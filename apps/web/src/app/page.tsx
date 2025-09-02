@@ -1,5 +1,6 @@
 import Image, { type ImageProps } from "next/image";
 import { Button } from "@repo/ui/button";
+import Link from "next/link";
 
 type Props = Omit<ImageProps, "src"> & {
   srcLight: string;
@@ -20,7 +21,9 @@ const ThemeImage = (props: Props) => {
 export default function Home() {
   return (
     <div>
-      <h1>Hello World</h1>
+      <Link href="/create">
+        <button>만들기</button>
+      </Link>
     </div>
   );
 }
