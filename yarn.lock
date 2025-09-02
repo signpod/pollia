@@ -12,6 +12,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.12.5":
+  version: 7.28.3
+  resolution: "@babel/runtime@npm:7.28.3"
+  checksum: 10c0/b360f82c2c5114f2a062d4d143d7b4ec690094764853937110585a9497977aed66c102166d0e404766c274e02a50ffb8f6d77fef7251ecf3f607f0e03e6397bc
+  languageName: node
+  linkType: hard
+
 "@emnapi/core@npm:^1.4.3, @emnapi/core@npm:^1.4.5":
   version: 1.5.0
   resolution: "@emnapi/core@npm:1.5.0"
@@ -1100,6 +1107,43 @@ __metadata:
     postcss: "npm:^8.4.41"
     tailwindcss: "npm:4.1.12"
   checksum: 10c0/25f6229bca22bb20513bb75896ff7d195052380a72cb534691860daeca5d5e3a9b80dc66ceb74998f7614293bf0a62c10d85d4ba5d39b6d820faafec9ab1d134
+  languageName: node
+  linkType: hard
+
+"@tanstack/query-core@npm:5.85.6":
+  version: 5.85.6
+  resolution: "@tanstack/query-core@npm:5.85.6"
+  checksum: 10c0/a7b2141094185f8ad8e168e57cf20cec07a93dcfad95e6e71f1154e40d3753230bd0851fd19cc8e221f61a6cd6d7e9dba8853ada304da29dc1b3f866dbe2b090
+  languageName: node
+  linkType: hard
+
+"@tanstack/query-devtools@npm:5.84.0":
+  version: 5.84.0
+  resolution: "@tanstack/query-devtools@npm:5.84.0"
+  checksum: 10c0/8257bebbf648e850f0186175a6e17aa6ac50e2dbb9413953927a698a2f73db8009693980f4c6b0f928a703be353a0b1bd1316031029818be7672db98c1b42cde
+  languageName: node
+  linkType: hard
+
+"@tanstack/react-query-devtools@npm:^5.85.6":
+  version: 5.85.6
+  resolution: "@tanstack/react-query-devtools@npm:5.85.6"
+  dependencies:
+    "@tanstack/query-devtools": "npm:5.84.0"
+  peerDependencies:
+    "@tanstack/react-query": ^5.85.6
+    react: ^18 || ^19
+  checksum: 10c0/a9baf38d67128d27195b3a034e00a49411c832a6540b7c0d6cfc6bde3ef0eafab5b04dded7bea79c58d8ca6402963f601df80bd443197c6321d9d26b5a657f5e
+  languageName: node
+  linkType: hard
+
+"@tanstack/react-query@npm:^5.85.6":
+  version: 5.85.6
+  resolution: "@tanstack/react-query@npm:5.85.6"
+  dependencies:
+    "@tanstack/query-core": "npm:5.85.6"
+  peerDependencies:
+    react: ^18 || ^19
+  checksum: 10c0/058564eea1805cf50d80ba2ddc3040df4564563802faf5e4a1282d859ab6d6d1bc50aa8a7924a5c060d57813dbe63dec4076e75e1988af4dbc60da0a743969aa
   languageName: node
   linkType: hard
 
@@ -3250,6 +3294,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "pollia@workspace:."
   dependencies:
+    "@tanstack/react-query": "npm:^5.85.6"
     prettier: "npm:^3.6.2"
     turbo: "npm:^2.5.6"
     typescript: "npm:5.9.2"
@@ -3334,6 +3379,17 @@ __metadata:
   peerDependencies:
     react: ^19.1.1
   checksum: 10c0/8c91198510521299c56e4e8d5e3a4508b2734fb5e52f29eeac33811de64e76fe586ad32c32182e2e84e070d98df67125da346c3360013357228172dbcd20bcdd
+  languageName: node
+  linkType: hard
+
+"react-error-boundary@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "react-error-boundary@npm:6.0.0"
+  dependencies:
+    "@babel/runtime": "npm:^7.12.5"
+  peerDependencies:
+    react: ">=16.13.1"
+  checksum: 10c0/1914d600dee95a14f14af4afe9867b0d35c26c4f7826d23208800ba2a99728659029aad60a6ef95e13430b4d79c2c4c9b3585f50bf508450478760d2e4e732d8
   languageName: node
   linkType: hard
 
@@ -4163,6 +4219,8 @@ __metadata:
     "@repo/typescript-config": "npm:*"
     "@repo/ui": "npm:*"
     "@tailwindcss/postcss": "npm:^4.1.12"
+    "@tanstack/react-query": "npm:^5.85.6"
+    "@tanstack/react-query-devtools": "npm:^5.85.6"
     "@types/node": "npm:^22.15.3"
     "@types/react": "npm:19.1.0"
     "@types/react-dom": "npm:19.1.1"
@@ -4174,6 +4232,7 @@ __metadata:
     postcss: "npm:^8.4.41"
     react: "npm:^19.1.0"
     react-dom: "npm:^19.1.0"
+    react-error-boundary: "npm:^6.0.0"
     tailwind-merge: "npm:^3.3.1"
     tailwindcss: "npm:^4.1.12"
     typescript: "npm:5.9.2"
