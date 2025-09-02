@@ -3,7 +3,6 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ["@radix-ui/react-dialog"],
   },
-
   images: {
     remotePatterns: [
       {
