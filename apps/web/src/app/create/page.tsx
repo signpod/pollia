@@ -7,18 +7,8 @@ import InfoStep from "./InfoStep.tsx";
 import OptionsStep from "./OptionsStep.tsx";
 import CompleteStep from "./CompleteStep.tsx";
 import FixedBottomButton from "./FixedBottomButton.tsx";
-
-export type Category =
-  | "패션"
-  | "음식"
-  | "영화"
-  | "음악"
-  | "게임"
-  | "여행"
-  | "스포츠"
-  | "도서"
-  | "IT"
-  | "기타";
+import { useCreatePoll } from "@/hooks/poll/useCreatePoll";
+import { Category } from "@/types/poll.ts";
 
 export type PollOption = {
   id: string;
@@ -36,6 +26,8 @@ export default function CreatePollPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [options, setOptions] = useState<PollOption[]>([]);
+  const [createdPollId, setCreatedPollId] = useState<string | null>(null);
+  const createPoll = useCreatePoll();
 
   const canGoNext = useMemo(() => {
     if (step === 1) return category !== null;
@@ -54,9 +46,36 @@ export default function CreatePollPage() {
     });
   }, [router]);
 
-  const handleNext = useCallback(() => {
+  const handleNext = useCallback(async () => {
+    // step 3 -> 4 진입 시 API에 생성 요청 전송
+    if (step === 3) {
+      if (createPoll.isPending) return;
+      if (!(options.length >= 2 && options.length <= 10)) return;
+      try {
+        const payload = {
+          title: title.trim(),
+          description: description.trim(),
+          categories: category?.id || "",
+          type: "LIST",
+          imageUrl: coverImageUrl,
+          options: options.map((o) => ({
+            title: o.title,
+            description: o.description,
+            imageUrl: o.imageUrl,
+            externalLinkUrl: o.link,
+          })),
+        };
+        const res = (await createPoll.mutateAsync(payload)) as any;
+        const newId: string | undefined = res?.id ?? res?.data?.id;
+        if (newId) setCreatedPollId(newId);
+        setStep(4);
+      } catch {
+        alert("생성에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+      }
+      return;
+    }
     setStep((s) => (s < 4 ? ((s + 1) as 1 | 2 | 3 | 4) : s));
-  }, []);
+  }, [step, category, title, description, coverImageUrl, options, createPoll]);
 
   const handleSelectCategory = useCallback((c: Category) => {
     setCategory(c);
@@ -85,6 +104,7 @@ export default function CreatePollPage() {
 
       {step === 4 && (
         <CompleteStep
+          pollId={createdPollId}
           category={category}
           title={title}
           description={description}
@@ -97,7 +117,7 @@ export default function CreatePollPage() {
           onPrev={handlePrev}
           onNext={handleNext}
           disablePrev={false}
-          disableNext={!canGoNext}
+          disableNext={!canGoNext || createPoll.isPending}
         />
       )}
     </div>

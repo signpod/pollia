@@ -14,6 +14,16 @@
   --color-border: #e5e7eb;
   --color-input: #e5e7eb;
   --color-ring: #a3a3a3;
+
+  /* Poll specific colors */
+  --color-poll-primary: oklch(0.6 0.2 220);
+  --color-poll-secondary: oklch(0.8 0.1 160);
+  --color-poll-accent: oklch(0.7 0.15 300);
+
+  --breakpoint-3xl: 1920px;
+
+  --font-display: "Geist", "Inter", sans-serif;
+  --font-mono: "GeistMono", "Fira Code", monospace;
 }
 
 /* Dark mode tokens (optional) */
@@ -68,4 +78,34 @@ body {
   @apply bg-background text-foreground;
 }
 
+@utility poll-card {
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  background-color: white;
+  box-shadow:
+    0 1px 3px 0 rgb(0 0 0 / 0.1),
+    0 1px 2px -1px rgb(0 0 0 / 0.1);
+  border: 1px solid rgb(229 231 235);
+}
 
+@utility vote-progress {
+  height: 0.5rem;
+  background-color: rgb(229 231 235);
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+}
+
+@utility vote-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, oklch(0.6 0.2 220), oklch(0.7 0.15 300));
+  border-radius: inherit;
+  transition: width 0.3s ease-in-out;
+}
+
+@utility line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

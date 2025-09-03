@@ -88,7 +88,7 @@ export default function OptionsStep({ options, onChangeOptions }: Props) {
               gap: 12,
             }}
           >
-            {o.imageUrl ? (
+            {/* {o.imageUrl ? (
               <Image
                 src={o.imageUrl}
                 alt={o.title}
@@ -112,7 +112,7 @@ export default function OptionsStep({ options, onChangeOptions }: Props) {
               >
                 IMG
               </div>
-            )}
+            )} */}
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 600 }}>{o.title}</div>
               {o.description && (
@@ -168,7 +168,7 @@ export default function OptionsStep({ options, onChangeOptions }: Props) {
               <SheetHeader>
                 <SheetTitle>{editing.id ? "선택지 수정" : "새 선택지"}</SheetTitle>
               </SheetHeader>
-              <input
+              {/* <input
                 type="file"
                 accept="image/*"
                 onChange={(e) => {
@@ -195,7 +195,7 @@ export default function OptionsStep({ options, onChangeOptions }: Props) {
                     style={{ borderRadius: 8, objectFit: "cover" }}
                   />
                 </div>
-              )}
+              )} */}
               <Input
                 value={editing.title}
                 onChange={(e) => setEditing({ ...editing, title: e.target.value })}

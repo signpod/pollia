@@ -1,37 +1,46 @@
 "use client";
 
-import type { Category, PollOption } from "./page";
+import { Category } from "@/types/poll";
+import type { PollOption } from "./page";
+import { useRouter } from "next/navigation";
 
 type Props = {
+  pollId?: string | null;
   category: Category | null;
   title: string;
   description?: string;
   options: PollOption[];
 };
 
-export default function CompleteStep({ category, title, description, options }: Props) {
+export default function CompleteStep({ pollId, category, title, description, options }: Props) {
+  const router = useRouter();
   const share = async () => {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const targetUrl = pollId ? `${origin}/poll/${pollId}` : origin;
     const text = `투표 참여하기: ${title}`;
-    const url = typeof window !== "undefined" ? window.location.href : "";
     if (navigator.share) {
       try {
-        await navigator.share({ title, text, url });
+        await navigator.share({ title, text, url: targetUrl });
       } catch {}
     } else if (navigator.clipboard) {
-      await navigator.clipboard.writeText(`${text}\n${url}`);
-      alert("링크를 클립보드에 복사했어요");
+      await navigator.clipboard.writeText(`${text}\n${targetUrl}`);
+      alert("주소가 복사되었습니다.");
     }
   };
 
   const go = () => {
-    alert("투표 상세로 이동 로직을 연결하세요");
+    if (pollId) {
+      router.replace(`/poll/${pollId}`);
+    } else {
+      alert("생성된 투표 ID가 없습니다.");
+    }
   };
 
   return (
     <div style={{ padding: 16 }}>
       <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>생성이 완료되었어요</h1>
       <div style={{ color: "#6b7280", marginBottom: 16 }}>
-        카테고리: {category ?? "-"}
+        카테고리: {category?.name || category?.id || "-"}
       </div>
       <div
         style={{
