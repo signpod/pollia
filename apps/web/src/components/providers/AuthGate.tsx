@@ -28,20 +28,40 @@ export function AuthGate({ children, publicPaths = ["/login", "/login/callback"]
         return;
       }
       try {
-        const url = `${API_BASE_URL?.replace(/\/$/, "") || ""}/auth/session`;
+        const url = `${API_BASE_URL?.replace(/\/$/, "") || ""}/users/my-info`;
         const res = await fetch(url, { method: "GET", credentials: "include" });
-        // 인증 실패로 간주하는 상태만 로그인으로 보냄
+        // 401/403 → 미인증
         if (res.status === 401 || res.status === 403) {
           const next = pathname + (search ? `?${search}` : "");
           router.replace(`/login?next=${encodeURIComponent(next)}`);
           return;
         }
-        // 200, 204 등은 통과, 그 외(네트워크/CORS/기타 상태)는 강제 리다이렉트하지 않음
-        if (!cancelled) setChecked(true);
+        // 2xx면 본문 존재 여부로 판단
+        if (res.ok) {
+          let hasBody = false;
+          try {
+            const ct = res.headers.get("content-type") || "";
+            if (ct.includes("application/json")) {
+              const data = await res.json();
+              hasBody = !!data;
+            }
+          } catch {
+            hasBody = false;
+          }
+          if (hasBody) {
+            if (!cancelled) setChecked(true);
+            return;
+          }
+        }
+        // 그 외 상태/본문 없음 → 로그인으로 이동
+        {
+          const next = pathname + (search ? `?${search}` : "");
+          router.replace(`/login?next=${encodeURIComponent(next)}`);
+        }
       } catch {
+        // 오류 시 보수적으로 로그인 유도
         const next = pathname + (search ? `?${search}` : "");
-        // 네트워크 오류 시에는 하얀화면 방지를 위해 통과시킴 (미들웨어가 있으면 서버단에서 차단)
-        if (!cancelled) setChecked(true);
+        router.replace(`/login?next=${encodeURIComponent(next)}`);
       }
     }
     run();
