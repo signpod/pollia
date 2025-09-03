@@ -1,7 +1,13 @@
+export interface Category {
+  id: string;
+  name: string;
+}
+
 export interface Poll {
   id: string;
   title: string;
   description: string;
+  category: Category;
   startAt: string;
   endAt: string;
   type: string;

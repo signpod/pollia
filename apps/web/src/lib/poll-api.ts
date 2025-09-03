@@ -10,6 +10,10 @@ export const mockPollData: Poll = {
   title: "가장 좋아하는 프로그래밍 언어는?",
   description:
     "2024년 개발자들이 가장 선호하는 프로그래밍 언어를 투표해주세요.",
+  category: {
+    id: "category-001",
+    name: "프로그래밍 언어",
+  },
   startAt: "2024-01-01T00:00:00.000Z",
   endAt: "2024-12-31T23:59:59.000Z",
   type: "single",
@@ -73,6 +77,10 @@ export const mockMultiplePollData: Poll = {
   title: "좋아하는 프론트엔드 프레임워크는? (복수 선택 가능)",
   description:
     "사용해본 경험이 있고 좋아하는 프론트엔드 프레임워크를 모두 선택해주세요.",
+  category: {
+    id: "category-002",
+    name: "프론트엔드 프레임워크",
+  },
   type: "multiple",
   allowMultipleVote: true,
   userVote: ["option-1", "option-3"],
