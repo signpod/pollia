@@ -1,19 +1,19 @@
 "use client";
 
 import { memo, useMemo } from "react";
-import type { Category as LocalCategory } from "./page";
+import { Category } from "@/types/poll";
 import { useCategories } from "@/hooks/categories/useCategories";
 
 type Props = {
-  selected: LocalCategory | null;
-  onSelect: (c: LocalCategory) => void;
+  selected: Category | null;
+  onSelect: (c: Category) => void;
 };
 
 function CategoryStepImpl({ selected, onSelect }: Props) {
   const { data, isLoading } = useCategories();
 
   const categories = useMemo(() => {
-    const fetched = (data ?? []) as string[];
+    const fetched = (data ?? []) as Category[];
     return fetched.length > 0 ? fetched : [];
   }, [data]);
 
@@ -40,11 +40,11 @@ function CategoryStepImpl({ selected, onSelect }: Props) {
           }}
         >
           {categories.map((c) => {
-            const isSel = selected === (c as unknown as LocalCategory);
+            const isSel = selected === c;
             return (
               <button
-                key={c}
-                onClick={() => onSelect(c as unknown as LocalCategory)}
+                key={c.id}
+                onClick={() => onSelect(c)}
                 style={{
                   padding: 12,
                   borderRadius: 12,
@@ -53,7 +53,7 @@ function CategoryStepImpl({ selected, onSelect }: Props) {
                   textAlign: "center",
                 }}
               >
-                {c}
+                {c.name || c.id}
               </button>
             );
           })}

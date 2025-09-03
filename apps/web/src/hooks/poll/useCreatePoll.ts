@@ -11,7 +11,7 @@ export type CreatePollOptionInput = {
 };
 
 export type CreatePollInput = {
-  category: string | null;
+  categories: string;
   title: string;
   description?: string;
   imageUrl?: string;

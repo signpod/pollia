@@ -48,7 +48,7 @@ export default function InfoStep({
       </h1>
 
       <div style={{ display: "grid", gap: 12 }}>
-        <div>
+        {/* <div>
           <label style={{ display: "block", fontWeight: 600, marginBottom: 8 }}>
             대표 이미지
           </label>
@@ -66,7 +66,7 @@ export default function InfoStep({
               style={{ marginTop: 8, width: "100%", borderRadius: 12 }}
             />
           )}
-        </div>
+        </div> */}
 
         <div>
           <label style={{ display: "block", fontWeight: 600, marginBottom: 8 }}>

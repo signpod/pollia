@@ -8,18 +8,7 @@ import OptionsStep from "./OptionsStep.tsx";
 import CompleteStep from "./CompleteStep.tsx";
 import FixedBottomButton from "./FixedBottomButton.tsx";
 import { useCreatePoll } from "@/hooks/poll/useCreatePoll";
-
-export type Category =
-  | "패션"
-  | "음식"
-  | "영화"
-  | "음악"
-  | "게임"
-  | "여행"
-  | "스포츠"
-  | "도서"
-  | "IT"
-  | "기타";
+import { Category } from "@/types/poll.ts";
 
 export type PollOption = {
   id: string;
@@ -63,15 +52,16 @@ export default function CreatePollPage() {
       if (!(options.length >= 2 && options.length <= 10)) return;
       try {
         const payload = {
-          category,
           title: title.trim(),
           description: description.trim(),
+          categories: category?.id || "",
+          type: "LIST",
           imageUrl: coverImageUrl,
           options: options.map((o) => ({
             title: o.title,
             description: o.description,
             imageUrl: o.imageUrl,
-            link: o.link,
+            externalLinkUrl: o.link,
           })),
         };
         await createPoll.mutateAsync(payload);

@@ -1,6 +1,7 @@
 "use client";
 
-import type { Category, PollOption } from "./page";
+import { Category } from "@/types/poll";
+import type { PollOption } from "./page";
 
 type Props = {
   category: Category | null;
@@ -31,7 +32,7 @@ export default function CompleteStep({ category, title, description, options }: 
     <div style={{ padding: 16 }}>
       <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>생성이 완료되었어요</h1>
       <div style={{ color: "#6b7280", marginBottom: 16 }}>
-        카테고리: {category ?? "-"}
+        카테고리: {category?.name || category?.id || "-"}
       </div>
       <div
         style={{
