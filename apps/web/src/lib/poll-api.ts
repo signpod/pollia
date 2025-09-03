@@ -21,9 +21,9 @@ export async function fetchPoll(pollId: string): Promise<Poll> {
 
 export async function fetchPollResults(
   pollId: string
-): Promise<PollResultOptionApiResponse[]> {
+): Promise<PollResultOptionApiResponse> {
   try {
-    const apiResponse = await httpClient.get<PollResultOptionApiResponse[]>(
+    const apiResponse = await httpClient.get<PollResultOptionApiResponse>(
       `polls/${pollId}/results`
     );
     return apiResponse;

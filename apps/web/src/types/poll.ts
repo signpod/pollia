@@ -16,11 +16,6 @@ export interface Poll {
   options: PollOption[];
   owner: PollOwner;
   createdAt: string;
-
-  // 클라이언트 전용 필드들 (API에서 제공하지 않음)
-  userVote?: string[];
-  isLiked?: boolean;
-  isBookmarked?: boolean;
 }
 
 export interface PollOption {
@@ -30,7 +25,6 @@ export interface PollOption {
   imageUrl?: string;
   externalLinkTitle?: string;
   externalLinkUrl?: string;
-  // voteCount는 API에서 제공하지 않으므로 제거
 }
 
 export interface PollOwner {
@@ -107,8 +101,12 @@ export interface BookmarkApiResponse {
   isBookmarked: boolean;
 }
 
-// 투표 결과 API 응답 타입
-export interface PollResultOptionApiResponse {
+export interface Category {
+  id: string;
+  name: string;
+}
+
+interface PollResultOption {
   id: string;
   pollId: string;
   title: string;
@@ -125,3 +123,5 @@ export interface PollResultOptionApiResponse {
   };
   voteCount: number;
 }
+
+export type PollResultOptionApiResponse = PollResultOption[];
