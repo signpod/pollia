@@ -26,6 +26,7 @@ export default function CreatePollPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [options, setOptions] = useState<PollOption[]>([]);
+  const [createdPollId, setCreatedPollId] = useState<string | null>(null);
   const createPoll = useCreatePoll();
 
   const canGoNext = useMemo(() => {
@@ -64,7 +65,9 @@ export default function CreatePollPage() {
             externalLinkUrl: o.link,
           })),
         };
-        await createPoll.mutateAsync(payload);
+        const res = (await createPoll.mutateAsync(payload)) as any;
+        const newId: string | undefined = res?.id ?? res?.data?.id;
+        if (newId) setCreatedPollId(newId);
         setStep(4);
       } catch {
         alert("생성에 실패했습니다. 잠시 후 다시 시도해 주세요.");
@@ -101,6 +104,7 @@ export default function CreatePollPage() {
 
       {step === 4 && (
         <CompleteStep
+          pollId={createdPollId}
           category={category}
           title={title}
           description={description}
