@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { http } from "@/src/lib/http/default";
+import { http } from "@/lib/http/default";
 
 export type CreatePollOptionInput = {
   title: string;
@@ -27,5 +27,3 @@ export function useCreatePoll() {
     },
   });
 }
-
-
