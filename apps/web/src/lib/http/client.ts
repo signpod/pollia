@@ -19,15 +19,21 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number) {
 
 function buildUrl(path: string, baseUrl?: string) {
   if (/^https?:\/\//.test(path)) return path;
-  const root = baseUrl ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
+  const root = baseUrl ?? process.env.NEXT_PUBLIC_API_BASE_URL;
   if (!root) return path;
   return `${root.replace(/\/$/, "")}/${path.replace(/^\//, "")}`;
 }
 
-export function createHttpClient(defaults: HttpOptions = {}, retry: RetryOptions = {}): HttpClient {
+export function createHttpClient(
+  defaults: HttpOptions = {},
+  retry: RetryOptions = {}
+): HttpClient {
   const opts: Required<HttpOptions> = {
-    baseUrl: defaults.baseUrl ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? "",
-    headers: { "Content-Type": "application/json", ...(defaults.headers || {}) },
+    baseUrl: defaults.baseUrl ?? process.env.NEXT_PUBLIC_API_BASE_URL,
+    headers: {
+      "Content-Type": "application/json",
+      ...(defaults.headers || {}),
+    },
     timeoutMs: defaults.timeoutMs ?? 15000,
     credentials: defaults.credentials ?? "include",
   };
@@ -47,9 +53,11 @@ export function createHttpClient(defaults: HttpOptions = {}, retry: RetryOptions
           fetch(url, {
             method,
             headers,
-            body: config.body !== undefined && headers["Content-Type"]?.includes("application/json")
-              ? JSON.stringify(config.body)
-              : (config.body as BodyInit | undefined),
+            body:
+              config.body !== undefined &&
+              headers["Content-Type"]?.includes("application/json")
+                ? JSON.stringify(config.body)
+                : (config.body as BodyInit | undefined),
             credentials,
             mode: "cors",
             redirect: "follow",
@@ -95,11 +103,11 @@ export function createHttpClient(defaults: HttpOptions = {}, retry: RetryOptions
   return {
     request: core,
     get: (path, config) => core(path, { ...config, method: "GET" }),
-    post: (path, body, config) => core(path, { ...config, method: "POST", body }),
+    post: (path, body, config) =>
+      core(path, { ...config, method: "POST", body }),
     put: (path, body, config) => core(path, { ...config, method: "PUT", body }),
-    patch: (path, body, config) => core(path, { ...config, method: "PATCH", body }),
+    patch: (path, body, config) =>
+      core(path, { ...config, method: "PATCH", body }),
     delete: (path, config) => core(path, { ...config, method: "DELETE" }),
   };
 }
-
-
