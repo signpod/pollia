@@ -7,6 +7,7 @@ import InfoStep from "./InfoStep.tsx";
 import OptionsStep from "./OptionsStep.tsx";
 import CompleteStep from "./CompleteStep.tsx";
 import FixedBottomButton from "./FixedBottomButton.tsx";
+import { useCreatePoll } from "@/hooks/poll/useCreatePoll";
 
 export type Category =
   | "패션"
@@ -36,6 +37,7 @@ export default function CreatePollPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [options, setOptions] = useState<PollOption[]>([]);
+  const createPoll = useCreatePoll();
 
   const canGoNext = useMemo(() => {
     if (step === 1) return category !== null;
@@ -54,9 +56,33 @@ export default function CreatePollPage() {
     });
   }, [router]);
 
-  const handleNext = useCallback(() => {
+  const handleNext = useCallback(async () => {
+    // step 3 -> 4 진입 시 API에 생성 요청 전송
+    if (step === 3) {
+      if (createPoll.isPending) return;
+      if (!(options.length >= 2 && options.length <= 10)) return;
+      try {
+        const payload = {
+          category,
+          title: title.trim(),
+          description: description.trim(),
+          imageUrl: coverImageUrl,
+          options: options.map((o) => ({
+            title: o.title,
+            description: o.description,
+            imageUrl: o.imageUrl,
+            link: o.link,
+          })),
+        };
+        await createPoll.mutateAsync(payload);
+        setStep(4);
+      } catch {
+        alert("생성에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+      }
+      return;
+    }
     setStep((s) => (s < 4 ? ((s + 1) as 1 | 2 | 3 | 4) : s));
-  }, []);
+  }, [step, category, title, description, coverImageUrl, options, createPoll]);
 
   const handleSelectCategory = useCallback((c: Category) => {
     setCategory(c);
@@ -97,7 +123,7 @@ export default function CreatePollPage() {
           onPrev={handlePrev}
           onNext={handleNext}
           disablePrev={false}
-          disableNext={!canGoNext}
+          disableNext={!canGoNext || createPoll.isPending}
         />
       )}
     </div>
