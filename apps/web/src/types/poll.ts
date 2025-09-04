@@ -16,6 +16,10 @@ export interface Poll {
   options: PollOption[];
   owner: PollOwner;
   createdAt: string;
+
+  hasLiked: boolean;
+  hasBookmarked: boolean;
+  userVotedOptionIds: string[];
 }
 
 export interface PollOption {
