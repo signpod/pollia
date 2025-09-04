@@ -60,23 +60,16 @@ export async function voteOption(
 }
 
 export async function unvoteOption(
-  pollId: string,
-  optionId: string
+  _pollId: string,
+  _optionId: string
 ): Promise<VoteApiResponse> {
-  try {
-    await httpClient.delete(`polls/${pollId}/vote/${optionId}`);
+  // TODO: 투표 취소 API가 준비되면 실제 구현으로 교체
+  await new Promise((resolve) => setTimeout(resolve, 300));
 
-    return {
-      success: true,
-      message: "투표가 취소되었습니다.",
-    };
-  } catch (error) {
-    console.error("투표 취소 실패:", error);
-    return {
-      success: false,
-      message: "투표 취소 중 오류가 발생했습니다.",
-    };
-  }
+  return {
+    success: true,
+    message: "투표가 취소되었습니다.",
+  };
 }
 
 export async function likePoll(_pollId: string): Promise<LikeApiResponse> {
