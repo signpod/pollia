@@ -85,6 +85,15 @@ export interface VoteApiResponse {
   updatedPoll?: Poll;
 }
 
+export interface VoteRequest {
+  optionId: string;
+}
+
+export interface VoteResponse {
+  id: string;
+  pollOptionId: string;
+}
+
 export interface LikeApiRequest {
   pollId: string;
 }

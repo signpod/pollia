@@ -4,6 +4,8 @@ import {
   LikeApiResponse,
   BookmarkApiResponse,
   PollResultOptionApiResponse,
+  VoteRequest,
+  VoteResponse,
 } from "@/types/poll";
 import { createHttpClient } from "@/lib/http/client";
 
@@ -37,29 +39,47 @@ export async function voteOption(
   pollId: string,
   optionId: string
 ): Promise<VoteApiResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 300));
+  try {
+    const requestBody: VoteRequest = {
+      optionId,
+    };
 
-  return {
-    success: true,
-    message: "투표가 완료되었습니다.",
-    // TODO: 실제 API 호출로 업데이트된 Poll 데이터 반환 필요
-  };
+    await httpClient.post<VoteResponse>(`polls/${pollId}/vote`, requestBody);
+
+    return {
+      success: true,
+      message: "투표가 완료되었습니다.",
+    };
+  } catch (error) {
+    console.error("투표 처리 실패:", error);
+    return {
+      success: false,
+      message: "투표 처리 중 오류가 발생했습니다.",
+    };
+  }
 }
 
 export async function unvoteOption(
   pollId: string,
   optionId: string
 ): Promise<VoteApiResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 300));
+  try {
+    await httpClient.delete(`polls/${pollId}/vote/${optionId}`);
 
-  return {
-    success: true,
-    message: "투표가 취소되었습니다.",
-    // TODO: 실제 API 호출로 업데이트된 Poll 데이터 반환 필요
-  };
+    return {
+      success: true,
+      message: "투표가 취소되었습니다.",
+    };
+  } catch (error) {
+    console.error("투표 취소 실패:", error);
+    return {
+      success: false,
+      message: "투표 취소 중 오류가 발생했습니다.",
+    };
+  }
 }
 
-export async function likePoll(pollId: string): Promise<LikeApiResponse> {
+export async function likePoll(_pollId: string): Promise<LikeApiResponse> {
   await new Promise((resolve) => setTimeout(resolve, 200));
 
   return {
@@ -70,7 +90,7 @@ export async function likePoll(pollId: string): Promise<LikeApiResponse> {
   };
 }
 
-export async function unlikePoll(pollId: string): Promise<LikeApiResponse> {
+export async function unlikePoll(_pollId: string): Promise<LikeApiResponse> {
   await new Promise((resolve) => setTimeout(resolve, 200));
 
   return {
@@ -82,7 +102,7 @@ export async function unlikePoll(pollId: string): Promise<LikeApiResponse> {
 }
 
 export async function bookmarkPoll(
-  pollId: string
+  _pollId: string
 ): Promise<BookmarkApiResponse> {
   await new Promise((resolve) => setTimeout(resolve, 200));
 
@@ -94,7 +114,7 @@ export async function bookmarkPoll(
 }
 
 export async function unbookmarkPoll(
-  pollId: string
+  _pollId: string
 ): Promise<BookmarkApiResponse> {
   await new Promise((resolve) => setTimeout(resolve, 200));
 
