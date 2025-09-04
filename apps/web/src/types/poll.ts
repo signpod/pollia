@@ -2,7 +2,7 @@ export interface Poll {
   id: string;
   title: string;
   description: string;
-  categories: string; // API 응답에 맞게 문자열로 변경
+  categories: string;
   startAt: string;
   endAt: string;
   type: string;
@@ -39,7 +39,7 @@ export interface PollOwner {
 }
 
 export interface PollResult {
-  option: PollOption & { voteCount: number }; // voteCount 포함된 옵션
+  option: PollOption & { voteCount: number };
   percentage: number;
   rank: number;
   isUserVote?: boolean;
@@ -92,6 +92,10 @@ export interface VoteRequest {
 export interface VoteResponse {
   id: string;
   pollOptionId: string;
+}
+
+export interface LikeResponse {
+  message: string;
 }
 
 export interface LikeApiRequest {

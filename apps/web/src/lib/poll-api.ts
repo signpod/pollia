@@ -6,6 +6,7 @@ import {
   PollResultOptionApiResponse,
   VoteRequest,
   VoteResponse,
+  LikeResponse,
 } from "@/types/poll";
 import { createHttpClient } from "@/lib/http/client";
 
@@ -72,15 +73,25 @@ export async function unvoteOption(
   };
 }
 
-export async function likePoll(_pollId: string): Promise<LikeApiResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 200));
+export async function likePoll(pollId: string): Promise<LikeApiResponse> {
+  try {
+    await httpClient.post<LikeResponse>(`polls/${pollId}/like`);
 
-  return {
-    success: true,
-    message: "좋아요가 추가되었습니다.",
-    likeCount: 325,
-    isLiked: true,
-  };
+    return {
+      success: true,
+      message: "좋아요가 추가되었습니다.",
+      likeCount: 0, // API에서 likeCount를 제공하지 않으므로 임시값
+      isLiked: true,
+    };
+  } catch (error) {
+    console.error("좋아요 처리 실패:", error);
+    return {
+      success: false,
+      message: "좋아요 처리 중 오류가 발생했습니다.",
+      likeCount: 0,
+      isLiked: false,
+    };
+  }
 }
 
 export async function unlikePoll(_pollId: string): Promise<LikeApiResponse> {
