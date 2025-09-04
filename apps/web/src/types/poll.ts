@@ -17,6 +17,7 @@ export interface Poll {
   owner: PollOwner;
   createdAt: string;
 
+  // 사용자 관련 정보
   hasLiked: boolean;
   hasBookmarked: boolean;
   userVotedOptionIds: string[];

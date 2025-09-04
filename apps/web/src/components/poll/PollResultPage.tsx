@@ -1,6 +1,6 @@
 "use client";
 
-import { Poll, PollResult } from "@/types/poll";
+import { Poll, PollResult, PollResultOptionApiResponse } from "@/types/poll";
 import { Card } from "@/components/ui/card";
 import { PollHeader } from "@/components/poll/PollHeader";
 import { PollOwner } from "@/components/poll/PollOwner";
@@ -14,7 +14,7 @@ import { useLikeBookmark } from "@/hooks/poll/useLikeBookmark";
 
 interface PollResultPageProps {
   poll: Poll;
-  results: PollResult[];
+  results: PollResultOptionApiResponse;
 }
 
 export function PollResultPage({ poll, results }: PollResultPageProps) {
@@ -60,18 +60,43 @@ export function PollResultPage({ poll, results }: PollResultPageProps) {
       )}
 
       <div className="space-y-4">
-        {results.map((result) => (
-          <OptionResult
-            key={result.option.id}
-            result={{
-              ...result,
-              isUserVote: voting.isUserVoted(result.option.id),
-            }}
-            allowMultiple={poll.allowMultipleVote}
-            onVote={voting.handleVote}
-            isVoting={voting.isVoting}
-          />
-        ))}
+        {results.map((apiResult, index) => {
+          // API 응답을 PollResult 형태로 변환
+          const totalVotes = results.reduce((sum, r) => sum + r.voteCount, 0);
+          const percentage =
+            totalVotes > 0 ? (apiResult.voteCount / totalVotes) * 100 : 0;
+
+          const pollResult: PollResult = {
+            option: {
+              id: apiResult.id,
+              title: apiResult.title,
+              voteCount: apiResult.voteCount,
+              ...(apiResult.description && {
+                description: apiResult.description,
+              }),
+              ...(apiResult.imageUrl && { imageUrl: apiResult.imageUrl }),
+              ...(apiResult.externalLinkTitle && {
+                externalLinkTitle: apiResult.externalLinkTitle,
+              }),
+              ...(apiResult.externalLinkUrl && {
+                externalLinkUrl: apiResult.externalLinkUrl,
+              }),
+            },
+            percentage: Math.round(percentage * 10) / 10,
+            rank: index + 1,
+            isUserVote: voting.isUserVoted(apiResult.id),
+          };
+
+          return (
+            <OptionResult
+              key={apiResult.id}
+              result={pollResult}
+              allowMultiple={poll.allowMultipleVote}
+              onVote={voting.handleVote}
+              isVoting={voting.isVoting}
+            />
+          );
+        })}
       </div>
     </div>
   );

@@ -11,7 +11,7 @@ export const useLikeBookmark = (pollId: string, initialPoll: Poll) => {
 
   const handleLike = async () => {
     try {
-      if (currentPoll.isLiked) {
+      if (currentPoll.hasLiked) {
         await mutations.unlike.mutateAsync();
       } else {
         await mutations.like.mutateAsync();
@@ -23,7 +23,7 @@ export const useLikeBookmark = (pollId: string, initialPoll: Poll) => {
 
   const handleBookmark = async () => {
     try {
-      if (currentPoll.isBookmarked) {
+      if (currentPoll.hasBookmarked) {
         await mutations.unbookmark.mutateAsync();
       } else {
         await mutations.bookmark.mutateAsync();
@@ -40,8 +40,8 @@ export const useLikeBookmark = (pollId: string, initialPoll: Poll) => {
     mutations.unbookmark.isPending;
 
   return {
-    isLiked: currentPoll.isLiked || false,
-    isBookmarked: currentPoll.isBookmarked || false,
+    isLiked: currentPoll.hasLiked,
+    isBookmarked: currentPoll.hasBookmarked,
     likeCount: currentPoll.likeCount,
     handleLike,
     handleBookmark,

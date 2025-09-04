@@ -5,15 +5,15 @@ export const usePollVoting = (poll: Poll) => {
   const mutations = usePollMutations(poll.id);
 
   const handleVote = async (optionId: string) => {
-    const isCurrentlyVoted = poll.userVote?.includes(optionId) || false;
+    const isCurrentlyVoted = poll.userVotedOptionIds.includes(optionId);
 
     try {
       if (isCurrentlyVoted) {
         await mutations.unvote.mutateAsync({ optionId });
       } else {
         if (!poll.allowMultipleVote) {
-          const currentVotes = poll.userVote || [];
-          for (const currentOptionId of currentVotes) {
+          // 단일 선택의 경우 기존 투표를 모두 취소
+          for (const currentOptionId of poll.userVotedOptionIds) {
             if (currentOptionId !== optionId) {
               await mutations.unvote.mutateAsync({ optionId: currentOptionId });
             }
@@ -28,7 +28,7 @@ export const usePollVoting = (poll: Poll) => {
   };
 
   const isUserVoted = (optionId: string) => {
-    return poll.userVote?.includes(optionId) || false;
+    return poll.userVotedOptionIds.includes(optionId);
   };
 
   const isVoting = mutations.vote.isPending || mutations.unvote.isPending;
