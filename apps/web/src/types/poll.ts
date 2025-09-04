@@ -98,6 +98,10 @@ export interface LikeResponse {
   message: string;
 }
 
+export interface BookmarkResponse {
+  message: string;
+}
+
 export interface LikeApiRequest {
   pollId: string;
 }

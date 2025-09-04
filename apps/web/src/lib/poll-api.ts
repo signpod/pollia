@@ -7,6 +7,7 @@ import {
   VoteRequest,
   VoteResponse,
   LikeResponse,
+  BookmarkResponse,
 } from "@/types/poll";
 import { createHttpClient } from "@/lib/http/client";
 
@@ -106,15 +107,24 @@ export async function unlikePoll(_pollId: string): Promise<LikeApiResponse> {
 }
 
 export async function bookmarkPoll(
-  _pollId: string
+  pollId: string
 ): Promise<BookmarkApiResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 200));
+  try {
+    await httpClient.post<BookmarkResponse>(`polls/${pollId}/bookmark`);
 
-  return {
-    success: true,
-    message: "북마크가 추가되었습니다.",
-    isBookmarked: true,
-  };
+    return {
+      success: true,
+      message: "북마크가 추가되었습니다.",
+      isBookmarked: true,
+    };
+  } catch (error) {
+    console.error("북마크 처리 실패:", error);
+    return {
+      success: false,
+      message: "북마크 처리 중 오류가 발생했습니다.",
+      isBookmarked: false,
+    };
+  }
 }
 
 export async function unbookmarkPoll(
