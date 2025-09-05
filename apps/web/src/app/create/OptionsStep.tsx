@@ -13,6 +13,8 @@ import {
   SheetFooter,
   SheetClose,
 } from "../../components/ui/sheet";
+import { usePostImage } from "@/hooks/shared/useUploadImage";
+import { CDN_BASE_URL } from "@/constants/config";
 
 type Props = {
   options: PollOption[];
@@ -24,6 +26,8 @@ export default function OptionsStep({ options, onChangeOptions }: Props) {
   const [editing, setEditing] = useState<PollOption | null>(null);
   const tempBlobRef = useRef<string | null>(null);
   const canAddMore = options.length < 10;
+  const postImage = usePostImage();
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const handleOpenCreate = () => {
     setEditing({ id: "", title: "", description: "", imageUrl: "", link: "" });
@@ -76,9 +80,17 @@ export default function OptionsStep({ options, onChangeOptions }: Props) {
 
       <div style={{ display: "grid", gap: 12 }}>
         {options.map((o) => (
-          <button
+          <div
             key={o.id}
+            role="button"
+            tabIndex={0}
             onClick={() => handleOpenEdit(o)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleOpenEdit(o);
+              }
+            }}
             style={{
               textAlign: "left",
               border: "1px solid #e5e7eb",
@@ -86,9 +98,10 @@ export default function OptionsStep({ options, onChangeOptions }: Props) {
               padding: 12,
               display: "flex",
               gap: 12,
+              cursor: "pointer",
             }}
           >
-            {/* {o.imageUrl ? (
+            {o.imageUrl ? (
               <Image
                 src={o.imageUrl}
                 alt={o.title}
@@ -112,7 +125,7 @@ export default function OptionsStep({ options, onChangeOptions }: Props) {
               >
                 IMG
               </div>
-            )} */}
+            )}
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 600 }}>{o.title}</div>
               {o.description && (
@@ -140,7 +153,7 @@ export default function OptionsStep({ options, onChangeOptions }: Props) {
             >
               삭제
             </button>
-          </button>
+          </div>
         ))}
       </div>
 
@@ -168,24 +181,46 @@ export default function OptionsStep({ options, onChangeOptions }: Props) {
               <SheetHeader>
                 <SheetTitle>{editing.id ? "선택지 수정" : "새 선택지"}</SheetTitle>
               </SheetHeader>
-              {/* <input
+              <input
                 type="file"
                 accept="image/*"
-                onChange={(e) => {
+                disabled={postImage.isPending}
+                onChange={async (e) => {
+                  if (postImage.isPending) return;
                   const file = e.target.files?.[0];
                   if (!file || !editing) return;
+                  setUploadError(null);
+                  // blob preview
                   const url = URL.createObjectURL(file);
                   if (tempBlobRef.current && tempBlobRef.current.startsWith("blob:")) {
                     URL.revokeObjectURL(tempBlobRef.current);
                   }
                   tempBlobRef.current = url;
                   setEditing({ ...editing, imageUrl: url });
+
+                  try {
+                    const uploadedUrl = await postImage.mutateAsync({
+                      file,
+                      fileName: file.name,
+                      fileType: file.type,
+                    });
+                    setEditing({
+                      ...editing,
+                      imageUrl: `${CDN_BASE_URL}${uploadedUrl}`,
+                    });
+                    if (tempBlobRef.current && tempBlobRef.current.startsWith("blob:")) {
+                      URL.revokeObjectURL(tempBlobRef.current);
+                      tempBlobRef.current = null;
+                    }
+                  } catch (err) {
+                    setUploadError("이미지 업로드에 실패했습니다. 다시 시도해 주세요.");
+                  }
                 }}
                 className="h-11 w-full rounded-md border px-3 py-2 text-sm"
                 style={{ borderColor: "var(--color-input)" }}
               />
               {editing.imageUrl && (
-                <div className="mt-1">
+                <div className="mt-1 relative">
                   <Image
                     src={editing.imageUrl}
                     alt={editing.title || "preview"}
@@ -194,8 +229,28 @@ export default function OptionsStep({ options, onChangeOptions }: Props) {
                     unoptimized
                     style={{ borderRadius: 8, objectFit: "cover" }}
                   />
+                  {postImage.isPending && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        background: "rgba(0,0,0,0.35)",
+                        borderRadius: 8,
+                        display: "grid",
+                        placeItems: "center",
+                        color: "#fff",
+                        fontSize: 12,
+                        fontWeight: 600,
+                      }}
+                    >
+                      업로드 중...
+                    </div>
+                  )}
                 </div>
-              )} */}
+              )}
+              {uploadError && (
+                <div className="text-[12px] text-red-700 mt-1">{uploadError}</div>
+              )}
               <Input
                 value={editing.title}
                 onChange={(e) => setEditing({ ...editing, title: e.target.value })}

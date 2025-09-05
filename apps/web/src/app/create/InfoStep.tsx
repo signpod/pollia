@@ -2,7 +2,9 @@
 
 import { Input } from "../../components/ui/input";
 import { Textarea } from "../../components/ui/textarea";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { usePostImage } from "@/hooks/shared/useUploadImage";
+import { CDN_BASE_URL } from "@/constants/config";
 
 type Props = {
   coverImageUrl?: string;
@@ -22,25 +24,31 @@ export default function InfoStep({
   onChangeDescription,
 }: Props) {
   const prevUrlRef = useRef<string | undefined>(undefined);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const postImage = usePostImage();
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const url = URL.createObjectURL(file);
-    if (prevUrlRef.current && prevUrlRef.current.startsWith("blob:")) {
-      URL.revokeObjectURL(prevUrlRef.current);
-    }
-    prevUrlRef.current = url;
-    onChangeCoverImageUrl(url);
-  };
 
-  useEffect(() => {
-    return () => {
+    const url = URL.createObjectURL(file);
+    onChangeCoverImageUrl(url);
+    setUploadError(null);
+
+    try {
+      const uploadedUrl = await postImage.mutateAsync({ file, fileName: file.name, fileType: file.type });
+      // 업로드 완료 시 최종 URL로 교체
+      onChangeCoverImageUrl(`${CDN_BASE_URL}${uploadedUrl}`);
+      // blob URL 정리
       if (prevUrlRef.current && prevUrlRef.current.startsWith("blob:")) {
         URL.revokeObjectURL(prevUrlRef.current);
+        prevUrlRef.current = undefined;
       }
-    };
-  }, []);
+    } catch (err) {
+      setUploadError("이미지 업로드에 실패했습니다. 다시 시도해 주세요.");
+    }
+  };
+
   return (
     <div style={{ padding: 16 }}>
       <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>
@@ -48,7 +56,7 @@ export default function InfoStep({
       </h1>
 
       <div style={{ display: "grid", gap: 12 }}>
-        {/* <div>
+        <div>
           <label style={{ display: "block", fontWeight: 600, marginBottom: 8 }}>
             대표 이미지
           </label>
@@ -60,13 +68,35 @@ export default function InfoStep({
             style={{ borderColor: "var(--color-input)" }}
           />
           {coverImageUrl && (
-            <img
-              src={coverImageUrl}
-              alt="cover"
-              style={{ marginTop: 8, width: "100%", borderRadius: 12 }}
-            />
+            <div style={{ position: "relative", marginTop: 8 }}>
+              <img
+                src={coverImageUrl}
+                alt="cover"
+                style={{ width: "100%", borderRadius: 12, display: "block" }}
+              />
+              {postImage.isPending && (
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    background: "rgba(0,0,0,0.35)",
+                    borderRadius: 12,
+                    display: "grid",
+                    placeItems: "center",
+                    color: "#fff",
+                    fontSize: 14,
+                    fontWeight: 600,
+                  }}
+                >
+                  업로드 중...
+                </div>
+              )}
+            </div>
           )}
-        </div> */}
+          {uploadError && (
+            <div style={{ color: "#b91c1c", fontSize: 12, marginTop: 8 }}>{uploadError}</div>
+          )}
+        </div>
 
         <div>
           <label style={{ display: "block", fontWeight: 600, marginBottom: 8 }}>
