@@ -906,6 +906,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@repo/tailwind-config@npm:*, @repo/tailwind-config@workspace:packages/tailwind-config":
+  version: 0.0.0-use.local
+  resolution: "@repo/tailwind-config@workspace:packages/tailwind-config"
+  dependencies:
+    postcss: "npm:^8.5.3"
+    tailwindcss: "npm:^4.1.12"
+  languageName: unknown
+  linkType: soft
+
 "@repo/typescript-config@npm:*, @repo/typescript-config@workspace:packages/typescript-config":
   version: 0.0.0-use.local
   resolution: "@repo/typescript-config@workspace:packages/typescript-config"
@@ -3321,7 +3330,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8.4.41":
+"postcss@npm:^8.4.41, postcss@npm:^8.5.3":
   version: 8.5.6
   resolution: "postcss@npm:8.5.6"
   dependencies:
@@ -4225,6 +4234,7 @@ __metadata:
     "@radix-ui/react-separator": "npm:^1.1.7"
     "@radix-ui/react-slot": "npm:^1.2.3"
     "@repo/eslint-config": "npm:*"
+    "@repo/tailwind-config": "npm:*"
     "@repo/typescript-config": "npm:*"
     "@repo/ui": "npm:*"
     "@tailwindcss/postcss": "npm:^4.1.12"
