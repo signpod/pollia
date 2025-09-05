@@ -10,9 +10,10 @@ type Props = {
   title: string;
   description?: string;
   options: PollOption[];
+  imageUrl?: string;
 };
 
-export default function CompleteStep({ pollId, category, title, description, options }: Props) {
+export default function CompleteStep({ pollId, category, title, description, options, imageUrl }: Props) {
   const router = useRouter();
   const share = async () => {
     const origin = typeof window !== "undefined" ? window.location.origin : "";
@@ -42,19 +43,46 @@ export default function CompleteStep({ pollId, category, title, description, opt
       <div style={{ color: "#6b7280", marginBottom: 16 }}>
         카테고리: {category?.name || category?.id || "-"}
       </div>
-      <div
-        style={{
-          border: "1px solid #e5e7eb",
-          borderRadius: 12,
-          padding: 12,
-          display: "grid",
-          gap: 8,
-          marginBottom: 16,
-        }}
-      >
-        <div style={{ fontWeight: 700 }}>{title}</div>
-        {description && <div style={{ color: "#6b7280" }}>{description}</div>}
-        <div style={{ color: "#9ca3af", fontSize: 12 }}>선택지 {options.length}개</div>
+      <div style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 16 }}>
+        <div style={{ width: 120 }}>
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt="cover"
+              style={{ width: 120, height: 120, borderRadius: 12, objectFit: "cover" }}
+            />
+          ) : (
+            <div
+              style={{
+                width: 120,
+                height: 120,
+                borderRadius: 12,
+                background: "#f3f4f6",
+                display: "grid",
+                placeItems: "center",
+                color: "#9ca3af",
+                fontSize: 12,
+              }}
+            >
+              IMG
+            </div>
+          )}
+        </div>
+
+        <div
+          style={{
+            border: "1px solid #e5e7eb",
+            borderRadius: 12,
+            padding: 12,
+            display: "grid",
+            gap: 8,
+            flex: 1,
+          }}
+        >
+          <div style={{ fontWeight: 700 }}>{title}</div>
+          {description && <div style={{ color: "#6b7280" }}>{description}</div>}
+          <div style={{ color: "#9ca3af", fontSize: 12 }}>선택지 {options.length}개</div>
+        </div>
       </div>
 
       <div style={{ display: "flex", gap: 8 }}>

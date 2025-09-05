@@ -109,6 +109,7 @@ export default function CreatePollPage() {
           title={title}
           description={description}
           options={options}
+          imageUrl={coverImageUrl}
         />
       )}
 
