@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
 import { PollResult } from "@/types/poll";
+import { getCdnImageUrl } from "@/lib/utils";
 
 interface OptionResultProps {
   result: PollResult;
@@ -18,6 +19,7 @@ export function OptionResult({
   isVoting,
 }: OptionResultProps) {
   const { option, percentage, rank, isUserVote } = result;
+  const cdnImageUrl = getCdnImageUrl(option.imageUrl);
 
   const getRankEmoji = (rank: number) => {
     switch (rank) {
@@ -50,9 +52,9 @@ export function OptionResult({
     >
       <div className="flex">
         <div className="relative w-32 h-24 flex-shrink-0">
-          {option.imageUrl ? (
+          {cdnImageUrl ? (
             <Image
-              src={option.imageUrl}
+              src={cdnImageUrl}
               alt={option.title}
               fill
               className="object-cover"

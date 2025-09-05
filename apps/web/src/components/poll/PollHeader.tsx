@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
+import { getCdnImageUrl } from "@/lib/utils";
 
 interface PollHeaderProps {
   title: string;
@@ -14,12 +15,14 @@ export function PollHeader({
   imageUrl,
   isSponsored,
 }: PollHeaderProps) {
+  const cdnImageUrl = getCdnImageUrl(imageUrl);
+
   return (
     <div className="space-y-4">
-      {imageUrl && (
+      {cdnImageUrl && (
         <div className="relative w-full h-48 rounded-lg overflow-hidden">
           <Image
-            src={imageUrl}
+            src={cdnImageUrl}
             alt={title}
             fill
             className="object-cover"

@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User } from "lucide-react";
 import { PollOwner as PollOwnerType } from "@/types/poll";
+import { getCdnImageUrl } from "@/lib/utils";
 
 interface PollOwnerProps {
   owner: PollOwnerType;
@@ -8,6 +9,8 @@ interface PollOwnerProps {
 }
 
 export function PollOwner({ owner, createdAt }: PollOwnerProps) {
+  const cdnProfileImageUrl = getCdnImageUrl(owner.profileImageUrl);
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -41,9 +44,9 @@ export function PollOwner({ owner, createdAt }: PollOwnerProps) {
   return (
     <div className="flex items-center gap-3 mt-6">
       <Avatar className="w-8 h-8">
-        <AvatarImage src={owner.profileImageUrl} alt={owner.name} />
+        <AvatarImage src={cdnProfileImageUrl} alt={owner.name} />
         <AvatarFallback className="bg-gray-100 text-gray-600 text-sm">
-          {owner.profileImageUrl ? (
+          {cdnProfileImageUrl ? (
             getInitials(owner.name)
           ) : (
             <User className="w-4 h-4" />
