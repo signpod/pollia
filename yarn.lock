@@ -2457,7 +2457,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@repo/tailwind-config@npm:*, @repo/tailwind-config@workspace:*, @repo/tailwind-config@workspace:packages/tailwind-config":
+"@repo/tailwind-config@npm:*, @repo/tailwind-config@workspace:packages/tailwind-config":
   version: 0.0.0-use.local
   resolution: "@repo/tailwind-config@workspace:packages/tailwind-config"
   dependencies:
@@ -2472,7 +2472,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@repo/ui@npm:*, @repo/ui@workspace:^, @repo/ui@workspace:packages/ui":
+"@repo/ui@npm:*, @repo/ui@workspace:packages/ui":
   version: 0.0.0-use.local
   resolution: "@repo/ui@workspace:packages/ui"
   dependencies:
@@ -9477,8 +9477,8 @@ __metadata:
   resolution: "storybook@workspace:apps/storybook"
   dependencies:
     "@eslint/eslintrc": "npm:^3"
-    "@repo/tailwind-config": "workspace:*"
-    "@repo/ui": "workspace:^"
+    "@repo/tailwind-config": "npm:*"
+    "@repo/ui": "npm:*"
     "@storybook/addon-docs": "npm:^9.1.5"
     "@storybook/nextjs": "npm:^9.1.4"
     "@types/node": "npm:^20"
