@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@source "../ui/src/**/*.{js,ts,jsx,tsx}";
+
 @theme {
   /* ==== Design Palette Tokens ==== */
   /* Zinc (Gray) */
@@ -43,24 +45,17 @@
 
   --breakpoint-3xl: 1920px;
 
-  --font-display: "SUIT Variable", "SUIT", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", Arial, "Apple SD Gothic Neo", sans-serif;
+  --font-display:
+    "SUIT Variable", "SUIT", system-ui, -apple-system, "Segoe UI", Roboto,
+    "Noto Sans KR", Arial, "Apple SD Gothic Neo", sans-serif;
   --font-mono: "GeistMono", "Fira Code", monospace;
-}
 
-/* Dark mode tokens */
-.dark {
-  --color-background: #0b0b0b;
-  --color-foreground: #f5f5f5;
-
-  --color-primary: #f5f5f5;
-  --color-primary-foreground: #111111;
-
-  --color-muted: #1f2937;
-  --color-muted-foreground: #9ca3af;
-
-  --color-border: #374151;
-  --color-input: #374151;
-  --color-ring: #9ca3af;
+  /* System colors for @apply utilities */
+  --color-background: #ffffff;
+  --color-foreground: #0a0a0a;
+  --color-border: #e5e7eb;
+  --color-muted: #f9fafb;
+  --color-muted-foreground: #6b7280;
 }
 
 /* Base styles and shadcn/ui compatible CSS variables */
@@ -86,6 +81,13 @@
   --border: 217.2 32.6% 17.5%;
   --input: 217.2 32.6% 17.5%;
   --ring: 212.7 26.8% 83.9%;
+
+  /* Dark mode colors for @apply utilities */
+  --color-background: #09090b;
+  --color-foreground: #fafafa;
+  --color-border: #27272a;
+  --color-muted: #262626;
+  --color-muted-foreground: #a1a1aa;
 }
 
 * {
