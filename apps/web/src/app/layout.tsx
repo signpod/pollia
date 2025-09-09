@@ -3,7 +3,6 @@ import "./globals.css";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { AuthGate } from "@/components/providers/AuthGate";
 import { Suspense } from "react";
-import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -18,11 +17,22 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <head>
-        <link href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css" rel="stylesheet" />
+        <link
+          href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css"
+          rel="stylesheet"
+        />
       </head>
       <body>
         <QueryProvider>
-          <Suspense fallback={<div className="grid min-h-[100svh] place-items-center"><div className="text-sm text-[--color-muted-foreground]">로딩 중...</div></div>}>
+          <Suspense
+            fallback={
+              <div className="grid min-h-[100svh] place-items-center">
+                <div className="text-sm text-[--color-muted-foreground]">
+                  로딩 중...
+                </div>
+              </div>
+            }
+          >
             <AuthGate>{children}</AuthGate>
           </Suspense>
         </QueryProvider>

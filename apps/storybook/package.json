@@ -8,14 +8,14 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@repo/ui": "workspace:^",
+    "@repo/ui": "*",
     "next": "15.5.2",
     "react": "19.1.0",
     "react-dom": "19.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@repo/tailwind-config": "workspace:*",
+    "@repo/tailwind-config": "*",
     "@storybook/addon-docs": "^9.1.5",
     "@storybook/nextjs": "^9.1.4",
     "@types/node": "^20",
