@@ -19,10 +19,20 @@
     "node": "22"
   },
   "packageManager": "yarn@4.9.4",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*"
+    ],
+    "nohoist": [
+      "**/react",
+      "**/react-dom",
+      "**/next",
+      "**/react/**",
+      "**/react-dom/**",
+      "**/next/**"
+    ]
+  },
   "dependencies": {
     "@tanstack/react-query": "^5.85.6"
   }
