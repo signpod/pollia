@@ -56,15 +56,39 @@ export const Tooltip = ({
     if (anchorElement) {
       setPosition(calculatePosition());
 
-      const handleScroll = () => setPosition(calculatePosition());
-      const handleResize = () => setPosition(calculatePosition());
+      let lastRect = anchorElement.getBoundingClientRect();
+      let animationId: number;
 
-      window.addEventListener("scroll", handleScroll, true);
-      window.addEventListener("resize", handleResize);
+      const checkPosition = () => {
+        const currentRect = anchorElement.getBoundingClientRect();
+
+        if (
+          lastRect.top !== currentRect.top ||
+          lastRect.left !== currentRect.left ||
+          lastRect.width !== currentRect.width ||
+          lastRect.height !== currentRect.height
+        ) {
+          setPosition(calculatePosition());
+          lastRect = currentRect;
+        }
+
+        animationId = requestAnimationFrame(checkPosition);
+      };
+
+      const resizeObserver = new ResizeObserver(() => {
+        setPosition(calculatePosition());
+      });
+
+      const handleWindowResize = () => setPosition(calculatePosition());
+
+      resizeObserver.observe(anchorElement);
+      window.addEventListener("resize", handleWindowResize);
+      animationId = requestAnimationFrame(checkPosition);
 
       return () => {
-        window.removeEventListener("scroll", handleScroll, true);
-        window.removeEventListener("resize", handleResize);
+        resizeObserver.disconnect();
+        window.removeEventListener("resize", handleWindowResize);
+        cancelAnimationFrame(animationId);
       };
     }
   }, [anchorElement, calculatePosition]);
