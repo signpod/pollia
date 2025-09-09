@@ -7707,7 +7707,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"next@npm:15.5.2, next@npm:^15.5.0":
+"next@npm:15.5.2, next@npm:^15.5.2":
   version: 15.5.2
   resolution: "next@npm:15.5.2"
   dependencies:
@@ -10439,7 +10439,7 @@ __metadata:
     clsx: "npm:^2.1.1"
     eslint: "npm:^9.34.0"
     lucide-react: "npm:^0.542.0"
-    next: "npm:^15.5.0"
+    next: "npm:^15.5.2"
     postcss: "npm:^8.4.41"
     react: "npm:^19.1.0"
     react-dom: "npm:^19.1.0"
