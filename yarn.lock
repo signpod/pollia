@@ -2488,8 +2488,14 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@repo/ui@workspace:packages/ui"
   dependencies:
+<<<<<<< HEAD
     "@repo/eslint-config": "workspace:*"
     "@repo/typescript-config": "workspace:*"
+=======
+    "@radix-ui/react-slot": "npm:^1.2.3"
+    "@repo/eslint-config": "npm:*"
+    "@repo/typescript-config": "npm:*"
+>>>>>>> 33d27b9 (chore: ui패키지에 shadcn 설정)
     "@types/node": "npm:^22.15.3"
     "@types/react": "npm:19.1.0"
     "@types/react-dom": "npm:19.1.1"
