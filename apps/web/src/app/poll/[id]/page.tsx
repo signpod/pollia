@@ -1,9 +1,9 @@
 "use client";
 
-import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
 import { PollContent } from "@/components/poll/PollContent";
 import { PollLoadingFallback } from "@/components/poll/PollLoadingFallback";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 
 function PollErrorFallback({
   error,

@@ -2439,7 +2439,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@repo/eslint-config@npm:*, @repo/eslint-config@workspace:packages/eslint-config":
+"@repo/eslint-config@workspace:*, @repo/eslint-config@workspace:packages/eslint-config":
   version: 0.0.0-use.local
   resolution: "@repo/eslint-config@workspace:packages/eslint-config"
   dependencies:
@@ -2452,12 +2452,13 @@ __metadata:
     eslint-plugin-react-hooks: "npm:^5.2.0"
     eslint-plugin-turbo: "npm:^2.5.0"
     globals: "npm:^16.3.0"
+    turbo: "npm:^2.5.6"
     typescript: "npm:^5.9.2"
     typescript-eslint: "npm:^8.40.0"
   languageName: unknown
   linkType: soft
 
-"@repo/tailwind-config@npm:*, @repo/tailwind-config@workspace:packages/tailwind-config":
+"@repo/tailwind-config@workspace:*, @repo/tailwind-config@workspace:packages/tailwind-config":
   version: 0.0.0-use.local
   resolution: "@repo/tailwind-config@workspace:packages/tailwind-config"
   dependencies:
@@ -2466,25 +2467,26 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@repo/typescript-config@npm:*, @repo/typescript-config@workspace:packages/typescript-config":
+"@repo/typescript-config@workspace:*, @repo/typescript-config@workspace:packages/typescript-config":
   version: 0.0.0-use.local
   resolution: "@repo/typescript-config@workspace:packages/typescript-config"
   languageName: unknown
   linkType: soft
 
-"@repo/ui@npm:*, @repo/ui@workspace:packages/ui":
+"@repo/ui@workspace:*, @repo/ui@workspace:packages/ui":
   version: 0.0.0-use.local
   resolution: "@repo/ui@workspace:packages/ui"
   dependencies:
-    "@repo/eslint-config": "npm:*"
-    "@repo/typescript-config": "npm:*"
+    "@repo/eslint-config": "workspace:*"
+    "@repo/typescript-config": "workspace:*"
     "@types/node": "npm:^22.15.3"
     "@types/react": "npm:19.1.0"
     "@types/react-dom": "npm:19.1.1"
     eslint: "npm:^9.34.0"
-    react: "npm:^19.1.0"
-    react-dom: "npm:^19.1.0"
     typescript: "npm:5.9.2"
+  peerDependencies:
+    react: ^18 || ^19
+    react-dom: ^18 || ^19
   languageName: unknown
   linkType: soft
 
@@ -4630,6 +4632,19 @@ __metadata:
   version: 1.0.3
   resolution: "core-util-is@npm:1.0.3"
   checksum: 10c0/90a0e40abbddfd7618f8ccd63a74d88deea94e77d0e8dbbea059fa7ebebb8fbb4e2909667fe26f3a467073de1a542ebe6ae4c73a73745ac5833786759cd906c9
+  languageName: node
+  linkType: hard
+
+"corepack@npm:^0.29.4":
+  version: 0.29.4
+  resolution: "corepack@npm:0.29.4"
+  bin:
+    corepack: ./dist/corepack.js
+    pnpm: ./dist/pnpm.js
+    pnpx: ./dist/pnpx.js
+    yarn: ./dist/yarn.js
+    yarnpkg: ./dist/yarnpkg.js
+  checksum: 10c0/7c6d57804436d0c0bc407ba662ee5628fcfe5b3c9edd0afe7e71801ba325781d6014b0b8d4cb77d3f0eb4b7f11104c9486d9c9bb748c49ca3baa569e5b373a08
   languageName: node
   linkType: hard
 
@@ -8283,7 +8298,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "pollia@workspace:."
   dependencies:
-    "@tanstack/react-query": "npm:^5.85.6"
+    corepack: "npm:^0.29.4"
+    eslint: "npm:^9.34.0"
     prettier: "npm:^3.6.2"
     turbo: "npm:^2.5.6"
     typescript: "npm:5.9.2"
@@ -9477,8 +9493,8 @@ __metadata:
   resolution: "storybook@workspace:apps/storybook"
   dependencies:
     "@eslint/eslintrc": "npm:^3"
-    "@repo/tailwind-config": "npm:*"
-    "@repo/ui": "npm:*"
+    "@repo/tailwind-config": "workspace:*"
+    "@repo/ui": "workspace:*"
     "@storybook/addon-docs": "npm:^9.1.5"
     "@storybook/nextjs": "npm:^9.1.4"
     "@types/node": "npm:^20"
@@ -9492,6 +9508,7 @@ __metadata:
     react-dom: "npm:19.1.0"
     storybook: "npm:^9.1.4"
     typescript: "npm:^5"
+    webpack: "npm:^5.95.0"
   languageName: unknown
   linkType: soft
 
@@ -10424,10 +10441,10 @@ __metadata:
     "@radix-ui/react-progress": "npm:^1.1.7"
     "@radix-ui/react-separator": "npm:^1.1.7"
     "@radix-ui/react-slot": "npm:^1.2.3"
-    "@repo/eslint-config": "npm:*"
-    "@repo/tailwind-config": "npm:*"
-    "@repo/typescript-config": "npm:*"
-    "@repo/ui": "npm:*"
+    "@repo/eslint-config": "workspace:*"
+    "@repo/tailwind-config": "workspace:*"
+    "@repo/typescript-config": "workspace:*"
+    "@repo/ui": "workspace:*"
     "@tailwindcss/postcss": "npm:^4.1.12"
     "@tanstack/react-query": "npm:^5.85.6"
     "@tanstack/react-query-devtools": "npm:^5.85.6"
@@ -10493,7 +10510,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webpack@npm:5":
+"webpack@npm:5, webpack@npm:^5.95.0":
   version: 5.101.3
   resolution: "webpack@npm:5.101.3"
   dependencies:

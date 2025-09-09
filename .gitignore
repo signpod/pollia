@@ -37,3 +37,7 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+
+.vscode/
+.yarn/sdks/
+.yarn/install-state.gz
