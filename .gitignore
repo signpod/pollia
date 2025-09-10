@@ -39,5 +39,3 @@ yarn-error.log*
 *.pem
 
 .vscode/
-.yarn/sdks/
-.yarn/install-state.gz

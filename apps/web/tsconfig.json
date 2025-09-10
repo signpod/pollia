@@ -2,7 +2,9 @@
   "extends": "@repo/typescript-config/nextjs.json",
   "compilerOptions": {
     "allowImportingTsExtensions": true,
+    "noEmit": true,
     "jsx": "react-jsx",
+    "types": ["node", "react", "react-dom"],
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
