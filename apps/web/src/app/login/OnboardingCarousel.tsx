@@ -55,7 +55,10 @@ export function OnboardingCarousel() {
 
   return (
     <div
-      className={cn("py-4 bg-zinc-50 rounded-[16px]", "flex flex-col gap-6")}
+      className={cn(
+        "bg-zinc-50 rounded-[16px] flex-1 py-4",
+        "flex flex-col gap-6 justify-center items-center"
+      )}
     >
       <div className="flex flex-col items-center text-center whitespace-pre-line gap-3">
         <IndexBadge index={selectedIndex} />
@@ -68,12 +71,13 @@ export function OnboardingCarousel() {
         <div className="flex w-full">
           {slides.map((slide) => (
             <div key={slide.id} className="shrink-0 basis-full px-6">
-              <div className="relative aspect-[272/230]">
+              <div className="relative flex justify-center items-center">
                 <Image
                   src={slide.imageUrl}
                   alt={slide.description}
+                  width={272}
                   className="object-cover"
-                  fill
+                  height={230}
                 />
               </div>
             </div>

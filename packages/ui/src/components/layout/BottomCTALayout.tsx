@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "../../lib/utils";
 import {
   createContext,
   useContext,
@@ -10,7 +11,7 @@ import {
 
 interface BottomCTAContextType {
   currentCTA: ReactNode | null;
-  setCTA: (cta: ReactNode) => void;
+  setCTA: (cta: ReactNode, className: string) => void;
   clearCTA: () => void;
 }
 
@@ -18,26 +19,32 @@ const BottomCTAContext = createContext<BottomCTAContextType | null>(null);
 
 interface BottomCTALayoutProps {
   children: ReactNode;
+  className?: string;
 }
 
-export function BottomCTALayout({ children }: BottomCTALayoutProps) {
+export function BottomCTALayout({ children, className }: BottomCTALayoutProps) {
   const [currentCTA, setCurrentCTA] = useState<ReactNode | null>(null);
+  const [ctaClassName, setCTAClassName] = useState<string | null>(null);
 
-  const setCTA = (cta: ReactNode) => {
+  const setCTA = (cta: ReactNode, className: string) => {
     setCurrentCTA(cta);
+    setCTAClassName(className);
   };
 
   const clearCTA = () => {
     setCurrentCTA(null);
+    setCTAClassName(null);
   };
 
   return (
     <BottomCTAContext.Provider value={{ currentCTA, setCTA, clearCTA }}>
-      <div className="relative">
+      <div className={cn("relative", className)}>
         {children}
 
         {currentCTA && (
-          <div className="fixed bottom-0 left-0 right-0 z-50 bg-white">
+          <div
+            className={cn("fixed bottom-0 left-0 right-0 z-50", ctaClassName)}
+          >
             {currentCTA}
           </div>
         )}
@@ -48,9 +55,10 @@ export function BottomCTALayout({ children }: BottomCTALayoutProps) {
 
 interface CTAProps {
   children: ReactNode;
+  className?: string;
 }
 
-function CTA({ children }: CTAProps) {
+function CTA({ children, className }: CTAProps) {
   const context = useContext(BottomCTAContext);
 
   if (!context) {
@@ -60,12 +68,12 @@ function CTA({ children }: CTAProps) {
   const { setCTA, clearCTA } = context;
 
   useEffect(() => {
-    setCTA(children);
+    setCTA(children, className ?? "");
 
     return () => {
       clearCTA();
     };
-  }, [children, setCTA, clearCTA]);
+  }, [children, setCTA, clearCTA, className]);
 
   return null;
 }
