@@ -7730,9 +7730,12 @@ const RAW_RUNTIME_STATE =
           ["@types/node", "npm:22.18.1"],\
           ["@types/react", "npm:19.1.0"],\
           ["@types/react-dom", "virtual:c47115e800a23a5392cdfc4e6017a1f2d8b704228d50c425ddec690d174547aa933f9c3221d88f300409b4fad99355b6856b295833ce2bc9c4d3130b71e9facc#npm:19.1.1"],\
+          ["class-variance-authority", "npm:0.7.1"],\
+          ["clsx", "npm:2.1.1"],\
           ["eslint", "virtual:7fb4eb32f83234e5dd1d742b232348d17f051d0c4fb82380cf2f6e700a8ecfa75d64d90f2ac3e3e48cac4801591742d42889bf988dc771e86c62f70dd8dc671b#npm:9.35.0"],\
           ["react", "npm:19.1.1"],\
           ["react-dom", "virtual:c47115e800a23a5392cdfc4e6017a1f2d8b704228d50c425ddec690d174547aa933f9c3221d88f300409b4fad99355b6856b295833ce2bc9c4d3130b71e9facc#npm:19.1.1"],\
+          ["tailwind-merge", "npm:3.3.1"],\
           ["typescript", "patch:typescript@npm%3A5.9.2#optional!builtin<compat/typescript>::version=5.9.2&hash=5786d5"]\
         ],\
         "linkType": "SOFT"\
