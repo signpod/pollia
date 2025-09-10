@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/nextjs";
 import { CenterOverlay } from "@repo/ui/components";
 
 const meta: Meta<typeof CenterOverlay> = {
-  title: "UI/CenterOverlay",
+  title: "Common/CenterOverlay",
   component: CenterOverlay,
   parameters: {
     layout: "centered",
