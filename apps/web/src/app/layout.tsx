@@ -22,7 +22,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>
+      <body className="antialiased px-5 max-w-lg mx-auto">
         <QueryProvider>
           <Suspense
             fallback={
