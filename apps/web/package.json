@@ -25,6 +25,7 @@
     "browser-image-compression": "^2.0.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "embla-carousel-react": "^8.6.0",
     "lucide-react": "^0.542.0",
     "next": "^15.5.2",
     "react": "^19.1.0",
@@ -34,6 +35,7 @@
   },
   "devDependencies": {
     "@jridgewell/resolve-uri": "^3.1.2",
+    "@svgr/webpack": "^8.1.0",
     "@tailwindcss/postcss": "^4.1.12",
     "@types/node": "^22.15.3",
     "@types/react": "19.1.0",

@@ -3,6 +3,7 @@ import "./globals.css";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { AuthGate } from "@/components/providers/AuthGate";
 import { Suspense } from "react";
+import { BottomCTALayout } from "@repo/ui/components";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -22,20 +23,22 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>
-        <QueryProvider>
-          <Suspense
-            fallback={
-              <div className="grid min-h-[100svh] place-items-center">
-                <div className="text-sm text-[--color-muted-foreground]">
-                  로딩 중...
+      <body className="antialiased">
+        <BottomCTALayout className="px-5 max-w-lg min-h-screen mx-auto">
+          <QueryProvider>
+            <Suspense
+              fallback={
+                <div className="grid min-h-[100svh] place-items-center">
+                  <div className="text-sm text-[--color-muted-foreground]">
+                    로딩 중...
+                  </div>
                 </div>
-              </div>
-            }
-          >
-            <AuthGate>{children}</AuthGate>
-          </Suspense>
-        </QueryProvider>
+              }
+            >
+              <AuthGate>{children}</AuthGate>
+            </Suspense>
+          </QueryProvider>
+        </BottomCTALayout>
       </body>
     </html>
   );

@@ -2,6 +2,14 @@
 const nextConfig = {
   experimental: {
     optimizePackageImports: ["@radix-ui/react-dialog"],
+    turbo: {
+      rules: {
+        "*.svg": {
+          loaders: ["@svgr/webpack"],
+          as: "*.js",
+        },
+      },
+    },
   },
   images: {
     remotePatterns: [
