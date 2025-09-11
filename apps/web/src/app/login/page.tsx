@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { API_BASE_URL } from "../../constants/config";
-import { BottomCTALayout, Button, Tooltip } from "@repo/ui/components";
+import { BottomCTALayout, Button, KakaoLoginButton, Tooltip } from "@repo/ui/components";
 import { OnboardingCarousel } from "./OnboardingCarousel";
 import KakaoIcon from "@public/svgs/kakao-icon.svg";
 import { cn } from "@repo/ui/lib";
@@ -31,20 +31,7 @@ export default function LoginPage() {
           >
             ⚡️ 3초만에 시작하기
           </Tooltip>
-          <Button
-            data-tooltip-id="kakao-login-tooltip"
-            className={cn(
-              "w-full box-border rounded-lg bg-[#FEE500] text-black h-11",
-              "px-6 flex justify-between"
-            )}
-            aria-label="카카오로 로그인하기"
-            onClick={handleKakaoLogin}
-          >
-            <KakaoIcon className="w-6 h-6" />
-            <div className="font-bold leading-1.5 text-center flex-1 text-[16px]">
-              카카오로 로그인하기
-            </div>
-          </Button>
+          <KakaoLoginButton onClick={handleKakaoLogin} />
         </div>
       </BottomCTALayout.CTA>
     </>
