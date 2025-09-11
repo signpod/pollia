@@ -69,15 +69,15 @@ export function OnboardingCarousel() {
 
       <div className="overflow-hidden w-full" ref={emblaRef}>
         <div className="flex w-full">
-          {slides.map((slide) => (
+          {slides.map((slide, slideIndex) => (
             <div key={slide.id} className="shrink-0 basis-full px-6">
-              <div className="relative flex justify-center items-center">
+              <div className="relative flex justify-center items-center w-full h-[300px]">
                 <Image
                   src={slide.imageUrl}
                   alt={slide.description}
-                  width={350}
+                  fill
                   className="object-cover"
-                  height={300}
+                  priority={slideIndex === 0}
                 />
               </div>
             </div>

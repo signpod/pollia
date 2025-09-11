@@ -1,16 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    optimizePackageImports: ["@radix-ui/react-dialog"],
-    turbo: {
-      rules: {
-        "*.svg": {
-          loaders: ["@svgr/webpack"],
-          as: "*.js",
-        },
-      },
-    },
+    optimizePackageImports: ["@radix-ui/react-dialog"]
   },
+
   images: {
     remotePatterns: [
       {
@@ -27,6 +20,15 @@ const nextConfig = {
       },
     ],
   },
+
+  turbopack: {
+    rules: {
+      "*.svg": {
+        loaders: ["@svgr/webpack"],
+        as: "*.js",
+      },
+    }
+  }
 };
 
 export default nextConfig;
