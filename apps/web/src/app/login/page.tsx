@@ -5,8 +5,6 @@ import { useSearchParams } from "next/navigation";
 import { API_BASE_URL } from "../../constants/config";
 import { BottomCTALayout, Button, KakaoLoginButton, Tooltip } from "@repo/ui/components";
 import { OnboardingCarousel } from "./OnboardingCarousel";
-import KakaoIcon from "@public/svgs/kakao-icon.svg";
-import { cn } from "@repo/ui/lib";
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
