@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { Button } from "@repo/ui/components";
+import { Button, KakaoLoginButton } from "@repo/ui/components";
 
 const meta: Meta<typeof Button> = {
   title: "UI/Button",
@@ -13,7 +13,7 @@ const meta: Meta<typeof Button> = {
       control: { type: "select" },
       options: ["primary", "secondary", "destructive"],
     },
-    isFullWidth: {
+    fullWidth: {
       control: { type: "boolean" },
     },
     asChild: {
@@ -41,6 +41,7 @@ export const Variants: Story = {
     <div className="flex flex-wrap gap-4">
       <Button variant="primary">Default</Button>
       <Button variant="secondary">Secondary</Button>
+      <Button variant="ghost" textAlign="left">button</Button>
     </div>
   ),
 };
@@ -53,6 +54,15 @@ export const Disabled: Story = {
       <Button variant="secondary" disabled>
         Disabled Secondary
       </Button>
+    </div>
+  ),
+};
+
+export const Loading: Story = {
+  render: () => (
+    <div className="w-80 max-w-md space-y-4">
+      <Button fullWidth loading />
+      <Button variant="secondary" fullWidth loading />
     </div>
   ),
 };
@@ -100,9 +110,9 @@ export const WithIcon: Story = {
 // Full Width 버튼
 export const FullWidth: Story = {
   render: () => (
-    <div className="w-full max-w-md space-y-4">
-      <Button isFullWidth>Full Width Primary</Button>
-      <Button isFullWidth leftIcon={<svg
+    <div className="w-80 max-w-md space-y-4">
+      <Button fullWidth>Full Width Primary</Button>
+      <Button fullWidth leftIcon={<svg
           className="h-4 w-4"
           fill="none"
           stroke="currentColor"
@@ -118,38 +128,20 @@ export const FullWidth: Story = {
         
         Full Width Primary with Icon
       </Button>
-      <Button variant="secondary" isFullWidth>
+      <Button variant="secondary" fullWidth>
         Full Width Secondary
       </Button>
+      <Button variant="ghost" fullWidth textAlign="left">
+        Full Width Ghost
+      </Button>
     </div>
   ),
 };
 
-// asChild 사용 예시
-export const AsChild: Story = {
+export const KakaoLogin: Story = {
   render: () => (
-    <div className="flex flex-wrap gap-4">
-      <Button asChild>
-        <a href="#" onClick={(e) => e.preventDefault()}>
-          Link Button
-        </a>
-      </Button>
-      <Button variant="secondary" asChild>
-        <a href="#" onClick={(e) => e.preventDefault()}>
-          Secondary Link
-        </a>
-      </Button>
+    <div className="w-80 max-w-md">
+      <KakaoLoginButton fullWidth />
     </div>
   ),
-};
-
-// Playground - 모든 props 조작 가능
-export const Playground: Story = {
-  args: {
-    children: "Button",
-    variant: "primary",
-    isFullWidth: false,
-    disabled: false,
-    asChild: false,
-  },
 };

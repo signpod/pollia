@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
+import { Loader2Icon } from "lucide-react";
 
 import { cn } from "../../lib";
 
@@ -13,9 +14,15 @@ const buttonVariants = cva(
           "bg-[var(--color-zinc-800)] text-white hover:bg-[var(--color-zinc-600)] active:bg-[var(--color-zinc-950)] disabled:bg-[var(--color-zinc-100)] disabled:text-[var(--color-zinc-400)]",
         secondary:
           "bg-white text-[var(--color-zinc-950)] ring-1 ring-[var(--color-zinc-200)] hover:ring-[var(--color-violet-500)] active:ring-[var(--color-zinc-500)] active:bg-[var(--color-violet-50)] disabled:bg-[var(--color-zinc-100)] disabled:text-[var(--color-zinc-400)] disabled:ring-[var(--color-zinc-200)]",
+          ghost:
+            "bg-white text-[var(--color-zinc-950)] hover:bg-[var(--color-zinc-50)]",
       },
-      isFullWidth: {
+      fullWidth: {
         true: "w-full",
+        false: "",
+      },
+      loading: {
+        true: "pointer-events-none",
         false: "",
       },
     },
@@ -28,23 +35,27 @@ const buttonVariants = cva(
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
+      textAlign?: "left" | "center" | "right";
       leftIcon?: React.ReactNode;
       rightIcon?: React.ReactNode;
-  asChild?: boolean;
-}
+      loading?: boolean;
+      asChild?: boolean;
+    }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, isFullWidth = false, leftIcon, rightIcon, asChild = false, children, ...props }, ref) => {
+  ({ className, variant, fullWidth = false, leftIcon, rightIcon, asChild = false, children, loading = false, textAlign = "center", ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
+
+    
     return (
       <Comp
-        className={cn(buttonVariants({ variant, isFullWidth, className }))}
+        className={cn(buttonVariants({ variant, fullWidth, loading, className }))}
         ref={ref}
         {...props}
       >
         {leftIcon && <span>{leftIcon}</span>}
-        <div className="w-full">
-          {children}
+        <div className={cn("w-full flex items-center font-bold", textAlign === "left" && "justify-start", textAlign === "center" && "justify-center", textAlign === "right" && "justify-end")}>
+          {loading ? <Loader2Icon className="w-4 h-4 animate-spin" /> : children}
         </div>
         {rightIcon && <span>{rightIcon}</span>}
       </Comp>

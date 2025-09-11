@@ -59,15 +59,17 @@
   /* Sub colors */
   --color-yellow-500: #ffd74a;
   --color-mint-500: #4ad3c8;
-
+  
   --color-primary: var(--color-violet-500);
   --color-yellow: var(--color-yellow-500);
   --color-mint: var(--color-mint-500);
-
+  
   /* Poll specific colors */
   --color-poll-primary: oklch(0.6 0.2 220);
   --color-poll-secondary: oklch(0.8 0.1 160);
   --color-poll-accent: oklch(0.7 0.15 300);
+
+  --color-kakao: #fee500;
 
   /* Breakpoints */
   --breakpoint-3xl: 1920px;

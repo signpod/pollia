@@ -30,8 +30,7 @@ export function LikeBookmarkActions({
   return (
     <div className="flex items-center gap-2 mt-6">
       <Button
-        variant={isLiked ? "default" : "outline"}
-        size="sm"
+        variant={isLiked ? "primary" : "secondary"}
         onClick={onLike}
         disabled={isProcessing}
         className={`transition-all duration-200 ${
@@ -49,8 +48,7 @@ export function LikeBookmarkActions({
       </Button>
 
       <Button
-        variant={isBookmarked ? "default" : "outline"}
-        size="sm"
+        variant={isBookmarked ? "primary" : "secondary"}
         onClick={onBookmark}
         disabled={isProcessing}
         className={`transition-all duration-200 ${
