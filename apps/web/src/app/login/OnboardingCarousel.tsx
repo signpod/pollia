@@ -62,7 +62,7 @@ export function OnboardingCarousel() {
     >
       <div className="flex flex-col items-center text-center whitespace-pre-line gap-3">
         <IndexBadge index={selectedIndex} />
-        <span className="font-bold leading-[1.5]">
+        <span className="font-bold leading-[1.5] text-[20px]">
           {slides[selectedIndex]?.description}
         </span>
       </div>
@@ -75,9 +75,9 @@ export function OnboardingCarousel() {
                 <Image
                   src={slide.imageUrl}
                   alt={slide.description}
-                  width={272}
+                  width={350}
                   className="object-cover"
-                  height={230}
+                  height={300}
                 />
               </div>
             </div>

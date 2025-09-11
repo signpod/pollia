@@ -160,8 +160,7 @@ export const Tooltip = ({
       style={{
         top: position.top,
         left: position.left,
-        filter:
-          "drop-shadow(0 10px 25px rgba(0, 0, 0, 0.15)) drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))",
+        filter: "drop-shadow(0 4px 20px rgba(0, 0, 0, 0.15))",
       }}
     >
       <div
