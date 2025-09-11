@@ -1,6 +1,6 @@
 "use client";
 
-import { Input } from "../../components/ui/input";
+import { Input } from "@repo/ui/components";
 import { Textarea } from "../../components/ui/textarea";
 import { useEffect, useRef, useState } from "react";
 import { usePostImage } from "@/hooks/shared/useUploadImage";
