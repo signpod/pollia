@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button } from "@repo/ui/components";
 import { Heart, Bookmark } from "lucide-react";
 
 interface LikeBookmarkActionsProps {
