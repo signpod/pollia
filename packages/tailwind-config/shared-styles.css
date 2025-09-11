@@ -30,6 +30,32 @@
   --color-violet-900: #4c1d95;
   --color-violet-950: #1e1b4b;
 
+  /* Red Palette */
+  --color-red-50: #fef2f2;
+  --color-red-100: #fee2e2;
+  --color-red-200: #fecaca;
+  --color-red-300: #fca5a5;
+  --color-red-400: #f87171;
+  --color-red-500: #ef4444;
+  --color-red-600: #dc2626;
+  --color-red-700: #b91c1c;
+  --color-red-800: #991b1b;
+  --color-red-900: #7f1d1d;
+  --color-red-950: #450a0a;
+
+  /* Orange Palette */
+  --color-orange-50: #fff7ed;
+  --color-orange-100: #ffedd5;
+  --color-orange-200: #fed7aa;
+  --color-orange-300: #fdba74;
+  --color-orange-400: #fb923c;
+  --color-orange-500: #f97316;
+  --color-orange-600: #ea580c;
+  --color-orange-700: #c2410c;
+  --color-orange-800: #9a3412;
+  --color-orange-900: #7c2d12;
+  --color-orange-950: #431407;
+
   /* Sub colors */
   --color-yellow-500: #ffd74a;
   --color-mint-500: #4ad3c8;
@@ -43,12 +69,29 @@
   --color-poll-secondary: oklch(0.8 0.1 160);
   --color-poll-accent: oklch(0.7 0.15 300);
 
+  /* Breakpoints */
   --breakpoint-3xl: 1920px;
 
+  /* Typography */
   --font-display:
     "SUIT Variable", "SUIT", system-ui, -apple-system, "Segoe UI", Roboto,
     "Noto Sans KR", Arial, "Apple SD Gothic Neo", sans-serif;
   --font-mono: "GeistMono", "Fira Code", monospace;
+
+  /* Spacing Scale */
+  --space-xs: 0.25rem;   /* 4px */
+  --space-sm: 0.5rem;    /* 8px */
+  --space-md: 0.75rem;   /* 12px */
+  --space-lg: 1rem;      /* 16px */
+  --space-xl: 1.5rem;    /* 24px */
+  
+  /* Border Radius */
+  --radius-none: 0px;
+  --radius-xs: 0.25rem;  /* 4px */
+  --radius-sm: 0.5rem;   /* 8px */
+  --radius-md: 0.75rem;     /* 12px */
+  --radius-lg: 1rem;      /* 16px */
+  --radius-full: 9999px;
 
   /* System colors for @apply utilities */
   --color-background: #ffffff;
