@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { API_BASE_URL } from "../../constants/config";
-import { BottomCTALayout, Button } from "@repo/ui/components";
+import { BottomCTALayout, Button, Tooltip } from "@repo/ui/components";
 import { OnboardingCarousel } from "./OnboardingCarousel";
 import PolliaIcon from "@public/svgs/pollia-icon.svg";
 import PolliaWordmark from "@public/svgs/pollia-wordmark.svg";
@@ -29,9 +29,17 @@ export default function LoginPage() {
       {/*TODO: 디자인 가이드 확인 후 삭제. 임시로 바텀 GAP 설정했습니다. 25.09.10 - 정우*/}
       <div className="h-[166px]"></div>
 
-      <BottomCTALayout.CTA className="w-full flex justify-center">
-        <div className="flex justify-center w-full max-w-lg px-5 mb-10">
+      <BottomCTALayout.CTA className="w-full flex justify-center bg-white">
+        <div className="flex flex-col justify-center w-full max-w-lg px-5 mb-10">
+          <div className="h-[82px] w-full" />
+          <Tooltip
+            id="kakao-login-tooltip"
+            className="font-bold color-zinc-950 text-xs animate-bounce"
+          >
+            ⚡️ 3초만에 시작하기
+          </Tooltip>
           <Button
+            data-tooltip-id="kakao-login-tooltip"
             className={cn(
               "w-full box-border rounded-lg bg-[#FEE500] text-black h-11",
               "px-6 flex justify-between"
