@@ -31,7 +31,7 @@ export default function LoginPage() {
           >
             ⚡️ 3초만에 시작하기
           </Tooltip>
-          <KakaoLoginButton onClick={handleKakaoLogin} />
+          <KakaoLoginButton data-tooltip-id="kakao-login-tooltip" onClick={handleKakaoLogin} />
         </div>
       </BottomCTALayout.CTA>
     </>
