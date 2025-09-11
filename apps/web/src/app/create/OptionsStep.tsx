@@ -3,7 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import type { PollOption } from "./page";
-import { Input } from "../../components/ui/input";
+import { Input } from "@repo/ui/components";
 import { Textarea } from "../../components/ui/textarea";
 import {
   Sheet,
