@@ -6,7 +6,7 @@ import { Loader2Icon } from "lucide-react";
 import { cn } from "../../lib";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap gap-[var(--space-lg)] rounded-[var(--radius-sm)] px-[var(--space-lg)] h-11 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center whitespace-nowrap gap-[var(--space-lg)] rounded-[var(--radius-sm)] px-[var(--space-lg)] h-12 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -54,7 +54,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {leftIcon && <span>{leftIcon}</span>}
-        <div className={cn("w-full flex items-center font-bold", textAlign === "left" && "justify-start", textAlign === "center" && "justify-center", textAlign === "right" && "justify-end")}>
+        <div className={cn("w-full flex items-center", textAlign === "left" && "justify-start", textAlign === "center" && "justify-center", textAlign === "right" && "justify-end")}>
           {loading ? <Loader2Icon className="w-4 h-4 animate-spin" /> : children}
         </div>
         {rightIcon && <span>{rightIcon}</span>}
