@@ -4,7 +4,6 @@ import useEmblaCarousel from "embla-carousel-react";
 import Image from "next/image";
 import { cn } from "@repo/ui/lib";
 import { CenterOverlay, Typo } from "@repo/ui/components";
-import PoliaLogo from "@public/svgs/pollia-icon-filled.svg";
 
 const slides = [
   {
@@ -102,7 +101,17 @@ export function OnboardingCarousel() {
 
 function IndexBadge({ index }: { index: number }) {
   return (
-    <CenterOverlay targetElement={<PoliaLogo className="size-6" />}>
+    <CenterOverlay
+      targetElement={
+        <Image
+          src="/svgs/pollia-icon-filled.svg"
+          alt="Pollia Logo"
+          width={24}
+          height={24}
+          className="size-6"
+        />
+      }
+    >
       <span className="text-sm font-bold text-white leading-[1.8]">
         {index + 1}
       </span>

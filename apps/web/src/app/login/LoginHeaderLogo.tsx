@@ -1,12 +1,22 @@
-"use client";
-import PolliaIcon from "@public/svgs/pollia-icon.svg";
-import PolliaWordmark from "@public/svgs/pollia-wordmark.svg";
+import Image from "next/image";
 
 export default function LoginHeaderLogo() {
   return (
     <>
-      <PolliaIcon className="text-primary" width={20} height={20} />
-      <PolliaWordmark className="text-black" height={30} />
+      <Image
+        src="/svgs/pollia-icon.svg"
+        alt="Pollia Icon"
+        width={20}
+        height={20}
+        className="text-primary"
+      />
+      <Image
+        src="/svgs/pollia-wordmark.svg"
+        alt="Pollia Wordmark"
+        width={80}
+        height={30}
+        className="text-black"
+      />
     </>
   );
 }
