@@ -2,11 +2,11 @@ import React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../../lib/utils";
 
-const mainTitleVariants = cva("font-bold", {
+const mainTitleVariants = cva("font-bold leading-[1.5]", {
   variants: {
     size: {
-      medium: "text-[24px] leading-[1.5]",
-      small: "text-[20px] leading-[1.5]",
+      medium: "text-[24px]",
+      small: "text-[20px]",
     },
   },
   defaultVariants: {
