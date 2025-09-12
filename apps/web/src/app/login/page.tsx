@@ -3,7 +3,12 @@
 import { useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { API_BASE_URL } from "../../constants/config";
-import { BottomCTALayout, Button, KakaoLoginButton, Tooltip } from "@repo/ui/components";
+import {
+  BottomCTALayout,
+  KakaoLoginButton,
+  Tooltip,
+  Typo,
+} from "@repo/ui/components";
 import { OnboardingCarousel } from "./OnboardingCarousel";
 
 export default function LoginPage() {
@@ -13,6 +18,7 @@ export default function LoginPage() {
     const url = `${API_BASE_URL}/auth/kakao?next=${encodeURIComponent(nextParam)}`;
     window.location.href = url;
   }, [nextParam]);
+
   return (
     <>
       <OnboardingCarousel />
@@ -27,9 +33,12 @@ export default function LoginPage() {
             id="kakao-login-tooltip"
             className="font-medium color-zinc-950 text-sm animate-bounce"
           >
-            ⚡️ 3초만에 시작하기
+            <Typo.Body size="medium">⚡️ 3초만에 시작하기</Typo.Body>
           </Tooltip>
-          <KakaoLoginButton data-tooltip-id="kakao-login-tooltip" onClick={handleKakaoLogin} />
+          <KakaoLoginButton
+            data-tooltip-id="kakao-login-tooltip"
+            onClick={handleKakaoLogin}
+          />
         </div>
       </BottomCTALayout.CTA>
     </>

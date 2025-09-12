@@ -8,13 +8,15 @@ export default function LoginCallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const code = searchParams.get("code");
-  const next = searchParams.get("next") || "/";
+  const next = searchParams.get("next") || "/login/done";
   const origin = typeof window !== "undefined" ? window.location.origin : "";
 
   useEffect(() => {
     async function run() {
       if (!code) {
-        router.replace(`/login?error=missing_code&next=${encodeURIComponent(next)}`);
+        router.replace(
+          `/login?error=missing_code&next=${encodeURIComponent(next)}`
+        );
         return;
       }
       // 백엔드가 직접 쿠키를 설정하도록, 백엔드 콜백 엔드포인트로 네비게이트합니다.
@@ -29,7 +31,9 @@ export default function LoginCallbackPage() {
 
   return (
     <div className="grid min-h-[100svh] place-items-center">
-      <div className="text-sm text-[--color-muted-foreground]">로그인 처리 중...</div>
+      <div className="text-sm text-[--color-muted-foreground]">
+        로그인 처리 중...
+      </div>
     </div>
   );
 }

@@ -14,8 +14,8 @@ const buttonVariants = cva(
           "bg-[var(--color-zinc-800)] text-white hover:bg-[var(--color-zinc-600)] active:bg-[var(--color-zinc-950)] disabled:bg-[var(--color-zinc-100)] disabled:text-[var(--color-zinc-400)]",
         secondary:
           "bg-white text-[var(--color-zinc-950)] ring-1 ring-[var(--color-zinc-200)] hover:ring-[var(--color-violet-500)] active:ring-[var(--color-zinc-500)] active:bg-[var(--color-violet-50)] disabled:bg-[var(--color-zinc-100)] disabled:text-[var(--color-zinc-400)] disabled:ring-[var(--color-zinc-200)]",
-          ghost:
-            "bg-white text-[var(--color-zinc-950)] hover:bg-[var(--color-zinc-50)]",
+        ghost:
+          "bg-white text-[var(--color-zinc-950)] hover:bg-[var(--color-zinc-50)]",
       },
       fullWidth: {
         true: "w-full",
@@ -27,7 +27,7 @@ const buttonVariants = cva(
       },
     },
     defaultVariants: {
-      variant: "primary"
+      variant: "primary",
     },
   }
 );
@@ -35,27 +35,53 @@ const buttonVariants = cva(
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
-      textAlign?: "left" | "center" | "right";
-      leftIcon?: React.ReactNode;
-      rightIcon?: React.ReactNode;
-      loading?: boolean;
-      asChild?: boolean;
-    }
+  textAlign?: "left" | "center" | "right";
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
+  loading?: boolean;
+  asChild?: boolean;
+}
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, fullWidth = false, leftIcon, rightIcon, asChild = false, children, loading = false, textAlign = "center", ...props }, ref) => {
+  (
+    {
+      className,
+      variant,
+      fullWidth = false,
+      leftIcon,
+      rightIcon,
+      asChild = false,
+      children,
+      loading = false,
+      textAlign = "center",
+      ...props
+    },
+    ref
+  ) => {
     const Comp = asChild ? Slot : "button";
 
-    
     return (
       <Comp
-        className={cn(buttonVariants({ variant, fullWidth, loading, className }))}
+        className={cn(
+          buttonVariants({ variant, fullWidth, loading, className })
+        )}
         ref={ref}
         {...props}
       >
         {leftIcon && <span>{leftIcon}</span>}
-        <div className={cn("w-full flex items-center", textAlign === "left" && "justify-start", textAlign === "center" && "justify-center", textAlign === "right" && "justify-end")}>
-          {loading ? <Loader2Icon className="w-4 h-4 animate-spin" /> : children}
+        <div
+          className={cn(
+            "w-full flex items-center",
+            textAlign === "left" && "justify-start",
+            textAlign === "center" && "justify-center",
+            textAlign === "right" && "justify-end"
+          )}
+        >
+          {loading ? (
+            <Loader2Icon className="w-4 h-4 animate-spin" />
+          ) : (
+            children
+          )}
         </div>
         {rightIcon && <span>{rightIcon}</span>}
       </Comp>
