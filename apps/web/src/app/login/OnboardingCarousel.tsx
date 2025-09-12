@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Image from "next/image";
 import { cn } from "@repo/ui/lib";
-import { CenterOverlay } from "@repo/ui/components";
+import { CenterOverlay, Typo } from "@repo/ui/components";
 import PoliaLogo from "@public/svgs/pollia-icon-filled.svg";
 
 const slides = [
@@ -62,9 +62,9 @@ export function OnboardingCarousel() {
     >
       <div className="flex flex-col items-center text-center whitespace-pre-line gap-3">
         <IndexBadge index={selectedIndex} />
-        <span className="font-bold leading-[1.5] text-[20px]">
+        <Typo.MainTitle size="small">
           {slides[selectedIndex]?.description}
-        </span>
+        </Typo.MainTitle>
       </div>
 
       <div className="overflow-hidden w-full" ref={emblaRef}>
