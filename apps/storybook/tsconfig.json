@@ -13,8 +13,13 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "incremental": true
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["../web/src/*"],
+      "@public/*": ["../web/public/*"]
+    }
   },
-  "include": [".storybook/**/*", "src/**/*"],
+  "include": [".storybook/**/*", "src/**/*", "../web/src/**/*"],
   "exclude": ["node_modules"]
 }

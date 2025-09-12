@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @source "../ui/src/**/*.{js,ts,jsx,tsx}";
+@source "../../apps/web/src/**/*.{js,ts,jsx,tsx}";
 
 @theme {
   /* ==== Design Palette Tokens ==== */

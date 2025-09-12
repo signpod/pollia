@@ -16,5 +16,15 @@ const config: StorybookConfig = {
     name: getAbsolutePath("@storybook/nextjs"),
     options: {},
   },
+  webpackFinal: async (config) => {
+    if (config.resolve) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        "@": join(__dirname, "../web/src"),
+        "@public": join(__dirname, "../web/public"),
+      };
+    }
+    return config;
+  },
 };
 export default config;
