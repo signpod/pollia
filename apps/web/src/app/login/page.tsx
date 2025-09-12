@@ -5,7 +5,6 @@ import { useSearchParams } from "next/navigation";
 import { API_BASE_URL } from "../../constants/config";
 import {
   BottomCTALayout,
-  Button,
   KakaoLoginButton,
   Tooltip,
   Typo,
@@ -19,6 +18,7 @@ export default function LoginPage() {
     const url = `${API_BASE_URL}/auth/kakao?next=${encodeURIComponent(nextParam)}`;
     window.location.href = url;
   }, [nextParam]);
+
   return (
     <>
       <OnboardingCarousel />
