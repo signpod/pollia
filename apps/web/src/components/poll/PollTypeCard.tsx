@@ -75,12 +75,12 @@ function HobullhoCard({ selected }: { selected: boolean }) {
         <CenterOverlay
           targetElement={<div className="size-12 bg-zinc-50 rounded-sm" />}
         >
-          <ThumbsUpIcon className="size-[20px]" />
+          <ThumbsUpIcon className="size-[20px]" strokeWidth={1.7} />
         </CenterOverlay>
         <CenterOverlay
           targetElement={<div className="size-12 bg-zinc-50 rounded-sm" />}
         >
-          <ThumbsDownIcon className="size-[20px]" />
+          <ThumbsDownIcon className="size-[20px]" strokeWidth={1.7} />
         </CenterOverlay>
       </div>
     </>
