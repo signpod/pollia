@@ -1,68 +1,85 @@
 "use client";
 
-import { memo, useMemo } from "react";
-import { Category } from "@/types/poll";
-import { useCategories } from "@/hooks/categories/useCategories";
+import { cn } from "@/lib/utils";
+import PollTypeSelect from "@/components/poll/PollTypeSelect";
+import {
+  BottomCTALayout,
+  Button,
+  CenterOverlay,
+  Typo,
+} from "@repo/ui/components";
+import { X } from "lucide-react";
 
-type Props = {
-  selected: Category | null;
-  onSelect: (c: Category) => void;
-};
+type PollType = "ox" | "hobullho" | "multiple";
 
-function CategoryStepImpl({ selected, onSelect }: Props) {
-  const { data, isLoading } = useCategories();
+interface CategoryStepProps {
+  selectedType?: PollType;
+  onTypeChange?: (type: PollType) => void;
+  onNext?: () => void;
+  onBack?: () => void;
+  isNextEnabled?: boolean;
+  className?: string;
+}
 
-  const categories = useMemo(() => {
-    const fetched = (data ?? []) as Category[];
-    return fetched.length > 0 ? fetched : [];
-  }, [data]);
-
+export default function CategoryStep({
+  selectedType,
+  onTypeChange,
+  onNext,
+  onBack,
+  isNextEnabled = false,
+  className,
+}: CategoryStepProps) {
   return (
-    <div style={{ padding: 16 }}>
-      <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 16 }}>
-        카테고리를 선택해 주세요
-      </h1>
-      {isLoading ? (
-        <div className="grid grid-cols-2 gap-3">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-12 rounded-xl bg-[--color-muted] animate-pulse"
-            />
-          ))}
-        </div>
-      ) : (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(2, 1fr)",
-            gap: 12,
-          }}
-        >
-          {categories.map((c) => {
-            const isSel = selected === c;
-            return (
+    <div className={cn("bg-white flex flex-col h-full gap-6", className)}>
+      {/* Header Section */}
+      <div className="flex flex-col gap-4">
+        {/* Back Button */}
+        <div className="px-1">
+          <CenterOverlay
+            targetElement={
               <button
-                key={c.id}
-                onClick={() => onSelect(c)}
-                style={{
-                  padding: 12,
-                  borderRadius: 12,
-                  border: `2px solid ${isSel ? "#111" : "#e5e7eb"}`,
-                  background: isSel ? "#f3f4f6" : "white",
-                  textAlign: "center",
-                }}
-              >
-                {c.name || c.id}
-              </button>
-            );
-          })}
+                onClick={onBack}
+                className="size-12 block"
+                aria-label="뒤로가기"
+              />
+            }
+          >
+            <X className="size-4 text-zinc-900 pointer-events-none" />
+          </CenterOverlay>
         </div>
-      )}
+
+        {/* Title Section */}
+        <div className="px-5 space-y-1">
+          <Typo.MainTitle size="medium">
+            어떤 유형의 폴을 생성할까요?
+          </Typo.MainTitle>
+          <Typo.Body size="large" className="text-zinc-600">
+            원하는 질문 방식을 골라주세요
+          </Typo.Body>
+        </div>
+      </div>
+
+      {/* Poll Type Selection */}
+      <div className="flex-1 px-5">
+        <PollTypeSelect
+          selectedType={selectedType}
+          onTypeChange={onTypeChange}
+        />
+      </div>
+
+      {/* Bottom CTA Button */}
+      <BottomCTALayout.CTA>
+        <div className="p-5 pb-10">
+          <Button
+            onClick={onNext}
+            disabled={!isNextEnabled}
+            variant="primary"
+            fullWidth={true}
+          >
+            <Typo.ButtonText>다음</Typo.ButtonText>
+          </Button>
+        </div>
+      </BottomCTALayout.CTA>
     </div>
   );
 }
-
-export default memo(CategoryStepImpl);
-
-
