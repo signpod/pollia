@@ -8,7 +8,7 @@ import {
   VoteResponse,
   LikeResponse,
   BookmarkResponse,
-} from "@/types/poll";
+} from "@/types/dto/poll";
 import { createHttpClient } from "@/lib/http/client";
 
 const httpClient = createHttpClient();

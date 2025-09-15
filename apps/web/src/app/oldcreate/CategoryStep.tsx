@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useMemo } from "react";
-import { Category } from "@/types/poll";
+import { Category } from "@/types/dto/poll";
 import { useCategories } from "@/hooks/categories/useCategories";
 
 type Props = {
@@ -64,5 +64,3 @@ function CategoryStepImpl({ selected, onSelect }: Props) {
 }
 
 export default memo(CategoryStepImpl);
-
-

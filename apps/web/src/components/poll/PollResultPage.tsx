@@ -1,6 +1,10 @@
 "use client";
 
-import { Poll, PollResult, PollResultOptionApiResponse } from "@/types/poll";
+import {
+  Poll,
+  PollResult,
+  PollResultOptionApiResponse,
+} from "@/types/dto/poll";
 import { Card } from "@/components/ui/card";
 import { PollHeader } from "@/components/poll/PollHeader";
 import { PollOwner } from "@/components/poll/PollOwner";

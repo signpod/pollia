@@ -8,7 +8,7 @@ import OptionsStep from "./OptionsStep.tsx";
 import CompleteStep from "./CompleteStep.tsx";
 import FixedBottomButton from "./FixedBottomButton.tsx";
 import { useCreatePoll } from "@/hooks/poll/useCreatePoll";
-import { Category } from "@/types/poll.ts";
+import { Category } from "@/types/dto/poll.ts";
 
 export type PollOption = {
   id: string;
@@ -42,7 +42,7 @@ export default function CreatePollPage() {
         router.back();
         return s;
       }
-      return ((s - 1) as 1 | 2 | 3 | 4);
+      return (s - 1) as 1 | 2 | 3 | 4;
     });
   }, [router]);
 
@@ -124,5 +124,3 @@ export default function CreatePollPage() {
     </div>
   );
 }
-
-

@@ -1,6 +1,6 @@
 "use client";
 
-import { Category } from "@/types/poll";
+import { Category } from "@/types/dto/poll";
 import type { PollOption } from "./page";
 import { useRouter } from "next/navigation";
 
@@ -13,7 +13,14 @@ type Props = {
   imageUrl?: string;
 };
 
-export default function CompleteStep({ pollId, category, title, description, options, imageUrl }: Props) {
+export default function CompleteStep({
+  pollId,
+  category,
+  title,
+  description,
+  options,
+  imageUrl,
+}: Props) {
   const router = useRouter();
   const share = async () => {
     const origin = typeof window !== "undefined" ? window.location.origin : "";
@@ -39,17 +46,31 @@ export default function CompleteStep({ pollId, category, title, description, opt
 
   return (
     <div style={{ padding: 16 }}>
-      <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>생성이 완료되었어요</h1>
+      <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>
+        생성이 완료되었어요
+      </h1>
       <div style={{ color: "#6b7280", marginBottom: 16 }}>
         카테고리: {category?.name || category?.id || "-"}
       </div>
-      <div style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 16 }}>
+      <div
+        style={{
+          display: "flex",
+          gap: 12,
+          alignItems: "flex-start",
+          marginBottom: 16,
+        }}
+      >
         <div style={{ width: 120 }}>
           {imageUrl ? (
             <img
               src={imageUrl}
               alt="cover"
-              style={{ width: 120, height: 120, borderRadius: 12, objectFit: "cover" }}
+              style={{
+                width: 120,
+                height: 120,
+                borderRadius: 12,
+                objectFit: "cover",
+              }}
             />
           ) : (
             <div
@@ -81,7 +102,9 @@ export default function CompleteStep({ pollId, category, title, description, opt
         >
           <div style={{ fontWeight: 700 }}>{title}</div>
           {description && <div style={{ color: "#6b7280" }}>{description}</div>}
-          <div style={{ color: "#9ca3af", fontSize: 12 }}>선택지 {options.length}개</div>
+          <div style={{ color: "#9ca3af", fontSize: 12 }}>
+            선택지 {options.length}개
+          </div>
         </div>
       </div>
 
@@ -115,5 +138,3 @@ export default function CompleteStep({ pollId, category, title, description, opt
     </div>
   );
 }
-
-

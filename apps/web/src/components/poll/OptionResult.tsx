@@ -2,7 +2,7 @@ import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
-import { PollResult } from "@/types/poll";
+import { PollResult } from "@/types/dto/poll";
 import { getCdnImageUrl } from "@/lib/utils";
 
 interface OptionResultProps {
