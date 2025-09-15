@@ -65,16 +65,15 @@ export function ImageSelector({
       >
         {hasImage ? (
           <img
-            src={imageUrl}
+            src={imageUrl!}
             alt="선택된 이미지"
-            className="size-full object-cover "
+            className="size-full object-cover"
           />
         ) : (
           <div
             className={cn(
               "flex items-center justify-center",
-              sizeStyles[size].padding,
-              "inline-block"
+              sizeStyles[size].padding
             )}
           >
             <ImagePlus
