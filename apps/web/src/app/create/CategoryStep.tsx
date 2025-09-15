@@ -2,7 +2,12 @@
 
 import { cn } from "@/lib/utils";
 import PollTypeSelect from "@/components/poll/PollTypeSelect";
-import { BottomCTALayout, Button } from "@repo/ui/components";
+import {
+  BottomCTALayout,
+  Button,
+  CenterOverlay,
+  Typo,
+} from "@repo/ui/components";
 import { X } from "lucide-react";
 
 type PollType = "ox" | "hobullho" | "multiple";
@@ -25,33 +30,37 @@ export default function CategoryStep({
   className,
 }: CategoryStepProps) {
   return (
-    <div className={cn("bg-white flex flex-col h-full", className)}>
+    <div className={cn("bg-white flex flex-col h-full gap-6", className)}>
       {/* Header Section */}
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
         {/* Back Button */}
-        <div className="px-1 py-0">
-          <button
-            onClick={onBack}
-            className="p-3 hover:bg-gray-50 rounded-lg transition-colors"
-            aria-label="뒤로가기"
+        <div className="px-1">
+          <CenterOverlay
+            targetElement={
+              <button
+                onClick={onBack}
+                className="size-12 block"
+                aria-label="뒤로가기"
+              />
+            }
           >
-            <X className="w-6 h-6 text-zinc-900" />
-          </button>
+            <X className="size-4 text-zinc-900 pointer-events-none" />
+          </CenterOverlay>
         </div>
 
         {/* Title Section */}
         <div className="px-5 space-y-1">
-          <h1 className="text-2xl font-bold text-zinc-950 leading-[1.5]">
+          <Typo.MainTitle size="medium">
             어떤 유형의 폴을 생성할까요?
-          </h1>
-          <p className="text-base font-medium text-zinc-600 leading-[1.5]">
+          </Typo.MainTitle>
+          <Typo.Body size="large" className="text-zinc-600">
             원하는 질문 방식을 골라주세요
-          </p>
+          </Typo.Body>
         </div>
       </div>
 
       {/* Poll Type Selection */}
-      <div className="flex-1 px-5 py-6">
+      <div className="flex-1 px-5">
         <PollTypeSelect
           selectedType={selectedType}
           onTypeChange={onTypeChange}
@@ -59,7 +68,7 @@ export default function CategoryStep({
       </div>
 
       {/* Bottom CTA Button */}
-      <BottomCTALayout.CTA className="bg-white border-t border-zinc-100">
+      <BottomCTALayout.CTA>
         <div className="p-5 pb-10">
           <Button
             onClick={onNext}
@@ -67,7 +76,7 @@ export default function CategoryStep({
             variant="primary"
             fullWidth={true}
           >
-            다음
+            <Typo.ButtonText>다음</Typo.ButtonText>
           </Button>
         </div>
       </BottomCTALayout.CTA>
