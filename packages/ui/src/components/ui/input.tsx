@@ -1,135 +1,22 @@
-import * as React from "react";
-import { cn } from "../../lib/utils";
-import { XCircleIcon } from "lucide-react";
+import * as React from "react"
 
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
-  helperText?: string;
-  errorMessage?: string;
-  showLength?: boolean;
-  required?: boolean;
-}
+import { cn } from "src/lib/utils"
 
-const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className, type, value, onChange, errorMessage, defaultValue,label, helperText, maxLength, showLength = true, required = false, ...props }, ref) => {
-    const [internalValue, setInternalValue] = React.useState(
-      value !== undefined ? value : (defaultValue || "")
-    );
-    const inputRef = React.useRef<HTMLInputElement>(null);
-    const [isFocused, setIsFocused] = React.useState(false);
-
-    // ref를 inputRef와 전달받은 ref 모두에 연결
-    React.useImperativeHandle(ref, () => inputRef.current!);
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newValue = e.target.value;
-      
-      // maxLength가 설정되어 있고, 현재 값이 제한을 초과하는 경우
-      if (maxLength && newValue.length > maxLength) {
-        // 제한된 길이만큼만 잘라서 사용
-        const truncatedValue = newValue.slice(0, maxLength);
-        setInternalValue(truncatedValue);
-        
-        // 잘린 값으로 synthetic event 생성
-        const syntheticEvent = {
-          ...e,
-          target: { ...e.target, value: truncatedValue },
-          currentTarget: { ...e.currentTarget, value: truncatedValue }
-        } as React.ChangeEvent<HTMLInputElement>;
-        onChange?.(syntheticEvent);
-        return;
-      }
-      
-      setInternalValue(newValue);
-      onChange?.(e);
-    };
-
-    const handleClear = () => {
-      setInternalValue("");
-      if (inputRef.current) {
-        // onChange 이벤트를 수동으로 발생시켜서 부모 컴포넌트에 알림
-        const syntheticEvent = {
-          target: { value: "" },
-          currentTarget: { value: "" }
-        } as React.ChangeEvent<HTMLInputElement>;
-        onChange?.(syntheticEvent);
-        inputRef.current.focus();
-      }
-    };
-
-    const currentValue = value !== undefined ? value : internalValue;
-    const hasValue = currentValue && currentValue.toString().length > 0;
-    
-    // x 버튼이 보여야 하는 조건:
-    // 1. focus를 가지고 있고, 값이 있으면 무조건 보여줘야함
-    // 2. error인 상태이고, 값이 있다면 무조건 보여줘야 함
-    const shouldShowClearButton = hasValue && (isFocused || errorMessage);
-
-    const handleFocus = () => {
-      setIsFocused(true);
-    };
-
-    const handleBlur = () => {
-      setIsFocused(false);
-    };
-
+const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
+  ({ className, type, ...props }, ref) => {
     return (
-      <div className="flex flex-col gap-2">
-        {label && (
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-bold text-zinc-950">
-              {label}
-            </label>
-            {required && (
-              <span className="text-sm font-bold text-red-500">*</span>
-            )}
-          </div>
+      <input
+        type={type}
+        className={cn(
+          "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+          className
         )}
-        <div className="relative">
-        <input
-          type={type}
-          className={cn(
-            "flex h-12 w-full rounded-[var(--radius-sm)] ring-1 ring-zinc-200 bg-white px-3 py-2 text-sm placeholder:text-zinc-300 focus-visible:outline-none focus-visible:ring-primary disabled:bg-zinc-100 disabled:text-zinc-500 pr-8",
-            errorMessage && "ring-red-500 focus-visible:ring-red-500",
-            className
-          )}
-          ref={inputRef}
-          value={currentValue}
-          onChange={handleChange}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          maxLength={maxLength}
-          {...props}
-        />
-        {shouldShowClearButton && (
-          <button
-            type="button"
-            onClick={handleClear}
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full flex items-center justify-center transition-colors"
-            aria-label="입력 내용 지우기"
-          >
-            <XCircleIcon size={24} className="fill-zinc-200 text-white" />
-          </button>
-        )}
-        </div>
-        {(helperText || (showLength && maxLength)) && (
-          <div className="flex items-center justify-between w-full">
-          <p className={cn("text-xs", errorMessage ? "text-red-500" : "text-zinc-400")}>
-            {errorMessage || helperText}
-          </p>
-          {showLength && (
-            <p className="text-xs text-zinc-400">
-              {currentValue.toString().length}/{maxLength}
-            </p>
-          )}
-          </div>
-        )}
-      </div>
-    );
+        ref={ref}
+        {...props}
+      />
+    )
   }
-);
-Input.displayName = "Input";
+)
+Input.displayName = "Input"
 
-export { Input };
-
-
+export { Input }

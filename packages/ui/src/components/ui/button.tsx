@@ -1,33 +1,35 @@
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
-import { Loader2Icon } from "lucide-react";
 
-import { cn } from "../../lib";
+import { cn } from "../../lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap gap-[var(--space-lg)] rounded-[var(--radius-sm)] px-[var(--space-lg)] h-12 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
-        primary:
-          "bg-[var(--color-zinc-800)] text-white hover:bg-[var(--color-zinc-600)] active:bg-[var(--color-zinc-950)] disabled:bg-[var(--color-zinc-100)] disabled:text-[var(--color-zinc-400)]",
+        default:
+          "bg-primary text-primary-foreground shadow hover:bg-primary/90",
+        destructive:
+          "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+        outline:
+          "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
         secondary:
-          "bg-white text-[var(--color-zinc-950)] ring-1 ring-[var(--color-zinc-200)] hover:ring-[var(--color-violet-500)] active:ring-[var(--color-zinc-500)] active:bg-[var(--color-violet-50)] disabled:bg-[var(--color-zinc-100)] disabled:text-[var(--color-zinc-400)] disabled:ring-[var(--color-zinc-200)]",
-        ghost:
-          "bg-white text-[var(--color-zinc-950)] hover:bg-[var(--color-zinc-50)]",
+          "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
       },
-      fullWidth: {
-        true: "w-full",
-        false: "",
-      },
-      loading: {
-        true: "pointer-events-none",
-        false: "",
+      size: {
+        default: "h-9 px-4 py-2",
+        sm: "h-8 rounded-md px-3 text-xs",
+        lg: "h-10 rounded-md px-8",
+        icon: "h-9 w-9",
       },
     },
     defaultVariants: {
-      variant: "primary",
+      variant: "default",
+      size: "default",
     },
   }
 );
@@ -35,56 +37,18 @@ const buttonVariants = cva(
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
-  textAlign?: "left" | "center" | "right";
-  leftIcon?: React.ReactNode;
-  rightIcon?: React.ReactNode;
-  loading?: boolean;
   asChild?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  (
-    {
-      className,
-      variant,
-      fullWidth = false,
-      leftIcon,
-      rightIcon,
-      asChild = false,
-      children,
-      loading = false,
-      textAlign = "center",
-      ...props
-    },
-    ref
-  ) => {
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
-
     return (
       <Comp
-        className={cn(
-          buttonVariants({ variant, fullWidth, loading, className })
-        )}
+        className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         {...props}
-      >
-        {leftIcon && <span>{leftIcon}</span>}
-        <div
-          className={cn(
-            "w-full flex items-center",
-            textAlign === "left" && "justify-start",
-            textAlign === "center" && "justify-center",
-            textAlign === "right" && "justify-end"
-          )}
-        >
-          {loading ? (
-            <Loader2Icon className="w-4 h-4 animate-spin" />
-          ) : (
-            children
-          )}
-        </div>
-        {rightIcon && <span>{rightIcon}</span>}
-      </Comp>
+      />
     );
   }
 );
