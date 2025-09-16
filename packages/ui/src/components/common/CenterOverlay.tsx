@@ -1,5 +1,6 @@
 "use client";
-import { PropsWithChildren, ReactElement } from "react";
+import React, { PropsWithChildren, ReactElement } from "react";
+import { cn } from "../../lib/utils";
 
 export interface CenterOverlayProps extends PropsWithChildren {
   targetElement: ReactElement;
@@ -17,15 +18,18 @@ export function CenterOverlay({ targetElement, children }: CenterOverlayProps) {
     return null;
   }
 
-  return (
-    <div className="relative inline-block align-top">
-      {targetElement}
-      <div
-        className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2`}
-        role="dialog"
-      >
-        {children}
-      </div>
-    </div>
-  );
+  return React.cloneElement(targetElement, {
+    className: cn((targetElement.props as any).className, "relative"),
+    children: (
+      <>
+        {(targetElement.props as any).children}
+        <div
+          className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2`}
+          role="dialog"
+        >
+          {children}
+        </div>
+      </>
+    ),
+  } as any);
 }
