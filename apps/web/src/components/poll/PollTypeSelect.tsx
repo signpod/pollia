@@ -13,36 +13,38 @@ const pollTypes: { type: PollType; label: string; description: string }[] = [
   {
     type: "ox",
     label: "O/X",
-    description: "예/아니오 선택"
+    description: "예/아니오 선택",
   },
   {
-    type: "hobullho", 
+    type: "hobullho",
     label: "호불호",
-    description: "좋아요/싫어요"
+    description: "좋아요/싫어요",
   },
   {
     type: "multiple",
     label: "객관식",
-    description: "여러 선택지"
-  }
+    description: "여러 선택지",
+  },
 ];
 
-export default function PollTypeSelect({ 
-  selectedType, 
-  onTypeChange, 
-  className 
+export default function PollTypeSelect({
+  selectedType,
+  onTypeChange,
+  className,
 }: PollTypeSelectProps) {
   return (
     <div className={cn("space-y-3", className)}>
       <div className="grid gap-3">
-        {pollTypes.map(({ type, label, description }) => (
-          <button key={type} onClick={() => onTypeChange?.(type)}>
-            <PollTypeCard 
+        {pollTypes.map(({ type }) => (
+          <button
+            key={type}
+            onClick={() => onTypeChange?.(type)}
+            className="text-left"
+          >
+            <PollTypeCard
               type={type}
               selected={selectedType === type}
-              className={cn(
-                "hover:ring-primary",
-              )}
+              className={cn("hover:ring-primary")}
             />
           </button>
         ))}
