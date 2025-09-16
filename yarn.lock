@@ -7353,6 +7353,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jotai@npm:^2.14.0":
+  version: 2.14.0
+  resolution: "jotai@npm:2.14.0"
+  peerDependencies:
+    "@babel/core": ">=7.0.0"
+    "@babel/template": ">=7.0.0"
+    "@types/react": ">=17.0.0"
+    react: ">=17.0.0"
+  peerDependenciesMeta:
+    "@babel/core":
+      optional: true
+    "@babel/template":
+      optional: true
+    "@types/react":
+      optional: true
+    react:
+      optional: true
+  checksum: 10c0/1a9544a9a5f9620dc485b81a34941fd858c8b64a5264fa025213a2a09badc0a73ae6bee95156077c5ffc787340cd752b53794b9f785eebfe942dded7609121c6
+  languageName: node
+  linkType: hard
+
 "js-tokens@npm:^3.0.0 || ^4.0.0, js-tokens@npm:^4.0.0":
   version: 4.0.0
   resolution: "js-tokens@npm:4.0.0"
@@ -9853,6 +9874,7 @@ __metadata:
     eslint: "npm:^9"
     eslint-config-next: "npm:15.5.2"
     eslint-plugin-storybook: "npm:^9.1.4"
+    jotai: "npm:^2.14.0"
     next: "npm:15.5.2"
     react: "npm:19.1.0"
     react-dom: "npm:19.1.0"
@@ -10831,6 +10853,7 @@ __metadata:
     clsx: "npm:^2.1.1"
     embla-carousel-react: "npm:^8.6.0"
     eslint: "npm:^9.34.0"
+    jotai: "npm:^2.14.0"
     lucide-react: "npm:^0.542.0"
     next: "npm:^15.5.2"
     postcss: "npm:^8.4.41"
