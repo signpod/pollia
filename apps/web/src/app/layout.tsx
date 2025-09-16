@@ -24,7 +24,7 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased">
-        <BottomCTALayout className="px-5 max-w-lg min-h-screen mx-auto">
+        <BottomCTALayout className="max-w-lg min-h-screen mx-auto">
           <QueryProvider>
             <Suspense
               fallback={
