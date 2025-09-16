@@ -1,9 +1,8 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 import { Input } from "@repo/ui/components";
-import React, { useState } from "react";
 
 const meta: Meta<typeof Input> = {
-  title: "UI/Input",
+  title: "Common/Input",
   component: Input,
   parameters: {
     layout: "centered",
@@ -48,18 +47,24 @@ export const Default: Story = {
   },
 };
 
-
 // 상태별 Input
 export const States: Story = {
   render: (args) => (
     <div className="space-y-8 w-80">
-      
-        <Input placeholder="기본 상태입니다" {...args} />
-        <Input placeholder="비활성화된 상태입니다" disabled />
-        <Input defaultValue="값이 있는 상태" {...args} />
-        <Input placeholder="에러가 발생한 상태입니다" errorMessage="에러가 발생한 상태입니다" {...args} />
-        <Input placeholder="값이 있는 상태입니다" defaultValue="잘못된 값이 있는 상태" errorMessage="잘못된 값이 있는 상태입니다" {...args} />
-    
+      <Input placeholder="기본 상태입니다" {...args} />
+      <Input placeholder="비활성화된 상태입니다" disabled />
+      <Input defaultValue="값이 있는 상태" {...args} />
+      <Input
+        placeholder="에러가 발생한 상태입니다"
+        errorMessage="에러가 발생한 상태입니다"
+        {...args}
+      />
+      <Input
+        placeholder="값이 있는 상태입니다"
+        defaultValue="잘못된 값이 있는 상태"
+        errorMessage="잘못된 값이 있는 상태입니다"
+        {...args}
+      />
     </div>
   ),
 };
