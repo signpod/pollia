@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { User } from "lucide-react";
-import { PollOwner as PollOwnerType } from "@/types/poll";
+import { PollOwner as PollOwnerType } from "@/types/dto/poll";
 import { getCdnImageUrl } from "@/lib/utils";
 
 interface PollOwnerProps {

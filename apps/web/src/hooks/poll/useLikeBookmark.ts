@@ -1,6 +1,6 @@
 import { usePollMutations } from "./usePollMutations";
 import { useQueryClient } from "@tanstack/react-query";
-import type { Poll } from "@/types/poll";
+import type { Poll } from "@/types/dto/poll";
 
 export const useLikeBookmark = (pollId: string, initialPoll: Poll) => {
   const mutations = usePollMutations(pollId);

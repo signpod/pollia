@@ -1,5 +1,5 @@
 import { usePollMutations } from "./usePollMutations";
-import type { Poll } from "@/types/poll";
+import type { Poll } from "@/types/dto/poll";
 
 export const usePollVoting = (poll: Poll) => {
   const mutations = usePollMutations(poll.id);

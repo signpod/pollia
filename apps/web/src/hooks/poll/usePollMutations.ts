@@ -7,7 +7,7 @@ import {
   bookmarkPoll,
   unbookmarkPoll,
 } from "@/lib/poll-api";
-import type { Poll } from "@/types/poll";
+import type { Poll } from "@/types/dto/poll";
 
 export const usePollMutations = (pollId: string) => {
   const queryClient = useQueryClient();

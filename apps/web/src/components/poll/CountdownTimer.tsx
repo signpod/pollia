@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Clock, Timer } from "lucide-react";
-import { TimeRemaining } from "@/types/poll";
+import { TimeRemaining } from "@/types/dto/poll";
 
 interface CountdownTimerProps {
   endAt: string;
