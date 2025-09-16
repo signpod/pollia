@@ -44,15 +44,26 @@ export function StepProvider({
   onStepChange,
   onComplete,
 }: StepProviderProps) {
-  const [currentStep, setCurrentStep] = useState(initialStep);
+  if (initialSteps.length === 0) {
+    throw new Error("StepProvider: steps array cannot be empty");
+  }
+
+  const safeInitialStep = Math.max(
+    0,
+    Math.min(initialStep, initialSteps.length - 1)
+  );
+
+  const [currentStep, setCurrentStep] = useState(safeInitialStep);
   const [steps, setSteps] = useState<StepConfig[]>(initialSteps);
 
-  const currentStepConfig = steps[currentStep] || steps[0]!;
+  const currentStepConfig = steps[currentStep] ?? steps[0]!;
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === steps.length - 1;
   const canGoNext = currentStepConfig?.canGoNext !== false;
   const canGoBack = currentStepConfig?.canGoBack !== false && !isFirstStep;
-  const progress = ((currentStep + 1) / steps.length) * 100;
+
+  const progress =
+    steps.length > 0 ? ((currentStep + 1) / steps.length) * 100 : 0;
 
   const goToStep = useCallback(
     (stepIndex: number) => {
