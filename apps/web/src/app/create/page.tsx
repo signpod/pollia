@@ -19,25 +19,14 @@ import { useRouter } from "next/navigation";
 
 export default function CreatePollPage() {
   const router = useRouter();
-  const { currentStep, goNext, goBack } = useStep();
+  const { currentStep, goBack } = useStep();
   const [isBinaryPollType] = useAtom(isBinaryPollTypeAtom);
   const [isMultiplePollType] = useAtom(isMultiplePollTypeAtom);
 
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
-        return (
-          <>
-            <TypeStepWrapper />
-            <BottomCTALayout.CTA>
-              <div className="p-5 pb-10">
-                <Button onClick={goNext} variant="primary" fullWidth={true}>
-                  <Typo.ButtonText>다음</Typo.ButtonText>
-                </Button>
-              </div>
-            </BottomCTALayout.CTA>
-          </>
-        );
+        return <TypeStepWrapper />;
       case 1:
         if (isBinaryPollType) {
           return <>Binary Info Step</>;
