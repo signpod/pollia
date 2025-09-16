@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  useStep,
-  BottomCTALayout,
-  Button,
-  Typo,
-  CenterOverlay,
-} from "@repo/ui/components";
-import TypeStepWrapper from "./TypeStepWrapper";
+import { useStep, Typo, CenterOverlay } from "@repo/ui/components";
 import { useAtom } from "jotai";
 import {
   isBinaryPollTypeAtom,
@@ -16,6 +9,8 @@ import {
 import { STEPS } from "@/constants/createPoll";
 import { ChevronLeft, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import TypeStep from "./TypeStep";
+import BinaryInfoStep from "./BinaryInfoStep";
 
 export default function CreatePollPage() {
   const router = useRouter();
@@ -26,10 +21,10 @@ export default function CreatePollPage() {
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
-        return <TypeStepWrapper />;
+        return <TypeStep />;
       case 1:
         if (isBinaryPollType) {
-          return <>Binary Info Step</>;
+          return <BinaryInfoStep />;
         } else if (isMultiplePollType) {
           return <>Multiple Info Step</>;
         }

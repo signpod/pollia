@@ -5,7 +5,7 @@ import { pollTypeAtom } from "@/atoms/create/pollTypeAtoms";
 import PollTypeStep from "./PollTypeStep";
 import { BottomCTALayout, Button, Typo, useStep } from "@repo/ui/components";
 
-export default function TypeStepWrapper() {
+export default function TypeStep() {
   const [selectedType, setSelectedType] = useAtom(pollTypeAtom);
   const { goNext } = useStep();
 
