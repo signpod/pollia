@@ -16,7 +16,7 @@ node_modules
 coverage
 
 # Yarn
-.yarn
+.yarn/install-state.gz
 
 # Turbo
 .turbo
