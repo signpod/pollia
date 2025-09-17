@@ -2,8 +2,17 @@
 
 import { useAtom } from "jotai";
 import { pollTypeAtom } from "@/atoms/create/pollTypeAtoms";
-import PollTypeStep from "./PollTypeStep";
 import { BottomCTALayout, Button, Typo, useStep } from "@repo/ui/components";
+import { cn } from "@/lib/utils";
+import PollTypeSelect from "@/components/poll/PollTypeSelect";
+
+type PollType = "ox" | "hobullho" | "multiple";
+
+interface PollTypeStepProps {
+  selectedType?: PollType;
+  onTypeChange?: (type: PollType) => void;
+  className?: string;
+}
 
 export default function TypeStep() {
   const [selectedType, setSelectedType] = useAtom(pollTypeAtom);
@@ -33,5 +42,17 @@ export default function TypeStep() {
         </div>
       </BottomCTALayout.CTA>
     </>
+  );
+}
+
+function PollTypeStep({
+  selectedType,
+  onTypeChange,
+  className,
+}: PollTypeStepProps) {
+  return (
+    <div className={cn("px-5", className)}>
+      <PollTypeSelect selectedType={selectedType} onTypeChange={onTypeChange} />
+    </div>
   );
 }
