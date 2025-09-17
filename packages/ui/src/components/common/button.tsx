@@ -6,16 +6,16 @@ import { Loader2Icon } from "lucide-react";
 import { cn } from "../../lib";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap gap-[var(--space-lg)] rounded-[var(--radius-sm)] px-[var(--space-lg)] h-12 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center whitespace-nowrap gap-[var(--space-lg)] rounded-[var(--radius-sm)] px-[var(--space-lg)] h-12 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
         primary:
-          "bg-[var(--color-zinc-800)] text-white hover:bg-[var(--color-zinc-600)] active:bg-[var(--color-zinc-950)] disabled:bg-[var(--color-zinc-100)] disabled:text-[var(--color-zinc-400)]",
+          "bg-[var(--color-zinc-800)] text-white hover:bg-[var(--color-zinc-600)] active:bg-[var(--color-zinc-950)] disabled:bg-[var(--color-zinc-100)] disabled:text-[var(--color-zinc-300)]",
         secondary:
-          "bg-white text-[var(--color-zinc-950)] ring-1 ring-[var(--color-zinc-200)] hover:ring-[var(--color-violet-500)] active:ring-[var(--color-zinc-500)] active:bg-[var(--color-violet-50)] disabled:bg-[var(--color-zinc-100)] disabled:text-[var(--color-zinc-400)] disabled:ring-[var(--color-zinc-200)]",
+          "bg-white text-[var(--color-zinc-950)] ring-1 ring-[var(--color-zinc-200)] hover:ring-[var(--color-violet-500)] active:ring-[var(--color-violet-500)] active:bg-[var(--color-violet-50)] active:text-[var(--color-violet-500)] disabled:bg-[var(--color-zinc-100)] disabled:text-[var(--color-zinc-300)] disabled:ring-[var(--color-zinc-200)]",
         ghost:
-          "bg-white text-[var(--color-zinc-950)] hover:bg-[var(--color-zinc-50)]",
+          "bg-white text-[var(--color-zinc-950)] active:bg-[var(--color-zinc-50)] disabled:bg-[var(--color-zinc-100)] disabled:text-[var(--color-zinc-300)]",
       },
       fullWidth: {
         true: "w-full",
