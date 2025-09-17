@@ -29,6 +29,7 @@ function MyComponent() {
       time={time}              // 필수  
       onDateChange={setDate}   // 필수
       onTimeChange={setTime}   // 필수
+      disabled={false}         // 선택적 (기본값: false)
     />
   );
 }
@@ -53,22 +54,28 @@ function MyComponent() {
       time={time}              // 필수
       onDateChange={setDate}   // 필수
       onTimeChange={setTime}   // 필수
+      disabled={false}         // 선택적 (기본값: false)
     />
   );
 }
 \`\`\`
 
-## Props (모두 필수)
+## Props
 
+### 필수 Props
 - **date**: \`Date | undefined\` - 선택된 날짜 (필수)
 - **time**: \`string\` - 선택된 시간 (HH:mm:ss 형식, 필수)
 - **onDateChange**: \`(date: Date | undefined) => void\` - 날짜 변경 콜백 (필수)
 - **onTimeChange**: \`(time: string) => void\` - 시간 변경 콜백 (필수)
 
+### 선택적 Props
+- **disabled**: \`boolean\` - 컴포넌트 비활성화 여부 (기본값: false)
+
 ## 주요 기능
 
 - **날짜 선택**: 팝오버 캘린더로 날짜 선택
 - **시간 선택**: HTML time input으로 시:분:초 입력
+- **비활성화 지원**: disabled prop으로 모든 인터랙션 차단 가능
 - **접근성**: 라벨과 키보드 네비게이션 지원
 - **완전한 Controlled**: 모든 props 필수, 외부에서 완전한 상태 제어
 - **타입 안전성**: TypeScript로 필수 props 강제`,
@@ -176,6 +183,86 @@ export const StartEndTime: Story = {
                 onTimeChange={setEndTime}
               />
             </div>
+          </div>
+        </div>
+      </div>
+    );
+  },
+};
+
+export const Disabled: Story = {
+  render: () => {
+    const [date, setDate] = useState<Date | undefined>(new Date());
+    const [time, setTime] = useState("14:30:00");
+
+    return (
+      <div style={{ padding: "20px" }}>
+        <h3 className="text-lg font-semibold mb-4">
+          비활성화된 DateAndTimePicker
+        </h3>
+        <p className="text-gray-600 mb-4">
+          disabled prop이 true일 때의 상태입니다. 클릭이나 입력이 불가능합니다.
+        </p>
+        <DateAndTimePicker
+          date={date}
+          time={time}
+          onDateChange={setDate}
+          onTimeChange={setTime}
+          disabled={true}
+        />
+      </div>
+    );
+  },
+};
+
+export const DisabledComparison: Story = {
+  render: () => {
+    const [enabledDate, setEnabledDate] = useState<Date | undefined>(
+      new Date()
+    );
+    const [enabledTime, setEnabledTime] = useState("10:00:00");
+    const [disabledDate, setDisabledDate] = useState<Date | undefined>(
+      new Date()
+    );
+    const [disabledTime, setDisabledTime] = useState("14:30:00");
+
+    return (
+      <div style={{ padding: "40px", maxWidth: "800px" }}>
+        <h3 className="text-lg font-semibold mb-6">
+          활성화 vs 비활성화 상태 비교
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <h4 className="font-medium text-gray-900 mb-3">
+              활성화 상태 (Normal)
+            </h4>
+            <p className="text-sm text-gray-600 mb-3">
+              클릭과 입력이 가능한 일반 상태입니다.
+            </p>
+            <DateAndTimePicker
+              date={enabledDate}
+              time={enabledTime}
+              onDateChange={setEnabledDate}
+              onTimeChange={setEnabledTime}
+              disabled={false}
+            />
+          </div>
+
+          <div>
+            <h4 className="font-medium text-gray-900 mb-3">
+              비활성화 상태 (Disabled)
+            </h4>
+            <p className="text-sm text-gray-600 mb-3">
+              disabled={true}로 설정된 상태입니다. 모든 인터랙션이 차단됩니다.
+            </p>
+            <DateAndTimePicker
+              date={disabledDate}
+              time={disabledTime}
+              onDateChange={setDisabledDate}
+              onTimeChange={setDisabledTime}
+              disabled={true}
+            />
           </div>
         </div>
       </div>

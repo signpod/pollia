@@ -1,6 +1,6 @@
 import { Meta, StoryObj } from "@storybook/nextjs";
 import { ImageSelector } from "@repo/ui/components";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const meta: Meta<typeof ImageSelector> = {
   title: "Common/ImageSelector",
@@ -12,15 +12,17 @@ const meta: Meta<typeof ImageSelector> = {
         component: `
 # ImageSelector
 
-이미지를 선택하고 관리할 수 있는 컴포넌트입니다. 클릭하여 이미지를 추가하거나, 기존 이미지를 삭제할 수 있습니다.
+실제 파일을 선택하고 관리할 수 있는 이미지 선택 컴포넌트입니다. 클릭하여 파일 브라우저를 열고 이미지를 선택하거나, 기존 이미지를 삭제할 수 있습니다.
 
 ## 특징
 
+- **실제 파일 선택**: input type="file"을 사용한 네이티브 파일 선택
 - **두 가지 크기**: Large (72x72px), Medium (48x48px)
 - **상태 관리**: 이미지 없음, 이미지 있음, 비활성화
-- **Lucide 아이콘**: Image, X 아이콘 사용
+- **미리보기**: 선택한 이미지를 즉시 미리보기로 표시
+- **메모리 관리**: URL.createObjectURL 메모리 누수 방지
+- **Lucide 아이콘**: ImagePlus, X 아이콘 사용
 - **접근성**: 키보드 네비게이션 및 스크린 리더 지원
-- **상호작용**: 클릭하여 이미지 선택, X 버튼으로 삭제
 
 ## Props
 
@@ -28,7 +30,7 @@ const meta: Meta<typeof ImageSelector> = {
 |------|------|-------------|
 | \`size\` | \`"large" \\| "medium"\` | 컴포넌트 크기 (기본값: "large") |
 | \`imageUrl\` | \`string\` | 현재 선택된 이미지 URL |
-| \`onImageSelect\` | \`() => void\` | 이미지 선택 시 호출되는 콜백 |
+| \`onImageSelect\` | \`(file: File) => void\` | 파일 선택 시 호출되는 콜백 |
 | \`onImageDelete\` | \`() => void\` | 이미지 삭제 시 호출되는 콜백 |
 | \`disabled\` | \`boolean\` | 비활성화 상태 |
 | \`className\` | \`string\` | 추가 CSS 클래스 |
@@ -47,8 +49,8 @@ const meta: Meta<typeof ImageSelector> = {
       description: "이미지 URL",
     },
     onImageSelect: {
-      action: "imageSelected",
-      description: "이미지 선택 콜백",
+      action: "fileSelected",
+      description: "파일 선택 콜백 (File 객체 전달)",
     },
     onImageDelete: {
       action: "imageDeleted",
@@ -190,22 +192,35 @@ export const SizeComparison: Story = {
 export const Interactive: Story = {
   render: () => {
     const [imageUrl, setImageUrl] = useState<string>();
+    const [fileName, setFileName] = useState<string>();
 
-    const handleImageSelect = () => {
-      // 실제 앱에서는 파일 선택 다이얼로그를 열거나 갤러리로 이동
-      const sampleImages = [
-        "https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=150&h=150&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=150&h=150&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=150&h=150&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1500964757637-c85e8a162699?w=150&h=150&fit=crop&crop=center",
-      ];
-      const randomImage =
-        sampleImages[Math.floor(Math.random() * sampleImages.length)]!;
-      setImageUrl(randomImage);
+    // 컴포넌트 언마운트 시 메모리 정리
+    useEffect(() => {
+      return () => {
+        if (imageUrl) {
+          URL.revokeObjectURL(imageUrl);
+        }
+      };
+    }, [imageUrl]);
+
+    const handleImageSelect = (file: File) => {
+      // 기존 URL이 있다면 먼저 메모리 해제
+      if (imageUrl) {
+        URL.revokeObjectURL(imageUrl);
+      }
+
+      // 선택된 파일을 미리보기 URL로 변환
+      const url = URL.createObjectURL(file);
+      setImageUrl(url);
+      setFileName(file.name);
     };
 
     const handleImageDelete = () => {
+      if (imageUrl) {
+        URL.revokeObjectURL(imageUrl);
+      }
       setImageUrl(undefined);
+      setFileName(undefined);
     };
 
     return (
@@ -218,11 +233,15 @@ export const Interactive: Story = {
         />
         <div className="text-sm text-gray-600">
           {imageUrl ? (
-            <p>
-              ✅ 이미지가 선택되었습니다. X 버튼을 클릭하여 삭제할 수 있습니다.
-            </p>
+            <div className="space-y-1">
+              <p>✅ 이미지가 선택되었습니다.</p>
+              <p className="text-xs text-gray-500">파일명: {fileName}</p>
+              <p className="text-xs text-gray-400">
+                X 버튼을 클릭하여 삭제할 수 있습니다.
+              </p>
+            </div>
           ) : (
-            <p>📷 클릭하여 랜덤 이미지를 추가해보세요.</p>
+            <p>📷 클릭하여 이미지 파일을 선택해보세요.</p>
           )}
         </div>
       </div>
@@ -232,7 +251,7 @@ export const Interactive: Story = {
     docs: {
       description: {
         story:
-          "실제로 상호작용할 수 있는 ImageSelector 예시입니다. 클릭하면 랜덤 이미지가 선택되고, X 버튼으로 삭제할 수 있습니다.",
+          "실제로 파일을 선택할 수 있는 ImageSelector 예시입니다. 클릭하면 파일 브라우저가 열리고, 이미지를 선택할 수 있습니다.",
       },
     },
   },
@@ -241,20 +260,29 @@ export const Interactive: Story = {
 // 폼에서 사용하는 예시
 export const InForm: Story = {
   render: () => {
-    const [images, setImages] = useState<string[]>([]);
+    const [images, setImages] = useState<{ url: string; name: string }[]>([]);
 
-    const addImage = () => {
-      const sampleImages = [
-        "https://images.unsplash.com/photo-1570197788417-0e82375c9371?w=150&h=150&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=150&h=150&fit=crop&crop=center",
-        "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=150&h=150&fit=crop&crop=center",
-      ];
-      const randomImage =
-        sampleImages[Math.floor(Math.random() * sampleImages.length)]!;
-      setImages([...images, randomImage]);
+    // 컴포넌트 언마운트 시 모든 URL 메모리 정리
+    useEffect(() => {
+      return () => {
+        images.forEach((image) => {
+          URL.revokeObjectURL(image.url);
+        });
+      };
+    }, [images]);
+
+    const addImage = (file: File) => {
+      if (images.length >= 4) return;
+
+      const url = URL.createObjectURL(file);
+      setImages([...images, { url, name: file.name }]);
     };
 
     const deleteImage = (index: number) => {
+      const imageToDelete = images[index];
+      if (imageToDelete) {
+        URL.revokeObjectURL(imageToDelete.url);
+      }
       setImages(images.filter((_, i) => i !== index));
     };
 
@@ -265,12 +293,12 @@ export const InForm: Story = {
             투표 옵션 이미지 (선택사항)
           </label>
           <div className="grid grid-cols-4 gap-2">
-            {images.map((imageUrl, index) => (
+            {images.map((image, index) => (
               <ImageSelector
                 key={index}
                 size="medium"
-                imageUrl={imageUrl}
-                onImageSelect={() => addImage()}
+                imageUrl={image.url}
+                onImageSelect={addImage}
                 onImageDelete={() => deleteImage(index)}
               />
             ))}
@@ -287,6 +315,15 @@ export const InForm: Story = {
           <p className="text-sm font-medium text-gray-700">
             선택된 이미지: {images.length}개
           </p>
+          {images.length > 0 && (
+            <div className="mt-2 space-y-1">
+              {images.map((image, index) => (
+                <p key={index} className="text-xs text-gray-500">
+                  {index + 1}. {image.name}
+                </p>
+              ))}
+            </div>
+          )}
           <p className="text-xs text-gray-500 mt-1">
             + 버튼을 클릭하여 이미지를 추가하고, X 버튼으로 삭제할 수 있습니다.
           </p>
@@ -298,7 +335,7 @@ export const InForm: Story = {
     docs: {
       description: {
         story:
-          "실제 폼에서 사용할 때의 예시입니다. 여러 개의 이미지를 관리하는 시나리오를 보여줍니다.",
+          "실제 폼에서 파일을 선택할 때의 예시입니다. 여러 개의 이미지 파일을 관리하는 시나리오를 보여줍니다.",
       },
     },
   },

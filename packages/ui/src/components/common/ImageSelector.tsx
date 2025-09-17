@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { cn } from "../../lib/utils";
 import { ImagePlus, X } from "lucide-react";
 
@@ -8,7 +9,7 @@ export type ImageSelectorSize = "large" | "medium";
 export interface ImageSelectorProps {
   size?: ImageSelectorSize;
   imageUrl?: string;
-  onImageSelect?: () => void;
+  onImageSelect?: (file: File) => void;
   onImageDelete?: () => void;
   disabled?: boolean;
   className?: string;
@@ -22,6 +23,7 @@ export function ImageSelector({
   disabled = false,
   className,
 }: ImageSelectorProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const hasImage = !!imageUrl;
 
   const sizeStyles = {
@@ -41,7 +43,16 @@ export function ImageSelector({
 
   const handleClick = () => {
     if (disabled) return;
-    onImageSelect?.();
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onImageSelect) {
+      onImageSelect(file);
+    }
+    // Reset input value to allow selecting the same file again
+    e.target.value = "";
   };
 
   const handleDelete = (e: React.MouseEvent) => {
@@ -51,10 +62,21 @@ export function ImageSelector({
   };
 
   return (
-    <div className={cn("relative inline-block align-top", className)}>
+    <div className={cn("relative w-fit h-fit align-top", className)}>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileChange}
+        disabled={disabled}
+        className="hidden"
+        aria-label="이미지 파일 선택"
+      />
+
       <button
         onClick={handleClick}
         disabled={disabled}
+        type="button"
         className={cn(
           "relative overflow-hidden rounded block",
           sizeStyles[size].container,
@@ -62,6 +84,7 @@ export function ImageSelector({
           disabled && "cursor-not-allowed opacity-50",
           !disabled && "cursor-pointer"
         )}
+        aria-label={hasImage ? "이미지 변경" : "이미지 선택"}
       >
         {hasImage ? (
           <img
@@ -87,12 +110,14 @@ export function ImageSelector({
         <button
           onClick={handleDelete}
           disabled={disabled}
+          type="button"
           className={cn(
             "absolute flex items-center justify-center rounded-full bg-zinc-950 text-white",
             sizeStyles[size].deleteButton,
             disabled && "cursor-not-allowed opacity-50",
             "hover:cursor-pointer"
           )}
+          aria-label="이미지 삭제"
         >
           <X className="size-3.5" strokeWidth={4} />
         </button>
