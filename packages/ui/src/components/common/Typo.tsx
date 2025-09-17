@@ -133,4 +133,6 @@ export const Typo = {
   ButtonText,
 };
 
+export { mainTitleVariants, subTitleVariants, bodyVariants, buttonVariants };
+
 export type { MainTitleProps, SubTitleProps, BodyProps, ButtonTextProps };

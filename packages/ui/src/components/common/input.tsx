@@ -1,7 +1,7 @@
 import * as React from "react";
 import { cn } from "../../lib/utils";
 import { XCircleIcon } from "lucide-react";
-import { Typo } from "./Typo";
+import { Typo, bodyVariants } from "./Typo";
 
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -114,7 +114,8 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <input
             type={type}
             className={cn(
-              "flex h-12 w-full rounded-[var(--radius-sm)] ring-1 ring-zinc-200 bg-white px-3 py-2 text-sm placeholder:text-zinc-300 focus-visible:outline-none focus-visible:ring-primary disabled:bg-zinc-100 disabled:text-zinc-500 pr-8",
+              "flex h-12 w-full rounded-[var(--radius-sm)] ring-1 ring-zinc-200 bg-white px-3 py-2 placeholder:text-zinc-300 focus-visible:outline-none focus-visible:ring-primary disabled:bg-zinc-100 disabled:text-zinc-500 pr-8",
+              bodyVariants({ size: "large" }),
               errorMessage && "ring-red-500 focus-visible:ring-red-500",
               className
             )}
