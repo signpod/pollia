@@ -16,6 +16,8 @@ import {
   Input,
   Typo,
   BottomCTALayout,
+  Toggle,
+  DateAndTimePicker,
 } from "@repo/ui/components";
 import { useAtom } from "jotai";
 import { ChevronRight } from "lucide-react";
@@ -23,11 +25,20 @@ import { useState, useEffect, useMemo } from "react";
 
 export default function BinaryInfoStep() {
   return (
-    <div className="flex flex-col gap-6 px-5">
-      <CategoryButton />
-      <ThumbnailSelector />
-      <SubjectInput />
-      <DescriptionInput />
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 px-5">
+        <CategoryButton />
+        <ThumbnailSelector />
+        <SubjectInput />
+        <DescriptionInput />
+      </div>
+
+      {/* DIVIDER */}
+      <div className="bg-zinc-50 w-full h-2" />
+
+      <div className="flex flex-col gap-6 px-5">
+        <VotingPeriodSection />
+      </div>
 
       <BinaryInfoCTAButton />
     </div>
@@ -163,10 +174,70 @@ function BinaryInfoCTAButton() {
           onClick={handleSubmit}
           disabled={!isValid}
         >
-          <Typo.ButtonText>다음</Typo.ButtonText>
+          <Typo.ButtonText>폴 만들기</Typo.ButtonText>
         </Button>
       </div>
     </BottomCTALayout.CTA>
+  );
+}
+
+function VotingPeriodSection() {
+  const [isUnlimited, setIsUnlimited] = useAtom(binaryPollIsUnlimitedAtom);
+  const [startDateString, setStartDateString] = useAtom(
+    binaryPollStartDateAtom
+  );
+  const [startTime, setStartTime] = useAtom(binaryPollStartTimeAtom);
+  const [endDateString, setEndDateString] = useAtom(binaryPollEndDateAtom);
+  const [endTime, setEndTime] = useAtom(binaryPollEndTimeAtom);
+
+  // string → Date 변환
+  const startDate = startDateString ? new Date(startDateString) : undefined;
+  const endDate = endDateString ? new Date(endDateString) : undefined;
+
+  // Date → string 변환 함수
+  const handleStartDateChange = (date: Date | undefined) => {
+    setStartDateString(date ? date.toISOString().split("T")[0]! : "");
+  };
+
+  const handleEndDateChange = (date: Date | undefined) => {
+    setEndDateString(date ? date.toISOString().split("T")[0]! : "");
+  };
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Typo.SubTitle size="large">무기한</Typo.SubTitle>
+          <Typo.Body size="medium" className="text-zinc-400">
+            (종료 버튼 누르기 전까지 투표 가능)
+          </Typo.Body>
+        </div>
+        <Toggle checked={isUnlimited} onCheckedChange={setIsUnlimited} />
+      </div>
+
+      <div className="flex flex-col gap-4">
+        <div className="flex justify-between items-center">
+          <Typo.SubTitle size="large">시작</Typo.SubTitle>
+          <DateAndTimePicker
+            date={startDate}
+            time={startTime}
+            onDateChange={handleStartDateChange}
+            onTimeChange={setStartTime}
+          />
+        </div>
+
+        <div className="flex justify-between items-center">
+          <Typo.SubTitle size="large">종료</Typo.SubTitle>
+          <DateAndTimePicker
+            date={endDate}
+            time={endTime}
+            onDateChange={handleEndDateChange}
+            onTimeChange={setEndTime}
+            disabled={isUnlimited}
+          />
+        </div>
+      </div>
+    </div>
   );
 }
 
