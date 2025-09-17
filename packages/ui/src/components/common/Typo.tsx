@@ -38,7 +38,7 @@ const bodyVariants = cva("leading-[1.5]", {
   },
 });
 
-const buttonVariants = cva("font-bold leading-[1.5]", {
+const buttonTextVariants = cva("font-bold leading-[1.5]", {
   variants: {
     size: {
       large: "text-[16px]",
@@ -67,7 +67,7 @@ interface BodyProps
 
 interface ButtonTextProps
   extends React.HTMLAttributes<HTMLSpanElement>,
-    VariantProps<typeof buttonVariants>,
+    VariantProps<typeof buttonTextVariants>,
     React.PropsWithChildren {}
 
 const MainTitle = React.forwardRef<HTMLHeadingElement, MainTitleProps>(
@@ -115,7 +115,7 @@ const ButtonText = React.forwardRef<HTMLSpanElement, ButtonTextProps>(
   ({ className, size, children, ...props }, ref) => {
     return (
       <span
-        className={cn(buttonVariants({ size, className }))}
+        className={cn(buttonTextVariants({ size, className }))}
         ref={ref}
         {...props}
       >
@@ -133,6 +133,11 @@ export const Typo = {
   ButtonText,
 };
 
-export { mainTitleVariants, subTitleVariants, bodyVariants, buttonVariants };
+export {
+  mainTitleVariants,
+  subTitleVariants,
+  bodyVariants,
+  buttonTextVariants,
+};
 
 export type { MainTitleProps, SubTitleProps, BodyProps, ButtonTextProps };
