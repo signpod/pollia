@@ -6,7 +6,7 @@ import { Loader2Icon } from "lucide-react";
 import { cn } from "../../lib";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap gap-[var(--space-lg)] rounded-[var(--radius-sm)] px-[var(--space-lg)] h-12 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center whitespace-nowrap gap-[var(--space-lg)] rounded-[var(--radius-sm)] px-[var(--space-lg)] h-12 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
     variants: {
       variant: {
