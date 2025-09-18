@@ -1,7 +1,7 @@
 "use client";
 
-import { PollContent } from "@/components/poll/PollContent";
-import { PollLoadingFallback } from "@/components/poll/PollLoadingFallback";
+import { PollContent } from "@/components/legacy/PollContent";
+import { PollLoadingFallback } from "@/components/legacy/PollLoadingFallback";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 

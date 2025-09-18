@@ -10,12 +10,16 @@ export interface InputProps
   errorMessage?: string;
   showLength?: boolean;
   required?: boolean;
+  containerClassName?: string;
+  inputClassName?: string;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   (
     {
       className,
+      containerClassName,
+      inputClassName,
       type,
       value,
       onChange,
@@ -92,7 +96,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     };
 
     return (
-      <div className="flex flex-col gap-2">
+      <div className={cn("flex flex-col gap-2", containerClassName)}>
         {label && (
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -117,7 +121,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               "flex h-12 w-full rounded-[var(--radius-sm)] ring-1 ring-zinc-200 bg-white px-3 py-2 placeholder:text-zinc-300 focus-visible:outline-none focus-visible:ring-primary disabled:bg-zinc-100 disabled:text-zinc-500 pr-8",
               bodyVariants({ size: "large" }),
               errorMessage && "ring-red-500 focus-visible:ring-red-500",
-              className
+              inputClassName || className
             )}
             ref={inputRef}
             value={currentValue}
@@ -130,7 +134,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           {shouldShowClearButton && (
             <button
               type="button"
-              onClick={handleClear}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                handleClear();
+              }}
               className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full flex items-center justify-center transition-colors"
               aria-label="입력 내용 지우기"
             >
