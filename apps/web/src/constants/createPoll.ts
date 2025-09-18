@@ -1,6 +1,7 @@
 import React from "react";
 import { StepConfig } from "@repo/ui/components";
 import { ChevronLeft, X } from "lucide-react";
+import MultipleInfoStep from "@/app/create/MultipleInfoStep";
 
 export interface ExtendedStepConfig extends StepConfig {
   description?: string;
@@ -61,7 +62,7 @@ export const createStepConfigs = (
       if (isBinaryPollType) {
         return React.createElement(BinaryInfoStep);
       } else if (isMultiplePollType) {
-        return React.createElement("div", null, "Multiple Info Step");
+        return React.createElement(MultipleInfoStep);
       }
       throw new Error("알 수 없는 폴 타입입니다.");
     },

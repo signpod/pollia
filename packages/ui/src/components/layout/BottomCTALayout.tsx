@@ -21,6 +21,7 @@ const BottomCTAContext = createContext<BottomCTAContextType | null>(null);
 interface BottomCTALayoutProps {
   children: ReactNode;
   className?: string;
+  hasBottomGap?: boolean;
 }
 
 export function BottomCTALayout({ children, className }: BottomCTALayoutProps) {
@@ -59,7 +60,7 @@ export function BottomCTALayout({ children, className }: BottomCTALayoutProps) {
   return (
     <BottomCTAContext.Provider value={{ currentCTA, setCTA, clearCTA }}>
       <div className={cn("relative", className)}>
-        <div style={{ paddingBottom: `${ctaHeight + 20}px` }}>{children}</div>
+        <div className={cn(`pb-[${ctaHeight + 20}px]`)}>{children}</div>
 
         {currentCTA && (
           <div

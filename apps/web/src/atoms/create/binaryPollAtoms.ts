@@ -48,9 +48,6 @@ export const resetToCurrentDateTimeAtom = atom(null, (_get, set) => {
   set(binaryPollEndTimeAtom, currentTime);
 });
 
-export const binaryPollOption1Atom = atom<string>("");
-export const binaryPollOption2Atom = atom<string>("");
-
 export const binaryPollThumbnailCountAtom = atom((get) => {
   const thumbnailUrl = get(binaryPollThumbnailUrlAtom);
   return thumbnailUrl ? 1 : 0;
@@ -82,9 +79,4 @@ export const binaryPollDataAtom = atom((get) => ({
   startTime: get(binaryPollStartTimeAtom),
   endDate: get(binaryPollEndDateAtom),
   endTime: get(binaryPollEndTimeAtom),
-
-  binaryOptions: {
-    option1: get(binaryPollOption1Atom),
-    option2: get(binaryPollOption2Atom),
-  },
 }));

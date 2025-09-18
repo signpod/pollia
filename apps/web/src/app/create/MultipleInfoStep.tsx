@@ -1,14 +1,15 @@
 import {
-  binaryPollCategoryAtom,
-  binaryPollEndTimeAtom,
-  binaryPollEndDateAtom,
-  binaryPollStartTimeAtom,
-  binaryPollStartDateAtom,
-  binaryPollThumbnailUrlAtom,
-  binaryPollDescriptionAtom,
-  binaryPollTitleAtom,
-  binaryPollIsUnlimitedAtom,
-} from "@/atoms/create/binaryPollAtoms";
+  multiplePollCategoryAtom,
+  multiplePollEndTimeAtom,
+  multiplePollEndDateAtom,
+  multiplePollStartTimeAtom,
+  multiplePollStartDateAtom,
+  multiplePollThumbnailUrlAtom,
+  multiplePollDescriptionAtom,
+  multiplePollTitleAtom,
+  multiplePollIsUnlimitedAtom,
+  multiplePollOCandidatesAtom,
+} from "@/atoms/create/multiplePollAtoms";
 import {
   useStep,
   Button,
@@ -22,8 +23,9 @@ import {
 import { useAtom, useAtomValue } from "jotai";
 import { ChevronRight } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
+import CandidateSelector from "./CandidateSelector";
 
-export default function BinaryInfoStep() {
+export default function MultipleInfoStep() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-6 px-5">
@@ -31,6 +33,7 @@ export default function BinaryInfoStep() {
         <ThumbnailSelector />
         <SubjectInput />
         <DescriptionInput />
+        <CandidateSelector />
       </div>
 
       {/* DIVIDER */}
@@ -47,7 +50,7 @@ export default function BinaryInfoStep() {
 
 function CategoryButton() {
   const { goNext } = useStep();
-  const selectedCategory = useAtomValue(binaryPollCategoryAtom);
+  const [selectedCategory] = useAtom(multiplePollCategoryAtom);
 
   return (
     <Button
@@ -126,16 +129,14 @@ function SubjectInput() {
   const [subject, setSubject] = useState("");
 
   return (
-    <div className="flex flex-col gap-1">
-      <Input
-        label="주제"
-        required
-        value={subject}
-        onChange={(e) => setSubject(e.target.value)}
-        placeholder="주제를 작성해주세요"
-        maxLength={30}
-      />
-    </div>
+    <Input
+      label="주제"
+      required
+      value={subject}
+      onChange={(e) => setSubject(e.target.value)}
+      placeholder="주제를 작성해주세요"
+      maxLength={30}
+    />
   );
 }
 
@@ -166,7 +167,7 @@ function DescriptionInput() {
 }
 
 function BinaryInfoCTAButton() {
-  const { isValid, handleSubmit } = useSubmitBinaryInfo();
+  const { isValid, handleSubmit } = useSubmitMultipleInfo();
 
   return (
     <BottomCTALayout.CTA>
@@ -185,13 +186,13 @@ function BinaryInfoCTAButton() {
 }
 
 function VotingPeriodSection() {
-  const [isUnlimited, setIsUnlimited] = useAtom(binaryPollIsUnlimitedAtom);
+  const [isUnlimited, setIsUnlimited] = useAtom(multiplePollIsUnlimitedAtom);
   const [startDateString, setStartDateString] = useAtom(
-    binaryPollStartDateAtom
+    multiplePollStartDateAtom
   );
-  const [startTime, setStartTime] = useAtom(binaryPollStartTimeAtom);
-  const [endDateString, setEndDateString] = useAtom(binaryPollEndDateAtom);
-  const [endTime, setEndTime] = useAtom(binaryPollEndTimeAtom);
+  const [startTime, setStartTime] = useAtom(multiplePollStartTimeAtom);
+  const [endDateString, setEndDateString] = useAtom(multiplePollEndDateAtom);
+  const [endTime, setEndTime] = useAtom(multiplePollEndTimeAtom);
 
   // string → Date 변환
   const startDate = startDateString ? new Date(startDateString) : undefined;
@@ -244,16 +245,17 @@ function VotingPeriodSection() {
   );
 }
 
-function useSubmitBinaryInfo() {
-  const category = useAtomValue(binaryPollCategoryAtom);
-  const title = useAtomValue(binaryPollTitleAtom);
-  const description = useAtomValue(binaryPollDescriptionAtom);
-  const thumbnailUrl = useAtomValue(binaryPollThumbnailUrlAtom);
-  const isUnlimited = useAtomValue(binaryPollIsUnlimitedAtom);
-  const startDate = useAtomValue(binaryPollStartDateAtom);
-  const startTime = useAtomValue(binaryPollStartTimeAtom);
-  const endDate = useAtomValue(binaryPollEndDateAtom);
-  const endTime = useAtomValue(binaryPollEndTimeAtom);
+function useSubmitMultipleInfo() {
+  const category = useAtomValue(multiplePollCategoryAtom);
+  const title = useAtomValue(multiplePollTitleAtom);
+  const description = useAtomValue(multiplePollDescriptionAtom);
+  const thumbnailUrl = useAtomValue(multiplePollThumbnailUrlAtom);
+  const isUnlimited = useAtomValue(multiplePollIsUnlimitedAtom);
+  const startDate = useAtomValue(multiplePollStartDateAtom);
+  const startTime = useAtomValue(multiplePollStartTimeAtom);
+  const endDate = useAtomValue(multiplePollEndDateAtom);
+  const endTime = useAtomValue(multiplePollEndTimeAtom);
+  const candidates = useAtomValue(multiplePollOCandidatesAtom);
 
   /**
    * 각 옵션값들에 대한 validate 진행.
@@ -274,6 +276,7 @@ function useSubmitBinaryInfo() {
     console.log("startTime", startTime);
     console.log("endDate", endDate);
     console.log("endTime", endTime);
+    console.log("candidates", candidates);
   };
 
   return {
