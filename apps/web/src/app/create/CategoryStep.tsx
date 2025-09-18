@@ -1,7 +1,7 @@
 import { binaryPollCategoryAtom } from "@/atoms/create/binaryPollAtoms";
 import { BottomCTALayout, Button, Typo, useStep } from "@repo/ui/components";
 import { POLL_CATEGORIES, CATEGORY_ICONS } from "@/constants/poll";
-import { PollCategory } from "@/types/client/poll";
+import { PollCategory } from "@/types/domain/poll";
 import { useAtom } from "jotai";
 import { cn } from "@/lib/utils";
 import { useState } from "react";

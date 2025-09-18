@@ -15,3 +15,10 @@ export type PollCategory =
   | "교육·문화"
   | "음식·맛집"
   | "라이프·육아";
+
+export type PollCandidate = {
+  id: string;
+  name: string;
+  imageUrl?: string;
+  link?: string;
+};

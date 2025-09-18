@@ -3,7 +3,7 @@ import {
   PollType,
   BinaryPollType,
   MultiplePollType,
-} from "@/types/client/poll";
+} from "@/types/domain/poll";
 import { atom } from "jotai";
 
 export const pollTypeAtom = atom<PollType | undefined>(undefined);

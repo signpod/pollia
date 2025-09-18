@@ -1,4 +1,4 @@
-import { PollType, PollCategory } from "@/types/client/poll";
+import { PollType, PollCategory } from "@/types/domain/poll";
 import {
   MapPin,
   Music4,
