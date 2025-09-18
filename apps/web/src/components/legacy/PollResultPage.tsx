@@ -6,12 +6,12 @@ import {
   PollResultOptionApiResponse,
 } from "@/types/dto/poll";
 import { Card } from "@/components/ui/card";
-import { PollHeader } from "@/components/poll/PollHeader";
-import { PollOwner } from "@/components/poll/PollOwner";
-import { PollStats } from "@/components/poll/PollStats";
-import { CountdownTimer } from "@/components/poll/CountdownTimer";
-import { LikeBookmarkActions } from "@/components/poll/LikeBookmarkActions";
-import { OptionResult } from "@/components/poll/OptionResult";
+import { PollHeader } from "@/components/legacy/PollHeader";
+import { PollOwner } from "@/components/legacy/PollOwner";
+import { PollStats } from "@/components/legacy/PollStats";
+import { CountdownTimer } from "@/components/legacy/CountdownTimer";
+import { LikeBookmarkActions } from "@/components/legacy/LikeBookmarkActions";
+import { OptionResult } from "@/components/legacy/OptionResult";
 import { Separator } from "@/components/ui/separator";
 import { usePollVoting } from "@/hooks/poll/usePollVoting";
 import { useLikeBookmark } from "@/hooks/poll/useLikeBookmark";
