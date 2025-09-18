@@ -47,6 +47,7 @@ export default function BinaryInfoStep() {
 
 function CategoryButton() {
   const { goNext } = useStep();
+  const [selectedCategory] = useAtom(binaryPollCategoryAtom);
 
   return (
     <Button
@@ -57,8 +58,10 @@ function CategoryButton() {
       rightIcon={<ChevronRight className="w-6 h-6" />}
     >
       <div className="flex items-center gap-1">
-        <span className="font-bold text-zinc-950">카테고리</span>
-        <span className="text-red-500">*</span>
+        <Typo.ButtonText size="large">
+          {selectedCategory || "카테고리"}
+        </Typo.ButtonText>
+        {!selectedCategory && <span className="text-red-500">*</span>}
       </div>
     </Button>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { StepProvider } from "@repo/ui/components";
-import { STEPS } from "@/constants/createPoll";
+import { CREATE_POLL_STEPS } from "@/constants/createPoll";
 
 export default function CreateLayout({
   children,
@@ -10,7 +10,7 @@ export default function CreateLayout({
 }) {
   return (
     <StepProvider
-      steps={STEPS}
+      steps={CREATE_POLL_STEPS}
       initialStep={0}
       onStepChange={(currentStep: number, previousStep: number) => {
         console.log(`Step 변경: ${previousStep} → ${currentStep}`);

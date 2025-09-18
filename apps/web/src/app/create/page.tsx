@@ -6,11 +6,12 @@ import {
   isBinaryPollTypeAtom,
   isMultiplePollTypeAtom,
 } from "@/atoms/create/pollTypeAtoms";
-import { STEPS } from "@/constants/createPoll";
-import { ChevronLeft, X } from "lucide-react";
+import { createStepConfigs } from "@/constants/createPoll";
 import { useRouter } from "next/navigation";
+
 import TypeStep from "./TypeStep";
 import BinaryInfoStep from "./BinaryInfoStep";
+import CategoryStep from "./CategoryStep";
 
 export default function CreatePollPage() {
   const router = useRouter();
@@ -18,43 +19,18 @@ export default function CreatePollPage() {
   const [isBinaryPollType] = useAtom(isBinaryPollTypeAtom);
   const [isMultiplePollType] = useAtom(isMultiplePollTypeAtom);
 
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 0:
-        return <TypeStep />;
-      case 1:
-        if (isBinaryPollType) {
-          return <BinaryInfoStep />;
-        } else if (isMultiplePollType) {
-          return <>Multiple Info Step</>;
-        }
-        throw new Error("알 수 없는 폴 타입입니다.");
-      case 2:
-        return <>Category Step</>;
-      default:
-        throw new Error("알 수 없는 단계입니다.");
-    }
-  };
+  const stepConfigs = createStepConfigs(
+    router,
+    goBack,
+    isBinaryPollType,
+    isMultiplePollType,
+    TypeStep,
+    BinaryInfoStep,
+    CategoryStep
+  );
 
-  const headerInfoMap: Record<
-    number,
-    { action: () => void; icon: React.ElementType }
-  > = {
-    0: {
-      action: router.back,
-      icon: X,
-    },
-    1: {
-      action: goBack,
-      icon: ChevronLeft,
-    },
-    2: {
-      action: goBack,
-      icon: ChevronLeft,
-    },
-  } as const;
-
-  const HeaderIcon = headerInfoMap[currentStep]?.icon;
+  const currentStepConfig = stepConfigs[currentStep];
+  const HeaderIcon = currentStepConfig?.header.icon;
 
   return (
     <>
@@ -64,7 +40,7 @@ export default function CreatePollPage() {
             <CenterOverlay
               targetElement={
                 <button
-                  onClick={headerInfoMap[currentStep]?.action}
+                  onClick={currentStepConfig?.header.action}
                   className="size-12 block"
                   aria-label="뒤로가기"
                 />
@@ -76,15 +52,17 @@ export default function CreatePollPage() {
 
           <div className="px-5 space-y-1">
             <Typo.MainTitle size="medium">
-              {STEPS[currentStep]?.title}
+              {currentStepConfig?.title}
             </Typo.MainTitle>
-            <Typo.Body size="large" className="text-zinc-600">
-              {STEPS[currentStep]?.description}
-            </Typo.Body>
+            {currentStepConfig?.description && (
+              <Typo.Body size="large" className="text-zinc-600">
+                {currentStepConfig.description}
+              </Typo.Body>
+            )}
           </div>
         </div>
 
-        {renderStepContent()}
+        {currentStepConfig?.content()}
       </div>
     </>
   );
