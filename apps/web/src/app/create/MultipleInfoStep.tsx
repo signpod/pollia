@@ -1,14 +1,14 @@
 import {
-  binaryPollCategoryAtom,
-  binaryPollEndTimeAtom,
-  binaryPollEndDateAtom,
-  binaryPollStartTimeAtom,
-  binaryPollStartDateAtom,
-  binaryPollThumbnailUrlAtom,
-  binaryPollDescriptionAtom,
-  binaryPollTitleAtom,
-  binaryPollIsUnlimitedAtom,
-} from "@/atoms/create/binaryPollAtoms";
+  multiplePollCategoryAtom,
+  multiplePollEndTimeAtom,
+  multiplePollEndDateAtom,
+  multiplePollStartTimeAtom,
+  multiplePollStartDateAtom,
+  multiplePollThumbnailUrlAtom,
+  multiplePollDescriptionAtom,
+  multiplePollTitleAtom,
+  multiplePollIsUnlimitedAtom,
+} from "@/atoms/create/multiplePollAtoms";
 import {
   useStep,
   Button,
@@ -49,7 +49,7 @@ export default function MultipleInfoStep() {
 
 function CategoryButton() {
   const { goNext } = useStep();
-  const [selectedCategory] = useAtom(binaryPollCategoryAtom);
+  const [selectedCategory] = useAtom(multiplePollCategoryAtom);
 
   return (
     <Button
@@ -187,13 +187,13 @@ function BinaryInfoCTAButton() {
 }
 
 function VotingPeriodSection() {
-  const [isUnlimited, setIsUnlimited] = useAtom(binaryPollIsUnlimitedAtom);
+  const [isUnlimited, setIsUnlimited] = useAtom(multiplePollIsUnlimitedAtom);
   const [startDateString, setStartDateString] = useAtom(
-    binaryPollStartDateAtom
+    multiplePollStartDateAtom
   );
-  const [startTime, setStartTime] = useAtom(binaryPollStartTimeAtom);
-  const [endDateString, setEndDateString] = useAtom(binaryPollEndDateAtom);
-  const [endTime, setEndTime] = useAtom(binaryPollEndTimeAtom);
+  const [startTime, setStartTime] = useAtom(multiplePollStartTimeAtom);
+  const [endDateString, setEndDateString] = useAtom(multiplePollEndDateAtom);
+  const [endTime, setEndTime] = useAtom(multiplePollEndTimeAtom);
 
   // string → Date 변환
   const startDate = startDateString ? new Date(startDateString) : undefined;
@@ -247,15 +247,15 @@ function VotingPeriodSection() {
 }
 
 function useSubmitBinaryInfo() {
-  const [category] = useAtom(binaryPollCategoryAtom);
-  const [title] = useAtom(binaryPollTitleAtom);
-  const [description] = useAtom(binaryPollDescriptionAtom);
-  const [thumbnailUrl] = useAtom(binaryPollThumbnailUrlAtom);
-  const [isUnlimited] = useAtom(binaryPollIsUnlimitedAtom);
-  const [startDate] = useAtom(binaryPollStartDateAtom);
-  const [startTime] = useAtom(binaryPollStartTimeAtom);
-  const [endDate] = useAtom(binaryPollEndDateAtom);
-  const [endTime] = useAtom(binaryPollEndTimeAtom);
+  const [category] = useAtom(multiplePollCategoryAtom);
+  const [title] = useAtom(multiplePollTitleAtom);
+  const [description] = useAtom(multiplePollDescriptionAtom);
+  const [thumbnailUrl] = useAtom(multiplePollThumbnailUrlAtom);
+  const [isUnlimited] = useAtom(multiplePollIsUnlimitedAtom);
+  const [startDate] = useAtom(multiplePollStartDateAtom);
+  const [startTime] = useAtom(multiplePollStartTimeAtom);
+  const [endDate] = useAtom(multiplePollEndDateAtom);
+  const [endTime] = useAtom(multiplePollEndTimeAtom);
 
   /**
    * 각 옵션값들에 대한 validate 진행.
