@@ -6,7 +6,8 @@ import {
   useContext,
   useState,
   ReactNode,
-  useEffect,
+  useRef,
+  useLayoutEffect,
 } from "react";
 
 interface BottomCTAContextType {
@@ -25,6 +26,8 @@ interface BottomCTALayoutProps {
 export function BottomCTALayout({ children, className }: BottomCTALayoutProps) {
   const [currentCTA, setCurrentCTA] = useState<ReactNode | null>(null);
   const [ctaClassName, setCTAClassName] = useState<string | null>(null);
+  const [ctaHeight, setCTAHeight] = useState(0);
+  const ctaRef = useRef<HTMLDivElement>(null);
 
   const setCTA = (cta: ReactNode, className: string) => {
     setCurrentCTA(cta);
@@ -36,14 +39,35 @@ export function BottomCTALayout({ children, className }: BottomCTALayoutProps) {
     setCTAClassName(null);
   };
 
+  useLayoutEffect(() => {
+    if (currentCTA && ctaRef.current) {
+      const updateHeight = () => {
+        setCTAHeight(ctaRef.current?.offsetHeight || 0);
+      };
+
+      updateHeight();
+
+      const resizeObserver = new ResizeObserver(updateHeight);
+      resizeObserver.observe(ctaRef.current);
+
+      return () => resizeObserver.disconnect();
+    } else {
+      setCTAHeight(0);
+    }
+  }, [currentCTA]);
+
   return (
     <BottomCTAContext.Provider value={{ currentCTA, setCTA, clearCTA }}>
       <div className={cn("relative", className)}>
-        {children}
+        <div style={{ paddingBottom: `${ctaHeight + 20}px` }}>{children}</div>
 
         {currentCTA && (
           <div
-            className={cn("fixed bottom-0 left-0 right-0 z-50", ctaClassName)}
+            ref={ctaRef}
+            className={cn(
+              "fixed bottom-0 left-0 right-0 z-50 bg-white",
+              ctaClassName
+            )}
           >
             {currentCTA}
           </div>
@@ -67,7 +91,7 @@ function CTA({ children, className }: CTAProps) {
 
   const { setCTA, clearCTA } = context;
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setCTA(children, className ?? "");
 
     return () => {
