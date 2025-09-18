@@ -128,16 +128,14 @@ function SubjectInput() {
   const [subject, setSubject] = useState("");
 
   return (
-    <div className="flex flex-col gap-2">
-      <Input
-        label="주제"
-        required
-        value={subject}
-        onChange={(e) => setSubject(e.target.value)}
-        placeholder="주제를 작성해주세요"
-        maxLength={30}
-      />
-    </div>
+    <Input
+      label="주제"
+      required
+      value={subject}
+      onChange={(e) => setSubject(e.target.value)}
+      placeholder="주제를 작성해주세요"
+      maxLength={30}
+    />
   );
 }
 

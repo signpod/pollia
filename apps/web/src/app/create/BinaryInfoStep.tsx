@@ -126,7 +126,7 @@ function SubjectInput() {
   const [subject, setSubject] = useState("");
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1">
       <Input
         label="주제"
         required

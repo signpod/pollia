@@ -99,7 +99,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       <div className={cn("flex flex-col gap-2", containerClassName)}>
         {label && (
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <Typo.SubTitle size="large" className="text-zinc-950">
                 {label}
               </Typo.SubTitle>
