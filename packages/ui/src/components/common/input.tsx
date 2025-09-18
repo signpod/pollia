@@ -130,7 +130,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           {shouldShowClearButton && (
             <button
               type="button"
-              onClick={handleClear}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                handleClear();
+              }}
               className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full flex items-center justify-center transition-colors"
               aria-label="입력 내용 지우기"
             >
