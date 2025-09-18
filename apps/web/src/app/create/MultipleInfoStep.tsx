@@ -8,6 +8,7 @@ import {
   multiplePollDescriptionAtom,
   multiplePollTitleAtom,
   multiplePollIsUnlimitedAtom,
+  multiplePollOCandidatesAtom,
 } from "@/atoms/create/multiplePollAtoms";
 import {
   useStep,
@@ -19,7 +20,7 @@ import {
   Toggle,
   DateAndTimePicker,
 } from "@repo/ui/components";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { ChevronRight } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import CandidateSelector from "./CandidateSelector";
@@ -166,7 +167,7 @@ function DescriptionInput() {
 }
 
 function BinaryInfoCTAButton() {
-  const { isValid, handleSubmit } = useSubmitBinaryInfo();
+  const { isValid, handleSubmit } = useSubmitMultipleInfo();
 
   return (
     <BottomCTALayout.CTA>
@@ -244,16 +245,17 @@ function VotingPeriodSection() {
   );
 }
 
-function useSubmitBinaryInfo() {
-  const [category] = useAtom(multiplePollCategoryAtom);
-  const [title] = useAtom(multiplePollTitleAtom);
-  const [description] = useAtom(multiplePollDescriptionAtom);
-  const [thumbnailUrl] = useAtom(multiplePollThumbnailUrlAtom);
-  const [isUnlimited] = useAtom(multiplePollIsUnlimitedAtom);
-  const [startDate] = useAtom(multiplePollStartDateAtom);
-  const [startTime] = useAtom(multiplePollStartTimeAtom);
-  const [endDate] = useAtom(multiplePollEndDateAtom);
-  const [endTime] = useAtom(multiplePollEndTimeAtom);
+function useSubmitMultipleInfo() {
+  const category = useAtomValue(multiplePollCategoryAtom);
+  const title = useAtomValue(multiplePollTitleAtom);
+  const description = useAtomValue(multiplePollDescriptionAtom);
+  const thumbnailUrl = useAtomValue(multiplePollThumbnailUrlAtom);
+  const isUnlimited = useAtomValue(multiplePollIsUnlimitedAtom);
+  const startDate = useAtomValue(multiplePollStartDateAtom);
+  const startTime = useAtomValue(multiplePollStartTimeAtom);
+  const endDate = useAtomValue(multiplePollEndDateAtom);
+  const endTime = useAtomValue(multiplePollEndTimeAtom);
+  const candidates = useAtomValue(multiplePollOCandidatesAtom);
 
   /**
    * 각 옵션값들에 대한 validate 진행.
@@ -274,6 +276,7 @@ function useSubmitBinaryInfo() {
     console.log("startTime", startTime);
     console.log("endDate", endDate);
     console.log("endTime", endTime);
+    console.log("candidates", candidates);
   };
 
   return {

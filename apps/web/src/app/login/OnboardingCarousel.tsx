@@ -56,7 +56,7 @@ export function OnboardingCarousel() {
   return (
     <div
       className={cn(
-        "bg-zinc-50 rounded-[16px] flex-1 py-4",
+        "bg-zinc-50 rounded-[16px] flex-1 py-4 mx-5",
         "flex flex-col gap-6 justify-center items-center"
       )}
     >
@@ -75,7 +75,8 @@ export function OnboardingCarousel() {
                 <Image
                   src={slide.imageUrl}
                   alt={slide.description}
-                  fill
+                  width={300}
+                  height={350}
                   className="object-cover"
                   priority={slideIndex === 0}
                 />
@@ -102,7 +103,13 @@ export function OnboardingCarousel() {
 
 function IndexBadge({ index }: { index: number }) {
   return (
-    <CenterOverlay targetElement={<PoliaLogo className="size-6" />}>
+    <CenterOverlay
+      targetElement={
+        <div>
+          <PoliaLogo className="size-6" />
+        </div>
+      }
+    >
       <span className="text-sm font-bold text-white leading-[1.8]">
         {index + 1}
       </span>

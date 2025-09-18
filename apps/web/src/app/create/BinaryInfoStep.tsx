@@ -19,7 +19,7 @@ import {
   Toggle,
   DateAndTimePicker,
 } from "@repo/ui/components";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue } from "jotai";
 import { ChevronRight } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 
@@ -47,7 +47,7 @@ export default function BinaryInfoStep() {
 
 function CategoryButton() {
   const { goNext } = useStep();
-  const [selectedCategory] = useAtom(binaryPollCategoryAtom);
+  const selectedCategory = useAtomValue(binaryPollCategoryAtom);
 
   return (
     <Button
@@ -245,15 +245,15 @@ function VotingPeriodSection() {
 }
 
 function useSubmitBinaryInfo() {
-  const [category] = useAtom(binaryPollCategoryAtom);
-  const [title] = useAtom(binaryPollTitleAtom);
-  const [description] = useAtom(binaryPollDescriptionAtom);
-  const [thumbnailUrl] = useAtom(binaryPollThumbnailUrlAtom);
-  const [isUnlimited] = useAtom(binaryPollIsUnlimitedAtom);
-  const [startDate] = useAtom(binaryPollStartDateAtom);
-  const [startTime] = useAtom(binaryPollStartTimeAtom);
-  const [endDate] = useAtom(binaryPollEndDateAtom);
-  const [endTime] = useAtom(binaryPollEndTimeAtom);
+  const category = useAtomValue(binaryPollCategoryAtom);
+  const title = useAtomValue(binaryPollTitleAtom);
+  const description = useAtomValue(binaryPollDescriptionAtom);
+  const thumbnailUrl = useAtomValue(binaryPollThumbnailUrlAtom);
+  const isUnlimited = useAtomValue(binaryPollIsUnlimitedAtom);
+  const startDate = useAtomValue(binaryPollStartDateAtom);
+  const startTime = useAtomValue(binaryPollStartTimeAtom);
+  const endDate = useAtomValue(binaryPollEndDateAtom);
+  const endTime = useAtomValue(binaryPollEndTimeAtom);
 
   /**
    * 각 옵션값들에 대한 validate 진행.
