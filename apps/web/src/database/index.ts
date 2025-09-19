@@ -1,13 +1,4 @@
-export {
-  createClient as createSupabaseClient,
-  createClient as createServerSupabaseClient,
-} from "./utils/supabase/middleware";
+export { createClient as createSupabaseClient } from "./utils/supabase/client";
+export { createClient as createServerSupabaseClient } from "./utils/supabase/client";
 
 export { default as prisma } from "./utils/prisma/client";
-
-export type {
-  Database,
-  Tables,
-  TablesInsert,
-  TablesUpdate,
-} from "./types/database";
