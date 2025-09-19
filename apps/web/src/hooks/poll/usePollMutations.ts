@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Poll } from "@/types/dto/poll";
 
 export const usePollMutations = (pollId: string) => {
   const queryClient = useQueryClient();
@@ -35,7 +34,7 @@ export const usePollMutations = (pollId: string) => {
       await queryClient.cancelQueries({ queryKey: ["poll", pollId] });
       const previousPoll = queryClient.getQueryData(["poll", pollId]);
 
-      queryClient.setQueryData(["poll", pollId], (old: Poll | undefined) => {
+      queryClient.setQueryData(["poll", pollId], (old: any | undefined) => {
         if (!old) return old;
         return {
           ...old,
@@ -63,7 +62,7 @@ export const usePollMutations = (pollId: string) => {
       await queryClient.cancelQueries({ queryKey: ["poll", pollId] });
       const previousPoll = queryClient.getQueryData(["poll", pollId]);
 
-      queryClient.setQueryData(["poll", pollId], (old: Poll | undefined) => {
+      queryClient.setQueryData(["poll", pollId], (old: any | undefined) => {
         if (!old) return old;
         return {
           ...old,
@@ -91,7 +90,7 @@ export const usePollMutations = (pollId: string) => {
       await queryClient.cancelQueries({ queryKey: ["poll", pollId] });
       const previousPoll = queryClient.getQueryData(["poll", pollId]);
 
-      queryClient.setQueryData(["poll", pollId], (old: Poll | undefined) => {
+      queryClient.setQueryData(["poll", pollId], (old: any | undefined) => {
         if (!old) return old;
         return {
           ...old,
@@ -117,8 +116,7 @@ export const usePollMutations = (pollId: string) => {
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: ["poll", pollId] });
       const previousPoll = queryClient.getQueryData(["poll", pollId]);
-
-      queryClient.setQueryData(["poll", pollId], (old: Poll | undefined) => {
+      queryClient.setQueryData(["poll", pollId], (old: any | undefined) => {
         if (!old) return old;
         return {
           ...old,

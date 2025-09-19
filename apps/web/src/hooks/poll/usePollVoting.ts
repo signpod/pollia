@@ -1,7 +1,6 @@
 import { usePollMutations } from "./usePollMutations";
-import type { Poll } from "@/types/dto/poll";
 
-export const usePollVoting = (poll: Poll) => {
+export const usePollVoting = (poll: any) => {
   const mutations = usePollMutations(poll.id);
 
   const handleVote = async (optionId: string) => {
