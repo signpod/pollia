@@ -8,10 +8,22 @@ import {
   Typo,
 } from "@repo/ui/components";
 import { OnboardingCarousel } from "./OnboardingCarousel";
+import { createClient as createSupabaseClient } from "@/database/utils/supabase/client";
 
 export default function LoginPage() {
-  const handleKakaoLogin = useCallback(() => {
-    //TODO: 카카오 로그인 API 구현
+  const handleKakaoLogin = useCallback(async () => {
+    const supabase = createSupabaseClient();
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "kakao",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+
+    if (error) {
+      console.error("카카오 로그인 에러:", error);
+    }
   }, []);
 
   return (
