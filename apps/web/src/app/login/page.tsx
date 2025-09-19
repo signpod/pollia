@@ -1,8 +1,6 @@
 "use client";
 
 import { useCallback } from "react";
-import { useSearchParams } from "next/navigation";
-import { API_BASE_URL } from "../../constants/config";
 import {
   BottomCTALayout,
   KakaoLoginButton,
@@ -12,12 +10,9 @@ import {
 import { OnboardingCarousel } from "./OnboardingCarousel";
 
 export default function LoginPage() {
-  const searchParams = useSearchParams();
-  const nextParam = searchParams.get("next") || "/";
   const handleKakaoLogin = useCallback(() => {
-    const url = `${API_BASE_URL}/auth/kakao?next=${encodeURIComponent(nextParam)}`;
-    window.location.href = url;
-  }, [nextParam]);
+    //TODO: 카카오 로그인 API 구현
+  }, []);
 
   return (
     <>

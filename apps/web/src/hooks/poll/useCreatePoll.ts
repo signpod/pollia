@@ -1,7 +1,6 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { http } from "@/lib/http/default";
 
 export type CreatePollOptionInput = {
   title: string;
@@ -20,10 +19,6 @@ export type CreatePollInput = {
 
 export function useCreatePoll() {
   return useMutation({
-    mutationFn: async (payload: CreatePollInput) => {
-      // 서버 스키마에 맞게 경로/페이로드 조정
-      const res = await http.post("/polls", payload);
-      return res as unknown;
-    },
+    mutationFn: async (payload: CreatePollInput) => {},
   });
 }
