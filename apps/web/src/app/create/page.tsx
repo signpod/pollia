@@ -1,12 +1,17 @@
 "use client";
 
-import { useStep, Typo, CenterOverlay } from "@repo/ui/components";
-import { useAtom } from "jotai";
+import {
+  useStep,
+  Typo,
+  CenterOverlay,
+  StepProvider,
+} from "@repo/ui/components";
+import { useAtomValue } from "jotai";
 import {
   isBinaryPollTypeAtom,
   isMultiplePollTypeAtom,
 } from "@/atoms/create/pollTypeAtoms";
-import { createStepConfigs } from "@/constants/createPoll";
+import { CREATE_POLL_STEPS, createStepConfigs } from "@/constants/createPoll";
 import { useRouter } from "next/navigation";
 
 import TypeStep from "./TypeStep";
@@ -14,10 +19,27 @@ import BinaryInfoStep from "./BinaryInfoStep";
 import CategoryStep from "./CategoryStep";
 
 export default function CreatePollPage() {
+  return (
+    <StepProvider
+      steps={CREATE_POLL_STEPS}
+      initialStep={0}
+      onStepChange={(currentStep: number, previousStep: number) => {
+        console.log(`Step 변경: ${previousStep} → ${currentStep}`);
+      }}
+      onComplete={() => {
+        console.log("모든 Step 완료");
+      }}
+    >
+      <CreatePollPageContent />
+    </StepProvider>
+  );
+}
+
+function CreatePollPageContent() {
   const router = useRouter();
+  const isBinaryPollType = useAtomValue(isBinaryPollTypeAtom);
+  const isMultiplePollType = useAtomValue(isMultiplePollTypeAtom);
   const { currentStep, goBack } = useStep();
-  const [isBinaryPollType] = useAtom(isBinaryPollTypeAtom);
-  const [isMultiplePollType] = useAtom(isMultiplePollTypeAtom);
 
   const stepConfigs = createStepConfigs(
     router,
