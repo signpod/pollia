@@ -1,7 +1,5 @@
 "use client";
 
-import { PollContent } from "@/components/legacy/PollContent";
-import { PollLoadingFallback } from "@/components/legacy/PollLoadingFallback";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -39,8 +37,8 @@ function PollErrorFallback({
 export default function PollPage() {
   return (
     <ErrorBoundary FallbackComponent={PollErrorFallback}>
-      <Suspense fallback={<PollLoadingFallback />}>
-        <PollContent />
+      <Suspense fallback={<div>Loading...</div>}>
+        <div>PollContent</div>
       </Suspense>
     </ErrorBoundary>
   );

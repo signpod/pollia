@@ -1,8 +1,6 @@
 "use client";
 
 import { useCallback } from "react";
-import { useSearchParams } from "next/navigation";
-import { API_BASE_URL } from "../../constants/config";
 import {
   BottomCTALayout,
   KakaoLoginButton,
@@ -10,14 +8,23 @@ import {
   Typo,
 } from "@repo/ui/components";
 import { OnboardingCarousel } from "./OnboardingCarousel";
+import { createClient as createSupabaseClient } from "@/database/utils/supabase/client";
 
 export default function LoginPage() {
-  const searchParams = useSearchParams();
-  const nextParam = searchParams.get("next") || "/";
-  const handleKakaoLogin = useCallback(() => {
-    const url = `${API_BASE_URL}/auth/kakao?next=${encodeURIComponent(nextParam)}`;
-    window.location.href = url;
-  }, [nextParam]);
+  const handleKakaoLogin = useCallback(async () => {
+    const supabase = createSupabaseClient();
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "kakao",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+
+    if (error) {
+      console.error("카카오 로그인 에러:", error);
+    }
+  }, []);
 
   return (
     <>

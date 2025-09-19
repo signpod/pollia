@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { QueryProvider } from "@/components/providers/QueryProvider";
-import { AuthGate } from "@/components/providers/AuthGate";
 import { Suspense } from "react";
 import { BottomCTALayout } from "@repo/ui/components";
 
@@ -35,7 +34,7 @@ export default function RootLayout({
                 </div>
               }
             >
-              <AuthGate>{children}</AuthGate>
+              {children}
             </Suspense>
           </QueryProvider>
         </BottomCTALayout>

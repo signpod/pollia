@@ -1,13 +1,4 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  voteOption,
-  unvoteOption,
-  likePoll,
-  unlikePoll,
-  bookmarkPoll,
-  unbookmarkPoll,
-} from "@/lib/poll-api";
-import type { Poll } from "@/types/dto/poll";
 
 export const usePollMutations = (pollId: string) => {
   const queryClient = useQueryClient();
@@ -17,26 +8,33 @@ export const usePollMutations = (pollId: string) => {
   };
 
   const voteMutation = useMutation({
-    mutationFn: ({ optionId }: { optionId: string }) =>
-      voteOption(pollId, optionId),
+    mutationFn: ({ optionId }: { optionId: string }) => {
+      //TODO: 투표 API 구현
+      return Promise.resolve({});
+    },
     onSuccess: invalidatePoll,
     onError: (error) => console.error("투표 실패:", error),
   });
 
   const unvoteMutation = useMutation({
-    mutationFn: ({ optionId }: { optionId: string }) =>
-      unvoteOption(pollId, optionId),
+    mutationFn: ({ optionId }: { optionId: string }) => {
+      //TODO: 투표 취소 API 구현
+      return Promise.resolve({});
+    },
     onSuccess: invalidatePoll,
     onError: (error) => console.error("투표 취소 실패:", error),
   });
 
   const likeMutation = useMutation({
-    mutationFn: () => likePoll(pollId),
+    mutationFn: () => {
+      //TODO: 좋아요 API 구현
+      return Promise.resolve({});
+    },
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: ["poll", pollId] });
       const previousPoll = queryClient.getQueryData(["poll", pollId]);
 
-      queryClient.setQueryData(["poll", pollId], (old: Poll | undefined) => {
+      queryClient.setQueryData(["poll", pollId], (old: any | undefined) => {
         if (!old) return old;
         return {
           ...old,
@@ -56,12 +54,15 @@ export const usePollMutations = (pollId: string) => {
   });
 
   const unlikeMutation = useMutation({
-    mutationFn: () => unlikePoll(pollId),
+    mutationFn: () => {
+      //TODO: 좋아요 취소 API 구현
+      return Promise.resolve({});
+    },
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: ["poll", pollId] });
       const previousPoll = queryClient.getQueryData(["poll", pollId]);
 
-      queryClient.setQueryData(["poll", pollId], (old: Poll | undefined) => {
+      queryClient.setQueryData(["poll", pollId], (old: any | undefined) => {
         if (!old) return old;
         return {
           ...old,
@@ -81,12 +82,15 @@ export const usePollMutations = (pollId: string) => {
   });
 
   const bookmarkMutation = useMutation({
-    mutationFn: () => bookmarkPoll(pollId),
+    mutationFn: () => {
+      //TODO: 북마크 API 구현
+      return Promise.resolve({});
+    },
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: ["poll", pollId] });
       const previousPoll = queryClient.getQueryData(["poll", pollId]);
 
-      queryClient.setQueryData(["poll", pollId], (old: Poll | undefined) => {
+      queryClient.setQueryData(["poll", pollId], (old: any | undefined) => {
         if (!old) return old;
         return {
           ...old,
@@ -105,12 +109,14 @@ export const usePollMutations = (pollId: string) => {
   });
 
   const unbookmarkMutation = useMutation({
-    mutationFn: () => unbookmarkPoll(pollId),
+    mutationFn: () => {
+      //TODO: 북마크 취소 API 구현
+      return Promise.resolve({});
+    },
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: ["poll", pollId] });
       const previousPoll = queryClient.getQueryData(["poll", pollId]);
-
-      queryClient.setQueryData(["poll", pollId], (old: Poll | undefined) => {
+      queryClient.setQueryData(["poll", pollId], (old: any | undefined) => {
         if (!old) return old;
         return {
           ...old,

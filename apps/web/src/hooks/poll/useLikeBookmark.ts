@@ -1,13 +1,11 @@
 import { usePollMutations } from "./usePollMutations";
 import { useQueryClient } from "@tanstack/react-query";
-import type { Poll } from "@/types/dto/poll";
 
-export const useLikeBookmark = (pollId: string, initialPoll: Poll) => {
+export const useLikeBookmark = (pollId: string, initialPoll: any) => {
   const mutations = usePollMutations(pollId);
   const queryClient = useQueryClient();
 
-  const currentPoll =
-    queryClient.getQueryData<Poll>(["poll", pollId]) || initialPoll;
+  const currentPoll = queryClient.getQueryData(["poll", pollId]) || initialPoll;
 
   const handleLike = async () => {
     try {
