@@ -12,12 +12,12 @@ export default function LoginDonePage() {
     <>
       <div className="flex-1 flex flex-col items-center justify-center gap-6 mb-[160px]">
         <motion.div
-          initial={{ x: "-100vw", rotate: -180 }}
+          initial={{ x: "-100vw", rotate: -560 }}
           animate={{ x: 0, rotate: 0 }}
           transition={{
             type: "spring",
-            damping: 10,
-            stiffness: 40,
+            damping: 12,
+            stiffness: 50,
             duration: 3,
           }}
         >
@@ -32,10 +32,7 @@ export default function LoginDonePage() {
             ease: "easeOut",
           }}
         >
-          <Typo.MainTitle
-            size="small"
-            className="text-center whitespace-pre-line font-bold"
-          >
+          <Typo.MainTitle size="small" className="text-center whitespace-pre-line font-bold">
             <span className="text-primary">{TEMP_POLL_ID}</span>
             {`님, \n 만나서 반가워요!`}
           </Typo.MainTitle>
@@ -54,10 +51,7 @@ export default function LoginDonePage() {
           }}
         >
           <Link href="/create" className="w-full">
-            <Button
-              className={cn("w-full box-border color-zinc-800", "bg-zinc-800")}
-              aria-label="첫 폴 만들러 가기"
-            >
+            <Button className={cn("w-full box-border color-zinc-800", "bg-zinc-800")} aria-label="첫 폴 만들러 가기">
               <Typo.ButtonText size="large">첫 폴 만들러 가기</Typo.ButtonText>
             </Button>
           </Link>
