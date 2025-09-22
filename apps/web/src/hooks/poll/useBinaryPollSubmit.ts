@@ -2,11 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { useAtomValue } from "jotai";
+import { useRouter } from "next/navigation";
 import { PollType, PollCategory } from "@prisma/client";
 import { useCreatePoll } from "./useCreatePoll";
 import { binaryPollDataAtom } from "@/atoms/create/binaryPollAtoms";
 import { CreatePollRequest } from "@/types/dto";
-import { binaryPollSchema, type BinaryPollFormData } from "@/schemas/binaryPollSchema";
+import {
+  binaryPollSchema,
+  type BinaryPollFormData,
+} from "@/schemas/binaryPollSchema";
 
 export interface UseBinaryPollSubmitOptions {
   onSuccess?: () => void;
@@ -14,10 +18,30 @@ export interface UseBinaryPollSubmitOptions {
 }
 
 export function useBinaryPollSubmit(options: UseBinaryPollSubmitOptions = {}) {
-  const { category, title, description, thumbnailUrl, isUnlimited, startDate, startTime, endDate, endTime } =
-    useAtomValue(binaryPollDataAtom);
+  const router = useRouter();
+  const {
+    category,
+    title,
+    description,
+    thumbnailUrl,
+    isUnlimited,
+    startDate,
+    startTime,
+    endDate,
+    endTime,
+  } = useAtomValue(binaryPollDataAtom);
 
-  const createPollMutation = useCreatePoll();
+  const createPollMutation = useCreatePoll({
+    onSuccess: (data) => {
+      if (data.data?.id) {
+        router.push(`/poll/create/done?pollId=${data.data.id}`);
+      }
+      options.onSuccess?.();
+    },
+    onError: (error) => {
+      options.onError?.(error);
+    },
+  });
 
   const [validation, setValidation] = useState({
     isValid: false,
@@ -54,20 +78,34 @@ export function useBinaryPollSubmit(options: UseBinaryPollSubmitOptions = {}) {
         data: null,
       });
     }
-  }, [category, title, description, thumbnailUrl, isUnlimited, startDate, startTime, endDate, endTime]);
+  }, [
+    category,
+    title,
+    description,
+    thumbnailUrl,
+    isUnlimited,
+    startDate,
+    startTime,
+    endDate,
+    endTime,
+  ]);
 
   const handleSubmit = async (imageFileUploadId?: string) => {
     if (!validation.isValid) {
       const errorMessage = validation.errors.join("\n");
-      options.onError?.(new Error(errorMessage));
+      console.error("❌ Binary Poll 유효성 검사 실패:", errorMessage);
       return;
     }
 
     try {
       const validatedData = validation.data!;
-      const startDateTime = new Date(`${validatedData.startDate}T${validatedData.startTime}`);
+      const startDateTime = new Date(
+        `${validatedData.startDate}T${validatedData.startTime}`
+      );
       const endDateTime =
-        !validatedData.isUnlimited && validatedData.endDate && validatedData.endTime
+        !validatedData.isUnlimited &&
+        validatedData.endDate &&
+        validatedData.endTime
           ? new Date(`${validatedData.endDate}T${validatedData.endTime}`)
           : undefined;
 
@@ -86,10 +124,9 @@ export function useBinaryPollSubmit(options: UseBinaryPollSubmitOptions = {}) {
       };
 
       await createPollMutation.mutateAsync(request);
-      options.onSuccess?.();
     } catch (error) {
-      console.error("❌ Binary Poll 생성 실패:", error);
-      options.onError?.(error as Error);
+      // Error는 이미 useCreatePoll의 onError에서 처리됨
+      console.error("❌ Binary Poll validation 또는 요청 실패:", error);
     }
   };
 

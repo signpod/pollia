@@ -81,33 +81,34 @@ function ThumbnailSelector() {
     fileUploadId: string;
   } | null>(null);
 
-  const { upload, isUploading, uploadError, deleteImage, isDeleting } = useImageUpload({
-    bucket: "poll-images",
-    onSuccess: (result) => {
-      setThumbnailUrl(result.publicUrl);
-      setUploadedFileId(result.fileUploadId);
+  const { upload, isUploading, uploadError, deleteImage, isDeleting } =
+    useImageUpload({
+      bucket: "poll-images",
+      onSuccess: (result) => {
+        setThumbnailUrl(result.publicUrl);
+        setUploadedFileId(result.fileUploadId);
 
-      setUploadedFile({
-        path: result.path,
-        fileUploadId: result.fileUploadId,
-      });
+        setUploadedFile({
+          path: result.path,
+          fileUploadId: result.fileUploadId,
+        });
 
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-        setPreviewUrl("");
-      }
-    },
-    onError: (error) => {
-      console.error("❌ 썸네일 업로드 실패:", error);
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-        setPreviewUrl("");
-      }
-    },
-    onProgress: (progress) => {
-      console.log(`업로드 진행률: ${progress.percentage}%`);
-    },
-  });
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl);
+          setPreviewUrl("");
+        }
+      },
+      onError: (error) => {
+        console.error("❌ 썸네일 업로드 실패:", error);
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl);
+          setPreviewUrl("");
+        }
+      },
+      onProgress: (progress) => {
+        console.log(`업로드 진행률: ${progress.percentage}%`);
+      },
+    });
 
   useEffect(() => {
     return () => {
@@ -152,7 +153,9 @@ function ThumbnailSelector() {
         <div className="flex items-center gap-1">
           <Typo.SubTitle size="large">썸네일</Typo.SubTitle>
         </div>
-        <span className="text-xs font-medium text-zinc-400">{thumbnailUrl ? "1" : "0"}/1</span>
+        <span className="text-xs font-medium text-zinc-400">
+          {thumbnailUrl ? "1" : "0"}/1
+        </span>
       </div>
 
       <ImageSelector
@@ -161,10 +164,18 @@ function ThumbnailSelector() {
         onImageSelect={handleImageSelect}
         onImageDelete={handleImageDelete}
       />
+
+      {/* TODO: 업로드 상태 표시. 임시로 만들었습니다. */}
       {(isUploading || isDeleting) && (
-        <div className="text-sm text-blue-500">{isUploading ? "업로드 중..." : "삭제 중..."}</div>
+        <div className="text-sm text-blue-500">
+          {isUploading ? "업로드 중..." : "삭제 중..."}
+        </div>
       )}
-      {uploadError && <div className="text-sm text-red-500">업로드 실패: {uploadError.message}</div>}
+      {uploadError && (
+        <div className="text-sm text-red-500">
+          업로드 실패: {uploadError.message}
+        </div>
+      )}
     </div>
   );
 }
@@ -221,8 +232,6 @@ function BinaryInfoCTAButton() {
     handleSubmit(uploadedFileId);
   };
 
-  console.log(isValid);
-
   return (
     <BottomCTALayout.CTA>
       <div className="p-5 pb-10">
@@ -233,7 +242,9 @@ function BinaryInfoCTAButton() {
           disabled={!isValid || isLoading}
           loading={isLoading}
         >
-          <Typo.ButtonText>{isLoading ? "생성 중..." : "폴 만들기"}</Typo.ButtonText>
+          <Typo.ButtonText>
+            {isLoading ? "생성 중..." : "폴 만들기"}
+          </Typo.ButtonText>
         </Button>
       </div>
     </BottomCTALayout.CTA>
@@ -242,7 +253,9 @@ function BinaryInfoCTAButton() {
 
 function VotingPeriodSection() {
   const [isUnlimited, setIsUnlimited] = useAtom(binaryPollIsUnlimitedAtom);
-  const [startDateString, setStartDateString] = useAtom(binaryPollStartDateAtom);
+  const [startDateString, setStartDateString] = useAtom(
+    binaryPollStartDateAtom
+  );
   const [startTime, setStartTime] = useAtom(binaryPollStartTimeAtom);
   const [endDateString, setEndDateString] = useAtom(binaryPollEndDateAtom);
   const [endTime, setEndTime] = useAtom(binaryPollEndTimeAtom);
