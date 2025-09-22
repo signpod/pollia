@@ -8,8 +8,144 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
-model test {
-  id         BigInt   @id @default(autoincrement())
-  created_at DateTime @default(now()) @db.Timestamptz(6)
+model User {
+  id        String   @id
+  email     String   @unique
+  name      String
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // 관계
+  polls         Poll[]         @relation("PollCreator")
+  votes         Vote[]
+  pollLikes     PollLike[]
+  pollBookmarks PollBookmark[]
+
+  @@map("users")
+}
+
+model Poll {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  imageUrl    String? @map("image_url")
+  type        PollType
+  category    PollCategory
+
+  // 투표 기간
+  startDate    DateTime
+  endDate      DateTime?
+  isIndefinite Boolean   @default(false)
+
+  // 여러 선택지 투표 설정
+  maxSelections Int? // null이면 단일 선택 (O/X, 좋아요/싫어요)
+
+  // 결과 공개 설정 (확장성)
+  showResultsMode ResultMode @default(IMMEDIATE)
+  isPublic        Boolean    @default(true)
+
+  // 관계
+  creatorId String
+  creator   User   @relation("PollCreator", fields: [creatorId], references: [id])
+  options   PollOption[]
+  votes     Vote[]
+  likes     PollLike[]
+  bookmarks PollBookmark[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([category])
+  @@index([type])
+  @@index([startDate, endDate])
+  @@map("polls")
+}
+
+model PollOption {
+  id          String @id @default(cuid())
+  pollId      String @map("poll_id")
+  poll        Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+
+  content     String
+  description String?
+  imageUrl    String? @map("image_url")
+  link        String?
+  order       Int
+
+  votes Vote[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([pollId, order])
+  @@map("poll_options")
+}
+
+model Vote {
+  id       String @id @default(cuid())
+  pollId   String @map("poll_id")
+  poll     Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  userId   String @map("user_id")
+  user     User   @relation(fields: [userId], references: [id])
+  optionId String @map("option_id")
+  option   PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // 같은 사용자가 같은 옵션에 중복 투표 방지
+  @@unique([pollId, userId, optionId])
+  @@index([pollId, userId])
+  @@map("votes")
+}
+
+model PollLike {
+  id     String @id @default(cuid())
+  pollId String @map("poll_id")
+  poll   Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([pollId, userId])
+  @@map("poll_likes")
+}
+
+model PollBookmark {
+  id     String @id @default(cuid())
+  pollId String @map("poll_id")
+  poll   Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([pollId, userId])
+  @@map("poll_bookmarks")
+}
+
+enum PollType {
+  YES_NO          // O, X
+  LIKE_DISLIKE    // 좋아요, 싫어요
+  MULTIPLE_CHOICE // 여러 선택지
+}
+
+enum PollCategory {
+  IT_DIGITAL
+  PET
+  TRAVEL_PLACE
+  GAME_HOBBY
+  SPORTS_HEALTH
+  ENTERTAINMENT
+  FASHION_BEAUTY
+  DAILY_LIFE
+  EDUCATION_CULTURE
+  FOOD_RESTAURANT
+  LIFE_PARENTING
+}
+
+enum ResultMode {
+  IMMEDIATE // 즉시 공개
+  AFTER_VOTE // 투표 후 공개
+  AFTER_END // 종료 후 공개
+  PRIVATE // 비공개
 }
