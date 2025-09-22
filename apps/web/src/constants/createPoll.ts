@@ -1,7 +1,6 @@
 import React from "react";
 import { StepConfig } from "@repo/ui/components";
 import { ChevronLeft, X } from "lucide-react";
-import MultipleInfoStep from "@/app/create/MultipleInfoStep";
 
 export interface ExtendedStepConfig extends StepConfig {
   description?: string;
@@ -28,20 +27,32 @@ export const CREATE_POLL_STEPS: StepConfig[] = [
   {
     id: "category",
     title: "카테고리를 선택해주세요",
-    canGoNext: true,
+    canGoNext: false,
     canGoBack: true,
   },
 ];
 
-export const createStepConfigs = (
-  router: { back: () => void },
-  goBack: () => void,
-  isBinaryPollType: boolean,
-  isMultiplePollType: boolean,
-  TypeStep: React.ComponentType,
-  BinaryInfoStep: React.ComponentType,
-  CategoryStep: React.ComponentType
-): ExtendedStepConfig[] => [
+interface CreateStepConfigsProps {
+  router: { back: () => void };
+  goBack: () => void;
+  isBinaryPollType: boolean;
+  isMultiplePollType: boolean;
+  TypeStep: React.ComponentType;
+  BinaryInfoStep: React.ComponentType;
+  MultipleInfoStep: React.ComponentType;
+  CategoryStep: React.ComponentType;
+}
+
+export const createStepConfigs = ({
+  router,
+  goBack,
+  isBinaryPollType,
+  isMultiplePollType,
+  TypeStep,
+  BinaryInfoStep,
+  MultipleInfoStep,
+  CategoryStep,
+}: CreateStepConfigsProps): ExtendedStepConfig[] => [
   {
     ...CREATE_POLL_STEPS[0]!,
     description: "원하는 질문 방식을 골라주세요",
