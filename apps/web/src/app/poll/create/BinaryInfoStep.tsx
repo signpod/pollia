@@ -25,7 +25,7 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useImageUpload } from "@/hooks/common/useImageUpload";
-import { useCreateBinaryPoll } from "@/hooks/poll/useCreateBinaryPoll";
+import { useBinaryPollSubmit } from "@/hooks/poll/useBinaryPollSubmit";
 
 export default function BinaryInfoStep() {
   return (
@@ -215,20 +215,13 @@ function DescriptionInput() {
 function BinaryInfoCTAButton() {
   const uploadedFileId = useAtomValue(binaryPollThumbnailFileUploadIdAtom);
 
-  const { handleSubmit, isLoading, isValid } = useCreateBinaryPoll({
-    onSuccess: () => {
-      console.log("✅ Binary Poll 생성 성공!");
-      // TODO: 폴 생성 후 리디렉션 로직 추가
-    },
-    onError: (error) => {
-      console.error("❌ Binary Poll 생성 실패:", error);
-      alert(error.message);
-    },
-  });
+  const { handleSubmit, isLoading, isValid } = useBinaryPollSubmit();
 
   const handleCreatePoll = () => {
     handleSubmit(uploadedFileId);
   };
+
+  console.log(isValid);
 
   return (
     <BottomCTALayout.CTA>
