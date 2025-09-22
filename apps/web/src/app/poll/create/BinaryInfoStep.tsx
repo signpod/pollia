@@ -9,6 +9,7 @@ import {
   binaryPollTitleAtom,
   binaryPollIsUnlimitedAtom,
 } from "@/atoms/create/binaryPollAtoms";
+import { CATEGORY_LABELS } from "@/constants/poll";
 import {
   useStep,
   Button,
@@ -59,7 +60,7 @@ function CategoryButton() {
     >
       <div className="flex items-center gap-1">
         <Typo.ButtonText size="large">
-          {selectedCategory || "카테고리"}
+          {selectedCategory ? CATEGORY_LABELS[selectedCategory] : "카테고리"}
         </Typo.ButtonText>
         {!selectedCategory && <span className="text-red-500">*</span>}
       </div>
