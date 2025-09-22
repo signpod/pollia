@@ -10,6 +10,9 @@ export const binaryPollCategoryAtom = atom<
 export const binaryPollTitleAtom = atom<string>("");
 export const binaryPollDescriptionAtom = atom<string>("");
 export const binaryPollThumbnailUrlAtom = atom<string | undefined>(undefined);
+export const binaryPollThumbnailFileUploadIdAtom = atom<string | undefined>(
+  undefined
+);
 
 export const getCurrentDate = (): string => {
   const now = new Date();

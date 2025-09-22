@@ -143,25 +143,34 @@ function validatePollRequest(request: CreatePollRequest): string | null {
     return "종료 날짜는 시작 날짜보다 늦어야 합니다.";
   }
 
-  if (!request.options || request.options.length === 0) {
-    return "최소 1개의 옵션을 추가해주세요.";
-  }
+  // 이진 투표가 아닌 경우에만 옵션 검증
+  const isBinaryPoll =
+    request.type === "YES_NO" || request.type === "LIKE_DISLIKE";
 
-  if (request.options.length > 10) {
-    return "옵션은 최대 10개까지 추가할 수 있습니다.";
-  }
-
-  for (const option of request.options) {
-    if (!option.content || option.content.trim().length === 0) {
-      return "모든 옵션에 내용을 입력해주세요.";
+  if (!isBinaryPoll) {
+    if (!request.options || request.options.length === 0) {
+      return "최소 1개의 옵션을 추가해주세요.";
     }
-    if (option.content.length > 100) {
-      return "옵션 내용은 100자를 초과할 수 없습니다.";
-    }
-  }
 
-  if (request.maxSelections && request.maxSelections > request.options.length) {
-    return "최대 선택 개수는 옵션 개수를 초과할 수 없습니다.";
+    if (request.options.length > 10) {
+      return "옵션은 최대 10개까지 추가할 수 있습니다.";
+    }
+
+    for (const option of request.options) {
+      if (!option.content || option.content.trim().length === 0) {
+        return "모든 옵션에 내용을 입력해주세요.";
+      }
+      if (option.content.length > 100) {
+        return "옵션 내용은 100자를 초과할 수 없습니다.";
+      }
+    }
+
+    if (
+      request.maxSelections &&
+      request.maxSelections > request.options.length
+    ) {
+      return "최대 선택 개수는 옵션 개수를 초과할 수 없습니다.";
+    }
   }
 
   return null;

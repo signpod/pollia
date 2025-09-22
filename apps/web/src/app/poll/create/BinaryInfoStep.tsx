@@ -5,6 +5,7 @@ import {
   binaryPollStartTimeAtom,
   binaryPollStartDateAtom,
   binaryPollThumbnailUrlAtom,
+  binaryPollThumbnailFileUploadIdAtom,
   binaryPollDescriptionAtom,
   binaryPollTitleAtom,
   binaryPollIsUnlimitedAtom,
@@ -20,9 +21,11 @@ import {
   Toggle,
   DateAndTimePicker,
 } from "@repo/ui/components";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { ChevronRight } from "lucide-react";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
+import { useImageUpload } from "@/hooks/common/useImageUpload";
+import { useCreateBinaryPoll } from "@/hooks/poll/useCreateBinaryPoll";
 
 export default function BinaryInfoStep() {
   return (
@@ -69,37 +72,80 @@ function CategoryButton() {
 }
 
 function ThumbnailSelector() {
-  const [thumbnailUrl, setThumbnailUrl] = useState<string>("");
+  const [thumbnailUrl, setThumbnailUrl] = useAtom(binaryPollThumbnailUrlAtom);
+  const setUploadedFileId = useSetAtom(binaryPollThumbnailFileUploadIdAtom);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
 
-  // 컴포넌트 언마운트 시 메모리 정리
+  const [uploadedFile, setUploadedFile] = useState<{
+    path: string;
+    fileUploadId: string;
+  } | null>(null);
+
+  const { upload, isUploading, uploadError, deleteImage, isDeleting } =
+    useImageUpload({
+      bucket: "poll-images",
+      onSuccess: (result) => {
+        console.log("✅ 썸네일 업로드 성공:", result);
+        setThumbnailUrl(result.publicUrl);
+        setUploadedFileId(result.fileUploadId);
+
+        setUploadedFile({
+          path: result.path,
+          fileUploadId: result.fileUploadId,
+        });
+
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl);
+          setPreviewUrl("");
+        }
+      },
+      onError: (error) => {
+        console.error("❌ 썸네일 업로드 실패:", error);
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl);
+          setPreviewUrl("");
+        }
+      },
+      onProgress: (progress) => {
+        console.log(`업로드 진행률: ${progress.percentage}%`);
+      },
+    });
+
   useEffect(() => {
     return () => {
-      if (thumbnailUrl) {
-        URL.revokeObjectURL(thumbnailUrl);
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
       }
     };
-  }, [thumbnailUrl]);
+  }, [previewUrl]);
 
   const handleImageSelect = (file: File) => {
-    // 기존 URL이 있다면 먼저 메모리 해제
-    if (thumbnailUrl) {
-      URL.revokeObjectURL(thumbnailUrl);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
     }
 
-    // 선택된 파일을 미리보기 URL로 변환
     const url = URL.createObjectURL(file);
-    setThumbnailUrl(url);
+    setPreviewUrl(url);
 
-    // TODO: 실제 파일 업로드 로직 구현 presigned url 사용
-    console.log("선택된 파일:", file);
+    upload(file);
   };
 
   const handleImageDelete = () => {
-    // 기존 URL이 있다면 메모리 해제
-    if (thumbnailUrl) {
-      URL.revokeObjectURL(thumbnailUrl);
+    if (uploadedFile) {
+      deleteImage({
+        path: uploadedFile.path,
+        bucket: "poll-images",
+      });
     }
-    setThumbnailUrl("");
+
+    setUploadedFile(null);
+    setUploadedFileId(undefined);
+    setThumbnailUrl(undefined);
+
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl("");
+    }
   };
 
   return (
@@ -115,24 +161,34 @@ function ThumbnailSelector() {
 
       <ImageSelector
         size="large"
-        imageUrl={thumbnailUrl}
+        imageUrl={thumbnailUrl || previewUrl}
         onImageSelect={handleImageSelect}
         onImageDelete={handleImageDelete}
       />
+      {(isUploading || isDeleting) && (
+        <div className="text-sm text-blue-500">
+          {isUploading ? "업로드 중..." : "삭제 중..."}
+        </div>
+      )}
+      {uploadError && (
+        <div className="text-sm text-red-500">
+          업로드 실패: {uploadError.message}
+        </div>
+      )}
     </div>
   );
 }
 
 function SubjectInput() {
-  const [subject, setSubject] = useState("");
+  const [title, setTitle] = useAtom(binaryPollTitleAtom);
 
   return (
     <div className="flex flex-col gap-1">
       <Input
         label="주제"
         required
-        value={subject}
-        onChange={(e) => setSubject(e.target.value)}
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
         placeholder="주제를 작성해주세요"
         maxLength={30}
       />
@@ -141,7 +197,7 @@ function SubjectInput() {
 }
 
 function DescriptionInput() {
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useAtom(binaryPollDescriptionAtom);
 
   return (
     <div className="flex flex-col gap-2">
@@ -167,7 +223,22 @@ function DescriptionInput() {
 }
 
 function BinaryInfoCTAButton() {
-  const { isValid, handleSubmit } = useSubmitBinaryInfo();
+  const uploadedFileId = useAtomValue(binaryPollThumbnailFileUploadIdAtom);
+
+  const { handleSubmit, isLoading, isValid } = useCreateBinaryPoll({
+    onSuccess: () => {
+      console.log("✅ Binary Poll 생성 성공!");
+      // TODO: 폴 생성 후 리디렉션 로직 추가
+    },
+    onError: (error) => {
+      console.error("❌ Binary Poll 생성 실패:", error);
+      alert(error.message);
+    },
+  });
+
+  const handleCreatePoll = () => {
+    handleSubmit(uploadedFileId);
+  };
 
   return (
     <BottomCTALayout.CTA>
@@ -175,10 +246,13 @@ function BinaryInfoCTAButton() {
         <Button
           variant="primary"
           fullWidth={true}
-          onClick={handleSubmit}
-          disabled={!isValid}
+          onClick={handleCreatePoll}
+          disabled={!isValid || isLoading}
+          loading={isLoading}
         >
-          <Typo.ButtonText>폴 만들기</Typo.ButtonText>
+          <Typo.ButtonText>
+            {isLoading ? "생성 중..." : "폴 만들기"}
+          </Typo.ButtonText>
         </Button>
       </div>
     </BottomCTALayout.CTA>
@@ -243,42 +317,4 @@ function VotingPeriodSection() {
       </div>
     </div>
   );
-}
-
-function useSubmitBinaryInfo() {
-  const category = useAtomValue(binaryPollCategoryAtom);
-  const title = useAtomValue(binaryPollTitleAtom);
-  const description = useAtomValue(binaryPollDescriptionAtom);
-  const thumbnailUrl = useAtomValue(binaryPollThumbnailUrlAtom);
-  const isUnlimited = useAtomValue(binaryPollIsUnlimitedAtom);
-  const startDate = useAtomValue(binaryPollStartDateAtom);
-  const startTime = useAtomValue(binaryPollStartTimeAtom);
-  const endDate = useAtomValue(binaryPollEndDateAtom);
-  const endTime = useAtomValue(binaryPollEndTimeAtom);
-
-  /**
-   * 각 옵션값들에 대한 validate 진행.
-   */
-
-  const isValid = useMemo(() => {
-    // TODO: validate 진행
-    return true;
-  }, []);
-
-  const handleSubmit = () => {
-    console.log("category", category);
-    console.log("title", title);
-    console.log("description", description);
-    console.log("thumbnailUrl", thumbnailUrl);
-    console.log("isUnlimited", isUnlimited);
-    console.log("startDate", startDate);
-    console.log("startTime", startTime);
-    console.log("endDate", endDate);
-    console.log("endTime", endTime);
-  };
-
-  return {
-    isValid,
-    handleSubmit,
-  };
 }
