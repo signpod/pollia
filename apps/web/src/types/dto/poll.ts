@@ -4,6 +4,7 @@ export interface CreatePollRequest {
   title: string;
   description?: string;
   imageUrl?: string;
+  imageFileUploadId?: string; // 폴 대표 이미지의 fileUploadId
   type: PollType;
   category: PollCategory;
 
@@ -22,6 +23,7 @@ export interface CreatePollOptionRequest {
   content: string;
   description?: string;
   imageUrl?: string;
+  imageFileUploadId?: string; // 옵션 이미지의 fileUploadId
   link?: string;
   order: number;
 }

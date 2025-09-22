@@ -21,6 +21,7 @@ model User {
   votes         Vote[]
   pollLikes     PollLike[]
   pollBookmarks PollBookmark[]
+  fileUploads   FileUpload[]   @relation("FileUploader")
 
   @@map("users")
 }
@@ -121,6 +122,49 @@ model PollBookmark {
 
   @@unique([pollId, userId])
   @@map("poll_bookmarks")
+}
+
+// 파일 업로드 추적 테이블
+model FileUpload {
+  id               String    @id @default(cuid())
+  userId           String    @map("user_id")
+  user             User      @relation("FileUploader", fields: [userId], references: [id])
+  
+  // 파일 정보
+  originalFileName String    @map("original_file_name")
+  filePath         String    @map("file_path")
+  publicUrl        String    @map("public_url")
+  fileSize         Int       @map("file_size")
+  mimeType         String    @map("mime_type")
+  bucket           String    @default("poll-images")
+  
+  // 상태 관리
+  status           FileStatus @default(TEMPORARY)
+  
+  // 연결된 엔티티 정보 (확정 시 설정)
+  relatedEntityType RelatedEntityType? @map("related_entity_type")
+  relatedEntityId   String?            @map("related_entity_id")
+  
+  // 시간 추적
+  createdAt   DateTime  @default(now()) @map("created_at")
+  confirmedAt DateTime? @map("confirmed_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  @@index([userId, status])
+  @@index([status, createdAt])
+  @@index([relatedEntityType, relatedEntityId])
+  @@map("file_uploads")
+}
+
+enum FileStatus {
+  TEMPORARY // 임시 업로드 상태
+  CONFIRMED // 확정 완료 상태
+  DELETED   // 삭제 상태
+}
+
+enum RelatedEntityType {
+  POLL        // 폴 대표 이미지
+  POLL_OPTION // 폴 옵션 이미지
 }
 
 enum PollType {

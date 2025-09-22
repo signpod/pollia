@@ -1,6 +1,6 @@
 "use server";
 
-import { ResultMode } from "@prisma/client";
+import { ResultMode, FileStatus, RelatedEntityType } from "@prisma/client";
 import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
 import prisma from "@/database/utils/prisma/client";
 import {
@@ -62,6 +62,44 @@ export async function createPoll(
           order: option.order,
         })),
       });
+
+      // 파일 확정 처리 - 폴 대표 이미지
+      if (request.imageFileUploadId) {
+        await tx.fileUpload.update({
+          where: {
+            id: request.imageFileUploadId,
+            userId: user.id,
+            status: FileStatus.TEMPORARY,
+          },
+          data: {
+            status: FileStatus.CONFIRMED,
+            confirmedAt: new Date(),
+            relatedEntityType: RelatedEntityType.POLL,
+            relatedEntityId: createdPoll.id,
+          },
+        });
+      }
+
+      // 파일 확정 처리 - 옵션 이미지들
+      const optionFileUploadIds = request.options
+        .map((option) => option.imageFileUploadId)
+        .filter(Boolean) as string[];
+
+      if (optionFileUploadIds.length > 0) {
+        await tx.fileUpload.updateMany({
+          where: {
+            id: { in: optionFileUploadIds },
+            userId: user.id,
+            status: FileStatus.TEMPORARY,
+          },
+          data: {
+            status: FileStatus.CONFIRMED,
+            confirmedAt: new Date(),
+            relatedEntityType: RelatedEntityType.POLL_OPTION,
+            relatedEntityId: createdPoll.id,
+          },
+        });
+      }
 
       return createdPoll;
     });
