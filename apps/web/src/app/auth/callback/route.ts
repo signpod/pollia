@@ -7,28 +7,49 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
   const cookieStore = await cookies();
 
-  console.log("🔍 Search Params:", Object.fromEntries(searchParams.entries()));
-
-  // 쿠키에서 리다이렉트 경로 읽기
   let next = cookieStore.get("auth_redirect")?.value ?? "/";
   if (!next.startsWith("/")) {
-    // 상대 URL이 아니면 기본값 사용
     next = "/";
   }
-
-  console.log("🎯 Next from cookie:", next);
 
   if (code) {
     const supabase = await createServerSupabaseClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        const { default: prisma } = await import(
+          "@/database/utils/prisma/client"
+        );
+
+        const existingUser = await prisma.user.findFirst({
+          where: { id: user.id },
+        });
+
+        if (!existingUser) {
+          await prisma.user.create({
+            data: {
+              id: user.id,
+              email: user.email!,
+              name:
+                user.user_metadata?.name ||
+                user.email?.split("@")[0] ||
+                "사용자",
+            },
+          });
+        }
+      }
+
       cookieStore.set("auth_redirect", "", {
         path: "/",
         maxAge: 0,
       });
 
-      const forwardedHost = request.headers.get("x-forwarded-host"); // 로드밸런서 이전 원본 호스트
+      const forwardedHost = request.headers.get("x-forwarded-host");
       const isLocalEnv = process.env.NODE_ENV === "development";
 
       if (isLocalEnv) {

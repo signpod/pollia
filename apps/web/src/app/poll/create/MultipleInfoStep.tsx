@@ -26,6 +26,7 @@ import { useAtom, useAtomValue } from "jotai";
 import { ChevronRight } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import CandidateSelector from "./CandidateSelector";
+import { CATEGORY_LABELS } from "@/constants/poll";
 
 export default function MultipleInfoStep() {
   return (
@@ -64,7 +65,7 @@ function CategoryButton() {
     >
       <div className="flex items-center gap-1">
         <Typo.ButtonText size="large">
-          {selectedCategory || "카테고리"}
+          {selectedCategory ? CATEGORY_LABELS[selectedCategory] : "카테고리"}
         </Typo.ButtonText>
         {!selectedCategory && <span className="text-red-500">*</span>}
       </div>

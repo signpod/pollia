@@ -1,9 +1,6 @@
 import { POLL_TYPES } from "@/constants/poll";
-import {
-  PollType,
-  BinaryPollType,
-  MultiplePollType,
-} from "@/types/domain/poll";
+import { PollType } from "@prisma/client";
+import { BinaryPollType, MultiplePollType } from "@/types/domain/poll";
 import { atom } from "jotai";
 
 export const pollTypeAtom = atom<PollType | undefined>(undefined);
@@ -17,24 +14,26 @@ export const pollTypeSelectedAtom = atom((get) => {
 
 export const isBinaryPollTypeAtom = atom((get) => {
   const pollType = get(pollTypeAtom);
-  return pollType === "ox" || pollType === "hobullho";
+  return pollType === PollType.YES_NO || pollType === PollType.LIKE_DISLIKE;
 });
 
 export const isMultiplePollTypeAtom = atom((get) => {
   const pollType = get(pollTypeAtom);
-  return pollType === "multiple";
+  return pollType === PollType.MULTIPLE_CHOICE;
 });
 
 export const selectedBinaryPollTypeAtom = atom((get) => {
   const pollType = get(pollTypeAtom);
-  return pollType === "ox" || pollType === "hobullho"
+  return pollType === PollType.YES_NO || pollType === PollType.LIKE_DISLIKE
     ? (pollType as BinaryPollType)
     : undefined;
 });
 
 export const selectedMultiplePollTypeAtom = atom((get) => {
   const pollType = get(pollTypeAtom);
-  return pollType === "multiple" ? (pollType as MultiplePollType) : undefined;
+  return pollType === PollType.MULTIPLE_CHOICE
+    ? (pollType as MultiplePollType)
+    : undefined;
 });
 
 export const categoryStepValidationAtom = atom((get) => {

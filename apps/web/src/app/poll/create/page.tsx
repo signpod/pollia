@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import TypeStep from "./TypeStep";
 import BinaryInfoStep from "./BinaryInfoStep";
 import CategoryStep from "./CategoryStep";
+import MultipleInfoStep from "./MultipleInfoStep";
 
 export default function CreatePollPage() {
   return (
@@ -41,18 +42,16 @@ function CreatePollPageContent() {
   const isMultiplePollType = useAtomValue(isMultiplePollTypeAtom);
   const { currentStep, goBack } = useStep();
 
-  const stepConfigs = createStepConfigs(
+  const currentStepConfig = createStepConfigs({
     router,
     goBack,
     isBinaryPollType,
     isMultiplePollType,
     TypeStep,
     BinaryInfoStep,
-    CategoryStep
-  );
-
-  const currentStepConfig = stepConfigs[currentStep];
-  const HeaderIcon = currentStepConfig?.header.icon;
+    CategoryStep,
+    MultipleInfoStep,
+  })[currentStep];
 
   return (
     <>
@@ -68,7 +67,9 @@ function CreatePollPageContent() {
                 />
               }
             >
-              {HeaderIcon && <HeaderIcon className="size-4 text-zinc-900" />}
+              {currentStepConfig?.header.icon && (
+                <currentStepConfig.header.icon className="size-4 text-zinc-900" />
+              )}
             </CenterOverlay>
           </div>
 

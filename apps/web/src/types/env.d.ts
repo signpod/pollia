@@ -7,5 +7,7 @@ declare namespace NodeJS {
 
     DATABASE_URL: string;
     DIRECT_URL: string;
+
+    CLEANUP_SECRET: string;
   }
 }
