@@ -1,4 +1,4 @@
-import { PollType, PollCategory, ResultMode } from "@prisma/client";
+import { ResultMode, PollType, PollCategory } from "@prisma/client";
 
 export interface CreatePollRequest {
   title: string;

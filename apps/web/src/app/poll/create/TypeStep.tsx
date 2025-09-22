@@ -5,8 +5,7 @@ import { pollTypeAtom } from "@/atoms/create/pollTypeAtoms";
 import { BottomCTALayout, Button, Typo, useStep } from "@repo/ui/components";
 import { cn } from "@/lib/utils";
 import PollTypeSelect from "@/components/poll/PollTypeSelect";
-
-type PollType = "ox" | "hobullho" | "multiple";
+import { PollType } from "@prisma/client";
 
 interface PollTypeStepProps {
   selectedType?: PollType;
@@ -18,7 +17,7 @@ export default function TypeStep() {
   const [selectedType, setSelectedType] = useAtom(pollTypeAtom);
   const { goNext } = useStep();
 
-  const handleTypeChange = (type: "ox" | "hobullho" | "multiple") => {
+  const handleTypeChange = (type: PollType) => {
     console.log("카테고리 선택:", type);
     setSelectedType(type);
   };

@@ -1,7 +1,6 @@
 import { cn } from "@/lib/utils";
 import PollTypeCard from "./PollTypeCard";
-
-type PollType = "ox" | "hobullho" | "multiple";
+import { PollType } from "@prisma/client";
 
 interface PollTypeSelectProps {
   selectedType?: PollType;
@@ -9,20 +8,17 @@ interface PollTypeSelectProps {
   className?: string;
 }
 
-const pollTypes: { type: PollType; label: string; description: string }[] = [
+const pollTypes: { type: PollType; description: string }[] = [
   {
-    type: "ox",
-    label: "O/X",
+    type: PollType.YES_NO,
     description: "예/아니오 선택",
   },
   {
-    type: "hobullho",
-    label: "호불호",
+    type: PollType.LIKE_DISLIKE,
     description: "좋아요/싫어요",
   },
   {
-    type: "multiple",
-    label: "객관식",
+    type: PollType.MULTIPLE_CHOICE,
     description: "여러 선택지",
   },
 ];
