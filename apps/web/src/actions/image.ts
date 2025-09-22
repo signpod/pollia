@@ -13,9 +13,7 @@ import {
   CleanupOrphanFilesResponse,
 } from "@/types/dto/image";
 
-export async function getUploadUrl(
-  request: UploadImageRequest
-): Promise<UploadImageResponse> {
+export async function getUploadUrl(request: UploadImageRequest): Promise<UploadImageResponse> {
   try {
     const supabase = await createServerSupabaseClient();
 
@@ -39,7 +37,7 @@ export async function getUploadUrl(
       };
     }
 
-    const bucket = request.bucket || "poll-images";
+    const bucket = request.bucket || "pollia-images";
     const fileExtension = request.fileName.split(".").pop() || "";
     const timestamp = Date.now();
     const fileName = `${user.id}/${timestamp}.${fileExtension}`;
@@ -56,9 +54,7 @@ export async function getUploadUrl(
       };
     }
 
-    const { data: publicUrlData } = supabase.storage
-      .from(bucket)
-      .getPublicUrl(fileName);
+    const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(fileName);
 
     const fileUpload = await prisma.fileUpload.create({
       data: {
@@ -97,13 +93,7 @@ function validateUploadRequest(request: UploadImageRequest): string | null {
     return "파일 크기는 10MB를 초과할 수 없습니다.";
   }
 
-  const allowedTypes = [
-    "image/jpeg",
-    "image/jpg",
-    "image/png",
-    "image/webp",
-    "image/gif",
-  ];
+  const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
 
   if (!allowedTypes.includes(request.fileType)) {
     return "지원하지 않는 파일 형식입니다. (JPEG, PNG, WebP, GIF만 가능)";
@@ -116,9 +106,7 @@ function validateUploadRequest(request: UploadImageRequest): string | null {
   return null;
 }
 
-export async function deleteImage(
-  request: DeleteImageRequest
-): Promise<DeleteImageResponse> {
+export async function deleteImage(request: DeleteImageRequest): Promise<DeleteImageResponse> {
   try {
     const supabase = await createServerSupabaseClient();
 
@@ -151,9 +139,7 @@ export async function deleteImage(
       };
     }
 
-    const { error: deleteError } = await supabase.storage
-      .from(bucket)
-      .remove([request.path]);
+    const { error: deleteError } = await supabase.storage.from(bucket).remove([request.path]);
 
     if (deleteError) {
       console.error("❌ 이미지 삭제 실패:", deleteError);
@@ -183,9 +169,7 @@ export async function deleteImage(
   }
 }
 
-export async function confirmFile(
-  request: ConfirmFileRequest
-): Promise<ConfirmFileResponse> {
+export async function confirmFile(request: ConfirmFileRequest): Promise<ConfirmFileResponse> {
   try {
     const supabase = await createServerSupabaseClient();
 
@@ -226,8 +210,6 @@ export async function confirmFile(
       },
     });
 
-    console.log(`✅ 파일 확정 완료: ${fileUpload.filePath}`);
-
     return {
       success: true,
     };
@@ -267,15 +249,10 @@ export async function cleanupOrphanFiles(): Promise<CleanupOrphanFilesResponse> 
 
     for (const file of orphanFiles) {
       try {
-        const { error: deleteError } = await supabase.storage
-          .from(file.bucket)
-          .remove([file.filePath]);
+        const { error: deleteError } = await supabase.storage.from(file.bucket).remove([file.filePath]);
 
         if (deleteError) {
-          console.error(
-            `❌ Storage 파일 삭제 실패: ${file.filePath}`,
-            deleteError
-          );
+          console.error(`❌ Storage 파일 삭제 실패: ${file.filePath}`, deleteError);
           failedFiles.push(file.filePath);
           continue;
         }
@@ -296,9 +273,7 @@ export async function cleanupOrphanFiles(): Promise<CleanupOrphanFilesResponse> 
       }
     }
 
-    console.log(
-      `🧹 고아 파일 정리 완료: 성공 ${deletedFiles.length}개, 실패 ${failedFiles.length}개`
-    );
+    console.log(`🧹 고아 파일 정리 완료: 성공 ${deletedFiles.length}개, 실패 ${failedFiles.length}개`);
 
     return {
       success: true,
