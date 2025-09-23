@@ -2283,7 +2283,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@radix-ui/react-dialog@npm:^1.1.1":
+"@radix-ui/react-dialog@npm:^1.1.1, @radix-ui/react-dialog@npm:^1.1.15":
   version: 1.1.15
   resolution: "@radix-ui/react-dialog@npm:1.1.15"
   dependencies:
@@ -2742,6 +2742,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@repo/ui@workspace:packages/ui"
   dependencies:
+    "@radix-ui/react-dialog": "npm:^1.1.15"
     "@radix-ui/react-label": "npm:^2.1.7"
     "@radix-ui/react-popover": "npm:^1.1.15"
     "@radix-ui/react-slot": "npm:^1.2.3"
@@ -2760,6 +2761,7 @@ __metadata:
     react-dom: "npm:^19.1.0"
     tailwind-merge: "npm:^3.3.1"
     typescript: "npm:5.9.2"
+    vaul: "npm:^1.1.2"
   languageName: unknown
   linkType: soft
 
@@ -11516,6 +11518,18 @@ __metadata:
   version: 0.20201231.0
   resolution: "uzip@npm:0.20201231.0"
   checksum: 10c0/44b261b20ac7e4d71e7099d7a7c4885626044be61cd246e76cf548fa444a4a37c301d1a683679168bc29c91d2ec81d62b8c1c75217a26b37f6ce35223866c2d2
+  languageName: node
+  linkType: hard
+
+"vaul@npm:^1.1.2":
+  version: 1.1.2
+  resolution: "vaul@npm:1.1.2"
+  dependencies:
+    "@radix-ui/react-dialog": "npm:^1.1.1"
+  peerDependencies:
+    react: ^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc
+    react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc
+  checksum: 10c0/a6da539eb5576c0004a6b17e3673ea1db2c34e80355860131183abf53279ce025bbd016d542c345d1cc8464ad12f9dc9860949c751055d8a84961e8472a53707
   languageName: node
   linkType: hard
 
