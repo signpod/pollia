@@ -7,10 +7,10 @@ import {
   multiplePollStartTimeAtom,
   multiplePollStartDateAtom,
   multiplePollThumbnailUrlAtom,
+  multiplePollThumbnailFileUploadIdAtom,
   multiplePollDescriptionAtom,
   multiplePollTitleAtom,
   multiplePollIsUnlimitedAtom,
-  multiplePollOCandidatesAtom,
 } from "@/atoms/create/multiplePollAtoms";
 import {
   useStep,
@@ -22,10 +22,12 @@ import {
   Toggle,
   DateAndTimePicker,
 } from "@repo/ui/components";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
+import { useImageUpload } from "@/hooks/common/useImageUpload";
+import { useMultiplePollSubmit } from "@/hooks/poll/useMultiplePollSubmit";
 import { ChevronRight } from "lucide-react";
-import { useState, useEffect, useMemo } from "react";
-import CandidateSelector from "./CandidateSelector";
+import { useState, useEffect } from "react";
+import OptionSelector from "@/app/poll/create/OptionSelector";
 import { CATEGORY_LABELS } from "@/constants/poll";
 
 export default function MultipleInfoStep() {
@@ -36,7 +38,7 @@ export default function MultipleInfoStep() {
         <ThumbnailSelector />
         <SubjectInput />
         <DescriptionInput />
-        <CandidateSelector />
+        <OptionSelector />
       </div>
 
       {/* DIVIDER */}
@@ -46,7 +48,7 @@ export default function MultipleInfoStep() {
         <VotingPeriodSection />
       </div>
 
-      <BinaryInfoCTAButton />
+      <MultipleInfoCTAButton />
     </div>
   );
 }
@@ -74,37 +76,79 @@ function CategoryButton() {
 }
 
 function ThumbnailSelector() {
-  const [thumbnailUrl, setThumbnailUrl] = useState<string>("");
+  const [thumbnailUrl, setThumbnailUrl] = useAtom(multiplePollThumbnailUrlAtom);
+  const setUploadedFileId = useSetAtom(multiplePollThumbnailFileUploadIdAtom);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
 
-  // 컴포넌트 언마운트 시 메모리 정리
+  const [uploadedFile, setUploadedFile] = useState<{
+    path: string;
+    fileUploadId: string;
+  } | null>(null);
+
+  const { upload, isUploading, uploadError, deleteImage, isDeleting } =
+    useImageUpload({
+      bucket: "poll-images",
+      onSuccess: (result) => {
+        setThumbnailUrl(result.publicUrl);
+        setUploadedFileId(result.fileUploadId);
+
+        setUploadedFile({
+          path: result.path,
+          fileUploadId: result.fileUploadId,
+        });
+
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl);
+          setPreviewUrl("");
+        }
+      },
+      onError: (error) => {
+        console.error("❌ 썸네일 업로드 실패:", error);
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl);
+          setPreviewUrl("");
+        }
+      },
+      onProgress: (progress) => {
+        console.log(`업로드 진행률: ${progress.percentage}%`);
+      },
+    });
+
   useEffect(() => {
     return () => {
-      if (thumbnailUrl) {
-        URL.revokeObjectURL(thumbnailUrl);
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
       }
     };
-  }, [thumbnailUrl]);
+  }, [previewUrl]);
 
   const handleImageSelect = (file: File) => {
-    // 기존 URL이 있다면 먼저 메모리 해제
-    if (thumbnailUrl) {
-      URL.revokeObjectURL(thumbnailUrl);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
     }
 
-    // 선택된 파일을 미리보기 URL로 변환
     const url = URL.createObjectURL(file);
-    setThumbnailUrl(url);
+    setPreviewUrl(url);
 
-    // TODO: 실제 파일 업로드 로직 구현 presigned url 사용
-    console.log("선택된 파일:", file);
+    upload(file);
   };
 
   const handleImageDelete = () => {
-    // 기존 URL이 있다면 메모리 해제
-    if (thumbnailUrl) {
-      URL.revokeObjectURL(thumbnailUrl);
+    if (uploadedFile) {
+      deleteImage({
+        path: uploadedFile.path,
+        bucket: "poll-images",
+      });
     }
-    setThumbnailUrl("");
+
+    setUploadedFile(null);
+    setUploadedFileId(undefined);
+    setThumbnailUrl(undefined);
+
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl("");
+    }
   };
 
   return (
@@ -120,23 +164,35 @@ function ThumbnailSelector() {
 
       <ImageSelector
         size="large"
-        imageUrl={thumbnailUrl}
+        imageUrl={thumbnailUrl || previewUrl}
         onImageSelect={handleImageSelect}
         onImageDelete={handleImageDelete}
       />
+
+      {/* TODO: 업로드 상태 표시. 임시로 만들었습니다. */}
+      {(isUploading || isDeleting) && (
+        <div className="text-sm text-blue-500">
+          {isUploading ? "업로드 중..." : "삭제 중..."}
+        </div>
+      )}
+      {uploadError && (
+        <div className="text-sm text-red-500">
+          업로드 실패: {uploadError.message}
+        </div>
+      )}
     </div>
   );
 }
 
 function SubjectInput() {
-  const [subject, setSubject] = useState("");
+  const [title, setTitle] = useAtom(multiplePollTitleAtom);
 
   return (
     <Input
       label="주제"
       required
-      value={subject}
-      onChange={(e) => setSubject(e.target.value)}
+      value={title}
+      onChange={(e) => setTitle(e.target.value)}
       placeholder="주제를 작성해주세요"
       maxLength={30}
     />
@@ -144,7 +200,7 @@ function SubjectInput() {
 }
 
 function DescriptionInput() {
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useAtom(multiplePollDescriptionAtom);
 
   return (
     <div className="flex flex-col gap-2">
@@ -169,8 +225,12 @@ function DescriptionInput() {
   );
 }
 
-function BinaryInfoCTAButton() {
-  const { isValid, handleSubmit } = useSubmitMultipleInfo();
+function MultipleInfoCTAButton() {
+  const { isValid, handleSubmit, isLoading } = useMultiplePollSubmit();
+
+  const handleClick = () => {
+    handleSubmit();
+  };
 
   return (
     <BottomCTALayout.CTA>
@@ -178,10 +238,12 @@ function BinaryInfoCTAButton() {
         <Button
           variant="primary"
           fullWidth={true}
-          onClick={handleSubmit}
-          disabled={!isValid}
+          onClick={handleClick}
+          disabled={!isValid || isLoading}
         >
-          <Typo.ButtonText>폴 만들기</Typo.ButtonText>
+          <Typo.ButtonText>
+            {isLoading ? "폴 생성 중..." : "폴 만들기"}
+          </Typo.ButtonText>
         </Button>
       </div>
     </BottomCTALayout.CTA>
@@ -246,44 +308,4 @@ function VotingPeriodSection() {
       </div>
     </div>
   );
-}
-
-function useSubmitMultipleInfo() {
-  const category = useAtomValue(multiplePollCategoryAtom);
-  const title = useAtomValue(multiplePollTitleAtom);
-  const description = useAtomValue(multiplePollDescriptionAtom);
-  const thumbnailUrl = useAtomValue(multiplePollThumbnailUrlAtom);
-  const isUnlimited = useAtomValue(multiplePollIsUnlimitedAtom);
-  const startDate = useAtomValue(multiplePollStartDateAtom);
-  const startTime = useAtomValue(multiplePollStartTimeAtom);
-  const endDate = useAtomValue(multiplePollEndDateAtom);
-  const endTime = useAtomValue(multiplePollEndTimeAtom);
-  const candidates = useAtomValue(multiplePollOCandidatesAtom);
-
-  /**
-   * 각 옵션값들에 대한 validate 진행.
-   */
-
-  const isValid = useMemo(() => {
-    // TODO: validate 진행
-    return true;
-  }, []);
-
-  const handleSubmit = () => {
-    console.log("category", category);
-    console.log("title", title);
-    console.log("description", description);
-    console.log("thumbnailUrl", thumbnailUrl);
-    console.log("isUnlimited", isUnlimited);
-    console.log("startDate", startDate);
-    console.log("startTime", startTime);
-    console.log("endDate", endDate);
-    console.log("endTime", endTime);
-    console.log("candidates", candidates);
-  };
-
-  return {
-    isValid,
-    handleSubmit,
-  };
 }
