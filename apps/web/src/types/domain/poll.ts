@@ -4,9 +4,12 @@ export type BinaryPollType = "YES_NO" | "LIKE_DISLIKE";
 export type MultiplePollType = "MULTIPLE_CHOICE";
 export { PollType, PollCategory };
 
-export type PollCandidate = {
+export type PollOption = {
   id: string;
-  name: string;
+  content: string;
+  description?: string;
   imageUrl?: string;
   link?: string;
+  order: number;
+  fileUploadId?: string;
 };
