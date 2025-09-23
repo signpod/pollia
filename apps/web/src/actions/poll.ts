@@ -176,6 +176,60 @@ function validatePollRequest(request: CreatePollRequest): string | null {
   return null;
 }
 
+export async function getPoll(pollId: string) {
+  try {
+    const poll = await prisma.poll.findUnique({
+      where: { id: pollId },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        options: {
+          select: {
+            id: true,
+            content: true,
+            description: true,
+            imageUrl: true,
+            _count: {
+              select: {
+                votes: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            votes: true,
+            likes: true,
+            bookmarks: true,
+          },
+        },
+      },
+    });
+
+    if (!poll) {
+      return {
+        success: false,
+        error: "투표를 찾을 수 없습니다.",
+      };
+    }
+
+    return {
+      success: true,
+      data: poll,
+    };
+  } catch (error) {
+    console.error("❌ 폴 조회 에러:", error);
+    return {
+      success: false,
+      error: "투표를 불러올 수 없습니다.",
+    };
+  }
+}
+
 export async function getUserPolls(
   userId?: string
 ): Promise<GetUserPollsResponse> {
