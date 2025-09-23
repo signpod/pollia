@@ -8,6 +8,7 @@ export * from "./common/Typo";
 export * from "./common/ImageSelector";
 export * from "./common/toggle";
 export * from "./common/DateAndTimePicker";
+export * from "./common/drawer";
 
 // Hooks
 export * from "../hooks/useStep";
