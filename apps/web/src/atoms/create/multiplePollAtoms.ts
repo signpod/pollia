@@ -1,5 +1,5 @@
-import { POLL_CATEGORIES } from "@/constants/poll";
-import { PollCandidate } from "@/types/domain/poll";
+import { POLL_CATEGORIES, POLL_TYPES } from "@/constants/poll";
+import { PollOption } from "@/types/domain/poll";
 import { generateUniqueId } from "@/lib/utils";
 import { atom } from "jotai";
 
@@ -12,6 +12,11 @@ export const multiplePollCategoryAtom = atom<
 export const multiplePollTitleAtom = atom<string>("");
 export const multiplePollDescriptionAtom = atom<string>("");
 export const multiplePollThumbnailUrlAtom = atom<string | undefined>(undefined);
+export const multiplePollThumbnailFileUploadIdAtom = atom<string | undefined>(
+  undefined
+);
+
+export const multiplePollMaxSelectionsAtom = atom<number>(1);
 
 export const getCurrentDate = (): string => {
   const now = new Date();
@@ -50,63 +55,62 @@ export const resetToCurrentDateTimeAtom = atom(null, (_get, set) => {
   set(multiplePollEndTimeAtom, currentTime);
 });
 
-/**
- * 빈 Poll Candidate를 생성합니다.
- * 매번 새로운 고유 ID가 할당됩니다.
- */
-const createEmptyPollCandidate = (): PollCandidate => ({
+const createEmptyPollOption = (order: number): PollOption => ({
   id: generateUniqueId(),
-  name: "",
+  content: "",
+  description: undefined,
   imageUrl: undefined,
   link: undefined,
+  order,
+  fileUploadId: undefined,
 });
 
-export const multiplePollOCandidatesAtom = atom<PollCandidate[]>([
-  createEmptyPollCandidate(),
-  createEmptyPollCandidate(),
+export const multiplePollOptionsAtom = atom<PollOption[]>([
+  createEmptyPollOption(0),
+  createEmptyPollOption(1),
 ]);
 
-// Candidate 관리를 위한 write-only atoms
-export const addCandidateAtom = atom(null, (get, set) => {
-  const candidates = get(multiplePollOCandidatesAtom);
-  const newCandidate = createEmptyPollCandidate();
-  set(multiplePollOCandidatesAtom, [...candidates, newCandidate]);
+export const addOptionAtom = atom(null, (get, set) => {
+  const options = get(multiplePollOptionsAtom);
+  const newOrder = options.length;
+  const newOption = createEmptyPollOption(newOrder);
+  set(multiplePollOptionsAtom, [...options, newOption]);
 });
 
-export const removeCandidateAtom = atom(
-  null,
-  (get, set, candidateId: string) => {
-    const candidates = get(multiplePollOCandidatesAtom);
-    const filteredCandidates = candidates.filter(
-      (candidate) => candidate.id !== candidateId
-    );
-    set(multiplePollOCandidatesAtom, filteredCandidates);
-  }
-);
+export const removeOptionAtom = atom(null, (get, set, optionId: string) => {
+  const options = get(multiplePollOptionsAtom);
+  const filteredOptions = options.filter((option) => option.id !== optionId);
 
-export const updateCandidateAtom = atom(
+  const reorderedOptions = filteredOptions.map((option, index) => ({
+    ...option,
+    order: index,
+  }));
+  set(multiplePollOptionsAtom, reorderedOptions);
+});
+
+export const updateOptionAtom = atom(
   null,
   (
     get,
     set,
-    update: { id: string; data: Partial<Omit<PollCandidate, "id">> }
+    update: { id: string; data: Partial<Omit<PollOption, "id" | "order">> }
   ) => {
-    const candidates = get(multiplePollOCandidatesAtom);
-    const updatedCandidates = candidates.map((candidate) =>
-      candidate.id === update.id ? { ...candidate, ...update.data } : candidate
+    const options = get(multiplePollOptionsAtom);
+    const updatedOptions = options.map((option) =>
+      option.id === update.id ? { ...option, ...update.data } : option
     );
-    set(multiplePollOCandidatesAtom, updatedCandidates);
+    set(multiplePollOptionsAtom, updatedOptions);
   }
 );
 
-export const clearCandidatesAtom = atom(null, (_get, set) => {
-  set(multiplePollOCandidatesAtom, []);
+export const clearOptionsAtom = atom(null, (_get, set) => {
+  set(multiplePollOptionsAtom, []);
 });
 
-export const resetCandidatesAtom = atom(null, (_get, set) => {
-  set(multiplePollOCandidatesAtom, [
-    createEmptyPollCandidate(),
-    createEmptyPollCandidate(),
+export const resetOptionsAtom = atom(null, (_get, set) => {
+  set(multiplePollOptionsAtom, [
+    createEmptyPollOption(0),
+    createEmptyPollOption(1),
   ]);
 });
 
@@ -118,29 +122,71 @@ export const multiplePollThumbnailCountAtom = atom((get) => {
 export const multiplePollStepValidationAtom = atom((get) => {
   const category = get(multiplePollCategoryAtom);
   const title = get(multiplePollTitleAtom);
+  const options = get(multiplePollOptionsAtom);
+  const maxSelections = get(multiplePollMaxSelectionsAtom);
+
+  const validOptions = options.filter((option) => option.content.trim());
+
+  const hasValidOptions = validOptions.length >= 2;
+  const isMaxSelectionsValid =
+    maxSelections >= 1 && maxSelections <= validOptions.length;
 
   return {
-    isValid: !!category && !!title.trim(),
+    isValid:
+      !!category && !!title.trim() && hasValidOptions && isMaxSelectionsValid,
     errors: {
       category: !category ? "카테고리를 선택해주세요" : null,
       title: !title.trim() ? "제목을 입력해주세요" : null,
+      options: !hasValidOptions ? "최소 2개 이상의 옵션을 입력해주세요" : null,
+      maxSelections: !isMaxSelectionsValid
+        ? `선택 가능 개수는 1~${validOptions.length} 사이여야 합니다`
+        : null,
     },
+    validOptionsCount: validOptions.length,
   };
 });
 
 export const multiplePollValidationAtom = multiplePollStepValidationAtom;
 
-export const multiplePollDataAtom = atom((get) => ({
-  category: get(multiplePollCategoryAtom),
-  title: get(multiplePollTitleAtom),
-  description: get(multiplePollDescriptionAtom),
-  thumbnailUrl: get(multiplePollThumbnailUrlAtom),
+export const adjustMaxSelectionsAtom = atom(null, (get, set) => {
+  const options = get(multiplePollOptionsAtom);
+  const currentMaxSelections = get(multiplePollMaxSelectionsAtom);
+  const validOptions = options.filter((option) => option.content.trim());
 
-  isUnlimited: get(multiplePollIsUnlimitedAtom),
-  startDate: get(multiplePollStartDateAtom),
-  startTime: get(multiplePollStartTimeAtom),
-  endDate: get(multiplePollEndDateAtom),
-  endTime: get(multiplePollEndTimeAtom),
+  if (validOptions.length > 0 && currentMaxSelections > validOptions.length) {
+    set(multiplePollMaxSelectionsAtom, validOptions.length);
+  }
 
-  multipleOptions: get(multiplePollOCandidatesAtom),
-}));
+  if (validOptions.length === 0) {
+    set(multiplePollMaxSelectionsAtom, 1);
+  }
+});
+
+export const multiplePollDataAtom = atom((get) => {
+  const options = get(multiplePollOptionsAtom);
+  const validOptions = options.filter((option) => option.content.trim());
+
+  return {
+    type: POLL_TYPES[2],
+
+    category: get(multiplePollCategoryAtom),
+    title: get(multiplePollTitleAtom),
+    description: get(multiplePollDescriptionAtom),
+
+    thumbnailUrl: get(multiplePollThumbnailUrlAtom),
+    thumbnailFileUploadId: get(multiplePollThumbnailFileUploadIdAtom),
+
+    maxSelections: get(multiplePollMaxSelectionsAtom),
+
+    isUnlimited: get(multiplePollIsUnlimitedAtom),
+    startDate: get(multiplePollStartDateAtom),
+    startTime: get(multiplePollStartTimeAtom),
+    endDate: get(multiplePollEndDateAtom),
+    endTime: get(multiplePollEndTimeAtom),
+
+    options: validOptions,
+
+    totalOptionsCount: options.length,
+    validOptionsCount: validOptions.length,
+  };
+});
