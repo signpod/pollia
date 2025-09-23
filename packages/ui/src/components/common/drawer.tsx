@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
 import { cn } from "../../lib/utils";
-import { Button } from "./button";
+import { Button } from "./Button";
 import { Typo } from "./Typo";
 
 interface DrawerContextType {

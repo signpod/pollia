@@ -1,4 +1,4 @@
-export * from "./common/button";
+export * from "./common/Button";
 export * from "./common/Input";
 
 export * from "./common/KakaoLoginButton";
