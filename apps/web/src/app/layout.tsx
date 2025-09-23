@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { BottomCTALayout } from "@repo/ui/components";
 
 export const metadata: Metadata = {
   title: "Pollia - 실시간 투표 플랫폼",

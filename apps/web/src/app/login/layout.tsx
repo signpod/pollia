@@ -7,7 +7,7 @@ export default function LoginLayout({
   children: React.ReactNode;
 }) {
   return (
-    <BottomCTALayout>
+    <BottomCTALayout hasBottomGap={false} className="min-h-screen">
       <div className="min-h-screen flex flex-col">
         <div className="flex items-center gap-2 justify-center py-3">
           <LoginHeaderLogo />
