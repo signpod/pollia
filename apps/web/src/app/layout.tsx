@@ -20,10 +20,8 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="antialiased">
-        <BottomCTALayout className="max-w-lg min-h-screen mx-auto">
-          {children}
-        </BottomCTALayout>
+      <body className="antialiased max-w-lg min-h-screen mx-auto">
+        {children}
       </body>
     </html>
   );

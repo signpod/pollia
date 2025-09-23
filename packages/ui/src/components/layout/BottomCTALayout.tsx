@@ -24,7 +24,11 @@ interface BottomCTALayoutProps {
   hasBottomGap?: boolean;
 }
 
-export function BottomCTALayout({ children, className }: BottomCTALayoutProps) {
+export function BottomCTALayout({
+  children,
+  className,
+  hasBottomGap = true,
+}: BottomCTALayoutProps) {
   const [currentCTA, setCurrentCTA] = useState<ReactNode | null>(null);
   const [ctaClassName, setCTAClassName] = useState<string | null>(null);
   const [ctaHeight, setCTAHeight] = useState(0);
@@ -60,7 +64,13 @@ export function BottomCTALayout({ children, className }: BottomCTALayoutProps) {
   return (
     <BottomCTAContext.Provider value={{ currentCTA, setCTA, clearCTA }}>
       <div className={cn("relative", className)}>
-        <div className={cn(`pb-[${ctaHeight + 20}px]`)}>{children}</div>
+        <div
+          style={{
+            paddingBottom: hasBottomGap ? `${ctaHeight + 20}px` : "0px",
+          }}
+        >
+          {children}
+        </div>
 
         {currentCTA && (
           <div

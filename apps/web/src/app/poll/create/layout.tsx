@@ -1,5 +1,6 @@
 import { AuthGate } from "@/components/providers/AuthGate";
 import Providers from "@/components/providers/QueryProvider";
+import { BottomCTALayout } from "@repo/ui/components";
 
 export default function CreateLayout({
   children,
@@ -8,7 +9,9 @@ export default function CreateLayout({
 }) {
   return (
     <AuthGate>
-      <Providers>{children}</Providers>
+      <BottomCTALayout>
+        <Providers>{children}</Providers>
+      </BottomCTALayout>
     </AuthGate>
   );
 }
