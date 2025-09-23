@@ -6,15 +6,11 @@ import { atom } from "jotai";
 export const multiplePollAvailableCategoriesAtom = atom(POLL_CATEGORIES);
 export const multiplePollCategorySelectModalOpenAtom = atom(false);
 
-export const multiplePollCategoryAtom = atom<
-  (typeof POLL_CATEGORIES)[number] | undefined
->(undefined);
+export const multiplePollCategoryAtom = atom<(typeof POLL_CATEGORIES)[number] | undefined>(undefined);
 export const multiplePollTitleAtom = atom<string>("");
 export const multiplePollDescriptionAtom = atom<string>("");
 export const multiplePollThumbnailUrlAtom = atom<string | undefined>(undefined);
-export const multiplePollThumbnailFileUploadIdAtom = atom<string | undefined>(
-  undefined
-);
+export const multiplePollThumbnailFileUploadIdAtom = atom<string | undefined>(undefined);
 
 export const multiplePollMaxSelectionsAtom = atom<number>(1);
 
@@ -57,18 +53,14 @@ export const resetToCurrentDateTimeAtom = atom(null, (_get, set) => {
 
 const createEmptyPollOption = (order: number): PollOption => ({
   id: generateUniqueId(),
-  content: "",
-  description: undefined,
+  description: "",
   imageUrl: undefined,
   link: undefined,
   order,
   fileUploadId: undefined,
 });
 
-export const multiplePollOptionsAtom = atom<PollOption[]>([
-  createEmptyPollOption(0),
-  createEmptyPollOption(1),
-]);
+export const multiplePollOptionsAtom = atom<PollOption[]>([createEmptyPollOption(0), createEmptyPollOption(1)]);
 
 export const addOptionAtom = atom(null, (get, set) => {
   const options = get(multiplePollOptionsAtom);
@@ -90,15 +82,9 @@ export const removeOptionAtom = atom(null, (get, set, optionId: string) => {
 
 export const updateOptionAtom = atom(
   null,
-  (
-    get,
-    set,
-    update: { id: string; data: Partial<Omit<PollOption, "id" | "order">> }
-  ) => {
+  (get, set, update: { id: string; data: Partial<Omit<PollOption, "id" | "order">> }) => {
     const options = get(multiplePollOptionsAtom);
-    const updatedOptions = options.map((option) =>
-      option.id === update.id ? { ...option, ...update.data } : option
-    );
+    const updatedOptions = options.map((option) => (option.id === update.id ? { ...option, ...update.data } : option));
     set(multiplePollOptionsAtom, updatedOptions);
   }
 );
@@ -108,10 +94,7 @@ export const clearOptionsAtom = atom(null, (_get, set) => {
 });
 
 export const resetOptionsAtom = atom(null, (_get, set) => {
-  set(multiplePollOptionsAtom, [
-    createEmptyPollOption(0),
-    createEmptyPollOption(1),
-  ]);
+  set(multiplePollOptionsAtom, [createEmptyPollOption(0), createEmptyPollOption(1)]);
 });
 
 export const multiplePollThumbnailCountAtom = atom((get) => {
@@ -125,22 +108,18 @@ export const multiplePollStepValidationAtom = atom((get) => {
   const options = get(multiplePollOptionsAtom);
   const maxSelections = get(multiplePollMaxSelectionsAtom);
 
-  const validOptions = options.filter((option) => option.content.trim());
+  const validOptions = options.filter((option) => option.description.trim());
 
   const hasValidOptions = validOptions.length >= 2;
-  const isMaxSelectionsValid =
-    maxSelections >= 1 && maxSelections <= validOptions.length;
+  const isMaxSelectionsValid = maxSelections >= 1 && maxSelections <= validOptions.length;
 
   return {
-    isValid:
-      !!category && !!title.trim() && hasValidOptions && isMaxSelectionsValid,
+    isValid: !!category && !!title.trim() && hasValidOptions && isMaxSelectionsValid,
     errors: {
       category: !category ? "카테고리를 선택해주세요" : null,
       title: !title.trim() ? "제목을 입력해주세요" : null,
       options: !hasValidOptions ? "최소 2개 이상의 옵션을 입력해주세요" : null,
-      maxSelections: !isMaxSelectionsValid
-        ? `선택 가능 개수는 1~${validOptions.length} 사이여야 합니다`
-        : null,
+      maxSelections: !isMaxSelectionsValid ? `선택 가능 개수는 1~${validOptions.length} 사이여야 합니다` : null,
     },
     validOptionsCount: validOptions.length,
   };
@@ -151,7 +130,7 @@ export const multiplePollValidationAtom = multiplePollStepValidationAtom;
 export const adjustMaxSelectionsAtom = atom(null, (get, set) => {
   const options = get(multiplePollOptionsAtom);
   const currentMaxSelections = get(multiplePollMaxSelectionsAtom);
-  const validOptions = options.filter((option) => option.content.trim());
+  const validOptions = options.filter((option) => option.description.trim());
 
   if (validOptions.length > 0 && currentMaxSelections > validOptions.length) {
     set(multiplePollMaxSelectionsAtom, validOptions.length);
@@ -164,7 +143,7 @@ export const adjustMaxSelectionsAtom = atom(null, (get, set) => {
 
 export const multiplePollDataAtom = atom((get) => {
   const options = get(multiplePollOptionsAtom);
-  const validOptions = options.filter((option) => option.content.trim());
+  const validOptions = options.filter((option) => option.description.trim());
 
   return {
     type: POLL_TYPES[2],

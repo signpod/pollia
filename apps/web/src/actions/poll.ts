@@ -3,15 +3,9 @@
 import { ResultMode, FileStatus, RelatedEntityType } from "@prisma/client";
 import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
 import prisma from "@/database/utils/prisma/client";
-import {
-  CreatePollRequest,
-  CreatePollResponse,
-  GetUserPollsResponse,
-} from "@/types/dto";
+import { CreatePollRequest, CreatePollResponse, GetUserPollsResponse } from "@/types/dto";
 
-export async function createPoll(
-  request: CreatePollRequest
-): Promise<CreatePollResponse> {
+export async function createPoll(request: CreatePollRequest): Promise<CreatePollResponse> {
   try {
     const supabase = await createServerSupabaseClient();
     const {
@@ -55,7 +49,6 @@ export async function createPoll(
       await tx.pollOption.createMany({
         data: request.options.map((option) => ({
           pollId: createdPoll.id,
-          content: option.content,
           description: option.description,
           imageUrl: option.imageUrl,
           link: option.link,
@@ -81,9 +74,7 @@ export async function createPoll(
       }
 
       // 파일 확정 처리 - 옵션 이미지들
-      const optionFileUploadIds = request.options
-        .map((option) => option.imageFileUploadId)
-        .filter(Boolean) as string[];
+      const optionFileUploadIds = request.options.map((option) => option.imageFileUploadId).filter(Boolean) as string[];
 
       if (optionFileUploadIds.length > 0) {
         await tx.fileUpload.updateMany({
@@ -131,6 +122,9 @@ function validatePollRequest(request: CreatePollRequest): string | null {
     return "제목은 100자를 초과할 수 없습니다.";
   }
 
+  if (!request.description) {
+    return "설명을 입력해주세요.";
+  }
   if (request.description && request.description.length > 500) {
     return "설명은 500자를 초과할 수 없습니다.";
   }
@@ -144,8 +138,7 @@ function validatePollRequest(request: CreatePollRequest): string | null {
   }
 
   // 이진 투표가 아닌 경우에만 옵션 검증
-  const isBinaryPoll =
-    request.type === "YES_NO" || request.type === "LIKE_DISLIKE";
+  const isBinaryPoll = request.type === "YES_NO" || request.type === "LIKE_DISLIKE";
 
   if (!isBinaryPoll) {
     if (!request.options || request.options.length === 0) {
@@ -157,18 +150,15 @@ function validatePollRequest(request: CreatePollRequest): string | null {
     }
 
     for (const option of request.options) {
-      if (!option.content || option.content.trim().length === 0) {
+      if (!option.description || option.description.trim().length === 0) {
         return "모든 옵션에 내용을 입력해주세요.";
       }
-      if (option.content.length > 100) {
+      if (option.description.length > 100) {
         return "옵션 내용은 100자를 초과할 수 없습니다.";
       }
     }
 
-    if (
-      request.maxSelections &&
-      request.maxSelections > request.options.length
-    ) {
+    if (request.maxSelections && request.maxSelections > request.options.length) {
       return "최대 선택 개수는 옵션 개수를 초과할 수 없습니다.";
     }
   }
@@ -190,7 +180,6 @@ export async function getPoll(pollId: string) {
         options: {
           select: {
             id: true,
-            content: true,
             description: true,
             imageUrl: true,
             _count: {
@@ -230,9 +219,7 @@ export async function getPoll(pollId: string) {
   }
 }
 
-export async function getUserPolls(
-  userId?: string
-): Promise<GetUserPollsResponse> {
+export async function getUserPolls(userId?: string): Promise<GetUserPollsResponse> {
   try {
     if (!userId) {
       const supabase = await createServerSupabaseClient();

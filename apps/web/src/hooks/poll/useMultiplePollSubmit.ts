@@ -4,10 +4,7 @@ import { useAtomValue } from "jotai";
 import { useRouter } from "next/navigation";
 import { PollType, PollCategory } from "@prisma/client";
 import { useCreatePoll } from "./useCreatePoll";
-import {
-  multiplePollDataAtom,
-  multiplePollValidationAtom,
-} from "@/atoms/create/multiplePollAtoms";
+import { multiplePollDataAtom, multiplePollValidationAtom } from "@/atoms/create/multiplePollAtoms";
 import { CreatePollRequest } from "@/types/dto";
 
 export interface UseMultiplePollSubmitOptions {
@@ -15,9 +12,7 @@ export interface UseMultiplePollSubmitOptions {
   onError?: (error: Error) => void;
 }
 
-export function useMultiplePollSubmit(
-  options: UseMultiplePollSubmitOptions = {}
-) {
+export function useMultiplePollSubmit(options: UseMultiplePollSubmitOptions = {}) {
   const router = useRouter();
   const pollData = useAtomValue(multiplePollDataAtom);
   const validation = useAtomValue(multiplePollValidationAtom);
@@ -49,9 +44,7 @@ export function useMultiplePollSubmit(
     }
 
     try {
-      const startDateTime = new Date(
-        `${pollData.startDate}T${pollData.startTime}`
-      );
+      const startDateTime = new Date(`${pollData.startDate}T${pollData.startTime}`);
 
       const endDateTime =
         !pollData.isUnlimited && pollData.endDate && pollData.endTime
@@ -59,8 +52,7 @@ export function useMultiplePollSubmit(
           : undefined;
 
       const optionsForApi = pollData.options.map((option, index) => ({
-        content: option.content,
-        description: option.description || undefined,
+        description: option.description,
         imageUrl: option.imageUrl || undefined,
         imageFileUploadId: option.fileUploadId || undefined,
         link: option.link || undefined,

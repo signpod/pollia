@@ -6,8 +6,7 @@ export { PollType, PollCategory };
 
 export type PollOption = {
   id: string;
-  content: string;
-  description?: string;
+  description: string;
   imageUrl?: string;
   link?: string;
   order: number;

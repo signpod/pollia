@@ -78,9 +78,7 @@ export function useMultipleOptions(): UseMultipleOptionsReturn {
     return options.some((option) => option.id === optionId);
   };
 
-  const validOptionCount = options.filter(
-    (option) => option.content.trim().length > 0
-  ).length;
+  const validOptionCount = options.filter((option) => option.description.trim().length > 0).length;
 
   const optionCount = options.length;
   const canAddMore = optionCount < MAX_OPTIONS;
