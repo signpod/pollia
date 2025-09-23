@@ -130,8 +130,6 @@ export function useBinaryPollSubmit(options: UseBinaryPollSubmitOptions = {}) {
     }
   };
 
-  console.log(validation);
-
   return {
     handleSubmit,
     isLoading: createPollMutation.isPending,

@@ -21,16 +21,7 @@ import MultipleInfoStep from "./MultipleInfoStep";
 
 export default function CreatePollPage() {
   return (
-    <StepProvider
-      steps={CREATE_POLL_STEPS}
-      initialStep={0}
-      onStepChange={(currentStep: number, previousStep: number) => {
-        console.log(`Step 변경: ${previousStep} → ${currentStep}`);
-      }}
-      onComplete={() => {
-        console.log("모든 Step 완료");
-      }}
-    >
+    <StepProvider steps={CREATE_POLL_STEPS} initialStep={0}>
       <CreatePollPageContent />
     </StepProvider>
   );

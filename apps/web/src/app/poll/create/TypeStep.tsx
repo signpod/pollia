@@ -18,7 +18,6 @@ export default function TypeStep() {
   const { goNext } = useStep();
 
   const handleTypeChange = (type: PollType) => {
-    console.log("카테고리 선택:", type);
     setSelectedType(type);
   };
 
