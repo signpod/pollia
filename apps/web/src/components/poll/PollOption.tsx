@@ -9,6 +9,7 @@ import {
   DrawerHeader,
   DrawerProvider,
   useDrawer,
+  IconButton,
 } from "@repo/ui/components";
 import { EllipsisVertical } from "lucide-react";
 import { useImageUpload } from "@/hooks/common/useImageUpload";
@@ -18,14 +19,11 @@ function OptionMenuTrigger() {
   const { open } = useDrawer();
 
   return (
-    <Button
-      variant="ghost"
-      className="size-6 hover:bg-zinc-100 p-0"
-      aria-label="옵션 메뉴"
+    <IconButton
+      icon={EllipsisVertical}
+      iconClassName="text-zinc-400"
       onClick={open}
-    >
-      <EllipsisVertical className="size-6 text-zinc-400" />
-    </Button>
+    />
   );
 }
 

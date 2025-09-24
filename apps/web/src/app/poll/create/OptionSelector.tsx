@@ -4,6 +4,7 @@ import { multiplePollMaxSelectionsAtom } from "@/atoms/create/multiplePollAtoms"
 import { Button, CounterInput, Typo } from "@repo/ui/components";
 import { PlusIcon } from "lucide-react";
 import { useAtom } from "jotai";
+import { useEffect } from "react";
 
 export function OptionSelector() {
   const {
@@ -20,6 +21,18 @@ export function OptionSelector() {
   const [maxSelections, setMaxSelections] = useAtom(
     multiplePollMaxSelectionsAtom
   );
+
+  useEffect(() => {
+    if (validOptionCount > 0 && maxSelections > validOptionCount) {
+      setMaxSelections(validOptionCount);
+    }
+
+    if (validOptionCount === 0 && maxSelections > 1) {
+      setMaxSelections(1);
+    }
+  }, [validOptionCount, maxSelections, setMaxSelections]);
+
+  const hasEmptyOptions = options.some((option) => !option.description.trim());
 
   return (
     <div className="flex flex-col gap-6">
@@ -77,10 +90,14 @@ export function OptionSelector() {
         variant="secondary"
         leftIcon={<PlusIcon />}
         onClick={addOption}
-        disabled={!canAddMore}
+        disabled={!canAddMore || hasEmptyOptions}
       >
         <Typo.ButtonText size="large">
-          {canAddMore ? "항목 추가하기" : `최대 ${maxOptions}개까지 추가 가능`}
+          {hasEmptyOptions
+            ? "모든 항목을 입력해주세요"
+            : canAddMore
+              ? "항목 추가하기"
+              : `최대 ${maxOptions}개까지 추가 가능`}
         </Typo.ButtonText>
       </Button>
 

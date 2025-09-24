@@ -11,11 +11,13 @@ type IconComponent =
 interface IconButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   icon: IconComponent;
+  iconClassName?: string;
   className?: string;
 }
 
 export function IconButton({
   icon: Icon,
+  iconClassName,
   className,
   disabled,
   ...props
@@ -37,7 +39,8 @@ export function IconButton({
         className={cn(
           "transition-colors size-6 stroke-2 duration-300",
           disabled ? "text-zinc-100" : "text-zinc-950",
-          disabled || "active:text-zinc-950"
+          disabled || "active:text-zinc-950",
+          iconClassName
         )}
       />
     </button>
