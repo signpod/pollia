@@ -27,7 +27,7 @@ function PollCreateDoneContent() {
     );
   }
   return (
-    <div className="mt-60">
+    <div className="pt-60">
       <div className="flex-1 flex flex-col items-center justify-center gap-6 mb-[160px]">
         <PolliaIcon className="text-primary size-30" />
 
@@ -81,14 +81,16 @@ function PollCreateDoneContent() {
 
 export default function PollCreateDonePage() {
   return (
-    <Suspense
-      fallback={
-        <div className="mt-60 text-center">
-          <Typo.MainTitle size="small">로딩 중...</Typo.MainTitle>
-        </div>
-      }
-    >
-      <PollCreateDoneContent />
-    </Suspense>
+    <BottomCTALayout hasBottomGap={false}>
+      <Suspense
+        fallback={
+          <div className="mt-60 text-center">
+            <Typo.MainTitle size="small">로딩 중...</Typo.MainTitle>
+          </div>
+        }
+      >
+        <PollCreateDoneContent />
+      </Suspense>
+    </BottomCTALayout>
   );
 }

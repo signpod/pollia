@@ -41,8 +41,6 @@ export function useMultiplePollSubmit(
     data: null as MultiplePollFormData | null,
   });
 
-  console.log("validation", validation);
-
   useEffect(() => {
     const formData: MultiplePollFormData = {
       category: pollData.category,
