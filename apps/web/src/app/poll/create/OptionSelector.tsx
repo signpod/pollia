@@ -1,13 +1,28 @@
 import PollOption from "@/components/poll/PollOption";
 import { useMultipleOptions } from "@/hooks/poll/useMultipleOptions";
-import { Button, Typo } from "@repo/ui/components";
+import { multiplePollMaxSelectionsAtom } from "@/atoms/create/multiplePollAtoms";
+import { Button, CounterInput, Typo } from "@repo/ui/components";
 import { PlusIcon } from "lucide-react";
+import { useAtom } from "jotai";
 
-export default function OptionSelector() {
-  const { options, updateOption, addOption, removeOption, canAddMore, canRemove, maxOptions } = useMultipleOptions();
+export function OptionSelector() {
+  const {
+    options,
+    updateOption,
+    addOption,
+    removeOption,
+    canAddMore,
+    canRemove,
+    maxOptions,
+    validOptionCount,
+  } = useMultipleOptions();
+
+  const [maxSelections, setMaxSelections] = useAtom(
+    multiplePollMaxSelectionsAtom
+  );
 
   return (
-    <>
+    <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1">
           <Typo.SubTitle size="large">투표 항목</Typo.SubTitle>
@@ -58,11 +73,26 @@ export default function OptionSelector() {
         );
       })}
 
-      <Button variant="secondary" leftIcon={<PlusIcon />} onClick={addOption} disabled={!canAddMore}>
+      <Button
+        variant="secondary"
+        leftIcon={<PlusIcon />}
+        onClick={addOption}
+        disabled={!canAddMore}
+      >
         <Typo.ButtonText size="large">
           {canAddMore ? "항목 추가하기" : `최대 ${maxOptions}개까지 추가 가능`}
         </Typo.ButtonText>
       </Button>
-    </>
+
+      <div className="flex justify-between">
+        <Typo.SubTitle size="large">선택 가능 답변 수</Typo.SubTitle>
+        <CounterInput
+          value={maxSelections}
+          onChange={setMaxSelections}
+          min={1}
+          max={Math.max(1, validOptionCount)}
+        />
+      </div>
+    </div>
   );
 }

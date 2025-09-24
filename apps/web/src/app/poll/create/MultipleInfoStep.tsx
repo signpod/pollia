@@ -27,7 +27,7 @@ import { useImageUpload } from "@/hooks/common/useImageUpload";
 import { useMultiplePollSubmit } from "@/hooks/poll/useMultiplePollSubmit";
 import { ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
-import OptionSelector from "@/app/poll/create/OptionSelector";
+import { OptionSelector } from "@/app/poll/create/OptionSelector";
 import { CATEGORY_LABELS } from "@/constants/poll";
 
 export default function MultipleInfoStep() {
