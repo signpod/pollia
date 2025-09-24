@@ -19,7 +19,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="antialiased max-w-lg min-h-screen mx-auto">
+      <body className="antialiased max-w-lg mx-auto min-h-screen">
         {children}
       </body>
     </html>

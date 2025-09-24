@@ -111,7 +111,7 @@ export function DrawerContent({ className, children }: DrawerContentProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/50"
+          className={cn("absolute inset-0 bg-black/50")}
           onClick={close}
         />
 
@@ -128,7 +128,7 @@ export function DrawerContent({ className, children }: DrawerContentProps) {
             "relative z-10 w-full",
             "bg-background rounded-t-lg shadow-lg",
             "max-h-[85vh] overflow-hidden flex flex-col",
-
+            "max-w-lg mx-auto",
             className
           )}
           onClick={(e) => e.stopPropagation()}
@@ -155,7 +155,7 @@ export function DrawerHeader({
   const { close } = useDrawer();
   return (
     <div
-      className={cn("flex items-center justify-between p-5 mb-6", className)}
+      className={cn("flex items-center  justify-between p-5 mb-6", className)}
     >
       <Typo.MainTitle size="small" className="flex-1">
         {children}
