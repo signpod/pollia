@@ -8,7 +8,7 @@ import {
   CATEGORY_LABELS,
 } from "@/constants/poll";
 import { PollCategory } from "@/types/domain/poll";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
