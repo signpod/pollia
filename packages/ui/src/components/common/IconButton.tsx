@@ -36,8 +36,8 @@ export function IconButton({
       <Icon
         className={cn(
           "transition-colors size-6 stroke-2 duration-300",
-          disabled ? "text-zinc-100" : "text-zinc-950"
-          //   disabled || "active:text-zinc-950"
+          disabled ? "text-zinc-100" : "text-zinc-950",
+          disabled || "active:text-zinc-950"
         )}
       />
     </button>
