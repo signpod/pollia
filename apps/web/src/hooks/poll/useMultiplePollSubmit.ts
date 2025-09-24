@@ -1,21 +1,27 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useAtomValue } from "jotai";
 import { useRouter } from "next/navigation";
 import { PollType, PollCategory } from "@prisma/client";
 import { useCreatePoll } from "./useCreatePoll";
-import { multiplePollDataAtom, multiplePollValidationAtom } from "@/atoms/create/multiplePollAtoms";
+import { multiplePollDataAtom } from "@/atoms/create/multiplePollAtoms";
 import { CreatePollRequest } from "@/types/dto";
+import {
+  multiplePollSchema,
+  type MultiplePollFormData,
+} from "@/schemas/multiplePollSchema";
 
 export interface UseMultiplePollSubmitOptions {
   onSuccess?: () => void;
   onError?: (error: Error) => void;
 }
 
-export function useMultiplePollSubmit(options: UseMultiplePollSubmitOptions = {}) {
+export function useMultiplePollSubmit(
+  options: UseMultiplePollSubmitOptions = {}
+) {
   const router = useRouter();
   const pollData = useAtomValue(multiplePollDataAtom);
-  const validation = useAtomValue(multiplePollValidationAtom);
 
   const createPollMutation = useCreatePoll({
     onSuccess: (data) => {
@@ -29,29 +35,81 @@ export function useMultiplePollSubmit(options: UseMultiplePollSubmitOptions = {}
     },
   });
 
+  const [validation, setValidation] = useState({
+    isValid: false,
+    errors: [] as string[],
+    data: null as MultiplePollFormData | null,
+  });
+
+  console.log("validation", validation);
+
+  useEffect(() => {
+    const formData: MultiplePollFormData = {
+      category: pollData.category,
+      title: pollData.title || "",
+      description: pollData.description || "",
+      thumbnailUrl: pollData.thumbnailUrl || "",
+      thumbnailFileUploadId: pollData.thumbnailFileUploadId || "",
+      maxSelections: pollData.maxSelections,
+      isUnlimited: pollData.isUnlimited,
+      startDate: pollData.startDate || "",
+      startTime: pollData.startTime || "",
+      endDate: pollData.endDate || "",
+      endTime: pollData.endTime || "",
+      options: pollData.options,
+    };
+
+    const result = multiplePollSchema.safeParse(formData);
+
+    if (result.success) {
+      setValidation({
+        isValid: true,
+        errors: [],
+        data: result.data,
+      });
+    } else {
+      const errors = result.error.issues.map((issue) => issue.message);
+      setValidation({
+        isValid: false,
+        errors,
+        data: null,
+      });
+    }
+  }, [
+    pollData.category,
+    pollData.title,
+    pollData.description,
+    pollData.thumbnailUrl,
+    pollData.thumbnailFileUploadId,
+    pollData.maxSelections,
+    pollData.isUnlimited,
+    pollData.startDate,
+    pollData.startTime,
+    pollData.endDate,
+    pollData.endTime,
+    pollData.options,
+  ]);
+
   const handleSubmit = async (imageFileUploadId?: string) => {
     if (!validation.isValid) {
-      const errorMessages = Object.values(validation.errors)
-        .filter((error) => error !== null)
-        .join("\n");
-      console.error("❌ Multiple Poll 유효성 검사 실패:", errorMessages);
-      return;
-    }
-
-    if (!pollData.category || !pollData.title.trim()) {
-      console.error("❌ 필수 필드가 누락되었습니다.");
+      const errorMessage = validation.errors.join("\n");
+      console.error("❌ Multiple Poll 유효성 검사 실패:", errorMessage);
       return;
     }
 
     try {
-      const startDateTime = new Date(`${pollData.startDate}T${pollData.startTime}`);
-
+      const validatedData = validation.data!;
+      const startDateTime = new Date(
+        `${validatedData.startDate}T${validatedData.startTime}`
+      );
       const endDateTime =
-        !pollData.isUnlimited && pollData.endDate && pollData.endTime
-          ? new Date(`${pollData.endDate}T${pollData.endTime}`)
+        !validatedData.isUnlimited &&
+        validatedData.endDate &&
+        validatedData.endTime
+          ? new Date(`${validatedData.endDate}T${validatedData.endTime}`)
           : undefined;
 
-      const optionsForApi = pollData.options.map((option, index) => ({
+      const optionsForApi = validatedData.options.map((option, index) => ({
         description: option.description,
         imageUrl: option.imageUrl || undefined,
         imageFileUploadId: option.fileUploadId || undefined,
@@ -60,23 +118,24 @@ export function useMultiplePollSubmit(options: UseMultiplePollSubmitOptions = {}
       }));
 
       const request: CreatePollRequest = {
-        title: pollData.title,
-        description: pollData.description || undefined,
-        imageUrl: pollData.thumbnailUrl || undefined,
-        imageFileUploadId: imageFileUploadId || pollData.thumbnailFileUploadId,
+        title: validatedData.title,
+        description: validatedData.description || undefined,
+        imageUrl: validatedData.thumbnailUrl || undefined,
+        imageFileUploadId:
+          imageFileUploadId || validatedData.thumbnailFileUploadId,
         type: PollType.MULTIPLE_CHOICE,
-        category: pollData.category as PollCategory,
+        category: validatedData.category as PollCategory,
         startDate: startDateTime,
         endDate: endDateTime,
-        isIndefinite: pollData.isUnlimited,
-        maxSelections: pollData.maxSelections,
+        isIndefinite: validatedData.isUnlimited,
+        maxSelections: validatedData.maxSelections,
         options: optionsForApi,
       };
 
       console.log("🚀 Multiple Poll 생성 요청:", request);
       await createPollMutation.mutateAsync(request);
     } catch (error) {
-      console.error("❌ Multiple Poll 생성 실패:", error);
+      console.error("❌ Multiple Poll validation 또는 요청 실패:", error);
     }
   };
 
@@ -84,9 +143,7 @@ export function useMultiplePollSubmit(options: UseMultiplePollSubmitOptions = {}
     handleSubmit,
     isLoading: createPollMutation.isPending,
     isValid: validation.isValid,
-    validationErrors: validation.errors,
-    validOptionsCount: validation.validOptionsCount,
-    pollData,
+    errors: validation.errors,
     error: createPollMutation.error,
   };
 }
