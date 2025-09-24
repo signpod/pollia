@@ -20,8 +20,7 @@ export interface CreatePollRequest {
 }
 
 export interface CreatePollOptionRequest {
-  content: string;
-  description?: string;
+  description: string;
   imageUrl?: string;
   imageFileUploadId?: string; // 옵션 이미지의 fileUploadId
   link?: string;

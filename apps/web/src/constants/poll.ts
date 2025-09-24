@@ -31,7 +31,7 @@ const POLL_TYPES: PollType[] = [
   PollType.YES_NO,
   PollType.LIKE_DISLIKE,
   PollType.MULTIPLE_CHOICE,
-];
+] as const;
 
 const CATEGORY_LABELS: Record<PollCategory, string> = {
   [PollCategory.IT_DIGITAL]: "IT·디지털",

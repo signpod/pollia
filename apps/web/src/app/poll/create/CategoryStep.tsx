@@ -1,4 +1,6 @@
 import { binaryPollCategoryAtom } from "@/atoms/create/binaryPollAtoms";
+import { multiplePollCategoryAtom } from "@/atoms/create/multiplePollAtoms";
+import { isMultiplePollTypeAtom } from "@/atoms/create/pollTypeAtoms";
 import { BottomCTALayout, Button, Typo, useStep } from "@repo/ui/components";
 import {
   POLL_CATEGORIES,
@@ -6,7 +8,7 @@ import {
   CATEGORY_LABELS,
 } from "@/constants/poll";
 import { PollCategory } from "@/types/domain/poll";
-import { useAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
@@ -14,8 +16,11 @@ export default function CategoryStep() {
   const { goBack } = useStep();
   const [tempSelectedCategory, setTempSelectedCategory] =
     useState<PollCategory | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_, setSelectedCategory] = useAtom(binaryPollCategoryAtom);
+
+  const isMultiplePollType = useAtomValue(isMultiplePollTypeAtom);
+
+  const setBinaryCategory = useSetAtom(binaryPollCategoryAtom);
+  const setMultipleCategory = useSetAtom(multiplePollCategoryAtom);
 
   const handleToggleCategorySelect = (category: PollCategory) => {
     if (tempSelectedCategory === category) {
@@ -27,7 +32,13 @@ export default function CategoryStep() {
 
   const handleSubmit = () => {
     if (!tempSelectedCategory) return;
-    setSelectedCategory(tempSelectedCategory);
+
+    if (isMultiplePollType) {
+      setMultipleCategory(tempSelectedCategory);
+    } else {
+      setBinaryCategory(tempSelectedCategory);
+    }
+
     goBack();
   };
 

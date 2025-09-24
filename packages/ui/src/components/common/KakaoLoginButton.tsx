@@ -1,4 +1,4 @@
-import { Button, ButtonProps } from "./button";
+import { Button, ButtonProps } from "./Button";
 import { Typo } from "./Typo";
 
 export function KakaoLoginButton(props: ButtonProps) {

@@ -1,4 +1,3 @@
-// components/AuthGate.tsx
 import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
 import { redirect } from "next/navigation";
 

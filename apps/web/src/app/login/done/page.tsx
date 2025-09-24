@@ -32,7 +32,10 @@ export default function LoginDonePage() {
             ease: "easeOut",
           }}
         >
-          <Typo.MainTitle size="small" className="text-center whitespace-pre-line font-bold">
+          <Typo.MainTitle
+            size="small"
+            className="text-center whitespace-pre-line font-bold"
+          >
             <span className="text-primary">{TEMP_POLL_ID}</span>
             {`님, \n 만나서 반가워요!`}
           </Typo.MainTitle>
@@ -50,8 +53,11 @@ export default function LoginDonePage() {
             ease: "easeOut",
           }}
         >
-          <Link href="/create" className="w-full">
-            <Button className={cn("w-full box-border color-zinc-800", "bg-zinc-800")} aria-label="첫 폴 만들러 가기">
+          <Link href="/poll/create" className="w-full">
+            <Button
+              className={cn("w-full box-border color-zinc-800", "bg-zinc-800")}
+              aria-label="첫 폴 만들러 가기"
+            >
               <Typo.ButtonText size="large">첫 폴 만들러 가기</Typo.ButtonText>
             </Button>
           </Link>

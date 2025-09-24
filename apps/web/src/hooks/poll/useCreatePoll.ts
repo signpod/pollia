@@ -4,7 +4,12 @@ import { useMutation } from "@tanstack/react-query";
 import { CreatePollRequest, CreatePollResponse } from "@/types/dto";
 import { createPoll } from "@/actions/poll";
 
-export function useCreatePoll() {
+interface UseCreatePollOptions {
+  onSuccess?: (data: CreatePollResponse) => void;
+  onError?: (error: Error) => void;
+}
+
+export function useCreatePoll(options: UseCreatePollOptions = {}) {
   return useMutation({
     mutationFn: async (
       payload: CreatePollRequest
@@ -18,10 +23,11 @@ export function useCreatePoll() {
       return result;
     },
     onSuccess: (data) => {
-      console.log("✅ 폴 생성 성공:", data.data);
+      options.onSuccess?.(data);
     },
     onError: (error) => {
       console.error("❌ 폴 생성 실패:", error);
+      options.onError?.(error as Error);
     },
   });
 }

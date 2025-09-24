@@ -5,31 +5,23 @@ import { useAtomValue } from "jotai";
 import { useRouter } from "next/navigation";
 import { PollType, PollCategory } from "@prisma/client";
 import { useCreatePoll } from "./useCreatePoll";
-import { binaryPollDataAtom } from "@/atoms/create/binaryPollAtoms";
+import { multiplePollDataAtom } from "@/atoms/create/multiplePollAtoms";
 import { CreatePollRequest } from "@/types/dto";
 import {
-  binaryPollSchema,
-  type BinaryPollFormData,
-} from "@/schemas/binaryPollSchema";
+  multiplePollSchema,
+  type MultiplePollFormData,
+} from "@/schemas/multiplePollSchema";
 
-export interface UseBinaryPollSubmitOptions {
+export interface UseMultiplePollSubmitOptions {
   onSuccess?: () => void;
   onError?: (error: Error) => void;
 }
 
-export function useBinaryPollSubmit(options: UseBinaryPollSubmitOptions = {}) {
+export function useMultiplePollSubmit(
+  options: UseMultiplePollSubmitOptions = {}
+) {
   const router = useRouter();
-  const {
-    category,
-    title,
-    description,
-    thumbnailUrl,
-    isUnlimited,
-    startDate,
-    startTime,
-    endDate,
-    endTime,
-  } = useAtomValue(binaryPollDataAtom);
+  const pollData = useAtomValue(multiplePollDataAtom);
 
   const createPollMutation = useCreatePoll({
     onSuccess: (data) => {
@@ -46,23 +38,26 @@ export function useBinaryPollSubmit(options: UseBinaryPollSubmitOptions = {}) {
   const [validation, setValidation] = useState({
     isValid: false,
     errors: [] as string[],
-    data: null as BinaryPollFormData | null,
+    data: null as MultiplePollFormData | null,
   });
 
   useEffect(() => {
-    const formData: BinaryPollFormData = {
-      category: category!,
-      title: title || "",
-      description: description || "",
-      thumbnailUrl: thumbnailUrl || "",
-      isUnlimited,
-      startDate: startDate || "",
-      startTime: startTime || "",
-      endDate: endDate || "",
-      endTime: endTime || "",
+    const formData: MultiplePollFormData = {
+      category: pollData.category,
+      title: pollData.title || "",
+      description: pollData.description || "",
+      thumbnailUrl: pollData.thumbnailUrl || "",
+      thumbnailFileUploadId: pollData.thumbnailFileUploadId || "",
+      maxSelections: pollData.maxSelections,
+      isUnlimited: pollData.isUnlimited,
+      startDate: pollData.startDate || "",
+      startTime: pollData.startTime || "",
+      endDate: pollData.endDate || "",
+      endTime: pollData.endTime || "",
+      options: pollData.options,
     };
 
-    const result = binaryPollSchema.safeParse(formData);
+    const result = multiplePollSchema.safeParse(formData);
 
     if (result.success) {
       setValidation({
@@ -79,21 +74,24 @@ export function useBinaryPollSubmit(options: UseBinaryPollSubmitOptions = {}) {
       });
     }
   }, [
-    category,
-    title,
-    description,
-    thumbnailUrl,
-    isUnlimited,
-    startDate,
-    startTime,
-    endDate,
-    endTime,
+    pollData.category,
+    pollData.title,
+    pollData.description,
+    pollData.thumbnailUrl,
+    pollData.thumbnailFileUploadId,
+    pollData.maxSelections,
+    pollData.isUnlimited,
+    pollData.startDate,
+    pollData.startTime,
+    pollData.endDate,
+    pollData.endTime,
+    pollData.options,
   ]);
 
   const handleSubmit = async (imageFileUploadId?: string) => {
     if (!validation.isValid) {
       const errorMessage = validation.errors.join("\n");
-      console.error("❌ Binary Poll 유효성 검사 실패:", errorMessage);
+      console.error("❌ Multiple Poll 유효성 검사 실패:", errorMessage);
       return;
     }
 
@@ -109,24 +107,33 @@ export function useBinaryPollSubmit(options: UseBinaryPollSubmitOptions = {}) {
           ? new Date(`${validatedData.endDate}T${validatedData.endTime}`)
           : undefined;
 
+      const optionsForApi = validatedData.options.map((option, index) => ({
+        description: option.description,
+        imageUrl: option.imageUrl || undefined,
+        imageFileUploadId: option.fileUploadId || undefined,
+        link: option.link || undefined,
+        order: index, // API에서는 0부터 시작하는 순서
+      }));
+
       const request: CreatePollRequest = {
         title: validatedData.title,
         description: validatedData.description || undefined,
         imageUrl: validatedData.thumbnailUrl || undefined,
-        imageFileUploadId,
-        type: PollType.YES_NO, // Binary poll은 YES_NO 타입
+        imageFileUploadId:
+          imageFileUploadId || validatedData.thumbnailFileUploadId,
+        type: PollType.MULTIPLE_CHOICE,
         category: validatedData.category as PollCategory,
         startDate: startDateTime,
         endDate: endDateTime,
         isIndefinite: validatedData.isUnlimited,
-        maxSelections: undefined, // null이면 이진 선택 (O/X)
-        options: [], // 이진 투표는 옵션 없음 - 클라이언트에서 처리
+        maxSelections: validatedData.maxSelections,
+        options: optionsForApi,
       };
 
+      console.log("🚀 Multiple Poll 생성 요청:", request);
       await createPollMutation.mutateAsync(request);
     } catch (error) {
-      // Error는 이미 useCreatePoll의 onError에서 처리됨
-      console.error("❌ Binary Poll validation 또는 요청 실패:", error);
+      console.error("❌ Multiple Poll validation 또는 요청 실패:", error);
     }
   };
 
