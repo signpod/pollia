@@ -6,8 +6,8 @@ import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
 import { cn } from "../../lib/utils";
-import { Button } from "./Button";
 import { Typo } from "./Typo";
+import { IconButton } from "./IconButton";
 
 interface DrawerContextType {
   isOpen: boolean;
@@ -129,6 +129,8 @@ export function DrawerContent({ className, children }: DrawerContentProps) {
             "bg-background rounded-t-lg shadow-lg",
             "max-h-[85vh] overflow-hidden flex flex-col",
             "max-w-lg mx-auto",
+            //TODO: Safe Area 설정
+            "pb-10",
             className
           )}
           onClick={(e) => e.stopPropagation()}
@@ -155,20 +157,13 @@ export function DrawerHeader({
   const { close } = useDrawer();
   return (
     <div
-      className={cn("flex items-center  justify-between p-5 mb-6", className)}
+      className={cn("flex items-center justify-between p-5 pb-6", className)}
     >
       <Typo.MainTitle size="small" className="flex-1">
         {children}
       </Typo.MainTitle>
       {showCloseButton && (
-        <Button
-          variant="ghost"
-          className="size-8 p-0"
-          onClick={close}
-          rightIcon={<X className="size-7" strokeWidth={2} />}
-        >
-          <span className="sr-only">닫기</span>
-        </Button>
+        <IconButton icon={X} onClick={close} aria-label="닫기" />
       )}
     </div>
   );

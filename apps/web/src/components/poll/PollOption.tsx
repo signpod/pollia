@@ -14,6 +14,7 @@ import {
 import { EllipsisVertical } from "lucide-react";
 import { useImageUpload } from "@/hooks/common/useImageUpload";
 import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 
 function OptionMenuTrigger() {
   const { open } = useDrawer();
@@ -39,26 +40,33 @@ function OptionMenuContent({
   onRemove,
 }: OptionMenuContentProps) {
   const [tempLink, setTempLink] = useState<string>(link);
+  const { close } = useDrawer();
 
   const handleLinkSubmit = () => {
     onLinkChange?.(tempLink);
+    close();
   };
+
+  const isDisabled = link === tempLink || tempLink.trim() === "";
 
   return (
     <DrawerContent>
       <DrawerHeader>항목 세부 설정</DrawerHeader>
 
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className={cn("flex-1 px-4", "flex flex-col gap-2")}>
         <Input
-          value={link}
+          value={tempLink}
           onChange={(e) => setTempLink(e.target.value)}
           placeholder={"https://www.pollia.me"}
           containerClassName="flex-1"
           maxLength={50}
         />
-
-        <Button variant="primary" onClick={handleLinkSubmit}>
-          항목 삭제하기
+        <Button
+          variant="primary"
+          onClick={handleLinkSubmit}
+          disabled={isDisabled}
+        >
+          항목 추가하기
         </Button>
 
         <Button variant="secondary" onClick={onRemove}>
@@ -200,7 +208,7 @@ export default function PollOption({
       </div>
 
       {link !== undefined && link && (
-        <div className="ml-12 px-4 py-2 bg-zinc-50 rounded-sm">
+        <div className="px-4 py-2 bg-zinc-50 rounded-sm">
           <Typo.Body size="small">{link}</Typo.Body>
         </div>
       )}
