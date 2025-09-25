@@ -1,5 +1,5 @@
 import { Meta, StoryObj } from "@storybook/nextjs";
-import PollCandidate from "web/src/components/poll/PollCandidate";
+import PollCandidate from "@web/components/poll/PollCandidate";
 import { useState } from "react";
 
 const meta: Meta<typeof PollCandidate> = {

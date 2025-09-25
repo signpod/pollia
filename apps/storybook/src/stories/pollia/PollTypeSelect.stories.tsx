@@ -1,5 +1,5 @@
 import { Meta, StoryObj } from "@storybook/nextjs";
-import PollTypeSelect from "web/src/components/poll/PollTypeSelect";
+import PollTypeSelect from "@web/components/poll/PollTypeSelect";
 import { useState } from "react";
 
 const meta: Meta<typeof PollTypeSelect> = {
@@ -32,18 +32,21 @@ type Story = StoryObj<typeof meta>;
 // 인터랙티브 선택 컴포넌트
 export const Interactive: Story = {
   render: () => {
-    const [selectedType, setSelectedType] = useState<"ox" | "hobullho" | "multiple">();
-    
+    const [selectedType, setSelectedType] = useState<
+      "ox" | "hobullho" | "multiple"
+    >();
+
     return (
       <div className="max-w-md space-y-4">
-        <PollTypeSelect 
+        <PollTypeSelect
           selectedType={selectedType}
           onTypeChange={setSelectedType}
         />
         {selectedType && (
           <div className="p-4 bg-violet-50 border border-violet-200 rounded-lg">
             <p className="text-sm font-medium text-violet-900">
-              선택된 투표 유형: <span className="font-bold">{selectedType}</span>
+              선택된 투표 유형:{" "}
+              <span className="font-bold">{selectedType}</span>
             </p>
             <p className="text-xs text-violet-600 mt-1">
               {selectedType === "ox" && "O/X (예/아니오) 투표"}
@@ -58,7 +61,8 @@ export const Interactive: Story = {
   parameters: {
     docs: {
       description: {
-        story: "실제로 클릭해서 투표 유형을 선택할 수 있는 인터랙티브 예시입니다. 선택된 유형이 시각적으로 강조됩니다.",
+        story:
+          "실제로 클릭해서 투표 유형을 선택할 수 있는 인터랙티브 예시입니다. 선택된 유형이 시각적으로 강조됩니다.",
       },
     },
   },
@@ -78,7 +82,7 @@ export const WithOxSelected: Story = {
   },
 };
 
-// 호불호 선택된 상태  
+// 호불호 선택된 상태
 export const WithHobullhoSelected: Story = {
   args: {
     selectedType: "hobullho",
@@ -138,7 +142,9 @@ export const CustomStyling: Story = {
 // 폼에서 사용하는 예시
 export const InForm: Story = {
   render: () => {
-    const [selectedType, setSelectedType] = useState<"ox" | "hobullho" | "multiple">();
+    const [selectedType, setSelectedType] = useState<
+      "ox" | "hobullho" | "multiple"
+    >();
     const [isValid, setIsValid] = useState(false);
 
     const handleTypeChange = (type: "ox" | "hobullho" | "multiple") => {
@@ -152,14 +158,14 @@ export const InForm: Story = {
           <label className="block text-sm font-medium text-zinc-700 mb-2">
             투표 유형을 선택하세요 *
           </label>
-          <PollTypeSelect 
+          <PollTypeSelect
             selectedType={selectedType}
             onTypeChange={handleTypeChange}
           />
         </div>
-        
+
         <div className="flex items-center justify-between">
-          <button 
+          <button
             className="px-4 py-2 bg-violet-600 text-white rounded-lg disabled:bg-gray-300"
             disabled={!isValid}
           >
@@ -175,7 +181,8 @@ export const InForm: Story = {
   parameters: {
     docs: {
       description: {
-        story: "실제 폼에서 사용할 때의 예시입니다. 선택이 완료되면 다음 단계 버튼이 활성화됩니다.",
+        story:
+          "실제 폼에서 사용할 때의 예시입니다. 선택이 완료되면 다음 단계 버튼이 활성화됩니다.",
       },
     },
   },

@@ -17,7 +17,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["../web/src/*"],
-      "@public/*": ["../web/public/*"]
+      "@web/*": ["../web/src/*"]
     }
   },
   "include": [".storybook/**/*", "src/**/*", "../web/src/**/*"],

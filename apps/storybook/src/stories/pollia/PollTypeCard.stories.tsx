@@ -1,5 +1,5 @@
 import { Meta, StoryObj } from "@storybook/nextjs";
-import PollTypeCard from "web/src/components/poll/PollTypeCard";
+import PollTypeCard from "@web/components/poll/PollTypeCard";
 
 const meta: Meta<typeof PollTypeCard> = {
   title: "Pollia/PollTypeCard",
@@ -32,7 +32,8 @@ export const Ox: Story = {
   parameters: {
     docs: {
       description: {
-        story: "O/X (예/아니오) 투표 유형을 표시합니다. 원형 아이콘과 X 아이콘으로 구성됩니다.",
+        story:
+          "O/X (예/아니오) 투표 유형을 표시합니다. 원형 아이콘과 X 아이콘으로 구성됩니다.",
       },
     },
   },
@@ -46,7 +47,8 @@ export const Hobullho: Story = {
   parameters: {
     docs: {
       description: {
-        story: "호불호 (좋아요/싫어요) 투표 유형을 표시합니다. 엄지척 아이콘으로 구성됩니다.",
+        story:
+          "호불호 (좋아요/싫어요) 투표 유형을 표시합니다. 엄지척 아이콘으로 구성됩니다.",
       },
     },
   },
@@ -60,7 +62,8 @@ export const Multiple: Story = {
   parameters: {
     docs: {
       description: {
-        story: "객관식 (여러 선택지) 투표 유형을 표시합니다. A, B, C 선택지로 구성됩니다.",
+        story:
+          "객관식 (여러 선택지) 투표 유형을 표시합니다. A, B, C 선택지로 구성됩니다.",
       },
     },
   },
