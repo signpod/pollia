@@ -1,5 +1,6 @@
 import { Meta, StoryObj } from "@storybook/nextjs";
-import PollTypeCard from "web/src/components/poll/PollTypeCard";
+import PollTypeCard from "@web/components/poll/PollTypeCard";
+import { PollType } from "@prisma/client";
 
 const meta: Meta<typeof PollTypeCard> = {
   title: "Pollia/PollTypeCard",
@@ -10,7 +11,11 @@ const meta: Meta<typeof PollTypeCard> = {
   argTypes: {
     type: {
       control: { type: "select" },
-      options: ["ox", "hobullho", "multiple"],
+      options: [
+        PollType.YES_NO,
+        PollType.LIKE_DISLIKE,
+        PollType.MULTIPLE_CHOICE,
+      ],
       description: "투표 유형을 선택하세요",
     },
     className: {
@@ -27,12 +32,13 @@ type Story = StoryObj<typeof meta>;
 // O/X 투표 유형
 export const Ox: Story = {
   args: {
-    type: "ox",
+    type: PollType.YES_NO,
   },
   parameters: {
     docs: {
       description: {
-        story: "O/X (예/아니오) 투표 유형을 표시합니다. 원형 아이콘과 X 아이콘으로 구성됩니다.",
+        story:
+          "O/X (예/아니오) 투표 유형을 표시합니다. 원형 아이콘과 X 아이콘으로 구성됩니다.",
       },
     },
   },
@@ -41,12 +47,13 @@ export const Ox: Story = {
 // 호불호 투표 유형
 export const Hobullho: Story = {
   args: {
-    type: "hobullho",
+    type: PollType.LIKE_DISLIKE,
   },
   parameters: {
     docs: {
       description: {
-        story: "호불호 (좋아요/싫어요) 투표 유형을 표시합니다. 엄지척 아이콘으로 구성됩니다.",
+        story:
+          "호불호 (좋아요/싫어요) 투표 유형을 표시합니다. 엄지척 아이콘으로 구성됩니다.",
       },
     },
   },
@@ -55,12 +62,13 @@ export const Hobullho: Story = {
 // 객관식 투표 유형
 export const Multiple: Story = {
   args: {
-    type: "multiple",
+    type: PollType.MULTIPLE_CHOICE,
   },
   parameters: {
     docs: {
       description: {
-        story: "객관식 (여러 선택지) 투표 유형을 표시합니다. A, B, C 선택지로 구성됩니다.",
+        story:
+          "객관식 (여러 선택지) 투표 유형을 표시합니다. A, B, C 선택지로 구성됩니다.",
       },
     },
   },
@@ -72,15 +80,15 @@ export const AllTypes: Story = {
     <div className="space-y-4">
       <div>
         <h3 className="text-sm font-medium text-zinc-600 mb-2">O/X</h3>
-        <PollTypeCard type="ox" selected={false} />
+        <PollTypeCard type={PollType.YES_NO} selected={false} />
       </div>
       <div>
         <h3 className="text-sm font-medium text-zinc-600 mb-2">호불호</h3>
-        <PollTypeCard type="hobullho" selected={false} />
+        <PollTypeCard type={PollType.LIKE_DISLIKE} selected={false} />
       </div>
       <div>
         <h3 className="text-sm font-medium text-zinc-600 mb-2">객관식</h3>
-        <PollTypeCard type="multiple" selected={false} />
+        <PollTypeCard type={PollType.MULTIPLE_CHOICE} selected={false} />
       </div>
     </div>
   ),
@@ -96,7 +104,7 @@ export const AllTypes: Story = {
 // 커스텀 스타일링
 export const CustomStyling: Story = {
   args: {
-    type: "ox",
+    type: PollType.YES_NO,
     className: "bg-blue-50 ring-blue-200",
   },
   parameters: {
