@@ -1,5 +1,6 @@
 import { Meta, StoryObj } from "@storybook/nextjs";
 import PollTypeSelect from "@web/components/poll/PollTypeSelect";
+import { PollType } from "@prisma/client";
 import { useState } from "react";
 
 const meta: Meta<typeof PollTypeSelect> = {
@@ -11,7 +12,12 @@ const meta: Meta<typeof PollTypeSelect> = {
   argTypes: {
     selectedType: {
       control: { type: "select" },
-      options: ["ox", "hobullho", "multiple", undefined],
+      options: [
+        PollType.YES_NO,
+        PollType.LIKE_DISLIKE,
+        PollType.MULTIPLE_CHOICE,
+        undefined,
+      ],
       description: "현재 선택된 투표 유형",
     },
     onTypeChange: {
@@ -32,9 +38,7 @@ type Story = StoryObj<typeof meta>;
 // 인터랙티브 선택 컴포넌트
 export const Interactive: Story = {
   render: () => {
-    const [selectedType, setSelectedType] = useState<
-      "ox" | "hobullho" | "multiple"
-    >();
+    const [selectedType, setSelectedType] = useState<PollType>();
 
     return (
       <div className="max-w-md space-y-4">
@@ -49,9 +53,11 @@ export const Interactive: Story = {
               <span className="font-bold">{selectedType}</span>
             </p>
             <p className="text-xs text-violet-600 mt-1">
-              {selectedType === "ox" && "O/X (예/아니오) 투표"}
-              {selectedType === "hobullho" && "호불호 (좋아요/싫어요) 투표"}
-              {selectedType === "multiple" && "객관식 (여러 선택지) 투표"}
+              {selectedType === PollType.YES_NO && "O/X (예/아니오) 투표"}
+              {selectedType === PollType.LIKE_DISLIKE &&
+                "호불호 (좋아요/싫어요) 투표"}
+              {selectedType === PollType.MULTIPLE_CHOICE &&
+                "객관식 (여러 선택지) 투표"}
             </p>
           </div>
         )}
@@ -71,7 +77,7 @@ export const Interactive: Story = {
 // O/X 선택된 상태
 export const WithOxSelected: Story = {
   args: {
-    selectedType: "ox",
+    selectedType: PollType.YES_NO,
   },
   parameters: {
     docs: {
@@ -85,7 +91,7 @@ export const WithOxSelected: Story = {
 // 호불호 선택된 상태
 export const WithHobullhoSelected: Story = {
   args: {
-    selectedType: "hobullho",
+    selectedType: PollType.LIKE_DISLIKE,
   },
   parameters: {
     docs: {
@@ -99,7 +105,7 @@ export const WithHobullhoSelected: Story = {
 // 객관식 선택된 상태
 export const WithMultipleSelected: Story = {
   args: {
-    selectedType: "multiple",
+    selectedType: PollType.MULTIPLE_CHOICE,
   },
   parameters: {
     docs: {
@@ -127,7 +133,7 @@ export const NoSelection: Story = {
 // 커스텀 스타일링
 export const CustomStyling: Story = {
   args: {
-    selectedType: "ox",
+    selectedType: PollType.YES_NO,
     className: "bg-gray-50 p-4 rounded-lg",
   },
   parameters: {
@@ -142,12 +148,10 @@ export const CustomStyling: Story = {
 // 폼에서 사용하는 예시
 export const InForm: Story = {
   render: () => {
-    const [selectedType, setSelectedType] = useState<
-      "ox" | "hobullho" | "multiple"
-    >();
+    const [selectedType, setSelectedType] = useState<PollType>();
     const [isValid, setIsValid] = useState(false);
 
-    const handleTypeChange = (type: "ox" | "hobullho" | "multiple") => {
+    const handleTypeChange = (type: PollType) => {
       setSelectedType(type);
       setIsValid(true);
     };
