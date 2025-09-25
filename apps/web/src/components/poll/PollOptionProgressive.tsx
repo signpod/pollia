@@ -11,7 +11,7 @@ import Image from "next/image";
 interface PollOptionProgressiveProps {
   icon?: LucideIcon;
   label: string;
-  percentage: number;
+  percentage?: number;
   selected?: boolean;
   className?: string;
   imageUrl?: string;
@@ -26,7 +26,7 @@ export function PollOptionProgressive({
   className,
 }: PollOptionProgressiveProps) {
   const progressWidth = React.useMemo(() => {
-    return Math.min(Math.max(percentage, 0), 100);
+    return Math.min(Math.max(percentage ?? 0, 0), 100);
   }, [percentage]);
 
   const textColor = selected ? "text-violet-500" : "text-zinc-500";
@@ -40,6 +40,7 @@ export function PollOptionProgressive({
         "transition-colors duration-200",
         "flex justify-between",
         "gap-2",
+        "min-w-78",
         className
       )}
       role="progressbar"
@@ -73,21 +74,25 @@ export function PollOptionProgressive({
           {label}
         </Typo.ButtonText>
 
-        <motion.div
-          className="absolute right-0 top-1/2 -translate-y-1/2"
-          animate={{
-            x: selected ? -32 : 0,
-          }}
-          transition={{
-            duration: 0.25,
-            ease: [0.25, 0.46, 0.45, 0.94],
-            delay: 0.05,
-          }}
-        >
-          <Typo.ButtonText size="medium" className={cn(textColor)}>
-            {percentage}%
-          </Typo.ButtonText>
-        </motion.div>
+        {percentage !== undefined && (
+          <motion.div
+            className="absolute right-0 top-1/2 -translate-y-1/2"
+            initial={{ x: 0, opacity: 0 }}
+            animate={{
+              x: selected ? -32 : 0,
+              opacity: selected ? 1 : 0,
+            }}
+            transition={{
+              duration: 0.25,
+              ease: [0.25, 0.46, 0.45, 0.94],
+              delay: 0.05,
+            }}
+          >
+            <Typo.ButtonText size="medium" className={cn(textColor)}>
+              {percentage}%
+            </Typo.ButtonText>
+          </motion.div>
+        )}
 
         <div className="absolute right-0 top-1/2 -translate-y-1/2 transition-opacity duration-200">
           {selected && <AnimatedCheck className={cn("h-6 w-6", textColor)} />}
