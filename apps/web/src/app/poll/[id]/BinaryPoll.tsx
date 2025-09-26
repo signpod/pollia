@@ -5,6 +5,7 @@ import { usePollResults, useUserVoteStatus } from "@/hooks/poll/usePoll";
 import {
   BINARY_OPTION_ORDER,
   BINARY_POLL_OPTIONS,
+  FALLBACK_OPTION_TEXT,
   isBinaryPollType,
 } from "@/constants/poll";
 import { PollType } from "@prisma/client";
@@ -12,14 +13,8 @@ import { isPollActive } from "@/lib/utils";
 import { usePollVoting } from "@/hooks/poll/usePollVoting";
 import { BasePollComponent } from "./BasePollComponent";
 
-interface YesNoPollProps {
+interface BinaryPollProps {
   pollId: string;
-}
-
-function getOrderForOptionType(optionType: "LIKE" | "DISLIKE"): number {
-  return optionType === "LIKE"
-    ? BINARY_OPTION_ORDER.POSITIVE
-    : BINARY_OPTION_ORDER.NEGATIVE;
 }
 
 function getBinaryOptionByOrder(
@@ -36,18 +31,20 @@ function getBinaryOptionByOrder(
   return option?.description || null;
 }
 
-function getDefaultOptionText(
-  pollType: PollType,
-  optionType: "LIKE" | "DISLIKE"
-): string {
-  const order = getOrderForOptionType(optionType);
+function getDefaultOptionText(pollType: PollType, order: number): string {
+  const pollTypeText = getBinaryOptionByOrder(pollType, order);
+  if (pollTypeText) {
+    return pollTypeText;
+  }
+
+  const fallbackText = getBinaryOptionByOrder(PollType.LIKE_DISLIKE, order);
   return (
-    getBinaryOptionByOrder(pollType, order) ||
-    (optionType === "LIKE" ? "좋아요" : "별로예요")
+    fallbackText ||
+    FALLBACK_OPTION_TEXT[order as keyof typeof FALLBACK_OPTION_TEXT]
   );
 }
 
-export function YesNoPoll({ pollId }: YesNoPollProps) {
+export function BinaryPoll({ pollId }: BinaryPollProps) {
   const { data: userVoteStatus } = useUserVoteStatus(pollId);
   const { data: pollResults } = usePollResults(pollId);
   const { handleVote, isVoting } = usePollVoting(pollId);
@@ -65,7 +62,7 @@ export function YesNoPoll({ pollId }: YesNoPollProps) {
       )
     : false;
 
-  const getUserVotedOption = useCallback(() => {
+  const getUserVotedOption = useCallback((): number | null => {
     if (!hasVoted || !userVoteStatus?.data?.votes?.length) {
       return null;
     }
@@ -75,19 +72,18 @@ export function YesNoPoll({ pollId }: YesNoPollProps) {
       return null;
     }
 
-    const optionOrder = userVote.option.order;
-    return optionOrder === 1 ? "LIKE" : "DISLIKE";
+    return userVote.option.order;
   }, [hasVoted, userVoteStatus]);
 
   const getPercentage = useCallback(
-    (optionType: "LIKE" | "DISLIKE") => {
+    (order: number) => {
       if (!hasVoted) {
         return undefined;
       }
 
-      const votedOption = getUserVotedOption();
+      const votedOptionOrder = getUserVotedOption();
 
-      if (votedOption !== optionType) {
+      if (votedOptionOrder !== order) {
         return undefined;
       }
 
@@ -95,9 +91,8 @@ export function YesNoPoll({ pollId }: YesNoPollProps) {
         return undefined;
       }
 
-      const targetOrderValue = getOrderForOptionType(optionType);
       const targetOption = pollResults.data.options.find(
-        (option) => option.order === targetOrderValue
+        (option) => option.order === order
       );
 
       if (!targetOption) {
@@ -115,26 +110,25 @@ export function YesNoPoll({ pollId }: YesNoPollProps) {
   );
 
   const isSelected = useCallback(
-    (optionType: "LIKE" | "DISLIKE") => {
+    (order: number) => {
       if (!hasVoted) {
         return false;
       }
 
-      const votedOption = getUserVotedOption();
-      return votedOption === optionType;
+      const votedOptionOrder = getUserVotedOption();
+      return votedOptionOrder === order;
     },
     [hasVoted, getUserVotedOption]
   );
 
-  const getOptionIdByType = useCallback(
-    (optionType: "LIKE" | "DISLIKE"): string | null => {
+  const getOptionIdByOrder = useCallback(
+    (order: number): string | null => {
       if (!pollResults?.data?.options || !pollType) {
         return null;
       }
 
-      const targetOrderValue = getOrderForOptionType(optionType);
       const targetOption = pollResults.data.options.find(
-        (option) => option.order === targetOrderValue
+        (option) => option.order === order
       );
 
       return targetOption?.id || null;
@@ -143,41 +137,35 @@ export function YesNoPoll({ pollId }: YesNoPollProps) {
   );
 
   const handleVoteAction = useCallback(
-    async (optionType: "LIKE" | "DISLIKE") => {
+    async (order: number) => {
       if (!pollActive || isVoting) return;
 
-      const optionId = getOptionIdByType(optionType);
+      const optionId = getOptionIdByOrder(order);
       if (!optionId) {
         return;
       }
 
       await handleVote(optionId);
     },
-    [pollActive, isVoting, getOptionIdByType, handleVote]
+    [pollActive, isVoting, getOptionIdByOrder, handleVote]
   );
 
   const getOptionLabel = useCallback(
-    (optionType: "LIKE" | "DISLIKE"): string => {
+    (order: number): string => {
       if (
         !pollResults?.success ||
         !pollResults?.data?.options?.length ||
         !pollType
       ) {
-        return pollType
-          ? getDefaultOptionText(pollType, optionType)
-          : optionType === "LIKE"
-            ? "좋아요"
-            : "별로예요";
+        // pollType이 없을 때도 getDefaultOptionText 사용 (내부에서 fallback 처리)
+        return getDefaultOptionText(pollType || PollType.LIKE_DISLIKE, order);
       }
 
-      const targetOrderValue = getOrderForOptionType(optionType);
       const targetOption = pollResults.data.options.find(
-        (option) => option.order === targetOrderValue
+        (option) => option.order === order
       );
 
-      return (
-        targetOption?.description || getDefaultOptionText(pollType, optionType)
-      );
+      return targetOption?.description || getDefaultOptionText(pollType, order);
     },
     [pollResults, pollType]
   );
@@ -188,28 +176,28 @@ export function YesNoPoll({ pollId }: YesNoPollProps) {
     <BasePollComponent pollId={pollId}>
       <div className="flex flex-col gap-2 w-full">
         <button
-          onClick={() => handleVoteAction("LIKE")}
+          onClick={() => handleVoteAction(BINARY_OPTION_ORDER.POSITIVE)}
           className={`w-full text-left ${!isVotingAllowed ? "opacity-50 cursor-not-allowed" : ""}`}
           disabled={!isVotingAllowed}
         >
           <PollOptionProgressive
             icon={ThumbsUp}
-            label={getOptionLabel("LIKE")}
-            percentage={getPercentage("LIKE")}
-            selected={isSelected("LIKE")}
+            label={getOptionLabel(BINARY_OPTION_ORDER.POSITIVE)}
+            percentage={getPercentage(BINARY_OPTION_ORDER.POSITIVE)}
+            selected={isSelected(BINARY_OPTION_ORDER.POSITIVE)}
           />
         </button>
 
         <button
-          onClick={() => handleVoteAction("DISLIKE")}
+          onClick={() => handleVoteAction(BINARY_OPTION_ORDER.NEGATIVE)}
           className={`w-full text-left ${!isVotingAllowed ? "opacity-50 cursor-not-allowed" : ""}`}
           disabled={!isVotingAllowed}
         >
           <PollOptionProgressive
             icon={ThumbsDown}
-            label={getOptionLabel("DISLIKE")}
-            percentage={getPercentage("DISLIKE")}
-            selected={isSelected("DISLIKE")}
+            label={getOptionLabel(BINARY_OPTION_ORDER.NEGATIVE)}
+            percentage={getPercentage(BINARY_OPTION_ORDER.NEGATIVE)}
+            selected={isSelected(BINARY_OPTION_ORDER.NEGATIVE)}
           />
         </button>
       </div>

@@ -48,18 +48,6 @@ export const binaryPollSchema = z
   )
   .refine(
     (data) => {
-      if (!data.startDate || !data.startTime) return false;
-      const startDateTime = new Date(`${data.startDate}T${data.startTime}`);
-      const now = new Date();
-      return startDateTime > now;
-    },
-    {
-      message: "시작 시간은 현재 시간보다 늦어야 합니다.",
-      path: ["startTime"],
-    }
-  )
-  .refine(
-    (data) => {
       if (data.isUnlimited) return true;
       return !!data.endDate;
     },

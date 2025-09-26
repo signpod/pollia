@@ -13,6 +13,70 @@ import {
   RemoveVoteResponse,
 } from "@/types/dto";
 import { BINARY_POLL_OPTIONS, isBinaryPollType } from "@/constants/poll";
+import { binaryPollSchema } from "@/schemas/binaryPollSchema";
+import { multiplePollSchema } from "@/schemas/multiplePollSchema";
+import { PollType } from "@prisma/client";
+
+function validatePollRequestWithClientSchema(
+  request: CreatePollRequest
+): string | null {
+  try {
+    if (!request.startDate) {
+      return "시작 날짜는 필수입니다.";
+    }
+
+    const startDateTime = request.startDate!;
+    const startDate = startDateTime.toISOString().split("T")[0];
+    const startTime =
+      startDateTime.toISOString().split("T")[1]?.slice(0, 5) || "";
+
+    const endDate = request.endDate?.toISOString().split("T")[0];
+    const endTime = request.endDate
+      ? request.endDate.toISOString().split("T")[1]?.slice(0, 5) || ""
+      : "";
+
+    const baseFormData = {
+      category: request.category,
+      title: request.title,
+      description: request.description || "",
+      thumbnailUrl: request.imageUrl || "",
+      isUnlimited: request.isIndefinite ?? false,
+      startDate,
+      startTime,
+      endDate: endDate || "",
+      endTime: endTime || "",
+    };
+
+    if (isBinaryPollType(request.type)) {
+      const result = binaryPollSchema.safeParse(baseFormData);
+      if (!result.success) {
+        return result.error.issues[0]?.message || "유효성 검사에 실패했습니다.";
+      }
+    } else if (request.type === PollType.MULTIPLE_CHOICE) {
+      const multipleFormData = {
+        ...baseFormData,
+        maxSelections: request.maxSelections || 1,
+        options: request.options.map((opt) => ({
+          id: `temp-${opt.order}`,
+          description: opt.description,
+          imageUrl: opt.imageUrl,
+          link: opt.link,
+          order: opt.order,
+          fileUploadId: opt.imageFileUploadId,
+        })),
+      };
+
+      const result = multiplePollSchema.safeParse(multipleFormData);
+      if (!result.success) {
+        return result.error.issues[0]?.message || "유효성 검사에 실패했습니다.";
+      }
+    }
+
+    return null;
+  } catch {
+    return "유효성 검사 중 오류가 발생했습니다.";
+  }
+}
 
 export async function createPoll(
   request: CreatePollRequest
@@ -31,7 +95,7 @@ export async function createPoll(
       };
     }
 
-    const validationError = validatePollRequest(request);
+    const validationError = validatePollRequestWithClientSchema(request);
     if (validationError) {
       return {
         success: false,
@@ -81,7 +145,6 @@ export async function createPoll(
         });
       }
 
-      // 파일 확정 처리 - 폴 대표 이미지
       if (request.imageFileUploadId) {
         await tx.fileUpload.update({
           where: {
@@ -140,88 +203,6 @@ export async function createPoll(
       error: "폴 생성 중 오류가 발생했습니다.",
     };
   }
-}
-
-function validatePollRequest(request: CreatePollRequest): string | null {
-  if (!request.title || request.title.trim().length === 0) {
-    return "제목을 입력해주세요.";
-  }
-  if (request.title.length > 100) {
-    return "제목은 100자를 초과할 수 없습니다.";
-  }
-
-  if (!request.description) {
-    return "설명을 입력해주세요.";
-  }
-  if (request.description && request.description.length > 500) {
-    return "설명은 500자를 초과할 수 없습니다.";
-  }
-
-  if (request.startDate < new Date()) {
-    return "시작 날짜는 현재 시간 이후여야 합니다.";
-  }
-
-  if (request.endDate && request.endDate <= request.startDate) {
-    return "종료 날짜는 시작 날짜보다 늦어야 합니다.";
-  }
-
-  // 타입별 검증 로직
-  if (isBinaryPollType(request.type)) {
-    // 이진 투표 타입 검증
-    if (request.options && request.options.length > 0) {
-      return "이진 투표 타입에서는 선택지를 별도로 입력할 수 없습니다. 서버에서 자동으로 생성됩니다.";
-    }
-
-    if (request.maxSelections && request.maxSelections !== 1) {
-      return "이진 투표는 단일 선택만 가능합니다.";
-    }
-  } else {
-    // MULTIPLE_CHOICE 타입 검증
-    if (!request.options || request.options.length === 0) {
-      return "다중 선택 투표는 최소 2개의 옵션을 추가해주세요.";
-    }
-
-    if (request.options.length < 2) {
-      return "다중 선택 투표는 최소 2개의 옵션이 필요합니다.";
-    }
-
-    if (request.options.length > 10) {
-      return "옵션은 최대 10개까지 추가할 수 있습니다.";
-    }
-
-    // 옵션 내용 검증
-    for (const [index, option] of request.options.entries()) {
-      if (!option.description || option.description.trim().length === 0) {
-        return `${index + 1}번째 옵션에 내용을 입력해주세요.`;
-      }
-      if (option.description.length > 100) {
-        return `${index + 1}번째 옵션 내용은 100자를 초과할 수 없습니다.`;
-      }
-    }
-
-    // 중복 옵션 검증
-    const descriptions = request.options.map((option) =>
-      option.description.trim()
-    );
-    const uniqueDescriptions = new Set(descriptions);
-    if (descriptions.length !== uniqueDescriptions.size) {
-      return "중복된 옵션이 있습니다. 각 옵션은 고유해야 합니다.";
-    }
-
-    // 최대 선택 개수 검증
-    if (
-      request.maxSelections &&
-      request.maxSelections > request.options.length
-    ) {
-      return "최대 선택 개수는 옵션 개수를 초과할 수 없습니다.";
-    }
-
-    if (request.maxSelections && request.maxSelections < 1) {
-      return "최대 선택 개수는 1개 이상이어야 합니다.";
-    }
-  }
-
-  return null;
 }
 
 export async function getPoll(pollId: string) {

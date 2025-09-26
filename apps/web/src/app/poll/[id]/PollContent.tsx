@@ -6,8 +6,7 @@ import { PollType } from "@prisma/client";
 
 import { useGetPoll } from "@/hooks/poll/usePoll";
 
-import { YesNoPoll } from "./YesNoPoll";
-import { LikeDislikePoll } from "./LikeDislikePoll";
+import { BinaryPoll } from "./BinaryPoll";
 import { MultipleChoicePoll } from "./MultipleChoicePoll";
 
 interface PollContentProps {
@@ -55,10 +54,8 @@ function PollData({ pollId }: { pollId: string }) {
   const renderPollByType = () => {
     switch (poll.data.type) {
       case PollType.YES_NO:
-        return <YesNoPoll pollId={pollId} />;
-
       case PollType.LIKE_DISLIKE:
-        return <LikeDislikePoll pollId={pollId} />;
+        return <BinaryPoll pollId={pollId} />;
 
       case PollType.MULTIPLE_CHOICE:
         return <MultipleChoicePoll pollId={pollId} />;

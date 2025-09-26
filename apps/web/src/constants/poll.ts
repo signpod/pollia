@@ -69,8 +69,13 @@ function isBinaryPollType(type: PollType): boolean {
 }
 
 const BINARY_OPTION_ORDER = {
-  POSITIVE: 1, // 긍정적 선택지 (O, 좋아요)
-  NEGATIVE: 2, // 부정적 선택지 (X, 별로예요)
+  POSITIVE: 1,
+  NEGATIVE: 2,
+} as const;
+
+const FALLBACK_OPTION_TEXT = {
+  [BINARY_OPTION_ORDER.POSITIVE]: "긍정",
+  [BINARY_OPTION_ORDER.NEGATIVE]: "부정",
 } as const;
 
 const CATEGORY_ICONS: Record<PollCategory, React.ElementType> = {
@@ -95,5 +100,6 @@ export {
   CATEGORY_ICONS,
   BINARY_POLL_OPTIONS,
   BINARY_OPTION_ORDER,
+  FALLBACK_OPTION_TEXT,
   isBinaryPollType,
 };
