@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    optimizePackageImports: ["@radix-ui/react-dialog"]
+    optimizePackageImports: ["@radix-ui/react-dialog"],
   },
 
   images: {
@@ -14,7 +14,7 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "cdn.pollia.me",
+        hostname: "lpgfbjohdashthkhxzab.supabase.co",
         port: "",
         pathname: "/**",
       },
@@ -27,8 +27,8 @@ const nextConfig = {
         loaders: ["@svgr/webpack"],
         as: "*.js",
       },
-    }
-  }
+    },
+  },
 };
 
 export default nextConfig;

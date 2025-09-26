@@ -3,9 +3,84 @@
 import { ResultMode, FileStatus, RelatedEntityType } from "@prisma/client";
 import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
 import prisma from "@/database/utils/prisma/client";
-import { CreatePollRequest, CreatePollResponse, GetUserPollsResponse } from "@/types/dto";
+import {
+  CreatePollRequest,
+  CreatePollResponse,
+  GetUserPollsResponse,
+  SubmitVoteRequest,
+  SubmitVoteResponse,
+  RemoveVoteRequest,
+  RemoveVoteResponse,
+} from "@/types/dto";
+import { BINARY_POLL_OPTIONS, isBinaryPollType } from "@/constants/poll";
+import { binaryPollSchema } from "@/schemas/binaryPollSchema";
+import { multiplePollSchema } from "@/schemas/multiplePollSchema";
+import { PollType } from "@prisma/client";
 
-export async function createPoll(request: CreatePollRequest): Promise<CreatePollResponse> {
+function validatePollRequestWithClientSchema(
+  request: CreatePollRequest
+): string | null {
+  try {
+    if (!request.startDate) {
+      return "시작 날짜는 필수입니다.";
+    }
+
+    const startDateTime = request.startDate!;
+    const startDate = startDateTime.toISOString().split("T")[0];
+    const startTime =
+      startDateTime.toISOString().split("T")[1]?.slice(0, 5) || "";
+
+    const endDate = request.endDate?.toISOString().split("T")[0];
+    const endTime = request.endDate
+      ? request.endDate.toISOString().split("T")[1]?.slice(0, 5) || ""
+      : "";
+
+    const baseFormData = {
+      category: request.category,
+      title: request.title,
+      description: request.description || "",
+      thumbnailUrl: request.imageUrl || "",
+      isUnlimited: request.isIndefinite ?? false,
+      startDate,
+      startTime,
+      endDate: endDate || "",
+      endTime: endTime || "",
+    };
+
+    if (isBinaryPollType(request.type)) {
+      const result = binaryPollSchema.safeParse(baseFormData);
+      if (!result.success) {
+        return result.error.issues[0]?.message || "유효성 검사에 실패했습니다.";
+      }
+    } else if (request.type === PollType.MULTIPLE_CHOICE) {
+      const multipleFormData = {
+        ...baseFormData,
+        maxSelections: request.maxSelections || 1,
+        options: request.options.map((opt) => ({
+          id: `temp-${opt.order}`,
+          description: opt.description,
+          imageUrl: opt.imageUrl,
+          link: opt.link,
+          order: opt.order,
+          fileUploadId: opt.imageFileUploadId,
+        })),
+      };
+
+      const result = multiplePollSchema.safeParse(multipleFormData);
+      if (!result.success) {
+        return result.error.issues[0]?.message || "유효성 검사에 실패했습니다.";
+      }
+    }
+
+    return null;
+  } catch {
+    return "유효성 검사 중 오류가 발생했습니다.";
+  }
+}
+
+export async function createPoll(
+  request: CreatePollRequest
+): Promise<CreatePollResponse> {
   try {
     const supabase = await createServerSupabaseClient();
     const {
@@ -20,7 +95,7 @@ export async function createPoll(request: CreatePollRequest): Promise<CreatePoll
       };
     }
 
-    const validationError = validatePollRequest(request);
+    const validationError = validatePollRequestWithClientSchema(request);
     if (validationError) {
       return {
         success: false,
@@ -46,17 +121,30 @@ export async function createPoll(request: CreatePollRequest): Promise<CreatePoll
         },
       });
 
-      await tx.pollOption.createMany({
-        data: request.options.map((option) => ({
-          pollId: createdPoll.id,
-          description: option.description,
-          imageUrl: option.imageUrl,
-          link: option.link,
-          order: option.order,
-        })),
-      });
+      if (isBinaryPollType(request.type)) {
+        const binaryOptions =
+          BINARY_POLL_OPTIONS[request.type as keyof typeof BINARY_POLL_OPTIONS];
+        await tx.pollOption.createMany({
+          data: binaryOptions.map(
+            (option: { description: string; order: number }) => ({
+              pollId: createdPoll.id,
+              description: option.description,
+              order: option.order,
+            })
+          ),
+        });
+      } else {
+        await tx.pollOption.createMany({
+          data: request.options.map((option) => ({
+            pollId: createdPoll.id,
+            description: option.description,
+            imageUrl: option.imageUrl,
+            link: option.link,
+            order: option.order,
+          })),
+        });
+      }
 
-      // 파일 확정 처리 - 폴 대표 이미지
       if (request.imageFileUploadId) {
         await tx.fileUpload.update({
           where: {
@@ -73,23 +161,26 @@ export async function createPoll(request: CreatePollRequest): Promise<CreatePoll
         });
       }
 
-      // 파일 확정 처리 - 옵션 이미지들
-      const optionFileUploadIds = request.options.map((option) => option.imageFileUploadId).filter(Boolean) as string[];
+      if (!isBinaryPollType(request.type) && request.options) {
+        const optionFileUploadIds = request.options
+          .map((option) => option.imageFileUploadId)
+          .filter(Boolean) as string[];
 
-      if (optionFileUploadIds.length > 0) {
-        await tx.fileUpload.updateMany({
-          where: {
-            id: { in: optionFileUploadIds },
-            userId: user.id,
-            status: FileStatus.TEMPORARY,
-          },
-          data: {
-            status: FileStatus.CONFIRMED,
-            confirmedAt: new Date(),
-            relatedEntityType: RelatedEntityType.POLL_OPTION,
-            relatedEntityId: createdPoll.id,
-          },
-        });
+        if (optionFileUploadIds.length > 0) {
+          await tx.fileUpload.updateMany({
+            where: {
+              id: { in: optionFileUploadIds },
+              userId: user.id,
+              status: FileStatus.TEMPORARY,
+            },
+            data: {
+              status: FileStatus.CONFIRMED,
+              confirmedAt: new Date(),
+              relatedEntityType: RelatedEntityType.POLL_OPTION,
+              relatedEntityId: createdPoll.id,
+            },
+          });
+        }
       }
 
       return createdPoll;
@@ -112,58 +203,6 @@ export async function createPoll(request: CreatePollRequest): Promise<CreatePoll
       error: "폴 생성 중 오류가 발생했습니다.",
     };
   }
-}
-
-function validatePollRequest(request: CreatePollRequest): string | null {
-  if (!request.title || request.title.trim().length === 0) {
-    return "제목을 입력해주세요.";
-  }
-  if (request.title.length > 100) {
-    return "제목은 100자를 초과할 수 없습니다.";
-  }
-
-  if (!request.description) {
-    return "설명을 입력해주세요.";
-  }
-  if (request.description && request.description.length > 500) {
-    return "설명은 500자를 초과할 수 없습니다.";
-  }
-
-  if (request.startDate < new Date()) {
-    return "시작 날짜는 현재 시간 이후여야 합니다.";
-  }
-
-  if (request.endDate && request.endDate <= request.startDate) {
-    return "종료 날짜는 시작 날짜보다 늦어야 합니다.";
-  }
-
-  // 이진 투표가 아닌 경우에만 옵션 검증
-  const isBinaryPoll = request.type === "YES_NO" || request.type === "LIKE_DISLIKE";
-
-  if (!isBinaryPoll) {
-    if (!request.options || request.options.length === 0) {
-      return "최소 1개의 옵션을 추가해주세요.";
-    }
-
-    if (request.options.length > 10) {
-      return "옵션은 최대 10개까지 추가할 수 있습니다.";
-    }
-
-    for (const option of request.options) {
-      if (!option.description || option.description.trim().length === 0) {
-        return "모든 옵션에 내용을 입력해주세요.";
-      }
-      if (option.description.length > 100) {
-        return "옵션 내용은 100자를 초과할 수 없습니다.";
-      }
-    }
-
-    if (request.maxSelections && request.maxSelections > request.options.length) {
-      return "최대 선택 개수는 옵션 개수를 초과할 수 없습니다.";
-    }
-  }
-
-  return null;
 }
 
 export async function getPoll(pollId: string) {
@@ -219,7 +258,9 @@ export async function getPoll(pollId: string) {
   }
 }
 
-export async function getUserPolls(userId?: string): Promise<GetUserPollsResponse> {
+export async function getUserPolls(
+  userId?: string
+): Promise<GetUserPollsResponse> {
   try {
     if (!userId) {
       const supabase = await createServerSupabaseClient();
@@ -270,4 +311,256 @@ export async function getUserPolls(userId?: string): Promise<GetUserPollsRespons
       error: "폴 목록을 불러올 수 없습니다.",
     };
   }
+}
+
+// 투표 결과 실시간 조회
+export async function getPollResults(pollId: string) {
+  try {
+    const poll = await prisma.poll.findUnique({
+      where: { id: pollId },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        type: true,
+        startDate: true,
+        endDate: true,
+        isIndefinite: true,
+        options: {
+          select: {
+            id: true,
+            description: true,
+            imageUrl: true,
+            order: true,
+            _count: {
+              select: {
+                votes: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            votes: true,
+          },
+        },
+      },
+    });
+
+    if (!poll) {
+      return {
+        success: false,
+        error: "투표를 찾을 수 없습니다.",
+      };
+    }
+
+    return {
+      success: true,
+      data: poll,
+    };
+  } catch (error) {
+    console.error("Error fetching poll results:", error);
+    return {
+      success: false,
+      error: "투표 결과를 불러올 수 없습니다.",
+    };
+  }
+}
+
+// 사용자의 특정 투표 참여 상태 확인
+export async function getUserVoteStatus(pollId: string) {
+  try {
+    const supabase = await createServerSupabaseClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        error: "로그인이 필요합니다.",
+      };
+    }
+
+    const votes = await prisma.vote.findMany({
+      where: {
+        pollId: pollId,
+        userId: user.id,
+      },
+      include: {
+        option: {
+          select: {
+            id: true,
+            description: true,
+            order: true,
+          },
+        },
+      },
+    });
+
+    return {
+      success: true,
+      data: {
+        hasVoted: votes.length > 0,
+        votes: votes.map((vote) => ({
+          id: vote.id,
+          option: vote.option,
+        })),
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching user vote status:", error);
+    return {
+      success: false,
+      error: "투표 상태를 불러올 수 없습니다.",
+    };
+  }
+}
+
+// 투표 제출
+export async function submitVote(
+  request: SubmitVoteRequest
+): Promise<SubmitVoteResponse> {
+  try {
+    const supabase = await createServerSupabaseClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        error: "로그인이 필요합니다.",
+      };
+    }
+
+    // 투표 검증
+    const validationError = await validateVoteRequest(request);
+    if (validationError) {
+      return {
+        success: false,
+        error: validationError,
+      };
+    }
+
+    const vote = await prisma.$transaction(async (tx) => {
+      // 기존 투표 제거 (이진 투표는 단일 선택)
+      await tx.vote.deleteMany({
+        where: {
+          pollId: request.pollId,
+          userId: user.id,
+        },
+      });
+
+      // 새 투표 생성
+      const newVote = await tx.vote.create({
+        data: {
+          pollId: request.pollId,
+          userId: user.id,
+          optionId: request.optionId,
+        },
+      });
+
+      return newVote;
+    });
+
+    return {
+      success: true,
+      data: {
+        id: vote.id,
+        pollId: vote.pollId,
+        optionId: vote.optionId,
+      },
+    };
+  } catch (error) {
+    console.error("❌ 투표 제출 에러:", error);
+    return {
+      success: false,
+      error: "투표 처리 중 오류가 발생했습니다.",
+    };
+  }
+}
+
+// 투표 취소
+export async function removeVote(
+  request: RemoveVoteRequest
+): Promise<RemoveVoteResponse> {
+  try {
+    const supabase = await createServerSupabaseClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        error: "로그인이 필요합니다.",
+      };
+    }
+
+    const whereClause = {
+      pollId: request.pollId,
+      userId: user.id,
+      ...(request.optionId && { optionId: request.optionId }),
+    };
+
+    const result = await prisma.vote.deleteMany({
+      where: whereClause,
+    });
+
+    return {
+      success: true,
+      data: {
+        removed: result.count > 0,
+      },
+    };
+  } catch (error) {
+    console.error("❌ 투표 취소 에러:", error);
+    return {
+      success: false,
+      error: "투표 취소 중 오류가 발생했습니다.",
+    };
+  }
+}
+
+// 투표 요청 검증
+async function validateVoteRequest(
+  request: SubmitVoteRequest
+): Promise<string | null> {
+  // Poll 존재 여부 및 상태 확인
+  const poll = await prisma.poll.findUnique({
+    where: { id: request.pollId },
+    include: {
+      options: {
+        select: { id: true },
+      },
+    },
+  });
+
+  if (!poll) {
+    return "존재하지 않는 투표입니다.";
+  }
+
+  // 투표 기간 확인
+  const now = new Date();
+  if (poll.startDate && now < poll.startDate) {
+    return "아직 투표가 시작되지 않았습니다.";
+  }
+
+  if (!poll.isIndefinite && poll.endDate && now >= poll.endDate) {
+    return "투표가 종료되었습니다.";
+  }
+
+  // 옵션 존재 여부 확인
+  const optionExists = poll.options.some(
+    (option) => option.id === request.optionId
+  );
+  if (!optionExists) {
+    return "존재하지 않는 선택지입니다.";
+  }
+
+  return null;
 }

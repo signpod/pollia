@@ -54,3 +54,73 @@ export interface GetUserPollsResponse {
   }>;
   error?: string;
 }
+
+export interface SubmitVoteRequest {
+  pollId: string;
+  optionId: string;
+}
+
+export interface SubmitVoteResponse {
+  success: boolean;
+  data?: {
+    id: string;
+    pollId: string;
+    optionId: string;
+  };
+  error?: string;
+}
+
+export interface RemoveVoteRequest {
+  pollId: string;
+  optionId?: string; // 특정 옵션 투표 취소 시
+}
+
+export interface RemoveVoteResponse {
+  success: boolean;
+  data?: {
+    removed: boolean;
+  };
+  error?: string;
+}
+
+export interface GetUserVoteStatusResponse {
+  success: boolean;
+  data?: {
+    hasVoted: boolean;
+    votes: Array<{
+      id: string;
+      option: {
+        id: string;
+        description: string;
+        order: number;
+      };
+    }>;
+  };
+  error?: string;
+}
+
+export interface GetPollResultsResponse {
+  success: boolean;
+  data?: {
+    id: string;
+    title: string;
+    description?: string;
+    type: PollType;
+    startDate?: Date;
+    endDate?: Date;
+    isIndefinite: boolean;
+    options: Array<{
+      id: string;
+      description: string;
+      imageUrl?: string;
+      order: number;
+      _count: {
+        votes: number;
+      };
+    }>;
+    _count: {
+      votes: number;
+    };
+  };
+  error?: string;
+}

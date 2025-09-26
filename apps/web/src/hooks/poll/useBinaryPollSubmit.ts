@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAtomValue } from "jotai";
 import { useRouter } from "next/navigation";
-import { PollType, PollCategory } from "@prisma/client";
+import { PollCategory } from "@prisma/client";
 import { useCreatePoll } from "./useCreatePoll";
 import { binaryPollDataAtom } from "@/atoms/create/binaryPollAtoms";
 import { CreatePollRequest } from "@/types/dto";
@@ -11,6 +11,7 @@ import {
   binaryPollSchema,
   type BinaryPollFormData,
 } from "@/schemas/binaryPollSchema";
+import { selectedBinaryPollTypeAtom } from "@/atoms/create/pollTypeAtoms";
 
 export interface UseBinaryPollSubmitOptions {
   onSuccess?: () => void;
@@ -30,7 +31,7 @@ export function useBinaryPollSubmit(options: UseBinaryPollSubmitOptions = {}) {
     endDate,
     endTime,
   } = useAtomValue(binaryPollDataAtom);
-
+  const selectedBinaryPollType = useAtomValue(selectedBinaryPollTypeAtom);
   const createPollMutation = useCreatePoll({
     onSuccess: (data) => {
       if (data.data?.id) {
@@ -98,6 +99,10 @@ export function useBinaryPollSubmit(options: UseBinaryPollSubmitOptions = {}) {
     }
 
     try {
+      if (!selectedBinaryPollType) {
+        throw new Error("투표 타입을 선택해주세요.");
+      }
+
       const validatedData = validation.data!;
       const startDateTime = new Date(
         `${validatedData.startDate}T${validatedData.startTime}`
@@ -110,22 +115,21 @@ export function useBinaryPollSubmit(options: UseBinaryPollSubmitOptions = {}) {
           : undefined;
 
       const request: CreatePollRequest = {
+        type: selectedBinaryPollType,
         title: validatedData.title,
         description: validatedData.description || undefined,
         imageUrl: validatedData.thumbnailUrl || undefined,
         imageFileUploadId,
-        type: PollType.YES_NO, // Binary poll은 YES_NO 타입
         category: validatedData.category as PollCategory,
         startDate: startDateTime,
         endDate: endDateTime,
         isIndefinite: validatedData.isUnlimited,
-        maxSelections: undefined, // null이면 이진 선택 (O/X)
+        maxSelections: undefined, // undefined이면 이진 선택 (O/X)
         options: [], // 이진 투표는 옵션 없음 - 클라이언트에서 처리
       };
 
       await createPollMutation.mutateAsync(request);
     } catch (error) {
-      // Error는 이미 useCreatePoll의 onError에서 처리됨
       console.error("❌ Binary Poll validation 또는 요청 실패:", error);
     }
   };
