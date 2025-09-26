@@ -36,10 +36,14 @@ export function BasePollComponent({
       )}
 
       <div className="flex items-center justify-between text-sm font-semibold w-full">
-        <div className="text-violet-500">
+        <Typo.Body size="medium" className="text-violet-500">
           {poll?.data?._count?.votes || 0}명 참여 중
-        </div>
-        <div className="text-zinc-400 text-right">1개 선택 가능</div>
+        </Typo.Body>
+        {poll?.data?.maxSelections && (
+          <Typo.Body size="medium" className="text-zinc-400 text-right">
+            {poll?.data.maxSelections || 1}개 선택 가능
+          </Typo.Body>
+        )}
       </div>
 
       {children}
