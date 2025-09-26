@@ -53,6 +53,26 @@ const TYPE_LABELS: Record<PollType, string> = {
   [PollType.MULTIPLE_CHOICE]: "여러 선택지",
 };
 
+const BINARY_POLL_OPTIONS = {
+  [PollType.YES_NO]: [
+    { description: "O", order: 1 },
+    { description: "X", order: 2 },
+  ],
+  [PollType.LIKE_DISLIKE]: [
+    { description: "좋아요", order: 1 },
+    { description: "별로예요", order: 2 },
+  ],
+} as const;
+
+function isBinaryPollType(type: PollType): boolean {
+  return type === PollType.YES_NO || type === PollType.LIKE_DISLIKE;
+}
+
+const BINARY_OPTION_ORDER = {
+  POSITIVE: 1, // 긍정적 선택지 (O, 좋아요)
+  NEGATIVE: 2, // 부정적 선택지 (X, 별로예요)
+} as const;
+
 const CATEGORY_ICONS: Record<PollCategory, React.ElementType> = {
   [PollCategory.IT_DIGITAL]: MonitorSmartphone,
   [PollCategory.PET]: Dog,
@@ -73,4 +93,7 @@ export {
   CATEGORY_LABELS,
   TYPE_LABELS,
   CATEGORY_ICONS,
+  BINARY_POLL_OPTIONS,
+  BINARY_OPTION_ORDER,
+  isBinaryPollType,
 };
