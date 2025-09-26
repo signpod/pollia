@@ -23,13 +23,8 @@ function useVoteMutation(pollId: string) {
     mutationFn: ({ optionId }: { optionId: string }) => {
       return submitVote({ pollId, optionId });
     },
-    onSuccess: (data) => {
-      if (data.success) {
-        invalidatePoll();
-        console.log("투표가 완료되었습니다!");
-      } else {
-        console.error(data.error || "투표에 실패했습니다.");
-      }
+    onSuccess: () => {
+      invalidatePoll();
     },
     onError: (error) => {
       console.error("투표 실패:", error);
@@ -40,13 +35,8 @@ function useVoteMutation(pollId: string) {
     mutationFn: ({ optionId }: { optionId: string }) => {
       return removeVote({ pollId, optionId });
     },
-    onSuccess: (data) => {
-      if (data.success) {
-        invalidatePoll();
-        console.log("투표가 취소되었습니다.");
-      } else {
-        console.error(data.error || "투표 취소에 실패했습니다.");
-      }
+    onSuccess: () => {
+      invalidatePoll();
     },
     onError: (error) => {
       console.error("투표 취소 실패:", error);
