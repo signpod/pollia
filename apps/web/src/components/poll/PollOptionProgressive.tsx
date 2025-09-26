@@ -29,13 +29,18 @@ export function PollOptionProgressive({
     return Math.min(Math.max(percentage ?? 0, 0), 100);
   }, [percentage]);
 
-  const textColor = selected ? "text-violet-500" : "text-zinc-500";
+  const textColor = selected
+    ? "text-violet-500"
+    : percentage !== undefined
+      ? "text-zinc-500"
+      : "text-zinc-950";
+
   const progressColor = selected ? "bg-violet-100" : "bg-zinc-200";
 
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-sm bg-neutral-50 p-4",
+        "relative overflow-hidden rounded-sm bg-zinc-50 p-4",
         "transition-all duration-200 ease-out",
         "transition-colors duration-200",
         "flex justify-between",
@@ -51,7 +56,6 @@ export function PollOptionProgressive({
       <div
         className={cn(
           "absolute left-0 top-0 h-full transition-all duration-300 ease-out",
-
           progressColor
         )}
         style={{
