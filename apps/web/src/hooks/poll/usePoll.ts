@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { getPoll, getPollResults, getUserVoteStatus } from "@/actions/poll";
+import { pollQueryKeys } from "@/constants/queryKeys/pollQueryKeys";
 
 export const useGetPoll = (pollId: string) => {
   return useQuery({
-    queryKey: ["poll", pollId],
+    queryKey: pollQueryKeys.poll(pollId),
     queryFn: () => {
       return getPoll(pollId);
     },
@@ -18,7 +19,7 @@ export type UsePollReturn = ReturnType<typeof useGetPoll>;
 
 export const usePollResults = (pollId: string) => {
   return useQuery({
-    queryKey: ["poll-results", pollId],
+    queryKey: pollQueryKeys.pollResults(pollId),
     queryFn: () => {
       return getPollResults(pollId);
     },
@@ -33,7 +34,7 @@ export type UsePollResultsReturn = ReturnType<typeof usePollResults>;
 
 export const useUserVoteStatus = (pollId: string) => {
   return useQuery({
-    queryKey: ["user-vote-status", pollId],
+    queryKey: pollQueryKeys.userVoteStatus(pollId),
     queryFn: () => {
       return getUserVoteStatus(pollId);
     },
