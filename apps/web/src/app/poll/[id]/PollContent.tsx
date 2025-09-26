@@ -3,12 +3,12 @@
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { PollType } from "@prisma/client";
-import {
-  YesNoPoll,
-  LikeDislikePoll,
-  MultipleChoicePoll,
-} from "./PollComponents";
+
 import { useGetPoll } from "@/hooks/poll/usePoll";
+
+import { YesNoPoll } from "./YesNoPoll";
+import { LikeDislikePoll } from "./LikeDislikePoll";
+import { MultipleChoicePoll } from "./MultipleChoicePoll";
 
 interface PollContentProps {
   pollId: string;

@@ -1,13 +1,7 @@
 import React, { useCallback } from "react";
 import { ThumbsUp, ThumbsDown } from "lucide-react";
 import { PollOptionProgressive } from "@/components/poll/PollOptionProgressive";
-import { Typo } from "@repo/ui/components";
-import {
-  useGetPoll,
-  usePollResults,
-  useUserVoteStatus,
-} from "@/hooks/poll/usePoll";
-import Image from "next/image";
+import { usePollResults, useUserVoteStatus } from "@/hooks/poll/usePoll";
 import {
   BINARY_OPTION_ORDER,
   BINARY_POLL_OPTIONS,
@@ -16,9 +10,9 @@ import {
 import { PollType } from "@prisma/client";
 import { isPollActive } from "@/lib/utils";
 import { usePollVoting } from "@/hooks/poll/usePollVoting";
-import { TimeDisplay } from "@/components/common/TimeDisplay";
+import { BasePollComponent } from "./BasePollComponent";
 
-interface BasePollComponentProps extends React.PropsWithChildren {
+interface YesNoPollProps {
   pollId: string;
 }
 
@@ -53,53 +47,7 @@ function getDefaultOptionText(
   );
 }
 
-function BasePollComponent({ pollId, children }: BasePollComponentProps) {
-  const { data: poll } = useGetPoll(pollId);
-
-  return (
-    <div className="space-y-4">
-      <div className="space-y-1">
-        <Typo.MainTitle size="medium">{poll?.data?.title}</Typo.MainTitle>
-        {poll?.data?.description && (
-          <Typo.Body size="large">{poll?.data?.description}</Typo.Body>
-        )}
-      </div>
-
-      {poll?.data?.imageUrl && (
-        <div className="w-full @container">
-          <Image
-            src={poll?.data?.imageUrl}
-            alt={poll?.data?.title}
-            width={400}
-            height={400}
-            className="w-full h-auto object-contain rounded-sm max-h-[161.8cqw]"
-          />
-        </div>
-      )}
-
-      <div className="flex items-center justify-between text-sm font-semibold w-full">
-        <div className="text-violet-500">
-          {poll?.data?._count?.votes || 0}명 참여 중
-        </div>
-        <div className="text-zinc-400 text-right">1개 선택 가능</div>
-      </div>
-
-      {children}
-
-      <div className="flex items-center justify-end w-full">
-        <TimeDisplay
-          startDate={
-            poll?.data?.startDate ? new Date(poll.data.startDate) : null
-          }
-          endDate={poll?.data?.endDate ? new Date(poll.data.endDate) : null}
-          isIndefinite={poll?.data?.isIndefinite ?? false}
-        />
-      </div>
-    </div>
-  );
-}
-
-export function YesNoPoll({ pollId }: BasePollComponentProps) {
+export function YesNoPoll({ pollId }: YesNoPollProps) {
   const { data: userVoteStatus } = useUserVoteStatus(pollId);
   const { data: pollResults } = usePollResults(pollId);
   const { handleVote, isVoting } = usePollVoting(pollId);
@@ -178,7 +126,6 @@ export function YesNoPoll({ pollId }: BasePollComponentProps) {
     [hasVoted, getUserVotedOption]
   );
 
-  // optionType으로부터 실제 optionId 찾기
   const getOptionIdByType = useCallback(
     (optionType: "LIKE" | "DISLIKE"): string | null => {
       if (!pollResults?.data?.options || !pollType) {
@@ -265,28 +212,6 @@ export function YesNoPoll({ pollId }: BasePollComponentProps) {
             selected={isSelected("DISLIKE")}
           />
         </button>
-      </div>
-    </BasePollComponent>
-  );
-}
-
-export function LikeDislikePoll({ pollId }: BasePollComponentProps) {
-  return (
-    <BasePollComponent pollId={pollId}>
-      {/* TODO: 호불호 투표 UI 구현 */}
-      <div className="text-sm text-gray-500">
-        호불호 투표 컴포넌트 구현 예정
-      </div>
-    </BasePollComponent>
-  );
-}
-
-export function MultipleChoicePoll({ pollId }: BasePollComponentProps) {
-  return (
-    <BasePollComponent pollId={pollId}>
-      {/* TODO: 객관식 투표 UI 구현 */}
-      <div className="text-sm text-gray-500">
-        객관식 투표 컴포넌트 구현 예정
       </div>
     </BasePollComponent>
   );
