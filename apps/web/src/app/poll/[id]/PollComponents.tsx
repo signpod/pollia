@@ -116,11 +116,11 @@ function BasePollComponent({ pollId, children }: BasePollComponentProps) {
         <div
           className={`text-sm font-semibold text-right ${
             timeStatus.isExpired
-              ? "text-red-500"
+              ? "text-red-400"
               : timeStatus.isIndefinite
-                ? "text-green-500"
+                ? "text-zinc-400"
                 : timeStatus.isNotStarted
-                  ? "text-blue-500"
+                  ? "text-blue-400"
                   : "text-zinc-400"
           }`}
         >

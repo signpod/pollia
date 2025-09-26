@@ -21,21 +21,19 @@ export function generateUniqueId(): string {
   return `${timestamp}-${randomPart}`;
 }
 
-// 시간 포맷팅 함수 (DD일 HH:MM:SS 또는 HH:MM:SS)
+// 시간 포맷팅 함수 (HH:MM:SS 또는 HHH:MM:SS)
 export function formatTimeRemaining(milliseconds: number): string {
   const totalSeconds = Math.floor(milliseconds / 1000);
-  const days = Math.floor(totalSeconds / 86400);
-  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const totalHours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
 
-  if (days > 0) {
-    return `${days}일 ${hours.toString().padStart(2, "0")}:${minutes
-      .toString()
-      .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-  }
+  const hoursStr =
+    totalHours >= 100
+      ? totalHours.toString()
+      : totalHours.toString().padStart(2, "0");
 
-  return `${hours.toString().padStart(2, "0")}:${minutes
+  return `${hoursStr}:${minutes
     .toString()
     .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 }
@@ -59,7 +57,7 @@ export function calculateTimeRemaining(
       isIndefinite: true,
       isNotStarted: false,
       timeRemaining: 0,
-      displayText: "무기한",
+      displayText: "무기한으로 진행되는 투표에요.",
     };
   }
 
