@@ -2,14 +2,13 @@
 
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { getPoll } from "@/actions/poll";
 import { PollType } from "@prisma/client";
 import {
   YesNoPoll,
   LikeDislikePoll,
   MultipleChoicePoll,
 } from "./PollComponents";
+import { useGetPoll } from "@/hooks/poll/usePoll";
 
 interface PollContentProps {
   pollId: string;
@@ -47,27 +46,22 @@ function PollErrorFallback({
 }
 
 function PollData({ pollId }: { pollId: string }) {
-  const { data } = useSuspenseQuery({
-    queryKey: ["poll", pollId],
-    queryFn: () => getPoll(pollId),
-  });
+  const { data: poll } = useGetPoll(pollId);
 
-  if (!data?.success || !data.data) {
-    throw new Error(data?.error || "투표를 불러올 수 없습니다.");
+  if (!poll?.success || !poll.data) {
+    throw new Error(poll?.error || "투표를 불러올 수 없습니다.");
   }
 
-  const poll = data.data;
-
   const renderPollByType = () => {
-    switch (poll.type) {
+    switch (poll.data.type) {
       case PollType.YES_NO:
-        return <YesNoPoll poll={poll} />;
+        return <YesNoPoll pollId={pollId} />;
 
       case PollType.LIKE_DISLIKE:
-        return <LikeDislikePoll poll={poll} />;
+        return <LikeDislikePoll pollId={pollId} />;
 
       case PollType.MULTIPLE_CHOICE:
-        return <MultipleChoicePoll poll={poll} />;
+        return <MultipleChoicePoll pollId={pollId} />;
 
       default:
         return (
@@ -81,24 +75,7 @@ function PollData({ pollId }: { pollId: string }) {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            {poll.title}
-          </h1>
-
-          {poll.description && (
-            <p className="text-gray-600 mb-6">{poll.description}</p>
-          )}
-
-          <div className="space-y-6">
-            <div className="flex justify-between items-center text-sm text-gray-500">
-              <span>작성자: {poll.creator.name}</span>
-              <span>총 투표 수: {poll._count.votes}</span>
-            </div>
-
-            {renderPollByType()}
-          </div>
-        </div>
+        <div className="bg-white rounded-lg p-6">{renderPollByType()}</div>
       </div>
     </div>
   );

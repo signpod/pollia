@@ -338,6 +338,9 @@ export async function getPollResults(pollId: string) {
         title: true,
         description: true,
         type: true,
+        startDate: true,
+        endDate: true,
+        isIndefinite: true,
         options: {
           select: {
             id: true,
