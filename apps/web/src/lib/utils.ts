@@ -73,7 +73,7 @@ export function calculateTimeRemaining(
       isIndefinite: false,
       isNotStarted: true,
       timeRemaining: timeUntilStart,
-      displayText: `${formatTimeRemaining(timeUntilStart)} 후 시작`,
+      displayText: `${formatTimeRemaining(timeUntilStart)} 후에 시작해요`,
     };
   }
 

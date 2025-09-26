@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback } from "react";
 import { ThumbsUp, ThumbsDown } from "lucide-react";
 import { PollOptionProgressive } from "@/components/poll/PollOptionProgressive";
 import { Typo } from "@repo/ui/components";
@@ -14,7 +14,9 @@ import {
   isBinaryPollType,
 } from "@/constants/poll";
 import { PollType } from "@prisma/client";
-import { calculateTimeRemaining, isPollActive } from "@/lib/utils";
+import { isPollActive } from "@/lib/utils";
+import { usePollVoting } from "@/hooks/poll/usePollVoting";
+import { TimeDisplay } from "@/components/common/TimeDisplay";
 
 interface BasePollComponentProps extends React.PropsWithChildren {
   pollId: string;
@@ -53,34 +55,6 @@ function getDefaultOptionText(
 
 function BasePollComponent({ pollId, children }: BasePollComponentProps) {
   const { data: poll } = useGetPoll(pollId);
-  const [currentTime, setCurrentTime] = useState(new Date());
-
-  useEffect(() => {
-    if (!poll?.data?.endDate || poll?.data?.isIndefinite) {
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [poll?.data?.endDate, poll?.data?.isIndefinite]);
-
-  const timeStatus = poll?.data
-    ? calculateTimeRemaining(
-        poll.data.startDate ? new Date(poll.data.startDate) : null,
-        poll.data.endDate ? new Date(poll.data.endDate) : null,
-        poll.data.isIndefinite,
-        currentTime
-      )
-    : {
-        isExpired: false,
-        isIndefinite: false,
-        isNotStarted: false,
-        timeRemaining: 0,
-        displayText: "계산 중...",
-      };
 
   return (
     <div className="space-y-4">
@@ -113,19 +87,13 @@ function BasePollComponent({ pollId, children }: BasePollComponentProps) {
       {children}
 
       <div className="flex items-center justify-end w-full">
-        <div
-          className={`text-sm font-semibold text-right ${
-            timeStatus.isExpired
-              ? "text-red-400"
-              : timeStatus.isIndefinite
-                ? "text-zinc-400"
-                : timeStatus.isNotStarted
-                  ? "text-blue-400"
-                  : "text-zinc-400"
-          }`}
-        >
-          {timeStatus.displayText}
-        </div>
+        <TimeDisplay
+          startDate={
+            poll?.data?.startDate ? new Date(poll.data.startDate) : null
+          }
+          endDate={poll?.data?.endDate ? new Date(poll.data.endDate) : null}
+          isIndefinite={poll?.data?.isIndefinite ?? false}
+        />
       </div>
     </div>
   );
@@ -134,6 +102,7 @@ function BasePollComponent({ pollId, children }: BasePollComponentProps) {
 export function YesNoPoll({ pollId }: BasePollComponentProps) {
   const { data: userVoteStatus } = useUserVoteStatus(pollId);
   const { data: pollResults } = usePollResults(pollId);
+  const { handleVote, isVoting } = usePollVoting(pollId);
 
   const hasVoted = userVoteStatus?.success && userVoteStatus?.data?.hasVoted;
   const pollType: PollType | undefined = pollResults?.data?.type;
@@ -209,10 +178,36 @@ export function YesNoPoll({ pollId }: BasePollComponentProps) {
     [hasVoted, getUserVotedOption]
   );
 
-  const handleVote = useCallback(async (optionType: "LIKE" | "DISLIKE") => {
-    // TODO: 투표 처리 구현
-    console.log(`투표 처리: ${optionType}`);
-  }, []);
+  // optionType으로부터 실제 optionId 찾기
+  const getOptionIdByType = useCallback(
+    (optionType: "LIKE" | "DISLIKE"): string | null => {
+      if (!pollResults?.data?.options || !pollType) {
+        return null;
+      }
+
+      const targetOrderValue = getOrderForOptionType(optionType);
+      const targetOption = pollResults.data.options.find(
+        (option) => option.order === targetOrderValue
+      );
+
+      return targetOption?.id || null;
+    },
+    [pollResults, pollType]
+  );
+
+  const handleVoteAction = useCallback(
+    async (optionType: "LIKE" | "DISLIKE") => {
+      if (!pollActive || isVoting) return;
+
+      const optionId = getOptionIdByType(optionType);
+      if (!optionId) {
+        return;
+      }
+
+      await handleVote(optionId);
+    },
+    [pollActive, isVoting, getOptionIdByType, handleVote]
+  );
 
   const getOptionLabel = useCallback(
     (optionType: "LIKE" | "DISLIKE"): string => {
@@ -240,13 +235,13 @@ export function YesNoPoll({ pollId }: BasePollComponentProps) {
     [pollResults, pollType]
   );
 
-  const isVotingAllowed = pollActive && !hasVoted;
+  const isVotingAllowed = pollActive && !isVoting;
 
   return (
     <BasePollComponent pollId={pollId}>
       <div className="flex flex-col gap-2 w-full">
         <button
-          onClick={() => handleVote("LIKE")}
+          onClick={() => handleVoteAction("LIKE")}
           className={`w-full text-left ${!isVotingAllowed ? "opacity-50 cursor-not-allowed" : ""}`}
           disabled={!isVotingAllowed}
         >
@@ -259,7 +254,7 @@ export function YesNoPoll({ pollId }: BasePollComponentProps) {
         </button>
 
         <button
-          onClick={() => handleVote("DISLIKE")}
+          onClick={() => handleVoteAction("DISLIKE")}
           className={`w-full text-left ${!isVotingAllowed ? "opacity-50 cursor-not-allowed" : ""}`}
           disabled={!isVotingAllowed}
         >
