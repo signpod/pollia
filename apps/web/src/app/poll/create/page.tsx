@@ -5,7 +5,7 @@ import {
   Typo,
   CenterOverlay,
   StepProvider,
-  BottomCTALayout,
+  FixedBottomLayout,
 } from "@repo/ui/components";
 import { useAtomValue } from "jotai";
 import {
@@ -22,11 +22,11 @@ import MultipleInfoStep from "./MultipleInfoStep";
 
 export default function CreatePollPage() {
   return (
-    <BottomCTALayout>
+    <FixedBottomLayout>
       <StepProvider steps={CREATE_POLL_STEPS} initialStep={0}>
         <CreatePollPageContent />
       </StepProvider>
-    </BottomCTALayout>
+    </FixedBottomLayout>
   );
 }
 

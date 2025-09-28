@@ -18,7 +18,7 @@ import {
   ImageSelector,
   Input,
   Typo,
-  BottomCTALayout,
+  FixedBottomLayout,
   Toggle,
   DateAndTimePicker,
 } from "@repo/ui/components";
@@ -233,7 +233,7 @@ function MultipleInfoCTAButton() {
   };
 
   return (
-    <BottomCTALayout.CTA>
+    <FixedBottomLayout.Content>
       <div className="p-5 pb-10">
         <Button
           variant="primary"
@@ -246,7 +246,7 @@ function MultipleInfoCTAButton() {
           </Typo.ButtonText>
         </Button>
       </div>
-    </BottomCTALayout.CTA>
+    </FixedBottomLayout.Content>
   );
 }
 

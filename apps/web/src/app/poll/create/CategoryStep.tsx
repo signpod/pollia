@@ -1,7 +1,7 @@
 import { binaryPollCategoryAtom } from "@/atoms/create/binaryPollAtoms";
 import { multiplePollCategoryAtom } from "@/atoms/create/multiplePollAtoms";
 import { isMultiplePollTypeAtom } from "@/atoms/create/pollTypeAtoms";
-import { BottomCTALayout, Button, Typo, useStep } from "@repo/ui/components";
+import { FixedBottomLayout, Button, Typo, useStep } from "@repo/ui/components";
 import {
   POLL_CATEGORIES,
   CATEGORY_ICONS,
@@ -69,7 +69,7 @@ export default function CategoryStep() {
         })}
       </div>
 
-      <BottomCTALayout.CTA>
+      <FixedBottomLayout.Content>
         <div className="p-5 pb-10">
           <Button
             variant="primary"
@@ -80,7 +80,7 @@ export default function CategoryStep() {
             <Typo.ButtonText>선택하기</Typo.ButtonText>
           </Button>
         </div>
-      </BottomCTALayout.CTA>
+      </FixedBottomLayout.Content>
     </>
   );
 }

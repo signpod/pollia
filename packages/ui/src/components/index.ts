@@ -15,4 +15,4 @@ export * from "./common/CounterInput";
 // Hooks
 export * from "../hooks/useStep";
 
-export * from "./layout/BottomCTALayout";
+export * from "./layout/FixedBottomLayout";
