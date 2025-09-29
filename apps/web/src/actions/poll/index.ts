@@ -8,4 +8,4 @@ export { likePoll, unlikePoll, toggleLikePoll } from "./like";
 
 export { bookmarkPoll, unbookmarkPoll, toggleBookmarkPoll } from "./bookmark";
 
-export { getPollUserStatus, getBulkPollUserStatus } from "./status";
+export { getPollUserStatus } from "./status";
