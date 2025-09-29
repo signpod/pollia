@@ -4,6 +4,7 @@ export const pollQueryKeys = {
   userVoteStatus: (pollId: string) => ["user-vote-status", pollId] as const,
   userPolls: (userId?: string) =>
     userId ? (["user-polls", userId] as const) : (["user-polls"] as const),
+  userPollStatus: (pollId: string) => ["user-poll-status", pollId] as const,
   all: () => ["poll"] as const,
 } as const;
 
