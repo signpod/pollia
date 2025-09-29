@@ -106,7 +106,7 @@ export function PollOptionProgressive({
       {imageUrl && (
         <div className="relative w-8 h-6">
           <div className="absolute left-0 top-1/2 -translate-y-1/2 size-10 rounded-xs overflow-hidden">
-            <Image src={imageUrl} alt="image" width={40} height={40} />
+            <Image src={imageUrl} alt="image" fill className="object-cover" />
           </div>
         </div>
       )}
