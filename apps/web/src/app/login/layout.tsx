@@ -8,7 +8,7 @@ export default function LoginLayout({
 }) {
   return (
     <FixedBottomLayout hasBottomGap={false} className="min-h-screen">
-      <FixedTopLayout className="flex-1 min-h-screen flex flex-col">
+      <FixedTopLayout className="flex-1 min-h-screen flex flex-col py-6">
         <FixedTopLayout.Content>
           <div className="flex items-center gap-2 justify-center py-3">
             <LoginHeaderLogo />

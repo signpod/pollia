@@ -81,7 +81,7 @@ export function FixedTopLayout({
 
         <div
           style={{
-            paddingTop: hasTopGap ? `${contentHeight + 20}px` : "0px",
+            paddingTop: hasTopGap ? `${contentHeight}px` : "0px",
           }}
         />
 
