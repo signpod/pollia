@@ -10,25 +10,25 @@ import {
   useLayoutEffect,
 } from "react";
 
-interface FixedBottomContextType {
+interface FixedTopContextType {
   currentContent: ReactNode | null;
   setContent: (content: ReactNode, className: string) => void;
   clearContent: () => void;
 }
 
-const FixedBottomContext = createContext<FixedBottomContextType | null>(null);
+const FixedTopContext = createContext<FixedTopContextType | null>(null);
 
-interface FixedBottomLayoutProps {
+interface FixedTopLayoutProps {
   children: ReactNode;
   className?: string;
-  hasBottomGap?: boolean;
+  hasTopGap?: boolean;
 }
 
-export function FixedBottomLayout({
+export function FixedTopLayout({
   children,
   className,
-  hasBottomGap = true,
-}: FixedBottomLayoutProps) {
+  hasTopGap = true,
+}: FixedTopLayoutProps) {
   const [currentContent, setCurrentContent] = useState<ReactNode | null>(null);
   const [contentClassName, setContentClassName] = useState<string | null>(null);
   const [contentHeight, setContentHeight] = useState(0);
@@ -62,22 +62,15 @@ export function FixedBottomLayout({
   }, [currentContent]);
 
   return (
-    <FixedBottomContext.Provider
+    <FixedTopContext.Provider
       value={{ currentContent, setContent, clearContent }}
     >
       <div className={cn("relative", className)}>
-        {children}
-        <div
-          style={{
-            paddingBottom: hasBottomGap ? `${contentHeight + 20}px` : "0px",
-          }}
-        />
-
         {currentContent && (
           <div
             ref={contentRef}
             className={cn(
-              "fixed bottom-0 left-0 right-0 z-50 bg-white",
+              "fixed top-0 left-0 right-0 z-50 bg-white",
               "max-w-lg mx-auto",
               contentClassName
             )}
@@ -85,25 +78,30 @@ export function FixedBottomLayout({
             {currentContent}
           </div>
         )}
+
+        <div
+          style={{
+            paddingTop: hasTopGap ? `${contentHeight + 20}px` : "0px",
+          }}
+        />
+
+        {children}
       </div>
-    </FixedBottomContext.Provider>
+    </FixedTopContext.Provider>
   );
 }
 
-interface FixedBottomContentProps {
+interface FixedTopContentProps {
   children: ReactNode;
   className?: string;
 }
 
-export function FixedBottomContent({
-  children,
-  className,
-}: FixedBottomContentProps) {
-  const context = useContext(FixedBottomContext);
+export function FixedTopContent({ children, className }: FixedTopContentProps) {
+  const context = useContext(FixedTopContext);
 
   if (!context) {
     throw new Error(
-      "FixedBottomLayout.Content must be used within FixedBottomLayout"
+      "FixedTopLayout.Content must be used within FixedTopLayout"
     );
   }
 
