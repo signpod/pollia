@@ -1,5 +1,5 @@
 "use client";
-import { BottomCTALayout, Button, Typo } from "@repo/ui/components";
+import { FixedBottomLayout, Button, Typo } from "@repo/ui/components";
 import PolliaIcon from "@public/svgs/poll-poll-e.svg";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -39,7 +39,7 @@ function PollCreateDoneContent() {
         </Typo.MainTitle>
       </div>
 
-      <BottomCTALayout.CTA className="w-full flex justify-center bg-white">
+      <FixedBottomLayout.Content className="w-full flex justify-center bg-white">
         <motion.div
           className="flex flex-col justify-center w-full max-w-lg px-5 mb-10 gap-2"
           initial={{ opacity: 0, y: 30 }}
@@ -74,14 +74,14 @@ function PollCreateDoneContent() {
             </Button>
           </Link>
         </motion.div>
-      </BottomCTALayout.CTA>
+      </FixedBottomLayout.Content>
     </div>
   );
 }
 
 export default function PollCreateDonePage() {
   return (
-    <BottomCTALayout hasBottomGap={false}>
+    <FixedBottomLayout hasBottomGap={false}>
       <Suspense
         fallback={
           <div className="mt-60 text-center">
@@ -91,6 +91,6 @@ export default function PollCreateDonePage() {
       >
         <PollCreateDoneContent />
       </Suspense>
-    </BottomCTALayout>
+    </FixedBottomLayout>
   );
 }

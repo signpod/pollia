@@ -5,7 +5,8 @@ import {
   Typo,
   CenterOverlay,
   StepProvider,
-  BottomCTALayout,
+  FixedBottomLayout,
+  FixedTopLayout,
 } from "@repo/ui/components";
 import { useAtomValue } from "jotai";
 import {
@@ -22,11 +23,11 @@ import MultipleInfoStep from "./MultipleInfoStep";
 
 export default function CreatePollPage() {
   return (
-    <BottomCTALayout>
+    <FixedBottomLayout>
       <StepProvider steps={CREATE_POLL_STEPS} initialStep={0}>
         <CreatePollPageContent />
       </StepProvider>
-    </BottomCTALayout>
+    </FixedBottomLayout>
   );
 }
 
@@ -48,8 +49,8 @@ function CreatePollPageContent() {
   })[currentStep];
 
   return (
-    <div className="bg-white flex flex-col h-full gap-6">
-      <div className="flex flex-col gap-4">
+    <FixedTopLayout className="bg-white flex flex-col h-full gap-6">
+      <FixedTopLayout.Content className="flex flex-col gap-4">
         <div className="px-1">
           <CenterOverlay
             targetElement={
@@ -65,20 +66,20 @@ function CreatePollPageContent() {
             )}
           </CenterOverlay>
         </div>
+      </FixedTopLayout.Content>
 
-        <div className="px-5 space-y-1">
-          <Typo.MainTitle size="medium">
-            {currentStepConfig?.title}
-          </Typo.MainTitle>
-          {currentStepConfig?.description && (
-            <Typo.Body size="large" className="text-zinc-600">
-              {currentStepConfig.description}
-            </Typo.Body>
-          )}
-        </div>
+      <div className="px-5 space-y-1">
+        <Typo.MainTitle size="medium">
+          {currentStepConfig?.title}
+        </Typo.MainTitle>
+        {currentStepConfig?.description && (
+          <Typo.Body size="large" className="text-zinc-600">
+            {currentStepConfig.description}
+          </Typo.Body>
+        )}
       </div>
 
       {currentStepConfig?.content()}
-    </div>
+    </FixedTopLayout>
   );
 }

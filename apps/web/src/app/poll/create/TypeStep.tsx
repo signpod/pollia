@@ -2,7 +2,7 @@
 
 import { useAtom } from "jotai";
 import { pollTypeAtom } from "@/atoms/create/pollTypeAtoms";
-import { BottomCTALayout, Button, Typo, useStep } from "@repo/ui/components";
+import { FixedBottomLayout, Button, Typo, useStep } from "@repo/ui/components";
 import { cn } from "@/lib/utils";
 import PollTypeSelect from "@/components/poll/PollTypeSelect";
 import { PollType } from "@prisma/client";
@@ -27,7 +27,7 @@ export default function TypeStep() {
         selectedType={selectedType}
         onTypeChange={handleTypeChange}
       />
-      <BottomCTALayout.CTA>
+      <FixedBottomLayout.Content>
         <div className="p-5 pb-10">
           <Button
             onClick={goNext}
@@ -38,7 +38,7 @@ export default function TypeStep() {
             <Typo.ButtonText>다음</Typo.ButtonText>
           </Button>
         </div>
-      </BottomCTALayout.CTA>
+      </FixedBottomLayout.Content>
     </>
   );
 }

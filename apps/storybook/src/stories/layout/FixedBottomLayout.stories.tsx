@@ -1,31 +1,31 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
-import { BottomCTALayout } from "@repo/ui/components";
+import { FixedBottomLayout } from "@repo/ui/components";
 
-const meta: Meta<typeof BottomCTALayout> = {
-  title: "Layout/BottomCTALayout",
-  component: BottomCTALayout,
+const meta: Meta<typeof FixedBottomLayout> = {
+  title: "Layout/FixedBottomLayout",
+  component: FixedBottomLayout,
   parameters: {
     layout: "fullscreen",
     docs: {
       description: {
-        component: `# BottomCTALayout
+        component: `# FixedBottomLayout
 
-전역 상태 관리를 통해 하단에 플로팅 CTA를 보여주는 레이아웃 컴포넌트입니다.
+전역 상태 관리를 통해 하단에 고정된 요소를 보여주는 레이아웃 컴포넌트입니다.
 
 ## 사용법
 
 \`\`\`tsx
 // app/layout.tsx에서 전역 설정
-<BottomCTALayout>
+<FixedBottomLayout>
   {children}
-</BottomCTALayout>
+</FixedBottomLayout>
 
-// 어느 페이지에서든 CTA 사용
-<BottomCTALayout.CTA>
+// 어느 페이지에서든 하단 고정 요소 사용
+<FixedBottomLayout.Content>
   <button className="w-full bg-blue-500 text-white py-3 rounded-lg">
     로그인하기
   </button>
-</BottomCTALayout.CTA>
+</FixedBottomLayout.Content>
 \`\`\`
 
 ## Props
@@ -34,17 +34,17 @@ const meta: Meta<typeof BottomCTALayout> = {
 |------|------|-------------|
 | \`children\` | \`ReactNode\` | 메인 콘텐츠 |
 
-## CTA Props
+## Content Props
 
 | Prop | Type | Description |
 |------|------|-------------|
-| \`children\` | \`ReactNode\` | 하단에 표시할 CTA 내용 |
+| \`children\` | \`ReactNode\` | 하단에 표시할 고정 콘텐츠 |
 
 ## 특징
 
-- **전역 상태**: Context를 통한 전역 CTA 관리
-- **합성 패턴**: \`BottomCTALayout.CTA\`로 사용
-- **플로팅 UI**: 하단에 카드 형태로 플로팅
+- **전역 상태**: Context를 통한 전역 하단 콘텐츠 관리
+- **합성 패턴**: \`FixedBottomLayout.Content\`로 사용
+- **플로팅 UI**: 하단에 카드 형태로 고정
 - **자동 관리**: 컴포넌트 언마운트 시 자동 제거`,
       },
     },
@@ -58,7 +58,7 @@ type Story = StoryObj<typeof meta>;
 export const BasicButton: Story = {
   render: () => {
     return (
-      <BottomCTALayout>
+      <FixedBottomLayout>
         <div style={{ padding: "2rem", minHeight: "100vh" }}>
           <h1
             style={{
@@ -79,14 +79,14 @@ export const BasicButton: Story = {
           ))}
         </div>
 
-        <BottomCTALayout.CTA>
+        <FixedBottomLayout.Content>
           <div className="p-4">
             <button className="w-full bg-blue-500 text-white py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors">
-              기본 CTA 버튼
+              기본 고정 버튼
             </button>
           </div>
-        </BottomCTALayout.CTA>
-      </BottomCTALayout>
+        </FixedBottomLayout.Content>
+      </FixedBottomLayout>
     );
   },
 };
@@ -94,7 +94,7 @@ export const BasicButton: Story = {
 export const MultipleButtons: Story = {
   render: () => {
     return (
-      <BottomCTALayout>
+      <FixedBottomLayout>
         <div style={{ padding: "2rem", minHeight: "100vh" }}>
           <h1
             style={{
@@ -106,7 +106,7 @@ export const MultipleButtons: Story = {
             다중 버튼 예시
           </h1>
           <p style={{ marginBottom: "1rem" }}>
-            여러 버튼이 함께 표시되는 CTA 예시입니다.
+            여러 버튼이 함께 표시되는 고정 콘텐츠 예시입니다.
           </p>
           {Array.from({ length: 15 }, (_, i) => (
             <p key={i} style={{ marginBottom: "1rem" }}>
@@ -115,7 +115,7 @@ export const MultipleButtons: Story = {
           ))}
         </div>
 
-        <BottomCTALayout.CTA>
+        <FixedBottomLayout.Content>
           <div className="flex gap-3 p-4">
             <button className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors">
               취소
@@ -124,16 +124,16 @@ export const MultipleButtons: Story = {
               확인
             </button>
           </div>
-        </BottomCTALayout.CTA>
-      </BottomCTALayout>
+        </FixedBottomLayout.Content>
+      </FixedBottomLayout>
     );
   },
 };
 
-export const ComplexCTA: Story = {
+export const ComplexContent: Story = {
   render: () => {
     return (
-      <BottomCTALayout>
+      <FixedBottomLayout>
         <div style={{ padding: "2rem", minHeight: "100vh" }}>
           <h1
             style={{
@@ -142,19 +142,19 @@ export const ComplexCTA: Story = {
               marginBottom: "1rem",
             }}
           >
-            복합 CTA 예시
+            복합 고정 콘텐츠 예시
           </h1>
           <p style={{ marginBottom: "1rem" }}>
-            텍스트와 버튼이 함께 있는 복잡한 CTA 예시입니다.
+            텍스트와 버튼이 함께 있는 복잡한 고정 콘텐츠 예시입니다.
           </p>
           {Array.from({ length: 25 }, (_, i) => (
             <p key={i} style={{ marginBottom: "1rem" }}>
-              콘텐츠 라인 {i + 1} - 복합 CTA 레이아웃을 테스트합니다.
+              콘텐츠 라인 {i + 1} - 복합 고정 레이아웃을 테스트합니다.
             </p>
           ))}
         </div>
 
-        <BottomCTALayout.CTA>
+        <FixedBottomLayout.Content>
           <div className="space-y-3 p-4">
             <div className="flex items-center justify-between">
               <div>
@@ -167,8 +167,8 @@ export const ComplexCTA: Story = {
               결제하기
             </button>
           </div>
-        </BottomCTALayout.CTA>
-      </BottomCTALayout>
+        </FixedBottomLayout.Content>
+      </FixedBottomLayout>
     );
   },
 };

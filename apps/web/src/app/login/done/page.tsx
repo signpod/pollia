@@ -1,5 +1,5 @@
 "use client";
-import { BottomCTALayout, Button, Typo } from "@repo/ui/components";
+import { FixedBottomLayout, Button, Typo } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
 import PolliaIcon from "@public/svgs/poll-poll-e.svg";
 import Link from "next/link";
@@ -42,7 +42,7 @@ export default function LoginDonePage() {
         </motion.div>
       </div>
 
-      <BottomCTALayout.CTA className="w-full flex justify-center bg-white">
+      <FixedBottomLayout.Content className="w-full flex justify-center bg-white">
         <motion.div
           className="flex flex-col justify-center w-full max-w-lg px-5 mb-10"
           initial={{ opacity: 0, y: 30 }}
@@ -62,7 +62,7 @@ export default function LoginDonePage() {
             </Button>
           </Link>
         </motion.div>
-      </BottomCTALayout.CTA>
+      </FixedBottomLayout.Content>
     </>
   );
 }
