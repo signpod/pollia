@@ -166,3 +166,31 @@ export interface GetPollResponse {
   };
   error?: string;
 }
+
+export interface GetPollUserStatusResponse {
+  userId: string;
+  pollId: string;
+  isLiked: boolean;
+  isBookmarked: boolean;
+}
+
+export interface GetBulkPollUserStatusResponse {
+  userId: string;
+  statusMap: Record<
+    string,
+    {
+      isLiked: boolean;
+      isBookmarked: boolean;
+    }
+  >;
+}
+
+export interface ToggleBookmarkPollResponse {
+  isBookmarked: boolean;
+  message: string;
+}
+
+export interface ToggleLikePollResponse {
+  isLiked: boolean;
+  message: string;
+}

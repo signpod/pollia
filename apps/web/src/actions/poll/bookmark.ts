@@ -12,10 +12,9 @@ export async function bookmarkPoll(pollId: string) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return {
-        success: false,
-        error: "로그인이 필요합니다.",
-      };
+      const error = new Error("로그인이 필요합니다.");
+      error.cause = 401;
+      throw error;
     }
 
     const poll = await prisma.poll.findUnique({
@@ -24,10 +23,9 @@ export async function bookmarkPoll(pollId: string) {
     });
 
     if (!poll) {
-      return {
-        success: false,
-        error: "존재하지 않는 투표입니다.",
-      };
+      const error = new Error("존재하지 않는 투표입니다.");
+      error.cause = 404;
+      throw error;
     }
 
     const existingBookmark = await prisma.pollBookmark.findUnique({
@@ -40,10 +38,9 @@ export async function bookmarkPoll(pollId: string) {
     });
 
     if (existingBookmark) {
-      return {
-        success: false,
-        error: "이미 북마크한 투표입니다.",
-      };
+      const error = new Error("이미 북마크한 투표입니다.");
+      error.cause = 409; // Conflict
+      throw error;
     }
 
     await prisma.pollBookmark.create({
@@ -54,17 +51,16 @@ export async function bookmarkPoll(pollId: string) {
     });
 
     return {
-      success: true,
-      data: {
-        message: "북마크가 추가되었습니다.",
-      },
+      message: "북마크가 추가되었습니다.",
     };
   } catch (error) {
     console.error("❌ 북마크 추가 에러:", error);
-    return {
-      success: false,
-      error: "북마크 처리 중 오류가 발생했습니다.",
-    };
+    if (error instanceof Error && error.cause) {
+      throw error; // 기존 에러 다시 throw
+    }
+    const serverError = new Error("북마크 처리 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
 }
 
@@ -77,10 +73,9 @@ export async function unbookmarkPoll(pollId: string) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return {
-        success: false,
-        error: "로그인이 필요합니다.",
-      };
+      const error = new Error("로그인이 필요합니다.");
+      error.cause = 401;
+      throw error;
     }
 
     const result = await prisma.pollBookmark.deleteMany({
@@ -91,24 +86,22 @@ export async function unbookmarkPoll(pollId: string) {
     });
 
     if (result.count === 0) {
-      return {
-        success: false,
-        error: "북마크하지 않은 투표입니다.",
-      };
+      const error = new Error("북마크하지 않은 투표입니다.");
+      error.cause = 404;
+      throw error;
     }
 
     return {
-      success: true,
-      data: {
-        message: "북마크가 취소되었습니다.",
-      },
+      message: "북마크가 취소되었습니다.",
     };
   } catch (error) {
     console.error("❌ 북마크 취소 에러:", error);
-    return {
-      success: false,
-      error: "북마크 취소 중 오류가 발생했습니다.",
-    };
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("북마크 취소 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
 }
 
@@ -121,10 +114,9 @@ export async function toggleBookmarkPoll(pollId: string) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return {
-        success: false,
-        error: "로그인이 필요합니다.",
-      };
+      const error = new Error("로그인이 필요합니다.");
+      error.cause = 401;
+      throw error;
     }
 
     const poll = await prisma.poll.findUnique({
@@ -133,10 +125,9 @@ export async function toggleBookmarkPoll(pollId: string) {
     });
 
     if (!poll) {
-      return {
-        success: false,
-        error: "존재하지 않는 투표입니다.",
-      };
+      const error = new Error("존재하지 않는 투표입니다.");
+      error.cause = 404;
+      throw error;
     }
 
     const existingBookmark = await prisma.pollBookmark.findUnique({
@@ -171,19 +162,18 @@ export async function toggleBookmarkPoll(pollId: string) {
     }
 
     return {
-      success: true,
-      data: {
-        isBookmarked,
-        message: isBookmarked
-          ? "북마크가 추가되었습니다."
-          : "북마크가 취소되었습니다.",
-      },
+      isBookmarked,
+      message: isBookmarked
+        ? "북마크가 추가되었습니다."
+        : "북마크가 취소되었습니다.",
     };
   } catch (error) {
     console.error("❌ 북마크 토글 에러:", error);
-    return {
-      success: false,
-      error: "북마크 처리 중 오류가 발생했습니다.",
-    };
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("북마크 처리 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
 }

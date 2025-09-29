@@ -12,10 +12,9 @@ export async function likePoll(pollId: string) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return {
-        success: false,
-        error: "로그인이 필요합니다.",
-      };
+      const error = new Error("로그인이 필요합니다.");
+      error.cause = 401;
+      throw error;
     }
 
     const poll = await prisma.poll.findUnique({
@@ -24,10 +23,9 @@ export async function likePoll(pollId: string) {
     });
 
     if (!poll) {
-      return {
-        success: false,
-        error: "존재하지 않는 투표입니다.",
-      };
+      const error = new Error("존재하지 않는 투표입니다.");
+      error.cause = 404;
+      throw error;
     }
 
     const existingLike = await prisma.pollLike.findUnique({
@@ -40,10 +38,9 @@ export async function likePoll(pollId: string) {
     });
 
     if (existingLike) {
-      return {
-        success: false,
-        error: "이미 좋아요를 누른 투표입니다.",
-      };
+      const error = new Error("이미 좋아요를 누른 투표입니다.");
+      error.cause = 409;
+      throw error;
     }
 
     await prisma.pollLike.create({
@@ -54,17 +51,16 @@ export async function likePoll(pollId: string) {
     });
 
     return {
-      success: true,
-      data: {
-        message: "좋아요가 추가되었습니다.",
-      },
+      message: "좋아요가 추가되었습니다.",
     };
   } catch (error) {
     console.error("❌ 좋아요 추가 에러:", error);
-    return {
-      success: false,
-      error: "좋아요 처리 중 오류가 발생했습니다.",
-    };
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("좋아요 처리 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
 }
 
@@ -77,10 +73,9 @@ export async function unlikePoll(pollId: string) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return {
-        success: false,
-        error: "로그인이 필요합니다.",
-      };
+      const error = new Error("로그인이 필요합니다.");
+      error.cause = 401;
+      throw error;
     }
 
     const result = await prisma.pollLike.deleteMany({
@@ -91,24 +86,22 @@ export async function unlikePoll(pollId: string) {
     });
 
     if (result.count === 0) {
-      return {
-        success: false,
-        error: "좋아요를 누르지 않은 투표입니다.",
-      };
+      const error = new Error("좋아요를 누르지 않은 투표입니다.");
+      error.cause = 404;
+      throw error;
     }
 
     return {
-      success: true,
-      data: {
-        message: "좋아요가 취소되었습니다.",
-      },
+      message: "좋아요가 취소되었습니다.",
     };
   } catch (error) {
     console.error("❌ 좋아요 취소 에러:", error);
-    return {
-      success: false,
-      error: "좋아요 취소 중 오류가 발생했습니다.",
-    };
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("좋아요 취소 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
 }
 
@@ -121,10 +114,9 @@ export async function toggleLikePoll(pollId: string) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return {
-        success: false,
-        error: "로그인이 필요합니다.",
-      };
+      const error = new Error("로그인이 필요합니다.");
+      error.cause = 401;
+      throw error;
     }
 
     const poll = await prisma.poll.findUnique({
@@ -133,10 +125,9 @@ export async function toggleLikePoll(pollId: string) {
     });
 
     if (!poll) {
-      return {
-        success: false,
-        error: "존재하지 않는 투표입니다.",
-      };
+      const error = new Error("존재하지 않는 투표입니다.");
+      error.cause = 404;
+      throw error;
     }
 
     const existingLike = await prisma.pollLike.findUnique({
@@ -171,19 +162,18 @@ export async function toggleLikePoll(pollId: string) {
     }
 
     return {
-      success: true,
-      data: {
-        isLiked,
-        message: isLiked
-          ? "좋아요가 추가되었습니다."
-          : "좋아요가 취소되었습니다.",
-      },
+      isLiked,
+      message: isLiked
+        ? "좋아요가 추가되었습니다."
+        : "좋아요가 취소되었습니다.",
     };
   } catch (error) {
     console.error("❌ 좋아요 토글 에러:", error);
-    return {
-      success: false,
-      error: "좋아요 처리 중 오류가 발생했습니다.",
-    };
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("좋아요 처리 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
 }
