@@ -1,19 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toggleLikePoll } from "@/actions/poll";
 import { pollQueryKeys } from "@/constants/queryKeys/pollQueryKeys";
-import type { GetPollResponse } from "@/types/dto";
-
-interface LikeResponse {
-  success: boolean;
-  data?: {
-    isLiked: boolean;
-    message: string;
-  };
-  error?: string;
-}
+import type {
+  ToggleLikePollResponse,
+  GetPollUserStatusResponse,
+} from "@/types/dto";
 
 interface LikeMutationContext {
-  previousPoll: GetPollResponse | undefined;
+  previousUserStatus: GetPollUserStatusResponse | undefined;
   pollId: string;
   optimisticUpdate: boolean;
 }
@@ -22,7 +16,7 @@ export const useLike = (pollId: string) => {
   const queryClient = useQueryClient();
 
   const likeMutation = useMutation<
-    LikeResponse,
+    ToggleLikePollResponse,
     Error,
     void,
     LikeMutationContext
@@ -34,101 +28,58 @@ export const useLike = (pollId: string) => {
 
     onMutate: async () => {
       await queryClient.cancelQueries({
-        queryKey: pollQueryKeys.poll(pollId),
+        queryKey: pollQueryKeys.userPollStatus(pollId),
       });
 
-      const previousPoll = queryClient.getQueryData<GetPollResponse>(
-        pollQueryKeys.poll(pollId)
-      );
+      const previousUserStatus =
+        queryClient.getQueryData<GetPollUserStatusResponse>(
+          pollQueryKeys.userPollStatus(pollId)
+        );
 
-      queryClient.setQueryData<GetPollResponse>(
-        pollQueryKeys.poll(pollId),
+      queryClient.setQueryData<GetPollUserStatusResponse>(
+        pollQueryKeys.userPollStatus(pollId),
         (oldData) => {
-          if (!oldData?.success || !oldData.data) return oldData;
-
-          const currentLikeCount = oldData.data._count?.likes || 0;
-          const hasUserLiked = oldData.data.userLikeStatus?.isLiked || false;
+          if (!oldData) return oldData;
 
           return {
             ...oldData,
-            data: {
-              ...oldData.data,
-              _count: {
-                ...oldData.data._count,
-                likes: hasUserLiked
-                  ? Math.max(0, currentLikeCount - 1)
-                  : currentLikeCount + 1,
-              },
-              userLikeStatus: {
-                isLiked: !hasUserLiked,
-              },
-            },
+            isLiked: !oldData.isLiked,
           };
         }
       );
 
       return {
-        previousPoll,
+        previousUserStatus,
         pollId,
         optimisticUpdate: true,
       };
     },
 
-    onSuccess: (data) => {
-      if (data.success && data.data) {
-        queryClient.setQueryData<GetPollResponse>(
-          pollQueryKeys.poll(pollId),
-          (oldData) => {
-            if (!oldData?.success || !oldData.data) return oldData;
-
-            return {
-              ...oldData,
-              data: {
-                ...oldData.data,
-                userLikeStatus: {
-                  isLiked: data.data!.isLiked,
-                },
-              },
-            };
-          }
-        );
-      }
-
+    onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: pollQueryKeys.poll(pollId),
+        queryKey: pollQueryKeys.userPollStatus(pollId),
       });
     },
 
     onError: (error, _variables, context) => {
-      if (context?.previousPoll) {
-        queryClient.setQueryData<GetPollResponse>(
-          pollQueryKeys.poll(pollId),
-          context.previousPoll
+      if (context?.previousUserStatus) {
+        queryClient.setQueryData<GetPollUserStatusResponse>(
+          pollQueryKeys.userPollStatus(pollId),
+          context.previousUserStatus
         );
       }
       console.error("좋아요 처리 실패:", error);
     },
-
-    onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: pollQueryKeys.poll(pollId),
-      });
-    },
   });
 
-  const currentPoll = queryClient.getQueryData<GetPollResponse>(
-    pollQueryKeys.poll(pollId)
+  const userStatus = queryClient.getQueryData<GetPollUserStatusResponse>(
+    pollQueryKeys.userPollStatus(pollId)
   );
 
-  const isLiked =
-    (currentPoll?.success && currentPoll.data?.userLikeStatus?.isLiked) ||
-    false;
-  const likeCount =
-    (currentPoll?.success && currentPoll.data?._count?.likes) || 0;
+  const isLiked = userStatus?.isLiked || false;
 
   return {
     isLiked,
-    likeCount,
     isProcessing: likeMutation.isPending,
     handleLike: likeMutation.mutate,
     error: likeMutation.error,

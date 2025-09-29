@@ -1,19 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toggleBookmarkPoll } from "@/actions/poll";
 import { pollQueryKeys } from "@/constants/queryKeys/pollQueryKeys";
-import type { GetPollResponse } from "@/types/dto";
-
-interface BookmarkResponse {
-  success: boolean;
-  data?: {
-    isBookmarked: boolean;
-    message: string;
-  };
-  error?: string;
-}
+import type {
+  ToggleBookmarkPollResponse,
+  GetPollUserStatusResponse,
+} from "@/types/dto";
 
 interface BookmarkMutationContext {
-  previousPoll: GetPollResponse | undefined;
+  previousUserStatus: GetPollUserStatusResponse | undefined;
   pollId: string;
   optimisticUpdate: boolean;
 }
@@ -22,7 +16,7 @@ export const useBookmark = (pollId: string) => {
   const queryClient = useQueryClient();
 
   const bookmarkMutation = useMutation<
-    BookmarkResponse,
+    ToggleBookmarkPollResponse,
     Error,
     void,
     BookmarkMutationContext
@@ -34,103 +28,58 @@ export const useBookmark = (pollId: string) => {
 
     onMutate: async () => {
       await queryClient.cancelQueries({
-        queryKey: pollQueryKeys.poll(pollId),
+        queryKey: pollQueryKeys.userPollStatus(pollId),
       });
 
-      const previousPoll = queryClient.getQueryData<GetPollResponse>(
-        pollQueryKeys.poll(pollId)
-      );
+      const previousUserStatus =
+        queryClient.getQueryData<GetPollUserStatusResponse>(
+          pollQueryKeys.userPollStatus(pollId)
+        );
 
-      queryClient.setQueryData<GetPollResponse>(
-        pollQueryKeys.poll(pollId),
+      queryClient.setQueryData<GetPollUserStatusResponse>(
+        pollQueryKeys.userPollStatus(pollId),
         (oldData) => {
-          if (!oldData?.success || !oldData.data) return oldData;
-
-          const currentBookmarkCount = oldData.data._count?.bookmarks || 0;
-          const hasUserBookmarked =
-            oldData.data.userBookmarkStatus?.isBookmarked || false;
+          if (!oldData) return oldData;
 
           return {
             ...oldData,
-            data: {
-              ...oldData.data,
-              _count: {
-                ...oldData.data._count,
-                bookmarks: hasUserBookmarked
-                  ? Math.max(0, currentBookmarkCount - 1)
-                  : currentBookmarkCount + 1,
-              },
-              userBookmarkStatus: {
-                isBookmarked: !hasUserBookmarked,
-              },
-            },
+            isBookmarked: !oldData.isBookmarked,
           };
         }
       );
 
       return {
-        previousPoll,
+        previousUserStatus,
         pollId,
         optimisticUpdate: true,
       };
     },
 
-    onSuccess: (data) => {
-      if (data.success && data.data) {
-        queryClient.setQueryData<GetPollResponse>(
-          pollQueryKeys.poll(pollId),
-          (oldData) => {
-            if (!oldData?.success || !oldData.data) return oldData;
-
-            return {
-              ...oldData,
-              data: {
-                ...oldData.data,
-                userBookmarkStatus: {
-                  isBookmarked: data.data!.isBookmarked,
-                },
-              },
-            };
-          }
-        );
-      }
-
+    onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: pollQueryKeys.poll(pollId),
+        queryKey: pollQueryKeys.userPollStatus(pollId),
       });
     },
 
     onError: (error, _variables, context) => {
-      if (context?.previousPoll) {
-        queryClient.setQueryData<GetPollResponse>(
-          pollQueryKeys.poll(pollId),
-          context.previousPoll
+      if (context?.previousUserStatus) {
+        queryClient.setQueryData<GetPollUserStatusResponse>(
+          pollQueryKeys.userPollStatus(pollId),
+          context.previousUserStatus
         );
       }
       console.error("북마크 처리 실패:", error);
     },
-
-    onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: pollQueryKeys.poll(pollId),
-      });
-    },
   });
 
-  const currentPoll = queryClient.getQueryData<GetPollResponse>(
-    pollQueryKeys.poll(pollId)
+  const userStatus = queryClient.getQueryData<GetPollUserStatusResponse>(
+    pollQueryKeys.userPollStatus(pollId)
   );
 
-  const isBookmarked =
-    (currentPoll?.success &&
-      currentPoll.data?.userBookmarkStatus?.isBookmarked) ||
-    false;
-  const bookmarkCount =
-    (currentPoll?.success && currentPoll.data?._count?.bookmarks) || 0;
+  const isBookmarked = userStatus?.isBookmarked || false;
 
   return {
     isBookmarked,
-    bookmarkCount,
     isProcessing: bookmarkMutation.isPending,
     handleBookmark: bookmarkMutation.mutate,
     error: bookmarkMutation.error,
