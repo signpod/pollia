@@ -8,6 +8,8 @@ import { useGetPoll } from "@/hooks/poll/usePoll";
 
 import { BinaryPoll } from "./BinaryPoll";
 import { MultipleChoicePoll } from "./MultipleChoicePoll";
+import { FixedBottomLayout } from "@repo/ui/components";
+import { BottomCTAButtons } from "./BottomCTAButtons";
 
 interface PollContentProps {
   pollId: string;
@@ -70,20 +72,22 @@ function PollData({ pollId }: { pollId: string }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-4xl">
-        <div className="bg-white rounded-lg p-6">{renderPollByType()}</div>
-      </div>
-    </div>
+    <div className="bg-white rounded-lg mx-4 p-6">{renderPollByType()}</div>
   );
 }
 
 export function PollContent({ pollId }: PollContentProps) {
   return (
-    <ErrorBoundary FallbackComponent={PollErrorFallback}>
-      <Suspense fallback={<div className="text-center py-8">Loading...</div>}>
-        <PollData pollId={pollId} />
-      </Suspense>
-    </ErrorBoundary>
+    <>
+      <ErrorBoundary FallbackComponent={PollErrorFallback}>
+        <Suspense fallback={<div className="text-center py-8">Loading...</div>}>
+          <PollData pollId={pollId} />
+        </Suspense>
+      </ErrorBoundary>
+
+      <FixedBottomLayout.Content>
+        <BottomCTAButtons />
+      </FixedBottomLayout.Content>
+    </>
   );
 }
