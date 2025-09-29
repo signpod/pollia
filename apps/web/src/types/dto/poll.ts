@@ -124,3 +124,45 @@ export interface GetPollResultsResponse {
   };
   error?: string;
 }
+
+export interface GetPollResponse {
+  success: boolean;
+  data?: {
+    id: string;
+    title: string;
+    description?: string;
+    imageUrl?: string;
+    type: PollType;
+    category: PollCategory;
+    startDate: Date;
+    endDate?: Date;
+    isIndefinite: boolean;
+    maxSelections?: number;
+    showResultsMode: ResultMode;
+    isPublic: boolean;
+    creator: {
+      id: string;
+      name: string;
+    };
+    options: Array<{
+      id: string;
+      description: string;
+      imageUrl?: string;
+      _count: {
+        votes: number;
+      };
+    }>;
+    _count: {
+      votes: number;
+      likes: number;
+      bookmarks: number;
+    };
+    userBookmarkStatus?: {
+      isBookmarked: boolean;
+    };
+    userLikeStatus?: {
+      isLiked: boolean;
+    };
+  };
+  error?: string;
+}
