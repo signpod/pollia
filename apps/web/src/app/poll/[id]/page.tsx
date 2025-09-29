@@ -1,6 +1,11 @@
 import { dehydrate } from "@tanstack/react-query";
 import { getQueryClient } from "@/lib/getQueryClient";
-import { getPoll, getPollResults, getUserVoteStatus } from "@/actions/poll";
+import {
+  getPoll,
+  getPollResults,
+  getPollUserStatus,
+  getUserVoteStatus,
+} from "@/actions/poll";
 import { pollQueryKeys } from "@/constants/queryKeys/pollQueryKeys";
 import PollClientWrapper from "./PollClientWrapper.tsx";
 
@@ -28,6 +33,12 @@ export default async function PollPage({ params }: PollPageProps) {
   await queryClient.prefetchQuery({
     queryKey: pollQueryKeys.userVoteStatus(id),
     queryFn: () => getUserVoteStatus(id),
+  });
+
+  // 투표 좋아요/북마크 여부 prefetch (로그인 상태 확인 포함)
+  await queryClient.prefetchQuery({
+    queryKey: pollQueryKeys.userPollStatus(id),
+    queryFn: () => getPollUserStatus(id),
   });
 
   const dehydratedState = dehydrate(queryClient);

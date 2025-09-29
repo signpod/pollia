@@ -1,6 +1,5 @@
 "use client";
 
-import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { PollType } from "@prisma/client";
 
@@ -80,14 +79,12 @@ export function PollContent({ pollId }: PollContentProps) {
   return (
     <>
       <ErrorBoundary FallbackComponent={PollErrorFallback}>
-        <Suspense fallback={<div className="text-center py-8">Loading...</div>}>
-          <PollData pollId={pollId} />
-        </Suspense>
-      </ErrorBoundary>
+        <PollData pollId={pollId} />
 
-      <FixedBottomLayout.Content>
-        <BottomCTAButtons />
-      </FixedBottomLayout.Content>
+        <FixedBottomLayout.Content>
+          <BottomCTAButtons pollId={pollId} />
+        </FixedBottomLayout.Content>
+      </ErrorBoundary>
     </>
   );
 }
