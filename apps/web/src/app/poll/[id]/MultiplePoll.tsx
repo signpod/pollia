@@ -5,7 +5,6 @@ import { isPollActive } from "@/lib/utils";
 import { useMultipleVoting } from "@/hooks/poll/useMultipleVoting";
 import { BasePollComponent } from "./BasePollComponent";
 import { Button } from "@repo/ui/components";
-import { Loader2Icon } from "lucide-react";
 
 interface MultiplePollProps {
   pollId: string;
@@ -168,12 +167,10 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
             disabled={!canSubmit}
             className="w-full "
             variant={canSubmit ? "primary" : "secondary"}
+            loading={isVoting}
           >
-            {isVoting ? (
-              <Loader2Icon className="w-4 h-4 animate-spin" />
-            ) : (
-              `${selectedOptionIds.size ? `${selectedOptionIds.size}개` : ""} 투표하기`
-            )}
+            {selectedOptionIds.size ? `${selectedOptionIds.size}개` : ""}
+            투표하기
           </Button>
         ) : (
           <Button
@@ -181,12 +178,9 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
             disabled={!isVotingAllowed}
             className="w-full mt-2"
             variant="secondary"
+            loading={isVoting}
           >
-            {isVoting ? (
-              <Loader2Icon className="w-4 h-4 animate-spin" />
-            ) : (
-              "재투표하기"
-            )}
+            재투표하기
           </Button>
         )}
       </div>
