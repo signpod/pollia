@@ -3,3 +3,6 @@ export type { UseCurrentUserReturn } from "./useCurrentUser";
 
 export { useUserStats } from "./useUserStats";
 export type { UseUserStatsReturn } from "./useUserStats";
+
+export { useAuth } from "./useAuth";
+export type { UseAuthReturn } from "./useAuth";
