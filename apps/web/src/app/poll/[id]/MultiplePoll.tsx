@@ -16,8 +16,6 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
   const { data: pollResults } = usePollResults(pollId);
   const { handleVoteToggle, isVoting } = useMultipleVoting(pollId);
 
-  console.log(userVoteStatus);
-
   const [selectedOptionIds, setSelectedOptionIds] = useState<Set<string>>(
     new Set()
   );
