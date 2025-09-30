@@ -72,21 +72,22 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
 
   const handleOptionToggle = useCallback(
     (optionId: string) => {
-      if (hasVoted || !pollActive || isVoting) return;
+      if (!pollActive || isVoting) return;
 
-      setSelectedOptionIds((prev) => {
-        const newSet = new Set(prev);
-        if (newSet.has(optionId)) {
-          newSet.delete(optionId);
-        } else {
-          if (newSet.size >= maxSelections) {
-            console.warn(`최대 ${maxSelections}개까지만 선택할 수 있습니다.`);
-            return newSet;
+      if (!hasVoted)
+        setSelectedOptionIds((prev) => {
+          const newSet = new Set(prev);
+          if (newSet.has(optionId)) {
+            newSet.delete(optionId);
+          } else {
+            if (newSet.size >= maxSelections) {
+              console.warn(`최대 ${maxSelections}개까지만 선택할 수 있습니다.`);
+              return newSet;
+            }
+            newSet.add(optionId);
           }
-          newSet.add(optionId);
-        }
-        return newSet;
-      });
+          return newSet;
+        });
     },
     [hasVoted, pollActive, isVoting, maxSelections]
   );
@@ -129,9 +130,13 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
 
   const isOptionDisabled = useCallback(
     (optionId: string): boolean => {
-      if (hasVoted || !pollActive || isVoting) return true;
-      if (selectedOptionIds.has(optionId)) return false;
-      return selectedOptionIds.size >= maxSelections;
+      if (!pollActive || isVoting) return true;
+      if (hasVoted) {
+        return false;
+      } else {
+        if (selectedOptionIds.has(optionId)) return false;
+        return selectedOptionIds.size >= maxSelections;
+      }
     },
     [hasVoted, pollActive, isVoting, selectedOptionIds, maxSelections]
   );
