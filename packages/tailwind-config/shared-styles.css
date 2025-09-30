@@ -60,11 +60,11 @@
   /* Sub colors */
   --color-yellow-500: #ffd74a;
   --color-mint-500: #4ad3c8;
-  
+
   --color-primary: var(--color-violet-500);
   --color-yellow: var(--color-yellow-500);
   --color-mint: var(--color-mint-500);
-  
+
   /* Poll specific colors */
   --color-poll-primary: oklch(0.6 0.2 220);
   --color-poll-secondary: oklch(0.8 0.1 160);
@@ -82,33 +82,33 @@
   --font-mono: "GeistMono", "Fira Code", monospace;
 
   /* Spacing Scale */
-  --space-xs: 0.25rem;   /* 4px */
-  --space-sm: 0.5rem;    /* 8px */
-  --space-md: 0.75rem;   /* 12px */
-  --space-lg: 1rem;      /* 16px */
-  --space-xl: 1.5rem;    /* 24px */
-  
+  --space-xs: 0.25rem; /* 4px */
+  --space-sm: 0.5rem; /* 8px */
+  --space-md: 0.75rem; /* 12px */
+  --space-lg: 1rem; /* 16px */
+  --space-xl: 1.5rem; /* 24px */
+
   /* Border Radius */
   --radius-none: 0px;
-  --radius-xs: 0.25rem;  /* 4px */
-  --radius-sm: 0.5rem;   /* 8px */
-  --radius-md: 0.75rem;  /* 12px */
-  --radius-lg: 1rem;     /* 16px */
+  --radius-xs: 0.25rem; /* 4px */
+  --radius-sm: 0.5rem; /* 8px */
+  --radius-md: 0.75rem; /* 12px */
+  --radius-lg: 1rem; /* 16px */
   --radius-full: 9999px;
 
   /* Additional spacing for better coverage */
   --space-0: 0px;
-  --space-1: 0.25rem;    /* 4px */
-  --space-2: 0.5rem;     /* 8px */
-  --space-3: 0.75rem;    /* 12px */
-  --space-4: 1rem;       /* 16px */
-  --space-6: 1.5rem;     /* 24px */
-  --space-8: 2rem;       /* 32px */
-  --space-12: 3rem;      /* 48px */
-  --space-16: 4rem;      /* 64px */
-  --space-20: 5rem;      /* 80px */
-  --space-24: 6rem;      /* 96px */
-  --space-32: 8rem;      /* 128px */
+  --space-1: 0.25rem; /* 4px */
+  --space-2: 0.5rem; /* 8px */
+  --space-3: 0.75rem; /* 12px */
+  --space-4: 1rem; /* 16px */
+  --space-6: 1.5rem; /* 24px */
+  --space-8: 2rem; /* 32px */
+  --space-12: 3rem; /* 48px */
+  --space-16: 4rem; /* 64px */
+  --space-20: 5rem; /* 80px */
+  --space-24: 6rem; /* 96px */
+  --space-32: 8rem; /* 128px */
 
   /* System colors for @apply utilities */
   --color-background: #ffffff;
@@ -162,37 +162,4 @@ body {
 body {
   @apply bg-background text-foreground;
   font-family: var(--font-display);
-}
-
-/* Custom utility classes */
-@utility poll-card {
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  background-color: white;
-  box-shadow:
-    0 1px 3px 0 rgb(0 0 0 / 0.1),
-    0 1px 2px -1px rgb(0 0 0 / 0.1);
-  border: 1px solid rgb(229 231 235);
-}
-
-@utility vote-progress {
-  height: 0.5rem;
-  background-color: rgb(229 231 235);
-  border-radius: 9999px;
-  overflow: hidden;
-  position: relative;
-}
-
-@utility vote-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, oklch(0.6 0.2 220), oklch(0.7 0.15 300));
-  border-radius: inherit;
-  transition: width 0.3s ease-in-out;
-}
-
-@utility line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
