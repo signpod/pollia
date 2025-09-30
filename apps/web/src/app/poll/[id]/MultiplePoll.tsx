@@ -148,7 +148,7 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
                 isOptionDisabled(option.id)
                   ? "opacity-50 cursor-not-allowed"
                   : ""
-              } ${isTempSelected(option.id) ? "ring-2 ring-violet-500 ring-offset-1" : ""}`}
+              } ${isTempSelected(option.id) ? "ring-2 ring-violet-500" : ""}`}
               disabled={isOptionDisabled(option.id)}
             >
               <PollOptionProgressive
