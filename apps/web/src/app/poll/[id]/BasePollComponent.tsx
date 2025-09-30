@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import { Typo } from "@repo/ui/components";
-import { useGetPoll } from "@/hooks/poll/usePoll";
+import { useGetPoll, usePollResults } from "@/hooks/poll/usePoll";
 import { TimeDisplay } from "@/components/common/TimeDisplay";
 
 interface BasePollComponentProps extends React.PropsWithChildren {
@@ -13,6 +13,7 @@ export function BasePollComponent({
   children,
 }: BasePollComponentProps) {
   const { data: poll } = useGetPoll(pollId);
+  const { data: pollResults } = usePollResults(pollId);
 
   return (
     <div className="space-y-4">
@@ -37,7 +38,7 @@ export function BasePollComponent({
 
       <div className="flex items-center justify-between text-sm font-semibold w-full">
         <Typo.Body size="medium" className="text-violet-500">
-          {poll?.data?._count?.votes || 0}명 참여 중
+          {pollResults?.data?._count?.participants || 0}명 참여 중
         </Typo.Body>
         {poll?.data?.maxSelections && (
           <Typo.Body size="medium" className="text-zinc-400 text-right">

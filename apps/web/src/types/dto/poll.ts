@@ -150,6 +150,7 @@ export interface GetPollResultsResponse {
     }>;
     _count: {
       votes: number;
+      participants: number;
     };
   };
   error?: string;
