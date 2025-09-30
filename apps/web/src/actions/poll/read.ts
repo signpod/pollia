@@ -125,6 +125,7 @@ export async function getPollResults(pollId: string) {
         startDate: true,
         endDate: true,
         isIndefinite: true,
+        maxSelections: true,
         options: {
           select: {
             id: true,
@@ -153,9 +154,26 @@ export async function getPollResults(pollId: string) {
       };
     }
 
+    // 고유 참여자 수 계산 (최적화된 COUNT DISTINCT)
+    const [participantCountResult] = await prisma.$queryRaw<
+      [{ count: bigint }]
+    >`
+      SELECT COUNT(DISTINCT user_id) as count
+      FROM votes
+      WHERE poll_id = ${pollId}
+    `;
+
+    const uniqueParticipants = Number(participantCountResult?.count || 0);
+
     return {
       success: true,
-      data: poll,
+      data: {
+        ...poll,
+        _count: {
+          votes: poll._count.votes,
+          participants: uniqueParticipants,
+        },
+      },
     };
   } catch (error) {
     console.error("Error fetching poll results:", error);

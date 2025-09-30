@@ -6,7 +6,7 @@ import { PollType } from "@prisma/client";
 import { useGetPoll } from "@/hooks/poll/usePoll";
 
 import { BinaryPoll } from "./BinaryPoll";
-import { MultipleChoicePoll } from "./MultipleChoicePoll";
+import { MultiplePoll } from "./MultiplePoll";
 import { FixedBottomLayout } from "@repo/ui/components";
 import { BottomCTAButtons } from "./BottomCTAButtons";
 
@@ -59,7 +59,7 @@ function PollData({ pollId }: { pollId: string }) {
         return <BinaryPoll pollId={pollId} />;
 
       case PollType.MULTIPLE_CHOICE:
-        return <MultipleChoicePoll pollId={pollId} />;
+        return <MultiplePoll pollId={pollId} />;
 
       default:
         return (
