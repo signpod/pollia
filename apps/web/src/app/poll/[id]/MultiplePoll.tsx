@@ -5,12 +5,14 @@ import { isPollActive } from "@/lib/utils";
 import { useMultipleVoting } from "@/hooks/poll/useMultipleVoting";
 import { BasePollComponent } from "./BasePollComponent";
 import { Button } from "@repo/ui/components";
+import { useAuth } from "@/hooks/user";
 
 interface MultiplePollProps {
   pollId: string;
 }
 
 export function MultiplePoll({ pollId }: MultiplePollProps) {
+  const { withAuth } = useAuth();
   const { data: userVoteStatus } = useUserVoteStatus(pollId);
   const { data: pollResults } = usePollResults(pollId);
   const { handleVoteToggle, isVoting } = useMultipleVoting(pollId);
@@ -72,55 +74,70 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
 
   const handleOptionToggle = useCallback(
     (optionId: string) => {
-      if (!pollActive || isVoting) return;
+      withAuth(() => {
+        if (!pollActive || isVoting) return;
 
-      if (!hasVoted)
-        setSelectedOptionIds((prev) => {
-          const newSet = new Set(prev);
-          if (newSet.has(optionId)) {
-            newSet.delete(optionId);
-          } else {
-            if (newSet.size >= maxSelections) {
-              console.warn(`최대 ${maxSelections}개까지만 선택할 수 있습니다.`);
-              return newSet;
+        if (!hasVoted)
+          setSelectedOptionIds((prev) => {
+            const newSet = new Set(prev);
+            if (newSet.has(optionId)) {
+              newSet.delete(optionId);
+            } else {
+              if (newSet.size >= maxSelections) {
+                console.warn(
+                  `최대 ${maxSelections}개까지만 선택할 수 있습니다.`
+                );
+                return newSet;
+              }
+              newSet.add(optionId);
             }
-            newSet.add(optionId);
-          }
-          return newSet;
-        });
+            return newSet;
+          });
+      })();
     },
-    [hasVoted, pollActive, isVoting, maxSelections]
+    [hasVoted, pollActive, isVoting, maxSelections, withAuth]
   );
 
   const handleSubmitVotes = useCallback(async () => {
-    if (!pollActive || isVoting || selectedOptionIds.size === 0) return;
+    withAuth(async () => {
+      if (!pollActive || isVoting || selectedOptionIds.size === 0) return;
 
-    try {
-      await Promise.all(
-        Array.from(selectedOptionIds).map((optionId) =>
-          handleVoteToggle(optionId)
-        )
-      );
+      try {
+        await Promise.all(
+          Array.from(selectedOptionIds).map((optionId) =>
+            handleVoteToggle(optionId)
+          )
+        );
 
-      setSelectedOptionIds(new Set());
-    } catch (error) {
-      console.error("투표 제출 실패:", error);
-    }
-  }, [pollActive, isVoting, selectedOptionIds, handleVoteToggle]);
+        setSelectedOptionIds(new Set());
+      } catch (error) {
+        console.error("투표 제출 실패:", error);
+      }
+    })();
+  }, [pollActive, isVoting, selectedOptionIds, handleVoteToggle, withAuth]);
 
   const handleResetVotes = useCallback(async () => {
-    if (!pollActive || isVoting || !hasVoted) return;
+    withAuth(async () => {
+      if (!pollActive || isVoting || !hasVoted) return;
 
-    const userVotes = userVoteStatus?.data?.votes || [];
+      const userVotes = userVoteStatus?.data?.votes || [];
 
-    try {
-      await Promise.all(
-        userVotes.map((vote) => handleVoteToggle(vote.option.id))
-      );
-    } catch (error) {
-      console.error("투표 취소 실패:", error);
-    }
-  }, [pollActive, isVoting, hasVoted, userVoteStatus, handleVoteToggle]);
+      try {
+        await Promise.all(
+          userVotes.map((vote) => handleVoteToggle(vote.option.id))
+        );
+      } catch (error) {
+        console.error("투표 취소 실패:", error);
+      }
+    })();
+  }, [
+    pollActive,
+    isVoting,
+    hasVoted,
+    userVoteStatus,
+    handleVoteToggle,
+    withAuth,
+  ]);
 
   const isVotingAllowed = pollActive && !isVoting;
   const canSubmit = !hasVoted && selectedOptionIds.size > 0 && isVotingAllowed;

@@ -3,8 +3,10 @@ import { IconButton } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
 import { useLike } from "@/hooks/poll/useLike";
 import { useBookmark } from "@/hooks/poll/useBookmark";
+import { useAuth } from "@/hooks/user";
 
 export function BottomCTAButtons({ pollId }: { pollId: string }) {
+  const { withAuth } = useAuth();
   const { isLiked, handleLike, isProcessing: likeProcessing } = useLike(pollId);
   const {
     isBookmarked,
@@ -12,8 +14,8 @@ export function BottomCTAButtons({ pollId }: { pollId: string }) {
     isProcessing: bookmarkProcessing,
   } = useBookmark(pollId);
 
-  const onLikeClick = () => handleLike();
-  const onBookmarkClick = () => handleBookmark();
+  const onLikeClick = () => withAuth(handleLike)();
+  const onBookmarkClick = () => withAuth(handleBookmark)();
 
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/poll/${pollId}`;

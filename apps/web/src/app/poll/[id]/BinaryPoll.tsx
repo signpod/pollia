@@ -12,6 +12,7 @@ import { PollType } from "@prisma/client";
 import { isPollActive } from "@/lib/utils";
 import { useIndividualVoting } from "@/hooks/poll/useIndividualVoting";
 import { BasePollComponent } from "./BasePollComponent";
+import { useAuth } from "@/hooks/user";
 
 interface BinaryPollProps {
   pollId: string;
@@ -45,6 +46,7 @@ function getDefaultOptionText(pollType: PollType, order: number): string {
 }
 
 export function BinaryPoll({ pollId }: BinaryPollProps) {
+  const { withAuth } = useAuth();
   const { data: userVoteStatus } = useUserVoteStatus(pollId);
   const { data: pollResults } = usePollResults(pollId);
   const { handleVote, isVoting } = useIndividualVoting(pollId);
@@ -138,16 +140,18 @@ export function BinaryPoll({ pollId }: BinaryPollProps) {
 
   const handleVoteAction = useCallback(
     async (order: number) => {
-      if (!pollActive || isVoting) return;
+      withAuth(async () => {
+        if (!pollActive || isVoting) return;
 
-      const optionId = getOptionIdByOrder(order);
-      if (!optionId) {
-        return;
-      }
+        const optionId = getOptionIdByOrder(order);
+        if (!optionId) {
+          return;
+        }
 
-      await handleVote(optionId);
+        await handleVote(optionId);
+      })();
     },
-    [pollActive, isVoting, getOptionIdByOrder, handleVote]
+    [pollActive, isVoting, getOptionIdByOrder, handleVote, withAuth]
   );
 
   const getOptionLabel = useCallback(
