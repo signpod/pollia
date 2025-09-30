@@ -83,6 +83,36 @@ export interface RemoveVoteResponse {
   error?: string;
 }
 
+// Multiple Choice Poll 전용 투표 타입들
+export interface SubmitMultipleVoteRequest {
+  pollId: string;
+  optionId: string;
+}
+
+export interface SubmitMultipleVoteResponse {
+  success: boolean;
+  data?: {
+    id: string;
+    pollId: string;
+    optionId: string;
+  };
+  error?: string;
+}
+
+export interface RemoveMultipleVoteRequest {
+  pollId: string;
+  optionId: string;
+}
+
+export interface RemoveMultipleVoteResponse {
+  success: boolean;
+  data?: {
+    pollId: string;
+    optionId: string;
+  };
+  error?: string;
+}
+
 export interface GetUserVoteStatusResponse {
   success: boolean;
   data?: {

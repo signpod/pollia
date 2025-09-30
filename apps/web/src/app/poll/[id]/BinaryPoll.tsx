@@ -10,7 +10,7 @@ import {
 } from "@/constants/poll";
 import { PollType } from "@prisma/client";
 import { isPollActive } from "@/lib/utils";
-import { usePollVoting } from "@/hooks/poll/usePollVoting";
+import { useIndividualVoting } from "@/hooks/poll/useIndividualVoting";
 import { BasePollComponent } from "./BasePollComponent";
 
 interface BinaryPollProps {
@@ -47,7 +47,7 @@ function getDefaultOptionText(pollType: PollType, order: number): string {
 export function BinaryPoll({ pollId }: BinaryPollProps) {
   const { data: userVoteStatus } = useUserVoteStatus(pollId);
   const { data: pollResults } = usePollResults(pollId);
-  const { handleVote, isVoting } = usePollVoting(pollId);
+  const { handleVote, isVoting } = useIndividualVoting(pollId);
 
   const hasVoted = userVoteStatus?.success && userVoteStatus?.data?.hasVoted;
   const pollType: PollType | undefined = pollResults?.data?.type;

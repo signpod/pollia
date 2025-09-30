@@ -2,7 +2,7 @@ import React, { useCallback, useState } from "react";
 import { PollOptionProgressive } from "@/components/poll/PollOptionProgressive";
 import { usePollResults, useUserVoteStatus } from "@/hooks/poll/usePoll";
 import { isPollActive } from "@/lib/utils";
-import { usePollVoting } from "@/hooks/poll/usePollVoting";
+import { useMultipleVoting } from "@/hooks/poll/useMultipleVoting";
 import { BasePollComponent } from "./BasePollComponent";
 import { Button } from "@repo/ui/components";
 import { Loader2Icon } from "lucide-react";
@@ -14,7 +14,7 @@ interface MultiplePollProps {
 export function MultiplePoll({ pollId }: MultiplePollProps) {
   const { data: userVoteStatus } = useUserVoteStatus(pollId);
   const { data: pollResults } = usePollResults(pollId);
-  const { handleVote, isVoting } = usePollVoting(pollId);
+  const { handleVoteToggle, isVoting } = useMultipleVoting(pollId);
 
   console.log(userVoteStatus);
 
@@ -94,14 +94,16 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
 
     try {
       await Promise.all(
-        Array.from(selectedOptionIds).map((optionId) => handleVote(optionId))
+        Array.from(selectedOptionIds).map((optionId) =>
+          handleVoteToggle(optionId)
+        )
       );
 
       setSelectedOptionIds(new Set());
     } catch (error) {
       console.error("투표 제출 실패:", error);
     }
-  }, [pollActive, isVoting, selectedOptionIds, handleVote]);
+  }, [pollActive, isVoting, selectedOptionIds, handleVoteToggle]);
 
   const handleResetVotes = useCallback(async () => {
     if (!pollActive || isVoting || !hasVoted) return;
@@ -109,11 +111,13 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
     const userVotes = userVoteStatus?.data?.votes || [];
 
     try {
-      await Promise.all(userVotes.map((vote) => handleVote(vote.option.id)));
+      await Promise.all(
+        userVotes.map((vote) => handleVoteToggle(vote.option.id))
+      );
     } catch (error) {
       console.error("투표 취소 실패:", error);
     }
-  }, [pollActive, isVoting, hasVoted, userVoteStatus, handleVote]);
+  }, [pollActive, isVoting, hasVoted, userVoteStatus, handleVoteToggle]);
 
   const isVotingAllowed = pollActive && !isVoting;
   const canSubmit = !hasVoted && selectedOptionIds.size > 0 && isVotingAllowed;

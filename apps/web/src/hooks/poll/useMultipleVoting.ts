@@ -1,12 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { submitVote, removeVote } from "@/actions/poll";
+import { submitMultipleVote, removeMultipleVote } from "@/actions/poll/vote";
 import { pollQueryKeys } from "@/constants/queryKeys/pollQueryKeys";
 import type {
   GetUserVoteStatusResponse,
   GetPollResultsResponse,
 } from "@/types/dto/poll";
 
-function useVoteMutation(pollId: string) {
+function useMultipleVoteMutation(pollId: string) {
   const queryClient = useQueryClient();
 
   const invalidatePoll = () => {
@@ -19,41 +19,41 @@ function useVoteMutation(pollId: string) {
     });
   };
 
-  const voteMutation = useMutation({
+  const addVoteMutation = useMutation({
     mutationFn: ({ optionId }: { optionId: string }) => {
-      return submitVote({ pollId, optionId });
+      return submitMultipleVote({ pollId, optionId });
     },
     onSuccess: () => {
       invalidatePoll();
     },
     onError: (error) => {
-      console.error("투표 실패:", error);
+      console.error("투표 추가 실패:", error);
     },
   });
 
-  const unvoteMutation = useMutation({
+  const removeVoteMutation = useMutation({
     mutationFn: ({ optionId }: { optionId: string }) => {
-      return removeVote({ pollId, optionId });
+      return removeMultipleVote({ pollId, optionId });
     },
     onSuccess: () => {
       invalidatePoll();
     },
     onError: (error) => {
-      console.error("투표 취소 실패:", error);
+      console.error("투표 제거 실패:", error);
     },
   });
 
   return {
-    voteMutation,
-    unvoteMutation,
+    addVoteMutation,
+    removeVoteMutation,
   };
 }
 
-export const usePollVoting = (pollId: string) => {
+export const useMultipleVoting = (pollId: string) => {
   const queryClient = useQueryClient();
-  const mutations = useVoteMutation(pollId);
+  const mutations = useMultipleVoteMutation(pollId);
 
-  const handleVote = async (optionId: string) => {
+  const handleVoteToggle = async (optionId: string) => {
     const currentUserVoteData = queryClient.getQueryData(
       pollQueryKeys.userVoteStatus(pollId)
     );
@@ -70,39 +70,46 @@ export const usePollVoting = (pollId: string) => {
         pollQueryKeys.pollResults(pollId)
       );
 
-      const hasVoted = currentVoteStatus?.data?.hasVoted;
-      const currentVote = currentVoteStatus?.data?.votes?.[0];
-      const currentOptionId = currentVote?.option?.id;
+      const existingVote = currentVoteStatus?.data?.votes?.find(
+        (vote) => vote.option.id === optionId
+      );
 
-      // 선택된 옵션의 정보 찾기
       const selectedOption = pollResults?.data?.options?.find(
         (option) => option.id === optionId
       );
 
-      const optimisticUpdate = (isVoting: boolean, votedOptionId?: string) => {
+      const optimisticUpdate = (isAdding: boolean, targetOptionId: string) => {
         queryClient.setQueryData<GetUserVoteStatusResponse>(
           pollQueryKeys.userVoteStatus(pollId),
           (old) => {
             if (!old) return old;
 
+            let updatedVotes = old.data?.votes || [];
+
+            if (isAdding && selectedOption) {
+              updatedVotes = [
+                ...updatedVotes,
+                {
+                  id: `temp-${Date.now()}`,
+                  option: {
+                    id: targetOptionId,
+                    description: selectedOption.description,
+                    order: selectedOption.order,
+                  },
+                },
+              ];
+            } else {
+              updatedVotes = updatedVotes.filter(
+                (vote) => vote.option.id !== targetOptionId
+              );
+            }
+
             return {
               ...old,
               data: {
                 ...old.data,
-                hasVoted: isVoting,
-                votes:
-                  isVoting && votedOptionId && selectedOption
-                    ? [
-                        {
-                          id: `temp-${Date.now()}`,
-                          option: {
-                            id: votedOptionId,
-                            description: selectedOption.description,
-                            order: selectedOption.order,
-                          },
-                        },
-                      ]
-                    : [],
+                hasVoted: updatedVotes.length > 0,
+                votes: updatedVotes,
               },
             };
           }
@@ -118,30 +125,14 @@ export const usePollVoting = (pollId: string) => {
               data: {
                 ...old.data,
                 options: old.data.options.map((option) => {
-                  if (option.id === votedOptionId && isVoting) {
-                    return {
-                      ...option,
-                      _count: { votes: option._count.votes + 1 },
-                    };
-                  }
-                  if (option.id === currentOptionId && hasVoted && !isVoting) {
+                  if (option.id === targetOptionId) {
                     return {
                       ...option,
                       _count: {
-                        votes: Math.max(0, option._count.votes - 1),
-                      },
-                    };
-                  }
-                  if (
-                    option.id === currentOptionId &&
-                    hasVoted &&
-                    isVoting &&
-                    currentOptionId !== votedOptionId
-                  ) {
-                    return {
-                      ...option,
-                      _count: {
-                        votes: Math.max(0, option._count.votes - 1),
+                        votes: Math.max(
+                          0,
+                          option._count.votes + (isAdding ? 1 : -1)
+                        ),
                       },
                     };
                   }
@@ -149,11 +140,10 @@ export const usePollVoting = (pollId: string) => {
                 }),
                 _count: {
                   ...old.data._count,
-                  votes: isVoting
-                    ? hasVoted
-                      ? old.data._count.votes
-                      : old.data._count.votes + 1
-                    : Math.max(0, old.data._count.votes - 1),
+                  votes: Math.max(
+                    0,
+                    old.data._count.votes + (isAdding ? 1 : -1)
+                  ),
                 },
               },
             };
@@ -161,12 +151,12 @@ export const usePollVoting = (pollId: string) => {
         );
       };
 
-      if (hasVoted && currentOptionId === optionId) {
-        optimisticUpdate(false);
-        await mutations.unvoteMutation.mutateAsync({ optionId });
+      if (existingVote) {
+        optimisticUpdate(false, optionId);
+        await mutations.removeVoteMutation.mutateAsync({ optionId });
       } else {
         optimisticUpdate(true, optionId);
-        await mutations.voteMutation.mutateAsync({ optionId });
+        await mutations.addVoteMutation.mutateAsync({ optionId });
       }
     } catch (error) {
       console.error("투표 처리 실패:", error);
@@ -194,13 +184,14 @@ export const usePollVoting = (pollId: string) => {
   };
 
   const isVoting =
-    mutations.voteMutation.isPending || mutations.unvoteMutation.isPending;
+    mutations.addVoteMutation.isPending ||
+    mutations.removeVoteMutation.isPending;
 
   return {
-    handleVote,
+    handleVoteToggle,
     isVoting,
     mutations,
   };
 };
 
-export type UsePollVotingReturn = ReturnType<typeof usePollVoting>;
+export type UseMultipleVotingReturn = ReturnType<typeof useMultipleVoting>;
