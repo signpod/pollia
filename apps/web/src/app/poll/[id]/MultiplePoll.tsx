@@ -22,6 +22,7 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
 
   const hasVoted = userVoteStatus?.success && userVoteStatus?.data?.hasVoted;
   const options = pollResults?.data?.options || [];
+  const maxSelections = pollResults?.data?.maxSelections || 1;
 
   const pollActive = pollResults?.data
     ? isPollActive(
@@ -79,12 +80,16 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
         if (newSet.has(optionId)) {
           newSet.delete(optionId);
         } else {
+          if (newSet.size >= maxSelections) {
+            console.warn(`최대 ${maxSelections}개까지만 선택할 수 있습니다.`);
+            return newSet;
+          }
           newSet.add(optionId);
         }
         return newSet;
       });
     },
-    [hasVoted, pollActive, isVoting]
+    [hasVoted, pollActive, isVoting, maxSelections]
   );
 
   const handleSubmitVotes = useCallback(async () => {
@@ -123,6 +128,15 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
   const isTempSelected = (optionId: string): boolean =>
     !hasVoted && selectedOptionIds.has(optionId);
 
+  const isOptionDisabled = useCallback(
+    (optionId: string): boolean => {
+      if (hasVoted || !pollActive || isVoting) return true;
+      if (selectedOptionIds.has(optionId)) return false;
+      return selectedOptionIds.size >= maxSelections;
+    },
+    [hasVoted, pollActive, isVoting, selectedOptionIds, maxSelections]
+  );
+
   return (
     <BasePollComponent pollId={pollId}>
       <div className="flex flex-col gap-3 w-full">
@@ -132,9 +146,11 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
               key={option.id}
               onClick={() => handleOptionToggle(option.id)}
               className={`w-full text-left rounded-sm transition-all duration-200 ${
-                !isVotingAllowed || hasVoted ? "cursor-not-allowed" : ""
-              } ${isTempSelected(option.id) ? "ring-2 ring-violet-500" : ""}`}
-              disabled={!isVotingAllowed || hasVoted}
+                isOptionDisabled(option.id)
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
+              } ${isTempSelected(option.id) ? "ring-2 ring-violet-500 ring-offset-1" : ""}`}
+              disabled={isOptionDisabled(option.id)}
             >
               <PollOptionProgressive
                 label={option.description}

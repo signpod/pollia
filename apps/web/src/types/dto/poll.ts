@@ -139,6 +139,7 @@ export interface GetPollResultsResponse {
     startDate?: Date;
     endDate?: Date;
     isIndefinite: boolean;
+    maxSelections?: number;
     options: Array<{
       id: string;
       description: string;
