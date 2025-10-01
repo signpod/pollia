@@ -21,6 +21,8 @@ export interface TimePickerProps {
 const PERIOD_OPTIONS = [
   { value: "AM", label: "오전" },
   { value: "PM", label: "오후" },
+  { value: "AM", label: "오전" },
+  { value: "PM", label: "오후" },
 ] as const;
 
 const convert24To12Hour = (hour24: number): number => {
@@ -165,8 +167,8 @@ function SwiperPicker({
           onSlideChange={handleSlideChange}
           className="h-full"
         >
-          {options.map((option) => (
-            <SwiperSlide key={option.value}>
+          {options.map((option, index) => (
+            <SwiperSlide key={option.value + index}>
               <div className="flex items-center justify-center h-full">
                 <Typo.ButtonText size="large">{option.label}</Typo.ButtonText>
               </div>
