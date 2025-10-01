@@ -4,11 +4,11 @@ import * as React from "react";
 import { Button } from "./Button";
 import { Button as ShadcnButton } from "../ui/button";
 import { Calendar } from "../ui/calendar";
-import { Input as ShadcnInput } from "../ui/input";
+import { TimePicker } from "./TimePicker";
 import { DrawerProvider, DrawerContent, useDrawer } from "./Drawer";
 import { cn } from "../../lib/utils";
 import { ko } from "react-day-picker/locale";
-import { Typo, buttonTextVariants } from "./Typo";
+import { Typo } from "./Typo";
 
 export function DateAndTimePicker({
   date,
@@ -19,6 +19,7 @@ export function DateAndTimePicker({
 }: DateAndTimePickerProps) {
   return (
     <div className="flex gap-4">
+      {/* Date Picker */}
       <DrawerProvider>
         <DatePickerButton date={date} disabled={disabled} />
         <DrawerContent className="p-5 pb-10">
@@ -26,20 +27,15 @@ export function DateAndTimePicker({
         </DrawerContent>
       </DrawerProvider>
 
-      <ShadcnInput
-        type="time"
-        step="1"
-        value={time}
-        onChange={(e) => onTimeChange(e.target.value)}
-        disabled={disabled}
-        className={cn(
-          "w-fit bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none",
-          "shadow-none",
-          "focus:border-violet-500 focus:text-violet-500 focus:bg-violet-50",
-          "active:border-violet-500 active:text-violet-500 active:bg-violet-50",
-          buttonTextVariants({ size: "medium" })
-        )}
-      />
+      {/* Time Picker */}
+      <DrawerProvider>
+        <TimePickerButton time={time} disabled={disabled} />
+        <DrawerContent
+          className={cn("p-5 pb-10", "flex flex-col items-center")}
+        >
+          <TimePickerContent time={time} onTimeChange={onTimeChange} />
+        </DrawerContent>
+      </DrawerProvider>
     </div>
   );
 }
@@ -88,6 +84,38 @@ function DatePickerButton({
   );
 }
 
+function TimePickerButton({
+  time,
+  disabled,
+}: {
+  time: string;
+  disabled: boolean;
+}) {
+  const { open, isOpen } = useDrawer();
+
+  const formatTime = (time: string): string => {
+    const [h = 0, m = 0] = time.split(":").map(Number);
+    const period = h < 12 ? "오전" : "오후";
+    const displayHours = h % 12 || 12;
+    return `${period} ${displayHours}:${String(m).padStart(2, "0")}`;
+  };
+
+  return (
+    <ShadcnButton
+      variant="outline"
+      onClick={open}
+      className={cn(
+        "justify-between",
+        isOpen && "text-violet-500 bg-violet-50 !border-violet-500",
+        "shadow-none"
+      )}
+      disabled={disabled}
+    >
+      <Typo.ButtonText size="medium">{formatTime(time)}</Typo.ButtonText>
+    </ShadcnButton>
+  );
+}
+
 function CalendarContent({
   date,
   onDateChange,
@@ -119,6 +147,31 @@ function CalendarContent({
         onSelect={handleDateSelect}
         className="w-full"
       />
+      <Button className="w-full mt-6" onClick={handleConfirm}>
+        확인
+      </Button>
+    </>
+  );
+}
+
+function TimePickerContent({
+  time,
+  onTimeChange,
+}: {
+  time: string;
+  onTimeChange: (time: string) => void;
+}) {
+  const { close } = useDrawer();
+  const [selectedTime, setSelectedTime] = React.useState(time);
+
+  const handleConfirm = () => {
+    onTimeChange(selectedTime);
+    close();
+  };
+
+  return (
+    <>
+      <TimePicker value={selectedTime} onValueChange={setSelectedTime} />
       <Button className="w-full mt-6" onClick={handleConfirm}>
         확인
       </Button>
