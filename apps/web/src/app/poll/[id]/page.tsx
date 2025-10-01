@@ -7,7 +7,10 @@ import {
   getUserVoteStatus,
 } from "@/actions/poll";
 import { pollQueryKeys } from "@/constants/queryKeys/pollQueryKeys";
-import PollClientWrapper from "./PollClientWrapper.tsx";
+import { PollClientWrapper } from "./PollClientWrapper.tsx";
+import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys.ts";
+import { getCurrentUser } from "@/actions/user/index.ts";
+import { GetCurrentUserResponse } from "@/types/dto/user.ts";
 
 interface PollPageProps {
   params: Promise<{ id: string }>;
@@ -29,17 +32,29 @@ export default async function PollPage({ params }: PollPageProps) {
     queryFn: () => getPollResults(id),
   });
 
-  // 투표 참여 여부 prefetch (로그인 상태 확인 포함)
+  // 사용자 통계 정보 prefetch
   await queryClient.prefetchQuery({
-    queryKey: pollQueryKeys.userVoteStatus(id),
-    queryFn: () => getUserVoteStatus(id),
+    queryKey: userQueryKeys.currentUser(),
+    queryFn: () => getCurrentUser(),
   });
 
-  // 투표 좋아요/북마크 여부 prefetch (로그인 상태 확인 포함)
-  await queryClient.prefetchQuery({
-    queryKey: pollQueryKeys.userPollStatus(id),
-    queryFn: () => getPollUserStatus(id),
-  });
+  const currentUser = queryClient.getQueryData(
+    userQueryKeys.currentUser()
+  ) as GetCurrentUserResponse;
+
+  if (currentUser?.success) {
+    // 투표 참여 여부 prefetch (로그인 상태 확인 포함)
+    await queryClient.prefetchQuery({
+      queryKey: pollQueryKeys.userVoteStatus(id),
+      queryFn: () => getUserVoteStatus(id),
+    });
+
+    // 투표 좋아요/북마크 여부 prefetch (로그인 상태 확인 포함)
+    await queryClient.prefetchQuery({
+      queryKey: pollQueryKeys.userPollStatus(id),
+      queryFn: () => getPollUserStatus(id),
+    });
+  }
 
   const dehydratedState = dehydrate(queryClient);
 

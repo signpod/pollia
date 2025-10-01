@@ -14,6 +14,7 @@ interface PollContentProps {
   pollId: string;
 }
 
+//TODO: 에러 핸들링 구현
 function PollErrorFallback({
   error,
   resetErrorBoundary,
@@ -77,14 +78,12 @@ function PollData({ pollId }: { pollId: string }) {
 
 export function PollContent({ pollId }: PollContentProps) {
   return (
-    <>
-      <ErrorBoundary FallbackComponent={PollErrorFallback}>
-        <PollData pollId={pollId} />
+    <ErrorBoundary FallbackComponent={PollErrorFallback}>
+      <PollData pollId={pollId} />
 
-        <FixedBottomLayout.Content>
-          <BottomCTAButtons pollId={pollId} />
-        </FixedBottomLayout.Content>
-      </ErrorBoundary>
-    </>
+      <FixedBottomLayout.Content>
+        <BottomCTAButtons pollId={pollId} />
+      </FixedBottomLayout.Content>
+    </ErrorBoundary>
   );
 }

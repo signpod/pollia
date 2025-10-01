@@ -5,13 +5,14 @@ import { isPollActive } from "@/lib/utils";
 import { useMultipleVoting } from "@/hooks/poll/useMultipleVoting";
 import { BasePollComponent } from "./BasePollComponent";
 import { Button } from "@repo/ui/components";
-import { Loader2Icon } from "lucide-react";
+import { useAuth } from "@/hooks/user";
 
 interface MultiplePollProps {
   pollId: string;
 }
 
 export function MultiplePoll({ pollId }: MultiplePollProps) {
+  const { withAuth } = useAuth();
   const { data: userVoteStatus } = useUserVoteStatus(pollId);
   const { data: pollResults } = usePollResults(pollId);
   const { handleVoteToggle, isVoting } = useMultipleVoting(pollId);
@@ -73,54 +74,70 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
 
   const handleOptionToggle = useCallback(
     (optionId: string) => {
-      if (hasVoted || !pollActive || isVoting) return;
+      withAuth(() => {
+        if (!pollActive || isVoting) return;
 
-      setSelectedOptionIds((prev) => {
-        const newSet = new Set(prev);
-        if (newSet.has(optionId)) {
-          newSet.delete(optionId);
-        } else {
-          if (newSet.size >= maxSelections) {
-            console.warn(`최대 ${maxSelections}개까지만 선택할 수 있습니다.`);
+        if (!hasVoted)
+          setSelectedOptionIds((prev) => {
+            const newSet = new Set(prev);
+            if (newSet.has(optionId)) {
+              newSet.delete(optionId);
+            } else {
+              if (newSet.size >= maxSelections) {
+                console.warn(
+                  `최대 ${maxSelections}개까지만 선택할 수 있습니다.`
+                );
+                return newSet;
+              }
+              newSet.add(optionId);
+            }
             return newSet;
-          }
-          newSet.add(optionId);
-        }
-        return newSet;
-      });
+          });
+      })();
     },
-    [hasVoted, pollActive, isVoting, maxSelections]
+    [hasVoted, pollActive, isVoting, maxSelections, withAuth]
   );
 
   const handleSubmitVotes = useCallback(async () => {
-    if (!pollActive || isVoting || selectedOptionIds.size === 0) return;
+    withAuth(async () => {
+      if (!pollActive || isVoting || selectedOptionIds.size === 0) return;
 
-    try {
-      await Promise.all(
-        Array.from(selectedOptionIds).map((optionId) =>
-          handleVoteToggle(optionId)
-        )
-      );
+      try {
+        await Promise.all(
+          Array.from(selectedOptionIds).map((optionId) =>
+            handleVoteToggle(optionId)
+          )
+        );
 
-      setSelectedOptionIds(new Set());
-    } catch (error) {
-      console.error("투표 제출 실패:", error);
-    }
-  }, [pollActive, isVoting, selectedOptionIds, handleVoteToggle]);
+        setSelectedOptionIds(new Set());
+      } catch (error) {
+        console.error("투표 제출 실패:", error);
+      }
+    })();
+  }, [pollActive, isVoting, selectedOptionIds, handleVoteToggle, withAuth]);
 
   const handleResetVotes = useCallback(async () => {
-    if (!pollActive || isVoting || !hasVoted) return;
+    withAuth(async () => {
+      if (!pollActive || isVoting || !hasVoted) return;
 
-    const userVotes = userVoteStatus?.data?.votes || [];
+      const userVotes = userVoteStatus?.data?.votes || [];
 
-    try {
-      await Promise.all(
-        userVotes.map((vote) => handleVoteToggle(vote.option.id))
-      );
-    } catch (error) {
-      console.error("투표 취소 실패:", error);
-    }
-  }, [pollActive, isVoting, hasVoted, userVoteStatus, handleVoteToggle]);
+      try {
+        await Promise.all(
+          userVotes.map((vote) => handleVoteToggle(vote.option.id))
+        );
+      } catch (error) {
+        console.error("투표 취소 실패:", error);
+      }
+    })();
+  }, [
+    pollActive,
+    isVoting,
+    hasVoted,
+    userVoteStatus,
+    handleVoteToggle,
+    withAuth,
+  ]);
 
   const isVotingAllowed = pollActive && !isVoting;
   const canSubmit = !hasVoted && selectedOptionIds.size > 0 && isVotingAllowed;
@@ -130,9 +147,13 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
 
   const isOptionDisabled = useCallback(
     (optionId: string): boolean => {
-      if (hasVoted || !pollActive || isVoting) return true;
-      if (selectedOptionIds.has(optionId)) return false;
-      return selectedOptionIds.size >= maxSelections;
+      if (!pollActive || isVoting) return true;
+      if (hasVoted) {
+        return false;
+      } else {
+        if (selectedOptionIds.has(optionId)) return false;
+        return selectedOptionIds.size >= maxSelections;
+      }
     },
     [hasVoted, pollActive, isVoting, selectedOptionIds, maxSelections]
   );
@@ -149,7 +170,7 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
                 isOptionDisabled(option.id)
                   ? "opacity-50 cursor-not-allowed"
                   : ""
-              } ${isTempSelected(option.id) ? "ring-2 ring-violet-500 ring-offset-1" : ""}`}
+              } ${isTempSelected(option.id) ? "ring-2 ring-violet-500" : ""}`}
               disabled={isOptionDisabled(option.id)}
             >
               <PollOptionProgressive
@@ -168,12 +189,10 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
             disabled={!canSubmit}
             className="w-full "
             variant={canSubmit ? "primary" : "secondary"}
+            loading={isVoting}
           >
-            {isVoting ? (
-              <Loader2Icon className="w-4 h-4 animate-spin" />
-            ) : (
-              `${selectedOptionIds.size ? `${selectedOptionIds.size}개` : ""} 투표하기`
-            )}
+            {selectedOptionIds.size ? `${selectedOptionIds.size}개` : ""}
+            투표하기
           </Button>
         ) : (
           <Button
@@ -181,12 +200,9 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
             disabled={!isVotingAllowed}
             className="w-full mt-2"
             variant="secondary"
+            loading={isVoting}
           >
-            {isVoting ? (
-              <Loader2Icon className="w-4 h-4 animate-spin" />
-            ) : (
-              "재투표하기"
-            )}
+            재투표하기
           </Button>
         )}
       </div>

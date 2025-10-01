@@ -8,6 +8,7 @@ export * from "./common/Typo";
 export * from "./common/ImageSelector";
 export * from "./common/Toggle";
 export * from "./common/DateAndTimePicker";
+export * from "./common/Dialog";
 export * from "./common/Drawer";
 export * from "./common/IconButton";
 export * from "./common/CounterInput";
