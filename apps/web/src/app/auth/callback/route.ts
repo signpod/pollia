@@ -41,6 +41,10 @@ export async function GET(request: Request) {
                 "사용자",
             },
           });
+
+          if (next === "/") {
+            next = "/login/done";
+          }
         }
       }
 
