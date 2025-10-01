@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  useEffect,
-} from "react";
+import { createContext, useContext, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -17,6 +11,7 @@ import {
 } from "@repo/ui/components";
 import PollPollECat from "@public/svgs//poll-poll-e-cat.svg";
 import CustomMusic from "@public/svgs//custom-music.svg";
+import { setCurrentUrlAsRedirect } from "@/lib/cookie";
 
 interface LoginModalContextType {
   isOpen: boolean;
@@ -52,6 +47,7 @@ export function LoginModalProvider({ children }: LoginModalProviderProps) {
 
   const handleLogin = useCallback(() => {
     close();
+    setCurrentUrlAsRedirect();
     router.push("/login");
   }, [close, router]);
 

@@ -14,8 +14,6 @@ export default function LoginPage() {
   const handleKakaoLogin = useCallback(async () => {
     const supabase = createSupabaseClient();
 
-    document.cookie = `auth_redirect=/login/done; path=/; max-age=300; SameSite=Lax`;
-
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "kakao",
       options: {
