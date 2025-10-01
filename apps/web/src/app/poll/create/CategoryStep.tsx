@@ -12,7 +12,7 @@ import { useAtomValue, useSetAtom } from "jotai";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
-export default function CategoryStep() {
+export function CategoryStep() {
   const { goBack } = useStep();
   const [tempSelectedCategory, setTempSelectedCategory] =
     useState<PollCategory | null>(null);
@@ -44,7 +44,7 @@ export default function CategoryStep() {
 
   return (
     <>
-      <div className="flex flex-col gap-4 px-5 pb-6">
+      <div className="flex flex-col gap-4 px-5 py-6">
         {POLL_CATEGORIES.map((category) => {
           const IconComponent = CATEGORY_ICONS[category];
           const isSelected = tempSelectedCategory === category;
@@ -59,7 +59,10 @@ export default function CategoryStep() {
                 <IconComponent width={24} height={24} strokeWidth={1.5} />
               }
               onClick={() => handleToggleCategorySelect(category)}
-              className={cn("justify-start gap-3", isSelected && "bg-zinc-50")}
+              className={cn(
+                "justify-start gap-3",
+                isSelected && "bg-violet-50 text-violet-500"
+              )}
             >
               <Typo.ButtonText size="large">
                 {CATEGORY_LABELS[category]}

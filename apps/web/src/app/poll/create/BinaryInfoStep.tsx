@@ -27,9 +27,9 @@ import { useState, useEffect } from "react";
 import { useImageUpload } from "@/hooks/common/useImageUpload";
 import { useBinaryPollSubmit } from "@/hooks/poll/useBinaryPollSubmit";
 
-export default function BinaryInfoStep() {
+export function BinaryInfoStep() {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 py-6">
       <div className="flex flex-col gap-6 px-5">
         <CategoryButton />
         <ThumbnailSelector />

@@ -30,7 +30,7 @@ import { useState, useEffect } from "react";
 import { OptionSelector } from "@/app/poll/create/OptionSelector";
 import { CATEGORY_LABELS } from "@/constants/poll";
 
-export default function MultipleInfoStep() {
+export function MultipleInfoStep() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-6 px-5">
@@ -273,7 +273,7 @@ function VotingPeriodSection() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 py-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Typo.SubTitle size="large">무기한</Typo.SubTitle>

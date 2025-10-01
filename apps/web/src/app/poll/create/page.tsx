@@ -3,10 +3,10 @@
 import {
   useStep,
   Typo,
-  CenterOverlay,
   StepProvider,
   FixedBottomLayout,
   FixedTopLayout,
+  IconButton,
 } from "@repo/ui/components";
 import { useAtomValue } from "jotai";
 import {
@@ -16,10 +16,10 @@ import {
 import { CREATE_POLL_STEPS, createStepConfigs } from "@/constants/createPoll";
 import { useRouter } from "next/navigation";
 
-import TypeStep from "./TypeStep";
-import BinaryInfoStep from "./BinaryInfoStep";
-import CategoryStep from "./CategoryStep";
-import MultipleInfoStep from "./MultipleInfoStep";
+import { TypeStep } from "./TypeStep";
+import { BinaryInfoStep } from "./BinaryInfoStep";
+import { CategoryStep } from "./CategoryStep";
+import { MultipleInfoStep } from "./MultipleInfoStep";
 
 export default function CreatePollPage() {
   return (
@@ -49,22 +49,18 @@ function CreatePollPageContent() {
   })[currentStep];
 
   return (
-    <FixedTopLayout className="bg-white flex flex-col h-full gap-6">
+    <FixedTopLayout className="bg-white flex flex-col h-full">
       <FixedTopLayout.Content className="flex flex-col gap-4">
         <div className="px-1">
-          <CenterOverlay
-            targetElement={
-              <button
-                onClick={currentStepConfig?.header.action}
-                className="size-12 block"
-                aria-label="뒤로가기"
-              />
-            }
-          >
-            {currentStepConfig?.header.icon && (
-              <currentStepConfig.header.icon className="size-4 text-zinc-900" />
-            )}
-          </CenterOverlay>
+          {currentStepConfig?.header.icon && (
+            <IconButton
+              onClick={currentStepConfig.header.action}
+              icon={currentStepConfig.header.icon}
+              className="size-12"
+            >
+              <span className="sr-only">뒤로가기</span>
+            </IconButton>
+          )}
         </div>
       </FixedTopLayout.Content>
 

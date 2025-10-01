@@ -13,7 +13,7 @@ interface PollTypeStepProps {
   className?: string;
 }
 
-export default function TypeStep() {
+export function TypeStep() {
   const [selectedType, setSelectedType] = useAtom(pollTypeAtom);
   const { goNext } = useStep();
 
