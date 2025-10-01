@@ -21,6 +21,7 @@ import {
   Toggle,
   DateAndTimePicker,
 } from "@repo/ui/components";
+import { formatDateToLocalString } from "@/lib/date";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -29,7 +30,7 @@ import { useBinaryPollSubmit } from "@/hooks/poll/useBinaryPollSubmit";
 
 export function BinaryInfoStep() {
   return (
-    <div className="flex flex-col gap-6 py-6">
+    <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-6 px-5">
         <CategoryButton />
         <ThumbnailSelector />
@@ -266,11 +267,11 @@ function VotingPeriodSection() {
 
   // Date → string 변환 함수
   const handleStartDateChange = (date: Date | undefined) => {
-    setStartDateString(date ? date.toISOString().split("T")[0]! : "");
+    setStartDateString(date ? formatDateToLocalString(date) : "");
   };
 
   const handleEndDateChange = (date: Date | undefined) => {
-    setEndDateString(date ? date.toISOString().split("T")[0]! : "");
+    setEndDateString(date ? formatDateToLocalString(date) : "");
   };
 
   return (

@@ -75,7 +75,7 @@ function CreatePollPageContent() {
         )}
       </div>
 
-      {currentStepConfig?.content()}
+      <div className="py-6">{currentStepConfig?.content()}</div>
     </FixedTopLayout>
   );
 }

@@ -44,7 +44,7 @@ export function CategoryStep() {
 
   return (
     <>
-      <div className="flex flex-col gap-4 px-5 py-6">
+      <div className="flex flex-col gap-4 px-5">
         {POLL_CATEGORIES.map((category) => {
           const IconComponent = CATEGORY_ICONS[category];
           const isSelected = tempSelectedCategory === category;

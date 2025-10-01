@@ -22,6 +22,7 @@ import {
   Toggle,
   DateAndTimePicker,
 } from "@repo/ui/components";
+import { formatDateToLocalString } from "@/lib/date";
 import { useAtom, useSetAtom } from "jotai";
 import { useImageUpload } from "@/hooks/common/useImageUpload";
 import { useMultiplePollSubmit } from "@/hooks/poll/useMultiplePollSubmit";
@@ -265,11 +266,11 @@ function VotingPeriodSection() {
 
   // Date → string 변환 함수
   const handleStartDateChange = (date: Date | undefined) => {
-    setStartDateString(date ? date.toISOString().split("T")[0]! : "");
+    setStartDateString(date ? formatDateToLocalString(date) : "");
   };
 
   const handleEndDateChange = (date: Date | undefined) => {
-    setEndDateString(date ? date.toISOString().split("T")[0]! : "");
+    setEndDateString(date ? formatDateToLocalString(date) : "");
   };
 
   return (
