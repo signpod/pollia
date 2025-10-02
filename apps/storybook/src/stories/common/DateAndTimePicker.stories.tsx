@@ -11,7 +11,7 @@ const meta: Meta<typeof DateAndTimePicker> = {
       description: {
         component: `# DateAndTimePicker
 
-날짜와 시간을 함께 선택할 수 있는 **완전한 controlled 컴포넌트**입니다. 모든 props가 필수입니다.
+날짜와 시간을 함께 선택할 수 있는 **완전한 controlled 컴포넌트**입니다.
 
 ## 기본 사용법
 
@@ -21,12 +21,12 @@ import { DateAndTimePicker } from "@repo/ui/components";
 
 function MyComponent() {
   const [date, setDate] = useState<Date | undefined>(undefined);
-  const [time, setTime] = useState("10:30:00");
+  const [time, setTime] = useState("10:30");
 
   return (
     <DateAndTimePicker
       date={date}              // 필수
-      time={time}              // 필수  
+      time={time}              // 필수 (24시간 형식: "HH:mm")
       onDateChange={setDate}   // 필수
       onTimeChange={setTime}   // 필수
       disabled={false}         // 선택적 (기본값: false)
@@ -42,7 +42,7 @@ import { useAtom } from "jotai";
 import { DateAndTimePicker } from "@repo/ui/components";
 
 const dateAtom = atom<Date | undefined>(undefined);
-const timeAtom = atom("10:30:00");
+const timeAtom = atom("10:30");
 
 function MyComponent() {
   const [date, setDate] = useAtom(dateAtom);
@@ -50,11 +50,10 @@ function MyComponent() {
 
   return (
     <DateAndTimePicker
-      date={date}              // 필수
-      time={time}              // 필수
-      onDateChange={setDate}   // 필수
-      onTimeChange={setTime}   // 필수
-      disabled={false}         // 선택적 (기본값: false)
+      date={date}
+      time={time}
+      onDateChange={setDate}
+      onTimeChange={setTime}
     />
   );
 }
@@ -63,21 +62,22 @@ function MyComponent() {
 ## Props
 
 ### 필수 Props
-- **date**: \`Date | undefined\` - 선택된 날짜 (필수)
-- **time**: \`string\` - 선택된 시간 (HH:mm:ss 형식, 필수)
-- **onDateChange**: \`(date: Date | undefined) => void\` - 날짜 변경 콜백 (필수)
-- **onTimeChange**: \`(time: string) => void\` - 시간 변경 콜백 (필수)
+- **date**: \`Date | undefined\` - 선택된 날짜
+- **time**: \`string\` - 선택된 시간 (24시간 형식: "HH:mm", 예: "14:30")
+- **onDateChange**: \`(date: Date | undefined) => void\` - 날짜 변경 콜백
+- **onTimeChange**: \`(time: string) => void\` - 시간 변경 콜백
 
 ### 선택적 Props
 - **disabled**: \`boolean\` - 컴포넌트 비활성화 여부 (기본값: false)
 
 ## 주요 기능
 
-- **날짜 선택**: 팝오버 캘린더로 날짜 선택
-- **시간 선택**: HTML time input으로 시:분:초 입력
-- **비활성화 지원**: disabled prop으로 모든 인터랙션 차단 가능
-- **접근성**: 라벨과 키보드 네비게이션 지원
-- **완전한 Controlled**: 모든 props 필수, 외부에서 완전한 상태 제어
+- **날짜 선택**: Drawer 기반 캘린더로 날짜 선택
+- **시간 선택**: Swiper 기반 휠 스크롤러로 시간 선택 (12시간제 표시)
+- **확인 버튼**: 선택 후 확인 버튼으로 적용
+- **비활성화 지원**: disabled prop으로 모든 인터랙션 차단
+- **모바일 최적화**: 터치 친화적인 UI
+- **완전한 Controlled**: 외부에서 완전한 상태 제어
 - **타입 안전성**: TypeScript로 필수 props 강제`,
       },
     },
@@ -91,7 +91,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: () => {
     const [date, setDate] = useState<Date | undefined>(undefined);
-    const [time, setTime] = useState("10:30:00");
+    const [time, setTime] = useState("10:30");
 
     return (
       <div style={{ padding: "20px" }}>
@@ -109,7 +109,7 @@ export const Default: Story = {
 export const InForm: Story = {
   render: () => {
     const [date, setDate] = useState<Date | undefined>(undefined);
-    const [time, setTime] = useState("14:00:00");
+    const [time, setTime] = useState("14:00");
 
     return (
       <div style={{ padding: "40px", maxWidth: "500px" }}>
@@ -154,9 +154,9 @@ export const InForm: Story = {
 export const StartEndTime: Story = {
   render: () => {
     const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-    const [startTime, setStartTime] = useState("09:00:00");
+    const [startTime, setStartTime] = useState("09:00");
     const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-    const [endTime, setEndTime] = useState("10:00:00");
+    const [endTime, setEndTime] = useState("10:00");
 
     return (
       <div style={{ padding: "40px", maxWidth: "600px" }}>
@@ -193,7 +193,7 @@ export const StartEndTime: Story = {
 export const Disabled: Story = {
   render: () => {
     const [date, setDate] = useState<Date | undefined>(new Date());
-    const [time, setTime] = useState("14:30:00");
+    const [time, setTime] = useState("14:30");
 
     return (
       <div style={{ padding: "20px" }}>
@@ -220,11 +220,11 @@ export const DisabledComparison: Story = {
     const [enabledDate, setEnabledDate] = useState<Date | undefined>(
       new Date()
     );
-    const [enabledTime, setEnabledTime] = useState("10:00:00");
+    const [enabledTime, setEnabledTime] = useState("10:00");
     const [disabledDate, setDisabledDate] = useState<Date | undefined>(
       new Date()
     );
-    const [disabledTime, setDisabledTime] = useState("14:30:00");
+    const [disabledTime, setDisabledTime] = useState("14:30");
 
     return (
       <div style={{ padding: "40px", maxWidth: "800px" }}>

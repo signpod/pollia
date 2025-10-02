@@ -10,6 +10,20 @@ import { cn } from "../../lib/utils";
 import { ko } from "react-day-picker/locale";
 import { Typo } from "./Typo";
 
+interface DateAndTimePickerProps {
+  date: Date | undefined;
+  /** 시간 값 (HH:mm 형식, 예: "14:30") */
+  time: string;
+  onDateChange: (date: Date | undefined) => void;
+  onTimeChange: (time: string) => void;
+  disabled?: boolean;
+}
+
+/**
+ *
+ * @param time - 시간 값 (HH:mm 형식, 예: "14:30")
+ * @returns
+ */
 export function DateAndTimePicker({
   date,
   time,
@@ -38,14 +52,6 @@ export function DateAndTimePicker({
       </DrawerProvider>
     </div>
   );
-}
-
-interface DateAndTimePickerProps {
-  date: Date | undefined;
-  time: string;
-  onDateChange: (date: Date | undefined) => void;
-  onTimeChange: (time: string) => void;
-  disabled?: boolean;
 }
 
 function DatePickerButton({
@@ -128,6 +134,11 @@ function CalendarContent({
     date
   );
 
+  // date prop이 변경되면 selectedDate도 동기화
+  React.useEffect(() => {
+    setSelectedDate(date);
+  }, [date]);
+
   const handleConfirm = () => {
     onDateChange(selectedDate);
     close();
@@ -163,6 +174,11 @@ function TimePickerContent({
 }) {
   const { close } = useDrawer();
   const [selectedTime, setSelectedTime] = React.useState(time);
+
+  // time prop이 변경되면 selectedTime도 동기화
+  React.useEffect(() => {
+    setSelectedTime(time);
+  }, [time]);
 
   const handleConfirm = () => {
     onTimeChange(selectedTime);

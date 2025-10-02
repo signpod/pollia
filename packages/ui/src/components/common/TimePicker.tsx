@@ -138,7 +138,7 @@ function SwiperPicker({
 
   React.useEffect(() => {
     if (swiperInstance && currentIndex !== -1 && !isInitializedRef.current) {
-      swiperInstance.slideTo(currentIndex, 0);
+      swiperInstance.slideToLoop(currentIndex, 0);
       isInitializedRef.current = true;
     }
   }, [swiperInstance, currentIndex]);
