@@ -29,7 +29,7 @@ export function PollClientWrapper({
       <HydrationBoundary state={dehydratedState}>
         <LoginModalProvider>
           <FixedBottomLayout
-            hasBottomGap={false}
+            hasBottomGap={true}
             className="min-h-screen bg-zinc-50"
           >
             <FixedTopLayout className="flex flex-col gap-2">

@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import { Typo } from "@repo/ui/components";
+import { Typo, ProcessChip } from "@repo/ui/components";
 import { useGetPoll, usePollResults } from "@/hooks/poll/usePoll";
-import { TimeDisplay } from "@/components/common/TimeDisplay";
+import { getPollStatus, getPollStatusMessage } from "@/lib/utils";
+import { User } from "lucide-react";
 
 interface BasePollComponentProps extends React.PropsWithChildren {
   pollId: string;
@@ -14,9 +15,46 @@ export function BasePollComponent({
 }: BasePollComponentProps) {
   const { data: poll } = useGetPoll(pollId);
   const { data: pollResults } = usePollResults(pollId);
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
+
+  const pollStatus = getPollStatus(
+    poll?.data?.startDate ? new Date(poll.data.startDate) : null,
+    poll?.data?.endDate ? new Date(poll.data.endDate) : null,
+    poll?.data?.isIndefinite ?? false
+  );
+
+  useEffect(() => {
+    setCurrentTime(new Date());
+
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const statusMessage = currentTime
+    ? getPollStatusMessage(
+        poll?.data?.startDate ? new Date(poll.data.startDate) : null,
+        poll?.data?.endDate ? new Date(poll.data.endDate) : null,
+        poll?.data?.isIndefinite ?? false,
+        currentTime
+      )
+    : "";
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <ProcessChip status={pollStatus} />
+        <Typo.Body
+          size="medium"
+          className="text-violet-500 flex items-center gap-1"
+        >
+          <User size={16} />
+          {pollResults?.data?._count?.participants || 0}명 참여 중
+        </Typo.Body>
+      </div>
+
       <div className="space-y-1">
         <Typo.MainTitle size="medium">{poll?.data?.title}</Typo.MainTitle>
         {poll?.data?.description && (
@@ -36,28 +74,15 @@ export function BasePollComponent({
         </div>
       )}
 
-      <div className="flex items-center justify-between text-sm font-semibold w-full">
-        <Typo.Body size="medium" className="text-violet-500">
-          {pollResults?.data?._count?.participants || 0}명 참여 중
+      <div className="flex items-center justify-between text-zinc-500">
+        <Typo.Body size="medium">
+          {poll?.data?.maxSelections || 1}개 선택 가능
         </Typo.Body>
-        {poll?.data?.maxSelections && (
-          <Typo.Body size="medium" className="text-zinc-400 text-right">
-            {poll?.data.maxSelections || 1}개 선택 가능
-          </Typo.Body>
-        )}
+
+        <Typo.Body size="medium">{statusMessage}</Typo.Body>
       </div>
 
       {children}
-
-      <div className="flex items-center justify-end w-full">
-        <TimeDisplay
-          startDate={
-            poll?.data?.startDate ? new Date(poll.data.startDate) : null
-          }
-          endDate={poll?.data?.endDate ? new Date(poll.data.endDate) : null}
-          isIndefinite={poll?.data?.isIndefinite ?? false}
-        />
-      </div>
     </div>
   );
 }

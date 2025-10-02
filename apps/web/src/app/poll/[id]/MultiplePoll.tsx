@@ -191,7 +191,7 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
             variant={canSubmit ? "primary" : "secondary"}
             loading={isVoting}
           >
-            {selectedOptionIds.size ? `${selectedOptionIds.size}개` : ""}
+            {selectedOptionIds.size ? `${selectedOptionIds.size}개 ` : ""}
             투표하기
           </Button>
         ) : (
