@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Pollia - 실시간 투표 플랫폼",
-  description: "쉽고 빠른 실시간 투표를 만들고 참여하세요",
+  title: "세상을 발견하는 솔직한 방법, 폴리아",
+  description: "첫 감각이 가장 솔직한 마음!",
 };
 
 export default function RootLayout({
