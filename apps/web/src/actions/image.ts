@@ -13,7 +13,9 @@ import {
   CleanupOrphanFilesResponse,
 } from "@/types/dto/image";
 
-export async function getUploadUrl(request: UploadImageRequest): Promise<UploadImageResponse> {
+export async function getUploadUrl(
+  request: UploadImageRequest
+): Promise<UploadImageResponse> {
   try {
     const supabase = await createServerSupabaseClient();
 
@@ -54,7 +56,9 @@ export async function getUploadUrl(request: UploadImageRequest): Promise<UploadI
       };
     }
 
-    const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(fileName);
+    const { data: publicUrlData } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(fileName);
 
     const fileUpload = await prisma.fileUpload.create({
       data: {
@@ -93,7 +97,13 @@ function validateUploadRequest(request: UploadImageRequest): string | null {
     return "파일 크기는 10MB를 초과할 수 없습니다.";
   }
 
-  const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
+  const allowedTypes = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+  ];
 
   if (!allowedTypes.includes(request.fileType)) {
     return "지원하지 않는 파일 형식입니다. (JPEG, PNG, WebP, GIF만 가능)";
@@ -106,7 +116,9 @@ function validateUploadRequest(request: UploadImageRequest): string | null {
   return null;
 }
 
-export async function deleteImage(request: DeleteImageRequest): Promise<DeleteImageResponse> {
+export async function deleteImage(
+  request: DeleteImageRequest
+): Promise<DeleteImageResponse> {
   try {
     const supabase = await createServerSupabaseClient();
 
@@ -122,13 +134,10 @@ export async function deleteImage(request: DeleteImageRequest): Promise<DeleteIm
       };
     }
 
-    const bucket = request.bucket || "poll-images";
-
     const fileUpload = await prisma.fileUpload.findFirst({
       where: {
         filePath: request.path,
         userId: user.id,
-        status: { not: FileStatus.DELETED },
       },
     });
 
@@ -139,7 +148,16 @@ export async function deleteImage(request: DeleteImageRequest): Promise<DeleteIm
       };
     }
 
-    const { error: deleteError } = await supabase.storage.from(bucket).remove([request.path]);
+    const { error: deleteError } = await supabase.storage
+      .from(fileUpload.bucket)
+      .remove([request.path]);
+
+    if (deleteError) {
+      return {
+        success: false,
+        error: "파일 삭제 권한이 없습니다.",
+      };
+    }
 
     if (deleteError) {
       console.error("❌ 이미지 삭제 실패:", deleteError);
@@ -149,13 +167,11 @@ export async function deleteImage(request: DeleteImageRequest): Promise<DeleteIm
       };
     }
 
-    await prisma.fileUpload.update({
+    await prisma.fileUpload.delete({
       where: { id: fileUpload.id },
-      data: {
-        status: FileStatus.DELETED,
-        deletedAt: new Date(),
-      },
     });
+
+    console.log("✅ DB 레코드 삭제 완료:", fileUpload.id);
 
     return {
       success: true,
@@ -169,7 +185,9 @@ export async function deleteImage(request: DeleteImageRequest): Promise<DeleteIm
   }
 }
 
-export async function confirmFile(request: ConfirmFileRequest): Promise<ConfirmFileResponse> {
+export async function confirmFile(
+  request: ConfirmFileRequest
+): Promise<ConfirmFileResponse> {
   try {
     const supabase = await createServerSupabaseClient();
 
@@ -249,20 +267,21 @@ export async function cleanupOrphanFiles(): Promise<CleanupOrphanFilesResponse> 
 
     for (const file of orphanFiles) {
       try {
-        const { error: deleteError } = await supabase.storage.from(file.bucket).remove([file.filePath]);
+        const { error: deleteError } = await supabase.storage
+          .from(file.bucket)
+          .remove([file.filePath]);
 
         if (deleteError) {
-          console.error(`❌ Storage 파일 삭제 실패: ${file.filePath}`, deleteError);
+          console.error(
+            `❌ Storage 파일 삭제 실패: ${file.filePath}`,
+            deleteError
+          );
           failedFiles.push(file.filePath);
           continue;
         }
 
-        await prisma.fileUpload.update({
+        await prisma.fileUpload.delete({
           where: { id: file.id },
-          data: {
-            status: FileStatus.DELETED,
-            deletedAt: new Date(),
-          },
         });
 
         deletedFiles.push(file.filePath);
@@ -273,7 +292,9 @@ export async function cleanupOrphanFiles(): Promise<CleanupOrphanFilesResponse> 
       }
     }
 
-    console.log(`🧹 고아 파일 정리 완료: 성공 ${deletedFiles.length}개, 실패 ${failedFiles.length}개`);
+    console.log(
+      `🧹 고아 파일 정리 완료: 성공 ${deletedFiles.length}개, 실패 ${failedFiles.length}개`
+    );
 
     return {
       success: true,

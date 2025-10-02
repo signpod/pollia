@@ -147,7 +147,6 @@ model FileUpload {
   // 시간 추적
   createdAt   DateTime  @default(now()) @map("created_at")
   confirmedAt DateTime? @map("confirmed_at")
-  deletedAt   DateTime? @map("deleted_at")
 
   @@index([userId, status])
   @@index([status, createdAt])
@@ -158,7 +157,6 @@ model FileUpload {
 enum FileStatus {
   TEMPORARY // 임시 업로드 상태
   CONFIRMED // 확정 완료 상태
-  DELETED   // 삭제 상태
 }
 
 enum RelatedEntityType {

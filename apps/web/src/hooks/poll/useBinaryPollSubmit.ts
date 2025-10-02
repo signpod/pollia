@@ -91,6 +91,9 @@ export function useBinaryPollSubmit(options: UseBinaryPollSubmitOptions = {}) {
     endTime,
   ]);
 
+  const isImageUploading =
+    thumbnailUrl !== undefined && thumbnailUrl.startsWith("blob:");
+
   const handleSubmit = async (imageFileUploadId?: string) => {
     if (!validation.isValid) {
       const errorMessage = validation.errors.join("\n");
@@ -137,7 +140,8 @@ export function useBinaryPollSubmit(options: UseBinaryPollSubmitOptions = {}) {
   return {
     handleSubmit,
     isLoading: createPollMutation.isPending,
-    isValid: validation.isValid,
+    isValid: validation.isValid && !isImageUploading,
+    isImageUploading,
     errors: validation.errors,
     error: createPollMutation.error,
   };

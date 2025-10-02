@@ -22,6 +22,7 @@ import {
   Toggle,
   DateAndTimePicker,
 } from "@repo/ui/components";
+import { formatDateToLocalString } from "@/lib/date";
 import { useAtom, useSetAtom } from "jotai";
 import { useImageUpload } from "@/hooks/common/useImageUpload";
 import { useMultiplePollSubmit } from "@/hooks/poll/useMultiplePollSubmit";
@@ -30,7 +31,7 @@ import { useState, useEffect } from "react";
 import { OptionSelector } from "@/app/poll/create/OptionSelector";
 import { CATEGORY_LABELS } from "@/constants/poll";
 
-export default function MultipleInfoStep() {
+export function MultipleInfoStep() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-6 px-5">
@@ -226,7 +227,8 @@ function DescriptionInput() {
 }
 
 function MultipleInfoCTAButton() {
-  const { isValid, handleSubmit, isLoading } = useMultiplePollSubmit();
+  const { isValid, handleSubmit, isLoading, isImageUploading } =
+    useMultiplePollSubmit();
 
   const handleClick = () => {
     handleSubmit();
@@ -240,9 +242,14 @@ function MultipleInfoCTAButton() {
           fullWidth={true}
           onClick={handleClick}
           disabled={!isValid || isLoading}
+          loading={isLoading || isImageUploading}
         >
           <Typo.ButtonText>
-            {isLoading ? "폴 생성 중..." : "폴 만들기"}
+            {isLoading
+              ? "폴 생성 중..."
+              : isImageUploading
+                ? "이미지 업로드 중..."
+                : "폴 만들기"}
           </Typo.ButtonText>
         </Button>
       </div>
@@ -265,15 +272,15 @@ function VotingPeriodSection() {
 
   // Date → string 변환 함수
   const handleStartDateChange = (date: Date | undefined) => {
-    setStartDateString(date ? date.toISOString().split("T")[0]! : "");
+    setStartDateString(date ? formatDateToLocalString(date) : "");
   };
 
   const handleEndDateChange = (date: Date | undefined) => {
-    setEndDateString(date ? date.toISOString().split("T")[0]! : "");
+    setEndDateString(date ? formatDateToLocalString(date) : "");
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 py-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Typo.SubTitle size="large">무기한</Typo.SubTitle>

@@ -88,6 +88,13 @@ export function useMultiplePollSubmit(
     pollData.options,
   ]);
 
+  const isImageUploading =
+    (pollData.thumbnailUrl !== undefined &&
+      pollData.thumbnailUrl.startsWith("blob:")) ||
+    pollData.options.some(
+      (option) => option.imageUrl && option.imageUrl.startsWith("blob:")
+    );
+
   const handleSubmit = async (imageFileUploadId?: string) => {
     if (!validation.isValid) {
       const errorMessage = validation.errors.join("\n");
@@ -140,7 +147,8 @@ export function useMultiplePollSubmit(
   return {
     handleSubmit,
     isLoading: createPollMutation.isPending,
-    isValid: validation.isValid,
+    isValid: validation.isValid && !isImageUploading,
+    isImageUploading,
     errors: validation.errors,
     error: createPollMutation.error,
   };

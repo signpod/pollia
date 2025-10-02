@@ -1,12 +1,12 @@
 import React from "react";
 import { StepConfig } from "@repo/ui/components";
-import { ChevronLeft, X } from "lucide-react";
+import { ChevronLeft, LucideIcon, X } from "lucide-react";
 
 export interface ExtendedStepConfig extends StepConfig {
   description?: string;
   header: {
     action: () => void;
-    icon: React.ElementType;
+    icon: LucideIcon | React.ComponentType<React.SVGProps<SVGSVGElement>>;
   };
   content: () => React.ReactNode;
 }

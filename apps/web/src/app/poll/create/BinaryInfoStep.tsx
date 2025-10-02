@@ -21,13 +21,14 @@ import {
   Toggle,
   DateAndTimePicker,
 } from "@repo/ui/components";
+import { formatDateToLocalString } from "@/lib/date";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { ChevronRight } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useImageUpload } from "@/hooks/common/useImageUpload";
 import { useBinaryPollSubmit } from "@/hooks/poll/useBinaryPollSubmit";
 
-export default function BinaryInfoStep() {
+export function BinaryInfoStep() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-6 px-5">
@@ -226,7 +227,8 @@ function DescriptionInput() {
 function BinaryInfoCTAButton() {
   const uploadedFileId = useAtomValue(binaryPollThumbnailFileUploadIdAtom);
 
-  const { handleSubmit, isLoading, isValid } = useBinaryPollSubmit();
+  const { handleSubmit, isLoading, isValid, isImageUploading } =
+    useBinaryPollSubmit();
 
   const handleCreatePoll = () => {
     handleSubmit(uploadedFileId);
@@ -240,10 +242,14 @@ function BinaryInfoCTAButton() {
           fullWidth={true}
           onClick={handleCreatePoll}
           disabled={!isValid || isLoading}
-          loading={isLoading}
+          loading={isLoading || isImageUploading}
         >
           <Typo.ButtonText>
-            {isLoading ? "생성 중..." : "폴 만들기"}
+            {isLoading
+              ? "생성 중..."
+              : isImageUploading
+                ? "이미지 업로드 중..."
+                : "폴 만들기"}
           </Typo.ButtonText>
         </Button>
       </div>
@@ -266,11 +272,11 @@ function VotingPeriodSection() {
 
   // Date → string 변환 함수
   const handleStartDateChange = (date: Date | undefined) => {
-    setStartDateString(date ? date.toISOString().split("T")[0]! : "");
+    setStartDateString(date ? formatDateToLocalString(date) : "");
   };
 
   const handleEndDateChange = (date: Date | undefined) => {
-    setEndDateString(date ? date.toISOString().split("T")[0]! : "");
+    setEndDateString(date ? formatDateToLocalString(date) : "");
   };
 
   return (

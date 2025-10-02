@@ -9,6 +9,7 @@ import {
   ConfirmFileRequest,
 } from "@/types/dto/image";
 import { RelatedEntityType } from "@prisma/client";
+import { preprocessImage } from "@/lib/preprocessImage";
 
 export interface ImageUploadProgress {
   loaded: number;
@@ -38,10 +39,12 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
   const uploadMutation = useMutation({
     mutationFn: async (file: File): Promise<UploadedImage> => {
       try {
+        const processedFile = await preprocessImage(file);
+
         const uploadRequest: UploadImageRequest = {
-          fileName: file.name,
-          fileType: file.type,
-          fileSize: file.size,
+          fileName: processedFile.name,
+          fileType: processedFile.type,
+          fileSize: processedFile.size,
           bucket: options.bucket,
         };
 
@@ -55,7 +58,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
 
         const { uploadUrl, publicUrl, path, fileUploadId } = urlResponse.data;
 
-        await uploadFileToStorage(file, uploadUrl, (progress) => {
+        await uploadFileToStorage(processedFile, uploadUrl, (progress) => {
           setUploadProgress(progress);
           options.onProgress?.(progress);
         });
@@ -63,7 +66,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
         const result: UploadedImage = {
           publicUrl,
           path,
-          file,
+          file: processedFile,
           fileUploadId,
           isTemporary: true,
         };
