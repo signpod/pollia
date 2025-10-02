@@ -55,8 +55,8 @@ const TYPE_LABELS: Record<PollType, string> = {
 
 const BINARY_POLL_OPTIONS = {
   [PollType.YES_NO]: [
-    { description: "O", order: 1 },
-    { description: "X", order: 2 },
+    { description: "맞아요", order: 1 },
+    { description: "아니에요", order: 2 },
   ],
   [PollType.LIKE_DISLIKE]: [
     { description: "좋아요", order: 1 },

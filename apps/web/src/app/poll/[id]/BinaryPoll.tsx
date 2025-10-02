@@ -1,11 +1,10 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { ThumbsUp, ThumbsDown } from "lucide-react";
 import { PollOptionProgressive } from "@/components/poll/PollOptionProgressive";
 import { usePollResults, useUserVoteStatus } from "@/hooks/poll/usePoll";
 import {
   BINARY_OPTION_ORDER,
   BINARY_POLL_OPTIONS,
-  FALLBACK_OPTION_TEXT,
   isBinaryPollType,
 } from "@/constants/poll";
 import { PollType } from "@prisma/client";
@@ -16,33 +15,6 @@ import { useAuth } from "@/hooks/user";
 
 interface BinaryPollProps {
   pollId: string;
-}
-
-function getBinaryOptionByOrder(
-  pollType: PollType,
-  order: number
-): string | null {
-  if (!isBinaryPollType(pollType)) {
-    return null;
-  }
-
-  const options =
-    BINARY_POLL_OPTIONS[pollType as keyof typeof BINARY_POLL_OPTIONS];
-  const option = options.find((opt) => opt.order === order);
-  return option?.description || null;
-}
-
-function getDefaultOptionText(pollType: PollType, order: number): string {
-  const pollTypeText = getBinaryOptionByOrder(pollType, order);
-  if (pollTypeText) {
-    return pollTypeText;
-  }
-
-  const fallbackText = getBinaryOptionByOrder(PollType.LIKE_DISLIKE, order);
-  return (
-    fallbackText ||
-    FALLBACK_OPTION_TEXT[order as keyof typeof FALLBACK_OPTION_TEXT]
-  );
 }
 
 export function BinaryPoll({ pollId }: BinaryPollProps) {
@@ -63,6 +35,30 @@ export function BinaryPoll({ pollId }: BinaryPollProps) {
         pollResults.data.isIndefinite
       )
     : false;
+
+  const isValidOptions = useMemo(() => {
+    if (
+      !pollResults?.data?.options ||
+      !pollType ||
+      !isBinaryPollType(pollType)
+    ) {
+      return false;
+    }
+
+    const expectedOptions =
+      BINARY_POLL_OPTIONS[pollType as keyof typeof BINARY_POLL_OPTIONS];
+
+    if (pollResults.data.options.length !== expectedOptions.length) {
+      return false;
+    }
+
+    return expectedOptions.every((expectedOption) => {
+      const actualOption = pollResults.data.options.find(
+        (opt) => opt.order === expectedOption.order
+      );
+      return actualOption?.description === expectedOption.description;
+    });
+  }, [pollResults, pollType]);
 
   const getUserVotedOption = useCallback((): number | null => {
     if (!hasVoted || !userVoteStatus?.data?.votes?.length) {
@@ -125,7 +121,7 @@ export function BinaryPoll({ pollId }: BinaryPollProps) {
 
   const getOptionIdByOrder = useCallback(
     (order: number): string | null => {
-      if (!pollResults?.data?.options || !pollType) {
+      if (!pollResults?.data?.options) {
         return null;
       }
 
@@ -135,7 +131,7 @@ export function BinaryPoll({ pollId }: BinaryPollProps) {
 
       return targetOption?.id || null;
     },
-    [pollResults, pollType]
+    [pollResults]
   );
 
   const handleVoteAction = useCallback(
@@ -156,25 +152,25 @@ export function BinaryPoll({ pollId }: BinaryPollProps) {
 
   const getOptionLabel = useCallback(
     (order: number): string => {
-      if (
-        !pollResults?.success ||
-        !pollResults?.data?.options?.length ||
-        !pollType
-      ) {
-        // pollType이 없을 때도 getDefaultOptionText 사용 (내부에서 fallback 처리)
-        return getDefaultOptionText(pollType || PollType.LIKE_DISLIKE, order);
+      if (!pollResults?.data?.options) {
+        return "";
       }
 
       const targetOption = pollResults.data.options.find(
         (option) => option.order === order
       );
 
-      return targetOption?.description || getDefaultOptionText(pollType, order);
+      return targetOption?.description || "";
     },
-    [pollResults, pollType]
+    [pollResults]
   );
 
   const isVotingAllowed = pollActive && !isVoting;
+
+  if (!isValidOptions) {
+    console.error("[500] Invalid options");
+    return null;
+  }
 
   return (
     <BasePollComponent pollId={pollId}>
