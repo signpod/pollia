@@ -227,7 +227,8 @@ function DescriptionInput() {
 function BinaryInfoCTAButton() {
   const uploadedFileId = useAtomValue(binaryPollThumbnailFileUploadIdAtom);
 
-  const { handleSubmit, isLoading, isValid } = useBinaryPollSubmit();
+  const { handleSubmit, isLoading, isValid, isImageUploading } =
+    useBinaryPollSubmit();
 
   const handleCreatePoll = () => {
     handleSubmit(uploadedFileId);
@@ -241,10 +242,14 @@ function BinaryInfoCTAButton() {
           fullWidth={true}
           onClick={handleCreatePoll}
           disabled={!isValid || isLoading}
-          loading={isLoading}
+          loading={isLoading || isImageUploading}
         >
           <Typo.ButtonText>
-            {isLoading ? "생성 중..." : "폴 만들기"}
+            {isLoading
+              ? "생성 중..."
+              : isImageUploading
+                ? "이미지 업로드 중..."
+                : "폴 만들기"}
           </Typo.ButtonText>
         </Button>
       </div>
