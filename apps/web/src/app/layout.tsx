@@ -4,6 +4,18 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "세상을 발견하는 솔직한 방법, 폴리아",
   description: "첫 감각이 가장 솔직한 마음!",
+  icons: {
+    icon: [
+      { url: "/images/favicon-32.ico", sizes: "32x32", type: "image/x-icon" },
+      { url: "/images/favicon-48.ico", sizes: "48x48", type: "image/x-icon" },
+    ],
+  },
+  openGraph: {
+    title: "세상을 발견하는 솔직한 방법, 폴리아",
+    description: "첫 감각이 가장 솔직한 마음!",
+    images: ["/images/opengraph.png"],
+    type: "website",
+  },
 };
 
 export default function RootLayout({
