@@ -26,14 +26,23 @@ export function BottomCTAButtons({ pollId }: { pollId: string }) {
     };
 
     try {
-      if (navigator.share && navigator.canShare(shareData)) {
-        await navigator.share(shareData);
-      } else {
-        await navigator.clipboard.writeText(shareUrl);
-        alert("링크가 클립보드에 복사되었습니다!");
+      if (navigator.share) {
+        const canShare = !navigator.canShare || navigator.canShare(shareData);
+        if (canShare) {
+          await navigator.share(shareData);
+          return;
+        }
       }
+
+      await navigator.clipboard.writeText(shareUrl);
+      alert("링크가 클립보드에 복사되었습니다!");
     } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        return;
+      }
+
       console.error("공유 실패:", error);
+
       try {
         await navigator.clipboard.writeText(shareUrl);
         alert("링크가 클립보드에 복사되었습니다!");
