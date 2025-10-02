@@ -13,6 +13,7 @@ export * from "./common/Dialog";
 export * from "./common/Drawer";
 export * from "./common/IconButton";
 export * from "./common/CounterInput";
+export * from "./common/ProcessChip";
 
 // Hooks
 export * from "../hooks/useStep";
