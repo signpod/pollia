@@ -37,3 +37,12 @@ import {
 export const FixedTopLayout = Object.assign(FixedTopLayoutBase, {
   Content: FixedTopContent,
 });
+
+import {
+  FloatingLayout as FloatingLayoutBase,
+  FloatingContent,
+} from "./layout/FloatingLayout";
+
+export const FloatingLayout = Object.assign(FloatingLayoutBase, {
+  Content: FloatingContent,
+});
