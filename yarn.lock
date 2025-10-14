@@ -10566,6 +10566,7 @@ __metadata:
     "@repo/ui": "workspace:*"
     "@storybook/addon-docs": "npm:^9.1.5"
     "@storybook/nextjs": "npm:^9.1.4"
+    "@svgr/webpack": "npm:^8.1.0"
     "@types/node": "npm:^20"
     "@types/react": "npm:^19"
     "@types/react-dom": "npm:^19"
