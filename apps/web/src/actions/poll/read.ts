@@ -115,6 +115,42 @@ export async function getUserPolls(
   }
 }
 
+export async function getBookmarkedPolls(
+  userId?: string
+): Promise<GetUserPollsResponse> {
+  try {
+    if (!userId) {
+      const supabase = await createServerSupabaseClient();
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+
+      if (authError || !user) {
+        return {
+          success: false,
+          error: "로그인이 필요합니다.",
+        };
+      }
+      userId = user.id;
+    }
+
+    const polls = await prisma.poll.findMany({
+      where: {
+        bookmarks: {
+          some: {
+            userId,
+          },
+        },
+      },
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        category: true,
+        startDate: true,
+        endDate: true,
+        isIndefinite: true,
         createdAt: true,
         _count: {
           select: {
@@ -133,10 +169,72 @@ export async function getUserPolls(
       data: polls,
     };
   } catch (error) {
-    console.error("❌ 폴 목록 조회 에러:", error);
+    console.error("❌ 북마크 폴 목록 조회 에러:", error);
     return {
       success: false,
-      error: "폴 목록을 불러올 수 없습니다.",
+      error: "북마크 폴 목록을 불러올 수 없습니다.",
+    };
+  }
+}
+
+export async function getLikedPolls(
+  userId?: string
+): Promise<GetUserPollsResponse> {
+  try {
+    if (!userId) {
+      const supabase = await createServerSupabaseClient();
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+
+      if (authError || !user) {
+        return {
+          success: false,
+          error: "로그인이 필요합니다.",
+        };
+      }
+      userId = user.id;
+    }
+
+    const polls = await prisma.poll.findMany({
+      where: {
+        likes: {
+          some: {
+            userId,
+          },
+        },
+      },
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        category: true,
+        startDate: true,
+        endDate: true,
+        isIndefinite: true,
+        createdAt: true,
+        _count: {
+          select: {
+            votes: true,
+            likes: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return {
+      success: true,
+      data: polls,
+    };
+  } catch (error) {
+    console.error("❌ 좋아요 폴 목록 조회 에러:", error);
+    return {
+      success: false,
+      error: "좋아요 폴 목록을 불러올 수 없습니다.",
     };
   }
 }
