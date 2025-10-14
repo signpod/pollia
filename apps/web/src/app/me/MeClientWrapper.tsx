@@ -7,10 +7,8 @@ import {
 } from "@tanstack/react-query";
 import { FixedBottomLayout, FixedTopLayout } from "@repo/ui/components";
 import { FloatingButton } from "./FloatingButton";
-import { UserInfo } from "./UserInfo";
 import { getQueryClient } from "@/lib/getQueryClient";
-import { PollList } from "./ui";
-import { useMe } from "./hook";
+import { ProfileContainer } from "./ProfileContainer";
 
 interface MeClientWrapperProps {
   dehydratedState: DehydratedState;
@@ -18,7 +16,6 @@ interface MeClientWrapperProps {
 
 export function MeClientWrapper({ dehydratedState }: MeClientWrapperProps) {
   const queryClient = getQueryClient();
-  const { me, polls } = useMe();
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -28,17 +25,7 @@ export function MeClientWrapper({ dehydratedState }: MeClientWrapperProps) {
             <FixedTopLayout.Content className="bg-transparent">
               <div className="h-12" />
             </FixedTopLayout.Content>
-            <UserInfo user={me!} />
-            <div className="space-y-6">
-              {polls.map((poll) => (
-                <PollList
-                  key={poll.title}
-                  title={poll.title}
-                  polls={poll.polls}
-                  useActiveIcon={poll.useActiveIcon}
-                />
-              ))}
-            </div>
+            <ProfileContainer />
           </FixedTopLayout>
           <FixedBottomLayout.Content className="flex justify-end p-4 bg-transparent">
             {/* TODO: 투표 생성 FloatingButton 수정 */}
