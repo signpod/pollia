@@ -1,6 +1,6 @@
 import { Meta, StoryObj } from "@storybook/nextjs";
 import PollCreateFloatingButton from "@web/components/poll/PollCreateFloatingButton";
-import { FloatingLayout } from "@repo/ui/components";
+import React from "react";
 
 const meta: Meta<typeof PollCreateFloatingButton> = {
   title: "Pollia/PollCreateFloatingButton",
@@ -77,175 +77,6 @@ export const WithText: Story = {
   },
 };
 
-// 실제 사용 예시 - FloatingLayout과 함께
-export const InFloatingLayout: Story = {
-  render: () => {
-    return (
-      <FloatingLayout>
-        <div style={{ width: "375px", height: "667px", padding: "2rem" }}>
-          <h1
-            style={{
-              fontSize: "1.5rem",
-              fontWeight: "bold",
-              marginBottom: "1rem",
-            }}
-          >
-            투표 목록
-          </h1>
-          <p style={{ color: "#71717a", marginBottom: "1rem" }}>
-            오른쪽 하단의 버튼을 눌러 새 투표를 만들어보세요.
-          </p>
-          {Array.from({ length: 10 }, (_, i) => (
-            <div
-              key={i}
-              style={{
-                padding: "1rem",
-                marginBottom: "0.5rem",
-                border: "1px solid #e4e4e7",
-                borderRadius: "8px",
-              }}
-            >
-              투표 항목 {i + 1}
-            </div>
-          ))}
-        </div>
-
-        <FloatingLayout.Content position={{ bottom: 20, right: 20 }}>
-          <PollCreateFloatingButton
-            variant="icon-only"
-            onClick={() => alert("투표 만들기 클릭!")}
-          />
-        </FloatingLayout.Content>
-      </FloatingLayout>
-    );
-  },
-  parameters: {
-    layout: "fullscreen",
-    docs: {
-      description: {
-        story:
-          "FloatingLayout과 함께 사용하는 실제 예시입니다. 화면 오른쪽 하단에 고정되어 표시됩니다.",
-      },
-    },
-  },
-};
-
-// 텍스트 버전 - FloatingLayout과 함께
-export const WithTextInFloatingLayout: Story = {
-  render: () => {
-    return (
-      <FloatingLayout>
-        <div style={{ width: "375px", height: "667px", padding: "2rem" }}>
-          <h1
-            style={{
-              fontSize: "1.5rem",
-              fontWeight: "bold",
-              marginBottom: "1rem",
-            }}
-          >
-            투표 목록
-          </h1>
-          <p style={{ color: "#71717a", marginBottom: "1rem" }}>
-            텍스트가 포함된 버튼으로 명확한 액션을 안내합니다.
-          </p>
-          {Array.from({ length: 10 }, (_, i) => (
-            <div
-              key={i}
-              style={{
-                padding: "1rem",
-                marginBottom: "0.5rem",
-                border: "1px solid #e4e4e7",
-                borderRadius: "8px",
-              }}
-            >
-              투표 항목 {i + 1}
-            </div>
-          ))}
-        </div>
-
-        <FloatingLayout.Content position={{ bottom: 20, right: 20 }}>
-          <PollCreateFloatingButton
-            variant="with-text"
-            onClick={() => alert("투표 만들기 클릭!")}
-          />
-        </FloatingLayout.Content>
-      </FloatingLayout>
-    );
-  },
-  parameters: {
-    layout: "fullscreen",
-    docs: {
-      description: {
-        story:
-          "텍스트가 포함된 버전의 실제 사용 예시입니다. 첫 방문 사용자나 명확한 안내가 필요한 경우에 적합합니다.",
-      },
-    },
-  },
-};
-
-// 다양한 위치 예시
-export const DifferentPositions: Story = {
-  render: () => {
-    return (
-      <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap" }}>
-        <div style={{ position: "relative", width: "200px", height: "200px" }}>
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              border: "2px dashed #e4e4e7",
-              borderRadius: "8px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#a1a1aa",
-            }}
-          >
-            오른쪽 하단
-          </div>
-          <div style={{ position: "absolute", bottom: "12px", right: "12px" }}>
-            <PollCreateFloatingButton variant="icon-only" />
-          </div>
-        </div>
-
-        <div style={{ position: "relative", width: "200px", height: "200px" }}>
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              border: "2px dashed #e4e4e7",
-              borderRadius: "8px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#a1a1aa",
-            }}
-          >
-            하단 중앙
-          </div>
-          <div
-            style={{
-              position: "absolute",
-              bottom: "12px",
-              left: "50%",
-              transform: "translateX(-50%)",
-            }}
-          >
-            <PollCreateFloatingButton variant="with-text" />
-          </div>
-        </div>
-      </div>
-    );
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: "다양한 위치에 배치된 버튼 예시입니다.",
-      },
-    },
-  },
-};
-
 // 상태별 비교
 export const AllVariants: Story = {
   render: () => (
@@ -280,6 +111,52 @@ export const AllVariants: Story = {
     docs: {
       description: {
         story: "두 가지 variant를 한 번에 비교할 수 있습니다.",
+      },
+    },
+  },
+};
+
+// 애니메이션 전환 예시
+export const AnimationTransition: Story = {
+  render: () => {
+    const [variant, setVariant] = React.useState<"icon-only" | "with-text">(
+      "with-text"
+    );
+
+    return (
+      <div style={{ textAlign: "center" }}>
+        <div style={{ marginBottom: "2rem" }}>
+          <PollCreateFloatingButton variant={variant} />
+        </div>
+
+        <button
+          onClick={() =>
+            setVariant(variant === "icon-only" ? "with-text" : "icon-only")
+          }
+          style={{
+            padding: "0.5rem 1rem",
+            borderRadius: "8px",
+            border: "1px solid #e4e4e7",
+            background: "white",
+            cursor: "pointer",
+          }}
+        >
+          전환하기 ({variant === "icon-only" ? "텍스트 표시" : "아이콘만"})
+        </button>
+
+        <p
+          style={{ marginTop: "1rem", fontSize: "0.875rem", color: "#71717a" }}
+        >
+          버튼을 클릭하여 애니메이션 전환을 확인하세요
+        </p>
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "버튼을 클릭하여 icon-only와 with-text 간의 부드러운 애니메이션 전환을 확인할 수 있습니다. 실제 스크롤 동작과 동일한 애니메이션이 적용됩니다.",
       },
     },
   },
