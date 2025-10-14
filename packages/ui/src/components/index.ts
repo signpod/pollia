@@ -25,6 +25,7 @@ import {
   FixedBottomLayout as FixedBottomLayoutBase,
   FixedBottomContent,
 } from "./layout/FixedBottomLayout";
+
 export const FixedBottomLayout = Object.assign(FixedBottomLayoutBase, {
   Content: FixedBottomContent,
 });
