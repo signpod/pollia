@@ -59,6 +59,9 @@ export const useBookmark = (pollId: string) => {
       queryClient.invalidateQueries({
         queryKey: pollQueryKeys.userPollStatus(pollId),
       });
+      queryClient.invalidateQueries({
+        queryKey: pollQueryKeys.bookmarkedPolls(),
+      });
     },
 
     onError: (error, _variables, context) => {

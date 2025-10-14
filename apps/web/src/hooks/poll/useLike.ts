@@ -59,6 +59,9 @@ export const useLike = (pollId: string) => {
       queryClient.invalidateQueries({
         queryKey: pollQueryKeys.userPollStatus(pollId),
       });
+      queryClient.invalidateQueries({
+        queryKey: pollQueryKeys.likedPolls(),
+      });
     },
 
     onError: (error, _variables, context) => {
