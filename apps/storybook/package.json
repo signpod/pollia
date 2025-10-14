@@ -19,6 +19,7 @@
     "@repo/tailwind-config": "workspace:*",
     "@storybook/addon-docs": "^9.1.5",
     "@storybook/nextjs": "^9.1.4",
+    "@svgr/webpack": "^8.1.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
