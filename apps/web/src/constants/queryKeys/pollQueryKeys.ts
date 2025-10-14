@@ -5,6 +5,12 @@ export const pollQueryKeys = {
   userPolls: (userId?: string) =>
     userId ? (["user-polls", userId] as const) : (["user-polls"] as const),
   userPollStatus: (pollId: string) => ["user-poll-status", pollId] as const,
+  bookmarkedPolls: (userId?: string) =>
+    userId
+      ? (["bookmarked-polls", userId] as const)
+      : (["bookmarked-polls"] as const),
+  likedPolls: (userId?: string) =>
+    userId ? (["liked-polls", userId] as const) : (["liked-polls"] as const),
   all: () => ["poll"] as const,
 } as const;
 

@@ -46,6 +46,9 @@ export interface GetUserPollsResponse {
     title: string;
     type: PollType;
     category: PollCategory;
+    startDate: Date;
+    endDate: Date | null;
+    isIndefinite: boolean;
     createdAt: Date;
     _count: {
       votes: number;
