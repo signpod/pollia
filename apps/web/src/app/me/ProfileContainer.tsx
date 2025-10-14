@@ -34,7 +34,9 @@ export function ProfileContainer() {
 
 function UserInfoSection() {
   const me = useCurrentUser();
-  return <UserInfo user={me.data!} />;
+  const {name} = me.data?.data ?? {};
+
+  return <UserInfo name={name ?? ""} />;
 }
 
 function UserPollsSection() {
