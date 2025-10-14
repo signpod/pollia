@@ -3,8 +3,8 @@ import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Image from "next/image";
 import { cn } from "@repo/ui/lib";
-import { CenterOverlay, Typo } from "@repo/ui/components";
-import PoliaLogo from "@public/svgs/pollia-icon-filled.svg";
+import { Typo } from "@repo/ui/components";
+import { PointIcon } from "@/components/common/PointIcon";
 
 const slides = [
   {
@@ -103,16 +103,10 @@ export function OnboardingCarousel() {
 
 function IndexBadge({ index }: { index: number }) {
   return (
-    <CenterOverlay
-      targetElement={
-        <div>
-          <PoliaLogo className="size-6" />
-        </div>
-      }
-    >
+    <PointIcon>
       <span className="text-sm font-bold text-white leading-[1.8]">
         {index + 1}
       </span>
-    </CenterOverlay>
+    </PointIcon>
   );
 }
