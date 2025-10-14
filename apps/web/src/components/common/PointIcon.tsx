@@ -1,11 +1,15 @@
 import { CenterOverlay } from "@repo/ui/components";
 import PoliaLogo from "@public/svgs/pollia-icon-filled.svg";
 
-export function PointIcon({ children }: { children: React.ReactNode }) {
+interface PointIconProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    React.PropsWithChildren {}
+
+export function PointIcon({ children, className, ...props }: PointIconProps) {
   return (
     <CenterOverlay
       targetElement={
-        <div>
+        <div className={className} {...props}>
           <PoliaLogo className="size-6" />
         </div>
       }
