@@ -6,9 +6,10 @@ import {
   DehydratedState,
 } from "@tanstack/react-query";
 import { FixedBottomLayout, FixedTopLayout } from "@repo/ui/components";
-import { FloatingButton } from "./FloatingButton";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { ProfileContainer } from "./ProfileContainer";
+import PollCreateFloatingButton from "@/components/poll/PollCreateFloatingButton";
+import Link from "next/link";
 
 interface MeClientWrapperProps {
   dehydratedState: DehydratedState;
@@ -16,6 +17,7 @@ interface MeClientWrapperProps {
 
 export function MeClientWrapper({ dehydratedState }: MeClientWrapperProps) {
   const queryClient = getQueryClient();
+
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -28,8 +30,11 @@ export function MeClientWrapper({ dehydratedState }: MeClientWrapperProps) {
             <ProfileContainer />
           </FixedTopLayout>
           <FixedBottomLayout.Content className="flex justify-end p-4 bg-transparent">
-            {/* TODO: 투표 생성 FloatingButton 수정 */}
-            <FloatingButton />
+          <Link  href="/poll/create" className="fixed bottom-5 right-5 cursor-pointer">
+            <PollCreateFloatingButton
+            variant='with-text'
+            />
+          </Link>
           </FixedBottomLayout.Content>
         </FixedBottomLayout>
       </HydrationBoundary>
