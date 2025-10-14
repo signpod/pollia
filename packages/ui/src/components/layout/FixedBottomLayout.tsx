@@ -9,6 +9,7 @@ import {
   useRef,
   useLayoutEffect,
 } from "react";
+import { Toaster } from "../common/Toast";
 
 interface FixedBottomContextType {
   currentContent: ReactNode | null;
@@ -73,6 +74,10 @@ export function FixedBottomLayout({
           }}
         />
 
+        {/* 토스트 알림 영역 */}
+        <Toaster offset={contentHeight + 16} />
+
+        {/* 고정 콘텐츠 영역 */}
         {currentContent && (
           <div
             ref={contentRef}
