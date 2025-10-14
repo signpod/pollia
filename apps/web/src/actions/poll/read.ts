@@ -86,6 +86,35 @@ export async function getUserPolls(
         title: true,
         type: true,
         category: true,
+        startDate: true,
+        endDate: true,
+        isIndefinite: true,
+        createdAt: true,
+        _count: {
+          select: {
+            votes: true,
+            likes: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return {
+      success: true,
+      data: polls,
+    };
+  } catch (error) {
+    console.error("❌ 폴 목록 조회 에러:", error);
+    return {
+      success: false,
+      error: "폴 목록을 불러올 수 없습니다.",
+    };
+  }
+}
+
         createdAt: true,
         _count: {
           select: {
