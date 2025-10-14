@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/nextjs";
-import { FixedBottomLayout } from "@repo/ui/components";
+import { FixedBottomLayout, toast } from "@repo/ui/components";
 
 const meta: Meta<typeof FixedBottomLayout> = {
   title: "Layout/FixedBottomLayout",
@@ -170,5 +170,254 @@ export const ComplexContent: Story = {
         </FixedBottomLayout.Content>
       </FixedBottomLayout>
     );
+  },
+};
+
+export const ToasterWithFixedBottom: Story = {
+  render: () => {
+    return (
+      <FixedBottomLayout>
+        <div style={{ padding: "2rem", minHeight: "100vh" }}>
+          <h1
+            style={{
+              fontSize: "2rem",
+              fontWeight: "bold",
+              marginBottom: "1rem",
+            }}
+          >
+            Toast와 하단 고정 콘텐츠 테스트
+          </h1>
+          <p style={{ marginBottom: "1rem", color: "#71717a" }}>
+            Toast가 하단 고정 콘텐츠 위에 올바르게 표시되는지 테스트합니다.
+          </p>
+
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.5rem",
+              marginBottom: "2rem",
+            }}
+          >
+            <h2 style={{ fontSize: "1.25rem", fontWeight: "600" }}>
+              Toast 테스트 버튼
+            </h2>
+            <button
+              onClick={() => toast.success("성공적으로 저장되었습니다!")}
+              style={{
+                padding: "0.75rem 1rem",
+                backgroundColor: "#22c55e",
+                color: "white",
+                borderRadius: "8px",
+                border: "none",
+                cursor: "pointer",
+                fontWeight: "600",
+              }}
+            >
+              Success Toast
+            </button>
+            <button
+              onClick={() => toast.error("오류가 발생했습니다.")}
+              style={{
+                padding: "0.75rem 1rem",
+                backgroundColor: "#ef4444",
+                color: "white",
+                borderRadius: "8px",
+                border: "none",
+                cursor: "pointer",
+                fontWeight: "600",
+              }}
+            >
+              Error Toast
+            </button>
+            <button
+              onClick={() => toast.warning("주의가 필요합니다.")}
+              style={{
+                padding: "0.75rem 1rem",
+                backgroundColor: "#f97316",
+                color: "white",
+                borderRadius: "8px",
+                border: "none",
+                cursor: "pointer",
+                fontWeight: "600",
+              }}
+            >
+              Warning Toast
+            </button>
+            <button
+              onClick={() => toast.info("참고하세요.")}
+              style={{
+                padding: "0.75rem 1rem",
+                backgroundColor: "#0284c7",
+                color: "white",
+                borderRadius: "8px",
+                border: "none",
+                cursor: "pointer",
+                fontWeight: "600",
+              }}
+            >
+              Info Toast
+            </button>
+          </div>
+
+          {Array.from({ length: 15 }, (_, i) => (
+            <p key={i} style={{ marginBottom: "1rem" }}>
+              콘텐츠 라인 {i + 1} - Toast와 고정 콘텐츠의 위치 관계를
+              테스트합니다.
+            </p>
+          ))}
+        </div>
+
+        <FixedBottomLayout.Content>
+          <div className="p-4 space-y-3">
+            <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+              <p className="text-sm text-gray-600">하단 고정 콘텐츠</p>
+              <p className="text-sm font-medium text-gray-900">
+                Toast는 이 위에 표시됩니다
+              </p>
+            </div>
+            <button className="w-full bg-indigo-500 text-white py-3 rounded-lg font-medium hover:bg-indigo-600 transition-colors">
+              하단 고정 버튼
+            </button>
+          </div>
+        </FixedBottomLayout.Content>
+      </FixedBottomLayout>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Toast가 하단 고정 콘텐츠(FixedBottomLayout.Content)와 함께 사용될 때 올바르게 렌더링되는지 테스트합니다. Toast는 고정 콘텐츠 위에 표시되어야 합니다.",
+      },
+    },
+  },
+};
+
+export const ToasterWithoutFixedBottom: Story = {
+  render: () => {
+    return (
+      <FixedBottomLayout>
+        <div style={{ padding: "2rem", minHeight: "100vh" }}>
+          <h1
+            style={{
+              fontSize: "2rem",
+              fontWeight: "bold",
+              marginBottom: "1rem",
+            }}
+          >
+            Toast 단독 테스트 (하단 고정 콘텐츠 없음)
+          </h1>
+          <p style={{ marginBottom: "1rem", color: "#71717a" }}>
+            하단 고정 콘텐츠 없이 Toast만 사용할 때의 동작을 테스트합니다.
+          </p>
+
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.5rem",
+              marginBottom: "2rem",
+            }}
+          >
+            <h2 style={{ fontSize: "1.25rem", fontWeight: "600" }}>
+              Toast 테스트 버튼
+            </h2>
+            <button
+              onClick={() => toast.success("성공적으로 저장되었습니다!")}
+              style={{
+                padding: "0.75rem 1rem",
+                backgroundColor: "#22c55e",
+                color: "white",
+                borderRadius: "8px",
+                border: "none",
+                cursor: "pointer",
+                fontWeight: "600",
+              }}
+            >
+              Success Toast
+            </button>
+            <button
+              onClick={() => toast.error("오류가 발생했습니다.")}
+              style={{
+                padding: "0.75rem 1rem",
+                backgroundColor: "#ef4444",
+                color: "white",
+                borderRadius: "8px",
+                border: "none",
+                cursor: "pointer",
+                fontWeight: "600",
+              }}
+            >
+              Error Toast
+            </button>
+            <button
+              onClick={() => toast.warning("주의가 필요합니다.")}
+              style={{
+                padding: "0.75rem 1rem",
+                backgroundColor: "#f97316",
+                color: "white",
+                borderRadius: "8px",
+                border: "none",
+                cursor: "pointer",
+                fontWeight: "600",
+              }}
+            >
+              Warning Toast
+            </button>
+            <button
+              onClick={() => toast.info("참고하세요.")}
+              style={{
+                padding: "0.75rem 1rem",
+                backgroundColor: "#0284c7",
+                color: "white",
+                borderRadius: "8px",
+                border: "none",
+                cursor: "pointer",
+                fontWeight: "600",
+              }}
+            >
+              Info Toast
+            </button>
+            <button
+              onClick={() => {
+                toast.success("첫 번째");
+                setTimeout(() => toast.info("두 번째"), 500);
+                setTimeout(() => toast.warning("세 번째"), 1000);
+                setTimeout(() => toast.error("네 번째"), 1500);
+              }}
+              style={{
+                padding: "0.75rem 1rem",
+                backgroundColor: "#8b5cf6",
+                color: "white",
+                borderRadius: "8px",
+                border: "none",
+                cursor: "pointer",
+                fontWeight: "600",
+              }}
+            >
+              Multiple Toasts (Queue 테스트)
+            </button>
+          </div>
+
+          {Array.from({ length: 20 }, (_, i) => (
+            <p key={i} style={{ marginBottom: "1rem" }}>
+              콘텐츠 라인 {i + 1} - 하단 고정 콘텐츠 없이 Toast만 사용하는
+              케이스를 테스트합니다.
+            </p>
+          ))}
+        </div>
+
+        {/* FixedBottomLayout.Content 없음 - contentHeight가 0인 상태 */}
+      </FixedBottomLayout>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "하단 고정 콘텐츠(FixedBottomLayout.Content)가 없을 때 Toast가 올바르게 렌더링되는지 테스트합니다. Toast는 화면 하단(offset 20px)에 표시되어야 합니다. contentHeight가 0일 때의 동작을 확인할 수 있습니다.",
+      },
+    },
   },
 };
