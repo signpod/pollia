@@ -85,22 +85,27 @@ function ToastContent({ type, message }: ToastProps) {
   const styles = TOAST_STYLES[type];
 
   return (
-    <div
-      className={cn(
-        "flex items-center gap-3 px-4 py-3 rounded-full",
-        styles.container
-      )}
-    >
-      <Icon className={cn("size-6 shrink-0", styles.icon)} strokeWidth={2} />
-      <Typo.ButtonText size="medium" className={cn("flex-1", styles.text)}>
-        {message}
-      </Typo.ButtonText>
+    <div className="w-full max-w-lg mx-auto flex justify-center">
+      <div
+        className={cn(
+          "flex items-center gap-3 px-4 py-3 rounded-full",
+          styles.container
+        )}
+      >
+        <Icon className={cn("size-6 shrink-0", styles.icon)} strokeWidth={2} />
+        <Typo.ButtonText
+          size="medium"
+          className={cn("flex-1 whitespace-nowrap", styles.text)}
+        >
+          {message}
+        </Typo.ButtonText>
+      </div>
     </div>
   );
 }
 
 // Toaster 컴포넌트 (앱 최상위에 배치)
-export function Toaster() {
+export function Toaster({ offset = 20 }: { offset?: number }) {
   return (
     <SonnerToaster
       position="bottom-center"
@@ -110,7 +115,8 @@ export function Toaster() {
           toast: "sonner-toast",
         },
       }}
-      offset="20px"
+      offset={offset}
+      mobileOffset={offset}
       gap={12}
     />
   );
