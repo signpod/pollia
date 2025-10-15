@@ -169,3 +169,18 @@ export const multiplePollDataAtom = atom((get) => {
     validOptionsCount: validOptions.length,
   };
 });
+
+export const resetMultiplePollAtom = atom(null, (_get, set) => {
+  set(multiplePollCategoryAtom, undefined);
+  set(multiplePollTitleAtom, "");
+  set(multiplePollDescriptionAtom, "");
+  set(multiplePollThumbnailUrlAtom, undefined);
+  set(multiplePollThumbnailFileUploadIdAtom, undefined);
+  set(multiplePollMaxSelectionsAtom, 1);
+  set(multiplePollIsUnlimitedAtom, false);
+  set(multiplePollStartDateAtom, "");
+  set(multiplePollStartTimeAtom, "");
+  set(multiplePollEndDateAtom, "");
+  set(multiplePollEndTimeAtom, "");
+  set(multiplePollOptionsAtom, [createEmptyPollOption(0), createEmptyPollOption(1)]);
+});

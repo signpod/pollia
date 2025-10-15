@@ -75,7 +75,6 @@ export const createStepConfigs = ({
       } else if (isMultiplePollType) {
         return React.createElement(MultipleInfoStep);
       }
-      throw new Error("알 수 없는 폴 타입입니다.");
     },
   },
   {
