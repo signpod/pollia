@@ -84,3 +84,17 @@ export const binaryPollDataAtom = atom((get) => ({
   endDate: get(binaryPollEndDateAtom),
   endTime: get(binaryPollEndTimeAtom),
 }));
+
+
+export const resetBinaryPollAtom = atom(null, (_get, set) => {
+  set(binaryPollCategoryAtom, undefined);
+  set(binaryPollTitleAtom, "");
+  set(binaryPollDescriptionAtom, "");
+  set(binaryPollThumbnailUrlAtom, undefined);
+  set(binaryPollThumbnailFileUploadIdAtom, undefined);
+  set(binaryPollIsUnlimitedAtom, false);
+  set(binaryPollStartDateAtom, "");
+  set(binaryPollStartTimeAtom, "");
+  set(binaryPollEndDateAtom, "");
+  set(binaryPollEndTimeAtom, "");
+});

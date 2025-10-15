@@ -1,17 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { useRouter } from "next/navigation";
 import { PollCategory } from "@prisma/client";
 import { useCreatePoll } from "./useCreatePoll";
-import { binaryPollDataAtom } from "@/atoms/create/binaryPollAtoms";
+import { binaryPollDataAtom, resetBinaryPollAtom } from "@/atoms/create/binaryPollAtoms";
 import { CreatePollRequest } from "@/types/dto";
 import {
   binaryPollSchema,
   type BinaryPollFormData,
 } from "@/schemas/binaryPollSchema";
-import { selectedBinaryPollTypeAtom } from "@/atoms/create/pollTypeAtoms";
+import { resetPollTypeAtom, selectedBinaryPollTypeAtom } from "@/atoms/create/pollTypeAtoms";
 
 export interface UseBinaryPollSubmitOptions {
   onSuccess?: () => void;
@@ -43,6 +43,8 @@ export function useBinaryPollSubmit(options: UseBinaryPollSubmitOptions = {}) {
       options.onError?.(error);
     },
   });
+  const resetPollData = useSetAtom(resetBinaryPollAtom);
+ const resetPollType = useSetAtom(resetPollTypeAtom);
 
   const [validation, setValidation] = useState({
     isValid: false,
@@ -131,7 +133,13 @@ export function useBinaryPollSubmit(options: UseBinaryPollSubmitOptions = {}) {
         options: [], // 이진 투표는 옵션 없음 - 클라이언트에서 처리
       };
 
-      await createPollMutation.mutateAsync(request);
+      const result = await createPollMutation.mutateAsync(request);
+      if(!result.success) {
+        throw new Error(result.error || "폴 생성에 실패했습니다.");
+      }
+
+      resetPollData();
+      resetPollType();
     } catch (error) {
       console.error("❌ Binary Poll validation 또는 요청 실패:", error);
     }
