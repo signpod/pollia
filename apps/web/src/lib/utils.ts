@@ -41,8 +41,6 @@ export function getPollStatus(
   isIndefinite: boolean,
   currentTime: Date = new Date()
 ): "before" | "active" | "after" {
-  if (isIndefinite) return "active";
-
   const now = currentTime.getTime();
   const startTime = startDate ? startDate.getTime() : 0;
   const endTime = endDate ? endDate.getTime() : Infinity;
