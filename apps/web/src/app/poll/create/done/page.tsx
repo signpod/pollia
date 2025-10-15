@@ -1,10 +1,11 @@
 "use client";
-import { FixedBottomLayout, Button, Typo } from "@repo/ui/components";
+import { FixedBottomLayout, Button, Typo, toast } from "@repo/ui/components";
 import PolliaIcon from "@public/svgs/poll-poll-e.svg";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { Share2 } from "lucide-react";
 
 const CREATE_POLL_DONE_MESSAGE =
   "폴이 성공적으로 만들어졌어요\n어떤 결과가 나올지 같이 기다려봐요!";
@@ -26,6 +27,7 @@ function PollCreateDoneContent() {
       </div>
     );
   }
+
   return (
     <div className="pt-60">
       <div className="flex-1 flex flex-col items-center justify-center gap-6 mb-[160px]">
@@ -37,6 +39,19 @@ function PollCreateDoneContent() {
         >
           {CREATE_POLL_DONE_MESSAGE}
         </Typo.MainTitle>
+
+        <Button
+          aria-label="만든 폴 링크 복사하기"
+          variant="secondary"
+          leftIcon={<Share2 className="size-6" />}
+          onClick={() => {
+            const pollUrl = `${window.location.origin}/poll/${pollId}`;
+            navigator.clipboard.writeText(pollUrl);
+            toast.success("링크 복사 완료!");
+          }}
+        >
+          <Typo.ButtonText size="large">만든 폴 링크 복사하기</Typo.ButtonText>
+        </Button>
       </div>
 
       <FixedBottomLayout.Content className="w-full flex justify-center bg-white">
@@ -49,21 +64,6 @@ function PollCreateDoneContent() {
             ease: "easeOut",
           }}
         >
-          <Button
-            className="w-full"
-            aria-label="만든 폴 링크 복사하기"
-            onClick={() => {
-              const pollUrl = `${window.location.origin}/poll/${pollId}`;
-              navigator.clipboard.writeText(pollUrl);
-              // TODO: 복사 완료 토스트 메시지 추가
-              alert("복사되었습니다.");
-            }}
-          >
-            <Typo.ButtonText size="large">
-              만든 폴 링크 복사하기
-            </Typo.ButtonText>
-          </Button>
-
           <Link href={`/poll/${pollId}`} className="w-full">
             <Button
               className="w-full"
