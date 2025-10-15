@@ -14,7 +14,7 @@ export function UserInfo({ name }: UserInfoProps) {
         {/* TODO: 유저 프로필 이미지 추가 */}
         {/* <AvatarImage src={imageUrl} /> */}
         <AvatarFallback>
-          <PollPollE />
+          <PollPollE className="w-full h-full" />
         </AvatarFallback>
       </Avatar>
       <Typo.MainTitle size="medium">{name}</Typo.MainTitle>
