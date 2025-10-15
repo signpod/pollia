@@ -6,22 +6,16 @@ import { cleanupOrphanFiles } from "@/actions/image";
 // 크론잡이나 스케줄러에서 주기적으로 호출 가능
 export async function GET(request: NextRequest) {
   try {
-    // Vercel 크론잡인지 확인
-    const isVercelCron = request.headers
-      .get("user-agent")
-      ?.includes("vercel-cron");
+    // Vercel Cron 보안 체크
     const authHeader = request.headers.get("authorization");
-    const expectedAuth = `Bearer ${process.env.CLEANUP_SECRET || "default-secret"}`;
 
-    // Vercel 크론잡이 아니고 인증 헤더도 없으면 거부
-    if (!isVercelCron && authHeader !== expectedAuth) {
+    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const startTime = Date.now();
-    const triggerSource = isVercelCron ? "Vercel Cron" : "Manual";
 
-    console.log(`🧹 고아 파일 정리 작업 시작... (트리거: ${triggerSource})`);
+    console.log("🧹 고아 파일 정리 작업 시작...");
 
     const result = await cleanupOrphanFiles();
 
@@ -40,7 +34,6 @@ export async function GET(request: NextRequest) {
     const duration = endTime - startTime;
 
     console.log("✅ 고아 파일 정리 완료:", {
-      triggerSource,
       deletedCount: result.deletedCount,
       failedCount: result.failedCount,
       duration: `${duration}ms`,
@@ -50,7 +43,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: "고아 파일 정리가 완료되었습니다.",
-      triggerSource,
       deletedCount: result.deletedCount,
       failedCount: result.failedCount,
       duration: `${duration}ms`,
