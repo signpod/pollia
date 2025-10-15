@@ -1,36 +1,7 @@
-"use client";
-
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import PollCreateFloatingButton from "@/components/poll/PollCreateFloatingButton";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  const [isAtTop, setIsAtTop] = useState(true);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      setIsAtTop(scrollPosition < 100);
-    };
-
-    handleScroll();
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
-
-  return (
-    <>
-      <div className="h-[200vh]">이곳에 메인 페이지가 만들어질 예정입니다.</div>
-
-      <Link href="/poll/create" className="fixed bottom-5 right-5">
-        <PollCreateFloatingButton
-          variant={isAtTop ? "with-text" : "icon-only"}
-        />
-      </Link>
-    </>
-  );
+  // redirect 함수를 server에서 사용하면, Home을 기준으로 한 SPA처럼 동작. (insert meta tag to redirect)
+  // TODO: 메인 페이지 구현 이후 변경되어야 합니다.
+  redirect("/me");
 }
