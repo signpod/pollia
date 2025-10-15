@@ -72,7 +72,7 @@ function PollData({ pollId }: { pollId: string }) {
   };
 
   return (
-    <div className="bg-white rounded-lg mx-4 p-6">{renderPollByType()}</div>
+    <div className="bg-white rounded-lg mx-5 p-4">{renderPollByType()}</div>
   );
 }
 
