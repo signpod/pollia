@@ -11,6 +11,7 @@ import {
   multiplePollDescriptionAtom,
   multiplePollTitleAtom,
   multiplePollIsUnlimitedAtom,
+  initializeDateTimeAtom,
 } from "@/atoms/create/multiplePollAtoms";
 import {
   useStep,
@@ -114,6 +115,8 @@ function ThumbnailSelector() {
         console.log(`업로드 진행률: ${progress.percentage}%`);
       },
     });
+
+    
 
   useEffect(() => {
     return () => {
@@ -265,6 +268,13 @@ function VotingPeriodSection() {
   const [startTime, setStartTime] = useAtom(multiplePollStartTimeAtom);
   const [endDateString, setEndDateString] = useAtom(multiplePollEndDateAtom);
   const [endTime, setEndTime] = useAtom(multiplePollEndTimeAtom);
+  const initializeDateTime = useSetAtom(initializeDateTimeAtom);
+
+  useEffect(() => {
+    if (!startDateString || !startTime || !endDateString || !endTime) {
+      initializeDateTime();
+    }
+  }, []);
 
   // string → Date 변환
   const startDate = startDateString ? new Date(startDateString) : undefined;

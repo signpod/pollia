@@ -21,10 +21,14 @@ export const getCurrentDate = (): string => {
 
 export const getCurrentTime = (): string => {
   const now = new Date();
-  return now.toTimeString().slice(0, 5);
+  const hours = now.getHours();
+  const minutes = now.getMinutes();
+  const roundedMinutes = Math.floor(minutes / 5) * 5;
+
+  return `${String(hours).padStart(2, '0')}:${String(roundedMinutes).padStart(2, '0')}`;
 };
 
-export const multiplePollIsUnlimitedAtom = atom<boolean>(false);
+export const multiplePollIsUnlimitedAtom = atom<boolean>(true);
 
 export const multiplePollStartDateAtom = atom<string>("");
 export const multiplePollStartTimeAtom = atom<string>("");
