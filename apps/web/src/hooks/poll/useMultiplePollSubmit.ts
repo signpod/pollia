@@ -1,16 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { useRouter } from "next/navigation";
 import { PollType, PollCategory } from "@prisma/client";
 import { useCreatePoll } from "./useCreatePoll";
-import { multiplePollDataAtom } from "@/atoms/create/multiplePollAtoms";
+import { multiplePollDataAtom, resetMultiplePollAtom } from "@/atoms/create/multiplePollAtoms";
 import { CreatePollRequest } from "@/types/dto";
 import {
   multiplePollSchema,
   type MultiplePollFormData,
 } from "@/schemas/multiplePollSchema";
+import { resetPollTypeAtom } from "@/atoms/create/pollTypeAtoms";
 
 export interface UseMultiplePollSubmitOptions {
   onSuccess?: () => void;
@@ -22,6 +23,8 @@ export function useMultiplePollSubmit(
 ) {
   const router = useRouter();
   const pollData = useAtomValue(multiplePollDataAtom);
+  const resetPollData = useSetAtom(resetMultiplePollAtom);
+  const resetPollType = useSetAtom(resetPollTypeAtom);
 
   const createPollMutation = useCreatePoll({
     onSuccess: (data) => {
@@ -138,7 +141,14 @@ export function useMultiplePollSubmit(
       };
 
       console.log("🚀 Multiple Poll 생성 요청:", request);
-      await createPollMutation.mutateAsync(request);
+      const result = await createPollMutation.mutateAsync(request);
+
+      if(!result.success) {
+        throw new Error(result.error || "폴 생성에 실패했습니다.");
+      }
+
+      resetPollData();
+      resetPollType();
     } catch (error) {
       console.error("❌ Multiple Poll validation 또는 요청 실패:", error);
     }
