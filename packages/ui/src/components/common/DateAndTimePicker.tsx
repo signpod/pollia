@@ -9,6 +9,7 @@ import { DrawerProvider, DrawerContent, useDrawer } from "./Drawer";
 import { cn } from "../../lib/utils";
 import { ko } from "react-day-picker/locale";
 import { Typo } from "./Typo";
+import type { Matcher } from "react-day-picker";
 
 interface DateAndTimePickerProps {
   date: Date | undefined;
@@ -17,6 +18,8 @@ interface DateAndTimePickerProps {
   onDateChange: (date: Date | undefined) => void;
   onTimeChange: (time: string) => void;
   disabled?: boolean;
+  /** 선택 불가능한 날짜 (예: { before: new Date() } - 오늘 이전 날짜 비활성화) */
+  disabledDates?: Matcher | Matcher[];
 }
 
 /**
@@ -30,6 +33,7 @@ export function DateAndTimePicker({
   onDateChange,
   onTimeChange,
   disabled = false,
+  disabledDates,
 }: DateAndTimePickerProps) {
   return (
     <div className="flex gap-4">
@@ -37,7 +41,11 @@ export function DateAndTimePicker({
       <DrawerProvider>
         <DatePickerButton date={date} disabled={disabled} />
         <DrawerContent className="p-5 pb-10">
-          <CalendarContent date={date} onDateChange={onDateChange} />
+          <CalendarContent
+            date={date}
+            onDateChange={onDateChange}
+            disabledDates={disabledDates}
+          />
         </DrawerContent>
       </DrawerProvider>
 
@@ -125,9 +133,11 @@ function TimePickerButton({
 function CalendarContent({
   date,
   onDateChange,
+  disabledDates,
 }: {
   date: Date | undefined;
   onDateChange: (date: Date | undefined) => void;
+  disabledDates?: Matcher | Matcher[];
 }) {
   const { close } = useDrawer();
   const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(
@@ -157,6 +167,7 @@ function CalendarContent({
         captionLayout="dropdown"
         onSelect={handleDateSelect}
         className="w-full"
+        disabled={disabledDates}
       />
       <Button className="w-full mt-6" onClick={handleConfirm}>
         확인

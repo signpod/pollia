@@ -7,6 +7,7 @@ import {
 } from "@repo/ui/components";
 import { useAtom } from "jotai";
 import { PrimitiveAtom } from "jotai";
+import type { Matcher } from "react-day-picker";
 
 interface VotingPeriodSectionProps {
   isUnlimitedAtom: PrimitiveAtom<boolean>;
@@ -29,11 +30,25 @@ export function VotingPeriodSection({
   const [endDateString, setEndDateString] = useAtom(endDateAtom);
   const [endTime, setEndTime] = useAtom(endTimeAtom);
 
-  // string → Date 변환
-  const startDate = startDateString ? new Date(startDateString) : undefined;
-  const endDate = endDateString ? new Date(endDateString) : undefined;
+  const startDate = startDateString
+    ? (() => {
+        const d = new Date(startDateString);
+        d.setHours(0, 0, 0, 0);
+        return d;
+      })()
+    : undefined;
 
-  // Date → string 변환 함수
+  const endDate = endDateString
+    ? (() => {
+        const d = new Date(endDateString);
+        d.setHours(0, 0, 0, 0);
+        return d;
+      })()
+    : undefined;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   const handleStartDateChange = (date: Date | undefined) => {
     setStartDateString(date ? formatDateToLocalString(date) : "");
   };
@@ -41,6 +56,13 @@ export function VotingPeriodSection({
   const handleEndDateChange = (date: Date | undefined) => {
     setEndDateString(date ? formatDateToLocalString(date) : "");
   };
+
+  const startDateDisabled: Matcher[] = [
+    { before: today },
+    ...(endDate ? [{ after: endDate }] : []),
+  ];
+
+  const endDateDisabled: Matcher = { before: startDate || today };
 
   return (
     <div className="flex flex-col gap-6">
@@ -62,6 +84,7 @@ export function VotingPeriodSection({
             time={startTime}
             onDateChange={handleStartDateChange}
             onTimeChange={setStartTime}
+            disabledDates={startDateDisabled}
           />
         </div>
 
@@ -75,6 +98,7 @@ export function VotingPeriodSection({
             onDateChange={handleEndDateChange}
             onTimeChange={setEndTime}
             disabled={isUnlimited}
+            disabledDates={endDateDisabled}
           />
         </div>
       </div>
