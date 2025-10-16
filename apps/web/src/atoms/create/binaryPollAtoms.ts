@@ -1,5 +1,6 @@
 import { POLL_CATEGORIES } from "@/constants/poll";
 import { atom } from "jotai";
+import { atomWithDefault } from "jotai/utils";
 import { getCurrentDate, getCurrentTime } from "@/lib/date";
 
 export const binaryPollAvailableCategoriesAtom = atom(POLL_CATEGORIES);
@@ -19,14 +20,10 @@ export const binaryPollThumbnailFileUploadIdAtom = atom<string | undefined>(
 
 export const binaryPollIsUnlimitedAtom = atom<boolean>(true);
 
-const currentDate = getCurrentDate();
-const currentTime = getCurrentTime();
-
-export const binaryPollStartDateAtom = atom<string>(currentDate);
-export const binaryPollStartTimeAtom = atom<string>(currentTime);
-export const binaryPollEndDateAtom = atom<string>(currentDate);
-export const binaryPollEndTimeAtom = atom<string>(currentTime);
-
+export const binaryPollStartDateAtom = atomWithDefault(() => getCurrentDate());
+export const binaryPollStartTimeAtom = atomWithDefault(() => getCurrentTime({ roundMinutesTo: 5 }));
+export const binaryPollEndDateAtom = atomWithDefault(() => getCurrentDate());
+export const binaryPollEndTimeAtom = atomWithDefault(() => getCurrentTime({ roundMinutesTo: 5 }));
 
 export const binaryPollThumbnailCountAtom = atom((get) => {
   const thumbnailUrl = get(binaryPollThumbnailUrlAtom);

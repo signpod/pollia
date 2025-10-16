@@ -2,6 +2,7 @@ import { POLL_CATEGORIES, POLL_TYPES } from "@/constants/poll";
 import { PollOption } from "@/types/domain/poll";
 import { generateUniqueId } from "@/lib/utils";
 import { atom } from "jotai";
+import { atomWithDefault } from "jotai/utils";
 import { getCurrentDate, getCurrentTime } from "@/lib/date";
 
 export const multiplePollAvailableCategoriesAtom = atom(POLL_CATEGORIES);
@@ -18,13 +19,10 @@ export const multiplePollMaxSelectionsAtom = atom<number>(1);
 
 export const multiplePollIsUnlimitedAtom = atom<boolean>(true);
 
-const currentDate = getCurrentDate();
-const currentTime = getCurrentTime();
-
-export const multiplePollStartDateAtom = atom<string>(currentDate);
-export const multiplePollStartTimeAtom = atom<string>(currentTime);
-export const multiplePollEndDateAtom = atom<string>(currentDate);
-export const multiplePollEndTimeAtom = atom<string>(currentTime);
+export const multiplePollStartDateAtom = atomWithDefault(() => getCurrentDate());
+export const multiplePollStartTimeAtom = atomWithDefault(() => getCurrentTime({ roundMinutesTo: 5 }));
+export const multiplePollEndDateAtom = atomWithDefault(() => getCurrentDate());
+export const multiplePollEndTimeAtom = atomWithDefault(() => getCurrentTime({ roundMinutesTo: 5 }));
 
 
 export const resetToCurrentDateTimeAtom = atom(null, (_get, set) => {
