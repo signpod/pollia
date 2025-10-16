@@ -110,6 +110,12 @@
   --space-24: 6rem; /* 96px */
   --space-32: 8rem; /* 128px */
 
+  /* Safe Area Insets for iOS/Android notch and gesture areas */
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+
   /* System colors for @apply utilities */
   --color-background: #ffffff;
   --color-foreground: #0a0a0a;
@@ -162,4 +168,120 @@ body {
 body {
   @apply bg-background text-foreground;
   font-family: var(--font-display);
+}
+
+/* Safe Area Utilities */
+.pt-safe {
+  padding-top: var(--safe-area-inset-top);
+}
+
+.pr-safe {
+  padding-right: var(--safe-area-inset-right);
+}
+
+.pb-safe {
+  padding-bottom: var(--safe-area-inset-bottom);
+}
+
+.pl-safe {
+  padding-left: var(--safe-area-inset-left);
+}
+
+.px-safe {
+  padding-left: var(--safe-area-inset-left);
+  padding-right: var(--safe-area-inset-right);
+}
+
+.py-safe {
+  padding-top: var(--safe-area-inset-top);
+  padding-bottom: var(--safe-area-inset-bottom);
+}
+
+.p-safe {
+  padding-top: var(--safe-area-inset-top);
+  padding-right: var(--safe-area-inset-right);
+  padding-bottom: var(--safe-area-inset-bottom);
+  padding-left: var(--safe-area-inset-left);
+}
+
+.mt-safe {
+  margin-top: var(--safe-area-inset-top);
+}
+
+.mr-safe {
+  margin-right: var(--safe-area-inset-right);
+}
+
+.mb-safe {
+  margin-bottom: var(--safe-area-inset-bottom);
+}
+
+.ml-safe {
+  margin-left: var(--safe-area-inset-left);
+}
+
+.mx-safe {
+  margin-left: var(--safe-area-inset-left);
+  margin-right: var(--safe-area-inset-right);
+}
+
+.my-safe {
+  margin-top: var(--safe-area-inset-top);
+  margin-bottom: var(--safe-area-inset-bottom);
+}
+
+.m-safe {
+  margin-top: var(--safe-area-inset-top);
+  margin-right: var(--safe-area-inset-right);
+  margin-bottom: var(--safe-area-inset-bottom);
+  margin-left: var(--safe-area-inset-left);
+}
+
+/* Safe Area with additional spacing */
+.pt-safe-4 {
+  padding-top: calc(var(--safe-area-inset-top) + 1rem);
+}
+
+.pb-safe-4 {
+  padding-bottom: calc(var(--safe-area-inset-bottom) + 1rem);
+}
+
+.px-safe-4 {
+  padding-left: calc(var(--safe-area-inset-left) + 1rem);
+  padding-right: calc(var(--safe-area-inset-right) + 1rem);
+}
+
+.py-safe-4 {
+  padding-top: calc(var(--safe-area-inset-top) + 1rem);
+  padding-bottom: calc(var(--safe-area-inset-bottom) + 1rem);
+}
+
+/* Top positioning with safe area */
+.top-safe {
+  top: var(--safe-area-inset-top);
+}
+
+.bottom-safe {
+  bottom: var(--safe-area-inset-bottom);
+}
+
+.left-safe {
+  left: var(--safe-area-inset-left);
+}
+
+.right-safe {
+  right: var(--safe-area-inset-right);
+}
+
+/* Height/Width with safe area */
+.h-safe-screen {
+  height: calc(
+    100vh - var(--safe-area-inset-top) - var(--safe-area-inset-bottom)
+  );
+}
+
+.min-h-safe-screen {
+  min-height: calc(
+    100vh - var(--safe-area-inset-top) - var(--safe-area-inset-bottom)
+  );
 }
