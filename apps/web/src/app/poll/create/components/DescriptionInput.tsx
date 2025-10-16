@@ -1,4 +1,5 @@
 import { Typo } from "@repo/ui/components";
+import { cn } from "@repo/ui/lib";
 import { useAtom, PrimitiveAtom } from "jotai";
 import { useCallback } from "react";
 
@@ -31,7 +32,12 @@ export function DescriptionInput({ descriptionAtom }: DescriptionInputProps) {
         placeholder="설명을 작성해주세요"
         maxLength={100}
         rows={2}
-        className="w-full px-4 py-3 bg-white border border-zinc-200 rounded-sm resize-none focus:outline-none focus:ring-1 focus:ring-zinc-950 placeholder:text-zinc-300"
+        className={cn(
+          "w-full px-4 py-3 bg-white border border-zinc-200 rounded-sm resize-none",
+          "focus:outline-none focus:ring-1 focus:ring-primary",
+          "placeholder:text-zinc-300",
+          description.length >= 100 && "border-red-500"
+        )}
       />
     </div>
   );
