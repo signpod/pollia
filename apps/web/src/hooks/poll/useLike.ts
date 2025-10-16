@@ -5,12 +5,21 @@ import type {
   ToggleLikePollResponse,
   GetPollUserStatusResponse,
 } from "@/types/dto";
+import { toast } from "@repo/ui/components";
 
 interface LikeMutationContext {
   previousUserStatus: GetPollUserStatusResponse | undefined;
   pollId: string;
   optimisticUpdate: boolean;
 }
+
+const LIKE_MESSAGES = {
+  success: {
+    like: "좋아요를 눌렀어요.",
+    cancel: "좋아요를 취소했어요.",
+  },
+  error: "좋아요 처리 중 오류가 발생했어요.",
+} as const;
 
 export const useLike = (pollId: string) => {
   const queryClient = useQueryClient();
@@ -62,16 +71,18 @@ export const useLike = (pollId: string) => {
       queryClient.invalidateQueries({
         queryKey: pollQueryKeys.likedPolls(),
       });
+      const message = isLiked ? LIKE_MESSAGES.success.like : LIKE_MESSAGES.success.cancel;
+      toast.success(message);
     },
 
-    onError: (error, _variables, context) => {
+    onError: (_, _variables, context) => {
       if (context?.previousUserStatus) {
         queryClient.setQueryData<GetPollUserStatusResponse>(
           pollQueryKeys.userPollStatus(pollId),
           context.previousUserStatus
         );
       }
-      console.error("좋아요 처리 실패:", error);
+      toast.error(LIKE_MESSAGES.error);
     },
   });
 

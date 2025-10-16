@@ -5,12 +5,21 @@ import type {
   ToggleBookmarkPollResponse,
   GetPollUserStatusResponse,
 } from "@/types/dto";
+import { toast } from "@repo/ui/components";
 
 interface BookmarkMutationContext {
   previousUserStatus: GetPollUserStatusResponse | undefined;
   pollId: string;
   optimisticUpdate: boolean;
 }
+
+const BOOKMARK_MESSAGES = {
+  success: {
+    add: "북마크를 추가했어요.",
+    remove: "북마크를 제거했어요.",
+  },
+  error: "북마크 처리 중 오류가 발생했어요.",
+} as const;
 
 export const useBookmark = (pollId: string) => {
   const queryClient = useQueryClient();
@@ -62,16 +71,18 @@ export const useBookmark = (pollId: string) => {
       queryClient.invalidateQueries({
         queryKey: pollQueryKeys.bookmarkedPolls(),
       });
+      const message = isBookmarked ? BOOKMARK_MESSAGES.success.add : BOOKMARK_MESSAGES.success.remove;
+      toast.success(message);
     },
 
-    onError: (error, _variables, context) => {
+    onError: (_, _variables, context) => {
       if (context?.previousUserStatus) {
         queryClient.setQueryData<GetPollUserStatusResponse>(
           pollQueryKeys.userPollStatus(pollId),
           context.previousUserStatus
         );
       }
-      console.error("북마크 처리 실패:", error);
+      toast.error(BOOKMARK_MESSAGES.error);
     },
   });
 
