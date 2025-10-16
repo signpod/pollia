@@ -97,14 +97,14 @@ const Input = ({
   return (
     <div className={cn("flex flex-col gap-2", containerClassName)}>
       {label && (
-        <>
+        <div className="flex items-center justify-between">
           <LabelText required={required}>{label}</LabelText>
           {showLength && maxLength && (
             <Typo.Body size="small" className="text-zinc-400">
               {currentValue.toString().length}/{maxLength}
             </Typo.Body>
           )}
-        </>
+        </div>
       )}
       <div className="relative">
         <input
