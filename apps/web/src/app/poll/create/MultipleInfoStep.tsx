@@ -21,6 +21,7 @@ import {
   FixedBottomLayout,
   Toggle,
   DateAndTimePicker,
+  LabelText,
 } from "@repo/ui/components";
 import { formatDateToLocalString } from "@/lib/date";
 import { useAtom, useSetAtom } from "jotai";
@@ -295,7 +296,7 @@ function VotingPeriodSection() {
 
       <div className="flex flex-col gap-4">
         <div className="flex justify-between items-center">
-          <Typo.SubTitle size="large">시작</Typo.SubTitle>
+          <LabelText required>시작</LabelText>
           <DateAndTimePicker
             date={startDate}
             time={startTime}
@@ -305,7 +306,9 @@ function VotingPeriodSection() {
         </div>
 
         <div className="flex justify-between items-center">
-          <Typo.SubTitle size="large">종료</Typo.SubTitle>
+          <LabelText required disabled={isUnlimited}>
+            종료
+          </LabelText>
           <DateAndTimePicker
             date={endDate}
             time={endTime}
