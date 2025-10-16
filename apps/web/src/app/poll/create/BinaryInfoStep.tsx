@@ -22,7 +22,6 @@ import { VotingPeriodSection } from "./components/VotingPeriodSection";
 
 
 const CREATE_BINARY_POLL_MESSAGES = {
-  success: "폴 만들기 성공했어요.",
   error: "폴 만들기 실패했어요.",
 } as const;
 
@@ -65,9 +64,6 @@ function BinaryInfoCTAButton() {
 
   const { handleSubmit, isLoading, isValid, isImageUploading } =
     useBinaryPollSubmit({
-      onSuccess: () => {
-        toast.success(CREATE_BINARY_POLL_MESSAGES.success);
-      },
       onError: () => {
         toast.error(CREATE_BINARY_POLL_MESSAGES.error);
       },
