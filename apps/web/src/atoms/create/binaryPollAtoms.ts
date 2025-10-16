@@ -16,14 +16,14 @@ export const binaryPollThumbnailFileUploadIdAtom = atom<string | undefined>(
   undefined
 );
 
-
-
 export const binaryPollIsUnlimitedAtom = atom<boolean>(true);
 
 export const binaryPollStartDateAtom = atomWithDefault(() => getCurrentDate());
-export const binaryPollStartTimeAtom = atomWithDefault(() => getCurrentTime({ roundMinutesTo: 5 }));
-export const binaryPollEndDateAtom = atomWithDefault(() => getCurrentDate());
-export const binaryPollEndTimeAtom = atomWithDefault(() => getCurrentTime({ roundMinutesTo: 5 }));
+export const binaryPollStartTimeAtom = atomWithDefault(() =>
+  getCurrentTime({ roundMinutesTo: 5 })
+);
+export const binaryPollEndDateAtom = atom<string>("");
+export const binaryPollEndTimeAtom = atom<string>("");
 
 export const binaryPollThumbnailCountAtom = atom((get) => {
   const thumbnailUrl = get(binaryPollThumbnailUrlAtom);
@@ -58,7 +58,6 @@ export const binaryPollDataAtom = atom((get) => ({
   endDate: get(binaryPollEndDateAtom),
   endTime: get(binaryPollEndTimeAtom),
 }));
-
 
 export const resetBinaryPollAtom = atom(null, (_get, set) => {
   set(binaryPollCategoryAtom, undefined);
