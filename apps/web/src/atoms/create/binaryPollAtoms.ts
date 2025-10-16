@@ -30,30 +30,14 @@ export const getCurrentTime = (): string => {
 
 export const binaryPollIsUnlimitedAtom = atom<boolean>(true);
 
-export const binaryPollStartDateAtom = atom<string>("");
-export const binaryPollStartTimeAtom = atom<string>("");
-export const binaryPollEndDateAtom = atom<string>("");
-export const binaryPollEndTimeAtom = atom<string>("");
+const currentDate = getCurrentDate();
+const currentTime = getCurrentTime();
 
-export const initializeDateTimeAtom = atom(null, (_get, set) => {
-  const currentDate = getCurrentDate();
-  const currentTime = getCurrentTime();
+export const binaryPollStartDateAtom = atom<string>(currentDate);
+export const binaryPollStartTimeAtom = atom<string>(currentTime);
+export const binaryPollEndDateAtom = atom<string>(currentDate);
+export const binaryPollEndTimeAtom = atom<string>(currentTime);
 
-  set(binaryPollStartDateAtom, currentDate);
-  set(binaryPollStartTimeAtom, currentTime);
-  set(binaryPollEndDateAtom, currentDate);
-  set(binaryPollEndTimeAtom, currentTime);
-});
-
-export const resetToCurrentDateTimeAtom = atom(null, (_get, set) => {
-  const currentDate = getCurrentDate();
-  const currentTime = getCurrentTime();
-
-  set(binaryPollStartDateAtom, currentDate);
-  set(binaryPollStartTimeAtom, currentTime);
-  set(binaryPollEndDateAtom, currentDate);
-  set(binaryPollEndTimeAtom, currentTime);
-});
 
 export const binaryPollThumbnailCountAtom = atom((get) => {
   const thumbnailUrl = get(binaryPollThumbnailUrlAtom);

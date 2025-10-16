@@ -9,7 +9,6 @@ import {
   binaryPollDescriptionAtom,
   binaryPollTitleAtom,
   binaryPollIsUnlimitedAtom,
-  initializeDateTimeAtom,
 } from "@/atoms/create/binaryPollAtoms";
 import { CATEGORY_LABELS } from "@/constants/poll";
 import {
@@ -266,13 +265,6 @@ function VotingPeriodSection() {
   const [startTime, setStartTime] = useAtom(binaryPollStartTimeAtom);
   const [endDateString, setEndDateString] = useAtom(binaryPollEndDateAtom);
   const [endTime, setEndTime] = useAtom(binaryPollEndTimeAtom);
-  const initializeDateTime = useSetAtom(initializeDateTimeAtom);
-
-  useEffect(() => {
-    if (!startDateString || !startTime || !endDateString || !endTime) {
-      initializeDateTime();
-    }
-  }, []);
 
   // string → Date 변환
   const startDate = startDateString ? new Date(startDateString) : undefined;

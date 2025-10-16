@@ -30,20 +30,14 @@ export const getCurrentTime = (): string => {
 
 export const multiplePollIsUnlimitedAtom = atom<boolean>(true);
 
-export const multiplePollStartDateAtom = atom<string>("");
-export const multiplePollStartTimeAtom = atom<string>("");
-export const multiplePollEndDateAtom = atom<string>("");
-export const multiplePollEndTimeAtom = atom<string>("");
+const currentDate = getCurrentDate();
+const currentTime = getCurrentTime();
 
-export const initializeDateTimeAtom = atom(null, (_get, set) => {
-  const currentDate = getCurrentDate();
-  const currentTime = getCurrentTime();
+export const multiplePollStartDateAtom = atom<string>(currentDate);
+export const multiplePollStartTimeAtom = atom<string>(currentTime);
+export const multiplePollEndDateAtom = atom<string>(currentDate);
+export const multiplePollEndTimeAtom = atom<string>(currentTime);
 
-  set(multiplePollStartDateAtom, currentDate);
-  set(multiplePollStartTimeAtom, currentTime);
-  set(multiplePollEndDateAtom, currentDate);
-  set(multiplePollEndTimeAtom, currentTime);
-});
 
 export const resetToCurrentDateTimeAtom = atom(null, (_get, set) => {
   const currentDate = getCurrentDate();
