@@ -11,7 +11,7 @@ import {
   binaryPollIsUnlimitedAtom,
 } from "@/atoms/create/binaryPollAtoms";
 import { binaryPollSchema } from "@/schemas/binaryPollSchema";
-import { Button, Typo, FixedBottomLayout } from "@repo/ui/components";
+import { Button, Typo, FixedBottomLayout, toast } from "@repo/ui/components";
 import { useAtomValue } from "jotai";
 import { useBinaryPollSubmit } from "@/hooks/poll/useBinaryPollSubmit";
 import { CategoryButton } from "./components/CategoryButton";
@@ -19,6 +19,12 @@ import { ThumbnailSelector } from "./components/ThumbnailSelector";
 import { SubjectInput } from "./components/SubjectInput";
 import { DescriptionInput } from "./components/DescriptionInput";
 import { VotingPeriodSection } from "./components/VotingPeriodSection";
+
+
+const CREATE_BINARY_POLL_MESSAGES = {
+  success: "폴 만들기 성공했어요.",
+  error: "폴 만들기 실패했어요.",
+} as const;
 
 export function BinaryInfoStep() {
   return (
@@ -58,7 +64,14 @@ function BinaryInfoCTAButton() {
   const uploadedFileId = useAtomValue(binaryPollThumbnailFileUploadIdAtom);
 
   const { handleSubmit, isLoading, isValid, isImageUploading } =
-    useBinaryPollSubmit();
+    useBinaryPollSubmit({
+      onSuccess: () => {
+        toast.success(CREATE_BINARY_POLL_MESSAGES.success);
+      },
+      onError: () => {
+        toast.error(CREATE_BINARY_POLL_MESSAGES.error);
+      },
+    });
 
   const handleCreatePoll = () => {
     handleSubmit(uploadedFileId);

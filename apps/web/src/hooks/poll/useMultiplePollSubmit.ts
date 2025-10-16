@@ -30,8 +30,10 @@ export function useMultiplePollSubmit(
     onSuccess: (data) => {
       if (data.data?.id) {
         router.push(`/poll/create/done?pollId=${data.data.id}`);
+        setTimeout(() => {
+          options.onSuccess?.();
+        }, 100);
       }
-      options.onSuccess?.();
     },
     onError: (error) => {
       options.onError?.(error);
