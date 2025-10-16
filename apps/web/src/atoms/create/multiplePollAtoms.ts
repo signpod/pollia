@@ -2,6 +2,7 @@ import { POLL_CATEGORIES, POLL_TYPES } from "@/constants/poll";
 import { PollOption } from "@/types/domain/poll";
 import { generateUniqueId } from "@/lib/utils";
 import { atom } from "jotai";
+import { getCurrentDate, getCurrentTime } from "@/lib/date";
 
 export const multiplePollAvailableCategoriesAtom = atom(POLL_CATEGORIES);
 export const multiplePollCategorySelectModalOpenAtom = atom(false);
@@ -14,19 +15,6 @@ export const multiplePollThumbnailFileUploadIdAtom = atom<string | undefined>(un
 
 export const multiplePollMaxSelectionsAtom = atom<number>(1);
 
-export const getCurrentDate = (): string => {
-  const now = new Date();
-  return now.toISOString().split("T")[0]!;
-};
-
-export const getCurrentTime = (): string => {
-  const now = new Date();
-  const hours = now.getHours();
-  const minutes = now.getMinutes();
-  const roundedMinutes = Math.floor(minutes / 5) * 5;
-
-  return `${String(hours).padStart(2, '0')}:${String(roundedMinutes).padStart(2, '0')}`;
-};
 
 export const multiplePollIsUnlimitedAtom = atom<boolean>(true);
 

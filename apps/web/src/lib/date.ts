@@ -22,3 +22,17 @@ export const parseDateFromLocalString = (dateString: string): Date => {
   const day = parts[2] ?? 1;
   return new Date(year, month - 1, day, 0, 0, 0, 0);
 };
+
+export const getCurrentDate = (): string => {
+  const now = new Date();
+  return now.toISOString().split("T")[0]!;
+};
+
+export const getCurrentTime = ({ roundMinutesTo = 5 }: { roundMinutesTo?: number } = {}): string => {
+  const now = new Date();
+  const hours = now.getHours();
+  const minutes = now.getMinutes();
+  const roundedMinutes = roundMinutesTo ? Math.floor(minutes / roundMinutesTo) * roundMinutesTo : minutes
+
+  return `${String(hours).padStart(2, '0')}:${String(roundedMinutes).padStart(2, '0')}`;
+};

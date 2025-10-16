@@ -1,5 +1,6 @@
 import { POLL_CATEGORIES } from "@/constants/poll";
 import { atom } from "jotai";
+import { getCurrentDate, getCurrentTime } from "@/lib/date";
 
 export const binaryPollAvailableCategoriesAtom = atom(POLL_CATEGORIES);
 export const binaryPollCategorySelectModalOpenAtom = atom(false);
@@ -14,19 +15,7 @@ export const binaryPollThumbnailFileUploadIdAtom = atom<string | undefined>(
   undefined
 );
 
-export const getCurrentDate = (): string => {
-  const now = new Date();
-  return now.toISOString().split("T")[0]!;
-};
 
-export const getCurrentTime = (): string => {
-  const now = new Date();
-  const hours = now.getHours();
-  const minutes = now.getMinutes();
-  const roundedMinutes = Math.floor(minutes / 5) * 5;
-
-  return `${String(hours).padStart(2, '0')}:${String(roundedMinutes).padStart(2, '0')}`;
-};
 
 export const binaryPollIsUnlimitedAtom = atom<boolean>(true);
 
