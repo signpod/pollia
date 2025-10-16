@@ -111,7 +111,7 @@ function TimePickerButton({
     const [h = 0, m = 0] = time.split(":").map(Number);
     const period = h < 12 ? "오전" : "오후";
     const displayHours = h % 12 || 12;
-    return `${period} ${displayHours}:${String(m).padStart(2, "0")}`;
+    return `${period} ${String(displayHours).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
   };
 
   return (
