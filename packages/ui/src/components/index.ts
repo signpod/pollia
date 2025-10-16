@@ -15,6 +15,7 @@ export * from "./common/IconButton";
 export * from "./common/CounterInput";
 export * from "./common/ProcessChip";
 export * from "./common/Toast";
+export * from "./common/LabelText";
 
 // Hooks
 export * from "../hooks/useStep";
