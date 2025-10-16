@@ -56,9 +56,7 @@ export function VotingPeriodSection({
 
       <div className="flex flex-col gap-4">
         <div className="flex justify-between items-center">
-          <LabelText required disabled={isUnlimited}>
-            시작
-          </LabelText>
+          <LabelText required>시작</LabelText>
           <DateAndTimePicker
             date={startDate}
             time={startTime}
