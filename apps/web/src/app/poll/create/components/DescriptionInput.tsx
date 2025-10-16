@@ -1,6 +1,6 @@
 import { Typo } from "@repo/ui/components";
-import { useAtom } from "jotai";
-import { PrimitiveAtom } from "jotai";
+import { useAtom, PrimitiveAtom } from "jotai";
+import { useCallback } from "react";
 
 interface DescriptionInputProps {
   descriptionAtom: PrimitiveAtom<string>;
@@ -8,6 +8,10 @@ interface DescriptionInputProps {
 
 export function DescriptionInput({ descriptionAtom }: DescriptionInputProps) {
   const [description, setDescription] = useAtom(descriptionAtom);
+
+  const handleBlur = useCallback(() => {
+    setDescription(description.trim());
+  }, [description, setDescription]);
 
   return (
     <div className="flex flex-col gap-2">
@@ -23,6 +27,7 @@ export function DescriptionInput({ descriptionAtom }: DescriptionInputProps) {
       <textarea
         value={description}
         onChange={(e) => setDescription(e.target.value)}
+        onBlur={handleBlur}
         placeholder="설명을 작성해주세요"
         maxLength={100}
         rows={2}

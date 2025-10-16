@@ -10,6 +10,7 @@ import {
   binaryPollTitleAtom,
   binaryPollIsUnlimitedAtom,
 } from "@/atoms/create/binaryPollAtoms";
+import { binaryPollSchema } from "@/schemas/binaryPollSchema";
 import { Button, Typo, FixedBottomLayout } from "@repo/ui/components";
 import { useAtomValue } from "jotai";
 import { useBinaryPollSubmit } from "@/hooks/poll/useBinaryPollSubmit";
@@ -28,7 +29,10 @@ export function BinaryInfoStep() {
           thumbnailUrlAtom={binaryPollThumbnailUrlAtom}
           thumbnailFileUploadIdAtom={binaryPollThumbnailFileUploadIdAtom}
         />
-        <SubjectInput titleAtom={binaryPollTitleAtom} />
+        <SubjectInput
+          titleAtom={binaryPollTitleAtom}
+          schema={binaryPollSchema}
+        />
         <DescriptionInput descriptionAtom={binaryPollDescriptionAtom} />
       </div>
 
