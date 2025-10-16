@@ -279,6 +279,7 @@ function VotingPeriodSection() {
     setEndDateString(date ? formatDateToLocalString(date) : "");
   };
 
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">

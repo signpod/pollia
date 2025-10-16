@@ -2,6 +2,8 @@ import { POLL_CATEGORIES, POLL_TYPES } from "@/constants/poll";
 import { PollOption } from "@/types/domain/poll";
 import { generateUniqueId } from "@/lib/utils";
 import { atom } from "jotai";
+import { atomWithDefault } from "jotai/utils";
+import { getCurrentDate, getCurrentTime } from "@/lib/date";
 
 export const multiplePollAvailableCategoriesAtom = atom(POLL_CATEGORIES);
 export const multiplePollCategorySelectModalOpenAtom = atom(false);
@@ -14,32 +16,14 @@ export const multiplePollThumbnailFileUploadIdAtom = atom<string | undefined>(un
 
 export const multiplePollMaxSelectionsAtom = atom<number>(1);
 
-export const getCurrentDate = (): string => {
-  const now = new Date();
-  return now.toISOString().split("T")[0]!;
-};
 
-export const getCurrentTime = (): string => {
-  const now = new Date();
-  return now.toTimeString().slice(0, 5);
-};
+export const multiplePollIsUnlimitedAtom = atom<boolean>(true);
 
-export const multiplePollIsUnlimitedAtom = atom<boolean>(false);
+export const multiplePollStartDateAtom = atomWithDefault(() => getCurrentDate());
+export const multiplePollStartTimeAtom = atomWithDefault(() => getCurrentTime({ roundMinutesTo: 5 }));
+export const multiplePollEndDateAtom = atomWithDefault(() => getCurrentDate());
+export const multiplePollEndTimeAtom = atomWithDefault(() => getCurrentTime({ roundMinutesTo: 5 }));
 
-export const multiplePollStartDateAtom = atom<string>("");
-export const multiplePollStartTimeAtom = atom<string>("");
-export const multiplePollEndDateAtom = atom<string>("");
-export const multiplePollEndTimeAtom = atom<string>("");
-
-export const initializeDateTimeAtom = atom(null, (_get, set) => {
-  const currentDate = getCurrentDate();
-  const currentTime = getCurrentTime();
-
-  set(multiplePollStartDateAtom, currentDate);
-  set(multiplePollStartTimeAtom, currentTime);
-  set(multiplePollEndDateAtom, currentDate);
-  set(multiplePollEndTimeAtom, currentTime);
-});
 
 export const resetToCurrentDateTimeAtom = atom(null, (_get, set) => {
   const currentDate = getCurrentDate();

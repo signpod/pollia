@@ -1,5 +1,7 @@
 import { POLL_CATEGORIES } from "@/constants/poll";
 import { atom } from "jotai";
+import { atomWithDefault } from "jotai/utils";
+import { getCurrentDate, getCurrentTime } from "@/lib/date";
 
 export const binaryPollAvailableCategoriesAtom = atom(POLL_CATEGORIES);
 export const binaryPollCategorySelectModalOpenAtom = atom(false);
@@ -14,42 +16,14 @@ export const binaryPollThumbnailFileUploadIdAtom = atom<string | undefined>(
   undefined
 );
 
-export const getCurrentDate = (): string => {
-  const now = new Date();
-  return now.toISOString().split("T")[0]!;
-};
 
-export const getCurrentTime = (): string => {
-  const now = new Date();
-  return now.toTimeString().slice(0, 5);
-};
 
-export const binaryPollIsUnlimitedAtom = atom<boolean>(false);
+export const binaryPollIsUnlimitedAtom = atom<boolean>(true);
 
-export const binaryPollStartDateAtom = atom<string>("");
-export const binaryPollStartTimeAtom = atom<string>("");
-export const binaryPollEndDateAtom = atom<string>("");
-export const binaryPollEndTimeAtom = atom<string>("");
-
-export const initializeDateTimeAtom = atom(null, (_get, set) => {
-  const currentDate = getCurrentDate();
-  const currentTime = getCurrentTime();
-
-  set(binaryPollStartDateAtom, currentDate);
-  set(binaryPollStartTimeAtom, currentTime);
-  set(binaryPollEndDateAtom, currentDate);
-  set(binaryPollEndTimeAtom, currentTime);
-});
-
-export const resetToCurrentDateTimeAtom = atom(null, (_get, set) => {
-  const currentDate = getCurrentDate();
-  const currentTime = getCurrentTime();
-
-  set(binaryPollStartDateAtom, currentDate);
-  set(binaryPollStartTimeAtom, currentTime);
-  set(binaryPollEndDateAtom, currentDate);
-  set(binaryPollEndTimeAtom, currentTime);
-});
+export const binaryPollStartDateAtom = atomWithDefault(() => getCurrentDate());
+export const binaryPollStartTimeAtom = atomWithDefault(() => getCurrentTime({ roundMinutesTo: 5 }));
+export const binaryPollEndDateAtom = atomWithDefault(() => getCurrentDate());
+export const binaryPollEndTimeAtom = atomWithDefault(() => getCurrentTime({ roundMinutesTo: 5 }));
 
 export const binaryPollThumbnailCountAtom = atom((get) => {
   const thumbnailUrl = get(binaryPollThumbnailUrlAtom);
