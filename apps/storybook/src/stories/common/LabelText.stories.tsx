@@ -15,6 +15,10 @@ const meta: Meta<typeof LabelText> = {
 ## 특징
 
 - **필수 표시**: 빨간색 별표(*)로 필수 입력 필드임을 명확히 표시
+  - required가 false: 별표 숨김 (opacity-0)
+  - required가 true + disabled가 false: 별표 선명 (opacity-100)
+  - required가 true + disabled가 true: 별표 희미 (opacity-15)
+- **비활성 상태**: disabled 시 텍스트 색상이 회색으로 변경
 - **일관된 스타일**: SubTitle 타이포그래피를 사용하여 통일된 디자인
 - **유연한 커스터마이징**: className을 통한 스타일 확장 가능
 
@@ -27,6 +31,9 @@ const meta: Meta<typeof LabelText> = {
 // 선택적 라벨
 <LabelText required={false}>닉네임</LabelText>
 
+// 비활성화된 라벨
+<LabelText required={true} disabled>비활성화됨</LabelText>
+
 // 커스텀 스타일
 <LabelText required={true} className="text-blue-600">
   파란색 라벨
@@ -35,7 +42,8 @@ const meta: Meta<typeof LabelText> = {
 
 ## Props
 
-- **required**: boolean - 필수 여부 (true일 때 빨간 별표 표시)
+- **required**: boolean - 필수 여부 (true: 별표 표시, false: 별표 숨김)
+- **disabled**: boolean (optional) - 비활성 상태 (회색 텍스트 + 별표 희미)
 - **children**: ReactNode - 라벨 텍스트 내용
 - **className**: string - 추가 스타일링 클래스
 - **...props**: HTMLDivElement 속성들`,
@@ -46,7 +54,16 @@ const meta: Meta<typeof LabelText> = {
   argTypes: {
     required: {
       control: { type: "boolean" },
-      description: "필수 입력 여부를 나타내는 표시",
+      description: "필수 입력 여부 (true: 별표 표시, false: 별표 숨김)",
+      table: {
+        type: { summary: "boolean" },
+        defaultValue: { summary: "false" },
+      },
+    },
+    disabled: {
+      control: { type: "boolean" },
+      description:
+        "비활성 상태 (회색 텍스트 + required가 true일 때 별표 희미하게 표시)",
       table: {
         type: { summary: "boolean" },
         defaultValue: { summary: "false" },
@@ -96,6 +113,15 @@ export const Optional: Story = {
   },
 };
 
+// 비활성화된 라벨
+export const Disabled: Story = {
+  args: {
+    children: "비활성화된 라벨",
+    required: true,
+    disabled: true,
+  },
+};
+
 // 모든 변형 표시
 export const AllVariations: Story = {
   render: () => (
@@ -117,7 +143,7 @@ export const AllVariations: Story = {
             color: "#374151",
           }}
         >
-          필수 라벨
+          필수 라벨 (별표 선명)
         </h3>
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           <LabelText required={true}>이메일</LabelText>
@@ -135,12 +161,33 @@ export const AllVariations: Story = {
             color: "#374151",
           }}
         >
-          선택적 라벨
+          선택적 라벨 (별표 숨김)
         </h3>
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           <LabelText required={false}>닉네임</LabelText>
           <LabelText required={false}>소개</LabelText>
           <LabelText required={false}>전화번호</LabelText>
+        </div>
+      </div>
+
+      <div>
+        <h3
+          style={{
+            marginBottom: "16px",
+            fontSize: "16px",
+            fontWeight: "600",
+            color: "#374151",
+          }}
+        >
+          비활성화 상태 (회색, 별표 희미)
+        </h3>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <LabelText required={true} disabled>
+            비활성화된 필수 라벨
+          </LabelText>
+          <LabelText required={false} disabled>
+            비활성화된 선택적 라벨 (별표 없음)
+          </LabelText>
         </div>
       </div>
     </div>
@@ -178,6 +225,10 @@ export const CustomStyles: Story = {
 
         <LabelText required={true} className="opacity-50">
           불투명도가 적용된 라벨
+        </LabelText>
+
+        <LabelText required={true} disabled className="!text-red-300">
+          비활성화 + 커스텀 색상
         </LabelText>
       </div>
     </div>
