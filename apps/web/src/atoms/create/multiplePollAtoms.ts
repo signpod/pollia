@@ -8,22 +8,28 @@ import { getCurrentDate, getCurrentTime } from "@/lib/date";
 export const multiplePollAvailableCategoriesAtom = atom(POLL_CATEGORIES);
 export const multiplePollCategorySelectModalOpenAtom = atom(false);
 
-export const multiplePollCategoryAtom = atom<(typeof POLL_CATEGORIES)[number] | undefined>(undefined);
+export const multiplePollCategoryAtom = atom<
+  (typeof POLL_CATEGORIES)[number] | undefined
+>(undefined);
 export const multiplePollTitleAtom = atom<string>("");
 export const multiplePollDescriptionAtom = atom<string>("");
 export const multiplePollThumbnailUrlAtom = atom<string | undefined>(undefined);
-export const multiplePollThumbnailFileUploadIdAtom = atom<string | undefined>(undefined);
+export const multiplePollThumbnailFileUploadIdAtom = atom<string | undefined>(
+  undefined
+);
 
 export const multiplePollMaxSelectionsAtom = atom<number>(1);
 
-
 export const multiplePollIsUnlimitedAtom = atom<boolean>(true);
 
-export const multiplePollStartDateAtom = atomWithDefault(() => getCurrentDate());
-export const multiplePollStartTimeAtom = atomWithDefault(() => getCurrentTime({ roundMinutesTo: 5 }));
-export const multiplePollEndDateAtom = atomWithDefault(() => getCurrentDate());
-export const multiplePollEndTimeAtom = atomWithDefault(() => getCurrentTime({ roundMinutesTo: 5 }));
-
+export const multiplePollStartDateAtom = atomWithDefault(() =>
+  getCurrentDate()
+);
+export const multiplePollStartTimeAtom = atomWithDefault(() =>
+  getCurrentTime({ roundMinutesTo: 5 })
+);
+export const multiplePollEndDateAtom = atom<string>("");
+export const multiplePollEndTimeAtom = atom<string>("");
 
 export const resetToCurrentDateTimeAtom = atom(null, (_get, set) => {
   const currentDate = getCurrentDate();
@@ -31,8 +37,8 @@ export const resetToCurrentDateTimeAtom = atom(null, (_get, set) => {
 
   set(multiplePollStartDateAtom, currentDate);
   set(multiplePollStartTimeAtom, currentTime);
-  set(multiplePollEndDateAtom, currentDate);
-  set(multiplePollEndTimeAtom, currentTime);
+  set(multiplePollEndDateAtom, "");
+  set(multiplePollEndTimeAtom, "");
 });
 
 const createEmptyPollOption = (order: number): PollOption => ({
@@ -44,7 +50,10 @@ const createEmptyPollOption = (order: number): PollOption => ({
   fileUploadId: undefined,
 });
 
-export const multiplePollOptionsAtom = atom<PollOption[]>([createEmptyPollOption(0), createEmptyPollOption(1)]);
+export const multiplePollOptionsAtom = atom<PollOption[]>([
+  createEmptyPollOption(0),
+  createEmptyPollOption(1),
+]);
 
 export const addOptionAtom = atom(null, (get, set) => {
   const options = get(multiplePollOptionsAtom);
@@ -66,9 +75,15 @@ export const removeOptionAtom = atom(null, (get, set, optionId: string) => {
 
 export const updateOptionAtom = atom(
   null,
-  (get, set, update: { id: string; data: Partial<Omit<PollOption, "id" | "order">> }) => {
+  (
+    get,
+    set,
+    update: { id: string; data: Partial<Omit<PollOption, "id" | "order">> }
+  ) => {
     const options = get(multiplePollOptionsAtom);
-    const updatedOptions = options.map((option) => (option.id === update.id ? { ...option, ...update.data } : option));
+    const updatedOptions = options.map((option) =>
+      option.id === update.id ? { ...option, ...update.data } : option
+    );
     set(multiplePollOptionsAtom, updatedOptions);
   }
 );
@@ -78,7 +93,10 @@ export const clearOptionsAtom = atom(null, (_get, set) => {
 });
 
 export const resetOptionsAtom = atom(null, (_get, set) => {
-  set(multiplePollOptionsAtom, [createEmptyPollOption(0), createEmptyPollOption(1)]);
+  set(multiplePollOptionsAtom, [
+    createEmptyPollOption(0),
+    createEmptyPollOption(1),
+  ]);
 });
 
 export const multiplePollThumbnailCountAtom = atom((get) => {
@@ -95,15 +113,19 @@ export const multiplePollStepValidationAtom = atom((get) => {
   const validOptions = options.filter((option) => option.description.trim());
 
   const hasValidOptions = validOptions.length >= 2;
-  const isMaxSelectionsValid = maxSelections >= 1 && maxSelections <= validOptions.length;
+  const isMaxSelectionsValid =
+    maxSelections >= 1 && maxSelections <= validOptions.length;
 
   return {
-    isValid: !!category && !!title.trim() && hasValidOptions && isMaxSelectionsValid,
+    isValid:
+      !!category && !!title.trim() && hasValidOptions && isMaxSelectionsValid,
     errors: {
       category: !category ? "카테고리를 선택해주세요" : null,
       title: !title.trim() ? "제목을 입력해주세요" : null,
       options: !hasValidOptions ? "최소 2개 이상의 옵션을 입력해주세요" : null,
-      maxSelections: !isMaxSelectionsValid ? `선택 가능 개수는 1~${validOptions.length} 사이여야 합니다` : null,
+      maxSelections: !isMaxSelectionsValid
+        ? `선택 가능 개수는 1~${validOptions.length} 사이여야 합니다`
+        : null,
     },
     validOptionsCount: validOptions.length,
   };
@@ -166,5 +188,8 @@ export const resetMultiplePollAtom = atom(null, (_get, set) => {
   set(multiplePollStartTimeAtom, "");
   set(multiplePollEndDateAtom, "");
   set(multiplePollEndTimeAtom, "");
-  set(multiplePollOptionsAtom, [createEmptyPollOption(0), createEmptyPollOption(1)]);
+  set(multiplePollOptionsAtom, [
+    createEmptyPollOption(0),
+    createEmptyPollOption(1),
+  ]);
 });
