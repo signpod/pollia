@@ -1,29 +1,33 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { http } from "@/lib/http/default";
+import { CreatePollRequest, CreatePollResponse } from "@/types/dto";
+import { createPoll } from "@/actions/poll";
 
-export type CreatePollOptionInput = {
-  title: string;
-  description?: string;
-  imageUrl?: string;
-  link?: string;
-};
+interface UseCreatePollOptions {
+  onSuccess?: (data: CreatePollResponse) => void;
+  onError?: (error: Error) => void;
+}
 
-export type CreatePollInput = {
-  categories: string;
-  title: string;
-  description?: string;
-  imageUrl?: string;
-  options: CreatePollOptionInput[];
-};
-
-export function useCreatePoll() {
+export function useCreatePoll(options: UseCreatePollOptions = {}) {
   return useMutation({
-    mutationFn: async (payload: CreatePollInput) => {
-      // 서버 스키마에 맞게 경로/페이로드 조정
-      const res = await http.post("/polls", payload);
-      return res as unknown;
+    mutationFn: async (
+      payload: CreatePollRequest
+    ): Promise<CreatePollResponse> => {
+      const result = await createPoll(payload);
+
+      if (!result.success) {
+        throw new Error(result.error || "폴 생성에 실패했습니다.");
+      }
+
+      return result;
+    },
+    onSuccess: (data) => {
+      options.onSuccess?.(data);
+    },
+    onError: (error) => {
+      console.error("❌ 폴 생성 실패:", error);
+      options.onError?.(error as Error);
     },
   });
 }

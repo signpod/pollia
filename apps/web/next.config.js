@@ -3,6 +3,7 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ["@radix-ui/react-dialog"],
   },
+
   images: {
     remotePatterns: [
       {
@@ -11,7 +12,22 @@ const nextConfig = {
         port: "",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "lpgfbjohdashthkhxzab.supabase.co",
+        port: "",
+        pathname: "/**",
+      },
     ],
+  },
+
+  turbopack: {
+    rules: {
+      "*.svg": {
+        loaders: ["@svgr/webpack"],
+        as: "*.js",
+      },
+    },
   },
 };
 

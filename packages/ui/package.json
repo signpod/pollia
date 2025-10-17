@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
-    "./*": "./src/*.tsx"
+    "./components": "./src/components/index.ts",
+    "./lib": "./src/lib/index.ts"
   },
   "scripts": {
     "lint": "eslint . --max-warnings 0",
@@ -11,8 +12,8 @@
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
-    "@repo/eslint-config": "*",
-    "@repo/typescript-config": "*",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
     "@types/node": "^22.15.3",
     "@types/react": "19.1.0",
     "@types/react-dom": "19.1.1",
@@ -20,7 +21,20 @@
     "typescript": "5.9.2"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-popover": "^1.1.15",
+    "@radix-ui/react-slot": "^1.2.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "lucide-react": "^0.543.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-day-picker": "^9.10.0",
+    "react-dom": "^19.1.0",
+    "sonner": "^2.0.7",
+    "swiper": "^12.0.2",
+    "tailwind-merge": "^3.3.1",
+    "vaul": "^1.1.2"
   }
 }

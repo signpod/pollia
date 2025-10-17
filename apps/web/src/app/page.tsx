@@ -1,29 +1,7 @@
-import Image, { type ImageProps } from "next/image";
-import { Button } from "@repo/ui/button";
-import Link from "next/link";
-
-type Props = Omit<ImageProps, "src"> & {
-  srcLight: string;
-  srcDark: string;
-};
-
-const ThemeImage = (props: Props) => {
-  const { srcLight, srcDark, ...rest } = props;
-
-  return (
-    <>
-      <Image {...rest} src={srcLight} className="imgLight" />
-      <Image {...rest} src={srcDark} className="imgDark" />
-    </>
-  );
-};
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return (
-    <div>
-      <Link href="/create">
-        <button>만들기</button>
-      </Link>
-    </div>
-  );
+  // redirect 함수를 server에서 사용하면, Home을 기준으로 한 SPA처럼 동작. (insert meta tag to redirect)
+  // TODO: 메인 페이지 구현 이후 변경되어야 합니다.
+  redirect("/me");
 }
