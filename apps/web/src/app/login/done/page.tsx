@@ -44,7 +44,7 @@ export default function LoginDonePage() {
 
       <FixedBottomLayout.Content className="w-full flex justify-center bg-white">
         <motion.div
-          className="flex flex-col justify-center w-full max-w-lg px-5 mb-10"
+          className="flex flex-col justify-center w-full max-w-lg p-5"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{
