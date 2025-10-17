@@ -1,9 +1,15 @@
 import { Heart, Share, Bookmark } from "lucide-react";
-import { IconButton } from "@repo/ui/components";
+import { IconButton, toast } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
 import { useLike } from "@/hooks/poll/useLike";
 import { useBookmark } from "@/hooks/poll/useBookmark";
 import { useAuth } from "@/hooks/user";
+
+const SHARE_MESSAGES = {
+  shared: "공유가 완료되었어요!",
+  copied: "링크가 클립보드에 복사되었어요.",
+  error: "링크를 클립보드에 복사하는 중 오류가 발생했어요.",
+} as const;
 
 export function BottomCTAButtons({ pollId }: { pollId: string }) {
   const { withAuth } = useAuth();
@@ -19,37 +25,34 @@ export function BottomCTAButtons({ pollId }: { pollId: string }) {
 
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/poll/${pollId}`;
-    const shareData = {
-      title: "폴리아 투표",
-      text: "이 투표에 참여해보세요!",
-      url: shareUrl,
-    };
 
-    try {
-      if (navigator.share) {
-        const canShare = !navigator.canShare || navigator.canShare(shareData);
-        if (canShare) {
+    if (navigator.share && navigator.canShare) {
+      const shareData = {
+        title: "폴리아 투표",
+        text: "이 투표에 참여해보세요!",
+        url: shareUrl,
+      };
+
+      if (navigator.canShare(shareData)) {
+        try {
           await navigator.share(shareData);
+          toast.success(SHARE_MESSAGES.shared);
           return;
+        } catch (error) {
+          if (error instanceof Error && error.name === "AbortError") {
+            // 취소했어도 링크는 복사해주기
+          }
         }
       }
+    }
 
+    // Fallback: 클립보드 복사
+    try {
       await navigator.clipboard.writeText(shareUrl);
-      alert("링크가 클립보드에 복사되었습니다!");
+      toast.success(SHARE_MESSAGES.copied);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") {
-        return;
-      }
-
-      console.error("공유 실패:", error);
-
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        alert("링크가 클립보드에 복사되었습니다!");
-      } catch (clipboardError) {
-        console.error("클립보드 복사 실패:", clipboardError);
-        alert("공유에 실패했습니다.");
-      }
+      toast.error(SHARE_MESSAGES.error);
     }
   };
 

@@ -13,7 +13,7 @@ import {
   multiplePollIsUnlimitedAtom,
 } from "@/atoms/create/multiplePollAtoms";
 import { multiplePollSchema } from "@/schemas/multiplePollSchema";
-import { Button, Typo, FixedBottomLayout } from "@repo/ui/components";
+import { Button, Typo, FixedBottomLayout, toast } from "@repo/ui/components";
 import { useMultiplePollSubmit } from "@/hooks/poll/useMultiplePollSubmit";
 import { OptionSelector } from "@/app/poll/create/OptionSelector";
 import { CategoryButton } from "./components/CategoryButton";
@@ -21,6 +21,11 @@ import { ThumbnailSelector } from "./components/ThumbnailSelector";
 import { SubjectInput } from "./components/SubjectInput";
 import { DescriptionInput } from "./components/DescriptionInput";
 import { VotingPeriodSection } from "./components/VotingPeriodSection";
+
+const CREATE_MULTIPLE_POLL_MESSAGES = {
+  success: "폴 만들기 성공했어요.",
+  error: "폴 만들기 실패했어요.",
+} as const;
 
 export function MultipleInfoStep() {
   return (
@@ -59,7 +64,14 @@ export function MultipleInfoStep() {
 
 function MultipleInfoCTAButton() {
   const { isValid, handleSubmit, isLoading, isImageUploading } =
-    useMultiplePollSubmit();
+    useMultiplePollSubmit({
+      onSuccess: () => {
+        toast.success(CREATE_MULTIPLE_POLL_MESSAGES.success);
+      },
+      onError: () => {
+        toast.error(CREATE_MULTIPLE_POLL_MESSAGES.error);
+      },
+    });
 
   const handleClick = () => {
     handleSubmit();
