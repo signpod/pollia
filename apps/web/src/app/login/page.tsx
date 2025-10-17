@@ -34,7 +34,7 @@ export default function LoginPage() {
       <div className="h-[166px]"></div>
 
       <FixedBottomLayout.Content className="w-full flex justify-center bg-white">
-        <div className="flex flex-col justify-center w-full max-w-lg px-5 mb-10">
+        <div className="flex flex-col justify-center w-full max-w-lg p-5">
           <div className="h-[82px] w-full" />
           <Tooltip id="kakao-login-tooltip" className="animate-bounce">
             <Typo.Body size="medium">⚡️ 3초만에 시작하기</Typo.Body>

@@ -73,7 +73,7 @@ export function CategoryStep() {
       </div>
 
       <FixedBottomLayout.Content>
-        <div className="p-5 pb-10">
+        <div className="p-5">
           <Button
             variant="primary"
             fullWidth={true}
