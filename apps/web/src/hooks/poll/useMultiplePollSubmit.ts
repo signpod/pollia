@@ -12,6 +12,7 @@ import {
   type MultiplePollFormData,
 } from "@/schemas/multiplePollSchema";
 import { resetPollTypeAtom } from "@/atoms/create/pollTypeAtoms";
+import { usePushAfter } from "../common/usePushAfter";
 
 export interface UseMultiplePollSubmitOptions {
   onSuccess?: () => void;
@@ -21,18 +22,17 @@ export interface UseMultiplePollSubmitOptions {
 export function useMultiplePollSubmit(
   options: UseMultiplePollSubmitOptions = {}
 ) {
-  const router = useRouter();
-  const pollData = useAtomValue(multiplePollDataAtom);
+  const pushAfter = usePushAfter();  
+ ; const pollData = useAtomValue(multiplePollDataAtom);
   const resetPollData = useSetAtom(resetMultiplePollAtom);
   const resetPollType = useSetAtom(resetPollTypeAtom);
 
   const createPollMutation = useCreatePoll({
     onSuccess: (data) => {
       if (data.data?.id) {
-        router.push(`/poll/create/done?pollId=${data.data.id}`);
-        setTimeout(() => {
+        pushAfter(`/poll/create/done?pollId=${data.data.id}`, () => {
           options.onSuccess?.();
-        }, 100);
+        });
       }
     },
     onError: (error) => {

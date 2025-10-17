@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useRouter } from "next/navigation";
 import { PollCategory } from "@prisma/client";
 import { useCreatePoll } from "./useCreatePoll";
 import { binaryPollDataAtom, resetBinaryPollAtom } from "@/atoms/create/binaryPollAtoms";
@@ -12,6 +11,7 @@ import {
   type BinaryPollFormData,
 } from "@/schemas/binaryPollSchema";
 import { resetPollTypeAtom, selectedBinaryPollTypeAtom } from "@/atoms/create/pollTypeAtoms";
+import { usePushAfter } from "../common/usePushAfter";
 
 export interface UseBinaryPollSubmitOptions {
   onSuccess?: () => void;
@@ -19,7 +19,6 @@ export interface UseBinaryPollSubmitOptions {
 }
 
 export function useBinaryPollSubmit(options: UseBinaryPollSubmitOptions = {}) {
-  const router = useRouter();
   const {
     category,
     title,
@@ -31,14 +30,15 @@ export function useBinaryPollSubmit(options: UseBinaryPollSubmitOptions = {}) {
     endDate,
     endTime,
   } = useAtomValue(binaryPollDataAtom);
+  const pushAfter = usePushAfter();  
+
   const selectedBinaryPollType = useAtomValue(selectedBinaryPollTypeAtom);
   const createPollMutation = useCreatePoll({
     onSuccess: (data) => {
       if (data.data?.id) {
-        router.push(`/poll/create/done?pollId=${data.data.id}`);
-        setTimeout(() => {
+        pushAfter(`/poll/create/done?pollId=${data.data.id}`, () => {
           options.onSuccess?.();
-        }, 100);
+        });
       }
     },
     onError: (error) => {
