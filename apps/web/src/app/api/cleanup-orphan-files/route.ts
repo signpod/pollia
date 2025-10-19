@@ -19,17 +19,6 @@ export async function GET(request: NextRequest) {
 
     const result = await cleanupOrphanFiles();
 
-    if (!result.success) {
-      console.error("❌ 고아 파일 정리 실패:", result.error);
-      return NextResponse.json(
-        {
-          success: false,
-          error: result.error,
-        },
-        { status: 500 }
-      );
-    }
-
     const endTime = Date.now();
     const duration = endTime - startTime;
 
@@ -55,7 +44,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: "고아 파일 정리 중 오류가 발생했습니다.",
+        error:
+          error instanceof Error
+            ? error.message
+            : "고아 파일 정리 중 오류가 발생했습니다.",
       },
       { status: 500 }
     );
