@@ -1,6 +1,6 @@
 "use server";
 
-import { getAuthUserOrNull } from "@/actions/auth";
+import { requireAuth } from "@/actions/auth";
 import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
 import prisma from "@/database/utils/prisma/client";
 import { FileStatus } from "@prisma/client";
@@ -18,23 +18,14 @@ export async function getUploadUrl(
   request: UploadImageRequest
 ): Promise<UploadImageResponse> {
   try {
-    const user = await getAuthUserOrNull();
-
-    if (!user) {
-      return {
-        success: false,
-        error: "로그인이 필요합니다.",
-      };
-    }
-
+    const user = await requireAuth();
     const supabase = await createServerSupabaseClient();
 
     const validationError = validateUploadRequest(request);
     if (validationError) {
-      return {
-        success: false,
-        error: validationError,
-      };
+      const error = new Error(validationError);
+      error.cause = 400;
+      throw error;
     }
 
     const bucket = request.bucket || "pollia-images";
@@ -48,10 +39,9 @@ export async function getUploadUrl(
 
     if (uploadError) {
       console.error("❌ Upload URL 생성 실패:", uploadError);
-      return {
-        success: false,
-        error: "업로드 URL 생성에 실패했습니다.",
-      };
+      const error = new Error("업로드 URL 생성에 실패했습니다.");
+      error.cause = 500;
+      throw error;
     }
 
     const { data: publicUrlData } = supabase.storage
@@ -72,7 +62,6 @@ export async function getUploadUrl(
     });
 
     return {
-      success: true,
       data: {
         uploadUrl: uploadData.signedUrl,
         publicUrl: publicUrlData.publicUrl,
@@ -81,11 +70,14 @@ export async function getUploadUrl(
       },
     };
   } catch (error) {
-    console.error("❌ 이미지 업로드 URL 생성 에러:", error);
-    return {
-      success: false,
-      error: "이미지 업로드 URL 생성 중 오류가 발생했습니다.",
-    };
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error(
+      "이미지 업로드 URL 생성 중 오류가 발생했습니다."
+    );
+    serverError.cause = 500;
+    throw serverError;
   }
 }
 
@@ -118,15 +110,7 @@ export async function deleteImage(
   request: DeleteImageRequest
 ): Promise<DeleteImageResponse> {
   try {
-    const user = await getAuthUserOrNull();
-
-    if (!user) {
-      return {
-        success: false,
-        error: "로그인이 필요합니다.",
-      };
-    }
-
+    const user = await requireAuth();
     const supabase = await createServerSupabaseClient();
 
     const fileUpload = await prisma.fileUpload.findFirst({
@@ -137,10 +121,9 @@ export async function deleteImage(
     });
 
     if (!fileUpload) {
-      return {
-        success: false,
-        error: "파일을 찾을 수 없거나 삭제 권한이 없습니다.",
-      };
+      const error = new Error("파일을 찾을 수 없거나 삭제 권한이 없습니다.");
+      error.cause = 404;
+      throw error;
     }
 
     const { error: deleteError } = await supabase.storage
@@ -148,18 +131,10 @@ export async function deleteImage(
       .remove([request.path]);
 
     if (deleteError) {
-      return {
-        success: false,
-        error: "파일 삭제 권한이 없습니다.",
-      };
-    }
-
-    if (deleteError) {
       console.error("❌ 이미지 삭제 실패:", deleteError);
-      return {
-        success: false,
-        error: "이미지 삭제에 실패했습니다.",
-      };
+      const error = new Error("이미지 삭제에 실패했습니다.");
+      error.cause = 500;
+      throw error;
     }
 
     await prisma.fileUpload.delete({
@@ -168,15 +143,14 @@ export async function deleteImage(
 
     console.log("✅ DB 레코드 삭제 완료:", fileUpload.id);
 
-    return {
-      success: true,
-    };
+    return {};
   } catch (error) {
-    console.error("❌ 이미지 삭제 에러:", error);
-    return {
-      success: false,
-      error: "이미지 삭제 중 오류가 발생했습니다.",
-    };
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("이미지 삭제 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
 }
 
@@ -184,14 +158,7 @@ export async function confirmFile(
   request: ConfirmFileRequest
 ): Promise<ConfirmFileResponse> {
   try {
-    const user = await getAuthUserOrNull();
-
-    if (!user) {
-      return {
-        success: false,
-        error: "로그인이 필요합니다.",
-      };
-    }
+    const user = await requireAuth();
 
     const fileUpload = await prisma.fileUpload.findFirst({
       where: {
@@ -202,10 +169,11 @@ export async function confirmFile(
     });
 
     if (!fileUpload) {
-      return {
-        success: false,
-        error: "임시 파일을 찾을 수 없거나 이미 처리되었습니다.",
-      };
+      const error = new Error(
+        "임시 파일을 찾을 수 없거나 이미 처리되었습니다."
+      );
+      error.cause = 404;
+      throw error;
     }
 
     await prisma.fileUpload.update({
@@ -218,15 +186,14 @@ export async function confirmFile(
       },
     });
 
-    return {
-      success: true,
-    };
+    return {};
   } catch (error) {
-    console.error("❌ 파일 확정 에러:", error);
-    return {
-      success: false,
-      error: "파일 확정 중 오류가 발생했습니다.",
-    };
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("파일 확정 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
 }
 
@@ -247,7 +214,6 @@ export async function cleanupOrphanFiles(): Promise<CleanupOrphanFilesResponse> 
 
     if (orphanFiles.length === 0) {
       return {
-        success: true,
         deletedCount: 0,
       };
     }
@@ -287,28 +253,24 @@ export async function cleanupOrphanFiles(): Promise<CleanupOrphanFilesResponse> 
     );
 
     return {
-      success: true,
       deletedCount: deletedFiles.length,
       failedCount: failedFiles.length,
       deletedFiles: deletedFiles.slice(0, 10), // 최대 10개까지만 반환
       failedFiles: failedFiles.slice(0, 10),
     };
   } catch (error) {
-    console.error("❌ 고아 파일 정리 에러:", error);
-    return {
-      success: false,
-      error: "고아 파일 정리 중 오류가 발생했습니다.",
-    };
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("고아 파일 정리 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
 }
 
 export async function getFileUploadById(fileUploadId: string) {
   try {
-    const user = await getAuthUserOrNull();
-
-    if (!user) {
-      return null;
-    }
+    const user = await requireAuth();
 
     const fileUpload = await prisma.fileUpload.findFirst({
       where: {
@@ -317,9 +279,19 @@ export async function getFileUploadById(fileUploadId: string) {
       },
     });
 
+    if (!fileUpload) {
+      const error = new Error("파일을 찾을 수 없습니다.");
+      error.cause = 404;
+      throw error;
+    }
+
     return fileUpload;
   } catch (error) {
-    console.error("❌ 파일 업로드 조회 에러:", error);
-    return null;
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("파일 업로드 조회 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
 }

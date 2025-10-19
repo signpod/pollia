@@ -1,6 +1,6 @@
 "use server";
 
-import { getAuthUserOrNull } from "@/actions/auth";
+import { requireAuth } from "@/actions/auth";
 import prisma from "@/database/utils/prisma/client";
 import { GetUserPollsResponse } from "@/types/dto";
 
@@ -38,22 +38,19 @@ export async function getPoll(pollId: string) {
     });
 
     if (!poll) {
-      return {
-        success: false,
-        error: "투표를 찾을 수 없습니다.",
-      };
+      const error = new Error("투표를 찾을 수 없습니다.");
+      error.cause = 404;
+      throw error;
     }
 
-    return {
-      success: true,
-      data: poll,
-    };
+    return { data: poll };
   } catch (error) {
-    console.error("❌ 폴 조회 에러:", error);
-    return {
-      success: false,
-      error: "투표를 불러올 수 없습니다.",
-    };
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("투표를 불러올 수 없습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
 }
 
@@ -62,14 +59,7 @@ export async function getUserPolls(
 ): Promise<GetUserPollsResponse> {
   try {
     if (!userId) {
-      const user = await getAuthUserOrNull();
-
-      if (!user) {
-        return {
-          success: false,
-          error: "로그인이 필요합니다.",
-        };
-      }
+      const user = await requireAuth();
       userId = user.id;
     }
 
@@ -99,15 +89,15 @@ export async function getUserPolls(
     });
 
     return {
-      success: true,
       data: polls,
     };
   } catch (error) {
-    console.error("❌ 폴 목록 조회 에러:", error);
-    return {
-      success: false,
-      error: "폴 목록을 불러올 수 없습니다.",
-    };
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("폴 목록을 불러올 수 없습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
 }
 
@@ -116,14 +106,7 @@ export async function getBookmarkedPolls(
 ): Promise<GetUserPollsResponse> {
   try {
     if (!userId) {
-      const user = await getAuthUserOrNull();
-
-      if (!user) {
-        return {
-          success: false,
-          error: "로그인이 필요합니다.",
-        };
-      }
+      const user = await requireAuth();
       userId = user.id;
     }
 
@@ -157,15 +140,15 @@ export async function getBookmarkedPolls(
     });
 
     return {
-      success: true,
       data: polls,
     };
   } catch (error) {
-    console.error("❌ 북마크 폴 목록 조회 에러:", error);
-    return {
-      success: false,
-      error: "북마크 폴 목록을 불러올 수 없습니다.",
-    };
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("북마크 폴 목록을 불러올 수 없습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
 }
 
@@ -174,14 +157,7 @@ export async function getLikedPolls(
 ): Promise<GetUserPollsResponse> {
   try {
     if (!userId) {
-      const user = await getAuthUserOrNull();
-
-      if (!user) {
-        return {
-          success: false,
-          error: "로그인이 필요합니다.",
-        };
-      }
+      const user = await requireAuth();
       userId = user.id;
     }
 
@@ -215,15 +191,15 @@ export async function getLikedPolls(
     });
 
     return {
-      success: true,
       data: polls,
     };
   } catch (error) {
-    console.error("❌ 좋아요 폴 목록 조회 에러:", error);
-    return {
-      success: false,
-      error: "좋아요 폴 목록을 불러올 수 없습니다.",
-    };
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("좋아요 폴 목록을 불러올 수 없습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
 }
 
@@ -263,10 +239,9 @@ export async function getPollResults(pollId: string) {
     });
 
     if (!poll) {
-      return {
-        success: false,
-        error: "투표를 찾을 수 없습니다.",
-      };
+      const error = new Error("투표를 찾을 수 없습니다.");
+      error.cause = 404;
+      throw error;
     }
 
     // 고유 참여자 수 계산 (최적화된 COUNT DISTINCT)
@@ -281,7 +256,6 @@ export async function getPollResults(pollId: string) {
     const uniqueParticipants = Number(participantCountResult?.count || 0);
 
     return {
-      success: true,
       data: {
         ...poll,
         _count: {
@@ -291,10 +265,11 @@ export async function getPollResults(pollId: string) {
       },
     };
   } catch (error) {
-    console.error("Error fetching poll results:", error);
-    return {
-      success: false,
-      error: "투표 결과를 불러올 수 없습니다.",
-    };
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("투표 결과를 불러올 수 없습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
 }

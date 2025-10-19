@@ -38,8 +38,7 @@ export interface CreatePollResponse {
 }
 
 export interface GetUserPollsResponse {
-  success: boolean;
-  data?: Array<{
+  data: Array<{
     id: string;
     title: string;
     type: PollType;
@@ -53,7 +52,6 @@ export interface GetUserPollsResponse {
       likes: number;
     };
   }>;
-  error?: string;
 }
 
 export interface SubmitVoteRequest {
