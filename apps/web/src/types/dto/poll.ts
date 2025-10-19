@@ -28,15 +28,13 @@ export interface CreatePollOptionRequest {
 }
 
 export interface CreatePollResponse {
-  success: boolean;
-  data?: {
+  data: {
     id: string;
     title: string;
     type: PollType;
     category: PollCategory;
     createdAt: Date;
   };
-  error?: string;
 }
 
 export interface GetUserPollsResponse {
