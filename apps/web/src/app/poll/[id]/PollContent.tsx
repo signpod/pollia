@@ -49,8 +49,8 @@ function PollErrorFallback({
 function PollData({ pollId }: { pollId: string }) {
   const { data: poll } = useGetPoll(pollId);
 
-  if (!poll?.success || !poll.data) {
-    throw new Error(poll?.error || "투표를 불러올 수 없습니다.");
+  if (!poll?.data) {
+    throw new Error("투표를 불러올 수 없습니다.");
   }
 
   const renderPollByType = () => {

@@ -25,52 +25,60 @@ export async function generateMetadata({
   params,
 }: PollPageProps): Promise<Metadata> {
   const { id } = await params;
-  const pollData = await getCachedPoll(id);
 
-  if (!pollData.success || !pollData.data) {
+  try {
+    const pollData = await getCachedPoll(id);
+
+    if (!pollData.data) {
+      return {
+        title: "투표를 찾을 수 없습니다",
+        description: "요청하신 투표를 찾을 수 없습니다.",
+      };
+    }
+
+    const poll = pollData.data;
+    const title = poll.title;
+    const description = poll.description
+      ? `${poll.description.slice(0, 150)}${poll.description.length > 150 ? "..." : ""}`
+      : `${poll.title}에 대한 투표에 참여해보세요!`;
+
+    const url = `${process.env.NEXT_PUBLIC_APP_URL || "https://pollia.co.kr"}/poll/${id}`;
+
+    return {
+      title,
+      description,
+      openGraph: {
+        title,
+        description,
+        url,
+        siteName: "폴리아",
+        type: "website",
+        ...(poll.imageUrl && {
+          images: [
+            {
+              url: poll.imageUrl,
+              width: 1200,
+              height: 630,
+              alt: poll.title,
+            },
+          ],
+        }),
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        ...(poll.imageUrl && {
+          images: [poll.imageUrl],
+        }),
+      },
+    };
+  } catch {
     return {
       title: "투표를 찾을 수 없습니다",
       description: "요청하신 투표를 찾을 수 없습니다.",
     };
   }
-
-  const poll = pollData.data;
-  const title = poll.title;
-  const description = poll.description
-    ? `${poll.description.slice(0, 150)}${poll.description.length > 150 ? "..." : ""}`
-    : `${poll.title}에 대한 투표에 참여해보세요!`;
-
-  const url = `${process.env.NEXT_PUBLIC_APP_URL || "https://pollia.co.kr"}/poll/${id}`;
-
-  return {
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      url,
-      siteName: "폴리아",
-      type: "website",
-      ...(poll.imageUrl && {
-        images: [
-          {
-            url: poll.imageUrl,
-            width: 1200,
-            height: 630,
-            alt: poll.title,
-          },
-        ],
-      }),
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      ...(poll.imageUrl && {
-        images: [poll.imageUrl],
-      }),
-    },
-  };
 }
 
 export default async function PollPage({ params }: PollPageProps) {
@@ -99,7 +107,7 @@ export default async function PollPage({ params }: PollPageProps) {
     userQueryKeys.currentUser()
   ) as GetCurrentUserResponse;
 
-  if (currentUser?.success) {
+  if (currentUser?.data) {
     // 투표 참여 여부 prefetch (로그인 상태 확인 포함)
     await queryClient.prefetchQuery({
       queryKey: pollQueryKeys.userVoteStatus(id),

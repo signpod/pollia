@@ -77,7 +77,7 @@ export const useIndividualVoting = (pollId: string) => {
       const currentVote = currentVoteStatus?.votes?.[0];
       const currentOptionId = currentVote?.option?.id;
 
-      const selectedOption = pollResults?.data?.options?.find(
+      const selectedOption = pollResults?.options?.find(
         (option) => option.id === optionId
       );
 
@@ -109,13 +109,13 @@ export const useIndividualVoting = (pollId: string) => {
         queryClient.setQueryData<GetPollResultsResponse>(
           pollQueryKeys.pollResults(pollId),
           (old) => {
-            if (!old?.data?.options) return old;
+            if (!old?.options) return old;
 
             return {
               ...old,
               data: {
-                ...old.data,
-                options: old.data.options.map((option) => {
+                ...old,
+                options: old.options.map((option) => {
                   if (option.id === votedOptionId && isVoting) {
                     return {
                       ...option,
@@ -146,12 +146,12 @@ export const useIndividualVoting = (pollId: string) => {
                   return option;
                 }),
                 _count: {
-                  ...old.data._count,
+                  ...old._count,
                   votes: isVoting
                     ? hasVoted
-                      ? old.data._count.votes
-                      : old.data._count.votes + 1
-                    : Math.max(0, old.data._count.votes - 1),
+                      ? old._count.votes
+                      : old._count.votes + 1
+                    : Math.max(0, old._count.votes - 1),
                 },
               },
             };
