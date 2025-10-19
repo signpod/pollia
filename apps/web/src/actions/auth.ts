@@ -15,7 +15,9 @@ import type { User } from "@supabase/supabase-js";
  *     const user = await requireAuth();
  *     // user.id 사용 가능
  *   } catch (error) {
- *     // 401 에러 처리
+ *     if (error instanceof Error && error.cause === 401) {
+ *       // 인증 에러 처리
+ *     }
  *   }
  * }
  * ```
@@ -34,49 +36,4 @@ export async function requireAuth(): Promise<User> {
   }
 
   return user;
-}
-
-/**
- * Server Action에서 인증된 사용자를 가져옵니다.
- * 인증되지 않은 경우 null을 반환합니다.
- *
- * Response 패턴 ({ success, error, data })을 사용하는 함수에서 사용하세요.
- *
- * @returns {Promise<User | null>} 인증된 사용자 객체 또는 null
- *
- * @example
- * ```typescript
- * export async function myServerAction() {
- *   const user = await getAuthUserOrNull();
- *
- *   if (!user) {
- *     return {
- *       success: false,
- *       error: "로그인이 필요합니다.",
- *     };
- *   }
- *
- *   return {
- *     success: true,
- *     data: { ... },
- *   };
- * }
- * ```
- */
-export async function getAuthUserOrNull(): Promise<User | null> {
-  try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return null;
-    }
-
-    return user;
-  } catch {
-    return null;
-  }
 }
