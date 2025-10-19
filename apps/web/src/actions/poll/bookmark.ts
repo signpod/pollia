@@ -1,21 +1,11 @@
 "use server";
 
-import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
+import { requireAuth } from "@/actions/auth";
 import prisma from "@/database/utils/prisma/client";
 
 export async function bookmarkPoll(pollId: string) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      const error = new Error("로그인이 필요합니다.");
-      error.cause = 401;
-      throw error;
-    }
+    const user = await requireAuth();
 
     const poll = await prisma.poll.findUnique({
       where: { id: pollId },
@@ -66,17 +56,7 @@ export async function bookmarkPoll(pollId: string) {
 
 export async function unbookmarkPoll(pollId: string) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      const error = new Error("로그인이 필요합니다.");
-      error.cause = 401;
-      throw error;
-    }
+    const user = await requireAuth();
 
     const result = await prisma.pollBookmark.deleteMany({
       where: {
@@ -107,17 +87,7 @@ export async function unbookmarkPoll(pollId: string) {
 
 export async function toggleBookmarkPoll(pollId: string) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      const error = new Error("로그인이 필요합니다.");
-      error.cause = 401;
-      throw error;
-    }
+    const user = await requireAuth();
 
     const poll = await prisma.poll.findUnique({
       where: { id: pollId },

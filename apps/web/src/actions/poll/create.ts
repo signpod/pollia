@@ -6,7 +6,7 @@ import {
   RelatedEntityType,
   PollType,
 } from "@prisma/client";
-import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
+import { getAuthUserOrNull } from "@/actions/auth";
 import prisma from "@/database/utils/prisma/client";
 import { CreatePollRequest, CreatePollResponse } from "@/types/dto";
 import { BINARY_POLL_OPTIONS, isBinaryPollType } from "@/constants/poll";
@@ -78,13 +78,9 @@ export async function createPoll(
   request: CreatePollRequest
 ): Promise<CreatePollResponse> {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const user = await getAuthUserOrNull();
 
-    if (authError || !user) {
+    if (!user) {
       return {
         success: false,
         error: "로그인이 필요합니다.",

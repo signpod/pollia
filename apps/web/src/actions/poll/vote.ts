@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
+import { requireAuth, getAuthUserOrNull } from "@/actions/auth";
 import prisma from "@/database/utils/prisma/client";
 import {
   SubmitVoteRequest,
@@ -16,13 +16,9 @@ import {
 // 사용자의 특정 투표 참여 상태 확인
 export async function getUserVoteStatus(pollId: string) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const user = await getAuthUserOrNull();
 
-    if (authError || !user) {
+    if (!user) {
       return {
         success: false,
         error: "로그인이 필요합니다.",
@@ -69,13 +65,9 @@ export async function submitIndividualVote(
   request: SubmitVoteRequest
 ): Promise<SubmitVoteResponse> {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const user = await getAuthUserOrNull();
 
-    if (authError || !user) {
+    if (!user) {
       return {
         success: false,
         error: "로그인이 필요합니다.",
@@ -134,13 +126,9 @@ export async function removeIndividualVote(
   request: RemoveVoteRequest
 ): Promise<RemoveVoteResponse> {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const user = await getAuthUserOrNull();
 
-    if (authError || !user) {
+    if (!user) {
       return {
         success: false,
         error: "로그인이 필요합니다.",
@@ -216,13 +204,9 @@ export async function submitMultipleVote(
   request: SubmitMultipleVoteRequest
 ): Promise<SubmitMultipleVoteResponse> {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const user = await getAuthUserOrNull();
 
-    if (authError || !user) {
+    if (!user) {
       return {
         success: false,
         error: "로그인이 필요합니다.",
@@ -285,13 +269,9 @@ export async function removeMultipleVote(
   request: RemoveMultipleVoteRequest
 ): Promise<RemoveMultipleVoteResponse> {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const user = await getAuthUserOrNull();
 
-    if (authError || !user) {
+    if (!user) {
       return {
         success: false,
         error: "로그인이 필요합니다.",

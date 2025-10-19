@@ -1,5 +1,6 @@
 "use server";
 
+import { getAuthUserOrNull } from "@/actions/auth";
 import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
 import prisma from "@/database/utils/prisma/client";
 import { FileStatus } from "@prisma/client";
@@ -17,19 +18,16 @@ export async function getUploadUrl(
   request: UploadImageRequest
 ): Promise<UploadImageResponse> {
   try {
-    const supabase = await createServerSupabaseClient();
+    const user = await getAuthUserOrNull();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    if (!user) {
       return {
         success: false,
         error: "로그인이 필요합니다.",
       };
     }
+
+    const supabase = await createServerSupabaseClient();
 
     const validationError = validateUploadRequest(request);
     if (validationError) {
@@ -120,19 +118,16 @@ export async function deleteImage(
   request: DeleteImageRequest
 ): Promise<DeleteImageResponse> {
   try {
-    const supabase = await createServerSupabaseClient();
+    const user = await getAuthUserOrNull();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    if (!user) {
       return {
         success: false,
         error: "로그인이 필요합니다.",
       };
     }
+
+    const supabase = await createServerSupabaseClient();
 
     const fileUpload = await prisma.fileUpload.findFirst({
       where: {
@@ -189,14 +184,9 @@ export async function confirmFile(
   request: ConfirmFileRequest
 ): Promise<ConfirmFileResponse> {
   try {
-    const supabase = await createServerSupabaseClient();
+    const user = await getAuthUserOrNull();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    if (!user) {
       return {
         success: false,
         error: "로그인이 필요합니다.",
@@ -314,14 +304,9 @@ export async function cleanupOrphanFiles(): Promise<CleanupOrphanFilesResponse> 
 
 export async function getFileUploadById(fileUploadId: string) {
   try {
-    const supabase = await createServerSupabaseClient();
+    const user = await getAuthUserOrNull();
 
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
+    if (!user) {
       return null;
     }
 

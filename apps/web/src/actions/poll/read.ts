@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
+import { getAuthUserOrNull } from "@/actions/auth";
 import prisma from "@/database/utils/prisma/client";
 import { GetUserPollsResponse } from "@/types/dto";
 
@@ -62,13 +62,9 @@ export async function getUserPolls(
 ): Promise<GetUserPollsResponse> {
   try {
     if (!userId) {
-      const supabase = await createServerSupabaseClient();
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
+      const user = await getAuthUserOrNull();
 
-      if (authError || !user) {
+      if (!user) {
         return {
           success: false,
           error: "로그인이 필요합니다.",
@@ -120,13 +116,9 @@ export async function getBookmarkedPolls(
 ): Promise<GetUserPollsResponse> {
   try {
     if (!userId) {
-      const supabase = await createServerSupabaseClient();
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
+      const user = await getAuthUserOrNull();
 
-      if (authError || !user) {
+      if (!user) {
         return {
           success: false,
           error: "로그인이 필요합니다.",
@@ -182,13 +174,9 @@ export async function getLikedPolls(
 ): Promise<GetUserPollsResponse> {
   try {
     if (!userId) {
-      const supabase = await createServerSupabaseClient();
-      const {
-        data: { user },
-        error: authError,
-      } = await supabase.auth.getUser();
+      const user = await getAuthUserOrNull();
 
-      if (authError || !user) {
+      if (!user) {
         return {
           success: false,
           error: "로그인이 필요합니다.",

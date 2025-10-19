@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
+import { getAuthUserOrNull } from "@/actions/auth";
 import prisma from "@/database/utils/prisma/client";
 import type {
   GetCurrentUserResponse,
@@ -9,13 +9,9 @@ import type {
 
 export async function getCurrentUser(): Promise<GetCurrentUserResponse> {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const user = await getAuthUserOrNull();
 
-    if (authError || !user) {
+    if (!user) {
       return {
         success: false,
         error: "로그인이 필요합니다.",
@@ -61,13 +57,9 @@ export async function getCurrentUser(): Promise<GetCurrentUserResponse> {
 
 export async function getUserStats(): Promise<GetUserStatsResponse> {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const user = await getAuthUserOrNull();
 
-    if (authError || !user) {
+    if (!user) {
       return {
         success: false,
         error: "로그인이 필요합니다.",
