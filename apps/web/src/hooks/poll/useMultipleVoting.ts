@@ -70,7 +70,7 @@ export const useMultipleVoting = (pollId: string) => {
         pollQueryKeys.pollResults(pollId)
       );
 
-      const existingVote = currentVoteStatus?.data?.votes?.find(
+      const existingVote = currentVoteStatus?.votes?.find(
         (vote) => vote.option.id === optionId
       );
 
@@ -84,7 +84,7 @@ export const useMultipleVoting = (pollId: string) => {
           (old) => {
             if (!old) return old;
 
-            let updatedVotes = old.data?.votes || [];
+            let updatedVotes = old.votes || [];
 
             if (isAdding && selectedOption) {
               updatedVotes = [
@@ -105,12 +105,8 @@ export const useMultipleVoting = (pollId: string) => {
             }
 
             return {
-              ...old,
-              data: {
-                ...old.data,
-                hasVoted: updatedVotes.length > 0,
-                votes: updatedVotes,
-              },
+              hasVoted: updatedVotes.length > 0,
+              votes: updatedVotes,
             };
           }
         );

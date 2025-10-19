@@ -60,13 +60,11 @@ export interface SubmitVoteRequest {
 }
 
 export interface SubmitVoteResponse {
-  success: boolean;
-  data?: {
+  data: {
     id: string;
     pollId: string;
     optionId: string;
   };
-  error?: string;
 }
 
 export interface RemoveVoteRequest {
@@ -75,11 +73,9 @@ export interface RemoveVoteRequest {
 }
 
 export interface RemoveVoteResponse {
-  success: boolean;
-  data?: {
+  data: {
     removed: boolean;
   };
-  error?: string;
 }
 
 // Multiple Choice Poll 전용 투표 타입들
@@ -89,13 +85,11 @@ export interface SubmitMultipleVoteRequest {
 }
 
 export interface SubmitMultipleVoteResponse {
-  success: boolean;
-  data?: {
+  data: {
     id: string;
     pollId: string;
     optionId: string;
   };
-  error?: string;
 }
 
 export interface RemoveMultipleVoteRequest {
@@ -104,33 +98,26 @@ export interface RemoveMultipleVoteRequest {
 }
 
 export interface RemoveMultipleVoteResponse {
-  success: boolean;
-  data?: {
+  data: {
     pollId: string;
     optionId: string;
   };
-  error?: string;
 }
 
 export interface GetUserVoteStatusResponse {
-  success: boolean;
-  data?: {
-    hasVoted: boolean;
-    votes: Array<{
+  hasVoted: boolean;
+  votes: Array<{
+    id: string;
+    option: {
       id: string;
-      option: {
-        id: string;
-        description: string;
-        order: number;
-      };
-    }>;
-  };
-  error?: string;
+      description: string;
+      order: number;
+    };
+  }>;
 }
 
 export interface GetPollResultsResponse {
-  success: boolean;
-  data?: {
+  data: {
     id: string;
     title: string;
     description?: string;
@@ -153,12 +140,10 @@ export interface GetPollResultsResponse {
       participants: number;
     };
   };
-  error?: string;
 }
 
 export interface GetPollResponse {
-  success: boolean;
-  data?: {
+  data: {
     id: string;
     title: string;
     description?: string;
@@ -195,7 +180,6 @@ export interface GetPollResponse {
       isLiked: boolean;
     };
   };
-  error?: string;
 }
 
 export interface GetPollUserStatusResponse {

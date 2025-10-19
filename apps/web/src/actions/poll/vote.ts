@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth, getAuthUserOrNull } from "@/actions/auth";
+import { requireAuth } from "@/actions/auth";
 import prisma from "@/database/utils/prisma/client";
 import {
   SubmitVoteRequest,
@@ -16,14 +16,7 @@ import {
 // 사용자의 특정 투표 참여 상태 확인
 export async function getUserVoteStatus(pollId: string) {
   try {
-    const user = await getAuthUserOrNull();
-
-    if (!user) {
-      return {
-        success: false,
-        error: "로그인이 필요합니다.",
-      };
-    }
+    const user = await requireAuth();
 
     const votes = await prisma.vote.findMany({
       where: {
@@ -42,21 +35,19 @@ export async function getUserVoteStatus(pollId: string) {
     });
 
     return {
-      success: true,
-      data: {
-        hasVoted: votes.length > 0,
-        votes: votes.map((vote) => ({
-          id: vote.id,
-          option: vote.option,
-        })),
-      },
+      hasVoted: votes.length > 0,
+      votes: votes.map((vote) => ({
+        id: vote.id,
+        option: vote.option,
+      })),
     };
   } catch (error) {
-    console.error("Error fetching user vote status:", error);
-    return {
-      success: false,
-      error: "투표 상태를 불러올 수 없습니다.",
-    };
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("투표 상태를 불러올 수 없습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
 }
 
@@ -65,22 +56,14 @@ export async function submitIndividualVote(
   request: SubmitVoteRequest
 ): Promise<SubmitVoteResponse> {
   try {
-    const user = await getAuthUserOrNull();
-
-    if (!user) {
-      return {
-        success: false,
-        error: "로그인이 필요합니다.",
-      };
-    }
+    const user = await requireAuth();
 
     // 투표 검증
     const validationError = await validateVoteRequest(request);
     if (validationError) {
-      return {
-        success: false,
-        error: validationError,
-      };
+      const error = new Error(validationError);
+      error.cause = 400;
+      throw error;
     }
 
     const vote = await prisma.$transaction(async (tx) => {
@@ -105,7 +88,6 @@ export async function submitIndividualVote(
     });
 
     return {
-      success: true,
       data: {
         id: vote.id,
         pollId: vote.pollId,
@@ -113,11 +95,12 @@ export async function submitIndividualVote(
       },
     };
   } catch (error) {
-    console.error("❌ 투표 제출 에러:", error);
-    return {
-      success: false,
-      error: "투표 처리 중 오류가 발생했습니다.",
-    };
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("투표 처리 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
 }
 
@@ -126,14 +109,7 @@ export async function removeIndividualVote(
   request: RemoveVoteRequest
 ): Promise<RemoveVoteResponse> {
   try {
-    const user = await getAuthUserOrNull();
-
-    if (!user) {
-      return {
-        success: false,
-        error: "로그인이 필요합니다.",
-      };
-    }
+    const user = await requireAuth();
 
     const whereClause = {
       pollId: request.pollId,
@@ -146,17 +122,17 @@ export async function removeIndividualVote(
     });
 
     return {
-      success: true,
       data: {
         removed: result.count > 0,
       },
     };
   } catch (error) {
-    console.error("❌ 투표 취소 에러:", error);
-    return {
-      success: false,
-      error: "투표 취소 중 오류가 발생했습니다.",
-    };
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("투표 취소 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
 }
 
@@ -204,22 +180,14 @@ export async function submitMultipleVote(
   request: SubmitMultipleVoteRequest
 ): Promise<SubmitMultipleVoteResponse> {
   try {
-    const user = await getAuthUserOrNull();
-
-    if (!user) {
-      return {
-        success: false,
-        error: "로그인이 필요합니다.",
-      };
-    }
+    const user = await requireAuth();
 
     // 투표 검증
     const validationError = await validateVoteRequest(request);
     if (validationError) {
-      return {
-        success: false,
-        error: validationError,
-      };
+      const error = new Error(validationError);
+      error.cause = 400;
+      throw error;
     }
 
     // 이미 해당 옵션에 투표했는지 확인
@@ -232,10 +200,9 @@ export async function submitMultipleVote(
     });
 
     if (existingVote) {
-      return {
-        success: false,
-        error: "이미 해당 옵션에 투표하셨습니다.",
-      };
+      const error = new Error("이미 해당 옵션에 투표하셨습니다.");
+      error.cause = 400;
+      throw error;
     }
 
     // 새 투표 생성 (기존 투표는 유지)
@@ -248,7 +215,6 @@ export async function submitMultipleVote(
     });
 
     return {
-      success: true,
       data: {
         id: newVote.id,
         pollId: newVote.pollId,
@@ -256,11 +222,12 @@ export async function submitMultipleVote(
       },
     };
   } catch (error) {
-    console.error("❌ Multiple Choice 투표 제출 에러:", error);
-    return {
-      success: false,
-      error: "투표 처리 중 오류가 발생했습니다.",
-    };
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("투표 처리 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
 }
 
@@ -269,14 +236,7 @@ export async function removeMultipleVote(
   request: RemoveMultipleVoteRequest
 ): Promise<RemoveMultipleVoteResponse> {
   try {
-    const user = await getAuthUserOrNull();
-
-    if (!user) {
-      return {
-        success: false,
-        error: "로그인이 필요합니다.",
-      };
-    }
+    const user = await requireAuth();
 
     // 특정 옵션의 투표만 제거
     const deletedVote = await prisma.vote.deleteMany({
@@ -288,24 +248,23 @@ export async function removeMultipleVote(
     });
 
     if (deletedVote.count === 0) {
-      return {
-        success: false,
-        error: "취소할 투표가 없습니다.",
-      };
+      const error = new Error("취소할 투표가 없습니다.");
+      error.cause = 404;
+      throw error;
     }
 
     return {
-      success: true,
       data: {
         pollId: request.pollId,
         optionId: request.optionId,
       },
     };
   } catch (error) {
-    console.error("❌ Multiple Choice 투표 취소 에러:", error);
-    return {
-      success: false,
-      error: "투표 취소 중 오류가 발생했습니다.",
-    };
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("투표 취소 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
 }
