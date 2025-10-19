@@ -2,9 +2,15 @@
 
 import { requireAuth } from "@/actions/auth";
 import prisma from "@/database/utils/prisma/client";
-import { GetUserPollsResponse } from "@/types/dto";
+import {
+  GetPollResponse,
+  GetPollResultsResponse,
+  GetUserPollsResponse,
+  GetBookmarkedPollsResponse,
+  GetLikedPollsResponse,
+} from "@/types/dto";
 
-export async function getPoll(pollId: string) {
+export async function getPoll(pollId: string): Promise<GetPollResponse> {
   try {
     const poll = await prisma.poll.findUnique({
       where: { id: pollId },
@@ -103,7 +109,7 @@ export async function getUserPolls(
 
 export async function getBookmarkedPolls(
   userId?: string
-): Promise<GetUserPollsResponse> {
+): Promise<GetBookmarkedPollsResponse> {
   try {
     if (!userId) {
       const user = await requireAuth();
@@ -154,7 +160,7 @@ export async function getBookmarkedPolls(
 
 export async function getLikedPolls(
   userId?: string
-): Promise<GetUserPollsResponse> {
+): Promise<GetLikedPollsResponse> {
   try {
     if (!userId) {
       const user = await requireAuth();
@@ -204,7 +210,9 @@ export async function getLikedPolls(
 }
 
 // 투표 결과 실시간 조회
-export async function getPollResults(pollId: string) {
+export async function getPollResults(
+  pollId: string
+): Promise<GetPollResultsResponse> {
   try {
     const poll = await prisma.poll.findUnique({
       where: { id: pollId },
@@ -256,12 +264,10 @@ export async function getPollResults(pollId: string) {
     const uniqueParticipants = Number(participantCountResult?.count || 0);
 
     return {
-      data: {
-        ...poll,
-        _count: {
-          votes: poll._count.votes,
-          participants: uniqueParticipants,
-        },
+      ...poll,
+      _count: {
+        votes: poll._count.votes,
+        participants: uniqueParticipants,
       },
     };
   } catch (error) {

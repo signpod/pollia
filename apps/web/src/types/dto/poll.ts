@@ -54,6 +54,40 @@ export interface GetUserPollsResponse {
   }>;
 }
 
+export interface GetBookmarkedPollsResponse {
+  data: Array<{
+    id: string;
+    title: string;
+    type: PollType;
+    category: PollCategory;
+    startDate: Date;
+    endDate: Date | null;
+    isIndefinite: boolean;
+    createdAt: Date;
+    _count: {
+      votes: number;
+      likes: number;
+    };
+  }>;
+}
+
+export interface GetLikedPollsResponse {
+  data: Array<{
+    id: string;
+    title: string;
+    type: PollType;
+    category: PollCategory;
+    startDate: Date;
+    endDate: Date | null;
+    isIndefinite: boolean;
+    createdAt: Date;
+    _count: {
+      votes: number;
+      likes: number;
+    };
+  }>;
+}
+
 export interface SubmitVoteRequest {
   pollId: string;
   optionId: string;
@@ -117,28 +151,26 @@ export interface GetUserVoteStatusResponse {
 }
 
 export interface GetPollResultsResponse {
-  data: {
+  id: string;
+  title: string;
+  description?: string | null;
+  type: PollType;
+  startDate?: Date;
+  endDate?: Date | null;
+  isIndefinite: boolean;
+  maxSelections?: number | null;
+  options: Array<{
     id: string;
-    title: string;
-    description?: string;
-    type: PollType;
-    startDate?: Date;
-    endDate?: Date;
-    isIndefinite: boolean;
-    maxSelections?: number;
-    options: Array<{
-      id: string;
-      description: string;
-      imageUrl?: string;
-      order: number;
-      _count: {
-        votes: number;
-      };
-    }>;
+    description: string;
+    imageUrl?: string | null;
+    order: number;
     _count: {
       votes: number;
-      participants: number;
     };
+  }>;
+  _count: {
+    votes: number;
+    participants: number;
   };
 }
 
@@ -146,14 +178,14 @@ export interface GetPollResponse {
   data: {
     id: string;
     title: string;
-    description?: string;
-    imageUrl?: string;
+    description?: string | null;
+    imageUrl?: string | null;
     type: PollType;
     category: PollCategory;
     startDate: Date;
-    endDate?: Date;
+    endDate?: Date | null;
     isIndefinite: boolean;
-    maxSelections?: number;
+    maxSelections?: number | null;
     showResultsMode: ResultMode;
     isPublic: boolean;
     creator: {
@@ -163,7 +195,7 @@ export interface GetPollResponse {
     options: Array<{
       id: string;
       description: string;
-      imageUrl?: string;
+      imageUrl?: string | null;
       _count: {
         votes: number;
       };

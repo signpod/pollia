@@ -26,9 +26,7 @@ export type UsePollReturn = ReturnType<typeof useGetPoll>;
 export const usePollResults = (pollId: string) => {
   return useQuery({
     queryKey: pollQueryKeys.pollResults(pollId),
-    queryFn: () => {
-      return getPollResults(pollId);
-    },
+    queryFn: () => getPollResults(pollId),
     refetchInterval: 10 * 1000,
     staleTime: 10 * 1000,
     retry: 3,

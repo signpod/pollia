@@ -21,17 +21,15 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
     new Set()
   );
 
-  const hasVoted = userVoteStatus?.success && userVoteStatus?.data?.hasVoted;
-  const options = pollResults?.data?.options || [];
-  const maxSelections = pollResults?.data?.maxSelections || 1;
+  const hasVoted = userVoteStatus?.hasVoted;
+  const options = pollResults?.options || [];
+  const maxSelections = pollResults?.maxSelections || 1;
 
-  const pollActive = pollResults?.data
+  const pollActive = pollResults
     ? isPollActive(
-        pollResults.data.startDate
-          ? new Date(pollResults.data.startDate)
-          : null,
-        pollResults.data.endDate ? new Date(pollResults.data.endDate) : null,
-        pollResults.data.isIndefinite
+        pollResults.startDate ? new Date(pollResults.startDate) : null,
+        pollResults.endDate ? new Date(pollResults.endDate) : null,
+        pollResults.isIndefinite
       )
     : false;
 
@@ -41,11 +39,11 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
         return undefined;
       }
 
-      if (!pollResults?.success || !pollResults?.data?.options?.length) {
+      if (!pollResults?.options?.length) {
         return undefined;
       }
 
-      const targetOption = pollResults.data.options.find(
+      const targetOption = pollResults.options.find(
         (option) => option.id === optionId
       );
 
@@ -53,7 +51,7 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
         return undefined;
       }
 
-      const totalVotes = pollResults.data._count.votes;
+      const totalVotes = pollResults._count.votes;
       if (totalVotes === 0) {
         return undefined;
       }
@@ -65,7 +63,7 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
 
   const isSelected = useCallback(
     (optionId: string): boolean => {
-      return !!userVoteStatus?.data?.votes?.find(
+      return !!userVoteStatus?.votes?.find(
         (vote) => vote.option.id === optionId
       );
     },
@@ -120,7 +118,7 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
     withAuth(async () => {
       if (!pollActive || isVoting || !hasVoted) return;
 
-      const userVotes = userVoteStatus?.data?.votes || [];
+      const userVotes = userVoteStatus?.votes || [];
 
       try {
         await Promise.all(
