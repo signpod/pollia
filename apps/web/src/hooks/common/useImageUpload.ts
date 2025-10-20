@@ -48,15 +48,8 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
           bucket: options.bucket,
         };
 
-        const urlResponse = await getUploadUrl(uploadRequest);
-
-        if (!urlResponse.success || !urlResponse.data) {
-          throw new Error(
-            urlResponse.error || "업로드 URL 생성에 실패했습니다."
-          );
-        }
-
-        const { uploadUrl, publicUrl, path, fileUploadId } = urlResponse.data;
+        const { data } = await getUploadUrl(uploadRequest);
+        const { uploadUrl, publicUrl, path, fileUploadId } = data;
 
         await uploadFileToStorage(processedFile, uploadUrl, (progress) => {
           setUploadProgress(progress);
@@ -89,15 +82,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (request: DeleteImageRequest) => {
-      const result = await deleteImage(request);
-
-      if (!result.success) {
-        throw new Error(result.error || "이미지 삭제에 실패했습니다.");
-      }
-
-      return result;
-    },
+    mutationFn: (request: DeleteImageRequest) => deleteImage(request),
     onSuccess: () => {
       console.log("✅ 이미지 삭제 성공");
     },
@@ -107,15 +92,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
   });
 
   const confirmMutation = useMutation({
-    mutationFn: async (request: ConfirmFileRequest) => {
-      const result = await confirmFile(request);
-
-      if (!result.success) {
-        throw new Error(result.error || "파일 확정에 실패했습니다.");
-      }
-
-      return result;
-    },
+    mutationFn: (request: ConfirmFileRequest) => confirmFile(request),
     onSuccess: () => {
       console.log("✅ 파일 확정 성공");
     },

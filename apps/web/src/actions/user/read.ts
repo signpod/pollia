@@ -1,6 +1,6 @@
 "use server";
 
-import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
+import { requireAuth } from "@/actions/auth";
 import prisma from "@/database/utils/prisma/client";
 import type {
   GetCurrentUserResponse,
@@ -9,18 +9,7 @@ import type {
 
 export async function getCurrentUser(): Promise<GetCurrentUserResponse> {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return {
-        success: false,
-        error: "로그인이 필요합니다.",
-      };
-    }
+    const user = await requireAuth();
 
     const dbUser = await prisma.user.findUnique({
       where: { id: user.id },
@@ -34,14 +23,12 @@ export async function getCurrentUser(): Promise<GetCurrentUserResponse> {
     });
 
     if (!dbUser) {
-      return {
-        success: false,
-        error: "사용자 정보를 찾을 수 없습니다.",
-      };
+      const error = new Error("사용자 정보를 찾을 수 없습니다.");
+      error.cause = 404;
+      throw error;
     }
 
     return {
-      success: true,
       data: {
         id: dbUser.id,
         email: dbUser.email,
@@ -51,28 +38,18 @@ export async function getCurrentUser(): Promise<GetCurrentUserResponse> {
       },
     };
   } catch (error) {
-    console.error("❌ 현재 사용자 정보 조회 에러:", error);
-    return {
-      success: false,
-      error: "사용자 정보를 불러올 수 없습니다.",
-    };
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("사용자 정보를 불러올 수 없습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
 }
 
 export async function getUserStats(): Promise<GetUserStatsResponse> {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return {
-        success: false,
-        error: "로그인이 필요합니다.",
-      };
-    }
+    const user = await requireAuth();
 
     const [pollsCreated, votesCount, likesCount, bookmarksCount] =
       await Promise.all([
@@ -91,7 +68,6 @@ export async function getUserStats(): Promise<GetUserStatsResponse> {
       ]);
 
     return {
-      success: true,
       data: {
         pollsCreated,
         votesCount,
@@ -100,10 +76,11 @@ export async function getUserStats(): Promise<GetUserStatsResponse> {
       },
     };
   } catch (error) {
-    console.error("❌ 사용자 통계 조회 에러:", error);
-    return {
-      success: false,
-      error: "사용자 통계를 불러올 수 없습니다.",
-    };
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("사용자 통계를 불러올 수 없습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
 }

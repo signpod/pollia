@@ -6,7 +6,7 @@ export function useAuth() {
   const { data: currentUser, isLoading } = useCurrentUser();
   const { open: openLoginModal } = useLoginModal();
 
-  const isLoggedIn = currentUser?.success ?? false;
+  const isLoggedIn = !!currentUser.id;
 
   const requireAuth = useCallback(
     (onSuccess?: () => void) => {
@@ -32,7 +32,7 @@ export function useAuth() {
   );
 
   return {
-    user: currentUser?.data,
+    user: currentUser,
     isLoggedIn,
     isLoading,
     requireAuth,

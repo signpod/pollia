@@ -28,20 +28,17 @@ export interface CreatePollOptionRequest {
 }
 
 export interface CreatePollResponse {
-  success: boolean;
-  data?: {
+  data: {
     id: string;
     title: string;
     type: PollType;
     category: PollCategory;
     createdAt: Date;
   };
-  error?: string;
 }
 
 export interface GetUserPollsResponse {
-  success: boolean;
-  data?: Array<{
+  data: Array<{
     id: string;
     title: string;
     type: PollType;
@@ -55,7 +52,40 @@ export interface GetUserPollsResponse {
       likes: number;
     };
   }>;
-  error?: string;
+}
+
+export interface GetBookmarkedPollsResponse {
+  data: Array<{
+    id: string;
+    title: string;
+    type: PollType;
+    category: PollCategory;
+    startDate: Date;
+    endDate: Date | null;
+    isIndefinite: boolean;
+    createdAt: Date;
+    _count: {
+      votes: number;
+      likes: number;
+    };
+  }>;
+}
+
+export interface GetLikedPollsResponse {
+  data: Array<{
+    id: string;
+    title: string;
+    type: PollType;
+    category: PollCategory;
+    startDate: Date;
+    endDate: Date | null;
+    isIndefinite: boolean;
+    createdAt: Date;
+    _count: {
+      votes: number;
+      likes: number;
+    };
+  }>;
 }
 
 export interface SubmitVoteRequest {
@@ -64,13 +94,11 @@ export interface SubmitVoteRequest {
 }
 
 export interface SubmitVoteResponse {
-  success: boolean;
-  data?: {
+  data: {
     id: string;
     pollId: string;
     optionId: string;
   };
-  error?: string;
 }
 
 export interface RemoveVoteRequest {
@@ -79,11 +107,9 @@ export interface RemoveVoteRequest {
 }
 
 export interface RemoveVoteResponse {
-  success: boolean;
-  data?: {
+  data: {
     removed: boolean;
   };
-  error?: string;
 }
 
 // Multiple Choice Poll 전용 투표 타입들
@@ -93,13 +119,11 @@ export interface SubmitMultipleVoteRequest {
 }
 
 export interface SubmitMultipleVoteResponse {
-  success: boolean;
-  data?: {
+  data: {
     id: string;
     pollId: string;
     optionId: string;
   };
-  error?: string;
 }
 
 export interface RemoveMultipleVoteRequest {
@@ -108,71 +132,60 @@ export interface RemoveMultipleVoteRequest {
 }
 
 export interface RemoveMultipleVoteResponse {
-  success: boolean;
-  data?: {
+  data: {
     pollId: string;
     optionId: string;
   };
-  error?: string;
 }
 
 export interface GetUserVoteStatusResponse {
-  success: boolean;
-  data?: {
-    hasVoted: boolean;
-    votes: Array<{
+  hasVoted: boolean;
+  votes: Array<{
+    id: string;
+    option: {
       id: string;
-      option: {
-        id: string;
-        description: string;
-        order: number;
-      };
-    }>;
-  };
-  error?: string;
+      description: string;
+      order: number;
+    };
+  }>;
 }
 
 export interface GetPollResultsResponse {
-  success: boolean;
-  data?: {
+  id: string;
+  title: string;
+  description?: string | null;
+  type: PollType;
+  startDate?: Date;
+  endDate?: Date | null;
+  isIndefinite: boolean;
+  maxSelections?: number | null;
+  options: Array<{
     id: string;
-    title: string;
-    description?: string;
-    type: PollType;
-    startDate?: Date;
-    endDate?: Date;
-    isIndefinite: boolean;
-    maxSelections?: number;
-    options: Array<{
-      id: string;
-      description: string;
-      imageUrl?: string;
-      order: number;
-      _count: {
-        votes: number;
-      };
-    }>;
+    description: string;
+    imageUrl?: string | null;
+    order: number;
     _count: {
       votes: number;
-      participants: number;
     };
+  }>;
+  _count: {
+    votes: number;
+    participants: number;
   };
-  error?: string;
 }
 
 export interface GetPollResponse {
-  success: boolean;
-  data?: {
+  data: {
     id: string;
     title: string;
-    description?: string;
-    imageUrl?: string;
+    description?: string | null;
+    imageUrl?: string | null;
     type: PollType;
     category: PollCategory;
     startDate: Date;
-    endDate?: Date;
+    endDate?: Date | null;
     isIndefinite: boolean;
-    maxSelections?: number;
+    maxSelections?: number | null;
     showResultsMode: ResultMode;
     isPublic: boolean;
     creator: {
@@ -182,7 +195,7 @@ export interface GetPollResponse {
     options: Array<{
       id: string;
       description: string;
-      imageUrl?: string;
+      imageUrl?: string | null;
       _count: {
         votes: number;
       };
@@ -199,7 +212,6 @@ export interface GetPollResponse {
       isLiked: boolean;
     };
   };
-  error?: string;
 }
 
 export interface GetPollUserStatusResponse {

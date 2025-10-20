@@ -51,7 +51,7 @@ export function BasePollComponent({
           className="text-violet-500 flex items-center gap-1"
         >
           <User size={16} />
-          {pollResults?.data?._count?.participants || 0}명 참여 중
+          {pollResults?._count?.participants || 0}명 참여 중
         </Typo.Body>
       </div>
 

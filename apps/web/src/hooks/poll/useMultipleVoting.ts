@@ -70,12 +70,12 @@ export const useMultipleVoting = (pollId: string) => {
         pollQueryKeys.pollResults(pollId)
       );
 
-      const existingVote = currentVoteStatus?.data?.votes?.find(
+      const existingVote = currentVoteStatus?.votes?.find(
         (vote) => vote.option.id === optionId
       );
 
-      const selectedOption = pollResults?.data?.options?.find(
-        (option) => option.id === optionId
+      const selectedOption = pollResults?.options?.find(
+        (option: { id: string }) => option.id === optionId
       );
 
       const optimisticUpdate = (isAdding: boolean, targetOptionId: string) => {
@@ -84,7 +84,7 @@ export const useMultipleVoting = (pollId: string) => {
           (old) => {
             if (!old) return old;
 
-            let updatedVotes = old.data?.votes || [];
+            let updatedVotes = old.votes || [];
 
             if (isAdding && selectedOption) {
               updatedVotes = [
@@ -105,12 +105,8 @@ export const useMultipleVoting = (pollId: string) => {
             }
 
             return {
-              ...old,
-              data: {
-                ...old.data,
-                hasVoted: updatedVotes.length > 0,
-                votes: updatedVotes,
-              },
+              hasVoted: updatedVotes.length > 0,
+              votes: updatedVotes,
             };
           }
         );
@@ -118,13 +114,13 @@ export const useMultipleVoting = (pollId: string) => {
         queryClient.setQueryData<GetPollResultsResponse>(
           pollQueryKeys.pollResults(pollId),
           (old) => {
-            if (!old?.data?.options) return old;
+            if (!old?.options) return old;
 
             return {
               ...old,
               data: {
-                ...old.data,
-                options: old.data.options.map((option) => {
+                ...old,
+                options: old.options.map((option) => {
                   if (option.id === targetOptionId) {
                     return {
                       ...option,
@@ -139,11 +135,8 @@ export const useMultipleVoting = (pollId: string) => {
                   return option;
                 }),
                 _count: {
-                  ...old.data._count,
-                  votes: Math.max(
-                    0,
-                    old.data._count.votes + (isAdding ? 1 : -1)
-                  ),
+                  ...old._count,
+                  votes: Math.max(0, old._count.votes + (isAdding ? 1 : -1)),
                 },
               },
             };

@@ -5,8 +5,16 @@ import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";
 export const useCurrentUser = () => {
   return useQuery({
     queryKey: userQueryKeys.currentUser(),
-    queryFn: () => {
-      return getCurrentUser();
+    queryFn: () => getCurrentUser(),
+    select: (data) => data.data,
+    initialData: {
+      data: {
+        id: "",
+        email: "",
+        name: "",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     },
     staleTime: 5 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000,

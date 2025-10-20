@@ -6,7 +6,7 @@ import {
   RelatedEntityType,
   PollType,
 } from "@prisma/client";
-import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
+import { requireAuth } from "@/actions/auth";
 import prisma from "@/database/utils/prisma/client";
 import { CreatePollRequest, CreatePollResponse } from "@/types/dto";
 import { BINARY_POLL_OPTIONS, isBinaryPollType } from "@/constants/poll";
@@ -78,25 +78,13 @@ export async function createPoll(
   request: CreatePollRequest
 ): Promise<CreatePollResponse> {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return {
-        success: false,
-        error: "로그인이 필요합니다.",
-      };
-    }
+    const user = await requireAuth();
 
     const validationError = validatePollRequestWithClientSchema(request);
     if (validationError) {
-      return {
-        success: false,
-        error: validationError,
-      };
+      const error = new Error(validationError);
+      error.cause = 400;
+      throw error;
     }
 
     const poll = await prisma.$transaction(async (tx) => {
@@ -183,7 +171,6 @@ export async function createPoll(
     });
 
     return {
-      success: true,
       data: {
         id: poll.id,
         title: poll.title,
@@ -193,10 +180,11 @@ export async function createPoll(
       },
     };
   } catch (error) {
-    console.error("❌ 폴 생성 에러:", error);
-    return {
-      success: false,
-      error: "폴 생성 중 오류가 발생했습니다.",
-    };
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("폴 생성 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
 }

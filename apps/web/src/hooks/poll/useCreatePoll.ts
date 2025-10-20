@@ -13,15 +13,7 @@ export function useCreatePoll(options: UseCreatePollOptions = {}) {
   return useMutation({
     mutationFn: async (
       payload: CreatePollRequest
-    ): Promise<CreatePollResponse> => {
-      const result = await createPoll(payload);
-
-      if (!result.success) {
-        throw new Error(result.error || "폴 생성에 실패했습니다.");
-      }
-
-      return result;
-    },
+    ): Promise<CreatePollResponse> => createPoll(payload),
     onSuccess: (data) => {
       options.onSuccess?.(data);
     },

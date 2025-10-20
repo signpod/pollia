@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useRouter } from "next/navigation";
 import { PollType, PollCategory } from "@prisma/client";
 import { useCreatePoll } from "./useCreatePoll";
-import { multiplePollDataAtom, resetMultiplePollAtom } from "@/atoms/create/multiplePollAtoms";
+import {
+  multiplePollDataAtom,
+  resetMultiplePollAtom,
+} from "@/atoms/create/multiplePollAtoms";
 import { CreatePollRequest } from "@/types/dto";
 import {
   multiplePollSchema,
@@ -22,8 +24,8 @@ export interface UseMultiplePollSubmitOptions {
 export function useMultiplePollSubmit(
   options: UseMultiplePollSubmitOptions = {}
 ) {
-  const pushAfter = usePushAfter();  
- ; const pollData = useAtomValue(multiplePollDataAtom);
+  const pushAfter = usePushAfter();
+  const pollData = useAtomValue(multiplePollDataAtom);
   const resetPollData = useSetAtom(resetMultiplePollAtom);
   const resetPollType = useSetAtom(resetPollTypeAtom);
 
@@ -107,53 +109,44 @@ export function useMultiplePollSubmit(
       return;
     }
 
-    try {
-      const validatedData = validation.data!;
-      const startDateTime = new Date(
-        `${validatedData.startDate}T${validatedData.startTime}`
-      );
-      const endDateTime =
-        !validatedData.isUnlimited &&
-        validatedData.endDate &&
-        validatedData.endTime
-          ? new Date(`${validatedData.endDate}T${validatedData.endTime}`)
-          : undefined;
+    const validatedData = validation.data!;
+    const startDateTime = new Date(
+      `${validatedData.startDate}T${validatedData.startTime}`
+    );
+    const endDateTime =
+      !validatedData.isUnlimited &&
+      validatedData.endDate &&
+      validatedData.endTime
+        ? new Date(`${validatedData.endDate}T${validatedData.endTime}`)
+        : undefined;
 
-      const optionsForApi = validatedData.options.map((option, index) => ({
-        description: option.description,
-        imageUrl: option.imageUrl || undefined,
-        imageFileUploadId: option.fileUploadId || undefined,
-        link: option.link || undefined,
-        order: index, // API에서는 0부터 시작하는 순서
-      }));
+    const optionsForApi = validatedData.options.map((option, index) => ({
+      description: option.description,
+      imageUrl: option.imageUrl || undefined,
+      imageFileUploadId: option.fileUploadId || undefined,
+      link: option.link || undefined,
+      order: index, // API에서는 0부터 시작하는 순서
+    }));
 
-      const request: CreatePollRequest = {
-        title: validatedData.title,
-        description: validatedData.description || undefined,
-        imageUrl: validatedData.thumbnailUrl || undefined,
-        imageFileUploadId:
-          imageFileUploadId || validatedData.thumbnailFileUploadId,
-        type: PollType.MULTIPLE_CHOICE,
-        category: validatedData.category as PollCategory,
-        startDate: startDateTime,
-        endDate: endDateTime,
-        isIndefinite: validatedData.isUnlimited,
-        maxSelections: validatedData.maxSelections,
-        options: optionsForApi,
-      };
+    const request: CreatePollRequest = {
+      title: validatedData.title,
+      description: validatedData.description || undefined,
+      imageUrl: validatedData.thumbnailUrl || undefined,
+      imageFileUploadId:
+        imageFileUploadId || validatedData.thumbnailFileUploadId,
+      type: PollType.MULTIPLE_CHOICE,
+      category: validatedData.category as PollCategory,
+      startDate: startDateTime,
+      endDate: endDateTime,
+      isIndefinite: validatedData.isUnlimited,
+      maxSelections: validatedData.maxSelections,
+      options: optionsForApi,
+    };
 
-      console.log("🚀 Multiple Poll 생성 요청:", request);
-      const result = await createPollMutation.mutateAsync(request);
+    await createPollMutation.mutateAsync(request);
 
-      if(!result.success) {
-        throw new Error(result.error || "폴 생성에 실패했습니다.");
-      }
-
-      resetPollData();
-      resetPollType();
-    } catch (error) {
-      console.error("❌ Multiple Poll validation 또는 요청 실패:", error);
-    }
+    resetPollData();
+    resetPollType();
   };
 
   return {

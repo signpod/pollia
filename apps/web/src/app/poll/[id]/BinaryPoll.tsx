@@ -23,37 +23,31 @@ export function BinaryPoll({ pollId }: BinaryPollProps) {
   const { data: pollResults } = usePollResults(pollId);
   const { handleVote, isVoting } = useIndividualVoting(pollId);
 
-  const hasVoted = userVoteStatus?.success && userVoteStatus?.data?.hasVoted;
-  const pollType: PollType | undefined = pollResults?.data?.type;
+  const hasVoted = userVoteStatus?.hasVoted;
+  const pollType: PollType | undefined = pollResults?.type;
 
-  const pollActive = pollResults?.data
+  const pollActive = pollResults
     ? isPollActive(
-        pollResults.data.startDate
-          ? new Date(pollResults.data.startDate)
-          : null,
-        pollResults.data.endDate ? new Date(pollResults.data.endDate) : null,
-        pollResults.data.isIndefinite
+        pollResults.startDate ? new Date(pollResults.startDate) : null,
+        pollResults.endDate ? new Date(pollResults.endDate) : null,
+        pollResults.isIndefinite
       )
     : false;
 
   const isValidOptions = useMemo(() => {
-    if (
-      !pollResults?.data?.options ||
-      !pollType ||
-      !isBinaryPollType(pollType)
-    ) {
+    if (!pollResults?.options || !pollType || !isBinaryPollType(pollType)) {
       return false;
     }
 
     const expectedOptions =
       BINARY_POLL_OPTIONS[pollType as keyof typeof BINARY_POLL_OPTIONS];
 
-    if (pollResults.data.options.length !== expectedOptions.length) {
+    if (pollResults.options.length !== expectedOptions.length) {
       return false;
     }
 
     return expectedOptions.every((expectedOption) => {
-      const actualOption = pollResults.data.options.find(
+      const actualOption = pollResults.options.find(
         (opt) => opt.order === expectedOption.order
       );
       return actualOption?.description === expectedOption.description;
@@ -61,11 +55,11 @@ export function BinaryPoll({ pollId }: BinaryPollProps) {
   }, [pollResults, pollType]);
 
   const getUserVotedOption = useCallback((): number | null => {
-    if (!hasVoted || !userVoteStatus?.data?.votes?.length) {
+    if (!hasVoted || !userVoteStatus?.votes?.length) {
       return null;
     }
 
-    const userVote = userVoteStatus.data.votes[0];
+    const userVote = userVoteStatus.votes[0];
     if (!userVote) {
       return null;
     }
@@ -85,11 +79,11 @@ export function BinaryPoll({ pollId }: BinaryPollProps) {
         return undefined;
       }
 
-      if (!pollResults?.success || !pollResults?.data?.options?.length) {
+      if (!pollResults?.options?.length) {
         return undefined;
       }
 
-      const targetOption = pollResults.data.options.find(
+      const targetOption = pollResults.options.find(
         (option) => option.order === order
       );
 
@@ -97,7 +91,7 @@ export function BinaryPoll({ pollId }: BinaryPollProps) {
         return undefined;
       }
 
-      const totalVotes = pollResults.data._count.votes;
+      const totalVotes = pollResults._count.votes;
       if (totalVotes === 0) {
         return undefined;
       }
@@ -121,11 +115,11 @@ export function BinaryPoll({ pollId }: BinaryPollProps) {
 
   const getOptionIdByOrder = useCallback(
     (order: number): string | null => {
-      if (!pollResults?.data?.options) {
+      if (!pollResults?.options) {
         return null;
       }
 
-      const targetOption = pollResults.data.options.find(
+      const targetOption = pollResults.options.find(
         (option) => option.order === order
       );
 
@@ -152,11 +146,11 @@ export function BinaryPoll({ pollId }: BinaryPollProps) {
 
   const getOptionLabel = useCallback(
     (order: number): string => {
-      if (!pollResults?.data?.options) {
+      if (!pollResults?.options) {
         return "";
       }
 
-      const targetOption = pollResults.data.options.find(
+      const targetOption = pollResults.options.find(
         (option) => option.order === order
       );
 

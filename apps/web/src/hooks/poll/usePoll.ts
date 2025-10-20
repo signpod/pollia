@@ -26,9 +26,7 @@ export type UsePollReturn = ReturnType<typeof useGetPoll>;
 export const usePollResults = (pollId: string) => {
   return useQuery({
     queryKey: pollQueryKeys.pollResults(pollId),
-    queryFn: () => {
-      return getPollResults(pollId);
-    },
+    queryFn: () => getPollResults(pollId),
     refetchInterval: 10 * 1000,
     staleTime: 10 * 1000,
     retry: 3,
@@ -52,9 +50,9 @@ export type UseUserVoteStatusReturn = ReturnType<typeof useUserVoteStatus>;
 export const useUserPolls = (userId?: string) => {
   return useQuery({
     queryKey: pollQueryKeys.userPolls(userId),
-    queryFn: () => {
-      return getUserPolls(userId);
-    },
+    queryFn: () => getUserPolls(userId),
+    select: (data) => data?.data ?? [],
+    initialData: { data: [] },
     staleTime: 5 * 60 * 1000,
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
@@ -66,9 +64,9 @@ export type UseUserPollsReturn = ReturnType<typeof useUserPolls>;
 export const useBookmarkedPolls = (userId?: string) => {
   return useQuery({
     queryKey: pollQueryKeys.bookmarkedPolls(userId),
-    queryFn: () => {
-      return getBookmarkedPolls(userId);
-    },
+    queryFn: () => getBookmarkedPolls(userId),
+    select: (data) => data?.data ?? [],
+    initialData: { data: [] },
     refetchInterval: 30 * 60 * 1000,
     staleTime: 30 * 60 * 1000,
     retry: 3,
@@ -81,9 +79,9 @@ export type UseBookmarkedPollsReturn = ReturnType<typeof useBookmarkedPolls>;
 export const useLikedPolls = (userId?: string) => {
   return useQuery({
     queryKey: pollQueryKeys.likedPolls(userId),
-    queryFn: () => {
-      return getLikedPolls(userId);
-    },
+    queryFn: () => getLikedPolls(userId),
+    select: (data) => data?.data ?? [],
+    initialData: { data: [] },
     refetchInterval: 30 * 60 * 1000,
     staleTime: 30 * 60 * 1000,
     retry: 3,

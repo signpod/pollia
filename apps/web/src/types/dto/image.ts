@@ -8,14 +8,12 @@ export interface UploadImageRequest {
 }
 
 export interface UploadImageResponse {
-  success: boolean;
-  data?: {
+  data: {
     uploadUrl: string;
     publicUrl: string;
     path: string;
     fileUploadId: string;
   };
-  error?: string;
 }
 
 export interface DeleteImageRequest {
@@ -23,10 +21,7 @@ export interface DeleteImageRequest {
   bucket?: string;
 }
 
-export interface DeleteImageResponse {
-  success: boolean;
-  error?: string;
-}
+export interface DeleteImageResponse {}
 
 export interface ConfirmFileRequest {
   fileUploadId: string;
@@ -34,16 +29,11 @@ export interface ConfirmFileRequest {
   relatedEntityId?: string;
 }
 
-export interface ConfirmFileResponse {
-  success: boolean;
-  error?: string;
-}
+export interface ConfirmFileResponse {}
 
 export interface CleanupOrphanFilesResponse {
-  success: boolean;
-  deletedCount?: number;
+  deletedCount: number;
   failedCount?: number;
   deletedFiles?: string[];
   failedFiles?: string[];
-  error?: string;
 }
