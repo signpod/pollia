@@ -1,50 +1,26 @@
-"use client";
+import { cookies } from "next/headers";
+import { LoginClient } from "./LoginClient";
 
-import { useCallback } from "react";
-import {
-  FixedBottomLayout,
-  KakaoLoginButton,
-  Tooltip,
-  Typo,
-} from "@repo/ui/components";
-import { OnboardingCarousel } from "./OnboardingCarousel";
-import { createClient as createSupabaseClient } from "@/database/utils/supabase/client";
+interface AuthError {
+  type: string;
+  message: string;
+  detail?: string;
+  timestamp: number;
+}
 
-export default function LoginPage() {
-  const handleKakaoLogin = useCallback(async () => {
-    const supabase = createSupabaseClient();
+export default async function LoginPage() {
+  const cookieStore = await cookies();
+  const authErrorCookie = cookieStore.get("auth_error");
 
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "kakao",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
+  let authError: AuthError | null = null;
 
-    if (error) {
-      console.error("카카오 로그인 에러:", error);
+  if (authErrorCookie) {
+    try {
+      authError = JSON.parse(authErrorCookie.value);
+    } catch (e) {
+      console.error("❌ [Server] 에러 파싱 실패:", e);
     }
-  }, []);
+  }
 
-  return (
-    <>
-      <OnboardingCarousel />
-
-      {/*TODO: 디자인 가이드 확인 후 삭제. 임시로 바텀 GAP 설정했습니다. 25.09.10 - 정우*/}
-      <div className="h-[166px]"></div>
-
-      <FixedBottomLayout.Content className="w-full flex justify-center bg-white">
-        <div className="flex flex-col justify-center w-full max-w-lg p-5">
-          <div className="h-[82px] w-full" />
-          <Tooltip id="kakao-login-tooltip" className="animate-bounce">
-            <Typo.Body size="medium">⚡️ 3초만에 시작하기</Typo.Body>
-          </Tooltip>
-          <KakaoLoginButton
-            data-tooltip-id="kakao-login-tooltip"
-            onClick={handleKakaoLogin}
-          />
-        </div>
-      </FixedBottomLayout.Content>
-    </>
-  );
+  return <LoginClient initialError={authError} />;
 }

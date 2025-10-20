@@ -5,6 +5,8 @@ import { createClient as createServerSupabaseClient } from "@/database/utils/sup
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
+  const oauthError = searchParams.get("error"); // 카카오에서 보낸 에러
+  const errorDescription = searchParams.get("error_description");
   const cookieStore = await cookies();
 
   let next = cookieStore.get("auth_redirect")?.value ?? "/";
@@ -12,9 +14,57 @@ export async function GET(request: Request) {
     next = "/";
   }
 
+  // 1. 카카오에서 에러 반환 (사용자 취소 등)
+  if (oauthError) {
+    const response = NextResponse.redirect(`${origin}/login`);
+    response.cookies.set(
+      "auth_error",
+      JSON.stringify({
+        type: "oauth_provider_error",
+        message:
+          oauthError === "access_denied"
+            ? "로그인이 취소되었습니다."
+            : "카카오 로그인 중 오류가 발생했습니다.",
+        detail: errorDescription,
+        timestamp: Date.now(),
+      }),
+      {
+        path: "/",
+        httpOnly: false,
+        maxAge: 10,
+        sameSite: "lax",
+      }
+    );
+    return response;
+  }
+
+  // 2. 인증 코드가 있는 경우
   if (code) {
     const supabase = await createServerSupabaseClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+    // 코드 교환 실패
+    if (error) {
+      console.error("코드 교환 실패:", error);
+
+      const response = NextResponse.redirect(`${origin}/login`);
+      response.cookies.set(
+        "auth_error",
+        JSON.stringify({
+          type: "exchange_failed",
+          message: "로그인 처리 중 오류가 발생했습니다.",
+          detail: error.message,
+          timestamp: Date.now(),
+        }),
+        {
+          path: "/",
+          httpOnly: false,
+          maxAge: 10,
+          sameSite: "lax",
+        }
+      );
+      return response;
+    }
 
     if (!error) {
       const {
@@ -67,6 +117,21 @@ export async function GET(request: Request) {
     }
   }
 
-  // 에러 발생시 에러 페이지로 리다이렉트
-  return NextResponse.redirect(`${origin}/auth/auth-code-error`);
+  // 3. 인증 코드가 없는 경우
+  const response = NextResponse.redirect(`${origin}/login`);
+  response.cookies.set(
+    "auth_error",
+    JSON.stringify({
+      type: "missing_code",
+      message: "인증 코드가 없습니다. 다시 시도해주세요.",
+      timestamp: Date.now(),
+    }),
+    {
+      path: "/",
+      httpOnly: false,
+      maxAge: 10,
+      sameSite: "lax",
+    }
+  );
+  return response;
 }
