@@ -17,7 +17,7 @@ const NOT_FOUND_MESSAGE = {
 } as const
 
 export default function NotFound() {
-  const router = useRouter()
+  const { handleClickBack } = useHandleClickBack()
 
   return (
     <FixedBottomLayout className="flex flex-col min-h-screen">
@@ -48,10 +48,20 @@ export default function NotFound() {
       </main>
 
       <FixedBottomLayout.Content className="p-5">
-        <Button className="w-full" onClick={() => router.back()}>
+        <Button className="w-full" onClick={handleClickBack}>
           {NOT_FOUND_MESSAGE.buttonText}
         </Button>
       </FixedBottomLayout.Content>
     </FixedBottomLayout>
   )
+}
+
+function useHandleClickBack() {
+  const router = useRouter()
+
+  const handleClickBack = () => {
+    router.back()
+  }
+
+  return { handleClickBack }
 }
