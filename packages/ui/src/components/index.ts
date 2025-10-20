@@ -16,6 +16,7 @@ export * from "./common/CounterInput";
 export * from "./common/ProcessChip";
 export * from "./common/Toast";
 export * from "./common/LabelText";
+export * from "./common/ModalProvider";
 
 // Hooks
 export * from "../hooks/useStep";
