@@ -1,0 +1,20 @@
+name: Notify Slack on PR Approval
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  slack:
+    if: github.event.review.state == 'approved'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send PR approval notification to Slack
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "✅ *[PR APPROVED]* *${{ github.event.repository.name }}* - ${{ github.event.pull_request.title }} (#${{ github.event.pull_request.number }})\n👤 *Author:* ${{ github.event.pull_request.user.login }}\n👀 *Reviewer:* ${{ github.event.review.user.login }}\n🔀 *Branch:* `${{ github.event.pull_request.head.ref }}`\n🔗 ${{ github.event.pull_request.html_url }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
