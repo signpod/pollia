@@ -26,15 +26,16 @@ export default function NotFound() {
           <div className="h-12" />
         </FixedTopLayout.Content>
       </FixedTopLayout>
-      <div className="flex flex-col items-center justify-center gap-6 flex-1">
+      <main className="flex flex-col items-center justify-center gap-6 flex-1">
         <div className="flex flex-col items-center justify-center relative">
           <Typo.MainTitle
             size="small"
             className="absolute top-0 left-0 right-0 text-center translate-y-[calc(-100%-8px)]"
+            aria-hidden="true"
           >
             {NOT_FOUND_MESSAGE.subTitle}
           </Typo.MainTitle>
-          <PollPollEOops className="size-30" />
+          <PollPollEOops className="size-30" alt="" />
         </div>
         <div className="flex flex-col items-center justify-center gap-1">
           <Typo.MainTitle size="small">
@@ -44,7 +45,7 @@ export default function NotFound() {
             {NOT_FOUND_MESSAGE.description}
           </Typo.Body>
         </div>
-      </div>
+      </main>
 
       <FixedBottomLayout.Content className="p-5">
         <Button className="w-full" onClick={() => router.back()}>
