@@ -42,3 +42,29 @@ const buttonVariants = cva(
 4. 비활성화 상태 (`disabled:`)
 5. 기타 상태 (`group-hover:`, `peer-*:` 등)
 6. 특수 선택자 (`[&_*]:` 형태)
+
+## 컴포넌트 Export 규칙
+
+새로운 UI 컴포넌트를 만들 때 반드시 `packages/ui/src/components/index.ts`에 export 해야 합니다.
+
+### Export 방법
+
+**일반 컴포넌트:**
+
+```tsx
+// packages/ui/src/components/index.ts
+export * from "./common/ComponentName";
+```
+
+**Compound 컴포넌트 (Next.js Server Component 호환):**
+
+```tsx
+import {
+  ComponentName as ComponentNameBase,
+  ComponentNameContent,
+} from "./layout/ComponentName";
+
+export const ComponentName = Object.assign(ComponentNameBase, {
+  Content: ComponentNameContent,
+});
+```
