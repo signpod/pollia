@@ -45,14 +45,23 @@
 
 @layer component {
   /* Button Text Colors */
-  .text-button-text-default {
+  .text-button-default {
     color: var(--color-button-text-default);
   }
-  .text-button-text-disabled {
+  .text-button-disabled {
     color: var(--color-button-text-disabled);
   }
-  .text-button-text-point {
+  .text-button-point {
     color: var(--color-button-text-point);
+  }
+  .hover\:text-button-point:hover {
+    color: var(--color-button-text-point);
+  }
+  .text-button-white {
+    color: var(--color-white);
+  }
+  .disabled\:text-button-disabled:disabled {
+    color: var(--color-button-text-disabled);
   }
 
   /* Button Background Colors - Primary */
@@ -85,8 +94,14 @@
   .bg-button-secondary-pressed {
     background-color: var(--color-button-bg-secondary-pressed);
   }
+  .hover\:bg-button-secondary-pressed:hover {
+    background-color: var(--color-button-bg-secondary-pressed);
+  }
   .active\:bg-button-secondary-pressed:active {
     background-color: var(--color-button-bg-secondary-pressed);
+  }
+  .disabled\:bg-button-secondary-default:disabled {
+    background-color: var(--color-button-bg-secondary-default);
   }
 
   /* Button Background Colors - Tertiary */
@@ -95,6 +110,9 @@
   }
   .hover\:bg-button-tertiary-hover:hover {
     background-color: var(--color-button-bg-tertiary-hover);
+  }
+  .disabled\:bg-button-primary-disabled:disabled {
+    background-color: var(--color-button-bg-primary-disabled);
   }
 
   /* Placeholder Text Colors */
@@ -118,15 +136,41 @@
   .border-placeholder-point {
     border-color: var(--color-placeholder-border-point);
   }
+  .hover\:border-placeholder-point:hover {
+    border-color: var(--color-placeholder-border-point);
+  }
   .focus\:border-placeholder-point:focus {
     border-color: var(--color-placeholder-border-point);
   }
   .border-placeholder-error {
     border-color: var(--color-placeholder-border-error);
   }
+  .disabled\:border-placeholder-default:disabled {
+    border-color: var(--color-placeholder-border-default);
+  }
+
+  /* Placeholder Ring Colors */
+  .ring-default {
+    --tw-ring-color: var(--color-placeholder-border-default);
+  }
+  .ring-point {
+    --tw-ring-color: var(--color-placeholder-border-point);
+  }
+  .hover\:ring-point:hover {
+    --tw-ring-color: var(--color-placeholder-border-point);
+  }
+  .focus\:ring-point:focus {
+    --tw-ring-color: var(--color-placeholder-border-point);
+  }
+  .ring-error {
+    --tw-ring-color: var(--color-placeholder-border-error);
+  }
+  .disabled\:ring-default:disabled {
+    --tw-ring-color: var(--color-placeholder-border-default);
+  }
 
   /* Placeholder Background Colors */
-  .bg-placeholder-default {
+  .bg-default {
     background-color: var(--color-placeholder-bg-default);
   }
 
