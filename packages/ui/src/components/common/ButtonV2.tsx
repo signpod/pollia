@@ -44,31 +44,31 @@ const buttonV2Variants = cva(
     variants: {
       variant: {
         primary: cn(
-          "bg-zinc-800 text-white",
-          "hover:bg-zinc-600",
-          "active:bg-zinc-950",
-          "disabled:bg-zinc-100 disabled:text-zinc-500",
+          "bg-button-primary-default text-button-white",
+          "hover:bg-button-primary-hover",
+          "active:bg-button-primary-pressed",
+          "disabled:bg-button-primary-disabled disabled:text-button-disabled",
           "focus-visible:ring-zinc-400"
         ),
         secondary: cn(
-          "ring-1 ring-inset ring-zinc-200",
-          "bg-white text-zinc-950",
-          "hover:ring-violet-500 hover:bg-violet-50 hover:text-violet-500",
-          "active:ring-violet-500 active:bg-violet-50 active:text-violet-500",
-          "disabled:bg-white disabled:text-zinc-200 disabled:ring-zinc-200",
+          "ring-1 ring-inset ring-default",
+          "bg-button-secondary-default text-button-default",
+          "hover:ring-point hover:text-button-point",
+          "active:ring-point active:bg-button-secondary-pressed active:text-button-point",
+          "disabled:bg-button-secondary-disabled disabled:text-button-disabled disabled:ring-default",
           "focus-visible:ring-violet-400"
         ),
         tertiary: cn(
-          "bg-transparent text-zinc-950",
-          "hover:bg-zinc-50",
-          "active:bg-violet-50 active:text-violet-500",
-          "disabled:text-zinc-400 disabled:bg-zinc-100",
-          "focus-visible:ring-zinc-300"
+          "bg-button-tertiary-default text-zinc-950",
+          "hover:bg-button-tertiary-hover",
+          "active:bg-button-tertiary-pressed active:text-button-point",
+          "disabled:bg-button-tertiary-disabled disabled:text-button-disabled disabled:ring-default",
+          "focus-visible:ring-default"
         ),
       },
       size: {
-        medium: "h-9 px-4",
-        large: "h-12 px-3",
+        medium: "h-9 px-3",
+        large: "h-12 px-4",
       },
     },
     defaultVariants: {
