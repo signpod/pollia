@@ -1,0 +1,111 @@
+@theme {
+  --color-kakao: #fee500;
+
+  /* Text Colors */
+  --color-text-default: var(--color-zinc-950);
+  --color-text-sub: var(--color-zinc-600);
+  --color-text-info: var(--color-zinc-500);
+  --color-text-disabled: var(--color-zinc-400);
+  --color-text-point: var(--color-violet-500);
+
+  /*Icon Colors */
+  --color-icon-default: var(--color-zinc-950);
+  --color-icon-sub: var(--color-zinc-400);
+  --color-icon-disabled: var(--color-zinc-300);
+  --color-icon-point: var(--color-violet-500);
+
+  /* Border Colors */
+  --color-border-default: var(--color-zinc-200);
+
+  /* Divider Colors */
+  --color-divider-default: var(--color-zinc-100);
+
+  /* Background Colors */
+  --color-background-default: var(--color-white);
+  --color-background-light: var(--color-zinc-50);
+  --color-background-deep: var(--color-zinc-200);
+  --color-background-point: var(--color-violet-50);
+  --color-background-point-light: var(--color-violet-100);
+
+  /* Effect Colors */
+  --color-effect-default: rgba(9, 9, 11, 0.1);
+}
+
+@layer semantic {
+  /* Kakao */
+  .bg-kakao {
+    background-color: var(--color-kakao);
+  }
+  .text-kakao {
+    color: var(--color-kakao);
+  }
+  .border-kakao {
+    border-color: var(--color-kakao);
+  }
+
+  /* Text Colors */
+  .text-default {
+    color: var(--color-text-default);
+  }
+  .text-sub {
+    color: var(--color-text-sub);
+  }
+  .text-info {
+    color: var(--color-text-info);
+  }
+  .text-disabled {
+    color: var(--color-text-disabled);
+  }
+  .text-point {
+    color: var(--color-text-point);
+  }
+
+  /* Icon Colors */
+  .text-icon-default {
+    color: var(--color-icon-default);
+  }
+  .text-icon-sub {
+    color: var(--color-icon-sub);
+  }
+  .text-icon-disabled {
+    color: var(--color-icon-disabled);
+  }
+  .text-icon-point {
+    color: var(--color-icon-point);
+  }
+
+  /* Border Colors */
+  .border-default {
+    border-color: var(--color-border-default);
+  }
+
+  /* Divider Colors */
+  .border-divider-default {
+    border-color: var(--color-divider-default);
+  }
+  .bg-divider-default {
+    background-color: var(--color-divider-default);
+  }
+
+  /* Background Colors */
+  .bg-default {
+    background-color: var(--color-background-default);
+  }
+  .bg-light {
+    background-color: var(--color-background-light);
+  }
+  .bg-deep {
+    background-color: var(--color-background-deep);
+  }
+  .bg-point {
+    background-color: var(--color-background-point);
+  }
+  .bg-point-light {
+    background-color: var(--color-background-point-light);
+  }
+
+  /* Effect Colors */
+  .shadow-effect-default {
+    box-shadow: 0 4px 20px 0 var(--color-effect-default);
+  }
+}
