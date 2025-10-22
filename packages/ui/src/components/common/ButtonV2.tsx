@@ -108,7 +108,7 @@ const ButtonV2 = ({
 
   return (
     <Comp
-      className={cn(buttonV2Variants({ variant, size, className }))}
+      className={cn(buttonV2Variants({ variant, size }), className)}
       ref={ref}
       disabled={disabled}
       {...props}
