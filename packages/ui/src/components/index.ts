@@ -1,4 +1,5 @@
 export * from "./common/Button";
+export * from "./common/ButtonV2";
 export * from "./common/Input";
 
 export * from "./common/KakaoLoginButton";

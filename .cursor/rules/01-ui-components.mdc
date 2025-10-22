@@ -1,0 +1,70 @@
+# UI 컴포넌트 작성 컨벤션 (packages/ui)
+
+## Tailwind CSS 클래스 그룹화 및 줄바꿈
+
+컴포넌트에서 Tailwind CSS 클래스를 사용할 때, `cn()` 함수를 통해 논리적 그룹으로 분리하여 가독성을 높입니다.
+
+### 상태 변형자(State Modifiers) 그룹화 규칙
+
+- **기본 스타일**: 레이아웃, 크기, 색상 등 기본적인 스타일
+- **인터랙션 상태**: `hover:`, `active:`, `focus:` 등
+- **접근성 상태**: `focus-visible:` 관련 스타일
+- **비활성화 상태**: `disabled:` 관련 스타일
+- **특수 선택자**: `[&_svg]`, `[&>*]` 등의 복잡한 선택자
+
+### 좋은 예시
+
+```tsx
+const buttonVariants = cva(
+  cn(
+    "inline-flex items-center justify-center whitespace-nowrap gap-2 rounded-sm transition-colors",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+    "disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0"
+  )
+  // ...
+);
+```
+
+### 나쁜 예시
+
+```tsx
+const buttonVariants = cva(
+  "inline-flex items-center justify-center whitespace-nowrap gap-2 rounded-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0"
+  // ...
+);
+```
+
+### 그룹화 우선순위
+
+1. 기본 레이아웃 및 스타일 (display, flex, grid, size, color 등)
+2. 호버/액티브 인터랙션 (`hover:`, `active:`)
+3. 포커스 상태 (`focus:`, `focus-visible:`, `focus-within:`)
+4. 비활성화 상태 (`disabled:`)
+5. 기타 상태 (`group-hover:`, `peer-*:` 등)
+6. 특수 선택자 (`[&_*]:` 형태)
+
+## 컴포넌트 Export 규칙
+
+새로운 UI 컴포넌트를 만들 때 반드시 `packages/ui/src/components/index.ts`에 export 해야 합니다.
+
+### Export 방법
+
+**일반 컴포넌트:**
+
+```tsx
+// packages/ui/src/components/index.ts
+export * from "./common/ComponentName";
+```
+
+**Compound 컴포넌트 (Next.js Server Component 호환):**
+
+```tsx
+import {
+  ComponentName as ComponentNameBase,
+  ComponentNameContent,
+} from "./layout/ComponentName";
+
+export const ComponentName = Object.assign(ComponentNameBase, {
+  Content: ComponentNameContent,
+});
+```

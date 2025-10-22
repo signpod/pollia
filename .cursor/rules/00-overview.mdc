@@ -1,0 +1,20 @@
+# Pollia 프로젝트 AI 코딩 규칙
+
+## 개요
+
+이 디렉토리는 Pollia 프로젝트의 AI 코딩 규칙을 정의합니다.
+
+모든 팀원이 Cursor AI를 사용할 때 일관된 코드 스타일과 컨벤션을 유지하기 위한 가이드라인입니다.
+
+## 규칙 구조
+
+- `00-overview.mdc` - 전체 개요
+- `01-ui-components.mdc` - UI 컴포넌트 작성 규칙
+- `02-storybook.mdc` - 스토리북 기본 구조
+- `03-storybook-patterns.mdc` - 스토리 작성 패턴
+- `04-storybook-docs.mdc` - argTypes & 문서화
+- `05-git-commit-messages.mdc` - Git 커밋 메시지 규칙
+
+## 규칙 적용 범위
+
+이 규칙은 프로젝트 전체에 적용되며, 하위 디렉토리의 특정 규칙이 있을 경우 해당 규칙이 우선 적용됩니다.
