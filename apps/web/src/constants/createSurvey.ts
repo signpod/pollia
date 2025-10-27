@@ -37,17 +37,19 @@ interface StepComponents {
   SubjectiveInfoStep: React.ComponentType;
 }
 
+type StepType = SurveyType | "ChoiceType";
+
 interface CreateStepConfigsProps {
   router: { back: () => void };
   goBack: () => void;
-  surveyType: SurveyType;
+  stepType: StepType;
   stepComponents: StepComponents;
 }
 
 export const createStepConfigs = ({
   router,
   goBack,
-  surveyType,
+  stepType,
   stepComponents,
 }: CreateStepConfigsProps): ExtendedStepConfig[] => [
   {
@@ -67,7 +69,7 @@ export const createStepConfigs = ({
       icon: ChevronLeft,
     },
     content: () => {
-      switch (surveyType) {
+      switch (stepType) {
         case SurveyType.EITHER_OR:
           return React.createElement(stepComponents.EitherOrInfoStep);
         case SurveyType.MULTIPLE_CHOICE:
