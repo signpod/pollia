@@ -8,16 +8,16 @@ import { PrimitiveAtom } from "jotai";
 import { useState, useEffect } from "react";
 
 interface ImageSelectorSectionProps {
-  thumbnailUrlAtom: PrimitiveAtom<string | undefined>;
-  thumbnailFileUploadIdAtom: PrimitiveAtom<string | undefined>;
+  imageUrlAtom: PrimitiveAtom<string | undefined>;
+  imageFileUploadIdAtom: PrimitiveAtom<string | undefined>;
 }
 
 export function ImageSelectorSection({
-  thumbnailUrlAtom,
-  thumbnailFileUploadIdAtom,
+  imageUrlAtom,
+  imageFileUploadIdAtom,
 }: ImageSelectorSectionProps) {
-  const [thumbnailUrl, setThumbnailUrl] = useAtom(thumbnailUrlAtom);
-  const setUploadedFileId = useSetAtom(thumbnailFileUploadIdAtom);
+  const [imageUrl, setImageUrl] = useAtom(imageUrlAtom);
+  const setUploadedFileId = useSetAtom(imageFileUploadIdAtom);
   const [previewUrl, setPreviewUrl] = useState<string>("");
 
   const [uploadedFile, setUploadedFile] = useState<{
@@ -29,7 +29,7 @@ export function ImageSelectorSection({
     useImageUpload({
       bucket: "poll-images",
       onSuccess: (result) => {
-        setThumbnailUrl(result.publicUrl);
+        setImageUrl(result.publicUrl);
         setUploadedFileId(result.fileUploadId);
 
         setUploadedFile({
@@ -83,7 +83,7 @@ export function ImageSelectorSection({
 
     setUploadedFile(null);
     setUploadedFileId(undefined);
-    setThumbnailUrl(undefined);
+    setImageUrl(undefined);
 
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
@@ -95,16 +95,16 @@ export function ImageSelectorSection({
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1">
-          <Typo.SubTitle size="large">썸네일</Typo.SubTitle>
+          <Typo.SubTitle size="large">이미지</Typo.SubTitle>
         </div>
         <span className="text-xs font-medium text-zinc-400">
-          {thumbnailUrl ? "1" : "0"}/1
+          {imageUrl ? "1" : "0"}/1
         </span>
       </div>
 
       <ImageSelectorComponent
         size="large"
-        imageUrl={thumbnailUrl || previewUrl}
+        imageUrl={imageUrl || previewUrl}
         onImageSelect={handleImageSelect}
         onImageDelete={handleImageDelete}
       />

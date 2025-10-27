@@ -2,6 +2,7 @@ import React from "react";
 import { StepConfig } from "@repo/ui/components";
 import { ChevronLeft, LucideIcon, X } from "lucide-react";
 import { SurveyType } from "@/types/domain/survey";
+import { TYPE_LABELS } from "./survey";
 
 export interface ExtendedStepConfig extends StepConfig {
   description?: string;
@@ -63,7 +64,10 @@ export const createStepConfigs = ({
   },
   {
     ...CREATE_SURVEY_STEPS[1],
-    description: undefined,
+    description:
+      stepType !== "ChoiceType"
+        ? `${TYPE_LABELS[stepType]} 질문의 내용을 작성해주세요`
+        : undefined,
     header: {
       action: goBack,
       icon: ChevronLeft,
@@ -78,6 +82,8 @@ export const createStepConfigs = ({
           return React.createElement(stepComponents.ScaleInfoStep);
         case SurveyType.SUBJECTIVE:
           return React.createElement(stepComponents.SubjectiveInfoStep);
+        case "ChoiceType":
+          return undefined;
       }
     },
   },

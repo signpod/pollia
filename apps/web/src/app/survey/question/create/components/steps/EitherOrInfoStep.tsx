@@ -1,15 +1,30 @@
+import {
+  eitherOrDataAtom,
+  eitherOrDescriptionAtom,
+  eitherOrImageFileUploadIdAtom,
+  eitherOrImageUrlAtom,
+  eitherOrTitleAtom,
+} from "@/atoms/survey/create/eitherOrInfoAtoms";
+import { eitherOrInfoSchema } from "@/schemas/survey/eitherOrInfoSchema";
 import { Button, Typo, FixedBottomLayout } from "@repo/ui/components";
+import { SubjectInputSection } from "../inputs/SubjectInputSection";
+import { DescriptionInputSection } from "../inputs/DescriptionInputSection";
+import { ImageSelectorSection } from "../inputs/ImageSelectorSection";
+import { useAtomValue } from "jotai";
 
 export function EitherOrInfoStep() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-6 px-5">
-        EitherOrInfoStepContent
-        {/* <SubjectInput
-          titleAtom={title}
-          schema={binaryPollSchema}
-        /> 
-        <DescriptionInput descriptionAtom={description} /> */}
+        <ImageSelectorSection
+          imageUrlAtom={eitherOrImageUrlAtom}
+          imageFileUploadIdAtom={eitherOrImageFileUploadIdAtom}
+        />
+        <SubjectInputSection
+          titleAtom={eitherOrTitleAtom}
+          schema={eitherOrInfoSchema}
+        />
+        <DescriptionInputSection descriptionAtom={eitherOrDescriptionAtom} />
       </div>
 
       <EitherOrInfoCTAButton />
@@ -19,8 +34,11 @@ export function EitherOrInfoStep() {
 
 function EitherOrInfoCTAButton() {
   //TODO: 질문 생성 로직 추가
+  const eitherOrData = useAtomValue(eitherOrDataAtom);
+
   const handleCreatePoll = () => {
     // TODO: 질문 생성 로직 추가
+    console.log(eitherOrData);
   };
 
   return (
