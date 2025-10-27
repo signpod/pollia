@@ -49,7 +49,9 @@ function SurveyQuestionCreateDoneContent() {
             toast.success("설문 질문의 아이디가 복사되었어요!");
           }}
         >
-          <Typo.ButtonText size="large">만든 폴 링크 복사하기</Typo.ButtonText>
+          <Typo.ButtonText size="large">
+            설문 질문의 아이디 복사하기
+          </Typo.ButtonText>
         </Button>
       </div>
 
