@@ -6,7 +6,7 @@ import { PlusIcon } from "lucide-react";
 import { useAtom } from "jotai";
 import { useEffect } from "react";
 
-export function OptionSelector() {
+export function OptionSelectorSection() {
   const {
     options,
     updateOption,

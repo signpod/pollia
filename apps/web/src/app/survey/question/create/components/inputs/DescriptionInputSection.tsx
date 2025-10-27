@@ -3,11 +3,13 @@ import { cn } from "@repo/ui/lib";
 import { useAtom, PrimitiveAtom } from "jotai";
 import { useCallback } from "react";
 
-interface DescriptionInputProps {
+interface DescriptionInputSectionProps {
   descriptionAtom: PrimitiveAtom<string>;
 }
 
-export function DescriptionInput({ descriptionAtom }: DescriptionInputProps) {
+export function DescriptionInputSection({
+  descriptionAtom,
+}: DescriptionInputSectionProps) {
   const [description, setDescription] = useAtom(descriptionAtom);
 
   const handleBlur = useCallback(() => {

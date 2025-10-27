@@ -3,12 +3,15 @@ import { useAtom, PrimitiveAtom } from "jotai";
 import { useCallback, useState } from "react";
 import { z } from "zod";
 
-interface SubjectInputProps {
+interface SubjectInputSectionProps {
   titleAtom: PrimitiveAtom<string>;
   schema: z.ZodObject<z.ZodRawShape>;
 }
 
-export function SubjectInput({ titleAtom, schema }: SubjectInputProps) {
+export function SubjectInputSection({
+  titleAtom,
+  schema,
+}: SubjectInputSectionProps) {
   const [title, setTitle] = useAtom(titleAtom);
   const [touched, setTouched] = useState(false);
   const [error, setError] = useState<string | undefined>();
