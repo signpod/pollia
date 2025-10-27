@@ -14,7 +14,7 @@ import {
   createStepConfigs,
   CREATE_SURVEY_STEPS,
 } from "@/constants/createSurvey";
-import { surveyTypeAtom } from "@/atoms/create/surveyTypeAtoms";
+import { surveyTypeAtom } from "@/atoms/survey/create/surveyTypeAtoms";
 
 import { TypeStep } from "./components/steps/TypeStep";
 import { EitherOrInfoStep } from "./components/steps/EitherOrInfoStep";

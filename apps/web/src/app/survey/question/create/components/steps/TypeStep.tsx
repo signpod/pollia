@@ -1,7 +1,7 @@
 "use client";
 
 import { useAtom } from "jotai";
-import { surveyTypeAtom } from "@/atoms/create/surveyTypeAtoms";
+import { surveyTypeAtom } from "@/atoms/survey/create/surveyTypeAtoms";
 import { FixedBottomLayout, Button, Typo, useStep } from "@repo/ui/components";
 import { cn } from "@/lib/utils";
 import { SurveyType } from "@/types/domain/survey";
