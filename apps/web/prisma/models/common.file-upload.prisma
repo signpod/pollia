@@ -1,0 +1,36 @@
+model FileUpload {
+  id                String             @id @default(cuid())
+  userId            String             @map("user_id")
+  user              User               @relation("FileUploader", fields: [userId], references: [id])
+  originalFileName  String             @map("original_file_name")
+  filePath          String             @map("file_path")
+  publicUrl         String             @map("public_url")
+  fileSize          Int                @map("file_size")
+  mimeType          String             @map("mime_type")
+  bucket            String             @default("poll-images")
+  status            FileStatus         @default(TEMPORARY)
+  relatedEntityType RelatedEntityType? @map("related_entity_type")
+  relatedEntityId   String?            @map("related_entity_id")
+
+  surveyOptions SurveyOption[]
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  confirmedAt DateTime? @map("confirmed_at")
+
+  @@index([userId, status])
+  @@index([status, createdAt])
+  @@index([relatedEntityType, relatedEntityId])
+  @@map("file_uploads")
+}
+
+enum FileStatus {
+  TEMPORARY
+  CONFIRMED
+}
+
+enum RelatedEntityType {
+  POLL
+  POLL_OPTION
+  SURVEY
+  SURVEY_OPTION
+}

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { getUploadUrl, deleteImage, confirmFile } from "@/actions/image";
+import { getUploadUrl, deleteImage, confirmFile } from "@/actions/common/image";
 import {
   UploadImageRequest,
   DeleteImageRequest,

@@ -1,0 +1,18 @@
+model User {
+  id    String @id
+  email String @unique
+  name  String
+
+  polls         Poll[]         @relation("PollCreator")
+  votes         Vote[]
+  pollLikes     PollLike[]
+  pollBookmarks PollBookmark[]
+  surveys       Survey[]       @relation("SurveyCreator")
+  surveyAnswers SurveyAnswer[]
+  fileUploads   FileUpload[]   @relation("FileUploader")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}

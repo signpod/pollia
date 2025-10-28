@@ -1,6 +1,5 @@
 'use server';
 
-import { requireAuth } from '@/actions/auth';
 import prisma from '@/database/utils/prisma/client';
 import {
   GetPollResponse,
@@ -9,6 +8,7 @@ import {
   GetBookmarkedPollsResponse,
   GetLikedPollsResponse,
 } from '@/types/dto';
+import { requireAuth } from '../common/auth';
 
 export async function getPoll(pollId: string): Promise<GetPollResponse> {
   try {

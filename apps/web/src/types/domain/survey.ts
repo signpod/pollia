@@ -1,0 +1,6 @@
+export enum SurveyType {
+  EITHER_OR = "EITHER_OR",
+  MULTIPLE_CHOICE = "MULTIPLE_CHOICE",
+  SCALE = "SCALE",
+  SUBJECTIVE = "SUBJECTIVE",
+}
