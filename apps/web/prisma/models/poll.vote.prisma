@@ -1,0 +1,15 @@
+model Vote {
+  id       String     @id @default(cuid())
+  pollId   String     @map("poll_id")
+  poll     Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  userId   String     @map("user_id")
+  user     User       @relation(fields: [userId], references: [id])
+  optionId String     @map("option_id")
+  option   PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([pollId, userId, optionId])
+  @@index([pollId, userId])
+  @@map("votes")
+}

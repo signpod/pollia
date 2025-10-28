@@ -1,0 +1,1114 @@
+# Server Actions 컨벤션
+
+## 디렉토리 구조
+
+```
+src/actions/
+├── common/           # 공통 actions
+│   ├── auth.ts
+│   └── image.ts
+├── poll/            # Poll 도메인
+│   ├── index.ts     # re-export
+│   ├── create.ts
+│   ├── read.ts
+│   ├── like.ts
+│   ├── bookmark.ts
+│   ├── vote.ts
+│   └── status.ts
+├── survey/          # Survey 도메인
+│   ├── index.ts
+│   ├── create.ts
+│   ├── read.ts
+│   └── ...
+└── user/            # User 도메인
+    ├── index.ts
+    └── read.ts
+```
+
+## 핵심 원칙
+
+### 1. 도메인별 폴더 구조
+
+```
+✅ actions/poll/create.ts     # 도메인별로 폴더 분리
+✅ actions/survey/read.ts
+✅ actions/common/auth.ts      # 공통 actions
+
+❌ actions/createPoll.ts       # 루트에 직접 생성 금지
+❌ actions/poll.ts             # 단일 파일에 모든 것 금지
+```
+
+### 2. 파일 네이밍 패턴
+
+**기능별 파일 분리:**
+
+```
+✅ create.ts      # 생성 액션
+✅ read.ts        # 조회 액션
+✅ update.ts      # 수정 액션
+✅ delete.ts      # 삭제 액션
+✅ like.ts        # 좋아요 액션
+✅ bookmark.ts    # 북마크 액션
+✅ vote.ts        # 투표 액션
+✅ status.ts      # 상태 조회 액션
+✅ index.ts       # re-export
+
+❌ pollActions.ts # 복수형 금지
+❌ all.ts         # 모든 것을 하나에 금지
+```
+
+### 3. index.ts로 Re-export
+
+```typescript
+// actions/poll/index.ts
+export { createPoll } from "./create";
+
+export { getPoll, getUserPolls, getPollResults } from "./read";
+
+export {
+  getUserVoteStatus,
+  submitIndividualVote,
+  removeIndividualVote,
+  submitMultipleVote,
+  removeMultipleVote,
+} from "./vote";
+
+export { likePoll, unlikePoll, toggleLikePoll } from "./like";
+
+export { bookmarkPoll, unbookmarkPoll, toggleBookmarkPoll } from "./bookmark";
+
+export { getPollUserStatus } from "./status";
+```
+
+**사용:**
+
+```typescript
+// ✅ 도메인별 import
+import { createPoll, getPoll } from "@/actions/poll";
+
+// ❌ 개별 파일 import 지양
+import { createPoll } from "@/actions/poll/create";
+```
+
+## DTO 타입 정의
+
+### DTO는 반드시 types/dto에 정의
+
+**❌ Server Action 파일 내 직접 정의 금지:**
+
+```typescript
+// ❌ actions/poll/create.ts
+export interface CreatePollRequest {
+  /* ... */
+} // 금지!
+export interface CreatePollResponse {
+  /* ... */
+} // 금지!
+```
+
+**✅ types/dto 파일에 정의:**
+
+```typescript
+// ✅ types/dto/poll.ts
+export interface CreatePollRequest {
+  title: string;
+  description?: string;
+  // ...
+}
+
+export interface CreatePollResponse {
+  data: {
+    id: string;
+    title: string;
+    createdAt: Date;
+  };
+}
+```
+
+**Server Action에서 import:**
+
+```typescript
+// ✅ actions/poll/create.ts
+"use server";
+
+import type { CreatePollRequest, CreatePollResponse } from "@/types/dto/poll";
+```
+
+### DTO 네이밍 규칙
+
+- Request: `{도메인}{동작}Request` (예: `CreatePollRequest`)
+- Response: `{도메인}{동작}Response` (예: `CreatePollResponse`)
+- 응답은 항상 `{ data: ... }` 구조
+
+## Server Action 기본 구조
+
+### 1. 조회 액션 (Read)
+
+```typescript
+"use server";
+
+import { requireAuth } from "@/actions/common/auth";
+import prisma from "@/database/utils/prisma/client";
+import type { GetPollResponse } from "@/types/dto/poll";
+
+export async function getPoll(pollId: string): Promise<GetPollResponse> {
+  try {
+    const poll = await prisma.poll.findUnique({
+      where: { id: pollId },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        options: {
+          select: {
+            id: true,
+            description: true,
+            imageUrl: true,
+            _count: {
+              select: {
+                votes: true,
+              },
+            },
+          },
+        },
+        _count: {
+          select: {
+            votes: true,
+            likes: true,
+            bookmarks: true,
+          },
+        },
+      },
+    });
+
+    if (!poll) {
+      const error = new Error("투표를 찾을 수 없습니다.");
+      error.cause = 404;
+      throw error;
+    }
+
+    return { data: poll };
+  } catch (error) {
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("투표를 불러올 수 없습니다.");
+    serverError.cause = 500;
+    throw serverError;
+  }
+}
+```
+
+**필수 요소:**
+
+- [ ] `"use server"` directive
+- [ ] DTO 타입 정의 및 사용
+- [ ] try-catch 에러 처리
+- [ ] error.cause로 HTTP 상태 코드 전달
+- [ ] 일관된 응답 형식 `{ data: ... }`
+- [ ] 인증 필요 시 `requireAuth()` 사용
+- [ ] 리소스 없을 시 404 에러
+
+### 2. 생성 액션 (Create)
+
+```typescript
+"use server";
+
+import { requireAuth } from "@/actions/common/auth";
+import prisma from "@/database/utils/prisma/client";
+import type { CreatePollRequest, CreatePollResponse } from "@/types/dto/poll";
+
+export async function createPoll(
+  request: CreatePollRequest
+): Promise<CreatePollResponse> {
+  try {
+    const user = await requireAuth();
+
+    // 1. Validation
+    const validationError = validatePollRequest(request);
+    if (validationError) {
+      const error = new Error(validationError);
+      error.cause = 400;
+      throw error;
+    }
+
+    // 2. Transaction으로 복잡한 생성 로직 처리
+    const poll = await prisma.$transaction(async (tx) => {
+      const createdPoll = await tx.poll.create({
+        data: {
+          title: request.title,
+          description: request.description,
+          type: request.type,
+          category: request.category,
+          creatorId: user.id,
+        },
+      });
+
+      // 관련 데이터 생성
+      await tx.pollOption.createMany({
+        data: request.options.map((option) => ({
+          pollId: createdPoll.id,
+          description: option.description,
+          order: option.order,
+        })),
+      });
+
+      return createdPoll;
+    });
+
+    return {
+      data: {
+        id: poll.id,
+        title: poll.title,
+        type: poll.type,
+        category: poll.category,
+        createdAt: poll.createdAt,
+      },
+    };
+  } catch (error) {
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("폴 생성 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
+  }
+}
+
+// ✅ Validation 함수 분리
+function validatePollRequest(request: CreatePollRequest): string | null {
+  if (!request.title || request.title.trim().length === 0) {
+    return "제목은 필수입니다.";
+  }
+  if (request.title.length > 100) {
+    return "제목은 100자를 초과할 수 없습니다.";
+  }
+  // ... 추가 검증
+  return null;
+}
+```
+
+**필수 요소:**
+
+- [ ] `requireAuth()`로 사용자 인증
+- [ ] Validation 로직 분리
+- [ ] `$transaction`으로 복잡한 로직 처리
+- [ ] 400 에러 (잘못된 요청)
+- [ ] 생성된 리소스의 주요 정보만 반환
+
+### 3. 토글 액션 (Toggle)
+
+```typescript
+"use server";
+
+import { requireAuth } from "@/actions/common/auth";
+import prisma from "@/database/utils/prisma/client";
+
+export async function toggleLikePoll(pollId: string) {
+  try {
+    const user = await requireAuth();
+
+    // 1. 리소스 존재 확인
+    const poll = await prisma.poll.findUnique({
+      where: { id: pollId },
+      select: { id: true },
+    });
+
+    if (!poll) {
+      const error = new Error("존재하지 않는 투표입니다.");
+      error.cause = 404;
+      throw error;
+    }
+
+    // 2. 현재 상태 확인
+    const existingLike = await prisma.pollLike.findUnique({
+      where: {
+        pollId_userId: {
+          pollId: pollId,
+          userId: user.id,
+        },
+      },
+    });
+
+    let isLiked: boolean;
+
+    // 3. 토글 처리
+    if (existingLike) {
+      await prisma.pollLike.delete({
+        where: {
+          pollId_userId: {
+            pollId: pollId,
+            userId: user.id,
+          },
+        },
+      });
+      isLiked = false;
+    } else {
+      await prisma.pollLike.create({
+        data: {
+          pollId: pollId,
+          userId: user.id,
+        },
+      });
+      isLiked = true;
+    }
+
+    return {
+      isLiked,
+      message: isLiked
+        ? "좋아요가 추가되었습니다."
+        : "좋아요가 취소되었습니다.",
+    };
+  } catch (error) {
+    console.error("❌ 좋아요 토글 에러:", error);
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("좋아요 처리 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
+  }
+}
+```
+
+**필수 요소:**
+
+- [ ] 리소스 존재 확인 (404)
+- [ ] 현재 상태 확인
+- [ ] 토글 로직
+- [ ] 결과 상태 반환 (`isLiked`)
+- [ ] console.error로 에러 로깅
+
+### 4. 삭제 액션 (Delete)
+
+```typescript
+"use server";
+
+import { requireAuth } from "@/actions/common/auth";
+import prisma from "@/database/utils/prisma/client";
+
+export async function deletePoll(pollId: string) {
+  try {
+    const user = await requireAuth();
+
+    // 1. 권한 확인
+    const poll = await prisma.poll.findUnique({
+      where: { id: pollId },
+      select: { id: true, creatorId: true },
+    });
+
+    if (!poll) {
+      const error = new Error("존재하지 않는 투표입니다.");
+      error.cause = 404;
+      throw error;
+    }
+
+    if (poll.creatorId !== user.id) {
+      const error = new Error("삭제 권한이 없습니다.");
+      error.cause = 403;
+      throw error;
+    }
+
+    // 2. 삭제 (onDelete: Cascade로 관련 데이터 자동 삭제)
+    await prisma.poll.delete({
+      where: { id: pollId },
+    });
+
+    return {
+      message: "투표가 삭제되었습니다.",
+    };
+  } catch (error) {
+    console.error("❌ 투표 삭제 에러:", error);
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("투표 삭제 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
+  }
+}
+```
+
+**필수 요소:**
+
+- [ ] 권한 확인 (403)
+- [ ] 리소스 존재 확인 (404)
+- [ ] 삭제 성공 메시지
+
+## 인증 처리
+
+### requireAuth 함수
+
+````typescript
+// actions/common/auth.ts
+import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
+import type { User } from "@supabase/supabase-js";
+
+/**
+ * Server Action에서 인증된 사용자를 가져옵니다.
+ * 인증되지 않은 경우 401 에러를 throw합니다.
+ *
+ * @throws {Error} 로그인이 필요한 경우 (error.cause = 401)
+ * @returns {Promise<User>} 인증된 사용자 객체
+ *
+ * @example
+ * ```typescript
+ * export async function myServerAction() {
+ *   try {
+ *     const user = await requireAuth();
+ *     // user.id 사용 가능
+ *   } catch (error) {
+ *     if (error instanceof Error && error.cause === 401) {
+ *       // 인증 에러 처리
+ *     }
+ *   }
+ * }
+ * ```
+ */
+export async function requireAuth(): Promise<User> {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    const error = new Error("로그인이 필요합니다.");
+    error.cause = 401;
+    throw error;
+  }
+
+  return user;
+}
+````
+
+**사용:**
+
+```typescript
+export async function myServerAction() {
+  const user = await requireAuth(); // ✅ 인증 필수
+  // user.id 사용
+}
+
+export async function publicAction() {
+  // requireAuth() 호출 안 함 ✅ 인증 불필요
+}
+```
+
+## 에러 처리
+
+### HTTP 상태 코드 패턴
+
+```typescript
+// 400: Bad Request (잘못된 요청)
+const error = new Error("제목은 필수입니다.");
+error.cause = 400;
+throw error;
+
+// 401: Unauthorized (인증 필요)
+const error = new Error("로그인이 필요합니다.");
+error.cause = 401;
+throw error;
+
+// 403: Forbidden (권한 없음)
+const error = new Error("삭제 권한이 없습니다.");
+error.cause = 403;
+throw error;
+
+// 404: Not Found (리소스 없음)
+const error = new Error("투표를 찾을 수 없습니다.");
+error.cause = 404;
+throw error;
+
+// 409: Conflict (중복)
+const error = new Error("이미 좋아요를 누른 투표입니다.");
+error.cause = 409;
+throw error;
+
+// 500: Internal Server Error (서버 오류)
+const error = new Error("투표 생성 중 오류가 발생했습니다.");
+error.cause = 500;
+throw error;
+```
+
+### 에러 처리 표준 패턴
+
+```typescript
+export async function myServerAction() {
+  try {
+    // 비즈니스 로직
+  } catch (error) {
+    console.error("❌ 에러 설명:", error); // ✅ 에러 로깅
+
+    // 이미 cause가 설정된 에러는 그대로 throw
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+
+    // 예상치 못한 에러는 500으로 처리
+    const serverError = new Error("작업 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
+  }
+}
+```
+
+## types/dto 구조 예시
+
+```
+src/types/dto/
+├── index.ts          # 전체 re-export
+├── poll.ts           # Poll 도메인 DTO
+├── survey.ts         # Survey 도메인 DTO
+├── user.ts           # User 도메인 DTO
+└── image.ts          # Image 도메인 DTO
+```
+
+### Poll DTO 예시
+
+```typescript
+// types/dto/poll.ts
+import type { Poll, PollOption, PollType, PollCategory } from "@prisma/client";
+
+// Request
+export interface CreatePollRequest {
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  type: PollType;
+  category: PollCategory;
+  startDate: Date;
+  endDate?: Date;
+  isIndefinite?: boolean;
+  maxSelections?: number;
+  options: {
+    description: string;
+    imageUrl?: string;
+    link?: string;
+    order: number;
+  }[];
+}
+
+// Response
+export interface CreatePollResponse {
+  data: {
+    id: string;
+    title: string;
+    type: PollType;
+    category: PollCategory;
+    createdAt: Date;
+  };
+}
+
+export interface GetPollResponse {
+  data: Poll & {
+    creator: {
+      id: string;
+      name: string;
+    };
+    options: Array<
+      PollOption & {
+        _count: {
+          votes: number;
+        };
+      }
+    >;
+    _count: {
+      votes: number;
+      likes: number;
+      bookmarks: number;
+    };
+  };
+}
+```
+
+### index.ts에서 re-export
+
+```typescript
+// types/dto/index.ts
+export * from "./poll";
+export * from "./survey";
+export * from "./user";
+export * from "./image";
+```
+
+## Validation
+
+### 1. Zod Schema 활용
+
+```typescript
+import { binaryPollSchema } from "@/schemas/binaryPollSchema";
+
+function validatePollRequestWithClientSchema(
+  request: CreatePollRequest
+): string | null {
+  try {
+    const formData = {
+      category: request.category,
+      title: request.title,
+      description: request.description || "",
+      // ...
+    };
+
+    const result = binaryPollSchema.safeParse(formData);
+    if (!result.success) {
+      return result.error.issues[0]?.message || "유효성 검사에 실패했습니다.";
+    }
+
+    return null;
+  } catch {
+    return "유효성 검사 중 오류가 발생했습니다.";
+  }
+}
+```
+
+### 2. 수동 Validation
+
+```typescript
+function validatePollRequest(request: CreatePollRequest): string | null {
+  if (!request.title || request.title.trim().length === 0) {
+    return "제목은 필수입니다.";
+  }
+
+  if (request.title.length > 100) {
+    return "제목은 100자를 초과할 수 없습니다.";
+  }
+
+  if (request.options.length < 2) {
+    return "최소 2개 이상의 선택지가 필요합니다.";
+  }
+
+  return null; // 검증 통과
+}
+```
+
+**사용:**
+
+```typescript
+const validationError = validatePollRequest(request);
+if (validationError) {
+  const error = new Error(validationError);
+  error.cause = 400;
+  throw error;
+}
+```
+
+## Transaction 사용
+
+### 복잡한 생성 로직
+
+```typescript
+const result = await prisma.$transaction(async (tx) => {
+  // 1. 메인 리소스 생성
+  const created = await tx.poll.create({
+    data: {
+      /* ... */
+    },
+  });
+
+  // 2. 관련 리소스 생성
+  await tx.pollOption.createMany({
+    data: options.map((opt) => ({
+      pollId: created.id,
+      description: opt.description,
+      order: opt.order,
+    })),
+  });
+
+  // 3. 파일 상태 업데이트
+  if (fileUploadId) {
+    await tx.fileUpload.update({
+      where: { id: fileUploadId },
+      data: {
+        status: FileStatus.CONFIRMED,
+        relatedEntityId: created.id,
+      },
+    });
+  }
+
+  return created;
+});
+```
+
+### 토글 로직에서는 불필요
+
+```typescript
+// ✅ 단순 토글은 transaction 불필요
+if (existingLike) {
+  await prisma.pollLike.delete({ where: { id: existingLike.id } });
+} else {
+  await prisma.pollLike.create({ data: { pollId, userId } });
+}
+
+// ❌ 불필요한 transaction
+await prisma.$transaction(async (tx) => {
+  if (existingLike) {
+    await tx.pollLike.delete({ where: { id: existingLike.id } });
+  }
+});
+```
+
+## Optional 매개변수 처리
+
+```typescript
+export async function getUserPolls(
+  userId?: string
+): Promise<GetUserPollsResponse> {
+  try {
+    // userId가 없으면 현재 사용자 ID 사용
+    if (!userId) {
+      const user = await requireAuth();
+      userId = user.id;
+    }
+
+    const polls = await prisma.poll.findMany({
+      where: { creatorId: userId },
+      // ...
+    });
+
+    return { data: polls };
+  } catch (error) {
+    // ...
+  }
+}
+```
+
+## Prisma Query 패턴
+
+### 1. select로 필요한 필드만 조회
+
+```typescript
+const poll = await prisma.poll.findUnique({
+  where: { id: pollId },
+  select: {
+    id: true,
+    title: true,
+    description: true,
+    createdAt: true,
+  },
+});
+```
+
+### 2. include로 관계 데이터 포함
+
+```typescript
+const poll = await prisma.poll.findUnique({
+  where: { id: pollId },
+  include: {
+    creator: {
+      select: {
+        id: true,
+        name: true,
+      },
+    },
+    options: {
+      select: {
+        id: true,
+        description: true,
+      },
+    },
+  },
+});
+```
+
+### 3. \_count로 개수 조회
+
+```typescript
+const poll = await prisma.poll.findUnique({
+  where: { id: pollId },
+  include: {
+    _count: {
+      select: {
+        votes: true,
+        likes: true,
+      },
+    },
+  },
+});
+```
+
+### 4. orderBy로 정렬
+
+```typescript
+const polls = await prisma.poll.findMany({
+  where: { creatorId: userId },
+  orderBy: {
+    createdAt: "desc", // 최신순
+  },
+});
+```
+
+### 5. Promise.all로 병렬 조회
+
+```typescript
+const [pollsCreated, votesCount, likesCount] = await Promise.all([
+  prisma.poll.count({ where: { creatorId: user.id } }),
+  prisma.vote.count({ where: { userId: user.id } }),
+  prisma.pollLike.count({ where: { userId: user.id } }),
+]);
+```
+
+## 네이밍 컨벤션
+
+### 함수 이름
+
+```typescript
+// CRUD 패턴
+✅ createPoll        # 생성
+✅ getPoll           # 단일 조회
+✅ getUserPolls      # 목록 조회
+✅ updatePoll        # 수정
+✅ deletePoll        # 삭제
+
+// 토글 패턴
+✅ toggleLikePoll    # 토글
+✅ likePoll          # 추가
+✅ unlikePoll        # 제거
+
+// 제출/취소 패턴
+✅ submitVote        # 제출
+✅ removeVote        # 취소
+
+// 상태 조회
+✅ getUserVoteStatus     # 사용자 투표 상태
+✅ getPollUserStatus     # 폴 사용자 상태
+✅ getPollResults        # 폴 결과
+
+❌ poll()            # 동사 없음
+❌ fetchPoll()       # fetch 대신 get 사용
+❌ retrievePoll()    # retrieve 대신 get 사용
+```
+
+## 체크리스트
+
+### 모든 Server Action
+
+- [ ] `"use server"` directive 추가
+- [ ] DTO 타입을 `types/dto`에 정의 (❌ Server Action 파일 내 정의 금지)
+- [ ] DTO 타입 import (`import type { ... } from "@/types/dto/domain"`)
+- [ ] try-catch 에러 처리
+- [ ] error.cause로 HTTP 상태 코드 전달
+- [ ] 예상치 못한 에러는 500 처리
+- [ ] console.error로 에러 로깅 (이모지 사용)
+
+### 생성 액션
+
+- [ ] `requireAuth()`로 사용자 인증
+- [ ] Validation 로직 (분리 권장)
+- [ ] `$transaction` 사용 (복잡한 경우)
+- [ ] 생성된 리소스의 주요 정보만 반환
+- [ ] 파일 업로드 상태 업데이트 (필요시)
+
+### 조회 액션
+
+- [ ] 리소스 없을 시 404 에러
+- [ ] `{ data: ... }` 형식으로 반환
+- [ ] select/include로 필요한 데이터만 조회
+- [ ] orderBy로 정렬 (목록 조회 시)
+
+### 수정 액션
+
+- [ ] `requireAuth()`로 사용자 인증
+- [ ] 권한 확인 (작성자만 수정 가능)
+- [ ] 리소스 존재 확인 (404)
+- [ ] 권한 없을 시 403 에러
+- [ ] Validation 로직
+
+### 삭제 액션
+
+- [ ] `requireAuth()`로 사용자 인증
+- [ ] 권한 확인 (작성자만 삭제 가능)
+- [ ] 리소스 존재 확인 (404)
+- [ ] 권한 없을 시 403 에러
+- [ ] 삭제 성공 메시지
+
+### 토글 액션
+
+- [ ] `requireAuth()`로 사용자 인증
+- [ ] 리소스 존재 확인 (404)
+- [ ] 현재 상태 확인
+- [ ] 토글 처리
+- [ ] 결과 상태 반환 (`isLiked`, `isBookmarked` 등)
+
+## 예제: Survey Domain Action 생성
+
+```typescript
+// 1. DTO 타입 정의
+// types/dto/survey.ts
+import type { Survey, SurveyQuestion } from "@prisma/client";
+
+export interface GetSurveyResponse {
+  data: Survey & {
+    creator: {
+      id: string;
+      name: string;
+    };
+    questions: SurveyQuestion[];
+  };
+}
+
+export interface CreateSurveyRequest {
+  title: string;
+  description?: string;
+}
+
+export interface CreateSurveyResponse {
+  data: {
+    id: string;
+    title: string;
+    createdAt: Date;
+  };
+}
+
+// 2. 조회 액션
+// actions/survey/read.ts
+("use server");
+
+import { requireAuth } from "@/actions/common/auth";
+import prisma from "@/database/utils/prisma/client";
+import type { GetSurveyResponse } from "@/types/dto/survey";
+
+export async function getSurvey(surveyId: string): Promise<GetSurveyResponse> {
+  try {
+    const survey = await prisma.survey.findUnique({
+      where: { id: surveyId },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        questions: {
+          include: {
+            options: {
+              select: {
+                id: true,
+                description: true,
+                order: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!survey) {
+      const error = new Error("설문조사를 찾을 수 없습니다.");
+      error.cause = 404;
+      throw error;
+    }
+
+    return { data: survey };
+  } catch (error) {
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("설문조사를 불러올 수 없습니다.");
+    serverError.cause = 500;
+    throw serverError;
+  }
+}
+
+// 3. 생성 액션
+// actions/survey/create.ts
+("use server");
+
+import { requireAuth } from "@/actions/common/auth";
+import prisma from "@/database/utils/prisma/client";
+import type {
+  CreateSurveyRequest,
+  CreateSurveyResponse,
+} from "@/types/dto/survey";
+
+export async function createSurvey(
+  request: CreateSurveyRequest
+): Promise<CreateSurveyResponse> {
+  try {
+    const user = await requireAuth();
+
+    const validationError = validateSurveyRequest(request);
+    if (validationError) {
+      const error = new Error(validationError);
+      error.cause = 400;
+      throw error;
+    }
+
+    const survey = await prisma.$transaction(async (tx) => {
+      const createdSurvey = await tx.survey.create({
+        data: {
+          title: request.title,
+          description: request.description,
+          creatorId: user.id,
+        },
+      });
+
+      // 질문 생성
+      for (const question of request.questions) {
+        await tx.surveyQuestion.create({
+          data: {
+            surveyId: createdSurvey.id,
+            title: question.title,
+            type: question.type,
+            order: question.order,
+            options: {
+              createMany: {
+                data: question.options.map((opt) => ({
+                  description: opt.description,
+                  order: opt.order,
+                })),
+              },
+            },
+          },
+        });
+      }
+
+      return createdSurvey;
+    });
+
+    return {
+      data: {
+        id: survey.id,
+        title: survey.title,
+        createdAt: survey.createdAt,
+      },
+    };
+  } catch (error) {
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("설문조사 생성 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
+  }
+}
+
+function validateSurveyRequest(request: CreateSurveyRequest): string | null {
+  if (!request.title || request.title.trim().length === 0) {
+    return "제목은 필수입니다.";
+  }
+  if (request.questions.length === 0) {
+    return "최소 1개 이상의 질문이 필요합니다.";
+  }
+  return null;
+}
+
+// 4. Re-export
+// actions/survey/index.ts
+export { createSurvey } from "./create";
+export { getSurvey } from "./read";
+
+// 5. types/dto에서 타입 사용
+// hooks나 컴포넌트에서 import
+import type {
+  CreateSurveyRequest,
+  CreateSurveyResponse,
+} from "@/types/dto/survey";
+// 또는
+import type { CreateSurveyRequest, CreateSurveyResponse } from "@/types/dto";
+```
+
+이 규칙을 따르면 일관성 있고 유지보수하기 쉬운 Server Actions를 작성할 수 있습니다.

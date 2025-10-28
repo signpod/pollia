@@ -6,7 +6,7 @@ import {
   RelatedEntityType,
   PollType,
 } from "@prisma/client";
-import { requireAuth } from "@/actions/auth";
+import { requireAuth } from "@/actions/common/auth";
 import prisma from "@/database/utils/prisma/client";
 import { CreatePollRequest, CreatePollResponse } from "@/types/dto";
 import { BINARY_POLL_OPTIONS, isBinaryPollType } from "@/constants/poll";

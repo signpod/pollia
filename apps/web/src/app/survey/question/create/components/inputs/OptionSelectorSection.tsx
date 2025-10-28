@@ -1,6 +1,6 @@
-import PollOption from "@/components/poll/PollOption";
-import { useMultipleOptions } from "@/hooks/poll/useMultipleOptions";
-import { multiplePollMaxSelectionsAtom } from "@/atoms/create/multiplePollAtoms";
+import { SurveyQuestionOption } from "@/components/survey/SurveyQuestionOption";
+import { useMultipleChoiceOptions } from "@/hooks/survey/question";
+import { multipleChoiceMaxSelectionsAtom } from "@/atoms/survey/create/multipleChoiceInfoAtoms";
 import { Button, CounterInput, Typo } from "@repo/ui/components";
 import { PlusIcon } from "lucide-react";
 import { useAtom } from "jotai";
@@ -16,10 +16,10 @@ export function OptionSelectorSection() {
     canRemove,
     maxOptions,
     validOptionCount,
-  } = useMultipleOptions();
+  } = useMultipleChoiceOptions();
 
   const [maxSelections, setMaxSelections] = useAtom(
-    multiplePollMaxSelectionsAtom
+    multipleChoiceMaxSelectionsAtom
   );
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export function OptionSelectorSection() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1">
-          <Typo.SubTitle size="large">투표 항목</Typo.SubTitle>
+          <Typo.SubTitle size="large">답변 항목</Typo.SubTitle>
           <span className="text-red-500">*</span>
         </div>
         <Typo.Body size="small" className="text-zinc-400">
@@ -55,10 +55,6 @@ export function OptionSelectorSection() {
           updateOption(option.id, { imageUrl });
         };
 
-        const handleLinkChange = (link: string) => {
-          updateOption(option.id, { link });
-        };
-
         const handleFileUploadIdChange = (fileUploadId: string) => {
           updateOption(option.id, { fileUploadId });
         };
@@ -70,16 +66,14 @@ export function OptionSelectorSection() {
         };
 
         return (
-          <PollOption
+          <SurveyQuestionOption
             key={option.id}
             id={option.id}
             description={option.description || ""}
             imageUrl={option.imageUrl || ""}
-            link={option.link || ""}
             fileUploadId={option.fileUploadId || ""}
             onDescriptionChange={handleDescriptionChange}
             onImageUrlChange={handleImageUrlChange}
-            onLinkChange={handleLinkChange}
             onFileUploadIdChange={handleFileUploadIdChange}
             onRemove={canRemove ? handleRemove : () => {}}
           />

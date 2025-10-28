@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/actions/auth";
+import { requireAuth } from "@/actions/common/auth";
 import prisma from "@/database/utils/prisma/client";
 
 export async function likePoll(pollId: string) {

@@ -4,7 +4,6 @@ import {
   Button,
   ImageSelector,
   Input,
-  Typo,
   DrawerContent,
   DrawerHeader,
   DrawerProvider,
@@ -29,46 +28,15 @@ function OptionMenuTrigger() {
 }
 
 interface OptionMenuContentProps {
-  link: string;
-  onLinkChange: (link: string) => void;
   onRemove: () => void;
 }
 
-function OptionMenuContent({
-  link,
-  onLinkChange,
-  onRemove,
-}: OptionMenuContentProps) {
-  const [tempLink, setTempLink] = useState<string>(link);
-  const { close } = useDrawer();
-
-  const handleLinkSubmit = () => {
-    onLinkChange?.(tempLink);
-    close();
-  };
-
-  const isDisabled = link === tempLink || tempLink.trim() === "";
-
+function OptionMenuContent({ onRemove }: OptionMenuContentProps) {
   return (
     <DrawerContent>
       <DrawerHeader>항목 세부 설정</DrawerHeader>
 
       <div className={cn("flex-1 px-4", "flex flex-col gap-2")}>
-        <Input
-          value={tempLink}
-          onChange={(e) => setTempLink(e.target.value)}
-          placeholder={"https://www.pollia.me"}
-          containerClassName="flex-1"
-          maxLength={50}
-        />
-        <Button
-          variant="primary"
-          onClick={handleLinkSubmit}
-          disabled={isDisabled}
-        >
-          항목 추가하기
-        </Button>
-
         <Button variant="secondary" onClick={onRemove}>
           항목 삭제하기
         </Button>
@@ -77,31 +45,27 @@ function OptionMenuContent({
   );
 }
 
-export interface PollOptionProps {
+export interface SurveyQuestionOptionProps {
   id: string;
   description: string;
   imageUrl: string;
-  link: string;
   fileUploadId: string;
   onDescriptionChange: (description: string) => void;
   onImageUrlChange: (imageUrl: string) => void;
-  onLinkChange: (link: string) => void;
   onFileUploadIdChange: (fileUploadId: string) => void;
   onRemove: () => void;
   placeholder?: string;
 }
 
-export default function PollOption({
+export function SurveyQuestionOption({
   description,
   imageUrl,
-  link,
   onDescriptionChange,
   onImageUrlChange,
-  onLinkChange,
   onFileUploadIdChange,
   onRemove,
-  placeholder = "투표 항목을 입력해주세요",
-}: PollOptionProps) {
+  placeholder = "질문 항목을 입력해주세요",
+}: SurveyQuestionOptionProps) {
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [uploadedFile, setUploadedFile] = useState<{
     path: string;
@@ -199,19 +163,9 @@ export default function PollOption({
 
         <DrawerProvider>
           <OptionMenuTrigger />
-          <OptionMenuContent
-            link={link}
-            onLinkChange={onLinkChange}
-            onRemove={onRemove}
-          />
+          <OptionMenuContent onRemove={onRemove} />
         </DrawerProvider>
       </div>
-
-      {link !== undefined && link && (
-        <div className="px-4 py-2 bg-zinc-50 rounded-sm">
-          <Typo.Body size="small">{link}</Typo.Body>
-        </div>
-      )}
 
       {(isUploading || isDeleting) && (
         <div className="ml-12 text-sm text-blue-500">
