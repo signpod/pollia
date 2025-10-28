@@ -1,6 +1,6 @@
 import { SurveyQuestionOption } from "@/components/survey/SurveyQuestionOption";
-import { useMultipleOptions } from "@/hooks/poll/useMultipleOptions";
-import { multiplePollMaxSelectionsAtom } from "@/atoms/create/multiplePollAtoms";
+import { useMultipleChoiceOptions } from "@/hooks/survey/question";
+import { multipleChoiceMaxSelectionsAtom } from "@/atoms/survey/create/multipleChoiceInfoAtoms";
 import { Button, CounterInput, Typo } from "@repo/ui/components";
 import { PlusIcon } from "lucide-react";
 import { useAtom } from "jotai";
@@ -16,10 +16,10 @@ export function OptionSelectorSection() {
     canRemove,
     maxOptions,
     validOptionCount,
-  } = useMultipleOptions();
+  } = useMultipleChoiceOptions();
 
   const [maxSelections, setMaxSelections] = useAtom(
-    multiplePollMaxSelectionsAtom
+    multipleChoiceMaxSelectionsAtom
   );
 
   useEffect(() => {
@@ -55,10 +55,6 @@ export function OptionSelectorSection() {
           updateOption(option.id, { imageUrl });
         };
 
-        const handleLinkChange = (link: string) => {
-          updateOption(option.id, { link });
-        };
-
         const handleFileUploadIdChange = (fileUploadId: string) => {
           updateOption(option.id, { fileUploadId });
         };
@@ -75,11 +71,9 @@ export function OptionSelectorSection() {
             id={option.id}
             description={option.description || ""}
             imageUrl={option.imageUrl || ""}
-            link={option.link || ""}
             fileUploadId={option.fileUploadId || ""}
             onDescriptionChange={handleDescriptionChange}
             onImageUrlChange={handleImageUrlChange}
-            onLinkChange={handleLinkChange}
             onFileUploadIdChange={handleFileUploadIdChange}
             onRemove={canRemove ? handleRemove : () => {}}
           />
