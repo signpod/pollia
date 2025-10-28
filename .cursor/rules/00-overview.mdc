@@ -15,6 +15,7 @@
 - `04-storybook-docs.mdc` - argTypes & 문서화
 - `05-prisma-schema.mdc` - Prisma 스키마 구조 및 컨벤션
 - `06-hooks-tanstack-query.mdc` - React Hooks 및 TanStack Query 컨벤션
+- `07-server-actions.mdc` - Next.js Server Actions 컨벤션
 
 ## 규칙 적용 범위
 
