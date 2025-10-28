@@ -6,10 +6,10 @@ model SurveyAnswer {
     textAnswer  String? @map("text_answer")
     scaleAnswer Int?    @map("scale_answer")
 
-    questionId String
+    questionId String         @map("question_id")
     question   SurveyQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
-    userId String
+    userId String @map("user_id")
     user   User   @relation(fields: [userId], references: [id])
 
     createdAt DateTime @default(now()) @map("created_at")

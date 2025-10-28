@@ -8,7 +8,7 @@ model SurveyQuestion {
 
     maxSelections Int? @map("max_selections")
 
-    surveyId String?
+    surveyId String?        @map("survey_id")
     survey   Survey?        @relation(fields: [surveyId], references: [id], onDelete: Cascade)
     options  SurveyOption[]
     answers  SurveyAnswer[]

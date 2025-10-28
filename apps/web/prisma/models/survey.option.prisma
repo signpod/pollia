@@ -4,7 +4,7 @@ model SurveyOption {
     imageUrl    String? @map("image_url")
     order       Int
 
-    questionId String
+    questionId String         @map("question_id")
     question   SurveyQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
     answers    SurveyAnswer[]
 
