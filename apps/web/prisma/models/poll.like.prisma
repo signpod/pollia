@@ -1,0 +1,12 @@
+model PollLike {
+  id     String @id @default(cuid())
+  pollId String @map("poll_id")
+  poll   Poll   @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([pollId, userId])
+  @@map("poll_likes")
+}
