@@ -12,6 +12,8 @@ model FileUpload {
   relatedEntityType RelatedEntityType? @map("related_entity_type")
   relatedEntityId   String?            @map("related_entity_id")
 
+  surveyOptions SurveyOption[]
+
   createdAt   DateTime  @default(now()) @map("created_at")
   confirmedAt DateTime? @map("confirmed_at")
 
@@ -29,4 +31,6 @@ enum FileStatus {
 enum RelatedEntityType {
   POLL
   POLL_OPTION
+  SURVEY
+  SURVEY_OPTION
 }

@@ -1,0 +1,18 @@
+model Survey {
+    id          String  @id @default(cuid())
+    title       String
+    description String?
+    imageUrl    String? @map("image_url")
+    isActive    Boolean @default(true)
+
+    creatorId String
+    creator   User             @relation("SurveyCreator", fields: [creatorId], references: [id])
+    questions SurveyQuestion[]
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@index([creatorId])
+    @@index([isActive])
+    @@map("surveys")
+}
