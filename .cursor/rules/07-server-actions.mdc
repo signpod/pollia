@@ -90,6 +90,56 @@ import { createPoll, getPoll } from "@/actions/poll";
 import { createPoll } from "@/actions/poll/create";
 ```
 
+## DTO 타입 정의
+
+### DTO는 반드시 types/dto에 정의
+
+**❌ Server Action 파일 내 직접 정의 금지:**
+
+```typescript
+// ❌ actions/poll/create.ts
+export interface CreatePollRequest {
+  /* ... */
+} // 금지!
+export interface CreatePollResponse {
+  /* ... */
+} // 금지!
+```
+
+**✅ types/dto 파일에 정의:**
+
+```typescript
+// ✅ types/dto/poll.ts
+export interface CreatePollRequest {
+  title: string;
+  description?: string;
+  // ...
+}
+
+export interface CreatePollResponse {
+  data: {
+    id: string;
+    title: string;
+    createdAt: Date;
+  };
+}
+```
+
+**Server Action에서 import:**
+
+```typescript
+// ✅ actions/poll/create.ts
+"use server";
+
+import type { CreatePollRequest, CreatePollResponse } from "@/types/dto/poll";
+```
+
+### DTO 네이밍 규칙
+
+- Request: `{도메인}{동작}Request` (예: `CreatePollRequest`)
+- Response: `{도메인}{동작}Response` (예: `CreatePollResponse`)
+- 응답은 항상 `{ data: ... }` 구조
+
 ## Server Action 기본 구조
 
 ### 1. 조회 액션 (Read)
@@ -99,7 +149,7 @@ import { createPoll } from "@/actions/poll/create";
 
 import { requireAuth } from "@/actions/common/auth";
 import prisma from "@/database/utils/prisma/client";
-import type { GetPollResponse } from "@/types/dto";
+import type { GetPollResponse } from "@/types/dto/poll";
 
 export async function getPoll(pollId: string): Promise<GetPollResponse> {
   try {
@@ -169,7 +219,7 @@ export async function getPoll(pollId: string): Promise<GetPollResponse> {
 
 import { requireAuth } from "@/actions/common/auth";
 import prisma from "@/database/utils/prisma/client";
-import type { CreatePollRequest, CreatePollResponse } from "@/types/dto";
+import type { CreatePollRequest, CreatePollResponse } from "@/types/dto/poll";
 
 export async function createPoll(
   request: CreatePollRequest
@@ -506,12 +556,22 @@ export async function myServerAction() {
 }
 ```
 
-## DTO 타입 정의
+## types/dto 구조 예시
 
-### Request/Response 타입
+```
+src/types/dto/
+├── index.ts          # 전체 re-export
+├── poll.ts           # Poll 도메인 DTO
+├── survey.ts         # Survey 도메인 DTO
+├── user.ts           # User 도메인 DTO
+└── image.ts          # Image 도메인 DTO
+```
+
+### Poll DTO 예시
 
 ```typescript
 // types/dto/poll.ts
+import type { Poll, PollOption, PollType, PollCategory } from "@prisma/client";
 
 // Request
 export interface CreatePollRequest {
@@ -565,11 +625,15 @@ export interface GetPollResponse {
 }
 ```
 
-**규칙:**
+### index.ts에서 re-export
 
-- Request는 `{도메인}{동작}Request` 패턴
-- Response는 `{도메인}{동작}Response` 패턴
-- Response는 항상 `{ data: ... }` 구조
+```typescript
+// types/dto/index.ts
+export * from "./poll";
+export * from "./survey";
+export * from "./user";
+export * from "./image";
+```
 
 ## Validation
 
@@ -823,7 +887,8 @@ const [pollsCreated, votesCount, likesCount] = await Promise.all([
 ### 모든 Server Action
 
 - [ ] `"use server"` directive 추가
-- [ ] DTO 타입 정의 및 사용
+- [ ] DTO 타입을 `types/dto`에 정의 (❌ Server Action 파일 내 정의 금지)
+- [ ] DTO 타입 import (`import type { ... } from "@/types/dto/domain"`)
 - [ ] try-catch 에러 처리
 - [ ] error.cause로 HTTP 상태 코드 전달
 - [ ] 예상치 못한 에러는 500 처리
@@ -871,9 +936,36 @@ const [pollsCreated, votesCount, likesCount] = await Promise.all([
 ## 예제: Survey Domain Action 생성
 
 ```typescript
-// 1. 조회 액션
+// 1. DTO 타입 정의
+// types/dto/survey.ts
+import type { Survey, SurveyQuestion } from "@prisma/client";
+
+export interface GetSurveyResponse {
+  data: Survey & {
+    creator: {
+      id: string;
+      name: string;
+    };
+    questions: SurveyQuestion[];
+  };
+}
+
+export interface CreateSurveyRequest {
+  title: string;
+  description?: string;
+}
+
+export interface CreateSurveyResponse {
+  data: {
+    id: string;
+    title: string;
+    createdAt: Date;
+  };
+}
+
+// 2. 조회 액션
 // actions/survey/read.ts
-"use server";
+("use server");
 
 import { requireAuth } from "@/actions/common/auth";
 import prisma from "@/database/utils/prisma/client";
@@ -921,7 +1013,7 @@ export async function getSurvey(surveyId: string): Promise<GetSurveyResponse> {
   }
 }
 
-// 2. 생성 액션
+// 3. 생성 액션
 // actions/survey/create.ts
 ("use server");
 
@@ -1004,10 +1096,19 @@ function validateSurveyRequest(request: CreateSurveyRequest): string | null {
   return null;
 }
 
-// 3. Re-export
+// 4. Re-export
 // actions/survey/index.ts
 export { createSurvey } from "./create";
 export { getSurvey } from "./read";
+
+// 5. types/dto에서 타입 사용
+// hooks나 컴포넌트에서 import
+import type {
+  CreateSurveyRequest,
+  CreateSurveyResponse,
+} from "@/types/dto/survey";
+// 또는
+import type { CreateSurveyRequest, CreateSurveyResponse } from "@/types/dto";
 ```
 
 이 규칙을 따르면 일관성 있고 유지보수하기 쉬운 Server Actions를 작성할 수 있습니다.
