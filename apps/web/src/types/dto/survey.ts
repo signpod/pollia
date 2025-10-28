@@ -2,7 +2,7 @@ import type { SurveyQuestionType } from "@prisma/client";
 
 // Multiple Choice Question
 export interface CreateMultipleChoiceQuestionRequest {
-  surveyId: string;
+  surveyId?: string;
   title: string;
   description?: string;
   imageUrl?: string;
@@ -19,6 +19,7 @@ export interface CreateMultipleChoiceQuestionRequest {
 export interface CreateMultipleChoiceQuestionResponse {
   data: {
     id: string;
+    surveyId: string;
     title: string;
     type: SurveyQuestionType;
     order: number;
@@ -28,7 +29,7 @@ export interface CreateMultipleChoiceQuestionResponse {
 
 // Scale Question
 export interface CreateScaleQuestionRequest {
-  surveyId: string;
+  surveyId?: string;
   title: string;
   description?: string;
   imageUrl?: string;
@@ -38,6 +39,7 @@ export interface CreateScaleQuestionRequest {
 export interface CreateScaleQuestionResponse {
   data: {
     id: string;
+    surveyId: string;
     title: string;
     type: SurveyQuestionType;
     order: number;
@@ -47,7 +49,7 @@ export interface CreateScaleQuestionResponse {
 
 // Subjective Question
 export interface CreateSubjectiveQuestionRequest {
-  surveyId: string;
+  surveyId?: string;
   title: string;
   description?: string;
   imageUrl?: string;
@@ -57,6 +59,7 @@ export interface CreateSubjectiveQuestionRequest {
 export interface CreateSubjectiveQuestionResponse {
   data: {
     id: string;
+    surveyId: string;
     title: string;
     type: SurveyQuestionType;
     order: number;
@@ -66,7 +69,7 @@ export interface CreateSubjectiveQuestionResponse {
 
 // Either Or Question
 export interface CreateEitherOrQuestionRequest {
-  surveyId: string;
+  surveyId?: string;
   title: string;
   description?: string;
   imageUrl?: string;
@@ -76,6 +79,7 @@ export interface CreateEitherOrQuestionRequest {
 export interface CreateEitherOrQuestionResponse {
   data: {
     id: string;
+    surveyId: string;
     title: string;
     type: SurveyQuestionType;
     order: number;

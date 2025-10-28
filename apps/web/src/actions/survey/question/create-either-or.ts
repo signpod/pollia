@@ -43,27 +43,29 @@ export async function createEitherOrQuestion(
       throw error;
     }
 
-    const survey = await prisma.survey.findUnique({
-      where: { id: request.surveyId },
-      select: { id: true, creatorId: true },
-    });
+    if (request.surveyId) {
+      const survey = await prisma.survey.findUnique({
+        where: { id: request.surveyId },
+        select: { id: true, creatorId: true },
+      });
 
-    if (!survey) {
-      const error = new Error("존재하지 않는 설문조사입니다.");
-      error.cause = 404;
-      throw error;
-    }
+      if (!survey) {
+        const error = new Error("존재하지 않는 설문조사입니다.");
+        error.cause = 404;
+        throw error;
+      }
 
-    if (survey.creatorId !== user.id) {
-      const error = new Error("질문을 추가할 권한이 없습니다.");
-      error.cause = 403;
-      throw error;
+      if (survey.creatorId !== user.id) {
+        const error = new Error("질문을 추가할 권한이 없습니다.");
+        error.cause = 403;
+        throw error;
+      }
     }
 
     const question = await prisma.$transaction(async (tx) => {
       const createdQuestion = await tx.surveyQuestion.create({
         data: {
-          surveyId: request.surveyId,
+          surveyId: request.surveyId ?? undefined,
           title: request.title,
           description: request.description,
           imageUrl: request.imageUrl,
@@ -94,6 +96,7 @@ export async function createEitherOrQuestion(
     return {
       data: {
         id: question.id,
+        surveyId: question.surveyId || "",
         title: question.title,
         type: question.type,
         order: question.order,
