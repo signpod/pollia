@@ -1,4 +1,4 @@
-import PollOption from "@/components/poll/PollOption";
+import { SurveyQuestionOption } from "@/components/survey/SurveyQuestionOption";
 import { useMultipleOptions } from "@/hooks/poll/useMultipleOptions";
 import { multiplePollMaxSelectionsAtom } from "@/atoms/create/multiplePollAtoms";
 import { Button, CounterInput, Typo } from "@repo/ui/components";
@@ -38,7 +38,7 @@ export function OptionSelectorSection() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1">
-          <Typo.SubTitle size="large">투표 항목</Typo.SubTitle>
+          <Typo.SubTitle size="large">답변 항목</Typo.SubTitle>
           <span className="text-red-500">*</span>
         </div>
         <Typo.Body size="small" className="text-zinc-400">
@@ -70,7 +70,7 @@ export function OptionSelectorSection() {
         };
 
         return (
-          <PollOption
+          <SurveyQuestionOption
             key={option.id}
             id={option.id}
             description={option.description || ""}

@@ -91,7 +91,7 @@ export interface PollOptionProps {
   placeholder?: string;
 }
 
-export default function PollOption({
+export function SurveyQuestionOption({
   description,
   imageUrl,
   link,
@@ -100,7 +100,7 @@ export default function PollOption({
   onLinkChange,
   onFileUploadIdChange,
   onRemove,
-  placeholder = "투표 항목을 입력해주세요",
+  placeholder = "질문 항목을 입력해주세요",
 }: PollOptionProps) {
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [uploadedFile, setUploadedFile] = useState<{
