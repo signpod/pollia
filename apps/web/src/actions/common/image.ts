@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/actions/auth";
+import { requireAuth } from "@/actions/common/auth";
 import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
 import prisma from "@/database/utils/prisma/client";
 import { FileStatus } from "@prisma/client";
