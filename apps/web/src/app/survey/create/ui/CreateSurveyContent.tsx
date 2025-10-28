@@ -1,11 +1,11 @@
 'use client';
 
 import {
-  FixedBottomContent,
+  Button,
   FixedBottomLayout,
-} from '../../../../../../packages/ui/src/components/layout/FixedBottomLayout';
-import { FixedTopContent } from '../../../../../../packages/ui/src/components/layout/FixedTopLayout';
-import { Button, FixedTopLayout, Typo } from '@repo/ui/components';
+  FixedTopLayout,
+  Typo,
+} from '@repo/ui/components';
 import { useMemo } from 'react';
 import { useUserPolls } from '@/hooks/poll/usePoll';
 import { UserQuestionList } from './UserQuestionList';
@@ -21,7 +21,6 @@ import {
   selectAllQuestionsAtom,
   deselectAllQuestionsAtom,
   reorderQuestionsAtom,
-  surveyTitleAtom,
   surveyValidationAtom,
 } from '@/atoms/create/surveyAtoms';
 
@@ -29,7 +28,6 @@ export function CreateSurveyContent() {
   const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
   const selectedQuestionIds = useAtomValue(selectedQuestionIdsAtom);
   const selectedQuestionCount = useAtomValue(selectedQuestionCountAtom);
-  const surveyTitle = useAtomValue(surveyTitleAtom);
   const validation = useAtomValue(surveyValidationAtom);
   const toggleQuestion = useSetAtom(toggleQuestionAtom);
   const selectAllQuestions = useSetAtom(selectAllQuestionsAtom);
@@ -75,7 +73,7 @@ export function CreateSurveyContent() {
   return (
     <FixedBottomLayout className="flex flex-col">
       <FixedTopLayout>
-        <FixedTopContent className="py-4 flex items-center justify-between border-b border-default w-full">
+        <FixedTopLayout.Content className="py-4 flex items-center justify-between  w-full">
           <Typo.MainTitle size="medium">설문조사지 생성</Typo.MainTitle>
           <div className="flex items-center gap-1">
             <Typo.Body size="large" className="text-violet-500 font-bold">
@@ -83,7 +81,7 @@ export function CreateSurveyContent() {
             </Typo.Body>
             <Typo.Body size="small">개 선택</Typo.Body>
           </div>
-        </FixedTopContent>
+        </FixedTopLayout.Content>
       </FixedTopLayout>
       <div className="flex flex-col gap-8  h-full py-4">
         <SurveyTitleForm />
@@ -123,7 +121,7 @@ export function CreateSurveyContent() {
         />
       </div>
 
-      <FixedBottomContent className="p-5">
+      <FixedBottomLayout.Content className="p-5">
         <Button
           variant="primary"
           className="w-full"
@@ -132,7 +130,7 @@ export function CreateSurveyContent() {
         >
           설문지 생성
         </Button>
-      </FixedBottomContent>
+      </FixedBottomLayout.Content>
     </FixedBottomLayout>
   );
 }
