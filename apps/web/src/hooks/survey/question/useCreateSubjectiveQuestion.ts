@@ -24,12 +24,14 @@ export function useCreateSubjectiveQuestion(
     ): Promise<CreateSubjectiveQuestionResponse> =>
       createSubjectiveQuestion(payload),
     onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: surveyQueryKeys.surveyQuestions(variables.surveyId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: surveyQueryKeys.survey(variables.surveyId),
-      });
+      if (variables.surveyId) {
+        queryClient.invalidateQueries({
+          queryKey: surveyQueryKeys.surveyQuestions(variables.surveyId),
+        });
+        queryClient.invalidateQueries({
+          queryKey: surveyQueryKeys.survey(variables.surveyId),
+        });
+      }
       options.onSuccess?.(data);
     },
     onError: (error) => {
