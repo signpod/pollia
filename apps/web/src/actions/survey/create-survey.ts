@@ -54,6 +54,17 @@ export async function createSurvey(
       },
     });
 
+    await tx.surveyQuestion.updateMany({
+      where: {
+        id: {
+          in: request.questionIds,
+        },
+      },
+      data: {
+        surveyId: createdSurvey.id,
+      },
+    });
+
     return createdSurvey;
   });
 
