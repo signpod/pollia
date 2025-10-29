@@ -27,7 +27,7 @@ export function ImageSelectorSection({
 
   const { upload, isUploading, uploadError, deleteImage, isDeleting } =
     useImageUpload({
-      bucket: "poll-images",
+      bucket: "survey-images",
       onSuccess: (result) => {
         setImageUrl(result.publicUrl);
         setUploadedFileId(result.fileUploadId);
