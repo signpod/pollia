@@ -10,7 +10,7 @@ import { useMemo } from 'react';
 import { useUserPolls } from '@/hooks/poll/usePoll';
 import { UserQuestionList } from './UserQuestionList';
 import { SelectedQuestionList } from './SelectedQuestionList';
-import { PollType } from '@prisma/client';
+import { SurveyQuestionType } from '@prisma/client';
 import { SurveyTitleForm } from './SurveyTitleForm';
 import { useAtom, useAtomValue, useSetAtom } from 'jotai';
 import {
@@ -51,7 +51,7 @@ export function CreateSurveyContent() {
   };
 
   const handleReorder = (
-    newOrder: { id: string; title: string; type: PollType }[]
+    newOrder: { id: string; title: string; type: SurveyQuestionType }[]
   ) => {
     reorderQuestions(newOrder.map((q) => q.id));
   };
@@ -109,7 +109,7 @@ export function CreateSurveyContent() {
             selectedQuestions as {
               id: string;
               title: string;
-              type: PollType;
+              type: SurveyQuestionType;
             }[]
           }
           onSelectQuestion={handleSelectQuestion}

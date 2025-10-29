@@ -1,6 +1,6 @@
 'use client';
 
-import { PollType } from '@prisma/client';
+import { SurveyQuestionType } from '@prisma/client';
 import { Button, Typo } from '@repo/ui/components';
 import { cn } from '@repo/ui/lib';
 import { ComponentProps } from 'react';
@@ -15,13 +15,13 @@ export interface QuestionListProps extends ComponentProps<'section'> {
   questions: {
     id: string;
     title: string;
-    type: PollType;
+    type: SurveyQuestionType;
   }[];
   getIsSelected?: (questionId: string) => boolean;
   onSelectQuestion: (questionId: string) => void;
   isDraggable?: boolean;
   onReorder?: (
-    newOrder: { id: string; title: string; type: PollType }[]
+    newOrder: { id: string; title: string; type: SurveyQuestionType }[]
   ) => void;
   hasSearchBar?: boolean;
   onSelectAll?: () => void;
@@ -150,7 +150,7 @@ export function QuestionList({
 }
 
 interface DraggableQuestionItemProps {
-  question: { id: string; title: string; type: PollType };
+  question: { id: string; title: string; type: SurveyQuestionType };
   index: number;
   isSelected: boolean;
   onSelectQuestion: (questionId: string) => void;
@@ -212,7 +212,7 @@ interface QuestionItemProps extends ComponentProps<'li'> {
   index: number;
   isDraggable?: boolean;
   isSelected?: boolean;
-  type: PollType;
+  type: SurveyQuestionType;
 }
 
 function QuestionItem({
@@ -267,25 +267,25 @@ function QuestionItem({
   );
 }
 
-function TypeTag({ type }: { type: PollType }) {
+function TypeTag({ type }: { type: SurveyQuestionType }) {
   const typeVariants = cva('px-2 py-1 rounded-full text-center', {
     variants: {
       type: {
-        YES_NO: 'bg-blue-50 text-blue-600',
-        LIKE_DISLIKE: 'bg-green-50 text-green-700',
-        MULTIPLE_CHOICE: 'bg-purple-50 text-purple-600',
+        EITHER_OR: 'bg-amber-50 text-amber-600',
+        SCALE: 'bg-green-50 text-green-700',
+        MULTIPLE_CHOICE: 'bg-sky-50 text-sky-600',
+        SUBJECTIVE: 'bg-rose-50 text-rose-600',
       },
     },
   });
+
+  if (!TYPE_LABELS[type]) {
+    return null;
+  }
+
   return (
     <Typo.Body size="small" className={typeVariants({ type })}>
       {TYPE_LABELS[type]}
     </Typo.Body>
   );
 }
-
-const TYPE_LABELS = {
-  [PollType.YES_NO]: '선택형',
-  [PollType.LIKE_DISLIKE]: '호감도',
-  [PollType.MULTIPLE_CHOICE]: '복수선택',
-};

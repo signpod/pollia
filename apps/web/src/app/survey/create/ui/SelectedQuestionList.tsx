@@ -1,4 +1,4 @@
-import { PollType } from '@prisma/client';
+import { SurveyQuestionType } from '@prisma/client';
 import { QuestionList, QuestionListProps } from './QuestionList';
 
 interface SelectedQuestionListProps
@@ -6,7 +6,7 @@ interface SelectedQuestionListProps
   questions: {
     id: string;
     title: string;
-    type: PollType;
+    type: SurveyQuestionType;
   }[];
 }
 
