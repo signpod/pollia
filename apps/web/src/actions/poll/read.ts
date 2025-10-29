@@ -1,14 +1,14 @@
-"use server";
+'use server';
 
-import { requireAuth } from "@/actions/common/auth";
-import prisma from "@/database/utils/prisma/client";
+import prisma from '@/database/utils/prisma/client';
 import {
   GetPollResponse,
   GetPollResultsResponse,
   GetUserPollsResponse,
   GetBookmarkedPollsResponse,
   GetLikedPollsResponse,
-} from "@/types/dto";
+} from '@/types/dto';
+import { requireAuth } from '../common/auth';
 
 export async function getPoll(pollId: string): Promise<GetPollResponse> {
   try {
@@ -44,7 +44,7 @@ export async function getPoll(pollId: string): Promise<GetPollResponse> {
     });
 
     if (!poll) {
-      const error = new Error("투표를 찾을 수 없습니다.");
+      const error = new Error('투표를 찾을 수 없습니다.');
       error.cause = 404;
       throw error;
     }
@@ -54,16 +54,22 @@ export async function getPoll(pollId: string): Promise<GetPollResponse> {
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error("투표를 불러올 수 없습니다.");
+    const serverError = new Error('투표를 불러올 수 없습니다.');
     serverError.cause = 500;
     throw serverError;
   }
 }
 
-export async function getUserPolls(
-  userId?: string
-): Promise<GetUserPollsResponse> {
+export async function getUserPolls(params?: {
+  userId?: string;
+  options?: {
+    searchQuery?: string;
+  };
+}): Promise<GetUserPollsResponse> {
   try {
+    let userId = params?.userId;
+    const options = params?.options;
+
     if (!userId) {
       const user = await requireAuth();
       userId = user.id;
@@ -72,6 +78,12 @@ export async function getUserPolls(
     const polls = await prisma.poll.findMany({
       where: {
         creatorId: userId,
+        ...(options?.searchQuery && {
+          title: {
+            contains: options.searchQuery,
+            mode: 'insensitive',
+          },
+        }),
       },
       select: {
         id: true,
@@ -90,7 +102,7 @@ export async function getUserPolls(
         },
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     });
 
@@ -101,7 +113,7 @@ export async function getUserPolls(
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error("폴 목록을 불러올 수 없습니다.");
+    const serverError = new Error('폴 목록을 불러올 수 없습니다.');
     serverError.cause = 500;
     throw serverError;
   }
@@ -141,7 +153,7 @@ export async function getBookmarkedPolls(
         },
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     });
 
@@ -152,7 +164,7 @@ export async function getBookmarkedPolls(
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error("북마크 폴 목록을 불러올 수 없습니다.");
+    const serverError = new Error('북마크 폴 목록을 불러올 수 없습니다.');
     serverError.cause = 500;
     throw serverError;
   }
@@ -192,7 +204,7 @@ export async function getLikedPolls(
         },
       },
       orderBy: {
-        createdAt: "desc",
+        createdAt: 'desc',
       },
     });
 
@@ -203,7 +215,7 @@ export async function getLikedPolls(
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error("좋아요 폴 목록을 불러올 수 없습니다.");
+    const serverError = new Error('좋아요 폴 목록을 불러올 수 없습니다.');
     serverError.cause = 500;
     throw serverError;
   }
@@ -247,7 +259,7 @@ export async function getPollResults(
     });
 
     if (!poll) {
-      const error = new Error("투표를 찾을 수 없습니다.");
+      const error = new Error('투표를 찾을 수 없습니다.');
       error.cause = 404;
       throw error;
     }
@@ -274,7 +286,7 @@ export async function getPollResults(
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error("투표 결과를 불러올 수 없습니다.");
+    const serverError = new Error('투표 결과를 불러올 수 없습니다.');
     serverError.cause = 500;
     throw serverError;
   }

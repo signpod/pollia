@@ -1,4 +1,4 @@
-import type { SurveyQuestionType } from "@prisma/client";
+import type { SurveyQuestion, SurveyQuestionType } from '@prisma/client';
 
 // Multiple Choice Question
 export interface CreateMultipleChoiceQuestionRequest {
@@ -84,5 +84,39 @@ export interface CreateEitherOrQuestionResponse {
     type: SurveyQuestionType;
     order: number;
     createdAt: Date;
+  };
+}
+
+export interface GetSurveyQuestionsResponse {
+  data: {
+    id: string;
+    title: string;
+    description?: string | null;
+    imageUrl?: string | null;
+    type: SurveyQuestionType;
+    order: number;
+    maxSelections: number | null;
+    createdAt: Date;
+    updatedAt: Date;
+    surveyId: string | null;
+  }[];
+}
+
+export interface CreateSurveyRequest {
+  title: string;
+  description?: string | null;
+  imageUrl?: string | null;
+  questionIds: string[];
+}
+
+export interface CreateSurveyResponse {
+  data: {
+    id: string;
+    title: string;
+    description?: string | null;
+    imageUrl?: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    creatorId: string;
   };
 }

@@ -26,7 +26,7 @@ export function useCreateEitherOrQuestion(
     onSuccess: (data, variables) => {
       if (variables.surveyId) {
         queryClient.invalidateQueries({
-          queryKey: surveyQueryKeys.surveyQuestions(variables.surveyId),
+          queryKey: surveyQueryKeys.surveyQuestions({ surveyId: variables.surveyId }),
         });
         queryClient.invalidateQueries({
           queryKey: surveyQueryKeys.survey(variables.surveyId),

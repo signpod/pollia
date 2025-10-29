@@ -1,12 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from '@tanstack/react-query';
 import {
   getPoll,
   getPollResults,
   getUserPolls,
   getUserVoteStatus,
-} from "@/actions/poll";
-import { pollQueryKeys } from "@/constants/queryKeys/pollQueryKeys";
-import { getBookmarkedPolls, getLikedPolls } from "@/actions/poll/read";
+} from '@/actions/poll';
+import { pollQueryKeys } from '@/constants/queryKeys/pollQueryKeys';
+import { getBookmarkedPolls, getLikedPolls } from '@/actions/poll/read';
 
 export const useGetPoll = (pollId: string) => {
   return useQuery({
@@ -47,15 +47,29 @@ export const useUserVoteStatus = (pollId: string) => {
 
 export type UseUserVoteStatusReturn = ReturnType<typeof useUserVoteStatus>;
 
-export const useUserPolls = (userId?: string) => {
+export const useUserPolls = ({
+  userId,
+  searchQuery,
+}: {
+  userId?: string;
+  searchQuery?: string;
+} = {}) => {
+  const queryKey = searchQuery
+    ? [...pollQueryKeys.userPolls(userId), searchQuery]
+    : pollQueryKeys.userPolls(userId);
+
   return useQuery({
-    queryKey: pollQueryKeys.userPolls(userId),
-    queryFn: () => getUserPolls(userId),
+    queryKey,
+    queryFn: () =>
+      getUserPolls({
+        userId,
+        options: searchQuery ? { searchQuery } : undefined,
+      }),
     select: (data) => data?.data ?? [],
-    initialData: { data: [] },
     staleTime: 5 * 60 * 1000,
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    refetchOnMount: true,
   });
 };
 

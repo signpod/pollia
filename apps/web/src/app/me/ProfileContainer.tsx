@@ -34,28 +34,28 @@ export function ProfileContainer() {
 
 function UserInfoSection() {
   const me = useCurrentUser();
-  const { name } = me.data;
+  const { name } = me.data ?? { name: '' };
 
   return <UserInfo name={name} />;
 }
 
 function UserPollsSection() {
   const userPolls = useUserPolls();
-  const polls = userPolls.data.slice(0, PREVIEW_VIEW_COUNT);
+  const polls = (userPolls.data ?? []).slice(0, PREVIEW_VIEW_COUNT);
 
   return <PollList title="내가 만든 투표" polls={polls} useActiveIcon />;
 }
 
 function BookmarkedPollsSection() {
   const userBookmarks = useBookmarkedPolls();
-  const polls = userBookmarks.data.slice(0, PREVIEW_VIEW_COUNT);
+  const polls = (userBookmarks.data ?? []).slice(0, PREVIEW_VIEW_COUNT);
 
   return <PollList title="북마크" polls={polls} />;
 }
 
 function LikedPollsSection() {
   const userLikes = useLikedPolls();
-  const polls = userLikes.data.slice(0, PREVIEW_VIEW_COUNT);
+  const polls = (userLikes.data ?? []).slice(0, PREVIEW_VIEW_COUNT);
 
   return <PollList title="좋아요" polls={polls} />;
 }
