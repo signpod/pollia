@@ -1,17 +1,23 @@
 import { getSurveyQuestions } from '@/actions/survey/question/read';
 import { surveyQueryKeys } from '@/constants/queryKeys/surveyQueryKeys';
+import { SurveyQuestionType } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
 
 export const useReadSurveyQuestions = (params?: {
   options?: {
     searchQuery?: string;
+    selectedQuestionTypes?: SurveyQuestionType[];
   };
 }) => {
   return useQuery({
-    queryKey: surveyQueryKeys.surveyQuestions(),
+    queryKey: surveyQueryKeys.surveyQuestions({
+      searchQuery: params?.options?.searchQuery,
+      selectedQuestionTypes: params?.options?.selectedQuestionTypes ?? [],
+    }),
     queryFn: () => {
       return getSurveyQuestions({
         searchQuery: params?.options?.searchQuery,
+        selectedQuestionTypes: params?.options?.selectedQuestionTypes ?? [],
       });
     },
     select: (data) => data?.data ?? [],

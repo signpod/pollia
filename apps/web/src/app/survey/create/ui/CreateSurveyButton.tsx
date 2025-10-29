@@ -4,7 +4,7 @@ import { Button, toast } from '@repo/ui/components';
 import { useCreateSurvey } from '@/hooks/survey/useCreateSurvey';
 import {
   selectedQuestionCountAtom,
-  selectedQuestionIdsAtom,
+  selectedQuestionAtom,
   surveyTitleAtom,
   surveyValidationAtom,
 } from '@/atoms/create/surveyAtoms';
@@ -17,7 +17,7 @@ const CREATE_SURVEY_MESSAGE = {
 
 export function CreateSurveyButton() {
   const surveyTitle = useAtomValue(surveyTitleAtom);
-  const selectedQuestionIds = useAtomValue(selectedQuestionIdsAtom);
+  const selectedQuestions = useAtomValue(selectedQuestionAtom);
   const validation = useAtomValue(surveyValidationAtom);
   const selectedQuestionCount = useAtomValue(selectedQuestionCountAtom);
 
@@ -33,7 +33,7 @@ export function CreateSurveyButton() {
   const handleCreateSurvey = () => {
     mutate({
       title: surveyTitle,
-      questionIds: selectedQuestionIds,
+      questionIds: Array.from(selectedQuestions).map((question) => question.id),
     });
   };
 

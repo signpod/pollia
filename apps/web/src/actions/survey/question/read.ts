@@ -2,9 +2,11 @@
 
 import prisma from '@/database/utils/prisma/client';
 import type { GetSurveyQuestionsResponse } from '@/types/dto';
+import { SurveyQuestionType } from '@prisma/client';
 
 export async function getSurveyQuestions(options?: {
   searchQuery?: string;
+  selectedQuestionTypes?: SurveyQuestionType[];
 }): Promise<GetSurveyQuestionsResponse> {
   try {
     const questions = await prisma.surveyQuestion.findMany({
@@ -13,6 +15,11 @@ export async function getSurveyQuestions(options?: {
           title: {
             contains: options.searchQuery,
             mode: 'insensitive',
+          },
+        }),
+        ...(options?.selectedQuestionTypes && {
+          type: {
+            in: options.selectedQuestionTypes,
           },
         }),
       },
@@ -32,8 +39,6 @@ export async function getSurveyQuestions(options?: {
         createdAt: 'desc',
       },
     });
-
-    console.log(questions);
 
     return {
       data: questions,

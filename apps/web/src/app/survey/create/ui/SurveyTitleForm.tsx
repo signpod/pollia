@@ -9,16 +9,8 @@ import {
 } from '@/atoms/create/surveyAtoms';
 
 export function SurveyTitleForm() {
-  const [title, setTitle] = useAtom(surveyTitleAtom);
-  const validation = useAtomValue(surveyValidationAtom);
-  const [touched, setTouched] = useAtom(surveyTitleTouchedAtom);
-
-  const handleBlur = () => {
-    setTouched(true);
-  };
-
-  const errorMessage =
-    touched && validation.errors.title ? validation.errors.title : undefined;
+  const { title, handleChange, errorMessage, handleBlur } =
+    useSurveyTitleForm();
 
   return (
     <Input
@@ -28,9 +20,34 @@ export function SurveyTitleForm() {
       maxLength={30}
       showLength={true}
       value={title}
-      onChange={(e) => setTitle(e.target.value)}
+      onChange={handleChange}
       onBlur={handleBlur}
       errorMessage={errorMessage}
     />
   );
+}
+
+function useSurveyTitleForm() {
+  const [title, setTitle] = useAtom(surveyTitleAtom);
+  const validation = useAtomValue(surveyValidationAtom);
+  const [touched, setTouched] = useAtom(surveyTitleTouchedAtom);
+
+  const handleBlur = () => {
+    setTouched(true);
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setTitle(value);
+  };
+
+  const errorMessage =
+    touched && validation.errors.title ? validation.errors.title : undefined;
+
+  return {
+    title,
+    handleChange,
+    errorMessage,
+    handleBlur,
+  };
 }

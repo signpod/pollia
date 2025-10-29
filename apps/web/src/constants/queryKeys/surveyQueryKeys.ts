@@ -1,9 +1,26 @@
 export const surveyQueryKeys = {
   survey: (surveyId: string) => ['survey', surveyId] as const,
-  surveyQuestions: (surveyId?: string) =>
-    surveyId
-      ? (['survey-questions', surveyId] as const)
-      : (['survey-questions'] as const),
+  surveyQuestions: (params?: {
+    surveyId?: string;
+    searchQuery?: string;
+    selectedQuestionTypes?: string[];
+  }) => {
+    const base = params?.surveyId
+      ? (['survey-questions', params.surveyId] as const)
+      : (['survey-questions'] as const);
+
+    if (!params?.searchQuery && !params?.selectedQuestionTypes?.length) {
+      return base;
+    }
+
+    return [
+      ...base,
+      {
+        searchQuery: params?.searchQuery ?? '',
+        selectedQuestionTypes: params?.selectedQuestionTypes ?? [],
+      },
+    ] as const;
+  },
   surveyResults: (surveyId: string) => ['survey-results', surveyId] as const,
   userAnswerStatus: (surveyId: string) =>
     ['user-answer-status', surveyId] as const,

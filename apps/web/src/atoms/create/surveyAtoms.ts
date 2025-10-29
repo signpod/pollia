@@ -1,9 +1,12 @@
+import { SurveyQuestionSummary } from '@/types/domain/survey';
 import { SurveyQuestionType } from '@prisma/client';
 import { atom } from 'jotai';
 
 export const surveyTitleAtom = atom<string>('');
 
-export const selectedQuestionIdsAtom = atom<string[]>([]);
+export const selectedQuestionAtom = atom<Set<SurveyQuestionSummary>>(
+  new Set<SurveyQuestionSummary>()
+);
 
 export const searchQueryAtom = atom<string>('');
 
@@ -14,56 +17,61 @@ export const selectedQuestionTypesAtom = atom<Set<SurveyQuestionType>>(
 );
 
 export const selectedQuestionCountAtom = atom((get) => {
-  const selectedIds = get(selectedQuestionIdsAtom);
-  return selectedIds.length;
+  const selectedQuestions = get(selectedQuestionAtom);
+  return selectedQuestions.size;
 });
 
-export const toggleQuestionAtom = atom(null, (get, set, questionId: string) => {
-  const currentIds = get(selectedQuestionIdsAtom);
-  if (currentIds.includes(questionId)) {
-    set(
-      selectedQuestionIdsAtom,
-      currentIds.filter((id) => id !== questionId)
-    );
-  } else {
-    set(selectedQuestionIdsAtom, [...currentIds, questionId]);
+export const toggleQuestionAtom = atom(
+  null,
+  (get, set, question: SurveyQuestionSummary) => {
+    const currentQuestions = get(selectedQuestionAtom);
+    if (currentQuestions.has(question)) {
+      set(
+        selectedQuestionAtom,
+        new Set([...currentQuestions].filter((q) => q.id !== question.id))
+      );
+    } else {
+      set(selectedQuestionAtom, new Set([...currentQuestions, question]));
+    }
   }
-});
+);
 
 export const selectAllQuestionsAtom = atom(
   null,
-  (_get, set, questionIds: string[]) => {
-    set(selectedQuestionIdsAtom, questionIds);
+  (_get, set, questions: SurveyQuestionSummary[]) => {
+    set(selectedQuestionAtom, new Set(questions));
   }
 );
 
 export const deselectAllQuestionsAtom = atom(null, (_get, set) => {
-  set(selectedQuestionIdsAtom, []);
+  set(selectedQuestionAtom, new Set<SurveyQuestionSummary>());
 });
 
 export const reorderQuestionsAtom = atom(
   null,
-  (_get, set, newOrder: string[]) => {
-    set(selectedQuestionIdsAtom, newOrder);
+  (_get, set, newOrder: SurveyQuestionSummary[]) => {
+    set(selectedQuestionAtom, new Set(newOrder));
   }
 );
 
 export const resetSurveyAtom = atom(null, (_get, set) => {
   set(surveyTitleAtom, '');
-  set(selectedQuestionIdsAtom, []);
+  set(selectedQuestionAtom, new Set<SurveyQuestionSummary>());
   set(searchQueryAtom, '');
 });
 
 export const surveyValidationAtom = atom((get) => {
   const title = get(surveyTitleAtom);
-  const selectedIds = get(selectedQuestionIdsAtom);
+  const selectedQuestions = get(selectedQuestionAtom);
 
   return {
-    isValid: !!title && selectedIds.length > 0,
+    isValid: !!title && selectedQuestions.size > 0,
     errors: {
       title: !title ? SURVEY_FORM_ERROR_MESSAGES.title : null,
       questions:
-        selectedIds.length === 0 ? SURVEY_FORM_ERROR_MESSAGES.questions : null,
+        selectedQuestions.size === 0
+          ? SURVEY_FORM_ERROR_MESSAGES.questions
+          : null,
     },
   };
 });

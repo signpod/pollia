@@ -1,33 +1,21 @@
-import { SurveyQuestionType } from '@prisma/client';
 import { QuestionList, QuestionListProps } from './QuestionList';
+import { SurveyQuestionSummary } from '@/types/domain/survey';
 
 interface SelectedQuestionListProps
   extends Omit<QuestionListProps, 'title' | 'isDraggable'> {
-  questions: {
-    id: string;
-    title: string;
-    type: SurveyQuestionType;
-  }[];
+  questions: SurveyQuestionSummary[];
 }
 
-export function SelectedQuestionList({
-  questions,
-  onSelectQuestion,
-  onReorder,
-  onDeselectAll,
-  getIsSelected,
-}: SelectedQuestionListProps) {
+export function SelectedQuestionList({ questions }: SelectedQuestionListProps) {
   return (
     <QuestionList
-      title="선택된 질문 목록"
+      title={LIST_TITLE}
       questions={questions}
-      onSelectQuestion={onSelectQuestion}
-      getIsSelected={getIsSelected}
-      onReorder={onReorder}
-      onDeselectAll={onDeselectAll}
       isDraggable
       showCheckboxInDraggable
       className=" h-[35vh]"
     />
   );
 }
+
+const LIST_TITLE = '선택된 질문 목록';
