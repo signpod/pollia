@@ -13,7 +13,7 @@ export function SurveyQuestionList({
       showSelectControls
       hasFilterBar
       hasSearchBar
-      className="h-[60vh]"
+      className="h-[50vh]"
       isLoading={isLoading}
     />
   );
