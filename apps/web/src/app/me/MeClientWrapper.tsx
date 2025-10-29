@@ -1,15 +1,16 @@
-"use client";
+'use client';
 
 import {
   QueryClientProvider,
   HydrationBoundary,
   DehydratedState,
-} from "@tanstack/react-query";
-import { FixedBottomLayout, FixedTopLayout } from "@repo/ui/components";
-import { getQueryClient } from "@/lib/getQueryClient";
-import { ProfileContainer } from "./ProfileContainer";
-import PollCreateFloatingButton from "@/components/poll/PollCreateFloatingButton";
-import Link from "next/link";
+} from '@tanstack/react-query';
+import { FixedBottomLayout, FixedTopLayout } from '@repo/ui/components';
+import { getQueryClient } from '@/lib/getQueryClient';
+import { ProfileContainer } from './ProfileContainer';
+import PollCreateFloatingButton from '@/components/poll/PollCreateFloatingButton';
+import Link from 'next/link';
+import SurveyCreateFloatingButton from '@/components/survey/SurveyCreateFloatingButton';
 
 interface MeClientWrapperProps {
   dehydratedState: DehydratedState;
@@ -17,7 +18,6 @@ interface MeClientWrapperProps {
 
 export function MeClientWrapper({ dehydratedState }: MeClientWrapperProps) {
   const queryClient = getQueryClient();
-
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -29,12 +29,15 @@ export function MeClientWrapper({ dehydratedState }: MeClientWrapperProps) {
             </FixedTopLayout.Content>
             <ProfileContainer />
           </FixedTopLayout>
-          <FixedBottomLayout.Content className="flex justify-end p-4 bg-transparent">
-          <Link  href="/poll/create" className="fixed bottom-5 right-5 cursor-pointer">
-            <PollCreateFloatingButton
-            variant='with-text'
-            />
-          </Link>
+          <FixedBottomLayout.Content className="w-full flex justify-end p-4 bg-transparent">
+            <div className="flex flex-col gap-4 fixed bottom-5 right-5">
+              <Link href="/poll/create">
+                <PollCreateFloatingButton variant="with-text" />
+              </Link>
+              <Link href="/survey/create">
+                <SurveyCreateFloatingButton variant="with-text" />
+              </Link>
+            </div>
           </FixedBottomLayout.Content>
         </FixedBottomLayout>
       </HydrationBoundary>

@@ -2,7 +2,7 @@
 
 import FloatingButton from '../common/FloatingButton';
 
-interface PollCreateFloatingButtonProps
+interface SurveyCreateFloatingButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'icon-only' | 'with-text';
 }
@@ -11,12 +11,12 @@ export default function PollCreateFloatingButton({
   variant = 'icon-only',
   className,
   ...props
-}: PollCreateFloatingButtonProps) {
+}: SurveyCreateFloatingButtonProps) {
   return (
     <FloatingButton
       variant={variant}
       className={className}
-      title="투표 만들기"
+      title="설문조사지 만들기"
       {...props}
     />
   );
