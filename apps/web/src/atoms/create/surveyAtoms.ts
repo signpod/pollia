@@ -9,6 +9,10 @@ export const searchQueryAtom = atom<string>('');
 
 export const surveyTitleTouchedAtom = atom<boolean>(false);
 
+export const selectedQuestionTypesAtom = atom<Set<SurveyQuestionType>>(
+  new Set<SurveyQuestionType>()
+);
+
 export const selectedQuestionCountAtom = atom((get) => {
   const selectedIds = get(selectedQuestionIdsAtom);
   return selectedIds.length;
@@ -63,8 +67,6 @@ export const surveyValidationAtom = atom((get) => {
     },
   };
 });
-
-export const selectedQuestionTypesAtom = atom<Set<SurveyQuestionType>>();
 
 export const toggleQuestionTypeAtom = atom(
   null,
