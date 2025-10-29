@@ -8,6 +8,7 @@ import { GripVertical, Square, CheckSquare, Loader2Icon } from 'lucide-react';
 import { Reorder } from 'framer-motion';
 import { SearchBar } from './SearchBar';
 import { EmptyFallback } from './EmptyFallback';
+import { SurveyQuestionFilter } from './SurveyQuestionFilter';
 import { TypeTag } from './TypeTag';
 
 export interface QuestionListProps extends ComponentProps<'section'> {
@@ -31,6 +32,7 @@ export interface QuestionListProps extends ComponentProps<'section'> {
   setSearchQuery?: (searchQuery: string) => void;
   showCheckboxInDraggable?: boolean;
   isLoading?: boolean;
+  hasFilterBar?: boolean;
 }
 
 export function QuestionList({
@@ -49,6 +51,7 @@ export function QuestionList({
   setSearchQuery,
   showCheckboxInDraggable = false,
   isLoading = false,
+  hasFilterBar = false,
   ...props
 }: QuestionListProps) {
   return (
@@ -89,6 +92,7 @@ export function QuestionList({
             />
           </div>
         )}
+        {hasFilterBar && <SurveyQuestionFilter />}
       </div>
       {!isLoading && isDraggable && onReorder ? (
         <Reorder.Group

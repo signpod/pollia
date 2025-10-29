@@ -1,3 +1,4 @@
+import { SurveyQuestionType } from '@prisma/client';
 import { atom } from 'jotai';
 
 export const surveyTitleAtom = atom<string>('');
@@ -62,6 +63,26 @@ export const surveyValidationAtom = atom((get) => {
     },
   };
 });
+
+export const selectedQuestionTypesAtom = atom<Set<SurveyQuestionType>>();
+
+export const toggleQuestionTypeAtom = atom(
+  null,
+  (get, set, questionType: SurveyQuestionType) => {
+    const currentTypes = get(selectedQuestionTypesAtom);
+    if (currentTypes && currentTypes.has(questionType)) {
+      set(
+        selectedQuestionTypesAtom,
+        new Set([...currentTypes].filter((type) => type !== questionType))
+      );
+    } else {
+      set(
+        selectedQuestionTypesAtom,
+        new Set([...(currentTypes ?? []), questionType])
+      );
+    }
+  }
+);
 
 const SURVEY_FORM_ERROR_MESSAGES = {
   title: '설문조사지 제목을 입력해주세요',

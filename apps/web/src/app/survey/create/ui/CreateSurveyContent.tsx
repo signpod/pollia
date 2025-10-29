@@ -15,6 +15,7 @@ import {
   selectAllQuestionsAtom,
   deselectAllQuestionsAtom,
   reorderQuestionsAtom,
+  selectedQuestionTypesAtom,
 } from '@/atoms/create/surveyAtoms';
 import { useReadSurveyQuestions } from '@/hooks/survey/question/useReadSurveyQuestions';
 import { CreateSurveyButton } from './CreateSurveyButton';
@@ -27,17 +28,27 @@ export function CreateSurveyContent() {
   const selectAllQuestions = useSetAtom(selectAllQuestionsAtom);
   const deselectAllQuestions = useSetAtom(deselectAllQuestionsAtom);
   const reorderQuestions = useSetAtom(reorderQuestionsAtom);
+  const selectedQuestionTypes = useAtomValue(selectedQuestionTypesAtom);
 
   const { data: questions, isLoading } = useReadSurveyQuestions();
 
-  const selectedQuestions = useMemo(() => {
-    return (
-      selectedQuestionIds
-        .map((questionId) =>
-          questions?.find((question) => question.id === questionId)
-        )
-        .filter(Boolean) ?? []
+  const filteredQuestions = useMemo(() => {
+    if (selectedQuestionTypes?.size === 0) {
+      return questions;
+    }
+    return questions?.filter((question) =>
+      selectedQuestionTypes?.has(question.type)
     );
+  }, [questions, selectedQuestionTypes]);
+
+  const selectedQuestions = useMemo(() => {
+    return selectedQuestionIds
+      .map((questionId) =>
+        questions?.find((question) => question.id === questionId)
+      )
+      .filter((question): question is NonNullable<typeof question> =>
+        Boolean(question)
+      );
   }, [selectedQuestionIds, questions]);
 
   const handleSelectQuestion = (questionId: string) => {
@@ -80,7 +91,7 @@ export function CreateSurveyContent() {
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           questions={
-            questions?.map((question) => ({
+            filteredQuestions?.map((question) => ({
               id: question.id,
               title: question.title,
               type: question.type,
