@@ -1,9 +1,10 @@
 import {
   deselectAllQuestionsAtom,
   selectAllQuestionsAtom,
+  selectedQuestionAtom,
 } from '@/atoms/create';
 import { Button, Typo } from '@repo/ui/components';
-import { useSetAtom } from 'jotai';
+import { useAtomValue, useSetAtom } from 'jotai';
 import { SurveyQuestionSummary } from '@/types/domain/survey';
 
 interface ToggleAllCheckButtonsProps {
@@ -13,19 +14,16 @@ interface ToggleAllCheckButtonsProps {
 export function ToggleAllCheckButtons({
   questions,
 }: ToggleAllCheckButtonsProps) {
-  const selectAllQuestions = useSetAtom(selectAllQuestionsAtom);
-  const deselectAllQuestions = useSetAtom(deselectAllQuestionsAtom);
-
-  const handleSelectAll = () => {
-    selectAllQuestions(questions);
-  };
+  const { handleSelectAll, handleDeselectAll, isAllSelected, isAllDeselected } =
+    useToggleAllCheckButtons({ questions });
 
   return (
     <div className="flex items-center gap-2">
       <Button
         variant="ghost"
-        onClick={() => deselectAllQuestions()}
+        onClick={handleDeselectAll}
         className="p-2 h-auto"
+        disabled={isAllDeselected}
       >
         <Typo.Body size="small">전체 해제</Typo.Body>
       </Button>
@@ -34,9 +32,38 @@ export function ToggleAllCheckButtons({
         variant="ghost"
         onClick={handleSelectAll}
         className="p-2 h-auto"
+        disabled={isAllSelected}
       >
         <Typo.Body size="small">전체 선택</Typo.Body>
       </Button>
     </div>
   );
+}
+
+function useToggleAllCheckButtons({ questions }: ToggleAllCheckButtonsProps) {
+  const selectAllQuestions = useSetAtom(selectAllQuestionsAtom);
+  const deselectAllQuestions = useSetAtom(deselectAllQuestionsAtom);
+  const selectedQuestions = useAtomValue(selectedQuestionAtom);
+
+  const handleSelectAll = () => {
+    selectAllQuestions(questions);
+  };
+
+  const handleDeselectAll = () => {
+    deselectAllQuestions();
+  };
+
+  const isAllSelected = questions.every((question) =>
+    selectedQuestions.has(question)
+  );
+  const isAllDeselected = questions.every(
+    (question) => !selectedQuestions.has(question)
+  );
+
+  return {
+    handleSelectAll,
+    handleDeselectAll,
+    isAllSelected,
+    isAllDeselected,
+  };
 }
