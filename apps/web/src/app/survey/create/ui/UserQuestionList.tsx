@@ -27,8 +27,9 @@ export function UserQuestionList({
       hasSearchBar
       searchQuery={searchQuery}
       setSearchQuery={setSearchQuery}
-      className="h-[35vh]"
+      className="h-[60vh]"
       isLoading={isLoading}
+      hasFilterBar
     />
   );
 }

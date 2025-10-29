@@ -56,13 +56,13 @@ export function QuestionList({
 }: QuestionListProps) {
   return (
     <section className={cn('flex flex-col', className)} {...props}>
-      <div className="flex-shrink-0 bg-background">
+      <div className="flex flex-col gap-2 bg-background">
         <div className="py-1 flex items-center justify-between">
           <Typo.SubTitle size="large">{title}</Typo.SubTitle>
           {showSelectControls && !isDraggable && (
             <div className="flex items-center gap-2">
               <Button
-                variant="secondary"
+                variant="ghost"
                 onClick={onDeselectAll}
                 className="p-2 h-auto"
               >
@@ -70,7 +70,7 @@ export function QuestionList({
               </Button>
 
               <Button
-                variant="secondary"
+                variant="ghost"
                 onClick={onSelectAll}
                 className="p-2 h-auto"
               >
