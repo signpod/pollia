@@ -11,6 +11,7 @@ export async function getSurveyQuestions(options?: {
   try {
     const questions = await prisma.surveyQuestion.findMany({
       where: {
+        surveyId: null,
         ...(options?.searchQuery && {
           title: {
             contains: options.searchQuery,
