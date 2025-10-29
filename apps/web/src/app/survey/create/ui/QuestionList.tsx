@@ -7,9 +7,8 @@ import { ComponentProps } from 'react';
 import { GripVertical, Square, CheckSquare, Loader2Icon } from 'lucide-react';
 import { Reorder } from 'framer-motion';
 import { SearchBar } from './SearchBar';
-import { cva } from 'class-variance-authority';
 import { EmptyFallback } from './EmptyFallback';
-import { TYPE_LABELS } from '@/constants/survey';
+import { TypeTag } from './TypeTag';
 
 export interface QuestionListProps extends ComponentProps<'section'> {
   title: string;
@@ -265,28 +264,5 @@ function QuestionItem({
         <GripVertical className="size-4 text-zinc-400 group-active:text-violet-500" />
       )}
     </li>
-  );
-}
-
-function TypeTag({ type }: { type: SurveyQuestionType }) {
-  const typeVariants = cva('px-2 py-1 rounded-full text-center', {
-    variants: {
-      type: {
-        EITHER_OR: 'bg-amber-50 text-amber-600',
-        SCALE: 'bg-green-50 text-green-700',
-        MULTIPLE_CHOICE: 'bg-sky-50 text-sky-600',
-        SUBJECTIVE: 'bg-rose-50 text-rose-600',
-      },
-    },
-  });
-
-  if (!TYPE_LABELS[type]) {
-    return null;
-  }
-
-  return (
-    <Typo.Body size="small" className={typeVariants({ type })}>
-      {TYPE_LABELS[type]}
-    </Typo.Body>
   );
 }
