@@ -28,7 +28,9 @@
         "NEXT_PUBLIC_SUPABASE_URL",
         "NEXT_PUBLIC_SUPABASE_ANON_KEY",
         "NODE_ENV",
-        "CRON_SECRET"
+        "CRON_SECRET",
+        "ROLLBAR_SERVER_TOKEN",
+        "NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN"
       ]
     }
   }
