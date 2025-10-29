@@ -44,6 +44,7 @@ export async function getSurveyQuestions(options?: {
       data: questions,
     };
   } catch (error) {
+    console.error('❌ 설문 질문 조회 실패:', error);
     if (error instanceof Error && error.cause) {
       throw error;
     }

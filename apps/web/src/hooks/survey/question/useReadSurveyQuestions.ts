@@ -1,4 +1,4 @@
-import { getSurveyQuestions } from '@/actions/survey/question/read';
+import { getSurveyQuestions } from '@/actions/survey';
 import { surveyQueryKeys } from '@/constants/queryKeys/surveyQueryKeys';
 import { SurveyQuestionType } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
@@ -27,3 +27,7 @@ export const useReadSurveyQuestions = (params?: {
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 };
+
+export type UseReadSurveyQuestionsReturn = ReturnType<
+  typeof useReadSurveyQuestions
+>;

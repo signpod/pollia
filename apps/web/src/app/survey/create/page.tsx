@@ -5,7 +5,7 @@ import { dehydrate } from '@tanstack/react-query';
 import { PageClientWrapper } from './ui/PageClientWrapper';
 import { CreateSurveyContent } from './ui/CreateSurveyContent';
 import { surveyQueryKeys } from '@/constants/queryKeys/surveyQueryKeys';
-import { getSurveyQuestions } from '@/actions/survey/question/read';
+import { getSurveyQuestions } from '@/actions/survey';
 
 export default async function CreateSurveyPage() {
   const queryClient = getQueryClient();
