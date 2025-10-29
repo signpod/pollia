@@ -9,5 +9,8 @@ declare namespace NodeJS {
     DIRECT_URL: string;
 
     CLEANUP_SECRET: string;
+
+    ROLLBAR_SERVER_TOKEN: string;
+    NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN: string;
   }
 }
