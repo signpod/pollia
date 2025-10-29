@@ -105,14 +105,11 @@ export function CreateSurveyContent() {
           onDeselectAll={handleDeselectAll}
         />
         <SelectedQuestionList
-          // FIXME: as 없애기
-          questions={
-            selectedQuestions as {
-              id: string;
-              title: string;
-              type: SurveyQuestionType;
-            }[]
-          }
+          questions={selectedQuestions.map((question) => ({
+            id: question.id,
+            title: question.title,
+            type: question.type,
+          }))}
           onSelectQuestion={handleSelectQuestion}
           getIsSelected={(questionId) =>
             selectedQuestionIds.includes(questionId)
