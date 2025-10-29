@@ -1,11 +1,6 @@
 'use client';
 
-import {
-  Button,
-  FixedBottomLayout,
-  FixedTopLayout,
-  Typo,
-} from '@repo/ui/components';
+import { FixedBottomLayout, FixedTopLayout, Typo } from '@repo/ui/components';
 import { useMemo } from 'react';
 import { useUserPolls } from '@/hooks/poll/usePoll';
 import { UserQuestionList } from './UserQuestionList';
@@ -28,7 +23,6 @@ export function CreateSurveyContent() {
   const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
   const selectedQuestionIds = useAtomValue(selectedQuestionIdsAtom);
   const selectedQuestionCount = useAtomValue(selectedQuestionCountAtom);
-  const validation = useAtomValue(surveyValidationAtom);
   const toggleQuestion = useSetAtom(toggleQuestionAtom);
   const selectAllQuestions = useSetAtom(selectAllQuestionsAtom);
   const deselectAllQuestions = useSetAtom(deselectAllQuestionsAtom);
@@ -64,10 +58,6 @@ export function CreateSurveyContent() {
 
   const handleDeselectAll = () => {
     deselectAllQuestions();
-  };
-
-  const handleCreateSurvey = () => {
-    // TODO: 설문조사지 생성 로직 구현
   };
 
   return (
@@ -122,14 +112,7 @@ export function CreateSurveyContent() {
       </div>
 
       <FixedBottomLayout.Content className="p-5">
-        <Button
-          variant="primary"
-          className="w-full"
-          onClick={handleCreateSurvey}
-          disabled={!validation.isValid || selectedQuestionCount === 0}
-        >
-          설문지 생성
-        </Button>
+        <CreateSurveyButton />
       </FixedBottomLayout.Content>
     </FixedBottomLayout>
   );
