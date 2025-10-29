@@ -9,6 +9,7 @@ import { Reorder } from 'framer-motion';
 import { SearchBar } from './SearchBar';
 import { cva } from 'class-variance-authority';
 import { EmptyFallback } from './EmptyFallback';
+import { TYPE_LABELS } from '@/constants/survey';
 
 export interface QuestionListProps extends ComponentProps<'section'> {
   title: string;

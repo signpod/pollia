@@ -2,7 +2,6 @@
 
 import { FixedBottomLayout, FixedTopLayout, Typo } from '@repo/ui/components';
 import { useMemo } from 'react';
-import { useUserPolls } from '@/hooks/poll/usePoll';
 import { UserQuestionList } from './UserQuestionList';
 import { SelectedQuestionList } from './SelectedQuestionList';
 import { SurveyQuestionType } from '@prisma/client';
@@ -16,8 +15,9 @@ import {
   selectAllQuestionsAtom,
   deselectAllQuestionsAtom,
   reorderQuestionsAtom,
-  surveyValidationAtom,
 } from '@/atoms/create/surveyAtoms';
+import { useReadSurveyQuestions } from '@/hooks/survey/question/useReadSurveyQuestions';
+import { CreateSurveyButton } from './CreateSurveyButton';
 
 export function CreateSurveyContent() {
   const [searchQuery, setSearchQuery] = useAtom(searchQueryAtom);
@@ -28,7 +28,7 @@ export function CreateSurveyContent() {
   const deselectAllQuestions = useSetAtom(deselectAllQuestionsAtom);
   const reorderQuestions = useSetAtom(reorderQuestionsAtom);
 
-  const { data: questions, isLoading } = useUserPolls({ searchQuery });
+  const { data: questions, isLoading } = useReadSurveyQuestions();
 
   const selectedQuestions = useMemo(() => {
     return (
