@@ -13,7 +13,6 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.log("clientConfig", clientConfig);
     const rollbar = new Rollbar(clientConfig);
     rollbar.error(error);
     console.error("Error caught:", error);
