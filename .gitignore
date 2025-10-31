@@ -42,7 +42,6 @@ yarn-error.log*
 *.pem
 
 .vscode/
-.prettierrc.js
 
 # Flutter
 **/android/**/gradle-wrapper.jar
