@@ -12,6 +12,6 @@ export default function PollCreateFloatingButton({
   ...props
 }: SurveyCreateFloatingButtonProps) {
   return (
-    <FloatingButton variant={variant} className={className} title="설문조사지 만들기" {...props} />
+    <FloatingButton variant={variant} className={className} title="설문조사 만들기" {...props} />
   );
 }
