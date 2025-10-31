@@ -139,7 +139,7 @@ function ProfileTabsContent() {
   return (
     <div className="w-full flex gap-4 flex-col">
       <ProfileTabs />
-      <div className="flex gap-2 w-full">
+      <div className="flex gap-2 w-full px-5">
         <BaseSearchBar
           placeholder={placeholder}
           value={searchQuery}
