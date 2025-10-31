@@ -33,6 +33,7 @@ export const surveyQueryKeys = {
       },
     ] as const;
   },
+  survey: (surveyId: string) => ["survey", surveyId] as const,
   surveyResults: (surveyId: string) => ["survey-results", surveyId] as const,
   userAnswerStatus: (surveyId: string) => ["user-answer-status", surveyId] as const,
   userSurveys: (userId?: string) =>
