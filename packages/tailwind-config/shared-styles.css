@@ -1,8 +1,12 @@
 @import "tailwindcss";
+@import "tailwindcss";
 
 @source "../ui/src/**/*.{js,ts,jsx,tsx}";
 @source "../../apps/web/src/**/*.{js,ts,jsx,tsx}";
 
+@import "../../packages/tailwind-config/color/primitive-color.css";
+@import "../../packages/tailwind-config/color/semantic-color.css";
+@import "../../packages/tailwind-config/color/component-color.css";
 @import "../../packages/tailwind-config/color/primitive-color.css";
 @import "../../packages/tailwind-config/color/semantic-color.css";
 @import "../../packages/tailwind-config/color/component-color.css";
@@ -102,13 +106,10 @@
   @apply border-border;
 }
 
-html {
-  scrollbar-gutter: stable;
-}
-
 html,
 body {
   height: 100%;
+  scrollbar-gutter: stable;
 }
 
 body {

@@ -1,3 +1,4 @@
+import { formatDateToLocalString } from "@/lib/date";
 import { Typo } from "@repo/ui/components";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
@@ -37,22 +38,39 @@ interface ListItemProps extends ComponentPropsWithRef<"li"> {
   title: string;
   leadingIcon?: React.ReactNode;
   href: string;
+  createdAt?: Date;
+  isDraft?: boolean;
 }
 
-function ListItem({ title, leadingIcon, href, ...props }: ListItemProps) {
+function ListItem({
+  title,
+  createdAt,
+  isDraft,
+  leadingIcon,
+  href,
+  ...props
+}: ListItemProps) {
   return (
     <li {...props}>
       <Link
         href={href}
-        className="flex items-center justify-between py-4 w-full border-b border-default"
+        className="flex flex-col py-4 w-full border-b border-default gap-2"
       >
-        <div className="flex items-center gap-3">
-          {leadingIcon}
-          <Typo.SubTitle size="large" className="flex-1">
-            {title}
-          </Typo.SubTitle>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {leadingIcon}
+
+            <Typo.SubTitle size="large" className="flex-1">
+              {title}
+            </Typo.SubTitle>
+          </div>
+          <ChevronRight className="size-6 text-zinc-300" />
         </div>
-        <ChevronRight className="size-6 text-zinc-300" />
+        {createdAt && (
+          <Typo.Body size="small" className="text-zinc-400">
+            {formatDateToLocalString(createdAt)}
+          </Typo.Body>
+        )}
       </Link>
     </li>
   );
@@ -64,3 +82,11 @@ export const List = {
   Content: ListContent,
   Item: ListItem,
 };
+
+function UsedTag({ isDraft }: { isDraft: boolean }) {
+  return (
+    <div className="px-2 py-1 rounded-full text-center ring-1 ring-transparent">
+      <Typo.Body size="small">{isDraft ? "미사용" : "사용"}</Typo.Body>
+    </div>
+  );
+}

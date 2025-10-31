@@ -26,4 +26,5 @@ export const meDraftFilterAtom = atom<DraftFilterType>("all");
  */
 export type SortOrderType = "latest" | "oldest";
 
-export const meSortOrderAtom = atom<SortOrderType>("latest");
+export const surveySortOrderAtom = atom<SortOrderType>("latest");
+export const surveyQuestionSortOrderAtom = atom<SortOrderType>("latest");

@@ -35,16 +35,12 @@ export function ContentList({
 }) {
   const observerTarget = useRef<HTMLDivElement>(null);
 
-  // 검색, isDraft 필터링, 정렬 로직
   const filteredAndSortedItems = useMemo(() => {
-    // 1. 검색 및 isDraft 필터링
     const filtered = items.filter((item) => {
-      // 검색어 필터링
       const matchesSearch = item.title
         .toLowerCase()
         .includes(searchQuery.toLowerCase());
 
-      // isDraft 필터링 (질문만 해당)
       if ("isDraft" in item) {
         if (draftFilter === "used") {
           return matchesSearch && !item.isDraft;
@@ -54,12 +50,9 @@ export function ContentList({
         }
       }
 
-      // draftFilter가 "all"이거나 Survey인 경우
       return matchesSearch;
     });
 
-    // 2. 정렬 (Survey에만 적용)
-    // createdAt이 있는 경우에만 정렬
     if (filtered.length > 0 && filtered[0] && "createdAt" in filtered[0]) {
       return [...filtered].sort((a, b) => {
         const dateA = new Date(a.createdAt).getTime();
@@ -100,15 +93,16 @@ export function ContentList({
           <div
             key={item.id}
             className={cn(
-              "flex items-center gap-2 px-5",
+              "flex gap-3 px-5 items-start",
               "hover:bg-violet-50 transition-colors duration-200"
             )}
           >
-            {"isDraft" in item ? <UsedTag item={item} /> : null}
             <List.Item
               key={item.id}
               title={item.title}
               href={`${baseHref}/${item.id}`}
+              createdAt={item.createdAt}
+              leadingIcon={"isDraft" in item ? <UsedTag item={item} /> : null}
               className="flex-1"
             />
           </div>

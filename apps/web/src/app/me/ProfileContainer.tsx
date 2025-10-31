@@ -3,9 +3,30 @@ import { ErrorBoundary } from "react-error-boundary";
 import { useCurrentUser } from "@/hooks/user/useCurrentUser";
 import { PollList } from "./ui";
 import { UserInfo } from "./UserInfo";
-import { Button, Typo } from "@repo/ui/components";
-
-const PREVIEW_VIEW_COUNT = 5;
+import {
+  Button,
+  Tab,
+  Typo,
+  useTab,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/ui/components";
+import { ContentList } from "./ui";
+import { UserSurveyQuestionDataContainer } from "./ui/UserSurveyQuestionDataContainer";
+import { UserSurveyDataContainer } from "./ui/UserSurveyDataContainer";
+import { BaseSearchBar } from "@/components/common/BaseSearchBar";
+import { useSearchQuery } from "@/hooks/common/useSearchQuery";
+import {
+  meSearchQueryAtom,
+  meDraftFilterAtom,
+  DraftFilterType,
+  SortOrderType,
+  surveySortOrderAtom,
+} from "@/atoms/me/searchAtoms";
+import { useAtom } from "jotai";
 
 export function ProfileContainer() {
   return (
@@ -120,7 +141,7 @@ function ProfileTabsContent() {
   const { activeTab } = useTab();
   const { searchQuery, handleChange } = useSearchQuery(meSearchQueryAtom);
   const [draftFilter, setDraftFilter] = useAtom(meDraftFilterAtom);
-  const [sortOrder, setSortOrder] = useAtom(meSortOrderAtom);
+  const [sortOrder, setSortOrder] = useAtom(surveySortOrderAtom);
 
   const DataContainer =
     activeTab === "userSurveys"
@@ -134,7 +155,6 @@ function ProfileTabsContent() {
       : "질문 제목을 검색해주세요";
 
   const showDraftFilter = activeTab === "userQuestions";
-  const showSortOrder = activeTab === "userSurveys";
 
   return (
     <div className="w-full flex gap-4 flex-col">
@@ -146,23 +166,21 @@ function ProfileTabsContent() {
           onChange={handleChange}
           containerClassName="w-full flex-1"
         />
-        {showSortOrder && (
-          <Select
-            value={sortOrder}
-            onValueChange={(value) => setSortOrder(value as SortOrderType)}
-          >
-            <SelectTrigger className="w-[120px]" aria-label="정렬 순서">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {SORT_ORDER_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
+        <Select
+          value={sortOrder}
+          onValueChange={(value) => setSortOrder(value as SortOrderType)}
+        >
+          <SelectTrigger className="w-[120px]" aria-label="정렬 순서">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SORT_ORDER_OPTIONS.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         {showDraftFilter && (
           <Select
             value={draftFilter}

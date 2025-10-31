@@ -3,10 +3,12 @@
 import prisma from "@/database/utils/prisma/client";
 import { requireAuth } from "../common/auth";
 import { GetUserSurveysResponse } from "@/types/dto";
+import { SortOrderType } from "@/atoms/me/searchAtoms";
 
 interface GetUserSurveysOptions {
   cursor?: string;
   limit?: number;
+  sortOrder?: SortOrderType;
 }
 
 export async function getUserSurveys(
@@ -26,7 +28,7 @@ export async function getUserSurveys(
       updatedAt: true,
     },
     orderBy: {
-      createdAt: "desc",
+      createdAt: options?.sortOrder === "latest" ? "desc" : "asc",
     },
     take: limit + 1,
     ...(options?.cursor && {

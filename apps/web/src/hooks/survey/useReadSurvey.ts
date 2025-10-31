@@ -1,6 +1,8 @@
 import { getUserSurveys } from "@/actions/survey/read-survey";
+import { surveySortOrderAtom } from "@/atoms/me/searchAtoms";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
 
 export const useReadSurvey = (params?: {
   options?: {
@@ -8,12 +10,15 @@ export const useReadSurvey = (params?: {
     limit?: number;
   };
 }) => {
+  const sortOrder = useAtomValue(surveySortOrderAtom);
+
   return useInfiniteQuery({
     queryKey: surveyQueryKeys.userSurveys(params?.options?.userId),
     queryFn: ({ pageParam }) => {
       return getUserSurveys({
         cursor: pageParam,
         limit: params?.options?.limit ?? 10,
+        sortOrder,
       });
     },
     initialPageParam: undefined as string | undefined,

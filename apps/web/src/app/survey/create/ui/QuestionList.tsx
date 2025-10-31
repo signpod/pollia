@@ -13,7 +13,12 @@ import {
   ToggleAllCheckButtons,
   TypeTag,
 } from "@/app/survey/create/ui";
-import { reorderQuestionsAtom, selectedQuestionAtom } from "@/atoms/create";
+import {
+  reorderQuestionsAtom,
+  selectedQuestionAtom,
+  searchQueryAtom,
+} from "@/atoms/create";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { SurveyQuestionSummary } from "@/types/domain/survey";
 import { Typo } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
@@ -252,7 +257,7 @@ function DraggableQuestionItem({
     <Reorder.Item
       value={question}
       className={cn(
-        "group flex items-center justify-between select-none p-3",
+        "group flex items-center justify-between select-none py-3",
         "cursor-grab active:cursor-grabbing",
         "hover:bg-zinc-50 active:bg-violet-50",
         "transition-colors duration-200 ease-in-out"
@@ -284,7 +289,7 @@ function QuestionItem({ question, index, isSelected, onSelectQuestion }: Questio
     <li
       onClick={() => onSelectQuestion(question)}
       className={cn(
-        "group flex cursor-pointer items-center justify-between p-3 select-none",
+        "flex items-center justify-between select-none py-3 group cursor-pointer",
         "hover:bg-zinc-50 active:bg-violet-100",
         "transition-colors duration-200 ease-in-out",
       )}
