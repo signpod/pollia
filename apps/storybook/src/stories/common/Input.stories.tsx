@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/nextjs";
 import { Input } from "@repo/ui/components";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 
 const meta: Meta<typeof Input> = {
   title: "Common/Input",

@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/nextjs";
 import { Tooltip } from "@repo/ui/components";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 
 const meta: Meta<typeof Tooltip> = {
   title: "Common/Tooltip",

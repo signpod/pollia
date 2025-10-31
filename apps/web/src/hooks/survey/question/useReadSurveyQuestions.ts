@@ -1,7 +1,7 @@
-import { SurveyQuestionType } from "@prisma/client";
-import { useQuery } from "@tanstack/react-query";
 import { getSurveyQuestions } from "@/actions/survey";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
+import { SurveyQuestionType } from "@prisma/client";
+import { useQuery } from "@tanstack/react-query";
 
 export const useReadSurveyQuestions = (params?: {
   options?: {

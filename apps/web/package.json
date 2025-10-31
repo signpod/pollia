@@ -10,7 +10,7 @@
     "dev": "next dev --turbopack --port 3000",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "biome check .",
+    "lint": "biome check --write .",
     "check-types": "tsc --noEmit",
     "db:pull": "dotenv -e .env.local -- prisma db pull",
     "db:push": "dotenv -e .env.local -- prisma db push",

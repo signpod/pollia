@@ -1,8 +1,8 @@
 "use client";
 
-import { PropsWithChildren } from "react";
-import { DehydratedState, HydrationBoundary, QueryClientProvider } from "@tanstack/react-query";
 import { getQueryClient } from "@/lib/getQueryClient";
+import { DehydratedState, HydrationBoundary, QueryClientProvider } from "@tanstack/react-query";
+import { PropsWithChildren } from "react";
 
 interface PageClientWrapperProps extends PropsWithChildren {
   dehydratedState: DehydratedState;

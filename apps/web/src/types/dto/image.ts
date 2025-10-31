@@ -21,7 +21,7 @@ export interface DeleteImageRequest {
   bucket?: string;
 }
 
-export interface DeleteImageResponse {}
+export type DeleteImageResponse = Record<string, never>;
 
 export interface ConfirmFileRequest {
   fileUploadId: string;
@@ -29,7 +29,7 @@ export interface ConfirmFileRequest {
   relatedEntityId?: string;
 }
 
-export interface ConfirmFileResponse {}
+export type ConfirmFileResponse = Record<string, never>;
 
 export interface CleanupOrphanFilesResponse {
   deletedCount: number;

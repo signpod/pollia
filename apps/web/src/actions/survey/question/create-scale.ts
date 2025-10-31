@@ -1,10 +1,10 @@
 "use server";
 
-import { SurveyQuestionType } from "@prisma/client";
 import { requireAuth } from "@/actions/common/auth";
 import prisma from "@/database/utils/prisma/client";
 import { scaleInfoSchema } from "@/schemas/survey/scaleInfoSchema";
 import type { CreateScaleQuestionRequest, CreateScaleQuestionResponse } from "@/types/dto/survey";
+import { SurveyQuestionType } from "@prisma/client";
 
 function validateScaleQuestion(request: CreateScaleQuestionRequest): string | null {
   try {

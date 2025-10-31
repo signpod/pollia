@@ -1,8 +1,8 @@
-import * as React from "react";
 import { XCircleIcon } from "lucide-react";
+import * as React from "react";
 import { cn } from "../../lib/utils";
 import { LabelText } from "./LabelText";
-import { bodyVariants, Typo } from "./Typo";
+import { Typo, bodyVariants } from "./Typo";
 
 export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "ref"> {
   label?: string;

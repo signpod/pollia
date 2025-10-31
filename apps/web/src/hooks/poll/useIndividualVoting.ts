@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { removeIndividualVote, submitIndividualVote } from "@/actions/poll/vote";
 import { pollQueryKeys } from "@/constants/queryKeys/pollQueryKeys";
 import type { GetPollResultsResponse, GetUserVoteStatusResponse } from "@/types/dto/poll";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 function useVoteMutation(pollId: string) {
   const queryClient = useQueryClient();

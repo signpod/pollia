@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, ReactNode, useContext, useLayoutEffect, useRef, useState } from "react";
+import { ReactNode, createContext, useContext, useLayoutEffect, useRef, useState } from "react";
 import { cn } from "../../lib/utils";
 import { Toaster } from "../common/Toast";
 
@@ -50,9 +50,8 @@ export function FixedBottomLayout({
       resizeObserver.observe(contentRef.current);
 
       return () => resizeObserver.disconnect();
-    } else {
-      setContentHeight(0);
     }
+    setContentHeight(0);
   }, [currentContent]);
 
   return (

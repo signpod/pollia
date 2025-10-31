@@ -1,5 +1,3 @@
-import { useAtomValue } from "jotai";
-import { Button, FixedBottomLayout, toast, Typo } from "@repo/ui/components";
 import {
   binaryPollCategoryAtom,
   binaryPollDescriptionAtom,
@@ -14,6 +12,8 @@ import {
 } from "@/atoms/create/binaryPollAtoms";
 import { useBinaryPollSubmit } from "@/hooks/poll/useBinaryPollSubmit";
 import { binaryPollSchema } from "@/schemas/binaryPollSchema";
+import { Button, FixedBottomLayout, Typo, toast } from "@repo/ui/components";
+import { useAtomValue } from "jotai";
 import { CategoryButton } from "./components/CategoryButton";
 import { DescriptionInput } from "./components/DescriptionInput";
 import { SubjectInput } from "./components/SubjectInput";

@@ -1,7 +1,7 @@
-import { atom } from "jotai";
-import { atomWithDefault } from "jotai/utils";
 import { POLL_CATEGORIES } from "@/constants/poll";
 import { getCurrentDate, getCurrentTime } from "@/lib/date";
+import { atom } from "jotai";
+import { atomWithDefault } from "jotai/utils";
 
 export const binaryPollAvailableCategoriesAtom = atom(POLL_CATEGORIES);
 export const binaryPollCategorySelectModalOpenAtom = atom(false);

@@ -1,11 +1,11 @@
 "use client";
 
-import { PollType } from "@prisma/client";
-import { useAtom } from "jotai";
-import { Button, FixedBottomLayout, Typo, useStep } from "@repo/ui/components";
 import { pollTypeAtom } from "@/atoms/create/pollTypeAtoms";
 import PollTypeSelect from "@/components/poll/PollTypeSelect";
 import { cn } from "@/lib/utils";
+import { PollType } from "@prisma/client";
+import { Button, FixedBottomLayout, Typo, useStep } from "@repo/ui/components";
+import { useAtom } from "jotai";
 
 interface PollTypeStepProps {
   selectedType?: PollType;

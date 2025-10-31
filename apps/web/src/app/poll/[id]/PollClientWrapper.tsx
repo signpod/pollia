@@ -1,10 +1,10 @@
 "use client";
 
-import { DehydratedState, HydrationBoundary, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { FixedBottomLayout, FixedTopLayout } from "@repo/ui/components";
 import { LoginModalProvider } from "@/components/providers/LoginModalProvider";
 import { getQueryClient } from "@/lib/getQueryClient";
+import { FixedBottomLayout, FixedTopLayout } from "@repo/ui/components";
+import { DehydratedState, HydrationBoundary, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { PollContent } from "./PollContent";
 import { PollHeader } from "./PollHeader";
 

@@ -1,7 +1,7 @@
 "use client";
 
-import * as React from "react";
 import type { LucideIcon } from "lucide-react";
+import * as React from "react";
 import { cn } from "../../lib/utils";
 
 type IconComponent = LucideIcon | React.ComponentType<React.SVGProps<SVGSVGElement>>;

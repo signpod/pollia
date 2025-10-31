@@ -1,7 +1,7 @@
+import { formatDateToLocalString } from "@/lib/date";
+import { DateAndTimePicker, LabelText, Toggle, Typo } from "@repo/ui/components";
 import { PrimitiveAtom, useAtom } from "jotai";
 import type { Matcher } from "react-day-picker";
-import { DateAndTimePicker, LabelText, Toggle, Typo } from "@repo/ui/components";
-import { formatDateToLocalString } from "@/lib/date";
 
 interface VotingPeriodSectionProps {
   isUnlimitedAtom: PrimitiveAtom<boolean>;

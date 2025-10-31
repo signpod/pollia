@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/nextjs";
 import { CenterOverlay } from "@repo/ui/components";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 
 const meta: Meta<typeof CenterOverlay> = {
   title: "Common/CenterOverlay",
@@ -43,7 +43,7 @@ export const CircleWithNumber: Story = {
   render: () => {
     return (
       <div style={{ padding: "100px" }}>
-        <CenterOverlay targetElement={<div className="h-20 w-20 rounded-full bg-blue-500"></div>}>
+        <CenterOverlay targetElement={<div className="h-20 w-20 rounded-full bg-blue-500" />}>
           <span className="text-xl font-bold text-white">42</span>
         </CenterOverlay>
       </div>
@@ -55,7 +55,7 @@ export const SquareWithText: Story = {
   render: () => {
     return (
       <div style={{ padding: "100px" }}>
-        <CenterOverlay targetElement={<div className="h-24 w-24 rounded-lg bg-green-500"></div>}>
+        <CenterOverlay targetElement={<div className="h-24 w-24 rounded-lg bg-green-500" />}>
           <span className="text-lg font-bold text-white">OK</span>
         </CenterOverlay>
       </div>
@@ -74,15 +74,15 @@ export const ColorfulShapes: Story = {
           alignItems: "center",
         }}
       >
-        <CenterOverlay targetElement={<div className="h-16 w-16 rounded-full bg-red-500"></div>}>
+        <CenterOverlay targetElement={<div className="h-16 w-16 rounded-full bg-red-500" />}>
           <span className="font-bold text-white">1</span>
         </CenterOverlay>
 
-        <CenterOverlay targetElement={<div className="h-16 w-16 rounded-lg bg-purple-500"></div>}>
+        <CenterOverlay targetElement={<div className="h-16 w-16 rounded-lg bg-purple-500" />}>
           <span className="font-bold text-white">A</span>
         </CenterOverlay>
 
-        <CenterOverlay targetElement={<div className="h-12 w-20 rounded-full bg-yellow-500"></div>}>
+        <CenterOverlay targetElement={<div className="h-12 w-20 rounded-full bg-yellow-500" />}>
           <span className="font-bold text-black">99</span>
         </CenterOverlay>
       </div>
@@ -101,17 +101,17 @@ export const IconShapes: Story = {
           alignItems: "center",
         }}
       >
-        <CenterOverlay targetElement={<div className="h-20 w-20 rounded-full bg-pink-500"></div>}>
+        <CenterOverlay targetElement={<div className="h-20 w-20 rounded-full bg-pink-500" />}>
           <span className="text-2xl text-white">💝</span>
         </CenterOverlay>
 
         <CenterOverlay
-          targetElement={<div className="h-16 w-16 rotate-45 rounded-lg bg-indigo-500"></div>}
+          targetElement={<div className="h-16 w-16 rotate-45 rounded-lg bg-indigo-500" />}
         >
           <span className="-rotate-45 text-sm font-bold text-white">NEW</span>
         </CenterOverlay>
 
-        <CenterOverlay targetElement={<div className="h-14 w-14 rounded-full bg-orange-500"></div>}>
+        <CenterOverlay targetElement={<div className="h-14 w-14 rounded-full bg-orange-500" />}>
           <span className="text-lg text-white">🔔</span>
         </CenterOverlay>
       </div>
@@ -132,7 +132,7 @@ export const GradientShapes: Story = {
       >
         <CenterOverlay
           targetElement={
-            <div className="h-20 w-20 rounded-full bg-gradient-to-br from-blue-400 to-purple-600"></div>
+            <div className="h-20 w-20 rounded-full bg-gradient-to-br from-blue-400 to-purple-600" />
           }
         >
           <span className="text-xl font-bold text-white">★</span>
@@ -140,7 +140,7 @@ export const GradientShapes: Story = {
 
         <CenterOverlay
           targetElement={
-            <div className="h-16 w-24 rounded-2xl bg-gradient-to-r from-green-400 to-blue-500"></div>
+            <div className="h-16 w-24 rounded-2xl bg-gradient-to-r from-green-400 to-blue-500" />
           }
         >
           <span className="text-lg font-bold text-white">LIVE</span>
@@ -148,7 +148,7 @@ export const GradientShapes: Story = {
 
         <CenterOverlay
           targetElement={
-            <div className="h-16 w-16 rounded-lg bg-gradient-to-tr from-pink-500 to-rose-500"></div>
+            <div className="h-16 w-16 rounded-lg bg-gradient-to-tr from-pink-500 to-rose-500" />
           }
         >
           <span className="text-2xl font-bold text-white">♥</span>

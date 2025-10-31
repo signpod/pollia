@@ -1,6 +1,5 @@
 "use server";
 
-import { FileStatus, SurveyQuestionType } from "@prisma/client";
 import { requireAuth } from "@/actions/common/auth";
 import prisma from "@/database/utils/prisma/client";
 import { multipleChoiceInfoSchema } from "@/schemas/survey/multipleChoiceInfoSchema";
@@ -8,6 +7,7 @@ import type {
   CreateMultipleChoiceQuestionRequest,
   CreateMultipleChoiceQuestionResponse,
 } from "@/types/dto/survey";
+import { FileStatus, SurveyQuestionType } from "@prisma/client";
 
 function validateMultipleChoiceQuestion(
   request: CreateMultipleChoiceQuestionRequest,

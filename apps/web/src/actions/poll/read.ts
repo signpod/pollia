@@ -121,16 +121,13 @@ export async function getUserPolls(params?: {
 
 export async function getBookmarkedPolls(userId?: string): Promise<GetBookmarkedPollsResponse> {
   try {
-    if (!userId) {
-      const user = await requireAuth();
-      userId = user.id;
-    }
+    const actualUserId = userId || (await requireAuth()).id;
 
     const polls = await prisma.poll.findMany({
       where: {
         bookmarks: {
           some: {
-            userId,
+            userId: actualUserId,
           },
         },
       },
@@ -170,16 +167,13 @@ export async function getBookmarkedPolls(userId?: string): Promise<GetBookmarked
 
 export async function getLikedPolls(userId?: string): Promise<GetLikedPollsResponse> {
   try {
-    if (!userId) {
-      const user = await requireAuth();
-      userId = user.id;
-    }
+    const actualUserId = userId || (await requireAuth()).id;
 
     const polls = await prisma.poll.findMany({
       where: {
         likes: {
           some: {
-            userId,
+            userId: actualUserId,
           },
         },
       },

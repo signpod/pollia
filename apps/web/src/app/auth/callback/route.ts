@@ -1,6 +1,6 @@
+import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -104,11 +104,11 @@ export async function GET(request: Request) {
       if (isLocalEnv) {
         // 개발환경에서는 로드밸런서가 없으므로 origin 사용
         return NextResponse.redirect(`${origin}${next}`);
-      } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${next}`);
-      } else {
-        return NextResponse.redirect(`${origin}${next}`);
       }
+      if (forwardedHost) {
+        return NextResponse.redirect(`https://${forwardedHost}${next}`);
+      }
+      return NextResponse.redirect(`${origin}${next}`);
     }
   }
 

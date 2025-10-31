@@ -1,8 +1,8 @@
-import { PollType } from "@prisma/client";
-import { CircleIcon, ThumbsDownIcon, ThumbsUpIcon, XIcon } from "lucide-react";
-import { CenterOverlay, Typo } from "@repo/ui/components";
 import { TYPE_LABELS } from "@/constants/poll";
 import { cn } from "@/lib/utils";
+import { PollType } from "@prisma/client";
+import { CenterOverlay, Typo } from "@repo/ui/components";
+import { CircleIcon, ThumbsDownIcon, ThumbsUpIcon, XIcon } from "lucide-react";
 
 interface PollTypeCardProps extends React.HTMLAttributes<HTMLDivElement> {
   type: PollType;
@@ -31,8 +31,7 @@ export default function PollTypeCard({
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function OxCard({ selected }: { selected: boolean }) {
+function OxCard() {
   return (
     <>
       <div className="flex flex-col items-start gap-1">
@@ -57,8 +56,7 @@ function OxCard({ selected }: { selected: boolean }) {
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function HobullhoCard({ selected }: { selected: boolean }) {
+function HobullhoCard() {
   return (
     <>
       <div className="flex flex-col items-start gap-1">

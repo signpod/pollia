@@ -1,9 +1,9 @@
 "use client";
 
-import { PollType } from "@prisma/client";
-import { ErrorBoundary } from "react-error-boundary";
-import { FixedBottomLayout } from "@repo/ui/components";
 import { useGetPoll } from "@/hooks/poll/usePoll";
+import { PollType } from "@prisma/client";
+import { FixedBottomLayout } from "@repo/ui/components";
+import { ErrorBoundary } from "react-error-boundary";
 import { BinaryPoll } from "./BinaryPoll";
 import { BottomCTAButtons } from "./BottomCTAButtons";
 import { MultiplePoll } from "./MultiplePoll";
@@ -30,6 +30,7 @@ function PollErrorFallback({
             </div>
             <div className="text-gray-600">{error.message || "잠시 후 다시 시도해주세요."}</div>
             <button
+              type="button"
               onClick={resetErrorBoundary}
               className="rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
             >

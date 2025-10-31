@@ -1,12 +1,12 @@
-import React, { useCallback, useMemo } from "react";
-import { PollType } from "@prisma/client";
-import { ThumbsDown, ThumbsUp } from "lucide-react";
 import { PollOptionProgressive } from "@/components/poll/PollOptionProgressive";
 import { BINARY_OPTION_ORDER, BINARY_POLL_OPTIONS, isBinaryPollType } from "@/constants/poll";
 import { useIndividualVoting } from "@/hooks/poll/useIndividualVoting";
 import { usePollResults, useUserVoteStatus } from "@/hooks/poll/usePoll";
 import { useAuth } from "@/hooks/user";
 import { isPollActive } from "@/lib/utils";
+import { PollType } from "@prisma/client";
+import { ThumbsDown, ThumbsUp } from "lucide-react";
+import { useCallback, useMemo } from "react";
 import { BasePollComponent } from "./BasePollComponent";
 
 interface BinaryPollProps {
@@ -157,6 +157,7 @@ export function BinaryPoll({ pollId }: BinaryPollProps) {
     <BasePollComponent pollId={pollId}>
       <div className="flex w-full flex-col gap-2">
         <button
+          type="button"
           onClick={() => handleVoteAction(BINARY_OPTION_ORDER.POSITIVE)}
           className={`w-full text-left ${!isVotingAllowed ? "cursor-not-allowed opacity-50" : ""}`}
           disabled={!isVotingAllowed}
@@ -170,6 +171,7 @@ export function BinaryPoll({ pollId }: BinaryPollProps) {
         </button>
 
         <button
+          type="button"
           onClick={() => handleVoteAction(BINARY_OPTION_ORDER.NEGATIVE)}
           className={`w-full text-left ${!isVotingAllowed ? "cursor-not-allowed opacity-50" : ""}`}
           disabled={!isVotingAllowed}

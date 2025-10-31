@@ -1,7 +1,7 @@
-import { useCallback } from "react";
-import { PrimitiveAtom, useAtom } from "jotai";
 import { Typo } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
+import { PrimitiveAtom, useAtom } from "jotai";
+import { useCallback } from "react";
 
 interface DescriptionInputProps {
   descriptionAtom: PrimitiveAtom<string>;

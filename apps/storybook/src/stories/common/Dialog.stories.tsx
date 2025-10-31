@@ -1,6 +1,3 @@
-import React from "react";
-import type { Meta, StoryObj } from "@storybook/nextjs";
-import { X } from "lucide-react";
 import {
   Button,
   Dialog,
@@ -9,6 +6,9 @@ import {
   DialogPortal,
   DialogTrigger,
 } from "@repo/ui/components";
+import type { Meta, StoryObj } from "@storybook/nextjs";
+import { X } from "lucide-react";
+import React from "react";
 
 const meta: Meta<typeof Dialog> = {
   title: "Common/Dialog",
@@ -327,8 +327,8 @@ export const Sizes: Story = {
                   <div>
                     <h4 className="mb-2 font-medium">오른쪽 섹션</h4>
                     <div className="space-y-2">
-                      <div className="h-6 rounded bg-gray-100"></div>
-                      <div className="h-6 rounded bg-gray-100"></div>
+                      <div className="h-6 rounded bg-gray-100" />
+                      <div className="h-6 rounded bg-gray-100" />
                     </div>
                   </div>
                 </div>

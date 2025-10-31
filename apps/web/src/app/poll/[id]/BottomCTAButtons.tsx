@@ -1,9 +1,9 @@
-import { Bookmark, Heart, Share } from "lucide-react";
-import { IconButton, toast } from "@repo/ui/components";
-import { cn } from "@repo/ui/lib";
 import { useBookmark } from "@/hooks/poll/useBookmark";
 import { useLike } from "@/hooks/poll/useLike";
 import { useAuth } from "@/hooks/user";
+import { IconButton, toast } from "@repo/ui/components";
+import { cn } from "@repo/ui/lib";
+import { Bookmark, Heart, Share } from "lucide-react";
 
 const SHARE_MESSAGES = {
   shared: "공유가 완료되었어요!",
@@ -47,7 +47,7 @@ export function BottomCTAButtons({ pollId }: { pollId: string }) {
       await navigator.clipboard.writeText(shareUrl);
       toast.success(SHARE_MESSAGES.copied);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
+    } catch (_error) {
       toast.error(SHARE_MESSAGES.error);
     }
   };

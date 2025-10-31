@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
 import { cleanupOrphanFiles } from "@/actions/common/image";
+import { NextRequest, NextResponse } from "next/server";
 
 // GET /api/cleanup-orphan-files
 // 고아 파일 정리를 수행하는 API 엔드포인트

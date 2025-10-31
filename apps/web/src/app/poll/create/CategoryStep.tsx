@@ -1,12 +1,12 @@
-import { useState } from "react";
-import { useAtomValue, useSetAtom } from "jotai";
-import { Button, FixedBottomLayout, Typo, useStep } from "@repo/ui/components";
 import { binaryPollCategoryAtom } from "@/atoms/create/binaryPollAtoms";
 import { multiplePollCategoryAtom } from "@/atoms/create/multiplePollAtoms";
 import { isMultiplePollTypeAtom } from "@/atoms/create/pollTypeAtoms";
 import { CATEGORY_ICONS, CATEGORY_LABELS, POLL_CATEGORIES } from "@/constants/poll";
 import { cn } from "@/lib/utils";
 import { PollCategory } from "@/types/domain/poll";
+import { Button, FixedBottomLayout, Typo, useStep } from "@repo/ui/components";
+import { useAtomValue, useSetAtom } from "jotai";
+import { useState } from "react";
 
 export function CategoryStep() {
   const { goBack } = useStep();

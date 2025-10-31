@@ -1,11 +1,11 @@
 "use client";
 
-import { ComponentPropsWithoutRef, ElementType } from "react";
+import { TYPE_LABELS } from "@/constants/survey";
 import { SurveyQuestionType } from "@prisma/client";
-import { cva } from "class-variance-authority";
 import { Typo } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
-import { TYPE_LABELS } from "@/constants/survey";
+import { cva } from "class-variance-authority";
+import { ComponentPropsWithoutRef, ElementType } from "react";
 
 type TypeTagOwnProps<C extends ElementType> = {
   as?: C;

@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useAtomValue } from "jotai";
+import { isBinaryPollTypeAtom, isMultiplePollTypeAtom } from "@/atoms/create/pollTypeAtoms";
+import { CREATE_POLL_STEPS, createStepConfigs } from "@/constants/createPoll";
 import {
   FixedBottomLayout,
   FixedTopLayout,
@@ -10,8 +10,8 @@ import {
   Typo,
   useStep,
 } from "@repo/ui/components";
-import { isBinaryPollTypeAtom, isMultiplePollTypeAtom } from "@/atoms/create/pollTypeAtoms";
-import { CREATE_POLL_STEPS, createStepConfigs } from "@/constants/createPoll";
+import { useAtomValue } from "jotai";
+import { useRouter } from "next/navigation";
 import { BinaryInfoStep } from "./BinaryInfoStep";
 import { CategoryStep } from "./CategoryStep";
 import { MultipleInfoStep } from "./MultipleInfoStep";

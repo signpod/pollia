@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { PrimitiveAtom, useAtom, useSetAtom } from "jotai";
-import { ImageSelector as ImageSelectorComponent, Typo } from "@repo/ui/components";
 import { useImageUpload } from "@/hooks/common/useImageUpload";
+import { ImageSelector as ImageSelectorComponent, Typo } from "@repo/ui/components";
+import { PrimitiveAtom, useAtom, useSetAtom } from "jotai";
+import { useEffect, useState } from "react";
 
 interface ImageSelectorSectionProps {
   imageUrlAtom: PrimitiveAtom<string | undefined>;

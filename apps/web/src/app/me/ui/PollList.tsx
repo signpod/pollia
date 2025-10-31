@@ -1,8 +1,8 @@
-import Link from "next/link";
-import { cva } from "class-variance-authority";
-import { Typo } from "@repo/ui/components";
 import { isPollActive } from "@/lib/utils";
 import { GetUserPollsResponse } from "@/types/dto";
+import { Typo } from "@repo/ui/components";
+import { cva } from "class-variance-authority";
+import Link from "next/link";
 import { List } from "./List";
 
 export function PollList({

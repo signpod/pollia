@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/nextjs";
 import { FixedTopLayout } from "@repo/ui/components";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 
 const meta: Meta<typeof FixedTopLayout> = {
   title: "Layout/FixedTopLayout",

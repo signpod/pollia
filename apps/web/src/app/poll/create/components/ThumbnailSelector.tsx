@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { PrimitiveAtom, useAtom, useSetAtom } from "jotai";
-import { ImageSelector, Typo } from "@repo/ui/components";
 import { useImageUpload } from "@/hooks/common/useImageUpload";
+import { ImageSelector, Typo } from "@repo/ui/components";
+import { PrimitiveAtom, useAtom, useSetAtom } from "jotai";
+import { useEffect, useState } from "react";
 
 interface ThumbnailSelectorProps {
   thumbnailUrlAtom: PrimitiveAtom<string | undefined>;

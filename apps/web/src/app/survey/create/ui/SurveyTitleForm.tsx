@@ -1,12 +1,12 @@
 "use client";
 
-import { useAtom, useAtomValue } from "jotai";
-import { Input } from "@repo/ui/components";
 import {
   surveyTitleAtom,
   surveyTitleTouchedAtom,
   surveyValidationAtom,
 } from "@/atoms/create/surveyAtoms";
+import { Input } from "@repo/ui/components";
+import { useAtom, useAtomValue } from "jotai";
 
 export function SurveyTitleForm() {
   const { title, handleChange, errorMessage, handleBlur } = useSurveyTitleForm();

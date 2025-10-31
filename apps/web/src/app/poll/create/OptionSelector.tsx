@@ -1,10 +1,10 @@
-import { useEffect } from "react";
-import { useAtom } from "jotai";
-import { PlusIcon } from "lucide-react";
-import { Button, CounterInput, Typo } from "@repo/ui/components";
 import { multiplePollMaxSelectionsAtom } from "@/atoms/create/multiplePollAtoms";
 import PollOption from "@/components/poll/PollOption";
 import { useMultipleOptions } from "@/hooks/poll/useMultipleOptions";
+import { Button, CounterInput, Typo } from "@repo/ui/components";
+import { useAtom } from "jotai";
+import { PlusIcon } from "lucide-react";
+import { useEffect } from "react";
 
 export function OptionSelector() {
   const {

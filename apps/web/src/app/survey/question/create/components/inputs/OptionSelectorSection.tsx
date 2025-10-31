@@ -1,10 +1,10 @@
-import { useEffect } from "react";
-import { useAtom } from "jotai";
-import { PlusIcon } from "lucide-react";
-import { Button, CounterInput, Typo } from "@repo/ui/components";
 import { multipleChoiceMaxSelectionsAtom } from "@/atoms/survey/create/multipleChoiceInfoAtoms";
 import { SurveyQuestionOption } from "@/components/survey/SurveyQuestionOption";
 import { useMultipleChoiceOptions } from "@/hooks/survey/question";
+import { Button, CounterInput, Typo } from "@repo/ui/components";
+import { useAtom } from "jotai";
+import { PlusIcon } from "lucide-react";
+import { useEffect } from "react";
 
 export function OptionSelectorSection() {
   const {

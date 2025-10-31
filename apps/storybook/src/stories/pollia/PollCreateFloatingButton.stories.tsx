@@ -1,6 +1,6 @@
-import React from "react";
 import { Meta, StoryObj } from "@storybook/nextjs";
 import PollCreateFloatingButton from "@web/components/poll/PollCreateFloatingButton";
+import React from "react";
 
 const meta: Meta<typeof PollCreateFloatingButton> = {
   title: "Pollia/PollCreateFloatingButton",

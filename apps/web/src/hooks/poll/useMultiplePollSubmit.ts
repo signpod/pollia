@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { PollCategory, PollType } from "@prisma/client";
-import { useAtomValue, useSetAtom } from "jotai";
 import { multiplePollDataAtom, resetMultiplePollAtom } from "@/atoms/create/multiplePollAtoms";
 import { resetPollTypeAtom } from "@/atoms/create/pollTypeAtoms";
-import { multiplePollSchema, type MultiplePollFormData } from "@/schemas/multiplePollSchema";
+import { type MultiplePollFormData, multiplePollSchema } from "@/schemas/multiplePollSchema";
 import { CreatePollRequest } from "@/types/dto";
+import { PollCategory, PollType } from "@prisma/client";
+import { useAtomValue, useSetAtom } from "jotai";
+import { useEffect, useState } from "react";
 import { usePushAfter } from "../common/usePushAfter";
 import { useCreatePoll } from "./useCreatePoll";
 
@@ -88,8 +88,8 @@ export function useMultiplePollSubmit(options: UseMultiplePollSubmitOptions = {}
   ]);
 
   const isImageUploading =
-    (pollData.thumbnailUrl !== undefined && pollData.thumbnailUrl.startsWith("blob:")) ||
-    pollData.options.some(option => option.imageUrl && option.imageUrl.startsWith("blob:"));
+    pollData.thumbnailUrl?.startsWith("blob:") ||
+    pollData.options.some(option => option.imageUrl?.startsWith("blob:"));
 
   const handleSubmit = async (imageFileUploadId?: string) => {
     if (!validation.isValid) {

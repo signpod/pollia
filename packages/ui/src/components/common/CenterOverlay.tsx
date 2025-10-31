@@ -25,7 +25,7 @@ export function CenterOverlay({ targetElement, children }: CenterOverlayProps) {
       <>
         {(targetElement.props as any).children}
         <div
-          className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform`}
+          className={"absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform"}
           role="dialog"
         >
           {children}

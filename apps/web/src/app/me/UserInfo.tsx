@@ -1,6 +1,6 @@
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import PollPollE from "@public/svgs/poll-poll-e.svg";
 import { Typo } from "@repo/ui/components";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface UserInfoProps {
   name: string;

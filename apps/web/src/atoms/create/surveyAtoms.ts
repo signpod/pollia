@@ -1,6 +1,6 @@
+import { SurveyQuestionSummary } from "@/types/domain/survey";
 import { SurveyQuestionType } from "@prisma/client";
 import { atom } from "jotai";
-import { SurveyQuestionSummary } from "@/types/domain/survey";
 
 export const surveyTitleAtom = atom<string>("");
 
@@ -66,7 +66,7 @@ export const surveyValidationAtom = atom(get => {
 
 export const toggleQuestionTypeAtom = atom(null, (get, set, questionType: SurveyQuestionType) => {
   const currentTypes = get(selectedQuestionTypesAtom);
-  if (currentTypes && currentTypes.has(questionType)) {
+  if (currentTypes?.has(questionType)) {
     set(
       selectedQuestionTypesAtom,
       new Set([...currentTypes].filter(type => type !== questionType)),

@@ -1,7 +1,7 @@
-import { useCallback, useState } from "react";
-import { PrimitiveAtom, useAtom } from "jotai";
-import { z } from "zod";
 import { Input } from "@repo/ui/components";
+import { PrimitiveAtom, useAtom } from "jotai";
+import { useCallback, useState } from "react";
+import { z } from "zod";
 
 interface SubjectInputProps {
   titleAtom: PrimitiveAtom<string>;

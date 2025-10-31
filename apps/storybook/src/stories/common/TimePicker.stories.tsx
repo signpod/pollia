@@ -1,6 +1,6 @@
-import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/nextjs";
 import { TimePicker } from "@repo/ui/components";
+import type { Meta, StoryObj } from "@storybook/nextjs";
+import { useState } from "react";
 
 const meta: Meta<typeof TimePicker> = {
   title: "Common/TimePicker",
@@ -168,7 +168,7 @@ export const AMPMTransition: Story = {
             11:55에서 시작합니다. 시간을 증가시켜 12:00(오후)로 전환해보세요.
           </p>
           <p className="text-sm font-medium">
-            현재 시간: {time} ({parseInt(time.split(":")[0] || "0") < 12 ? "오전" : "오후"})
+            현재 시간: {time} ({Number.parseInt(time.split(":")[0] || "0") < 12 ? "오전" : "오후"})
           </p>
         </div>
         <TimePicker value={time} onValueChange={setTime} />

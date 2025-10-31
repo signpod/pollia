@@ -1,7 +1,7 @@
-import { Typo } from "@repo/ui/components";
 import { TYPE_LABELS } from "@/constants/survey";
 import { cn } from "@/lib/utils";
 import { SurveyType } from "@/types/domain/survey";
+import { Typo } from "@repo/ui/components";
 
 interface SurveyTypeCardProps extends React.HTMLAttributes<HTMLDivElement> {
   type: SurveyType;

@@ -1,7 +1,7 @@
-import { ComponentPropsWithRef } from "react";
-import Link from "next/link";
-import { ChevronRight } from "lucide-react";
 import { Typo } from "@repo/ui/components";
+import { ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { ComponentPropsWithRef } from "react";
 
 function ListRoot({ children, ...props }: ComponentPropsWithRef<"section">) {
   return (

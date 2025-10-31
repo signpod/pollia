@@ -1,12 +1,12 @@
 "use client";
 
-import { Suspense } from "react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import PolliaIcon from "@public/svgs/poll-poll-e.svg";
+import { Button, FixedBottomLayout, Typo, toast } from "@repo/ui/components";
 import { motion } from "framer-motion";
 import { Share2 } from "lucide-react";
-import { Button, FixedBottomLayout, toast, Typo } from "@repo/ui/components";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 const CREATE_SURVEY_QUESTION_DONE_MESSAGE = "설문의 질문 하나가 성공적으로 만들어졌어요!";
 
@@ -60,7 +60,7 @@ function SurveyQuestionCreateDoneContent() {
             ease: "easeOut",
           }}
         >
-          <Link href={`/survey/question/create`} className="w-full">
+          <Link href={"/survey/question/create"} className="w-full">
             <Button className="w-full" variant="secondary" aria-label="질문 하나 더 만들기">
               <Typo.ButtonText size="large">질문 하나 더 만들기</Typo.ButtonText>
             </Button>

@@ -1,11 +1,11 @@
 "use client";
 
-import { createContext, useCallback, useContext, useState } from "react";
-import { useRouter } from "next/navigation";
+import { setCurrentUrlAsRedirect } from "@/lib/cookie";
 import CustomMusic from "@public/svgs//custom-music.svg";
 import PollPollECat from "@public/svgs//poll-poll-e-cat.svg";
 import { Button, Dialog, DialogOverlay, DialogPortal, Typo } from "@repo/ui/components";
-import { setCurrentUrlAsRedirect } from "@/lib/cookie";
+import { useRouter } from "next/navigation";
+import { createContext, useCallback, useContext, useState } from "react";
 
 interface LoginModalContextType {
   isOpen: boolean;

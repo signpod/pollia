@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
-import Rollbar from "rollbar";
 import { ResetPage } from "@/components/common/ResetPage";
 import { clientConfig } from "@/rollbar";
+import { useEffect } from "react";
+import Rollbar from "rollbar";
 
 export default function GlobalError({
   error,
@@ -22,9 +22,9 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <html>
+    <html lang="ko">
       <body>
-        <ResetPage reset={reset} />;
+        <ResetPage reset={reset} />
       </body>
     </html>
   );

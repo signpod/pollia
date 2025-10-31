@@ -1,6 +1,6 @@
-import { atom } from "jotai";
 import { SURVEY_TYPES } from "@/constants/survey";
 import { SurveyType } from "@/types/domain/survey";
+import { atom } from "jotai";
 
 export const surveyTypeAtom = atom<SurveyType | undefined>(undefined);
 

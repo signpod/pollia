@@ -1,6 +1,6 @@
-import React from "react";
+import { Button, ModalProvider, useModal } from "@repo/ui/components";
 import type { Meta, StoryObj } from "@storybook/nextjs";
-import { Button, ModalProvider, useModal, type ModalConfig } from "@repo/ui/components";
+import React from "react";
 
 const meta: Meta<typeof ModalProvider> = {
   title: "Common/ModalProvider",

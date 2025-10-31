@@ -1,15 +1,15 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { createClient as createSupabaseClient } from "@/database/utils/supabase/client";
 import {
   FixedBottomLayout,
   KakaoLoginButton,
-  toast,
   Tooltip,
   Typo,
+  toast,
   useModal,
 } from "@repo/ui/components";
-import { createClient as createSupabaseClient } from "@/database/utils/supabase/client";
+import { useCallback, useEffect } from "react";
 import { OnboardingCarousel } from "./OnboardingCarousel";
 
 interface AuthError {
@@ -72,7 +72,7 @@ export function LoginClient({ initialError }: LoginClientProps) {
       <OnboardingCarousel />
 
       {/*TODO: 디자인 가이드 확인 후 삭제. 임시로 바텀 GAP 설정했습니다. 25.09.10 - 정우*/}
-      <div className="h-[166px]"></div>
+      <div className="h-[166px]" />
 
       <FixedBottomLayout.Content className="flex w-full justify-center bg-white">
         <div className="flex w-full max-w-lg flex-col justify-center p-5">

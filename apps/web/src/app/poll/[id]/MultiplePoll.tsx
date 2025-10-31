@@ -1,10 +1,10 @@
-import React, { useCallback, useState } from "react";
-import { Button } from "@repo/ui/components";
 import { PollOptionProgressive } from "@/components/poll/PollOptionProgressive";
 import { useMultipleVoting } from "@/hooks/poll/useMultipleVoting";
 import { usePollResults, useUserVoteStatus } from "@/hooks/poll/usePoll";
 import { useAuth } from "@/hooks/user";
 import { isPollActive } from "@/lib/utils";
+import { Button } from "@repo/ui/components";
+import { useCallback, useState } from "react";
 import { BasePollComponent } from "./BasePollComponent";
 
 interface MultiplePollProps {
@@ -129,10 +129,9 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
       if (!pollActive || isVoting) return true;
       if (hasVoted) {
         return false;
-      } else {
-        if (selectedOptionIds.has(optionId)) return false;
-        return selectedOptionIds.size >= maxSelections;
       }
+      if (selectedOptionIds.has(optionId)) return false;
+      return selectedOptionIds.size >= maxSelections;
     },
     [hasVoted, pollActive, isVoting, selectedOptionIds, maxSelections],
   );

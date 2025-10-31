@@ -1,11 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import Image from "next/image";
-import useEmblaCarousel from "embla-carousel-react";
+import { PointIcon } from "@/components/common/PointIcon";
 import { Typo } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
-import { PointIcon } from "@/components/common/PointIcon";
+import useEmblaCarousel from "embla-carousel-react";
+import Image from "next/image";
+import { useCallback, useEffect, useState } from "react";
 
 const slides = [
   {
@@ -88,11 +88,13 @@ export function OnboardingCarousel() {
       <div className="flex justify-center gap-2">
         {slides.map((_, index) => (
           <button
-            key={index}
+            key={`dot-${index}`}
+            type="button"
             className={`h-2 w-2 rounded-full transition-colors duration-200 ${
               index === selectedIndex ? "bg-zinc-950" : "bg-zinc-200"
             }`}
             onClick={() => onDotButtonClick(index)}
+            aria-label={`슬라이드 ${index + 1}로 이동`}
           />
         ))}
       </div>

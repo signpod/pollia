@@ -1,7 +1,7 @@
 "use client";
 
-import { EllipsisVertical } from "lucide-react";
 import { Button, ImageSelector, Input, Typo } from "@repo/ui/components";
+import { EllipsisVertical } from "lucide-react";
 
 export interface PollCandidateProps {
   imageUrl?: string;

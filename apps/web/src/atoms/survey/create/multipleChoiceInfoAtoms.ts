@@ -1,5 +1,5 @@
-import { atom } from "jotai";
 import { generateUniqueId } from "@/lib/utils";
+import { atom } from "jotai";
 
 export interface SurveyOption {
   id: string;

@@ -1,10 +1,10 @@
-import { useRouter, useSearchParams } from "next/navigation";
-import { useAtomValue } from "jotai";
-import { Button, FixedBottomLayout, toast, Typo } from "@repo/ui/components";
 import { eitherOrDataAtom } from "@/atoms/survey/create/eitherOrInfoAtoms";
 import { useCreateEitherOrQuestion } from "@/hooks/survey/question";
 import { eitherOrInfoSchema } from "@/schemas/survey/eitherOrInfoSchema";
 import type { CreateEitherOrQuestionRequest } from "@/types/dto/survey";
+import { Button, FixedBottomLayout, Typo, toast } from "@repo/ui/components";
+import { useAtomValue } from "jotai";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export function EitherOrSubmitButton() {
   const router = useRouter();

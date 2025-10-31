@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef } from "react";
 import { ImagePlus, X } from "lucide-react";
+import { useRef } from "react";
 import { cn } from "../../lib/utils";
 
 export type ImageSelectorSize = "large" | "medium";

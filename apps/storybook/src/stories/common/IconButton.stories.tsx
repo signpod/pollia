@@ -1,7 +1,7 @@
-import * as React from "react";
+import { IconButton } from "@repo/ui/components";
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { ChevronDown, ChevronUp, Heart, Minus, Plus, Settings } from "lucide-react";
-import { IconButton } from "@repo/ui/components";
+import * as React from "react";
 
 const meta: Meta<typeof IconButton> = {
   title: "Common/IconButton",

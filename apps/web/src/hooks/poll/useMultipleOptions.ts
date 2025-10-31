@@ -1,4 +1,3 @@
-import { useAtomValue, useSetAtom } from "jotai";
 import {
   addOptionAtom,
   clearOptionsAtom,
@@ -8,6 +7,7 @@ import {
   updateOptionAtom,
 } from "@/atoms/create/multiplePollAtoms";
 import { PollOption } from "@/types/domain/poll";
+import { useAtomValue, useSetAtom } from "jotai";
 
 export type OptionUpdateData = Partial<Omit<PollOption, "id" | "order">>;
 

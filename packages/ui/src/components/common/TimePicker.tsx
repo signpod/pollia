@@ -1,7 +1,7 @@
 "use client";
 
-import * as React from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import * as React from "react";
 import type { Swiper as SwiperType } from "swiper";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { cn } from "../../lib/utils";
@@ -69,12 +69,12 @@ export function TimePicker({ value = "00:00", onValueChange, className }: TimePi
   };
 
   const handleHourChange = (newHour: string) => {
-    const hour24 = convert12To24Hour(parseInt(newHour), isPM);
+    const hour24 = convert12To24Hour(Number.parseInt(newHour), isPM);
     onValueChange?.(formatTime(hour24, minutes));
   };
 
   const handleMinuteChange = (newMinute: string) => {
-    onValueChange?.(formatTime(hours, parseInt(newMinute)));
+    onValueChange?.(formatTime(hours, Number.parseInt(newMinute)));
   };
 
   return (

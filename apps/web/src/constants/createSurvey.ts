@@ -1,7 +1,7 @@
-import React from "react";
-import { ChevronLeft, LucideIcon, X } from "lucide-react";
-import { StepConfig } from "@repo/ui/components";
 import { SurveyType } from "@/types/domain/survey";
+import { StepConfig } from "@repo/ui/components";
+import { ChevronLeft, LucideIcon, X } from "lucide-react";
+import React from "react";
 import { TYPE_LABELS } from "./survey";
 
 export interface ExtendedStepConfig extends StepConfig {

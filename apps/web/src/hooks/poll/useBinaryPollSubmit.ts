@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { PollCategory } from "@prisma/client";
-import { useAtomValue, useSetAtom } from "jotai";
 import { binaryPollDataAtom, resetBinaryPollAtom } from "@/atoms/create/binaryPollAtoms";
 import { resetPollTypeAtom, selectedBinaryPollTypeAtom } from "@/atoms/create/pollTypeAtoms";
-import { binaryPollSchema, type BinaryPollFormData } from "@/schemas/binaryPollSchema";
+import { type BinaryPollFormData, binaryPollSchema } from "@/schemas/binaryPollSchema";
 import { CreatePollRequest } from "@/types/dto";
+import { PollCategory } from "@prisma/client";
+import { useAtomValue, useSetAtom } from "jotai";
+import { useEffect, useState } from "react";
 import { usePushAfter } from "../common/usePushAfter";
 import { useCreatePoll } from "./useCreatePoll";
 
@@ -92,7 +92,7 @@ export function useBinaryPollSubmit(options: UseBinaryPollSubmitOptions = {}) {
     endTime,
   ]);
 
-  const isImageUploading = thumbnailUrl !== undefined && thumbnailUrl.startsWith("blob:");
+  const isImageUploading = thumbnailUrl?.startsWith("blob:");
 
   const handleSubmit = async (imageFileUploadId?: string) => {
     if (!validation.isValid) {

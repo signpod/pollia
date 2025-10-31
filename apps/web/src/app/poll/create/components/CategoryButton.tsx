@@ -1,8 +1,8 @@
+import { CATEGORY_LABELS } from "@/constants/poll";
 import { PollCategory } from "@prisma/client";
+import { Button, Typo, useStep } from "@repo/ui/components";
 import { PrimitiveAtom, useAtomValue } from "jotai";
 import { ChevronRight } from "lucide-react";
-import { Button, Typo, useStep } from "@repo/ui/components";
-import { CATEGORY_LABELS } from "@/constants/poll";
 
 interface CategoryButtonProps {
   categoryAtom: PrimitiveAtom<PollCategory | undefined>;

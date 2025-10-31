@@ -1,12 +1,12 @@
 "use client";
 
-import { Suspense } from "react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import PolliaIcon from "@public/svgs/poll-poll-e.svg";
+import { Button, FixedBottomLayout, Typo, toast } from "@repo/ui/components";
 import { motion } from "framer-motion";
 import { Share2 } from "lucide-react";
-import { Button, FixedBottomLayout, toast, Typo } from "@repo/ui/components";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 const CREATE_POLL_DONE_MESSAGE =
   "폴이 성공적으로 만들어졌어요\n어떤 결과가 나올지 같이 기다려봐요!";

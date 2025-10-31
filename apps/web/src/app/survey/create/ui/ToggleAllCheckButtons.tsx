@@ -1,11 +1,11 @@
-import { useAtomValue, useSetAtom } from "jotai";
-import { Button, Typo } from "@repo/ui/components";
 import {
   deselectAllQuestionsAtom,
   selectAllQuestionsAtom,
   selectedQuestionAtom,
 } from "@/atoms/create";
 import { SurveyQuestionSummary } from "@/types/domain/survey";
+import { Button, Typo } from "@repo/ui/components";
+import { useAtomValue, useSetAtom } from "jotai";
 
 interface ToggleAllCheckButtonsProps {
   questions: SurveyQuestionSummary[];

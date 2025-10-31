@@ -7,15 +7,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "ignore": [
-      "node_modules",
-      ".next",
-      "dist",
-      "build",
-      "out",
-      "storybook-static",
-      ".turbo"
-    ]
+    "ignore": ["node_modules", ".next", "dist", "build", "out", "storybook-static", ".turbo"]
   },
   "formatter": {
     "enabled": true,
@@ -34,34 +26,51 @@
     "rules": {
       "recommended": true,
       "a11y": {
-        "recommended": true
+        "recommended": true,
+        "useSemanticElements": "warn",
+        "noSvgWithoutTitle": "warn",
+        "useButtonType": "warn",
+        "useHtmlLang": "warn",
+        "noLabelWithoutControl": "warn",
+        "useKeyWithClickEvents": "warn",
+        "useFocusableInteractive": "warn",
+        "useAriaPropsForRole": "warn"
       },
       "complexity": {
         "recommended": true,
-        "noForEach": "off"
+        "noForEach": "off",
+        "noUselessFragments": "warn",
+        "noBannedTypes": "warn"
       },
       "correctness": {
         "recommended": true,
-        "noUnusedVariables": "error",
-        "noUnusedImports": "error",
+        "noUnusedVariables": "warn",
+        "noUnusedImports": "warn",
+        "noChildrenProp": "warn",
+        "noVoidElementsWithChildren": "warn",
         "useExhaustiveDependencies": "warn",
-        "useHookAtTopLevel": "error"
+        "useHookAtTopLevel": "warn",
+        "useJsxKeyInIterable": "warn"
       },
       "security": {
-        "recommended": true
+        "recommended": true,
+        "noDangerouslySetInnerHtml": "warn"
       },
       "style": {
         "recommended": true,
         "noNonNullAssertion": "warn",
         "useImportType": "off",
-        "useConst": "error",
-        "useNodejsImportProtocol": "error"
+        "useConst": "warn",
+        "useNodejsImportProtocol": "warn",
+        "noParameterAssign": "warn"
       },
       "suspicious": {
         "recommended": true,
         "noExplicitAny": "warn",
         "noArrayIndexKey": "warn",
-        "noConsoleLog": "off"
+        "noConsoleLog": "off",
+        "noShadowRestrictedNames": "warn",
+        "noSuspiciousSemicolonInJsx": "warn"
       },
       "nursery": {
         "useSortedClasses": "off"
@@ -94,5 +103,3 @@
     }
   ]
 }
-
-

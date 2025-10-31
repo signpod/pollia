@@ -1,11 +1,11 @@
 "use client";
 
-import * as React from "react";
-import Image from "next/image";
+import { cn } from "@/lib/utils";
+import { CenterOverlay, Typo } from "@repo/ui/components";
 import { motion } from "framer-motion";
 import { Check, type LucideIcon } from "lucide-react";
-import { CenterOverlay, Typo } from "@repo/ui/components";
-import { cn } from "@/lib/utils";
+import Image from "next/image";
+import * as React from "react";
 
 interface PollOptionProgressiveProps {
   icon?: LucideIcon;

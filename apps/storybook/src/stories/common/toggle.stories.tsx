@@ -1,6 +1,6 @@
-import { useState } from "react";
-import type { Meta, StoryObj } from "@storybook/nextjs";
 import { Toggle } from "@repo/ui/components";
+import type { Meta, StoryObj } from "@storybook/nextjs";
+import { useState } from "react";
 
 const meta: Meta<typeof Toggle> = {
   title: "Common/Toggle",

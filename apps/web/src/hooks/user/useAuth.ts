@@ -1,5 +1,5 @@
-import { useCallback } from "react";
 import { useLoginModal } from "@/components/providers/LoginModalProvider";
+import { useCallback } from "react";
 import { useCurrentUser } from "./useCurrentUser";
 
 export function useAuth() {

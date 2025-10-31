@@ -1,10 +1,10 @@
-import { useRouter, useSearchParams } from "next/navigation";
-import { useAtomValue } from "jotai";
-import { Button, FixedBottomLayout, toast, Typo } from "@repo/ui/components";
 import { scaleDataAtom } from "@/atoms/survey/create/scaleInfoAtoms";
 import { useCreateScaleQuestion } from "@/hooks/survey/question";
 import { scaleInfoSchema } from "@/schemas/survey/scaleInfoSchema";
 import type { CreateScaleQuestionRequest } from "@/types/dto/survey";
+import { Button, FixedBottomLayout, Typo, toast } from "@repo/ui/components";
+import { useAtomValue } from "jotai";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export function ScaleSubmitButton() {
   const router = useRouter();

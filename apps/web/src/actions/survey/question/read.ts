@@ -1,8 +1,8 @@
 "use server";
 
-import { SurveyQuestionType } from "@prisma/client";
 import prisma from "@/database/utils/prisma/client";
 import type { GetSurveyQuestionsResponse } from "@/types/dto";
+import { SurveyQuestionType } from "@prisma/client";
 
 export async function getSurveyQuestions(options?: {
   searchQuery?: string;

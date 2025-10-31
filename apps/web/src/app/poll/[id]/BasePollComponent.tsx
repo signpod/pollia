@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
-import Image from "next/image";
-import { User } from "lucide-react";
-import { ProcessChip, Typo } from "@repo/ui/components";
 import { useGetPoll, usePollResults } from "@/hooks/poll/usePoll";
 import { getPollStatus, getPollStatusMessage } from "@/lib/utils";
+import { ProcessChip, Typo } from "@repo/ui/components";
+import { User } from "lucide-react";
+import Image from "next/image";
+import React, { useEffect, useState } from "react";
 
 interface BasePollComponentProps extends React.PropsWithChildren {
   pollId: string;

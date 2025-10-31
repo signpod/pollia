@@ -1,8 +1,8 @@
 "use client";
 
-import { useAtom } from "jotai";
-import { Input } from "@repo/ui/components";
 import { searchQueryAtom } from "@/atoms/create";
+import { Input } from "@repo/ui/components";
+import { useAtom } from "jotai";
 
 const SEARCH_BAR_PLACEHOLDER = "질문 제목을 검색해주세요";
 

@@ -1,7 +1,5 @@
 "use client";
 
-import { useAtomValue } from "jotai";
-import { FixedBottomLayout, FixedTopLayout, Typo } from "@repo/ui/components";
 import {
   CreateSurveyButton,
   SelectedQuestionDataContainer,
@@ -11,6 +9,8 @@ import {
   SurveyTitleForm,
 } from "@/app/survey/create/ui";
 import { selectedQuestionCountAtom } from "@/atoms/create/surveyAtoms";
+import { FixedBottomLayout, FixedTopLayout, Typo } from "@repo/ui/components";
+import { useAtomValue } from "jotai";
 
 export function CreateSurveyContent() {
   const selectedQuestionCount = useAtomValue(selectedQuestionCountAtom);

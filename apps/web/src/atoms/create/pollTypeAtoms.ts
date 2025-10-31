@@ -1,7 +1,7 @@
-import { PollType } from "@prisma/client";
-import { atom } from "jotai";
 import { POLL_TYPES } from "@/constants/poll";
 import { BinaryPollType, MultiplePollType } from "@/types/domain/poll";
+import { PollType } from "@prisma/client";
+import { atom } from "jotai";
 
 export const pollTypeAtom = atom<PollType | undefined>(undefined);
 

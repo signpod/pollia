@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { Meta, StoryObj } from "@storybook/nextjs";
 import { ImageSelector } from "@repo/ui/components";
+import { Meta, StoryObj } from "@storybook/nextjs";
+import { useEffect, useState } from "react";
 
 const meta: Meta<typeof ImageSelector> = {
   title: "Common/ImageSelector",

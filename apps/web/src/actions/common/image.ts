@@ -1,6 +1,5 @@
 "use server";
 
-import { FileStatus } from "@prisma/client";
 import { requireAuth } from "@/actions/common/auth";
 import prisma from "@/database/utils/prisma/client";
 import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
@@ -13,6 +12,7 @@ import {
   UploadImageRequest,
   UploadImageResponse,
 } from "@/types/dto/image";
+import { FileStatus } from "@prisma/client";
 
 export async function getUploadUrl(request: UploadImageRequest): Promise<UploadImageResponse> {
   try {

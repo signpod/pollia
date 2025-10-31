@@ -1,5 +1,5 @@
-import { PollType } from "@prisma/client";
 import { cn } from "@/lib/utils";
+import { PollType } from "@prisma/client";
 import PollTypeCard from "./PollTypeCard";
 
 interface PollTypeSelectProps {

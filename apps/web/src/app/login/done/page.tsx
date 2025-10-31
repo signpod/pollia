@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import PolliaIcon from "@public/svgs/poll-poll-e.svg";
-import { motion } from "framer-motion";
 import { Button, FixedBottomLayout, Typo } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
+import { motion } from "framer-motion";
+import Link from "next/link";
 
 const TEMP_POLL_ID = "포근한 폴리안";
 
@@ -35,7 +35,7 @@ export default function LoginDonePage() {
         >
           <Typo.MainTitle size="small" className="text-center font-bold whitespace-pre-line">
             <span className="text-primary">{TEMP_POLL_ID}</span>
-            {`님, \n 만나서 반가워요!`}
+            {"님, \n 만나서 반가워요!"}
           </Typo.MainTitle>
         </motion.div>
       </div>

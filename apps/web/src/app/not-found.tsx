@@ -1,8 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import PollPollEOops from "@public/svgs/poll-poll-e-oops.svg";
 import { Button, FixedBottomLayout, FixedTopLayout, Typo } from "@repo/ui/components";
+import { useRouter } from "next/navigation";
 
 const NOT_FOUND_MESSAGE = {
   subTitle: "Oops!",

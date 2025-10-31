@@ -1,6 +1,5 @@
 "use server";
 
-import { SurveyQuestionType } from "@prisma/client";
 import { requireAuth } from "@/actions/common/auth";
 import prisma from "@/database/utils/prisma/client";
 import { eitherOrInfoSchema } from "@/schemas/survey/eitherOrInfoSchema";
@@ -8,6 +7,7 @@ import type {
   CreateEitherOrQuestionRequest,
   CreateEitherOrQuestionResponse,
 } from "@/types/dto/survey";
+import { SurveyQuestionType } from "@prisma/client";
 
 function validateEitherOrQuestion(request: CreateEitherOrQuestionRequest): string | null {
   try {

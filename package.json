@@ -20,10 +20,7 @@
     "node": "22"
   },
   "packageManager": "yarn@4.9.4",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "workspaces": ["apps/*", "packages/*"],
   "dependencies": {
     "@emotion/is-prop-valid": "^1.4.0",
     "zod": "^4.1.11"

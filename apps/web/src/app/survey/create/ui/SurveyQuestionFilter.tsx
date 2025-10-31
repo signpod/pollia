@@ -1,10 +1,10 @@
 "use client";
 
+import { selectedQuestionTypesAtom, toggleQuestionTypeAtom } from "@/atoms/create";
 import { SurveyQuestionType } from "@prisma/client";
+import { Typo } from "@repo/ui/components";
 import { useAtomValue, useSetAtom } from "jotai";
 import { FilterIcon } from "lucide-react";
-import { Typo } from "@repo/ui/components";
-import { selectedQuestionTypesAtom, toggleQuestionTypeAtom } from "@/atoms/create";
 import { TypeTag } from "./TypeTag";
 
 const questionTypes: SurveyQuestionType[] = [

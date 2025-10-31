@@ -1,7 +1,7 @@
-import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { PollOptionProgressive } from "@web/components/poll/PollOptionProgressive";
 import { Calendar, Coffee, Heart, Star, ThumbsUp, Trophy, Users } from "lucide-react";
+import * as React from "react";
 
 const meta: Meta<typeof PollOptionProgressive> = {
   title: "Pollia/PollOptionProgressive",
@@ -562,10 +562,8 @@ export const AccessibilityDemo: Story = {
         <div className="mt-3 rounded-lg bg-green-50 p-3">
           <p className="text-xs text-green-700">
             ✅ role=&quot;progressbar&quot; 지원
-            <br />
-            ✅ aria-valuenow, aria-valuemax 설정
-            <br />
-            ✅ 적절한 aria-label 제공
+            <br />✅ aria-valuenow, aria-valuemax 설정
+            <br />✅ 적절한 aria-label 제공
             <br />✅ 키보드 포커스 시각화
           </p>
         </div>

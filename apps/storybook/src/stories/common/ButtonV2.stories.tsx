@@ -1,6 +1,6 @@
+import { ButtonV2 } from "@repo/ui/components";
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { ChevronRight, Heart, Plus, Settings } from "lucide-react";
-import { ButtonV2 } from "@repo/ui/components";
 
 const meta: Meta<typeof ButtonV2> = {
   title: "Common/ButtonV2",

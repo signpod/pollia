@@ -1,6 +1,5 @@
-import React from "react";
+import { Toaster, toast } from "@repo/ui/components";
 import { Meta, StoryObj } from "@storybook/nextjs";
-import { toast, Toaster } from "@repo/ui/components";
 
 const meta: Meta = {
   title: "Common/Toast",

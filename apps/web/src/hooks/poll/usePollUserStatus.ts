@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import { getPollUserStatus } from "@/actions/poll";
 import { pollQueryKeys } from "@/constants/queryKeys/pollQueryKeys";
+import { useQuery } from "@tanstack/react-query";
 
 export const useGetPollUserStatus = (pollId: string) => {
   return useQuery({

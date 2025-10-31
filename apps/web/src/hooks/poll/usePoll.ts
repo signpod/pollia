@@ -1,7 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
 import { getPoll, getPollResults, getUserPolls, getUserVoteStatus } from "@/actions/poll";
 import { getBookmarkedPolls, getLikedPolls } from "@/actions/poll/read";
 import { pollQueryKeys } from "@/constants/queryKeys/pollQueryKeys";
+import { useQuery } from "@tanstack/react-query";
 
 export const useGetPoll = (pollId: string) => {
   return useQuery({

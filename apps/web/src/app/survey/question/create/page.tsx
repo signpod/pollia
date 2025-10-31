@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useAtomValue } from "jotai";
+import { surveyTypeAtom } from "@/atoms/survey/create/surveyTypeAtoms";
+import { CREATE_SURVEY_STEPS, createStepConfigs } from "@/constants/createSurvey";
 import {
   FixedBottomLayout,
   FixedTopLayout,
@@ -10,8 +10,8 @@ import {
   Typo,
   useStep,
 } from "@repo/ui/components";
-import { surveyTypeAtom } from "@/atoms/survey/create/surveyTypeAtoms";
-import { CREATE_SURVEY_STEPS, createStepConfigs } from "@/constants/createSurvey";
+import { useAtomValue } from "jotai";
+import { useRouter } from "next/navigation";
 import { EitherOrInfoStep } from "./components/steps/EitherOrInfoStep";
 import { MultipleChoiceInfoStep } from "./components/steps/MultipleChoiceInfoStep";
 import { ScaleInfoStep } from "./components/steps/ScaleInfoStep";
