@@ -1,5 +1,11 @@
 "use client";
+"use client";
 
+import { Typo } from '@repo/ui/components';
+import { cn } from '@repo/ui/lib';
+import { ComponentProps } from 'react';
+import { GripVertical, Square, CheckSquare, Loader2Icon } from 'lucide-react';
+import { Reorder } from 'framer-motion';
 import {
   EmptyFallback,
   SearchBar,
@@ -40,9 +46,19 @@ export function QuestionList({
   ...props
 }: QuestionListProps) {
   const reorderQuestions = useSetAtom(reorderQuestionsAtom);
-  const { selectedQuestions, toggleQuestionSelection } = useToggleQuestionSelection();
+  const { selectedQuestions, toggleQuestionSelection } =
+    useToggleQuestionSelection();
+  const searchQuery = useAtomValue(searchQueryAtom);
 
-  const isEmpty = questions.length === 0;
+  // 검색 필터링 로직
+  const filteredQuestions = useMemo(() => {
+    if (!hasSearchBar || !searchQuery) return questions;
+    return questions.filter((question) =>
+      question.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [questions, searchQuery, hasSearchBar]);
+
+  const isEmpty = filteredQuestions.length === 0;
   const shouldShowSelectControls = showSelectControls && !isDraggable;
 
   return (
@@ -52,11 +68,11 @@ export function QuestionList({
         hasSearchBar={hasSearchBar}
         hasFilterBar={hasFilterBar}
         showSelectControls={shouldShowSelectControls}
-        questions={questions}
+        questions={filteredQuestions}
       />
 
       <QuestionListContent
-        questions={questions}
+        questions={filteredQuestions}
         isEmpty={isEmpty}
         isLoading={isLoading}
         isDraggable={isDraggable}
@@ -236,10 +252,10 @@ function DraggableQuestionItem({
     <Reorder.Item
       value={question}
       className={cn(
-        "group flex items-center justify-between p-3 select-none",
+        "group flex items-center justify-between select-none p-3",
         "cursor-grab active:cursor-grabbing",
         "hover:bg-zinc-50 active:bg-violet-50",
-        "transition-colors duration-200 ease-in-out",
+        "transition-colors duration-200 ease-in-out"
       )}
       style={{ listStyle: "none" }}
     >
@@ -302,6 +318,7 @@ function QuestionContent({
   isDraggable,
 }: QuestionContentProps) {
   const CheckboxIcon = isSelected ? CheckSquare : Square;
+  const checkboxColorClass = isSelected ? "text-violet-500" : "text-zinc-300";
   const checkboxColorClass = isSelected ? "text-violet-500" : "text-zinc-300";
 
   return (

@@ -1,4 +1,4 @@
-import type { SurveyQuestionType } from "@prisma/client";
+import type { Survey, SurveyQuestionType } from "@prisma/client";
 
 // Multiple Choice Question
 export interface CreateMultipleChoiceQuestionRequest {
@@ -119,4 +119,11 @@ export interface CreateSurveyResponse {
     updatedAt: Date;
     creatorId: string;
   };
+}
+
+export interface GetUserSurveysResponse {
+  data: Pick<
+    Survey,
+    "id" | "title" | "description" | "imageUrl" | "createdAt" | "updatedAt"
+  >[];
 }

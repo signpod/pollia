@@ -1,26 +1,41 @@
 import { getSurveyQuestions } from "@/actions/survey";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
 import { SurveyQuestionType } from "@prisma/client";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
 export const useReadSurveyQuestions = (params?: {
   options?: {
     searchQuery?: string;
     selectedQuestionTypes?: SurveyQuestionType[];
+    isDraft?: boolean;
+    limit?: number;
   };
 }) => {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: surveyQueryKeys.surveyQuestions({
       searchQuery: params?.options?.searchQuery,
       selectedQuestionTypes: params?.options?.selectedQuestionTypes ?? [],
+      isDraft: params?.options?.isDraft ?? false,
     }),
-    queryFn: () => {
+    queryFn: ({ pageParam }) => {
       return getSurveyQuestions({
         searchQuery: params?.options?.searchQuery,
         selectedQuestionTypes: params?.options?.selectedQuestionTypes ?? [],
+        isDraft: params?.options?.isDraft,
+        cursor: pageParam,
+        limit: params?.options?.limit ?? 10,
       });
     },
-    select: data => data?.data ?? [],
+    select: (data) => {
+      return data.pages.flatMap((page) =>
+        page.data.map((item) => ({
+          ...item,
+          isDraft: item.surveyId === null ? true : false,
+        }))
+      );
+    },
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
     staleTime: 5 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000,
     retry: 3,

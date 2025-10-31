@@ -13,7 +13,7 @@ function ListRoot({ children, ...props }: ComponentPropsWithRef<"section">) {
 
 interface ListHeaderProps extends ComponentPropsWithRef<"div"> {
   title: string;
-  action: React.ReactNode;
+  action?: React.ReactNode;
 }
 
 function ListHeader({ title, action, ...props }: ListHeaderProps) {
@@ -27,7 +27,7 @@ function ListHeader({ title, action, ...props }: ListHeaderProps) {
 
 function ListContent({ children, ...props }: ComponentPropsWithRef<"ul">) {
   return (
-    <ul {...props} className="space-y-2">
+    <ul {...props} className="flex flex-col gap-0">
       {children}
     </ul>
   );
@@ -42,8 +42,11 @@ interface ListItemProps extends ComponentPropsWithRef<"li"> {
 function ListItem({ title, leadingIcon, href, ...props }: ListItemProps) {
   return (
     <li {...props}>
-      <Link href={href} className="flex items-center justify-between rounded-lg bg-white p-4">
-        <div className="flex items-center gap-2">
+      <Link
+        href={href}
+        className="flex items-center justify-between py-4 w-full border-b border-default"
+      >
+        <div className="flex items-center gap-3">
           {leadingIcon}
           <Typo.SubTitle size="large" className="flex-1">
             {title}

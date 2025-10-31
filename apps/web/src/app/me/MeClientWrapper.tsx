@@ -18,16 +18,13 @@ export function MeClientWrapper({ dehydratedState }: MeClientWrapperProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <HydrationBoundary state={dehydratedState}>
-        <FixedBottomLayout className="min-h-screen bg-zinc-50">
-          <FixedTopLayout className="space-y-6">
-            <FixedTopLayout.Content className="bg-transparent">
-              <div className="h-12" />
-            </FixedTopLayout.Content>
+        <FixedBottomLayout className="bg-background min-h-screen">
+          <FixedTopLayout className="space-y-6 pt-12">
             <ProfileContainer />
           </FixedTopLayout>
-          <FixedBottomLayout.Content className="flex w-full justify-end bg-transparent p-4">
-            <div className="fixed right-5 bottom-5 flex flex-col gap-4">
-              <Link href="/poll/create">
+          <FixedBottomLayout.Content className="w-full flex justify-end p-4 bg-transparent">
+            <div className="flex flex-col gap-4 fixed bottom-5 right-5">
+              <Link href="/survey/question/create">
                 <PollCreateFloatingButton variant="with-text" />
               </Link>
               <Link href="/survey/create">

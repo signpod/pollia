@@ -23,7 +23,7 @@ function useSurveyQuestionData() {
 
   const { data: questions, isLoading } = useReadSurveyQuestions({
     options: {
-      searchQuery: searchQuery ?? "",
+      searchQuery,
       selectedQuestionTypes: Array.from(selectedQuestionTypes),
     },
   });

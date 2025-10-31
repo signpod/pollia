@@ -1,9 +1,9 @@
-import { useBookmarkedPolls, useLikedPolls, useUserPolls } from "@/hooks/poll/usePoll";
-import { useCurrentUser } from "@/hooks/user/useCurrentUser";
-import { Button, Typo } from "@repo/ui/components";
 import { ErrorBoundary } from "react-error-boundary";
-import { UserInfo } from "./UserInfo";
+
+import { useCurrentUser } from "@/hooks/user/useCurrentUser";
 import { PollList } from "./ui";
+import { UserInfo } from "./UserInfo";
+import { Button, Typo } from "@repo/ui/components";
 
 const PREVIEW_VIEW_COUNT = 5;
 
@@ -12,19 +12,30 @@ export function ProfileContainer() {
     <>
       <ErrorBoundary FallbackComponent={UserInfoErrorFallback}>
         <UserInfoSection />
+        <Tab.Root initialTab="userSurveys">
+          <ProfileTabsContent />
+        </Tab.Root>
       </ErrorBoundary>
-      <div className="space-y-6">
-        <ErrorBoundary FallbackComponent={PollListErrorFallback}>
-          <UserPollsSection />
-        </ErrorBoundary>
-        <ErrorBoundary FallbackComponent={PollListErrorFallback}>
-          <BookmarkedPollsSection />
-        </ErrorBoundary>
-        <ErrorBoundary FallbackComponent={PollListErrorFallback}>
-          <LikedPollsSection />
-        </ErrorBoundary>
-      </div>
     </>
+  );
+}
+
+export type ProfileTab = "userSurveys" | "userQuestions";
+
+const PROFILE_TABS: { value: ProfileTab; label: string }[] = [
+  { value: "userSurveys", label: "내가 만든 설문" },
+  { value: "userQuestions", label: "내가 만든 질문" },
+] as const;
+
+function ProfileTabs() {
+  return (
+    <Tab.List>
+      {PROFILE_TABS.map((item) => (
+        <Tab.Item key={item.value} value={item.value}>
+          <Typo.SubTitle size="large">{item.label}</Typo.SubTitle>
+        </Tab.Item>
+      ))}
+    </Tab.List>
   );
 }
 
@@ -33,27 +44,6 @@ function UserInfoSection() {
   const { name } = me.data ?? { name: "" };
 
   return <UserInfo name={name} />;
-}
-
-function UserPollsSection() {
-  const userPolls = useUserPolls();
-  const polls = (userPolls.data ?? []).slice(0, PREVIEW_VIEW_COUNT);
-
-  return <PollList title="내가 만든 투표" polls={polls} useActiveIcon />;
-}
-
-function BookmarkedPollsSection() {
-  const userBookmarks = useBookmarkedPolls();
-  const polls = (userBookmarks.data ?? []).slice(0, PREVIEW_VIEW_COUNT);
-
-  return <PollList title="북마크" polls={polls} />;
-}
-
-function LikedPollsSection() {
-  const userLikes = useLikedPolls();
-  const polls = (userLikes.data ?? []).slice(0, PREVIEW_VIEW_COUNT);
-
-  return <PollList title="좋아요" polls={polls} />;
 }
 
 //TODO: 에러 핸들링 구현
@@ -67,8 +57,8 @@ function ErrorFallback({
   resetErrorBoundary: () => void;
 }) {
   return (
-    <div className="mx-5 rounded-lg bg-white p-6">
-      <div className="space-y-4 text-center">
+    <div className="bg-white rounded-lg p-6 mx-5">
+      <div className="text-center space-y-4">
         <Typo.Body size="large" className="text-red-600">
           {title}
         </Typo.Body>
@@ -112,5 +102,103 @@ function PollListErrorFallback({
       error={error}
       resetErrorBoundary={resetErrorBoundary}
     />
+  );
+}
+
+const DRAFT_FILTER_OPTIONS: { value: DraftFilterType; label: string }[] = [
+  { value: "all", label: "전체" },
+  { value: "used", label: "사용" },
+  { value: "unused", label: "미사용" },
+];
+
+const SORT_ORDER_OPTIONS: { value: SortOrderType; label: string }[] = [
+  { value: "latest", label: "최신순" },
+  { value: "oldest", label: "오래된순" },
+];
+
+function ProfileTabsContent() {
+  const { activeTab } = useTab();
+  const { searchQuery, handleChange } = useSearchQuery(meSearchQueryAtom);
+  const [draftFilter, setDraftFilter] = useAtom(meDraftFilterAtom);
+  const [sortOrder, setSortOrder] = useAtom(meSortOrderAtom);
+
+  const DataContainer =
+    activeTab === "userSurveys"
+      ? UserSurveyDataContainer
+      : UserSurveyQuestionDataContainer;
+
+  const baseHref = activeTab === "userSurveys" ? "/survey" : "/survey/question";
+  const placeholder =
+    activeTab === "userSurveys"
+      ? "설문 제목을 검색해주세요"
+      : "질문 제목을 검색해주세요";
+
+  const showDraftFilter = activeTab === "userQuestions";
+  const showSortOrder = activeTab === "userSurveys";
+
+  return (
+    <div className="w-full flex gap-4 flex-col">
+      <ProfileTabs />
+      <div className="flex gap-2 w-full">
+        <BaseSearchBar
+          placeholder={placeholder}
+          value={searchQuery}
+          onChange={handleChange}
+          containerClassName="w-full flex-1"
+        />
+        {showSortOrder && (
+          <Select
+            value={sortOrder}
+            onValueChange={(value) => setSortOrder(value as SortOrderType)}
+          >
+            <SelectTrigger className="w-[120px]" aria-label="정렬 순서">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SORT_ORDER_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+        {showDraftFilter && (
+          <Select
+            value={draftFilter}
+            onValueChange={(value) => setDraftFilter(value as DraftFilterType)}
+          >
+            <SelectTrigger className="w-[120px]" aria-label="사용 상태 필터">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {DRAFT_FILTER_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
+      </div>
+      <div className="space-y-6">
+        <ErrorBoundary FallbackComponent={PollListErrorFallback}>
+          <DataContainer>
+            {({ data, hasNextPage, fetchNextPage, isFetchingNextPage }) => (
+              <ContentList
+                items={data}
+                baseHref={baseHref}
+                hasNextPage={hasNextPage}
+                fetchNextPage={fetchNextPage}
+                isFetchingNextPage={isFetchingNextPage}
+                searchQuery={searchQuery}
+                draftFilter={draftFilter}
+                sortOrder={sortOrder}
+              />
+            )}
+          </DataContainer>
+        </ErrorBoundary>
+      </div>
+    </div>
   );
 }
