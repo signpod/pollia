@@ -24,8 +24,8 @@ export default function PollTypeCard({
       )}
       {...props}
     >
-      {type === PollType.YES_NO && <OxCard selected={selected} />}
-      {type === PollType.LIKE_DISLIKE && <HobullhoCard selected={selected} />}
+      {type === PollType.YES_NO && <OxCard />}
+      {type === PollType.LIKE_DISLIKE && <HobullhoCard />}
       {type === PollType.MULTIPLE_CHOICE && <MultipleCard selected={selected} />}
     </div>
   );
