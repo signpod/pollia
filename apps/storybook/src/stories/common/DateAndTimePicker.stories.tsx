@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/nextjs";
 import { useState } from "react";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 import { DateAndTimePicker } from "@repo/ui/components";
 
 const meta: Meta<typeof DateAndTimePicker> = {
@@ -95,12 +95,7 @@ export const Default: Story = {
 
     return (
       <div style={{ padding: "20px" }}>
-        <DateAndTimePicker
-          date={date}
-          time={time}
-          onDateChange={setDate}
-          onTimeChange={setTime}
-        />
+        <DateAndTimePicker date={date} time={time} onDateChange={setDate} onTimeChange={setTime} />
       </div>
     );
   },
@@ -114,23 +109,19 @@ export const InForm: Story = {
     return (
       <div style={{ padding: "40px", maxWidth: "500px" }}>
         <form className="space-y-4">
-          <h3 className="text-lg font-semibold mb-4">새 일정 만들기</h3>
+          <h3 className="mb-4 text-lg font-semibold">새 일정 만들기</h3>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              일정 제목
-            </label>
+            <label className="mb-2 block text-sm font-medium text-gray-700">일정 제목</label>
             <input
               type="text"
               placeholder="일정 제목을 입력하세요"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              날짜 및 시간
-            </label>
+            <label className="mb-2 block text-sm font-medium text-gray-700">날짜 및 시간</label>
             <DateAndTimePicker
               date={date}
               time={time}
@@ -141,7 +132,7 @@ export const InForm: Story = {
 
           <button
             type="submit"
-            className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            className="w-full rounded-lg bg-blue-500 px-4 py-2 text-white transition-colors hover:bg-blue-600"
           >
             일정 저장
           </button>
@@ -163,9 +154,9 @@ export const StartEndTime: Story = {
         <div className="space-y-6">
           <h3 className="text-lg font-semibold">회의 일정 설정</h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
-              <h4 className="font-medium text-gray-900 mb-3">시작 시간</h4>
+              <h4 className="mb-3 font-medium text-gray-900">시작 시간</h4>
               <DateAndTimePicker
                 date={startDate}
                 time={startTime}
@@ -175,7 +166,7 @@ export const StartEndTime: Story = {
             </div>
 
             <div>
-              <h4 className="font-medium text-gray-900 mb-3">종료 시간</h4>
+              <h4 className="mb-3 font-medium text-gray-900">종료 시간</h4>
               <DateAndTimePicker
                 date={endDate}
                 time={endTime}
@@ -197,10 +188,8 @@ export const Disabled: Story = {
 
     return (
       <div style={{ padding: "20px" }}>
-        <h3 className="text-lg font-semibold mb-4">
-          비활성화된 DateAndTimePicker
-        </h3>
-        <p className="text-gray-600 mb-4">
+        <h3 className="mb-4 text-lg font-semibold">비활성화된 DateAndTimePicker</h3>
+        <p className="mb-4 text-gray-600">
           disabled prop이 true일 때의 상태입니다. 클릭이나 입력이 불가능합니다.
         </p>
         <DateAndTimePicker
@@ -217,29 +206,19 @@ export const Disabled: Story = {
 
 export const DisabledComparison: Story = {
   render: () => {
-    const [enabledDate, setEnabledDate] = useState<Date | undefined>(
-      new Date()
-    );
+    const [enabledDate, setEnabledDate] = useState<Date | undefined>(new Date());
     const [enabledTime, setEnabledTime] = useState("10:00");
-    const [disabledDate, setDisabledDate] = useState<Date | undefined>(
-      new Date()
-    );
+    const [disabledDate, setDisabledDate] = useState<Date | undefined>(new Date());
     const [disabledTime, setDisabledTime] = useState("14:30");
 
     return (
       <div style={{ padding: "40px", maxWidth: "800px" }}>
-        <h3 className="text-lg font-semibold mb-6">
-          활성화 vs 비활성화 상태 비교
-        </h3>
+        <h3 className="mb-6 text-lg font-semibold">활성화 vs 비활성화 상태 비교</h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
           <div>
-            <h4 className="font-medium text-gray-900 mb-3">
-              활성화 상태 (Normal)
-            </h4>
-            <p className="text-sm text-gray-600 mb-3">
-              클릭과 입력이 가능한 일반 상태입니다.
-            </p>
+            <h4 className="mb-3 font-medium text-gray-900">활성화 상태 (Normal)</h4>
+            <p className="mb-3 text-sm text-gray-600">클릭과 입력이 가능한 일반 상태입니다.</p>
             <DateAndTimePicker
               date={enabledDate}
               time={enabledTime}
@@ -250,10 +229,8 @@ export const DisabledComparison: Story = {
           </div>
 
           <div>
-            <h4 className="font-medium text-gray-900 mb-3">
-              비활성화 상태 (Disabled)
-            </h4>
-            <p className="text-sm text-gray-600 mb-3">
+            <h4 className="mb-3 font-medium text-gray-900">비활성화 상태 (Disabled)</h4>
+            <p className="mb-3 text-sm text-gray-600">
               disabled={true}로 설정된 상태입니다. 모든 인터랙션이 차단됩니다.
             </p>
             <DateAndTimePicker

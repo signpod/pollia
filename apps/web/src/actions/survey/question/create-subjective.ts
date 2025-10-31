@@ -1,17 +1,15 @@
 "use server";
 
+import { SurveyQuestionType } from "@prisma/client";
 import { requireAuth } from "@/actions/common/auth";
 import prisma from "@/database/utils/prisma/client";
-import { SurveyQuestionType } from "@prisma/client";
 import { subjectiveInfoSchema } from "@/schemas/survey/subjectiveInfoSchema";
 import type {
   CreateSubjectiveQuestionRequest,
   CreateSubjectiveQuestionResponse,
 } from "@/types/dto/survey";
 
-function validateSubjectiveQuestion(
-  request: CreateSubjectiveQuestionRequest
-): string | null {
+function validateSubjectiveQuestion(request: CreateSubjectiveQuestionRequest): string | null {
   try {
     const formData = {
       title: request.title,
@@ -31,7 +29,7 @@ function validateSubjectiveQuestion(
 }
 
 export async function createSubjectiveQuestion(
-  request: CreateSubjectiveQuestionRequest
+  request: CreateSubjectiveQuestionRequest,
 ): Promise<CreateSubjectiveQuestionResponse> {
   try {
     const user = await requireAuth();

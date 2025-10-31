@@ -1,13 +1,12 @@
 "use client";
 
-import { cn } from "@/lib/utils";
-import { PlusIcon } from "lucide-react";
-import { PointIcon } from "../common/PointIcon";
-import { Typo } from "@repo/ui/components";
 import { motion } from "framer-motion";
+import { PlusIcon } from "lucide-react";
+import { Typo } from "@repo/ui/components";
+import { cn } from "@/lib/utils";
+import { PointIcon } from "../common/PointIcon";
 
-interface PollCreateFloatingButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface PollCreateFloatingButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "icon-only" | "with-text";
 }
 
@@ -21,10 +20,10 @@ export default function PollCreateFloatingButton({
   return (
     <button
       className={cn(
-        "relative rounded-full shadow-lg bg-zinc-800",
+        "relative rounded-full bg-zinc-800 shadow-lg",
         "flex items-center justify-center overflow-hidden",
-        "active:scale-95 transition-all duration-200",
-        className
+        "transition-all duration-200 active:scale-95",
+        className,
       )}
       aria-label="투표 만들기"
       {...props}
@@ -36,7 +35,7 @@ export default function PollCreateFloatingButton({
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
-        <PointIcon className="size-6 text-white shrink-0">
+        <PointIcon className="size-6 shrink-0 text-white">
           <PlusIcon className="size-4.5 text-zinc-950" strokeWidth={2.8} />
         </PointIcon>
 
@@ -48,10 +47,7 @@ export default function PollCreateFloatingButton({
           }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
         >
-          <Typo.ButtonText
-            size="large"
-            className="text-white whitespace-nowrap"
-          >
+          <Typo.ButtonText size="large" className="whitespace-nowrap text-white">
             투표 만들기
           </Typo.ButtonText>
         </motion.div>

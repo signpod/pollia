@@ -1,11 +1,12 @@
 "use client";
-import { FixedBottomLayout, Button, Typo, toast } from "@repo/ui/components";
-import PolliaIcon from "@public/svgs/poll-poll-e.svg";
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { useSearchParams } from "next/navigation";
+
 import { Suspense } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import PolliaIcon from "@public/svgs/poll-poll-e.svg";
+import { motion } from "framer-motion";
 import { Share2 } from "lucide-react";
+import { Button, FixedBottomLayout, toast, Typo } from "@repo/ui/components";
 
 const CREATE_POLL_DONE_MESSAGE =
   "폴이 성공적으로 만들어졌어요\n어떤 결과가 나올지 같이 기다려봐요!";
@@ -30,13 +31,10 @@ function PollCreateDoneContent() {
 
   return (
     <div className="pt-60">
-      <div className="flex-1 flex flex-col items-center justify-center gap-6 mb-[160px]">
+      <div className="mb-[160px] flex flex-1 flex-col items-center justify-center gap-6">
         <PolliaIcon className="text-primary size-30" />
 
-        <Typo.MainTitle
-          size="small"
-          className="text-center whitespace-pre-line font-bold"
-        >
+        <Typo.MainTitle size="small" className="text-center font-bold whitespace-pre-line">
           {CREATE_POLL_DONE_MESSAGE}
         </Typo.MainTitle>
 
@@ -54,9 +52,9 @@ function PollCreateDoneContent() {
         </Button>
       </div>
 
-      <FixedBottomLayout.Content className="w-full flex justify-center bg-white">
+      <FixedBottomLayout.Content className="flex w-full justify-center bg-white">
         <motion.div
-          className="flex flex-col justify-center w-full max-w-lg p-5 gap-2"
+          className="flex w-full max-w-lg flex-col justify-center gap-2 p-5"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{
@@ -65,11 +63,7 @@ function PollCreateDoneContent() {
           }}
         >
           <Link href={`/poll/${pollId}`} className="w-full">
-            <Button
-              className="w-full"
-              variant="secondary"
-              aria-label="지금 바로 확인하기"
-            >
+            <Button className="w-full" variant="secondary" aria-label="지금 바로 확인하기">
               <Typo.ButtonText size="large">지금 바로 확인하기</Typo.ButtonText>
             </Button>
           </Link>

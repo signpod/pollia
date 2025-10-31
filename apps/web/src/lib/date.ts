@@ -28,11 +28,15 @@ export const getCurrentDate = (): string => {
   return now.toISOString().split("T")[0]!;
 };
 
-export const getCurrentTime = ({ roundMinutesTo = 5 }: { roundMinutesTo?: number } = {}): string => {
+export const getCurrentTime = ({
+  roundMinutesTo = 5,
+}: { roundMinutesTo?: number } = {}): string => {
   const now = new Date();
   const hours = now.getHours();
   const minutes = now.getMinutes();
-  const roundedMinutes = roundMinutesTo ? Math.floor(minutes / roundMinutesTo) * roundMinutesTo : minutes
+  const roundedMinutes = roundMinutesTo
+    ? Math.floor(minutes / roundMinutesTo) * roundMinutesTo
+    : minutes;
 
-  return `${String(hours).padStart(2, '0')}:${String(roundedMinutes).padStart(2, '0')}`;
+  return `${String(hours).padStart(2, "0")}:${String(roundedMinutes).padStart(2, "0")}`;
 };

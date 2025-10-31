@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useCallback, useContext, useState } from "react";
 
 export interface StepConfig {
   id: string;
@@ -48,10 +48,7 @@ export function StepProvider({
     throw new Error("StepProvider: steps array cannot be empty");
   }
 
-  const safeInitialStep = Math.max(
-    0,
-    Math.min(initialStep, initialSteps.length - 1)
-  );
+  const safeInitialStep = Math.max(0, Math.min(initialStep, initialSteps.length - 1));
 
   const [currentStep, setCurrentStep] = useState(safeInitialStep);
   const [steps, setSteps] = useState<StepConfig[]>(initialSteps);
@@ -62,8 +59,7 @@ export function StepProvider({
   const canGoNext = currentStepConfig?.canGoNext !== false;
   const canGoBack = currentStepConfig?.canGoBack !== false && !isFirstStep;
 
-  const progress =
-    steps.length > 0 ? ((currentStep + 1) / steps.length) * 100 : 0;
+  const progress = steps.length > 0 ? ((currentStep + 1) / steps.length) * 100 : 0;
 
   const goToStep = useCallback(
     (stepIndex: number) => {
@@ -77,7 +73,7 @@ export function StepProvider({
         }
       }
     },
-    [currentStep, steps.length, onStepChange, onComplete]
+    [currentStep, steps.length, onStepChange, onComplete],
   );
 
   const goNext = useCallback(() => {
@@ -92,16 +88,11 @@ export function StepProvider({
     }
   }, [canGoBack, isFirstStep, currentStep, goToStep]);
 
-  const updateStepConfig = useCallback(
-    (stepIndex: number, updates: Partial<StepConfig>) => {
-      setSteps((prevSteps) =>
-        prevSteps.map((step, index) =>
-          index === stepIndex ? { ...step, ...updates } : step
-        )
-      );
-    },
-    []
-  );
+  const updateStepConfig = useCallback((stepIndex: number, updates: Partial<StepConfig>) => {
+    setSteps(prevSteps =>
+      prevSteps.map((step, index) => (index === stepIndex ? { ...step, ...updates } : step)),
+    );
+  }, []);
 
   const value: StepContextValue = {
     currentStep,

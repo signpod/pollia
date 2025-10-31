@@ -1,6 +1,6 @@
+import { useEffect, useState } from "react";
 import { Meta, StoryObj } from "@storybook/nextjs";
 import { ImageSelector } from "@repo/ui/components";
-import { useState, useEffect } from "react";
 
 const meta: Meta<typeof ImageSelector> = {
   title: "Common/ImageSelector",
@@ -79,8 +79,7 @@ export const DefaultLarge: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          "기본 상태의 Large 크기 ImageSelector입니다. 클릭하여 이미지를 추가할 수 있습니다.",
+        story: "기본 상태의 Large 크기 ImageSelector입니다. 클릭하여 이미지를 추가할 수 있습니다.",
       },
     },
   },
@@ -169,11 +168,11 @@ export const DisabledWithImage: Story = {
 export const SizeComparison: Story = {
   render: () => (
     <div className="flex items-center gap-4">
-      <div className="text-center space-y-2">
+      <div className="space-y-2 text-center">
         <ImageSelector size="large" />
         <p className="text-sm text-gray-600">Large (72x72px)</p>
       </div>
-      <div className="text-center space-y-2">
+      <div className="space-y-2 text-center">
         <ImageSelector size="medium" />
         <p className="text-sm text-gray-600">Medium (48x48px)</p>
       </div>
@@ -236,9 +235,7 @@ export const Interactive: Story = {
             <div className="space-y-1">
               <p>✅ 이미지가 선택되었습니다.</p>
               <p className="text-xs text-gray-500">파일명: {fileName}</p>
-              <p className="text-xs text-gray-400">
-                X 버튼을 클릭하여 삭제할 수 있습니다.
-              </p>
+              <p className="text-xs text-gray-400">X 버튼을 클릭하여 삭제할 수 있습니다.</p>
             </div>
           ) : (
             <p>📷 클릭하여 이미지 파일을 선택해보세요.</p>
@@ -265,7 +262,7 @@ export const InForm: Story = {
     // 컴포넌트 언마운트 시 모든 URL 메모리 정리
     useEffect(() => {
       return () => {
-        images.forEach((image) => {
+        images.forEach(image => {
           URL.revokeObjectURL(image.url);
         });
       };
@@ -289,7 +286,7 @@ export const InForm: Story = {
     return (
       <div className="max-w-md space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="mb-2 block text-sm font-medium text-gray-700">
             투표 옵션 이미지 (선택사항)
           </label>
           <div className="grid grid-cols-4 gap-2">
@@ -302,19 +299,13 @@ export const InForm: Story = {
                 onImageDelete={() => deleteImage(index)}
               />
             ))}
-            {images.length < 4 && (
-              <ImageSelector size="medium" onImageSelect={addImage} />
-            )}
+            {images.length < 4 && <ImageSelector size="medium" onImageSelect={addImage} />}
           </div>
-          <p className="text-xs text-gray-500 mt-1">
-            최대 4개의 이미지를 추가할 수 있습니다.
-          </p>
+          <p className="mt-1 text-xs text-gray-500">최대 4개의 이미지를 추가할 수 있습니다.</p>
         </div>
 
-        <div className="p-4 bg-gray-50 rounded-lg">
-          <p className="text-sm font-medium text-gray-700">
-            선택된 이미지: {images.length}개
-          </p>
+        <div className="rounded-lg bg-gray-50 p-4">
+          <p className="text-sm font-medium text-gray-700">선택된 이미지: {images.length}개</p>
           {images.length > 0 && (
             <div className="mt-2 space-y-1">
               {images.map((image, index) => (
@@ -324,7 +315,7 @@ export const InForm: Story = {
               ))}
             </div>
           )}
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="mt-1 text-xs text-gray-500">
             + 버튼을 클릭하여 이미지를 추가하고, X 버튼으로 삭제할 수 있습니다.
           </p>
         </div>

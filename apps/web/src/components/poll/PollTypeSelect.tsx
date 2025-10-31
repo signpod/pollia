@@ -1,6 +1,6 @@
+import { PollType } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import PollTypeCard from "./PollTypeCard";
-import { PollType } from "@prisma/client";
 
 interface PollTypeSelectProps {
   selectedType?: PollType;
@@ -32,11 +32,7 @@ export default function PollTypeSelect({
     <div className={cn("space-y-3", className)}>
       <div className="grid gap-3">
         {pollTypes.map(({ type }) => (
-          <button
-            key={type}
-            onClick={() => onTypeChange?.(type)}
-            className="text-left"
-          >
+          <button key={type} onClick={() => onTypeChange?.(type)} className="text-left">
             <PollTypeCard
               type={type}
               selected={selectedType === type}

@@ -1,25 +1,21 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { useAtomValue } from "jotai";
 import {
-  useStep,
-  Typo,
-  StepProvider,
   FixedBottomLayout,
   FixedTopLayout,
   IconButton,
+  StepProvider,
+  Typo,
+  useStep,
 } from "@repo/ui/components";
-import { useAtomValue } from "jotai";
-import {
-  isBinaryPollTypeAtom,
-  isMultiplePollTypeAtom,
-} from "@/atoms/create/pollTypeAtoms";
+import { isBinaryPollTypeAtom, isMultiplePollTypeAtom } from "@/atoms/create/pollTypeAtoms";
 import { CREATE_POLL_STEPS, createStepConfigs } from "@/constants/createPoll";
-import { useRouter } from "next/navigation";
-
-import { TypeStep } from "./TypeStep";
 import { BinaryInfoStep } from "./BinaryInfoStep";
 import { CategoryStep } from "./CategoryStep";
 import { MultipleInfoStep } from "./MultipleInfoStep";
+import { TypeStep } from "./TypeStep";
 
 export default function CreatePollPage() {
   return (
@@ -49,7 +45,7 @@ function CreatePollPageContent() {
   })[currentStep];
 
   return (
-    <FixedTopLayout className="bg-white flex flex-col h-full">
+    <FixedTopLayout className="flex h-full flex-col bg-white">
       <FixedTopLayout.Content className="flex flex-col gap-4">
         <div className="px-1">
           {currentStepConfig?.header.icon && (
@@ -64,10 +60,8 @@ function CreatePollPageContent() {
         </div>
       </FixedTopLayout.Content>
 
-      <div className="px-5 space-y-1">
-        <Typo.MainTitle size="medium">
-          {currentStepConfig?.title}
-        </Typo.MainTitle>
+      <div className="space-y-1 px-5">
+        <Typo.MainTitle size="medium">{currentStepConfig?.title}</Typo.MainTitle>
         {currentStepConfig?.description && (
           <Typo.Body size="large" className="text-zinc-600">
             {currentStepConfig.description}

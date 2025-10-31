@@ -1,9 +1,7 @@
-import { CenterOverlay } from "@repo/ui/components";
 import PoliaLogo from "@public/svgs/pollia-icon-filled.svg";
+import { CenterOverlay } from "@repo/ui/components";
 
-interface PointIconProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    React.PropsWithChildren {}
+interface PointIconProps extends React.HTMLAttributes<HTMLDivElement>, React.PropsWithChildren {}
 
 export function PointIcon({ children, className, ...props }: PointIconProps) {
   return (

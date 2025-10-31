@@ -3,14 +3,14 @@
 import { requireAuth } from "@/actions/common/auth";
 import prisma from "@/database/utils/prisma/client";
 import {
-  SubmitVoteRequest,
-  SubmitVoteResponse,
+  RemoveMultipleVoteRequest,
+  RemoveMultipleVoteResponse,
   RemoveVoteRequest,
   RemoveVoteResponse,
   SubmitMultipleVoteRequest,
   SubmitMultipleVoteResponse,
-  RemoveMultipleVoteRequest,
-  RemoveMultipleVoteResponse,
+  SubmitVoteRequest,
+  SubmitVoteResponse,
 } from "@/types/dto";
 
 // 사용자의 특정 투표 참여 상태 확인
@@ -36,7 +36,7 @@ export async function getUserVoteStatus(pollId: string) {
 
     return {
       hasVoted: votes.length > 0,
-      votes: votes.map((vote) => ({
+      votes: votes.map(vote => ({
         id: vote.id,
         option: vote.option,
       })),
@@ -53,7 +53,7 @@ export async function getUserVoteStatus(pollId: string) {
 
 // Individual Poll 투표 제출 (Binary Poll용)
 export async function submitIndividualVote(
-  request: SubmitVoteRequest
+  request: SubmitVoteRequest,
 ): Promise<SubmitVoteResponse> {
   try {
     const user = await requireAuth();
@@ -66,7 +66,7 @@ export async function submitIndividualVote(
       throw error;
     }
 
-    const vote = await prisma.$transaction(async (tx) => {
+    const vote = await prisma.$transaction(async tx => {
       // 기존 투표 제거 (이진 투표는 단일 선택)
       await tx.vote.deleteMany({
         where: {
@@ -106,7 +106,7 @@ export async function submitIndividualVote(
 
 // Individual Poll 투표 취소 (Binary Poll용)
 export async function removeIndividualVote(
-  request: RemoveVoteRequest
+  request: RemoveVoteRequest,
 ): Promise<RemoveVoteResponse> {
   try {
     const user = await requireAuth();
@@ -137,9 +137,7 @@ export async function removeIndividualVote(
 }
 
 // 투표 요청 검증
-async function validateVoteRequest(
-  request: SubmitVoteRequest
-): Promise<string | null> {
+async function validateVoteRequest(request: SubmitVoteRequest): Promise<string | null> {
   // Poll 존재 여부 및 상태 확인
   const poll = await prisma.poll.findUnique({
     where: { id: request.pollId },
@@ -165,9 +163,7 @@ async function validateVoteRequest(
   }
 
   // 옵션 존재 여부 확인
-  const optionExists = poll.options.some(
-    (option) => option.id === request.optionId
-  );
+  const optionExists = poll.options.some(option => option.id === request.optionId);
   if (!optionExists) {
     return "존재하지 않는 선택지입니다.";
   }
@@ -177,7 +173,7 @@ async function validateVoteRequest(
 
 // Multiple Choice Poll 투표 제출
 export async function submitMultipleVote(
-  request: SubmitMultipleVoteRequest
+  request: SubmitMultipleVoteRequest,
 ): Promise<SubmitMultipleVoteResponse> {
   try {
     const user = await requireAuth();
@@ -233,7 +229,7 @@ export async function submitMultipleVote(
 
 // Multiple Choice Poll 투표 취소
 export async function removeMultipleVote(
-  request: RemoveMultipleVoteRequest
+  request: RemoveMultipleVoteRequest,
 ): Promise<RemoveMultipleVoteResponse> {
   try {
     const user = await requireAuth();

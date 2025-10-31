@@ -1,5 +1,5 @@
-import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
 import type { User } from "@supabase/supabase-js";
+import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
 
 /**
  * Server Action에서 인증된 사용자를 가져옵니다.

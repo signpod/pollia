@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import { Typo } from '@repo/ui/components';
-import { cn } from '@repo/ui/lib';
-import { ComponentProps } from 'react';
-import { GripVertical, Square, CheckSquare, Loader2Icon } from 'lucide-react';
-import { Reorder } from 'framer-motion';
+import { ComponentProps } from "react";
+import { Reorder } from "framer-motion";
+import { useAtom, useSetAtom } from "jotai";
+import { CheckSquare, GripVertical, Loader2Icon, Square } from "lucide-react";
+import { Typo } from "@repo/ui/components";
+import { cn } from "@repo/ui/lib";
 import {
-  SearchBar,
   EmptyFallback,
+  SearchBar,
   SurveyQuestionFilter,
-  TypeTag,
   ToggleAllCheckButtons,
-} from '@/app/survey/create/ui';
-import { reorderQuestionsAtom, selectedQuestionAtom } from '@/atoms/create';
-import { useAtom, useSetAtom } from 'jotai';
-import { SurveyQuestionSummary } from '@/types/domain/survey';
+  TypeTag,
+} from "@/app/survey/create/ui";
+import { reorderQuestionsAtom, selectedQuestionAtom } from "@/atoms/create";
+import { SurveyQuestionSummary } from "@/types/domain/survey";
 
-export interface QuestionListProps extends ComponentProps<'section'> {
+export interface QuestionListProps extends ComponentProps<"section"> {
   title: string;
   questions: SurveyQuestionSummary[];
   isDraggable?: boolean;
@@ -40,14 +40,13 @@ export function QuestionList({
   ...props
 }: QuestionListProps) {
   const reorderQuestions = useSetAtom(reorderQuestionsAtom);
-  const { selectedQuestions, toggleQuestionSelection } =
-    useToggleQuestionSelection();
+  const { selectedQuestions, toggleQuestionSelection } = useToggleQuestionSelection();
 
   const isEmpty = questions.length === 0;
   const shouldShowSelectControls = showSelectControls && !isDraggable;
 
   return (
-    <section className={cn('flex flex-col', className)} {...props}>
+    <section className={cn("flex flex-col", className)} {...props}>
       <QuestionListHeader
         title={title}
         hasSearchBar={hasSearchBar}
@@ -86,7 +85,7 @@ function QuestionListHeader({
   questions,
 }: QuestionListHeaderProps) {
   return (
-    <div className="flex flex-col gap-4 bg-background">
+    <div className="bg-background flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <Typo.SubTitle size="large">{title}</Typo.SubTitle>
         {showSelectControls && <ToggleAllCheckButtons questions={questions} />}
@@ -120,14 +119,14 @@ function QuestionListContent({
 }: QuestionListContentProps) {
   if (isLoading)
     return (
-      <div className="py-2 flex flex-col flex-1 min-h-0 overflow-y-auto items-center justify-center">
-        <Loader2Icon className="size-12 text-zinc-200 animate-spin" />
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto py-2">
+        <Loader2Icon className="size-12 animate-spin text-zinc-200" />
       </div>
     );
 
   if (isEmpty) {
     return (
-      <div className="py-2 flex flex-col flex-1 min-h-0 overflow-y-auto items-center justify-center">
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center overflow-y-auto py-2">
         <EmptyFallback />
       </div>
     );
@@ -170,7 +169,7 @@ function DraggableQuestionsList({
       axis="y"
       values={questions}
       onReorder={onReorder}
-      className="py-2 flex flex-col flex-1 min-h-0 overflow-y-auto"
+      className="flex min-h-0 flex-1 flex-col overflow-y-auto py-2"
       as="ul"
     >
       {questions.map((question, index) => (
@@ -199,7 +198,7 @@ function StaticQuestionsList({
   onSelectQuestion,
 }: StaticQuestionsListProps) {
   return (
-    <ul className="py-2 flex flex-col flex-1 min-h-0 overflow-y-auto">
+    <ul className="flex min-h-0 flex-1 flex-col overflow-y-auto py-2">
       {questions.map((question, index) => (
         <QuestionItem
           key={question.id}
@@ -237,12 +236,12 @@ function DraggableQuestionItem({
     <Reorder.Item
       value={question}
       className={cn(
-        'group flex items-center justify-between select-none p-3',
-        'cursor-grab active:cursor-grabbing',
-        'hover:bg-zinc-50 active:bg-violet-50',
-        'transition-colors duration-200 ease-in-out'
+        "group flex items-center justify-between p-3 select-none",
+        "cursor-grab active:cursor-grabbing",
+        "hover:bg-zinc-50 active:bg-violet-50",
+        "transition-colors duration-200 ease-in-out",
       )}
-      style={{ listStyle: 'none' }}
+      style={{ listStyle: "none" }}
     >
       <QuestionContent
         question={question}
@@ -252,7 +251,7 @@ function DraggableQuestionItem({
         onCheckboxClick={handleCheckboxClick}
         isDraggable
       />
-      <GripVertical className="size-4 text-zinc-400 pointer-events-none group-active:text-violet-500 transition-colors" />
+      <GripVertical className="pointer-events-none size-4 text-zinc-400 transition-colors group-active:text-violet-500" />
     </Reorder.Item>
   );
 }
@@ -264,19 +263,14 @@ interface QuestionItemProps {
   onSelectQuestion: (question: SurveyQuestionSummary) => void;
 }
 
-function QuestionItem({
-  question,
-  index,
-  isSelected,
-  onSelectQuestion,
-}: QuestionItemProps) {
+function QuestionItem({ question, index, isSelected, onSelectQuestion }: QuestionItemProps) {
   return (
     <li
       onClick={() => onSelectQuestion(question)}
       className={cn(
-        'flex items-center justify-between select-none p-3 group cursor-pointer',
-        'hover:bg-zinc-50 active:bg-violet-100',
-        'transition-colors duration-200 ease-in-out'
+        "group flex cursor-pointer items-center justify-between p-3 select-none",
+        "hover:bg-zinc-50 active:bg-violet-100",
+        "transition-colors duration-200 ease-in-out",
       )}
     >
       <QuestionContent
@@ -308,24 +302,17 @@ function QuestionContent({
   isDraggable,
 }: QuestionContentProps) {
   const CheckboxIcon = isSelected ? CheckSquare : Square;
-  const checkboxColorClass = isSelected ? 'text-violet-500' : 'text-zinc-300';
+  const checkboxColorClass = isSelected ? "text-violet-500" : "text-zinc-300";
 
   return (
-    <div
-      className={cn(
-        'flex gap-4 items-center',
-        isDraggable && 'pointer-events-none'
-      )}
-    >
+    <div className={cn("flex items-center gap-4", isDraggable && "pointer-events-none")}>
       {showCheckbox && !isDraggable && (
-        <CheckboxIcon className={cn('size-5', checkboxColorClass)} />
+        <CheckboxIcon className={cn("size-5", checkboxColorClass)} />
       )}
 
       {showCheckbox && isDraggable && (
         <div className="pointer-events-auto" onClick={onCheckboxClick}>
-          <CheckboxIcon
-            className={cn('size-5 cursor-pointer', checkboxColorClass)}
-          />
+          <CheckboxIcon className={cn("size-5 cursor-pointer", checkboxColorClass)} />
         </div>
       )}
 
@@ -333,10 +320,7 @@ function QuestionContent({
 
       <TypeTag type={question.type} />
 
-      <Typo.Body
-        size="medium"
-        className={cn(isDraggable && 'group-active:text-violet-500')}
-      >
+      <Typo.Body size="medium" className={cn(isDraggable && "group-active:text-violet-500")}>
         {question.title}
       </Typo.Body>
     </div>
@@ -349,7 +333,7 @@ interface QuestionNumberProps {
 
 function QuestionNumber({ index }: QuestionNumberProps) {
   return (
-    <div className="aspect-square w-5 flex items-center justify-center bg-violet-50 rounded-full">
+    <div className="flex aspect-square w-5 items-center justify-center rounded-full bg-violet-50">
       <Typo.Body size="small" className="font-semibold text-violet-600">
         {index + 1}
       </Typo.Body>
@@ -358,17 +342,14 @@ function QuestionNumber({ index }: QuestionNumberProps) {
 }
 
 function useToggleQuestionSelection() {
-  const [selectedQuestions, setSelectedQuestions] =
-    useAtom(selectedQuestionAtom);
+  const [selectedQuestions, setSelectedQuestions] = useAtom(selectedQuestionAtom);
 
   const toggleQuestionSelection = (question: SurveyQuestionSummary) => {
     const isSelected = selectedQuestions.has(question);
     const updatedQuestions = new Set(selectedQuestions);
 
     if (isSelected) {
-      updatedQuestions.delete(
-        [...updatedQuestions].find((q) => q.id === question.id)!
-      );
+      updatedQuestions.delete([...updatedQuestions].find(q => q.id === question.id)!);
     } else {
       updatedQuestions.add(question);
     }

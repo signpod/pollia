@@ -1,43 +1,35 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { PollCategory, PollType } from "@prisma/client";
 import { useAtomValue, useSetAtom } from "jotai";
-import { PollType, PollCategory } from "@prisma/client";
-import { useCreatePoll } from "./useCreatePoll";
-import {
-  multiplePollDataAtom,
-  resetMultiplePollAtom,
-} from "@/atoms/create/multiplePollAtoms";
-import { CreatePollRequest } from "@/types/dto";
-import {
-  multiplePollSchema,
-  type MultiplePollFormData,
-} from "@/schemas/multiplePollSchema";
+import { multiplePollDataAtom, resetMultiplePollAtom } from "@/atoms/create/multiplePollAtoms";
 import { resetPollTypeAtom } from "@/atoms/create/pollTypeAtoms";
+import { multiplePollSchema, type MultiplePollFormData } from "@/schemas/multiplePollSchema";
+import { CreatePollRequest } from "@/types/dto";
 import { usePushAfter } from "../common/usePushAfter";
+import { useCreatePoll } from "./useCreatePoll";
 
 export interface UseMultiplePollSubmitOptions {
   onSuccess?: () => void;
   onError?: (error: Error) => void;
 }
 
-export function useMultiplePollSubmit(
-  options: UseMultiplePollSubmitOptions = {}
-) {
+export function useMultiplePollSubmit(options: UseMultiplePollSubmitOptions = {}) {
   const pushAfter = usePushAfter();
   const pollData = useAtomValue(multiplePollDataAtom);
   const resetPollData = useSetAtom(resetMultiplePollAtom);
   const resetPollType = useSetAtom(resetPollTypeAtom);
 
   const createPollMutation = useCreatePoll({
-    onSuccess: (data) => {
+    onSuccess: data => {
       if (data.data?.id) {
         pushAfter(`/poll/create/done?pollId=${data.data.id}`, () => {
           options.onSuccess?.();
         });
       }
     },
-    onError: (error) => {
+    onError: error => {
       options.onError?.(error);
     },
   });
@@ -73,7 +65,7 @@ export function useMultiplePollSubmit(
         data: result.data,
       });
     } else {
-      const errors = result.error.issues.map((issue) => issue.message);
+      const errors = result.error.issues.map(issue => issue.message);
       setValidation({
         isValid: false,
         errors,
@@ -96,11 +88,8 @@ export function useMultiplePollSubmit(
   ]);
 
   const isImageUploading =
-    (pollData.thumbnailUrl !== undefined &&
-      pollData.thumbnailUrl.startsWith("blob:")) ||
-    pollData.options.some(
-      (option) => option.imageUrl && option.imageUrl.startsWith("blob:")
-    );
+    (pollData.thumbnailUrl !== undefined && pollData.thumbnailUrl.startsWith("blob:")) ||
+    pollData.options.some(option => option.imageUrl && option.imageUrl.startsWith("blob:"));
 
   const handleSubmit = async (imageFileUploadId?: string) => {
     if (!validation.isValid) {
@@ -110,13 +99,9 @@ export function useMultiplePollSubmit(
     }
 
     const validatedData = validation.data!;
-    const startDateTime = new Date(
-      `${validatedData.startDate}T${validatedData.startTime}`
-    );
+    const startDateTime = new Date(`${validatedData.startDate}T${validatedData.startTime}`);
     const endDateTime =
-      !validatedData.isUnlimited &&
-      validatedData.endDate &&
-      validatedData.endTime
+      !validatedData.isUnlimited && validatedData.endDate && validatedData.endTime
         ? new Date(`${validatedData.endDate}T${validatedData.endTime}`)
         : undefined;
 
@@ -132,8 +117,7 @@ export function useMultiplePollSubmit(
       title: validatedData.title,
       description: validatedData.description || undefined,
       imageUrl: validatedData.thumbnailUrl || undefined,
-      imageFileUploadId:
-        imageFileUploadId || validatedData.thumbnailFileUploadId,
+      imageFileUploadId: imageFileUploadId || validatedData.thumbnailFileUploadId,
       type: PollType.MULTIPLE_CHOICE,
       category: validatedData.category as PollCategory,
       startDate: startDateTime,

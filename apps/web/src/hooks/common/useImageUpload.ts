@@ -1,15 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { getUploadUrl, deleteImage, confirmFile } from "@/actions/common/image";
-import {
-  UploadImageRequest,
-  DeleteImageRequest,
-  ConfirmFileRequest,
-} from "@/types/dto/image";
 import { RelatedEntityType } from "@prisma/client";
+import { useMutation } from "@tanstack/react-query";
+import { confirmFile, deleteImage, getUploadUrl } from "@/actions/common/image";
 import { preprocessImage } from "@/lib/preprocessImage";
+import { ConfirmFileRequest, DeleteImageRequest, UploadImageRequest } from "@/types/dto/image";
 
 export interface ImageUploadProgress {
   loaded: number;
@@ -33,8 +29,7 @@ export interface UseImageUploadOptions {
 }
 
 export function useImageUpload(options: UseImageUploadOptions = {}) {
-  const [uploadProgress, setUploadProgress] =
-    useState<ImageUploadProgress | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<ImageUploadProgress | null>(null);
 
   const uploadMutation = useMutation({
     mutationFn: async (file: File): Promise<UploadedImage> => {
@@ -51,7 +46,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
         const { data } = await getUploadUrl(uploadRequest);
         const { uploadUrl, publicUrl, path, fileUploadId } = data;
 
-        await uploadFileToStorage(processedFile, uploadUrl, (progress) => {
+        await uploadFileToStorage(processedFile, uploadUrl, progress => {
           setUploadProgress(progress);
           options.onProgress?.(progress);
         });
@@ -71,11 +66,11 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
         throw error;
       }
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       console.log("✅ 이미지 업로드 성공:", data);
       options.onSuccess?.(data);
     },
-    onError: (error) => {
+    onError: error => {
       console.error("❌ 이미지 업로드 실패:", error);
       options.onError?.(error as Error);
     },
@@ -86,7 +81,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
     onSuccess: () => {
       console.log("✅ 이미지 삭제 성공");
     },
-    onError: (error) => {
+    onError: error => {
       console.error("❌ 이미지 삭제 실패:", error);
     },
   });
@@ -96,7 +91,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
     onSuccess: () => {
       console.log("✅ 파일 확정 성공");
     },
-    onError: (error) => {
+    onError: error => {
       console.error("❌ 파일 확정 실패:", error);
     },
   });
@@ -133,12 +128,12 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
 async function uploadFileToStorage(
   file: File,
   uploadUrl: string,
-  onProgress?: (progress: ImageUploadProgress) => void
+  onProgress?: (progress: ImageUploadProgress) => void,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
 
-    xhr.upload.addEventListener("progress", (event) => {
+    xhr.upload.addEventListener("progress", event => {
       if (event.lengthComputable && onProgress) {
         const progress: ImageUploadProgress = {
           loaded: event.loaded,
@@ -182,7 +177,7 @@ export function useMultipleImageUpload(options: UseImageUploadOptions = {}) {
       try {
         const result = await singleUpload.uploadAsync(file);
         results.push(result);
-        setUploadedImages((prev) => [...prev, result]);
+        setUploadedImages(prev => [...prev, result]);
       } catch (error) {
         console.error(`파일 ${file.name} 업로드 실패:`, error);
         throw error;
@@ -199,29 +194,24 @@ export function useMultipleImageUpload(options: UseImageUploadOptions = {}) {
         path: imageToRemove.path,
         bucket: options.bucket,
       });
-      setUploadedImages((prev) => prev.filter((_, i) => i !== index));
+      setUploadedImages(prev => prev.filter((_, i) => i !== index));
     }
   };
 
-  const confirmImages = async (
-    relatedEntityType?: RelatedEntityType,
-    relatedEntityId?: string
-  ) => {
+  const confirmImages = async (relatedEntityType?: RelatedEntityType, relatedEntityId?: string) => {
     const confirmPromises = uploadedImages
-      .filter((img) => img.isTemporary)
-      .map((img) =>
+      .filter(img => img.isTemporary)
+      .map(img =>
         singleUpload.confirmFileAsync({
           fileUploadId: img.fileUploadId,
           relatedEntityType,
           relatedEntityId,
-        })
+        }),
       );
 
     await Promise.all(confirmPromises);
 
-    setUploadedImages((prev) =>
-      prev.map((img) => ({ ...img, isTemporary: false }))
-    );
+    setUploadedImages(prev => prev.map(img => ({ ...img, isTemporary: false })));
   };
 
   return {

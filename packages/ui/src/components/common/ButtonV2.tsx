@@ -1,10 +1,10 @@
 "use client";
 
 import * as React from "react";
+import { PropsWithChildren } from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { LucideIcon } from "lucide-react";
-import { PropsWithChildren } from "react";
 import { cn } from "../../lib";
 import { Typo } from "./Typo";
 
@@ -23,13 +23,13 @@ export function ButtonText({
   children,
 }: ButtonTextProps) {
   return (
-    <div className="flex items-center gap-2 flex-1">
-      {LeftIcon && <LeftIcon className="w-6 h-6 shrink-0" />}
-      <Typo.ButtonText size={size} className="flex-1 flex gap-0.5">
+    <div className="flex flex-1 items-center gap-2">
+      {LeftIcon && <LeftIcon className="h-6 w-6 shrink-0" />}
+      <Typo.ButtonText size={size} className="flex flex-1 gap-0.5">
         {children}
-        {required && <span className="text-red-500 font-bold">*</span>}
+        {required && <span className="font-bold text-red-500">*</span>}
       </Typo.ButtonText>
-      {RightIcon && <RightIcon className="w-6 h-6 shrink-0" />}
+      {RightIcon && <RightIcon className="h-6 w-6 shrink-0" />}
     </div>
   );
 }
@@ -38,7 +38,7 @@ const buttonV2Variants = cva(
   cn(
     "inline-flex items-center justify-center whitespace-nowrap gap-2 rounded-sm transition-colors transition-shadow",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-    "disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0"
+    "disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0",
   ),
   {
     variants: {
@@ -48,7 +48,7 @@ const buttonV2Variants = cva(
           "hover:bg-button-primary-hover",
           "active:bg-button-primary-pressed",
           "disabled:bg-button-primary-disabled disabled:text-button-disabled",
-          "focus-visible:ring-zinc-400"
+          "focus-visible:ring-zinc-400",
         ),
         secondary: cn(
           "ring-1 ring-inset ring-default",
@@ -56,14 +56,14 @@ const buttonV2Variants = cva(
           "hover:ring-point hover:text-button-point",
           "active:ring-point active:bg-button-secondary-pressed active:text-button-point",
           "disabled:bg-button-secondary-disabled disabled:text-button-disabled disabled:ring-default",
-          "focus-visible:ring-violet-400"
+          "focus-visible:ring-violet-400",
         ),
         tertiary: cn(
           "bg-button-tertiary-default text-zinc-950",
           "hover:bg-button-tertiary-hover",
           "active:bg-button-tertiary-pressed active:text-button-point",
           "disabled:bg-button-tertiary-disabled disabled:text-button-disabled disabled:ring-default",
-          "focus-visible:ring-default"
+          "focus-visible:ring-default",
         ),
       },
       size: {
@@ -75,7 +75,7 @@ const buttonV2Variants = cva(
       variant: "primary",
       size: "large",
     },
-  }
+  },
 );
 
 export interface ButtonV2Props
@@ -119,7 +119,7 @@ const ButtonV2 = ({
         required={required}
         size={size === "large" ? "large" : "medium"}
       >
-        <div className={cn("flex items-center w-full")}>{children}</div>
+        <div className={cn("flex w-full items-center")}>{children}</div>
       </ButtonText>
     </Comp>
   );

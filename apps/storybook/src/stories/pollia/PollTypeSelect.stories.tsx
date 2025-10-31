@@ -1,7 +1,7 @@
+import { useState } from "react";
+import { PollType } from "@prisma/client";
 import { Meta, StoryObj } from "@storybook/nextjs";
 import PollTypeSelect from "@web/components/poll/PollTypeSelect";
-import { PollType } from "@prisma/client";
-import { useState } from "react";
 
 const meta: Meta<typeof PollTypeSelect> = {
   title: "Pollia/PollTypeSelect",
@@ -12,12 +12,7 @@ const meta: Meta<typeof PollTypeSelect> = {
   argTypes: {
     selectedType: {
       control: { type: "select" },
-      options: [
-        PollType.YES_NO,
-        PollType.LIKE_DISLIKE,
-        PollType.MULTIPLE_CHOICE,
-        undefined,
-      ],
+      options: [PollType.YES_NO, PollType.LIKE_DISLIKE, PollType.MULTIPLE_CHOICE, undefined],
       description: "현재 선택된 투표 유형",
     },
     onTypeChange: {
@@ -42,22 +37,16 @@ export const Interactive: Story = {
 
     return (
       <div className="max-w-md space-y-4">
-        <PollTypeSelect
-          selectedType={selectedType}
-          onTypeChange={setSelectedType}
-        />
+        <PollTypeSelect selectedType={selectedType} onTypeChange={setSelectedType} />
         {selectedType && (
-          <div className="p-4 bg-violet-50 border border-violet-200 rounded-lg">
+          <div className="rounded-lg border border-violet-200 bg-violet-50 p-4">
             <p className="text-sm font-medium text-violet-900">
-              선택된 투표 유형:{" "}
-              <span className="font-bold">{selectedType}</span>
+              선택된 투표 유형: <span className="font-bold">{selectedType}</span>
             </p>
-            <p className="text-xs text-violet-600 mt-1">
+            <p className="mt-1 text-xs text-violet-600">
               {selectedType === PollType.YES_NO && "O/X (예/아니오) 투표"}
-              {selectedType === PollType.LIKE_DISLIKE &&
-                "호불호 (좋아요/싫어요) 투표"}
-              {selectedType === PollType.MULTIPLE_CHOICE &&
-                "객관식 (여러 선택지) 투표"}
+              {selectedType === PollType.LIKE_DISLIKE && "호불호 (좋아요/싫어요) 투표"}
+              {selectedType === PollType.MULTIPLE_CHOICE && "객관식 (여러 선택지) 투표"}
             </p>
           </div>
         )}
@@ -159,18 +148,15 @@ export const InForm: Story = {
     return (
       <div className="max-w-md space-y-4">
         <div>
-          <label className="block text-sm font-medium text-zinc-700 mb-2">
+          <label className="mb-2 block text-sm font-medium text-zinc-700">
             투표 유형을 선택하세요 *
           </label>
-          <PollTypeSelect
-            selectedType={selectedType}
-            onTypeChange={handleTypeChange}
-          />
+          <PollTypeSelect selectedType={selectedType} onTypeChange={handleTypeChange} />
         </div>
 
         <div className="flex items-center justify-between">
           <button
-            className="px-4 py-2 bg-violet-600 text-white rounded-lg disabled:bg-gray-300"
+            className="rounded-lg bg-violet-600 px-4 py-2 text-white disabled:bg-gray-300"
             disabled={!isValid}
           >
             다음 단계
@@ -185,8 +171,7 @@ export const InForm: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          "실제 폼에서 사용할 때의 예시입니다. 선택이 완료되면 다음 단계 버튼이 활성화됩니다.",
+        story: "실제 폼에서 사용할 때의 예시입니다. 선택이 완료되면 다음 단계 버튼이 활성화됩니다.",
       },
     },
   },

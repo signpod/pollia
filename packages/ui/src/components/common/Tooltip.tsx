@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback, ReactNode } from "react";
+import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 export interface TooltipProps {
@@ -15,12 +15,7 @@ interface Position {
   left: number;
 }
 
-export const Tooltip = ({
-  children,
-  id,
-  placement = "top",
-  className = "",
-}: TooltipProps) => {
+export const Tooltip = ({ children, id, placement = "top", className = "" }: TooltipProps) => {
   const [position, setPosition] = useState<Position>({ top: 0, left: 0 });
   const [anchorElement, setAnchorElement] = useState<HTMLElement | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -94,9 +89,7 @@ export const Tooltip = ({
   }, [anchorElement, calculatePosition]);
 
   useEffect(() => {
-    const element = document.querySelector(
-      `[data-tooltip-id="${id}"]`
-    ) as HTMLElement;
+    const element = document.querySelector(`[data-tooltip-id="${id}"]`) as HTMLElement;
     element.style.position = "relative";
     setAnchorElement(element);
   }, [id]);
@@ -165,7 +158,7 @@ export const Tooltip = ({
     >
       <div
         ref={tooltipRef}
-        className={`relative px-4 py-2 rounded-full opacity-100 bg-white ${className}`}
+        className={`relative rounded-full bg-white px-4 py-2 opacity-100 ${className}`}
         role="tooltip"
       >
         {children}
@@ -174,7 +167,5 @@ export const Tooltip = ({
     </div>
   );
 
-  return typeof window !== "undefined"
-    ? createPortal(tooltipElement, document.body)
-    : null;
+  return typeof window !== "undefined" ? createPortal(tooltipElement, document.body) : null;
 };

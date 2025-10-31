@@ -1,9 +1,9 @@
-import { Button, Typo, FixedBottomLayout, toast } from "@repo/ui/components";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAtomValue } from "jotai";
-import { useSearchParams, useRouter } from "next/navigation";
+import { Button, FixedBottomLayout, toast, Typo } from "@repo/ui/components";
 import { scaleDataAtom } from "@/atoms/survey/create/scaleInfoAtoms";
-import { scaleInfoSchema } from "@/schemas/survey/scaleInfoSchema";
 import { useCreateScaleQuestion } from "@/hooks/survey/question";
+import { scaleInfoSchema } from "@/schemas/survey/scaleInfoSchema";
 import type { CreateScaleQuestionRequest } from "@/types/dto/survey";
 
 export function ScaleSubmitButton() {
@@ -14,13 +14,13 @@ export function ScaleSubmitButton() {
 
   const scaleData = useAtomValue(scaleDataAtom);
   const { mutate, isPending } = useCreateScaleQuestion({
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast.success("척도형 질문이 생성되었습니다!");
       router.push(
-        `/survey/question/create/done?surveyQuestionId=${data.data.id}${data.data.surveyId ? `&surveyId=${data.data.surveyId}` : ""}`
+        `/survey/question/create/done?surveyQuestionId=${data.data.id}${data.data.surveyId ? `&surveyId=${data.data.surveyId}` : ""}`,
       );
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message || "질문 생성에 실패했습니다.");
     },
   });
@@ -53,9 +53,7 @@ export function ScaleSubmitButton() {
           disabled={isPending || !scaleData.title.trim()}
           loading={isPending}
         >
-          <Typo.ButtonText>
-            {isPending ? "생성 중..." : "질문 생성하기"}
-          </Typo.ButtonText>
+          <Typo.ButtonText>{isPending ? "생성 중..." : "질문 생성하기"}</Typo.ButtonText>
         </Button>
       </div>
     </FixedBottomLayout.Content>

@@ -1,12 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
-import {
-  getPoll,
-  getPollResults,
-  getUserPolls,
-  getUserVoteStatus,
-} from '@/actions/poll';
-import { pollQueryKeys } from '@/constants/queryKeys/pollQueryKeys';
-import { getBookmarkedPolls, getLikedPolls } from '@/actions/poll/read';
+import { useQuery } from "@tanstack/react-query";
+import { getPoll, getPollResults, getUserPolls, getUserVoteStatus } from "@/actions/poll";
+import { getBookmarkedPolls, getLikedPolls } from "@/actions/poll/read";
+import { pollQueryKeys } from "@/constants/queryKeys/pollQueryKeys";
 
 export const useGetPoll = (pollId: string) => {
   return useQuery({
@@ -17,7 +12,7 @@ export const useGetPoll = (pollId: string) => {
     refetchInterval: 30 * 60 * 1000,
     staleTime: 30 * 60 * 1000,
     retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 };
 
@@ -30,7 +25,7 @@ export const usePollResults = (pollId: string) => {
     refetchInterval: 10 * 1000,
     staleTime: 10 * 1000,
     retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 };
 
@@ -65,10 +60,10 @@ export const useUserPolls = ({
         userId,
         options: searchQuery ? { searchQuery } : undefined,
       }),
-    select: (data) => data?.data ?? [],
+    select: data => data?.data ?? [],
     staleTime: 5 * 60 * 1000,
     retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
     refetchOnMount: true,
   });
 };
@@ -79,12 +74,12 @@ export const useBookmarkedPolls = (userId?: string) => {
   return useQuery({
     queryKey: pollQueryKeys.bookmarkedPolls(userId),
     queryFn: () => getBookmarkedPolls(userId),
-    select: (data) => data?.data ?? [],
+    select: data => data?.data ?? [],
     initialData: { data: [] },
     refetchInterval: 30 * 60 * 1000,
     staleTime: 30 * 60 * 1000,
     retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 };
 
@@ -94,12 +89,12 @@ export const useLikedPolls = (userId?: string) => {
   return useQuery({
     queryKey: pollQueryKeys.likedPolls(userId),
     queryFn: () => getLikedPolls(userId),
-    select: (data) => data?.data ?? [],
+    select: data => data?.data ?? [],
     initialData: { data: [] },
     refetchInterval: 30 * 60 * 1000,
     staleTime: 30 * 60 * 1000,
     retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 };
 

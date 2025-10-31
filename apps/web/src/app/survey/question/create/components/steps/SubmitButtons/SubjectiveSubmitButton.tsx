@@ -1,9 +1,9 @@
-import { Button, Typo, FixedBottomLayout, toast } from "@repo/ui/components";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAtomValue } from "jotai";
-import { useSearchParams, useRouter } from "next/navigation";
+import { Button, FixedBottomLayout, toast, Typo } from "@repo/ui/components";
 import { subjectiveDataAtom } from "@/atoms/survey/create/subjectiveInfoAtoms";
-import { subjectiveInfoSchema } from "@/schemas/survey/subjectiveInfoSchema";
 import { useCreateSubjectiveQuestion } from "@/hooks/survey/question";
+import { subjectiveInfoSchema } from "@/schemas/survey/subjectiveInfoSchema";
 import type { CreateSubjectiveQuestionRequest } from "@/types/dto/survey";
 
 export function SubjectiveSubmitButton() {
@@ -14,13 +14,13 @@ export function SubjectiveSubmitButton() {
 
   const subjectiveData = useAtomValue(subjectiveDataAtom);
   const { mutate, isPending } = useCreateSubjectiveQuestion({
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast.success("주관식 질문이 생성되었습니다!");
       router.push(
-        `/survey/question/create/done?surveyQuestionId=${data.data.id}${data.data.surveyId ? `&surveyId=${data.data.surveyId}` : ""}`
+        `/survey/question/create/done?surveyQuestionId=${data.data.id}${data.data.surveyId ? `&surveyId=${data.data.surveyId}` : ""}`,
       );
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message || "질문 생성에 실패했습니다.");
     },
   });
@@ -53,9 +53,7 @@ export function SubjectiveSubmitButton() {
           disabled={isPending || !subjectiveData.title.trim()}
           loading={isPending}
         >
-          <Typo.ButtonText>
-            {isPending ? "생성 중..." : "질문 생성하기"}
-          </Typo.ButtonText>
+          <Typo.ButtonText>{isPending ? "생성 중..." : "질문 생성하기"}</Typo.ButtonText>
         </Button>
       </div>
     </FixedBottomLayout.Content>

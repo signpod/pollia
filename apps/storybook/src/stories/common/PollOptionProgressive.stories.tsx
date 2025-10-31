@@ -1,15 +1,7 @@
+import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { PollOptionProgressive } from "@web/components/poll/PollOptionProgressive";
-import {
-  Heart,
-  ThumbsUp,
-  Star,
-  Coffee,
-  Users,
-  Calendar,
-  Trophy,
-} from "lucide-react";
-import * as React from "react";
+import { Calendar, Coffee, Heart, Star, ThumbsUp, Trophy, Users } from "lucide-react";
 
 const meta: Meta<typeof PollOptionProgressive> = {
   title: "Pollia/PollOptionProgressive",
@@ -219,18 +211,13 @@ export const ResultMode: Story = {
 
 export const ProgressStates: Story = {
   render: () => (
-    <div className="space-y-4 w-96">
+    <div className="w-96 space-y-4">
       <div>
         <h3 className="mb-3 text-sm font-medium">다양한 진행률</h3>
         <div className="space-y-2">
           <PollOptionProgressive icon={Heart} label="0%" percentage={0} />
           <PollOptionProgressive icon={Star} label="25%" percentage={25} />
-          <PollOptionProgressive
-            icon={ThumbsUp}
-            label="50%"
-            percentage={50}
-            selected
-          />
+          <PollOptionProgressive icon={ThumbsUp} label="50%" percentage={50} selected />
           <PollOptionProgressive icon={Coffee} label="75%" percentage={75} />
           <PollOptionProgressive icon={Trophy} label="100%" percentage={100} />
         </div>
@@ -241,7 +228,7 @@ export const ProgressStates: Story = {
 
 export const SelectionStates: Story = {
   render: () => (
-    <div className="space-y-4 w-96">
+    <div className="w-96 space-y-4">
       <div>
         <h3 className="mb-3 text-sm font-medium">선택 상태별 비교</h3>
         <div className="space-y-2">
@@ -251,12 +238,7 @@ export const SelectionStates: Story = {
             percentage={60}
             selected={false}
           />
-          <PollOptionProgressive
-            icon={Heart}
-            label="선택됨"
-            percentage={60}
-            selected={true}
-          />
+          <PollOptionProgressive icon={Heart} label="선택됨" percentage={60} selected={true} />
         </div>
         <p className="mt-2 text-xs text-gray-500">
           선택 상태에 따른 색상 변화와 체크마크 애니메이션을 확인하세요.
@@ -272,60 +254,32 @@ export const SelectionStates: Story = {
 
 export const ModeComparison: Story = {
   render: () => (
-    <div className="space-y-6 w-96">
+    <div className="w-96 space-y-6">
       <div>
-        <h3 className="mb-3 text-sm font-medium text-blue-700">
-          🗳️ 투표 진행 모드
-        </h3>
+        <h3 className="mb-3 text-sm font-medium text-blue-700">🗳️ 투표 진행 모드</h3>
         <div className="space-y-2">
           <PollOptionProgressive icon={Heart} label="좋아요" selected={false} />
           <PollOptionProgressive icon={Heart} label="좋아요" selected={true} />
-          <PollOptionProgressive
-            icon={ThumbsUp}
-            label="싫어요"
-            selected={false}
-          />
+          <PollOptionProgressive icon={ThumbsUp} label="싫어요" selected={false} />
         </div>
-        <p className="mt-2 text-xs text-blue-600">
-          퍼센테이지 없음 - 투표 진행 중일 때 사용
-        </p>
+        <p className="mt-2 text-xs text-blue-600">퍼센테이지 없음 - 투표 진행 중일 때 사용</p>
       </div>
 
       <div>
-        <h3 className="mb-3 text-sm font-medium text-green-700">
-          📊 결과 표시 모드
-        </h3>
+        <h3 className="mb-3 text-sm font-medium text-green-700">📊 결과 표시 모드</h3>
         <div className="space-y-2">
-          <PollOptionProgressive
-            icon={Heart}
-            label="좋아요"
-            percentage={70}
-            selected={false}
-          />
-          <PollOptionProgressive
-            icon={Heart}
-            label="좋아요"
-            percentage={70}
-            selected={true}
-          />
-          <PollOptionProgressive
-            icon={ThumbsUp}
-            label="싫어요"
-            percentage={30}
-            selected={false}
-          />
+          <PollOptionProgressive icon={Heart} label="좋아요" percentage={70} selected={false} />
+          <PollOptionProgressive icon={Heart} label="좋아요" percentage={70} selected={true} />
+          <PollOptionProgressive icon={ThumbsUp} label="싫어요" percentage={30} selected={false} />
         </div>
-        <p className="mt-2 text-xs text-green-600">
-          퍼센테이지 표시 - 투표 결과를 보여줄 때 사용
-        </p>
+        <p className="mt-2 text-xs text-green-600">퍼센테이지 표시 - 투표 결과를 보여줄 때 사용</p>
       </div>
     </div>
   ),
   parameters: {
     docs: {
       description: {
-        story:
-          "투표 진행 모드와 결과 표시 모드의 차이점을 직접 비교할 수 있습니다.",
+        story: "투표 진행 모드와 결과 표시 모드의 차이점을 직접 비교할 수 있습니다.",
       },
     },
   },
@@ -337,15 +291,11 @@ export const ModeComparison: Story = {
 
 export const MediaVariations: Story = {
   render: () => (
-    <div className="space-y-4 w-96">
+    <div className="w-96 space-y-4">
       <div>
         <h3 className="mb-3 text-sm font-medium">멀티미디어 조합</h3>
         <div className="space-y-2">
-          <PollOptionProgressive
-            icon={Heart}
-            label="아이콘만"
-            percentage={35}
-          />
+          <PollOptionProgressive icon={Heart} label="아이콘만" percentage={35} />
           <PollOptionProgressive
             label="이미지만"
             percentage={25}
@@ -371,26 +321,13 @@ export const MediaVariations: Story = {
 
 export const RealWorldScenarios: Story = {
   render: () => (
-    <div className="space-y-6 w-96">
+    <div className="w-96 space-y-6">
       <div>
         <h3 className="mb-3 text-sm font-medium">감정 투표</h3>
         <div className="space-y-2">
-          <PollOptionProgressive
-            icon={Heart}
-            label="좋아요"
-            percentage={65}
-            selected
-          />
-          <PollOptionProgressive
-            icon={ThumbsUp}
-            label="괜찮아요"
-            percentage={25}
-          />
-          <PollOptionProgressive
-            icon={Star}
-            label="보통이에요"
-            percentage={10}
-          />
+          <PollOptionProgressive icon={Heart} label="좋아요" percentage={65} selected />
+          <PollOptionProgressive icon={ThumbsUp} label="괜찮아요" percentage={25} />
+          <PollOptionProgressive icon={Star} label="보통이에요" percentage={10} />
         </div>
       </div>
 
@@ -451,9 +388,7 @@ export const RealWorldScenarios: Story = {
 export const InteractiveToggle: Story = {
   render: () => {
     const [showResults, setShowResults] = React.useState(false);
-    const [selectedOption, setSelectedOption] = React.useState<number | null>(
-      1
-    );
+    const [selectedOption, setSelectedOption] = React.useState<number | null>(1);
 
     const options = [
       { label: "React", icon: Star, percentage: 45 },
@@ -463,14 +398,12 @@ export const InteractiveToggle: Story = {
     ];
 
     return (
-      <div className="space-y-4 w-96">
-        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-          <span className="text-sm font-medium">
-            {showResults ? "📊 결과 보기" : "🗳️ 투표 중"}
-          </span>
+      <div className="w-96 space-y-4">
+        <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
+          <span className="text-sm font-medium">{showResults ? "📊 결과 보기" : "🗳️ 투표 중"}</span>
           <button
             onClick={() => setShowResults(!showResults)}
-            className="px-3 py-1 bg-violet-600 text-white text-xs rounded-md hover:bg-violet-700 transition-colors"
+            className="rounded-md bg-violet-600 px-3 py-1 text-xs text-white transition-colors hover:bg-violet-700"
           >
             {showResults ? "투표 모드" : "결과 보기"}
           </button>
@@ -480,9 +413,7 @@ export const InteractiveToggle: Story = {
           {options.map((option, index) => (
             <button
               key={option.label}
-              onClick={() =>
-                setSelectedOption(selectedOption === index ? null : index)
-              }
+              onClick={() => setSelectedOption(selectedOption === index ? null : index)}
               className="w-full text-left"
             >
               <PollOptionProgressive
@@ -495,11 +426,11 @@ export const InteractiveToggle: Story = {
           ))}
         </div>
 
-        <div className="p-3 bg-blue-50 rounded-lg">
-          <p className="text-sm text-blue-800 font-medium">
+        <div className="rounded-lg bg-blue-50 p-3">
+          <p className="text-sm font-medium text-blue-800">
             현재 모드: {showResults ? "결과 표시" : "투표 진행"}
           </p>
-          <p className="text-xs text-blue-600 mt-1">
+          <p className="mt-1 text-xs text-blue-600">
             {showResults
               ? "퍼센테이지가 표시되고 선택 시 애니메이션이 적용됩니다."
               : "퍼센테이지가 숨겨지고 선택 상태만 표시됩니다."}
@@ -511,8 +442,7 @@ export const InteractiveToggle: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          "실시간으로 투표 모드와 결과 모드를 전환하며 차이점을 체험할 수 있습니다.",
+        story: "실시간으로 투표 모드와 결과 모드를 전환하며 차이점을 체험할 수 있습니다.",
       },
     },
   },
@@ -521,9 +451,7 @@ export const InteractiveToggle: Story = {
 export const VotingSimulation: Story = {
   render: () => {
     const [votes, setVotes] = React.useState([45, 30, 15, 10]);
-    const [selectedOption, setSelectedOption] = React.useState<number | null>(
-      null
-    );
+    const [selectedOption, setSelectedOption] = React.useState<number | null>(null);
 
     const options = [
       {
@@ -570,14 +498,11 @@ export const VotingSimulation: Story = {
     const winner = votes.indexOf(Math.max(...votes));
 
     return (
-      <div className="space-y-4 w-96">
-        <div className="text-center p-3 bg-violet-50 rounded-lg">
-          <h3 className="text-sm font-medium text-violet-900">
-            🍕 좋아하는 음식 투표
-          </h3>
+      <div className="w-96 space-y-4">
+        <div className="rounded-lg bg-violet-50 p-3 text-center">
+          <h3 className="text-sm font-medium text-violet-900">🍕 좋아하는 음식 투표</h3>
           <p className="text-xs text-violet-600">
-            총 {total}표 참여 · 1위:{" "}
-            {winner !== -1 ? options[winner]?.label : "없음"}
+            총 {total}표 참여 · 1위: {winner !== -1 ? options[winner]?.label : "없음"}
           </p>
         </div>
 
@@ -592,9 +517,7 @@ export const VotingSimulation: Story = {
                 icon={option.icon}
                 label={option.label}
                 imageUrl={option.imageUrl}
-                percentage={Math.round(
-                  ((votes[index] || 0) / Math.max(total, 1)) * 100
-                )}
+                percentage={Math.round(((votes[index] || 0) / Math.max(total, 1)) * 100)}
                 selected={selectedOption === index}
               />
             </button>
@@ -623,7 +546,7 @@ export const VotingSimulation: Story = {
 
 export const AccessibilityDemo: Story = {
   render: () => (
-    <div className="space-y-4 w-96">
+    <div className="w-96 space-y-4">
       <div>
         <h3 className="mb-3 text-sm font-medium">접근성 기능</h3>
         <div className="space-y-2">
@@ -633,18 +556,10 @@ export const AccessibilityDemo: Story = {
             percentage={85}
             selected
           />
-          <PollOptionProgressive
-            icon={Users}
-            label="스크린 리더 최적화"
-            percentage={70}
-          />
-          <PollOptionProgressive
-            icon={Star}
-            label="ARIA 속성 완벽 지원"
-            percentage={90}
-          />
+          <PollOptionProgressive icon={Users} label="스크린 리더 최적화" percentage={70} />
+          <PollOptionProgressive icon={Star} label="ARIA 속성 완벽 지원" percentage={90} />
         </div>
-        <div className="mt-3 p-3 bg-green-50 rounded-lg">
+        <div className="mt-3 rounded-lg bg-green-50 p-3">
           <p className="text-xs text-green-700">
             ✅ role=&quot;progressbar&quot; 지원
             <br />
@@ -660,8 +575,7 @@ export const AccessibilityDemo: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          "웹 접근성 가이드라인(WCAG)을 준수하는 접근성 기능들을 확인할 수 있습니다.",
+        story: "웹 접근성 가이드라인(WCAG)을 준수하는 접근성 기능들을 확인할 수 있습니다.",
       },
     },
   },

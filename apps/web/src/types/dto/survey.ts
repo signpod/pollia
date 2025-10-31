@@ -1,4 +1,4 @@
-import type { SurveyQuestion, SurveyQuestionType } from '@prisma/client';
+import type { SurveyQuestion, SurveyQuestionType } from "@prisma/client";
 
 // Multiple Choice Question
 export interface CreateMultipleChoiceQuestionRequest {

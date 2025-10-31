@@ -1,16 +1,13 @@
-'use server';
+"use server";
 
-import prisma from '@/database/utils/prisma/client';
-import { requireAuth } from '@/actions/common/auth';
-import type {
-  CreateSurveyRequest,
-  CreateSurveyResponse,
-} from '@/types/dto/survey';
+import { requireAuth } from "@/actions/common/auth";
+import prisma from "@/database/utils/prisma/client";
+import type { CreateSurveyRequest, CreateSurveyResponse } from "@/types/dto/survey";
 
 const SURVEY_MESSAGE = {
-  TITLE_REQUIRED: '제목은 필수입니다.',
-  QUESTIONS_REQUIRED: '최소 1개 이상의 질문이 필요합니다.',
-  SURVEY_CREATION_FAILED: '설문조사지 생성 중 오류가 발생했습니다.',
+  TITLE_REQUIRED: "제목은 필수입니다.",
+  QUESTIONS_REQUIRED: "최소 1개 이상의 질문이 필요합니다.",
+  SURVEY_CREATION_FAILED: "설문조사지 생성 중 오류가 발생했습니다.",
 };
 
 function validateSurveyRequest(request: CreateSurveyRequest): string | null {
@@ -23,9 +20,7 @@ function validateSurveyRequest(request: CreateSurveyRequest): string | null {
   return null;
 }
 
-export async function createSurvey(
-  request: CreateSurveyRequest
-): Promise<CreateSurveyResponse> {
+export async function createSurvey(request: CreateSurveyRequest): Promise<CreateSurveyResponse> {
   try {
     const validationError = validateSurveyRequest(request);
     if (validationError) {
@@ -44,7 +39,7 @@ export async function createSurvey(
 
   const user = await requireAuth();
 
-  const survey = await prisma.$transaction(async (tx) => {
+  const survey = await prisma.$transaction(async tx => {
     const createdSurvey = await tx.survey.create({
       data: {
         title: request.title,

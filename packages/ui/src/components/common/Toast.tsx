@@ -1,7 +1,7 @@
 "use client";
 
-import { Toaster as SonnerToaster, toast as sonnerToast } from "sonner";
-import { Info, AlertTriangle, BadgeCheck, Ban } from "lucide-react";
+import { AlertTriangle, BadgeCheck, Ban, Info } from "lucide-react";
+import { toast as sonnerToast, Toaster as SonnerToaster } from "sonner";
 import { cn } from "../../lib/utils";
 import { Typo } from "./Typo";
 
@@ -47,18 +47,10 @@ function ToastContent({ type, message }: ToastProps) {
   const styles = TOAST_STYLES[type];
 
   return (
-    <div className="w-full max-w-lg mx-auto flex justify-center">
-      <div
-        className={cn(
-          "flex items-center gap-3 px-4 py-3 rounded-full",
-          styles.container
-        )}
-      >
+    <div className="mx-auto flex w-full max-w-lg justify-center">
+      <div className={cn("flex items-center gap-3 rounded-full px-4 py-3", styles.container)}>
         <Icon className={cn("size-6 shrink-0", styles.icon)} strokeWidth={2} />
-        <Typo.ButtonText
-          size="medium"
-          className={cn("flex-1 whitespace-nowrap", styles.text)}
-        >
+        <Typo.ButtonText size="medium" className={cn("flex-1 whitespace-nowrap", styles.text)}>
           {message}
         </Typo.ButtonText>
       </div>
@@ -87,36 +79,24 @@ export function Toaster({ offset = 20 }: { offset?: number }) {
 // toast 함수
 export const toast = {
   success: (message: string, options?: { duration?: number }) => {
-    return sonnerToast.custom(
-      () => <ToastContent type="success" message={message} />,
-      {
-        duration: options?.duration || 3000,
-      }
-    );
+    return sonnerToast.custom(() => <ToastContent type="success" message={message} />, {
+      duration: options?.duration || 3000,
+    });
   },
   error: (message: string, options?: { duration?: number }) => {
-    return sonnerToast.custom(
-      () => <ToastContent type="error" message={message} />,
-      {
-        duration: options?.duration || 3000,
-      }
-    );
+    return sonnerToast.custom(() => <ToastContent type="error" message={message} />, {
+      duration: options?.duration || 3000,
+    });
   },
   warning: (message: string, options?: { duration?: number }) => {
-    return sonnerToast.custom(
-      () => <ToastContent type="warning" message={message} />,
-      {
-        duration: options?.duration || 3000,
-      }
-    );
+    return sonnerToast.custom(() => <ToastContent type="warning" message={message} />, {
+      duration: options?.duration || 3000,
+    });
   },
   info: (message: string, options?: { duration?: number }) => {
-    return sonnerToast.custom(
-      () => <ToastContent type="info" message={message} />,
-      {
-        duration: options?.duration || 3000,
-      }
-    );
+    return sonnerToast.custom(() => <ToastContent type="info" message={message} />, {
+      duration: options?.duration || 3000,
+    });
   },
   dismiss: sonnerToast.dismiss,
 };

@@ -133,9 +133,7 @@ export async function toggleLikePoll(pollId: string) {
 
     return {
       isLiked,
-      message: isLiked
-        ? "좋아요가 추가되었습니다."
-        : "좋아요가 취소되었습니다.",
+      message: isLiked ? "좋아요가 추가되었습니다." : "좋아요가 취소되었습니다.",
     };
   } catch (error) {
     console.error("❌ 좋아요 토글 에러:", error);

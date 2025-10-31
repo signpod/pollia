@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import Rollbar from "rollbar";
-import { clientConfig } from "@/rollbar";
 import { ResetPage } from "@/components/common/ResetPage";
+import { clientConfig } from "@/rollbar";
 
 export default function GlobalError({
   error,

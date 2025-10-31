@@ -11,7 +11,7 @@ export const useUserStats = () => {
     staleTime: 2 * 60 * 1000, // 2분
     refetchInterval: 2 * 60 * 1000, // 2분마다 자동 갱신
     retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 };
 

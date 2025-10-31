@@ -1,14 +1,7 @@
 "use client";
 
+import { createContext, ReactNode, useContext, useLayoutEffect, useRef, useState } from "react";
 import { cn } from "../../lib/utils";
-import {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-  useRef,
-  useLayoutEffect,
-} from "react";
 
 interface FixedTopContextType {
   currentContent: ReactNode | null;
@@ -24,11 +17,7 @@ interface FixedTopLayoutProps {
   hasTopGap?: boolean;
 }
 
-export function FixedTopLayout({
-  children,
-  className,
-  hasTopGap = true,
-}: FixedTopLayoutProps) {
+export function FixedTopLayout({ children, className, hasTopGap = true }: FixedTopLayoutProps) {
   const [currentContent, setCurrentContent] = useState<ReactNode | null>(null);
   const [contentClassName, setContentClassName] = useState<string | null>(null);
   const [contentHeight, setContentHeight] = useState(0);
@@ -62,17 +51,15 @@ export function FixedTopLayout({
   }, [currentContent]);
 
   return (
-    <FixedTopContext.Provider
-      value={{ currentContent, setContent, clearContent }}
-    >
+    <FixedTopContext.Provider value={{ currentContent, setContent, clearContent }}>
       <div className={cn("relative", className)}>
         {currentContent && (
           <div
             ref={contentRef}
             className={cn(
-              "fixed top-0 left-0 right-0 z-50 bg-white",
-              "max-w-lg mx-auto",
-              contentClassName
+              "fixed top-0 right-0 left-0 z-50 bg-white",
+              "mx-auto max-w-lg",
+              contentClassName,
             )}
           >
             {currentContent}
@@ -100,9 +87,7 @@ export function FixedTopContent({ children, className }: FixedTopContentProps) {
   const context = useContext(FixedTopContext);
 
   if (!context) {
-    throw new Error(
-      "FixedTopLayout.Content must be used within FixedTopLayout"
-    );
+    throw new Error("FixedTopLayout.Content must be used within FixedTopLayout");
   }
 
   const { setContent, clearContent } = context;

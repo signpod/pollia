@@ -14,15 +14,14 @@ interface UseCreateMultipleChoiceQuestionOptions {
 }
 
 export function useCreateMultipleChoiceQuestion(
-  options: UseCreateMultipleChoiceQuestionOptions = {}
+  options: UseCreateMultipleChoiceQuestionOptions = {},
 ) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (
-      payload: CreateMultipleChoiceQuestionRequest
-    ): Promise<CreateMultipleChoiceQuestionResponse> =>
-      createMultipleChoiceQuestion(payload),
+      payload: CreateMultipleChoiceQuestionRequest,
+    ): Promise<CreateMultipleChoiceQuestionResponse> => createMultipleChoiceQuestion(payload),
     onSuccess: (data, variables) => {
       if (variables.surveyId) {
         queryClient.invalidateQueries({
@@ -34,7 +33,7 @@ export function useCreateMultipleChoiceQuestion(
       }
       options.onSuccess?.(data);
     },
-    onError: (error) => {
+    onError: error => {
       console.error("❌ 객관식 질문 생성 실패:", error);
       options.onError?.(error as Error);
     },

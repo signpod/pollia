@@ -1,14 +1,7 @@
 "use client";
 
+import { createContext, ReactNode, useContext, useLayoutEffect, useRef, useState } from "react";
 import { cn } from "../../lib/utils";
-import {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-  useRef,
-  useLayoutEffect,
-} from "react";
 import { Toaster } from "../common/Toast";
 
 interface FixedBottomContextType {
@@ -63,9 +56,7 @@ export function FixedBottomLayout({
   }, [currentContent]);
 
   return (
-    <FixedBottomContext.Provider
-      value={{ currentContent, setContent, clearContent }}
-    >
+    <FixedBottomContext.Provider value={{ currentContent, setContent, clearContent }}>
       <div className={cn("relative", className)}>
         {children}
         <div
@@ -82,9 +73,9 @@ export function FixedBottomLayout({
           <div
             ref={contentRef}
             className={cn(
-              "fixed bottom-0 left-0 right-0 z-50 bg-white",
-              "max-w-lg mx-auto",
-              contentClassName
+              "fixed right-0 bottom-0 left-0 z-50 bg-white",
+              "mx-auto max-w-lg",
+              contentClassName,
             )}
           >
             {currentContent}
@@ -100,16 +91,11 @@ interface FixedBottomContentProps {
   className?: string;
 }
 
-export function FixedBottomContent({
-  children,
-  className,
-}: FixedBottomContentProps) {
+export function FixedBottomContent({ children, className }: FixedBottomContentProps) {
   const context = useContext(FixedBottomContext);
 
   if (!context) {
-    throw new Error(
-      "FixedBottomLayout.Content must be used within FixedBottomLayout"
-    );
+    throw new Error("FixedBottomLayout.Content must be used within FixedBottomLayout");
   }
 
   const { setContent, clearContent } = context;

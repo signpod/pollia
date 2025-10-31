@@ -1,8 +1,4 @@
-import {
-  isServer,
-  QueryClient,
-  defaultShouldDehydrateQuery,
-} from "@tanstack/react-query";
+import { defaultShouldDehydrateQuery, isServer, QueryClient } from "@tanstack/react-query";
 
 function makeQueryClient() {
   return new QueryClient({
@@ -21,16 +17,15 @@ function makeQueryClient() {
             return false;
           return failureCount < 3;
         },
-        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+        retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
       },
       mutations: {
         retry: 1,
       },
       dehydrate: {
         // pending 쿼리도 dehydration에 포함
-        shouldDehydrateQuery: (query) =>
-          defaultShouldDehydrateQuery(query) ||
-          query.state.status === "pending",
+        shouldDehydrateQuery: query =>
+          defaultShouldDehydrateQuery(query) || query.state.status === "pending",
       },
     },
   });

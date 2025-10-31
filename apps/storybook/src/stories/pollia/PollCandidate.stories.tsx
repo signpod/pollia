@@ -1,6 +1,6 @@
+import { useState } from "react";
 import { Meta, StoryObj } from "@storybook/nextjs";
 import PollCandidate from "@web/components/poll/PollCandidate";
-import { useState } from "react";
 
 const meta: Meta<typeof PollCandidate> = {
   title: "Pollia/PollCandidate",
@@ -56,8 +56,7 @@ export const Default: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          "기본 후보자 컴포넌트입니다. 이미지와 후보자명만 입력할 수 있습니다.",
+        story: "기본 후보자 컴포넌트입니다. 이미지와 후보자명만 입력할 수 있습니다.",
       },
     },
   },
@@ -136,7 +135,7 @@ export const InteractiveBasic: Story = {
           onOptionsClick={() => alert("옵션 메뉴 클릭!")}
         />
         {name && (
-          <div className="p-4 bg-violet-50 border border-violet-200 rounded-lg">
+          <div className="rounded-lg border border-violet-200 bg-violet-50 p-4">
             <p className="text-sm font-medium text-violet-900">
               후보자명: <span className="font-bold">{name}</span>
             </p>
@@ -159,9 +158,7 @@ export const InteractiveBasic: Story = {
 export const WithLinkDisplay: Story = {
   render: () => {
     const [name, setName] = useState("갤럭시 S24");
-    const [imageUrl, setImageUrl] = useState<string | undefined>(
-      "https://via.placeholder.com/48"
-    );
+    const [imageUrl, setImageUrl] = useState<string | undefined>("https://via.placeholder.com/48");
 
     const handleImageSelect = (file: File) => {
       const url = URL.createObjectURL(file);
@@ -183,7 +180,7 @@ export const WithLinkDisplay: Story = {
           onImageDelete={handleImageDelete}
           onOptionsClick={() => alert("옵션 메뉴 클릭!")}
         />
-        <div className="p-4 bg-violet-50 border border-violet-200 rounded-lg">
+        <div className="rounded-lg border border-violet-200 bg-violet-50 p-4">
           <div className="space-y-1">
             <p className="text-sm font-medium text-violet-900">
               후보자명: <span className="font-bold">{name}</span>
@@ -224,25 +221,21 @@ export const MultipleCandidate: Story = {
     ]);
 
     const updateCandidate = (index: number, field: string, value: string) => {
-      setCandidates((prev) =>
-        prev.map((candidate, i) =>
-          i === index ? { ...candidate, [field]: value } : candidate
-        )
+      setCandidates(prev =>
+        prev.map((candidate, i) => (i === index ? { ...candidate, [field]: value } : candidate)),
       );
     };
 
     return (
       <div className="max-w-md space-y-3">
-        <h3 className="text-sm font-medium text-zinc-700 mb-4">
-          스마트폰 후보 목록
-        </h3>
+        <h3 className="mb-4 text-sm font-medium text-zinc-700">스마트폰 후보 목록</h3>
         {candidates.map((candidate, index) => (
           <PollCandidate
             key={index}
             name={candidate.name}
             link={candidate.link}
             imageUrl={candidate.imageUrl}
-            onNameChange={(name) => updateCandidate(index, "name", name)}
+            onNameChange={name => updateCandidate(index, "name", name)}
             onOptionsClick={() => alert(`${candidate.name} 옵션 메뉴`)}
           />
         ))}

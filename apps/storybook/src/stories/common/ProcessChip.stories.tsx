@@ -134,7 +134,7 @@ export const WithCustomStyles: Story = {
           gap: "20px",
         }}
       >
-        <ProcessChip status="active" className="text-sm px-3 py-1.5" />
+        <ProcessChip status="active" className="px-3 py-1.5 text-sm" />
         <ProcessChip status="active" className="rounded-full" />
         <ProcessChip status="active" className="font-bold" />
       </div>
@@ -147,24 +147,24 @@ export const InContext: Story = {
     return (
       <div style={{ padding: "40px", maxWidth: "400px" }}>
         <div className="space-y-4">
-          <div className="p-4 bg-white rounded-lg border border-zinc-200">
-            <div className="flex items-center justify-between mb-2">
+          <div className="rounded-lg border border-zinc-200 bg-white p-4">
+            <div className="mb-2 flex items-center justify-between">
               <h3 className="font-semibold">좋아하는 과일은?</h3>
               <ProcessChip status="active" />
             </div>
             <p className="text-sm text-gray-600">325명 참여 중</p>
           </div>
 
-          <div className="p-4 bg-white rounded-lg border border-zinc-200">
-            <div className="flex items-center justify-between mb-2">
+          <div className="rounded-lg border border-zinc-200 bg-white p-4">
+            <div className="mb-2 flex items-center justify-between">
               <h3 className="font-semibold">올해의 영화는?</h3>
               <ProcessChip status="before" />
             </div>
             <p className="text-sm text-gray-600">3시간 후 시작</p>
           </div>
 
-          <div className="p-4 bg-white rounded-lg border border-zinc-200">
-            <div className="flex items-center justify-between mb-2">
+          <div className="rounded-lg border border-zinc-200 bg-white p-4">
+            <div className="mb-2 flex items-center justify-between">
               <h3 className="font-semibold">최고의 음식은?</h3>
               <ProcessChip status="after" />
             </div>

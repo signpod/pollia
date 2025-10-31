@@ -1,18 +1,13 @@
 import { cache } from "react";
-import { dehydrate } from "@tanstack/react-query";
-import { getQueryClient } from "@/lib/getQueryClient";
-import {
-  getPoll,
-  getPollResults,
-  getPollUserStatus,
-  getUserVoteStatus,
-} from "@/actions/poll";
-import { pollQueryKeys } from "@/constants/queryKeys/pollQueryKeys";
-import { PollClientWrapper } from "./PollClientWrapper.tsx";
-import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys.ts";
-import { getCurrentUser } from "@/actions/user/index.ts";
-import { GetCurrentUserResponse } from "@/types/dto/user.ts";
 import type { Metadata } from "next";
+import { dehydrate } from "@tanstack/react-query";
+import { getPoll, getPollResults, getPollUserStatus, getUserVoteStatus } from "@/actions/poll";
+import { getCurrentUser } from "@/actions/user/index.ts";
+import { pollQueryKeys } from "@/constants/queryKeys/pollQueryKeys";
+import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys.ts";
+import { getQueryClient } from "@/lib/getQueryClient";
+import { GetCurrentUserResponse } from "@/types/dto/user.ts";
+import { PollClientWrapper } from "./PollClientWrapper.tsx";
 
 interface PollPageProps {
   params: Promise<{ id: string }>;
@@ -21,9 +16,7 @@ interface PollPageProps {
 // 서버 컴포넌트 전용 캐시 (generateMetadata와 PollPage 간 중복 방지)
 const getCachedPoll = cache(getPoll);
 
-export async function generateMetadata({
-  params,
-}: PollPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PollPageProps): Promise<Metadata> {
   const { id } = await params;
 
   try {
@@ -104,7 +97,7 @@ export default async function PollPage({ params }: PollPageProps) {
   });
 
   const currentUser = queryClient.getQueryData(
-    userQueryKeys.currentUser()
+    userQueryKeys.currentUser(),
   ) as GetCurrentUserResponse;
 
   if (currentUser?.data) {

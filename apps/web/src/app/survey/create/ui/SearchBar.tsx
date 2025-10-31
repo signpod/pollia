@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { Input } from '@repo/ui/components';
-import { useAtom } from 'jotai';
-import { searchQueryAtom } from '@/atoms/create';
+import { useAtom } from "jotai";
+import { Input } from "@repo/ui/components";
+import { searchQueryAtom } from "@/atoms/create";
 
-const SEARCH_BAR_PLACEHOLDER = '질문 제목을 검색해주세요';
+const SEARCH_BAR_PLACEHOLDER = "질문 제목을 검색해주세요";
 
 export function SearchBar() {
   const { searchQuery, handleChange } = useSearchBar();

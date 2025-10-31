@@ -1,15 +1,13 @@
+import { useCallback } from "react";
+import { PrimitiveAtom, useAtom } from "jotai";
 import { Typo } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
-import { useAtom, PrimitiveAtom } from "jotai";
-import { useCallback } from "react";
 
 interface DescriptionInputSectionProps {
   descriptionAtom: PrimitiveAtom<string>;
 }
 
-export function DescriptionInputSection({
-  descriptionAtom,
-}: DescriptionInputSectionProps) {
+export function DescriptionInputSection({ descriptionAtom }: DescriptionInputSectionProps) {
   const [description, setDescription] = useAtom(descriptionAtom);
 
   const handleBlur = useCallback(() => {
@@ -29,16 +27,16 @@ export function DescriptionInputSection({
 
       <textarea
         value={description}
-        onChange={(e) => setDescription(e.target.value)}
+        onChange={e => setDescription(e.target.value)}
         onBlur={handleBlur}
         placeholder="설명을 작성해주세요"
         maxLength={100}
         rows={2}
         className={cn(
-          "w-full px-4 py-3 bg-white border border-zinc-200 rounded-sm resize-none",
-          "focus:outline-none focus:ring-1 focus:ring-primary",
+          "w-full resize-none rounded-sm border border-zinc-200 bg-white px-4 py-3",
+          "focus:ring-primary focus:ring-1 focus:outline-none",
           "placeholder:text-zinc-300",
-          description.length >= 100 && "border-red-500"
+          description.length >= 100 && "border-red-500",
         )}
       />
     </div>

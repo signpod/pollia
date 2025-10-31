@@ -1,11 +1,11 @@
-import { Typo } from "@repo/ui/components";
-import { ChevronRight } from "lucide-react";
-import Link from "next/link";
 import { ComponentPropsWithRef } from "react";
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
+import { Typo } from "@repo/ui/components";
 
 function ListRoot({ children, ...props }: ComponentPropsWithRef<"section">) {
   return (
-    <section className="px-5 gap-3 flex flex-col" {...props}>
+    <section className="flex flex-col gap-3 px-5" {...props}>
       {children}
     </section>
   );
@@ -18,7 +18,7 @@ interface ListHeaderProps extends ComponentPropsWithRef<"div"> {
 
 function ListHeader({ title, action, ...props }: ListHeaderProps) {
   return (
-    <div className="flex justify-between items-center" {...props}>
+    <div className="flex items-center justify-between" {...props}>
       <Typo.MainTitle size="small">{title}</Typo.MainTitle>
       {action}
     </div>
@@ -42,10 +42,7 @@ interface ListItemProps extends ComponentPropsWithRef<"li"> {
 function ListItem({ title, leadingIcon, href, ...props }: ListItemProps) {
   return (
     <li {...props}>
-      <Link
-        href={href}
-        className="flex items-center justify-between bg-white rounded-lg p-4"
-      >
+      <Link href={href} className="flex items-center justify-between rounded-lg bg-white p-4">
         <div className="flex items-center gap-2">
           {leadingIcon}
           <Typo.SubTitle size="large" className="flex-1">

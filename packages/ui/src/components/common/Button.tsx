@@ -2,7 +2,6 @@ import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { Loader2Icon } from "lucide-react";
-
 import { cn } from "../../lib";
 
 const buttonVariants = cva(
@@ -29,7 +28,7 @@ const buttonVariants = cva(
     defaultVariants: {
       variant: "primary",
     },
-  }
+  },
 );
 
 export interface ButtonProps
@@ -56,37 +55,31 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       textAlign = "center",
       ...props
     },
-    ref
+    ref,
   ) => {
     const Comp = asChild ? Slot : "button";
 
     return (
       <Comp
-        className={cn(
-          buttonVariants({ variant, fullWidth, loading, className })
-        )}
+        className={cn(buttonVariants({ variant, fullWidth, loading, className }))}
         ref={ref}
         {...props}
       >
         {leftIcon && <span>{leftIcon}</span>}
         <div
           className={cn(
-            "w-full flex items-center",
+            "flex w-full items-center",
             textAlign === "left" && "justify-start",
             textAlign === "center" && "justify-center",
-            textAlign === "right" && "justify-end"
+            textAlign === "right" && "justify-end",
           )}
         >
-          {loading ? (
-            <Loader2Icon className="w-4 h-4 animate-spin" />
-          ) : (
-            children
-          )}
+          {loading ? <Loader2Icon className="h-4 w-4 animate-spin" /> : children}
         </div>
         {rightIcon && <span>{rightIcon}</span>}
       </Comp>
     );
-  }
+  },
 );
 Button.displayName = "Button";
 

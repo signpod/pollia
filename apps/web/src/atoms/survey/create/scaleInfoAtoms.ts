@@ -5,12 +5,12 @@ export const scaleDescriptionAtom = atom<string>("");
 export const scaleImageUrlAtom = atom<string | undefined>(undefined);
 export const scaleImageFileUploadIdAtom = atom<string | undefined>(undefined);
 
-export const scaleImageCountAtom = atom((get) => {
+export const scaleImageCountAtom = atom(get => {
   const imageUrl = get(scaleImageUrlAtom);
   return imageUrl ? 1 : 0;
 });
 
-export const scaleDataAtom = atom((get) => ({
+export const scaleDataAtom = atom(get => ({
   title: get(scaleTitleAtom),
   description: get(scaleDescriptionAtom),
   imageUrl: get(scaleImageUrlAtom),

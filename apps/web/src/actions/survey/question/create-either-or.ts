@@ -1,17 +1,15 @@
 "use server";
 
+import { SurveyQuestionType } from "@prisma/client";
 import { requireAuth } from "@/actions/common/auth";
 import prisma from "@/database/utils/prisma/client";
-import { SurveyQuestionType } from "@prisma/client";
 import { eitherOrInfoSchema } from "@/schemas/survey/eitherOrInfoSchema";
 import type {
   CreateEitherOrQuestionRequest,
   CreateEitherOrQuestionResponse,
 } from "@/types/dto/survey";
 
-function validateEitherOrQuestion(
-  request: CreateEitherOrQuestionRequest
-): string | null {
+function validateEitherOrQuestion(request: CreateEitherOrQuestionRequest): string | null {
   try {
     const formData = {
       title: request.title,
@@ -31,7 +29,7 @@ function validateEitherOrQuestion(
 }
 
 export async function createEitherOrQuestion(
-  request: CreateEitherOrQuestionRequest
+  request: CreateEitherOrQuestionRequest,
 ): Promise<CreateEitherOrQuestionResponse> {
   try {
     const user = await requireAuth();
@@ -62,7 +60,7 @@ export async function createEitherOrQuestion(
       }
     }
 
-    const question = await prisma.$transaction(async (tx) => {
+    const question = await prisma.$transaction(async tx => {
       const createdQuestion = await tx.surveyQuestion.create({
         data: {
           surveyId: request.surveyId ?? undefined,

@@ -1,25 +1,24 @@
+import { useAtomValue } from "jotai";
+import { Button, FixedBottomLayout, toast, Typo } from "@repo/ui/components";
 import {
   binaryPollCategoryAtom,
-  binaryPollEndTimeAtom,
-  binaryPollEndDateAtom,
-  binaryPollStartTimeAtom,
-  binaryPollStartDateAtom,
-  binaryPollThumbnailUrlAtom,
-  binaryPollThumbnailFileUploadIdAtom,
   binaryPollDescriptionAtom,
-  binaryPollTitleAtom,
+  binaryPollEndDateAtom,
+  binaryPollEndTimeAtom,
   binaryPollIsUnlimitedAtom,
+  binaryPollStartDateAtom,
+  binaryPollStartTimeAtom,
+  binaryPollThumbnailFileUploadIdAtom,
+  binaryPollThumbnailUrlAtom,
+  binaryPollTitleAtom,
 } from "@/atoms/create/binaryPollAtoms";
-import { binaryPollSchema } from "@/schemas/binaryPollSchema";
-import { Button, Typo, FixedBottomLayout, toast } from "@repo/ui/components";
-import { useAtomValue } from "jotai";
 import { useBinaryPollSubmit } from "@/hooks/poll/useBinaryPollSubmit";
+import { binaryPollSchema } from "@/schemas/binaryPollSchema";
 import { CategoryButton } from "./components/CategoryButton";
-import { ThumbnailSelector } from "./components/ThumbnailSelector";
-import { SubjectInput } from "./components/SubjectInput";
 import { DescriptionInput } from "./components/DescriptionInput";
+import { SubjectInput } from "./components/SubjectInput";
+import { ThumbnailSelector } from "./components/ThumbnailSelector";
 import { VotingPeriodSection } from "./components/VotingPeriodSection";
-
 
 const CREATE_BINARY_POLL_MESSAGES = {
   error: "폴 만들기 실패했어요.",
@@ -34,15 +33,12 @@ export function BinaryInfoStep() {
           thumbnailUrlAtom={binaryPollThumbnailUrlAtom}
           thumbnailFileUploadIdAtom={binaryPollThumbnailFileUploadIdAtom}
         />
-        <SubjectInput
-          titleAtom={binaryPollTitleAtom}
-          schema={binaryPollSchema}
-        />
+        <SubjectInput titleAtom={binaryPollTitleAtom} schema={binaryPollSchema} />
         <DescriptionInput descriptionAtom={binaryPollDescriptionAtom} />
       </div>
 
       {/* DIVIDER */}
-      <div className="bg-zinc-50 w-full h-2" />
+      <div className="h-2 w-full bg-zinc-50" />
 
       <div className="flex flex-col gap-6 px-5">
         <VotingPeriodSection
@@ -62,12 +58,11 @@ export function BinaryInfoStep() {
 function BinaryInfoCTAButton() {
   const uploadedFileId = useAtomValue(binaryPollThumbnailFileUploadIdAtom);
 
-  const { handleSubmit, isLoading, isValid, isImageUploading } =
-    useBinaryPollSubmit({
-      onError: () => {
-        toast.error(CREATE_BINARY_POLL_MESSAGES.error);
-      },
-    });
+  const { handleSubmit, isLoading, isValid, isImageUploading } = useBinaryPollSubmit({
+    onError: () => {
+      toast.error(CREATE_BINARY_POLL_MESSAGES.error);
+    },
+  });
 
   const handleCreatePoll = () => {
     handleSubmit(uploadedFileId);
@@ -84,11 +79,7 @@ function BinaryInfoCTAButton() {
           loading={isLoading || isImageUploading}
         >
           <Typo.ButtonText>
-            {isLoading
-              ? "생성 중..."
-              : isImageUploading
-                ? "이미지 업로드 중..."
-                : "폴 만들기"}
+            {isLoading ? "생성 중..." : isImageUploading ? "이미지 업로드 중..." : "폴 만들기"}
           </Typo.ButtonText>
         </Button>
       </div>

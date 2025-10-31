@@ -10,6 +10,6 @@ export const useGetPollUserStatus = (pollId: string) => {
     },
     staleTime: 5 * 60 * 1000,
     retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 };

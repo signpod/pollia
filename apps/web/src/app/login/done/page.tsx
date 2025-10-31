@@ -1,16 +1,17 @@
 "use client";
-import { FixedBottomLayout, Button, Typo } from "@repo/ui/components";
-import { cn } from "@repo/ui/lib";
-import PolliaIcon from "@public/svgs/poll-poll-e.svg";
+
 import Link from "next/link";
+import PolliaIcon from "@public/svgs/poll-poll-e.svg";
 import { motion } from "framer-motion";
+import { Button, FixedBottomLayout, Typo } from "@repo/ui/components";
+import { cn } from "@repo/ui/lib";
 
 const TEMP_POLL_ID = "포근한 폴리안";
 
 export default function LoginDonePage() {
   return (
     <>
-      <div className="flex-1 flex flex-col items-center justify-center gap-6 mb-[160px]">
+      <div className="mb-[160px] flex flex-1 flex-col items-center justify-center gap-6">
         <motion.div
           initial={{ x: "-100vw", rotate: -560 }}
           animate={{ x: 0, rotate: 0 }}
@@ -32,19 +33,16 @@ export default function LoginDonePage() {
             ease: "easeOut",
           }}
         >
-          <Typo.MainTitle
-            size="small"
-            className="text-center whitespace-pre-line font-bold"
-          >
+          <Typo.MainTitle size="small" className="text-center font-bold whitespace-pre-line">
             <span className="text-primary">{TEMP_POLL_ID}</span>
             {`님, \n 만나서 반가워요!`}
           </Typo.MainTitle>
         </motion.div>
       </div>
 
-      <FixedBottomLayout.Content className="w-full flex justify-center bg-white">
+      <FixedBottomLayout.Content className="flex w-full justify-center bg-white">
         <motion.div
-          className="flex flex-col justify-center w-full max-w-lg p-5"
+          className="flex w-full max-w-lg flex-col justify-center p-5"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{
@@ -55,7 +53,7 @@ export default function LoginDonePage() {
         >
           <Link href="/poll/create" className="w-full">
             <Button
-              className={cn("w-full box-border color-zinc-800", "bg-zinc-800")}
+              className={cn("color-zinc-800 box-border w-full", "bg-zinc-800")}
               aria-label="첫 폴 만들러 가기"
             >
               <Typo.ButtonText size="large">첫 폴 만들러 가기</Typo.ButtonText>

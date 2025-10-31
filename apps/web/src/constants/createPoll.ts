@@ -1,6 +1,6 @@
 import React from "react";
-import { StepConfig } from "@repo/ui/components";
 import { ChevronLeft, LucideIcon, X } from "lucide-react";
+import { StepConfig } from "@repo/ui/components";
 
 export interface ExtendedStepConfig extends StepConfig {
   description?: string;

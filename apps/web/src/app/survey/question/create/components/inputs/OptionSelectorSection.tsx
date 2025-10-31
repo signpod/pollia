@@ -1,10 +1,10 @@
+import { useEffect } from "react";
+import { useAtom } from "jotai";
+import { PlusIcon } from "lucide-react";
+import { Button, CounterInput, Typo } from "@repo/ui/components";
+import { multipleChoiceMaxSelectionsAtom } from "@/atoms/survey/create/multipleChoiceInfoAtoms";
 import { SurveyQuestionOption } from "@/components/survey/SurveyQuestionOption";
 import { useMultipleChoiceOptions } from "@/hooks/survey/question";
-import { multipleChoiceMaxSelectionsAtom } from "@/atoms/survey/create/multipleChoiceInfoAtoms";
-import { Button, CounterInput, Typo } from "@repo/ui/components";
-import { PlusIcon } from "lucide-react";
-import { useAtom } from "jotai";
-import { useEffect } from "react";
 
 export function OptionSelectorSection() {
   const {
@@ -18,9 +18,7 @@ export function OptionSelectorSection() {
     validOptionCount,
   } = useMultipleChoiceOptions();
 
-  const [maxSelections, setMaxSelections] = useAtom(
-    multipleChoiceMaxSelectionsAtom
-  );
+  const [maxSelections, setMaxSelections] = useAtom(multipleChoiceMaxSelectionsAtom);
 
   useEffect(() => {
     if (validOptionCount > 0 && maxSelections > validOptionCount) {
@@ -32,7 +30,7 @@ export function OptionSelectorSection() {
     }
   }, [validOptionCount, maxSelections, setMaxSelections]);
 
-  const hasEmptyOptions = options.some((option) => !option.description.trim());
+  const hasEmptyOptions = options.some(option => !option.description.trim());
 
   return (
     <div className="flex flex-col gap-6">
@@ -46,7 +44,7 @@ export function OptionSelectorSection() {
         </Typo.Body>
       </div>
 
-      {options.map((option) => {
+      {options.map(option => {
         const handleDescriptionChange = (description: string) => {
           updateOption(option.id, { description });
         };

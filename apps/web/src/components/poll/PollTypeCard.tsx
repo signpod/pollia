@@ -1,8 +1,8 @@
-import { cn } from "@/lib/utils";
-import { CircleIcon, XIcon, ThumbsDownIcon, ThumbsUpIcon } from "lucide-react";
-import { CenterOverlay, Typo } from "@repo/ui/components";
 import { PollType } from "@prisma/client";
+import { CircleIcon, ThumbsDownIcon, ThumbsUpIcon, XIcon } from "lucide-react";
+import { CenterOverlay, Typo } from "@repo/ui/components";
 import { TYPE_LABELS } from "@/constants/poll";
+import { cn } from "@/lib/utils";
 
 interface PollTypeCardProps extends React.HTMLAttributes<HTMLDivElement> {
   type: PollType;
@@ -18,17 +18,15 @@ export default function PollTypeCard({
   return (
     <div
       className={cn(
-        "flex justify-between items-center gap-6 p-4 ring-1 ring-zinc-200 rounded-[var(--radius-sm)]",
-        selected && "bg-violet-50 ring-primary",
-        className
+        "flex items-center justify-between gap-6 rounded-[var(--radius-sm)] p-4 ring-1 ring-zinc-200",
+        selected && "ring-primary bg-violet-50",
+        className,
       )}
       {...props}
     >
       {type === PollType.YES_NO && <OxCard selected={selected} />}
       {type === PollType.LIKE_DISLIKE && <HobullhoCard selected={selected} />}
-      {type === PollType.MULTIPLE_CHOICE && (
-        <MultipleCard selected={selected} />
-      )}
+      {type === PollType.MULTIPLE_CHOICE && <MultipleCard selected={selected} />}
     </div>
   );
 }
@@ -37,7 +35,7 @@ export default function PollTypeCard({
 function OxCard({ selected }: { selected: boolean }) {
   return (
     <>
-      <div className="flex flex-col gap-1 items-start">
+      <div className="flex flex-col items-start gap-1">
         <Typo.SubTitle size="large" className="text-zinc-950">
           {TYPE_LABELS[PollType.YES_NO]}
         </Typo.SubTitle>
@@ -46,16 +44,12 @@ function OxCard({ selected }: { selected: boolean }) {
         </Typo.Body>
       </div>
 
-      <div className="flex gap-1 h-[62px] items-center">
-        <CenterOverlay
-          targetElement={<div className="size-12 bg-zinc-50 rounded-sm" />}
-        >
+      <div className="flex h-[62px] items-center gap-1">
+        <CenterOverlay targetElement={<div className="size-12 rounded-sm bg-zinc-50" />}>
           <CircleIcon className="size-[16px]" strokeWidth={2} />
         </CenterOverlay>
 
-        <CenterOverlay
-          targetElement={<div className="size-12 bg-zinc-50 rounded-sm" />}
-        >
+        <CenterOverlay targetElement={<div className="size-12 rounded-sm bg-zinc-50" />}>
           <XIcon className="size-[20px]" strokeWidth={2} />
         </CenterOverlay>
       </div>
@@ -67,7 +61,7 @@ function OxCard({ selected }: { selected: boolean }) {
 function HobullhoCard({ selected }: { selected: boolean }) {
   return (
     <>
-      <div className="flex flex-col gap-1 items-start">
+      <div className="flex flex-col items-start gap-1">
         <Typo.SubTitle size="large" className="text-zinc-950">
           {TYPE_LABELS[PollType.LIKE_DISLIKE]}
         </Typo.SubTitle>
@@ -76,15 +70,11 @@ function HobullhoCard({ selected }: { selected: boolean }) {
         </Typo.Body>
       </div>
 
-      <div className="flex gap-1 h-[62px] items-center">
-        <CenterOverlay
-          targetElement={<div className="size-12 bg-zinc-50 rounded-sm" />}
-        >
+      <div className="flex h-[62px] items-center gap-1">
+        <CenterOverlay targetElement={<div className="size-12 rounded-sm bg-zinc-50" />}>
           <ThumbsUpIcon className="size-[20px]" strokeWidth={1.7} />
         </CenterOverlay>
-        <CenterOverlay
-          targetElement={<div className="size-12 bg-zinc-50 rounded-sm" />}
-        >
+        <CenterOverlay targetElement={<div className="size-12 rounded-sm bg-zinc-50" />}>
           <ThumbsDownIcon className="size-[20px]" strokeWidth={1.7} />
         </CenterOverlay>
       </div>
@@ -95,7 +85,7 @@ function HobullhoCard({ selected }: { selected: boolean }) {
 function MultipleCard({ selected }: { selected: boolean }) {
   return (
     <>
-      <div className="flex flex-col gap-1 items-start">
+      <div className="flex flex-col items-start gap-1">
         <Typo.SubTitle size="large" className="text-zinc-950">
           {TYPE_LABELS[PollType.MULTIPLE_CHOICE]}
         </Typo.SubTitle>
@@ -106,24 +96,24 @@ function MultipleCard({ selected }: { selected: boolean }) {
       <div className="flex flex-col gap-1">
         <p
           className={cn(
-            "text-[12px] font-bold leading-[150%] text-zinc-950 w-25 text-center bg-zinc-50 rounded-[var(--radius-sm)]",
-            selected && "bg-white"
+            "w-25 rounded-[var(--radius-sm)] bg-zinc-50 text-center text-[12px] leading-[150%] font-bold text-zinc-950",
+            selected && "bg-white",
           )}
         >
           A
         </p>
         <p
           className={cn(
-            "text-[12px] font-bold leading-[150%] text-zinc-950 w-25 text-center bg-zinc-50 rounded-[var(--radius-sm)]",
-            selected && "bg-white"
+            "w-25 rounded-[var(--radius-sm)] bg-zinc-50 text-center text-[12px] leading-[150%] font-bold text-zinc-950",
+            selected && "bg-white",
           )}
         >
           B
         </p>
         <p
           className={cn(
-            "text-[12px] font-bold leading-[150%] text-zinc-950 w-25 text-center bg-zinc-50 rounded-[var(--radius-sm)]",
-            selected && "bg-white"
+            "w-25 rounded-[var(--radius-sm)] bg-zinc-50 text-center text-[12px] leading-[150%] font-bold text-zinc-950",
+            selected && "bg-white",
           )}
         >
           C

@@ -1,13 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  submitIndividualVote,
-  removeIndividualVote,
-} from "@/actions/poll/vote";
+import { removeIndividualVote, submitIndividualVote } from "@/actions/poll/vote";
 import { pollQueryKeys } from "@/constants/queryKeys/pollQueryKeys";
-import type {
-  GetUserVoteStatusResponse,
-  GetPollResultsResponse,
-} from "@/types/dto/poll";
+import type { GetPollResultsResponse, GetUserVoteStatusResponse } from "@/types/dto/poll";
 
 function useVoteMutation(pollId: string) {
   const queryClient = useQueryClient();
@@ -29,7 +23,7 @@ function useVoteMutation(pollId: string) {
     onSuccess: () => {
       invalidatePoll();
     },
-    onError: (error) => {
+    onError: error => {
       console.error("투표 실패:", error);
     },
   });
@@ -41,7 +35,7 @@ function useVoteMutation(pollId: string) {
     onSuccess: () => {
       invalidatePoll();
     },
-    onError: (error) => {
+    onError: error => {
       console.error("투표 취소 실패:", error);
     },
   });
@@ -57,34 +51,27 @@ export const useIndividualVoting = (pollId: string) => {
   const mutations = useVoteMutation(pollId);
 
   const handleVote = async (optionId: string) => {
-    const currentUserVoteData = queryClient.getQueryData(
-      pollQueryKeys.userVoteStatus(pollId)
-    );
-    const currentPollResultsData = queryClient.getQueryData(
-      pollQueryKeys.pollResults(pollId)
-    );
+    const currentUserVoteData = queryClient.getQueryData(pollQueryKeys.userVoteStatus(pollId));
+    const currentPollResultsData = queryClient.getQueryData(pollQueryKeys.pollResults(pollId));
 
     try {
-      const currentVoteStatus =
-        queryClient.getQueryData<GetUserVoteStatusResponse>(
-          pollQueryKeys.userVoteStatus(pollId)
-        );
+      const currentVoteStatus = queryClient.getQueryData<GetUserVoteStatusResponse>(
+        pollQueryKeys.userVoteStatus(pollId),
+      );
       const pollResults = queryClient.getQueryData<GetPollResultsResponse>(
-        pollQueryKeys.pollResults(pollId)
+        pollQueryKeys.pollResults(pollId),
       );
 
       const hasVoted = currentVoteStatus?.hasVoted;
       const currentVote = currentVoteStatus?.votes?.[0];
       const currentOptionId = currentVote?.option?.id;
 
-      const selectedOption = pollResults?.options?.find(
-        (option) => option.id === optionId
-      );
+      const selectedOption = pollResults?.options?.find(option => option.id === optionId);
 
       const optimisticUpdate = (isVoting: boolean, votedOptionId?: string) => {
         queryClient.setQueryData<GetUserVoteStatusResponse>(
           pollQueryKeys.userVoteStatus(pollId),
-          (old) => {
+          old => {
             if (!old) return old;
 
             return {
@@ -103,60 +90,57 @@ export const useIndividualVoting = (pollId: string) => {
                     ]
                   : [],
             };
-          }
+          },
         );
 
-        queryClient.setQueryData<GetPollResultsResponse>(
-          pollQueryKeys.pollResults(pollId),
-          (old) => {
-            if (!old?.options) return old;
+        queryClient.setQueryData<GetPollResultsResponse>(pollQueryKeys.pollResults(pollId), old => {
+          if (!old?.options) return old;
 
-            return {
+          return {
+            ...old,
+            data: {
               ...old,
-              data: {
-                ...old,
-                options: old.options.map((option) => {
-                  if (option.id === votedOptionId && isVoting) {
-                    return {
-                      ...option,
-                      _count: { votes: option._count.votes + 1 },
-                    };
-                  }
-                  if (option.id === currentOptionId && hasVoted && !isVoting) {
-                    return {
-                      ...option,
-                      _count: {
-                        votes: Math.max(0, option._count.votes - 1),
-                      },
-                    };
-                  }
-                  if (
-                    option.id === currentOptionId &&
-                    hasVoted &&
-                    isVoting &&
-                    currentOptionId !== votedOptionId
-                  ) {
-                    return {
-                      ...option,
-                      _count: {
-                        votes: Math.max(0, option._count.votes - 1),
-                      },
-                    };
-                  }
-                  return option;
-                }),
-                _count: {
-                  ...old._count,
-                  votes: isVoting
-                    ? hasVoted
-                      ? old._count.votes
-                      : old._count.votes + 1
-                    : Math.max(0, old._count.votes - 1),
-                },
+              options: old.options.map(option => {
+                if (option.id === votedOptionId && isVoting) {
+                  return {
+                    ...option,
+                    _count: { votes: option._count.votes + 1 },
+                  };
+                }
+                if (option.id === currentOptionId && hasVoted && !isVoting) {
+                  return {
+                    ...option,
+                    _count: {
+                      votes: Math.max(0, option._count.votes - 1),
+                    },
+                  };
+                }
+                if (
+                  option.id === currentOptionId &&
+                  hasVoted &&
+                  isVoting &&
+                  currentOptionId !== votedOptionId
+                ) {
+                  return {
+                    ...option,
+                    _count: {
+                      votes: Math.max(0, option._count.votes - 1),
+                    },
+                  };
+                }
+                return option;
+              }),
+              _count: {
+                ...old._count,
+                votes: isVoting
+                  ? hasVoted
+                    ? old._count.votes
+                    : old._count.votes + 1
+                  : Math.max(0, old._count.votes - 1),
               },
-            };
-          }
-        );
+            },
+          };
+        });
       };
 
       if (hasVoted && currentOptionId === optionId) {
@@ -170,16 +154,10 @@ export const useIndividualVoting = (pollId: string) => {
       console.error("투표 처리 실패:", error);
 
       if (currentUserVoteData) {
-        queryClient.setQueryData(
-          pollQueryKeys.userVoteStatus(pollId),
-          currentUserVoteData
-        );
+        queryClient.setQueryData(pollQueryKeys.userVoteStatus(pollId), currentUserVoteData);
       }
       if (currentPollResultsData) {
-        queryClient.setQueryData(
-          pollQueryKeys.pollResults(pollId),
-          currentPollResultsData
-        );
+        queryClient.setQueryData(pollQueryKeys.pollResults(pollId), currentPollResultsData);
       }
 
       queryClient.invalidateQueries({
@@ -191,8 +169,7 @@ export const useIndividualVoting = (pollId: string) => {
     }
   };
 
-  const isVoting =
-    mutations.voteMutation.isPending || mutations.unvoteMutation.isPending;
+  const isVoting = mutations.voteMutation.isPending || mutations.unvoteMutation.isPending;
 
   return {
     handleVote,

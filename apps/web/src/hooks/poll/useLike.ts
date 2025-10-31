@@ -1,11 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "@repo/ui/components";
 import { toggleLikePoll } from "@/actions/poll";
 import { pollQueryKeys } from "@/constants/queryKeys/pollQueryKeys";
-import type {
-  ToggleLikePollResponse,
-  GetPollUserStatusResponse,
-} from "@/types/dto";
-import { toast } from "@repo/ui/components";
+import type { GetPollUserStatusResponse, ToggleLikePollResponse } from "@/types/dto";
 
 interface LikeMutationContext {
   previousUserStatus: GetPollUserStatusResponse | undefined;
@@ -24,12 +21,7 @@ const LIKE_MESSAGES = {
 export const useLike = (pollId: string) => {
   const queryClient = useQueryClient();
 
-  const likeMutation = useMutation<
-    ToggleLikePollResponse,
-    Error,
-    void,
-    LikeMutationContext
-  >({
+  const likeMutation = useMutation<ToggleLikePollResponse, Error, void, LikeMutationContext>({
     mutationFn: async () => {
       const result = await toggleLikePoll(pollId);
       return result;
@@ -40,21 +32,20 @@ export const useLike = (pollId: string) => {
         queryKey: pollQueryKeys.userPollStatus(pollId),
       });
 
-      const previousUserStatus =
-        queryClient.getQueryData<GetPollUserStatusResponse>(
-          pollQueryKeys.userPollStatus(pollId)
-        );
+      const previousUserStatus = queryClient.getQueryData<GetPollUserStatusResponse>(
+        pollQueryKeys.userPollStatus(pollId),
+      );
 
       queryClient.setQueryData<GetPollUserStatusResponse>(
         pollQueryKeys.userPollStatus(pollId),
-        (oldData) => {
+        oldData => {
           if (!oldData) return oldData;
 
           return {
             ...oldData,
             isLiked: !oldData.isLiked,
           };
-        }
+        },
       );
 
       return {
@@ -79,7 +70,7 @@ export const useLike = (pollId: string) => {
       if (context?.previousUserStatus) {
         queryClient.setQueryData<GetPollUserStatusResponse>(
           pollQueryKeys.userPollStatus(pollId),
-          context.previousUserStatus
+          context.previousUserStatus,
         );
       }
       toast.error(LIKE_MESSAGES.error);
@@ -87,7 +78,7 @@ export const useLike = (pollId: string) => {
   });
 
   const userStatus = queryClient.getQueryData<GetPollUserStatusResponse>(
-    pollQueryKeys.userPollStatus(pollId)
+    pollQueryKeys.userPollStatus(pollId),
   );
 
   const isLiked = userStatus?.isLiked || false;

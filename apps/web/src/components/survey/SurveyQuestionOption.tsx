@@ -1,30 +1,24 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { EllipsisVertical } from "lucide-react";
 import {
   Button,
-  ImageSelector,
-  Input,
   DrawerContent,
   DrawerHeader,
   DrawerProvider,
-  useDrawer,
   IconButton,
+  ImageSelector,
+  Input,
+  useDrawer,
 } from "@repo/ui/components";
-import { EllipsisVertical } from "lucide-react";
 import { useImageUpload } from "@/hooks/common/useImageUpload";
-import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 function OptionMenuTrigger() {
   const { open } = useDrawer();
 
-  return (
-    <IconButton
-      icon={EllipsisVertical}
-      iconClassName="text-zinc-400"
-      onClick={open}
-    />
-  );
+  return <IconButton icon={EllipsisVertical} iconClassName="text-zinc-400" onClick={open} />;
 }
 
 interface OptionMenuContentProps {
@@ -72,34 +66,33 @@ export function SurveyQuestionOption({
     fileUploadId: string;
   } | null>(null);
 
-  const { upload, isUploading, uploadError, deleteImage, isDeleting } =
-    useImageUpload({
-      bucket: "poll-images",
-      onSuccess: (result) => {
-        onImageUrlChange?.(result.publicUrl);
-        onFileUploadIdChange?.(result.fileUploadId);
+  const { upload, isUploading, uploadError, deleteImage, isDeleting } = useImageUpload({
+    bucket: "poll-images",
+    onSuccess: result => {
+      onImageUrlChange?.(result.publicUrl);
+      onFileUploadIdChange?.(result.fileUploadId);
 
-        setUploadedFile({
-          path: result.path,
-          fileUploadId: result.fileUploadId,
-        });
+      setUploadedFile({
+        path: result.path,
+        fileUploadId: result.fileUploadId,
+      });
 
-        if (previewUrl) {
-          URL.revokeObjectURL(previewUrl);
-          setPreviewUrl("");
-        }
-      },
-      onError: (error) => {
-        console.error("❌ 옵션 이미지 업로드 실패:", error);
-        if (previewUrl) {
-          URL.revokeObjectURL(previewUrl);
-          setPreviewUrl("");
-        }
-      },
-      onProgress: (progress) => {
-        console.log(`옵션 이미지 업로드 진행률: ${progress.percentage}%`);
-      },
-    });
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        setPreviewUrl("");
+      }
+    },
+    onError: error => {
+      console.error("❌ 옵션 이미지 업로드 실패:", error);
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        setPreviewUrl("");
+      }
+    },
+    onProgress: progress => {
+      console.log(`옵션 이미지 업로드 진행률: ${progress.percentage}%`);
+    },
+  });
 
   useEffect(() => {
     return () => {
@@ -174,9 +167,7 @@ export function SurveyQuestionOption({
       )}
 
       {uploadError && (
-        <div className="ml-12 text-sm text-red-500">
-          업로드 실패: {uploadError.message}
-        </div>
+        <div className="ml-12 text-sm text-red-500">업로드 실패: {uploadError.message}</div>
       )}
     </div>
   );

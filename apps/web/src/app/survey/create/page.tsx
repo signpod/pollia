@@ -1,11 +1,11 @@
-'use server';
+"use server";
 
-import { getQueryClient } from '@/lib/getQueryClient';
-import { dehydrate } from '@tanstack/react-query';
-import { PageClientWrapper } from './ui/PageClientWrapper';
-import { CreateSurveyContent } from './ui/CreateSurveyContent';
-import { surveyQueryKeys } from '@/constants/queryKeys/surveyQueryKeys';
-import { getSurveyQuestions } from '@/actions/survey';
+import { dehydrate } from "@tanstack/react-query";
+import { getSurveyQuestions } from "@/actions/survey";
+import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
+import { getQueryClient } from "@/lib/getQueryClient";
+import { CreateSurveyContent } from "./ui/CreateSurveyContent";
+import { PageClientWrapper } from "./ui/PageClientWrapper";
 
 export default async function CreateSurveyPage() {
   const queryClient = getQueryClient();

@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-
 import { Provider as RollbarProvider } from "@rollbar/react";
 import { clientConfig } from "@/rollbar";
 
@@ -43,7 +42,7 @@ export default function RootLayout({
           />
         </head>
         <body className="antialiased">
-          <div className="max-w-lg min-h-screen mx-auto">{children}</div>
+          <div className="mx-auto min-h-screen max-w-lg">{children}</div>
         </body>
       </html>
     </RollbarProvider>

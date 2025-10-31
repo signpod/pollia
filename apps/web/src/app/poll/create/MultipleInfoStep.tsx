@@ -1,25 +1,25 @@
 "use client";
 
+import { Button, FixedBottomLayout, toast, Typo } from "@repo/ui/components";
+import { OptionSelector } from "@/app/poll/create/OptionSelector";
 import {
   multiplePollCategoryAtom,
-  multiplePollEndTimeAtom,
-  multiplePollEndDateAtom,
-  multiplePollStartTimeAtom,
-  multiplePollStartDateAtom,
-  multiplePollThumbnailUrlAtom,
-  multiplePollThumbnailFileUploadIdAtom,
   multiplePollDescriptionAtom,
-  multiplePollTitleAtom,
+  multiplePollEndDateAtom,
+  multiplePollEndTimeAtom,
   multiplePollIsUnlimitedAtom,
+  multiplePollStartDateAtom,
+  multiplePollStartTimeAtom,
+  multiplePollThumbnailFileUploadIdAtom,
+  multiplePollThumbnailUrlAtom,
+  multiplePollTitleAtom,
 } from "@/atoms/create/multiplePollAtoms";
-import { multiplePollSchema } from "@/schemas/multiplePollSchema";
-import { Button, Typo, FixedBottomLayout, toast } from "@repo/ui/components";
 import { useMultiplePollSubmit } from "@/hooks/poll/useMultiplePollSubmit";
-import { OptionSelector } from "@/app/poll/create/OptionSelector";
+import { multiplePollSchema } from "@/schemas/multiplePollSchema";
 import { CategoryButton } from "./components/CategoryButton";
-import { ThumbnailSelector } from "./components/ThumbnailSelector";
-import { SubjectInput } from "./components/SubjectInput";
 import { DescriptionInput } from "./components/DescriptionInput";
+import { SubjectInput } from "./components/SubjectInput";
+import { ThumbnailSelector } from "./components/ThumbnailSelector";
 import { VotingPeriodSection } from "./components/VotingPeriodSection";
 
 const CREATE_MULTIPLE_POLL_MESSAGES = {
@@ -36,16 +36,13 @@ export function MultipleInfoStep() {
           thumbnailUrlAtom={multiplePollThumbnailUrlAtom}
           thumbnailFileUploadIdAtom={multiplePollThumbnailFileUploadIdAtom}
         />
-        <SubjectInput
-          titleAtom={multiplePollTitleAtom}
-          schema={multiplePollSchema}
-        />
+        <SubjectInput titleAtom={multiplePollTitleAtom} schema={multiplePollSchema} />
         <DescriptionInput descriptionAtom={multiplePollDescriptionAtom} />
         <OptionSelector />
       </div>
 
       {/* DIVIDER */}
-      <div className="bg-zinc-50 w-full h-2" />
+      <div className="h-2 w-full bg-zinc-50" />
 
       <div className="flex flex-col gap-6 px-5">
         <VotingPeriodSection
@@ -63,15 +60,14 @@ export function MultipleInfoStep() {
 }
 
 function MultipleInfoCTAButton() {
-  const { isValid, handleSubmit, isLoading, isImageUploading } =
-    useMultiplePollSubmit({
-      onSuccess: () => {
-        toast.success(CREATE_MULTIPLE_POLL_MESSAGES.success);
-      },
-      onError: () => {
-        toast.error(CREATE_MULTIPLE_POLL_MESSAGES.error);
-      },
-    });
+  const { isValid, handleSubmit, isLoading, isImageUploading } = useMultiplePollSubmit({
+    onSuccess: () => {
+      toast.success(CREATE_MULTIPLE_POLL_MESSAGES.success);
+    },
+    onError: () => {
+      toast.error(CREATE_MULTIPLE_POLL_MESSAGES.error);
+    },
+  });
 
   const handleClick = () => {
     handleSubmit();
@@ -88,11 +84,7 @@ function MultipleInfoCTAButton() {
           loading={isLoading || isImageUploading}
         >
           <Typo.ButtonText>
-            {isLoading
-              ? "폴 생성 중..."
-              : isImageUploading
-                ? "이미지 업로드 중..."
-                : "폴 만들기"}
+            {isLoading ? "폴 생성 중..." : isImageUploading ? "이미지 업로드 중..." : "폴 만들기"}
           </Typo.ButtonText>
         </Button>
       </div>

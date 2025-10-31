@@ -1,13 +1,9 @@
 import { ErrorBoundary } from "react-error-boundary";
-import {
-  useBookmarkedPolls,
-  useLikedPolls,
-  useUserPolls,
-} from "@/hooks/poll/usePoll";
+import { Button, Typo } from "@repo/ui/components";
+import { useBookmarkedPolls, useLikedPolls, useUserPolls } from "@/hooks/poll/usePoll";
 import { useCurrentUser } from "@/hooks/user/useCurrentUser";
 import { PollList } from "./ui";
 import { UserInfo } from "./UserInfo";
-import { Button, Typo } from "@repo/ui/components";
 
 const PREVIEW_VIEW_COUNT = 5;
 
@@ -34,7 +30,7 @@ export function ProfileContainer() {
 
 function UserInfoSection() {
   const me = useCurrentUser();
-  const { name } = me.data ?? { name: '' };
+  const { name } = me.data ?? { name: "" };
 
   return <UserInfo name={name} />;
 }
@@ -71,8 +67,8 @@ function ErrorFallback({
   resetErrorBoundary: () => void;
 }) {
   return (
-    <div className="bg-white rounded-lg p-6 mx-5">
-      <div className="text-center space-y-4">
+    <div className="mx-5 rounded-lg bg-white p-6">
+      <div className="space-y-4 text-center">
         <Typo.Body size="large" className="text-red-600">
           {title}
         </Typo.Body>

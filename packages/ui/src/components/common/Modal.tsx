@@ -1,10 +1,10 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback } from "react";
-import { Dialog, DialogPortal, DialogOverlay } from "./Dialog";
-import { Button } from "./Button";
-import { Typo } from "./Typo";
+import { createContext, useCallback, useContext, useState } from "react";
 import { cn } from "../../lib/utils";
+import { Button } from "./Button";
+import { Dialog, DialogOverlay, DialogPortal } from "./Dialog";
+import { Typo } from "./Typo";
 
 export interface ModalConfig {
   title: string;
@@ -76,9 +76,9 @@ export function ModalProvider({ children }: ModalProviderProps) {
           <DialogOverlay onClick={close} />
           <div
             className={cn(
-              "fixed left-[50%] top-[50%] z-50 w-[350px] -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white shadow-lg",
+              "fixed top-[50%] left-[50%] z-50 w-[350px] -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white shadow-lg",
               "p-6",
-              "flex flex-col gap-6"
+              "flex flex-col gap-6",
             )}
           >
             <div className="flex flex-col items-center gap-2">
@@ -88,14 +88,9 @@ export function ModalProvider({ children }: ModalProviderProps) {
               </Typo.Body>
             </div>
 
-            <div className="flex gap-3 w-full">
+            <div className="flex w-full gap-3">
               {modalConfig.showCancelButton && (
-                <Button
-                  variant="secondary"
-                  fullWidth
-                  onClick={handleCancel}
-                  className="flex-1"
-                >
+                <Button variant="secondary" fullWidth onClick={handleCancel} className="flex-1">
                   {modalConfig.cancelText || "취소"}
                 </Button>
               )}

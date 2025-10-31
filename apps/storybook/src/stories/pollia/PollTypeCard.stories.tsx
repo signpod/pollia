@@ -1,6 +1,6 @@
+import { PollType } from "@prisma/client";
 import { Meta, StoryObj } from "@storybook/nextjs";
 import PollTypeCard from "@web/components/poll/PollTypeCard";
-import { PollType } from "@prisma/client";
 
 const meta: Meta<typeof PollTypeCard> = {
   title: "Pollia/PollTypeCard",
@@ -11,11 +11,7 @@ const meta: Meta<typeof PollTypeCard> = {
   argTypes: {
     type: {
       control: { type: "select" },
-      options: [
-        PollType.YES_NO,
-        PollType.LIKE_DISLIKE,
-        PollType.MULTIPLE_CHOICE,
-      ],
+      options: [PollType.YES_NO, PollType.LIKE_DISLIKE, PollType.MULTIPLE_CHOICE],
       description: "투표 유형을 선택하세요",
     },
     className: {
@@ -37,8 +33,7 @@ export const Ox: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          "O/X (예/아니오) 투표 유형을 표시합니다. 원형 아이콘과 X 아이콘으로 구성됩니다.",
+        story: "O/X (예/아니오) 투표 유형을 표시합니다. 원형 아이콘과 X 아이콘으로 구성됩니다.",
       },
     },
   },
@@ -52,8 +47,7 @@ export const Hobullho: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          "호불호 (좋아요/싫어요) 투표 유형을 표시합니다. 엄지척 아이콘으로 구성됩니다.",
+        story: "호불호 (좋아요/싫어요) 투표 유형을 표시합니다. 엄지척 아이콘으로 구성됩니다.",
       },
     },
   },
@@ -67,8 +61,7 @@ export const Multiple: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          "객관식 (여러 선택지) 투표 유형을 표시합니다. A, B, C 선택지로 구성됩니다.",
+        story: "객관식 (여러 선택지) 투표 유형을 표시합니다. A, B, C 선택지로 구성됩니다.",
       },
     },
   },
@@ -79,15 +72,15 @@ export const AllTypes: Story = {
   render: () => (
     <div className="space-y-4">
       <div>
-        <h3 className="text-sm font-medium text-zinc-600 mb-2">O/X</h3>
+        <h3 className="mb-2 text-sm font-medium text-zinc-600">O/X</h3>
         <PollTypeCard type={PollType.YES_NO} selected={false} />
       </div>
       <div>
-        <h3 className="text-sm font-medium text-zinc-600 mb-2">호불호</h3>
+        <h3 className="mb-2 text-sm font-medium text-zinc-600">호불호</h3>
         <PollTypeCard type={PollType.LIKE_DISLIKE} selected={false} />
       </div>
       <div>
-        <h3 className="text-sm font-medium text-zinc-600 mb-2">객관식</h3>
+        <h3 className="mb-2 text-sm font-medium text-zinc-600">객관식</h3>
         <PollTypeCard type={PollType.MULTIPLE_CHOICE} selected={false} />
       </div>
     </div>

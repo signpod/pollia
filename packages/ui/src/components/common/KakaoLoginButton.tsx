@@ -4,7 +4,7 @@ import { Typo } from "./Typo";
 export function KakaoLoginButton(props: ButtonProps) {
   return (
     <Button
-      className="bg-kakao text-zinc-900 hover:bg-kakao active:bg-kakao focus:bg-kakao"
+      className="bg-kakao hover:bg-kakao active:bg-kakao focus:bg-kakao text-zinc-900"
       {...props}
       leftIcon={
         <svg

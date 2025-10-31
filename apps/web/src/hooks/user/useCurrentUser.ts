@@ -6,7 +6,7 @@ export const useCurrentUser = () => {
   return useQuery({
     queryKey: userQueryKeys.currentUser(),
     queryFn: () => getCurrentUser(),
-    select: (data) => data.data,
+    select: data => data.data,
     initialData: {
       data: {
         id: "",
@@ -19,7 +19,7 @@ export const useCurrentUser = () => {
     staleTime: 5 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000,
     retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 };
 

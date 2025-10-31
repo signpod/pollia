@@ -1,13 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { createPortal } from "react-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
-
+import { createPortal } from "react-dom";
 import { cn } from "../../lib/utils";
-import { Typo } from "./Typo";
 import { IconButton } from "./IconButton";
+import { Typo } from "./Typo";
 
 interface DrawerContextType {
   isOpen: boolean;
@@ -16,9 +15,7 @@ interface DrawerContextType {
   toggle: () => void;
 }
 
-const DrawerContext = React.createContext<DrawerContextType | undefined>(
-  undefined
-);
+const DrawerContext = React.createContext<DrawerContextType | undefined>(undefined);
 
 export const useDrawer = () => {
   const context = React.useContext(DrawerContext);
@@ -33,15 +30,12 @@ interface DrawerProviderProps {
   defaultOpen?: boolean;
 }
 
-export function DrawerProvider({
-  children,
-  defaultOpen = false,
-}: DrawerProviderProps) {
+export function DrawerProvider({ children, defaultOpen = false }: DrawerProviderProps) {
   const [isOpen, setIsOpen] = React.useState(defaultOpen);
 
   const open = React.useCallback(() => setIsOpen(true), []);
   const close = React.useCallback(() => setIsOpen(false), []);
-  const toggle = React.useCallback(() => setIsOpen((prev) => !prev), []);
+  const toggle = React.useCallback(() => setIsOpen(prev => !prev), []);
 
   const value = React.useMemo(
     () => ({
@@ -50,12 +44,10 @@ export function DrawerProvider({
       close,
       toggle,
     }),
-    [isOpen, open, close, toggle]
+    [isOpen, open, close, toggle],
   );
 
-  return (
-    <DrawerContext.Provider value={value}>{children}</DrawerContext.Provider>
-  );
+  return <DrawerContext.Provider value={value}>{children}</DrawerContext.Provider>;
 }
 
 interface DrawerContentProps {
@@ -127,19 +119,19 @@ export function DrawerContent({ className, children }: DrawerContentProps) {
           className={cn(
             "relative z-10 w-full",
             "bg-background rounded-t-lg shadow-lg",
-            "max-h-[85vh] overflow-hidden flex flex-col",
-            "max-w-lg mx-auto",
+            "flex max-h-[85vh] flex-col overflow-hidden",
+            "mx-auto max-w-lg",
             //TODO: Safe Area 설정
             "pb-10",
-            className
+            className,
           )}
-          onClick={(e) => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
         >
           {children}
         </motion.div>
       </motion.div>
     </AnimatePresence>,
-    document.body
+    document.body,
   );
 }
 
@@ -149,22 +141,14 @@ interface DrawerHeaderProps {
   showCloseButton?: boolean;
 }
 
-export function DrawerHeader({
-  className,
-  children,
-  showCloseButton = true,
-}: DrawerHeaderProps) {
+export function DrawerHeader({ className, children, showCloseButton = true }: DrawerHeaderProps) {
   const { close } = useDrawer();
   return (
-    <div
-      className={cn("flex items-center justify-between p-5 pb-6", className)}
-    >
+    <div className={cn("flex items-center justify-between p-5 pb-6", className)}>
       <Typo.MainTitle size="small" className="flex-1">
         {children}
       </Typo.MainTitle>
-      {showCloseButton && (
-        <IconButton icon={X} onClick={close} aria-label="닫기" />
-      )}
+      {showCloseButton && <IconButton icon={X} onClick={close} aria-label="닫기" />}
     </div>
   );
 }

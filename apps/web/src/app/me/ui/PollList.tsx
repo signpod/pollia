@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { List } from "./List";
-import { Typo } from "@repo/ui/components";
 import { cva } from "class-variance-authority";
+import { Typo } from "@repo/ui/components";
 import { isPollActive } from "@/lib/utils";
 import { GetUserPollsResponse } from "@/types/dto";
+import { List } from "./List";
 
 export function PollList({
   title,
@@ -18,7 +18,7 @@ export function PollList({
     <List.Root>
       <List.Header title={title} action={<ActionButton />} />
       <List.Content>
-        {polls?.map((poll) => (
+        {polls?.map(poll => (
           <List.Item
             leadingIcon={
               useActiveIcon ? (
@@ -70,7 +70,7 @@ function LeadingIcon({
           false: "text-zinc-500 bg-zinc-100",
         },
       },
-    }
+    },
   );
   return (
     <div className={leadingIconVariant({ isProgressive })}>

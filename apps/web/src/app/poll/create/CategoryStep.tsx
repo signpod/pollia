@@ -1,21 +1,16 @@
+import { useState } from "react";
+import { useAtomValue, useSetAtom } from "jotai";
+import { Button, FixedBottomLayout, Typo, useStep } from "@repo/ui/components";
 import { binaryPollCategoryAtom } from "@/atoms/create/binaryPollAtoms";
 import { multiplePollCategoryAtom } from "@/atoms/create/multiplePollAtoms";
 import { isMultiplePollTypeAtom } from "@/atoms/create/pollTypeAtoms";
-import { FixedBottomLayout, Button, Typo, useStep } from "@repo/ui/components";
-import {
-  POLL_CATEGORIES,
-  CATEGORY_ICONS,
-  CATEGORY_LABELS,
-} from "@/constants/poll";
-import { PollCategory } from "@/types/domain/poll";
-import { useAtomValue, useSetAtom } from "jotai";
+import { CATEGORY_ICONS, CATEGORY_LABELS, POLL_CATEGORIES } from "@/constants/poll";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { PollCategory } from "@/types/domain/poll";
 
 export function CategoryStep() {
   const { goBack } = useStep();
-  const [tempSelectedCategory, setTempSelectedCategory] =
-    useState<PollCategory | null>(null);
+  const [tempSelectedCategory, setTempSelectedCategory] = useState<PollCategory | null>(null);
 
   const isMultiplePollType = useAtomValue(isMultiplePollTypeAtom);
 
@@ -45,7 +40,7 @@ export function CategoryStep() {
   return (
     <>
       <div className="flex flex-col gap-4 px-5">
-        {POLL_CATEGORIES.map((category) => {
+        {POLL_CATEGORIES.map(category => {
           const IconComponent = CATEGORY_ICONS[category];
           const isSelected = tempSelectedCategory === category;
 
@@ -55,18 +50,11 @@ export function CategoryStep() {
               variant={"ghost"}
               fullWidth={true}
               textAlign="left"
-              leftIcon={
-                <IconComponent width={24} height={24} strokeWidth={1.5} />
-              }
+              leftIcon={<IconComponent width={24} height={24} strokeWidth={1.5} />}
               onClick={() => handleToggleCategorySelect(category)}
-              className={cn(
-                "justify-start gap-3",
-                isSelected && "bg-violet-50 text-violet-500"
-              )}
+              className={cn("justify-start gap-3", isSelected && "bg-violet-50 text-violet-500")}
             >
-              <Typo.ButtonText size="large">
-                {CATEGORY_LABELS[category]}
-              </Typo.ButtonText>
+              <Typo.ButtonText size="large">{CATEGORY_LABELS[category]}</Typo.ButtonText>
             </Button>
           );
         })}

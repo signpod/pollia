@@ -1,6 +1,6 @@
-import { Meta, StoryObj } from "@storybook/nextjs";
-import { Toaster, toast } from "@repo/ui/components";
 import React from "react";
+import { Meta, StoryObj } from "@storybook/nextjs";
+import { toast, Toaster } from "@repo/ui/components";
 
 const meta: Meta = {
   title: "Common/Toast",
@@ -79,9 +79,7 @@ export const AllTypes: Story = {
             padding: "2rem",
           }}
         >
-          <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>
-            Toast 타입별 예시
-          </h2>
+          <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>Toast 타입별 예시</h2>
           <button
             onClick={() => toast.success("투표가 생성되었습니다!")}
             style={{
@@ -162,9 +160,7 @@ export const DirectUsage: Story = {
             padding: "2rem",
           }}
         >
-          <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>
-            toast 함수 직접 사용
-          </h2>
+          <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>toast 함수 직접 사용</h2>
           <button
             onClick={() => toast.success("좋아요를 눌렀습니다!")}
             style={{
@@ -213,9 +209,7 @@ export const QueueManagement: Story = {
             textAlign: "center",
           }}
         >
-          <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>
-            Queue 관리
-          </h2>
+          <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>Queue 관리</h2>
           <button
             onClick={showMultipleToasts}
             style={{
@@ -239,8 +233,7 @@ export const QueueManagement: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          "여러 토스트를 연속으로 호출하면 Queue에 쌓여 순차적으로 표시됩니다.",
+        story: "여러 토스트를 연속으로 호출하면 Queue에 쌓여 순차적으로 표시됩니다.",
       },
     },
   },
@@ -260,13 +253,9 @@ export const CustomDuration: Story = {
             padding: "2rem",
           }}
         >
-          <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>
-            Duration 커스터마이징
-          </h2>
+          <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>Duration 커스터마이징</h2>
           <button
-            onClick={() =>
-              toast.success("1초 후 사라집니다", { duration: 1000 })
-            }
+            onClick={() => toast.success("1초 후 사라집니다", { duration: 1000 })}
             style={{
               padding: "0.75rem 1.5rem",
               borderRadius: "8px",
@@ -296,9 +285,7 @@ export const CustomDuration: Story = {
             3초 (기본값)
           </button>
           <button
-            onClick={() =>
-              toast.warning("7초 후 사라집니다", { duration: 7000 })
-            }
+            onClick={() => toast.warning("7초 후 사라집니다", { duration: 7000 })}
             style={{
               padding: "0.75rem 1.5rem",
               borderRadius: "8px",
@@ -317,8 +304,7 @@ export const CustomDuration: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          "duration 옵션을 통해 토스트가 화면에 표시되는 시간을 조절할 수 있습니다.",
+        story: "duration 옵션을 통해 토스트가 화면에 표시되는 시간을 조절할 수 있습니다.",
       },
     },
   },
@@ -360,9 +346,7 @@ export const RealWorldScenarios: Story = {
             padding: "2rem",
           }}
         >
-          <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>
-            실제 사용 시나리오
-          </h2>
+          <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>실제 사용 시나리오</h2>
           <button
             onClick={handleVoteSubmit}
             style={{
@@ -422,8 +406,7 @@ export const RealWorldScenarios: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          "실제 앱에서 사용될 수 있는 다양한 시나리오를 시뮬레이션한 예시입니다.",
+        story: "실제 앱에서 사용될 수 있는 다양한 시나리오를 시뮬레이션한 예시입니다.",
       },
     },
   },

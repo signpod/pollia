@@ -1,9 +1,8 @@
-import { CATEGORY_LABELS } from "@/constants/poll";
-import { Button, Typo, useStep } from "@repo/ui/components";
 import { PollCategory } from "@prisma/client";
-import { useAtomValue } from "jotai";
-import { PrimitiveAtom } from "jotai";
+import { PrimitiveAtom, useAtomValue } from "jotai";
 import { ChevronRight } from "lucide-react";
+import { Button, Typo, useStep } from "@repo/ui/components";
+import { CATEGORY_LABELS } from "@/constants/poll";
 
 interface CategoryButtonProps {
   categoryAtom: PrimitiveAtom<PollCategory | undefined>;
@@ -19,7 +18,7 @@ export function CategoryButton({ categoryAtom }: CategoryButtonProps) {
       onClick={goNext}
       fullWidth
       textAlign="left"
-      rightIcon={<ChevronRight className="w-6 h-6" />}
+      rightIcon={<ChevronRight className="h-6 w-6" />}
     >
       <div className="flex items-center gap-1">
         <Typo.ButtonText size="large">

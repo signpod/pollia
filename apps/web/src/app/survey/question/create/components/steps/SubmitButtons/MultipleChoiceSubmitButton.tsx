@@ -1,9 +1,9 @@
-import { Button, Typo, FixedBottomLayout, toast } from "@repo/ui/components";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAtomValue } from "jotai";
-import { useSearchParams, useRouter } from "next/navigation";
+import { Button, FixedBottomLayout, toast, Typo } from "@repo/ui/components";
 import { multipleChoiceDataAtom } from "@/atoms/survey/create/multipleChoiceInfoAtoms";
-import { multipleChoiceInfoSchema } from "@/schemas/survey/multipleChoiceInfoSchema";
 import { useCreateMultipleChoiceQuestion } from "@/hooks/survey/question";
+import { multipleChoiceInfoSchema } from "@/schemas/survey/multipleChoiceInfoSchema";
 import type { CreateMultipleChoiceQuestionRequest } from "@/types/dto/survey";
 
 export function MultipleChoiceSubmitButton() {
@@ -14,20 +14,19 @@ export function MultipleChoiceSubmitButton() {
 
   const multipleChoiceData = useAtomValue(multipleChoiceDataAtom);
   const { mutate, isPending } = useCreateMultipleChoiceQuestion({
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast.success("객관식 질문이 생성되었습니다!");
       router.push(
-        `/survey/question/create/done?surveyQuestionId=${data.data.id}${data.data.surveyId ? `&surveyId=${data.data.surveyId}` : ""}`
+        `/survey/question/create/done?surveyQuestionId=${data.data.id}${data.data.surveyId ? `&surveyId=${data.data.surveyId}` : ""}`,
       );
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message || "질문 생성에 실패했습니다.");
     },
   });
 
   const handleCreateQuestion = () => {
-    const validationResult =
-      multipleChoiceInfoSchema.safeParse(multipleChoiceData);
+    const validationResult = multipleChoiceInfoSchema.safeParse(multipleChoiceData);
     if (!validationResult.success) {
       toast.error("입력 정보를 확인해주세요.");
       return;
@@ -40,7 +39,7 @@ export function MultipleChoiceSubmitButton() {
       imageUrl: multipleChoiceData.imageUrl,
       maxSelections: multipleChoiceData.maxSelections,
       order,
-      options: multipleChoiceData.options.map((option) => ({
+      options: multipleChoiceData.options.map(option => ({
         description: option.description,
         imageUrl: option.imageUrl,
         order: option.order,
@@ -52,9 +51,7 @@ export function MultipleChoiceSubmitButton() {
   };
 
   const isDisabled =
-    isPending ||
-    !multipleChoiceData.title.trim() ||
-    multipleChoiceData.validOptionsCount < 2;
+    isPending || !multipleChoiceData.title.trim() || multipleChoiceData.validOptionsCount < 2;
 
   return (
     <FixedBottomLayout.Content>
@@ -66,9 +63,7 @@ export function MultipleChoiceSubmitButton() {
           disabled={isDisabled}
           loading={isPending}
         >
-          <Typo.ButtonText>
-            {isPending ? "생성 중..." : "질문 생성하기"}
-          </Typo.ButtonText>
+          <Typo.ButtonText>{isPending ? "생성 중..." : "질문 생성하기"}</Typo.ButtonText>
         </Button>
       </div>
     </FixedBottomLayout.Content>

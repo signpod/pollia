@@ -39,7 +39,7 @@ export function getPollStatus(
   startDate: Date | null,
   endDate: Date | null,
   isIndefinite: boolean,
-  currentTime: Date = new Date()
+  currentTime: Date = new Date(),
 ): "before" | "active" | "after" {
   const now = currentTime.getTime();
   const startTime = startDate ? startDate.getTime() : 0;
@@ -56,18 +56,16 @@ export function isPollActive(
   startDate: Date | null,
   endDate: Date | null,
   isIndefinite: boolean,
-  currentTime: Date = new Date()
+  currentTime: Date = new Date(),
 ): boolean {
-  return (
-    getPollStatus(startDate, endDate, isIndefinite, currentTime) === "active"
-  );
+  return getPollStatus(startDate, endDate, isIndefinite, currentTime) === "active";
 }
 
 export function getPollStatusMessage(
   startDate: Date | null,
   endDate: Date | null,
   isIndefinite: boolean,
-  currentTime: Date = new Date()
+  currentTime: Date = new Date(),
 ): string {
   const status = getPollStatus(startDate, endDate, isIndefinite, currentTime);
 

@@ -18,10 +18,7 @@ const SheetOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Overlay
     ref={ref}
-    className={cn(
-      "fixed inset-0 z-50 bg-black/40 backdrop-blur-sm",
-      className
-    )}
+    className={cn("fixed inset-0 z-50 bg-black/40 backdrop-blur-sm", className)}
     {...props}
   />
 ));
@@ -47,9 +44,9 @@ const SheetContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed z-50 grid gap-4 bg-background p-4 shadow-lg outline-none",
+        "bg-background fixed z-50 grid gap-4 p-4 shadow-lg outline-none",
         sideClasses[side],
-        className
+        className,
       )}
       {...props}
     >
@@ -75,7 +72,7 @@ const SheetTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Title
     ref={ref}
-    className={cn("text-lg font-semibold leading-none tracking-tight", className)}
+    className={cn("text-lg leading-none font-semibold tracking-tight", className)}
     {...props}
   />
 ));
@@ -87,7 +84,7 @@ const SheetDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
+    className={cn("text-muted-foreground text-sm", className)}
     {...props}
   />
 ));
@@ -105,5 +102,3 @@ export {
   SheetTitle,
   SheetDescription,
 };
-
-

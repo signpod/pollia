@@ -81,7 +81,7 @@ export const BasicButton: Story = {
 
         <FixedBottomLayout.Content>
           <div className="p-4">
-            <button className="w-full bg-blue-500 text-white py-3 rounded-lg font-medium hover:bg-blue-600 transition-colors">
+            <button className="w-full rounded-lg bg-blue-500 py-3 font-medium text-white transition-colors hover:bg-blue-600">
               기본 고정 버튼
             </button>
           </div>
@@ -105,9 +105,7 @@ export const MultipleButtons: Story = {
           >
             다중 버튼 예시
           </h1>
-          <p style={{ marginBottom: "1rem" }}>
-            여러 버튼이 함께 표시되는 고정 콘텐츠 예시입니다.
-          </p>
+          <p style={{ marginBottom: "1rem" }}>여러 버튼이 함께 표시되는 고정 콘텐츠 예시입니다.</p>
           {Array.from({ length: 15 }, (_, i) => (
             <p key={i} style={{ marginBottom: "1rem" }}>
               콘텐츠 라인 {i + 1} - 다중 버튼 레이아웃을 테스트합니다.
@@ -117,10 +115,10 @@ export const MultipleButtons: Story = {
 
         <FixedBottomLayout.Content>
           <div className="flex gap-3 p-4">
-            <button className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-medium hover:bg-gray-300 transition-colors">
+            <button className="flex-1 rounded-lg bg-gray-200 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-300">
               취소
             </button>
-            <button className="flex-1 bg-green-500 text-white py-3 rounded-lg font-medium hover:bg-green-600 transition-colors">
+            <button className="flex-1 rounded-lg bg-green-500 py-3 font-medium text-white transition-colors hover:bg-green-600">
               확인
             </button>
           </div>
@@ -163,7 +161,7 @@ export const ComplexContent: Story = {
               </div>
               <p className="text-xl font-bold text-gray-900">₩25,000</p>
             </div>
-            <button className="w-full bg-purple-500 text-white py-3 rounded-lg font-medium hover:bg-purple-600 transition-colors">
+            <button className="w-full rounded-lg bg-purple-500 py-3 font-medium text-white transition-colors hover:bg-purple-600">
               결제하기
             </button>
           </div>
@@ -199,9 +197,7 @@ export const ToasterWithFixedBottom: Story = {
               marginBottom: "2rem",
             }}
           >
-            <h2 style={{ fontSize: "1.25rem", fontWeight: "600" }}>
-              Toast 테스트 버튼
-            </h2>
+            <h2 style={{ fontSize: "1.25rem", fontWeight: "600" }}>Toast 테스트 버튼</h2>
             <button
               onClick={() => toast.success("성공적으로 저장되었습니다!")}
               style={{
@@ -262,21 +258,18 @@ export const ToasterWithFixedBottom: Story = {
 
           {Array.from({ length: 15 }, (_, i) => (
             <p key={i} style={{ marginBottom: "1rem" }}>
-              콘텐츠 라인 {i + 1} - Toast와 고정 콘텐츠의 위치 관계를
-              테스트합니다.
+              콘텐츠 라인 {i + 1} - Toast와 고정 콘텐츠의 위치 관계를 테스트합니다.
             </p>
           ))}
         </div>
 
         <FixedBottomLayout.Content>
-          <div className="p-4 space-y-3">
-            <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+          <div className="space-y-3 p-4">
+            <div className="flex items-center justify-between rounded-lg bg-gray-50 p-3">
               <p className="text-sm text-gray-600">하단 고정 콘텐츠</p>
-              <p className="text-sm font-medium text-gray-900">
-                Toast는 이 위에 표시됩니다
-              </p>
+              <p className="text-sm font-medium text-gray-900">Toast는 이 위에 표시됩니다</p>
             </div>
-            <button className="w-full bg-indigo-500 text-white py-3 rounded-lg font-medium hover:bg-indigo-600 transition-colors">
+            <button className="w-full rounded-lg bg-indigo-500 py-3 font-medium text-white transition-colors hover:bg-indigo-600">
               하단 고정 버튼
             </button>
           </div>
@@ -320,9 +313,7 @@ export const ToasterWithoutFixedBottom: Story = {
               marginBottom: "2rem",
             }}
           >
-            <h2 style={{ fontSize: "1.25rem", fontWeight: "600" }}>
-              Toast 테스트 버튼
-            </h2>
+            <h2 style={{ fontSize: "1.25rem", fontWeight: "600" }}>Toast 테스트 버튼</h2>
             <button
               onClick={() => toast.success("성공적으로 저장되었습니다!")}
               style={{
@@ -402,8 +393,7 @@ export const ToasterWithoutFixedBottom: Story = {
 
           {Array.from({ length: 20 }, (_, i) => (
             <p key={i} style={{ marginBottom: "1rem" }}>
-              콘텐츠 라인 {i + 1} - 하단 고정 콘텐츠 없이 Toast만 사용하는
-              케이스를 테스트합니다.
+              콘텐츠 라인 {i + 1} - 하단 고정 콘텐츠 없이 Toast만 사용하는 케이스를 테스트합니다.
             </p>
           ))}
         </div>

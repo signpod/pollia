@@ -1,8 +1,8 @@
-import { Heart, Share, Bookmark } from "lucide-react";
+import { Bookmark, Heart, Share } from "lucide-react";
 import { IconButton, toast } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
-import { useLike } from "@/hooks/poll/useLike";
 import { useBookmark } from "@/hooks/poll/useBookmark";
+import { useLike } from "@/hooks/poll/useLike";
 import { useAuth } from "@/hooks/user";
 
 const SHARE_MESSAGES = {
@@ -14,11 +14,7 @@ const SHARE_MESSAGES = {
 export function BottomCTAButtons({ pollId }: { pollId: string }) {
   const { withAuth } = useAuth();
   const { isLiked, handleLike, isProcessing: likeProcessing } = useLike(pollId);
-  const {
-    isBookmarked,
-    handleBookmark,
-    isProcessing: bookmarkProcessing,
-  } = useBookmark(pollId);
+  const { isBookmarked, handleBookmark, isProcessing: bookmarkProcessing } = useBookmark(pollId);
 
   const onLikeClick = () => withAuth(handleLike)();
   const onBookmarkClick = () => withAuth(handleBookmark)();
@@ -60,7 +56,7 @@ export function BottomCTAButtons({ pollId }: { pollId: string }) {
     <div
       className={cn(
         "flex items-center justify-between p-1",
-        "shadow-[0_4px_20px_0_rgba(0,0,0,0.1)]"
+        "shadow-[0_4px_20px_0_rgba(0,0,0,0.1)]",
       )}
     >
       <div className="flex items-center">
@@ -73,17 +69,12 @@ export function BottomCTAButtons({ pollId }: { pollId: string }) {
           disabled={likeProcessing}
           iconClassName={cn(
             "transition-all duration-300",
-            isLiked && "text-violet-500 fill-violet-500"
+            isLiked && "text-violet-500 fill-violet-500",
           )}
         />
 
         {/* 공유 */}
-        <IconButton
-          icon={Share}
-          onClick={handleShare}
-          aria-label="공유"
-          className="size-12"
-        />
+        <IconButton icon={Share} onClick={handleShare} aria-label="공유" className="size-12" />
       </div>
 
       {/* 스크랩 */}
@@ -95,7 +86,7 @@ export function BottomCTAButtons({ pollId }: { pollId: string }) {
         disabled={bookmarkProcessing}
         iconClassName={cn(
           "transition-all duration-300",
-          isBookmarked && "text-violet-500 fill-violet-500"
+          isBookmarked && "text-violet-500 fill-violet-500",
         )}
       />
     </div>

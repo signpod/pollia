@@ -1,8 +1,8 @@
 "use client";
 
 import { useRef } from "react";
-import { cn } from "../../lib/utils";
 import { ImagePlus, X } from "lucide-react";
+import { cn } from "../../lib/utils";
 
 export type ImageSelectorSize = "large" | "medium";
 
@@ -62,7 +62,7 @@ export function ImageSelector({
   };
 
   return (
-    <div className={cn("relative w-fit h-fit align-top", className)}>
+    <div className={cn("relative h-fit w-fit align-top", className)}>
       <input
         ref={fileInputRef}
         type="file"
@@ -78,30 +78,19 @@ export function ImageSelector({
         disabled={disabled}
         type="button"
         className={cn(
-          "relative overflow-hidden rounded block",
+          "relative block overflow-hidden rounded",
           sizeStyles[size].container,
           hasImage ? "border-transparent bg-gray-100" : "bg-gray-50",
           disabled && "cursor-not-allowed opacity-50",
-          !disabled && "cursor-pointer"
+          !disabled && "cursor-pointer",
         )}
         aria-label={hasImage ? "이미지 변경" : "이미지 선택"}
       >
         {hasImage ? (
-          <img
-            src={imageUrl!}
-            alt="선택된 이미지"
-            className="size-full object-cover"
-          />
+          <img src={imageUrl!} alt="선택된 이미지" className="size-full object-cover" />
         ) : (
-          <div
-            className={cn(
-              "flex items-center justify-center",
-              sizeStyles[size].padding
-            )}
-          >
-            <ImagePlus
-              className={cn(sizeStyles[size].iconSize, "text-zinc-400")}
-            />
+          <div className={cn("flex items-center justify-center", sizeStyles[size].padding)}>
+            <ImagePlus className={cn(sizeStyles[size].iconSize, "text-zinc-400")} />
           </div>
         )}
       </button>
@@ -115,7 +104,7 @@ export function ImageSelector({
             "absolute flex items-center justify-center rounded-full bg-zinc-950 text-white",
             sizeStyles[size].deleteButton,
             disabled && "cursor-not-allowed opacity-50",
-            "hover:cursor-pointer"
+            "hover:cursor-pointer",
           )}
           aria-label="이미지 삭제"
         >

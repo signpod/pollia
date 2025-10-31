@@ -1,16 +1,15 @@
-'use client';
+"use client";
 
-import { Input } from '@repo/ui/components';
-import { useAtom, useAtomValue } from 'jotai';
+import { useAtom, useAtomValue } from "jotai";
+import { Input } from "@repo/ui/components";
 import {
   surveyTitleAtom,
-  surveyValidationAtom,
   surveyTitleTouchedAtom,
-} from '@/atoms/create/surveyAtoms';
+  surveyValidationAtom,
+} from "@/atoms/create/surveyAtoms";
 
 export function SurveyTitleForm() {
-  const { title, handleChange, errorMessage, handleBlur } =
-    useSurveyTitleForm();
+  const { title, handleChange, errorMessage, handleBlur } = useSurveyTitleForm();
 
   return (
     <Input
@@ -41,8 +40,7 @@ function useSurveyTitleForm() {
     setTitle(value);
   };
 
-  const errorMessage =
-    touched && validation.errors.title ? validation.errors.title : undefined;
+  const errorMessage = touched && validation.errors.title ? validation.errors.title : undefined;
 
   return {
     title,

@@ -1,9 +1,9 @@
-import { Button, Typo, FixedBottomLayout, toast } from "@repo/ui/components";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAtomValue } from "jotai";
-import { useSearchParams, useRouter } from "next/navigation";
+import { Button, FixedBottomLayout, toast, Typo } from "@repo/ui/components";
 import { eitherOrDataAtom } from "@/atoms/survey/create/eitherOrInfoAtoms";
-import { eitherOrInfoSchema } from "@/schemas/survey/eitherOrInfoSchema";
 import { useCreateEitherOrQuestion } from "@/hooks/survey/question";
+import { eitherOrInfoSchema } from "@/schemas/survey/eitherOrInfoSchema";
 import type { CreateEitherOrQuestionRequest } from "@/types/dto/survey";
 
 export function EitherOrSubmitButton() {
@@ -14,13 +14,13 @@ export function EitherOrSubmitButton() {
 
   const eitherOrData = useAtomValue(eitherOrDataAtom);
   const { mutate, isPending } = useCreateEitherOrQuestion({
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast.success("양자택일 질문이 생성되었습니다!");
       router.push(
-        `/survey/question/create/done?surveyQuestionId=${data.data.id}&surveyId=${data.data.surveyId}`
+        `/survey/question/create/done?surveyQuestionId=${data.data.id}&surveyId=${data.data.surveyId}`,
       );
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error.message || "질문 생성에 실패했습니다.");
     },
   });
@@ -53,9 +53,7 @@ export function EitherOrSubmitButton() {
           disabled={isPending || !eitherOrData.title.trim()}
           loading={isPending}
         >
-          <Typo.ButtonText>
-            {isPending ? "생성 중..." : "질문 생성하기"}
-          </Typo.ButtonText>
+          <Typo.ButtonText>{isPending ? "생성 중..." : "질문 생성하기"}</Typo.ButtonText>
         </Button>
       </div>
     </FixedBottomLayout.Content>

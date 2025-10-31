@@ -1,26 +1,22 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { useAtomValue } from "jotai";
 import {
-  useStep,
-  Typo,
-  StepProvider,
   FixedBottomLayout,
   FixedTopLayout,
   IconButton,
+  StepProvider,
+  Typo,
+  useStep,
 } from "@repo/ui/components";
-import { useAtomValue } from "jotai";
-import { useRouter } from "next/navigation";
-import {
-  createStepConfigs,
-  CREATE_SURVEY_STEPS,
-} from "@/constants/createSurvey";
 import { surveyTypeAtom } from "@/atoms/survey/create/surveyTypeAtoms";
-
-import { TypeStep } from "./components/steps/TypeStep";
+import { CREATE_SURVEY_STEPS, createStepConfigs } from "@/constants/createSurvey";
 import { EitherOrInfoStep } from "./components/steps/EitherOrInfoStep";
 import { MultipleChoiceInfoStep } from "./components/steps/MultipleChoiceInfoStep";
 import { ScaleInfoStep } from "./components/steps/ScaleInfoStep";
 import { SubjectiveInfoStep } from "./components/steps/SubjectiveInfoStep";
+import { TypeStep } from "./components/steps/TypeStep";
 
 export default function CreateSurveyQuestionPage() {
   return (
@@ -51,7 +47,7 @@ function CreateSurveyQuestionPageContent() {
   })[currentStep];
 
   return (
-    <FixedTopLayout className="bg-white flex flex-col h-full">
+    <FixedTopLayout className="flex h-full flex-col bg-white">
       <FixedTopLayout.Content className="flex flex-col gap-4">
         <div className="px-1">
           {currentStepConfig?.header.icon && (
@@ -66,10 +62,8 @@ function CreateSurveyQuestionPageContent() {
         </div>
       </FixedTopLayout.Content>
 
-      <div className="px-5 space-y-1">
-        <Typo.MainTitle size="medium">
-          {currentStepConfig?.title}
-        </Typo.MainTitle>
+      <div className="space-y-1 px-5">
+        <Typo.MainTitle size="medium">{currentStepConfig?.title}</Typo.MainTitle>
         {currentStepConfig?.description && (
           <Typo.Body size="large" className="text-zinc-600">
             {currentStepConfig.description}

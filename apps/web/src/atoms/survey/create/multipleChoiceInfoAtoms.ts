@@ -20,9 +20,7 @@ const createEmptySurveyOption = (order: number): SurveyOption => ({
 export const multipleChoiceTitleAtom = atom<string>("");
 export const multipleChoiceDescriptionAtom = atom<string>("");
 export const multipleChoiceImageUrlAtom = atom<string | undefined>(undefined);
-export const multipleChoiceImageFileUploadIdAtom = atom<string | undefined>(
-  undefined
-);
+export const multipleChoiceImageFileUploadIdAtom = atom<string | undefined>(undefined);
 
 export const multipleChoiceMaxSelectionsAtom = atom<number>(1);
 
@@ -38,50 +36,40 @@ export const addMultipleChoiceOptionAtom = atom(null, (get, set) => {
   set(multipleChoiceOptionsAtom, [...options, newOption]);
 });
 
-export const removeMultipleChoiceOptionAtom = atom(
-  null,
-  (get, set, optionId: string) => {
-    const options = get(multipleChoiceOptionsAtom);
-    const filteredOptions = options.filter((option) => option.id !== optionId);
+export const removeMultipleChoiceOptionAtom = atom(null, (get, set, optionId: string) => {
+  const options = get(multipleChoiceOptionsAtom);
+  const filteredOptions = options.filter(option => option.id !== optionId);
 
-    const reorderedOptions = filteredOptions.map((option, index) => ({
-      ...option,
-      order: index,
-    }));
-    set(multipleChoiceOptionsAtom, reorderedOptions);
-  }
-);
+  const reorderedOptions = filteredOptions.map((option, index) => ({
+    ...option,
+    order: index,
+  }));
+  set(multipleChoiceOptionsAtom, reorderedOptions);
+});
 
 export const updateMultipleChoiceOptionAtom = atom(
   null,
-  (
-    get,
-    set,
-    update: { id: string; data: Partial<Omit<SurveyOption, "id" | "order">> }
-  ) => {
+  (get, set, update: { id: string; data: Partial<Omit<SurveyOption, "id" | "order">> }) => {
     const options = get(multipleChoiceOptionsAtom);
-    const updatedOptions = options.map((option) =>
-      option.id === update.id ? { ...option, ...update.data } : option
+    const updatedOptions = options.map(option =>
+      option.id === update.id ? { ...option, ...update.data } : option,
     );
     set(multipleChoiceOptionsAtom, updatedOptions);
-  }
+  },
 );
 
 export const resetMultipleChoiceOptionsAtom = atom(null, (_get, set) => {
-  set(multipleChoiceOptionsAtom, [
-    createEmptySurveyOption(0),
-    createEmptySurveyOption(1),
-  ]);
+  set(multipleChoiceOptionsAtom, [createEmptySurveyOption(0), createEmptySurveyOption(1)]);
 });
 
-export const multipleChoiceImageCountAtom = atom((get) => {
+export const multipleChoiceImageCountAtom = atom(get => {
   const imageUrl = get(multipleChoiceImageUrlAtom);
   return imageUrl ? 1 : 0;
 });
 
-export const multipleChoiceDataAtom = atom((get) => {
+export const multipleChoiceDataAtom = atom(get => {
   const options = get(multipleChoiceOptionsAtom);
-  const validOptions = options.filter((option) => option.description.trim());
+  const validOptions = options.filter(option => option.description.trim());
 
   return {
     title: get(multipleChoiceTitleAtom),
@@ -101,8 +89,5 @@ export const resetMultipleChoiceAtom = atom(null, (_get, set) => {
   set(multipleChoiceImageUrlAtom, undefined);
   set(multipleChoiceImageFileUploadIdAtom, undefined);
   set(multipleChoiceMaxSelectionsAtom, 1);
-  set(multipleChoiceOptionsAtom, [
-    createEmptySurveyOption(0),
-    createEmptySurveyOption(1),
-  ]);
+  set(multipleChoiceOptionsAtom, [createEmptySurveyOption(0), createEmptySurveyOption(1)]);
 });

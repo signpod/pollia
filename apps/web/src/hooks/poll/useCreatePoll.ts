@@ -1,8 +1,8 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { CreatePollRequest, CreatePollResponse } from "@/types/dto";
 import { createPoll } from "@/actions/poll";
+import { CreatePollRequest, CreatePollResponse } from "@/types/dto";
 
 interface UseCreatePollOptions {
   onSuccess?: (data: CreatePollResponse) => void;
@@ -11,13 +11,12 @@ interface UseCreatePollOptions {
 
 export function useCreatePoll(options: UseCreatePollOptions = {}) {
   return useMutation({
-    mutationFn: async (
-      payload: CreatePollRequest
-    ): Promise<CreatePollResponse> => createPoll(payload),
-    onSuccess: (data) => {
+    mutationFn: async (payload: CreatePollRequest): Promise<CreatePollResponse> =>
+      createPoll(payload),
+    onSuccess: data => {
       options.onSuccess?.(data);
     },
-    onError: (error) => {
+    onError: error => {
       console.error("❌ 폴 생성 실패:", error);
       options.onError?.(error as Error);
     },

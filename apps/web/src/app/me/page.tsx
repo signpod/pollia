@@ -1,11 +1,11 @@
-import { getQueryClient } from "@/lib/getQueryClient";
-import { pollQueryKeys } from "@/constants/queryKeys/pollQueryKeys";
 import { dehydrate } from "@tanstack/react-query";
 import { getUserPolls } from "@/actions/poll";
-import { MeClientWrapper } from "./MeClientWrapper";
 import { getBookmarkedPolls, getLikedPolls } from "@/actions/poll/read";
-import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";
 import { getCurrentUser } from "@/actions/user/read";
+import { pollQueryKeys } from "@/constants/queryKeys/pollQueryKeys";
+import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";
+import { getQueryClient } from "@/lib/getQueryClient";
+import { MeClientWrapper } from "./MeClientWrapper";
 
 export default async function MePage() {
   const queryClient = getQueryClient();
