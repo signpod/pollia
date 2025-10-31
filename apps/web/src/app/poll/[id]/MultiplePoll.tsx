@@ -142,6 +142,7 @@ export function MultiplePoll({ pollId }: MultiplePollProps) {
         <div className="flex flex-col gap-2">
           {options.map(option => (
             <button
+              type="button"
               key={option.id}
               onClick={() => handleOptionToggle(option.id)}
               className={`w-full rounded-sm text-left transition-all duration-200 ${
