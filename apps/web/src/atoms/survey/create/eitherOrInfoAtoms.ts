@@ -3,16 +3,14 @@ import { atom } from "jotai";
 export const eitherOrTitleAtom = atom<string>("");
 export const eitherOrDescriptionAtom = atom<string>("");
 export const eitherOrImageUrlAtom = atom<string | undefined>(undefined);
-export const eitherOrImageFileUploadIdAtom = atom<string | undefined>(
-  undefined
-);
+export const eitherOrImageFileUploadIdAtom = atom<string | undefined>(undefined);
 
-export const eitherOrImageCountAtom = atom((get) => {
+export const eitherOrImageCountAtom = atom(get => {
   const imageUrl = get(eitherOrImageUrlAtom);
   return imageUrl ? 1 : 0;
 });
 
-export const eitherOrDataAtom = atom((get) => ({
+export const eitherOrDataAtom = atom(get => ({
   title: get(eitherOrTitleAtom),
   description: get(eitherOrDescriptionAtom),
   imageUrl: get(eitherOrImageUrlAtom),

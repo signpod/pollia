@@ -1,9 +1,9 @@
+import { multiplePollMaxSelectionsAtom } from "@/atoms/create/multiplePollAtoms";
 import PollOption from "@/components/poll/PollOption";
 import { useMultipleOptions } from "@/hooks/poll/useMultipleOptions";
-import { multiplePollMaxSelectionsAtom } from "@/atoms/create/multiplePollAtoms";
 import { Button, CounterInput, Typo } from "@repo/ui/components";
-import { PlusIcon } from "lucide-react";
 import { useAtom } from "jotai";
+import { PlusIcon } from "lucide-react";
 import { useEffect } from "react";
 
 export function OptionSelector() {
@@ -18,9 +18,7 @@ export function OptionSelector() {
     validOptionCount,
   } = useMultipleOptions();
 
-  const [maxSelections, setMaxSelections] = useAtom(
-    multiplePollMaxSelectionsAtom
-  );
+  const [maxSelections, setMaxSelections] = useAtom(multiplePollMaxSelectionsAtom);
 
   useEffect(() => {
     if (validOptionCount > 0 && maxSelections > validOptionCount) {
@@ -32,7 +30,7 @@ export function OptionSelector() {
     }
   }, [validOptionCount, maxSelections, setMaxSelections]);
 
-  const hasEmptyOptions = options.some((option) => !option.description.trim());
+  const hasEmptyOptions = options.some(option => !option.description.trim());
 
   return (
     <div className="flex flex-col gap-6">
@@ -46,7 +44,7 @@ export function OptionSelector() {
         </Typo.Body>
       </div>
 
-      {options.map((option) => {
+      {options.map(option => {
         const handleDescriptionChange = (description: string) => {
           updateOption(option.id, { description });
         };

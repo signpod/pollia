@@ -1,11 +1,8 @@
-'use client';
+"use client";
 
-import { useMutation } from '@tanstack/react-query';
-import { createSurvey } from '@/actions/survey/create-survey';
-import type {
-  CreateSurveyRequest,
-  CreateSurveyResponse,
-} from '@/types/dto/survey';
+import { createSurvey } from "@/actions/survey/create-survey";
+import type { CreateSurveyRequest, CreateSurveyResponse } from "@/types/dto/survey";
+import { useMutation } from "@tanstack/react-query";
 
 interface UseCreateSurveyOptions {
   onSuccess?: (data: CreateSurveyResponse) => void;
@@ -14,13 +11,12 @@ interface UseCreateSurveyOptions {
 
 export function useCreateSurvey(options: UseCreateSurveyOptions = {}) {
   return useMutation({
-    mutationFn: async (
-      payload: CreateSurveyRequest
-    ): Promise<CreateSurveyResponse> => createSurvey(payload),
-    onSuccess: (data) => {
+    mutationFn: async (payload: CreateSurveyRequest): Promise<CreateSurveyResponse> =>
+      createSurvey(payload),
+    onSuccess: data => {
       options.onSuccess?.(data);
     },
-    onError: (error) => {
+    onError: error => {
       options.onError?.(error as Error);
     },
   });

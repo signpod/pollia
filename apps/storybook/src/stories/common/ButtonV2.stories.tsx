@@ -1,6 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/nextjs";
 import { ButtonV2 } from "@repo/ui/components";
-import { Heart, Plus, ChevronRight, Settings } from "lucide-react";
+import type { Meta, StoryObj } from "@storybook/nextjs";
+import { ChevronRight, Heart, Plus, Settings } from "lucide-react";
 
 const meta: Meta<typeof ButtonV2> = {
   title: "Common/ButtonV2",
@@ -218,11 +218,7 @@ export const IconCombinations: Story = {
           <ButtonV2 variant="primary" leftIcon={Plus} rightIcon={ChevronRight}>
             추가 후 이동
           </ButtonV2>
-          <ButtonV2
-            variant="secondary"
-            leftIcon={Heart}
-            rightIcon={ChevronRight}
-          >
+          <ButtonV2 variant="secondary" leftIcon={Heart} rightIcon={ChevronRight}>
             좋아요 및 공유
           </ButtonV2>
         </div>
@@ -258,10 +254,7 @@ export const InteractionStates: Story = {
           <ButtonV2 variant="secondary" className="ring-violet-500">
             Hover
           </ButtonV2>
-          <ButtonV2
-            variant="secondary"
-            className="bg-violet-50 text-violet-500 ring-violet-500"
-          >
+          <ButtonV2 variant="secondary" className="bg-violet-50 text-violet-500 ring-violet-500">
             Active
           </ButtonV2>
           <ButtonV2 variant="secondary" disabled>
@@ -303,7 +296,7 @@ export const RealWorldUseCases: Story = {
 
       <div>
         <h3 className="mb-3 text-sm font-medium">Create Actions</h3>
-        <div className="flex flex-col gap-3 w-80">
+        <div className="flex w-80 flex-col gap-3">
           <ButtonV2 variant="primary" leftIcon={Plus}>
             새 투표 만들기
           </ButtonV2>
@@ -315,7 +308,7 @@ export const RealWorldUseCases: Story = {
 
       <div>
         <h3 className="mb-3 text-sm font-medium">Navigation</h3>
-        <div className="flex flex-col gap-3 w-80">
+        <div className="flex w-80 flex-col gap-3">
           <ButtonV2 variant="primary" rightIcon={ChevronRight}>
             다음 단계로
           </ButtonV2>

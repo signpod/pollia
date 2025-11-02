@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/nextjs";
 import { LabelText } from "@repo/ui/components";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 
 const meta: Meta<typeof LabelText> = {
   title: "Common/LabelText",
@@ -62,8 +62,7 @@ const meta: Meta<typeof LabelText> = {
     },
     disabled: {
       control: { type: "boolean" },
-      description:
-        "비활성 상태 (회색 텍스트 + required가 true일 때 별표 희미하게 표시)",
+      description: "비활성 상태 (회색 텍스트 + required가 true일 때 별표 희미하게 표시)",
       table: {
         type: { summary: "boolean" },
         defaultValue: { summary: "false" },
@@ -219,7 +218,7 @@ export const CustomStyles: Story = {
           회색 라벨
         </LabelText>
 
-        <LabelText required={true} className="text-green-600 text-lg">
+        <LabelText required={true} className="text-lg text-green-600">
           큰 크기 라벨
         </LabelText>
 
@@ -255,10 +254,7 @@ export const Interactive: Story = {
         클릭 가능한 라벨
       </LabelText>
 
-      <LabelText
-        required={false}
-        className="hover:text-blue-600 transition-colors cursor-pointer"
-      >
+      <LabelText required={false} className="cursor-pointer transition-colors hover:text-blue-600">
         호버 효과가 있는 라벨
       </LabelText>
     </div>
@@ -282,8 +278,8 @@ export const TextLengths: Story = {
       <LabelText required={true}>조금 더 긴 라벨 텍스트 예시입니다</LabelText>
 
       <LabelText required={false}>
-        매우 긴 라벨 텍스트의 예시로, 여러 단어가 포함되어 있을 때 어떻게
-        표시되는지 확인할 수 있습니다
+        매우 긴 라벨 텍스트의 예시로, 여러 단어가 포함되어 있을 때 어떻게 표시되는지 확인할 수
+        있습니다
       </LabelText>
     </div>
   ),

@@ -1,5 +1,5 @@
-import { z } from "zod";
 import { PollCategory } from "@prisma/client";
+import { z } from "zod";
 
 const pollCategoryValues = Object.values(PollCategory) as [string, ...string[]];
 
@@ -20,7 +20,7 @@ export const binaryPollSchema = z
       .string()
       .optional()
       .refine(
-        (val) => {
+        val => {
           if (!val || val === "") return true;
           try {
             new URL(val);
@@ -29,7 +29,7 @@ export const binaryPollSchema = z
             return false;
           }
         },
-        { message: "올바른 URL 형식이 아닙니다." }
+        { message: "올바른 URL 형식이 아닙니다." },
       ),
     isUnlimited: z.boolean().default(false),
     startDate: z.string().min(1, "시작 날짜를 설정해주세요."),
@@ -38,36 +38,36 @@ export const binaryPollSchema = z
     endTime: z.string().optional(),
   })
   .refine(
-    (data) => {
+    data => {
       return data.category !== undefined;
     },
     {
       message: "카테고리를 선택해주세요.",
       path: ["category"],
-    }
+    },
   )
   .refine(
-    (data) => {
+    data => {
       if (data.isUnlimited) return true;
       return !!data.endDate;
     },
     {
       message: "종료 날짜를 설정해주세요.",
       path: ["endDate"],
-    }
+    },
   )
   .refine(
-    (data) => {
+    data => {
       if (data.isUnlimited) return true;
       return !!data.endTime;
     },
     {
       message: "종료 시간을 설정해주세요.",
       path: ["endTime"],
-    }
+    },
   )
   .refine(
-    (data) => {
+    data => {
       if (data.isUnlimited || !data.endDate || !data.endTime) return true;
       const startDateTime = new Date(`${data.startDate}T${data.startTime}`);
       const endDateTime = new Date(`${data.endDate}T${data.endTime}`);
@@ -76,7 +76,7 @@ export const binaryPollSchema = z
     {
       message: "종료 시간은 시작 시간보다 늦어야 합니다.",
       path: ["endTime"],
-    }
+    },
   );
 
 export type BinaryPollFormData = z.infer<typeof binaryPollSchema>;

@@ -1,4 +1,4 @@
-import { SurveyQuestionType } from '@prisma/client';
+import { SurveyQuestionType } from "@prisma/client";
 
 const typeOrder: Record<SurveyQuestionType, number> = {
   EITHER_OR: 0,
@@ -13,7 +13,7 @@ export function getSortedQuestions(
     title: string;
     type: SurveyQuestionType;
     createdAt: Date;
-  }[]
+  }[],
 ) {
   return [...questions].sort((a, b) => {
     const typeComparison = typeOrder[a.type] - typeOrder[b.type];

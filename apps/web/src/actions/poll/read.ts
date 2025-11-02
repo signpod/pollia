@@ -1,14 +1,14 @@
-'use server';
+"use server";
 
-import prisma from '@/database/utils/prisma/client';
+import prisma from "@/database/utils/prisma/client";
 import {
+  GetBookmarkedPollsResponse,
+  GetLikedPollsResponse,
   GetPollResponse,
   GetPollResultsResponse,
   GetUserPollsResponse,
-  GetBookmarkedPollsResponse,
-  GetLikedPollsResponse,
-} from '@/types/dto';
-import { requireAuth } from '../common/auth';
+} from "@/types/dto";
+import { requireAuth } from "../common/auth";
 
 export async function getPoll(pollId: string): Promise<GetPollResponse> {
   try {
@@ -44,7 +44,7 @@ export async function getPoll(pollId: string): Promise<GetPollResponse> {
     });
 
     if (!poll) {
-      const error = new Error('투표를 찾을 수 없습니다.');
+      const error = new Error("투표를 찾을 수 없습니다.");
       error.cause = 404;
       throw error;
     }
@@ -54,7 +54,7 @@ export async function getPoll(pollId: string): Promise<GetPollResponse> {
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error('투표를 불러올 수 없습니다.');
+    const serverError = new Error("투표를 불러올 수 없습니다.");
     serverError.cause = 500;
     throw serverError;
   }
@@ -81,7 +81,7 @@ export async function getUserPolls(params?: {
         ...(options?.searchQuery && {
           title: {
             contains: options.searchQuery,
-            mode: 'insensitive',
+            mode: "insensitive",
           },
         }),
       },
@@ -102,7 +102,7 @@ export async function getUserPolls(params?: {
         },
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
@@ -113,26 +113,21 @@ export async function getUserPolls(params?: {
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error('폴 목록을 불러올 수 없습니다.');
+    const serverError = new Error("폴 목록을 불러올 수 없습니다.");
     serverError.cause = 500;
     throw serverError;
   }
 }
 
-export async function getBookmarkedPolls(
-  userId?: string
-): Promise<GetBookmarkedPollsResponse> {
+export async function getBookmarkedPolls(userId?: string): Promise<GetBookmarkedPollsResponse> {
   try {
-    if (!userId) {
-      const user = await requireAuth();
-      userId = user.id;
-    }
+    const actualUserId = userId || (await requireAuth()).id;
 
     const polls = await prisma.poll.findMany({
       where: {
         bookmarks: {
           some: {
-            userId,
+            userId: actualUserId,
           },
         },
       },
@@ -153,7 +148,7 @@ export async function getBookmarkedPolls(
         },
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
@@ -164,26 +159,21 @@ export async function getBookmarkedPolls(
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error('북마크 폴 목록을 불러올 수 없습니다.');
+    const serverError = new Error("북마크 폴 목록을 불러올 수 없습니다.");
     serverError.cause = 500;
     throw serverError;
   }
 }
 
-export async function getLikedPolls(
-  userId?: string
-): Promise<GetLikedPollsResponse> {
+export async function getLikedPolls(userId?: string): Promise<GetLikedPollsResponse> {
   try {
-    if (!userId) {
-      const user = await requireAuth();
-      userId = user.id;
-    }
+    const actualUserId = userId || (await requireAuth()).id;
 
     const polls = await prisma.poll.findMany({
       where: {
         likes: {
           some: {
-            userId,
+            userId: actualUserId,
           },
         },
       },
@@ -204,7 +194,7 @@ export async function getLikedPolls(
         },
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
@@ -215,16 +205,14 @@ export async function getLikedPolls(
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error('좋아요 폴 목록을 불러올 수 없습니다.');
+    const serverError = new Error("좋아요 폴 목록을 불러올 수 없습니다.");
     serverError.cause = 500;
     throw serverError;
   }
 }
 
 // 투표 결과 실시간 조회
-export async function getPollResults(
-  pollId: string
-): Promise<GetPollResultsResponse> {
+export async function getPollResults(pollId: string): Promise<GetPollResultsResponse> {
   try {
     const poll = await prisma.poll.findUnique({
       where: { id: pollId },
@@ -259,15 +247,13 @@ export async function getPollResults(
     });
 
     if (!poll) {
-      const error = new Error('투표를 찾을 수 없습니다.');
+      const error = new Error("투표를 찾을 수 없습니다.");
       error.cause = 404;
       throw error;
     }
 
     // 고유 참여자 수 계산 (최적화된 COUNT DISTINCT)
-    const [participantCountResult] = await prisma.$queryRaw<
-      [{ count: bigint }]
-    >`
+    const [participantCountResult] = await prisma.$queryRaw<[{ count: bigint }]>`
       SELECT COUNT(DISTINCT user_id) as count
       FROM votes
       WHERE poll_id = ${pollId}
@@ -286,7 +272,7 @@ export async function getPollResults(
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error('투표 결과를 불러올 수 없습니다.');
+    const serverError = new Error("투표 결과를 불러올 수 없습니다.");
     serverError.cause = 500;
     throw serverError;
   }

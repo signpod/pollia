@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-
-import { Provider as RollbarProvider } from "@rollbar/react";
 import { clientConfig } from "@/rollbar";
+import { Provider as RollbarProvider } from "@rollbar/react";
 
 export const metadata: Metadata = {
   title: "세상을 발견하는 솔직한 방법, 폴리아",
@@ -43,7 +42,7 @@ export default function RootLayout({
           />
         </head>
         <body className="antialiased">
-          <div className="max-w-lg min-h-screen mx-auto">{children}</div>
+          <div className="mx-auto min-h-screen max-w-lg">{children}</div>
         </body>
       </html>
     </RollbarProvider>

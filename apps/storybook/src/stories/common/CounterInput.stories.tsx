@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/nextjs";
 import { CounterInput } from "@repo/ui/components";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 import { useState } from "react";
 
 const meta: Meta<typeof CounterInput> = {
@@ -77,9 +77,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 // Controlled 컴포넌트 래퍼
-function ControlledCounterInput(
-  props: Partial<React.ComponentProps<typeof CounterInput>>
-) {
+function ControlledCounterInput(props: Partial<React.ComponentProps<typeof CounterInput>>) {
   const [value, setValue] = useState(props.value || 1);
   return <CounterInput {...props} value={value} onChange={setValue} />;
 }
@@ -109,9 +107,7 @@ export const Variants: Story = {
       </div>
 
       <div>
-        <h3 className="mb-3 text-sm font-medium">
-          단계별 증가 (0-100, step=10)
-        </h3>
+        <h3 className="mb-3 text-sm font-medium">단계별 증가 (0-100, step=10)</h3>
         <ControlledCounterInput value={20} min={0} max={100} step={10} />
       </div>
     </div>
@@ -123,23 +119,17 @@ export const BoundaryValues: Story = {
   render: () => (
     <div className="space-y-8">
       <div>
-        <h3 className="mb-3 text-sm font-medium">
-          최솟값 (1) - 감소 버튼 비활성화
-        </h3>
+        <h3 className="mb-3 text-sm font-medium">최솟값 (1) - 감소 버튼 비활성화</h3>
         <ControlledCounterInput value={1} min={1} max={10} />
       </div>
 
       <div>
-        <h3 className="mb-3 text-sm font-medium">
-          최댓값 (10) - 증가 버튼 비활성화
-        </h3>
+        <h3 className="mb-3 text-sm font-medium">최댓값 (10) - 증가 버튼 비활성화</h3>
         <ControlledCounterInput value={10} min={1} max={10} />
       </div>
 
       <div>
-        <h3 className="mb-3 text-sm font-medium">
-          단일 값 (5-5) - 양쪽 버튼 비활성화
-        </h3>
+        <h3 className="mb-3 text-sm font-medium">단일 값 (5-5) - 양쪽 버튼 비활성화</h3>
         <ControlledCounterInput value={5} min={5} max={5} />
       </div>
     </div>

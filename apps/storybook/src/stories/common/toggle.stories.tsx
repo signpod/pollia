@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/nextjs";
 import { Toggle } from "@repo/ui/components";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 import { useState } from "react";
 
 const meta: Meta<typeof Toggle> = {
@@ -85,11 +85,7 @@ export const Default: Story = {
 
     return (
       <div style={{ padding: "40px" }}>
-        <Toggle
-          checked={checked}
-          onCheckedChange={setChecked}
-          aria-label="기본 토글"
-        />
+        <Toggle checked={checked} onCheckedChange={setChecked} aria-label="기본 토글" />
       </div>
     );
   },
@@ -120,20 +116,12 @@ export const WithLabel: Story = {
         </div>
 
         <div className="flex items-center gap-3">
-          <Toggle
-            checked={darkMode}
-            onCheckedChange={setDarkMode}
-            aria-label="다크 모드"
-          />
+          <Toggle checked={darkMode} onCheckedChange={setDarkMode} aria-label="다크 모드" />
           <label className="text-sm font-medium">다크 모드</label>
         </div>
 
         <div className="flex items-center gap-3">
-          <Toggle
-            checked={autoSave}
-            onCheckedChange={setAutoSave}
-            aria-label="자동 저장"
-          />
+          <Toggle checked={autoSave} onCheckedChange={setAutoSave} aria-label="자동 저장" />
           <label className="text-sm font-medium">자동 저장</label>
         </div>
       </div>
@@ -153,7 +141,7 @@ export const States: Story = {
         }}
       >
         <div>
-          <h3 className="text-sm font-semibold mb-3">활성 상태</h3>
+          <h3 className="mb-3 text-sm font-semibold">활성 상태</h3>
           <div className="flex items-center gap-4">
             <div className="flex flex-col items-center gap-2">
               <Toggle checked={false} onCheckedChange={() => {}} />
@@ -167,7 +155,7 @@ export const States: Story = {
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold mb-3">비활성 상태</h3>
+          <h3 className="mb-3 text-sm font-semibold">비활성 상태</h3>
           <div className="flex items-center gap-4">
             <div className="flex flex-col items-center gap-2">
               <Toggle checked={false} onCheckedChange={() => {}} disabled />
@@ -194,14 +182,13 @@ export const Interactive: Story = {
       weeklyDigest: false,
     });
 
-    const updateSetting =
-      (key: keyof typeof settings) => (checked: boolean) => {
-        setSettings((prev) => ({ ...prev, [key]: checked }));
-      };
+    const updateSetting = (key: keyof typeof settings) => (checked: boolean) => {
+      setSettings(prev => ({ ...prev, [key]: checked }));
+    };
 
     return (
       <div style={{ padding: "40px", maxWidth: "400px" }}>
-        <h3 className="text-lg font-semibold mb-6">알림 설정</h3>
+        <h3 className="mb-6 text-lg font-semibold">알림 설정</h3>
 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -219,9 +206,7 @@ export const Interactive: Story = {
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium">이메일 업데이트</p>
-              <p className="text-sm text-gray-600">
-                중요한 업데이트를 이메일로 받습니다
-              </p>
+              <p className="text-sm text-gray-600">중요한 업데이트를 이메일로 받습니다</p>
             </div>
             <Toggle
               checked={settings.emailUpdates}
@@ -233,9 +218,7 @@ export const Interactive: Story = {
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium">SMS 알림</p>
-              <p className="text-sm text-gray-600">
-                긴급 알림을 SMS로 받습니다
-              </p>
+              <p className="text-sm text-gray-600">긴급 알림을 SMS로 받습니다</p>
             </div>
             <Toggle
               checked={settings.smsAlerts}
@@ -257,11 +240,9 @@ export const Interactive: Story = {
           </div>
         </div>
 
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <h4 className="font-medium mb-2">현재 설정:</h4>
-          <pre className="text-xs text-gray-700">
-            {JSON.stringify(settings, null, 2)}
-          </pre>
+        <div className="mt-6 rounded-lg bg-gray-50 p-4">
+          <h4 className="mb-2 font-medium">현재 설정:</h4>
+          <pre className="text-xs text-gray-700">{JSON.stringify(settings, null, 2)}</pre>
         </div>
       </div>
     );

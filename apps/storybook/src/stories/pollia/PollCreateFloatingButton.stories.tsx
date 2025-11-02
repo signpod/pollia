@@ -119,9 +119,7 @@ export const AllVariants: Story = {
 // 애니메이션 전환 예시
 export const AnimationTransition: Story = {
   render: () => {
-    const [variant, setVariant] = React.useState<"icon-only" | "with-text">(
-      "with-text"
-    );
+    const [variant, setVariant] = React.useState<"icon-only" | "with-text">("with-text");
 
     return (
       <div style={{ textAlign: "center" }}>
@@ -130,9 +128,7 @@ export const AnimationTransition: Story = {
         </div>
 
         <button
-          onClick={() =>
-            setVariant(variant === "icon-only" ? "with-text" : "icon-only")
-          }
+          onClick={() => setVariant(variant === "icon-only" ? "with-text" : "icon-only")}
           style={{
             padding: "0.5rem 1rem",
             borderRadius: "8px",
@@ -144,9 +140,7 @@ export const AnimationTransition: Story = {
           전환하기 ({variant === "icon-only" ? "텍스트 표시" : "아이콘만"})
         </button>
 
-        <p
-          style={{ marginTop: "1rem", fontSize: "0.875rem", color: "#71717a" }}
-        >
+        <p style={{ marginTop: "1rem", fontSize: "0.875rem", color: "#71717a" }}>
           버튼을 클릭하여 애니메이션 전환을 확인하세요
         </p>
       </div>

@@ -1,36 +1,30 @@
 import { POLL_CATEGORIES } from "@/constants/poll";
+import { getCurrentDate, getCurrentTime } from "@/lib/date";
 import { atom } from "jotai";
 import { atomWithDefault } from "jotai/utils";
-import { getCurrentDate, getCurrentTime } from "@/lib/date";
 
 export const binaryPollAvailableCategoriesAtom = atom(POLL_CATEGORIES);
 export const binaryPollCategorySelectModalOpenAtom = atom(false);
 
-export const binaryPollCategoryAtom = atom<
-  (typeof POLL_CATEGORIES)[number] | undefined
->(undefined);
+export const binaryPollCategoryAtom = atom<(typeof POLL_CATEGORIES)[number] | undefined>(undefined);
 export const binaryPollTitleAtom = atom<string>("");
 export const binaryPollDescriptionAtom = atom<string>("");
 export const binaryPollThumbnailUrlAtom = atom<string | undefined>(undefined);
-export const binaryPollThumbnailFileUploadIdAtom = atom<string | undefined>(
-  undefined
-);
+export const binaryPollThumbnailFileUploadIdAtom = atom<string | undefined>(undefined);
 
 export const binaryPollIsUnlimitedAtom = atom<boolean>(true);
 
 export const binaryPollStartDateAtom = atomWithDefault(() => getCurrentDate());
-export const binaryPollStartTimeAtom = atomWithDefault(() =>
-  getCurrentTime({ roundMinutesTo: 5 })
-);
+export const binaryPollStartTimeAtom = atomWithDefault(() => getCurrentTime({ roundMinutesTo: 5 }));
 export const binaryPollEndDateAtom = atom<string>("");
 export const binaryPollEndTimeAtom = atom<string>("");
 
-export const binaryPollThumbnailCountAtom = atom((get) => {
+export const binaryPollThumbnailCountAtom = atom(get => {
   const thumbnailUrl = get(binaryPollThumbnailUrlAtom);
   return thumbnailUrl ? 1 : 0;
 });
 
-export const binaryPollStepValidationAtom = atom((get) => {
+export const binaryPollStepValidationAtom = atom(get => {
   const category = get(binaryPollCategoryAtom);
   const title = get(binaryPollTitleAtom);
 
@@ -45,7 +39,7 @@ export const binaryPollStepValidationAtom = atom((get) => {
 
 export const binaryPollValidationAtom = binaryPollStepValidationAtom;
 
-export const binaryPollDataAtom = atom((get) => ({
+export const binaryPollDataAtom = atom(get => ({
   category: get(binaryPollCategoryAtom),
   title: get(binaryPollTitleAtom),
   description: get(binaryPollDescriptionAtom),

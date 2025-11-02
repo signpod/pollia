@@ -1,13 +1,13 @@
-import { useAtomValue, useSetAtom } from "jotai";
 import {
-  multiplePollOptionsAtom,
   addOptionAtom,
-  removeOptionAtom,
-  updateOptionAtom,
   clearOptionsAtom,
+  multiplePollOptionsAtom,
+  removeOptionAtom,
   resetOptionsAtom,
+  updateOptionAtom,
 } from "@/atoms/create/multiplePollAtoms";
 import { PollOption } from "@/types/domain/poll";
+import { useAtomValue, useSetAtom } from "jotai";
 
 export type OptionUpdateData = Partial<Omit<PollOption, "id" | "order">>;
 
@@ -71,16 +71,14 @@ export function useMultipleOptions(): UseMultipleOptionsReturn {
   };
 
   const findOption = (optionId: string): PollOption | undefined => {
-    return options.find((option) => option.id === optionId);
+    return options.find(option => option.id === optionId);
   };
 
   const hasOptionId = (optionId: string): boolean => {
-    return options.some((option) => option.id === optionId);
+    return options.some(option => option.id === optionId);
   };
 
-  const validOptionCount = options.filter(
-    (option) => option.description.trim().length > 0
-  ).length;
+  const validOptionCount = options.filter(option => option.description.trim().length > 0).length;
 
   const optionCount = options.length;
   const canAddMore = optionCount < MAX_OPTIONS;

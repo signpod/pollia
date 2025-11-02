@@ -1,18 +1,18 @@
-'use client';
+"use client";
 
-import { Button, toast } from '@repo/ui/components';
-import { useCreateSurvey } from '@/hooks/survey/useCreateSurvey';
 import {
-  selectedQuestionCountAtom,
   selectedQuestionAtom,
+  selectedQuestionCountAtom,
   surveyTitleAtom,
   surveyValidationAtom,
-} from '@/atoms/create/surveyAtoms';
-import { useAtomValue } from 'jotai';
+} from "@/atoms/create/surveyAtoms";
+import { useCreateSurvey } from "@/hooks/survey/useCreateSurvey";
+import { Button, toast } from "@repo/ui/components";
+import { useAtomValue } from "jotai";
 
 const CREATE_SURVEY_MESSAGE = {
-  SUCCESS: '설문조사지 생성에 성공했습니다.',
-  ERROR: '설문조사지 생성에 실패했습니다.',
+  SUCCESS: "설문조사지 생성에 성공했습니다.",
+  ERROR: "설문조사지 생성에 실패했습니다.",
 };
 
 export function CreateSurveyButton() {
@@ -33,7 +33,7 @@ export function CreateSurveyButton() {
   const handleCreateSurvey = () => {
     mutate({
       title: surveyTitle,
-      questionIds: Array.from(selectedQuestions).map((question) => question.id),
+      questionIds: Array.from(selectedQuestions).map(question => question.id),
     });
   };
 

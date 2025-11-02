@@ -1,11 +1,11 @@
 "use client";
 
+import { runAfterTransitionAtom } from "@/atoms/routeTransitionAtoms";
+import { getQueryClient } from "@/lib/getQueryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { getQueryClient } from "@/lib/getQueryClient";
-import { usePathname } from "next/navigation";
 import { useSetAtom } from "jotai";
-import { runAfterTransitionAtom } from "@/atoms/routeTransitionAtoms";
+import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
 interface ProvidersProps {
@@ -17,7 +17,7 @@ export default function Providers({ children }: ProvidersProps) {
   const queryClient = getQueryClient();
   const pathname = usePathname();
   const runAfterTransition = useSetAtom(runAfterTransitionAtom);
-  
+
   useEffect(() => {
     runAfterTransition();
   }, [pathname, runAfterTransition]);

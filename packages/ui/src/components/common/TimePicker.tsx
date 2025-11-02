@@ -1,13 +1,12 @@
 "use client";
 
+import { ChevronDown, ChevronUp } from "lucide-react";
 import * as React from "react";
-import { Swiper, SwiperSlide } from "swiper/react";
 import type { Swiper as SwiperType } from "swiper";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { Swiper, SwiperSlide } from "swiper/react";
 import { cn } from "../../lib/utils";
-import { Typo } from "./Typo";
 import { IconButton } from "./IconButton";
-
+import { Typo } from "./Typo";
 import "swiper/css";
 
 export interface TimePickerProps {
@@ -47,11 +46,7 @@ const formatTime = (hours: number, minutes: number): string => {
  * @param onValueChange - 시간 변경 콜백 (형식: "HH:mm")
  * @param className - 컴포넌트 클래스 이름
  */
-export function TimePicker({
-  value = "00:00",
-  onValueChange,
-  className,
-}: TimePickerProps) {
+export function TimePicker({ value = "00:00", onValueChange, className }: TimePickerProps) {
   const [hours = 0, minutes = 0] = value.split(":").map(Number);
 
   const hourOptions = Array.from({ length: 12 }, (_, i) => {
@@ -74,12 +69,12 @@ export function TimePicker({
   };
 
   const handleHourChange = (newHour: string) => {
-    const hour24 = convert12To24Hour(parseInt(newHour), isPM);
+    const hour24 = convert12To24Hour(Number.parseInt(newHour), isPM);
     onValueChange?.(formatTime(hour24, minutes));
   };
 
   const handleMinuteChange = (newMinute: string) => {
-    onValueChange?.(formatTime(hours, parseInt(newMinute)));
+    onValueChange?.(formatTime(hours, Number.parseInt(newMinute)));
   };
 
   return (
@@ -123,18 +118,11 @@ interface SwiperPickerProps {
   width?: string;
 }
 
-function SwiperPicker({
-  options,
-  value,
-  onChange,
-  width = "w-12",
-}: SwiperPickerProps) {
-  const [swiperInstance, setSwiperInstance] = React.useState<SwiperType | null>(
-    null
-  );
+function SwiperPicker({ options, value, onChange, width = "w-12" }: SwiperPickerProps) {
+  const [swiperInstance, setSwiperInstance] = React.useState<SwiperType | null>(null);
   const isInitializedRef = React.useRef(false);
 
-  const currentIndex = options.findIndex((opt) => opt.value === value);
+  const currentIndex = options.findIndex(opt => opt.value === value);
 
   React.useEffect(() => {
     if (swiperInstance && currentIndex !== -1 && !isInitializedRef.current) {
@@ -169,7 +157,7 @@ function SwiperPicker({
         >
           {options.map((option, index) => (
             <SwiperSlide key={option.value + index}>
-              <div className="flex items-center justify-center h-full">
+              <div className="flex h-full items-center justify-center">
                 <Typo.ButtonText size="large">{option.label}</Typo.ButtonText>
               </div>
             </SwiperSlide>

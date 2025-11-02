@@ -133,9 +133,7 @@ export async function toggleBookmarkPoll(pollId: string) {
 
     return {
       isBookmarked,
-      message: isBookmarked
-        ? "북마크가 추가되었습니다."
-        : "북마크가 취소되었습니다.",
+      message: isBookmarked ? "북마크가 추가되었습니다." : "북마크가 취소되었습니다.",
     };
   } catch (error) {
     console.error("❌ 북마크 토글 에러:", error);

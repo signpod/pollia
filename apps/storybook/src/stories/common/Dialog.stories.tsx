@@ -1,14 +1,14 @@
-import type { Meta, StoryObj } from "@storybook/nextjs";
-import React from "react";
 import {
-  Dialog,
-  DialogTrigger,
-  DialogPortal,
-  DialogOverlay,
-  DialogClose,
   Button,
+  Dialog,
+  DialogClose,
+  DialogOverlay,
+  DialogPortal,
+  DialogTrigger,
 } from "@repo/ui/components";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 import { X } from "lucide-react";
+import React from "react";
 
 const meta: Meta<typeof Dialog> = {
   title: "Common/Dialog",
@@ -95,15 +95,15 @@ export const Default: Story = {
   args: {
     defaultOpen: false,
   },
-  render: (args) => (
+  render: args => (
     <Dialog {...args}>
       <DialogTrigger asChild>
         <Button variant="primary">Dialog 열기</Button>
       </DialogTrigger>
       <DialogPortal>
         <DialogOverlay />
-        <div className="fixed left-[50%] top-[50%] z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-lg">
-          <div className="flex items-center justify-between mb-4">
+        <div className="fixed top-[50%] left-[50%] z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-lg">
+          <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold">기본 Dialog</h2>
             <DialogClose asChild>
               <button className="rounded-sm opacity-70 hover:opacity-100">
@@ -112,9 +112,8 @@ export const Default: Story = {
             </DialogClose>
           </div>
 
-          <p className="text-sm text-gray-600 mb-6">
-            이것은 기본 Dialog 컴포넌트입니다. 내부 내용을 바깥에서 자유롭게
-            구성할 수 있습니다.
+          <p className="mb-6 text-sm text-gray-600">
+            이것은 기본 Dialog 컴포넌트입니다. 내부 내용을 바깥에서 자유롭게 구성할 수 있습니다.
           </p>
 
           <div className="flex justify-end gap-3">
@@ -141,8 +140,8 @@ export const States: Story = {
           </DialogTrigger>
           <DialogPortal>
             <DialogOverlay />
-            <div className="fixed left-[50%] top-[50%] z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-lg">
-              <div className="flex items-center justify-between mb-4">
+            <div className="fixed top-[50%] left-[50%] z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-lg">
+              <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold">기본 Dialog</h2>
                 <DialogClose asChild>
                   <button className="rounded-sm opacity-70 hover:opacity-100">
@@ -150,9 +149,7 @@ export const States: Story = {
                   </button>
                 </DialogClose>
               </div>
-              <p className="text-sm text-gray-600 mb-6">
-                일반적인 Dialog입니다.
-              </p>
+              <p className="mb-6 text-sm text-gray-600">일반적인 Dialog입니다.</p>
               <DialogClose asChild>
                 <Button variant="primary" className="w-full">
                   확인
@@ -173,28 +170,23 @@ export const States: Story = {
           </DialogTrigger>
           <DialogPortal>
             <DialogOverlay />
-            <div className="fixed left-[50%] top-[50%] z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-lg">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-red-800">
-                  정말 계속하시겠습니까?
-                </h2>
+            <div className="fixed top-[50%] left-[50%] z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-lg">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-red-800">정말 계속하시겠습니까?</h2>
                 <DialogClose asChild>
                   <button className="rounded-sm opacity-70 hover:opacity-100">
                     <X className="h-4 w-4" />
                   </button>
                 </DialogClose>
               </div>
-              <p className="text-sm text-gray-600 mb-6">
+              <p className="mb-6 text-sm text-gray-600">
                 이 작업은 되돌릴 수 없습니다. 신중하게 검토해주세요.
               </p>
               <div className="flex justify-end gap-3">
                 <DialogClose asChild>
                   <Button variant="secondary">취소</Button>
                 </DialogClose>
-                <Button
-                  variant="primary"
-                  className="bg-red-600 hover:bg-red-700"
-                >
+                <Button variant="primary" className="bg-red-600 hover:bg-red-700">
                   확인
                 </Button>
               </div>
@@ -211,8 +203,8 @@ export const States: Story = {
           </DialogTrigger>
           <DialogPortal>
             <DialogOverlay />
-            <div className="fixed left-[50%] top-[50%] z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-lg">
-              <div className="flex items-center justify-between mb-4">
+            <div className="fixed top-[50%] left-[50%] z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-lg">
+              <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold">사용자 정보</h2>
                 <DialogClose asChild>
                   <button className="rounded-sm opacity-70 hover:opacity-100">
@@ -221,9 +213,9 @@ export const States: Story = {
                 </DialogClose>
               </div>
 
-              <div className="space-y-4 mb-6">
+              <div className="mb-6 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">이름</label>
+                  <label className="mb-2 block text-sm font-medium">이름</label>
                   <input
                     type="text"
                     className="w-full rounded-md border border-gray-300 px-3 py-2"
@@ -231,9 +223,7 @@ export const States: Story = {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    이메일
-                  </label>
+                  <label className="mb-2 block text-sm font-medium">이메일</label>
                   <input
                     type="email"
                     className="w-full rounded-md border border-gray-300 px-3 py-2"
@@ -269,8 +259,8 @@ export const Sizes: Story = {
             </DialogTrigger>
             <DialogPortal>
               <DialogOverlay />
-              <div className="fixed left-[50%] top-[50%] z-50 w-full max-w-xs -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-4 shadow-lg">
-                <div className="flex items-center justify-between mb-3">
+              <div className="fixed top-[50%] left-[50%] z-50 w-full max-w-xs -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-4 shadow-lg">
+                <div className="mb-3 flex items-center justify-between">
                   <h2 className="text-md font-semibold">작은 Dialog</h2>
                   <DialogClose asChild>
                     <button className="rounded-sm opacity-70 hover:opacity-100">
@@ -278,7 +268,7 @@ export const Sizes: Story = {
                     </button>
                   </DialogClose>
                 </div>
-                <p className="text-sm text-gray-600 mb-4">간단한 메시지</p>
+                <p className="mb-4 text-sm text-gray-600">간단한 메시지</p>
                 <DialogClose asChild>
                   <Button variant="primary" className="w-full text-sm">
                     확인
@@ -294,8 +284,8 @@ export const Sizes: Story = {
             </DialogTrigger>
             <DialogPortal>
               <DialogOverlay />
-              <div className="fixed left-[50%] top-[50%] z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-lg">
-                <div className="flex items-center justify-between mb-4">
+              <div className="fixed top-[50%] left-[50%] z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-lg">
+                <div className="mb-4 flex items-center justify-between">
                   <h2 className="text-lg font-semibold">중간 Dialog</h2>
                   <DialogClose asChild>
                     <button className="rounded-sm opacity-70 hover:opacity-100">
@@ -303,9 +293,7 @@ export const Sizes: Story = {
                     </button>
                   </DialogClose>
                 </div>
-                <p className="text-sm text-gray-600 mb-6">
-                  일반적인 크기의 Dialog입니다.
-                </p>
+                <p className="mb-6 text-sm text-gray-600">일반적인 크기의 Dialog입니다.</p>
                 <DialogClose asChild>
                   <Button variant="primary" className="w-full">
                     확인
@@ -321,8 +309,8 @@ export const Sizes: Story = {
             </DialogTrigger>
             <DialogPortal>
               <DialogOverlay />
-              <div className="fixed left-[50%] top-[50%] z-50 w-full max-w-2xl -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-8 shadow-lg">
-                <div className="flex items-center justify-between mb-6">
+              <div className="fixed top-[50%] left-[50%] z-50 w-full max-w-2xl -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-8 shadow-lg">
+                <div className="mb-6 flex items-center justify-between">
                   <h2 className="text-xl font-semibold">큰 Dialog</h2>
                   <DialogClose asChild>
                     <button className="rounded-sm opacity-70 hover:opacity-100">
@@ -331,18 +319,16 @@ export const Sizes: Story = {
                   </DialogClose>
                 </div>
 
-                <div className="grid grid-cols-2 gap-6 mb-8">
+                <div className="mb-8 grid grid-cols-2 gap-6">
                   <div>
-                    <h4 className="font-medium mb-2">왼쪽 섹션</h4>
-                    <p className="text-sm text-gray-600">
-                      복잡한 내용을 담을 수 있습니다.
-                    </p>
+                    <h4 className="mb-2 font-medium">왼쪽 섹션</h4>
+                    <p className="text-sm text-gray-600">복잡한 내용을 담을 수 있습니다.</p>
                   </div>
                   <div>
-                    <h4 className="font-medium mb-2">오른쪽 섹션</h4>
+                    <h4 className="mb-2 font-medium">오른쪽 섹션</h4>
                     <div className="space-y-2">
-                      <div className="h-6 bg-gray-100 rounded"></div>
-                      <div className="h-6 bg-gray-100 rounded"></div>
+                      <div className="h-6 rounded bg-gray-100" />
+                      <div className="h-6 rounded bg-gray-100" />
                     </div>
                   </div>
                 </div>
@@ -371,18 +357,16 @@ export const Interactive: Story = {
       <div className="space-y-6">
         <div>
           <h3 className="mb-3 text-sm font-medium">제어된 Dialog</h3>
-          <div className="flex items-center gap-4 mb-4">
+          <div className="mb-4 flex items-center gap-4">
             <Button onClick={() => setControlled(true)}>외부에서 열기</Button>
-            <span className="text-sm text-gray-600">
-              상태: {controlled ? "열림" : "닫힘"}
-            </span>
+            <span className="text-sm text-gray-600">상태: {controlled ? "열림" : "닫힘"}</span>
           </div>
 
           <Dialog open={controlled} onOpenChange={setControlled}>
             <DialogPortal>
               <DialogOverlay />
-              <div className="fixed left-[50%] top-[50%] z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-lg">
-                <div className="flex items-center justify-between mb-4">
+              <div className="fixed top-[50%] left-[50%] z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-lg">
+                <div className="mb-4 flex items-center justify-between">
                   <h2 className="text-lg font-semibold">제어된 Dialog</h2>
                   <DialogClose asChild>
                     <button className="rounded-sm opacity-70 hover:opacity-100">
@@ -391,15 +375,12 @@ export const Interactive: Story = {
                   </DialogClose>
                 </div>
 
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="mb-4 text-sm text-gray-600">
                   외부 상태로 Dialog를 제어할 수 있습니다.
                 </p>
 
-                <div className="flex gap-2 mb-6">
-                  <Button
-                    variant="secondary"
-                    onClick={() => setControlled(false)}
-                  >
+                <div className="mb-6 flex gap-2">
+                  <Button variant="secondary" onClick={() => setControlled(false)}>
                     닫기
                   </Button>
                   <Button
@@ -413,11 +394,7 @@ export const Interactive: Story = {
                   </Button>
                 </div>
 
-                <Button
-                  variant="primary"
-                  className="w-full"
-                  onClick={() => setControlled(false)}
-                >
+                <Button variant="primary" className="w-full" onClick={() => setControlled(false)}>
                   확인
                 </Button>
               </div>
@@ -433,8 +410,8 @@ export const Interactive: Story = {
             </DialogTrigger>
             <DialogPortal>
               <DialogOverlay />
-              <div className="fixed left-[50%] top-[50%] z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-lg">
-                <div className="flex items-center justify-between mb-4">
+              <div className="fixed top-[50%] left-[50%] z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white p-6 shadow-lg">
+                <div className="mb-4 flex items-center justify-between">
                   <h2 className="text-lg font-semibold">카운터</h2>
                   <DialogClose asChild>
                     <button className="rounded-sm opacity-70 hover:opacity-100">
@@ -443,19 +420,13 @@ export const Interactive: Story = {
                   </DialogClose>
                 </div>
 
-                <div className="text-center mb-6">
-                  <div className="text-3xl font-bold mb-4">{counter}</div>
+                <div className="mb-6 text-center">
+                  <div className="mb-4 text-3xl font-bold">{counter}</div>
                   <div className="flex justify-center gap-3">
-                    <Button
-                      variant="secondary"
-                      onClick={() => setCounter(counter - 1)}
-                    >
+                    <Button variant="secondary" onClick={() => setCounter(counter - 1)}>
                       -1
                     </Button>
-                    <Button
-                      variant="primary"
-                      onClick={() => setCounter(counter + 1)}
-                    >
+                    <Button variant="primary" onClick={() => setCounter(counter + 1)}>
                       +1
                     </Button>
                   </div>
@@ -488,15 +459,13 @@ export const Styling: Story = {
             </DialogTrigger>
             <DialogPortal>
               <DialogOverlay className="bg-black/30" />
-              <div className="fixed left-[50%] top-[50%] z-50 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 shadow-lg">
-                <div className="text-center mb-6">
-                  <h2 className="text-lg font-semibold mb-2">둥근 모서리</h2>
-                  <p className="text-sm text-gray-600">
-                    커스텀 스타일이 적용된 Dialog
-                  </p>
+              <div className="fixed top-[50%] left-[50%] z-50 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 shadow-lg">
+                <div className="mb-6 text-center">
+                  <h2 className="mb-2 text-lg font-semibold">둥근 모서리</h2>
+                  <p className="text-sm text-gray-600">커스텀 스타일이 적용된 Dialog</p>
                 </div>
                 <DialogClose asChild>
-                  <Button variant="primary" className="rounded-full w-full">
+                  <Button variant="primary" className="w-full rounded-full">
                     확인
                   </Button>
                 </DialogClose>
@@ -510,21 +479,17 @@ export const Styling: Story = {
             </DialogTrigger>
             <DialogPortal>
               <DialogOverlay className="bg-black/70" />
-              <div className="fixed left-[50%] top-[50%] z-50 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-lg bg-gray-900 text-white p-6 shadow-lg border border-gray-700">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-white">
-                    다크 테마
-                  </h2>
+              <div className="fixed top-[50%] left-[50%] z-50 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-lg border border-gray-700 bg-gray-900 p-6 text-white shadow-lg">
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-lg font-semibold text-white">다크 테마</h2>
                   <DialogClose asChild>
-                    <button className="rounded-sm opacity-70 hover:opacity-100 text-white">
+                    <button className="rounded-sm text-white opacity-70 hover:opacity-100">
                       <X className="h-4 w-4" />
                     </button>
                   </DialogClose>
                 </div>
 
-                <p className="text-sm text-gray-300 mb-6">
-                  다크 테마가 적용된 Dialog입니다.
-                </p>
+                <p className="mb-6 text-sm text-gray-300">다크 테마가 적용된 Dialog입니다.</p>
 
                 <div className="flex justify-end gap-3">
                   <DialogClose asChild>

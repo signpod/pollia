@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
 import { cleanupOrphanFiles } from "@/actions/common/image";
+import { NextRequest, NextResponse } from "next/server";
 
 // GET /api/cleanup-orphan-files
 // 고아 파일 정리를 수행하는 API 엔드포인트
@@ -44,12 +44,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "고아 파일 정리 중 오류가 발생했습니다.",
+        error: error instanceof Error ? error.message : "고아 파일 정리 중 오류가 발생했습니다.",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

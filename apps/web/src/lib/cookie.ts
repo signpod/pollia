@@ -21,9 +21,7 @@ export function setCurrentUrlAsRedirect(): void {
  */
 export function getAuthRedirect(): string | null {
   const cookies = document.cookie.split("; ");
-  const authCookie = cookies.find((cookie) =>
-    cookie.startsWith("auth_redirect=")
-  );
+  const authCookie = cookies.find(cookie => cookie.startsWith("auth_redirect="));
 
   if (!authCookie) {
     return null;

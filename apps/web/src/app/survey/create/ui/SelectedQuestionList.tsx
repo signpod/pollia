@@ -1,8 +1,7 @@
-import { QuestionList, QuestionListProps } from './QuestionList';
-import { SurveyQuestionSummary } from '@/types/domain/survey';
+import { SurveyQuestionSummary } from "@/types/domain/survey";
+import { QuestionList, QuestionListProps } from "./QuestionList";
 
-interface SelectedQuestionListProps
-  extends Omit<QuestionListProps, 'title' | 'isDraggable'> {
+interface SelectedQuestionListProps extends Omit<QuestionListProps, "title" | "isDraggable"> {
   questions: SurveyQuestionSummary[];
 }
 
@@ -13,9 +12,9 @@ export function SelectedQuestionList({ questions }: SelectedQuestionListProps) {
       questions={questions}
       isDraggable
       showCheckboxInDraggable
-      className=" h-[35vh]"
+      className="h-[35vh]"
     />
   );
 }
 
-const LIST_TITLE = '선택된 질문 목록';
+const LIST_TITLE = "선택된 질문 목록";

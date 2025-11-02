@@ -1,10 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { submitMultipleVote, removeMultipleVote } from "@/actions/poll/vote";
+import { removeMultipleVote, submitMultipleVote } from "@/actions/poll/vote";
 import { pollQueryKeys } from "@/constants/queryKeys/pollQueryKeys";
-import type {
-  GetUserVoteStatusResponse,
-  GetPollResultsResponse,
-} from "@/types/dto/poll";
+import type { GetPollResultsResponse, GetUserVoteStatusResponse } from "@/types/dto/poll";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 function useMultipleVoteMutation(pollId: string) {
   const queryClient = useQueryClient();
@@ -26,7 +23,7 @@ function useMultipleVoteMutation(pollId: string) {
     onSuccess: () => {
       invalidatePoll();
     },
-    onError: (error) => {
+    onError: error => {
       console.error("투표 추가 실패:", error);
     },
   });
@@ -38,7 +35,7 @@ function useMultipleVoteMutation(pollId: string) {
     onSuccess: () => {
       invalidatePoll();
     },
-    onError: (error) => {
+    onError: error => {
       console.error("투표 제거 실패:", error);
     },
   });
@@ -54,34 +51,27 @@ export const useMultipleVoting = (pollId: string) => {
   const mutations = useMultipleVoteMutation(pollId);
 
   const handleVoteToggle = async (optionId: string) => {
-    const currentUserVoteData = queryClient.getQueryData(
-      pollQueryKeys.userVoteStatus(pollId)
-    );
-    const currentPollResultsData = queryClient.getQueryData(
-      pollQueryKeys.pollResults(pollId)
-    );
+    const currentUserVoteData = queryClient.getQueryData(pollQueryKeys.userVoteStatus(pollId));
+    const currentPollResultsData = queryClient.getQueryData(pollQueryKeys.pollResults(pollId));
 
     try {
-      const currentVoteStatus =
-        queryClient.getQueryData<GetUserVoteStatusResponse>(
-          pollQueryKeys.userVoteStatus(pollId)
-        );
+      const currentVoteStatus = queryClient.getQueryData<GetUserVoteStatusResponse>(
+        pollQueryKeys.userVoteStatus(pollId),
+      );
       const pollResults = queryClient.getQueryData<GetPollResultsResponse>(
-        pollQueryKeys.pollResults(pollId)
+        pollQueryKeys.pollResults(pollId),
       );
 
-      const existingVote = currentVoteStatus?.votes?.find(
-        (vote) => vote.option.id === optionId
-      );
+      const existingVote = currentVoteStatus?.votes?.find(vote => vote.option.id === optionId);
 
       const selectedOption = pollResults?.options?.find(
-        (option: { id: string }) => option.id === optionId
+        (option: { id: string }) => option.id === optionId,
       );
 
       const optimisticUpdate = (isAdding: boolean, targetOptionId: string) => {
         queryClient.setQueryData<GetUserVoteStatusResponse>(
           pollQueryKeys.userVoteStatus(pollId),
-          (old) => {
+          old => {
             if (!old) return old;
 
             let updatedVotes = old.votes || [];
@@ -99,49 +89,41 @@ export const useMultipleVoting = (pollId: string) => {
                 },
               ];
             } else {
-              updatedVotes = updatedVotes.filter(
-                (vote) => vote.option.id !== targetOptionId
-              );
+              updatedVotes = updatedVotes.filter(vote => vote.option.id !== targetOptionId);
             }
 
             return {
               hasVoted: updatedVotes.length > 0,
               votes: updatedVotes,
             };
-          }
+          },
         );
 
-        queryClient.setQueryData<GetPollResultsResponse>(
-          pollQueryKeys.pollResults(pollId),
-          (old) => {
-            if (!old?.options) return old;
+        queryClient.setQueryData<GetPollResultsResponse>(pollQueryKeys.pollResults(pollId), old => {
+          if (!old?.options) return old;
 
-            return {
+          return {
+            ...old,
+            data: {
               ...old,
-              data: {
-                ...old,
-                options: old.options.map((option) => {
-                  if (option.id === targetOptionId) {
-                    return {
-                      ...option,
-                      _count: {
-                        votes: Math.max(
-                          0,
-                          option._count.votes + (isAdding ? 1 : -1)
-                        ),
-                      },
-                    };
-                  }
-                  return option;
-                }),
-                _count: {
-                  ...old._count,
-                  votes: Math.max(0, old._count.votes + (isAdding ? 1 : -1)),
-                },
+              options: old.options.map(option => {
+                if (option.id === targetOptionId) {
+                  return {
+                    ...option,
+                    _count: {
+                      votes: Math.max(0, option._count.votes + (isAdding ? 1 : -1)),
+                    },
+                  };
+                }
+                return option;
+              }),
+              _count: {
+                ...old._count,
+                votes: Math.max(0, old._count.votes + (isAdding ? 1 : -1)),
               },
-            };
-          }
-        );
+            },
+          };
+        });
       };
 
       if (existingVote) {
@@ -155,16 +137,10 @@ export const useMultipleVoting = (pollId: string) => {
       console.error("투표 처리 실패:", error);
 
       if (currentUserVoteData) {
-        queryClient.setQueryData(
-          pollQueryKeys.userVoteStatus(pollId),
-          currentUserVoteData
-        );
+        queryClient.setQueryData(pollQueryKeys.userVoteStatus(pollId), currentUserVoteData);
       }
       if (currentPollResultsData) {
-        queryClient.setQueryData(
-          pollQueryKeys.pollResults(pollId),
-          currentPollResultsData
-        );
+        queryClient.setQueryData(pollQueryKeys.pollResults(pollId), currentPollResultsData);
       }
 
       queryClient.invalidateQueries({
@@ -176,9 +152,7 @@ export const useMultipleVoting = (pollId: string) => {
     }
   };
 
-  const isVoting =
-    mutations.addVoteMutation.isPending ||
-    mutations.removeVoteMutation.isPending;
+  const isVoting = mutations.addVoteMutation.isPending || mutations.removeVoteMutation.isPending;
 
   return {
     handleVoteToggle,

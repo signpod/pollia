@@ -2,15 +2,15 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import prisma from "@/database/utils/prisma/client";
-import { SurveyQuestionType, FileStatus } from "@prisma/client";
 import { multipleChoiceInfoSchema } from "@/schemas/survey/multipleChoiceInfoSchema";
 import type {
   CreateMultipleChoiceQuestionRequest,
   CreateMultipleChoiceQuestionResponse,
 } from "@/types/dto/survey";
+import { FileStatus, SurveyQuestionType } from "@prisma/client";
 
 function validateMultipleChoiceQuestion(
-  request: CreateMultipleChoiceQuestionRequest
+  request: CreateMultipleChoiceQuestionRequest,
 ): string | null {
   try {
     const formData = {
@@ -18,7 +18,7 @@ function validateMultipleChoiceQuestion(
       description: request.description || "",
       imageUrl: request.imageUrl || "",
       maxSelections: request.maxSelections,
-      options: request.options.map((opt) => ({
+      options: request.options.map(opt => ({
         id: `temp-${opt.order}`,
         description: opt.description,
         imageUrl: opt.imageUrl,
@@ -39,7 +39,7 @@ function validateMultipleChoiceQuestion(
 }
 
 export async function createMultipleChoiceQuestion(
-  request: CreateMultipleChoiceQuestionRequest
+  request: CreateMultipleChoiceQuestionRequest,
 ): Promise<CreateMultipleChoiceQuestionResponse> {
   try {
     const user = await requireAuth();
@@ -70,7 +70,7 @@ export async function createMultipleChoiceQuestion(
       }
     }
 
-    const question = await prisma.$transaction(async (tx) => {
+    const question = await prisma.$transaction(async tx => {
       const createdQuestion = await tx.surveyQuestion.create({
         data: {
           surveyId: request.surveyId ?? undefined,
@@ -84,7 +84,7 @@ export async function createMultipleChoiceQuestion(
       });
 
       await tx.surveyOption.createMany({
-        data: request.options.map((option) => ({
+        data: request.options.map(option => ({
           questionId: createdQuestion.id,
           description: option.description,
           imageUrl: option.imageUrl,
@@ -94,7 +94,7 @@ export async function createMultipleChoiceQuestion(
       });
 
       const optionFileUploadIds = request.options
-        .map((option) => option.imageFileUploadId)
+        .map(option => option.imageFileUploadId)
         .filter(Boolean) as string[];
 
       if (optionFileUploadIds.length > 0) {

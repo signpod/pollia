@@ -1,8 +1,3 @@
-import { SubjectInputSection } from "../inputs/SubjectInputSection";
-import { DescriptionInputSection } from "../inputs/DescriptionInputSection";
-import { OptionSelectorSection } from "../inputs/OptionSelectorSection";
-import { ImageSelectorSection } from "../inputs/ImageSelectorSection";
-
 import {
   multipleChoiceDescriptionAtom,
   multipleChoiceImageFileUploadIdAtom,
@@ -10,6 +5,10 @@ import {
   multipleChoiceTitleAtom,
 } from "@/atoms/survey/create/multipleChoiceInfoAtoms";
 import { multipleChoiceInfoSchema } from "@/schemas/survey/multipleChoiceInfoSchema";
+import { DescriptionInputSection } from "../inputs/DescriptionInputSection";
+import { ImageSelectorSection } from "../inputs/ImageSelectorSection";
+import { OptionSelectorSection } from "../inputs/OptionSelectorSection";
+import { SubjectInputSection } from "../inputs/SubjectInputSection";
 import { MultipleChoiceSubmitButton } from "./SubmitButtons";
 
 export function MultipleChoiceInfoStep() {
@@ -24,9 +23,7 @@ export function MultipleChoiceInfoStep() {
           titleAtom={multipleChoiceTitleAtom}
           schema={multipleChoiceInfoSchema}
         />
-        <DescriptionInputSection
-          descriptionAtom={multipleChoiceDescriptionAtom}
-        />
+        <DescriptionInputSection descriptionAtom={multipleChoiceDescriptionAtom} />
         <OptionSelectorSection />
       </div>
 

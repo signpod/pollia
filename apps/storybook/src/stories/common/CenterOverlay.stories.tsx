@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/nextjs";
 import { CenterOverlay } from "@repo/ui/components";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 
 const meta: Meta<typeof CenterOverlay> = {
   title: "Common/CenterOverlay",
@@ -43,12 +43,8 @@ export const CircleWithNumber: Story = {
   render: () => {
     return (
       <div style={{ padding: "100px" }}>
-        <CenterOverlay
-          targetElement={
-            <div className="w-20 h-20 bg-blue-500 rounded-full"></div>
-          }
-        >
-          <span className="text-white font-bold text-xl">42</span>
+        <CenterOverlay targetElement={<div className="h-20 w-20 rounded-full bg-blue-500" />}>
+          <span className="text-xl font-bold text-white">42</span>
         </CenterOverlay>
       </div>
     );
@@ -59,12 +55,8 @@ export const SquareWithText: Story = {
   render: () => {
     return (
       <div style={{ padding: "100px" }}>
-        <CenterOverlay
-          targetElement={
-            <div className="w-24 h-24 bg-green-500 rounded-lg"></div>
-          }
-        >
-          <span className="text-white font-bold text-lg">OK</span>
+        <CenterOverlay targetElement={<div className="h-24 w-24 rounded-lg bg-green-500" />}>
+          <span className="text-lg font-bold text-white">OK</span>
         </CenterOverlay>
       </div>
     );
@@ -82,28 +74,16 @@ export const ColorfulShapes: Story = {
           alignItems: "center",
         }}
       >
-        <CenterOverlay
-          targetElement={
-            <div className="w-16 h-16 bg-red-500 rounded-full"></div>
-          }
-        >
-          <span className="text-white font-bold">1</span>
+        <CenterOverlay targetElement={<div className="h-16 w-16 rounded-full bg-red-500" />}>
+          <span className="font-bold text-white">1</span>
         </CenterOverlay>
 
-        <CenterOverlay
-          targetElement={
-            <div className="w-16 h-16 bg-purple-500 rounded-lg"></div>
-          }
-        >
-          <span className="text-white font-bold">A</span>
+        <CenterOverlay targetElement={<div className="h-16 w-16 rounded-lg bg-purple-500" />}>
+          <span className="font-bold text-white">A</span>
         </CenterOverlay>
 
-        <CenterOverlay
-          targetElement={
-            <div className="w-20 h-12 bg-yellow-500 rounded-full"></div>
-          }
-        >
-          <span className="text-black font-bold">99</span>
+        <CenterOverlay targetElement={<div className="h-12 w-20 rounded-full bg-yellow-500" />}>
+          <span className="font-bold text-black">99</span>
         </CenterOverlay>
       </div>
     );
@@ -121,28 +101,18 @@ export const IconShapes: Story = {
           alignItems: "center",
         }}
       >
-        <CenterOverlay
-          targetElement={
-            <div className="w-20 h-20 bg-pink-500 rounded-full"></div>
-          }
-        >
-          <span className="text-white text-2xl">💝</span>
+        <CenterOverlay targetElement={<div className="h-20 w-20 rounded-full bg-pink-500" />}>
+          <span className="text-2xl text-white">💝</span>
         </CenterOverlay>
 
         <CenterOverlay
-          targetElement={
-            <div className="w-16 h-16 bg-indigo-500 rounded-lg rotate-45"></div>
-          }
+          targetElement={<div className="h-16 w-16 rotate-45 rounded-lg bg-indigo-500" />}
         >
-          <span className="text-white font-bold text-sm -rotate-45">NEW</span>
+          <span className="-rotate-45 text-sm font-bold text-white">NEW</span>
         </CenterOverlay>
 
-        <CenterOverlay
-          targetElement={
-            <div className="w-14 h-14 bg-orange-500 rounded-full"></div>
-          }
-        >
-          <span className="text-white text-lg">🔔</span>
+        <CenterOverlay targetElement={<div className="h-14 w-14 rounded-full bg-orange-500" />}>
+          <span className="text-lg text-white">🔔</span>
         </CenterOverlay>
       </div>
     );
@@ -162,26 +132,26 @@ export const GradientShapes: Story = {
       >
         <CenterOverlay
           targetElement={
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full"></div>
+            <div className="h-20 w-20 rounded-full bg-gradient-to-br from-blue-400 to-purple-600" />
           }
         >
-          <span className="text-white font-bold text-xl">★</span>
+          <span className="text-xl font-bold text-white">★</span>
         </CenterOverlay>
 
         <CenterOverlay
           targetElement={
-            <div className="w-24 h-16 bg-gradient-to-r from-green-400 to-blue-500 rounded-2xl"></div>
+            <div className="h-16 w-24 rounded-2xl bg-gradient-to-r from-green-400 to-blue-500" />
           }
         >
-          <span className="text-white font-bold text-lg">LIVE</span>
+          <span className="text-lg font-bold text-white">LIVE</span>
         </CenterOverlay>
 
         <CenterOverlay
           targetElement={
-            <div className="w-16 h-16 bg-gradient-to-tr from-pink-500 to-rose-500 rounded-lg"></div>
+            <div className="h-16 w-16 rounded-lg bg-gradient-to-tr from-pink-500 to-rose-500" />
           }
         >
-          <span className="text-white font-bold text-2xl">♥</span>
+          <span className="text-2xl font-bold text-white">♥</span>
         </CenterOverlay>
       </div>
     );

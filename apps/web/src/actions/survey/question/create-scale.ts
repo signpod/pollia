@@ -2,16 +2,11 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import prisma from "@/database/utils/prisma/client";
-import { SurveyQuestionType } from "@prisma/client";
 import { scaleInfoSchema } from "@/schemas/survey/scaleInfoSchema";
-import type {
-  CreateScaleQuestionRequest,
-  CreateScaleQuestionResponse,
-} from "@/types/dto/survey";
+import type { CreateScaleQuestionRequest, CreateScaleQuestionResponse } from "@/types/dto/survey";
+import { SurveyQuestionType } from "@prisma/client";
 
-function validateScaleQuestion(
-  request: CreateScaleQuestionRequest
-): string | null {
+function validateScaleQuestion(request: CreateScaleQuestionRequest): string | null {
   try {
     const formData = {
       title: request.title,
@@ -31,7 +26,7 @@ function validateScaleQuestion(
 }
 
 export async function createScaleQuestion(
-  request: CreateScaleQuestionRequest
+  request: CreateScaleQuestionRequest,
 ): Promise<CreateScaleQuestionResponse> {
   try {
     const user = await requireAuth();

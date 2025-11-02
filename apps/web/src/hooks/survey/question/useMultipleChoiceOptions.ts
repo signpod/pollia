@@ -1,12 +1,12 @@
-import { useAtomValue, useSetAtom } from "jotai";
 import {
-  multipleChoiceOptionsAtom,
-  addMultipleChoiceOptionAtom,
-  removeMultipleChoiceOptionAtom,
-  updateMultipleChoiceOptionAtom,
-  resetMultipleChoiceOptionsAtom,
   SurveyOption,
+  addMultipleChoiceOptionAtom,
+  multipleChoiceOptionsAtom,
+  removeMultipleChoiceOptionAtom,
+  resetMultipleChoiceOptionsAtom,
+  updateMultipleChoiceOptionAtom,
 } from "@/atoms/survey/create/multipleChoiceInfoAtoms";
+import { useAtomValue, useSetAtom } from "jotai";
 
 export type OptionUpdateData = Partial<Omit<SurveyOption, "id" | "order">>;
 
@@ -64,16 +64,14 @@ export function useMultipleChoiceOptions(): UseMultipleChoiceOptionsReturn {
   };
 
   const findOption = (optionId: string): SurveyOption | undefined => {
-    return options.find((option) => option.id === optionId);
+    return options.find(option => option.id === optionId);
   };
 
   const hasOptionId = (optionId: string): boolean => {
-    return options.some((option) => option.id === optionId);
+    return options.some(option => option.id === optionId);
   };
 
-  const validOptionCount = options.filter(
-    (option) => option.description.trim().length > 0
-  ).length;
+  const validOptionCount = options.filter(option => option.description.trim().length > 0).length;
 
   const optionCount = options.length;
   const canAddMore = optionCount < MAX_OPTIONS;

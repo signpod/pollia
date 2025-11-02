@@ -15,7 +15,7 @@ export const baseInfoSchema = z.object({
     .string()
     .optional()
     .refine(
-      (val) => {
+      val => {
         if (!val || val === "") return true;
         try {
           new URL(val);
@@ -24,7 +24,7 @@ export const baseInfoSchema = z.object({
           return false;
         }
       },
-      { message: "올바른 URL 형식이 아닙니다." }
+      { message: "올바른 URL 형식이 아닙니다." },
     ),
 });
 

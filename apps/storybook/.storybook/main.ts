@@ -1,6 +1,5 @@
+import { dirname, join } from "node:path";
 import type { StorybookConfig } from "@storybook/nextjs";
-
-import { join, dirname } from "path";
 
 /**
  * This function is used to resolve the absolute path of a package.
@@ -16,7 +15,7 @@ const config: StorybookConfig = {
     name: getAbsolutePath("@storybook/nextjs"),
     options: {},
   },
-  webpackFinal: async (config) => {
+  webpackFinal: async config => {
     if (config.resolve) {
       config.resolve.alias = {
         ...config.resolve.alias,
@@ -26,7 +25,7 @@ const config: StorybookConfig = {
     }
 
     // SVG를 React 컴포넌트로 import할 수 있도록 설정
-    const fileLoaderRule = config.module?.rules?.find((rule) => {
+    const fileLoaderRule = config.module?.rules?.find(rule => {
       if (typeof rule !== "object" || !rule) return false;
       if (!("test" in rule)) return false;
       return rule.test instanceof RegExp && rule.test.test(".svg");

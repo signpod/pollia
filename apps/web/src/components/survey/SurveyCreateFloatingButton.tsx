@@ -1,23 +1,17 @@
-'use client';
+"use client";
 
-import FloatingButton from '../common/FloatingButton';
+import FloatingButton from "../common/FloatingButton";
 
-interface SurveyCreateFloatingButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'icon-only' | 'with-text';
+interface SurveyCreateFloatingButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: "icon-only" | "with-text";
 }
 
 export default function PollCreateFloatingButton({
-  variant = 'icon-only',
+  variant = "icon-only",
   className,
   ...props
 }: SurveyCreateFloatingButtonProps) {
   return (
-    <FloatingButton
-      variant={variant}
-      className={className}
-      title="설문조사지 만들기"
-      {...props}
-    />
+    <FloatingButton variant={variant} className={className} title="설문조사지 만들기" {...props} />
   );
 }

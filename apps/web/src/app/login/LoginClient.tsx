@@ -1,16 +1,16 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { createClient as createSupabaseClient } from "@/database/utils/supabase/client";
 import {
   FixedBottomLayout,
   KakaoLoginButton,
-  toast,
   Tooltip,
   Typo,
+  toast,
   useModal,
 } from "@repo/ui/components";
+import { useCallback, useEffect } from "react";
 import { OnboardingCarousel } from "./OnboardingCarousel";
-import { createClient as createSupabaseClient } from "@/database/utils/supabase/client";
 
 interface AuthError {
   type: string;
@@ -55,12 +55,9 @@ export function LoginClient({ initialError }: LoginClientProps) {
 
       if (error) {
         console.error("카카오 로그인 설정 에러:", error);
-        toast.error(
-          "로그인 시작 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
-          {
-            duration: 3000,
-          }
-        );
+        toast.error("로그인 시작 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", {
+          duration: 3000,
+        });
       }
     } catch (error) {
       console.error("예상치 못한 에러:", error);
@@ -75,18 +72,15 @@ export function LoginClient({ initialError }: LoginClientProps) {
       <OnboardingCarousel />
 
       {/*TODO: 디자인 가이드 확인 후 삭제. 임시로 바텀 GAP 설정했습니다. 25.09.10 - 정우*/}
-      <div className="h-[166px]"></div>
+      <div className="h-[166px]" />
 
-      <FixedBottomLayout.Content className="w-full flex justify-center bg-white">
-        <div className="flex flex-col justify-center w-full max-w-lg p-5">
+      <FixedBottomLayout.Content className="flex w-full justify-center bg-white">
+        <div className="flex w-full max-w-lg flex-col justify-center p-5">
           <div className="h-[82px] w-full" />
           <Tooltip id="kakao-login-tooltip" className="animate-bounce">
             <Typo.Body size="medium">⚡️ 3초만에 시작하기</Typo.Body>
           </Tooltip>
-          <KakaoLoginButton
-            data-tooltip-id="kakao-login-tooltip"
-            onClick={handleKakaoLogin}
-          />
+          <KakaoLoginButton data-tooltip-id="kakao-login-tooltip" onClick={handleKakaoLogin} />
         </div>
       </FixedBottomLayout.Content>
     </>

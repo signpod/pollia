@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
 import { getPollUserStatus } from "@/actions/poll";
 import { pollQueryKeys } from "@/constants/queryKeys/pollQueryKeys";
+import { useQuery } from "@tanstack/react-query";
 
 export const useGetPollUserStatus = (pollId: string) => {
   return useQuery({
@@ -10,6 +10,6 @@ export const useGetPollUserStatus = (pollId: string) => {
     },
     staleTime: 5 * 60 * 1000,
     retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 };

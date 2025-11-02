@@ -5,9 +5,9 @@ import {
   eitherOrTitleAtom,
 } from "@/atoms/survey/create/eitherOrInfoAtoms";
 import { eitherOrInfoSchema } from "@/schemas/survey/eitherOrInfoSchema";
-import { SubjectInputSection } from "../inputs/SubjectInputSection";
 import { DescriptionInputSection } from "../inputs/DescriptionInputSection";
 import { ImageSelectorSection } from "../inputs/ImageSelectorSection";
+import { SubjectInputSection } from "../inputs/SubjectInputSection";
 import { EitherOrSubmitButton } from "./SubmitButtons";
 
 export function EitherOrInfoStep() {
@@ -18,10 +18,7 @@ export function EitherOrInfoStep() {
           imageUrlAtom={eitherOrImageUrlAtom}
           imageFileUploadIdAtom={eitherOrImageFileUploadIdAtom}
         />
-        <SubjectInputSection
-          titleAtom={eitherOrTitleAtom}
-          schema={eitherOrInfoSchema}
-        />
+        <SubjectInputSection titleAtom={eitherOrTitleAtom} schema={eitherOrInfoSchema} />
         <DescriptionInputSection descriptionAtom={eitherOrDescriptionAtom} />
       </div>
 

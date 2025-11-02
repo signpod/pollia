@@ -49,13 +49,12 @@ type Story = StoryObj<typeof meta>;
 // 숫자 표시
 export const WithNumber: Story = {
   args: {
-    children: <span className="text-white font-bold text-sm">1</span>,
+    children: <span className="text-sm font-bold text-white">1</span>,
   },
   parameters: {
     docs: {
       description: {
-        story:
-          "숫자를 중앙에 표시합니다. 투표 순번이나 선택지 번호로 활용할 수 있습니다.",
+        story: "숫자를 중앙에 표시합니다. 투표 순번이나 선택지 번호로 활용할 수 있습니다.",
       },
     },
   },
@@ -64,13 +63,12 @@ export const WithNumber: Story = {
 // 텍스트 표시
 export const WithText: Story = {
   args: {
-    children: <span className="text-white font-bold text-xs">A</span>,
+    children: <span className="text-xs font-bold text-white">A</span>,
   },
   parameters: {
     docs: {
       description: {
-        story:
-          "텍스트를 중앙에 표시합니다. 객관식 선택지 라벨로 활용할 수 있습니다.",
+        story: "텍스트를 중앙에 표시합니다. 객관식 선택지 라벨로 활용할 수 있습니다.",
       },
     },
   },
@@ -88,19 +86,14 @@ export const WithIcon: Story = {
         stroke="currentColor"
         className="size-4 text-white"
       >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M12 4.5v15m7.5-7.5h-15"
-        />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
       </svg>
     </PointIcon>
   ),
   parameters: {
     docs: {
       description: {
-        story:
-          "아이콘을 중앙에 표시합니다. 다양한 액션 버튼으로 활용할 수 있습니다.",
+        story: "아이콘을 중앙에 표시합니다. 다양한 액션 버튼으로 활용할 수 있습니다.",
       },
     },
   },
@@ -111,27 +104,26 @@ export const NumberSequence: Story = {
   render: () => (
     <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
       <PointIcon>
-        <span className="text-white font-bold text-sm">1</span>
+        <span className="text-sm font-bold text-white">1</span>
       </PointIcon>
       <PointIcon>
-        <span className="text-white font-bold text-sm">2</span>
+        <span className="text-sm font-bold text-white">2</span>
       </PointIcon>
       <PointIcon>
-        <span className="text-white font-bold text-sm">3</span>
+        <span className="text-sm font-bold text-white">3</span>
       </PointIcon>
       <PointIcon>
-        <span className="text-white font-bold text-sm">4</span>
+        <span className="text-sm font-bold text-white">4</span>
       </PointIcon>
       <PointIcon>
-        <span className="text-white font-bold text-sm">5</span>
+        <span className="text-sm font-bold text-white">5</span>
       </PointIcon>
     </div>
   ),
   parameters: {
     docs: {
       description: {
-        story:
-          "연속된 숫자를 표시하는 예시입니다. 투표 선택지 순번 표시에 활용할 수 있습니다.",
+        story: "연속된 숫자를 표시하는 예시입니다. 투표 선택지 순번 표시에 활용할 수 있습니다.",
       },
     },
   },
@@ -142,27 +134,26 @@ export const AlphabetSequence: Story = {
   render: () => (
     <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
       <PointIcon>
-        <span className="text-white font-bold text-xs">A</span>
+        <span className="text-xs font-bold text-white">A</span>
       </PointIcon>
       <PointIcon>
-        <span className="text-white font-bold text-xs">B</span>
+        <span className="text-xs font-bold text-white">B</span>
       </PointIcon>
       <PointIcon>
-        <span className="text-white font-bold text-xs">C</span>
+        <span className="text-xs font-bold text-white">C</span>
       </PointIcon>
       <PointIcon>
-        <span className="text-white font-bold text-xs">D</span>
+        <span className="text-xs font-bold text-white">D</span>
       </PointIcon>
       <PointIcon>
-        <span className="text-white font-bold text-xs">E</span>
+        <span className="text-xs font-bold text-white">E</span>
       </PointIcon>
     </div>
   ),
   parameters: {
     docs: {
       description: {
-        story:
-          "알파벳 순서를 표시하는 예시입니다. 객관식 투표의 선택지 라벨로 활용할 수 있습니다.",
+        story: "알파벳 순서를 표시하는 예시입니다. 객관식 투표의 선택지 라벨로 활용할 수 있습니다.",
       },
     },
   },
@@ -181,11 +172,7 @@ export const VariousIcons: Story = {
           stroke="currentColor"
           className="size-4 text-white"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M12 4.5v15m7.5-7.5h-15"
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
         </svg>
       </PointIcon>
       <PointIcon>
@@ -197,11 +184,7 @@ export const VariousIcons: Story = {
           stroke="currentColor"
           className="size-4 text-white"
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M4.5 12.75l6 6 9-13.5"
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
         </svg>
       </PointIcon>
       <PointIcon>
@@ -255,36 +238,24 @@ export const SizeComparison: Story = {
       <div style={{ textAlign: "center" }}>
         <div style={{ transform: "scale(0.75)" }}>
           <PointIcon>
-            <span className="text-white font-bold text-sm">1</span>
+            <span className="text-sm font-bold text-white">1</span>
           </PointIcon>
         </div>
-        <p
-          style={{ fontSize: "0.75rem", color: "#71717a", marginTop: "0.5rem" }}
-        >
-          작게
-        </p>
+        <p style={{ fontSize: "0.75rem", color: "#71717a", marginTop: "0.5rem" }}>작게</p>
       </div>
       <div style={{ textAlign: "center" }}>
         <PointIcon>
-          <span className="text-white font-bold text-sm">2</span>
+          <span className="text-sm font-bold text-white">2</span>
         </PointIcon>
-        <p
-          style={{ fontSize: "0.75rem", color: "#71717a", marginTop: "0.5rem" }}
-        >
-          기본
-        </p>
+        <p style={{ fontSize: "0.75rem", color: "#71717a", marginTop: "0.5rem" }}>기본</p>
       </div>
       <div style={{ textAlign: "center" }}>
         <div style={{ transform: "scale(1.5)" }}>
           <PointIcon>
-            <span className="text-white font-bold text-sm">3</span>
+            <span className="text-sm font-bold text-white">3</span>
           </PointIcon>
         </div>
-        <p
-          style={{ fontSize: "0.75rem", color: "#71717a", marginTop: "0.5rem" }}
-        >
-          크게
-        </p>
+        <p style={{ fontSize: "0.75rem", color: "#71717a", marginTop: "0.5rem" }}>크게</p>
       </div>
     </div>
   ),

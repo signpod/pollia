@@ -1,23 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useAtomValue, useSetAtom } from "jotai";
-import { PollCategory } from "@prisma/client";
-import { useCreatePoll } from "./useCreatePoll";
-import {
-  binaryPollDataAtom,
-  resetBinaryPollAtom,
-} from "@/atoms/create/binaryPollAtoms";
+import { binaryPollDataAtom, resetBinaryPollAtom } from "@/atoms/create/binaryPollAtoms";
+import { resetPollTypeAtom, selectedBinaryPollTypeAtom } from "@/atoms/create/pollTypeAtoms";
+import { type BinaryPollFormData, binaryPollSchema } from "@/schemas/binaryPollSchema";
 import { CreatePollRequest } from "@/types/dto";
-import {
-  binaryPollSchema,
-  type BinaryPollFormData,
-} from "@/schemas/binaryPollSchema";
-import {
-  resetPollTypeAtom,
-  selectedBinaryPollTypeAtom,
-} from "@/atoms/create/pollTypeAtoms";
+import { PollCategory } from "@prisma/client";
+import { useAtomValue, useSetAtom } from "jotai";
+import { useEffect, useState } from "react";
 import { usePushAfter } from "../common/usePushAfter";
+import { useCreatePoll } from "./useCreatePoll";
 
 export interface UseBinaryPollSubmitOptions {
   onSuccess?: () => void;
@@ -40,14 +31,14 @@ export function useBinaryPollSubmit(options: UseBinaryPollSubmitOptions = {}) {
 
   const selectedBinaryPollType = useAtomValue(selectedBinaryPollTypeAtom);
   const createPollMutation = useCreatePoll({
-    onSuccess: (data) => {
+    onSuccess: data => {
       if (data.data?.id) {
         pushAfter(`/poll/create/done?pollId=${data.data.id}`, () => {
           options.onSuccess?.();
         });
       }
     },
-    onError: (error) => {
+    onError: error => {
       options.onError?.(error);
     },
   });
@@ -82,7 +73,7 @@ export function useBinaryPollSubmit(options: UseBinaryPollSubmitOptions = {}) {
         data: result.data,
       });
     } else {
-      const errors = result.error.issues.map((issue) => issue.message);
+      const errors = result.error.issues.map(issue => issue.message);
       setValidation({
         isValid: false,
         errors,
@@ -101,8 +92,7 @@ export function useBinaryPollSubmit(options: UseBinaryPollSubmitOptions = {}) {
     endTime,
   ]);
 
-  const isImageUploading =
-    thumbnailUrl !== undefined && thumbnailUrl.startsWith("blob:");
+  const isImageUploading = thumbnailUrl?.startsWith("blob:");
 
   const handleSubmit = async (imageFileUploadId?: string) => {
     if (!validation.isValid) {
@@ -117,13 +107,9 @@ export function useBinaryPollSubmit(options: UseBinaryPollSubmitOptions = {}) {
     }
 
     const validatedData = validation.data!;
-    const startDateTime = new Date(
-      `${validatedData.startDate}T${validatedData.startTime}`
-    );
+    const startDateTime = new Date(`${validatedData.startDate}T${validatedData.startTime}`);
     const endDateTime =
-      !validatedData.isUnlimited &&
-      validatedData.endDate &&
-      validatedData.endTime
+      !validatedData.isUnlimited && validatedData.endDate && validatedData.endTime
         ? new Date(`${validatedData.endDate}T${validatedData.endTime}`)
         : undefined;
 

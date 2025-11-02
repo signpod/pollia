@@ -1,7 +1,7 @@
-import React from "react";
+import { SurveyType } from "@/types/domain/survey";
 import { StepConfig } from "@repo/ui/components";
 import { ChevronLeft, LucideIcon, X } from "lucide-react";
-import { SurveyType } from "@/types/domain/survey";
+import React from "react";
 import { TYPE_LABELS } from "./survey";
 
 export interface ExtendedStepConfig extends StepConfig {
@@ -65,9 +65,7 @@ export const createStepConfigs = ({
   {
     ...CREATE_SURVEY_STEPS[1],
     description:
-      stepType !== "ChoiceType"
-        ? `${TYPE_LABELS[stepType]} 질문의 내용을 작성해주세요`
-        : undefined,
+      stepType !== "ChoiceType" ? `${TYPE_LABELS[stepType]} 질문의 내용을 작성해주세요` : undefined,
     header: {
       action: goBack,
       icon: ChevronLeft,

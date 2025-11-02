@@ -1,22 +1,20 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
-import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
 import prisma from "@/database/utils/prisma/client";
-import { FileStatus } from "@prisma/client";
+import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
 import {
-  UploadImageRequest,
-  UploadImageResponse,
-  DeleteImageRequest,
-  DeleteImageResponse,
+  CleanupOrphanFilesResponse,
   ConfirmFileRequest,
   ConfirmFileResponse,
-  CleanupOrphanFilesResponse,
+  DeleteImageRequest,
+  DeleteImageResponse,
+  UploadImageRequest,
+  UploadImageResponse,
 } from "@/types/dto/image";
+import { FileStatus } from "@prisma/client";
 
-export async function getUploadUrl(
-  request: UploadImageRequest
-): Promise<UploadImageResponse> {
+export async function getUploadUrl(request: UploadImageRequest): Promise<UploadImageResponse> {
   try {
     const user = await requireAuth();
     const supabase = await createServerSupabaseClient();
@@ -44,9 +42,7 @@ export async function getUploadUrl(
       throw error;
     }
 
-    const { data: publicUrlData } = supabase.storage
-      .from(bucket)
-      .getPublicUrl(fileName);
+    const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(fileName);
 
     const fileUpload = await prisma.fileUpload.create({
       data: {
@@ -73,9 +69,7 @@ export async function getUploadUrl(
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error(
-      "이미지 업로드 URL 생성 중 오류가 발생했습니다."
-    );
+    const serverError = new Error("이미지 업로드 URL 생성 중 오류가 발생했습니다.");
     serverError.cause = 500;
     throw serverError;
   }
@@ -87,13 +81,7 @@ function validateUploadRequest(request: UploadImageRequest): string | null {
     return "파일 크기는 10MB를 초과할 수 없습니다.";
   }
 
-  const allowedTypes = [
-    "image/jpeg",
-    "image/jpg",
-    "image/png",
-    "image/webp",
-    "image/gif",
-  ];
+  const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
 
   if (!allowedTypes.includes(request.fileType)) {
     return "지원하지 않는 파일 형식입니다. (JPEG, PNG, WebP, GIF만 가능)";
@@ -106,9 +94,7 @@ function validateUploadRequest(request: UploadImageRequest): string | null {
   return null;
 }
 
-export async function deleteImage(
-  request: DeleteImageRequest
-): Promise<DeleteImageResponse> {
+export async function deleteImage(request: DeleteImageRequest): Promise<DeleteImageResponse> {
   try {
     const user = await requireAuth();
     const supabase = await createServerSupabaseClient();
@@ -154,9 +140,7 @@ export async function deleteImage(
   }
 }
 
-export async function confirmFile(
-  request: ConfirmFileRequest
-): Promise<ConfirmFileResponse> {
+export async function confirmFile(request: ConfirmFileRequest): Promise<ConfirmFileResponse> {
   try {
     const user = await requireAuth();
 
@@ -169,9 +153,7 @@ export async function confirmFile(
     });
 
     if (!fileUpload) {
-      const error = new Error(
-        "임시 파일을 찾을 수 없거나 이미 처리되었습니다."
-      );
+      const error = new Error("임시 파일을 찾을 수 없거나 이미 처리되었습니다.");
       error.cause = 404;
       throw error;
     }
@@ -228,10 +210,7 @@ export async function cleanupOrphanFiles(): Promise<CleanupOrphanFilesResponse> 
           .remove([file.filePath]);
 
         if (deleteError) {
-          console.error(
-            `❌ Storage 파일 삭제 실패: ${file.filePath}`,
-            deleteError
-          );
+          console.error(`❌ Storage 파일 삭제 실패: ${file.filePath}`, deleteError);
           failedFiles.push(file.filePath);
           continue;
         }
@@ -249,7 +228,7 @@ export async function cleanupOrphanFiles(): Promise<CleanupOrphanFilesResponse> 
     }
 
     console.log(
-      `🧹 고아 파일 정리 완료: 성공 ${deletedFiles.length}개, 실패 ${failedFiles.length}개`
+      `🧹 고아 파일 정리 완료: 성공 ${deletedFiles.length}개, 실패 ${failedFiles.length}개`,
     );
 
     return {

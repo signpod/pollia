@@ -1,4 +1,4 @@
-import { clsx, type ClassValue } from "clsx";
+import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -38,12 +38,12 @@ export function formatTimeRemainingInDays(milliseconds: number): string {
 export function getPollStatus(
   startDate: Date | null,
   endDate: Date | null,
-  isIndefinite: boolean,
-  currentTime: Date = new Date()
+  _isIndefinite: boolean,
+  currentTime: Date = new Date(),
 ): "before" | "active" | "after" {
   const now = currentTime.getTime();
   const startTime = startDate ? startDate.getTime() : 0;
-  const endTime = endDate ? endDate.getTime() : Infinity;
+  const endTime = endDate ? endDate.getTime() : Number.POSITIVE_INFINITY;
 
   if (startDate && now < startTime) return "before";
 
@@ -56,18 +56,16 @@ export function isPollActive(
   startDate: Date | null,
   endDate: Date | null,
   isIndefinite: boolean,
-  currentTime: Date = new Date()
+  currentTime: Date = new Date(),
 ): boolean {
-  return (
-    getPollStatus(startDate, endDate, isIndefinite, currentTime) === "active"
-  );
+  return getPollStatus(startDate, endDate, isIndefinite, currentTime) === "active";
 }
 
 export function getPollStatusMessage(
   startDate: Date | null,
   endDate: Date | null,
   isIndefinite: boolean,
-  currentTime: Date = new Date()
+  currentTime: Date = new Date(),
 ): string {
   const status = getPollStatus(startDate, endDate, isIndefinite, currentTime);
 

@@ -6,10 +6,7 @@ interface AuthGateProps {
   redirectTo?: string;
 }
 
-export async function AuthGate({
-  children,
-  redirectTo = "/login",
-}: AuthGateProps) {
+export async function AuthGate({ children, redirectTo = "/login" }: AuthGateProps) {
   const supabase = await createServerSupabaseClient();
 
   const {

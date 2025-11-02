@@ -1,11 +1,8 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toggleBookmarkPoll } from "@/actions/poll";
 import { pollQueryKeys } from "@/constants/queryKeys/pollQueryKeys";
-import type {
-  ToggleBookmarkPollResponse,
-  GetPollUserStatusResponse,
-} from "@/types/dto";
+import type { GetPollUserStatusResponse, ToggleBookmarkPollResponse } from "@/types/dto";
 import { toast } from "@repo/ui/components";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface BookmarkMutationContext {
   previousUserStatus: GetPollUserStatusResponse | undefined;
@@ -40,21 +37,20 @@ export const useBookmark = (pollId: string) => {
         queryKey: pollQueryKeys.userPollStatus(pollId),
       });
 
-      const previousUserStatus =
-        queryClient.getQueryData<GetPollUserStatusResponse>(
-          pollQueryKeys.userPollStatus(pollId)
-        );
+      const previousUserStatus = queryClient.getQueryData<GetPollUserStatusResponse>(
+        pollQueryKeys.userPollStatus(pollId),
+      );
 
       queryClient.setQueryData<GetPollUserStatusResponse>(
         pollQueryKeys.userPollStatus(pollId),
-        (oldData) => {
+        oldData => {
           if (!oldData) return oldData;
 
           return {
             ...oldData,
             isBookmarked: !oldData.isBookmarked,
           };
-        }
+        },
       );
 
       return {
@@ -71,7 +67,9 @@ export const useBookmark = (pollId: string) => {
       queryClient.invalidateQueries({
         queryKey: pollQueryKeys.bookmarkedPolls(),
       });
-      const message = isBookmarked ? BOOKMARK_MESSAGES.success.add : BOOKMARK_MESSAGES.success.remove;
+      const message = isBookmarked
+        ? BOOKMARK_MESSAGES.success.add
+        : BOOKMARK_MESSAGES.success.remove;
       toast.success(message);
     },
 
@@ -79,7 +77,7 @@ export const useBookmark = (pollId: string) => {
       if (context?.previousUserStatus) {
         queryClient.setQueryData<GetPollUserStatusResponse>(
           pollQueryKeys.userPollStatus(pollId),
-          context.previousUserStatus
+          context.previousUserStatus,
         );
       }
       toast.error(BOOKMARK_MESSAGES.error);
@@ -87,7 +85,7 @@ export const useBookmark = (pollId: string) => {
   });
 
   const userStatus = queryClient.getQueryData<GetPollUserStatusResponse>(
-    pollQueryKeys.userPollStatus(pollId)
+    pollQueryKeys.userPollStatus(pollId),
   );
 
   const isBookmarked = userStatus?.isBookmarked || false;

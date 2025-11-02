@@ -1,12 +1,6 @@
 import { formatDateToLocalString } from "@/lib/date";
-import {
-  DateAndTimePicker,
-  LabelText,
-  Toggle,
-  Typo,
-} from "@repo/ui/components";
-import { useAtom } from "jotai";
-import { PrimitiveAtom } from "jotai";
+import { DateAndTimePicker, LabelText, Toggle, Typo } from "@repo/ui/components";
+import { PrimitiveAtom, useAtom } from "jotai";
 import type { Matcher } from "react-day-picker";
 
 interface VotingPeriodSectionProps {
@@ -77,7 +71,7 @@ export function VotingPeriodSection({
       </div>
 
       <div className="flex flex-col gap-4">
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between">
           <LabelText required>시작</LabelText>
           <DateAndTimePicker
             date={startDate}
@@ -88,7 +82,7 @@ export function VotingPeriodSection({
           />
         </div>
 
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between">
           <LabelText required disabled={isUnlimited}>
             종료
           </LabelText>

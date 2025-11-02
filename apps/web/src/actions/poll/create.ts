@@ -1,21 +1,14 @@
 "use server";
 
-import {
-  ResultMode,
-  FileStatus,
-  RelatedEntityType,
-  PollType,
-} from "@prisma/client";
 import { requireAuth } from "@/actions/common/auth";
-import prisma from "@/database/utils/prisma/client";
-import { CreatePollRequest, CreatePollResponse } from "@/types/dto";
 import { BINARY_POLL_OPTIONS, isBinaryPollType } from "@/constants/poll";
+import prisma from "@/database/utils/prisma/client";
 import { binaryPollSchema } from "@/schemas/binaryPollSchema";
 import { multiplePollSchema } from "@/schemas/multiplePollSchema";
+import { CreatePollRequest, CreatePollResponse } from "@/types/dto";
+import { FileStatus, PollType, RelatedEntityType, ResultMode } from "@prisma/client";
 
-function validatePollRequestWithClientSchema(
-  request: CreatePollRequest
-): string | null {
+function validatePollRequestWithClientSchema(request: CreatePollRequest): string | null {
   try {
     if (!request.startDate) {
       return "시작 날짜는 필수입니다.";
@@ -23,8 +16,7 @@ function validatePollRequestWithClientSchema(
 
     const startDateTime = request.startDate!;
     const startDate = startDateTime.toISOString().split("T")[0];
-    const startTime =
-      startDateTime.toISOString().split("T")[1]?.slice(0, 5) || "";
+    const startTime = startDateTime.toISOString().split("T")[1]?.slice(0, 5) || "";
 
     const endDate = request.endDate?.toISOString().split("T")[0];
     const endTime = request.endDate
@@ -52,7 +44,7 @@ function validatePollRequestWithClientSchema(
       const multipleFormData = {
         ...baseFormData,
         maxSelections: request.maxSelections || 1,
-        options: request.options.map((opt) => ({
+        options: request.options.map(opt => ({
           id: `temp-${opt.order}`,
           description: opt.description,
           imageUrl: opt.imageUrl,
@@ -74,9 +66,7 @@ function validatePollRequestWithClientSchema(
   }
 }
 
-export async function createPoll(
-  request: CreatePollRequest
-): Promise<CreatePollResponse> {
+export async function createPoll(request: CreatePollRequest): Promise<CreatePollResponse> {
   try {
     const user = await requireAuth();
 
@@ -87,7 +77,7 @@ export async function createPoll(
       throw error;
     }
 
-    const poll = await prisma.$transaction(async (tx) => {
+    const poll = await prisma.$transaction(async tx => {
       const createdPoll = await tx.poll.create({
         data: {
           title: request.title,
@@ -106,20 +96,17 @@ export async function createPoll(
       });
 
       if (isBinaryPollType(request.type)) {
-        const binaryOptions =
-          BINARY_POLL_OPTIONS[request.type as keyof typeof BINARY_POLL_OPTIONS];
+        const binaryOptions = BINARY_POLL_OPTIONS[request.type as keyof typeof BINARY_POLL_OPTIONS];
         await tx.pollOption.createMany({
-          data: binaryOptions.map(
-            (option: { description: string; order: number }) => ({
-              pollId: createdPoll.id,
-              description: option.description,
-              order: option.order,
-            })
-          ),
+          data: binaryOptions.map((option: { description: string; order: number }) => ({
+            pollId: createdPoll.id,
+            description: option.description,
+            order: option.order,
+          })),
         });
       } else {
         await tx.pollOption.createMany({
-          data: request.options.map((option) => ({
+          data: request.options.map(option => ({
             pollId: createdPoll.id,
             description: option.description,
             imageUrl: option.imageUrl,
@@ -147,7 +134,7 @@ export async function createPoll(
 
       if (!isBinaryPollType(request.type) && request.options) {
         const optionFileUploadIds = request.options
-          .map((option) => option.imageFileUploadId)
+          .map(option => option.imageFileUploadId)
           .filter(Boolean) as string[];
 
         if (optionFileUploadIds.length > 0) {

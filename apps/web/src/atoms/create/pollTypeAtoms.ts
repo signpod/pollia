@@ -1,42 +1,40 @@
 import { POLL_TYPES } from "@/constants/poll";
-import { PollType } from "@prisma/client";
 import { BinaryPollType, MultiplePollType } from "@/types/domain/poll";
+import { PollType } from "@prisma/client";
 import { atom } from "jotai";
 
 export const pollTypeAtom = atom<PollType | undefined>(undefined);
 
 export const availablePollTypesAtom = atom(POLL_TYPES);
 
-export const pollTypeSelectedAtom = atom((get) => {
+export const pollTypeSelectedAtom = atom(get => {
   const pollType = get(pollTypeAtom);
   return !!pollType;
 });
 
-export const isBinaryPollTypeAtom = atom((get) => {
+export const isBinaryPollTypeAtom = atom(get => {
   const pollType = get(pollTypeAtom);
   return pollType === PollType.YES_NO || pollType === PollType.LIKE_DISLIKE;
 });
 
-export const isMultiplePollTypeAtom = atom((get) => {
+export const isMultiplePollTypeAtom = atom(get => {
   const pollType = get(pollTypeAtom);
   return pollType === PollType.MULTIPLE_CHOICE;
 });
 
-export const selectedBinaryPollTypeAtom = atom((get) => {
+export const selectedBinaryPollTypeAtom = atom(get => {
   const pollType = get(pollTypeAtom);
   return pollType === PollType.YES_NO || pollType === PollType.LIKE_DISLIKE
     ? (pollType as BinaryPollType)
     : undefined;
 });
 
-export const selectedMultiplePollTypeAtom = atom((get) => {
+export const selectedMultiplePollTypeAtom = atom(get => {
   const pollType = get(pollTypeAtom);
-  return pollType === PollType.MULTIPLE_CHOICE
-    ? (pollType as MultiplePollType)
-    : undefined;
+  return pollType === PollType.MULTIPLE_CHOICE ? (pollType as MultiplePollType) : undefined;
 });
 
-export const categoryStepValidationAtom = atom((get) => {
+export const categoryStepValidationAtom = atom(get => {
   const pollType = get(pollTypeAtom);
 
   return {
@@ -51,9 +49,6 @@ export const resetPollTypeAtom = atom(null, (_get, set) => {
   set(pollTypeAtom, undefined);
 });
 
-export const setPollTypeAtom = atom(
-  null,
-  (_get, set, newPollType: PollType) => {
-    set(pollTypeAtom, newPollType);
-  }
-);
+export const setPollTypeAtom = atom(null, (_get, set, newPollType: PollType) => {
+  set(pollTypeAtom, newPollType);
+});

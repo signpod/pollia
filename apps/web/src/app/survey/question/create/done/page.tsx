@@ -1,14 +1,14 @@
 "use client";
-import { FixedBottomLayout, Button, Typo, toast } from "@repo/ui/components";
+
 import PolliaIcon from "@public/svgs/poll-poll-e.svg";
-import Link from "next/link";
+import { Button, FixedBottomLayout, Typo, toast } from "@repo/ui/components";
 import { motion } from "framer-motion";
+import { Share2 } from "lucide-react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import { Share2 } from "lucide-react";
 
-const CREATE_SURVEY_QUESTION_DONE_MESSAGE =
-  "설문의 질문 하나가 성공적으로 만들어졌어요!";
+const CREATE_SURVEY_QUESTION_DONE_MESSAGE = "설문의 질문 하나가 성공적으로 만들어졌어요!";
 
 function SurveyQuestionCreateDoneContent() {
   const searchParams = useSearchParams();
@@ -30,13 +30,10 @@ function SurveyQuestionCreateDoneContent() {
 
   return (
     <div className="pt-60">
-      <div className="flex-1 flex flex-col items-center justify-center gap-6 mb-[160px]">
+      <div className="mb-[160px] flex flex-1 flex-col items-center justify-center gap-6">
         <PolliaIcon className="text-primary size-30" />
 
-        <Typo.MainTitle
-          size="small"
-          className="text-center whitespace-pre-line font-bold"
-        >
+        <Typo.MainTitle size="small" className="text-center font-bold whitespace-pre-line">
           {CREATE_SURVEY_QUESTION_DONE_MESSAGE}
         </Typo.MainTitle>
 
@@ -49,15 +46,13 @@ function SurveyQuestionCreateDoneContent() {
             toast.success("설문 질문의 아이디가 복사되었어요!");
           }}
         >
-          <Typo.ButtonText size="large">
-            설문 질문의 아이디 복사하기
-          </Typo.ButtonText>
+          <Typo.ButtonText size="large">설문 질문의 아이디 복사하기</Typo.ButtonText>
         </Button>
       </div>
 
-      <FixedBottomLayout.Content className="w-full flex justify-center bg-white">
+      <FixedBottomLayout.Content className="flex w-full justify-center bg-white">
         <motion.div
-          className="flex flex-col justify-center w-full max-w-lg p-5 gap-2"
+          className="flex w-full max-w-lg flex-col justify-center gap-2 p-5"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{
@@ -65,15 +60,9 @@ function SurveyQuestionCreateDoneContent() {
             ease: "easeOut",
           }}
         >
-          <Link href={`/survey/question/create`} className="w-full">
-            <Button
-              className="w-full"
-              variant="secondary"
-              aria-label="질문 하나 더 만들기"
-            >
-              <Typo.ButtonText size="large">
-                질문 하나 더 만들기
-              </Typo.ButtonText>
+          <Link href={"/survey/question/create"} className="w-full">
+            <Button className="w-full" variant="secondary" aria-label="질문 하나 더 만들기">
+              <Typo.ButtonText size="large">질문 하나 더 만들기</Typo.ButtonText>
             </Button>
           </Link>
         </motion.div>

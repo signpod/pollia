@@ -1,25 +1,17 @@
-'use client';
+"use client";
 
-import { useAtomValue } from 'jotai';
-import {
-  searchQueryAtom,
-  selectedQuestionTypesAtom,
-} from '@/atoms/create/surveyAtoms';
-import { useReadSurveyQuestions } from '@/hooks/survey/question/useReadSurveyQuestions';
-import { ReactNode, useMemo } from 'react';
-import { getSortedQuestions } from '../util/sortedQuestion';
-import { SurveyQuestionSummary } from '@/types/domain/survey';
+import { searchQueryAtom, selectedQuestionTypesAtom } from "@/atoms/create/surveyAtoms";
+import { useReadSurveyQuestions } from "@/hooks/survey/question/useReadSurveyQuestions";
+import { SurveyQuestionSummary } from "@/types/domain/survey";
+import { useAtomValue } from "jotai";
+import { ReactNode, useMemo } from "react";
+import { getSortedQuestions } from "../util/sortedQuestion";
 
 interface SurveyQuestionDataContainerProps {
-  children: (data: {
-    questions: SurveyQuestionSummary[];
-    isLoading: boolean;
-  }) => ReactNode;
+  children: (data: { questions: SurveyQuestionSummary[]; isLoading: boolean }) => ReactNode;
 }
 
-export function SurveyQuestionDataContainer({
-  children,
-}: SurveyQuestionDataContainerProps) {
+export function SurveyQuestionDataContainer({ children }: SurveyQuestionDataContainerProps) {
   const { questions, isLoading } = useSurveyQuestionData();
 
   return <>{children({ questions: questions ?? [], isLoading })}</>;
@@ -31,7 +23,7 @@ function useSurveyQuestionData() {
 
   const { data: questions, isLoading } = useReadSurveyQuestions({
     options: {
-      searchQuery: searchQuery ?? '',
+      searchQuery: searchQuery ?? "",
       selectedQuestionTypes: Array.from(selectedQuestionTypes),
     },
   });

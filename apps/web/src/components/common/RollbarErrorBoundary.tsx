@@ -1,8 +1,7 @@
 "use client";
 
-import { ErrorBoundary } from "@rollbar/react";
-
 import { ResetPage } from "@/components/common/ResetPage";
+import { ErrorBoundary } from "@rollbar/react";
 
 export default function RollbarErrorBoundary() {
   return (

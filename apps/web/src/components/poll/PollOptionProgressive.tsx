@@ -1,12 +1,11 @@
 "use client";
 
-import * as React from "react";
-import { Check } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { CenterOverlay, Typo } from "@repo/ui/components";
+import { motion } from "framer-motion";
+import { Check, type LucideIcon } from "lucide-react";
 import Image from "next/image";
+import * as React from "react";
 
 interface PollOptionProgressiveProps {
   icon?: LucideIcon;
@@ -46,7 +45,7 @@ export function PollOptionProgressive({
         "flex justify-between",
         "gap-2",
         "min-w-78",
-        className
+        className,
       )}
       role="progressbar"
       aria-valuenow={percentage}
@@ -55,8 +54,8 @@ export function PollOptionProgressive({
     >
       <div
         className={cn(
-          "absolute left-0 top-0 h-full transition-all duration-300 ease-out",
-          progressColor
+          "absolute top-0 left-0 h-full transition-all duration-300 ease-out",
+          progressColor,
         )}
         style={{
           width: `${progressWidth}%`,
@@ -66,9 +65,7 @@ export function PollOptionProgressive({
       <div className={cn("relative flex items-center gap-3", "flex-1")}>
         {Icon && (
           <CenterOverlay
-            targetElement={
-              <div className="flex size-6 items-center justify-center" />
-            }
+            targetElement={<div className="flex size-6 items-center justify-center" />}
           >
             <Icon className={cn("size-6", textColor)} />
           </CenterOverlay>
@@ -80,7 +77,7 @@ export function PollOptionProgressive({
 
         {percentage !== undefined && (
           <motion.div
-            className="absolute right-0 top-1/2 -translate-y-1/2"
+            className="absolute top-1/2 right-0 -translate-y-1/2"
             initial={{ x: 0, opacity: 0 }}
             animate={{
               x: selected ? -32 : 0,
@@ -98,14 +95,14 @@ export function PollOptionProgressive({
           </motion.div>
         )}
 
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 transition-opacity duration-200">
+        <div className="absolute top-1/2 right-0 -translate-y-1/2 transition-opacity duration-200">
           {selected && <AnimatedCheck className={cn("h-6 w-6", textColor)} />}
         </div>
       </div>
 
       {imageUrl && (
-        <div className="relative w-8 h-6">
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 size-10 rounded-xs overflow-hidden">
+        <div className="relative h-6 w-8">
+          <div className="absolute top-1/2 left-0 size-10 -translate-y-1/2 overflow-hidden rounded-xs">
             <Image src={imageUrl} alt="image" fill className="object-cover" />
           </div>
         </div>

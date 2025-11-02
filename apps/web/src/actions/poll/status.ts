@@ -4,9 +4,7 @@ import { requireAuth } from "@/actions/common/auth";
 import prisma from "@/database/utils/prisma/client";
 import type { GetPollUserStatusResponse } from "@/types/dto";
 
-export async function getPollUserStatus(
-  pollId: string
-): Promise<GetPollUserStatusResponse> {
+export async function getPollUserStatus(pollId: string): Promise<GetPollUserStatusResponse> {
   const user = await requireAuth();
 
   const poll = await prisma.poll.findUnique({

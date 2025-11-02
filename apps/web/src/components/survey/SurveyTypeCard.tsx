@@ -1,7 +1,7 @@
-import { cn } from "@/lib/utils";
-import { Typo } from "@repo/ui/components";
 import { TYPE_LABELS } from "@/constants/survey";
+import { cn } from "@/lib/utils";
 import { SurveyType } from "@/types/domain/survey";
+import { Typo } from "@repo/ui/components";
 
 interface SurveyTypeCardProps extends React.HTMLAttributes<HTMLDivElement> {
   type: SurveyType;
@@ -17,9 +17,9 @@ export function SurveyTypeCard({
   return (
     <div
       className={cn(
-        "flex justify-between items-center gap-6 p-4 ring-1 ring-zinc-200 rounded-[var(--radius-sm)]",
-        selected && "bg-violet-50 ring-primary",
-        className
+        "flex items-center justify-between gap-6 rounded-[var(--radius-sm)] p-4 ring-1 ring-zinc-200",
+        selected && "ring-primary bg-violet-50",
+        className,
       )}
       {...props}
     >
@@ -51,15 +51,9 @@ export function SurveyTypeCard({
   );
 }
 
-function CardContent({
-  label,
-  description,
-}: {
-  label: string;
-  description: string;
-}) {
+function CardContent({ label, description }: { label: string; description: string }) {
   return (
-    <div className="flex flex-col gap-1 items-start">
+    <div className="flex flex-col items-start gap-1">
       <Typo.SubTitle size="large" className="text-zinc-950">
         {label}
       </Typo.SubTitle>

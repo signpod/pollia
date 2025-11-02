@@ -1,17 +1,13 @@
-import React, { useCallback, useMemo } from "react";
-import { ThumbsUp, ThumbsDown } from "lucide-react";
 import { PollOptionProgressive } from "@/components/poll/PollOptionProgressive";
-import { usePollResults, useUserVoteStatus } from "@/hooks/poll/usePoll";
-import {
-  BINARY_OPTION_ORDER,
-  BINARY_POLL_OPTIONS,
-  isBinaryPollType,
-} from "@/constants/poll";
-import { PollType } from "@prisma/client";
-import { isPollActive } from "@/lib/utils";
+import { BINARY_OPTION_ORDER, BINARY_POLL_OPTIONS, isBinaryPollType } from "@/constants/poll";
 import { useIndividualVoting } from "@/hooks/poll/useIndividualVoting";
-import { BasePollComponent } from "./BasePollComponent";
+import { usePollResults, useUserVoteStatus } from "@/hooks/poll/usePoll";
 import { useAuth } from "@/hooks/user";
+import { isPollActive } from "@/lib/utils";
+import { PollType } from "@prisma/client";
+import { ThumbsDown, ThumbsUp } from "lucide-react";
+import { useCallback, useMemo } from "react";
+import { BasePollComponent } from "./BasePollComponent";
 
 interface BinaryPollProps {
   pollId: string;
@@ -30,7 +26,7 @@ export function BinaryPoll({ pollId }: BinaryPollProps) {
     ? isPollActive(
         pollResults.startDate ? new Date(pollResults.startDate) : null,
         pollResults.endDate ? new Date(pollResults.endDate) : null,
-        pollResults.isIndefinite
+        pollResults.isIndefinite,
       )
     : false;
 
@@ -39,17 +35,14 @@ export function BinaryPoll({ pollId }: BinaryPollProps) {
       return false;
     }
 
-    const expectedOptions =
-      BINARY_POLL_OPTIONS[pollType as keyof typeof BINARY_POLL_OPTIONS];
+    const expectedOptions = BINARY_POLL_OPTIONS[pollType as keyof typeof BINARY_POLL_OPTIONS];
 
     if (pollResults.options.length !== expectedOptions.length) {
       return false;
     }
 
-    return expectedOptions.every((expectedOption) => {
-      const actualOption = pollResults.options.find(
-        (opt) => opt.order === expectedOption.order
-      );
+    return expectedOptions.every(expectedOption => {
+      const actualOption = pollResults.options.find(opt => opt.order === expectedOption.order);
       return actualOption?.description === expectedOption.description;
     });
   }, [pollResults, pollType]);
@@ -83,9 +76,7 @@ export function BinaryPoll({ pollId }: BinaryPollProps) {
         return undefined;
       }
 
-      const targetOption = pollResults.options.find(
-        (option) => option.order === order
-      );
+      const targetOption = pollResults.options.find(option => option.order === order);
 
       if (!targetOption) {
         return undefined;
@@ -98,7 +89,7 @@ export function BinaryPoll({ pollId }: BinaryPollProps) {
 
       return Math.round((targetOption._count.votes / totalVotes) * 100);
     },
-    [hasVoted, getUserVotedOption, pollResults]
+    [hasVoted, getUserVotedOption, pollResults],
   );
 
   const isSelected = useCallback(
@@ -110,7 +101,7 @@ export function BinaryPoll({ pollId }: BinaryPollProps) {
       const votedOptionOrder = getUserVotedOption();
       return votedOptionOrder === order;
     },
-    [hasVoted, getUserVotedOption]
+    [hasVoted, getUserVotedOption],
   );
 
   const getOptionIdByOrder = useCallback(
@@ -119,13 +110,11 @@ export function BinaryPoll({ pollId }: BinaryPollProps) {
         return null;
       }
 
-      const targetOption = pollResults.options.find(
-        (option) => option.order === order
-      );
+      const targetOption = pollResults.options.find(option => option.order === order);
 
       return targetOption?.id || null;
     },
-    [pollResults]
+    [pollResults],
   );
 
   const handleVoteAction = useCallback(
@@ -141,7 +130,7 @@ export function BinaryPoll({ pollId }: BinaryPollProps) {
         await handleVote(optionId);
       })();
     },
-    [pollActive, isVoting, getOptionIdByOrder, handleVote, withAuth]
+    [pollActive, isVoting, getOptionIdByOrder, handleVote, withAuth],
   );
 
   const getOptionLabel = useCallback(
@@ -150,13 +139,11 @@ export function BinaryPoll({ pollId }: BinaryPollProps) {
         return "";
       }
 
-      const targetOption = pollResults.options.find(
-        (option) => option.order === order
-      );
+      const targetOption = pollResults.options.find(option => option.order === order);
 
       return targetOption?.description || "";
     },
-    [pollResults]
+    [pollResults],
   );
 
   const isVotingAllowed = pollActive && !isVoting;
@@ -168,10 +155,11 @@ export function BinaryPoll({ pollId }: BinaryPollProps) {
 
   return (
     <BasePollComponent pollId={pollId}>
-      <div className="flex flex-col gap-2 w-full">
+      <div className="flex w-full flex-col gap-2">
         <button
+          type="button"
           onClick={() => handleVoteAction(BINARY_OPTION_ORDER.POSITIVE)}
-          className={`w-full text-left ${!isVotingAllowed ? "opacity-50 cursor-not-allowed" : ""}`}
+          className={`w-full text-left ${!isVotingAllowed ? "cursor-not-allowed opacity-50" : ""}`}
           disabled={!isVotingAllowed}
         >
           <PollOptionProgressive
@@ -183,8 +171,9 @@ export function BinaryPoll({ pollId }: BinaryPollProps) {
         </button>
 
         <button
+          type="button"
           onClick={() => handleVoteAction(BINARY_OPTION_ORDER.NEGATIVE)}
-          className={`w-full text-left ${!isVotingAllowed ? "opacity-50 cursor-not-allowed" : ""}`}
+          className={`w-full text-left ${!isVotingAllowed ? "cursor-not-allowed opacity-50" : ""}`}
           disabled={!isVotingAllowed}
         >
           <PollOptionProgressive

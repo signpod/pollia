@@ -1,11 +1,8 @@
-import { QuestionList, QuestionListProps } from './QuestionList';
+import { QuestionList, QuestionListProps } from "./QuestionList";
 
-type SurveyQuestionListProps = Omit<QuestionListProps, 'title'>;
+type SurveyQuestionListProps = Omit<QuestionListProps, "title">;
 
-export function SurveyQuestionList({
-  questions,
-  isLoading,
-}: SurveyQuestionListProps) {
+export function SurveyQuestionList({ questions, isLoading }: SurveyQuestionListProps) {
   return (
     <QuestionList
       title={LIST_TITLE}
@@ -19,4 +16,4 @@ export function SurveyQuestionList({
   );
 }
 
-const LIST_TITLE = '설문 질문 목록';
+const LIST_TITLE = "설문 질문 목록";

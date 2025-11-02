@@ -2,10 +2,7 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import prisma from "@/database/utils/prisma/client";
-import type {
-  GetCurrentUserResponse,
-  GetUserStatsResponse,
-} from "@/types/dto/user";
+import type { GetCurrentUserResponse, GetUserStatsResponse } from "@/types/dto/user";
 
 export async function getCurrentUser(): Promise<GetCurrentUserResponse> {
   try {
@@ -51,21 +48,20 @@ export async function getUserStats(): Promise<GetUserStatsResponse> {
   try {
     const user = await requireAuth();
 
-    const [pollsCreated, votesCount, likesCount, bookmarksCount] =
-      await Promise.all([
-        prisma.poll.count({
-          where: { creatorId: user.id },
-        }),
-        prisma.vote.count({
-          where: { userId: user.id },
-        }),
-        prisma.pollLike.count({
-          where: { userId: user.id },
-        }),
-        prisma.pollBookmark.count({
-          where: { userId: user.id },
-        }),
-      ]);
+    const [pollsCreated, votesCount, likesCount, bookmarksCount] = await Promise.all([
+      prisma.poll.count({
+        where: { creatorId: user.id },
+      }),
+      prisma.vote.count({
+        where: { userId: user.id },
+      }),
+      prisma.pollLike.count({
+        where: { userId: user.id },
+      }),
+      prisma.pollBookmark.count({
+        where: { userId: user.id },
+      }),
+    ]);
 
     return {
       data: {

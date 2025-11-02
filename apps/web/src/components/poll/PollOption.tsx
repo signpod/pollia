@@ -1,31 +1,25 @@
 "use client";
 
+import { useImageUpload } from "@/hooks/common/useImageUpload";
+import { cn } from "@/lib/utils";
 import {
   Button,
-  ImageSelector,
-  Input,
-  Typo,
   DrawerContent,
   DrawerHeader,
   DrawerProvider,
-  useDrawer,
   IconButton,
+  ImageSelector,
+  Input,
+  Typo,
+  useDrawer,
 } from "@repo/ui/components";
 import { EllipsisVertical } from "lucide-react";
-import { useImageUpload } from "@/hooks/common/useImageUpload";
-import { useState, useEffect } from "react";
-import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 function OptionMenuTrigger() {
   const { open } = useDrawer();
 
-  return (
-    <IconButton
-      icon={EllipsisVertical}
-      iconClassName="text-zinc-400"
-      onClick={open}
-    />
-  );
+  return <IconButton icon={EllipsisVertical} iconClassName="text-zinc-400" onClick={open} />;
 }
 
 interface OptionMenuContentProps {
@@ -34,11 +28,7 @@ interface OptionMenuContentProps {
   onRemove: () => void;
 }
 
-function OptionMenuContent({
-  link,
-  onLinkChange,
-  onRemove,
-}: OptionMenuContentProps) {
+function OptionMenuContent({ link, onLinkChange, onRemove }: OptionMenuContentProps) {
   const [tempLink, setTempLink] = useState<string>(link);
   const { close } = useDrawer();
 
@@ -56,16 +46,12 @@ function OptionMenuContent({
       <div className={cn("flex-1 px-4", "flex flex-col gap-2")}>
         <Input
           value={tempLink}
-          onChange={(e) => setTempLink(e.target.value)}
+          onChange={e => setTempLink(e.target.value)}
           placeholder={"https://www.pollia.me"}
           containerClassName="flex-1"
           maxLength={50}
         />
-        <Button
-          variant="primary"
-          onClick={handleLinkSubmit}
-          disabled={isDisabled}
-        >
+        <Button variant="primary" onClick={handleLinkSubmit} disabled={isDisabled}>
           항목 추가하기
         </Button>
 
@@ -108,34 +94,33 @@ export default function PollOption({
     fileUploadId: string;
   } | null>(null);
 
-  const { upload, isUploading, uploadError, deleteImage, isDeleting } =
-    useImageUpload({
-      bucket: "poll-images",
-      onSuccess: (result) => {
-        onImageUrlChange?.(result.publicUrl);
-        onFileUploadIdChange?.(result.fileUploadId);
+  const { upload, isUploading, uploadError, deleteImage, isDeleting } = useImageUpload({
+    bucket: "poll-images",
+    onSuccess: result => {
+      onImageUrlChange?.(result.publicUrl);
+      onFileUploadIdChange?.(result.fileUploadId);
 
-        setUploadedFile({
-          path: result.path,
-          fileUploadId: result.fileUploadId,
-        });
+      setUploadedFile({
+        path: result.path,
+        fileUploadId: result.fileUploadId,
+      });
 
-        if (previewUrl) {
-          URL.revokeObjectURL(previewUrl);
-          setPreviewUrl("");
-        }
-      },
-      onError: (error) => {
-        console.error("❌ 옵션 이미지 업로드 실패:", error);
-        if (previewUrl) {
-          URL.revokeObjectURL(previewUrl);
-          setPreviewUrl("");
-        }
-      },
-      onProgress: (progress) => {
-        console.log(`옵션 이미지 업로드 진행률: ${progress.percentage}%`);
-      },
-    });
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        setPreviewUrl("");
+      }
+    },
+    onError: error => {
+      console.error("❌ 옵션 이미지 업로드 실패:", error);
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        setPreviewUrl("");
+      }
+    },
+    onProgress: progress => {
+      console.log(`옵션 이미지 업로드 진행률: ${progress.percentage}%`);
+    },
+  });
 
   useEffect(() => {
     return () => {
@@ -199,16 +184,12 @@ export default function PollOption({
 
         <DrawerProvider>
           <OptionMenuTrigger />
-          <OptionMenuContent
-            link={link}
-            onLinkChange={onLinkChange}
-            onRemove={onRemove}
-          />
+          <OptionMenuContent link={link} onLinkChange={onLinkChange} onRemove={onRemove} />
         </DrawerProvider>
       </div>
 
       {link !== undefined && link && (
-        <div className="px-4 py-2 bg-zinc-50 rounded-sm">
+        <div className="rounded-sm bg-zinc-50 px-4 py-2">
           <Typo.Body size="small">{link}</Typo.Body>
         </div>
       )}
@@ -220,9 +201,7 @@ export default function PollOption({
       )}
 
       {uploadError && (
-        <div className="ml-12 text-sm text-red-500">
-          업로드 실패: {uploadError.message}
-        </div>
+        <div className="ml-12 text-sm text-red-500">업로드 실패: {uploadError.message}</div>
       )}
     </div>
   );

@@ -1,5 +1,5 @@
 import { Input } from "@repo/ui/components";
-import { useAtom, PrimitiveAtom } from "jotai";
+import { PrimitiveAtom, useAtom } from "jotai";
 import { useCallback, useState } from "react";
 import { z } from "zod";
 
@@ -8,10 +8,7 @@ interface SubjectInputSectionProps {
   schema: z.ZodObject<z.ZodRawShape>;
 }
 
-export function SubjectInputSection({
-  titleAtom,
-  schema,
-}: SubjectInputSectionProps) {
+export function SubjectInputSection({ titleAtom, schema }: SubjectInputSectionProps) {
   const [title, setTitle] = useAtom(titleAtom);
   const [touched, setTouched] = useState(false);
   const [error, setError] = useState<string | undefined>();
@@ -25,9 +22,7 @@ export function SubjectInputSection({
       const result = schema.safeParse({ title: trimmed });
 
       if (!result.success) {
-        const titleError = result.error.issues.find(
-          (issue) => issue.path[0] === "title"
-        );
+        const titleError = result.error.issues.find(issue => issue.path[0] === "title");
         setError(titleError?.message);
       } else {
         setError(undefined);
@@ -42,7 +37,7 @@ export function SubjectInputSection({
       label="주제"
       required
       value={title}
-      onChange={(e) => setTitle(e.target.value)}
+      onChange={e => setTitle(e.target.value)}
       onFocus={() => setTouched(false)}
       onBlur={handleBlur}
       placeholder="주제를 작성해주세요"

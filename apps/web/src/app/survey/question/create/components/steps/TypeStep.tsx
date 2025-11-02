@@ -1,11 +1,11 @@
 "use client";
 
-import { useAtom } from "jotai";
 import { surveyTypeAtom } from "@/atoms/survey/create/surveyTypeAtoms";
-import { FixedBottomLayout, Button, Typo, useStep } from "@repo/ui/components";
+import { SurveyTypeSelect } from "@/components/survey/SurveyTypeSelect";
 import { cn } from "@/lib/utils";
 import { SurveyType } from "@/types/domain/survey";
-import { SurveyTypeSelect } from "@/components/survey/SurveyTypeSelect";
+import { Button, FixedBottomLayout, Typo, useStep } from "@repo/ui/components";
+import { useAtom } from "jotai";
 
 interface SurveyTypeStepProps {
   selectedType?: SurveyType;
@@ -23,18 +23,10 @@ export function TypeStep() {
 
   return (
     <>
-      <SurveyTypeStep
-        selectedType={selectedType}
-        onTypeChange={handleTypeChange}
-      />
+      <SurveyTypeStep selectedType={selectedType} onTypeChange={handleTypeChange} />
       <FixedBottomLayout.Content>
         <div className="p-5">
-          <Button
-            onClick={goNext}
-            disabled={!selectedType}
-            variant="primary"
-            fullWidth={true}
-          >
+          <Button onClick={goNext} disabled={!selectedType} variant="primary" fullWidth={true}>
             <Typo.ButtonText>다음</Typo.ButtonText>
           </Button>
         </div>
@@ -43,17 +35,10 @@ export function TypeStep() {
   );
 }
 
-function SurveyTypeStep({
-  selectedType,
-  onTypeChange,
-  className,
-}: SurveyTypeStepProps) {
+function SurveyTypeStep({ selectedType, onTypeChange, className }: SurveyTypeStepProps) {
   return (
     <div className={cn("px-5", className)}>
-      <SurveyTypeSelect
-        selectedType={selectedType}
-        onTypeChange={onTypeChange}
-      />
+      <SurveyTypeSelect selectedType={selectedType} onTypeChange={onTypeChange} />
     </div>
   );
 }

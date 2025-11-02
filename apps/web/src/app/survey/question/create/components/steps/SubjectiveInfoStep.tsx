@@ -1,6 +1,3 @@
-import { ImageSelectorSection } from "../inputs/ImageSelectorSection";
-import { SubjectInputSection } from "../inputs/SubjectInputSection";
-import { DescriptionInputSection } from "../inputs/DescriptionInputSection";
 import {
   subjectiveDescriptionAtom,
   subjectiveImageFileUploadIdAtom,
@@ -8,6 +5,9 @@ import {
   subjectiveTitleAtom,
 } from "@/atoms/survey/create/subjectiveInfoAtoms";
 import { subjectiveInfoSchema } from "@/schemas/survey/subjectiveInfoSchema";
+import { DescriptionInputSection } from "../inputs/DescriptionInputSection";
+import { ImageSelectorSection } from "../inputs/ImageSelectorSection";
+import { SubjectInputSection } from "../inputs/SubjectInputSection";
 import { SubjectiveSubmitButton } from "./SubmitButtons";
 
 export function SubjectiveInfoStep() {
@@ -18,10 +18,7 @@ export function SubjectiveInfoStep() {
           imageUrlAtom={subjectiveImageUrlAtom}
           imageFileUploadIdAtom={subjectiveImageFileUploadIdAtom}
         />
-        <SubjectInputSection
-          titleAtom={subjectiveTitleAtom}
-          schema={subjectiveInfoSchema}
-        />
+        <SubjectInputSection titleAtom={subjectiveTitleAtom} schema={subjectiveInfoSchema} />
         <DescriptionInputSection descriptionAtom={subjectiveDescriptionAtom} />
       </div>
 

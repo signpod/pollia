@@ -2,18 +2,16 @@ import {
   deselectAllQuestionsAtom,
   selectAllQuestionsAtom,
   selectedQuestionAtom,
-} from '@/atoms/create';
-import { Button, Typo } from '@repo/ui/components';
-import { useAtomValue, useSetAtom } from 'jotai';
-import { SurveyQuestionSummary } from '@/types/domain/survey';
+} from "@/atoms/create";
+import { SurveyQuestionSummary } from "@/types/domain/survey";
+import { Button, Typo } from "@repo/ui/components";
+import { useAtomValue, useSetAtom } from "jotai";
 
 interface ToggleAllCheckButtonsProps {
   questions: SurveyQuestionSummary[];
 }
 
-export function ToggleAllCheckButtons({
-  questions,
-}: ToggleAllCheckButtonsProps) {
+export function ToggleAllCheckButtons({ questions }: ToggleAllCheckButtonsProps) {
   const { handleSelectAll, handleDeselectAll, isAllSelected, isAllDeselected } =
     useToggleAllCheckButtons({ questions });
 
@@ -22,7 +20,7 @@ export function ToggleAllCheckButtons({
       <Button
         variant="ghost"
         onClick={handleDeselectAll}
-        className="p-2 h-auto"
+        className="h-auto p-2"
         disabled={isAllDeselected}
       >
         <Typo.Body size="small">전체 해제</Typo.Body>
@@ -31,7 +29,7 @@ export function ToggleAllCheckButtons({
       <Button
         variant="ghost"
         onClick={handleSelectAll}
-        className="p-2 h-auto"
+        className="h-auto p-2"
         disabled={isAllSelected}
       >
         <Typo.Body size="small">전체 선택</Typo.Body>
@@ -53,12 +51,8 @@ function useToggleAllCheckButtons({ questions }: ToggleAllCheckButtonsProps) {
     deselectAllQuestions();
   };
 
-  const isAllSelected = questions.every((question) =>
-    selectedQuestions.has(question)
-  );
-  const isAllDeselected = questions.every(
-    (question) => !selectedQuestions.has(question)
-  );
+  const isAllSelected = questions.every(question => selectedQuestions.has(question));
+  const isAllDeselected = questions.every(question => !selectedQuestions.has(question));
 
   return {
     handleSelectAll,

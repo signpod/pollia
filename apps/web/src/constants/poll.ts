@@ -1,16 +1,16 @@
-import { PollType, PollCategory } from "@prisma/client";
+import { PollCategory, PollType } from "@prisma/client";
 import {
-  MapPin,
-  Music4,
-  Sofa,
-  BookOpen,
   Baby,
-  MonitorSmartphone,
+  BookOpen,
+  Coffee,
   Dog,
   Dribbble,
-  Star,
+  MapPin,
+  MonitorSmartphone,
+  Music4,
   Shirt,
-  Coffee,
+  Sofa,
+  Star,
 } from "lucide-react";
 
 const POLL_CATEGORIES: PollCategory[] = [

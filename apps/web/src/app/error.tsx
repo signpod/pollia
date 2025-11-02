@@ -1,11 +1,11 @@
 "use client";
 
+import { ResetPage } from "@/components/common/ResetPage";
+import { clientConfig } from "@/rollbar";
 import { useEffect } from "react";
 import Rollbar from "rollbar";
-import { clientConfig } from "@/rollbar";
-import { ResetPage } from "@/components/common/ResetPage";
 
-export default function Error({
+export default function ErrorPage({
   error,
   reset,
 }: {

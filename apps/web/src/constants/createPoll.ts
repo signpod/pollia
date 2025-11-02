@@ -1,6 +1,6 @@
-import React from "react";
 import { StepConfig } from "@repo/ui/components";
 import { ChevronLeft, LucideIcon, X } from "lucide-react";
+import React from "react";
 
 export interface ExtendedStepConfig extends StepConfig {
   description?: string;
@@ -72,7 +72,8 @@ export const createStepConfigs = ({
     content: () => {
       if (isBinaryPollType) {
         return React.createElement(BinaryInfoStep);
-      } else if (isMultiplePollType) {
+      }
+      if (isMultiplePollType) {
         return React.createElement(MultipleInfoStep);
       }
     },

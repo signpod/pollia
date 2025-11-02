@@ -20,7 +20,7 @@ const DEFAULT_OPTIONS: Required<ImageProcessingOptions> = {
  */
 export async function preprocessImage(
   file: File,
-  options: ImageProcessingOptions = {}
+  options: ImageProcessingOptions = {},
 ): Promise<File> {
   const config = { ...DEFAULT_OPTIONS, ...options };
 
@@ -43,10 +43,7 @@ export async function preprocessImage(
         let { width, height } = img;
 
         if (width > config.maxWidth || height > config.maxHeight) {
-          const ratio = Math.min(
-            config.maxWidth / width,
-            config.maxHeight / height
-          );
+          const ratio = Math.min(config.maxWidth / width, config.maxHeight / height);
           width = Math.round(width * ratio);
           height = Math.round(height * ratio);
         }
@@ -57,7 +54,7 @@ export async function preprocessImage(
         ctx.drawImage(img, 0, 0, width, height);
 
         canvas.toBlob(
-          (blob) => {
+          blob => {
             if (blob) {
               const originalName = file.name;
               const nameWithoutExt = originalName.replace(/\.[^/.]+$/, "");
@@ -75,12 +72,10 @@ export async function preprocessImage(
             }
           },
           `image/${config.format}`,
-          config.quality
+          config.quality,
         );
       } catch (error) {
-        reject(
-          error instanceof Error ? error : new Error("이미지 처리 중 오류 발생")
-        );
+        reject(error instanceof Error ? error : new Error("이미지 처리 중 오류 발생"));
       }
     };
 

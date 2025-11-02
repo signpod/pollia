@@ -1,11 +1,6 @@
+import { Button, ModalProvider, useModal } from "@repo/ui/components";
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import React from "react";
-import {
-  ModalProvider,
-  useModal,
-  Button,
-  type ModalConfig,
-} from "@repo/ui/components";
 
 const meta: Meta<typeof ModalProvider> = {
   title: "Common/ModalProvider",
@@ -148,7 +143,7 @@ function VariousModalsDemo() {
 
   return (
     <div className="flex flex-col gap-4 p-6">
-      <h3 className="text-lg font-semibold mb-2">다양한 시나리오</h3>
+      <h3 className="mb-2 text-lg font-semibold">다양한 시나리오</h3>
 
       <Button
         variant="primary"
@@ -220,8 +215,8 @@ function CallbackDemo() {
   return (
     <div className="flex flex-col gap-4 p-6">
       <h3 className="text-lg font-semibold">콜백 함수 테스트</h3>
-      <div className="text-center p-4 bg-gray-100 rounded-lg">
-        <p className="text-sm text-gray-600 mb-2">카운터</p>
+      <div className="rounded-lg bg-gray-100 p-4 text-center">
+        <p className="mb-2 text-sm text-gray-600">카운터</p>
         <p className="text-3xl font-bold">{count}</p>
       </div>
       <Button
@@ -270,8 +265,7 @@ function LongTextDemo() {
         variant="secondary"
         onClick={() =>
           showModal({
-            title:
-              "이것은 아주 긴 제목입니다. 제목이 얼마나 잘 표시되는지 확인해봅시다.",
+            title: "이것은 아주 긴 제목입니다. 제목이 얼마나 잘 표시되는지 확인해봅시다.",
             description: "짧은 설명",
             confirmText: "확인",
           })
@@ -356,8 +350,7 @@ export const LongText: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          "긴 제목이나 긴 설명 텍스트가 어떻게 표시되는지 확인할 수 있습니다.",
+        story: "긴 제목이나 긴 설명 텍스트가 어떻게 표시되는지 확인할 수 있습니다.",
       },
     },
   },
@@ -368,8 +361,8 @@ export const Playground: Story = {
   render: () => (
     <ModalProvider>
       <div className="p-6">
-        <h3 className="text-lg font-semibold mb-4">모달 플레이그라운드</h3>
-        <p className="text-sm text-gray-600 mb-6">
+        <h3 className="mb-4 text-lg font-semibold">모달 플레이그라운드</h3>
+        <p className="mb-6 text-sm text-gray-600">
           아래 버튼들을 클릭하여 다양한 모달을 테스트해보세요.
         </p>
         <div className="grid grid-cols-2 gap-4">

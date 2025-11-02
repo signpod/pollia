@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useCallback } from 'react';
-import { useRouter } from 'next/navigation';
-import { useSetAtom } from 'jotai';
-import { setAfterTransitionAtom } from '@/atoms/routeTransitionAtoms';
+import { setAfterTransitionAtom } from "@/atoms/routeTransitionAtoms";
+import { useSetAtom } from "jotai";
+import { useRouter } from "next/navigation";
+import { useCallback } from "react";
 
 export function usePushAfter() {
   const router = useRouter();
@@ -14,6 +14,6 @@ export function usePushAfter() {
       setAfter(onAfter);
       router.push(href);
     },
-    [router, setAfter]
+    [router, setAfter],
   );
 }
