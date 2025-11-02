@@ -24,5 +24,4 @@ enum SurveyQuestionType {
     MULTIPLE_CHOICE
     SCALE
     SUBJECTIVE
-    EITHER_OR
 }
