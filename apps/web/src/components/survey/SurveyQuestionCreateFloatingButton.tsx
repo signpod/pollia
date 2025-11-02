@@ -3,22 +3,22 @@
 import Link from "next/link";
 import FloatingButton from "../common/FloatingButton";
 
-interface SurveyCreateFloatingButtonProps
+interface SurveyQuestionCreateFloatingButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "icon-only" | "with-text";
 }
 
-export function SurveyCreateFloatingButton({
+export function SurveyQuestionCreateFloatingButton({
   variant = "icon-only",
   className,
   ...props
-}: SurveyCreateFloatingButtonProps) {
+}: SurveyQuestionCreateFloatingButtonProps) {
   return (
-    <Link href="/survey/create">
+    <Link href="/survey/question/create">
       <FloatingButton
         variant={variant}
         className={className}
-        title="설문 만들기"
+        title="질문 만들기"
         {...props}
       />
     </Link>

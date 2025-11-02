@@ -1,38 +1,43 @@
 import { cn } from "@/lib/utils";
-import { SurveyType } from "@/types/domain/survey";
+import { SurveyQuestionType } from "@/types/domain/survey";
 import { SurveyTypeCard } from "./SurveyTypeCard";
 
 interface SurveyTypeSelectProps {
-  selectedType?: SurveyType;
-  onTypeChange?: (type: SurveyType) => void;
+  selectedType?: SurveyQuestionType;
+  onTypeChange?: (type: SurveyQuestionType) => void;
   className?: string;
 }
 
-const surveyTypes: { type: SurveyType; description: string }[] = [
+const surveyTypes: { type: SurveyQuestionType; description: string }[] = [
   {
-    type: SurveyType.EITHER_OR,
-    description: "예/아니오 선택",
-  },
-  {
-    type: SurveyType.MULTIPLE_CHOICE,
+    type: SurveyQuestionType.MULTIPLE_CHOICE,
     description: "여러 선택지",
   },
   {
-    type: SurveyType.SCALE,
+    type: SurveyQuestionType.SCALE,
     description: "스케일",
   },
   {
-    type: SurveyType.SUBJECTIVE,
+    type: SurveyQuestionType.SUBJECTIVE,
     description: "주관식",
   },
 ];
 
-export function SurveyTypeSelect({ selectedType, onTypeChange, className }: SurveyTypeSelectProps) {
+export function SurveyTypeSelect({
+  selectedType,
+  onTypeChange,
+  className,
+}: SurveyTypeSelectProps) {
   return (
     <div className={cn("space-y-3", className)}>
       <div className="grid gap-3">
         {surveyTypes.map(({ type }) => (
-          <button key={type} onClick={() => onTypeChange?.(type)} className="text-left">
+          <button
+            key={type}
+            type="button"
+            onClick={() => onTypeChange?.(type)}
+            className="text-left"
+          >
             <SurveyTypeCard
               type={type}
               selected={selectedType === type}

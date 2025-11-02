@@ -1,15 +1,13 @@
-import { SurveyType } from "@/types/domain/survey";
+import { SurveyQuestionType } from "@/types/domain/survey";
 
-export const SURVEY_TYPES: SurveyType[] = [
-  SurveyType.EITHER_OR,
-  SurveyType.MULTIPLE_CHOICE,
-  SurveyType.SCALE,
-  SurveyType.SUBJECTIVE,
+export const SURVEY_QUESTION_TYPES: SurveyQuestionType[] = [
+  SurveyQuestionType.MULTIPLE_CHOICE,
+  SurveyQuestionType.SCALE,
+  SurveyQuestionType.SUBJECTIVE,
 ];
 
-export const TYPE_LABELS = {
-  [SurveyType.EITHER_OR]: "O, X",
-  [SurveyType.MULTIPLE_CHOICE]: "여러 선택지",
-  [SurveyType.SCALE]: "척도형",
-  [SurveyType.SUBJECTIVE]: "주관식",
+export const SURVEY_QUESTION_TYPE_LABELS = {
+  [SurveyQuestionType.MULTIPLE_CHOICE]: "여러 선택지",
+  [SurveyQuestionType.SCALE]: "척도형",
+  [SurveyQuestionType.SUBJECTIVE]: "주관식",
 };

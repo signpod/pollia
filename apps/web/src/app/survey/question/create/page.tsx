@@ -1,7 +1,10 @@
 "use client";
 
-import { surveyTypeAtom } from "@/atoms/survey/create/surveyTypeAtoms";
-import { CREATE_SURVEY_STEPS, createStepConfigs } from "@/constants/createSurvey";
+import { surveyQuestionTypeAtom } from "@/atoms/survey/create/surveyTypeAtoms";
+import {
+  CREATE_SURVEY_STEPS,
+  createStepConfigs,
+} from "@/constants/createSurvey";
 import {
   FixedBottomLayout,
   FixedTopLayout,
@@ -12,7 +15,6 @@ import {
 } from "@repo/ui/components";
 import { useAtomValue } from "jotai";
 import { useRouter } from "next/navigation";
-import { EitherOrInfoStep } from "./components/steps/EitherOrInfoStep";
 import { MultipleChoiceInfoStep } from "./components/steps/MultipleChoiceInfoStep";
 import { ScaleInfoStep } from "./components/steps/ScaleInfoStep";
 import { SubjectiveInfoStep } from "./components/steps/SubjectiveInfoStep";
@@ -30,16 +32,15 @@ export default function CreateSurveyQuestionPage() {
 
 function CreateSurveyQuestionPageContent() {
   const router = useRouter();
-  const surveyType = useAtomValue(surveyTypeAtom);
+  const surveyQuestionType = useAtomValue(surveyQuestionTypeAtom);
   const { currentStep, goBack } = useStep();
 
   const currentStepConfig = createStepConfigs({
     router,
     goBack,
-    stepType: surveyType ?? "ChoiceType",
+    stepType: surveyQuestionType ?? "ChoiceType",
     stepComponents: {
       TypeStep,
-      EitherOrInfoStep,
       MultipleChoiceInfoStep,
       ScaleInfoStep,
       SubjectiveInfoStep,
@@ -63,7 +64,9 @@ function CreateSurveyQuestionPageContent() {
       </FixedTopLayout.Content>
 
       <div className="space-y-1 px-5">
-        <Typo.MainTitle size="medium">{currentStepConfig?.title}</Typo.MainTitle>
+        <Typo.MainTitle size="medium">
+          {currentStepConfig?.title}
+        </Typo.MainTitle>
         {currentStepConfig?.description && (
           <Typo.Body size="large" className="text-zinc-600">
             {currentStepConfig.description}

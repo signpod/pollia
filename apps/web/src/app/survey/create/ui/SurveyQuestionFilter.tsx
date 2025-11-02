@@ -1,18 +1,15 @@
 "use client";
 
-import { selectedQuestionTypesAtom, toggleQuestionTypeAtom } from "@/atoms/create";
+import {
+  selectedQuestionTypesAtom,
+  toggleQuestionTypeAtom,
+} from "@/atoms/create";
 import { SurveyQuestionType } from "@prisma/client";
 import { Typo } from "@repo/ui/components";
 import { useAtomValue, useSetAtom } from "jotai";
 import { FilterIcon } from "lucide-react";
 import { TypeTag } from "./TypeTag";
-
-const questionTypes: SurveyQuestionType[] = [
-  SurveyQuestionType.EITHER_OR,
-  SurveyQuestionType.MULTIPLE_CHOICE,
-  SurveyQuestionType.SCALE,
-  SurveyQuestionType.SUBJECTIVE,
-];
+import { SURVEY_QUESTION_TYPES } from "@/constants/survey";
 
 export function SurveyQuestionFilter() {
   const selectedQuestionTypes = useAtomValue(selectedQuestionTypesAtom);
@@ -29,7 +26,7 @@ export function SurveyQuestionFilter() {
         <Typo.Body size="medium">질문 유형 필터 옵션</Typo.Body>
       </div>
       <ul className="flex items-center gap-4">
-        {questionTypes.map(questionType => (
+        {SURVEY_QUESTION_TYPES.map((questionType) => (
           <li key={questionType}>
             <TypeTag
               type={questionType}

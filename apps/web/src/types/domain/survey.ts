@@ -1,10 +1,8 @@
-import { SurveyQuestion } from "@prisma/client";
+import { SurveyQuestion, SurveyQuestionType } from "@prisma/client";
 
-export enum SurveyType {
-  EITHER_OR = "EITHER_OR",
-  MULTIPLE_CHOICE = "MULTIPLE_CHOICE",
-  SCALE = "SCALE",
-  SUBJECTIVE = "SUBJECTIVE",
-}
+export { SurveyQuestionType };
 
-export type SurveyQuestionSummary = Pick<SurveyQuestion, "id" | "title" | "type" | "createdAt">;
+export type SurveyQuestionSummary = Pick<
+  SurveyQuestion,
+  "id" | "title" | "type" | "createdAt"
+>;
