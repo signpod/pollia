@@ -1,7 +1,6 @@
 import { SurveyQuestionType } from "@prisma/client";
 
 export const surveyQueryKeys = {
-  survey: (surveyId: string) => ["survey", surveyId] as const,
   surveyQuestions: (params?: {
     surveyId?: string;
     searchQuery?: string;
@@ -11,13 +10,10 @@ export const surveyQueryKeys = {
     const base = params?.surveyId
       ? (["survey-questions", params.surveyId] as const)
       : (["survey-questions"] as const);
-      ? (["survey-questions", params.surveyId] as const)
-      : (["survey-questions"] as const);
 
     const hasFilters =
       params?.searchQuery ||
-      (params?.selectedQuestionTypes &&
-        params.selectedQuestionTypes.length > 0) ||
+      (params?.selectedQuestionTypes && params.selectedQuestionTypes.length > 0) ||
       params?.isDraft !== undefined;
 
     if (!hasFilters) {

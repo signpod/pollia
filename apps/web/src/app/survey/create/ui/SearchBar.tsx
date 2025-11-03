@@ -6,7 +6,6 @@ import { BaseSearchBar } from "@/components/common/BaseSearchBar";
 import { useSearchQuery } from "@/hooks/common/useSearchQuery";
 
 const SEARCH_BAR_PLACEHOLDER = "질문 제목을 검색해주세요";
-const SEARCH_BAR_PLACEHOLDER = "질문 제목을 검색해주세요";
 
 export function SearchBar() {
   const { searchQuery, handleChange } = useSearchQuery(searchQueryAtom);

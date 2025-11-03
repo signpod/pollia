@@ -1,5 +1,5 @@
 "use client";
-"use client";
+
 import {
   EmptyFallback,
   SearchBar,
@@ -15,7 +15,7 @@ import { Reorder } from "framer-motion";
 import { useAtomValue } from "jotai";
 import { useAtom, useSetAtom } from "jotai";
 import { CheckSquare, GripVertical, Loader2Icon, Square } from "lucide-react";
-import { ComponentProps } from "react";
+import { ComponentProps, useMemo } from "react";
 
 export interface QuestionListProps extends ComponentProps<"section"> {
   title: string;
@@ -44,7 +44,6 @@ export function QuestionList({
   const { selectedQuestions, toggleQuestionSelection } = useToggleQuestionSelection();
   const searchQuery = useAtomValue(searchQueryAtom);
 
-  // 검색 필터링 로직
   const filteredQuestions = useMemo(() => {
     if (!hasSearchBar || !searchQuery) return questions;
     return questions.filter(question =>
@@ -312,7 +311,6 @@ function QuestionContent({
   isDraggable,
 }: QuestionContentProps) {
   const CheckboxIcon = isSelected ? CheckSquare : Square;
-  const checkboxColorClass = isSelected ? "text-violet-500" : "text-zinc-300";
   const checkboxColorClass = isSelected ? "text-violet-500" : "text-zinc-300";
 
   return (
