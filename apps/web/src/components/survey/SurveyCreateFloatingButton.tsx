@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import FloatingButton from "../common/FloatingButton";
 
 interface SurveyCreateFloatingButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -12,6 +13,8 @@ export default function PollCreateFloatingButton({
   ...props
 }: SurveyCreateFloatingButtonProps) {
   return (
-    <FloatingButton variant={variant} className={className} title="설문조사 만들기" {...props} />
+    <Link href="/survey/create">
+      <FloatingButton variant={variant} className={className} title="설문 만들기" {...props} />
+    </Link>
   );
 }

@@ -1,11 +1,9 @@
 "use client";
 
-import PollCreateFloatingButton from "@/components/poll/PollCreateFloatingButton";
 import SurveyCreateFloatingButton from "@/components/survey/SurveyCreateFloatingButton";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { FixedBottomLayout, FixedTopLayout } from "@repo/ui/components";
 import { DehydratedState, HydrationBoundary, QueryClientProvider } from "@tanstack/react-query";
-import Link from "next/link";
 import { ProfileContainer } from "./ProfileContainer";
 
 interface MeClientWrapperProps {
@@ -22,14 +20,10 @@ export function MeClientWrapper({ dehydratedState }: MeClientWrapperProps) {
           <FixedTopLayout className="space-y-6 pt-12">
             <ProfileContainer />
           </FixedTopLayout>
-          <FixedBottomLayout.Content className="w-full flex justify-end p-4 bg-transparent">
-            <div className="flex flex-col gap-4 fixed bottom-5 right-5">
-              <Link href="/survey/question/create">
-                <PollCreateFloatingButton variant="with-text" />
-              </Link>
-              <Link href="/survey/create">
-                <SurveyCreateFloatingButton variant="with-text" />
-              </Link>
+          <FixedBottomLayout.Content className="flex w-full justify-end bg-transparent p-4">
+            <div className="fixed right-5 bottom-5 flex flex-col gap-4">
+              <SurveyQuestionCreateFloatingButton variant="with-text" />
+              <SurveyCreateFloatingButton variant="with-text" />
             </div>
           </FixedBottomLayout.Content>
         </FixedBottomLayout>
