@@ -49,6 +49,7 @@ export const resetSurveyAtom = atom(null, (_get, set) => {
   set(surveyTitleAtom, "");
   set(selectedQuestionAtom, new Set<SurveyQuestionSummary>());
   set(searchQueryAtom, "");
+  set(surveyTitleTouchedAtom, false);
 });
 
 export const surveyValidationAtom = atom(get => {

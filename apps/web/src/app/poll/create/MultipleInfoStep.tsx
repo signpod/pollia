@@ -12,6 +12,7 @@ import {
   multiplePollThumbnailFileUploadIdAtom,
   multiplePollThumbnailUrlAtom,
   multiplePollTitleAtom,
+  multiplePollTitleTouchedAtom,
 } from "@/atoms/create/multiplePollAtoms";
 import { useMultiplePollSubmit } from "@/hooks/poll/useMultiplePollSubmit";
 import { multiplePollSchema } from "@/schemas/multiplePollSchema";
@@ -36,7 +37,11 @@ export function MultipleInfoStep() {
           thumbnailUrlAtom={multiplePollThumbnailUrlAtom}
           thumbnailFileUploadIdAtom={multiplePollThumbnailFileUploadIdAtom}
         />
-        <SubjectInput titleAtom={multiplePollTitleAtom} schema={multiplePollSchema} />
+        <SubjectInput
+          titleAtom={multiplePollTitleAtom}
+          touchedAtom={multiplePollTitleTouchedAtom}
+          schema={multiplePollSchema}
+        />
         <DescriptionInput descriptionAtom={multiplePollDescriptionAtom} />
         <OptionSelector />
       </div>

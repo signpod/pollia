@@ -5,12 +5,13 @@ import { z } from "zod";
 
 interface SubjectInputSectionProps {
   titleAtom: PrimitiveAtom<string>;
+  touchedAtom: PrimitiveAtom<boolean>;
   schema: z.ZodObject<z.ZodRawShape>;
 }
 
-export function SubjectInputSection({ titleAtom, schema }: SubjectInputSectionProps) {
+export function SubjectInputSection({ titleAtom, touchedAtom, schema }: SubjectInputSectionProps) {
   const [title, setTitle] = useAtom(titleAtom);
-  const [touched, setTouched] = useState(false);
+  const [touched, setTouched] = useAtom(touchedAtom);
   const [error, setError] = useState<string | undefined>();
 
   const handleBlur = useCallback(() => {
@@ -30,7 +31,7 @@ export function SubjectInputSection({ titleAtom, schema }: SubjectInputSectionPr
     } catch {
       setError(undefined);
     }
-  }, [title, setTitle, schema]);
+  }, [title, setTitle, setTouched, schema]);
 
   return (
     <Input

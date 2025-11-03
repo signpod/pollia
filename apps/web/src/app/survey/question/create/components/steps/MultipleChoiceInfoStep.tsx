@@ -3,6 +3,7 @@ import {
   multipleChoiceImageFileUploadIdAtom,
   multipleChoiceImageUrlAtom,
   multipleChoiceTitleAtom,
+  multipleChoiceTitleTouchedAtom,
 } from "@/atoms/survey/create/multipleChoiceInfoAtoms";
 import { multipleChoiceInfoSchema } from "@/schemas/survey/multipleChoiceInfoSchema";
 import { DescriptionInputSection } from "../inputs/DescriptionInputSection";
@@ -21,6 +22,7 @@ export function MultipleChoiceInfoStep() {
         />
         <SubjectInputSection
           titleAtom={multipleChoiceTitleAtom}
+          touchedAtom={multipleChoiceTitleTouchedAtom}
           schema={multipleChoiceInfoSchema}
         />
         <DescriptionInputSection descriptionAtom={multipleChoiceDescriptionAtom} />

@@ -9,6 +9,7 @@ import {
   binaryPollThumbnailFileUploadIdAtom,
   binaryPollThumbnailUrlAtom,
   binaryPollTitleAtom,
+  binaryPollTitleTouchedAtom,
 } from "@/atoms/create/binaryPollAtoms";
 import { useBinaryPollSubmit } from "@/hooks/poll/useBinaryPollSubmit";
 import { binaryPollSchema } from "@/schemas/binaryPollSchema";
@@ -33,7 +34,11 @@ export function BinaryInfoStep() {
           thumbnailUrlAtom={binaryPollThumbnailUrlAtom}
           thumbnailFileUploadIdAtom={binaryPollThumbnailFileUploadIdAtom}
         />
-        <SubjectInput titleAtom={binaryPollTitleAtom} schema={binaryPollSchema} />
+        <SubjectInput
+          titleAtom={binaryPollTitleAtom}
+          touchedAtom={binaryPollTitleTouchedAtom}
+          schema={binaryPollSchema}
+        />
         <DescriptionInput descriptionAtom={binaryPollDescriptionAtom} />
       </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  resetSurveyAtom,
   selectedQuestionAtom,
   selectedQuestionCountAtom,
   surveyTitleAtom,
@@ -9,7 +10,7 @@ import {
 import { usePushAfter } from "@/hooks/common/usePushAfter";
 import { useCreateSurvey } from "@/hooks/survey/useCreateSurvey";
 import { Button, toast } from "@repo/ui/components";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 
 const CREATE_SURVEY_MESSAGE = {
   SUCCESS: "설문조사지 생성에 성공했습니다.",
@@ -33,16 +34,16 @@ export function CreateSurveyButton() {
 }
 
 function useCreateSurveyButton() {
-  const [surveyTitle, setSurveyTitle] = useAtom(surveyTitleAtom);
-  const [selectedQuestions, setSelectedQuestions] = useAtom(selectedQuestionAtom);
+  const surveyTitle = useAtomValue(surveyTitleAtom);
+  const selectedQuestions = useAtomValue(selectedQuestionAtom);
   const validation = useAtomValue(surveyValidationAtom);
   const selectedQuestionCount = useAtomValue(selectedQuestionCountAtom);
+  const resetSurvey = useSetAtom(resetSurveyAtom);
   const pushAfter = usePushAfter();
 
   const { mutate, isPending } = useCreateSurvey({
     onSuccess: () => {
-      setSurveyTitle("");
-      setSelectedQuestions(new Set());
+      resetSurvey();
       pushAfter("/me", () => {
         toast.success(CREATE_SURVEY_MESSAGE.SUCCESS);
       });

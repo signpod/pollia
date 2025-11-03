@@ -8,6 +8,7 @@ export const binaryPollCategorySelectModalOpenAtom = atom(false);
 
 export const binaryPollCategoryAtom = atom<(typeof POLL_CATEGORIES)[number] | undefined>(undefined);
 export const binaryPollTitleAtom = atom<string>("");
+export const binaryPollTitleTouchedAtom = atom<boolean>(false);
 export const binaryPollDescriptionAtom = atom<string>("");
 export const binaryPollThumbnailUrlAtom = atom<string | undefined>(undefined);
 export const binaryPollThumbnailFileUploadIdAtom = atom<string | undefined>(undefined);
@@ -56,6 +57,7 @@ export const binaryPollDataAtom = atom(get => ({
 export const resetBinaryPollAtom = atom(null, (_get, set) => {
   set(binaryPollCategoryAtom, undefined);
   set(binaryPollTitleAtom, "");
+  set(binaryPollTitleTouchedAtom, false);
   set(binaryPollDescriptionAtom, "");
   set(binaryPollThumbnailUrlAtom, undefined);
   set(binaryPollThumbnailFileUploadIdAtom, undefined);

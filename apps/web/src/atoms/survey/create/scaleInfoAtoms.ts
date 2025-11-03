@@ -1,6 +1,7 @@
 import { atom } from "jotai";
 
 export const scaleTitleAtom = atom<string>("");
+export const scaleTitleTouchedAtom = atom<boolean>(false);
 export const scaleDescriptionAtom = atom<string>("");
 export const scaleImageUrlAtom = atom<string | undefined>(undefined);
 export const scaleImageFileUploadIdAtom = atom<string | undefined>(undefined);
@@ -19,6 +20,7 @@ export const scaleDataAtom = atom(get => ({
 
 export const resetScaleAtom = atom(null, (_get, set) => {
   set(scaleTitleAtom, "");
+  set(scaleTitleTouchedAtom, false);
   set(scaleDescriptionAtom, "");
   set(scaleImageUrlAtom, undefined);
   set(scaleImageFileUploadIdAtom, undefined);
