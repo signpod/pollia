@@ -1,8 +1,9 @@
-import { SurveyType } from "@/types/domain/survey";
+import React from "react";
+
+import { SurveyQuestionType } from "@/types/domain/survey";
 import { StepConfig } from "@repo/ui/components";
 import { ChevronLeft, LucideIcon, X } from "lucide-react";
-import React from "react";
-import { TYPE_LABELS } from "./survey";
+import { SURVEY_QUESTION_TYPE_LABELS } from "./survey";
 
 export interface ExtendedStepConfig extends StepConfig {
   description?: string;
@@ -32,13 +33,12 @@ export const CREATE_SURVEY_STEPS: CreateSurveyStep = [
 
 interface StepComponents {
   TypeStep: React.ComponentType;
-  EitherOrInfoStep: React.ComponentType;
   MultipleChoiceInfoStep: React.ComponentType;
   ScaleInfoStep: React.ComponentType;
   SubjectiveInfoStep: React.ComponentType;
 }
 
-type StepType = SurveyType | "ChoiceType";
+type StepType = SurveyQuestionType | "ChoiceType";
 
 interface CreateStepConfigsProps {
   router: { back: () => void };
@@ -65,20 +65,20 @@ export const createStepConfigs = ({
   {
     ...CREATE_SURVEY_STEPS[1],
     description:
-      stepType !== "ChoiceType" ? `${TYPE_LABELS[stepType]} 질문의 내용을 작성해주세요` : undefined,
+      stepType !== "ChoiceType"
+        ? `${SURVEY_QUESTION_TYPE_LABELS[stepType]} 질문의 내용을 작성해주세요`
+        : undefined,
     header: {
       action: goBack,
       icon: ChevronLeft,
     },
     content: () => {
       switch (stepType) {
-        case SurveyType.EITHER_OR:
-          return React.createElement(stepComponents.EitherOrInfoStep);
-        case SurveyType.MULTIPLE_CHOICE:
+        case SurveyQuestionType.MULTIPLE_CHOICE:
           return React.createElement(stepComponents.MultipleChoiceInfoStep);
-        case SurveyType.SCALE:
+        case SurveyQuestionType.SCALE:
           return React.createElement(stepComponents.ScaleInfoStep);
-        case SurveyType.SUBJECTIVE:
+        case SurveyQuestionType.SUBJECTIVE:
           return React.createElement(stepComponents.SubjectiveInfoStep);
         case "ChoiceType":
           return undefined;

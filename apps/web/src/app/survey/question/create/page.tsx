@@ -1,6 +1,6 @@
 "use client";
 
-import { surveyTypeAtom } from "@/atoms/survey/create/surveyTypeAtoms";
+import { surveyQuestionTypeAtom } from "@/atoms/survey/create/surveyTypeAtoms";
 import { CREATE_SURVEY_STEPS, createStepConfigs } from "@/constants/createSurvey";
 import {
   FixedBottomLayout,
@@ -12,7 +12,6 @@ import {
 } from "@repo/ui/components";
 import { useAtomValue } from "jotai";
 import { useRouter } from "next/navigation";
-import { EitherOrInfoStep } from "./components/steps/EitherOrInfoStep";
 import { MultipleChoiceInfoStep } from "./components/steps/MultipleChoiceInfoStep";
 import { ScaleInfoStep } from "./components/steps/ScaleInfoStep";
 import { SubjectiveInfoStep } from "./components/steps/SubjectiveInfoStep";
@@ -30,16 +29,15 @@ export default function CreateSurveyQuestionPage() {
 
 function CreateSurveyQuestionPageContent() {
   const router = useRouter();
-  const surveyType = useAtomValue(surveyTypeAtom);
+  const surveyQuestionType = useAtomValue(surveyQuestionTypeAtom);
   const { currentStep, goBack } = useStep();
 
   const currentStepConfig = createStepConfigs({
     router,
     goBack,
-    stepType: surveyType ?? "ChoiceType",
+    stepType: surveyQuestionType ?? "ChoiceType",
     stepComponents: {
       TypeStep,
-      EitherOrInfoStep,
       MultipleChoiceInfoStep,
       ScaleInfoStep,
       SubjectiveInfoStep,

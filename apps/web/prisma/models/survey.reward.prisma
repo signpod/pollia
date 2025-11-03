@@ -1,0 +1,19 @@
+model Reward {
+    id            String      @id @default(cuid())
+    name          String
+    paymentType   PaymentType @map("payment_type")
+    scheduledDate DateTime?   @map("scheduled_date")
+    paidAt        DateTime?   @map("paid_at")
+
+    survey Survey?
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@map("survey_rewards")
+}
+
+enum PaymentType {
+    IMMEDIATE
+    SCHEDULED
+}

@@ -1,7 +1,6 @@
 import { SurveyQuestionType } from "@prisma/client";
 
 const typeOrder: Record<SurveyQuestionType, number> = {
-  EITHER_OR: 0,
   SCALE: 1,
   MULTIPLE_CHOICE: 2,
   SUBJECTIVE: 3,

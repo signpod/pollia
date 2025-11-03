@@ -1,10 +1,10 @@
-import { TYPE_LABELS } from "@/constants/survey";
+import { SURVEY_QUESTION_TYPE_LABELS } from "@/constants/survey";
 import { cn } from "@/lib/utils";
-import { SurveyType } from "@/types/domain/survey";
+import { SurveyQuestionType } from "@/types/domain/survey";
 import { Typo } from "@repo/ui/components";
 
 interface SurveyTypeCardProps extends React.HTMLAttributes<HTMLDivElement> {
-  type: SurveyType;
+  type: SurveyQuestionType;
   selected?: boolean;
 }
 
@@ -23,27 +23,21 @@ export function SurveyTypeCard({
       )}
       {...props}
     >
-      {type === SurveyType.EITHER_OR && (
+      {type === SurveyQuestionType.MULTIPLE_CHOICE && (
         <CardContent
-          label={TYPE_LABELS[SurveyType.EITHER_OR]}
-          description="단순한 찬반 여부를 확인할 때"
-        />
-      )}
-      {type === SurveyType.MULTIPLE_CHOICE && (
-        <CardContent
-          label={TYPE_LABELS[SurveyType.MULTIPLE_CHOICE]}
+          label={SURVEY_QUESTION_TYPE_LABELS[SurveyQuestionType.MULTIPLE_CHOICE]}
           description="여러 선택지에 대한 선호도를 파악할 때"
         />
       )}
-      {type === SurveyType.SCALE && (
+      {type === SurveyQuestionType.SCALE && (
         <CardContent
-          label={TYPE_LABELS[SurveyType.SCALE]}
+          label={SURVEY_QUESTION_TYPE_LABELS[SurveyQuestionType.SCALE]}
           description="숫자로 표현할 수 있는 값을 파악할 때"
         />
       )}
-      {type === SurveyType.SUBJECTIVE && (
+      {type === SurveyQuestionType.SUBJECTIVE && (
         <CardContent
-          label={TYPE_LABELS[SurveyType.SUBJECTIVE]}
+          label={SURVEY_QUESTION_TYPE_LABELS[SurveyQuestionType.SUBJECTIVE]}
           description="주관식 답변을 파악할 때"
         />
       )}
@@ -51,7 +45,13 @@ export function SurveyTypeCard({
   );
 }
 
-function CardContent({ label, description }: { label: string; description: string }) {
+function CardContent({
+  label,
+  description,
+}: {
+  label: string;
+  description: string;
+}) {
   return (
     <div className="flex flex-col items-start gap-1">
       <Typo.SubTitle size="large" className="text-zinc-950">

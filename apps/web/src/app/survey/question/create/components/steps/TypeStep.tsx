@@ -1,29 +1,29 @@
 "use client";
 
-import { surveyTypeAtom } from "@/atoms/survey/create/surveyTypeAtoms";
+import { surveyQuestionTypeAtom } from "@/atoms/survey/create/surveyTypeAtoms";
 import { SurveyTypeSelect } from "@/components/survey/SurveyTypeSelect";
 import { cn } from "@/lib/utils";
-import { SurveyType } from "@/types/domain/survey";
+import { SurveyQuestionType } from "@/types/domain/survey";
 import { Button, FixedBottomLayout, Typo, useStep } from "@repo/ui/components";
 import { useAtom } from "jotai";
 
 interface SurveyTypeStepProps {
-  selectedType?: SurveyType;
-  onTypeChange?: (type: SurveyType) => void;
+  selectedType?: SurveyQuestionType;
+  onTypeChange?: (type: SurveyQuestionType) => void;
   className?: string;
 }
 
 export function TypeStep() {
-  const [selectedType, setSelectedType] = useAtom(surveyTypeAtom);
+  const [selectedType, setSelectedType] = useAtom(surveyQuestionTypeAtom);
   const { goNext } = useStep();
 
-  const handleTypeChange = (type: SurveyType) => {
+  const handleTypeChange = (type: SurveyQuestionType) => {
     setSelectedType(type);
   };
 
   return (
     <>
-      <SurveyTypeStep selectedType={selectedType} onTypeChange={handleTypeChange} />
+      <SurveyQuestionTypeStep selectedType={selectedType} onTypeChange={handleTypeChange} />
       <FixedBottomLayout.Content>
         <div className="p-5">
           <Button onClick={goNext} disabled={!selectedType} variant="primary" fullWidth={true}>
@@ -35,7 +35,7 @@ export function TypeStep() {
   );
 }
 
-function SurveyTypeStep({ selectedType, onTypeChange, className }: SurveyTypeStepProps) {
+function SurveyQuestionTypeStep({ selectedType, onTypeChange, className }: SurveyTypeStepProps) {
   return (
     <div className={cn("px-5", className)}>
       <SurveyTypeSelect selectedType={selectedType} onTypeChange={onTypeChange} />
