@@ -1,7 +1,7 @@
-import { getUserPolls } from "@/actions/poll";
-import { getBookmarkedPolls, getLikedPolls } from "@/actions/poll/read";
+import { getSurveyQuestions } from "@/actions/survey";
+import { getUserSurveys } from "@/actions/survey/read-survey";
 import { getCurrentUser } from "@/actions/user/read";
-import { pollQueryKeys } from "@/constants/queryKeys/pollQueryKeys";
+import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
 import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { dehydrate } from "@tanstack/react-query";
@@ -16,18 +16,21 @@ export default async function MePage() {
   });
 
   await queryClient.prefetchQuery({
-    queryKey: pollQueryKeys.userPolls(),
-    queryFn: () => getUserPolls(),
+    queryKey: surveyQueryKeys.surveyQuestions(),
+    queryFn: () => {
+      return getSurveyQuestions();
+    },
   });
 
-  await queryClient.prefetchQuery({
-    queryKey: pollQueryKeys.bookmarkedPolls(),
-    queryFn: () => getBookmarkedPolls(),
-  });
-
-  await queryClient.prefetchQuery({
-    queryKey: pollQueryKeys.likedPolls(),
-    queryFn: () => getLikedPolls(),
+  await queryClient.prefetchInfiniteQuery({
+    queryKey: surveyQueryKeys.userSurveys(),
+    queryFn: ({ pageParam }) => {
+      return getUserSurveys({
+        cursor: pageParam,
+        limit: 10,
+      });
+    },
+    initialPageParam: undefined as string | undefined,
   });
 
   const dehydratedState = dehydrate(queryClient);

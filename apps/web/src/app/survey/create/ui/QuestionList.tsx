@@ -7,14 +7,15 @@ import {
   ToggleAllCheckButtons,
   TypeTag,
 } from "@/app/survey/create/ui";
-import { reorderQuestionsAtom, selectedQuestionAtom } from "@/atoms/create";
+import { reorderQuestionsAtom, searchQueryAtom, selectedQuestionAtom } from "@/atoms/create";
 import { SurveyQuestionSummary } from "@/types/domain/survey";
 import { Typo } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
 import { Reorder } from "framer-motion";
+import { useAtomValue } from "jotai";
 import { useAtom, useSetAtom } from "jotai";
 import { CheckSquare, GripVertical, Loader2Icon, Square } from "lucide-react";
-import { ComponentProps } from "react";
+import { ComponentProps, useMemo } from "react";
 
 export interface QuestionListProps extends ComponentProps<"section"> {
   title: string;
@@ -41,8 +42,16 @@ export function QuestionList({
 }: QuestionListProps) {
   const reorderQuestions = useSetAtom(reorderQuestionsAtom);
   const { selectedQuestions, toggleQuestionSelection } = useToggleQuestionSelection();
+  const searchQuery = useAtomValue(searchQueryAtom);
 
-  const isEmpty = questions.length === 0;
+  const filteredQuestions = useMemo(() => {
+    if (!hasSearchBar || !searchQuery) return questions;
+    return questions.filter(question =>
+      question.title.toLowerCase().includes(searchQuery.toLowerCase()),
+    );
+  }, [questions, searchQuery, hasSearchBar]);
+
+  const isEmpty = filteredQuestions.length === 0;
   const shouldShowSelectControls = showSelectControls && !isDraggable;
 
   return (
@@ -52,11 +61,11 @@ export function QuestionList({
         hasSearchBar={hasSearchBar}
         hasFilterBar={hasFilterBar}
         showSelectControls={shouldShowSelectControls}
-        questions={questions}
+        questions={filteredQuestions}
       />
 
       <QuestionListContent
-        questions={questions}
+        questions={filteredQuestions}
         isEmpty={isEmpty}
         isLoading={isLoading}
         isDraggable={isDraggable}
@@ -236,7 +245,7 @@ function DraggableQuestionItem({
     <Reorder.Item
       value={question}
       className={cn(
-        "group flex items-center justify-between p-3 select-none",
+        "group flex items-center justify-between select-none py-3",
         "cursor-grab active:cursor-grabbing",
         "hover:bg-zinc-50 active:bg-violet-50",
         "transition-colors duration-200 ease-in-out",
@@ -268,7 +277,7 @@ function QuestionItem({ question, index, isSelected, onSelectQuestion }: Questio
     <li
       onClick={() => onSelectQuestion(question)}
       className={cn(
-        "group flex cursor-pointer items-center justify-between p-3 select-none",
+        "flex items-center justify-between select-none py-3 group cursor-pointer",
         "hover:bg-zinc-50 active:bg-violet-100",
         "transition-colors duration-200 ease-in-out",
       )}

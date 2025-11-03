@@ -1,3 +1,4 @@
+import { SurveyQuestionSummary } from "@/types/domain/survey";
 import { SurveyQuestionType } from "@prisma/client";
 
 const typeOrder: Record<SurveyQuestionType, number> = {
@@ -6,14 +7,7 @@ const typeOrder: Record<SurveyQuestionType, number> = {
   SUBJECTIVE: 3,
 };
 
-export function getSortedQuestions(
-  questions: {
-    id: string;
-    title: string;
-    type: SurveyQuestionType;
-    createdAt: Date;
-  }[],
-) {
+export function getSortedQuestions(questions: SurveyQuestionSummary[]) {
   return [...questions].sort((a, b) => {
     const typeComparison = typeOrder[a.type] - typeOrder[b.type];
     if (typeComparison !== 0) {

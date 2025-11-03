@@ -4,25 +4,37 @@ import prisma from "@/database/utils/prisma/client";
 import type { GetSurveyQuestionsResponse } from "@/types/dto";
 import { SurveyQuestionType } from "@prisma/client";
 
-export async function getSurveyQuestions(options?: {
+interface GetSurveyQuestionsOptions {
   searchQuery?: string;
   selectedQuestionTypes?: SurveyQuestionType[];
-}): Promise<GetSurveyQuestionsResponse> {
+  isDraft?: boolean;
+  cursor?: string;
+  limit?: number;
+}
+
+export async function getSurveyQuestions(
+  options?: GetSurveyQuestionsOptions,
+): Promise<GetSurveyQuestionsResponse & { nextCursor?: string }> {
   try {
+    const limit = options?.limit ?? 10;
+
     const questions = await prisma.surveyQuestion.findMany({
       where: {
-        surveyId: null,
+        ...(options?.isDraft && {
+          surveyId: null,
+        }),
         ...(options?.searchQuery && {
           title: {
             contains: options.searchQuery,
             mode: "insensitive",
           },
         }),
-        ...(options?.selectedQuestionTypes && {
-          type: {
-            in: options.selectedQuestionTypes,
-          },
-        }),
+        ...(options?.selectedQuestionTypes &&
+          options.selectedQuestionTypes.length > 0 && {
+            type: {
+              in: options.selectedQuestionTypes,
+            },
+          }),
       },
       select: {
         id: true,
@@ -39,10 +51,24 @@ export async function getSurveyQuestions(options?: {
       orderBy: {
         createdAt: "desc",
       },
+      take: limit + 1,
+      ...(options?.cursor && {
+        cursor: {
+          id: options.cursor,
+        },
+        skip: 1,
+      }),
     });
+
+    let nextCursor: string | undefined = undefined;
+    if (questions.length > limit) {
+      const nextItem = questions.pop();
+      nextCursor = nextItem?.id;
+    }
 
     return {
       data: questions,
+      nextCursor,
     };
   } catch (error) {
     console.error("❌ 설문 질문 조회 실패:", error);

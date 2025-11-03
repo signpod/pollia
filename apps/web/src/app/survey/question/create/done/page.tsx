@@ -65,6 +65,11 @@ function SurveyQuestionCreateDoneContent() {
               <Typo.ButtonText size="large">질문 하나 더 만들기</Typo.ButtonText>
             </Button>
           </Link>
+          <Link href={`/survey/question/create`} className="w-full">
+            <Button className="w-full" variant="secondary" aria-label="질문 하나 더 만들기">
+              <Typo.ButtonText size="large">설문 하나</Typo.ButtonText>
+            </Button>
+          </Link>
         </motion.div>
       </FixedBottomLayout.Content>
     </div>

@@ -4,7 +4,6 @@ interface SurveyPageProps {
 
 export default async function SurveyPage({ params }: SurveyPageProps) {
   const { id } = await params;
-  console.log(id);
 
-  return <div>SurveyPage</div>;
+  return <div>Survey Question {id}</div>;
 }

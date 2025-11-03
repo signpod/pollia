@@ -1,5 +1,4 @@
 "use client";
-
 import {
   CreateSurveyButton,
   SelectedQuestionDataContainer,
@@ -16,7 +15,7 @@ export function CreateSurveyContent() {
   const selectedQuestionCount = useAtomValue(selectedQuestionCountAtom);
 
   return (
-    <FixedBottomLayout className="flex flex-col">
+    <FixedBottomLayout className="flex flex-col px-5">
       <FixedTopLayout>
         <FixedTopLayout.Content className="flex w-full items-center justify-between py-4">
           <Typo.MainTitle size="medium">설문조사지 생성</Typo.MainTitle>
