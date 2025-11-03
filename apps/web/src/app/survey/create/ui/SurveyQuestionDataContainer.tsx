@@ -25,6 +25,7 @@ function useSurveyQuestionData() {
     options: {
       searchQuery,
       selectedQuestionTypes: Array.from(selectedQuestionTypes),
+      isDraft: true,
     },
   });
 
