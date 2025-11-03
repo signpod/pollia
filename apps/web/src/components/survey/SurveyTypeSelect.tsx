@@ -23,11 +23,7 @@ const surveyTypes: { type: SurveyQuestionType; description: string }[] = [
   },
 ];
 
-export function SurveyTypeSelect({
-  selectedType,
-  onTypeChange,
-  className,
-}: SurveyTypeSelectProps) {
+export function SurveyTypeSelect({ selectedType, onTypeChange, className }: SurveyTypeSelectProps) {
   return (
     <div className={cn("space-y-3", className)}>
       <div className="grid gap-3">

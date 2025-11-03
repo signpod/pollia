@@ -1,10 +1,7 @@
 "use client";
 
 import { surveyQuestionTypeAtom } from "@/atoms/survey/create/surveyTypeAtoms";
-import {
-  CREATE_SURVEY_STEPS,
-  createStepConfigs,
-} from "@/constants/createSurvey";
+import { CREATE_SURVEY_STEPS, createStepConfigs } from "@/constants/createSurvey";
 import {
   FixedBottomLayout,
   FixedTopLayout,
@@ -64,9 +61,7 @@ function CreateSurveyQuestionPageContent() {
       </FixedTopLayout.Content>
 
       <div className="space-y-1 px-5">
-        <Typo.MainTitle size="medium">
-          {currentStepConfig?.title}
-        </Typo.MainTitle>
+        <Typo.MainTitle size="medium">{currentStepConfig?.title}</Typo.MainTitle>
         {currentStepConfig?.description && (
           <Typo.Body size="large" className="text-zinc-600">
             {currentStepConfig.description}

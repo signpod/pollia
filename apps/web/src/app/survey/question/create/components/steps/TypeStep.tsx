@@ -23,18 +23,10 @@ export function TypeStep() {
 
   return (
     <>
-      <SurveyQuestionTypeStep
-        selectedType={selectedType}
-        onTypeChange={handleTypeChange}
-      />
+      <SurveyQuestionTypeStep selectedType={selectedType} onTypeChange={handleTypeChange} />
       <FixedBottomLayout.Content>
         <div className="p-5">
-          <Button
-            onClick={goNext}
-            disabled={!selectedType}
-            variant="primary"
-            fullWidth={true}
-          >
+          <Button onClick={goNext} disabled={!selectedType} variant="primary" fullWidth={true}>
             <Typo.ButtonText>다음</Typo.ButtonText>
           </Button>
         </div>
@@ -43,17 +35,10 @@ export function TypeStep() {
   );
 }
 
-function SurveyQuestionTypeStep({
-  selectedType,
-  onTypeChange,
-  className,
-}: SurveyTypeStepProps) {
+function SurveyQuestionTypeStep({ selectedType, onTypeChange, className }: SurveyTypeStepProps) {
   return (
     <div className={cn("px-5", className)}>
-      <SurveyTypeSelect
-        selectedType={selectedType}
-        onTypeChange={onTypeChange}
-      />
+      <SurveyTypeSelect selectedType={selectedType} onTypeChange={onTypeChange} />
     </div>
   );
 }

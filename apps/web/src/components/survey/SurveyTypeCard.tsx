@@ -19,15 +19,13 @@ export function SurveyTypeCard({
       className={cn(
         "flex items-center justify-between gap-6 rounded-[var(--radius-sm)] p-4 ring-1 ring-zinc-200",
         selected && "ring-primary bg-violet-50",
-        className
+        className,
       )}
       {...props}
     >
       {type === SurveyQuestionType.MULTIPLE_CHOICE && (
         <CardContent
-          label={
-            SURVEY_QUESTION_TYPE_LABELS[SurveyQuestionType.MULTIPLE_CHOICE]
-          }
+          label={SURVEY_QUESTION_TYPE_LABELS[SurveyQuestionType.MULTIPLE_CHOICE]}
           description="여러 선택지에 대한 선호도를 파악할 때"
         />
       )}

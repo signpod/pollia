@@ -1,15 +1,10 @@
 "use client";
 
-import { SurveyQuestionCreateFloatingButton } from "@/components/survey/SurveyQuestionCreateFloatingButton";
 import { SurveyCreateFloatingButton } from "@/components/survey/SurveyCreateFloatingButton";
+import { SurveyQuestionCreateFloatingButton } from "@/components/survey/SurveyQuestionCreateFloatingButton";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { FixedBottomLayout, FixedTopLayout } from "@repo/ui/components";
-import {
-  DehydratedState,
-  HydrationBoundary,
-  QueryClientProvider,
-} from "@tanstack/react-query";
-import Link from "next/link";
+import { DehydratedState, HydrationBoundary, QueryClientProvider } from "@tanstack/react-query";
 import { ProfileContainer } from "./ProfileContainer";
 
 interface MeClientWrapperProps {

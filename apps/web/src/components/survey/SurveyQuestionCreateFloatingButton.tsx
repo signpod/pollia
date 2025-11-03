@@ -15,12 +15,7 @@ export function SurveyQuestionCreateFloatingButton({
 }: SurveyQuestionCreateFloatingButtonProps) {
   return (
     <Link href="/survey/question/create">
-      <FloatingButton
-        variant={variant}
-        className={className}
-        title="질문 만들기"
-        {...props}
-      />
+      <FloatingButton variant={variant} className={className} title="질문 만들기" {...props} />
     </Link>
   );
 }
