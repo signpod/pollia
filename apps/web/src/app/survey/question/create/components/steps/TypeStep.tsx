@@ -1,6 +1,6 @@
 "use client";
 
-import { surveyQuestionTypeAtom } from "@/atoms/survey/create/surveyTypeAtoms";
+import { surveyQuestionTypeAtom } from "@/atoms/survey/quetion/surveyTypeAtoms";
 import { SurveyTypeSelect } from "@/components/survey/SurveyTypeSelect";
 import { cn } from "@/lib/utils";
 import { SurveyQuestionType } from "@/types/domain/survey";

@@ -1,6 +1,6 @@
 "use client";
 
-import { selectedQuestionAtom } from "@/atoms/create/surveyAtoms";
+import { selectedQuestionAtom } from "@/atoms/survey/surveyAtoms";
 import { SurveyQuestionSummary } from "@/types/domain/survey";
 import { useAtomValue } from "jotai";
 import { ReactNode, useMemo } from "react";

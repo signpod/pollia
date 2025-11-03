@@ -1,8 +1,8 @@
-import { resetEitherOrAtom } from "@/atoms/survey/create/eitherOrInfoAtoms";
-import { resetMultipleChoiceAtom } from "@/atoms/survey/create/multipleChoiceInfoAtoms";
-import { resetScaleAtom } from "@/atoms/survey/create/scaleInfoAtoms";
-import { resetSubjectiveAtom } from "@/atoms/survey/create/subjectiveInfoAtoms";
-import { surveyQuestionTypeAtom } from "@/atoms/survey/create/surveyTypeAtoms";
+import { resetEitherOrAtom } from "@/atoms/survey/quetion/eitherOrInfoAtoms";
+import { resetMultipleChoiceAtom } from "@/atoms/survey/quetion/multipleChoiceInfoAtoms";
+import { resetScaleAtom } from "@/atoms/survey/quetion/scaleInfoAtoms";
+import { resetSubjectiveAtom } from "@/atoms/survey/quetion/subjectiveInfoAtoms";
+import { surveyQuestionTypeAtom } from "@/atoms/survey/quetion/surveyTypeAtoms";
 import { useSetAtom } from "jotai";
 
 export function useResetSurveyQuestion() {

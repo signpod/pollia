@@ -1,4 +1,4 @@
-import { subjectiveDataAtom } from "@/atoms/survey/create/subjectiveInfoAtoms";
+import { subjectiveDataAtom } from "@/atoms/survey/quetion/subjectiveInfoAtoms";
 import { useCreateSubjectiveQuestion } from "@/hooks/survey/question";
 import { subjectiveInfoSchema } from "@/schemas/survey/subjectiveInfoSchema";
 import type { CreateSubjectiveQuestionRequest } from "@/types/dto/survey";

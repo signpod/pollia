@@ -1,6 +1,14 @@
 "use client";
 
+<<<<<<< Updated upstream
 import { surveyTitleAtom, surveyValidationAtom } from "@/atoms/create/surveyAtoms";
+=======
+import {
+  surveyTitleAtom,
+  surveyTitleTouchedAtom,
+  surveyValidationAtom,
+} from "@/atoms/survey/surveyAtoms";
+>>>>>>> Stashed changes
 import { Input } from "@repo/ui/components";
 import { useAtom, useAtomValue } from "jotai";
 import { useState } from "react";

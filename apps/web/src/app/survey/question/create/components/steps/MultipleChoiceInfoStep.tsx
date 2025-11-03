@@ -3,7 +3,12 @@ import {
   multipleChoiceImageFileUploadIdAtom,
   multipleChoiceImageUrlAtom,
   multipleChoiceTitleAtom,
+<<<<<<< Updated upstream
 } from "@/atoms/survey/create/multipleChoiceInfoAtoms";
+=======
+  multipleChoiceTitleTouchedAtom,
+} from "@/atoms/survey/quetion/multipleChoiceInfoAtoms";
+>>>>>>> Stashed changes
 import { multipleChoiceInfoSchema } from "@/schemas/survey/multipleChoiceInfoSchema";
 import { DescriptionInputSection } from "../inputs/DescriptionInputSection";
 import { ImageSelectorSection } from "../inputs/ImageSelectorSection";

@@ -1,7 +1,7 @@
 "use client";
 "use client";
 
-import { searchQueryAtom } from "@/atoms/create";
+import { searchQueryAtom } from "@/atoms/survey/surveyAtoms";
 import { BaseSearchBar } from "@/components/common/BaseSearchBar";
 import { useSearchQuery } from "@/hooks/common/useSearchQuery";
 

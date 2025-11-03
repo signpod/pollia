@@ -3,7 +3,12 @@ import {
   subjectiveImageFileUploadIdAtom,
   subjectiveImageUrlAtom,
   subjectiveTitleAtom,
+<<<<<<< Updated upstream
 } from "@/atoms/survey/create/subjectiveInfoAtoms";
+=======
+  subjectiveTitleTouchedAtom,
+} from "@/atoms/survey/quetion/subjectiveInfoAtoms";
+>>>>>>> Stashed changes
 import { subjectiveInfoSchema } from "@/schemas/survey/subjectiveInfoSchema";
 import { DescriptionInputSection } from "../inputs/DescriptionInputSection";
 import { ImageSelectorSection } from "../inputs/ImageSelectorSection";

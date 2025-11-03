@@ -6,7 +6,7 @@ import {
   selectedQuestionCountAtom,
   surveyTitleAtom,
   surveyValidationAtom,
-} from "@/atoms/create/surveyAtoms";
+} from "@/atoms/survey/surveyAtoms";
 import { usePushAfter } from "@/hooks/common/usePushAfter";
 import { useCreateSurvey } from "@/hooks/survey/useCreateSurvey";
 import { Button, toast } from "@repo/ui/components";

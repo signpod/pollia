@@ -7,7 +7,7 @@ import {
   SurveyQuestionList,
   SurveyTitleForm,
 } from "@/app/survey/create/ui";
-import { selectedQuestionCountAtom } from "@/atoms/create/surveyAtoms";
+import { selectedQuestionCountAtom } from "@/atoms/survey/surveyAtoms";
 import { FixedBottomLayout, FixedTopLayout, Typo } from "@repo/ui/components";
 import { useAtomValue } from "jotai";
 

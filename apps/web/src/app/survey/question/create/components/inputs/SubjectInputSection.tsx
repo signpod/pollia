@@ -30,7 +30,7 @@ export function SubjectInputSection({ titleAtom, schema }: SubjectInputSectionPr
     } catch {
       setError(undefined);
     }
-  }, [title, setTitle, setTouched, schema]);
+  }, [title, setTitle, schema]);
 
   return (
     <Input
