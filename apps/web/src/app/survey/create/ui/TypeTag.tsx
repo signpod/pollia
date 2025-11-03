@@ -35,9 +35,6 @@ export function TypeTag<C extends ElementType = "div">({
     {
       variants: {
         type: {
-          EITHER_OR: `bg-amber-50 text-amber-600 ${
-            selected && "bg-amber-100 text-amber-700 ring-1 ring-amber-400 hover:ring-amber-300"
-          }`,
           SCALE: `bg-green-50 text-green-700 ${
             selected && "bg-green-100 text-green-800 ring-1 ring-green-400 hover:ring-green-300"
           }`,
