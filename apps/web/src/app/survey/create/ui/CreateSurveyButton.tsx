@@ -13,8 +13,8 @@ import { Button, toast } from "@repo/ui/components";
 import { useAtomValue, useSetAtom } from "jotai";
 
 const CREATE_SURVEY_MESSAGE = {
-  SUCCESS: "설문조사지 생성에 성공했습니다.",
-  ERROR: "설문조사지 생성에 실패했습니다.",
+  SUCCESS: "설문지 생성에 성공했습니다.",
+  ERROR: "설문지 생성에 실패했습니다.",
 };
 
 export function CreateSurveyButton() {
