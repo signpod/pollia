@@ -1,8 +1,8 @@
+import { getCurrentUser } from "@/actions/user/read";
+import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { dehydrate } from "@tanstack/react-query";
 import { MeClientWrapper } from "./MeClientWrapper";
-import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";
-import { getCurrentUser } from "@/actions/user/read";
 
 export default async function MePage() {
   const queryClient = getQueryClient();

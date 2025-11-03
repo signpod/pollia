@@ -1,9 +1,9 @@
 "use client";
 "use client";
 
+import { searchQueryAtom } from "@/atoms/create";
 import { BaseSearchBar } from "@/components/common/BaseSearchBar";
 import { useSearchQuery } from "@/hooks/common/useSearchQuery";
-import { searchQueryAtom } from "@/atoms/create";
 
 const SEARCH_BAR_PLACEHOLDER = "질문 제목을 검색해주세요";
 const SEARCH_BAR_PLACEHOLDER = "질문 제목을 검색해주세요";

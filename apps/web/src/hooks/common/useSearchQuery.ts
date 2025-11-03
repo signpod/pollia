@@ -26,7 +26,7 @@ export function useSearchQuery(searchQueryAtom: PrimitiveAtom<string>) {
     (e: ChangeEvent<HTMLInputElement>) => {
       setSearchQuery(e.target.value);
     },
-    [setSearchQuery]
+    [setSearchQuery],
   );
 
   const clearSearch = useCallback(() => {

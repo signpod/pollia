@@ -42,20 +42,10 @@ interface ListItemProps extends ComponentPropsWithRef<"li"> {
   isDraft?: boolean;
 }
 
-function ListItem({
-  title,
-  createdAt,
-  isDraft,
-  leadingIcon,
-  href,
-  ...props
-}: ListItemProps) {
+function ListItem({ title, createdAt, isDraft, leadingIcon, href, ...props }: ListItemProps) {
   return (
     <li {...props}>
-      <Link
-        href={href}
-        className="flex flex-col py-4 w-full border-b border-default gap-2"
-      >
+      <Link href={href} className="flex flex-col py-4 w-full border-b border-default gap-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             {leadingIcon}

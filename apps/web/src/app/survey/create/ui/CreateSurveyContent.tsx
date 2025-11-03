@@ -1,8 +1,4 @@
 "use client";
-
-import { FixedBottomLayout, FixedTopLayout, Typo } from "@repo/ui/components";
-import { useAtomValue } from "jotai";
-import { selectedQuestionCountAtom } from "@/atoms/create/surveyAtoms";
 import {
   CreateSurveyButton,
   SelectedQuestionDataContainer,

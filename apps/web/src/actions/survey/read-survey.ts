@@ -1,9 +1,9 @@
 "use server";
 
-import prisma from "@/database/utils/prisma/client";
-import { requireAuth } from "../common/auth";
-import { GetUserSurveysResponse } from "@/types/dto";
 import { SortOrderType } from "@/atoms/me/searchAtoms";
+import prisma from "@/database/utils/prisma/client";
+import { GetUserSurveysResponse } from "@/types/dto";
+import { requireAuth } from "../common/auth";
 
 interface GetUserSurveysOptions {
   cursor?: string;
@@ -12,7 +12,7 @@ interface GetUserSurveysOptions {
 }
 
 export async function getUserSurveys(
-  options?: GetUserSurveysOptions
+  options?: GetUserSurveysOptions,
 ): Promise<GetUserSurveysResponse & { nextCursor?: string }> {
   const user = await requireAuth();
   const limit = options?.limit ?? 10;

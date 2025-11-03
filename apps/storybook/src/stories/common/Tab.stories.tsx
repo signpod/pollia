@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/nextjs";
 import { Tab, Typo } from "@repo/ui/components";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 import React from "react";
 
 const meta: Meta<typeof Tab.Root> = {
@@ -142,8 +142,7 @@ export const WithContent: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          "Tab.Content를 사용하여 각 탭에 해당하는 콘텐츠를 표시할 수 있습니다.",
+        story: "Tab.Content를 사용하여 각 탭에 해당하는 콘텐츠를 표시할 수 있습니다.",
       },
     },
   },
@@ -317,7 +316,8 @@ export const States: Story = {
   parameters: {
     docs: {
       description: {
-        story: "Tab의 다양한 상태를 보여줍니다. disabled prop으로 특정 탭을 비활성화할 수 있습니다.",
+        story:
+          "Tab의 다양한 상태를 보여줍니다. disabled prop으로 특정 탭을 비활성화할 수 있습니다.",
       },
     },
   },

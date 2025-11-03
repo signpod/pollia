@@ -26,16 +26,16 @@ export const useReadSurveyQuestions = (params?: {
         limit: params?.options?.limit ?? 10,
       });
     },
-    select: (data) => {
-      return data.pages.flatMap((page) =>
-        page.data.map((item) => ({
+    select: data => {
+      return data.pages.flatMap(page =>
+        page.data.map(item => ({
           ...item,
           isDraft: item.surveyId === null ? true : false,
-        }))
+        })),
       );
     },
     initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    getNextPageParam: lastPage => lastPage.nextCursor,
     staleTime: 5 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000,
     retry: 3,

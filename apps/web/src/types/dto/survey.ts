@@ -122,8 +122,5 @@ export interface CreateSurveyResponse {
 }
 
 export interface GetUserSurveysResponse {
-  data: Pick<
-    Survey,
-    "id" | "title" | "description" | "imageUrl" | "createdAt" | "updatedAt"
-  >[];
+  data: Pick<Survey, "id" | "title" | "description" | "imageUrl" | "createdAt" | "updatedAt">[];
 }

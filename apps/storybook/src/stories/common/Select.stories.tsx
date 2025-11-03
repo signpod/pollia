@@ -1,14 +1,14 @@
-import type { Meta, StoryObj } from "@storybook/nextjs";
 import {
   Select,
   SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   SelectGroup,
+  SelectItem,
   SelectLabel,
   SelectSeparator,
+  SelectTrigger,
+  SelectValue,
 } from "@repo/ui/components";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 import React from "react";
 
 const meta: Meta<typeof Select> = {
@@ -132,9 +132,7 @@ export const Sizes: Story = {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="option1">매우 긴 옵션 텍스트 예시</SelectItem>
-            <SelectItem value="option2">
-              또 다른 긴 옵션 텍스트입니다
-            </SelectItem>
+            <SelectItem value="option2">또 다른 긴 옵션 텍스트입니다</SelectItem>
             <SelectItem value="option3">세 번째 옵션</SelectItem>
           </SelectContent>
         </Select>
@@ -158,8 +156,7 @@ export const Sizes: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          "다양한 너비의 Select 컴포넌트입니다. className으로 너비를 조절할 수 있습니다.",
+        story: "다양한 너비의 Select 컴포넌트입니다. className으로 너비를 조절할 수 있습니다.",
       },
     },
   },
@@ -252,8 +249,7 @@ export const Interactive: Story = {
   parameters: {
     docs: {
       description: {
-        story:
-          "실제로 동작하는 Interactive Select입니다. 선택한 값이 실시간으로 업데이트됩니다.",
+        story: "실제로 동작하는 Interactive Select입니다. 선택한 값이 실시간으로 업데이트됩니다.",
       },
     },
   },

@@ -1,32 +1,31 @@
 import { ErrorBoundary } from "react-error-boundary";
 
+import {
+  DraftFilterType,
+  SortOrderType,
+  meDraftFilterAtom,
+  meSearchQueryAtom,
+  surveySortOrderAtom,
+} from "@/atoms/me/searchAtoms";
+import { BaseSearchBar } from "@/components/common/BaseSearchBar";
+import { useSearchQuery } from "@/hooks/common/useSearchQuery";
 import { useCurrentUser } from "@/hooks/user/useCurrentUser";
-import { PollList } from "./ui";
-import { UserInfo } from "./UserInfo";
 import {
   Button,
-  Tab,
-  Typo,
-  useTab,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Tab,
+  Typo,
+  useTab,
 } from "@repo/ui/components";
-import { ContentList } from "./ui";
-import { UserSurveyQuestionDataContainer } from "./ui/UserSurveyQuestionDataContainer";
-import { UserSurveyDataContainer } from "./ui/UserSurveyDataContainer";
-import { BaseSearchBar } from "@/components/common/BaseSearchBar";
-import { useSearchQuery } from "@/hooks/common/useSearchQuery";
-import {
-  meSearchQueryAtom,
-  meDraftFilterAtom,
-  DraftFilterType,
-  SortOrderType,
-  surveySortOrderAtom,
-} from "@/atoms/me/searchAtoms";
 import { useAtom } from "jotai";
+import { UserInfo } from "./UserInfo";
+import { ContentList } from "./ui";
+import { UserSurveyDataContainer } from "./ui/UserSurveyDataContainer";
+import { UserSurveyQuestionDataContainer } from "./ui/UserSurveyQuestionDataContainer";
 
 export function ProfileContainer() {
   return (
@@ -51,7 +50,7 @@ const PROFILE_TABS: { value: ProfileTab; label: string }[] = [
 function ProfileTabs() {
   return (
     <Tab.List>
-      {PROFILE_TABS.map((item) => (
+      {PROFILE_TABS.map(item => (
         <Tab.Item key={item.value} value={item.value}>
           <Typo.SubTitle size="large">{item.label}</Typo.SubTitle>
         </Tab.Item>
@@ -144,15 +143,11 @@ function ProfileTabsContent() {
   const [sortOrder, setSortOrder] = useAtom(surveySortOrderAtom);
 
   const DataContainer =
-    activeTab === "userSurveys"
-      ? UserSurveyDataContainer
-      : UserSurveyQuestionDataContainer;
+    activeTab === "userSurveys" ? UserSurveyDataContainer : UserSurveyQuestionDataContainer;
 
   const baseHref = activeTab === "userSurveys" ? "/survey" : "/survey/question";
   const placeholder =
-    activeTab === "userSurveys"
-      ? "설문 제목을 검색해주세요"
-      : "질문 제목을 검색해주세요";
+    activeTab === "userSurveys" ? "설문 제목을 검색해주세요" : "질문 제목을 검색해주세요";
 
   const showDraftFilter = activeTab === "userQuestions";
 
@@ -166,15 +161,12 @@ function ProfileTabsContent() {
           onChange={handleChange}
           containerClassName="w-full flex-1"
         />
-        <Select
-          value={sortOrder}
-          onValueChange={(value) => setSortOrder(value as SortOrderType)}
-        >
+        <Select value={sortOrder} onValueChange={value => setSortOrder(value as SortOrderType)}>
           <SelectTrigger className="w-[120px]" aria-label="정렬 순서">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {SORT_ORDER_OPTIONS.map((option) => (
+            {SORT_ORDER_OPTIONS.map(option => (
               <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
@@ -184,13 +176,13 @@ function ProfileTabsContent() {
         {showDraftFilter && (
           <Select
             value={draftFilter}
-            onValueChange={(value) => setDraftFilter(value as DraftFilterType)}
+            onValueChange={value => setDraftFilter(value as DraftFilterType)}
           >
             <SelectTrigger className="w-[120px]" aria-label="사용 상태 필터">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {DRAFT_FILTER_OPTIONS.map((option) => (
+              {DRAFT_FILTER_OPTIONS.map(option => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>

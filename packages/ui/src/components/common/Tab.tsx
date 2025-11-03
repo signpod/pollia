@@ -1,10 +1,10 @@
 "use client";
 
-import * as React from "react";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
-import { cn } from "../../lib/utils";
 import { cva } from "class-variance-authority";
 import { motion } from "framer-motion";
+import * as React from "react";
+import { cn } from "../../lib/utils";
 
 /**
  * Tab Component with Full Accessibility Support (Radix UI)
@@ -37,15 +37,8 @@ interface TabRootProps extends React.ComponentPropsWithoutRef<typeof TabsPrimiti
   initialTab?: string;
 }
 
-function TabRoot({
-  children,
-  initialTab,
-  defaultValue,
-  ...props
-}: TabRootProps) {
-  const [activeTab, setActiveTab] = React.useState<string | undefined>(
-    initialTab || defaultValue
-  );
+function TabRoot({ children, initialTab, defaultValue, ...props }: TabRootProps) {
+  const [activeTab, setActiveTab] = React.useState<string | undefined>(initialTab || defaultValue);
 
   return (
     <TabContext.Provider value={{ activeTab }}>
@@ -68,7 +61,9 @@ export function useTab() {
     setActiveTab: (value: string) => {
       // Radix UI에서는 프로그래매틱하게 탭을 변경하려면
       // Tabs.Root의 value prop을 controlled로 사용해야 합니다
-      console.warn("setActiveTab is not supported with Radix UI Tabs. Use controlled mode with value prop instead.");
+      console.warn(
+        "setActiveTab is not supported with Radix UI Tabs. Use controlled mode with value prop instead.",
+      );
     },
   };
 }
@@ -79,10 +74,7 @@ const TabList = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <TabsPrimitive.List
     ref={ref}
-    className={cn(
-      "relative flex w-full items-center border-b border-gray-200",
-      className
-    )}
+    className={cn("relative flex w-full items-center border-b border-gray-200", className)}
     {...props}
   />
 ));
@@ -92,53 +84,52 @@ interface TabItemProps extends React.ComponentPropsWithoutRef<typeof TabsPrimiti
   value: string;
 }
 
-const TabItem = React.forwardRef<
-  React.ElementRef<typeof TabsPrimitive.Trigger>,
-  TabItemProps
->(({ children, value, className, ...props }, ref) => {
-  const { activeTab } = React.useContext(TabContext);
-  const isActive = activeTab === value;
+const TabItem = React.forwardRef<React.ElementRef<typeof TabsPrimitive.Trigger>, TabItemProps>(
+  ({ children, value, className, ...props }, ref) => {
+    const { activeTab } = React.useContext(TabContext);
+    const isActive = activeTab === value;
 
-  const tabItemVariants = cva(
-    "relative px-4 py-3 flex-1 text-center select-none transition-colors",
-    {
-      variants: {
-        isActive: {
-          true: "text-primary",
-          false: "text-zinc-500",
+    const tabItemVariants = cva(
+      "relative px-4 py-3 flex-1 text-center select-none transition-colors",
+      {
+        variants: {
+          isActive: {
+            true: "text-primary",
+            false: "text-zinc-500",
+          },
         },
       },
-    }
-  );
+    );
 
-  return (
-    <TabsPrimitive.Trigger
-      ref={ref}
-      value={value}
-      className={cn(
-        tabItemVariants({ isActive }),
-        "cursor-pointer",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2",
-        "disabled:cursor-not-allowed disabled:opacity-50",
-        className
-      )}
-      {...props}
-    >
-      {children}
-      {isActive && (
-        <motion.div
-          className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
-          layoutId="activeTab"
-          transition={{
-            type: "spring",
-            stiffness: 500,
-            damping: 30,
-          }}
-        />
-      )}
-    </TabsPrimitive.Trigger>
-  );
-});
+    return (
+      <TabsPrimitive.Trigger
+        ref={ref}
+        value={value}
+        className={cn(
+          tabItemVariants({ isActive }),
+          "cursor-pointer",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2",
+          "disabled:cursor-not-allowed disabled:opacity-50",
+          className,
+        )}
+        {...props}
+      >
+        {children}
+        {isActive && (
+          <motion.div
+            className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
+            layoutId="activeTab"
+            transition={{
+              type: "spring",
+              stiffness: 500,
+              damping: 30,
+            }}
+          />
+        )}
+      </TabsPrimitive.Trigger>
+    );
+  },
+);
 TabItem.displayName = "TabItem";
 
 const TabContent = React.forwardRef<
@@ -149,7 +140,7 @@ const TabContent = React.forwardRef<
     ref={ref}
     className={cn(
       "mt-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2",
-      className
+      className,
     )}
     {...props}
   />

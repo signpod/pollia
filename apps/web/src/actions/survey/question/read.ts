@@ -13,7 +13,7 @@ interface GetSurveyQuestionsOptions {
 }
 
 export async function getSurveyQuestions(
-  options?: GetSurveyQuestionsOptions
+  options?: GetSurveyQuestionsOptions,
 ): Promise<GetSurveyQuestionsResponse & { nextCursor?: string }> {
   try {
     const limit = options?.limit ?? 10;

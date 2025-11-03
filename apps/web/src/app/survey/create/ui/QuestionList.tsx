@@ -1,11 +1,5 @@
 "use client";
 "use client";
-
-import { Typo } from '@repo/ui/components';
-import { cn } from '@repo/ui/lib';
-import { ComponentProps } from 'react';
-import { GripVertical, Square, CheckSquare, Loader2Icon } from 'lucide-react';
-import { Reorder } from 'framer-motion';
 import {
   EmptyFallback,
   SearchBar,
@@ -13,16 +7,12 @@ import {
   ToggleAllCheckButtons,
   TypeTag,
 } from "@/app/survey/create/ui";
-import {
-  reorderQuestionsAtom,
-  selectedQuestionAtom,
-  searchQueryAtom,
-} from "@/atoms/create";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { reorderQuestionsAtom, searchQueryAtom, selectedQuestionAtom } from "@/atoms/create";
 import { SurveyQuestionSummary } from "@/types/domain/survey";
 import { Typo } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
 import { Reorder } from "framer-motion";
+import { useAtomValue } from "jotai";
 import { useAtom, useSetAtom } from "jotai";
 import { CheckSquare, GripVertical, Loader2Icon, Square } from "lucide-react";
 import { ComponentProps } from "react";
@@ -51,15 +41,14 @@ export function QuestionList({
   ...props
 }: QuestionListProps) {
   const reorderQuestions = useSetAtom(reorderQuestionsAtom);
-  const { selectedQuestions, toggleQuestionSelection } =
-    useToggleQuestionSelection();
+  const { selectedQuestions, toggleQuestionSelection } = useToggleQuestionSelection();
   const searchQuery = useAtomValue(searchQueryAtom);
 
   // 검색 필터링 로직
   const filteredQuestions = useMemo(() => {
     if (!hasSearchBar || !searchQuery) return questions;
-    return questions.filter((question) =>
-      question.title.toLowerCase().includes(searchQuery.toLowerCase())
+    return questions.filter(question =>
+      question.title.toLowerCase().includes(searchQuery.toLowerCase()),
     );
   }, [questions, searchQuery, hasSearchBar]);
 
@@ -260,7 +249,7 @@ function DraggableQuestionItem({
         "group flex items-center justify-between select-none py-3",
         "cursor-grab active:cursor-grabbing",
         "hover:bg-zinc-50 active:bg-violet-50",
-        "transition-colors duration-200 ease-in-out"
+        "transition-colors duration-200 ease-in-out",
       )}
       style={{ listStyle: "none" }}
     >

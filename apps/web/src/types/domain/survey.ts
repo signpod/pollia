@@ -1,5 +1,4 @@
 import { SurveyQuestion } from "@prisma/client";
-import { SurveyQuestion } from "@prisma/client";
 
 export enum SurveyType {
   EITHER_OR = "EITHER_OR",

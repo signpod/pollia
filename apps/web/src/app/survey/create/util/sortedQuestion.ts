@@ -1,5 +1,5 @@
-import { SurveyQuestionType } from "@prisma/client";
 import { SurveyQuestionSummary } from "@/types/domain/survey";
+import { SurveyQuestionType } from "@prisma/client";
 
 const typeOrder: Record<SurveyQuestionType, number> = {
   EITHER_OR: 0,

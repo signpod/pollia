@@ -1,13 +1,13 @@
 "use client";
 
-import { Survey } from "@prisma/client";
-import { List } from "./List";
-import { SurveyQuestionSummary } from "@/types/domain/survey";
-import { useEffect, useRef, useMemo } from "react";
-import { Button, Typo } from "@repo/ui/components";
-import { Loader2Icon } from "lucide-react";
-import { cn } from "@repo/ui/lib";
 import { DraftFilterType, SortOrderType } from "@/atoms/me/searchAtoms";
+import { SurveyQuestionSummary } from "@/types/domain/survey";
+import { Survey } from "@prisma/client";
+import { Button, Typo } from "@repo/ui/components";
+import { cn } from "@repo/ui/lib";
+import { Loader2Icon } from "lucide-react";
+import { useEffect, useMemo, useRef } from "react";
+import { List } from "./List";
 
 export function ContentList({
   items,
@@ -21,10 +21,7 @@ export function ContentList({
 }: {
   items:
     | SurveyQuestionSummary[]
-    | Pick<
-        Survey,
-        "id" | "title" | "description" | "imageUrl" | "createdAt" | "updatedAt"
-      >[];
+    | Pick<Survey, "id" | "title" | "description" | "imageUrl" | "createdAt" | "updatedAt">[];
   baseHref: string;
   hasNextPage: boolean;
   fetchNextPage: () => void;
@@ -36,10 +33,8 @@ export function ContentList({
   const observerTarget = useRef<HTMLDivElement>(null);
 
   const filteredAndSortedItems = useMemo(() => {
-    const filtered = items.filter((item) => {
-      const matchesSearch = item.title
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+    const filtered = items.filter(item => {
+      const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
 
       if ("isDraft" in item) {
         if (draftFilter === "used") {
@@ -69,12 +64,12 @@ export function ContentList({
     if (!currentTarget) return;
 
     const observer = new IntersectionObserver(
-      (entries) => {
+      entries => {
         if (entries[0]?.isIntersecting && hasNextPage && !isFetchingNextPage) {
           fetchNextPage();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     observer.observe(currentTarget);
@@ -89,12 +84,12 @@ export function ContentList({
   return (
     <List.Root>
       <List.Content>
-        {filteredAndSortedItems?.map((item) => (
+        {filteredAndSortedItems?.map(item => (
           <div
             key={item.id}
             className={cn(
               "flex gap-3 px-5 items-start",
-              "hover:bg-violet-50 transition-colors duration-200"
+              "hover:bg-violet-50 transition-colors duration-200",
             )}
           >
             <List.Item
@@ -131,10 +126,7 @@ function UsedTag({
 }: {
   item:
     | SurveyQuestionSummary
-    | Pick<
-        Survey,
-        "id" | "title" | "description" | "imageUrl" | "createdAt" | "updatedAt"
-      >;
+    | Pick<Survey, "id" | "title" | "description" | "imageUrl" | "createdAt" | "updatedAt">;
 }) {
   const isDraft = "isDraft" in item ? item.isDraft : false;
   const text = isDraft ? "미사용" : "사용";
@@ -143,7 +135,7 @@ function UsedTag({
     <div
       className={cn(
         "px-2 py-1 rounded-full text-center ring-1 ring-transparent",
-        isDraft ? "bg-gray-100 text-gray-600" : "bg-violet-100 text-violet-600"
+        isDraft ? "bg-gray-100 text-gray-600" : "bg-violet-100 text-violet-600",
       )}
     >
       <Typo.Body size="small">{text}</Typo.Body>
