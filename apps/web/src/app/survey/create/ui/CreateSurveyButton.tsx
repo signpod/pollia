@@ -6,6 +6,7 @@ import {
   surveyTitleAtom,
   surveyValidationAtom,
 } from "@/atoms/create/surveyAtoms";
+import { usePushAfter } from "@/hooks/common/usePushAfter";
 import { useCreateSurvey } from "@/hooks/survey/useCreateSurvey";
 import { Button, toast } from "@repo/ui/components";
 import { useAtomValue } from "jotai";
@@ -20,10 +21,13 @@ export function CreateSurveyButton() {
   const selectedQuestions = useAtomValue(selectedQuestionAtom);
   const validation = useAtomValue(surveyValidationAtom);
   const selectedQuestionCount = useAtomValue(selectedQuestionCountAtom);
+  const pushAfter = usePushAfter();
 
   const { mutate, isPending } = useCreateSurvey({
     onSuccess: () => {
-      toast.success(CREATE_SURVEY_MESSAGE.SUCCESS);
+      pushAfter("/me", () => {
+        toast.success(CREATE_SURVEY_MESSAGE.SUCCESS);
+      });
     },
     onError: () => {
       toast.error(CREATE_SURVEY_MESSAGE.ERROR);
