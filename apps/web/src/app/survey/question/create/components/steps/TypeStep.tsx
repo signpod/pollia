@@ -23,7 +23,10 @@ export function TypeStep() {
 
   return (
     <>
-      <SurveyQuestionTypeStep selectedType={selectedType} onTypeChange={handleTypeChange} />
+      <SurveyQuestionTypeStep
+        selectedType={selectedType ?? undefined}
+        onTypeChange={handleTypeChange}
+      />
       <FixedBottomLayout.Content>
         <div className="p-5">
           <Button onClick={goNext} disabled={!selectedType} variant="primary" fullWidth={true}>
