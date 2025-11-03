@@ -1,6 +1,7 @@
 "use client";
 
-import SurveyCreateFloatingButton from "@/components/survey/SurveyCreateFloatingButton";
+import { SurveyCreateFloatingButton } from "@/components/survey/SurveyCreateFloatingButton";
+import { SurveyQuestionCreateFloatingButton } from "@/components/survey/SurveyQuestionCreateFloatingButton";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { FixedBottomLayout, FixedTopLayout } from "@repo/ui/components";
 import { DehydratedState, HydrationBoundary, QueryClientProvider } from "@tanstack/react-query";
