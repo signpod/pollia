@@ -1,3 +1,4 @@
+import { DraftFilterType, SortOrderType } from "@/types/common/sort";
 import { atom } from "jotai";
 
 /**
@@ -14,7 +15,6 @@ export const meSearchQueryAtom = atom<string>("");
  * "used": 사용됨 (isDraft: false)
  * "unused": 미사용 (isDraft: true)
  */
-export type DraftFilterType = "all" | "used" | "unused";
 
 export const meDraftFilterAtom = atom<DraftFilterType>("all");
 
@@ -24,7 +24,6 @@ export const meDraftFilterAtom = atom<DraftFilterType>("all");
  * "latest": 최신순
  * "oldest": 오래된순
  */
-export type SortOrderType = "latest" | "oldest";
 
 export const surveySortOrderAtom = atom<SortOrderType>("latest");
 export const surveyQuestionSortOrderAtom = atom<SortOrderType>("latest");

@@ -1,6 +1,6 @@
 "use client";
 
-import { DraftFilterType, SortOrderType } from "@/atoms/me/searchAtoms";
+import { DraftFilterType, SortOrderType } from "@/types/common/sort";
 import { SurveyQuestionSummary } from "@/types/domain/survey";
 import { Survey } from "@prisma/client";
 import { Button, Typo } from "@repo/ui/components";

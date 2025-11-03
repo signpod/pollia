@@ -1,7 +1,7 @@
 "use server";
 
-import { SortOrderType } from "@/atoms/me/searchAtoms";
 import prisma from "@/database/utils/prisma/client";
+import { SortOrderType } from "@/types/common/sort";
 import { GetUserSurveysResponse } from "@/types/dto";
 import { requireAuth } from "../common/auth";
 

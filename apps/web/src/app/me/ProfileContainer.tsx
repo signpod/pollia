@@ -1,15 +1,11 @@
 import { ErrorBoundary } from "react-error-boundary";
 
-import {
-  DraftFilterType,
-  SortOrderType,
-  meDraftFilterAtom,
-  meSearchQueryAtom,
-  surveySortOrderAtom,
-} from "@/atoms/me/searchAtoms";
+import { meDraftFilterAtom, meSearchQueryAtom, surveySortOrderAtom } from "@/atoms/me/searchAtoms";
 import { BaseSearchBar } from "@/components/common/BaseSearchBar";
 import { useSearchQuery } from "@/hooks/common/useSearchQuery";
 import { useCurrentUser } from "@/hooks/user/useCurrentUser";
+import type { DraftFilterType, SortOrderType } from "@/types/common/sort";
+
 import {
   Button,
   Select,
