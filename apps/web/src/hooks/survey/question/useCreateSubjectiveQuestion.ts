@@ -7,6 +7,7 @@ import type {
   CreateSubjectiveQuestionResponse,
 } from "@/types/dto/survey";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useResetSurveyQuestion } from "./useResetSurveyQuestion";
 
 interface UseCreateSubjectiveQuestionOptions {
   onSuccess?: (data: CreateSubjectiveQuestionResponse) => void;
@@ -15,6 +16,7 @@ interface UseCreateSubjectiveQuestionOptions {
 
 export function useCreateSubjectiveQuestion(options: UseCreateSubjectiveQuestionOptions = {}) {
   const queryClient = useQueryClient();
+  const { handleResetSurveyQuestion } = useResetSurveyQuestion();
 
   return useMutation({
     mutationFn: async (
@@ -31,6 +33,7 @@ export function useCreateSubjectiveQuestion(options: UseCreateSubjectiveQuestion
           queryKey: surveyQueryKeys.survey(variables.surveyId),
         });
       }
+      handleResetSurveyQuestion();
       options.onSuccess?.(data);
     },
     onError: error => {
