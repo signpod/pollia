@@ -3,7 +3,6 @@ import {
   scaleImageFileUploadIdAtom,
   scaleImageUrlAtom,
   scaleTitleAtom,
-  scaleTitleTouchedAtom,
 } from "@/atoms/survey/create/scaleInfoAtoms";
 import { scaleInfoSchema } from "@/schemas/survey/scaleInfoSchema";
 import { DescriptionInputSection } from "../inputs/DescriptionInputSection";
@@ -19,11 +18,7 @@ export function ScaleInfoStep() {
           imageUrlAtom={scaleImageUrlAtom}
           imageFileUploadIdAtom={scaleImageFileUploadIdAtom}
         />
-        <SubjectInputSection
-          titleAtom={scaleTitleAtom}
-          touchedAtom={scaleTitleTouchedAtom}
-          schema={scaleInfoSchema}
-        />
+        <SubjectInputSection titleAtom={scaleTitleAtom} schema={scaleInfoSchema} />
         <DescriptionInputSection descriptionAtom={scaleDescriptionAtom} />
       </div>
 

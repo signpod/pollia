@@ -10,8 +10,6 @@ export const selectedQuestionAtom = atom<Set<SurveyQuestionSummary>>(
 
 export const searchQueryAtom = atom<string>("");
 
-export const surveyTitleTouchedAtom = atom<boolean>(false);
-
 export const selectedQuestionTypesAtom = atom<Set<SurveyQuestionType>>(
   new Set<SurveyQuestionType>(),
 );
@@ -49,7 +47,6 @@ export const resetSurveyAtom = atom(null, (_get, set) => {
   set(surveyTitleAtom, "");
   set(selectedQuestionAtom, new Set<SurveyQuestionSummary>());
   set(searchQueryAtom, "");
-  set(surveyTitleTouchedAtom, false);
 });
 
 export const surveyValidationAtom = atom(get => {

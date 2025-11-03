@@ -1,7 +1,6 @@
 import { atom } from "jotai";
 
 export const subjectiveTitleAtom = atom<string>("");
-export const subjectiveTitleTouchedAtom = atom<boolean>(false);
 export const subjectiveDescriptionAtom = atom<string>("");
 export const subjectiveImageUrlAtom = atom<string | undefined>(undefined);
 export const subjectiveImageFileUploadIdAtom = atom<string | undefined>(undefined);
@@ -20,7 +19,6 @@ export const subjectiveDataAtom = atom(get => ({
 
 export const resetSubjectiveAtom = atom(null, (_get, set) => {
   set(subjectiveTitleAtom, "");
-  set(subjectiveTitleTouchedAtom, false);
   set(subjectiveDescriptionAtom, "");
   set(subjectiveImageUrlAtom, undefined);
   set(subjectiveImageFileUploadIdAtom, undefined);

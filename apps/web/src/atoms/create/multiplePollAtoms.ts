@@ -12,7 +12,6 @@ export const multiplePollCategoryAtom = atom<(typeof POLL_CATEGORIES)[number] | 
   undefined,
 );
 export const multiplePollTitleAtom = atom<string>("");
-export const multiplePollTitleTouchedAtom = atom<boolean>(false);
 export const multiplePollDescriptionAtom = atom<string>("");
 export const multiplePollThumbnailUrlAtom = atom<string | undefined>(undefined);
 export const multiplePollThumbnailFileUploadIdAtom = atom<string | undefined>(undefined);
@@ -167,7 +166,6 @@ export const multiplePollDataAtom = atom(get => {
 export const resetMultiplePollAtom = atom(null, (_get, set) => {
   set(multiplePollCategoryAtom, undefined);
   set(multiplePollTitleAtom, "");
-  set(multiplePollTitleTouchedAtom, false);
   set(multiplePollDescriptionAtom, "");
   set(multiplePollThumbnailUrlAtom, undefined);
   set(multiplePollThumbnailFileUploadIdAtom, undefined);

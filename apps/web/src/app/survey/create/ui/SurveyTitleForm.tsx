@@ -1,12 +1,9 @@
 "use client";
 
-import {
-  surveyTitleAtom,
-  surveyTitleTouchedAtom,
-  surveyValidationAtom,
-} from "@/atoms/create/surveyAtoms";
+import { surveyTitleAtom, surveyValidationAtom } from "@/atoms/create/surveyAtoms";
 import { Input } from "@repo/ui/components";
 import { useAtom, useAtomValue } from "jotai";
+import { useState } from "react";
 
 export function SurveyTitleForm() {
   const { title, handleChange, errorMessage, handleBlur } = useSurveyTitleForm();
@@ -29,7 +26,7 @@ export function SurveyTitleForm() {
 function useSurveyTitleForm() {
   const [title, setTitle] = useAtom(surveyTitleAtom);
   const validation = useAtomValue(surveyValidationAtom);
-  const [touched, setTouched] = useAtom(surveyTitleTouchedAtom);
+  const [touched, setTouched] = useState<boolean>(false);
 
   const handleBlur = () => {
     setTouched(true);
