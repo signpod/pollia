@@ -1,15 +1,11 @@
 @import "tailwindcss";
-@import "tailwindcss";
+@import "../../packages/tailwind-config/color/primitive-color.css";
+@import "../../packages/tailwind-config/color/semantic-color.css";
+@import "../../packages/tailwind-config/color/component-color.css";
+@import "../../packages/tailwind-config/tiptap.css";
 
 @source "../ui/src/**/*.{js,ts,jsx,tsx}";
 @source "../../apps/web/src/**/*.{js,ts,jsx,tsx}";
-
-@import "../../packages/tailwind-config/color/primitive-color.css";
-@import "../../packages/tailwind-config/color/semantic-color.css";
-@import "../../packages/tailwind-config/color/component-color.css";
-@import "../../packages/tailwind-config/color/primitive-color.css";
-@import "../../packages/tailwind-config/color/semantic-color.css";
-@import "../../packages/tailwind-config/color/component-color.css";
 
 @theme {
   /* Sub colors */
