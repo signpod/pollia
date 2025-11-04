@@ -66,7 +66,7 @@ function SurveyQuestionCreateDoneContent() {
             </Button>
           </Link>
           <Link href="/survey/create" className="w-full">
-            <Button className="w-full" variant="primary" aria-label="질문 하나 더 만들기">
+            <Button className="w-full" variant="primary" aria-label="설문지 만들기">
               <Typo.ButtonText size="large">설문지 만들기</Typo.ButtonText>
             </Button>
           </Link>
