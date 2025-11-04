@@ -43,7 +43,7 @@ export default function FloatingButton({
         <motion.div
           className="overflow-hidden"
           animate={{
-            width: showText ? "120px" : "0px",
+            width: showText ? "74px" : "0px",
             opacity: showText ? 1 : 0,
           }}
           transition={{ duration: 0.3, ease: "easeInOut" }}
