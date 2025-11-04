@@ -10,7 +10,7 @@ interface SubjectInputSectionProps {
 
 export function SubjectInputSection({ titleAtom, schema }: SubjectInputSectionProps) {
   const [title, setTitle] = useAtom(titleAtom);
-  const [touched, setTouched] = useState(false);
+  const [touched, setTouched] = useState<boolean>(false);
   const [error, setError] = useState<string | undefined>();
 
   const handleBlur = useCallback(() => {

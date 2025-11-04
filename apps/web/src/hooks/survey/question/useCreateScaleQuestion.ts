@@ -4,6 +4,7 @@ import { createScaleQuestion } from "@/actions/survey/question";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
 import type { CreateScaleQuestionRequest, CreateScaleQuestionResponse } from "@/types/dto/survey";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useResetSurveyQuestion } from "./useResetSurveyQuestion";
 
 interface UseCreateScaleQuestionOptions {
   onSuccess?: (data: CreateScaleQuestionResponse) => void;
@@ -12,6 +13,7 @@ interface UseCreateScaleQuestionOptions {
 
 export function useCreateScaleQuestion(options: UseCreateScaleQuestionOptions = {}) {
   const queryClient = useQueryClient();
+  const { handleResetSurveyQuestion } = useResetSurveyQuestion();
 
   return useMutation({
     mutationFn: async (payload: CreateScaleQuestionRequest): Promise<CreateScaleQuestionResponse> =>
@@ -25,6 +27,7 @@ export function useCreateScaleQuestion(options: UseCreateScaleQuestionOptions = 
           queryKey: surveyQueryKeys.survey(variables.surveyId),
         });
       }
+      handleResetSurveyQuestion();
       options.onSuccess?.(data);
     },
     onError: error => {

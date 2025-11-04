@@ -1,6 +1,6 @@
 "use client";
 
-import { searchQueryAtom, selectedQuestionTypesAtom } from "@/atoms/create/surveyAtoms";
+import { searchQueryAtom, selectedQuestionTypesAtom } from "@/atoms/survey/surveyAtoms";
 import { useReadSurveyQuestions } from "@/hooks/survey/question/useReadSurveyQuestions";
 import { SurveyQuestionSummary } from "@/types/domain/survey";
 import { useAtomValue } from "jotai";
@@ -25,6 +25,7 @@ function useSurveyQuestionData() {
     options: {
       searchQuery,
       selectedQuestionTypes: Array.from(selectedQuestionTypes),
+      isDraft: true,
     },
   });
 

@@ -3,7 +3,7 @@ import {
   multipleChoiceImageFileUploadIdAtom,
   multipleChoiceImageUrlAtom,
   multipleChoiceTitleAtom,
-} from "@/atoms/survey/create/multipleChoiceInfoAtoms";
+} from "@/atoms/survey/quetion/multipleChoiceInfoAtoms";
 import { multipleChoiceInfoSchema } from "@/schemas/survey/multipleChoiceInfoSchema";
 import { DescriptionInputSection } from "../inputs/DescriptionInputSection";
 import { ImageSelectorSection } from "../inputs/ImageSelectorSection";

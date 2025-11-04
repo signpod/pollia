@@ -49,10 +49,6 @@ export function TypeTag<C extends ElementType = "div">({
     },
   );
 
-  if (!SURVEY_QUESTION_TYPE_LABELS[type]) {
-    return null;
-  }
-
   return (
     <Component {...props}>
       <Typo.Body size="small" className={cn(typeVariants({ type }), className)}>

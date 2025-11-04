@@ -1,8 +1,7 @@
 "use client";
 
 import { DraftFilterType, SortOrderType } from "@/types/common/sort";
-import { SurveyQuestionSummary } from "@/types/domain/survey";
-import { Survey } from "@prisma/client";
+import { SurveyQuestionSummary, SurveySummary } from "@/types/domain/survey";
 import { Button, Typo } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
 import { Loader2Icon } from "lucide-react";
@@ -19,9 +18,7 @@ export function ContentList({
   draftFilter = "all",
   sortOrder = "latest",
 }: {
-  items:
-    | SurveyQuestionSummary[]
-    | Pick<Survey, "id" | "title" | "description" | "imageUrl" | "createdAt" | "updatedAt">[];
+  items: SurveyQuestionSummary[] | SurveySummary[];
   baseHref: string;
   hasNextPage: boolean;
   fetchNextPage: () => void;
@@ -124,9 +121,7 @@ export function ContentList({
 function UsedTag({
   item,
 }: {
-  item:
-    | SurveyQuestionSummary
-    | Pick<Survey, "id" | "title" | "description" | "imageUrl" | "createdAt" | "updatedAt">;
+  item: SurveyQuestionSummary | SurveySummary;
 }) {
   const isDraft = "isDraft" in item ? item.isDraft : false;
   const text = isDraft ? "미사용" : "사용";

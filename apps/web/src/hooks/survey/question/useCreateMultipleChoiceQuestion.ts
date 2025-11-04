@@ -7,6 +7,7 @@ import type {
   CreateMultipleChoiceQuestionResponse,
 } from "@/types/dto/survey";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useResetSurveyQuestion } from "./useResetSurveyQuestion";
 
 interface UseCreateMultipleChoiceQuestionOptions {
   onSuccess?: (data: CreateMultipleChoiceQuestionResponse) => void;
@@ -17,6 +18,7 @@ export function useCreateMultipleChoiceQuestion(
   options: UseCreateMultipleChoiceQuestionOptions = {},
 ) {
   const queryClient = useQueryClient();
+  const { handleResetSurveyQuestion } = useResetSurveyQuestion();
 
   return useMutation({
     mutationFn: async (
@@ -31,6 +33,7 @@ export function useCreateMultipleChoiceQuestion(
           queryKey: surveyQueryKeys.survey(variables.surveyId),
         });
       }
+      handleResetSurveyQuestion();
       options.onSuccess?.(data);
     },
     onError: error => {

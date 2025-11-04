@@ -7,7 +7,11 @@ import {
   ToggleAllCheckButtons,
   TypeTag,
 } from "@/app/survey/create/ui";
-import { reorderQuestionsAtom, searchQueryAtom, selectedQuestionAtom } from "@/atoms/create";
+import {
+  reorderQuestionsAtom,
+  searchQueryAtom,
+  selectedQuestionAtom,
+} from "@/atoms/survey/surveyAtoms";
 import { SurveyQuestionSummary } from "@/types/domain/survey";
 import { Typo } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";

@@ -2,7 +2,7 @@ import { SURVEY_QUESTION_TYPES } from "@/constants/survey";
 import { SurveyQuestionType } from "@/types/domain/survey";
 import { atom } from "jotai";
 
-export const surveyQuestionTypeAtom = atom<SurveyQuestionType | undefined>(undefined);
+export const surveyQuestionTypeAtom = atom<SurveyQuestionType | null>(null);
 
 export const availableSurveyTypesAtom = atom(SURVEY_QUESTION_TYPES);
 
@@ -38,7 +38,7 @@ export const categoryStepValidationAtom = atom(get => {
 });
 
 export const resetSurveyTypeAtom = atom(null, (_get, set) => {
-  set(surveyQuestionTypeAtom, undefined);
+  set(surveyQuestionTypeAtom, null);
 });
 
 export const setSurveyTypeAtom = atom(null, (_get, set, newSurveyType: SurveyQuestionType) => {

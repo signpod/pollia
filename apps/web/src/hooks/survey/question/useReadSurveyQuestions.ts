@@ -30,7 +30,7 @@ export const useReadSurveyQuestions = (params?: {
       return data.pages.flatMap(page =>
         page.data.map(item => ({
           ...item,
-          isDraft: item.surveyId === null ? true : false,
+          isDraft: item.surveyId === null,
         })),
       );
     },

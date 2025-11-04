@@ -1,6 +1,6 @@
 "use client";
 
-import { surveyQuestionTypeAtom } from "@/atoms/survey/create/surveyTypeAtoms";
+import { surveyQuestionTypeAtom } from "@/atoms/survey/quetion/surveyTypeAtoms";
 import { CREATE_SURVEY_STEPS, createStepConfigs } from "@/constants/createSurvey";
 import {
   FixedBottomLayout,

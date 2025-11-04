@@ -1,6 +1,6 @@
 "use client";
 
-import { selectedQuestionTypesAtom, toggleQuestionTypeAtom } from "@/atoms/create";
+import { selectedQuestionTypesAtom, toggleQuestionTypeAtom } from "@/atoms/survey/surveyAtoms";
 import { SURVEY_QUESTION_TYPES } from "@/constants/survey";
 import { SurveyQuestionType } from "@prisma/client";
 import { Typo } from "@repo/ui/components";

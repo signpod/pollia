@@ -7,7 +7,7 @@ import type { CreateSurveyRequest, CreateSurveyResponse } from "@/types/dto/surv
 const SURVEY_MESSAGE = {
   TITLE_REQUIRED: "제목은 필수입니다.",
   QUESTIONS_REQUIRED: "최소 1개 이상의 질문이 필요합니다.",
-  SURVEY_CREATION_FAILED: "설문조사지 생성 중 오류가 발생했습니다.",
+  SURVEY_CREATION_FAILED: "설문지 생성 중 오류가 발생했습니다.",
 };
 
 function validateSurveyRequest(request: CreateSurveyRequest): string | null {

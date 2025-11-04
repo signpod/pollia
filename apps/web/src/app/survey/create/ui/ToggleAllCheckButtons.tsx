@@ -2,7 +2,7 @@ import {
   deselectAllQuestionsAtom,
   selectAllQuestionsAtom,
   selectedQuestionAtom,
-} from "@/atoms/create";
+} from "@/atoms/survey/surveyAtoms";
 import { SurveyQuestionSummary } from "@/types/domain/survey";
 import { Button, Typo } from "@repo/ui/components";
 import { useAtomValue, useSetAtom } from "jotai";

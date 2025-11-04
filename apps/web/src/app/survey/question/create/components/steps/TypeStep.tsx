@@ -1,6 +1,6 @@
 "use client";
 
-import { surveyQuestionTypeAtom } from "@/atoms/survey/create/surveyTypeAtoms";
+import { surveyQuestionTypeAtom } from "@/atoms/survey/quetion/surveyTypeAtoms";
 import { SurveyTypeSelect } from "@/components/survey/SurveyTypeSelect";
 import { cn } from "@/lib/utils";
 import { SurveyQuestionType } from "@/types/domain/survey";
@@ -23,7 +23,10 @@ export function TypeStep() {
 
   return (
     <>
-      <SurveyQuestionTypeStep selectedType={selectedType} onTypeChange={handleTypeChange} />
+      <SurveyQuestionTypeStep
+        selectedType={selectedType ?? undefined}
+        onTypeChange={handleTypeChange}
+      />
       <FixedBottomLayout.Content>
         <div className="p-5">
           <Button onClick={goNext} disabled={!selectedType} variant="primary" fullWidth={true}>
