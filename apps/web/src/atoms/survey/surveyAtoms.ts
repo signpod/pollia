@@ -1,3 +1,4 @@
+import { baseInfoSchema } from "@/schemas/survey/baseInfoSchema";
 import { SurveyQuestionSummary } from "@/types/domain/survey";
 import { SurveyQuestionType } from "@prisma/client";
 import { atom } from "jotai";
@@ -10,8 +11,6 @@ export const selectedQuestionAtom = atom<Set<SurveyQuestionSummary>>(
 
 export const searchQueryAtom = atom<string>("");
 
-export const surveyTitleTouchedAtom = atom<boolean>(false);
-
 export const selectedQuestionTypesAtom = atom<Set<SurveyQuestionType>>(
   new Set<SurveyQuestionType>(),
 );
@@ -19,15 +18,6 @@ export const selectedQuestionTypesAtom = atom<Set<SurveyQuestionType>>(
 export const selectedQuestionCountAtom = atom(get => {
   const selectedQuestions = get(selectedQuestionAtom);
   return selectedQuestions.size;
-});
-
-export const toggleQuestionAtom = atom(null, (get, set, question: SurveyQuestionSummary) => {
-  const currentQuestions = get(selectedQuestionAtom);
-  if (currentQuestions.has(question)) {
-    set(selectedQuestionAtom, new Set([...currentQuestions].filter(q => q.id !== question.id)));
-  } else {
-    set(selectedQuestionAtom, new Set([...currentQuestions, question]));
-  }
 });
 
 export const selectAllQuestionsAtom = atom(
@@ -49,18 +39,32 @@ export const resetSurveyAtom = atom(null, (_get, set) => {
   set(surveyTitleAtom, "");
   set(selectedQuestionAtom, new Set<SurveyQuestionSummary>());
   set(searchQueryAtom, "");
-  set(surveyTitleTouchedAtom, false);
 });
 
 export const surveyValidationAtom = atom(get => {
   const title = get(surveyTitleAtom);
   const selectedQuestions = get(selectedQuestionAtom);
 
+  let titleError: string | null = null;
+  const trimmedTitle = title.trim();
+
+  try {
+    const result = baseInfoSchema.safeParse({ title: trimmedTitle });
+    if (!result.success) {
+      const titleIssue = result.error.issues.find(issue => issue.path[0] === "title");
+      titleError = titleIssue?.message ?? null;
+    }
+  } catch {
+    titleError = null;
+  }
+
+  const questionsError = selectedQuestions.size === 0 ? SURVEY_FORM_ERROR_MESSAGES.questions : null;
+
   return {
-    isValid: !!title && selectedQuestions.size > 0,
+    isValid: !titleError && selectedQuestions.size > 0,
     errors: {
-      title: !title ? SURVEY_FORM_ERROR_MESSAGES.title : null,
-      questions: selectedQuestions.size === 0 ? SURVEY_FORM_ERROR_MESSAGES.questions : null,
+      title: titleError,
+      questions: questionsError,
     },
   };
 });
@@ -78,6 +82,5 @@ export const toggleQuestionTypeAtom = atom(null, (get, set, questionType: Survey
 });
 
 const SURVEY_FORM_ERROR_MESSAGES = {
-  title: "설문조사지 제목을 입력해주세요",
   questions: "최소 1개 이상의 질문을 선택해주세요",
 };

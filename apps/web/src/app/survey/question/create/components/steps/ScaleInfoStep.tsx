@@ -3,12 +3,7 @@ import {
   scaleImageFileUploadIdAtom,
   scaleImageUrlAtom,
   scaleTitleAtom,
-<<<<<<< Updated upstream
-} from "@/atoms/survey/create/scaleInfoAtoms";
-=======
-  scaleTitleTouchedAtom,
 } from "@/atoms/survey/quetion/scaleInfoAtoms";
->>>>>>> Stashed changes
 import { scaleInfoSchema } from "@/schemas/survey/scaleInfoSchema";
 import { DescriptionInputSection } from "../inputs/DescriptionInputSection";
 import { ImageSelectorSection } from "../inputs/ImageSelectorSection";

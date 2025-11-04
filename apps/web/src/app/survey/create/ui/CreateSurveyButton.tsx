@@ -3,7 +3,6 @@
 import {
   resetSurveyAtom,
   selectedQuestionAtom,
-  selectedQuestionCountAtom,
   surveyTitleAtom,
   surveyValidationAtom,
 } from "@/atoms/survey/surveyAtoms";
@@ -37,7 +36,6 @@ function useCreateSurveyButton() {
   const surveyTitle = useAtomValue(surveyTitleAtom);
   const selectedQuestions = useAtomValue(selectedQuestionAtom);
   const validation = useAtomValue(surveyValidationAtom);
-  const selectedQuestionCount = useAtomValue(selectedQuestionCountAtom);
   const resetSurvey = useSetAtom(resetSurveyAtom);
   const pushAfter = usePushAfter();
 
@@ -60,7 +58,7 @@ function useCreateSurveyButton() {
     });
   };
 
-  const disabled = !validation.isValid || selectedQuestionCount === 0;
+  const disabled = !validation.isValid;
 
   return {
     handleCreateSurvey,

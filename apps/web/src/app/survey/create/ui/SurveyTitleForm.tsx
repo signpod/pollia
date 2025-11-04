@@ -1,18 +1,12 @@
 "use client";
+import { surveyTitleAtom } from "@/atoms/survey/surveyAtoms";
 import { baseInfoSchema } from "@/schemas/survey/baseInfoSchema";
-<<<<<<< Updated upstream
-import { } from "@/atoms/create/surveyAtoms";
-=======
-import {
-  surveyTitleAtom,
-} from "@/atoms/survey/surveyAtoms";
->>>>>>> Stashed changes
 import { Input } from "@repo/ui/components";
 import { useAtom } from "jotai";
 import { useCallback, useState } from "react";
 
 export function SurveyTitleForm() {
-  const { title, handleChange, errorMessage, handleBlur, handleFocus } = useSurveyTitleForm();
+  const { title, handleChange, errorMessage, handleBlur } = useSurveyTitleForm();
 
   return (
     <Input
@@ -23,7 +17,6 @@ export function SurveyTitleForm() {
       showLength={true}
       value={title}
       onChange={handleChange}
-      onFocus={handleFocus}
       onBlur={handleBlur}
       errorMessage={errorMessage}
     />
@@ -32,13 +25,11 @@ export function SurveyTitleForm() {
 
 function useSurveyTitleForm() {
   const [title, setTitle] = useAtom(surveyTitleAtom);
-  const [touched, setTouched] = useState<boolean>(false);
   const [error, setError] = useState<string | undefined>();
 
   const handleBlur = useCallback(() => {
     const trimmed = title.trim();
     setTitle(trimmed);
-    setTouched(true);
 
     try {
       const result = baseInfoSchema.safeParse({ title: trimmed });
@@ -54,22 +45,17 @@ function useSurveyTitleForm() {
     }
   }, [title, setTitle]);
 
-  const handleFocus = useCallback(() => {
-    setTouched(false);
-  }, []);
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setTitle(value);
   };
 
-  const errorMessage = touched ? error : undefined;
+  const errorMessage = error;
 
   return {
     title,
     handleChange,
     errorMessage,
     handleBlur,
-    handleFocus,
   };
 }
