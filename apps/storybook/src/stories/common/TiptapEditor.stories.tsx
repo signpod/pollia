@@ -22,6 +22,10 @@ const meta: Meta<typeof TiptapEditor> = {
       control: "boolean",
       description: "편집 가능 여부",
     },
+    showToolbar: {
+      control: "boolean",
+      description: "툴바 표시 여부",
+    },
     onUpdate: {
       action: "updated",
       description: "콘텐츠 업데이트 콜백",
@@ -105,6 +109,38 @@ export const Interactive: Story = {
   },
 };
 
+export const WithToolbar: Story = {
+  args: {
+    content: "<p>툴바를 사용해서 텍스트를 꾸며보세요!</p>",
+    placeholder: "내용을 입력하세요",
+    editable: true,
+    showToolbar: true,
+  },
+};
+
+export const ToolbarWithContent: Story = {
+  args: {
+    content: `
+      <h1>제목 1</h1>
+      <h2>제목 2</h2>
+      <h3>제목 3</h3>
+      <p>이것은 <strong>굵은</strong> 텍스트와 <em>기울임</em> 텍스트입니다.</p>
+      <ul>
+        <li>목록 항목 1</li>
+        <li>목록 항목 2</li>
+      </ul>
+      <ol>
+        <li>번호 항목 1</li>
+        <li>번호 항목 2</li>
+      </ol>
+      <blockquote>인용문입니다</blockquote>
+      <pre><code>const code = "코드 블록";</code></pre>
+    `,
+    showToolbar: true,
+    editable: true,
+  },
+};
+
 export const States: Story = {
   render: () => (
     <div className="w-[600px] space-y-8">
@@ -116,6 +152,11 @@ export const States: Story = {
       <div>
         <h3 className="mb-3 text-sm font-medium">With Content</h3>
         <TiptapEditor content="<p>내용이 있는 에디터입니다.</p>" />
+      </div>
+
+      <div>
+        <h3 className="mb-3 text-sm font-medium">With Toolbar</h3>
+        <TiptapEditor content="<p>툴바가 있는 에디터입니다.</p>" showToolbar={true} />
       </div>
 
       <div>
