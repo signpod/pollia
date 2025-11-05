@@ -3,6 +3,7 @@ import {
   CreateSurveyButton,
   SelectedQuestionDataContainer,
   SelectedQuestionList,
+  SurveyDescriptionForm,
   SurveyQuestionDataContainer,
   SurveyQuestionList,
   SurveyTitleForm,
@@ -30,6 +31,7 @@ export function CreateSurveyContent() {
 
       <div className="flex h-full flex-col gap-8 py-4">
         <SurveyTitleForm />
+        <SurveyDescriptionForm />
         <SurveyQuestionDataContainer>
           {({ questions, isLoading }) => (
             <SurveyQuestionList isLoading={isLoading} questions={questions} />

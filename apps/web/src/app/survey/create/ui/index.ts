@@ -6,6 +6,7 @@ export { QuestionList } from "./QuestionList";
 export { SearchBar } from "./SearchBar";
 export { SelectedQuestionDataContainer } from "./SelectedQuestionDataContainer";
 export { SelectedQuestionList } from "./SelectedQuestionList";
+export { SurveyDescriptionForm } from "./SurveyDescriptionForm";
 export { SurveyQuestionDataContainer } from "./SurveyQuestionDataContainer";
 export { SurveyQuestionFilter } from "./SurveyQuestionFilter";
 export { SurveyQuestionList } from "./SurveyQuestionList";
