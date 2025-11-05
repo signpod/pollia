@@ -11,7 +11,7 @@
 /* Paragraph */
 .tiptap p {
   margin: 0.75em 0;
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 .tiptap p:first-child {
