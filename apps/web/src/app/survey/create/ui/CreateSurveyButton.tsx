@@ -9,6 +9,7 @@ import {
 } from "@/atoms/survey/surveyAtoms";
 import { usePushAfter } from "@/hooks/common/usePushAfter";
 import { useCreateSurvey } from "@/hooks/survey/useCreateSurvey";
+import { sanitizeTiptapContent } from "@/lib/tiptap/utils";
 import { Button, toast } from "@repo/ui/components";
 import { useAtomValue, useSetAtom } from "jotai";
 
@@ -56,7 +57,7 @@ function useCreateSurveyButton() {
   const handleCreateSurvey = () => {
     mutate({
       title: surveyTitle,
-      description: surveyDescription || null,
+      description: sanitizeTiptapContent(surveyDescription),
       questionIds: Array.from(selectedQuestions).map(question => question.id),
     });
   };
