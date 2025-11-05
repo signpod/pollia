@@ -4,7 +4,7 @@ import {
   subjectiveImageUrlAtom,
   subjectiveTitleAtom,
 } from "@/atoms/survey/quetion/subjectiveInfoAtoms";
-import { subjectiveInfoSchema } from "@/schemas/survey/subjectiveInfoSchema";
+import { subjectiveInfoSchema } from "@/schemas/survey/question/subjectiveInfoSchema";
 import { DescriptionInputSection } from "../inputs/DescriptionInputSection";
 import { ImageSelectorSection } from "../inputs/ImageSelectorSection";
 import { SubjectInputSection } from "../inputs/SubjectInputSection";

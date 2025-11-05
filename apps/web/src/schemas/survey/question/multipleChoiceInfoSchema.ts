@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { baseInfoSchema } from "./baseInfoSchema";
+import { baseInfoSchema } from "../baseInfoSchema";
 
 const surveyOptionSchema = z.object({
   id: z.string(),

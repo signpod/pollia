@@ -1,6 +1,6 @@
 import { multipleChoiceDataAtom } from "@/atoms/survey/quetion/multipleChoiceInfoAtoms";
 import { useCreateMultipleChoiceQuestion } from "@/hooks/survey/question";
-import { multipleChoiceInfoSchema } from "@/schemas/survey/multipleChoiceInfoSchema";
+import { multipleChoiceInfoSchema } from "@/schemas/survey/question/multipleChoiceInfoSchema";
 import type { CreateMultipleChoiceQuestionRequest } from "@/types/dto/survey";
 import { Button, FixedBottomLayout, Typo, toast } from "@repo/ui/components";
 import { useAtomValue } from "jotai";

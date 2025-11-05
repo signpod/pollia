@@ -4,7 +4,7 @@ import {
   multipleChoiceImageUrlAtom,
   multipleChoiceTitleAtom,
 } from "@/atoms/survey/quetion/multipleChoiceInfoAtoms";
-import { multipleChoiceInfoSchema } from "@/schemas/survey/multipleChoiceInfoSchema";
+import { multipleChoiceInfoSchema } from "@/schemas/survey/question/multipleChoiceInfoSchema";
 import { DescriptionInputSection } from "../inputs/DescriptionInputSection";
 import { ImageSelectorSection } from "../inputs/ImageSelectorSection";
 import { OptionSelectorSection } from "../inputs/OptionSelectorSection";
