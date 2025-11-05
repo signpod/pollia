@@ -29,6 +29,8 @@ export * from "./common/LabelText";
 export * from "./common/Modal";
 export * from "./common/Tab";
 export * from "./common/Select";
+export * from "./common/TiptapEditor";
+export * from "./common/TiptapViewer";
 
 // Hooks
 export * from "../hooks/useStep";

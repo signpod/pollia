@@ -4,7 +4,7 @@ import {
   scaleImageUrlAtom,
   scaleTitleAtom,
 } from "@/atoms/survey/quetion/scaleInfoAtoms";
-import { scaleInfoSchema } from "@/schemas/survey/scaleInfoSchema";
+import { scaleInfoSchema } from "@/schemas/survey/question/scaleInfoSchema";
 import { DescriptionInputSection } from "../inputs/DescriptionInputSection";
 import { ImageSelectorSection } from "../inputs/ImageSelectorSection";
 import { SubjectInputSection } from "../inputs/SubjectInputSection";

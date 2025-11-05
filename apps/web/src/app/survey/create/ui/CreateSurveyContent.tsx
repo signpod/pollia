@@ -3,6 +3,7 @@ import {
   CreateSurveyButton,
   SelectedQuestionDataContainer,
   SelectedQuestionList,
+  SurveyDescriptionForm,
   SurveyQuestionDataContainer,
   SurveyQuestionList,
   SurveyTitleForm,
@@ -18,7 +19,7 @@ export function CreateSurveyContent() {
     <FixedBottomLayout className="flex flex-col px-5">
       <FixedTopLayout>
         <FixedTopLayout.Content className="flex w-full items-center justify-between py-4">
-          <Typo.MainTitle size="medium">설문지 생성</Typo.MainTitle>
+          <Typo.MainTitle size="medium">설문조사 생성</Typo.MainTitle>
           <div className="flex items-center gap-1">
             <Typo.Body size="large" className="font-bold text-violet-500">
               {selectedQuestionCount}
@@ -30,6 +31,7 @@ export function CreateSurveyContent() {
 
       <div className="flex h-full flex-col gap-8 py-4">
         <SurveyTitleForm />
+        <SurveyDescriptionForm />
         <SurveyQuestionDataContainer>
           {({ questions, isLoading }) => (
             <SurveyQuestionList isLoading={isLoading} questions={questions} />

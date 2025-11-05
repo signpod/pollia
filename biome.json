@@ -7,7 +7,17 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "ignore": ["node_modules", ".next", "dist", "build", "out", "storybook-static", ".turbo"]
+    "ignore": [
+      "node_modules",
+      ".next",
+      "dist",
+      "build",
+      "out",
+      "storybook-static",
+      ".turbo",
+      "**/package.json",
+      "yarn.lock"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -90,6 +100,15 @@
       "attributePosition": "auto"
     }
   },
+  "json": {
+    "formatter": {
+      "enabled": true,
+      "indentStyle": "space",
+      "indentWidth": 2,
+      "lineWidth": 80,
+      "trailingCommas": "none"
+    }
+  },
   "overrides": [
     {
       "include": ["*.ts", "*.tsx", "*.js", "*.jsx"],
@@ -99,6 +118,12 @@
             "useImportType": "off"
           }
         }
+      }
+    },
+    {
+      "include": ["**/package.json"],
+      "formatter": {
+        "lineWidth": 120
       }
     }
   ]

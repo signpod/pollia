@@ -5,6 +5,8 @@ import { atom } from "jotai";
 
 export const surveyTitleAtom = atom<string>("");
 
+export const surveyDescriptionAtom = atom<string>("");
+
 export const selectedQuestionAtom = atom<Set<SurveyQuestionSummary>>(
   new Set<SurveyQuestionSummary>(),
 );
@@ -37,6 +39,7 @@ export const reorderQuestionsAtom = atom(null, (_get, set, newOrder: SurveyQuest
 
 export const resetSurveyAtom = atom(null, (_get, set) => {
   set(surveyTitleAtom, "");
+  set(surveyDescriptionAtom, "");
   set(selectedQuestionAtom, new Set<SurveyQuestionSummary>());
   set(searchQueryAtom, "");
 });

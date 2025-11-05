@@ -1,6 +1,6 @@
 import { scaleDataAtom } from "@/atoms/survey/quetion/scaleInfoAtoms";
 import { useCreateScaleQuestion } from "@/hooks/survey/question";
-import { scaleInfoSchema } from "@/schemas/survey/scaleInfoSchema";
+import { scaleInfoSchema } from "@/schemas/survey/question/scaleInfoSchema";
 import type { CreateScaleQuestionRequest } from "@/types/dto/survey";
 import { Button, FixedBottomLayout, Typo, toast } from "@repo/ui/components";
 import { useAtomValue } from "jotai";

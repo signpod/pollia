@@ -3,11 +3,13 @@
 import {
   resetSurveyAtom,
   selectedQuestionAtom,
+  surveyDescriptionAtom,
   surveyTitleAtom,
   surveyValidationAtom,
 } from "@/atoms/survey/surveyAtoms";
 import { usePushAfter } from "@/hooks/common/usePushAfter";
 import { useCreateSurvey } from "@/hooks/survey/useCreateSurvey";
+import { sanitizeTiptapContent } from "@/lib/tiptap/utils";
 import { Button, toast } from "@repo/ui/components";
 import { useAtomValue, useSetAtom } from "jotai";
 
@@ -34,6 +36,7 @@ export function CreateSurveyButton() {
 
 function useCreateSurveyButton() {
   const surveyTitle = useAtomValue(surveyTitleAtom);
+  const surveyDescription = useAtomValue(surveyDescriptionAtom);
   const selectedQuestions = useAtomValue(selectedQuestionAtom);
   const validation = useAtomValue(surveyValidationAtom);
   const resetSurvey = useSetAtom(resetSurveyAtom);
@@ -54,6 +57,7 @@ function useCreateSurveyButton() {
   const handleCreateSurvey = () => {
     mutate({
       title: surveyTitle,
+      description: sanitizeTiptapContent(surveyDescription),
       questionIds: Array.from(selectedQuestions).map(question => question.id),
     });
   };

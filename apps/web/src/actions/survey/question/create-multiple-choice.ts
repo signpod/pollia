@@ -2,7 +2,7 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import prisma from "@/database/utils/prisma/client";
-import { multipleChoiceInfoSchema } from "@/schemas/survey/multipleChoiceInfoSchema";
+import { multipleChoiceInfoSchema } from "@/schemas/survey/question/multipleChoiceInfoSchema";
 import type {
   CreateMultipleChoiceQuestionRequest,
   CreateMultipleChoiceQuestionResponse,
