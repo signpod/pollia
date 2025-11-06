@@ -80,6 +80,20 @@ export const AllTypes: Story = {
         >
           <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>Toast 타입별 예시</h2>
           <button
+            onClick={() => toast.default("디폴트 메세지입니다.")}
+            style={{
+              padding: "0.75rem 1.5rem",
+              borderRadius: "8px",
+              border: "1px solid #e4e4e7",
+              background: "white",
+              cursor: "pointer",
+              fontWeight: "600",
+            }}
+            type="button"
+          >
+            Default Toast
+          </button>
+          <button
             onClick={() => toast.success("투표가 생성되었습니다!")}
             style={{
               padding: "0.75rem 1.5rem",
@@ -89,21 +103,9 @@ export const AllTypes: Story = {
               cursor: "pointer",
               fontWeight: "600",
             }}
+            type="button"
           >
             Success Toast
-          </button>
-          <button
-            onClick={() => toast.info("투표는 24시간 동안 진행됩니다.")}
-            style={{
-              padding: "0.75rem 1.5rem",
-              borderRadius: "8px",
-              border: "1px solid #e4e4e7",
-              background: "white",
-              cursor: "pointer",
-              fontWeight: "600",
-            }}
-          >
-            Info Toast
           </button>
           <button
             onClick={() => toast.warning("이미지 크기가 너무 큽니다.")}
@@ -115,21 +117,9 @@ export const AllTypes: Story = {
               cursor: "pointer",
               fontWeight: "600",
             }}
+            type="button"
           >
             Warning Toast
-          </button>
-          <button
-            onClick={() => toast.error("네트워크 오류가 발생했습니다.")}
-            style={{
-              padding: "0.75rem 1.5rem",
-              borderRadius: "8px",
-              border: "1px solid #e4e4e7",
-              background: "white",
-              cursor: "pointer",
-              fontWeight: "600",
-            }}
-          >
-            Error Toast
           </button>
         </div>
       </>
@@ -170,6 +160,7 @@ export const DirectUsage: Story = {
               cursor: "pointer",
               fontWeight: "600",
             }}
+            type="button"
           >
             Success
           </button>
@@ -190,10 +181,9 @@ export const DirectUsage: Story = {
 export const QueueManagement: Story = {
   render: () => {
     const showMultipleToasts = () => {
-      toast.success("첫 번째 토스트");
-      setTimeout(() => toast.info("두 번째 토스트"), 500);
+      toast.default("첫 번째 토스트");
+      setTimeout(() => toast.success("두 번째 토스트"), 500);
       setTimeout(() => toast.warning("세 번째 토스트"), 1000);
-      setTimeout(() => toast.error("네 번째 토스트"), 1500);
     };
 
     return (
@@ -219,6 +209,7 @@ export const QueueManagement: Story = {
               cursor: "pointer",
               fontWeight: "600",
             }}
+            type="button"
           >
             여러 개 토스트 띄우기
           </button>
@@ -254,6 +245,7 @@ export const CustomDuration: Story = {
         >
           <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>Duration 커스터마이징</h2>
           <button
+            type="button"
             onClick={() => toast.success("1초 후 사라집니다", { duration: 1000 })}
             style={{
               padding: "0.75rem 1.5rem",
@@ -268,7 +260,7 @@ export const CustomDuration: Story = {
           </button>
           <button
             onClick={() =>
-              toast.info("3초 후 사라집니다 (기본값)", {
+              toast.default("3초 후 사라집니다 (기본값)", {
                 duration: 3000,
               })
             }
@@ -280,6 +272,7 @@ export const CustomDuration: Story = {
               cursor: "pointer",
               fontWeight: "600",
             }}
+            type="button"
           >
             3초 (기본값)
           </button>
@@ -293,6 +286,7 @@ export const CustomDuration: Story = {
               cursor: "pointer",
               fontWeight: "600",
             }}
+            type="button"
           >
             7초 (긴 메시지용)
           </button>
@@ -322,16 +316,22 @@ export const RealWorldScenarios: Story = {
     const handleImageUpload = () => {
       // 이미지 업로드 실패 시뮬레이션
       setTimeout(() => {
-        toast.error("이미지 업로드에 실패했습니다.");
+        toast.warning("이미지 업로드에 실패했습니다.");
       }, 500);
     };
 
     const handleBookmark = () => {
-      toast.info("북마크에 추가되었습니다.");
+      toast.success("북마크에 추가되었습니다.");
     };
 
     const handleMaxVotes = () => {
       toast.warning("최대 5개까지 선택할 수 있습니다.");
+    };
+
+    const handleLongMessage = () => {
+      toast.success(
+        "줄이 넘어가는 긴 메세지 예시입니다. 줄이 넘어가는 긴 메세지 예시입니다. 줄이 넘어가는 긴 메세지 예시입니다.",
+      );
     };
 
     return (
@@ -356,6 +356,7 @@ export const RealWorldScenarios: Story = {
               cursor: "pointer",
               fontWeight: "600",
             }}
+            type="button"
           >
             투표 제출
           </button>
@@ -369,6 +370,7 @@ export const RealWorldScenarios: Story = {
               cursor: "pointer",
               fontWeight: "600",
             }}
+            type="button"
           >
             이미지 업로드 (실패)
           </button>
@@ -382,6 +384,7 @@ export const RealWorldScenarios: Story = {
               cursor: "pointer",
               fontWeight: "600",
             }}
+            type="button"
           >
             북마크 추가
           </button>
@@ -395,8 +398,23 @@ export const RealWorldScenarios: Story = {
               cursor: "pointer",
               fontWeight: "600",
             }}
+            type="button"
           >
             최대 개수 초과
+          </button>
+          <button
+            onClick={handleLongMessage}
+            style={{
+              padding: "0.75rem 1.5rem",
+              borderRadius: "8px",
+              border: "1px solid #e4e4e7",
+              background: "white",
+              cursor: "pointer",
+              fontWeight: "600",
+            }}
+            type="button"
+          >
+            긴 메세지
           </button>
         </div>
       </>
