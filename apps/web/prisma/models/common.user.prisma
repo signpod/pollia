@@ -3,10 +3,6 @@ model User {
   email String @unique
   name  String
 
-  polls         Poll[]         @relation("PollCreator")
-  votes         Vote[]
-  pollLikes     PollLike[]
-  pollBookmarks PollBookmark[]
   surveys       Survey[]       @relation("SurveyCreator")
   surveyAnswers SurveyAnswer[]
   fileUploads   FileUpload[]   @relation("FileUploader")
