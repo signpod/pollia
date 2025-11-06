@@ -1,9 +1,9 @@
 import { Typo } from "@repo/ui/components";
-import { SurveyCollection } from "./SurveyCollection";
-import { SurveyDescription } from "./SurveyDescription";
-import { SurveyImage } from "./SurveyImage";
-import { SurveyLogo } from "./SurveyLogo";
-import { SurveyReward } from "./SurveyReward";
+import { SurveyCollection } from "./components/SurveyCollection";
+import { SurveyDescription } from "./components/SurveyDescription";
+import { SurveyImage } from "./components/SurveyImage";
+import { SurveyLogo } from "./components/SurveyLogo";
+import { SurveyReward } from "./components/SurveyReward";
 
 const mockData = {
   logoUrl: "https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?w=150&h=150&fit=crop",
