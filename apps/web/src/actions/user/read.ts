@@ -2,7 +2,7 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import prisma from "@/database/utils/prisma/client";
-import type { GetCurrentUserResponse, GetUserStatsResponse } from "@/types/dto/user";
+import type { GetCurrentUserResponse } from "@/types/dto/user";
 
 export async function getCurrentUser(): Promise<GetCurrentUserResponse> {
   try {
@@ -39,43 +39,6 @@ export async function getCurrentUser(): Promise<GetCurrentUserResponse> {
       throw error;
     }
     const serverError = new Error("사용자 정보를 불러올 수 없습니다.");
-    serverError.cause = 500;
-    throw serverError;
-  }
-}
-
-export async function getUserStats(): Promise<GetUserStatsResponse> {
-  try {
-    const user = await requireAuth();
-
-    const [pollsCreated, votesCount, likesCount, bookmarksCount] = await Promise.all([
-      prisma.poll.count({
-        where: { creatorId: user.id },
-      }),
-      prisma.vote.count({
-        where: { userId: user.id },
-      }),
-      prisma.pollLike.count({
-        where: { userId: user.id },
-      }),
-      prisma.pollBookmark.count({
-        where: { userId: user.id },
-      }),
-    ]);
-
-    return {
-      data: {
-        pollsCreated,
-        votesCount,
-        likesCount,
-        bookmarksCount,
-      },
-    };
-  } catch (error) {
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("사용자 통계를 불러올 수 없습니다.");
     serverError.cause = 500;
     throw serverError;
   }

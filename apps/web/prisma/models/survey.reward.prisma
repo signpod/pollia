@@ -1,6 +1,8 @@
 model Reward {
     id            String      @id @default(cuid())
     name          String
+    description   String?
+    imageUrl      String?     @map("image_url")
     paymentType   PaymentType @map("payment_type")
     scheduledDate DateTime?   @map("scheduled_date")
     paidAt        DateTime?   @map("paid_at")

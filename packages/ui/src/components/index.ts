@@ -9,6 +9,7 @@ import { FixedTopContent, FixedTopLayout as FixedTopLayoutBase } from "./layout/
 
 export * from "./common/Button";
 export * from "./common/ButtonV2";
+export * from "./common/FloatingButton";
 export * from "./common/Input";
 
 export * from "./common/KakaoLoginButton";
