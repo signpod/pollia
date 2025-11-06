@@ -1,1 +1,1 @@
-export { getCurrentUser, getUserStats } from "./read";
+export { getCurrentUser } from "./read";

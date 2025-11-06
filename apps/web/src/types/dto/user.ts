@@ -7,12 +7,3 @@ export interface GetCurrentUserResponse {
     updatedAt: Date;
   };
 }
-
-export interface GetUserStatsResponse {
-  data: {
-    pollsCreated: number;
-    votesCount: number;
-    likesCount: number;
-    bookmarksCount: number;
-  };
-}
