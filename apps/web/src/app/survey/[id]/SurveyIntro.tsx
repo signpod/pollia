@@ -2,7 +2,7 @@
 
 import { ButtonV2, FixedBottomLayout, FloatingButton, Typo } from "@repo/ui/components";
 import { Gift } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { SurveyCollection } from "./components/SurveyCollection";
 import { SurveyDescription } from "./components/SurveyDescription";
 import { SurveyImage } from "./components/SurveyImage";
@@ -30,6 +30,11 @@ export function SurveyIntro() {
   const { logoUrl, title, estimatedMinutes, deadline, target, imageUrl, description, reward } =
     mockData;
   const [isRewardVisible, setIsRewardVisible] = useState(true);
+  const rewardRef = useRef<HTMLDivElement>(null);
+
+  const scrollToReward = () => {
+    rewardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <main className="flex w-full flex-col gap-8 p-5">
@@ -51,17 +56,24 @@ export function SurveyIntro() {
         </div>
       </div>
 
-      <SurveyReward
-        rewardName={reward.name}
-        rewardImage={reward.image}
-        rewardDescription={reward.description}
-        onVisibilityChange={setIsRewardVisible}
-      />
+      <div ref={rewardRef}>
+        <SurveyReward
+          rewardName={reward.name}
+          rewardImage={reward.image}
+          rewardDescription={reward.description}
+          onVisibilityChange={setIsRewardVisible}
+        />
+      </div>
 
       <FixedBottomLayout.Content className="flex w-full justify-end bg-transparent px-4 py-3">
         {!isRewardVisible && (
           <div className="absolute right-5 top-[-56] flex flex-col gap-4">
-            <FloatingButton variant="tertiary" icon={Gift} className="bg-white" />
+            <FloatingButton
+              variant="tertiary"
+              icon={Gift}
+              className="bg-white"
+              onClick={scrollToReward}
+            />
           </div>
         )}
         <ButtonV2 variant="primary" size="large" className="w-full">
