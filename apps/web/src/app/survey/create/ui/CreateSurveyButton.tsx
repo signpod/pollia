@@ -50,7 +50,7 @@ function useCreateSurveyButton() {
       });
     },
     onError: () => {
-      toast.error(CREATE_SURVEY_MESSAGE.ERROR);
+      toast.warning(CREATE_SURVEY_MESSAGE.ERROR);
     },
   });
 

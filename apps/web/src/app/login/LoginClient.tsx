@@ -55,13 +55,13 @@ export function LoginClient({ initialError }: LoginClientProps) {
 
       if (error) {
         console.error("카카오 로그인 설정 에러:", error);
-        toast.error("로그인 시작 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", {
+        toast.warning("로그인 시작 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", {
           duration: 3000,
         });
       }
     } catch (error) {
       console.error("예상치 못한 에러:", error);
-      toast.error("로그인 중 문제가 발생했습니다.", {
+      toast.warning("로그인 중 문제가 발생했습니다.", {
         duration: 3000,
       });
     }

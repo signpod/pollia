@@ -21,14 +21,14 @@ export function SubjectiveSubmitButton() {
       );
     },
     onError: error => {
-      toast.error(error.message || "질문 생성에 실패했습니다.");
+      toast.warning(error.message || "질문 생성에 실패했습니다.");
     },
   });
 
   const handleCreateQuestion = () => {
     const validationResult = subjectiveInfoSchema.safeParse(subjectiveData);
     if (!validationResult.success) {
-      toast.error("입력 정보를 확인해주세요.");
+      toast.warning("입력 정보를 확인해주세요.");
       return;
     }
 
