@@ -22,7 +22,7 @@ export function SurveyCollection({ estimatedMinutes, deadline, target }: SurveyC
   if (items.length === 0) return null;
 
   return (
-    <div className="flex w-full flex-col gap-3 rounded bg-light p-3">
+    <div className="flex w-full flex-col gap-3 rounded-sm bg-light p-3">
       <div className="flex flex-wrap items-start gap-x-4 gap-y-1">
         {items.map(item => (
           <div key={item.id} className="flex items-center gap-2">
