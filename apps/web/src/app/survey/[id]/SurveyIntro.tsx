@@ -1,4 +1,5 @@
-import { Typo } from "@repo/ui/components";
+import { ButtonV2, FixedBottomLayout, FloatingButton, Typo } from "@repo/ui/components";
+import { Gift } from "lucide-react";
 import { SurveyCollection } from "./components/SurveyCollection";
 import { SurveyDescription } from "./components/SurveyDescription";
 import { SurveyImage } from "./components/SurveyImage";
@@ -27,7 +28,7 @@ export function SurveyIntro() {
     mockData;
 
   return (
-    <main className="flex w-full flex-col gap-8 px-5">
+    <main className="flex w-full flex-col gap-8 p-5">
       <div className="flex w-full flex-col gap-2">
         <SurveyLogo logoUrl={logoUrl} />
 
@@ -51,6 +52,17 @@ export function SurveyIntro() {
         rewardImage={reward.image}
         rewardDescription={reward.description}
       />
+
+      <FixedBottomLayout.Content className="flex w-full justify-end bg-transparent px-4 py-3">
+        <div className="absolute right-5 top-[-56] flex flex-col gap-4">
+          <FloatingButton variant="tertiary" icon={Gift} className="bg-white" />
+        </div>
+        <ButtonV2 variant="primary" size="large" className="w-full">
+          <Typo.ButtonText size="large" className="flex w-full items-center justify-center">
+            참여하고 리워드 받기
+          </Typo.ButtonText>
+        </ButtonV2>
+      </FixedBottomLayout.Content>
     </main>
   );
 }
