@@ -1,5 +1,8 @@
+"use client";
+
 import { ButtonV2, FixedBottomLayout, FloatingButton, Typo } from "@repo/ui/components";
 import { Gift } from "lucide-react";
+import { useState } from "react";
 import { SurveyCollection } from "./components/SurveyCollection";
 import { SurveyDescription } from "./components/SurveyDescription";
 import { SurveyImage } from "./components/SurveyImage";
@@ -26,6 +29,7 @@ const mockData = {
 export function SurveyIntro() {
   const { logoUrl, title, estimatedMinutes, deadline, target, imageUrl, description, reward } =
     mockData;
+  const [isRewardVisible, setIsRewardVisible] = useState(true);
 
   return (
     <main className="flex w-full flex-col gap-8 p-5">
@@ -51,12 +55,15 @@ export function SurveyIntro() {
         rewardName={reward.name}
         rewardImage={reward.image}
         rewardDescription={reward.description}
+        onVisibilityChange={setIsRewardVisible}
       />
 
       <FixedBottomLayout.Content className="flex w-full justify-end bg-transparent px-4 py-3">
-        <div className="absolute right-5 top-[-56] flex flex-col gap-4">
-          <FloatingButton variant="tertiary" icon={Gift} className="bg-white" />
-        </div>
+        {!isRewardVisible && (
+          <div className="absolute right-5 top-[-56] flex flex-col gap-4">
+            <FloatingButton variant="tertiary" icon={Gift} className="bg-white" />
+          </div>
+        )}
         <ButtonV2 variant="primary" size="large" className="w-full">
           <Typo.ButtonText size="large" className="flex w-full items-center justify-center">
             참여하고 리워드 받기

@@ -9,13 +9,21 @@ interface SurveyRewardProps {
   rewardName: string;
   rewardImage?: string;
   rewardDescription?: string;
+  onVisibilityChange?: (isVisible: boolean) => void;
 }
 
-export function SurveyReward({ rewardName, rewardImage, rewardDescription }: SurveyRewardProps) {
+export function SurveyReward({
+  rewardName,
+  rewardImage,
+  rewardDescription,
+  onVisibilityChange,
+}: SurveyRewardProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
   const titleRef = useRef<HTMLDivElement>(null);
   const descriptionRef = useRef<HTMLDivElement>(null);
+  const headerButtonRef = useRef<HTMLButtonElement>(null);
+  const headerDivRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const checkTruncation = () => {
@@ -40,10 +48,37 @@ export function SurveyReward({ rewardName, rewardImage, rewardDescription }: Sur
     };
   }, []);
 
+  useEffect(() => {
+    if (!onVisibilityChange) return;
+
+    const headerElement = headerButtonRef.current || headerDivRef.current;
+    if (!headerElement) return;
+
+    const observer = new IntersectionObserver(
+      entries => {
+        const entry = entries[0];
+        if (entry) {
+          onVisibilityChange(entry.isIntersecting);
+        }
+      },
+      {
+        threshold: 0,
+        rootMargin: "0px 0px -80px 0px",
+      },
+    );
+
+    observer.observe(headerElement);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [onVisibilityChange]);
+
   return (
     <div className="flex w-full flex-col gap-2 rounded-sm bg-white p-3 shadow-[0px_4px_20px_0px_rgba(9,9,11,0.08)]">
       {isTruncated && (
         <button
+          ref={headerButtonRef}
           onClick={() => setIsOpen(!isOpen)}
           className="flex w-full items-start gap-2"
           type="button"
@@ -60,7 +95,7 @@ export function SurveyReward({ rewardName, rewardImage, rewardDescription }: Sur
       )}
 
       {!isTruncated && (
-        <div className="flex w-full items-start gap-2">
+        <div ref={headerDivRef} className="flex w-full items-start gap-2">
           <div className="flex-1">
             <Typo.Body size="medium" className="text-info text-left">
               설문 리워드
