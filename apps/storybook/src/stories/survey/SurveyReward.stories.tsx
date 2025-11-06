@@ -352,3 +352,73 @@ export const MobileView: Story = {
     </div>
   ),
 };
+
+export const TruncationBug: Story = {
+  render: () => (
+    <div className="w-full max-w-[390px] space-y-6">
+      <div>
+        <h3 className="mb-3 text-sm font-medium text-red-600">
+          버그: 짧은 텍스트 + 개행 = 불필요한 아코디언
+        </h3>
+        <p className="mb-3 text-xs text-gray-600">
+          현재 버그: collapsed view의 truncate 클래스 때문에 개행이 있는 짧은 텍스트도 항상
+          아코디언이 표시됩니다. 실제로는 expanded view에서 충분히 짧게 표시되는데도 말이죠.
+        </p>
+        <SurveyReward
+          rewardName={"CU 바나나우유\n기프티콘"}
+          rewardImage="https://images.unsplash.com/photo-1563636619-e9143da7973b?w=150&h=150&fit=crop"
+          rewardDescription={"설문 완료 후\n즉시 제공"}
+        />
+      </div>
+
+      <div>
+        <h3 className="mb-3 text-sm font-medium text-green-600">비교: 개행 없는 짧은 텍스트</h3>
+        <p className="mb-3 text-xs text-gray-600">
+          동일한 길이지만 개행이 없으면 아코디언이 표시되지 않습니다.
+        </p>
+        <SurveyReward
+          rewardName="CU 바나나우유 기프티콘"
+          rewardImage="https://images.unsplash.com/photo-1563636619-e9143da7973b?w=150&h=150&fit=crop"
+          rewardDescription="설문 완료 후 즉시 제공"
+        />
+      </div>
+
+      <div>
+        <h3 className="mb-3 text-sm font-medium text-red-600">버그: 매우 짧은 텍스트 + 개행</h3>
+        <p className="mb-3 text-xs text-gray-600">
+          한 줄에 5글자씩만 있는데도 아코디언이 나타납니다.
+        </p>
+        <SurveyReward rewardName={"CU\n기프티콘"} rewardDescription={"즉시\n제공"} />
+      </div>
+
+      <div>
+        <h3 className="mb-3 text-sm font-medium text-green-600">정상: 실제로 긴 텍스트</h3>
+        <p className="mb-3 text-xs text-gray-600">이 경우는 아코디언이 정상적으로 필요합니다.</p>
+        <SurveyReward
+          rewardName="1등 : 신세계 상품권 5만원권, 1명 2등 : 신세계 상품권 3만원권, 2명"
+          rewardImage="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=150&h=150&fit=crop"
+          rewardDescription="매월 추첨을 통해 경품을 지급하며, 당첨자 결과는 고객센터에 게시됩니다."
+        />
+      </div>
+
+      <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded">
+        <h4 className="text-sm font-bold mb-2">예상 결과 vs 실제 결과</h4>
+        <ul className="text-xs space-y-1">
+          <li>
+            ❌ <strong>버그 케이스 1-3</strong>: 아코디언이 표시됨 (불필요)
+          </li>
+          <li>
+            ✅ <strong>정상 케이스</strong>: 아코디언이 표시됨 (필요)
+          </li>
+        </ul>
+        <p className="mt-3 text-xs text-gray-700">
+          <strong>원인:</strong> collapsed view (truncate 클래스)를 측정하기 때문에 개행 문자가
+          있으면 항상 scrollWidth &gt; clientWidth가 됩니다.
+          <br />
+          <strong>해결:</strong> expanded view를 측정하거나, 초기에 expanded 상태로 렌더링 후
+          측정해야 합니다.
+        </p>
+      </div>
+    </div>
+  ),
+};

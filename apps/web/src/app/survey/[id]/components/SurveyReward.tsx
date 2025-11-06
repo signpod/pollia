@@ -24,6 +24,10 @@ export function SurveyReward({
   const descriptionRef = useRef<HTMLDivElement>(null);
   const headerButtonRef = useRef<HTMLButtonElement>(null);
   const headerDivRef = useRef<HTMLDivElement>(null);
+  const hasNameNewLine = rewardName.includes("\n");
+  const hasDescriptionNewLine = rewardDescription?.includes("\n");
+  const hasNewLine = hasNameNewLine || hasDescriptionNewLine;
+  const hasChevron = isTruncated || hasNewLine;
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useLayoutEffect(() => {
@@ -77,7 +81,7 @@ export function SurveyReward({
 
   return (
     <div className="flex w-full flex-col gap-2 rounded-sm bg-white p-3 shadow-[0px_4px_20px_0px_rgba(9,9,11,0.08)]">
-      {isTruncated && (
+      {hasChevron ? (
         <button
           ref={headerButtonRef}
           onClick={() => setIsOpen(!isOpen)}
@@ -93,9 +97,7 @@ export function SurveyReward({
             {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </div>
         </button>
-      )}
-
-      {!isTruncated && (
+      ) : (
         <div ref={headerDivRef} className="flex w-full items-start gap-2">
           <div className="flex-1">
             <Typo.Body size="medium" className="text-info text-left">
@@ -105,7 +107,7 @@ export function SurveyReward({
         </div>
       )}
 
-      {isOpen && isTruncated ? (
+      {isOpen ? (
         <div className="flex w-full flex-col gap-2">
           {rewardImage && (
             <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-light">
@@ -145,11 +147,15 @@ export function SurveyReward({
           )}
 
           <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <Typo.Body size="medium" className="truncate" ref={titleRef}>
+            <Typo.Body size="medium" className="line-clamp-1 whitespace-pre-line" ref={titleRef}>
               {rewardName}
             </Typo.Body>
             {rewardDescription && (
-              <Typo.Body size="small" className="text-info truncate" ref={descriptionRef}>
+              <Typo.Body
+                size="small"
+                className="text-info line-clamp-1 whitespace-pre-line"
+                ref={descriptionRef}
+              >
                 * {rewardDescription}
               </Typo.Body>
             )}
