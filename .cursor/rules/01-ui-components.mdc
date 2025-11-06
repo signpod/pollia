@@ -68,3 +68,45 @@ export const ComponentName = Object.assign(ComponentNameBase, {
   Content: ComponentNameContent,
 });
 ```
+
+## 스토리북 구현 필수
+
+**모든 UI 컴포넌트를 구현할 때는 반드시 스토리북도 함께 구현해야 합니다.**
+
+### 스토리북 파일 위치
+
+- 경로: `apps/storybook/src/stories/common/`
+- 파일명: `ComponentName.stories.tsx`
+
+### 기본 규칙
+
+1. 컴포넌트를 구현한 직후 스토리북을 작성합니다
+2. 스토리북 작성 시 `02-storybook.mdc`, `03-storybook-patterns.mdc`, `04-storybook-docs.mdc` 규칙을 따릅니다
+3. 다양한 사용 사례를 포함한 스토리를 작성합니다
+4. 절대 경로 import를 사용합니다 (`@repo/ui/components`)
+
+### 예시
+
+```tsx
+// apps/storybook/src/stories/common/FloatingButton.stories.tsx
+import type { Meta, StoryObj } from "@storybook/react";
+import { FloatingButton } from "@repo/ui/components";
+import { Plus } from "lucide-react";
+
+const meta = {
+  title: "Common/FloatingButton",
+  component: FloatingButton,
+  parameters: {
+    layout: "centered",
+  },
+} satisfies Meta<typeof FloatingButton>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  args: {
+    icon: Plus,
+  },
+};
+```
