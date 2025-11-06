@@ -3,7 +3,7 @@
 import { Typo } from "@repo/ui/components";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 interface SurveyRewardProps {
   rewardName: string;
@@ -25,7 +25,8 @@ export function SurveyReward({
   const headerButtonRef = useRef<HTMLButtonElement>(null);
   const headerDivRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  useLayoutEffect(() => {
     const checkTruncation = () => {
       const titleElement = titleRef.current;
       const descriptionElement = descriptionRef.current;
@@ -46,7 +47,7 @@ export function SurveyReward({
     return () => {
       window.removeEventListener("resize", checkTruncation);
     };
-  }, []);
+  }, [rewardName, rewardDescription]);
 
   useEffect(() => {
     if (!onVisibilityChange) return;

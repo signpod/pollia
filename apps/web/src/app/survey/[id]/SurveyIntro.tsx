@@ -67,7 +67,7 @@ export function SurveyIntro() {
 
       <FixedBottomLayout.Content className="flex w-full justify-end bg-transparent px-4 py-3">
         <div
-          className={`absolute right-5 top-[-56] flex flex-col gap-4 transition-opacity duration-150 ${
+          className={`absolute right-5 top-[-56px] flex flex-col gap-4 transition-opacity duration-150 ${
             !isRewardVisible ? "opacity-100" : "pointer-events-none opacity-0"
           }`}
         >
