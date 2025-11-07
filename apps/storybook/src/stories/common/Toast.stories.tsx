@@ -72,10 +72,6 @@ export const toast = {
       duration: options?.duration,
     });
   },
-  custom: (options: ToastOptions) => {
-    return baseToast(options);
-  },
-  dismiss: baseToast.dismiss,
 };
 \`\`\`
 

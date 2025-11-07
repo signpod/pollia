@@ -1,4 +1,4 @@
-import { type ToastOptions, toast as baseToast } from "@repo/ui/components";
+import { toast as baseToast } from "@repo/ui/components";
 
 export interface ToastPresetOptions {
   duration?: number;
@@ -27,10 +27,6 @@ export const polliaToast = {
       duration: options?.duration,
     });
   },
-  custom: (options: ToastOptions) => {
-    return baseToast(options);
-  },
-  dismiss: baseToast.dismiss,
 };
 
 function BadgeFilledIcon({ className }: { className?: string }) {

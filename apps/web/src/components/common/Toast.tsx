@@ -1,6 +1,6 @@
 import AlertTriangleIcon from "@public/svgs/alert-triangle-filled.svg";
 import BadgeFilledIcon from "@public/svgs/badge-filled.svg";
-import { type ToastOptions, toast as baseToast } from "@repo/ui/components";
+import { toast as baseToast } from "@repo/ui/components";
 
 export interface ToastPresetOptions {
   duration?: number;
@@ -29,8 +29,4 @@ export const toast = {
       duration: options?.duration,
     });
   },
-  custom: (options: ToastOptions) => {
-    return baseToast(options);
-  },
-  dismiss: baseToast.dismiss,
 };
