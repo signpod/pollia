@@ -1,4 +1,4 @@
-model SurveyOption {
+model SurveyQuestionOption {
     id          String  @id @default(cuid())
     title       String
     description String?

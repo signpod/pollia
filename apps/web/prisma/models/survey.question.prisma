@@ -8,9 +8,9 @@ model SurveyQuestion {
 
     maxSelections Int? @map("max_selections")
 
-    surveyId String?        @map("survey_id")
-    survey   Survey?        @relation(fields: [surveyId], references: [id], onDelete: Cascade)
-    options  SurveyOption[]
+    surveyId String?                @map("survey_id")
+    survey   Survey?                @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+    options  SurveyQuestionOption[]
     answers  SurveyAnswer[]
 
     createdAt DateTime @default(now()) @map("created_at")

@@ -1,7 +1,7 @@
 model SurveyAnswer {
-    id       String        @id @default(cuid())
-    optionId String?       @map("option_id")
-    option   SurveyOption? @relation(fields: [optionId], references: [id], onDelete: Cascade)
+    id       String                @id @default(cuid())
+    optionId String?               @map("option_id")
+    option   SurveyQuestionOption? @relation(fields: [optionId], references: [id], onDelete: Cascade)
 
     textAnswer  String? @map("text_answer")
     scaleAnswer Int?    @map("scale_answer")
