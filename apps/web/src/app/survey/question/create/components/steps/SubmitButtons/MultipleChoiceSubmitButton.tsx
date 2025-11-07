@@ -1,4 +1,4 @@
-import { multipleChoiceDataAtom } from "@/atoms/survey/quetion/multipleChoiceInfoAtoms";
+import { multipleChoiceDataAtom } from "@/atoms/survey/question/multipleChoiceInfoAtoms";
 import { useCreateMultipleChoiceQuestion } from "@/hooks/survey/question";
 import { multipleChoiceInfoSchema } from "@/schemas/survey/question/multipleChoiceInfoSchema";
 import type { CreateMultipleChoiceQuestionRequest } from "@/types/dto/survey";
@@ -40,6 +40,7 @@ export function MultipleChoiceSubmitButton() {
       maxSelections: multipleChoiceData.maxSelections,
       order,
       options: multipleChoiceData.options.map(option => ({
+        title: option.title,
         description: option.description,
         imageUrl: option.imageUrl,
         order: option.order,

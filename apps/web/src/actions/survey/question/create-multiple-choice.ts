@@ -20,6 +20,7 @@ function validateMultipleChoiceQuestion(
       maxSelections: request.maxSelections,
       options: request.options.map(opt => ({
         id: `temp-${opt.order}`,
+        title: opt.title,
         description: opt.description,
         imageUrl: opt.imageUrl,
         order: opt.order,
@@ -83,10 +84,11 @@ export async function createMultipleChoiceQuestion(
         },
       });
 
-      await tx.surveyOption.createMany({
+      await tx.surveyQuestionOption.createMany({
         data: request.options.map(option => ({
           questionId: createdQuestion.id,
-          description: option.description,
+          title: option.title,
+          description: option.description || null,
           imageUrl: option.imageUrl,
           order: option.order,
           fileUploadId: option.imageFileUploadId,

@@ -4,12 +4,15 @@ import { useImageUpload } from "@/hooks/common/useImageUpload";
 import { cn } from "@/lib/utils";
 import {
   Button,
+  ButtonV2,
   DrawerContent,
   DrawerHeader,
   DrawerProvider,
   IconButton,
   ImageSelector,
   Input,
+  Typo,
+  toast,
   useDrawer,
 } from "@repo/ui/components";
 import { EllipsisVertical } from "lucide-react";
@@ -22,13 +25,41 @@ function OptionMenuTrigger() {
 }
 
 interface OptionMenuContentProps {
+  description: string;
+  descriptionPlaceholder: string;
+  onDescriptionChange: (description: string) => void;
   onRemove: () => void;
 }
 
-function OptionMenuContent({ onRemove }: OptionMenuContentProps) {
+function OptionMenuContent({
+  description,
+  descriptionPlaceholder,
+  onDescriptionChange,
+  onRemove,
+}: OptionMenuContentProps) {
+  const [tempDescription, setTempDescription] = useState<string>(description);
+
+  const handleSaveDescription = () => {
+    onDescriptionChange(tempDescription);
+    toast.success("항목 설명이 저장되었습니다.");
+  };
   return (
     <DrawerContent>
       <DrawerHeader>항목 세부 설정</DrawerHeader>
+
+      <div className="flex flex-col px-4 gap-2 pb-4">
+        <Input
+          label="항목 설명"
+          value={tempDescription}
+          onChange={e => setTempDescription(e.target.value)}
+          placeholder={descriptionPlaceholder}
+          maxLength={50}
+        />
+
+        <ButtonV2 variant="primary" onClick={handleSaveDescription} className="w-full">
+          <Typo.ButtonText className="w-full text-center">저장하기</Typo.ButtonText>
+        </ButtonV2>
+      </div>
 
       <div className={cn("flex-1 px-4", "flex flex-col gap-2")}>
         <Button variant="secondary" onClick={onRemove}>
@@ -41,24 +72,30 @@ function OptionMenuContent({ onRemove }: OptionMenuContentProps) {
 
 export interface SurveyQuestionOptionProps {
   id: string;
+  title: string;
   description: string;
   imageUrl: string;
   fileUploadId: string;
+  onTitleChange: (title: string) => void;
   onDescriptionChange: (description: string) => void;
   onImageUrlChange: (imageUrl: string) => void;
   onFileUploadIdChange: (fileUploadId: string) => void;
   onRemove: () => void;
-  placeholder?: string;
+  titlePlaceholder?: string;
+  descriptionPlaceholder?: string;
 }
 
 export function SurveyQuestionOption({
+  title,
   description,
   imageUrl,
+  onTitleChange,
   onDescriptionChange,
   onImageUrlChange,
   onFileUploadIdChange,
   onRemove,
-  placeholder = "질문 항목을 입력해주세요",
+  titlePlaceholder = "질문 제목을 입력해주세요",
+  descriptionPlaceholder = "질문 설명을 입력해주세요",
 }: SurveyQuestionOptionProps) {
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [uploadedFile, setUploadedFile] = useState<{
@@ -131,10 +168,6 @@ export function SurveyQuestionOption({
     }
   };
 
-  const handleDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onDescriptionChange?.(e.target.value);
-  };
-
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-3">
@@ -147,18 +180,29 @@ export function SurveyQuestionOption({
         />
 
         <Input
-          value={description}
-          onChange={handleDescriptionChange}
-          placeholder={placeholder}
+          value={title}
+          onChange={e => onTitleChange(e.target.value)}
+          placeholder={titlePlaceholder}
           containerClassName="flex-1"
           maxLength={50}
         />
 
         <DrawerProvider>
           <OptionMenuTrigger />
-          <OptionMenuContent onRemove={onRemove} />
+          <OptionMenuContent
+            description={description}
+            descriptionPlaceholder={descriptionPlaceholder}
+            onDescriptionChange={onDescriptionChange}
+            onRemove={onRemove}
+          />
         </DrawerProvider>
       </div>
+
+      {!!description && (
+        <div className="text-sm text-info border border-info rounded-sm p-2">
+          <Typo.Body size="small">{description}</Typo.Body>
+        </div>
+      )}
 
       {(isUploading || isDeleting) && (
         <div className="ml-12 text-sm text-blue-500">

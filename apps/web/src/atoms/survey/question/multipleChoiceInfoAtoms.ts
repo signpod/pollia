@@ -3,6 +3,7 @@ import { atom } from "jotai";
 
 export interface SurveyOption {
   id: string;
+  title: string;
   description: string;
   imageUrl?: string;
   order: number;
@@ -11,6 +12,7 @@ export interface SurveyOption {
 
 const createEmptySurveyOption = (order: number): SurveyOption => ({
   id: generateUniqueId(),
+  title: "",
   description: "",
   imageUrl: undefined,
   order,

@@ -1,10 +1,10 @@
-import { multipleChoiceMaxSelectionsAtom } from "@/atoms/survey/quetion/multipleChoiceInfoAtoms";
+import { multipleChoiceMaxSelectionsAtom } from "@/atoms/survey/question/multipleChoiceInfoAtoms";
 import { SurveyQuestionOption } from "@/components/survey/SurveyQuestionOption";
 import { useMultipleChoiceOptions } from "@/hooks/survey/question";
 import { Button, CounterInput, Typo } from "@repo/ui/components";
 import { useAtom } from "jotai";
 import { PlusIcon } from "lucide-react";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 
 export function OptionSelectorSection() {
   const {
@@ -30,7 +30,18 @@ export function OptionSelectorSection() {
     }
   }, [validOptionCount, maxSelections, setMaxSelections]);
 
-  const hasEmptyOptions = options.some(option => !option.description.trim());
+  const hasEmptyOptions = options.some(option => !option.title.trim());
+
+  const createFieldHandler = useCallback(
+    (id: string) => ({
+      onTitleChange: (title: string) => updateOption(id, { title }),
+      onDescriptionChange: (description: string) => updateOption(id, { description }),
+      onImageUrlChange: (imageUrl: string) => updateOption(id, { imageUrl }),
+      onFileUploadIdChange: (fileUploadId: string) => updateOption(id, { fileUploadId }),
+      onRemove: () => canRemove && removeOption(id),
+    }),
+    [updateOption, removeOption, canRemove],
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -45,35 +56,27 @@ export function OptionSelectorSection() {
       </div>
 
       {options.map(option => {
-        const handleDescriptionChange = (description: string) => {
-          updateOption(option.id, { description });
-        };
-
-        const handleImageUrlChange = (imageUrl: string) => {
-          updateOption(option.id, { imageUrl });
-        };
-
-        const handleFileUploadIdChange = (fileUploadId: string) => {
-          updateOption(option.id, { fileUploadId });
-        };
-
-        const handleRemove = () => {
-          if (canRemove) {
-            removeOption(option.id);
-          }
-        };
+        const {
+          onTitleChange,
+          onDescriptionChange,
+          onImageUrlChange,
+          onFileUploadIdChange,
+          onRemove,
+        } = createFieldHandler(option.id);
 
         return (
           <SurveyQuestionOption
             key={option.id}
             id={option.id}
+            title={option.title}
             description={option.description || ""}
             imageUrl={option.imageUrl || ""}
             fileUploadId={option.fileUploadId || ""}
-            onDescriptionChange={handleDescriptionChange}
-            onImageUrlChange={handleImageUrlChange}
-            onFileUploadIdChange={handleFileUploadIdChange}
-            onRemove={canRemove ? handleRemove : () => {}}
+            onTitleChange={onTitleChange}
+            onDescriptionChange={onDescriptionChange}
+            onImageUrlChange={onImageUrlChange}
+            onFileUploadIdChange={onFileUploadIdChange}
+            onRemove={onRemove}
           />
         );
       })}
