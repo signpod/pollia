@@ -1,4 +1,4 @@
-import { multipleChoiceDataAtom } from "@/atoms/survey/quetion/multipleChoiceInfoAtoms";
+import { multipleChoiceDataAtom } from "@/atoms/survey/question/multipleChoiceInfoAtoms";
 import { useCreateMultipleChoiceQuestion } from "@/hooks/survey/question";
 import { multipleChoiceInfoSchema } from "@/schemas/survey/question/multipleChoiceInfoSchema";
 import type { CreateMultipleChoiceQuestionRequest } from "@/types/dto/survey";
