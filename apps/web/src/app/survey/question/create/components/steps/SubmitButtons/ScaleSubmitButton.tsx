@@ -1,8 +1,9 @@
 import { scaleDataAtom } from "@/atoms/survey/question/scaleInfoAtoms";
+import { toast } from "@/components/common/Toast";
 import { useCreateScaleQuestion } from "@/hooks/survey/question";
 import { scaleInfoSchema } from "@/schemas/survey/question/scaleInfoSchema";
 import type { CreateScaleQuestionRequest } from "@/types/dto/survey";
-import { Button, FixedBottomLayout, Typo, toast } from "@repo/ui/components";
+import { Button, FixedBottomLayout, Typo } from "@repo/ui/components";
 import { useAtomValue } from "jotai";
 import { useRouter, useSearchParams } from "next/navigation";
 

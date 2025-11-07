@@ -1,7 +1,8 @@
 "use client";
 
+import { toast } from "@/components/common/Toast";
 import PolliaIcon from "@public/svgs/poll-poll-e.svg";
-import { Button, FixedBottomLayout, Typo, toast } from "@repo/ui/components";
+import { Button, FixedBottomLayout, Typo } from "@repo/ui/components";
 import { motion } from "framer-motion";
 import { Share2 } from "lucide-react";
 import Link from "next/link";

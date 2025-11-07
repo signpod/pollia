@@ -1,14 +1,8 @@
 "use client";
 
+import { toast } from "@/components/common/Toast";
 import { createClient as createSupabaseClient } from "@/database/utils/supabase/client";
-import {
-  FixedBottomLayout,
-  KakaoLoginButton,
-  Tooltip,
-  Typo,
-  toast,
-  useModal,
-} from "@repo/ui/components";
+import { FixedBottomLayout, KakaoLoginButton, Tooltip, Typo, useModal } from "@repo/ui/components";
 import { useCallback, useEffect } from "react";
 import { OnboardingCarousel } from "./OnboardingCarousel";
 
