@@ -3,7 +3,8 @@ import { baseInfoSchema } from "../baseInfoSchema";
 
 const surveyOptionSchema = z.object({
   id: z.string(),
-  description: z.string().min(1, "항목 설명을 입력해주세요.").trim(),
+  title: z.string().min(1, "항목 제목을 입력해주세요.").trim(),
+  description: z.string().optional(),
   imageUrl: z.string().optional(),
   order: z.number(),
   fileUploadId: z.string().optional(),
@@ -16,7 +17,7 @@ export const multipleChoiceInfoSchema = baseInfoSchema
   })
   .refine(
     data => {
-      const validOptions = data.options.filter(option => option.description.trim());
+      const validOptions = data.options.filter(option => option.title.trim());
       return validOptions.length >= 2;
     },
     {
@@ -26,7 +27,7 @@ export const multipleChoiceInfoSchema = baseInfoSchema
   )
   .refine(
     data => {
-      const validOptions = data.options.filter(option => option.description.trim());
+      const validOptions = data.options.filter(option => option.title.trim());
       return data.maxSelections <= validOptions.length;
     },
     {

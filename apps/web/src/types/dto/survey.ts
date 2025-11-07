@@ -9,7 +9,8 @@ export interface CreateMultipleChoiceQuestionRequest {
   maxSelections: number;
   order: number;
   options: {
-    description: string;
+    title: string;
+    description?: string;
     imageUrl?: string;
     order: number;
     imageFileUploadId?: string;
