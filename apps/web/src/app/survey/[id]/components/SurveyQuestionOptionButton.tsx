@@ -2,15 +2,19 @@
 
 import { cn } from "@/lib/utils";
 import CheckCircle from "@public/svgs/check-circle-filled.svg";
+import CheckSquare from "@public/svgs/check-square-filled.svg";
 import { Typo } from "@repo/ui/components";
 import { cva } from "class-variance-authority";
 import Image from "next/image";
 import { ComponentProps, useState } from "react";
 
+type SelectType = "radio" | "checkbox";
+
 interface SurveyQuestionOptionButtonProps extends ComponentProps<"button"> {
   title: string;
   description?: string;
   imageUrl?: string;
+  selectType?: SelectType;
 }
 
 export function SurveyQuestionOptionButton({
@@ -20,6 +24,7 @@ export function SurveyQuestionOptionButton({
   className,
   onClick,
   disabled,
+  selectType = "radio",
   ...props
 }: SurveyQuestionOptionButtonProps) {
   const [isSelected, setIsSelected] = useState(false);
@@ -80,6 +85,7 @@ export function SurveyQuestionOptionButton({
   });
 
   const imageStyle = disabled ? "opacity-30" : "opacity-100";
+  const CheckIcon = selectType === "checkbox" ? CheckSquare : CheckCircle;
 
   return (
     <button
@@ -110,7 +116,7 @@ export function SurveyQuestionOptionButton({
       </div>
 
       <div className="flex h-full">
-        <CheckCircle className={cn("size-6", checkCircleColor)} />
+        <CheckIcon className={cn("size-6", checkCircleColor)} />
       </div>
     </button>
   );

@@ -18,13 +18,24 @@ const meta: Meta<typeof SurveyQuestionOptionButton> = {
 - 선택 시 보라색 배경과 체크 아이콘으로 시각적 피드백 제공
 - 이미지, 제목, 설명을 유연하게 조합 가능
 - 호버 및 활성화 상태의 인터랙션 스타일 지원
+- 단일 선택(radio)과 복수 선택(checkbox) 타입 지원
 
 ## 사용법
 
 \`\`\`tsx
 import { SurveyQuestionOptionButton } from "./components/SurveyQuestionOptionButton";
 
+// 단일 선택 (radio - 원형 체크)
 <SurveyQuestionOptionButton
+  selectType="radio"
+  title="선택지 제목"
+  description="선택지 설명 (선택사항)"
+  imageUrl="https://example.com/image.jpg"
+/>
+
+// 복수 선택 (checkbox - 사각형 체크)
+<SurveyQuestionOptionButton
+  selectType="checkbox"
   title="선택지 제목"
   description="선택지 설명 (선택사항)"
   imageUrl="https://example.com/image.jpg"
@@ -47,6 +58,11 @@ import { SurveyQuestionOptionButton } from "./components/SurveyQuestionOptionBut
     imageUrl: {
       control: { type: "text" },
       description: "선택지 이미지 URL (선택사항)",
+    },
+    selectType: {
+      control: { type: "radio" },
+      options: ["radio", "checkbox"],
+      description: "선택 타입 (단일 선택: radio, 복수 선택: checkbox)",
     },
     onClick: {
       description: "클릭 이벤트 핸들러",
@@ -226,6 +242,89 @@ export const WithImage: Story = {
   ),
 };
 
+// SelectType 비교
+export const SelectTypes: Story = {
+  render: () => (
+    <div className="w-full max-w-[390px] space-y-8">
+      <div>
+        <h3 className="mb-3 text-sm font-medium">Radio (단일 선택) - 원형 체크</h3>
+        <p className="mb-4 text-xs text-gray-600">
+          단일 선택 질문에 사용됩니다. 원형 체크 아이콘이 표시됩니다.
+        </p>
+        <div className="flex flex-col gap-3">
+          <SurveyQuestionOptionButton
+            selectType="radio"
+            imageUrl="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=150&h=150&fit=crop"
+            title="아메리카노"
+            description="깔끔하고 진한 맛"
+          />
+          <SurveyQuestionOptionButton
+            selectType="radio"
+            imageUrl="https://images.unsplash.com/photo-1485808191679-5f86510681a2?w=150&h=150&fit=crop"
+            title="카페라떼"
+            description="부드럽고 고소한 맛"
+          />
+          <SurveyQuestionOptionButton
+            selectType="radio"
+            imageUrl="https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=150&h=150&fit=crop"
+            title="카푸치노"
+            description="거품이 풍부한 커피"
+          />
+        </div>
+      </div>
+
+      <div>
+        <h3 className="mb-3 text-sm font-medium">Checkbox (복수 선택) - 사각형 체크</h3>
+        <p className="mb-4 text-xs text-gray-600">
+          복수 선택 질문에 사용됩니다. 사각형 체크 아이콘이 표시됩니다.
+        </p>
+        <div className="flex flex-col gap-3">
+          <SurveyQuestionOptionButton
+            selectType="checkbox"
+            imageUrl="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=150&h=150&fit=crop"
+            title="아메리카노"
+            description="깔끔하고 진한 맛"
+          />
+          <SurveyQuestionOptionButton
+            selectType="checkbox"
+            imageUrl="https://images.unsplash.com/photo-1485808191679-5f86510681a2?w=150&h=150&fit=crop"
+            title="카페라떼"
+            description="부드럽고 고소한 맛"
+          />
+          <SurveyQuestionOptionButton
+            selectType="checkbox"
+            imageUrl="https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=150&h=150&fit=crop"
+            title="카푸치노"
+            description="거품이 풍부한 커피"
+          />
+        </div>
+      </div>
+
+      <div>
+        <h3 className="mb-3 text-sm font-medium">이미지 없는 경우 비교</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <p className="mb-2 text-xs text-gray-600">Radio</p>
+            <div className="flex flex-col gap-2">
+              <SurveyQuestionOptionButton selectType="radio" title="옵션 1" />
+              <SurveyQuestionOptionButton selectType="radio" title="옵션 2" />
+              <SurveyQuestionOptionButton selectType="radio" title="옵션 3" />
+            </div>
+          </div>
+          <div>
+            <p className="mb-2 text-xs text-gray-600">Checkbox</p>
+            <div className="flex flex-col gap-2">
+              <SurveyQuestionOptionButton selectType="checkbox" title="옵션 1" />
+              <SurveyQuestionOptionButton selectType="checkbox" title="옵션 2" />
+              <SurveyQuestionOptionButton selectType="checkbox" title="옵션 3" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  ),
+};
+
 // 인터랙티브 상태 (선택/선택 해제)
 export const Interactive: Story = {
   render: () => (
@@ -262,15 +361,37 @@ export const Disabled: Story = {
   render: () => (
     <div className="w-full max-w-[390px] space-y-6">
       <div>
-        <h3 className="mb-3 text-sm font-medium">비활성화된 버튼</h3>
+        <h3 className="mb-3 text-sm font-medium">비활성화된 버튼 (Radio)</h3>
         <div className="flex flex-col gap-3">
-          <SurveyQuestionOptionButton title="비활성화된 옵션" disabled />
+          <SurveyQuestionOptionButton selectType="radio" title="비활성화된 옵션" disabled />
           <SurveyQuestionOptionButton
+            selectType="radio"
             title="비활성화된 옵션"
             description="이 옵션은 선택할 수 없습니다"
             disabled
           />
           <SurveyQuestionOptionButton
+            selectType="radio"
+            imageUrl="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=150&h=150&fit=crop"
+            title="비활성화된 옵션"
+            description="이미지가 있어도 선택할 수 없습니다"
+            disabled
+          />
+        </div>
+      </div>
+
+      <div>
+        <h3 className="mb-3 text-sm font-medium">비활성화된 버튼 (Checkbox)</h3>
+        <div className="flex flex-col gap-3">
+          <SurveyQuestionOptionButton selectType="checkbox" title="비활성화된 옵션" disabled />
+          <SurveyQuestionOptionButton
+            selectType="checkbox"
+            title="비활성화된 옵션"
+            description="이 옵션은 선택할 수 없습니다"
+            disabled
+          />
+          <SurveyQuestionOptionButton
+            selectType="checkbox"
             imageUrl="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=150&h=150&fit=crop"
             title="비활성화된 옵션"
             description="이미지가 있어도 선택할 수 없습니다"
@@ -287,24 +408,28 @@ export const RealWorldExample: Story = {
   render: () => (
     <div className="w-full max-w-[390px] space-y-8">
       <div>
-        <h3 className="mb-3 text-sm font-medium">질문: 선호하는 커피는 무엇인가요?</h3>
+        <h3 className="mb-3 text-sm font-medium">단일 선택: 선호하는 커피는 무엇인가요?</h3>
         <div className="flex flex-col gap-3">
           <SurveyQuestionOptionButton
+            selectType="radio"
             imageUrl="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=150&h=150&fit=crop"
             title="아메리카노"
             description="깔끔하고 진한 맛"
           />
           <SurveyQuestionOptionButton
+            selectType="radio"
             imageUrl="https://images.unsplash.com/photo-1485808191679-5f86510681a2?w=150&h=150&fit=crop"
             title="카페라떼"
             description="부드럽고 고소한 맛"
           />
           <SurveyQuestionOptionButton
+            selectType="radio"
             imageUrl="https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=150&h=150&fit=crop"
             title="카푸치노"
             description="거품이 풍부한 커피"
           />
           <SurveyQuestionOptionButton
+            selectType="radio"
             imageUrl="https://images.unsplash.com/photo-1517487881594-2787fef5ebf7?w=150&h=150&fit=crop"
             title="기타"
             description="다른 종류의 커피를 선호합니다"
@@ -313,13 +438,59 @@ export const RealWorldExample: Story = {
       </div>
 
       <div>
-        <h3 className="mb-3 text-sm font-medium">질문: 이 서비스에 만족하시나요?</h3>
+        <h3 className="mb-3 text-sm font-medium">복수 선택: 관심 있는 주제를 모두 선택하세요</h3>
         <div className="flex flex-col gap-3">
-          <SurveyQuestionOptionButton title="매우 만족" description="기대 이상입니다" />
-          <SurveyQuestionOptionButton title="만족" description="만족스럽습니다" />
-          <SurveyQuestionOptionButton title="보통" description="그저 그렇습니다" />
-          <SurveyQuestionOptionButton title="불만족" description="개선이 필요합니다" />
-          <SurveyQuestionOptionButton title="매우 불만족" description="기대에 미치지 못합니다" />
+          <SurveyQuestionOptionButton
+            selectType="checkbox"
+            title="건강 및 운동"
+            description="웰니스, 피트니스, 요가 등"
+          />
+          <SurveyQuestionOptionButton
+            selectType="checkbox"
+            title="맛집 및 카페"
+            description="음식, 레스토랑, 카페 탐방"
+          />
+          <SurveyQuestionOptionButton
+            selectType="checkbox"
+            title="여행 및 관광"
+            description="국내외 여행지 추천"
+          />
+          <SurveyQuestionOptionButton
+            selectType="checkbox"
+            title="취미 및 문화"
+            description="공연, 전시, 취미 활동"
+          />
+        </div>
+      </div>
+
+      <div>
+        <h3 className="mb-3 text-sm font-medium">단일 선택: 이 서비스에 만족하시나요?</h3>
+        <div className="flex flex-col gap-3">
+          <SurveyQuestionOptionButton
+            selectType="radio"
+            title="매우 만족"
+            description="기대 이상입니다"
+          />
+          <SurveyQuestionOptionButton
+            selectType="radio"
+            title="만족"
+            description="만족스럽습니다"
+          />
+          <SurveyQuestionOptionButton
+            selectType="radio"
+            title="보통"
+            description="그저 그렇습니다"
+          />
+          <SurveyQuestionOptionButton
+            selectType="radio"
+            title="불만족"
+            description="개선이 필요합니다"
+          />
+          <SurveyQuestionOptionButton
+            selectType="radio"
+            title="매우 불만족"
+            description="기대에 미치지 못합니다"
+          />
         </div>
       </div>
     </div>
@@ -337,21 +508,25 @@ export const MobileView: Story = {
 
       <div className="flex flex-col gap-3">
         <SurveyQuestionOptionButton
+          selectType="radio"
           imageUrl="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=150&h=150&fit=crop"
           title="거의 매일 운동합니다"
           description="주 5회 이상 규칙적으로 운동하는 편입니다"
         />
         <SurveyQuestionOptionButton
+          selectType="radio"
           imageUrl="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=150&h=150&fit=crop"
           title="주 3-4회 운동합니다"
           description="일주일에 서너 번 정도 운동 시간을 갖습니다"
         />
         <SurveyQuestionOptionButton
+          selectType="radio"
           imageUrl="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=150&h=150&fit=crop"
           title="주 1-2회 운동합니다"
           description="가끔씩 시간이 날 때 운동합니다"
         />
         <SurveyQuestionOptionButton
+          selectType="radio"
           imageUrl="https://images.unsplash.com/photo-1540555700478-4be289fbecef?w=150&h=150&fit=crop"
           title="거의 운동하지 않습니다"
           description="한 달에 한두 번 정도만 운동합니다"
