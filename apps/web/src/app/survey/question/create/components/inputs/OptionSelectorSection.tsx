@@ -45,6 +45,10 @@ export function OptionSelectorSection() {
       </div>
 
       {options.map(option => {
+        const handleTitleChange = (title: string) => {
+          updateOption(option.id, { title });
+        };
+
         const handleDescriptionChange = (description: string) => {
           updateOption(option.id, { description });
         };
@@ -67,9 +71,11 @@ export function OptionSelectorSection() {
           <SurveyQuestionOption
             key={option.id}
             id={option.id}
+            title={option.title}
             description={option.description || ""}
             imageUrl={option.imageUrl || ""}
             fileUploadId={option.fileUploadId || ""}
+            onTitleChange={handleTitleChange}
             onDescriptionChange={handleDescriptionChange}
             onImageUrlChange={handleImageUrlChange}
             onFileUploadIdChange={handleFileUploadIdChange}

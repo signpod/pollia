@@ -40,6 +40,7 @@ export function MultipleChoiceSubmitButton() {
       maxSelections: multipleChoiceData.maxSelections,
       order,
       options: multipleChoiceData.options.map(option => ({
+        title: option.title,
         description: option.description,
         imageUrl: option.imageUrl,
         order: option.order,

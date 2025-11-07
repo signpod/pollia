@@ -3,6 +3,7 @@ import { atom } from "jotai";
 
 export interface SurveyOption {
   id: string;
+  title: string;
   description: string;
   imageUrl?: string;
   order: number;
@@ -11,6 +12,7 @@ export interface SurveyOption {
 
 const createEmptySurveyOption = (order: number): SurveyOption => ({
   id: generateUniqueId(),
+  title: "",
   description: "",
   imageUrl: undefined,
   order,
@@ -18,7 +20,6 @@ const createEmptySurveyOption = (order: number): SurveyOption => ({
 });
 
 export const multipleChoiceTitleAtom = atom<string>("");
-export const multipleChoiceTitleTouchedAtom = atom<boolean>(false);
 export const multipleChoiceDescriptionAtom = atom<string>("");
 export const multipleChoiceImageUrlAtom = atom<string | undefined>(undefined);
 export const multipleChoiceImageFileUploadIdAtom = atom<string | undefined>(undefined);
@@ -86,7 +87,6 @@ export const multipleChoiceDataAtom = atom(get => {
 
 export const resetMultipleChoiceAtom = atom(null, (_get, set) => {
   set(multipleChoiceTitleAtom, "");
-  set(multipleChoiceTitleTouchedAtom, false);
   set(multipleChoiceDescriptionAtom, "");
   set(multipleChoiceImageUrlAtom, undefined);
   set(multipleChoiceImageFileUploadIdAtom, undefined);

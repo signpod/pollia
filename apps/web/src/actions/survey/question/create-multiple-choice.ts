@@ -84,7 +84,7 @@ export async function createMultipleChoiceQuestion(
         },
       });
 
-      await tx.surveyOption.createMany({
+      await tx.surveyQuestionOption.createMany({
         data: request.options.map(option => ({
           questionId: createdQuestion.id,
           title: option.title,
