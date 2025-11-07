@@ -89,7 +89,7 @@ export function SurveyQuestionOptionButton({
 
   return (
     <button
-      className={containerVariants({ isSelected })}
+      className={cn(containerVariants({ isSelected }), className)}
       onClick={handleClick}
       disabled={disabled}
       {...props}
