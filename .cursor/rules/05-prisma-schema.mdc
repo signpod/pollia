@@ -10,11 +10,13 @@ apps/web/
     └── models/                # 모든 모델 정의 (flat 구조)
         ├── common.user.prisma
         ├── common.file-upload.prisma
-        ├── poll.main.prisma
+        ├── poll.prisma        # Poll 도메인 메인 모델 (domain = entity)
         ├── poll.option.prisma
         ├── poll.vote.prisma
         ├── poll.like.prisma
-        └── poll.bookmark.prisma
+        ├── poll.bookmark.prisma
+        ├── survey.prisma      # Survey 도메인 메인 모델 (domain = entity)
+        └── survey.question.prisma
 ```
 
 ## 핵심 원칙
@@ -42,12 +44,18 @@ datasource db {
 
 ### 2. 파일 네이밍 컨벤션
 
-**패턴:** `{domain}.{entity}.prisma`
+**패턴:** `{domain}.{entity}.prisma` 또는 `{domain}.prisma`
+
+**네이밍 규칙:**
+
+- 기본: `{domain}.{entity}.prisma` 형식 사용
+- 예외: domain과 entity가 동일한 경우 `{domain}.prisma` 허용
 
 **도메인 프리픽스:**
 
 - `common.*` - 공통/기반 모델 (User, FileUpload 등)
 - `poll.*` - 투표 도메인 모델
+- `survey.*` - 설문조사 도메인 모델
 - `{새로운도메인}.*` - 추가 도메인
 
 **예시:**
@@ -56,11 +64,13 @@ datasource db {
 ✅ common.user.prisma        # 공통 사용자 모델
 ✅ poll.main.prisma          # 투표 메인 모델
 ✅ poll.option.prisma        # 투표 옵션 모델
-✅ survey.main.prisma        # 새 도메인 추가 시
+✅ survey.prisma             # domain과 entity가 같을 경우 (Survey 모델)
+✅ survey.question.prisma    # Survey 도메인의 Question 엔티티
+✅ user.prisma               # domain과 entity가 같을 경우 (User 모델)
 
-❌ user.prisma               # 도메인 프리픽스 없음
 ❌ Poll.prisma               # 대문자 사용
 ❌ poll-main.prisma          # 하이픈 대신 점 사용
+❌ survey.survey.prisma      # 중복 표기 (survey.prisma로 간소화)
 ```
 
 ### 3. 폴더 구조 금지
@@ -197,7 +207,10 @@ enum PollCategory {
 ### 2. 파일 생성
 
 ```bash
-touch apps/web/prisma/models/survey.main.prisma
+# domain과 entity가 같은 경우 (Survey)
+touch apps/web/prisma/models/survey.prisma
+
+# domain 내 다른 entity들
 touch apps/web/prisma/models/survey.question.prisma
 touch apps/web/prisma/models/survey.answer.prisma
 ```
@@ -205,7 +218,7 @@ touch apps/web/prisma/models/survey.answer.prisma
 ### 3. 모델 작성
 
 ```prisma
-// survey.main.prisma
+// survey.prisma (domain과 entity가 같을 경우)
 model Survey {
   id          String   @id @default(cuid())
   title       String
@@ -287,7 +300,9 @@ git commit -m "feat: Add Survey domain models"
 ### 새 모델 추가 시
 
 - [ ] 적절한 도메인 프리픽스 선택
-- [ ] `{domain}.{entity}.prisma` 네이밍 준수
+- [ ] 네이밍 컨벤션 준수
+  - 기본: `{domain}.{entity}.prisma`
+  - domain과 entity가 같을 경우: `{domain}.prisma`
 - [ ] models/ 디렉토리 바로 아래에 생성 (하위 폴더 ❌)
 - [ ] 모델 구조 순서 준수 (ID → 비즈니스 → 관계 → 타임스탬프)
 - [ ] 관계 필드에 명확한 relation name 지정
