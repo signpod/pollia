@@ -1,56 +1,22 @@
 "use client";
 
-import { AlertTriangle, BadgeCheck, Ban, Info } from "lucide-react";
+import type React from "react";
 import { Toaster as SonnerToaster, toast as sonnerToast } from "sonner";
 import { cn } from "../../lib/utils";
 import { Typo } from "./Typo";
 
-type ToastType = "success" | "error" | "warning" | "info";
-
 interface ToastProps {
-  type: ToastType;
   message: string;
+  icon?: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  iconClassName?: string;
 }
 
-const TOAST_ICONS = {
-  success: BadgeCheck,
-  info: Info,
-  warning: AlertTriangle,
-  error: Ban,
-} as const;
-
-const TOAST_STYLES = {
-  success: {
-    container: "bg-zinc-600",
-    icon: "text-white",
-    text: "text-white",
-  },
-  info: {
-    container: "bg-sky-50",
-    icon: "text-sky-600",
-    text: "text-sky-600",
-  },
-  warning: {
-    container: "bg-orange-50",
-    icon: "text-orange-500",
-    text: "text-orange-500",
-  },
-  error: {
-    container: "bg-red-50",
-    icon: "text-red-500",
-    text: "text-red-500",
-  },
-} as const;
-
-function ToastContent({ type, message }: ToastProps) {
-  const Icon = TOAST_ICONS[type];
-  const styles = TOAST_STYLES[type];
-
+function ToastContent({ message, icon: Icon, iconClassName }: ToastProps) {
   return (
     <div className="mx-auto flex w-full max-w-lg justify-center">
-      <div className={cn("flex items-center gap-3 rounded-full px-4 py-3", styles.container)}>
-        <Icon className={cn("size-6 shrink-0", styles.icon)} strokeWidth={2} />
-        <Typo.ButtonText size="medium" className={cn("flex-1 whitespace-nowrap", styles.text)}>
+      <div className={cn("flex items-center gap-3 rounded-sm px-4 py-3 bg-non-modal-bg-default")}>
+        {Icon && <Icon className={cn("size-6 shrink-0", iconClassName)} strokeWidth={2} />}
+        <Typo.ButtonText size="medium" className={cn("flex-1  text-non-modal-text-default")}>
           {message}
         </Typo.ButtonText>
       </div>
@@ -76,27 +42,29 @@ export function Toaster({ offset = 20 }: { offset?: number }) {
   );
 }
 
-// toast 함수
-export const toast = {
-  success: (message: string, options?: { duration?: number }) => {
-    return sonnerToast.custom(() => <ToastContent type="success" message={message} />, {
-      duration: options?.duration || 3000,
-    });
-  },
-  error: (message: string, options?: { duration?: number }) => {
-    return sonnerToast.custom(() => <ToastContent type="error" message={message} />, {
-      duration: options?.duration || 3000,
-    });
-  },
-  warning: (message: string, options?: { duration?: number }) => {
-    return sonnerToast.custom(() => <ToastContent type="warning" message={message} />, {
-      duration: options?.duration || 3000,
-    });
-  },
-  info: (message: string, options?: { duration?: number }) => {
-    return sonnerToast.custom(() => <ToastContent type="info" message={message} />, {
-      duration: options?.duration || 3000,
-    });
-  },
-  dismiss: sonnerToast.dismiss,
-};
+// Toast 옵션 타입
+export interface ToastOptions {
+  message: string;
+  icon?: React.ComponentType<{ className?: string; strokeWidth?: number }>;
+  iconClassName?: string;
+  duration?: number;
+}
+
+// 기본 toast 함수 (아이콘 주입)
+export function toast(options: ToastOptions) {
+  return sonnerToast.custom(
+    () => (
+      <ToastContent
+        message={options.message}
+        icon={options.icon}
+        iconClassName={options.iconClassName}
+      />
+    ),
+    {
+      duration: options.duration || 3000,
+    },
+  );
+}
+
+// dismiss 함수
+toast.dismiss = sonnerToast.dismiss;

@@ -7,10 +7,11 @@ import {
   surveyTitleAtom,
   surveyValidationAtom,
 } from "@/atoms/survey/surveyAtoms";
+import { toast } from "@/components/common/Toast";
 import { usePushAfter } from "@/hooks/common/usePushAfter";
 import { useCreateSurvey } from "@/hooks/survey/useCreateSurvey";
 import { sanitizeTiptapContent } from "@/lib/tiptap/utils";
-import { Button, toast } from "@repo/ui/components";
+import { Button } from "@repo/ui/components";
 import { useAtomValue, useSetAtom } from "jotai";
 
 const CREATE_SURVEY_MESSAGE = {
@@ -50,7 +51,7 @@ function useCreateSurveyButton() {
       });
     },
     onError: () => {
-      toast.error(CREATE_SURVEY_MESSAGE.ERROR);
+      toast.warning(CREATE_SURVEY_MESSAGE.ERROR);
     },
   });
 

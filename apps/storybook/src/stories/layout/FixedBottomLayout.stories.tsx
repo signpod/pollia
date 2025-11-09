@@ -81,7 +81,10 @@ export const BasicButton: Story = {
 
         <FixedBottomLayout.Content>
           <div className="p-4">
-            <button className="w-full rounded-lg bg-blue-500 py-3 font-medium text-white transition-colors hover:bg-blue-600">
+            <button
+              type="button"
+              className="w-full rounded-lg bg-blue-500 py-3 font-medium text-white transition-colors hover:bg-blue-600"
+            >
               기본 고정 버튼
             </button>
           </div>
@@ -115,10 +118,16 @@ export const MultipleButtons: Story = {
 
         <FixedBottomLayout.Content>
           <div className="flex gap-3 p-4">
-            <button className="flex-1 rounded-lg bg-gray-200 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-300">
+            <button
+              type="button"
+              className="flex-1 rounded-lg bg-gray-200 py-3 font-medium text-gray-700 transition-colors hover:bg-gray-300"
+            >
               취소
             </button>
-            <button className="flex-1 rounded-lg bg-green-500 py-3 font-medium text-white transition-colors hover:bg-green-600">
+            <button
+              type="button"
+              className="flex-1 rounded-lg bg-green-500 py-3 font-medium text-white transition-colors hover:bg-green-600"
+            >
               확인
             </button>
           </div>
@@ -161,7 +170,10 @@ export const ComplexContent: Story = {
               </div>
               <p className="text-xl font-bold text-gray-900">₩25,000</p>
             </div>
-            <button className="w-full rounded-lg bg-purple-500 py-3 font-medium text-white transition-colors hover:bg-purple-600">
+            <button
+              type="button"
+              className="w-full rounded-lg bg-purple-500 py-3 font-medium text-white transition-colors hover:bg-purple-600"
+            >
               결제하기
             </button>
           </div>
@@ -209,22 +221,9 @@ export const ToasterWithFixedBottom: Story = {
                 cursor: "pointer",
                 fontWeight: "600",
               }}
+              type="button"
             >
               Success Toast
-            </button>
-            <button
-              onClick={() => toast.error("오류가 발생했습니다.")}
-              style={{
-                padding: "0.75rem 1rem",
-                backgroundColor: "#ef4444",
-                color: "white",
-                borderRadius: "8px",
-                border: "none",
-                cursor: "pointer",
-                fontWeight: "600",
-              }}
-            >
-              Error Toast
             </button>
             <button
               onClick={() => toast.warning("주의가 필요합니다.")}
@@ -237,22 +236,9 @@ export const ToasterWithFixedBottom: Story = {
                 cursor: "pointer",
                 fontWeight: "600",
               }}
+              type="button"
             >
               Warning Toast
-            </button>
-            <button
-              onClick={() => toast.info("참고하세요.")}
-              style={{
-                padding: "0.75rem 1rem",
-                backgroundColor: "#0284c7",
-                color: "white",
-                borderRadius: "8px",
-                border: "none",
-                cursor: "pointer",
-                fontWeight: "600",
-              }}
-            >
-              Info Toast
             </button>
           </div>
 
@@ -269,7 +255,10 @@ export const ToasterWithFixedBottom: Story = {
               <p className="text-sm text-gray-600">하단 고정 콘텐츠</p>
               <p className="text-sm font-medium text-gray-900">Toast는 이 위에 표시됩니다</p>
             </div>
-            <button className="w-full rounded-lg bg-indigo-500 py-3 font-medium text-white transition-colors hover:bg-indigo-600">
+            <button
+              type="button"
+              className="w-full rounded-lg bg-indigo-500 py-3 font-medium text-white transition-colors hover:bg-indigo-600"
+            >
               하단 고정 버튼
             </button>
           </div>
@@ -325,22 +314,9 @@ export const ToasterWithoutFixedBottom: Story = {
                 cursor: "pointer",
                 fontWeight: "600",
               }}
+              type="button"
             >
               Success Toast
-            </button>
-            <button
-              onClick={() => toast.error("오류가 발생했습니다.")}
-              style={{
-                padding: "0.75rem 1rem",
-                backgroundColor: "#ef4444",
-                color: "white",
-                borderRadius: "8px",
-                border: "none",
-                cursor: "pointer",
-                fontWeight: "600",
-              }}
-            >
-              Error Toast
             </button>
             <button
               onClick={() => toast.warning("주의가 필요합니다.")}
@@ -353,29 +329,16 @@ export const ToasterWithoutFixedBottom: Story = {
                 cursor: "pointer",
                 fontWeight: "600",
               }}
+              type="button"
             >
               Warning Toast
             </button>
             <button
-              onClick={() => toast.info("참고하세요.")}
-              style={{
-                padding: "0.75rem 1rem",
-                backgroundColor: "#0284c7",
-                color: "white",
-                borderRadius: "8px",
-                border: "none",
-                cursor: "pointer",
-                fontWeight: "600",
-              }}
-            >
-              Info Toast
-            </button>
-            <button
               onClick={() => {
                 toast.success("첫 번째");
-                setTimeout(() => toast.info("두 번째"), 500);
+                setTimeout(() => toast.default("두 번째"), 500);
                 setTimeout(() => toast.warning("세 번째"), 1000);
-                setTimeout(() => toast.error("네 번째"), 1500);
+                setTimeout(() => toast.default("네 번째"), 1500);
               }}
               style={{
                 padding: "0.75rem 1rem",
@@ -386,6 +349,7 @@ export const ToasterWithoutFixedBottom: Story = {
                 cursor: "pointer",
                 fontWeight: "600",
               }}
+              type="button"
             >
               Multiple Toasts (Queue 테스트)
             </button>

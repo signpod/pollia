@@ -273,7 +273,7 @@ export const useLike = (pollId: string) => {
           context.previousUserStatus
         );
       }
-      toast.error(LIKE_MESSAGES.error);
+      toast.warning(LIKE_MESSAGES.error);
     },
   });
 
@@ -556,7 +556,7 @@ import { toast } from "@repo/ui/components";
 toast.success("좋아요를 눌렀어요.");
 
 // 에러
-toast.error("좋아요 처리 중 오류가 발생했어요.");
+toast.warning("좋아요 처리 중 오류가 발생했어요.");
 
 // 정보
 toast.info("투표가 종료되었어요.");

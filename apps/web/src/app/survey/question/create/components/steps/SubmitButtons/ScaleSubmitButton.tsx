@@ -1,8 +1,9 @@
 import { scaleDataAtom } from "@/atoms/survey/question/scaleInfoAtoms";
+import { toast } from "@/components/common/Toast";
 import { useCreateScaleQuestion } from "@/hooks/survey/question";
 import { scaleInfoSchema } from "@/schemas/survey/question/scaleInfoSchema";
 import type { CreateScaleQuestionRequest } from "@/types/dto/survey";
-import { Button, FixedBottomLayout, Typo, toast } from "@repo/ui/components";
+import { Button, FixedBottomLayout, Typo } from "@repo/ui/components";
 import { useAtomValue } from "jotai";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -21,14 +22,14 @@ export function ScaleSubmitButton() {
       );
     },
     onError: error => {
-      toast.error(error.message || "질문 생성에 실패했습니다.");
+      toast.warning(error.message || "질문 생성에 실패했습니다.");
     },
   });
 
   const handleCreateQuestion = () => {
     const validationResult = scaleInfoSchema.safeParse(scaleData);
     if (!validationResult.success) {
-      toast.error("입력 정보를 확인해주세요.");
+      toast.warning("입력 정보를 확인해주세요.");
       return;
     }
 
