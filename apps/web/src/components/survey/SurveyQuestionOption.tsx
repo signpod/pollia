@@ -12,11 +12,11 @@ import {
   ImageSelector,
   Input,
   Typo,
-  toast,
   useDrawer,
 } from "@repo/ui/components";
 import { EllipsisVertical } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "../common/Toast";
 
 function OptionMenuTrigger() {
   const { open } = useDrawer();
