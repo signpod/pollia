@@ -33,6 +33,9 @@ export * from "./common/Select";
 export * from "./common/TiptapEditor";
 export * from "./common/TiptapViewer";
 
+// Layout
+export * from "./layout/GridBox";
+
 // Hooks
 export * from "../hooks/useStep";
 
