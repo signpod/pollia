@@ -53,7 +53,7 @@ const ScaleGuide: React.FC<ScaleGuideProps> = ({ labels, className }) => {
               {label}
             </Typo.Body>
           </div>
-          {index < itemCount - 1 && <div className="h-3 w-0 border-r color-divider-sub" />}
+          {index < itemCount - 1 && <div className="h-3 w-0 border-r border-divider-sub" />}
         </React.Fragment>
       ))}
     </div>
