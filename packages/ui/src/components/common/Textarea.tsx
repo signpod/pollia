@@ -42,7 +42,7 @@ const Textarea = ({
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [isFocused, setIsFocused] = React.useState(false);
 
-  React.useImperativeHandle(ref, () => textareaRef.current as HTMLTextAreaElement);
+  React.useImperativeHandle(ref, () => textareaRef.current!);
 
   // textarea가 리사이즈될 때 container도 따라가도록 동기화
   React.useEffect(() => {
