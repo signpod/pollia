@@ -16,6 +16,7 @@ export * from "./common/KakaoLoginButton";
 export * from "./common/Tooltip";
 export * from "./common/CenterOverlay";
 export * from "./common/Typo";
+export * from "./common/LikertScale";
 export * from "./common/ImageSelector";
 export * from "./common/Toggle";
 export * from "./common/DateAndTimePicker";
