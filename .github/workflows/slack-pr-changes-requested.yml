@@ -1,0 +1,21 @@
+name: Notify Slack on PR Changes Requested
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  slack:
+    if: github.event.review.state == 'changes_requested'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send PR changes requested notification to Slack
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "🔄 *[PR CHANGES REQUESTED]* *${{ github.event.repository.name }}* - ${{ github.event.pull_request.title }} (#${{ github.event.pull_request.number }})\n👤 *Author:* ${{ github.event.pull_request.user.login }}\n👀 *Reviewer:* ${{ github.event.review.user.login }}\n💬 *Comment:* ${{ github.event.review.body }}\n🔀 *Branch:* `${{ github.event.pull_request.head.ref }}`\n🔗 ${{ github.event.pull_request.html_url }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
