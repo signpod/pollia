@@ -19,6 +19,7 @@
 
   /* Divider Colors */
   --color-divider-default: var(--color-zinc-100);
+  --color-divider-sub: var(--color-zinc-200);
 
   /* Background Colors */
   --color-background-default: var(--color-white);
@@ -85,6 +86,15 @@
   }
   .bg-divider-default {
     background-color: var(--color-divider-default);
+  }
+  .border-divider-sub {
+    border-color: var(--color-divider-sub);
+  }
+  .bg-divider-sub {
+    background-color: var(--color-divider-sub);
+  }
+  .color-divider-sub {
+    color: var(--color-divider-sub);
   }
 
   /* Background Colors */
