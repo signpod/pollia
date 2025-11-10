@@ -109,7 +109,7 @@ const Input = ({
         <input
           type={type}
           className={cn(
-            "focus-visible:ring-primary flex h-12 w-full rounded-sm bg-white px-3 py-2 pr-8 ring-1 ring-zinc-200 placeholder:text-zinc-300 focus-visible:outline-none disabled:bg-zinc-100 disabled:text-zinc-500",
+            "focus-visible:ring-primary flex h-12 w-full rounded-sm bg-white px-3 py-2 pr-8 ring-1 ring-zinc-200 placeholder:text-disabled focus-visible:outline-none disabled:bg-zinc-100 disabled:text-zinc-500",
             bodyVariants({ size: "large" }),
             errorMessage && "ring-red-500 focus-visible:ring-red-500",
             inputClassName || className,
