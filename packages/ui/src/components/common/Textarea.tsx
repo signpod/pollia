@@ -162,7 +162,7 @@ const Textarea = ({
               e.preventDefault();
               handleClear();
             }}
-            className="col-start-1 row-start-1 place-self-start-end mt-2 mr-2 flex items-center justify-center rounded-full transition-colors"
+            className="col-start-1 row-start-1 self-start justify-self-end mt-3 mr-4 flex items-center justify-center rounded-full transition-colors w-fit h-fit"
             aria-label="입력 내용 지우기"
           >
             <XCircleIcon size={24} className="fill-icon-disabled text-white" />
