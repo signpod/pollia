@@ -7,6 +7,7 @@
   --color-text-info: var(--color-zinc-500);
   --color-text-disabled: var(--color-zinc-400);
   --color-text-point: var(--color-violet-500);
+  --color-text-error: var(--color-red-500);
 
   /*Icon Colors */
   --color-icon-default: var(--color-zinc-950);
@@ -59,6 +60,9 @@
   }
   .text-point {
     color: var(--color-text-point);
+  }
+  .text-error {
+    color: var(--color-text-error);
   }
 
   /* Icon Colors */
