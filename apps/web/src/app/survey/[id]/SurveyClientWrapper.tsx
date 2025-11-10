@@ -4,7 +4,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 
 import { getQueryClient } from "@/lib/getQueryClient";
 import { FixedBottomLayout } from "@repo/ui/components";
-import { SurveyIntro } from "./SurveyIntro";
+// import { SurveyIntro } from "./SurveyIntro";
+import { SurveyScale } from "./SurveyScale";
 
 // interface SurveyClientWrapperProps {
 //   dehydratedState: DehydratedState;
@@ -13,7 +14,8 @@ import { SurveyIntro } from "./SurveyIntro";
 export function SurveyClientWrapper() {
   return (
     <ClientWrapper>
-      <SurveyIntro />
+      {/* <SurveyIntro /> */}
+      <SurveyScale />
     </ClientWrapper>
   );
 }
