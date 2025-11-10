@@ -1,32 +1,89 @@
-import { LikertScale, type ScaleThumbProps } from "@/app/survey/[id]/components/LikertScale";
-import type { Meta, StoryObj } from "@storybook/react";
-import { Frown, Heart, Meh, Smile } from "lucide-react";
+import { SurveyLikertScale } from "@/app/survey/[id]/components/SurveyLikertScale";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 import { useState } from "react";
 
-const meta = {
-  title: "Survey/LikertScale",
-  component: LikertScale,
+const meta: Meta<typeof SurveyLikertScale> = {
+  title: "Survey/SurveyLikertScale",
+  component: SurveyLikertScale,
   parameters: {
-    layout: "centered",
+    layout: "padded",
+    docs: {
+      description: {
+        component: `# SurveyLikertScale
+
+A Likert scale component for survey questions with customizable face emoji thumbs.
+
+## Features
+
+- Interactive slider with touch/drag support
+- Customizable min/max/step values
+- Face emoji thumbs that reflect rating (1-5 scale)
+- Optional scale guide with labels
+- Disabled state support
+- Responsive and mobile-friendly
+
+## Composite Structure
+
+This component uses a composite pattern:
+
+- \`SurveyLikertScale\`: Main wrapper component
+- \`SurveyLikertScale.ScaleGuide\`: Optional label display (optional)
+- \`SurveyLikertScale.Thumb\`: Face emoji thumb (optional, auto-selects icon by value)
+
+**Note:** If \`SurveyLikertScale.Thumb\` is not provided, a default circular thumb will be displayed.
+
+## Usage
+
+\`\`\`tsx
+import { SurveyLikertScale } from "./components/SurveyLikertScale";
+
+// With face emoji thumb
+function Example() {
+  const [value, setValue] = useState(3);
+  
+  return (
+    <SurveyLikertScale value={value} onChange={setValue}>
+      <SurveyLikertScale.ScaleGuide 
+        labels={["Very Bad", "Bad", "Neutral", "Good", "Very Good"]} 
+      />
+      <SurveyLikertScale.Thumb value={value} />
+    </SurveyLikertScale>
+  );
+}
+
+// With default circular thumb (without face emoji)
+function SimpleExample() {
+  const [value, setValue] = useState(3);
+  
+  return (
+    <SurveyLikertScale value={value} onChange={setValue}>
+      <SurveyLikertScale.ScaleGuide labels={["1", "2", "3", "4", "5"]} />
+    </SurveyLikertScale>
+  );
+}
+\`\`\`
+`,
+      },
+    },
   },
   tags: ["autodocs"],
   argTypes: {
     value: {
       control: { type: "range", min: 1, max: 5, step: 1 },
-      description: "현재 선택된 값",
+      description: "Current selected value",
       table: {
         type: { summary: "number" },
       },
     },
     onChange: {
-      description: "값 변경 시 호출되는 콜백 함수",
+      description: "Callback fired when value changes",
       table: {
         type: { summary: "(value: number) => void" },
       },
     },
     min: {
       control: "number",
-      description: "최소값",
+      description: "Minimum value",
       table: {
         type: { summary: "number" },
         defaultValue: { summary: "1" },
@@ -34,7 +91,7 @@ const meta = {
     },
     max: {
       control: "number",
-      description: "최대값",
+      description: "Maximum value",
       table: {
         type: { summary: "number" },
         defaultValue: { summary: "5" },
@@ -42,46 +99,34 @@ const meta = {
     },
     step: {
       control: "number",
-      description: "증감 단위",
+      description: "Step increment value",
       table: {
         type: { summary: "number" },
         defaultValue: { summary: "1" },
       },
     },
-    labels: {
-      control: "object",
-      description: "스케일 가이드 라벨 배열",
-      table: {
-        type: { summary: "string[]" },
-      },
-    },
-    scaleThumb: {
-      description: "커스텀 Thumb 컴포넌트",
-      table: {
-        type: { summary: "React.ComponentType<ScaleThumbProps>" },
-      },
-    },
     disabled: {
       control: "boolean",
-      description: "비활성화 여부",
+      description: "Whether the component is disabled",
       table: {
         type: { summary: "boolean" },
         defaultValue: { summary: "false" },
       },
     },
   },
-} satisfies Meta<typeof LikertScale>;
+};
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// 기본 스토리
 export const Default: Story = {
   render: args => {
     const [value, setValue] = useState(args.value || 3);
     return (
       <div className="flex min-h-[300px] w-[400px] items-center justify-center p-8">
-        <LikertScale {...args} value={value} onChange={setValue} />
+        <SurveyLikertScale {...args} value={value} onChange={setValue}>
+          <SurveyLikertScale.Thumb value={value} />
+        </SurveyLikertScale>
       </div>
     );
   },
@@ -94,14 +139,42 @@ export const Default: Story = {
   },
 };
 
-// 숫자 라벨
+export const WithoutCustomThumb: Story = {
+  render: args => {
+    const [value, setValue] = useState(args.value || 3);
+    return (
+      <div className="flex min-h-[300px] w-[400px] flex-col items-center justify-center gap-4 p-8">
+        <SurveyLikertScale {...args} value={value} onChange={setValue} />
+        <p className="text-sm text-zinc-600">Selected: {value}</p>
+      </div>
+    );
+  },
+  args: {
+    value: 3,
+    onChange: () => {},
+    min: 1,
+    max: 5,
+    step: 1,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Default circular thumb without face emoji. When `SurveyLikertScale.Thumb` is not provided as a child, it displays a simple circular thumb.",
+      },
+    },
+  },
+};
+
 export const WithNumberLabels: Story = {
   render: args => {
     const [value, setValue] = useState(args.value || 1);
     return (
       <div className="flex min-h-[300px] w-[400px] flex-col items-center justify-center gap-4 p-8">
-        <LikertScale {...args} value={value} onChange={setValue} />
-        <p className="text-sm text-zinc-600">선택된 값: {value}</p>
+        <SurveyLikertScale value={value} onChange={setValue} min={1} max={5} step={1}>
+          <SurveyLikertScale.ScaleGuide labels={["1", "2", "3", "4", "5"]} />
+        </SurveyLikertScale>
+        <p className="text-sm text-zinc-600">Selected: {value}</p>
       </div>
     );
   },
@@ -111,18 +184,28 @@ export const WithNumberLabels: Story = {
     min: 1,
     max: 5,
     step: 1,
-    labels: ["1", "2", "3", "4", "5"],
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: "With number labels and default circular thumb. Shows numeric scale without face emoji.",
+      },
+    },
   },
 };
 
-// 텍스트 라벨
 export const WithTextLabels: Story = {
   render: args => {
     const [value, setValue] = useState(args.value || 3);
     return (
       <div className="flex min-h-[300px] w-[400px] flex-col items-center justify-center gap-4 p-8">
-        <LikertScale {...args} value={value} onChange={setValue} />
-        <p className="text-sm text-zinc-600">선택된 값: {value}</p>
+        <SurveyLikertScale value={value} onChange={setValue} min={1} max={5} step={1}>
+          <SurveyLikertScale.ScaleGuide
+            labels={["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"]}
+          />
+          <SurveyLikertScale.Thumb value={value} />
+        </SurveyLikertScale>
+        <p className="text-sm text-zinc-600">Selected: {value}</p>
       </div>
     );
   },
@@ -132,34 +215,29 @@ export const WithTextLabels: Story = {
     min: 1,
     max: 5,
     step: 1,
-    labels: ["전혀 아니다", "아니다", "보통이다", "그렇다", "매우 그렇다"],
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "With text labels and face emoji thumb. The thumb automatically displays the appropriate face emoji based on the selected value (1=very bad, 5=very good).",
+      },
+    },
   },
 };
 
-// 커스텀 Scale Thumb
-const CustomEmojiThumb: React.FC<ScaleThumbProps> = ({ value }) => {
-  const getEmoji = () => {
-    if (value <= 2) return { icon: Frown, color: "text-red-500" };
-    if (value === 3) return { icon: Meh, color: "text-yellow-500" };
-    return { icon: Smile, color: "text-green-500" };
-  };
-
-  const { icon: Icon, color } = getEmoji();
-
-  return (
-    <div className="flex size-8 items-center justify-center rounded-full bg-white shadow-lg ring-2 ring-violet-500">
-      <Icon className={`size-5 ${color}`} />
-    </div>
-  );
-};
-
-export const WithCustomThumb: Story = {
+export const WithCustomColors: Story = {
   render: args => {
     const [value, setValue] = useState(args.value || 3);
     return (
       <div className="flex min-h-[300px] w-[400px] flex-col items-center justify-center gap-4 p-8">
-        <LikertScale {...args} value={value} onChange={setValue} scaleThumb={CustomEmojiThumb} />
-        <p className="text-sm text-zinc-600">선택된 값: {value} (이모지가 바뀝니다!)</p>
+        <SurveyLikertScale value={value} onChange={setValue} min={1} max={5} step={1}>
+          <SurveyLikertScale.ScaleGuide
+            labels={["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"]}
+          />
+          <SurveyLikertScale.Thumb value={value} className="text-sky-600" />
+        </SurveyLikertScale>
+        <p className="text-sm text-zinc-600">Selected: {value} (Custom color)</p>
       </div>
     );
   },
@@ -169,18 +247,27 @@ export const WithCustomThumb: Story = {
     min: 1,
     max: 5,
     step: 1,
-    labels: ["전혀 아니다", "아니다", "보통이다", "그렇다", "매우 그렇다"],
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Customizing face emoji thumb color using Tailwind color classes. The SVG icons use `currentColor` so you can style them with text-* classes.",
+      },
+    },
   },
 };
 
-// 7점 척도
 export const SevenPointScale: Story = {
   render: args => {
     const [value, setValue] = useState(args.value || 4);
     return (
       <div className="flex min-h-[300px] w-[400px] flex-col items-center justify-center gap-4 p-8">
-        <LikertScale {...args} value={value} onChange={setValue} />
-        <p className="text-sm text-zinc-600">선택된 값: {value} / 7</p>
+        <SurveyLikertScale value={value} onChange={setValue} min={1} max={7} step={1}>
+          <SurveyLikertScale.ScaleGuide labels={["1", "2", "3", "4", "5", "6", "7"]} />
+          <SurveyLikertScale.Thumb value={value} />
+        </SurveyLikertScale>
+        <p className="text-sm text-zinc-600">Selected: {value} / 7</p>
       </div>
     );
   },
@@ -190,17 +277,26 @@ export const SevenPointScale: Story = {
     min: 1,
     max: 7,
     step: 1,
-    labels: ["1", "2", "3", "4", "5", "6", "7"],
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "7-point scale example. Note: Face emoji thumbs are designed for 5-point scales, so values outside 1-5 will default to the neutral face.",
+      },
+    },
   },
 };
 
-// 비활성화
 export const Disabled: Story = {
   render: args => {
     const [value, setValue] = useState(args.value || 3);
     return (
       <div className="flex min-h-[300px] w-[400px] items-center justify-center p-8">
-        <LikertScale {...args} value={value} onChange={setValue} />
+        <SurveyLikertScale value={value} onChange={setValue} min={1} max={5} step={1} disabled>
+          <SurveyLikertScale.ScaleGuide labels={["1", "2", "3", "4", "5"]} />
+          <SurveyLikertScale.Thumb value={value} />
+        </SurveyLikertScale>
       </div>
     );
   },
@@ -210,12 +306,17 @@ export const Disabled: Story = {
     min: 1,
     max: 5,
     step: 1,
-    labels: ["1", "2", "3", "4", "5"],
     disabled: true,
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: "Disabled state prevents user interaction with the slider.",
+      },
+    },
   },
 };
 
-// 실제 사용 예시
 export const RealWorldExample: Story = {
   render: () => {
     const [answers, setAnswers] = useState<Record<string, number>>({
@@ -227,39 +328,41 @@ export const RealWorldExample: Story = {
     const questions = [
       {
         id: "satisfaction",
-        question: "서비스에 얼마나 만족하시나요?",
-        labels: ["전혀 아니다", "아니다", "보통이다", "그렇다", "매우 그렇다"],
+        question: "How satisfied are you with the service?",
+        labels: ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"],
       },
       {
         id: "recommendation",
-        question: "다른 사람에게 추천하시겠습니까?",
-        labels: ["전혀 아니다", "아니다", "보통이다", "그렇다", "매우 그렇다"],
+        question: "Would you recommend this to others?",
+        labels: ["Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"],
       },
       {
         id: "usability",
-        question: "사용하기 쉬운가요?",
-        labels: ["매우 어렵다", "어렵다", "보통이다", "쉽다", "매우 쉽다"],
+        question: "Is it easy to use?",
+        labels: ["Very Difficult", "Difficult", "Neutral", "Easy", "Very Easy"],
       },
     ];
 
     return (
       <div className="flex min-h-[600px] w-[500px] flex-col gap-8 p-8">
-        <h2 className="text-xl font-bold">설문조사</h2>
+        <h2 className="text-xl font-bold">Survey</h2>
         {questions.map(q => (
           <div key={q.id} className="flex flex-col gap-4">
             <h3 className="text-base font-medium">{q.question}</h3>
-            <LikertScale
+            <SurveyLikertScale
               value={answers[q.id] ?? 3}
               onChange={value => setAnswers(prev => ({ ...prev, [q.id]: value }))}
               min={1}
               max={5}
               step={1}
-              labels={q.labels}
-            />
+            >
+              <SurveyLikertScale.ScaleGuide labels={q.labels} />
+              <SurveyLikertScale.Thumb value={answers[q.id] ?? 3} />
+            </SurveyLikertScale>
           </div>
         ))}
         <div className="mt-4 rounded-lg bg-zinc-100 p-4">
-          <h4 className="mb-2 font-semibold">응답 결과:</h4>
+          <h4 className="mb-2 font-semibold">Response:</h4>
           <pre className="text-sm">{JSON.stringify(answers, null, 2)}</pre>
         </div>
       </div>
@@ -269,28 +372,34 @@ export const RealWorldExample: Story = {
     value: 3,
     onChange: () => {},
   },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Complete survey form example with multiple Likert scale questions. Shows how to manage multiple responses in a form context.",
+      },
+    },
+  },
 };
 
-// 모바일 터치 테스트
 export const MobileTouch: Story = {
   render: () => {
     const [value, setValue] = useState(3);
     return (
       <div className="flex min-h-[400px] w-full max-w-[400px] flex-col items-center justify-center gap-6 p-4">
         <div className="rounded-lg bg-blue-50 p-4 text-center">
-          <p className="text-sm font-medium text-blue-900">모바일에서 테스트해보세요!</p>
-          <p className="mt-1 text-xs text-blue-700">
-            Thumb을 터치하여 드래그하거나 트랙을 탭하세요
-          </p>
+          <p className="text-sm font-medium text-blue-900">Test on Mobile!</p>
+          <p className="mt-1 text-xs text-blue-700">Touch and drag the thumb or tap the track</p>
         </div>
-        <LikertScale
-          value={value}
-          onChange={setValue}
-          labels={["매우 나쁨", "나쁨", "보통", "좋음", "매우 좋음"]}
-        />
+        <SurveyLikertScale value={value} onChange={setValue} min={1} max={5} step={1}>
+          <SurveyLikertScale.ScaleGuide
+            labels={["Very Bad", "Bad", "Neutral", "Good", "Very Good"]}
+          />
+          <SurveyLikertScale.Thumb value={value} />
+        </SurveyLikertScale>
         <div className="flex flex-col items-center gap-2">
           <p className="text-2xl font-bold text-violet-600">{value}</p>
-          <p className="text-sm text-zinc-500">선택된 값</p>
+          <p className="text-sm text-zinc-500">Selected Value</p>
         </div>
       </div>
     );
@@ -303,42 +412,55 @@ export const MobileTouch: Story = {
     viewport: {
       defaultViewport: "mobile1",
     },
+    docs: {
+      description: {
+        story:
+          "Mobile-optimized view for testing touch interactions. The slider works seamlessly with both mouse and touch inputs.",
+      },
+    },
   },
 };
 
-// 하트 아이콘 Thumb
-const HeartThumb: React.FC<ScaleThumbProps> = ({ value }) => {
-  const getHeartColor = () => {
-    if (value <= 2) return "text-zinc-400";
-    if (value === 3) return "text-pink-300";
-    return "text-pink-500";
-  };
-
-  const isFilled = value >= 4;
-
-  return (
-    <div className="flex size-8 items-center justify-center rounded-full bg-white shadow-lg ring-2 ring-pink-500">
-      <Heart className={`size-5 ${getHeartColor()} ${isFilled ? "fill-current" : ""}`} />
-    </div>
-  );
-};
-
-export const WithHeartThumb: Story = {
-  render: args => {
-    const [value, setValue] = useState(args.value || 1);
+export const ThumbGallery: Story = {
+  render: () => {
     return (
-      <div className="flex min-h-[300px] w-[400px] flex-col items-center justify-center gap-4 p-8">
-        <LikertScale {...args} value={value} onChange={setValue} scaleThumb={HeartThumb} />
-        <p className="text-sm text-zinc-600">선택된 값: {value} (하트가 채워집니다!)</p>
+      <div className="flex min-h-[400px] w-[600px] flex-col gap-8 p-8">
+        <h2 className="text-xl font-bold">Thumb Face Gallery</h2>
+        <div className="flex items-center justify-around">
+          <div className="flex flex-col items-center gap-2">
+            <SurveyLikertScale.Thumb value={1} />
+            <p className="text-sm text-zinc-600">Very Bad (1)</p>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <SurveyLikertScale.Thumb value={2} />
+            <p className="text-sm text-zinc-600">Bad (2)</p>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <SurveyLikertScale.Thumb value={3} />
+            <p className="text-sm text-zinc-600">Neutral (3)</p>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <SurveyLikertScale.Thumb value={4} />
+            <p className="text-sm text-zinc-600">Good (4)</p>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <SurveyLikertScale.Thumb value={5} />
+            <p className="text-sm text-zinc-600">Very Good (5)</p>
+          </div>
+        </div>
       </div>
     );
   },
   args: {
-    value: 1,
+    value: 3,
     onChange: () => {},
-    min: 1,
-    max: 5,
-    step: 1,
-    labels: ["1", "2", "3", "4", "5"],
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Gallery showing all five face emoji variations (1=very bad, 2=bad, 3=neutral, 4=good, 5=very good). Useful for previewing the available thumb icons.",
+      },
+    },
   },
 };

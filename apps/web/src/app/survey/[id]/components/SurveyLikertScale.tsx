@@ -1,42 +1,39 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Slider as SliderPrimitive } from "@repo/ui/components";
+import BadFaceIcon from "@public/svgs/face/bad.svg";
+import GoodFaceIcon from "@public/svgs/face/good.svg";
+import NormalFaceIcon from "@public/svgs/face/normal.svg";
+import VeryBadFaceIcon from "@public/svgs/face/very-bad.svg";
+import VeryGoodFaceIcon from "@public/svgs/face/very-good.svg";
+import { Slider as SliderPrimitive, Typo } from "@repo/ui/components";
 import * as React from "react";
-
-export interface ScaleThumbProps {
-  value: number;
-  className?: string;
-}
 
 export interface ScaleGuideProps {
   labels: string[];
   className?: string;
 }
 
-export interface LikertScaleProps {
+export interface SurveyThumbProps {
+  value: number;
+  className?: string;
+  size?: number;
+}
+
+export interface SurveyLikertScaleProps {
   value: number;
   onChange: (value: number) => void;
   min?: number;
   max?: number;
   step?: number;
-  labels?: string[];
-  scaleThumb?: React.ComponentType<ScaleThumbProps>;
   className?: string;
   disabled?: boolean;
+  children?: React.ReactNode;
 }
 
-const DefaultScaleThumb: React.FC<ScaleThumbProps> = ({ className }) => {
-  return (
-    <div
-      className={cn(
-        "flex size-6 items-center justify-center rounded-full bg-white shadow-lg ring-2 ring-violet-500",
-        className,
-      )}
-    >
-      <div className="size-3 rounded-full bg-violet-500" />
-    </div>
-  );
+type SurveyLikertScaleComponent = React.FC<SurveyLikertScaleProps> & {
+  ScaleGuide: React.FC<ScaleGuideProps>;
+  Thumb: React.FC<SurveyThumbProps>;
 };
 
 const ScaleGuide: React.FC<ScaleGuideProps> = ({ labels, className }) => {
@@ -51,28 +48,50 @@ const ScaleGuide: React.FC<ScaleGuideProps> = ({ labels, className }) => {
     >
       {labels.map((label, index) => (
         <React.Fragment key={`${label}-${index}`}>
-          <div className="flex w-15 items-center justify-center">
-            <p className="whitespace-nowrap text-center text-xs font-medium leading-[1.5] text-zinc-900">
+          <div className="flex items-center justify-center w-full">
+            <Typo.Body size="small" className="whitespace-nowrap text-center">
               {label}
-            </p>
+            </Typo.Body>
           </div>
-          {index < itemCount - 1 && <div className="h-3 w-0 border-r border-zinc-200" />}
+          {index < itemCount - 1 && <div className="h-3 w-0 border-r color-divider-sub" />}
         </React.Fragment>
       ))}
     </div>
   );
 };
 
-export const LikertScale: React.FC<LikertScaleProps> = ({
+const SurveyThumb: React.FC<SurveyThumbProps> = ({ value, className, size = 40 }) => {
+  const FaceIcon = React.useMemo(() => {
+    if (value === 1) return VeryBadFaceIcon;
+    if (value === 2) return BadFaceIcon;
+    if (value === 3) return NormalFaceIcon;
+    if (value === 4) return GoodFaceIcon;
+    return VeryGoodFaceIcon;
+  }, [value]);
+
+  return (
+    <div
+      className={cn(
+        "flex items-center justify-center text-violet-500",
+        "px-2 py-4",
+        "bg-violet-500/20 rounded-sm",
+        className,
+      )}
+    >
+      <FaceIcon width={size} height={size} />
+    </div>
+  );
+};
+
+const SurveyLikertScaleBase: React.FC<SurveyLikertScaleProps> = ({
   value,
   onChange,
   min = 1,
   max = 5,
   step = 1,
-  labels,
-  scaleThumb: ScaleThumbComponent = DefaultScaleThumb,
   className,
   disabled = false,
+  children,
 }) => {
   const scaleRef = React.useRef<HTMLDivElement>(null);
   const [padding, setPadding] = React.useState(0);
@@ -86,17 +105,14 @@ export const LikertScale: React.FC<LikertScaleProps> = ({
     return positions;
   }, [min, max, step]);
 
-  const hasLabels = labels && labels.length > 0;
   const stepCount = max - min + 1;
 
-  if (hasLabels) {
-    if (labels.length !== stepCount) {
-      throw new Error("labels의 개수와 step의 개수가 일치하지 않습니다.");
-    }
-  }
+  const hasScaleGuide = React.Children.toArray(children).some(
+    child => React.isValidElement(child) && child.type === ScaleGuide,
+  );
 
   React.useEffect(() => {
-    if (hasLabels && scaleRef.current) {
+    if (hasScaleGuide && scaleRef.current) {
       const updatePadding = () => {
         if (!scaleRef.current) return;
         const calculatedPadding = scaleRef.current.clientWidth / stepCount / 2;
@@ -114,11 +130,19 @@ export const LikertScale: React.FC<LikertScaleProps> = ({
     }
 
     setPadding(0);
-  }, [hasLabels, stepCount]);
+  }, [hasScaleGuide, stepCount]);
+
+  const scaleGuide = React.Children.toArray(children).find(
+    child => React.isValidElement(child) && child.type === ScaleGuide,
+  );
+
+  const thumbChild = React.Children.toArray(children).find(
+    child => React.isValidElement(child) && child.type === SurveyThumb,
+  );
 
   return (
-    <div ref={scaleRef} className={cn("flex w-full flex-col gap-12", className)}>
-      {hasLabels && <ScaleGuide labels={labels} />}
+    <div ref={scaleRef} className={cn("flex w-full flex-col gap-5", className)}>
+      {scaleGuide}
 
       <div
         className={cn("relative h-18 w-full")}
@@ -167,14 +191,22 @@ export const LikertScale: React.FC<LikertScaleProps> = ({
             className={cn(
               "relative block focus:outline-none disabled:pointer-events-none disabled:opacity-50",
               disabled ? "cursor-not-allowed" : "cursor-grab active:cursor-grabbing",
+              !thumbChild &&
+                "size-6 rounded-full bg-violet-500 shadow-lg ring-2 ring-offset-4 ring-violet-500",
             )}
           >
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-              <ScaleThumbComponent value={value} />
-            </div>
+            {thumbChild && (
+              <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                {React.cloneElement(thumbChild as React.ReactElement<SurveyThumbProps>, { value })}
+              </div>
+            )}
           </SliderPrimitive.Thumb>
         </SliderPrimitive.Root>
       </div>
     </div>
   );
 };
+
+export const SurveyLikertScale = SurveyLikertScaleBase as SurveyLikertScaleComponent;
+SurveyLikertScale.ScaleGuide = ScaleGuide;
+SurveyLikertScale.Thumb = SurveyThumb;
