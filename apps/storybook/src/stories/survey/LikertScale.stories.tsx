@@ -1,10 +1,10 @@
-import { LikertScale, type ScaleThumbProps } from "@repo/ui/components";
+import { LikertScale, type ScaleThumbProps } from "@/app/survey/[id]/components/LikertScale";
 import type { Meta, StoryObj } from "@storybook/react";
 import { Frown, Heart, Meh, Smile } from "lucide-react";
 import { useState } from "react";
 
 const meta = {
-  title: "Common/LikertScale",
+  title: "Survey/LikertScale",
   component: LikertScale,
   parameters: {
     layout: "centered",
