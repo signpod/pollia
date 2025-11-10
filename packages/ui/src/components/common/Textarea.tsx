@@ -39,19 +39,34 @@ const Textarea = ({
     value !== undefined ? value : defaultValue || "",
   );
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+  const containerRef = React.useRef<HTMLDivElement>(null);
   const [isFocused, setIsFocused] = React.useState(false);
-  const [textareaSize, setTextareaSize] = React.useState({ width: 0, height: 0 });
 
   React.useImperativeHandle(ref, () => textareaRef.current as HTMLTextAreaElement);
 
+  // textarea가 리사이즈될 때 container도 따라가도록 동기화
   React.useEffect(() => {
     const textarea = textareaRef.current;
-    if (!textarea) return;
+    const container = containerRef.current;
+    if (!textarea || !container) return;
+
+    let previousWidth: number | null = null;
 
     const resizeObserver = new ResizeObserver(entries => {
       for (const entry of entries) {
-        const { width, height } = entry.contentRect;
-        setTextareaSize({ width, height });
+        const { width } = entry.contentRect;
+
+        // 첫 observation: 초기 너비만 저장하고 max-width는 설정하지 않음
+        if (previousWidth === null) {
+          previousWidth = width;
+          return;
+        }
+
+        // width가 실제로 변경되었을 때만 적용 (세로 리사이즈는 무시)
+        if (Math.abs(width - previousWidth) > 1) {
+          container.style.maxWidth = `${width}px`;
+          previousWidth = width;
+        }
       }
     });
 
@@ -121,10 +136,10 @@ const Textarea = ({
           <LabelText required={required}>{label}</LabelText>
         </div>
       )}
-      <div className="relative">
+      <div ref={containerRef} className="grid w-full">
         <textarea
           className={cn(
-            "w-full rounded-sm bg-white px-4 py-3 ring-1 ring-default placeholder:text-disabled",
+            "col-start-1 row-start-1 w-full rounded-sm bg-white px-4 py-3 ring-1 ring-default placeholder:text-disabled min-h-12",
             "focus-visible:ring-primary focus-visible:outline-none disabled:bg-zinc-100 disabled:text-disabled",
             bodyVariants({ size: "large" }),
             resizeClassMap[resize],
@@ -147,7 +162,7 @@ const Textarea = ({
               e.preventDefault();
               handleClear();
             }}
-            className="absolute top-2 right-2 flex items-center justify-center rounded-full transition-colors"
+            className="col-start-1 row-start-1 place-self-start-end mt-2 mr-2 flex items-center justify-center rounded-full transition-colors"
             aria-label="입력 내용 지우기"
           >
             <XCircleIcon size={24} className="fill-icon-disabled text-white" />
@@ -156,12 +171,7 @@ const Textarea = ({
         {showLength && maxLength && (
           <Typo.Body
             size="small"
-            className="absolute text-disabled pointer-events-none"
-            style={{
-              bottom: "12px",
-              left: textareaSize.width > 0 ? `${textareaSize.width - 16}px` : "auto",
-              right: textareaSize.width > 0 ? "auto" : "16px",
-            }}
+            className="col-start-1 row-start-1 place-self-end text-disabled pointer-events-none mb-3 mr-4"
           >
             {currentValue.toString().length}/{maxLength}
           </Typo.Body>
