@@ -1,4 +1,3 @@
-import { XCircleIcon } from "lucide-react";
 import * as React from "react";
 import { cn } from "../../lib/utils";
 import { LabelText } from "./LabelText";
@@ -97,22 +96,7 @@ const Textarea = ({
     onChange?.(e);
   };
 
-  const handleClear = () => {
-    setInternalValue("");
-    if (textareaRef.current) {
-      const syntheticEvent = {
-        target: { value: "" },
-        currentTarget: { value: "" },
-      } as React.ChangeEvent<HTMLTextAreaElement>;
-      onChange?.(syntheticEvent);
-      textareaRef.current.focus();
-    }
-  };
-
   const currentValue = value !== undefined ? value : internalValue;
-  const hasValue = currentValue && currentValue.toString().length > 0;
-
-  const shouldShowClearButton = hasValue && (isFocused || errorMessage);
 
   const handleFocus = () => {
     setIsFocused(true);
@@ -158,19 +142,6 @@ const Textarea = ({
           rows={rows}
           {...props}
         />
-        {shouldShowClearButton && (
-          <button
-            type="button"
-            onMouseDown={e => {
-              e.preventDefault();
-              handleClear();
-            }}
-            className="col-start-1 row-start-1 self-start justify-self-end mt-3 mr-4 flex items-center justify-center rounded-full transition-colors w-fit h-fit"
-            aria-label="입력 내용 지우기"
-          >
-            <XCircleIcon size={24} className="fill-icon-disabled text-white" />
-          </button>
-        )}
         {showLength && maxLength && (
           <Typo.Body
             size="small"
