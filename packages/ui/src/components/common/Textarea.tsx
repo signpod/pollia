@@ -129,7 +129,7 @@ const Textarea = ({
             bodyVariants({ size: "large" }),
             resizeClassMap[resize],
             errorMessage && "ring-1 ring-error",
-            !errorMessage && isFocused && "ring-1 ring-primary",
+            !errorMessage && isFocused && "ring-1 ring-point",
             !errorMessage && !isFocused && "ring-1 ring-default",
             textareaClassName || className,
           )}
