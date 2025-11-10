@@ -139,11 +139,14 @@ const Textarea = ({
       <div ref={containerRef} className="grid w-full">
         <textarea
           className={cn(
-            "col-start-1 row-start-1 w-full rounded-sm bg-white px-4 py-3 ring-1 ring-default placeholder:text-disabled min-h-12",
-            "focus-visible:ring-primary focus-visible:outline-none disabled:bg-zinc-100 disabled:text-disabled",
+            "col-start-1 row-start-1 w-full rounded-sm bg-white px-4 py-3 placeholder:text-disabled min-h-12",
+            "focus-visible:outline-none disabled:bg-zinc-100 disabled:text-disabled",
+            "transition-all duration-150",
             bodyVariants({ size: "large" }),
             resizeClassMap[resize],
-            errorMessage && "ring-error focus-visible:ring-error",
+            errorMessage && "ring-1 ring-error",
+            !errorMessage && isFocused && "ring-1 ring-primary",
+            !errorMessage && !isFocused && "ring-1 ring-default",
             textareaClassName || className,
           )}
           ref={textareaRef}
