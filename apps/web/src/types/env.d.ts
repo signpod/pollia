@@ -12,5 +12,8 @@ declare namespace NodeJS {
 
     ROLLBAR_SERVER_TOKEN: string;
     NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN: string;
+
+    NEXT_PUBLIC_KAKAO_JS_KEY: string;
+    KAKAO_REST_API_KEY: string;
   }
 }
