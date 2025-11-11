@@ -69,91 +69,89 @@ export async function GET(request: Request) {
         return response;
       }
 
-      if (!error) {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-        if (user) {
-          const isNewUser = await ensureUserExists({ user });
-
-          if (isNewUser && next === "/") {
-            next = "/login/done";
-          }
-        }
-
-        cookieStore.set("auth_redirect", "", {
-          path: "/",
-          maxAge: 0,
-        });
-
-        const forwardedHost = request.headers.get("x-forwarded-host");
-        const isLocalEnv = process.env.NODE_ENV === "development";
-
-        if (isLocalEnv) {
-          return NextResponse.redirect(`${origin}${next}`);
-        }
-        if (forwardedHost) {
-          return NextResponse.redirect(`https://${forwardedHost}${next}`);
-        }
-        return NextResponse.redirect(`${origin}${next}`);
-      }
-    } else {
-      try {
-        const tokenData = await exchangeKakaoToken({
-          code,
-          redirectUri: `${origin}/auth/callback`,
-        });
-
-        const kakaoUser = await getKakaoUserInfo(tokenData.access_token);
-
-        const user = await createSessionWithKakao({
-          idToken: tokenData.id_token,
-        });
-
-        const userName = kakaoUser.kakao_account?.profile?.nickname;
-        const isNewUser = await ensureUserExists({ user, name: userName });
+      if (user) {
+        const isNewUser = await ensureUserExists({ user });
 
         if (isNewUser && next === "/") {
           next = "/login/done";
         }
-
-        cookieStore.set("auth_redirect", "", {
-          path: "/",
-          maxAge: 0,
-        });
-
-        const forwardedHost = request.headers.get("x-forwarded-host");
-        const isLocalEnv = process.env.NODE_ENV === "development";
-
-        if (isLocalEnv) {
-          return NextResponse.redirect(`${origin}${next}`);
-        }
-        if (forwardedHost) {
-          return NextResponse.redirect(`https://${forwardedHost}${next}`);
-        }
-        return NextResponse.redirect(`${origin}${next}`);
-      } catch (error) {
-        console.error("카카오 SDK Flow 에러:", error);
-
-        const response = NextResponse.redirect(`${origin}/login`);
-        response.cookies.set(
-          "auth_error",
-          JSON.stringify({
-            type: "kakao_sdk_flow_error",
-            message: "로그인 처리 중 오류가 발생했습니다.",
-            detail: error instanceof Error ? error.message : "Unknown error",
-            timestamp: Date.now(),
-          }),
-          {
-            path: "/",
-            httpOnly: false,
-            maxAge: 10,
-            sameSite: "lax",
-          },
-        );
-        return response;
       }
+
+      cookieStore.set("auth_redirect", "", {
+        path: "/",
+        maxAge: 0,
+      });
+
+      const forwardedHost = request.headers.get("x-forwarded-host");
+      const isLocalEnv = process.env.NODE_ENV === "development";
+
+      if (isLocalEnv) {
+        return NextResponse.redirect(`${origin}${next}`);
+      }
+      if (forwardedHost) {
+        return NextResponse.redirect(`https://${forwardedHost}${next}`);
+      }
+      return NextResponse.redirect(`${origin}${next}`);
+    }
+
+    try {
+      const tokenData = await exchangeKakaoToken({
+        code,
+        redirectUri: `${origin}/auth/callback`,
+      });
+
+      const kakaoUser = await getKakaoUserInfo(tokenData.access_token);
+
+      const user = await createSessionWithKakao({
+        idToken: tokenData.id_token,
+      });
+
+      const userName = kakaoUser.kakao_account?.profile?.nickname;
+      const isNewUser = await ensureUserExists({ user, name: userName });
+
+      if (isNewUser && next === "/") {
+        next = "/login/done";
+      }
+
+      cookieStore.set("auth_redirect", "", {
+        path: "/",
+        maxAge: 0,
+      });
+
+      const forwardedHost = request.headers.get("x-forwarded-host");
+      const isLocalEnv = process.env.NODE_ENV === "development";
+
+      if (isLocalEnv) {
+        return NextResponse.redirect(`${origin}${next}`);
+      }
+      if (forwardedHost) {
+        return NextResponse.redirect(`https://${forwardedHost}${next}`);
+      }
+      return NextResponse.redirect(`${origin}${next}`);
+    } catch (error) {
+      console.error("카카오 SDK Flow 에러:", error);
+
+      const response = NextResponse.redirect(`${origin}/login`);
+      response.cookies.set(
+        "auth_error",
+        JSON.stringify({
+          type: "kakao_sdk_flow_error",
+          message: "로그인 처리 중 오류가 발생했습니다.",
+          detail: error instanceof Error ? error.message : "Unknown error",
+          timestamp: Date.now(),
+        }),
+        {
+          path: "/",
+          httpOnly: false,
+          maxAge: 10,
+          sameSite: "lax",
+        },
+      );
+      return response;
     }
   }
 

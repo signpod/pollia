@@ -1,12 +1,7 @@
 "use server";
 
 import prisma from "@/database/utils/prisma/client";
-import type { User as SupabaseUser } from "@supabase/supabase-js";
-
-interface EnsureUserExistsOptions {
-  user: SupabaseUser;
-  name?: string;
-}
+import type { EnsureUserExistsOptions } from "@/types/dto/user";
 
 /**
  * Prisma에 사용자가 존재하는지 확인하고, 없으면 생성
