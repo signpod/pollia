@@ -4,11 +4,11 @@ import { z } from "zod";
  * 주관식 질문 응답 스키마
  */
 export const subjectiveResponseSchema = z.object({
-  questionId: z.string().min(1, "질문 ID가 필요합니다."),
+  questionId: z.string().min(1, "질문 ID가 필요해요."),
   textResponse: z
     .string()
-    .min(1, "응답을 입력해주세요.")
-    .max(100, "응답은 100자를 초과할 수 없습니다.")
+    .min(1, "필수 입력 항목이에요.")
+    .max(100, "최대 100자까지 입력할 수 있어요.")
     .trim(),
 });
 
