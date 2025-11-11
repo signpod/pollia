@@ -13,6 +13,7 @@ import { SurveySubjective } from "./SurveySubjective";
 // }
 
 export function SurveyClientWrapper() {
+  //TODO: stepconfig 추가 예정
   return (
     <ClientWrapper>
       {/* <SurveyIntro /> */}
@@ -29,7 +30,9 @@ function ClientWrapper({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       {/* <HydrationBoundary state={dehydratedState}> */}
       <FixedBottomLayout className="bg-background min-h-screen">
-        <FixedTopLayout>{children}</FixedTopLayout>
+        <FixedTopLayout>
+          <main>{children}</main>
+        </FixedTopLayout>
       </FixedBottomLayout>
       {/* </HydrationBoundary> */}
     </QueryClientProvider>
