@@ -3,7 +3,7 @@
 import { toast } from "@/components/common/Toast";
 import { createClient as createSupabaseClient } from "@/database/utils/supabase/client";
 import { FixedBottomLayout, KakaoLoginButton, Tooltip, Typo, useModal } from "@repo/ui/components";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { OnboardingCarousel } from "./OnboardingCarousel";
 
 interface AuthError {
@@ -19,6 +19,38 @@ interface LoginClientProps {
 
 export function LoginClient({ initialError }: LoginClientProps) {
   const { showModal } = useModal();
+  const [isKakaoSdkLoaded, setIsKakaoSdkLoaded] = useState(false);
+
+  useEffect(() => {
+    const kakaoJsKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY;
+
+    if (!kakaoJsKey) {
+      console.warn("NEXT_PUBLIC_KAKAO_JS_KEY가 설정되지 않았습니다.");
+      return;
+    }
+
+    if (window.Kakao) {
+      if (!window.Kakao.isInitialized()) {
+        window.Kakao.init(kakaoJsKey);
+      }
+      setIsKakaoSdkLoaded(true);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://developers.kakao.com/sdk/js/kakao.js";
+    script.async = true;
+    script.onload = () => {
+      if (window.Kakao && !window.Kakao.isInitialized()) {
+        window.Kakao.init(kakaoJsKey);
+        setIsKakaoSdkLoaded(true);
+      }
+    };
+    script.onerror = () => {
+      console.error("카카오 SDK 로드 실패");
+    };
+    document.head.appendChild(script);
+  }, []);
 
   useEffect(() => {
     if (initialError) {
@@ -37,9 +69,21 @@ export function LoginClient({ initialError }: LoginClientProps) {
   }, [initialError, showModal]);
 
   const handleKakaoLogin = useCallback(async () => {
-    const supabase = createSupabaseClient();
-
     try {
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+      if (isMobile && isKakaoSdkLoaded && window.Kakao) {
+        window.Kakao.Auth.authorize({
+          redirectUri: `${window.location.origin}/auth/callback`,
+          throughTalk: true,
+          prompts: "login",
+        });
+
+        return;
+      }
+
+      const supabase = createSupabaseClient();
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "kakao",
         options: {
@@ -59,13 +103,11 @@ export function LoginClient({ initialError }: LoginClientProps) {
         duration: 3000,
       });
     }
-  }, []);
+  }, [isKakaoSdkLoaded]);
 
   return (
     <>
       <OnboardingCarousel />
-
-      {/*TODO: 디자인 가이드 확인 후 삭제. 임시로 바텀 GAP 설정했습니다. 25.09.10 - 정우*/}
       <div className="h-[166px]" />
 
       <FixedBottomLayout.Content className="flex w-full justify-center bg-white">
