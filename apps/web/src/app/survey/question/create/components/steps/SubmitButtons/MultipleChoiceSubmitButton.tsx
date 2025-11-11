@@ -1,4 +1,4 @@
-import { multipleChoiceDataAtom } from "@/atoms/survey/question/multipleChoiceInfoAtoms";
+import { multipleChoiceDataAtom } from "@/atoms/survey/question/creation/multipleChoice";
 import { toast } from "@/components/common/Toast";
 import { useCreateMultipleChoiceQuestion } from "@/hooks/survey/question";
 import { multipleChoiceInfoSchema } from "@/schemas/survey/question/multipleChoiceInfoSchema";

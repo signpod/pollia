@@ -1,4 +1,4 @@
-import { resetMultipleChoiceAtom } from "@/atoms/survey/question/creation/multipleChoiceInfoAtoms";
+import { resetMultipleChoiceAtom } from "@/atoms/survey/question/creation/multipleChoice";
 import { resetScaleAtom } from "@/atoms/survey/question/creation/scaleAtoms";
 import { resetSubjectiveAtom } from "@/atoms/survey/question/creation/subjectiveAtoms";
 import { surveyQuestionTypeAtom } from "@/atoms/survey/question/surveyTypeAtoms";

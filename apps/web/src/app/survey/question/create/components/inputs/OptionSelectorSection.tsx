@@ -1,4 +1,4 @@
-import { multipleChoiceMaxSelectionsAtom } from "@/atoms/survey/question/multipleChoiceInfoAtoms";
+import { multipleChoiceMaxSelectionsAtom } from "@/atoms/survey/question/creation/multipleChoice";
 import { SurveyQuestionOption } from "@/components/survey/SurveyQuestionOption";
 import { useMultipleChoiceOptions } from "@/hooks/survey/question";
 import { Button, CounterInput, Typo } from "@repo/ui/components";

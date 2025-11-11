@@ -71,7 +71,7 @@ export const multipleChoiceImageCountAtom = atom(get => {
 
 export const multipleChoiceDataAtom = atom(get => {
   const options = get(multipleChoiceOptionsAtom);
-  const validOptions = options.filter(option => option.description.trim());
+  const validOptions = options.filter(option => option.title.trim());
 
   return {
     title: get(multipleChoiceTitleAtom),

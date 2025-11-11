@@ -1,4 +1,4 @@
-import { scaleDataAtom } from "@/atoms/survey/question/scaleInfoAtoms";
+import { scaleDataAtom } from "@/atoms/survey/question/creation/scaleAtoms";
 import { toast } from "@/components/common/Toast";
 import { useCreateScaleQuestion } from "@/hooks/survey/question";
 import { scaleInfoSchema } from "@/schemas/survey/question/scaleInfoSchema";

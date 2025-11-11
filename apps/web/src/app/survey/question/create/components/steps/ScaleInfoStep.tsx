@@ -3,7 +3,7 @@ import {
   scaleImageFileUploadIdAtom,
   scaleImageUrlAtom,
   scaleTitleAtom,
-} from "@/atoms/survey/question/scaleInfoAtoms";
+} from "@/atoms/survey/question/creation/scaleAtoms";
 import { scaleInfoSchema } from "@/schemas/survey/question/scaleInfoSchema";
 import { DescriptionInputSection } from "../inputs/DescriptionInputSection";
 import { ImageSelectorSection } from "../inputs/ImageSelectorSection";

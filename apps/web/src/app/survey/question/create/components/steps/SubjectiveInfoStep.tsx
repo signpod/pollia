@@ -3,7 +3,7 @@ import {
   subjectiveImageFileUploadIdAtom,
   subjectiveImageUrlAtom,
   subjectiveTitleAtom,
-} from "@/atoms/survey/question/subjectiveInfoAtoms";
+} from "@/atoms/survey/question/creation/subjectiveAtoms";
 import { subjectiveInfoSchema } from "@/schemas/survey/question/subjectiveInfoSchema";
 import { DescriptionInputSection } from "../inputs/DescriptionInputSection";
 import { ImageSelectorSection } from "../inputs/ImageSelectorSection";
