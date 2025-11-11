@@ -30,7 +30,9 @@
         "NODE_ENV",
         "CRON_SECRET",
         "ROLLBAR_SERVER_TOKEN",
-        "NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN"
+        "NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN",
+        "NEXT_PUBLIC_KAKAO_JS_KEY",
+        "KAKAO_REST_API_KEY"
       ]
     }
   }
