@@ -1,5 +1,3 @@
-import { scaleResponseAtom } from "@/atoms/survey/question/response/scaleAtoms";
-import { useAtom } from "jotai";
 import { useState } from "react";
 import { SurveyLikertScale } from "./components/SurveyLikertScale";
 import { SurveyQuestionLayout } from "./components/SurveyQuestionLayout";
@@ -37,9 +35,11 @@ export function SurveyScale() {
 
 const SURVEY_LIKERT_SCALE_TEXT = ["매우 불만족", "불만족", "보통", "만족", "매우 만족"];
 
+const DEFAULT_SCALE_VALUE = 3;
+
 function useSurveyScaleValue() {
   const [isScaleValueChanged, setIsScaleValueChanged] = useState(false);
-  const [scaleValue, setScaleValue] = useAtom(scaleResponseAtom);
+  const [scaleValue, setScaleValue] = useState(DEFAULT_SCALE_VALUE);
 
   const handleScaleValueChange = (value: number) => {
     if (!isScaleValueChanged) {

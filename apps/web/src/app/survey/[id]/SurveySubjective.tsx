@@ -1,7 +1,6 @@
-import { subjectiveResponseAtom } from "@/atoms/survey/question/response/subjectiveAtoms";
 import { subjectiveResponseSchema } from "@/schemas/survey/question/response/subjectiveResponseSchema";
 import { Textarea } from "@repo/ui/components";
-import { useAtom } from "jotai";
+import { useState } from "react";
 import { SurveyQuestionLayout } from "./components/SurveyQuestionLayout";
 
 const mockData = {
@@ -16,12 +15,18 @@ const mockData = {
 const PLACEHOLDER = "답변을 입력해주세요";
 
 export function SurveySubjective() {
-  const { subjectiveValue, handleSubjectiveValueChange, feedbackMessage, validationResult } =
-    useSurveySubjectiveValue();
+  const {
+    subjectiveValue,
+    handleSubjectiveValueChange,
+    handleBlur,
+    feedbackMessage,
+    validationResult,
+    showError,
+  } = useSurveySubjectiveValue();
   const { title, description, imageUrl, order, totalQuestionCount } = mockData;
   const isFirstQuestion = order === 1;
   const isNextDisabled = !validationResult.success;
-  const errorMessage = validationResult.error?.issues[0]?.message;
+  const errorMessage = showError ? validationResult.error?.issues[0]?.message : undefined;
 
   return (
     <SurveyQuestionLayout
@@ -39,6 +44,7 @@ export function SurveySubjective() {
         showLength
         value={subjectiveValue}
         onChange={handleSubjectiveValueChange}
+        onBlur={handleBlur}
         required
         rows={4}
         resize="vertical"
@@ -51,10 +57,15 @@ export function SurveySubjective() {
 
 function useSurveySubjectiveValue() {
   const { questionId } = mockData;
-  const [subjectiveValue, setSubjectiveValue] = useAtom(subjectiveResponseAtom);
+  const [subjectiveValue, setSubjectiveValue] = useState("");
+  const [showError, setShowError] = useState(false);
 
   function handleSubjectiveValueChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     setSubjectiveValue(e.target.value);
+  }
+
+  function handleBlur() {
+    setShowError(true);
   }
 
   const feedbackMessage =
@@ -65,7 +76,14 @@ function useSurveySubjectiveValue() {
     textResponse: subjectiveValue,
   });
 
-  return { subjectiveValue, handleSubjectiveValueChange, feedbackMessage, validationResult };
+  return {
+    subjectiveValue,
+    handleSubjectiveValueChange,
+    handleBlur,
+    feedbackMessage,
+    validationResult,
+    showError,
+  };
 }
 
 const MAX_FEEDBACK_MESSAGE_LENGTH = 2;
