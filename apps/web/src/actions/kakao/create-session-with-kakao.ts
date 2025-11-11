@@ -1,8 +1,8 @@
 "use server";
 
 import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
+import type { CreateSessionWithKakaoRequest } from "@/types/external/kakao";
 import type { User } from "@supabase/supabase-js";
-import type { CreateSessionWithKakaoRequest } from "./types";
 
 /**
  * 카카오 ID Token으로 Supabase 세션 생성

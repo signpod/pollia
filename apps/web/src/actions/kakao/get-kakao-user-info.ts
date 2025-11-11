@@ -1,6 +1,6 @@
 "use server";
 
-import type { KakaoUserInfo } from "./types";
+import type { KakaoUserInfo } from "@/types/external/kakao";
 
 /**
  * 카카오 Access Token으로 사용자 정보 조회

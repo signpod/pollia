@@ -1,6 +1,6 @@
 "use server";
 
-import type { ExchangeKakaoTokenRequest, KakaoTokenResponse } from "./types";
+import type { ExchangeKakaoTokenRequest, KakaoTokenResponse } from "@/types/external/kakao";
 
 /**
  * 카카오 Authorization Code를 Access Token과 ID Token으로 교환

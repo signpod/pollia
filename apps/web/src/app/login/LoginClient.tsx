@@ -50,10 +50,6 @@ export function LoginClient({ initialError }: LoginClientProps) {
       console.error("카카오 SDK 로드 실패");
     };
     document.head.appendChild(script);
-
-    return () => {
-      // cleanup: 스크립트 제거는 하지 않음 (재사용 가능)
-    };
   }, []);
 
   useEffect(() => {
@@ -112,8 +108,6 @@ export function LoginClient({ initialError }: LoginClientProps) {
   return (
     <>
       <OnboardingCarousel />
-
-      {/*TODO: 디자인 가이드 확인 후 삭제. 임시로 바텀 GAP 설정했습니다. 25.09.10 - 정우*/}
       <div className="h-[166px]" />
 
       <FixedBottomLayout.Content className="flex w-full justify-center bg-white">
