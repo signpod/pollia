@@ -1,7 +1,6 @@
 "use client";
 
 import { toast } from "@/components/common/Toast";
-import { createClient as createSupabaseClient } from "@/database/utils/supabase/client";
 import { FixedBottomLayout, KakaoLoginButton, Tooltip, Typo, useModal } from "@repo/ui/components";
 import { useCallback, useEffect, useState } from "react";
 import { OnboardingCarousel } from "./OnboardingCarousel";
@@ -68,37 +67,24 @@ export function LoginClient({ initialError }: LoginClientProps) {
     }
   }, [initialError, showModal]);
 
-  const handleKakaoLogin = useCallback(async () => {
+  const handleKakaoLogin = useCallback(() => {
     try {
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-      if (isMobile && isKakaoSdkLoaded && window.Kakao) {
-        window.Kakao.Auth.authorize({
-          redirectUri: `${window.location.origin}/auth/callback`,
-          throughTalk: true,
-          prompts: "login",
+      if (!isKakaoSdkLoaded || !window.Kakao) {
+        toast.warning("카카오 로그인을 준비 중입니다. 잠시 후 다시 시도해주세요.", {
+          duration: 3000,
         });
-
         return;
       }
 
-      const supabase = createSupabaseClient();
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "kakao",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
+      window.Kakao.Auth.authorize({
+        redirectUri: `${window.location.origin}/auth/callback`,
+        throughTalk: isMobile,
+        prompts: "login",
       });
-
-      if (error) {
-        console.error("카카오 로그인 설정 에러:", error);
-        toast.warning("로그인 시작 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.", {
-          duration: 3000,
-        });
-      }
     } catch (error) {
-      console.error("예상치 못한 에러:", error);
+      console.error("카카오 로그인 에러:", error);
       toast.warning("로그인 중 문제가 발생했습니다.", {
         duration: 3000,
       });
