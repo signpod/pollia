@@ -2,7 +2,7 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import prisma from "@/database/utils/prisma/client";
-import { subjectiveInfoSchema } from "@/schemas/survey/question/subjectiveInfoSchema";
+import { subjectiveInfoSchema } from "@/schemas/survey/question/creation/subjectiveInfoSchema";
 import type {
   CreateSubjectiveQuestionRequest,
   CreateSubjectiveQuestionResponse,

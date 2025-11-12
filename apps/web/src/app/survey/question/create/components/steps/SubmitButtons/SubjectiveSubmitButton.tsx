@@ -1,7 +1,7 @@
-import { subjectiveDataAtom } from "@/atoms/survey/question/subjectiveInfoAtoms";
+import { subjectiveDataAtom } from "@/atoms/survey/question/creation/subjectiveAtoms";
 import { toast } from "@/components/common/Toast";
 import { useCreateSubjectiveQuestion } from "@/hooks/survey/question";
-import { subjectiveInfoSchema } from "@/schemas/survey/question/subjectiveInfoSchema";
+import { subjectiveInfoSchema } from "@/schemas/survey/question/creation/subjectiveInfoSchema";
 import type { CreateSubjectiveQuestionRequest } from "@/types/dto/survey";
 import { Button, FixedBottomLayout, Typo } from "@repo/ui/components";
 import { useAtomValue } from "jotai";

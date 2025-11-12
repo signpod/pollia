@@ -1,5 +1,10 @@
 import { atom } from "jotai";
 
+/**
+ * 주관식 질문 생성용 Atoms
+ * 관리자가 설문 질문을 생성할 때 사용하는 상태 관리
+ */
+
 export const subjectiveTitleAtom = atom<string>("");
 export const subjectiveTitleTouchedAtom = atom<boolean>(false);
 export const subjectiveDescriptionAtom = atom<string>("");

@@ -5,7 +5,7 @@ import {
   removeMultipleChoiceOptionAtom,
   resetMultipleChoiceOptionsAtom,
   updateMultipleChoiceOptionAtom,
-} from "@/atoms/survey/question/multipleChoiceInfoAtoms";
+} from "@/atoms/survey/question/creation/multipleChoice";
 import { useAtomValue, useSetAtom } from "jotai";
 
 export type OptionUpdateData = Partial<Omit<SurveyOption, "id" | "order">>;

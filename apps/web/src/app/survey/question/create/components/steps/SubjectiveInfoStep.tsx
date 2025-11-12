@@ -3,8 +3,8 @@ import {
   subjectiveImageFileUploadIdAtom,
   subjectiveImageUrlAtom,
   subjectiveTitleAtom,
-} from "@/atoms/survey/question/subjectiveInfoAtoms";
-import { subjectiveInfoSchema } from "@/schemas/survey/question/subjectiveInfoSchema";
+} from "@/atoms/survey/question/creation/subjectiveAtoms";
+import { subjectiveInfoSchema } from "@/schemas/survey/question/creation/subjectiveInfoSchema";
 import { DescriptionInputSection } from "../inputs/DescriptionInputSection";
 import { ImageSelectorSection } from "../inputs/ImageSelectorSection";
 import { SubjectInputSection } from "../inputs/SubjectInputSection";
