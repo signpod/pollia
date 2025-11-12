@@ -36,7 +36,7 @@ export function Toaster({ offset = 20 }: { offset?: number }) {
         },
       }}
       offset={offset}
-      mobileOffset={offset}
+      mobileOffset={{ bottom: offset }}
       gap={12}
     />
   );
