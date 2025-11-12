@@ -5,14 +5,14 @@ import type { CreateSessionWithKakaoRequest } from "@/types/external/kakao";
 import type { User } from "@supabase/supabase-js";
 
 /**
- * 카카오 ID Token으로 Supabase 세션 생성
+ * 카카오 ID Token으로 Supabase 세션 생성 및 사용자 메타데이터 설정
  *
- * @param request - ID Token
+ * @param request - ID Token과 사용자 이름
  * @returns Supabase User 객체
  * @throws Supabase 세션 생성 실패 시 에러
  */
 export async function createSessionWithKakao(
-  request: CreateSessionWithKakaoRequest,
+  request: CreateSessionWithKakaoRequest & { userName?: string },
 ): Promise<User> {
   try {
     const supabase = await createServerSupabaseClient();
@@ -32,6 +32,16 @@ export async function createSessionWithKakao(
       const serverError = new Error("사용자 정보를 가져올 수 없습니다.");
       serverError.cause = 500;
       throw serverError;
+    }
+
+    // Supabase Authentication의 Display Name 설정 - [25.11.12 - 러기]
+    if (request.userName) {
+      await supabase.auth.updateUser({
+        data: {
+          name: request.userName,
+          full_name: request.userName,
+        },
+      });
     }
 
     return data.user;

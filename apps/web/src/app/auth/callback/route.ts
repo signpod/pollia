@@ -46,12 +46,13 @@ export async function GET(request: Request) {
       });
 
       const kakaoUser = await getKakaoUserInfo(tokenData.access_token);
+      const userName = kakaoUser.kakao_account?.profile?.nickname;
 
       const user = await createSessionWithKakao({
         idToken: tokenData.id_token,
+        userName,
       });
 
-      const userName = kakaoUser.kakao_account?.profile?.nickname;
       const isNewUser = await ensureUserExists({ user, name: userName });
 
       if (isNewUser && next === "/") {
