@@ -76,12 +76,9 @@ export function LoginClient({ initialError }: LoginClientProps) {
         return;
       }
 
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
       window.Kakao.Auth.authorize({
         redirectUri: `${window.location.origin}/auth/callback`,
-        throughTalk: isMobile,
-        prompts: "login",
+        prompts: "select_account",
       });
     } catch (error) {
       console.error("카카오 로그인 에러:", error);
