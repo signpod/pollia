@@ -1,5 +1,6 @@
 import { FixedBottomLayout, toast } from "@repo/ui/components";
 import type { Meta, StoryObj } from "@storybook/nextjs";
+import { AlertTriangle, CheckCircle2 } from "lucide-react";
 
 const meta: Meta<typeof FixedBottomLayout> = {
   title: "Layout/FixedBottomLayout",
@@ -211,7 +212,13 @@ export const ToasterWithFixedBottom: Story = {
           >
             <h2 style={{ fontSize: "1.25rem", fontWeight: "600" }}>Toast 테스트 버튼</h2>
             <button
-              onClick={() => toast.success("성공적으로 저장되었습니다!")}
+              onClick={() =>
+                toast({
+                  message: "성공적으로 저장되었습니다!",
+                  icon: CheckCircle2,
+                  iconClassName: "text-green-500",
+                })
+              }
               style={{
                 padding: "0.75rem 1rem",
                 backgroundColor: "#22c55e",
@@ -226,7 +233,13 @@ export const ToasterWithFixedBottom: Story = {
               Success Toast
             </button>
             <button
-              onClick={() => toast.warning("주의가 필요합니다.")}
+              onClick={() =>
+                toast({
+                  message: "주의가 필요합니다.",
+                  icon: AlertTriangle,
+                  iconClassName: "text-orange-500",
+                })
+              }
               style={{
                 padding: "0.75rem 1rem",
                 backgroundColor: "#f97316",
@@ -304,7 +317,13 @@ export const ToasterWithoutFixedBottom: Story = {
           >
             <h2 style={{ fontSize: "1.25rem", fontWeight: "600" }}>Toast 테스트 버튼</h2>
             <button
-              onClick={() => toast.success("성공적으로 저장되었습니다!")}
+              onClick={() =>
+                toast({
+                  message: "성공적으로 저장되었습니다!",
+                  icon: CheckCircle2,
+                  iconClassName: "text-green-500",
+                })
+              }
               style={{
                 padding: "0.75rem 1rem",
                 backgroundColor: "#22c55e",
@@ -319,7 +338,13 @@ export const ToasterWithoutFixedBottom: Story = {
               Success Toast
             </button>
             <button
-              onClick={() => toast.warning("주의가 필요합니다.")}
+              onClick={() =>
+                toast({
+                  message: "주의가 필요합니다.",
+                  icon: AlertTriangle,
+                  iconClassName: "text-orange-500",
+                })
+              }
               style={{
                 padding: "0.75rem 1rem",
                 backgroundColor: "#f97316",
@@ -335,10 +360,34 @@ export const ToasterWithoutFixedBottom: Story = {
             </button>
             <button
               onClick={() => {
-                toast.success("첫 번째");
-                setTimeout(() => toast.default("두 번째"), 500);
-                setTimeout(() => toast.warning("세 번째"), 1000);
-                setTimeout(() => toast.default("네 번째"), 1500);
+                toast({
+                  message: "첫 번째",
+                  icon: CheckCircle2,
+                  iconClassName: "text-green-500",
+                });
+                setTimeout(
+                  () =>
+                    toast({
+                      message: "두 번째",
+                    }),
+                  500,
+                );
+                setTimeout(
+                  () =>
+                    toast({
+                      message: "세 번째",
+                      icon: AlertTriangle,
+                      iconClassName: "text-orange-500",
+                    }),
+                  1000,
+                );
+                setTimeout(
+                  () =>
+                    toast({
+                      message: "네 번째",
+                    }),
+                  1500,
+                );
               }}
               style={{
                 padding: "0.75rem 1rem",
