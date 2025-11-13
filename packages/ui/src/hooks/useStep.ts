@@ -71,14 +71,14 @@ export function StepProvider({
   const goToStep = useCallback(
     (stepIndex: number) => {
       if (stepIndex >= 0 && stepIndex < steps.length) {
-        const previousStep = currentStep;
-        setCurrentStep(stepIndex);
-        onStepChange?.(stepIndex, previousStep);
-
         if (syncWithUrl) {
           const params = new URLSearchParams(searchParams?.toString());
           params.set(URL_STEP_PARAM_NAME, String(stepIndex + 1));
           router.push(`${pathname}?${params.toString()}`);
+        } else {
+          const previousStep = currentStep;
+          setCurrentStep(stepIndex);
+          onStepChange?.(stepIndex, previousStep);
         }
 
         if (stepIndex === steps.length - 1) {
