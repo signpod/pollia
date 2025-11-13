@@ -30,6 +30,8 @@ export interface StepContextValue {
 
 const StepContext = createContext<StepContextValue | null>(null);
 
+const URL_STEP_PARAM_NAME = "step";
+
 export interface StepProviderProps {
   children: React.ReactNode;
   steps: StepConfig[];
@@ -75,7 +77,7 @@ export function StepProvider({
 
         if (syncWithUrl) {
           const params = new URLSearchParams(searchParams?.toString());
-          params.set("step", String(stepIndex + 1));
+          params.set(URL_STEP_PARAM_NAME, String(stepIndex + 1));
           router.push(`${pathname}?${params.toString()}`);
         }
 
@@ -115,22 +117,20 @@ export function StepProvider({
   }, []);
 
   useEffect(() => {
+    if (!syncWithUrl) return;
+
     const urlParams = new URLSearchParams(window.location.search);
-    const urlStep = urlParams.get("step");
+    const urlStep = urlParams.get(URL_STEP_PARAM_NAME);
     if (!urlStep) {
       router.replace(`${pathname}?step=${currentStep + 1}`);
     }
-  }, [currentStep, router, pathname]);
-
-  useEffect(() => {
-    if (!syncWithUrl) return;
 
     const handlePopState = () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const urlStep = urlParams.get("step");
-      if (urlStep) {
-        const stepIndex = Number.parseInt(urlStep, 10) - 1;
-        if (stepIndex >= 0 && stepIndex < steps.length) {
+      const params = new URLSearchParams(window.location.search);
+      const step = params.get(URL_STEP_PARAM_NAME);
+      if (step) {
+        const stepIndex = Number.parseInt(step, 10) - 1;
+        if (stepIndex >= 0 && stepIndex < steps.length && stepIndex !== currentStep) {
           setCurrentStep(stepIndex);
           onStepChange?.(stepIndex, currentStep);
         }
@@ -139,7 +139,7 @@ export function StepProvider({
 
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [syncWithUrl, steps.length, currentStep, onStepChange]);
+  }, [syncWithUrl, currentStep, steps.length, router, pathname, onStepChange]);
 
   const value: StepContextValue = {
     currentStep,
