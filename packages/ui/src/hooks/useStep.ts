@@ -122,24 +122,11 @@ export function StepProvider({
     const urlParams = new URLSearchParams(window.location.search);
     const urlStep = urlParams.get(URL_STEP_PARAM_NAME);
     if (!urlStep) {
-      router.replace(`${pathname}?step=${currentStep + 1}`);
+      currentStep === 0
+        ? router.replace(`${pathname}?step=${currentStep + 1}`)
+        : router.push(`${pathname}?step=${currentStep + 1}`);
     }
-
-    const handlePopState = () => {
-      const params = new URLSearchParams(window.location.search);
-      const step = params.get(URL_STEP_PARAM_NAME);
-      if (step) {
-        const stepIndex = Number.parseInt(step, 10) - 1;
-        if (stepIndex >= 0 && stepIndex < steps.length && stepIndex !== currentStep) {
-          setCurrentStep(stepIndex);
-          onStepChange?.(stepIndex, currentStep);
-        }
-      }
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, [syncWithUrl, currentStep, steps.length, router, pathname, onStepChange]);
+  }, [syncWithUrl, currentStep, router, pathname]);
 
   const value: StepContextValue = {
     currentStep,
