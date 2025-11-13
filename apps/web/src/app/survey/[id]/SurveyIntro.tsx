@@ -2,6 +2,7 @@
 
 import { ButtonV2, FixedBottomLayout, FloatingButton, Typo } from "@repo/ui/components";
 import { Gift } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { SurveyCollection } from "./components/SurveyCollection";
 import { SurveyDescription } from "./components/SurveyDescription";
@@ -31,6 +32,8 @@ export function SurveyIntro() {
     mockData;
   const [isRewardVisible, setIsRewardVisible] = useState(true);
   const rewardRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const params = useParams<{ id: string }>();
 
   const scrollToReward = () => {
     rewardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -78,7 +81,12 @@ export function SurveyIntro() {
             onClick={scrollToReward}
           />
         </div>
-        <ButtonV2 variant="primary" size="large" className="w-full">
+        <ButtonV2
+          variant="primary"
+          size="large"
+          className="w-full"
+          onClick={() => router.push(`/survey/${params.id}/question?step=1`)}
+        >
           <Typo.ButtonText size="large" className="flex w-full items-center justify-center">
             참여하고 리워드 받기
           </Typo.ButtonText>
