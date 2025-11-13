@@ -50,14 +50,14 @@ export const createQuestionSteps = ({
   questions,
   stepComponents,
 }: CreateQuestionStepsProps): ExtendedQuestionStepConfig[] => {
-  return questions.map((question, index) => {
+  return questions.map(question => {
     const ContentComponent = getContentComponent(question.type, stepComponents);
 
     return {
       id: question.id,
       title: question.title,
       canGoNext: false, // 기본값, 각 컴포넌트에서 동적으로 업데이트
-      canGoBack: index > 0,
+      canGoBack: true,
       questionData: question,
       content: ContentComponent,
     };

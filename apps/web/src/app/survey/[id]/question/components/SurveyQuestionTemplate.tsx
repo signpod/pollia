@@ -7,6 +7,7 @@ import {
 } from "@repo/ui/components";
 import { ChevronLeftIcon } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import type { PropsWithChildren } from "react";
 
 interface SurveyQuestionTemplateProps extends PropsWithChildren {
@@ -35,7 +36,16 @@ export function SurveyQuestionTemplate({
   onNext,
   nextButtonText = "다음",
 }: SurveyQuestionTemplateProps) {
+  const router = useRouter();
   const progressValue = (currentOrder / totalQuestionCount) * 100 || 0;
+
+  const handlePrevious = () => {
+    if (isFirstQuestion) {
+      router.back();
+    } else {
+      onPrevious?.();
+    }
+  };
 
   return (
     <FixedBottomLayout>
@@ -72,8 +82,7 @@ export function SurveyQuestionTemplate({
             variant="secondary"
             size="large"
             className="w-fit aspect-square"
-            disabled={isFirstQuestion}
-            onClick={onPrevious}
+            onClick={handlePrevious}
           >
             <ChevronLeftIcon className="size-6" />
           </ButtonV2>
