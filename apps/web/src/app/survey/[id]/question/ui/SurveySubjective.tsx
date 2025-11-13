@@ -1,5 +1,6 @@
 import { QuestionStepContentProps } from "@/constants/surveyQuestion";
 import { subjectiveResponseSchema } from "@/schemas/survey/question/response/subjectiveResponseSchema";
+import type { SurveyAnswerItem } from "@/types/dto";
 import { Textarea } from "@repo/ui/components";
 import { useState } from "react";
 import { SurveyQuestionTemplate } from "../components/SurveyQuestionTemplate";
@@ -62,7 +63,7 @@ export function SurveySubjective({
 function useSurveySubjectiveValue(
   questionId: string,
   updateCanGoNext?: (canGoNext: boolean) => void,
-  onAnswerChange?: (answer: import("@/types/dto/survey").SurveyAnswerItem) => void,
+  onAnswerChange?: (answer: SurveyAnswerItem) => void,
 ) {
   const [subjectiveValue, setSubjectiveValue] = useState("");
   const [showError, setShowError] = useState(false);
