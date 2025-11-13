@@ -90,6 +90,12 @@ export const Tooltip = ({ children, id, placement = "top", className = "" }: Too
 
   useEffect(() => {
     const element = document.querySelector(`[data-tooltip-id="${id}"]`) as HTMLElement;
+
+    if (!element) {
+      console.error(`[Tooltip] data-tooltip-id="${id}"를 가진 요소를 찾을 수 없습니다.`);
+      return;
+    }
+
     element.style.position = "relative";
     setAnchorElement(element);
   }, [id]);

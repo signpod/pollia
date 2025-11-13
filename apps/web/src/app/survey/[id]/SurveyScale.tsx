@@ -25,15 +25,14 @@ export function SurveyScale() {
       isFirstQuestion={isFirstQuestion}
       isNextDisabled={!isScaleValueChanged}
     >
-      <SurveyLikertScale value={scaleValue} onChange={handleScaleValueChange}>
-        <SurveyLikertScale.ScaleGuide labels={SURVEY_LIKERT_SCALE_TEXT} />
-        <SurveyLikertScale.Thumb value={scaleValue} />
-      </SurveyLikertScale>
+      <div className="h-[125px] px-11 flex flex-col justify-end">
+        <SurveyLikertScale value={scaleValue} onChange={handleScaleValueChange}>
+          <SurveyLikertScale.Thumb value={scaleValue} />
+        </SurveyLikertScale>
+      </div>
     </SurveyQuestionLayout>
   );
 }
-
-const SURVEY_LIKERT_SCALE_TEXT = ["매우 불만족", "불만족", "보통", "만족", "매우 만족"];
 
 const DEFAULT_SCALE_VALUE = 3;
 

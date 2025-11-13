@@ -174,9 +174,7 @@ export const WithNumberLabels: Story = {
     const [value, setValue] = useState(args.value || 1);
     return (
       <div className="flex min-h-[300px] w-[400px] flex-col items-center justify-center gap-4 p-8">
-        <SurveyLikertScale value={value} onChange={setValue} min={1} max={5} step={1}>
-          <SurveyLikertScale.ScaleGuide labels={["1", "2", "3", "4", "5"]} />
-        </SurveyLikertScale>
+        <SurveyLikertScale value={value} onChange={setValue} min={1} max={5} step={1} />
         <p className="text-sm text-zinc-600">선택된 값: {value}</p>
       </div>
     );
@@ -198,39 +196,6 @@ export const WithNumberLabels: Story = {
   },
 };
 
-// 텍스트 레이블
-export const WithTextLabels: Story = {
-  render: args => {
-    const [value, setValue] = useState(args.value || 3);
-    return (
-      <div className="flex min-h-[300px] w-[400px] flex-col items-center justify-center gap-4 p-8">
-        <SurveyLikertScale value={value} onChange={setValue} min={1} max={5} step={1}>
-          <SurveyLikertScale.ScaleGuide
-            labels={["매우 동의 안함", "동의 안함", "보통", "동의함", "매우 동의함"]}
-          />
-          <SurveyLikertScale.Thumb value={value} />
-        </SurveyLikertScale>
-        <p className="text-sm text-zinc-600">선택된 값: {value}</p>
-      </div>
-    );
-  },
-  args: {
-    value: 3,
-    onChange: () => {},
-    min: 1,
-    max: 5,
-    step: 1,
-  },
-  parameters: {
-    docs: {
-      description: {
-        story:
-          "텍스트 레이블과 감정 이모지 썸네일을 함께 사용합니다. 썸네일은 선택된 값에 따라 자동으로 적절한 감정 이모지를 표시합니다 (1=매우 나쁨, 5=매우 좋음).",
-      },
-    },
-  },
-};
-
 // 커스텀 색상
 export const WithCustomColors: Story = {
   render: args => {
@@ -238,9 +203,6 @@ export const WithCustomColors: Story = {
     return (
       <div className="flex min-h-[300px] w-[400px] flex-col items-center justify-center gap-4 p-8">
         <SurveyLikertScale value={value} onChange={setValue} min={1} max={5} step={1}>
-          <SurveyLikertScale.ScaleGuide
-            labels={["매우 동의 안함", "동의 안함", "보통", "동의함", "매우 동의함"]}
-          />
           <SurveyLikertScale.Thumb value={value} className="text-sky-600" />
         </SurveyLikertScale>
         <p className="text-sm text-zinc-600">선택된 값: {value} (커스텀 색상)</p>
@@ -271,7 +233,6 @@ export const SevenPointScale: Story = {
     return (
       <div className="flex min-h-[300px] w-[400px] flex-col items-center justify-center gap-4 p-8">
         <SurveyLikertScale value={value} onChange={setValue} min={1} max={7} step={1}>
-          <SurveyLikertScale.ScaleGuide labels={["1", "2", "3", "4", "5", "6", "7"]} />
           <SurveyLikertScale.Thumb value={value} />
         </SurveyLikertScale>
         <p className="text-sm text-zinc-600">선택된 값: {value} / 7</p>
@@ -302,7 +263,6 @@ export const Disabled: Story = {
     return (
       <div className="flex min-h-[300px] w-[400px] items-center justify-center p-8">
         <SurveyLikertScale value={value} onChange={setValue} min={1} max={5} step={1} disabled>
-          <SurveyLikertScale.ScaleGuide labels={["1", "2", "3", "4", "5"]} />
           <SurveyLikertScale.Thumb value={value} />
         </SurveyLikertScale>
       </div>
@@ -365,7 +325,6 @@ export const RealWorldExample: Story = {
               max={5}
               step={1}
             >
-              <SurveyLikertScale.ScaleGuide labels={q.labels} />
               <SurveyLikertScale.Thumb value={answers[q.id] ?? 3} />
             </SurveyLikertScale>
           </div>
@@ -404,9 +363,6 @@ export const MobileTouch: Story = {
           </p>
         </div>
         <SurveyLikertScale value={value} onChange={setValue} min={1} max={5} step={1}>
-          <SurveyLikertScale.ScaleGuide
-            labels={["매우 나쁨", "나쁨", "보통", "좋음", "매우 좋음"]}
-          />
           <SurveyLikertScale.Thumb value={value} />
         </SurveyLikertScale>
         <div className="flex flex-col items-center gap-2">
