@@ -119,14 +119,28 @@ export function StepProvider({
   useEffect(() => {
     if (!syncWithUrl) return;
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlStep = urlParams.get(URL_STEP_PARAM_NAME);
+    const urlStep = searchParams?.get(URL_STEP_PARAM_NAME);
+
     if (!urlStep) {
-      currentStep === 0
-        ? router.replace(`${pathname}?step=${currentStep + 1}`)
-        : router.push(`${pathname}?step=${currentStep + 1}`);
+      const params = new URLSearchParams(searchParams?.toString());
+      params.set(URL_STEP_PARAM_NAME, String(currentStep + 1));
+      router.replace(`${pathname}?${params.toString()}`);
+      return;
     }
-  }, [syncWithUrl, currentStep, router, pathname]);
+
+    const urlStepNumber = Number.parseInt(urlStep, 10) - 1;
+
+    if (
+      !Number.isNaN(urlStepNumber) &&
+      urlStepNumber >= 0 &&
+      urlStepNumber < steps.length &&
+      urlStepNumber !== currentStep
+    ) {
+      const previousStep = currentStep;
+      setCurrentStep(urlStepNumber);
+      onStepChange?.(urlStepNumber, previousStep);
+    }
+  }, [syncWithUrl, searchParams, currentStep, steps.length, router, pathname, onStepChange]);
 
   const value: StepContextValue = {
     currentStep,
