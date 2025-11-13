@@ -1,6 +1,7 @@
 "use client";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import React, { createContext, useCallback, useContext, useState } from "react";
+import { createContext, createElement, useCallback, useContext, useEffect, useState } from "react";
 
 export interface StepConfig {
   id: string;
@@ -35,6 +36,7 @@ export interface StepProviderProps {
   initialStep?: number;
   onStepChange?: (currentStep: number, previousStep: number) => void;
   onComplete?: () => void;
+  syncWithUrl?: boolean;
 }
 
 export function StepProvider({
@@ -43,21 +45,24 @@ export function StepProvider({
   initialStep = 0,
   onStepChange,
   onComplete,
+  syncWithUrl = false,
 }: StepProviderProps) {
   if (initialSteps.length === 0) {
     throw new Error("StepProvider: steps array cannot be empty");
   }
 
-  const safeInitialStep = Math.max(0, Math.min(initialStep, initialSteps.length - 1));
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  const [currentStep, setCurrentStep] = useState(safeInitialStep);
+  const [currentStep, setCurrentStep] = useState(initialStep);
   const [steps, setSteps] = useState<StepConfig[]>(initialSteps);
 
   const currentStepConfig = steps[currentStep] ?? steps[0]!;
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === steps.length - 1;
   const canGoNext = currentStepConfig?.canGoNext !== false;
-  const canGoBack = currentStepConfig?.canGoBack !== false && !isFirstStep;
+  const canGoBack = currentStepConfig?.canGoBack !== false;
 
   const progress = steps.length > 0 ? ((currentStep + 1) / steps.length) * 100 : 0;
 
@@ -68,12 +73,27 @@ export function StepProvider({
         setCurrentStep(stepIndex);
         onStepChange?.(stepIndex, previousStep);
 
+        if (syncWithUrl) {
+          const params = new URLSearchParams(searchParams?.toString());
+          params.set("step", String(stepIndex + 1));
+          router.push(`${pathname}?${params.toString()}`);
+        }
+
         if (stepIndex === steps.length - 1) {
           onComplete?.();
         }
       }
     },
-    [currentStep, steps.length, onStepChange, onComplete],
+    [
+      currentStep,
+      steps.length,
+      onStepChange,
+      onComplete,
+      syncWithUrl,
+      router,
+      pathname,
+      searchParams,
+    ],
   );
 
   const goNext = useCallback(() => {
@@ -94,6 +114,33 @@ export function StepProvider({
     );
   }, []);
 
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlStep = urlParams.get("step");
+    if (!urlStep) {
+      router.replace(`${pathname}?step=${currentStep + 1}`);
+    }
+  }, [currentStep, router, pathname]);
+
+  useEffect(() => {
+    if (!syncWithUrl) return;
+
+    const handlePopState = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlStep = urlParams.get("step");
+      if (urlStep) {
+        const stepIndex = Number.parseInt(urlStep, 10) - 1;
+        if (stepIndex >= 0 && stepIndex < steps.length) {
+          setCurrentStep(stepIndex);
+          onStepChange?.(stepIndex, currentStep);
+        }
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [syncWithUrl, steps.length, currentStep, onStepChange]);
+
   const value: StepContextValue = {
     currentStep,
     currentStepConfig,
@@ -109,7 +156,7 @@ export function StepProvider({
     progress,
   };
 
-  return React.createElement(StepContext.Provider, { value }, children);
+  return createElement(StepContext.Provider, { value }, children);
 }
 
 export function useStep(): StepContextValue {

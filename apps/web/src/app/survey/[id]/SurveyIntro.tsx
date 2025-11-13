@@ -85,7 +85,7 @@ export function SurveyIntro() {
           variant="primary"
           size="large"
           className="w-full"
-          onClick={() => router.push(`/survey/${params.id}/question?step=1`)}
+          onClick={() => router.push(`/survey/${params.id}/question`)}
         >
           <Typo.ButtonText size="large" className="flex w-full items-center justify-center">
             참여하고 리워드 받기

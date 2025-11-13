@@ -9,8 +9,9 @@ import { SurveyQuestionType } from "@/types/domain/survey";
 // TODO: 임시 타입 - 답변 제출 스펙 미확정으로 추후 변경 예정
 import type { SurveyAnswerItem } from "@/types/dto/survey";
 import { StepProvider, useStep } from "@repo/ui/components";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useRef, useState } from "react";
+import { useParams } from "next/navigation";
+import { useCallback } from "react";
+import { useRef, useState } from "react";
 import { SurveyScale } from "./ui/SurveyScale";
 import { SurveySubjective } from "./ui/SurveySubjective";
 
@@ -39,13 +40,6 @@ const MOCK_QUESTIONS: QuestionData[] = [
 ];
 
 export default function SurveyPage() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const params = useParams<{ id: string }>();
-
-  const currentStepFromUrl = Number(searchParams.get("step") || "1");
-  const initialStep = Math.max(0, currentStepFromUrl - 1);
-
   const steps = createQuestionSteps({
     questions: MOCK_QUESTIONS,
     stepComponents: {
@@ -55,16 +49,8 @@ export default function SurveyPage() {
     },
   });
 
-  const handleStepChange = useCallback(
-    (currentStep: number) => {
-      const stepNumber = currentStep + 1;
-      router.replace(`/survey/${params.id}/question?step=${stepNumber}`);
-    },
-    [router, params.id],
-  );
-
   return (
-    <StepProvider steps={steps} initialStep={initialStep} onStepChange={handleStepChange}>
+    <StepProvider steps={steps} initialStep={0} syncWithUrl>
       <SurveyQuestionRenderer />
     </StepProvider>
   );
