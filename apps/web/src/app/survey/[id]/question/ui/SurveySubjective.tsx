@@ -1,7 +1,7 @@
 import { QuestionStepContentProps } from "@/constants/surveyQuestion";
 import { subjectiveResponseSchema } from "@/schemas/survey/question/response/subjectiveResponseSchema";
 import { Textarea } from "@repo/ui/components";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { SurveyQuestionTemplate } from "../components/SurveyQuestionTemplate";
 
 const PLACEHOLDER = "답변을 입력해주세요";
@@ -71,6 +71,12 @@ function useSurveySubjectiveValue(
     const value = e.target.value;
     setSubjectiveValue(value);
 
+    const result = subjectiveResponseSchema.safeParse({
+      questionId,
+      textResponse: value,
+    });
+    updateCanGoNext?.(result.success);
+
     // 답변 변경 전달
     if (value.trim()) {
       onAnswerChange?.({
@@ -92,11 +98,6 @@ function useSurveySubjectiveValue(
     questionId,
     textResponse: subjectiveValue,
   });
-
-  // validation 상태가 변경될 때마다 canGoNext 업데이트
-  useEffect(() => {
-    updateCanGoNext?.(validationResult.success);
-  }, [validationResult.success, updateCanGoNext]);
 
   return {
     subjectiveValue,
