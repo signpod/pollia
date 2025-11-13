@@ -141,7 +141,7 @@ function ProfileTabsContent() {
   const DataContainer =
     activeTab === "userSurveys" ? UserSurveyDataContainer : UserSurveyQuestionDataContainer;
 
-  const baseHref = activeTab === "userSurveys" ? "/survey" : "/survey/question";
+  const baseHref = activeTab === "userSurveys" ? "/survey" : "/question";
   const placeholder =
     activeTab === "userSurveys" ? "설문 제목을 검색해주세요" : "질문 제목을 검색해주세요";
 

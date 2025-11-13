@@ -7,9 +7,10 @@ import {
 } from "@repo/ui/components";
 import { ChevronLeftIcon } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import type { PropsWithChildren } from "react";
 
-interface SurveyQuestionLayoutProps extends PropsWithChildren {
+interface SurveyQuestionTemplateProps extends PropsWithChildren {
   currentOrder: number;
   totalQuestionCount: number;
   title: string;
@@ -22,7 +23,7 @@ interface SurveyQuestionLayoutProps extends PropsWithChildren {
   nextButtonText?: string;
 }
 
-export function SurveyQuestionLayout({
+export function SurveyQuestionTemplate({
   currentOrder,
   totalQuestionCount,
   title,
@@ -34,14 +35,25 @@ export function SurveyQuestionLayout({
   onPrevious,
   onNext,
   nextButtonText = "다음",
-}: SurveyQuestionLayoutProps) {
+}: SurveyQuestionTemplateProps) {
+  const router = useRouter();
   const progressValue = (currentOrder / totalQuestionCount) * 100 || 0;
 
+  const handlePrevious = () => {
+    if (isFirstQuestion) {
+      router.back();
+    } else {
+      onPrevious?.();
+    }
+  };
+
   return (
-    <>
-      <FixedTopLayout.Content className="pt-3">
-        <ProgressBar value={progressValue} />
-      </FixedTopLayout.Content>
+    <FixedBottomLayout>
+      <FixedTopLayout>
+        <FixedTopLayout.Content className="pt-3">
+          <ProgressBar value={progressValue} />
+        </FixedTopLayout.Content>
+      </FixedTopLayout>
 
       <div className="space-y-8 mt-8 px-5 pb-5">
         {/* 질문 정보 섹션 */}
@@ -70,8 +82,7 @@ export function SurveyQuestionLayout({
             variant="secondary"
             size="large"
             className="w-fit aspect-square"
-            disabled={isFirstQuestion}
-            onClick={onPrevious}
+            onClick={handlePrevious}
           >
             <ChevronLeftIcon className="size-6" />
           </ButtonV2>
@@ -88,6 +99,6 @@ export function SurveyQuestionLayout({
           </ButtonV2>
         </nav>
       </FixedBottomLayout.Content>
-    </>
+    </FixedBottomLayout>
   );
 }
