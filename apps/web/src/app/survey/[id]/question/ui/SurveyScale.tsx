@@ -21,8 +21,6 @@ export function SurveyScale({
     onAnswerChange,
   );
 
-  const scaleLabels = questionData.scaleConfig?.labels || SURVEY_LIKERT_SCALE_TEXT;
-
   return (
     <SurveyQuestionTemplate
       currentOrder={currentOrder}
@@ -37,14 +35,11 @@ export function SurveyScale({
       nextButtonText={nextButtonText}
     >
       <SurveyLikertScale value={scaleValue} onChange={handleScaleValueChange}>
-        <SurveyLikertScale.ScaleGuide labels={scaleLabels} />
         <SurveyLikertScale.Thumb value={scaleValue} />
       </SurveyLikertScale>
     </SurveyQuestionTemplate>
   );
 }
-
-const SURVEY_LIKERT_SCALE_TEXT = ["매우 불만족", "불만족", "보통", "만족", "매우 만족"];
 
 const DEFAULT_SCALE_VALUE = 3;
 
