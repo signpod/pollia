@@ -2,7 +2,7 @@
 
 import { createScaleQuestion } from "@/actions/survey/question";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
-import type { CreateScaleQuestionRequest, CreateScaleQuestionResponse } from "@/types/dto/survey";
+import type { CreateScaleQuestionRequest, CreateScaleQuestionResponse } from "@/types/dto";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useResetSurveyQuestion } from "./useResetSurveyQuestion";
 

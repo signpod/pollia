@@ -10,7 +10,7 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import prisma from "@/database/utils/prisma/client";
-import type { SubmitSurveyAnswersRequest, SubmitSurveyAnswersResponse } from "@/types/dto/survey";
+import type { SubmitSurveyAnswersRequest, SubmitSurveyAnswersResponse } from "@/types/dto";
 
 const ANSWER_MESSAGE = {
   SURVEY_NOT_FOUND: "설문조사를 찾을 수 없습니다.",

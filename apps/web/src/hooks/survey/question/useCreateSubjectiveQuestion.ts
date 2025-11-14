@@ -5,7 +5,7 @@ import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
 import type {
   CreateSubjectiveQuestionRequest,
   CreateSubjectiveQuestionResponse,
-} from "@/types/dto/survey";
+} from "@/types/dto";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useResetSurveyQuestion } from "./useResetSurveyQuestion";
 

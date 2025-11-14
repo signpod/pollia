@@ -2,7 +2,7 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import prisma from "@/database/utils/prisma/client";
-import type { CreateSurveyRequest, CreateSurveyResponse } from "@/types/dto/survey";
+import type { CreateSurveyRequest, CreateSurveyResponse } from "@/types/dto";
 
 const SURVEY_MESSAGE = {
   TITLE_REQUIRED: "제목은 필수입니다.",

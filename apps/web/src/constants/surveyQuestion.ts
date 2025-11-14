@@ -1,7 +1,7 @@
 import React from "react";
 
 import { SurveyQuestionType } from "@/types/domain/survey";
-import type { SurveyAnswerItem } from "@/types/dto/survey";
+import type { SurveyAnswerItem } from "@/types/dto";
 import { StepConfig } from "@repo/ui/components";
 
 export interface QuestionData {

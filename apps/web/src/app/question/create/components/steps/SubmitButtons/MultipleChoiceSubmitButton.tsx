@@ -2,7 +2,7 @@ import { multipleChoiceDataAtom } from "@/atoms/survey/question/creation/multipl
 import { toast } from "@/components/common/Toast";
 import { useCreateMultipleChoiceQuestion } from "@/hooks/survey/question";
 import { multipleChoiceInfoSchema } from "@/schemas/survey/question/creation/multipleChoiceInfoSchema";
-import type { CreateMultipleChoiceQuestionRequest } from "@/types/dto/survey";
+import type { CreateMultipleChoiceQuestionRequest } from "@/types/dto";
 import { Button, FixedBottomLayout, Typo } from "@repo/ui/components";
 import { useAtomValue } from "jotai";
 import { useRouter, useSearchParams } from "next/navigation";
