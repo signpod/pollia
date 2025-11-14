@@ -6,7 +6,7 @@ import { subjectiveInfoSchema } from "@/schemas/survey/question/creation/subject
 import type {
   CreateSubjectiveQuestionRequest,
   CreateSubjectiveQuestionResponse,
-} from "@/types/dto/survey";
+} from "@/types/dto";
 import { SurveyQuestionType } from "@prisma/client";
 
 function validateSubjectiveQuestion(request: CreateSubjectiveQuestionRequest): string | null {

@@ -7,7 +7,7 @@ import {
 } from "@/constants/surveyQuestion";
 import { SurveyQuestionType } from "@/types/domain/survey";
 // TODO: 임시 타입 - 답변 제출 스펙 미확정으로 추후 변경 예정
-import type { SurveyAnswerItem } from "@/types/dto/survey";
+import type { SurveyAnswerItem } from "@/types/dto";
 import { StepProvider, useStep } from "@repo/ui/components";
 import { useParams } from "next/navigation";
 import { useCallback } from "react";

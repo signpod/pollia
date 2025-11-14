@@ -1,6 +1,6 @@
 import { SurveyLikertScale } from "@/app/survey/[id]/components/SurveyLikertScale";
 import { QuestionStepContentProps } from "@/constants/surveyQuestion";
-import type { SurveyAnswerItem } from "@/types/dto/survey";
+import type { SurveyAnswerItem } from "@/types/dto";
 import { useState } from "react";
 import { SurveyQuestionTemplate } from "../components/SurveyQuestionTemplate";
 

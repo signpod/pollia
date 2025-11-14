@@ -2,7 +2,7 @@
 
 import { createSurvey } from "@/actions/survey/create-survey";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
-import type { CreateSurveyRequest, CreateSurveyResponse } from "@/types/dto/survey";
+import type { CreateSurveyRequest, CreateSurveyResponse } from "@/types/dto";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface UseCreateSurveyOptions {

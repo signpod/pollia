@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches: [dev, main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 1. 코드 체크아웃
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      # 2. Corepack 활성화 (Yarn 4 사용)
+      - name: Enable Corepack
+        run: corepack enable
+      
+      # 3. Node.js 설정
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'yarn'
+      
+      # 4. Turborepo 캐시 설정
+      - name: Setup Turborepo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+      
+      # 5. 의존성 설치
+      - name: Install dependencies
+        run: yarn install --immutable
+      
+      # 6. Prisma 클라이언트 생성
+      - name: Generate Prisma Client
+        working-directory: apps/web
+        run: npx prisma generate
+      
+      # 7. 타입 체크
+      - name: Type check
+        run: yarn check-types
+      
+      # 8. 린트 체크
+      - name: Lint
+        run: yarn lint
+      
+      # 9. 테스트 실행 (커버리지 포함)
+      - name: Run tests with coverage
+        run: yarn test:coverage
+      
+      # 10. 성공 메시지
+      - name: All checks passed
+        if: success()
+        run: echo "✅ All CI checks passed!"
+

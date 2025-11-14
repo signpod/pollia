@@ -6,7 +6,7 @@ import { multipleChoiceInfoSchema } from "@/schemas/survey/question/creation/mul
 import type {
   CreateMultipleChoiceQuestionRequest,
   CreateMultipleChoiceQuestionResponse,
-} from "@/types/dto/survey";
+} from "@/types/dto";
 import { FileStatus, SurveyQuestionType } from "@prisma/client";
 
 function validateMultipleChoiceQuestion(

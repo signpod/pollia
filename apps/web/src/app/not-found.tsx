@@ -30,7 +30,7 @@ export default function NotFound() {
           >
             {NOT_FOUND_MESSAGE.subTitle}
           </Typo.MainTitle>
-          <PollPollEOops className="size-30" alt="" />
+          <PollPollEOops className="size-30" />
         </div>
         <div className="flex flex-col items-center justify-center gap-1">
           <Typo.MainTitle size="small">{NOT_FOUND_MESSAGE.title}</Typo.MainTitle>
