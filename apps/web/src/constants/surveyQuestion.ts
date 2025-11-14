@@ -11,12 +11,13 @@ export interface QuestionData {
   title: string;
   description?: string;
   imageUrl?: string;
-  options?: Array<{ id: string; label: string }>;
+  options?: Array<{ id: string; label: string; description: string; imageUrl: string }>;
   scaleConfig?: {
     min: number;
     max: number;
     labels: string[];
   };
+  maxSelections?: number;
 }
 
 export interface ExtendedQuestionStepConfig extends StepConfig {

@@ -1,0 +1,78 @@
+import { QuestionStepContentProps } from "@/constants/surveyQuestion";
+import { SurveyQuestionOptionButton } from "../../components/SurveyQuestionOptionButton";
+import { SurveyQuestionTemplate } from "../components/SurveyQuestionTemplate";
+import {
+  SurveyMultipleChoiceProvider,
+  useSurveyMultipleChoice,
+} from "./SurveyMultipleChoiceProvider";
+
+export function SurveyMultipleChoice({
+  questionData,
+  currentOrder,
+  totalQuestionCount,
+  isFirstQuestion,
+  onPrevious,
+  onNext,
+  nextButtonText,
+  updateCanGoNext,
+  onAnswerChange,
+}: QuestionStepContentProps) {
+  return (
+    <SurveyMultipleChoiceProvider
+      maxSelections={questionData.maxSelections ?? 1}
+      questionId={questionData.id}
+      updateCanGoNext={updateCanGoNext}
+      onAnswerChange={onAnswerChange}
+    >
+      <SurveyMultipleChoiceContent
+        questionData={questionData}
+        currentOrder={currentOrder}
+        totalQuestionCount={totalQuestionCount}
+        isFirstQuestion={isFirstQuestion}
+        onPrevious={onPrevious}
+        onNext={onNext}
+        nextButtonText={nextButtonText}
+      />
+    </SurveyMultipleChoiceProvider>
+  );
+}
+
+function SurveyMultipleChoiceContent({
+  questionData,
+  currentOrder,
+  totalQuestionCount,
+  isFirstQuestion,
+  onPrevious,
+  onNext,
+  nextButtonText,
+}: Omit<QuestionStepContentProps, "isNextDisabled" | "updateCanGoNext" | "onAnswerChange">) {
+  const isMultipleChoice = !!questionData.maxSelections && questionData.maxSelections > 1;
+  const { selectedIds, toggleSelectedId, canGoNext } = useSurveyMultipleChoice();
+
+  return (
+    <SurveyQuestionTemplate
+      currentOrder={currentOrder}
+      totalQuestionCount={totalQuestionCount}
+      title={questionData.title}
+      description={questionData.description}
+      imageUrl={questionData.imageUrl}
+      isFirstQuestion={isFirstQuestion}
+      isNextDisabled={!canGoNext}
+      onPrevious={onPrevious}
+      onNext={onNext}
+      nextButtonText={nextButtonText}
+    >
+      {questionData.options?.map(option => (
+        <SurveyQuestionOptionButton
+          key={option.id}
+          selectType={isMultipleChoice ? "checkbox" : "radio"}
+          imageUrl={option.imageUrl}
+          title={option.label}
+          description={option.description}
+          isSelected={selectedIds.has(option.id)}
+          onClick={() => toggleSelectedId(option.id)}
+        />
+      ))}
+    </SurveyQuestionTemplate>
+  );
+}

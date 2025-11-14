@@ -6,7 +6,7 @@ import CheckSquare from "@public/svgs/check-square-filled.svg";
 import { Typo } from "@repo/ui/components";
 import { cva } from "class-variance-authority";
 import Image from "next/image";
-import { ComponentProps, useState } from "react";
+import { ComponentProps } from "react";
 
 type SelectType = "radio" | "checkbox";
 
@@ -15,6 +15,7 @@ interface SurveyQuestionOptionButtonProps extends ComponentProps<"button"> {
   description?: string;
   imageUrl?: string;
   selectType?: SelectType;
+  isSelected?: boolean;
 }
 
 export function SurveyQuestionOptionButton({
@@ -25,18 +26,16 @@ export function SurveyQuestionOptionButton({
   onClick,
   disabled,
   selectType = "radio",
+  isSelected = false,
   ...props
 }: SurveyQuestionOptionButtonProps) {
-  const [isSelected, setIsSelected] = useState(false);
-
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    setIsSelected(prev => !prev);
     onClick?.(e);
   };
 
   const containerVariants = cva(
     cn(
-      "flex-1 flex justify-start items-start p-4 ring-1 ring-inset ring-default rounded-md",
+      "w-full flex-1 flex justify-start items-start p-4 ring-1 ring-inset ring-default rounded-md",
       "hover:bg-zinc-50 active:ring-point",
       "disabled:cursor-not-allowed",
     ),

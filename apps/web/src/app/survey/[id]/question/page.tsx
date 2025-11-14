@@ -12,8 +12,7 @@ import { StepProvider, useStep } from "@repo/ui/components";
 import { useParams } from "next/navigation";
 import { useCallback } from "react";
 import { useRef, useState } from "react";
-import { SurveyScale } from "./ui/SurveyScale";
-import { SurveySubjective } from "./ui/SurveySubjective";
+import { SurveyMultipleChoice, SurveyScale, SurveySubjective } from "./ui";
 
 // TODO: 실제 데이터는 서버에서 fetch하여 사용
 const MOCK_QUESTIONS: QuestionData[] = [
@@ -37,13 +36,77 @@ const MOCK_QUESTIONS: QuestionData[] = [
     title: "추가로 하고 싶은 말씀이 있으신가요?",
     description: "자유롭게 의견을 작성해주세요.",
   },
+  {
+    id: "cmho7ioha000093zaw3i1sqfd1",
+    order: 3,
+    type: SurveyQuestionType.MULTIPLE_CHOICE,
+    title: "코카콜라 맛있다 맛있으면 또 먹어",
+    imageUrl: "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&h=400&fit=crop",
+    description: "척척 박사님 가르쳐주세요",
+    options: [
+      {
+        id: "cmho7ioha000093zaw3i1sqfd2",
+        label: "맛있다",
+        description: "맛있다",
+        imageUrl:
+          "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&h=400&fit=crop",
+      },
+      {
+        id: "cmho7ioha000093zaw3i1sqfd3",
+        label: "맛있지 않다",
+        description: "맛있지 않다",
+        imageUrl:
+          "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&h=400&fit=crop",
+      },
+      {
+        id: "cmho7ioha000093zaw3i1sqfd4",
+        label: "모르겠다",
+        description: "모르겠다",
+        imageUrl:
+          "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&h=400&fit=crop",
+      },
+    ],
+    maxSelections: 2,
+  },
+  {
+    id: "cmho7ioha000093zaw3i1sqfdddddAAA",
+    order: 4,
+    type: SurveyQuestionType.MULTIPLE_CHOICE,
+    title: "코카콜라 맛있다 맛있으면 또 먹어",
+    imageUrl: "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&h=400&fit=crop",
+    description: "척척 박사님 가르쳐주세요",
+    options: [
+      {
+        id: "cmho7ioha000093zaw3i1sqfddddd1",
+        label: "맛있다",
+        description: "맛있다",
+        imageUrl:
+          "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&h=400&fit=crop",
+      },
+      {
+        id: "cmho7ioha000093zaw3i1sqfdddddd2",
+        label: "맛있지 않다",
+        description: "맛있지 않다",
+        imageUrl:
+          "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&h=400&fit=crop",
+      },
+      {
+        id: "cmho7ioha000093zaw3i1sqfdddddd3",
+        label: "모르겠다",
+        description: "모르겠다",
+        imageUrl:
+          "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&h=400&fit=crop",
+      },
+    ],
+    maxSelections: 1,
+  },
 ];
 
 export default function SurveyPage() {
   const steps = createQuestionSteps({
     questions: MOCK_QUESTIONS,
     stepComponents: {
-      MultipleChoice: () => <div>Multiple Choice (미구현)</div>,
+      MultipleChoice: SurveyMultipleChoice,
       Scale: SurveyScale,
       Subjective: SurveySubjective,
     },
@@ -132,6 +195,7 @@ function SurveyQuestionRenderer() {
 
   return (
     <ContentComponent
+      key={questionData.id}
       questionData={questionData}
       currentOrder={questionData.order}
       totalQuestionCount={MOCK_QUESTIONS.length}
