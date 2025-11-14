@@ -2,6 +2,7 @@
 
 import { ButtonV2, FixedBottomLayout, FloatingButton, Typo } from "@repo/ui/components";
 import { Gift } from "lucide-react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { SurveyCollection } from "./components/SurveyCollection";
@@ -40,58 +41,70 @@ export function SurveyIntro() {
   };
 
   return (
-    <main className="flex w-full flex-col gap-8 p-5">
-      <div className="flex w-full flex-col gap-2">
-        <SurveyLogo logoUrl={logoUrl} />
+    <>
+      <main className="flex w-full flex-col gap-8 p-5">
+        <div className="flex w-full flex-col gap-2">
+          <SurveyLogo logoUrl={logoUrl} />
 
-        <div className="flex w-full flex-col gap-4">
-          <div className="flex w-full flex-col gap-2">
-            <Typo.MainTitle size="medium">{title}</Typo.MainTitle>
+          <div className="flex w-full flex-col gap-4">
+            <div className="flex w-full flex-col gap-2">
+              <Typo.MainTitle size="medium">{title}</Typo.MainTitle>
 
-            <SurveyCollection
-              deadline={deadline}
-              estimatedMinutes={estimatedMinutes}
-              target={target}
-            />
+              <SurveyCollection
+                deadline={deadline}
+                estimatedMinutes={estimatedMinutes}
+                target={target}
+              />
+            </div>
+            {imageUrl && <SurveyImage imageUrl={imageUrl} />}
+            <SurveyDescription content={description} />
           </div>
-          {imageUrl && <SurveyImage imageUrl={imageUrl} />}
-          <SurveyDescription content={description} />
         </div>
-      </div>
 
-      <div ref={rewardRef}>
-        <SurveyReward
-          rewardName={reward.name}
-          rewardImage={reward.image}
-          rewardDescription={reward.description}
-          onVisibilityChange={setIsRewardVisible}
-        />
-      </div>
-
-      <FixedBottomLayout.Content className="flex w-full justify-end bg-transparent px-4 py-3">
-        <div
-          className={`absolute right-5 top-[-56px] flex flex-col gap-4 transition-opacity duration-150 ${
-            !isRewardVisible ? "opacity-100" : "pointer-events-none opacity-0"
-          }`}
-        >
-          <FloatingButton
-            variant="tertiary"
-            icon={Gift}
-            className="bg-white"
-            onClick={scrollToReward}
+        <div ref={rewardRef}>
+          <SurveyReward
+            rewardName={reward.name}
+            rewardImage={reward.image}
+            rewardDescription={reward.description}
+            onVisibilityChange={setIsRewardVisible}
           />
         </div>
-        <ButtonV2
-          variant="primary"
-          size="large"
-          className="w-full"
-          onClick={() => router.push(`/survey/${params.id}/question`)}
+
+        <FixedBottomLayout.Content className="flex w-full justify-end bg-transparent px-4 py-3">
+          <div
+            className={`absolute right-5 top-[-56px] flex flex-col gap-4 transition-opacity duration-150 ${
+              !isRewardVisible ? "opacity-100" : "pointer-events-none opacity-0"
+            }`}
+          >
+            <FloatingButton
+              variant="tertiary"
+              icon={Gift}
+              className="bg-white"
+              onClick={scrollToReward}
+            />
+          </div>
+          <ButtonV2
+            variant="primary"
+            size="large"
+            className="w-full"
+            onClick={() => router.push(`/survey/${params.id}/question`)}
+          >
+            <Typo.ButtonText size="large" className="flex w-full items-center justify-center">
+              참여하고 리워드 받기
+            </Typo.ButtonText>
+          </ButtonV2>
+        </FixedBottomLayout.Content>
+      </main>
+      <div className="flex justify-center">
+        <Link
+          href={process.env.NEXT_PUBLIC_PRIVACY_POLICY_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-zinc-400"
         >
-          <Typo.ButtonText size="large" className="flex w-full items-center justify-center">
-            참여하고 리워드 받기
-          </Typo.ButtonText>
-        </ButtonV2>
-      </FixedBottomLayout.Content>
-    </main>
+          <Typo.Body size="small">개인정보처리방침</Typo.Body>
+        </Link>
+      </div>
+    </>
   );
 }
