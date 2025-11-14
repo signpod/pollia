@@ -39,19 +39,24 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
       
-      # 6. 타입 체크
+      # 6. Prisma 클라이언트 생성
+      - name: Generate Prisma Client
+        working-directory: apps/web
+        run: npx prisma generate
+      
+      # 7. 타입 체크
       - name: Type check
         run: yarn check-types
       
-      # 7. 린트 체크
+      # 8. 린트 체크
       - name: Lint
         run: yarn lint
       
-      # 8. 테스트 실행 (커버리지 포함)
+      # 9. 테스트 실행 (커버리지 포함)
       - name: Run tests with coverage
         run: yarn test:coverage
       
-      # 9. 커버리지 리포트를 PR 코멘트로 추가
+      # 10. 커버리지 리포트를 PR 코멘트로 추가
       - name: Coverage report to PR
         if: github.event_name == 'pull_request'
         uses: ArtiomTr/jest-coverage-report-action@v2
@@ -62,7 +67,7 @@ jobs:
           coverage-file: ./coverage/coverage-final.json
           base-coverage-file: ./coverage/coverage-final.json
       
-      # 10. 성공 메시지
+      # 11. 성공 메시지
       - name: All checks passed
         if: success()
         run: echo "✅ All CI checks passed!"
