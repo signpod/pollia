@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, develop, feat/**]
+  push:
+    branches: [main, develop]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # 1. 코드 체크아웃
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      # 2. Node.js 설정
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'yarn'
+      
+      # 3. Corepack 활성화 (Yarn 4 사용)
+      - name: Enable Corepack
+        run: corepack enable
+      
+      # 4. Turborepo 캐시 설정
+      - name: Setup Turborepo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+      
+      # 5. 의존성 설치
+      - name: Install dependencies
+        run: yarn install --immutable
+      
+      # 6. 타입 체크
+      - name: Type check
+        run: yarn check-types
+      
+      # 7. 린트 체크
+      - name: Lint
+        run: yarn lint
+      
+      # 8. 테스트 실행 (커버리지 포함)
+      - name: Run tests with coverage
+        run: yarn test:coverage
+      
+      # 9. 커버리지 리포트를 PR 코멘트로 추가
+      - name: Coverage report to PR
+        if: github.event_name == 'pull_request'
+        uses: ArtiomTr/jest-coverage-report-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          working-directory: apps/web
+          skip-step: all
+          coverage-file: ./coverage/coverage-final.json
+          base-coverage-file: ./coverage/coverage-final.json
+      
+      # 10. 성공 메시지
+      - name: All checks passed
+        if: success()
+        run: echo "✅ All CI checks passed!"
+
