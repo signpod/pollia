@@ -163,3 +163,74 @@ export interface SubmitSurveyAnswersResponse {
     submittedAt: Date;
   };
 }
+
+// Survey 조회 응답 타입
+export interface GetSurveyResponse {
+  data: {
+    id: string;
+    title: string;
+    description: string | null;
+    imageUrl: string | null;
+    brandLogoUrl: string | null;
+    estimatedMinutes: number | null;
+    deadline: Date | null;
+    isActive: boolean;
+    creatorId: string;
+    rewardId: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+}
+
+// Survey의 Question ID 배열 조회 응답 타입
+export interface GetSurveyQuestionIdsResponse {
+  data: {
+    questionIds: string[];
+  };
+}
+
+// Question 상세 조회 응답 타입
+export interface GetQuestionByIdResponse {
+  data: {
+    id: string;
+    title: string;
+    description: string | null;
+    imageUrl: string | null;
+    type: SurveyQuestionType;
+    order: number;
+    maxSelections: number | null;
+    surveyId: string | null;
+    options: {
+      id: string;
+      title: string;
+      description: string | null;
+      imageUrl: string | null;
+      order: number;
+    }[];
+    createdAt: Date;
+    updatedAt: Date;
+  };
+}
+
+// Survey의 모든 Question 상세 조회 응답 타입
+export interface GetSurveyQuestionsDetailResponse {
+  data: {
+    id: string;
+    title: string;
+    description: string | null;
+    imageUrl: string | null;
+    type: SurveyQuestionType;
+    order: number;
+    maxSelections: number | null;
+    surveyId: string | null;
+    options: {
+      id: string;
+      title: string;
+      description: string | null;
+      imageUrl: string | null;
+      order: number;
+    }[];
+    createdAt: Date;
+    updatedAt: Date;
+  }[];
+}
