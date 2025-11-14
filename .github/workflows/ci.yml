@@ -56,18 +56,7 @@ jobs:
       - name: Run tests with coverage
         run: yarn test:coverage
       
-      # 10. 커버리지 리포트를 PR 코멘트로 추가
-      - name: Coverage report to PR
-        if: github.event_name == 'pull_request'
-        uses: ArtiomTr/jest-coverage-report-action@v2
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          working-directory: apps/web
-          skip-step: all
-          coverage-file: ./coverage/coverage-final.json
-          base-coverage-file: ./coverage/coverage-final.json
-      
-      # 11. 성공 메시지
+      # 10. 성공 메시지
       - name: All checks passed
         if: success()
         run: echo "✅ All CI checks passed!"
