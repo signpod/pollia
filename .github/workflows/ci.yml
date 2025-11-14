@@ -2,9 +2,9 @@ name: CI
 
 on:
   pull_request:
-    branches: [main, develop, feat/**]
+    branches: [dev, main]
   push:
-    branches: [main, develop]
+    branches: [dev, main]
 
 jobs:
   ci:
@@ -15,16 +15,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      # 2. Node.js 설정
+      # 2. Corepack 활성화 (Yarn 4 사용)
+      - name: Enable Corepack
+        run: corepack enable
+      
+      # 3. Node.js 설정
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'yarn'
-      
-      # 3. Corepack 활성화 (Yarn 4 사용)
-      - name: Enable Corepack
-        run: corepack enable
       
       # 4. Turborepo 캐시 설정
       - name: Setup Turborepo cache
