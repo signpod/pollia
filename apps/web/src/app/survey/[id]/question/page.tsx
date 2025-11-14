@@ -195,6 +195,7 @@ function SurveyQuestionRenderer() {
 
   return (
     <ContentComponent
+      key={questionData.id}
       questionData={questionData}
       currentOrder={questionData.order}
       totalQuestionCount={MOCK_QUESTIONS.length}
