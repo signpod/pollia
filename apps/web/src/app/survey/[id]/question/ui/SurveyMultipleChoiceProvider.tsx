@@ -1,5 +1,5 @@
 import type { SurveyAnswerItem } from "@/types/dto/survey";
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 interface SurveyMultipleChoiceContextType {
   selectedIds: Set<string>;
@@ -7,7 +7,9 @@ interface SurveyMultipleChoiceContextType {
   canGoNext: boolean;
 }
 
-const SurveyMultipleChoiceContext = createContext<SurveyMultipleChoiceContextType | null>(null);
+const SurveyMultipleChoiceContext = createContext<SurveyMultipleChoiceContextType | undefined>(
+  undefined,
+);
 
 interface SurveyMultipleChoiceProviderProps {
   children: React.ReactNode;
@@ -29,38 +31,39 @@ export function SurveyMultipleChoiceProvider({
 
   const toggleSelectedId = useCallback(
     (optionId: string) => {
-      const newSet = new Set(selectedIds);
+      setSelectedIds(prev => {
+        const newSet = new Set(prev);
 
-      if (newSet.has(optionId)) {
-        newSet.delete(optionId);
-      } else {
-        if (maxSelections === 1) {
-          newSet.clear();
+        if (newSet.has(optionId)) {
+          newSet.delete(optionId);
+        } else {
+          if (maxSelections === 1) {
+            newSet.clear();
+          }
+          if (newSet.size < maxSelections) {
+            newSet.add(optionId);
+          }
         }
-        if (newSet.size < maxSelections) {
-          newSet.add(optionId);
-        }
-      }
 
-      const newCanGoNext = newSet.size > 0;
-
-      setSelectedIds(newSet);
-
-      queueMicrotask(() => {
-        setCanGoNext(newCanGoNext);
-        updateCanGoNext?.(newCanGoNext);
-
-        if (newSet.size > 0) {
-          onAnswerChange?.({
-            questionId,
-            type: "MULTIPLE_CHOICE",
-            selectedOptionIds: Array.from(newSet),
-          });
-        }
+        return newSet;
       });
     },
-    [selectedIds, maxSelections, questionId, updateCanGoNext, onAnswerChange],
+    [maxSelections],
   );
+
+  useEffect(() => {
+    const newCanGoNext = selectedIds.size > 0;
+    setCanGoNext(newCanGoNext);
+    updateCanGoNext?.(newCanGoNext);
+
+    if (selectedIds.size > 0) {
+      onAnswerChange?.({
+        questionId,
+        type: "MULTIPLE_CHOICE",
+        selectedOptionIds: Array.from(selectedIds),
+      });
+    }
+  }, [selectedIds, questionId, updateCanGoNext, onAnswerChange]);
 
   const value = useMemo(
     () => ({ selectedIds, toggleSelectedId, canGoNext }),
