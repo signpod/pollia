@@ -26,8 +26,8 @@ export function SurveyScale({
       currentOrder={currentOrder}
       totalQuestionCount={totalQuestionCount}
       title={questionData.title}
-      description={questionData.description}
-      imageUrl={questionData.imageUrl}
+      description={questionData.description ?? undefined}
+      imageUrl={questionData.imageUrl ?? undefined}
       isFirstQuestion={isFirstQuestion}
       isNextDisabled={!isScaleValueChanged}
       onPrevious={onPrevious}
