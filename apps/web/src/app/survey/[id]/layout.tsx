@@ -1,5 +1,3 @@
-"use client";
-
 import Providers from "@/components/providers/QueryProvider";
 import type { PropsWithChildren } from "react";
 
