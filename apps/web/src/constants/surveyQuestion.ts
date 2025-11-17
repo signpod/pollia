@@ -1,32 +1,16 @@
 import React from "react";
 
 import { SurveyQuestionType } from "@/types/domain/survey";
-import type { SurveyAnswerItem } from "@/types/dto";
+import type { SurveyAnswerItem, SurveyQuestionDetail } from "@/types/dto";
 import { StepConfig } from "@repo/ui/components";
 
-export interface QuestionData {
-  id: string;
-  order: number;
-  type: SurveyQuestionType;
-  title: string;
-  description?: string;
-  imageUrl?: string;
-  options?: Array<{ id: string; label: string; description: string; imageUrl: string }>;
-  scaleConfig?: {
-    min: number;
-    max: number;
-    labels: string[];
-  };
-  maxSelections?: number;
-}
-
 export interface ExtendedQuestionStepConfig extends StepConfig {
-  questionData: QuestionData;
+  questionData: SurveyQuestionDetail;
   content: React.ComponentType<QuestionStepContentProps>;
 }
 
 export interface QuestionStepContentProps {
-  questionData: QuestionData;
+  questionData: SurveyQuestionDetail;
   currentOrder: number;
   totalQuestionCount: number;
   isFirstQuestion: boolean;
@@ -39,7 +23,7 @@ export interface QuestionStepContentProps {
 }
 
 interface CreateQuestionStepsProps {
-  questions: QuestionData[];
+  questions: SurveyQuestionDetail[];
   stepComponents: {
     MultipleChoice: React.ComponentType<QuestionStepContentProps>;
     Scale: React.ComponentType<QuestionStepContentProps>;

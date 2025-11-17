@@ -52,6 +52,8 @@ export interface GetSurveyResponse {
     rewardId: string | null;
     createdAt: Date;
     updatedAt: Date;
+    // TODO: 대상자 DB 추가 후 수정
+    // target: string | null;
   };
 }
 

@@ -141,25 +141,28 @@ export interface GetQuestionByIdResponse {
   };
 }
 
-// Survey의 모든 Question 상세 조회 응답 타입
-export interface GetSurveyQuestionsDetailResponse {
-  data: {
+// Survey Question 상세 타입
+export interface SurveyQuestionDetail {
+  id: string;
+  title: string;
+  description: string | null;
+  imageUrl: string | null;
+  type: SurveyQuestionType;
+  order: number;
+  maxSelections: number | null;
+  surveyId: string | null;
+  options: {
     id: string;
     title: string;
     description: string | null;
     imageUrl: string | null;
-    type: SurveyQuestionType;
     order: number;
-    maxSelections: number | null;
-    surveyId: string | null;
-    options: {
-      id: string;
-      title: string;
-      description: string | null;
-      imageUrl: string | null;
-      order: number;
-    }[];
-    createdAt: Date;
-    updatedAt: Date;
   }[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Survey의 모든 Question 상세 조회 응답 타입
+export interface GetSurveyQuestionsDetailResponse {
+  data: SurveyQuestionDetail[];
 }

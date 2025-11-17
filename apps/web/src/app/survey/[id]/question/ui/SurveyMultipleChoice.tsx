@@ -54,8 +54,8 @@ function SurveyMultipleChoiceContent({
       currentOrder={currentOrder}
       totalQuestionCount={totalQuestionCount}
       title={questionData.title}
-      description={questionData.description}
-      imageUrl={questionData.imageUrl}
+      description={questionData.description ?? undefined}
+      imageUrl={questionData.imageUrl ?? undefined}
       isFirstQuestion={isFirstQuestion}
       isNextDisabled={!canGoNext}
       onPrevious={onPrevious}
@@ -66,9 +66,9 @@ function SurveyMultipleChoiceContent({
         <SurveyQuestionOptionButton
           key={option.id}
           selectType={isMultipleChoice ? "checkbox" : "radio"}
-          imageUrl={option.imageUrl}
-          title={option.label}
-          description={option.description}
+          imageUrl={option.imageUrl ?? undefined}
+          title={option.title}
+          description={option.description ?? undefined}
           isSelected={selectedIds.has(option.id)}
           onClick={() => toggleSelectedId(option.id)}
         />

@@ -9,7 +9,7 @@ interface SurveyCollectionProps {
 
 export function SurveyCollection({ estimatedMinutes, deadline, target }: SurveyCollectionProps) {
   const items = [
-    { label: "소요시간", value: `${estimatedMinutes}분` },
+    { label: "소요시간", value: estimatedMinutes ? `${estimatedMinutes}분` : "" },
     { label: "마감일", value: deadline ? format(deadline, "yyyy.MM.dd HH:mm") : "" },
     { label: "대상자", value: target },
   ]

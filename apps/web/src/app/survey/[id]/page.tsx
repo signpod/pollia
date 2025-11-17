@@ -1,3 +1,7 @@
+import { getSurvey } from "@/actions/survey";
+import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
+import { getQueryClient } from "@/lib/getQueryClient";
+import { dehydrate } from "@tanstack/react-query";
 import { SurveyClientWrapper } from "./SurveyClientWrapper";
 
 export default async function SurveyPage({
@@ -6,15 +10,14 @@ export default async function SurveyPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  // const queryClient = getQueryClient();
+  const queryClient = getQueryClient();
 
-  // TODO: Tanstack Query를 사용하여 설문 조회. Server에서 데이터를 가져온 후, Client에서 데이터를 표시.
-  /*
   await queryClient.prefetchQuery({
-    queryKey: surveyQueryKey가 들어가야 합니다.
-    queryFn: survey를 GET하는 함수를 호출합니다.
+    queryKey: surveyQueryKeys.survey(id),
+    queryFn: () => getSurvey(id),
   });
-  */
 
-  return <SurveyClientWrapper />;
+  const dehydratedState = dehydrate(queryClient);
+
+  return <SurveyClientWrapper dehydratedState={dehydratedState} />;
 }
