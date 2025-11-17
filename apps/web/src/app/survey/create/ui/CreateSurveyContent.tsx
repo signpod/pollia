@@ -6,6 +6,7 @@ import {
   SurveyDescriptionForm,
   SurveyQuestionDataContainer,
   SurveyQuestionList,
+  SurveyTargetForm,
   SurveyTitleForm,
 } from "@/app/survey/create/ui";
 import { selectedQuestionCountAtom } from "@/atoms/survey/surveyAtoms";
@@ -32,6 +33,7 @@ export function CreateSurveyContent() {
       <div className="flex h-full flex-col gap-8 py-4">
         <SurveyTitleForm />
         <SurveyDescriptionForm />
+        <SurveyTargetForm />
         <SurveyQuestionDataContainer>
           {({ questions, isLoading }) => (
             <SurveyQuestionList isLoading={isLoading} questions={questions} />
