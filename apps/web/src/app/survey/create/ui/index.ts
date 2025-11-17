@@ -10,6 +10,7 @@ export { SurveyDescriptionForm } from "./SurveyDescriptionForm";
 export { SurveyQuestionDataContainer } from "./SurveyQuestionDataContainer";
 export { SurveyQuestionFilter } from "./SurveyQuestionFilter";
 export { SurveyQuestionList } from "./SurveyQuestionList";
+export { SurveyTargetForm } from "./SurveyTargetForm";
 export { SurveyTitleForm } from "./SurveyTitleForm";
 export { ToggleAllCheckButtons } from "./ToggleAllCheckButtons";
 export { TypeTag } from "./TypeTag";

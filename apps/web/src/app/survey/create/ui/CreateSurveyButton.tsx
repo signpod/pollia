@@ -4,6 +4,7 @@ import {
   resetSurveyAtom,
   selectedQuestionAtom,
   surveyDescriptionAtom,
+  surveyTargetAtom,
   surveyTitleAtom,
   surveyValidationAtom,
 } from "@/atoms/survey/surveyAtoms";
@@ -38,6 +39,7 @@ export function CreateSurveyButton() {
 function useCreateSurveyButton() {
   const surveyTitle = useAtomValue(surveyTitleAtom);
   const surveyDescription = useAtomValue(surveyDescriptionAtom);
+  const surveyTarget = useAtomValue(surveyTargetAtom);
   const selectedQuestions = useAtomValue(selectedQuestionAtom);
   const validation = useAtomValue(surveyValidationAtom);
   const resetSurvey = useSetAtom(resetSurveyAtom);
@@ -59,6 +61,7 @@ function useCreateSurveyButton() {
     mutate({
       title: surveyTitle,
       description: sanitizeTiptapContent(surveyDescription),
+      target: surveyTarget.trim() || null,
       questionIds: Array.from(selectedQuestions).map(question => question.id),
     });
   };
