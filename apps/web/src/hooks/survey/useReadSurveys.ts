@@ -1,7 +1,7 @@
-import { getSurvey, getUserSurveys } from "@/actions/survey/read-survey";
+import { getUserSurveys } from "@/actions/survey/read-survey";
 import { surveySortOrderAtom } from "@/atoms/me/searchAtoms";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
 
 export const useReadSurveys = (params?: {
@@ -31,12 +31,3 @@ export const useReadSurveys = (params?: {
 };
 
 export type UseReadSurveysReturn = ReturnType<typeof useReadSurveys>;
-
-export const useReadSurvey = (surveyId: string) => {
-  return useQuery({
-    queryKey: surveyQueryKeys.survey(surveyId),
-    queryFn: () => getSurvey(surveyId),
-  });
-};
-
-export type UseReadSurveyReturn = ReturnType<typeof useReadSurvey>;
