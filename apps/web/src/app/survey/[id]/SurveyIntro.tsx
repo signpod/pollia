@@ -17,7 +17,7 @@ const DEFAULT_ESTIMATE_TIME = 10; // 10분
 export function SurveyIntro() {
   const params = useParams<{ id: string }>();
   const { data: survey } = useReadSurvey(params.id);
-  const { brandLogoUrl, title, estimatedMinutes, deadline, imageUrl, description, target } =
+  const { brandLogoUrl, title, estimatedMinutes, deadline, imageUrl, description } =
     survey?.data ?? {};
   const [isRewardVisible, setIsRewardVisible] = useState(true);
   const rewardRef = useRef<HTMLDivElement>(null);
@@ -48,7 +48,8 @@ export function SurveyIntro() {
               <SurveyCollection
                 deadline={deadline ?? undefined}
                 estimatedMinutes={estimatedMinutes ?? DEFAULT_ESTIMATE_TIME}
-                target={target ?? undefined}
+                // TODO: 대상자 DB 추가 후 수정
+                target={"20-30대 여성"}
               />
             </div>
             {imageUrl && <SurveyImage imageUrl={imageUrl} />}
