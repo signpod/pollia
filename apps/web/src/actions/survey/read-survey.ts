@@ -35,6 +35,7 @@ export async function getUserSurveys(
       id: true,
       title: true,
       description: true,
+      target: true,
       imageUrl: true,
       createdAt: true,
       updatedAt: true,

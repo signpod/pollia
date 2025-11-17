@@ -30,7 +30,10 @@ export interface CreateSurveyResponse {
 // ============================================================================
 
 export interface GetUserSurveysResponse {
-  data: Pick<Survey, "id" | "title" | "description" | "imageUrl" | "createdAt" | "updatedAt">[];
+  data: Pick<
+    Survey,
+    "id" | "title" | "description" | "target" | "imageUrl" | "createdAt" | "updatedAt"
+  >[];
 }
 
 // Survey 조회 응답 타입
