@@ -7,6 +7,7 @@ import type { Survey } from "@prisma/client";
 export interface CreateSurveyRequest {
   title: string;
   description?: string | null;
+  target?: string | null;
   imageUrl?: string | null;
   questionIds: string[];
 }
@@ -16,6 +17,7 @@ export interface CreateSurveyResponse {
     id: string;
     title: string;
     description?: string | null;
+    target?: string | null;
     imageUrl?: string | null;
     createdAt: Date;
     updatedAt: Date;
@@ -37,6 +39,7 @@ export interface GetSurveyResponse {
     id: string;
     title: string;
     description: string | null;
+    target: string | null;
     imageUrl: string | null;
     brandLogoUrl: string | null;
     estimatedMinutes: number | null;
