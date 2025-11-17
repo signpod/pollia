@@ -1,8 +1,7 @@
 "use client";
-import { FixedTopLayout } from "@repo/ui/components";
+import { FixedBottomLayout, FixedTopLayout } from "@repo/ui/components";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
 
-import { FixedBottomLayout } from "@repo/ui/components";
 import { PropsWithChildren } from "react";
 import { SurveyIntro } from "./SurveyIntro";
 
