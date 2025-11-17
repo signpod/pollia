@@ -52,6 +52,7 @@ export interface GetSurveyResponse {
     rewardId: string | null;
     createdAt: Date;
     updatedAt: Date;
+    target: string | null;
   };
 }
 
