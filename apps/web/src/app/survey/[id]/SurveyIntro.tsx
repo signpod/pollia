@@ -12,8 +12,6 @@ import { SurveyImage } from "./components/SurveyImage";
 import { SurveyLogo } from "./components/SurveyLogo";
 import { SurveyReward } from "./components/SurveyReward";
 
-const DEFAULT_ESTIMATE_TIME = 10; // 10분
-
 export function SurveyIntro() {
   const params = useParams<{ id: string }>();
   const { data: survey } = useReadSurvey(params.id);
@@ -47,7 +45,7 @@ export function SurveyIntro() {
 
               <SurveyCollection
                 deadline={deadline ?? undefined}
-                estimatedMinutes={estimatedMinutes ?? DEFAULT_ESTIMATE_TIME}
+                estimatedMinutes={estimatedMinutes ?? undefined}
                 // TODO: 대상자 DB 추가 후 수정
                 target={"20-30대 여성"}
               />
