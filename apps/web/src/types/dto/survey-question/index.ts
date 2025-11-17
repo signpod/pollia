@@ -163,4 +163,3 @@ export interface GetSurveyQuestionsDetailResponse {
     updatedAt: Date;
   }[];
 }
-
