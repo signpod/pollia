@@ -24,20 +24,10 @@ export function QuestionClientWrapper({ dehydratedState }: QuestionClientWrapper
 
 function SurveyQuestionContent() {
   const params = useParams<{ id: string }>();
-  const { data: questions, isLoading } = useReadSurveyQuestionsDetail(params.id);
-
-  if (isLoading || !questions?.data || questions.data.length === 0) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <p className="text-lg">설문 문항을 불러오는 중...</p>
-        </div>
-      </div>
-    );
-  }
+  const { data: questions } = useReadSurveyQuestionsDetail(params.id);
 
   const steps = createQuestionSteps({
-    questions: questions.data,
+    questions: questions!.data!,
     stepComponents: {
       MultipleChoice: SurveyMultipleChoice,
       Scale: SurveyScale,
@@ -47,7 +37,7 @@ function SurveyQuestionContent() {
 
   return (
     <StepProvider steps={steps} initialStep={0} syncWithUrl>
-      <SurveyQuestionRenderer totalQuestionCount={questions.data.length} />
+      <SurveyQuestionRenderer totalQuestionCount={questions!.data!.length} />
     </StepProvider>
   );
 }
