@@ -12,6 +12,8 @@ import { SurveyImage } from "./components/SurveyImage";
 import { SurveyLogo } from "./components/SurveyLogo";
 import { SurveyReward } from "./components/SurveyReward";
 
+const DEFAULT_ESTIMATE_TIME = 10; // 10분
+
 export function SurveyIntro() {
   const params = useParams<{ id: string }>();
   const { data: survey } = useReadSurvey(params.id);
@@ -45,7 +47,7 @@ export function SurveyIntro() {
 
               <SurveyCollection
                 deadline={deadline ?? undefined}
-                estimatedMinutes={estimatedMinutes ?? 10}
+                estimatedMinutes={estimatedMinutes ?? DEFAULT_ESTIMATE_TIME}
                 target={target ?? undefined}
               />
             </div>
