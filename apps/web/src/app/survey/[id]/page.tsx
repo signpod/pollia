@@ -1,4 +1,4 @@
-import { getSurvey, getSurveyQuestionsDetail } from "@/actions/survey";
+import { getSurvey } from "@/actions/survey";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { dehydrate } from "@tanstack/react-query";
@@ -15,11 +15,6 @@ export default async function SurveyPage({
   await queryClient.prefetchQuery({
     queryKey: surveyQueryKeys.survey(id),
     queryFn: () => getSurvey(id),
-  });
-
-  await queryClient.prefetchQuery({
-    queryKey: surveyQueryKeys.surveyQuestions({ surveyId: id }),
-    queryFn: () => getSurveyQuestionsDetail(id),
   });
 
   const dehydratedState = dehydrate(queryClient);
