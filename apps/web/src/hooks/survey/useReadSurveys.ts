@@ -1,10 +1,10 @@
-import { getUserSurveys } from "@/actions/survey/read-survey";
+import { getSurvey, getUserSurveys } from "@/actions/survey/read-survey";
 import { surveySortOrderAtom } from "@/atoms/me/searchAtoms";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
 
-export const useReadSurvey = (params?: {
+export const useReadSurveys = (params?: {
   options?: {
     userId?: string;
     limit?: number;
@@ -27,6 +27,15 @@ export const useReadSurvey = (params?: {
     refetchInterval: 5 * 60 * 1000,
     retry: 3,
     retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+  });
+};
+
+export type UseReadSurveysReturn = ReturnType<typeof useReadSurveys>;
+
+export const useReadSurvey = (surveyId: string) => {
+  return useQuery({
+    queryKey: surveyQueryKeys.survey(surveyId),
+    queryFn: () => getSurvey(surveyId),
   });
 };
 
