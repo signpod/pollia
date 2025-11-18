@@ -5,7 +5,7 @@ import type { SurveyAnswerItem } from "@/types/dto";
 import { StepProvider, useModal, useStep } from "@repo/ui/components";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useRef, useState } from "react";
 import { SurveyMultipleChoice, SurveyScale, SurveySubjective } from "./ui";
 
@@ -124,22 +124,48 @@ function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: nu
     }
   }, [isLastStep, goNext, handleSubmit]);
 
+  const showExitConfirmModal = useCallback(() => {
+    const surveyIntroPath = `/survey/${params.id}`;
+    showModal({
+      ...SURVEY_EXIT_MODAL,
+      showCancelButton: true,
+      onConfirm: () => {
+        close();
+      },
+      onCancel: () => {
+        router.push(surveyIntroPath);
+      },
+    });
+  }, [params.id, showModal, close, router]);
+
   const handlePrevious = useCallback(() => {
     if (isFirstStep) {
-      showModal({
-        ...SURVEY_EXIT_MODAL,
-        showCancelButton: true,
-        onConfirm: () => {
-          close();
-        },
-        onCancel: () => {
-          router.push(`/survey/${params.id}`);
-        },
-      });
+      showExitConfirmModal();
     } else {
       goBack();
     }
-  }, [isFirstStep, goBack, router, params.id, close, showModal]);
+  }, [isFirstStep, goBack, showExitConfirmModal]);
+
+  useEffect(() => {
+    const currentPathRef = { current: window.location.pathname + window.location.search };
+
+    const handlePopState = () => {
+      const surveyIntroPath = `/survey/${params.id}`;
+
+      if (window.location.pathname === surveyIntroPath) {
+        window.history.pushState(null, "", currentPathRef.current);
+        showExitConfirmModal();
+      } else {
+        currentPathRef.current = window.location.pathname + window.location.search;
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [params.id, showExitConfirmModal]);
 
   return (
     <ContentComponent
