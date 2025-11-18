@@ -1,3 +1,5 @@
+"use client";
+
 import { surveyEstimatedMinutesAtom } from "@/atoms/survey/surveyAtoms";
 import { Input, Typo } from "@repo/ui/components";
 import { useAtom } from "jotai";

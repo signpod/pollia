@@ -1,3 +1,5 @@
+"use client";
+
 import { surveyDeadlineDateAtom, surveyDeadlineTimeAtom } from "@/atoms/survey/surveyAtoms";
 import { DateAndTimePicker, Typo } from "@repo/ui/components";
 import { useAtom } from "jotai";
