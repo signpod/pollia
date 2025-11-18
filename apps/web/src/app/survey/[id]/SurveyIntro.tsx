@@ -65,7 +65,7 @@ export function SurveyIntro({ initialError }: { initialError: AuthError | null }
           />
         </div>
 
-        <FixedBottomLayout.Content className="flex w-full justify-end bg-transparent px-4 py-3">
+        <FixedBottomLayout.Content className="flex w-full justify-end bg-transparent ">
           <div
             className={`absolute right-5 top-[-56px] flex flex-col gap-4 transition-opacity duration-150 ${
               !isRewardVisible ? "opacity-100" : "pointer-events-none opacity-0"
@@ -113,15 +113,19 @@ function BottomButton({
 
   return (
     <div data-tooltip-id="tooltip-id" className="w-full">
-      <Tooltip id="tooltip-id" placement="top">
-        <Typo.Body size="medium">{LOGIN_BUTTON_TEXT.loggedOutTooltip}</Typo.Body>
-      </Tooltip>
-      <ButtonV2 variant="primary" size="large" className="w-full" onClick={handleClick}>
-        <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
-          {!isLoggedIn && <KakaoIcon className="size-6" />}
-          {isLoggedIn ? LOGIN_BUTTON_TEXT.loggedIn : LOGIN_BUTTON_TEXT.loggedOut}
-        </Typo.ButtonText>
-      </ButtonV2>
+      {!isLoggedIn && (
+        <Tooltip id="tooltip-id" placement="top">
+          <Typo.Body size="medium">{LOGIN_BUTTON_TEXT.loggedOutTooltip}</Typo.Body>
+        </Tooltip>
+      )}
+      <div className="py-3 px-4">
+        <ButtonV2 variant="primary" size="large" className="w-full" onClick={handleClick}>
+          <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
+            {!isLoggedIn && <KakaoIcon className="size-6" />}
+            {isLoggedIn ? LOGIN_BUTTON_TEXT.loggedIn : LOGIN_BUTTON_TEXT.loggedOut}
+          </Typo.ButtonText>
+        </ButtonV2>
+      </div>
     </div>
   );
 }
