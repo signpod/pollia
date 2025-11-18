@@ -67,7 +67,6 @@ function useCreateSurveyButton() {
   });
 
   const handleCreateSurvey = () => {
-    console.log("estimatedMinutes!!!!", estimatedMinutes);
     mutate({
       title: surveyTitle,
       description: sanitizeTiptapContent(surveyDescription),
