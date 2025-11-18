@@ -10,6 +10,7 @@ export interface CreateSurveyRequest {
   target?: string | null;
   imageUrl?: string | null;
   questionIds: string[];
+  deadline?: Date;
 }
 
 export interface CreateSurveyResponse {
@@ -22,6 +23,7 @@ export interface CreateSurveyResponse {
     createdAt: Date;
     updatedAt: Date;
     creatorId: string;
+    deadline?: Date | null;
   };
 }
 

@@ -3,6 +3,8 @@
 import {
   resetSurveyAtom,
   selectedQuestionAtom,
+  surveyDeadlineDateAtom,
+  surveyDeadlineTimeAtom,
   surveyDescriptionAtom,
   surveyTargetAtom,
   surveyTitleAtom,
@@ -42,6 +44,10 @@ function useCreateSurveyButton() {
   const surveyTarget = useAtomValue(surveyTargetAtom);
   const selectedQuestions = useAtomValue(selectedQuestionAtom);
   const validation = useAtomValue(surveyValidationAtom);
+
+  const deadlineDate = useAtomValue(surveyDeadlineDateAtom);
+  const deadlineTime = useAtomValue(surveyDeadlineTimeAtom);
+
   const resetSurvey = useSetAtom(resetSurveyAtom);
   const pushAfter = usePushAfter();
 
@@ -63,6 +69,9 @@ function useCreateSurveyButton() {
       description: sanitizeTiptapContent(surveyDescription),
       target: surveyTarget.trim() || null,
       questionIds: Array.from(selectedQuestions).map(question => question.id),
+      deadline: deadlineDate
+        ? new Date(`${deadlineDate.toISOString().split("T")[0]}T${deadlineTime}`)
+        : undefined,
     });
   };
 
