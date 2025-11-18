@@ -10,6 +10,8 @@ export const surveyTitleAtom = atom<string>("");
 export const surveyDeadlineDateAtom = atom<Date | undefined>(undefined);
 export const surveyDeadlineTimeAtom = atom<string>(DEFAULT_DEADLINE_TIME);
 
+export const surveyEstimatedMinutesAtom = atom<number | undefined>(undefined);
+
 export const surveyDescriptionAtom = atom<string>("");
 
 export const surveyTargetAtom = atom<string>("");
@@ -52,6 +54,7 @@ export const resetSurveyAtom = atom(null, (_get, set) => {
   set(searchQueryAtom, "");
   set(surveyDeadlineDateAtom, undefined);
   set(surveyDeadlineTimeAtom, DEFAULT_DEADLINE_TIME);
+  set(surveyEstimatedMinutesAtom, undefined);
 });
 
 export const surveyValidationAtom = atom(get => {
