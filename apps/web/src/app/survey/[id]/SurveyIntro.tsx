@@ -15,7 +15,7 @@ import { SurveyReward } from "./components/SurveyReward";
 export function SurveyIntro() {
   const params = useParams<{ id: string }>();
   const { data: survey } = useReadSurvey(params.id);
-  const { brandLogoUrl, title, estimatedMinutes, deadline, imageUrl, description } =
+  const { brandLogoUrl, title, estimatedMinutes, deadline, imageUrl, description, target } =
     survey?.data ?? {};
   const [isRewardVisible, setIsRewardVisible] = useState(true);
   const rewardRef = useRef<HTMLDivElement>(null);
@@ -46,8 +46,7 @@ export function SurveyIntro() {
               <SurveyCollection
                 deadline={deadline ?? undefined}
                 estimatedMinutes={estimatedMinutes ?? undefined}
-                // TODO: 대상자 DB 추가 후 수정
-                target={"20-30대 여성"}
+                target={target ?? undefined}
               />
             </div>
             {imageUrl && <SurveyImage imageUrl={imageUrl} />}
