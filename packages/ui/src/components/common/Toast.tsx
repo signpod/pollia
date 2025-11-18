@@ -16,7 +16,10 @@ function ToastContent({ message, icon: Icon, iconClassName }: ToastProps) {
     <div className="mx-auto flex w-full max-w-lg justify-center">
       <div className={cn("flex items-center gap-3 rounded-sm px-4 py-3 bg-non-modal-bg-default")}>
         {Icon && <Icon className={cn("size-6 shrink-0", iconClassName)} strokeWidth={2} />}
-        <Typo.ButtonText size="medium" className={cn("flex-1  text-non-modal-text-default")}>
+        <Typo.ButtonText
+          size="medium"
+          className="flex-1 text-non-modal-text-default max-w-[260px] whitespace-pre-wrap break-keep"
+        >
           {message}
         </Typo.ButtonText>
       </div>

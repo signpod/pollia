@@ -413,6 +413,132 @@ export const CustomIcon: Story = {
   },
 };
 
+// 줄바꿈 문자 지원 (whitespace-pre-wrap)
+export const LineBreakSupport: Story = {
+  render: () => {
+    const handleSingleLine = () => {
+      polliaToast.success("한 줄 메시지입니다.");
+    };
+
+    const handleMultiLine = () => {
+      polliaToast.success("첫 번째 줄입니다.\n두 번째 줄입니다.\n세 번째 줄입니다.");
+    };
+
+    return (
+      <>
+        <Toaster />
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "1rem",
+            padding: "2rem",
+          }}
+        >
+          <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>
+            줄바꿈 문자 지원 (whitespace-pre-wrap)
+          </h2>
+          <p style={{ fontSize: "0.875rem", color: "#71717a", marginBottom: "0.5rem" }}>
+            메시지에 \n을 포함하면 줄바꿈이 적용됩니다.
+          </p>
+          <button
+            onClick={handleSingleLine}
+            style={{
+              padding: "0.75rem 1.5rem",
+              borderRadius: "8px",
+              border: "1px solid #e4e4e7",
+              background: "white",
+              cursor: "pointer",
+              fontWeight: "600",
+            }}
+            type="button"
+          >
+            한 줄 메시지
+          </button>
+          <button
+            onClick={handleMultiLine}
+            style={{
+              padding: "0.75rem 1.5rem",
+              borderRadius: "8px",
+              border: "1px solid #e4e4e7",
+              background: "white",
+              cursor: "pointer",
+              fontWeight: "600",
+            }}
+            type="button"
+          >
+            여러 줄 메시지 (\n 사용)
+          </button>
+        </div>
+      </>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "whitespace-pre-wrap 스타일이 적용되어 있어 메시지 내 줄바꿈 문자(\\n)가 실제 줄바꿈으로 렌더링됩니다. 긴 안내 메시지나 구조화된 정보를 표시할 때 유용합니다.",
+      },
+    },
+  },
+};
+
+// 단어 중간 분리 방지 (break-keep)
+export const WordBreakPrevention: Story = {
+  render: () => {
+    const handleNaturalBreak = () => {
+      polliaToast.success(
+        "투표 생성이 완료되었습니다! 친구들에게 공유하여 더 많은 의견을 수집해보세요.",
+      );
+    };
+
+    return (
+      <>
+        <Toaster />
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "1rem",
+            padding: "2rem",
+          }}
+        >
+          <h2 style={{ fontSize: "1.25rem", fontWeight: "bold" }}>
+            단어 중간 분리 방지 (break-keep)
+          </h2>
+          <p style={{ fontSize: "0.875rem", color: "#71717a", marginBottom: "0.5rem" }}>
+            한글 단어가 줄바꿈 시 중간에서 분리되지 않습니다.
+            <br />
+            예: "메세지" → "메, 세지" ❌ / "메세지" ✅
+          </p>
+          <button
+            onClick={handleNaturalBreak}
+            style={{
+              padding: "0.75rem 1.5rem",
+              borderRadius: "8px",
+              border: "1px solid #e4e4e7",
+              background: "white",
+              cursor: "pointer",
+              fontWeight: "600",
+            }}
+            type="button"
+          >
+            자연스러운 줄바꿈
+          </button>
+        </div>
+      </>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "break-keep 스타일이 적용되어 한글 단어가 줄바꿈 시 중간에서 분리되지 않습니다. 이는 한글의 가독성을 크게 향상시키며, 특히 긴 메시지에서 자연스러운 줄바꿈을 제공합니다.",
+      },
+    },
+  },
+};
+
 // 실제 사용 시나리오
 export const RealWorldScenarios: Story = {
   render: () => {
