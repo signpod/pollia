@@ -26,7 +26,7 @@ function SurveyQuestionContent() {
   const { data: questions } = useReadSurveyQuestionsDetail(params.id);
 
   const steps = createQuestionSteps({
-    questions: questions?.data ?? [],
+    questions: questions.data,
     stepComponents: {
       MultipleChoice: SurveyMultipleChoice,
       Scale: SurveyScale,
@@ -36,7 +36,7 @@ function SurveyQuestionContent() {
 
   return (
     <StepProvider steps={steps} initialStep={0} syncWithUrl>
-      <SurveyQuestionRenderer totalQuestionCount={questions?.data.length ?? 0} />
+      <SurveyQuestionRenderer totalQuestionCount={questions.data.length} />
     </StepProvider>
   );
 }
