@@ -1,11 +1,10 @@
 "use client";
-
 import { ExtendedQuestionStepConfig, createQuestionSteps } from "@/constants/surveyQuestion";
 import { useReadSurveyQuestionsDetail } from "@/hooks/survey/question/useReadSurveyQuestionsDetail";
 import type { SurveyAnswerItem } from "@/types/dto";
 import { StepProvider, useStep } from "@repo/ui/components";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { useRef, useState } from "react";
 import { SurveyMultipleChoice, SurveyScale, SurveySubjective } from "./ui";
@@ -27,7 +26,7 @@ function SurveyQuestionContent() {
   const { data: questions } = useReadSurveyQuestionsDetail(params.id);
 
   const steps = createQuestionSteps({
-    questions: questions!.data!,
+    questions: questions.data,
     stepComponents: {
       MultipleChoice: SurveyMultipleChoice,
       Scale: SurveyScale,
@@ -37,13 +36,14 @@ function SurveyQuestionContent() {
 
   return (
     <StepProvider steps={steps} initialStep={0} syncWithUrl>
-      <SurveyQuestionRenderer totalQuestionCount={questions!.data!.length} />
+      <SurveyQuestionRenderer totalQuestionCount={questions.data.length} />
     </StepProvider>
   );
 }
 
 function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: number }) {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const answersRef = useRef<Map<string, SurveyAnswerItem>>(new Map());
@@ -116,6 +116,14 @@ function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: nu
     }
   }, [isLastStep, goNext, handleSubmit]);
 
+  const handlePrevious = useCallback(() => {
+    if (isFirstStep) {
+      router.push(`/survey/${params.id}`);
+    } else {
+      goBack();
+    }
+  }, [isFirstStep, goBack, router, params.id]);
+
   return (
     <ContentComponent
       key={questionData.id}
@@ -124,7 +132,7 @@ function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: nu
       totalQuestionCount={totalQuestionCount}
       isFirstQuestion={isFirstStep}
       isNextDisabled={!canGoNext || isSubmitting}
-      onPrevious={goBack}
+      onPrevious={handlePrevious}
       onNext={handleNext}
       nextButtonText={isLastStep ? (isSubmitting ? "제출 중..." : "완료") : "다음"}
       updateCanGoNext={updateCanGoNext}
