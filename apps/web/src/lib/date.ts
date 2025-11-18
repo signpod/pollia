@@ -45,3 +45,14 @@ export const getCurrentTime = ({
 
   return format(adjustedDate, "HH:mm");
 };
+
+/**
+ * Date 객체와 시간 문자열을 결합하여 새로운 Date 객체 생성
+ * @param date - 날짜 정보를 가진 Date 객체
+ * @param time - HH:mm 형식의 시간 문자열
+ * @returns 날짜와 시간이 결합된 Date 객체
+ */
+export const combineDateAndTime = (date: Date, time: string): Date => {
+  const dateString = format(date, "yyyy-MM-dd");
+  return new Date(`${dateString}T${time}`);
+};

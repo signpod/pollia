@@ -14,7 +14,7 @@ import {
 import { toast } from "@/components/common/Toast";
 import { usePushAfter } from "@/hooks/common/usePushAfter";
 import { useCreateSurvey } from "@/hooks/survey/useCreateSurvey";
-import { formatDateToLocalString } from "@/lib/date";
+import { combineDateAndTime } from "@/lib/date";
 import { sanitizeTiptapContent } from "@/lib/tiptap/utils";
 import { Button } from "@repo/ui/components";
 import { useAtomValue, useSetAtom } from "jotai";
@@ -72,9 +72,7 @@ function useCreateSurveyButton() {
       description: sanitizeTiptapContent(surveyDescription),
       target: surveyTarget.trim() || null,
       questionIds: Array.from(selectedQuestions).map(question => question.id),
-      deadline: deadlineDate
-        ? new Date(`${formatDateToLocalString(deadlineDate)}T${deadlineTime}`)
-        : undefined,
+      deadline: deadlineDate ? combineDateAndTime(deadlineDate, deadlineTime) : undefined,
       estimatedMinutes,
     });
   };
