@@ -22,13 +22,58 @@ function validateSurveyRequest(request: CreateSurveyRequest): string | null {
 
 export async function createSurvey(request: CreateSurveyRequest): Promise<CreateSurveyResponse> {
   try {
+    const user = await requireAuth();
+
     const validationError = validateSurveyRequest(request);
     if (validationError) {
       const error = new Error(validationError);
       error.cause = 400;
       throw error;
     }
+
+    const survey = await prisma.$transaction(async tx => {
+      const createdSurvey = await tx.survey.create({
+        data: {
+          title: request.title,
+          description: request.description,
+          target: request.target,
+          imageUrl: request.imageUrl,
+          deadline: request.deadline,
+          estimatedMinutes: request.estimatedMinutes,
+          creatorId: user.id,
+        },
+      });
+
+      await tx.surveyQuestion.updateMany({
+        where: {
+          id: {
+            in: request.questionIds,
+          },
+        },
+        data: {
+          surveyId: createdSurvey.id,
+        },
+      });
+
+      return createdSurvey;
+    });
+
+    return {
+      data: {
+        id: survey.id,
+        title: survey.title,
+        description: survey.description,
+        target: survey.target,
+        imageUrl: survey.imageUrl,
+        deadline: survey.deadline,
+        estimatedMinutes: survey.estimatedMinutes,
+        createdAt: survey.createdAt,
+        updatedAt: survey.updatedAt,
+        creatorId: user.id,
+      },
+    };
   } catch (error) {
+    console.error("❌ 설문지 생성 실패:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -36,48 +81,4 @@ export async function createSurvey(request: CreateSurveyRequest): Promise<Create
     serverError.cause = 500;
     throw serverError;
   }
-
-  const user = await requireAuth();
-
-  const survey = await prisma.$transaction(async tx => {
-    const createdSurvey = await tx.survey.create({
-      data: {
-        title: request.title,
-        description: request.description,
-        target: request.target,
-        imageUrl: request.imageUrl,
-        deadline: request.deadline,
-        estimatedMinutes: request.estimatedMinutes,
-        creatorId: user.id,
-      },
-    });
-
-    await tx.surveyQuestion.updateMany({
-      where: {
-        id: {
-          in: request.questionIds,
-        },
-      },
-      data: {
-        surveyId: createdSurvey.id,
-      },
-    });
-
-    return createdSurvey;
-  });
-
-  return {
-    data: {
-      id: survey.id,
-      title: survey.title,
-      description: survey.description,
-      target: survey.target,
-      imageUrl: survey.imageUrl,
-      deadline: survey.deadline,
-      estimatedMinutes: survey.estimatedMinutes,
-      createdAt: survey.createdAt,
-      updatedAt: survey.updatedAt,
-      creatorId: user.id,
-    },
-  };
 }
