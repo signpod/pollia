@@ -5,6 +5,7 @@ import {
   SelectedQuestionList,
   SurveyDateAndTimeForm,
   SurveyDescriptionForm,
+  SurveyEstimatedMinutesForm,
   SurveyQuestionDataContainer,
   SurveyQuestionList,
   SurveyTargetForm,
@@ -46,6 +47,8 @@ export function CreateSurveyContent() {
         </SelectedQuestionDataContainer>
 
         <SurveyDateAndTimeForm />
+
+        <SurveyEstimatedMinutesForm />
       </div>
 
       <FixedBottomLayout.Content className="p-5">
