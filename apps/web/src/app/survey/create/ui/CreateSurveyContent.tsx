@@ -3,6 +3,7 @@ import {
   CreateSurveyButton,
   SelectedQuestionDataContainer,
   SelectedQuestionList,
+  SurveyDateAndTimeForm,
   SurveyDescriptionForm,
   SurveyQuestionDataContainer,
   SurveyQuestionList,
@@ -43,6 +44,8 @@ export function CreateSurveyContent() {
         <SelectedQuestionDataContainer>
           {({ questions }) => <SelectedQuestionList questions={questions} />}
         </SelectedQuestionDataContainer>
+
+        <SurveyDateAndTimeForm />
       </div>
 
       <FixedBottomLayout.Content className="p-5">
