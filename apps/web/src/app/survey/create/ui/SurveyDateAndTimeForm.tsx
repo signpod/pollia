@@ -6,8 +6,6 @@ export function SurveyDateAndTimeForm() {
   const [deadlineDate, setDeadlineDate] = useAtom(surveyDeadlineDateAtom);
   const [deadlineTime, setDeadlineTime] = useAtom(surveyDeadlineTimeAtom);
 
-  const deadlineDateDisabled = deadlineDate ? { after: new Date(deadlineDate) } : undefined;
-
   return (
     <section className="flex justify-between items-center">
       <Typo.SubTitle>종료 일시</Typo.SubTitle>
@@ -16,7 +14,7 @@ export function SurveyDateAndTimeForm() {
         time={deadlineTime}
         onDateChange={setDeadlineDate}
         onTimeChange={setDeadlineTime}
-        disabledDates={deadlineDateDisabled}
+        disabledDates={{ before: new Date() }}
       />
     </section>
   );
