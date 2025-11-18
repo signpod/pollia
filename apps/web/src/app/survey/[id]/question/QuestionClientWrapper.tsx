@@ -1,5 +1,4 @@
 "use client";
-
 import { ExtendedQuestionStepConfig, createQuestionSteps } from "@/constants/surveyQuestion";
 import { useReadSurveyQuestionsDetail } from "@/hooks/survey/question/useReadSurveyQuestionsDetail";
 import type { SurveyAnswerItem } from "@/types/dto";
@@ -27,7 +26,7 @@ function SurveyQuestionContent() {
   const { data: questions } = useReadSurveyQuestionsDetail(params.id);
 
   const steps = createQuestionSteps({
-    questions: questions!.data!,
+    questions: questions?.data ?? [],
     stepComponents: {
       MultipleChoice: SurveyMultipleChoice,
       Scale: SurveyScale,
@@ -37,7 +36,7 @@ function SurveyQuestionContent() {
 
   return (
     <StepProvider steps={steps} initialStep={0} syncWithUrl>
-      <SurveyQuestionRenderer totalQuestionCount={questions!.data!.length} />
+      <SurveyQuestionRenderer totalQuestionCount={questions?.data.length ?? 0} />
     </StepProvider>
   );
 }
