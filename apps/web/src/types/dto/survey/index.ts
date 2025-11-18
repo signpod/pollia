@@ -11,6 +11,7 @@ export interface CreateSurveyRequest {
   imageUrl?: string | null;
   questionIds: string[];
   deadline?: Date;
+  estimatedMinutes?: number;
 }
 
 export interface CreateSurveyResponse {
@@ -24,6 +25,7 @@ export interface CreateSurveyResponse {
     updatedAt: Date;
     creatorId: string;
     deadline?: Date | null;
+    estimatedMinutes?: number | null;
   };
 }
 

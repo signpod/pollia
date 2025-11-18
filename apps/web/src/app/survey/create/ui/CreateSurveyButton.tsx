@@ -6,6 +6,7 @@ import {
   surveyDeadlineDateAtom,
   surveyDeadlineTimeAtom,
   surveyDescriptionAtom,
+  surveyEstimatedMinutesAtom,
   surveyTargetAtom,
   surveyTitleAtom,
   surveyValidationAtom,
@@ -48,6 +49,7 @@ function useCreateSurveyButton() {
 
   const deadlineDate = useAtomValue(surveyDeadlineDateAtom);
   const deadlineTime = useAtomValue(surveyDeadlineTimeAtom);
+  const estimatedMinutes = useAtomValue(surveyEstimatedMinutesAtom);
 
   const resetSurvey = useSetAtom(resetSurveyAtom);
   const pushAfter = usePushAfter();
@@ -65,6 +67,7 @@ function useCreateSurveyButton() {
   });
 
   const handleCreateSurvey = () => {
+    console.log("estimatedMinutes!!!!", estimatedMinutes);
     mutate({
       title: surveyTitle,
       description: sanitizeTiptapContent(surveyDescription),
@@ -73,6 +76,7 @@ function useCreateSurveyButton() {
       deadline: deadlineDate
         ? new Date(`${formatDateToLocalString(deadlineDate)}T${deadlineTime}`)
         : undefined,
+      estimatedMinutes,
     });
   };
 

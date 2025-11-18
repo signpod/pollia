@@ -47,6 +47,7 @@ export async function createSurvey(request: CreateSurveyRequest): Promise<Create
         target: request.target,
         imageUrl: request.imageUrl,
         deadline: request.deadline,
+        estimatedMinutes: request.estimatedMinutes,
         creatorId: user.id,
       },
     });
@@ -73,6 +74,7 @@ export async function createSurvey(request: CreateSurveyRequest): Promise<Create
       target: survey.target,
       imageUrl: survey.imageUrl,
       deadline: survey.deadline,
+      estimatedMinutes: survey.estimatedMinutes,
       createdAt: survey.createdAt,
       updatedAt: survey.updatedAt,
       creatorId: user.id,
