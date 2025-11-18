@@ -11,6 +11,7 @@ export function SurveyDateAndTimeForm() {
   return (
     <section className="flex justify-between">
       <Typo.SubTitle>설문 종료 일시</Typo.SubTitle>
+    <section className="flex justify-between items-center">
       <DateAndTimePicker
         date={deadlineDate}
         time={deadlineTime}
