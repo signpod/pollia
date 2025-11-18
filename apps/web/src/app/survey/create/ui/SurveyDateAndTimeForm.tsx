@@ -9,9 +9,8 @@ export function SurveyDateAndTimeForm() {
   const deadlineDateDisabled = deadlineDate ? { after: new Date(deadlineDate) } : undefined;
 
   return (
-    <section className="flex justify-between">
-      <Typo.SubTitle>설문 종료 일시</Typo.SubTitle>
     <section className="flex justify-between items-center">
+      <Typo.SubTitle>종료 일시</Typo.SubTitle>
       <DateAndTimePicker
         date={deadlineDate}
         time={deadlineTime}

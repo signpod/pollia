@@ -16,7 +16,7 @@ export function SurveyEstimatedMinutesForm() {
 
   return (
     <section className="flex items-center justify-between gap-4">
-      <Typo.SubTitle id="survey-estimated-minutes-label">설문 소요시간</Typo.SubTitle>
+      <Typo.SubTitle id="survey-estimated-minutes-label">소요 시간</Typo.SubTitle>
       <div className="flex items-center gap-2">
         <Input
           aria-labelledby="survey-estimated-minutes-label"
