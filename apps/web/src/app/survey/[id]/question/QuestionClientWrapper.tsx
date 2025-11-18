@@ -2,12 +2,19 @@
 import { ExtendedQuestionStepConfig, createQuestionSteps } from "@/constants/surveyQuestion";
 import { useReadSurveyQuestionsDetail } from "@/hooks/survey/question/useReadSurveyQuestionsDetail";
 import type { SurveyAnswerItem } from "@/types/dto";
-import { StepProvider, useStep } from "@repo/ui/components";
+import { StepProvider, useModal, useStep } from "@repo/ui/components";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { useRef, useState } from "react";
 import { SurveyMultipleChoice, SurveyScale, SurveySubjective } from "./ui";
+
+const SURVEY_EXIT_MODAL = {
+  title: "설문을 종료하실 건가요?",
+  description: "이 페이지를 벗어나면 저장된 내용이 사라져요.",
+  confirmText: "계속하기",
+  cancelText: "종료하기",
+} as const;
 
 interface QuestionClientWrapperProps {
   dehydratedState: DehydratedState;
@@ -45,6 +52,7 @@ function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: nu
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { showModal, close } = useModal();
 
   const answersRef = useRef<Map<string, SurveyAnswerItem>>(new Map());
 
@@ -118,11 +126,20 @@ function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: nu
 
   const handlePrevious = useCallback(() => {
     if (isFirstStep) {
-      router.push(`/survey/${params.id}`);
+      showModal({
+        ...SURVEY_EXIT_MODAL,
+        showCancelButton: true,
+        onConfirm: () => {
+          close();
+        },
+        onCancel: () => {
+          router.push(`/survey/${params.id}`);
+        },
+      });
     } else {
       goBack();
     }
-  }, [isFirstStep, goBack, router, params.id]);
+  }, [isFirstStep, goBack, router, params.id, close, showModal]);
 
   return (
     <ContentComponent
