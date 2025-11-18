@@ -3,7 +3,12 @@ import { SurveyQuestionSummary } from "@/types/domain/survey";
 import { SurveyQuestionType } from "@prisma/client";
 import { atom } from "jotai";
 
+const DEFAULT_DEADLINE_TIME = "10:30";
+
 export const surveyTitleAtom = atom<string>("");
+
+export const surveyDeadlineDateAtom = atom<Date | undefined>(undefined);
+export const surveyDeadlineTimeAtom = atom<string>(DEFAULT_DEADLINE_TIME);
 
 export const surveyDescriptionAtom = atom<string>("");
 
@@ -45,6 +50,8 @@ export const resetSurveyAtom = atom(null, (_get, set) => {
   set(surveyTargetAtom, "");
   set(selectedQuestionAtom, new Set<SurveyQuestionSummary>());
   set(searchQueryAtom, "");
+  set(surveyDeadlineDateAtom, undefined);
+  set(surveyDeadlineTimeAtom, DEFAULT_DEADLINE_TIME);
 });
 
 export const surveyValidationAtom = atom(get => {
