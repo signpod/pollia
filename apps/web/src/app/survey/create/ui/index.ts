@@ -14,3 +14,5 @@ export { SurveyTargetForm } from "./SurveyTargetForm";
 export { SurveyTitleForm } from "./SurveyTitleForm";
 export { ToggleAllCheckButtons } from "./ToggleAllCheckButtons";
 export { TypeTag } from "./TypeTag";
+export { SurveyDateAndTimeForm } from "./SurveyDateAndTimeForm";
+export { SurveyEstimatedMinutesForm } from "./SurveyEstimatedMinutesForm";

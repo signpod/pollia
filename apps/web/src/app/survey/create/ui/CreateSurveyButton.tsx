@@ -3,7 +3,10 @@
 import {
   resetSurveyAtom,
   selectedQuestionAtom,
+  surveyDeadlineDateAtom,
+  surveyDeadlineTimeAtom,
   surveyDescriptionAtom,
+  surveyEstimatedMinutesAtom,
   surveyTargetAtom,
   surveyTitleAtom,
   surveyValidationAtom,
@@ -11,6 +14,7 @@ import {
 import { toast } from "@/components/common/Toast";
 import { usePushAfter } from "@/hooks/common/usePushAfter";
 import { useCreateSurvey } from "@/hooks/survey/useCreateSurvey";
+import { combineDateAndTime } from "@/lib/date";
 import { sanitizeTiptapContent } from "@/lib/tiptap/utils";
 import { Button } from "@repo/ui/components";
 import { useAtomValue, useSetAtom } from "jotai";
@@ -42,6 +46,11 @@ function useCreateSurveyButton() {
   const surveyTarget = useAtomValue(surveyTargetAtom);
   const selectedQuestions = useAtomValue(selectedQuestionAtom);
   const validation = useAtomValue(surveyValidationAtom);
+
+  const deadlineDate = useAtomValue(surveyDeadlineDateAtom);
+  const deadlineTime = useAtomValue(surveyDeadlineTimeAtom);
+  const estimatedMinutes = useAtomValue(surveyEstimatedMinutesAtom);
+
   const resetSurvey = useSetAtom(resetSurveyAtom);
   const pushAfter = usePushAfter();
 
@@ -63,6 +72,8 @@ function useCreateSurveyButton() {
       description: sanitizeTiptapContent(surveyDescription),
       target: surveyTarget.trim() || null,
       questionIds: Array.from(selectedQuestions).map(question => question.id),
+      deadline: deadlineDate ? combineDateAndTime(deadlineDate, deadlineTime) : undefined,
+      estimatedMinutes,
     });
   };
 
