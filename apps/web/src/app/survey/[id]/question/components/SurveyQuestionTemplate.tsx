@@ -11,7 +11,9 @@ import { ChevronLeftIcon } from "lucide-react";
 import Image from "next/image";
 import { type PropsWithChildren, useEffect } from "react";
 
+let hasShownFirstToast = false;
 let hasShownHalfToast = false;
+let hasShownFinalToast = false;
 
 interface SurveyQuestionTemplateProps extends PropsWithChildren {
   currentOrder: number;
@@ -41,8 +43,8 @@ export function SurveyQuestionTemplate({
   const progressValue = (currentOrder / totalQuestionCount) * 100 || 0;
 
   useEffect(() => {
-    const isFirstQuestion = currentOrder === 1;
-    const isFinalQuestion = currentOrder === totalQuestionCount;
+    const isFirstQuestion = currentOrder === 1 && !hasShownFirstToast;
+    const isFinalQuestion = currentOrder === totalQuestionCount && !hasShownFinalToast;
     const isHalfway = progressValue >= 50 && !hasShownHalfToast;
 
     if (isFirstQuestion) {
