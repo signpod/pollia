@@ -42,9 +42,10 @@ export function SurveyQuestionTemplate({
   nextButtonText = "다음",
   hasShownToastsRef,
 }: SurveyQuestionTemplateProps) {
+  const progressValue = (currentOrder / totalQuestionCount) * 100 || 0;
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: hasShownToastsRef는 ref 객체로 의도적으로 의존성 배열에서 제외
   useEffect(() => {
-    const progressValue = (currentOrder / totalQuestionCount) * 100 || 0;
     const isFirstQuestion = currentOrder === 1 && !hasShownToastsRef.current.first;
     const isFinalQuestion = currentOrder === totalQuestionCount && !hasShownToastsRef.current.final;
     const isHalfway = progressValue >= 50 && !hasShownToastsRef.current.half;
