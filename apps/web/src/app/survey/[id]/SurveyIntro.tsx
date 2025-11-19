@@ -79,7 +79,7 @@ export function SurveyIntro({ initialError }: { initialError: AuthError | null }
               onClick={scrollToReward}
             />
           </div>
-          <BottomButton params={params} initialError={initialError} />
+          <BottomButton params={params} initialError={initialError} deadline={deadline} />
         </FixedBottomLayout.Content>
       </main>
       <div className="flex justify-center">
