@@ -1,19 +1,18 @@
 "use client";
 
-import { AuthError, useKakaoLogin } from "@/hooks/login/useKakaoLogin";
+import { AuthError } from "@/hooks/login/useKakaoLogin";
 import { useReadSurvey } from "@/hooks/survey";
-import { useAuth } from "@/hooks/user";
-import KakaoIcon from "@public/svgs/kakao-icon.svg";
-import { ButtonV2, FixedBottomLayout, FloatingButton, Tooltip, Typo } from "@repo/ui/components";
+import { FixedBottomLayout, FloatingButton, Typo } from "@repo/ui/components";
 import { Gift } from "lucide-react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useRef, useState } from "react";
 import { SurveyCollection } from "./components/SurveyCollection";
 import { SurveyDescription } from "./components/SurveyDescription";
 import { SurveyImage } from "./components/SurveyImage";
 import { SurveyLogo } from "./components/SurveyLogo";
 import { SurveyReward } from "./components/SurveyReward";
+import { BottomButton } from "./ui";
 
 export function SurveyIntro({ initialError }: { initialError: AuthError | null }) {
   const params = useParams<{ id: string }>();
@@ -94,44 +93,3 @@ export function SurveyIntro({ initialError }: { initialError: AuthError | null }
     </>
   );
 }
-
-function BottomButton({
-  params,
-  initialError,
-}: { params: { id: string }; initialError: AuthError | null }) {
-  const { handleKakaoLogin } = useKakaoLogin(initialError);
-  const { isLoggedIn } = useAuth();
-  const router = useRouter();
-
-  const handleClick = () => {
-    if (!isLoggedIn) {
-      handleKakaoLogin();
-    } else {
-      router.push(`/survey/${params.id}/question`);
-    }
-  };
-
-  return (
-    <div data-tooltip-id="tooltip-id" className="w-full">
-      {!isLoggedIn && (
-        <Tooltip id="tooltip-id" placement="top">
-          <Typo.Body size="medium">{LOGIN_BUTTON_TEXT.loggedOutTooltip}</Typo.Body>
-        </Tooltip>
-      )}
-      <div className="py-3 px-4">
-        <ButtonV2 variant="primary" size="large" className="w-full" onClick={handleClick}>
-          <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
-            {!isLoggedIn && <KakaoIcon className="size-6" />}
-            {isLoggedIn ? LOGIN_BUTTON_TEXT.loggedIn : LOGIN_BUTTON_TEXT.loggedOut}
-          </Typo.ButtonText>
-        </ButtonV2>
-      </div>
-    </div>
-  );
-}
-
-const LOGIN_BUTTON_TEXT = {
-  loggedOutTooltip: "로그인 후 리워드를 받아보세요 🎁",
-  loggedIn: "참여하고 리워드 받기",
-  loggedOut: "카카오 로그인 후 참여하기",
-};
