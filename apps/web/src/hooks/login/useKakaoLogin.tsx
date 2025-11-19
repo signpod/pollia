@@ -1,6 +1,7 @@
 "use client";
 
 import { toast } from "@/components/common/Toast";
+import { setAuthRedirect } from "@/lib/cookie";
 import { useModal } from "@repo/ui/components";
 import { useCallback, useEffect, useState } from "react";
 
@@ -12,31 +13,14 @@ export interface AuthError {
 }
 
 interface UseKakaoLoginOptions {
-  initialError: AuthError | null;
+  initialError?: AuthError | null;
   redirectPath?: string;
 }
 
-export function useKakaoLogin(initialError: AuthError | null): { handleKakaoLogin: () => void };
-export function useKakaoLogin(options: UseKakaoLoginOptions): { handleKakaoLogin: () => void };
-export function useKakaoLogin(initialErrorOrOptions: AuthError | null | UseKakaoLoginOptions): {
-  handleKakaoLogin: () => void;
-} {
+export function useKakaoLogin(options: UseKakaoLoginOptions = {}) {
+  const { initialError = null, redirectPath } = options;
   const { showModal } = useModal();
   const [isKakaoSdkLoaded, setIsKakaoSdkLoaded] = useState(false);
-
-  const initialError =
-    initialErrorOrOptions &&
-    typeof initialErrorOrOptions === "object" &&
-    "initialError" in initialErrorOrOptions
-      ? initialErrorOrOptions.initialError
-      : (initialErrorOrOptions as AuthError | null);
-
-  const redirectPath =
-    initialErrorOrOptions &&
-    typeof initialErrorOrOptions === "object" &&
-    "redirectPath" in initialErrorOrOptions
-      ? initialErrorOrOptions.redirectPath
-      : undefined;
 
   useEffect(() => {
     const kakaoJsKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY;
@@ -95,7 +79,7 @@ export function useKakaoLogin(initialErrorOrOptions: AuthError | null | UseKakao
       }
 
       if (redirectPath?.startsWith("/")) {
-        document.cookie = `auth_redirect=${redirectPath}; path=/; max-age=600; SameSite=Lax`;
+        setAuthRedirect(redirectPath);
       }
 
       window.Kakao.Auth.authorize({
