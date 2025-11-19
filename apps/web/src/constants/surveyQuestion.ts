@@ -1,4 +1,4 @@
-import React from "react";
+import React, { MutableRefObject } from "react";
 
 import { SurveyQuestionType } from "@/types/domain/survey";
 import type { SurveyAnswerItem, SurveyQuestionDetail } from "@/types/dto";
@@ -20,6 +20,11 @@ export interface QuestionStepContentProps {
   nextButtonText?: string;
   updateCanGoNext?: (canGoNext: boolean) => void;
   onAnswerChange?: (answer: SurveyAnswerItem) => void;
+  hasShownToastsRef: MutableRefObject<{
+    first: boolean;
+    half: boolean;
+    final: boolean;
+  }>;
 }
 
 interface CreateQuestionStepsProps {

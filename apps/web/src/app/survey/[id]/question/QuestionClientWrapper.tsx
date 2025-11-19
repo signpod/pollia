@@ -57,6 +57,11 @@ function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: nu
   const { showModal, close } = useModal();
 
   const answersRef = useRef<Map<string, SurveyAnswerItem>>(new Map());
+  const hasShownToastsRef = useRef({
+    first: false,
+    half: false,
+    final: false,
+  });
 
   const {
     currentStep,
@@ -88,8 +93,6 @@ function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: nu
     if (isSubmitting) return;
 
     setIsSubmitting(true);
-
-    const answers = Array.from(answersRef.current.values());
 
     try {
       const answers = Array.from(answersRef.current.values());
@@ -193,6 +196,7 @@ function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: nu
       nextButtonText={isLastStep ? (isSubmitting ? "제출 중..." : "완료") : "다음"}
       updateCanGoNext={updateCanGoNext}
       onAnswerChange={handleAnswerChange}
+      hasShownToastsRef={hasShownToastsRef}
     />
   );
 }

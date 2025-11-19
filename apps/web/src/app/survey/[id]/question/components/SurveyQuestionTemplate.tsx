@@ -9,11 +9,7 @@ import {
 } from "@repo/ui/components";
 import { ChevronLeftIcon } from "lucide-react";
 import Image from "next/image";
-import { type PropsWithChildren, useEffect } from "react";
-
-let hasShownFirstToast = false;
-let hasShownHalfToast = false;
-let hasShownFinalToast = false;
+import { type MutableRefObject, type PropsWithChildren, useEffect } from "react";
 
 interface SurveyQuestionTemplateProps extends PropsWithChildren {
   currentOrder: number;
@@ -26,6 +22,11 @@ interface SurveyQuestionTemplateProps extends PropsWithChildren {
   onPrevious?: () => void;
   onNext?: () => void;
   nextButtonText?: string;
+  hasShownToastsRef: MutableRefObject<{
+    first: boolean;
+    half: boolean;
+    final: boolean;
+  }>;
 }
 
 export function SurveyQuestionTemplate({
@@ -39,31 +40,32 @@ export function SurveyQuestionTemplate({
   onPrevious,
   onNext,
   nextButtonText = "다음",
+  hasShownToastsRef,
 }: SurveyQuestionTemplateProps) {
   const progressValue = (currentOrder / totalQuestionCount) * 100 || 0;
 
   useEffect(() => {
-    const isFirstQuestion = currentOrder === 1 && !hasShownFirstToast;
-    const isFinalQuestion = currentOrder === totalQuestionCount && !hasShownFinalToast;
-    const isHalfway = progressValue >= 50 && !hasShownHalfToast;
+    const isFirstQuestion = currentOrder === 1 && !hasShownToastsRef.current.first;
+    const isFinalQuestion = currentOrder === totalQuestionCount && !hasShownToastsRef.current.final;
+    const isHalfway = progressValue >= 50 && !hasShownToastsRef.current.half;
 
     if (isFirstQuestion) {
       toast.default(SURVEY_TOAST_MESSAGE.first.message, { id: SURVEY_TOAST_MESSAGE.first.id });
-      hasShownFirstToast = true;
+      hasShownToastsRef.current.first = true;
       return;
     }
 
     if (isFinalQuestion) {
       toast.default(SURVEY_TOAST_MESSAGE.final.message, { id: SURVEY_TOAST_MESSAGE.final.id });
-      hasShownFinalToast = true;
+      hasShownToastsRef.current.final = true;
       return;
     }
 
     if (isHalfway) {
       toast.default(SURVEY_TOAST_MESSAGE.half.message, { id: SURVEY_TOAST_MESSAGE.half.id });
-      hasShownHalfToast = true;
+      hasShownToastsRef.current.half = true;
     }
-  }, [currentOrder, totalQuestionCount, progressValue]);
+  }, [currentOrder, totalQuestionCount, progressValue, hasShownToastsRef]);
 
   return (
     <FixedBottomLayout>

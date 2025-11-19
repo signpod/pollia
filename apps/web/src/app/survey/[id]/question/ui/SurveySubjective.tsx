@@ -17,6 +17,7 @@ export function SurveySubjective({
   nextButtonText,
   updateCanGoNext,
   onAnswerChange,
+  hasShownToastsRef,
 }: QuestionStepContentProps) {
   const {
     subjectiveValue,
@@ -42,6 +43,7 @@ export function SurveySubjective({
       onPrevious={onPrevious}
       onNext={onNext}
       nextButtonText={nextButtonText}
+      hasShownToastsRef={hasShownToastsRef}
     >
       <Textarea
         placeholder={PLACEHOLDER}
