@@ -11,9 +11,32 @@ export interface AuthError {
   timestamp: number;
 }
 
-export function useKakaoLogin(initialError: AuthError | null) {
+interface UseKakaoLoginOptions {
+  initialError: AuthError | null;
+  redirectPath?: string;
+}
+
+export function useKakaoLogin(initialError: AuthError | null): { handleKakaoLogin: () => void };
+export function useKakaoLogin(options: UseKakaoLoginOptions): { handleKakaoLogin: () => void };
+export function useKakaoLogin(initialErrorOrOptions: AuthError | null | UseKakaoLoginOptions): {
+  handleKakaoLogin: () => void;
+} {
   const { showModal } = useModal();
   const [isKakaoSdkLoaded, setIsKakaoSdkLoaded] = useState(false);
+
+  const initialError =
+    initialErrorOrOptions &&
+    typeof initialErrorOrOptions === "object" &&
+    "initialError" in initialErrorOrOptions
+      ? initialErrorOrOptions.initialError
+      : (initialErrorOrOptions as AuthError | null);
+
+  const redirectPath =
+    initialErrorOrOptions &&
+    typeof initialErrorOrOptions === "object" &&
+    "redirectPath" in initialErrorOrOptions
+      ? initialErrorOrOptions.redirectPath
+      : undefined;
 
   useEffect(() => {
     const kakaoJsKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY;
@@ -71,6 +94,10 @@ export function useKakaoLogin(initialError: AuthError | null) {
         return;
       }
 
+      if (redirectPath?.startsWith("/")) {
+        document.cookie = `auth_redirect=${redirectPath}; path=/; max-age=600; SameSite=Lax`;
+      }
+
       window.Kakao.Auth.authorize({
         redirectUri: `${window.location.origin}/auth/callback`,
         prompts: "select_account",
@@ -81,7 +108,7 @@ export function useKakaoLogin(initialError: AuthError | null) {
         duration: 3000,
       });
     }
-  }, [isKakaoSdkLoaded]);
+  }, [isKakaoSdkLoaded, redirectPath]);
 
   return {
     handleKakaoLogin,

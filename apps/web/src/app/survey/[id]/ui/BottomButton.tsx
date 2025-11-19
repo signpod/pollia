@@ -19,7 +19,10 @@ interface BottomButtonProps {
 }
 
 export function BottomButton({ params, initialError, deadline }: BottomButtonProps) {
-  const { handleKakaoLogin } = useKakaoLogin(initialError);
+  const { handleKakaoLogin } = useKakaoLogin({
+    initialError,
+    redirectPath: `/survey/${params.id}`,
+  });
   const { isLoggedIn } = useAuth();
   const router = useRouter();
 
