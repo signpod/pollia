@@ -1,25 +1,28 @@
 "use client";
 
+import { AuthError } from "@/hooks/login/useKakaoLogin";
 import { useReadSurvey } from "@/hooks/survey";
-import { ButtonV2, FixedBottomLayout, FloatingButton, Typo } from "@repo/ui/components";
+import { FixedBottomLayout, FloatingButton, Typo } from "@repo/ui/components";
 import { Gift } from "lucide-react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useRef, useState } from "react";
-import { SurveyCollection } from "./components/SurveyCollection";
-import { SurveyDescription } from "./components/SurveyDescription";
-import { SurveyImage } from "./components/SurveyImage";
-import { SurveyLogo } from "./components/SurveyLogo";
-import { SurveyReward } from "./components/SurveyReward";
+import {
+  SurveyCollection,
+  SurveyDescription,
+  SurveyImage,
+  SurveyLogo,
+  SurveyReward,
+} from "./components";
+import { BottomButton } from "./ui";
 
-export function SurveyIntro() {
+export function SurveyIntro({ initialError }: { initialError: AuthError | null }) {
   const params = useParams<{ id: string }>();
   const { data: survey } = useReadSurvey(params.id);
   const { brandLogoUrl, title, estimatedMinutes, deadline, imageUrl, description, target } =
     survey?.data ?? {};
   const [isRewardVisible, setIsRewardVisible] = useState(true);
   const rewardRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
   const scrollToReward = () => {
     rewardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -63,7 +66,7 @@ export function SurveyIntro() {
           />
         </div>
 
-        <FixedBottomLayout.Content className="flex w-full justify-end bg-transparent px-4 py-3">
+        <FixedBottomLayout.Content className="flex w-full justify-end bg-transparent ">
           <div
             className={`absolute right-5 top-[-56px] flex flex-col gap-4 transition-opacity duration-150 ${
               !isRewardVisible ? "opacity-100" : "pointer-events-none opacity-0"
@@ -76,16 +79,7 @@ export function SurveyIntro() {
               onClick={scrollToReward}
             />
           </div>
-          <ButtonV2
-            variant="primary"
-            size="large"
-            className="w-full"
-            onClick={() => router.push(`/survey/${params.id}/question`)}
-          >
-            <Typo.ButtonText size="large" className="flex w-full items-center justify-center">
-              참여하고 리워드 받기
-            </Typo.ButtonText>
-          </ButtonV2>
+          <BottomButton params={params} initialError={initialError} />
         </FixedBottomLayout.Content>
       </main>
       <div className="flex justify-center">
