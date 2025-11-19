@@ -1,3 +1,4 @@
+import { ROUTES } from "@/constants/routes";
 import { AuthError, useKakaoLogin } from "@/hooks/login/useKakaoLogin";
 import { useAuth } from "@/hooks/user/useAuth";
 import { Survey } from "@prisma/client";
@@ -21,7 +22,7 @@ interface BottomButtonProps {
 export function BottomButton({ params, initialError, deadline }: BottomButtonProps) {
   const { handleKakaoLogin } = useKakaoLogin({
     initialError,
-    redirectPath: `/survey/${params.id}`,
+    redirectPath: ROUTES.SURVEY(params.id),
   });
   const { isLoggedIn } = useAuth();
   const router = useRouter();
@@ -32,7 +33,7 @@ export function BottomButton({ params, initialError, deadline }: BottomButtonPro
     if (!isLoggedIn) {
       handleKakaoLogin();
     } else {
-      router.push(`/survey/${params.id}/question`);
+      router.push(ROUTES.SURVEY_QUESTION(params.id));
     }
   };
 

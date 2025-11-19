@@ -1,3 +1,4 @@
+import { ROUTES } from "@/constants/routes";
 import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -7,7 +8,11 @@ interface AuthGateProps {
   currentPath?: string;
 }
 
-export async function AuthGate({ children, redirectTo = "/login", currentPath }: AuthGateProps) {
+export async function AuthGate({
+  children,
+  redirectTo = ROUTES.LOGIN,
+  currentPath,
+}: AuthGateProps) {
   const supabase = await createServerSupabaseClient();
 
   const {
