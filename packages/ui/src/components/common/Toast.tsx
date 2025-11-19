@@ -51,6 +51,7 @@ export interface ToastOptions {
   icon?: React.ComponentType<{ className?: string; strokeWidth?: number }>;
   iconClassName?: string;
   duration?: number;
+  id?: string | number;
 }
 
 // 기본 toast 함수 (아이콘 주입)
@@ -65,6 +66,7 @@ export function toast(options: ToastOptions) {
     ),
     {
       duration: options.duration || 3000,
+      id: options.id,
     },
   );
 }

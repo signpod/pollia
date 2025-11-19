@@ -4,6 +4,7 @@ import { toast as baseToast } from "@repo/ui/components";
 
 export interface ToastPresetOptions {
   duration?: number;
+  id?: string | number;
 }
 
 export const toast = {
@@ -13,6 +14,7 @@ export const toast = {
       icon: BadgeFilledIcon,
       iconClassName: "text-non-modal-icon-default",
       duration: options?.duration,
+      id: options?.id,
     });
   },
   warning: (message: string, options?: ToastPresetOptions) => {
@@ -21,12 +23,14 @@ export const toast = {
       icon: AlertTriangleIcon,
       iconClassName: "text-non-modal-icon-warning",
       duration: options?.duration,
+      id: options?.id,
     });
   },
   default: (message: string, options?: ToastPresetOptions) => {
     return baseToast({
       message,
       duration: options?.duration,
+      id: options?.id,
     });
   },
 };
