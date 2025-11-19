@@ -1,7 +1,6 @@
 "use client";
 import { AuthError, useKakaoLogin } from "@/hooks/login/useKakaoLogin";
 import { FixedBottomLayout, KakaoLoginButton, Tooltip, Typo } from "@repo/ui/components";
-import {} from "react";
 import { OnboardingCarousel } from "./OnboardingCarousel";
 
 interface LoginClientProps {
