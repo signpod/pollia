@@ -7,11 +7,13 @@ import { Gift } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useRef, useState } from "react";
-import { SurveyCollection } from "./components/SurveyCollection";
-import { SurveyDescription } from "./components/SurveyDescription";
-import { SurveyImage } from "./components/SurveyImage";
-import { SurveyLogo } from "./components/SurveyLogo";
-import { SurveyReward } from "./components/SurveyReward";
+import {
+  SurveyCollection,
+  SurveyDescription,
+  SurveyImage,
+  SurveyLogo,
+  SurveyReward,
+} from "./components";
 import { BottomButton } from "./ui";
 
 export function SurveyIntro({ initialError }: { initialError: AuthError | null }) {
