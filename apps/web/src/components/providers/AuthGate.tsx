@@ -1,12 +1,18 @@
+import { ROUTES } from "@/constants/routes";
 import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
 import { redirect } from "next/navigation";
 
 interface AuthGateProps {
   children: React.ReactNode;
   redirectTo?: string;
+  currentPath?: string;
 }
 
-export async function AuthGate({ children, redirectTo = "/login" }: AuthGateProps) {
+export async function AuthGate({
+  children,
+  redirectTo = ROUTES.LOGIN,
+  currentPath,
+}: AuthGateProps) {
   const supabase = await createServerSupabaseClient();
 
   const {
@@ -15,7 +21,11 @@ export async function AuthGate({ children, redirectTo = "/login" }: AuthGateProp
   } = await supabase.auth.getUser();
 
   if (error || !user) {
-    redirect(redirectTo);
+    const redirectUrl = currentPath
+      ? `${redirectTo}?next=${encodeURIComponent(currentPath)}`
+      : redirectTo;
+
+    redirect(redirectUrl);
   }
 
   return <>{children}</>;

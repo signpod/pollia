@@ -1,6 +1,7 @@
 "use client";
 
 import { toast } from "@/components/common/Toast";
+import { setAuthRedirect } from "@/lib/cookie";
 import { useModal } from "@repo/ui/components";
 import { useCallback, useEffect, useState } from "react";
 
@@ -11,7 +12,13 @@ export interface AuthError {
   timestamp: number;
 }
 
-export function useKakaoLogin(initialError: AuthError | null) {
+interface UseKakaoLoginOptions {
+  initialError?: AuthError | null;
+  redirectPath?: string;
+}
+
+export function useKakaoLogin(options: UseKakaoLoginOptions = {}) {
+  const { initialError = null, redirectPath } = options;
   const { showModal } = useModal();
   const [isKakaoSdkLoaded, setIsKakaoSdkLoaded] = useState(false);
 
@@ -71,6 +78,10 @@ export function useKakaoLogin(initialError: AuthError | null) {
         return;
       }
 
+      if (redirectPath?.startsWith("/")) {
+        setAuthRedirect(redirectPath);
+      }
+
       window.Kakao.Auth.authorize({
         redirectUri: `${window.location.origin}/auth/callback`,
         prompts: "select_account",
@@ -81,7 +92,7 @@ export function useKakaoLogin(initialError: AuthError | null) {
         duration: 3000,
       });
     }
-  }, [isKakaoSdkLoaded]);
+  }, [isKakaoSdkLoaded, redirectPath]);
 
   return {
     handleKakaoLogin,
