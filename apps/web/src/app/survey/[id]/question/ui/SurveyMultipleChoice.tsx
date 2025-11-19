@@ -16,6 +16,7 @@ export function SurveyMultipleChoice({
   nextButtonText,
   updateCanGoNext,
   onAnswerChange,
+  hasShownToastsRef,
 }: QuestionStepContentProps) {
   return (
     <SurveyMultipleChoiceProvider
@@ -32,6 +33,7 @@ export function SurveyMultipleChoice({
         onPrevious={onPrevious}
         onNext={onNext}
         nextButtonText={nextButtonText}
+        hasShownToastsRef={hasShownToastsRef}
       />
     </SurveyMultipleChoiceProvider>
   );
@@ -45,6 +47,7 @@ function SurveyMultipleChoiceContent({
   onPrevious,
   onNext,
   nextButtonText,
+  hasShownToastsRef,
 }: Omit<QuestionStepContentProps, "isNextDisabled" | "updateCanGoNext" | "onAnswerChange">) {
   const isMultipleChoice = !!questionData.maxSelections && questionData.maxSelections > 1;
   const { selectedIds, toggleSelectedId, canGoNext } = useSurveyMultipleChoice();
@@ -61,6 +64,7 @@ function SurveyMultipleChoiceContent({
       onPrevious={onPrevious}
       onNext={onNext}
       nextButtonText={nextButtonText}
+      hasShownToastsRef={hasShownToastsRef}
     >
       {questionData.options?.map(option => (
         <SurveyQuestionOptionButton

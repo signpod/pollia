@@ -1,4 +1,6 @@
 "use client";
+import { toast } from "@/components/common/Toast";
+import { SURVEY_TOAST_MESSAGE } from "@/constants/surveyMessages";
 import { ExtendedQuestionStepConfig, createQuestionSteps } from "@/constants/surveyQuestion";
 import { useReadSurveyQuestionsDetail } from "@/hooks/survey/question/useReadSurveyQuestionsDetail";
 import type { SurveyAnswerItem } from "@/types/dto";
@@ -55,6 +57,11 @@ function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: nu
   const { showModal, close } = useModal();
 
   const answersRef = useRef<Map<string, SurveyAnswerItem>>(new Map());
+  const hasShownToastsRef = useRef({
+    first: false,
+    half: false,
+    final: false,
+  });
 
   const {
     currentStep,
@@ -87,33 +94,42 @@ function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: nu
 
     setIsSubmitting(true);
 
-    const answers = Array.from(answersRef.current.values());
+    try {
+      const answers = Array.from(answersRef.current.values());
 
-    console.log("=".repeat(50));
-    console.log("📝 설문조사 제출");
-    console.log("=".repeat(50));
-    console.log("설문조사 ID:", params.id);
-    console.log("답변 개수:", answers.length);
-    console.log("\n답변 상세:");
-    answers.forEach((answer, index) => {
-      console.log(`\n[${index + 1}] 질문 ID: ${answer.questionId}`);
-      console.log(`   타입: ${answer.type}`);
-      if (answer.type === "SCALE") {
-        console.log(`   척도 값: ${answer.scaleValue}`);
-      } else if (answer.type === "SUBJECTIVE") {
-        console.log(`   텍스트 답변: "${answer.textResponse}"`);
-      } else if (answer.type === "MULTIPLE_CHOICE") {
-        console.log(`   선택한 옵션 IDs: [${answer.selectedOptionIds.join(", ")}]`);
-      }
-    });
-    console.log(`\n${"=".repeat(50)}`);
+      console.log("=".repeat(50));
+      console.log("📝 설문조사 제출");
+      console.log("=".repeat(50));
+      console.log("설문조사 ID:", params.id);
+      console.log("답변 개수:", answers.length);
+      console.log("\n답변 상세:");
+      answers.forEach((answer, index) => {
+        console.log(`\n[${index + 1}] 질문 ID: ${answer.questionId}`);
+        console.log(`   타입: ${answer.type}`);
+        if (answer.type === "SCALE") {
+          console.log(`   척도 값: ${answer.scaleValue}`);
+        } else if (answer.type === "SUBJECTIVE") {
+          console.log(`   텍스트 답변: "${answer.textResponse}"`);
+        } else if (answer.type === "MULTIPLE_CHOICE") {
+          console.log(`   선택한 옵션 IDs: [${answer.selectedOptionIds.join(", ")}]`);
+        }
+      });
+      console.log(`\n${"=".repeat(50)}`);
 
-    setTimeout(() => {
+      // TODO: 실제 API 호출로 교체 예정
+      // await submitSurveyAnswers({ surveyId: params.id, answers });
+
+      setTimeout(() => {
+        setIsSubmitting(false);
+        alert("답변이 수집되었습니다! (콘솔을 확인하세요)");
+        // TODO: 임시 - 완료 후 동작 미확정 (페이지 이동 or 모달 표시 등)
+        // router.push(`/survey/${params.id}/done`);
+      }, 500);
+    } catch (error) {
+      console.error("설문 제출 중 오류 발생:", error);
+      toast.warning(SURVEY_TOAST_MESSAGE.error.message, { id: SURVEY_TOAST_MESSAGE.error.id });
       setIsSubmitting(false);
-      alert("답변이 수집되었습니다! (콘솔을 확인하세요)");
-      // TODO: 임시 - 완료 후 동작 미확정 (페이지 이동 or 모달 표시 등)
-      // router.push(`/survey/${params.id}/done`);
-    }, 500);
+    }
   }, [isSubmitting, params.id]);
 
   const handleNext = useCallback(() => {
@@ -180,6 +196,7 @@ function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: nu
       nextButtonText={isLastStep ? (isSubmitting ? "제출 중..." : "완료") : "다음"}
       updateCanGoNext={updateCanGoNext}
       onAnswerChange={handleAnswerChange}
+      hasShownToastsRef={hasShownToastsRef}
     />
   );
 }
