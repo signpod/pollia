@@ -9,7 +9,7 @@ import {
 } from "@repo/ui/components";
 import { ChevronLeftIcon } from "lucide-react";
 import Image from "next/image";
-import { type MutableRefObject, type PropsWithChildren, useEffect } from "react";
+import { type PropsWithChildren, type RefObject, useEffect } from "react";
 
 interface SurveyQuestionTemplateProps extends PropsWithChildren {
   currentOrder: number;
@@ -22,7 +22,7 @@ interface SurveyQuestionTemplateProps extends PropsWithChildren {
   onPrevious?: () => void;
   onNext?: () => void;
   nextButtonText?: string;
-  hasShownToastsRef: MutableRefObject<{
+  hasShownToastsRef: RefObject<{
     first: boolean;
     half: boolean;
     final: boolean;
