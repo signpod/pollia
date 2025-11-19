@@ -3,7 +3,7 @@ import Providers from "@/components/providers/QueryProvider";
 
 export default function CreateLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AuthGate>
+    <AuthGate currentPath={"/me"}>
       <Providers>{children}</Providers>
     </AuthGate>
   );
