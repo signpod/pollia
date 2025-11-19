@@ -20,9 +20,7 @@ const createMockUser = (
   ...overrides,
 });
 
-const createMockSupabaseUser = (
-  overrides: Partial<SupabaseUser> = {},
-): SupabaseUser =>
+const createMockSupabaseUser = (overrides: Partial<SupabaseUser> = {}): SupabaseUser =>
   ({
     id: "user1",
     email: "test@example.com",
@@ -85,7 +83,7 @@ describe("UserService", () => {
     });
   });
 
-  describe("ensureUserExists", () => {
+  describe("createUserIfNotExists", () => {
     it("기존 사용자가 있으면 false를 반환한다", async () => {
       // Given
       const mockUser = createMockUser();
@@ -93,7 +91,7 @@ describe("UserService", () => {
       mockRepo.findFirst.mockResolvedValue(mockUser);
 
       // When
-      const result = await service.ensureUserExists({
+      const result = await service.createUserIfNotExists({
         user: supabaseUser,
       });
 
@@ -111,7 +109,7 @@ describe("UserService", () => {
       mockRepo.create.mockResolvedValue(mockCreatedUser);
 
       // When
-      const result = await service.ensureUserExists({
+      const result = await service.createUserIfNotExists({
         user: supabaseUser,
         name: "제공된 이름",
       });
@@ -136,7 +134,7 @@ describe("UserService", () => {
       mockRepo.create.mockResolvedValue(mockCreatedUser);
 
       // When
-      const result = await service.ensureUserExists({
+      const result = await service.createUserIfNotExists({
         user: supabaseUser,
       });
 
@@ -160,7 +158,7 @@ describe("UserService", () => {
       mockRepo.create.mockResolvedValue(mockCreatedUser);
 
       // When
-      const result = await service.ensureUserExists({
+      const result = await service.createUserIfNotExists({
         user: supabaseUser,
       });
 
@@ -184,7 +182,7 @@ describe("UserService", () => {
       mockRepo.create.mockResolvedValue(mockCreatedUser);
 
       // When
-      const result = await service.ensureUserExists({
+      const result = await service.createUserIfNotExists({
         user: supabaseUser,
       });
 
@@ -208,7 +206,7 @@ describe("UserService", () => {
       mockRepo.create.mockResolvedValue(mockCreatedUser);
 
       // When
-      const result = await service.ensureUserExists({
+      const result = await service.createUserIfNotExists({
         user: supabaseUser,
         name: "제공된 이름",
       });
@@ -223,4 +221,3 @@ describe("UserService", () => {
     });
   });
 });
-

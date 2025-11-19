@@ -8,9 +8,9 @@ import type { EnsureUserExistsOptions } from "@/types/dto/user";
  * @param options - Supabase User와 사용자 이름
  * @returns 사용자가 새로 생성되었는지 여부
  */
-export async function ensureUserExists(options: EnsureUserExistsOptions): Promise<boolean> {
+export async function createUserIfNotExists(options: EnsureUserExistsOptions): Promise<boolean> {
   try {
-    return await userService.ensureUserExists(options);
+    return await userService.createUserIfNotExists(options);
   } catch (error) {
     console.error("❌ 사용자 생성 실패:", error);
     throw error;

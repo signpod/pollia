@@ -1,5 +1,5 @@
 import { createSessionWithKakao, exchangeKakaoToken, getKakaoUserInfo } from "@/actions/kakao";
-import { ensureUserExists } from "@/actions/user/ensure-user-exists";
+import { createUserIfNotExists } from "@/actions/user";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
@@ -53,7 +53,7 @@ export async function GET(request: Request) {
         userName,
       });
 
-      const isNewUser = await ensureUserExists({ user, name: userName });
+      const isNewUser = await createUserIfNotExists({ user, name: userName });
 
       if (isNewUser && next === "/") {
         next = "/login/done";

@@ -1,5 +1,5 @@
 import { userRepository } from "@/server/repositories/user/userRepository";
-import type { GetCurrentUserResponse, EnsureUserExistsOptions } from "@/types/dto";
+import type { EnsureUserExistsOptions, GetCurrentUserResponse } from "@/types/dto";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 /**
@@ -32,7 +32,7 @@ export class UserService {
    * @param options - Supabase User와 사용자 이름
    * @returns 사용자가 새로 생성되었는지 여부
    */
-  async ensureUserExists(options: EnsureUserExistsOptions): Promise<boolean> {
+  async createUserIfNotExists(options: EnsureUserExistsOptions): Promise<boolean> {
     const { user, name } = options;
 
     const existingUser = await this.repo.findFirst(user.id);
@@ -60,14 +60,8 @@ export class UserService {
    * @returns 결정된 사용자 이름
    */
   private determineUserName(user: SupabaseUser, providedName?: string): string {
-    return (
-      providedName ||
-      user.user_metadata?.name ||
-      user.email?.split("@")[0] ||
-      "사용자"
-    );
+    return providedName || user.user_metadata?.name || user.email?.split("@")[0] || "사용자";
   }
 }
 
 export const userService = new UserService();
-
