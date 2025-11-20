@@ -1,4 +1,5 @@
 import type { UserRepository } from "@/server/repositories/user/userRepository";
+import { UserRole } from "@prisma/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { UserService } from "./userService";
 
@@ -8,6 +9,7 @@ const createMockUser = (
     id: string;
     email: string;
     name: string;
+    role: UserRole;
     createdAt: Date;
     updatedAt: Date;
   }> = {},
@@ -15,6 +17,7 @@ const createMockUser = (
   id: "user1",
   email: "test@example.com",
   name: "테스트 사용자",
+  role: UserRole.USER,
   createdAt: new Date("2025-01-01"),
   updatedAt: new Date("2025-01-01"),
   ...overrides,
