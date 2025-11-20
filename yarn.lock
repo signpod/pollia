@@ -2781,9 +2781,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@prisma/client@npm:^6.16.2":
-  version: 6.16.2
-  resolution: "@prisma/client@npm:6.16.2"
+"@prisma/client@npm:^6.19.0":
+  version: 6.19.0
+  resolution: "@prisma/client@npm:6.19.0"
   peerDependencies:
     prisma: "*"
     typescript: ">=5.1.0"
@@ -2792,7 +2792,7 @@ __metadata:
       optional: true
     typescript:
       optional: true
-  checksum: 10c0/2d3356d18de6411dc61b701dfea2a4fc052913f7f7c6019d4cf477a2d391c7ca0adf1601f1d2b9030b5a1c2479b4d7d5b128e1b413218c1b12cd58f1091d2d1a
+  checksum: 10c0/c3173fae0195adc952ab47d30120b5ae397b71997b9b60c2ba78fb10a99d10bda2996869c311164a08311ae0bbde41b86806898e49648df3fe713fbe8cb4659e
   languageName: node
   linkType: hard
 
@@ -14063,7 +14063,7 @@ __metadata:
   resolution: "web@workspace:apps/web"
   dependencies:
     "@jridgewell/resolve-uri": "npm:^3.1.2"
-    "@prisma/client": "npm:^6.16.2"
+    "@prisma/client": "npm:^6.19.0"
     "@radix-ui/react-avatar": "npm:^1.1.10"
     "@radix-ui/react-dialog": "npm:^1.1.1"
     "@radix-ui/react-progress": "npm:^1.1.7"
