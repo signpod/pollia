@@ -1,5 +1,6 @@
 import { getCurrentUser } from "@/actions/user";
 import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";
+import { UserRole } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
 
 export const useCurrentUser = () => {
@@ -12,6 +13,7 @@ export const useCurrentUser = () => {
         id: "",
         email: "",
         name: "",
+        role: UserRole.USER,
         createdAt: new Date(),
         updatedAt: new Date(),
       },

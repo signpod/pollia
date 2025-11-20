@@ -54,8 +54,10 @@ src/
 │   │   └── auth.ts            # requireAuth 유틸
 │   └── survey/
 │       ├── index.ts           # re-export
-│       ├── create-survey.ts   # 생성 액션
-│       └── read-survey.ts     # 조회 액션
+│       ├── create.ts          # 생성 액션 (CRUD)
+│       ├── read.ts            # 조회 액션 (CRUD)
+│       ├── update.ts          # 수정 액션 (CRUD)
+│       └── delete.ts          # 삭제 액션 (CRUD)
 │
 ├── server/
 │   ├── repositories/          # Repository 계층
@@ -79,12 +81,57 @@ src/
 ✅ surveyRepository.ts      # {도메인}Repository.ts
 ✅ surveyService.ts         # {도메인}Service.ts
 ✅ surveyService.test.ts    # {도메인}Service.test.ts
-✅ read-survey.ts           # {동작}-{도메인}.ts (kebab-case)
+✅ create.ts                # CRUD 파일명 (kebab-case)
+✅ read.ts                  # CRUD 파일명 (kebab-case)
+✅ update.ts                # CRUD 파일명 (kebab-case)
+✅ delete.ts                # CRUD 파일명 (kebab-case)
 
 ❌ survey-repository.ts     # kebab-case 금지 (Repository/Service)
 ❌ SurveyRepository.ts      # PascalCase 금지 (파일명)
 ❌ survey.repository.ts     # dot 구분 금지
+❌ create-survey.ts         # 동작-도메인 형식 금지 (CRUD 사용)
+❌ read-survey.ts           # 동작-도메인 형식 금지 (CRUD 사용)
 ```
+
+### Server Action 파일 구조 (CRUD)
+
+**기본 원칙:**
+- 각 도메인은 `create.ts`, `read.ts`, `update.ts`, `delete.ts` 4개 파일만 사용
+- 한 파일에 여러 함수 허용 (같은 CRUD 카테고리)
+- 특수한 경우(인증, 결제 등)는 예외 허용하되 문서화
+
+**예시:**
+
+```typescript
+// ✅ actions/survey/create.ts
+"use server";
+
+export async function createSurvey(request: CreateSurveyRequest) { /* ... */ }
+export async function createSurveyDraft(request: CreateDraftRequest) { /* ... */ }
+
+// ✅ actions/survey/read.ts
+"use server";
+
+export async function getSurvey(surveyId: string) { /* ... */ }
+export async function getUserSurveys(userId: string) { /* ... */ }
+export async function getSurveyQuestionIds(surveyId: string) { /* ... */ }
+
+// ✅ actions/user/create.ts
+"use server";
+
+export async function createUser(data: CreateUserData) { /* ... */ }
+export async function createUserIfNotExists(options: CreateOptions) { /* ... */ }
+
+// ❌ actions/survey/get-survey.ts (별도 파일 금지)
+// ❌ actions/survey/create-survey.ts (동작-도메인 형식 금지)
+```
+
+**특수 케이스 예외:**
+- 인증: `actions/auth/login.ts`, `actions/auth/logout.ts`
+- 결제: `actions/payment/process.ts`, `actions/payment/refund.ts`
+- 파일 업로드: `actions/file/upload.ts`
+
+이러한 예외는 CRUD로 분류하기 어려운 경우에만 허용하며, 팀 내 합의 후 사용합니다.
 
 ---
 
@@ -1140,11 +1187,11 @@ export const surveyService = new SurveyService();
 ### 3. Server Action
 
 ```typescript
-// src/actions/survey/read-survey.ts
+// src/actions/survey/read.ts
 "use server";
 
 import { surveyService } from "@/server/services/survey/surveyService";
-import type { GetSurveyResponse } from "@/types/dto";
+import type { GetSurveyResponse, GetSurveyQuestionIdsResponse } from "@/types/dto";
 
 export async function getSurvey(surveyId: string): Promise<GetSurveyResponse> {
   try {
@@ -1156,6 +1203,23 @@ export async function getSurvey(surveyId: string): Promise<GetSurveyResponse> {
       throw error;
     }
     const serverError = new Error("설문조사를 불러올 수 없습니다.");
+    serverError.cause = 500;
+    throw serverError;
+  }
+}
+
+export async function getSurveyQuestionIds(
+  surveyId: string,
+): Promise<GetSurveyQuestionIdsResponse> {
+  try {
+    const data = await surveyService.getSurveyQuestionIds(surveyId);
+    return { data };
+  } catch (error) {
+    console.error("❌ 설문 질문 ID 조회 실패:", error);
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("질문 목록을 불러올 수 없습니다.");
     serverError.cause = 500;
     throw serverError;
   }
