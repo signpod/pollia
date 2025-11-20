@@ -80,8 +80,10 @@ export async function requireAdmin(): Promise<{
 
     return { supabaseUser, dbUser };
   } catch (error) {
-    if (error instanceof Error && error.cause === 401) {
-      throw error;
+    if (error instanceof Error && error.cause === 404) {
+      const authError = new Error("사용자 정보를 찾을 수 없습니다.");
+      authError.cause = 401;
+      throw authError;
     }
 
     if (error instanceof Error && error.cause === 403) {
