@@ -7,12 +7,12 @@ model Reward {
     scheduledDate DateTime?   @map("scheduled_date")
     paidAt        DateTime?   @map("paid_at")
 
-    survey Survey?
+    surveys Survey[]
 
     createdAt DateTime @default(now()) @map("created_at")
     updatedAt DateTime @updatedAt @map("updated_at")
 
-    @@map("survey_rewards")
+    @@map("rewards")
 }
 
 enum PaymentType {

@@ -11,8 +11,8 @@ model Survey {
 
     creatorId String           @map("creator_id")
     creator   User             @relation("SurveyCreator", fields: [creatorId], references: [id])
-    rewardId  String?          @unique @map("reward_id")
-    reward    Reward?          @relation(fields: [rewardId], references: [id])
+    rewardId  String?          @map("reward_id")
+    reward    Reward?          @relation(fields: [rewardId], references: [id], onDelete: SetNull)
     questions SurveyQuestion[]
 
     createdAt DateTime @default(now()) @map("created_at")
@@ -20,5 +20,6 @@ model Survey {
 
     @@index([creatorId])
     @@index([isActive])
+    @@index([rewardId])
     @@map("surveys")
 }
