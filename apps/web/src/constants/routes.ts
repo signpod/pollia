@@ -2,6 +2,10 @@
  * 애플리케이션 라우트 경로 상수
  */
 export const ROUTES = {
+  // 관리자 관련
+  ADMIN: "/admin",
+  ADMIN_LOGIN: "/admin/login",
+
   // 인증 관련
   LOGIN: "/login",
   AUTH_CALLBACK: "/auth/callback",
