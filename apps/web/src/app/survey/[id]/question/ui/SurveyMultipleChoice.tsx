@@ -66,17 +66,19 @@ function SurveyMultipleChoiceContent({
       nextButtonText={nextButtonText}
       hasShownToastsRef={hasShownToastsRef}
     >
-      {questionData.options?.map(option => (
-        <SurveyQuestionOptionButton
-          key={option.id}
-          selectType={isMultipleChoice ? "checkbox" : "radio"}
-          imageUrl={option.imageUrl ?? undefined}
-          title={option.title}
-          description={option.description ?? undefined}
-          isSelected={selectedIds.has(option.id)}
-          onClick={() => toggleSelectedId(option.id)}
-        />
-      ))}
+      <div className="flex flex-col gap-2 w-full">
+        {questionData.options?.map(option => (
+          <SurveyQuestionOptionButton
+            key={option.id}
+            selectType={isMultipleChoice ? "checkbox" : "radio"}
+            imageUrl={option.imageUrl ?? undefined}
+            title={option.title}
+            description={option.description ?? undefined}
+            isSelected={selectedIds.has(option.id)}
+            onClick={() => toggleSelectedId(option.id)}
+          />
+        ))}
+      </div>
     </SurveyQuestionTemplate>
   );
 }
