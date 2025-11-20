@@ -21,7 +21,7 @@ function useSelectedQuestionData() {
   const sortedQuestions = useMemo(() => {
     if (!selectedQuestions) return [];
 
-    return [...selectedQuestions];
+    return selectedQuestions;
   }, [selectedQuestions]);
 
   return {
