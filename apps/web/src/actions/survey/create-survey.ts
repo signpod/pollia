@@ -3,6 +3,7 @@
 import { requireAuth } from "@/actions/common/auth";
 import prisma from "@/database/utils/prisma/client";
 import type { CreateSurveyRequest, CreateSurveyResponse } from "@/types/dto";
+import { Prisma } from "@prisma/client";
 
 const SURVEY_MESSAGE = {
   TITLE_REQUIRED: "제목은 필수입니다.",
@@ -44,16 +45,21 @@ export async function createSurvey(request: CreateSurveyRequest): Promise<Create
         },
       });
 
-      await tx.surveyQuestion.updateMany({
-        where: {
-          id: {
-            in: request.questionIds,
-          },
-        },
-        data: {
-          surveyId: createdSurvey.id,
-        },
-      });
+      if (request.questionIds.length > 0) {
+        const whenClauses = request.questionIds.map(
+          (id, index) => Prisma.sql`WHEN ${id} THEN ${index + 1}`,
+        );
+
+        await tx.$executeRaw`
+          UPDATE "survey_questions"
+          SET "survey_id" = ${createdSurvey.id},
+              "order" = CASE "id" ${Prisma.join(whenClauses, " ")} END
+          WHERE "id" IN (${Prisma.join(
+            request.questionIds.map(id => Prisma.sql`${id}`),
+            ",",
+          )})
+        `;
+      }
 
       return createdSurvey;
     });

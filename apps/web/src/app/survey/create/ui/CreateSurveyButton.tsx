@@ -71,7 +71,7 @@ function useCreateSurveyButton() {
       title: surveyTitle,
       description: sanitizeTiptapContent(surveyDescription),
       target: surveyTarget.trim() || null,
-      questionIds: Array.from(selectedQuestions).map(question => question.id),
+      questionIds: selectedQuestions.map(question => question.id),
       deadline: deadlineDate ? combineDateAndTime(deadlineDate, deadlineTime) : undefined,
       estimatedMinutes,
     });

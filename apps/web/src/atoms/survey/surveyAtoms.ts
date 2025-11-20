@@ -16,9 +16,7 @@ export const surveyDescriptionAtom = atom<string>("");
 
 export const surveyTargetAtom = atom<string>("");
 
-export const selectedQuestionAtom = atom<Set<SurveyQuestionSummary>>(
-  new Set<SurveyQuestionSummary>(),
-);
+export const selectedQuestionAtom = atom<SurveyQuestionSummary[]>([]);
 
 export const searchQueryAtom = atom<string>("");
 
@@ -28,29 +26,29 @@ export const selectedQuestionTypesAtom = atom<Set<SurveyQuestionType>>(
 
 export const selectedQuestionCountAtom = atom(get => {
   const selectedQuestions = get(selectedQuestionAtom);
-  return selectedQuestions.size;
+  return selectedQuestions.length;
 });
 
 export const selectAllQuestionsAtom = atom(
   null,
   (_get, set, questions: SurveyQuestionSummary[]) => {
-    set(selectedQuestionAtom, new Set(questions));
+    set(selectedQuestionAtom, questions);
   },
 );
 
 export const deselectAllQuestionsAtom = atom(null, (_get, set) => {
-  set(selectedQuestionAtom, new Set<SurveyQuestionSummary>());
+  set(selectedQuestionAtom, []);
 });
 
 export const reorderQuestionsAtom = atom(null, (_get, set, newOrder: SurveyQuestionSummary[]) => {
-  set(selectedQuestionAtom, new Set(newOrder));
+  set(selectedQuestionAtom, newOrder);
 });
 
 export const resetSurveyAtom = atom(null, (_get, set) => {
   set(surveyTitleAtom, "");
   set(surveyDescriptionAtom, "");
   set(surveyTargetAtom, "");
-  set(selectedQuestionAtom, new Set<SurveyQuestionSummary>());
+  set(selectedQuestionAtom, []);
   set(searchQueryAtom, "");
   set(surveyDeadlineDateAtom, undefined);
   set(surveyDeadlineTimeAtom, DEFAULT_DEADLINE_TIME);
@@ -74,10 +72,11 @@ export const surveyValidationAtom = atom(get => {
     titleError = null;
   }
 
-  const questionsError = selectedQuestions.size === 0 ? SURVEY_FORM_ERROR_MESSAGES.questions : null;
+  const questionsError =
+    selectedQuestions.length === 0 ? SURVEY_FORM_ERROR_MESSAGES.questions : null;
 
   return {
-    isValid: !titleError && selectedQuestions.size > 0,
+    isValid: !titleError && selectedQuestions.length > 0,
     errors: {
       title: titleError,
       questions: questionsError,

@@ -115,7 +115,7 @@ interface QuestionListContentProps {
   isLoading: boolean;
   isDraggable: boolean;
   showCheckboxInDraggable: boolean;
-  selectedQuestions: Set<SurveyQuestionSummary>;
+  selectedQuestions: SurveyQuestionSummary[];
   onReorder: (questions: SurveyQuestionSummary[]) => void;
   onSelectQuestion: (question: SurveyQuestionSummary) => void;
 }
@@ -164,7 +164,7 @@ function QuestionListContent({
 
 interface DraggableQuestionsListProps {
   questions: SurveyQuestionSummary[];
-  selectedQuestions: Set<SurveyQuestionSummary>;
+  selectedQuestions: SurveyQuestionSummary[];
   showCheckbox: boolean;
   onReorder: (questions: SurveyQuestionSummary[]) => void;
   onSelectQuestion: (question: SurveyQuestionSummary) => void;
@@ -190,7 +190,7 @@ function DraggableQuestionsList({
           key={question.id}
           question={question}
           index={index}
-          isSelected={selectedQuestions.has(question)}
+          isSelected={selectedQuestions.some(q => q.id === question.id)}
           onSelectQuestion={() => onSelectQuestion(question)}
           showCheckbox={showCheckbox}
         />
@@ -201,7 +201,7 @@ function DraggableQuestionsList({
 
 interface StaticQuestionsListProps {
   questions: SurveyQuestionSummary[];
-  selectedQuestions: Set<SurveyQuestionSummary>;
+  selectedQuestions: SurveyQuestionSummary[];
   onSelectQuestion: (question: SurveyQuestionSummary) => void;
 }
 
@@ -217,7 +217,7 @@ function StaticQuestionsList({
           key={question.id}
           question={question}
           index={index}
-          isSelected={selectedQuestions.has(question)}
+          isSelected={selectedQuestions.some(q => q.id === question.id)}
           onSelectQuestion={onSelectQuestion}
         />
       ))}
@@ -358,16 +358,13 @@ function useToggleQuestionSelection() {
   const [selectedQuestions, setSelectedQuestions] = useAtom(selectedQuestionAtom);
 
   const toggleQuestionSelection = (question: SurveyQuestionSummary) => {
-    const isSelected = selectedQuestions.has(question);
-    const updatedQuestions = new Set(selectedQuestions);
+    const isSelected = selectedQuestions.some(q => q.id === question.id);
 
     if (isSelected) {
-      updatedQuestions.delete([...updatedQuestions].find(q => q.id === question.id)!);
+      setSelectedQuestions(selectedQuestions.filter(q => q.id !== question.id));
     } else {
-      updatedQuestions.add(question);
+      setSelectedQuestions([...selectedQuestions, question]);
     }
-
-    setSelectedQuestions(updatedQuestions);
   };
 
   return {
