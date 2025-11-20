@@ -84,7 +84,7 @@ const SurveyLikertScaleBase = ({
 
   return (
     <div className={cn("flex w-full flex-col gap-5", className)}>
-      <div className={cn("relative h-18 w-full")}>
+      <div className={cn("relative h-18 w-full px-11")}>
         <SliderPrimitive.Root
           value={[value]}
           onValueChange={values => {
