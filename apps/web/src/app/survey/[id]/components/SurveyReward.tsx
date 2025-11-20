@@ -27,7 +27,7 @@ export function SurveyReward({
   const hasNameNewLine = useMemo(() => rewardName.includes("\n"), [rewardName]);
   const hasChevron = useMemo(() => isTruncated || hasNameNewLine, [isTruncated, hasNameNewLine]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  // biome-ignore lint/correctness/useExhaustiveDependencies: rewardName/rewardDescription 변경 시에만 truncation 체크가 필요하며, resize 이벤트 리스너는 한 번만 등록/해제되어야 함
   useLayoutEffect(() => {
     const checkTruncation = () => {
       const titleElement = titleRef.current;
