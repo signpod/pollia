@@ -1,4 +1,6 @@
 import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
+import { userService } from "@/server/services/user/userService";
+import { type GetCurrentUserResponse, UserRole } from "@/types/dto/user";
 import type { User } from "@supabase/supabase-js";
 
 /**
@@ -36,4 +38,44 @@ export async function requireAuth(): Promise<User> {
   }
 
   return user;
+}
+
+/**
+ * Server Action에서 관리자 권한을 확인합니다.
+ * 인증되지 않은 경우 401 에러, 관리자가 아닌 경우 403 에러를 throw합니다.
+ *
+ * @throws {Error} 로그인이 필요한 경우 (error.cause = 401)
+ * @throws {Error} 관리자 권한이 필요한 경우 (error.cause = 403)
+ * @returns {Promise<{ supabaseUser: User; dbUser: GetCurrentUserResponse["data"] }>} Supabase 사용자와 DB 사용자 정보
+ *
+ * @example
+ * ```typescript
+ * export async function deleteUser(userId: string) {
+ *   try {
+ *     const { dbUser } = await requireAdmin();
+ *     // 관리자만 실행 가능한 로직
+ *     await userService.deleteUser(userId);
+ *   } catch (error) {
+ *     if (error instanceof Error && error.cause === 403) {
+ *       // 권한 에러 처리
+ *     }
+ *   }
+ * }
+ * ```
+ */
+export async function requireAdmin(): Promise<{
+  supabaseUser: User;
+  dbUser: GetCurrentUserResponse["data"];
+}> {
+  const supabaseUser = await requireAuth();
+
+  const dbUser = await userService.getCurrentUser(supabaseUser.id);
+
+  if (dbUser.role !== UserRole.ADMIN) {
+    const error = new Error("관리자 권한이 필요합니다.");
+    error.cause = 403;
+    throw error;
+  }
+
+  return { supabaseUser, dbUser };
 }
