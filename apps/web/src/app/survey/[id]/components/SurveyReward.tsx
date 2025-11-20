@@ -81,7 +81,7 @@ export function SurveyReward({
           <button
             ref={headerButtonRef}
             onClick={() => setIsOpen(!isOpen)}
-            className="flex w-full items-center gap-2 py-3 "
+            className="flex w-full items-center gap-2 py-3"
             type="button"
           >
             <div className="flex-1">
