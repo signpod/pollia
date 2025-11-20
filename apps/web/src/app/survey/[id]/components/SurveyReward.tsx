@@ -81,56 +81,61 @@ export function SurveyReward({
   }, [onVisibilityChange]);
 
   return (
-    <div className="flex w-full flex-col rounded-sm bg-white px-3 shadow-[0px_4px_20px_0px_rgba(9,9,11,0.08)]">
-      {hasChevron ? (
-        <button
-          ref={headerButtonRef}
-          onClick={() => setIsOpen(!isOpen)}
-          className="flex w-full items-center gap-2 py-3 "
-          type="button"
-        >
-          <div className="flex-1">
-            <Typo.Body size="medium" className="text-info text-left">
-              설문 리워드
-            </Typo.Body>
-          </div>
-          <div className="shrink-0 size-6 flex items-center justify-center text-disabled">
-            {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          </div>
-        </button>
-      ) : (
-        <div ref={headerDivRef} className="flex w-full items-center gap-2 py-3">
-          <div className="flex-1">
-            <Typo.Body size="medium" className="text-info text-left">
-              설문 리워드
-            </Typo.Body>
-          </div>
-        </div>
-      )}
-
-      <div className="flex w-full gap-4 border-t border-default py-3">
-        <div className="flex w-full flex-1 flex-col gap-1">
-          <Typo.Body size="medium" className={cn("whitespace-pre-line", !isOpen && "line-clamp-2")}>
-            {rewardName}
-          </Typo.Body>
-          {isOpen && rewardDescription && (
-            <Typo.Body size="small" className="text-info whitespace-pre-line">
-              * {rewardDescription}
-            </Typo.Body>
-          )}
-        </div>
-        {rewardImage && (
-          <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-light">
-            <Image
-              src={rewardImage}
-              alt={rewardName}
-              width={32}
-              height={32}
-              className="max-h-8 max-w-8 h-auto w-auto object-contain"
-            />
+    <div className="flex w-full flex-col gap-3">
+      <div className="flex w-full flex-col rounded-sm bg-white px-3 shadow-[0px_4px_20px_0px_rgba(9,9,11,0.08)]">
+        {hasChevron ? (
+          <button
+            ref={headerButtonRef}
+            onClick={() => setIsOpen(!isOpen)}
+            className="flex w-full items-center gap-2 py-3 "
+            type="button"
+          >
+            <div className="flex-1">
+              <Typo.Body size="medium" className="text-info text-left">
+                설문 리워드
+              </Typo.Body>
+            </div>
+            <div className="shrink-0 size-6 flex items-center justify-center text-disabled">
+              {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </div>
+          </button>
+        ) : (
+          <div ref={headerDivRef} className="flex w-full items-center gap-2 py-3">
+            <div className="flex-1">
+              <Typo.Body size="medium" className="text-info text-left">
+                설문 리워드
+              </Typo.Body>
+            </div>
           </div>
         )}
+
+        <div className="flex w-full gap-4 border-t border-default py-3">
+          <div className="flex w-full flex-1 flex-col gap-1">
+            <Typo.Body
+              size="medium"
+              className={cn("whitespace-pre-line", !isOpen && "line-clamp-2")}
+            >
+              {rewardName}
+            </Typo.Body>
+          </div>
+          {rewardImage && (
+            <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-light">
+              <Image
+                src={rewardImage}
+                alt={rewardName}
+                width={32}
+                height={32}
+                className="max-h-8 max-w-8 h-auto w-auto object-contain"
+              />
+            </div>
+          )}
+        </div>
       </div>
+      {rewardDescription && (
+        <Typo.Body size="small" className="text-info whitespace-pre-line px-1">
+          * {rewardDescription}
+        </Typo.Body>
+      )}
     </div>
   );
 }
