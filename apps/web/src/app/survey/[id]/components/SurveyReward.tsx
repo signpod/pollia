@@ -22,28 +22,22 @@ export function SurveyReward({
   const [isOpen, setIsOpen] = useState(false);
   const [isTruncated, setIsTruncated] = useState(false);
   const titleRef = useRef<HTMLDivElement>(null);
-  const descriptionRef = useRef<HTMLDivElement>(null);
   const headerButtonRef = useRef<HTMLButtonElement>(null);
   const headerDivRef = useRef<HTMLDivElement>(null);
   const hasNameNewLine = rewardName.includes("\n");
-  const hasDescriptionNewLine = rewardDescription?.includes("\n");
-  const hasNewLine = hasNameNewLine || hasDescriptionNewLine;
-  const hasChevron = isTruncated || hasNewLine;
+  const hasChevron = isTruncated || hasNameNewLine;
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useLayoutEffect(() => {
     const checkTruncation = () => {
       const titleElement = titleRef.current;
-      const descriptionElement = descriptionRef.current;
 
       const isTitleTruncated = titleElement
-        ? titleElement.scrollWidth > titleElement.clientWidth
-        : false;
-      const isDescriptionTruncated = descriptionElement
-        ? descriptionElement.scrollWidth > descriptionElement.clientWidth
+        ? titleElement.scrollWidth > titleElement.clientWidth ||
+          titleElement.scrollHeight > titleElement.clientHeight
         : false;
 
-      setIsTruncated(isTitleTruncated || isDescriptionTruncated);
+      setIsTruncated(isTitleTruncated);
     };
 
     checkTruncation();
@@ -118,6 +112,7 @@ export function SurveyReward({
           <div className="flex w-full flex-1 flex-col gap-1">
             <Typo.Body
               size="medium"
+              ref={titleRef}
               className={cn("whitespace-pre-line", !isOpen && "line-clamp-2")}
             >
               {rewardName}
