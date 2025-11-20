@@ -31,7 +31,7 @@ export function SurveyIntro({ initialError }: { initialError: AuthError | null }
   // TODO: 리워드 조회
   // const reward = useReadReward(rewardId);
   const reward = {
-    name: "CU 바나나우유 기프티콘",
+    name: "1등 : CU 바나나우유 기프티콘, 1명\n2등 : 신세계 상품권 3만원권, 2명\n3등 : 신세계 상품권 1만원권, 5명",
     image: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=150&h=150&fit=crop",
     description: "설문 완료 후 즉시 제공",
   };
