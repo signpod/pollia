@@ -69,13 +69,27 @@ export async function requireAdmin(): Promise<{
 }> {
   const supabaseUser = await requireAuth();
 
-  const dbUser = await userService.getCurrentUser(supabaseUser.id);
+  try {
+    const dbUser = await userService.getCurrentUser(supabaseUser.id);
 
-  if (dbUser.role !== UserRole.ADMIN) {
-    const error = new Error("관리자 권한이 필요합니다.");
-    error.cause = 403;
-    throw error;
+    if (dbUser.role !== UserRole.ADMIN) {
+      const error = new Error("관리자 권한이 필요합니다.");
+      error.cause = 403;
+      throw error;
+    }
+
+    return { supabaseUser, dbUser };
+  } catch (error) {
+    if (error instanceof Error && error.cause === 401) {
+      throw error;
+    }
+
+    if (error instanceof Error && error.cause === 403) {
+      throw error;
+    }
+
+    const serverError = new Error("권한 확인 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
-
-  return { supabaseUser, dbUser };
 }

@@ -13,14 +13,14 @@ export class UserService {
    * User ID로 User 정보 조회
    * @param userId - User ID
    * @returns User 정보
-   * @throws 404 - User를 찾을 수 없는 경우
+   * @throws 401 - User를 찾을 수 없는 경우 (인증 실패)
    */
   async getCurrentUser(userId: string): Promise<GetCurrentUserResponse["data"]> {
     const user = await this.repo.findById(userId);
 
     if (!user) {
       const error = new Error("사용자 정보를 찾을 수 없습니다.");
-      error.cause = 404;
+      error.cause = 401;
       throw error;
     }
 
