@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { Typo } from "@repo/ui/components";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 interface SurveyRewardProps {
   rewardName: string;
@@ -24,8 +24,8 @@ export function SurveyReward({
   const titleRef = useRef<HTMLDivElement>(null);
   const headerButtonRef = useRef<HTMLButtonElement>(null);
   const headerDivRef = useRef<HTMLDivElement>(null);
-  const hasNameNewLine = rewardName.includes("\n");
-  const hasChevron = isTruncated || hasNameNewLine;
+  const hasNameNewLine = useMemo(() => rewardName.includes("\n"), [rewardName]);
+  const hasChevron = useMemo(() => isTruncated || hasNameNewLine, [isTruncated, hasNameNewLine]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useLayoutEffect(() => {
