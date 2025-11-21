@@ -91,3 +91,37 @@ export function getPollStatusMessage(
 
   return "";
 }
+
+/**
+ * TipTap 에디터에서 생성된 HTML을 정리합니다.
+ * - 불필요한 속성 제거 (contenteditable, translate)
+ * - ProseMirror 관련 클래스 및 태그 제거
+ * - 빈 태그 제거
+ * @param html 정리할 HTML 문자열
+ * @returns 정리된 HTML 문자열
+ */
+export function cleanTiptapHTML(html: string): string {
+  if (!html) return "";
+
+  // 불필요한 속성 제거
+  let cleaned = html
+    .replace(/\s*contenteditable="[^"]*"/g, "")
+    .replace(/\s*translate="[^"]*"/g, "")
+    .replace(/\s*class="[^"]*tiptap[^"]*"/g, "")
+    .replace(/\s*class="[^"]*ProseMirror[^"]*"/g, "");
+
+  // 빈 class 속성 제거
+  cleaned = cleaned.replace(/\s*class=""\s*/g, " ");
+
+  // ProseMirror-trailingBreak 제거
+  cleaned = cleaned.replace(/<br[^>]*class="[^"]*ProseMirror-trailingBreak[^"]*"[^>]*>/g, "");
+
+  // 빈 태그 제거 (단, <br>은 유지)
+  cleaned = cleaned.replace(/<p>\s*<\/p>/g, "");
+  cleaned = cleaned.replace(/<div>\s*<\/div>/g, "");
+
+  // 연속된 공백 정리
+  cleaned = cleaned.replace(/\s+/g, " ").trim();
+
+  return cleaned;
+}
