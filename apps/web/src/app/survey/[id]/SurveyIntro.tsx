@@ -2,6 +2,7 @@
 
 import { AuthError } from "@/hooks/login/useKakaoLogin";
 import { useReadSurvey } from "@/hooks/survey";
+import { cleanTiptapHTML } from "@/lib/utils";
 import { FixedBottomLayout, FloatingButton, Typo } from "@repo/ui/components";
 import { Gift } from "lucide-react";
 import Link from "next/link";
@@ -53,7 +54,7 @@ export function SurveyIntro({ initialError }: { initialError: AuthError | null }
               />
             </div>
             {imageUrl && <SurveyImage imageUrl={imageUrl} />}
-            <SurveyDescription content={description ?? ""} />
+            <SurveyDescription content={cleanTiptapHTML(description || "")} />
           </div>
         </div>
 
