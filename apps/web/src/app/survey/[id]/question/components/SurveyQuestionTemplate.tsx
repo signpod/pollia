@@ -47,8 +47,12 @@ export function SurveyQuestionTemplate({
   // biome-ignore lint/correctness/useExhaustiveDependencies: hasShownToastsRef는 ref 객체로 의도적으로 의존성 배열에서 제외
   useEffect(() => {
     const isFirstQuestion = currentOrder === 1 && !hasShownToastsRef.current.first;
-    const isFinalQuestion = currentOrder === totalQuestionCount && !hasShownToastsRef.current.final;
-    const isHalfway = progressValue >= 50 && !hasShownToastsRef.current.half;
+    const isFinalQuestion =
+      currentOrder === totalQuestionCount &&
+      !hasShownToastsRef.current.final &&
+      totalQuestionCount > 1;
+    const isHalfway =
+      progressValue >= 50 && !hasShownToastsRef.current.half && totalQuestionCount > 2;
 
     if (isFirstQuestion) {
       toast.default(SURVEY_TOAST_MESSAGE.first.message, { id: SURVEY_TOAST_MESSAGE.first.id });
