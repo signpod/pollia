@@ -51,7 +51,8 @@ export function SurveyQuestionTemplate({
       currentOrder === totalQuestionCount &&
       !hasShownToastsRef.current.final &&
       totalQuestionCount > 1;
-    const isHalfway = progressValue >= 50 && !hasShownToastsRef.current.half;
+    const isHalfway =
+      progressValue >= 50 && !hasShownToastsRef.current.half && totalQuestionCount > 2;
 
     if (isFirstQuestion) {
       toast.default(SURVEY_TOAST_MESSAGE.first.message, { id: SURVEY_TOAST_MESSAGE.first.id });
