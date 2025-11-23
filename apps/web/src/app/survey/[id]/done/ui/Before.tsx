@@ -1,9 +1,13 @@
+"use client";
+
 import { Typo } from "@repo/ui/components";
 import { Check } from "lucide-react";
+import { ConfettiParticles } from "./ConfettiParticles";
 
 export function Before() {
   return (
-    <div className="w-full flex flex-col items-center gap-6 pt-[220px]">
+    <div className="relative w-full flex flex-col items-center gap-6 pt-[220px] flex-1 overflow-hidden bg-white">
+      <ConfettiParticles />
       <div className="flex justify-center items-center bg-violet-100 rounded-[20px] size-[80px]">
         <Check className=" text-primary size-10" strokeWidth={3} />
       </div>
