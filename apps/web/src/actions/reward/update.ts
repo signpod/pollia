@@ -36,3 +36,4 @@ export async function updateReward(
     throw serverError;
   }
 }
+

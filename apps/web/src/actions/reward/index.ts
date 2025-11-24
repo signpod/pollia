@@ -1,4 +1,4 @@
-export { createReward } from "./create-reward";
-export { getReward, getRewards } from "./read-reward";
-export { updateReward } from "./update-reward";
-export { deleteReward } from "./delete-reward";
+export { createReward } from "./create";
+export { getReward, getRewards } from "./read";
+export { updateReward } from "./update";
+export { deleteReward } from "./delete";

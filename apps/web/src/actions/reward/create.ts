@@ -32,3 +32,4 @@ export async function createReward(request: CreateRewardRequest): Promise<Create
     throw serverError;
   }
 }
+

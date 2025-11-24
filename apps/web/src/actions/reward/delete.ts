@@ -26,3 +26,4 @@ export async function deleteReward(rewardId: string): Promise<DeleteRewardRespon
     throw serverError;
   }
 }
+
