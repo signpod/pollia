@@ -3,11 +3,6 @@
 import { requireAuth } from "@/actions/common/auth";
 import { surveyQuestionOptionService } from "@/server/services/survey-question-option/surveyQuestionOptionService";
 
-/**
- * Option 삭제 Server Action
- * @param optionId - Option ID
- * @returns 삭제 성공 메시지
- */
 export async function deleteOption(optionId: string): Promise<{ message: string }> {
   try {
     const user = await requireAuth();
@@ -26,11 +21,6 @@ export async function deleteOption(optionId: string): Promise<{ message: string 
   }
 }
 
-/**
- * Question의 모든 Option 삭제 Server Action
- * @param questionId - Question ID
- * @returns 삭제 성공 메시지
- */
 export async function deleteOptionsByQuestionId(questionId: string): Promise<{ message: string }> {
   try {
     const user = await requireAuth();
@@ -48,4 +38,3 @@ export async function deleteOptionsByQuestionId(questionId: string): Promise<{ m
     throw serverError;
   }
 }
-

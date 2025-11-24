@@ -4,12 +4,6 @@ import { requireAuth } from "@/actions/common/auth";
 import { surveyQuestionOptionService } from "@/server/services/survey-question-option/surveyQuestionOptionService";
 import type { SurveyQuestionOption } from "@prisma/client";
 
-/**
- * Option 수정 Server Action
- * @param optionId - Option ID
- * @param data - 수정할 데이터
- * @returns 수정된 Option 정보
- */
 export async function updateOption(
   optionId: string,
   data: {
@@ -35,4 +29,3 @@ export async function updateOption(
     throw serverError;
   }
 }
-

@@ -3,10 +3,6 @@ import { surveyQuestionRepository } from "@/server/repositories/survey-question/
 import { surveyRepository } from "@/server/repositories/survey/surveyRepository";
 import type { SurveyQuestionOption } from "@prisma/client";
 
-/**
- * Survey Question Option Service
- * Survey Question Option 도메인의 비즈니스 로직 계층
- */
 export class SurveyQuestionOptionService {
   constructor(
     private optionRepo = surveyQuestionOptionRepository,
@@ -14,12 +10,6 @@ export class SurveyQuestionOptionService {
     private surveyRepo = surveyRepository,
   ) {}
 
-  /**
-   * Option ID로 Option 조회
-   * @param optionId - Option ID
-   * @returns Option 정보
-   * @throws 404 - Option을 찾을 수 없는 경우
-   */
   async getOptionById(optionId: string): Promise<SurveyQuestionOption> {
     const option = await this.optionRepo.findById(optionId);
 
@@ -32,12 +22,6 @@ export class SurveyQuestionOptionService {
     return option;
   }
 
-  /**
-   * Question ID로 Option 목록 조회
-   * @param questionId - Question ID
-   * @returns Option 목록
-   * @throws 404 - Question을 찾을 수 없는 경우
-   */
   async getOptionsByQuestionId(questionId: string): Promise<SurveyQuestionOption[]> {
     const question = await this.questionRepo.findById(questionId);
     if (!question) {
@@ -50,15 +34,6 @@ export class SurveyQuestionOptionService {
     return options;
   }
 
-  /**
-   * Option 생성
-   * @param data - 생성할 Option 데이터
-   * @param userId - 생성자 User ID
-   * @returns 생성된 Option 정보
-   * @throws 400 - 유효성 검증 실패
-   * @throws 404 - Question을 찾을 수 없는 경우
-   * @throws 403 - 권한이 없는 경우
-   */
   async createOption(
     data: {
       questionId: string;
@@ -95,16 +70,6 @@ export class SurveyQuestionOptionService {
     return option;
   }
 
-  /**
-   * 여러 Option 생성
-   * @param questionId - Question ID
-   * @param options - 생성할 Option 데이터 목록
-   * @param userId - 생성자 User ID
-   * @returns 생성된 Option 목록
-   * @throws 400 - 유효성 검증 실패
-   * @throws 404 - Question을 찾을 수 없는 경우
-   * @throws 403 - 권한이 없는 경우
-   */
   async createOptions(
     questionId: string,
     options: Array<{
@@ -148,16 +113,6 @@ export class SurveyQuestionOptionService {
     return createdOptions;
   }
 
-  /**
-   * Option 수정
-   * @param optionId - Option ID
-   * @param data - 수정할 데이터
-   * @param userId - 요청 User ID
-   * @returns 수정된 Option 정보
-   * @throws 400 - 유효성 검증 실패
-   * @throws 404 - Option을 찾을 수 없는 경우
-   * @throws 403 - 권한이 없는 경우
-   */
   async updateOption(
     optionId: string,
     data: {
@@ -196,13 +151,6 @@ export class SurveyQuestionOptionService {
     return updatedOption;
   }
 
-  /**
-   * Option 삭제
-   * @param optionId - Option ID
-   * @param userId - 요청 User ID
-   * @throws 404 - Option을 찾을 수 없는 경우
-   * @throws 403 - 권한이 없는 경우
-   */
   async deleteOption(optionId: string, userId: string): Promise<void> {
     const option = await this.getOptionById(optionId);
 
@@ -211,26 +159,12 @@ export class SurveyQuestionOptionService {
     await this.optionRepo.delete(optionId);
   }
 
-  /**
-   * Question의 모든 Option 삭제
-   * @param questionId - Question ID
-   * @param userId - 요청 User ID
-   * @throws 404 - Question을 찾을 수 없는 경우
-   * @throws 403 - 권한이 없는 경우
-   */
   async deleteOptionsByQuestionId(questionId: string, userId: string): Promise<void> {
     await this.verifyQuestionAccess(questionId, userId);
 
     await this.optionRepo.deleteByQuestionId(questionId);
   }
 
-  /**
-   * Question 존재 및 접근 권한 확인
-   * @param questionId - Question ID
-   * @param userId - User ID
-   * @throws 404 - Question을 찾을 수 없는 경우
-   * @throws 403 - 권한이 없는 경우
-   */
   private async verifyQuestionAccess(questionId: string, userId: string): Promise<void> {
     const question = await this.questionRepo.findById(questionId);
 

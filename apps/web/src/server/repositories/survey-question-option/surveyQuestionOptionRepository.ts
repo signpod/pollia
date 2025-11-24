@@ -1,27 +1,13 @@
 import prisma from "@/database/utils/prisma/client";
 import type { FileStatus } from "@prisma/client";
 
-/**
- * Survey Question Option Repository
- * Survey Question Option 도메인의 데이터 접근 계층
- */
 export class SurveyQuestionOptionRepository {
-  /**
-   * Option ID로 Option 조회
-   * @param optionId - Option ID
-   * @returns Option 또는 null
-   */
   async findById(optionId: string) {
     return prisma.surveyQuestionOption.findUnique({
       where: { id: optionId },
     });
   }
 
-  /**
-   * Question ID로 Option 목록 조회
-   * @param questionId - Question ID
-   * @returns Option 목록
-   */
   async findByQuestionId(questionId: string) {
     return prisma.surveyQuestionOption.findMany({
       where: { questionId },
@@ -29,11 +15,6 @@ export class SurveyQuestionOptionRepository {
     });
   }
 
-  /**
-   * Option 목록 조회
-   * @param options - 조회 옵션
-   * @returns Option 목록
-   */
   async findMany(options?: {
     questionIds?: string[];
     cursor?: string;
@@ -63,12 +44,6 @@ export class SurveyQuestionOptionRepository {
     });
   }
 
-  /**
-   * Option 생성 (FileUpload 처리 포함)
-   * @param data - 생성할 Option 데이터
-   * @param userId - 생성자 User ID
-   * @returns 생성된 Option
-   */
   async create(
     data: {
       questionId: string;
@@ -110,13 +85,6 @@ export class SurveyQuestionOptionRepository {
     });
   }
 
-  /**
-   * 여러 Option 생성 (FileUpload 처리 포함)
-   * @param questionId - Question ID
-   * @param options - 생성할 Option 데이터 목록
-   * @param userId - 생성자 User ID
-   * @returns 생성된 Option 목록
-   */
   async createMany(
     questionId: string,
     options: Array<{
@@ -163,12 +131,6 @@ export class SurveyQuestionOptionRepository {
     });
   }
 
-  /**
-   * Option 수정
-   * @param optionId - Option ID
-   * @param data - 수정할 데이터
-   * @returns 수정된 Option
-   */
   async update(
     optionId: string,
     data: {
@@ -184,22 +146,12 @@ export class SurveyQuestionOptionRepository {
     });
   }
 
-  /**
-   * Option 삭제
-   * @param optionId - Option ID
-   * @returns 삭제된 Option
-   */
   async delete(optionId: string) {
     return prisma.surveyQuestionOption.delete({
       where: { id: optionId },
     });
   }
 
-  /**
-   * Question의 모든 Option 삭제
-   * @param questionId - Question ID
-   * @returns 삭제된 Option 개수
-   */
   async deleteByQuestionId(questionId: string) {
     return prisma.surveyQuestionOption.deleteMany({
       where: { questionId },

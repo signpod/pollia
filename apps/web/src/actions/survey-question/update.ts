@@ -2,31 +2,34 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import { surveyQuestionService } from "@/server/services/survey-question/surveyQuestionService";
+import type { UpdateQuestionInput } from "@/server/services/survey-question/types";
 
-/**
- * Question 수정 Server Action
- * @param questionId - Question ID
- * @param data - 수정할 데이터
- * @returns 수정된 Question 정보
- */
-export async function updateQuestion(
-  questionId: string,
-  data: {
-    title?: string;
-    description?: string;
-    imageUrl?: string;
-    order?: number;
-    maxSelections?: number;
-  },
-) {
+export interface UpdateQuestionRequest {
+  title?: string;
+  description?: string;
+  imageUrl?: string;
+  order?: number;
+  maxSelections?: number;
+}
+
+function toUpdateQuestionInput(dto: UpdateQuestionRequest): UpdateQuestionInput {
+  return {
+    title: dto.title,
+    description: dto.description,
+    imageUrl: dto.imageUrl,
+    order: dto.order,
+    maxSelections: dto.maxSelections,
+  };
+}
+
+export async function updateQuestion(questionId: string, request: UpdateQuestionRequest) {
   try {
     const user = await requireAuth();
-
-    const updatedQuestion = await surveyQuestionService.updateQuestion(questionId, data, user.id);
-
+    const input = toUpdateQuestionInput(request);
+    const updatedQuestion = await surveyQuestionService.updateQuestion(questionId, input, user.id);
     return { data: updatedQuestion };
   } catch (error) {
-    console.error("❌ 질문 수정 실패:", error);
+    console.error("updateQuestion error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }

@@ -3,11 +3,6 @@
 import { requireAuth } from "@/actions/common/auth";
 import { surveyQuestionService } from "@/server/services/survey-question/surveyQuestionService";
 
-/**
- * Question 삭제 Server Action
- * @param questionId - Question ID
- * @returns 삭제 성공 메시지
- */
 export async function deleteQuestion(questionId: string) {
   try {
     const user = await requireAuth();

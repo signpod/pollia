@@ -3,6 +3,12 @@
 import { requireAuth } from "@/actions/common/auth";
 import { surveyQuestionService } from "@/server/services/survey-question/surveyQuestionService";
 import type {
+  CreateEitherOrInput,
+  CreateMultipleChoiceInput,
+  CreateScaleInput,
+  CreateSubjectiveInput,
+} from "@/server/services/survey-question/types";
+import type {
   CreateEitherOrQuestionRequest,
   CreateEitherOrQuestionResponse,
   CreateMultipleChoiceQuestionRequest,
@@ -13,22 +19,66 @@ import type {
   CreateSubjectiveQuestionResponse,
 } from "@/types/dto";
 
-/**
- * Multiple Choice Question 생성 Server Action
- * @param request - Question 생성 요청 데이터
- * @returns 생성된 Question 정보
- */
+function toMultipleChoiceInput(
+  dto: CreateMultipleChoiceQuestionRequest,
+): CreateMultipleChoiceInput {
+  return {
+    surveyId: dto.surveyId,
+    title: dto.title,
+    description: dto.description,
+    imageUrl: dto.imageUrl,
+    maxSelections: dto.maxSelections,
+    order: dto.order,
+    options: dto.options.map(opt => ({
+      title: opt.title,
+      description: opt.description,
+      imageUrl: opt.imageUrl,
+      order: opt.order,
+      imageFileUploadId: opt.imageFileUploadId,
+    })),
+  };
+}
+
+function toScaleInput(dto: CreateScaleQuestionRequest): CreateScaleInput {
+  return {
+    surveyId: dto.surveyId,
+    title: dto.title,
+    description: dto.description,
+    imageUrl: dto.imageUrl,
+    order: dto.order,
+  };
+}
+
+function toSubjectiveInput(dto: CreateSubjectiveQuestionRequest): CreateSubjectiveInput {
+  return {
+    surveyId: dto.surveyId,
+    title: dto.title,
+    description: dto.description,
+    imageUrl: dto.imageUrl,
+    order: dto.order,
+  };
+}
+
+function toEitherOrInput(dto: CreateEitherOrQuestionRequest): CreateEitherOrInput {
+  return {
+    surveyId: dto.surveyId,
+    title: dto.title,
+    description: dto.description,
+    imageUrl: dto.imageUrl,
+    order: dto.order,
+  };
+}
+
 export async function createMultipleChoiceQuestion(
   request: CreateMultipleChoiceQuestionRequest,
 ): Promise<CreateMultipleChoiceQuestionResponse> {
   try {
     const user = await requireAuth();
-
-    const question = await surveyQuestionService.createMultipleChoiceQuestion(request, user.id);
-
+    const input = toMultipleChoiceInput(request);
+    const question = await surveyQuestionService.createMultipleChoiceQuestion(input, user.id);
     return { data: question };
   } catch (error) {
-    console.error("❌ 객관식 질문 생성 실패:", error);
+    console.error("createMultipleChoiceQuestion error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -38,22 +88,16 @@ export async function createMultipleChoiceQuestion(
   }
 }
 
-/**
- * Scale Question 생성 Server Action
- * @param request - Question 생성 요청 데이터
- * @returns 생성된 Question 정보
- */
 export async function createScaleQuestion(
   request: CreateScaleQuestionRequest,
 ): Promise<CreateScaleQuestionResponse> {
   try {
     const user = await requireAuth();
-
-    const question = await surveyQuestionService.createScaleQuestion(request, user.id);
-
+    const input = toScaleInput(request);
+    const question = await surveyQuestionService.createScaleQuestion(input, user.id);
     return { data: question };
   } catch (error) {
-    console.error("❌ 척도형 질문 생성 실패:", error);
+    console.error("createScaleQuestion error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -63,22 +107,16 @@ export async function createScaleQuestion(
   }
 }
 
-/**
- * Subjective Question 생성 Server Action
- * @param request - Question 생성 요청 데이터
- * @returns 생성된 Question 정보
- */
 export async function createSubjectiveQuestion(
   request: CreateSubjectiveQuestionRequest,
 ): Promise<CreateSubjectiveQuestionResponse> {
   try {
     const user = await requireAuth();
-
-    const question = await surveyQuestionService.createSubjectiveQuestion(request, user.id);
-
+    const input = toSubjectiveInput(request);
+    const question = await surveyQuestionService.createSubjectiveQuestion(input, user.id);
     return { data: question };
   } catch (error) {
-    console.error("❌ 주관식 질문 생성 실패:", error);
+    console.error("createSubjectiveQuestion error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -88,22 +126,16 @@ export async function createSubjectiveQuestion(
   }
 }
 
-/**
- * Either Or Question 생성 Server Action
- * @param request - Question 생성 요청 데이터
- * @returns 생성된 Question 정보
- */
 export async function createEitherOrQuestion(
   request: CreateEitherOrQuestionRequest,
 ): Promise<CreateEitherOrQuestionResponse> {
   try {
     const user = await requireAuth();
-
-    const question = await surveyQuestionService.createEitherOrQuestion(request, user.id);
-
+    const input = toEitherOrInput(request);
+    const question = await surveyQuestionService.createEitherOrQuestion(input, user.id);
     return { data: question };
   } catch (error) {
-    console.error("❌ 양자택일 질문 생성 실패:", error);
+    console.error("createEitherOrQuestion error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }

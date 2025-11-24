@@ -3,11 +3,6 @@
 import { surveyQuestionOptionService } from "@/server/services/survey-question-option/surveyQuestionOptionService";
 import type { SurveyQuestionOption } from "@prisma/client";
 
-/**
- * Option ID로 Option 조회 Server Action
- * @param optionId - Option ID
- * @returns Option 정보
- */
 export async function getOptionById(optionId: string): Promise<{ data: SurveyQuestionOption }> {
   try {
     const option = await surveyQuestionOptionService.getOptionById(optionId);
@@ -23,11 +18,6 @@ export async function getOptionById(optionId: string): Promise<{ data: SurveyQue
   }
 }
 
-/**
- * Question ID로 Option 목록 조회 Server Action
- * @param questionId - Question ID
- * @returns Option 목록
- */
 export async function getOptionsByQuestionId(
   questionId: string,
 ): Promise<{ data: SurveyQuestionOption[] }> {
@@ -44,4 +34,3 @@ export async function getOptionsByQuestionId(
     throw serverError;
   }
 }
-
