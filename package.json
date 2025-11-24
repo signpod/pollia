@@ -2,6 +2,7 @@
   "name": "pollia",
   "private": true,
   "scripts": {
+    "git:clean-branches": "git branch | grep -v 'main\\|dev' | xargs git branch -D && git branch -r | grep -v 'main\\|dev' | sed 's/origin\\///' | xargs -I {} git branch -dr origin/{}",
     "build": "turbo run build",
     "build:clean": "yarn clean:cache && turbo run build",
     "test": "turbo run test",
