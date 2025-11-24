@@ -3,20 +3,13 @@
 import { requireAuth } from "@/actions/common/auth";
 import { surveyService } from "@/server/services/survey/surveyService";
 
-/**
- * Survey 삭제 Server Action
- * @param surveyId - Survey ID
- * @returns 삭제 성공 메시지
- */
 export async function deleteSurvey(surveyId: string) {
   try {
     const user = await requireAuth();
-
     await surveyService.deleteSurvey(surveyId, user.id);
-
     return { message: "설문조사가 삭제되었습니다." };
   } catch (error) {
-    console.error("❌ 설문조사 삭제 실패:", error);
+    console.error("deleteSurvey error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }

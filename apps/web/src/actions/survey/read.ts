@@ -2,6 +2,7 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import { surveyService } from "@/server/services/survey/surveyService";
+import type { GetUserSurveysOptions } from "@/server/services/survey/types";
 import type { SortOrderType } from "@/types/common/sort";
 import type {
   GetQuestionByIdResponse,
@@ -11,24 +12,29 @@ import type {
   GetUserSurveysResponse,
 } from "@/types/dto";
 
-/**
- * 사용자의 Survey 목록 조회 Server Action
- * @param options - 조회 옵션
- * @returns Survey 목록
- */
-export async function getUserSurveys(options?: {
+export interface GetUserSurveysRequest {
   cursor?: string;
   limit?: number;
   sortOrder?: SortOrderType;
-}): Promise<GetUserSurveysResponse & { nextCursor?: string }> {
+}
+
+function toGetUserSurveysOptions(dto: GetUserSurveysRequest): GetUserSurveysOptions {
+  return {
+    cursor: dto.cursor,
+    limit: dto.limit,
+    sortOrder: dto.sortOrder,
+  };
+}
+
+export async function getUserSurveys(
+  request?: GetUserSurveysRequest,
+): Promise<GetUserSurveysResponse & { nextCursor?: string }> {
   try {
     const user = await requireAuth();
-    const limit = options?.limit ?? 10;
+    const limit = request?.limit ?? 10;
+    const options = request ? toGetUserSurveysOptions({ ...request, limit: limit + 1 }) : { limit: limit + 1 };
 
-    const surveys = await surveyService.getUserSurveys(user.id, {
-      ...options,
-      limit: limit + 1,
-    });
+    const surveys = await surveyService.getUserSurveys(user.id, options);
 
     let nextCursor: string | undefined = undefined;
     if (surveys.length > limit) {
@@ -38,7 +44,7 @@ export async function getUserSurveys(options?: {
 
     return { data: surveys, nextCursor };
   } catch (error) {
-    console.error("❌ 사용자 설문조사 목록 조회 실패:", error);
+    console.error("getUserSurveys error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -48,17 +54,12 @@ export async function getUserSurveys(options?: {
   }
 }
 
-/**
- * Survey ID로 Survey 정보 조회 Server Action
- * @param surveyId - Survey ID
- * @returns Survey 정보
- */
 export async function getSurvey(surveyId: string): Promise<GetSurveyResponse> {
   try {
     const survey = await surveyService.getSurvey(surveyId);
     return { data: survey };
   } catch (error) {
-    console.error("❌ 설문조사 조회 실패:", error);
+    console.error("getSurvey error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -68,19 +69,12 @@ export async function getSurvey(surveyId: string): Promise<GetSurveyResponse> {
   }
 }
 
-/**
- * Survey ID로 Question ID 배열 조회 Server Action
- * @param surveyId - Survey ID
- * @returns Question ID 배열
- */
-export async function getSurveyQuestionIds(
-  surveyId: string,
-): Promise<GetSurveyQuestionIdsResponse> {
+export async function getSurveyQuestionIds(surveyId: string): Promise<GetSurveyQuestionIdsResponse> {
   try {
     const data = await surveyService.getSurveyQuestionIds(surveyId);
     return { data };
   } catch (error) {
-    console.error("❌ 설문 질문 ID 목록 조회 실패:", error);
+    console.error("getSurveyQuestionIds error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -90,17 +84,12 @@ export async function getSurveyQuestionIds(
   }
 }
 
-/**
- * Question ID로 Question 상세 정보 조회 Server Action
- * @param questionId - Question ID
- * @returns Question 상세 정보
- */
 export async function getQuestionById(questionId: string): Promise<GetQuestionByIdResponse> {
   try {
     const question = await surveyService.getQuestionById(questionId);
     return { data: question };
   } catch (error) {
-    console.error("❌ 질문 조회 실패:", error);
+    console.error("getQuestionById error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -110,11 +99,6 @@ export async function getQuestionById(questionId: string): Promise<GetQuestionBy
   }
 }
 
-/**
- * Survey ID로 모든 Question 상세 정보 조회 Server Action
- * @param surveyId - Survey ID
- * @returns Question 상세 정보 배열
- */
 export async function getSurveyQuestionsDetail(
   surveyId: string,
 ): Promise<GetSurveyQuestionsDetailResponse> {
@@ -122,7 +106,7 @@ export async function getSurveyQuestionsDetail(
     const questions = await surveyService.getSurveyQuestionsDetail(surveyId);
     return { data: questions };
   } catch (error) {
-    console.error("❌ 설문 질문 상세 목록 조회 실패:", error);
+    console.error("getSurveyQuestionsDetail error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }

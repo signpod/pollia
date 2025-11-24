@@ -2,22 +2,29 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import { surveyService } from "@/server/services/survey/surveyService";
+import type { CreateSurveyInput } from "@/server/services/survey/types";
 import type { CreateSurveyRequest, CreateSurveyResponse } from "@/types/dto";
 
-/**
- * Survey 생성 Server Action
- * @param request - Survey 생성 요청 데이터
- * @returns 생성된 Survey 정보
- */
+function toCreateSurveyInput(dto: CreateSurveyRequest): CreateSurveyInput {
+  return {
+    title: dto.title,
+    description: dto.description,
+    target: dto.target,
+    imageUrl: dto.imageUrl,
+    deadline: dto.deadline,
+    estimatedMinutes: dto.estimatedMinutes,
+    questionIds: dto.questionIds,
+  };
+}
+
 export async function createSurvey(request: CreateSurveyRequest): Promise<CreateSurveyResponse> {
   try {
     const user = await requireAuth();
-
-    const survey = await surveyService.createSurvey(request, user.id);
-
+    const input = toCreateSurveyInput(request);
+    const survey = await surveyService.createSurvey(input, user.id);
     return { data: survey };
   } catch (error) {
-    console.error("❌ 설문지 생성 실패:", error);
+    console.error("createSurvey error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }

@@ -2,32 +2,36 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import { surveyService } from "@/server/services/survey/surveyService";
+import type { UpdateSurveyInput } from "@/server/services/survey/types";
 
-/**
- * Survey 수정 Server Action
- * @param surveyId - Survey ID
- * @param data - 수정할 데이터
- * @returns 수정된 Survey 정보
- */
-export async function updateSurvey(
-  surveyId: string,
-  data: {
-    title?: string;
-    description?: string;
-    target?: string;
-    imageUrl?: string;
-    deadline?: Date;
-    estimatedMinutes?: number;
-  },
-) {
+export interface UpdateSurveyRequest {
+  title?: string;
+  description?: string;
+  target?: string;
+  imageUrl?: string;
+  deadline?: Date;
+  estimatedMinutes?: number;
+}
+
+function toUpdateSurveyInput(dto: UpdateSurveyRequest): UpdateSurveyInput {
+  return {
+    title: dto.title,
+    description: dto.description,
+    target: dto.target,
+    imageUrl: dto.imageUrl,
+    deadline: dto.deadline,
+    estimatedMinutes: dto.estimatedMinutes,
+  };
+}
+
+export async function updateSurvey(surveyId: string, request: UpdateSurveyRequest) {
   try {
     const user = await requireAuth();
-
-    const updatedSurvey = await surveyService.updateSurvey(surveyId, data, user.id);
-
+    const input = toUpdateSurveyInput(request);
+    const updatedSurvey = await surveyService.updateSurvey(surveyId, input, user.id);
     return { data: updatedSurvey };
   } catch (error) {
-    console.error("❌ 설문조사 수정 실패:", error);
+    console.error("updateSurvey error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
