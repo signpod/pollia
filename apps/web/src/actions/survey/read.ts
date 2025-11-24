@@ -1,8 +1,8 @@
 "use server";
 
-import prisma from "@/database/utils/prisma/client";
+import { requireAuth } from "@/actions/common/auth";
 import { surveyService } from "@/server/services/survey/surveyService";
-import { SortOrderType } from "@/types/common/sort";
+import type { SortOrderType } from "@/types/common/sort";
 import type {
   GetQuestionByIdResponse,
   GetSurveyQuestionIdsResponse,
@@ -10,59 +10,46 @@ import type {
   GetSurveyResponse,
   GetUserSurveysResponse,
 } from "@/types/dto";
-import { requireAuth } from "../common/auth";
 
-interface GetUserSurveysOptions {
+/**
+ * 사용자의 Survey 목록 조회 Server Action
+ * @param options - 조회 옵션
+ * @returns Survey 목록
+ */
+export async function getUserSurveys(options?: {
   cursor?: string;
   limit?: number;
   sortOrder?: SortOrderType;
-}
+}): Promise<GetUserSurveysResponse & { nextCursor?: string }> {
+  try {
+    const user = await requireAuth();
+    const limit = options?.limit ?? 10;
 
-/**
- * 1. 사용자의 설문조사 목록 조회
- * @param options - 조회 옵션
- * @returns 설문조사 목록
- */
-export async function getUserSurveys(
-  options?: GetUserSurveysOptions,
-): Promise<GetUserSurveysResponse & { nextCursor?: string }> {
-  const user = await requireAuth();
-  const limit = options?.limit ?? 10;
+    const surveys = await surveyService.getUserSurveys(user.id, {
+      ...options,
+      limit: limit + 1,
+    });
 
-  const surveys = await prisma.survey.findMany({
-    where: { creatorId: user.id },
-    select: {
-      id: true,
-      title: true,
-      description: true,
-      target: true,
-      imageUrl: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-    orderBy: {
-      createdAt: options?.sortOrder === "latest" ? "desc" : "asc",
-    },
-    take: limit + 1,
-    ...(options?.cursor && {
-      cursor: {
-        id: options.cursor,
-      },
-      skip: 1,
-    }),
-  });
+    let nextCursor: string | undefined = undefined;
+    if (surveys.length > limit) {
+      const nextItem = surveys.pop();
+      nextCursor = nextItem?.id;
+    }
 
-  let nextCursor: string | undefined = undefined;
-  if (surveys.length > limit) {
-    const nextItem = surveys.pop();
-    nextCursor = nextItem?.id;
+    return { data: surveys, nextCursor };
+  } catch (error) {
+    console.error("❌ 사용자 설문조사 목록 조회 실패:", error);
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("설문조사 목록을 불러올 수 없습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
-
-  return { data: surveys, nextCursor };
 }
 
 /**
- * 1. Survey ID로 Survey 정보 조회
+ * Survey ID로 Survey 정보 조회 Server Action
  * @param surveyId - Survey ID
  * @returns Survey 정보
  */
@@ -82,7 +69,7 @@ export async function getSurvey(surveyId: string): Promise<GetSurveyResponse> {
 }
 
 /**
- * 2. Survey ID로 Question ID 배열 조회
+ * Survey ID로 Question ID 배열 조회 Server Action
  * @param surveyId - Survey ID
  * @returns Question ID 배열
  */
@@ -104,7 +91,7 @@ export async function getSurveyQuestionIds(
 }
 
 /**
- * 3. Question ID로 Question 상세 정보 조회
+ * Question ID로 Question 상세 정보 조회 Server Action
  * @param questionId - Question ID
  * @returns Question 상세 정보
  */
@@ -124,8 +111,7 @@ export async function getQuestionById(questionId: string): Promise<GetQuestionBy
 }
 
 /**
- * 4. Survey ID로 모든 Question 상세 정보 조회
- * Repository의 최적화된 쿼리를 사용하여 단일 쿼리로 조회
+ * Survey ID로 모든 Question 상세 정보 조회 Server Action
  * @param surveyId - Survey ID
  * @returns Question 상세 정보 배열
  */
