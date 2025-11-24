@@ -367,7 +367,10 @@ describe("SurveyQuestionService", () => {
         title: "질문",
         order: 0,
         maxSelections: 1,
-        options: [{ title: "옵션 1", order: 0 }],
+        options: [
+          { title: "옵션 1", order: 0 },
+          { title: "옵션 2", order: 1 },
+        ],
       };
 
       mockSurveyRepo.findById.mockResolvedValue(mockSurvey);
@@ -393,7 +396,10 @@ describe("SurveyQuestionService", () => {
         title: "질문",
         order: 0,
         maxSelections: 1,
-        options: [{ title: "옵션 1", order: 0 }],
+        options: [
+          { title: "옵션 1", order: 0 },
+          { title: "옵션 2", order: 1 },
+        ],
       };
 
       mockSurveyRepo.findById.mockResolvedValue(null);
@@ -402,6 +408,48 @@ describe("SurveyQuestionService", () => {
       await expect(service.createMultipleChoiceQuestion(request, "user1")).rejects.toThrow(
         "존재하지 않는 설문조사입니다.",
       );
+    });
+
+    it("옵션이 2개 미만이면 400 에러를 던진다", async () => {
+      // Given
+      const request = {
+        surveyId: "survey1",
+        title: "질문",
+        order: 0,
+        maxSelections: 1,
+        options: [{ title: "옵션 1", order: 0 }],
+      };
+
+      // When & Then
+      await expect(service.createMultipleChoiceQuestion(request, "user1")).rejects.toThrow(
+        "최소 2개 이상의 항목이 필요합니다.",
+      );
+
+      try {
+        await service.createMultipleChoiceQuestion(request, "user1");
+      } catch (error) {
+        expect(error instanceof Error && error.cause).toBe(400);
+      }
+
+      expect(mockQuestionRepo.createMultipleChoice).not.toHaveBeenCalled();
+    });
+
+    it("옵션이 없으면 400 에러를 던진다", async () => {
+      // Given
+      const request = {
+        surveyId: "survey1",
+        title: "질문",
+        order: 0,
+        maxSelections: 1,
+        options: [],
+      };
+
+      // When & Then
+      await expect(service.createMultipleChoiceQuestion(request, "user1")).rejects.toThrow(
+        "최소 2개 이상의 항목이 필요합니다.",
+      );
+
+      expect(mockQuestionRepo.createMultipleChoice).not.toHaveBeenCalled();
     });
   });
 

@@ -411,8 +411,8 @@ describe("SurveyService", () => {
         {
           title: request.title,
           description: request.description,
-          target: null,
-          imageUrl: null,
+          target: undefined,
+          imageUrl: undefined,
           deadline: request.deadline,
           estimatedMinutes: request.estimatedMinutes,
           creatorId: "user-1",
