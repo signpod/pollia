@@ -1,8 +1,8 @@
-import { surveyQuestionRepository } from "@/server/repositories/survey-question/surveyQuestionRepository";
-import { surveyRepository } from "@/server/repositories/survey/surveyRepository";
 import { multipleChoiceInfoSchema } from "@/schemas/survey/question/creation/multipleChoiceInfoSchema";
 import { scaleInfoSchema } from "@/schemas/survey/question/creation/scaleInfoSchema";
 import { subjectiveInfoSchema } from "@/schemas/survey/question/creation/subjectiveInfoSchema";
+import { surveyQuestionRepository } from "@/server/repositories/survey-question/surveyQuestionRepository";
+import { surveyRepository } from "@/server/repositories/survey/surveyRepository";
 import type {
   CreateEitherOrQuestionRequest,
   CreateMultipleChoiceQuestionRequest,
@@ -68,7 +68,9 @@ export class SurveyQuestionService {
    * @returns Question 상세 목록
    * @throws 404 - Survey를 찾을 수 없는 경우
    */
-  async getSurveyQuestionsDetail(surveyId: string): Promise<GetSurveyQuestionsDetailResponse["data"]> {
+  async getSurveyQuestionsDetail(
+    surveyId: string,
+  ): Promise<GetSurveyQuestionsDetailResponse["data"]> {
     const survey = await this.surveyRepo.findById(surveyId);
     if (!survey) {
       const error = new Error("설문조사를 찾을 수 없습니다.");
@@ -115,10 +117,7 @@ export class SurveyQuestionService {
    * @throws 404 - Survey를 찾을 수 없는 경우
    * @throws 403 - 권한이 없는 경우
    */
-  async createMultipleChoiceQuestion(
-    request: CreateMultipleChoiceQuestionRequest,
-    userId: string,
-  ) {
+  async createMultipleChoiceQuestion(request: CreateMultipleChoiceQuestionRequest, userId: string) {
     const validationError = this.validateMultipleChoiceQuestion(request);
     if (validationError) {
       const error = new Error(validationError);
@@ -203,10 +202,7 @@ export class SurveyQuestionService {
    * @throws 404 - Survey를 찾을 수 없는 경우
    * @throws 403 - 권한이 없는 경우
    */
-  async createSubjectiveQuestion(
-    request: CreateSubjectiveQuestionRequest,
-    userId: string,
-  ) {
+  async createSubjectiveQuestion(request: CreateSubjectiveQuestionRequest, userId: string) {
     const validationError = this.validateSubjectiveQuestion(request);
     if (validationError) {
       const error = new Error(validationError);
@@ -246,10 +242,7 @@ export class SurveyQuestionService {
    * @throws 404 - Survey를 찾을 수 없는 경우
    * @throws 403 - 권한이 없는 경우
    */
-  async createEitherOrQuestion(
-    request: CreateEitherOrQuestionRequest,
-    userId: string,
-  ) {
+  async createEitherOrQuestion(request: CreateEitherOrQuestionRequest, userId: string) {
     if (!request.title || request.title.trim().length === 0) {
       const error = new Error("제목은 필수입니다.");
       error.cause = 400;
@@ -424,9 +417,7 @@ export class SurveyQuestionService {
    * @param request - Question 생성 요청 데이터
    * @returns 검증 에러 메시지 또는 null
    */
-  private validateSubjectiveQuestion(
-    request: CreateSubjectiveQuestionRequest,
-  ): string | null {
+  private validateSubjectiveQuestion(request: CreateSubjectiveQuestionRequest): string | null {
     try {
       const formData = {
         title: request.title,
@@ -447,4 +438,3 @@ export class SurveyQuestionService {
 }
 
 export const surveyQuestionService = new SurveyQuestionService();
-
