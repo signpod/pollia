@@ -109,7 +109,7 @@ export interface CreatePollResponse {
 **✅ types/dto 파일에 정의:**
 
 ```typescript
-// ✅ types/dto/poll.ts
+// ✅ types/dto/poll/index.ts
 export interface CreatePollRequest {
   title: string;
   description?: string;
@@ -133,6 +133,29 @@ export interface CreatePollResponse {
 
 import type { CreatePollRequest, CreatePollResponse } from "@/types/dto/poll";
 ```
+
+### DTO 폴더 구조 규칙
+
+**중요**: DTO 폴더 구조는 `actions`와 `server`의 도메인 구조와 **동일하게** 유지해야 합니다.
+
+```
+✅ 올바른 구조:
+actions/survey/question/     → types/dto/survey/question/
+actions/survey/answer/       → types/dto/survey/answer/
+actions/poll/                → types/dto/poll/
+actions/reward/              → types/dto/reward/
+
+❌ 잘못된 구조:
+actions/survey/question/     → types/dto/survey-question/  (케밥 케이스 금지)
+actions/survey/answer/       → types/dto/surveyAnswer/     (카멜 케이스 금지)
+```
+
+**폴더명 규칙:**
+- 단일 도메인: `types/dto/poll/`, `types/dto/reward/`, `types/dto/user/`
+- 중첩 도메인: `types/dto/survey/question/`, `types/dto/survey/answer/`
+- 케밥 케이스(`survey-question`) 금지
+- 카멜/파스칼 케이스(`surveyQuestion`, `SurveyQuestion`) 금지
+- 슬래시(`/`)로만 계층 구분
 
 ### DTO 네이밍 규칙
 
@@ -558,19 +581,46 @@ export async function myServerAction() {
 
 ## types/dto 구조 예시
 
+**중요**: DTO 폴더 구조는 `actions`와 `server`의 도메인 구조와 **정확히 동일**해야 합니다.
+
+### 단일 도메인 구조
+
 ```
 src/types/dto/
 ├── index.ts          # 전체 re-export
-├── poll.ts           # Poll 도메인 DTO
-├── survey.ts         # Survey 도메인 DTO
-├── user.ts           # User 도메인 DTO
-└── image.ts          # Image 도메인 DTO
+├── poll/
+│   └── index.ts      # Poll 도메인 DTO
+├── reward/
+│   └── index.ts      # Reward 도메인 DTO
+└── user/
+    └── index.ts      # User 도메인 DTO
+```
+
+### 중첩 도메인 구조
+
+```
+src/types/dto/
+├── index.ts          # 전체 re-export
+└── survey/
+    ├── index.ts      # Survey 도메인 DTO
+    ├── question/
+    │   └── index.ts  # Survey Question 도메인 DTO
+    └── answer/
+        └── index.ts  # Survey Answer 도메인 DTO
+```
+
+**대응 관계:**
+```
+actions/survey/question/     ↔ types/dto/survey/question/
+actions/survey/answer/       ↔ types/dto/survey/answer/
+actions/poll/                ↔ types/dto/poll/
+actions/reward/              ↔ types/dto/reward/
 ```
 
 ### Poll DTO 예시
 
 ```typescript
-// types/dto/poll.ts
+// types/dto/poll/index.ts
 import type { Poll, PollOption, PollType, PollCategory } from "@prisma/client";
 
 // Request
@@ -631,8 +681,10 @@ export interface GetPollResponse {
 // types/dto/index.ts
 export * from "./poll";
 export * from "./survey";
+export * from "./survey/question";
+export * from "./survey/answer";
+export * from "./reward";
 export * from "./user";
-export * from "./image";
 ```
 
 ## Validation
