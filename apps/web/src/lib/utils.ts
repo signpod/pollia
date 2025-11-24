@@ -103,12 +103,7 @@ export function getPollStatusMessage(
 export function cleanTiptapHTML(html: string): string {
   if (!html) return "";
 
-  // 불필요한 속성 제거
-  let cleaned = html
-    .replace(/\s*contenteditable="[^"]*"/g, "")
-    .replace(/\s*translate="[^"]*"/g, "")
-    .replace(/\s*class="[^"]*tiptap[^"]*"/g, "")
-    .replace(/\s*class="[^"]*ProseMirror[^"]*"/g, "");
+  let cleaned = html;
 
   // 빈 class 속성 제거
   cleaned = cleaned.replace(/\s*class=""\s*/g, " ");
