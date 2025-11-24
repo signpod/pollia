@@ -89,7 +89,6 @@ export class SurveyQuestionOptionService {
       throw error;
     }
 
-    // Question 존재 및 권한 확인
     await this.verifyQuestionAccess(data.questionId, userId);
 
     const option = await this.optionRepo.create(data, userId);
@@ -117,7 +116,6 @@ export class SurveyQuestionOptionService {
     }>,
     userId: string,
   ): Promise<SurveyQuestionOption[]> {
-    // Validation
     if (!options || options.length === 0) {
       const error = new Error("최소 1개 이상의 옵션이 필요합니다.");
       error.cause = 400;
@@ -144,7 +142,6 @@ export class SurveyQuestionOptionService {
       }
     }
 
-    // Question 존재 및 권한 확인
     await this.verifyQuestionAccess(questionId, userId);
 
     const createdOptions = await this.optionRepo.createMany(questionId, options, userId);
@@ -171,10 +168,8 @@ export class SurveyQuestionOptionService {
     },
     userId: string,
   ): Promise<SurveyQuestionOption> {
-    // Option 존재 확인
     const option = await this.getOptionById(optionId);
 
-    // Validation
     if (data.title !== undefined) {
       if (!data.title || data.title.trim().length === 0) {
         const error = new Error("옵션 제목은 필수입니다.");
@@ -195,7 +190,6 @@ export class SurveyQuestionOptionService {
       throw error;
     }
 
-    // Question 존재 및 권한 확인
     await this.verifyQuestionAccess(option.questionId, userId);
 
     const updatedOption = await this.optionRepo.update(optionId, data);
@@ -212,7 +206,6 @@ export class SurveyQuestionOptionService {
   async deleteOption(optionId: string, userId: string): Promise<void> {
     const option = await this.getOptionById(optionId);
 
-    // Question 존재 및 권한 확인
     await this.verifyQuestionAccess(option.questionId, userId);
 
     await this.optionRepo.delete(optionId);
@@ -226,7 +219,6 @@ export class SurveyQuestionOptionService {
    * @throws 403 - 권한이 없는 경우
    */
   async deleteOptionsByQuestionId(questionId: string, userId: string): Promise<void> {
-    // Question 존재 및 권한 확인
     await this.verifyQuestionAccess(questionId, userId);
 
     await this.optionRepo.deleteByQuestionId(questionId);
@@ -248,7 +240,6 @@ export class SurveyQuestionOptionService {
       throw error;
     }
 
-    // Question이 Survey에 속한 경우 Survey 소유자 확인
     if (question.surveyId) {
       const survey = await this.surveyRepo.findById(question.surveyId);
 
@@ -264,9 +255,7 @@ export class SurveyQuestionOptionService {
         throw error;
       }
     }
-    // Question이 Draft인 경우 추가 권한 확인 로직 필요 시 구현
   }
 }
 
 export const surveyQuestionOptionService = new SurveyQuestionOptionService();
-

@@ -43,11 +43,12 @@ export class SurveyQuestionOptionRepository {
 
     return prisma.surveyQuestionOption.findMany({
       where: {
-        ...(options?.questionIds && options.questionIds.length > 0 && {
-          questionId: {
-            in: options.questionIds,
-          },
-        }),
+        ...(options?.questionIds &&
+          options.questionIds.length > 0 && {
+            questionId: {
+              in: options.questionIds,
+            },
+          }),
       },
       orderBy: {
         createdAt: "desc",
@@ -139,9 +140,7 @@ export class SurveyQuestionOptionRepository {
         })),
       });
 
-      const fileUploadIds = options
-        .map(option => option.fileUploadId)
-        .filter(Boolean) as string[];
+      const fileUploadIds = options.map(option => option.fileUploadId).filter(Boolean) as string[];
 
       if (fileUploadIds.length > 0) {
         await tx.fileUpload.updateMany({
@@ -209,4 +208,3 @@ export class SurveyQuestionOptionRepository {
 }
 
 export const surveyQuestionOptionRepository = new SurveyQuestionOptionRepository();
-
