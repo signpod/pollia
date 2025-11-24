@@ -1,6 +1,7 @@
 "use client";
 
 import { surveyDescriptionAtom } from "@/atoms/survey/surveyAtoms";
+import { cleanTiptapHTML } from "@/lib/utils";
 import { LabelText, TiptapEditor } from "@repo/ui/components";
 import { useAtom } from "jotai";
 import { useCallback } from "react";
@@ -27,7 +28,8 @@ function useSurveyDescriptionForm() {
 
   const handleUpdate = useCallback(
     (content: string) => {
-      setDescription(content);
+      const cleaned = cleanTiptapHTML(content);
+      setDescription(cleaned);
     },
     [setDescription],
   );
