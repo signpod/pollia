@@ -1,7 +1,8 @@
 import { multipleChoiceDataAtom } from "@/atoms/survey/question/creation/multipleChoice";
 import { toast } from "@/components/common/Toast";
 import { useCreateMultipleChoiceQuestion } from "@/hooks/survey/question";
-import { multipleChoiceInfoSchema } from "@/schemas/survey/question/creation/multipleChoiceInfoSchema";
+// TODO: @/schemas_legacy는 deprecated. 새로운 @/schemas/{domain}/ 스키마로 교체 필요
+import { multipleChoiceInfoSchema } from "@/schemas_legacy/survey/question/creation/multipleChoiceInfoSchema";
 import type { CreateMultipleChoiceQuestionRequest } from "@/types/dto";
 import { Button, FixedBottomLayout, Typo } from "@repo/ui/components";
 import { useAtomValue } from "jotai";

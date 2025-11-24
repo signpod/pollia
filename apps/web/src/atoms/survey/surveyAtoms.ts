@@ -1,4 +1,5 @@
-import { baseInfoSchema } from "@/schemas/survey/baseInfoSchema";
+// TODO: @/schemas_legacy는 deprecated. 새로운 @/schemas/{domain}/ 스키마로 교체 필요
+import { baseInfoSchema } from "@/schemas_legacy/survey/baseInfoSchema";
 import { SurveyQuestionSummary } from "@/types/domain/survey";
 import { SurveyQuestionType } from "@prisma/client";
 import { atom } from "jotai";

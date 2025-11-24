@@ -4,7 +4,8 @@ import {
   scaleImageUrlAtom,
   scaleTitleAtom,
 } from "@/atoms/survey/question/creation/scaleAtoms";
-import { scaleInfoSchema } from "@/schemas/survey/question/creation/scaleInfoSchema";
+// TODO: @/schemas_legacy는 deprecated. 새로운 @/schemas/{domain}/ 스키마로 교체 필요
+import { scaleInfoSchema } from "@/schemas_legacy/survey/question/creation/scaleInfoSchema";
 import { DescriptionInputSection } from "../inputs/DescriptionInputSection";
 import { ImageSelectorSection } from "../inputs/ImageSelectorSection";
 import { SubjectInputSection } from "../inputs/SubjectInputSection";

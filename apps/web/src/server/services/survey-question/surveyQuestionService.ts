@@ -1,6 +1,7 @@
-import { multipleChoiceInfoSchema } from "@/schemas/survey/question/creation/multipleChoiceInfoSchema";
-import { scaleInfoSchema } from "@/schemas/survey/question/creation/scaleInfoSchema";
-import { subjectiveInfoSchema } from "@/schemas/survey/question/creation/subjectiveInfoSchema";
+// TODO: @/schemas_legacy는 deprecated. 새로운 @/schemas/{domain}/ 스키마로 교체 필요
+import { multipleChoiceInfoSchema } from "@/schemas_legacy/survey/question/creation/multipleChoiceInfoSchema";
+import { scaleInfoSchema } from "@/schemas_legacy/survey/question/creation/scaleInfoSchema";
+import { subjectiveInfoSchema } from "@/schemas_legacy/survey/question/creation/subjectiveInfoSchema";
 import { surveyQuestionRepository } from "@/server/repositories/survey-question/surveyQuestionRepository";
 import { surveyRepository } from "@/server/repositories/survey/surveyRepository";
 import { SurveyQuestionType } from "@prisma/client";

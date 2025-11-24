@@ -4,7 +4,8 @@ import {
   subjectiveImageUrlAtom,
   subjectiveTitleAtom,
 } from "@/atoms/survey/question/creation/subjectiveAtoms";
-import { subjectiveInfoSchema } from "@/schemas/survey/question/creation/subjectiveInfoSchema";
+// TODO: @/schemas_legacy는 deprecated. 새로운 @/schemas/{domain}/ 스키마로 교체 필요
+import { subjectiveInfoSchema } from "@/schemas_legacy/survey/question/creation/subjectiveInfoSchema";
 import { DescriptionInputSection } from "../inputs/DescriptionInputSection";
 import { ImageSelectorSection } from "../inputs/ImageSelectorSection";
 import { SubjectInputSection } from "../inputs/SubjectInputSection";

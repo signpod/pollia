@@ -1,6 +1,7 @@
 "use client";
 import { surveyTitleAtom } from "@/atoms/survey/surveyAtoms";
-import { baseInfoSchema } from "@/schemas/survey/baseInfoSchema";
+// TODO: @/schemas_legacy는 deprecated. 새로운 @/schemas/{domain}/ 스키마로 교체 필요
+import { baseInfoSchema } from "@/schemas_legacy/survey/baseInfoSchema";
 import { Input } from "@repo/ui/components";
 import { useAtom } from "jotai";
 import { useCallback, useState } from "react";

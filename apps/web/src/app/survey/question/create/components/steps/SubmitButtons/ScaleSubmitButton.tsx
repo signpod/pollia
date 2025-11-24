@@ -1,7 +1,8 @@
 import { scaleDataAtom } from "@/atoms/survey/question/creation/scaleAtoms";
 import { toast } from "@/components/common/Toast";
 import { useCreateScaleQuestion } from "@/hooks/survey/question";
-import { scaleInfoSchema } from "@/schemas/survey/question/creation/scaleInfoSchema";
+// TODO: @/schemas_legacy는 deprecated. 새로운 @/schemas/{domain}/ 스키마로 교체 필요
+import { scaleInfoSchema } from "@/schemas_legacy/survey/question/creation/scaleInfoSchema";
 import type { CreateScaleQuestionRequest } from "@/types/dto";
 import { Button, FixedBottomLayout, Typo } from "@repo/ui/components";
 import { useAtomValue } from "jotai";
