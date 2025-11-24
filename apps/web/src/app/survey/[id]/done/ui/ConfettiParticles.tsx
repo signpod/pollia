@@ -11,7 +11,8 @@ interface Particle {
   y: number;
   rotation: number;
   color: string;
-  size: number;
+  width: number;
+  height: number;
   duration: number;
   delay: number;
 }
@@ -23,7 +24,7 @@ export function ConfettiParticles() {
     const screenHeight = window.innerHeight;
     const newParticles: Particle[] = Array.from({ length: 100 }, (_, i) => {
       const startX = (Math.random() - 0.5) * 800;
-      const startY = -200 - Math.random() * screenHeight * 1.4;
+      const startY = -100 - Math.random() * screenHeight * 1.4;
       const endX = startX + (Math.random() - 0.5) * 150;
       const fallDistance = screenHeight + 400;
 
@@ -33,8 +34,9 @@ export function ConfettiParticles() {
         y: startY + fallDistance,
         rotation: Math.random() * 720,
         color: COLORS[Math.floor(Math.random() * COLORS.length)] ?? "bg-violet-500",
-        size: 6 + Math.random() * 10,
-        duration: 2 + Math.random() * 2,
+        width: 6 + Math.random() * 4,
+        height: 10 + Math.random() * 8,
+        duration: 1.2 + Math.random() * 2,
         delay: 0,
       };
     });
@@ -50,8 +52,8 @@ export function ConfettiParticles() {
             key={particle.id}
             className={`absolute ${particle.color} rounded-[2px]`}
             style={{
-              width: particle.size,
-              height: particle.size,
+              width: particle.width,
+              height: particle.height,
               left: "50%",
               top: 0,
             }}
