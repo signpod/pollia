@@ -15,17 +15,6 @@ export function After() {
   const { title, estimatedMinutes, deadline, imageUrl, target } = survey?.data ?? {};
   const router = useRouter();
 
-  const formatDeadline = (deadline: string | Date) => {
-    return new Date(deadline)
-      .toLocaleDateString("ko-KR", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      })
-      .replace(/\./g, ".")
-      .replace(/\s/g, "");
-  };
-
   return (
     <div className="flex flex-col w-full items-center h-full my-auto">
       <div className="w-full flex flex-col items-center flex-1">
@@ -42,9 +31,9 @@ export function After() {
               {title}
             </Typo.MainTitle>
             <div className="w-full flex flex-col gap-3 bg-light rounded-sm p-3">
-              {estimatedMinutes && <Label label="소요시간" value={`${estimatedMinutes}분`} />}
-              {deadline && <Label label="마감일" value={formatDeadline(deadline)} />}
-              {target && <Label label="대상자" value={target} />}
+              {estimatedMinutes && <InfoRow label="소요시간" value={`${estimatedMinutes}분`} />}
+              {deadline && <InfoRow label="마감일" value={formatDeadline(deadline)} />}
+              {target && <InfoRow label="대상자" value={target} />}
             </div>
             {imageUrl && (
               <div className="w-full aspect-[3/2] overflow-hidden rounded-sm bg-red-200">
@@ -89,7 +78,7 @@ export function After() {
   );
 }
 
-function Label({ label, value }: { label: string; value: string }) {
+function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center gap-2">
       <Typo.Body className="text-disabled">{label}</Typo.Body>
@@ -97,3 +86,14 @@ function Label({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+const formatDeadline = (deadline: string | Date) => {
+  return new Date(deadline)
+    .toLocaleDateString("ko-KR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    })
+    .replace(/\./g, ".")
+    .replace(/\s/g, "");
+};
