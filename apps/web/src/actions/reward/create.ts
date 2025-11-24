@@ -2,28 +2,27 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import { rewardService } from "@/server/services/reward/rewardService";
+import type { CreateRewardInput } from "@/server/services/reward/types";
 import type { CreateRewardRequest, CreateRewardResponse } from "@/types/dto";
 
-/**
- * Reward 생성 Server Action
- * @param request - Reward 생성 요청 데이터
- * @returns 생성된 Reward 정보
- */
+function toCreateRewardInput(dto: CreateRewardRequest): CreateRewardInput {
+  return {
+    name: dto.name,
+    description: dto.description,
+    imageUrl: dto.imageUrl,
+    paymentType: dto.paymentType,
+    scheduledDate: dto.scheduledDate,
+  };
+}
+
 export async function createReward(request: CreateRewardRequest): Promise<CreateRewardResponse> {
   try {
     await requireAuth();
-
-    const reward = await rewardService.createReward({
-      name: request.name,
-      description: request.description,
-      imageUrl: request.imageUrl,
-      paymentType: request.paymentType,
-      scheduledDate: request.scheduledDate,
-    });
-
+    const input = toCreateRewardInput(request);
+    const reward = await rewardService.createReward(input);
     return { data: reward };
   } catch (error) {
-    console.error("❌ Reward 생성 실패:", error);
+    console.error("createReward error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -32,4 +31,3 @@ export async function createReward(request: CreateRewardRequest): Promise<Create
     throw serverError;
   }
 }
-
