@@ -42,6 +42,8 @@ Pollia의 서버 코드는 **3계층 아키텍처**를 따릅니다:
 2. **단일 책임**: 각 계층은 하나의 책임만 가짐
 3. **테스트 가능성**: Service 계층을 중심으로 테스트 작성
 4. **일관된 네이밍**: 계층별로 일관된 메서드명 사용
+5. **주석 최소화**: JSDoc은 Public API에만 사용, 코드로 의도 표현
+6. **타입 분리**: Service 내부 타입은 별도 `types.ts`로 관리
 
 ---
 
@@ -67,9 +69,10 @@ src/
 │   └── services/              # Service 계층
 │       └── survey/
 │           ├── surveyService.ts
-│           └── surveyService.test.ts  # 테스트
+│           ├── surveyService.test.ts  # 테스트
+│           └── types.ts       # Service 내부 타입 (선택)
 │
-└── types/dto/                 # DTO 타입 정의
+└── types/dto/                 # DTO 타입 정의 (Client 사용)
     ├── index.ts
     └── survey/
         └── index.ts
@@ -132,6 +135,144 @@ export async function createUserIfNotExists(options: CreateOptions) { /* ... */ 
 - 파일 업로드: `actions/file/upload.ts`
 
 이러한 예외는 CRUD로 분류하기 어려운 경우에만 허용하며, 팀 내 합의 후 사용합니다.
+
+---
+
+## 타입 관리 및 주석 규칙
+
+### DTO vs Service 내부 타입
+
+**DTO (`/types/dto/`):**
+- Client에서 Server Action을 호출할 때 사용하는 타입
+- TanStack Query hooks가 사용
+- Client 컴포넌트가 직접 참조
+- **Client가 사용하면 DTO!**
+
+```typescript
+// ✅ /types/dto/survey-question/index.ts
+export interface CreateMultipleChoiceQuestionRequest {
+  title: string;
+  options: Array<{ title: string; order: number; }>;
+}
+
+// Client에서 사용
+import type { CreateMultipleChoiceQuestionRequest } from "@/types/dto";
+const hook = useCreateMultipleChoiceQuestion();
+hook.mutate(request); // ← Client가 사용
+```
+
+**Service 내부 타입 (`/server/services/{도메인}/types.ts`):**
+- Service 계층에서만 사용되는 타입
+- Client는 모름 (알 필요도 없음)
+- Server Action → Service 간의 내부 계약
+- **Client가 사용 안 하면 Service 타입!**
+
+```typescript
+// ✅ /server/services/survey-answer/types.ts
+export interface CreateAnswerRequest {
+  questionId: string;
+  optionId?: string;
+}
+
+// Service에서만 사용
+import type { CreateAnswerRequest } from "./types";
+async createAnswer(request: CreateAnswerRequest, userId: string) { }
+```
+
+**타입 분리 기준:**
+
+| 상황 | 위치 | 예시 |
+|------|------|------|
+| Client가 사용 | `/types/dto/` | survey-question (Client form → Server) |
+| Server 내부만 | `/server/services/.../types.ts` | survey-answer (Server 내부 로직만) |
+
+### 주석 작성 규칙
+
+**기본 원칙: 주석을 최소화하고 코드로 의도를 표현**
+
+**JSDoc을 작성하지 않는 경우 (대부분):**
+```typescript
+// ✅ Repository - JSDoc 없음
+export class SurveyRepository {
+  async findById(surveyId: string) {
+    return prisma.survey.findUnique({
+      where: { id: surveyId },
+    });
+  }
+}
+
+// ✅ Service - JSDoc 없음
+export class SurveyService {
+  async getSurvey(surveyId: string) {
+    const survey = await this.repo.findById(surveyId);
+    if (!survey) {
+      const error = new Error("설문조사를 찾을 수 없습니다.");
+      error.cause = 404;
+      throw error;
+    }
+    return survey;
+  }
+}
+
+// ✅ Server Action - JSDoc 없음
+export async function getSurvey(surveyId: string) {
+  try {
+    const survey = await surveyService.getSurvey(surveyId);
+    return { data: survey };
+  } catch (error) {
+    console.error("❌ 설문조사 조회 실패:", error);
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    throw new Error("설문조사를 불러올 수 없습니다.");
+  }
+}
+```
+
+**JSDoc을 작성하는 경우 (예외):**
+- 복잡한 비즈니스 로직을 가진 util 함수
+- 외부 라이브러리를 wrapping한 함수
+- 알고리즘이 복잡해서 설명이 필요한 경우
+
+```typescript
+// ✅ 복잡한 util 함수는 JSDoc 허용
+/**
+ * 설문 응답률을 계산합니다.
+ * 
+ * @param totalQuestions - 전체 질문 수
+ * @param answeredQuestions - 응답한 질문 수
+ * @returns 응답률 (0-100)
+ * 
+ * @example
+ * calculateResponseRate(10, 7) // returns 70
+ */
+export function calculateResponseRate(
+  totalQuestions: number,
+  answeredQuestions: number
+): number {
+  if (totalQuestions === 0) return 0;
+  return Math.round((answeredQuestions / totalQuestions) * 100);
+}
+```
+
+**테스트 코드의 주석:**
+- Given-When-Then 주석은 허용 (테스트 가독성)
+- 그 외 불필요한 주석은 제거
+
+```typescript
+// ✅ 테스트 코드
+it("Survey를 성공적으로 조회한다", async () => {
+  // Given
+  const mockSurvey = { id: "survey-1", title: "테스트" };
+  mockRepo.findById.mockResolvedValue(mockSurvey);
+
+  // When
+  const result = await service.getSurvey("survey-1");
+
+  // Then
+  expect(result).toEqual(mockSurvey);
+});
+```
 
 ---
 
@@ -333,31 +474,110 @@ async createSurveyWithQuestions(
 - 비즈니스 로직 구현
 - Repository 조합
 - 검증 및 에러 처리
-- DTO 타입 사용
+- 적절한 타입 사용 (DTO 또는 Service 내부 타입)
+
+### 타입 분류 규칙 (B 접근법: 엄격한 계층 분리)
+
+**핵심 원칙: Service는 DTO를 모른다**
+
+Service 계층은 Client가 사용하는 DTO를 직접 import하지 않습니다. 대신 자체 타입(`types.ts`)만 사용합니다. 이렇게 하면 각 계층의 책임이 명확해지고, 의존성 방향이 일관됩니다.
+
+```
+[Client] ──DTO──▶ [Server Action] ──Service 타입──▶ [Service] ──▶ [Repository]
+                        │
+                   변환 책임
+```
+
+**1. DTO (`/types/dto/{도메인}/index.ts`)**
+- Client ↔ Server Action 간의 계약
+- TanStack Query hooks에서 사용
+- Client 컴포넌트에서 직접 참조
+
+```typescript
+// ✅ Client와 Server Action만 DTO를 알고 있음
+// hooks/survey/question/useCreateMultipleChoiceQuestion.ts
+import type { CreateMultipleChoiceQuestionRequest } from "@/types/dto";
+
+// actions/survey-question/create.ts
+import type { CreateMultipleChoiceQuestionRequest } from "@/types/dto";
+```
+
+**2. Service 내부 타입 (`/server/services/{도메인}/types.ts`)**
+- Service 계층 전용 타입
+- Server Action → Service 간의 내부 계약
+- **Service는 이 타입만 알고 있음**
+
+```typescript
+// ✅ /server/services/survey-question/types.ts
+export interface CreateMultipleChoiceInput {
+  surveyId?: string;
+  title: string;
+  description?: string;
+  maxSelections: number;
+  order: number;
+  options: OptionInput[];
+}
+
+// ✅ Service는 자체 타입만 import
+// services/survey-question/surveyQuestionService.ts
+import type { CreateMultipleChoiceInput } from "./types";
+
+async createMultipleChoiceQuestion(input: CreateMultipleChoiceInput, userId: string) {
+  // ...
+}
+```
+
+**3. Server Action의 변환 책임**
+
+Server Action은 DTO를 받아서 Service 타입으로 변환합니다:
+
+```typescript
+// actions/survey-question/create.ts
+import type { CreateMultipleChoiceQuestionRequest } from "@/types/dto";
+import type { CreateMultipleChoiceInput } from "@/server/services/survey-question/types";
+
+function toMultipleChoiceInput(dto: CreateMultipleChoiceQuestionRequest): CreateMultipleChoiceInput {
+  return {
+    surveyId: dto.surveyId,
+    title: dto.title,
+    description: dto.description,
+    maxSelections: dto.maxSelections,
+    order: dto.order,
+    options: dto.options.map(opt => ({
+      title: opt.title,
+      order: opt.order,
+    })),
+  };
+}
+
+export async function createMultipleChoiceQuestion(request: CreateMultipleChoiceQuestionRequest) {
+  const user = await requireAuth();
+  const input = toMultipleChoiceInput(request);  // DTO → Service 타입 변환
+  const question = await surveyQuestionService.createMultipleChoiceQuestion(input, user.id);
+  return { data: question };
+}
+```
+
+**왜 이렇게 하는가?**
+
+| 장점 | 설명 |
+|------|------|
+| 계층 독립성 | Service는 Client 변경에 영향받지 않음 |
+| 명확한 책임 | 변환은 Action에서, 로직은 Service에서 |
+| 테스트 용이 | Service 테스트 시 DTO 의존성 없음 |
+| 학습 효과 | 데이터 흐름과 계층 분리를 명확히 이해 |
 
 ### 기본 구조
 
 ```typescript
+// ✅ Service는 DTO를 import하지 않음! 자체 타입만 사용
 import { surveyRepository } from "@/server/repositories/survey/surveyRepository";
-import type {
-  GetSurveyResponse,
-  GetSurveyQuestionIdsResponse,
-} from "@/types/dto";
+import type { CreateSurveyInput } from "./types";
 
-/**
- * Survey Service
- * Survey 도메인의 비즈니스 로직 계층
- */
 export class SurveyService {
   constructor(private repo = surveyRepository) {}
 
-  /**
-   * Survey ID로 Survey 정보 조회
-   * @param surveyId - Survey ID
-   * @returns Survey 정보
-   * @throws 404 - Survey를 찾을 수 없는 경우
-   */
-  async getSurvey(surveyId: string): Promise<GetSurveyResponse["data"]> {
+  async getSurvey(surveyId: string) {
     const survey = await this.repo.findById(surveyId);
 
     if (!survey) {
@@ -369,64 +589,34 @@ export class SurveyService {
     return survey;
   }
 
-  /**
-   * Survey ID로 Question ID 목록 조회
-   * @param surveyId - Survey ID
-   * @returns Question ID 배열
-   * @throws 404 - Survey를 찾을 수 없는 경우
-   */
-  async getSurveyQuestionIds(
-    surveyId: string,
-  ): Promise<GetSurveyQuestionIdsResponse["data"]> {
-    // Survey 존재 확인
+  async getSurveyQuestionIds(surveyId: string) {
     await this.getSurvey(surveyId);
-
     const questionIds = await this.repo.findQuestionIdsBySurveyId(surveyId);
-
-    return {
-      questionIds,
-    };
+    return { questionIds };
   }
 
-  /**
-   * Survey 생성
-   * @param data - 생성할 Survey 데이터
-   * @returns 생성된 Survey 정보
-   * @throws 400 - 유효성 검증 실패
-   */
-  async createSurvey(data: {
-    title: string;
-    description?: string;
-    creatorId: string;
-  }): Promise<GetSurveyResponse["data"]> {
-    // 1. Validation
-    if (!data.title || data.title.trim().length === 0) {
+  async createSurvey(input: CreateSurveyInput, userId: string) {
+    if (!input.title || input.title.trim().length === 0) {
       const error = new Error("제목은 필수입니다.");
       error.cause = 400;
       throw error;
     }
 
-    if (data.title.length > 100) {
+    if (input.title.length > 100) {
       const error = new Error("제목은 100자를 초과할 수 없습니다.");
       error.cause = 400;
       throw error;
     }
 
-    // 2. Repository 호출
-    const survey = await this.repo.create(data);
+    const survey = await this.repo.create({
+      ...input,
+      creatorId: userId,
+    });
 
     return survey;
   }
 
-  /**
-   * Survey 삭제
-   * @param surveyId - Survey ID
-   * @param userId - 요청 사용자 ID
-   * @throws 404 - Survey를 찾을 수 없는 경우
-   * @throws 403 - 삭제 권한이 없는 경우
-   */
   async deleteSurvey(surveyId: string, userId: string): Promise<void> {
-    // 1. Survey 존재 및 권한 확인
     const survey = await this.getSurvey(surveyId);
 
     if (survey.creatorId !== userId) {
@@ -435,25 +625,32 @@ export class SurveyService {
       throw error;
     }
 
-    // 2. 삭제
     await this.repo.delete(surveyId);
   }
 }
 
-// ✅ Singleton 패턴으로 export
 export const surveyService = new SurveyService();
+```
+
+```typescript
+// ✅ /server/services/survey/types.ts
+export interface CreateSurveyInput {
+  title: string;
+  description?: string;
+  target?: string;
+}
 ```
 
 ### 필수 요소
 
 - [ ] **Class 기반 구현**
 - [ ] **Constructor Injection** (테스트용 Mock 주입)
-- [ ] **JSDoc 주석** (클래스, 메서드, 파라미터, @throws)
 - [ ] **Singleton export** (`export const {도메인}Service = new ...`)
 - [ ] **일관된 메서드명** (get*, create*, update*, delete*, toggle*)
-- [ ] **DTO 타입 사용** (`Promise<GetSurveyResponse["data"]>`)
+- [ ] **자체 타입 사용** (`types.ts`에서 import, DTO 사용 금지)
 - [ ] **에러 처리** (error.cause 설정)
 - [ ] **Validation 로직**
+- [ ] **주석 최소화** (코드로 의도 표현)
 
 ### 메서드 네이밍 규칙
 
