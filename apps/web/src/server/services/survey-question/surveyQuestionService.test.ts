@@ -610,7 +610,7 @@ describe("SurveyQuestionService", () => {
 
       // When & Then
       await expect(service.createEitherOrQuestion(request, "user1")).rejects.toThrow(
-        "제목은 필수입니다.",
+        "제목을 입력해주세요.",
       );
 
       expect(mockQuestionRepo.create).not.toHaveBeenCalled();

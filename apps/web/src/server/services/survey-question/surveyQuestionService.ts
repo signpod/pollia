@@ -1,7 +1,10 @@
-// TODO: @/schemas_legacy는 deprecated. 새로운 @/schemas/{domain}/ 스키마로 교체 필요
-import { multipleChoiceInfoSchema } from "@/schemas_legacy/survey/question/creation/multipleChoiceInfoSchema";
-import { scaleInfoSchema } from "@/schemas_legacy/survey/question/creation/scaleInfoSchema";
-import { subjectiveInfoSchema } from "@/schemas_legacy/survey/question/creation/subjectiveInfoSchema";
+import {
+  eitherOrInputSchema,
+  multipleChoiceInputSchema,
+  questionUpdateSchema,
+  scaleInputSchema,
+  subjectiveInputSchema,
+} from "@/schemas/survey-question";
 import { surveyQuestionRepository } from "@/server/repositories/survey-question/surveyQuestionRepository";
 import { surveyRepository } from "@/server/repositories/survey/surveyRepository";
 import { SurveyQuestionType } from "@prisma/client";
@@ -77,28 +80,34 @@ export class SurveyQuestionService {
     input: CreateMultipleChoiceInput,
     userId: string,
   ): Promise<QuestionCreatedResult> {
-    const validationError = this.validateMultipleChoiceQuestion(input);
-    if (validationError) {
-      const error = new Error(validationError);
+    const result = multipleChoiceInputSchema.safeParse(input);
+    if (!result.success) {
+      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
       error.cause = 400;
       throw error;
     }
 
-    if (input.surveyId) {
-      await this.verifySurveyAccess(input.surveyId, userId);
+    if (result.data.surveyId) {
+      await this.verifySurveyAccess(result.data.surveyId, userId);
     }
 
     const question = await this.questionRepo.createMultipleChoice(
       {
-        surveyId: input.surveyId,
-        title: input.title,
-        description: input.description,
-        imageUrl: input.imageUrl,
+        surveyId: result.data.surveyId,
+        title: result.data.title,
+        description: result.data.description,
+        imageUrl: result.data.imageUrl,
         type: SurveyQuestionType.MULTIPLE_CHOICE,
-        order: input.order,
-        maxSelections: input.maxSelections,
+        order: result.data.order,
+        maxSelections: result.data.maxSelections,
       },
-      input.options,
+      result.data.options.map(opt => ({
+        title: opt.title,
+        description: opt.description,
+        imageUrl: opt.imageUrl,
+        order: opt.order,
+        imageFileUploadId: opt.imageFileUploadId,
+      })),
       userId,
     );
 
@@ -116,24 +125,24 @@ export class SurveyQuestionService {
     input: CreateScaleInput,
     userId: string,
   ): Promise<QuestionCreatedResult> {
-    const validationError = this.validateScaleQuestion(input);
-    if (validationError) {
-      const error = new Error(validationError);
+    const result = scaleInputSchema.safeParse(input);
+    if (!result.success) {
+      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
       error.cause = 400;
       throw error;
     }
 
-    if (input.surveyId) {
-      await this.verifySurveyAccess(input.surveyId, userId);
+    if (result.data.surveyId) {
+      await this.verifySurveyAccess(result.data.surveyId, userId);
     }
 
     const question = await this.questionRepo.create({
-      surveyId: input.surveyId,
-      title: input.title,
-      description: input.description,
-      imageUrl: input.imageUrl,
+      surveyId: result.data.surveyId,
+      title: result.data.title,
+      description: result.data.description,
+      imageUrl: result.data.imageUrl,
       type: SurveyQuestionType.SCALE,
-      order: input.order,
+      order: result.data.order,
     });
 
     return {
@@ -150,24 +159,24 @@ export class SurveyQuestionService {
     input: CreateSubjectiveInput,
     userId: string,
   ): Promise<QuestionCreatedResult> {
-    const validationError = this.validateSubjectiveQuestion(input);
-    if (validationError) {
-      const error = new Error(validationError);
+    const result = subjectiveInputSchema.safeParse(input);
+    if (!result.success) {
+      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
       error.cause = 400;
       throw error;
     }
 
-    if (input.surveyId) {
-      await this.verifySurveyAccess(input.surveyId, userId);
+    if (result.data.surveyId) {
+      await this.verifySurveyAccess(result.data.surveyId, userId);
     }
 
     const question = await this.questionRepo.create({
-      surveyId: input.surveyId,
-      title: input.title,
-      description: input.description,
-      imageUrl: input.imageUrl,
+      surveyId: result.data.surveyId,
+      title: result.data.title,
+      description: result.data.description,
+      imageUrl: result.data.imageUrl,
       type: SurveyQuestionType.SUBJECTIVE,
-      order: input.order,
+      order: result.data.order,
     });
 
     return {
@@ -184,23 +193,24 @@ export class SurveyQuestionService {
     input: CreateEitherOrInput,
     userId: string,
   ): Promise<QuestionCreatedResult> {
-    if (!input.title || input.title.trim().length === 0) {
-      const error = new Error("제목은 필수입니다.");
+    const result = eitherOrInputSchema.safeParse(input);
+    if (!result.success) {
+      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
       error.cause = 400;
       throw error;
     }
 
-    if (input.surveyId) {
-      await this.verifySurveyAccess(input.surveyId, userId);
+    if (result.data.surveyId) {
+      await this.verifySurveyAccess(result.data.surveyId, userId);
     }
 
     const question = await this.questionRepo.create({
-      surveyId: input.surveyId,
-      title: input.title,
-      description: input.description,
-      imageUrl: input.imageUrl,
+      surveyId: result.data.surveyId,
+      title: result.data.title,
+      description: result.data.description,
+      imageUrl: result.data.imageUrl,
       type: SurveyQuestionType.MULTIPLE_CHOICE,
-      order: input.order,
+      order: result.data.order,
     });
 
     return {
@@ -214,6 +224,13 @@ export class SurveyQuestionService {
   }
 
   async updateQuestion(questionId: string, data: UpdateQuestionInput, userId: string) {
+    const result = questionUpdateSchema.safeParse(data);
+    if (!result.success) {
+      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
+      error.cause = 400;
+      throw error;
+    }
+
     const question = await this.questionRepo.findById(questionId);
     if (!question) {
       const error = new Error("질문을 찾을 수 없습니다.");
@@ -225,7 +242,7 @@ export class SurveyQuestionService {
       await this.verifySurveyAccess(question.surveyId, userId);
     }
 
-    const updatedQuestion = await this.questionRepo.update(questionId, data);
+    const updatedQuestion = await this.questionRepo.update(questionId, result.data);
 
     return updatedQuestion;
   }
@@ -258,72 +275,6 @@ export class SurveyQuestionService {
       const error = new Error("질문을 추가할 권한이 없습니다.");
       error.cause = 403;
       throw error;
-    }
-  }
-
-  private validateMultipleChoiceQuestion(input: CreateMultipleChoiceInput): string | null {
-    try {
-      const formData = {
-        title: input.title,
-        description: input.description || "",
-        imageUrl: input.imageUrl || "",
-        maxSelections: input.maxSelections,
-        options: input.options.map(opt => ({
-          id: `temp-${opt.order}`,
-          title: opt.title,
-          description: opt.description,
-          imageUrl: opt.imageUrl,
-          order: opt.order,
-          fileUploadId: opt.imageFileUploadId,
-        })),
-      };
-
-      const result = multipleChoiceInfoSchema.safeParse(formData);
-      if (!result.success) {
-        return result.error.issues[0]?.message || "유효성 검사에 실패했습니다.";
-      }
-
-      return null;
-    } catch {
-      return "유효성 검사 중 오류가 발생했습니다.";
-    }
-  }
-
-  private validateScaleQuestion(input: CreateScaleInput): string | null {
-    try {
-      const formData = {
-        title: input.title,
-        description: input.description || "",
-        imageUrl: input.imageUrl || "",
-      };
-
-      const result = scaleInfoSchema.safeParse(formData);
-      if (!result.success) {
-        return result.error.issues[0]?.message || "유효성 검사에 실패했습니다.";
-      }
-
-      return null;
-    } catch {
-      return "유효성 검사 중 오류가 발생했습니다.";
-    }
-  }
-
-  private validateSubjectiveQuestion(input: CreateSubjectiveInput): string | null {
-    try {
-      const formData = {
-        title: input.title,
-        description: input.description || "",
-        imageUrl: input.imageUrl || "",
-      };
-
-      const result = subjectiveInfoSchema.safeParse(formData);
-      if (!result.success) {
-        return result.error.issues[0]?.message || "유효성 검사에 실패했습니다.";
-      }
-
-      return null;
-    } catch {
-      return "유효성 검사 중 오류가 발생했습니다.";
     }
   }
 }
