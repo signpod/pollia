@@ -32,7 +32,7 @@ export function SurveyCompletion() {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const shareButtonsRef = useRef<HTMLDivElement>(null);
   const [showContent, setShowContent] = useState(false);
-  const [showFirstText, setShowFirstText] = useState(false);
+  const [showFirstText, setShowFirstText] = useState(true);
   const [startAfter, setStartAfter] = useState(false);
 
   useEffect(() => {
@@ -49,18 +49,11 @@ export function SurveyCompletion() {
       {
         scale: 1,
         opacity: 1,
-        duration: 0.5,
+        duration: 0.4,
         ease: "back.out(1.7)",
       },
       0,
     );
-
-    // 0.3초 대기 후 텍스트 애니메이션
-    tl.to({}, { duration: 0.2 }); // 빈 애니메이션으로 딜레이 생성
-
-    tl.call(() => {
-      setShowFirstText(true);
-    });
 
     tl.fromTo(
       textRef.current,
@@ -71,23 +64,22 @@ export function SurveyCompletion() {
       {
         y: 0,
         opacity: 1,
-        duration: 0.3,
+        duration: 0.4,
         ease: "power2.out",
       },
+      "-=0.4",
     );
 
-    tl.to(
-      checkIconRef.current,
-      {
-        opacity: 0,
-        scale: 0.8,
-        duration: 0.3,
-      },
-      "+=0.3",
-    );
+    tl.to({}, { duration: 0.8 });
+
+    tl.to(checkIconRef.current, {
+      opacity: 0,
+      scale: 0.8,
+      duration: 0.4,
+    });
 
     // 기존 텍스트 페이드 아웃
-    tl.to(textRef.current, { opacity: 0, y: -10, duration: 0.2 }, "-=0.2");
+    tl.to(textRef.current, { opacity: 0, y: -10, duration: 0.2 });
 
     tl.call(() => {
       setShowFirstText(false);
@@ -100,10 +92,10 @@ export function SurveyCompletion() {
         backgroundColor: "#ffffff",
         borderRadius: "16px",
         boxShadow: "0px 4px 20px rgba(92, 11, 11, 0.08)",
-        duration: 0.3,
+        duration: 0.4,
         ease: "power2.inOut",
       },
-      "-=0.3",
+      // "-=1",
     );
 
     // 설문 내용 표시
@@ -202,30 +194,33 @@ export function SurveyCompletion() {
           layout
           transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
           ref={boxRef}
-          className="relative flex flex-col justify-center items-center bg-violet-100 rounded-[20px] p-4  overflow-visible z-20"
+          className="relative flex flex-col justify-center items-center bg-violet-100 rounded-[20px] p-4  overflow-visible"
           style={{
             width: showContent ? "100%" : "80px",
             minHeight: showContent ? "auto" : "80px",
           }}
         >
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
             <DotLottieReact
               src="/lotties/Pop.lottie"
               loop={false}
               autoplay
               speed={2}
-              style={{ width: "600px", height: "600px" }}
+              style={{ width: "600px", height: "600px", zIndex: 0 }}
             />
           </div>
 
           {/* 체크 아이콘 */}
-          <div ref={checkIconRef} className="absolute inset-0 flex items-center justify-center">
+          <div
+            ref={checkIconRef}
+            className="absolute inset-0 flex items-center justify-center z-20"
+          >
             <Check className="text-primary size-10" strokeWidth={3} />
           </div>
 
           {/* 설문 카드 내용 */}
           {showContent && (
-            <div ref={surveyContentRef} className="flex flex-col gap-2 w-full relative">
+            <div ref={surveyContentRef} className="flex flex-col gap-2 w-full relative z-20">
               <div ref={logoRef} style={{ opacity: 0 }}>
                 <Image src={PolliaLogo} alt="Pollia Logo" width={52} height={16} />
               </div>
