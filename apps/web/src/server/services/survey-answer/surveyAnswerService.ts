@@ -1,6 +1,12 @@
+import {
+  submitAnswersSchema,
+  surveyAnswerInputSchema,
+  surveyAnswerUpdateSchema,
+} from "@/schemas/survey-answer";
 import { surveyAnswerRepository } from "@/server/repositories/survey-answer/surveyAnswerRepository";
 import { surveyQuestionRepository } from "@/server/repositories/survey-question/surveyQuestionRepository";
 import { surveyRepository } from "@/server/repositories/survey/surveyRepository";
+import { SurveyQuestionType } from "@prisma/client";
 import type { CreateAnswerRequest, SubmitAnswersRequest } from "./types";
 
 export class SurveyAnswerService {
@@ -49,26 +55,40 @@ export class SurveyAnswerService {
   }
 
   async createAnswer(request: CreateAnswerRequest, userId: string) {
-    const question = await this.questionRepo.findById(request.questionId);
+    const result = surveyAnswerInputSchema.safeParse(request);
+    if (!result.success) {
+      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
+      error.cause = 400;
+      throw error;
+    }
+
+    const question = await this.questionRepo.findById(result.data.questionId);
     if (!question) {
       const error = new Error("질문을 찾을 수 없습니다.");
       error.cause = 404;
       throw error;
     }
 
-    this.validateAnswerData(request, question.type);
+    this.validateAnswerByType(result.data, question.type);
 
     return this.answerRepo.create({
-      questionId: request.questionId,
+      questionId: result.data.questionId,
       userId,
-      optionId: request.optionId,
-      textAnswer: request.textAnswer,
-      scaleAnswer: request.scaleAnswer,
+      optionId: result.data.optionId,
+      textAnswer: result.data.textAnswer,
+      scaleAnswer: result.data.scaleAnswer,
     });
   }
 
   async submitAnswers(request: SubmitAnswersRequest, userId: string) {
-    const survey = await this.surveyRepo.findById(request.surveyId);
+    const result = submitAnswersSchema.safeParse(request);
+    if (!result.success) {
+      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
+      error.cause = 400;
+      throw error;
+    }
+
+    const survey = await this.surveyRepo.findById(result.data.surveyId);
     if (!survey) {
       const error = new Error("설문조사를 찾을 수 없습니다.");
       error.cause = 404;
@@ -81,13 +101,7 @@ export class SurveyAnswerService {
       throw error;
     }
 
-    if (request.answers.length === 0) {
-      const error = new Error("최소 1개 이상의 답변이 필요합니다.");
-      error.cause = 400;
-      throw error;
-    }
-
-    const questionIds = request.answers.map(a => a.questionId);
+    const questionIds = result.data.answers.map(a => a.questionId);
     const questions = await Promise.all(questionIds.map(id => this.questionRepo.findById(id)));
 
     for (let i = 0; i < questions.length; i++) {
@@ -98,15 +112,20 @@ export class SurveyAnswerService {
         throw error;
       }
 
-      if (question.surveyId !== request.surveyId) {
+      if (question.surveyId !== result.data.surveyId) {
         const error = new Error("유효하지 않은 질문이 포함되어 있습니다.");
         error.cause = 400;
         throw error;
       }
 
-      const answer = request.answers[i];
+      const answer = result.data.answers[i];
       if (!answer) continue;
-      this.validateSubmitAnswer(answer, question.type);
+
+      if (answer.type !== question.type) {
+        const error = new Error("답변 타입이 질문 타입과 일치하지 않습니다.");
+        error.cause = 400;
+        throw error;
+      }
     }
 
     await this.answerRepo.deleteByQuestionsAndUser(questionIds, userId);
@@ -118,20 +137,20 @@ export class SurveyAnswerService {
       scaleAnswer?: number;
     }> = [];
 
-    for (const answer of request.answers) {
-      if (answer.type === "MULTIPLE_CHOICE" && answer.selectedOptionIds) {
+    for (const answer of result.data.answers) {
+      if (answer.type === SurveyQuestionType.MULTIPLE_CHOICE && answer.selectedOptionIds) {
         for (const optionId of answer.selectedOptionIds) {
           answersToCreate.push({
             questionId: answer.questionId,
             optionId,
           });
         }
-      } else if (answer.type === "SCALE" && answer.scaleValue !== undefined) {
+      } else if (answer.type === SurveyQuestionType.SCALE && answer.scaleValue !== undefined) {
         answersToCreate.push({
           questionId: answer.questionId,
           scaleAnswer: answer.scaleValue,
         });
-      } else if (answer.type === "SUBJECTIVE" && answer.textResponse) {
+      } else if (answer.type === SurveyQuestionType.SUBJECTIVE && answer.textResponse) {
         answersToCreate.push({
           questionId: answer.questionId,
           textAnswer: answer.textResponse,
@@ -142,8 +161,8 @@ export class SurveyAnswerService {
     await this.answerRepo.createMany(answersToCreate, userId);
 
     return {
-      surveyId: request.surveyId,
-      answersCount: request.answers.length,
+      surveyId: result.data.surveyId,
+      answersCount: result.data.answers.length,
       submittedAt: new Date(),
     };
   }
@@ -157,6 +176,13 @@ export class SurveyAnswerService {
     },
     userId: string,
   ) {
+    const result = surveyAnswerUpdateSchema.safeParse(data);
+    if (!result.success) {
+      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
+      error.cause = 400;
+      throw error;
+    }
+
     const answer = await this.getAnswerById(answerId);
 
     if (answer.userId !== userId) {
@@ -165,7 +191,7 @@ export class SurveyAnswerService {
       throw error;
     }
 
-    return this.answerRepo.update(answerId, data);
+    return this.answerRepo.update(answerId, result.data);
   }
 
   async deleteAnswer(answerId: string, userId: string): Promise<void> {
@@ -191,69 +217,24 @@ export class SurveyAnswerService {
     await this.answerRepo.deleteBySurveyAndUser(surveyId, userId);
   }
 
-  private validateAnswerData(
-    request: CreateAnswerRequest,
-    questionType: "MULTIPLE_CHOICE" | "SCALE" | "SUBJECTIVE",
+  private validateAnswerByType(
+    data: { optionId?: string; textAnswer?: string; scaleAnswer?: number },
+    questionType: SurveyQuestionType,
   ) {
-    if (questionType === "MULTIPLE_CHOICE") {
-      if (!request.optionId) {
-        const error = new Error("객관식 답변에는 선택지가 필요합니다.");
-        error.cause = 400;
-        throw error;
-      }
-    } else if (questionType === "SCALE") {
-      if (request.scaleAnswer === undefined || request.scaleAnswer < 1 || request.scaleAnswer > 5) {
-        const error = new Error("척도 값은 1~5 사이여야 합니다.");
-        error.cause = 400;
-        throw error;
-      }
-    } else if (questionType === "SUBJECTIVE") {
-      if (!request.textAnswer || request.textAnswer.trim().length === 0) {
-        const error = new Error("주관식 답변은 필수입니다.");
-        error.cause = 400;
-        throw error;
-      }
-      if (request.textAnswer.length > 100) {
-        const error = new Error("주관식 답변은 100자를 초과할 수 없습니다.");
-        error.cause = 400;
-        throw error;
-      }
-    }
-  }
-
-  private validateSubmitAnswer(
-    answer: SubmitAnswersRequest["answers"][0],
-    questionType: "MULTIPLE_CHOICE" | "SCALE" | "SUBJECTIVE",
-  ) {
-    if (answer.type !== questionType) {
-      const error = new Error("답변 타입이 질문 타입과 일치하지 않습니다.");
+    if (questionType === SurveyQuestionType.MULTIPLE_CHOICE && !data.optionId) {
+      const error = new Error("객관식 답변에는 선택지가 필요합니다.");
       error.cause = 400;
       throw error;
     }
-
-    if (answer.type === "MULTIPLE_CHOICE") {
-      if (!answer.selectedOptionIds || answer.selectedOptionIds.length === 0) {
-        const error = new Error("최소 1개 이상의 선택지를 선택해주세요.");
-        error.cause = 400;
-        throw error;
-      }
-    } else if (answer.type === "SCALE") {
-      if (answer.scaleValue === undefined || answer.scaleValue < 1 || answer.scaleValue > 5) {
-        const error = new Error("척도 값은 1~5 사이여야 합니다.");
-        error.cause = 400;
-        throw error;
-      }
-    } else if (answer.type === "SUBJECTIVE") {
-      if (!answer.textResponse || answer.textResponse.trim().length === 0) {
-        const error = new Error("주관식 답변은 필수입니다.");
-        error.cause = 400;
-        throw error;
-      }
-      if (answer.textResponse.length > 100) {
-        const error = new Error("주관식 답변은 100자를 초과할 수 없습니다.");
-        error.cause = 400;
-        throw error;
-      }
+    if (questionType === SurveyQuestionType.SCALE && data.scaleAnswer === undefined) {
+      const error = new Error("척도 값을 선택해주세요.");
+      error.cause = 400;
+      throw error;
+    }
+    if (questionType === SurveyQuestionType.SUBJECTIVE && !data.textAnswer) {
+      const error = new Error("주관식 답변은 필수입니다.");
+      error.cause = 400;
+      throw error;
     }
   }
 }
