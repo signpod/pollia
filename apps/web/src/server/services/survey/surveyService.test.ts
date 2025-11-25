@@ -435,7 +435,7 @@ describe("SurveyService", () => {
 
       // When & Then
       await expect(surveyService.createSurvey(request, "user-1")).rejects.toThrow(
-        "제목은 필수입니다.",
+        "제목을 입력해주세요.",
       );
 
       try {
@@ -574,7 +574,7 @@ describe("SurveyService", () => {
 
       // When & Then
       await expect(surveyService.updateSurvey("survey-1", { title: "" }, "user-1")).rejects.toThrow(
-        "제목은 필수입니다.",
+        "제목을 입력해주세요.",
       );
 
       try {

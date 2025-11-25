@@ -1,3 +1,4 @@
+import { surveyInputSchema, surveyUpdateSchema } from "@/schemas/survey";
 import { surveyRepository } from "@/server/repositories/survey/surveyRepository";
 import type {
   CreateSurveyInput,
@@ -60,29 +61,25 @@ export class SurveyService {
   }
 
   async createSurvey(input: CreateSurveyInput, userId: string): Promise<SurveyCreatedResult> {
-    if (!input.title || input.title.trim().length === 0) {
-      const error = new Error("제목은 필수입니다.");
+    const result = surveyInputSchema.safeParse(input);
+    if (!result.success) {
+      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
       error.cause = 400;
       throw error;
     }
 
-    if (input.questionIds.length === 0) {
-      const error = new Error("최소 1개 이상의 질문이 필요합니다.");
-      error.cause = 400;
-      throw error;
-    }
-
+    const validated = result.data;
     const survey = await this.repo.createWithQuestions(
       {
-        title: input.title,
-        description: input.description ?? undefined,
-        target: input.target ?? undefined,
-        imageUrl: input.imageUrl ?? undefined,
-        deadline: input.deadline ?? undefined,
-        estimatedMinutes: input.estimatedMinutes ?? undefined,
+        title: validated.title,
+        description: validated.description,
+        target: validated.target,
+        imageUrl: validated.imageUrl,
+        deadline: validated.deadline,
+        estimatedMinutes: validated.estimatedMinutes,
         creatorId: userId,
       },
-      input.questionIds,
+      validated.questionIds,
     );
 
     return {
@@ -108,13 +105,14 @@ export class SurveyService {
       throw error;
     }
 
-    if (data.title !== undefined && (!data.title || data.title.trim().length === 0)) {
-      const error = new Error("제목은 필수입니다.");
+    const result = surveyUpdateSchema.safeParse(data);
+    if (!result.success) {
+      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
       error.cause = 400;
       throw error;
     }
 
-    const updatedSurvey = await this.repo.update(surveyId, data);
+    const updatedSurvey = await this.repo.update(surveyId, result.data);
     return updatedSurvey;
   }
 
