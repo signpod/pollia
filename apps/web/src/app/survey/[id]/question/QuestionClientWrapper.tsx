@@ -1,5 +1,6 @@
 "use client";
 import { toast } from "@/components/common/Toast";
+import { ROUTES } from "@/constants/routes";
 import { SURVEY_TOAST_MESSAGE } from "@/constants/surveyMessages";
 import { ExtendedQuestionStepConfig, createQuestionSteps } from "@/constants/surveyQuestion";
 import { useReadSurveyQuestionsDetail } from "@/hooks/survey/question/useReadSurveyQuestionsDetail";
@@ -121,9 +122,7 @@ function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: nu
 
       setTimeout(() => {
         setIsSubmitting(false);
-        alert("답변이 수집되었습니다! (콘솔을 확인하세요)");
-        // TODO: 임시 - 완료 후 동작 미확정 (페이지 이동 or 모달 표시 등)
-        router.push(`/survey/${params.id}/done`);
+        router.push(ROUTES.SURVEY_DONE(params.id));
       }, 500);
     } catch (error) {
       console.error("설문 제출 중 오류 발생:", error);

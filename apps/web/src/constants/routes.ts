@@ -22,6 +22,7 @@ export const ROUTES = {
 
   // 설문 관련
   SURVEY: (id: string) => `/survey/${id}`,
+  SURVEY_DONE: (id: string) => `/survey/${id}/done`,
   SURVEY_QUESTION: (surveyId: string) => `/survey/${surveyId}/question`,
   SURVEY_CREATE: "/survey/create",
   SURVEY_QUESTION_CREATE: "/survey/question/create",
