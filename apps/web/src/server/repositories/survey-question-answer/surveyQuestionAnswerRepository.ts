@@ -31,6 +31,29 @@ export class SurveyQuestionAnswerRepository {
     });
   }
 
+  async findByUserId(userId: string) {
+    return prisma.surveyQuestionAnswer.findMany({
+      where: {
+        response: {
+          userId,
+        },
+      },
+      include: {
+        question: true,
+        option: true,
+        response: {
+          select: {
+            id: true,
+            surveyId: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  }
+
   async findByQuestionId(questionId: string) {
     return prisma.surveyQuestionAnswer.findMany({
       where: { questionId },
