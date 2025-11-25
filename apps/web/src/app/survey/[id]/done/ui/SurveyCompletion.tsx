@@ -2,6 +2,8 @@
 
 import { ROUTES } from "@/constants/routes";
 import { useReadSurvey } from "@/hooks/survey";
+import { cn } from "@/lib/utils";
+import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import PolliaLogo from "@public/images/pollia-logo.png";
 import KakaoIcon from "@public/svgs/kakao-icon.svg";
 import { ButtonV2, FixedBottomLayout, Typo } from "@repo/ui/components";
@@ -11,7 +13,6 @@ import { Check, Share2 } from "lucide-react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ConfettiParticlesBurst } from "./ConfettiParticlesBurst";
 
 export function SurveyCompletion() {
   const params = useParams<{ id: string }>();
@@ -30,18 +31,14 @@ export function SurveyCompletion() {
   const afterTitleRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const shareButtonsRef = useRef<HTMLDivElement>(null);
-  const [showConfetti, setShowConfetti] = useState(false);
   const [showContent, setShowContent] = useState(false);
   const [showFirstText, setShowFirstText] = useState(false);
+  const [startAfter, setStartAfter] = useState(false);
 
   useEffect(() => {
     if (!boxRef.current) return;
 
     const tl = gsap.timeline();
-
-    tl.call(() => {
-      setShowConfetti(true);
-    });
 
     tl.fromTo(
       boxRef.current,
@@ -52,11 +49,14 @@ export function SurveyCompletion() {
       {
         scale: 1,
         opacity: 1,
-        duration: 0.3,
+        duration: 0.5,
         ease: "back.out(1.7)",
       },
       0,
     );
+
+    // 0.3초 대기 후 텍스트 애니메이션
+    tl.to({}, { duration: 0.3 }); // 빈 애니메이션으로 딜레이 생성
 
     tl.call(() => {
       setShowFirstText(true);
@@ -74,7 +74,6 @@ export function SurveyCompletion() {
         duration: 0.3,
         ease: "power2.out",
       },
-      "+=0.3",
     );
 
     tl.to(
@@ -92,6 +91,7 @@ export function SurveyCompletion() {
 
     tl.call(() => {
       setShowFirstText(false);
+      setStartAfter(true);
     });
 
     tl.to(
@@ -177,12 +177,16 @@ export function SurveyCompletion() {
   }, [showContent]);
 
   return (
-    <div className="relative w-full flex flex-col items-center gap-6 pt-[220px] flex-1 overflow-hidden bg-white">
-      {showConfetti && <ConfettiParticlesBurst />}
+    <div
+      className={cn(
+        "relative w-full flex flex-col items-center gap-6 pt-[280px] flex-1 overflow-hidden bg-white",
+        startAfter ? "my-auto pt-0" : "pt-[280px]",
+      )}
+    >
       <motion.div
         layout
         transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-        className="flex flex-col items-center gap-6 bg-white/80 p-6 w-full"
+        className="relative flex flex-col items-center gap-6 bg-white/80 p-6 w-full"
       >
         {showContent && !showFirstText && (
           <div ref={afterTitleRef} style={{ opacity: 0, transform: "translateY(10px)" }}>
@@ -198,17 +202,24 @@ export function SurveyCompletion() {
           layout
           transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
           ref={boxRef}
-          className="relative flex flex-col justify-center items-center bg-violet-100 rounded-[20px] p-4"
+          className="relative flex flex-col justify-center items-center bg-violet-100 rounded-[20px] p-4  overflow-visible z-20"
           style={{
             width: showContent ? "100%" : "80px",
             minHeight: showContent ? "auto" : "80px",
           }}
         >
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-10">
+            <DotLottieReact
+              src="/lotties/Pop.lottie"
+              loop={false}
+              autoplay
+              speed={2}
+              style={{ width: "600px", height: "600px" }}
+            />
+          </div>
+
           {/* 체크 아이콘 */}
-          <div
-            ref={checkIconRef}
-            className="absolute inset-0 flex items-center justify-center z-10"
-          >
+          <div ref={checkIconRef} className="absolute inset-0 flex items-center justify-center">
             <Check className="text-primary size-10" strokeWidth={3} />
           </div>
 
