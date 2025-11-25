@@ -1,5 +1,6 @@
 import { QuestionStepContentProps } from "@/constants/surveyQuestion";
-import { subjectiveResponseSchema } from "@/schemas/survey/question/response/subjectiveResponseSchema";
+// TODO: @/schemas_legacy는 deprecated. 새로운 @/schemas/{domain}/ 스키마로 교체 필요
+import { subjectiveResponseSchema } from "@/schemas_legacy/survey/question/response/subjectiveResponseSchema";
 import type { SurveyAnswerItem } from "@/types/dto";
 import { Textarea } from "@repo/ui/components";
 import { useState } from "react";

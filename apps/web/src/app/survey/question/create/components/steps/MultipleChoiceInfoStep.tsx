@@ -4,7 +4,8 @@ import {
   multipleChoiceImageUrlAtom,
   multipleChoiceTitleAtom,
 } from "@/atoms/survey/question/creation/multipleChoice";
-import { multipleChoiceInfoSchema } from "@/schemas/survey/question/creation/multipleChoiceInfoSchema";
+// TODO: @/schemas_legacy는 deprecated. 새로운 @/schemas/{domain}/ 스키마로 교체 필요
+import { multipleChoiceInfoSchema } from "@/schemas_legacy/survey/question/creation/multipleChoiceInfoSchema";
 import { DescriptionInputSection } from "../inputs/DescriptionInputSection";
 import { ImageSelectorSection } from "../inputs/ImageSelectorSection";
 import { OptionSelectorSection } from "../inputs/OptionSelectorSection";

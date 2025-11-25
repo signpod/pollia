@@ -179,7 +179,9 @@ describe("RewardService", () => {
       };
 
       // When & Then
-      await expect(service.createReward(invalidData)).rejects.toThrow("Reward 이름은 필수입니다.");
+      await expect(service.createReward(invalidData)).rejects.toThrow(
+        "Reward 이름을 입력해주세요.",
+      );
 
       expect(mockRepo.create).not.toHaveBeenCalled();
     });
@@ -347,7 +349,7 @@ describe("RewardService", () => {
 
       // When & Then
       await expect(service.updateReward("reward1", invalidData)).rejects.toThrow(
-        "Reward 이름은 필수입니다.",
+        "Reward 이름을 입력해주세요.",
       );
 
       expect(mockRepo.update).not.toHaveBeenCalled();

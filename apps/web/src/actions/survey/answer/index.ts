@@ -1,1 +1,0 @@
-export { submitSurveyAnswers } from "./submit";

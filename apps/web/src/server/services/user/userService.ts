@@ -1,21 +1,11 @@
 import { userRepository } from "@/server/repositories/user/userRepository";
-import type { EnsureUserExistsOptions, GetCurrentUserResponse } from "@/types/dto";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
+import type { CreateUserIfNotExistsInput, UpdateUserInput } from "./types";
 
-/**
- * User Service
- * User 도메인의 비즈니스 로직 계층
- */
 export class UserService {
   constructor(private repo = userRepository) {}
 
-  /**
-   * User ID로 User 정보 조회
-   * @param userId - User ID
-   * @returns User 정보
-   * @throws 404 - User를 찾을 수 없는 경우
-   */
-  async getCurrentUser(userId: string): Promise<GetCurrentUserResponse["data"]> {
+  async getUserById(userId: string) {
     const user = await this.repo.findById(userId);
 
     if (!user) {
@@ -27,13 +17,8 @@ export class UserService {
     return user;
   }
 
-  /**
-   * Prisma에 사용자가 존재하는지 확인하고, 없으면 생성
-   * @param options - Supabase User와 사용자 이름
-   * @returns 사용자가 새로 생성되었는지 여부
-   */
-  async createUserIfNotExists(options: EnsureUserExistsOptions): Promise<boolean> {
-    const { user, name } = options;
+  async createUserIfNotExists(input: CreateUserIfNotExistsInput): Promise<boolean> {
+    const { user, name } = input;
 
     const existingUser = await this.repo.findFirst(user.id);
 
@@ -41,7 +26,6 @@ export class UserService {
       return false;
     }
 
-    // 사용자 이름 우선순위: name > user_metadata.name > email 앞부분 > "사용자"
     const userName = this.determineUserName(user, name);
 
     await this.repo.create({
@@ -53,14 +37,39 @@ export class UserService {
     return true;
   }
 
-  /**
-   * 사용자 이름 결정 로직
-   * @param user - Supabase User
-   * @param providedName - 제공된 이름 (선택)
-   * @returns 결정된 사용자 이름
-   */
   private determineUserName(user: SupabaseUser, providedName?: string): string {
     return providedName || user.user_metadata?.name || user.email?.split("@")[0] || "사용자";
+  }
+
+  async updateUser(userId: string, input: UpdateUserInput) {
+    const user = await this.repo.findById(userId);
+
+    if (!user) {
+      const error = new Error("사용자 정보를 찾을 수 없습니다.");
+      error.cause = 404;
+      throw error;
+    }
+
+    if (input.name !== undefined && (!input.name || input.name.trim().length === 0)) {
+      const error = new Error("이름은 필수입니다.");
+      error.cause = 400;
+      throw error;
+    }
+
+    const updatedUser = await this.repo.update(userId, input);
+    return updatedUser;
+  }
+
+  async deleteUser(userId: string): Promise<void> {
+    const user = await this.repo.findById(userId);
+
+    if (!user) {
+      const error = new Error("사용자 정보를 찾을 수 없습니다.");
+      error.cause = 404;
+      throw error;
+    }
+
+    await this.repo.delete(userId);
   }
 }
 

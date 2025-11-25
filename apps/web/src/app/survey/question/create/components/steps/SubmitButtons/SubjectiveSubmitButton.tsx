@@ -1,7 +1,8 @@
 import { subjectiveDataAtom } from "@/atoms/survey/question/creation/subjectiveAtoms";
 import { toast } from "@/components/common/Toast";
 import { useCreateSubjectiveQuestion } from "@/hooks/survey/question";
-import { subjectiveInfoSchema } from "@/schemas/survey/question/creation/subjectiveInfoSchema";
+// TODO: @/schemas_legacy는 deprecated. 새로운 @/schemas/{domain}/ 스키마로 교체 필요
+import { subjectiveInfoSchema } from "@/schemas_legacy/survey/question/creation/subjectiveInfoSchema";
 import type { CreateSubjectiveQuestionRequest } from "@/types/dto";
 import { Button, FixedBottomLayout, Typo } from "@repo/ui/components";
 import { useAtomValue } from "jotai";

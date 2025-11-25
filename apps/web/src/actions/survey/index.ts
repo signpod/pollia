@@ -1,3 +1,13 @@
-export * from "./question";
-export * from "./answer";
-export * from "./read-survey";
+export { createSurvey } from "./create";
+
+export {
+  getUserSurveys,
+  getSurvey,
+  getSurveyQuestionIds,
+  getQuestionById,
+  getSurveyQuestionsDetail,
+} from "./read";
+
+export { updateSurvey } from "./update";
+
+export { deleteSurvey } from "./delete";
