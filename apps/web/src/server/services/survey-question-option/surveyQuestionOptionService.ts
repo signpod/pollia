@@ -1,3 +1,8 @@
+import {
+  optionInputSchema,
+  optionUpdateSchema,
+  optionsInputSchema,
+} from "@/schemas/survey-question-option";
 import { surveyQuestionOptionRepository } from "@/server/repositories/survey-question-option/surveyQuestionOptionRepository";
 import { surveyQuestionRepository } from "@/server/repositories/survey-question/surveyQuestionRepository";
 import { surveyRepository } from "@/server/repositories/survey/surveyRepository";
@@ -45,28 +50,16 @@ export class SurveyQuestionOptionService {
     },
     userId: string,
   ): Promise<SurveyQuestionOption> {
-    // Validation
-    if (!data.title || data.title.trim().length === 0) {
-      const error = new Error("옵션 제목은 필수입니다.");
+    const result = optionInputSchema.safeParse(data);
+    if (!result.success) {
+      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
       error.cause = 400;
       throw error;
     }
 
-    if (data.title.length > 100) {
-      const error = new Error("옵션 제목은 100자를 초과할 수 없습니다.");
-      error.cause = 400;
-      throw error;
-    }
+    await this.verifyQuestionAccess(result.data.questionId, userId);
 
-    if (data.order < 0) {
-      const error = new Error("옵션 순서는 0 이상이어야 합니다.");
-      error.cause = 400;
-      throw error;
-    }
-
-    await this.verifyQuestionAccess(data.questionId, userId);
-
-    const option = await this.optionRepo.create(data, userId);
+    const option = await this.optionRepo.create(result.data, userId);
     return option;
   }
 
@@ -81,35 +74,20 @@ export class SurveyQuestionOptionService {
     }>,
     userId: string,
   ): Promise<SurveyQuestionOption[]> {
-    if (!options || options.length === 0) {
-      const error = new Error("최소 1개 이상의 옵션이 필요합니다.");
+    const result = optionsInputSchema.safeParse({ questionId, options });
+    if (!result.success) {
+      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
       error.cause = 400;
       throw error;
     }
 
-    for (const option of options) {
-      if (!option.title || option.title.trim().length === 0) {
-        const error = new Error("옵션 제목은 필수입니다.");
-        error.cause = 400;
-        throw error;
-      }
+    await this.verifyQuestionAccess(result.data.questionId, userId);
 
-      if (option.title.length > 100) {
-        const error = new Error("옵션 제목은 100자를 초과할 수 없습니다.");
-        error.cause = 400;
-        throw error;
-      }
-
-      if (option.order < 0) {
-        const error = new Error("옵션 순서는 0 이상이어야 합니다.");
-        error.cause = 400;
-        throw error;
-      }
-    }
-
-    await this.verifyQuestionAccess(questionId, userId);
-
-    const createdOptions = await this.optionRepo.createMany(questionId, options, userId);
+    const createdOptions = await this.optionRepo.createMany(
+      result.data.questionId,
+      result.data.options,
+      userId,
+    );
     return createdOptions;
   }
 
@@ -123,31 +101,18 @@ export class SurveyQuestionOptionService {
     },
     userId: string,
   ): Promise<SurveyQuestionOption> {
-    const option = await this.getOptionById(optionId);
-
-    if (data.title !== undefined) {
-      if (!data.title || data.title.trim().length === 0) {
-        const error = new Error("옵션 제목은 필수입니다.");
-        error.cause = 400;
-        throw error;
-      }
-
-      if (data.title.length > 100) {
-        const error = new Error("옵션 제목은 100자를 초과할 수 없습니다.");
-        error.cause = 400;
-        throw error;
-      }
-    }
-
-    if (data.order !== undefined && data.order < 0) {
-      const error = new Error("옵션 순서는 0 이상이어야 합니다.");
+    const result = optionUpdateSchema.safeParse(data);
+    if (!result.success) {
+      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
       error.cause = 400;
       throw error;
     }
 
+    const option = await this.getOptionById(optionId);
+
     await this.verifyQuestionAccess(option.questionId, userId);
 
-    const updatedOption = await this.optionRepo.update(optionId, data);
+    const updatedOption = await this.optionRepo.update(optionId, result.data);
     return updatedOption;
   }
 

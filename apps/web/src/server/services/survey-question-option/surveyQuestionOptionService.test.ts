@@ -213,7 +213,7 @@ describe("SurveyQuestionOptionService", () => {
 
       // When & Then
       await expect(service.createOption(invalidData, "user1")).rejects.toThrow(
-        "옵션 제목은 필수입니다.",
+        "옵션 제목을 입력해주세요.",
       );
 
       expect(mockOptionRepo.create).not.toHaveBeenCalled();
@@ -452,7 +452,7 @@ describe("SurveyQuestionOptionService", () => {
 
       // When & Then
       await expect(service.updateOption("option1", { title: "" }, "user1")).rejects.toThrow(
-        "옵션 제목은 필수입니다.",
+        "옵션 제목을 입력해주세요.",
       );
     });
   });
