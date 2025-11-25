@@ -44,7 +44,7 @@ Pollia의 서버 코드는 **3계층 아키텍처**를 따릅니다:
 4. **일관된 네이밍**: 계층별로 일관된 메서드명 사용
 5. **주석 최소화**: JSDoc은 Public API에만 사용, 코드로 의도 표현
 6. **타입 분리**: Service 내부 타입은 별도 `types.ts`로 관리
-7. **스키마 공유**: Validation은 Zod 스키마를 Client/Service 공유 (End-to-End 검증)
+7. **스키마 공유**: Validation은 Zod 스키마를 Client/Service 공유 (End-to-End 검증) → `08-schemas.mdc`
 
 ---
 
@@ -285,144 +285,49 @@ it("Survey를 성공적으로 조회한다", async () => {
 
 ## Validation 스키마 (End-to-End 검증)
 
+> **상세 문서**: `08-schemas.mdc` 참조
+
 ### 개요
 
-Validation은 **Zod 스키마**를 사용하여 Client와 Service에서 공유합니다.
-이를 통해 End-to-End 검증 일관성을 보장합니다.
+Validation은 **Zod 스키마**를 사용하여 End-to-End 검증을 수행합니다.
+Client와 Server가 동일한 기본 스키마를 공유하되, Server는 필요 시 확장합니다.
 
 ```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   Client    │ ──▶ │   Schema    │ ◀── │   Service   │
-│  (폼 검증)   │     │  (Zod 공유)  │     │  (비즈니스)  │
-└─────────────┘     └─────────────┘     └─────────────┘
+Client 스키마 (공유)          Server 확장 스키마 (Server 전용)
+┌──────────────────┐         ┌──────────────────────────┐
+│ userInputSchema  │ ──────▶ │ userServerSchema         │
+│ - name           │ extend  │ - name                   │
+│ - email          │         │ - email                  │
+└──────────────────┘         │ + role (Server가 결정)    │
+                             └──────────────────────────┘
 ```
 
-### 디렉토리 구조
+### 핵심 원칙
 
-```
-src/schemas/
-├── survey/
-│   ├── index.ts                    # re-export
-│   ├── createSurveySchema.ts       # 생성 스키마
-│   └── updateSurveySchema.ts       # 수정 스키마
-├── reward/
-│   ├── index.ts
-│   ├── createRewardSchema.ts
-│   └── updateRewardSchema.ts
-└── index.ts                        # 전체 re-export
-```
-
-### 스키마 작성 규칙
-
-**파일명:**
-```
-✅ createSurveySchema.ts      # create{도메인}Schema.ts
-✅ updateRewardSchema.ts      # update{도메인}Schema.ts
-
-❌ surveyCreateSchema.ts      # 도메인-동작 순서 금지
-❌ CreateSurveySchema.ts      # PascalCase 파일명 금지
-```
-
-**스키마 예시:**
-
-```typescript
-// ✅ /schemas/reward/createRewardSchema.ts
-import { z } from "zod";
-
-export const createRewardSchema = z.object({
-  name: z
-    .string()
-    .min(1, "Reward 이름은 필수입니다.")
-    .max(100, "Reward 이름은 100자를 초과할 수 없습니다."),
-  description: z.string().optional(),
-  imageUrl: z.string().url().optional(),
-  paymentType: z.enum(["IMMEDIATE", "SCHEDULED"]),
-  scheduledDate: z.date().optional(),
-}).refine(
-  (data) => {
-    if (data.paymentType === "SCHEDULED" && !data.scheduledDate) {
-      return false;
-    }
-    return true;
-  },
-  { message: "예약 지급의 경우 예약 일시는 필수입니다." }
-);
-
-export type CreateRewardSchemaType = z.infer<typeof createRewardSchema>;
-```
-
-### Client에서 사용
-
-```typescript
-// ✅ Client 폼 검증
-import { createRewardSchema } from "@/schemas/reward";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-
-const form = useForm({
-  resolver: zodResolver(createRewardSchema),
-});
-```
+1. **End-to-End 검증**: Client와 Server가 동일한 기본 스키마 사용
+2. **보안 분리**: Server 전용 필드(Role, creatorId 등)는 Server에서만 처리
+3. **데이터 단위**: CRUD 동작이 아닌 데이터 단위로 스키마 구성
+4. **확장 패턴**: Client 스키마를 기반으로 Server가 필요 시 `.extend()` 사용
 
 ### Service에서 사용
 
 ```typescript
-// ✅ Service에서 스키마 검증
-import { createRewardSchema } from "@/schemas/reward";
-import type { CreateRewardInput } from "./types";
+import { surveyInputSchema } from "@/schemas/survey";
 
-export class RewardService {
-  async createReward(input: CreateRewardInput) {
-    const result = createRewardSchema.safeParse(input);
+export class SurveyService {
+  async createSurvey(input: CreateSurveyInput, userId: string) {
+    const result = surveyInputSchema.safeParse(input);
     if (!result.success) {
       const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
       error.cause = 400;
       throw error;
     }
-
-    return await this.repo.create(input);
+    // ...
   }
 }
 ```
 
-### 타입 분리 원칙
-
-스키마와 Service 타입은 **역할이 다릅니다**:
-
-| | Schema | Service 타입 |
-|--|--------|-------------|
-| **위치** | `/schemas/` | `/server/services/{도메인}/types.ts` |
-| **목적** | 검증 (validation) | 데이터 전달 (interface) |
-| **공유** | Client + Service | Service 내부만 |
-
-```typescript
-// ✅ 스키마에서 타입 추론 가능하지만, Service 타입은 별도 정의
-// /schemas/reward/createRewardSchema.ts
-export type CreateRewardSchemaType = z.infer<typeof createRewardSchema>;
-
-// /server/services/reward/types.ts (별도 유지)
-export interface CreateRewardInput {
-  name: string;
-  description?: string;
-  // ...
-}
-```
-
-**이유:**
-- Service 타입은 비즈니스 로직에 필요한 추가 필드가 있을 수 있음
-- 스키마 변경이 Service 타입에 자동 반영되면 예기치 않은 영향 발생 가능
-- 명시적 분리로 의도를 명확히 함
-
-### 도메인 로직 구현 시 체크리스트
-
-새로운 도메인 로직 구현 시:
-
-- [ ] `/schemas/{도메인}/` 폴더 생성
-- [ ] `create{도메인}Schema.ts` 작성
-- [ ] `update{도메인}Schema.ts` 작성 (필요시)
-- [ ] `index.ts`에서 re-export
-- [ ] Service에서 스키마 import 및 검증 적용
-- [ ] Client 폼에서 스키마 사용
+**스키마 작성 규칙, 확장 패턴, 에러 메시지 가이드 등 상세 내용은 `08-schemas.mdc` 참조**
 
 ---
 
@@ -440,27 +345,13 @@ export interface CreateRewardInput {
 ```typescript
 import prisma from "@/database/utils/prisma/client";
 
-/**
- * Survey Repository
- * Survey 도메인의 데이터 접근 계층
- */
 export class SurveyRepository {
-  /**
-   * Survey ID로 Survey 조회
-   * @param surveyId - Survey ID
-   * @returns Survey 또는 null
-   */
   async findById(surveyId: string) {
     return prisma.survey.findUnique({
       where: { id: surveyId },
     });
   }
 
-  /**
-   * Survey ID로 Question ID 목록 조회
-   * @param surveyId - Survey ID
-   * @returns Question ID 배열
-   */
   async findQuestionIdsBySurveyId(surveyId: string) {
     const questions = await prisma.surveyQuestion.findMany({
       where: { surveyId },
@@ -470,11 +361,6 @@ export class SurveyRepository {
     return questions.map(q => q.id);
   }
 
-  /**
-   * Survey 생성
-   * @param data - 생성할 Survey 데이터
-   * @returns 생성된 Survey
-   */
   async create(data: {
     title: string;
     description?: string;
@@ -487,11 +373,6 @@ export class SurveyRepository {
     });
   }
 
-  /**
-   * Survey 삭제
-   * @param surveyId - Survey ID
-   * @returns 삭제된 Survey
-   */
   async delete(surveyId: string) {
     return prisma.survey.delete({
       where: { id: surveyId },
@@ -499,18 +380,17 @@ export class SurveyRepository {
   }
 }
 
-// ✅ Singleton 패턴으로 export
 export const surveyRepository = new SurveyRepository();
 ```
 
 ### 필수 요소
 
 - [ ] **Class 기반 구현**
-- [ ] **JSDoc 주석** (클래스, 메서드, 파라미터)
 - [ ] **Singleton export** (`export const {도메인}Repository = new ...`)
 - [ ] **일관된 메서드명** (find*, create*, update*, delete*)
 - [ ] **에러 처리 없음** (null 반환)
 - [ ] **Prisma 쿼리만 포함**
+- [ ] **주석 없음** (코드로 의도 표현)
 
 ### 메서드 네이밍 규칙
 
@@ -1414,21 +1294,21 @@ describe("PollService", () => {
 #### Repository 생성
 - [ ] `src/server/repositories/{도메인}/{도메인}Repository.ts` 생성
 - [ ] Class 기반 구현
-- [ ] JSDoc 주석 추가
 - [ ] Singleton export
 - [ ] Prisma 쿼리만 포함
 - [ ] 에러 처리 없음 (null 반환)
+- [ ] 주석 없음
 
 #### Service 생성
 - [ ] `src/server/services/{도메인}/{도메인}Service.ts` 생성
 - [ ] Class 기반 구현
 - [ ] Constructor Injection
-- [ ] JSDoc 주석 추가 (@throws 포함)
 - [ ] Singleton export
 - [ ] Repository 주입
 - [ ] 비즈니스 로직 구현
 - [ ] Validation 로직 추가
 - [ ] 에러 처리 (error.cause)
+- [ ] 주석 없음
 
 #### Server Action 수정
 - [ ] Service import
