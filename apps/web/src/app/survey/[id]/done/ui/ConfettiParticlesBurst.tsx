@@ -37,10 +37,10 @@ export function ConfettiParticlesBurst() {
         distance,
         rotation: Math.random() * 720 - 360,
         color: COLORS[Math.floor(Math.random() * COLORS.length)] ?? "bg-violet-500",
-        width: 6 + Math.random() * 4,
-        height: 10 + Math.random() * 8,
+        width: 2 + Math.random() * 4,
+        height: 4 + Math.random() * 8,
         duration: 1 + Math.random() * 0.5,
-        delay: Math.random() * 0.2,
+        delay: 0,
       };
     });
 
