@@ -13,7 +13,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ConfettiParticlesBurst } from "./ConfettiParticlesBurst";
 
-export function Before() {
+export function SurveyCompletion() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { data: survey } = useReadSurvey(params.id);
@@ -32,7 +32,7 @@ export function Before() {
   const shareButtonsRef = useRef<HTMLDivElement>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [showContent, setShowContent] = useState(false);
-  const [showFirstText, setShowFirstText] = useState(true);
+  const [showFirstText, setShowFirstText] = useState(false);
 
   useEffect(() => {
     if (!boxRef.current) return;
@@ -58,6 +58,10 @@ export function Before() {
       0,
     );
 
+    tl.call(() => {
+      setShowFirstText(true);
+    });
+
     tl.fromTo(
       textRef.current,
       {
@@ -70,6 +74,7 @@ export function Before() {
         duration: 0.3,
         ease: "power2.out",
       },
+      "+=0.3",
     );
 
     tl.to(
@@ -94,7 +99,7 @@ export function Before() {
       {
         backgroundColor: "#ffffff",
         borderRadius: "16px",
-        boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.08)",
+        boxShadow: "0px 4px 20px rgba(92, 11, 11, 0.08)",
         duration: 0.3,
         ease: "power2.inOut",
       },
@@ -169,7 +174,7 @@ export function Before() {
     return () => {
       tl.kill();
     };
-  }, [showContent, imageUrl]);
+  }, [showContent]);
 
   return (
     <div className="relative w-full flex flex-col items-center gap-6 pt-[220px] flex-1 overflow-hidden bg-white">

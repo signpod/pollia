@@ -1,7 +1,7 @@
 import { getSurveyQuestionsDetail } from "@/actions/survey";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
 import { getQueryClient } from "@/lib/getQueryClient";
-import { Before } from "./ui";
+import { SurveyCompletion } from "./ui";
 
 export default async function SurveyPage({
   params,
@@ -16,5 +16,5 @@ export default async function SurveyPage({
     queryFn: () => getSurveyQuestionsDetail(id),
   });
 
-  return <Before />;
+  return <SurveyCompletion />;
 }
