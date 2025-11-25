@@ -38,3 +38,21 @@ alwaysApply: true
   - 테스트 코드의 Given-When-Then 주석은 허용
   - 코드 자체가 명확하다면 설명 주석을 추가하지 않음
   - 좋은 변수명, 함수명, 타입 정의로 의도를 표현
+
+### 라이브러리 사용 규칙
+
+- **Context7 MCP를 사용하여 라이브러리 버전에 맞는 구현을 확인한다**
+  - 라이브러리 API 사용 시 deprecated 경고가 발생하면 Context7로 최신 문서 확인
+  - 새로운 라이브러리 기능 사용 전 해당 버전에서 지원하는지 확인
+  - 예시: Zod v4에서 `z.string().url()`은 deprecated, `z.url()`로 대체
+
+- **라이브러리 버전 확인 방법**
+  ```bash
+  # package.json에서 버전 확인
+  grep "{라이브러리명}" package.json
+  ```
+
+- **Context7 MCP 사용 예시**
+  1. `resolve-library-id`로 라이브러리 ID 조회
+  2. `get-library-docs`로 특정 기능에 대한 최신 문서 확인
+  3. 버전에 맞는 올바른 API 사용
