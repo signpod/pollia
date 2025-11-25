@@ -1,18 +1,21 @@
 "use client";
 
+import { ROUTES } from "@/constants/routes";
 import { useReadSurvey } from "@/hooks/survey";
 import PolliaLogo from "@public/images/pollia-logo.png";
-import { Typo } from "@repo/ui/components";
+import KakaoIcon from "@public/svgs/kakao-icon.svg";
+import { ButtonV2, FixedBottomLayout, Typo } from "@repo/ui/components";
 import { motion } from "framer-motion";
 import gsap from "gsap";
-import { Check } from "lucide-react";
+import { Check, Share2 } from "lucide-react";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ConfettiParticlesBurst } from "./ConfettiParticlesBurst";
 
 export function Before() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
   const { data: survey } = useReadSurvey(params.id);
   const { title, estimatedMinutes, deadline, imageUrl, target } = survey?.data ?? {};
 
@@ -24,9 +27,12 @@ export function Before() {
   const infoBoxRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
-
+  const afterTitleRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const shareButtonsRef = useRef<HTMLDivElement>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [showContent, setShowContent] = useState(false);
+  const [showFirstText, setShowFirstText] = useState(true);
 
   useEffect(() => {
     if (!boxRef.current) return;
@@ -76,23 +82,52 @@ export function Before() {
       "+=0.3",
     );
 
+    // 기존 텍스트 페이드 아웃
+    tl.to(textRef.current, { opacity: 0, y: -10, duration: 0.2 }, "-=0.2");
+
+    tl.call(() => {
+      setShowFirstText(false);
+    });
+
     tl.to(
       boxRef.current,
       {
         backgroundColor: "#ffffff",
         borderRadius: "16px",
         boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.08)",
-        duration: 0.4,
+        duration: 0.3,
         ease: "power2.inOut",
       },
       "-=0.3",
     );
 
+    // 설문 내용 표시
     tl.call(() => {
       setShowContent(true);
     });
 
-    tl.to(textRef.current, { opacity: 0, y: -10 }, "-=0.1");
+    // afterTitle, shareButtons, button 애니메이션 (DOM 렌더링 대기)
+    tl.add(() => {
+      setTimeout(() => {
+        if (afterTitleRef.current && shareButtonsRef.current && buttonRef.current) {
+          const subTl = gsap.timeline();
+
+          subTl.to(afterTitleRef.current, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" });
+          subTl.to(shareButtonsRef.current, {
+            opacity: 1,
+            y: 0,
+            duration: 0.3,
+            ease: "power2.out",
+          });
+          subTl.fromTo(
+            buttonRef.current,
+            { opacity: 0, y: 10 },
+            { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" },
+            "-=0.1",
+          );
+        }
+      }, 100);
+    });
 
     return () => {
       tl.kill();
@@ -141,12 +176,22 @@ export function Before() {
       {showConfetti && <ConfettiParticlesBurst />}
       <motion.div
         layout
-        transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+        transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
         className="flex flex-col items-center gap-6 bg-white/80 p-6 w-full"
       >
+        {showContent && !showFirstText && (
+          <div ref={afterTitleRef} style={{ opacity: 0, transform: "translateY(10px)" }}>
+            <Typo.MainTitle size="small" className="text-center">
+              방금 참여한 설문을
+              <br />
+              친구들에게도 공유해보세요👀
+            </Typo.MainTitle>
+          </div>
+        )}
+
         <motion.div
           layout
-          transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+          transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
           ref={boxRef}
           className="relative flex flex-col justify-center items-center bg-violet-100 rounded-[20px] p-4"
           style={{
@@ -201,15 +246,52 @@ export function Before() {
           )}
         </motion.div>
 
-        <div ref={textRef}>
-          <Typo.MainTitle size="small" className="text-center text-primary">
-            가나디 설문조사
-          </Typo.MainTitle>
-          <Typo.MainTitle size="small" className="text-center">
-            응답을 성공적으로 제출했어요
-          </Typo.MainTitle>
-        </div>
+        {showFirstText && (
+          <div ref={textRef}>
+            <Typo.MainTitle size="small" className="text-center text-primary">
+              {title}
+            </Typo.MainTitle>
+            <Typo.MainTitle size="small" className="text-center">
+              응답을 성공적으로 제출했어요
+            </Typo.MainTitle>
+          </div>
+        )}
+
+        {showContent && (
+          <div
+            ref={shareButtonsRef}
+            className="flex gap-8 w-full justify-center"
+            style={{ opacity: 0, transform: "translateY(10px)" }}
+          >
+            <button type="button" className="flex flex-col gap-2">
+              <div className="bg-[#FEE500] size-12 p-3 rounded-sm">
+                <KakaoIcon />
+              </div>
+              <Typo.Body className="text-sub">카카오톡</Typo.Body>
+            </button>
+
+            <button type="button" className="flex flex-col gap-2">
+              <div className="bg-white border border-default size-12 p-3 rounded-sm">
+                <Share2 />
+              </div>
+              <Typo.Body className="text-sub">공유하기</Typo.Body>
+            </button>
+          </div>
+        )}
       </motion.div>
+      {showContent && (
+        <FixedBottomLayout.Content className="px-5 py-3">
+          <ButtonV2
+            ref={buttonRef}
+            variant="primary"
+            size="large"
+            className="w-full opacity-0"
+            onClick={() => router.push(ROUTES.SURVEY(params.id))}
+          >
+            <div className="flex justify-center items-center text-center flex-1">메인으로 가기</div>
+          </ButtonV2>
+        </FixedBottomLayout.Content>
+      )}
     </div>
   );
 }
