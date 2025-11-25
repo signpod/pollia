@@ -5,9 +5,9 @@ model SurveyQuestionOption {
     imageUrl    String? @map("image_url")
     order       Int
 
-    questionId String         @map("question_id")
-    question   SurveyQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
-    answers    SurveyAnswer[]
+    questionId String                 @map("question_id")
+    question   SurveyQuestion         @relation(fields: [questionId], references: [id], onDelete: Cascade)
+    answers    SurveyQuestionAnswer[]
 
     fileUploadId String?     @map("file_upload_id")
     fileUpload   FileUpload? @relation(fields: [fileUploadId], references: [id])

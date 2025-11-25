@@ -11,7 +11,7 @@ model SurveyQuestion {
     surveyId String?                @map("survey_id")
     survey   Survey?                @relation(fields: [surveyId], references: [id], onDelete: Cascade)
     options  SurveyQuestionOption[]
-    answers  SurveyAnswer[]
+    answers  SurveyQuestionAnswer[]
 
     createdAt DateTime @default(now()) @map("created_at")
     updatedAt DateTime @updatedAt @map("updated_at")

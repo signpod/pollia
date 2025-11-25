@@ -1,0 +1,22 @@
+model SurveyResponse {
+    id          String    @id @default(cuid())
+    startedAt   DateTime  @default(now()) @map("started_at")
+    completedAt DateTime? @map("completed_at")
+
+    surveyId String @map("survey_id")
+    survey   Survey @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+
+    userId String @map("user_id")
+    user   User   @relation(fields: [userId], references: [id])
+
+    answers SurveyQuestionAnswer[]
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@unique([surveyId, userId])
+    @@index([surveyId])
+    @@index([userId])
+    @@index([completedAt])
+    @@map("survey_responses")
+}
