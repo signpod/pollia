@@ -23,7 +23,7 @@ export interface CompleteSurveyResponseResponse {
     surveyId: string;
     userId: string;
     startedAt: Date;
-    completedAt: Date;
+    completedAt: Date | null;
     updatedAt: Date;
   };
 }
