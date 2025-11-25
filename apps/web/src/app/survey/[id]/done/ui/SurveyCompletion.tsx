@@ -56,7 +56,7 @@ export function SurveyCompletion() {
     );
 
     // 0.3초 대기 후 텍스트 애니메이션
-    tl.to({}, { duration: 0.3 }); // 빈 애니메이션으로 딜레이 생성
+    tl.to({}, { duration: 0.2 }); // 빈 애니메이션으로 딜레이 생성
 
     tl.call(() => {
       setShowFirstText(true);
