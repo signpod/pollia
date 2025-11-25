@@ -2593,6 +2593,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@lottiefiles/dotlottie-react@npm:^0.17.8":
+  version: 0.17.8
+  resolution: "@lottiefiles/dotlottie-react@npm:0.17.8"
+  dependencies:
+    "@lottiefiles/dotlottie-web": "npm:0.57.0"
+  peerDependencies:
+    react: ^17 || ^18 || ^19
+  checksum: 10c0/fe31bd222787be3b6d9d7d24f879142174ef4f2981d2dc31339bfb38e9d0fef5ab3ddd676a5943da1cf677b56a5c0cbc6d4c40e090f3d3da7e2cd791196b8277
+  languageName: node
+  linkType: hard
+
+"@lottiefiles/dotlottie-web@npm:0.57.0":
+  version: 0.57.0
+  resolution: "@lottiefiles/dotlottie-web@npm:0.57.0"
+  checksum: 10c0/0d9b6fa450ccae5de6ced375cfced383733a90250c1d2c0cee95e4b1533e4ec0a1c37b75439cf6e956d2369980697a779ba31dd31527f9e67ff936569e59f689
+  languageName: node
+  linkType: hard
+
 "@mdx-js/react@npm:^3.0.0":
   version: 3.1.1
   resolution: "@mdx-js/react@npm:3.1.1"
@@ -8545,6 +8563,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"gsap@npm:^3.13.0":
+  version: 3.13.0
+  resolution: "gsap@npm:3.13.0"
+  checksum: 10c0/a42dd2e02467a4abe96409aaf6cd0e5d697c72e05ec13c18c2271330493983aa63cc717c9dd0740fda2f884d0f56c7b98fc18b13500f0c1da94864985840da7c
+  languageName: node
+  linkType: hard
+
 "handlebars@npm:^4.7.8":
   version: 4.7.8
   resolution: "handlebars@npm:4.7.8"
@@ -14063,6 +14088,7 @@ __metadata:
   resolution: "web@workspace:apps/web"
   dependencies:
     "@jridgewell/resolve-uri": "npm:^3.1.2"
+    "@lottiefiles/dotlottie-react": "npm:^0.17.8"
     "@prisma/client": "npm:^6.19.0"
     "@radix-ui/react-avatar": "npm:^1.1.10"
     "@radix-ui/react-dialog": "npm:^1.1.1"
@@ -14090,6 +14116,7 @@ __metadata:
     dotenv-cli: "npm:^10.0.0"
     embla-carousel-react: "npm:^8.6.0"
     framer-motion: "npm:^12.23.15"
+    gsap: "npm:^3.13.0"
     jest: "npm:^29.7.0"
     jest-environment-node: "npm:^29.7.0"
     jotai: "npm:^2.14.0"
