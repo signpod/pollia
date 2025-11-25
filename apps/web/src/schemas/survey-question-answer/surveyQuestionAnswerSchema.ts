@@ -1,6 +1,8 @@
 import { SurveyQuestionType } from "@prisma/client";
 import { z } from "zod";
 
+const responseIdSchema = z.string().min(1, "응답 ID가 필요합니다.");
+
 const questionIdSchema = z.string().min(1, "질문 ID가 필요합니다.");
 
 const optionIdSchema = z.string().min(1, "선택지 ID가 필요합니다.");
@@ -19,7 +21,8 @@ const scaleAnswerSchema = z
 
 const questionTypeSchema = z.enum(SurveyQuestionType);
 
-export const surveyAnswerInputSchema = z.object({
+export const questionAnswerInputSchema = z.object({
+  responseId: responseIdSchema,
   questionId: questionIdSchema,
   optionId: optionIdSchema.optional(),
   textAnswer: textAnswerSchema.optional(),
@@ -63,11 +66,11 @@ const submitAnswerItemSchema = z
   );
 
 export const submitAnswersSchema = z.object({
-  surveyId: z.string().min(1, "설문조사 ID가 필요합니다."),
+  responseId: responseIdSchema,
   answers: z.array(submitAnswerItemSchema).min(1, "최소 1개 이상의 답변이 필요합니다."),
 });
 
-export const surveyAnswerUpdateSchema = z
+export const questionAnswerUpdateSchema = z
   .object({
     optionId: optionIdSchema.optional(),
     textAnswer: textAnswerSchema.optional(),
@@ -77,7 +80,7 @@ export const surveyAnswerUpdateSchema = z
     message: "최소 하나의 필드를 수정해야 합니다.",
   });
 
-export type SurveyAnswerInput = z.infer<typeof surveyAnswerInputSchema>;
+export type QuestionAnswerInput = z.infer<typeof questionAnswerInputSchema>;
 export type SubmitAnswers = z.infer<typeof submitAnswersSchema>;
 export type SubmitAnswerItem = z.infer<typeof submitAnswerItemSchema>;
-export type SurveyAnswerUpdate = z.infer<typeof surveyAnswerUpdateSchema>;
+export type QuestionAnswerUpdate = z.infer<typeof questionAnswerUpdateSchema>;

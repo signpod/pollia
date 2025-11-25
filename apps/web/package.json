@@ -17,6 +17,7 @@
     "test:coverage": "jest --config jest.config.cjs --coverage",
     "db:pull": "dotenv -e .env.local -- prisma db pull",
     "db:push": "dotenv -e .env.local -- prisma db push",
+    "db:validate": "dotenv -e .env.local -- prisma validate",
     "db:generate": "dotenv -e .env.local -- prisma generate",
     "db:studio": "dotenv -e .env.local -- prisma studio",
     "db:migrate": "dotenv -e .env.local -- prisma migrate dev",
