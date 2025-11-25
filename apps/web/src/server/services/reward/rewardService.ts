@@ -1,5 +1,5 @@
+import { rewardInputSchema, rewardUpdateSchema } from "@/schemas/reward";
 import { rewardRepository } from "@/server/repositories/reward/rewardRepository";
-import type { PaymentType } from "@prisma/client";
 import type { CreateRewardInput, UpdateRewardInput } from "./types";
 
 export class RewardService {
@@ -22,67 +22,32 @@ export class RewardService {
   }
 
   async createReward(input: CreateRewardInput) {
-    this.validateRewardData(input);
-    return await this.repo.create(input);
+    const result = rewardInputSchema.safeParse(input);
+    if (!result.success) {
+      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
+      error.cause = 400;
+      throw error;
+    }
+
+    return await this.repo.create(result.data);
   }
 
   async updateReward(rewardId: string, input: UpdateRewardInput) {
     await this.getReward(rewardId);
 
-    if (input.name !== undefined) {
-      this.validateName(input.name);
+    const result = rewardUpdateSchema.safeParse(input);
+    if (!result.success) {
+      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
+      error.cause = 400;
+      throw error;
     }
 
-    if (input.paymentType !== undefined) {
-      this.validatePaymentType(input.paymentType, input.scheduledDate);
-    }
-
-    return await this.repo.update(rewardId, input);
+    return await this.repo.update(rewardId, result.data);
   }
 
   async deleteReward(rewardId: string): Promise<void> {
     await this.getReward(rewardId);
     await this.repo.delete(rewardId);
-  }
-
-  private validateRewardData(data: {
-    name: string;
-    paymentType: PaymentType;
-    scheduledDate?: Date;
-  }): void {
-    this.validateName(data.name);
-    this.validatePaymentType(data.paymentType, data.scheduledDate);
-  }
-
-  private validateName(name: string): void {
-    if (!name || name.trim().length === 0) {
-      const error = new Error("Reward 이름은 필수입니다.");
-      error.cause = 400;
-      throw error;
-    }
-
-    if (name.length > 100) {
-      const error = new Error("Reward 이름은 100자를 초과할 수 없습니다.");
-      error.cause = 400;
-      throw error;
-    }
-  }
-
-  private validatePaymentType(paymentType: PaymentType, scheduledDate?: Date): void {
-    if (paymentType === "SCHEDULED" && !scheduledDate) {
-      const error = new Error("예약 지급의 경우 예약 일시는 필수입니다.");
-      error.cause = 400;
-      throw error;
-    }
-
-    if (paymentType === "SCHEDULED" && scheduledDate) {
-      const now = new Date();
-      if (scheduledDate <= now) {
-        const error = new Error("예약 일시는 현재 시간보다 이후여야 합니다.");
-        error.cause = 400;
-        throw error;
-      }
-    }
   }
 }
 
