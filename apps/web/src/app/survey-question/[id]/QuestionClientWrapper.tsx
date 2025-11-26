@@ -232,7 +232,7 @@ function SurveyQuestionRenderer({
       currentOrder={questionData.order}
       totalQuestionCount={totalQuestionCount}
       isFirstQuestion={isFirstStep}
-      isNextDisabled={!canGoNext || isProcessing}
+      isNextDisabled={!canGoNext || isProcessing || isInitializing}
       onPrevious={handlePrevious}
       onNext={handleNext}
       nextButtonText={isLastStep ? (isCompletingSurvey ? "제출 중..." : "완료") : "다음"}
