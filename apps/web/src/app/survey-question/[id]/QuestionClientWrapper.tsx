@@ -7,10 +7,10 @@ import { useReadSurveyQuestionsDetail } from "@/hooks/survey/question/useReadSur
 import type { SurveyAnswerItem } from "@/types/dto";
 import { StepProvider, useModal, useStep } from "@repo/ui/components";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect } from "react";
 import { useRef, useState } from "react";
-import { SurveyMultipleChoice, SurveyScale, SurveySubjective } from "./ui";
+import { SurveyMultipleChoice, SurveyScale, SurveySubjective } from "../ui";
 
 const SURVEY_EXIT_MODAL = {
   title: "설문을 종료하실 건가요?",
@@ -32,8 +32,10 @@ export function QuestionClientWrapper({ dehydratedState }: QuestionClientWrapper
 }
 
 function SurveyQuestionContent() {
-  const params = useParams<{ id: string }>();
-  const { data: questions } = useReadSurveyQuestionsDetail(params.id);
+  const searchParams = useSearchParams();
+  const surveyId = searchParams.get("surveyId");
+
+  const { data: questions } = useReadSurveyQuestionsDetail(surveyId ?? "");
 
   const steps = createQuestionSteps({
     questions: questions.data,
@@ -56,6 +58,8 @@ function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: nu
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showModal, close } = useModal();
+  const searchParams = useSearchParams();
+  const surveyId = searchParams.get("surveyId") ?? "";
 
   const answersRef = useRef<Map<string, SurveyAnswerItem>>(new Map());
   const hasShownToastsRef = useRef({
@@ -140,7 +144,6 @@ function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: nu
   }, [isLastStep, goNext, handleSubmit]);
 
   const showExitConfirmModal = useCallback(() => {
-    const surveyIntroPath = `/survey/${params.id}`;
     showModal({
       ...SURVEY_EXIT_MODAL,
       showCancelButton: true,
@@ -148,10 +151,10 @@ function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: nu
         close();
       },
       onCancel: () => {
-        router.push(surveyIntroPath);
+        router.push(ROUTES.SURVEY(surveyId));
       },
     });
-  }, [params.id, showModal, close, router]);
+  }, []);
 
   const handlePrevious = useCallback(() => {
     if (isFirstStep) {
@@ -159,15 +162,13 @@ function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: nu
     } else {
       goBack();
     }
-  }, [isFirstStep, goBack, showExitConfirmModal]);
+  }, []);
 
   useEffect(() => {
     const currentPathRef = { current: window.location.pathname + window.location.search };
 
     const handlePopState = () => {
-      const surveyIntroPath = `/survey/${params.id}`;
-
-      if (window.location.pathname === surveyIntroPath) {
+      if (window.location.pathname === ROUTES.SURVEY(surveyId)) {
         window.history.pushState(null, "", currentPathRef.current);
         showExitConfirmModal();
       } else {
@@ -180,7 +181,7 @@ function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: nu
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, [params.id, showExitConfirmModal]);
+  }, []);
 
   return (
     <ContentComponent

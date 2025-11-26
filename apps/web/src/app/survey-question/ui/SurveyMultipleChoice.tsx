@@ -1,5 +1,5 @@
+import { SurveyQuestionOptionButton } from "@/app/survey/[id]/components";
 import { QuestionStepContentProps } from "@/constants/surveyQuestion";
-import { SurveyQuestionOptionButton } from "../../components/SurveyQuestionOptionButton";
 import { SurveyQuestionTemplate } from "../[id]/components/SurveyQuestionTemplate";
 import {
   SurveyMultipleChoiceProvider,
