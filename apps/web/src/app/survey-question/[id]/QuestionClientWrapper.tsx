@@ -7,7 +7,7 @@ import { useReadSurveyQuestionsDetail } from "@/hooks/survey/question/useReadSur
 import type { SurveyAnswerItem } from "@/types/dto";
 import { StepProvider, useModal, useStep } from "@repo/ui/components";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect } from "react";
 import { useRef, useState } from "react";
 import { SurveyMultipleChoice, SurveyScale, SurveySubjective } from "../ui";
@@ -78,7 +78,6 @@ function SurveyQuestionRenderer({
   totalQuestionCount,
   surveyId,
 }: { totalQuestionCount: number; surveyId: string }) {
-  const params = useParams<{ id: string }>();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showModal, close } = useModal();
@@ -127,7 +126,7 @@ function SurveyQuestionRenderer({
       console.log("=".repeat(50));
       console.log("📝 설문조사 제출");
       console.log("=".repeat(50));
-      console.log("설문조사 ID:", params.id);
+      console.log("설문조사 ID:", surveyId);
       console.log("답변 개수:", answers.length);
       console.log("\n답변 상세:");
       answers.forEach((answer, index) => {
@@ -155,7 +154,7 @@ function SurveyQuestionRenderer({
       toast.warning(SURVEY_TOAST_MESSAGE.error.message, { id: SURVEY_TOAST_MESSAGE.error.id });
       setIsSubmitting(false);
     }
-  }, [isSubmitting, params.id]);
+  }, [isSubmitting, surveyId]);
 
   const handleNext = useCallback(() => {
     if (isLastStep) {
