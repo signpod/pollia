@@ -176,7 +176,7 @@ function SurveyQuestionRenderer({
         router.push(ROUTES.SURVEY(surveyId));
       },
     });
-  }, []);
+  }, [surveyId, showModal, close, router]);
 
   const handlePrevious = useCallback(() => {
     if (isFirstStep) {
@@ -184,7 +184,7 @@ function SurveyQuestionRenderer({
     } else {
       goBack();
     }
-  }, []);
+  }, [isFirstStep, goBack, showExitConfirmModal]);
 
   useEffect(() => {
     const currentPathRef = { current: window.location.pathname + window.location.search };
@@ -203,7 +203,7 @@ function SurveyQuestionRenderer({
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, []);
+  }, [surveyId, showExitConfirmModal]);
 
   return (
     <ContentComponent
