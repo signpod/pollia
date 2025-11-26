@@ -7,7 +7,7 @@ import { useReadSurveyQuestionsDetail } from "@/hooks/survey/question/useReadSur
 import type { SurveyAnswerItem } from "@/types/dto";
 import { StepProvider, useModal, useStep } from "@repo/ui/components";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect } from "react";
 import { useRef, useState } from "react";
 import { SurveyMultipleChoice, SurveyScale, SurveySubjective } from "../ui";
@@ -46,18 +46,19 @@ function SurveyQuestionContent({ surveyId }: { surveyId: string }) {
 
   return (
     <StepProvider steps={steps} initialStep={0}>
-      <SurveyQuestionRenderer totalQuestionCount={questions.data.length} />
+      <SurveyQuestionRenderer totalQuestionCount={questions.data.length} surveyId={surveyId} />
     </StepProvider>
   );
 }
 
-function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: number }) {
+function SurveyQuestionRenderer({
+  totalQuestionCount,
+  surveyId,
+}: { totalQuestionCount: number; surveyId: string }) {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showModal, close } = useModal();
-  const searchParams = useSearchParams();
-  const surveyId = searchParams.get("surveyId") ?? "";
 
   const answersRef = useRef<Map<string, SurveyAnswerItem>>(new Map());
   const hasShownToastsRef = useRef({
@@ -124,7 +125,7 @@ function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: nu
 
       setTimeout(() => {
         setIsSubmitting(false);
-        router.push(ROUTES.SURVEY_DONE(params.id));
+        router.push(ROUTES.SURVEY_DONE(surveyId));
       }, 500);
     } catch (error) {
       console.error("설문 제출 중 오류 발생:", error);
