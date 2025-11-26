@@ -1,7 +1,7 @@
 "use client";
 
 import { AuthError } from "@/hooks/login/useKakaoLogin";
-import { useReadSurvey } from "@/hooks/survey";
+import { useReadSurvey, useReadSurveyQuestionIds } from "@/hooks/survey";
 import { cleanTiptapHTML } from "@/lib/utils";
 import { FixedBottomLayout, FloatingButton, Typo } from "@repo/ui/components";
 import { Gift } from "lucide-react";
@@ -20,6 +20,8 @@ import { BottomButton } from "./ui";
 export function SurveyIntro({ initialError }: { initialError: AuthError | null }) {
   const params = useParams<{ id: string }>();
   const { data: survey } = useReadSurvey(params.id);
+  const { data: questionIds } = useReadSurveyQuestionIds(params.id);
+  const firstQuestionId = questionIds?.data.questionIds[0];
   const { brandLogoUrl, title, estimatedMinutes, deadline, imageUrl, description, target } =
     survey?.data ?? {};
   const [isRewardVisible, setIsRewardVisible] = useState(true);
@@ -80,7 +82,12 @@ export function SurveyIntro({ initialError }: { initialError: AuthError | null }
               onClick={scrollToReward}
             />
           </div>
-          <BottomButton params={params} initialError={initialError} deadline={deadline} />
+          <BottomButton
+            params={params}
+            firstQuestionId={firstQuestionId ?? ""}
+            initialError={initialError}
+            deadline={deadline}
+          />
         </FixedBottomLayout.Content>
       </main>
       <div className="flex justify-center">

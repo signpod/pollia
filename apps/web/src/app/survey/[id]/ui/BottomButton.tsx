@@ -15,11 +15,17 @@ const LOGIN_BUTTON_TEXT = {
 
 interface BottomButtonProps {
   params: { id: string };
+  firstQuestionId: string;
   initialError: AuthError | null;
   deadline?: Survey["deadline"];
 }
 
-export function BottomButton({ params, initialError, deadline }: BottomButtonProps) {
+export function BottomButton({
+  params,
+  firstQuestionId,
+  initialError,
+  deadline,
+}: BottomButtonProps) {
   const { handleKakaoLogin } = useKakaoLogin({
     initialError,
     redirectPath: ROUTES.SURVEY(params.id),
@@ -33,7 +39,7 @@ export function BottomButton({ params, initialError, deadline }: BottomButtonPro
     if (!isLoggedIn) {
       handleKakaoLogin();
     } else {
-      router.push(ROUTES.SURVEY_QUESTION(params.id));
+      router.push(`${ROUTES.SURVEY_QUESTION(firstQuestionId)}?surveyId=${params.id}`);
     }
   };
 
