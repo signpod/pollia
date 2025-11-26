@@ -1,10 +1,13 @@
 import { AuthGate } from "@/components/providers/AuthGate";
 import Providers from "@/components/providers/QueryProvider";
+import { ModalProvider } from "@repo/ui/components";
 
-export default function QuestionLayout({ children }: { children: React.ReactNode }) {
+export default function SurveyQuestionLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AuthGate>
-      <Providers>{children}</Providers>
-    </AuthGate>
+    <ModalProvider>
+      <AuthGate>
+        <Providers>{children}</Providers>
+      </AuthGate>
+    </ModalProvider>
   );
 }
