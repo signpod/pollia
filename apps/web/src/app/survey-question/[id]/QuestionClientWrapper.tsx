@@ -22,18 +22,27 @@ const SURVEY_EXIT_MODAL = {
 interface QuestionClientWrapperProps {
   surveyId: string;
   dehydratedState: DehydratedState;
+  currentQuestionId: string;
 }
 
-export function QuestionClientWrapper({ surveyId, dehydratedState }: QuestionClientWrapperProps) {
+export function QuestionClientWrapper({
+  surveyId,
+  dehydratedState,
+  currentQuestionId,
+}: QuestionClientWrapperProps) {
   return (
     <HydrationBoundary state={dehydratedState}>
-      <SurveyQuestionContent surveyId={surveyId} />
+      <SurveyQuestionContent surveyId={surveyId} currentQuestionId={currentQuestionId} />
     </HydrationBoundary>
   );
 }
 
-function SurveyQuestionContent({ surveyId }: { surveyId: string }) {
+function SurveyQuestionContent({
+  surveyId,
+  currentQuestionId,
+}: { surveyId: string; currentQuestionId: string }) {
   const { data: questions } = useReadSurveyQuestionsDetail(surveyId ?? "");
+  const router = useRouter();
 
   const steps = createQuestionSteps({
     questions: questions.data,
@@ -44,8 +53,22 @@ function SurveyQuestionContent({ surveyId }: { surveyId: string }) {
     },
   });
 
+  const initialStep = steps.findIndex(
+    step => (step as ExtendedQuestionStepConfig).questionData.id === currentQuestionId,
+  );
+
   return (
-    <StepProvider steps={steps} initialStep={0}>
+    <StepProvider
+      steps={steps}
+      initialStep={initialStep >= 0 ? initialStep : 0}
+      onStepChange={currentStepIndex => {
+        const newQuestionId = (steps[currentStepIndex] as ExtendedQuestionStepConfig)?.questionData
+          .id;
+        if (newQuestionId && newQuestionId !== currentQuestionId) {
+          router.push(ROUTES.SURVEY_QUESTION(newQuestionId));
+        }
+      }}
+    >
       <SurveyQuestionRenderer totalQuestionCount={questions.data.length} surveyId={surveyId} />
     </StepProvider>
   );

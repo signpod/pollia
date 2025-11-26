@@ -27,5 +27,11 @@ export default async function SurveyQuestionPage({
 
   const dehydratedState = dehydrate(queryClient);
 
-  return <QuestionClientWrapper surveyId={surveyId ?? ""} dehydratedState={dehydratedState} />;
+  return (
+    <QuestionClientWrapper
+      surveyId={surveyId ?? ""}
+      dehydratedState={dehydratedState}
+      currentQuestionId={id}
+    />
+  );
 }
