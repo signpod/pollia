@@ -1,4 +1,4 @@
-import { getSurveyQuestions } from "@/actions/survey";
+import { getSurveyQuestions } from "@/actions/survey-question";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
 import { SurveyQuestionType } from "@prisma/client";
 import { useInfiniteQuery } from "@tanstack/react-query";

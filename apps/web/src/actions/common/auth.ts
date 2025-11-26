@@ -70,7 +70,7 @@ export async function requireAdmin(): Promise<{
   const supabaseUser = await requireAuth();
 
   try {
-    const dbUser = await userService.getCurrentUser(supabaseUser.id);
+    const dbUser = await userService.getUserById(supabaseUser.id);
 
     if (dbUser.role !== UserRole.ADMIN) {
       const error = new Error("관리자 권한이 필요합니다.");

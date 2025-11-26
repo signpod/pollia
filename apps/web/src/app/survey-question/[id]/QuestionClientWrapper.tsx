@@ -7,10 +7,10 @@ import { useReadSurveyQuestionsDetail } from "@/hooks/survey/question/useReadSur
 import type { SurveyAnswerItem } from "@/types/dto";
 import { StepProvider, useModal, useStep } from "@repo/ui/components";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect } from "react";
 import { useRef, useState } from "react";
-import { SurveyMultipleChoice, SurveyScale, SurveySubjective } from "./ui";
+import { SurveyMultipleChoice, SurveyScale, SurveySubjective } from "../ui";
 
 const SURVEY_EXIT_MODAL = {
   title: "설문을 종료하실 건가요?",
@@ -20,20 +20,29 @@ const SURVEY_EXIT_MODAL = {
 } as const;
 
 interface QuestionClientWrapperProps {
+  surveyId: string;
   dehydratedState: DehydratedState;
+  currentQuestionId: string;
 }
 
-export function QuestionClientWrapper({ dehydratedState }: QuestionClientWrapperProps) {
+export function QuestionClientWrapper({
+  surveyId,
+  dehydratedState,
+  currentQuestionId,
+}: QuestionClientWrapperProps) {
   return (
     <HydrationBoundary state={dehydratedState}>
-      <SurveyQuestionContent />
+      <SurveyQuestionContent surveyId={surveyId} currentQuestionId={currentQuestionId} />
     </HydrationBoundary>
   );
 }
 
-function SurveyQuestionContent() {
-  const params = useParams<{ id: string }>();
-  const { data: questions } = useReadSurveyQuestionsDetail(params.id);
+function SurveyQuestionContent({
+  surveyId,
+  currentQuestionId,
+}: { surveyId: string; currentQuestionId: string }) {
+  const { data: questions } = useReadSurveyQuestionsDetail(surveyId);
+  const router = useRouter();
 
   const steps = createQuestionSteps({
     questions: questions.data,
@@ -44,15 +53,31 @@ function SurveyQuestionContent() {
     },
   });
 
+  const initialStep = steps.findIndex(
+    step => (step as ExtendedQuestionStepConfig).questionData.id === currentQuestionId,
+  );
+
   return (
-    <StepProvider steps={steps} initialStep={0} syncWithUrl>
-      <SurveyQuestionRenderer totalQuestionCount={questions.data.length} />
+    <StepProvider
+      steps={steps}
+      initialStep={initialStep >= 0 ? initialStep : 0}
+      onStepChange={currentStepIndex => {
+        const newQuestionId = (steps[currentStepIndex] as ExtendedQuestionStepConfig)?.questionData
+          .id;
+        if (newQuestionId && newQuestionId !== currentQuestionId) {
+          router.push(ROUTES.SURVEY_QUESTION(newQuestionId));
+        }
+      }}
+    >
+      <SurveyQuestionRenderer totalQuestionCount={questions.data.length} surveyId={surveyId} />
     </StepProvider>
   );
 }
 
-function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: number }) {
-  const params = useParams<{ id: string }>();
+function SurveyQuestionRenderer({
+  totalQuestionCount,
+  surveyId,
+}: { totalQuestionCount: number; surveyId: string }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showModal, close } = useModal();
@@ -63,6 +88,7 @@ function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: nu
     half: false,
     final: false,
   });
+  const isExitingRef = useRef(false);
 
   const {
     currentStep,
@@ -101,7 +127,7 @@ function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: nu
       console.log("=".repeat(50));
       console.log("📝 설문조사 제출");
       console.log("=".repeat(50));
-      console.log("설문조사 ID:", params.id);
+      console.log("설문조사 ID:", surveyId);
       console.log("답변 개수:", answers.length);
       console.log("\n답변 상세:");
       answers.forEach((answer, index) => {
@@ -122,14 +148,14 @@ function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: nu
 
       setTimeout(() => {
         setIsSubmitting(false);
-        router.push(ROUTES.SURVEY_DONE(params.id));
+        router.push(ROUTES.SURVEY_DONE(surveyId));
       }, 500);
     } catch (error) {
       console.error("설문 제출 중 오류 발생:", error);
       toast.warning(SURVEY_TOAST_MESSAGE.error.message, { id: SURVEY_TOAST_MESSAGE.error.id });
       setIsSubmitting(false);
     }
-  }, [isSubmitting, params.id]);
+  }, [isSubmitting, surveyId, router]);
 
   const handleNext = useCallback(() => {
     if (isLastStep) {
@@ -140,7 +166,6 @@ function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: nu
   }, [isLastStep, goNext, handleSubmit]);
 
   const showExitConfirmModal = useCallback(() => {
-    const surveyIntroPath = `/survey/${params.id}`;
     showModal({
       ...SURVEY_EXIT_MODAL,
       showCancelButton: true,
@@ -148,10 +173,15 @@ function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: nu
         close();
       },
       onCancel: () => {
-        router.push(surveyIntroPath);
+        isExitingRef.current = true;
+        close();
+        window.history.go(-1);
+        setTimeout(() => {
+          router.push(ROUTES.SURVEY(surveyId));
+        }, 100);
       },
     });
-  }, [params.id, showModal, close, router]);
+  }, [surveyId, showModal, close, router]);
 
   const handlePrevious = useCallback(() => {
     if (isFirstStep) {
@@ -162,16 +192,17 @@ function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: nu
   }, [isFirstStep, goBack, showExitConfirmModal]);
 
   useEffect(() => {
-    const currentPathRef = { current: window.location.pathname + window.location.search };
+    const currentUrl = window.location.pathname + window.location.search;
+    window.history.replaceState({ ...window.history.state, fromSurveyQuestion: true }, "");
+    window.history.pushState({ ...window.history.state, preventBack: true }, "", currentUrl);
 
-    const handlePopState = () => {
-      const surveyIntroPath = `/survey/${params.id}`;
-
-      if (window.location.pathname === surveyIntroPath) {
-        window.history.pushState(null, "", currentPathRef.current);
+    const handlePopState = (event: PopStateEvent) => {
+      if (isExitingRef.current) {
+        return;
+      }
+      if (event.state?.fromSurveyQuestion) {
+        window.history.pushState({ ...window.history.state, preventBack: true }, "", currentUrl);
         showExitConfirmModal();
-      } else {
-        currentPathRef.current = window.location.pathname + window.location.search;
       }
     };
 
@@ -180,7 +211,7 @@ function SurveyQuestionRenderer({ totalQuestionCount }: { totalQuestionCount: nu
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, [params.id, showExitConfirmModal]);
+  }, [showExitConfirmModal]);
 
   return (
     <ContentComponent

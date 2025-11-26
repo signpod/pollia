@@ -15,11 +15,17 @@ const LOGIN_BUTTON_TEXT = {
 
 interface BottomButtonProps {
   params: { id: string };
+  firstQuestionId?: string;
   initialError: AuthError | null;
   deadline?: Survey["deadline"];
 }
 
-export function BottomButton({ params, initialError, deadline }: BottomButtonProps) {
+export function BottomButton({
+  params,
+  firstQuestionId,
+  initialError,
+  deadline,
+}: BottomButtonProps) {
   const { handleKakaoLogin } = useKakaoLogin({
     initialError,
     redirectPath: ROUTES.SURVEY(params.id),
@@ -28,12 +34,13 @@ export function BottomButton({ params, initialError, deadline }: BottomButtonPro
   const router = useRouter();
 
   const isExpired = Boolean(deadline && isBefore(deadline, new Date()));
+  const isDisabled = isExpired || !firstQuestionId;
 
   const handleClick = () => {
     if (!isLoggedIn) {
       handleKakaoLogin();
-    } else {
-      router.push(ROUTES.SURVEY_QUESTION(params.id));
+    } else if (firstQuestionId) {
+      router.push(ROUTES.SURVEY_QUESTION(firstQuestionId));
     }
   };
 
@@ -69,7 +76,13 @@ export function BottomButton({ params, initialError, deadline }: BottomButtonPro
 
   return (
     <div className="py-3 px-4 w-full">
-      <ButtonV2 variant="primary" size="large" className="w-full" onClick={handleClick}>
+      <ButtonV2
+        variant="primary"
+        size="large"
+        className="w-full"
+        onClick={handleClick}
+        disabled={isDisabled}
+      >
         <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
           {LOGIN_BUTTON_TEXT.loggedIn}
         </Typo.ButtonText>

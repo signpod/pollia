@@ -1,4 +1,4 @@
-import { getSurveyQuestionsDetail } from "@/actions/survey";
+import { getSurveyQuestionsDetail } from "@/actions/survey-question";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { SurveyCompletion } from "./ui";

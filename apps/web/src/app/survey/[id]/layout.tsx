@@ -1,4 +1,5 @@
 import { getSurvey } from "@/actions/survey";
+import { getSurveyQuestionIds } from "@/actions/survey-question";
 import { getCurrentUser } from "@/actions/user";
 import Providers from "@/components/providers/QueryProvider";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
@@ -27,6 +28,10 @@ export default async function SurveyLayout({
     queryClient.prefetchQuery({
       queryKey: userQueryKeys.currentUser(),
       queryFn: () => getCurrentUser(),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: surveyQueryKeys.surveyQuestionIds({ surveyId: id }),
+      queryFn: () => getSurveyQuestionIds(id),
     }),
   ]);
 
