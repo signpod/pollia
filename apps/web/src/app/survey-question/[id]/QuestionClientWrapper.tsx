@@ -88,6 +88,7 @@ function SurveyQuestionRenderer({
     half: false,
     final: false,
   });
+  const isExitingRef = useRef(false);
 
   const {
     currentStep,
@@ -154,7 +155,7 @@ function SurveyQuestionRenderer({
       toast.warning(SURVEY_TOAST_MESSAGE.error.message, { id: SURVEY_TOAST_MESSAGE.error.id });
       setIsSubmitting(false);
     }
-  }, [isSubmitting, surveyId]);
+  }, [isSubmitting, surveyId, router]);
 
   const handleNext = useCallback(() => {
     if (isLastStep) {
@@ -172,7 +173,12 @@ function SurveyQuestionRenderer({
         close();
       },
       onCancel: () => {
-        router.push(ROUTES.SURVEY(surveyId));
+        isExitingRef.current = true;
+        close();
+        window.history.go(-1);
+        setTimeout(() => {
+          router.push(ROUTES.SURVEY(surveyId));
+        }, 100);
       },
     });
   }, [surveyId, showModal, close, router]);
@@ -186,14 +192,17 @@ function SurveyQuestionRenderer({
   }, [isFirstStep, goBack, showExitConfirmModal]);
 
   useEffect(() => {
-    const currentPathRef = { current: window.location.pathname + window.location.search };
+    const currentUrl = window.location.pathname + window.location.search;
+    window.history.replaceState({ ...window.history.state, fromSurveyQuestion: true }, "");
+    window.history.pushState({ ...window.history.state, preventBack: true }, "", currentUrl);
 
-    const handlePopState = () => {
-      if (window.location.pathname === ROUTES.SURVEY(surveyId)) {
-        window.history.pushState(null, "", currentPathRef.current);
+    const handlePopState = (event: PopStateEvent) => {
+      if (isExitingRef.current) {
+        return;
+      }
+      if (event.state?.fromSurveyQuestion) {
+        window.history.pushState({ ...window.history.state, preventBack: true }, "", currentUrl);
         showExitConfirmModal();
-      } else {
-        currentPathRef.current = window.location.pathname + window.location.search;
       }
     };
 
@@ -202,7 +211,7 @@ function SurveyQuestionRenderer({
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, [surveyId, showExitConfirmModal]);
+  }, [showExitConfirmModal]);
 
   return (
     <ContentComponent
