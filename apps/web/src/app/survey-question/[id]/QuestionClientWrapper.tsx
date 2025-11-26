@@ -20,21 +20,19 @@ const SURVEY_EXIT_MODAL = {
 } as const;
 
 interface QuestionClientWrapperProps {
+  surveyId: string;
   dehydratedState: DehydratedState;
 }
 
-export function QuestionClientWrapper({ dehydratedState }: QuestionClientWrapperProps) {
+export function QuestionClientWrapper({ surveyId, dehydratedState }: QuestionClientWrapperProps) {
   return (
     <HydrationBoundary state={dehydratedState}>
-      <SurveyQuestionContent />
+      <SurveyQuestionContent surveyId={surveyId} />
     </HydrationBoundary>
   );
 }
 
-function SurveyQuestionContent() {
-  const searchParams = useSearchParams();
-  const surveyId = searchParams.get("surveyId");
-
+function SurveyQuestionContent({ surveyId }: { surveyId: string }) {
   const { data: questions } = useReadSurveyQuestionsDetail(surveyId ?? "");
 
   const steps = createQuestionSteps({

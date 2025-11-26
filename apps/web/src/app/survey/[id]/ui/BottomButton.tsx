@@ -39,7 +39,7 @@ export function BottomButton({
     if (!isLoggedIn) {
       handleKakaoLogin();
     } else {
-      router.push(`${ROUTES.SURVEY_QUESTION(firstQuestionId)}?surveyId=${params.id}`);
+      router.push(ROUTES.SURVEY_QUESTION(firstQuestionId));
     }
   };
 

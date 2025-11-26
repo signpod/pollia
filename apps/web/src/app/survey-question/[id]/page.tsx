@@ -1,27 +1,31 @@
-import { getSurveyQuestionsDetail } from "@/actions/survey";
+import { getQuestionById } from "@/actions/survey";
+import { getSurveyQuestionsDetail } from "@/actions/survey-question";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { dehydrate } from "@tanstack/react-query";
 import { QuestionClientWrapper } from "./QuestionClientWrapper";
 
 export default async function SurveyQuestionPage({
-  searchParams,
+  params,
 }: {
-  searchParams: Promise<{ surveyId?: string }>;
+  params: Promise<{ id: string }>;
 }) {
-  const { surveyId } = await searchParams;
+  const { id } = await params;
   const queryClient = getQueryClient();
 
-  if (!surveyId) {
-    throw new Error("surveyId가 필요합니다.");
+  const question = await getQuestionById(id);
+  const surveyId = question.data.surveyId;
+
+  if (surveyId) {
+    await queryClient.prefetchQuery({
+      queryKey: surveyQueryKeys.surveyQuestions({ surveyId }),
+      queryFn: () => getSurveyQuestionsDetail(surveyId),
+    });
   }
 
-  await queryClient.prefetchQuery({
-    queryKey: surveyQueryKeys.surveyQuestions({ surveyId }),
-    queryFn: () => getSurveyQuestionsDetail(surveyId),
-  });
+  queryClient.setQueryData(surveyQueryKeys.surveyQuestion(id), question);
 
   const dehydratedState = dehydrate(queryClient);
 
-  return <QuestionClientWrapper dehydratedState={dehydratedState} />;
+  return <QuestionClientWrapper surveyId={surveyId ?? ""} dehydratedState={dehydratedState} />;
 }
