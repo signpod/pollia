@@ -59,7 +59,7 @@ export async function getSurvey(surveyId: string): Promise<GetSurveyResponse> {
     const survey = await surveyService.getSurvey(surveyId);
     return { data: survey };
   } catch (error) {
-    console.error("getSurvey error:", error);
+    console.error("❌ 설문조사 조회 실패:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
