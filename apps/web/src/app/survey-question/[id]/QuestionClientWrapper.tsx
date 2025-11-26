@@ -45,7 +45,7 @@ function SurveyQuestionContent() {
   });
 
   return (
-    <StepProvider steps={steps} initialStep={0} syncWithUrl>
+    <StepProvider steps={steps} initialStep={0}>
       <SurveyQuestionRenderer totalQuestionCount={questions.data.length} />
     </StepProvider>
   );

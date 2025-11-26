@@ -20,7 +20,7 @@ import { TypeStep } from "./components/steps/TypeStep";
 export default function CreateSurveyQuestionPage() {
   return (
     <FixedBottomLayout>
-      <StepProvider steps={CREATE_SURVEY_STEPS} initialStep={0} syncWithUrl>
+      <StepProvider steps={CREATE_SURVEY_STEPS} initialStep={0}>
         <CreateSurveyQuestionPageContent />
       </StepProvider>
     </FixedBottomLayout>
