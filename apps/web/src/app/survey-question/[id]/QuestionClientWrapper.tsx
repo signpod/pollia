@@ -149,8 +149,13 @@ function SurveyQuestionRenderer({
     setCurrentAnswer(answer);
   }, []);
 
+  const hasStartedRef = useRef(false);
+
   useEffect(() => {
-    startResponse({ surveyId });
+    if (!hasStartedRef.current) {
+      hasStartedRef.current = true;
+      startResponse({ surveyId });
+    }
   }, [surveyId, startResponse]);
 
   const handleNext = useCallback(() => {
