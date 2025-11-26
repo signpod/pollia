@@ -3,6 +3,7 @@ import { getSurveyQuestionsDetail } from "@/actions/survey-question";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { dehydrate } from "@tanstack/react-query";
+import { notFound } from "next/navigation";
 import { QuestionClientWrapper } from "./QuestionClientWrapper";
 
 export default async function SurveyQuestionPage({
@@ -13,7 +14,13 @@ export default async function SurveyQuestionPage({
   const { id } = await params;
   const queryClient = getQueryClient();
 
-  const question = await getQuestionById(id);
+  const question = await getQuestionById(id).catch(error => {
+    if (error instanceof Error && (error as Error & { cause?: number }).cause === 404) {
+      notFound();
+    }
+    throw error;
+  });
+
   const surveyId = question.data.surveyId;
 
   if (surveyId) {
