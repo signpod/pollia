@@ -15,7 +15,7 @@ const LOGIN_BUTTON_TEXT = {
 
 interface BottomButtonProps {
   params: { id: string };
-  firstQuestionId: string;
+  firstQuestionId?: string;
   initialError: AuthError | null;
   deadline?: Survey["deadline"];
 }
@@ -34,11 +34,12 @@ export function BottomButton({
   const router = useRouter();
 
   const isExpired = Boolean(deadline && isBefore(deadline, new Date()));
+  const isDisabled = isExpired || !firstQuestionId;
 
   const handleClick = () => {
     if (!isLoggedIn) {
       handleKakaoLogin();
-    } else {
+    } else if (firstQuestionId) {
       router.push(ROUTES.SURVEY_QUESTION(firstQuestionId));
     }
   };
@@ -75,7 +76,13 @@ export function BottomButton({
 
   return (
     <div className="py-3 px-4 w-full">
-      <ButtonV2 variant="primary" size="large" className="w-full" onClick={handleClick}>
+      <ButtonV2
+        variant="primary"
+        size="large"
+        className="w-full"
+        onClick={handleClick}
+        disabled={isDisabled}
+      >
         <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
           {LOGIN_BUTTON_TEXT.loggedIn}
         </Typo.ButtonText>
