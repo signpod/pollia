@@ -4,7 +4,7 @@ import { subjectiveResponseSchema } from "@/schemas_legacy/survey/question/respo
 import type { SurveyAnswerItem } from "@/types/dto";
 import { Textarea } from "@repo/ui/components";
 import { useState } from "react";
-import { SurveyQuestionTemplate } from "../components/SurveyQuestionTemplate";
+import { SurveyQuestionTemplate } from "../[id]/components/SurveyQuestionTemplate";
 
 const PLACEHOLDER = "답변을 입력해주세요";
 
