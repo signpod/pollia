@@ -1,5 +1,5 @@
-import { getSurveyQuestions } from "@/actions/survey";
-import { getUserSurveys } from "@/actions/survey/read-survey";
+import { getUserSurveys } from "@/actions/survey";
+import { getSurveyQuestions } from "@/actions/survey-question";
 import { getCurrentUser } from "@/actions/user/read";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
 import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";

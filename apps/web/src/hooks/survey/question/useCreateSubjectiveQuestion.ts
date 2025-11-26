@@ -1,6 +1,6 @@
 "use client";
 
-import { createSubjectiveQuestion } from "@/actions/survey/question";
+import { createSubjectiveQuestion } from "@/actions/survey-question";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
 import type {
   CreateSubjectiveQuestionRequest,

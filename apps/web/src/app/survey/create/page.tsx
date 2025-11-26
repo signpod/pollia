@@ -1,6 +1,6 @@
 "use server";
 
-import { getSurveyQuestions } from "@/actions/survey";
+import { getSurveyQuestions } from "@/actions/survey-question";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { dehydrate } from "@tanstack/react-query";
