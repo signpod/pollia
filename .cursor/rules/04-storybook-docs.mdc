@@ -1,3 +1,7 @@
+---
+globs: ["apps/storybook/**"]
+---
+
 # Storybook argTypes 및 문서화
 
 ## argTypes 정의

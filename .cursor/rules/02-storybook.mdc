@@ -1,3 +1,7 @@
+---
+globs: ["apps/storybook/**"]
+---
+
 # Storybook 작성 컨벤션 (apps/storybook)
 
 ## 폴더 구조
@@ -26,14 +30,14 @@ src/stories/
 
 스토리북에서 컴포넌트를 import할 때는 반드시 다음 경로를 사용해야 합니다:
 
-### ✅ 올바른 Import
+### 올바른 Import
 
 ```tsx
 import { ComponentName } from "@repo/ui/components";
 import { Button, Input } from "@repo/ui/components";
 ```
 
-### ❌ 잘못된 Import
+### 잘못된 Import
 
 ```tsx
 // 상대 경로 사용 금지

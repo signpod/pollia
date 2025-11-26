@@ -1,3 +1,7 @@
+---
+globs: ["apps/storybook/**"]
+---
+
 # Storybook 스토리 작성 패턴
 
 ## 필수 스토리

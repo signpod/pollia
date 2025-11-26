@@ -1,3 +1,7 @@
+---
+globs: ["packages/ui/**"]
+---
+
 # UI 컴포넌트 작성 컨벤션 (packages/ui)
 
 ## Tailwind CSS 클래스 그룹화 및 줄바꿈
@@ -59,7 +63,7 @@ const Component = ({ prop1, prop2 }: ComponentProps) => {
 ### 사용하지 않는 방식
 
 ```tsx
-// ❌ React.FC 사용하지 않음
+// React.FC 사용하지 않음
 const Component: React.FC<ComponentProps> = ({ prop1, prop2 }) => {
   return <div>...</div>
 }

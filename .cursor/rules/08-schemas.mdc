@@ -1,30 +1,13 @@
+---
+globs: ["apps/web/src/schemas/**"]
+---
+
 # Validation 스키마 컨벤션
 
 ## 개요
 
 Pollia는 **Zod 스키마**를 사용하여 End-to-End 검증을 수행합니다.
 Client와 Server가 동일한 스키마를 공유하되, Server는 필요 시 확장합니다.
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        스키마 구조                               │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│   Client                  Schema                   Server       │
-│     │                       │                        │          │
-│     │   { name, email }     │                        │          │
-│     │ ─────────────────────▶│  userInputSchema       │          │
-│     │                       │  (Client 입력 검증)     │          │
-│     │                       │                        │          │
-│     │                       │        + extend        │          │
-│     │                       │            │           │          │
-│     │                       │            ▼           │          │
-│     │                       │  userServerSchema      │          │
-│     │                       │  (Server 확장 검증)     │          │
-│     │                       │  + role, createdAt     │          │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
 
 ### 핵심 원칙
 
@@ -56,11 +39,11 @@ src/schemas/
 **schemas 디렉토리는 server/services 디렉토리 구조와 동일하게 유지합니다.**
 
 ```
-server/services/survey/          → schemas/survey/
-server/services/survey-question/ → schemas/survey-question/
-server/services/survey-answer/   → schemas/survey-answer/
-server/services/reward/          → schemas/reward/
-server/services/user/            → schemas/user/
+server/services/survey/          -> schemas/survey/
+server/services/survey-question/ -> schemas/survey-question/
+server/services/survey-answer/   -> schemas/survey-answer/
+server/services/reward/          -> schemas/reward/
+server/services/user/            -> schemas/user/
 ```
 
 ---
@@ -68,13 +51,14 @@ server/services/user/            → schemas/user/
 ## 파일 네이밍 규칙
 
 ```
-✅ surveySchema.ts            # {도메인}Schema.ts
-✅ userSchema.ts              # {도메인}Schema.ts
-✅ rewardSchema.ts            # {도메인}Schema.ts
+surveySchema.ts            # {도메인}Schema.ts
+userSchema.ts              # {도메인}Schema.ts
+rewardSchema.ts            # {도메인}Schema.ts
 
-❌ createSurveySchema.ts      # CRUD 동작 기반 금지
-❌ updateRewardSchema.ts      # CRUD 동작 기반 금지
-❌ SurveySchema.ts            # PascalCase 파일명 금지
+# 잘못된 예시
+createSurveySchema.ts      # CRUD 동작 기반 금지
+updateRewardSchema.ts      # CRUD 동작 기반 금지
+SurveySchema.ts            # PascalCase 파일명 금지
 ```
 
 ---
@@ -147,7 +131,7 @@ export type UserServer = z.infer<typeof userServerSchema>;
 ### Server 전용 필드 예시
 
 ```typescript
-// ❌ Client 스키마에 포함하면 안 되는 필드
+// Client 스키마에 포함하면 안 되는 필드
 role          // 권한 - Server가 결정
 creatorId     // 생성자 - Session에서 가져옴
 isAdmin       // 관리자 여부 - Server가 결정
@@ -205,27 +189,6 @@ export class UserService {
 }
 ```
 
-### Service에서 사용 (Server 확장)
-
-```typescript
-// Service - Server 확장 스키마 사용
-import { userServerSchema } from "@/schemas/user";
-
-export class AdminService {
-  async createUserWithRole(input: CreateUserWithRoleInput) {
-    // Server 확장 스키마로 검증 (role 포함)
-    const result = userServerSchema.safeParse(input);
-    if (!result.success) {
-      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
-      error.cause = 400;
-      throw error;
-    }
-
-    return this.repo.create(result.data);
-  }
-}
-```
-
 ---
 
 ## 스키마 확장 패턴
@@ -244,33 +207,6 @@ export const surveyServerSchema = surveyInputSchema.extend({
   creatorId: z.string().min(1),
   isActive: z.boolean().default(true),
 });
-```
-
-### merge 사용 (두 스키마 합치기)
-
-```typescript
-const baseSchema = z.object({ name: z.string() });
-const extraSchema = z.object({ age: z.number() });
-
-const mergedSchema = baseSchema.merge(extraSchema);
-// { name: string, age: number }
-```
-
-### pick/omit 사용
-
-```typescript
-const fullSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  email: z.string(),
-  createdAt: z.date(),
-});
-
-// 일부 필드만 선택
-const createSchema = fullSchema.pick({ name: true, email: true });
-
-// 일부 필드 제외
-const updateSchema = fullSchema.omit({ id: true, createdAt: true });
 ```
 
 ### partial 사용 (Update용)
@@ -295,12 +231,12 @@ const updateSchema = inputSchema.partial().refine(
 ### 사용자 친화적 메시지
 
 ```typescript
-// ✅ 좋은 예 - 사용자가 이해하기 쉬움
+// 좋은 예 - 사용자가 이해하기 쉬움
 z.string().min(1, "제목을 입력해주세요.")
 z.string().max(30, "제목은 30자를 초과할 수 없습니다.")
 z.string().email("올바른 이메일 형식이 아닙니다.")
 
-// ❌ 나쁜 예 - 기술적 용어
+// 나쁜 예 - 기술적 용어
 z.string().min(1, "Required")
 z.string().max(30, "Max length exceeded")
 z.string().email("Invalid email format")
@@ -341,10 +277,3 @@ z.string().email("Invalid email format")
 - [ ] `/schemas/index.ts`에 도메인 추가
 - [ ] Service에서 스키마 import 및 검증 적용
 - [ ] Client 폼에서 스키마 사용
-
----
-
-## 관련 문서
-
-- **Server 계층 아키텍처**: `07-server-layers.mdc`
-- **TanStack Query Hooks**: `06-hooks-tanstack-query.mdc`

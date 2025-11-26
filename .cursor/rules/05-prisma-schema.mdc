@@ -1,3 +1,7 @@
+---
+globs: ["apps/web/prisma/**"]
+---
+
 # Prisma Schema 구조 및 컨벤션
 
 ## 디렉토리 구조
@@ -61,32 +65,33 @@ datasource db {
 **예시:**
 
 ```
-✅ common.user.prisma        # 공통 사용자 모델
-✅ poll.main.prisma          # 투표 메인 모델
-✅ poll.option.prisma        # 투표 옵션 모델
-✅ survey.prisma             # domain과 entity가 같을 경우 (Survey 모델)
-✅ survey.question.prisma    # Survey 도메인의 Question 엔티티
-✅ user.prisma               # domain과 entity가 같을 경우 (User 모델)
+common.user.prisma        # 공통 사용자 모델
+poll.main.prisma          # 투표 메인 모델
+poll.option.prisma        # 투표 옵션 모델
+survey.prisma             # domain과 entity가 같을 경우 (Survey 모델)
+survey.question.prisma    # Survey 도메인의 Question 엔티티
+user.prisma               # domain과 entity가 같을 경우 (User 모델)
 
-❌ Poll.prisma               # 대문자 사용
-❌ poll-main.prisma          # 하이픈 대신 점 사용
-❌ survey.survey.prisma      # 중복 표기 (survey.prisma로 간소화)
+# 잘못된 예시
+Poll.prisma               # 대문자 사용
+poll-main.prisma          # 하이픈 대신 점 사용
+survey.survey.prisma      # 중복 표기 (survey.prisma로 간소화)
 ```
 
 ### 3. 폴더 구조 금지
 
-**❌ 하위 디렉토리 사용 금지:**
+**하위 디렉토리 사용 금지:**
 
 ```
-❌ models/common/user.prisma    # VSCode Language Server 인식 불가
-❌ models/poll/main.prisma      # 타입 참조 오류 발생
+models/common/user.prisma    # VSCode Language Server 인식 불가
+models/poll/main.prisma      # 타입 참조 오류 발생
 ```
 
-**✅ Flat 구조 필수:**
+**Flat 구조 필수:**
 
 ```
-✅ models/common.user.prisma    # 모든 파일이 같은 레벨
-✅ models/poll.main.prisma      # 파일명으로 도메인 구분
+models/common.user.prisma    # 모든 파일이 같은 레벨
+models/poll.main.prisma      # 파일명으로 도메인 구분
 ```
 
 **이유:**
@@ -137,8 +142,8 @@ model ModelName {
 
 ```prisma
 model User {
-  userId      String   # ✅ camelCase
-  createdAt   DateTime # ✅ camelCase
+  userId      String   # camelCase
+  createdAt   DateTime # camelCase
 
   @@map("users")       # 테이블명은 snake_case
 }
@@ -147,8 +152,8 @@ model User {
 **데이터베이스 매핑 (snake_case):**
 
 ```prisma
-imageUrl    String? @map("image_url")    # ✅ DB는 snake_case
-createdAt   DateTime @map("created_at")  # ✅ 명시적 매핑
+imageUrl    String? @map("image_url")    # DB는 snake_case
+createdAt   DateTime @map("created_at")  # 명시적 매핑
 ```
 
 ### 3. 관계 정의
@@ -158,7 +163,7 @@ createdAt   DateTime @map("created_at")  # ✅ 명시적 매핑
 ```prisma
 // common.user.prisma
 model User {
-  polls Poll[] @relation("PollCreator")  # ✅ 명확한 관계명
+  polls Poll[] @relation("PollCreator")  # 명확한 관계명
   votes Vote[]
 }
 
@@ -200,8 +205,8 @@ enum PollCategory {
 
 ```
 새 기능: 설문조사(Survey)
-→ 도메인: survey
-→ 엔티티: Survey, SurveyQuestion, SurveyAnswer
+-> 도메인: survey
+-> 엔티티: Survey, SurveyQuestion, SurveyAnswer
 ```
 
 ### 2. 파일 생성
@@ -242,7 +247,7 @@ model Survey {
 model User {
   // 기존 관계...
   polls   Poll[]   @relation("PollCreator")
-  surveys Survey[] @relation("SurveyCreator")  // ✅ 추가
+  surveys Survey[] @relation("SurveyCreator")  # 추가
 }
 ```
 
@@ -263,13 +268,13 @@ npm run db:migrate     # 마이그레이션 생성
 **방법 1:**
 
 ```
-Cmd + Shift + P → "Prisma: Restart Language Server"
+Cmd + Shift + P -> "Prisma: Restart Language Server"
 ```
 
 **방법 2:**
 
 ```
-Cmd + Shift + P → "Developer: Reload Window"
+Cmd + Shift + P -> "Developer: Reload Window"
 ```
 
 **방법 3:**
@@ -303,8 +308,8 @@ git commit -m "feat: Add Survey domain models"
 - [ ] 네이밍 컨벤션 준수
   - 기본: `{domain}.{entity}.prisma`
   - domain과 entity가 같을 경우: `{domain}.prisma`
-- [ ] models/ 디렉토리 바로 아래에 생성 (하위 폴더 ❌)
-- [ ] 모델 구조 순서 준수 (ID → 비즈니스 → 관계 → 타임스탬프)
+- [ ] models/ 디렉토리 바로 아래에 생성 (하위 폴더 금지)
+- [ ] 모델 구조 순서 준수 (ID -> 비즈니스 -> 관계 -> 타임스탬프)
 - [ ] 관계 필드에 명확한 relation name 지정
 - [ ] 관련 enum은 같은 파일에 정의
 - [ ] 공통 모델(User 등)에 역관계 추가
