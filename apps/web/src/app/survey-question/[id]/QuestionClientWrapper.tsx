@@ -41,7 +41,7 @@ function SurveyQuestionContent({
   surveyId,
   currentQuestionId,
 }: { surveyId: string; currentQuestionId: string }) {
-  const { data: questions } = useReadSurveyQuestionsDetail(surveyId ?? "");
+  const { data: questions } = useReadSurveyQuestionsDetail(surveyId);
   const router = useRouter();
 
   const steps = createQuestionSteps({
