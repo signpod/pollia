@@ -1,0 +1,327 @@
+---
+globs: ["apps/web/src/app/admin/**", "apps/web/src/app/login/admin/**"]
+---
+
+# Admin Design Guide
+
+## 개요
+
+Next.js App Router 기반 admin 대시보드. shadcn/ui 컴포넌트와 Tailwind CSS를 사용하여 디자인 없이도 평균 이상의 사용성을 갖춘 UI를 생성한다.
+
+### 핵심 목표
+
+1. 일관된 스페이싱과 타이포그래피
+2. 명확한 정보 계층 구조
+3. 직관적인 네비게이션과 작업 흐름
+4. 데스크톱 우선, 태블릿까지 지원
+
+---
+
+## shadcn/ui 컴포넌트 사용 규칙
+
+Admin 영역에서는 반드시 `@/app/admin/components/shadcn-ui`의 컴포넌트를 사용한다.
+
+### Import 경로
+
+```typescript
+// ✅ 올바른 Import (admin 전용 shadcn-ui)
+import { Button } from "@/app/admin/components/shadcn-ui/button";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/app/admin/components/shadcn-ui/card";
+import { Input } from "@/app/admin/components/shadcn-ui/input";
+import { Label } from "@/app/admin/components/shadcn-ui/label";
+import { cn } from "@/app/admin/lib/utils";
+
+// ❌ 잘못된 Import (글로벌 컴포넌트 사용 금지)
+import { Button } from "@/components/ui/button";
+import { Card } from "@repo/ui/components";
+```
+
+### 사용 가능한 컴포넌트
+
+`@/app/admin/components/shadcn-ui/` 경로의 모든 컴포넌트:
+- Layout: `card`, `separator`, `tabs`, `accordion`, `collapsible`
+- Form: `button`, `input`, `textarea`, `select`, `checkbox`, `radio-group`, `switch`, `label`, `form`
+- Feedback: `alert`, `alert-dialog`, `dialog`, `drawer`, `sheet`, `toast`, `sonner`
+- Navigation: `breadcrumb`, `dropdown-menu`, `menubar`, `navigation-menu`, `pagination`
+- Data Display: `avatar`, `badge`, `table`, `calendar`, `chart`
+- Overlay: `popover`, `tooltip`, `hover-card`, `context-menu`
+
+---
+
+## 간격/여백 시스템 (Spacing)
+
+Tailwind의 4px 단위 spacing scale을 기준으로 한다.
+
+### 페이지 레이아웃
+
+```
+페이지 컨테이너: px-6 py-8 (데스크톱), px-4 py-6 (태블릿)
+최대 너비: max-w-7xl mx-auto
+```
+
+### 섹션 간격
+
+| 구분 | 클래스 | 용도 |
+|------|--------|------|
+| 페이지 제목 ~ 콘텐츠 | `mb-8` | 페이지 헤더 아래 |
+| 섹션 ~ 섹션 | `mt-10` 또는 `space-y-10` | 독립된 섹션 구분 |
+| 카드 ~ 카드 | `gap-6` | 그리드 내 카드 간격 |
+
+### 컴포넌트 내부 간격
+
+| 구분 | 클래스 | 용도 |
+|------|--------|------|
+| 카드 내부 | `p-6` | CardContent 기본 패딩 |
+| 폼 필드 간격 | `space-y-4` | 입력 필드 사이 |
+| 버튼 그룹 | `gap-3` | 인접한 버튼들 |
+| 아이콘 ~ 텍스트 | `gap-2` | 버튼/메뉴 내 아이콘 |
+
+### 예시
+
+```tsx
+<div className="px-6 py-8 max-w-7xl mx-auto">
+  <header className="mb-8">
+    <h1>페이지 제목</h1>
+  </header>
+
+  <section className="space-y-10">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* 카드들 */}
+    </div>
+  </section>
+</div>
+```
+
+---
+
+## 타이포그래피 시스템
+
+명확한 계층 구조를 위해 일관된 텍스트 스타일을 적용한다.
+
+### 텍스트 계층
+
+| 용도 | 클래스 | 예시 |
+|------|--------|------|
+| 페이지 제목 | `text-3xl font-bold tracking-tight` | 대시보드, 설정 |
+| 섹션 제목 | `text-xl font-semibold` | 최근 활동, 통계 |
+| 카드 제목 | `text-lg font-medium` | CardTitle 기본값 |
+| 본문 | `text-sm` | 일반 텍스트 |
+| 보조 텍스트 | `text-sm text-muted-foreground` | 설명, 힌트, 날짜 |
+| 캡션/라벨 | `text-xs text-muted-foreground` | 폼 라벨, 테이블 헤더 |
+
+### 페이지 헤더 패턴
+
+```tsx
+<header className="mb-8">
+  <h1 className="text-3xl font-bold tracking-tight">페이지 제목</h1>
+  <p className="text-muted-foreground mt-2">페이지에 대한 간단한 설명</p>
+</header>
+```
+
+### 섹션 헤더 패턴
+
+```tsx
+<div className="flex items-center justify-between mb-4">
+  <h2 className="text-xl font-semibold">섹션 제목</h2>
+  <Button variant="outline" size="sm">액션</Button>
+</div>
+```
+
+---
+
+## 버튼/액션 가이드
+
+중요도에 따라 시각적 구분을 명확히 한다.
+
+### 중요도별 Variant
+
+| 중요도 | Variant | 용도 |
+|--------|---------|------|
+| Primary | `default` | 주요 액션 (저장, 생성, 확인) |
+| Secondary | `outline` | 보조 액션 (취소, 뒤로가기) |
+| Tertiary | `ghost` | 부가 액션 (더보기, 필터) |
+| Destructive | `destructive` | 위험한 액션 (삭제, 초기화) |
+
+### 배치 원칙
+
+- 주요 액션은 우측에 배치
+- 취소/뒤로가기는 좌측에 배치
+- 위험한 액션은 별도 확인 다이얼로그 사용
+
+```tsx
+<div className="flex justify-end gap-3">
+  <Button variant="outline">취소</Button>
+  <Button>저장</Button>
+</div>
+```
+
+### 크기 가이드
+
+| 위치 | Size | 용도 |
+|------|------|------|
+| 페이지 헤더 | `default` | 주요 CTA |
+| 섹션 헤더 | `sm` | 섹션 내 액션 |
+| 테이블 행 | `sm` 또는 `icon-sm` | 행별 액션 |
+| 모달 푸터 | `default` | 확인/취소 |
+
+---
+
+## 카드/컨테이너 가이드
+
+관련 정보를 논리적으로 그룹화한다.
+
+### 사용 원칙
+
+- 독립적인 정보 단위는 Card로 감싼다
+- 관련 필드는 하나의 Card 내에 그룹화한다
+- 중첩 Card는 피한다 (대신 구분선 또는 배경색 사용)
+
+### 기본 카드 패턴
+
+```tsx
+<Card>
+  <CardHeader>
+    <CardTitle>카드 제목</CardTitle>
+    <CardDescription>카드에 대한 설명</CardDescription>
+  </CardHeader>
+  <CardContent>
+    {/* 콘텐츠 */}
+  </CardContent>
+</Card>
+```
+
+### 카드 그리드
+
+```tsx
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  <Card>...</Card>
+  <Card>...</Card>
+  <Card>...</Card>
+</div>
+```
+
+---
+
+## 복잡한 UI 패턴
+
+### 대시보드 레이아웃
+
+```tsx
+<div className="px-6 py-8 max-w-7xl mx-auto">
+  {/* 페이지 헤더 */}
+  <header className="mb-8">
+    <h1 className="text-3xl font-bold tracking-tight">대시보드</h1>
+  </header>
+
+  {/* 지표 카드 (최상단, 가장 중요) */}
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+    <Card>
+      <CardHeader className="pb-2">
+        <CardDescription>총 응답수</CardDescription>
+        <CardTitle className="text-2xl">1,234</CardTitle>
+      </CardHeader>
+    </Card>
+    {/* 더 많은 지표 카드 */}
+  </div>
+
+  {/* 차트/테이블 섹션 */}
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <Card>
+      <CardHeader>
+        <CardTitle>응답 추이</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {/* 차트 */}
+      </CardContent>
+    </Card>
+    <Card>
+      <CardHeader>
+        <CardTitle>최근 응답</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {/* 테이블 */}
+      </CardContent>
+    </Card>
+  </div>
+</div>
+```
+
+### 편집기 레이아웃
+
+```tsx
+<div className="flex h-screen">
+  {/* 사이드바 (선택적) */}
+  <aside className="w-64 border-r p-4 hidden lg:block">
+    {/* 네비게이션 또는 옵션 */}
+  </aside>
+
+  {/* 메인 영역 */}
+  <main className="flex-1 flex flex-col">
+    {/* 툴바 */}
+    <header className="border-b px-6 py-3 flex items-center justify-between">
+      <h1 className="text-lg font-medium">문서 제목</h1>
+      <div className="flex gap-3">
+        <Button variant="outline" size="sm">미리보기</Button>
+        <Button size="sm">저장</Button>
+      </div>
+    </header>
+
+    {/* 편집 영역 */}
+    <div className="flex-1 overflow-auto p-6">
+      {/* 에디터 콘텐츠 */}
+    </div>
+  </main>
+
+  {/* 속성 패널 (선택적) */}
+  <aside className="w-80 border-l p-4 hidden xl:block">
+    {/* 선택된 요소의 속성 */}
+  </aside>
+</div>
+```
+
+### 정보 우선순위 시각화
+
+| 우선순위 | 시각적 처리 |
+|----------|-------------|
+| 가장 중요 | 큰 텍스트, 상단 배치, 강조 색상 |
+| 중요 | 기본 텍스트, 카드로 그룹화 |
+| 보조 | `text-muted-foreground`, 작은 텍스트 |
+| 메타정보 | `text-xs`, 하단 또는 우측 배치 |
+
+---
+
+## 반응형 브레이크포인트
+
+| 브레이크포인트 | 너비 | 용도 |
+|----------------|------|------|
+| 기본 | < 768px | 모바일 (최소 지원) |
+| `md` | ≥ 768px | 태블릿 |
+| `lg` | ≥ 1024px | 데스크톱 |
+| `xl` | ≥ 1280px | 와이드 데스크톱 |
+
+### 반응형 패턴
+
+```tsx
+{/* 그리드 컬럼 */}
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+{/* 사이드바 표시 */}
+<aside className="hidden lg:block w-64">
+
+{/* 패딩 조정 */}
+<div className="px-4 py-6 lg:px-6 lg:py-8">
+```
+
+---
+
+## 체크리스트
+
+새 페이지/컴포넌트 작성 시 확인:
+
+- [ ] 페이지 컨테이너에 `px-6 py-8 max-w-7xl mx-auto` 적용
+- [ ] 페이지 제목에 `text-3xl font-bold tracking-tight` 적용
+- [ ] 섹션 간격 `space-y-10` 또는 `mt-10` 적용
+- [ ] 카드 간격 `gap-6` 적용
+- [ ] 버튼 중요도에 맞는 variant 사용
+- [ ] 보조 텍스트에 `text-muted-foreground` 적용
+- [ ] 반응형 그리드 (`grid-cols-1 md:grid-cols-2 lg:grid-cols-3`) 적용
