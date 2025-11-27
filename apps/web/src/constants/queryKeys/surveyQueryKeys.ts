@@ -38,6 +38,7 @@ export const surveyQueryKeys = {
   userSurveys: (userId?: string) =>
     userId ? (["user-surveys", userId] as const) : (["user-surveys"] as const),
   all: () => ["survey"] as const,
+  surveyResponseForSurvey: (surveyId: string) => ["survey-response-for-survey", surveyId] as const,
 } as const;
 
 export type SurveyQueryKeys = typeof surveyQueryKeys;

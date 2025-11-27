@@ -1,13 +1,12 @@
 "use client";
 
 import { AuthError } from "@/hooks/login/useKakaoLogin";
-import { useReadSurvey, useReadSurveyQuestionIds } from "@/hooks/survey";
+import { useSurveyIntroData, useSurveyResume, useSurveyRewardVisibility } from "@/hooks/survey";
 import { cleanTiptapHTML } from "@/lib/utils";
 import { FixedBottomLayout, FloatingButton, Typo } from "@repo/ui/components";
 import { Gift } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useRef, useState } from "react";
 import {
   SurveyCollection,
   SurveyDescription,
@@ -19,17 +18,18 @@ import { BottomButton } from "./ui";
 
 export function SurveyIntro({ initialError }: { initialError: AuthError | null }) {
   const params = useParams<{ id: string }>();
-  const { data: survey } = useReadSurvey(params.id);
-  const { data: questionIds } = useReadSurveyQuestionIds(params.id);
-  const firstQuestionId = questionIds?.data.questionIds[0];
-  const { brandLogoUrl, title, estimatedMinutes, deadline, imageUrl, description, target } =
-    survey?.data ?? {};
-  const [isRewardVisible, setIsRewardVisible] = useState(true);
-  const rewardRef = useRef<HTMLDivElement>(null);
 
-  const scrollToReward = () => {
-    rewardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
+  const { survey, firstQuestionId, isEnabledToResume, nextQuestionId } = useSurveyIntroData(
+    params.id,
+  );
+
+  useSurveyResume({ isEnabledToResume, nextQuestionId, firstQuestionId });
+
+  const { isRewardVisible, setIsRewardVisible, rewardRef, scrollToReward } =
+    useSurveyRewardVisibility();
+
+  const { brandLogoUrl, title, estimatedMinutes, deadline, imageUrl, description, target } =
+    survey ?? {};
 
   // TODO: 리워드 조회
   // const reward = useReadReward(rewardId);

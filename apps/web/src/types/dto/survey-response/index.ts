@@ -1,3 +1,5 @@
+import { SurveyQuestionAnswer } from "@prisma/client";
+
 export interface StartSurveyResponseRequest {
   surveyId: string;
 }
@@ -37,6 +39,7 @@ export interface GetSurveyResponseResponse {
     completedAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
+    answers: SurveyQuestionAnswer[];
   };
 }
 
