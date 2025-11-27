@@ -1,4 +1,4 @@
-import { getUserSurveys } from "@/actions/survey";
+import { getUserSurveys } from "@/actions/survey/read";
 import { surveySortOrderAtom } from "@/atoms/me/searchAtoms";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
 import { useInfiniteQuery } from "@tanstack/react-query";
