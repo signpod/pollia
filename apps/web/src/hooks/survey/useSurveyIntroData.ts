@@ -10,7 +10,7 @@ export function useSurveyIntroData(surveyId: string) {
   const { data: surveyResponse } = useReadSurveyResponseForSurvey({ surveyId });
 
   const firstQuestionId = questionIds?.data.questionIds[0];
-  const isCompleted = surveyResponse?.data?.completedAt !== null;
+  const isCompleted = !!surveyResponse?.data?.completedAt;
   const lastQuestionIndex = surveyResponse?.data?.answers?.length ?? 0;
   const nextQuestionId = questionIds?.data.questionIds[lastQuestionIndex];
   const isEnabledToResume = !isCompleted && lastQuestionIndex > 0 && !!nextQuestionId;
