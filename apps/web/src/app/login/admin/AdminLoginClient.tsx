@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
-import { ROUTES } from "@/constants/routes";
+import { ADMIN_ROUTES } from "@/app/admin/constants/routes";
 import { AuthError, useKakaoLogin } from "@/hooks/login/useKakaoLogin";
 
 interface AdminLoginClientProps {
@@ -19,7 +19,7 @@ interface AdminLoginClientProps {
 export function AdminLoginClient({ initialError }: AdminLoginClientProps) {
   const { handleKakaoLogin } = useKakaoLogin({
     initialError,
-    redirectPath: ROUTES.ADMIN,
+    redirectPath: ADMIN_ROUTES.ADMIN,
   });
 
   return (

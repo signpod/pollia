@@ -1,5 +1,5 @@
 import { requireAdmin } from "@/actions/common/auth";
-import { ROUTES } from "@/constants/routes";
+import { ADMIN_ROUTES } from "@/app/admin/constants/routes";
 import { getAuthError } from "@/lib/getAuthError";
 import { redirect } from "next/navigation";
 import { AdminLoginClient } from "./AdminLoginClient";
@@ -10,7 +10,7 @@ export default async function AdminLoginPage() {
     .catch(() => false);
 
   if (isAdmin) {
-    redirect(ROUTES.ADMIN);
+    redirect(ADMIN_ROUTES.ADMIN);
   }
 
   const authError = await getAuthError();
