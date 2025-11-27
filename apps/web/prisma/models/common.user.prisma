@@ -1,0 +1,20 @@
+model User {
+  id    String   @id
+  email String   @unique
+  name  String
+  role  UserRole @default(USER)
+
+  surveys         Survey[]         @relation("SurveyCreator")
+  surveyResponses SurveyResponse[]
+  fileUploads     FileUpload[]     @relation("FileUploader")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}

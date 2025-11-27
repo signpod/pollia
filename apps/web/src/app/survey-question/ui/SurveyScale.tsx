@@ -1,0 +1,72 @@
+import { SurveyLikertScale } from "@/app/survey/[id]/components/SurveyLikertScale";
+import { QuestionStepContentProps } from "@/constants/surveyQuestion";
+import type { SurveyAnswerItem } from "@/types/dto";
+import { useState } from "react";
+import { SurveyQuestionTemplate } from "../[id]/components/SurveyQuestionTemplate";
+
+export function SurveyScale({
+  questionData,
+  currentOrder,
+  totalQuestionCount,
+  isFirstQuestion,
+  onPrevious,
+  onNext,
+  nextButtonText,
+  updateCanGoNext,
+  onAnswerChange,
+  hasShownToastsRef,
+}: QuestionStepContentProps) {
+  const { isScaleValueChanged, scaleValue, handleScaleValueChange } = useSurveyScaleValue(
+    questionData.id,
+    updateCanGoNext,
+    onAnswerChange,
+  );
+
+  return (
+    <SurveyQuestionTemplate
+      currentOrder={currentOrder}
+      totalQuestionCount={totalQuestionCount}
+      title={questionData.title}
+      description={questionData.description ?? undefined}
+      imageUrl={questionData.imageUrl ?? undefined}
+      isFirstQuestion={isFirstQuestion}
+      isNextDisabled={!isScaleValueChanged}
+      onPrevious={onPrevious}
+      onNext={onNext}
+      nextButtonText={nextButtonText}
+      hasShownToastsRef={hasShownToastsRef}
+    >
+      <SurveyLikertScale value={scaleValue} onChange={handleScaleValueChange}>
+        <SurveyLikertScale.Thumb value={scaleValue} />
+      </SurveyLikertScale>
+    </SurveyQuestionTemplate>
+  );
+}
+
+const DEFAULT_SCALE_VALUE = 3;
+
+function useSurveyScaleValue(
+  questionId: string,
+  updateCanGoNext?: (canGoNext: boolean) => void,
+  onAnswerChange?: (answer: SurveyAnswerItem) => void,
+) {
+  const [isScaleValueChanged, setIsScaleValueChanged] = useState(false);
+  const [scaleValue, setScaleValue] = useState(DEFAULT_SCALE_VALUE);
+
+  const handleScaleValueChange = (value: number) => {
+    if (!isScaleValueChanged) {
+      setIsScaleValueChanged(true);
+      updateCanGoNext?.(true);
+    }
+    setScaleValue(value);
+
+    // 답변 변경 전달
+    onAnswerChange?.({
+      questionId,
+      type: "SCALE",
+      scaleValue: value,
+    });
+  };
+
+  return { isScaleValueChanged, scaleValue, handleScaleValueChange };
+}

@@ -1,22 +1,20 @@
-import { FixedBottomLayout, FixedTopLayout } from "@repo/ui/components";
+import { FixedBottomLayout, FixedTopLayout, ModalProvider } from "@repo/ui/components";
 import LoginHeaderLogo from "./LoginHeaderLogo";
 
-export default function LoginLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function LoginLayout({ children }: { children: React.ReactNode }) {
   return (
-    <FixedBottomLayout hasBottomGap={false} className="min-h-screen">
-      <FixedTopLayout className="flex-1 min-h-screen flex flex-col py-6">
-        <FixedTopLayout.Content>
-          <div className="flex items-center gap-2 justify-center py-3">
-            <LoginHeaderLogo />
-          </div>
-        </FixedTopLayout.Content>
+    <ModalProvider>
+      <FixedBottomLayout hasBottomGap={false} className="min-h-screen">
+        <FixedTopLayout className="flex min-h-screen flex-1 flex-col py-6">
+          <FixedTopLayout.Content>
+            <div className="flex items-center justify-center gap-2 py-3">
+              <LoginHeaderLogo />
+            </div>
+          </FixedTopLayout.Content>
 
-        {children}
-      </FixedTopLayout>
-    </FixedBottomLayout>
+          {children}
+        </FixedTopLayout>
+      </FixedBottomLayout>
+    </ModalProvider>
   );
 }

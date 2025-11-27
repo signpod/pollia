@@ -1,4 +1,4 @@
-import { clsx, type ClassValue } from "clsx";
+import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -38,12 +38,12 @@ export function formatTimeRemainingInDays(milliseconds: number): string {
 export function getPollStatus(
   startDate: Date | null,
   endDate: Date | null,
-  isIndefinite: boolean,
-  currentTime: Date = new Date()
+  _isIndefinite: boolean,
+  currentTime: Date = new Date(),
 ): "before" | "active" | "after" {
   const now = currentTime.getTime();
   const startTime = startDate ? startDate.getTime() : 0;
-  const endTime = endDate ? endDate.getTime() : Infinity;
+  const endTime = endDate ? endDate.getTime() : Number.POSITIVE_INFINITY;
 
   if (startDate && now < startTime) return "before";
 
@@ -56,18 +56,16 @@ export function isPollActive(
   startDate: Date | null,
   endDate: Date | null,
   isIndefinite: boolean,
-  currentTime: Date = new Date()
+  currentTime: Date = new Date(),
 ): boolean {
-  return (
-    getPollStatus(startDate, endDate, isIndefinite, currentTime) === "active"
-  );
+  return getPollStatus(startDate, endDate, isIndefinite, currentTime) === "active";
 }
 
 export function getPollStatusMessage(
   startDate: Date | null,
   endDate: Date | null,
   isIndefinite: boolean,
-  currentTime: Date = new Date()
+  currentTime: Date = new Date(),
 ): string {
   const status = getPollStatus(startDate, endDate, isIndefinite, currentTime);
 
@@ -92,4 +90,33 @@ export function getPollStatusMessage(
   }
 
   return "";
+}
+
+/**
+ * TipTap 에디터에서 생성된 HTML을 정리합니다.
+ * - 불필요한 속성 제거 (contenteditable, translate)
+ * - ProseMirror 관련 클래스 및 태그 제거
+ * - 빈 태그 제거
+ * @param html 정리할 HTML 문자열
+ * @returns 정리된 HTML 문자열
+ */
+export function cleanTiptapHTML(html: string): string {
+  if (!html) return "";
+
+  let cleaned = html;
+
+  // 빈 class 속성 제거
+  cleaned = cleaned.replace(/\s*class=""\s*/g, " ");
+
+  // ProseMirror-trailingBreak 제거
+  cleaned = cleaned.replace(/<br[^>]*class="[^"]*ProseMirror-trailingBreak[^"]*"[^>]*>/g, "");
+
+  // 빈 태그 제거 (단, <br>은 유지)
+  cleaned = cleaned.replace(/<p>\s*<\/p>/g, "");
+  cleaned = cleaned.replace(/<div>\s*<\/div>/g, "");
+
+  // 연속된 공백 정리
+  cleaned = cleaned.replace(/\s+/g, " ").trim();
+
+  return cleaned;
 }

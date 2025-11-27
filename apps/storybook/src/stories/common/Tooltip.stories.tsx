@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/nextjs";
 import { Tooltip } from "@repo/ui/components";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 
 const meta: Meta<typeof Tooltip> = {
   title: "Common/Tooltip",
@@ -72,7 +72,7 @@ export const Top: Story = {
     <div style={{ padding: "100px", minHeight: "300px" }}>
       <button
         data-tooltip-id="top-tooltip"
-        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+        className="rounded-lg bg-blue-500 px-4 py-2 text-white transition-colors hover:bg-blue-600"
       >
         위쪽 툴팁
       </button>
@@ -88,7 +88,7 @@ export const Bottom: Story = {
     <div style={{ padding: "100px", minHeight: "300px" }}>
       <button
         data-tooltip-id="bottom-tooltip"
-        className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+        className="rounded-lg bg-green-500 px-4 py-2 text-white transition-colors hover:bg-green-600"
       >
         아래 툴팁
       </button>

@@ -9,5 +9,13 @@ declare namespace NodeJS {
     DIRECT_URL: string;
 
     CLEANUP_SECRET: string;
+
+    ROLLBAR_SERVER_TOKEN: string;
+    NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN: string;
+
+    NEXT_PUBLIC_KAKAO_JS_KEY: string;
+    KAKAO_REST_API_KEY: string;
+
+    NEXT_PUBLIC_PRIVACY_POLICY_URL: string;
   }
 }

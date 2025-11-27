@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/nextjs";
 import { Button, KakaoLoginButton } from "@repo/ui/components";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 
 const meta: Meta<typeof Button> = {
   title: "Common/Button",
@@ -61,12 +61,7 @@ export const Variants: Story = {
           <Button
             variant="primary"
             leftIcon={
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -81,12 +76,7 @@ export const Variants: Story = {
           <Button
             variant="secondary"
             leftIcon={
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -101,12 +91,7 @@ export const Variants: Story = {
           <Button
             variant="ghost"
             leftIcon={
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -150,10 +135,7 @@ export const InteractionStates: Story = {
         <h3 className="mb-3 text-sm font-medium">Primary Variant States</h3>
         <div className="flex flex-wrap gap-4">
           <Button variant="primary">Default</Button>
-          <Button
-            variant="primary"
-            className="hover:bg-[var(--color-zinc-600)]"
-          >
+          <Button variant="primary" className="hover:bg-[var(--color-zinc-600)]">
             Hover Effect
           </Button>
           <Button variant="primary" className="bg-[var(--color-zinc-950)]">
@@ -166,10 +148,7 @@ export const InteractionStates: Story = {
         <h3 className="mb-3 text-sm font-medium">Secondary Variant States</h3>
         <div className="flex flex-wrap gap-4">
           <Button variant="secondary">Default</Button>
-          <Button
-            variant="secondary"
-            className="ring-[var(--color-violet-500)]"
-          >
+          <Button variant="secondary" className="ring-[var(--color-violet-500)]">
             Hover Effect
           </Button>
           <Button
@@ -211,18 +190,8 @@ export const WithIcon: Story = {
     <div className="flex flex-wrap gap-4">
       <Button
         leftIcon={
-          <svg
-            className="h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4v16m8-8H4"
-            />
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
         }
       >
@@ -231,18 +200,8 @@ export const WithIcon: Story = {
       <Button
         variant="secondary"
         leftIcon={
-          <svg
-            className="h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4v16m8-8H4"
-            />
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
         }
       >
@@ -267,18 +226,8 @@ export const FullWidth: Story = {
       <Button
         fullWidth
         leftIcon={
-          <svg
-            className="h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4v16m8-8H4"
-            />
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
         }
       >

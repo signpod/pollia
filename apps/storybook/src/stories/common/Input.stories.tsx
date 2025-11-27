@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/nextjs";
 import { Input } from "@repo/ui/components";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 
 const meta: Meta<typeof Input> = {
   title: "Common/Input",
@@ -49,8 +49,8 @@ export const Default: Story = {
 
 // 상태별 Input
 export const States: Story = {
-  render: (args) => (
-    <div className="space-y-8 w-80">
+  render: args => (
+    <div className="w-80 space-y-8">
       <Input placeholder="기본 상태입니다" {...args} />
       <Input placeholder="비활성화된 상태입니다" disabled />
       <Input defaultValue="값이 있는 상태" {...args} />

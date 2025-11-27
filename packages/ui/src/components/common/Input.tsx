@@ -1,11 +1,10 @@
+import { XCircleIcon } from "lucide-react";
 import * as React from "react";
 import { cn } from "../../lib/utils";
-import { XCircleIcon } from "lucide-react";
-import { Typo, bodyVariants } from "./Typo";
 import { LabelText } from "./LabelText";
+import { Typo, bodyVariants } from "./Typo";
 
-export interface InputProps
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "ref"> {
+export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "ref"> {
   label?: string;
   helperText?: string;
   errorMessage?: string;
@@ -34,7 +33,7 @@ const Input = ({
   ...props
 }: InputProps) => {
   const [internalValue, setInternalValue] = React.useState(
-    value !== undefined ? value : defaultValue || ""
+    value !== undefined ? value : defaultValue || "",
   );
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [isFocused, setIsFocused] = React.useState(false);
@@ -110,10 +109,10 @@ const Input = ({
         <input
           type={type}
           className={cn(
-            "flex h-12 w-full rounded-sm ring-1 ring-zinc-200 bg-white px-3 py-2 placeholder:text-zinc-300 focus-visible:outline-none focus-visible:ring-primary disabled:bg-zinc-100 disabled:text-zinc-500 pr-8",
+            "focus-visible:ring-point flex h-12 w-full rounded-sm bg-white px-3 py-2 pr-8 ring-1 ring-zinc-200 placeholder:text-disabled focus-visible:outline-none disabled:bg-zinc-100 disabled:text-zinc-500",
             bodyVariants({ size: "large" }),
             errorMessage && "ring-red-500 focus-visible:ring-red-500",
-            inputClassName || className
+            inputClassName || className,
           )}
           ref={inputRef}
           value={currentValue}
@@ -126,11 +125,11 @@ const Input = ({
         {shouldShowClearButton && (
           <button
             type="button"
-            onMouseDown={(e) => {
+            onMouseDown={e => {
               e.preventDefault();
               handleClear();
             }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full flex items-center justify-center transition-colors"
+            className="absolute top-1/2 right-2 flex -translate-y-1/2 items-center justify-center rounded-full transition-colors"
             aria-label="입력 내용 지우기"
           >
             <XCircleIcon size={24} className="fill-zinc-200 text-white" />
@@ -138,10 +137,7 @@ const Input = ({
         )}
       </div>
       {(helperText || errorMessage) && (
-        <Typo.Body
-          size="small"
-          className={cn(errorMessage ? "text-red-500" : "text-zinc-400")}
-        >
+        <Typo.Body size="small" className={cn(errorMessage ? "text-red-500" : "text-zinc-400")}>
           {errorMessage || helperText}
         </Typo.Body>
       )}

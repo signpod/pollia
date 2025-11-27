@@ -1,0 +1,20 @@
+name: Notify Slack on Issue Comment
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  slack:
+    if: github.event.issue.pull_request != null
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send issue comment notification to Slack
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "💬 *[PR COMMENT]* *${{ github.event.repository.name }}* - ${{ github.event.issue.title }} (#${{ github.event.issue.number }})\n👤 *Commenter:* ${{ github.event.comment.user.login }}\n💬 *Comment:* ${{ github.event.comment.body }}\n🔗 ${{ github.event.comment.html_url }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

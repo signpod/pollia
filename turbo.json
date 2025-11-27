@@ -6,7 +6,15 @@
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*", "!**/*.stories.{tsx,jsx,mdx}"],
       "outputs": [".next/**", "!.next/cache/**", "storybook-static/**"],
-      "env": ["NODE_ENV"]
+      "env": [
+        "NODE_ENV",
+        "DATABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_URL",
+        "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN",
+        "NEXT_PUBLIC_KAKAO_JS_KEY",
+        "NEXT_PUBLIC_PRIVACY_POLICY_URL"
+      ]
     },
     "build:storybook": {
       "dependsOn": ["^build:storybook"],
@@ -18,6 +26,18 @@
     "check-types": {
       "dependsOn": ["^check-types"]
     },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"]
+    },
+    "test:watch": {
+      "cache": false,
+      "persistent": true
+    },
+    "test:coverage": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"]
+    },
     "dev": {
       "cache": false,
       "persistent": true,
@@ -28,7 +48,12 @@
         "NEXT_PUBLIC_SUPABASE_URL",
         "NEXT_PUBLIC_SUPABASE_ANON_KEY",
         "NODE_ENV",
-        "CRON_SECRET"
+        "CRON_SECRET",
+        "ROLLBAR_SERVER_TOKEN",
+        "NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN",
+        "NEXT_PUBLIC_KAKAO_JS_KEY",
+        "KAKAO_REST_API_KEY",
+        "NEXT_PUBLIC_PRIVACY_POLICY_URL"
       ]
     }
   }

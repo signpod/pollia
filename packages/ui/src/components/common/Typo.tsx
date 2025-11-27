@@ -1,5 +1,5 @@
+import { type VariantProps, cva } from "class-variance-authority";
 import React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../../lib/utils";
 
 const mainTitleVariants = cva("font-bold leading-[1.5]", {
@@ -73,30 +73,22 @@ interface ButtonTextProps
 const MainTitle = React.forwardRef<HTMLHeadingElement, MainTitleProps>(
   ({ className, size, children, ...props }, ref) => {
     return (
-      <h1
-        className={cn(mainTitleVariants({ size, className }))}
-        ref={ref}
-        {...props}
-      >
+      <h1 className={cn(mainTitleVariants({ size, className }))} ref={ref} {...props}>
         {children}
       </h1>
     );
-  }
+  },
 );
 MainTitle.displayName = "MainTitle";
 
 const SubTitle = React.forwardRef<HTMLHeadingElement, SubTitleProps>(
   ({ className, size, children, ...props }, ref) => {
     return (
-      <h2
-        className={cn(subTitleVariants({ size, className }))}
-        ref={ref}
-        {...props}
-      >
+      <h2 className={cn(subTitleVariants({ size, className }))} ref={ref} {...props}>
         {children}
       </h2>
     );
-  }
+  },
 );
 SubTitle.displayName = "SubTitle";
 
@@ -107,22 +99,18 @@ const Body = React.forwardRef<HTMLParagraphElement, BodyProps>(
         {children}
       </p>
     );
-  }
+  },
 );
 Body.displayName = "Body";
 
 const ButtonText = React.forwardRef<HTMLSpanElement, ButtonTextProps>(
   ({ className, size, children, ...props }, ref) => {
     return (
-      <span
-        className={cn(buttonTextVariants({ size, className }))}
-        ref={ref}
-        {...props}
-      >
+      <span className={cn(buttonTextVariants({ size, className }))} ref={ref} {...props}>
         {children}
       </span>
     );
-  }
+  },
 );
 ButtonText.displayName = "ButtonText";
 
@@ -133,11 +121,6 @@ export const Typo = {
   ButtonText,
 };
 
-export {
-  mainTitleVariants,
-  subTitleVariants,
-  bodyVariants,
-  buttonTextVariants,
-};
+export { mainTitleVariants, subTitleVariants, bodyVariants, buttonTextVariants };
 
 export type { MainTitleProps, SubTitleProps, BodyProps, ButtonTextProps };

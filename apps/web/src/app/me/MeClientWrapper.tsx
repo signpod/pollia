@@ -1,15 +1,11 @@
 "use client";
 
-import {
-  QueryClientProvider,
-  HydrationBoundary,
-  DehydratedState,
-} from "@tanstack/react-query";
-import { FixedBottomLayout, FixedTopLayout } from "@repo/ui/components";
+import { SurveyCreateFloatingButton } from "@/components/survey/SurveyCreateFloatingButton";
+import { SurveyQuestionCreateFloatingButton } from "@/components/survey/SurveyQuestionCreateFloatingButton";
 import { getQueryClient } from "@/lib/getQueryClient";
+import { FixedBottomLayout, FixedTopLayout } from "@repo/ui/components";
+import { DehydratedState, HydrationBoundary, QueryClientProvider } from "@tanstack/react-query";
 import { ProfileContainer } from "./ProfileContainer";
-import PollCreateFloatingButton from "@/components/poll/PollCreateFloatingButton";
-import Link from "next/link";
 
 interface MeClientWrapperProps {
   dehydratedState: DehydratedState;
@@ -18,23 +14,18 @@ interface MeClientWrapperProps {
 export function MeClientWrapper({ dehydratedState }: MeClientWrapperProps) {
   const queryClient = getQueryClient();
 
-
   return (
     <QueryClientProvider client={queryClient}>
       <HydrationBoundary state={dehydratedState}>
-        <FixedBottomLayout className="bg-zinc-50 min-h-screen">
-          <FixedTopLayout className="space-y-6">
-            <FixedTopLayout.Content className="bg-transparent">
-              <div className="h-12" />
-            </FixedTopLayout.Content>
+        <FixedBottomLayout className="bg-background min-h-screen">
+          <FixedTopLayout className="space-y-6 pt-12">
             <ProfileContainer />
           </FixedTopLayout>
-          <FixedBottomLayout.Content className="flex justify-end p-4 bg-transparent">
-          <Link  href="/poll/create" className="fixed bottom-5 right-5 cursor-pointer">
-            <PollCreateFloatingButton
-            variant='with-text'
-            />
-          </Link>
+          <FixedBottomLayout.Content className="flex w-full justify-end bg-transparent p-4">
+            <div className="fixed right-5 bottom-5 flex flex-col gap-4">
+              <SurveyQuestionCreateFloatingButton variant="with-text" />
+              <SurveyCreateFloatingButton variant="with-text" />
+            </div>
           </FixedBottomLayout.Content>
         </FixedBottomLayout>
       </HydrationBoundary>

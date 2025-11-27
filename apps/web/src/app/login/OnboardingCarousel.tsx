@@ -1,10 +1,11 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+
+import { PointIcon } from "@/components/common/PointIcon";
+import { Typo } from "@repo/ui/components";
+import { cn } from "@repo/ui/lib";
 import useEmblaCarousel from "embla-carousel-react";
 import Image from "next/image";
-import { cn } from "@repo/ui/lib";
-import { Typo } from "@repo/ui/components";
-import { PointIcon } from "@/components/common/PointIcon";
+import { useCallback, useEffect, useState } from "react";
 
 const slides = [
   {
@@ -39,7 +40,7 @@ export function OnboardingCarousel() {
       if (!emblaApi) return;
       emblaApi.scrollTo(index);
     },
-    [emblaApi]
+    [emblaApi],
   );
 
   const onSelect = useCallback(() => {
@@ -56,22 +57,20 @@ export function OnboardingCarousel() {
   return (
     <div
       className={cn(
-        "bg-zinc-50 rounded-[16px] flex-1 py-4 mx-5",
-        "flex flex-col gap-6 justify-center items-center"
+        "mx-5 flex-1 rounded-[16px] bg-zinc-50 py-4",
+        "flex flex-col items-center justify-center gap-6",
       )}
     >
-      <div className="flex flex-col items-center text-center whitespace-pre-line gap-3">
+      <div className="flex flex-col items-center gap-3 text-center whitespace-pre-line">
         <IndexBadge index={selectedIndex} />
-        <Typo.MainTitle size="small">
-          {slides[selectedIndex]?.description}
-        </Typo.MainTitle>
+        <Typo.MainTitle size="small">{slides[selectedIndex]?.description}</Typo.MainTitle>
       </div>
 
-      <div className="overflow-hidden w-full" ref={emblaRef}>
+      <div className="w-full overflow-hidden" ref={emblaRef}>
         <div className="flex w-full">
           {slides.map((slide, slideIndex) => (
             <div key={slide.id} className="shrink-0 basis-full px-6">
-              <div className="relative flex justify-center items-center w-full h-[300px]">
+              <div className="relative flex h-[300px] w-full items-center justify-center">
                 <Image
                   src={slide.imageUrl}
                   alt={slide.description}
@@ -89,11 +88,13 @@ export function OnboardingCarousel() {
       <div className="flex justify-center gap-2">
         {slides.map((_, index) => (
           <button
-            key={index}
-            className={`w-2 h-2 rounded-full transition-colors duration-200 ${
+            key={`dot-${index}`}
+            type="button"
+            className={`h-2 w-2 rounded-full transition-colors duration-200 ${
               index === selectedIndex ? "bg-zinc-950" : "bg-zinc-200"
             }`}
             onClick={() => onDotButtonClick(index)}
+            aria-label={`슬라이드 ${index + 1}로 이동`}
           />
         ))}
       </div>
@@ -104,9 +105,7 @@ export function OnboardingCarousel() {
 function IndexBadge({ index }: { index: number }) {
   return (
     <PointIcon>
-      <span className="text-sm font-bold text-white leading-[1.8]">
-        {index + 1}
-      </span>
+      <span className="text-sm leading-[1.8] font-bold text-white">{index + 1}</span>
     </PointIcon>
   );
 }

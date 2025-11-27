@@ -1,15 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { Button } from "./Button";
+import type { Matcher } from "react-day-picker";
+import { ko } from "react-day-picker/locale";
+import { cn } from "../../lib/utils";
 import { Button as ShadcnButton } from "../ui/button";
 import { Calendar } from "../ui/calendar";
+import { Button } from "./Button";
+import { DrawerContent, DrawerProvider, useDrawer } from "./Drawer";
 import { TimePicker } from "./TimePicker";
-import { DrawerProvider, DrawerContent, useDrawer } from "./Drawer";
-import { cn } from "../../lib/utils";
-import { ko } from "react-day-picker/locale";
 import { Typo } from "./Typo";
-import type { Matcher } from "react-day-picker";
 
 interface DateAndTimePickerProps {
   date: Date | undefined;
@@ -41,20 +41,14 @@ export function DateAndTimePicker({
       <DrawerProvider>
         <DatePickerButton date={date} disabled={disabled} />
         <DrawerContent className="p-5 pb-10">
-          <CalendarContent
-            date={date}
-            onDateChange={onDateChange}
-            disabledDates={disabledDates}
-          />
+          <CalendarContent date={date} onDateChange={onDateChange} disabledDates={disabledDates} />
         </DrawerContent>
       </DrawerProvider>
 
       {/* Time Picker */}
       <DrawerProvider>
         <TimePickerButton time={time} disabled={disabled} />
-        <DrawerContent
-          className={cn("p-5 pb-10", "flex flex-col items-center")}
-        >
+        <DrawerContent className={cn("p-5 pb-10", "flex flex-col items-center")}>
           <TimePickerContent time={time} onTimeChange={onTimeChange} />
         </DrawerContent>
       </DrawerProvider>
@@ -62,13 +56,7 @@ export function DateAndTimePicker({
   );
 }
 
-function DatePickerButton({
-  date,
-  disabled,
-}: {
-  date: Date | undefined;
-  disabled: boolean;
-}) {
+function DatePickerButton({ date, disabled }: { date: Date | undefined; disabled: boolean }) {
   const { open, isOpen } = useDrawer();
 
   const formatDate = (date: Date): string => {
@@ -86,25 +74,17 @@ function DatePickerButton({
       onClick={open}
       className={cn(
         "justify-between",
-        isOpen && "text-violet-500 bg-violet-50 !border-violet-500",
-        "shadow-none"
+        isOpen && "!border-violet-500 bg-violet-50 text-violet-500",
+        "shadow-none",
       )}
       disabled={disabled}
     >
-      <Typo.ButtonText size="medium">
-        {date ? formatDate(date) : "날짜 선택"}
-      </Typo.ButtonText>
+      <Typo.ButtonText size="medium">{date ? formatDate(date) : "날짜 선택"}</Typo.ButtonText>
     </ShadcnButton>
   );
 }
 
-function TimePickerButton({
-  time,
-  disabled,
-}: {
-  time: string;
-  disabled: boolean;
-}) {
+function TimePickerButton({ time, disabled }: { time: string; disabled: boolean }) {
   const { open, isOpen } = useDrawer();
 
   const formatTime = (time: string): string => {
@@ -120,8 +100,8 @@ function TimePickerButton({
       onClick={open}
       className={cn(
         "justify-between",
-        isOpen && "text-violet-500 bg-violet-50 !border-violet-500",
-        "shadow-none"
+        isOpen && "!border-violet-500 bg-violet-50 text-violet-500",
+        "shadow-none",
       )}
       disabled={disabled}
     >
@@ -140,9 +120,7 @@ function CalendarContent({
   disabledDates?: Matcher | Matcher[];
 }) {
   const { close } = useDrawer();
-  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(
-    date
-  );
+  const [selectedDate, setSelectedDate] = React.useState<Date | undefined>(date);
 
   // date prop이 변경되면 selectedDate도 동기화
   React.useEffect(() => {
@@ -169,7 +147,7 @@ function CalendarContent({
         className="w-full"
         disabled={disabledDates}
       />
-      <Button className="w-full mt-6" onClick={handleConfirm}>
+      <Button className="mt-6 w-full" onClick={handleConfirm}>
         확인
       </Button>
     </>
@@ -199,7 +177,7 @@ function TimePickerContent({
   return (
     <>
       <TimePicker value={selectedTime} onValueChange={setSelectedTime} />
-      <Button className="w-full mt-6" onClick={handleConfirm}>
+      <Button className="mt-6 w-full" onClick={handleConfirm}>
         확인
       </Button>
     </>

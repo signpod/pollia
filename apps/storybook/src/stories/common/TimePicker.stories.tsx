@@ -1,6 +1,6 @@
+import { TimePicker } from "@repo/ui/components";
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { useState } from "react";
-import { TimePicker } from "@repo/ui/components";
 
 const meta: Meta<typeof TimePicker> = {
   title: "Common/TimePicker",
@@ -109,7 +109,7 @@ export const Default: Story = {
     return (
       <div className="p-6">
         <div className="mb-4">
-          <p className="text-sm text-gray-600 mb-2">선택된 시간: {time}</p>
+          <p className="mb-2 text-sm text-gray-600">선택된 시간: {time}</p>
         </div>
         <TimePicker value={time} onValueChange={setTime} />
       </div>
@@ -126,28 +126,28 @@ export const DifferentTimes: Story = {
     const [midnight, setMidnight] = useState("00:00");
 
     return (
-      <div className="p-6 space-y-8">
+      <div className="space-y-8 p-6">
         <div>
-          <h3 className="text-sm font-semibold mb-3">오전 9:00</h3>
-          <p className="text-xs text-gray-600 mb-2">선택된 시간: {morning}</p>
+          <h3 className="mb-3 text-sm font-semibold">오전 9:00</h3>
+          <p className="mb-2 text-xs text-gray-600">선택된 시간: {morning}</p>
           <TimePicker value={morning} onValueChange={setMorning} />
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold mb-3">오후 2:30</h3>
-          <p className="text-xs text-gray-600 mb-2">선택된 시간: {afternoon}</p>
+          <h3 className="mb-3 text-sm font-semibold">오후 2:30</h3>
+          <p className="mb-2 text-xs text-gray-600">선택된 시간: {afternoon}</p>
           <TimePicker value={afternoon} onValueChange={setAfternoon} />
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold mb-3">오후 6:45</h3>
-          <p className="text-xs text-gray-600 mb-2">선택된 시간: {evening}</p>
+          <h3 className="mb-3 text-sm font-semibold">오후 6:45</h3>
+          <p className="mb-2 text-xs text-gray-600">선택된 시간: {evening}</p>
           <TimePicker value={evening} onValueChange={setEvening} />
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold mb-3">오전 0:00 (자정)</h3>
-          <p className="text-xs text-gray-600 mb-2">선택된 시간: {midnight}</p>
+          <h3 className="mb-3 text-sm font-semibold">오전 0:00 (자정)</h3>
+          <p className="mb-2 text-xs text-gray-600">선택된 시간: {midnight}</p>
           <TimePicker value={midnight} onValueChange={setMidnight} />
         </div>
       </div>
@@ -168,8 +168,7 @@ export const AMPMTransition: Story = {
             11:55에서 시작합니다. 시간을 증가시켜 12:00(오후)로 전환해보세요.
           </p>
           <p className="text-sm font-medium">
-            현재 시간: {time} (
-            {parseInt(time.split(":")[0] || "0") < 12 ? "오전" : "오후"})
+            현재 시간: {time} ({Number.parseInt(time.split(":")[0] || "0") < 12 ? "오전" : "오후"})
           </p>
         </div>
         <TimePicker value={time} onValueChange={setTime} />
@@ -207,15 +206,15 @@ export const DragInteraction: Story = {
       <div className="p-6">
         <div className="mb-4 space-y-2">
           <h3 className="text-sm font-semibold">드래그 인터랙션</h3>
-          <p className="text-xs text-gray-600 mb-1">
+          <p className="mb-1 text-xs text-gray-600">
             숫자를 위/아래로 드래그하여 값을 변경할 수 있습니다.
           </p>
-          <ul className="text-xs text-gray-600 space-y-1 list-disc list-inside">
+          <ul className="list-inside list-disc space-y-1 text-xs text-gray-600">
             <li>마우스 드래그: 클릭 후 위/아래로 드래그</li>
             <li>터치 드래그: 터치 후 위/아래로 스와이프</li>
             <li>30px 드래그당 1단위 변경</li>
           </ul>
-          <p className="text-sm font-medium mt-3">선택된 시간: {time}</p>
+          <p className="mt-3 text-sm font-medium">선택된 시간: {time}</p>
         </div>
         <TimePicker value={time} onValueChange={setTime} />
       </div>
@@ -232,14 +231,14 @@ export const ButtonInteraction: Story = {
       <div className="p-6">
         <div className="mb-4 space-y-2">
           <h3 className="text-sm font-semibold">Chevron 버튼 인터랙션</h3>
-          <p className="text-xs text-gray-600 mb-1">
+          <p className="mb-1 text-xs text-gray-600">
             위/아래 화살표 버튼을 클릭하여 값을 변경할 수 있습니다.
           </p>
-          <ul className="text-xs text-gray-600 space-y-1 list-disc list-inside">
+          <ul className="list-inside list-disc space-y-1 text-xs text-gray-600">
             <li>시간: 1시간 단위로 증감 (0~23시 순환)</li>
             <li>분: 5분 단위로 증감 (0~55분 순환)</li>
           </ul>
-          <p className="text-sm font-medium mt-3">선택된 시간: {time}</p>
+          <p className="mt-3 text-sm font-medium">선택된 시간: {time}</p>
         </div>
         <TimePicker value={time} onValueChange={setTime} />
       </div>
@@ -255,13 +254,13 @@ export const CustomStyle: Story = {
     return (
       <div className="p-6">
         <div className="mb-4">
-          <h3 className="text-sm font-semibold mb-2">커스텀 스타일</h3>
+          <h3 className="mb-2 text-sm font-semibold">커스텀 스타일</h3>
           <p className="text-sm font-medium">선택된 시간: {time}</p>
         </div>
         <TimePicker
           value={time}
           onValueChange={setTime}
-          className="bg-gradient-to-b from-violet-50 to-white border border-violet-200"
+          className="border border-violet-200 bg-gradient-to-b from-violet-50 to-white"
         />
       </div>
     );
@@ -277,28 +276,28 @@ export const TimeOfDay: Story = {
     const [sleep, setSleep] = useState("23:00");
 
     return (
-      <div className="p-6 space-y-6">
+      <div className="space-y-6 p-6">
         <div>
-          <h3 className="text-sm font-semibold mb-2">🌅 아침 식사</h3>
-          <p className="text-xs text-gray-600 mb-2">시간: {breakfast}</p>
+          <h3 className="mb-2 text-sm font-semibold">🌅 아침 식사</h3>
+          <p className="mb-2 text-xs text-gray-600">시간: {breakfast}</p>
           <TimePicker value={breakfast} onValueChange={setBreakfast} />
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold mb-2">🌞 점심 식사</h3>
-          <p className="text-xs text-gray-600 mb-2">시간: {lunch}</p>
+          <h3 className="mb-2 text-sm font-semibold">🌞 점심 식사</h3>
+          <p className="mb-2 text-xs text-gray-600">시간: {lunch}</p>
           <TimePicker value={lunch} onValueChange={setLunch} />
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold mb-2">🌆 저녁 식사</h3>
-          <p className="text-xs text-gray-600 mb-2">시간: {dinner}</p>
+          <h3 className="mb-2 text-sm font-semibold">🌆 저녁 식사</h3>
+          <p className="mb-2 text-xs text-gray-600">시간: {dinner}</p>
           <TimePicker value={dinner} onValueChange={setDinner} />
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold mb-2">🌙 취침 시간</h3>
-          <p className="text-xs text-gray-600 mb-2">시간: {sleep}</p>
+          <h3 className="mb-2 text-sm font-semibold">🌙 취침 시간</h3>
+          <p className="mb-2 text-xs text-gray-600">시간: {sleep}</p>
           <TimePicker value={sleep} onValueChange={setSleep} />
         </div>
       </div>
@@ -322,11 +321,9 @@ export const TimeFormatConversion: Story = {
       <div className="p-6">
         <div className="mb-4 space-y-2">
           <h3 className="text-sm font-semibold">시간 포맷 변환</h3>
-          <div className="bg-gray-50 p-3 rounded-lg space-y-1">
+          <div className="space-y-1 rounded-lg bg-gray-50 p-3">
             <p className="text-xs text-gray-600">24시간제: {time}</p>
-            <p className="text-xs text-gray-600">
-              12시간제: {convertTo12Hour(time)}
-            </p>
+            <p className="text-xs text-gray-600">12시간제: {convertTo12Hour(time)}</p>
           </div>
         </div>
         <TimePicker value={time} onValueChange={setTime} />

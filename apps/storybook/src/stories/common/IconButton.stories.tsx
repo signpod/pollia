@@ -1,13 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/nextjs";
 import { IconButton } from "@repo/ui/components";
-import {
-  Minus,
-  Plus,
-  ChevronUp,
-  ChevronDown,
-  Heart,
-  Settings,
-} from "lucide-react";
+import type { Meta, StoryObj } from "@storybook/nextjs";
+import { ChevronDown, ChevronUp, Heart, Minus, Plus, Settings } from "lucide-react";
 import * as React from "react";
 
 const meta: Meta<typeof IconButton> = {
@@ -74,7 +67,7 @@ export const States: Story = {
     <div className="space-y-8">
       <div>
         <h3 className="mb-3 text-sm font-medium">Button States</h3>
-        <div className="flex gap-4 items-center">
+        <div className="flex items-center gap-4">
           <div className="text-center">
             <p className="mb-2 text-xs text-gray-500">Default</p>
             <IconButton icon={ChevronUp} />
@@ -88,7 +81,7 @@ export const States: Story = {
 
       <div>
         <h3 className="mb-3 text-sm font-medium">Different Icons</h3>
-        <div className="flex gap-4 items-center">
+        <div className="flex items-center gap-4">
           <div className="text-center">
             <p className="mb-2 text-xs text-gray-500">Plus</p>
             <IconButton icon={Plus} />
@@ -117,7 +110,7 @@ export const Sizes: Story = {
     <div className="space-y-8">
       <div>
         <h3 className="mb-3 text-sm font-medium">Small Size (24x24)</h3>
-        <div className="flex gap-4 items-center">
+        <div className="flex items-center gap-4">
           <IconButton icon={Plus} />
           <IconButton icon={Minus} />
           <IconButton icon={ChevronUp} disabled />
@@ -126,7 +119,7 @@ export const Sizes: Story = {
 
       <div>
         <h3 className="mb-3 text-sm font-medium">Medium Size (32x32)</h3>
-        <div className="flex gap-4 items-center">
+        <div className="flex items-center gap-4">
           <IconButton icon={Plus} />
           <IconButton icon={Minus} />
           <IconButton icon={ChevronUp} disabled />
@@ -141,10 +134,8 @@ export const Disabled: Story = {
   render: () => (
     <div className="space-y-8">
       <div>
-        <h3 className="mb-3 text-sm font-medium">
-          Disabled with disabled prop
-        </h3>
-        <div className="flex gap-4 items-center">
+        <h3 className="mb-3 text-sm font-medium">Disabled with disabled prop</h3>
+        <div className="flex items-center gap-4">
           <IconButton icon={Plus} disabled />
           <IconButton icon={Minus} disabled />
           <IconButton icon={Heart} disabled />
@@ -153,7 +144,7 @@ export const Disabled: Story = {
 
       <div>
         <h3 className="mb-3 text-sm font-medium">Disabled with state prop</h3>
-        <div className="flex gap-4 items-center">
+        <div className="flex items-center gap-4">
           <IconButton icon={Plus} disabled />
           <IconButton icon={Minus} disabled />
           <IconButton icon={Heart} disabled />
@@ -172,31 +163,24 @@ export const Interactive: Story = {
     });
 
     const increment = (id: string) => {
-      setCounts((prev) => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
+      setCounts(prev => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
     };
 
     return (
       <div className="space-y-8">
         <div>
           <h3 className="mb-3 text-sm font-medium">Interactive Example</h3>
-          <div className="flex gap-4 items-center">
+          <div className="flex items-center gap-4">
             <div className="text-center">
               <IconButton icon={Heart} onClick={() => increment("heart")} />
-              <p className="text-xs text-gray-500 mt-1">
-                Clicked: {counts.heart}
-              </p>
+              <p className="mt-1 text-xs text-gray-500">Clicked: {counts.heart}</p>
             </div>
             <div className="text-center">
-              <IconButton
-                icon={Settings}
-                onClick={() => increment("settings")}
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Clicked: {counts.settings}
-              </p>
+              <IconButton icon={Settings} onClick={() => increment("settings")} />
+              <p className="mt-1 text-xs text-gray-500">Clicked: {counts.settings}</p>
             </div>
           </div>
-          <p className="text-sm text-gray-500 mt-4">
+          <p className="mt-4 text-sm text-gray-500">
             클릭하면 카운터가 증가하고, active 상태를 볼 수 있습니다.
           </p>
         </div>

@@ -32,12 +32,12 @@ export function ProcessChip({ status, className }: ProcessChipProps) {
   return (
     <div
       className={cn(
-        "w-15 h-7",
+        "h-7 w-15",
         "inline-flex items-center justify-center",
         "rounded-full",
         config.bgColor,
         config.textColor,
-        className
+        className,
       )}
     >
       <Typo.ButtonText size="medium">{config.label}</Typo.ButtonText>

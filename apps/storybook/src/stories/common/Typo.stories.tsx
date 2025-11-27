@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from "@storybook/nextjs";
 import { Typo } from "@repo/ui/components";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 
 const meta: Meta<typeof Typo.MainTitle> = {
   title: "Common/Typo",
@@ -127,8 +127,7 @@ export const AllTypes: Story = {
             본문 텍스트 Large (16px) - 중요한 본문이나 강조할 내용에 사용합니다.
           </Typo.Body>
           <Typo.Body size="medium">
-            본문 텍스트 Medium (14px) - 일반적인 본문 텍스트로 가장 많이
-            사용됩니다.
+            본문 텍스트 Medium (14px) - 일반적인 본문 텍스트로 가장 많이 사용됩니다.
           </Typo.Body>
           <Typo.Body size="small">
             본문 텍스트 Small (12px) - 부가 설명이나 작은 텍스트에 사용합니다.
@@ -148,12 +147,8 @@ export const AllTypes: Story = {
           Button Text
         </h3>
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          <Typo.ButtonText size="large">
-            버튼 텍스트 Large (16px)
-          </Typo.ButtonText>
-          <Typo.ButtonText size="medium">
-            버튼 텍스트 Medium (14px)
-          </Typo.ButtonText>
+          <Typo.ButtonText size="large">버튼 텍스트 Large (16px)</Typo.ButtonText>
+          <Typo.ButtonText size="medium">버튼 텍스트 Medium (14px)</Typo.ButtonText>
         </div>
       </div>
     </div>
@@ -171,9 +166,7 @@ export const MainTitles: Story = {
         maxWidth: "600px",
       }}
     >
-      <Typo.MainTitle size="medium">
-        새로운 프로젝트를 시작해보세요
-      </Typo.MainTitle>
+      <Typo.MainTitle size="medium">새로운 프로젝트를 시작해보세요</Typo.MainTitle>
       <Typo.MainTitle size="small">더 작은 메인 제목입니다</Typo.MainTitle>
       <Typo.MainTitle size="medium" className="text-blue-600">
         색상을 변경한 메인 제목
@@ -194,20 +187,18 @@ export const BodyVariations: Story = {
       }}
     >
       <Typo.Body size="large">
-        이것은 큰 본문 텍스트입니다. 중요한 정보나 강조하고 싶은 내용을 표시할
-        때 사용합니다. 16px 크기에 Medium 폰트 웨이트를 가지고 있어 적절한
-        가독성을 제공합니다.
+        이것은 큰 본문 텍스트입니다. 중요한 정보나 강조하고 싶은 내용을 표시할 때 사용합니다. 16px
+        크기에 Medium 폰트 웨이트를 가지고 있어 적절한 가독성을 제공합니다.
       </Typo.Body>
 
       <Typo.Body size="medium">
-        이것은 중간 크기의 본문 텍스트입니다. 가장 일반적으로 사용되는 텍스트
-        크기로, 대부분의 본문 내용에 적합합니다. 14px 크기에 Semibold 웨이트를
-        사용합니다.
+        이것은 중간 크기의 본문 텍스트입니다. 가장 일반적으로 사용되는 텍스트 크기로, 대부분의 본문
+        내용에 적합합니다. 14px 크기에 Semibold 웨이트를 사용합니다.
       </Typo.Body>
 
       <Typo.Body size="small">
-        이것은 작은 본문 텍스트입니다. 부가 정보, 설명, 또는 덜 중요한 내용을
-        표시할 때 사용합니다. 12px 크기에 Medium 웨이트로 깔끔한 느낌을 줍니다.
+        이것은 작은 본문 텍스트입니다. 부가 정보, 설명, 또는 덜 중요한 내용을 표시할 때 사용합니다.
+        12px 크기에 Medium 웨이트로 깔끔한 느낌을 줍니다.
       </Typo.Body>
 
       <Typo.Body size="medium" className="text-gray-500">
@@ -238,7 +229,7 @@ export const Interactive: Story = {
 
       <Typo.SubTitle
         size="large"
-        className="hover:text-purple-600 transition-colors cursor-pointer"
+        className="cursor-pointer transition-colors hover:text-purple-600"
       >
         호버 효과가 있는 서브 제목
       </Typo.SubTitle>
@@ -320,7 +311,7 @@ export const ColorVariations: Story = {
           borderRadius: "8px",
         }}
       >
-        <Typo.MainTitle size="small" className="text-white mb-3">
+        <Typo.MainTitle size="small" className="mb-3 text-white">
           어두운 배경의 흰색 제목
         </Typo.MainTitle>
         <Typo.Body size="medium" className="text-gray-300">

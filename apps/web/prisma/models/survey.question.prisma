@@ -1,0 +1,27 @@
+model SurveyQuestion {
+    id          String             @id @default(cuid())
+    title       String
+    description String?
+    imageUrl    String?            @map("image_url")
+    type        SurveyQuestionType
+    order       Int
+
+    maxSelections Int? @map("max_selections")
+
+    surveyId String?                @map("survey_id")
+    survey   Survey?                @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+    options  SurveyQuestionOption[]
+    answers  SurveyQuestionAnswer[]
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    @@index([surveyId])
+    @@map("survey_questions")
+}
+
+enum SurveyQuestionType {
+    MULTIPLE_CHOICE
+    SCALE
+    SUBJECTIVE
+}

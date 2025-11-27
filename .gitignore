@@ -41,8 +41,6 @@ yarn-error.log*
 .DS_Store
 *.pem
 
-.vscode/
-
 # Flutter
 **/android/**/gradle-wrapper.jar
 **/android/.gradle

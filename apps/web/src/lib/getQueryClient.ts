@@ -1,8 +1,4 @@
-import {
-  isServer,
-  QueryClient,
-  defaultShouldDehydrateQuery,
-} from "@tanstack/react-query";
+import { QueryClient, defaultShouldDehydrateQuery, isServer } from "@tanstack/react-query";
 
 function makeQueryClient() {
   return new QueryClient({
@@ -21,16 +17,15 @@ function makeQueryClient() {
             return false;
           return failureCount < 3;
         },
-        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+        retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
       },
       mutations: {
         retry: 1,
       },
       dehydrate: {
         // pending 쿼리도 dehydration에 포함
-        shouldDehydrateQuery: (query) =>
-          defaultShouldDehydrateQuery(query) ||
-          query.state.status === "pending",
+        shouldDehydrateQuery: query =>
+          defaultShouldDehydrateQuery(query) || query.state.status === "pending",
       },
     },
   });
@@ -42,10 +37,9 @@ export function getQueryClient() {
   if (isServer) {
     // 서버: 항상 새로운 쿼리 클라이언트 생성
     return makeQueryClient();
-  } else {
-    // 브라우저: 이미 있지 않은 경우에만 새로운 쿼리 클라이언트 생성
-    // React가 초기 렌더에서 suspend하는 경우 새로운 클라이언트를 재생성하지 않도록 함
-    if (!browserQueryClient) browserQueryClient = makeQueryClient();
-    return browserQueryClient;
   }
+  // 브라우저: 이미 있지 않은 경우에만 새로운 쿼리 클라이언트 생성
+  // React가 초기 렌더에서 suspend하는 경우 새로운 클라이언트를 재생성하지 않도록 함
+  if (!browserQueryClient) browserQueryClient = makeQueryClient();
+  return browserQueryClient;
 }

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "storybook dev -p 6006",
     "build": "storybook build",
-    "lint": "eslint"
+    "lint": "biome check --write ."
   },
   "dependencies": {
     "@repo/ui": "workspace:*",
@@ -15,7 +15,6 @@
     "react-dom": "19.1.0"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
     "@repo/tailwind-config": "workspace:*",
     "@storybook/addon-docs": "^9.1.5",
     "@storybook/nextjs": "^9.1.4",
@@ -23,9 +22,6 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "15.5.2",
-    "eslint-plugin-storybook": "^9.1.4",
     "storybook": "^9.1.4",
     "typescript": "^5",
     "webpack": "^5.95.0"

@@ -1,0 +1,672 @@
+# React Hooks 및 TanStack Query 컨벤션
+
+## 디렉토리 구조
+
+```
+src/hooks/
+├── common/           # 공통 hooks
+│   ├── useImageUpload.ts
+│   └── usePushAfter.ts
+├── poll/            # Poll 도메인
+│   ├── useCreatePoll.ts
+│   ├── usePoll.ts
+│   ├── useLike.ts
+│   └── ...
+├── survey/          # Survey 도메인
+│   ├── useCreateSurvey.ts
+│   ├── useSurvey.ts
+│   └── ...
+└── user/            # User 도메인
+    ├── index.ts
+    ├── useAuth.ts
+    └── useCurrentUser.ts
+```
+
+## 핵심 원칙
+
+### 1. 도메인별 폴더 구조
+
+```
+✅ hooks/poll/useCreatePoll.ts     # 도메인별로 폴더 분리
+✅ hooks/survey/useSurvey.ts
+✅ hooks/common/useImageUpload.ts  # 공통 hooks
+
+❌ hooks/useCreatePoll.ts          # 루트에 직접 생성 금지
+❌ hooks/poll.ts                   # 단일 파일에 모든 것 금지
+```
+
+### 2. 파일 네이밍
+
+```
+패턴: use{동사}{도메인/기능명}.ts
+
+✅ useCreatePoll.ts      # 생성 hook
+✅ usePoll.ts            # 조회 hook (여러 query 포함 가능)
+✅ useLike.ts            # 단일 액션 hook
+✅ useImageUpload.ts     # 기능 중심 hook
+
+❌ create-poll.ts        # use 프리픽스 필수
+❌ pollHooks.ts          # 복수형 금지
+```
+
+## Query Hooks (데이터 조회)
+
+### 기본 구조
+
+```typescript
+import { useQuery } from "@tanstack/react-query";
+import { getData } from "@/actions/domain";
+import { domainQueryKeys } from "@/constants/queryKeys/domainQueryKeys";
+
+export const useGetData = (id: string) => {
+  return useQuery({
+    queryKey: domainQueryKeys.data(id),
+    queryFn: () => getData(id),
+    staleTime: 5 * 60 * 1000, // 5분
+    refetchInterval: 5 * 60 * 1000, // 5분마다 갱신
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  });
+};
+
+export type UseGetDataReturn = ReturnType<typeof useGetData>;
+```
+
+### 필수 요소
+
+1. **Query Key는 별도 파일에서 관리**
+
+```typescript
+// ❌ 직접 정의 금지
+queryKey: ["poll", pollId];
+
+// ✅ queryKeys 파일 사용
+queryKey: pollQueryKeys.poll(pollId);
+```
+
+2. **Return Type Export**
+
+```typescript
+export type UseGetDataReturn = ReturnType<typeof useGetData>;
+```
+
+3. **데이터 변환 (필요시)**
+
+```typescript
+export const useUserPolls = (userId?: string) => {
+  return useQuery({
+    queryKey: pollQueryKeys.userPolls(userId),
+    queryFn: () => getUserPolls(userId),
+    select: (data) => data?.data ?? [], // ✅ 데이터 변환
+    initialData: { data: [] }, // ✅ 초기값 제공
+    staleTime: 5 * 60 * 1000,
+  });
+};
+```
+
+4. **Cache 설정**
+
+```typescript
+// 자주 변경되는 데이터 (실시간 결과)
+refetchInterval: 10 * 1000,    // 10초
+staleTime: 10 * 1000,
+
+// 일반 데이터
+staleTime: 5 * 60 * 1000,      // 5분
+refetchInterval: 5 * 60 * 1000,
+
+// 거의 변경되지 않는 데이터
+staleTime: 30 * 60 * 1000,     // 30분
+refetchInterval: 30 * 60 * 1000,
+```
+
+### 여러 Query를 한 파일에 관리
+
+```typescript
+// ✅ usePoll.ts - 관련된 query들을 하나의 파일에
+export const useGetPoll = (pollId: string) => {
+  /* ... */
+};
+export type UseGetPollReturn = ReturnType<typeof useGetPoll>;
+
+export const usePollResults = (pollId: string) => {
+  /* ... */
+};
+export type UsePollResultsReturn = ReturnType<typeof usePollResults>;
+
+export const useUserVoteStatus = (pollId: string) => {
+  /* ... */
+};
+export type UseUserVoteStatusReturn = ReturnType<typeof useUserVoteStatus>;
+```
+
+## Mutation Hooks (데이터 변경)
+
+### 1. 기본 Mutation Hook
+
+```typescript
+"use client"; // ✅ 클라이언트 컴포넌트 명시
+
+import { useMutation } from "@tanstack/react-query";
+import { createData } from "@/actions/domain";
+import type { CreateDataRequest, CreateDataResponse } from "@/types/dto";
+
+interface UseCreateDataOptions {
+  onSuccess?: (data: CreateDataResponse) => void;
+  onError?: (error: Error) => void;
+}
+
+export function useCreateData(options: UseCreateDataOptions = {}) {
+  return useMutation({
+    mutationFn: async (
+      payload: CreateDataRequest
+    ): Promise<CreateDataResponse> => {
+      return createData(payload);
+    },
+    onSuccess: (data) => {
+      options.onSuccess?.(data);
+    },
+    onError: (error) => {
+      console.error("❌ 데이터 생성 실패:", error);
+      options.onError?.(error as Error);
+    },
+  });
+}
+```
+
+**필수 요소:**
+
+- `"use client"` directive
+- Options 인터페이스로 콜백 받기
+- 타입 명시 (`CreateDataRequest`, `CreateDataResponse`)
+- onSuccess, onError 핸들링
+
+### 2. Optimistic Update Pattern
+
+```typescript
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toggleLike } from "@/actions/poll";
+import { pollQueryKeys } from "@/constants/queryKeys/pollQueryKeys";
+import { toast } from "@repo/ui/components";
+import type { GetPollUserStatusResponse } from "@/types/dto";
+
+interface LikeMutationContext {
+  previousUserStatus: GetPollUserStatusResponse | undefined;
+  pollId: string;
+  optimisticUpdate: boolean;
+}
+
+const LIKE_MESSAGES = {
+  success: {
+    like: "좋아요를 눌렀어요.",
+    cancel: "좋아요를 취소했어요.",
+  },
+  error: "좋아요 처리 중 오류가 발생했어요.",
+} as const;
+
+export const useLike = (pollId: string) => {
+  const queryClient = useQueryClient();
+
+  const likeMutation = useMutation<
+    ToggleLikeResponse,
+    Error,
+    void,
+    LikeMutationContext // ✅ Context 타입 정의
+  >({
+    mutationFn: async () => {
+      return await toggleLike(pollId);
+    },
+
+    // ✅ 1. Optimistic Update
+    onMutate: async () => {
+      // 진행 중인 쿼리 취소
+      await queryClient.cancelQueries({
+        queryKey: pollQueryKeys.userPollStatus(pollId),
+      });
+
+      // 이전 데이터 백업
+      const previousUserStatus =
+        queryClient.getQueryData<GetPollUserStatusResponse>(
+          pollQueryKeys.userPollStatus(pollId)
+        );
+
+      // Optimistic Update
+      queryClient.setQueryData<GetPollUserStatusResponse>(
+        pollQueryKeys.userPollStatus(pollId),
+        (oldData) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            isLiked: !oldData.isLiked,
+          };
+        }
+      );
+
+      // Context 반환 (롤백용)
+      return {
+        previousUserStatus,
+        pollId,
+        optimisticUpdate: true,
+      };
+    },
+
+    // ✅ 2. 성공 시 처리
+    onSuccess: () => {
+      // 관련 쿼리 무효화
+      queryClient.invalidateQueries({
+        queryKey: pollQueryKeys.userPollStatus(pollId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: pollQueryKeys.likedPolls(),
+      });
+
+      toast.success(
+        isLiked ? LIKE_MESSAGES.success.like : LIKE_MESSAGES.success.cancel
+      );
+    },
+
+    // ✅ 3. 실패 시 롤백
+    onError: (_, _variables, context) => {
+      if (context?.previousUserStatus) {
+        queryClient.setQueryData<GetPollUserStatusResponse>(
+          pollQueryKeys.userPollStatus(pollId),
+          context.previousUserStatus
+        );
+      }
+      toast.warning(LIKE_MESSAGES.error);
+    },
+  });
+
+  // ✅ 4. 현재 상태 조회
+  const userStatus = queryClient.getQueryData<GetPollUserStatusResponse>(
+    pollQueryKeys.userPollStatus(pollId)
+  );
+  const isLiked = userStatus?.isLiked || false;
+
+  // ✅ 5. 명확한 인터페이스 반환
+  return {
+    isLiked,
+    isProcessing: likeMutation.isPending,
+    handleLike: likeMutation.mutate,
+    error: likeMutation.error,
+    isError: likeMutation.isError,
+  };
+};
+
+export type UseLikeReturn = ReturnType<typeof useLike>;
+```
+
+**Optimistic Update 체크리스트:**
+
+- [ ] `onMutate`에서 `cancelQueries`로 진행 중인 쿼리 취소
+- [ ] 이전 데이터 백업 (롤백용)
+- [ ] `setQueryData`로 즉시 UI 업데이트
+- [ ] Context에 롤백 정보 저장
+- [ ] `onSuccess`에서 `invalidateQueries`
+- [ ] `onError`에서 이전 데이터로 롤백
+- [ ] 사용자 피드백 (toast)
+
+### 3. 복잡한 Mutation (다중 작업)
+
+```typescript
+export function useImageUpload(options: UseImageUploadOptions = {}) {
+  const [uploadProgress, setUploadProgress] =
+    useState<ImageUploadProgress | null>(null);
+
+  // ✅ 여러 mutation 정의
+  const uploadMutation = useMutation({
+    mutationFn: async (file: File): Promise<UploadedImage> => {
+      // ... 복잡한 로직
+    },
+    onSuccess: (data) => {
+      console.log("✅ 이미지 업로드 성공:", data);
+      options.onSuccess?.(data);
+    },
+    onError: (error) => {
+      console.error("❌ 이미지 업로드 실패:", error);
+      options.onError?.(error as Error);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (request: DeleteImageRequest) => deleteImage(request),
+    onSuccess: () => console.log("✅ 이미지 삭제 성공"),
+    onError: (error) => console.error("❌ 이미지 삭제 실패:", error),
+  });
+
+  const confirmMutation = useMutation({
+    mutationFn: (request: ConfirmFileRequest) => confirmFile(request),
+    onSuccess: () => console.log("✅ 파일 확정 성공"),
+    onError: (error) => console.error("❌ 파일 확정 실패:", error),
+  });
+
+  // ✅ 명확하게 그룹화된 반환값
+  return {
+    // 업로드
+    upload: uploadMutation.mutate,
+    uploadAsync: uploadMutation.mutateAsync,
+    isUploading: uploadMutation.isPending,
+    uploadProgress,
+    uploadError: uploadMutation.error,
+
+    // 삭제
+    deleteImage: deleteMutation.mutate,
+    deleteImageAsync: deleteMutation.mutateAsync,
+    isDeleting: deleteMutation.isPending,
+    deleteError: deleteMutation.error,
+
+    // 확정 처리
+    confirmFile: confirmMutation.mutate,
+    confirmFileAsync: confirmMutation.mutateAsync,
+    isConfirming: confirmMutation.isPending,
+    confirmError: confirmMutation.error,
+
+    reset: () => {
+      uploadMutation.reset();
+      deleteMutation.reset();
+      confirmMutation.reset();
+      setUploadProgress(null);
+    },
+  };
+}
+```
+
+## Query Keys 관리
+
+### 파일 구조
+
+```
+src/constants/queryKeys/
+├── pollQueryKeys.ts
+├── surveyQueryKeys.ts
+└── userQueryKeys.ts
+```
+
+### Query Keys 정의 패턴
+
+```typescript
+// pollQueryKeys.ts
+export const pollQueryKeys = {
+  // 단일 리소스
+  poll: (pollId: string) => ["poll", pollId] as const,
+
+  // 관계 데이터
+  pollResults: (pollId: string) => ["poll-results", pollId] as const,
+  userVoteStatus: (pollId: string) => ["user-vote-status", pollId] as const,
+
+  // 리스트 (optional 매개변수)
+  userPolls: (userId?: string) =>
+    userId ? (["user-polls", userId] as const) : (["user-polls"] as const),
+
+  bookmarkedPolls: (userId?: string) =>
+    userId
+      ? (["bookmarked-polls", userId] as const)
+      : (["bookmarked-polls"] as const),
+
+  // 전체 무효화용
+  all: () => ["poll"] as const,
+} as const;
+
+export type PollQueryKeys = typeof pollQueryKeys;
+```
+
+**규칙:**
+
+- [ ] 모든 queryKey는 별도 파일로 관리
+- [ ] 함수로 정의하여 동적 매개변수 지원
+- [ ] `as const`로 타입 안정성 확보
+- [ ] optional 매개변수는 삼항 연산자로 처리
+- [ ] 타입 export
+
+### Query Key 네이밍 컨벤션
+
+```typescript
+✅ poll: (id) => ["poll", id]                    # 단일 리소스
+✅ pollResults: (id) => ["poll-results", id]     # 파생 데이터
+✅ userPolls: (userId) => ["user-polls", userId] # 사용자별 목록
+✅ all: () => ["poll"]                           # 전체 무효화
+
+❌ ["poll", id]                                  # 함수로 감싸지 않음
+❌ getPoll: (id) => ["poll", id]                 # get 프리픽스 불필요
+```
+
+## 네이밍 컨벤션
+
+### Hook 이름
+
+```typescript
+// Query (조회)
+✅ useGetPoll          # 단일 조회
+✅ usePollResults      # 관련 데이터 조회
+✅ useUserPolls        # 목록 조회
+✅ useCurrentUser      # 현재 상태 조회
+
+// Mutation (변경)
+✅ useCreatePoll       # 생성
+✅ useUpdatePoll       # 수정
+✅ useDeletePoll       # 삭제
+✅ useLike             # 토글/액션
+✅ useBookmark         # 토글/액션
+✅ useIndividualVoting # 복잡한 로직
+```
+
+### 변수/함수 이름
+
+```typescript
+// Mutation 함수
+✅ handleLike          # handle + 액션명
+✅ handleBookmark
+✅ handleVote
+
+// 상태 변수
+✅ isLiked             # 불린 상태
+✅ isProcessing        # 진행 중 상태
+✅ isUploading
+✅ uploadProgress      # 진행률
+
+// Mutation 객체
+✅ likeMutation        # mutation 접미사
+✅ voteMutation
+✅ uploadMutation
+
+❌ like()              # 동사만 사용 금지
+❌ processing          # is 프리픽스 필수
+```
+
+### 상수
+
+```typescript
+// 메시지 상수
+const LIKE_MESSAGES = {
+  success: {
+    like: "좋아요를 눌렀어요.",
+    cancel: "좋아요를 취소했어요.",
+  },
+  error: "좋아요 처리 중 오류가 발생했어요.",
+} as const;
+
+// 설정 상수
+const CACHE_TIME = {
+  REALTIME: 10 * 1000, // 10초
+  NORMAL: 5 * 60 * 1000, // 5분
+  STATIC: 30 * 60 * 1000, // 30분
+} as const;
+```
+
+## Return 타입 패턴
+
+### Query Hook Return
+
+```typescript
+export const useGetPoll = (pollId: string) => {
+  return useQuery({
+    queryKey: pollQueryKeys.poll(pollId),
+    queryFn: () => getPoll(pollId),
+    // ...
+  });
+};
+
+// ✅ ReturnType으로 자동 추론
+export type UseGetPollReturn = ReturnType<typeof useGetPoll>;
+```
+
+### Mutation Hook Return
+
+```typescript
+export const useLike = (pollId: string) => {
+  // ...
+
+  return {
+    // 상태
+    isLiked,
+    isProcessing: likeMutation.isPending,
+
+    // 액션
+    handleLike: likeMutation.mutate,
+
+    // 에러
+    error: likeMutation.error,
+    isError: likeMutation.isError,
+  };
+};
+
+export type UseLikeReturn = ReturnType<typeof useLike>;
+```
+
+## 에러 처리
+
+### Console 로그 규칙
+
+```typescript
+// ✅ 이모지 사용
+console.log("✅ 데이터 로드 성공:", data);
+console.error("❌ 데이터 로드 실패:", error);
+
+// 단계별 로그
+console.log("🔄 데이터 업로드 중...");
+console.log("✅ 데이터 업로드 성공");
+```
+
+### Toast 메시지
+
+```typescript
+import { toast } from "@repo/ui/components";
+
+// 성공
+toast.success("좋아요를 눌렀어요.");
+
+// 에러
+toast.warning("좋아요 처리 중 오류가 발생했어요.");
+
+// 정보
+toast.info("투표가 종료되었어요.");
+```
+
+## 체크리스트
+
+### Query Hook 작성 시
+
+- [ ] `useQuery` 사용
+- [ ] queryKey는 별도 파일에서 가져오기
+- [ ] staleTime, refetchInterval 설정
+- [ ] retry 설정 (기본 3회)
+- [ ] select로 데이터 변환 (필요시)
+- [ ] initialData 제공 (필요시)
+- [ ] ReturnType export
+
+### Mutation Hook 작성 시
+
+- [ ] `"use client"` directive 추가
+- [ ] Options 인터페이스 정의
+- [ ] mutationFn 타입 명시
+- [ ] onSuccess, onError 핸들링
+- [ ] console.log로 성공/실패 로깅
+- [ ] toast로 사용자 피드백 (필요시)
+- [ ] ReturnType export
+
+### Optimistic Update 적용 시
+
+- [ ] onMutate에서 cancelQueries
+- [ ] 이전 데이터 백업
+- [ ] setQueryData로 즉시 업데이트
+- [ ] Context 타입 정의
+- [ ] onSuccess에서 invalidateQueries
+- [ ] onError에서 롤백
+- [ ] 사용자 피드백 제공
+
+### Query Keys 정의 시
+
+- [ ] 도메인별 파일 분리
+- [ ] 함수로 정의
+- [ ] `as const` 사용
+- [ ] optional 매개변수 처리
+- [ ] 타입 export
+
+## 예제: Survey Domain Hook 생성
+
+```typescript
+// 1. Query Keys 정의
+// src/constants/queryKeys/surveyQueryKeys.ts
+export const surveyQueryKeys = {
+  survey: (surveyId: string) => ["survey", surveyId] as const,
+  surveyQuestions: (surveyId: string) =>
+    ["survey-questions", surveyId] as const,
+  userSurveys: (userId?: string) =>
+    userId ? (["user-surveys", userId] as const) : (["user-surveys"] as const),
+  all: () => ["survey"] as const,
+} as const;
+
+export type SurveyQueryKeys = typeof surveyQueryKeys;
+
+// 2. Query Hook
+// src/hooks/survey/useSurvey.ts
+import { useQuery } from "@tanstack/react-query";
+import { getSurvey } from "@/actions/survey";
+import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
+
+export const useGetSurvey = (surveyId: string) => {
+  return useQuery({
+    queryKey: surveyQueryKeys.survey(surveyId),
+    queryFn: () => getSurvey(surveyId),
+    staleTime: 5 * 60 * 1000,
+    refetchInterval: 5 * 60 * 1000,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+  });
+};
+
+export type UseGetSurveyReturn = ReturnType<typeof useGetSurvey>;
+
+// 3. Mutation Hook
+// src/hooks/survey/useCreateSurvey.ts
+("use client");
+
+import { useMutation } from "@tanstack/react-query";
+import { createSurvey } from "@/actions/survey";
+import type { CreateSurveyRequest, CreateSurveyResponse } from "@/types/dto";
+
+interface UseCreateSurveyOptions {
+  onSuccess?: (data: CreateSurveyResponse) => void;
+  onError?: (error: Error) => void;
+}
+
+export function useCreateSurvey(options: UseCreateSurveyOptions = {}) {
+  return useMutation({
+    mutationFn: async (
+      payload: CreateSurveyRequest
+    ): Promise<CreateSurveyResponse> => {
+      return createSurvey(payload);
+    },
+    onSuccess: (data) => {
+      console.log("✅ 설문 생성 성공:", data);
+      options.onSuccess?.(data);
+    },
+    onError: (error) => {
+      console.error("❌ 설문 생성 실패:", error);
+      options.onError?.(error as Error);
+    },
+  });
+}
+```
+
+이 규칙을 따르면 일관성 있고 유지보수하기 쉬운 React Query hooks를 작성할 수 있습니다.
