@@ -3,6 +3,11 @@ import { toast } from "@/components/common/Toast";
 import { ROUTES } from "@/constants/routes";
 import { SURVEY_TOAST_MESSAGE } from "@/constants/surveyMessages";
 import { ExtendedQuestionStepConfig, createQuestionSteps } from "@/constants/surveyQuestion";
+import {
+  useStartSurveyResponse,
+  useSubmitQuestionAnswer,
+  useSubmitSurveyAnswers,
+} from "@/hooks/survey-response";
 import { useReadSurveyQuestionsDetail } from "@/hooks/survey/question/useReadSurveyQuestionsDetail";
 import type { SurveyAnswerItem } from "@/types/dto";
 import { StepProvider, useModal, useStep } from "@repo/ui/components";
@@ -79,16 +84,44 @@ function SurveyQuestionRenderer({
   surveyId,
 }: { totalQuestionCount: number; surveyId: string }) {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [responseId, setResponseId] = useState<string | null>(null);
+  const [currentAnswer, setCurrentAnswer] = useState<SurveyAnswerItem | null>(null);
   const { showModal, close } = useModal();
 
-  const answersRef = useRef<Map<string, SurveyAnswerItem>>(new Map());
   const hasShownToastsRef = useRef({
     first: false,
     half: false,
     final: false,
   });
   const isExitingRef = useRef(false);
+
+  const { mutate: startResponse, isPending: isStarting } = useStartSurveyResponse({
+    onSuccess: data => {
+      setResponseId(data.data.id);
+    },
+    onError: () => {
+      toast.warning("설문 응답을 시작할 수 없습니다.", { id: "init-error" });
+      router.push(ROUTES.SURVEY(surveyId));
+    },
+  });
+
+  const { mutate: submitAnswer, isPending: isSubmittingAnswer } = useSubmitQuestionAnswer({
+    onSuccess: () => {
+      goNext();
+    },
+    onError: () => {
+      toast.warning("답변 저장에 실패했습니다.", { id: "submit-answer-error" });
+    },
+  });
+
+  const { mutate: completeSurvey, isPending: isCompletingSurvey } = useSubmitSurveyAnswers({
+    onSuccess: () => {
+      router.push(ROUTES.SURVEY_DONE(surveyId));
+    },
+    onError: () => {
+      toast.warning(SURVEY_TOAST_MESSAGE.error.message, { id: SURVEY_TOAST_MESSAGE.error.id });
+    },
+  });
 
   const {
     currentStep,
@@ -113,57 +146,33 @@ function SurveyQuestionRenderer({
   );
 
   const handleAnswerChange = useCallback((answer: SurveyAnswerItem) => {
-    answersRef.current.set(answer.questionId, answer);
+    setCurrentAnswer(answer);
   }, []);
 
-  const handleSubmit = useCallback(() => {
-    if (isSubmitting) return;
+  const hasStartedRef = useRef(false);
 
-    setIsSubmitting(true);
-
-    try {
-      const answers = Array.from(answersRef.current.values());
-
-      console.log("=".repeat(50));
-      console.log("📝 설문조사 제출");
-      console.log("=".repeat(50));
-      console.log("설문조사 ID:", surveyId);
-      console.log("답변 개수:", answers.length);
-      console.log("\n답변 상세:");
-      answers.forEach((answer, index) => {
-        console.log(`\n[${index + 1}] 질문 ID: ${answer.questionId}`);
-        console.log(`   타입: ${answer.type}`);
-        if (answer.type === "SCALE") {
-          console.log(`   척도 값: ${answer.scaleValue}`);
-        } else if (answer.type === "SUBJECTIVE") {
-          console.log(`   텍스트 답변: "${answer.textResponse}"`);
-        } else if (answer.type === "MULTIPLE_CHOICE") {
-          console.log(`   선택한 옵션 IDs: [${answer.selectedOptionIds.join(", ")}]`);
-        }
-      });
-      console.log(`\n${"=".repeat(50)}`);
-
-      // TODO: 실제 API 호출로 교체 예정
-      // await submitSurveyAnswers({ surveyId: params.id, answers });
-
-      setTimeout(() => {
-        setIsSubmitting(false);
-        router.push(ROUTES.SURVEY_DONE(surveyId));
-      }, 500);
-    } catch (error) {
-      console.error("설문 제출 중 오류 발생:", error);
-      toast.warning(SURVEY_TOAST_MESSAGE.error.message, { id: SURVEY_TOAST_MESSAGE.error.id });
-      setIsSubmitting(false);
+  useEffect(() => {
+    if (!hasStartedRef.current) {
+      hasStartedRef.current = true;
+      startResponse({ surveyId });
     }
-  }, [isSubmitting, surveyId, router]);
+  }, [surveyId, startResponse]);
 
   const handleNext = useCallback(() => {
+    if (!responseId || !currentAnswer) return;
+
     if (isLastStep) {
-      handleSubmit();
+      completeSurvey({
+        responseId,
+        answers: [currentAnswer],
+      });
     } else {
-      goNext();
+      submitAnswer({
+        responseId,
+        answer: currentAnswer,
+      });
     }
-  }, [isLastStep, goNext, handleSubmit]);
+  }, [isLastStep, responseId, currentAnswer, submitAnswer, completeSurvey]);
 
   const showExitConfirmModal = useCallback(() => {
     showModal({
@@ -213,6 +222,9 @@ function SurveyQuestionRenderer({
     };
   }, [showExitConfirmModal]);
 
+  const isInitializing = isStarting || !responseId;
+  const isProcessing = isSubmittingAnswer || isCompletingSurvey;
+
   return (
     <ContentComponent
       key={questionData.id}
@@ -220,10 +232,10 @@ function SurveyQuestionRenderer({
       currentOrder={questionData.order}
       totalQuestionCount={totalQuestionCount}
       isFirstQuestion={isFirstStep}
-      isNextDisabled={!canGoNext || isSubmitting}
+      isNextDisabled={!canGoNext || isProcessing || isInitializing}
       onPrevious={handlePrevious}
       onNext={handleNext}
-      nextButtonText={isLastStep ? (isSubmitting ? "제출 중..." : "완료") : "다음"}
+      nextButtonText={isLastStep ? (isCompletingSurvey ? "제출 중..." : "완료") : "다음"}
       updateCanGoNext={updateCanGoNext}
       onAnswerChange={handleAnswerChange}
       hasShownToastsRef={hasShownToastsRef}
