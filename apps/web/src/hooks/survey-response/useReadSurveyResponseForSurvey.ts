@@ -13,3 +13,7 @@ export function useReadSurveyResponseForSurvey({ surveyId }: { surveyId: string 
     enabled: !!surveyId,
   });
 }
+
+export type UseReadSurveyResponseForSurveyReturn = ReturnType<
+  typeof useReadSurveyResponseForSurvey
+>;
