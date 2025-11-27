@@ -1,7 +1,10 @@
+"use server";
+
 import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
 import { userService } from "@/server/services/user/userService";
 import { type GetCurrentUserResponse, UserRole } from "@/types/dto/user";
 import type { User } from "@supabase/supabase-js";
+import { redirect } from "next/navigation";
 
 export async function requireAuth(): Promise<User> {
   const supabase = await createServerSupabaseClient();
@@ -49,5 +52,20 @@ export async function requireAdmin(): Promise<{
     const serverError = new Error("권한 확인 중 오류가 발생했습니다.");
     serverError.cause = 500;
     throw serverError;
+  }
+}
+
+export async function signOut(redirectTo?: string): Promise<void> {
+  const supabase = await createServerSupabaseClient();
+  const { error } = await supabase.auth.signOut();
+
+  if (error) {
+    const serverError = new Error("로그아웃 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
+  }
+
+  if (redirectTo) {
+    redirect(redirectTo);
   }
 }
