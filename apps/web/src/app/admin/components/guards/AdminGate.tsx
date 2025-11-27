@@ -6,10 +6,6 @@ interface AdminGateProps {
   children: React.ReactNode;
 }
 
-/**
- * 관리자 권한 확인 게이트
- * Admin이 아닌 경우 404로 처리
- */
 export async function AdminGate({ children }: AdminGateProps) {
   try {
     await requireAdmin();
