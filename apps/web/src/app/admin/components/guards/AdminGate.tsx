@@ -1,24 +1,21 @@
 import { requireAdmin } from "@/actions/common/auth";
-import { ROUTES } from "@/constants/routes";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 interface AdminGateProps {
   children: React.ReactNode;
 }
 
-/**
- * 관리자 권한 확인 게이트
- * Admin이 아닌 경우 404로 처리
- */
 export async function AdminGate({ children }: AdminGateProps) {
   try {
     await requireAdmin();
   } catch (error) {
     if (error instanceof Error) {
       if (error.cause === 401) {
-        redirect(ROUTES.ADMIN_LOGIN);
+        console.warn("[AdminGate] 401 Unauthorized - 로그인 필요:", error.message);
+        notFound();
       }
       if (error.cause === 403) {
+        console.warn("[AdminGate] 403 Forbidden - 관리자 권한 없음:", error.message);
         notFound();
       }
     }
