@@ -34,33 +34,32 @@ export function SurveyList() {
           </Card>
         </Link>
         {surveys.map(survey => (
-          <Card
-            key={survey.id}
-            className="h-[180px] hover:shadow-md hover:bg-muted/30 transition-shadow cursor-pointer"
-          >
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg line-clamp-1">{survey.title}</CardTitle>
-              {survey.description && (
-                <CardDescription className="line-clamp-2">
-                  {survey.description
-                    .replace(/<[^>]*>/g, " ")
-                    .replace(/\s+/g, " ")
-                    .trim()}
-                </CardDescription>
-              )}
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CalendarDays className="size-4" />
-                <span>
-                  {formatDistanceToNow(new Date(survey.createdAt), {
-                    addSuffix: true,
-                    locale: ko,
-                  })}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
+          <Link key={survey.id} href={ADMIN_ROUTES.ADMIN_SURVEY(survey.id)}>
+            <Card className="h-[180px] hover:shadow-md hover:bg-muted/30 transition-shadow cursor-pointer">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg line-clamp-1">{survey.title}</CardTitle>
+                {survey.description && (
+                  <CardDescription className="line-clamp-2">
+                    {survey.description
+                      .replace(/<[^>]*>/g, " ")
+                      .replace(/\s+/g, " ")
+                      .trim()}
+                  </CardDescription>
+                )}
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <CalendarDays className="size-4" />
+                  <span>
+                    {formatDistanceToNow(new Date(survey.createdAt), {
+                      addSuffix: true,
+                      locale: ko,
+                    })}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
 
