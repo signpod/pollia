@@ -8,7 +8,13 @@ interface MainButtonProps {
 export const MainButton = React.forwardRef<HTMLButtonElement, MainButtonProps>(
   ({ onClick }, ref) => (
     <FixedBottomLayout.Content className="px-5 py-3">
-      <ButtonV2 ref={ref} variant="primary" size="large" className="w-full" onClick={onClick}>
+      <ButtonV2
+        ref={ref}
+        variant="primary"
+        size="large"
+        className="w-full opacity-0"
+        onClick={onClick}
+      >
         <div className="flex justify-center items-center text-center flex-1">메인으로 가기</div>
       </ButtonV2>
     </FixedBottomLayout.Content>
