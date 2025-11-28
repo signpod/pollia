@@ -7,6 +7,7 @@ import NormalFaceIcon from "@public/svgs/face/normal.svg";
 import VeryBadFaceIcon from "@public/svgs/face/very-bad.svg";
 import VeryGoodFaceIcon from "@public/svgs/face/very-good.svg";
 import { Slider as SliderPrimitive, Tooltip } from "@repo/ui/components";
+import { motion } from "framer-motion";
 import * as React from "react";
 
 export interface SurveyLikertScaleProps {
@@ -39,19 +40,32 @@ const SurveyThumb = ({ value, className, size = 40 }: SurveyThumbProps) => {
   const { icon: FaceIcon, label } = SCALE_GUIDE_ASSETS[value as 1 | 2 | 3 | 4 | 5];
 
   return (
-    <div
-      data-tooltip-id={`tooltip-${id}`}
-      className={cn(
-        "flex items-center justify-center text-violet-500",
-        "px-2 py-4",
-        "bg-violet-500/20 rounded-sm",
-        className,
-      )}
-    >
-      <FaceIcon width={size} height={size} />
-      <Tooltip id={`tooltip-${id}`} placement="top">
-        {label}
-      </Tooltip>
+    <div className="flex flex-col items-center justify-center">
+      <motion.div
+        animate={{
+          y: [-12, 0, -12],
+        }}
+        data-tooltip-id={`tooltip-${id}`}
+        transition={{
+          duration: 1.2,
+          ease: "easeInOut",
+          repeat: Number.POSITIVE_INFINITY,
+        }}
+      >
+        <Tooltip id={`tooltip-${id}`} placement="top">
+          {label}
+        </Tooltip>
+      </motion.div>
+      <div
+        className={cn(
+          "flex items-center justify-center text-violet-500 gap-6",
+          "px-2 py-4",
+          "bg-violet-500/20 rounded-sm",
+          className,
+        )}
+      >
+        <FaceIcon width={size} height={size} />
+      </div>
     </div>
   );
 };
