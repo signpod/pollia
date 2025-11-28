@@ -42,6 +42,7 @@ export class SurveyRepository {
         description: true,
         target: true,
         imageUrl: true,
+        isActive: true,
         createdAt: true,
         updatedAt: true,
       },
