@@ -2,12 +2,12 @@
 
 import { getUserSurveys } from "@/actions/survey/read";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
-import { ADMIN_ROUTES } from "../constants/routes";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 import { CalendarDays, Plus } from "lucide-react";
 import Link from "next/link";
+import { ADMIN_ROUTES } from "../constants/routes";
 import { Button } from "./shadcn-ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./shadcn-ui/card";
 import { Skeleton } from "./shadcn-ui/skeleton";
@@ -36,8 +36,8 @@ export function SurveyList() {
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Link href={ADMIN_ROUTES.ADMIN_SURVEY_CREATE}>
-          <Card className="h-full border-dashed border-2 hover:border-primary hover:bg-accent/50 transition-all cursor-pointer group">
-            <div className="flex flex-col items-center justify-center h-full min-h-[160px] gap-3">
+          <Card className="h-[180px] border-dashed border-2 hover:border-primary hover:bg-muted/30 transition-shadow cursor-pointer group">
+            <div className="flex flex-col items-center justify-center h-full gap-3">
               <div className="size-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                 <Plus className="size-6 text-primary" />
               </div>
@@ -49,11 +49,19 @@ export function SurveyList() {
           </Card>
         </Link>
         {surveys.map(survey => (
-          <Card key={survey.id} className="hover:shadow-md transition-shadow cursor-pointer">
+          <Card
+            key={survey.id}
+            className="h-[180px] hover:shadow-md hover:bg-muted/30 transition-shadow cursor-pointer"
+          >
             <CardHeader className="pb-3">
               <CardTitle className="text-lg line-clamp-1">{survey.title}</CardTitle>
               {survey.description && (
-                <CardDescription className="line-clamp-2">{survey.description}</CardDescription>
+                <CardDescription className="line-clamp-2">
+                  {survey.description
+                    .replace(/<[^>]*>/g, " ")
+                    .replace(/\s+/g, " ")
+                    .trim()}
+                </CardDescription>
               )}
             </CardHeader>
             <CardContent>
