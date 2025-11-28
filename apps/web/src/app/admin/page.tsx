@@ -15,7 +15,7 @@ export default async function AdminPage() {
         limit: 10,
       });
     },
-    initialPageParam: undefined as string | undefined,
+    initialPageParam: "",
   });
 
   const dehydratedState = dehydrate(queryClient);

@@ -1,32 +1,17 @@
 "use client";
 
-import { getUserSurveys } from "@/actions/survey/read";
-import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
-import { useInfiniteQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 import { CalendarDays, Plus } from "lucide-react";
 import Link from "next/link";
 import { ADMIN_ROUTES } from "../constants/routes";
+import { useAdminSurveys } from "../hooks/use-admin-surveys";
 import { Button } from "./shadcn-ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./shadcn-ui/card";
 import { Skeleton } from "./shadcn-ui/skeleton";
 
 export function SurveyList() {
-  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteQuery({
-    queryKey: surveyQueryKeys.userSurveys(),
-    queryFn: ({ pageParam }) => {
-      return getUserSurveys({
-        cursor: pageParam,
-        limit: 10,
-      });
-    },
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: lastPage => lastPage.nextCursor,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  const surveys = data?.pages.flatMap(page => page.data) ?? [];
+  const { surveys, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useAdminSurveys();
 
   if (isLoading) {
     return <SurveyListSkeleton />;
