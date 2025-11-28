@@ -6,6 +6,7 @@ import { CalendarDays, Plus } from "lucide-react";
 import Link from "next/link";
 import { ADMIN_ROUTES } from "../constants/routes";
 import { useAdminSurveys } from "../hooks/use-admin-surveys";
+import { Badge } from "./shadcn-ui/badge";
 import { Button } from "./shadcn-ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./shadcn-ui/card";
 import { Skeleton } from "./shadcn-ui/skeleton";
@@ -48,14 +49,26 @@ export function SurveyList() {
                 )}
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <CalendarDays className="size-4" />
-                  <span>
-                    {formatDistanceToNow(new Date(survey.createdAt), {
-                      addSuffix: true,
-                      locale: ko,
-                    })}
-                  </span>
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <CalendarDays className="size-4" />
+                    <span>
+                      {formatDistanceToNow(new Date(survey.createdAt), {
+                        addSuffix: true,
+                        locale: ko,
+                      })}
+                    </span>
+                  </div>
+                  <Badge
+                    variant={survey.isActive ? "default" : "secondary"}
+                    className={
+                      survey.isActive
+                        ? "bg-green-500/10 text-green-700 dark:bg-green-500/20 dark:text-green-400 hover:bg-green-500/20"
+                        : "bg-gray-500/10 text-gray-700 dark:bg-gray-500/20 dark:text-gray-400"
+                    }
+                  >
+                    {survey.isActive ? "활성" : "비활성"}
+                  </Badge>
                 </div>
               </CardContent>
             </Card>
