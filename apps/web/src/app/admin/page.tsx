@@ -1,10 +1,24 @@
-export default function AdminPage() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">대시보드</h1>
-        <p className="text-muted-foreground">관리자 대시보드에 오신 것을 환영합니다.</p>
-      </div>
-    </div>
-  );
+import { getUserSurveys } from "@/actions/survey/read";
+import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
+import { getQueryClient } from "@/lib/getQueryClient";
+import { dehydrate } from "@tanstack/react-query";
+import { AdminDashboardClient } from "./components/AdminDashboardClient";
+
+export default async function AdminPage() {
+  const queryClient = getQueryClient();
+
+  await queryClient.prefetchInfiniteQuery({
+    queryKey: surveyQueryKeys.userSurveys(),
+    queryFn: ({ pageParam }) => {
+      return getUserSurveys({
+        cursor: pageParam,
+        limit: 10,
+      });
+    },
+    initialPageParam: undefined as string | undefined,
+  });
+
+  const dehydratedState = dehydrate(queryClient);
+
+  return <AdminDashboardClient dehydratedState={dehydratedState} />;
 }
