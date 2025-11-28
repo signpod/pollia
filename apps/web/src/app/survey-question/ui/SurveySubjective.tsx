@@ -102,8 +102,16 @@ function useSurveySubjectiveValue(
         textResponse: initialTextValue,
       });
       updateCanGoNext?.(result.success);
+
+      if (result.success) {
+        onAnswerChange?.({
+          questionId,
+          type: "SUBJECTIVE",
+          textResponse: initialTextValue,
+        });
+      }
     }
-  }, [initialTextValue, questionId, updateCanGoNext]);
+  }, [initialTextValue, questionId, updateCanGoNext, onAnswerChange]);
 
   function handleSubjectiveValueChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     const value = e.target.value;

@@ -54,7 +54,15 @@ export function SurveyMultipleChoiceProvider({
 
   useEffect(() => {
     setSelectedIds(initialSelectedIds);
-  }, [initialSelectedIds]);
+
+    if (initialSelectedIds.size > 0) {
+      onAnswerChange?.({
+        questionId,
+        type: "MULTIPLE_CHOICE",
+        selectedOptionIds: Array.from(initialSelectedIds),
+      });
+    }
+  }, [initialSelectedIds, questionId, onAnswerChange]);
 
   const toggleSelectedId = useCallback(
     (optionId: string) => {

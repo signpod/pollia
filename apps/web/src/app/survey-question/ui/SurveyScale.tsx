@@ -77,8 +77,14 @@ function useSurveyScaleValue(
     if (initialScaleValue !== DEFAULT_SCALE_VALUE) {
       setIsScaleValueChanged(true);
       updateCanGoNext?.(true);
+
+      onAnswerChange?.({
+        questionId,
+        type: "SCALE",
+        scaleValue: initialScaleValue,
+      });
     }
-  }, [initialScaleValue, updateCanGoNext]);
+  }, [initialScaleValue, questionId, updateCanGoNext, onAnswerChange]);
 
   const handleScaleValueChange = (value: number) => {
     if (!isScaleValueChanged) {
