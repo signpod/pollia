@@ -36,7 +36,7 @@ export interface CreateSurveyResponse {
 export interface GetUserSurveysResponse {
   data: Pick<
     Survey,
-    "id" | "title" | "description" | "target" | "imageUrl" | "createdAt" | "updatedAt"
+    "id" | "title" | "description" | "target" | "imageUrl" | "isActive" | "createdAt" | "updatedAt"
   >[];
 }
 

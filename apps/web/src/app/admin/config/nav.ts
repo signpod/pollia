@@ -20,7 +20,7 @@ export interface SurveyItem {
   title: string;
 }
 
-export function createAdminNavConfig(surveys: SurveyItem[] = []): NavGroup[] {
+export function createAdminNavConfig(surveys: SurveyItem[]): NavGroup[] {
   const surveyItems: NavItem[] = surveys.map(survey => ({
     title: survey.title,
     url: ADMIN_ROUTES.ADMIN_SURVEY(survey.id),
