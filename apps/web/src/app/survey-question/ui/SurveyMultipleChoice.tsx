@@ -22,6 +22,7 @@ export function SurveyMultipleChoice({
     <SurveyMultipleChoiceProvider
       maxSelections={questionData.maxSelections ?? 1}
       questionId={questionData.id}
+      surveyId={questionData.surveyId}
       updateCanGoNext={updateCanGoNext}
       onAnswerChange={onAnswerChange}
     >

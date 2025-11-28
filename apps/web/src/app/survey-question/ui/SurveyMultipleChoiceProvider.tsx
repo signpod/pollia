@@ -1,3 +1,4 @@
+import { useReadSurveyResponseForSurvey } from "@/hooks/survey-response";
 import type { SurveyAnswerItem } from "@/types/dto/survey";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
@@ -15,6 +16,7 @@ interface SurveyMultipleChoiceProviderProps {
   children: React.ReactNode;
   maxSelections: number;
   questionId: string;
+  surveyId: string | null;
   updateCanGoNext?: (canGoNext: boolean) => void;
   onAnswerChange?: (answer: SurveyAnswerItem) => void;
 }
@@ -23,11 +25,36 @@ export function SurveyMultipleChoiceProvider({
   children,
   maxSelections,
   questionId,
+  surveyId,
   updateCanGoNext,
   onAnswerChange,
 }: SurveyMultipleChoiceProviderProps) {
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const { data: responseData } = useReadSurveyResponseForSurvey({
+    surveyId: surveyId || "",
+  });
+
+  const initialSelectedIds = useMemo(() => {
+    if (!surveyId || !responseData?.data?.answers || responseData.data.answers.length === 0) {
+      return new Set<string>();
+    }
+
+    const questionAnswers = responseData.data.answers.filter(
+      answer => answer.questionId === questionId && answer.optionId !== null,
+    );
+
+    if (questionAnswers.length === 0) {
+      return new Set<string>();
+    }
+
+    return new Set(questionAnswers.map(answer => answer.optionId).filter(Boolean) as string[]);
+  }, [surveyId, responseData, questionId]);
+
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(initialSelectedIds);
   const [canGoNext, setCanGoNext] = useState(false);
+
+  useEffect(() => {
+    setSelectedIds(initialSelectedIds);
+  }, [initialSelectedIds]);
 
   const toggleSelectedId = useCallback(
     (optionId: string) => {
