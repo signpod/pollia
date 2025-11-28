@@ -64,7 +64,7 @@ export function AdminSidebar() {
                 <div>
                   <PolliaIcon
                     className={cn(
-                      "text-zinc-800 shrink-0",
+                      "shrink-0",
                       isExpanded ? "size-6" : "size-8",
                       "transition-size duration-300",
                     )}
