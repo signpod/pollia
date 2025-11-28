@@ -2,34 +2,53 @@ import gsap from "gsap";
 import { ANIMATION_DURATIONS } from "./constants";
 import type { AnimationRefs } from "./useAnimationRefs";
 
+let isAnimating = false;
+
 export function animateFinalElements(refs: AnimationRefs) {
-  if (!refs.afterTitle.current || !refs.shareButtons.current || !refs.button.current) return;
+  if (isAnimating) return;
+  isAnimating = true;
 
-  const subTl = gsap.timeline();
+  const waitForElements = () => {
+    return new Promise<void>(resolve => {
+      const checkElements = () => {
+        if (refs.afterTitle.current && refs.shareButtons.current && refs.button.current) {
+          resolve();
+        } else {
+          requestAnimationFrame(checkElements);
+        }
+      };
+      checkElements();
+    });
+  };
 
-  subTl.to(refs.afterTitle.current, {
-    opacity: 1,
-    y: 0,
-    duration: ANIMATION_DURATIONS.CONTENT_FADE,
-    ease: "power2.out",
-  });
+  waitForElements().then(() => {
+    gsap.set(refs.button.current, { opacity: 0, y: 10 });
 
-  subTl.to(refs.shareButtons.current, {
-    opacity: 1,
-    y: 0,
-    duration: ANIMATION_DURATIONS.CONTENT_FADE,
-    ease: "power2.out",
-  });
+    const subTl = gsap.timeline();
 
-  subTl.fromTo(
-    refs.button.current,
-    { opacity: 0, y: 10 },
-    {
+    subTl.to(refs.afterTitle.current, {
       opacity: 1,
       y: 0,
       duration: ANIMATION_DURATIONS.CONTENT_FADE,
       ease: "power2.out",
-    },
-    "-=0.1",
-  );
+    });
+
+    subTl.to(refs.shareButtons.current, {
+      opacity: 1,
+      y: 0,
+      duration: ANIMATION_DURATIONS.CONTENT_FADE,
+      ease: "power2.out",
+    });
+
+    subTl.to(
+      refs.button.current,
+      {
+        opacity: 1,
+        y: 0,
+        duration: ANIMATION_DURATIONS.CONTENT_FADE,
+        ease: "power2.out",
+      },
+      "-=0.1",
+    );
+  });
 }
