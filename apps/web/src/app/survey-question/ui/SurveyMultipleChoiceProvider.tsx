@@ -1,5 +1,13 @@
-import type { SurveyAnswerItem } from "@/types/dto/survey";
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import type { GetSurveyResponseResponse, SurveyAnswerItem } from "@/types/dto";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 interface SurveyMultipleChoiceContextType {
   selectedIds: Set<string>;
@@ -15,6 +23,7 @@ interface SurveyMultipleChoiceProviderProps {
   children: React.ReactNode;
   maxSelections: number;
   questionId: string;
+  surveyResponse?: GetSurveyResponseResponse;
   updateCanGoNext?: (canGoNext: boolean) => void;
   onAnswerChange?: (answer: SurveyAnswerItem) => void;
 }
@@ -23,11 +32,46 @@ export function SurveyMultipleChoiceProvider({
   children,
   maxSelections,
   questionId,
+  surveyResponse,
   updateCanGoNext,
   onAnswerChange,
 }: SurveyMultipleChoiceProviderProps) {
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const initialSelectedIds = useMemo(() => {
+    if (!surveyResponse?.data?.answers || surveyResponse.data.answers.length === 0) {
+      return new Set<string>();
+    }
+
+    const questionAnswers = surveyResponse.data.answers.filter(
+      answer => answer.questionId === questionId && answer.optionId !== null,
+    );
+
+    if (questionAnswers.length === 0) {
+      return new Set<string>();
+    }
+
+    return new Set(questionAnswers.map(answer => answer.optionId).filter(Boolean) as string[]);
+  }, [surveyResponse, questionId]);
+
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(initialSelectedIds);
   const [canGoNext, setCanGoNext] = useState(false);
+
+  // onAnswerChange ref로 최신 참조 유지
+  const onAnswerChangeRef = useRef(onAnswerChange);
+  useEffect(() => {
+    onAnswerChangeRef.current = onAnswerChange;
+  }, [onAnswerChange]);
+
+  useEffect(() => {
+    setSelectedIds(initialSelectedIds);
+
+    if (initialSelectedIds.size > 0) {
+      onAnswerChangeRef.current?.({
+        questionId,
+        type: "MULTIPLE_CHOICE",
+        selectedOptionIds: Array.from(initialSelectedIds),
+      });
+    }
+  }, [initialSelectedIds, questionId]);
 
   const toggleSelectedId = useCallback(
     (optionId: string) => {
