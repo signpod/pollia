@@ -1,9 +1,10 @@
 import { QuestionStepContentProps } from "@/constants/surveyQuestion";
+import { useReadSurveyResponseForSurvey } from "@/hooks/survey-response";
 // TODO: @/schemas_legacy는 deprecated. 새로운 @/schemas/{domain}/ 스키마로 교체 필요
 import { subjectiveResponseSchema } from "@/schemas_legacy/survey/question/response/subjectiveResponseSchema";
 import type { SurveyAnswerItem } from "@/types/dto";
 import { Textarea } from "@repo/ui/components";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { SurveyQuestionTemplate } from "../[id]/components/SurveyQuestionTemplate";
 
 const PLACEHOLDER = "답변을 입력해주세요";
@@ -27,7 +28,12 @@ export function SurveySubjective({
     feedbackMessage,
     validationResult,
     showError,
-  } = useSurveySubjectiveValue(questionData.id, updateCanGoNext, onAnswerChange);
+  } = useSurveySubjectiveValue(
+    questionData.id,
+    questionData.surveyId,
+    updateCanGoNext,
+    onAnswerChange,
+  );
 
   const isNextDisabled = !validationResult.success;
   const errorMessage = showError ? validationResult.error?.issues[0]?.message : undefined;
@@ -65,11 +71,39 @@ export function SurveySubjective({
 
 function useSurveySubjectiveValue(
   questionId: string,
+  surveyId: string | null,
   updateCanGoNext?: (canGoNext: boolean) => void,
   onAnswerChange?: (answer: SurveyAnswerItem) => void,
 ) {
-  const [subjectiveValue, setSubjectiveValue] = useState("");
+  const { data: responseData } = useReadSurveyResponseForSurvey({
+    surveyId: surveyId || "",
+  });
+
+  const initialTextValue = useMemo(() => {
+    if (!surveyId || !responseData?.data?.answers || responseData.data.answers.length === 0) {
+      return "";
+    }
+
+    const questionAnswer = responseData.data.answers.find(
+      answer => answer.questionId === questionId && answer.textAnswer !== null,
+    );
+
+    return questionAnswer?.textAnswer ?? "";
+  }, [surveyId, responseData, questionId]);
+
+  const [subjectiveValue, setSubjectiveValue] = useState(initialTextValue);
   const [showError, setShowError] = useState(false);
+
+  useEffect(() => {
+    setSubjectiveValue(initialTextValue);
+    if (initialTextValue.trim()) {
+      const result = subjectiveResponseSchema.safeParse({
+        questionId,
+        textResponse: initialTextValue,
+      });
+      updateCanGoNext?.(result.success);
+    }
+  }, [initialTextValue, questionId, updateCanGoNext]);
 
   function handleSubjectiveValueChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     const value = e.target.value;
@@ -81,7 +115,6 @@ function useSurveySubjectiveValue(
     });
     updateCanGoNext?.(result.success);
 
-    // 답변 변경 전달
     if (value.trim()) {
       onAnswerChange?.({
         questionId,
