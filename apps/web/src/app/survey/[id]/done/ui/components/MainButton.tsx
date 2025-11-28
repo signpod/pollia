@@ -22,4 +22,3 @@ export const MainButton = React.forwardRef<HTMLButtonElement, MainButtonProps>(
 );
 
 MainButton.displayName = "MainButton";
-

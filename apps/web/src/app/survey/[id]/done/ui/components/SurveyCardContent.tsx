@@ -1,5 +1,5 @@
-import { Typo } from "@repo/ui/components";
 import PolliaLogo from "@public/images/pollia-logo.png";
+import { Typo } from "@repo/ui/components";
 import Image from "next/image";
 import type { AnimationRefs } from "../animations/useAnimationRefs";
 import { formatDeadline } from "../utils/formatDeadline";
@@ -74,4 +74,3 @@ function InfoRow({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
-

@@ -19,4 +19,3 @@ export const CompletionText = React.forwardRef<HTMLDivElement, CompletionTextPro
 );
 
 CompletionText.displayName = "CompletionText";
-
