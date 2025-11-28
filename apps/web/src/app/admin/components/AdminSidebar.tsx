@@ -16,9 +16,10 @@ import {
 } from "@/app/admin/components/shadcn-ui/sidebar";
 import { SurveyItem, createAdminNavConfig } from "@/app/admin/config/nav";
 import { ADMIN_ROUTES } from "@/app/admin/constants/routes";
+import { useAdminTheme } from "@/app/admin/hooks/use-admin-theme";
 import PolliaIcon from "@public/svgs/pollia-icon.svg";
 import PolliaWordmark from "@public/svgs/pollia-wordmark.svg";
-import { LogOut } from "lucide-react";
+import { LogOut, Moon, Sun } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
@@ -37,6 +38,7 @@ function getMockSurveys(): SurveyItem[] {
 export function AdminSidebar() {
   const pathname = usePathname();
   const { state } = useSidebar();
+  const { isDark, toggleTheme, mounted } = useAdminTheme();
 
   const adminNavConfig = useMemo(() => {
     const mockSurveys = getMockSurveys();
@@ -84,6 +86,42 @@ export function AdminSidebar() {
 
       <SidebarFooter>
         <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              tooltip={mounted ? (isDark ? "라이트 모드로 전환" : "다크 모드로 전환") : "테마 전환"}
+              onClick={toggleTheme}
+              disabled={!mounted}
+              className="w-full justify-start cursor-pointer"
+            >
+              {mounted ? (
+                isDark ? (
+                  <Moon className="size-4" />
+                ) : (
+                  <Sun className="size-4" />
+                )
+              ) : (
+                <Sun className="size-4" />
+              )}
+              <div className="flex-1 flex justify-between items-center">
+                <span>{mounted ? (isDark ? "다크 모드" : "라이트 모드") : "테마 전환"}</span>
+                <div
+                  className={cn(
+                    "group-data-[collapsible=icon]:hidden inline-flex h-5 w-9 shrink-0 items-center rounded-full border border-transparent p-px shadow-xs",
+                    mounted && isDark ? "bg-primary" : "bg-input",
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "size-4 rounded-full transition-transform",
+                      mounted && isDark
+                        ? "translate-x-4 bg-primary-foreground"
+                        : "translate-x-0 bg-background",
+                    )}
+                  />
+                </div>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton asChild tooltip="로그아웃">
               <Button

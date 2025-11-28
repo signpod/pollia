@@ -2,6 +2,7 @@
 
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
 import { SidebarInset, SidebarProvider } from "@/app/admin/components/shadcn-ui/sidebar";
+import { useAdminTheme } from "@/app/admin/hooks/use-admin-theme";
 import { AdminSidebar } from "./AdminSidebar";
 import { AdminSidebarTrigger } from "./AdminSidebarTrigger";
 
@@ -10,6 +11,8 @@ interface AdminLayoutProps {
 }
 
 export function AdminLayout({ children }: AdminLayoutProps) {
+  useAdminTheme();
+
   return (
     <SidebarProvider>
       <AdminSidebar />

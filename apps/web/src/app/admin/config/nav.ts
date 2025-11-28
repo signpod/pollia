@@ -31,16 +31,16 @@ export function createAdminNavConfig(surveys: SurveyItem[] = []): NavGroup[] {
     {
       label: "설문",
       items: surveyItems,
-    },
-    {
-      label: "시스템",
-      items: [
-        {
-          title: "설정",
+  },
+  {
+    label: "시스템",
+    items: [
+      {
+        title: "설정",
           url: ADMIN_ROUTES.ADMIN_SETTINGS,
-          icon: Settings,
-        },
-      ],
-    },
-  ];
+        icon: Settings,
+      },
+    ],
+  },
+];
 }

@@ -8,7 +8,12 @@ export function AdminSidebarTrigger() {
   const { toggleSidebar, state } = useSidebar();
 
   return (
-    <Button variant="ghost" size="icon" className="-ml-1 size-7" onClick={toggleSidebar}>
+    <Button
+      variant="ghost"
+      size="icon"
+      className="-ml-1 size-7 cursor-pointer"
+      onClick={toggleSidebar}
+    >
       {state === "expanded" ? <ChevronLeftIcon /> : <PanelLeftIcon />}
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
