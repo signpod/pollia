@@ -17,4 +17,3 @@ export default async function AdminSurveyPage({ params }: AdminSurveyPageProps) 
     </div>
   );
 }
-
