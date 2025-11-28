@@ -1,7 +1,7 @@
 import React, { RefObject } from "react";
 
 import { SurveyQuestionType } from "@/types/domain/survey";
-import type { SurveyAnswerItem, SurveyQuestionDetail } from "@/types/dto";
+import type { GetSurveyResponseResponse, SurveyAnswerItem, SurveyQuestionDetail } from "@/types/dto";
 import { StepConfig } from "@repo/ui/components";
 
 export interface ExtendedQuestionStepConfig extends StepConfig {
@@ -20,6 +20,7 @@ export interface QuestionStepContentProps {
   nextButtonText?: string;
   updateCanGoNext?: (canGoNext: boolean) => void;
   onAnswerChange?: (answer: SurveyAnswerItem) => void;
+  surveyResponse?: GetSurveyResponseResponse;
   hasShownToastsRef: RefObject<{
     first: boolean;
     half: boolean;

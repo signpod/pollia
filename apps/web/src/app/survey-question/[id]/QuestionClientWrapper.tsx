@@ -4,6 +4,7 @@ import { ROUTES } from "@/constants/routes";
 import { SURVEY_TOAST_MESSAGE } from "@/constants/surveyMessages";
 import { ExtendedQuestionStepConfig, createQuestionSteps } from "@/constants/surveyQuestion";
 import {
+  useReadSurveyResponseForSurvey,
   useStartSurveyResponse,
   useSubmitQuestionAnswer,
   useSubmitSurveyAnswers,
@@ -87,6 +88,10 @@ function SurveyQuestionRenderer({
   const [responseId, setResponseId] = useState<string | null>(null);
   const [currentAnswer, setCurrentAnswer] = useState<SurveyAnswerItem | null>(null);
   const { showModal, close } = useModal();
+
+  const { data: surveyResponse } = useReadSurveyResponseForSurvey({
+    surveyId,
+  });
 
   const hasShownToastsRef = useRef({
     first: false,
@@ -238,6 +243,7 @@ function SurveyQuestionRenderer({
       nextButtonText={isLastStep ? (isCompletingSurvey ? "제출 중..." : "완료") : "다음"}
       updateCanGoNext={updateCanGoNext}
       onAnswerChange={handleAnswerChange}
+      surveyResponse={surveyResponse?.data ? surveyResponse : undefined}
       hasShownToastsRef={hasShownToastsRef}
     />
   );

@@ -16,13 +16,14 @@ export function SurveyMultipleChoice({
   nextButtonText,
   updateCanGoNext,
   onAnswerChange,
+  surveyResponse,
   hasShownToastsRef,
 }: QuestionStepContentProps) {
   return (
     <SurveyMultipleChoiceProvider
       maxSelections={questionData.maxSelections ?? 1}
       questionId={questionData.id}
-      surveyId={questionData.surveyId}
+      surveyResponse={surveyResponse}
       updateCanGoNext={updateCanGoNext}
       onAnswerChange={onAnswerChange}
     >
