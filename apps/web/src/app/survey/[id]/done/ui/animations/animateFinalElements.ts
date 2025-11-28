@@ -3,6 +3,10 @@ import { ANIMATION_DURATIONS } from "./constants";
 import type { AnimationRefs } from "./useAnimationRefs";
 
 export function animateFinalElements(refs: AnimationRefs) {
+  if (!refs.afterTitle.current || !refs.shareButtons.current || !refs.button.current) {
+    return;
+  }
+
   const subTl = gsap.timeline();
 
   subTl.to(refs.afterTitle.current, {
@@ -19,8 +23,9 @@ export function animateFinalElements(refs: AnimationRefs) {
     ease: "power2.out",
   });
 
-  subTl.to(
+  subTl.fromTo(
     refs.button.current,
+    { opacity: 0, y: 10 },
     {
       opacity: 1,
       y: 0,
