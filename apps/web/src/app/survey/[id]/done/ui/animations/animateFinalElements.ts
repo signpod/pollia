@@ -3,13 +3,7 @@ import { ANIMATION_DURATIONS } from "./constants";
 import type { AnimationRefs } from "./useAnimationRefs";
 
 export function animateFinalElements(refs: AnimationRefs) {
-  const subTl = gsap.timeline({
-    onComplete: () => {
-      if (refs.button.current) {
-        refs.button.current.dataset.animating = "false";
-      }
-    },
-  });
+  const subTl = gsap.timeline();
 
   subTl.to(refs.afterTitle.current, {
     opacity: 1,
