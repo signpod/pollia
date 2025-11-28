@@ -1,5 +1,4 @@
-import { getUserSurveys } from "@/actions/survey";
-import { getSurveyQuestions } from "@/actions/survey-question";
+import { getUserSurveys } from "@/actions/survey/read";
 import { getCurrentUser } from "@/actions/user/read";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
 import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";
@@ -18,7 +17,7 @@ export default async function MePage() {
   await queryClient.prefetchQuery({
     queryKey: surveyQueryKeys.surveyQuestions(),
     queryFn: () => {
-      return getSurveyQuestions();
+      return getUserSurveys();
     },
   });
 

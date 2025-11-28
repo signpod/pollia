@@ -1,6 +1,6 @@
 "use client";
 
-import { createScaleQuestion } from "@/actions/survey-question";
+import { createScaleQuestion } from "@/actions/survey-question/create";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
 import type { CreateScaleQuestionRequest, CreateScaleQuestionResponse } from "@/types/dto";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

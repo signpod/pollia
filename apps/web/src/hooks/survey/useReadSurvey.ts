@@ -1,4 +1,4 @@
-import { getSurvey } from "@/actions/survey";
+import { getSurvey } from "@/actions/survey/read";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
 import { useQuery } from "@tanstack/react-query";
 

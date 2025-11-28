@@ -1,0 +1,332 @@
+---
+globs: ["apps/web/prisma/**"]
+---
+
+# Prisma Schema 구조 및 컨벤션
+
+## 디렉토리 구조
+
+```
+apps/web/
+├── prisma.config.ts          # Prisma 설정 파일
+└── prisma/
+    ├── schema.prisma          # datasource + generator만 포함
+    └── models/                # 모든 모델 정의 (flat 구조)
+        ├── common.user.prisma
+        ├── common.file-upload.prisma
+        ├── poll.prisma        # Poll 도메인 메인 모델 (domain = entity)
+        ├── poll.option.prisma
+        ├── poll.vote.prisma
+        ├── poll.like.prisma
+        ├── poll.bookmark.prisma
+        ├── survey.prisma      # Survey 도메인 메인 모델 (domain = entity)
+        └── survey.question.prisma
+```
+
+## 핵심 원칙
+
+### 1. 멀티 파일 스키마 구조
+
+**schema.prisma는 설정만 포함:**
+
+```prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+```
+
+**모든 모델은 models/ 디렉토리에 분리:**
+
+- schema.prisma에는 model, enum 정의 금지
+- 모든 비즈니스 로직은 별도 파일로 분리
+
+### 2. 파일 네이밍 컨벤션
+
+**패턴:** `{domain}.{entity}.prisma` 또는 `{domain}.prisma`
+
+**네이밍 규칙:**
+
+- 기본: `{domain}.{entity}.prisma` 형식 사용
+- 예외: domain과 entity가 동일한 경우 `{domain}.prisma` 허용
+
+**도메인 프리픽스:**
+
+- `common.*` - 공통/기반 모델 (User, FileUpload 등)
+- `poll.*` - 투표 도메인 모델
+- `survey.*` - 설문조사 도메인 모델
+- `{새로운도메인}.*` - 추가 도메인
+
+**예시:**
+
+```
+common.user.prisma        # 공통 사용자 모델
+poll.main.prisma          # 투표 메인 모델
+poll.option.prisma        # 투표 옵션 모델
+survey.prisma             # domain과 entity가 같을 경우 (Survey 모델)
+survey.question.prisma    # Survey 도메인의 Question 엔티티
+user.prisma               # domain과 entity가 같을 경우 (User 모델)
+
+# 잘못된 예시
+Poll.prisma               # 대문자 사용
+poll-main.prisma          # 하이픈 대신 점 사용
+survey.survey.prisma      # 중복 표기 (survey.prisma로 간소화)
+```
+
+### 3. 폴더 구조 금지
+
+**하위 디렉토리 사용 금지:**
+
+```
+models/common/user.prisma    # VSCode Language Server 인식 불가
+models/poll/main.prisma      # 타입 참조 오류 발생
+```
+
+**Flat 구조 필수:**
+
+```
+models/common.user.prisma    # 모든 파일이 같은 레벨
+models/poll.main.prisma      # 파일명으로 도메인 구분
+```
+
+**이유:**
+
+- Prisma CLI는 하위 디렉토리를 지원하지만
+- VSCode Language Server는 flat 구조만 완전히 지원
+- 타입 인식, 자동완성, Go to Definition 정상 작동 보장
+
+## 모델 작성 규칙
+
+### 1. 모델 구조 순서
+
+```prisma
+model ModelName {
+  // 1. ID 필드
+  id String @id @default(cuid())
+
+  // 2. 비즈니스 필드 (그룹핑)
+  title       String
+  description String?
+  imageUrl    String?  @map("image_url")
+
+  // 3. 상태/설정 필드
+  isActive Boolean @default(true)
+  type     EnumType
+
+  // 4. 외래키 필드
+  userId String @map("user_id")
+
+  // 5. 관계 필드
+  user    User      @relation(fields: [userId], references: [id])
+  posts   Post[]
+
+  // 6. 타임스탬프
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // 7. 인덱스 및 제약조건
+  @@unique([userId, postId])
+  @@index([userId])
+  @@map("model_names")
+}
+```
+
+### 2. 필드 네이밍
+
+**Prisma 모델 (camelCase):**
+
+```prisma
+model User {
+  userId      String   # camelCase
+  createdAt   DateTime # camelCase
+
+  @@map("users")       # 테이블명은 snake_case
+}
+```
+
+**데이터베이스 매핑 (snake_case):**
+
+```prisma
+imageUrl    String? @map("image_url")    # DB는 snake_case
+createdAt   DateTime @map("created_at")  # 명시적 매핑
+```
+
+### 3. 관계 정의
+
+**명확한 relation name 사용:**
+
+```prisma
+// common.user.prisma
+model User {
+  polls Poll[] @relation("PollCreator")  # 명확한 관계명
+  votes Vote[]
+}
+
+// poll.main.prisma
+model Poll {
+  creatorId String
+  creator   User @relation("PollCreator", fields: [creatorId], references: [id])
+}
+```
+
+### 4. Enum 위치
+
+**관련 모델과 같은 파일에 정의:**
+
+```prisma
+// poll.main.prisma
+model Poll {
+  type     PollType
+  category PollCategory
+  // ...
+}
+
+enum PollType {
+  YES_NO
+  LIKE_DISLIKE
+  MULTIPLE_CHOICE
+}
+
+enum PollCategory {
+  IT_DIGITAL
+  PET
+  TRAVEL_PLACE
+}
+```
+
+## 새 모델 추가 프로세스
+
+### 1. 도메인 파악
+
+```
+새 기능: 설문조사(Survey)
+-> 도메인: survey
+-> 엔티티: Survey, SurveyQuestion, SurveyAnswer
+```
+
+### 2. 파일 생성
+
+```bash
+# domain과 entity가 같은 경우 (Survey)
+touch apps/web/prisma/models/survey.prisma
+
+# domain 내 다른 entity들
+touch apps/web/prisma/models/survey.question.prisma
+touch apps/web/prisma/models/survey.answer.prisma
+```
+
+### 3. 모델 작성
+
+```prisma
+// survey.prisma (domain과 entity가 같을 경우)
+model Survey {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+
+  creatorId String
+  creator   User             @relation("SurveyCreator", fields: [creatorId], references: [id])
+  questions SurveyQuestion[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("surveys")
+}
+```
+
+### 4. 공통 모델에 관계 추가
+
+```prisma
+// common.user.prisma
+model User {
+  // 기존 관계...
+  polls   Poll[]   @relation("PollCreator")
+  surveys Survey[] @relation("SurveyCreator")  # 추가
+}
+```
+
+### 5. 생성 및 검증
+
+```bash
+npm run db:generate    # Prisma Client 생성
+npm run db:push        # 개발 DB에 반영
+npm run db:migrate     # 마이그레이션 생성
+```
+
+## VSCode Language Server
+
+### Language Server 재시작
+
+파일 추가/수정 후 타입 인식이 안 될 때:
+
+**방법 1:**
+
+```
+Cmd + Shift + P -> "Prisma: Restart Language Server"
+```
+
+**방법 2:**
+
+```
+Cmd + Shift + P -> "Developer: Reload Window"
+```
+
+**방법 3:**
+
+```bash
+npx prisma format  # 자동으로 Language Server 갱신
+```
+
+## 마이그레이션
+
+### 개발 환경
+
+```bash
+npm run db:push        # 스키마 변경 즉시 반영 (빠른 반복)
+npm run db:generate    # Prisma Client 재생성
+```
+
+### 프로덕션 준비
+
+```bash
+npm run db:migrate     # 마이그레이션 파일 생성
+git add prisma/migrations/
+git commit -m "feat: Add Survey domain models"
+```
+
+## 체크리스트
+
+### 새 모델 추가 시
+
+- [ ] 적절한 도메인 프리픽스 선택
+- [ ] 네이밍 컨벤션 준수
+  - 기본: `{domain}.{entity}.prisma`
+  - domain과 entity가 같을 경우: `{domain}.prisma`
+- [ ] models/ 디렉토리 바로 아래에 생성 (하위 폴더 금지)
+- [ ] 모델 구조 순서 준수 (ID -> 비즈니스 -> 관계 -> 타임스탬프)
+- [ ] 관계 필드에 명확한 relation name 지정
+- [ ] 관련 enum은 같은 파일에 정의
+- [ ] 공통 모델(User 등)에 역관계 추가
+- [ ] `npm run db:generate` 실행 확인
+- [ ] Language Server 재시작으로 타입 인식 확인
+
+### 기존 모델 수정 시
+
+- [ ] 필드 순서 유지
+- [ ] snake_case 매핑 확인 (`@map`)
+- [ ] 관계 변경 시 양쪽 모델 모두 수정
+- [ ] 마이그레이션 생성 또는 db:push
+
+## 참고사항
+
+- Prisma CLI는 재귀적으로 모든 `.prisma` 파일 탐색
+- Import 구문 불필요 (자동으로 통합)
+- 모든 model, enum은 전역적으로 참조 가능
+- `prisma.config.ts`가 스키마 위치 정의
+- VSCode Extension 필수 설치: "Prisma"
