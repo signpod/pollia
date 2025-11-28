@@ -3,9 +3,7 @@ import { ANIMATION_DURATIONS } from "./constants";
 import type { AnimationRefs } from "./useAnimationRefs";
 
 export function animateFinalElements(refs: AnimationRefs) {
-  if (!refs.afterTitle.current || !refs.shareButtons.current || !refs.button.current) {
-    return;
-  }
+  if (!refs.afterTitle.current || !refs.shareButtons.current || !refs.button.current) return;
 
   const subTl = gsap.timeline();
 
