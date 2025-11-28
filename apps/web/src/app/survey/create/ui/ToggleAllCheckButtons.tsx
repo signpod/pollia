@@ -51,11 +51,11 @@ function useToggleAllCheckButtons({ questions }: ToggleAllCheckButtonsProps) {
     deselectAllQuestions();
   };
 
-  const isAllSelected = questions.every(question => 
-    selectedQuestions.some(q => q.id === question.id)
+  const isAllSelected = questions.every(question =>
+    selectedQuestions.some(q => q.id === question.id),
   );
-  const isAllDeselected = questions.every(question => 
-    !selectedQuestions.some(q => q.id === question.id)
+  const isAllDeselected = questions.every(
+    question => !selectedQuestions.some(q => q.id === question.id),
   );
 
   return {

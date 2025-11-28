@@ -1,5 +1,5 @@
-import { Typo } from "@repo/ui/components";
 import KakaoIcon from "@public/svgs/kakao-icon.svg";
+import { Typo } from "@repo/ui/components";
 import { Share2 } from "lucide-react";
 import React from "react";
 
@@ -26,4 +26,3 @@ export const ShareButtons = React.forwardRef<HTMLDivElement>((_props, ref) => (
 ));
 
 ShareButtons.displayName = "ShareButtons";
-
