@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 
 export interface AnimationRefs {
   box: React.RefObject<HTMLDivElement | null>;
@@ -15,17 +15,32 @@ export interface AnimationRefs {
 }
 
 export function useAnimationRefs(): AnimationRefs {
-  return {
-    box: useRef<HTMLDivElement>(null),
-    checkIcon: useRef<HTMLDivElement>(null),
-    surveyContent: useRef<HTMLDivElement>(null),
-    logo: useRef<HTMLDivElement>(null),
-    title: useRef<HTMLDivElement>(null),
-    infoBox: useRef<HTMLDivElement>(null),
-    image: useRef<HTMLDivElement>(null),
-    text: useRef<HTMLDivElement>(null),
-    afterTitle: useRef<HTMLDivElement>(null),
-    button: useRef<HTMLButtonElement>(null),
-    shareButtons: useRef<HTMLDivElement>(null),
-  };
+  const box = useRef<HTMLDivElement>(null);
+  const checkIcon = useRef<HTMLDivElement>(null);
+  const surveyContent = useRef<HTMLDivElement>(null);
+  const logo = useRef<HTMLDivElement>(null);
+  const title = useRef<HTMLDivElement>(null);
+  const infoBox = useRef<HTMLDivElement>(null);
+  const image = useRef<HTMLDivElement>(null);
+  const text = useRef<HTMLDivElement>(null);
+  const afterTitle = useRef<HTMLDivElement>(null);
+  const button = useRef<HTMLButtonElement>(null);
+  const shareButtons = useRef<HTMLDivElement>(null);
+
+  return useMemo(
+    () => ({
+      box,
+      checkIcon,
+      surveyContent,
+      logo,
+      title,
+      infoBox,
+      image,
+      text,
+      afterTitle,
+      button,
+      shareButtons,
+    }),
+    [],
+  );
 }
