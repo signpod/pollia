@@ -1,7 +1,8 @@
 import { SurveyLikertScale } from "@/app/survey/[id]/components/SurveyLikertScale";
 import { QuestionStepContentProps } from "@/constants/surveyQuestion";
+import { useReadSurveyResponseForSurvey } from "@/hooks/survey-response";
 import type { SurveyAnswerItem } from "@/types/dto";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { SurveyQuestionTemplate } from "../[id]/components/SurveyQuestionTemplate";
 
 export function SurveyScale({
@@ -18,6 +19,7 @@ export function SurveyScale({
 }: QuestionStepContentProps) {
   const { isScaleValueChanged, scaleValue, handleScaleValueChange } = useSurveyScaleValue(
     questionData.id,
+    questionData.surveyId,
     updateCanGoNext,
     onAnswerChange,
   );
@@ -47,11 +49,36 @@ const DEFAULT_SCALE_VALUE = 3;
 
 function useSurveyScaleValue(
   questionId: string,
+  surveyId: string | null,
   updateCanGoNext?: (canGoNext: boolean) => void,
   onAnswerChange?: (answer: SurveyAnswerItem) => void,
 ) {
+  const { data: responseData } = useReadSurveyResponseForSurvey({
+    surveyId: surveyId || "",
+  });
+
+  const initialScaleValue = useMemo(() => {
+    if (!surveyId || !responseData?.data?.answers || responseData.data.answers.length === 0) {
+      return DEFAULT_SCALE_VALUE;
+    }
+
+    const questionAnswer = responseData.data.answers.find(
+      answer => answer.questionId === questionId && answer.scaleAnswer !== null,
+    );
+
+    return questionAnswer?.scaleAnswer ?? DEFAULT_SCALE_VALUE;
+  }, [surveyId, responseData, questionId]);
+
   const [isScaleValueChanged, setIsScaleValueChanged] = useState(false);
-  const [scaleValue, setScaleValue] = useState(DEFAULT_SCALE_VALUE);
+  const [scaleValue, setScaleValue] = useState(initialScaleValue);
+
+  useEffect(() => {
+    setScaleValue(initialScaleValue);
+    if (initialScaleValue !== DEFAULT_SCALE_VALUE) {
+      setIsScaleValueChanged(true);
+      updateCanGoNext?.(true);
+    }
+  }, [initialScaleValue, updateCanGoNext]);
 
   const handleScaleValueChange = (value: number) => {
     if (!isScaleValueChanged) {
@@ -60,7 +87,6 @@ function useSurveyScaleValue(
     }
     setScaleValue(value);
 
-    // 답변 변경 전달
     onAnswerChange?.({
       questionId,
       type: "SCALE",
