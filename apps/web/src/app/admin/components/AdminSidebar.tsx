@@ -14,7 +14,7 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/app/admin/components/shadcn-ui/sidebar";
-import { SurveyItem, createAdminNavConfig } from "@/app/admin/config/nav";
+import { createAdminNavConfig } from "@/app/admin/config/nav";
 import { ADMIN_ROUTES } from "@/app/admin/constants/routes";
 import { useAdminTheme } from "@/app/admin/hooks/use-admin-theme";
 import PolliaIcon from "@public/svgs/pollia-icon.svg";
@@ -23,27 +23,18 @@ import { LogOut, Moon, Sun } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
+import { useAdminSurveys } from "../hooks/use-admin-surveys";
 import { cn } from "../lib/utils";
-
-//TODO: 설문 목록 조회 API 연동 후 삭제
-function getMockSurveys(): SurveyItem[] {
-  return [
-    { id: "1", title: "사용자 만족도 조사" },
-    { id: "2", title: "제품 피드백 설문" },
-    { id: "3", title: "서비스 개선 의견" },
-    { id: "4", title: "이벤트 참여 설문" },
-  ];
-}
 
 export function AdminSidebar() {
   const pathname = usePathname();
   const { state } = useSidebar();
   const { isDark, toggleTheme, mounted } = useAdminTheme();
+  const { surveys } = useAdminSurveys({ limit: 10 });
 
   const adminNavConfig = useMemo(() => {
-    const mockSurveys = getMockSurveys();
-    return createAdminNavConfig(mockSurveys);
-  }, []);
+    return createAdminNavConfig(surveys);
+  }, [surveys]);
 
   const isActive = (url: string) => {
     if (url === ADMIN_ROUTES.ADMIN) {

@@ -1,24 +1,13 @@
-import { getUserSurveys } from "@/actions/survey/read";
-import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
-import { getQueryClient } from "@/lib/getQueryClient";
-import { dehydrate } from "@tanstack/react-query";
-import { AdminDashboardClient } from "./components/AdminDashboardClient";
+import { SurveyList } from "./components/SurveyList";
 
-export default async function AdminPage() {
-  const queryClient = getQueryClient();
-
-  await queryClient.prefetchInfiniteQuery({
-    queryKey: surveyQueryKeys.userSurveys(),
-    queryFn: ({ pageParam }) => {
-      return getUserSurveys({
-        cursor: pageParam,
-        limit: 10,
-      });
-    },
-    initialPageParam: "",
-  });
-
-  const dehydratedState = dehydrate(queryClient);
-
-  return <AdminDashboardClient dehydratedState={dehydratedState} />;
+export default function AdminPage() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">설문조사</h1>
+        <p className="text-muted-foreground">내가 만든 설문조사 목록입니다.</p>
+      </div>
+      <SurveyList />
+    </div>
+  );
 }
