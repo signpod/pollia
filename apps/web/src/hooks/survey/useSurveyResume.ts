@@ -39,3 +39,5 @@ export function useSurveyResume({
 
   return { showResumeModal };
 }
+
+export type UseSurveyResumeReturn = ReturnType<typeof useSurveyResume>;
