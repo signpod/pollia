@@ -18,7 +18,7 @@ interface BottomButtonProps {
   firstQuestionId?: string;
   initialError: AuthError | null;
   deadline?: Survey["deadline"];
-  showResumeModal?: () => void;
+  showResumeModal?: () => boolean;
 }
 
 export function BottomButton({
