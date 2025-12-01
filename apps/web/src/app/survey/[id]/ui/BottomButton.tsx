@@ -18,6 +18,7 @@ interface BottomButtonProps {
   firstQuestionId?: string;
   initialError: AuthError | null;
   deadline?: Survey["deadline"];
+  showResumeModal?: () => void;
 }
 
 export function BottomButton({
@@ -25,6 +26,7 @@ export function BottomButton({
   firstQuestionId,
   initialError,
   deadline,
+  showResumeModal,
 }: BottomButtonProps) {
   const { handleKakaoLogin } = useKakaoLogin({
     initialError,
@@ -39,6 +41,11 @@ export function BottomButton({
   const handleClick = () => {
     if (!isLoggedIn) {
       handleKakaoLogin();
+    } else if (showResumeModal) {
+      const modalShown = showResumeModal();
+      if (!modalShown && firstQuestionId) {
+        router.push(ROUTES.SURVEY_QUESTION(firstQuestionId));
+      }
     } else if (firstQuestionId) {
       router.push(ROUTES.SURVEY_QUESTION(firstQuestionId));
     }
