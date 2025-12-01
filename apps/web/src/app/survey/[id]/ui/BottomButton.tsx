@@ -39,7 +39,7 @@ export function BottomButton({
 
   const isExpired = Boolean(deadline && isBefore(deadline, new Date()));
   const isDisabled = isExpired || !firstQuestionId;
-  const alreadyParticipated = isCompleted;
+  const alreadyCompleted = isCompleted;
 
   const handleClick = () => {
     if (!isLoggedIn) {
@@ -66,7 +66,7 @@ export function BottomButton({
     );
   }
 
-  if (alreadyParticipated) {
+  if (alreadyCompleted) {
     return (
       <div className="py-3 px-4 w-full">
         <ButtonV2 variant="primary" size="large" className="w-full" disabled>
