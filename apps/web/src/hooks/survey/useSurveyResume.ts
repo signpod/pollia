@@ -1,7 +1,7 @@
 import { ROUTES } from "@/constants/routes";
 import { useModal } from "@repo/ui/components";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useCallback } from "react";
 
 interface UseSurveyResumeParams {
   isEnabledToResume: boolean;
@@ -17,7 +17,7 @@ export function useSurveyResume({
   const { showModal } = useModal();
   const router = useRouter();
 
-  useEffect(() => {
+  const showResumeModal = useCallback(() => {
     if (isEnabledToResume && nextQuestionId && firstQuestionId) {
       showModal({
         title: "설문을 계속 진행할까요?",
@@ -32,6 +32,12 @@ export function useSurveyResume({
           router.push(ROUTES.SURVEY_QUESTION(firstQuestionId));
         },
       });
+      return true;
     }
+    return false;
   }, [isEnabledToResume, showModal, nextQuestionId, firstQuestionId, router]);
+
+  return { showResumeModal };
 }
+
+export type UseSurveyResumeReturn = ReturnType<typeof useSurveyResume>;

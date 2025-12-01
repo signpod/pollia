@@ -23,7 +23,11 @@ export function SurveyIntro({ initialError }: { initialError: AuthError | null }
     params.id,
   );
 
-  useSurveyResume({ isEnabledToResume, nextQuestionId, firstQuestionId });
+  const { showResumeModal } = useSurveyResume({
+    isEnabledToResume,
+    nextQuestionId,
+    firstQuestionId,
+  });
 
   const { isRewardVisible, setIsRewardVisible, rewardRef, scrollToReward } =
     useSurveyRewardVisibility();
@@ -87,6 +91,7 @@ export function SurveyIntro({ initialError }: { initialError: AuthError | null }
             firstQuestionId={firstQuestionId ?? ""}
             initialError={initialError}
             deadline={deadline}
+            showResumeModal={showResumeModal}
           />
         </FixedBottomLayout.Content>
       </main>
