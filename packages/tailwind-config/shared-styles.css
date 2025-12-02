@@ -64,6 +64,9 @@
   --color-border: #e5e7eb;
   --color-muted: #f9fafb;
   --color-muted-foreground: #6b7280;
+
+  /* Semantic background colors for Tailwind utilities */
+  --color-light: var(--color-background-light);
 }
 
 /* Base styles and shadcn/ui compatible CSS variables */
@@ -109,7 +112,7 @@ body {
 }
 
 body {
-  @apply bg-background text-foreground;
+  @apply bg-light text-foreground;
   font-family: var(--font-display);
 }
 
