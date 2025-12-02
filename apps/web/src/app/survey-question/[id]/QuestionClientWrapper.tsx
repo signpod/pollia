@@ -25,6 +25,13 @@ const SURVEY_EXIT_MODAL = {
   cancelText: "종료하기",
 } as const;
 
+const SURVEY_SUBMIT_MODAL = {
+  title: "응답을 제출할까요?",
+  description: "제출 이후에는 답변을 수정하거나\n다시 응답할 수 없어요",
+  confirmText: "제출하기",
+  cancelText: "취소",
+} as const;
+
 interface QuestionClientWrapperProps {
   surveyId: string;
   dehydratedState: DehydratedState;
@@ -168,10 +175,7 @@ function SurveyQuestionRenderer({
 
     if (isLastStep) {
       showModal({
-        title: "응답을 제출할까요?",
-        description: "제출 이후에는 답변을 수정하거나\n다시 응답할 수 없어요",
-        confirmText: "제출하기",
-        cancelText: "취소",
+        ...SURVEY_SUBMIT_MODAL,
         showCancelButton: true,
         onConfirm: async () => {
           await completeSurveyAsync({
