@@ -25,6 +25,13 @@ const SURVEY_EXIT_MODAL = {
   cancelText: "종료하기",
 } as const;
 
+const SURVEY_SUBMIT_MODAL = {
+  title: "응답을 제출할까요?",
+  description: "제출 이후에는 답변을 수정하거나\n다시 응답할 수 없어요",
+  confirmText: "제출하기",
+  cancelText: "취소",
+} as const;
+
 interface QuestionClientWrapperProps {
   surveyId: string;
   dehydratedState: DehydratedState;
@@ -119,7 +126,7 @@ function SurveyQuestionRenderer({
     },
   });
 
-  const { mutate: completeSurvey, isPending: isCompletingSurvey } = useSubmitSurveyAnswers({
+  const { mutateAsync: completeSurveyAsync } = useSubmitSurveyAnswers({
     onSuccess: () => {
       router.push(ROUTES.SURVEY_DONE(surveyId));
     },
@@ -167,9 +174,15 @@ function SurveyQuestionRenderer({
     if (!responseId || !currentAnswer) return;
 
     if (isLastStep) {
-      completeSurvey({
-        responseId,
-        answers: [currentAnswer],
+      showModal({
+        ...SURVEY_SUBMIT_MODAL,
+        showCancelButton: true,
+        onConfirm: async () => {
+          await completeSurveyAsync({
+            responseId,
+            answers: [currentAnswer],
+          });
+        },
       });
     } else {
       submitAnswer({
@@ -177,7 +190,7 @@ function SurveyQuestionRenderer({
         answer: currentAnswer,
       });
     }
-  }, [isLastStep, responseId, currentAnswer, submitAnswer, completeSurvey]);
+  }, [isLastStep, responseId, currentAnswer, submitAnswer, completeSurveyAsync, showModal]);
 
   const showExitConfirmModal = useCallback(() => {
     showModal({
@@ -228,7 +241,6 @@ function SurveyQuestionRenderer({
   }, [showExitConfirmModal]);
 
   const isInitializing = isStarting || !responseId;
-  const isProcessing = isSubmittingAnswer || isCompletingSurvey;
 
   return (
     <ContentComponent
@@ -237,10 +249,10 @@ function SurveyQuestionRenderer({
       currentOrder={questionData.order}
       totalQuestionCount={totalQuestionCount}
       isFirstQuestion={isFirstStep}
-      isNextDisabled={!canGoNext || isProcessing || isInitializing}
+      isNextDisabled={!canGoNext || isSubmittingAnswer || isInitializing}
       onPrevious={handlePrevious}
       onNext={handleNext}
-      nextButtonText={isLastStep ? (isCompletingSurvey ? "제출 중..." : "완료") : "다음"}
+      nextButtonText={isLastStep ? "제출하기" : "다음"}
       updateCanGoNext={updateCanGoNext}
       onAnswerChange={handleAnswerChange}
       surveyResponse={surveyResponse?.data ? surveyResponse : undefined}
