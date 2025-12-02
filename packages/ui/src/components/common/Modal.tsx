@@ -70,10 +70,11 @@ export function ModalProvider({ children }: ModalProviderProps) {
       setModalConfig(prev => ({ ...prev, confirmButtonIsLoading: true }));
       try {
         await result;
+        close();
       } catch (error) {
         console.error("❌ Modal onConfirm 에러 발생:", error);
       } finally {
-        close();
+        setModalConfig(prev => ({ ...prev, confirmButtonIsLoading: false }));
       }
     } else {
       close();
