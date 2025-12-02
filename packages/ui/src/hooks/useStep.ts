@@ -72,7 +72,7 @@ export function StepProvider({
           }
           const stepId = steps[stepIndex]?.id;
           if (!stepId) {
-            console.error("Step ID is missing");
+            console.error("❌ question id가 없습니다.");
             return;
           }
           const currentPath = window.location.pathname;
