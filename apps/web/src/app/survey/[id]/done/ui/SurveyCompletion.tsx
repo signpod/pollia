@@ -66,7 +66,7 @@ export function SurveyCompletion() {
     window.history.replaceState({ ...window.history.state, fromSurveyQuestion: true }, "");
     window.history.pushState({ ...window.history.state, preventBack: true }, "", currentUrl);
 
-    const handlePopState = (event: PopStateEvent) => {
+    const handlePopState = () => {
       window.history.pushState({ ...window.history.state, preventBack: true }, "", currentUrl);
       router.push(ROUTES.SURVEY(params.id));
     };
