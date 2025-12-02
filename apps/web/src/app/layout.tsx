@@ -42,7 +42,7 @@ export default function RootLayout({
           />
         </head>
         <body className="antialiased">
-          <div className="mx-auto min-h-screen max-w-lg">{children}</div>
+          <div className="mx-auto min-h-screen max-w-lg bg-background">{children}</div>
         </body>
       </html>
     </RollbarProvider>
