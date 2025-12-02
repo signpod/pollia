@@ -55,7 +55,7 @@ export function StepProvider({
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [steps, setSteps] = useState<StepConfig[]>(initialSteps);
 
-  const currentStepConfig = steps[currentStep] ?? steps[0]!;
+  const currentStepConfig = steps[currentStep] ?? (steps[0] as StepConfig);
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === steps.length - 1;
   const canGoNext = currentStepConfig?.canGoNext !== false;
@@ -67,7 +67,11 @@ export function StepProvider({
     (stepIndex: number) => {
       if (stepIndex >= 0 && stepIndex < steps.length) {
         if (syncWithUrl) {
-          router.push(`/survey-question/${steps[stepIndex]?.id}`);
+          const currentPath = window.location.pathname;
+          const pathParts = currentPath.split("/");
+          pathParts[pathParts.length - 1] = steps[stepIndex]?.id ?? "";
+          const newPath = pathParts.join("/");
+          router.push(newPath);
         } else {
           const previousStep = currentStep;
           setCurrentStep(stepIndex);
