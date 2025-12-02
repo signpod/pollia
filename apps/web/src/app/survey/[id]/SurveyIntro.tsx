@@ -19,9 +19,8 @@ import { BottomButton } from "./ui";
 export function SurveyIntro({ initialError }: { initialError: AuthError | null }) {
   const params = useParams<{ id: string }>();
 
-  const { survey, firstQuestionId, isEnabledToResume, nextQuestionId } = useSurveyIntroData(
-    params.id,
-  );
+  const { survey, firstQuestionId, isEnabledToResume, nextQuestionId, isCompleted } =
+    useSurveyIntroData(params.id);
 
   const { showResumeModal } = useSurveyResume({
     isEnabledToResume,
@@ -92,6 +91,7 @@ export function SurveyIntro({ initialError }: { initialError: AuthError | null }
             initialError={initialError}
             deadline={deadline}
             showResumeModal={showResumeModal}
+            isCompleted={isCompleted}
           />
         </FixedBottomLayout.Content>
       </main>
