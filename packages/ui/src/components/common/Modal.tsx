@@ -11,9 +11,11 @@ export interface ModalConfig {
   description: string;
   confirmText?: string;
   cancelText?: string;
-  onConfirm?: () => void;
+  onConfirm?: () => void | Promise<void>;
   onCancel?: () => void;
   showCancelButton?: boolean;
+  confirmButtonIsLoading?: boolean;
+  cancelButtonIsLoading?: boolean;
 }
 
 interface ModalContextType {
@@ -57,9 +59,20 @@ export function ModalProvider({ children }: ModalProviderProps) {
     setIsOpen(false);
   }, []);
 
-  const handleConfirm = useCallback(() => {
-    modalConfig.onConfirm?.();
-    close();
+  const handleConfirm = useCallback(async () => {
+    const result = modalConfig.onConfirm?.();
+    if (result instanceof Promise) {
+      setModalConfig(prev => ({ ...prev, confirmButtonIsLoading: true }));
+      try {
+        await result;
+      } catch (error) {
+        console.error("❌ Modal onConfirm 에러 발생:", error);
+      } finally {
+        close();
+      }
+    } else {
+      close();
+    }
   }, [modalConfig, close]);
 
   const handleCancel = useCallback(() => {
@@ -90,7 +103,13 @@ export function ModalProvider({ children }: ModalProviderProps) {
 
             <div className="flex w-full gap-3">
               {modalConfig.showCancelButton && (
-                <Button variant="secondary" fullWidth onClick={handleCancel} className="flex-1">
+                <Button
+                  variant="secondary"
+                  fullWidth
+                  onClick={handleCancel}
+                  className="flex-1"
+                  loading={modalConfig.cancelButtonIsLoading}
+                >
                   {modalConfig.cancelText || "취소"}
                 </Button>
               )}
@@ -99,6 +118,7 @@ export function ModalProvider({ children }: ModalProviderProps) {
                 fullWidth
                 onClick={handleConfirm}
                 className={modalConfig.showCancelButton ? "flex-1" : "w-full"}
+                loading={modalConfig.confirmButtonIsLoading}
               >
                 {modalConfig.confirmText}
               </Button>
