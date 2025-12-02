@@ -272,7 +272,11 @@ function SurveyQuestionRenderer({
       }
       if (event.state?.fromSurveyQuestion) {
         window.history.pushState({ ...window.history.state, preventBack: true }, "", currentUrl);
-        showExitConfirmModal();
+        if (isFirstStep) {
+          showExitConfirmModal();
+        } else {
+          goBack();
+        }
       }
     };
 
@@ -281,7 +285,7 @@ function SurveyQuestionRenderer({
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, [showExitConfirmModal]);
+  }, [showExitConfirmModal, isFirstStep, goBack]);
 
   const isInitializing = isStarting || !responseId;
 
