@@ -67,10 +67,22 @@ export function StepProvider({
     (stepIndex: number) => {
       if (stepIndex >= 0 && stepIndex < steps.length) {
         if (syncWithUrl) {
+          if (typeof window === "undefined") {
+            return;
+          }
+          const stepId = steps[stepIndex]?.id;
+          if (!stepId) {
+            console.error("Step ID is missing");
+            return;
+          }
           const currentPath = window.location.pathname;
-          const pathParts = currentPath.split("/");
-          pathParts[pathParts.length - 1] = steps[stepIndex]?.id ?? "";
-          const newPath = pathParts.join("/");
+          const pathParts = currentPath.split("/").filter(Boolean);
+          if (pathParts.length === 0) {
+            router.push(`/${stepId}`);
+            return;
+          }
+          pathParts[pathParts.length - 1] = stepId;
+          const newPath = `/${pathParts.join("/")}`;
           router.push(newPath);
         } else {
           const previousStep = currentStep;
