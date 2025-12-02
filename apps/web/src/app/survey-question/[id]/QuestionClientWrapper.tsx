@@ -119,7 +119,7 @@ function SurveyQuestionRenderer({
     },
   });
 
-  const { mutate: completeSurvey, isPending: isCompletingSurvey } = useSubmitSurveyAnswers({
+  const { mutateAsync: completeSurveyAsync } = useSubmitSurveyAnswers({
     onSuccess: () => {
       router.push(ROUTES.SURVEY_DONE(surveyId));
     },
@@ -173,14 +173,11 @@ function SurveyQuestionRenderer({
         confirmText: "제출하기",
         cancelText: "취소",
         showCancelButton: true,
-        onConfirm: () => {
-          completeSurvey({
+        onConfirm: async () => {
+          await completeSurveyAsync({
             responseId,
             answers: [currentAnswer],
           });
-        },
-        onCancel: () => {
-          close();
         },
       });
     } else {
@@ -189,7 +186,7 @@ function SurveyQuestionRenderer({
         answer: currentAnswer,
       });
     }
-  }, [isLastStep, responseId, currentAnswer, submitAnswer, completeSurvey]);
+  }, [isLastStep, responseId, currentAnswer, submitAnswer, completeSurveyAsync, showModal]);
 
   const showExitConfirmModal = useCallback(() => {
     showModal({
@@ -240,7 +237,6 @@ function SurveyQuestionRenderer({
   }, [showExitConfirmModal]);
 
   const isInitializing = isStarting || !responseId;
-  const isProcessing = isSubmittingAnswer || isCompletingSurvey;
 
   return (
     <ContentComponent
@@ -249,10 +245,10 @@ function SurveyQuestionRenderer({
       currentOrder={questionData.order}
       totalQuestionCount={totalQuestionCount}
       isFirstQuestion={isFirstStep}
-      isNextDisabled={!canGoNext || isProcessing || isInitializing}
+      isNextDisabled={!canGoNext || isSubmittingAnswer || isInitializing}
       onPrevious={handlePrevious}
       onNext={handleNext}
-      nextButtonText={isLastStep ? (isCompletingSurvey ? "제출 중..." : "제출하기") : "다음"}
+      nextButtonText={isLastStep ? "제출하기" : "다음"}
       updateCanGoNext={updateCanGoNext}
       onAnswerChange={handleAnswerChange}
       surveyResponse={surveyResponse?.data ? surveyResponse : undefined}
