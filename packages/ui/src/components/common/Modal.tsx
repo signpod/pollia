@@ -57,6 +57,11 @@ export function ModalProvider({ children }: ModalProviderProps) {
 
   const close = useCallback(() => {
     setIsOpen(false);
+    setModalConfig(prev => ({
+      ...prev,
+      confirmButtonIsLoading: false,
+      cancelButtonIsLoading: false,
+    }));
   }, []);
 
   const handleConfirm = useCallback(async () => {
