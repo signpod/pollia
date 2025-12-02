@@ -19,6 +19,7 @@ interface BottomButtonProps {
   initialError: AuthError | null;
   deadline?: Survey["deadline"];
   showResumeModal?: () => boolean;
+  isCompleted: boolean;
 }
 
 export function BottomButton({
@@ -27,6 +28,7 @@ export function BottomButton({
   initialError,
   deadline,
   showResumeModal,
+  isCompleted,
 }: BottomButtonProps) {
   const { handleKakaoLogin } = useKakaoLogin({
     initialError,
@@ -37,6 +39,7 @@ export function BottomButton({
 
   const isExpired = Boolean(deadline && isBefore(deadline, new Date()));
   const isDisabled = isExpired || !firstQuestionId;
+  const alreadyCompleted = isCompleted;
 
   const handleClick = () => {
     if (!isLoggedIn) {
@@ -57,6 +60,18 @@ export function BottomButton({
         <ButtonV2 variant="primary" size="large" className="w-full" disabled>
           <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
             응답 기간이 마감되었어요
+          </Typo.ButtonText>
+        </ButtonV2>
+      </div>
+    );
+  }
+
+  if (alreadyCompleted) {
+    return (
+      <div className="py-3 px-4 w-full">
+        <ButtonV2 variant="primary" size="large" className="w-full" disabled>
+          <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
+            이미 응답한 설문이에요
           </Typo.ButtonText>
         </ButtonV2>
       </div>
