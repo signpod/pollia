@@ -61,6 +61,23 @@ export function SurveyCompletion() {
     };
   }, [showContent, refs]);
 
+  useEffect(() => {
+    const currentUrl = window.location.pathname + window.location.search;
+    window.history.replaceState({ ...window.history.state, fromSurveyQuestion: true }, "");
+    window.history.pushState({ ...window.history.state, preventBack: true }, "", currentUrl);
+
+    const handlePopState = (event: PopStateEvent) => {
+      window.history.pushState({ ...window.history.state, preventBack: true }, "", currentUrl);
+      router.push(ROUTES.SURVEY(params.id));
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [params.id, router]);
+
   return (
     <div
       className={cn(
