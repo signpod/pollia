@@ -10,12 +10,16 @@ import {
   useSubmitSurveyAnswers,
 } from "@/hooks/survey-response";
 import { useReadSurveyQuestionsDetail } from "@/hooks/survey/question/useReadSurveyQuestionsDetail";
+import {
+  getSessionStorageJSON,
+  removeSessionStorage,
+  setSessionStorageJSON,
+} from "@/lib/sessionStorage";
 import type { SurveyAnswerItem } from "@/types/dto";
 import { StepProvider, useModal, useStep } from "@repo/ui/components";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect } from "react";
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { SurveyMultipleChoice, SurveyScale, SurveySubjective } from "../ui";
 
 const SURVEY_EXIT_MODAL = {
@@ -55,7 +59,6 @@ function SurveyQuestionContent({
   currentQuestionId,
 }: { surveyId: string; currentQuestionId: string }) {
   const { data: questions } = useReadSurveyQuestionsDetail(surveyId);
-  const router = useRouter();
 
   const steps = createQuestionSteps({
     questions: questions.data,
@@ -71,17 +74,7 @@ function SurveyQuestionContent({
   );
 
   return (
-    <StepProvider
-      steps={steps}
-      initialStep={initialStep >= 0 ? initialStep : 0}
-      onStepChange={currentStepIndex => {
-        const newQuestionId = (steps[currentStepIndex] as ExtendedQuestionStepConfig)?.questionData
-          .id;
-        if (newQuestionId && newQuestionId !== currentQuestionId) {
-          router.push(ROUTES.SURVEY_QUESTION(newQuestionId));
-        }
-      }}
-    >
+    <StepProvider syncWithUrl steps={steps} initialStep={initialStep >= 0 ? initialStep : 0}>
       <SurveyQuestionRenderer totalQuestionCount={questions.data.length} surveyId={surveyId} />
     </StepProvider>
   );
@@ -90,7 +83,10 @@ function SurveyQuestionContent({
 function SurveyQuestionRenderer({
   totalQuestionCount,
   surveyId,
-}: { totalQuestionCount: number; surveyId: string }) {
+}: {
+  totalQuestionCount: number;
+  surveyId: string;
+}) {
   const router = useRouter();
   const [responseId, setResponseId] = useState<string | null>(null);
   const [currentAnswer, setCurrentAnswer] = useState<SurveyAnswerItem | null>(null);
@@ -100,12 +96,8 @@ function SurveyQuestionRenderer({
     surveyId,
   });
 
-  const hasShownToastsRef = useRef({
-    first: false,
-    half: false,
-    final: false,
-  });
   const isExitingRef = useRef(false);
+  const toastStorageKey = `survey-toast-${surveyId}`;
 
   const { mutate: startResponse, isPending: isStarting } = useStartSurveyResponse({
     onSuccess: data => {
@@ -128,6 +120,7 @@ function SurveyQuestionRenderer({
 
   const { mutateAsync: completeSurveyAsync } = useSubmitSurveyAnswers({
     onSuccess: () => {
+      removeSessionStorage(toastStorageKey);
       router.push(ROUTES.SURVEY_DONE(surveyId));
     },
     onError: () => {
@@ -149,6 +142,56 @@ function SurveyQuestionRenderer({
   const stepConfig = currentStepConfig as unknown as ExtendedQuestionStepConfig;
   const ContentComponent = stepConfig.content;
   const questionData = stepConfig.questionData;
+
+  const lastToastQuestionIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (lastToastQuestionIdRef.current === questionData.id) {
+      return;
+    }
+
+    lastToastQuestionIdRef.current = questionData.id;
+
+    const currentOrder = questionData.order;
+    const progressValue = (currentOrder / totalQuestionCount) * 100 || 0;
+
+    const isFirstQuestion = currentOrder === 1;
+    const isFinalQuestion = currentOrder === totalQuestionCount && totalQuestionCount > 1;
+    const isHalfway = progressValue >= 50 && totalQuestionCount > 2;
+
+    const toastState = getSessionStorageJSON(toastStorageKey, {
+      first: false,
+      half: false,
+      final: false,
+    });
+
+    if (isFirstQuestion && !toastState.first) {
+      setSessionStorageJSON(toastStorageKey, { ...toastState, first: true });
+      toast.default(SURVEY_TOAST_MESSAGE.first.message, {
+        id: SURVEY_TOAST_MESSAGE.first.id,
+        duration: 4000,
+      });
+      return;
+    }
+
+    if (isFinalQuestion && !toastState.final) {
+      setSessionStorageJSON(toastStorageKey, { ...toastState, final: true });
+      toast.default(SURVEY_TOAST_MESSAGE.final.message, {
+        id: SURVEY_TOAST_MESSAGE.final.id,
+        duration: 4000,
+      });
+      return;
+    }
+
+    if (isHalfway && !toastState.half) {
+      setSessionStorageJSON(toastStorageKey, { ...toastState, half: true });
+      toast.default(SURVEY_TOAST_MESSAGE.half.message, {
+        id: SURVEY_TOAST_MESSAGE.half.id,
+        duration: 4000,
+      });
+      return;
+    }
+  }, [questionData.id, questionData.order, totalQuestionCount, toastStorageKey]);
 
   const updateCanGoNext = useCallback(
     (canGoNext: boolean) => {
@@ -229,7 +272,11 @@ function SurveyQuestionRenderer({
       }
       if (event.state?.fromSurveyQuestion) {
         window.history.pushState({ ...window.history.state, preventBack: true }, "", currentUrl);
-        showExitConfirmModal();
+        if (isFirstStep) {
+          showExitConfirmModal();
+        } else {
+          goBack();
+        }
       }
     };
 
@@ -238,7 +285,7 @@ function SurveyQuestionRenderer({
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, [showExitConfirmModal]);
+  }, [showExitConfirmModal, isFirstStep, goBack]);
 
   const isInitializing = isStarting || !responseId;
 
@@ -256,7 +303,6 @@ function SurveyQuestionRenderer({
       updateCanGoNext={updateCanGoNext}
       onAnswerChange={handleAnswerChange}
       surveyResponse={surveyResponse?.data ? surveyResponse : undefined}
-      hasShownToastsRef={hasShownToastsRef}
     />
   );
 }
