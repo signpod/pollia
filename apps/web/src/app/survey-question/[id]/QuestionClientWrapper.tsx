@@ -10,6 +10,11 @@ import {
   useSubmitSurveyAnswers,
 } from "@/hooks/survey-response";
 import { useReadSurveyQuestionsDetail } from "@/hooks/survey/question/useReadSurveyQuestionsDetail";
+import {
+  getSessionStorageJSON,
+  removeSessionStorage,
+  setSessionStorageJSON,
+} from "@/lib/sessionStorage";
 import type { SurveyAnswerItem } from "@/types/dto";
 import { StepProvider, useModal, useStep } from "@repo/ui/components";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
@@ -104,6 +109,7 @@ function SurveyQuestionRenderer({
   });
 
   const isExitingRef = useRef(false);
+  const toastStorageKey = `survey-toast-${surveyId}`;
 
   const { mutate: startResponse, isPending: isStarting } = useStartSurveyResponse({
     onSuccess: data => {
@@ -126,6 +132,7 @@ function SurveyQuestionRenderer({
 
   const { mutateAsync: completeSurveyAsync } = useSubmitSurveyAnswers({
     onSuccess: () => {
+      removeSessionStorage(toastStorageKey);
       router.push(ROUTES.SURVEY_DONE(surveyId));
     },
     onError: () => {
@@ -164,7 +171,14 @@ function SurveyQuestionRenderer({
     const isFinalQuestion = currentOrder === totalQuestionCount && totalQuestionCount > 1;
     const isHalfway = progressValue >= 50 && totalQuestionCount > 2;
 
-    if (isFirstQuestion) {
+    const toastState = getSessionStorageJSON(toastStorageKey, {
+      first: false,
+      half: false,
+      final: false,
+    });
+
+    if (isFirstQuestion && !toastState.first) {
+      setSessionStorageJSON(toastStorageKey, { ...toastState, first: true });
       toast.default(SURVEY_TOAST_MESSAGE.first.message, {
         id: SURVEY_TOAST_MESSAGE.first.id,
         duration: 4000,
@@ -172,7 +186,8 @@ function SurveyQuestionRenderer({
       return;
     }
 
-    if (isFinalQuestion) {
+    if (isFinalQuestion && !toastState.final) {
+      setSessionStorageJSON(toastStorageKey, { ...toastState, final: true });
       toast.default(SURVEY_TOAST_MESSAGE.final.message, {
         id: SURVEY_TOAST_MESSAGE.final.id,
         duration: 4000,
@@ -180,14 +195,15 @@ function SurveyQuestionRenderer({
       return;
     }
 
-    if (isHalfway) {
+    if (isHalfway && !toastState.half) {
+      setSessionStorageJSON(toastStorageKey, { ...toastState, half: true });
       toast.default(SURVEY_TOAST_MESSAGE.half.message, {
         id: SURVEY_TOAST_MESSAGE.half.id,
         duration: 4000,
       });
       return;
     }
-  }, [questionData.id, questionData.order, totalQuestionCount]);
+  }, [questionData.id, questionData.order, totalQuestionCount, toastStorageKey]);
 
   const updateCanGoNext = useCallback(
     (canGoNext: boolean) => {
