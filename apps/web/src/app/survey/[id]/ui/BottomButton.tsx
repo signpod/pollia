@@ -7,8 +7,11 @@ import { ButtonV2, Tooltip, Typo } from "@repo/ui/components";
 import { isBefore } from "date-fns";
 import { useRouter } from "next/navigation";
 
-const LOGIN_BUTTON_TEXT = {
-  loggedOutTooltip: "로그인 후 리워드를 받아보세요 🎁",
+const TOOLTIP_TEXT = {
+  loggedOut: "로그인 후 리워드를 받아보세요 🎁",
+};
+
+const BUTTON_TEXT = {
   loggedIn: "참여하고 리워드 받기",
   loggedOut: "카카오 로그인 후 참여하기",
   expired: "응답 기간이 마감되었어요",
@@ -61,7 +64,7 @@ export function BottomButton({
       <div className="py-3 px-4 w-full">
         <ButtonV2 variant="primary" size="large" className="w-full" disabled>
           <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
-            {LOGIN_BUTTON_TEXT.expired}
+            {BUTTON_TEXT.expired}
           </Typo.ButtonText>
         </ButtonV2>
       </div>
@@ -73,7 +76,7 @@ export function BottomButton({
       <div className="py-3 px-4 w-full">
         <ButtonV2 variant="primary" size="large" className="w-full" disabled>
           <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
-            {LOGIN_BUTTON_TEXT.alreadyCompleted}
+            {BUTTON_TEXT.alreadyCompleted}
           </Typo.ButtonText>
         </ButtonV2>
       </div>
@@ -84,13 +87,13 @@ export function BottomButton({
     return (
       <div data-tooltip-id="tooltip-id" className="w-full">
         <Tooltip id="tooltip-id" placement="top">
-          <Typo.Body size="medium">{LOGIN_BUTTON_TEXT.loggedOutTooltip}</Typo.Body>
+          <Typo.Body size="medium">{TOOLTIP_TEXT.loggedOut}</Typo.Body>
         </Tooltip>
         <div className="py-3 px-4">
           <ButtonV2 variant="primary" size="large" className="w-full" onClick={handleClick}>
             <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
               <KakaoIcon className="size-6" />
-              {LOGIN_BUTTON_TEXT.loggedOut}
+              {BUTTON_TEXT.loggedOut}
             </Typo.ButtonText>
           </ButtonV2>
         </div>
@@ -108,7 +111,7 @@ export function BottomButton({
         disabled={isDisabled}
       >
         <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
-          {LOGIN_BUTTON_TEXT.loggedIn}
+          {BUTTON_TEXT.loggedIn}
         </Typo.ButtonText>
       </ButtonV2>
     </div>
