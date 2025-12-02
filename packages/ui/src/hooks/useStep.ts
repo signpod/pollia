@@ -1,7 +1,7 @@
 "use client";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import { createContext, createElement, useCallback, useContext, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { createContext, createElement, useCallback, useContext, useState } from "react";
 
 export interface StepConfig {
   id: string;
@@ -30,8 +30,6 @@ export interface StepContextValue {
 
 const StepContext = createContext<StepContextValue | null>(null);
 
-const URL_STEP_PARAM_NAME = "step";
-
 export interface StepProviderProps {
   children: React.ReactNode;
   steps: StepConfig[];
@@ -54,13 +52,10 @@ export function StepProvider({
   }
 
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
   const [currentStep, setCurrentStep] = useState(initialStep);
   const [steps, setSteps] = useState<StepConfig[]>(initialSteps);
 
-  const currentStepConfig = steps[currentStep] ?? steps[0]!;
+  const currentStepConfig = steps[currentStep] ?? (steps[0] as StepConfig);
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === steps.length - 1;
   const canGoNext = currentStepConfig?.canGoNext !== false;
@@ -72,9 +67,23 @@ export function StepProvider({
     (stepIndex: number) => {
       if (stepIndex >= 0 && stepIndex < steps.length) {
         if (syncWithUrl) {
-          const params = new URLSearchParams(searchParams?.toString());
-          params.set(URL_STEP_PARAM_NAME, String(stepIndex + 1));
-          router.push(`${pathname}?${params.toString()}`);
+          if (typeof window === "undefined") {
+            return;
+          }
+          const stepId = steps[stepIndex]?.id;
+          if (!stepId) {
+            console.error("❌ question id가 없습니다.");
+            return;
+          }
+          const currentPath = window.location.pathname;
+          const pathParts = currentPath.split("/").filter(Boolean);
+          if (pathParts.length === 0) {
+            router.push(`/${stepId}`);
+            return;
+          }
+          pathParts[pathParts.length - 1] = stepId;
+          const newPath = `/${pathParts.join("/")}`;
+          router.push(newPath);
         } else {
           const previousStep = currentStep;
           setCurrentStep(stepIndex);
@@ -86,16 +95,7 @@ export function StepProvider({
         }
       }
     },
-    [
-      currentStep,
-      steps.length,
-      onStepChange,
-      onComplete,
-      syncWithUrl,
-      router,
-      pathname,
-      searchParams,
-    ],
+    [currentStep, steps.length, onStepChange, onComplete, syncWithUrl, router, steps],
   );
 
   const goNext = useCallback(() => {
@@ -115,32 +115,6 @@ export function StepProvider({
       prevSteps.map((step, index) => (index === stepIndex ? { ...step, ...updates } : step)),
     );
   }, []);
-
-  useEffect(() => {
-    if (!syncWithUrl) return;
-
-    const urlStep = searchParams?.get(URL_STEP_PARAM_NAME);
-
-    if (!urlStep) {
-      const params = new URLSearchParams(searchParams?.toString());
-      params.set(URL_STEP_PARAM_NAME, String(currentStep + 1));
-      router.replace(`${pathname}?${params.toString()}`);
-      return;
-    }
-
-    const urlStepNumber = Number.parseInt(urlStep, 10) - 1;
-
-    if (
-      !Number.isNaN(urlStepNumber) &&
-      urlStepNumber >= 0 &&
-      urlStepNumber < steps.length &&
-      urlStepNumber !== currentStep
-    ) {
-      const previousStep = currentStep;
-      setCurrentStep(urlStepNumber);
-      onStepChange?.(urlStepNumber, previousStep);
-    }
-  }, [syncWithUrl, searchParams, currentStep, steps.length, router, pathname, onStepChange]);
 
   const value: StepContextValue = {
     currentStep,

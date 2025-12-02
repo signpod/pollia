@@ -15,7 +15,6 @@ export function SurveyScale({
   updateCanGoNext,
   onAnswerChange,
   surveyResponse,
-  hasShownToastsRef,
 }: QuestionStepContentProps) {
   const { isScaleValueChanged, scaleValue, handleScaleValueChange } = useSurveyScaleValue(
     questionData.id,
@@ -36,7 +35,6 @@ export function SurveyScale({
       onPrevious={onPrevious}
       onNext={onNext}
       nextButtonText={nextButtonText}
-      hasShownToastsRef={hasShownToastsRef}
     >
       <SurveyLikertScale value={scaleValue} onChange={handleScaleValueChange}>
         <SurveyLikertScale.Thumb value={scaleValue} />
