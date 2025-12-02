@@ -11,9 +11,11 @@ export interface ModalConfig {
   description: string;
   confirmText?: string;
   cancelText?: string;
-  onConfirm?: () => void;
+  onConfirm?: () => void | Promise<void>;
   onCancel?: () => void;
   showCancelButton?: boolean;
+  confirmButtonIsLoading?: boolean;
+  cancelButtonIsLoading?: boolean;
 }
 
 interface ModalContextType {
@@ -55,11 +57,27 @@ export function ModalProvider({ children }: ModalProviderProps) {
 
   const close = useCallback(() => {
     setIsOpen(false);
+    setModalConfig(prev => ({
+      ...prev,
+      confirmButtonIsLoading: false,
+      cancelButtonIsLoading: false,
+    }));
   }, []);
 
-  const handleConfirm = useCallback(() => {
-    modalConfig.onConfirm?.();
-    close();
+  const handleConfirm = useCallback(async () => {
+    const result = modalConfig.onConfirm?.();
+    if (result instanceof Promise) {
+      setModalConfig(prev => ({ ...prev, confirmButtonIsLoading: true }));
+      try {
+        await result;
+        close();
+      } catch (error) {
+        console.error("❌ Modal onConfirm 에러 발생:", error);
+        setModalConfig(prev => ({ ...prev, confirmButtonIsLoading: false }));
+      }
+    } else {
+      close();
+    }
   }, [modalConfig, close]);
 
   const handleCancel = useCallback(() => {
@@ -83,14 +101,20 @@ export function ModalProvider({ children }: ModalProviderProps) {
           >
             <div className="flex flex-col items-center gap-2">
               <Typo.MainTitle size="small">{modalConfig.title}</Typo.MainTitle>
-              <Typo.Body size="large" className="text-center text-gray-600">
+              <Typo.Body size="large" className="text-center text-gray-600 whitespace-pre-line">
                 {modalConfig.description}
               </Typo.Body>
             </div>
 
             <div className="flex w-full gap-3">
               {modalConfig.showCancelButton && (
-                <Button variant="secondary" fullWidth onClick={handleCancel} className="flex-1">
+                <Button
+                  variant="secondary"
+                  fullWidth
+                  onClick={handleCancel}
+                  className="flex-1"
+                  loading={modalConfig.cancelButtonIsLoading}
+                >
                   {modalConfig.cancelText || "취소"}
                 </Button>
               )}
@@ -99,6 +123,7 @@ export function ModalProvider({ children }: ModalProviderProps) {
                 fullWidth
                 onClick={handleConfirm}
                 className={modalConfig.showCancelButton ? "flex-1" : "w-full"}
+                loading={modalConfig.confirmButtonIsLoading}
               >
                 {modalConfig.confirmText}
               </Button>
