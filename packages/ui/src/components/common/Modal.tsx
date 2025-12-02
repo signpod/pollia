@@ -83,7 +83,7 @@ export function ModalProvider({ children }: ModalProviderProps) {
           >
             <div className="flex flex-col items-center gap-2">
               <Typo.MainTitle size="small">{modalConfig.title}</Typo.MainTitle>
-              <Typo.Body size="large" className="text-center text-gray-600">
+              <Typo.Body size="large" className="text-center text-gray-600 whitespace-pre-line">
                 {modalConfig.description}
               </Typo.Body>
             </div>
