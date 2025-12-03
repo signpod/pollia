@@ -3,6 +3,7 @@ import { toast } from "@/components/common/Toast";
 import { ROUTES } from "@/constants/routes";
 import { SURVEY_TOAST_MESSAGE } from "@/constants/surveyMessages";
 import { ExtendedQuestionStepConfig, createQuestionSteps } from "@/constants/surveyQuestion";
+import { usePreventBack } from "@/hooks/common/usePreventBack";
 import {
   useReadSurveyResponseForSurvey,
   useStartSurveyResponse,
@@ -261,31 +262,19 @@ function SurveyQuestionRenderer({
     }
   }, [isFirstStep, goBack, showExitConfirmModal]);
 
-  useEffect(() => {
-    const currentUrl = window.location.pathname + window.location.search;
-    window.history.replaceState({ ...window.history.state, fromSurveyQuestion: true }, "");
-    window.history.pushState({ ...window.history.state, preventBack: true }, "", currentUrl);
-
-    const handlePopState = (event: PopStateEvent) => {
+  usePreventBack({
+    onPopState: () => {
       if (isExitingRef.current) {
         return;
       }
-      if (event.state?.fromSurveyQuestion) {
-        window.history.pushState({ ...window.history.state, preventBack: true }, "", currentUrl);
-        if (isFirstStep) {
-          showExitConfirmModal();
-        } else {
-          goBack();
-        }
+      if (isFirstStep) {
+        showExitConfirmModal();
+      } else {
+        goBack();
       }
-    };
-
-    window.addEventListener("popstate", handlePopState);
-
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, [showExitConfirmModal, isFirstStep, goBack]);
+    },
+    checkState: state => state?.fromSurveyQuestion === true,
+  });
 
   const isInitializing = isStarting || !responseId;
 
