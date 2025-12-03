@@ -1,6 +1,6 @@
 "use client";
 
-import { createSurvey } from "@/actions/survey/create";
+import { createSurvey } from "@/actions/mission";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
 import type { CreateSurveyRequest, CreateSurveyResponse } from "@/types/dto";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

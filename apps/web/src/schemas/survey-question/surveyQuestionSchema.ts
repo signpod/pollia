@@ -12,9 +12,9 @@ const imageUrlSchema = z.url({ message: "올바른 URL 형식이 아닙니다." 
 
 const orderSchema = z.number().int("순서는 정수여야 합니다.").min(0, "순서는 0 이상이어야 합니다.");
 
-const surveyIdSchema = z.string().min(1, "설문조사 ID가 필요합니다.").optional();
+const missionIdSchema = z.string().min(1, "미션 ID가 필요합니다.").optional();
 
-const questionOptionSchema = z.object({
+const actionOptionSchema = z.object({
   title: z.string().min(1, "항목 제목을 입력해주세요.").trim(),
   description: z.string().optional(),
   imageUrl: imageUrlSchema,
@@ -22,18 +22,18 @@ const questionOptionSchema = z.object({
   imageFileUploadId: z.string().optional(),
 });
 
-const baseQuestionSchema = z.object({
-  surveyId: surveyIdSchema,
+const baseActionSchema = z.object({
+  missionId: missionIdSchema,
   title: titleSchema,
   description: descriptionSchema,
   imageUrl: imageUrlSchema,
   order: orderSchema,
 });
 
-export const multipleChoiceInputSchema = baseQuestionSchema
+export const multipleChoiceInputSchema = baseActionSchema
   .extend({
     maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다."),
-    options: z.array(questionOptionSchema).min(2, "최소 2개 이상의 항목이 필요합니다."),
+    options: z.array(actionOptionSchema).min(2, "최소 2개 이상의 항목이 필요합니다."),
   })
   .refine(
     data => {
@@ -50,11 +50,11 @@ export const multipleChoiceInputSchema = baseQuestionSchema
     { message: "선택 가능 개수는 유효한 항목 개수를 초과할 수 없습니다.", path: ["maxSelections"] },
   );
 
-export const scaleInputSchema = baseQuestionSchema;
+export const scaleInputSchema = baseActionSchema;
 
-export const subjectiveInputSchema = baseQuestionSchema;
+export const subjectiveInputSchema = baseActionSchema;
 
-export const eitherOrInputSchema = baseQuestionSchema;
+export const eitherOrInputSchema = baseActionSchema;
 
 export const questionUpdateSchema = z
   .object({
@@ -72,5 +72,5 @@ export type MultipleChoiceInput = z.infer<typeof multipleChoiceInputSchema>;
 export type ScaleInput = z.infer<typeof scaleInputSchema>;
 export type SubjectiveInput = z.infer<typeof subjectiveInputSchema>;
 export type EitherOrInput = z.infer<typeof eitherOrInputSchema>;
-export type QuestionOption = z.infer<typeof questionOptionSchema>;
+export type ActionOption = z.infer<typeof actionOptionSchema>;
 export type QuestionUpdate = z.infer<typeof questionUpdateSchema>;

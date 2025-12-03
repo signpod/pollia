@@ -1,6 +1,6 @@
 "use client";
 
-import { startSurveyResponse } from "@/actions/survey-response";
+import { startSurveyResponse } from "@/actions/mission-response";
 import type { StartSurveyResponseRequest, StartSurveyResponseResponse } from "@/types/dto";
 import { useMutation } from "@tanstack/react-query";
 

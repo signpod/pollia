@@ -10,4 +10,3 @@ interface AdminHydrationBoundaryProps extends PropsWithChildren {
 export function AdminHydrationBoundary({ state, children }: AdminHydrationBoundaryProps) {
   return <HydrationBoundary state={state}>{children}</HydrationBoundary>;
 }
-

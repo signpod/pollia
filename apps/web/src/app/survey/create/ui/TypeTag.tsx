@@ -1,7 +1,7 @@
 "use client";
 
 import { SURVEY_QUESTION_TYPE_LABELS } from "@/constants/survey";
-import { SurveyQuestionType } from "@prisma/client";
+import { ActionType } from "@prisma/client";
 import { Typo } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
 import { cva } from "class-variance-authority";
@@ -9,7 +9,7 @@ import { ComponentPropsWithoutRef, ElementType } from "react";
 
 type TypeTagOwnProps<C extends ElementType> = {
   as?: C;
-  type: SurveyQuestionType;
+  type: ActionType;
   selected?: boolean;
 };
 
