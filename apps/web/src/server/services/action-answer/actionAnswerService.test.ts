@@ -1,14 +1,14 @@
-import type { SurveyQuestionAnswerRepository } from "@/server/repositories/survey-question-answer/surveyQuestionAnswerRepository";
-import type { SurveyQuestionRepository } from "@/server/repositories/survey-question/surveyQuestionRepository";
-import type { SurveyResponseRepository } from "@/server/repositories/survey-response/surveyResponseRepository";
-import { SurveyQuestionType } from "@prisma/client";
-import { SurveyQuestionAnswerService } from "./surveyQuestionAnswerService";
+import type { ActionAnswerRepository } from "@/server/repositories/action-answer/actionAnswerRepository";
+import type { ActionRepository } from "@/server/repositories/action/actionRepository";
+import type { MissionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
+import { ActionType } from "@prisma/client";
+import { ActionAnswerService } from ".";
 
-describe("SurveyQuestionAnswerService", () => {
-  let service: SurveyQuestionAnswerService;
-  let mockAnswerRepo: jest.Mocked<SurveyQuestionAnswerRepository>;
-  let mockResponseRepo: jest.Mocked<SurveyResponseRepository>;
-  let mockQuestionRepo: jest.Mocked<SurveyQuestionRepository>;
+describe("ActionAnswerService", () => {
+  let service: ActionAnswerService;
+  let mockAnswerRepo: jest.Mocked<ActionAnswerRepository>;
+  let mockResponseRepo: jest.Mocked<MissionResponseRepository>;
+  let mockActionRepo: jest.Mocked<ActionRepository>;
 
   const mockUser = { id: "user1" };
   const now = new Date();
@@ -18,35 +18,35 @@ describe("SurveyQuestionAnswerService", () => {
       findById: jest.fn(),
       findByUserId: jest.fn(),
       findByResponseId: jest.fn(),
-      findByQuestionId: jest.fn(),
-      findByResponseAndQuestion: jest.fn(),
+      findByActionId: jest.fn(),
+      findByResponseAndAction: jest.fn(),
       create: jest.fn(),
       createMany: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
       deleteByResponseId: jest.fn(),
-      deleteByResponseAndQuestions: jest.fn(),
-    } as unknown as jest.Mocked<SurveyQuestionAnswerRepository>;
+      deleteByResponseAndActions: jest.fn(),
+    } as unknown as jest.Mocked<ActionAnswerRepository>;
 
     mockResponseRepo = {
       findById: jest.fn(),
-      findBySurveyAndUser: jest.fn(),
-      findBySurveyId: jest.fn(),
+      findByMissionAndUser: jest.fn(),
+      findByMissionId: jest.fn(),
       findByUserId: jest.fn(),
-      findCompletedBySurveyId: jest.fn(),
+      findCompletedByMissionId: jest.fn(),
       create: jest.fn(),
       updateCompletedAt: jest.fn(),
       delete: jest.fn(),
-      deleteBySurveyAndUser: jest.fn(),
-      countBySurveyId: jest.fn(),
-      countCompletedBySurveyId: jest.fn(),
-    } as unknown as jest.Mocked<SurveyResponseRepository>;
+      deleteByMissionAndUser: jest.fn(),
+      countByMissionId: jest.fn(),
+      countCompletedByMissionId: jest.fn(),
+    } as unknown as jest.Mocked<MissionResponseRepository>;
 
-    mockQuestionRepo = {
+    mockActionRepo = {
       findById: jest.fn(),
-    } as unknown as jest.Mocked<SurveyQuestionRepository>;
+    } as unknown as jest.Mocked<ActionRepository>;
 
-    service = new SurveyQuestionAnswerService(mockAnswerRepo, mockResponseRepo, mockQuestionRepo);
+    service = new ActionAnswerService(mockAnswerRepo, mockResponseRepo, mockActionRepo);
   });
 
   afterEach(() => {
@@ -59,12 +59,12 @@ describe("SurveyQuestionAnswerService", () => {
       const mockAnswer = {
         id: "answer1",
         responseId: "response1",
-        questionId: "question1",
+        actionId: "action1",
         optionId: "option1",
         textAnswer: null,
         scaleAnswer: null,
         createdAt: now,
-        response: { id: "response1", userId: "user1", surveyId: "survey1" },
+        response: { id: "response1", userId: "user1", missionId: "mission1" },
       };
       mockAnswerRepo.findById.mockResolvedValue(mockAnswer as never);
 
@@ -90,7 +90,7 @@ describe("SurveyQuestionAnswerService", () => {
       // Given
       const mockAnswer = {
         id: "answer1",
-        response: { id: "response1", userId: "other-user", surveyId: "survey1" },
+        response: { id: "response1", userId: "other-user", missionId: "mission1" },
       };
       mockAnswerRepo.findById.mockResolvedValue(mockAnswer as never);
 
@@ -119,7 +119,7 @@ describe("SurveyQuestionAnswerService", () => {
   describe("getAnswersByResponseId", () => {
     it("Response의 모든 Answer를 조회한다", async () => {
       // Given
-      const mockResponse = { id: "response1", userId: "user1", surveyId: "survey1" };
+      const mockResponse = { id: "response1", userId: "user1", missionId: "mission1" };
       const mockAnswers = [{ id: "answer1" }, { id: "answer2" }];
       mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
       mockAnswerRepo.findByResponseId.mockResolvedValue(mockAnswers as never);
@@ -157,26 +157,26 @@ describe("SurveyQuestionAnswerService", () => {
   describe("createAnswer", () => {
     it("객관식 Answer를 성공적으로 생성한다", async () => {
       // Given
-      const mockResponse = { id: "response1", userId: "user1", surveyId: "survey1" };
-      const mockQuestion = {
-        id: "question1",
-        surveyId: "survey1",
-        type: SurveyQuestionType.MULTIPLE_CHOICE,
+      const mockResponse = { id: "response1", userId: "user1", missionId: "mission1" };
+      const mockAction = {
+        id: "action1",
+        missionId: "mission1",
+        type: ActionType.MULTIPLE_CHOICE,
       };
       const mockCreatedAnswer = {
         id: "answer1",
         responseId: "response1",
-        questionId: "question1",
+        actionId: "action1",
         optionId: "option1",
       };
 
       mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
-      mockQuestionRepo.findById.mockResolvedValue(mockQuestion as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
       mockAnswerRepo.create.mockResolvedValue(mockCreatedAnswer as never);
 
       // When
       const result = await service.createAnswer(
-        { responseId: "response1", questionId: "question1", optionId: "option1" },
+        { responseId: "response1", questionId: "action1", optionId: "option1" },
         mockUser.id,
       );
 
@@ -187,17 +187,17 @@ describe("SurveyQuestionAnswerService", () => {
 
     it("척도 Answer를 성공적으로 생성한다", async () => {
       // Given
-      const mockResponse = { id: "response1", userId: "user1", surveyId: "survey1" };
-      const mockQuestion = { id: "question1", surveyId: "survey1", type: SurveyQuestionType.SCALE };
+      const mockResponse = { id: "response1", userId: "user1", missionId: "mission1" };
+      const mockAction = { id: "action1", missionId: "mission1", type: ActionType.SCALE };
       const mockCreatedAnswer = { id: "answer1", scaleAnswer: 4 };
 
       mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
-      mockQuestionRepo.findById.mockResolvedValue(mockQuestion as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
       mockAnswerRepo.create.mockResolvedValue(mockCreatedAnswer as never);
 
       // When
       const result = await service.createAnswer(
-        { responseId: "response1", questionId: "question1", scaleAnswer: 4 },
+        { responseId: "response1", questionId: "action1", scaleAnswer: 4 },
         mockUser.id,
       );
 
@@ -207,21 +207,21 @@ describe("SurveyQuestionAnswerService", () => {
 
     it("주관식 Answer를 성공적으로 생성한다", async () => {
       // Given
-      const mockResponse = { id: "response1", userId: "user1", surveyId: "survey1" };
-      const mockQuestion = {
-        id: "question1",
-        surveyId: "survey1",
-        type: SurveyQuestionType.SUBJECTIVE,
+      const mockResponse = { id: "response1", userId: "user1", missionId: "mission1" };
+      const mockAction = {
+        id: "action1",
+        missionId: "mission1",
+        type: ActionType.SUBJECTIVE,
       };
       const mockCreatedAnswer = { id: "answer1", textAnswer: "답변 내용" };
 
       mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
-      mockQuestionRepo.findById.mockResolvedValue(mockQuestion as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
       mockAnswerRepo.create.mockResolvedValue(mockCreatedAnswer as never);
 
       // When
       const result = await service.createAnswer(
-        { responseId: "response1", questionId: "question1", textAnswer: "답변 내용" },
+        { responseId: "response1", questionId: "action1", textAnswer: "답변 내용" },
         mockUser.id,
       );
 
@@ -229,32 +229,32 @@ describe("SurveyQuestionAnswerService", () => {
       expect(result).toEqual(mockCreatedAnswer);
     });
 
-    it("Question이 없으면 404 에러를 던진다", async () => {
+    it("Action이 없으면 404 에러를 던진다", async () => {
       // Given
       const mockResponse = { id: "response1", userId: "user1" };
       mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
-      mockQuestionRepo.findById.mockResolvedValue(null);
+      mockActionRepo.findById.mockResolvedValue(null);
 
       // When & Then
       await expect(
         service.createAnswer(
-          { responseId: "response1", questionId: "invalid-question", optionId: "option1" },
+          { responseId: "response1", questionId: "invalid-action", optionId: "option1" },
           mockUser.id,
         ),
-      ).rejects.toThrow("질문을 찾을 수 없습니다.");
+      ).rejects.toThrow("액션을 찾을 수 없습니다.");
     });
 
-    it("객관식 질문에 optionId 없으면 400 에러를 던진다", async () => {
+    it("객관식 액션에 optionId 없으면 400 에러를 던진다", async () => {
       // Given
       const mockResponse = { id: "response1", userId: "user1" };
-      const mockQuestion = { id: "question1", type: SurveyQuestionType.MULTIPLE_CHOICE };
+      const mockAction = { id: "action1", type: ActionType.MULTIPLE_CHOICE };
 
       mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
-      mockQuestionRepo.findById.mockResolvedValue(mockQuestion as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
 
       // When & Then
       await expect(
-        service.createAnswer({ responseId: "response1", questionId: "question1" }, mockUser.id),
+        service.createAnswer({ responseId: "response1", questionId: "action1" }, mockUser.id),
       ).rejects.toThrow("객관식 답변에는 선택지가 필요합니다.");
     });
 
@@ -265,7 +265,7 @@ describe("SurveyQuestionAnswerService", () => {
       // When & Then
       await expect(
         service.createAnswer(
-          { responseId: "invalid-response", questionId: "question1", optionId: "option1" },
+          { responseId: "invalid-response", questionId: "action1", optionId: "option1" },
           mockUser.id,
         ),
       ).rejects.toThrow("응답을 찾을 수 없습니다.");
@@ -277,20 +277,20 @@ describe("SurveyQuestionAnswerService", () => {
       // Given
       const mockResponse = {
         id: "response1",
-        surveyId: "survey1",
+        missionId: "mission1",
         userId: "user1",
         completedAt: null,
       };
-      const mockQuestions = [
-        { id: "q1", surveyId: "survey1", type: SurveyQuestionType.MULTIPLE_CHOICE },
-        { id: "q2", surveyId: "survey1", type: SurveyQuestionType.SCALE },
+      const mockActions = [
+        { id: "q1", missionId: "mission1", type: ActionType.MULTIPLE_CHOICE },
+        { id: "q2", missionId: "mission1", type: ActionType.SCALE },
       ];
 
       mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
-      mockQuestionRepo.findById
-        .mockResolvedValueOnce(mockQuestions[0] as never)
-        .mockResolvedValueOnce(mockQuestions[1] as never);
-      mockAnswerRepo.deleteByResponseAndQuestions.mockResolvedValue({ count: 0 });
+      mockActionRepo.findById
+        .mockResolvedValueOnce(mockActions[0] as never)
+        .mockResolvedValueOnce(mockActions[1] as never);
+      mockAnswerRepo.deleteByResponseAndActions.mockResolvedValue({ count: 0 });
       mockAnswerRepo.createMany.mockResolvedValue({ count: 3 });
 
       // When
@@ -300,10 +300,10 @@ describe("SurveyQuestionAnswerService", () => {
           answers: [
             {
               questionId: "q1",
-              type: SurveyQuestionType.MULTIPLE_CHOICE,
+              type: ActionType.MULTIPLE_CHOICE,
               selectedOptionIds: ["opt1", "opt2"],
             },
-            { questionId: "q2", type: SurveyQuestionType.SCALE, scaleValue: 4 },
+            { questionId: "q2", type: ActionType.SCALE, scaleValue: 4 },
           ],
         },
         mockUser.id,
@@ -325,50 +325,50 @@ describe("SurveyQuestionAnswerService", () => {
         service.submitAnswers(
           {
             responseId: "response1",
-            answers: [{ questionId: "q1", type: SurveyQuestionType.SCALE, scaleValue: 3 }],
+            answers: [{ questionId: "q1", type: ActionType.SCALE, scaleValue: 3 }],
           },
           mockUser.id,
         ),
       ).rejects.toThrow("이미 완료된 응답입니다.");
     });
 
-    it("다른 Survey의 질문이 포함되면 400 에러를 던진다", async () => {
+    it("다른 Mission의 액션이 포함되면 400 에러를 던진다", async () => {
       // Given
       const mockResponse = {
         id: "response1",
-        surveyId: "survey1",
+        missionId: "mission1",
         userId: "user1",
         completedAt: null,
       };
-      const mockQuestion = { id: "q1", surveyId: "other-survey", type: SurveyQuestionType.SCALE };
+      const mockAction = { id: "q1", missionId: "other-mission", type: ActionType.SCALE };
 
       mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
-      mockQuestionRepo.findById.mockResolvedValue(mockQuestion as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
 
       // When & Then
       await expect(
         service.submitAnswers(
           {
             responseId: "response1",
-            answers: [{ questionId: "q1", type: SurveyQuestionType.SCALE, scaleValue: 3 }],
+            answers: [{ questionId: "q1", type: ActionType.SCALE, scaleValue: 3 }],
           },
           mockUser.id,
         ),
-      ).rejects.toThrow("유효하지 않은 질문이 포함되어 있습니다.");
+      ).rejects.toThrow("유효하지 않은 액션이 포함되어 있습니다.");
     });
 
-    it("답변 타입이 질문 타입과 다르면 400 에러를 던진다", async () => {
+    it("답변 타입이 액션 타입과 다르면 400 에러를 던진다", async () => {
       // Given
       const mockResponse = {
         id: "response1",
-        surveyId: "survey1",
+        missionId: "mission1",
         userId: "user1",
         completedAt: null,
       };
-      const mockQuestion = { id: "q1", surveyId: "survey1", type: SurveyQuestionType.SCALE };
+      const mockAction = { id: "q1", missionId: "mission1", type: ActionType.SCALE };
 
       mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
-      mockQuestionRepo.findById.mockResolvedValue(mockQuestion as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
 
       // When & Then
       await expect(
@@ -378,14 +378,14 @@ describe("SurveyQuestionAnswerService", () => {
             answers: [
               {
                 questionId: "q1",
-                type: SurveyQuestionType.MULTIPLE_CHOICE,
+                type: ActionType.MULTIPLE_CHOICE,
                 selectedOptionIds: ["opt1"],
               },
             ],
           },
           mockUser.id,
         ),
-      ).rejects.toThrow("답변 타입이 질문 타입과 일치하지 않습니다.");
+      ).rejects.toThrow("답변 타입이 액션 타입과 일치하지 않습니다.");
     });
   });
 
@@ -394,15 +394,15 @@ describe("SurveyQuestionAnswerService", () => {
       // Given
       const mockAnswer = {
         id: "answer1",
-        questionId: "question1",
+        actionId: "action1",
         optionId: "option1",
         response: { userId: "user1" },
       };
-      const mockQuestion = { id: "question1", type: SurveyQuestionType.MULTIPLE_CHOICE };
+      const mockAction = { id: "action1", type: ActionType.MULTIPLE_CHOICE };
       const mockUpdatedAnswer = { ...mockAnswer, optionId: "option2" };
 
       mockAnswerRepo.findById.mockResolvedValue(mockAnswer as never);
-      mockQuestionRepo.findById.mockResolvedValue(mockQuestion as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
       mockAnswerRepo.update.mockResolvedValue(mockUpdatedAnswer as never);
 
       // When

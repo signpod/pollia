@@ -1,5 +1,6 @@
-import type { SurveyQuestionType } from "@prisma/client";
+import type { ActionType } from "@prisma/client";
 
+// 외부 API에서는 스키마를 따라 questionId를 받음
 export interface CreateAnswerInput {
   responseId: string;
   questionId: string;
@@ -12,7 +13,7 @@ export interface SubmitAnswersInput {
   responseId: string;
   answers: Array<{
     questionId: string;
-    type: SurveyQuestionType;
+    type: ActionType;
     selectedOptionIds?: string[];
     scaleValue?: number;
     textResponse?: string;

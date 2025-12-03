@@ -1,8 +1,8 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
-import { surveyQuestionAnswerService } from "@/server/services/survey-question-answer/surveyQuestionAnswerService";
-import type { UpdateAnswerInput } from "@/server/services/survey-question-answer/types";
+import { surveyQuestionAnswerService } from "@/server/services/action-answer";
+import type { UpdateAnswerInput } from "@/server/services/action-answer/types";
 import type { GetQuestionAnswerResponse, UpdateQuestionAnswerRequest } from "@/types/dto";
 
 function toUpdateAnswerInput(dto: UpdateQuestionAnswerRequest): UpdateAnswerInput {

@@ -3,17 +3,17 @@ import {
   questionAnswerUpdateSchema,
   submitAnswersSchema,
 } from "@/schemas/survey-question-answer";
-import { surveyQuestionAnswerRepository } from "@/server/repositories/survey-question-answer/surveyQuestionAnswerRepository";
-import { surveyQuestionRepository } from "@/server/repositories/survey-question/surveyQuestionRepository";
-import { surveyResponseRepository } from "@/server/repositories/survey-response/surveyResponseRepository";
-import { SurveyQuestionType } from "@prisma/client";
+import { actionAnswerRepository } from "@/server/repositories/action-answer/actionAnswerRepository";
+import { actionRepository } from "@/server/repositories/action/actionRepository";
+import { missionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
+import { ActionType } from "@prisma/client";
 import type { CreateAnswerInput, SubmitAnswersInput, UpdateAnswerInput } from "./types";
 
-export class SurveyQuestionAnswerService {
+export class ActionAnswerService {
   constructor(
-    private answerRepo = surveyQuestionAnswerRepository,
-    private responseRepo = surveyResponseRepository,
-    private questionRepo = surveyQuestionRepository,
+    private answerRepo = actionAnswerRepository,
+    private responseRepo = missionResponseRepository,
+    private actionRepo = actionRepository,
   ) {}
 
   async getAnswerById(answerId: string, userId: string) {
@@ -65,21 +65,22 @@ export class SurveyQuestionAnswerService {
     }
 
     const { responseId, questionId, optionId, textAnswer, scaleAnswer } = parseResult.data;
+    const actionId = questionId;
 
     await this.verifyResponseOwnership(responseId, userId);
 
-    const question = await this.questionRepo.findById(questionId);
-    if (!question) {
-      const error = new Error("질문을 찾을 수 없습니다.");
+    const action = await this.actionRepo.findById(actionId);
+    if (!action) {
+      const error = new Error("액션을 찾을 수 없습니다.");
       error.cause = 404;
       throw error;
     }
 
-    this.validateAnswerByQuestionType({ optionId, textAnswer, scaleAnswer }, question.type);
+    this.validateAnswerByActionType({ optionId, textAnswer, scaleAnswer }, action.type);
 
     return this.answerRepo.create({
       responseId,
-      questionId,
+      actionId,
       optionId,
       textAnswer,
       scaleAnswer,
@@ -114,19 +115,19 @@ export class SurveyQuestionAnswerService {
       throw error;
     }
 
-    const questionIds = parseResult.data.answers.map(a => a.questionId);
-    const questions = await Promise.all(questionIds.map(id => this.questionRepo.findById(id)));
+    const actionIds = parseResult.data.answers.map(a => a.questionId);
+    const actions = await Promise.all(actionIds.map(id => this.actionRepo.findById(id)));
 
-    for (let i = 0; i < questions.length; i++) {
-      const question = questions[i];
-      if (!question) {
-        const error = new Error("일부 질문을 찾을 수 없습니다.");
+    for (let i = 0; i < actions.length; i++) {
+      const action = actions[i];
+      if (!action) {
+        const error = new Error("일부 액션을 찾을 수 없습니다.");
         error.cause = 400;
         throw error;
       }
 
-      if (question.surveyId !== response.surveyId) {
-        const error = new Error("유효하지 않은 질문이 포함되어 있습니다.");
+      if (action.missionId !== response.missionId) {
+        const error = new Error("유효하지 않은 액션이 포함되어 있습니다.");
         error.cause = 400;
         throw error;
       }
@@ -134,42 +135,44 @@ export class SurveyQuestionAnswerService {
       const answer = parseResult.data.answers[i];
       if (!answer) continue;
 
-      if (answer.type !== question.type) {
-        const error = new Error("답변 타입이 질문 타입과 일치하지 않습니다.");
+      if (answer.type !== action.type) {
+        const error = new Error("답변 타입이 액션 타입과 일치하지 않습니다.");
         error.cause = 400;
         throw error;
       }
     }
 
-    await this.answerRepo.deleteByResponseAndQuestions(parseResult.data.responseId, questionIds);
+    await this.answerRepo.deleteByResponseAndActions(parseResult.data.responseId, actionIds);
 
     const answersToCreate: Array<{
       responseId: string;
-      questionId: string;
+      actionId: string;
       optionId?: string;
       textAnswer?: string;
       scaleAnswer?: number;
     }> = [];
 
     for (const answer of parseResult.data.answers) {
-      if (answer.type === SurveyQuestionType.MULTIPLE_CHOICE && answer.selectedOptionIds) {
+      const actionId = answer.questionId;
+
+      if (answer.type === ActionType.MULTIPLE_CHOICE && answer.selectedOptionIds) {
         for (const optionId of answer.selectedOptionIds) {
           answersToCreate.push({
             responseId: parseResult.data.responseId,
-            questionId: answer.questionId,
+            actionId,
             optionId,
           });
         }
-      } else if (answer.type === SurveyQuestionType.SCALE && answer.scaleValue !== undefined) {
+      } else if (answer.type === ActionType.SCALE && answer.scaleValue !== undefined) {
         answersToCreate.push({
           responseId: parseResult.data.responseId,
-          questionId: answer.questionId,
+          actionId,
           scaleAnswer: answer.scaleValue,
         });
-      } else if (answer.type === SurveyQuestionType.SUBJECTIVE && answer.textResponse) {
+      } else if (answer.type === ActionType.SUBJECTIVE && answer.textResponse) {
         answersToCreate.push({
           responseId: parseResult.data.responseId,
-          questionId: answer.questionId,
+          actionId,
           textAnswer: answer.textResponse,
         });
       }
@@ -194,9 +197,9 @@ export class SurveyQuestionAnswerService {
 
     const answer = await this.getAnswerById(answerId, userId);
 
-    const question = await this.questionRepo.findById(answer.questionId);
-    if (question) {
-      this.validateAnswerByQuestionType(parseResult.data, question.type);
+    const action = await this.actionRepo.findById(answer.actionId);
+    if (action) {
+      this.validateAnswerByActionType(parseResult.data, action.type);
     }
 
     return this.answerRepo.update(answerId, parseResult.data);
@@ -241,21 +244,21 @@ export class SurveyQuestionAnswerService {
     }
   }
 
-  private validateAnswerByQuestionType(
+  private validateAnswerByActionType(
     data: { optionId?: string; textAnswer?: string; scaleAnswer?: number },
-    questionType: SurveyQuestionType,
+    actionType: ActionType,
   ) {
-    if (questionType === SurveyQuestionType.MULTIPLE_CHOICE && !data.optionId) {
+    if (actionType === ActionType.MULTIPLE_CHOICE && !data.optionId) {
       const error = new Error("객관식 답변에는 선택지가 필요합니다.");
       error.cause = 400;
       throw error;
     }
-    if (questionType === SurveyQuestionType.SCALE && data.scaleAnswer === undefined) {
+    if (actionType === ActionType.SCALE && data.scaleAnswer === undefined) {
       const error = new Error("척도 값을 선택해주세요.");
       error.cause = 400;
       throw error;
     }
-    if (questionType === SurveyQuestionType.SUBJECTIVE && !data.textAnswer) {
+    if (actionType === ActionType.SUBJECTIVE && !data.textAnswer) {
       const error = new Error("주관식 답변은 필수입니다.");
       error.cause = 400;
       throw error;
@@ -263,4 +266,4 @@ export class SurveyQuestionAnswerService {
   }
 }
 
-export const surveyQuestionAnswerService = new SurveyQuestionAnswerService();
+export const actionAnswerService = new ActionAnswerService();

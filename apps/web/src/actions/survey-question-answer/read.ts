@@ -1,7 +1,7 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
-import { surveyQuestionAnswerService } from "@/server/services/survey-question-answer/surveyQuestionAnswerService";
+import { surveyQuestionAnswerService } from "@/server/services/action-answer";
 import type {
   GetAnswersByResponseResponse,
   GetAnswersByUserResponse,
