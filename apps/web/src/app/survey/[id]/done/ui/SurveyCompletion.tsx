@@ -1,6 +1,7 @@
 "use client";
 
 import { ROUTES } from "@/constants/routes";
+import { usePreventBack } from "@/hooks/common/usePreventBack";
 import { useReadSurvey } from "@/hooks/survey";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -61,22 +62,9 @@ export function SurveyCompletion() {
     };
   }, [showContent, refs]);
 
-  useEffect(() => {
-    const currentUrl = window.location.pathname + window.location.search;
-    window.history.replaceState({ ...window.history.state, fromSurveyQuestion: true }, "");
-    window.history.pushState({ ...window.history.state, preventBack: true }, "", currentUrl);
-
-    const handlePopState = () => {
-      window.history.pushState({ ...window.history.state, preventBack: true }, "", currentUrl);
-      router.push(ROUTES.SURVEY(params.id));
-    };
-
-    window.addEventListener("popstate", handlePopState);
-
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, [params.id, router]);
+  usePreventBack({
+    redirectTo: ROUTES.SURVEY(params.id),
+  });
 
   return (
     <div
