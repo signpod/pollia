@@ -1,8 +1,8 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
-import { surveyResponseService } from "@/server/services/survey-response/surveyResponseService";
-import type { StartResponseInput } from "@/server/services/survey-response/types";
+import { surveyResponseService } from "@/server/services/mission-response";
+import type { StartResponseInput } from "@/server/services/mission-response/types";
 import type {
   CompleteSurveyResponseRequest,
   CompleteSurveyResponseResponse,

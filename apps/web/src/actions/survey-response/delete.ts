@@ -1,7 +1,7 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
-import { surveyResponseService } from "@/server/services/survey-response/surveyResponseService";
+import { surveyResponseService } from "@/server/services/mission-response";
 import type { DeleteSurveyResponseResponse } from "@/types/dto";
 
 export async function deleteSurveyResponse(
