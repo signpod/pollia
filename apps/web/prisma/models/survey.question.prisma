@@ -1,27 +1,30 @@
-model SurveyQuestion {
-    id          String             @id @default(cuid())
+model Action {
+    id          String     @id @default(cuid())
     title       String
     description String?
-    imageUrl    String?            @map("image_url")
-    type        SurveyQuestionType
+    imageUrl    String?    @map("image_url")
+    type        ActionType
     order       Int
 
     maxSelections Int? @map("max_selections")
 
-    surveyId String?                @map("survey_id")
-    survey   Survey?                @relation(fields: [surveyId], references: [id], onDelete: Cascade)
-    options  SurveyQuestionOption[]
-    answers  SurveyQuestionAnswer[]
+    missionId String?        @map("mission_id")
+    mission   Mission?       @relation(fields: [missionId], references: [id], onDelete: Cascade)
+    options   ActionOption[]
+    answers   ActionAnswer[]
 
     createdAt DateTime @default(now()) @map("created_at")
     updatedAt DateTime @updatedAt @map("updated_at")
 
-    @@index([surveyId])
-    @@map("survey_questions")
+    @@index([missionId])
+    @@map("actions")
 }
 
-enum SurveyQuestionType {
+enum ActionType {
     MULTIPLE_CHOICE
     SCALE
+    RATING
+    TAG
     SUBJECTIVE
+    IMAGE
 }

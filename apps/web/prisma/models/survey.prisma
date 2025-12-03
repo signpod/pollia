@@ -1,4 +1,4 @@
-model Survey {
+model Mission {
     id               String    @id @default(cuid())
     title            String
     description      String?
@@ -9,12 +9,12 @@ model Survey {
     deadline         DateTime?
     isActive         Boolean   @default(true) @map("is_active")
 
-    creatorId String           @map("creator_id")
-    creator   User             @relation("SurveyCreator", fields: [creatorId], references: [id])
-    rewardId  String?          @map("reward_id")
-    reward    Reward?          @relation(fields: [rewardId], references: [id], onDelete: SetNull)
-    questions SurveyQuestion[]
-    responses SurveyResponse[]
+    creatorId String            @map("creator_id")
+    creator   User              @relation("MissionCreator", fields: [creatorId], references: [id])
+    rewardId  String?           @map("reward_id")
+    reward    Reward?           @relation(fields: [rewardId], references: [id], onDelete: SetNull)
+    questions Action[]
+    responses MissionResponse[]
 
     createdAt DateTime @default(now()) @map("created_at")
     updatedAt DateTime @updatedAt @map("updated_at")
@@ -22,5 +22,5 @@ model Survey {
     @@index([creatorId])
     @@index([isActive])
     @@index([rewardId])
-    @@map("surveys")
+    @@map("missions")
 }
