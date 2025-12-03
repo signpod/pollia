@@ -28,8 +28,8 @@ export function SurveyList() {
                 <Plus className="size-6 text-primary" />
               </div>
               <div className="text-center">
-                <p className="font-medium">새 설문조사 만들기</p>
-                <p className="text-sm text-muted-foreground">클릭하여 설문조사를 생성하세요</p>
+                <p className="font-medium">새 미션 만들기</p>
+                <p className="text-sm text-muted-foreground">클릭하여 미션을 생성하세요</p>
               </div>
             </div>
           </Card>
