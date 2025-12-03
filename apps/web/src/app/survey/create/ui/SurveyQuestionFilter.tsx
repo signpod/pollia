@@ -2,7 +2,7 @@
 
 import { selectedQuestionTypesAtom, toggleQuestionTypeAtom } from "@/atoms/survey/surveyAtoms";
 import { SURVEY_QUESTION_TYPES } from "@/constants/survey";
-import { SurveyQuestionType } from "@prisma/client";
+import { ActionType } from "@prisma/client";
 import { Typo } from "@repo/ui/components";
 import { useAtomValue, useSetAtom } from "jotai";
 import { FilterIcon } from "lucide-react";
@@ -12,7 +12,7 @@ export function SurveyQuestionFilter() {
   const selectedQuestionTypes = useAtomValue(selectedQuestionTypesAtom);
   const toggleQuestionType = useSetAtom(toggleQuestionTypeAtom);
 
-  const isSelected = (questionType: SurveyQuestionType) => {
+  const isSelected = (questionType: ActionType) => {
     return selectedQuestionTypes?.has(questionType);
   };
 
