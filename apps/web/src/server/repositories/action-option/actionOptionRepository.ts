@@ -1,33 +1,33 @@
 import prisma from "@/database/utils/prisma/client";
 import type { FileStatus } from "@prisma/client";
 
-export class SurveyQuestionOptionRepository {
+export class ActionOptionRepository {
   async findById(optionId: string) {
-    return prisma.surveyQuestionOption.findUnique({
+    return prisma.actionOption.findUnique({
       where: { id: optionId },
     });
   }
 
-  async findByQuestionId(questionId: string) {
-    return prisma.surveyQuestionOption.findMany({
-      where: { questionId },
+  async findByActionId(actionId: string) {
+    return prisma.actionOption.findMany({
+      where: { actionId },
       orderBy: { order: "asc" },
     });
   }
 
   async findMany(options?: {
-    questionIds?: string[];
+    actionIds?: string[];
     cursor?: string;
     limit?: number;
   }) {
     const limit = options?.limit ?? 10;
 
-    return prisma.surveyQuestionOption.findMany({
+    return prisma.actionOption.findMany({
       where: {
-        ...(options?.questionIds &&
-          options.questionIds.length > 0 && {
-            questionId: {
-              in: options.questionIds,
+        ...(options?.actionIds &&
+          options.actionIds.length > 0 && {
+            actionId: {
+              in: options.actionIds,
             },
           }),
       },
@@ -46,7 +46,7 @@ export class SurveyQuestionOptionRepository {
 
   async create(
     data: {
-      questionId: string;
+      actionId: string;
       title: string;
       description?: string;
       imageUrl?: string;
@@ -56,9 +56,9 @@ export class SurveyQuestionOptionRepository {
     userId: string,
   ) {
     return prisma.$transaction(async tx => {
-      const createdOption = await tx.surveyQuestionOption.create({
+      const createdOption = await tx.actionOption.create({
         data: {
-          questionId: data.questionId,
+          actionId: data.actionId,
           title: data.title,
           description: data.description || null,
           imageUrl: data.imageUrl,
@@ -86,7 +86,7 @@ export class SurveyQuestionOptionRepository {
   }
 
   async createMany(
-    questionId: string,
+    actionId: string,
     options: Array<{
       title: string;
       description?: string;
@@ -97,9 +97,9 @@ export class SurveyQuestionOptionRepository {
     userId: string,
   ) {
     return prisma.$transaction(async tx => {
-      await tx.surveyQuestionOption.createMany({
+      await tx.actionOption.createMany({
         data: options.map(option => ({
-          questionId,
+          actionId,
           title: option.title,
           description: option.description || null,
           imageUrl: option.imageUrl,
@@ -124,8 +124,8 @@ export class SurveyQuestionOptionRepository {
         });
       }
 
-      return tx.surveyQuestionOption.findMany({
-        where: { questionId },
+      return tx.actionOption.findMany({
+        where: { actionId },
         orderBy: { order: "asc" },
       });
     });
@@ -140,23 +140,23 @@ export class SurveyQuestionOptionRepository {
       order?: number;
     },
   ) {
-    return prisma.surveyQuestionOption.update({
+    return prisma.actionOption.update({
       where: { id: optionId },
       data,
     });
   }
 
   async delete(optionId: string) {
-    return prisma.surveyQuestionOption.delete({
+    return prisma.actionOption.delete({
       where: { id: optionId },
     });
   }
 
-  async deleteByQuestionId(questionId: string) {
-    return prisma.surveyQuestionOption.deleteMany({
-      where: { questionId },
+  async deleteByActionId(actionId: string) {
+    return prisma.actionOption.deleteMany({
+      where: { actionId },
     });
   }
 }
 
-export const surveyQuestionOptionRepository = new SurveyQuestionOptionRepository();
+export const actionOptionRepository = new ActionOptionRepository();

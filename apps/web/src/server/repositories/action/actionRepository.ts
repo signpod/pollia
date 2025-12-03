@@ -1,10 +1,10 @@
 import prisma from "@/database/utils/prisma/client";
-import type { FileStatus, SurveyQuestionType } from "@prisma/client";
+import type { ActionType, FileStatus } from "@prisma/client";
 
-export class SurveyQuestionRepository {
-  async findByIdWithOptions(questionId: string) {
-    return prisma.surveyQuestion.findUnique({
-      where: { id: questionId },
+export class ActionRepository {
+  async findByIdWithOptions(actionId: string) {
+    return prisma.action.findUnique({
+      where: { id: actionId },
       include: {
         options: {
           select: {
@@ -20,24 +20,24 @@ export class SurveyQuestionRepository {
     });
   }
 
-  async findById(questionId: string) {
-    return prisma.surveyQuestion.findUnique({
-      where: { id: questionId },
+  async findById(actionId: string) {
+    return prisma.action.findUnique({
+      where: { id: actionId },
     });
   }
 
-  async findQuestionIdsBySurveyId(surveyId: string) {
-    const questions = await prisma.surveyQuestion.findMany({
-      where: { surveyId },
+  async findActionIdsByMissionId(missionId: string) {
+    const actions = await prisma.action.findMany({
+      where: { missionId },
       select: { id: true },
       orderBy: { order: "asc" },
     });
-    return questions.map(q => q.id);
+    return actions.map(q => q.id);
   }
 
-  async findDetailsBySurveyId(surveyId: string) {
-    return prisma.surveyQuestion.findMany({
-      where: { surveyId },
+  async findDetailsByMissionId(missionId: string) {
+    return prisma.action.findMany({
+      where: { missionId },
       include: {
         options: {
           select: {
@@ -56,17 +56,17 @@ export class SurveyQuestionRepository {
 
   async findMany(options?: {
     searchQuery?: string;
-    selectedQuestionTypes?: SurveyQuestionType[];
+    selectedActionTypes?: ActionType[];
     isDraft?: boolean;
     cursor?: string;
     limit?: number;
   }) {
     const limit = options?.limit ?? 10;
 
-    return prisma.surveyQuestion.findMany({
+    return prisma.action.findMany({
       where: {
         ...(options?.isDraft && {
-          surveyId: null,
+          missionId: null,
         }),
         ...(options?.searchQuery && {
           title: {
@@ -74,10 +74,10 @@ export class SurveyQuestionRepository {
             mode: "insensitive",
           },
         }),
-        ...(options?.selectedQuestionTypes &&
-          options.selectedQuestionTypes.length > 0 && {
+        ...(options?.selectedActionTypes &&
+          options.selectedActionTypes.length > 0 && {
             type: {
-              in: options.selectedQuestionTypes,
+              in: options.selectedActionTypes,
             },
           }),
       },
@@ -91,7 +91,7 @@ export class SurveyQuestionRepository {
         order: true,
         createdAt: true,
         updatedAt: true,
-        surveyId: true,
+        missionId: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -108,11 +108,11 @@ export class SurveyQuestionRepository {
 
   async createMultipleChoice(
     data: {
-      surveyId?: string;
+      missionId?: string;
       title: string;
       description?: string;
       imageUrl?: string;
-      type: SurveyQuestionType;
+      type: ActionType;
       order: number;
       maxSelections?: number;
     },
@@ -126,9 +126,9 @@ export class SurveyQuestionRepository {
     userId: string,
   ) {
     return prisma.$transaction(async tx => {
-      const createdQuestion = await tx.surveyQuestion.create({
+      const createdAction = await tx.action.create({
         data: {
-          surveyId: data.surveyId ?? undefined,
+          missionId: data.missionId ?? undefined,
           title: data.title,
           description: data.description,
           imageUrl: data.imageUrl,
@@ -138,9 +138,9 @@ export class SurveyQuestionRepository {
         },
       });
 
-      await tx.surveyQuestionOption.createMany({
+      await tx.actionOption.createMany({
         data: options.map(option => ({
-          questionId: createdQuestion.id,
+          actionId: createdAction.id,
           title: option.title,
           description: option.description || null,
           imageUrl: option.imageUrl,
@@ -167,21 +167,21 @@ export class SurveyQuestionRepository {
         });
       }
 
-      return createdQuestion;
+      return createdAction;
     });
   }
 
   async create(data: {
-    surveyId?: string;
+    missionId?: string;
     title: string;
     description?: string;
     imageUrl?: string;
-    type: SurveyQuestionType;
+    type: ActionType;
     order: number;
   }) {
-    return prisma.surveyQuestion.create({
+    return prisma.action.create({
       data: {
-        surveyId: data.surveyId ?? undefined,
+        missionId: data.missionId ?? undefined,
         title: data.title,
         description: data.description,
         imageUrl: data.imageUrl,
@@ -192,7 +192,7 @@ export class SurveyQuestionRepository {
   }
 
   async update(
-    questionId: string,
+    actionId: string,
     data: {
       title?: string;
       description?: string;
@@ -201,17 +201,17 @@ export class SurveyQuestionRepository {
       maxSelections?: number;
     },
   ) {
-    return prisma.surveyQuestion.update({
-      where: { id: questionId },
+    return prisma.action.update({
+      where: { id: actionId },
       data,
     });
   }
 
-  async delete(questionId: string) {
-    return prisma.surveyQuestion.delete({
-      where: { id: questionId },
+  async delete(actionId: string) {
+    return prisma.action.delete({
+      where: { id: actionId },
     });
   }
 }
 
-export const surveyQuestionRepository = new SurveyQuestionRepository();
+export const actionRepository = new ActionRepository();

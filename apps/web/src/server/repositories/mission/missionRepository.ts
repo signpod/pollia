@@ -3,26 +3,26 @@ import type { SortOrderType } from "@/types/common/sort";
 import { Prisma } from "@prisma/client";
 
 /**
- * Survey Repository
- * Survey 도메인의 데이터 접근 계층
+ * Mission Repository
+ * Mission 도메인의 데이터 접근 계층
  */
-export class SurveyRepository {
+export class MissionRepository {
   /**
-   * Survey ID로 Survey 조회
-   * @param surveyId - Survey ID
-   * @returns Survey 또는 null
+   * Mission ID로 Mission 조회
+   * @param missionId - Mission ID
+   * @returns Mission 또는 null
    */
-  async findById(surveyId: string) {
-    return prisma.survey.findUnique({
-      where: { id: surveyId },
+  async findById(missionId: string) {
+    return prisma.mission.findUnique({
+      where: { id: missionId },
     });
   }
 
   /**
-   * User ID로 Survey 목록 조회
+   * User ID로 Mission 목록 조회
    * @param userId - User ID
    * @param options - 조회 옵션
-   * @returns Survey 목록
+   * @returns Mission 목록
    */
   async findByUserId(
     userId: string,
@@ -34,7 +34,7 @@ export class SurveyRepository {
   ) {
     const limit = options?.limit ?? 10;
 
-    return prisma.survey.findMany({
+    return prisma.mission.findMany({
       where: { creatorId: userId },
       select: {
         id: true,
@@ -60,27 +60,27 @@ export class SurveyRepository {
   }
 
   /**
-   * Survey ID로 Question ID 목록 조회
-   * @param surveyId - Survey ID
-   * @returns Question ID 배열
+   * Mission ID로 Action ID 목록 조회
+   * @param missionId - Mission ID
+   * @returns Action ID 배열
    */
-  async findQuestionIdsBySurveyId(surveyId: string) {
-    const questions = await prisma.surveyQuestion.findMany({
-      where: { surveyId },
+  async findActionIdsByMissionId(missionId: string) {
+    const actions = await prisma.action.findMany({
+      where: { missionId },
       select: { id: true },
       orderBy: { order: "asc" },
     });
-    return questions.map(q => q.id);
+    return actions.map(q => q.id);
   }
 
   /**
-   * Question ID로 Question 상세 조회 (options 포함)
-   * @param questionId - Question ID
-   * @returns Question 또는 null
+   * Action ID로 Action 상세 조회 (options 포함)
+   * @param actionId - Action ID
+   * @returns Action 또는 null
    */
-  async findQuestionById(questionId: string) {
-    return prisma.surveyQuestion.findUnique({
-      where: { id: questionId },
+  async findActionById(actionId: string) {
+    return prisma.action.findUnique({
+      where: { id: actionId },
       select: {
         id: true,
         title: true,
@@ -89,7 +89,7 @@ export class SurveyRepository {
         type: true,
         order: true,
         maxSelections: true,
-        surveyId: true,
+        missionId: true,
         options: {
           select: {
             id: true,
@@ -109,13 +109,13 @@ export class SurveyRepository {
   }
 
   /**
-   * Survey ID로 모든 Question 상세 조회 (options 포함)
-   * @param surveyId - Survey ID
-   * @returns Question 배열
+   * Mission ID로 모든 Action 상세 조회 (options 포함)
+   * @param missionId - Mission ID
+   * @returns Action 배열
    */
-  async findQuestionsBySurveyId(surveyId: string) {
-    return prisma.surveyQuestion.findMany({
-      where: { surveyId },
+  async findActionsByMissionId(missionId: string) {
+    return prisma.action.findMany({
+      where: { missionId },
       select: {
         id: true,
         title: true,
@@ -124,7 +124,7 @@ export class SurveyRepository {
         type: true,
         order: true,
         maxSelections: true,
-        surveyId: true,
+        missionId: true,
         options: {
           select: {
             id: true,
@@ -147,12 +147,12 @@ export class SurveyRepository {
   }
 
   /**
-   * Survey 생성 및 Question 연결
-   * @param data - Survey 생성 데이터
-   * @param questionIds - 연결할 Question ID 목록
-   * @returns 생성된 Survey
+   * Mission 생성 및 Action 연결
+   * @param data - Mission 생성 데이터
+   * @param actionIds - 연결할 Action ID 목록
+   * @returns 생성된 Mission
    */
-  async createWithQuestions(
+  async createWithActions(
     data: {
       title: string;
       description?: string;
@@ -162,10 +162,10 @@ export class SurveyRepository {
       estimatedMinutes?: number;
       creatorId: string;
     },
-    questionIds: string[],
+    actionIds: string[],
   ) {
     return prisma.$transaction(async tx => {
-      const createdSurvey = await tx.survey.create({
+      const createdMission = await tx.mission.create({
         data: {
           title: data.title,
           description: data.description,
@@ -177,34 +177,32 @@ export class SurveyRepository {
         },
       });
 
-      if (questionIds.length > 0) {
-        const whenClauses = questionIds.map(
-          (id, index) => Prisma.sql`WHEN ${id} THEN ${index + 1}`,
-        );
+      if (actionIds.length > 0) {
+        const whenClauses = actionIds.map((id, index) => Prisma.sql`WHEN ${id} THEN ${index + 1}`);
 
         await tx.$executeRaw`
-          UPDATE "survey_questions"
-          SET "survey_id" = ${createdSurvey.id},
+          UPDATE "actions"
+          SET "mission_id" = ${createdMission.id},
               "order" = CASE "id" ${Prisma.join(whenClauses, " ")} END
           WHERE "id" IN (${Prisma.join(
-            questionIds.map(id => Prisma.sql`${id}`),
+            actionIds.map(id => Prisma.sql`${id}`),
             ",",
           )})
         `;
       }
 
-      return createdSurvey;
+      return createdMission;
     });
   }
 
   /**
-   * Survey 수정
-   * @param surveyId - Survey ID
+   * Mission 수정
+   * @param missionId - Mission ID
    * @param data - 수정할 데이터
-   * @returns 수정된 Survey
+   * @returns 수정된 Mission
    */
   async update(
-    surveyId: string,
+    missionId: string,
     data: {
       title?: string;
       description?: string;
@@ -214,22 +212,22 @@ export class SurveyRepository {
       estimatedMinutes?: number;
     },
   ) {
-    return prisma.survey.update({
-      where: { id: surveyId },
+    return prisma.mission.update({
+      where: { id: missionId },
       data,
     });
   }
 
   /**
-   * Survey 삭제
-   * @param surveyId - Survey ID
-   * @returns 삭제된 Survey
+   * Mission 삭제
+   * @param missionId - Mission ID
+   * @returns 삭제된 Mission
    */
-  async delete(surveyId: string) {
-    return prisma.survey.delete({
-      where: { id: surveyId },
+  async delete(missionId: string) {
+    return prisma.mission.delete({
+      where: { id: missionId },
     });
   }
 }
 
-export const surveyRepository = new SurveyRepository();
+export const missionRepository = new MissionRepository();

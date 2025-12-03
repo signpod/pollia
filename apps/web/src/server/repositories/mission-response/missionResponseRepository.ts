@@ -1,11 +1,11 @@
 import prisma from "@/database/utils/prisma/client";
 
-export class SurveyResponseRepository {
+export class MissionResponseRepository {
   async findById(id: string) {
-    return prisma.surveyResponse.findUnique({
+    return prisma.missionResponse.findUnique({
       where: { id },
       include: {
-        survey: {
+        mission: {
           select: {
             id: true,
             title: true,
@@ -21,7 +21,7 @@ export class SurveyResponseRepository {
         },
         answers: {
           include: {
-            question: true,
+            action: true,
             option: true,
           },
         },
@@ -29,18 +29,18 @@ export class SurveyResponseRepository {
     });
   }
 
-  async findBySurveyAndUser(surveyId: string, userId: string) {
-    return prisma.surveyResponse.findUnique({
+  async findByMissionAndUser(missionId: string, userId: string) {
+    return prisma.missionResponse.findUnique({
       where: {
-        surveyId_userId: {
-          surveyId,
+        missionId_userId: {
+          missionId,
           userId,
         },
       },
       include: {
         answers: {
           include: {
-            question: true,
+            action: true,
             option: true,
           },
         },
@@ -48,9 +48,9 @@ export class SurveyResponseRepository {
     });
   }
 
-  async findBySurveyId(surveyId: string) {
-    return prisma.surveyResponse.findMany({
-      where: { surveyId },
+  async findByMissionId(missionId: string) {
+    return prisma.missionResponse.findMany({
+      where: { missionId },
       include: {
         user: {
           select: {
@@ -68,10 +68,10 @@ export class SurveyResponseRepository {
   }
 
   async findByUserId(userId: string) {
-    return prisma.surveyResponse.findMany({
+    return prisma.missionResponse.findMany({
       where: { userId },
       include: {
-        survey: {
+        mission: {
           select: {
             id: true,
             title: true,
@@ -86,10 +86,10 @@ export class SurveyResponseRepository {
     });
   }
 
-  async findCompletedBySurveyId(surveyId: string) {
-    return prisma.surveyResponse.findMany({
+  async findCompletedByMissionId(missionId: string) {
+    return prisma.missionResponse.findMany({
       where: {
-        surveyId,
+        missionId,
         completedAt: { not: null },
       },
       include: {
@@ -103,15 +103,15 @@ export class SurveyResponseRepository {
     });
   }
 
-  async create(data: { surveyId: string; userId: string }) {
-    return prisma.surveyResponse.create({
+  async create(data: { missionId: string; userId: string }) {
+    return prisma.missionResponse.create({
       data: {
-        surveyId: data.surveyId,
+        missionId: data.missionId,
         userId: data.userId,
         startedAt: new Date(),
       },
       include: {
-        survey: {
+        mission: {
           select: {
             id: true,
             title: true,
@@ -122,7 +122,7 @@ export class SurveyResponseRepository {
   }
 
   async updateCompletedAt(id: string) {
-    return prisma.surveyResponse.update({
+    return prisma.missionResponse.update({
       where: { id },
       data: {
         completedAt: new Date(),
@@ -131,34 +131,34 @@ export class SurveyResponseRepository {
   }
 
   async delete(id: string) {
-    return prisma.surveyResponse.delete({
+    return prisma.missionResponse.delete({
       where: { id },
     });
   }
 
-  async deleteBySurveyAndUser(surveyId: string, userId: string) {
-    return prisma.surveyResponse.deleteMany({
+  async deleteByMissionAndUser(missionId: string, userId: string) {
+    return prisma.missionResponse.deleteMany({
       where: {
-        surveyId,
+        missionId,
         userId,
       },
     });
   }
 
-  async countBySurveyId(surveyId: string) {
-    return prisma.surveyResponse.count({
-      where: { surveyId },
+  async countByMissionId(missionId: string) {
+    return prisma.missionResponse.count({
+      where: { missionId },
     });
   }
 
-  async countCompletedBySurveyId(surveyId: string) {
-    return prisma.surveyResponse.count({
+  async countCompletedByMissionId(missionId: string) {
+    return prisma.missionResponse.count({
       where: {
-        surveyId,
+        missionId,
         completedAt: { not: null },
       },
     });
   }
 }
 
-export const surveyResponseRepository = new SurveyResponseRepository();
+export const missionResponseRepository = new MissionResponseRepository();

@@ -1,17 +1,17 @@
 import prisma from "@/database/utils/prisma/client";
 
-export class SurveyQuestionAnswerRepository {
+export class ActionAnswerRepository {
   async findById(id: string) {
-    return prisma.surveyQuestionAnswer.findUnique({
+    return prisma.actionAnswer.findUnique({
       where: { id },
       include: {
-        question: true,
+        action: true,
         option: true,
         response: {
           select: {
             id: true,
             userId: true,
-            surveyId: true,
+            missionId: true,
           },
         },
       },
@@ -19,10 +19,10 @@ export class SurveyQuestionAnswerRepository {
   }
 
   async findByResponseId(responseId: string) {
-    return prisma.surveyQuestionAnswer.findMany({
+    return prisma.actionAnswer.findMany({
       where: { responseId },
       include: {
-        question: true,
+        action: true,
         option: true,
       },
       orderBy: {
@@ -32,19 +32,19 @@ export class SurveyQuestionAnswerRepository {
   }
 
   async findByUserId(userId: string) {
-    return prisma.surveyQuestionAnswer.findMany({
+    return prisma.actionAnswer.findMany({
       where: {
         response: {
           userId,
         },
       },
       include: {
-        question: true,
+        action: true,
         option: true,
         response: {
           select: {
             id: true,
-            surveyId: true,
+            missionId: true,
           },
         },
       },
@@ -54,9 +54,9 @@ export class SurveyQuestionAnswerRepository {
     });
   }
 
-  async findByQuestionId(questionId: string) {
-    return prisma.surveyQuestionAnswer.findMany({
-      where: { questionId },
+  async findByActionId(actionId: string) {
+    return prisma.actionAnswer.findMany({
+      where: { actionId },
       include: {
         response: {
           select: {
@@ -68,11 +68,11 @@ export class SurveyQuestionAnswerRepository {
     });
   }
 
-  async findByResponseAndQuestion(responseId: string, questionId: string) {
-    return prisma.surveyQuestionAnswer.findMany({
+  async findByResponseAndAction(responseId: string, actionId: string) {
+    return prisma.actionAnswer.findMany({
       where: {
         responseId,
-        questionId,
+        actionId,
       },
       include: {
         option: true,
@@ -82,15 +82,15 @@ export class SurveyQuestionAnswerRepository {
 
   async create(data: {
     responseId: string;
-    questionId: string;
+    actionId: string;
     optionId?: string;
     textAnswer?: string;
     scaleAnswer?: number;
   }) {
-    return prisma.surveyQuestionAnswer.create({
+    return prisma.actionAnswer.create({
       data,
       include: {
-        question: true,
+        action: true,
         option: true,
       },
     });
@@ -99,13 +99,13 @@ export class SurveyQuestionAnswerRepository {
   async createMany(
     answers: Array<{
       responseId: string;
-      questionId: string;
+      actionId: string;
       optionId?: string;
       textAnswer?: string;
       scaleAnswer?: number;
     }>,
   ) {
-    return prisma.surveyQuestionAnswer.createMany({
+    return prisma.actionAnswer.createMany({
       data: answers,
     });
   }
@@ -118,36 +118,36 @@ export class SurveyQuestionAnswerRepository {
       scaleAnswer?: number;
     },
   ) {
-    return prisma.surveyQuestionAnswer.update({
+    return prisma.actionAnswer.update({
       where: { id },
       data,
       include: {
-        question: true,
+        action: true,
         option: true,
       },
     });
   }
 
   async delete(id: string) {
-    return prisma.surveyQuestionAnswer.delete({
+    return prisma.actionAnswer.delete({
       where: { id },
     });
   }
 
   async deleteByResponseId(responseId: string) {
-    return prisma.surveyQuestionAnswer.deleteMany({
+    return prisma.actionAnswer.deleteMany({
       where: { responseId },
     });
   }
 
-  async deleteByResponseAndQuestions(responseId: string, questionIds: string[]) {
-    return prisma.surveyQuestionAnswer.deleteMany({
+  async deleteByResponseAndActions(responseId: string, actionIds: string[]) {
+    return prisma.actionAnswer.deleteMany({
       where: {
         responseId,
-        questionId: { in: questionIds },
+        actionId: { in: actionIds },
       },
     });
   }
 }
 
-export const surveyQuestionAnswerRepository = new SurveyQuestionAnswerRepository();
+export const actionAnswerRepository = new ActionAnswerRepository();
