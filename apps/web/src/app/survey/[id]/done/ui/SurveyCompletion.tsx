@@ -1,6 +1,7 @@
 "use client";
 
 import { ROUTES } from "@/constants/routes";
+import { usePreventBack } from "@/hooks/common/usePreventBack";
 import { useReadSurvey } from "@/hooks/survey";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -60,6 +61,10 @@ export function SurveyCompletion() {
       timeline.kill();
     };
   }, [showContent, refs]);
+
+  usePreventBack({
+    redirectTo: ROUTES.SURVEY(params.id),
+  });
 
   return (
     <div
