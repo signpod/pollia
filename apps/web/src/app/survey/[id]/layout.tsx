@@ -1,6 +1,6 @@
-import { getSurvey } from "@/actions/survey";
-import { getSurveyQuestionIds } from "@/actions/survey-question";
-import { getMyResponseForSurvey } from "@/actions/survey-response";
+import { getSurveyQuestionIds } from "@/actions/action";
+import { getSurvey } from "@/actions/mission";
+import { getMyResponseForSurvey } from "@/actions/mission-response";
 import { getCurrentUser } from "@/actions/user";
 import Providers from "@/components/providers/QueryProvider";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";

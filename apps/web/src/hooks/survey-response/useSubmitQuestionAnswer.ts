@@ -1,6 +1,6 @@
 "use client";
 
-import { submitQuestionAnswers } from "@/actions/survey-question-answer";
+import { submitQuestionAnswers } from "@/actions/action-answer";
 import type { SurveyAnswerItem } from "@/types/dto";
 import { useMutation } from "@tanstack/react-query";
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { submitQuestionAnswers } from "@/actions/survey-question-answer";
-import { completeSurveyResponse } from "@/actions/survey-response";
+import { submitQuestionAnswers } from "@/actions/action-answer";
+import { completeSurveyResponse } from "@/actions/mission-response";
 import type { SubmitQuestionAnswersRequest, SubmitQuestionAnswersResponse } from "@/types/dto";
 import { useMutation } from "@tanstack/react-query";
 

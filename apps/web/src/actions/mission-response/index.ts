@@ -1,11 +1,11 @@
 import { completeMissionResponse, startMissionResponse } from "./create";
 import { deleteMissionResponse } from "./delete";
 import {
-  getMyResponseForMission,
-  getMyResponses,
   getMissionResponse,
   getMissionResponses,
   getMissionStats,
+  getMyResponseForMission,
+  getMyResponses,
 } from "./read";
 
 export const completeSurveyResponse = completeMissionResponse;
@@ -15,7 +15,6 @@ export const getMyResponseForSurvey = getMyResponseForMission;
 export const getSurveyResponse = getMissionResponse;
 export const getSurveyResponses = getMissionResponses;
 export const getSurveyStats = getMissionStats;
-
 
 export {
   completeMissionResponse,

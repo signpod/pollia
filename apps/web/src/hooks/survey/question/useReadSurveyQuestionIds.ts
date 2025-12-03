@@ -1,6 +1,6 @@
 "use client";
 
-import { getSurveyQuestionIds } from "@/actions/survey-question";
+import { getSurveyQuestionIds } from "@/actions/action";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
 import { useQuery } from "@tanstack/react-query";
 
