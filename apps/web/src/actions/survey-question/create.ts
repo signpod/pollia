@@ -1,13 +1,13 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
-import { surveyQuestionService } from "@/server/services/survey-question/surveyQuestionService";
+import { surveyQuestionService } from "@/server/services/action";
 import type {
   CreateEitherOrInput,
   CreateMultipleChoiceInput,
   CreateScaleInput,
   CreateSubjectiveInput,
-} from "@/server/services/survey-question/types";
+} from "@/server/services/action/types";
 import type {
   CreateEitherOrQuestionRequest,
   CreateEitherOrQuestionResponse,

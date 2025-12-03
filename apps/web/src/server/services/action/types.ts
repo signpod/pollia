@@ -1,7 +1,7 @@
-import type { SurveyQuestionType } from "@prisma/client";
+import type { ActionType } from "@prisma/client";
 
 export interface CreateMultipleChoiceInput {
-  surveyId?: string;
+  missionId?: string;
   title: string;
   description?: string;
   imageUrl?: string;
@@ -17,7 +17,7 @@ export interface CreateMultipleChoiceInput {
 }
 
 export interface CreateScaleInput {
-  surveyId?: string;
+  missionId?: string;
   title: string;
   description?: string;
   imageUrl?: string;
@@ -25,7 +25,7 @@ export interface CreateScaleInput {
 }
 
 export interface CreateSubjectiveInput {
-  surveyId?: string;
+  missionId?: string;
   title: string;
   description?: string;
   imageUrl?: string;
@@ -33,14 +33,14 @@ export interface CreateSubjectiveInput {
 }
 
 export interface CreateEitherOrInput {
-  surveyId?: string;
+  missionId?: string;
   title: string;
   description?: string;
   imageUrl?: string;
   order: number;
 }
 
-export interface UpdateQuestionInput {
+export interface UpdateActionInput {
   title?: string;
   description?: string;
   imageUrl?: string;
@@ -48,19 +48,19 @@ export interface UpdateQuestionInput {
   maxSelections?: number;
 }
 
-export interface GetQuestionsOptions {
+export interface GetActionsOptions {
   searchQuery?: string;
-  selectedQuestionTypes?: SurveyQuestionType[];
+  selectedActionTypes?: ActionType[];
   isDraft?: boolean;
   cursor?: string;
   limit?: number;
 }
 
-export interface QuestionCreatedResult {
+export interface ActionCreatedResult {
   id: string;
-  surveyId: string;
+  missionId: string;
   title: string;
-  type: SurveyQuestionType;
+  type: ActionType;
   order: number;
   createdAt: Date;
 }

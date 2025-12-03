@@ -1,7 +1,7 @@
 "use server";
 
-import { surveyQuestionService } from "@/server/services/survey-question/surveyQuestionService";
-import type { GetQuestionsOptions } from "@/server/services/survey-question/types";
+import { surveyQuestionService } from "@/server/services/action";
+import type { GetQuestionsOptions } from "@/server/services/action/types";
 import type {
   GetQuestionByIdResponse,
   GetSurveyQuestionIdsResponse,
