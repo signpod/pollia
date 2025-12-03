@@ -1,7 +1,7 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
-import { surveyService } from "@/server/services/survey/surveyService";
+import { surveyService } from "@/server/services/mission";
 
 export async function deleteSurvey(surveyId: string) {
   try {

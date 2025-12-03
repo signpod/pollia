@@ -1,6 +1,6 @@
 import type { SortOrderType } from "@/types/common/sort";
 
-export interface CreateSurveyInput {
+export interface CreateMissionInput {
   title: string;
   description?: string | null;
   target?: string | null;
@@ -10,7 +10,7 @@ export interface CreateSurveyInput {
   questionIds: string[];
 }
 
-export interface UpdateSurveyInput {
+export interface UpdateMissionInput {
   title?: string;
   description?: string;
   target?: string;
@@ -19,13 +19,13 @@ export interface UpdateSurveyInput {
   estimatedMinutes?: number;
 }
 
-export interface GetUserSurveysOptions {
+export interface GetUserMissionsOptions {
   cursor?: string;
   limit?: number;
   sortOrder?: SortOrderType;
 }
 
-export interface SurveyCreatedResult {
+export interface MissionCreatedResult {
   id: string;
   title: string;
   description: string | null;

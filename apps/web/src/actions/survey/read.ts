@@ -1,8 +1,8 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
-import { surveyService } from "@/server/services/survey/surveyService";
-import type { GetUserSurveysOptions } from "@/server/services/survey/types";
+import { surveyService } from "@/server/services/mission";
+import type { GetUserSurveysOptions } from "@/server/services/mission/types";
 import type { SortOrderType } from "@/types/common/sort";
 import type { GetSurveyResponse, GetUserSurveysResponse } from "@/types/dto";
 

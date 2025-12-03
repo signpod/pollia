@@ -1,8 +1,8 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
-import { surveyService } from "@/server/services/survey/surveyService";
-import type { UpdateSurveyInput } from "@/server/services/survey/types";
+import { surveyService } from "@/server/services/mission";
+import type { UpdateSurveyInput } from "@/server/services/mission/types";
 
 export interface UpdateSurveyRequest {
   title?: string;

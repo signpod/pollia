@@ -1,8 +1,8 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
-import { surveyService } from "@/server/services/survey/surveyService";
-import type { CreateSurveyInput } from "@/server/services/survey/types";
+import { surveyService } from "@/server/services/mission";
+import type { CreateSurveyInput } from "@/server/services/mission/types";
 import type { CreateSurveyRequest, CreateSurveyResponse } from "@/types/dto";
 
 function toCreateSurveyInput(dto: CreateSurveyRequest): CreateSurveyInput {
