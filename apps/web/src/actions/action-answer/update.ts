@@ -1,7 +1,7 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
-import { surveyQuestionAnswerService } from "@/server/services/action-answer";
+import { actionAnswerService } from "@/server/services/action-answer";
 import type { UpdateAnswerInput } from "@/server/services/action-answer/types";
 import type { GetQuestionAnswerResponse, UpdateQuestionAnswerRequest } from "@/types/dto";
 
@@ -13,17 +13,18 @@ function toUpdateAnswerInput(dto: UpdateQuestionAnswerRequest): UpdateAnswerInpu
   };
 }
 
-export async function updateQuestionAnswer(
+export async function updateAnswer(
   answerId: string,
   request: UpdateQuestionAnswerRequest,
 ): Promise<GetQuestionAnswerResponse> {
   try {
     const user = await requireAuth();
     const input = toUpdateAnswerInput(request);
-    const answer = await surveyQuestionAnswerService.updateAnswer(answerId, input, user.id);
-    return { data: answer };
+    const answer = await actionAnswerService.updateAnswer(answerId, input, user.id);
+    const data = { ...answer, questionId: answer.action.id };
+    return { data };
   } catch (error) {
-    console.error("updateQuestionAnswer error:", error);
+    console.error("updateAnswer error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }

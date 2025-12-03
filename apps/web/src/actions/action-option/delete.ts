@@ -1,13 +1,13 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
-import { surveyQuestionOptionService } from "@/server/services/action-option";
+import { actionOptionService } from "@/server/services/action-option";
 
 export async function deleteOption(optionId: string): Promise<{ message: string }> {
   try {
     const user = await requireAuth();
 
-    await surveyQuestionOptionService.deleteOption(optionId, user.id);
+    await actionOptionService.deleteOption(optionId, user.id);
 
     return { message: "옵션이 삭제되었습니다." };
   } catch (error) {
@@ -25,7 +25,7 @@ export async function deleteOptionsByQuestionId(questionId: string): Promise<{ m
   try {
     const user = await requireAuth();
 
-    await surveyQuestionOptionService.deleteOptionsByQuestionId(questionId, user.id);
+    await actionOptionService.deleteOptionsByActionId(questionId, user.id);
 
     return { message: "모든 옵션이 삭제되었습니다." };
   } catch (error) {

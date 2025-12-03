@@ -1,13 +1,13 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
-import { surveyQuestionService } from "@/server/services/action";
+import { actionService } from "@/server/services/action";
 
-export async function deleteQuestion(questionId: string) {
+export async function deleteAction(actionId: string) {
   try {
     const user = await requireAuth();
 
-    await surveyQuestionService.deleteQuestion(questionId, user.id);
+    await actionService.deleteAction(actionId, user.id);
 
     return { message: "질문이 삭제되었습니다." };
   } catch (error) {

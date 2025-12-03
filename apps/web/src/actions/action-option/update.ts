@@ -1,8 +1,8 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
-import { surveyQuestionOptionService } from "@/server/services/action-option";
-import type { SurveyQuestionOption } from "@prisma/client";
+import { actionOptionService } from "@/server/services/action-option";
+import type { ActionOption } from "@prisma/client";
 
 export async function updateOption(
   optionId: string,
@@ -12,11 +12,11 @@ export async function updateOption(
     imageUrl?: string;
     order?: number;
   },
-): Promise<{ data: SurveyQuestionOption }> {
+): Promise<{ data: ActionOption }> {
   try {
     const user = await requireAuth();
 
-    const updatedOption = await surveyQuestionOptionService.updateOption(optionId, data, user.id);
+    const updatedOption = await actionOptionService.updateOption(optionId, data, user.id);
 
     return { data: updatedOption };
   } catch (error) {

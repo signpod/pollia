@@ -1,7 +1,7 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
-import { surveyQuestionService } from "@/server/services/action";
+import { actionService } from "@/server/services/action";
 import type {
   CreateEitherOrInput,
   CreateMultipleChoiceInput,
@@ -23,7 +23,7 @@ function toMultipleChoiceInput(
   dto: CreateMultipleChoiceQuestionRequest,
 ): CreateMultipleChoiceInput {
   return {
-    surveyId: dto.surveyId,
+    missionId: dto.surveyId,
     title: dto.title,
     description: dto.description,
     imageUrl: dto.imageUrl,
@@ -41,7 +41,7 @@ function toMultipleChoiceInput(
 
 function toScaleInput(dto: CreateScaleQuestionRequest): CreateScaleInput {
   return {
-    surveyId: dto.surveyId,
+    missionId: dto.surveyId,
     title: dto.title,
     description: dto.description,
     imageUrl: dto.imageUrl,
@@ -51,7 +51,7 @@ function toScaleInput(dto: CreateScaleQuestionRequest): CreateScaleInput {
 
 function toSubjectiveInput(dto: CreateSubjectiveQuestionRequest): CreateSubjectiveInput {
   return {
-    surveyId: dto.surveyId,
+    missionId: dto.surveyId,
     title: dto.title,
     description: dto.description,
     imageUrl: dto.imageUrl,
@@ -61,7 +61,7 @@ function toSubjectiveInput(dto: CreateSubjectiveQuestionRequest): CreateSubjecti
 
 function toEitherOrInput(dto: CreateEitherOrQuestionRequest): CreateEitherOrInput {
   return {
-    surveyId: dto.surveyId,
+    missionId: dto.surveyId,
     title: dto.title,
     description: dto.description,
     imageUrl: dto.imageUrl,
@@ -69,16 +69,17 @@ function toEitherOrInput(dto: CreateEitherOrQuestionRequest): CreateEitherOrInpu
   };
 }
 
-export async function createMultipleChoiceQuestion(
+export async function createMultipleChoiceAction(
   request: CreateMultipleChoiceQuestionRequest,
 ): Promise<CreateMultipleChoiceQuestionResponse> {
   try {
     const user = await requireAuth();
     const input = toMultipleChoiceInput(request);
-    const question = await surveyQuestionService.createMultipleChoiceQuestion(input, user.id);
-    return { data: question };
+    const question = await actionService.createMultipleChoiceAction(input, user.id);
+    const data = { ...question, surveyId: question.missionId };
+    return { data };
   } catch (error) {
-    console.error("createMultipleChoiceQuestion error:", error);
+    console.error("createMultipleChoiceAction error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -88,16 +89,18 @@ export async function createMultipleChoiceQuestion(
   }
 }
 
-export async function createScaleQuestion(
+export async function createScaleAction(
   request: CreateScaleQuestionRequest,
 ): Promise<CreateScaleQuestionResponse> {
   try {
     const user = await requireAuth();
     const input = toScaleInput(request);
-    const question = await surveyQuestionService.createScaleQuestion(input, user.id);
-    return { data: question };
+    const question = await actionService.createScaleAction(input, user.id);
+    const data = { ...question, surveyId: question.missionId };
+
+    return { data };
   } catch (error) {
-    console.error("createScaleQuestion error:", error);
+    console.error("createScaleAction error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -107,16 +110,18 @@ export async function createScaleQuestion(
   }
 }
 
-export async function createSubjectiveQuestion(
+export async function createSubjectiveAction(
   request: CreateSubjectiveQuestionRequest,
 ): Promise<CreateSubjectiveQuestionResponse> {
   try {
     const user = await requireAuth();
     const input = toSubjectiveInput(request);
-    const question = await surveyQuestionService.createSubjectiveQuestion(input, user.id);
-    return { data: question };
+    const question = await actionService.createSubjectiveAction(input, user.id);
+
+    const data = { ...question, surveyId: question.missionId };
+    return { data };
   } catch (error) {
-    console.error("createSubjectiveQuestion error:", error);
+    console.error("createSubjectiveAction error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -126,16 +131,18 @@ export async function createSubjectiveQuestion(
   }
 }
 
-export async function createEitherOrQuestion(
+export async function createEitherOrAction(
   request: CreateEitherOrQuestionRequest,
 ): Promise<CreateEitherOrQuestionResponse> {
   try {
     const user = await requireAuth();
     const input = toEitherOrInput(request);
-    const question = await surveyQuestionService.createEitherOrQuestion(input, user.id);
-    return { data: question };
+    const question = await actionService.createEitherOrAction(input, user.id);
+    const data = { ...question, surveyId: question.missionId };
+
+    return { data };
   } catch (error) {
-    console.error("createEitherOrQuestion error:", error);
+    console.error("createEitherOrAction error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }

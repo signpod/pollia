@@ -1,39 +1,40 @@
 "use server";
 
-import { surveyQuestionService } from "@/server/services/action";
-import type { GetQuestionsOptions } from "@/server/services/action/types";
+import { actionService } from "@/server/services/action";
+import type { GetActionsOptions } from "@/server/services/action/types";
 import type {
   GetQuestionByIdResponse,
   GetSurveyQuestionIdsResponse,
   GetSurveyQuestionsDetailResponse,
   GetSurveyQuestionsResponse,
 } from "@/types/dto";
-import type { SurveyQuestionType } from "@prisma/client";
+import type { ActionType } from "@prisma/client";
 
-export interface GetSurveyQuestionsRequest {
+export interface GetMissionQuestionsRequest {
   searchQuery?: string;
-  selectedQuestionTypes?: SurveyQuestionType[];
+  selectedQuestionTypes?: ActionType[];
   isDraft?: boolean;
   cursor?: string;
   limit?: number;
 }
 
-function toGetQuestionsOptions(dto: GetSurveyQuestionsRequest): GetQuestionsOptions {
+function toGetActionsOptions(dto: GetMissionQuestionsRequest): GetActionsOptions {
   return {
     searchQuery: dto.searchQuery,
-    selectedQuestionTypes: dto.selectedQuestionTypes,
+    selectedActionTypes: dto.selectedQuestionTypes,
     isDraft: dto.isDraft,
     cursor: dto.cursor,
     limit: dto.limit,
   };
 }
 
-export async function getQuestionById(questionId: string): Promise<GetQuestionByIdResponse> {
+export async function getActionById(actionId: string): Promise<GetQuestionByIdResponse> {
   try {
-    const question = await surveyQuestionService.getQuestionById(questionId);
-    return { data: question };
+    const question = await actionService.getActionById(actionId);
+    const data = { ...question, surveyId: question.missionId };
+    return { data };
   } catch (error) {
-    console.error("getQuestionById error:", error);
+    console.error("getActionById error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -43,14 +44,15 @@ export async function getQuestionById(questionId: string): Promise<GetQuestionBy
   }
 }
 
-export async function getSurveyQuestionIds(
-  surveyId: string,
+export async function getMissionActionIds(
+  missionId: string,
 ): Promise<GetSurveyQuestionIdsResponse> {
   try {
-    const data = await surveyQuestionService.getSurveyQuestionIds(surveyId);
+    const { actionIds } = await actionService.getMissionActionIds(missionId);
+    const data = { questionIds: actionIds };
     return { data };
   } catch (error) {
-    console.error("getSurveyQuestionIds error:", error);
+    console.error("getMissionActionIds error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -60,14 +62,15 @@ export async function getSurveyQuestionIds(
   }
 }
 
-export async function getSurveyQuestionsDetail(
-  surveyId: string,
+export async function getMissionActionsDetail(
+  missionId: string,
 ): Promise<GetSurveyQuestionsDetailResponse> {
   try {
-    const questions = await surveyQuestionService.getSurveyQuestionsDetail(surveyId);
-    return { data: questions };
+    const questions = await actionService.getMissionActionsDetail(missionId);
+    const data = questions.map(question => ({ ...question, surveyId: question.missionId }));
+    return { data };
   } catch (error) {
-    console.error("getSurveyQuestionsDetail error:", error);
+    console.error("getMissionActionsDetail error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -77,16 +80,16 @@ export async function getSurveyQuestionsDetail(
   }
 }
 
-export async function getSurveyQuestions(
-  request?: GetSurveyQuestionsRequest,
+export async function getMissionActions(
+  request?: GetMissionQuestionsRequest,
 ): Promise<GetSurveyQuestionsResponse & { nextCursor?: string }> {
   try {
     const limit = request?.limit ?? 10;
     const options = request
-      ? toGetQuestionsOptions({ ...request, limit: limit + 1 })
+      ? toGetActionsOptions({ ...request, limit: limit + 1 })
       : { limit: limit + 1 };
 
-    const questions = await surveyQuestionService.getQuestions(options);
+    const questions = await actionService.getActions(options);
 
     let nextCursor: string | undefined = undefined;
     if (questions.length > limit) {
@@ -95,15 +98,15 @@ export async function getSurveyQuestions(
     }
 
     return {
-      data: questions,
+      data: questions.map(question => ({ ...question, surveyId: question.missionId })),
       nextCursor,
     };
   } catch (error) {
-    console.error("getSurveyQuestions error:", error);
+    console.error("getMissionActions error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error("설문 질문 목록을 불러올 수 없습니다.");
+    const serverError = new Error("미션 질문 목록을 불러올 수 없습니다.");
     serverError.cause = 500;
     throw serverError;
   }

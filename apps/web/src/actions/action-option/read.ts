@@ -1,11 +1,11 @@
 "use server";
 
-import { surveyQuestionOptionService } from "@/server/services/action-option";
-import type { SurveyQuestionOption } from "@prisma/client";
+import { actionOptionService } from "@/server/services/action-option";
+import type { ActionOption } from "@prisma/client";
 
-export async function getOptionById(optionId: string): Promise<{ data: SurveyQuestionOption }> {
+export async function getOptionById(optionId: string): Promise<{ data: ActionOption }> {
   try {
-    const option = await surveyQuestionOptionService.getOptionById(optionId);
+    const option = await actionOptionService.getOptionById(optionId);
     return { data: option };
   } catch (error) {
     console.error("❌ 옵션 조회 실패:", error);
@@ -20,9 +20,9 @@ export async function getOptionById(optionId: string): Promise<{ data: SurveyQue
 
 export async function getOptionsByQuestionId(
   questionId: string,
-): Promise<{ data: SurveyQuestionOption[] }> {
+): Promise<{ data: ActionOption[] }> {
   try {
-    const options = await surveyQuestionOptionService.getOptionsByQuestionId(questionId);
+    const options = await actionOptionService.getOptionsByActionId(questionId);
     return { data: options };
   } catch (error) {
     console.error("❌ 질문 옵션 조회 실패:", error);

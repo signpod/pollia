@@ -1,7 +1,7 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
-import { surveyQuestionAnswerService } from "@/server/services/action-answer";
+import { actionAnswerService } from "@/server/services/action-answer";
 import type { CreateAnswerInput, SubmitAnswersInput } from "@/server/services/action-answer/types";
 import type {
   CreateQuestionAnswerRequest,
@@ -33,16 +33,18 @@ function toSubmitAnswersInput(dto: SubmitQuestionAnswersRequest): SubmitAnswersI
   };
 }
 
-export async function createQuestionAnswer(
+export async function createAnswer(
   request: CreateQuestionAnswerRequest,
 ): Promise<CreateQuestionAnswerResponse> {
   try {
     const user = await requireAuth();
     const input = toCreateAnswerInput(request);
-    const answer = await surveyQuestionAnswerService.createAnswer(input, user.id);
-    return { data: answer };
+    const answer = await actionAnswerService.createAnswer(input, user.id);
+
+    const data = { ...answer, questionId: answer.action.id };
+    return { data };
   } catch (error) {
-    console.error("createQuestionAnswer error:", error);
+    console.error("createAnswer error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -52,16 +54,16 @@ export async function createQuestionAnswer(
   }
 }
 
-export async function submitQuestionAnswers(
+export async function submitAnswers(
   request: SubmitQuestionAnswersRequest,
 ): Promise<SubmitQuestionAnswersResponse> {
   try {
     const user = await requireAuth();
     const input = toSubmitAnswersInput(request);
-    const result = await surveyQuestionAnswerService.submitAnswers(input, user.id);
+    const result = await actionAnswerService.submitAnswers(input, user.id);
     return { data: result };
   } catch (error) {
-    console.error("submitQuestionAnswers error:", error);
+    console.error("submitAnswers error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }

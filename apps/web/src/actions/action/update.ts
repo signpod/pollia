@@ -1,8 +1,8 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
-import { surveyQuestionService } from "@/server/services/action";
-import type { UpdateQuestionInput } from "@/server/services/action/types";
+import { actionService } from "@/server/services/action";
+import type { UpdateActionInput } from "@/server/services/action/types";
 
 export interface UpdateQuestionRequest {
   title?: string;
@@ -12,7 +12,7 @@ export interface UpdateQuestionRequest {
   maxSelections?: number;
 }
 
-function toUpdateQuestionInput(dto: UpdateQuestionRequest): UpdateQuestionInput {
+function toUpdateActionInput(dto: UpdateQuestionRequest): UpdateActionInput {
   return {
     title: dto.title,
     description: dto.description,
@@ -22,14 +22,14 @@ function toUpdateQuestionInput(dto: UpdateQuestionRequest): UpdateQuestionInput 
   };
 }
 
-export async function updateQuestion(questionId: string, request: UpdateQuestionRequest) {
+export async function updateAction(actionId: string, request: UpdateQuestionRequest) {
   try {
     const user = await requireAuth();
-    const input = toUpdateQuestionInput(request);
-    const updatedQuestion = await surveyQuestionService.updateQuestion(questionId, input, user.id);
+    const input = toUpdateActionInput(request);
+    const updatedQuestion = await actionService.updateAction(actionId, input, user.id);
     return { data: updatedQuestion };
   } catch (error) {
-    console.error("updateQuestion error:", error);
+    console.error("updateAction error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }

@@ -1,7 +1,7 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
-import { surveyResponseService } from "@/server/services/mission-response";
+import { missionResponseService } from "@/server/services/mission-response";
 import type {
   GetMyResponsesResponse,
   GetSurveyResponseResponse,
@@ -9,13 +9,14 @@ import type {
   GetSurveyStatsResponse,
 } from "@/types/dto";
 
-export async function getSurveyResponse(responseId: string): Promise<GetSurveyResponseResponse> {
+export async function getMissionResponse(responseId: string): Promise<GetSurveyResponseResponse> {
   try {
     const user = await requireAuth();
-    const response = await surveyResponseService.getResponseById(responseId, user.id);
-    return { data: response };
+    const response = await missionResponseService.getResponseById(responseId, user.id);
+    const data = { ...response, surveyId: response.missionId };
+    return { data };
   } catch (error) {
-    console.error("getSurveyResponse error:", error);
+    console.error("getMissionResponse error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -25,15 +26,19 @@ export async function getSurveyResponse(responseId: string): Promise<GetSurveyRe
   }
 }
 
-export async function getMyResponseForSurvey(
-  surveyId: string,
+export async function getMyResponseForMission(
+  missionId: string,
 ): Promise<GetSurveyResponseResponse | { data: null }> {
   try {
     const user = await requireAuth();
-    const response = await surveyResponseService.getResponseBySurveyAndUser(surveyId, user.id);
-    return { data: response };
+    const response = await missionResponseService.getResponseByMissionAndUser(missionId, user.id);
+    if (!response) {
+      return { data: null };
+    }
+    const data = { ...response, surveyId: response.missionId };
+    return { data };
   } catch (error) {
-    console.error("getMyResponseForSurvey error:", error);
+    console.error("getMyResponseForMission error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -46,8 +51,9 @@ export async function getMyResponseForSurvey(
 export async function getMyResponses(): Promise<GetMyResponsesResponse> {
   try {
     const user = await requireAuth();
-    const responses = await surveyResponseService.getUserResponses(user.id);
-    return { data: responses };
+    const responses = await missionResponseService.getUserResponses(user.id);
+    const data = responses.map(response => ({ ...response, surveyId: response.missionId }));
+    return { data };
   } catch (error) {
     console.error("getMyResponses error:", error);
     if (error instanceof Error && error.cause) {
@@ -59,13 +65,14 @@ export async function getMyResponses(): Promise<GetMyResponsesResponse> {
   }
 }
 
-export async function getSurveyResponses(surveyId: string): Promise<GetSurveyResponsesResponse> {
+export async function getMissionResponses(missionId: string): Promise<GetSurveyResponsesResponse> {
   try {
     const user = await requireAuth();
-    const responses = await surveyResponseService.getSurveyResponses(surveyId, user.id);
-    return { data: responses };
+    const responses = await missionResponseService.getMissionResponses(missionId, user.id);
+    const data = responses.map(response => ({ ...response, surveyId: response.missionId }));
+    return { data };
   } catch (error) {
-    console.error("getSurveyResponses error:", error);
+    console.error("getMissionResponses error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -75,13 +82,13 @@ export async function getSurveyResponses(surveyId: string): Promise<GetSurveyRes
   }
 }
 
-export async function getSurveyStats(surveyId: string): Promise<GetSurveyStatsResponse> {
+export async function getMissionStats(missionId: string): Promise<GetSurveyStatsResponse> {
   try {
     const user = await requireAuth();
-    const stats = await surveyResponseService.getSurveyStats(surveyId, user.id);
+    const stats = await missionResponseService.getMissionStats(missionId, user.id);
     return { data: stats };
   } catch (error) {
-    console.error("getSurveyStats error:", error);
+    console.error("getMissionStats error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }

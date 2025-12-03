@@ -1,7 +1,7 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
-import { surveyResponseService } from "@/server/services/mission-response";
+import { missionResponseService } from "@/server/services/mission-response";
 import type { StartResponseInput } from "@/server/services/mission-response/types";
 import type {
   CompleteSurveyResponseRequest,
@@ -16,16 +16,17 @@ function toStartResponseInput(dto: StartSurveyResponseRequest): StartResponseInp
   };
 }
 
-export async function startSurveyResponse(
+export async function startMissionResponse(
   request: StartSurveyResponseRequest,
 ): Promise<StartSurveyResponseResponse> {
   try {
     const user = await requireAuth();
     const input = toStartResponseInput(request);
-    const response = await surveyResponseService.startResponse(input, user.id);
-    return { data: response };
+    const response = await missionResponseService.startResponse(input, user.id);
+    const data = { ...response, surveyId: response.missionId };
+    return { data };
   } catch (error) {
-    console.error("startSurveyResponse error:", error);
+    console.error("startMissionResponse error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -35,18 +36,19 @@ export async function startSurveyResponse(
   }
 }
 
-export async function completeSurveyResponse(
+export async function completeMissionResponse(
   request: CompleteSurveyResponseRequest,
 ): Promise<CompleteSurveyResponseResponse> {
   try {
     const user = await requireAuth();
-    const response = await surveyResponseService.completeResponse(
+    const response = await missionResponseService.completeResponse(
       { responseId: request.responseId },
       user.id,
     );
-    return { data: response };
+    const data = { ...response, surveyId: response.missionId };
+    return { data };
   } catch (error) {
-    console.error("completeSurveyResponse error:", error);
+    console.error("completeMissionResponse error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }

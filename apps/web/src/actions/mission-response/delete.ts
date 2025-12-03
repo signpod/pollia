@@ -1,18 +1,18 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
-import { surveyResponseService } from "@/server/services/mission-response";
+import { missionResponseService } from "@/server/services/mission-response";
 import type { DeleteSurveyResponseResponse } from "@/types/dto";
 
-export async function deleteSurveyResponse(
+export async function deleteMissionResponse(
   responseId: string,
 ): Promise<DeleteSurveyResponseResponse> {
   try {
     const user = await requireAuth();
-    await surveyResponseService.deleteResponse(responseId, user.id);
+    await missionResponseService.deleteResponse(responseId, user.id);
     return { message: "응답이 삭제되었습니다." };
   } catch (error) {
-    console.error("deleteSurveyResponse error:", error);
+    console.error("deleteMissionResponse error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }

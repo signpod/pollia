@@ -1,8 +1,8 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
-import { surveyQuestionOptionService } from "@/server/services/action-option";
-import type { SurveyQuestionOption } from "@prisma/client";
+import { actionOptionService } from "@/server/services/action-option";
+import type { ActionOption } from "@prisma/client";
 
 export async function createOption(data: {
   questionId: string;
@@ -11,11 +11,11 @@ export async function createOption(data: {
   imageUrl?: string;
   order: number;
   fileUploadId?: string;
-}): Promise<{ data: SurveyQuestionOption }> {
+}): Promise<{ data: ActionOption }> {
   try {
     const user = await requireAuth();
 
-    const option = await surveyQuestionOptionService.createOption(data, user.id);
+    const option = await actionOptionService.createOption(data, user.id);
 
     return { data: option };
   } catch (error) {
@@ -38,15 +38,11 @@ export async function createOptions(
     order: number;
     fileUploadId?: string;
   }>,
-): Promise<{ data: SurveyQuestionOption[] }> {
+): Promise<{ data: ActionOption[] }> {
   try {
     const user = await requireAuth();
 
-    const createdOptions = await surveyQuestionOptionService.createOptions(
-      questionId,
-      options,
-      user.id,
-    );
+    const createdOptions = await actionOptionService.createOptions(questionId, options, user.id);
 
     return { data: createdOptions };
   } catch (error) {

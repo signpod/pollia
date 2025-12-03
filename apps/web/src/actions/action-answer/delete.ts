@@ -1,15 +1,15 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
-import { surveyQuestionAnswerService } from "@/server/services/action-answer";
+import { actionAnswerService } from "@/server/services/action-answer";
 
-export async function deleteQuestionAnswer(answerId: string): Promise<{ message: string }> {
+export async function deleteAnswer(answerId: string): Promise<{ message: string }> {
   try {
     const user = await requireAuth();
-    await surveyQuestionAnswerService.deleteAnswer(answerId, user.id);
+    await actionAnswerService.deleteAnswer(answerId, user.id);
     return { message: "답변이 삭제되었습니다." };
   } catch (error) {
-    console.error("deleteQuestionAnswer error:", error);
+    console.error("deleteAnswer error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -22,7 +22,7 @@ export async function deleteQuestionAnswer(answerId: string): Promise<{ message:
 export async function deleteAnswersByResponse(responseId: string): Promise<{ message: string }> {
   try {
     const user = await requireAuth();
-    await surveyQuestionAnswerService.deleteAnswersByResponseId(responseId, user.id);
+    await actionAnswerService.deleteAnswersByResponseId(responseId, user.id);
     return { message: "답변들이 삭제되었습니다." };
   } catch (error) {
     console.error("deleteAnswersByResponse error:", error);
