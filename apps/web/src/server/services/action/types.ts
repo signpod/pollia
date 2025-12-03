@@ -1,0 +1,66 @@
+import type { ActionType } from "@prisma/client";
+
+export interface CreateMultipleChoiceInput {
+  missionId?: string;
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  maxSelections: number;
+  order: number;
+  options: {
+    title: string;
+    description?: string;
+    imageUrl?: string;
+    order: number;
+    imageFileUploadId?: string;
+  }[];
+}
+
+export interface CreateScaleInput {
+  missionId?: string;
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  order: number;
+}
+
+export interface CreateSubjectiveInput {
+  missionId?: string;
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  order: number;
+}
+
+export interface CreateEitherOrInput {
+  missionId?: string;
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  order: number;
+}
+
+export interface UpdateActionInput {
+  title?: string;
+  description?: string;
+  imageUrl?: string;
+  order?: number;
+  maxSelections?: number;
+}
+
+export interface GetActionsOptions {
+  searchQuery?: string;
+  selectedActionTypes?: ActionType[];
+  isDraft?: boolean;
+  cursor?: string;
+  limit?: number;
+}
+
+export interface ActionCreatedResult {
+  id: string;
+  missionId: string;
+  title: string;
+  type: ActionType;
+  order: number;
+  createdAt: Date;
+}

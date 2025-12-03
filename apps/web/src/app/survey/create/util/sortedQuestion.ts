@@ -1,7 +1,7 @@
 import { SurveyQuestionSummary } from "@/types/domain/survey";
-import { SurveyQuestionType } from "@prisma/client";
+import { ActionType } from "@prisma/client";
 
-const typeOrder: Record<SurveyQuestionType, number> = {
+const typeOrder: Record<ActionType, number> = {
   SCALE: 1,
   MULTIPLE_CHOICE: 2,
   SUBJECTIVE: 3,

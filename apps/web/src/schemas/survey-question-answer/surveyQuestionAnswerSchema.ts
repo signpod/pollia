@@ -1,4 +1,4 @@
-import { SurveyQuestionType } from "@prisma/client";
+import { ActionType } from "@prisma/client";
 import { z } from "zod";
 
 const responseIdSchema = z.string().min(1, "응답 ID가 필요합니다.");
@@ -19,7 +19,7 @@ const scaleAnswerSchema = z
   .min(1, "척도 값은 1~5 사이여야 합니다.")
   .max(5, "척도 값은 1~5 사이여야 합니다.");
 
-const questionTypeSchema = z.enum(SurveyQuestionType);
+const questionTypeSchema = z.enum(ActionType);
 
 export const questionAnswerInputSchema = z.object({
   responseId: responseIdSchema,
@@ -39,7 +39,7 @@ const submitAnswerItemSchema = z
   })
   .refine(
     data => {
-      if (data.type === SurveyQuestionType.MULTIPLE_CHOICE) {
+      if (data.type === ActionType.MULTIPLE_CHOICE) {
         return data.selectedOptionIds && data.selectedOptionIds.length > 0;
       }
       return true;
@@ -48,7 +48,7 @@ const submitAnswerItemSchema = z
   )
   .refine(
     data => {
-      if (data.type === SurveyQuestionType.SCALE) {
+      if (data.type === ActionType.SCALE) {
         return data.scaleValue !== undefined;
       }
       return true;
@@ -57,7 +57,7 @@ const submitAnswerItemSchema = z
   )
   .refine(
     data => {
-      if (data.type === SurveyQuestionType.SUBJECTIVE) {
+      if (data.type === ActionType.SUBJECTIVE) {
         return data.textResponse && data.textResponse.trim().length > 0;
       }
       return true;

@@ -1,21 +1,21 @@
-model SurveyQuestionAnswer {
-    id       String                @id @default(cuid())
-    optionId String?               @map("option_id")
-    option   SurveyQuestionOption? @relation(fields: [optionId], references: [id], onDelete: Cascade)
+model ActionAnswer {
+    id       String        @id @default(cuid())
+    optionId String?       @map("option_id")
+    option   ActionOption? @relation(fields: [optionId], references: [id], onDelete: Cascade)
 
     textAnswer  String? @map("text_answer")
     scaleAnswer Int?    @map("scale_answer")
 
-    questionId String         @map("question_id")
-    question   SurveyQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+    actionId String @map("action_id")
+    action   Action @relation(fields: [actionId], references: [id], onDelete: Cascade)
 
-    responseId String         @map("response_id")
-    response   SurveyResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+    responseId String          @map("response_id")
+    response   MissionResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
 
     createdAt DateTime @default(now()) @map("created_at")
 
-    @@unique([responseId, questionId, optionId])
-    @@index([questionId])
+    @@unique([responseId, actionId, optionId])
+    @@index([actionId])
     @@index([responseId])
-    @@map("survey_question_answers")
+    @@map("action_answers")
 }

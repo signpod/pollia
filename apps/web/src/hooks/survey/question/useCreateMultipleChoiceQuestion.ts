@@ -1,6 +1,6 @@
 "use client";
 
-import { createMultipleChoiceQuestion } from "@/actions/survey-question/create";
+import { createMultipleChoiceQuestion } from "@/actions/action";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
 import type {
   CreateMultipleChoiceQuestionRequest,

@@ -1,4 +1,4 @@
-import { getUserSurveys } from "@/actions/survey/read";
+import { getUserSurveys } from "@/actions/mission";
 import { getCurrentUser } from "@/actions/user/read";
 import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
 import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";

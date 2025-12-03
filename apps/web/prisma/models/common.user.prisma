@@ -4,9 +4,9 @@ model User {
   name  String
   role  UserRole @default(USER)
 
-  surveys         Survey[]         @relation("SurveyCreator")
-  surveyResponses SurveyResponse[]
-  fileUploads     FileUpload[]     @relation("FileUploader")
+  missions         Mission[]         @relation("MissionCreator")
+  missionResponses MissionResponse[]
+  fileUploads      FileUpload[]      @relation("FileUploader")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

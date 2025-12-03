@@ -1,7 +1,7 @@
 import { ROUTES } from "@/constants/routes";
 import { AuthError, useKakaoLogin } from "@/hooks/login/useKakaoLogin";
 import { useAuth } from "@/hooks/user/useAuth";
-import { Survey } from "@prisma/client";
+import { Mission } from "@prisma/client";
 import KakaoIcon from "@public/svgs/kakao-icon.svg";
 import { ButtonV2, Tooltip, Typo } from "@repo/ui/components";
 import { isBefore } from "date-fns";
@@ -17,7 +17,7 @@ interface BottomButtonProps {
   params: { id: string };
   firstQuestionId?: string;
   initialError: AuthError | null;
-  deadline?: Survey["deadline"];
+  deadline?: Mission["deadline"];
 }
 
 export function BottomButton({

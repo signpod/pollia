@@ -1,10 +1,10 @@
-import { SurveyQuestionType } from "@prisma/client";
+import { ActionType } from "@prisma/client";
 
 export const surveyQueryKeys = {
   surveyQuestions: (params?: {
     surveyId?: string;
     searchQuery?: string;
-    selectedQuestionTypes?: SurveyQuestionType[];
+    selectedQuestionTypes?: ActionType[];
     isDraft?: boolean;
   }) => {
     const base = params?.surveyId
