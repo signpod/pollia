@@ -1,7 +1,7 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
-import { surveyQuestionOptionService } from "@/server/services/survey-question-option/surveyQuestionOptionService";
+import { surveyQuestionOptionService } from "@/server/services/action-option";
 import type { SurveyQuestionOption } from "@prisma/client";
 
 export async function updateOption(

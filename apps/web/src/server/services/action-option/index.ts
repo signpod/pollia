@@ -3,19 +3,19 @@ import {
   optionUpdateSchema,
   optionsInputSchema,
 } from "@/schemas/survey-question-option";
-import { surveyQuestionOptionRepository } from "@/server/repositories/survey-question-option/surveyQuestionOptionRepository";
-import { surveyQuestionRepository } from "@/server/repositories/survey-question/surveyQuestionRepository";
-import { surveyRepository } from "@/server/repositories/survey/surveyRepository";
-import type { SurveyQuestionOption } from "@prisma/client";
+import { actionOptionRepository } from "@/server/repositories/action-option/actionOptionRepository";
+import { actionRepository } from "@/server/repositories/action/actionRepository";
+import { missionRepository } from "@/server/repositories/mission/missionRepository";
+import type { ActionOption } from "@prisma/client";
 
-export class SurveyQuestionOptionService {
+export class ActionOptionService {
   constructor(
-    private optionRepo = surveyQuestionOptionRepository,
-    private questionRepo = surveyQuestionRepository,
-    private surveyRepo = surveyRepository,
+    private optionRepo = actionOptionRepository,
+    private actionRepo = actionRepository,
+    private missionRepo = missionRepository,
   ) {}
 
-  async getOptionById(optionId: string): Promise<SurveyQuestionOption> {
+  async getOptionById(optionId: string): Promise<ActionOption> {
     const option = await this.optionRepo.findById(optionId);
 
     if (!option) {
@@ -27,15 +27,15 @@ export class SurveyQuestionOptionService {
     return option;
   }
 
-  async getOptionsByQuestionId(questionId: string): Promise<SurveyQuestionOption[]> {
-    const question = await this.questionRepo.findById(questionId);
-    if (!question) {
-      const error = new Error("질문을 찾을 수 없습니다.");
+  async getOptionsByActionId(actionId: string): Promise<ActionOption[]> {
+    const action = await this.actionRepo.findById(actionId);
+    if (!action) {
+      const error = new Error("액션을 찾을 수 없습니다.");
       error.cause = 404;
       throw error;
     }
 
-    const options = await this.optionRepo.findByQuestionId(questionId);
+    const options = await this.optionRepo.findByActionId(actionId);
     return options;
   }
 
@@ -49,7 +49,7 @@ export class SurveyQuestionOptionService {
       fileUploadId?: string;
     },
     userId: string,
-  ): Promise<SurveyQuestionOption> {
+  ): Promise<ActionOption> {
     const result = optionInputSchema.safeParse(data);
     if (!result.success) {
       const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
@@ -57,9 +57,21 @@ export class SurveyQuestionOptionService {
       throw error;
     }
 
-    await this.verifyQuestionAccess(result.data.questionId, userId);
+    const actionId = result.data.questionId;
 
-    const option = await this.optionRepo.create(result.data, userId);
+    await this.verifyActionAccess(actionId, userId);
+
+    const option = await this.optionRepo.create(
+      {
+        actionId,
+        title: result.data.title,
+        description: result.data.description,
+        imageUrl: result.data.imageUrl,
+        order: result.data.order,
+        fileUploadId: result.data.fileUploadId,
+      },
+      userId,
+    );
     return option;
   }
 
@@ -73,7 +85,7 @@ export class SurveyQuestionOptionService {
       fileUploadId?: string;
     }>,
     userId: string,
-  ): Promise<SurveyQuestionOption[]> {
+  ): Promise<ActionOption[]> {
     const result = optionsInputSchema.safeParse({ questionId, options });
     if (!result.success) {
       const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
@@ -81,13 +93,11 @@ export class SurveyQuestionOptionService {
       throw error;
     }
 
-    await this.verifyQuestionAccess(result.data.questionId, userId);
+    const actionId = result.data.questionId;
 
-    const createdOptions = await this.optionRepo.createMany(
-      result.data.questionId,
-      result.data.options,
-      userId,
-    );
+    await this.verifyActionAccess(actionId, userId);
+
+    const createdOptions = await this.optionRepo.createMany(actionId, result.data.options, userId);
     return createdOptions;
   }
 
@@ -100,7 +110,7 @@ export class SurveyQuestionOptionService {
       order?: number;
     },
     userId: string,
-  ): Promise<SurveyQuestionOption> {
+  ): Promise<ActionOption> {
     const result = optionUpdateSchema.safeParse(data);
     if (!result.success) {
       const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
@@ -110,7 +120,7 @@ export class SurveyQuestionOptionService {
 
     const option = await this.getOptionById(optionId);
 
-    await this.verifyQuestionAccess(option.questionId, userId);
+    await this.verifyActionAccess(option.actionId, userId);
 
     const updatedOption = await this.optionRepo.update(optionId, result.data);
     return updatedOption;
@@ -119,36 +129,36 @@ export class SurveyQuestionOptionService {
   async deleteOption(optionId: string, userId: string): Promise<void> {
     const option = await this.getOptionById(optionId);
 
-    await this.verifyQuestionAccess(option.questionId, userId);
+    await this.verifyActionAccess(option.actionId, userId);
 
     await this.optionRepo.delete(optionId);
   }
 
-  async deleteOptionsByQuestionId(questionId: string, userId: string): Promise<void> {
-    await this.verifyQuestionAccess(questionId, userId);
+  async deleteOptionsByActionId(actionId: string, userId: string): Promise<void> {
+    await this.verifyActionAccess(actionId, userId);
 
-    await this.optionRepo.deleteByQuestionId(questionId);
+    await this.optionRepo.deleteByActionId(actionId);
   }
 
-  private async verifyQuestionAccess(questionId: string, userId: string): Promise<void> {
-    const question = await this.questionRepo.findById(questionId);
+  private async verifyActionAccess(actionId: string, userId: string): Promise<void> {
+    const action = await this.actionRepo.findById(actionId);
 
-    if (!question) {
-      const error = new Error("존재하지 않는 질문입니다.");
+    if (!action) {
+      const error = new Error("존재하지 않는 액션입니다.");
       error.cause = 404;
       throw error;
     }
 
-    if (question.surveyId) {
-      const survey = await this.surveyRepo.findById(question.surveyId);
+    if (action.missionId) {
+      const mission = await this.missionRepo.findById(action.missionId);
 
-      if (!survey) {
-        const error = new Error("존재하지 않는 설문조사입니다.");
+      if (!mission) {
+        const error = new Error("존재하지 않는 미션입니다.");
         error.cause = 404;
         throw error;
       }
 
-      if (survey.creatorId !== userId) {
+      if (mission.creatorId !== userId) {
         const error = new Error("옵션을 수정할 권한이 없습니다.");
         error.cause = 403;
         throw error;
@@ -157,4 +167,4 @@ export class SurveyQuestionOptionService {
   }
 }
 
-export const surveyQuestionOptionService = new SurveyQuestionOptionService();
+export const actionOptionService = new ActionOptionService();

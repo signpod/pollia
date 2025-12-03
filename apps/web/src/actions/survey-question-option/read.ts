@@ -1,6 +1,6 @@
 "use server";
 
-import { surveyQuestionOptionService } from "@/server/services/survey-question-option/surveyQuestionOptionService";
+import { surveyQuestionOptionService } from "@/server/services/action-option";
 import type { SurveyQuestionOption } from "@prisma/client";
 
 export async function getOptionById(optionId: string): Promise<{ data: SurveyQuestionOption }> {
