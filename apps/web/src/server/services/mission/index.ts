@@ -17,7 +17,7 @@ export class MissionService {
     const mission = await this.repo.findById(missionId);
 
     if (!mission) {
-      const error = new Error("설문조사를 찾을 수 없습니다.");
+      const error = new Error("미션을 찾을 수 없습니다.");
       error.cause = 404;
       throw error;
     }
@@ -35,7 +35,7 @@ export class MissionService {
     const action = await this.repo.findActionById(actionId);
 
     if (!action) {
-      const error = new Error("질문을 찾을 수 없습니다.");
+      const error = new Error("액션을 찾을 수 없습니다.");
       error.cause = 404;
       throw error;
     }

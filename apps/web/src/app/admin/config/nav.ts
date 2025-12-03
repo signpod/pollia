@@ -15,22 +15,22 @@ export interface NavGroup {
   items: NavItem[];
 }
 
-export interface SurveyItem {
+export interface MissionItem {
   id: string;
   title: string;
 }
 
-export function createAdminNavConfig(surveys: SurveyItem[]): NavGroup[] {
-  const surveyItems: NavItem[] = surveys.map(survey => ({
-    title: survey.title,
-    url: ADMIN_ROUTES.ADMIN_SURVEY(survey.id),
+export function createAdminNavConfig(missions: MissionItem[]): NavGroup[] {
+  const missionItems: NavItem[] = missions.map(mission => ({
+    title: mission.title,
+    url: ADMIN_ROUTES.ADMIN_MISSION(mission.id),
     icon: ClipboardList,
   }));
 
   return [
     {
-      label: "설문",
-      items: surveyItems,
+      label: "미션",
+      items: missionItems,
     },
     {
       label: "시스템",

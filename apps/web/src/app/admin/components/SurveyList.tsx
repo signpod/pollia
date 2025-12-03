@@ -21,21 +21,21 @@ export function SurveyList() {
   return (
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Link href={ADMIN_ROUTES.ADMIN_SURVEY_CREATE}>
+        <Link href={ADMIN_ROUTES.ADMIN_MISSION_CREATE}>
           <Card className="h-[180px] border-dashed border-2 hover:border-primary hover:bg-muted/30 transition-shadow cursor-pointer group">
             <div className="flex flex-col items-center justify-center h-full gap-3">
               <div className="size-12 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
                 <Plus className="size-6 text-primary" />
               </div>
               <div className="text-center">
-                <p className="font-medium">새 설문조사 만들기</p>
-                <p className="text-sm text-muted-foreground">클릭하여 설문조사를 생성하세요</p>
+                <p className="font-medium">새 미션 만들기</p>
+                <p className="text-sm text-muted-foreground">클릭하여 미션을 생성하세요</p>
               </div>
             </div>
           </Card>
         </Link>
         {surveys.map(survey => (
-          <Link key={survey.id} href={ADMIN_ROUTES.ADMIN_SURVEY(survey.id)}>
+          <Link key={survey.id} href={ADMIN_ROUTES.ADMIN_MISSION(survey.id)}>
             <Card className="h-[180px] hover:shadow-md hover:bg-muted/30 transition-shadow cursor-pointer">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg line-clamp-1">{survey.title}</CardTitle>
