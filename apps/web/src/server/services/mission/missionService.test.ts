@@ -59,7 +59,7 @@ describe("MissionService", () => {
 
       // When & Then: 에러 검증
       await expect(missionService.getMission("invalid-id")).rejects.toThrow(
-        "설문조사를 찾을 수 없습니다.",
+        "미션을 찾을 수 없습니다.",
       );
 
       // 에러 cause 검증
@@ -111,7 +111,7 @@ describe("MissionService", () => {
 
       // When & Then
       await expect(missionService.getMissionActionIds("invalid-id")).rejects.toThrow(
-        "설문조사를 찾을 수 없습니다.",
+        "미션을 찾을 수 없습니다.",
       );
 
       // findActionIdsByMissionId가 호출되지 않았는지 확인
@@ -167,7 +167,7 @@ describe("MissionService", () => {
 
       // When & Then
       await expect(missionService.getActionById("invalid-id")).rejects.toThrow(
-        "질문을 찾을 수 없습니다.",
+        "액션을 찾을 수 없습니다.",
       );
 
       // 에러 cause 검증
@@ -257,7 +257,7 @@ describe("MissionService", () => {
 
       // When & Then
       await expect(missionService.getMissionActionsDetail("invalid-id")).rejects.toThrow(
-        "설문조사를 찾을 수 없습니다.",
+        "미션을 찾을 수 없습니다.",
       );
 
       // findActionsByMissionId가 호출되지 않았는지 확인
@@ -524,7 +524,7 @@ describe("MissionService", () => {
       // When & Then
       await expect(
         missionService.updateMission("invalid-id", { title: "수정" }, "user-1"),
-      ).rejects.toThrow("설문조사를 찾을 수 없습니다.");
+      ).rejects.toThrow("미션을 찾을 수 없습니다.");
     });
 
     it("권한이 없으면 403 에러를 던진다", async () => {
@@ -624,7 +624,7 @@ describe("MissionService", () => {
 
       // When & Then
       await expect(missionService.deleteMission("invalid-id", "user-1")).rejects.toThrow(
-        "설문조사를 찾을 수 없습니다.",
+        "미션을 찾을 수 없습니다.",
       );
     });
 
