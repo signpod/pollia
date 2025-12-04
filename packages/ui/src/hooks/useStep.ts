@@ -58,8 +58,8 @@ export function StepProvider({
   const currentStepConfig = steps[currentStep] ?? (steps[0] as StepConfig);
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === steps.length - 1;
-  const canGoNext = currentStepConfig?.canGoNext !== false;
-  const canGoBack = currentStepConfig?.canGoBack !== false;
+  const canGoNext = !!currentStepConfig?.canGoNext;
+  const canGoBack = !!currentStepConfig?.canGoBack;
 
   const progress = steps.length > 0 ? ((currentStep + 1) / steps.length) * 100 : 0;
 

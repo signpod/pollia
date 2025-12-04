@@ -1,21 +1,22 @@
 model FileUpload {
-  id                String             @id @default(cuid())
-  userId            String             @map("user_id")
-  user              User               @relation("FileUploader", fields: [userId], references: [id])
-  originalFileName  String             @map("original_file_name")
-  filePath          String             @map("file_path")
-  publicUrl         String             @map("public_url")
-  fileSize          Int                @map("file_size")
-  mimeType          String             @map("mime_type")
-  bucket            String             @default("poll-images")
-  status            FileStatus         @default(TEMPORARY)
-  relatedEntityType RelatedEntityType? @map("related_entity_type")
-  relatedEntityId   String?            @map("related_entity_id")
-
-  actionOption ActionOption?
-
-  createdAt   DateTime  @default(now()) @map("created_at")
-  confirmedAt DateTime? @map("confirmed_at")
+  id                                                        String             @id @default(cuid())
+  userId                                                    String             @map("user_id")
+  originalFileName                                          String             @map("original_file_name")
+  filePath                                                  String             @map("file_path")
+  publicUrl                                                 String             @map("public_url")
+  fileSize                                                  Int                @map("file_size")
+  mimeType                                                  String             @map("mime_type")
+  bucket                                                    String             @default("poll-images")
+  status                                                    FileStatus         @default(TEMPORARY)
+  relatedEntityType                                         RelatedEntityType? @map("related_entity_type")
+  relatedEntityId                                           String?            @map("related_entity_id")
+  createdAt                                                 DateTime           @default(now()) @map("created_at")
+  confirmedAt                                               DateTime?          @map("confirmed_at")
+  actionOption                                              ActionOption?
+  actions                                                   Action?
+  user                                                      User               @relation("FileUploader", fields: [userId], references: [id])
+  missions_missions_brand_logo_file_upload_idTofile_uploads Mission?           @relation("missions_brand_logo_file_upload_idTofile_uploads")
+  missions_missions_image_file_upload_idTofile_uploads      Mission?           @relation("missions_image_file_upload_idTofile_uploads")
 
   @@index([userId, status])
   @@index([status, createdAt])
@@ -31,4 +32,5 @@ enum FileStatus {
 enum RelatedEntityType {
   MISSION
   ACTION_OPTION
+  ACTION
 }

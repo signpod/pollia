@@ -1,12 +1,12 @@
 import { getUserSurveys } from "@/actions/mission";
-import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
+import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 export function useAdminSurveys(options?: { limit?: number }) {
   const limit = options?.limit ?? 10;
 
   const query = useInfiniteQuery({
-    queryKey: surveyQueryKeys.userSurveys(),
+    queryKey: missionQueryKeys.userMissions(),
     queryFn: ({ pageParam }) => {
       return getUserSurveys({
         cursor: pageParam,

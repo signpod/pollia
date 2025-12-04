@@ -3,27 +3,22 @@
 import { requireAuth } from "@/actions/common/auth";
 import { actionService } from "@/server/services/action";
 import type {
-  CreateEitherOrInput,
   CreateMultipleChoiceInput,
   CreateScaleInput,
   CreateSubjectiveInput,
 } from "@/server/services/action/types";
 import type {
-  CreateEitherOrQuestionRequest,
-  CreateEitherOrQuestionResponse,
-  CreateMultipleChoiceQuestionRequest,
-  CreateMultipleChoiceQuestionResponse,
-  CreateScaleQuestionRequest,
-  CreateScaleQuestionResponse,
-  CreateSubjectiveQuestionRequest,
-  CreateSubjectiveQuestionResponse,
+  CreateMultipleChoiceActionRequest,
+  CreateMultipleChoiceActionResponse,
+  CreateScaleActionRequest,
+  CreateScaleActionResponse,
+  CreateSubjectiveActionRequest,
+  CreateSubjectiveActionResponse,
 } from "@/types/dto";
 
-function toMultipleChoiceInput(
-  dto: CreateMultipleChoiceQuestionRequest,
-): CreateMultipleChoiceInput {
+function toMultipleChoiceInput(dto: CreateMultipleChoiceActionRequest): CreateMultipleChoiceInput {
   return {
-    missionId: dto.surveyId,
+    missionId: dto.missionId,
     title: dto.title,
     description: dto.description,
     imageUrl: dto.imageUrl,
@@ -39,9 +34,9 @@ function toMultipleChoiceInput(
   };
 }
 
-function toScaleInput(dto: CreateScaleQuestionRequest): CreateScaleInput {
+function toScaleInput(dto: CreateScaleActionRequest): CreateScaleInput {
   return {
-    missionId: dto.surveyId,
+    missionId: dto.missionId,
     title: dto.title,
     description: dto.description,
     imageUrl: dto.imageUrl,
@@ -49,19 +44,9 @@ function toScaleInput(dto: CreateScaleQuestionRequest): CreateScaleInput {
   };
 }
 
-function toSubjectiveInput(dto: CreateSubjectiveQuestionRequest): CreateSubjectiveInput {
+function toSubjectiveInput(dto: CreateSubjectiveActionRequest): CreateSubjectiveInput {
   return {
-    missionId: dto.surveyId,
-    title: dto.title,
-    description: dto.description,
-    imageUrl: dto.imageUrl,
-    order: dto.order,
-  };
-}
-
-function toEitherOrInput(dto: CreateEitherOrQuestionRequest): CreateEitherOrInput {
-  return {
-    missionId: dto.surveyId,
+    missionId: dto.missionId,
     title: dto.title,
     description: dto.description,
     imageUrl: dto.imageUrl,
@@ -70,8 +55,8 @@ function toEitherOrInput(dto: CreateEitherOrQuestionRequest): CreateEitherOrInpu
 }
 
 export async function createMultipleChoiceAction(
-  request: CreateMultipleChoiceQuestionRequest,
-): Promise<CreateMultipleChoiceQuestionResponse> {
+  request: CreateMultipleChoiceActionRequest,
+): Promise<CreateMultipleChoiceActionResponse> {
   try {
     const user = await requireAuth();
     const input = toMultipleChoiceInput(request);
@@ -90,8 +75,8 @@ export async function createMultipleChoiceAction(
 }
 
 export async function createScaleAction(
-  request: CreateScaleQuestionRequest,
-): Promise<CreateScaleQuestionResponse> {
+  request: CreateScaleActionRequest,
+): Promise<CreateScaleActionResponse> {
   try {
     const user = await requireAuth();
     const input = toScaleInput(request);
@@ -111,8 +96,8 @@ export async function createScaleAction(
 }
 
 export async function createSubjectiveAction(
-  request: CreateSubjectiveQuestionRequest,
-): Promise<CreateSubjectiveQuestionResponse> {
+  request: CreateSubjectiveActionRequest,
+): Promise<CreateSubjectiveActionResponse> {
   try {
     const user = await requireAuth();
     const input = toSubjectiveInput(request);
@@ -122,27 +107,6 @@ export async function createSubjectiveAction(
     return { data };
   } catch (error) {
     console.error("createSubjectiveAction error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("질문 생성 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
-  }
-}
-
-export async function createEitherOrAction(
-  request: CreateEitherOrQuestionRequest,
-): Promise<CreateEitherOrQuestionResponse> {
-  try {
-    const user = await requireAuth();
-    const input = toEitherOrInput(request);
-    const question = await actionService.createEitherOrAction(input, user.id);
-    const data = { ...question, surveyId: question.missionId };
-
-    return { data };
-  } catch (error) {
-    console.error("createEitherOrAction error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }

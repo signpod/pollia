@@ -1,12 +1,12 @@
 "use client";
 
-import { useReadSurveyQuestions } from "@/hooks/survey/question/useReadSurveyQuestions";
-import { SurveyQuestionSummary } from "@/types/domain/survey";
+import { useReadActions } from "@/hooks/action/useReadActions";
+import { ActionSummary } from "@/types/domain/action";
 import { ReactNode } from "react";
 
 interface UserSurveyQuestionDataContainerProps {
   children: (data: {
-    data: SurveyQuestionSummary[];
+    data: ActionSummary[];
     isLoading: boolean;
     isFetchingNextPage: boolean;
     hasNextPage: boolean;
@@ -34,8 +34,7 @@ export function UserSurveyQuestionDataContainer({
 }
 
 function useUserSurveyQuestionData() {
-  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
-    useReadSurveyQuestions();
+  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useReadActions();
 
   return {
     data: data ?? [],

@@ -12,7 +12,7 @@ export async function getAnswer(answerId: string): Promise<GetQuestionAnswerResp
   try {
     const user = await requireAuth();
     const answer = await actionAnswerService.getAnswerById(answerId, user.id);
-    const data = { ...answer, questionId: answer.action.id };
+    const data = { ...answer, actionId: answer.action.id };
     return { data };
   } catch (error) {
     console.error("getAnswer error:", error);
@@ -29,7 +29,7 @@ export async function getMyAnswers(): Promise<GetAnswersByUserResponse> {
   try {
     const user = await requireAuth();
     const answers = await actionAnswerService.getAnswersByUserId(user.id);
-    const data = answers.map(answer => ({ ...answer, questionId: answer.action.id }));
+    const data = answers.map(answer => ({ ...answer, actionId: answer.action.id }));
     return { data };
   } catch (error) {
     console.error("getMyAnswers error:", error);
@@ -48,7 +48,7 @@ export async function getAnswersByResponse(
   try {
     const user = await requireAuth();
     const answers = await actionAnswerService.getAnswersByResponseId(responseId, user.id);
-    const data = answers.map(answer => ({ ...answer, questionId: answer.action.id }));
+    const data = answers.map(answer => ({ ...answer, actionId: answer.action.id }));
     return { data };
   } catch (error) {
     console.error("getAnswersByResponse error:", error);

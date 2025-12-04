@@ -1,7 +1,9 @@
 "use client";
 
+import { ROUTES } from "@/constants/routes";
 import { DraftFilterType, SortOrderType } from "@/types/common/sort";
-import { SurveyQuestionSummary, SurveySummary } from "@/types/domain/survey";
+import { ActionSummary } from "@/types/domain/action";
+import { MissionSummary } from "@/types/domain/mission";
 import { Button, Typo } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
 import { Loader2Icon } from "lucide-react";
@@ -18,7 +20,7 @@ export function ContentList({
   draftFilter = "all",
   sortOrder = "latest",
 }: {
-  items: SurveyQuestionSummary[] | SurveySummary[];
+  items: MissionSummary[] | ActionSummary[];
   baseHref: string;
   hasNextPage: boolean;
   fetchNextPage: () => void;
@@ -92,7 +94,7 @@ export function ContentList({
             <List.Item
               key={item.id}
               title={item.title}
-              href={`${baseHref}/${item.id}`}
+              href={ROUTES.MISSION(item.id)}
               createdAt={item.createdAt}
               leadingIcon={"isDraft" in item ? <UsedTag item={item} /> : null}
               className="flex-1"
@@ -121,7 +123,7 @@ export function ContentList({
 function UsedTag({
   item,
 }: {
-  item: SurveyQuestionSummary | SurveySummary;
+  item: MissionSummary | ActionSummary;
 }) {
   const isDraft = "isDraft" in item ? item.isDraft : false;
   const text = isDraft ? "미사용" : "사용";

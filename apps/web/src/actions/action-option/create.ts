@@ -5,7 +5,7 @@ import { actionOptionService } from "@/server/services/action-option";
 import type { ActionOption } from "@prisma/client";
 
 export async function createOption(data: {
-  questionId: string;
+  actionId: string;
   title: string;
   description?: string;
   imageUrl?: string;

@@ -3,9 +3,9 @@
 import { requireAuth } from "@/actions/common/auth";
 import { actionAnswerService } from "@/server/services/action-answer";
 import type { UpdateAnswerInput } from "@/server/services/action-answer/types";
-import type { GetQuestionAnswerResponse, UpdateQuestionAnswerRequest } from "@/types/dto";
+import type { GetQuestionAnswerResponse, UpdateActionAnswerRequest } from "@/types/dto";
 
-function toUpdateAnswerInput(dto: UpdateQuestionAnswerRequest): UpdateAnswerInput {
+function toUpdateAnswerInput(dto: UpdateActionAnswerRequest): UpdateAnswerInput {
   return {
     optionId: dto.optionId,
     textAnswer: dto.textAnswer,
@@ -15,13 +15,13 @@ function toUpdateAnswerInput(dto: UpdateQuestionAnswerRequest): UpdateAnswerInpu
 
 export async function updateAnswer(
   answerId: string,
-  request: UpdateQuestionAnswerRequest,
+  request: UpdateActionAnswerRequest,
 ): Promise<GetQuestionAnswerResponse> {
   try {
     const user = await requireAuth();
     const input = toUpdateAnswerInput(request);
     const answer = await actionAnswerService.updateAnswer(answerId, input, user.id);
-    const data = { ...answer, questionId: answer.action.id };
+    const data = { ...answer, actionId: answer.action.id };
     return { data };
   } catch (error) {
     console.error("updateAnswer error:", error);

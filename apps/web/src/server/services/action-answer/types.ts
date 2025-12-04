@@ -1,9 +1,8 @@
 import type { ActionType } from "@prisma/client";
 
-// 외부 API에서는 스키마를 따라 questionId를 받음
 export interface CreateAnswerInput {
   responseId: string;
-  questionId: string;
+  actionId: string;
   optionId?: string;
   textAnswer?: string;
   scaleAnswer?: number;
@@ -12,7 +11,7 @@ export interface CreateAnswerInput {
 export interface SubmitAnswersInput {
   responseId: string;
   answers: Array<{
-    questionId: string;
+    actionId: string;
     type: ActionType;
     selectedOptionIds?: string[];
     scaleValue?: number;
