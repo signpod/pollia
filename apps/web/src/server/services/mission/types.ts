@@ -2,12 +2,12 @@ import type { SortOrderType } from "@/types/common/sort";
 
 export interface CreateMissionInput {
   title: string;
-  description?: string | null;
-  target?: string | null;
-  imageUrl?: string | null;
+  description?: string;
+  target?: string;
+  imageUrl?: string;
   deadline?: Date;
   estimatedMinutes?: number;
-  questionIds: string[];
+  actionIds?: string[];
 }
 
 export interface UpdateMissionInput {

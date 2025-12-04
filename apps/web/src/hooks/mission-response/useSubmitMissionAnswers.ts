@@ -1,7 +1,7 @@
 "use client";
 
-import { submitQuestionAnswers } from "@/actions/action-answer";
-import { completeSurveyResponse } from "@/actions/mission-response";
+import { submitAnswers } from "@/actions/action-answer";
+import { completeMissionResponse } from "@/actions/mission-response";
 import type { SubmitActionAnswersRequest, SubmitActionAnswersResponse } from "@/types/dto";
 import { useMutation } from "@tanstack/react-query";
 
@@ -15,9 +15,9 @@ export function useSubmitMissionAnswers(options: UseSubmitMissionAnswersOptions 
     mutationFn: async (
       payload: SubmitActionAnswersRequest,
     ): Promise<SubmitActionAnswersResponse> => {
-      const submitResult = await submitQuestionAnswers(payload);
+      const submitResult = await submitAnswers(payload);
 
-      await completeSurveyResponse({ responseId: payload.responseId });
+      await completeMissionResponse({ responseId: payload.responseId });
 
       return submitResult;
     },

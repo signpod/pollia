@@ -1,14 +1,14 @@
 import type { ActionAnswer } from "../action-answer";
 
-export interface StartSurveyResponseRequest {
+export interface StartMissionResponseRequest {
   surveyId: string;
 }
 
-export interface CompleteSurveyResponseRequest {
+export interface CompleteMissionResponseRequest {
   responseId: string;
 }
 
-export interface StartSurveyResponseResponse {
+export interface StartMissionResponseResponse {
   data: {
     id: string;
     surveyId: string;
@@ -19,7 +19,7 @@ export interface StartSurveyResponseResponse {
   };
 }
 
-export interface CompleteSurveyResponseResponse {
+export interface CompleteMissionResponseResponse {
   data: {
     id: string;
     surveyId: string;
@@ -30,7 +30,7 @@ export interface CompleteSurveyResponseResponse {
   };
 }
 
-export interface GetSurveyResponseResponse {
+export interface GetMissionResponseResponse {
   data: {
     id: string;
     surveyId: string;
@@ -43,7 +43,7 @@ export interface GetSurveyResponseResponse {
   };
 }
 
-export interface GetMyResponsesResponse {
+export interface GetMyMissionResponsesResponse {
   data: Array<{
     id: string;
     surveyId: string;
@@ -54,7 +54,7 @@ export interface GetMyResponsesResponse {
   }>;
 }
 
-export interface GetSurveyResponsesResponse {
+export interface GetMissionResponsesResponse {
   data: Array<{
     id: string;
     surveyId: string;
@@ -65,7 +65,7 @@ export interface GetSurveyResponsesResponse {
   }>;
 }
 
-export interface GetSurveyStatsResponse {
+export interface GetMissionStatsResponse {
   data: {
     total: number;
     completed: number;
@@ -73,6 +73,6 @@ export interface GetSurveyStatsResponse {
   };
 }
 
-export interface DeleteSurveyResponseResponse {
+export interface DeleteMissionResponseResponse {
   message: string;
 }

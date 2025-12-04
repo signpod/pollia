@@ -1,6 +1,6 @@
 export {
-  surveyInputSchema,
-  surveyUpdateSchema,
-  type SurveyInput,
-  type SurveyUpdate,
+  missionInputSchema,
+  missionUpdateSchema,
+  type MissionInput,
+  type MissionUpdate,
 } from "./missionSchema";

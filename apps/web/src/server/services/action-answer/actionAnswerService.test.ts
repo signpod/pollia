@@ -176,7 +176,7 @@ describe("ActionAnswerService", () => {
 
       // When
       const result = await service.createAnswer(
-        { responseId: "response1", questionId: "action1", optionId: "option1" },
+        { responseId: "response1", actionId: "action1", optionId: "option1" },
         mockUser.id,
       );
 
@@ -197,7 +197,7 @@ describe("ActionAnswerService", () => {
 
       // When
       const result = await service.createAnswer(
-        { responseId: "response1", questionId: "action1", scaleAnswer: 4 },
+        { responseId: "response1", actionId: "action1", scaleAnswer: 4 },
         mockUser.id,
       );
 
@@ -221,7 +221,7 @@ describe("ActionAnswerService", () => {
 
       // When
       const result = await service.createAnswer(
-        { responseId: "response1", questionId: "action1", textAnswer: "답변 내용" },
+        { responseId: "response1", actionId: "action1", textAnswer: "답변 내용" },
         mockUser.id,
       );
 
@@ -238,7 +238,7 @@ describe("ActionAnswerService", () => {
       // When & Then
       await expect(
         service.createAnswer(
-          { responseId: "response1", questionId: "invalid-action", optionId: "option1" },
+          { responseId: "response1", actionId: "invalid-action", optionId: "option1" },
           mockUser.id,
         ),
       ).rejects.toThrow("액션을 찾을 수 없습니다.");
@@ -254,7 +254,7 @@ describe("ActionAnswerService", () => {
 
       // When & Then
       await expect(
-        service.createAnswer({ responseId: "response1", questionId: "action1" }, mockUser.id),
+        service.createAnswer({ responseId: "response1", actionId: "action1" }, mockUser.id),
       ).rejects.toThrow("객관식 답변에는 선택지가 필요합니다.");
     });
 
@@ -265,7 +265,7 @@ describe("ActionAnswerService", () => {
       // When & Then
       await expect(
         service.createAnswer(
-          { responseId: "invalid-response", questionId: "action1", optionId: "option1" },
+          { responseId: "invalid-response", actionId: "action1", optionId: "option1" },
           mockUser.id,
         ),
       ).rejects.toThrow("응답을 찾을 수 없습니다.");
@@ -299,11 +299,11 @@ describe("ActionAnswerService", () => {
           responseId: "response1",
           answers: [
             {
-              questionId: "q1",
+              actionId: "q1",
               type: ActionType.MULTIPLE_CHOICE,
               selectedOptionIds: ["opt1", "opt2"],
             },
-            { questionId: "q2", type: ActionType.SCALE, scaleValue: 4 },
+            { actionId: "q2", type: ActionType.SCALE, scaleValue: 4 },
           ],
         },
         mockUser.id,
@@ -325,7 +325,7 @@ describe("ActionAnswerService", () => {
         service.submitAnswers(
           {
             responseId: "response1",
-            answers: [{ questionId: "q1", type: ActionType.SCALE, scaleValue: 3 }],
+            answers: [{ actionId: "q1", type: ActionType.SCALE, scaleValue: 3 }],
           },
           mockUser.id,
         ),
@@ -350,7 +350,7 @@ describe("ActionAnswerService", () => {
         service.submitAnswers(
           {
             responseId: "response1",
-            answers: [{ questionId: "q1", type: ActionType.SCALE, scaleValue: 3 }],
+            answers: [{ actionId: "q1", type: ActionType.SCALE, scaleValue: 3 }],
           },
           mockUser.id,
         ),
@@ -377,7 +377,7 @@ describe("ActionAnswerService", () => {
             responseId: "response1",
             answers: [
               {
-                questionId: "q1",
+                actionId: "q1",
                 type: ActionType.MULTIPLE_CHOICE,
                 selectedOptionIds: ["opt1"],
               },

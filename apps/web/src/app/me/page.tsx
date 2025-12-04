@@ -1,4 +1,4 @@
-import { getUserSurveys } from "@/actions/mission";
+import { getUserMissions } from "@/actions/mission";
 import { getCurrentUser } from "@/actions/user/read";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
@@ -18,14 +18,14 @@ export default async function MePage() {
   await queryClient.prefetchQuery({
     queryKey: actionQueryKeys.actions(),
     queryFn: () => {
-      return getUserSurveys();
+      return getUserMissions();
     },
   });
 
   await queryClient.prefetchInfiniteQuery({
     queryKey: missionQueryKeys.userMissions(),
     queryFn: ({ pageParam }) => {
-      return getUserSurveys({
+      return getUserMissions({
         cursor: pageParam,
         limit: 10,
       });

@@ -13,7 +13,7 @@ function toCreateMissionInput(dto: CreateMissionRequest): CreateMissionInput {
     imageUrl: dto.imageUrl,
     deadline: dto.deadline,
     estimatedMinutes: dto.estimatedMinutes,
-    questionIds: dto.questionIds,
+    actionIds: [],
   };
 }
 

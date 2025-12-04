@@ -1,11 +1,11 @@
-import { getSurvey } from "@/actions/mission";
+import { getMission } from "@/actions/mission";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { useQuery } from "@tanstack/react-query";
 
 export const useReadMission = (missionId: string) => {
   return useQuery({
     queryKey: missionQueryKeys.mission(missionId),
-    queryFn: () => getSurvey(missionId),
+    queryFn: () => getMission(missionId),
     staleTime: 5 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000,
     retry: 3,
