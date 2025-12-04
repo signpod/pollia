@@ -1,16 +1,14 @@
-import type { Mission } from "@/types/domain/mission";
-// ============================================================================
-// Mission Creation DTOs
-// ============================================================================
+import type { Mission } from "@prisma/client";
 
 export interface CreateMissionRequest {
   title: string;
-  description?: string | null;
-  target?: string | null;
-  imageUrl?: string | null;
-  questionIds: string[];
+  description?: string;
+  target?: string;
+  imageUrl?: string;
+  brandLogoUrl?: string;
   deadline?: Date;
   estimatedMinutes?: number;
+  isActive?: boolean;
 }
 
 export interface CreateMissionResponse {
@@ -20,17 +18,32 @@ export interface CreateMissionResponse {
     description?: string | null;
     target?: string | null;
     imageUrl?: string | null;
+    brandLogoUrl?: string | null;
+    deadline?: Date | null;
+    estimatedMinutes?: number | null;
     createdAt: Date;
     updatedAt: Date;
     creatorId: string;
-    deadline?: Date | null;
-    estimatedMinutes?: number | null;
   };
 }
 
-// ============================================================================
-// Mission Read DTOs
-// ============================================================================
+export interface GetMissionResponse {
+  data: {
+    id: string;
+    title: string;
+    description?: string | null;
+    target?: string | null;
+    imageUrl?: string | null;
+    brandLogoUrl?: string | null;
+    estimatedMinutes?: number | null;
+    deadline?: Date | null;
+    isActive: boolean;
+    creatorId: string;
+    rewardId?: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+}
 
 export interface GetUserMissionsResponse {
   data: Pick<
@@ -39,21 +52,17 @@ export interface GetUserMissionsResponse {
   >[];
 }
 
-// Mission 조회 응답 타입
-export interface GetMissionResponse {
-  data: {
-    id: string;
-    title: string;
-    description: string | null;
-    target: string | null;
-    imageUrl: string | null;
-    brandLogoUrl: string | null;
-    estimatedMinutes: number | null;
-    deadline: Date | null;
-    isActive: boolean;
-    creatorId: string;
-    rewardId: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-  };
+export interface UpdateMissionRequest {
+  title?: string;
+  description?: string;
+  target?: string;
+  imageUrl?: string;
+  brandLogoUrl?: string;
+  deadline?: Date;
+  estimatedMinutes?: number;
+  isActive?: boolean;
+}
+
+export interface UpdateMissionResponse {
+  data: Mission;
 }

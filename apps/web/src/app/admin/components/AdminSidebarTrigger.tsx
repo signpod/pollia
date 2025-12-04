@@ -2,7 +2,7 @@
 
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { useSidebar } from "@/app/admin/components/shadcn-ui/sidebar";
-import { ChevronLeftIcon, PanelLeftIcon } from "lucide-react";
+import { PanelLeftIcon, X } from "lucide-react";
 
 export function AdminSidebarTrigger() {
   const { toggleSidebar, state } = useSidebar();
@@ -14,7 +14,7 @@ export function AdminSidebarTrigger() {
       className="-ml-1 size-7 cursor-pointer"
       onClick={toggleSidebar}
     >
-      {state === "expanded" ? <ChevronLeftIcon /> : <PanelLeftIcon />}
+      {state === "expanded" ? <X /> : <PanelLeftIcon />}
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   );

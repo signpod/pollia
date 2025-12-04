@@ -1,18 +1,14 @@
 model MissionResponse {
-  id          String    @id @default(cuid())
-  startedAt   DateTime  @default(now()) @map("started_at")
-  completedAt DateTime? @map("completed_at")
-
-  missionId String  @map("mission_id")
-  mission   Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
-
-  userId String @map("user_id")
-  user   User   @relation(fields: [userId], references: [id])
-
-  answers ActionAnswer[]
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id          String         @id @default(cuid())
+  startedAt   DateTime       @default(now()) @map("started_at")
+  completedAt DateTime?      @map("completed_at")
+  missionId   String         @map("mission_id")
+  userId      String         @map("user_id")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+  answers     ActionAnswer[]
+  mission     Mission        @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  user        User           @relation(fields: [userId], references: [id])
 
   @@unique([missionId, userId])
   @@index([missionId])

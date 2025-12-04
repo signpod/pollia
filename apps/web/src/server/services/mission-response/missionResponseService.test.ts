@@ -219,7 +219,7 @@ describe("MissionResponseService", () => {
       mockResponseRepo.create.mockResolvedValue(mockCreatedResponse as never);
 
       // When
-      const result = await service.startResponse({ surveyId: "mission1" }, mockUser.id);
+      const result = await service.startResponse({ missionId: "mission1" }, mockUser.id);
 
       // Then
       expect(result).toEqual(mockCreatedResponse);
@@ -237,7 +237,7 @@ describe("MissionResponseService", () => {
       mockResponseRepo.findByMissionAndUser.mockResolvedValue(mockExistingResponse as never);
 
       // When
-      const result = await service.startResponse({ surveyId: "mission1" }, mockUser.id);
+      const result = await service.startResponse({ missionId: "mission1" }, mockUser.id);
 
       // Then
       expect(result).toEqual(mockExistingResponse);
@@ -250,7 +250,7 @@ describe("MissionResponseService", () => {
 
       // When & Then
       await expect(
-        service.startResponse({ surveyId: "invalid-mission" }, mockUser.id),
+        service.startResponse({ missionId: "invalid-mission" }, mockUser.id),
       ).rejects.toThrow("미션을 찾을 수 없습니다.");
     });
 
@@ -260,7 +260,7 @@ describe("MissionResponseService", () => {
       mockMissionRepo.findById.mockResolvedValue(mockMission as never);
 
       // When & Then
-      await expect(service.startResponse({ surveyId: "mission1" }, mockUser.id)).rejects.toThrow(
+      await expect(service.startResponse({ missionId: "mission1" }, mockUser.id)).rejects.toThrow(
         "종료된 미션입니다.",
       );
     });

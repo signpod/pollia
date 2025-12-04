@@ -1,18 +1,22 @@
 "use client";
 
 import { startMissionResponse } from "@/actions/mission-response";
-import type { StartSurveyResponseRequest, StartSurveyResponseResponse } from "@/types/dto";
+import type {
+  StartMissionResponseRequest,
+  StartMissionResponseResponse,
+} from "@/types/dto/mission-response";
 import { useMutation } from "@tanstack/react-query";
 
 interface UseStartMissionResponseOptions {
-  onSuccess?: (data: StartSurveyResponseResponse) => void;
+  onSuccess?: (data: StartMissionResponseResponse) => void;
   onError?: (error: Error) => void;
 }
 
 export function useStartMissionResponse(options: UseStartMissionResponseOptions = {}) {
   return useMutation({
-    mutationFn: async (payload: StartSurveyResponseRequest): Promise<StartSurveyResponseResponse> =>
-      startMissionResponse(payload),
+    mutationFn: async (
+      payload: StartMissionResponseRequest,
+    ): Promise<StartMissionResponseResponse> => startMissionResponse(payload),
     onSuccess: data => {
       options.onSuccess?.(data);
     },
