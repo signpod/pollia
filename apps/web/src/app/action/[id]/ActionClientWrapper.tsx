@@ -302,7 +302,7 @@ function ActionRenderer({
       currentOrder={actionData.order}
       totalActionCount={totalActionCount}
       isFirstAction={isFirstStep}
-      isNextDisabled={!canGoNext}
+      isNextDisabled={!canGoNext || isSubmittingAnswer}
       onPrevious={handlePrevious}
       onNext={handleNext}
       nextButtonText={isLastStep ? "제출하기" : "다음"}
