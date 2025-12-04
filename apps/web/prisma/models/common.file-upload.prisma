@@ -35,5 +35,4 @@ enum RelatedEntityType {
   MISSION
   ACTION
   ACTION_OPTION
-  ACTION
 }

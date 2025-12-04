@@ -5,7 +5,7 @@ CREATE TYPE "ActionType" AS ENUM ('MULTIPLE_CHOICE', 'SCALE', 'RATING', 'TAG', '
 CREATE TYPE "FileStatus" AS ENUM ('TEMPORARY', 'CONFIRMED');
 
 -- CreateEnum
-CREATE TYPE "RelatedEntityType" AS ENUM ('MISSION', 'ACTION_OPTION');
+CREATE TYPE "RelatedEntityType" AS ENUM ('MISSION', 'ACTION_OPTION', 'ACTION');
 
 -- CreateEnum
 CREATE TYPE "UserRole" AS ENUM ('USER', 'ADMIN');
@@ -53,6 +53,7 @@ CREATE TABLE "actions" (
     "mission_id" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
+    "image_file_upload_id" TEXT,
 
     CONSTRAINT "actions_pkey" PRIMARY KEY ("id")
 );
@@ -103,6 +104,8 @@ CREATE TABLE "missions" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "target" TEXT,
+    "brand_logo_file_upload_id" TEXT,
+    "image_file_upload_id" TEXT,
 
     CONSTRAINT "missions_pkey" PRIMARY KEY ("id")
 );
@@ -154,6 +157,9 @@ CREATE INDEX "action_options_action_id_idx" ON "action_options"("action_id");
 CREATE UNIQUE INDEX "action_options_action_id_order_key" ON "action_options"("action_id", "order");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "actions_image_file_upload_id_key" ON "actions"("image_file_upload_id");
+
+-- CreateIndex
 CREATE INDEX "actions_mission_id_idx" ON "actions"("mission_id");
 
 -- CreateIndex
@@ -167,6 +173,12 @@ CREATE INDEX "file_uploads_related_entity_type_related_entity_id_idx" ON "file_u
 
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "missions_brand_logo_file_upload_id_key" ON "missions"("brand_logo_file_upload_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "missions_image_file_upload_id_key" ON "missions"("image_file_upload_id");
 
 -- CreateIndex
 CREATE INDEX "missions_creator_id_idx" ON "missions"("creator_id");
@@ -205,13 +217,22 @@ ALTER TABLE "action_options" ADD CONSTRAINT "action_options_action_id_fkey" FORE
 ALTER TABLE "action_options" ADD CONSTRAINT "action_options_file_upload_id_fkey" FOREIGN KEY ("file_upload_id") REFERENCES "file_uploads"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "actions" ADD CONSTRAINT "actions_image_file_upload_id_fkey" FOREIGN KEY ("image_file_upload_id") REFERENCES "file_uploads"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "actions" ADD CONSTRAINT "actions_mission_id_fkey" FOREIGN KEY ("mission_id") REFERENCES "missions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "file_uploads" ADD CONSTRAINT "file_uploads_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "missions" ADD CONSTRAINT "missions_brand_logo_file_upload_id_fkey" FOREIGN KEY ("brand_logo_file_upload_id") REFERENCES "file_uploads"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "missions" ADD CONSTRAINT "missions_creator_id_fkey" FOREIGN KEY ("creator_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "missions" ADD CONSTRAINT "missions_image_file_upload_id_fkey" FOREIGN KEY ("image_file_upload_id") REFERENCES "file_uploads"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "missions" ADD CONSTRAINT "missions_reward_id_fkey" FOREIGN KEY ("reward_id") REFERENCES "rewards"("id") ON DELETE SET NULL ON UPDATE CASCADE;
