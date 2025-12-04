@@ -1,3 +1,4 @@
+import { TiptapEditor } from "@/app/admin/components/common/TiptapEditor";
 import {
   Card,
   CardContent,
@@ -7,7 +8,6 @@ import {
 } from "@/app/admin/components/shadcn-ui/card";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
-import { TiptapEditor } from "@/app/admin/components/common/TiptapEditor";
 import type { UseFormReturn } from "react-hook-form";
 
 interface BasicInfoCardProps {

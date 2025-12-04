@@ -1,23 +1,23 @@
 "use client";
 
+import { Button } from "@/app/admin/components/shadcn-ui/button";
+import { cn } from "@/app/admin/lib/utils";
 import type { Editor } from "@tiptap/core";
 import Placeholder from "@tiptap/extension-placeholder";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { useEffect } from "react";
-import { Button } from "@/app/admin/components/shadcn-ui/button";
-import { cn } from "@/app/admin/lib/utils";
 import {
   Bold,
-  Italic,
-  List,
-  ListOrdered,
-  Quote,
   Code,
   Heading1,
   Heading2,
   Heading3,
+  Italic,
+  List,
+  ListOrdered,
+  Quote,
 } from "lucide-react";
+import { useEffect } from "react";
 
 export interface TiptapEditorProps {
   content?: string;
@@ -66,9 +66,7 @@ function TiptapToolbar({ editor }: TiptapToolbarProps) {
           variant="ghost"
           size="icon"
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          className={cn(
-            editor.isActive("heading", { level: 1 }) && "bg-accent",
-          )}
+          className={cn(editor.isActive("heading", { level: 1 }) && "bg-accent")}
           aria-label="제목 1"
         >
           <Heading1 className="size-4" />
@@ -78,9 +76,7 @@ function TiptapToolbar({ editor }: TiptapToolbarProps) {
           variant="ghost"
           size="icon"
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={cn(
-            editor.isActive("heading", { level: 2 }) && "bg-accent",
-          )}
+          className={cn(editor.isActive("heading", { level: 2 }) && "bg-accent")}
           aria-label="제목 2"
         >
           <Heading2 className="size-4" />
@@ -90,9 +86,7 @@ function TiptapToolbar({ editor }: TiptapToolbarProps) {
           variant="ghost"
           size="icon"
           onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          className={cn(
-            editor.isActive("heading", { level: 3 }) && "bg-accent",
-          )}
+          className={cn(editor.isActive("heading", { level: 3 }) && "bg-accent")}
           aria-label="제목 3"
         >
           <Heading3 className="size-4" />
@@ -214,4 +208,3 @@ export function TiptapEditor({
 }
 
 export type { Editor };
-
