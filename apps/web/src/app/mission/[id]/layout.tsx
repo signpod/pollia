@@ -1,6 +1,6 @@
-import { getSurveyQuestionIds } from "@/actions/action";
-import { getSurvey } from "@/actions/mission";
-import { getMyResponseForSurvey } from "@/actions/mission-response";
+import { getMissionActionIds } from "@/actions/action";
+import { getMission } from "@/actions/mission";
+import { getMyResponseForMission } from "@/actions/mission-response";
 import { getCurrentUser } from "@/actions/user";
 import Providers from "@/components/providers/QueryProvider";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
@@ -21,7 +21,7 @@ export default async function MissionLayout({
 
   // Mission 데이터와 User 데이터를 prefetch
   const [missionResult] = await Promise.all([
-    getSurvey(id).catch(error => {
+    getMission(id).catch(error => {
       if (error instanceof Error && (error as Error & { cause?: number }).cause === 404) {
         notFound();
       }
@@ -33,11 +33,11 @@ export default async function MissionLayout({
     }),
     queryClient.prefetchQuery({
       queryKey: actionQueryKeys.actionsIds({ missionId: id }),
-      queryFn: () => getSurveyQuestionIds(id),
+      queryFn: () => getMissionActionIds(id),
     }),
     queryClient.prefetchQuery({
       queryKey: missionQueryKeys.missionResponseForMission(id),
-      queryFn: () => getMyResponseForSurvey(id),
+      queryFn: () => getMyResponseForMission(id),
     }),
   ]);
 

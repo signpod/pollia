@@ -1,6 +1,6 @@
 "use server";
 
-import { getSurveyQuestions } from "@/actions/action";
+import { getMissionActions } from "@/actions/action";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { dehydrate } from "@tanstack/react-query";
@@ -12,7 +12,7 @@ export default async function CreateMissionPage() {
 
   await queryClient.prefetchQuery({
     queryKey: actionQueryKeys.actions(),
-    queryFn: () => getSurveyQuestions(),
+    queryFn: () => getMissionActions(),
   });
 
   const dehydratedState = dehydrate(queryClient);
