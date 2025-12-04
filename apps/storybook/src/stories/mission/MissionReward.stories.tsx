@@ -1,9 +1,9 @@
-import { SurveyReward } from "@/app/survey/[id]/components/SurveyReward";
+import { MissionReward } from "@/app/mission/[id]/components";
 import type { Meta, StoryObj } from "@storybook/nextjs";
 
-const meta: Meta<typeof SurveyReward> = {
-  title: "Survey/SurveyReward",
-  component: SurveyReward,
+const meta: Meta<typeof MissionReward> = {
+  title: "Mission/MissionReward",
+  component: MissionReward,
   parameters: {
     layout: "padded",
     docs: {
@@ -58,7 +58,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: args => (
     <div className="w-full max-w-[390px]">
-      <SurveyReward {...args} />
+      <MissionReward {...args} />
     </div>
   ),
   args: {
@@ -74,7 +74,7 @@ export const OptionalProps: Story = {
     <div className="w-full max-w-[390px] space-y-6">
       <div>
         <h3 className="mb-3 text-sm font-medium">모든 값 있음 (이름 + 이미지 + 설명)</h3>
-        <SurveyReward
+        <MissionReward
           rewardName="CU 바나나우유 기프티콘"
           rewardImage="https://images.unsplash.com/photo-1563636619-e9143da7973b?w=150&h=150&fit=crop"
           rewardDescription="설문 완료 후 즉시 제공"
@@ -83,7 +83,7 @@ export const OptionalProps: Story = {
 
       <div>
         <h3 className="mb-3 text-sm font-medium">이름 + 설명 (이미지 없음)</h3>
-        <SurveyReward
+        <MissionReward
           rewardName="CU 바나나우유 기프티콘"
           rewardDescription="설문 완료 후 즉시 제공"
         />
@@ -91,7 +91,7 @@ export const OptionalProps: Story = {
 
       <div>
         <h3 className="mb-3 text-sm font-medium">이름 + 이미지 (설명 없음)</h3>
-        <SurveyReward
+        <MissionReward
           rewardName="CU 바나나우유 기프티콘"
           rewardImage="https://images.unsplash.com/photo-1563636619-e9143da7973b?w=150&h=150&fit=crop"
         />
@@ -99,7 +99,7 @@ export const OptionalProps: Story = {
 
       <div>
         <h3 className="mb-3 text-sm font-medium">이름만 (이미지, 설명 없음)</h3>
-        <SurveyReward rewardName="참여 감사 포인트 100P" />
+        <MissionReward rewardName="참여 감사 포인트 100P" />
       </div>
     </div>
   ),
@@ -111,12 +111,15 @@ export const WithoutImage: Story = {
     <div className="w-full max-w-[390px] space-y-6">
       <div>
         <h3 className="mb-3 text-sm font-medium">짧은 텍스트</h3>
-        <SurveyReward rewardName="스타벅스 아메리카노" rewardDescription="설문 완료 후 즉시 제공" />
+        <MissionReward
+          rewardName="스타벅스 아메리카노"
+          rewardDescription="설문 완료 후 즉시 제공"
+        />
       </div>
 
       <div>
         <h3 className="mb-3 text-sm font-medium">긴 텍스트</h3>
-        <SurveyReward
+        <MissionReward
           rewardName="1등 : 신세계 상품권 5만원권, 1명
 2등 : 신세계 상품권 3만원권, 2명
 3등 : 신세계 상품권 1만원권, 5명"
@@ -126,7 +129,7 @@ export const WithoutImage: Story = {
 
       <div>
         <h3 className="mb-3 text-sm font-medium">이름만 (설명도 없음)</h3>
-        <SurveyReward rewardName="참여 포인트 적립" />
+        <MissionReward rewardName="참여 포인트 적립" />
       </div>
     </div>
   ),
@@ -138,7 +141,7 @@ export const WithoutDescription: Story = {
     <div className="w-full max-w-[390px] space-y-6">
       <div>
         <h3 className="mb-3 text-sm font-medium">이미지 + 짧은 이름</h3>
-        <SurveyReward
+        <MissionReward
           rewardName="스타벅스 아메리카노"
           rewardImage="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=150&h=150&fit=crop"
         />
@@ -146,7 +149,7 @@ export const WithoutDescription: Story = {
 
       <div>
         <h3 className="mb-3 text-sm font-medium">이미지 + 긴 이름</h3>
-        <SurveyReward
+        <MissionReward
           rewardName="1등 : 신세계 상품권 5만원권, 1명
 2등 : 신세계 상품권 3만원권, 2명"
           rewardImage="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=150&h=150&fit=crop"
@@ -155,7 +158,7 @@ export const WithoutDescription: Story = {
 
       <div>
         <h3 className="mb-3 text-sm font-medium">이름만 (이미지도 없음)</h3>
-        <SurveyReward rewardName="참여 포인트 적립" />
+        <MissionReward rewardName="참여 포인트 적립" />
       </div>
     </div>
   ),
@@ -165,7 +168,7 @@ export const WithoutDescription: Story = {
 export const LongText: Story = {
   render: args => (
     <div className="w-full max-w-[390px]">
-      <SurveyReward {...args} />
+      <MissionReward {...args} />
     </div>
   ),
   args: {
@@ -183,7 +186,7 @@ export const LineBreakTest: Story = {
     <div className="w-full max-w-[390px] space-y-6">
       <div>
         <h3 className="mb-3 text-sm font-medium">이름에만 개행</h3>
-        <SurveyReward
+        <MissionReward
           rewardName={"1등 상품\n2등 상품\n3등 상품"}
           rewardImage="https://images.unsplash.com/photo-1563636619-e9143da7973b?w=150&h=150&fit=crop"
           rewardDescription="설문 완료 후 즉시 제공"
@@ -192,7 +195,7 @@ export const LineBreakTest: Story = {
 
       <div>
         <h3 className="mb-3 text-sm font-medium">설명에만 개행</h3>
-        <SurveyReward
+        <MissionReward
           rewardName="CU 바나나우유 기프티콘"
           rewardImage="https://images.unsplash.com/photo-1563636619-e9143da7973b?w=150&h=150&fit=crop"
           rewardDescription={
@@ -203,7 +206,7 @@ export const LineBreakTest: Story = {
 
       <div>
         <h3 className="mb-3 text-sm font-medium">이름과 설명 모두 개행</h3>
-        <SurveyReward
+        <MissionReward
           rewardName={
             "1등 : 신세계 상품권 5만원권, 1명\n2등 : 신세계 상품권 3만원권, 2명\n3등 : 신세계 상품권 1만원권, 5명"
           }
@@ -216,7 +219,7 @@ export const LineBreakTest: Story = {
 
       <div>
         <h3 className="mb-3 text-sm font-medium">긴 텍스트 + 개행 (접었을 때 truncate 확인)</h3>
-        <SurveyReward
+        <MissionReward
           rewardName={
             "1등 : 신세계 상품권 5만원권 (매우 귀한 상품입니다), 1명\n2등 : 신세계 상품권 3만원권 (좋은 상품입니다), 2명\n3등 : 신세계 상품권 1만원권 (감사 상품입니다), 5명"
           }
@@ -236,7 +239,7 @@ export const DifferentImages: Story = {
     <div className="w-full max-w-[390px] space-y-6">
       <div>
         <h3 className="mb-3 text-sm font-medium">가로로 긴 이미지</h3>
-        <SurveyReward
+        <MissionReward
           rewardName="스타벅스 아메리카노"
           rewardImage="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&h=100&fit=crop"
           rewardDescription="설문 완료 후 즉시 제공"
@@ -245,7 +248,7 @@ export const DifferentImages: Story = {
 
       <div>
         <h3 className="mb-3 text-sm font-medium">세로로 긴 이미지</h3>
-        <SurveyReward
+        <MissionReward
           rewardName="CU 바나나우유"
           rewardImage="https://images.unsplash.com/photo-1481391032119-d89fee407e44?w=100&h=200&fit=crop"
           rewardDescription="설문 완료 후 즉시 제공"
@@ -254,7 +257,7 @@ export const DifferentImages: Story = {
 
       <div>
         <h3 className="mb-3 text-sm font-medium">정사각형 이미지</h3>
-        <SurveyReward
+        <MissionReward
           rewardName="신세계 상품권"
           rewardImage="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=150&h=150&fit=crop"
           rewardDescription="설문 완료 후 즉시 제공"
@@ -270,7 +273,7 @@ export const RealWorldExample: Story = {
     <div className="w-full max-w-[390px] space-y-8">
       <div>
         <h3 className="mb-3 text-sm font-medium">단일 리워드</h3>
-        <SurveyReward
+        <MissionReward
           rewardName="CU 바나나우유 기프티콘"
           rewardImage="https://images.unsplash.com/photo-1563636619-e9143da7973b?w=150&h=150&fit=crop"
           rewardDescription="설문 완료 후 즉시 제공"
@@ -279,7 +282,7 @@ export const RealWorldExample: Story = {
 
       <div>
         <h3 className="mb-3 text-sm font-medium">추첨형 리워드</h3>
-        <SurveyReward
+        <MissionReward
           rewardName="1등 : 신세계 상품권 5만원권, 1명 
 2등 : 신세계 상품권 3만원권, 2명
 3등 : 신세계 상품권 1만원권, 5명
@@ -291,7 +294,7 @@ export const RealWorldExample: Story = {
 
       <div>
         <h3 className="mb-3 text-sm font-medium">간단한 리워드</h3>
-        <SurveyReward rewardName="참여 감사 포인트 100P" />
+        <MissionReward rewardName="참여 감사 포인트 100P" />
       </div>
     </div>
   ),
@@ -304,17 +307,17 @@ export const AccordionBehavior: Story = {
       <div>
         <h3 className="mb-3 text-sm font-medium">여러 개의 아코디언 (독립적으로 동작)</h3>
         <div className="space-y-4">
-          <SurveyReward
+          <MissionReward
             rewardName="1등 리워드"
             rewardImage="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=150&h=150&fit=crop"
             rewardDescription="설문 완료 후 추첨을 통해 지급됩니다."
           />
-          <SurveyReward
+          <MissionReward
             rewardName="2등 리워드"
             rewardImage="https://images.unsplash.com/photo-1563636619-e9143da7973b?w=150&h=150&fit=crop"
             rewardDescription="설문 완료 후 추첨을 통해 지급됩니다."
           />
-          <SurveyReward
+          <MissionReward
             rewardName="3등 리워드"
             rewardImage="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=150&h=150&fit=crop"
             rewardDescription="설문 완료 후 추첨을 통해 지급됩니다."
@@ -337,7 +340,7 @@ export const MobileView: Story = {
         </div>
       </div>
 
-      <SurveyReward
+      <MissionReward
         rewardName="1등 : 신세계 상품권 5만원권, 1명 
 2등 : 신세계 상품권 3만원권, 2명
 3등 : 신세계 상품권 1만원권, 5명
@@ -364,7 +367,7 @@ export const TruncationBug: Story = {
           현재 버그: collapsed view의 truncate 클래스 때문에 개행이 있는 짧은 텍스트도 항상
           아코디언이 표시됩니다. 실제로는 expanded view에서 충분히 짧게 표시되는데도 말이죠.
         </p>
-        <SurveyReward
+        <MissionReward
           rewardName={"CU 바나나우유\n기프티콘"}
           rewardImage="https://images.unsplash.com/photo-1563636619-e9143da7973b?w=150&h=150&fit=crop"
           rewardDescription={"설문 완료 후\n즉시 제공"}
@@ -376,7 +379,7 @@ export const TruncationBug: Story = {
         <p className="mb-3 text-xs text-gray-600">
           동일한 길이지만 개행이 없으면 아코디언이 표시되지 않습니다.
         </p>
-        <SurveyReward
+        <MissionReward
           rewardName="CU 바나나우유 기프티콘"
           rewardImage="https://images.unsplash.com/photo-1563636619-e9143da7973b?w=150&h=150&fit=crop"
           rewardDescription="설문 완료 후 즉시 제공"
@@ -388,13 +391,13 @@ export const TruncationBug: Story = {
         <p className="mb-3 text-xs text-gray-600">
           한 줄에 5글자씩만 있는데도 아코디언이 나타납니다.
         </p>
-        <SurveyReward rewardName={"CU\n기프티콘"} rewardDescription={"즉시\n제공"} />
+        <MissionReward rewardName={"CU\n기프티콘"} rewardDescription={"즉시\n제공"} />
       </div>
 
       <div>
         <h3 className="mb-3 text-sm font-medium text-green-600">정상: 실제로 긴 텍스트</h3>
         <p className="mb-3 text-xs text-gray-600">이 경우는 아코디언이 정상적으로 필요합니다.</p>
-        <SurveyReward
+        <MissionReward
           rewardName="1등 : 신세계 상품권 5만원권, 1명 2등 : 신세계 상품권 3만원권, 2명"
           rewardImage="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=150&h=150&fit=crop"
           rewardDescription="매월 추첨을 통해 경품을 지급하며, 당첨자 결과는 고객센터에 게시됩니다."
