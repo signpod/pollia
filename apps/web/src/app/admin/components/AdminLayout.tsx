@@ -5,6 +5,7 @@ import { SidebarInset, SidebarProvider } from "@/app/admin/components/shadcn-ui/
 import { useAdminTheme } from "@/app/admin/hooks/use-admin-theme";
 import { AdminSidebar } from "./AdminSidebar";
 import { AdminSidebarTrigger } from "./AdminSidebarTrigger";
+import { Toaster } from "./shadcn-ui/sonner";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -15,6 +16,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <SidebarProvider>
+      <Toaster />
       <AdminSidebar />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
