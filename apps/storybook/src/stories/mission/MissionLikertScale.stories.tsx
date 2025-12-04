@@ -1,10 +1,10 @@
-import { SurveyLikertScale } from "@/app/survey/[id]/components/SurveyLikertScale";
+import { MissionLikertScale } from "@/app/mission/[id]/components";
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { useState } from "react";
 
-const meta: Meta<typeof SurveyLikertScale> = {
-  title: "Survey/SurveyLikertScale",
-  component: SurveyLikertScale,
+const meta: Meta<typeof MissionLikertScale> = {
+  title: "Mission/MissionLikertScale",
+  component: MissionLikertScale,
   parameters: {
     layout: "padded",
     docs: {
@@ -125,9 +125,9 @@ export const Default: Story = {
     const [value, setValue] = useState(args.value || 3);
     return (
       <div className="flex min-h-[300px] w-[400px] items-center justify-center p-8">
-        <SurveyLikertScale {...args} value={value} onChange={setValue}>
-          <SurveyLikertScale.Thumb value={value} />
-        </SurveyLikertScale>
+        <MissionLikertScale {...args} value={value} onChange={setValue}>
+          <MissionLikertScale.Thumb value={value} />
+        </MissionLikertScale>
       </div>
     );
   },
@@ -146,7 +146,7 @@ export const WithoutCustomThumb: Story = {
     const [value, setValue] = useState(args.value || 3);
     return (
       <div className="flex min-h-[300px] w-[400px] flex-col items-center justify-center gap-4 p-8">
-        <SurveyLikertScale {...args} value={value} onChange={setValue} />
+        <MissionLikertScale {...args} value={value} onChange={setValue} />
         <p className="text-sm text-zinc-600">선택된 값: {value}</p>
       </div>
     );
@@ -174,7 +174,7 @@ export const WithNumberLabels: Story = {
     const [value, setValue] = useState(args.value || 1);
     return (
       <div className="flex min-h-[300px] w-[400px] flex-col items-center justify-center gap-4 p-8">
-        <SurveyLikertScale value={value} onChange={setValue} min={1} max={5} step={1} />
+        <MissionLikertScale value={value} onChange={setValue} min={1} max={5} step={1} />
         <p className="text-sm text-zinc-600">선택된 값: {value}</p>
       </div>
     );
@@ -202,9 +202,9 @@ export const WithCustomColors: Story = {
     const [value, setValue] = useState(args.value || 3);
     return (
       <div className="flex min-h-[300px] w-[400px] flex-col items-center justify-center gap-4 p-8">
-        <SurveyLikertScale value={value} onChange={setValue} min={1} max={5} step={1}>
-          <SurveyLikertScale.Thumb value={value} className="text-sky-600" />
-        </SurveyLikertScale>
+        <MissionLikertScale value={value} onChange={setValue} min={1} max={5} step={1}>
+          <MissionLikertScale.Thumb value={value} className="text-sky-600" />
+        </MissionLikertScale>
         <p className="text-sm text-zinc-600">선택된 값: {value} (커스텀 색상)</p>
       </div>
     );
@@ -232,9 +232,9 @@ export const SevenPointScale: Story = {
     const [value, setValue] = useState(args.value || 4);
     return (
       <div className="flex min-h-[300px] w-[400px] flex-col items-center justify-center gap-4 p-8">
-        <SurveyLikertScale value={value} onChange={setValue} min={1} max={7} step={1}>
-          <SurveyLikertScale.Thumb value={value} />
-        </SurveyLikertScale>
+        <MissionLikertScale value={value} onChange={setValue} min={1} max={7} step={1}>
+          <MissionLikertScale.Thumb value={value} />
+        </MissionLikertScale>
         <p className="text-sm text-zinc-600">선택된 값: {value} / 7</p>
       </div>
     );
@@ -262,9 +262,9 @@ export const Disabled: Story = {
     const [value, setValue] = useState(args.value || 3);
     return (
       <div className="flex min-h-[300px] w-[400px] items-center justify-center p-8">
-        <SurveyLikertScale value={value} onChange={setValue} min={1} max={5} step={1} disabled>
-          <SurveyLikertScale.Thumb value={value} />
-        </SurveyLikertScale>
+        <MissionLikertScale value={value} onChange={setValue} min={1} max={5} step={1} disabled>
+          <MissionLikertScale.Thumb value={value} />
+        </MissionLikertScale>
       </div>
     );
   },
@@ -318,15 +318,15 @@ export const RealWorldExample: Story = {
         {questions.map(q => (
           <div key={q.id} className="flex flex-col gap-4">
             <h3 className="text-base font-medium">{q.question}</h3>
-            <SurveyLikertScale
+            <MissionLikertScale
               value={answers[q.id] ?? 3}
               onChange={value => setAnswers(prev => ({ ...prev, [q.id]: value }))}
               min={1}
               max={5}
               step={1}
             >
-              <SurveyLikertScale.Thumb value={answers[q.id] ?? 3} />
-            </SurveyLikertScale>
+              <MissionLikertScale.Thumb value={answers[q.id] ?? 3} />
+            </MissionLikertScale>
           </div>
         ))}
         <div className="mt-4 rounded-lg bg-zinc-100 p-4">
@@ -362,9 +362,9 @@ export const MobileTouch: Story = {
             썸네일을 터치하고 드래그하거나 트랙을 탭하세요
           </p>
         </div>
-        <SurveyLikertScale value={value} onChange={setValue} min={1} max={5} step={1}>
-          <SurveyLikertScale.Thumb value={value} />
-        </SurveyLikertScale>
+        <MissionLikertScale value={value} onChange={setValue} min={1} max={5} step={1}>
+          <MissionLikertScale.Thumb value={value} />
+        </MissionLikertScale>
         <div className="flex flex-col items-center gap-2">
           <p className="text-2xl font-bold text-violet-600">{value}</p>
           <p className="text-sm text-zinc-500">선택된 값</p>
@@ -397,23 +397,23 @@ export const ThumbGallery: Story = {
         <h2 className="text-xl font-bold">썸네일 표정 갤러리</h2>
         <div className="flex items-center justify-around">
           <div className="flex flex-col items-center gap-2">
-            <SurveyLikertScale.Thumb value={1} />
+            <MissionLikertScale.Thumb value={1} />
             <p className="text-sm text-zinc-600">매우 나쁨 (1)</p>
           </div>
           <div className="flex flex-col items-center gap-2">
-            <SurveyLikertScale.Thumb value={2} />
+            <MissionLikertScale.Thumb value={2} />
             <p className="text-sm text-zinc-600">나쁨 (2)</p>
           </div>
           <div className="flex flex-col items-center gap-2">
-            <SurveyLikertScale.Thumb value={3} />
+            <MissionLikertScale.Thumb value={3} />
             <p className="text-sm text-zinc-600">보통 (3)</p>
           </div>
           <div className="flex flex-col items-center gap-2">
-            <SurveyLikertScale.Thumb value={4} />
+            <MissionLikertScale.Thumb value={4} />
             <p className="text-sm text-zinc-600">좋음 (4)</p>
           </div>
           <div className="flex flex-col items-center gap-2">
-            <SurveyLikertScale.Thumb value={5} />
+            <MissionLikertScale.Thumb value={5} />
             <p className="text-sm text-zinc-600">매우 좋음 (5)</p>
           </div>
         </div>
