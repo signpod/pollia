@@ -13,6 +13,9 @@ model Action {
   options       ActionOption[]
   mission       Mission?       @relation(fields: [missionId], references: [id], onDelete: Cascade)
 
+  imageFileUploadId String?     @unique @map("image_file_upload_id")
+  imageFileUpload   FileUpload? @relation("ActionImage", fields: [imageFileUploadId], references: [id])
+
   @@index([missionId])
   @@map("actions")
 }

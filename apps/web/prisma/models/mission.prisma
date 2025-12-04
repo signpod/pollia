@@ -17,6 +17,11 @@ model Mission {
   creator          User              @relation("MissionCreator", fields: [creatorId], references: [id])
   reward           Reward?           @relation(fields: [rewardId], references: [id])
 
+  imageFileUploadId     String?     @unique @map("image_file_upload_id")
+  imageFileUpload       FileUpload? @relation("MissionImage", fields: [imageFileUploadId], references: [id])
+  brandLogoFileUploadId String?     @unique @map("brand_logo_file_upload_id")
+  brandLogoFileUpload   FileUpload? @relation("MissionBrandLogo", fields: [brandLogoFileUploadId], references: [id])
+
   @@index([creatorId])
   @@index([isActive])
   @@index([rewardId])

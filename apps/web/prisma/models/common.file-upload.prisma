@@ -12,8 +12,13 @@ model FileUpload {
   relatedEntityId   String?            @map("related_entity_id")
   createdAt         DateTime           @default(now()) @map("created_at")
   confirmedAt       DateTime?          @map("confirmed_at")
-  actionOption      ActionOption?
-  user              User               @relation("FileUploader", fields: [userId], references: [id])
+
+  actionOption     ActionOption? @relation("ActionOptionImage")
+  missionImage     Mission?      @relation("MissionImage")
+  missionBrandLogo Mission?      @relation("MissionBrandLogo")
+  actionImage      Action?       @relation("ActionImage")
+
+  user User @relation("FileUploader", fields: [userId], references: [id])
 
   @@index([userId, status])
   @@index([status, createdAt])
@@ -28,6 +33,7 @@ enum FileStatus {
 
 enum RelatedEntityType {
   MISSION
+  ACTION
   ACTION_OPTION
   ACTION
 }
