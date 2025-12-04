@@ -1,8 +1,4 @@
-import {
-  optionInputSchema,
-  optionUpdateSchema,
-  optionsInputSchema,
-} from "@/schemas/survey-question-option";
+import { optionInputSchema, optionUpdateSchema, optionsInputSchema } from "@/schemas/action-option";
 import { actionOptionRepository } from "@/server/repositories/action-option/actionOptionRepository";
 import { actionRepository } from "@/server/repositories/action/actionRepository";
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
@@ -41,7 +37,7 @@ export class ActionOptionService {
 
   async createOption(
     data: {
-      questionId: string;
+      actionId: string;
       title: string;
       description?: string;
       imageUrl?: string;
@@ -57,7 +53,7 @@ export class ActionOptionService {
       throw error;
     }
 
-    const actionId = result.data.questionId;
+    const actionId = result.data.actionId;
 
     await this.verifyActionAccess(actionId, userId);
 
@@ -76,7 +72,7 @@ export class ActionOptionService {
   }
 
   async createOptions(
-    questionId: string,
+    actionId: string,
     options: Array<{
       title: string;
       description?: string;
@@ -86,14 +82,12 @@ export class ActionOptionService {
     }>,
     userId: string,
   ): Promise<ActionOption[]> {
-    const result = optionsInputSchema.safeParse({ questionId, options });
+    const result = optionsInputSchema.safeParse({ actionId, options });
     if (!result.success) {
       const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
       error.cause = 400;
       throw error;
     }
-
-    const actionId = result.data.questionId;
 
     await this.verifyActionAccess(actionId, userId);
 

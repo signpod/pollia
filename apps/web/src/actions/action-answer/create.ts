@@ -4,15 +4,15 @@ import { requireAuth } from "@/actions/common/auth";
 import { actionAnswerService } from "@/server/services/action-answer";
 import type { CreateAnswerInput, SubmitAnswersInput } from "@/server/services/action-answer/types";
 import type {
-  CreateQuestionAnswerRequest,
-  CreateQuestionAnswerResponse,
-  SubmitQuestionAnswersRequest,
-  SubmitQuestionAnswersResponse,
+  CreateActionAnswerRequest,
+  CreateActionAnswerResponse,
+  SubmitActionAnswersRequest,
+  SubmitActionAnswersResponse,
 } from "@/types/dto";
 
-function toCreateAnswerInput(dto: CreateQuestionAnswerRequest): CreateAnswerInput {
+function toCreateAnswerInput(dto: CreateActionAnswerRequest): CreateAnswerInput {
   return {
-    questionId: dto.questionId,
+    actionId: dto.actionId,
     responseId: dto.responseId,
     optionId: dto.optionId,
     textAnswer: dto.textAnswer,
@@ -20,11 +20,11 @@ function toCreateAnswerInput(dto: CreateQuestionAnswerRequest): CreateAnswerInpu
   };
 }
 
-function toSubmitAnswersInput(dto: SubmitQuestionAnswersRequest): SubmitAnswersInput {
+function toSubmitAnswersInput(dto: SubmitActionAnswersRequest): SubmitAnswersInput {
   return {
     responseId: dto.responseId,
     answers: dto.answers.map(a => ({
-      questionId: a.questionId,
+      actionId: a.actionId,
       type: a.type,
       selectedOptionIds: a.selectedOptionIds,
       scaleValue: a.scaleValue,
@@ -34,14 +34,14 @@ function toSubmitAnswersInput(dto: SubmitQuestionAnswersRequest): SubmitAnswersI
 }
 
 export async function createAnswer(
-  request: CreateQuestionAnswerRequest,
-): Promise<CreateQuestionAnswerResponse> {
+  request: CreateActionAnswerRequest,
+): Promise<CreateActionAnswerResponse> {
   try {
     const user = await requireAuth();
     const input = toCreateAnswerInput(request);
     const answer = await actionAnswerService.createAnswer(input, user.id);
 
-    const data = { ...answer, questionId: answer.action.id };
+    const data = { ...answer, actionId: answer.action.id };
     return { data };
   } catch (error) {
     console.error("createAnswer error:", error);
@@ -55,8 +55,8 @@ export async function createAnswer(
 }
 
 export async function submitAnswers(
-  request: SubmitQuestionAnswersRequest,
-): Promise<SubmitQuestionAnswersResponse> {
+  request: SubmitActionAnswersRequest,
+): Promise<SubmitActionAnswersResponse> {
   try {
     const user = await requireAuth();
     const input = toSubmitAnswersInput(request);

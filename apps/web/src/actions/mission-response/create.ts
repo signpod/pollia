@@ -12,7 +12,7 @@ import type {
 
 function toStartResponseInput(dto: StartSurveyResponseRequest): StartResponseInput {
   return {
-    surveyId: dto.surveyId,
+    missionId: dto.surveyId,
   };
 }
 

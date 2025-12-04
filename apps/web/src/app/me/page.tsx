@@ -1,6 +1,7 @@
 import { getUserSurveys } from "@/actions/mission";
 import { getCurrentUser } from "@/actions/user/read";
-import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
+import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
+import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { dehydrate } from "@tanstack/react-query";
@@ -15,14 +16,14 @@ export default async function MePage() {
   });
 
   await queryClient.prefetchQuery({
-    queryKey: surveyQueryKeys.surveyQuestions(),
+    queryKey: actionQueryKeys.actions(),
     queryFn: () => {
       return getUserSurveys();
     },
   });
 
   await queryClient.prefetchInfiniteQuery({
-    queryKey: surveyQueryKeys.userSurveys(),
+    queryKey: missionQueryKeys.userMissions(),
     queryFn: ({ pageParam }) => {
       return getUserSurveys({
         cursor: pageParam,

@@ -4,7 +4,7 @@ import { requireAuth } from "@/actions/common/auth";
 import { missionService } from "@/server/services/mission";
 import type { GetUserMissionsOptions } from "@/server/services/mission/types";
 import type { SortOrderType } from "@/types/common/sort";
-import type { GetSurveyResponse, GetUserSurveysResponse } from "@/types/dto";
+import type { GetMissionResponse, GetUserMissionsResponse } from "@/types/dto";
 
 export interface GetUserMissionsRequest {
   cursor?: string;
@@ -22,7 +22,7 @@ function toGetUserMissionsOptions(dto: GetUserMissionsRequest): GetUserMissionsO
 
 export async function getUserMissions(
   request?: GetUserMissionsRequest,
-): Promise<GetUserSurveysResponse & { nextCursor?: string }> {
+): Promise<GetUserMissionsResponse & { nextCursor?: string }> {
   try {
     const user = await requireAuth();
     const limit = request?.limit ?? 10;
@@ -50,7 +50,7 @@ export async function getUserMissions(
   }
 }
 
-export async function getMission(missionId: string): Promise<GetSurveyResponse> {
+export async function getMission(missionId: string): Promise<GetMissionResponse> {
   try {
     const mission = await missionService.getMission(missionId);
     return { data: mission };

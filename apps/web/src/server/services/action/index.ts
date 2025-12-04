@@ -4,7 +4,7 @@ import {
   questionUpdateSchema,
   scaleInputSchema,
   subjectiveInputSchema,
-} from "@/schemas/survey-question";
+} from "@/schemas/action";
 import { actionRepository } from "@/server/repositories/action/actionRepository";
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
 import { ActionType } from "@prisma/client";

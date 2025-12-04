@@ -3,10 +3,10 @@
 import { actionService } from "@/server/services/action";
 import type { GetActionsOptions } from "@/server/services/action/types";
 import type {
-  GetQuestionByIdResponse,
-  GetSurveyQuestionIdsResponse,
-  GetSurveyQuestionsDetailResponse,
-  GetSurveyQuestionsResponse,
+  GetActionByIdResponse,
+  GetActionIdsResponse,
+  GetActionResponse,
+  GetMissionActionsDetailResponse,
 } from "@/types/dto";
 import type { ActionType } from "@prisma/client";
 
@@ -28,7 +28,7 @@ function toGetActionsOptions(dto: GetMissionQuestionsRequest): GetActionsOptions
   };
 }
 
-export async function getActionById(actionId: string): Promise<GetQuestionByIdResponse> {
+export async function getActionById(actionId: string): Promise<GetActionByIdResponse> {
   try {
     const question = await actionService.getActionById(actionId);
     const data = { ...question, surveyId: question.missionId };
@@ -44,12 +44,10 @@ export async function getActionById(actionId: string): Promise<GetQuestionByIdRe
   }
 }
 
-export async function getMissionActionIds(
-  missionId: string,
-): Promise<GetSurveyQuestionIdsResponse> {
+export async function getMissionActionIds(missionId: string): Promise<GetActionIdsResponse> {
   try {
     const { actionIds } = await actionService.getMissionActionIds(missionId);
-    const data = { questionIds: actionIds };
+    const data = { actionIds };
     return { data };
   } catch (error) {
     console.error("getMissionActionIds error:", error);
@@ -64,7 +62,7 @@ export async function getMissionActionIds(
 
 export async function getMissionActionsDetail(
   missionId: string,
-): Promise<GetSurveyQuestionsDetailResponse> {
+): Promise<GetMissionActionsDetailResponse> {
   try {
     const questions = await actionService.getMissionActionsDetail(missionId);
     const data = questions.map(question => ({ ...question, surveyId: question.missionId }));
@@ -82,7 +80,7 @@ export async function getMissionActionsDetail(
 
 export async function getMissionActions(
   request?: GetMissionQuestionsRequest,
-): Promise<GetSurveyQuestionsResponse & { nextCursor?: string }> {
+): Promise<GetActionResponse & { nextCursor?: string }> {
   try {
     const limit = request?.limit ?? 10;
     const options = request
