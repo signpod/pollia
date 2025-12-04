@@ -1,5 +1,5 @@
 import { getUserSurveys } from "@/actions/mission";
-import { surveyQueryKeys } from "@/constants/queryKeys/surveyQueryKeys";
+import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { dehydrate } from "@tanstack/react-query";
 import "./admin.css";
@@ -12,7 +12,7 @@ export default async function AdminLayoutRoot({ children }: { children: React.Re
   const queryClient = getQueryClient();
 
   await queryClient.prefetchInfiniteQuery({
-    queryKey: surveyQueryKeys.userSurveys(),
+    queryKey: missionQueryKeys.userMissions(),
     queryFn: ({ pageParam }) => {
       return getUserSurveys({
         cursor: pageParam,

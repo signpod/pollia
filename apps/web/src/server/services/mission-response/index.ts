@@ -1,4 +1,4 @@
-import { completeResponseInputSchema, startResponseInputSchema } from "@/schemas/survey-response";
+import { completeResponseInputSchema, startResponseInputSchema } from "@/schemas/mission-response";
 import { missionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
 import type { CompleteResponseInput, ResponseStats, StartResponseInput } from "./types";
@@ -86,8 +86,7 @@ export class MissionResponseService {
       throw error;
     }
 
-    // 스키마의 surveyId를 missionId로 매핑
-    const missionId = parseResult.data.surveyId;
+    const missionId = parseResult.data.missionId;
 
     const mission = await this.missionRepo.findById(missionId);
 

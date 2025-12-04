@@ -1,12 +1,12 @@
 "use client";
 
-import { useReadSurveys } from "@/hooks/survey";
-import { GetUserSurveysResponse } from "@/types/dto";
+import { useReadMissions } from "@/hooks/mission";
+import { GetUserMissionsResponse } from "@/types/dto";
 import { ReactNode } from "react";
 
 interface UserSurveyDataContainerProps {
   children: (data: {
-    data: GetUserSurveysResponse["data"];
+    data: GetUserMissionsResponse["data"];
     isLoading: boolean;
     isFetchingNextPage: boolean;
     hasNextPage: boolean;
@@ -31,7 +31,7 @@ export function UserSurveyDataContainer({ children }: UserSurveyDataContainerPro
 }
 
 function useUserSurveyData() {
-  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useReadSurveys();
+  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useReadMissions();
 
   const flatData = data?.pages.flatMap(page => page.data) ?? [];
 

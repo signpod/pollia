@@ -1,9 +1,4 @@
-import {
-  createEitherOrAction,
-  createMultipleChoiceAction,
-  createScaleAction,
-  createSubjectiveAction,
-} from "./create";
+import { createMultipleChoiceAction, createScaleAction, createSubjectiveAction } from "./create";
 import { deleteAction } from "./delete";
 import {
   getActionById,
@@ -25,7 +20,6 @@ export {
   createMultipleChoiceAction,
   createScaleAction,
   createSubjectiveAction,
-  createEitherOrAction,
   getActionById,
   getMissionActionIds,
   getMissionActionsDetail,

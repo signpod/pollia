@@ -1,5 +1,5 @@
 export interface StartResponseInput {
-  surveyId: string;
+  missionId: string;
 }
 
 export interface CompleteResponseInput {

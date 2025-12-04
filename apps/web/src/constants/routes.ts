@@ -11,18 +11,13 @@ export const ROUTES = {
   HOME: "/",
   ME: "/me",
 
-  // 투표 관련
-  POLL: (id: string) => `/poll/${id}`,
-  POLL_CREATE: "/poll/create",
-  POLL_CREATE_DONE: "/poll/create/done",
-
   // 설문 관련
-  SURVEY: (id: string) => `/survey/${id}`,
-  SURVEY_DONE: (id: string) => `/survey/${id}/done`,
-  SURVEY_QUESTION: (questionId: string) => `/survey-question/${questionId}`,
-  SURVEY_CREATE: "/survey/create",
-  SURVEY_QUESTION_CREATE: "/survey/question/create",
-  SURVEY_QUESTION_CREATE_DONE: "/survey/question/create/done",
+  MISSION: (id: string) => `/mission/${id}`,
+  MISSION_DONE: (id: string) => `/mission/${id}/done`,
+  ACTION: (actionId: string) => `/action/${actionId}`,
+  MISSION_CREATE: "/mission/create",
+  ACTION_CREATE: "/mission/action/create",
+  ACTION_CREATE_DONE: "/mission/action/create/done",
 } as const;
 
 export type Routes = typeof ROUTES;

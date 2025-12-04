@@ -3,9 +3,9 @@
 import { requireAuth } from "@/actions/common/auth";
 import { missionService } from "@/server/services/mission";
 import type { CreateMissionInput } from "@/server/services/mission/types";
-import type { CreateSurveyRequest, CreateSurveyResponse } from "@/types/dto";
+import type { CreateMissionRequest, CreateMissionResponse } from "@/types/dto";
 
-function toCreateMissionInput(dto: CreateSurveyRequest): CreateMissionInput {
+function toCreateMissionInput(dto: CreateMissionRequest): CreateMissionInput {
   return {
     title: dto.title,
     description: dto.description,
@@ -17,7 +17,7 @@ function toCreateMissionInput(dto: CreateSurveyRequest): CreateMissionInput {
   };
 }
 
-export async function createMission(request: CreateSurveyRequest): Promise<CreateSurveyResponse> {
+export async function createMission(request: CreateMissionRequest): Promise<CreateMissionResponse> {
   try {
     const user = await requireAuth();
     const input = toCreateMissionInput(request);

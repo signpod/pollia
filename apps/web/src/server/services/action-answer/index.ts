@@ -1,8 +1,8 @@
 import {
-  questionAnswerInputSchema,
-  questionAnswerUpdateSchema,
+  actionAnswerInputSchema,
+  actionAnswerUpdateSchema,
   submitAnswersSchema,
-} from "@/schemas/survey-question-answer";
+} from "@/schemas/action-answer";
 import { actionAnswerRepository } from "@/server/repositories/action-answer/actionAnswerRepository";
 import { actionRepository } from "@/server/repositories/action/actionRepository";
 import { missionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
@@ -57,15 +57,14 @@ export class ActionAnswerService {
   }
 
   async createAnswer(input: CreateAnswerInput, userId: string) {
-    const parseResult = questionAnswerInputSchema.safeParse(input);
+    const parseResult = actionAnswerInputSchema.safeParse(input);
     if (!parseResult.success) {
       const error = new Error(parseResult.error.issues[0]?.message || "유효성 검사 실패");
       error.cause = 400;
       throw error;
     }
 
-    const { responseId, questionId, optionId, textAnswer, scaleAnswer } = parseResult.data;
-    const actionId = questionId;
+    const { responseId, actionId, optionId, textAnswer, scaleAnswer } = parseResult.data;
 
     await this.verifyResponseOwnership(responseId, userId);
 
@@ -115,7 +114,7 @@ export class ActionAnswerService {
       throw error;
     }
 
-    const actionIds = parseResult.data.answers.map(a => a.questionId);
+    const actionIds = parseResult.data.answers.map(a => a.actionId);
     const actions = await Promise.all(actionIds.map(id => this.actionRepo.findById(id)));
 
     for (let i = 0; i < actions.length; i++) {
@@ -153,7 +152,7 @@ export class ActionAnswerService {
     }> = [];
 
     for (const answer of parseResult.data.answers) {
-      const actionId = answer.questionId;
+      const actionId = answer.actionId;
 
       if (answer.type === ActionType.MULTIPLE_CHOICE && answer.selectedOptionIds) {
         for (const optionId of answer.selectedOptionIds) {
@@ -188,7 +187,7 @@ export class ActionAnswerService {
   }
 
   async updateAnswer(answerId: string, input: UpdateAnswerInput, userId: string) {
-    const parseResult = questionAnswerUpdateSchema.safeParse(input);
+    const parseResult = actionAnswerUpdateSchema.safeParse(input);
     if (!parseResult.success) {
       const error = new Error(parseResult.error.issues[0]?.message || "유효성 검사 실패");
       error.cause = 400;

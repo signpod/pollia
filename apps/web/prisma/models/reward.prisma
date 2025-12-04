@@ -6,11 +6,9 @@ model Reward {
   paymentType   PaymentType @map("payment_type")
   scheduledDate DateTime?   @map("scheduled_date")
   paidAt        DateTime?   @map("paid_at")
-
-  missions Mission[]
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  missions      Mission[]
 
   @@map("rewards")
 }

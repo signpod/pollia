@@ -1,7 +1,7 @@
 import {
   surveyInputSchema as missionInputSchema,
   surveyUpdateSchema as missionUpdateSchema,
-} from "@/schemas/survey";
+} from "@/schemas/mission";
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
 import type {
   CreateMissionInput,

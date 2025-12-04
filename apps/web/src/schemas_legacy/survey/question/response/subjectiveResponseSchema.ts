@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 /**
- * 주관식 질문 응답 스키마
+ * 주관식 액션 응답 스키마
  */
 export const subjectiveResponseSchema = z.object({
-  questionId: z.string().min(1, "질문 ID가 필요해요."),
+  actionId: z.string().min(1, "액션 ID가 필요해요."),
   textResponse: z
     .string()
     .min(1, "필수 입력 항목이에요.")
