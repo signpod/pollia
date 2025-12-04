@@ -16,7 +16,9 @@ interface BasicInfoCardProps {
     description?: string | undefined;
     target?: string | undefined;
     imageUrl?: string | undefined;
+    imageFileUploadId?: string | undefined;
     brandLogoUrl?: string | undefined;
+    brandLogoFileUploadId?: string | undefined;
     deadline?: Date | undefined;
     estimatedMinutes?: number | undefined;
     actionIds?: string[] | undefined;
