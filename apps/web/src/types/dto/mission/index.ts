@@ -1,16 +1,14 @@
-import type { Mission } from "@/types/domain/mission";
-// ============================================================================
-// Mission Creation DTOs
-// ============================================================================
+import type { Mission } from "@prisma/client";
 
 export interface CreateMissionRequest {
   title: string;
   description?: string | null;
   target?: string | null;
   imageUrl?: string | null;
-  questionIds: string[];
+  brandLogoUrl?: string | null;
   deadline?: Date;
   estimatedMinutes?: number;
+  isActive?: boolean;
 }
 
 export interface CreateMissionResponse {
@@ -20,26 +18,15 @@ export interface CreateMissionResponse {
     description?: string | null;
     target?: string | null;
     imageUrl?: string | null;
+    brandLogoUrl?: string | null;
+    deadline?: Date | null;
+    estimatedMinutes?: number | null;
     createdAt: Date;
     updatedAt: Date;
     creatorId: string;
-    deadline?: Date | null;
-    estimatedMinutes?: number | null;
   };
 }
 
-// ============================================================================
-// Mission Read DTOs
-// ============================================================================
-
-export interface GetUserMissionsResponse {
-  data: Pick<
-    Mission,
-    "id" | "title" | "description" | "target" | "imageUrl" | "isActive" | "createdAt" | "updatedAt"
-  >[];
-}
-
-// Mission 조회 응답 타입
 export interface GetMissionResponse {
   data: {
     id: string;
@@ -56,4 +43,26 @@ export interface GetMissionResponse {
     createdAt: Date;
     updatedAt: Date;
   };
+}
+
+export interface GetUserMissionsResponse {
+  data: Pick<
+    Mission,
+    "id" | "title" | "description" | "target" | "imageUrl" | "isActive" | "createdAt" | "updatedAt"
+  >[];
+}
+
+export interface UpdateMissionRequest {
+  title?: string;
+  description?: string | null;
+  target?: string | null;
+  imageUrl?: string | null;
+  brandLogoUrl?: string | null;
+  deadline?: Date;
+  estimatedMinutes?: number;
+  isActive?: boolean;
+}
+
+export interface UpdateMissionResponse {
+  data: Mission;
 }
