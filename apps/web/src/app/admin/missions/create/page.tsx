@@ -13,7 +13,6 @@ import { Label } from "@/app/admin/components/shadcn-ui/label";
 import { Textarea } from "@/app/admin/components/shadcn-ui/textarea";
 import { useCreateMission } from "@/app/admin/hooks/use-create-mission";
 import { missionInputSchema } from "@/schemas/mission";
-import type { MissionInput } from "@/schemas/mission";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -31,17 +30,18 @@ export default function AdminMissionCreatePage() {
     },
   });
 
-  const form = useForm<MissionInput>({
+  const form = useForm({
     resolver: zodResolver(missionInputSchema),
     defaultValues: {
       title: "",
       description: "",
       target: "",
-      imageUrl: "",
-      brandLogoUrl: "",
+      imageUrl: undefined,
+      brandLogoUrl: undefined,
       estimatedMinutes: undefined,
       deadline: undefined,
       isActive: undefined,
+      actionIds: [],
     },
   });
 
