@@ -62,7 +62,7 @@ function ActionCreateDoneContent() {
             ease: "easeOut",
           }}
         >
-          <Link href={"/survey/question/create"} className="w-full">
+          <Link href={ROUTES.ACTION_CREATE} className="w-full">
             <Button className="w-full" variant="secondary" aria-label="질문 하나 더 만들기">
               <Typo.ButtonText size="large">질문 하나 더 만들기</Typo.ButtonText>
             </Button>
