@@ -1,4 +1,4 @@
-import { getSurveyQuestionsDetail } from "@/actions/action";
+import { getMissionActionsDetail } from "@/actions/action";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { MissionCompletion } from "./ui";
@@ -13,7 +13,7 @@ export default async function MissionPage({
 
   await queryClient.prefetchQuery({
     queryKey: actionQueryKeys.actions({ missionId: id }),
-    queryFn: () => getSurveyQuestionsDetail(id),
+    queryFn: () => getMissionActionsDetail(id),
   });
 
   return <MissionCompletion />;
