@@ -7,7 +7,7 @@ import {
 } from "@/app/admin/components/shadcn-ui/card";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
-import { Textarea } from "@/app/admin/components/shadcn-ui/textarea";
+import { TiptapEditor } from "@/app/admin/components/common/TiptapEditor";
 import type { UseFormReturn } from "react-hook-form";
 
 interface BasicInfoCardProps {
@@ -46,11 +46,14 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
 
         <div className="space-y-2">
           <Label htmlFor="description">설명</Label>
-          <Textarea
-            id="description"
+          <TiptapEditor
+            content={form.watch("description") || ""}
+            onUpdate={content => {
+              form.setValue("description", content || undefined, { shouldDirty: true });
+            }}
             placeholder="미션에 대한 설명을 입력하세요"
-            rows={4}
-            {...form.register("description")}
+            showToolbar={true}
+            className="min-h-[200px]"
           />
           {form.formState.errors.description && (
             <p className="text-sm text-destructive">{form.formState.errors.description.message}</p>
