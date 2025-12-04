@@ -1,6 +1,6 @@
 "use client";
 
-import { createScaleQuestion } from "@/actions/action";
+import { createScaleAction } from "@/actions/action";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import type { CreateScaleActionRequest, CreateScaleActionResponse } from "@/types/dto";
@@ -18,7 +18,7 @@ export function useCreateScaleAction(options: UseCreateScaleActionOptions = {}) 
 
   return useMutation({
     mutationFn: async (payload: CreateScaleActionRequest): Promise<CreateScaleActionResponse> =>
-      createScaleQuestion(payload),
+      createScaleAction(payload),
     onSuccess: (data, variables) => {
       if (variables.missionId) {
         queryClient.invalidateQueries({

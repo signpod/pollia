@@ -1,13 +1,13 @@
 "use client";
 
-import { getSurveyQuestionIds } from "@/actions/action";
+import { getMissionActionIds } from "@/actions/action";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { useQuery } from "@tanstack/react-query";
 
 export const useReadActionIds = (missionId: string) => {
   return useQuery({
     queryKey: actionQueryKeys.actionsIds({ missionId }),
-    queryFn: () => getSurveyQuestionIds(missionId),
+    queryFn: () => getMissionActionIds(missionId),
     staleTime: 5 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000,
     retry: 3,

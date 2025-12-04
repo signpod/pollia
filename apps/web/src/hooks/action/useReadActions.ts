@@ -1,4 +1,4 @@
-import { getSurveyQuestions } from "@/actions/action";
+import { getMissionActions } from "@/actions/action";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { ActionType } from "@prisma/client";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -18,7 +18,7 @@ export const useReadActions = (params?: {
       isDraft: params?.options?.isDraft ?? false,
     }),
     queryFn: ({ pageParam }) => {
-      return getSurveyQuestions({
+      return getMissionActions({
         searchQuery: params?.options?.searchQuery,
         selectedQuestionTypes: params?.options?.selectedActionTypes ?? [],
         isDraft: params?.options?.isDraft,
