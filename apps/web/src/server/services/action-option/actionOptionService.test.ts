@@ -175,7 +175,7 @@ describe("ActionOptionService", () => {
     it("Option을 성공적으로 생성한다", async () => {
       // Given
       const createData = {
-        questionId: "action1",
+        actionId: "action1",
         title: "새 옵션",
         description: "설명",
         imageUrl: "https://example.com/image.jpg",
@@ -211,7 +211,7 @@ describe("ActionOptionService", () => {
     it("제목이 없으면 400 에러를 던진다", async () => {
       // Given
       const invalidData = {
-        questionId: "action1",
+        actionId: "action1",
         title: "",
         order: 0,
       };
@@ -227,7 +227,7 @@ describe("ActionOptionService", () => {
     it("제목이 100자를 초과하면 400 에러를 던진다", async () => {
       // Given
       const invalidData = {
-        questionId: "action1",
+        actionId: "action1",
         title: "a".repeat(101),
         order: 0,
       };
@@ -241,7 +241,7 @@ describe("ActionOptionService", () => {
     it("순서가 음수면 400 에러를 던진다", async () => {
       // Given
       const invalidData = {
-        questionId: "action1",
+        actionId: "action1",
         title: "옵션",
         order: -1,
       };
@@ -255,7 +255,7 @@ describe("ActionOptionService", () => {
     it("Action이 없으면 404 에러를 던진다", async () => {
       // Given
       const createData = {
-        questionId: "invalid-action",
+        actionId: "invalid-action",
         title: "옵션",
         order: 0,
       };
@@ -271,7 +271,7 @@ describe("ActionOptionService", () => {
     it("Mission 소유자가 아니면 403 에러를 던진다", async () => {
       // Given
       const createData = {
-        questionId: "action1",
+        actionId: "action1",
         title: "옵션",
         order: 0,
       };

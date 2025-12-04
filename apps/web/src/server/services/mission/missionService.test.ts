@@ -383,11 +383,11 @@ describe("MissionService", () => {
       const request = {
         title: "새 설문",
         description: "설명",
-        target: null,
-        imageUrl: null,
+        target: undefined,
+        imageUrl: undefined,
         deadline: new Date("2024-12-31"),
         estimatedMinutes: 10,
-        questionIds: ["a1", "a2"],
+        actionIds: ["a1", "a2"],
       };
       const mockCreatedMission = {
         id: "mission-1",
@@ -430,41 +430,17 @@ describe("MissionService", () => {
       // Given
       const request = {
         title: "",
-        description: null,
-        target: null,
-        imageUrl: null,
+        description: undefined,
+        target: undefined,
+        imageUrl: undefined,
         deadline: undefined,
         estimatedMinutes: undefined,
-        questionIds: ["a1"],
+        actionIds: ["a1"],
       };
 
       // When & Then
       await expect(missionService.createMission(request, "user-1")).rejects.toThrow(
         "제목을 입력해주세요.",
-      );
-
-      try {
-        await missionService.createMission(request, "user-1");
-      } catch (error) {
-        expect((error as Error & { cause: number }).cause).toBe(400);
-      }
-    });
-
-    it("Action이 없으면 400 에러를 던진다", async () => {
-      // Given
-      const request = {
-        title: "설문",
-        description: null,
-        target: null,
-        imageUrl: null,
-        deadline: undefined,
-        estimatedMinutes: undefined,
-        questionIds: [],
-      };
-
-      // When & Then
-      await expect(missionService.createMission(request, "user-1")).rejects.toThrow(
-        "최소 1개 이상의 질문이 필요합니다.",
       );
 
       try {

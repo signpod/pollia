@@ -6,9 +6,13 @@ const titleSchema = z
   .max(30, "제목은 30자를 초과할 수 없습니다.")
   .trim();
 
-const descriptionSchema = z.string().max(100, "설명은 100자를 초과할 수 없습니다.").optional();
+const descriptionSchema = z
+  .string()
+  .max(100, "설명은 100자를 초과할 수 없습니다.")
+  .optional();
 
 const targetSchema = z.string().max(50, "대상은 50자를 초과할 수 없습니다.").optional();
+
 const imageUrlSchema = z.url({ message: "올바른 URL 형식이 아닙니다." }).optional();
 
 const brandLogoUrlSchema = z.url({ message: "올바른 URL 형식이 아닙니다." }).optional();
@@ -22,6 +26,11 @@ const estimatedMinutesSchema = z
   .max(120, "예상 소요 시간은 120분을 초과할 수 없습니다.")
   .optional();
 
+const actionIdsSchema = z
+  .array(z.string().min(1, "액션 ID가 비어있습니다."))
+  .optional()
+  .default([]);
+
 export const missionInputSchema = z.object({
   title: titleSchema,
   description: descriptionSchema,
@@ -30,6 +39,7 @@ export const missionInputSchema = z.object({
   brandLogoUrl: brandLogoUrlSchema,
   deadline: deadlineSchema,
   estimatedMinutes: estimatedMinutesSchema,
+  actionIds: actionIdsSchema,
   isActive: z.boolean().optional(),
 });
 

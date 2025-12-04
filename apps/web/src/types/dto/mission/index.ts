@@ -2,10 +2,10 @@ import type { Mission } from "@prisma/client";
 
 export interface CreateMissionRequest {
   title: string;
-  description?: string | null;
-  target?: string | null;
-  imageUrl?: string | null;
-  brandLogoUrl?: string | null;
+  description?: string;
+  target?: string;
+  imageUrl?: string;
+  brandLogoUrl?: string;
   deadline?: Date;
   estimatedMinutes?: number;
   isActive?: boolean;
@@ -31,15 +31,15 @@ export interface GetMissionResponse {
   data: {
     id: string;
     title: string;
-    description: string | null;
-    target: string | null;
-    imageUrl: string | null;
-    brandLogoUrl: string | null;
-    estimatedMinutes: number | null;
-    deadline: Date | null;
+    description?: string | null;
+    target?: string | null;
+    imageUrl?: string | null;
+    brandLogoUrl?: string | null;
+    estimatedMinutes?: number | null;
+    deadline?: Date | null;
     isActive: boolean;
     creatorId: string;
-    rewardId: string | null;
+    rewardId?: string | null;
     createdAt: Date;
     updatedAt: Date;
   };
@@ -54,10 +54,10 @@ export interface GetUserMissionsResponse {
 
 export interface UpdateMissionRequest {
   title?: string;
-  description?: string | null;
-  target?: string | null;
-  imageUrl?: string | null;
-  brandLogoUrl?: string | null;
+  description?: string;
+  target?: string;
+  imageUrl?: string;
+  brandLogoUrl?: string;
   deadline?: Date;
   estimatedMinutes?: number;
   isActive?: boolean;
