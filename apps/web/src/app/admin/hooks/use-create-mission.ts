@@ -15,11 +15,9 @@ export function useCreateMission(options: UseCreateMissionOptions = {}) {
       return createMission(payload);
     },
     onSuccess: data => {
-      console.log("미션 생성 성공:", data);
       options.onSuccess?.(data);
     },
     onError: error => {
-      console.error("미션 생성 실패:", error);
       options.onError?.(error as Error);
     },
   });

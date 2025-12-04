@@ -1,4 +1,4 @@
-import { getUserSurveys } from "@/actions/mission";
+import { getUserMissions } from "@/actions/mission";
 import { surveySortOrderAtom } from "@/atoms/me/searchAtoms";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -15,7 +15,7 @@ export const useReadMissions = (params?: {
   return useInfiniteQuery({
     queryKey: missionQueryKeys.userMissions(params?.options?.userId),
     queryFn: ({ pageParam }) => {
-      return getUserSurveys({
+      return getUserMissions({
         cursor: pageParam,
         limit: params?.options?.limit ?? 10,
         sortOrder,

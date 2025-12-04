@@ -1,6 +1,6 @@
 "use client";
 
-import { submitQuestionAnswers } from "@/actions/action-answer";
+import { submitAnswers } from "@/actions/action-answer";
 import type { ActionAnswerItem } from "@/types/dto";
 import { useMutation } from "@tanstack/react-query";
 
@@ -17,7 +17,7 @@ interface UseSubmitActionAnswerOptions {
 export function useSubmitActionAnswer(options: UseSubmitActionAnswerOptions = {}) {
   return useMutation({
     mutationFn: async ({ responseId, answer }: SubmitActionAnswerPayload) => {
-      return await submitQuestionAnswers({
+      return await submitAnswers({
         responseId,
         answers: [answer],
       });
