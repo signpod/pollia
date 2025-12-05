@@ -7,6 +7,7 @@ import { useReadMission } from "@/app/admin/hooks/use-read-mission";
 import { useUpdateMission } from "@/app/admin/hooks/use-update-mission";
 import { use } from "react";
 import { toast } from "sonner";
+import { ActionsEditTab } from "./components/ActionsEditTab";
 import { BasicInfoEditTab } from "./components/BasicInfoEditTab";
 
 interface AdminMissionEditPageProps {
@@ -72,9 +73,7 @@ export default function AdminMissionEditPage({ params }: AdminMissionEditPagePro
         </TabsContent>
 
         <TabsContent value="actions" className="mt-6">
-          <div className="text-muted-foreground">
-            액션 순서 수정 콘텐츠 (액션 수정/생성 버튼 포함)
-          </div>
+          <ActionsEditTab missionId={missionId} />
         </TabsContent>
 
         <TabsContent value="reward" className="mt-6">

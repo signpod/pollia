@@ -5,3 +5,11 @@ export const adminMissionQueryKeys = {
 } as const;
 
 export type AdminMissionQueryKeys = typeof adminMissionQueryKeys;
+
+export const adminActionQueryKeys = {
+  all: () => ["admin", "action"] as const,
+  actions: (missionId: string) => ["admin", "actions", missionId] as const,
+  action: (actionId: string) => ["admin", "action", actionId] as const,
+} as const;
+
+export type AdminActionQueryKeys = typeof adminActionQueryKeys;
