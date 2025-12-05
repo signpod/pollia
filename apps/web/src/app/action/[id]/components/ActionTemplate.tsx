@@ -44,9 +44,9 @@ export function SurveyQuestionTemplate({
         </FixedTopLayout.Content>
       </FixedTopLayout>
 
-      <div className="space-y-8 mt-8 px-5 pb-5">
+      <div className="space-y-8 px-5 pb-5 pt-9">
         {/* 질문 정보 섹션 */}
-        <section className="pt-5 space-y-2">
+        <section className="space-y-2">
           <Typo.MainTitle size="medium">{title}</Typo.MainTitle>
           {description && (
             <Typo.Body size="large" className="text-sub">
