@@ -246,50 +246,24 @@ function ActionButtons({ isPending, isDirty, onReset }: ActionButtonsProps) {
 
 type MissionData = GetMissionResponse["data"];
 
-function useBasicInfoForm(mission: MissionData | undefined) {
+function useBasicInfoForm(mission: MissionData) {
+  const defaultValues = {
+    title: mission.title,
+    description: mission.description ?? "",
+    target: mission.target ?? "",
+    imageUrl: mission.imageUrl ?? undefined,
+    brandLogoUrl: mission.brandLogoUrl ?? undefined,
+    estimatedMinutes: mission.estimatedMinutes ?? undefined,
+    deadline: mission.deadline ? new Date(mission.deadline) : undefined,
+    isActive: mission.isActive,
+  };
+
   const form = useForm<MissionUpdate>({
     resolver: zodResolver(missionUpdateSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      target: "",
-      imageUrl: undefined,
-      brandLogoUrl: undefined,
-      estimatedMinutes: undefined,
-      deadline: undefined,
-      isActive: undefined,
-    },
+    defaultValues,
   });
 
-  useEffect(() => {
-    if (mission) {
-      form.reset({
-        title: mission.title,
-        description: mission.description ?? "",
-        target: mission.target ?? "",
-        imageUrl: mission.imageUrl ?? undefined,
-        brandLogoUrl: mission.brandLogoUrl ?? undefined,
-        estimatedMinutes: mission.estimatedMinutes ?? undefined,
-        deadline: mission.deadline ? new Date(mission.deadline) : undefined,
-        isActive: mission.isActive,
-      });
-    }
-  }, [mission, form]);
-
-  const handleReset = () => {
-    if (mission) {
-      form.reset({
-        title: mission.title,
-        description: mission.description ?? "",
-        target: mission.target ?? "",
-        imageUrl: mission.imageUrl ?? undefined,
-        brandLogoUrl: mission.brandLogoUrl ?? undefined,
-        estimatedMinutes: mission.estimatedMinutes ?? undefined,
-        deadline: mission.deadline ? new Date(mission.deadline) : undefined,
-        isActive: mission.isActive,
-      });
-    }
-  };
+  const handleReset = () => form.reset(defaultValues);
 
   return { form, handleReset };
 }
@@ -410,6 +384,13 @@ export function BasicInfoEditTab({ missionId }: BasicInfoEditTabProps) {
   const { data: missionResponse, isLoading, error } = useReadMission(missionId);
   const mission = missionResponse?.data;
 
+  if (isLoading) return <LoadingState />;
+  if (error || !mission) return <ErrorState />;
+
+  return <BasicInfoForm mission={mission} missionId={missionId} />;
+}
+
+function BasicInfoForm({ mission, missionId }: { mission: MissionData; missionId: string }) {
   const { form, handleReset } = useBasicInfoForm(mission);
 
   const missionImage = useMissionImageUpload(form);
@@ -423,11 +404,6 @@ export function BasicInfoEditTab({ missionId }: BasicInfoEditTabProps) {
   const onSubmit = form.handleSubmit(data => {
     updateMission.mutate({ missionId, data });
   });
-
-  if (isLoading) return <LoadingState />;
-  if (error || !mission) return <ErrorState />;
-
-  console.log(form.formState);
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
