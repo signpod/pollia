@@ -123,6 +123,10 @@
   @apply border-border outline-ring/50;
 }
 
+.admin-root button {
+  cursor: pointer;
+}
+
 @theme inline {
   /* Override shared-styles.css --color-primary (violet -> shadcn default) */
   --color-primary: hsl(var(--primary));
