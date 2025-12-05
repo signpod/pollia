@@ -3,32 +3,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
-:root {
-  --sidebar: 0 0% 99%;
-  --sidebar-foreground: 240 5.3% 26.1%;
-  --sidebar-primary: 240 5.9% 10%;
-  --sidebar-primary-foreground: 0 0% 98%;
-  --sidebar-accent: 240 4.8% 95.9%;
-  --sidebar-accent-foreground: 240 5.9% 10%;
-  --sidebar-border: 220 13% 91%;
-  --sidebar-ring: 217.2 91.2% 59.8%;
-}
-
-.dark {
-  --sidebar: 240 8% 7%;
-  --sidebar-foreground: 240 4.8% 95.9%;
-  --sidebar-primary: 224.3 76.3% 48%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 240 3.7% 15.9%;
-  --sidebar-accent-foreground: 240 4.8% 95.9%;
-  --sidebar-border: 240 3.7% 15.9%;
-  --sidebar-ring: 217.2 91.2% 59.8%;
-}
-
 .admin-root {
   --font-system: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
     "Segoe UI Symbol", "Noto Color Emoji";
 
+  /* shadcn/ui 기본 테마 변수 - Light mode */
   --background: 0 0% 100%;
   --foreground: 240 10% 3.9%;
   --card: 0 0% 100%;
@@ -50,6 +29,7 @@
   --ring: 240 5.9% 10%;
   --radius: 0.5rem;
 
+  /* Sidebar */
   --sidebar: 0 0% 99%;
   --sidebar-foreground: 240 5.3% 26.1%;
   --sidebar-primary: 240 5.9% 10%;
@@ -59,23 +39,13 @@
   --sidebar-border: 220 13% 91%;
   --sidebar-ring: 217.2 91.2% 59.8%;
 
-  /* Tailwind @theme 오버라이드 - Light mode */
-  --color-background: hsl(0 0% 100%);
-  --color-foreground: hsl(240 10% 3.9%);
-  --color-primary: hsl(240 5.9% 10%);
-  --color-primary-foreground: hsl(0 0% 98%);
-  --color-border: hsl(240 5.9% 90%);
-  --color-input: hsl(240 5.9% 90%);
-  --color-ring: hsl(240 5.9% 10%);
-  --color-muted: hsl(240 4.8% 95.9%);
-  --color-muted-foreground: hsl(240 3.8% 46.1%);
-
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
   font-family: var(--font-system);
 }
 
 .admin-root.dark {
+  /* shadcn/ui 기본 테마 변수 - Dark mode */
   --background: 240 10% 3.9%;
   --foreground: 0 0% 98%;
   --card: 240 10% 6%;
@@ -96,6 +66,7 @@
   --input: 240 3.7% 15.9%;
   --ring: 240 4.9% 83.9%;
 
+  /* Sidebar */
   --sidebar: 240 8% 7%;
   --sidebar-foreground: 240 4.8% 95.9%;
   --sidebar-primary: 224.3 76.3% 48%;
@@ -104,23 +75,14 @@
   --sidebar-accent-foreground: 240 4.8% 95.9%;
   --sidebar-border: 240 3.7% 15.9%;
   --sidebar-ring: 217.2 91.2% 59.8%;
-
-  /* Tailwind @theme 오버라이드 - Dark mode */
-  --color-background: hsl(240 10% 3.9%);
-  --color-foreground: hsl(0 0% 98%);
-  --color-primary: hsl(0 0% 98%);
-  --color-primary-foreground: hsl(240 5.9% 10%);
-  --color-border: hsl(240 3.7% 15.9%);
-  --color-input: hsl(240 3.7% 15.9%);
-  --color-ring: hsl(240 4.9% 83.9%);
-  --color-muted: hsl(240 3.7% 15.9%);
-  --color-muted-foreground: hsl(240 5% 64.9%);
 }
 
-.admin-root *,
-.admin-root *::before,
-.admin-root *::after {
-  @apply border-border outline-ring/50;
+@layer base {
+  .admin-root *,
+  .admin-root *::before,
+  .admin-root *::after {
+    @apply border-border outline-ring/50;
+  }
 }
 
 .admin-root button {
