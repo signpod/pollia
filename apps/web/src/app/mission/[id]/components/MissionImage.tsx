@@ -9,8 +9,15 @@ export function MissionImage({ imageUrl, alt = "Mission Image" }: MissionImagePr
   if (!imageUrl) return null;
 
   return (
-    <div className="relative w-full overflow-hidden rounded-sm aspect-[3/2]">
-      <Image src={imageUrl} alt={alt} fill className="object-cover" />
+    <div className="relative w-full overflow-hidden rounded-sm">
+      <Image
+        src={imageUrl}
+        alt={alt}
+        width={0}
+        height={0}
+        sizes="100vw"
+        className="w-full h-auto object-contain"
+      />
     </div>
   );
 }
