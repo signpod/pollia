@@ -75,14 +75,17 @@ export const Tooltip = ({ children, id, placement = "top", className = "" }: Too
       });
 
       const handleWindowResize = () => setPosition(calculatePosition());
+      const handleScroll = () => setPosition(calculatePosition());
 
       resizeObserver.observe(anchorElement);
       window.addEventListener("resize", handleWindowResize);
+      window.addEventListener("scroll", handleScroll, true);
       animationId = requestAnimationFrame(checkPosition);
 
       return () => {
         resizeObserver.disconnect();
         window.removeEventListener("resize", handleWindowResize);
+        window.removeEventListener("scroll", handleScroll, true);
         cancelAnimationFrame(animationId);
       };
     }

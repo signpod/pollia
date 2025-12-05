@@ -2,7 +2,7 @@ import { MissionLikertScale } from "@/app/mission/[id]/components/MissionLikertS
 import { ActionStepContentProps } from "@/constants/action";
 import { ActionType } from "@/types/domain/action";
 import type { ActionAnswerItem, GetMissionResponseResponse } from "@/types/dto";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 
 export function Scale({
@@ -28,8 +28,9 @@ export function Scale({
   // 다른 페이지에서 스크롤된 상태로 이 페이지로 이동할 경우,
   // Tooltip의 위치 계산(getBoundingClientRect)이 잘못된 스크롤 위치를 기준으로 수행되어
   // tooltip이 잘못된 위치에 렌더링되는 문제를 방지하기 위해 스크롤을 맨 위로 초기화
+  // useLayoutEffect를 사용하여 DOM 업데이트 후 동기적으로 실행하여 Tooltip 위치 계산보다 먼저 실행되도록 함
   // biome-ignore lint/correctness/useExhaustiveDependencies: actionData.id 변경 시에만 스크롤 초기화 필요
-  useEffect(() => {
+  useLayoutEffect(() => {
     window.scrollTo(0, 0);
   }, [actionData.id]);
 
