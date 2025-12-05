@@ -1,7 +1,7 @@
 import { MissionLikertScale } from "@/app/mission/[id]/components/MissionLikertScale";
 import { ActionStepContentProps } from "@/constants/action";
 import { ActionType } from "@/types/domain/action";
-import type { ActionAnswerItem, GetSurveyResponseResponse } from "@/types/dto";
+import type { ActionAnswerItem, GetMissionResponseResponse } from "@/types/dto";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 
@@ -49,7 +49,7 @@ const DEFAULT_SCALE_VALUE = 3;
 
 function useSurveyScaleValue(
   actionId: string,
-  missionResponse?: GetSurveyResponseResponse,
+  missionResponse?: GetMissionResponseResponse,
   updateCanGoNext?: (canGoNext: boolean) => void,
   onAnswerChange?: (answer: ActionAnswerItem) => void,
 ) {

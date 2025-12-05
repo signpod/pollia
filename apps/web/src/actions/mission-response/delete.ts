@@ -2,11 +2,11 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import { missionResponseService } from "@/server/services/mission-response";
-import type { DeleteSurveyResponseResponse } from "@/types/dto";
+import type { DeleteMissionResponseResponse } from "@/types/dto";
 
 export async function deleteMissionResponse(
   responseId: string,
-): Promise<DeleteSurveyResponseResponse> {
+): Promise<DeleteMissionResponseResponse> {
   try {
     const user = await requireAuth();
     await missionResponseService.deleteResponse(responseId, user.id);

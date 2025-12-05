@@ -2,7 +2,7 @@ import React from "react";
 
 import { ActionType } from "@/types/domain/action";
 import type { ActionAnswerItem, ActionDetail } from "@/types/dto";
-import type { GetSurveyResponseResponse } from "@/types/dto/mission-response";
+import type { GetMissionResponseResponse } from "@/types/dto/mission-response";
 import { StepConfig } from "@repo/ui/components";
 
 export interface ExtendedActionStepConfig extends StepConfig {
@@ -21,7 +21,7 @@ export interface ActionStepContentProps {
   nextButtonText?: string;
   updateCanGoNext?: (canGoNext: boolean) => void;
   onAnswerChange?: (answer: ActionAnswerItem) => void;
-  missionResponse?: GetSurveyResponseResponse;
+  missionResponse?: GetMissionResponseResponse;
 }
 
 interface CreateActionStepsProps {

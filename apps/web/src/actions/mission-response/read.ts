@@ -3,13 +3,13 @@
 import { requireAuth } from "@/actions/common/auth";
 import { missionResponseService } from "@/server/services/mission-response";
 import type {
-  GetMyResponsesResponse,
-  GetSurveyResponseResponse,
-  GetSurveyResponsesResponse,
-  GetSurveyStatsResponse,
+  GetMissionResponseResponse,
+  GetMissionResponsesResponse,
+  GetMissionStatsResponse,
+  GetMyMissionResponsesResponse,
 } from "@/types/dto";
 
-export async function getMissionResponse(responseId: string): Promise<GetSurveyResponseResponse> {
+export async function getMissionResponse(responseId: string): Promise<GetMissionResponseResponse> {
   try {
     const user = await requireAuth();
     const response = await missionResponseService.getResponseById(responseId, user.id);
@@ -28,7 +28,7 @@ export async function getMissionResponse(responseId: string): Promise<GetSurveyR
 
 export async function getMyResponseForMission(
   missionId: string,
-): Promise<GetSurveyResponseResponse | { data: null }> {
+): Promise<GetMissionResponseResponse | { data: null }> {
   try {
     const user = await requireAuth();
     const response = await missionResponseService.getResponseByMissionAndUser(missionId, user.id);
@@ -48,7 +48,7 @@ export async function getMyResponseForMission(
   }
 }
 
-export async function getMyResponses(): Promise<GetMyResponsesResponse> {
+export async function getMyResponses(): Promise<GetMyMissionResponsesResponse> {
   try {
     const user = await requireAuth();
     const responses = await missionResponseService.getUserResponses(user.id);
@@ -65,7 +65,7 @@ export async function getMyResponses(): Promise<GetMyResponsesResponse> {
   }
 }
 
-export async function getMissionResponses(missionId: string): Promise<GetSurveyResponsesResponse> {
+export async function getMissionResponses(missionId: string): Promise<GetMissionResponsesResponse> {
   try {
     const user = await requireAuth();
     const responses = await missionResponseService.getMissionResponses(missionId, user.id);
@@ -82,7 +82,7 @@ export async function getMissionResponses(missionId: string): Promise<GetSurveyR
   }
 }
 
-export async function getMissionStats(missionId: string): Promise<GetSurveyStatsResponse> {
+export async function getMissionStats(missionId: string): Promise<GetMissionStatsResponse> {
   try {
     const user = await requireAuth();
     const stats = await missionResponseService.getMissionStats(missionId, user.id);

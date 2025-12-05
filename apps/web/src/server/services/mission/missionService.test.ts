@@ -39,6 +39,8 @@ describe("MissionService", () => {
         isActive: true,
         creatorId: "user-1",
         rewardId: null,
+        imageFileUploadId: null,
+        brandLogoFileUploadId: null,
         createdAt: new Date("2024-01-01"),
         updatedAt: new Date("2024-01-01"),
       };
@@ -88,6 +90,8 @@ describe("MissionService", () => {
         isActive: true,
         creatorId: "user-1",
         rewardId: null,
+        imageFileUploadId: null,
+        brandLogoFileUploadId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -131,6 +135,7 @@ describe("MissionService", () => {
         order: 1,
         maxSelections: 1,
         missionId: "mission-1",
+        imageFileUploadId: null,
         options: [
           {
             id: "opt1",
@@ -194,6 +199,8 @@ describe("MissionService", () => {
         isActive: true,
         creatorId: "user-1",
         rewardId: null,
+        imageFileUploadId: null,
+        brandLogoFileUploadId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -278,6 +285,8 @@ describe("MissionService", () => {
         isActive: true,
         creatorId: "user-1",
         rewardId: null,
+        imageFileUploadId: null,
+        brandLogoFileUploadId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -401,6 +410,8 @@ describe("MissionService", () => {
         isActive: true,
         creatorId: "user-1",
         rewardId: null,
+        imageFileUploadId: null,
+        brandLogoFileUploadId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -466,6 +477,8 @@ describe("MissionService", () => {
         isActive: true,
         creatorId: "user-1",
         rewardId: null,
+        imageFileUploadId: null,
+        brandLogoFileUploadId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -517,6 +530,8 @@ describe("MissionService", () => {
         isActive: true,
         creatorId: "user-1",
         rewardId: null,
+        imageFileUploadId: null,
+        brandLogoFileUploadId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -548,6 +563,8 @@ describe("MissionService", () => {
         isActive: true,
         creatorId: "user-1",
         rewardId: null,
+        imageFileUploadId: null,
+        brandLogoFileUploadId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -581,6 +598,8 @@ describe("MissionService", () => {
         isActive: true,
         creatorId: "user-1",
         rewardId: null,
+        imageFileUploadId: null,
+        brandLogoFileUploadId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -618,6 +637,8 @@ describe("MissionService", () => {
         isActive: true,
         creatorId: "user-1",
         rewardId: null,
+        imageFileUploadId: null,
+        brandLogoFileUploadId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
