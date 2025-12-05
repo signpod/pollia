@@ -477,6 +477,8 @@ describe("MissionService", () => {
         isActive: true,
         creatorId: "user-1",
         rewardId: null,
+        imageFileUploadId: null,
+        brandLogoFileUploadId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };

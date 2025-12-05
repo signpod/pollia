@@ -298,6 +298,8 @@ describe("ActionService", () => {
       isActive: true,
       creatorId: "user1",
       rewardId: null,
+      imageFileUploadId: null,
+      brandLogoFileUploadId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -483,6 +485,8 @@ describe("ActionService", () => {
       isActive: true,
       creatorId: "user1",
       rewardId: null,
+      imageFileUploadId: null,
+      brandLogoFileUploadId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -595,6 +599,8 @@ describe("ActionService", () => {
       isActive: true,
       creatorId: "user1",
       rewardId: null,
+      imageFileUploadId: null,
+      brandLogoFileUploadId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -707,6 +713,8 @@ describe("ActionService", () => {
       isActive: true,
       creatorId: "user1",
       rewardId: null,
+      imageFileUploadId: null,
+      brandLogoFileUploadId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -873,6 +881,8 @@ describe("ActionService", () => {
       isActive: true,
       creatorId: "user1",
       rewardId: null,
+      imageFileUploadId: null,
+      brandLogoFileUploadId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -951,6 +961,8 @@ describe("ActionService", () => {
       isActive: true,
       creatorId: "user1",
       rewardId: null,
+      imageFileUploadId: null,
+      brandLogoFileUploadId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
