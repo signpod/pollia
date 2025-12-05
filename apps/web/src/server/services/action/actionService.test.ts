@@ -44,6 +44,7 @@ describe("ActionService", () => {
         type: ActionType.MULTIPLE_CHOICE,
         order: 0,
         maxSelections: 1,
+        imageFileUploadId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
         options: [
@@ -97,6 +98,8 @@ describe("ActionService", () => {
         isActive: true,
         creatorId: "user1",
         rewardId: null,
+        imageFileUploadId: null,
+        brandLogoFileUploadId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -142,6 +145,8 @@ describe("ActionService", () => {
         isActive: true,
         creatorId: "user1",
         rewardId: null,
+        imageFileUploadId: null,
+        brandLogoFileUploadId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -155,6 +160,7 @@ describe("ActionService", () => {
           type: ActionType.MULTIPLE_CHOICE,
           order: 0,
           maxSelections: 1,
+          imageFileUploadId: null,
           createdAt: new Date(),
           updatedAt: new Date(),
           options: [],
@@ -196,6 +202,7 @@ describe("ActionService", () => {
           imageUrl: null,
           maxSelections: 1,
           order: 0,
+          imageFileUploadId: null,
           createdAt: new Date(),
           updatedAt: new Date(),
           missionId: "mission1",
@@ -235,6 +242,7 @@ describe("ActionService", () => {
           imageUrl: null,
           maxSelections: 1,
           order: 0,
+          imageFileUploadId: null,
           createdAt: new Date(),
           updatedAt: new Date(),
           missionId: "mission1",
@@ -329,6 +337,7 @@ describe("ActionService", () => {
         maxSelections: request.maxSelections,
         description: request.description,
         imageUrl: null,
+        imageFileUploadId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -496,6 +505,7 @@ describe("ActionService", () => {
         maxSelections: null,
         description: request.description,
         imageUrl: null,
+        imageFileUploadId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -607,6 +617,7 @@ describe("ActionService", () => {
         maxSelections: null,
         description: request.description,
         imageUrl: null,
+        imageFileUploadId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -715,6 +726,7 @@ describe("ActionService", () => {
         maxSelections: null,
         description: null,
         imageUrl: null,
+        imageFileUploadId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -749,6 +761,7 @@ describe("ActionService", () => {
         maxSelections: null,
         description: null,
         imageUrl: null,
+        imageFileUploadId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -843,6 +856,7 @@ describe("ActionService", () => {
       type: ActionType.MULTIPLE_CHOICE,
       order: 0,
       maxSelections: 1,
+      imageFileUploadId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -920,6 +934,7 @@ describe("ActionService", () => {
       type: ActionType.MULTIPLE_CHOICE,
       order: 0,
       maxSelections: 1,
+      imageFileUploadId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

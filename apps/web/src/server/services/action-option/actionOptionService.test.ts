@@ -89,6 +89,7 @@ describe("ActionOptionService", () => {
         type: ActionType.MULTIPLE_CHOICE,
         order: 0,
         maxSelections: null,
+        imageFileUploadId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -168,6 +169,8 @@ describe("ActionOptionService", () => {
       isActive: true,
       creatorId: "user1",
       rewardId: null,
+      imageFileUploadId: null,
+      brandLogoFileUploadId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -318,6 +321,8 @@ describe("ActionOptionService", () => {
       isActive: true,
       creatorId: "user1",
       rewardId: null,
+      imageFileUploadId: null,
+      brandLogoFileUploadId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -413,6 +418,8 @@ describe("ActionOptionService", () => {
       isActive: true,
       creatorId: "user1",
       rewardId: null,
+      imageFileUploadId: null,
+      brandLogoFileUploadId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -500,6 +507,8 @@ describe("ActionOptionService", () => {
       isActive: true,
       creatorId: "user1",
       rewardId: null,
+      imageFileUploadId: null,
+      brandLogoFileUploadId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -571,6 +580,8 @@ describe("ActionOptionService", () => {
       isActive: true,
       creatorId: "user1",
       rewardId: null,
+      imageFileUploadId: null,
+      brandLogoFileUploadId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
