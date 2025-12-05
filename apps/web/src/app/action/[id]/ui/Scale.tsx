@@ -25,6 +25,14 @@ export function Scale({
     onAnswerChange,
   );
 
+  // 다른 페이지에서 스크롤된 상태로 이 페이지로 이동할 경우,
+  // Tooltip의 위치 계산(getBoundingClientRect)이 잘못된 스크롤 위치를 기준으로 수행되어
+  // tooltip이 잘못된 위치에 렌더링되는 문제를 방지하기 위해 스크롤을 맨 위로 초기화
+  // biome-ignore lint/correctness/useExhaustiveDependencies: actionData.id 변경 시에만 스크롤 초기화 필요
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [actionData.id]);
+
   return (
     <SurveyQuestionTemplate
       currentOrder={currentOrder}
