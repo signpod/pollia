@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
 import { useReadActionsDetail } from "@/app/admin/hooks/use-read-actions-detail";
+import { useReorderActions } from "@/app/admin/hooks/use-reorder-actions";
 import type { ActionDetail } from "@/types/dto/action";
 import {
   DndContext,
@@ -31,6 +32,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface ActionsEditTabProps {
   missionId: string;
@@ -150,6 +152,15 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
   const [actions, setActions] = useState<ActionDetail[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
 
+  const reorderActions = useReorderActions({
+    onSuccess: () => {
+      toast.success("액션 순서가 변경되었습니다.");
+    },
+    onError: error => {
+      toast.error(error.message || "액션 순서 변경 중 오류가 발생했습니다.");
+    },
+  });
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -175,11 +186,16 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
-      setActions(items => {
-        const oldIndex = items.findIndex(item => item.id === active.id);
-        const newIndex = items.findIndex(item => item.id === over.id);
-        const newItems = arrayMove(items, oldIndex, newIndex);
-        return newItems.map((item, index) => ({ ...item, order: index }));
+      const oldIndex = actions.findIndex(item => item.id === active.id);
+      const newIndex = actions.findIndex(item => item.id === over.id);
+      const newItems = arrayMove(actions, oldIndex, newIndex);
+      const updatedItems = newItems.map((item, index) => ({ ...item, order: index }));
+
+      setActions(updatedItems);
+
+      reorderActions.mutate({
+        missionId,
+        actionOrders: updatedItems.map(item => ({ id: item.id, order: item.order })),
       });
     }
 
