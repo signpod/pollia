@@ -1,8 +1,16 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/admin/components/shadcn-ui/tabs";
+import { use } from "react";
+import { BasicInfoEditTab } from "./components/BasicInfoEditTab";
 
-export default function AdminMissionEditPage() {
+interface AdminMissionEditPageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default function AdminMissionEditPage({ params }: AdminMissionEditPageProps) {
+  const { id: missionId } = use(params);
+
   return (
     <div className="px-6 py-8">
       <header className="mb-8">
@@ -18,7 +26,7 @@ export default function AdminMissionEditPage() {
         </TabsList>
 
         <TabsContent value="basic" className="mt-6">
-          <div className="text-muted-foreground">기본 정보 수정 콘텐츠</div>
+          <BasicInfoEditTab missionId={missionId} />
         </TabsContent>
 
         <TabsContent value="actions" className="mt-6">
