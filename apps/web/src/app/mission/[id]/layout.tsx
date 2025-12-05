@@ -43,11 +43,17 @@ export default async function MissionLayout({
   ]);
 
   const rewardId = missionResult.data.rewardId;
+  const prefetchPromises = [];
   if (rewardId) {
-    queryClient.prefetchQuery({
-      queryKey: rewardQueryKeys.reward(rewardId),
-      queryFn: () => getReward(rewardId),
-    });
+    prefetchPromises.push(
+      queryClient.prefetchQuery({
+        queryKey: rewardQueryKeys.reward(rewardId),
+        queryFn: () => getReward(rewardId),
+      }),
+    );
+  }
+  if (prefetchPromises.length > 0) {
+    await Promise.all(prefetchPromises);
   }
 
   queryClient.setQueryData(missionQueryKeys.mission(id), missionResult);
