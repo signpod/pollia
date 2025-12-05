@@ -98,7 +98,7 @@ const MissionLikertScaleBase = ({
 
   return (
     <div className={cn("flex w-full flex-col gap-5", className)}>
-      <div className={cn("relative h-18 w-full px-11")}>
+      <div className={cn("relative h-18 w-full px-11 pt-20")}>
         <SliderPrimitive.Root
           value={[value]}
           onValueChange={values => {
