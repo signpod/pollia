@@ -225,7 +225,7 @@ export function BasicInfoEditTab({ missionId }: BasicInfoEditTabProps) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6 max-w-4xl">
+    <form onSubmit={onSubmit} className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>기본 정보</CardTitle>
