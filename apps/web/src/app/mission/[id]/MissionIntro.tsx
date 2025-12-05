@@ -35,7 +35,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
   const { brandLogoUrl, title, estimatedMinutes, deadline, imageUrl, description, target } =
     mission ?? {};
 
-  const { data: reward } = useReadReward(mission?.rewardId ?? "");
+  const { data: reward } = useReadReward(mission?.rewardId || "");
 
   return (
     <>
