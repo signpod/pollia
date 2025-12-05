@@ -73,6 +73,12 @@ function SurveyMultipleChoiceContent({
             title={option.title}
             description={option.description ?? undefined}
             isSelected={selectedIds.has(option.id)}
+            disabled={
+              isMultipleChoice &&
+              !selectedIds.has(option.id) &&
+              actionData.maxSelections !== null &&
+              selectedIds.size >= actionData.maxSelections
+            }
             onClick={() => toggleSelectedId(option.id)}
           />
         ))}
