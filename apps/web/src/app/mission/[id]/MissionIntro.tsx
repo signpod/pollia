@@ -2,6 +2,7 @@
 
 import { AuthError } from "@/hooks/login/useKakaoLogin";
 import { useMissionIntroData, useMissionRewardVisibility, useSurveyResume } from "@/hooks/mission";
+import { useReadReward } from "@/hooks/reward/useReadReward";
 import { cleanTiptapHTML } from "@/lib/utils";
 import { FixedBottomLayout, FloatingButton, Typo } from "@repo/ui/components";
 import { Gift } from "lucide-react";
@@ -34,13 +35,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
   const { brandLogoUrl, title, estimatedMinutes, deadline, imageUrl, description, target } =
     mission ?? {};
 
-  // TODO: 리워드 조회
-  // const reward = useReadReward(rewardId);
-  const reward = {
-    name: "1등 : CU 바나나우유 기프티콘, 1명\n2등 : 신세계 상품권 3만원권, 2명\n3등 : 신세계 상품권 1만원권, 5명",
-    image: "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=150&h=150&fit=crop",
-    description: "설문 완료 후 즉시 제공",
-  };
+  const { data: reward } = useReadReward(mission?.rewardId ?? "");
 
   return (
     <>
@@ -64,12 +59,14 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
         </div>
 
         <div ref={rewardRef}>
-          <MissionReward
-            rewardName={reward.name}
-            rewardImage={reward.image}
-            rewardDescription={reward.description}
-            onVisibilityChange={setIsRewardVisible}
-          />
+          {reward && (
+            <MissionReward
+              rewardName={reward?.data.name ?? ""}
+              rewardImage={reward?.data.imageUrl ?? undefined}
+              rewardDescription={reward?.data.description ?? undefined}
+              onVisibilityChange={setIsRewardVisible}
+            />
+          )}
         </div>
 
         <FixedBottomLayout.Content className="flex w-full justify-end bg-transparent ">
