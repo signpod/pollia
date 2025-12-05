@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
+import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
 import { useReadActionsDetail } from "@/app/admin/hooks/use-read-actions-detail";
 import { useReorderActions } from "@/app/admin/hooks/use-reorder-actions";
 import type { ActionDetail } from "@/types/dto/action";
@@ -218,11 +219,36 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center text-muted-foreground">액션 목록을 불러오는 중...</div>
-        </CardContent>
-      </Card>
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-24" />
+            <Skeleton className="h-4 w-64 mt-2" />
+          </CardHeader>
+          <CardContent>
+            {[1, 2, 3].map(i => (
+              <Card key={i} className={`mb-3 ${ACTION_CARD_HEIGHT}`}>
+                <CardContent className="h-full px-4 py-0 flex items-center">
+                  <div className="flex items-center gap-3 w-full">
+                    <Skeleton className="size-7 rounded" />
+                    <div className="flex-1 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-5 w-14 rounded" />
+                        <Skeleton className="h-4 w-6" />
+                      </div>
+                      <Skeleton className="h-5 w-48" />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Skeleton className="size-8 rounded" />
+                      <Skeleton className="size-8 rounded" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
