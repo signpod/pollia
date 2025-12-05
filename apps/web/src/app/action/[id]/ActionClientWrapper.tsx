@@ -99,7 +99,7 @@ function ActionRenderer({
   const isExitingRef = useRef(false);
   const toastStorageKey = `mission-toast-${missionId}`;
 
-  const { mutate: startResponse, isPending: isStarting } = useStartSurveyResponse({
+  const { mutate: startResponse } = useStartSurveyResponse({
     onSuccess: data => {
       setResponseId(data.data.id);
     },
