@@ -1,7 +1,6 @@
 "use client";
 
 import { confirmFile, deleteImage, getUploadUrl } from "@/actions/common/image";
-import { preprocessImage } from "@/lib/preprocessImage";
 import { ConfirmFileRequest, DeleteImageRequest, UploadImageRequest } from "@/types/dto/image";
 import { RelatedEntityType } from "@prisma/client";
 import { useMutation } from "@tanstack/react-query";
@@ -34,7 +33,8 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
   const uploadMutation = useMutation({
     mutationFn: async (file: File): Promise<UploadedImage> => {
       try {
-        const processedFile = await preprocessImage(file);
+        // const processedFile = await preprocessImage(file);
+        const processedFile = file;
 
         const uploadRequest: UploadImageRequest = {
           fileName: processedFile.name,
