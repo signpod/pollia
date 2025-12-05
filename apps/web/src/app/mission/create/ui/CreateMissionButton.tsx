@@ -9,6 +9,7 @@ import {
   missionTitleAtom,
   missionValidationAtom,
   resetMissionAtom,
+  selectedActionAtom,
 } from "@/atoms/mission/missionAtoms";
 import { toast } from "@/components/common/Toast";
 import { usePushAfter } from "@/hooks/common/usePushAfter";
@@ -44,6 +45,7 @@ function useCreateMissionButton() {
   const surveyDescription = useAtomValue(missionDescriptionAtom);
   const surveyTarget = useAtomValue(missionTargetAtom);
   const validation = useAtomValue(missionValidationAtom);
+  const selectedActions = useAtomValue(selectedActionAtom);
 
   const deadlineDate = useAtomValue(missionDeadlineDateAtom);
   const deadlineTime = useAtomValue(missionDeadlineTimeAtom);
@@ -75,6 +77,7 @@ function useCreateMissionButton() {
       target: trimmedTarget !== "" ? trimmedTarget : undefined,
       deadline: deadlineDate ? combineDateAndTime(deadlineDate, deadlineTime) : undefined,
       estimatedMinutes,
+      actionIds: selectedActions.map(action => action.id),
     });
   };
 
