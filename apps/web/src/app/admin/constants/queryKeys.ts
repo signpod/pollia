@@ -13,3 +13,10 @@ export const adminActionQueryKeys = {
 } as const;
 
 export type AdminActionQueryKeys = typeof adminActionQueryKeys;
+
+export const adminRewardQueryKeys = {
+  all: () => ["admin", "reward"] as const,
+  reward: (rewardId: string) => ["admin", "reward", rewardId] as const,
+} as const;
+
+export type AdminRewardQueryKeys = typeof adminRewardQueryKeys;

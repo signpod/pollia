@@ -9,6 +9,7 @@ import { use } from "react";
 import { toast } from "sonner";
 import { ActionsEditTab } from "./components/ActionsEditTab";
 import { BasicInfoEditTab } from "./components/BasicInfoEditTab";
+import { RewardEditTab } from "./components/RewardEditTab";
 
 interface AdminMissionEditPageProps {
   params: Promise<{ id: string }>;
@@ -77,7 +78,7 @@ export default function AdminMissionEditPage({ params }: AdminMissionEditPagePro
         </TabsContent>
 
         <TabsContent value="reward" className="mt-6">
-          <div className="text-muted-foreground">리워드 콘텐츠 (리워드 수정/생성 버튼 포함)</div>
+          <RewardEditTab missionId={missionId} />
         </TabsContent>
       </Tabs>
     </div>
