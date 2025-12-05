@@ -2,7 +2,7 @@ import { ActionStepContentProps } from "@/constants/action";
 // TODO: @/schemas_legacy는 deprecated. 새로운 @/schemas/{domain}/ 스키마로 교체 필요
 import { subjectiveResponseSchema } from "@/schemas_legacy/survey/question/response/subjectiveResponseSchema";
 import { ActionType } from "@/types/domain/action";
-import type { ActionAnswerItem, GetSurveyResponseResponse } from "@/types/dto";
+import type { ActionAnswerItem, GetMissionResponseResponse } from "@/types/dto";
 import { Textarea } from "@repo/ui/components";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
@@ -66,7 +66,7 @@ export function Subjective({
 
 function useSurveySubjectiveValue(
   actionId: string,
-  missionResponse?: GetSurveyResponseResponse,
+  missionResponse?: GetMissionResponseResponse,
   updateCanGoNext?: (canGoNext: boolean) => void,
   onAnswerChange?: (answer: ActionAnswerItem) => void,
 ) {

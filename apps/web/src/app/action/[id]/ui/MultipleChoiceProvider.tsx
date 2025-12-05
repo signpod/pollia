@@ -1,6 +1,6 @@
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
-import type { ActionAnswerItem, GetSurveyResponseResponse } from "@/types/dto";
+import type { ActionAnswerItem, GetMissionResponseResponse } from "@/types/dto";
 import {
   createContext,
   useCallback,
@@ -25,7 +25,7 @@ interface SurveyMultipleChoiceProviderProps {
   children: React.ReactNode;
   maxSelections: number;
   actionId: string;
-  missionResponse?: GetSurveyResponseResponse;
+  missionResponse?: GetMissionResponseResponse;
   updateCanGoNext?: (canGoNext: boolean) => void;
   onAnswerChange?: (answer: ActionAnswerItem) => void;
 }

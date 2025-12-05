@@ -1,4 +1,4 @@
-import { getQuestionById, getSurveyQuestionsDetail } from "@/actions/action";
+import { getActionById, getMissionActionsDetail } from "@/actions/action";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { dehydrate } from "@tanstack/react-query";
@@ -13,7 +13,7 @@ export default async function ActionPage({
   const { id } = await params;
   const queryClient = getQueryClient();
 
-  const action = await getQuestionById(id).catch(error => {
+  const action = await getActionById(id).catch(error => {
     if (error instanceof Error && (error as Error & { cause?: number }).cause === 404) {
       notFound();
     }
@@ -25,7 +25,7 @@ export default async function ActionPage({
   if (missionId) {
     await queryClient.prefetchQuery({
       queryKey: actionQueryKeys.actions({ missionId: missionId }),
-      queryFn: () => getSurveyQuestionsDetail(missionId),
+      queryFn: () => getMissionActionsDetail(missionId),
     });
   }
 

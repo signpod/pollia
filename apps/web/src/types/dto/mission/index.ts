@@ -9,6 +9,7 @@ export interface CreateMissionRequest {
   deadline?: Date;
   estimatedMinutes?: number;
   isActive?: boolean;
+  actionIds?: string[];
 }
 
 export interface CreateMissionResponse {

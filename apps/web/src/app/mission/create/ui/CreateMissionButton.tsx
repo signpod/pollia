@@ -44,8 +44,8 @@ function useCreateMissionButton() {
   const surveyTitle = useAtomValue(missionTitleAtom);
   const surveyDescription = useAtomValue(missionDescriptionAtom);
   const surveyTarget = useAtomValue(missionTargetAtom);
-  const selectedQuestions = useAtomValue(selectedActionAtom);
   const validation = useAtomValue(missionValidationAtom);
+  const selectedActions = useAtomValue(selectedActionAtom);
 
   const deadlineDate = useAtomValue(missionDeadlineDateAtom);
   const deadlineTime = useAtomValue(missionDeadlineTimeAtom);
@@ -67,13 +67,17 @@ function useCreateMissionButton() {
   });
 
   const handleCreateMission = () => {
+    const sanitizedDescription = sanitizeTiptapContent(surveyDescription);
+    const trimmedTarget = surveyTarget.trim();
+
     mutate({
       title: surveyTitle,
-      description: sanitizeTiptapContent(surveyDescription),
-      target: surveyTarget.trim() || null,
-      questionIds: selectedQuestions.map(question => question.id),
+      description:
+        sanitizedDescription && sanitizedDescription !== "" ? sanitizedDescription : undefined,
+      target: trimmedTarget !== "" ? trimmedTarget : undefined,
       deadline: deadlineDate ? combineDateAndTime(deadlineDate, deadlineTime) : undefined,
       estimatedMinutes,
+      actionIds: selectedActions.map(action => action.id),
     });
   };
 
