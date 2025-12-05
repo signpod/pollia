@@ -99,7 +99,7 @@ function ActionRenderer({
   const isExitingRef = useRef(false);
   const toastStorageKey = `mission-toast-${missionId}`;
 
-  const { mutate: startResponse, isPending: isStarting } = useStartSurveyResponse({
+  const { mutate: startResponse } = useStartSurveyResponse({
     onSuccess: data => {
       setResponseId(data.data.id);
     },
@@ -116,6 +116,7 @@ function ActionRenderer({
     onError: () => {
       toast.warning("답변 저장에 실패했습니다.", { id: "submit-answer-error" });
     },
+    missionId,
   });
 
   const { mutateAsync: completeSurveyAsync } = useSubmitSurveyAnswers({
