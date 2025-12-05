@@ -116,6 +116,7 @@ function ActionRenderer({
     onError: () => {
       toast.warning("답변 저장에 실패했습니다.", { id: "submit-answer-error" });
     },
+    missionId,
   });
 
   const { mutateAsync: completeSurveyAsync } = useSubmitSurveyAnswers({
