@@ -9,7 +9,6 @@ import {
   missionTitleAtom,
   missionValidationAtom,
   resetMissionAtom,
-  selectedActionAtom,
 } from "@/atoms/mission/missionAtoms";
 import { toast } from "@/components/common/Toast";
 import { usePushAfter } from "@/hooks/common/usePushAfter";
@@ -44,7 +43,6 @@ function useCreateMissionButton() {
   const surveyTitle = useAtomValue(missionTitleAtom);
   const surveyDescription = useAtomValue(missionDescriptionAtom);
   const surveyTarget = useAtomValue(missionTargetAtom);
-  const selectedQuestions = useAtomValue(selectedActionAtom);
   const validation = useAtomValue(missionValidationAtom);
 
   const deadlineDate = useAtomValue(missionDeadlineDateAtom);
@@ -67,11 +65,14 @@ function useCreateMissionButton() {
   });
 
   const handleCreateMission = () => {
+    const sanitizedDescription = sanitizeTiptapContent(surveyDescription);
+    const trimmedTarget = surveyTarget.trim();
+
     mutate({
       title: surveyTitle,
-      description: sanitizeTiptapContent(surveyDescription),
-      target: surveyTarget.trim() || null,
-      questionIds: selectedQuestions.map(question => question.id),
+      description:
+        sanitizedDescription && sanitizedDescription !== "" ? sanitizedDescription : undefined,
+      target: trimmedTarget !== "" ? trimmedTarget : undefined,
       deadline: deadlineDate ? combineDateAndTime(deadlineDate, deadlineTime) : undefined,
       estimatedMinutes,
     });
