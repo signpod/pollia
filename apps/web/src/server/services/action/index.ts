@@ -259,6 +259,28 @@ export class ActionService {
     await this.actionRepo.delete(actionId);
   }
 
+  async reorderActions(
+    missionId: string,
+    actionOrders: Array<{ id: string; order: number }>,
+    userId: string,
+  ) {
+    await this.verifyMissionAccess(missionId, userId);
+
+    const actionIds = actionOrders.map(a => a.id);
+    const missionActions = await this.actionRepo.findActionIdsByMissionId(missionId);
+
+    const invalidActions = actionIds.filter(id => !missionActions.includes(id));
+    if (invalidActions.length > 0) {
+      const error = new Error("해당 미션에 속하지 않는 액션이 포함되어 있습니다.");
+      error.cause = 400;
+      throw error;
+    }
+
+    await this.actionRepo.updateManyOrders(actionOrders);
+
+    return { success: true };
+  }
+
   private async verifyMissionAccess(missionId: string, userId: string): Promise<void> {
     const mission = await this.missionRepo.findById(missionId);
 

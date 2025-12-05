@@ -212,6 +212,17 @@ export class ActionRepository {
       where: { id: actionId },
     });
   }
+
+  async updateManyOrders(updates: Array<{ id: string; order: number }>) {
+    return prisma.$transaction(
+      updates.map(({ id, order }) =>
+        prisma.action.update({
+          where: { id },
+          data: { order },
+        }),
+      ),
+    );
+  }
 }
 
 export const actionRepository = new ActionRepository();
