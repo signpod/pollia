@@ -27,9 +27,5 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ],
-  "dependencies": {
-    "@emotion/is-prop-valid": "^1.4.0",
-    "zod": "^4.1.11"
-  }
+  ]
 }
