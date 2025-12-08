@@ -6,4 +6,5 @@ export {
   getMissionActions,
   getMissionActionsDetail,
 } from "./read";
+export { reorderActions } from "./reorder";
 export { updateAction } from "./update";

@@ -4,6 +4,7 @@ import { getQueryClient } from "@/lib/getQueryClient";
 import { dehydrate } from "@tanstack/react-query";
 import { notFound } from "next/navigation";
 import { ActionClientWrapper } from "./ActionClientWrapper";
+import { ActionPageWrapper } from "./ActionPageWrapper";
 
 export default async function ActionPage({
   params,
@@ -34,10 +35,12 @@ export default async function ActionPage({
   const dehydratedState = dehydrate(queryClient);
 
   return (
-    <ActionClientWrapper
-      missionId={missionId ?? ""}
-      dehydratedState={dehydratedState}
-      currentActionId={id}
-    />
+    <ActionPageWrapper>
+      <ActionClientWrapper
+        missionId={missionId ?? ""}
+        dehydratedState={dehydratedState}
+        currentActionId={id}
+      />
+    </ActionPageWrapper>
   );
 }

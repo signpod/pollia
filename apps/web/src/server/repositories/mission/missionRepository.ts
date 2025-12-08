@@ -2,28 +2,13 @@ import prisma from "@/database/utils/prisma/client";
 import type { SortOrderType } from "@/types/common/sort";
 import { Prisma } from "@prisma/client";
 
-/**
- * Mission Repository
- * Mission 도메인의 데이터 접근 계층
- */
 export class MissionRepository {
-  /**
-   * Mission ID로 Mission 조회
-   * @param missionId - Mission ID
-   * @returns Mission 또는 null
-   */
   async findById(missionId: string) {
     return prisma.mission.findUnique({
       where: { id: missionId },
     });
   }
 
-  /**
-   * User ID로 Mission 목록 조회
-   * @param userId - User ID
-   * @param options - 조회 옵션
-   * @returns Mission 목록
-   */
   async findByUserId(
     userId: string,
     options?: {
@@ -59,11 +44,6 @@ export class MissionRepository {
     });
   }
 
-  /**
-   * Mission ID로 Action ID 목록 조회
-   * @param missionId - Mission ID
-   * @returns Action ID 배열
-   */
   async findActionIdsByMissionId(missionId: string) {
     const actions = await prisma.action.findMany({
       where: { missionId },
@@ -73,11 +53,6 @@ export class MissionRepository {
     return actions.map(q => q.id);
   }
 
-  /**
-   * Action ID로 Action 상세 조회 (options 포함)
-   * @param actionId - Action ID
-   * @returns Action 또는 null
-   */
   async findActionById(actionId: string) {
     return prisma.action.findUnique({
       where: { id: actionId },
@@ -108,11 +83,6 @@ export class MissionRepository {
     });
   }
 
-  /**
-   * Mission ID로 모든 Action 상세 조회 (options 포함)
-   * @param missionId - Mission ID
-   * @returns Action 배열
-   */
   async findActionsByMissionId(missionId: string) {
     return prisma.action.findMany({
       where: { missionId },
@@ -146,12 +116,6 @@ export class MissionRepository {
     });
   }
 
-  /**
-   * Mission 생성 및 Action 연결
-   * @param data - Mission 생성 데이터
-   * @param actionIds - 연결할 Action ID 목록
-   * @returns 생성된 Mission
-   */
   async createWithActions(
     data: {
       title: string;
@@ -195,12 +159,6 @@ export class MissionRepository {
     });
   }
 
-  /**
-   * Mission 수정
-   * @param missionId - Mission ID
-   * @param data - 수정할 데이터
-   * @returns 수정된 Mission
-   */
   async update(
     missionId: string,
     data: {
@@ -208,8 +166,10 @@ export class MissionRepository {
       description?: string;
       target?: string;
       imageUrl?: string;
+      brandLogoUrl?: string;
       deadline?: Date;
       estimatedMinutes?: number;
+      isActive?: boolean;
     },
   ) {
     return prisma.mission.update({
@@ -218,11 +178,6 @@ export class MissionRepository {
     });
   }
 
-  /**
-   * Mission 삭제
-   * @param missionId - Mission ID
-   * @returns 삭제된 Mission
-   */
   async delete(missionId: string) {
     return prisma.mission.delete({
       where: { id: missionId },

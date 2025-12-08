@@ -2,7 +2,7 @@ import { MissionLikertScale } from "@/app/mission/[id]/components/MissionLikertS
 import { ActionStepContentProps } from "@/constants/action";
 import { ActionType } from "@/types/domain/action";
 import type { ActionAnswerItem, GetMissionResponseResponse } from "@/types/dto";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 
 export function Scale({
@@ -18,21 +18,12 @@ export function Scale({
   onAnswerChange,
   missionResponse,
 }: ActionStepContentProps) {
-  const { isScaleValueChanged, scaleValue, handleScaleValueChange } = useSurveyScaleValue(
+  const { scaleValue, handleScaleValueChange } = useSurveyScaleValue(
     actionData.id,
     missionResponse,
     updateCanGoNext,
     onAnswerChange,
   );
-
-  // 다른 페이지에서 스크롤된 상태로 이 페이지로 이동할 경우,
-  // Tooltip의 위치 계산(getBoundingClientRect)이 잘못된 스크롤 위치를 기준으로 수행되어
-  // tooltip이 잘못된 위치에 렌더링되는 문제를 방지하기 위해 스크롤을 맨 위로 초기화
-  // useLayoutEffect를 사용하여 DOM 업데이트 후 동기적으로 실행하여 Tooltip 위치 계산보다 먼저 실행되도록 함
-  // biome-ignore lint/correctness/useExhaustiveDependencies: actionData.id 변경 시에만 스크롤 초기화 필요
-  useLayoutEffect(() => {
-    window.scrollTo(0, 0);
-  }, [actionData.id]);
 
   return (
     <SurveyQuestionTemplate
@@ -42,7 +33,7 @@ export function Scale({
       description={actionData.description ?? undefined}
       imageUrl={actionData.imageUrl ?? undefined}
       isFirstAction={isFirstAction}
-      isNextDisabled={isNextDisabledProp || !isScaleValueChanged}
+      isNextDisabled={isNextDisabledProp}
       onPrevious={onPrevious}
       onNext={onNext}
       nextButtonText={nextButtonText}
@@ -74,7 +65,6 @@ function useSurveyScaleValue(
     return questionAnswer?.scaleAnswer ?? DEFAULT_SCALE_VALUE;
   }, [missionResponse, actionId]);
 
-  const [isScaleValueChanged, setIsScaleValueChanged] = useState(false);
   const [scaleValue, setScaleValue] = useState(initialScaleValue);
 
   // updateCanGoNext와 onAnswerChange ref로 최신 참조 유지
@@ -88,23 +78,16 @@ function useSurveyScaleValue(
 
   useEffect(() => {
     setScaleValue(initialScaleValue);
-    if (initialScaleValue !== DEFAULT_SCALE_VALUE) {
-      setIsScaleValueChanged(true);
-      updateCanGoNextRef.current?.(true);
+    updateCanGoNextRef.current?.(true);
 
-      onAnswerChangeRef.current?.({
-        actionId,
-        type: ActionType.SCALE,
-        scaleValue: initialScaleValue,
-      });
-    }
+    onAnswerChangeRef.current?.({
+      actionId,
+      type: ActionType.SCALE,
+      scaleValue: initialScaleValue,
+    });
   }, [initialScaleValue, actionId]);
 
   const handleScaleValueChange = (value: number) => {
-    if (!isScaleValueChanged) {
-      setIsScaleValueChanged(true);
-      updateCanGoNext?.(true);
-    }
     setScaleValue(value);
 
     onAnswerChange?.({
@@ -114,5 +97,5 @@ function useSurveyScaleValue(
     });
   };
 
-  return { isScaleValueChanged, scaleValue, handleScaleValueChange };
+  return { scaleValue, handleScaleValueChange };
 }

@@ -1,6 +1,6 @@
 import { getUserMissions } from "@/actions/mission";
-import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
-import { getQueryClient } from "@/lib/getQueryClient";
+import { adminMissionQueryKeys } from "@/app/admin/constants/queryKeys";
+import { getAdminQueryClient } from "@/app/admin/lib/get-admin-query-client";
 import { dehydrate } from "@tanstack/react-query";
 import "./admin.css";
 import { AdminHydrationBoundary } from "./components/AdminHydrationBoundary";
@@ -9,10 +9,10 @@ import { AdminQueryProvider } from "./components/AdminQueryProvider";
 import { AdminGate } from "./components/guards/AdminGate";
 
 export default async function AdminLayoutRoot({ children }: { children: React.ReactNode }) {
-  const queryClient = getQueryClient();
+  const queryClient = getAdminQueryClient();
 
   await queryClient.prefetchInfiniteQuery({
-    queryKey: missionQueryKeys.userMissions(),
+    queryKey: adminMissionQueryKeys.missions(),
     queryFn: ({ pageParam }) => {
       return getUserMissions({
         cursor: pageParam,
