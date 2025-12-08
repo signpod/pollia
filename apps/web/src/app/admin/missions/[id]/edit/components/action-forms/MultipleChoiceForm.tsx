@@ -3,45 +3,50 @@
 import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Card, CardContent } from "@/app/admin/components/shadcn-ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/app/admin/components/shadcn-ui/form";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
+import { Textarea } from "@/app/admin/components/shadcn-ui/textarea";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
-import { BaseActionForm } from "./BaseActionForm";
-import type {
-  ActionFormProps,
-  ActionOptionInput,
-  BaseActionFormData,
-  MultipleChoiceFormData,
-} from "./types";
-
-interface OptionWithId extends ActionOptionInput {
-  id: string;
-  imageFile?: File;
-  imagePreviewUrl?: string;
-}
+import { useFieldArray, useForm } from "react-hook-form";
+import { type MultipleChoiceFormInput, multipleChoiceFormSchema } from "./schemas";
+import type { ActionFormProps, ActionOptionInput, MultipleChoiceFormData } from "./types";
 
 interface OptionCardProps {
-  option: OptionWithId;
   index: number;
   total: number;
-  onUpdate: (id: string, data: Partial<OptionWithId>) => void;
-  onDelete: (id: string) => void;
-  onMoveUp: (id: string) => void;
-  onMoveDown: (id: string) => void;
-  onImageSelect: (id: string, file: File) => void;
-  onImageDelete: (id: string) => void;
+  title: string;
+  description?: string;
+  imagePreviewUrl?: string;
+  onTitleChange: (value: string) => void;
+  onDescriptionChange: (value: string) => void;
+  onMoveUp: () => void;
+  onMoveDown: () => void;
+  onDelete: () => void;
+  onImageSelect: (file: File) => void;
+  onImageDelete: () => void;
   disabled?: boolean;
 }
 
 function OptionCard({
-  option,
   index,
   total,
-  onUpdate,
-  onDelete,
+  title,
+  description,
+  imagePreviewUrl,
+  onTitleChange,
+  onDescriptionChange,
   onMoveUp,
   onMoveDown,
+  onDelete,
   onImageSelect,
   onImageDelete,
   disabled,
@@ -60,9 +65,9 @@ function OptionCard({
 
             <ImageSelector
               size="medium"
-              imageUrl={option.imagePreviewUrl}
-              onImageSelect={file => onImageSelect(option.id, file)}
-              onImageDelete={() => onImageDelete(option.id)}
+              imageUrl={imagePreviewUrl}
+              onImageSelect={onImageSelect}
+              onImageDelete={onImageDelete}
               disabled={disabled}
             />
           </div>
@@ -70,15 +75,15 @@ function OptionCard({
           <div className="flex-1 space-y-2 min-w-0">
             <Input
               placeholder="선택지 제목"
-              value={option.title}
-              onChange={e => onUpdate(option.id, { title: e.target.value })}
+              value={title}
+              onChange={e => onTitleChange(e.target.value)}
               disabled={disabled}
               className="h-9 text-sm"
             />
             <Input
               placeholder="선택지 설명 (선택)"
-              value={option.description || ""}
-              onChange={e => onUpdate(option.id, { description: e.target.value })}
+              value={description || ""}
+              onChange={e => onDescriptionChange(e.target.value)}
               disabled={disabled}
               className="h-9 text-sm"
             />
@@ -89,7 +94,7 @@ function OptionCard({
               type="button"
               variant="ghost"
               size="icon"
-              onClick={() => onMoveUp(option.id)}
+              onClick={onMoveUp}
               disabled={disabled || isFirst}
               className="size-8"
             >
@@ -99,7 +104,7 @@ function OptionCard({
               type="button"
               variant="ghost"
               size="icon"
-              onClick={() => onMoveDown(option.id)}
+              onClick={onMoveDown}
               disabled={disabled || isLast}
               className="size-8"
             >
@@ -111,7 +116,7 @@ function OptionCard({
             type="button"
             variant="ghost"
             size="icon"
-            onClick={() => onDelete(option.id)}
+            onClick={onDelete}
             disabled={disabled}
             className="size-8 text-destructive hover:text-destructive shrink-0"
           >
@@ -128,161 +133,188 @@ export function MultipleChoiceForm({
   onSubmit,
   onCancel,
 }: ActionFormProps<MultipleChoiceFormData>) {
-  const [options, setOptions] = useState<OptionWithId[]>([]);
+  const form = useForm<MultipleChoiceFormInput>({
+    resolver: zodResolver(multipleChoiceFormSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      options: [],
+    },
+    mode: "onChange",
+  });
 
-  const handleSubmit = (baseData: BaseActionFormData) => {
-    const formattedOptions: ActionOptionInput[] = options.map(opt => ({
+  const { fields, append, remove, swap } = useFieldArray({
+    control: form.control,
+    name: "options",
+  });
+
+  const imagePreviewUrls = new Map<string, string>();
+
+  const handleSubmit = form.handleSubmit((data: MultipleChoiceFormInput) => {
+    const formattedOptions: ActionOptionInput[] = data.options.map(opt => ({
       title: opt.title,
       description: opt.description || undefined,
-      imageUrl: opt.imagePreviewUrl || undefined,
+      imageUrl: opt.imageUrl || undefined,
     }));
 
     onSubmit({
-      ...baseData,
       type: "MULTIPLE_CHOICE",
+      title: data.title,
+      description: data.description,
       options: formattedOptions,
     });
-  };
+  });
 
   const handleAddOption = () => {
-    const newOption: OptionWithId = {
+    append({
       id: crypto.randomUUID(),
       title: "",
       description: "",
-    };
-    setOptions(prev => [...prev, newOption]);
+    });
   };
 
-  const handleUpdateOption = (id: string, data: Partial<OptionWithId>) => {
-    setOptions(prev => prev.map(opt => (opt.id === id ? { ...opt, ...data } : opt)));
-  };
-
-  const handleDeleteOption = (id: string) => {
-    const option = options.find(opt => opt.id === id);
-    if (option?.imagePreviewUrl) {
-      URL.revokeObjectURL(option.imagePreviewUrl);
+  const handleMoveUp = (index: number) => {
+    if (index > 0) {
+      swap(index, index - 1);
     }
-    setOptions(prev => prev.filter(opt => opt.id !== id));
   };
 
-  const handleMoveUp = (id: string) => {
-    setOptions(prev => {
-      const index = prev.findIndex(opt => opt.id === id);
-      if (index <= 0) return prev;
-      const current = prev[index];
-      const above = prev[index - 1];
-      if (!current || !above) return prev;
-      return prev.map((opt, i) => {
-        if (i === index - 1) return current;
-        if (i === index) return above;
-        return opt;
-      });
-    });
+  const handleMoveDown = (index: number) => {
+    if (index < fields.length - 1) {
+      swap(index, index + 1);
+    }
   };
 
-  const handleMoveDown = (id: string) => {
-    setOptions(prev => {
-      const index = prev.findIndex(opt => opt.id === id);
-      if (index < 0 || index >= prev.length - 1) return prev;
-      const current = prev[index];
-      const below = prev[index + 1];
-      if (!current || !below) return prev;
-      return prev.map((opt, i) => {
-        if (i === index) return below;
-        if (i === index + 1) return current;
-        return opt;
-      });
-    });
-  };
-
-  const handleImageSelect = (id: string, file: File) => {
+  const handleImageSelect = (index: number, file: File) => {
     const previewUrl = URL.createObjectURL(file);
-    setOptions(prev =>
-      prev.map(opt =>
-        opt.id === id
-          ? {
-              ...opt,
-              imageFile: file,
-              imagePreviewUrl: previewUrl,
-            }
-          : opt,
-      ),
-    );
-  };
-
-  const handleImageDelete = (id: string) => {
-    const option = options.find(opt => opt.id === id);
-    if (option?.imagePreviewUrl) {
-      URL.revokeObjectURL(option.imagePreviewUrl);
+    const fieldId = fields[index]?.id;
+    if (fieldId) {
+      imagePreviewUrls.set(fieldId, previewUrl);
     }
-    setOptions(prev =>
-      prev.map(opt =>
-        opt.id === id
-          ? {
-              ...opt,
-              imageFile: undefined,
-              imagePreviewUrl: undefined,
-              imageUrl: undefined,
-            }
-          : opt,
-      ),
-    );
+    form.setValue(`options.${index}.imageUrl`, previewUrl);
   };
 
-  const isFormValid = (_baseData: BaseActionFormData) => {
-    return options.length > 0 && options.every(opt => opt.title.trim().length > 0);
+  const handleImageDelete = (index: number) => {
+    const fieldId = fields[index]?.id;
+    if (fieldId) {
+      const previewUrl = imagePreviewUrls.get(fieldId);
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        imagePreviewUrls.delete(fieldId);
+      }
+    }
+    form.setValue(`options.${index}.imageUrl`, undefined);
   };
 
   return (
-    <BaseActionForm
-      titlePlaceholder="예: 가장 선호하는 옵션을 선택해주세요."
-      isLoading={isLoading}
-      onSubmit={handleSubmit}
-      onCancel={onCancel}
-      isValid={isFormValid}
-    >
-      <div className="space-y-2">
-        <Label className="text-sm font-medium">
-          선택지 <span className="text-destructive">*</span>
-        </Label>
+    <Form {...form}>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                제목 <span className="text-destructive">*</span>
+              </FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="예: 가장 선호하는 옵션을 선택해주세요."
+                  {...field}
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-        {options.length > 0 ? (
-          <div>
-            {options.map((option, index) => (
-              <OptionCard
-                key={option.id}
-                option={option}
-                index={index}
-                total={options.length}
-                onUpdate={handleUpdateOption}
-                onDelete={handleDeleteOption}
-                onMoveUp={handleMoveUp}
-                onMoveDown={handleMoveDown}
-                onImageSelect={handleImageSelect}
-                onImageDelete={handleImageDelete}
-                disabled={isLoading}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="rounded-lg border border-dashed p-4 text-center text-muted-foreground">
-            <p className="text-sm">선택지가 없습니다.</p>
-            <p className="text-xs mt-1">아래 버튼을 눌러 선택지를 추가하세요.</p>
-          </div>
-        )}
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                설명 <span className="text-muted-foreground">(선택)</span>
+              </FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="액션에 대한 추가 설명을 입력하세요."
+                  {...field}
+                  disabled={isLoading}
+                  rows={2}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="w-full"
-          onClick={handleAddOption}
-          disabled={isLoading}
-        >
-          <Plus className="size-4 mr-2" />
-          선택지 추가
-        </Button>
-      </div>
-    </BaseActionForm>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label className="text-sm font-medium">
+              선택지 <span className="text-destructive">*</span>
+            </Label>
+            {form.formState.errors.options?.message && (
+              <p className="text-sm text-destructive">{form.formState.errors.options.message}</p>
+            )}
+          </div>
+
+          {fields.length > 0 ? (
+            <div>
+              {fields.map((field, index) => (
+                <OptionCard
+                  key={field.id}
+                  index={index}
+                  total={fields.length}
+                  title={form.watch(`options.${index}.title`)}
+                  description={form.watch(`options.${index}.description`)}
+                  imagePreviewUrl={form.watch(`options.${index}.imageUrl`)}
+                  onTitleChange={value => {
+                    form.setValue(`options.${index}.title`, value, { shouldValidate: true });
+                    form.trigger("options");
+                  }}
+                  onDescriptionChange={value =>
+                    form.setValue(`options.${index}.description`, value)
+                  }
+                  onMoveUp={() => handleMoveUp(index)}
+                  onMoveDown={() => handleMoveDown(index)}
+                  onDelete={() => remove(index)}
+                  onImageSelect={file => handleImageSelect(index, file)}
+                  onImageDelete={() => handleImageDelete(index)}
+                  disabled={isLoading}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-lg border border-dashed p-4 text-center text-muted-foreground">
+              <p className="text-sm">선택지가 없습니다.</p>
+              <p className="text-xs mt-1">아래 버튼을 눌러 선택지를 추가하세요.</p>
+            </div>
+          )}
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="w-full"
+            onClick={handleAddOption}
+            disabled={isLoading}
+          >
+            <Plus className="size-4 mr-2" />
+            선택지 추가
+          </Button>
+        </div>
+
+        <div className="flex justify-end gap-3 pt-4">
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+            이전
+          </Button>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? "생성 중..." : "액션 추가"}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }
