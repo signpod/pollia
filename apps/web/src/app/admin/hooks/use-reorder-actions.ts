@@ -13,16 +13,22 @@ export function useReorderActions(options: UseReorderActionsOptions = {}) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (request: ReorderActionsRequest) => reorderActions(request),
+    mutationFn: async (request: ReorderActionsRequest) => {
+      return await reorderActions(request);
+    },
+
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: adminActionQueryKeys.actions(variables.missionId),
       });
       options.onSuccess?.();
     },
-    onError: error => {
+
+    onError: (error, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: adminActionQueryKeys.actions(variables.missionId),
+      });
       options.onError?.(error as Error);
     },
   });
 }
-
