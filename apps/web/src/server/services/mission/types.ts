@@ -15,8 +15,10 @@ export interface UpdateMissionInput {
   description?: string;
   target?: string;
   imageUrl?: string;
+  brandLogoUrl?: string;
   deadline?: Date;
   estimatedMinutes?: number;
+  isActive?: boolean;
 }
 
 export interface GetUserMissionsOptions {

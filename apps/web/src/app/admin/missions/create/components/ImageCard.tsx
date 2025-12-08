@@ -1,5 +1,6 @@
 "use client";
 
+import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
 import {
   Card,
   CardContent,
@@ -7,11 +8,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
-import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
+import { ADMIN_STORAGE_BUCKETS } from "@/app/admin/constants/storage";
 import { useImageUpload } from "@/hooks/common/useImageUpload";
-import type { UseFormReturn } from "react-hook-form";
 import { useEffect, useState } from "react";
+import type { UseFormReturn } from "react-hook-form";
+import { toast } from "sonner";
 
 interface ImageCardProps {
   form: UseFormReturn<{
@@ -44,7 +46,7 @@ export function ImageCard({ form }: ImageCardProps) {
   } | null>(null);
 
   const missionImageUpload = useImageUpload({
-    bucket: "poll-images",
+    bucket: ADMIN_STORAGE_BUCKETS.MISSION_IMAGES,
     onSuccess: result => {
       form.setValue("imageUrl", result.publicUrl);
       form.setValue("imageFileUploadId", result.fileUploadId);
@@ -60,6 +62,9 @@ export function ImageCard({ form }: ImageCardProps) {
     },
     onError: error => {
       console.error("❌ 미션 이미지 업로드 실패:", error);
+      toast.error("미션 이미지 업로드 실패", {
+        description: error.message,
+      });
       if (missionImagePreview) {
         URL.revokeObjectURL(missionImagePreview);
         setMissionImagePreview("");
@@ -68,7 +73,7 @@ export function ImageCard({ form }: ImageCardProps) {
   });
 
   const brandLogoUpload = useImageUpload({
-    bucket: "poll-images",
+    bucket: ADMIN_STORAGE_BUCKETS.MISSION_IMAGES,
     onSuccess: result => {
       form.setValue("brandLogoUrl", result.publicUrl);
       form.setValue("brandLogoFileUploadId", result.fileUploadId);
@@ -84,6 +89,9 @@ export function ImageCard({ form }: ImageCardProps) {
     },
     onError: error => {
       console.error("❌ 브랜드 로고 업로드 실패:", error);
+      toast.error("브랜드 로고 업로드 실패", {
+        description: error.message,
+      });
       if (brandLogoPreview) {
         URL.revokeObjectURL(brandLogoPreview);
         setBrandLogoPreview("");
@@ -116,7 +124,7 @@ export function ImageCard({ form }: ImageCardProps) {
     if (missionImageFile) {
       missionImageUpload.deleteImage({
         path: missionImageFile.path,
-        bucket: "poll-images",
+        bucket: ADMIN_STORAGE_BUCKETS.MISSION_IMAGES,
       });
     }
 
@@ -144,7 +152,7 @@ export function ImageCard({ form }: ImageCardProps) {
     if (brandLogoFile) {
       brandLogoUpload.deleteImage({
         path: brandLogoFile.path,
-        bucket: "poll-images",
+        bucket: ADMIN_STORAGE_BUCKETS.MISSION_IMAGES,
       });
     }
 

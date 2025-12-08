@@ -32,6 +32,8 @@
 | `06-hooks-tanstack-query.mdc` | `apps/web/src/hooks/**` |
 | `07-server-layers.mdc` | `apps/web/src/server/**`, `apps/web/src/actions/**` |
 | `08-schemas.mdc` | `apps/web/src/schemas/**` |
+| `09-admin-design-guide.mdc` | `apps/web/src/app/admin/**` |
+| `10-admin-architecture.mdc` | `apps/web/src/app/admin/**` |
 | `98-pr-trigger.mdc` | 수동 참조 |
 | `99-code-reviewer.mdc` | 수동 참조 |
 

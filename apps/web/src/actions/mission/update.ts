@@ -9,8 +9,10 @@ export interface UpdateMissionRequest {
   description?: string;
   target?: string;
   imageUrl?: string;
+  brandLogoUrl?: string;
   deadline?: Date;
   estimatedMinutes?: number;
+  isActive?: boolean;
 }
 
 function toUpdateMissionInput(dto: UpdateMissionRequest): UpdateMissionInput {
@@ -19,8 +21,10 @@ function toUpdateMissionInput(dto: UpdateMissionRequest): UpdateMissionInput {
     description: dto.description,
     target: dto.target,
     imageUrl: dto.imageUrl,
+    brandLogoUrl: dto.brandLogoUrl,
     deadline: dto.deadline,
     estimatedMinutes: dto.estimatedMinutes,
+    isActive: dto.isActive,
   };
 }
 

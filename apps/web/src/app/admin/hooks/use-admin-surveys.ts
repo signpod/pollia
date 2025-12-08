@@ -1,12 +1,12 @@
 import { getUserMissions } from "@/actions/mission";
-import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
+import { adminMissionQueryKeys } from "@/app/admin/constants/queryKeys";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 export function useAdminSurveys(options?: { limit?: number }) {
   const limit = options?.limit ?? 10;
 
   const query = useInfiniteQuery({
-    queryKey: missionQueryKeys.userMissions(),
+    queryKey: adminMissionQueryKeys.missions(),
     queryFn: ({ pageParam }) => {
       return getUserMissions({
         cursor: pageParam,

@@ -17,7 +17,7 @@ import {
   ListOrdered,
   Quote,
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export interface TiptapEditorProps {
   content?: string;
@@ -154,6 +154,8 @@ export function TiptapEditor({
   editable = true,
   showToolbar = false,
 }: TiptapEditorProps) {
+  const isInitialized = useRef(false);
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -171,13 +173,20 @@ export function TiptapEditor({
       },
     },
     onUpdate: ({ editor }: { editor: Editor }) => {
-      onUpdate?.(editor.getHTML());
+      if (isInitialized.current) {
+        onUpdate?.(editor.getHTML());
+      }
+    },
+    onCreate: () => {
+      isInitialized.current = true;
     },
   });
 
   useEffect(() => {
     if (editor && editor.getHTML() !== content) {
+      isInitialized.current = false;
       editor.commands.setContent(content);
+      isInitialized.current = true;
     }
   }, [content, editor]);
 
