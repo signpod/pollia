@@ -7,7 +7,7 @@ import {
 } from "@repo/ui/components";
 import { ChevronLeftIcon } from "lucide-react";
 import Image from "next/image";
-import { type PropsWithChildren } from "react";
+import { type PropsWithChildren, useEffect } from "react";
 
 interface ActionTemplateProps extends PropsWithChildren {
   currentOrder: number;
@@ -35,6 +35,11 @@ export function SurveyQuestionTemplate({
   nextButtonText = "다음",
 }: ActionTemplateProps) {
   const progressValue = (currentOrder / totalActionCount) * 100 || 0;
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentOrder]);
 
   return (
     <FixedBottomLayout>
