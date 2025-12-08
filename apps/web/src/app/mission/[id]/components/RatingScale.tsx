@@ -157,27 +157,29 @@ export function RatingScale({
       };
     }
 
-    const currentPosition = positions[currentIndex] ?? 0;
     const isFirstDot = isFirst(currentIndex);
     const isLastDot = isLast(currentIndex);
 
     if (isVertical) {
-      const top = `${currentPosition * 100}%`;
       const transform = isFirstDot
         ? "translate(-50%, 0%)"
         : isLastDot
           ? "translate(-50%, -100%)"
-          : "translate(-50%, -50%)";
-      return { top, transform, left: "50%", position: "absolute" as const };
+          : `translate(-50%, -${(currentIndex / (positions.length - 1)) * 100}%)`;
+      return {
+        top: "100%",
+        transform,
+        left: "50%",
+        position: "absolute" as const,
+      };
     }
 
-    const left = `${currentPosition * 100}%`;
     const transform = isFirstDot
-      ? "translate(-50%, -50%)"
+      ? "translate(-100%, -50%)"
       : isLastDot
-        ? "translate(-50%, -50%)"
+        ? "translate(0%, -50%)"
         : "translate(-50%, -50%)";
-    return { left, transform, top: "50%", position: "absolute" as const };
+    return { left: "100%", transform, top: "50%", position: "absolute" as const };
   }, [positions, currentIndex, isFirst, isLast, isVertical]);
 
   return (
