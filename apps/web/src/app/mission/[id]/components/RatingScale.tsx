@@ -48,26 +48,49 @@ export function RatingScale({
     height,
   } = useMemo(() => {
     if (options && options.length > 0) {
-      const sortedOptions = [...options].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-      const minOrder = sortedOptions[0]?.order ?? 0;
-      const maxOrder = sortedOptions[sortedOptions.length - 1]?.order ?? 0;
+      const allHaveOrder = options.every(
+        option => option.order !== undefined && option.order !== null,
+      );
 
-      const positions: number[] = [];
-      const titles: string[] = [];
+      let sortedOptions: RatingScaleOption[];
+      let positions: number[];
+      let sliderMin: number;
+      let sliderMax: number;
 
-      sortedOptions.forEach(option => {
-        const position =
-          maxOrder === minOrder ? 0 : ((option.order ?? 0) - minOrder) / (maxOrder - minOrder);
-        positions.push(position);
-        titles.push(option.title ?? "");
-      });
+      if (allHaveOrder) {
+        sortedOptions = [...options].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        const minOrder = sortedOptions[0]?.order ?? 0;
+        const maxOrder = sortedOptions[sortedOptions.length - 1]?.order ?? 0;
+
+        positions = [];
+
+        sortedOptions.forEach(option => {
+          const position =
+            maxOrder === minOrder ? 0 : ((option.order ?? 0) - minOrder) / (maxOrder - minOrder);
+          positions.push(position);
+        });
+
+        sliderMin = minOrder;
+        sliderMax = maxOrder;
+      } else {
+        sortedOptions = [...options];
+        positions = [];
+
+        sortedOptions.forEach((_, index) => {
+          const position = sortedOptions.length === 1 ? 0 : index / (sortedOptions.length - 1);
+          positions.push(position);
+        });
+
+        sliderMin = 0;
+        sliderMax = sortedOptions.length - 1;
+      }
 
       const isFirst = (index: number) => index === 0;
       const isLast = (index: number) => index === positions.length - 1;
 
       const isVertical =
         options.length > 5 ||
-        options.some(option => (option.title?.length ?? 0) > 6) ||
+        options.some(option => !!option.order?.toString().length) ||
         direction === "vertical";
 
       const height = isVertical ? options.length * (288 / 5) : undefined;
@@ -75,8 +98,8 @@ export function RatingScale({
       return {
         positions,
         options: sortedOptions,
-        sliderMin: minOrder,
-        sliderMax: maxOrder,
+        sliderMin,
+        sliderMax,
         sliderStep: 1,
         isFirst,
         isLast,
@@ -115,22 +138,33 @@ export function RatingScale({
     if (positions.length === 0) return 0;
 
     if (sortedOptions && sortedOptions.length > 0) {
-      const exactIndex = sortedOptions.findIndex(option => option.order === localValue);
-      if (exactIndex >= 0) {
-        return exactIndex;
+      const allHaveOrder = sortedOptions.every(
+        option => option.order !== undefined && option.order !== null,
+      );
+
+      if (allHaveOrder) {
+        const exactIndex = sortedOptions.findIndex(option => option.order === localValue);
+        if (exactIndex >= 0) {
+          return exactIndex;
+        }
+        const normalizedValue =
+          sliderMax === sliderMin ? 0 : (localValue - sliderMin) / (sliderMax - sliderMin);
+        let closestIndex = 0;
+        let closestDistance = Math.abs(positions[0] ?? 0 - normalizedValue);
+        for (let idx = 1; idx < positions.length; idx++) {
+          const distance = Math.abs(positions[idx] ?? 0 - normalizedValue);
+          if (distance < closestDistance) {
+            closestDistance = distance;
+            closestIndex = idx;
+          }
+        }
+        return closestIndex;
       }
+
       const normalizedValue =
         sliderMax === sliderMin ? 0 : (localValue - sliderMin) / (sliderMax - sliderMin);
-      let closestIndex = 0;
-      let closestDistance = Math.abs(positions[0] ?? 0 - normalizedValue);
-      for (let idx = 1; idx < positions.length; idx++) {
-        const distance = Math.abs(positions[idx] ?? 0 - normalizedValue);
-        if (distance < closestDistance) {
-          closestDistance = distance;
-          closestIndex = idx;
-        }
-      }
-      return closestIndex;
+      const indexValue = Math.round(normalizedValue * (sortedOptions.length - 1));
+      return Math.max(0, Math.min(sortedOptions.length - 1, indexValue));
     }
 
     const normalizedValue =
@@ -290,10 +324,10 @@ function SliderDots({ positions, options, isFirst, isLast, isVertical }: SliderD
                     isVertical ? "left-[40px]" : "top-[40px]",
                   )}
                 >
-                  {options?.[index]?.order}점
+                  {options?.[index]?.title}
                 </Typo.SubTitle>
               )}
-              {options?.[index]?.title && (
+              {options?.[index]?.order && (
                 <Typo.Body
                   size="large"
                   key={`title-${position}`}
@@ -302,7 +336,7 @@ function SliderDots({ positions, options, isFirst, isLast, isVertical }: SliderD
                     isVertical ? "left-[72px]" : "top-[72px]",
                   )}
                 >
-                  {options?.[index]?.title}
+                  {options?.[index]?.order}
                 </Typo.Body>
               )}
             </div>
