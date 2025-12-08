@@ -8,11 +8,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
-import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
 import { useReadMission } from "@/app/admin/hooks/use-read-mission";
 import { useReadReward } from "@/app/admin/hooks/use-read-reward";
 import type { Reward } from "@prisma/client";
 import { Calendar, Gift, Pencil, Plus, Trash2 } from "lucide-react";
+import { Suspense } from "react";
 
 interface RewardEditTabProps {
   missionId: string;
@@ -94,45 +94,30 @@ function EmptyRewardCard({ onCreate }: { onCreate: () => void }) {
 function LoadingSkeleton() {
   return (
     <Card>
-      <CardHeader>
-        <Skeleton className="h-6 w-16" />
-        <Skeleton className="h-4 w-48 mt-2" />
-      </CardHeader>
-      <CardContent>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <Skeleton className="size-12 rounded-lg" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-6 w-32" />
-                <Skeleton className="h-4 w-64" />
-                <div className="flex items-center gap-4 mt-3">
-                  <Skeleton className="h-6 w-20 rounded-full" />
-                  <Skeleton className="h-4 w-24" />
-                </div>
-              </div>
-              <div className="flex items-center gap-1">
-                <Skeleton className="size-8 rounded" />
-                <Skeleton className="size-8 rounded" />
-              </div>
+      <CardContent className="p-6">
+        <div className="flex items-start gap-4">
+          <div className="size-12 rounded-lg bg-muted animate-pulse" />
+          <div className="flex-1 space-y-2">
+            <div className="h-6 w-32 bg-muted rounded animate-pulse" />
+            <div className="h-4 w-64 bg-muted rounded animate-pulse" />
+            <div className="flex items-center gap-4 mt-3">
+              <div className="h-6 w-20 bg-muted rounded-full animate-pulse" />
+              <div className="h-4 w-24 bg-muted rounded animate-pulse" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="size-8 bg-muted rounded animate-pulse" />
+            <div className="size-8 bg-muted rounded animate-pulse" />
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
 }
 
-export function RewardEditTab({ missionId }: RewardEditTabProps) {
-  const { data: missionResponse, isLoading: isMissionLoading } = useReadMission(missionId);
+function RewardContent({ missionId }: { missionId: string }) {
+  const { data: missionResponse } = useReadMission(missionId);
   const mission = missionResponse?.data;
-
-  const { data: rewardResponse, isLoading: isRewardLoading } = useReadReward(
-    mission?.rewardId ?? null,
-  );
-  const reward = rewardResponse?.data;
-
-  const isLoading = isMissionLoading || (mission?.rewardId && isRewardLoading);
 
   const handleCreate = () => {
     alert("리워드 생성");
@@ -146,14 +131,37 @@ export function RewardEditTab({ missionId }: RewardEditTabProps) {
     alert("리워드 삭제");
   };
 
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <LoadingSkeleton />
-      </div>
-    );
+  if (!mission?.rewardId) {
+    return <EmptyRewardCard onCreate={handleCreate} />;
   }
 
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <RewardCardWrapper rewardId={mission.rewardId} onEdit={handleEdit} onDelete={handleDelete} />
+    </Suspense>
+  );
+}
+
+function RewardCardWrapper({
+  rewardId,
+  onEdit,
+  onDelete,
+}: {
+  rewardId: string;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  const { data: rewardResponse } = useReadReward(rewardId);
+  const reward = rewardResponse?.data;
+
+  if (!reward) {
+    return null;
+  }
+
+  return <RewardCard reward={reward} onEdit={onEdit} onDelete={onDelete} />;
+}
+
+export function RewardEditTab({ missionId }: RewardEditTabProps) {
   return (
     <div className="space-y-6">
       <Card>
@@ -162,11 +170,7 @@ export function RewardEditTab({ missionId }: RewardEditTabProps) {
           <CardDescription>미션 완료 시 지급되는 리워드를 관리합니다.</CardDescription>
         </CardHeader>
         <CardContent>
-          {reward ? (
-            <RewardCard reward={reward} onEdit={handleEdit} onDelete={handleDelete} />
-          ) : (
-            <EmptyRewardCard onCreate={handleCreate} />
-          )}
+          <RewardContent missionId={missionId} />
         </CardContent>
       </Card>
     </div>

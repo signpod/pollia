@@ -1,11 +1,12 @@
 "use client";
 
+import { ErrorBoundary } from "@/app/admin/components/common/ErrorBoundary";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
 import { Switch } from "@/app/admin/components/shadcn-ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/admin/components/shadcn-ui/tabs";
 import { useReadMission } from "@/app/admin/hooks/use-read-mission";
 import { useUpdateMission } from "@/app/admin/hooks/use-update-mission";
-import { use } from "react";
+import { Suspense, use } from "react";
 import { toast } from "sonner";
 import { ActionsEditTab } from "./components/ActionsEditTab";
 import { BasicInfoEditTab } from "./components/BasicInfoEditTab";
@@ -74,11 +75,19 @@ export default function AdminMissionEditPage({ params }: AdminMissionEditPagePro
         </TabsContent>
 
         <TabsContent value="actions" className="mt-6">
-          <ActionsEditTab missionId={missionId} />
+          <ErrorBoundary>
+            <Suspense fallback={<div className="text-muted-foreground">로딩 중...</div>}>
+              <ActionsEditTab missionId={missionId} />
+            </Suspense>
+          </ErrorBoundary>
         </TabsContent>
 
         <TabsContent value="reward" className="mt-6">
-          <RewardEditTab missionId={missionId} />
+          <ErrorBoundary>
+            <Suspense fallback={<div className="text-muted-foreground">로딩 중...</div>}>
+              <RewardEditTab missionId={missionId} />
+            </Suspense>
+          </ErrorBoundary>
         </TabsContent>
       </Tabs>
     </div>
