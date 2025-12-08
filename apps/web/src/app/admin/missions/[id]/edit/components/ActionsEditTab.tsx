@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
 import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
+import { useCreateAction } from "@/app/admin/hooks/use-create-action";
 import { useReadActionsDetail } from "@/app/admin/hooks/use-read-actions-detail";
 import { useReorderActions } from "@/app/admin/hooks/use-reorder-actions";
 import type { ActionDetail } from "@/types/dto/action";
@@ -165,6 +166,16 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
     },
   });
 
+  const createAction = useCreateAction({
+    onSuccess: () => {
+      toast.success("액션이 생성되었습니다.");
+      setIsCreateDialogOpen(false);
+    },
+    onError: error => {
+      toast.error(error.message || "액션 생성 중 오류가 발생했습니다.");
+    },
+  });
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -219,10 +230,26 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
   };
 
   const handleCreateSubmit = (data: ActionFormData) => {
-    // TODO: API 호출로 실제 액션 생성
-    console.log("액션 생성:", data);
-    toast.success("액션이 생성되었습니다.");
-    setIsCreateDialogOpen(false);
+    const nextOrder = actions.length;
+
+    createAction.mutate({
+      missionId,
+      type: data.type,
+      title: data.title,
+      description: data.description,
+      imageUrl: data.imageUrl,
+      order: nextOrder,
+      options:
+        "options" in data
+          ? data.options.map((opt, index) => ({
+              title: opt.title,
+              description: opt.description,
+              imageUrl: opt.imageUrl,
+              order: index,
+            }))
+          : undefined,
+      maxSelections: "maxSelections" in data ? data.maxSelections : undefined,
+    });
   };
 
   const activeAction = activeId ? actions.find(a => a.id === activeId) : null;
@@ -307,6 +334,7 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
         onSubmit={handleCreateSubmit}
+        isLoading={createAction.isPending}
       />
     </div>
   );

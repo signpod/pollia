@@ -49,13 +49,13 @@ const ACTION_TYPES = [
   {
     value: "SCALE" as const,
     label: "척도",
-    description: "1~5점 또는 1~10점 스케일로 응답",
+    description: "관리자가 설정한 스케일로 응답",
     icon: SlidersHorizontal,
   },
   {
     value: "RATING" as const,
     label: "평가",
-    description: "별점으로 평가",
+    description: "1~10점인 별점으로 평가",
     icon: Star,
   },
   {
@@ -199,7 +199,7 @@ export function CreateActionDialog({
             </div>
           </div>
         ) : (
-          <div className="py-2">
+          <div className="py-2 max-h-[80vh] overflow-y-auto pr-2 -mr-2">
             <ActionForm
               type={selectedType}
               isLoading={isLoading}
