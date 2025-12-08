@@ -1,126 +1,19 @@
 "use client";
 
-import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
-import { Card, CardContent } from "@/app/admin/components/shadcn-ui/card";
 import { Form } from "@/app/admin/components/shadcn-ui/form";
-import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { BaseActionFormFields } from "./BaseActionForm";
+import { OptionCard } from "./OptionCard";
 import { type TagFormInput, tagFormSchema } from "./schemas";
 import type { ActionFormProps, ActionOptionInput, TagFormData } from "./types";
 
-interface OptionCardProps {
-  index: number;
-  total: number;
-  title: string;
-  description?: string;
-  imagePreviewUrl?: string;
-  onTitleChange: (value: string) => void;
-  onDescriptionChange: (value: string) => void;
-  onMoveUp: () => void;
-  onMoveDown: () => void;
-  onDelete: () => void;
-  onImageSelect: (file: File) => void;
-  onImageDelete: () => void;
-  disabled?: boolean;
-}
-
-function OptionCard({
-  index,
-  total,
-  title,
-  description,
-  imagePreviewUrl,
-  onTitleChange,
-  onDescriptionChange,
-  onMoveUp,
-  onMoveDown,
-  onDelete,
-  onImageSelect,
-  onImageDelete,
-  disabled,
-}: OptionCardProps) {
-  const isFirst = index === 0;
-  const isLast = index === total - 1;
-
-  return (
-    <Card className="mb-3 py-4 px-0">
-      <CardContent>
-        <div className="flex items-start gap-3">
-          <div className="flex flex-col gap-2 items-start">
-            <div className="flex items-center justify-center size-6 rounded-full bg-muted text-xs font-bold text-muted-foreground shrink-0">
-              {index + 1}
-            </div>
-
-            <ImageSelector
-              size="medium"
-              imageUrl={imagePreviewUrl}
-              onImageSelect={onImageSelect}
-              onImageDelete={onImageDelete}
-              disabled={disabled}
-            />
-          </div>
-
-          <div className="flex-1 space-y-2 min-w-0">
-            <Input
-              placeholder="태그 제목"
-              value={title}
-              onChange={e => onTitleChange(e.target.value)}
-              disabled={disabled}
-              className="h-9 text-sm"
-            />
-            <Input
-              placeholder="태그 설명 (선택)"
-              value={description || ""}
-              onChange={e => onDescriptionChange(e.target.value)}
-              disabled={disabled}
-              className="h-9 text-sm"
-            />
-          </div>
-
-          <div className="flex flex-col gap-1 shrink-0">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={onMoveUp}
-              disabled={disabled || isFirst}
-              className="size-8"
-            >
-              <ChevronUp className="size-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={onMoveDown}
-              disabled={disabled || isLast}
-              className="size-8"
-            >
-              <ChevronDown className="size-4" />
-            </Button>
-          </div>
-
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={onDelete}
-            disabled={disabled}
-            className="size-8 text-destructive hover:text-destructive shrink-0"
-          >
-            <Trash2 className="size-4" />
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+const MIN_OPTIONS = 2;
+const MAX_OPTIONS = 10;
 
 export function TagForm({ isLoading = false, onSubmit, onCancel }: ActionFormProps<TagFormData>) {
   const form = useForm<TagFormInput>({
@@ -241,9 +134,12 @@ export function TagForm({ isLoading = false, onSubmit, onCancel }: ActionFormPro
                   key={field.id}
                   index={index}
                   total={fields.length}
+                  minOptions={MIN_OPTIONS}
                   title={form.watch(`options.${index}.title`)}
                   description={form.watch(`options.${index}.description`)}
                   imagePreviewUrl={form.watch(`options.${index}.imageUrl`)}
+                  titlePlaceholder="태그 제목"
+                  descriptionPlaceholder="태그 설명 (선택)"
                   onTitleChange={value => {
                     form.setValue(`options.${index}.title`, value, { shouldValidate: true });
                     form.trigger("options");
@@ -273,7 +169,7 @@ export function TagForm({ isLoading = false, onSubmit, onCancel }: ActionFormPro
             size="sm"
             className="w-full"
             onClick={handleAddOption}
-            disabled={isLoading}
+            disabled={isLoading || fields.length >= MAX_OPTIONS}
           >
             <Plus className="size-4 mr-2" />
             태그 추가
