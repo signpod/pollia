@@ -66,7 +66,9 @@ export function RatingScale({
       const isLast = (index: number) => index === positions.length - 1;
 
       const isVertical =
-        options.some(option => (option.title?.length ?? 0) > 6) || direction === "vertical";
+        options.length > 5 ||
+        options.some(option => (option.title?.length ?? 0) > 6) ||
+        direction === "vertical";
 
       const height = isVertical ? options.length * (288 / 5) : undefined;
 
@@ -171,12 +173,12 @@ export function RatingScale({
 
     const left = `${currentPosition * 100}%`;
     const transform = isFirstDot
-      ? "translate(0%, -50%)"
+      ? "translate(-50%, -50%)"
       : isLastDot
-        ? "translate(-100%, -50%)"
+        ? "translate(-50%, -50%)"
         : "translate(-50%, -50%)";
     return { left, transform, top: "50%", position: "absolute" as const };
-  }, [currentIndex, positions, isFirst, isLast, isVertical]);
+  }, [positions, currentIndex, isFirst, isLast, isVertical]);
 
   return (
     <div className={cn("flex gap-5", isVertical ? "flex-row h-full" : "flex-col w-full")}>
