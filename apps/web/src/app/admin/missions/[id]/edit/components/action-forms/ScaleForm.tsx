@@ -3,9 +3,12 @@
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
+import {
+  useAdminMultipleImages,
+  useAdminSingleImage,
+} from "@/app/admin/hooks/use-admin-image-upload";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
-import { useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { BaseActionFormFields } from "./BaseActionForm";
 import { OptionCard } from "./OptionCard";
@@ -45,22 +48,28 @@ export function ScaleForm({
     name: "options",
   });
 
-  const imagePreviewUrls = new Map<string, string>();
-  const [mainImagePreviewUrl, setMainImagePreviewUrl] = useState<string | null>(
-    initialData?.imageUrl || null,
-  );
+  const mainImage = useAdminSingleImage({ initialUrl: initialData?.imageUrl });
+  const optionImages = useAdminMultipleImages();
 
   const handleSubmit = form.handleSubmit((data: ScaleFormInput) => {
-    const formattedOptions: ActionOptionInput[] = data.options.map(opt => ({
-      title: opt.title,
-      description: opt.description || undefined,
-      imageUrl: opt.imageUrl || undefined,
-    }));
+    const formattedOptions: ActionOptionInput[] = data.options.map((opt, index) => {
+      const fieldId = fields[index]?.id;
+      const uploadedData = fieldId ? optionImages.getUploadedData(fieldId) : undefined;
+
+      return {
+        title: opt.title,
+        description: opt.description || undefined,
+        imageUrl: uploadedData?.publicUrl || opt.imageUrl || undefined,
+        imageFileUploadId: uploadedData?.fileUploadId,
+      };
+    });
 
     onSubmit({
       type: "SCALE",
       title: data.title,
       description: data.description,
+      imageUrl: mainImage.uploadedData?.publicUrl || data.imageUrl || undefined,
+      imageFileUploadId: mainImage.uploadedData?.fileUploadId,
       options: formattedOptions,
     });
   });
@@ -85,41 +94,6 @@ export function ScaleForm({
     }
   };
 
-  const handleImageSelect = (index: number, file: File) => {
-    const previewUrl = URL.createObjectURL(file);
-    const fieldId = fields[index]?.id;
-    if (fieldId) {
-      imagePreviewUrls.set(fieldId, previewUrl);
-    }
-    form.setValue(`options.${index}.imageUrl`, previewUrl);
-  };
-
-  const handleImageDelete = (index: number) => {
-    const fieldId = fields[index]?.id;
-    if (fieldId) {
-      const previewUrl = imagePreviewUrls.get(fieldId);
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-        imagePreviewUrls.delete(fieldId);
-      }
-    }
-    form.setValue(`options.${index}.imageUrl`, undefined);
-  };
-
-  const handleMainImageSelect = (file: File) => {
-    const previewUrl = URL.createObjectURL(file);
-    setMainImagePreviewUrl(previewUrl);
-    form.setValue("imageUrl", previewUrl);
-  };
-
-  const handleMainImageDelete = () => {
-    if (mainImagePreviewUrl) {
-      URL.revokeObjectURL(mainImagePreviewUrl);
-      setMainImagePreviewUrl(null);
-    }
-    form.setValue("imageUrl", "");
-  };
-
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -127,9 +101,9 @@ export function ScaleForm({
           control={form.control}
           isLoading={isLoading}
           titlePlaceholder="예: 서비스 만족도를 평가해주세요."
-          mainImagePreviewUrl={mainImagePreviewUrl}
-          onMainImageSelect={handleMainImageSelect}
-          onMainImageDelete={handleMainImageDelete}
+          mainImagePreviewUrl={mainImage.previewUrl}
+          onMainImageSelect={mainImage.selectImage}
+          onMainImageDelete={mainImage.clearImage}
         />
 
         <div className="space-y-2">
@@ -144,32 +118,42 @@ export function ScaleForm({
 
           {fields.length > 0 ? (
             <div>
-              {fields.map((field, index) => (
-                <OptionCard
-                  key={field.id}
-                  index={index}
-                  total={fields.length}
-                  minOptions={MIN_OPTIONS}
-                  title={form.watch(`options.${index}.title`)}
-                  description={form.watch(`options.${index}.description`)}
-                  imagePreviewUrl={form.watch(`options.${index}.imageUrl`)}
-                  titlePlaceholder="척도 레이블"
-                  descriptionPlaceholder="척도 설명 (선택)"
-                  onTitleChange={value => {
-                    form.setValue(`options.${index}.title`, value, { shouldValidate: true });
-                    form.trigger("options");
-                  }}
-                  onDescriptionChange={value =>
-                    form.setValue(`options.${index}.description`, value)
-                  }
-                  onMoveUp={() => handleMoveUp(index)}
-                  onMoveDown={() => handleMoveDown(index)}
-                  onDelete={() => remove(index)}
-                  onImageSelect={file => handleImageSelect(index, file)}
-                  onImageDelete={() => handleImageDelete(index)}
-                  disabled={isLoading}
-                />
-              ))}
+              {fields.map((field, index) => {
+                const previewUrl = optionImages.getPreviewUrl(
+                  field.id,
+                  form.watch(`options.${index}.imageUrl`),
+                );
+
+                return (
+                  <OptionCard
+                    key={field.id}
+                    index={index}
+                    total={fields.length}
+                    minOptions={MIN_OPTIONS}
+                    title={form.watch(`options.${index}.title`)}
+                    description={form.watch(`options.${index}.description`)}
+                    imagePreviewUrl={previewUrl}
+                    titlePlaceholder="척도 레이블"
+                    descriptionPlaceholder="척도 설명 (선택)"
+                    onTitleChange={value => {
+                      form.setValue(`options.${index}.title`, value, { shouldValidate: true });
+                      form.trigger("options");
+                    }}
+                    onDescriptionChange={value =>
+                      form.setValue(`options.${index}.description`, value)
+                    }
+                    onMoveUp={() => handleMoveUp(index)}
+                    onMoveDown={() => handleMoveDown(index)}
+                    onDelete={() => {
+                      optionImages.clearImage(field.id);
+                      remove(index);
+                    }}
+                    onImageSelect={file => optionImages.selectImage(field.id, file)}
+                    onImageDelete={() => optionImages.clearImage(field.id)}
+                    disabled={isLoading}
+                  />
+                );
+              })}
             </div>
           ) : (
             <div className="rounded-lg border border-dashed p-4 text-center text-muted-foreground">
@@ -195,7 +179,10 @@ export function ScaleForm({
           <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
             {isEditMode ? "닫기" : "이전"}
           </Button>
-          <Button type="submit" disabled={isLoading}>
+          <Button
+            type="submit"
+            disabled={isLoading || mainImage.isUploading || optionImages.isAnyUploading}
+          >
             {isLoading
               ? isEditMode
                 ? "수정 중..."

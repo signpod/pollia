@@ -21,11 +21,13 @@ interface CreateActionInput {
   title: string;
   description?: string;
   imageUrl?: string;
+  imageFileUploadId?: string;
   order: number;
   options?: {
     title: string;
     description?: string;
     imageUrl?: string;
+    imageFileUploadId?: string;
     order: number;
   }[];
   maxSelections?: number;
@@ -55,6 +57,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
                 title: opt.title,
                 description: opt.description,
                 imageUrl: opt.imageUrl,
+                imageFileUploadId: opt.imageFileUploadId,
                 order: opt.order ?? index,
               })) ?? [],
           };

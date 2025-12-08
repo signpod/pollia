@@ -4,13 +4,14 @@ export interface ActionOptionInput {
   title: string;
   description?: string;
   imageUrl?: string;
+  imageFileUploadId?: string;
 }
 
 export interface BaseActionFormData {
   title: string;
   description?: string;
   imageUrl?: string;
-  imageFile?: File;
+  imageFileUploadId?: string;
 }
 
 export interface MultipleChoiceFormData extends BaseActionFormData {

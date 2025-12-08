@@ -256,6 +256,7 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
       title: data.title,
       description: data.description,
       imageUrl: data.imageUrl,
+      imageFileUploadId: data.imageFileUploadId,
       order: nextOrder,
       options:
         "options" in data
@@ -263,6 +264,7 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
               title: opt.title,
               description: opt.description,
               imageUrl: opt.imageUrl,
+              imageFileUploadId: opt.imageFileUploadId,
               order: index,
             }))
           : undefined,

@@ -2,8 +2,8 @@
 
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Form } from "@/app/admin/components/shadcn-ui/form";
+import { useAdminSingleImage } from "@/app/admin/hooks/use-admin-image-upload";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { BaseActionFormFields } from "./BaseActionForm";
 import { type SubjectiveFormInput, subjectiveFormSchema } from "./schemas";
@@ -27,31 +27,17 @@ export function RatingForm({
     mode: "onChange",
   });
 
-  const [mainImagePreviewUrl, setMainImagePreviewUrl] = useState<string | null>(
-    initialData?.imageUrl || null,
-  );
+  const mainImage = useAdminSingleImage({ initialUrl: initialData?.imageUrl });
 
   const handleSubmit = form.handleSubmit((data: SubjectiveFormInput) => {
     onSubmit({
       type: "RATING",
       title: data.title,
       description: data.description,
+      imageUrl: mainImage.uploadedData?.publicUrl || data.imageUrl || undefined,
+      imageFileUploadId: mainImage.uploadedData?.fileUploadId,
     });
   });
-
-  const handleMainImageSelect = (file: File) => {
-    const previewUrl = URL.createObjectURL(file);
-    setMainImagePreviewUrl(previewUrl);
-    form.setValue("imageUrl", previewUrl);
-  };
-
-  const handleMainImageDelete = () => {
-    if (mainImagePreviewUrl) {
-      URL.revokeObjectURL(mainImagePreviewUrl);
-      setMainImagePreviewUrl(null);
-    }
-    form.setValue("imageUrl", "");
-  };
 
   return (
     <Form {...form}>
@@ -59,17 +45,17 @@ export function RatingForm({
         <BaseActionFormFields
           control={form.control}
           isLoading={isLoading}
-          titlePlaceholder="예: 이 제품에 대해 별점을 매겨주세요."
-          mainImagePreviewUrl={mainImagePreviewUrl}
-          onMainImageSelect={handleMainImageSelect}
-          onMainImageDelete={handleMainImageDelete}
+          titlePlaceholder="예: 이 상품을 평가해주세요."
+          mainImagePreviewUrl={mainImage.previewUrl}
+          onMainImageSelect={mainImage.selectImage}
+          onMainImageDelete={mainImage.clearImage}
         />
 
         <div className="flex justify-end gap-3 pt-4">
           <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
             {isEditMode ? "닫기" : "이전"}
           </Button>
-          <Button type="submit" disabled={isLoading}>
+          <Button type="submit" disabled={isLoading || mainImage.isUploading}>
             {isLoading
               ? isEditMode
                 ? "수정 중..."
