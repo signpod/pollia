@@ -12,6 +12,7 @@ import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
 import { useCreateAction } from "@/app/admin/hooks/use-create-action";
 import { useReadActionsDetail } from "@/app/admin/hooks/use-read-actions-detail";
 import { useReorderActions } from "@/app/admin/hooks/use-reorder-actions";
+import { useUpdateAction } from "@/app/admin/hooks/use-update-action";
 import type { ActionDetail } from "@/types/dto/action";
 import {
   DndContext,
@@ -176,6 +177,16 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
     },
     onError: error => {
       toast.error(error.message || "액션 생성 중 오류가 발생했습니다.");
+    },
+  });
+
+  const updateAction = useUpdateAction({
+    onSuccess: () => {
+      toast.success("액션이 수정되었습니다.");
+      setIsEditDialogOpen(false);
+    },
+    onError: error => {
+      toast.error(error.message || "액션 수정 중 오류가 발생했습니다.");
     },
   });
 
@@ -349,9 +360,18 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
         onOpenChange={setIsEditDialogOpen}
         action={editingAction}
         onSubmit={data => {
-          alert(`액션 수정 제출: ${JSON.stringify(data)}`);
+          if (!editingAction) return;
+
+          updateAction.mutate({
+            actionId: editingAction.id,
+            missionId,
+            title: data.title,
+            description: data.description,
+            imageUrl: data.imageUrl,
+            maxSelections: "maxSelections" in data ? data.maxSelections : undefined,
+          });
         }}
-        isLoading={false}
+        isLoading={updateAction.isPending}
       />
     </div>
   );
