@@ -1,3 +1,4 @@
+export { BaseActionForm } from "./BaseActionForm";
 export { ImageUploadForm } from "./ImageUploadForm";
 export { MultipleChoiceForm } from "./MultipleChoiceForm";
 export { RatingForm } from "./RatingForm";

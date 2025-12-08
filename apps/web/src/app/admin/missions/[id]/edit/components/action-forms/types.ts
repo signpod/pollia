@@ -10,6 +10,7 @@ export interface BaseActionFormData {
   title: string;
   description?: string;
   imageUrl?: string;
+  imageFile?: File;
 }
 
 export interface MultipleChoiceFormData extends BaseActionFormData {
