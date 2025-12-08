@@ -32,3 +32,5 @@ export function useReorderActions(options: UseReorderActionsOptions = {}) {
     },
   });
 }
+
+export type UseReorderActionsReturn = ReturnType<typeof useReorderActions>;
