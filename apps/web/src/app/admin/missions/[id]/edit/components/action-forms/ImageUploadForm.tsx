@@ -15,6 +15,8 @@ export function ImageUploadForm({
   onCancel,
   initialData,
 }: ActionFormProps<ImageUploadFormData>) {
+  const isEditMode = !!initialData;
+
   const form = useForm<SubjectiveFormInput>({
     resolver: zodResolver(subjectiveFormSchema),
     defaultValues: {
@@ -65,10 +67,16 @@ export function ImageUploadForm({
 
         <div className="flex justify-end gap-3 pt-4">
           <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-            이전
+            {isEditMode ? "닫기" : "이전"}
           </Button>
           <Button type="submit" disabled={isLoading}>
-            {isLoading ? "생성 중..." : "액션 추가"}
+            {isLoading
+              ? isEditMode
+                ? "수정 중..."
+                : "생성 중..."
+              : isEditMode
+                ? "수정하기"
+                : "생성하기"}
           </Button>
         </div>
       </form>
