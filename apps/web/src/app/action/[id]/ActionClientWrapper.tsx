@@ -4,7 +4,6 @@ import { ExtendedActionStepConfig, createActionSteps } from "@/constants/action"
 import { SURVEY_TOAST_MESSAGE } from "@/constants/missionMessages";
 import { ROUTES } from "@/constants/routes";
 import { useReadActionsDetail } from "@/hooks/action/useReadActionsDetail";
-import { usePreventBack } from "@/hooks/common/usePreventBack";
 import {
   useReadMissionResponseForMission,
   useStartSurveyResponse,
@@ -141,6 +140,42 @@ function ActionRenderer({
     steps,
   } = useStep();
 
+  const showExitConfirmModal = useCallback(() => {
+    showModal({
+      ...SURVEY_EXIT_MODAL,
+      showCancelButton: true,
+      onConfirm: () => {
+        close();
+      },
+      onCancel: () => {
+        isExitingRef.current = true;
+        close();
+        window.history.go(-1);
+        setTimeout(() => {
+          router.push(ROUTES.MISSION(missionId));
+        }, 100);
+      },
+    });
+  }, [missionId, showModal, close, router]);
+
+  useEffect(() => {
+    const handleBackPressed = () => {
+      if (isExitingRef.current) {
+        return;
+      }
+      if (isFirstStep) {
+        showExitConfirmModal();
+      } else {
+        goBack();
+      }
+    };
+
+    window.addEventListener("action-back-pressed", handleBackPressed);
+    return () => {
+      window.removeEventListener("action-back-pressed", handleBackPressed);
+    };
+  }, [isFirstStep, showExitConfirmModal, goBack]);
+
   const stepConfig = currentStepConfig as unknown as ExtendedActionStepConfig;
   const ContentComponent = stepConfig.content;
   const actionData = stepConfig.actionData;
@@ -256,24 +291,6 @@ function ActionRenderer({
     }
   }, [isLastStep, responseId, currentAnswer, submitAnswer, completeSurveyAsync, showModal]);
 
-  const showExitConfirmModal = useCallback(() => {
-    showModal({
-      ...SURVEY_EXIT_MODAL,
-      showCancelButton: true,
-      onConfirm: () => {
-        close();
-      },
-      onCancel: () => {
-        isExitingRef.current = true;
-        close();
-        window.history.go(-1);
-        setTimeout(() => {
-          router.push(ROUTES.MISSION(missionId));
-        }, 100);
-      },
-    });
-  }, [missionId, showModal, close, router]);
-
   const handlePrevious = useCallback(() => {
     if (isFirstStep) {
       showExitConfirmModal();
@@ -281,20 +298,6 @@ function ActionRenderer({
       goBack();
     }
   }, [isFirstStep, goBack, showExitConfirmModal]);
-
-  usePreventBack({
-    onPopState: () => {
-      if (isExitingRef.current) {
-        return;
-      }
-      if (isFirstStep) {
-        showExitConfirmModal();
-      } else {
-        goBack();
-      }
-    },
-    checkState: state => state?.fromSurveyQuestion === true,
-  });
 
   return (
     <ContentComponent
