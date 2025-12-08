@@ -1,93 +1,76 @@
 "use client";
 
 import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
-import { Button } from "@/app/admin/components/shadcn-ui/button";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/app/admin/components/shadcn-ui/form";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
 import { Textarea } from "@/app/admin/components/shadcn-ui/textarea";
 import type { ReactNode } from "react";
-import { useState } from "react";
-import type { BaseActionFormData } from "./types";
+import type { Control, FieldValues, Path } from "react-hook-form";
 
-interface BaseActionFormProps {
-  titlePlaceholder?: string;
+interface BaseActionFormFieldsProps<TFieldValues extends FieldValues> {
+  control: Control<TFieldValues>;
   isLoading?: boolean;
-  onSubmit: (data: BaseActionFormData) => void;
-  onCancel: () => void;
+  titlePlaceholder?: string;
+  mainImagePreviewUrl: string | null;
+  onMainImageSelect: (file: File) => void;
+  onMainImageDelete: () => void;
   children?: ReactNode;
-  isValid?: (baseData: BaseActionFormData) => boolean;
 }
 
-export function BaseActionForm({
-  titlePlaceholder = "액션 제목을 입력하세요.",
+export function BaseActionFormFields<TFieldValues extends FieldValues>({
+  control,
   isLoading = false,
-  onSubmit,
-  onCancel,
+  titlePlaceholder = "예: 가장 선호하는 옵션을 선택해주세요.",
+  mainImagePreviewUrl,
+  onMainImageSelect,
+  onMainImageDelete,
   children,
-  isValid: customIsValid,
-}: BaseActionFormProps) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
-
-  const baseData: BaseActionFormData = {
-    title: title.trim(),
-    description: description.trim() || undefined,
-    imageFile: imageFile || undefined,
-  };
-
-  const defaultIsValid = baseData.title.length > 0;
-  const isValid = customIsValid ? customIsValid(baseData) && defaultIsValid : defaultIsValid;
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isValid) return;
-    onSubmit(baseData);
-  };
-
-  const handleImageSelect = (file: File) => {
-    setImageFile(file);
-    const previewUrl = URL.createObjectURL(file);
-    setImagePreviewUrl(previewUrl);
-  };
-
-  const handleImageDelete = () => {
-    if (imagePreviewUrl) {
-      URL.revokeObjectURL(imagePreviewUrl);
-    }
-    setImageFile(null);
-    setImagePreviewUrl(null);
-  };
-
+}: BaseActionFormFieldsProps<TFieldValues>) {
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-2">
-        <Label htmlFor="title" className="text-sm font-medium">
-          제목 <span className="text-destructive">*</span>
-        </Label>
-        <Input
-          id="title"
-          placeholder={titlePlaceholder}
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          disabled={isLoading}
-        />
-      </div>
+    <>
+      <FormField
+        control={control}
+        name={"title" as Path<TFieldValues>}
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>
+              제목 <span className="text-destructive">*</span>
+            </FormLabel>
+            <FormControl>
+              <Input placeholder={titlePlaceholder} {...field} disabled={isLoading} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
-      <div className="space-y-2">
-        <Label htmlFor="description" className="text-sm font-medium">
-          설명 <span className="text-muted-foreground">(선택)</span>
-        </Label>
-        <Textarea
-          id="description"
-          placeholder="액션에 대한 추가 설명을 입력하세요."
-          value={description}
-          onChange={e => setDescription(e.target.value)}
-          disabled={isLoading}
-          rows={2}
-        />
-      </div>
+      <FormField
+        control={control}
+        name={"description" as Path<TFieldValues>}
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>
+              설명 <span className="text-muted-foreground">(선택)</span>
+            </FormLabel>
+            <FormControl>
+              <Textarea
+                placeholder="액션에 대한 추가 설명을 입력하세요."
+                {...field}
+                disabled={isLoading}
+                rows={2}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
       <div className="space-y-2">
         <Label className="text-sm font-medium">
@@ -96,9 +79,9 @@ export function BaseActionForm({
         <div className="flex items-center gap-3">
           <ImageSelector
             size="large"
-            imageUrl={imagePreviewUrl || undefined}
-            onImageSelect={handleImageSelect}
-            onImageDelete={handleImageDelete}
+            imageUrl={mainImagePreviewUrl || undefined}
+            onImageSelect={onMainImageSelect}
+            onImageDelete={onMainImageDelete}
             disabled={isLoading}
           />
           <p className="text-xs text-muted-foreground">액션에 표시될 이미지를 선택하세요.</p>
@@ -106,15 +89,6 @@ export function BaseActionForm({
       </div>
 
       {children}
-
-      <div className="flex justify-end gap-3 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-          이전
-        </Button>
-        <Button type="submit" disabled={!isValid || isLoading}>
-          {isLoading ? "생성 중..." : "액션 추가"}
-        </Button>
-      </div>
-    </form>
+    </>
   );
 }

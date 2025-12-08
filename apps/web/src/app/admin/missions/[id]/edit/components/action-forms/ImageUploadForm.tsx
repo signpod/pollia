@@ -1,32 +1,74 @@
 "use client";
 
-import { BaseActionForm } from "./BaseActionForm";
-import type { ActionFormProps, BaseActionFormData, ImageUploadFormData } from "./types";
+import { Button } from "@/app/admin/components/shadcn-ui/button";
+import { Form } from "@/app/admin/components/shadcn-ui/form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { BaseActionFormFields } from "./BaseActionForm";
+import { type SubjectiveFormInput, subjectiveFormSchema } from "./schemas";
+import type { ActionFormProps, ImageUploadFormData } from "./types";
 
 export function ImageUploadForm({
   isLoading = false,
   onSubmit,
   onCancel,
 }: ActionFormProps<ImageUploadFormData>) {
-  const handleSubmit = (baseData: BaseActionFormData) => {
+  const form = useForm<SubjectiveFormInput>({
+    resolver: zodResolver(subjectiveFormSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      imageUrl: "",
+    },
+    mode: "onChange",
+  });
+
+  const [mainImagePreviewUrl, setMainImagePreviewUrl] = useState<string | null>(null);
+
+  const handleSubmit = form.handleSubmit((data: SubjectiveFormInput) => {
     onSubmit({
-      ...baseData,
       type: "IMAGE",
+      title: data.title,
+      description: data.description,
     });
+  });
+
+  const handleMainImageSelect = (file: File) => {
+    const previewUrl = URL.createObjectURL(file);
+    setMainImagePreviewUrl(previewUrl);
+    form.setValue("imageUrl", previewUrl);
+  };
+
+  const handleMainImageDelete = () => {
+    if (mainImagePreviewUrl) {
+      URL.revokeObjectURL(mainImagePreviewUrl);
+      setMainImagePreviewUrl(null);
+    }
+    form.setValue("imageUrl", "");
   };
 
   return (
-    <BaseActionForm
-      titlePlaceholder="예: 제품 사용 사진을 업로드해주세요."
-      isLoading={isLoading}
-      onSubmit={handleSubmit}
-      onCancel={onCancel}
-    >
-      {/* TODO: 이미지 업로드 폼 구현 - 최대 파일 수, 허용 포맷 설정 */}
-      <div className="rounded-lg border border-dashed p-4 text-center text-muted-foreground">
-        <p className="text-sm">이미지 업로드 설정 영역</p>
-        <p className="text-xs mt-1">최대 파일 수, 허용 확장자 등</p>
-      </div>
-    </BaseActionForm>
+    <Form {...form}>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <BaseActionFormFields
+          control={form.control}
+          isLoading={isLoading}
+          titlePlaceholder="예: 제품 사진을 업로드해주세요."
+          mainImagePreviewUrl={mainImagePreviewUrl}
+          onMainImageSelect={handleMainImageSelect}
+          onMainImageDelete={handleMainImageDelete}
+        />
+
+        <div className="flex justify-end gap-3 pt-4">
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
+            이전
+          </Button>
+          <Button type="submit" disabled={isLoading}>
+            {isLoading ? "생성 중..." : "액션 추가"}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }

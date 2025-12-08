@@ -3,20 +3,14 @@
 import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Card, CardContent } from "@/app/admin/components/shadcn-ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/app/admin/components/shadcn-ui/form";
+import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
-import { Textarea } from "@/app/admin/components/shadcn-ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
+import { BaseActionFormFields } from "./BaseActionForm";
 import { type MultipleChoiceFormInput, multipleChoiceFormSchema } from "./schemas";
 import type { ActionFormProps, ActionOptionInput, MultipleChoiceFormData } from "./types";
 
@@ -138,6 +132,7 @@ export function MultipleChoiceForm({
     defaultValues: {
       title: "",
       description: "",
+      imageUrl: "",
       options: [],
     },
     mode: "onChange",
@@ -149,6 +144,7 @@ export function MultipleChoiceForm({
   });
 
   const imagePreviewUrls = new Map<string, string>();
+  const [mainImagePreviewUrl, setMainImagePreviewUrl] = useState<string | null>(null);
 
   const handleSubmit = form.handleSubmit((data: MultipleChoiceFormInput) => {
     const formattedOptions: ActionOptionInput[] = data.options.map(opt => ({
@@ -206,48 +202,30 @@ export function MultipleChoiceForm({
     form.setValue(`options.${index}.imageUrl`, undefined);
   };
 
+  const handleMainImageSelect = (file: File) => {
+    const previewUrl = URL.createObjectURL(file);
+    setMainImagePreviewUrl(previewUrl);
+    form.setValue("imageUrl", previewUrl);
+  };
+
+  const handleMainImageDelete = () => {
+    if (mainImagePreviewUrl) {
+      URL.revokeObjectURL(mainImagePreviewUrl);
+      setMainImagePreviewUrl(null);
+    }
+    form.setValue("imageUrl", "");
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={handleSubmit} className="space-y-6">
-        <FormField
+        <BaseActionFormFields
           control={form.control}
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                제목 <span className="text-destructive">*</span>
-              </FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="예: 가장 선호하는 옵션을 선택해주세요."
-                  {...field}
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                설명 <span className="text-muted-foreground">(선택)</span>
-              </FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="액션에 대한 추가 설명을 입력하세요."
-                  {...field}
-                  disabled={isLoading}
-                  rows={2}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          isLoading={isLoading}
+          titlePlaceholder="예: 가장 선호하는 옵션을 선택해주세요."
+          mainImagePreviewUrl={mainImagePreviewUrl}
+          onMainImageSelect={handleMainImageSelect}
+          onMainImageDelete={handleMainImageDelete}
         />
 
         <div className="space-y-2">
