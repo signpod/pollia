@@ -34,6 +34,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { CreateActionDialog } from "./CreateActionDialog";
+import type { ActionFormData } from "./action-forms";
 
 interface ActionsEditTabProps {
   missionId: string;
@@ -152,6 +154,7 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
   const { data: actionsResponse, isLoading } = useReadActionsDetail(missionId);
   const [actions, setActions] = useState<ActionDetail[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   const reorderActions = useReorderActions({
     onSuccess: () => {
@@ -212,7 +215,14 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
   };
 
   const handleCreateAction = () => {
-    alert("새 액션 생성");
+    setIsCreateDialogOpen(true);
+  };
+
+  const handleCreateSubmit = (data: ActionFormData) => {
+    // TODO: API 호출로 실제 액션 생성
+    console.log("액션 생성:", data);
+    toast.success("액션이 생성되었습니다.");
+    setIsCreateDialogOpen(false);
   };
 
   const activeAction = activeId ? actions.find(a => a.id === activeId) : null;
@@ -292,6 +302,12 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
           )}
         </CardContent>
       </Card>
+
+      <CreateActionDialog
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        onSubmit={handleCreateSubmit}
+      />
     </div>
   );
 }
