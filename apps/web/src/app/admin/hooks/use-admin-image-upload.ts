@@ -4,7 +4,7 @@ import { deleteImage, getUploadUrl } from "@/actions/common/image";
 import { ADMIN_STORAGE_BUCKETS } from "@/app/admin/constants/storage";
 import type { DeleteImageRequest, UploadImageRequest } from "@/types/dto/image";
 import { useMutation } from "@tanstack/react-query";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface UploadedImageData {
   publicUrl: string;
@@ -22,6 +22,8 @@ export interface UseAdminSingleImageOptions {
 export function useAdminSingleImage(options: UseAdminSingleImageOptions = {}) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(options.initialUrl || null);
   const [uploadedData, setUploadedData] = useState<UploadedImageData | null>(null);
+  const previewUrlRef = useRef(previewUrl);
+  previewUrlRef.current = previewUrl;
 
   const uploadMutation = useMutation({
     mutationFn: async (file: File): Promise<UploadedImageData> => {
@@ -41,8 +43,8 @@ export function useAdminSingleImage(options: UseAdminSingleImageOptions = {}) {
     },
     onSuccess: data => {
       setUploadedData(data);
-      if (previewUrl?.startsWith("blob:")) {
-        URL.revokeObjectURL(previewUrl);
+      if (previewUrlRef.current?.startsWith("blob:")) {
+        URL.revokeObjectURL(previewUrlRef.current);
       }
       setPreviewUrl(data.publicUrl);
       options.onUploadSuccess?.(data);
@@ -58,22 +60,22 @@ export function useAdminSingleImage(options: UseAdminSingleImageOptions = {}) {
 
   useEffect(() => {
     return () => {
-      if (previewUrl?.startsWith("blob:")) {
-        URL.revokeObjectURL(previewUrl);
+      if (previewUrlRef.current?.startsWith("blob:")) {
+        URL.revokeObjectURL(previewUrlRef.current);
       }
     };
-  }, [previewUrl]);
+  }, []);
 
   const selectImage = useCallback(
     (file: File) => {
-      if (previewUrl?.startsWith("blob:")) {
-        URL.revokeObjectURL(previewUrl);
+      if (previewUrlRef.current?.startsWith("blob:")) {
+        URL.revokeObjectURL(previewUrlRef.current);
       }
       const blobUrl = URL.createObjectURL(file);
       setPreviewUrl(blobUrl);
       uploadMutation.mutate(file);
     },
-    [previewUrl, uploadMutation],
+    [uploadMutation],
   );
 
   const clearImage = useCallback(() => {
@@ -83,30 +85,19 @@ export function useAdminSingleImage(options: UseAdminSingleImageOptions = {}) {
         bucket: options.bucket || ADMIN_STORAGE_BUCKETS.MISSION_IMAGES,
       });
     }
-    if (previewUrl?.startsWith("blob:")) {
-      URL.revokeObjectURL(previewUrl);
+    if (previewUrlRef.current?.startsWith("blob:")) {
+      URL.revokeObjectURL(previewUrlRef.current);
     }
     setPreviewUrl(null);
     setUploadedData(null);
-  }, [uploadedData, previewUrl, deleteMutation, options.bucket]);
-
-  const reset = useCallback(() => {
-    if (previewUrl?.startsWith("blob:")) {
-      URL.revokeObjectURL(previewUrl);
-    }
-    setPreviewUrl(options.initialUrl || null);
-    setUploadedData(null);
-  }, [previewUrl, options.initialUrl]);
+  }, [uploadedData, deleteMutation, options.bucket]);
 
   return {
     previewUrl,
     uploadedData,
     isUploading: uploadMutation.isPending,
-    isDeleting: deleteMutation.isPending,
-    error: uploadMutation.error,
     selectImage,
     clearImage,
-    reset,
   };
 }
 
@@ -120,6 +111,8 @@ export function useAdminMultipleImages(options: UseAdminMultipleImagesOptions = 
   const [previews, setPreviews] = useState<Map<string, string>>(new Map());
   const [uploadedDataMap, setUploadedDataMap] = useState<Map<string, UploadedImageData>>(new Map());
   const [uploadingIds, setUploadingIds] = useState<Set<string>>(new Set());
+  const previewsRef = useRef(previews);
+  previewsRef.current = previews;
 
   const uploadMutation = useMutation({
     mutationFn: async ({
@@ -182,13 +175,13 @@ export function useAdminMultipleImages(options: UseAdminMultipleImagesOptions = 
 
   useEffect(() => {
     return () => {
-      for (const url of previews.values()) {
+      for (const url of previewsRef.current.values()) {
         if (url.startsWith("blob:")) {
           URL.revokeObjectURL(url);
         }
       }
     };
-  }, [previews]);
+  }, []);
 
   const selectImage = useCallback(
     (id: string, file: File) => {
@@ -242,27 +235,12 @@ export function useAdminMultipleImages(options: UseAdminMultipleImagesOptions = 
 
   const getUploadedData = useCallback((id: string) => uploadedDataMap.get(id), [uploadedDataMap]);
 
-  const isUploading = useCallback((id: string) => uploadingIds.has(id), [uploadingIds]);
-
-  const reset = useCallback(() => {
-    for (const url of previews.values()) {
-      if (url.startsWith("blob:")) {
-        URL.revokeObjectURL(url);
-      }
-    }
-    setPreviews(new Map());
-    setUploadedDataMap(new Map());
-    setUploadingIds(new Set());
-  }, [previews]);
-
   return {
     selectImage,
     clearImage,
     getPreviewUrl,
     getUploadedData,
-    isUploading,
     isAnyUploading: uploadingIds.size > 0,
-    reset,
   };
 }
 
