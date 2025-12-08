@@ -19,14 +19,21 @@ export function MultipleChoiceForm({
   isLoading = false,
   onSubmit,
   onCancel,
+  initialData,
 }: ActionFormProps<MultipleChoiceFormData>) {
   const form = useForm<MultipleChoiceFormInput>({
     resolver: zodResolver(multipleChoiceFormSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      imageUrl: "",
-      options: [],
+      title: initialData?.title || "",
+      description: initialData?.description || "",
+      imageUrl: initialData?.imageUrl || "",
+      options:
+        initialData?.options?.map(opt => ({
+          id: crypto.randomUUID(),
+          title: opt.title,
+          description: opt.description || "",
+          imageUrl: opt.imageUrl || "",
+        })) || [],
     },
     mode: "onChange",
   });
@@ -37,7 +44,9 @@ export function MultipleChoiceForm({
   });
 
   const imagePreviewUrls = new Map<string, string>();
-  const [mainImagePreviewUrl, setMainImagePreviewUrl] = useState<string | null>(null);
+  const [mainImagePreviewUrl, setMainImagePreviewUrl] = useState<string | null>(
+    initialData?.imageUrl || null,
+  );
 
   const handleSubmit = form.handleSubmit((data: MultipleChoiceFormInput) => {
     const formattedOptions: ActionOptionInput[] = data.options.map(opt => ({

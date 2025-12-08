@@ -13,18 +13,21 @@ export function RatingForm({
   isLoading = false,
   onSubmit,
   onCancel,
+  initialData,
 }: ActionFormProps<RatingFormData>) {
   const form = useForm<SubjectiveFormInput>({
     resolver: zodResolver(subjectiveFormSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      imageUrl: "",
+      title: initialData?.title || "",
+      description: initialData?.description || "",
+      imageUrl: initialData?.imageUrl || "",
     },
     mode: "onChange",
   });
 
-  const [mainImagePreviewUrl, setMainImagePreviewUrl] = useState<string | null>(null);
+  const [mainImagePreviewUrl, setMainImagePreviewUrl] = useState<string | null>(
+    initialData?.imageUrl || null,
+  );
 
   const handleSubmit = form.handleSubmit((data: SubjectiveFormInput) => {
     onSubmit({

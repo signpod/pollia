@@ -36,6 +36,7 @@ import { GripVertical, Pencil, Plus, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { CreateActionDialog } from "./CreateActionDialog";
+import { EditActionDialog } from "./EditActionDialog";
 import type { ActionFormData } from "./action-forms";
 
 interface ActionsEditTabProps {
@@ -156,6 +157,8 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
   const [actions, setActions] = useState<ActionDetail[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingAction, setEditingAction] = useState<ActionDetail | null>(null);
 
   const reorderActions = useReorderActions({
     onSuccess: () => {
@@ -218,7 +221,11 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
   };
 
   const handleEdit = (actionId: string) => {
-    alert(`액션 수정: ${actionId}`);
+    const action = actions.find(a => a.id === actionId);
+    if (action) {
+      setEditingAction(action);
+      setIsEditDialogOpen(true);
+    }
   };
 
   const handleDelete = (actionId: string) => {
@@ -335,6 +342,16 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
         onOpenChange={setIsCreateDialogOpen}
         onSubmit={handleCreateSubmit}
         isLoading={createAction.isPending}
+      />
+
+      <EditActionDialog
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        action={editingAction}
+        onSubmit={data => {
+          alert(`액션 수정 제출: ${JSON.stringify(data)}`);
+        }}
+        isLoading={false}
       />
     </div>
   );

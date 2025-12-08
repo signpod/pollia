@@ -58,4 +58,5 @@ export interface ActionFormProps<T extends ActionFormData = ActionFormData> {
   isLoading?: boolean;
   onSubmit: (data: T) => void;
   onCancel: () => void;
+  initialData?: Partial<Omit<T, "type">>;
 }
