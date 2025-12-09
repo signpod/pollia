@@ -25,6 +25,7 @@ export const multipleChoiceFormSchema = z
     title: actionTitleSchema,
     description: actionDescriptionSchema,
     imageUrl: actionImageUrlSchema,
+    maxSelections: z.number().int().min(1, "최소 1개 이상 선택 가능해야 합니다."),
     options: z.array(actionOptionFormSchema),
   })
   .refine(data => data.options.length >= 2 && data.options.length <= 10, {
@@ -34,6 +35,10 @@ export const multipleChoiceFormSchema = z
   .refine(data => data.options.every(opt => opt.title.trim().length > 0), {
     message: "모든 선택지에 제목을 입력해주세요.",
     path: ["options"],
+  })
+  .refine(data => data.maxSelections <= data.options.length, {
+    message: "선택 가능 개수는 선택지 개수를 초과할 수 없습니다.",
+    path: ["maxSelections"],
   });
 
 export const scaleFormSchema = z
@@ -57,6 +62,7 @@ export const tagFormSchema = z
     title: actionTitleSchema,
     description: actionDescriptionSchema,
     imageUrl: actionImageUrlSchema,
+    maxSelections: z.number().int().min(1, "최소 1개 이상 선택 가능해야 합니다."),
     options: z.array(actionOptionFormSchema),
   })
   .refine(data => data.options.length >= 2 && data.options.length <= 10, {
@@ -66,6 +72,10 @@ export const tagFormSchema = z
   .refine(data => data.options.every(opt => opt.title.trim().length > 0), {
     message: "모든 태그에 제목을 입력해주세요.",
     path: ["options"],
+  })
+  .refine(data => data.maxSelections <= data.options.length, {
+    message: "선택 가능 개수는 태그 개수를 초과할 수 없습니다.",
+    path: ["maxSelections"],
   });
 
 export const subjectiveFormSchema = z.object({

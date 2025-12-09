@@ -11,6 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { BaseActionFormFields } from "./BaseActionForm";
+import { MaxSelectionsField } from "./MaxSelectionsField";
 import { OptionCard } from "./OptionCard";
 import { type TagFormInput, tagFormSchema } from "./schemas";
 import type { ActionFormProps, ActionOptionInput, TagFormData } from "./types";
@@ -32,6 +33,7 @@ export function TagForm({
       title: initialData?.title || "",
       description: initialData?.description || "",
       imageUrl: initialData?.imageUrl || "",
+      maxSelections: initialData?.maxSelections ?? 1,
       options:
         initialData?.options?.map(opt => ({
           id: crypto.randomUUID(),
@@ -70,6 +72,7 @@ export function TagForm({
       description: data.description,
       imageUrl: mainImage.uploadedData?.publicUrl || data.imageUrl || undefined,
       imageFileUploadId: mainImage.uploadedData?.fileUploadId,
+      maxSelections: data.maxSelections,
       options: formattedOptions,
     });
   });
@@ -104,6 +107,13 @@ export function TagForm({
           mainImagePreviewUrl={mainImage.previewUrl}
           onMainImageSelect={mainImage.selectImage}
           onMainImageDelete={mainImage.clearImage}
+        />
+
+        <MaxSelectionsField
+          control={form.control}
+          name="maxSelections"
+          maxOptions={fields.length}
+          disabled={isLoading}
         />
 
         <div className="space-y-2">
