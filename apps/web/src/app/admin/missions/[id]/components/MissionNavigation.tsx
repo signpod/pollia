@@ -13,6 +13,7 @@ export function MissionNavigation({ missionId }: MissionNavigationProps) {
   const pathname = usePathname();
   const isDetailPage = pathname === ADMIN_ROUTES.ADMIN_MISSION(missionId);
   const isEditPage = pathname === ADMIN_ROUTES.ADMIN_MISSION_EDIT(missionId);
+  const isTrackingPage = pathname === ADMIN_ROUTES.ADMIN_MISSION_TRACKING(missionId);
 
   return (
     <nav className="flex gap-1 border-b">
@@ -39,6 +40,18 @@ export function MissionNavigation({ missionId }: MissionNavigationProps) {
         )}
       >
         편집
+      </Link>
+      <Link
+        href={ADMIN_ROUTES.ADMIN_MISSION_TRACKING(missionId)}
+        className={cn(
+          "px-4 py-2 text-sm font-medium transition-colors",
+          "border-b-2 -mb-px",
+          isTrackingPage
+            ? "border-primary text-foreground"
+            : "border-transparent text-muted-foreground hover:text-foreground hover:border-border",
+        )}
+      >
+        사용자 추적
       </Link>
     </nav>
   );

@@ -177,20 +177,6 @@ export function MissionDetailContent({ mission }: MissionDetailContentProps) {
             </div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>사용자 활동 트래킹</CardTitle>
-            <CardDescription>
-              미션에 참여한 사용자들의 활동 내역을 확인할 수 있습니다
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="p-8 border border-dashed rounded-lg text-center text-muted-foreground">
-              TODO: 사용자 활동 트래킹 UI 구현 예정
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
