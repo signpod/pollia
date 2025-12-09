@@ -63,9 +63,12 @@ Tailwind의 4px 단위 spacing scale을 기준으로 한다.
 ### 페이지 레이아웃
 
 ```
-페이지 컨테이너: px-6 py-8 (데스크톱), px-4 py-6 (태블릿)
-최대 너비: max-w-7xl mx-auto
+AdminLayout에서 자동 적용: p-7 (28px)
+페이지 컨테이너: 추가 패딩 불필요
+최대 너비: max-w-7xl mx-auto (필요한 경우에만)
 ```
+
+**중요:** `AdminLayout.tsx`가 이미 `p-7` 패딩을 모든 자식 페이지에 적용하므로, 개별 페이지에서 `px-6 py-8` 등의 추가 패딩을 적용하지 않는다.
 
 ### 섹션 간격
 
@@ -87,7 +90,7 @@ Tailwind의 4px 단위 spacing scale을 기준으로 한다.
 ### 예시
 
 ```tsx
-<div className="px-6 py-8 max-w-7xl mx-auto">
+<div className="max-w-7xl mx-auto">
   <header className="mb-8">
     <h1>페이지 제목</h1>
   </header>
@@ -215,7 +218,7 @@ Tailwind의 4px 단위 spacing scale을 기준으로 한다.
 ### 대시보드 레이아웃
 
 ```tsx
-<div className="px-6 py-8 max-w-7xl mx-auto">
+<div className="max-w-7xl mx-auto">
   {/* 페이지 헤더 */}
   <header className="mb-8">
     <h1 className="text-3xl font-bold tracking-tight">대시보드</h1>
@@ -326,7 +329,7 @@ Tailwind의 4px 단위 spacing scale을 기준으로 한다.
 
 새 페이지/컴포넌트 작성 시 확인:
 
-- [ ] 페이지 컨테이너에 `px-6 py-8 max-w-7xl mx-auto` 적용
+- [ ] 페이지 컨테이너에 `max-w-7xl mx-auto` 적용 (패딩은 AdminLayout에서 자동 적용됨)
 - [ ] 페이지 제목에 `text-3xl font-bold tracking-tight` 적용
 - [ ] 섹션 간격 `space-y-10` 또는 `mt-10` 적용
 - [ ] 카드 간격 `gap-6` 적용
