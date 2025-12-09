@@ -5,6 +5,8 @@ export interface UploadImageRequest {
   fileType: string;
   fileSize: number;
   bucket?: string;
+  relatedEntityType?: RelatedEntityType;
+  relatedEntityId?: string;
 }
 
 export interface UploadImageResponse {

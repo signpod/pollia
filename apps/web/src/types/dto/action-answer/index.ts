@@ -18,6 +18,16 @@ export type ActionAnswerItem =
       actionId: string;
       type: typeof ActionType.MULTIPLE_CHOICE;
       selectedOptionIds: string[];
+    }
+  | {
+      actionId: string;
+      type: typeof ActionType.RATING;
+      scaleValue: number;
+    }
+  | {
+      actionId: string;
+      type: typeof ActionType.IMAGE;
+      textResponse: string;
     };
 
 export interface CreateActionAnswerRequest {
@@ -36,6 +46,7 @@ export interface SubmitActionAnswersRequest {
     selectedOptionIds?: string[];
     scaleValue?: number;
     textResponse?: string;
+    fileUploadId?: string;
   }>;
 }
 

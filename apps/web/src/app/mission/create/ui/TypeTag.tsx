@@ -7,12 +7,6 @@ import { cn } from "@repo/ui/lib";
 import { cva } from "class-variance-authority";
 import { ComponentPropsWithoutRef, ElementType } from "react";
 
-type SupportedActionType = "MULTIPLE_CHOICE" | "SCALE" | "SUBJECTIVE" | "RATING";
-
-function isSupportedActionType(type: ActionType): type is SupportedActionType {
-  return type === "MULTIPLE_CHOICE" || type === "SCALE" || type === "SUBJECTIVE";
-}
-
 type TypeTagOwnProps<C extends ElementType> = {
   as?: C;
   type: ActionType;
@@ -31,10 +25,6 @@ export function TypeTag<C extends ElementType = "div">({
 }: TypeTagProps<C>) {
   const Component = as || "div";
   const isButton = as === "button";
-
-  if (!isSupportedActionType(type)) {
-    return null;
-  }
 
   const typeVariants = cva(
     cn(
@@ -56,6 +46,12 @@ export function TypeTag<C extends ElementType = "div">({
           }`,
           RATING: `bg-yellow-50 text-yellow-600 ${
             selected && "bg-yellow-100 text-yellow-700 ring-1 ring-yellow-400 hover:ring-yellow-300"
+          }`,
+          IMAGE: `bg-purple-50 text-purple-600 ${
+            selected && "bg-purple-100 text-purple-700 ring-1 ring-purple-400 hover:ring-purple-300"
+          }`,
+          TAG: `bg-gray-50 text-gray-600 ${
+            selected && "bg-gray-100 text-gray-700 ring-1 ring-gray-400 hover:ring-gray-300"
           }`,
         },
       },
