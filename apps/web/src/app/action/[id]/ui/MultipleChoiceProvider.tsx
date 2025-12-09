@@ -28,6 +28,7 @@ interface SurveyMultipleChoiceProviderProps {
   missionResponse?: GetMissionResponseResponse;
   updateCanGoNext?: (canGoNext: boolean) => void;
   onAnswerChange?: (answer: ActionAnswerItem) => void;
+  answerType?: typeof ActionType.MULTIPLE_CHOICE | typeof ActionType.TAG;
 }
 
 export function MultipleChoiceProvider({
@@ -37,6 +38,7 @@ export function MultipleChoiceProvider({
   missionResponse,
   updateCanGoNext,
   onAnswerChange,
+  answerType,
 }: SurveyMultipleChoiceProviderProps) {
   const initialSelectedIds = useMemo(() => {
     if (!missionResponse?.data?.answers || missionResponse.data.answers.length === 0) {
@@ -112,7 +114,7 @@ export function MultipleChoiceProvider({
     if (selectedIds.size > 0) {
       const answer: ActionAnswerItem = {
         actionId,
-        type: ActionType.MULTIPLE_CHOICE,
+        type: answerType ?? ActionType.MULTIPLE_CHOICE,
         selectedOptionIds: Array.from(selectedIds),
       };
 
@@ -128,7 +130,7 @@ export function MultipleChoiceProvider({
       setCanGoNext(false);
       updateCanGoNext?.(false);
     }
-  }, [selectedIds, actionId, updateCanGoNext, onAnswerChange]);
+  }, [selectedIds, actionId, updateCanGoNext, onAnswerChange, answerType]);
 
   const value = useMemo(
     () => ({ selectedIds, toggleSelectedId, canGoNext }),

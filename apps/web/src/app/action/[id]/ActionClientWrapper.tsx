@@ -23,6 +23,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActionImage,
+  ActionTag,
   MissionRatingScale,
   MissionStarScale,
   MultipleChoice,
@@ -75,6 +76,7 @@ function ActionContent({
       Subjective: Subjective,
       Rating: MissionStarScale,
       Image: ActionImage,
+      Tag: ActionTag,
     },
   });
 
@@ -271,7 +273,6 @@ function ActionRenderer({
 
   const handleNext = useCallback(() => {
     if (!responseId || !currentAnswer) return;
-    console.log("currentAnswer", currentAnswer);
 
     const validationResult = submitAnswerItemSchema.safeParse(currentAnswer);
     if (!validationResult.success) {

@@ -32,8 +32,7 @@ interface CreateActionStepsProps {
     Subjective: React.ComponentType<ActionStepContentProps>;
     Rating: React.ComponentType<ActionStepContentProps>;
     Image: React.ComponentType<ActionStepContentProps>;
-    // TODO: Tag 추가 시 수정 필요
-    // Tag: React.ComponentType<ActionStepContentProps>;
+    Tag: React.ComponentType<ActionStepContentProps>;
   };
 }
 
@@ -47,7 +46,7 @@ export const createActionSteps = ({
     return {
       id: action.id,
       title: action.title,
-      canGoNext: false, // 기본값, 각 컴포넌트에서 동적으로 업데이트
+      canGoNext: false,
       canGoBack: true,
       actionData: action,
       content: ContentComponent,
@@ -70,9 +69,8 @@ function getContentComponent(
       return stepComponents.Subjective;
     case ActionType.IMAGE:
       return stepComponents.Image;
-    // TODO: Tag 추가 시 수정 필요
-    // case ActionType.TAG:
-    //   return stepComponents.Tag;
+    case ActionType.TAG:
+      return stepComponents.Tag;
     default:
       throw new Error(`Unsupported question type: ${type}`);
   }

@@ -28,6 +28,11 @@ export type ActionAnswerItem =
       actionId: string;
       type: typeof ActionType.IMAGE;
       textResponse: string;
+    }
+  | {
+      actionId: string;
+      type: typeof ActionType.TAG;
+      selectedOptionIds: string[];
     };
 
 export interface CreateActionAnswerRequest {
