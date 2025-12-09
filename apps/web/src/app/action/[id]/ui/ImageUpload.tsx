@@ -233,7 +233,6 @@ export function ImageUpload({ initialImageUrl, onUploadChange, actionId }: Image
             ref={inputRef}
             type="file"
             accept="image/*,.heic,.heif"
-            capture="environment"
             className="hidden"
             onChange={handleFileChange}
             disabled={isUploading}
