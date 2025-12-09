@@ -1,3 +1,4 @@
 export * from "./MultipleChoice";
-export * from "./Scale";
+export * from "./StarScale";
 export * from "./Subjective";
+export * from "./RatingScale";

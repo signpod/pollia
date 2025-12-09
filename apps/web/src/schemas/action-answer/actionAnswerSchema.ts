@@ -14,10 +14,9 @@ const textAnswerSchema = z
   .trim();
 
 const scaleAnswerSchema = z
-  .number()
-  .int("척도 값은 정수여야 합니다.")
-  .min(1, "척도 값은 1~5 사이여야 합니다.")
-  .max(5, "척도 값은 1~5 사이여야 합니다.");
+  .number("별점 값은 숫자여야 합니다.")
+  .min(0, "별점 값은 0 이상이어야 합니다.")
+  .max(5, "별점 값은 5 이하여야 합니다.");
 
 const actionTypeSchema = z.enum(ActionType);
 

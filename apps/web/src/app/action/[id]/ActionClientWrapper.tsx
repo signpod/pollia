@@ -21,7 +21,7 @@ import { StepProvider, useModal, useStep } from "@repo/ui/components";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { MultipleChoice, Scale, Subjective } from "./ui";
+import { MissionRatingScale, MissionStarScale, MultipleChoice, Subjective } from "./ui";
 
 const SURVEY_EXIT_MODAL = {
   title: "설문을 종료하실 건가요?",
@@ -65,8 +65,9 @@ function ActionContent({
     actions: actions.data,
     stepComponents: {
       MultipleChoice: MultipleChoice,
-      Scale: Scale,
+      Scale: MissionRatingScale,
       Subjective: Subjective,
+      Rating: MissionStarScale,
     },
   });
 

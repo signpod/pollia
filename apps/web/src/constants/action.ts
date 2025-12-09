@@ -30,6 +30,7 @@ interface CreateActionStepsProps {
     MultipleChoice: React.ComponentType<ActionStepContentProps>;
     Scale: React.ComponentType<ActionStepContentProps>;
     Subjective: React.ComponentType<ActionStepContentProps>;
+    Rating: React.ComponentType<ActionStepContentProps>;
   };
 }
 
@@ -60,6 +61,8 @@ function getContentComponent(
       return stepComponents.MultipleChoice;
     case ActionType.SCALE:
       return stepComponents.Scale;
+    case ActionType.RATING:
+      return stepComponents.Rating;
     case ActionType.SUBJECTIVE:
       return stepComponents.Subjective;
     default:
