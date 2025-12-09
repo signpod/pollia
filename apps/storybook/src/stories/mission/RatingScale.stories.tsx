@@ -1,9 +1,9 @@
-import { RatingScale } from "@/app/mission/[id]/components";
+import { RatingScale } from "@repo/ui/components";
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { useState } from "react";
 
 const meta: Meta<typeof RatingScale> = {
-  title: "Mission/RatingScale",
+  title: "Common/RatingScale",
   component: RatingScale,
   parameters: {
     layout: "centered",
@@ -29,7 +29,7 @@ const meta: Meta<typeof RatingScale> = {
 ## 사용법
 
 \`\`\`tsx
-import { RatingScale } from "@/app/mission/[id]/components";
+import { RatingScale } from "@repo/ui/components";
 
 // 기본 사용 (숫자 범위)
 function BasicExample() {

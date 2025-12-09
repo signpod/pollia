@@ -1,8 +1,8 @@
 "use client";
-import { cn } from "@/lib/utils";
 import { Slider as SliderPrimitive, Typo } from "@repo/ui/components";
 import { useMemo, useState } from "react";
 import type { CSSProperties } from "react";
+import { cn } from "../../lib/utils";
 
 const Slider = {
   ...SliderPrimitive,
