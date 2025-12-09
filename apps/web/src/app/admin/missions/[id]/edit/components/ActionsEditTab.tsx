@@ -392,6 +392,16 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
             description: data.description,
             imageUrl: data.imageUrl,
             maxSelections: "maxSelections" in data ? data.maxSelections : undefined,
+            options:
+              "options" in data
+                ? data.options.map((opt, index) => ({
+                    title: opt.title,
+                    description: opt.description,
+                    imageUrl: opt.imageUrl,
+                    imageFileUploadId: opt.imageFileUploadId,
+                    order: index,
+                  }))
+                : undefined,
           });
         }}
         isLoading={updateAction.isPending}

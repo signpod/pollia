@@ -4,12 +4,21 @@ import { requireAuth } from "@/actions/common/auth";
 import { actionService } from "@/server/services/action";
 import type { UpdateActionInput } from "@/server/services/action/types";
 
+export interface UpdateQuestionOptionRequest {
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  order: number;
+  imageFileUploadId?: string;
+}
+
 export interface UpdateQuestionRequest {
   title?: string;
   description?: string;
   imageUrl?: string;
   order?: number;
   maxSelections?: number;
+  options?: UpdateQuestionOptionRequest[];
 }
 
 function toUpdateActionInput(dto: UpdateQuestionRequest): UpdateActionInput {
@@ -19,6 +28,7 @@ function toUpdateActionInput(dto: UpdateQuestionRequest): UpdateActionInput {
     imageUrl: dto.imageUrl,
     order: dto.order,
     maxSelections: dto.maxSelections,
+    options: dto.options,
   };
 }
 

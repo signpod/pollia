@@ -85,6 +85,7 @@ export const questionUpdateSchema = z
     imageUrl: imageUrlSchema,
     order: orderSchema.optional(),
     maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다.").optional(),
+    options: z.array(actionOptionSchema).optional(),
   })
   .refine(data => Object.keys(data).length > 0, {
     message: "최소 하나의 필드를 수정해야 합니다.",

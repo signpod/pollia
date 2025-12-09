@@ -75,12 +75,21 @@ export interface CreateImageInput {
   order: number;
 }
 
+export interface UpdateActionOptionInput {
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  order: number;
+  imageFileUploadId?: string;
+}
+
 export interface UpdateActionInput {
   title?: string;
   description?: string;
   imageUrl?: string;
   order?: number;
   maxSelections?: number;
+  options?: UpdateActionOptionInput[];
 }
 
 export interface GetActionsOptions {

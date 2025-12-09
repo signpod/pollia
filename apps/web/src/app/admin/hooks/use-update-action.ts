@@ -4,6 +4,14 @@ import { updateAction } from "@/actions/action/update";
 import { adminActionQueryKeys } from "@/app/admin/constants/queryKeys";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+interface UpdateActionOptionInput {
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  order: number;
+  imageFileUploadId?: string;
+}
+
 interface UpdateActionInput {
   actionId: string;
   missionId: string;
@@ -12,6 +20,7 @@ interface UpdateActionInput {
   imageUrl?: string;
   order?: number;
   maxSelections?: number;
+  options?: UpdateActionOptionInput[];
 }
 
 interface UseUpdateActionOptions {
@@ -30,6 +39,7 @@ export function useUpdateAction(options: UseUpdateActionOptions = {}) {
         imageUrl: input.imageUrl,
         order: input.order,
         maxSelections: input.maxSelections,
+        options: input.options,
       });
     },
 
