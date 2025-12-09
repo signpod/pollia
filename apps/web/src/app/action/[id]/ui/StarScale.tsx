@@ -24,7 +24,7 @@ export function MissionStarScale({
     updateCanGoNext,
     onAnswerChange,
     defaultValue: 0,
-    actionType: ActionType.SCALE,
+    actionType: ActionType.RATING,
   });
 
   const starRating = scaleValueToStarRating(scaleValue);
