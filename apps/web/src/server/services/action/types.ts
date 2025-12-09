@@ -40,6 +40,41 @@ export interface CreateEitherOrInput {
   order: number;
 }
 
+export interface CreateTagInput {
+  missionId?: string;
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  imageFileUploadId?: string;
+  order: number;
+  maxSelections?: number;
+  options: {
+    title: string;
+    description?: string;
+    imageUrl?: string;
+    order: number;
+    imageFileUploadId?: string;
+  }[];
+}
+
+export interface CreateRatingInput {
+  missionId?: string;
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  imageFileUploadId?: string;
+  order: number;
+}
+
+export interface CreateImageInput {
+  missionId?: string;
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  imageFileUploadId?: string;
+  order: number;
+}
+
 export interface UpdateActionInput {
   title?: string;
   description?: string;

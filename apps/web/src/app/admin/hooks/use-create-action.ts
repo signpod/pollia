@@ -1,19 +1,24 @@
 "use client";
 
 import {
+  createImageAction,
   createMultipleChoiceAction,
+  createRatingAction,
   createScaleAction,
   createSubjectiveAction,
+  createTagAction,
 } from "@/actions/action/create";
 import { adminActionQueryKeys } from "@/app/admin/constants/queryKeys";
+import type { ActionType } from "@/app/admin/missions/[id]/edit/components/action-forms";
 import type {
+  CreateImageActionRequest,
   CreateMultipleChoiceActionRequest,
+  CreateRatingActionRequest,
   CreateScaleActionRequest,
   CreateSubjectiveActionRequest,
+  CreateTagActionRequest,
 } from "@/types/dto";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-type ActionType = "MULTIPLE_CHOICE" | "SCALE" | "RATING" | "TAG" | "SUBJECTIVE" | "IMAGE";
 
 interface CreateActionInput {
   missionId: string;
@@ -50,6 +55,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             title: input.title,
             description: input.description,
             imageUrl: input.imageUrl,
+            imageFileUploadId: input.imageFileUploadId,
             order: input.order,
             maxSelections: input.maxSelections ?? 1,
             options:
@@ -70,6 +76,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             title: input.title,
             description: input.description,
             imageUrl: input.imageUrl,
+            imageFileUploadId: input.imageFileUploadId,
             order: input.order,
           };
           return await createScaleAction(request);
@@ -81,15 +88,56 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             title: input.title,
             description: input.description,
             imageUrl: input.imageUrl,
+            imageFileUploadId: input.imageFileUploadId,
             order: input.order,
           };
           return await createSubjectiveAction(request);
         }
 
-        case "RATING":
-        case "TAG":
-        case "IMAGE":
-          throw new Error(`아직 지원하지 않는 액션 타입입니다: ${input.type}`);
+        case "TAG": {
+          const request: CreateTagActionRequest = {
+            missionId: input.missionId,
+            title: input.title,
+            description: input.description,
+            imageUrl: input.imageUrl,
+            imageFileUploadId: input.imageFileUploadId,
+            order: input.order,
+            maxSelections: input.maxSelections,
+            options:
+              input.options?.map((opt, index) => ({
+                title: opt.title,
+                description: opt.description,
+                imageUrl: opt.imageUrl,
+                imageFileUploadId: opt.imageFileUploadId,
+                order: opt.order ?? index,
+              })) ?? [],
+          };
+          return await createTagAction(request);
+        }
+
+        case "RATING": {
+          const request: CreateRatingActionRequest = {
+            missionId: input.missionId,
+            title: input.title,
+            description: input.description,
+            imageUrl: input.imageUrl,
+            imageFileUploadId: input.imageFileUploadId,
+            order: input.order,
+          };
+          return await createRatingAction(request);
+        }
+
+        case "IMAGE": {
+          const request: CreateImageActionRequest = {
+            missionId: input.missionId,
+            title: input.title,
+            description: input.description,
+            imageUrl: input.imageUrl,
+            imageFileUploadId: input.imageFileUploadId,
+            order: input.order,
+          };
+          return await createImageAction(request);
+        }
 
         default:
           throw new Error(`알 수 없는 액션 타입입니다: ${input.type}`);

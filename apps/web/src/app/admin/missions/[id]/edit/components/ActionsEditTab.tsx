@@ -148,6 +148,12 @@ function getActionTypeLabel(type: string): string {
       return "주관식";
     case "SCALE":
       return "척도";
+    case "RATING":
+      return "평가";
+    case "TAG":
+      return "태그";
+    case "IMAGE":
+      return "이미지";
     default:
       return type;
   }
