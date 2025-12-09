@@ -38,6 +38,8 @@ interface RewardFormProps {
 }
 
 export function RewardForm({ isLoading, onSubmit, onCancel, initialData }: RewardFormProps) {
+  const isEditMode = !!initialData;
+
   const form = useForm<RewardFormData>({
     resolver: zodResolver(rewardInputSchema),
     defaultValues: {
@@ -53,6 +55,7 @@ export function RewardForm({ isLoading, onSubmit, onCancel, initialData }: Rewar
 
   const {
     previewUrl: imagePreviewUrl,
+    uploadedData: uploadedImageData,
     isUploading: isImageUploading,
     selectImage: handleImageSelect,
     clearImage: handleImageDelete,
@@ -60,7 +63,7 @@ export function RewardForm({ isLoading, onSubmit, onCancel, initialData }: Rewar
     bucket: ADMIN_STORAGE_BUCKETS.MISSION_IMAGES,
     initialUrl: initialData?.imageUrl,
     onUploadSuccess: data => {
-      form.setValue("imageUrl", data.publicUrl);
+      form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
     },
   });
 
@@ -70,10 +73,13 @@ export function RewardForm({ isLoading, onSubmit, onCancel, initialData }: Rewar
 
   const handleClearImage = () => {
     handleImageDelete();
-    form.setValue("imageUrl", undefined);
+    form.setValue("imageUrl", undefined, { shouldDirty: true });
   };
 
   const isFormDisabled = isLoading || isImageUploading;
+  const hasImageChange = uploadedImageData !== null;
+  const isSaveDisabled =
+    isFormDisabled || (isEditMode && !form.formState.isDirty && !hasImageChange);
 
   return (
     <Form {...form}>
@@ -190,7 +196,7 @@ export function RewardForm({ isLoading, onSubmit, onCancel, initialData }: Rewar
           <Button type="button" variant="outline" onClick={onCancel} disabled={isFormDisabled}>
             취소
           </Button>
-          <Button type="submit" disabled={isFormDisabled}>
+          <Button type="submit" disabled={isSaveDisabled}>
             {isImageUploading ? "이미지 업로드 중..." : isLoading ? "저장 중..." : "저장"}
           </Button>
         </div>
