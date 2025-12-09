@@ -21,7 +21,7 @@ export default function AdminMissionEditPage({ params }: AdminMissionEditPagePro
   const mission = missionResponse?.data;
 
   return (
-    <div className="max-w-4xl">
+    <div className="max-w-7xl">
       <AdminMissionHeader
         title="미션 수정"
         description="미션의 기본 정보, 액션, 리워드를 수정합니다"
