@@ -180,6 +180,14 @@ export class ActionAnswerService {
           actionId,
           textAnswer: answer.textResponse,
         });
+      } else if (answer.type === ActionType.TAG && answer.selectedOptionIds) {
+        for (const optionId of answer.selectedOptionIds) {
+          answersToCreate.push({
+            responseId: parseResult.data.responseId,
+            actionId,
+            optionId,
+          });
+        }
       }
     }
 

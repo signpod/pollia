@@ -34,7 +34,7 @@ export function SurveyQuestionTemplate({
   onNext,
   nextButtonText = "다음",
 }: ActionTemplateProps) {
-  const progressValue = (currentOrder / totalActionCount) * 100 || 0;
+  const progressValue = ((currentOrder + 1) / totalActionCount) * 100 || 0;
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
