@@ -1,7 +1,7 @@
 "use client";
 import { Slider as SliderPrimitive, Typo } from "@repo/ui/components";
 import { useMemo, useState } from "react";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ComponentProps } from "react";
 import { cn } from "../../lib/utils";
 
 const Slider = {
@@ -14,7 +14,8 @@ export interface RatingScaleOption {
   order?: number;
 }
 
-export interface RatingScaleProps {
+export interface RatingScaleProps
+  extends Omit<ComponentProps<"div">, "value" | "onChange" | "disabled"> {
   value: number;
   onChange: (value: number) => void;
   options?: RatingScaleOption[];
@@ -32,6 +33,8 @@ export function RatingScale({
   max = 5,
   step = 1,
   disabled = false,
+  className,
+  ...props
 }: RatingScaleProps) {
   const {
     positions,
@@ -215,7 +218,10 @@ export function RatingScale({
   }, [positions, currentIndex, isFirst, isLast, isVertical, localValue, sliderMin, sliderMax]);
 
   return (
-    <div className={cn("flex gap-5", isVertical ? "flex-row h-full" : "flex-col w-full")}>
+    <div
+      className={cn("flex gap-5", isVertical ? "flex-row h-full" : "flex-col w-full", className)}
+      {...props}
+    >
       <div
         className={cn("relative", isVertical ? "px-4 py-9" : "w-full px-9 py-10")}
         style={isVertical && height ? { height: `${height}px` } : undefined}

@@ -1,6 +1,6 @@
 "use client";
 import { Slider } from "@repo/ui/components";
-import { useState } from "react";
+import { ComponentProps, useState } from "react";
 import { cn } from "../../lib/utils";
 
 function StarFilled({ className }: { className?: string }) {
@@ -93,7 +93,9 @@ function StarSmile({ className }: { className?: string }) {
   );
 }
 
-export interface StarScaleProps {
+const MAX_STARS = 5;
+export interface StarScaleProps
+  extends Omit<ComponentProps<"div">, "value" | "onChange" | "disabled"> {
   value?: number;
   onChange?: (value: number) => void;
   disabled?: boolean;
@@ -103,10 +105,11 @@ export function StarScale({
   value: controlledValue,
   onChange,
   disabled = false,
+  className,
+  ...props
 }: StarScaleProps = {}) {
   const [internalValue, setInternalValue] = useState(1);
   const value = controlledValue ?? internalValue;
-  const maxStars = 5;
 
   const handleChange = (newValue: number) => {
     if (onChange) {
@@ -117,7 +120,7 @@ export function StarScale({
   };
 
   return (
-    <div className="relative w-full px-14">
+    <div className={cn("relative w-full px-14", className)} {...props}>
       <Slider.Root
         value={[value]}
         onValueChange={values => {
@@ -127,17 +130,17 @@ export function StarScale({
           }
         }}
         min={0.5}
-        max={maxStars}
+        max={MAX_STARS}
         step={0.5}
         disabled={disabled}
         className="relative flex h-18 w-full touch-none select-none items-center"
       >
         <Slider.Track>
           <div className="pointer-events-none absolute left-0 right-0 top-1/2 flex w-full -translate-y-1/2 items-center justify-between px-0">
-            {Array.from({ length: maxStars }).map((_, index) => {
+            {Array.from({ length: MAX_STARS }).map((_, index) => {
               const starIndex = index + 1;
               const starValue = index + 1;
-              const StarIcon = value === maxStars ? StarSmile : StarFilled;
+              const StarIcon = value === MAX_STARS ? StarSmile : StarFilled;
               const isFilled = value >= starValue;
               const isHalf = value >= starValue - 0.5 && value < starValue;
 

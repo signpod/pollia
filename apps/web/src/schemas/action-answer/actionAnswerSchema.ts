@@ -13,11 +13,7 @@ const textAnswerSchema = z
   .max(100, "주관식 답변은 100자를 초과할 수 없습니다.")
   .trim();
 
-const scaleAnswerSchema = z
-  .number()
-  .int("척도 값은 정수여야 합니다.")
-  .min(1, "척도 값은 1~5 사이여야 합니다.")
-  .max(5, "척도 값은 1~5 사이여야 합니다.");
+const scaleAnswerSchema = z.number("별점 값은 숫자여야 합니다.");
 
 const actionTypeSchema = z.enum(ActionType);
 

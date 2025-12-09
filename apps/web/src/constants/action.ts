@@ -30,6 +30,7 @@ interface CreateActionStepsProps {
     MultipleChoice: React.ComponentType<ActionStepContentProps>;
     Scale: React.ComponentType<ActionStepContentProps>;
     Subjective: React.ComponentType<ActionStepContentProps>;
+    Rating: React.ComponentType<ActionStepContentProps>;
   };
 }
 
