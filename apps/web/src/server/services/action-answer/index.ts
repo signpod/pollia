@@ -135,7 +135,6 @@ export class ActionAnswerService {
       if (!answer) continue;
 
       if (answer.type !== action.type) {
-        console.log(answer.type, action.type);
         const error = new Error("답변 타입이 액션 타입과 일치하지 않습니다.");
         error.cause = 400;
         throw error;

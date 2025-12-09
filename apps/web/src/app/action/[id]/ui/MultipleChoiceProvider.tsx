@@ -73,7 +73,7 @@ export function MultipleChoiceProvider({
     if (initialSelectedIds.size > 0) {
       const answer: ActionAnswerItem = {
         actionId,
-        type: ActionType.MULTIPLE_CHOICE,
+        type: answerType ?? ActionType.MULTIPLE_CHOICE,
         selectedOptionIds: Array.from(initialSelectedIds),
       };
 
@@ -86,7 +86,7 @@ export function MultipleChoiceProvider({
     } else {
       updateCanGoNextRef.current?.(false);
     }
-  }, [initialSelectedIds, actionId]);
+  }, [initialSelectedIds, actionId, answerType]);
 
   const toggleSelectedId = useCallback(
     (optionId: string) => {

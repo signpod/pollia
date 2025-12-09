@@ -68,7 +68,7 @@ function SurveyMultipleChoiceContent({
       onNext={onNext}
       nextButtonText={nextButtonText}
     >
-      <div className="flex flex-wrap gap-3 w-full space-y-3">
+      <div className="flex flex-wrap gap-3 w-full">
         {actionData.options?.map(option => (
           <Chip
             key={option.id}
