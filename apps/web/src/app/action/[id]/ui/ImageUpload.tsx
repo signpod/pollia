@@ -233,7 +233,6 @@ export function ImageUpload({ initialImageUrl, onUploadChange, actionId }: Image
             ref={inputRef}
             type="file"
             accept="image/*,.heic,.heif"
-            capture="environment"
             className="hidden"
             onChange={handleFileChange}
             disabled={isUploading}
@@ -392,16 +391,16 @@ export function ImageUpload({ initialImageUrl, onUploadChange, actionId }: Image
                   <ButtonV2
                     variant="secondary"
                     onClick={handleCropCancel}
-                    className="flex-1 touch-manipulation"
+                    className="flex-1 touch-manipulation "
                   >
-                    취소
+                    <div className="flex justify-center items-center text-center flex-1">취소</div>
                   </ButtonV2>
                   <ButtonV2
                     variant="primary"
                     onClick={handleCropComplete}
-                    className="flex-1 touch-manipulation"
+                    className="flex-1 touch-manipulation "
                   >
-                    완료
+                    <div className="flex justify-center items-center text-center flex-1">완료</div>
                   </ButtonV2>
                 </div>
               </div>
