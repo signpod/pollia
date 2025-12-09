@@ -24,7 +24,8 @@ import { useReadMission } from "@/app/admin/hooks/use-read-mission";
 import { useReadReward } from "@/app/admin/hooks/use-read-reward";
 import { useUpdateReward } from "@/app/admin/hooks/use-update-reward";
 import type { Reward } from "@prisma/client";
-import { Calendar, Gift, Pencil, Plus, Trash2 } from "lucide-react";
+import { Calendar, Pencil, Plus, Trash2 } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
 import { CreateRewardDialog } from "./CreateRewardDialog";
@@ -48,11 +49,17 @@ function RewardCard({
 
   return (
     <Card>
-      <CardContent className="p-6">
+      <CardContent>
         <div className="flex items-start gap-4">
-          <div className="flex size-12 items-center justify-center rounded-lg bg-primary/10">
-            <Gift className="size-6 text-primary" />
-          </div>
+          {reward.imageUrl && (
+            <Image
+              src={reward.imageUrl}
+              alt={reward.name}
+              width={48}
+              height={48}
+              className="rounded-lg object-cover"
+            />
+          )}
 
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-lg">{reward.name}</h3>
