@@ -17,6 +17,7 @@ import {
   SubjectiveForm,
   TagForm,
 } from "./action-forms";
+import { getActionTypeLabel } from "./action-forms/utils";
 
 interface EditActionDialogProps {
   open: boolean;
@@ -24,25 +25,6 @@ interface EditActionDialogProps {
   action: ActionDetail | null;
   onSubmit: (data: ActionFormData) => void;
   isLoading?: boolean;
-}
-
-function getActionTypeLabel(type: string): string {
-  switch (type) {
-    case "MULTIPLE_CHOICE":
-      return "객관식";
-    case "SCALE":
-      return "척도";
-    case "RATING":
-      return "평가";
-    case "TAG":
-      return "태그";
-    case "SUBJECTIVE":
-      return "주관식";
-    case "IMAGE":
-      return "이미지 업로드";
-    default:
-      return type;
-  }
 }
 
 export function EditActionDialog({
@@ -109,6 +91,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            maxSelections: action.maxSelections ?? 1,
             options: mapOptions(action.options),
           }}
         />
@@ -150,6 +133,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            maxSelections: action.maxSelections ?? 1,
             options: mapOptions(action.options),
           }}
         />

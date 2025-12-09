@@ -50,6 +50,7 @@ import { toast } from "sonner";
 import { CreateActionDialog } from "./CreateActionDialog";
 import { EditActionDialog } from "./EditActionDialog";
 import type { ActionFormData } from "./action-forms";
+import { getActionTypeLabel } from "./action-forms/utils";
 
 interface ActionsEditTabProps {
   missionId: string;
@@ -149,25 +150,6 @@ function ActionCardOverlay({ action }: { action: ActionDetail }) {
       </CardContent>
     </Card>
   );
-}
-
-function getActionTypeLabel(type: string): string {
-  switch (type) {
-    case "MULTIPLE_CHOICE":
-      return "객관식";
-    case "SUBJECTIVE":
-      return "주관식";
-    case "SCALE":
-      return "척도";
-    case "RATING":
-      return "평가";
-    case "TAG":
-      return "태그";
-    case "IMAGE":
-      return "이미지";
-    default:
-      return type;
-  }
 }
 
 export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
