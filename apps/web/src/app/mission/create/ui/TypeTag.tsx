@@ -7,8 +7,7 @@ import { cn } from "@repo/ui/lib";
 import { cva } from "class-variance-authority";
 import { ComponentPropsWithoutRef, ElementType } from "react";
 
-// TODO: 이미지, 태그 추가 시 수정 필요
-type SupportedActionType = "MULTIPLE_CHOICE" | "SCALE" | "SUBJECTIVE";
+type SupportedActionType = "MULTIPLE_CHOICE" | "SCALE" | "SUBJECTIVE" | "RATING";
 
 function isSupportedActionType(type: ActionType): type is SupportedActionType {
   return type === "MULTIPLE_CHOICE" || type === "SCALE" || type === "SUBJECTIVE";
@@ -54,6 +53,9 @@ export function TypeTag<C extends ElementType = "div">({
           }`,
           SUBJECTIVE: `bg-rose-50 text-rose-600 ${
             selected && "bg-rose-100 text-rose-700 ring-1 ring-rose-400 hover:ring-rose-300"
+          }`,
+          RATING: `bg-yellow-50 text-yellow-600 ${
+            selected && "bg-yellow-100 text-yellow-700 ring-1 ring-yellow-400 hover:ring-yellow-300"
           }`,
         },
       },
