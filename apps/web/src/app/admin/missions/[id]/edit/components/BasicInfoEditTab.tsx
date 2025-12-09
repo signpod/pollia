@@ -175,7 +175,7 @@ function ImageCard({
         <CardTitle>이미지</CardTitle>
         <CardDescription>미션 이미지와 브랜드 로고를 수정하세요.</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="flex gap-10">
         <div className="space-y-2">
           <Label>미션 이미지</Label>
           <div className="flex flex-col gap-2">
@@ -408,7 +408,6 @@ function BasicInfoForm({ mission, missionId }: { mission: MissionData; missionId
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <BasicInfoCard form={form} />
-
       <ImageCard
         form={form}
         missionImageUrl={missionImage.imageUrl}

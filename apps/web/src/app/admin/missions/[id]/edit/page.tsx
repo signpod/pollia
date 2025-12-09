@@ -38,7 +38,7 @@ export default function AdminMissionEditPage({ params }: AdminMissionEditPagePro
   };
 
   return (
-    <div className="px-6 py-8 max-w-4xl">
+    <div className="max-w-4xl">
       <header className="mb-8">
         <div className="flex items-center justify-between">
           <div>
@@ -66,8 +66,8 @@ export default function AdminMissionEditPage({ params }: AdminMissionEditPagePro
       <Tabs defaultValue="basic" className="w-full">
         <TabsList>
           <TabsTrigger value="basic">기본 정보 수정</TabsTrigger>
-          <TabsTrigger value="actions">액션 순서 수정</TabsTrigger>
-          <TabsTrigger value="reward">리워드</TabsTrigger>
+          <TabsTrigger value="actions">액션 수정</TabsTrigger>
+          <TabsTrigger value="reward">리워드 수정</TabsTrigger>
         </TabsList>
 
         <TabsContent value="basic" className="mt-6">
