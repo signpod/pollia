@@ -11,7 +11,10 @@ import { stripHtmlTags } from "@/app/admin/lib/utils";
 import type { GetMissionResponse } from "@/types/dto";
 import { Calendar, CheckCircle2, Clock, Gift, XCircle } from "lucide-react";
 import Image from "next/image";
+import { AdminMissionHeader } from "./AdminMissionHeader";
 import { ClientDateDisplay } from "./ClientDateDisplay";
+import { MissionActiveToggle } from "./MissionActiveToggle";
+import { MissionNavigation } from "./MissionNavigation";
 
 interface MissionDetailContentProps {
   mission: GetMissionResponse["data"];
@@ -20,10 +23,13 @@ interface MissionDetailContentProps {
 export function MissionDetailContent({ mission }: MissionDetailContentProps) {
   return (
     <div className="max-w-7xl">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">미션 상세</h1>
-        <p className="text-muted-foreground mt-2">{mission.title}</p>
-      </header>
+      <AdminMissionHeader
+        title="미션 상세"
+        description={mission.title}
+        nav={<MissionNavigation missionId={mission.id} />}
+      >
+        <MissionActiveToggle missionId={mission.id} isActive={mission.isActive} />
+      </AdminMissionHeader>
 
       <div className="space-y-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
