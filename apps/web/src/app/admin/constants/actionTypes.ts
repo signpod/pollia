@@ -1,4 +1,4 @@
-export const ACTION_TYPE_LABELS: Record<string, string> = {
+export const ACTION_TYPE_LABELS = {
   MULTIPLE_CHOICE: "객관식",
   SCALE: "척도형",
   SUBJECTIVE: "주관식",
@@ -9,5 +9,5 @@ export const ACTION_TYPE_LABELS: Record<string, string> = {
 } as const;
 
 export function getActionTypeLabel(type: string): string {
-  return ACTION_TYPE_LABELS[type] || type;
+  return ACTION_TYPE_LABELS[type as keyof typeof ACTION_TYPE_LABELS] || type;
 }

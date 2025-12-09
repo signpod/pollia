@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { formatDate } from "date-fns";
+import { ko } from "date-fns/locale";
+import { useMemo } from "react";
 
 interface ClientDateDisplayProps {
   date: Date | string;
@@ -8,35 +10,15 @@ interface ClientDateDisplayProps {
 }
 
 export function ClientDateDisplay({ date, format = "datetime" }: ClientDateDisplayProps) {
-  const [formattedDate, setFormattedDate] = useState("");
-
-  useEffect(() => {
+  const formattedDate = useMemo(() => {
     const dateObj = new Date(date);
 
     if (format === "date") {
-      setFormattedDate(
-        dateObj.toLocaleDateString("ko-KR", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        }),
-      );
-    } else {
-      setFormattedDate(
-        dateObj.toLocaleString("ko-KR", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      );
+      return formatDate(dateObj, "yyyy년 M월 d일", { locale: ko });
     }
-  }, [date, format]);
 
-  if (!formattedDate) {
-    return <span className="text-muted-foreground">-</span>;
-  }
+    return formatDate(dateObj, "yyyy년 M월 d일 HH:mm", { locale: ko });
+  }, [date, format]);
 
   return <span>{formattedDate}</span>;
 }
