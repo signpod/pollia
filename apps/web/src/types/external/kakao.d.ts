@@ -196,6 +196,35 @@ declare global {
          */
         setAccessToken: (token: string, persist?: boolean) => void;
       };
+
+      /**
+       * 카카오 링크 공유 관련 API
+       */
+      Share: {
+        /**
+         * 기본 템플릿으로 카카오톡 공유
+         * @param options - 공유 옵션
+         */
+        sendDefault: (options: {
+          objectType: "feed" | "list" | "location" | "commerce" | "text";
+          content: {
+            title: string;
+            description: string;
+            imageUrl: string;
+            link: {
+              mobileWebUrl?: string;
+              webUrl?: string;
+            };
+          };
+          buttons?: Array<{
+            title: string;
+            link: {
+              mobileWebUrl?: string;
+              webUrl?: string;
+            };
+          }>;
+        }) => void;
+      };
     };
   }
 }
