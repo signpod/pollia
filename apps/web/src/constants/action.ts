@@ -61,6 +61,8 @@ function getContentComponent(
       return stepComponents.MultipleChoice;
     case ActionType.SCALE:
       return stepComponents.Scale;
+    case ActionType.RATING:
+      return stepComponents.Rating;
     case ActionType.SUBJECTIVE:
       return stepComponents.Subjective;
     default:
