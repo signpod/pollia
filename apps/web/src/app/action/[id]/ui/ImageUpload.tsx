@@ -420,7 +420,7 @@ export function ImageUpload({ initialImageUrl, onUploadChange, actionId }: Image
                       className="relative flex h-5 w-full touch-none select-none items-center"
                     >
                       <Slider.Track className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-divider-default">
-                        <Slider.Range className="absolute h-full bg-point" />
+                        <Slider.Range className="absolute h-full bg-primary" />
                       </Slider.Track>
                       <Slider.Thumb className="block size-5 rounded-full border-2 border-white bg-white shadow-effect-default transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2" />
                     </Slider.Root>
