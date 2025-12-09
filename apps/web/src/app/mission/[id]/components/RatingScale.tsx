@@ -14,8 +14,6 @@ export interface RatingScaleOption {
   order?: number;
 }
 
-export type Direction = "horizontal" | "vertical";
-
 export interface RatingScaleProps {
   value: number;
   onChange: (value: number) => void;
@@ -23,7 +21,6 @@ export interface RatingScaleProps {
   min?: number;
   max?: number;
   step?: number;
-  direction?: Direction;
   disabled?: boolean;
 }
 
@@ -35,7 +32,6 @@ export function RatingScale({
   max = 5,
   step = 1,
   disabled = false,
-  direction = "horizontal",
 }: RatingScaleProps) {
   const {
     positions,
@@ -90,9 +86,9 @@ export function RatingScale({
       const isLast = (index: number) => index === positions.length - 1;
 
       const isVertical =
+        max > 5 ||
         options.length > 5 ||
-        options.some(option => !!option.order?.toString().length) ||
-        direction === "vertical";
+        options.some(option => (option.order?.toString().length ?? 0) > 0);
 
       const height = isVertical ? options.length * (288 / 5) : undefined;
 
@@ -118,7 +114,9 @@ export function RatingScale({
 
     const isFirst = (index: number) => index === 0;
     const isLast = (index: number) => index === positions.length - 1;
-    const isVertical = direction === "vertical";
+    const isVertical = max > 5;
+
+    const height = isVertical ? positions.length * (288 / 5) : undefined;
 
     return {
       positions,
@@ -129,9 +127,9 @@ export function RatingScale({
       isFirst,
       isLast,
       isVertical,
-      height: undefined,
+      height,
     };
-  }, [options, min, max, step, direction, options?.length]);
+  }, [options, min, max, step, options?.length]);
 
   const [localValue, setLocalValue] = useState(Math.max(sliderMin, Math.min(sliderMax, value)));
 
@@ -168,19 +166,9 @@ export function RatingScale({
       return Math.max(0, Math.min(sortedOptions.length - 1, indexValue));
     }
 
-    const normalizedValue =
-      sliderMax === sliderMin ? 0 : (localValue - sliderMin) / (sliderMax - sliderMin);
-    let closestIndex = 0;
-    let closestDistance = Math.abs(positions[0] ?? 0 - normalizedValue);
-    for (let idx = 1; idx < positions.length; idx++) {
-      const distance = Math.abs(positions[idx] ?? 0 - normalizedValue);
-      if (distance < closestDistance) {
-        closestDistance = distance;
-        closestIndex = idx;
-      }
-    }
-    return closestIndex;
-  }, [localValue, sortedOptions, positions, sliderMin, sliderMax]);
+    const index = Math.round((localValue - sliderMin) / sliderStep);
+    return Math.max(0, Math.min(positions.length - 1, index));
+  }, [localValue, sortedOptions, positions, sliderMin, sliderMax, sliderStep]);
 
   const thumbPosition = useMemo(() => {
     if (positions.length === 0) {
@@ -192,6 +180,10 @@ export function RatingScale({
       };
     }
 
+    const normalizedValue =
+      sliderMax === sliderMin ? 0 : (localValue - sliderMin) / (sliderMax - sliderMin);
+    const positionPercent = normalizedValue * 100;
+
     const isFirstDot = isFirst(currentIndex);
     const isLastDot = isLast(currentIndex);
 
@@ -200,7 +192,7 @@ export function RatingScale({
         ? "translate(-50%, 0%)"
         : isLastDot
           ? "translate(-50%, -100%)"
-          : `translate(-50%, -${(currentIndex / (positions.length - 1)) * 100}%)`;
+          : `translate(-50%, -${positionPercent}%)`;
       return {
         top: "100%",
         transform,
@@ -214,8 +206,13 @@ export function RatingScale({
       : isLastDot
         ? "translate(0%, -50%)"
         : "translate(-50%, -50%)";
-    return { left: "100%", transform, top: "50%", position: "absolute" as const };
-  }, [positions, currentIndex, isFirst, isLast, isVertical]);
+    return {
+      left: `${positionPercent}%`,
+      transform,
+      top: "50%",
+      position: "absolute" as const,
+    };
+  }, [positions, currentIndex, isFirst, isLast, isVertical, localValue, sliderMin, sliderMax]);
 
   return (
     <div className={cn("flex gap-5", isVertical ? "flex-row h-full" : "flex-col w-full")}>
@@ -357,25 +354,50 @@ function SliderDots({ positions, options, isFirst, isLast, isVertical }: SliderD
                 isVertical ? { top: positionValue, transform } : { left: positionValue, transform }
               }
             >
+              {isVertical && (options?.[index]?.title || options?.[index]?.order) && (
+                <div className="absolute left-[calc(100%+24px)] flex items-center gap-3">
+                  {options?.[index]?.title && (
+                    <Typo.SubTitle
+                      size="large"
+                      key={`title-${position}`}
+                      style={{
+                        width: "auto",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {options?.[index]?.title}
+                    </Typo.SubTitle>
+                  )}
+                  {options?.[index]?.order && (
+                    <Typo.Body
+                      size="large"
+                      key={`order-${position}`}
+                      className="whitespace-nowrap text-sub"
+                      style={{
+                        width: "auto",
+                      }}
+                    >
+                      {options?.[index]?.order}
+                    </Typo.Body>
+                  )}
+                </div>
+              )}
               <div className="rounded-full transition-colors bg-zinc-200 size-4" />
-              {options?.[index]?.title && (
+              {!isVertical && options?.[index]?.title && (
                 <Typo.SubTitle
                   size="large"
-                  key={`order-${position}`}
+                  key={`title-horizontal-${position}`}
                   className={cn("absolute", getTitleClassName())}
                   style={getTitleStyle(options?.length ?? 0, isFirstDot, isLastDot)}
                 >
                   {options?.[index]?.title}
                 </Typo.SubTitle>
               )}
-              {options?.[index]?.order && (
+              {!isVertical && options?.[index]?.order && (
                 <Typo.Body
                   size="large"
-                  key={`title-${position}`}
-                  className={cn(
-                    "whitespace-nowrap absolute text-sub",
-                    isVertical ? "left-[72px]" : "top-[72px]",
-                  )}
+                  key={`order-horizontal-${position}`}
+                  className={cn("whitespace-nowrap absolute text-sub", "top-[72px]")}
                 >
                   {options?.[index]?.order}
                 </Typo.Body>
