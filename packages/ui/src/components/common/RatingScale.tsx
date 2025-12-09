@@ -274,35 +274,19 @@ interface SliderDotsProps {
 }
 
 function SliderDots({ positions, options, isFirst, isLast, isVertical }: SliderDotsProps) {
-  const getTitleStyle = (
-    optionsLength: number,
-    isFirst: boolean,
-    isLast: boolean,
-  ): CSSProperties | undefined => {
+  const getTitleStyle = (optionsLength: number): CSSProperties | undefined => {
     if (isVertical) {
       return undefined;
     }
 
     if (optionsLength === 5) {
-      return isFirst
-        ? { textAlign: "left", width: "3em", transform: "translateX(50%)" }
-        : isLast
-          ? { textAlign: "right", width: "3em", transform: "translateX(-50%)" }
-          : { width: "3em" };
+      return { width: "3em" };
     }
     if (optionsLength === 4) {
-      return isFirst
-        ? { textAlign: "left", width: "4em", transform: "translateX(50%)" }
-        : isLast
-          ? { textAlign: "right", width: "4em", transform: "translateX(-50%)" }
-          : { width: "4em" };
+      return { width: "4em" };
     }
     if (optionsLength === 3) {
-      return isFirst
-        ? { textAlign: "left", width: "6em", transform: "translateX(50%)" }
-        : isLast
-          ? { textAlign: "right", width: "6em", transform: "translateX(-50%)" }
-          : { width: "6em" };
+      return { width: "6em" };
     }
 
     return undefined;
@@ -387,8 +371,8 @@ function SliderDots({ positions, options, isFirst, isLast, isVertical }: SliderD
                 <Typo.SubTitle
                   size="large"
                   key={`title-horizontal-${position}`}
-                  className={cn("absolute", getTitleClassName())}
-                  style={getTitleStyle(options?.length ?? 0, isFirstDot, isLastDot)}
+                  className={cn("absolute text-center", getTitleClassName())}
+                  style={getTitleStyle(options?.length ?? 0)}
                 >
                   {options?.[index]?.title}
                 </Typo.SubTitle>
