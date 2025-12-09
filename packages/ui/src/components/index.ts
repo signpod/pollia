@@ -36,6 +36,7 @@ export * from "./common/TiptapViewer";
 export * from "./common/Textarea";
 export * from "./common/ProgressBar";
 export * from "./common/RatingScale";
+export * from "./common/StarScale";
 
 // Hooks
 export * from "../hooks/useStep";

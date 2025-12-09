@@ -5,4 +5,3 @@ export * from "./MissionLikertScale";
 export * from "./MissionLogo";
 export * from "./ActionOptionButton";
 export * from "./MissionReward";
-export * from "./StarScale";
