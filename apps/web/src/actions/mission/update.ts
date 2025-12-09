@@ -13,6 +13,7 @@ export interface UpdateMissionRequest {
   deadline?: Date;
   estimatedMinutes?: number;
   isActive?: boolean;
+  rewardId?: string | null;
 }
 
 function toUpdateMissionInput(dto: UpdateMissionRequest): UpdateMissionInput {
@@ -25,6 +26,7 @@ function toUpdateMissionInput(dto: UpdateMissionRequest): UpdateMissionInput {
     deadline: dto.deadline,
     estimatedMinutes: dto.estimatedMinutes,
     isActive: dto.isActive,
+    rewardId: dto.rewardId,
   };
 }
 

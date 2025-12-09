@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
+import { updateMission } from "@/actions/mission/update";
 import { rewardService } from "@/server/services/reward/rewardService";
 import type { CreateRewardInput } from "@/server/services/reward/types";
 import type { CreateRewardRequest, CreateRewardResponse } from "@/types/dto";
@@ -20,6 +21,9 @@ export async function createReward(request: CreateRewardRequest): Promise<Create
     await requireAuth();
     const input = toCreateRewardInput(request);
     const reward = await rewardService.createReward(input);
+
+    await updateMission(request.missionId, { rewardId: reward.id });
+
     return { data: reward };
   } catch (error) {
     console.error("createReward error:", error);
