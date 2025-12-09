@@ -2,7 +2,7 @@ import { getUserMissions } from "@/actions/mission";
 import { adminMissionQueryKeys } from "@/app/admin/constants/queryKeys";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-export function useAdminSurveys(options?: { limit?: number }) {
+export function useAdminMissions(options?: { limit?: number }) {
   const limit = options?.limit ?? 10;
 
   const query = useInfiniteQuery({
@@ -18,10 +18,10 @@ export function useAdminSurveys(options?: { limit?: number }) {
     staleTime: 5 * 60 * 1000,
   });
 
-  const surveys = query.data?.pages.flatMap(page => page.data) ?? [];
+  const missions = query.data?.pages.flatMap(page => page.data) ?? [];
 
   return {
-    surveys,
+    missions,
     isLoading: query.isLoading,
     hasNextPage: query.hasNextPage,
     fetchNextPage: query.fetchNextPage,

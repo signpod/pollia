@@ -23,18 +23,18 @@ import { LogOut, Moon, Sun } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
-import { useAdminSurveys } from "../hooks/use-admin-surveys";
+import { useAdminMissions } from "../hooks/use-admin-missions";
 import { cn } from "../lib/utils";
 
 export function AdminSidebar() {
   const pathname = usePathname();
   const { state } = useSidebar();
   const { isDark, toggleTheme, mounted } = useAdminTheme();
-  const { surveys } = useAdminSurveys({ limit: 10 });
+  const { missions } = useAdminMissions({ limit: 10 });
 
   const adminNavConfig = useMemo(() => {
-    return createAdminNavConfig(surveys);
-  }, [surveys]);
+    return createAdminNavConfig(missions);
+  }, [missions]);
 
   const isActive = (url: string) => {
     if (url === ADMIN_ROUTES.ADMIN) {
