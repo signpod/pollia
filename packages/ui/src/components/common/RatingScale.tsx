@@ -227,7 +227,7 @@ export function RatingScale({
       {...props}
     >
       <div
-        className={cn("relative", isVertical ? "px-4 py-9" : "w-full px-9 py-10")}
+        className={cn("relative", isVertical ? "px-4 py-9" : "w-full px-9 pb-10")}
         style={isVertical && height ? { height: `${height}px` } : undefined}
       >
         <Slider.Root
