@@ -41,6 +41,11 @@ export function MissionRatingScale({
       nextButtonText={nextButtonText}
     >
       <RatingScale
+        options={actionData.options.map(option => ({
+          id: option.id,
+          title: option.title,
+          order: option.order,
+        }))}
         value={scaleValue}
         onChange={handleScaleValueChange}
         className={getScaleClassName(!!actionData.imageUrl)}

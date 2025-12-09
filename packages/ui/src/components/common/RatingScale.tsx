@@ -10,15 +10,17 @@ const Slider = {
 };
 
 export interface RatingScaleOption {
+  id: string;
   title?: string;
-  order?: number;
+  description?: number;
+  order: number;
 }
 
 export interface RatingScaleProps
   extends Omit<ComponentProps<"div">, "value" | "onChange" | "disabled"> {
   value: number;
   onChange: (value: number) => void;
-  options?: RatingScaleOption[];
+  options: RatingScaleOption[];
   min?: number;
   max?: number;
   step?: number;
@@ -49,7 +51,7 @@ export function RatingScale({
   } = useMemo(() => {
     if (options && options.length > 0) {
       const allHaveOrder = options.every(
-        option => option.order !== undefined && option.order !== null,
+        option => option.description !== undefined && option.description !== null,
       );
 
       let sortedOptions: RatingScaleOption[];
@@ -58,15 +60,17 @@ export function RatingScale({
       let sliderMax: number;
 
       if (allHaveOrder) {
-        sortedOptions = [...options].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-        const minOrder = sortedOptions[0]?.order ?? 0;
-        const maxOrder = sortedOptions[sortedOptions.length - 1]?.order ?? 0;
+        sortedOptions = [...options].sort((a, b) => (a.description ?? 0) - (b.description ?? 0));
+        const minOrder = sortedOptions[0]?.description ?? 0;
+        const maxOrder = sortedOptions[sortedOptions.length - 1]?.description ?? 0;
 
         positions = [];
 
         sortedOptions.forEach(option => {
           const position =
-            maxOrder === minOrder ? 0 : ((option.order ?? 0) - minOrder) / (maxOrder - minOrder);
+            maxOrder === minOrder
+              ? 0
+              : ((option.description ?? 0) - minOrder) / (maxOrder - minOrder);
           positions.push(position);
         });
 
@@ -91,7 +95,7 @@ export function RatingScale({
       const isVertical =
         max > 5 ||
         options.length > 5 ||
-        options.some(option => (option.order?.toString().length ?? 0) > 0);
+        options.some(option => (option.description?.toString().length ?? 0) > 0);
 
       const height = isVertical ? options.length * (288 / 5) : undefined;
 
@@ -141,11 +145,11 @@ export function RatingScale({
 
     if (sortedOptions && sortedOptions.length > 0) {
       const allHaveOrder = sortedOptions.every(
-        option => option.order !== undefined && option.order !== null,
+        option => option.description !== undefined && option.description !== null,
       );
 
       if (allHaveOrder) {
-        const exactIndex = sortedOptions.findIndex(option => option.order === localValue);
+        const exactIndex = sortedOptions.findIndex(option => option.description === localValue);
         if (exactIndex >= 0) {
           return exactIndex;
         }
@@ -344,7 +348,7 @@ function SliderDots({ positions, options, isFirst, isLast, isVertical }: SliderD
                 isVertical ? { top: positionValue, transform } : { left: positionValue, transform }
               }
             >
-              {isVertical && (options?.[index]?.title || options?.[index]?.order) && (
+              {isVertical && (options?.[index]?.title || options?.[index]?.description) && (
                 <div className="absolute left-[calc(100%+24px)] flex items-center gap-3">
                   {options?.[index]?.title && (
                     <Typo.SubTitle
@@ -358,7 +362,7 @@ function SliderDots({ positions, options, isFirst, isLast, isVertical }: SliderD
                       {options?.[index]?.title}
                     </Typo.SubTitle>
                   )}
-                  {options?.[index]?.order && (
+                  {options?.[index]?.description && (
                     <Typo.Body
                       size="large"
                       key={`order-${position}`}
@@ -367,7 +371,7 @@ function SliderDots({ positions, options, isFirst, isLast, isVertical }: SliderD
                         width: "auto",
                       }}
                     >
-                      {options?.[index]?.order}
+                      {options?.[index]?.description}
                     </Typo.Body>
                   )}
                 </div>
@@ -383,13 +387,13 @@ function SliderDots({ positions, options, isFirst, isLast, isVertical }: SliderD
                   {options?.[index]?.title}
                 </Typo.SubTitle>
               )}
-              {!isVertical && options?.[index]?.order && (
+              {!isVertical && options?.[index]?.description && (
                 <Typo.Body
                   size="large"
                   key={`order-horizontal-${position}`}
                   className={cn("whitespace-nowrap absolute text-sub", "top-[72px]")}
                 >
-                  {options?.[index]?.order}
+                  {options?.[index]?.description}
                 </Typo.Body>
               )}
             </div>

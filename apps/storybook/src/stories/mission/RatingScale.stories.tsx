@@ -167,11 +167,11 @@ export const Default: Story = {
     value: 3,
     onChange: () => {},
     options: [
-      { title: "매우 나쁨" },
-      { title: "나쁨" },
-      { title: "보통" },
-      { title: "좋음" },
-      { title: "매우 좋음" },
+      { id: "1", title: "매우 나쁨", order: 0 },
+      { id: "2", title: "나쁨", order: 1 },
+      { id: "3", title: "보통", order: 2 },
+      { id: "4", title: "좋음", order: 3 },
+      { id: "5", title: "매우 좋음", order: 4 },
     ],
   },
 };
@@ -190,11 +190,11 @@ export const WithOptions: Story = {
     value: 3,
     onChange: () => {},
     options: [
-      { title: "매우 나쁨", order: 1 },
-      { title: "나쁨", order: 2 },
-      { title: "보통", order: 3 },
-      { title: "좋음", order: 4 },
-      { title: "매우 좋음", order: 5 },
+      { id: "1", title: "매우 나쁨", order: 1 },
+      { id: "2", title: "나쁨", order: 2 },
+      { id: "3", title: "보통", order: 3 },
+      { id: "4", title: "좋음", order: 4 },
+      { id: "5", title: "매우 좋음", order: 5 },
     ],
   },
   parameters: {
@@ -216,9 +216,9 @@ export const ThreeOptions: Story = {
           value={value}
           onChange={setValue}
           options={[
-            { title: "낮음", order: 1 },
-            { title: "보통", order: 2 },
-            { title: "높음", order: 3 },
+            { id: "1", title: "낮음", order: 1 },
+            { id: "2", title: "보통", order: 2 },
+            { id: "3", title: "높음", order: 3 },
           ]}
         />
         <p className="text-sm text-zinc-600">선택된 값: {value}</p>
@@ -243,10 +243,10 @@ export const FourOptions: Story = {
           value={value}
           onChange={setValue}
           options={[
-            { title: "전혀 아님", order: 1 },
-            { title: "아님", order: 2 },
-            { title: "그렇다", order: 3 },
-            { title: "매우 그렇다", order: 4 },
+            { id: "1", title: "전혀 아님", order: 1 },
+            { id: "2", title: "아님", order: 2 },
+            { id: "3", title: "그렇다", order: 3 },
+            { id: "4", title: "매우 그렇다", order: 4 },
           ]}
         />
         <p className="text-sm text-zinc-600">선택된 값: {value}</p>
@@ -271,11 +271,11 @@ export const FiveOptions: Story = {
           value={value}
           onChange={setValue}
           options={[
-            { title: "매우 나쁨", order: 1 },
-            { title: "나쁨", order: 2 },
-            { title: "보통", order: 3 },
-            { title: "좋음", order: 4 },
-            { title: "매우 좋음", order: 5 },
+            { id: "1", title: "매우 나쁨", order: 1 },
+            { id: "2", title: "나쁨", order: 2 },
+            { id: "3", title: "보통", order: 3 },
+            { id: "4", title: "좋음", order: 4 },
+            { id: "5", title: "매우 좋음", order: 5 },
           ]}
         />
         <p className="text-sm text-zinc-600">선택된 값: {value}</p>
@@ -300,12 +300,12 @@ export const Vertical: Story = {
           value={value}
           onChange={setValue}
           options={[
-            { title: "매우 나쁨", order: 1 },
-            { title: "나쁨", order: 2 },
-            { title: "보통", order: 3 },
-            { title: "좋음", order: 4 },
-            { title: "매우 좋음", order: 5 },
-            { title: "완벽함", order: 6 },
+            { id: "1", title: "매우 나쁨", order: 1 },
+            { id: "2", title: "나쁨", order: 2 },
+            { id: "3", title: "보통", order: 3 },
+            { id: "4", title: "좋음", order: 4 },
+            { id: "5", title: "매우 좋음", order: 5 },
+            { id: "6", title: "완벽함", order: 6 },
           ]}
         />
       </div>
@@ -330,11 +330,11 @@ export const VerticalWithOptions: Story = {
           value={value}
           onChange={setValue}
           options={[
-            { title: "매우 나쁨", order: 1 },
-            { title: "나쁨", order: 2 },
-            { title: "보통", order: 3 },
-            { title: "좋음", order: 4 },
-            { title: "매우 좋음", order: 5 },
+            { id: "1", title: "매우 나쁨", order: 1 },
+            { id: "2", title: "나쁨", order: 2 },
+            { id: "3", title: "보통", order: 3 },
+            { id: "4", title: "좋음", order: 4 },
+            { id: "5", title: "매우 좋음", order: 5 },
           ]}
         />
       </div>
@@ -355,7 +355,7 @@ export const CustomRange: Story = {
     const [value, setValue] = useState(5);
     return (
       <div className="flex min-h-[800px] w-[800px] flex-col items-center justify-center gap-4 p-8">
-        <RatingScale value={value} onChange={setValue} min={0} max={10} step={1} />
+        <RatingScale value={value} onChange={setValue} min={0} max={10} step={1} options={[]} />
         <p className="text-sm text-zinc-600">선택된 값: {value} (0-10 범위)</p>
       </div>
     );
@@ -374,7 +374,15 @@ export const Disabled: Story = {
     const [value, setValue] = useState(3);
     return (
       <div className="flex min-h-[200px] w-[600px] items-center justify-center p-8">
-        <RatingScale value={value} onChange={setValue} min={1} max={5} step={1} disabled />
+        <RatingScale
+          value={value}
+          onChange={setValue}
+          min={1}
+          max={5}
+          step={1}
+          disabled
+          options={[]}
+        />
       </div>
     );
   },
@@ -396,11 +404,11 @@ export const WithoutOrder: Story = {
           value={value}
           onChange={setValue}
           options={[
-            { title: "전혀 아님" },
-            { title: "아님" },
-            { title: "보통" },
-            { title: "그렇다" },
-            { title: "매우 그렇다" },
+            { id: "1", title: "전혀 아님", order: 1 },
+            { id: "2", title: "아님", order: 2 },
+            { id: "3", title: "보통", order: 3 },
+            { id: "4", title: "그렇다", order: 4 },
+            { id: "5", title: "매우 그렇다", order: 5 },
           ]}
         />
         <p className="text-sm text-zinc-600">선택된 값: {value}</p>
@@ -469,7 +477,7 @@ export const Interactive: Story = {
             <RatingScale
               value={answers[q.id] ?? 3}
               onChange={value => setAnswers(prev => ({ ...prev, [q.id]: value }))}
-              options={q.options}
+              options={q.options.map(o => ({ ...o, id: o.title }))}
             />
           </div>
         ))}
