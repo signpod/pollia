@@ -38,7 +38,7 @@ export default function AdminMissionEditPage({ params }: AdminMissionEditPagePro
   };
 
   return (
-    <div className="px-6 py-8 max-w-4xl">
+    <div className="max-w-4xl">
       <header className="mb-8">
         <div className="flex items-center justify-between">
           <div>
