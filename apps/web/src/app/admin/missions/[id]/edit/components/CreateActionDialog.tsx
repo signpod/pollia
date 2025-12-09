@@ -10,6 +10,7 @@ import {
 } from "@/app/admin/components/shadcn-ui/dialog";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
 import { RadioGroup, RadioGroupItem } from "@/app/admin/components/shadcn-ui/radio-group";
+import { getActionTypeLabel } from "@/app/admin/constants/actionTypes";
 import { cn } from "@/app/admin/lib/utils";
 import {
   ChevronLeft,
@@ -42,37 +43,37 @@ interface CreateActionDialogProps {
 const ACTION_TYPES = [
   {
     value: "MULTIPLE_CHOICE" as const,
-    label: "객관식",
+    label: getActionTypeLabel("MULTIPLE_CHOICE"),
     description: "여러 선택지 중 하나 이상을 선택",
     icon: ClipboardList,
   },
   {
     value: "SCALE" as const,
-    label: "척도",
+    label: getActionTypeLabel("SCALE"),
     description: "관리자가 설정한 스케일로 응답",
     icon: SlidersHorizontal,
   },
   {
     value: "RATING" as const,
-    label: "평가",
+    label: getActionTypeLabel("RATING"),
     description: "1~10점인 별점으로 평가",
     icon: Star,
   },
   {
     value: "TAG" as const,
-    label: "태그",
+    label: getActionTypeLabel("TAG"),
     description: "여러 태그 중 선택",
     icon: Hash,
   },
   {
     value: "SUBJECTIVE" as const,
-    label: "주관식",
+    label: getActionTypeLabel("SUBJECTIVE"),
     description: "자유롭게 텍스트로 응답",
     icon: MessageSquare,
   },
   {
     value: "IMAGE" as const,
-    label: "이미지 업로드",
+    label: getActionTypeLabel("IMAGE"),
     description: "이미지 파일을 업로드하여 응답",
     icon: ImageIcon,
   },

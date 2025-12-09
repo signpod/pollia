@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/app/admin/components/shadcn-ui/dialog";
+import { getActionTypeLabel } from "@/app/admin/constants/actionTypes";
 import type { ActionDetail } from "@/types/dto/action";
 import {
   type ActionFormData,
@@ -17,7 +18,6 @@ import {
   SubjectiveForm,
   TagForm,
 } from "./action-forms";
-import { getActionTypeLabel } from "./action-forms/utils";
 
 interface EditActionDialogProps {
   open: boolean;
