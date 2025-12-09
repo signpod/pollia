@@ -30,7 +30,7 @@ export function ActionImage({
       return null;
     }
 
-    return null;
+    return answer.textAnswer;
   }, [missionResponse, actionData.id]);
 
   const updateCanGoNextRef = useRef(updateCanGoNext);
