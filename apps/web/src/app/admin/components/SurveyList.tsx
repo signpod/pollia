@@ -6,6 +6,7 @@ import { CalendarDays, Plus } from "lucide-react";
 import Link from "next/link";
 import { ADMIN_ROUTES } from "../constants/routes";
 import { useAdminSurveys } from "../hooks/use-admin-surveys";
+import { stripHtmlTags } from "../lib/utils";
 import { Badge } from "./shadcn-ui/badge";
 import { Button } from "./shadcn-ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./shadcn-ui/card";
@@ -41,10 +42,7 @@ export function SurveyList() {
                 <CardTitle className="text-lg line-clamp-1">{survey.title}</CardTitle>
                 {survey.description && (
                   <CardDescription className="line-clamp-2">
-                    {survey.description
-                      .replace(/<[^>]*>/g, " ")
-                      .replace(/\s+/g, " ")
-                      .trim()}
+                    {stripHtmlTags(survey.description)}
                   </CardDescription>
                 )}
               </CardHeader>
