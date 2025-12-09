@@ -2,6 +2,7 @@
 import { cn } from "@/lib/utils";
 import { Slider as SliderPrimitive, Typo } from "@repo/ui/components";
 import { useMemo, useState } from "react";
+import type { CSSProperties } from "react";
 
 const Slider = {
   ...SliderPrimitive,
@@ -276,6 +277,48 @@ interface SliderDotsProps {
 }
 
 function SliderDots({ positions, options, isFirst, isLast, isVertical }: SliderDotsProps) {
+  const getTitleStyle = (
+    optionsLength: number,
+    isFirst: boolean,
+    isLast: boolean,
+  ): CSSProperties | undefined => {
+    if (isVertical) {
+      return undefined;
+    }
+
+    if (optionsLength === 5) {
+      return isFirst
+        ? { textAlign: "left", width: "3em", transform: "translateX(50%)" }
+        : isLast
+          ? { textAlign: "right", width: "3em", transform: "translateX(-50%)" }
+          : { width: "3em" };
+    }
+    if (optionsLength === 4) {
+      return isFirst
+        ? { textAlign: "left", width: "4em", transform: "translateX(50%)" }
+        : isLast
+          ? { textAlign: "right", width: "4em", transform: "translateX(-50%)" }
+          : { width: "4em" };
+    }
+    if (optionsLength === 3) {
+      return isFirst
+        ? { textAlign: "left", width: "6em", transform: "translateX(50%)" }
+        : isLast
+          ? { textAlign: "right", width: "6em", transform: "translateX(-50%)" }
+          : { width: "6em" };
+    }
+
+    return undefined;
+  };
+
+  const getTitleClassName = () => {
+    if (isVertical) {
+      return "left-[40px]";
+    }
+
+    return "top-[40px]";
+  };
+
   return (
     <>
       <div
@@ -319,10 +362,8 @@ function SliderDots({ positions, options, isFirst, isLast, isVertical }: SliderD
                 <Typo.SubTitle
                   size="large"
                   key={`order-${position}`}
-                  className={cn(
-                    "whitespace-nowrap absolute",
-                    isVertical ? "left-[40px]" : "top-[40px]",
-                  )}
+                  className={cn("absolute", getTitleClassName())}
+                  style={getTitleStyle(options?.length ?? 0, isFirstDot, isLastDot)}
                 >
                   {options?.[index]?.title}
                 </Typo.SubTitle>
