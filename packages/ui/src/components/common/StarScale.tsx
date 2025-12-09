@@ -93,9 +93,28 @@ function StarSmile({ className }: { className?: string }) {
   );
 }
 
-export function StarScale() {
-  const [value, setValue] = useState(1);
+export interface StarScaleProps {
+  value?: number;
+  onChange?: (value: number) => void;
+  disabled?: boolean;
+}
+
+export function StarScale({
+  value: controlledValue,
+  onChange,
+  disabled = false,
+}: StarScaleProps = {}) {
+  const [internalValue, setInternalValue] = useState(1);
+  const value = controlledValue ?? internalValue;
   const maxStars = 5;
+
+  const handleChange = (newValue: number) => {
+    if (onChange) {
+      onChange(newValue);
+    } else {
+      setInternalValue(newValue);
+    }
+  };
 
   return (
     <div className="relative w-full px-14">
@@ -104,12 +123,13 @@ export function StarScale() {
         onValueChange={values => {
           const newValue = values[0];
           if (newValue !== undefined) {
-            setValue(newValue);
+            handleChange(newValue);
           }
         }}
         min={0.5}
         max={maxStars}
         step={0.5}
+        disabled={disabled}
         className="relative flex h-18 w-full touch-none select-none items-center"
       >
         <Slider.Track>
