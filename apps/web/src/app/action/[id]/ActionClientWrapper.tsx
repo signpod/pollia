@@ -21,7 +21,13 @@ import { StepProvider, useModal, useStep } from "@repo/ui/components";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { MissionRatingScale, MissionStarScale, MultipleChoice, Subjective } from "./ui";
+import {
+  ActionImage,
+  MissionRatingScale,
+  MissionStarScale,
+  MultipleChoice,
+  Subjective,
+} from "./ui";
 
 const SURVEY_EXIT_MODAL = {
   title: "설문을 종료하실 건가요?",
@@ -68,6 +74,7 @@ function ActionContent({
       Scale: MissionRatingScale,
       Subjective: Subjective,
       Rating: MissionStarScale,
+      Image: ActionImage,
     },
   });
 
@@ -264,6 +271,7 @@ function ActionRenderer({
 
   const handleNext = useCallback(() => {
     if (!responseId || !currentAnswer) return;
+    console.log("currentAnswer", currentAnswer);
 
     const validationResult = submitAnswerItemSchema.safeParse(currentAnswer);
     if (!validationResult.success) {

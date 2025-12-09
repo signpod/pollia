@@ -54,6 +54,8 @@ export async function getUploadUrl(request: UploadImageRequest): Promise<UploadI
         mimeType: request.fileType,
         bucket,
         status: FileStatus.TEMPORARY,
+        relatedEntityType: request.relatedEntityType,
+        relatedEntityId: request.relatedEntityId,
       },
     });
 

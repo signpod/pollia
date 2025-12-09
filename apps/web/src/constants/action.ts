@@ -31,6 +31,9 @@ interface CreateActionStepsProps {
     Scale: React.ComponentType<ActionStepContentProps>;
     Subjective: React.ComponentType<ActionStepContentProps>;
     Rating: React.ComponentType<ActionStepContentProps>;
+    Image: React.ComponentType<ActionStepContentProps>;
+    // TODO: Tag 추가 시 수정 필요
+    // Tag: React.ComponentType<ActionStepContentProps>;
   };
 }
 
@@ -65,6 +68,11 @@ function getContentComponent(
       return stepComponents.Rating;
     case ActionType.SUBJECTIVE:
       return stepComponents.Subjective;
+    case ActionType.IMAGE:
+      return stepComponents.Image;
+    // TODO: Tag 추가 시 수정 필요
+    // case ActionType.TAG:
+    //   return stepComponents.Tag;
     default:
       throw new Error(`Unsupported question type: ${type}`);
   }

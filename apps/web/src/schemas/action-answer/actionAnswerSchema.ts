@@ -13,6 +13,11 @@ const textAnswerSchema = z
   .max(100, "주관식 답변은 100자를 초과할 수 없습니다.")
   .trim();
 
+const imageUrlSchema = z
+  .string()
+  .min(1, "이미지 URL은 필수입니다.")
+  .url("유효한 이미지 URL이 아닙니다.");
+
 const scaleAnswerSchema = z
   .number("별점 값은 숫자여야 합니다.")
   .min(0, "별점 값은 0 이상이어야 합니다.")
@@ -34,7 +39,7 @@ export const submitAnswerItemSchema = z
     type: actionTypeSchema,
     selectedOptionIds: z.array(optionIdSchema).optional(),
     scaleValue: scaleAnswerSchema.optional(),
-    textResponse: textAnswerSchema.optional(),
+    textResponse: z.union([textAnswerSchema, imageUrlSchema]).optional(),
   })
   .refine(
     data => {
@@ -62,6 +67,15 @@ export const submitAnswerItemSchema = z
       return true;
     },
     { message: "주관식 답변은 필수입니다." },
+  )
+  .refine(
+    data => {
+      if (data.type === ActionType.IMAGE) {
+        return data.textResponse && data.textResponse.length > 0;
+      }
+      return true;
+    },
+    { message: "이미지는 필수입니다." },
   );
 
 export const submitAnswersSchema = z.object({

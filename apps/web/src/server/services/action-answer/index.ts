@@ -174,6 +174,12 @@ export class ActionAnswerService {
           actionId,
           textAnswer: answer.textResponse,
         });
+      } else if (answer.type === ActionType.IMAGE && answer.textResponse) {
+        answersToCreate.push({
+          responseId: parseResult.data.responseId,
+          actionId,
+          textAnswer: answer.textResponse,
+        });
       }
     }
 
