@@ -1,4 +1,9 @@
-export type ActionType = "MULTIPLE_CHOICE" | "SCALE" | "RATING" | "TAG" | "SUBJECTIVE" | "IMAGE";
+import type { ActionType as PrismaActionType } from "@prisma/client";
+
+export type ActionType = Extract<
+  PrismaActionType,
+  "MULTIPLE_CHOICE" | "SCALE" | "RATING" | "TAG" | "SUBJECTIVE" | "IMAGE"
+>;
 
 export interface ActionOptionInput {
   title: string;

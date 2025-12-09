@@ -101,6 +101,8 @@ export function useAdminSingleImage(options: UseAdminSingleImageOptions = {}) {
   };
 }
 
+export type UseAdminSingleImageReturn = ReturnType<typeof useAdminSingleImage>;
+
 export interface UseAdminMultipleImagesOptions {
   bucket?: string;
   onUploadSuccess?: (id: string, data: UploadedImageData) => void;
@@ -243,6 +245,8 @@ export function useAdminMultipleImages(options: UseAdminMultipleImagesOptions = 
     isAnyUploading: uploadingIds.size > 0,
   };
 }
+
+export type UseAdminMultipleImagesReturn = ReturnType<typeof useAdminMultipleImages>;
 
 async function uploadFileToStorage(file: File, uploadUrl: string): Promise<void> {
   return new Promise((resolve, reject) => {

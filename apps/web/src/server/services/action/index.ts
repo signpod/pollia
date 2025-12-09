@@ -1,8 +1,8 @@
 import {
+  actionUpdateSchema,
   eitherOrInputSchema,
   imageInputSchema,
   multipleChoiceInputSchema,
-  questionUpdateSchema,
   ratingInputSchema,
   scaleInputSchema,
   subjectiveInputSchema,
@@ -331,7 +331,7 @@ export class ActionService {
   }
 
   async updateAction(actionId: string, data: UpdateActionInput, userId: string) {
-    const result = questionUpdateSchema.safeParse(data);
+    const result = actionUpdateSchema.safeParse(data);
     if (!result.success) {
       const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
       error.cause = 400;

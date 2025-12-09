@@ -78,7 +78,7 @@ export const imageInputSchema = baseActionSchema.extend({
   imageFileUploadId: z.string().optional(),
 });
 
-export const questionUpdateSchema = z
+export const actionUpdateSchema = z
   .object({
     title: titleSchema.optional(),
     description: descriptionSchema,
@@ -99,4 +99,4 @@ export type TagInput = z.infer<typeof tagInputSchema>;
 export type RatingInput = z.infer<typeof ratingInputSchema>;
 export type ImageInput = z.infer<typeof imageInputSchema>;
 export type ActionOption = z.infer<typeof actionOptionSchema>;
-export type QuestionUpdate = z.infer<typeof questionUpdateSchema>;
+export type ActionUpdate = z.infer<typeof actionUpdateSchema>;

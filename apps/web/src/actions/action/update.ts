@@ -3,25 +3,9 @@
 import { requireAuth } from "@/actions/common/auth";
 import { actionService } from "@/server/services/action";
 import type { UpdateActionInput } from "@/server/services/action/types";
+import type { UpdateActionRequest } from "@/types/dto/action";
 
-export interface UpdateQuestionOptionRequest {
-  title: string;
-  description?: string;
-  imageUrl?: string;
-  order: number;
-  imageFileUploadId?: string;
-}
-
-export interface UpdateQuestionRequest {
-  title?: string;
-  description?: string;
-  imageUrl?: string;
-  order?: number;
-  maxSelections?: number;
-  options?: UpdateQuestionOptionRequest[];
-}
-
-function toUpdateActionInput(dto: UpdateQuestionRequest): UpdateActionInput {
+function toUpdateActionInput(dto: UpdateActionRequest): UpdateActionInput {
   return {
     title: dto.title,
     description: dto.description,
@@ -32,7 +16,7 @@ function toUpdateActionInput(dto: UpdateQuestionRequest): UpdateActionInput {
   };
 }
 
-export async function updateAction(actionId: string, request: UpdateQuestionRequest) {
+export async function updateAction(actionId: string, request: UpdateActionRequest) {
   try {
     const user = await requireAuth();
     const input = toUpdateActionInput(request);

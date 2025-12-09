@@ -6,7 +6,7 @@ export {
   tagInputSchema,
   ratingInputSchema,
   imageInputSchema,
-  questionUpdateSchema,
+  actionUpdateSchema,
   type MultipleChoiceInput,
   type ScaleInput,
   type SubjectiveInput,
@@ -14,5 +14,5 @@ export {
   type TagInput,
   type RatingInput,
   type ImageInput,
-  type QuestionUpdate,
+  type ActionUpdate,
 } from "./actionSchema";

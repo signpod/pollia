@@ -1,7 +1,7 @@
 import type { ActionType } from "@/types/domain/action";
 
 // ============================================================================
-// Question Creation DTOs
+// Action Creation DTOs
 // ============================================================================
 
 // Multiple Choice Question
@@ -144,6 +144,27 @@ export interface CreateImageActionResponse {
     order: number;
     createdAt: Date;
   };
+}
+
+// ============================================================================
+// Action Update DTOs
+// ============================================================================
+
+export interface UpdateActionOptionRequest {
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  order: number;
+  imageFileUploadId?: string;
+}
+
+export interface UpdateActionRequest {
+  title?: string;
+  description?: string;
+  imageUrl?: string;
+  order?: number;
+  maxSelections?: number;
+  options?: UpdateActionOptionRequest[];
 }
 
 // ============================================================================

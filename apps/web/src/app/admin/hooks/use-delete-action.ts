@@ -30,6 +30,7 @@ export function useDeleteAction(options: UseDeleteActionOptions = {}) {
     },
 
     onError: error => {
+      console.error("액션 삭제 실패:", error);
       options.onError?.(error as Error);
     },
   });
