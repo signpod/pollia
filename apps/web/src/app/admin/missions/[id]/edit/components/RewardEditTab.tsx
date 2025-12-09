@@ -58,6 +58,7 @@ function RewardCard({
               width={48}
               height={48}
               className="rounded-lg object-cover"
+              sizes="48px"
             />
           )}
 

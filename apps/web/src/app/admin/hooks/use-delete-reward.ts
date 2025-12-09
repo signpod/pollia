@@ -55,6 +55,7 @@ export function useDeleteReward(options: UseDeleteRewardOptions = {}) {
     },
 
     onError: error => {
+      console.error("리워드 삭제 실패:", error);
       options.onError?.(error as Error);
     },
   });
