@@ -118,7 +118,7 @@ function EmptyRewardCard({ onCreate }: { onCreate: () => void }) {
 function LoadingSkeleton() {
   return (
     <Card>
-      <CardContent className="p-6">
+      <CardContent>
         <div className="flex items-start gap-4">
           <div className="size-12 rounded-lg bg-muted animate-pulse" />
           <div className="flex-1 space-y-2">
