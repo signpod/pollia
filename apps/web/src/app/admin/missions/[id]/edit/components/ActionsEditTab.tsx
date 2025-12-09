@@ -19,6 +19,7 @@ import {
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
 import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
+import { getActionTypeLabel } from "@/app/admin/constants/actionTypes";
 import { useCreateAction } from "@/app/admin/hooks/use-create-action";
 import { useDeleteAction } from "@/app/admin/hooks/use-delete-action";
 import { useReadActionsDetail } from "@/app/admin/hooks/use-read-actions-detail";
@@ -50,7 +51,6 @@ import { toast } from "sonner";
 import { CreateActionDialog } from "./CreateActionDialog";
 import { EditActionDialog } from "./EditActionDialog";
 import type { ActionFormData } from "./action-forms";
-import { getActionTypeLabel } from "./action-forms/utils";
 
 interface ActionsEditTabProps {
   missionId: string;

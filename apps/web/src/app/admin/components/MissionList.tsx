@@ -5,17 +5,19 @@ import { ko } from "date-fns/locale";
 import { CalendarDays, Plus } from "lucide-react";
 import Link from "next/link";
 import { ADMIN_ROUTES } from "../constants/routes";
-import { useAdminSurveys } from "../hooks/use-admin-surveys";
+import { useAdminMissions } from "../hooks/use-admin-missions";
+import { stripHtmlTags } from "../lib/utils";
 import { Badge } from "./shadcn-ui/badge";
 import { Button } from "./shadcn-ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./shadcn-ui/card";
 import { Skeleton } from "./shadcn-ui/skeleton";
 
-export function SurveyList() {
-  const { surveys, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useAdminSurveys();
+export function MissionList() {
+  const { missions, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useAdminMissions();
 
   if (isLoading) {
-    return <SurveyListSkeleton />;
+    return <MissionListSkeleton />;
   }
 
   return (
@@ -34,17 +36,14 @@ export function SurveyList() {
             </div>
           </Card>
         </Link>
-        {surveys.map(survey => (
-          <Link key={survey.id} href={ADMIN_ROUTES.ADMIN_MISSION(survey.id)}>
+        {missions.map(mission => (
+          <Link key={mission.id} href={ADMIN_ROUTES.ADMIN_MISSION(mission.id)}>
             <Card className="h-[180px] hover:shadow-md hover:bg-muted/30 transition-shadow cursor-pointer">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg line-clamp-1">{survey.title}</CardTitle>
-                {survey.description && (
+                <CardTitle className="text-lg line-clamp-1">{mission.title}</CardTitle>
+                {mission.description && (
                   <CardDescription className="line-clamp-2">
-                    {survey.description
-                      .replace(/<[^>]*>/g, " ")
-                      .replace(/\s+/g, " ")
-                      .trim()}
+                    {stripHtmlTags(mission.description)}
                   </CardDescription>
                 )}
               </CardHeader>
@@ -53,21 +52,21 @@ export function SurveyList() {
                   <div className="flex items-center gap-2">
                     <CalendarDays className="size-4" />
                     <span>
-                      {formatDistanceToNow(new Date(survey.createdAt), {
+                      {formatDistanceToNow(new Date(mission.createdAt), {
                         addSuffix: true,
                         locale: ko,
                       })}
                     </span>
                   </div>
                   <Badge
-                    variant={survey.isActive ? "default" : "secondary"}
+                    variant={mission.isActive ? "default" : "secondary"}
                     className={
-                      survey.isActive
+                      mission.isActive
                         ? "bg-green-500/10 text-green-700 dark:bg-green-500/20 dark:text-green-400 hover:bg-green-500/20"
                         : "bg-gray-500/10 text-gray-700 dark:bg-gray-500/20 dark:text-gray-400"
                     }
                   >
-                    {survey.isActive ? "활성" : "비활성"}
+                    {mission.isActive ? "활성" : "비활성"}
                   </Badge>
                 </div>
               </CardContent>
@@ -87,7 +86,7 @@ export function SurveyList() {
   );
 }
 
-function SurveyListSkeleton() {
+function MissionListSkeleton() {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 6 }).map((_, i) => (
