@@ -13,6 +13,7 @@ export function createActionServiceTestContext() {
     create: jest.fn(),
     createMultipleChoice: jest.fn(),
     update: jest.fn(),
+    updateWithOptions: jest.fn(),
     delete: jest.fn(),
     updateManyOrders: jest.fn(),
   } as jest.Mocked<ActionRepository>;

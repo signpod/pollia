@@ -349,7 +349,19 @@ export class ActionService {
       await this.verifyMissionAccess(action.missionId, userId);
     }
 
-    const updatedAction = await this.actionRepo.update(actionId, result.data);
+    const { options, ...actionData } = result.data;
+
+    if (options && options.length > 0) {
+      const updatedAction = await this.actionRepo.updateWithOptions(
+        actionId,
+        actionData,
+        options,
+        userId,
+      );
+      return updatedAction;
+    }
+
+    const updatedAction = await this.actionRepo.update(actionId, actionData);
 
     return updatedAction;
   }
