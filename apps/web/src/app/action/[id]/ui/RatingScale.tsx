@@ -1,6 +1,5 @@
 import { ActionStepContentProps } from "@/constants/action";
 import { useMissionScaleValue } from "@/hooks/action";
-import { ActionType } from "@/types/domain/action";
 import { RatingScale } from "@repo/ui/components";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 import { getScaleClassName } from "../utils";
@@ -24,7 +23,6 @@ export function MissionRatingScale({
     updateCanGoNext,
     onAnswerChange,
     defaultValue: 3,
-    actionType: ActionType.SCALE,
   });
 
   return (

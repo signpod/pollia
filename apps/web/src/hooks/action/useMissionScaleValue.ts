@@ -8,7 +8,6 @@ interface UseMissionScaleValueOptions {
   updateCanGoNext?: (canGoNext: boolean) => void;
   onAnswerChange?: (answer: ActionAnswerItem) => void;
   defaultValue: number;
-  actionType: ActionType;
 }
 
 export function useMissionScaleValue({
@@ -17,7 +16,6 @@ export function useMissionScaleValue({
   updateCanGoNext,
   onAnswerChange,
   defaultValue,
-  actionType,
 }: UseMissionScaleValueOptions) {
   const initialScaleValue = useMemo(() => {
     if (!missionResponse?.data?.answers || missionResponse.data.answers.length === 0) {
@@ -50,11 +48,11 @@ export function useMissionScaleValue({
 
       onAnswerChangeRef.current?.({
         actionId,
-        type: actionType,
+        type: ActionType.SCALE,
         scaleValue: initialScaleValue,
       });
     }
-  }, [initialScaleValue, actionId, defaultValue, actionType]);
+  }, [initialScaleValue, actionId, defaultValue]);
 
   const handleScaleValueChange = (value: number) => {
     if (!isScaleValueChanged) {
@@ -65,11 +63,10 @@ export function useMissionScaleValue({
 
     onAnswerChange?.({
       actionId,
-      type: actionType,
+      type: ActionType.SCALE,
       scaleValue: value,
     });
   };
 
   return { isScaleValueChanged, scaleValue, handleScaleValueChange };
 }
-
