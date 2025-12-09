@@ -1,3 +1,4 @@
+import { toast } from "@/components/common/Toast";
 import { ActionStepContentProps } from "@/constants/action";
 import { ActionType } from "@/types/domain/action";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
@@ -55,6 +56,14 @@ function SurveyMultipleChoiceContent({
   const isDisabled =
     actionData.maxSelections !== null && selectedIds.size >= actionData.maxSelections;
 
+  const handleClick = (optionId: string) => {
+    if (isDisabled && !selectedIds.has(optionId)) {
+      toast.warning("최대 선택 개수를 초과했어요.");
+      return;
+    }
+    toggleSelectedId(optionId);
+  };
+
   return (
     <SurveyQuestionTemplate
       currentOrder={currentOrder}
@@ -74,8 +83,7 @@ function SurveyMultipleChoiceContent({
             key={option.id}
             label={option.title}
             isSelected={selectedIds.has(option.id)}
-            onClick={() => toggleSelectedId(option.id)}
-            disabled={isDisabled}
+            onClick={() => handleClick(option.id)}
           />
         ))}
       </div>
