@@ -2,6 +2,7 @@
 
 import { toast } from "@/components/common/Toast";
 import { type UploadedImage, useImageUpload } from "@/hooks/common/useImageUpload";
+import { getCroppedImg } from "@/lib/imageCrop";
 import { cn } from "@/lib/utils";
 import { RelatedEntityType } from "@prisma/client";
 import { ButtonV2, Slider, Typo } from "@repo/ui/components";
@@ -9,7 +10,16 @@ import { Dialog, DialogOverlay, DialogPortal } from "@repo/ui/components";
 import { Edit2, Loader2Icon, PlusIcon, X } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
-import Cropper, { Area } from "react-easy-crop";
+import Cropper, { type Area } from "react-easy-crop";
+
+const BLUR_THUMBNAIL_MAX_SIZE = 50;
+const ZOOM_MIN = 1;
+const ZOOM_MAX = 3;
+const ZOOM_DEFAULT = 1;
+const ROTATION_MIN = 0;
+const ROTATION_MAX = 360;
+const ROTATION_DEFAULT = 0;
+const CROP_DEFAULT = { x: 0, y: 0 };
 
 function generateBlurDataURL(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -24,8 +34,10 @@ function generateBlurDataURL(file: File): Promise<string> {
           return;
         }
 
-        const maxSize = 50;
-        const ratio = Math.min(maxSize / img.width, maxSize / img.height);
+        const ratio = Math.min(
+          BLUR_THUMBNAIL_MAX_SIZE / img.width,
+          BLUR_THUMBNAIL_MAX_SIZE / img.height,
+        );
         canvas.width = img.width * ratio;
         canvas.height = img.height * ratio;
 
@@ -47,71 +59,6 @@ interface ImageUploadProps {
   actionId: string;
 }
 
-function createImage(url: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const image = new window.Image();
-    image.addEventListener("load", () => resolve(image));
-    image.addEventListener("error", error => reject(error));
-    image.setAttribute("crossOrigin", "anonymous");
-    image.src = url;
-  });
-}
-
-function getRadianAngle(degreeValue: number): number {
-  return (degreeValue * Math.PI) / 180;
-}
-
-function rotateSize(width: number, height: number, rotation: number) {
-  const rotRad = getRadianAngle(rotation);
-  return {
-    width: Math.abs(Math.cos(rotRad) * width) + Math.abs(Math.sin(rotRad) * height),
-    height: Math.abs(Math.sin(rotRad) * width) + Math.abs(Math.cos(rotRad) * height),
-  };
-}
-
-async function getCroppedImg(imageSrc: string, pixelCrop: Area, rotation = 0): Promise<Blob> {
-  const image = await createImage(imageSrc);
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-
-  if (!ctx) {
-    throw new Error("Canvas context를 생성할 수 없습니다.");
-  }
-
-  const rotRad = getRadianAngle(rotation);
-  const { width: bBoxWidth, height: bBoxHeight } = rotateSize(image.width, image.height, rotation);
-
-  canvas.width = bBoxWidth;
-  canvas.height = bBoxHeight;
-
-  ctx.translate(bBoxWidth / 2, bBoxHeight / 2);
-  ctx.rotate(rotRad);
-  ctx.translate(-image.width / 2, -image.height / 2);
-
-  ctx.drawImage(image, 0, 0);
-
-  const data = ctx.getImageData(0, 0, bBoxWidth, bBoxHeight);
-
-  canvas.width = pixelCrop.width;
-  canvas.height = pixelCrop.height;
-
-  ctx.putImageData(data, Math.round(0 - pixelCrop.x), Math.round(0 - pixelCrop.y));
-
-  return new Promise((resolve, reject) => {
-    canvas.toBlob(
-      blob => {
-        if (blob) {
-          resolve(blob);
-        } else {
-          reject(new Error("이미지를 Blob으로 변환하는데 실패했습니다."));
-        }
-      },
-      "image/jpeg",
-      0.95,
-    );
-  });
-}
-
 export function ImageUpload({ initialImageUrl, onUploadChange, actionId }: ImageUploadProps) {
   const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(null);
   const [isImageLoading, setIsImageLoading] = useState(false);
@@ -119,11 +66,24 @@ export function ImageUpload({ initialImageUrl, onUploadChange, actionId }: Image
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
   const [imageToCrop, setImageToCrop] = useState<string | null>(null);
   const [originalFile, setOriginalFile] = useState<File | null>(null);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [rotation, setRotation] = useState(0);
+  const [crop, setCrop] = useState(CROP_DEFAULT);
+  const [zoom, setZoom] = useState(ZOOM_DEFAULT);
+  const [rotation, setRotation] = useState(ROTATION_DEFAULT);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const revokeImageUrl = useCallback((url: string | null) => {
+    if (url) {
+      URL.revokeObjectURL(url);
+    }
+  }, []);
+
+  const resetCropState = useCallback(() => {
+    setCrop(CROP_DEFAULT);
+    setZoom(ZOOM_DEFAULT);
+    setRotation(ROTATION_DEFAULT);
+    setCroppedAreaPixels(null);
+  }, []);
 
   useEffect(() => {
     if (initialImageUrl && !uploadedImage) {
@@ -159,6 +119,14 @@ export function ImageUpload({ initialImageUrl, onUploadChange, actionId }: Image
   const onCropComplete = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
+
+  const handleCropCancel = useCallback(() => {
+    setIsCropModalOpen(false);
+    revokeImageUrl(imageToCrop);
+    setImageToCrop(null);
+    setOriginalFile(null);
+    resetCropState();
+  }, [imageToCrop, revokeImageUrl, resetCropState]);
 
   const handleCropComplete = useCallback(async () => {
     if (!imageToCrop || !croppedAreaPixels || !originalFile) {
@@ -197,20 +165,25 @@ export function ImageUpload({ initialImageUrl, onUploadChange, actionId }: Image
 
       upload(croppedFile);
 
+      revokeImageUrl(imageToCrop);
       setImageToCrop(null);
       setOriginalFile(null);
-      setCrop({ x: 0, y: 0 });
-      setZoom(1);
-      setRotation(0);
-      setCroppedAreaPixels(null);
+      resetCropState();
     } catch (error) {
       console.error("이미지 크롭 실패:", error);
       toast.warning("이미지 처리에 실패했어요.\n다시 시도해주세요.");
-      setIsCropModalOpen(false);
-      setImageToCrop(null);
-      setOriginalFile(null);
+      handleCropCancel();
     }
-  }, [imageToCrop, croppedAreaPixels, rotation, originalFile, upload]);
+  }, [
+    imageToCrop,
+    croppedAreaPixels,
+    rotation,
+    originalFile,
+    upload,
+    revokeImageUrl,
+    resetCropState,
+    handleCropCancel,
+  ]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -246,26 +219,11 @@ export function ImageUpload({ initialImageUrl, onUploadChange, actionId }: Image
     }
   };
 
-  const handleCropCancel = () => {
-    setIsCropModalOpen(false);
-    if (imageToCrop) {
-      URL.revokeObjectURL(imageToCrop);
-    }
-    setImageToCrop(null);
-    setOriginalFile(null);
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setRotation(0);
-    setCroppedAreaPixels(null);
-  };
-
   useEffect(() => {
     return () => {
-      if (imageToCrop) {
-        URL.revokeObjectURL(imageToCrop);
-      }
+      revokeImageUrl(imageToCrop);
     };
-  }, [imageToCrop]);
+  }, [imageToCrop, revokeImageUrl]);
 
   return (
     <>
@@ -392,9 +350,9 @@ export function ImageUpload({ initialImageUrl, onUploadChange, actionId }: Image
                     </Typo.Body>
                     <Slider.Root
                       value={[zoom]}
-                      onValueChange={values => setZoom(values[0] ?? 1)}
-                      min={1}
-                      max={3}
+                      onValueChange={values => setZoom(values[0] ?? ZOOM_DEFAULT)}
+                      min={ZOOM_MIN}
+                      max={ZOOM_MAX}
                       step={0.1}
                       className="relative flex h-5 w-full touch-none select-none items-center"
                     >
@@ -413,9 +371,9 @@ export function ImageUpload({ initialImageUrl, onUploadChange, actionId }: Image
                     </Typo.Body>
                     <Slider.Root
                       value={[rotation]}
-                      onValueChange={values => setRotation(values[0] ?? 0)}
-                      min={0}
-                      max={360}
+                      onValueChange={values => setRotation(values[0] ?? ROTATION_DEFAULT)}
+                      min={ROTATION_MIN}
+                      max={ROTATION_MAX}
                       step={1}
                       className="relative flex h-5 w-full touch-none select-none items-center"
                     >
