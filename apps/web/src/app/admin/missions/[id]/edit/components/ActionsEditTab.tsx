@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/app/admin/components/shadcn-ui/alert-dialog";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import {
   Card,
@@ -10,6 +20,7 @@ import {
 } from "@/app/admin/components/shadcn-ui/card";
 import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
 import { useCreateAction } from "@/app/admin/hooks/use-create-action";
+import { useDeleteAction } from "@/app/admin/hooks/use-delete-action";
 import { useReadActionsDetail } from "@/app/admin/hooks/use-read-actions-detail";
 import { useReorderActions } from "@/app/admin/hooks/use-reorder-actions";
 import { useUpdateAction } from "@/app/admin/hooks/use-update-action";
@@ -166,6 +177,8 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingAction, setEditingAction] = useState<ActionDetail | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletingActionId, setDeletingActionId] = useState<string | null>(null);
 
   const reorderActions = useReorderActions({
     onSuccess: () => {
@@ -193,6 +206,17 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
     },
     onError: error => {
       toast.error(error.message || "액션 수정 중 오류가 발생했습니다.");
+    },
+  });
+
+  const deleteActionMutation = useDeleteAction({
+    onSuccess: () => {
+      toast.success("액션이 삭제되었습니다.");
+      setIsDeleteDialogOpen(false);
+      setDeletingActionId(null);
+    },
+    onError: error => {
+      toast.error(error.message || "액션 삭제 중 오류가 발생했습니다.");
     },
   });
 
@@ -246,7 +270,16 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
   };
 
   const handleDelete = (actionId: string) => {
-    alert(`액션 삭제: ${actionId}`);
+    setDeletingActionId(actionId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deletingActionId) return;
+    deleteActionMutation.mutate({
+      actionId: deletingActionId,
+      missionId,
+    });
   };
 
   const handleCreateAction = () => {
@@ -381,6 +414,27 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
         }}
         isLoading={updateAction.isPending}
       />
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>액션을 삭제하시겠습니까?</AlertDialogTitle>
+            <AlertDialogDescription>
+              이 작업은 되돌릴 수 없습니다. 액션과 관련된 모든 데이터가 삭제됩니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteActionMutation.isPending}>취소</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={deleteActionMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteActionMutation.isPending ? "삭제 중..." : "삭제"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
