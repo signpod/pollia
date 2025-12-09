@@ -1,12 +1,21 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
+import { updateMission } from "@/actions/mission/update";
 import { rewardService } from "@/server/services/reward/rewardService";
 import type { DeleteRewardResponse } from "@/types/dto";
 
-export async function deleteReward(rewardId: string): Promise<DeleteRewardResponse> {
+export async function deleteReward(
+  rewardId: string,
+  missionId?: string,
+): Promise<DeleteRewardResponse> {
   try {
     await requireAuth();
+
+    if (missionId) {
+      await updateMission(missionId, { rewardId: null });
+    }
+
     await rewardService.deleteReward(rewardId);
     return { message: "Reward가 삭제되었습니다." };
   } catch (error) {
