@@ -87,13 +87,32 @@ export function ImageUpload({ initialImageUrl, onUploadChange, actionId }: Image
     if (file) {
       setUploadedImage(null);
       setIsImageLoading(false);
-      try {
-        const blur = await generateBlurDataURL(file);
-        setBlurDataURL(blur);
-      } catch {
+
+      const fileName = file.name.toLowerCase();
+      const fileType = file.type.toLowerCase();
+
+      const isHeic =
+        fileType === "image/heic" ||
+        fileType === "image/heif" ||
+        fileName.endsWith(".heic") ||
+        fileName.endsWith(".heif");
+
+      if (!isHeic && file.type.startsWith("image/")) {
+        try {
+          const blur = await generateBlurDataURL(file);
+          setBlurDataURL(blur);
+        } catch {
+          setBlurDataURL(null);
+        }
+      } else {
         setBlurDataURL(null);
       }
+
       upload(file);
+
+      if (inputRef.current) {
+        inputRef.current.value = "";
+      }
     }
   };
 
@@ -103,7 +122,8 @@ export function ImageUpload({ initialImageUrl, onUploadChange, actionId }: Image
         <input
           ref={inputRef}
           type="file"
-          accept="image/*"
+          accept="image/*,.heic,.heif"
+          capture="environment"
           className="hidden"
           onChange={handleFileChange}
           disabled={isUploading}
@@ -115,12 +135,19 @@ export function ImageUpload({ initialImageUrl, onUploadChange, actionId }: Image
         )}
         {!isUploading && !uploadedImage && (
           <button
-            onClick={() => inputRef.current?.click()}
+            onClick={() => {
+              inputRef.current?.click();
+            }}
+            onTouchStart={e => {
+              e.preventDefault();
+              inputRef.current?.click();
+            }}
             type="button"
             className={cn(
               "absolute inset-0 flex flex-col items-center justify-center gap-3 border border-dashed bg-white border-zinc-300 rounded-sm",
-              "hover:bg-zinc-50",
+              "hover:bg-zinc-50 active:bg-zinc-100",
               "transition-colors duration-200 ease-in-out",
+              "touch-manipulation",
             )}
           >
             <PlusIcon className="size-6 text-info" />
@@ -144,8 +171,14 @@ export function ImageUpload({ initialImageUrl, onUploadChange, actionId }: Image
         {uploadedImage && !isImageLoading && (
           <ButtonV2
             variant="primary"
-            className="absolute top-2 right-2"
-            onClick={() => inputRef.current?.click()}
+            className="absolute top-2 right-2 touch-manipulation"
+            onClick={() => {
+              inputRef.current?.click();
+            }}
+            onTouchStart={e => {
+              e.preventDefault();
+              inputRef.current?.click();
+            }}
           >
             <Edit2 className="size-4" />
           </ButtonV2>

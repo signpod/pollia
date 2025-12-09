@@ -83,10 +83,34 @@ function validateUploadRequest(request: UploadImageRequest): string | null {
     return "파일 크기는 10MB를 초과할 수 없습니다.";
   }
 
-  const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
+  const allowedTypes = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+    "image/heic",
+    "image/heif",
+  ];
 
-  if (!allowedTypes.includes(request.fileType)) {
-    return "지원하지 않는 파일 형식입니다. (JPEG, PNG, WebP, GIF만 가능)";
+  const fileType = request.fileType?.toLowerCase() || "";
+  const fileName = request.fileName?.toLowerCase() || "";
+
+  const isImageByExtension =
+    fileName.endsWith(".jpg") ||
+    fileName.endsWith(".jpeg") ||
+    fileName.endsWith(".png") ||
+    fileName.endsWith(".webp") ||
+    fileName.endsWith(".gif") ||
+    fileName.endsWith(".heic") ||
+    fileName.endsWith(".heif");
+
+  if (!fileType && !isImageByExtension) {
+    return "지원하지 않는 파일 형식입니다. (JPEG, PNG, WebP, GIF, HEIC, HEIF만 가능)";
+  }
+
+  if (fileType && !allowedTypes.includes(fileType) && !isImageByExtension) {
+    return "지원하지 않는 파일 형식입니다. (JPEG, PNG, WebP, GIF, HEIC, HEIF만 가능)";
   }
 
   if (!request.fileName || request.fileName.trim().length === 0) {
