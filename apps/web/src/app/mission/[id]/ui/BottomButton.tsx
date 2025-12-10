@@ -5,6 +5,7 @@ import { Mission } from "@prisma/client";
 import KakaoIcon from "@public/svgs/kakao-icon.svg";
 import { ButtonV2, Tooltip, Typo } from "@repo/ui/components";
 import { isBefore } from "date-fns";
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 
 const TOOLTIP_TEXT = {
@@ -12,7 +13,7 @@ const TOOLTIP_TEXT = {
 };
 
 const BUTTON_TEXT = {
-  loggedIn: "참여하고 리워드 받기",
+  loggedIn: "지금 바로 참여하기",
   loggedOut: "카카오 로그인 후 참여하기",
   expired: "응답 기간이 마감되었어요",
   alreadyCompleted: "이미 응답한 설문이에요",
@@ -111,8 +112,17 @@ export function BottomButton({
         onClick={handleClick}
         disabled={isDisabled}
       >
-        <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
+        <Typo.ButtonText size="large" className="relative m-auto flex justify-center items-center">
           {BUTTON_TEXT.loggedIn}
+          <motion.div
+            className="absolute right-[-32px] top-0"
+            animate={{ x: [0, 10, 0] }}
+            transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+          >
+            <Typo.ButtonText size="large" className="w-full">
+              👉
+            </Typo.ButtonText>
+          </motion.div>
         </Typo.ButtonText>
       </ButtonV2>
     </div>
