@@ -5,6 +5,7 @@ import CheckCircle from "@public/svgs/check-circle-filled.svg";
 import CheckSquare from "@public/svgs/check-square-filled.svg";
 import { Typo } from "@repo/ui/components";
 import { cva } from "class-variance-authority";
+import { Square } from "lucide-react";
 import Image from "next/image";
 import { ComponentProps } from "react";
 
@@ -85,6 +86,7 @@ export function ActionOptionButton({
 
   const imageStyle = disabled ? "opacity-30" : "opacity-100";
   const CheckIcon = selectType === "checkbox" ? CheckSquare : CheckCircle;
+  const NoneCheckedIcon = selectType === "checkbox" ? Square : null;
 
   return (
     <button
@@ -115,7 +117,11 @@ export function ActionOptionButton({
       </div>
 
       <div className="flex h-full">
-        <CheckIcon className={cn("size-6", checkCircleColor)} />
+        {isSelected ? (
+          <CheckIcon className={cn("size-6", checkCircleColor)} />
+        ) : (
+          NoneCheckedIcon && <NoneCheckedIcon className={cn("size-6", checkCircleColor)} />
+        )}
       </div>
     </button>
   );

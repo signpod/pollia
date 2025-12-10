@@ -265,7 +265,6 @@ export function RatingScale({
           <Slider.Thumb
             className={cn(
               "relative block size-9 rounded-full bg-white bg shadow-[0_4px_20px_rgba(0,0,0,0.1)]",
-              "focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 focus-visible:outline-none",
             )}
             style={thumbPosition}
           />

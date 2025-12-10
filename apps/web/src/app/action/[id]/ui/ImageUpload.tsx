@@ -20,6 +20,7 @@ const ROTATION_MIN = 0;
 const ROTATION_MAX = 360;
 const ROTATION_DEFAULT = 0;
 const CROP_DEFAULT = { x: 0, y: 0 };
+const SKIP_CROP_FILE_EXTENSIONS = ["gif"] as const;
 
 function generateBlurDataURL(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -193,6 +194,7 @@ export function ImageUpload({ initialImageUrl, onUploadChange, actionId }: Image
 
       const fileName = file.name.toLowerCase();
       const fileType = file.type.toLowerCase();
+      const fileExtension = fileName.split(".").pop()?.toLowerCase();
 
       const isHeic =
         fileType === "image/heic" ||
@@ -200,7 +202,18 @@ export function ImageUpload({ initialImageUrl, onUploadChange, actionId }: Image
         fileName.endsWith(".heic") ||
         fileName.endsWith(".heif");
 
-      if (isHeic || !file.type.startsWith("image/")) {
+      const isGif = fileType === "image/gif" || fileName.endsWith(".gif");
+
+      const shouldSkipCrop =
+        isHeic ||
+        isGif ||
+        !file.type.startsWith("image/") ||
+        (fileExtension &&
+          SKIP_CROP_FILE_EXTENSIONS.includes(
+            fileExtension as (typeof SKIP_CROP_FILE_EXTENSIONS)[number],
+          ));
+
+      if (shouldSkipCrop) {
         upload(file);
         if (inputRef.current) {
           inputRef.current.value = "";
@@ -238,8 +251,8 @@ export function ImageUpload({ initialImageUrl, onUploadChange, actionId }: Image
             disabled={isUploading}
           />
           {isUploading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-              <Loader2Icon className="size-8 animate-spin text-gray-400" />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-30">
+              <Loader2Icon className="size-8 animate-spin text-white" />
             </div>
           )}
           {!isUploading && !uploadedImage && (

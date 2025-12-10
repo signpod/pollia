@@ -5,14 +5,18 @@ import * as React from "react";
 import { cn } from "../../lib";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap gap-[var(--space-lg)] rounded-[var(--radius-sm)] px-[var(--space-lg)] h-12 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0",
+  "inline-flex items-center justify-center whitespace-nowrap gap-[var(--space-lg)] rounded-[var(--radius-sm)] px-[var(--space-lg)] h-12 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
     variants: {
       variant: {
         primary:
           "bg-[var(--color-zinc-800)] text-white hover:bg-[var(--color-zinc-600)] active:bg-[var(--color-zinc-950)] disabled:bg-[var(--color-zinc-100)] disabled:text-[var(--color-zinc-300)]",
-        secondary:
-          "bg-white text-[var(--color-zinc-950)] ring-1 ring-[var(--color-zinc-200)] hover:ring-[var(--color-violet-500)] active:ring-[var(--color-violet-500)] active:bg-[var(--color-violet-50)] active:text-[var(--color-violet-500)] disabled:bg-[var(--color-zinc-100)] disabled:text-[var(--color-zinc-300)] disabled:ring-[var(--color-zinc-200)]",
+        secondary: cn(
+          "bg-white ring-1 ring-[var(--color-zinc-200)] text-[var(--color-zinc-950)]",
+          "hover:ring-[var(--color-violet-500)] hover:text-[var(--color-violet-500)]",
+          "active:ring-[var(--color-violet-500)] active:bg-[var(--color-violet-50)] active:text-[var(--color-violet-500)]",
+          "disabled:bg-[var(--color-zinc-100)] disabled:text-[var(--color-zinc-300)] disabled:ring-[var(--color-zinc-200)]",
+        ),
         ghost:
           "bg-white text-[var(--color-zinc-950)] active:bg-[var(--color-zinc-50)] disabled:bg-[var(--color-zinc-100)] disabled:text-[var(--color-zinc-300)]",
       },
@@ -61,7 +65,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     return (
       <Comp
-        className={cn(buttonVariants({ variant, fullWidth, loading, className }))}
+        className={cn(buttonVariants({ variant, fullWidth, loading }), className)}
         ref={ref}
         {...props}
       >
