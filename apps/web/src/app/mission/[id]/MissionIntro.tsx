@@ -20,13 +20,15 @@ import { BottomButton } from "./ui";
 export function MissionIntro({ initialError }: { initialError: AuthError | null }) {
   const params = useParams<{ id: string }>();
 
-  const { mission, firstActionId, isEnabledToResume, nextActionId, isCompleted } =
+  const { mission, firstActionId, isEnabledToResume, nextActionId, isCompleted, missionResponse } =
     useMissionIntroData(params.id);
 
   const { showResumeModal } = useSurveyResume({
     isEnabledToResume,
     nextActionId,
     firstActionId,
+    missionId: params.id,
+    responseId: missionResponse?.id ?? "",
   });
 
   const { isRewardVisible, setIsRewardVisible, rewardRef, scrollToReward } =
