@@ -8,6 +8,7 @@ import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { rewardQueryKeys } from "@/constants/queryKeys/rewardQueryKeys";
 import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";
+import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { ModalProvider } from "@repo/ui/components";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
@@ -21,39 +22,54 @@ export default async function MissionLayout({
   const { id } = await params;
   const queryClient = getQueryClient();
 
-  const [missionResult] = await Promise.all([
-    getMission(id).catch(error => {
-      if (error instanceof Error && (error as Error & { cause?: number }).cause === 404) {
-        notFound();
-      }
-      throw error;
-    }),
-    queryClient.prefetchQuery({
-      queryKey: userQueryKeys.currentUser(),
-      queryFn: () => getCurrentUser(),
-    }),
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const isAuthenticated = !!user;
+
+  const missionResult = await getMission(id).catch(error => {
+    if (error instanceof Error && (error as Error & { cause?: number }).cause === 404) {
+      notFound();
+    }
+    throw error;
+  });
+
+  const prefetchPromises = [
     queryClient.prefetchQuery({
       queryKey: actionQueryKeys.actionsIds({ missionId: id }),
       queryFn: () => getMissionActionIds(id),
     }),
-    queryClient.prefetchQuery({
-      queryKey: missionQueryKeys.missionResponseForMission(id),
-      queryFn: () => getMyResponseForMission(id),
-    }),
-  ]);
+  ];
+
+  if (isAuthenticated) {
+    prefetchPromises.push(
+      queryClient.prefetchQuery({
+        queryKey: userQueryKeys.currentUser(),
+        queryFn: () => getCurrentUser(),
+      }),
+      queryClient.prefetchQuery({
+        queryKey: missionQueryKeys.missionResponseForMission(id),
+        queryFn: () => getMyResponseForMission(id),
+      }),
+    );
+  }
+
+  await Promise.all(prefetchPromises);
 
   const rewardId = missionResult.data.rewardId;
-  const prefetchPromises = [];
+  const rewardPrefetchPromises = [];
   if (rewardId) {
-    prefetchPromises.push(
+    rewardPrefetchPromises.push(
       queryClient.prefetchQuery({
         queryKey: rewardQueryKeys.reward(rewardId),
         queryFn: () => getReward(rewardId),
       }),
     );
   }
-  if (prefetchPromises.length > 0) {
-    await Promise.all(prefetchPromises);
+  if (rewardPrefetchPromises.length > 0) {
+    await Promise.all(rewardPrefetchPromises);
   }
 
   queryClient.setQueryData(missionQueryKeys.mission(id), missionResult);
