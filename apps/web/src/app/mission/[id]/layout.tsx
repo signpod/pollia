@@ -8,7 +8,7 @@ import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { rewardQueryKeys } from "@/constants/queryKeys/rewardQueryKeys";
 import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";
-import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
+import { checkAuthStatus } from "@/lib/auth";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { ModalProvider } from "@repo/ui/components";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
@@ -22,12 +22,7 @@ export default async function MissionLayout({
   const { id } = await params;
   const queryClient = getQueryClient();
 
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const isAuthenticated = !!user;
+  const { isAuthenticated } = await checkAuthStatus();
 
   const missionResult = await getMission(id).catch(error => {
     if (error instanceof Error && (error as Error & { cause?: number }).cause === 404) {

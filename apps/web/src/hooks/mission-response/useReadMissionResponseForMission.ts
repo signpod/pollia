@@ -1,11 +1,10 @@
 import { getMyResponseForMission } from "@/actions/mission-response";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
-import { useCurrentUser } from "@/hooks/user";
+import { useAuth } from "@/hooks/user";
 import { useQuery } from "@tanstack/react-query";
 
 export function useReadMissionResponseForMission({ missionId }: { missionId: string }) {
-  const { data: currentUser } = useCurrentUser();
-  const isLoggedIn = !!currentUser?.id;
+  const { isLoggedIn } = useAuth();
 
   return useQuery({
     queryKey: missionQueryKeys.missionResponseForMission(missionId),
