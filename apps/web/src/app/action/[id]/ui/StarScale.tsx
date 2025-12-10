@@ -1,5 +1,5 @@
 import { ActionStepContentProps } from "@/constants/action";
-import { useMissionScaleValue } from "@/hooks/action";
+import { useMissionRatingValue } from "@/hooks/action";
 import { StarScale } from "@repo/ui/components";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 import { getScaleClassName, scaleValueToStarRating, starRatingToScaleValue } from "../utils";
@@ -17,7 +17,7 @@ export function MissionStarScale({
   onAnswerChange,
   missionResponse,
 }: ActionStepContentProps) {
-  const { isScaleValueChanged, scaleValue, handleScaleValueChange } = useMissionScaleValue({
+  const { isScaleValueChanged, scaleValue, handleScaleValueChange } = useMissionRatingValue({
     actionId: actionData.id,
     missionResponse,
     updateCanGoNext,

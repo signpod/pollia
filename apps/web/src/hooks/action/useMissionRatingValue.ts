@@ -2,7 +2,7 @@ import { ActionType } from "@/types/domain/action";
 import type { ActionAnswerItem, GetMissionResponseResponse } from "@/types/dto";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-interface UseMissionScaleValueOptions {
+interface UseMissionRatingValueOptions {
   actionId: string;
   missionResponse?: GetMissionResponseResponse;
   updateCanGoNext?: (canGoNext: boolean) => void;
@@ -10,13 +10,13 @@ interface UseMissionScaleValueOptions {
   defaultValue: number;
 }
 
-export function useMissionScaleValue({
+export function useMissionRatingValue({
   actionId,
   missionResponse,
   updateCanGoNext,
   onAnswerChange,
   defaultValue,
-}: UseMissionScaleValueOptions) {
+}: UseMissionRatingValueOptions) {
   const initialScaleValue = useMemo(() => {
     if (!missionResponse?.data?.answers || missionResponse.data.answers.length === 0) {
       return defaultValue;
@@ -63,7 +63,7 @@ export function useMissionScaleValue({
 
     onAnswerChange?.({
       actionId,
-      type: ActionType.SCALE,
+      type: ActionType.RATING,
       scaleValue: value,
     });
   };
