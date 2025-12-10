@@ -57,7 +57,7 @@ function SurveyMultipleChoiceContent({
     actionData.maxSelections !== null && selectedIds.size >= actionData.maxSelections;
 
   const handleClick = (optionId: string) => {
-    if (isDisabled && !selectedIds.has(optionId)) {
+    if (isDisabled && !selectedIds.has(optionId) && actionData.maxSelections !== null) {
       toast.default(`태그는 최대 ${actionData.maxSelections}개까지 선택할 수 있어요.`);
       return;
     }
