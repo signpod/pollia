@@ -22,7 +22,7 @@ export function MissionCompletion() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { data: survey } = useReadMission(params.id);
-  const { title, estimatedMinutes, deadline, imageUrl, target } = survey?.data ?? {};
+  const { title, estimatedMinutes, deadline, imageUrl, target, brandLogoUrl } = survey?.data ?? {};
 
   const refs = useAnimationRefs();
   const [showContent, setShowContent] = useState(false);
@@ -91,6 +91,7 @@ export function MissionCompletion() {
               deadline={deadline}
               target={target}
               imageUrl={imageUrl}
+              brandLogoUrl={brandLogoUrl}
             />
           )}
         </AnimatedBox>
