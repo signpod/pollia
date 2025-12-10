@@ -11,8 +11,12 @@ const buttonVariants = cva(
       variant: {
         primary:
           "bg-[var(--color-zinc-800)] text-white hover:bg-[var(--color-zinc-600)] active:bg-[var(--color-zinc-950)] disabled:bg-[var(--color-zinc-100)] disabled:text-[var(--color-zinc-300)]",
-        secondary:
-          "bg-white  ring-1 ring-[var(--color-zinc-200)] hover:ring-[var(--color-violet-500)] active:ring-[var(--color-violet-500)] active:bg-[var(--color-violet-50)] active:text-[var(--color-violet-500)] disabled:bg-[var(--color-zinc-100)] disabled:text-[var(--color-zinc-300)] disabled:ring-[var(--color-zinc-200)] hover:text-[var(--color-violet-500)] text-[var(--color-zinc-950)]",
+        secondary: cn(
+          "bg-white ring-1 ring-[var(--color-zinc-200)] text-[var(--color-zinc-950)]",
+          "hover:ring-[var(--color-violet-500)] hover:text-[var(--color-violet-500)]",
+          "active:ring-[var(--color-violet-500)] active:bg-[var(--color-violet-50)] active:text-[var(--color-violet-500)]",
+          "disabled:bg-[var(--color-zinc-100)] disabled:text-[var(--color-zinc-300)] disabled:ring-[var(--color-zinc-200)]",
+        ),
         ghost:
           "bg-white text-[var(--color-zinc-950)] active:bg-[var(--color-zinc-50)] disabled:bg-[var(--color-zinc-100)] disabled:text-[var(--color-zinc-300)]",
       },
