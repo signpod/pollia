@@ -200,7 +200,9 @@ export function ImageUpload({ initialImageUrl, onUploadChange, actionId }: Image
         fileName.endsWith(".heic") ||
         fileName.endsWith(".heif");
 
-      if (isHeic || !file.type.startsWith("image/")) {
+      const isGif = fileType === "image/gif" || fileName.endsWith(".gif");
+
+      if (isHeic || isGif || !file.type.startsWith("image/")) {
         upload(file);
         if (inputRef.current) {
           inputRef.current.value = "";
@@ -238,8 +240,8 @@ export function ImageUpload({ initialImageUrl, onUploadChange, actionId }: Image
             disabled={isUploading}
           />
           {isUploading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-              <Loader2Icon className="size-8 animate-spin text-gray-400" />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-30">
+              <Loader2Icon className="size-8 animate-spin text-white" />
             </div>
           )}
           {!isUploading && !uploadedImage && (
