@@ -89,6 +89,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
             deadline={deadline}
             showResumeModal={showResumeModal}
             isCompleted={isCompleted}
+            hasReward={!!reward}
           />
         </FixedBottomLayout.Content>
       </main>

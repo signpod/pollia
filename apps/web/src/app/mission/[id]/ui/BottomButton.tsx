@@ -5,15 +5,17 @@ import { Mission } from "@prisma/client";
 import KakaoIcon from "@public/svgs/kakao-icon.svg";
 import { ButtonV2, Tooltip, Typo } from "@repo/ui/components";
 import { isBefore } from "date-fns";
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 
 const TOOLTIP_TEXT = {
-  loggedOut: "로그인 후 리워드를 받아보세요 🎁",
+  loggedOut: "리워드를 받으려면 로그인이 필요해요 🎁",
+  loggedOutWithoutModal: "참여하려면 로그인이 필요해요 🍀",
 };
 
 const BUTTON_TEXT = {
-  loggedIn: "참여하고 리워드 받기",
-  loggedOut: "카카오 로그인 후 참여하기",
+  loggedIn: "지금 바로 참여하기",
+  loggedOut: "카카오로 로그인하기",
   expired: "응답 기간이 마감되었어요",
   alreadyCompleted: "이미 응답한 설문이에요",
 };
@@ -25,6 +27,7 @@ interface BottomButtonProps {
   deadline?: Mission["deadline"];
   showResumeModal?: () => boolean;
   isCompleted: boolean;
+  hasReward: boolean;
 }
 
 export function BottomButton({
@@ -32,6 +35,7 @@ export function BottomButton({
   firstActionId,
   initialError,
   deadline,
+  hasReward = false,
   showResumeModal,
   isCompleted,
 }: BottomButtonProps) {
@@ -88,11 +92,21 @@ export function BottomButton({
     return (
       <div data-tooltip-id="tooltip-id" className="w-full">
         <Tooltip id="tooltip-id" placement="top">
-          <Typo.Body size="medium">{TOOLTIP_TEXT.loggedOut}</Typo.Body>
+          <Typo.Body size="medium">
+            {hasReward ? TOOLTIP_TEXT.loggedOut : TOOLTIP_TEXT.loggedOutWithoutModal}
+          </Typo.Body>
         </Tooltip>
         <div className="py-3 px-4">
-          <ButtonV2 variant="primary" size="large" className="w-full" onClick={handleClick}>
-            <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
+          <ButtonV2
+            variant="primary"
+            size="large"
+            className="w-full bg-kakao hover:bg-kakao active:bg-kakao focus:bg-kakao"
+            onClick={handleClick}
+          >
+            <Typo.ButtonText
+              size="large"
+              className="flex w-full items-center justify-center gap-3 text-default"
+            >
               <KakaoIcon className="size-6" />
               {BUTTON_TEXT.loggedOut}
             </Typo.ButtonText>
@@ -111,8 +125,17 @@ export function BottomButton({
         onClick={handleClick}
         disabled={isDisabled}
       >
-        <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
+        <Typo.ButtonText size="large" className="relative m-auto flex justify-center items-center">
           {BUTTON_TEXT.loggedIn}
+          <motion.div
+            className="absolute right-[-32px] top-0"
+            animate={{ x: [0, 10, 0] }}
+            transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+          >
+            <Typo.ButtonText size="large" className="w-full">
+              👉
+            </Typo.ButtonText>
+          </motion.div>
         </Typo.ButtonText>
       </ButtonV2>
     </div>

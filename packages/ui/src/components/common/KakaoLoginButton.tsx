@@ -1,10 +1,14 @@
+import { cn } from "../../lib";
 import { Button, ButtonProps } from "./Button";
 import { Typo } from "./Typo";
 
 export function KakaoLoginButton(props: ButtonProps) {
   return (
     <Button
-      className="bg-kakao hover:bg-kakao active:bg-kakao focus:bg-kakao text-zinc-900"
+      className={cn(
+        "bg-kakao hover:bg-kakao active:bg-kakao focus:bg-kakao text-zinc-900",
+        props.className,
+      )}
       {...props}
       leftIcon={
         <svg
