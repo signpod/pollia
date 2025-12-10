@@ -58,7 +58,7 @@ function SurveyMultipleChoiceContent({
 
   const handleClick = (optionId: string) => {
     if (isDisabled && !selectedIds.has(optionId)) {
-      toast.warning("최대 선택 개수를 초과했어요.");
+      toast.default(`태그는 최대 ${actionData.maxSelections}개까지 선택할 수 있어요.`);
       return;
     }
     toggleSelectedId(optionId);
