@@ -135,6 +135,7 @@ export class ActionAnswerService {
       if (!answer) continue;
 
       if (answer.type !== action.type) {
+        console.log(answer.type, action.type);
         const error = new Error("답변 타입이 액션 타입과 일치하지 않습니다.");
         error.cause = 400;
         throw error;
@@ -163,6 +164,12 @@ export class ActionAnswerService {
           });
         }
       } else if (answer.type === ActionType.SCALE && answer.scaleValue !== undefined) {
+        answersToCreate.push({
+          responseId: parseResult.data.responseId,
+          actionId,
+          scaleAnswer: answer.scaleValue,
+        });
+      } else if (answer.type === ActionType.RATING && answer.scaleValue !== undefined) {
         answersToCreate.push({
           responseId: parseResult.data.responseId,
           actionId,
@@ -268,6 +275,11 @@ export class ActionAnswerService {
     }
     if (actionType === ActionType.SCALE && data.scaleAnswer === undefined) {
       const error = new Error("척도 값을 선택해주세요.");
+      error.cause = 400;
+      throw error;
+    }
+    if (actionType === ActionType.RATING && data.scaleAnswer === undefined) {
+      const error = new Error("별점 값을 선택해주세요.");
       error.cause = 400;
       throw error;
     }

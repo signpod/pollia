@@ -21,7 +21,7 @@ const imageUrlSchema = z
 const scaleAnswerSchema = z
   .number("별점 값은 숫자여야 합니다.")
   .min(0, "별점 값은 0 이상이어야 합니다.")
-  .max(5, "별점 값은 5 이하여야 합니다.");
+  .max(10, "별점 값은 10 이하여야 합니다.");
 
 const actionTypeSchema = z.enum(ActionType);
 
@@ -58,6 +58,15 @@ export const submitAnswerItemSchema = z
       return true;
     },
     { message: "척도 값을 선택해주세요." },
+  )
+  .refine(
+    data => {
+      if (data.type === ActionType.RATING) {
+        return data.scaleValue !== undefined;
+      }
+      return true;
+    },
+    { message: "별점 값을 선택해주세요." },
   )
   .refine(
     data => {
