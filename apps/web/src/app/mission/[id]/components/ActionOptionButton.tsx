@@ -86,7 +86,7 @@ export function ActionOptionButton({
 
   const imageStyle = disabled ? "opacity-30" : "opacity-100";
   const CheckIcon = selectType === "checkbox" ? CheckSquare : CheckCircle;
-  const NoneCheckedIcon = selectType === "checkbox" ? Square : "div";
+  const NoneCheckedIcon = selectType === "checkbox" ? Square : null;
 
   return (
     <button
@@ -120,7 +120,7 @@ export function ActionOptionButton({
         {isSelected ? (
           <CheckIcon className={cn("size-6", checkCircleColor)} />
         ) : (
-          <NoneCheckedIcon className={cn("size-6", checkCircleColor)} />
+          NoneCheckedIcon && <NoneCheckedIcon className={cn("size-6", checkCircleColor)} />
         )}
       </div>
     </button>
