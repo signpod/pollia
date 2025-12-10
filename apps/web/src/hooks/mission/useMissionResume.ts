@@ -21,7 +21,8 @@ export function useSurveyResume({
 }: UseMissionResumeParams) {
   const { showModal } = useModal();
   const router = useRouter();
-  const { mutate: resetMissionResponse } = useResetMissionResponse({ missionId });
+  const { mutateAsync: resetMissionResponse, isPending: isResetMissionResponsePending } =
+    useResetMissionResponse({ missionId });
 
   const showResumeModal = useCallback(() => {
     if (isEnabledToResume && nextActionId && firstActionId) {
@@ -34,10 +35,11 @@ export function useSurveyResume({
         onConfirm: () => {
           router.push(ROUTES.ACTION(nextActionId));
         },
-        onCancel: () => {
-          resetMissionResponse(responseId);
+        onCancel: async () => {
+          await resetMissionResponse(responseId);
           router.push(ROUTES.ACTION(firstActionId));
         },
+        cancelButtonIsLoading: isResetMissionResponsePending,
       });
       return true;
     }
