@@ -40,14 +40,22 @@ export default async function MissionLayout({
 
   if (isAuthenticated) {
     prefetchPromises.push(
-      queryClient.prefetchQuery({
-        queryKey: userQueryKeys.currentUser(),
-        queryFn: () => getCurrentUser(),
-      }),
-      queryClient.prefetchQuery({
-        queryKey: missionQueryKeys.missionResponseForMission(id),
-        queryFn: () => getMyResponseForMission(id),
-      }),
+      queryClient
+        .prefetchQuery({
+          queryKey: userQueryKeys.currentUser(),
+          queryFn: () => getCurrentUser(),
+        })
+        .catch(() => {
+          // 로그인하지 않은 경우 에러 무시
+        }),
+      queryClient
+        .prefetchQuery({
+          queryKey: missionQueryKeys.missionResponseForMission(id),
+          queryFn: () => getMyResponseForMission(id),
+        })
+        .catch(() => {
+          // 로그인하지 않은 경우 에러 무시
+        }),
     );
   }
 
