@@ -15,7 +15,7 @@ export function Chip({ label, isSelected, className, disabled, ...props }: ChipP
         "transition-colors duration-200 ease-in-out",
         "hover:bg-zinc-50 active:ring-point",
         isSelected
-          ? "bg-light ring-point"
+          ? "bg-violet-50 ring-point"
           : disabled
             ? "bg-zinc-50 ring-default"
             : "bg-white ring-default",
