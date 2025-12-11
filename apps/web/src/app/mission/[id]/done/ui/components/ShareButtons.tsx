@@ -8,7 +8,7 @@ import KakaoIcon from "@public/svgs/kakao-icon.svg";
 import { Typo } from "@repo/ui/components";
 import { Share2 } from "lucide-react";
 import { useParams } from "next/navigation";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 
 export const ShareButtons = React.forwardRef<HTMLDivElement>((_props, ref) => {
   const params = useParams<{ id: string }>();
@@ -19,8 +19,13 @@ export const ShareButtons = React.forwardRef<HTMLDivElement>((_props, ref) => {
   }, [params.id]);
 
   const { handleKakaoShare } = useKakaoShare({ shareUrl });
+  const [isSharing, setIsSharing] = useState(false);
 
   const handleShare = useCallback(async () => {
+    if (isSharing) {
+      return;
+    }
+
     if (!navigator.share) {
       try {
         await navigator.clipboard.writeText(shareUrl);
@@ -34,6 +39,7 @@ export const ShareButtons = React.forwardRef<HTMLDivElement>((_props, ref) => {
       return;
     }
 
+    setIsSharing(true);
     try {
       await navigator.share({
         title: SHARE_MESSAGES.kakao.title,
@@ -45,8 +51,10 @@ export const ShareButtons = React.forwardRef<HTMLDivElement>((_props, ref) => {
         return;
       }
       console.error("공유 에러:", error);
+    } finally {
+      setIsSharing(false);
     }
-  }, [shareUrl]);
+  }, [shareUrl, isSharing]);
 
   return (
     <div
