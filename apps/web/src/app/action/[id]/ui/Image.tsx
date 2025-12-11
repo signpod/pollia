@@ -18,8 +18,10 @@ export function ActionImage({
   updateCanGoNext,
   onAnswerChange,
   missionResponse,
+  isLoading,
 }: ActionStepContentProps) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+
   const initialImageUrl = useMemo(() => {
     if (!missionResponse?.data?.answers || missionResponse.data.answers.length === 0) {
       return null;
@@ -90,6 +92,7 @@ export function ActionImage({
       onPrevious={onPrevious}
       onNext={onNext}
       nextButtonText={nextButtonText}
+      isLoading={isLoading}
     >
       <ImageUpload
         initialImageUrl={initialImageUrl ?? undefined}

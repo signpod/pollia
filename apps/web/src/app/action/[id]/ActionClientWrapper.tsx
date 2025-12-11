@@ -118,7 +118,7 @@ function ActionRenderer({
     },
   });
 
-  const { mutate: submitAnswer, isPending: isSubmittingAnswer } = useSubmitQuestionAnswer({
+  const { mutateAsync: submitAnswer, isPending: isSubmittingAnswer } = useSubmitQuestionAnswer({
     onSuccess: () => {
       goNext();
     },
@@ -128,15 +128,16 @@ function ActionRenderer({
     missionId,
   });
 
-  const { mutateAsync: completeSurveyAsync } = useSubmitSurveyAnswers({
-    onSuccess: () => {
-      removeSessionStorage(toastStorageKey);
-      router.push(ROUTES.MISSION_DONE(missionId));
-    },
-    onError: () => {
-      toast.warning(SURVEY_TOAST_MESSAGE.error.message, { id: SURVEY_TOAST_MESSAGE.error.id });
-    },
-  });
+  const { mutateAsync: completeSurveyAsync, isPending: isCompletingSurvey } =
+    useSubmitSurveyAnswers({
+      onSuccess: () => {
+        removeSessionStorage(toastStorageKey);
+        router.push(ROUTES.MISSION_DONE(missionId));
+      },
+      onError: () => {
+        toast.warning(SURVEY_TOAST_MESSAGE.error.message, { id: SURVEY_TOAST_MESSAGE.error.id });
+      },
+    });
 
   const {
     currentStep,
@@ -271,7 +272,7 @@ function ActionRenderer({
     }
   }, [missionId, startResponse]);
 
-  const handleNext = useCallback(() => {
+  const handleNext = useCallback(async () => {
     if (!responseId || !currentAnswer) return;
 
     const validationResult = submitAnswerItemSchema.safeParse(currentAnswer);
@@ -294,7 +295,7 @@ function ActionRenderer({
         },
       });
     } else {
-      submitAnswer({
+      await submitAnswer({
         responseId,
         answer: currentAnswer,
       });
@@ -316,7 +317,8 @@ function ActionRenderer({
       currentOrder={actionData.order}
       totalActionCount={totalActionCount}
       isFirstAction={isFirstStep}
-      isNextDisabled={!canGoNext || isSubmittingAnswer}
+      isNextDisabled={!canGoNext || isSubmittingAnswer || isCompletingSurvey}
+      isLoading={isSubmittingAnswer || isCompletingSurvey}
       onPrevious={handlePrevious}
       onNext={handleNext}
       nextButtonText={isLastStep ? "제출하기" : "다음"}

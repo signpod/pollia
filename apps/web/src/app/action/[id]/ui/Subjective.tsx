@@ -21,6 +21,7 @@ export function Subjective({
   updateCanGoNext,
   onAnswerChange,
   missionResponse,
+  isLoading,
 }: ActionStepContentProps) {
   const {
     subjectiveValue,
@@ -46,6 +47,7 @@ export function Subjective({
       onPrevious={onPrevious}
       onNext={onNext}
       nextButtonText={nextButtonText}
+      isLoading={isLoading}
     >
       <Textarea
         placeholder={PLACEHOLDER}

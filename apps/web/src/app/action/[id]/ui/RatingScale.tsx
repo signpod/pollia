@@ -16,6 +16,7 @@ export function MissionRatingScale({
   updateCanGoNext,
   onAnswerChange,
   missionResponse,
+  isLoading,
 }: ActionStepContentProps) {
   const { isScaleValueChanged, scaleValue, handleScaleValueChange } = useMissionScaleValue({
     actionId: actionData.id,
@@ -37,6 +38,7 @@ export function MissionRatingScale({
       onPrevious={onPrevious}
       onNext={onNext}
       nextButtonText={nextButtonText}
+      isLoading={isLoading}
     >
       <RatingScale
         options={actionData.options.map(option => ({
