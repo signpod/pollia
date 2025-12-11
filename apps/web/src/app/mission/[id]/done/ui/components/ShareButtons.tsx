@@ -20,15 +20,34 @@ export const ShareButtons = React.forwardRef<HTMLDivElement>((_props, ref) => {
 
   const { handleKakaoShare } = useKakaoShare({ shareUrl });
 
-  const handleCopyLink = useCallback(async () => {
+  const handleShare = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(shareUrl);
-      toast.success(SHARE_MESSAGES.clipboard.success);
+      if (navigator.share) {
+        await navigator.share({
+          title: "설문에 참여해주세요",
+          text: "설문에 참여하고 의견을 공유해보세요!",
+          url: shareUrl,
+        });
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success(SHARE_MESSAGES.clipboard.success);
+      }
     } catch (error) {
-      console.error("클립보드 복사 에러:", error);
-      toast.warning(SHARE_MESSAGES.clipboard.error, {
-        duration: 3000,
-      });
+      if (error instanceof Error && error.name === "AbortError") {
+        return;
+      }
+      console.error("❌ 공유 에러:", error);
+      if (!navigator.share) {
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          toast.success(SHARE_MESSAGES.clipboard.success);
+        } catch (clipboardError) {
+          console.error("클립보드 복사 에러:", clipboardError);
+          toast.warning(SHARE_MESSAGES.clipboard.error, {
+            duration: 3000,
+          });
+        }
+      }
     }
   }, [shareUrl]);
 
@@ -45,8 +64,8 @@ export const ShareButtons = React.forwardRef<HTMLDivElement>((_props, ref) => {
         <Typo.Body className="text-sub">카카오톡</Typo.Body>
       </button>
 
-      <button type="button" className="flex flex-col gap-2" onClick={handleCopyLink}>
-        <div className="bg-white border border-default size-12 p-3 rounded-sm">
+      <button type="button" className="flex flex-col gap-2" onClick={handleShare}>
+        <div className="bg-white border border-default size-12 p-3 rounded-sm flex items-center justify-center">
           <Share2 />
         </div>
         <Typo.Body className="text-sub">공유하기</Typo.Body>
