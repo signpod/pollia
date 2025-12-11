@@ -1,4 +1,3 @@
-import PolliaLogo from "@public/images/pollia-logo.png";
 import { Typo } from "@repo/ui/components";
 import Image from "next/image";
 import type { AnimationRefs } from "../animations/useAnimationRefs";
@@ -11,6 +10,7 @@ interface SurveyCardContentProps {
   deadline?: string | Date | null;
   target?: string | null;
   imageUrl?: string | null;
+  brandLogoUrl?: string | null;
 }
 
 export function SurveyCardContent({
@@ -20,12 +20,21 @@ export function SurveyCardContent({
   deadline,
   target,
   imageUrl,
+  brandLogoUrl,
 }: SurveyCardContentProps) {
   return (
     <div ref={refs.surveyContent} className="flex flex-col gap-2 w-full relative z-20">
       {/* 로고 */}
-      <div ref={refs.logo} style={{ opacity: 0 }}>
-        <Image src={PolliaLogo} alt="Pollia Logo" width={52} height={16} />
+      <div ref={refs.logo} style={{ opacity: 0 }} className="h-4 w-auto">
+        {brandLogoUrl && (
+          <Image
+            src={brandLogoUrl}
+            alt="Brand Logo"
+            height={16}
+            width={16}
+            className="object-contain h-full"
+          />
+        )}
       </div>
 
       {/* 제목 */}

@@ -9,6 +9,7 @@ export const ADMIN_ROUTES = {
   ADMIN_MISSION: (id: string) => `${MISSIONS_BASE}/${id}`,
   ADMIN_MISSION_CREATE: `${MISSIONS_BASE}/create`,
   ADMIN_MISSION_EDIT: (id: string) => `${MISSIONS_BASE}/${id}/edit`,
+  ADMIN_MISSION_TRACKING: (id: string) => `${MISSIONS_BASE}/${id}/tracking`,
   ADMIN_SETTINGS: `${ADMIN_BASE}/settings`,
 } as const;
 

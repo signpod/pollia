@@ -13,11 +13,15 @@ const textAnswerSchema = z
   .max(100, "주관식 답변은 100자를 초과할 수 없습니다.")
   .trim();
 
+const imageUrlSchema = z
+  .string()
+  .min(1, "이미지 URL은 필수입니다.")
+  .url("유효한 이미지 URL이 아닙니다.");
+
 const scaleAnswerSchema = z
-  .number()
-  .int("척도 값은 정수여야 합니다.")
-  .min(1, "척도 값은 1~5 사이여야 합니다.")
-  .max(5, "척도 값은 1~5 사이여야 합니다.");
+  .number("별점 값은 숫자여야 합니다.")
+  .min(0, "별점 값은 0 이상이어야 합니다.")
+  .max(10, "별점 값은 10 이하여야 합니다.");
 
 const actionTypeSchema = z.enum(ActionType);
 
@@ -35,7 +39,7 @@ export const submitAnswerItemSchema = z
     type: actionTypeSchema,
     selectedOptionIds: z.array(optionIdSchema).optional(),
     scaleValue: scaleAnswerSchema.optional(),
-    textResponse: textAnswerSchema.optional(),
+    textResponse: z.union([textAnswerSchema, imageUrlSchema]).optional(),
   })
   .refine(
     data => {
@@ -57,12 +61,30 @@ export const submitAnswerItemSchema = z
   )
   .refine(
     data => {
+      if (data.type === ActionType.RATING) {
+        return data.scaleValue !== undefined;
+      }
+      return true;
+    },
+    { message: "별점 값을 선택해주세요." },
+  )
+  .refine(
+    data => {
       if (data.type === ActionType.SUBJECTIVE) {
         return data.textResponse && data.textResponse.trim().length > 0;
       }
       return true;
     },
     { message: "주관식 답변은 필수입니다." },
+  )
+  .refine(
+    data => {
+      if (data.type === ActionType.IMAGE) {
+        return data.textResponse && data.textResponse.length > 0;
+      }
+      return true;
+    },
+    { message: "이미지는 필수입니다." },
   );
 
 export const submitAnswersSchema = z.object({

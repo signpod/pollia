@@ -22,6 +22,7 @@ export interface ActionStepContentProps {
   updateCanGoNext?: (canGoNext: boolean) => void;
   onAnswerChange?: (answer: ActionAnswerItem) => void;
   missionResponse?: GetMissionResponseResponse;
+  isLoading?: boolean;
 }
 
 interface CreateActionStepsProps {
@@ -30,6 +31,9 @@ interface CreateActionStepsProps {
     MultipleChoice: React.ComponentType<ActionStepContentProps>;
     Scale: React.ComponentType<ActionStepContentProps>;
     Subjective: React.ComponentType<ActionStepContentProps>;
+    Rating: React.ComponentType<ActionStepContentProps>;
+    Image: React.ComponentType<ActionStepContentProps>;
+    Tag: React.ComponentType<ActionStepContentProps>;
   };
 }
 
@@ -43,7 +47,7 @@ export const createActionSteps = ({
     return {
       id: action.id,
       title: action.title,
-      canGoNext: false, // 기본값, 각 컴포넌트에서 동적으로 업데이트
+      canGoNext: false,
       canGoBack: true,
       actionData: action,
       content: ContentComponent,
@@ -60,8 +64,14 @@ function getContentComponent(
       return stepComponents.MultipleChoice;
     case ActionType.SCALE:
       return stepComponents.Scale;
+    case ActionType.RATING:
+      return stepComponents.Rating;
     case ActionType.SUBJECTIVE:
       return stepComponents.Subjective;
+    case ActionType.IMAGE:
+      return stepComponents.Image;
+    case ActionType.TAG:
+      return stepComponents.Tag;
     default:
       throw new Error(`Unsupported question type: ${type}`);
   }

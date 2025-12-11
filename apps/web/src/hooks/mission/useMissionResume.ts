@@ -2,20 +2,27 @@ import { ROUTES } from "@/constants/routes";
 import { useModal } from "@repo/ui/components";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
+import { useResetMissionResponse } from "../mission-response/useResetMissionResponse";
 
 interface UseMissionResumeParams {
   isEnabledToResume: boolean;
   nextActionId?: string;
   firstActionId?: string;
+  missionId: string;
+  responseId: string;
 }
 
 export function useSurveyResume({
   isEnabledToResume,
   nextActionId,
   firstActionId,
+  missionId,
+  responseId,
 }: UseMissionResumeParams) {
   const { showModal } = useModal();
   const router = useRouter();
+  const { mutateAsync: resetMissionResponse, isPending: isResetMissionResponsePending } =
+    useResetMissionResponse({ missionId });
 
   const showResumeModal = useCallback(() => {
     if (isEnabledToResume && nextActionId && firstActionId) {
@@ -28,14 +35,24 @@ export function useSurveyResume({
         onConfirm: () => {
           router.push(ROUTES.ACTION(nextActionId));
         },
-        onCancel: () => {
+        onCancel: async () => {
+          await resetMissionResponse(responseId);
           router.push(ROUTES.ACTION(firstActionId));
         },
+        cancelButtonIsLoading: isResetMissionResponsePending,
       });
       return true;
     }
     return false;
-  }, [isEnabledToResume, showModal, nextActionId, firstActionId, router]);
+  }, [
+    isEnabledToResume,
+    showModal,
+    nextActionId,
+    firstActionId,
+    router,
+    resetMissionResponse,
+    responseId,
+  ]);
 
   return { showResumeModal };
 }

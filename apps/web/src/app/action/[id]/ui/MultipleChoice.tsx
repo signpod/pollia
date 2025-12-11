@@ -15,6 +15,7 @@ export function MultipleChoice({
   updateCanGoNext,
   onAnswerChange,
   missionResponse,
+  isLoading,
 }: ActionStepContentProps) {
   return (
     <MultipleChoiceProvider
@@ -33,6 +34,7 @@ export function MultipleChoice({
         onPrevious={onPrevious}
         onNext={onNext}
         nextButtonText={nextButtonText}
+        isLoading={isLoading}
       />
     </MultipleChoiceProvider>
   );
@@ -47,6 +49,7 @@ function SurveyMultipleChoiceContent({
   onNext,
   nextButtonText,
   isNextDisabled: isNextDisabledProp,
+  isLoading,
 }: Omit<ActionStepContentProps, "updateCanGoNext" | "onAnswerChange">) {
   const isMultipleChoice = !!actionData.maxSelections && actionData.maxSelections > 1;
   const { selectedIds, toggleSelectedId, canGoNext } = useSurveyMultipleChoice();
@@ -63,6 +66,7 @@ function SurveyMultipleChoiceContent({
       onPrevious={onPrevious}
       onNext={onNext}
       nextButtonText={nextButtonText}
+      isLoading={isLoading}
     >
       <div className="flex flex-col gap-2 w-full">
         {actionData.options?.map(option => (

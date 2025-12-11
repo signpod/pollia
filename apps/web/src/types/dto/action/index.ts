@@ -1,7 +1,7 @@
 import type { ActionType } from "@/types/domain/action";
 
 // ============================================================================
-// Question Creation DTOs
+// Action Creation DTOs
 // ============================================================================
 
 // Multiple Choice Question
@@ -10,6 +10,7 @@ export interface CreateMultipleChoiceActionRequest {
   title: string;
   description?: string;
   imageUrl?: string;
+  imageFileUploadId?: string;
   maxSelections: number;
   order: number;
   options: {
@@ -38,6 +39,7 @@ export interface CreateScaleActionRequest {
   title: string;
   description?: string;
   imageUrl?: string;
+  imageFileUploadId?: string;
   order: number;
 }
 
@@ -58,6 +60,7 @@ export interface CreateSubjectiveActionRequest {
   title: string;
   description?: string;
   imageUrl?: string;
+  imageFileUploadId?: string;
   order: number;
 }
 
@@ -70,6 +73,98 @@ export interface CreateSubjectiveActionResponse {
     order: number;
     createdAt: Date;
   };
+}
+
+// Tag Action
+export interface CreateTagActionRequest {
+  missionId?: string;
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  imageFileUploadId?: string;
+  order: number;
+  maxSelections?: number;
+  options: {
+    title: string;
+    description?: string;
+    imageUrl?: string;
+    order: number;
+    imageFileUploadId?: string;
+  }[];
+}
+
+export interface CreateTagActionResponse {
+  data: {
+    id: string;
+    missionId: string;
+    title: string;
+    type: ActionType;
+    order: number;
+    createdAt: Date;
+  };
+}
+
+// Rating Action
+export interface CreateRatingActionRequest {
+  missionId?: string;
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  imageFileUploadId?: string;
+  order: number;
+}
+
+export interface CreateRatingActionResponse {
+  data: {
+    id: string;
+    missionId: string;
+    title: string;
+    type: ActionType;
+    order: number;
+    createdAt: Date;
+  };
+}
+
+// Image Action
+export interface CreateImageActionRequest {
+  missionId?: string;
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  imageFileUploadId?: string;
+  order: number;
+}
+
+export interface CreateImageActionResponse {
+  data: {
+    id: string;
+    missionId: string;
+    title: string;
+    type: ActionType;
+    order: number;
+    createdAt: Date;
+  };
+}
+
+// ============================================================================
+// Action Update DTOs
+// ============================================================================
+
+export interface UpdateActionOptionRequest {
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  order: number;
+  imageFileUploadId?: string;
+}
+
+export interface UpdateActionRequest {
+  title?: string;
+  description?: string;
+  imageUrl?: string;
+  order?: number;
+  maxSelections?: number;
+  options?: UpdateActionOptionRequest[];
 }
 
 // ============================================================================

@@ -7,13 +7,6 @@ import { cn } from "@repo/ui/lib";
 import { cva } from "class-variance-authority";
 import { ComponentPropsWithoutRef, ElementType } from "react";
 
-// TODO: 이미지, 태그 추가 시 수정 필요
-type SupportedActionType = "MULTIPLE_CHOICE" | "SCALE" | "SUBJECTIVE";
-
-function isSupportedActionType(type: ActionType): type is SupportedActionType {
-  return type === "MULTIPLE_CHOICE" || type === "SCALE" || type === "SUBJECTIVE";
-}
-
 type TypeTagOwnProps<C extends ElementType> = {
   as?: C;
   type: ActionType;
@@ -33,10 +26,6 @@ export function TypeTag<C extends ElementType = "div">({
   const Component = as || "div";
   const isButton = as === "button";
 
-  if (!isSupportedActionType(type)) {
-    return null;
-  }
-
   const typeVariants = cva(
     cn(
       "px-2 py-1 rounded-full text-center ring-1 ring-transparent",
@@ -54,6 +43,15 @@ export function TypeTag<C extends ElementType = "div">({
           }`,
           SUBJECTIVE: `bg-rose-50 text-rose-600 ${
             selected && "bg-rose-100 text-rose-700 ring-1 ring-rose-400 hover:ring-rose-300"
+          }`,
+          RATING: `bg-yellow-50 text-yellow-600 ${
+            selected && "bg-yellow-100 text-yellow-700 ring-1 ring-yellow-400 hover:ring-yellow-300"
+          }`,
+          IMAGE: `bg-purple-50 text-purple-600 ${
+            selected && "bg-purple-100 text-purple-700 ring-1 ring-purple-400 hover:ring-purple-300"
+          }`,
+          TAG: `bg-gray-50 text-gray-600 ${
+            selected && "bg-gray-100 text-gray-700 ring-1 ring-gray-400 hover:ring-gray-300"
           }`,
         },
       },

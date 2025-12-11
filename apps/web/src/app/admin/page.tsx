@@ -1,4 +1,4 @@
-import { SurveyList } from "./components/SurveyList";
+import { MissionList } from "./components/MissionList";
 
 export default function AdminPage() {
   return (
@@ -7,7 +7,7 @@ export default function AdminPage() {
         <h1 className="text-3xl font-bold tracking-tight">미션</h1>
         <p className="text-muted-foreground">내가 만든 미션 목록입니다.</p>
       </div>
-      <SurveyList />
+      <MissionList />
     </div>
   );
 }

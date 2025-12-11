@@ -22,6 +22,8 @@ export interface UploadedImage {
 
 export interface UseImageUploadOptions {
   bucket?: string;
+  relatedEntityType?: RelatedEntityType;
+  relatedEntityId?: string;
   onSuccess?: (result: UploadedImage) => void;
   onError?: (error: Error) => void;
   onProgress?: (progress: ImageUploadProgress) => void;
@@ -33,6 +35,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
   const uploadMutation = useMutation({
     mutationFn: async (file: File): Promise<UploadedImage> => {
       try {
+        // TODO:이미지 전처리 로직 추가 필요
         // const processedFile = await preprocessImage(file);
         const processedFile = file;
 
@@ -41,6 +44,8 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
           fileType: processedFile.type,
           fileSize: processedFile.size,
           bucket: options.bucket,
+          relatedEntityType: options.relatedEntityType,
+          relatedEntityId: options.relatedEntityId,
         };
 
         const { data } = await getUploadUrl(uploadRequest);

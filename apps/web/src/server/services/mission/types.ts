@@ -19,6 +19,7 @@ export interface UpdateMissionInput {
   deadline?: Date;
   estimatedMinutes?: number;
   isActive?: boolean;
+  rewardId?: string | null;
 }
 
 export interface GetUserMissionsOptions {

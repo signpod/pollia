@@ -207,6 +207,67 @@ export class ActionRepository {
     });
   }
 
+  async updateWithOptions(
+    actionId: string,
+    data: {
+      title?: string;
+      description?: string;
+      imageUrl?: string;
+      order?: number;
+      maxSelections?: number;
+    },
+    options: Array<{
+      title: string;
+      description?: string;
+      imageUrl?: string;
+      order: number;
+      imageFileUploadId?: string;
+    }>,
+    userId: string,
+  ) {
+    return prisma.$transaction(async tx => {
+      const updatedAction = await tx.action.update({
+        where: { id: actionId },
+        data,
+      });
+
+      await tx.actionOption.deleteMany({
+        where: { actionId },
+      });
+
+      await tx.actionOption.createMany({
+        data: options.map(option => ({
+          actionId,
+          title: option.title,
+          description: option.description || null,
+          imageUrl: option.imageUrl,
+          order: option.order,
+          fileUploadId: option.imageFileUploadId,
+        })),
+      });
+
+      const optionFileUploadIds = options
+        .map(option => option.imageFileUploadId)
+        .filter(Boolean) as string[];
+
+      if (optionFileUploadIds.length > 0) {
+        await tx.fileUpload.updateMany({
+          where: {
+            id: { in: optionFileUploadIds },
+            userId: userId,
+            status: "TEMPORARY" as FileStatus,
+          },
+          data: {
+            status: "CONFIRMED" as FileStatus,
+            confirmedAt: new Date(),
+          },
+        });
+      }
+
+      return updatedAction;
+    });
+  }
+
   async delete(actionId: string) {
     return prisma.action.delete({
       where: { id: actionId },

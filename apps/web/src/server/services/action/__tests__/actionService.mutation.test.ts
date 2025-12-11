@@ -78,6 +78,64 @@ describe("ActionService - Mutation", () => {
 
       expect(ctx.mockActionRepo.update).not.toHaveBeenCalled();
     });
+
+    it("options가 포함되면 updateWithOptions를 호출한다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+      const updateData = {
+        title: "수정된 액션",
+        options: [
+          { title: "새 옵션 1", order: 0 },
+          { title: "새 옵션 2", order: 1 },
+        ],
+      };
+      const mockUpdatedAction = {
+        ...mockAction,
+        title: updateData.title,
+      };
+
+      ctx.mockActionRepo.findById.mockResolvedValue(mockAction);
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.updateWithOptions.mockResolvedValue(mockUpdatedAction);
+
+      // When
+      const result = await ctx.service.updateAction("action1", updateData, "user1");
+
+      // Then
+      expect(result).toEqual(mockUpdatedAction);
+      expect(ctx.mockActionRepo.updateWithOptions).toHaveBeenCalledWith(
+        "action1",
+        { title: "수정된 액션" },
+        updateData.options,
+        "user1",
+      );
+      expect(ctx.mockActionRepo.update).not.toHaveBeenCalled();
+    });
+
+    it("options가 빈 배열이면 기본 update를 호출한다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+      const updateData = {
+        title: "수정된 액션",
+        options: [],
+      };
+      const mockUpdatedAction = {
+        ...mockAction,
+        title: updateData.title,
+      };
+
+      ctx.mockActionRepo.findById.mockResolvedValue(mockAction);
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.update.mockResolvedValue(mockUpdatedAction);
+
+      // When
+      const result = await ctx.service.updateAction("action1", updateData, "user1");
+
+      // Then
+      expect(result).toEqual(mockUpdatedAction);
+      expect(ctx.mockActionRepo.update).toHaveBeenCalledWith("action1", { title: "수정된 액션" });
+      expect(ctx.mockActionRepo.updateWithOptions).not.toHaveBeenCalled();
+    });
   });
 
   describe("deleteAction", () => {

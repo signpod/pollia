@@ -1,9 +1,12 @@
 import {
+  actionUpdateSchema,
   eitherOrInputSchema,
+  imageInputSchema,
   multipleChoiceInputSchema,
-  questionUpdateSchema,
+  ratingInputSchema,
   scaleInputSchema,
   subjectiveInputSchema,
+  tagInputSchema,
 } from "@/schemas/action";
 import { actionRepository } from "@/server/repositories/action/actionRepository";
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
@@ -11,9 +14,12 @@ import { ActionType } from "@prisma/client";
 import type {
   ActionCreatedResult,
   CreateEitherOrInput,
+  CreateImageInput,
   CreateMultipleChoiceInput,
+  CreateRatingInput,
   CreateScaleInput,
   CreateSubjectiveInput,
+  CreateTagInput,
   GetActionsOptions,
   UpdateActionInput,
 } from "./types";
@@ -220,8 +226,112 @@ export class ActionService {
     };
   }
 
+  async createTagAction(input: CreateTagInput, userId: string): Promise<ActionCreatedResult> {
+    const result = tagInputSchema.safeParse(input);
+    if (!result.success) {
+      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
+      error.cause = 400;
+      throw error;
+    }
+
+    if (result.data.missionId) {
+      await this.verifyMissionAccess(result.data.missionId, userId);
+    }
+
+    const action = await this.actionRepo.createMultipleChoice(
+      {
+        missionId: result.data.missionId,
+        title: result.data.title,
+        description: result.data.description,
+        imageUrl: result.data.imageUrl,
+        type: ActionType.TAG,
+        order: result.data.order,
+        maxSelections: result.data.maxSelections ?? undefined,
+      },
+      result.data.options.map(opt => ({
+        title: opt.title,
+        description: opt.description,
+        imageUrl: opt.imageUrl,
+        order: opt.order,
+        imageFileUploadId: opt.imageFileUploadId,
+      })),
+      userId,
+    );
+
+    return {
+      id: action.id,
+      missionId: action.missionId || "",
+      title: action.title,
+      type: action.type,
+      order: action.order,
+      createdAt: action.createdAt,
+    };
+  }
+
+  async createRatingAction(input: CreateRatingInput, userId: string): Promise<ActionCreatedResult> {
+    const result = ratingInputSchema.safeParse(input);
+    if (!result.success) {
+      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
+      error.cause = 400;
+      throw error;
+    }
+
+    if (result.data.missionId) {
+      await this.verifyMissionAccess(result.data.missionId, userId);
+    }
+
+    const action = await this.actionRepo.create({
+      missionId: result.data.missionId,
+      title: result.data.title,
+      description: result.data.description,
+      imageUrl: result.data.imageUrl,
+      type: ActionType.RATING,
+      order: result.data.order,
+    });
+
+    return {
+      id: action.id,
+      missionId: action.missionId || "",
+      title: action.title,
+      type: action.type,
+      order: action.order,
+      createdAt: action.createdAt,
+    };
+  }
+
+  async createImageAction(input: CreateImageInput, userId: string): Promise<ActionCreatedResult> {
+    const result = imageInputSchema.safeParse(input);
+    if (!result.success) {
+      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
+      error.cause = 400;
+      throw error;
+    }
+
+    if (result.data.missionId) {
+      await this.verifyMissionAccess(result.data.missionId, userId);
+    }
+
+    const action = await this.actionRepo.create({
+      missionId: result.data.missionId,
+      title: result.data.title,
+      description: result.data.description,
+      imageUrl: result.data.imageUrl,
+      type: ActionType.IMAGE,
+      order: result.data.order,
+    });
+
+    return {
+      id: action.id,
+      missionId: action.missionId || "",
+      title: action.title,
+      type: action.type,
+      order: action.order,
+      createdAt: action.createdAt,
+    };
+  }
+
   async updateAction(actionId: string, data: UpdateActionInput, userId: string) {
-    const result = questionUpdateSchema.safeParse(data);
+    const result = actionUpdateSchema.safeParse(data);
     if (!result.success) {
       const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
       error.cause = 400;
@@ -239,7 +349,19 @@ export class ActionService {
       await this.verifyMissionAccess(action.missionId, userId);
     }
 
-    const updatedAction = await this.actionRepo.update(actionId, result.data);
+    const { options, ...actionData } = result.data;
+
+    if (options && options.length > 0) {
+      const updatedAction = await this.actionRepo.updateWithOptions(
+        actionId,
+        actionData,
+        options,
+        userId,
+      );
+      return updatedAction;
+    }
+
+    const updatedAction = await this.actionRepo.update(actionId, actionData);
 
     return updatedAction;
   }

@@ -168,12 +168,32 @@ export class ActionAnswerService {
           actionId,
           scaleAnswer: answer.scaleValue,
         });
+      } else if (answer.type === ActionType.RATING && answer.scaleValue !== undefined) {
+        answersToCreate.push({
+          responseId: parseResult.data.responseId,
+          actionId,
+          scaleAnswer: answer.scaleValue,
+        });
       } else if (answer.type === ActionType.SUBJECTIVE && answer.textResponse) {
         answersToCreate.push({
           responseId: parseResult.data.responseId,
           actionId,
           textAnswer: answer.textResponse,
         });
+      } else if (answer.type === ActionType.IMAGE && answer.textResponse) {
+        answersToCreate.push({
+          responseId: parseResult.data.responseId,
+          actionId,
+          textAnswer: answer.textResponse,
+        });
+      } else if (answer.type === ActionType.TAG && answer.selectedOptionIds) {
+        for (const optionId of answer.selectedOptionIds) {
+          answersToCreate.push({
+            responseId: parseResult.data.responseId,
+            actionId,
+            optionId,
+          });
+        }
       }
     }
 
@@ -254,6 +274,11 @@ export class ActionAnswerService {
     }
     if (actionType === ActionType.SCALE && data.scaleAnswer === undefined) {
       const error = new Error("척도 값을 선택해주세요.");
+      error.cause = 400;
+      throw error;
+    }
+    if (actionType === ActionType.RATING && data.scaleAnswer === undefined) {
+      const error = new Error("별점 값을 선택해주세요.");
       error.cause = 400;
       throw error;
     }

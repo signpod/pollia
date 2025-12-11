@@ -53,6 +53,7 @@ export const missionUpdateSchema = z
     deadline: z.date().optional(),
     estimatedMinutes: estimatedMinutesSchema,
     isActive: z.boolean().optional(),
+    rewardId: z.string().nullable().optional(),
   })
   .refine(data => Object.keys(data).length > 0, {
     message: "최소 하나의 필드를 수정해야 합니다.",
