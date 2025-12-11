@@ -12,7 +12,7 @@ export interface ModalConfig {
   confirmText?: string;
   cancelText?: string;
   onConfirm?: () => void | Promise<void>;
-  onCancel?: () => void;
+  onCancel?: () => void | Promise<void>;
   showCancelButton?: boolean;
   confirmButtonIsLoading?: boolean;
   cancelButtonIsLoading?: boolean;
@@ -80,9 +80,20 @@ export function ModalProvider({ children }: ModalProviderProps) {
     }
   }, [modalConfig, close]);
 
-  const handleCancel = useCallback(() => {
-    modalConfig.onCancel?.();
-    close();
+  const handleCancel = useCallback(async () => {
+    const result = modalConfig.onCancel?.();
+    if (result instanceof Promise) {
+      setModalConfig(prev => ({ ...prev, cancelButtonIsLoading: true }));
+      try {
+        await result;
+        close();
+      } catch (error) {
+        console.error("❌ Modal onCancel 에러 발생:", error);
+        setModalConfig(prev => ({ ...prev, cancelButtonIsLoading: false }));
+      }
+    } else {
+      close();
+    }
   }, [modalConfig, close]);
 
   return (
