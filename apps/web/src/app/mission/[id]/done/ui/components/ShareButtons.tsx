@@ -21,33 +21,30 @@ export const ShareButtons = React.forwardRef<HTMLDivElement>((_props, ref) => {
   const { handleKakaoShare } = useKakaoShare({ shareUrl });
 
   const handleShare = useCallback(async () => {
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: "설문에 참여해주세요",
-          text: "설문에 참여하고 의견을 공유해보세요!",
-          url: shareUrl,
-        });
-      } else {
+    if (!navigator.share) {
+      try {
         await navigator.clipboard.writeText(shareUrl);
         toast.success(SHARE_MESSAGES.clipboard.success);
+      } catch (error) {
+        console.error("클립보드 복사 에러:", error);
+        toast.warning(SHARE_MESSAGES.clipboard.error, {
+          duration: 3000,
+        });
       }
+      return;
+    }
+
+    try {
+      await navigator.share({
+        title: SHARE_MESSAGES.kakao.title,
+        text: SHARE_MESSAGES.kakao.description,
+        url: shareUrl,
+      });
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
         return;
       }
-      console.error("❌ 공유 에러:", error);
-      if (!navigator.share) {
-        try {
-          await navigator.clipboard.writeText(shareUrl);
-          toast.success(SHARE_MESSAGES.clipboard.success);
-        } catch (clipboardError) {
-          console.error("클립보드 복사 에러:", clipboardError);
-          toast.warning(SHARE_MESSAGES.clipboard.error, {
-            duration: 3000,
-          });
-        }
-      }
+      console.error("공유 에러:", error);
     }
   }, [shareUrl]);
 
