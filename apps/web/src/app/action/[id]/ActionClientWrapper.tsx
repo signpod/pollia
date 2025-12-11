@@ -16,7 +16,9 @@ import {
   setSessionStorageJSON,
 } from "@/lib/sessionStorage";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
+import { ActionType } from "@/types/domain/action";
 import type { ActionAnswerItem } from "@/types/dto";
+import type { ActionAnswer } from "@/types/dto/action-answer";
 import { StepProvider, useModal, useStep } from "@repo/ui/components";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -118,7 +120,7 @@ function ActionRenderer({
     },
   });
 
-  const { mutate: submitAnswer, isPending: isSubmittingAnswer } = useSubmitQuestionAnswer({
+  const { mutateAsync: submitAnswer, isPending: isSubmittingAnswer } = useSubmitQuestionAnswer({
     onSuccess: () => {
       goNext();
     },
@@ -128,15 +130,16 @@ function ActionRenderer({
     missionId,
   });
 
-  const { mutateAsync: completeSurveyAsync } = useSubmitSurveyAnswers({
-    onSuccess: () => {
-      removeSessionStorage(toastStorageKey);
-      router.push(ROUTES.MISSION_DONE(missionId));
-    },
-    onError: () => {
-      toast.warning(SURVEY_TOAST_MESSAGE.error.message, { id: SURVEY_TOAST_MESSAGE.error.id });
-    },
-  });
+  const { mutateAsync: completeSurveyAsync, isPending: isCompletingSurvey } =
+    useSubmitSurveyAnswers({
+      onSuccess: () => {
+        removeSessionStorage(toastStorageKey);
+        router.push(ROUTES.MISSION_DONE(missionId));
+      },
+      onError: () => {
+        toast.warning(SURVEY_TOAST_MESSAGE.error.message, { id: SURVEY_TOAST_MESSAGE.error.id });
+      },
+    });
 
   const {
     currentStep,
@@ -271,7 +274,44 @@ function ActionRenderer({
     }
   }, [missionId, startResponse]);
 
-  const handleNext = useCallback(() => {
+  const isAnswerSameAsSubmitted = useCallback(
+    (answer: ActionAnswerItem, submittedAnswers: ActionAnswer[]): boolean => {
+      const answersForAction = submittedAnswers.filter(
+        submitted => submitted.actionId === answer.actionId,
+      );
+
+      if (answersForAction.length === 0) {
+        return false;
+      }
+
+      if (answer.type === ActionType.MULTIPLE_CHOICE || answer.type === ActionType.TAG) {
+        const submittedOptionIds = answersForAction
+          .map(a => a.optionId)
+          .filter((id): id is string => id !== null)
+          .sort();
+        const currentOptionIds = [...answer.selectedOptionIds].sort();
+        return (
+          submittedOptionIds.length === currentOptionIds.length &&
+          submittedOptionIds.every((id, index) => id === currentOptionIds[index])
+        );
+      }
+
+      if (answer.type === ActionType.SCALE || answer.type === ActionType.RATING) {
+        const submittedScaleValue = answersForAction[0]?.scaleAnswer;
+        return submittedScaleValue !== null && submittedScaleValue === answer.scaleValue;
+      }
+
+      if (answer.type === ActionType.SUBJECTIVE || answer.type === ActionType.IMAGE) {
+        const submittedTextAnswer = answersForAction[0]?.textAnswer;
+        return submittedTextAnswer !== null && submittedTextAnswer === answer.textResponse;
+      }
+
+      return false;
+    },
+    [],
+  );
+
+  const handleNext = useCallback(async () => {
     if (!responseId || !currentAnswer) return;
 
     const validationResult = submitAnswerItemSchema.safeParse(currentAnswer);
@@ -279,6 +319,14 @@ function ActionRenderer({
       const errorMessage =
         validationResult.error.issues[0]?.message || "답변 형식이 올바르지 않습니다.";
       toast.warning(errorMessage, { id: "answer-validation-error" });
+      return;
+    }
+
+    const submittedAnswers = missionResponse?.data?.answers ?? [];
+    const isSame = isAnswerSameAsSubmitted(currentAnswer, submittedAnswers);
+
+    if (isSame) {
+      goNext();
       return;
     }
 
@@ -294,12 +342,22 @@ function ActionRenderer({
         },
       });
     } else {
-      submitAnswer({
+      await submitAnswer({
         responseId,
         answer: currentAnswer,
       });
     }
-  }, [isLastStep, responseId, currentAnswer, submitAnswer, completeSurveyAsync, showModal]);
+  }, [
+    isLastStep,
+    responseId,
+    currentAnswer,
+    submitAnswer,
+    completeSurveyAsync,
+    showModal,
+    missionResponse,
+    isAnswerSameAsSubmitted,
+    goNext,
+  ]);
 
   const handlePrevious = useCallback(() => {
     if (isFirstStep) {
@@ -316,7 +374,8 @@ function ActionRenderer({
       currentOrder={actionData.order}
       totalActionCount={totalActionCount}
       isFirstAction={isFirstStep}
-      isNextDisabled={!canGoNext || isSubmittingAnswer}
+      isNextDisabled={!canGoNext || isSubmittingAnswer || isCompletingSurvey}
+      isLoading={isSubmittingAnswer || isCompletingSurvey}
       onPrevious={handlePrevious}
       onNext={handleNext}
       nextButtonText={isLastStep ? "제출하기" : "다음"}

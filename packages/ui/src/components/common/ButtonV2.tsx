@@ -2,7 +2,7 @@
 
 import { Slot } from "@radix-ui/react-slot";
 import { type VariantProps, cva } from "class-variance-authority";
-import { LucideIcon } from "lucide-react";
+import { Loader2Icon, LucideIcon } from "lucide-react";
 import * as React from "react";
 import { PropsWithChildren } from "react";
 import { cn } from "../../lib";
@@ -86,6 +86,7 @@ export interface ButtonV2Props
   leftIcon?: LucideIcon | React.ComponentType<React.SVGProps<SVGSVGElement>>;
   rightIcon?: LucideIcon | React.ComponentType<React.SVGProps<SVGSVGElement>>;
   required?: boolean;
+  loading?: boolean;
 }
 
 const ButtonV2 = ({
@@ -102,6 +103,8 @@ const ButtonV2 = ({
   asChild = false,
   children,
   className,
+
+  loading = false,
   ...props
 }: ButtonV2Props) => {
   const Comp = asChild ? Slot : "button";
@@ -119,7 +122,9 @@ const ButtonV2 = ({
         required={required}
         size={size === "large" ? "large" : "medium"}
       >
-        <div className={cn("flex w-full items-center")}>{children}</div>
+        <div className={cn("flex w-full items-center")}>
+          {loading ? <Loader2Icon className="size-6 animate-spin mx-auto" /> : children}
+        </div>
       </ButtonText>
     </Comp>
   );

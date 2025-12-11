@@ -22,6 +22,7 @@ export interface ActionStepContentProps {
   updateCanGoNext?: (canGoNext: boolean) => void;
   onAnswerChange?: (answer: ActionAnswerItem) => void;
   missionResponse?: GetMissionResponseResponse;
+  isLoading?: boolean;
 }
 
 interface CreateActionStepsProps {

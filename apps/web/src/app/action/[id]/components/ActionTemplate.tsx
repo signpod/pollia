@@ -18,8 +18,9 @@ interface ActionTemplateProps extends PropsWithChildren {
   isFirstAction: boolean;
   isNextDisabled: boolean;
   onPrevious?: () => void;
-  onNext?: () => void;
+  onNext?: () => void | Promise<void>;
   nextButtonText?: string;
+  isLoading?: boolean;
 }
 
 export function SurveyQuestionTemplate({
@@ -33,6 +34,7 @@ export function SurveyQuestionTemplate({
   onPrevious,
   onNext,
   nextButtonText = "다음",
+  isLoading,
 }: ActionTemplateProps) {
   const progressValue = ((currentOrder + 1) / totalActionCount) * 100 || 0;
 
@@ -85,7 +87,14 @@ export function SurveyQuestionTemplate({
             size="large"
             className="flex-1 flex"
             disabled={isNextDisabled}
-            onClick={onNext}
+            loading={isLoading}
+            onClick={async () => {
+              if (onNext instanceof Promise) {
+                await onNext();
+              } else {
+                onNext?.();
+              }
+            }}
           >
             <Typo.ButtonText size="large" className="flex justify-center w-full">
               {nextButtonText}
