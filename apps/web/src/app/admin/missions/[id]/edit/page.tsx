@@ -5,11 +5,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/admin/components
 import { useReadMission } from "@/app/admin/hooks/use-read-mission";
 import { Suspense, use } from "react";
 import { AdminMissionHeader } from "../components/AdminMissionHeader";
-import { MissionActiveToggle } from "../components/MissionActiveToggle";
 import { MissionNavigation } from "../components/MissionNavigation";
 import { ActionsEditTab } from "./components/ActionsEditTab";
 import { BasicInfoEditTab } from "./components/BasicInfoEditTab";
 import { RewardEditTab } from "./components/RewardEditTab";
+import { notFound } from "next/navigation";
 
 interface AdminMissionEditPageProps {
   params: Promise<{ id: string }>;
@@ -20,15 +20,17 @@ export default function AdminMissionEditPage({ params }: AdminMissionEditPagePro
   const { data: missionResponse } = useReadMission(missionId);
   const mission = missionResponse?.data;
 
+  if (!mission) return notFound();
+
   return (
     <div className="max-w-7xl">
       <AdminMissionHeader
         title="미션 수정"
         description="미션의 기본 정보, 액션, 리워드를 수정합니다"
         nav={<MissionNavigation missionId={missionId} />}
-      >
-        {mission && <MissionActiveToggle missionId={missionId} isActive={mission.isActive} />}
-      </AdminMissionHeader>
+        missionId={missionId}
+        isActive={mission?.isActive}
+      />
 
       <Tabs defaultValue="basic" className="w-full">
         <TabsList>

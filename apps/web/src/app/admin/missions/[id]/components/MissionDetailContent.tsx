@@ -13,7 +13,6 @@ import { Calendar, CheckCircle2, Clock, Gift, XCircle } from "lucide-react";
 import Image from "next/image";
 import { AdminMissionHeader } from "./AdminMissionHeader";
 import { ClientDateDisplay } from "./ClientDateDisplay";
-import { MissionActiveToggle } from "./MissionActiveToggle";
 import { MissionNavigation } from "./MissionNavigation";
 
 interface MissionDetailContentProps {
@@ -27,9 +26,9 @@ export function MissionDetailContent({ mission }: MissionDetailContentProps) {
         title="미션 상세"
         description={mission.title}
         nav={<MissionNavigation missionId={mission.id} />}
-      >
-        <MissionActiveToggle missionId={mission.id} isActive={mission.isActive} />
-      </AdminMissionHeader>
+        missionId={mission.id}
+        isActive={mission.isActive}
+      />
 
       <div className="space-y-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
