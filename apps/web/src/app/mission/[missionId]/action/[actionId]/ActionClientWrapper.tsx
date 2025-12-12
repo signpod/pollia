@@ -4,17 +4,14 @@ import { ExtendedActionStepConfig, createActionSteps } from "@/constants/action"
 import { SURVEY_TOAST_MESSAGE } from "@/constants/missionMessages";
 import { ROUTES } from "@/constants/routes";
 import { useReadActionsDetail } from "@/hooks/action/useReadActionsDetail";
+import { useMissionSurveyToast } from "@/hooks/mission/useMissionSurveyToast";
 import {
   useReadMissionResponseForMission,
   useStartSurveyResponse,
   useSubmitQuestionAnswer,
   useSubmitSurveyAnswers,
 } from "@/hooks/mission-response";
-import {
-  getSessionStorageJSON,
-  removeSessionStorage,
-  setSessionStorageJSON,
-} from "@/lib/sessionStorage";
+import { removeSessionStorage } from "@/lib/sessionStorage";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
 import type { ActionAnswerItem } from "@/types/dto";
@@ -94,7 +91,6 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
 
   const { data: missionResponse } = useReadMissionResponseForMission({ missionId });
 
-  const isExitingRef = useRef(false);
   const toastStorageKey = `mission-toast-${missionId}`;
 
   const { mutate: startResponse } = useStartSurveyResponse({
@@ -137,7 +133,6 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
     isLastStep,
     canGoNext,
     updateStepConfig,
-    steps,
   } = useStep();
 
   const showExitConfirmModal = useCallback(() => {
@@ -148,98 +143,23 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
         close();
       },
       onCancel: () => {
-        isExitingRef.current = true;
         close();
-        window.history.go(-1);
-        setTimeout(() => {
-          router.push(ROUTES.MISSION(missionId));
-        }, 100);
+        router.push(ROUTES.MISSION(missionId));
       },
     });
   }, [missionId, showModal, close, router]);
-
-  useEffect(() => {
-    const handleBackPressed = () => {
-      if (isExitingRef.current) {
-        return;
-      }
-      if (isFirstStep) {
-        showExitConfirmModal();
-      } else {
-        goBack();
-      }
-    };
-
-    window.addEventListener("action-back-pressed", handleBackPressed);
-    return () => {
-      window.removeEventListener("action-back-pressed", handleBackPressed);
-    };
-  }, [isFirstStep, showExitConfirmModal, goBack]);
 
   const stepConfig = currentStepConfig as unknown as ExtendedActionStepConfig;
   const ContentComponent = stepConfig.content;
   const actionData = stepConfig.actionData;
 
-  // actionData.id가 변경될 때 currentStep을 동기화
-  useEffect(() => {
-    const stepIndex = steps.findIndex(
-      step => (step as ExtendedActionStepConfig).actionData.id === actionData.id,
-    );
-    if (stepIndex >= 0 && stepIndex !== currentStep) {
-      // URL이 변경되어 step이 변경된 경우, canGoNext를 초기화하지 않음
-      // 각 컴포넌트가 자신의 canGoNext를 설정할 것임
-    }
-  }, [actionData.id, steps, currentStep]);
+  const currentOrder = actionData.order;
 
-  const lastToastQuestionIdRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (lastToastQuestionIdRef.current === actionData.id) {
-      return;
-    }
-
-    lastToastQuestionIdRef.current = actionData.id;
-
-    const currentOrder = actionData.order;
-    const progressValue = (currentOrder / totalActionCount) * 100 || 0;
-
-    const isFirstQuestion = currentOrder === 1;
-    const isFinalQuestion = currentOrder === totalActionCount && totalActionCount > 1;
-    const isHalfway = progressValue >= 50 && totalActionCount > 2;
-
-    const toastState = getSessionStorageJSON(toastStorageKey, {
-      first: false,
-      half: false,
-      final: false,
-    });
-
-    if (isFirstQuestion && !toastState.first) {
-      setSessionStorageJSON(toastStorageKey, { ...toastState, first: true });
-      toast.default(SURVEY_TOAST_MESSAGE.first.message, {
-        id: SURVEY_TOAST_MESSAGE.first.id,
-        duration: 4000,
-      });
-      return;
-    }
-
-    if (isFinalQuestion && !toastState.final) {
-      setSessionStorageJSON(toastStorageKey, { ...toastState, final: true });
-      toast.default(SURVEY_TOAST_MESSAGE.final.message, {
-        id: SURVEY_TOAST_MESSAGE.final.id,
-        duration: 4000,
-      });
-      return;
-    }
-
-    if (isHalfway && !toastState.half) {
-      setSessionStorageJSON(toastStorageKey, { ...toastState, half: true });
-      toast.default(SURVEY_TOAST_MESSAGE.half.message, {
-        id: SURVEY_TOAST_MESSAGE.half.id,
-        duration: 4000,
-      });
-      return;
-    }
-  }, [actionData.id, actionData.order, totalActionCount, toastStorageKey]);
+  useMissionSurveyToast({
+    currentOrder,
+    totalActionCount,
+    toastStorageKey,
+  });
 
   const updateCanGoNext = useCallback(
     (canGoNext: boolean) => {
