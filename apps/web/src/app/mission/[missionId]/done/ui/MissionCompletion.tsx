@@ -1,7 +1,6 @@
 "use client";
 
 import { ROUTES } from "@/constants/routes";
-import { usePreventBack } from "@/hooks/common/usePreventBack";
 import { useReadMission } from "@/hooks/mission";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -17,11 +16,12 @@ import { MainButton } from "./components/MainButton";
 import { ShareButtons } from "./components/ShareButtons";
 import { ShareTitle } from "./components/ShareTitle";
 import { SurveyCardContent } from "./components/SurveyCardContent";
+import { usePreventBack } from "@/hooks/common/usePreventBack";
 
 export function MissionCompletion() {
-  const params = useParams<{ id: string }>();
+  const { missionId } = useParams<{ missionId: string }>();
   const router = useRouter();
-  const { data: survey } = useReadMission(params.id);
+  const { data: survey } = useReadMission(missionId);
   const { title, estimatedMinutes, deadline, imageUrl, target, brandLogoUrl } = survey?.data ?? {};
 
   const refs = useAnimationRefs();
@@ -62,10 +62,6 @@ export function MissionCompletion() {
     };
   }, [showContent, refs]);
 
-  usePreventBack({
-    redirectTo: ROUTES.MISSION(params.id),
-  });
-
   return (
     <div
       className={cn(
@@ -105,7 +101,7 @@ export function MissionCompletion() {
 
       {/* 하단 버튼 */}
       {showContent && (
-        <MainButton ref={refs.button} onClick={() => router.push(ROUTES.MISSION(params.id))} />
+        <MainButton ref={refs.button} onClick={() => router.push(ROUTES.MISSION(missionId))} />
       )}
     </div>
   );
