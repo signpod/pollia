@@ -1,7 +1,6 @@
 "use client";
 
 import { ROUTES } from "@/constants/routes";
-import { usePreventBack } from "@/hooks/common/usePreventBack";
 import { useReadMission } from "@/hooks/mission";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -17,6 +16,7 @@ import { MainButton } from "./components/MainButton";
 import { ShareButtons } from "./components/ShareButtons";
 import { ShareTitle } from "./components/ShareTitle";
 import { SurveyCardContent } from "./components/SurveyCardContent";
+import { usePreventBack } from "@/hooks/common/usePreventBack";
 
 export function MissionCompletion() {
   const { missionId } = useParams<{ missionId: string }>();
@@ -61,10 +61,6 @@ export function MissionCompletion() {
       timeline.kill();
     };
   }, [showContent, refs]);
-
-  usePreventBack({
-    redirectTo: ROUTES.MISSION(missionId),
-  });
 
   return (
     <div

@@ -18,7 +18,7 @@ import type { ActionAnswerItem } from "@/types/dto";
 import type { ActionAnswer } from "@/types/dto/action-answer";
 import { StepProvider, useModal, useStep } from "@repo/ui/components";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
-import { useParams, useRouter } from "next/navigation";
+import { redirect, useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActionImage,
@@ -28,6 +28,7 @@ import {
   MultipleChoice,
   Subjective,
 } from "./ui";
+import { getMyResponseForMission } from "@/actions/mission-response";
 
 const SURVEY_EXIT_MODAL = {
   title: "설문을 종료하실 건가요?",
@@ -122,6 +123,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
       onError: () => {
         toast.warning(SURVEY_TOAST_MESSAGE.error.message, { id: SURVEY_TOAST_MESSAGE.error.id });
       },
+      missionId,
     });
 
   const {

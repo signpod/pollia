@@ -2,9 +2,10 @@ import { getActionById, getMissionActionsDetail } from "@/actions/action";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { dehydrate } from "@tanstack/react-query";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ActionClientWrapper } from "./ActionClientWrapper";
-// import { ActionPageWrapper } from "./ActionPageWrapper";
+import { getMyResponseForMission } from "@/actions/mission-response";
+import { ROUTES } from "@/constants/routes";
 
 export default async function ActionPage({
   params,
@@ -23,7 +24,7 @@ export default async function ActionPage({
   });
 
   await queryClient.prefetchQuery({
-    queryKey: actionQueryKeys.actions({ missionId: missionId }),
+    queryKey: actionQueryKeys.actions({ missionId }),
     queryFn: () => getMissionActionsDetail(missionId),
   });
 
@@ -31,9 +32,5 @@ export default async function ActionPage({
 
   const dehydratedState = dehydrate(queryClient);
 
-  return (
-    // <ActionPageWrapper>
-    <ActionClientWrapper dehydratedState={dehydratedState} />
-    // </ActionPageWrapper>
-  );
+  return <ActionClientWrapper dehydratedState={dehydratedState} />;
 }
