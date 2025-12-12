@@ -44,11 +44,11 @@ export const missionInputSchema = z.object({
 export const missionUpdateSchema = z
   .object({
     title: titleSchema.optional(),
-    description: z.string().max(100, "설명은 100자를 초과할 수 없습니다.").optional(),
-    target: z.string().max(50, "대상은 50자를 초과할 수 없습니다.").optional(),
-    imageUrl: z.url({ message: "올바른 URL 형식이 아닙니다." }).optional(),
+    description: descriptionSchema,
+    target: targetSchema,
+    imageUrl: imageUrlSchema,
     imageFileUploadId: imageFileUploadIdSchema,
-    brandLogoUrl: z.url({ message: "올바른 URL 형식이 아닙니다." }).optional(),
+    brandLogoUrl: brandLogoUrlSchema,
     brandLogoFileUploadId: brandLogoFileUploadIdSchema,
     deadline: z.date().optional(),
     estimatedMinutes: estimatedMinutesSchema,

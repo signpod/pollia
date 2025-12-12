@@ -1,5 +1,7 @@
 "use client";
 
+import { useReadMission } from "@/app/admin/hooks/use-read-mission";
+import { notFound } from "next/navigation";
 import { use } from "react";
 import { AdminMissionHeader } from "../components/AdminMissionHeader";
 import { MissionNavigation } from "../components/MissionNavigation";
@@ -10,6 +12,10 @@ interface AdminMissionTrackingPageProps {
 
 export default function AdminMissionTrackingPage({ params }: AdminMissionTrackingPageProps) {
   const { id: missionId } = use(params);
+  const { data: missionResponse } = useReadMission(missionId);
+  const mission = missionResponse?.data;
+
+  if (!mission) return notFound();
 
   return (
     <div className="max-w-7xl">
@@ -17,6 +23,8 @@ export default function AdminMissionTrackingPage({ params }: AdminMissionTrackin
         title="사용자 추적"
         description="미션에 참여한 사용자들의 활동 내역을 확인할 수 있습니다"
         nav={<MissionNavigation missionId={missionId} />}
+        missionId={missionId}
+        isActive={mission.isActive}
       />
 
       <div className="p-8 border border-dashed rounded-lg text-center text-muted-foreground">

@@ -124,7 +124,7 @@ function BasicInfoCard({ form }: BasicInfoCardProps) {
             type="number"
             placeholder="예상 소요 시간을 입력하세요"
             {...form.register("estimatedMinutes", {
-              valueAsNumber: true,
+              setValueAs: value => (value === "" ? undefined : Number(value)),
             })}
           />
           {form.formState.errors.estimatedMinutes && (
