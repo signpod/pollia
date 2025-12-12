@@ -274,6 +274,14 @@ export function RatingScale({
             isFirst={isFirst}
             isLast={isLast}
             isVertical={isVertical}
+            onOptionClick={value => {
+              setLocalValue(value);
+              onChange(value);
+            }}
+            sliderMin={sliderMin}
+            sliderMax={sliderMax}
+            sliderStep={sliderStep}
+            disabled={disabled}
           />
           <Slider.Thumb
             className={cn(
@@ -293,9 +301,41 @@ interface SliderDotsProps {
   isFirst: (index: number) => boolean;
   isLast: (index: number) => boolean;
   isVertical: boolean;
+  onOptionClick?: (value: number) => void;
+  sliderMin: number;
+  sliderMax: number;
+  sliderStep: number;
+  disabled?: boolean;
 }
 
-function SliderDots({ positions, options, isFirst, isLast, isVertical }: SliderDotsProps) {
+function SliderDots({
+  positions,
+  options,
+  isFirst,
+  isLast,
+  isVertical,
+  onOptionClick,
+  sliderMin,
+  sliderMax,
+  sliderStep,
+  disabled,
+}: SliderDotsProps) {
+  const handleOptionClick = (order: number) => {
+    if (disabled || !onOptionClick) return;
+
+    if (options && options.length > 0) {
+      const allHaveOrder = options.every(
+        option => option.description !== undefined && option.description !== null,
+      );
+
+      if (allHaveOrder) {
+        const option = options.find(option => option.order === order);
+        if (option) {
+          onOptionClick(option.description ?? 0);
+        }
+      }
+    }
+  };
   const getTitleStyle = (optionsLength: number): CSSProperties | undefined => {
     if (isVertical) {
       return undefined;
@@ -326,7 +366,7 @@ function SliderDots({ positions, options, isFirst, isLast, isVertical }: SliderD
     <>
       <div
         className={cn(
-          "pointer-events-none absolute z-0",
+          "absolute z-0",
           isVertical
             ? "top-0 bottom-0 left-1/2 flex h-full -translate-x-1/2 flex-col items-center py-0"
             : "left-0 right-0 top-1/2 flex w-full -translate-y-1/2 items-center px-0",
@@ -370,6 +410,11 @@ function SliderDots({ positions, options, isFirst, isLast, isVertical }: SliderD
                         width: "auto",
                         whiteSpace: "nowrap",
                       }}
+                      className={cn(
+                        onOptionClick && !disabled && "cursor-pointer hover:opacity-70",
+                        disabled && "cursor-not-allowed opacity-50",
+                      )}
+                      onClick={() => handleOptionClick(options?.[index]?.order ?? 0)}
                     >
                       {options?.[index]?.title}
                     </Typo.SubTitle>
@@ -378,10 +423,15 @@ function SliderDots({ positions, options, isFirst, isLast, isVertical }: SliderD
                     <Typo.Body
                       size="large"
                       key={`order-${position}`}
-                      className="whitespace-nowrap text-sub"
+                      className={cn(
+                        "whitespace-nowrap text-sub",
+                        onOptionClick && !disabled && "cursor-pointer hover:opacity-70",
+                        disabled && "cursor-not-allowed opacity-50",
+                      )}
                       style={{
                         width: "auto",
                       }}
+                      onClick={() => handleOptionClick(options?.[index]?.order ?? 0)}
                     >
                       {options?.[index]?.description}
                     </Typo.Body>
@@ -393,8 +443,9 @@ function SliderDots({ positions, options, isFirst, isLast, isVertical }: SliderD
                 <Typo.SubTitle
                   size="large"
                   key={`title-horizontal-${position}`}
-                  className={cn("absolute text-center", getTitleClassName())}
+                  className={cn("absolute text-center pointer-events-auto", getTitleClassName())}
                   style={getTitleStyle(options?.length ?? 0)}
+                  onClick={() => handleOptionClick(index)}
                 >
                   {options?.[index]?.title}
                 </Typo.SubTitle>
