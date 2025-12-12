@@ -325,7 +325,7 @@ export const VerticalWithOptions: Story = {
   render: () => {
     const [value, setValue] = useState(3);
     return (
-      <div className="flex min-h-[400px] w-[200px] items-center justify-center p-8">
+      <div className="flex min-h-[400px] w-[600px] items-center justify-center p-8">
         <RatingScale
           value={value}
           onChange={setValue}
