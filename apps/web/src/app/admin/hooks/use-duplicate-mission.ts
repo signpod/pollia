@@ -1,8 +1,9 @@
 "use client";
 
 import { duplicateMission } from "@/actions/mission";
+import { adminMissionQueryKeys } from "@/app/admin/constants/queryKeys";
 import type { DuplicateMissionRequest, DuplicateMissionResponse } from "@/types/dto";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface UseDuplicateMissionOptions {
   onSuccess?: (data: DuplicateMissionResponse) => void;
@@ -10,11 +11,16 @@ interface UseDuplicateMissionOptions {
 }
 
 export function useDuplicateMission(options: UseDuplicateMissionOptions = {}) {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (payload: DuplicateMissionRequest): Promise<DuplicateMissionResponse> => {
       return duplicateMission(payload);
     },
     onSuccess: data => {
+      queryClient.invalidateQueries({
+        queryKey: adminMissionQueryKeys.missions(),
+      });
       options.onSuccess?.(data);
     },
     onError: error => {
