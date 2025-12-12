@@ -19,7 +19,7 @@ import type { ActionAnswer } from "@/types/dto/action-answer";
 import { StepProvider, useModal, useStep } from "@repo/ui/components";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActionImage,
   ActionTag,
@@ -28,13 +28,6 @@ import {
   MultipleChoice,
   Subjective,
 } from "./ui";
-
-// const SURVEY_EXIT_MODAL = {
-//   title: "설문을 종료하실 건가요?",
-//   description: "이 페이지를 벗어나면 저장된 내용이 사라져요.",
-//   confirmText: "계속하기",
-//   cancelText: "종료하기",
-// } as const;
 
 const SURVEY_SUBMIT_MODAL = {
   title: "응답을 제출할까요?",
@@ -64,10 +57,16 @@ function ActionContent() {
   useEffect(() => {
     const actionIdBefore = getSessionStorage(`current-action-id-${missionId}`);
     const currentActionIdIndex = actionsIds.findIndex(id => id === actionId);
-    const isActionIdBefore =
-      actionIdBefore && actionIdBefore === "initial"
-        ? currentActionIdIndex === 0
-        : Math.abs(currentActionIdIndex - actionsIds.findIndex(id => id === actionIdBefore)) <= 1;
+    const isActionIdBefore = useMemo(() => {
+      if (!actionIdBefore) return false;
+
+      if (actionIdBefore === "initial") {
+        return currentActionIdIndex === 0;
+      }
+
+      const beforeIndex = actionsIds.findIndex(id => id === actionIdBefore);
+      return Math.abs(currentActionIdIndex - beforeIndex) <= 1;
+    }, [actionIdBefore, currentActionIdIndex, actionsIds]);
 
     if (!isActionIdBefore) {
       router.replace(ROUTES.MISSION(missionId));
@@ -108,7 +107,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
   const { missionId } = useParams<{ missionId: string }>();
   const [responseId, setResponseId] = useState<string | null>(null);
   const [currentAnswer, setCurrentAnswer] = useState<ActionAnswerItem | null>(null);
-  const { showModal, close } = useModal();
+  const { showModal } = useModal();
 
   const { data: missionResponse } = useReadMissionResponseForMission({ missionId });
 
@@ -280,7 +279,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
     } else {
       goBack();
     }
-  }, [isFirstStep, goBack]);
+  }, [isFirstStep, goBack, missionId, router]);
 
   return (
     <ContentComponent
