@@ -1,4 +1,4 @@
-import { ActionOptionButton } from "@/app/mission/[id]/components";
+import { ActionOptionButton } from "@/app/mission/[missionId]/components";
 import { ActionStepContentProps } from "@/constants/action";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 import { MultipleChoiceProvider, useSurveyMultipleChoice } from "./MultipleChoiceProvider";

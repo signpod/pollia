@@ -9,38 +9,31 @@ import { ActionPageWrapper } from "./ActionPageWrapper";
 export default async function ActionPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ missionId: string; actionId: string }>;
 }) {
-  const { id } = await params;
+  const { missionId, actionId } = await params;
+
   const queryClient = getQueryClient();
 
-  const action = await getActionById(id).catch(error => {
+  const action = await getActionById(actionId).catch(error => {
     if (error instanceof Error && (error as Error & { cause?: number }).cause === 404) {
       notFound();
     }
     throw error;
   });
 
-  const missionId = action.data.missionId;
+  await queryClient.prefetchQuery({
+    queryKey: actionQueryKeys.actions({ missionId: missionId }),
+    queryFn: () => getMissionActionsDetail(missionId),
+  });
 
-  if (missionId) {
-    await queryClient.prefetchQuery({
-      queryKey: actionQueryKeys.actions({ missionId: missionId }),
-      queryFn: () => getMissionActionsDetail(missionId),
-    });
-  }
-
-  queryClient.setQueryData(actionQueryKeys.action(id), action);
+  queryClient.setQueryData(actionQueryKeys.action(actionId), action);
 
   const dehydratedState = dehydrate(queryClient);
 
   return (
     <ActionPageWrapper>
-      <ActionClientWrapper
-        missionId={missionId ?? ""}
-        dehydratedState={dehydratedState}
-        currentActionId={id}
-      />
+      <ActionClientWrapper dehydratedState={dehydratedState} />
     </ActionPageWrapper>
   );
 }

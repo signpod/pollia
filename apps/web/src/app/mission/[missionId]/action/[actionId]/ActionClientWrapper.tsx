@@ -21,7 +21,7 @@ import type { ActionAnswerItem } from "@/types/dto";
 import type { ActionAnswer } from "@/types/dto/action-answer";
 import { StepProvider, useModal, useStep } from "@repo/ui/components";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActionImage,
@@ -47,27 +47,19 @@ const SURVEY_SUBMIT_MODAL = {
 } as const;
 
 interface ActionClientWrapperProps {
-  missionId: string;
   dehydratedState: DehydratedState;
-  currentActionId: string;
 }
 
-export function ActionClientWrapper({
-  missionId,
-  dehydratedState,
-  currentActionId,
-}: ActionClientWrapperProps) {
+export function ActionClientWrapper({ dehydratedState }: ActionClientWrapperProps) {
   return (
     <HydrationBoundary state={dehydratedState}>
-      <ActionContent missionId={missionId} currentActionId={currentActionId} />
+      <ActionContent />
     </HydrationBoundary>
   );
 }
 
-function ActionContent({
-  missionId,
-  currentActionId,
-}: { missionId: string; currentActionId: string }) {
+function ActionContent() {
+  const { missionId, actionId } = useParams<{ missionId: string; actionId: string }>();
   const { data: actions } = useReadActionsDetail(missionId);
 
   const steps = createActionSteps({
@@ -83,24 +75,19 @@ function ActionContent({
   });
 
   const initialStep = steps.findIndex(
-    step => (step as ExtendedActionStepConfig).actionData.id === currentActionId,
+    step => (step as ExtendedActionStepConfig).actionData.id === actionId,
   );
 
   return (
     <StepProvider syncWithUrl steps={steps} initialStep={initialStep >= 0 ? initialStep : 0}>
-      <ActionRenderer totalActionCount={actions.data.length} missionId={missionId} />
+      <ActionRenderer totalActionCount={actions.data.length} />
     </StepProvider>
   );
 }
 
-function ActionRenderer({
-  totalActionCount,
-  missionId,
-}: {
-  totalActionCount: number;
-  missionId: string;
-}) {
+function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
   const router = useRouter();
+  const { missionId } = useParams<{ missionId: string }>();
   const [responseId, setResponseId] = useState<string | null>(null);
   const [currentAnswer, setCurrentAnswer] = useState<ActionAnswerItem | null>(null);
   const { showModal, close } = useModal();

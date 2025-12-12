@@ -6,7 +6,7 @@ import KakaoIcon from "@public/svgs/kakao-icon.svg";
 import { ButtonV2, Tooltip, Typo } from "@repo/ui/components";
 import { isBefore } from "date-fns";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 const TOOLTIP_TEXT = {
   loggedOut: "리워드를 받으려면 로그인이 필요해요 🎁",
@@ -21,7 +21,6 @@ const BUTTON_TEXT = {
 };
 
 interface BottomButtonProps {
-  params: { id: string };
   firstActionId?: string;
   initialError: AuthError | null;
   deadline?: Mission["deadline"];
@@ -31,7 +30,6 @@ interface BottomButtonProps {
 }
 
 export function BottomButton({
-  params,
   firstActionId,
   initialError,
   deadline,
@@ -39,9 +37,10 @@ export function BottomButton({
   showResumeModal,
   isCompleted,
 }: BottomButtonProps) {
+  const { missionId } = useParams<{ missionId: string }>();
   const { handleKakaoLogin } = useKakaoLogin({
     initialError,
-    redirectPath: ROUTES.MISSION(params.id),
+    redirectPath: ROUTES.MISSION(missionId),
   });
   const { isLoggedIn } = useAuth();
   const router = useRouter();
@@ -57,10 +56,10 @@ export function BottomButton({
     } else if (showResumeModal) {
       const modalShown = showResumeModal();
       if (!modalShown && firstActionId) {
-        router.push(ROUTES.ACTION(firstActionId));
+        router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
       }
     } else if (firstActionId) {
-      router.push(ROUTES.ACTION(firstActionId));
+      router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
     }
   };
 
