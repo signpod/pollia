@@ -16,8 +16,10 @@ export interface RatingScaleOption {
   order: number;
 }
 
-export interface RatingScaleProps
-  extends Omit<ComponentProps<"div">, "value" | "onChange" | "disabled"> {
+export interface RatingScaleProps extends Omit<
+  ComponentProps<"div">,
+  "value" | "onChange" | "disabled"
+> {
   value: number;
   onChange: (value: number) => void;
   options: RatingScaleOption[];
@@ -92,10 +94,21 @@ export function RatingScale({
       const isFirst = (index: number) => index === 0;
       const isLast = (index: number) => index === positions.length - 1;
 
+      const getTitleLimit = (optionsLength: number) => {
+        if (optionsLength >= 5) {
+          return 6;
+        }
+        if (optionsLength >= 4) {
+          return 4;
+        }
+        return 3;
+      };
+
       const isVertical =
         max > 5 ||
         options.length > 5 ||
-        options.some(option => (option.description?.toString().length ?? 0) > 0);
+        options.some(option => (option.description?.toString().length ?? 0) > 0) ||
+        options.some(option => option.title?.length ?? 0 > getTitleLimit(options.length));
 
       const height = isVertical ? options.length * (288 / 5) : undefined;
 

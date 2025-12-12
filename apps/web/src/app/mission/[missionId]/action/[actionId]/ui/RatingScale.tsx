@@ -23,7 +23,7 @@ export function MissionRatingScale({
     missionResponse,
     updateCanGoNext,
     onAnswerChange,
-    defaultValue: 3,
+    defaultValue: actionData.options.length > 0 ? Math.floor(actionData.options.length / 2) : 0,
   });
 
   return (
