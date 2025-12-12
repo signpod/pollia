@@ -49,6 +49,10 @@ export function usePreventBack({
       return;
     }
 
+    if (typeof window === "undefined") {
+      return;
+    }
+
     const currentUrl = window.location.pathname + window.location.search;
 
     window.history.replaceState({ preventBack: true, url: currentUrl }, "", currentUrl);
@@ -79,5 +83,5 @@ export function usePreventBack({
       isRedirectingRef.current = false;
       window.removeEventListener("popstate", handlePopState, { capture: true });
     };
-  }, [redirectTo, enabled, onPopState]);
+  }, [redirectTo, enabled, onPopState, currentPath]);
 }

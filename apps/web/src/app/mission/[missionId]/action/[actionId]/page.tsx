@@ -2,10 +2,8 @@ import { getActionById, getMissionActionsDetail } from "@/actions/action";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { dehydrate } from "@tanstack/react-query";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { ActionClientWrapper } from "./ActionClientWrapper";
-import { getMyResponseForMission } from "@/actions/mission-response";
-import { ROUTES } from "@/constants/routes";
 
 export default async function ActionPage({
   params,

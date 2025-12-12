@@ -19,6 +19,7 @@ export function useMissionSurveyToast({
 }: UseMissionSurveyToastParams) {
   const progressValue = ((currentOrder + 1) / totalActionCount) * 100 || 0;
 
+  // currentOrder는 0부터 시작 (첫 번째 질문 = 0)
   const isFirstQuestion = currentOrder === 0;
   const isFinalQuestion = currentOrder === totalActionCount && totalActionCount > 1;
   const isHalfway = progressValue >= 50 && totalActionCount > 2;
