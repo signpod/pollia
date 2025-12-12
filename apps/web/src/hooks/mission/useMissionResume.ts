@@ -3,6 +3,7 @@ import { useModal } from "@repo/ui/components";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { useResetMissionResponse } from "../mission-response/useResetMissionResponse";
+import { removeSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
 
 interface UseMissionResumeParams {
   isEnabledToResume: boolean;
@@ -33,6 +34,7 @@ export function useSurveyResume({
         cancelText: "처음부터 다시",
         showCancelButton: true,
         onConfirm: () => {
+          setSessionStorage(`current-action-id-${missionId}`, "resume");
           router.push(ROUTES.ACTION({ missionId, actionId: nextActionId }));
         },
         onCancel: async () => {

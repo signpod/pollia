@@ -16,9 +16,20 @@ import {
   MissionReward,
 } from "./components";
 import { BottomButton } from "./ui";
+import { getSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
+import { useEffect } from "react";
 
 export function MissionIntro({ initialError }: { initialError: AuthError | null }) {
   const { missionId } = useParams<{ missionId: string }>();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const existingValue = getSessionStorage(`current-action-id-${missionId}`);
+    if (!existingValue) {
+      setSessionStorage(`current-action-id-${missionId}`, "initial");
+    }
+  }, [missionId]);
 
   const { mission, firstActionId, isEnabledToResume, nextActionId, isCompleted, missionResponse } =
     useMissionIntroData(missionId);
