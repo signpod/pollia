@@ -122,6 +122,7 @@ export class MissionRepository {
       description?: string;
       target?: string;
       imageUrl?: string;
+      brandLogoUrl?: string;
       deadline?: Date;
       estimatedMinutes?: number;
       creatorId: string;
@@ -135,6 +136,7 @@ export class MissionRepository {
           description: data.description,
           target: data.target,
           imageUrl: data.imageUrl,
+          brandLogoUrl: data.brandLogoUrl,
           deadline: data.deadline,
           estimatedMinutes: data.estimatedMinutes,
           creatorId: data.creatorId,

@@ -75,6 +75,7 @@ export class MissionService {
         description: validated.description,
         target: validated.target,
         imageUrl: validated.imageUrl,
+        brandLogoUrl: validated.brandLogoUrl,
         deadline: validated.deadline,
         estimatedMinutes: validated.estimatedMinutes,
         creatorId: userId,
