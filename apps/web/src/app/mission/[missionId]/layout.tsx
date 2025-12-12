@@ -18,13 +18,13 @@ import type { PropsWithChildren } from "react";
 export default async function MissionLayout({
   children,
   params,
-}: PropsWithChildren<{ params: Promise<{ id: string }> }>) {
-  const { id } = await params;
+}: PropsWithChildren<{ params: Promise<{ missionId: string }> }>) {
+  const { missionId } = await params;
   const queryClient = getQueryClient();
 
   const { isAuthenticated } = await checkAuthStatus();
 
-  const missionResult = await getMission(id).catch(error => {
+  const missionResult = await getMission(missionId).catch(error => {
     if (error instanceof Error && (error as Error & { cause?: number }).cause === 404) {
       notFound();
     }
@@ -33,8 +33,8 @@ export default async function MissionLayout({
 
   const prefetchPromises = [
     queryClient.prefetchQuery({
-      queryKey: actionQueryKeys.actionsIds({ missionId: id }),
-      queryFn: () => getMissionActionIds(id),
+      queryKey: actionQueryKeys.actionsIds({ missionId }),
+      queryFn: () => getMissionActionIds(missionId),
     }),
   ];
 
@@ -50,8 +50,8 @@ export default async function MissionLayout({
         }),
       queryClient
         .prefetchQuery({
-          queryKey: missionQueryKeys.missionResponseForMission(id),
-          queryFn: () => getMyResponseForMission(id),
+          queryKey: missionQueryKeys.missionResponseForMission(missionId),
+          queryFn: () => getMyResponseForMission(missionId),
         })
         .catch(() => {
           // 로그인하지 않은 경우 에러 무시
@@ -75,7 +75,7 @@ export default async function MissionLayout({
     await Promise.all(rewardPrefetchPromises);
   }
 
-  queryClient.setQueryData(missionQueryKeys.mission(id), missionResult);
+  queryClient.setQueryData(missionQueryKeys.mission(missionId), missionResult);
 
   const dehydratedState = dehydrate(queryClient);
 

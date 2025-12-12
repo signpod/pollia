@@ -18,16 +18,16 @@ import {
 import { BottomButton } from "./ui";
 
 export function MissionIntro({ initialError }: { initialError: AuthError | null }) {
-  const params = useParams<{ id: string }>();
+  const { missionId } = useParams<{ missionId: string }>();
 
   const { mission, firstActionId, isEnabledToResume, nextActionId, isCompleted, missionResponse } =
-    useMissionIntroData(params.id);
+    useMissionIntroData(missionId);
 
   const { showResumeModal } = useSurveyResume({
     isEnabledToResume,
     nextActionId,
     firstActionId,
-    missionId: params.id,
+    missionId,
     responseId: missionResponse?.id ?? "",
   });
 
@@ -85,7 +85,6 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
             />
           </div>
           <BottomButton
-            params={params}
             firstActionId={firstActionId ?? ""}
             initialError={initialError}
             deadline={deadline}
