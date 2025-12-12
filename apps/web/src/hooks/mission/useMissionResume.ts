@@ -33,11 +33,11 @@ export function useSurveyResume({
         cancelText: "처음부터 다시",
         showCancelButton: true,
         onConfirm: () => {
-          router.push(ROUTES.ACTION(nextActionId));
+          router.push(ROUTES.ACTION({ missionId, actionId: nextActionId }));
         },
         onCancel: async () => {
           await resetMissionResponse(responseId);
-          router.push(ROUTES.ACTION(firstActionId));
+          router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
         },
         cancelButtonIsLoading: isResetMissionResponsePending,
       });
