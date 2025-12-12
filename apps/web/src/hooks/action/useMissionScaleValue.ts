@@ -42,16 +42,17 @@ export function useMissionScaleValue({
 
   useEffect(() => {
     setScaleValue(initialScaleValue);
+    updateCanGoNextRef.current?.(true);
+
     if (initialScaleValue !== defaultValue) {
       setIsScaleValueChanged(true);
-      updateCanGoNextRef.current?.(true);
-
-      onAnswerChangeRef.current?.({
-        actionId,
-        type: ActionType.RATING,
-        scaleValue: initialScaleValue,
-      });
     }
+
+    onAnswerChangeRef.current?.({
+      actionId,
+      type: ActionType.SCALE,
+      scaleValue: initialScaleValue,
+    });
   }, [initialScaleValue, actionId, defaultValue]);
 
   const handleScaleValueChange = (value: number) => {
