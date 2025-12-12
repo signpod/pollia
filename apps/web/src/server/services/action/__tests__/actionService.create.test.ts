@@ -198,11 +198,41 @@ describe("ActionService - Create", () => {
         imageUrl: undefined,
         order: 0,
         options: [
-          { title: "매우 불만족", description: undefined, imageUrl: undefined, order: 0 },
-          { title: "불만족", description: undefined, imageUrl: undefined, order: 1 },
-          { title: "보통", description: undefined, imageUrl: undefined, order: 2 },
-          { title: "만족", description: undefined, imageUrl: undefined, order: 3 },
-          { title: "매우 만족", description: undefined, imageUrl: undefined, order: 4 },
+          {
+            title: "매우 불만족",
+            description: undefined,
+            imageUrl: undefined,
+            order: 0,
+            imageFileUploadId: undefined,
+          },
+          {
+            title: "불만족",
+            description: undefined,
+            imageUrl: undefined,
+            order: 1,
+            imageFileUploadId: undefined,
+          },
+          {
+            title: "보통",
+            description: undefined,
+            imageUrl: undefined,
+            order: 2,
+            imageFileUploadId: undefined,
+          },
+          {
+            title: "만족",
+            description: undefined,
+            imageUrl: undefined,
+            order: 3,
+            imageFileUploadId: undefined,
+          },
+          {
+            title: "매우 만족",
+            description: undefined,
+            imageUrl: undefined,
+            order: 4,
+            imageFileUploadId: undefined,
+          },
         ],
       };
       const mockCreatedAction = {
