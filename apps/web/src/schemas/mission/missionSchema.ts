@@ -3,12 +3,12 @@ import { z } from "zod";
 const titleSchema = z
   .string()
   .min(1, "제목을 입력해주세요.")
-  .max(30, "제목은 30자를 초과할 수 없습니다.")
+  .max(100, "제목은 100자를 초과할 수 없습니다.")
   .trim();
 
-const descriptionSchema = z.string().max(100, "설명은 100자를 초과할 수 없습니다.").optional();
+const descriptionSchema = z.string().max(500, "설명은 500자를 초과할 수 없습니다.").optional();
 
-const targetSchema = z.string().max(50, "대상은 50자를 초과할 수 없습니다.").optional();
+const targetSchema = z.string().max(100, "대상은 100자를 초과할 수 없습니다.").optional();
 
 const imageUrlSchema = z.url({ message: "올바른 URL 형식이 아닙니다." }).optional();
 const imageFileUploadIdSchema = z.string().optional();
@@ -20,9 +20,9 @@ const deadlineSchema = z.date().optional();
 
 const estimatedMinutesSchema = z
   .number()
-  .int("예상 소요 시간은 정수여야 합니다.")
-  .positive("예상 소요 시간은 양수여야 합니다.")
-  .max(120, "예상 소요 시간은 120분을 초과할 수 없습니다.")
+  .int("정수여야 합니다")
+  .min(1, "1 이상이어야 합니다")
+  .max(120, "120 이하여야 합니다")
   .optional();
 
 const actionIdsSchema = z.array(z.string().min(1, "액션 ID가 비어있습니다.")).default([]);

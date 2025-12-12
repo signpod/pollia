@@ -75,6 +75,7 @@ export class MissionService {
         description: validated.description,
         target: validated.target,
         imageUrl: validated.imageUrl,
+        brandLogoUrl: validated.brandLogoUrl,
         deadline: validated.deadline,
         estimatedMinutes: validated.estimatedMinutes,
         creatorId: userId,
@@ -126,6 +127,59 @@ export class MissionService {
     }
 
     await this.repo.delete(missionId);
+  }
+
+  async duplicateMission(missionId: string, userId: string): Promise<MissionCreatedResult> {
+    const originalMission = await this.getMission(missionId);
+
+    if (originalMission.creatorId !== userId) {
+      const error = new Error("복제 권한이 없습니다.");
+      error.cause = 403;
+      throw error;
+    }
+
+    const originalActions = await this.repo.findActionsByMissionId(missionId);
+
+    const duplicated = await this.repo.duplicateMission(
+      {
+        title: `${originalMission.title} - 복사본`,
+        description: originalMission.description,
+        target: originalMission.target,
+        imageUrl: originalMission.imageUrl,
+        brandLogoUrl: originalMission.brandLogoUrl,
+        deadline: originalMission.deadline,
+        estimatedMinutes: originalMission.estimatedMinutes,
+        isActive: false,
+        creatorId: userId,
+      },
+      originalActions.map(action => ({
+        title: action.title,
+        description: action.description,
+        imageUrl: action.imageUrl,
+        type: action.type,
+        order: action.order,
+        maxSelections: action.maxSelections,
+        options: action.options.map(opt => ({
+          title: opt.title,
+          description: opt.description,
+          imageUrl: opt.imageUrl,
+          order: opt.order,
+        })),
+      })),
+    );
+
+    return {
+      id: duplicated.id,
+      title: duplicated.title,
+      description: duplicated.description,
+      target: duplicated.target,
+      imageUrl: duplicated.imageUrl,
+      deadline: duplicated.deadline,
+      estimatedMinutes: duplicated.estimatedMinutes,
+      createdAt: duplicated.createdAt,
+      updatedAt: duplicated.updatedAt,
+      creatorId: userId,
+    };
   }
 }
 

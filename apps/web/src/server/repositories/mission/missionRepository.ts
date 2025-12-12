@@ -1,6 +1,6 @@
 import prisma from "@/database/utils/prisma/client";
 import type { SortOrderType } from "@/types/common/sort";
-import { Prisma } from "@prisma/client";
+import { type ActionType, Prisma } from "@prisma/client";
 
 export class MissionRepository {
   async findById(missionId: string) {
@@ -18,6 +18,7 @@ export class MissionRepository {
     },
   ) {
     const limit = options?.limit ?? 10;
+    const sortOrder = options?.sortOrder ?? "latest";
 
     return prisma.mission.findMany({
       where: { creatorId: userId },
@@ -32,7 +33,7 @@ export class MissionRepository {
         updatedAt: true,
       },
       orderBy: {
-        createdAt: options?.sortOrder === "latest" ? "desc" : "asc",
+        updatedAt: sortOrder === "latest" ? "desc" : "asc",
       },
       take: limit + 1,
       ...(options?.cursor && {
@@ -122,6 +123,7 @@ export class MissionRepository {
       description?: string;
       target?: string;
       imageUrl?: string;
+      brandLogoUrl?: string;
       deadline?: Date;
       estimatedMinutes?: number;
       creatorId: string;
@@ -135,6 +137,7 @@ export class MissionRepository {
           description: data.description,
           target: data.target,
           imageUrl: data.imageUrl,
+          brandLogoUrl: data.brandLogoUrl,
           deadline: data.deadline,
           estimatedMinutes: data.estimatedMinutes,
           creatorId: data.creatorId,
@@ -181,6 +184,78 @@ export class MissionRepository {
   async delete(missionId: string) {
     return prisma.mission.delete({
       where: { id: missionId },
+    });
+  }
+
+  async duplicateMission(
+    missionData: {
+      title: string;
+      description?: string | null;
+      target?: string | null;
+      imageUrl?: string | null;
+      brandLogoUrl?: string | null;
+      deadline?: Date | null;
+      estimatedMinutes?: number | null;
+      isActive: boolean;
+      creatorId: string;
+    },
+    actionsData: Array<{
+      title: string;
+      description?: string | null;
+      imageUrl?: string | null;
+      type: ActionType;
+      order: number;
+      maxSelections?: number | null;
+      options: Array<{
+        title: string;
+        description?: string | null;
+        imageUrl?: string | null;
+        order: number;
+      }>;
+    }>,
+  ) {
+    return prisma.$transaction(async tx => {
+      const newMission = await tx.mission.create({
+        data: {
+          title: missionData.title,
+          description: missionData.description,
+          target: missionData.target,
+          imageUrl: missionData.imageUrl,
+          brandLogoUrl: missionData.brandLogoUrl,
+          deadline: missionData.deadline,
+          estimatedMinutes: missionData.estimatedMinutes,
+          isActive: missionData.isActive,
+          creatorId: missionData.creatorId,
+        },
+      });
+
+      for (const actionData of actionsData) {
+        const newAction = await tx.action.create({
+          data: {
+            missionId: newMission.id,
+            title: actionData.title,
+            description: actionData.description,
+            imageUrl: actionData.imageUrl,
+            type: actionData.type,
+            order: actionData.order,
+            maxSelections: actionData.maxSelections,
+          },
+        });
+
+        if (actionData.options.length > 0) {
+          await tx.actionOption.createMany({
+            data: actionData.options.map(opt => ({
+              actionId: newAction.id,
+              title: opt.title,
+              description: opt.description,
+              imageUrl: opt.imageUrl,
+              order: opt.order,
+            })),
+          });
+        }
+      }
+
+      return newMission;
     });
   }
 }

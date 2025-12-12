@@ -50,6 +50,13 @@ function toScaleInput(dto: CreateScaleActionRequest): CreateScaleInput {
     description: dto.description,
     imageUrl: dto.imageUrl,
     order: dto.order,
+    options: dto.options.map(opt => ({
+      title: opt.title,
+      description: opt.description,
+      imageUrl: opt.imageUrl,
+      order: opt.order,
+      imageFileUploadId: opt.imageFileUploadId,
+    })),
   };
 }
 

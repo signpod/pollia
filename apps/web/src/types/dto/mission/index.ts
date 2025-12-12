@@ -67,3 +67,14 @@ export interface UpdateMissionRequest {
 export interface UpdateMissionResponse {
   data: Mission;
 }
+
+export interface DuplicateMissionRequest {
+  missionId: string;
+}
+
+export interface DuplicateMissionResponse {
+  data: {
+    id: string;
+    title: string;
+  };
+}

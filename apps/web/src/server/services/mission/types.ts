@@ -5,6 +5,7 @@ export interface CreateMissionInput {
   description?: string;
   target?: string;
   imageUrl?: string;
+  brandLogoUrl?: string;
   deadline?: Date;
   estimatedMinutes?: number;
   actionIds?: string[];

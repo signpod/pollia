@@ -11,6 +11,7 @@ function toCreateMissionInput(dto: CreateMissionRequest): CreateMissionInput {
     description: dto.description,
     target: dto.target,
     imageUrl: dto.imageUrl,
+    brandLogoUrl: dto.brandLogoUrl,
     deadline: dto.deadline,
     estimatedMinutes: dto.estimatedMinutes,
     actionIds: dto.actionIds ?? [],
