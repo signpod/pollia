@@ -80,19 +80,14 @@ function ActionContent() {
 
   return (
     <StepProvider syncWithUrl steps={steps} initialStep={initialStep >= 0 ? initialStep : 0}>
-      <ActionRenderer totalActionCount={actions.data.length} missionId={missionId} />
+      <ActionRenderer totalActionCount={actions.data.length} />
     </StepProvider>
   );
 }
 
-function ActionRenderer({
-  totalActionCount,
-  missionId,
-}: {
-  totalActionCount: number;
-  missionId: string;
-}) {
+function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
   const router = useRouter();
+  const { missionId } = useParams<{ missionId: string }>();
   const [responseId, setResponseId] = useState<string | null>(null);
   const [currentAnswer, setCurrentAnswer] = useState<ActionAnswerItem | null>(null);
   const { showModal, close } = useModal();
