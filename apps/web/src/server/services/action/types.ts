@@ -22,6 +22,13 @@ export interface CreateScaleInput {
   description?: string;
   imageUrl?: string;
   order: number;
+  options: {
+    title: string;
+    description?: string;
+    imageUrl?: string;
+    order: number;
+    imageFileUploadId?: string;
+  }[];
 }
 
 export interface CreateSubjectiveInput {

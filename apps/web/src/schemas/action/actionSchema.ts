@@ -50,7 +50,17 @@ export const multipleChoiceInputSchema = baseActionSchema
     { message: "선택 가능 개수는 유효한 항목 개수를 초과할 수 없습니다.", path: ["maxSelections"] },
   );
 
-export const scaleInputSchema = baseActionSchema;
+export const scaleInputSchema = baseActionSchema
+  .extend({
+    options: z.array(actionOptionSchema).min(3, "최소 3개 이상의 척도가 필요합니다."),
+  })
+  .refine(
+    data => {
+      const validOptions = data.options.filter(option => option.title.trim());
+      return validOptions.length >= 3;
+    },
+    { message: "최소 3개 이상의 유효한 척도가 필요합니다.", path: ["options"] },
+  );
 
 export const subjectiveInputSchema = baseActionSchema;
 

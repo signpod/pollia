@@ -139,14 +139,25 @@ export class ActionService {
       await this.verifyMissionAccess(result.data.missionId, userId);
     }
 
-    const action = await this.actionRepo.create({
-      missionId: result.data.missionId,
-      title: result.data.title,
-      description: result.data.description,
-      imageUrl: result.data.imageUrl,
-      type: ActionType.SCALE,
-      order: result.data.order,
-    });
+    const validated = result.data;
+    const action = await this.actionRepo.createMultipleChoice(
+      {
+        missionId: validated.missionId,
+        title: validated.title,
+        description: validated.description,
+        imageUrl: validated.imageUrl,
+        type: ActionType.SCALE,
+        order: validated.order,
+      },
+      validated.options.map(opt => ({
+        title: opt.title,
+        description: opt.description,
+        imageUrl: opt.imageUrl,
+        order: opt.order,
+        imageFileUploadId: opt.imageFileUploadId,
+      })),
+      userId,
+    );
 
     return {
       id: action.id,
