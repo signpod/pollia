@@ -19,7 +19,7 @@ import type { ActionAnswer } from "@/types/dto/action-answer";
 import { StepProvider, useModal, useStep } from "@repo/ui/components";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActionImage,
   ActionTag,
@@ -57,26 +57,27 @@ function ActionContent() {
   useEffect(() => {
     const actionIdBefore = getSessionStorage(`current-action-id-${missionId}`);
     const currentActionIdIndex = actionsIds.findIndex(id => id === actionId);
-    const isActionIdBefore = useMemo(() => {
+    const getIsActionIdBefore = () => {
+      console.log("actionIdBefore", actionIdBefore);
       if (!actionIdBefore) return false;
-
       if (actionIdBefore === "initial") {
         return currentActionIdIndex === 0;
       }
 
-      const beforeIndex = actionsIds.findIndex(id => id === actionIdBefore);
-      return Math.abs(currentActionIdIndex - beforeIndex) <= 1;
-    }, [actionIdBefore, currentActionIdIndex, actionsIds]);
+      if (actionIdBefore === "resume") return true;
+
+      return (
+        Math.abs(currentActionIdIndex - actionsIds.findIndex(id => id === actionIdBefore)) <= 1
+      );
+    };
+
+    const isActionIdBefore = getIsActionIdBefore();
 
     if (!isActionIdBefore) {
       router.replace(ROUTES.MISSION(missionId));
       return;
     }
     setSessionStorage(`current-action-id-${missionId}`, actionId);
-
-    return () => {
-      removeSessionStorage(`current-action-id-${missionId}`);
-    };
   }, [actionsIds, actionId, missionId, router]);
 
   const steps = createActionSteps({
