@@ -30,7 +30,7 @@ export function AdminSidebar() {
   const pathname = usePathname();
   const { state } = useSidebar();
   const { isDark, toggleTheme, mounted } = useAdminTheme();
-  const { missions } = useAdminMissions({ limit: 10 });
+  const { missions } = useAdminMissions({ sortOrder: "latest", limit: 100 });
 
   const adminNavConfig = useMemo(() => {
     return createAdminNavConfig(missions);

@@ -18,6 +18,7 @@ export class MissionRepository {
     },
   ) {
     const limit = options?.limit ?? 10;
+    const sortOrder = options?.sortOrder ?? "latest";
 
     return prisma.mission.findMany({
       where: { creatorId: userId },
@@ -32,7 +33,7 @@ export class MissionRepository {
         updatedAt: true,
       },
       orderBy: {
-        createdAt: options?.sortOrder === "latest" ? "desc" : "asc",
+        updatedAt: sortOrder === "latest" ? "desc" : "asc",
       },
       take: limit + 1,
       ...(options?.cursor && {

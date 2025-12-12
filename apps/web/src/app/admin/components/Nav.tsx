@@ -5,6 +5,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/app/admin/components/shadcn-ui/collapsible";
+import { ScrollArea } from "@/app/admin/components/shadcn-ui/scroll-area";
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -39,6 +40,9 @@ export function Nav({ config, isActive }: NavProps) {
     <>
       {config.map(group => {
         const isGroupOpen = openGroups.includes(group.label);
+        const isMissionGroup = group.label === "미션";
+        const shouldScroll = isMissionGroup && group.items.length > 10;
+
         return (
           <Collapsible
             key={group.label}
@@ -56,11 +60,21 @@ export function Nav({ config, isActive }: NavProps) {
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <SidebarGroupContent>
-                  <SidebarMenu>
-                    {group.items.map(item => (
-                      <NavItemComponent key={item.url} item={item} isActive={isActive} />
-                    ))}
-                  </SidebarMenu>
+                  {shouldScroll ? (
+                    <ScrollArea className="h-[400px]">
+                      <SidebarMenu>
+                        {group.items.map(item => (
+                          <NavItemComponent key={item.url} item={item} isActive={isActive} />
+                        ))}
+                      </SidebarMenu>
+                    </ScrollArea>
+                  ) : (
+                    <SidebarMenu>
+                      {group.items.map(item => (
+                        <NavItemComponent key={item.url} item={item} isActive={isActive} />
+                      ))}
+                    </SidebarMenu>
+                  )}
                 </SidebarGroupContent>
               </CollapsibleContent>
             </SidebarGroup>
