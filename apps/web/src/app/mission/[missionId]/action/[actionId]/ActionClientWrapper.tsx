@@ -11,7 +11,7 @@ import {
   useSubmitQuestionAnswer,
   useSubmitSurveyAnswers,
 } from "@/hooks/mission-response";
-import { removeSessionStorage } from "@/lib/sessionStorage";
+import { getSessionStorage, removeSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
 import type { ActionAnswerItem } from "@/types/dto";
@@ -29,12 +29,12 @@ import {
   Subjective,
 } from "./ui";
 
-const SURVEY_EXIT_MODAL = {
-  title: "설문을 종료하실 건가요?",
-  description: "이 페이지를 벗어나면 저장된 내용이 사라져요.",
-  confirmText: "계속하기",
-  cancelText: "종료하기",
-} as const;
+// const SURVEY_EXIT_MODAL = {
+//   title: "설문을 종료하실 건가요?",
+//   description: "이 페이지를 벗어나면 저장된 내용이 사라져요.",
+//   confirmText: "계속하기",
+//   cancelText: "종료하기",
+// } as const;
 
 const SURVEY_SUBMIT_MODAL = {
   title: "응답을 제출할까요?",
@@ -57,7 +57,28 @@ export function ActionClientWrapper({ dehydratedState }: ActionClientWrapperProp
 
 function ActionContent() {
   const { missionId, actionId } = useParams<{ missionId: string; actionId: string }>();
+  const router = useRouter();
   const { data: actions } = useReadActionsDetail(missionId);
+  const actionsIds = actions.data.map(action => action.id);
+
+  useEffect(() => {
+    const actionIdBefore = getSessionStorage(`current-action-id-${missionId}`);
+    const currentActionIdIndex = actionsIds.findIndex(id => id === actionId);
+    const isActionIdBefore =
+      actionIdBefore && actionIdBefore === "initial"
+        ? currentActionIdIndex === 0
+        : Math.abs(currentActionIdIndex - actionsIds.findIndex(id => id === actionIdBefore)) <= 1;
+
+    if (!isActionIdBefore) {
+      router.replace(ROUTES.MISSION(missionId));
+      return;
+    }
+    setSessionStorage(`current-action-id-${missionId}`, actionId);
+
+    return () => {
+      removeSessionStorage(`current-action-id-${missionId}`);
+    };
+  }, [actionsIds, actionId, missionId, router]);
 
   const steps = createActionSteps({
     actions: actions.data,
@@ -135,20 +156,6 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
     canGoNext,
     updateStepConfig,
   } = useStep();
-
-  const showExitConfirmModal = useCallback(() => {
-    showModal({
-      ...SURVEY_EXIT_MODAL,
-      showCancelButton: true,
-      onConfirm: () => {
-        close();
-      },
-      onCancel: () => {
-        close();
-        router.push(ROUTES.MISSION(missionId));
-      },
-    });
-  }, [missionId, showModal, close, router]);
 
   const stepConfig = currentStepConfig as unknown as ExtendedActionStepConfig;
   const ContentComponent = stepConfig.content;
@@ -269,11 +276,11 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
 
   const handlePrevious = useCallback(() => {
     if (isFirstStep) {
-      showExitConfirmModal();
+      router.push(ROUTES.MISSION(missionId));
     } else {
       goBack();
     }
-  }, [isFirstStep, goBack, showExitConfirmModal]);
+  }, [isFirstStep, goBack]);
 
   return (
     <ContentComponent

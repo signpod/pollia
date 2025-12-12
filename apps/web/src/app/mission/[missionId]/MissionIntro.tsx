@@ -16,9 +16,12 @@ import {
   MissionReward,
 } from "./components";
 import { BottomButton } from "./ui";
+import { setSessionStorage } from "@/lib/sessionStorage";
 
 export function MissionIntro({ initialError }: { initialError: AuthError | null }) {
   const { missionId } = useParams<{ missionId: string }>();
+
+  setSessionStorage(`current-action-id-${missionId}`, "initial");
 
   const { mission, firstActionId, isEnabledToResume, nextActionId, isCompleted, missionResponse } =
     useMissionIntroData(missionId);
