@@ -167,11 +167,11 @@ export const Default: Story = {
     value: 3,
     onChange: () => {},
     options: [
-      { id: "1", title: "매우 나쁨", order: 0 },
-      { id: "2", title: "나쁨", order: 1 },
-      { id: "3", title: "보통", order: 2 },
-      { id: "4", title: "좋음", order: 3 },
-      { id: "5", title: "매우 좋음", order: 4 },
+      { id: "1", title: "1점", order: 0 },
+      { id: "2", title: "2점", order: 1 },
+      { id: "3", title: "3점", order: 2 },
+      { id: "4", title: "4점", order: 3 },
+      { id: "5", title: "5점", order: 4 },
     ],
   },
 };
@@ -216,9 +216,9 @@ export const ThreeOptions: Story = {
           value={value}
           onChange={setValue}
           options={[
-            { id: "1", title: "낮음", order: 1 },
+            { id: "1", title: "매우 낮음", order: 1 },
             { id: "2", title: "보통", order: 2 },
-            { id: "3", title: "높음", order: 3 },
+            { id: "3", title: "매우 높음", order: 3 },
           ]}
         />
         <p className="text-sm text-zinc-600">선택된 값: {value}</p>

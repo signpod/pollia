@@ -96,19 +96,19 @@ export function RatingScale({
 
       const getTitleLimit = (optionsLength: number) => {
         if (optionsLength >= 5) {
-          return 6;
+          return 3;
         }
         if (optionsLength >= 4) {
           return 4;
         }
-        return 3;
+        return 5;
       };
 
       const isVertical =
         max > 5 ||
         options.length > 5 ||
         options.some(option => (option.description?.toString().length ?? 0) > 0) ||
-        options.some(option => option.title?.length ?? 0 > getTitleLimit(options.length));
+        options.some(option => (option.title?.trim().length ?? 0) > getTitleLimit(options.length));
 
       const height = isVertical ? options.length * (288 / 5) : undefined;
 
