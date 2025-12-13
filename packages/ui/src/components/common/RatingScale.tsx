@@ -12,7 +12,7 @@ const Slider = {
 export interface RatingScaleOption {
   id: string;
   title?: string;
-  description?: number;
+  description?: string;
   order: number;
 }
 
@@ -53,7 +53,7 @@ export function RatingScale({
   } = useMemo(() => {
     if (options && options.length > 0) {
       const allHaveOrder = options.every(
-        option => option.description !== undefined && option.description !== null,
+        option => option.order !== undefined && option.order !== null,
       );
 
       let sortedOptions: RatingScaleOption[];
@@ -62,17 +62,15 @@ export function RatingScale({
       let sliderMax: number;
 
       if (allHaveOrder) {
-        sortedOptions = [...options].sort((a, b) => (a.description ?? 0) - (b.description ?? 0));
-        const minOrder = sortedOptions[0]?.description ?? 0;
-        const maxOrder = sortedOptions[sortedOptions.length - 1]?.description ?? 0;
+        sortedOptions = [...options].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        const minOrder = sortedOptions[0]?.order ?? 0;
+        const maxOrder = sortedOptions[sortedOptions.length - 1]?.order ?? 0;
 
         positions = [];
 
         sortedOptions.forEach(option => {
           const position =
-            maxOrder === minOrder
-              ? 0
-              : ((option.description ?? 0) - minOrder) / (maxOrder - minOrder);
+            maxOrder === minOrder ? 0 : ((option.order ?? 0) - minOrder) / (maxOrder - minOrder);
           positions.push(position);
         });
 
@@ -162,22 +160,8 @@ export function RatingScale({
       );
 
       if (allHaveOrder) {
-        const exactIndex = sortedOptions.findIndex(option => option.description === localValue);
-        if (exactIndex >= 0) {
-          return exactIndex;
-        }
-        const normalizedValue =
-          sliderMax === sliderMin ? 0 : (localValue - sliderMin) / (sliderMax - sliderMin);
-        let closestIndex = 0;
-        let closestDistance = Math.abs(positions[0] ?? 0 - normalizedValue);
-        for (let idx = 1; idx < positions.length; idx++) {
-          const distance = Math.abs(positions[idx] ?? 0 - normalizedValue);
-          if (distance < closestDistance) {
-            closestDistance = distance;
-            closestIndex = idx;
-          }
-        }
-        return closestIndex;
+        const exactIndex = sortedOptions.findIndex(option => option.order === localValue);
+        return exactIndex;
       }
 
       const normalizedValue =
@@ -286,6 +270,8 @@ export function RatingScale({
           <Slider.Thumb
             className={cn(
               "relative block size-9 rounded-full bg-white bg shadow-[0_4px_20px_rgba(0,0,0,0.1)]",
+              "relative block size-9 rounded-full bg-white shadow-[0_4px_20px_rgba(0,0,0,0.1)]",
+              "focus:outline-none",
             )}
             style={thumbPosition}
           />
@@ -325,7 +311,7 @@ function SliderDots({
 
     if (options && options.length > 0) {
       const allHaveOrder = options.every(
-        option => option.description !== undefined && option.description !== null,
+        option => option.order !== undefined && option.order !== null,
       );
 
       if (allHaveOrder) {

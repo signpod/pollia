@@ -43,7 +43,8 @@ export function MissionRatingScale({
       <RatingScale
         options={actionData.options.map(option => ({
           id: option.id,
-          title: option.title,
+          title: option.title ?? undefined,
+          description: option.description ?? undefined,
           order: option.order,
         }))}
         value={scaleValue}
