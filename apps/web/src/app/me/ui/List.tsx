@@ -38,11 +38,17 @@ interface ListItemProps extends ComponentPropsWithRef<"li"> {
   title: string;
   leadingIcon?: React.ReactNode;
   href: string;
-  createdAt?: Date;
+  createdAt?: Date | string;
   isDraft?: boolean;
 }
 
 function ListItem({ title, createdAt, isDraft, leadingIcon, href, ...props }: ListItemProps) {
+  const formattedDate = createdAt
+    ? typeof createdAt === "string"
+      ? createdAt.split("T")[0]
+      : formatDateToLocalString(createdAt)
+    : null;
+
   return (
     <li {...props}>
       <Link href={href} className="flex flex-col py-4 w-full border-b border-default gap-2">
@@ -56,9 +62,9 @@ function ListItem({ title, createdAt, isDraft, leadingIcon, href, ...props }: Li
           </div>
           <ChevronRight className="size-6 text-zinc-300" />
         </div>
-        {createdAt && (
+        {formattedDate && (
           <Typo.Body size="small" className="text-zinc-400">
-            {formatDateToLocalString(createdAt)}
+            {formattedDate}
           </Typo.Body>
         )}
       </Link>
@@ -73,10 +79,3 @@ export const List = {
   Item: ListItem,
 };
 
-function UsedTag({ isDraft }: { isDraft: boolean }) {
-  return (
-    <div className="px-2 py-1 rounded-full text-center ring-1 ring-transparent">
-      <Typo.Body size="small">{isDraft ? "미사용" : "사용"}</Typo.Body>
-    </div>
-  );
-}
