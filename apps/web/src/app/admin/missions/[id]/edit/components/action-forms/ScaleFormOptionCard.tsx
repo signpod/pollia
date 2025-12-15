@@ -1,6 +1,5 @@
 "use client";
 
-import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Card, CardContent } from "@/app/admin/components/shadcn-ui/card";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
@@ -12,7 +11,6 @@ export interface ScaleFormOptionCardProps {
   minOptions: number;
   title: string;
   description?: string;
-  imagePreviewUrl?: string;
   titlePlaceholder?: string;
   descriptionPlaceholder?: string;
   onTitleChange: (value: string) => void;
@@ -20,8 +18,6 @@ export interface ScaleFormOptionCardProps {
   onMoveUp: () => void;
   onMoveDown: () => void;
   onDelete: () => void;
-  onImageSelect: (file: File) => void;
-  onImageDelete: () => void;
   disabled?: boolean;
 }
 
@@ -31,7 +27,6 @@ export function ScaleFormOptionCard({
   minOptions,
   title,
   description,
-  imagePreviewUrl,
   titlePlaceholder = "제목",
   descriptionPlaceholder = "설명 (선택)",
   onTitleChange,
@@ -39,8 +34,6 @@ export function ScaleFormOptionCard({
   onMoveUp,
   onMoveDown,
   onDelete,
-  onImageSelect,
-  onImageDelete,
   disabled,
 }: ScaleFormOptionCardProps) {
   const isFirst = index === 0;
@@ -51,18 +44,8 @@ export function ScaleFormOptionCard({
     <Card className="mb-3 py-4 px-0">
       <CardContent>
         <div className="flex items-start gap-3">
-          <div className="flex flex-col gap-2 items-start">
-            <div className="flex items-center justify-center size-6 rounded-full bg-muted text-xs font-bold text-muted-foreground shrink-0">
-              {index + 1}
-            </div>
-
-            <ImageSelector
-              size="medium"
-              imageUrl={imagePreviewUrl}
-              onImageSelect={onImageSelect}
-              onImageDelete={onImageDelete}
-              disabled={disabled}
-            />
+          <div className="flex items-center justify-center size-6 rounded-full bg-muted text-xs font-bold text-muted-foreground shrink-0">
+            {index + 1}
           </div>
 
           <div className="flex-1 space-y-2 min-w-0">
