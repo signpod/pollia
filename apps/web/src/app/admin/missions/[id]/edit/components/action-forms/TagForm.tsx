@@ -12,7 +12,7 @@ import { Plus } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { BaseActionFormFields } from "./BaseActionForm";
 import { MaxSelectionsField } from "./MaxSelectionsField";
-import { OptionCard } from "./OptionCard";
+import { TagFormOptionCard } from "./TagFormOptionCard";
 import { type TagFormInput, tagFormSchema } from "./schemas";
 import type { ActionFormProps, ActionOptionInput, TagFormData } from "./types";
 
@@ -135,7 +135,7 @@ export function TagForm({
                 );
 
                 return (
-                  <OptionCard
+                  <TagFormOptionCard
                     key={field.id}
                     index={index}
                     total={fields.length}

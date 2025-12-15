@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/app/admin/components/shadcn-ui/card";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 
-export interface OptionCardProps {
+export interface MultipleChoiceOptionCardProps {
   index: number;
   total: number;
   minOptions: number;
@@ -25,7 +25,7 @@ export interface OptionCardProps {
   disabled?: boolean;
 }
 
-export function OptionCard({
+export function MultipleChoiceOptionCard({
   index,
   total,
   minOptions,
@@ -42,7 +42,7 @@ export function OptionCard({
   onImageSelect,
   onImageDelete,
   disabled,
-}: OptionCardProps) {
+}: MultipleChoiceOptionCardProps) {
   const isFirst = index === 0;
   const isLast = index === total - 1;
   const canDelete = total > minOptions;

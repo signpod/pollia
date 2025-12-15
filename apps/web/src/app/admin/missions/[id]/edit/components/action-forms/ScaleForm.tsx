@@ -11,7 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { BaseActionFormFields } from "./BaseActionForm";
-import { OptionCard } from "./OptionCard";
+import { ScaleFormOptionCard } from "./ScaleFormOptionCard";
 import { type ScaleFormInput, scaleFormSchema } from "./schemas";
 import type { ActionFormProps, ActionOptionInput, ScaleFormData } from "./types";
 
@@ -125,7 +125,7 @@ export function ScaleForm({
                 );
 
                 return (
-                  <OptionCard
+                  <ScaleFormOptionCard
                     key={field.id}
                     index={index}
                     total={fields.length}
