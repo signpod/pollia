@@ -12,7 +12,7 @@ import { Plus } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { BaseActionFormFields } from "./BaseActionForm";
 import { MaxSelectionsField } from "./MaxSelectionsField";
-import { OptionCard } from "./OptionCard";
+import { MultipleChoiceOptionCard } from "./MultipleChoiceOptionCard";
 import { type MultipleChoiceFormInput, multipleChoiceFormSchema } from "./schemas";
 import type { ActionFormProps, ActionOptionInput, MultipleChoiceFormData } from "./types";
 
@@ -135,7 +135,7 @@ export function MultipleChoiceForm({
                 );
 
                 return (
-                  <OptionCard
+                  <MultipleChoiceOptionCard
                     key={field.id}
                     index={index}
                     total={fields.length}
