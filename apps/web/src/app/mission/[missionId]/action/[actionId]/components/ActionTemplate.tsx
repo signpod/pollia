@@ -40,11 +40,10 @@ export function SurveyQuestionTemplate({
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentOrder]);
+  }, []);
 
   return (
-    <FixedBottomLayout>
+    <FixedBottomLayout hasGradient>
       <FixedTopLayout>
         <FixedTopLayout.Content className="pt-3">
           <ProgressBar value={progressValue} />

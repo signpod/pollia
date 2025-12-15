@@ -3,11 +3,13 @@
 import { AuthError } from "@/hooks/login/useKakaoLogin";
 import { useMissionIntroData, useMissionRewardVisibility, useSurveyResume } from "@/hooks/mission";
 import { useReadReward } from "@/hooks/reward/useReadReward";
+import { getSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
 import { cleanTiptapHTML } from "@/lib/utils";
 import { FixedBottomLayout, FloatingButton, Typo } from "@repo/ui/components";
 import { Gift } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useEffect } from "react";
 import {
   MissionCollection,
   MissionDescription,
@@ -16,8 +18,6 @@ import {
   MissionReward,
 } from "./components";
 import { BottomButton } from "./ui";
-import { getSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
-import { useEffect } from "react";
 
 export function MissionIntro({ initialError }: { initialError: AuthError | null }) {
   const { missionId } = useParams<{ missionId: string }>();
@@ -82,7 +82,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
           )}
         </div>
 
-        <FixedBottomLayout.Content className="flex w-full justify-end bg-transparent ">
+        <FixedBottomLayout.Content className="flex w-full justify-end">
           <div
             className={`absolute right-5 top-[-56px] flex flex-col gap-4 transition-opacity duration-150 ${
               !isRewardVisible ? "opacity-100" : "pointer-events-none opacity-0"
