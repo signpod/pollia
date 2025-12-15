@@ -1,6 +1,7 @@
 "use client";
 
 import { confirmFile, deleteImage, getUploadUrl } from "@/actions/common/images";
+import type { StorageBucket } from "@/constants/buckets";
 import { ConfirmFileRequest, DeleteImageRequest, UploadImageRequest } from "@/types/dto/image";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
@@ -20,7 +21,7 @@ export interface UploadedImage {
 }
 
 export interface UseImageUploadOptions {
-  bucket?: string;
+  bucket?: StorageBucket;
   onSuccess?: (result: UploadedImage) => void;
   onError?: (error: Error) => void;
   onProgress?: (progress: ImageUploadProgress) => void;
@@ -192,7 +193,6 @@ export function useMultipleImageUpload(options: UseImageUploadOptions = {}) {
     if (imageToRemove) {
       singleUpload.deleteImage({
         path: imageToRemove.path,
-        bucket: options.bucket,
       });
       setUploadedImages(prev => prev.filter((_, i) => i !== index));
     }

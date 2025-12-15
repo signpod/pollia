@@ -155,7 +155,6 @@ export function SurveyQuestionOption({
     if (uploadedFile) {
       deleteImage({
         path: uploadedFile.path,
-        bucket: STORAGE_BUCKETS.ACTION_OPTION_IMAGES,
       });
     }
 

@@ -20,8 +20,8 @@ import {
   SelectValue,
 } from "@/app/admin/components/shadcn-ui/select";
 import { Textarea } from "@/app/admin/components/shadcn-ui/textarea";
-import { ADMIN_STORAGE_BUCKETS } from "@/app/admin/constants/storage";
 import { useAdminSingleImage } from "@/app/admin/hooks/use-admin-image-upload";
+import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { rewardInputSchema } from "@/schemas/reward";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PaymentType } from "@prisma/client";
@@ -60,7 +60,7 @@ export function RewardForm({ isLoading, onSubmit, onCancel, initialData }: Rewar
     selectImage: handleImageSelect,
     clearImage: handleImageDelete,
   } = useAdminSingleImage({
-    bucket: ADMIN_STORAGE_BUCKETS.MISSION_IMAGES,
+    bucket: STORAGE_BUCKETS.MISSION_IMAGES,
     initialUrl: initialData?.imageUrl,
     onUploadSuccess: data => {
       form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
