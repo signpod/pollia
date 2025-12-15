@@ -1,27 +1,14 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
-import prisma from "@/database/utils/prisma/client";
+import { fileUploadService } from "@/server/services/file-upload";
 
 export async function getFileUploadById(fileUploadId: string) {
   try {
     const user = await requireAuth();
-
-    const fileUpload = await prisma.fileUpload.findFirst({
-      where: {
-        id: fileUploadId,
-        userId: user.id,
-      },
-    });
-
-    if (!fileUpload) {
-      const error = new Error("파일을 찾을 수 없습니다.");
-      error.cause = 404;
-      throw error;
-    }
-
-    return fileUpload;
+    return await fileUploadService.getFileUpload(fileUploadId, user.id);
   } catch (error) {
+    console.error("파일 업로드 조회 실패:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
