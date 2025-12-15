@@ -12,10 +12,8 @@ export interface RatingScaleOption {
   order: number;
 }
 
-export interface RatingScaleProps extends Omit<
-  ComponentProps<"div">,
-  "value" | "onChange" | "disabled"
-> {
+export interface RatingScaleProps
+  extends Omit<ComponentProps<"div">, "value" | "onChange" | "disabled"> {
   value: number;
   onChange: (value: number) => void;
   options: RatingScaleOption[];
@@ -203,9 +201,7 @@ export function RatingScale({
           step={sliderStep}
           disabled={disabled}
           orientation={isVertical ? "vertical" : "horizontal"}
-          className={cn(
-            isVertical ? "h-full w-6 items-center" : "h-18 w-full items-center",
-          )}
+          className={cn(isVertical ? "h-full w-6 items-center" : "h-18 w-full items-center")}
         >
           <Scale.Track
             className={cn(
@@ -359,7 +355,7 @@ function RatingScaleDots({
                         "whitespace-nowrap text-sub",
                         onOptionClick && !disabled && "cursor-pointer",
                         disabled && "cursor-not-allowed opacity-50",
-                      )}    
+                      )}
                       onClick={() => handleOptionClick(options?.[index]?.order ?? 0)}
                     >
                       {options?.[index]?.description}
@@ -372,7 +368,10 @@ function RatingScaleDots({
                 <Typo.SubTitle
                   size="large"
                   key={`title-horizontal-${position}`}
-                  className={cn("absolute text-center pointer-events-auto cursor-pointer", getTitleClassName())}
+                  className={cn(
+                    "absolute text-center pointer-events-auto cursor-pointer",
+                    getTitleClassName(),
+                  )}
                   style={getTitleStyle(options?.length ?? 0)}
                   onClick={() => handleOptionClick(index)}
                 >

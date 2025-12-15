@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { ComponentProps, CSSProperties } from "react";
+import type { CSSProperties, ComponentProps } from "react";
 import { cn } from "../../lib/utils";
 
 export interface ScaleRootProps
@@ -170,13 +170,7 @@ export interface ScaleTrackProps extends ComponentProps<"div"> {}
 
 function ScaleTrack({ className, children, ...props }: ScaleTrackProps) {
   return (
-    <div
-      className={cn(
-        "relative",
-        className,
-      )}
-      {...props}
-    >
+    <div className={cn("relative", className)} {...props}>
       {children}
     </div>
   );
@@ -187,16 +181,7 @@ export interface ScaleThumbProps extends ComponentProps<"div"> {
 }
 
 function ScaleThumb({ className, style, ...props }: ScaleThumbProps) {
-  return (
-    <div
-      className={cn(
-        "absolute",
-        className,
-      )}
-      style={style}
-      {...props}
-    />
-  );
+  return <div className={cn("absolute", className)} style={style} {...props} />;
 }
 
 export const Scale = {
