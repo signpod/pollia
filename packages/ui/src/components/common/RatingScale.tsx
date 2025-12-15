@@ -190,17 +190,10 @@ export function RatingScale({
       sliderMax === sliderMin ? 0 : (localValue - sliderMin) / (sliderMax - sliderMin);
     const positionPercent = normalizedValue * 100;
 
-    const isFirstDot = isFirst(currentIndex);
-    const isLastDot = isLast(currentIndex);
-
     if (isVertical) {
-      const transform = isFirstDot
-        ? "translate(-50%, 0%)"
-        : isLastDot
-          ? "translate(-50%, -100%)"
-          : `translate(-50%, -${positionPercent}%)`;
+      const transform = "translate(-50%, -50%)";
       return {
-        top: "100%",
+        top: `${positionPercent}%`,
         transform,
         left: "50%",
         position: "absolute" as const,
@@ -351,13 +344,7 @@ function SliderDots({
           const isLastDot = isLast(index);
 
           const positionValue = `${position * 100}%`;
-          const transform = isVertical
-            ? isFirstDot
-              ? "translate(-50%, 0%)"
-              : isLastDot
-                ? "translate(-50%, -100%)"
-                : "translate(-50%, -50%)"
-            : "translate(-50%, -50%)";
+          const transform = "translate(-50%, -50%)";
 
           return (
             <div

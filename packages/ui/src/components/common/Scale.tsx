@@ -39,7 +39,7 @@ function ScaleRoot({
 
       if (orientation === "vertical") {
         const y = clientY - rect.top;
-        percentage = 1 - y / rect.height;
+        percentage = y / rect.height;
       } else {
         const x = clientX - rect.left;
         percentage = x / rect.width;
