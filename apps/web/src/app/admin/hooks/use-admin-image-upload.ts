@@ -89,7 +89,7 @@ export function useAdminSingleImage(options: UseAdminSingleImageOptions = {}) {
     }
     setPreviewUrl(null);
     setUploadedData(null);
-  }, [uploadedData, deleteMutation, options.bucket]);
+  }, [uploadedData, deleteMutation]);
 
   return {
     previewUrl,
@@ -225,7 +225,7 @@ export function useAdminMultipleImages(options: UseAdminMultipleImagesOptions = 
         return newMap;
       });
     },
-    [uploadedDataMap, deleteMutation, options.bucket],
+    [uploadedDataMap, deleteMutation],
   );
 
   const getPreviewUrl = useCallback(
