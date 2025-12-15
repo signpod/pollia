@@ -406,14 +406,18 @@ describe("ActionService - Create", () => {
       expect(result.type).toBe(ActionType.SUBJECTIVE);
       expect(result.order).toBe(request.order);
       expect(result.createdAt).toBeDefined();
-      expect(ctx.mockActionRepo.create).toHaveBeenCalledWith({
-        missionId: "mission1",
-        title: request.title,
-        description: request.description,
-        imageUrl: request.imageUrl,
-        type: ActionType.SUBJECTIVE,
-        order: request.order,
-      });
+      expect(ctx.mockActionRepo.create).toHaveBeenCalledWith(
+        {
+          missionId: "mission1",
+          title: request.title,
+          description: request.description,
+          imageUrl: request.imageUrl,
+          imageFileUploadId: undefined,
+          type: ActionType.SUBJECTIVE,
+          order: request.order,
+        },
+        "user1",
+      );
     });
 
     it("Mission 소유자가 아니면 403 에러를 던진다", async () => {

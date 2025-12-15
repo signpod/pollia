@@ -184,7 +184,7 @@ describe("ActionOptionService", () => {
         description: "설명",
         imageUrl: "https://example.com/image.jpg",
         order: 0,
-        fileUploadId: "file1",
+        imageFileUploadId: "file1",
       };
       const mockCreatedOption = {
         id: "option1",
@@ -448,7 +448,7 @@ describe("ActionOptionService", () => {
 
       // Then
       expect(result).toEqual(mockUpdatedOption);
-      expect(mockOptionRepo.update).toHaveBeenCalledWith("option1", updateData);
+      expect(mockOptionRepo.update).toHaveBeenCalledWith("option1", updateData, "user1");
     });
 
     it("Option이 없으면 404 에러를 던진다", async () => {
