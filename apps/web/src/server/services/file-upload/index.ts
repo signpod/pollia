@@ -1,7 +1,7 @@
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
 import { fileUploadRepository } from "@/server/repositories/file-upload/fileUploadRepository";
-import { FileStatus } from "@prisma/client";
+import { FileStatus, type FileUpload } from "@prisma/client";
 
 import type { CleanupResult, CreateUploadUrlInput, UploadUrlResult } from "./types";
 
@@ -103,7 +103,7 @@ export class FileUploadService {
     await this.repo.updateStatus(fileUploadId, FileStatus.CONFIRMED, new Date());
   }
 
-  async getFileUpload(fileUploadId: string, userId: string) {
+  async getFileUpload(fileUploadId: string, userId: string): Promise<FileUpload> {
     const fileUpload = await this.repo.findByIdAndUserId(fileUploadId, userId);
 
     if (!fileUpload) {

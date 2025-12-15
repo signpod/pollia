@@ -2,8 +2,9 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import { fileUploadService } from "@/server/services/file-upload";
+import type { FileUpload } from "@prisma/client";
 
-export async function getFileUploadById(fileUploadId: string) {
+export async function getFileUploadById(fileUploadId: string): Promise<FileUpload> {
   try {
     const user = await requireAuth();
     return await fileUploadService.getFileUpload(fileUploadId, user.id);
