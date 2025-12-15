@@ -1,38 +1,30 @@
 model FileUpload {
-  id                String             @id @default(cuid())
-  userId            String             @map("user_id")
-  originalFileName  String             @map("original_file_name")
-  filePath          String             @map("file_path")
-  publicUrl         String             @map("public_url")
-  fileSize          Int                @map("file_size")
-  mimeType          String             @map("mime_type")
-  bucket            String             @default("poll-images")
-  status            FileStatus         @default(TEMPORARY)
-  relatedEntityType RelatedEntityType? @map("related_entity_type")
-  relatedEntityId   String?            @map("related_entity_id")
-  createdAt         DateTime           @default(now()) @map("created_at")
-  confirmedAt       DateTime?          @map("confirmed_at")
+  id               String     @id @default(cuid())
+  userId           String     @map("user_id")
+  originalFileName String     @map("original_file_name")
+  filePath         String     @map("file_path")
+  publicUrl        String     @map("public_url")
+  fileSize         Int        @map("file_size")
+  mimeType         String     @map("mime_type")
+  bucket           String     @default("pollia-images")
+  status           FileStatus @default(TEMPORARY)
+  createdAt        DateTime   @default(now()) @map("created_at")
+  confirmedAt      DateTime?  @map("confirmed_at")
 
-  actionOption     ActionOption? @relation("ActionOptionImage")
-  missionImage     Mission?      @relation("MissionImage")
-  missionBrandLogo Mission?      @relation("MissionBrandLogo")
-  actionImage      Action?       @relation("ActionImage")
+  actionOptions      ActionOption[] @relation("ActionOptionImage")
+  missionImages      Mission[]      @relation("MissionImage")
+  missionBrandLogos  Mission[]      @relation("MissionBrandLogo")
+  actionImages       Action[]       @relation("ActionImage")
+  actionAnswerImages ActionAnswer[] @relation("ActionAnswerImage")
 
   user User @relation("FileUploader", fields: [userId], references: [id])
 
   @@index([userId, status])
   @@index([status, createdAt])
-  @@index([relatedEntityType, relatedEntityId])
   @@map("file_uploads")
 }
 
 enum FileStatus {
   TEMPORARY
   CONFIRMED
-}
-
-enum RelatedEntityType {
-  MISSION
-  ACTION
-  ACTION_OPTION
 }

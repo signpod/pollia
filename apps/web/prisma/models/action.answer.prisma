@@ -3,12 +3,16 @@ model ActionAnswer {
   optionId    String?         @map("option_id")
   textAnswer  String?         @map("text_answer")
   scaleAnswer Int?            @map("scale_answer")
+  imageUrl    String?         @map("image_url")
   actionId    String          @map("action_id")
   responseId  String          @map("response_id")
   createdAt   DateTime        @default(now()) @map("created_at")
   action      Action          @relation(fields: [actionId], references: [id], onDelete: Cascade)
   option      ActionOption?   @relation(fields: [optionId], references: [id], onDelete: Cascade)
   response    MissionResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+
+  imageFileUploadId String?     @map("image_file_upload_id")
+  imageFileUpload   FileUpload? @relation("ActionAnswerImage", fields: [imageFileUploadId], references: [id])
 
   @@unique([responseId, actionId, optionId])
   @@index([actionId])
