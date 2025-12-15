@@ -16,7 +16,7 @@ const TOOLTIP_TEXT = {
 const BUTTON_TEXT = {
   loggedIn: "지금 바로 참여하기",
   loggedOut: "카카오로 로그인하기",
-  expired: "응답 기간이 마감되었어요",
+  expired: "마감된 미션이에요",
   alreadyCompleted: "이미 완료한 미션이에요",
 };
 
