@@ -13,6 +13,8 @@ interface MissionRewardProps {
   onVisibilityChange?: (isVisible: boolean) => void;
 }
 
+const REWARD_TEXT = "미션 리워드";
+
 export function MissionReward({
   rewardName,
   rewardImage,
@@ -86,7 +88,7 @@ export function MissionReward({
           >
             <div className="flex-1">
               <Typo.Body size="medium" className="text-info text-left">
-                설문 리워드
+                {REWARD_TEXT}
               </Typo.Body>
             </div>
             <div className="shrink-0 size-6 flex items-center justify-center text-disabled">
@@ -97,7 +99,7 @@ export function MissionReward({
           <div ref={headerDivRef} className="flex w-full items-center gap-2 py-3">
             <div className="flex-1">
               <Typo.Body size="medium" className="text-info text-left">
-                설문 리워드
+                {REWARD_TEXT}
               </Typo.Body>
             </div>
           </div>

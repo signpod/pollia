@@ -1,18 +1,18 @@
-export const SURVEY_TOAST_MESSAGE = {
+export const MISSION_TOAST_MESSAGE = {
   first: {
-    id: "survey-toast-first",
-    message: "솔직하게 답변해주세요! 👀",
+    id: "mission-toast-first",
+    message: "첫 미션 시작! 가볍게 한 번 가볼까요? 🚀",
   },
   half: {
-    id: "survey-toast-half",
-    message: "벌써 반이나 응답하셨어요! 조금만 더 힘내요😎",
+    id: "mission-toast-half",
+    message: "중간까지 클리어! 완주가 코앞이에요 👏",
   },
   final: {
-    id: "survey-toast-final",
-    message: "드디어 마지막 질문이에요! 🎁",
+    id: "mission-toast-final",
+    message: "거의 다 왔어요! 마지막 미션만 완료하면 끝! 🏁",
   },
   error: {
-    id: "survey-toast-error",
+    id: "mission-toast-error",
     message: "네트워크에 문제가 발생했어요.\n잠시후 다시 시도해주세요.",
   },
 } as const;

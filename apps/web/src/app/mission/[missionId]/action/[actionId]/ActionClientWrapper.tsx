@@ -1,16 +1,16 @@
 "use client";
 import { toast } from "@/components/common/Toast";
 import { ExtendedActionStepConfig, createActionSteps } from "@/constants/action";
-import { SURVEY_TOAST_MESSAGE } from "@/constants/missionMessages";
+import { MISSION_TOAST_MESSAGE } from "@/constants/missionMessages";
 import { ROUTES } from "@/constants/routes";
 import { useReadActionsDetail } from "@/hooks/action/useReadActionsDetail";
-import { useMissionSurveyToast } from "@/hooks/mission/useMissionSurveyToast";
 import {
   useReadMissionResponseForMission,
   useStartSurveyResponse,
   useSubmitQuestionAnswer,
   useSubmitSurveyAnswers,
 } from "@/hooks/mission-response";
+import { useMissionSurveyToast } from "@/hooks/mission/useMissionSurveyToast";
 import { getSessionStorage, removeSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
@@ -30,8 +30,8 @@ import {
 } from "./ui";
 
 const SURVEY_SUBMIT_MODAL = {
-  title: "응답을 제출할까요?",
-  description: "제출 이후에는 답변을 수정하거나\n다시 응답할 수 없어요",
+  title: "미션을 최종적으로 제출할까요?",
+  description: "제출 이후에는 답변을 수정하거나\n다시 참여할 수 없어요",
   confirmText: "제출하기",
   cancelText: "취소",
 } as const;
@@ -141,7 +141,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
         router.push(ROUTES.MISSION_DONE(missionId));
       },
       onError: () => {
-        toast.warning(SURVEY_TOAST_MESSAGE.error.message, { id: SURVEY_TOAST_MESSAGE.error.id });
+        toast.warning(MISSION_TOAST_MESSAGE.error.message, { id: MISSION_TOAST_MESSAGE.error.id });
       },
       missionId,
     });
