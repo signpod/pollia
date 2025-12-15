@@ -107,6 +107,7 @@ export function CreateActionDialog({
 
   const handleFormSubmit = (data: ActionFormData) => {
     onSubmit(data);
+    handleOpenChange(false);
   };
 
   const handleCancel = () => {
