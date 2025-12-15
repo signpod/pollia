@@ -1,9 +1,9 @@
 import { ROUTES } from "@/constants/routes";
+import { setSessionStorage } from "@/lib/sessionStorage";
 import { useModal } from "@repo/ui/components";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { useResetMissionResponse } from "../mission-response/useResetMissionResponse";
-import { removeSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
 
 interface UseMissionResumeParams {
   isEnabledToResume: boolean;
@@ -28,7 +28,7 @@ export function useSurveyResume({
   const showResumeModal = useCallback(() => {
     if (isEnabledToResume && nextActionId && firstActionId) {
       showModal({
-        title: "설문을 계속 진행할까요?",
+        title: "미션을 계속 진행할까요?",
         description: "마지막 지점부터 바로 이어할 수 있어요.",
         confirmText: "이어서 진행",
         cancelText: "처음부터 다시",
