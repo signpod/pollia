@@ -27,6 +27,7 @@ const baseActionSchema = z.object({
   title: titleSchema,
   description: descriptionSchema,
   imageUrl: imageUrlSchema,
+  imageFileUploadId: z.string().optional(),
   order: orderSchema,
 });
 
@@ -68,7 +69,6 @@ export const eitherOrInputSchema = baseActionSchema;
 
 export const tagInputSchema = baseActionSchema
   .extend({
-    imageFileUploadId: z.string().optional(),
     maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다.").optional(),
     options: z.array(actionOptionSchema).min(2, "최소 2개 이상의 태그가 필요합니다."),
   })
@@ -80,19 +80,16 @@ export const tagInputSchema = baseActionSchema
     { message: "최소 2개 이상의 유효한 태그가 필요합니다.", path: ["options"] },
   );
 
-export const ratingInputSchema = baseActionSchema.extend({
-  imageFileUploadId: z.string().optional(),
-});
+export const ratingInputSchema = baseActionSchema;
 
-export const imageInputSchema = baseActionSchema.extend({
-  imageFileUploadId: z.string().optional(),
-});
+export const imageInputSchema = baseActionSchema;
 
 export const actionUpdateSchema = z
   .object({
     title: titleSchema.optional(),
     description: descriptionSchema,
     imageUrl: imageUrlSchema,
+    imageFileUploadId: z.string().optional(),
     order: orderSchema.optional(),
     maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다.").optional(),
     options: z.array(actionOptionSchema).optional(),

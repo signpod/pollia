@@ -112,6 +112,7 @@ export class ActionRepository {
       title: string;
       description?: string;
       imageUrl?: string;
+      imageFileUploadId?: string;
       type: ActionType;
       order: number;
       maxSelections?: number;
@@ -132,6 +133,7 @@ export class ActionRepository {
           title: data.title,
           description: data.description,
           imageUrl: data.imageUrl,
+          imageFileUploadId: data.imageFileUploadId,
           type: data.type,
           order: data.order,
           maxSelections: data.maxSelections,
@@ -149,14 +151,15 @@ export class ActionRepository {
         })),
       });
 
-      const optionFileUploadIds = options
-        .map(option => option.imageFileUploadId)
-        .filter(Boolean) as string[];
+      const allFileUploadIds = [
+        data.imageFileUploadId,
+        ...options.map(option => option.imageFileUploadId),
+      ].filter(Boolean) as string[];
 
-      if (optionFileUploadIds.length > 0) {
+      if (allFileUploadIds.length > 0) {
         await tx.fileUpload.updateMany({
           where: {
-            id: { in: optionFileUploadIds },
+            id: { in: allFileUploadIds },
             userId: userId,
             status: "TEMPORARY" as FileStatus,
           },
@@ -171,20 +174,55 @@ export class ActionRepository {
     });
   }
 
-  async create(data: {
-    missionId?: string;
-    title: string;
-    description?: string;
-    imageUrl?: string;
-    type: ActionType;
-    order: number;
-  }) {
+  async create(
+    data: {
+      missionId?: string;
+      title: string;
+      description?: string;
+      imageUrl?: string;
+      imageFileUploadId?: string;
+      type: ActionType;
+      order: number;
+    },
+    userId?: string,
+  ) {
+    if (data.imageFileUploadId && userId) {
+      return prisma.$transaction(async tx => {
+        const createdAction = await tx.action.create({
+          data: {
+            missionId: data.missionId ?? undefined,
+            title: data.title,
+            description: data.description,
+            imageUrl: data.imageUrl,
+            imageFileUploadId: data.imageFileUploadId,
+            type: data.type,
+            order: data.order,
+          },
+        });
+
+        await tx.fileUpload.updateMany({
+          where: {
+            id: data.imageFileUploadId,
+            userId: userId,
+            status: "TEMPORARY" as FileStatus,
+          },
+          data: {
+            status: "CONFIRMED" as FileStatus,
+            confirmedAt: new Date(),
+          },
+        });
+
+        return createdAction;
+      });
+    }
+
     return prisma.action.create({
       data: {
         missionId: data.missionId ?? undefined,
         title: data.title,
         description: data.description,
         imageUrl: data.imageUrl,
+        imageFileUploadId: data.imageFileUploadId,
         type: data.type,
         order: data.order,
       },
@@ -197,10 +235,35 @@ export class ActionRepository {
       title?: string;
       description?: string;
       imageUrl?: string;
+      imageFileUploadId?: string;
       order?: number;
       maxSelections?: number;
     },
+    userId?: string,
   ) {
+    if (data.imageFileUploadId && userId) {
+      return prisma.$transaction(async tx => {
+        const updatedAction = await tx.action.update({
+          where: { id: actionId },
+          data,
+        });
+
+        await tx.fileUpload.updateMany({
+          where: {
+            id: data.imageFileUploadId,
+            userId: userId,
+            status: "TEMPORARY" as FileStatus,
+          },
+          data: {
+            status: "CONFIRMED" as FileStatus,
+            confirmedAt: new Date(),
+          },
+        });
+
+        return updatedAction;
+      });
+    }
+
     return prisma.action.update({
       where: { id: actionId },
       data,
@@ -213,6 +276,7 @@ export class ActionRepository {
       title?: string;
       description?: string;
       imageUrl?: string;
+      imageFileUploadId?: string;
       order?: number;
       maxSelections?: number;
     },
@@ -246,14 +310,15 @@ export class ActionRepository {
         })),
       });
 
-      const optionFileUploadIds = options
-        .map(option => option.imageFileUploadId)
-        .filter(Boolean) as string[];
+      const allFileUploadIds = [
+        data.imageFileUploadId,
+        ...options.map(option => option.imageFileUploadId),
+      ].filter(Boolean) as string[];
 
-      if (optionFileUploadIds.length > 0) {
+      if (allFileUploadIds.length > 0) {
         await tx.fileUpload.updateMany({
           where: {
-            id: { in: optionFileUploadIds },
+            id: { in: allFileUploadIds },
             userId: userId,
             status: "TEMPORARY" as FileStatus,
           },

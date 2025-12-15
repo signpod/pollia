@@ -10,6 +10,7 @@ function toUpdateActionInput(dto: UpdateActionRequest): UpdateActionInput {
     title: dto.title,
     description: dto.description,
     imageUrl: dto.imageUrl,
+    imageFileUploadId: dto.imageFileUploadId,
     order: dto.order,
     maxSelections: dto.maxSelections,
     options: dto.options,
