@@ -58,7 +58,6 @@ function ActionContent() {
     const actionIdBefore = getSessionStorage(`current-action-id-${missionId}`);
     const currentActionIdIndex = actionsIds.findIndex(id => id === actionId);
     const getIsActionIdBefore = () => {
-      console.log("actionIdBefore", actionIdBefore);
       if (!actionIdBefore) return false;
       if (actionIdBefore === "initial") {
         return currentActionIdIndex === 0;
