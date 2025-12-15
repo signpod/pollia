@@ -11,6 +11,7 @@ export async function updateOption(
     description?: string;
     imageUrl?: string;
     order?: number;
+    imageFileUploadId?: string;
   },
 ): Promise<{ data: ActionOption }> {
   try {
