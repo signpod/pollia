@@ -5,7 +5,9 @@ export interface CreateMissionInput {
   description?: string;
   target?: string;
   imageUrl?: string;
+  imageFileUploadId?: string;
   brandLogoUrl?: string;
+  brandLogoFileUploadId?: string;
   deadline?: Date;
   estimatedMinutes?: number;
   actionIds?: string[];
@@ -16,7 +18,9 @@ export interface UpdateMissionInput {
   description?: string;
   target?: string;
   imageUrl?: string;
+  imageFileUploadId?: string;
   brandLogoUrl?: string;
+  brandLogoFileUploadId?: string;
   deadline?: Date;
   estimatedMinutes?: number;
   isActive?: boolean;

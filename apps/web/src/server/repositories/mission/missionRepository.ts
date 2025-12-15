@@ -1,6 +1,6 @@
 import prisma from "@/database/utils/prisma/client";
 import type { SortOrderType } from "@/types/common/sort";
-import { type ActionType, Prisma } from "@prisma/client";
+import { type ActionType, type FileStatus, Prisma } from "@prisma/client";
 
 export class MissionRepository {
   async findById(missionId: string) {
@@ -123,7 +123,9 @@ export class MissionRepository {
       description?: string;
       target?: string;
       imageUrl?: string;
+      imageFileUploadId?: string;
       brandLogoUrl?: string;
+      brandLogoFileUploadId?: string;
       deadline?: Date;
       estimatedMinutes?: number;
       creatorId: string;
@@ -137,7 +139,9 @@ export class MissionRepository {
           description: data.description,
           target: data.target,
           imageUrl: data.imageUrl,
+          imageFileUploadId: data.imageFileUploadId,
           brandLogoUrl: data.brandLogoUrl,
+          brandLogoFileUploadId: data.brandLogoFileUploadId,
           deadline: data.deadline,
           estimatedMinutes: data.estimatedMinutes,
           creatorId: data.creatorId,
@@ -158,6 +162,24 @@ export class MissionRepository {
         `;
       }
 
+      const fileUploadIds = [data.imageFileUploadId, data.brandLogoFileUploadId].filter(
+        Boolean,
+      ) as string[];
+
+      if (fileUploadIds.length > 0) {
+        await tx.fileUpload.updateMany({
+          where: {
+            id: { in: fileUploadIds },
+            userId: data.creatorId,
+            status: "TEMPORARY" as FileStatus,
+          },
+          data: {
+            status: "CONFIRMED" as FileStatus,
+            confirmedAt: new Date(),
+          },
+        });
+      }
+
       return createdMission;
     });
   }
@@ -169,12 +191,42 @@ export class MissionRepository {
       description?: string;
       target?: string;
       imageUrl?: string;
+      imageFileUploadId?: string;
       brandLogoUrl?: string;
+      brandLogoFileUploadId?: string;
       deadline?: Date;
       estimatedMinutes?: number;
       isActive?: boolean;
     },
+    userId?: string,
   ) {
+    const fileUploadIds = [data.imageFileUploadId, data.brandLogoFileUploadId].filter(
+      Boolean,
+    ) as string[];
+
+    if (fileUploadIds.length > 0 && userId) {
+      return prisma.$transaction(async tx => {
+        const updatedMission = await tx.mission.update({
+          where: { id: missionId },
+          data,
+        });
+
+        await tx.fileUpload.updateMany({
+          where: {
+            id: { in: fileUploadIds },
+            userId: userId,
+            status: "TEMPORARY" as FileStatus,
+          },
+          data: {
+            status: "CONFIRMED" as FileStatus,
+            confirmedAt: new Date(),
+          },
+        });
+
+        return updatedMission;
+      });
+    }
+
     return prisma.mission.update({
       where: { id: missionId },
       data,

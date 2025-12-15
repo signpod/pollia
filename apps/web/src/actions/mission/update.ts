@@ -9,7 +9,9 @@ export interface UpdateMissionRequest {
   description?: string;
   target?: string;
   imageUrl?: string;
+  imageFileUploadId?: string;
   brandLogoUrl?: string;
+  brandLogoFileUploadId?: string;
   deadline?: Date;
   estimatedMinutes?: number;
   isActive?: boolean;
@@ -22,7 +24,9 @@ function toUpdateMissionInput(dto: UpdateMissionRequest): UpdateMissionInput {
     description: dto.description,
     target: dto.target,
     imageUrl: dto.imageUrl,
+    imageFileUploadId: dto.imageFileUploadId,
     brandLogoUrl: dto.brandLogoUrl,
+    brandLogoFileUploadId: dto.brandLogoFileUploadId,
     deadline: dto.deadline,
     estimatedMinutes: dto.estimatedMinutes,
     isActive: dto.isActive,
