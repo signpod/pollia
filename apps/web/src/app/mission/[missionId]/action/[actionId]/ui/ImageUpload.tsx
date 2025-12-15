@@ -56,7 +56,7 @@ function generateBlurDataURL(file: File): Promise<string> {
 
 interface ImageUploadProps {
   initialImageUrl?: string;
-  onUploadChange?: (hasUploadedImage: boolean, imageUrl?: string) => void;
+  onUploadChange?: (hasUploadedImage: boolean, imageUrl?: string, fileUploadId?: string) => void;
   actionId: string;
 }
 
@@ -105,13 +105,13 @@ export function ImageUpload({ initialImageUrl, onUploadChange, actionId }: Image
     onSuccess: result => {
       setUploadedImage(result);
       setIsImageLoading(true);
-      onUploadChange?.(true, result.publicUrl);
+      onUploadChange?.(true, result.publicUrl, result.fileUploadId);
     },
     onError: () => {
       toast.warning(uploadError?.message || "파일 업로드에 실패했어요.\n다시 시도해주세요.");
       setUploadedImage(null);
       setIsImageLoading(false);
-      onUploadChange?.(false, undefined);
+      onUploadChange?.(false, undefined, undefined);
     },
   });
 
