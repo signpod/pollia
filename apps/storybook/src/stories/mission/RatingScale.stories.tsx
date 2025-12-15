@@ -243,10 +243,10 @@ export const FourOptions: Story = {
           value={value}
           onChange={setValue}
           options={[
-            { id: "1", title: "전혀 아님", order: 1 },
-            { id: "2", title: "아님", order: 2 },
-            { id: "3", title: "그렇다", order: 3 },
-            { id: "4", title: "매우 그렇다", order: 4 },
+            { id: "1", title: "1점", order: 1 },
+            { id: "2", title: "2점", order: 2 },
+            { id: "3", title: "3점", order: 3 },
+            { id: "4", title: "4점", order: 4 },
           ]}
         />
         <p className="text-sm text-zinc-600">선택된 값: {value}</p>
@@ -271,11 +271,11 @@ export const FiveOptions: Story = {
           value={value}
           onChange={setValue}
           options={[
-            { id: "1", title: "매우 나쁨", order: 1 },
+            { id: "1", title: "매나쁨", order: 1 },
             { id: "2", title: "나쁨", order: 2 },
             { id: "3", title: "보통", order: 3 },
             { id: "4", title: "좋음", order: 4 },
-            { id: "5", title: "매우 좋음", order: 5 },
+            { id: "5", title: "매우", order: 5 },
           ]}
         />
         <p className="text-sm text-zinc-600">선택된 값: {value}</p>
@@ -321,7 +321,7 @@ export const Vertical: Story = {
   },
 };
 
-export const VerticalWithOptions: Story = {
+export const VerticalWithDescription: Story = {
   render: () => {
     const [value, setValue] = useState(3);
     return (
@@ -330,11 +330,11 @@ export const VerticalWithOptions: Story = {
           value={value}
           onChange={setValue}
           options={[
-            { id: "1", title: "매우 나쁨", order: 1 },
-            { id: "2", title: "나쁨", order: 2 },
-            { id: "3", title: "보통", order: 3 },
-            { id: "4", title: "좋음", order: 4 },
-            { id: "5", title: "매우 좋음", order: 5 },
+            { id: "1", title: "1점", description: "매우 나쁨", order: 1 },
+            { id: "2", title: "2점", description: "나쁨", order: 2 },
+            { id: "3", title: "3점", description: "보통", order: 3 },
+            { id: "4", title: "4점", description: "좋음", order: 4 },
+            { id: "5", title: "5점", description: "매우 좋음", order: 5 },
           ]}
         />
       </div>
