@@ -47,7 +47,7 @@ export function SurveyCardContent({
       {/* 정보 박스 */}
       <div
         ref={refs.infoBox}
-        className="w-full flex flex-col gap-3 bg-light rounded-sm p-3"
+        className="w-full flex flex-wrap items-center gap-x-4 gap-y-1 bg-light rounded-sm p-3"
         style={{ opacity: 0 }}
       >
         {estimatedMinutes && <InfoRow label="소요시간" value={`${estimatedMinutes}분`} />}
@@ -77,8 +77,8 @@ export function SurveyCardContent({
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center gap-2">
-      <Typo.Body className="text-disabled">{label}</Typo.Body>
+    <div className="flex gap-2">
+      <Typo.Body className="text-disabled whitespace-nowrap">{label}</Typo.Body>
       <Typo.Body className="text-sub">{value}</Typo.Body>
     </div>
   );
