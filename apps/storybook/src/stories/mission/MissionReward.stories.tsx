@@ -1,4 +1,4 @@
-import { MissionReward } from "@/app/mission/[id]/components";
+import { MissionReward } from "@/app/mission/[missionId]/components";
 import type { Meta, StoryObj } from "@storybook/nextjs";
 
 const meta: Meta<typeof MissionReward> = {

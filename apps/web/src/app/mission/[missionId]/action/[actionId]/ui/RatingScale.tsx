@@ -18,12 +18,12 @@ export function MissionRatingScale({
   missionResponse,
   isLoading,
 }: ActionStepContentProps) {
-  const { isScaleValueChanged, scaleValue, handleScaleValueChange } = useMissionScaleValue({
+  const { scaleValue, handleScaleValueChange } = useMissionScaleValue({
     actionId: actionData.id,
     missionResponse,
     updateCanGoNext,
     onAnswerChange,
-    defaultValue: 3,
+    defaultValue: actionData.options.length > 0 ? Math.floor(actionData.options.length / 2) : 0,
   });
 
   return (
@@ -34,7 +34,7 @@ export function MissionRatingScale({
       description={actionData.description ?? undefined}
       imageUrl={actionData.imageUrl ?? undefined}
       isFirstAction={isFirstAction}
-      isNextDisabled={isNextDisabledProp || !isScaleValueChanged}
+      isNextDisabled={isNextDisabledProp}
       onPrevious={onPrevious}
       onNext={onNext}
       nextButtonText={nextButtonText}
@@ -43,7 +43,8 @@ export function MissionRatingScale({
       <RatingScale
         options={actionData.options.map(option => ({
           id: option.id,
-          title: option.title,
+          title: option.title ?? undefined,
+          description: option.description ?? undefined,
           order: option.order,
         }))}
         value={scaleValue}
