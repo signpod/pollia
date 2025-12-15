@@ -5,6 +5,7 @@ export interface CreateRewardRequest {
   name: string;
   description?: string;
   imageUrl?: string;
+  imageFileUploadId?: string;
   paymentType: PaymentType;
   scheduledDate?: Date;
 }
@@ -13,6 +14,7 @@ export interface UpdateRewardRequest {
   name?: string;
   description?: string;
   imageUrl?: string;
+  imageFileUploadId?: string;
   paymentType?: PaymentType;
   scheduledDate?: Date;
 }

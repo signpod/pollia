@@ -21,7 +21,7 @@ export class RewardService {
     return await this.repo.findMany();
   }
 
-  async createReward(input: CreateRewardInput) {
+  async createReward(input: CreateRewardInput, userId: string) {
     const result = rewardInputSchema.safeParse(input);
     if (!result.success) {
       const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
@@ -29,10 +29,10 @@ export class RewardService {
       throw error;
     }
 
-    return await this.repo.create(result.data);
+    return await this.repo.create(result.data, userId);
   }
 
-  async updateReward(rewardId: string, input: UpdateRewardInput) {
+  async updateReward(rewardId: string, input: UpdateRewardInput, userId: string) {
     await this.getReward(rewardId);
 
     const result = rewardUpdateSchema.safeParse(input);
@@ -42,7 +42,7 @@ export class RewardService {
       throw error;
     }
 
-    return await this.repo.update(rewardId, result.data);
+    return await this.repo.update(rewardId, result.data, userId);
   }
 
   async deleteReward(rewardId: string): Promise<void> {
