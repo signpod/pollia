@@ -1,6 +1,6 @@
 "use client";
 
-import { confirmFile, deleteImage, getUploadUrl } from "@/actions/common/image";
+import { confirmFile, deleteImage, getUploadUrl } from "@/actions/common/images";
 import { ConfirmFileRequest, DeleteImageRequest, UploadImageRequest } from "@/types/dto/image";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";

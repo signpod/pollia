@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteImage, getUploadUrl } from "@/actions/common/image";
+import { deleteImage, getUploadUrl } from "@/actions/common/images";
 import { ADMIN_STORAGE_BUCKETS } from "@/app/admin/constants/storage";
 import type { DeleteImageRequest, UploadImageRequest } from "@/types/dto/image";
 import { useMutation } from "@tanstack/react-query";
