@@ -25,8 +25,8 @@ export function MissionCollection({ estimatedMinutes, deadline, target }: Missio
     <div className="flex w-full flex-col gap-3 rounded-sm bg-light p-3">
       <div className="flex flex-wrap items-start gap-x-4 gap-y-1">
         {items.map(item => (
-          <div key={item.id} className="flex items-center gap-2">
-            <Typo.Body size="medium" className="text-disabled">
+          <div key={item.id} className="flex gap-2">
+            <Typo.Body size="medium" className="text-disabled whitespace-nowrap">
               {item.label}
             </Typo.Body>
             <Typo.Body size="medium" className="text-sub">

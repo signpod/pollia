@@ -13,9 +13,9 @@ export function Chip({ label, isSelected, className, disabled, ...props }: ChipP
       className={cn(
         "flex items-center justify-center px-4 py-3 ring-1 ring-inset rounded-full gap-3 m-0",
         "transition-colors duration-200 ease-in-out",
-        "hover:bg-zinc-50 active:ring-point",
+        "hover:bg-zinc-50 active:bg-zinc-200 active:ring-point",
         isSelected
-          ? "bg-violet-50 ring-point"
+          ? "bg-violet-50 ring-point hover:bg-violet-100 active:bg-violet-200"
           : disabled
             ? "bg-zinc-50 ring-default"
             : "bg-white ring-default",
