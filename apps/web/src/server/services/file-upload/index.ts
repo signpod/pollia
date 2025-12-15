@@ -16,7 +16,6 @@ const ALLOWED_IMAGE_TYPES = [
   "image/heif",
 ];
 const TEMPORARY_FILE_RETENTION_HOURS = 24;
-const UNREFERENCED_FILE_RETENTION_HOURS = 72;
 
 export type SupabaseClientFactory = typeof createServerSupabaseClient;
 export type SupabaseClient = Awaited<ReturnType<SupabaseClientFactory>>;
@@ -137,10 +136,7 @@ export class FileUploadService {
       }
     }
 
-    const unreferencedCutoffTime = new Date(
-      Date.now() - UNREFERENCED_FILE_RETENTION_HOURS * 60 * 60 * 1000,
-    );
-    const unreferencedFiles = await this.repo.findUnreferencedOlderThan(unreferencedCutoffTime);
+    const unreferencedFiles = await this.repo.findUnreferencedOlderThan(new Date());
 
     console.log(`참조 없는 고아 파일 ${unreferencedFiles.length}개 발견`);
 
