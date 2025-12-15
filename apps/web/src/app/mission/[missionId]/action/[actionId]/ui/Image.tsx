@@ -59,7 +59,7 @@ export function ActionImage({
       const answer: ActionAnswerItem = {
         actionId: actionData.id,
         type: ActionType.IMAGE,
-        textResponse: imageUrl,
+        imageUrl: imageUrl,
         imageFileUploadId: imageFileUploadId,
       };
 

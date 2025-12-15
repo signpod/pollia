@@ -182,11 +182,11 @@ export class ActionAnswerService {
           actionId,
           textAnswer: answer.textResponse,
         });
-      } else if (answer.type === ActionType.IMAGE && answer.textResponse) {
+      } else if (answer.type === ActionType.IMAGE && answer.imageUrl) {
         answersToCreate.push({
           responseId: parseResult.data.responseId,
           actionId,
-          imageUrl: answer.textResponse,
+          imageUrl: answer.imageUrl,
           imageFileUploadId: answer.imageFileUploadId,
         });
       } else if (answer.type === ActionType.TAG && answer.selectedOptionIds) {

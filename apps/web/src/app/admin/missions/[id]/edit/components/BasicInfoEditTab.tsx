@@ -13,7 +13,10 @@ import {
 import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
 import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
-import { useFormImageUpload } from "@/app/admin/hooks/use-form-image-upload";
+import {
+  type UseFormImageUploadReturn,
+  useFormImageUpload,
+} from "@/app/admin/hooks/use-form-image-upload";
 import { useReadMission } from "@/app/admin/hooks/use-read-mission";
 import { useUpdateMission } from "@/app/admin/hooks/use-update-mission";
 import { type MissionUpdate, missionUpdateSchema } from "@/schemas/mission";
@@ -35,8 +38,8 @@ interface ImageCardProps {
   form: UseFormReturn<MissionUpdate>;
   missionImageUrl: string | undefined;
   brandLogoUrl: string | undefined;
-  missionImageUpload: ReturnType<typeof useFormImageUpload>;
-  brandLogoUpload: ReturnType<typeof useFormImageUpload>;
+  missionImageUpload: UseFormImageUploadReturn;
+  brandLogoUpload: UseFormImageUploadReturn;
 }
 
 interface ActionButtonsProps {

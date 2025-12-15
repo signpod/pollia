@@ -41,7 +41,8 @@ export const submitAnswerItemSchema = z
     type: actionTypeSchema,
     selectedOptionIds: z.array(optionIdSchema).optional(),
     scaleValue: scaleAnswerSchema.optional(),
-    textResponse: z.union([textAnswerSchema, imageUrlSchema]).optional(),
+    textResponse: textAnswerSchema.optional(),
+    imageUrl: imageUrlSchema.optional(),
     imageFileUploadId: imageFileUploadIdSchema,
   })
   .refine(
@@ -83,7 +84,7 @@ export const submitAnswerItemSchema = z
   .refine(
     data => {
       if (data.type === ActionType.IMAGE) {
-        return data.textResponse && data.textResponse.length > 0;
+        return data.imageUrl && data.imageUrl.length > 0;
       }
       return true;
     },
