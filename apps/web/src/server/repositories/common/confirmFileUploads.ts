@@ -7,7 +7,7 @@ type TransactionClient = Omit<
 
 export async function confirmFileUploads(
   tx: TransactionClient | Prisma.TransactionClient,
-  userId: string,
+  userId?: string,
   fileUploadIds?: string | string[],
 ): Promise<void> {
   if (!fileUploadIds) return;
