@@ -16,7 +16,6 @@ import { MainButton } from "./components/MainButton";
 import { ShareButtons } from "./components/ShareButtons";
 import { ShareTitle } from "./components/ShareTitle";
 import { SurveyCardContent } from "./components/SurveyCardContent";
-import { usePreventBack } from "@/hooks/common/usePreventBack";
 
 export function MissionCompletion() {
   const { missionId } = useParams<{ missionId: string }>();
