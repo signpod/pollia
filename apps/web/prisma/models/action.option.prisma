@@ -5,7 +5,7 @@ model ActionOption {
   imageUrl     String?        @map("image_url")
   order        Int
   actionId     String         @map("action_id")
-  fileUploadId String?        @unique @map("file_upload_id")
+  fileUploadId String?        @map("file_upload_id")
   createdAt    DateTime       @default(now()) @map("created_at")
   updatedAt    DateTime       @updatedAt @map("updated_at")
   answers      ActionAnswer[]

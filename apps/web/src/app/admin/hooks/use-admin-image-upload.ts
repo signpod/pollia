@@ -1,7 +1,7 @@
 "use client";
 
-import { deleteImage, getUploadUrl } from "@/actions/common/image";
-import { ADMIN_STORAGE_BUCKETS } from "@/app/admin/constants/storage";
+import { deleteImage, getUploadUrl } from "@/actions/common/images";
+import { STORAGE_BUCKETS, type StorageBucket } from "@/constants/buckets";
 import type { DeleteImageRequest, UploadImageRequest } from "@/types/dto/image";
 import { useMutation } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -13,7 +13,7 @@ export interface UploadedImageData {
 }
 
 export interface UseAdminSingleImageOptions {
-  bucket?: string;
+  bucket?: StorageBucket;
   initialUrl?: string;
   onUploadSuccess?: (data: UploadedImageData) => void;
   onUploadError?: (error: Error) => void;
@@ -31,7 +31,7 @@ export function useAdminSingleImage(options: UseAdminSingleImageOptions = {}) {
         fileName: file.name,
         fileType: file.type,
         fileSize: file.size,
-        bucket: options.bucket || ADMIN_STORAGE_BUCKETS.MISSION_IMAGES,
+        bucket: options.bucket || STORAGE_BUCKETS.MISSION_IMAGES,
       };
 
       const { data } = await getUploadUrl(uploadRequest);
@@ -82,7 +82,6 @@ export function useAdminSingleImage(options: UseAdminSingleImageOptions = {}) {
     if (uploadedData) {
       deleteMutation.mutate({
         path: uploadedData.path,
-        bucket: options.bucket || ADMIN_STORAGE_BUCKETS.MISSION_IMAGES,
       });
     }
     if (previewUrlRef.current?.startsWith("blob:")) {
@@ -90,7 +89,7 @@ export function useAdminSingleImage(options: UseAdminSingleImageOptions = {}) {
     }
     setPreviewUrl(null);
     setUploadedData(null);
-  }, [uploadedData, deleteMutation, options.bucket]);
+  }, [uploadedData, deleteMutation]);
 
   return {
     previewUrl,
@@ -104,7 +103,7 @@ export function useAdminSingleImage(options: UseAdminSingleImageOptions = {}) {
 export type UseAdminSingleImageReturn = ReturnType<typeof useAdminSingleImage>;
 
 export interface UseAdminMultipleImagesOptions {
-  bucket?: string;
+  bucket?: StorageBucket;
   onUploadSuccess?: (id: string, data: UploadedImageData) => void;
   onUploadError?: (id: string, error: Error) => void;
 }
@@ -128,7 +127,7 @@ export function useAdminMultipleImages(options: UseAdminMultipleImagesOptions = 
         fileName: file.name,
         fileType: file.type,
         fileSize: file.size,
-        bucket: options.bucket || ADMIN_STORAGE_BUCKETS.MISSION_IMAGES,
+        bucket: options.bucket || STORAGE_BUCKETS.MISSION_IMAGES,
       };
 
       const { data } = await getUploadUrl(uploadRequest);
@@ -207,7 +206,6 @@ export function useAdminMultipleImages(options: UseAdminMultipleImagesOptions = 
       if (data) {
         deleteMutation.mutate({
           path: data.path,
-          bucket: options.bucket || ADMIN_STORAGE_BUCKETS.MISSION_IMAGES,
         });
       }
 
@@ -227,7 +225,7 @@ export function useAdminMultipleImages(options: UseAdminMultipleImagesOptions = 
         return newMap;
       });
     },
-    [uploadedDataMap, deleteMutation, options.bucket],
+    [uploadedDataMap, deleteMutation],
   );
 
   const getPreviewUrl = useCallback(

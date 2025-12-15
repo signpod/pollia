@@ -13,9 +13,9 @@ import {
 import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
 import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
-import { ADMIN_STORAGE_BUCKETS } from "@/app/admin/constants/storage";
 import { useReadMission } from "@/app/admin/hooks/use-read-mission";
 import { useUpdateMission } from "@/app/admin/hooks/use-update-mission";
+import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { useImageUpload } from "@/hooks/common/useImageUpload";
 import { type MissionUpdate, missionUpdateSchema } from "@/schemas/mission";
 import type { GetMissionResponse } from "@/types/dto";
@@ -273,7 +273,7 @@ function useMissionImageUpload(form: UseFormReturn<MissionUpdate>) {
   const [file, setFile] = useState<{ path: string; fileUploadId: string } | null>(null);
 
   const upload = useImageUpload({
-    bucket: ADMIN_STORAGE_BUCKETS.MISSION_IMAGES,
+    bucket: STORAGE_BUCKETS.MISSION_IMAGES,
     onSuccess: result => {
       form.setValue("imageUrl", result.publicUrl, { shouldDirty: true });
       setFile({ path: result.path, fileUploadId: result.fileUploadId });
@@ -307,7 +307,7 @@ function useMissionImageUpload(form: UseFormReturn<MissionUpdate>) {
 
   const handleDelete = () => {
     if (file) {
-      upload.deleteImage({ path: file.path, bucket: ADMIN_STORAGE_BUCKETS.MISSION_IMAGES });
+      upload.deleteImage({ path: file.path });
     }
     setFile(null);
     form.setValue("imageUrl", undefined, { shouldDirty: true });
@@ -327,7 +327,7 @@ function useBrandLogoUpload(form: UseFormReturn<MissionUpdate>) {
   const [file, setFile] = useState<{ path: string; fileUploadId: string } | null>(null);
 
   const upload = useImageUpload({
-    bucket: ADMIN_STORAGE_BUCKETS.MISSION_IMAGES,
+    bucket: STORAGE_BUCKETS.MISSION_IMAGES,
     onSuccess: result => {
       form.setValue("brandLogoUrl", result.publicUrl, { shouldDirty: true });
       setFile({ path: result.path, fileUploadId: result.fileUploadId });
@@ -361,7 +361,7 @@ function useBrandLogoUpload(form: UseFormReturn<MissionUpdate>) {
 
   const handleDelete = () => {
     if (file) {
-      upload.deleteImage({ path: file.path, bucket: ADMIN_STORAGE_BUCKETS.MISSION_IMAGES });
+      upload.deleteImage({ path: file.path });
     }
     setFile(null);
     form.setValue("brandLogoUrl", undefined, { shouldDirty: true });

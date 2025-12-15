@@ -1,8 +1,8 @@
 "use client";
 
-import { confirmFile, deleteImage, getUploadUrl } from "@/actions/common/image";
+import { confirmFile, deleteImage, getUploadUrl } from "@/actions/common/images";
+import type { StorageBucket } from "@/constants/buckets";
 import { ConfirmFileRequest, DeleteImageRequest, UploadImageRequest } from "@/types/dto/image";
-import { RelatedEntityType } from "@prisma/client";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 
@@ -21,9 +21,7 @@ export interface UploadedImage {
 }
 
 export interface UseImageUploadOptions {
-  bucket?: string;
-  relatedEntityType?: RelatedEntityType;
-  relatedEntityId?: string;
+  bucket?: StorageBucket;
   onSuccess?: (result: UploadedImage) => void;
   onError?: (error: Error) => void;
   onProgress?: (progress: ImageUploadProgress) => void;
@@ -44,8 +42,6 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
           fileType: processedFile.type,
           fileSize: processedFile.size,
           bucket: options.bucket,
-          relatedEntityType: options.relatedEntityType,
-          relatedEntityId: options.relatedEntityId,
         };
 
         const { data } = await getUploadUrl(uploadRequest);
@@ -197,20 +193,17 @@ export function useMultipleImageUpload(options: UseImageUploadOptions = {}) {
     if (imageToRemove) {
       singleUpload.deleteImage({
         path: imageToRemove.path,
-        bucket: options.bucket,
       });
       setUploadedImages(prev => prev.filter((_, i) => i !== index));
     }
   };
 
-  const confirmImages = async (relatedEntityType?: RelatedEntityType, relatedEntityId?: string) => {
+  const confirmImages = async () => {
     const confirmPromises = uploadedImages
       .filter(img => img.isTemporary)
       .map(img =>
         singleUpload.confirmFileAsync({
           fileUploadId: img.fileUploadId,
-          relatedEntityType,
-          relatedEntityId,
         }),
       );
 

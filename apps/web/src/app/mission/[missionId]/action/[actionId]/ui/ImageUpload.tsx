@@ -1,10 +1,10 @@
 "use client";
 
 import { toast } from "@/components/common/Toast";
+import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { type UploadedImage, useImageUpload } from "@/hooks/common/useImageUpload";
 import { getCroppedImg } from "@/lib/imageCrop";
 import { cn } from "@/lib/utils";
-import { RelatedEntityType } from "@prisma/client";
 import { ButtonV2, Slider, Typo } from "@repo/ui/components";
 import { Dialog, DialogOverlay, DialogPortal } from "@repo/ui/components";
 import { Edit2, Loader2Icon, PlusIcon, X } from "lucide-react";
@@ -101,9 +101,7 @@ export function ImageUpload({ initialImageUrl, onUploadChange, actionId }: Image
   }, [initialImageUrl, uploadedImage, onUploadChange]);
 
   const { upload, isUploading, uploadError } = useImageUpload({
-    bucket: "mission-images",
-    relatedEntityType: RelatedEntityType.ACTION,
-    relatedEntityId: actionId,
+    bucket: STORAGE_BUCKETS.ACTION_ANSWER_IMAGES,
     onSuccess: result => {
       setUploadedImage(result);
       setIsImageLoading(true);
