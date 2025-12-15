@@ -33,6 +33,8 @@ export const actionAnswerInputSchema = z.object({
   scaleAnswer: scaleAnswerSchema.optional(),
 });
 
+const imageFileUploadIdSchema = z.string().optional();
+
 export const submitAnswerItemSchema = z
   .object({
     actionId: actionIdSchema,
@@ -40,6 +42,7 @@ export const submitAnswerItemSchema = z
     selectedOptionIds: z.array(optionIdSchema).optional(),
     scaleValue: scaleAnswerSchema.optional(),
     textResponse: z.union([textAnswerSchema, imageUrlSchema]).optional(),
+    imageFileUploadId: imageFileUploadIdSchema,
   })
   .refine(
     data => {

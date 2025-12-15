@@ -28,6 +28,7 @@ export type ActionAnswerItem =
       actionId: string;
       type: typeof ActionType.IMAGE;
       textResponse: string;
+      imageFileUploadId?: string;
     }
   | {
       actionId: string;

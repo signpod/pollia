@@ -149,6 +149,8 @@ export class ActionAnswerService {
       optionId?: string;
       textAnswer?: string;
       scaleAnswer?: number;
+      imageUrl?: string;
+      imageFileUploadId?: string;
     }> = [];
 
     for (const answer of parseResult.data.answers) {
@@ -184,7 +186,8 @@ export class ActionAnswerService {
         answersToCreate.push({
           responseId: parseResult.data.responseId,
           actionId,
-          textAnswer: answer.textResponse,
+          imageUrl: answer.textResponse,
+          imageFileUploadId: answer.imageFileUploadId,
         });
       } else if (answer.type === ActionType.TAG && answer.selectedOptionIds) {
         for (const optionId of answer.selectedOptionIds) {
@@ -197,7 +200,7 @@ export class ActionAnswerService {
       }
     }
 
-    await this.answerRepo.createMany(answersToCreate);
+    await this.answerRepo.createMany(answersToCreate, userId);
 
     return {
       responseId: parseResult.data.responseId,
