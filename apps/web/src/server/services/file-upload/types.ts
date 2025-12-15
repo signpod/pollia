@@ -1,8 +1,10 @@
+import type { StorageBucket } from "@/constants/buckets";
+
 export interface CreateUploadUrlInput {
   fileName: string;
   fileSize: number;
   fileType: string;
-  bucket?: string;
+  bucket?: StorageBucket;
 }
 
 export interface UploadUrlResult {

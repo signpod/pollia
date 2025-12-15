@@ -1,8 +1,10 @@
+import type { StorageBucket } from "@/constants/buckets";
+
 export interface UploadImageRequest {
   fileName: string;
   fileType: string;
   fileSize: number;
-  bucket?: string;
+  bucket?: StorageBucket;
 }
 
 export interface UploadImageResponse {
@@ -16,7 +18,6 @@ export interface UploadImageResponse {
 
 export interface DeleteImageRequest {
   path: string;
-  bucket?: string;
 }
 
 export type DeleteImageResponse = Record<string, never>;
