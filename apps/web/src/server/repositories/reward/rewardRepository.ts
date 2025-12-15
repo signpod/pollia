@@ -15,6 +15,7 @@ export class RewardRepository {
         name: true,
         description: true,
         imageUrl: true,
+        imageFileUploadId: true,
         paymentType: true,
         scheduledDate: true,
         paidAt: true,
