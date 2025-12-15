@@ -1,12 +1,8 @@
-import { RelatedEntityType } from "@prisma/client";
-
 export interface UploadImageRequest {
   fileName: string;
   fileType: string;
   fileSize: number;
   bucket?: string;
-  relatedEntityType?: RelatedEntityType;
-  relatedEntityId?: string;
 }
 
 export interface UploadImageResponse {
@@ -27,8 +23,6 @@ export type DeleteImageResponse = Record<string, never>;
 
 export interface ConfirmFileRequest {
   fileUploadId: string;
-  relatedEntityType?: RelatedEntityType;
-  relatedEntityId?: string;
 }
 
 export type ConfirmFileResponse = Record<string, never>;

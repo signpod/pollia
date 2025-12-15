@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
+import { STORAGE_BUCKETS } from "@/constants/buckets";
 import prisma from "@/database/utils/prisma/client";
 import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
 import {
@@ -26,7 +27,7 @@ export async function getUploadUrl(request: UploadImageRequest): Promise<UploadI
       throw error;
     }
 
-    const bucket = request.bucket || "pollia-images";
+    const bucket = request.bucket || STORAGE_BUCKETS.FALLBACK;
     const fileExtension = request.fileName.split(".").pop() || "";
     const timestamp = Date.now();
     const fileName = `${user.id}/${timestamp}.${fileExtension}`;
@@ -54,8 +55,6 @@ export async function getUploadUrl(request: UploadImageRequest): Promise<UploadI
         mimeType: request.fileType,
         bucket,
         status: FileStatus.TEMPORARY,
-        relatedEntityType: request.relatedEntityType,
-        relatedEntityId: request.relatedEntityId,
       },
     });
 
@@ -189,8 +188,6 @@ export async function confirmFile(request: ConfirmFileRequest): Promise<ConfirmF
       data: {
         status: FileStatus.CONFIRMED,
         confirmedAt: new Date(),
-        relatedEntityType: request.relatedEntityType,
-        relatedEntityId: request.relatedEntityId,
       },
     });
 
