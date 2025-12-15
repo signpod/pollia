@@ -276,6 +276,7 @@ function useMissionImageUpload(form: UseFormReturn<MissionUpdate>) {
     bucket: STORAGE_BUCKETS.MISSION_IMAGES,
     onSuccess: result => {
       form.setValue("imageUrl", result.publicUrl, { shouldDirty: true });
+      form.setValue("imageFileUploadId", result.fileUploadId, { shouldDirty: true });
       setFile({ path: result.path, fileUploadId: result.fileUploadId });
       if (preview) {
         URL.revokeObjectURL(preview);
@@ -311,6 +312,7 @@ function useMissionImageUpload(form: UseFormReturn<MissionUpdate>) {
     }
     setFile(null);
     form.setValue("imageUrl", undefined, { shouldDirty: true });
+    form.setValue("imageFileUploadId", undefined, { shouldDirty: true });
     if (preview) {
       URL.revokeObjectURL(preview);
       setPreview("");
@@ -330,6 +332,7 @@ function useBrandLogoUpload(form: UseFormReturn<MissionUpdate>) {
     bucket: STORAGE_BUCKETS.MISSION_IMAGES,
     onSuccess: result => {
       form.setValue("brandLogoUrl", result.publicUrl, { shouldDirty: true });
+      form.setValue("brandLogoFileUploadId", result.fileUploadId, { shouldDirty: true });
       setFile({ path: result.path, fileUploadId: result.fileUploadId });
       if (preview) {
         URL.revokeObjectURL(preview);
@@ -365,6 +368,7 @@ function useBrandLogoUpload(form: UseFormReturn<MissionUpdate>) {
     }
     setFile(null);
     form.setValue("brandLogoUrl", undefined, { shouldDirty: true });
+    form.setValue("brandLogoFileUploadId", undefined, { shouldDirty: true });
     if (preview) {
       URL.revokeObjectURL(preview);
       setPreview("");
