@@ -18,6 +18,7 @@ interface UpdateActionInput {
   title?: string;
   description?: string;
   imageUrl?: string;
+  imageFileUploadId?: string;
   order?: number;
   maxSelections?: number;
   options?: UpdateActionOptionInput[];
@@ -37,6 +38,7 @@ export function useUpdateAction(options: UseUpdateActionOptions = {}) {
         title: input.title,
         description: input.description,
         imageUrl: input.imageUrl,
+        imageFileUploadId: input.imageFileUploadId,
         order: input.order,
         maxSelections: input.maxSelections,
         options: input.options,
