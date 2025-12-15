@@ -25,16 +25,13 @@ export function SurveyCardContent({
   return (
     <div ref={refs.surveyContent} className="flex flex-col gap-2 w-full relative z-20">
       {/* 로고 */}
-      <div ref={refs.logo} style={{ opacity: 0 }} className="h-4 w-auto">
-        {brandLogoUrl && (
-          <Image
-            src={brandLogoUrl}
-            alt="Brand Logo"
-            height={16}
-            width={16}
-            className="object-contain h-full"
-          />
-        )}
+      <div ref={refs.logo} style={{ opacity: 0 }} className="relative h-7 w-full">
+        <Image
+          src={brandLogoUrl ?? ""}
+          alt="Mission Logo"
+          fill
+          className="object-contain object-left"
+        />
       </div>
 
       {/* 제목 */}
