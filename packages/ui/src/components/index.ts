@@ -18,6 +18,7 @@ export * from "./common/CenterOverlay";
 export * from "./common/Typo";
 export * from "./common/ImageSelector";
 export * from "./common/Slider";
+export * from "./common/Scale";
 export * from "./common/Toggle";
 export * from "./common/DateAndTimePicker";
 export * from "./common/TimePicker";

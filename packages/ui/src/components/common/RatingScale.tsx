@@ -1,11 +1,13 @@
 "use client";
-import { Slider as SliderPrimitive, Typo } from "@repo/ui/components";
+import { Scale, Typo } from "@repo/ui/components";
 import { useMemo, useState } from "react";
 import type { CSSProperties, ComponentProps } from "react";
 import { cn } from "../../lib/utils";
 
 const Slider = {
-  ...SliderPrimitive,
+  Root: Scale.Root,
+  Track: Scale.Track,
+  Thumb: Scale.Thumb,
   Dots: SliderDots,
 };
 
@@ -205,11 +207,7 @@ export function RatingScale({
       };
     }
 
-    const transform = isFirstDot
-      ? "translate(-100%, -50%)"
-      : isLastDot
-        ? "translate(0%, -50%)"
-        : "translate(-50%, -50%)";
+    const transform = "translate(-50%, -50%)";
     return {
       left: `${positionPercent}%`,
       transform,
@@ -241,14 +239,9 @@ export function RatingScale({
           step={sliderStep}
           disabled={disabled}
           orientation={isVertical ? "vertical" : "horizontal"}
-          className={cn(
-            "relative flex touch-none select-none",
-            isVertical ? "h-full w-6 flex-col items-center" : "h-18 w-full items-center",
-          )}
         >
           <Slider.Track
             className={cn(
-              "relative grow overflow-visible rounded-full bg-zinc-100",
               isVertical ? "h-full w-[6px]" : "h-[6px] w-full",
             )}
           />
@@ -268,11 +261,6 @@ export function RatingScale({
             disabled={disabled}
           />
           <Slider.Thumb
-            className={cn(
-              "relative block size-9 rounded-full bg-white bg shadow-[0_4px_20px_rgba(0,0,0,0.1)]",
-              "relative block size-9 rounded-full bg-white shadow-[0_4px_20px_rgba(0,0,0,0.1)]",
-              "focus:outline-none",
-            )}
             style={thumbPosition}
           />
         </Slider.Root>
@@ -301,9 +289,9 @@ function SliderDots({
   isLast,
   isVertical,
   onOptionClick,
-  sliderMin,
-  sliderMax,
-  sliderStep,
+  sliderMin: _sliderMin,
+  sliderMax: _sliderMax,
+  sliderStep: _sliderStep,
   disabled,
 }: SliderDotsProps) {
   const handleOptionClick = (order: number) => {
@@ -317,7 +305,7 @@ function SliderDots({
       if (allHaveOrder) {
         const option = options.find(option => option.order === order);
         if (option) {
-          onOptionClick(option.description ?? 0);
+          onOptionClick(option.order ?? 0);
         }
       }
     }
@@ -369,11 +357,7 @@ function SliderDots({
               : isLastDot
                 ? "translate(-50%, -100%)"
                 : "translate(-50%, -50%)"
-            : isFirstDot
-              ? "translate(0%, -50%)"
-              : isLastDot
-                ? "translate(-100%, -50%)"
-                : "translate(-50%, -50%)";
+            : "translate(-50%, -50%)";
 
           return (
             <div
