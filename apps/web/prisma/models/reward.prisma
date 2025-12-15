@@ -10,6 +10,9 @@ model Reward {
   updatedAt     DateTime    @updatedAt @map("updated_at")
   missions      Mission[]
 
+  imageFileUploadId String?     @map("image_file_upload_id")
+  imageFileUpload   FileUpload? @relation("RewardImage", fields: [imageFileUploadId], references: [id])
+
   @@map("rewards")
 }
 
