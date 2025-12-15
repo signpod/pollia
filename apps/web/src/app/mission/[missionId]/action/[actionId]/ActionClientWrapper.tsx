@@ -30,8 +30,8 @@ import {
 } from "./ui";
 
 const SURVEY_SUBMIT_MODAL = {
-  title: "응답을 제출할까요?",
-  description: "제출 이후에는 답변을 수정하거나\n다시 응답할 수 없어요",
+  title: "미션을 최종적으로 제출할까요?",
+  description: "제출 이후에는 답변을 수정하거나\n다시 참여할 수 없어요",
   confirmText: "제출하기",
   cancelText: "취소",
 } as const;
