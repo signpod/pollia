@@ -1,6 +1,7 @@
 import prisma from "@/database/utils/prisma/client";
+import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
 import type { SortOrderType } from "@/types/common/sort";
-import { type ActionType, type FileStatus, Prisma } from "@prisma/client";
+import { type ActionType, Prisma } from "@prisma/client";
 
 export class MissionRepository {
   async findById(missionId: string) {
@@ -166,19 +167,7 @@ export class MissionRepository {
         Boolean,
       ) as string[];
 
-      if (fileUploadIds.length > 0) {
-        await tx.fileUpload.updateMany({
-          where: {
-            id: { in: fileUploadIds },
-            userId: data.creatorId,
-            status: "TEMPORARY" as FileStatus,
-          },
-          data: {
-            status: "CONFIRMED" as FileStatus,
-            confirmedAt: new Date(),
-          },
-        });
-      }
+      await confirmFileUploads(tx, data.creatorId, fileUploadIds);
 
       return createdMission;
     });
@@ -211,17 +200,7 @@ export class MissionRepository {
           data,
         });
 
-        await tx.fileUpload.updateMany({
-          where: {
-            id: { in: fileUploadIds },
-            userId: userId,
-            status: "TEMPORARY" as FileStatus,
-          },
-          data: {
-            status: "CONFIRMED" as FileStatus,
-            confirmedAt: new Date(),
-          },
-        });
+        await confirmFileUploads(tx, userId, fileUploadIds);
 
         return updatedMission;
       });

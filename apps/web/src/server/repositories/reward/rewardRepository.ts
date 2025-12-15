@@ -1,5 +1,6 @@
 import prisma from "@/database/utils/prisma/client";
-import { type FileStatus, type PaymentType } from "@prisma/client";
+import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
+import type { PaymentType } from "@prisma/client";
 
 export class RewardRepository {
   async findById(rewardId: string) {
@@ -53,17 +54,7 @@ export class RewardRepository {
           },
         });
 
-        await tx.fileUpload.updateMany({
-          where: {
-            id: data.imageFileUploadId,
-            userId,
-            status: "TEMPORARY" as FileStatus,
-          },
-          data: {
-            status: "CONFIRMED" as FileStatus,
-            confirmedAt: new Date(),
-          },
-        });
+        await confirmFileUploads(tx, userId, data.imageFileUploadId);
 
         return reward;
       });
@@ -111,17 +102,7 @@ export class RewardRepository {
           },
         });
 
-        await tx.fileUpload.updateMany({
-          where: {
-            id: data.imageFileUploadId,
-            userId,
-            status: "TEMPORARY" as FileStatus,
-          },
-          data: {
-            status: "CONFIRMED" as FileStatus,
-            confirmedAt: new Date(),
-          },
-        });
+        await confirmFileUploads(tx, userId, data.imageFileUploadId);
 
         return reward;
       });

@@ -1,5 +1,6 @@
 import prisma from "@/database/utils/prisma/client";
-import type { ActionType, FileStatus } from "@prisma/client";
+import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
+import type { ActionType } from "@prisma/client";
 
 export class ActionRepository {
   async findByIdWithOptions(actionId: string) {
@@ -156,19 +157,7 @@ export class ActionRepository {
         ...options.map(option => option.imageFileUploadId),
       ].filter(Boolean) as string[];
 
-      if (allFileUploadIds.length > 0) {
-        await tx.fileUpload.updateMany({
-          where: {
-            id: { in: allFileUploadIds },
-            userId: userId,
-            status: "TEMPORARY" as FileStatus,
-          },
-          data: {
-            status: "CONFIRMED" as FileStatus,
-            confirmedAt: new Date(),
-          },
-        });
-      }
+      await confirmFileUploads(tx, userId, allFileUploadIds);
 
       return createdAction;
     });
@@ -200,17 +189,7 @@ export class ActionRepository {
           },
         });
 
-        await tx.fileUpload.updateMany({
-          where: {
-            id: data.imageFileUploadId,
-            userId: userId,
-            status: "TEMPORARY" as FileStatus,
-          },
-          data: {
-            status: "CONFIRMED" as FileStatus,
-            confirmedAt: new Date(),
-          },
-        });
+        await confirmFileUploads(tx, userId, data.imageFileUploadId);
 
         return createdAction;
       });
@@ -248,17 +227,7 @@ export class ActionRepository {
           data,
         });
 
-        await tx.fileUpload.updateMany({
-          where: {
-            id: data.imageFileUploadId,
-            userId: userId,
-            status: "TEMPORARY" as FileStatus,
-          },
-          data: {
-            status: "CONFIRMED" as FileStatus,
-            confirmedAt: new Date(),
-          },
-        });
+        await confirmFileUploads(tx, userId, data.imageFileUploadId);
 
         return updatedAction;
       });
@@ -315,19 +284,7 @@ export class ActionRepository {
         ...options.map(option => option.imageFileUploadId),
       ].filter(Boolean) as string[];
 
-      if (allFileUploadIds.length > 0) {
-        await tx.fileUpload.updateMany({
-          where: {
-            id: { in: allFileUploadIds },
-            userId: userId,
-            status: "TEMPORARY" as FileStatus,
-          },
-          data: {
-            status: "CONFIRMED" as FileStatus,
-            confirmedAt: new Date(),
-          },
-        });
-      }
+      await confirmFileUploads(tx, userId, allFileUploadIds);
 
       return updatedAction;
     });

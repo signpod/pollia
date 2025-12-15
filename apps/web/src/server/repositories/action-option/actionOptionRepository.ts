@@ -1,5 +1,5 @@
 import prisma from "@/database/utils/prisma/client";
-import type { FileStatus } from "@prisma/client";
+import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
 
 export class ActionOptionRepository {
   async findById(optionId: string) {
@@ -68,17 +68,7 @@ export class ActionOptionRepository {
       });
 
       if (data.imageFileUploadId) {
-        await tx.fileUpload.updateMany({
-          where: {
-            id: data.imageFileUploadId,
-            userId: userId,
-            status: "TEMPORARY" as FileStatus,
-          },
-          data: {
-            status: "CONFIRMED" as FileStatus,
-            confirmedAt: new Date(),
-          },
-        });
+        await confirmFileUploads(tx, userId, data.imageFileUploadId);
       }
 
       return createdOption;
@@ -112,19 +102,7 @@ export class ActionOptionRepository {
         .map(option => option.imageFileUploadId)
         .filter(Boolean) as string[];
 
-      if (fileUploadIds.length > 0) {
-        await tx.fileUpload.updateMany({
-          where: {
-            id: { in: fileUploadIds },
-            userId: userId,
-            status: "TEMPORARY" as FileStatus,
-          },
-          data: {
-            status: "CONFIRMED" as FileStatus,
-            confirmedAt: new Date(),
-          },
-        });
-      }
+      await confirmFileUploads(tx, userId, fileUploadIds);
 
       return tx.actionOption.findMany({
         where: { actionId },
@@ -157,17 +135,7 @@ export class ActionOptionRepository {
           },
         });
 
-        await tx.fileUpload.updateMany({
-          where: {
-            id: data.imageFileUploadId,
-            userId: userId,
-            status: "TEMPORARY" as FileStatus,
-          },
-          data: {
-            status: "CONFIRMED" as FileStatus,
-            confirmedAt: new Date(),
-          },
-        });
+        await confirmFileUploads(tx, userId, data.imageFileUploadId);
 
         return updatedOption;
       });

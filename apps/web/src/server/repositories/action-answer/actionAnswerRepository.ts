@@ -1,5 +1,5 @@
 import prisma from "@/database/utils/prisma/client";
-import type { FileStatus } from "@prisma/client";
+import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
 
 export class ActionAnswerRepository {
   async findById(id: string) {
@@ -111,17 +111,7 @@ export class ActionAnswerRepository {
           },
         });
 
-        await tx.fileUpload.updateMany({
-          where: {
-            id: data.imageFileUploadId,
-            userId: userId,
-            status: "TEMPORARY" as FileStatus,
-          },
-          data: {
-            status: "CONFIRMED" as FileStatus,
-            confirmedAt: new Date(),
-          },
-        });
+        await confirmFileUploads(tx, userId, data.imageFileUploadId);
 
         return createdAnswer;
       });
@@ -172,17 +162,7 @@ export class ActionAnswerRepository {
           })),
         });
 
-        await tx.fileUpload.updateMany({
-          where: {
-            id: { in: fileUploadIds },
-            userId: userId,
-            status: "TEMPORARY" as FileStatus,
-          },
-          data: {
-            status: "CONFIRMED" as FileStatus,
-            confirmedAt: new Date(),
-          },
-        });
+        await confirmFileUploads(tx, userId, fileUploadIds);
 
         return { count: answers.length };
       });
@@ -229,17 +209,7 @@ export class ActionAnswerRepository {
           },
         });
 
-        await tx.fileUpload.updateMany({
-          where: {
-            id: data.imageFileUploadId,
-            userId: userId,
-            status: "TEMPORARY" as FileStatus,
-          },
-          data: {
-            status: "CONFIRMED" as FileStatus,
-            confirmedAt: new Date(),
-          },
-        });
+        await confirmFileUploads(tx, userId, data.imageFileUploadId);
 
         return updatedAnswer;
       });
