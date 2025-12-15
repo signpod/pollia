@@ -190,7 +190,7 @@ function ScaleThumb({ className, style, ...props }: ScaleThumbProps) {
   return (
     <div
       className={cn(
-        "relative block size-9 rounded-full bg-white/20 shadow-[0_4px_20px_rgba(0,0,0,0.1)]",
+        "relative block size-9 rounded-full bg-white shadow-[0_4px_20px_rgba(0,0,0,0.1)]",
         "focus:outline-none",
         "data-[orientation='horizontal']:left-[8px]",
         className,

@@ -1,4 +1,5 @@
 "use client";
+
 import { Scale, Typo } from "@repo/ui/components";
 import { useMemo, useState } from "react";
 import type { CSSProperties, ComponentProps } from "react";
@@ -278,8 +279,6 @@ interface SliderDotsProps {
 function SliderDots({
   positions,
   options,
-  isFirst,
-  isLast,
   isVertical,
   onOptionClick,
   sliderMin: _sliderMin,
@@ -340,9 +339,6 @@ function SliderDots({
         )}
       >
         {positions.map((position, index) => {
-          const isFirstDot = isFirst(index);
-          const isLastDot = isLast(index);
-
           const positionValue = `${position * 100}%`;
           const transform = "translate(-50%, -50%)";
 
@@ -368,7 +364,7 @@ function SliderDots({
                         whiteSpace: "nowrap",
                       }}
                       className={cn(
-                        onOptionClick && !disabled && "cursor-pointer hover:opacity-70",
+                        onOptionClick && !disabled && "cursor-pointer",
                         disabled && "cursor-not-allowed opacity-50",
                       )}
                       onClick={() => handleOptionClick(options?.[index]?.order ?? 0)}
@@ -382,12 +378,9 @@ function SliderDots({
                       key={`order-${position}`}
                       className={cn(
                         "whitespace-nowrap text-sub",
-                        onOptionClick && !disabled && "cursor-pointer hover:opacity-70",
+                        onOptionClick && !disabled && "cursor-pointer",
                         disabled && "cursor-not-allowed opacity-50",
-                      )}
-                      style={{
-                        width: "auto",
-                      }}
+                      )}    
                       onClick={() => handleOptionClick(options?.[index]?.order ?? 0)}
                     >
                       {options?.[index]?.description}
@@ -400,7 +393,7 @@ function SliderDots({
                 <Typo.SubTitle
                   size="large"
                   key={`title-horizontal-${position}`}
-                  className={cn("absolute text-center pointer-events-auto", getTitleClassName())}
+                  className={cn("absolute text-center pointer-events-auto cursor-pointer", getTitleClassName())}
                   style={getTitleStyle(options?.length ?? 0)}
                   onClick={() => handleOptionClick(index)}
                 >
@@ -411,7 +404,7 @@ function SliderDots({
                 <Typo.Body
                   size="large"
                   key={`order-horizontal-${position}`}
-                  className={cn("whitespace-nowrap absolute text-sub", "top-[72px]")}
+                  className={cn("whitespace-nowrap absolute text-sub cursor-pointer", "top-[72px]")}
                 >
                   {options?.[index]?.description}
                 </Typo.Body>
