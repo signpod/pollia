@@ -152,7 +152,7 @@ function ScaleRoot({
       ref={rootRef}
       className={cn(
         "relative flex touch-none select-none",
-        orientation === "vertical" ? "h-full w-6 flex-col items-center" : "h-18 w-full items-center",
+        orientation === "vertical" ? "flex-col" : "flex-row",
         disabled && "cursor-not-allowed opacity-50",
         className,
       )}
@@ -172,7 +172,7 @@ function ScaleTrack({ className, children, ...props }: ScaleTrackProps) {
   return (
     <div
       className={cn(
-        "relative grow overflow-visible rounded-full bg-zinc-100",
+        "relative",
         className,
       )}
       {...props}
@@ -190,9 +190,7 @@ function ScaleThumb({ className, style, ...props }: ScaleThumbProps) {
   return (
     <div
       className={cn(
-        "relative block size-9 rounded-full bg-white shadow-[0_4px_20px_rgba(0,0,0,0.1)]",
-        "focus:outline-none",
-        "data-[orientation='horizontal']:left-[8px]",
+        "absolute",
         className,
       )}
       style={style}

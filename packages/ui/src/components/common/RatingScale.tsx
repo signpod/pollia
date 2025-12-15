@@ -5,13 +5,6 @@ import { useMemo, useState } from "react";
 import type { CSSProperties, ComponentProps } from "react";
 import { cn } from "../../lib/utils";
 
-const Slider = {
-  Root: Scale.Root,
-  Track: Scale.Track,
-  Thumb: Scale.Thumb,
-  Dots: SliderDots,
-};
-
 export interface RatingScaleOption {
   id: string;
   title?: string;
@@ -154,29 +147,6 @@ export function RatingScale({
 
   const [localValue, setLocalValue] = useState(Math.max(sliderMin, Math.min(sliderMax, value)));
 
-  const currentIndex = useMemo(() => {
-    if (positions.length === 0) return 0;
-
-    if (sortedOptions && sortedOptions.length > 0) {
-      const allHaveOrder = sortedOptions.every(
-        option => option.description !== undefined && option.description !== null,
-      );
-
-      if (allHaveOrder) {
-        const exactIndex = sortedOptions.findIndex(option => option.order === localValue);
-        return exactIndex;
-      }
-
-      const normalizedValue =
-        sliderMax === sliderMin ? 0 : (localValue - sliderMin) / (sliderMax - sliderMin);
-      const indexValue = Math.round(normalizedValue * (sortedOptions.length - 1));
-      return Math.max(0, Math.min(sortedOptions.length - 1, indexValue));
-    }
-
-    const index = Math.round((localValue - sliderMin) / sliderStep);
-    return Math.max(0, Math.min(positions.length - 1, index));
-  }, [localValue, sortedOptions, positions, sliderMin, sliderMax, sliderStep]);
-
   const thumbPosition = useMemo(() => {
     if (positions.length === 0) {
       return {
@@ -208,7 +178,7 @@ export function RatingScale({
       top: "50%",
       position: "absolute" as const,
     };
-  }, [positions, currentIndex, isFirst, isLast, isVertical, localValue, sliderMin, sliderMax]);
+  }, [positions, isVertical, localValue, sliderMin, sliderMax]);
 
   return (
     <div
@@ -219,7 +189,7 @@ export function RatingScale({
         className={cn("relative", isVertical ? "px-4 py-9" : "w-full px-9 pb-10")}
         style={isVertical && height ? { height: `${height}px` } : undefined}
       >
-        <Slider.Root
+        <Scale.Root
           value={[localValue]}
           onValueChange={values => {
             const newValue = values[0];
@@ -233,19 +203,23 @@ export function RatingScale({
           step={sliderStep}
           disabled={disabled}
           orientation={isVertical ? "vertical" : "horizontal"}
+          className={cn(
+            isVertical ? "h-full w-6 items-center" : "h-18 w-full items-center",
+          )}
         >
-          <Slider.Track
+          <Scale.Track
             className={cn(
+              "grow overflow-visible rounded-full bg-zinc-100",
               isVertical ? "h-full w-[6px]" : "h-[6px] w-full",
             )}
           />
-          <Slider.Dots
+          <RatingScaleDots
             positions={positions}
             options={sortedOptions}
             isFirst={isFirst}
             isLast={isLast}
             isVertical={isVertical}
-            onOptionClick={value => {
+            onOptionClick={(value: number) => {
               setLocalValue(value);
               onChange(value);
             }}
@@ -254,16 +228,21 @@ export function RatingScale({
             sliderStep={sliderStep}
             disabled={disabled}
           />
-          <Slider.Thumb
+          <Scale.Thumb
+            className={cn(
+              "block size-9 rounded-full bg-white shadow-[0_4px_20px_rgba(0,0,0,0.1)]",
+              "focus:outline-none",
+              "data-[orientation='horizontal']:left-[8px]",
+            )}
             style={thumbPosition}
           />
-        </Slider.Root>
+        </Scale.Root>
       </div>
     </div>
   );
 }
 
-interface SliderDotsProps {
+interface RatingScaleDotsProps {
   positions: number[];
   options?: RatingScaleOption[];
   isFirst: (index: number) => boolean;
@@ -276,7 +255,7 @@ interface SliderDotsProps {
   disabled?: boolean;
 }
 
-function SliderDots({
+function RatingScaleDots({
   positions,
   options,
   isVertical,
@@ -285,17 +264,17 @@ function SliderDots({
   sliderMax: _sliderMax,
   sliderStep: _sliderStep,
   disabled,
-}: SliderDotsProps) {
+}: RatingScaleDotsProps) {
   const handleOptionClick = (order: number) => {
     if (disabled || !onOptionClick) return;
 
     if (options && options.length > 0) {
       const allHaveOrder = options.every(
-        option => option.order !== undefined && option.order !== null,
+        (option: RatingScaleOption) => option.order !== undefined && option.order !== null,
       );
 
       if (allHaveOrder) {
-        const option = options.find(option => option.order === order);
+        const option = options.find((option: RatingScaleOption) => option.order === order);
         if (option) {
           onOptionClick(option.order ?? 0);
         }
@@ -338,7 +317,7 @@ function SliderDots({
             : "left-0 right-0 top-1/2 flex w-full -translate-y-1/2 items-center px-0",
         )}
       >
-        {positions.map((position, index) => {
+        {positions.map((position: number, index: number) => {
           const positionValue = `${position * 100}%`;
           const transform = "translate(-50%, -50%)";
 
