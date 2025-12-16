@@ -1,7 +1,9 @@
 import type { FileUploadRepository } from "@/server/repositories/file-upload/fileUploadRepository";
-import { FileStatus } from "@prisma/client";
 
 import { FileUploadService, type SupabaseClient, type SupabaseClientFactory } from ".";
+
+export { createMockFileUpload } from "../testUtils";
+export { createMockFileUpload as mockFileUploadFactory } from "../testUtils";
 
 export function createMockStorageBucket() {
   return {
@@ -50,34 +52,3 @@ export function createFileUploadServiceTestContext() {
 }
 
 export type FileUploadServiceTestContext = ReturnType<typeof createFileUploadServiceTestContext>;
-
-export const mockFileUploadFactory = (
-  overrides: Partial<{
-    id: string;
-    userId: string;
-    originalFileName: string;
-    filePath: string;
-    publicUrl: string;
-    fileSize: number;
-    mimeType: string;
-    bucket: string;
-    status: FileStatus;
-    confirmedAt: Date | null;
-    createdAt: Date;
-    updatedAt: Date;
-  }> = {},
-) => ({
-  id: "file1",
-  userId: "user1",
-  originalFileName: "test.jpg",
-  filePath: "user1/123456789.jpg",
-  publicUrl: "https://example.com/user1/123456789.jpg",
-  fileSize: 1024,
-  mimeType: "image/jpeg",
-  bucket: "pollia-images",
-  status: FileStatus.TEMPORARY,
-  confirmedAt: null,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  ...overrides,
-});
