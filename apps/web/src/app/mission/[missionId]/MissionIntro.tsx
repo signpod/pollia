@@ -75,11 +75,11 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
         <div className="relative">
           {imageUrl && (
             <div className="overflow-hidden sticky top-0 left-0 right-0 z-0">
-              <div className="bg-linear-to-t from-black/25 to-transparent h-[52px] absolute bottom-0 left-0 right-0 z-10" />
               <MissionImage imageUrl={imageUrl} />
             </div>
           )}
           <div className="flex w-full flex-col bg-white py-5 rounded-md pb-0 relative z-10 mt-[-20px]">
+            <div className="bg-linear-to-t from-black/25 to-transparent h-[52px] absolute top-[-44px] left-0 right-0 z-2" />
             <div className="sticky top-0 z-10 rounded-t-md mt-[-20px] bg-white px-5">
               <Tab.Root value={activeTab} pointColor="secondary" onValueChange={handleChangeTab}>
                 <Tab.List>
