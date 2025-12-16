@@ -1,22 +1,17 @@
+import {
+  actionDescriptionSchema,
+  actionOptionDescriptionSchema,
+  actionOptionTitleSchema,
+  actionTitleSchema,
+} from "@/schemas/action";
 import { z } from "zod";
-
-const actionTitleSchema = z
-  .string()
-  .min(1, "제목을 입력해주세요.")
-  .max(30, "제목은 30자를 초과할 수 없습니다.")
-  .trim();
-
-const actionDescriptionSchema = z
-  .string()
-  .max(500, "설명은 500자를 초과할 수 없습니다.")
-  .optional();
 
 const actionImageUrlSchema = z.string().optional();
 
 const actionOptionFormSchema = z.object({
   id: z.string(),
-  title: z.string(),
-  description: z.string().optional(),
+  title: actionOptionTitleSchema,
+  description: actionOptionDescriptionSchema,
   imageUrl: z.string().optional(),
 });
 

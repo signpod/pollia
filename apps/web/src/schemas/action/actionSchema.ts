@@ -1,32 +1,46 @@
 import { z } from "zod";
 
-const titleSchema = z
+export const actionTitleSchema = z
   .string()
   .min(1, "제목을 입력해주세요.")
-  .max(30, "제목은 30자를 초과할 수 없습니다.")
+  .max(100, "제목은 100자를 초과할 수 없습니다.")
   .trim();
 
-const descriptionSchema = z.string().max(100, "설명은 100자를 초과할 수 없습니다.").optional();
+export const actionDescriptionSchema = z
+  .string()
+  .max(500, "설명은 500자를 초과할 수 없습니다.")
+  .optional();
 
-const imageUrlSchema = z.url({ message: "올바른 URL 형식이 아닙니다." }).optional();
+export const actionImageUrlSchema = z.url({ message: "올바른 URL 형식이 아닙니다." }).optional();
+
+export const actionOptionTitleSchema = z
+  .string()
+  .min(1, "항목 제목을 입력해주세요.")
+  .max(50, "항목 제목은 50자를 초과할 수 없습니다.")
+  .trim();
+
+export const actionOptionDescriptionSchema = z
+  .string()
+  .max(200, "설명은 200자를 초과할 수 없습니다.")
+  .optional();
 
 const orderSchema = z.number().int("순서는 정수여야 합니다.").min(0, "순서는 0 이상이어야 합니다.");
 
 const missionIdSchema = z.string().min(1, "미션 ID가 필요합니다.").optional();
 
 const actionOptionSchema = z.object({
-  title: z.string().min(1, "항목 제목을 입력해주세요.").trim(),
-  description: z.string().optional(),
-  imageUrl: imageUrlSchema,
+  title: actionOptionTitleSchema,
+  description: actionOptionDescriptionSchema,
+  imageUrl: actionImageUrlSchema,
   order: orderSchema,
   imageFileUploadId: z.string().optional(),
 });
 
 const baseActionSchema = z.object({
   missionId: missionIdSchema,
-  title: titleSchema,
-  description: descriptionSchema,
-  imageUrl: imageUrlSchema,
+  title: actionTitleSchema,
+  description: actionDescriptionSchema,
+  imageUrl: actionImageUrlSchema,
   imageFileUploadId: z.string().optional(),
   order: orderSchema,
 });
@@ -86,9 +100,9 @@ export const imageInputSchema = baseActionSchema;
 
 export const actionUpdateSchema = z
   .object({
-    title: titleSchema.optional(),
-    description: descriptionSchema,
-    imageUrl: imageUrlSchema,
+    title: actionTitleSchema.optional(),
+    description: actionDescriptionSchema,
+    imageUrl: actionImageUrlSchema,
     imageFileUploadId: z.string().optional(),
     order: orderSchema.optional(),
     maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다.").optional(),

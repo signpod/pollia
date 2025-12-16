@@ -1,4 +1,9 @@
 export {
+  actionTitleSchema,
+  actionDescriptionSchema,
+  actionImageUrlSchema,
+  actionOptionTitleSchema,
+  actionOptionDescriptionSchema,
   multipleChoiceInputSchema,
   scaleInputSchema,
   subjectiveInputSchema,
