@@ -1,5 +1,5 @@
 import { decrypt, encrypt } from "@/lib/crypto";
-import { missionInputSchema, missionUpdateSchema } from "@/schemas/mission";
+import { missionInputSchema, missionPasswordSchema, missionUpdateSchema } from "@/schemas/mission";
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
 import type {
   CreateMissionInput,
@@ -198,13 +198,14 @@ export class MissionService {
       throw error;
     }
 
-    if (!password || password.trim().length === 0) {
-      const error = new Error("비밀번호를 입력해주세요.");
+    const result = missionPasswordSchema.safeParse({ password });
+    if (!result.success) {
+      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
       error.cause = 400;
       throw error;
     }
 
-    const encryptedPassword = encrypt(password);
+    const encryptedPassword = encrypt(result.data.password);
     await this.repo.updatePassword(missionId, encryptedPassword);
   }
 

@@ -30,6 +30,15 @@ const estimatedMinutesSchema = z
 
 const actionIdsSchema = z.array(z.string().min(1, "액션 ID가 비어있습니다.")).default([]);
 
+const passwordSchema = z
+  .string()
+  .min(4, "비밀번호는 최소 4자 이상이어야 합니다.")
+  .max(20, "비밀번호는 20자를 초과할 수 없습니다.");
+
+export const missionPasswordSchema = z.object({
+  password: passwordSchema,
+});
+
 export const missionInputSchema = z.object({
   title: titleSchema,
   description: descriptionSchema,
@@ -66,3 +75,4 @@ export const missionUpdateSchema = z
 
 export type MissionInput = z.infer<typeof missionInputSchema>;
 export type MissionUpdate = z.infer<typeof missionUpdateSchema>;
+export type MissionPasswordInput = z.infer<typeof missionPasswordSchema>;

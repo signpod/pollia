@@ -922,7 +922,7 @@ describe("MissionService", () => {
 
       // When & Then
       await expect(missionService.setPassword("mission-1", "", "user-1")).rejects.toThrow(
-        "비밀번호를 입력해주세요.",
+        "비밀번호는 최소 4자 이상이어야 합니다.",
       );
 
       try {
