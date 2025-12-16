@@ -74,13 +74,13 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
       <main className="flex w-full flex-col gap-8">
         <div className="relative">
           {imageUrl && (
-            <div className="overflow-hidden relative">
+            <div className="overflow-hidden sticky top-0 left-0 right-0 z-0">
               <div className="bg-linear-to-t from-black/25 to-transparent h-[52px] absolute bottom-0 left-0 right-0 z-10" />
               <MissionImage imageUrl={imageUrl} />
             </div>
           )}
-          <div className="flex w-full flex-col bg-white py-5 rounded-md pb-0 mt-[-20px]">
-            <div className="sticky top-0 z-10 pb-5 rounded-md mt-[-20px] bg-white">
+          <div className="flex w-full flex-col bg-white py-5 rounded-md pb-0 relative z-10 mt-[-20px]">
+            <div className="sticky top-0 z-10 rounded-t-md mt-[-20px] bg-white px-5">
               <Tab.Root value={activeTab} pointColor="secondary" onValueChange={handleChangeTab}>
                 <Tab.List>
                   <Tab.Item value="mission-guide">미션 안내</Tab.Item>
