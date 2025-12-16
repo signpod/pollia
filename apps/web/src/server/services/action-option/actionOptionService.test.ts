@@ -187,17 +187,17 @@ describe("ActionOptionService", () => {
       expect(mockOptionRepo.create).not.toHaveBeenCalled();
     });
 
-    it("제목이 100자를 초과하면 400 에러를 던진다", async () => {
+    it("제목이 50자를 초과하면 400 에러를 던진다", async () => {
       // Given
       const invalidData = {
         actionId: "action1",
-        title: "a".repeat(101),
+        title: "a".repeat(51),
         order: 0,
       };
 
       // When & Then
       await expect(service.createOption(invalidData, "user1")).rejects.toThrow(
-        "옵션 제목은 100자를 초과할 수 없습니다.",
+        "옵션 제목은 50자를 초과할 수 없습니다.",
       );
     });
 
