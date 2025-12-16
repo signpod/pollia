@@ -1220,4 +1220,184 @@ describe("MissionService", () => {
       expect(result).toBe(true);
     });
   });
+
+  describe("getMissionWithParticipantInfo", () => {
+    it("참여 정보를 성공적으로 반환한다", async () => {
+      // Given
+      const mockMission = createMockMission({
+        id: "mission-1",
+        isActive: true,
+        maxParticipants: 100,
+        deadline: null,
+      });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockResponseRepository.countByMissionId.mockResolvedValue(45);
+
+      // When
+      const result = await missionService.getMissionWithParticipantInfo("mission-1");
+
+      // Then
+      expect(result).toEqual({
+        currentParticipants: 45,
+        maxParticipants: 100,
+        isClosed: false,
+      });
+    });
+
+    it("maxParticipants가 null이면 isClosed는 false이다", async () => {
+      // Given
+      const mockMission = createMockMission({
+        id: "mission-1",
+        isActive: true,
+        maxParticipants: null,
+        deadline: null,
+      });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockResponseRepository.countByMissionId.mockResolvedValue(1000);
+
+      // When
+      const result = await missionService.getMissionWithParticipantInfo("mission-1");
+
+      // Then
+      expect(result.isClosed).toBe(false);
+      expect(result.maxParticipants).toBeNull();
+    });
+
+    it("정원이 초과되면 isClosed는 true이다", async () => {
+      // Given
+      const mockMission = createMockMission({
+        id: "mission-1",
+        isActive: true,
+        maxParticipants: 50,
+        deadline: null,
+      });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockResponseRepository.countByMissionId.mockResolvedValue(50);
+
+      // When
+      const result = await missionService.getMissionWithParticipantInfo("mission-1");
+
+      // Then
+      expect(result.isClosed).toBe(true);
+    });
+
+    it("isActive가 false이면 isClosed는 true이다", async () => {
+      // Given
+      const mockMission = createMockMission({
+        id: "mission-1",
+        isActive: false,
+        maxParticipants: 100,
+        deadline: null,
+      });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockResponseRepository.countByMissionId.mockResolvedValue(10);
+
+      // When
+      const result = await missionService.getMissionWithParticipantInfo("mission-1");
+
+      // Then
+      expect(result.isClosed).toBe(true);
+    });
+
+    it("마감일이 지나면 isClosed는 true이다", async () => {
+      // Given
+      const pastDate = new Date("2020-01-01");
+      const mockMission = createMockMission({
+        id: "mission-1",
+        isActive: true,
+        maxParticipants: 100,
+        deadline: pastDate,
+      });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockResponseRepository.countByMissionId.mockResolvedValue(10);
+
+      // When
+      const result = await missionService.getMissionWithParticipantInfo("mission-1");
+
+      // Then
+      expect(result.isClosed).toBe(true);
+    });
+
+    it("미션이 없으면 404 에러를 던진다", async () => {
+      // Given
+      mockRepository.findById.mockResolvedValue(null);
+
+      // When & Then
+      await expect(missionService.getMissionWithParticipantInfo("invalid-id")).rejects.toThrow(
+        "미션을 찾을 수 없습니다.",
+      );
+    });
+  });
+
+  describe("checkParticipantLimit", () => {
+    it("정원 미달이면 에러 없이 통과한다", async () => {
+      // Given
+      const mockMission = createMockMission({
+        id: "mission-1",
+        maxParticipants: 100,
+      });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockResponseRepository.countByMissionId.mockResolvedValue(50);
+
+      // When & Then
+      await expect(missionService.checkParticipantLimit("mission-1")).resolves.not.toThrow();
+    });
+
+    it("maxParticipants가 null이면 에러 없이 통과한다", async () => {
+      // Given
+      const mockMission = createMockMission({
+        id: "mission-1",
+        maxParticipants: null,
+      });
+      mockRepository.findById.mockResolvedValue(mockMission);
+
+      // When & Then
+      await expect(missionService.checkParticipantLimit("mission-1")).resolves.not.toThrow();
+      expect(mockResponseRepository.countByMissionId).not.toHaveBeenCalled();
+    });
+
+    it("maxParticipants가 0이면 에러 없이 통과한다", async () => {
+      // Given
+      const mockMission = createMockMission({
+        id: "mission-1",
+        maxParticipants: 0,
+      });
+      mockRepository.findById.mockResolvedValue(mockMission);
+
+      // When & Then
+      await expect(missionService.checkParticipantLimit("mission-1")).resolves.not.toThrow();
+      expect(mockResponseRepository.countByMissionId).not.toHaveBeenCalled();
+    });
+
+    it("정원 초과 시 403 에러를 던진다", async () => {
+      // Given
+      const mockMission = createMockMission({
+        id: "mission-1",
+        maxParticipants: 50,
+      });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockResponseRepository.countByMissionId.mockResolvedValue(50);
+
+      // When & Then
+      await expect(missionService.checkParticipantLimit("mission-1")).rejects.toThrow(
+        "미션 참여 정원이 마감되었습니다.",
+      );
+
+      try {
+        await missionService.checkParticipantLimit("mission-1");
+      } catch (error) {
+        expect(error instanceof Error && error.cause).toBe(403);
+      }
+    });
+
+    it("미션이 없으면 404 에러를 던진다", async () => {
+      // Given
+      mockRepository.findById.mockResolvedValue(null);
+
+      // When & Then
+      await expect(missionService.checkParticipantLimit("invalid-id")).rejects.toThrow(
+        "미션을 찾을 수 없습니다.",
+      );
+    });
+  });
 });
