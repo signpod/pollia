@@ -39,6 +39,8 @@ export const mockMissionFactory = (overrides: Partial<Mission> = {}): Mission =>
   estimatedMinutes: null,
   deadline: null,
   isActive: true,
+  type: "GENERAL",
+  password: null,
   creatorId: "user1",
   rewardId: null,
   imageFileUploadId: null,

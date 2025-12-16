@@ -1,6 +1,11 @@
 import type { MissionRepository } from "@/server/repositories/mission/missionRepository";
 import { MissionService } from ".";
 
+jest.mock("@/lib/crypto", () => ({
+  encrypt: jest.fn((text: string) => `encrypted:${text}`),
+  decrypt: jest.fn((text: string) => text.replace("encrypted:", "")),
+}));
+
 describe("MissionService", () => {
   let missionService: MissionService;
   let mockRepository: jest.Mocked<MissionRepository>;
@@ -15,6 +20,7 @@ describe("MissionService", () => {
       createWithActions: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+      updatePassword: jest.fn(),
       duplicateMission: jest.fn(),
     } as jest.Mocked<MissionRepository>;
 
@@ -38,6 +44,8 @@ describe("MissionService", () => {
         estimatedMinutes: 10,
         deadline: null,
         isActive: true,
+        type: "GENERAL" as const,
+        password: null,
         creatorId: "user-1",
         rewardId: null,
         imageFileUploadId: null,
@@ -398,6 +406,7 @@ describe("MissionService", () => {
         brandLogoUrl: undefined,
         deadline: new Date("2024-12-31"),
         estimatedMinutes: 10,
+        type: "GENERAL" as const,
         actionIds: ["a1", "a2"],
       };
       const mockCreatedMission = {
@@ -410,6 +419,8 @@ describe("MissionService", () => {
         deadline: request.deadline,
         estimatedMinutes: request.estimatedMinutes,
         isActive: true,
+        type: "GENERAL" as const,
+        password: null,
         creatorId: "user-1",
         rewardId: null,
         imageFileUploadId: null,
@@ -434,6 +445,7 @@ describe("MissionService", () => {
           brandLogoUrl: undefined,
           deadline: request.deadline,
           estimatedMinutes: request.estimatedMinutes,
+          type: "GENERAL",
           creatorId: "user-1",
         },
         ["a1", "a2"],
@@ -450,6 +462,7 @@ describe("MissionService", () => {
         brandLogoUrl: undefined,
         deadline: undefined,
         estimatedMinutes: undefined,
+        type: "GENERAL" as const,
         actionIds: ["a1"],
       };
 
@@ -941,6 +954,8 @@ describe("MissionService", () => {
         estimatedMinutes: null,
         deadline: null,
         isActive: true,
+        type: "GENERAL" as const,
+        password: null,
         creatorId: "user-1",
         rewardId: null,
         imageFileUploadId: null,
@@ -959,6 +974,8 @@ describe("MissionService", () => {
         estimatedMinutes: null,
         deadline: null,
         isActive: false,
+        type: "GENERAL" as const,
+        password: null,
         creatorId: "user-1",
         rewardId: null,
         imageFileUploadId: null,
@@ -981,6 +998,369 @@ describe("MissionService", () => {
         }),
         expect.any(Array),
       );
+    });
+  });
+
+  describe("setPassword", () => {
+    it("비밀번호를 성공적으로 설정한다", async () => {
+      // Given
+      const mockMission = {
+        id: "mission-1",
+        title: "미션",
+        description: null,
+        target: null,
+        imageUrl: null,
+        brandLogoUrl: null,
+        estimatedMinutes: null,
+        deadline: null,
+        isActive: true,
+        type: "EXPERIENCE_GROUP" as const,
+        password: null,
+        creatorId: "user-1",
+        rewardId: null,
+        imageFileUploadId: null,
+        brandLogoFileUploadId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockRepository.updatePassword.mockResolvedValue({
+        ...mockMission,
+        password: "encrypted:1234",
+      });
+
+      // When
+      await missionService.setPassword("mission-1", "1234", "user-1");
+
+      // Then
+      expect(mockRepository.updatePassword).toHaveBeenCalledWith("mission-1", "encrypted:1234");
+    });
+
+    it("권한이 없으면 403 에러를 던진다", async () => {
+      // Given
+      const mockMission = {
+        id: "mission-1",
+        title: "미션",
+        description: null,
+        target: null,
+        imageUrl: null,
+        brandLogoUrl: null,
+        estimatedMinutes: null,
+        deadline: null,
+        isActive: true,
+        type: "EXPERIENCE_GROUP" as const,
+        password: null,
+        creatorId: "user-1",
+        rewardId: null,
+        imageFileUploadId: null,
+        brandLogoFileUploadId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      mockRepository.findById.mockResolvedValue(mockMission);
+
+      // When & Then
+      await expect(missionService.setPassword("mission-1", "1234", "user-2")).rejects.toThrow(
+        "비밀번호 설정 권한이 없습니다.",
+      );
+
+      try {
+        await missionService.setPassword("mission-1", "1234", "user-2");
+      } catch (error) {
+        expect((error as Error & { cause: number }).cause).toBe(403);
+      }
+    });
+
+    it("빈 비밀번호면 400 에러를 던진다", async () => {
+      // Given
+      const mockMission = {
+        id: "mission-1",
+        title: "미션",
+        description: null,
+        target: null,
+        imageUrl: null,
+        brandLogoUrl: null,
+        estimatedMinutes: null,
+        deadline: null,
+        isActive: true,
+        type: "EXPERIENCE_GROUP" as const,
+        password: null,
+        creatorId: "user-1",
+        rewardId: null,
+        imageFileUploadId: null,
+        brandLogoFileUploadId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      mockRepository.findById.mockResolvedValue(mockMission);
+
+      // When & Then
+      await expect(missionService.setPassword("mission-1", "", "user-1")).rejects.toThrow(
+        "비밀번호를 입력해주세요.",
+      );
+
+      try {
+        await missionService.setPassword("mission-1", "", "user-1");
+      } catch (error) {
+        expect((error as Error & { cause: number }).cause).toBe(400);
+      }
+    });
+  });
+
+  describe("removePassword", () => {
+    it("비밀번호를 성공적으로 제거한다", async () => {
+      // Given
+      const mockMission = {
+        id: "mission-1",
+        title: "미션",
+        description: null,
+        target: null,
+        imageUrl: null,
+        brandLogoUrl: null,
+        estimatedMinutes: null,
+        deadline: null,
+        isActive: true,
+        type: "EXPERIENCE_GROUP" as const,
+        password: "encrypted:1234",
+        creatorId: "user-1",
+        rewardId: null,
+        imageFileUploadId: null,
+        brandLogoFileUploadId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockRepository.updatePassword.mockResolvedValue({ ...mockMission, password: null });
+
+      // When
+      await missionService.removePassword("mission-1", "user-1");
+
+      // Then
+      expect(mockRepository.updatePassword).toHaveBeenCalledWith("mission-1", null);
+    });
+
+    it("권한이 없으면 403 에러를 던진다", async () => {
+      // Given
+      const mockMission = {
+        id: "mission-1",
+        title: "미션",
+        description: null,
+        target: null,
+        imageUrl: null,
+        brandLogoUrl: null,
+        estimatedMinutes: null,
+        deadline: null,
+        isActive: true,
+        type: "EXPERIENCE_GROUP" as const,
+        password: "encrypted:1234",
+        creatorId: "user-1",
+        rewardId: null,
+        imageFileUploadId: null,
+        brandLogoFileUploadId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      mockRepository.findById.mockResolvedValue(mockMission);
+
+      // When & Then
+      await expect(missionService.removePassword("mission-1", "user-2")).rejects.toThrow(
+        "비밀번호 제거 권한이 없습니다.",
+      );
+
+      try {
+        await missionService.removePassword("mission-1", "user-2");
+      } catch (error) {
+        expect((error as Error & { cause: number }).cause).toBe(403);
+      }
+    });
+  });
+
+  describe("getPassword", () => {
+    it("비밀번호를 복호화하여 반환한다", async () => {
+      // Given
+      const mockMission = {
+        id: "mission-1",
+        title: "미션",
+        description: null,
+        target: null,
+        imageUrl: null,
+        brandLogoUrl: null,
+        estimatedMinutes: null,
+        deadline: null,
+        isActive: true,
+        type: "EXPERIENCE_GROUP" as const,
+        password: "encrypted:1234",
+        creatorId: "user-1",
+        rewardId: null,
+        imageFileUploadId: null,
+        brandLogoFileUploadId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      mockRepository.findById.mockResolvedValue(mockMission);
+
+      // When
+      const result = await missionService.getPassword("mission-1", "user-1");
+
+      // Then
+      expect(result).toBe("1234");
+    });
+
+    it("비밀번호가 없으면 null을 반환한다", async () => {
+      // Given
+      const mockMission = {
+        id: "mission-1",
+        title: "미션",
+        description: null,
+        target: null,
+        imageUrl: null,
+        brandLogoUrl: null,
+        estimatedMinutes: null,
+        deadline: null,
+        isActive: true,
+        type: "GENERAL" as const,
+        password: null,
+        creatorId: "user-1",
+        rewardId: null,
+        imageFileUploadId: null,
+        brandLogoFileUploadId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      mockRepository.findById.mockResolvedValue(mockMission);
+
+      // When
+      const result = await missionService.getPassword("mission-1", "user-1");
+
+      // Then
+      expect(result).toBeNull();
+    });
+
+    it("권한이 없으면 403 에러를 던진다", async () => {
+      // Given
+      const mockMission = {
+        id: "mission-1",
+        title: "미션",
+        description: null,
+        target: null,
+        imageUrl: null,
+        brandLogoUrl: null,
+        estimatedMinutes: null,
+        deadline: null,
+        isActive: true,
+        type: "EXPERIENCE_GROUP" as const,
+        password: "encrypted:1234",
+        creatorId: "user-1",
+        rewardId: null,
+        imageFileUploadId: null,
+        brandLogoFileUploadId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      mockRepository.findById.mockResolvedValue(mockMission);
+
+      // When & Then
+      await expect(missionService.getPassword("mission-1", "user-2")).rejects.toThrow(
+        "비밀번호 조회 권한이 없습니다.",
+      );
+
+      try {
+        await missionService.getPassword("mission-1", "user-2");
+      } catch (error) {
+        expect((error as Error & { cause: number }).cause).toBe(403);
+      }
+    });
+  });
+
+  describe("verifyPassword", () => {
+    it("올바른 비밀번호면 true를 반환한다", async () => {
+      // Given
+      const mockMission = {
+        id: "mission-1",
+        title: "미션",
+        description: null,
+        target: null,
+        imageUrl: null,
+        brandLogoUrl: null,
+        estimatedMinutes: null,
+        deadline: null,
+        isActive: true,
+        type: "EXPERIENCE_GROUP" as const,
+        password: "encrypted:1234",
+        creatorId: "user-1",
+        rewardId: null,
+        imageFileUploadId: null,
+        brandLogoFileUploadId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      mockRepository.findById.mockResolvedValue(mockMission);
+
+      // When
+      const result = await missionService.verifyPassword("mission-1", "1234");
+
+      // Then
+      expect(result).toBe(true);
+    });
+
+    it("틀린 비밀번호면 false를 반환한다", async () => {
+      // Given
+      const mockMission = {
+        id: "mission-1",
+        title: "미션",
+        description: null,
+        target: null,
+        imageUrl: null,
+        brandLogoUrl: null,
+        estimatedMinutes: null,
+        deadline: null,
+        isActive: true,
+        type: "EXPERIENCE_GROUP" as const,
+        password: "encrypted:1234",
+        creatorId: "user-1",
+        rewardId: null,
+        imageFileUploadId: null,
+        brandLogoFileUploadId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      mockRepository.findById.mockResolvedValue(mockMission);
+
+      // When
+      const result = await missionService.verifyPassword("mission-1", "wrong");
+
+      // Then
+      expect(result).toBe(false);
+    });
+
+    it("비밀번호가 없는 미션은 항상 true를 반환한다", async () => {
+      // Given
+      const mockMission = {
+        id: "mission-1",
+        title: "미션",
+        description: null,
+        target: null,
+        imageUrl: null,
+        brandLogoUrl: null,
+        estimatedMinutes: null,
+        deadline: null,
+        isActive: true,
+        type: "GENERAL" as const,
+        password: null,
+        creatorId: "user-1",
+        rewardId: null,
+        imageFileUploadId: null,
+        brandLogoFileUploadId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+      mockRepository.findById.mockResolvedValue(mockMission);
+
+      // When
+      const result = await missionService.verifyPassword("mission-1", "anything");
+
+      // Then
+      expect(result).toBe(true);
     });
   });
 });
