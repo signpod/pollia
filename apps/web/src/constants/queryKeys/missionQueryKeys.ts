@@ -7,6 +7,7 @@ export const missionQueryKeys = {
   all: () => ["mission"] as const,
   missionResponseForMission: (missionId: string) =>
     ["mission-response-for-mission", missionId] as const,
+  missionParticipant: (missionId: string) => ["mission-participant", missionId] as const,
 } as const;
 
 export type MissionQueryKeys = typeof missionQueryKeys;
