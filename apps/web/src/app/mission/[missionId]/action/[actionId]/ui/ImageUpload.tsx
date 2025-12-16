@@ -333,7 +333,7 @@ export function ImageUpload({ initialImageUrl, onUploadChange }: ImageUploadProp
                 </button>
               </div>
 
-              <div className="relative h-[400px] w-full bg-black">
+              <div className="relative flex h-[400px] w-full items-center justify-center">
                 {imageToCrop && (
                   <Cropper
                     image={imageToCrop}
@@ -347,6 +347,19 @@ export function ImageUpload({ initialImageUrl, onUploadChange }: ImageUploadProp
                     onCropComplete={onCropComplete}
                     cropShape="rect"
                     showGrid={false}
+                    objectFit="contain"
+                    style={{
+                      mediaStyle: {
+                        maxWidth: "360px",
+                        maxHeight: "360px",
+                      },
+                    }}
+                    cropperProps={{
+                      style: {
+                        width: "360px",
+                        height: "360px",
+                      },
+                    }}
                   />
                 )}
               </div>
