@@ -20,7 +20,7 @@ export async function confirmFileUploads(
   await tx.fileUpload.updateMany({
     where: {
       id: { in: validIds },
-      userId,
+      ...(userId && { userId }),
       status: FileStatus.TEMPORARY,
     },
     data: {

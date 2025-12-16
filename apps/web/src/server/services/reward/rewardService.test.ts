@@ -2,6 +2,8 @@ import type { RewardRepository } from "@/server/repositories/reward/rewardReposi
 import type { PaymentType } from "@prisma/client";
 import { RewardService } from "./rewardService";
 
+const TEST_USER_ID = "user1";
+
 // Mock 데이터 생성 헬퍼 함수
 const createMockReward = (
   overrides: Partial<{
@@ -9,6 +11,7 @@ const createMockReward = (
     name: string;
     description: string | null;
     imageUrl: string | null;
+    imageFileUploadId: string | null;
     paymentType: PaymentType;
     scheduledDate: Date | null;
     paidAt: Date | null;
@@ -20,6 +23,7 @@ const createMockReward = (
   name: "스타벅스 아메리카노",
   description: "Tall 사이즈",
   imageUrl: null,
+  imageFileUploadId: null,
   paymentType: "IMMEDIATE" as PaymentType,
   scheduledDate: null,
   paidAt: null,
@@ -137,11 +141,11 @@ describe("RewardService", () => {
       mockRepo.create.mockResolvedValue(mockCreatedReward);
 
       // When
-      const result = await service.createReward(createData);
+      const result = await service.createReward(createData, TEST_USER_ID);
 
       // Then
       expect(result).toEqual(mockCreatedReward);
-      expect(mockRepo.create).toHaveBeenCalledWith(createData);
+      expect(mockRepo.create).toHaveBeenCalledWith(createData, TEST_USER_ID);
     });
 
     it("SCHEDULED 타입 Reward를 성공적으로 생성한다", async () => {
@@ -164,11 +168,11 @@ describe("RewardService", () => {
       mockRepo.create.mockResolvedValue(mockCreatedReward);
 
       // When
-      const result = await service.createReward(createData);
+      const result = await service.createReward(createData, TEST_USER_ID);
 
       // Then
       expect(result).toEqual(mockCreatedReward);
-      expect(mockRepo.create).toHaveBeenCalledWith(createData);
+      expect(mockRepo.create).toHaveBeenCalledWith(createData, TEST_USER_ID);
     });
 
     it("이름이 없으면 400 에러를 던진다", async () => {
@@ -179,7 +183,7 @@ describe("RewardService", () => {
       };
 
       // When & Then
-      await expect(service.createReward(invalidData)).rejects.toThrow(
+      await expect(service.createReward(invalidData, TEST_USER_ID)).rejects.toThrow(
         "Reward 이름을 입력해주세요.",
       );
 
@@ -194,7 +198,7 @@ describe("RewardService", () => {
       };
 
       // When & Then
-      await expect(service.createReward(invalidData)).rejects.toThrow(
+      await expect(service.createReward(invalidData, TEST_USER_ID)).rejects.toThrow(
         "Reward 이름은 100자를 초과할 수 없습니다.",
       );
 
@@ -209,7 +213,7 @@ describe("RewardService", () => {
       };
 
       // When & Then
-      await expect(service.createReward(invalidData)).rejects.toThrow(
+      await expect(service.createReward(invalidData, TEST_USER_ID)).rejects.toThrow(
         "예약 지급의 경우 예약 일시는 필수입니다.",
       );
 
@@ -227,7 +231,7 @@ describe("RewardService", () => {
       };
 
       // When & Then
-      await expect(service.createReward(invalidData)).rejects.toThrow(
+      await expect(service.createReward(invalidData, TEST_USER_ID)).rejects.toThrow(
         "예약 일시는 현재 시간보다 이후여야 합니다.",
       );
 
@@ -257,12 +261,12 @@ describe("RewardService", () => {
       mockRepo.update.mockResolvedValue(mockUpdatedReward);
 
       // When
-      const result = await service.updateReward("reward1", updateData);
+      const result = await service.updateReward("reward1", updateData, TEST_USER_ID);
 
       // Then
       expect(result).toEqual(mockUpdatedReward);
       expect(mockRepo.findById).toHaveBeenCalledWith("reward1");
-      expect(mockRepo.update).toHaveBeenCalledWith("reward1", updateData);
+      expect(mockRepo.update).toHaveBeenCalledWith("reward1", updateData, TEST_USER_ID);
     });
 
     it("description만 수정할 수 있다", async () => {
@@ -285,11 +289,11 @@ describe("RewardService", () => {
       mockRepo.update.mockResolvedValue(mockUpdatedReward);
 
       // When
-      const result = await service.updateReward("reward1", updateData);
+      const result = await service.updateReward("reward1", updateData, TEST_USER_ID);
 
       // Then
       expect(result).toEqual(mockUpdatedReward);
-      expect(mockRepo.update).toHaveBeenCalledWith("reward1", updateData);
+      expect(mockRepo.update).toHaveBeenCalledWith("reward1", updateData, TEST_USER_ID);
     });
 
     it("paymentType을 SCHEDULED에서 IMMEDIATE로 변경할 수 있다", async () => {
@@ -315,11 +319,11 @@ describe("RewardService", () => {
       mockRepo.update.mockResolvedValue(mockUpdatedReward);
 
       // When
-      const result = await service.updateReward("reward1", updateData);
+      const result = await service.updateReward("reward1", updateData, TEST_USER_ID);
 
       // Then
       expect(result).toEqual(mockUpdatedReward);
-      expect(mockRepo.update).toHaveBeenCalledWith("reward1", updateData);
+      expect(mockRepo.update).toHaveBeenCalledWith("reward1", updateData, TEST_USER_ID);
     });
 
     it("존재하지 않는 Reward를 수정하려고 하면 404 에러를 던진다", async () => {
@@ -331,7 +335,7 @@ describe("RewardService", () => {
       };
 
       // When & Then
-      await expect(service.updateReward("invalid-id", updateData)).rejects.toThrow(
+      await expect(service.updateReward("invalid-id", updateData, TEST_USER_ID)).rejects.toThrow(
         "Reward를 찾을 수 없습니다.",
       );
 
@@ -348,7 +352,7 @@ describe("RewardService", () => {
       };
 
       // When & Then
-      await expect(service.updateReward("reward1", invalidData)).rejects.toThrow(
+      await expect(service.updateReward("reward1", invalidData, TEST_USER_ID)).rejects.toThrow(
         "Reward 이름을 입력해주세요.",
       );
 
@@ -365,7 +369,7 @@ describe("RewardService", () => {
       };
 
       // When & Then
-      await expect(service.updateReward("reward1", invalidData)).rejects.toThrow(
+      await expect(service.updateReward("reward1", invalidData, TEST_USER_ID)).rejects.toThrow(
         "예약 지급의 경우 예약 일시는 필수입니다.",
       );
 
