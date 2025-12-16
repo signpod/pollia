@@ -44,16 +44,29 @@ function TabRoot({
   children,
   initialTab,
   defaultValue,
+  value,
   pointColor = "primary",
+  onValueChange,
   ...props
 }: TabRootProps) {
-  const [activeTab, setActiveTab] = React.useState<string | undefined>(initialTab || defaultValue);
+  const [internalActiveTab, setInternalActiveTab] = React.useState<string | undefined>(
+    initialTab || defaultValue,
+  );
+  const activeTab = value !== undefined ? value : internalActiveTab;
+
+  const handleValueChange = (newValue: string) => {
+    if (value === undefined) {
+      setInternalActiveTab(newValue);
+    }
+    onValueChange?.(newValue);
+  };
 
   return (
     <TabContext.Provider value={{ activeTab, pointColor }}>
       <TabsPrimitive.Root
+        value={value}
         defaultValue={initialTab || defaultValue}
-        onValueChange={setActiveTab}
+        onValueChange={handleValueChange}
         {...props}
       >
         {children}
@@ -118,7 +131,7 @@ const TabItem = React.forwardRef<React.ElementRef<typeof TabsPrimitive.Trigger>,
         className={cn(
           tabItemVariants({ isActive }),
           isActive && (pointColor === "primary" ? "text-violet-500" : "text-black"),
-          "cursor-pointer",
+          "cursor-pointer overflow-hidden",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2",
           "disabled:cursor-not-allowed disabled:opacity-50",
           className,
