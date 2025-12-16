@@ -37,13 +37,13 @@ export function ActionOptionButton({
   const containerVariants = cva(
     cn(
       "w-full flex-1 flex justify-start items-start p-4 ring-1 ring-inset ring-default rounded-md",
-      "hover:bg-zinc-50 active:ring-point",
       "disabled:cursor-not-allowed",
     ),
     {
       variants: {
         isSelected: {
           true: "text-icon-point ring-point bg-violet-50 active:ring-point",
+          false: "hover:bg-zinc-50",
         },
       },
       defaultVariants: {
