@@ -3,6 +3,7 @@
 import { toast } from "@/components/common/Toast";
 import { ROUTES } from "@/constants/routes";
 import { SHARE_MESSAGES } from "@/constants/shareMessages";
+import { useReadMission } from "@/hooks/mission";
 import { useKakaoShare } from "@/hooks/share/useKakaoShare";
 import KakaoIcon from "@public/svgs/kakao-icon.svg";
 import { Typo } from "@repo/ui/components";
@@ -11,14 +12,19 @@ import { useParams } from "next/navigation";
 import React, { useCallback, useMemo, useState } from "react";
 
 export const ShareButtons = React.forwardRef<HTMLDivElement>((_props, ref) => {
-  const params = useParams<{ id: string }>();
+  const { missionId } = useParams<{ missionId: string }>();
+  const { data: mission } = useReadMission(missionId);
 
   const shareUrl = useMemo(() => {
     if (typeof window === "undefined") return "";
-    return `${window.location.origin}${ROUTES.MISSION(params.id)}`;
-  }, [params.id]);
+    return `${window.location.origin}${ROUTES.MISSION(missionId)}`;
+  }, [missionId]);
 
-  const { handleKakaoShare } = useKakaoShare({ shareUrl });
+  const { handleKakaoShare } = useKakaoShare({
+    shareUrl,
+    title: mission?.data?.title,
+    imageUrl: mission?.data?.imageUrl,
+  });
   const [isSharing, setIsSharing] = useState(false);
 
   const handleShare = useCallback(async () => {
@@ -42,7 +48,7 @@ export const ShareButtons = React.forwardRef<HTMLDivElement>((_props, ref) => {
     setIsSharing(true);
     try {
       await navigator.share({
-        title: SHARE_MESSAGES.kakao.title,
+        title: mission?.data?.title || SHARE_MESSAGES.kakao.title,
         text: SHARE_MESSAGES.kakao.description,
         url: shareUrl,
       });
@@ -54,7 +60,7 @@ export const ShareButtons = React.forwardRef<HTMLDivElement>((_props, ref) => {
     } finally {
       setIsSharing(false);
     }
-  }, [shareUrl, isSharing]);
+  }, [shareUrl, isSharing, mission?.data?.title]);
 
   return (
     <div
