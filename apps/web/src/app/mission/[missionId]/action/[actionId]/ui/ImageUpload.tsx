@@ -112,10 +112,6 @@ export function ImageUpload({ initialImageUrl, onUploadChange }: ImageUploadProp
     },
   });
 
-  const onCropComplete = useCallback(() => {
-    // CustomCropper에서 직접 호출됨
-  }, []);
-
   const handleCropCancel = useCallback(() => {
     setIsCropModalOpen(false);
     revokeImageUrl(imageToCrop);
@@ -347,9 +343,6 @@ export function ImageUpload({ initialImageUrl, onUploadChange }: ImageUploadProp
                     zoom={zoom}
                     rotation={rotation}
                     onCropChange={setCrop}
-                    onZoomChange={setZoom}
-                    onRotationChange={setRotation}
-                    onCropComplete={onCropComplete}
                   />
                 )}
               </div>

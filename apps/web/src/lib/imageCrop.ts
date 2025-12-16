@@ -185,7 +185,7 @@ export async function getCroppedImg(
         }
       },
       "image/jpeg",
-      0.95,
+      1.0,
     );
   });
 }

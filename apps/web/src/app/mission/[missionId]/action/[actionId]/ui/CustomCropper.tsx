@@ -11,6 +11,7 @@ interface CustomCropperProps {
 }
 
 const CROP_SIZE = 360;
+const ASPECT_RATIO_TOLERANCE = 0.001;
 
 export function CustomCropper({
   imageSrc,
@@ -20,7 +21,6 @@ export function CustomCropper({
   onCropChange,
 }: CustomCropperProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const imageRef = useRef<HTMLImageElement>(null);
   const [imageSize, setImageSize] = useState<{ width: number; height: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
@@ -31,6 +31,10 @@ export function CustomCropper({
     img.onload = () => {
       setImageSize({ width: img.width, height: img.height });
       setImageLoaded(true);
+    };
+    img.onerror = () => {
+      setImageLoaded(false);
+      setImageSize(null);
     };
     img.src = imageSrc;
   }, [imageSrc]);
@@ -58,7 +62,7 @@ export function CustomCropper({
     const calculatedAspect = scaledWidth / scaledHeight;
     const originalAspect = imageSize.width / imageSize.height;
 
-    if (Math.abs(calculatedAspect - originalAspect) > 0.001) {
+    if (Math.abs(calculatedAspect - originalAspect) > ASPECT_RATIO_TOLERANCE) {
       if (isWider) {
         return {
           width: scaledWidth,
@@ -153,8 +157,8 @@ export function CustomCropper({
       e.preventDefault();
 
       const touch = e.touches[0];
-      const deltaX = touch?.clientX ?? 0 - dragStart.x;
-      const deltaY = touch?.clientY ?? 0 - dragStart.y;
+      const deltaX = (touch?.clientX ?? 0) - dragStart.x;
+      const deltaY = (touch?.clientY ?? 0) - dragStart.y;
 
       const displaySize = getImageDisplaySize();
       const maxX = Math.max(0, (displaySize.width - CROP_SIZE) / 2);
@@ -201,7 +205,6 @@ export function CustomCropper({
       {imageLoaded && imageSize && (
         <img
           key={`${imageSrc}-${zoom}-${rotation}`}
-          ref={imageRef}
           src={imageSrc}
           alt="crop"
           className="absolute select-none pointer-events-none"
