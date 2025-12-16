@@ -1,4 +1,4 @@
-import type { Mission } from "@prisma/client";
+import type { Mission, MissionType } from "@prisma/client";
 
 export interface CreateMissionRequest {
   title: string;
@@ -10,6 +10,7 @@ export interface CreateMissionRequest {
   brandLogoFileUploadId?: string;
   deadline?: Date;
   estimatedMinutes?: number;
+  type: MissionType;
   isActive?: boolean;
   actionIds?: string[];
 }
@@ -24,6 +25,7 @@ export interface CreateMissionResponse {
     brandLogoUrl?: string | null;
     deadline?: Date | null;
     estimatedMinutes?: number | null;
+    type: MissionType;
     createdAt: Date;
     updatedAt: Date;
     creatorId: string;
@@ -41,6 +43,7 @@ export interface GetMissionResponse {
     estimatedMinutes?: number | null;
     deadline?: Date | null;
     isActive: boolean;
+    type: MissionType;
     creatorId: string;
     rewardId?: string | null;
     createdAt: Date;
@@ -51,7 +54,15 @@ export interface GetMissionResponse {
 export interface GetUserMissionsResponse {
   data: Pick<
     Mission,
-    "id" | "title" | "description" | "target" | "imageUrl" | "isActive" | "createdAt" | "updatedAt"
+    | "id"
+    | "title"
+    | "description"
+    | "target"
+    | "imageUrl"
+    | "isActive"
+    | "type"
+    | "createdAt"
+    | "updatedAt"
   >[];
 }
 
@@ -65,6 +76,7 @@ export interface UpdateMissionRequest {
   brandLogoFileUploadId?: string;
   deadline?: Date;
   estimatedMinutes?: number;
+  type?: MissionType;
   isActive?: boolean;
 }
 

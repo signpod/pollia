@@ -21,6 +21,7 @@ interface BasicInfoCardProps {
     brandLogoFileUploadId?: string | undefined;
     deadline?: Date | undefined;
     estimatedMinutes?: number | undefined;
+    type: "GENERAL" | "EXPERIENCE_GROUP";
     actionIds?: string[] | undefined;
     isActive?: boolean | undefined;
   }>;

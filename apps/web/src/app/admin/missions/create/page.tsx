@@ -35,6 +35,7 @@ export default function AdminMissionCreatePage() {
       brandLogoFileUploadId: undefined,
       estimatedMinutes: undefined,
       deadline: undefined,
+      type: "GENERAL" as const,
       isActive: undefined,
       actionIds: [],
     },

@@ -1,7 +1,7 @@
 import prisma from "@/database/utils/prisma/client";
 import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
 import type { SortOrderType } from "@/types/common/sort";
-import { type ActionType, Prisma } from "@prisma/client";
+import { type ActionType, type MissionType, Prisma } from "@prisma/client";
 
 export class MissionRepository {
   async findById(missionId: string) {
@@ -30,6 +30,7 @@ export class MissionRepository {
         target: true,
         imageUrl: true,
         isActive: true,
+        type: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -129,6 +130,7 @@ export class MissionRepository {
       brandLogoFileUploadId?: string;
       deadline?: Date;
       estimatedMinutes?: number;
+      type: MissionType;
       creatorId: string;
     },
     actionIds: string[],
@@ -145,6 +147,7 @@ export class MissionRepository {
           brandLogoFileUploadId: data.brandLogoFileUploadId,
           deadline: data.deadline,
           estimatedMinutes: data.estimatedMinutes,
+          type: data.type,
           creatorId: data.creatorId,
         },
       });
@@ -173,25 +176,11 @@ export class MissionRepository {
     });
   }
 
-  async update(
-    missionId: string,
-    data: {
-      title?: string;
-      description?: string;
-      target?: string;
-      imageUrl?: string;
-      imageFileUploadId?: string;
-      brandLogoUrl?: string;
-      brandLogoFileUploadId?: string;
-      deadline?: Date;
-      estimatedMinutes?: number;
-      isActive?: boolean;
-    },
-    userId?: string,
-  ) {
-    const fileUploadIds = [data.imageFileUploadId, data.brandLogoFileUploadId].filter(
-      Boolean,
-    ) as string[];
+  async update(missionId: string, data: Prisma.MissionUncheckedUpdateInput, userId?: string) {
+    const fileUploadIds = [
+      typeof data.imageFileUploadId === "string" ? data.imageFileUploadId : undefined,
+      typeof data.brandLogoFileUploadId === "string" ? data.brandLogoFileUploadId : undefined,
+    ].filter(Boolean) as string[];
 
     if (fileUploadIds.length > 0 && userId) {
       return prisma.$transaction(async tx => {
@@ -228,6 +217,7 @@ export class MissionRepository {
       deadline?: Date | null;
       estimatedMinutes?: number | null;
       isActive: boolean;
+      type: MissionType;
       creatorId: string;
     },
     actionsData: Array<{
@@ -256,6 +246,7 @@ export class MissionRepository {
           deadline: missionData.deadline,
           estimatedMinutes: missionData.estimatedMinutes,
           isActive: missionData.isActive,
+          type: missionData.type,
           creatorId: missionData.creatorId,
         },
       });

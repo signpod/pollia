@@ -16,6 +16,7 @@ function toCreateMissionInput(dto: CreateMissionRequest): CreateMissionInput {
     brandLogoFileUploadId: dto.brandLogoFileUploadId,
     deadline: dto.deadline,
     estimatedMinutes: dto.estimatedMinutes,
+    type: dto.type,
     actionIds: dto.actionIds ?? [],
   };
 }
