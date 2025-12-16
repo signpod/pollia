@@ -24,7 +24,20 @@ export function useSubmitActionAnswer(options: UseSubmitActionAnswerOptions) {
     mutationFn: async ({ responseId, answer }: SubmitActionAnswerPayload) => {
       return await submitAnswers({
         responseId,
-        answers: [answer],
+        answers: [
+          {
+            actionId: answer.actionId,
+            type: answer.type,
+            ...(answer.type === "MULTIPLE_CHOICE" || answer.type === "TAG"
+              ? { selectedOptionIds: answer.selectedOptionIds }
+              : {}),
+            ...(answer.type === "SCALE" || answer.type === "RATING"
+              ? { scaleValue: answer.scaleValue }
+              : {}),
+            ...(answer.type === "SUBJECTIVE" ? { textResponse: answer.textResponse } : {}),
+            ...(answer.type === "IMAGE" ? { fileUploadId: answer.imageFileUploadId } : {}),
+          },
+        ],
       });
     },
     onSuccess: () => {

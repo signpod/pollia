@@ -55,11 +55,10 @@ export function ActionImage({
   }, [missionResponse, actionData.id]);
 
   useEffect(() => {
-    if (imageUrl) {
+    if (imageUrl && imageFileUploadId) {
       const answer: ActionAnswerItem = {
         actionId: actionData.id,
         type: ActionType.IMAGE,
-        imageUrl: imageUrl,
         imageFileUploadId: imageFileUploadId,
       };
 
@@ -105,7 +104,6 @@ export function ActionImage({
       <ImageUpload
         initialImageUrl={initialImageUrl ?? undefined}
         onUploadChange={handleUploadChange}
-        actionId={actionData.id}
       />
     </SurveyQuestionTemplate>
   );

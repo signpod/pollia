@@ -221,8 +221,8 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
       }
 
       if (answer.type === ActionType.IMAGE) {
-        const submittedImageUrl = answersForAction[0]?.imageUrl;
-        return submittedImageUrl !== null && submittedImageUrl === answer.imageUrl;
+        const submittedImageUrl = answersForAction[0]?.imageFileUploadId;
+        return submittedImageUrl !== null && submittedImageUrl === answer.imageFileUploadId;
       }
 
       return false;
@@ -256,7 +256,24 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
         onConfirm: async () => {
           await completeSurveyAsync({
             responseId,
-            answers: [currentAnswer],
+            answers: [
+              {
+                actionId: currentAnswer.actionId,
+                type: currentAnswer.type,
+                ...(currentAnswer.type === "MULTIPLE_CHOICE" || currentAnswer.type === "TAG"
+                  ? { selectedOptionIds: currentAnswer.selectedOptionIds }
+                  : {}),
+                ...(currentAnswer.type === "SCALE" || currentAnswer.type === "RATING"
+                  ? { scaleValue: currentAnswer.scaleValue }
+                  : {}),
+                ...(currentAnswer.type === "SUBJECTIVE"
+                  ? { textResponse: currentAnswer.textResponse }
+                  : {}),
+                ...(currentAnswer.type === "IMAGE"
+                  ? { fileUploadId: currentAnswer.imageFileUploadId }
+                  : {}),
+              },
+            ],
           });
         },
       });

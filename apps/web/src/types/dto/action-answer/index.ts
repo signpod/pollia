@@ -27,7 +27,6 @@ export type ActionAnswerItem =
   | {
       actionId: string;
       type: typeof ActionType.IMAGE;
-      imageUrl: string;
       imageFileUploadId?: string;
     }
   | {
