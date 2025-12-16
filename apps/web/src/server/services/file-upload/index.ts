@@ -12,9 +12,9 @@ const ALLOWED_IMAGE_TYPES = [
   "image/png",
   "image/webp",
   "image/gif",
-  "image/heic",
-  "image/heif",
+  "image/avif",
 ];
+const ALLOWED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif"];
 const TEMPORARY_FILE_RETENTION_HOURS = 24;
 
 export type SupabaseClientFactory = typeof createServerSupabaseClient;
@@ -169,27 +169,16 @@ export class FileUploadService {
     const fileType = input.fileType?.toLowerCase() || "";
     const fileName = input.fileName?.toLowerCase() || "";
 
-    const isImageByExtension =
-      fileName.endsWith(".jpg") ||
-      fileName.endsWith(".jpeg") ||
-      fileName.endsWith(".png") ||
-      fileName.endsWith(".webp") ||
-      fileName.endsWith(".gif") ||
-      fileName.endsWith(".heic") ||
-      fileName.endsWith(".heif");
+    const isImageByExtension = ALLOWED_IMAGE_EXTENSIONS.some(ext => fileName.endsWith(ext));
 
     if (!fileType && !isImageByExtension) {
-      const error = new Error(
-        "지원하지 않는 파일 형식입니다. (JPEG, PNG, WebP, GIF, HEIC, HEIF만 가능)",
-      );
+      const error = new Error("지원하지 않는 파일 형식입니다. (JPEG, PNG, WebP, GIF, AVIF만 가능)");
       error.cause = 400;
       throw error;
     }
 
     if (fileType && !ALLOWED_IMAGE_TYPES.includes(fileType) && !isImageByExtension) {
-      const error = new Error(
-        "지원하지 않는 파일 형식입니다. (JPEG, PNG, WebP, GIF, HEIC, HEIF만 가능)",
-      );
+      const error = new Error("지원하지 않는 파일 형식입니다. (JPEG, PNG, WebP, GIF, AVIF만 가능)");
       error.cause = 400;
       throw error;
     }
