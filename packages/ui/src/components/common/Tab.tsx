@@ -29,19 +29,28 @@ import { cn } from "../../lib/utils";
 // Context for active tab tracking (for animations)
 const TabContext = React.createContext<{
   activeTab: string | undefined;
+  pointColor: "primary" | "secondary";
 }>({
   activeTab: undefined,
+  pointColor: "primary",
 });
 
 interface TabRootProps extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root> {
   initialTab?: string;
+  pointColor?: "primary" | "secondary";
 }
 
-function TabRoot({ children, initialTab, defaultValue, ...props }: TabRootProps) {
+function TabRoot({
+  children,
+  initialTab,
+  defaultValue,
+  pointColor = "primary",
+  ...props
+}: TabRootProps) {
   const [activeTab, setActiveTab] = React.useState<string | undefined>(initialTab || defaultValue);
 
   return (
-    <TabContext.Provider value={{ activeTab }}>
+    <TabContext.Provider value={{ activeTab, pointColor }}>
       <TabsPrimitive.Root
         defaultValue={initialTab || defaultValue}
         onValueChange={setActiveTab}
@@ -82,11 +91,12 @@ TabList.displayName = TabsPrimitive.List.displayName;
 
 interface TabItemProps extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger> {
   value: string;
+  pointColor?: "primary" | "secondary";
 }
 
 const TabItem = React.forwardRef<React.ElementRef<typeof TabsPrimitive.Trigger>, TabItemProps>(
   ({ children, value, className, ...props }, ref) => {
-    const { activeTab } = React.useContext(TabContext);
+    const { activeTab, pointColor } = React.useContext(TabContext);
     const isActive = activeTab === value;
 
     const tabItemVariants = cva(
@@ -94,7 +104,7 @@ const TabItem = React.forwardRef<React.ElementRef<typeof TabsPrimitive.Trigger>,
       {
         variants: {
           isActive: {
-            true: "text-primary",
+            true: "",
             false: "text-zinc-500",
           },
         },
@@ -107,6 +117,7 @@ const TabItem = React.forwardRef<React.ElementRef<typeof TabsPrimitive.Trigger>,
         value={value}
         className={cn(
           tabItemVariants({ isActive }),
+          isActive && (pointColor === "primary" ? "text-violet-500" : "text-black"),
           "cursor-pointer",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2",
           "disabled:cursor-not-allowed disabled:opacity-50",
@@ -117,8 +128,12 @@ const TabItem = React.forwardRef<React.ElementRef<typeof TabsPrimitive.Trigger>,
         {children}
         {isActive && (
           <motion.div
-            className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
-            layoutId="activeTab"
+            key={`${value}-${pointColor}`}
+            className={cn(
+              "absolute bottom-0 left-0 right-0 h-0.5",
+              pointColor === "primary" ? "bg-primary" : "bg-black",
+            )}
+            layoutId={`activeTab-${pointColor}`}
             transition={{
               type: "spring",
               stiffness: 500,
