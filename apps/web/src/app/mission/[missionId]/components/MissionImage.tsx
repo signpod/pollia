@@ -9,7 +9,7 @@ export function MissionImage({ imageUrl, alt = "Mission Image" }: MissionImagePr
   if (!imageUrl) return null;
 
   return (
-    <div className="relative w-full overflow-hidden">
+    <div className="relative w-full aspect-2/3 overflow-hidden">
       <Image
         src={imageUrl}
         alt={alt}
