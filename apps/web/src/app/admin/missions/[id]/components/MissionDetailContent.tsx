@@ -148,9 +148,10 @@ export function MissionDetailContent({ mission }: MissionDetailContentProps) {
                         alt="미션 이미지"
                         width={200}
                         height={200}
-                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 400px"
                         className="w-auto h-auto max-w-full max-h-64 min-h-32 rounded-lg border"
                         style={{ objectFit: "contain" }}
+                        loading="lazy"
                       />
                     </div>
                   ) : (
@@ -172,9 +173,10 @@ export function MissionDetailContent({ mission }: MissionDetailContentProps) {
                         alt="브랜드 로고"
                         width={150}
                         height={80}
-                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 300px"
                         className="w-auto h-auto max-w-full max-h-32 min-h-16 rounded-lg border bg-gray-50 p-2"
                         style={{ objectFit: "contain" }}
+                        loading="lazy"
                       />
                     </div>
                   ) : (

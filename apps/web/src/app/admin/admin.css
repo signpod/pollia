@@ -89,7 +89,11 @@
   cursor: pointer;
 }
 
-/* Sonner toast 스타일 (body에 렌더링되므로 전역 설정 필요) */
+/*
+ * Sonner toast 스타일 (body에 렌더링되므로 전역 설정 필요)
+ * Sonner는 createPortal을 사용하여 document.body에 직접 렌더링되므로
+ * .admin-root의 CSS 변수를 상속받지 못함
+ */
 [data-sonner-toaster][data-theme] {
   --normal-bg: hsl(0 0% 100%);
   --normal-text: hsl(240 10% 3.9%);

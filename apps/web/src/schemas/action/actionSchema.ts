@@ -38,25 +38,28 @@ export const actionOptionDescriptionSchema = z
   )
   .optional();
 
-const orderSchema = z.number().int("순서는 정수여야 합니다.").min(0, "순서는 0 이상이어야 합니다.");
+const actionOrderSchema = z
+  .number()
+  .int("순서는 정수여야 합니다.")
+  .min(0, "순서는 0 이상이어야 합니다.");
 
-const missionIdSchema = z.string().min(1, "미션 ID가 필요합니다.").optional();
+const actionMissionIdSchema = z.string().min(1, "미션 ID가 필요합니다.").optional();
 
 const actionOptionSchema = z.object({
   title: actionOptionTitleSchema,
   description: actionOptionDescriptionSchema,
   imageUrl: actionImageUrlSchema,
-  order: orderSchema,
+  order: actionOrderSchema,
   imageFileUploadId: z.string().optional(),
 });
 
 const baseActionSchema = z.object({
-  missionId: missionIdSchema,
+  missionId: actionMissionIdSchema,
   title: actionTitleSchema,
   description: actionDescriptionSchema,
   imageUrl: actionImageUrlSchema,
   imageFileUploadId: z.string().optional(),
-  order: orderSchema,
+  order: actionOrderSchema,
 });
 
 export const multipleChoiceInputSchema = baseActionSchema
@@ -118,7 +121,7 @@ export const actionUpdateSchema = z
     description: actionDescriptionSchema,
     imageUrl: actionImageUrlSchema,
     imageFileUploadId: z.string().optional(),
-    order: orderSchema.optional(),
+    order: actionOrderSchema.optional(),
     maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다.").optional(),
     options: z.array(actionOptionSchema).optional(),
   })
