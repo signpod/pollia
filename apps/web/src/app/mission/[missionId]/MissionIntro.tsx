@@ -1,7 +1,7 @@
 "use client";
 
 import { AuthError } from "@/hooks/login/useKakaoLogin";
-import { useMissionIntroData, useSurveyResume } from "@/hooks/mission";
+import { useMissionIntroData, useSectionScrollSync, useSurveyResume } from "@/hooks/mission";
 import { useReadMissionParticipantInfo } from "@/hooks/participant/useReadMissionParticipantInfo";
 import { useReadReward } from "@/hooks/reward/useReadReward";
 import { getSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
@@ -9,7 +9,6 @@ import { cleanTiptapHTML } from "@/lib/utils";
 import { FixedBottomLayout, Tab, Typo } from "@repo/ui/components";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
 import {
   MissionDescription,
   MissionImage,
@@ -58,16 +57,11 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
   // const { currentParticipants, maxParticipants } = participantInfo?.data ?? {};
   const { currentParticipants } = participantInfo?.data ?? {};
   const maxParticipants = 200;
-  const [activeTab, setActiveTab] = useState<string>("mission-guide");
 
-  const handleChangeTab = (value: string) => {
-    setActiveTab(value);
-    const element = document.getElementById(value);
-    if (element) {
-      window.history.pushState(null, "", `#${value}`);
-      element.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
+  const { activeTab, handleChangeTab } = useSectionScrollSync({
+    sections: ["mission-guide", "reward", "participation-method"],
+    defaultSection: "mission-guide",
+  });
 
   return (
     <>
