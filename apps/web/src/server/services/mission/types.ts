@@ -1,4 +1,5 @@
 import type { SortOrderType } from "@/types/common/sort";
+import type { MissionType } from "@prisma/client";
 
 export interface CreateMissionInput {
   title: string;
@@ -10,6 +11,7 @@ export interface CreateMissionInput {
   brandLogoFileUploadId?: string;
   deadline?: Date;
   estimatedMinutes?: number;
+  type: MissionType;
   actionIds?: string[];
 }
 
@@ -24,6 +26,7 @@ export interface UpdateMissionInput {
   deadline?: Date;
   estimatedMinutes?: number;
   isActive?: boolean;
+  type?: MissionType;
   rewardId?: string | null;
 }
 
@@ -41,6 +44,7 @@ export interface MissionCreatedResult {
   imageUrl: string | null;
   deadline: Date | null;
   estimatedMinutes: number | null;
+  type: MissionType;
   createdAt: Date;
   updatedAt: Date;
   creatorId: string;

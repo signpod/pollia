@@ -130,7 +130,7 @@ export class MissionRepository {
       brandLogoFileUploadId?: string;
       deadline?: Date;
       estimatedMinutes?: number;
-      type?: MissionType;
+      type: MissionType;
       creatorId: string;
     },
     actionIds: string[],
@@ -224,7 +224,7 @@ export class MissionRepository {
       deadline?: Date | null;
       estimatedMinutes?: number | null;
       isActive: boolean;
-      type?: MissionType;
+      type: MissionType;
       creatorId: string;
     },
     actionsData: Array<{

@@ -1,4 +1,7 @@
+import { MissionType } from "@prisma/client";
 import { z } from "zod";
+
+const missionTypeSchema = z.enum(MissionType);
 
 const titleSchema = z
   .string()
@@ -37,6 +40,7 @@ export const missionInputSchema = z.object({
   brandLogoFileUploadId: brandLogoFileUploadIdSchema,
   deadline: deadlineSchema,
   estimatedMinutes: estimatedMinutesSchema,
+  type: missionTypeSchema,
   actionIds: actionIdsSchema,
   isActive: z.boolean().optional(),
 });
@@ -52,6 +56,7 @@ export const missionUpdateSchema = z
     brandLogoFileUploadId: brandLogoFileUploadIdSchema,
     deadline: z.date().optional(),
     estimatedMinutes: estimatedMinutesSchema,
+    type: missionTypeSchema.optional(),
     isActive: z.boolean().optional(),
     rewardId: z.string().nullable().optional(),
   })
