@@ -105,7 +105,6 @@ export function ActionImage({
       <ImageUpload
         initialImageUrl={initialImageUrl ?? undefined}
         onUploadChange={handleUploadChange}
-        actionId={actionData.id}
       />
     </SurveyQuestionTemplate>
   );

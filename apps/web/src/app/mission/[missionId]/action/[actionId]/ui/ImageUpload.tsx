@@ -57,10 +57,9 @@ function generateBlurDataURL(file: File): Promise<string> {
 interface ImageUploadProps {
   initialImageUrl?: string;
   onUploadChange?: (hasUploadedImage: boolean, imageUrl?: string, fileUploadId?: string) => void;
-  actionId: string;
 }
 
-export function ImageUpload({ initialImageUrl, onUploadChange, actionId }: ImageUploadProps) {
+export function ImageUpload({ initialImageUrl, onUploadChange }: ImageUploadProps) {
   const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(null);
   const [isImageLoading, setIsImageLoading] = useState(false);
   const [blurDataURL, setBlurDataURL] = useState<string | null>(null);
