@@ -9,13 +9,12 @@ import {
 } from "@/app/admin/components/shadcn-ui/card";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
+import {
+  MISSION_DESCRIPTION_MAX_LENGTH,
+  MISSION_TARGET_MAX_LENGTH,
+  MISSION_TITLE_MAX_LENGTH,
+} from "@/schemas/mission";
 import type { UseFormReturn } from "react-hook-form";
-
-const LIMITS = {
-  title: 100,
-  description: 500,
-  target: 100,
-} as const;
 
 interface BasicInfoCardProps {
   form: UseFormReturn<{
@@ -47,12 +46,15 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
             <Label htmlFor="title">
               제목 <span className="text-destructive">*</span>
             </Label>
-            <CharacterCounter current={form.watch("title")?.length || 0} max={LIMITS.title} />
+            <CharacterCounter
+              current={form.watch("title")?.length || 0}
+              max={MISSION_TITLE_MAX_LENGTH}
+            />
           </div>
           <Input
             id="title"
             placeholder="미션 제목을 입력하세요"
-            maxLength={LIMITS.title}
+            maxLength={MISSION_TITLE_MAX_LENGTH}
             {...form.register("title")}
           />
           {form.formState.errors.title && (
@@ -65,7 +67,7 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
             <Label htmlFor="description">설명</Label>
             <CharacterCounter
               current={form.watch("description")?.length || 0}
-              max={LIMITS.description}
+              max={MISSION_DESCRIPTION_MAX_LENGTH}
             />
           </div>
           <TiptapEditor
@@ -85,12 +87,15 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="target">대상</Label>
-            <CharacterCounter current={form.watch("target")?.length || 0} max={LIMITS.target} />
+            <CharacterCounter
+              current={form.watch("target")?.length || 0}
+              max={MISSION_TARGET_MAX_LENGTH}
+            />
           </div>
           <Input
             id="target"
             placeholder="미션 대상을 입력하세요"
-            maxLength={LIMITS.target}
+            maxLength={MISSION_TARGET_MAX_LENGTH}
             {...form.register("target")}
           />
           {form.formState.errors.target && (

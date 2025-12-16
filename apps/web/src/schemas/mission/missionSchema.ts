@@ -1,17 +1,30 @@
 import { MissionType } from "@prisma/client";
 import { z } from "zod";
 
+export const MISSION_TITLE_MAX_LENGTH = 100;
+export const MISSION_DESCRIPTION_MAX_LENGTH = 500;
+export const MISSION_TARGET_MAX_LENGTH = 100;
+
 const missionTypeSchema = z.enum(MissionType);
 
 const titleSchema = z
   .string()
   .min(1, "제목을 입력해주세요.")
-  .max(100, "제목은 100자를 초과할 수 없습니다.")
+  .max(MISSION_TITLE_MAX_LENGTH, `제목은 ${MISSION_TITLE_MAX_LENGTH}자를 초과할 수 없습니다.`)
   .trim();
 
-const descriptionSchema = z.string().max(500, "설명은 500자를 초과할 수 없습니다.").optional();
+const descriptionSchema = z
+  .string()
+  .max(
+    MISSION_DESCRIPTION_MAX_LENGTH,
+    `설명은 ${MISSION_DESCRIPTION_MAX_LENGTH}자를 초과할 수 없습니다.`,
+  )
+  .optional();
 
-const targetSchema = z.string().max(100, "대상은 100자를 초과할 수 없습니다.").optional();
+const targetSchema = z
+  .string()
+  .max(MISSION_TARGET_MAX_LENGTH, `대상은 ${MISSION_TARGET_MAX_LENGTH}자를 초과할 수 없습니다.`)
+  .optional();
 
 const imageUrlSchema = z.url({ message: "올바른 URL 형식이 아닙니다." }).optional();
 const imageFileUploadIdSchema = z.string().optional();

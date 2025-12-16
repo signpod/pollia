@@ -12,13 +12,9 @@ import {
 import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
 import { Textarea } from "@/app/admin/components/shadcn-ui/textarea";
+import { ACTION_DESCRIPTION_MAX_LENGTH, ACTION_TITLE_MAX_LENGTH } from "@/schemas/action";
 import type { ReactNode } from "react";
 import type { Control, FieldValues, Path, UseFormWatch } from "react-hook-form";
-
-const LIMITS = {
-  title: 100,
-  description: 500,
-} as const;
 
 interface BaseActionFormFieldsProps<TFieldValues extends FieldValues> {
   control: Control<TFieldValues>;
@@ -55,12 +51,12 @@ export function BaseActionFormFields<TFieldValues extends FieldValues>({
               <FormLabel>
                 제목 <span className="text-destructive">*</span>
               </FormLabel>
-              <CharacterCounter current={titleValue?.length || 0} max={LIMITS.title} />
+              <CharacterCounter current={titleValue?.length || 0} max={ACTION_TITLE_MAX_LENGTH} />
             </div>
             <FormControl>
               <Input
                 placeholder={titlePlaceholder}
-                maxLength={LIMITS.title}
+                maxLength={ACTION_TITLE_MAX_LENGTH}
                 {...field}
                 disabled={isLoading}
               />
@@ -79,12 +75,15 @@ export function BaseActionFormFields<TFieldValues extends FieldValues>({
               <FormLabel>
                 설명 <span className="text-muted-foreground">(선택)</span>
               </FormLabel>
-              <CharacterCounter current={descriptionValue?.length || 0} max={LIMITS.description} />
+              <CharacterCounter
+                current={descriptionValue?.length || 0}
+                max={ACTION_DESCRIPTION_MAX_LENGTH}
+              />
             </div>
             <FormControl>
               <Textarea
                 placeholder="액션에 대한 추가 설명을 입력하세요."
-                maxLength={LIMITS.description}
+                maxLength={ACTION_DESCRIPTION_MAX_LENGTH}
                 {...field}
                 disabled={isLoading}
                 rows={2}

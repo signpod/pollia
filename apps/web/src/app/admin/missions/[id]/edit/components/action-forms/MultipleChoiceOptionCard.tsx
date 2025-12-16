@@ -5,12 +5,11 @@ import { InputWithCounter } from "@/app/admin/components/common/InputField";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Card, CardContent } from "@/app/admin/components/shadcn-ui/card";
 import { cn } from "@/app/admin/lib/utils";
+import {
+  ACTION_OPTION_DESCRIPTION_MAX_LENGTH,
+  ACTION_OPTION_TITLE_MAX_LENGTH,
+} from "@/schemas/action";
 import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
-
-const LIMITS = {
-  title: 50,
-  description: 200,
-} as const;
 
 export interface MultipleChoiceOptionCardProps {
   index: number;
@@ -82,7 +81,7 @@ export function MultipleChoiceOptionCard({
               value={title}
               onChange={e => onTitleChange(e.target.value)}
               disabled={disabled}
-              maxLength={LIMITS.title}
+              maxLength={ACTION_OPTION_TITLE_MAX_LENGTH}
               currentLength={title.length}
               className="h-9 text-sm"
             />
@@ -91,7 +90,7 @@ export function MultipleChoiceOptionCard({
               value={description || ""}
               onChange={e => onDescriptionChange(e.target.value)}
               disabled={disabled}
-              maxLength={LIMITS.description}
+              maxLength={ACTION_OPTION_DESCRIPTION_MAX_LENGTH}
               currentLength={description?.length || 0}
               className="h-9 text-sm"
             />

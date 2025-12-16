@@ -2,11 +2,8 @@
 
 import { InputWithCounter } from "@/app/admin/components/common/InputField";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
+import { ACTION_OPTION_TITLE_MAX_LENGTH } from "@/schemas/action";
 import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
-
-const LIMITS = {
-  title: 50,
-} as const;
 
 export interface TagFormOptionCardProps {
   index: number;
@@ -49,7 +46,7 @@ export function TagFormOptionCard({
           value={title}
           onChange={e => onTitleChange(e.target.value)}
           disabled={disabled}
-          maxLength={LIMITS.title}
+          maxLength={ACTION_OPTION_TITLE_MAX_LENGTH}
           currentLength={title.length}
           className="h-9 text-sm flex-1"
         />
