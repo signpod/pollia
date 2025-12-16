@@ -46,38 +46,57 @@ export async function getCroppedImg(
     const currentZoom = zoom ?? 1;
     const currentCrop = crop ?? { x: 0, y: 0 };
 
+    const imageAspect = image.width / image.height;
+    const isWider = image.width > image.height;
+
+    let baseDisplayWidth: number;
+    let baseDisplayHeight: number;
+
+    if (isWider) {
+      baseDisplayWidth = cropSize.width;
+      baseDisplayHeight = cropSize.width / imageAspect;
+    } else {
+      baseDisplayHeight = cropSize.height;
+      baseDisplayWidth = cropSize.height * imageAspect;
+    }
+
+    const displayWidth = baseDisplayWidth * currentZoom;
+    const displayHeight = baseDisplayHeight * currentZoom;
+
+    const scaleFactorX = image.width / displayWidth;
+    const scaleFactorY = image.height / displayHeight;
+    const scaleFactor = Math.min(scaleFactorX, scaleFactorY);
+
+    const outputWidth = Math.round(cropSize.width * scaleFactor);
+    const outputHeight = Math.round(cropSize.height * scaleFactor);
+
     const sourceCanvas = document.createElement("canvas");
-    const sourceCtx = sourceCanvas.getContext("2d");
+    const sourceCtx = sourceCanvas.getContext("2d", {
+      willReadFrequently: false,
+      alpha: false,
+    });
 
     if (!sourceCtx) {
       throw new Error("Canvas context를 생성할 수 없습니다.");
     }
 
-    sourceCanvas.width = cropSize.width;
-    sourceCanvas.height = cropSize.height;
+    sourceCanvas.width = outputWidth;
+    sourceCanvas.height = outputHeight;
+
+    sourceCtx.imageSmoothingEnabled = true;
+    sourceCtx.imageSmoothingQuality = "high";
 
     sourceCtx.fillStyle = "#ffffff";
-    sourceCtx.fillRect(0, 0, cropSize.width, cropSize.height);
+    sourceCtx.fillRect(0, 0, outputWidth, outputHeight);
 
-    const centerX = cropSize.width / 2;
-    const centerY = cropSize.height / 2;
+    const centerX = outputWidth / 2;
+    const centerY = outputHeight / 2;
 
-    let baseDrawWidth: number;
-    let baseDrawHeight: number;
+    const scaledDisplayWidth = displayWidth * scaleFactor;
+    const scaledDisplayHeight = displayHeight * scaleFactor;
 
-    const isWider = image.width > image.height;
-    if (isWider) {
-      baseDrawWidth = cropSize.width;
-      baseDrawHeight = image.height * (cropSize.width / image.width);
-    } else {
-      baseDrawHeight = cropSize.height;
-      baseDrawWidth = image.width * (cropSize.height / image.height);
-    }
-
-    const scaledDrawWidth = baseDrawWidth * currentZoom;
-    const scaledDrawHeight = baseDrawHeight * currentZoom;
-    const scaledDrawX = centerX + currentCrop.x - scaledDrawWidth / 2;
-    const scaledDrawY = centerY + currentCrop.y - scaledDrawHeight / 2;
+    const scaledDrawX = centerX + currentCrop.x * scaleFactor - scaledDisplayWidth / 2;
+    const scaledDrawY = centerY + currentCrop.y * scaleFactor - scaledDisplayHeight / 2;
 
     const rotRad = getRadianAngle(rotation);
     sourceCtx.save();
@@ -93,8 +112,8 @@ export async function getCroppedImg(
       image.height,
       scaledDrawX,
       scaledDrawY,
-      scaledDrawWidth,
-      scaledDrawHeight,
+      scaledDisplayWidth,
+      scaledDisplayHeight,
     );
 
     sourceCtx.restore();
@@ -109,13 +128,16 @@ export async function getCroppedImg(
           }
         },
         "image/jpeg",
-        0.95,
+        1.0,
       );
     });
   }
 
   const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
+  const ctx = canvas.getContext("2d", {
+    willReadFrequently: false,
+    alpha: false,
+  });
 
   if (!ctx) {
     throw new Error("Canvas context를 생성할 수 없습니다.");
@@ -130,6 +152,9 @@ export async function getCroppedImg(
 
   canvas.width = bBoxWidth;
   canvas.height = bBoxHeight;
+
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = "high";
 
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, bBoxWidth, bBoxHeight);

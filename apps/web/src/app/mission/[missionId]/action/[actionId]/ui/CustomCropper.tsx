@@ -8,9 +8,6 @@ interface CustomCropperProps {
   zoom: number;
   rotation: number;
   onCropChange: (crop: { x: number; y: number }) => void;
-  onZoomChange: (zoom: number) => void;
-  onRotationChange: (rotation: number) => void;
-  onCropComplete: () => void;
 }
 
 const CROP_SIZE = 360;
@@ -21,9 +18,6 @@ export function CustomCropper({
   zoom,
   rotation,
   onCropChange,
-  onZoomChange,
-  onRotationChange,
-  onCropComplete,
 }: CustomCropperProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
@@ -46,7 +40,7 @@ export function CustomCropper({
 
     const imageAspect = imageSize.width / imageSize.height;
     const isWider = imageSize.width > imageSize.height;
-    
+
     let baseWidth: number;
     let baseHeight: number;
 
@@ -70,12 +64,11 @@ export function CustomCropper({
           width: scaledWidth,
           height: scaledWidth / originalAspect,
         };
-      } else {
-        return {
-          width: scaledHeight * originalAspect,
-          height: scaledHeight,
-        };
       }
+      return {
+        width: scaledHeight * originalAspect,
+        height: scaledHeight,
+      };
     }
 
     return {
@@ -149,7 +142,7 @@ export function CustomCropper({
       e.preventDefault();
       const touch = e.touches[0];
       setIsDragging(true);
-      setDragStart({ x: touch.clientX, y: touch.clientY });
+      setDragStart({ x: touch?.clientX ?? 0, y: touch?.clientY ?? 0 });
     },
     [imageLoaded],
   );
@@ -160,8 +153,8 @@ export function CustomCropper({
       e.preventDefault();
 
       const touch = e.touches[0];
-      const deltaX = touch.clientX - dragStart.x;
-      const deltaY = touch.clientY - dragStart.y;
+      const deltaX = touch?.clientX ?? 0 - dragStart.x;
+      const deltaY = touch?.clientY ?? 0 - dragStart.y;
 
       const displaySize = getImageDisplaySize();
       const maxX = Math.max(0, (displaySize.width - CROP_SIZE) / 2);
@@ -173,7 +166,7 @@ export function CustomCropper({
       const newY = Math.max(minY, Math.min(maxY, crop.y + deltaY));
 
       onCropChange({ x: newX, y: newY });
-      setDragStart({ x: touch.clientX, y: touch.clientY });
+      setDragStart({ x: touch?.clientX ?? 0, y: touch?.clientY ?? 0 });
     },
     [isDragging, dragStart, crop, onCropChange, getImageDisplaySize],
   );
@@ -223,7 +216,7 @@ export function CustomCropper({
             top: `${imagePosition.y}px`,
             transform: `rotate(${rotation}deg)`,
             transformOrigin: "center center",
-            imageRendering: "high-quality",
+            imageRendering: "auto",
           }}
           draggable={false}
         />
@@ -238,4 +231,3 @@ export function CustomCropper({
     </div>
   );
 }
-
