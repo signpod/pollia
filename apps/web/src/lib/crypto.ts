@@ -20,13 +20,22 @@ export function encrypt(text: string): string {
 }
 
 export function decrypt(encryptedText: string): string {
-  const [ivHex, encrypted] = encryptedText.split(":");
-  if (!ivHex || !encrypted) {
-    throw new Error("Invalid encryption format");
+  try {
+    const [ivHex, encrypted] = encryptedText.split(":");
+    if (!ivHex || !encrypted) {
+      throw new Error("Invalid encryption format");
+    }
+    const iv = Buffer.from(ivHex, "hex");
+    const decipher = crypto.createDecipheriv(ALGORITHM, getSecretKey(), iv);
+    let decrypted = decipher.update(encrypted, "hex", "utf8");
+    decrypted += decipher.final("utf8");
+    return decrypted;
+  } catch (error) {
+    if (error instanceof Error && error.message === "Invalid encryption format") {
+      throw error;
+    }
+    const decryptError = new Error("Decryption failed");
+    decryptError.cause = error;
+    throw decryptError;
   }
-  const iv = Buffer.from(ivHex, "hex");
-  const decipher = crypto.createDecipheriv(ALGORITHM, getSecretKey(), iv);
-  let decrypted = decipher.update(encrypted, "hex", "utf8");
-  decrypted += decipher.final("utf8");
-  return decrypted;
 }

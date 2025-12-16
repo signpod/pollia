@@ -207,13 +207,6 @@ export class MissionRepository {
     });
   }
 
-  async updatePassword(missionId: string, password: string | null) {
-    return prisma.mission.update({
-      where: { id: missionId },
-      data: { password },
-    });
-  }
-
   async duplicateMission(
     missionData: {
       title: string;

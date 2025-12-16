@@ -206,7 +206,7 @@ export class MissionService {
     }
 
     const encryptedPassword = encrypt(result.data.password);
-    await this.repo.updatePassword(missionId, encryptedPassword);
+    await this.repo.update(missionId, { password: encryptedPassword });
   }
 
   async removePassword(missionId: string, userId: string): Promise<void> {
@@ -218,9 +218,16 @@ export class MissionService {
       throw error;
     }
 
-    await this.repo.updatePassword(missionId, null);
+    await this.repo.update(missionId, { password: null });
   }
 
+  /**
+   * 미션의 비밀번호를 평문으로 반환합니다.
+   * @warning 보안에 민감한 메서드입니다. Admin/Creator 전용으로만 사용하세요.
+   * @param missionId - 미션 ID
+   * @param userId - 요청한 사용자 ID (Creator만 가능)
+   * @returns 복호화된 비밀번호 또는 null
+   */
   async getPassword(missionId: string, userId: string): Promise<string | null> {
     const mission = await this.getMission(missionId);
 

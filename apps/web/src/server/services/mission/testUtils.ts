@@ -13,7 +13,6 @@ export function createMissionServiceTestContext() {
     createWithActions: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
-    updatePassword: jest.fn(),
     duplicateMission: jest.fn(),
   } as jest.Mocked<MissionRepository>;
 

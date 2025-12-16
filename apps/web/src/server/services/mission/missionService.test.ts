@@ -21,7 +21,6 @@ describe("MissionService", () => {
       createWithActions: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
-      updatePassword: jest.fn(),
       duplicateMission: jest.fn(),
     } as jest.Mocked<MissionRepository>;
 
@@ -850,7 +849,7 @@ describe("MissionService", () => {
         updatedAt: new Date(),
       };
       mockRepository.findById.mockResolvedValue(mockMission);
-      mockRepository.updatePassword.mockResolvedValue({
+      mockRepository.update.mockResolvedValue({
         ...mockMission,
         password: "encrypted:1234",
       });
@@ -859,7 +858,9 @@ describe("MissionService", () => {
       await missionService.setPassword("mission-1", "1234", "user-1");
 
       // Then
-      expect(mockRepository.updatePassword).toHaveBeenCalledWith("mission-1", "encrypted:1234");
+      expect(mockRepository.update).toHaveBeenCalledWith("mission-1", {
+        password: "encrypted:1234",
+      });
     });
 
     it("권한이 없으면 403 에러를 던진다", async () => {
@@ -956,13 +957,13 @@ describe("MissionService", () => {
         updatedAt: new Date(),
       };
       mockRepository.findById.mockResolvedValue(mockMission);
-      mockRepository.updatePassword.mockResolvedValue({ ...mockMission, password: null });
+      mockRepository.update.mockResolvedValue({ ...mockMission, password: null });
 
       // When
       await missionService.removePassword("mission-1", "user-1");
 
       // Then
-      expect(mockRepository.updatePassword).toHaveBeenCalledWith("mission-1", null);
+      expect(mockRepository.update).toHaveBeenCalledWith("mission-1", { password: null });
     });
 
     it("권한이 없으면 403 에러를 던진다", async () => {
