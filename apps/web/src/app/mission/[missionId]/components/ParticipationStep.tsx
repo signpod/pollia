@@ -13,7 +13,7 @@ export function ParticipationStep({ stepNumber, title, description }: Participat
   return (
     <div className="flex gap-4 w-full">
       <div className="relative flex items-center justify-center">
-        <Badge className="fill-black size-15" />
+        <Badge className="fill-black size-14" />
         <Typo.MainTitle
           size="small"
           className="text-white absolute inset-0 z-20 flex items-center justify-center"
@@ -22,8 +22,10 @@ export function ParticipationStep({ stepNumber, title, description }: Participat
         </Typo.MainTitle>
       </div>
       <div className="flex flex-col gap-2 flex-1">
-        <Typo.MainTitle size="small">{title}</Typo.MainTitle>
-        <Typo.Body size="medium" className="text-info">
+        <Typo.MainTitle size="small" className="break-keep">
+          {title}
+        </Typo.MainTitle>
+        <Typo.Body size="medium" className="text-info break-keep">
           {description}
         </Typo.Body>
       </div>

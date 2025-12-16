@@ -122,9 +122,19 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
             <div id="participation-method">
               <ParticipationMethodSection
                 steps={[
-                  { title: "참여 방법1", description: "참여 방법1입니다." },
-                  { title: "참여 방법2", description: "참여 방법2입니다." },
-                  { title: "참여 방법2", description: "참여 방법2입니다." },
+                  {
+                    title: "전용 링크로 제품 구매하기",
+                    description:
+                      "전용 구매 링크를 통해 ‘스타벅스 홀리데이 블론드 로스트’를 구매해주세요!",
+                  },
+                  {
+                    title: "구매 사진 인증하기",
+                    description: "제품을 받고 영수증과 사진 인증을 진행해주세요!",
+                  },
+                  {
+                    title: "사용 후기 작성하기",
+                    description: "일주일 사용 후, 미션 페이지로 다시 돌아와서 후기 작성하면 끝!",
+                  },
                 ]}
               />
             </div>

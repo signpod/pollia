@@ -63,7 +63,11 @@ export function MissionRewardSection({
               />
             )}
           </div>
-          {rewardName && <Typo.MainTitle size="small">{rewardName}</Typo.MainTitle>}
+          {rewardName && (
+            <Typo.MainTitle size="small" className="break-keep">
+              {rewardName}
+            </Typo.MainTitle>
+          )}
         </div>
       </div>
     </div>

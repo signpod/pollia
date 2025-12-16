@@ -14,7 +14,7 @@ export function MissionDescription({ content }: MissionDescriptionProps) {
     <div className="w-full">
       <TiptapViewer
         content={content}
-        className={cn("prose prose-sm", "max-w-none focus:outline-none", "text-sub")}
+        className={cn("prose prose-sm break-keep", "max-w-none focus:outline-none", "text-sub")}
       />
     </div>
   );
