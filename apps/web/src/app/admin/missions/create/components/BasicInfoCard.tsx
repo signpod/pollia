@@ -1,3 +1,4 @@
+import { CharacterCounter } from "@/app/admin/components/common/InputField";
 import { TiptapEditor } from "@/app/admin/components/common/TiptapEditor";
 import {
   Card,
@@ -8,7 +9,6 @@ import {
 } from "@/app/admin/components/shadcn-ui/card";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
-import { cn } from "@/app/admin/lib/utils";
 import type { UseFormReturn } from "react-hook-form";
 
 const LIMITS = {
@@ -16,15 +16,6 @@ const LIMITS = {
   description: 500,
   target: 100,
 } as const;
-
-function CharacterCounter({ current, max }: { current: number; max: number }) {
-  const isOver = current > max;
-  return (
-    <span className={cn("text-xs", isOver ? "text-destructive" : "text-muted-foreground")}>
-      {current}/{max}자
-    </span>
-  );
-}
 
 interface BasicInfoCardProps {
   form: UseFormReturn<{

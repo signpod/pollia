@@ -1,6 +1,7 @@
 "use client";
 
 import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
+import { CharacterCounter } from "@/app/admin/components/common/InputField";
 import { TiptapEditor } from "@/app/admin/components/common/TiptapEditor";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import {
@@ -19,7 +20,6 @@ import {
 } from "@/app/admin/hooks/use-form-image-upload";
 import { useReadMission } from "@/app/admin/hooks/use-read-mission";
 import { useUpdateMission } from "@/app/admin/hooks/use-update-mission";
-import { cn } from "@/app/admin/lib/utils";
 import { type MissionUpdate, missionUpdateSchema } from "@/schemas/mission";
 import type { GetMissionResponse } from "@/types/dto";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,15 +32,6 @@ const LIMITS = {
   description: 500,
   target: 100,
 } as const;
-
-function CharacterCounter({ current, max }: { current: number; max: number }) {
-  const isOver = current > max;
-  return (
-    <span className={cn("text-xs", isOver ? "text-destructive" : "text-muted-foreground")}>
-      {current}/{max}자
-    </span>
-  );
-}
 
 interface BasicInfoEditTabProps {
   missionId: string;

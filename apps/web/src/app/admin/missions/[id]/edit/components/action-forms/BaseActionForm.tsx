@@ -1,6 +1,7 @@
 "use client";
 
 import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
+import { CharacterCounter } from "@/app/admin/components/common/InputField";
 import {
   FormControl,
   FormField,
@@ -11,7 +12,6 @@ import {
 import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
 import { Textarea } from "@/app/admin/components/shadcn-ui/textarea";
-import { cn } from "@/app/admin/lib/utils";
 import type { ReactNode } from "react";
 import type { Control, FieldValues, Path, UseFormWatch } from "react-hook-form";
 
@@ -19,15 +19,6 @@ const LIMITS = {
   title: 100,
   description: 500,
 } as const;
-
-function CharacterCounter({ current, max }: { current: number; max: number }) {
-  const isOver = current > max;
-  return (
-    <span className={cn("text-xs", isOver ? "text-destructive" : "text-muted-foreground")}>
-      {current}/{max}자
-    </span>
-  );
-}
 
 interface BaseActionFormFieldsProps<TFieldValues extends FieldValues> {
   control: Control<TFieldValues>;

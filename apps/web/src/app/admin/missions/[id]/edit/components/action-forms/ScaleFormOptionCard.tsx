@@ -1,24 +1,14 @@
 "use client";
 
+import { InputWithCounter } from "@/app/admin/components/common/InputField";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Card, CardContent } from "@/app/admin/components/shadcn-ui/card";
-import { Input } from "@/app/admin/components/shadcn-ui/input";
-import { cn } from "@/app/admin/lib/utils";
 import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 
 const LIMITS = {
   title: 50,
   description: 200,
 } as const;
-
-function CharacterCounter({ current, max }: { current: number; max: number }) {
-  const isOver = current > max;
-  return (
-    <span className={cn("text-xs", isOver ? "text-destructive" : "text-muted-foreground")}>
-      {current}/{max}
-    </span>
-  );
-}
 
 export interface ScaleFormOptionCardProps {
   index: number;
@@ -64,32 +54,24 @@ export function ScaleFormOptionCard({
           </div>
 
           <div className="flex-1 space-y-2 min-w-0">
-            <div className="space-y-1">
-              <Input
-                placeholder={titlePlaceholder}
-                value={title}
-                onChange={e => onTitleChange(e.target.value)}
-                disabled={disabled}
-                maxLength={LIMITS.title}
-                className="h-9 text-sm"
-              />
-              <div className="flex justify-end">
-                <CharacterCounter current={title.length} max={LIMITS.title} />
-              </div>
-            </div>
-            <div className="space-y-1">
-              <Input
-                placeholder={descriptionPlaceholder}
-                value={description || ""}
-                onChange={e => onDescriptionChange(e.target.value)}
-                disabled={disabled}
-                maxLength={LIMITS.description}
-                className="h-9 text-sm"
-              />
-              <div className="flex justify-end">
-                <CharacterCounter current={description?.length || 0} max={LIMITS.description} />
-              </div>
-            </div>
+            <InputWithCounter
+              placeholder={titlePlaceholder}
+              value={title}
+              onChange={e => onTitleChange(e.target.value)}
+              disabled={disabled}
+              maxLength={LIMITS.title}
+              currentLength={title.length}
+              className="h-9 text-sm"
+            />
+            <InputWithCounter
+              placeholder={descriptionPlaceholder}
+              value={description || ""}
+              onChange={e => onDescriptionChange(e.target.value)}
+              disabled={disabled}
+              maxLength={LIMITS.description}
+              currentLength={description?.length || 0}
+              className="h-9 text-sm"
+            />
           </div>
 
           <div className="flex flex-col gap-1 shrink-0">
