@@ -289,7 +289,7 @@ export function ImageUpload({ initialImageUrl, onUploadChange }: ImageUploadProp
               height={400}
               placeholder={blurDataURL ? "blur" : "empty"}
               blurDataURL={blurDataURL || undefined}
-              className="absolute inset-0  object-contain"
+              className="absolute inset-0 size-full object-contain"
               onLoadingComplete={() => setIsImageLoading(false)}
             />
           )}
