@@ -9,7 +9,7 @@ import { cleanTiptapHTML } from "@/lib/utils";
 import { FixedBottomLayout, Tab, Typo } from "@repo/ui/components";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useEffect } from "react";
+import { useState } from "react";
 import {
   MissionDescription,
   MissionImage,
@@ -24,14 +24,12 @@ import { BottomButton } from "./ui";
 export function MissionIntro({ initialError }: { initialError: AuthError | null }) {
   const { missionId } = useParams<{ missionId: string }>();
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
+  if (typeof window !== "undefined") {
     const existingValue = getSessionStorage(`current-action-id-${missionId}`);
     if (!existingValue) {
       setSessionStorage(`current-action-id-${missionId}`, "initial");
     }
-  }, [missionId]);
+  }
 
   const { mission, firstActionId, isEnabledToResume, nextActionId, isCompleted, missionResponse } =
     useMissionIntroData(missionId);
@@ -60,27 +58,43 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
   // const { currentParticipants, maxParticipants } = participantInfo?.data ?? {};
   const { currentParticipants } = participantInfo?.data ?? {};
   const maxParticipants = 200;
+  const [activeTab, setActiveTab] = useState<string>("mission-guide");
+
+  const handleChangeTab = (value: string) => {
+    setActiveTab(value);
+    const element = document.getElementById(value);
+    if (element) {
+      window.history.pushState(null, "", `#${value}`);
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   return (
     <>
-      <main className="flex w-full flex-col gap-8 overflow-hidden">
+      <main className="flex w-full flex-col gap-8">
         <div className="relative">
           {imageUrl && (
-            <div>
+            <div className="overflow-hidden relative">
+              <div className="bg-linear-to-t from-black/25 to-transparent h-[52px] absolute bottom-0 left-0 right-0 z-10" />
               <MissionImage imageUrl={imageUrl} />
             </div>
           )}
-          <div className="sticky top-0 z-10 flex w-full flex-col bg-white py-5 pb-0 rounded-md mt-[-20px] shadow-[0_-18px_50px_rgba(0,0,0,0.25)]">
-            <Tab.Root defaultValue="description" pointColor="secondary">
-              <Tab.List>
-                <Tab.Item value="description">미션 안내</Tab.Item>
-                <Tab.Item value="collection">참여 혜택</Tab.Item>
-                <Tab.Item value="review">참여 방법</Tab.Item>
-              </Tab.List>
-            </Tab.Root>
+          <div className="flex w-full flex-col bg-white py-5 rounded-md pb-0 mt-[-20px]">
+            <div className="sticky top-0 z-10 pb-5 rounded-md mt-[-20px] bg-white">
+              <Tab.Root value={activeTab} pointColor="secondary" onValueChange={handleChangeTab}>
+                <Tab.List>
+                  <Tab.Item value="mission-guide">미션 안내</Tab.Item>
+                  <Tab.Item value="reward">참여 혜택</Tab.Item>
+                  <Tab.Item value="participation-method">참여 방법</Tab.Item>
+                </Tab.List>
+              </Tab.Root>
+            </div>
 
-            {/* description */}
-            <div className="flex w-full flex-col gap-8 rounded-3xl px-5 py-8 items-center">
+            {/* mission-guide */}
+            <div
+              id="mission-guide"
+              className="flex w-full flex-col gap-8 rounded-3xl px-5 py-8 items-center"
+            >
               <div className="flex w-full flex-col gap-6">
                 <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
 
@@ -102,19 +116,24 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
               <ParticipantCount current={currentParticipants ?? 0} max={maxParticipants} />
             </div>
 
-            <MissionRewardSection
-              rewardImageUrl={reward?.data.imageUrl ?? undefined}
-              rewardName={reward?.data.name ?? undefined}
-              brandLogoUrl={brandLogoUrl ?? undefined}
-            />
+            <div id="reward">
+              <MissionRewardSection
+                rewardImageUrl={reward?.data.imageUrl ?? undefined}
+                rewardName={reward?.data.name ?? undefined}
+                rewardPaymentType={reward?.data.paymentType ?? undefined}
+                brandLogoUrl={brandLogoUrl ?? undefined}
+              />
+            </div>
 
-            <ParticipationMethodSection
-              steps={[
-                { title: "참여 방법1", description: "참여 방법1입니다." },
-                { title: "참여 방법2", description: "참여 방법2입니다." },
-                { title: "참여 방법2", description: "참여 방법2입니다." },
-              ]}
-            />
+            <div id="participation-method">
+              <ParticipationMethodSection
+                steps={[
+                  { title: "참여 방법1", description: "참여 방법1입니다." },
+                  { title: "참여 방법2", description: "참여 방법2입니다." },
+                  { title: "참여 방법2", description: "참여 방법2입니다." },
+                ]}
+              />
+            </div>
           </div>
         </div>
 
