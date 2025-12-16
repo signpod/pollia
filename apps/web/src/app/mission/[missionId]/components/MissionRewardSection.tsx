@@ -1,32 +1,40 @@
 "use client";
 
+import { PaymentType } from "@prisma/client";
 import { Typo } from "@repo/ui/components";
 import Image from "next/image";
 import { SectionHeader } from "./SectionHeader";
 
+const REWARD_SECTION_BADGE_TEXT = "참여 혜택";
+const REWARD_SECTION_TITLE = (
+  <>
+    참여해주신 모든 분께
+    <br />
+    감사의 선물을 드려요!
+  </>
+);
+
+const PAYMENT_TYPE_LABELS: Record<PaymentType, string> = {
+  [PaymentType.IMMEDIATE]: "전원 증정",
+  [PaymentType.SCHEDULED]: "예약 지급",
+} as const;
+
 interface MissionRewardSectionProps {
   rewardImageUrl?: string;
   rewardName?: string;
+  rewardPaymentType?: PaymentType;
   brandLogoUrl?: string;
 }
 
 export function MissionRewardSection({
   rewardImageUrl,
   rewardName,
+  rewardPaymentType,
   brandLogoUrl,
 }: MissionRewardSectionProps) {
   return (
     <div className="flex flex-col gap-8 bg-zinc-50 px-5 py-8">
-      <SectionHeader
-        badgeText="참여 혜택"
-        title={
-          <>
-            참여해주신 모든 분께
-            <br />
-            감사의 선물을 드려요!
-          </>
-        }
-      />
+      <SectionHeader badgeText={REWARD_SECTION_BADGE_TEXT} title={REWARD_SECTION_TITLE} />
 
       <div className="w-full rounded-md overflow-hidden bg-white shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
         {rewardImageUrl && (
@@ -42,7 +50,7 @@ export function MissionRewardSection({
           <div className="w-full flex justify-between items-center">
             <div className="bg-violet-50 rounded-sm px-3 py-2">
               <Typo.Body size="medium" className="text-primary">
-                전원 증정
+                {rewardPaymentType ? PAYMENT_TYPE_LABELS[rewardPaymentType] : ""}
               </Typo.Body>
             </div>
             {brandLogoUrl && (
