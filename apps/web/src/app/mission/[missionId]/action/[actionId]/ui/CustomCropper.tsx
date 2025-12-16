@@ -195,42 +195,44 @@ export function CustomCropper({
   const displaySize = getImageDisplaySize();
 
   return (
-    <div
-      ref={containerRef}
-      className="relative size-[360px] overflow-hidden bg-white"
-      style={{ touchAction: "none", cursor: isDragging ? "grabbing" : "grab" }}
-      onMouseDown={handleMouseDown}
-      onTouchStart={handleTouchStart}
-    >
-      {imageLoaded && imageSize && (
-        <img
-          key={`${imageSrc}-${zoom}-${rotation}`}
-          src={imageSrc}
-          alt="crop"
-          className="absolute select-none pointer-events-none"
-          style={{
-            width: `${displaySize.width}px`,
-            height: `${displaySize.height}px`,
-            minWidth: `${displaySize.width}px`,
-            minHeight: `${displaySize.height}px`,
-            maxWidth: `${displaySize.width}px`,
-            maxHeight: `${displaySize.height}px`,
-            left: `${imagePosition.x}px`,
-            top: `${imagePosition.y}px`,
-            transform: `rotate(${rotation}deg)`,
-            transformOrigin: "center center",
-            imageRendering: "auto",
-          }}
-          draggable={false}
-        />
-      )}
+    <div className="w-full h-full flex items-center justify-center overflow-hidden bg-white/20">
       <div
-        className="absolute inset-0 border-2 border-white shadow-[0_0_0_9999px_rgba(0,0,0,0.5)] pointer-events-none"
-        style={{
-          width: `${CROP_SIZE}px`,
-          height: `${CROP_SIZE}px`,
-        }}
-      />
+        ref={containerRef}
+        className="relative size-[360px] overflow-visible bg-white/20"
+        style={{ touchAction: "none", cursor: isDragging ? "grabbing" : "grab" }}
+        onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
+      >
+        {imageLoaded && imageSize && (
+          <img
+            key={`${imageSrc}-${zoom}-${rotation}`}
+            src={imageSrc}
+            alt="crop"
+            className="absolute select-none pointer-events-none"
+            style={{
+              width: `${displaySize.width}px`,
+              height: `${displaySize.height}px`,
+              minWidth: `${displaySize.width}px`,
+              minHeight: `${displaySize.height}px`,
+              maxWidth: `${displaySize.width}px`,
+              maxHeight: `${displaySize.height}px`,
+              left: `${imagePosition.x}px`,
+              top: `${imagePosition.y}px`,
+              transform: `rotate(${rotation}deg)`,
+              transformOrigin: "center center",
+              imageRendering: "auto",
+            }}
+            draggable={false}
+          />
+        )}
+        <div
+          className="absolute inset-0 shadow-[0_0_0_9999px_rgba(0,0,0,0.5)] pointer-events-none"
+          style={{
+            width: `${CROP_SIZE}px`,
+            height: `${CROP_SIZE}px`,
+          }}
+        />
+      </div>
     </div>
   );
 }
