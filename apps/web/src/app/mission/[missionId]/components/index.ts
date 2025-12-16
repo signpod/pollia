@@ -1,4 +1,3 @@
-export * from "./MissionCollection";
 export * from "./MissionDescription";
 export * from "./MissionImage";
 export * from "./MissionLikertScale";

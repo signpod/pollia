@@ -2,21 +2,17 @@
 
 import { AuthError } from "@/hooks/login/useKakaoLogin";
 import { useMissionIntroData, useMissionRewardVisibility, useSurveyResume } from "@/hooks/mission";
+import { useReadMissionParticipantInfo } from "@/hooks/participant/useReadMissionParticipantInfo";
 import { useReadReward } from "@/hooks/reward/useReadReward";
 import { getSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
 import { cleanTiptapHTML } from "@/lib/utils";
-import { FixedBottomLayout, FloatingButton, Typo } from "@repo/ui/components";
+import { FixedBottomLayout, FloatingButton, Tab, Typo } from "@repo/ui/components";
 import { Gift } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
-import {
-  MissionCollection,
-  MissionDescription,
-  MissionImage,
-  MissionLogo,
-  MissionReward,
-} from "./components";
+import { MissionDescription, MissionImage, MissionLogo, MissionReward } from "./components";
+import { formatDeadline } from "./done/ui/utils/formatDeadline";
 import { BottomButton } from "./ui";
 
 export function MissionIntro({ initialError }: { initialError: AuthError | null }) {
@@ -45,29 +41,75 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
   const { isRewardVisible, setIsRewardVisible, rewardRef, scrollToReward } =
     useMissionRewardVisibility();
 
-  const { brandLogoUrl, title, estimatedMinutes, deadline, imageUrl, description, target } =
-    mission ?? {};
+  const {
+    brandLogoUrl,
+    title,
+    estimatedMinutes,
+    deadline,
+    imageUrl,
+    description,
+    target,
+    createdAt,
+  } = mission ?? {};
 
   const { data: reward } = useReadReward(mission?.rewardId || "");
+  const { data: participantInfo } = useReadMissionParticipantInfo(missionId);
+  // const { currentParticipants, maxParticipants } = participantInfo?.data ?? {};
+  const { currentParticipants } = participantInfo?.data ?? {};
+  const maxParticipants = 200;
 
   return (
     <>
-      <main className="flex w-full flex-col gap-8 p-5">
-        <div className="flex w-full flex-col gap-2">
-          <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
-
-          <div className="flex w-full flex-col gap-4">
-            <div className="flex w-full flex-col gap-2">
-              <Typo.MainTitle size="medium">{title}</Typo.MainTitle>
-
-              <MissionCollection
-                deadline={deadline ?? undefined}
-                estimatedMinutes={estimatedMinutes ?? undefined}
-                target={target ?? undefined}
-              />
+      <main className="flex w-full flex-col gap-8 overflow-hidden">
+        <div className="relative">
+          {imageUrl && (
+            <div>
+              <MissionImage imageUrl={imageUrl} />
             </div>
-            {imageUrl && <MissionImage imageUrl={imageUrl} />}
-            <MissionDescription content={cleanTiptapHTML(description || "")} />
+          )}
+          <div className="sticky top-0 z-10 flex w-full flex-col bg-white p-5 pb-0 rounded-md mt-[-20px] shadow-[0_-18px_50px_rgba(0,0,0,0.25)]">
+            <Tab.Root defaultValue="description" pointColor="secondary">
+              <Tab.List>
+                <Tab.Item value="description">미션 안내</Tab.Item>
+                <Tab.Item value="collection">참여 혜택</Tab.Item>
+                <Tab.Item value="review">참여 방법</Tab.Item>
+              </Tab.List>
+            </Tab.Root>
+
+            <div className="flex w-full flex-col gap-8 rounded-3xl px-5 py-8 items-center">
+              <div className="flex w-full flex-col gap-6">
+                <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
+
+                <Typo.MainTitle size="large" className="break-keep text-center">
+                  {title}
+                </Typo.MainTitle>
+
+                <MissionDescription content={cleanTiptapHTML(description || "")} />
+              </div>
+
+              <div className="flex flex-col gap-1 items-center">
+                <Typo.SubTitle size="large">미션 기간</Typo.SubTitle>
+                <Typo.Body
+                  size="small"
+                  className="text-info"
+                >{`${formatDeadline(createdAt ?? "")} ~ ${formatDeadline(deadline ?? "")}`}</Typo.Body>
+              </div>
+
+              <div className="flex justify-between items-center px-6 py-4 rounded-md bg-zinc-700 w-[208px]">
+                <Typo.Body size="medium" className="text-white">
+                  남은 참여 인원
+                </Typo.Body>
+                <div className="flex gap-1 items-center">
+                  <Typo.Body size="large" className="text-white">
+                    {currentParticipants}명
+                  </Typo.Body>
+                  <Typo.Body
+                    size="medium"
+                    className="text-zinc-400"
+                  >{`/${maxParticipants}명`}</Typo.Body>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
