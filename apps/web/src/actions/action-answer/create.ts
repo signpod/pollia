@@ -29,6 +29,7 @@ function toSubmitAnswersInput(dto: SubmitActionAnswersRequest): SubmitAnswersInp
       selectedOptionIds: a.selectedOptionIds,
       scaleValue: a.scaleValue,
       textResponse: a.textResponse,
+      imageFileUploadId: a.fileUploadId,
     })),
   };
 }

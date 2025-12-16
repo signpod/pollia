@@ -149,7 +149,6 @@ export class ActionAnswerService {
       optionId?: string;
       textAnswer?: string;
       scaleAnswer?: number;
-      imageUrl?: string;
       imageFileUploadId?: string;
     }> = [];
 
@@ -182,11 +181,10 @@ export class ActionAnswerService {
           actionId,
           textAnswer: answer.textResponse,
         });
-      } else if (answer.type === ActionType.IMAGE && answer.imageUrl) {
+      } else if (answer.type === ActionType.IMAGE && answer.imageFileUploadId) {
         answersToCreate.push({
           responseId: parseResult.data.responseId,
           actionId,
-          imageUrl: answer.imageUrl,
           imageFileUploadId: answer.imageFileUploadId,
         });
       } else if (answer.type === ActionType.TAG && answer.selectedOptionIds) {
