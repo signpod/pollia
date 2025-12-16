@@ -1,15 +1,20 @@
 import { decrypt, encrypt } from "@/lib/crypto";
 import { missionInputSchema, missionPasswordSchema, missionUpdateSchema } from "@/schemas/mission";
+import { missionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
 import type {
   CreateMissionInput,
   GetUserMissionsOptions,
   MissionCreatedResult,
+  MissionWithParticipantInfo,
   UpdateMissionInput,
 } from "./types";
 
 export class MissionService {
-  constructor(private repo = missionRepository) {}
+  constructor(
+    private repo = missionRepository,
+    private responseRepo = missionResponseRepository,
+  ) {}
 
   async getMission(missionId: string) {
     const mission = await this.repo.findById(missionId);
@@ -21,6 +26,41 @@ export class MissionService {
     }
 
     return mission;
+  }
+
+  async getMissionWithParticipantInfo(missionId: string): Promise<MissionWithParticipantInfo> {
+    const mission = await this.getMission(missionId);
+    const currentParticipants = await this.responseRepo.countByMissionId(missionId);
+
+    const isDeadlinePassed = mission.deadline ? mission.deadline < new Date() : false;
+    const isParticipantLimitReached =
+      mission.maxParticipants !== null &&
+      mission.maxParticipants > 0 &&
+      currentParticipants >= mission.maxParticipants;
+
+    const isClosed = !mission.isActive || isDeadlinePassed || isParticipantLimitReached;
+
+    return {
+      currentParticipants,
+      maxParticipants: mission.maxParticipants,
+      isClosed,
+    };
+  }
+
+  async checkParticipantLimit(missionId: string): Promise<void> {
+    const mission = await this.getMission(missionId);
+
+    if (mission.maxParticipants === null || mission.maxParticipants <= 0) {
+      return;
+    }
+
+    const currentParticipants = await this.responseRepo.countByMissionId(missionId);
+
+    if (currentParticipants >= mission.maxParticipants) {
+      const error = new Error("미션 참여 정원이 마감되었습니다.");
+      error.cause = 403;
+      throw error;
+    }
   }
 
   async getMissionActionIds(missionId: string) {
@@ -81,6 +121,7 @@ export class MissionService {
         brandLogoFileUploadId: validated.brandLogoFileUploadId,
         deadline: validated.deadline,
         estimatedMinutes: validated.estimatedMinutes,
+        maxParticipants: validated.maxParticipants,
         type: validated.type,
         creatorId: userId,
       },

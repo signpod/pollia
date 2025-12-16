@@ -1,34 +1,29 @@
 import type { SortOrderType } from "@/types/common/sort";
-import type { MissionType } from "@prisma/client";
+import type { MissionType, Prisma } from "@prisma/client";
 
-export interface CreateMissionInput {
-  title: string;
-  description?: string;
-  target?: string;
-  imageUrl?: string;
-  imageFileUploadId?: string;
-  brandLogoUrl?: string;
-  brandLogoFileUploadId?: string;
-  deadline?: Date;
-  estimatedMinutes?: number;
-  type: MissionType;
+type MissionCreateFields = Pick<
+  Prisma.MissionUncheckedCreateInput,
+  | "title"
+  | "description"
+  | "target"
+  | "imageUrl"
+  | "imageFileUploadId"
+  | "brandLogoUrl"
+  | "brandLogoFileUploadId"
+  | "deadline"
+  | "estimatedMinutes"
+  | "maxParticipants"
+  | "type"
+>;
+
+export type CreateMissionInput = MissionCreateFields & {
   actionIds?: string[];
-}
+};
 
-export interface UpdateMissionInput {
-  title?: string;
-  description?: string;
-  target?: string;
-  imageUrl?: string;
-  imageFileUploadId?: string;
-  brandLogoUrl?: string;
-  brandLogoFileUploadId?: string;
-  deadline?: Date;
-  estimatedMinutes?: number;
+export type UpdateMissionInput = Partial<MissionCreateFields> & {
   isActive?: boolean;
-  type?: MissionType;
   rewardId?: string | null;
-}
+};
 
 export interface GetUserMissionsOptions {
   cursor?: string;
@@ -48,4 +43,10 @@ export interface MissionCreatedResult {
   createdAt: Date;
   updatedAt: Date;
   creatorId: string;
+}
+
+export interface MissionWithParticipantInfo {
+  currentParticipants: number;
+  maxParticipants: number | null;
+  isClosed: boolean;
 }
