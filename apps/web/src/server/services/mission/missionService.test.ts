@@ -1,3 +1,4 @@
+import type { MissionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import type { MissionRepository } from "@/server/repositories/mission/missionRepository";
 import { MissionService } from ".";
 import { createMockMission } from "../testUtils";
@@ -10,6 +11,7 @@ jest.mock("@/lib/crypto", () => ({
 describe("MissionService", () => {
   let missionService: MissionService;
   let mockRepository: jest.Mocked<MissionRepository>;
+  let mockResponseRepository: jest.Mocked<MissionResponseRepository>;
 
   beforeEach(() => {
     mockRepository = {
@@ -24,7 +26,21 @@ describe("MissionService", () => {
       duplicateMission: jest.fn(),
     } as jest.Mocked<MissionRepository>;
 
-    missionService = new MissionService(mockRepository);
+    mockResponseRepository = {
+      findById: jest.fn(),
+      findByMissionAndUser: jest.fn(),
+      findByMissionId: jest.fn(),
+      findByUserId: jest.fn(),
+      findCompletedByMissionId: jest.fn(),
+      create: jest.fn(),
+      updateCompletedAt: jest.fn(),
+      delete: jest.fn(),
+      deleteByMissionAndUser: jest.fn(),
+      countByMissionId: jest.fn(),
+      countCompletedByMissionId: jest.fn(),
+    } as jest.Mocked<MissionResponseRepository>;
+
+    missionService = new MissionService(mockRepository, mockResponseRepository);
   });
 
   afterEach(() => {
@@ -366,6 +382,7 @@ describe("MissionService", () => {
         deadline: request.deadline,
         estimatedMinutes: request.estimatedMinutes,
         isActive: true,
+        maxParticipants: null,
         type: "GENERAL" as const,
         password: null,
         creatorId: "user-1",
@@ -779,6 +796,7 @@ describe("MissionService", () => {
         estimatedMinutes: null,
         deadline: null,
         isActive: true,
+        maxParticipants: null,
         type: "GENERAL" as const,
         password: null,
         creatorId: "user-1",
@@ -799,6 +817,7 @@ describe("MissionService", () => {
         estimatedMinutes: null,
         deadline: null,
         isActive: false,
+        maxParticipants: null,
         type: "GENERAL" as const,
         password: null,
         creatorId: "user-1",
@@ -839,6 +858,7 @@ describe("MissionService", () => {
         estimatedMinutes: null,
         deadline: null,
         isActive: true,
+        maxParticipants: null,
         type: "EXPERIENCE_GROUP" as const,
         password: null,
         creatorId: "user-1",
@@ -875,6 +895,7 @@ describe("MissionService", () => {
         estimatedMinutes: null,
         deadline: null,
         isActive: true,
+        maxParticipants: null,
         type: "EXPERIENCE_GROUP" as const,
         password: null,
         creatorId: "user-1",
@@ -910,6 +931,7 @@ describe("MissionService", () => {
         estimatedMinutes: null,
         deadline: null,
         isActive: true,
+        maxParticipants: null,
         type: "EXPERIENCE_GROUP" as const,
         password: null,
         creatorId: "user-1",
@@ -947,6 +969,7 @@ describe("MissionService", () => {
         estimatedMinutes: null,
         deadline: null,
         isActive: true,
+        maxParticipants: null,
         type: "EXPERIENCE_GROUP" as const,
         password: "encrypted:1234",
         creatorId: "user-1",
@@ -978,6 +1001,7 @@ describe("MissionService", () => {
         estimatedMinutes: null,
         deadline: null,
         isActive: true,
+        maxParticipants: null,
         type: "EXPERIENCE_GROUP" as const,
         password: "encrypted:1234",
         creatorId: "user-1",
@@ -1015,6 +1039,7 @@ describe("MissionService", () => {
         estimatedMinutes: null,
         deadline: null,
         isActive: true,
+        maxParticipants: null,
         type: "EXPERIENCE_GROUP" as const,
         password: "encrypted:1234",
         creatorId: "user-1",
@@ -1045,6 +1070,7 @@ describe("MissionService", () => {
         estimatedMinutes: null,
         deadline: null,
         isActive: true,
+        maxParticipants: null,
         type: "GENERAL" as const,
         password: null,
         creatorId: "user-1",
@@ -1075,6 +1101,7 @@ describe("MissionService", () => {
         estimatedMinutes: null,
         deadline: null,
         isActive: true,
+        maxParticipants: null,
         type: "EXPERIENCE_GROUP" as const,
         password: "encrypted:1234",
         creatorId: "user-1",
@@ -1112,6 +1139,7 @@ describe("MissionService", () => {
         estimatedMinutes: null,
         deadline: null,
         isActive: true,
+        maxParticipants: null,
         type: "EXPERIENCE_GROUP" as const,
         password: "encrypted:1234",
         creatorId: "user-1",
@@ -1142,6 +1170,7 @@ describe("MissionService", () => {
         estimatedMinutes: null,
         deadline: null,
         isActive: true,
+        maxParticipants: null,
         type: "EXPERIENCE_GROUP" as const,
         password: "encrypted:1234",
         creatorId: "user-1",
@@ -1172,6 +1201,7 @@ describe("MissionService", () => {
         estimatedMinutes: null,
         deadline: null,
         isActive: true,
+        maxParticipants: null,
         type: "GENERAL" as const,
         password: null,
         creatorId: "user-1",

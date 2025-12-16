@@ -11,6 +11,7 @@ export const createMockMission = (overrides: Partial<Mission> = {}): Mission => 
   estimatedMinutes: null,
   deadline: null,
   isActive: true,
+  maxParticipants: null,
   type: MissionType.GENERAL,
   password: null,
   creatorId: "user1",
