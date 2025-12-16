@@ -42,7 +42,7 @@ export class ActionOptionService {
       description?: string;
       imageUrl?: string;
       order: number;
-      fileUploadId?: string;
+      imageFileUploadId?: string;
     },
     userId: string,
   ): Promise<ActionOption> {
@@ -64,7 +64,7 @@ export class ActionOptionService {
         description: result.data.description,
         imageUrl: result.data.imageUrl,
         order: result.data.order,
-        fileUploadId: result.data.fileUploadId,
+        imageFileUploadId: result.data.imageFileUploadId,
       },
       userId,
     );
@@ -78,7 +78,7 @@ export class ActionOptionService {
       description?: string;
       imageUrl?: string;
       order: number;
-      fileUploadId?: string;
+      imageFileUploadId?: string;
     }>,
     userId: string,
   ): Promise<ActionOption[]> {
@@ -102,6 +102,7 @@ export class ActionOptionService {
       description?: string;
       imageUrl?: string;
       order?: number;
+      imageFileUploadId?: string;
     },
     userId: string,
   ): Promise<ActionOption> {
@@ -116,7 +117,7 @@ export class ActionOptionService {
 
     await this.verifyActionAccess(option.actionId, userId);
 
-    const updatedOption = await this.optionRepo.update(optionId, result.data);
+    const updatedOption = await this.optionRepo.update(optionId, result.data, userId);
     return updatedOption;
   }
 

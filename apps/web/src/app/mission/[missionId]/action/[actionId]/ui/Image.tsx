@@ -21,6 +21,7 @@ export function ActionImage({
   isLoading,
 }: ActionStepContentProps) {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageFileUploadId, setImageFileUploadId] = useState<string | undefined>(undefined);
 
   const initialImageUrl = useMemo(() => {
     if (!missionResponse?.data?.answers || missionResponse.data.answers.length === 0) {
@@ -32,7 +33,7 @@ export function ActionImage({
       return null;
     }
 
-    return answer.textAnswer;
+    return answer.imageUrl ?? null;
   }, [missionResponse, actionData.id]);
 
   const updateCanGoNextRef = useRef(updateCanGoNext);
@@ -58,7 +59,8 @@ export function ActionImage({
       const answer: ActionAnswerItem = {
         actionId: actionData.id,
         type: ActionType.IMAGE,
-        textResponse: imageUrl,
+        imageUrl: imageUrl,
+        imageFileUploadId: imageFileUploadId,
       };
 
       const validationResult = submitAnswerItemSchema.safeParse(answer);
@@ -70,13 +72,19 @@ export function ActionImage({
     } else {
       updateCanGoNextRef.current?.(false);
     }
-  }, [imageUrl, actionData.id]);
+  }, [imageUrl, imageFileUploadId, actionData.id]);
 
-  const handleUploadChange = (hasUploadedImage: boolean, uploadedImageUrl?: string) => {
+  const handleUploadChange = (
+    hasUploadedImage: boolean,
+    uploadedImageUrl?: string,
+    fileUploadId?: string,
+  ) => {
     if (hasUploadedImage && uploadedImageUrl) {
       setImageUrl(uploadedImageUrl);
+      setImageFileUploadId(fileUploadId);
     } else if (!hasUploadedImage) {
       setImageUrl(null);
+      setImageFileUploadId(undefined);
     }
   };
 

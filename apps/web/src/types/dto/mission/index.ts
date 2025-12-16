@@ -5,7 +5,9 @@ export interface CreateMissionRequest {
   description?: string;
   target?: string;
   imageUrl?: string;
+  imageFileUploadId?: string;
   brandLogoUrl?: string;
+  brandLogoFileUploadId?: string;
   deadline?: Date;
   estimatedMinutes?: number;
   isActive?: boolean;
@@ -58,7 +60,9 @@ export interface UpdateMissionRequest {
   description?: string;
   target?: string;
   imageUrl?: string;
+  imageFileUploadId?: string;
   brandLogoUrl?: string;
+  brandLogoFileUploadId?: string;
   deadline?: Date;
   estimatedMinutes?: number;
   isActive?: boolean;

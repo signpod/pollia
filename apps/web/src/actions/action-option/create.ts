@@ -10,7 +10,7 @@ export async function createOption(data: {
   description?: string;
   imageUrl?: string;
   order: number;
-  fileUploadId?: string;
+  imageFileUploadId?: string;
 }): Promise<{ data: ActionOption }> {
   try {
     const user = await requireAuth();
@@ -36,7 +36,7 @@ export async function createOptions(
     description?: string;
     imageUrl?: string;
     order: number;
-    fileUploadId?: string;
+    imageFileUploadId?: string;
   }>,
 ): Promise<{ data: ActionOption[] }> {
   try {

@@ -33,13 +33,17 @@ export const actionAnswerInputSchema = z.object({
   scaleAnswer: scaleAnswerSchema.optional(),
 });
 
+const imageFileUploadIdSchema = z.string().optional();
+
 export const submitAnswerItemSchema = z
   .object({
     actionId: actionIdSchema,
     type: actionTypeSchema,
     selectedOptionIds: z.array(optionIdSchema).optional(),
     scaleValue: scaleAnswerSchema.optional(),
-    textResponse: z.union([textAnswerSchema, imageUrlSchema]).optional(),
+    textResponse: textAnswerSchema.optional(),
+    imageUrl: imageUrlSchema.optional(),
+    imageFileUploadId: imageFileUploadIdSchema,
   })
   .refine(
     data => {
@@ -80,7 +84,7 @@ export const submitAnswerItemSchema = z
   .refine(
     data => {
       if (data.type === ActionType.IMAGE) {
-        return data.textResponse && data.textResponse.length > 0;
+        return data.imageUrl && data.imageUrl.length > 0;
       }
       return true;
     },

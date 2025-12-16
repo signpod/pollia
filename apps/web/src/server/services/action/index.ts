@@ -103,6 +103,7 @@ export class ActionService {
         title: result.data.title,
         description: result.data.description,
         imageUrl: result.data.imageUrl,
+        imageFileUploadId: result.data.imageFileUploadId,
         type: ActionType.MULTIPLE_CHOICE,
         order: result.data.order,
         maxSelections: result.data.maxSelections,
@@ -146,6 +147,7 @@ export class ActionService {
         title: validated.title,
         description: validated.description,
         imageUrl: validated.imageUrl,
+        imageFileUploadId: validated.imageFileUploadId,
         type: ActionType.SCALE,
         order: validated.order,
       },
@@ -184,14 +186,18 @@ export class ActionService {
       await this.verifyMissionAccess(result.data.missionId, userId);
     }
 
-    const action = await this.actionRepo.create({
-      missionId: result.data.missionId,
-      title: result.data.title,
-      description: result.data.description,
-      imageUrl: result.data.imageUrl,
-      type: ActionType.SUBJECTIVE,
-      order: result.data.order,
-    });
+    const action = await this.actionRepo.create(
+      {
+        missionId: result.data.missionId,
+        title: result.data.title,
+        description: result.data.description,
+        imageUrl: result.data.imageUrl,
+        imageFileUploadId: result.data.imageFileUploadId,
+        type: ActionType.SUBJECTIVE,
+        order: result.data.order,
+      },
+      userId,
+    );
 
     return {
       id: action.id,
@@ -218,14 +224,18 @@ export class ActionService {
       await this.verifyMissionAccess(result.data.missionId, userId);
     }
 
-    const action = await this.actionRepo.create({
-      missionId: result.data.missionId,
-      title: result.data.title,
-      description: result.data.description,
-      imageUrl: result.data.imageUrl,
-      type: ActionType.MULTIPLE_CHOICE,
-      order: result.data.order,
-    });
+    const action = await this.actionRepo.create(
+      {
+        missionId: result.data.missionId,
+        title: result.data.title,
+        description: result.data.description,
+        imageUrl: result.data.imageUrl,
+        imageFileUploadId: result.data.imageFileUploadId,
+        type: ActionType.MULTIPLE_CHOICE,
+        order: result.data.order,
+      },
+      userId,
+    );
 
     return {
       id: action.id,
@@ -255,6 +265,7 @@ export class ActionService {
         title: result.data.title,
         description: result.data.description,
         imageUrl: result.data.imageUrl,
+        imageFileUploadId: result.data.imageFileUploadId,
         type: ActionType.TAG,
         order: result.data.order,
         maxSelections: result.data.maxSelections ?? undefined,
@@ -291,14 +302,18 @@ export class ActionService {
       await this.verifyMissionAccess(result.data.missionId, userId);
     }
 
-    const action = await this.actionRepo.create({
-      missionId: result.data.missionId,
-      title: result.data.title,
-      description: result.data.description,
-      imageUrl: result.data.imageUrl,
-      type: ActionType.RATING,
-      order: result.data.order,
-    });
+    const action = await this.actionRepo.create(
+      {
+        missionId: result.data.missionId,
+        title: result.data.title,
+        description: result.data.description,
+        imageUrl: result.data.imageUrl,
+        imageFileUploadId: result.data.imageFileUploadId,
+        type: ActionType.RATING,
+        order: result.data.order,
+      },
+      userId,
+    );
 
     return {
       id: action.id,
@@ -322,14 +337,18 @@ export class ActionService {
       await this.verifyMissionAccess(result.data.missionId, userId);
     }
 
-    const action = await this.actionRepo.create({
-      missionId: result.data.missionId,
-      title: result.data.title,
-      description: result.data.description,
-      imageUrl: result.data.imageUrl,
-      type: ActionType.IMAGE,
-      order: result.data.order,
-    });
+    const action = await this.actionRepo.create(
+      {
+        missionId: result.data.missionId,
+        title: result.data.title,
+        description: result.data.description,
+        imageUrl: result.data.imageUrl,
+        imageFileUploadId: result.data.imageFileUploadId,
+        type: ActionType.IMAGE,
+        order: result.data.order,
+      },
+      userId,
+    );
 
     return {
       id: action.id,
@@ -372,7 +391,7 @@ export class ActionService {
       return updatedAction;
     }
 
-    const updatedAction = await this.actionRepo.update(actionId, actionData);
+    const updatedAction = await this.actionRepo.update(actionId, actionData, userId);
 
     return updatedAction;
   }

@@ -75,7 +75,9 @@ export class MissionService {
         description: validated.description,
         target: validated.target,
         imageUrl: validated.imageUrl,
+        imageFileUploadId: validated.imageFileUploadId,
         brandLogoUrl: validated.brandLogoUrl,
+        brandLogoFileUploadId: validated.brandLogoFileUploadId,
         deadline: validated.deadline,
         estimatedMinutes: validated.estimatedMinutes,
         creatorId: userId,
@@ -113,7 +115,7 @@ export class MissionService {
       throw error;
     }
 
-    const updatedMission = await this.repo.update(missionId, result.data);
+    const updatedMission = await this.repo.update(missionId, result.data, userId);
     return updatedMission;
   }
 

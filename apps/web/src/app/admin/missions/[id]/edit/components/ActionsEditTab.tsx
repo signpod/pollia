@@ -391,6 +391,7 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
             title: data.title,
             description: data.description,
             imageUrl: data.imageUrl,
+            imageFileUploadId: data.imageFileUploadId,
             maxSelections: "maxSelections" in data ? data.maxSelections : undefined,
             options:
               "options" in data

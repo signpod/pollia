@@ -10,6 +10,7 @@ function toUpdateRewardInput(dto: UpdateRewardRequest): UpdateRewardInput {
     name: dto.name,
     description: dto.description,
     imageUrl: dto.imageUrl,
+    imageFileUploadId: dto.imageFileUploadId,
     paymentType: dto.paymentType,
     scheduledDate: dto.scheduledDate,
   };
@@ -20,9 +21,9 @@ export async function updateReward(
   request: UpdateRewardRequest,
 ): Promise<UpdateRewardResponse> {
   try {
-    await requireAuth();
+    const user = await requireAuth();
     const input = toUpdateRewardInput(request);
-    const reward = await rewardService.updateReward(rewardId, input);
+    const reward = await rewardService.updateReward(rewardId, input, user.id);
     return { data: reward };
   } catch (error) {
     console.error("updateReward error:", error);

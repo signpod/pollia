@@ -1,5 +1,6 @@
 import prisma from "@/database/utils/prisma/client";
-import type { ActionType, FileStatus } from "@prisma/client";
+import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
+import type { ActionType } from "@prisma/client";
 
 export class ActionRepository {
   async findByIdWithOptions(actionId: string) {
@@ -112,6 +113,7 @@ export class ActionRepository {
       title: string;
       description?: string;
       imageUrl?: string;
+      imageFileUploadId?: string;
       type: ActionType;
       order: number;
       maxSelections?: number;
@@ -132,6 +134,7 @@ export class ActionRepository {
           title: data.title,
           description: data.description,
           imageUrl: data.imageUrl,
+          imageFileUploadId: data.imageFileUploadId,
           type: data.type,
           order: data.order,
           maxSelections: data.maxSelections,
@@ -149,42 +152,56 @@ export class ActionRepository {
         })),
       });
 
-      const optionFileUploadIds = options
-        .map(option => option.imageFileUploadId)
-        .filter(Boolean) as string[];
+      const allFileUploadIds = [
+        data.imageFileUploadId,
+        ...options.map(option => option.imageFileUploadId),
+      ].filter(Boolean) as string[];
 
-      if (optionFileUploadIds.length > 0) {
-        await tx.fileUpload.updateMany({
-          where: {
-            id: { in: optionFileUploadIds },
-            userId: userId,
-            status: "TEMPORARY" as FileStatus,
-          },
-          data: {
-            status: "CONFIRMED" as FileStatus,
-            confirmedAt: new Date(),
-          },
-        });
-      }
+      await confirmFileUploads(tx, userId, allFileUploadIds);
 
       return createdAction;
     });
   }
 
-  async create(data: {
-    missionId?: string;
-    title: string;
-    description?: string;
-    imageUrl?: string;
-    type: ActionType;
-    order: number;
-  }) {
+  async create(
+    data: {
+      missionId?: string;
+      title: string;
+      description?: string;
+      imageUrl?: string;
+      imageFileUploadId?: string;
+      type: ActionType;
+      order: number;
+    },
+    userId?: string,
+  ) {
+    if (data.imageFileUploadId && userId) {
+      return prisma.$transaction(async tx => {
+        const createdAction = await tx.action.create({
+          data: {
+            missionId: data.missionId ?? undefined,
+            title: data.title,
+            description: data.description,
+            imageUrl: data.imageUrl,
+            imageFileUploadId: data.imageFileUploadId,
+            type: data.type,
+            order: data.order,
+          },
+        });
+
+        await confirmFileUploads(tx, userId, data.imageFileUploadId);
+
+        return createdAction;
+      });
+    }
+
     return prisma.action.create({
       data: {
         missionId: data.missionId ?? undefined,
         title: data.title,
         description: data.description,
         imageUrl: data.imageUrl,
+        imageFileUploadId: data.imageFileUploadId,
         type: data.type,
         order: data.order,
       },
@@ -197,10 +214,25 @@ export class ActionRepository {
       title?: string;
       description?: string;
       imageUrl?: string;
+      imageFileUploadId?: string;
       order?: number;
       maxSelections?: number;
     },
+    userId?: string,
   ) {
+    if (data.imageFileUploadId && userId) {
+      return prisma.$transaction(async tx => {
+        const updatedAction = await tx.action.update({
+          where: { id: actionId },
+          data,
+        });
+
+        await confirmFileUploads(tx, userId, data.imageFileUploadId);
+
+        return updatedAction;
+      });
+    }
+
     return prisma.action.update({
       where: { id: actionId },
       data,
@@ -213,6 +245,7 @@ export class ActionRepository {
       title?: string;
       description?: string;
       imageUrl?: string;
+      imageFileUploadId?: string;
       order?: number;
       maxSelections?: number;
     },
@@ -246,23 +279,12 @@ export class ActionRepository {
         })),
       });
 
-      const optionFileUploadIds = options
-        .map(option => option.imageFileUploadId)
-        .filter(Boolean) as string[];
+      const allFileUploadIds = [
+        data.imageFileUploadId,
+        ...options.map(option => option.imageFileUploadId),
+      ].filter(Boolean) as string[];
 
-      if (optionFileUploadIds.length > 0) {
-        await tx.fileUpload.updateMany({
-          where: {
-            id: { in: optionFileUploadIds },
-            userId: userId,
-            status: "TEMPORARY" as FileStatus,
-          },
-          data: {
-            status: "CONFIRMED" as FileStatus,
-            confirmedAt: new Date(),
-          },
-        });
-      }
+      await confirmFileUploads(tx, userId, allFileUploadIds);
 
       return updatedAction;
     });

@@ -215,9 +215,14 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
         return submittedScaleValue !== null && submittedScaleValue === answer.scaleValue;
       }
 
-      if (answer.type === ActionType.SUBJECTIVE || answer.type === ActionType.IMAGE) {
+      if (answer.type === ActionType.SUBJECTIVE) {
         const submittedTextAnswer = answersForAction[0]?.textAnswer;
         return submittedTextAnswer !== null && submittedTextAnswer === answer.textResponse;
+      }
+
+      if (answer.type === ActionType.IMAGE) {
+        const submittedImageUrl = answersForAction[0]?.imageUrl;
+        return submittedImageUrl !== null && submittedImageUrl === answer.imageUrl;
       }
 
       return false;

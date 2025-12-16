@@ -169,6 +169,7 @@ export interface UpdateActionRequest {
   title?: string;
   description?: string;
   imageUrl?: string;
+  imageFileUploadId?: string;
   order?: number;
   maxSelections?: number;
   options?: UpdateActionOptionRequest[];

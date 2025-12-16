@@ -1,4 +1,5 @@
 import prisma from "@/database/utils/prisma/client";
+import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
 
 export class ActionAnswerRepository {
   async findById(id: string) {
@@ -80,15 +81,52 @@ export class ActionAnswerRepository {
     });
   }
 
-  async create(data: {
-    responseId: string;
-    actionId: string;
-    optionId?: string;
-    textAnswer?: string;
-    scaleAnswer?: number;
-  }) {
+  async create(
+    data: {
+      responseId: string;
+      actionId: string;
+      optionId?: string;
+      textAnswer?: string;
+      scaleAnswer?: number;
+      imageUrl?: string;
+      imageFileUploadId?: string;
+    },
+    userId?: string,
+  ) {
+    if (data.imageFileUploadId && userId) {
+      return prisma.$transaction(async tx => {
+        const createdAnswer = await tx.actionAnswer.create({
+          data: {
+            responseId: data.responseId,
+            actionId: data.actionId,
+            optionId: data.optionId,
+            textAnswer: data.textAnswer,
+            scaleAnswer: data.scaleAnswer,
+            imageUrl: data.imageUrl,
+            imageFileUploadId: data.imageFileUploadId,
+          },
+          include: {
+            action: true,
+            option: true,
+          },
+        });
+
+        await confirmFileUploads(tx, userId, data.imageFileUploadId);
+
+        return createdAnswer;
+      });
+    }
+
     return prisma.actionAnswer.create({
-      data,
+      data: {
+        responseId: data.responseId,
+        actionId: data.actionId,
+        optionId: data.optionId,
+        textAnswer: data.textAnswer,
+        scaleAnswer: data.scaleAnswer,
+        imageUrl: data.imageUrl,
+        imageFileUploadId: data.imageFileUploadId,
+      },
       include: {
         action: true,
         option: true,
@@ -103,10 +141,43 @@ export class ActionAnswerRepository {
       optionId?: string;
       textAnswer?: string;
       scaleAnswer?: number;
+      imageUrl?: string;
+      imageFileUploadId?: string;
     }>,
+    userId?: string,
   ) {
+    const fileUploadIds = answers.map(a => a.imageFileUploadId).filter(Boolean) as string[];
+
+    if (fileUploadIds.length > 0 && userId) {
+      return prisma.$transaction(async tx => {
+        await tx.actionAnswer.createMany({
+          data: answers.map(a => ({
+            responseId: a.responseId,
+            actionId: a.actionId,
+            optionId: a.optionId,
+            textAnswer: a.textAnswer,
+            scaleAnswer: a.scaleAnswer,
+            imageUrl: a.imageUrl,
+            imageFileUploadId: a.imageFileUploadId,
+          })),
+        });
+
+        await confirmFileUploads(tx, userId, fileUploadIds);
+
+        return { count: answers.length };
+      });
+    }
+
     return prisma.actionAnswer.createMany({
-      data: answers,
+      data: answers.map(a => ({
+        responseId: a.responseId,
+        actionId: a.actionId,
+        optionId: a.optionId,
+        textAnswer: a.textAnswer,
+        scaleAnswer: a.scaleAnswer,
+        imageUrl: a.imageUrl,
+        imageFileUploadId: a.imageFileUploadId,
+      })),
     });
   }
 
@@ -116,11 +187,43 @@ export class ActionAnswerRepository {
       optionId?: string;
       textAnswer?: string;
       scaleAnswer?: number;
+      imageUrl?: string;
+      imageFileUploadId?: string;
     },
+    userId?: string,
   ) {
+    if (data.imageFileUploadId && userId) {
+      return prisma.$transaction(async tx => {
+        const updatedAnswer = await tx.actionAnswer.update({
+          where: { id },
+          data: {
+            optionId: data.optionId,
+            textAnswer: data.textAnswer,
+            scaleAnswer: data.scaleAnswer,
+            imageUrl: data.imageUrl,
+            imageFileUploadId: data.imageFileUploadId,
+          },
+          include: {
+            action: true,
+            option: true,
+          },
+        });
+
+        await confirmFileUploads(tx, userId, data.imageFileUploadId);
+
+        return updatedAnswer;
+      });
+    }
+
     return prisma.actionAnswer.update({
       where: { id },
-      data,
+      data: {
+        optionId: data.optionId,
+        textAnswer: data.textAnswer,
+        scaleAnswer: data.scaleAnswer,
+        imageUrl: data.imageUrl,
+        imageFileUploadId: data.imageFileUploadId,
+      },
       include: {
         action: true,
         option: true,

@@ -504,10 +504,14 @@ describe("MissionService", () => {
       // Then
       expect(result.title).toBe("수정된 설문");
       expect(result.description).toBe("수정된 설명");
-      expect(mockRepository.update).toHaveBeenCalledWith("mission-1", {
-        title: "수정된 설문",
-        description: "수정된 설명",
-      });
+      expect(mockRepository.update).toHaveBeenCalledWith(
+        "mission-1",
+        {
+          title: "수정된 설문",
+          description: "수정된 설명",
+        },
+        "user-1",
+      );
     });
 
     it("Mission이 없으면 404 에러를 던진다", async () => {
