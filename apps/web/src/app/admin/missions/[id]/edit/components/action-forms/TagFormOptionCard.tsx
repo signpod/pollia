@@ -2,7 +2,21 @@
 
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
+import { cn } from "@/app/admin/lib/utils";
 import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
+
+const LIMITS = {
+  title: 50,
+} as const;
+
+function CharacterCounter({ current, max }: { current: number; max: number }) {
+  const isOver = current > max;
+  return (
+    <span className={cn("text-xs", isOver ? "text-destructive" : "text-muted-foreground")}>
+      {current}/{max}
+    </span>
+  );
+}
 
 export interface TagFormOptionCardProps {
   index: number;
@@ -39,13 +53,19 @@ export function TagFormOptionCard({
         {index + 1}
       </div>
 
-      <Input
-        placeholder={titlePlaceholder}
-        value={title}
-        onChange={e => onTitleChange(e.target.value)}
-        disabled={disabled}
-        className="h-9 text-sm flex-1"
-      />
+      <div className="flex-1 space-y-1">
+        <Input
+          placeholder={titlePlaceholder}
+          value={title}
+          onChange={e => onTitleChange(e.target.value)}
+          disabled={disabled}
+          maxLength={LIMITS.title}
+          className="h-9 text-sm"
+        />
+        <div className="flex justify-end">
+          <CharacterCounter current={title.length} max={LIMITS.title} />
+        </div>
+      </div>
 
       <div className="flex gap-1 shrink-0">
         <Button

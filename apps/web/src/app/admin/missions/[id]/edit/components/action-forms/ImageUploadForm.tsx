@@ -44,6 +44,7 @@ export function ImageUploadForm({
       <form onSubmit={handleSubmit} className="space-y-6">
         <BaseActionFormFields
           control={form.control}
+          watch={form.watch}
           isLoading={isLoading}
           titlePlaceholder="예: 사진을 업로드해주세요."
           mainImagePreviewUrl={mainImage.previewUrl}
