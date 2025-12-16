@@ -10,7 +10,7 @@ import { Dialog, DialogOverlay, DialogPortal } from "@repo/ui/components";
 import { Edit2, Loader2Icon, PlusIcon, X } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
-import Cropper, { type Area } from "react-easy-crop";
+import { CustomCropper } from "./CustomCropper";
 
 const BLUR_THUMBNAIL_MAX_SIZE = 50;
 const ZOOM_MIN = 1;
@@ -69,7 +69,6 @@ export function ImageUpload({ initialImageUrl, onUploadChange }: ImageUploadProp
   const [crop, setCrop] = useState(CROP_DEFAULT);
   const [zoom, setZoom] = useState(ZOOM_DEFAULT);
   const [rotation, setRotation] = useState(ROTATION_DEFAULT);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const revokeImageUrl = useCallback((url: string | null) => {
@@ -82,7 +81,6 @@ export function ImageUpload({ initialImageUrl, onUploadChange }: ImageUploadProp
     setCrop(CROP_DEFAULT);
     setZoom(ZOOM_DEFAULT);
     setRotation(ROTATION_DEFAULT);
-    setCroppedAreaPixels(null);
   }, []);
 
   useEffect(() => {
@@ -114,8 +112,8 @@ export function ImageUpload({ initialImageUrl, onUploadChange }: ImageUploadProp
     },
   });
 
-  const onCropComplete = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
-    setCroppedAreaPixels(croppedAreaPixels);
+  const onCropComplete = useCallback(() => {
+    // CustomCropper에서 직접 호출됨
   }, []);
 
   const handleCropCancel = useCallback(() => {
@@ -127,7 +125,7 @@ export function ImageUpload({ initialImageUrl, onUploadChange }: ImageUploadProp
   }, [imageToCrop, revokeImageUrl, resetCropState]);
 
   const handleCropComplete = useCallback(async () => {
-    if (!imageToCrop || !croppedAreaPixels || !originalFile) {
+    if (!imageToCrop || !originalFile) {
       return;
     }
 
@@ -135,7 +133,14 @@ export function ImageUpload({ initialImageUrl, onUploadChange }: ImageUploadProp
       setIsCropModalOpen(false);
       setIsImageLoading(true);
 
-      const croppedBlob = await getCroppedImg(imageToCrop, croppedAreaPixels, rotation);
+      const croppedBlob = await getCroppedImg(
+        imageToCrop,
+        { width: 360, height: 360, x: 0, y: 0 },
+        rotation,
+        true,
+        crop,
+        zoom,
+      );
       const croppedFile = new File([croppedBlob], originalFile.name, {
         type: "image/jpeg",
         lastModified: Date.now(),
@@ -174,13 +179,14 @@ export function ImageUpload({ initialImageUrl, onUploadChange }: ImageUploadProp
     }
   }, [
     imageToCrop,
-    croppedAreaPixels,
     rotation,
     originalFile,
     upload,
     revokeImageUrl,
     resetCropState,
     handleCropCancel,
+    crop,
+    zoom,
   ]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -283,7 +289,7 @@ export function ImageUpload({ initialImageUrl, onUploadChange }: ImageUploadProp
               height={400}
               placeholder={blurDataURL ? "blur" : "empty"}
               blurDataURL={blurDataURL || undefined}
-              className="absolute inset-0 size-full object-cover"
+              className="absolute inset-0  object-contain"
               onLoadingComplete={() => setIsImageLoading(false)}
             />
           )}
@@ -335,31 +341,15 @@ export function ImageUpload({ initialImageUrl, onUploadChange }: ImageUploadProp
 
               <div className="relative flex h-[400px] w-full items-center justify-center">
                 {imageToCrop && (
-                  <Cropper
-                    image={imageToCrop}
+                  <CustomCropper
+                    imageSrc={imageToCrop}
                     crop={crop}
                     zoom={zoom}
                     rotation={rotation}
-                    aspect={1}
                     onCropChange={setCrop}
                     onZoomChange={setZoom}
                     onRotationChange={setRotation}
                     onCropComplete={onCropComplete}
-                    cropShape="rect"
-                    showGrid={false}
-                    objectFit="contain"
-                    style={{
-                      mediaStyle: {
-                        maxWidth: "360px",
-                        maxHeight: "360px",
-                      },
-                    }}
-                    cropperProps={{
-                      style: {
-                        width: "360px",
-                        height: "360px",
-                      },
-                    }}
                   />
                 )}
               </div>
