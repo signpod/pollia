@@ -1,21 +1,24 @@
 model Mission {
-  id               String            @id @default(cuid())
+  id               String    @id @default(cuid())
   title            String
   description      String?
-  imageUrl         String?           @map("image_url")
-  brandLogoUrl     String?           @map("brand_logo_url")
-  estimatedMinutes Int?              @map("estimated_minutes")
+  imageUrl         String?   @map("image_url")
+  brandLogoUrl     String?   @map("brand_logo_url")
+  estimatedMinutes Int?      @map("estimated_minutes")
   deadline         DateTime?
-  isActive         Boolean           @default(true) @map("is_active")
-  creatorId        String            @map("creator_id")
-  rewardId         String?           @map("reward_id")
-  createdAt        DateTime          @default(now()) @map("created_at")
-  updatedAt        DateTime          @updatedAt @map("updated_at")
+  isActive         Boolean   @default(true) @map("is_active")
+  creatorId        String    @map("creator_id")
+  rewardId         String?   @map("reward_id")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
   target           String?
-  questions        Action[]
-  responses        MissionResponse[]
-  creator          User              @relation("MissionCreator", fields: [creatorId], references: [id])
-  reward           Reward?           @relation(fields: [rewardId], references: [id])
+  type             MissionType       @default(GENERAL)
+  password         String?
+
+  questions Action[]
+  responses MissionResponse[]
+  creator   User              @relation("MissionCreator", fields: [creatorId], references: [id])
+  reward    Reward?           @relation(fields: [rewardId], references: [id])
 
   imageFileUploadId     String?     @map("image_file_upload_id")
   imageFileUpload       FileUpload? @relation("MissionImage", fields: [imageFileUploadId], references: [id])
@@ -26,4 +29,9 @@ model Mission {
   @@index([isActive])
   @@index([rewardId])
   @@map("missions")
+}
+
+enum MissionType {
+  GENERAL
+  EXPERIENCE_GROUP
 }
