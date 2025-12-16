@@ -15,6 +15,7 @@ export interface UpdateMissionRequest {
   brandLogoFileUploadId?: string;
   deadline?: Date;
   estimatedMinutes?: number;
+  maxParticipants?: number | null;
   type?: MissionType;
   isActive?: boolean;
   rewardId?: string | null;
@@ -31,6 +32,7 @@ function toUpdateMissionInput(dto: UpdateMissionRequest): UpdateMissionInput {
     brandLogoFileUploadId: dto.brandLogoFileUploadId,
     deadline: dto.deadline,
     estimatedMinutes: dto.estimatedMinutes,
+    maxParticipants: dto.maxParticipants,
     type: dto.type,
     isActive: dto.isActive,
     rewardId: dto.rewardId,

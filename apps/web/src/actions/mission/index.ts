@@ -1,5 +1,11 @@
 export { createMission } from "./create";
 export { deleteMission } from "./delete";
 export { duplicateMission } from "./duplicate";
-export { getMission, getMissionPassword, getUserMissions, verifyMissionPassword } from "./read";
+export {
+  getMission,
+  getMissionParticipantInfo,
+  getMissionPassword,
+  getUserMissions,
+  verifyMissionPassword,
+} from "./read";
 export { removeMissionPassword, setMissionPassword, updateMission } from "./update";

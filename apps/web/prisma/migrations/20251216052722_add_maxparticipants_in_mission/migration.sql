@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "missions" ADD COLUMN     "max_participants" INTEGER;

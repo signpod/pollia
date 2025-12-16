@@ -119,37 +119,10 @@ export class MissionRepository {
     });
   }
 
-  async createWithActions(
-    data: {
-      title: string;
-      description?: string;
-      target?: string;
-      imageUrl?: string;
-      imageFileUploadId?: string;
-      brandLogoUrl?: string;
-      brandLogoFileUploadId?: string;
-      deadline?: Date;
-      estimatedMinutes?: number;
-      type: MissionType;
-      creatorId: string;
-    },
-    actionIds: string[],
-  ) {
+  async createWithActions(data: Prisma.MissionUncheckedCreateInput, actionIds: string[]) {
     return prisma.$transaction(async tx => {
       const createdMission = await tx.mission.create({
-        data: {
-          title: data.title,
-          description: data.description,
-          target: data.target,
-          imageUrl: data.imageUrl,
-          imageFileUploadId: data.imageFileUploadId,
-          brandLogoUrl: data.brandLogoUrl,
-          brandLogoFileUploadId: data.brandLogoFileUploadId,
-          deadline: data.deadline,
-          estimatedMinutes: data.estimatedMinutes,
-          type: data.type,
-          creatorId: data.creatorId,
-        },
+        data,
       });
 
       if (actionIds.length > 0) {

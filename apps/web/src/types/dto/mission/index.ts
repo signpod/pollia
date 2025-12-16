@@ -10,6 +10,7 @@ export interface CreateMissionRequest {
   brandLogoFileUploadId?: string;
   deadline?: Date;
   estimatedMinutes?: number;
+  maxParticipants?: number | null;
   type: MissionType;
   isActive?: boolean;
   actionIds?: string[];
@@ -92,5 +93,13 @@ export interface DuplicateMissionResponse {
   data: {
     id: string;
     title: string;
+  };
+}
+
+export interface GetMissionParticipantInfoResponse {
+  data: {
+    currentParticipants: number;
+    maxParticipants: number | null;
+    isClosed: boolean;
   };
 }

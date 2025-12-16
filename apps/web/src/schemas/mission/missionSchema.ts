@@ -28,6 +28,13 @@ const estimatedMinutesSchema = z
   .max(120, "120 이하여야 합니다")
   .optional();
 
+const maxParticipantsSchema = z
+  .number()
+  .int("정수여야 합니다")
+  .min(1, "1 이상이어야 합니다")
+  .nullable()
+  .optional();
+
 const actionIdsSchema = z.array(z.string().min(1, "액션 ID가 비어있습니다.")).default([]);
 
 const passwordSchema = z
@@ -49,6 +56,7 @@ export const missionInputSchema = z.object({
   brandLogoFileUploadId: brandLogoFileUploadIdSchema,
   deadline: deadlineSchema,
   estimatedMinutes: estimatedMinutesSchema,
+  maxParticipants: maxParticipantsSchema,
   type: missionTypeSchema,
   actionIds: actionIdsSchema,
   isActive: z.boolean().optional(),
@@ -65,6 +73,7 @@ export const missionUpdateSchema = z
     brandLogoFileUploadId: brandLogoFileUploadIdSchema,
     deadline: z.date().optional(),
     estimatedMinutes: estimatedMinutesSchema,
+    maxParticipants: maxParticipantsSchema,
     type: missionTypeSchema.optional(),
     isActive: z.boolean().optional(),
     rewardId: z.string().nullable().optional(),
