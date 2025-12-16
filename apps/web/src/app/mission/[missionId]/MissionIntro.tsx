@@ -1,18 +1,18 @@
 "use client";
 
 import { AuthError } from "@/hooks/login/useKakaoLogin";
-import { useMissionIntroData, useMissionRewardVisibility, useSurveyResume } from "@/hooks/mission";
+import { useMissionIntroData, useSurveyResume } from "@/hooks/mission";
 import { useReadMissionParticipantInfo } from "@/hooks/participant/useReadMissionParticipantInfo";
 import { useReadReward } from "@/hooks/reward/useReadReward";
 import { getSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
 import { cleanTiptapHTML } from "@/lib/utils";
-import { FixedBottomLayout, FloatingButton, Tab, Typo } from "@repo/ui/components";
-import { Gift } from "lucide-react";
+import { FixedBottomLayout, Tab, Typo } from "@repo/ui/components";
+import { Badge } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
-import { MissionDescription, MissionImage, MissionLogo, MissionReward } from "./components";
+import { MissionDescription, MissionImage, MissionLogo } from "./components";
 import { formatDeadline } from "./done/ui/utils/formatDeadline";
 import { BottomButton } from "./ui";
 
@@ -39,8 +39,8 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
     responseId: missionResponse?.id ?? "",
   });
 
-  const { isRewardVisible, setIsRewardVisible, rewardRef, scrollToReward } =
-    useMissionRewardVisibility();
+  // const { isRewardVisible, setIsRewardVisible, rewardRef, scrollToReward } =
+  //   useMissionRewardVisibility();
 
   const {
     brandLogoUrl,
@@ -159,10 +159,76 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                 </div>
               </div>
             </div>
+
+            {/* 참여 방법 */}
+            <div className="flex flex-col gap-8 bg-white px-5 py-8 items-center">
+              <div className="flex flex-col gap-4 items-center">
+                <div className="bg-zinc-700 rounded-full px-3 py-1">
+                  <Typo.SubTitle size="large" className="text-white">
+                    참여 방법
+                  </Typo.SubTitle>
+                </div>
+                <Typo.MainTitle size="medium">참여 방법 한 눈에 보기 👀</Typo.MainTitle>
+              </div>
+
+              <div className="flex flex-col gap-8 bg-zinc-50 rounded-md p-8 w-full">
+                <div className="flex gap-4 w-full">
+                  <div className="relative flex items-center justify-center">
+                    <Badge className="fill-black size-15" />
+                    <Typo.MainTitle
+                      size="small"
+                      className="text-white absolute inset-0 z-20 flex items-center justify-center"
+                    >
+                      1
+                    </Typo.MainTitle>
+                  </div>
+                  <div className="flex flex-col gap-2 flex-1">
+                    <Typo.MainTitle size="small">참여 방법1</Typo.MainTitle>
+                    <Typo.Body size="medium" className="text-info">
+                      참여 방법1입니다.
+                    </Typo.Body>
+                  </div>
+                </div>
+                <div className="flex gap-4 w-full">
+                  <div className="relative flex items-center justify-center">
+                    <Badge className="fill-black size-15" />
+                    <Typo.MainTitle
+                      size="small"
+                      className="text-white absolute inset-0 z-20 flex items-center justify-center"
+                    >
+                      2
+                    </Typo.MainTitle>
+                  </div>
+                  <div className="flex flex-col gap-2 flex-1">
+                    <Typo.MainTitle size="small">참여 방법2</Typo.MainTitle>
+                    <Typo.Body size="medium" className="text-info">
+                      참여 방법2입니다.
+                    </Typo.Body>
+                  </div>
+                </div>
+                <div className="flex gap-4 w-full">
+                  <div className="relative flex items-center justify-center">
+                    <Badge className="fill-black size-15" />
+                    <Typo.MainTitle
+                      size="small"
+                      className="text-white absolute inset-0 z-20 flex items-center justify-center"
+                    >
+                      3
+                    </Typo.MainTitle>
+                  </div>
+                  <div className="flex flex-col gap-2 flex-1">
+                    <Typo.MainTitle size="small">참여 방법2</Typo.MainTitle>
+                    <Typo.Body size="medium" className="text-info">
+                      참여 방법2입니다.
+                    </Typo.Body>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div ref={rewardRef}>
+        {/* <div ref={rewardRef}>
           {reward && (
             <MissionReward
               rewardName={reward?.data.name ?? ""}
@@ -171,10 +237,10 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
               onVisibilityChange={setIsRewardVisible}
             />
           )}
-        </div>
+        </div> */}
 
         <FixedBottomLayout.Content className="flex w-full justify-end">
-          <div
+          {/* <div
             className={`absolute right-5 top-[-56px] flex flex-col gap-4 transition-opacity duration-150 ${
               !isRewardVisible ? "opacity-100" : "pointer-events-none opacity-0"
             }`}
@@ -185,7 +251,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
               className="bg-white"
               onClick={scrollToReward}
             />
-          </div>
+          </div> */}
           <BottomButton
             firstActionId={firstActionId ?? ""}
             initialError={initialError}
