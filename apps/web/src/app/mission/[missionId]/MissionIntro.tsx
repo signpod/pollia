@@ -8,6 +8,7 @@ import { getSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
 import { cleanTiptapHTML } from "@/lib/utils";
 import { FixedBottomLayout, FloatingButton, Tab, Typo } from "@repo/ui/components";
 import { Gift } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
@@ -67,7 +68,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
               <MissionImage imageUrl={imageUrl} />
             </div>
           )}
-          <div className="sticky top-0 z-10 flex w-full flex-col bg-white p-5 pb-0 rounded-md mt-[-20px] shadow-[0_-18px_50px_rgba(0,0,0,0.25)]">
+          <div className="sticky top-0 z-10 flex w-full flex-col bg-white py-5 pb-0 rounded-md mt-[-20px] shadow-[0_-18px_50px_rgba(0,0,0,0.25)]">
             <Tab.Root defaultValue="description" pointColor="secondary">
               <Tab.List>
                 <Tab.Item value="description">미션 안내</Tab.Item>
@@ -76,6 +77,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
               </Tab.List>
             </Tab.Root>
 
+            {/* description */}
             <div className="flex w-full flex-col gap-8 rounded-3xl px-5 py-8 items-center">
               <div className="flex w-full flex-col gap-6">
                 <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
@@ -107,6 +109,53 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                     size="medium"
                     className="text-zinc-400"
                   >{`/${maxParticipants}명`}</Typo.Body>
+                </div>
+              </div>
+            </div>
+
+            {/* reward */}
+            <div className="flex flex-col gap-8 bg-zinc-50 px-5 py-8">
+              <div className="flex flex-col gap-4 items-center">
+                <div className="bg-zinc-700 rounded-full px-3 py-1">
+                  <Typo.SubTitle size="large" className="text-white">
+                    참여 혜택
+                  </Typo.SubTitle>
+                </div>
+                <Typo.MainTitle size="medium">
+                  참여해주신 모든 분께
+                  <br />
+                  감사의 선물을 드려요!
+                </Typo.MainTitle>
+              </div>
+
+              <div className="w-full rounded-md overflow-hidden bg-white shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
+                {reward?.data.imageUrl && (
+                  <Image
+                    src={reward?.data.imageUrl}
+                    alt="reward"
+                    width={400}
+                    height={400}
+                    className="w-full h-auto object-contain"
+                  />
+                )}
+                <div className="w-full flex flex-col p-4 gap-3">
+                  <div className="w-full flex justify-between items-center">
+                    <div className="bg-violet-50 rounded-sm px-3 py-2">
+                      <Typo.Body size="medium" className="text-primary">
+                        전원 증정
+                      </Typo.Body>
+                    </div>
+                    {brandLogoUrl && (
+                      <Image
+                        src={brandLogoUrl}
+                        alt="reward"
+                        width={40}
+                        height={40}
+                        className="object-contain"
+                      />
+                    )}
+                  </div>
+                  <Typo.MainTitle size="small">{reward?.data.name}</Typo.MainTitle>
                 </div>
               </div>
             </div>
