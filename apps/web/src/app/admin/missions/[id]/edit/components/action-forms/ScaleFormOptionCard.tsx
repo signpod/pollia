@@ -79,6 +79,16 @@ export function ScaleFormOptionCard({
               type="button"
               variant="ghost"
               size="icon"
+              onClick={onDelete}
+              disabled={disabled || !canDelete}
+              className="size-8 text-destructive hover:text-destructive shrink-0 disabled:text-muted-foreground"
+            >
+              <Trash2 className="size-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
               onClick={onMoveUp}
               disabled={disabled || isFirst}
               className="size-8"
@@ -96,17 +106,6 @@ export function ScaleFormOptionCard({
               <ChevronDown className="size-4" />
             </Button>
           </div>
-
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={onDelete}
-            disabled={disabled || !canDelete}
-            className="size-8 text-destructive hover:text-destructive shrink-0 disabled:text-muted-foreground"
-          >
-            <Trash2 className="size-4" />
-          </Button>
         </div>
       </CardContent>
     </Card>

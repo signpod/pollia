@@ -38,20 +38,22 @@ export function TagFormOptionCard({
   const canDelete = total > minOptions;
 
   return (
-    <div className="flex items-center gap-2 mb-2">
+    <div className="flex items-center-safe gap-3">
       <div className="flex items-center justify-center size-6 rounded-full bg-muted text-xs font-bold text-muted-foreground shrink-0">
         {index + 1}
       </div>
 
-      <InputWithCounter
-        placeholder={titlePlaceholder}
-        value={title}
-        onChange={e => onTitleChange(e.target.value)}
-        disabled={disabled}
-        maxLength={LIMITS.title}
-        currentLength={title.length}
-        className="h-9 text-sm flex-1"
-      />
+      <div className="flex-1 mt-6">
+        <InputWithCounter
+          placeholder={titlePlaceholder}
+          value={title}
+          onChange={e => onTitleChange(e.target.value)}
+          disabled={disabled}
+          maxLength={LIMITS.title}
+          currentLength={title.length}
+          className="h-9 text-sm flex-1"
+        />
+      </div>
 
       <div className="flex gap-1 shrink-0">
         <Button

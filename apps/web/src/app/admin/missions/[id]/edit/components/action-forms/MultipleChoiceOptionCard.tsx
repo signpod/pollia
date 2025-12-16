@@ -4,6 +4,7 @@ import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
 import { InputWithCounter } from "@/app/admin/components/common/InputField";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Card, CardContent } from "@/app/admin/components/shadcn-ui/card";
+import { cn } from "@/app/admin/lib/utils";
 import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 
 const LIMITS = {
@@ -56,8 +57,13 @@ export function MultipleChoiceOptionCard({
     <Card className="mb-3 py-4 px-0">
       <CardContent>
         <div className="flex items-start gap-3">
-          <div className="flex flex-col gap-2 items-start">
-            <div className="flex items-center justify-center size-6 rounded-full bg-muted text-xs font-bold text-muted-foreground shrink-0">
+          <div className="flex flex-col gap-2 items-start relative">
+            <div
+              className={cn(
+                "flex items-center justify-center size-6 rounded-full bg-muted text-xs font-bold text-muted-foreground shrink-0",
+                "absolute -top-2 -left-2 z-10",
+              )}
+            >
               {index + 1}
             </div>
 
@@ -96,6 +102,16 @@ export function MultipleChoiceOptionCard({
               type="button"
               variant="ghost"
               size="icon"
+              onClick={onDelete}
+              disabled={disabled || !canDelete}
+              className="size-8 text-destructive hover:text-destructive shrink-0 disabled:text-muted-foreground"
+            >
+              <Trash2 className="size-4" />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
               onClick={onMoveUp}
               disabled={disabled || isFirst}
               className="size-8"
@@ -113,17 +129,6 @@ export function MultipleChoiceOptionCard({
               <ChevronDown className="size-4" />
             </Button>
           </div>
-
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={onDelete}
-            disabled={disabled || !canDelete}
-            className="size-8 text-destructive hover:text-destructive shrink-0 disabled:text-muted-foreground"
-          >
-            <Trash2 className="size-4" />
-          </Button>
         </div>
       </CardContent>
     </Card>
