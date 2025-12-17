@@ -76,6 +76,8 @@ function ActionContent() {
       router.replace(ROUTES.MISSION(missionId));
       return;
     }
+
+    window.scrollTo({ top: 0, behavior: "instant" });
     setSessionStorage(`current-action-id-${missionId}`, actionId);
   }, [actionsIds, actionId, missionId, router]);
 
