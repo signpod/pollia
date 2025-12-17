@@ -30,7 +30,7 @@ export function ScaleForm({
     defaultValues: {
       title: initialData?.title || "",
       description: initialData?.description || "",
-      imageUrl: initialData?.imageUrl || undefined,
+      imageUrl: initialData?.imageUrl,
       options:
         initialData?.options?.map(opt => ({
           id: crypto.randomUUID(),

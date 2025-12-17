@@ -22,7 +22,7 @@ export function SubjectiveForm({
     defaultValues: {
       title: initialData?.title || "",
       description: initialData?.description || "",
-      imageUrl: initialData?.imageUrl || undefined,
+      imageUrl: initialData?.imageUrl,
     },
     mode: "onChange",
   });

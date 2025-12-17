@@ -34,14 +34,14 @@ export function MultipleChoiceForm({
     defaultValues: {
       title: initialData?.title || "",
       description: initialData?.description || "",
-      imageUrl: initialData?.imageUrl || undefined,
+      imageUrl: initialData?.imageUrl,
       maxSelections: initialData?.maxSelections ?? 1,
       options:
         initialData?.options?.map(opt => ({
           id: crypto.randomUUID(),
           title: opt.title,
           description: opt.description || "",
-          imageUrl: opt.imageUrl || undefined,
+          imageUrl: opt.imageUrl,
         })) || [],
     },
     mode: "onChange",
