@@ -9,7 +9,8 @@ import {
 } from "@/app/admin/components/shadcn-ui/card";
 import { stripHtmlTags } from "@/app/admin/lib/utils";
 import type { GetMissionResponse } from "@/types/dto";
-import { Calendar, CheckCircle2, Clock, Gift, ImageIcon, XCircle } from "lucide-react";
+import { MissionType } from "@prisma/client";
+import { Calendar, CheckCircle2, Clock, Gift, ImageIcon, Tag, XCircle } from "lucide-react";
 import Image from "next/image";
 import { AdminMissionHeader } from "./AdminMissionHeader";
 import { ClientDateDisplay } from "./ClientDateDisplay";
@@ -17,6 +18,17 @@ import { MissionNavigation } from "./MissionNavigation";
 
 interface MissionDetailContentProps {
   mission: GetMissionResponse["data"];
+}
+
+function getMissionTypeLabel(type: MissionType): string {
+  switch (type) {
+    case MissionType.GENERAL:
+      return "일반 미션";
+    case MissionType.EXPERIENCE_GROUP:
+      return "체험단 미션";
+    default:
+      return "알 수 없음";
+  }
 }
 
 export function MissionDetailContent({ mission }: MissionDetailContentProps) {
@@ -31,7 +43,7 @@ export function MissionDetailContent({ mission }: MissionDetailContentProps) {
       />
 
       <div className="space-y-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
           <Card>
             <CardHeader className="pb-2">
               <CardDescription>상태</CardDescription>
@@ -48,6 +60,18 @@ export function MissionDetailContent({ mission }: MissionDetailContentProps) {
                   <span className="text-lg font-medium text-muted-foreground">비활성</span>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription>타입</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-2">
+                <Tag className="h-5 w-5 text-muted-foreground" />
+                <span className="text-lg font-medium">{getMissionTypeLabel(mission.type)}</span>
+              </div>
             </CardContent>
           </Card>
 
