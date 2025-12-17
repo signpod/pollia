@@ -8,6 +8,7 @@ import { getSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
 import { cleanTiptapHTML } from "@/lib/utils";
 import { FixedBottomLayout, Tab, Typo } from "@repo/ui/components";
 import { useParams } from "next/navigation";
+import { useEffect } from "react";
 
 import {
   MissionDescription,
@@ -29,6 +30,10 @@ const SCROLL_OFFSET = 30;
 
 export function MissionIntro({ initialError }: { initialError: AuthError | null }) {
   const { missionId } = useParams<{ missionId: string }>();
+
+  useEffect(() => {
+    window.scrollTo(0, -30);
+  }, []);
 
   if (typeof window !== "undefined") {
     const existingValue = getSessionStorage(`current-action-id-${missionId}`);
