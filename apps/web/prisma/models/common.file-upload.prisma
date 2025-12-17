@@ -11,12 +11,13 @@ model FileUpload {
   createdAt        DateTime   @default(now()) @map("created_at")
   confirmedAt      DateTime?  @map("confirmed_at")
 
-  actionOptions      ActionOption[] @relation("ActionOptionImage")
-  missionImages      Mission[]      @relation("MissionImage")
-  missionBrandLogos  Mission[]      @relation("MissionBrandLogo")
-  actionImages       Action[]       @relation("ActionImage")
-  actionAnswerImages ActionAnswer[] @relation("ActionAnswerImage")
-  rewardImages       Reward[]       @relation("RewardImage")
+  actionOptions           ActionOption[]      @relation("ActionOptionImage")
+  missionImages           Mission[]           @relation("MissionImage")
+  missionBrandLogos       Mission[]           @relation("MissionBrandLogo")
+  actionImages            Action[]            @relation("ActionImage")
+  actionAnswerImages      ActionAnswer[]      @relation("ActionAnswerImage")
+  rewardImages            Reward[]            @relation("RewardImage")
+  missionCompletionImages MissionCompletion[] @relation("MissionCompletionImage")
 
   user User @relation("FileUploader", fields: [userId], references: [id])
 

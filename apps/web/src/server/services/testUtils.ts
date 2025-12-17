@@ -1,4 +1,4 @@
-import type { Action, FileUpload, Mission } from "@prisma/client";
+import type { Action, FileUpload, Mission, MissionCompletion } from "@prisma/client";
 import { FileStatus, MissionType } from "@prisma/client";
 
 export const createMockMission = (overrides: Partial<Mission> = {}): Mission => ({
@@ -50,5 +50,30 @@ export const createMockFileUpload = (overrides: Partial<FileUpload> = {}): FileU
   status: FileStatus.TEMPORARY,
   confirmedAt: null,
   createdAt: new Date(),
+  ...overrides,
+});
+
+type MissionCompletionWithRelations = MissionCompletion & {
+  imageFileUpload: { id: string; publicUrl: string } | null;
+  mission: { id: string; creatorId: string };
+};
+
+export const createMockMissionCompletion = (
+  overrides: Partial<MissionCompletionWithRelations> = {},
+): MissionCompletionWithRelations => ({
+  id: "completion1",
+  title: "미션 완료!",
+  description: "축하합니다!",
+  imageUrl: null,
+  imageFileUploadId: null,
+  links: null,
+  missionId: "mission1",
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  imageFileUpload: null,
+  mission: {
+    id: "mission1",
+    creatorId: "user1",
+  },
   ...overrides,
 });

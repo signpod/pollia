@@ -1,0 +1,220 @@
+---
+paths: ["apps/web/src/app/admin/**", "apps/web/src/app/login/admin/**"]
+---
+
+# Admin 코드 아키텍처
+
+## 핵심 원칙
+
+Admin 영역은 일반 사용자 영역과 완전히 분리된 코드베이스를 유지한다.
+캐시 충돌 방지, 권한 분리, 독립적인 유지보수를 위해 hooks, components, constants, lib 등 모든 코드를 admin 내부에서 관리한다.
+
+---
+
+## 디렉토리 구조
+
+```
+apps/web/src/app/admin/
+├── components/
+│   ├── common/           # Admin 공통 컴포넌트
+│   ├── shadcn-ui/        # Admin 전용 shadcn-ui (수정 금지)
+│   └── guards/           # 권한 체크 컴포넌트
+├── constants/
+│   ├── queryKeys.ts      # Admin 전용 Query Keys
+│   ├── routes.ts         # Admin 라우트 상수
+│   └── storage.ts        # Admin Storage 버킷 상수
+├── hooks/
+│   ├── use-read-mission.ts
+│   ├── use-update-mission.ts
+│   └── ...
+├── lib/
+│   ├── get-admin-query-client.ts  # Admin 전용 QueryClient
+│   └── utils.ts
+└── missions/
+    └── [id]/
+        ├── layout.tsx    # 서버 prefetch
+        ├── page.tsx
+        └── edit/
+            ├── page.tsx
+            └── components/
+```
+
+---
+
+## 코드 분리 규칙
+
+### 절대 분리 필수 항목
+
+| 구분 | Admin 경로 | 일반 경로 (사용 금지) |
+|------|-----------|---------------------|
+| Hooks | `@/app/admin/hooks/` | `@/hooks/` |
+| Components | `@/app/admin/components/` | `@/components/` |
+| Query Keys | `@/app/admin/constants/queryKeys` | `@/constants/queryKeys/` |
+| QueryClient | `@/app/admin/lib/get-admin-query-client` | `@/lib/getQueryClient` |
+| Utils | `@/app/admin/lib/utils` | `@/lib/utils` |
+
+### 공유 가능 항목
+
+| 구분 | 경로 | 설명 |
+|------|------|------|
+| Server Actions | `@/actions/` | API 호출 로직 |
+| Types/DTO | `@/types/` | 타입 정의 |
+| Schemas | `@/schemas/` | Zod 스키마 |
+| Server Services | `@/server/` | 비즈니스 로직 |
+
+---
+
+## Import 규칙
+
+### 올바른 Import
+
+```typescript
+// Hooks
+import { useReadMission } from "@/app/admin/hooks/use-read-mission";
+import { useUpdateMission } from "@/app/admin/hooks/use-update-mission";
+
+// Query Keys
+import { adminMissionQueryKeys } from "@/app/admin/constants/queryKeys";
+
+// QueryClient (서버 컴포넌트)
+import { getAdminQueryClient } from "@/app/admin/lib/get-admin-query-client";
+
+// Components
+import { Button } from "@/app/admin/components/shadcn-ui/button";
+import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
+
+// Utils
+import { cn } from "@/app/admin/lib/utils";
+
+// 공유 가능 (Server Actions, Types)
+import { getMission, updateMission } from "@/actions/mission";
+import type { UpdateMissionRequest } from "@/types/dto/mission";
+```
+
+### 잘못된 Import
+
+```typescript
+// 일반 hooks 사용 금지
+import { useReadMission } from "@/hooks/mission";
+
+// 일반 Query Keys 사용 금지
+import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
+
+// 일반 QueryClient 사용 금지
+import { getQueryClient } from "@/lib/getQueryClient";
+
+// 글로벌 컴포넌트 사용 금지
+import { Button } from "@/components/ui/button";
+import { Button } from "@repo/ui/components";
+```
+
+---
+
+## TanStack Query 분리
+
+### Admin 전용 QueryClient
+
+Admin은 독립된 QueryClient를 사용하여 일반 사용자와 캐시를 완전히 분리한다.
+
+```typescript
+// apps/web/src/app/admin/lib/get-admin-query-client.ts
+let browserAdminQueryClient: QueryClient | undefined = undefined;
+
+export function getAdminQueryClient() {
+  if (isServer) {
+    return makeAdminQueryClient();
+  }
+  if (!browserAdminQueryClient) browserAdminQueryClient = makeAdminQueryClient();
+  return browserAdminQueryClient;
+}
+```
+
+### Admin 전용 Query Keys
+
+Query Key에 `"admin"` prefix를 포함하여 일반 캐시와 구분한다.
+
+```typescript
+// apps/web/src/app/admin/constants/queryKeys.ts
+export const adminMissionQueryKeys = {
+  all: () => ["admin", "mission"] as const,
+  mission: (missionId: string) => ["admin", "mission", missionId] as const,
+  missions: () => ["admin", "missions"] as const,
+} as const;
+```
+
+### Layout에서 서버 Prefetch
+
+```typescript
+// apps/web/src/app/admin/missions/[id]/layout.tsx
+import { getAdminQueryClient } from "@/app/admin/lib/get-admin-query-client";
+import { adminMissionQueryKeys } from "@/app/admin/constants/queryKeys";
+
+export default async function AdminMissionLayout({ children, params }) {
+  const { id: missionId } = await params;
+  const queryClient = getAdminQueryClient();
+
+  await queryClient.prefetchQuery({
+    queryKey: adminMissionQueryKeys.mission(missionId),
+    queryFn: () => getMission(missionId),
+  });
+
+  return <HydrationBoundary state={dehydrate(queryClient)}>{children}</HydrationBoundary>;
+}
+```
+
+---
+
+## Hook 작성 규칙
+
+### 파일 네이밍
+
+```
+패턴: use-{동사}-{도메인}.ts (kebab-case)
+
+use-read-mission.ts      # 조회 hook
+use-update-mission.ts    # 수정 hook
+use-create-action.ts     # 생성 hook
+use-delete-reward.ts     # 삭제 hook
+```
+
+### 기본 구조
+
+```typescript
+// apps/web/src/app/admin/hooks/use-read-mission.ts
+"use client";
+
+import { getMission } from "@/actions/mission";
+import { adminMissionQueryKeys } from "@/app/admin/constants/queryKeys";
+import { useQuery } from "@tanstack/react-query";
+
+export function useReadMission(missionId: string) {
+  return useQuery({
+    queryKey: adminMissionQueryKeys.mission(missionId),
+    queryFn: () => getMission(missionId),
+    staleTime: 5 * 60 * 1000,
+    retry: 3,
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
+  });
+}
+
+export type UseReadMissionReturn = ReturnType<typeof useReadMission>;
+```
+
+---
+
+## 체크리스트
+
+### 새 Admin 페이지/컴포넌트 작성 시
+
+- [ ] Hooks는 `@/app/admin/hooks/`에 위치
+- [ ] Query Keys는 `@/app/admin/constants/queryKeys` 사용
+- [ ] QueryClient는 `@/app/admin/lib/get-admin-query-client` 사용
+- [ ] shadcn-ui는 `@/app/admin/components/shadcn-ui/` 사용
+- [ ] 일반 `@/hooks/`, `@/constants/queryKeys/` import 없음 확인
+
+### 새 Admin Hook 작성 시
+
+- [ ] `"use client"` directive 추가
+- [ ] `adminMissionQueryKeys` 또는 해당 도메인의 admin query key 사용
+- [ ] 파일명 kebab-case (`use-xxx-yyy.ts`)
+- [ ] ReturnType export
