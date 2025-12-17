@@ -1,7 +1,7 @@
 "use client";
 
+import PolliaIconFilled from "@public/svgs/pollia-icon-filled.svg";
 import { Typo } from "@repo/ui/components";
-import { Badge } from "lucide-react";
 
 interface ParticipationStepProps {
   stepNumber: number;
@@ -13,7 +13,7 @@ export function ParticipationStep({ stepNumber, title, description }: Participat
   return (
     <div className="flex gap-4 w-full items-start">
       <div className="relative flex items-center justify-center">
-        <Badge className="fill-black size-14" />
+        <PolliaIconFilled className="fill-black size-14" />
         <Typo.MainTitle
           size="small"
           className="text-white absolute inset-0 z-20 flex items-center justify-center"
