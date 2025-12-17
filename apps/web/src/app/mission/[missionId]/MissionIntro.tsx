@@ -61,6 +61,8 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
     defaultSection: "mission-guide",
   });
 
+  const deadlineText = deadline ? formatDeadline(deadline) : "정원 마감시";
+
   return (
     <>
       <main className="flex w-full flex-col gap-8">
@@ -94,7 +96,24 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                   {title}
                 </Typo.MainTitle>
 
-                <MissionDescription content={cleanTiptapHTML(description || "")} />
+                <MissionDescription
+                  content={cleanTiptapHTML(description || "")}
+                  className="text-center"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1 items-center">
+                <Typo.SubTitle size="large">미션 조건</Typo.SubTitle>
+                <Typo.Body size="small" className="text-info">
+                  {target}
+                </Typo.Body>
+              </div>
+
+              <div className="flex flex-col gap-1 items-center">
+                <Typo.SubTitle size="large">미션 소요 시간</Typo.SubTitle>
+                <Typo.Body size="small" className="text-info">
+                  {estimatedMinutes}분
+                </Typo.Body>
               </div>
 
               <div className="flex flex-col gap-1 items-center">
@@ -102,7 +121,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                 <Typo.Body
                   size="small"
                   className="text-info"
-                >{`${formatDeadline(createdAt ?? "")} ~ ${formatDeadline(deadline ?? "")}`}</Typo.Body>
+                >{`${formatDeadline(createdAt ?? "")} ~ ${deadlineText}`}</Typo.Body>
               </div>
 
               {maxParticipants && (
