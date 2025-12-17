@@ -8,6 +8,7 @@ import { getSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
 import { cleanTiptapHTML } from "@/lib/utils";
 import { FixedBottomLayout, Tab, Typo } from "@repo/ui/components";
 import { useParams } from "next/navigation";
+
 import {
   MissionDescription,
   MissionFooter,
@@ -15,10 +16,16 @@ import {
   MissionLogo,
   MissionRewardSection,
   ParticipantCount,
-  ParticipationMethodSection,
 } from "./components";
 import { formatDeadline } from "./done/ui/utils/formatDeadline";
 import { BottomButton } from "./ui";
+
+const SECTION_IDS = {
+  MISSION_GUIDE: "mission-guide",
+  REWARD: "reward",
+} as const;
+
+const SCROLL_OFFSET = 30;
 
 export function MissionIntro({ initialError }: { initialError: AuthError | null }) {
   const { missionId } = useParams<{ missionId: string }>();
@@ -56,9 +63,14 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
   const { data: participantInfo } = useReadMissionParticipantInfo(missionId);
   const { currentParticipants, maxParticipants } = participantInfo?.data ?? {};
 
+  const sections = reward
+    ? [SECTION_IDS.MISSION_GUIDE, SECTION_IDS.REWARD]
+    : [SECTION_IDS.MISSION_GUIDE];
+
   const { activeTab, handleChangeTab } = useSectionScrollSync({
-    sections: ["mission-guide", "reward", "participation-method"],
-    defaultSection: "mission-guide",
+    sections,
+    defaultSection: SECTION_IDS.MISSION_GUIDE,
+    scrollOffset: SCROLL_OFFSET,
   });
 
   const deadlineText = deadline ? formatDeadline(deadline) : "정원 마감시";
@@ -68,26 +80,27 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
       <main className="flex w-full flex-col gap-8">
         <div className="relative">
           {imageUrl && (
-            <div className="overflow-hidden sticky top-0 left-0 right-0 z-0 bg-white">
+            <div className="overflow-hidden sticky top-0 left-0 right-0 z-10 bg-white">
               <MissionImage imageUrl={imageUrl} />
             </div>
           )}
-          <div className="flex w-full flex-col bg-white py-5 rounded-md pb-0 relative z-10 mt-[-20px]">
-            <div className="bg-linear-to-t from-black/25 to-transparent h-[52px] absolute top-[-44px] left-0 right-0 z-2" />
-            <div className="sticky top-0 z-10 rounded-t-md mt-[-20px] bg-white px-5">
-              <Tab.Root value={activeTab} pointColor="secondary" onValueChange={handleChangeTab}>
-                <Tab.List>
-                  <Tab.Item value="mission-guide">미션 안내</Tab.Item>
-                  <Tab.Item value="reward">참여 혜택</Tab.Item>
-                  <Tab.Item value="participation-method">참여 방법</Tab.Item>
-                </Tab.List>
-              </Tab.Root>
+          <div className="flex w-full flex-col bg-white py-5 rounded-t-3xl pb-0 relative z-10 mt-[-40px]">
+            <div className="bg-white h-6 absolute top-0 left-0 right-0  rounded-t-3xl z-30" />
+            <div className="bg-linear-to-t from-black/25 to-transparent h-[52px] absolute top-[-30px] left-0 right-0 z-20" />
+            <div className="sticky top-0 z-30 rounded-t-md mt-[-20px] bg-white px-5">
+              {sections.length > 1 && (
+                <Tab.Root value={activeTab} pointColor="secondary" onValueChange={handleChangeTab}>
+                  <Tab.List>
+                    <Tab.Item value={SECTION_IDS.MISSION_GUIDE}>미션 안내</Tab.Item>
+                    {reward && <Tab.Item value={SECTION_IDS.REWARD}>참여 혜택</Tab.Item>}
+                  </Tab.List>
+                </Tab.Root>
+              )}
             </div>
 
-            {/* mission-guide */}
             <div
-              id="mission-guide"
-              className="flex w-full flex-col gap-8 rounded-3xl px-5 py-8 items-center"
+              id={SECTION_IDS.MISSION_GUIDE}
+              className="flex w-full flex-col gap-8 px-5 py-8 items-center"
             >
               <div className="flex w-full flex-col gap-6">
                 <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
@@ -129,16 +142,19 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
               )}
             </div>
 
-            <div id="reward">
-              <MissionRewardSection
-                rewardImageUrl={reward?.data.imageUrl ?? undefined}
-                rewardName={reward?.data.name ?? undefined}
-                rewardPaymentType={reward?.data.paymentType ?? undefined}
-                brandLogoUrl={brandLogoUrl ?? undefined}
-              />
-            </div>
+            {reward && (
+              <div id={SECTION_IDS.REWARD}>
+                <MissionRewardSection
+                  rewardImageUrl={reward?.data.imageUrl ?? undefined}
+                  rewardName={reward?.data.name ?? undefined}
+                  rewardPaymentType={reward?.data.paymentType ?? undefined}
+                  brandLogoUrl={brandLogoUrl ?? undefined}
+                />
+              </div>
+            )}
 
-            <div id="participation-method">
+            {/* TODO: 참여 방법 추가 시 실제 데이터 사용 */}
+            {/* <div id="participation-method">
               <ParticipationMethodSection
                 steps={[
                   {
@@ -156,7 +172,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                   },
                 ]}
               />
-            </div>
+            </div> */}
           </div>
         </div>
 

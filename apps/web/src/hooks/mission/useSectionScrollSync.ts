@@ -3,12 +3,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 interface UseSectionScrollSyncOptions {
   sections: string[];
   defaultSection?: string;
+  scrollOffset?: number;
   onSectionChange?: (sectionId: string) => void;
 }
 
 export function useSectionScrollSync({
   sections,
   defaultSection = sections[0] ?? "",
+  scrollOffset = 0,
   onSectionChange,
 }: UseSectionScrollSyncOptions) {
   const sectionsKey = useMemo(() => sections.join(","), [sections]);
@@ -25,22 +27,29 @@ export function useSectionScrollSync({
   const isScrollingRef = useRef(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleChangeTab = useCallback((value: string) => {
-    setActiveTab(value);
-    isScrollingRef.current = true;
-    const element = document.getElementById(value);
-    if (element) {
-      window.history.pushState(null, "", `#${value}`);
-      element.scrollIntoView({ behavior: "smooth", block: "start" });
+  const handleChangeTab = useCallback(
+    (value: string) => {
+      setActiveTab(value);
+      isScrollingRef.current = true;
+      const element = document.getElementById(value);
+      if (element) {
+        window.history.pushState(null, "", `#${value}`);
+        const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo({
+          top: elementPosition - scrollOffset,
+          behavior: "smooth",
+        });
 
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
+        if (scrollTimeoutRef.current) {
+          clearTimeout(scrollTimeoutRef.current);
+        }
+        scrollTimeoutRef.current = setTimeout(() => {
+          isScrollingRef.current = false;
+        }, 1000);
       }
-      scrollTimeoutRef.current = setTimeout(() => {
-        isScrollingRef.current = false;
-      }, 1000);
-    }
-  }, []);
+    },
+    [scrollOffset],
+  );
 
   useEffect(() => {
     const sectionsList = sectionsKey.split(",");
@@ -62,8 +71,9 @@ export function useSectionScrollSync({
 
       for (const [sectionId, element] of sectionElements) {
         const rect = element.getBoundingClientRect();
-        const isTopNearViewport = rect.top >= 0 && rect.top <= 100;
-        const isFullyVisible = rect.top >= 0 && rect.bottom <= viewportHeight;
+        const adjustedTop = rect.top - scrollOffset;
+        const isTopNearViewport = adjustedTop >= -50 && adjustedTop <= 50;
+        const isFullyVisible = adjustedTop >= 0 && rect.bottom <= viewportHeight;
 
         if (isTopNearViewport || isFullyVisible) {
           foundSection = { id: sectionId, element };
@@ -87,7 +97,7 @@ export function useSectionScrollSync({
         clearTimeout(scrollTimeoutRef.current);
       }
     };
-  }, [activeTab, sectionsKey, onSectionChange]);
+  }, [activeTab, sectionsKey, scrollOffset, onSectionChange]);
 
   return {
     activeTab,
