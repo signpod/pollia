@@ -15,8 +15,8 @@ const REWARD_SECTION_TITLE = (
 );
 
 const PAYMENT_TYPE_LABELS: Record<PaymentType, string> = {
-  [PaymentType.IMMEDIATE]: "전원 증정",
-  [PaymentType.SCHEDULED]: "예약 지급",
+  [PaymentType.IMMEDIATE]: "완료 후 즉시 지급",
+  [PaymentType.SCHEDULED]: "완료 후 예약 지급",
 } as const;
 
 interface MissionRewardSectionProps {
