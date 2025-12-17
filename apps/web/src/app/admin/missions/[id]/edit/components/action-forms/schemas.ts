@@ -1,17 +1,28 @@
 import {
+  MULTIPLE_CHOICE_MAX_OPTIONS,
+  MULTIPLE_CHOICE_MIN_OPTIONS,
+  SCALE_MAX_OPTIONS,
+  SCALE_MIN_OPTIONS,
+  TAG_MAX_OPTIONS,
+  TAG_MIN_OPTIONS,
   actionDescriptionSchema,
-  actionOptionDescriptionSchema,
-  actionOptionTitleSchema,
+  actionImageUrlSchema,
   actionTitleSchema,
 } from "@/schemas/action";
+import { actionOptionSchema } from "@/schemas/action-option";
 import { z } from "zod";
 
-const actionImageUrlSchema = z.string().optional();
+export {
+  MULTIPLE_CHOICE_MAX_OPTIONS,
+  MULTIPLE_CHOICE_MIN_OPTIONS,
+  SCALE_MAX_OPTIONS,
+  SCALE_MIN_OPTIONS,
+  TAG_MAX_OPTIONS,
+  TAG_MIN_OPTIONS,
+};
 
-const actionOptionFormSchema = z.object({
+const actionOptionFormSchema = actionOptionSchema.omit({ order: true }).extend({
   id: z.string(),
-  title: actionOptionTitleSchema,
-  description: actionOptionDescriptionSchema,
   imageUrl: z.string().optional(),
 });
 
@@ -23,10 +34,15 @@ export const multipleChoiceFormSchema = z
     maxSelections: z.number().int().min(1, "최소 1개 이상 선택 가능해야 합니다."),
     options: z.array(actionOptionFormSchema),
   })
-  .refine(data => data.options.length >= 2 && data.options.length <= 10, {
-    message: "선택지는 2개~10개까지 가능합니다.",
-    path: ["options"],
-  })
+  .refine(
+    data =>
+      data.options.length >= MULTIPLE_CHOICE_MIN_OPTIONS &&
+      data.options.length <= MULTIPLE_CHOICE_MAX_OPTIONS,
+    {
+      message: `선택지는 ${MULTIPLE_CHOICE_MIN_OPTIONS}개~${MULTIPLE_CHOICE_MAX_OPTIONS}개까지 가능합니다.`,
+      path: ["options"],
+    },
+  )
   .refine(data => data.options.every(opt => opt.title.trim().length > 0), {
     message: "모든 선택지에 제목을 입력해주세요.",
     path: ["options"],
@@ -43,10 +59,13 @@ export const scaleFormSchema = z
     imageUrl: actionImageUrlSchema,
     options: z.array(actionOptionFormSchema),
   })
-  .refine(data => data.options.length >= 3 && data.options.length <= 10, {
-    message: "척도는 3개~10개의 옵션이 필요합니다.",
-    path: ["options"],
-  })
+  .refine(
+    data => data.options.length >= SCALE_MIN_OPTIONS && data.options.length <= SCALE_MAX_OPTIONS,
+    {
+      message: `척도는 ${SCALE_MIN_OPTIONS}개~${SCALE_MAX_OPTIONS}개의 옵션이 필요합니다.`,
+      path: ["options"],
+    },
+  )
   .refine(data => data.options.every(opt => opt.title.trim().length > 0), {
     message: "모든 선택지에 제목을 입력해주세요.",
     path: ["options"],
@@ -60,10 +79,13 @@ export const tagFormSchema = z
     maxSelections: z.number().int().min(1, "최소 1개 이상 선택 가능해야 합니다."),
     options: z.array(actionOptionFormSchema),
   })
-  .refine(data => data.options.length >= 2 && data.options.length <= 10, {
-    message: "태그는 2개~10개의 옵션이 필요합니다.",
-    path: ["options"],
-  })
+  .refine(
+    data => data.options.length >= TAG_MIN_OPTIONS && data.options.length <= TAG_MAX_OPTIONS,
+    {
+      message: `태그는 ${TAG_MIN_OPTIONS}개~${TAG_MAX_OPTIONS}개의 옵션이 필요합니다.`,
+      path: ["options"],
+    },
+  )
   .refine(data => data.options.every(opt => opt.title.trim().length > 0), {
     message: "모든 태그에 제목을 입력해주세요.",
     path: ["options"],

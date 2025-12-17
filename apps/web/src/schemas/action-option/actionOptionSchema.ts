@@ -28,13 +28,15 @@ export const optionInputSchema = z.object({
   imageFileUploadId: imageFileUploadIdSchema,
 });
 
-const optionItemSchema = z.object({
+export const actionOptionSchema = z.object({
   title: titleSchema,
   description: descriptionSchema,
   imageUrl: imageUrlSchema,
   order: orderSchema,
   imageFileUploadId: imageFileUploadIdSchema,
 });
+
+const optionItemSchema = actionOptionSchema;
 
 export const optionsInputSchema = z.object({
   actionId: actionIdSchema,

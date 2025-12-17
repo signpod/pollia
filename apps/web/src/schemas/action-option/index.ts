@@ -1,4 +1,5 @@
 export {
+  actionOptionSchema,
   optionInputSchema,
   optionsInputSchema,
   optionUpdateSchema,
