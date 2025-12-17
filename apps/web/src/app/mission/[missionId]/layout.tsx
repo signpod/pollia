@@ -8,12 +8,53 @@ import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { rewardQueryKeys } from "@/constants/queryKeys/rewardQueryKeys";
 import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";
+import { SHARE_IMAGE_PATH, SHARE_MESSAGES } from "@/constants/shareMessages";
 import { checkAuthStatus } from "@/lib/auth";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { ModalProvider } from "@repo/ui/components";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { PropsWithChildren } from "react";
+
+interface LayoutParams {
+  params: Promise<{ missionId: string }>;
+}
+
+export async function generateMetadata({ params }: LayoutParams): Promise<Metadata> {
+  const { missionId } = await params;
+
+  try {
+    const missionResult = await getMission(missionId);
+    const { title, imageUrl } = missionResult.data;
+
+    const ogTitle = title || SHARE_MESSAGES.kakao.title;
+    const ogDescription = SHARE_MESSAGES.kakao.description;
+    const ogImage = imageUrl || SHARE_IMAGE_PATH;
+
+    return {
+      title: ogTitle,
+      description: ogDescription,
+      openGraph: {
+        title: ogTitle,
+        description: ogDescription,
+        images: [ogImage],
+        type: "website",
+      },
+    };
+  } catch {
+    return {
+      title: SHARE_MESSAGES.kakao.title,
+      description: SHARE_MESSAGES.kakao.description,
+      openGraph: {
+        title: SHARE_MESSAGES.kakao.title,
+        description: SHARE_MESSAGES.kakao.description,
+        images: [SHARE_IMAGE_PATH],
+        type: "website",
+      },
+    };
+  }
+}
 
 export default async function MissionLayout({
   children,
