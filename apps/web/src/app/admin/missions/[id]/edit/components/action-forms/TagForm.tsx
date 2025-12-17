@@ -10,11 +10,8 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { BaseActionFormFields } from "./BaseActionForm";
 import { MaxSelectionsField } from "./MaxSelectionsField";
 import { TagFormOptionCard } from "./TagFormOptionCard";
-import { type TagFormInput, tagFormSchema } from "./schemas";
+import { TAG_MAX_OPTIONS, TAG_MIN_OPTIONS, type TagFormInput, tagFormSchema } from "./schemas";
 import type { ActionFormProps, ActionOptionInput, TagFormData } from "./types";
-
-const MIN_OPTIONS = 2;
-const MAX_OPTIONS = 10;
 
 export function TagForm({
   isLoading = false,
@@ -119,7 +116,7 @@ export function TagForm({
                   key={field.id}
                   index={index}
                   total={fields.length}
-                  minOptions={MIN_OPTIONS}
+                  minOptions={TAG_MIN_OPTIONS}
                   title={form.watch(`options.${index}.title`)}
                   titlePlaceholder="태그 제목"
                   onTitleChange={value => {
@@ -146,7 +143,7 @@ export function TagForm({
             size="sm"
             className="w-full"
             onClick={handleAddOption}
-            disabled={isLoading || fields.length >= MAX_OPTIONS}
+            disabled={isLoading || fields.length >= TAG_MAX_OPTIONS}
           >
             <Plus className="size-4 mr-2" />
             태그 추가

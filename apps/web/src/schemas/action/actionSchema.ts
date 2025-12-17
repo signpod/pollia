@@ -1,3 +1,4 @@
+import { actionOptionSchema } from "@/schemas/action-option";
 import { z } from "zod";
 
 export const ACTION_TITLE_MAX_LENGTH = 100;
@@ -45,14 +46,6 @@ const actionOrderSchema = z
 
 const actionMissionIdSchema = z.string().min(1, "미션 ID가 필요합니다.").optional();
 
-const actionOptionSchema = z.object({
-  title: actionOptionTitleSchema,
-  description: actionOptionDescriptionSchema,
-  imageUrl: actionImageUrlSchema,
-  order: actionOrderSchema,
-  imageFileUploadId: z.string().optional(),
-});
-
 const baseActionSchema = z.object({
   missionId: actionMissionIdSchema,
   title: actionTitleSchema,
@@ -62,54 +55,23 @@ const baseActionSchema = z.object({
   order: actionOrderSchema,
 });
 
-export const multipleChoiceInputSchema = baseActionSchema
-  .extend({
-    maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다."),
-    options: z.array(actionOptionSchema).min(2, "최소 2개 이상의 항목이 필요합니다."),
-  })
-  .refine(
-    data => {
-      const validOptions = data.options.filter(option => option.title.trim());
-      return validOptions.length >= 2;
-    },
-    { message: "최소 2개 이상의 유효한 항목이 필요합니다.", path: ["options"] },
-  )
-  .refine(
-    data => {
-      const validOptions = data.options.filter(option => option.title.trim());
-      return data.maxSelections <= validOptions.length;
-    },
-    { message: "선택 가능 개수는 유효한 항목 개수를 초과할 수 없습니다.", path: ["maxSelections"] },
-  );
+export const multipleChoiceInputSchema = baseActionSchema.extend({
+  maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다."),
+  options: z.array(actionOptionSchema).min(2, "최소 2개 이상의 항목이 필요합니다."),
+});
 
-export const scaleInputSchema = baseActionSchema
-  .extend({
-    options: z.array(actionOptionSchema).min(3, "최소 3개 이상의 척도가 필요합니다."),
-  })
-  .refine(
-    data => {
-      const validOptions = data.options.filter(option => option.title.trim());
-      return validOptions.length >= 3;
-    },
-    { message: "최소 3개 이상의 유효한 척도가 필요합니다.", path: ["options"] },
-  );
+export const scaleInputSchema = baseActionSchema.extend({
+  options: z.array(actionOptionSchema).min(2, "최소 2개 이상의 항목이 필요합니다."),
+});
 
 export const subjectiveInputSchema = baseActionSchema;
 
 export const eitherOrInputSchema = baseActionSchema;
 
-export const tagInputSchema = baseActionSchema
-  .extend({
-    maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다.").optional(),
-    options: z.array(actionOptionSchema).min(2, "최소 2개 이상의 태그가 필요합니다."),
-  })
-  .refine(
-    data => {
-      const validOptions = data.options.filter(option => option.title.trim());
-      return validOptions.length >= 2;
-    },
-    { message: "최소 2개 이상의 유효한 태그가 필요합니다.", path: ["options"] },
-  );
+export const tagInputSchema = baseActionSchema.extend({
+  maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다.").optional(),
+  options: z.array(actionOptionSchema).min(2, "최소 2개 이상의 항목이 필요합니다."),
+});
 
 export const ratingInputSchema = baseActionSchema;
 

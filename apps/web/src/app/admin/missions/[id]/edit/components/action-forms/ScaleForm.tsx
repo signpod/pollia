@@ -9,11 +9,13 @@ import { Plus } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { BaseActionFormFields } from "./BaseActionForm";
 import { ScaleFormOptionCard } from "./ScaleFormOptionCard";
-import { type ScaleFormInput, scaleFormSchema } from "./schemas";
+import {
+  SCALE_MAX_OPTIONS,
+  SCALE_MIN_OPTIONS,
+  type ScaleFormInput,
+  scaleFormSchema,
+} from "./schemas";
 import type { ActionFormProps, ActionOptionInput, ScaleFormData } from "./types";
-
-const MIN_OPTIONS = 3;
-const MAX_OPTIONS = 10;
 
 export function ScaleForm({
   isLoading = false,
@@ -112,7 +114,7 @@ export function ScaleForm({
                   key={field.id}
                   index={index}
                   total={fields.length}
-                  minOptions={MIN_OPTIONS}
+                  minOptions={SCALE_MIN_OPTIONS}
                   title={form.watch(`options.${index}.title`)}
                   description={form.watch(`options.${index}.description`)}
                   titlePlaceholder="척도 레이블"
@@ -144,7 +146,7 @@ export function ScaleForm({
             size="sm"
             className="w-full"
             onClick={handleAddOption}
-            disabled={isLoading || fields.length >= MAX_OPTIONS}
+            disabled={isLoading || fields.length >= SCALE_MAX_OPTIONS}
           >
             <Plus className="size-4 mr-2" />
             척도 추가
