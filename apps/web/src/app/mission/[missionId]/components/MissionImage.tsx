@@ -10,14 +10,7 @@ export function MissionImage({ imageUrl, alt = "Mission Image" }: MissionImagePr
 
   return (
     <div className="relative w-full aspect-2/3 overflow-hidden">
-      <Image
-        src={imageUrl}
-        alt={alt}
-        width={0}
-        height={0}
-        sizes="100vw"
-        className="w-full h-auto object-contain"
-      />
+      <Image src={imageUrl} alt={alt} fill sizes="100vw" className="object-cover" priority />
     </div>
   );
 }

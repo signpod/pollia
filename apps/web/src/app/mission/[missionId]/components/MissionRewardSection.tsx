@@ -56,7 +56,7 @@ export function MissionRewardSection({
             {brandLogoUrl && (
               <Image
                 src={brandLogoUrl}
-                alt="reward"
+                alt="Brand Logo"
                 width={40}
                 height={40}
                 className="object-contain"

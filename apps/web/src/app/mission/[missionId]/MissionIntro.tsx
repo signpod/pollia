@@ -68,7 +68,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
       <main className="flex w-full flex-col gap-8">
         <div className="relative">
           {imageUrl && (
-            <div className="overflow-hidden sticky top-0 left-0 right-0 z-0">
+            <div className="overflow-hidden sticky top-0 left-0 right-0 z-0 bg-white">
               <MissionImage imageUrl={imageUrl} />
             </div>
           )}

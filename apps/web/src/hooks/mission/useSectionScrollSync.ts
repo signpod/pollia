@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface UseSectionScrollSyncOptions {
   sections: string[];
@@ -11,6 +11,8 @@ export function useSectionScrollSync({
   defaultSection = sections[0] ?? "",
   onSectionChange,
 }: UseSectionScrollSyncOptions) {
+  const sectionsKey = useMemo(() => sections.join(","), [sections]);
+
   const [activeTab, setActiveTab] = useState<string>(() => {
     if (typeof window !== "undefined") {
       const hash = window.location.hash.slice(1);
@@ -23,7 +25,7 @@ export function useSectionScrollSync({
   const isScrollingRef = useRef(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleChangeTab = (value: string) => {
+  const handleChangeTab = useCallback((value: string) => {
     setActiveTab(value);
     isScrollingRef.current = true;
     const element = document.getElementById(value);
@@ -38,12 +40,13 @@ export function useSectionScrollSync({
         isScrollingRef.current = false;
       }, 1000);
     }
-  };
+  }, []);
 
   useEffect(() => {
+    const sectionsList = sectionsKey.split(",");
     const sectionElements: Map<string, HTMLElement> = new Map();
 
-    sections.forEach(sectionId => {
+    sectionsList.forEach(sectionId => {
       const element = document.getElementById(sectionId);
       if (element) {
         sectionElements.set(sectionId, element);
@@ -53,29 +56,25 @@ export function useSectionScrollSync({
     const handleScroll = () => {
       if (isScrollingRef.current) return;
 
-      const viewportTop = window.scrollY;
       const viewportHeight = window.innerHeight;
-      const sectionsData: Array<{ id: string; top: number; bottom: number; element: HTMLElement }> =
-        [];
 
-      sectionElements.forEach((element, sectionId) => {
+      let foundSection: { id: string; element: HTMLElement } | null = null;
+
+      for (const [sectionId, element] of sectionElements) {
         const rect = element.getBoundingClientRect();
-        const top = rect.top + viewportTop;
-        const bottom = top + rect.height;
-        sectionsData.push({ id: sectionId, top, bottom, element });
-      });
-
-      const activeSection = sectionsData.find(section => {
-        const rect = section.element.getBoundingClientRect();
         const isTopNearViewport = rect.top >= 0 && rect.top <= 100;
         const isFullyVisible = rect.top >= 0 && rect.bottom <= viewportHeight;
-        return isTopNearViewport || isFullyVisible;
-      });
 
-      if (activeSection && activeSection.id !== activeTab) {
-        setActiveTab(activeSection.id);
-        window.history.pushState(null, "", `#${activeSection.id}`);
-        onSectionChange?.(activeSection.id);
+        if (isTopNearViewport || isFullyVisible) {
+          foundSection = { id: sectionId, element };
+          break;
+        }
+      }
+
+      if (foundSection && foundSection.id !== activeTab) {
+        setActiveTab(foundSection.id);
+        window.history.pushState(null, "", `#${foundSection.id}`);
+        onSectionChange?.(foundSection.id);
       }
     };
 
@@ -88,10 +87,12 @@ export function useSectionScrollSync({
         clearTimeout(scrollTimeoutRef.current);
       }
     };
-  }, [activeTab, sections, onSectionChange]);
+  }, [activeTab, sectionsKey, onSectionChange]);
 
   return {
     activeTab,
     handleChangeTab,
   };
 }
+
+export type UseSectionScrollSyncReturn = ReturnType<typeof useSectionScrollSync>;
