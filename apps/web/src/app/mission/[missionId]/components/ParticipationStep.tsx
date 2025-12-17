@@ -11,7 +11,7 @@ interface ParticipationStepProps {
 
 export function ParticipationStep({ stepNumber, title, description }: ParticipationStepProps) {
   return (
-    <div className="flex gap-4 w-full">
+    <div className="flex gap-4 w-full items-start">
       <div className="relative flex items-center justify-center">
         <Badge className="fill-black size-14" />
         <Typo.MainTitle
