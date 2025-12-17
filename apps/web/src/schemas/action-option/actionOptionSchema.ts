@@ -3,10 +3,10 @@ import { z } from "zod";
 const titleSchema = z
   .string()
   .min(1, "옵션 제목을 입력해주세요.")
-  .max(100, "옵션 제목은 100자를 초과할 수 없습니다.")
+  .max(50, "옵션 제목은 50자를 초과할 수 없습니다.")
   .trim();
 
-const descriptionSchema = z.string().optional();
+const descriptionSchema = z.string().max(200, "설명은 200자를 초과할 수 없습니다.").optional();
 
 const imageUrlSchema = z.url({ message: "올바른 URL 형식이 아닙니다." }).optional();
 

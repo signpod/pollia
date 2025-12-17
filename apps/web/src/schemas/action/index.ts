@@ -1,4 +1,13 @@
 export {
+  ACTION_TITLE_MAX_LENGTH,
+  ACTION_DESCRIPTION_MAX_LENGTH,
+  ACTION_OPTION_TITLE_MAX_LENGTH,
+  ACTION_OPTION_DESCRIPTION_MAX_LENGTH,
+  actionTitleSchema,
+  actionDescriptionSchema,
+  actionImageUrlSchema,
+  actionOptionTitleSchema,
+  actionOptionDescriptionSchema,
   multipleChoiceInputSchema,
   scaleInputSchema,
   subjectiveInputSchema,

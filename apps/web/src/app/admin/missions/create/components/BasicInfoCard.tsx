@@ -1,3 +1,4 @@
+import { CharacterCounter } from "@/app/admin/components/common/InputField";
 import { TiptapEditor } from "@/app/admin/components/common/TiptapEditor";
 import {
   Card,
@@ -8,6 +9,11 @@ import {
 } from "@/app/admin/components/shadcn-ui/card";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
+import {
+  MISSION_DESCRIPTION_MAX_LENGTH,
+  MISSION_TARGET_MAX_LENGTH,
+  MISSION_TITLE_MAX_LENGTH,
+} from "@/schemas/mission";
 import type { UseFormReturn } from "react-hook-form";
 
 interface BasicInfoCardProps {
@@ -36,17 +42,34 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="title">
-            제목 <span className="text-destructive">*</span>
-          </Label>
-          <Input id="title" placeholder="미션 제목을 입력하세요" {...form.register("title")} />
+          <div className="flex items-center justify-between">
+            <Label htmlFor="title">
+              제목 <span className="text-destructive">*</span>
+            </Label>
+            <CharacterCounter
+              current={form.watch("title")?.length || 0}
+              max={MISSION_TITLE_MAX_LENGTH}
+            />
+          </div>
+          <Input
+            id="title"
+            placeholder="미션 제목을 입력하세요"
+            maxLength={MISSION_TITLE_MAX_LENGTH}
+            {...form.register("title")}
+          />
           {form.formState.errors.title && (
             <p className="text-sm text-destructive">{form.formState.errors.title.message}</p>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="description">설명</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="description">설명</Label>
+            <CharacterCounter
+              current={form.watch("description")?.length || 0}
+              max={MISSION_DESCRIPTION_MAX_LENGTH}
+            />
+          </div>
           <TiptapEditor
             content={form.watch("description") || ""}
             onUpdate={content => {
@@ -62,8 +85,19 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="target">대상</Label>
-          <Input id="target" placeholder="미션 대상을 입력하세요" {...form.register("target")} />
+          <div className="flex items-center justify-between">
+            <Label htmlFor="target">대상</Label>
+            <CharacterCounter
+              current={form.watch("target")?.length || 0}
+              max={MISSION_TARGET_MAX_LENGTH}
+            />
+          </div>
+          <Input
+            id="target"
+            placeholder="미션 대상을 입력하세요"
+            maxLength={MISSION_TARGET_MAX_LENGTH}
+            {...form.register("target")}
+          />
           {form.formState.errors.target && (
             <p className="text-sm text-destructive">{form.formState.errors.target.message}</p>
           )}

@@ -9,7 +9,7 @@ import {
 } from "@/app/admin/components/shadcn-ui/card";
 import { stripHtmlTags } from "@/app/admin/lib/utils";
 import type { GetMissionResponse } from "@/types/dto";
-import { Calendar, CheckCircle2, Clock, Gift, XCircle } from "lucide-react";
+import { Calendar, CheckCircle2, Clock, Gift, ImageIcon, XCircle } from "lucide-react";
 import Image from "next/image";
 import { AdminMissionHeader } from "./AdminMissionHeader";
 import { ClientDateDisplay } from "./ClientDateDisplay";
@@ -59,7 +59,11 @@ export function MissionDetailContent({ mission }: MissionDetailContentProps) {
               <div className="flex items-center gap-2">
                 <Clock className="h-5 w-5 text-muted-foreground" />
                 <span className="text-lg font-medium">
-                  {mission.estimatedMinutes ? `${mission.estimatedMinutes}분` : "미설정"}
+                  {mission.estimatedMinutes ? (
+                    `${mission.estimatedMinutes}분`
+                  ) : (
+                    <span className="text-muted-foreground text-base">설정 안 됨</span>
+                  )}
                 </span>
               </div>
             </CardContent>
@@ -76,7 +80,7 @@ export function MissionDetailContent({ mission }: MissionDetailContentProps) {
                   {mission.deadline ? (
                     <ClientDateDisplay date={mission.deadline} format="date" />
                   ) : (
-                    "미설정"
+                    <span className="text-muted-foreground text-base">설정 안 됨</span>
                   )}
                 </span>
               </div>
@@ -91,7 +95,11 @@ export function MissionDetailContent({ mission }: MissionDetailContentProps) {
               <div className="flex items-center gap-2">
                 <Gift className="h-5 w-5 text-muted-foreground" />
                 <span className="text-lg font-medium">
-                  {mission.rewardId ? "설정됨" : "미설정"}
+                  {mission.rewardId ? (
+                    "설정됨"
+                  ) : (
+                    <span className="text-muted-foreground text-base">설정 안 됨</span>
+                  )}
                 </span>
               </div>
             </CardContent>
@@ -107,18 +115,26 @@ export function MissionDetailContent({ mission }: MissionDetailContentProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <dt className="text-sm font-medium text-muted-foreground">제목</dt>
-                <dd className="text-sm">{mission.title}</dd>
+                <dd className="text-sm p-3 bg-muted/30 rounded-md border">{mission.title}</dd>
               </div>
 
               <div className="space-y-2">
                 <dt className="text-sm font-medium text-muted-foreground">타겟</dt>
-                <dd className="text-sm">{mission.target || "미설정"}</dd>
+                <dd className="text-sm p-3 bg-muted/30 rounded-md border">
+                  {mission.target || (
+                    <span className="text-muted-foreground italic">설정되지 않음</span>
+                  )}
+                </dd>
               </div>
 
               <div className="space-y-2 md:col-span-2">
                 <dt className="text-sm font-medium text-muted-foreground">설명</dt>
-                <dd className="text-sm">
-                  {mission.description ? stripHtmlTags(mission.description) : "미설정"}
+                <dd className="text-sm p-3 bg-muted/30 rounded-md border min-h-[80px]">
+                  {mission.description ? (
+                    stripHtmlTags(mission.description)
+                  ) : (
+                    <span className="text-muted-foreground italic">설정되지 않음</span>
+                  )}
                 </dd>
               </div>
 
@@ -126,17 +142,23 @@ export function MissionDetailContent({ mission }: MissionDetailContentProps) {
                 <dt className="text-sm font-medium text-muted-foreground">미션 이미지</dt>
                 <dd>
                   {mission.imageUrl ? (
-                    <div className="relative w-full h-48 rounded-lg overflow-hidden border">
+                    <div className="relative">
                       <Image
                         src={mission.imageUrl}
                         alt="미션 이미지"
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        width={200}
+                        height={200}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 400px"
+                        className="w-auto h-auto max-w-full max-h-64 min-h-32 rounded-lg border"
+                        style={{ objectFit: "contain" }}
+                        loading="lazy"
                       />
                     </div>
                   ) : (
-                    <span className="text-sm text-muted-foreground">미설정</span>
+                    <div className="flex flex-col items-center justify-center h-32 border-2 border-dashed rounded-lg bg-muted/20">
+                      <ImageIcon className="h-8 w-8 text-muted-foreground/50 mb-2" />
+                      <span className="text-sm text-muted-foreground">이미지 없음</span>
+                    </div>
                   )}
                 </dd>
               </div>
@@ -145,17 +167,23 @@ export function MissionDetailContent({ mission }: MissionDetailContentProps) {
                 <dt className="text-sm font-medium text-muted-foreground">브랜드 로고</dt>
                 <dd>
                   {mission.brandLogoUrl ? (
-                    <div className="relative w-full h-48 rounded-lg overflow-hidden border">
+                    <div className="relative">
                       <Image
                         src={mission.brandLogoUrl}
                         alt="브랜드 로고"
-                        fill
-                        className="object-contain bg-gray-50"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        width={150}
+                        height={80}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 300px"
+                        className="w-auto h-auto max-w-full max-h-32 min-h-16 rounded-lg border bg-gray-50 p-2"
+                        style={{ objectFit: "contain" }}
+                        loading="lazy"
                       />
                     </div>
                   ) : (
-                    <span className="text-sm text-muted-foreground">미설정</span>
+                    <div className="flex flex-col items-center justify-center h-32 border-2 border-dashed rounded-lg bg-muted/20">
+                      <ImageIcon className="h-8 w-8 text-muted-foreground/50 mb-2" />
+                      <span className="text-sm text-muted-foreground">이미지 없음</span>
+                    </div>
                   )}
                 </dd>
               </div>

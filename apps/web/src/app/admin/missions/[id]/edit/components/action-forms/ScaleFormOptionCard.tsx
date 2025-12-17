@@ -1,8 +1,12 @@
 "use client";
 
+import { InputWithCounter } from "@/app/admin/components/common/InputField";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Card, CardContent } from "@/app/admin/components/shadcn-ui/card";
-import { Input } from "@/app/admin/components/shadcn-ui/input";
+import {
+  ACTION_OPTION_DESCRIPTION_MAX_LENGTH,
+  ACTION_OPTION_TITLE_MAX_LENGTH,
+} from "@/schemas/action";
 import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 
 export interface ScaleFormOptionCardProps {
@@ -49,23 +53,37 @@ export function ScaleFormOptionCard({
           </div>
 
           <div className="flex-1 space-y-2 min-w-0">
-            <Input
+            <InputWithCounter
               placeholder={titlePlaceholder}
               value={title}
               onChange={e => onTitleChange(e.target.value)}
               disabled={disabled}
+              maxLength={ACTION_OPTION_TITLE_MAX_LENGTH}
+              currentLength={title.length}
               className="h-9 text-sm"
             />
-            <Input
+            <InputWithCounter
               placeholder={descriptionPlaceholder}
               value={description || ""}
               onChange={e => onDescriptionChange(e.target.value)}
               disabled={disabled}
+              maxLength={ACTION_OPTION_DESCRIPTION_MAX_LENGTH}
+              currentLength={description?.length || 0}
               className="h-9 text-sm"
             />
           </div>
 
           <div className="flex flex-col gap-1 shrink-0">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={onDelete}
+              disabled={disabled || !canDelete}
+              className="size-8 text-destructive hover:text-destructive shrink-0 disabled:text-muted-foreground"
+            >
+              <Trash2 className="size-4" />
+            </Button>
             <Button
               type="button"
               variant="ghost"
@@ -87,17 +105,6 @@ export function ScaleFormOptionCard({
               <ChevronDown className="size-4" />
             </Button>
           </div>
-
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={onDelete}
-            disabled={disabled || !canDelete}
-            className="size-8 text-destructive hover:text-destructive shrink-0 disabled:text-muted-foreground"
-          >
-            <Trash2 className="size-4" />
-          </Button>
         </div>
       </CardContent>
     </Card>

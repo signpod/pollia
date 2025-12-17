@@ -1,7 +1,8 @@
 "use client";
 
+import { InputWithCounter } from "@/app/admin/components/common/InputField";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
-import { Input } from "@/app/admin/components/shadcn-ui/input";
+import { ACTION_OPTION_TITLE_MAX_LENGTH } from "@/schemas/action";
 import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 
 export interface TagFormOptionCardProps {
@@ -34,18 +35,22 @@ export function TagFormOptionCard({
   const canDelete = total > minOptions;
 
   return (
-    <div className="flex items-center gap-2 mb-2">
+    <div className="flex items-center-safe gap-3">
       <div className="flex items-center justify-center size-6 rounded-full bg-muted text-xs font-bold text-muted-foreground shrink-0">
         {index + 1}
       </div>
 
-      <Input
-        placeholder={titlePlaceholder}
-        value={title}
-        onChange={e => onTitleChange(e.target.value)}
-        disabled={disabled}
-        className="h-9 text-sm flex-1"
-      />
+      <div className="flex-1 mt-6">
+        <InputWithCounter
+          placeholder={titlePlaceholder}
+          value={title}
+          onChange={e => onTitleChange(e.target.value)}
+          disabled={disabled}
+          maxLength={ACTION_OPTION_TITLE_MAX_LENGTH}
+          currentLength={title.length}
+          className="h-9 text-sm flex-1"
+        />
+      </div>
 
       <div className="flex gap-1 shrink-0">
         <Button
