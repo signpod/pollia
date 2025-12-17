@@ -26,7 +26,7 @@ export function TagForm({
     defaultValues: {
       title: initialData?.title || "",
       description: initialData?.description || "",
-      imageUrl: initialData?.imageUrl || "",
+      imageUrl: initialData?.imageUrl || undefined,
       maxSelections: initialData?.maxSelections ?? 1,
       options:
         initialData?.options?.map(opt => ({
@@ -59,7 +59,6 @@ export function TagForm({
       options: formattedOptions,
     });
   });
-
   const handleAddOption = () => {
     append({
       id: crypto.randomUUID(),

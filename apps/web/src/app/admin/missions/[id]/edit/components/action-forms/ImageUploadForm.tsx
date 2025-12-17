@@ -22,7 +22,7 @@ export function ImageUploadForm({
     defaultValues: {
       title: initialData?.title || "",
       description: initialData?.description || "",
-      imageUrl: initialData?.imageUrl || "",
+      imageUrl: initialData?.imageUrl || undefined,
     },
     mode: "onChange",
   });
