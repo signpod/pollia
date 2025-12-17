@@ -1,5 +1,5 @@
 import { getMissionActionIds } from "@/actions/action";
-import { getMission } from "@/actions/mission";
+import { getMission, getMissionParticipantInfo } from "@/actions/mission";
 import { getMyResponseForMission } from "@/actions/mission-response";
 import { getReward } from "@/actions/reward/read";
 import { getCurrentUser } from "@/actions/user";
@@ -35,6 +35,10 @@ export default async function MissionLayout({
     queryClient.prefetchQuery({
       queryKey: actionQueryKeys.actionsIds({ missionId }),
       queryFn: () => getMissionActionIds(missionId),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: missionQueryKeys.missionParticipant(missionId),
+      queryFn: () => getMissionParticipantInfo(missionId),
     }),
   ];
 
