@@ -1,13 +1,25 @@
-import { actionDescriptionSchema, actionImageUrlSchema, actionTitleSchema } from "@/schemas/action";
+import {
+  MULTIPLE_CHOICE_MAX_OPTIONS,
+  MULTIPLE_CHOICE_MIN_OPTIONS,
+  SCALE_MAX_OPTIONS,
+  SCALE_MIN_OPTIONS,
+  TAG_MAX_OPTIONS,
+  TAG_MIN_OPTIONS,
+  actionDescriptionSchema,
+  actionImageUrlSchema,
+  actionTitleSchema,
+} from "@/schemas/action";
 import { actionOptionSchema } from "@/schemas/action-option";
 import { z } from "zod";
 
-export const TAG_MIN_OPTIONS = 2;
-export const TAG_MAX_OPTIONS = 20;
-export const MULTIPLE_CHOICE_MIN_OPTIONS = 2;
-export const MULTIPLE_CHOICE_MAX_OPTIONS = 10;
-export const SCALE_MIN_OPTIONS = 3;
-export const SCALE_MAX_OPTIONS = 10;
+export {
+  MULTIPLE_CHOICE_MAX_OPTIONS,
+  MULTIPLE_CHOICE_MIN_OPTIONS,
+  SCALE_MAX_OPTIONS,
+  SCALE_MIN_OPTIONS,
+  TAG_MAX_OPTIONS,
+  TAG_MIN_OPTIONS,
+};
 
 const actionOptionFormSchema = actionOptionSchema.omit({ order: true }).extend({
   id: z.string(),

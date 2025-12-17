@@ -6,6 +6,13 @@ export const ACTION_DESCRIPTION_MAX_LENGTH = 500;
 export const ACTION_OPTION_TITLE_MAX_LENGTH = 50;
 export const ACTION_OPTION_DESCRIPTION_MAX_LENGTH = 200;
 
+export const TAG_MIN_OPTIONS = 2;
+export const TAG_MAX_OPTIONS = 20;
+export const MULTIPLE_CHOICE_MIN_OPTIONS = 2;
+export const MULTIPLE_CHOICE_MAX_OPTIONS = 10;
+export const SCALE_MIN_OPTIONS = 3;
+export const SCALE_MAX_OPTIONS = 10;
+
 export const actionTitleSchema = z
   .string()
   .min(1, "제목을 입력해주세요.")
@@ -57,11 +64,20 @@ const baseActionSchema = z.object({
 
 export const multipleChoiceInputSchema = baseActionSchema.extend({
   maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다."),
-  options: z.array(actionOptionSchema).min(2, "최소 2개 이상의 항목이 필요합니다."),
+  options: z
+    .array(actionOptionSchema)
+    .min(
+      MULTIPLE_CHOICE_MIN_OPTIONS,
+      `최소 ${MULTIPLE_CHOICE_MIN_OPTIONS}개 이상의 항목이 필요합니다.`,
+    )
+    .max(MULTIPLE_CHOICE_MAX_OPTIONS, `최대 ${MULTIPLE_CHOICE_MAX_OPTIONS}개까지 가능합니다.`),
 });
 
 export const scaleInputSchema = baseActionSchema.extend({
-  options: z.array(actionOptionSchema).min(2, "최소 2개 이상의 항목이 필요합니다."),
+  options: z
+    .array(actionOptionSchema)
+    .min(SCALE_MIN_OPTIONS, `최소 ${SCALE_MIN_OPTIONS}개 이상의 항목이 필요합니다.`)
+    .max(SCALE_MAX_OPTIONS, `최대 ${SCALE_MAX_OPTIONS}개까지 가능합니다.`),
 });
 
 export const subjectiveInputSchema = baseActionSchema;
@@ -70,7 +86,10 @@ export const eitherOrInputSchema = baseActionSchema;
 
 export const tagInputSchema = baseActionSchema.extend({
   maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다.").optional(),
-  options: z.array(actionOptionSchema).min(2, "최소 2개 이상의 항목이 필요합니다."),
+  options: z
+    .array(actionOptionSchema)
+    .min(TAG_MIN_OPTIONS, `최소 ${TAG_MIN_OPTIONS}개 이상의 항목이 필요합니다.`)
+    .max(TAG_MAX_OPTIONS, `최대 ${TAG_MAX_OPTIONS}개까지 가능합니다.`),
 });
 
 export const ratingInputSchema = baseActionSchema;
