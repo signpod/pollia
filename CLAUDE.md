@@ -1,0 +1,38 @@
+# Pollia 프로젝트 AI 코딩 규칙
+
+## 개요
+
+이 프로젝트는 Claude Code를 사용하여 일관된 코드 스타일과 컨벤션을 유지합니다.
+상세 규칙은 `.claude/rules/` 폴더의 `.md` 파일들에서 glob 패턴에 따라 자동 적용됩니다.
+
+## 핵심 원칙
+
+### 주석 작성 규칙
+
+- 불필요한 주석은 절대 작성하지 않는다
+- JSDoc 주석은 Public API, 매개변수/반환값 문서화, 복잡한 util 함수에만 작성
+- 테스트 코드의 Given-When-Then 주석은 허용
+- 좋은 변수명, 함수명, 타입 정의로 의도를 표현
+
+### 라이브러리 사용 규칙
+
+- Context7 MCP를 사용하여 라이브러리 버전에 맞는 구현 확인
+- deprecated 경고 발생 시 Context7로 최신 문서 확인
+- 예시: Zod v4에서 `z.string().url()`은 deprecated, `z.url()`로 대체
+
+## 규칙 파일 구조
+
+| 파일 | 적용 범위 |
+|------|----------|
+| `01-ui-components.md` | `packages/ui/**` |
+| `02-storybook.md` | `apps/storybook/**` |
+| `03-storybook-patterns.md` | `apps/storybook/**` |
+| `04-storybook-docs.md` | `apps/storybook/**` |
+| `05-prisma-schema.md` | `apps/web/prisma/**` |
+| `06-hooks-tanstack-query.md` | `apps/web/src/hooks/**` |
+| `07-server-layers.md` | `apps/web/src/server/**`, `apps/web/src/actions/**` |
+| `08-schemas.md` | `apps/web/src/schemas/**` |
+| `09-admin-design-guide.md` | `apps/web/src/app/admin/**` |
+| `10-admin-architecture.md` | `apps/web/src/app/admin/**` |
+| `98-pr-trigger.md` | 수동 참조 |
+| `99-code-reviewer.md` | 수동 참조 |
