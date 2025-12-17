@@ -8,6 +8,7 @@ import { getSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
 import { cleanTiptapHTML } from "@/lib/utils";
 import { FixedBottomLayout, Tab, Typo } from "@repo/ui/components";
 import { useParams } from "next/navigation";
+
 import {
   MissionDescription,
   MissionFooter,
@@ -18,6 +19,13 @@ import {
 } from "./components";
 import { formatDeadline } from "./done/ui/utils/formatDeadline";
 import { BottomButton } from "./ui";
+
+const SECTION_IDS = {
+  MISSION_GUIDE: "mission-guide",
+  REWARD: "reward",
+} as const;
+
+const SCROLL_OFFSET = 30;
 
 export function MissionIntro({ initialError }: { initialError: AuthError | null }) {
   const { missionId } = useParams<{ missionId: string }>();
@@ -55,12 +63,14 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
   const { data: participantInfo } = useReadMissionParticipantInfo(missionId);
   const { currentParticipants, maxParticipants } = participantInfo?.data ?? {};
 
-  const sections = reward ? ["mission-guide", "reward"] : ["mission-guide"];
+  const sections = reward
+    ? [SECTION_IDS.MISSION_GUIDE, SECTION_IDS.REWARD]
+    : [SECTION_IDS.MISSION_GUIDE];
 
   const { activeTab, handleChangeTab } = useSectionScrollSync({
     sections,
-    defaultSection: "mission-guide",
-    scrollOffset: 30,
+    defaultSection: SECTION_IDS.MISSION_GUIDE,
+    scrollOffset: SCROLL_OFFSET,
   });
 
   const deadlineText = deadline ? formatDeadline(deadline) : "정원 마감시";
@@ -81,18 +91,16 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
               {sections.length > 1 && (
                 <Tab.Root value={activeTab} pointColor="secondary" onValueChange={handleChangeTab}>
                   <Tab.List>
-                    <Tab.Item value="mission-guide">미션 안내</Tab.Item>
-                    {reward && <Tab.Item value="reward">참여 혜택</Tab.Item>}
-                    {/* <Tab.Item value="participation-method">참여 방법</Tab.Item> */}
+                    <Tab.Item value={SECTION_IDS.MISSION_GUIDE}>미션 안내</Tab.Item>
+                    {reward && <Tab.Item value={SECTION_IDS.REWARD}>참여 혜택</Tab.Item>}
                   </Tab.List>
                 </Tab.Root>
               )}
             </div>
 
-            {/* mission-guide */}
             <div
-              id="mission-guide"
-              className="flex w-full flex-col gap-8 px-5 py-8 items-center z-"
+              id={SECTION_IDS.MISSION_GUIDE}
+              className="flex w-full flex-col gap-8 px-5 py-8 items-center"
             >
               <div className="flex w-full flex-col gap-6">
                 <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
@@ -135,7 +143,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
             </div>
 
             {reward && (
-              <div id="reward">
+              <div id={SECTION_IDS.REWARD}>
                 <MissionRewardSection
                   rewardImageUrl={reward?.data.imageUrl ?? undefined}
                   rewardName={reward?.data.name ?? undefined}
