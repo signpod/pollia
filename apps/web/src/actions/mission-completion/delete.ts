@@ -5,11 +5,11 @@ import { missionCompletionService } from "@/server/services/mission-completion/m
 import type { DeleteMissionCompletionResponse } from "@/types/dto";
 
 export async function deleteMissionCompletion(
-  missionId: string,
+  id: string,
 ): Promise<DeleteMissionCompletionResponse> {
   try {
     const user = await requireAuth();
-    await missionCompletionService.deleteMissionCompletion(missionId, user.id);
+    await missionCompletionService.deleteMissionCompletion(id, user.id);
     return { message: "미션 완료 데이터가 삭제되었습니다." };
   } catch (error) {
     console.error("deleteMissionCompletion error:", error);

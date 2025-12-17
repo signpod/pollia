@@ -13,6 +13,12 @@ export class MissionCompletionRepository {
             publicUrl: true,
           },
         },
+        mission: {
+          select: {
+            id: true,
+            creatorId: true,
+          },
+        },
       },
     });
   }
@@ -84,6 +90,12 @@ export class MissionCompletionRepository {
                 publicUrl: true,
               },
             },
+            mission: {
+              select: {
+                id: true,
+                creatorId: true,
+              },
+            },
           },
         });
 
@@ -101,6 +113,12 @@ export class MissionCompletionRepository {
           select: {
             id: true,
             publicUrl: true,
+          },
+        },
+        mission: {
+          select: {
+            id: true,
+            creatorId: true,
           },
         },
       },

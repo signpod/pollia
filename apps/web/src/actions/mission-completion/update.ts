@@ -21,14 +21,14 @@ function toUpdateMissionCompletionInput(
 }
 
 export async function updateMissionCompletion(
-  missionId: string,
+  id: string,
   request: UpdateMissionCompletionRequest,
 ): Promise<UpdateMissionCompletionResponse> {
   try {
     const user = await requireAuth();
     const input = toUpdateMissionCompletionInput(request);
     const missionCompletion = await missionCompletionService.updateMissionCompletion(
-      missionId,
+      id,
       input,
       user.id,
     );

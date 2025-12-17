@@ -228,33 +228,30 @@ describe("MissionCompletionService", () => {
         description: "수정된 설명",
       };
       const mockCompletion = createMockMissionCompletion();
-      const mockMission = createMockMission();
       const mockUpdatedCompletion = createMockMissionCompletion({
         ...updateData,
       });
 
-      mockRepo.findByMissionId.mockResolvedValue(mockCompletion);
-      mockMissionRepo.findById.mockResolvedValue(mockMission);
+      mockRepo.findById.mockResolvedValue(mockCompletion);
       mockRepo.update.mockResolvedValue(mockUpdatedCompletion);
 
       // When
       const result = await service.updateMissionCompletion(
-        TEST_MISSION_ID,
+        mockCompletion.id,
         updateData,
         TEST_USER_ID,
       );
 
       // Then
       expect(result).toEqual(mockUpdatedCompletion);
-      expect(mockRepo.findByMissionId).toHaveBeenCalledWith(TEST_MISSION_ID);
-      expect(mockMissionRepo.findById).toHaveBeenCalledWith(TEST_MISSION_ID);
+      expect(mockRepo.findById).toHaveBeenCalledWith(mockCompletion.id);
       expect(mockRepo.update).toHaveBeenCalledWith(mockCompletion.id, updateData, TEST_USER_ID);
     });
 
     it("MissionCompletion이 없으면 404 에러를 던진다", async () => {
       // Given
       const updateData = { title: "수정된 제목" };
-      mockRepo.findByMissionId.mockResolvedValue(null);
+      mockRepo.findById.mockResolvedValue(null);
 
       // When & Then
       await expect(
@@ -264,38 +261,25 @@ describe("MissionCompletionService", () => {
       expect(mockRepo.update).not.toHaveBeenCalled();
     });
 
-    it("Mission이 없으면 404 에러를 던진다", async () => {
-      // Given
-      const updateData = { title: "수정된 제목" };
-      const mockCompletion = createMockMissionCompletion();
-
-      mockRepo.findByMissionId.mockResolvedValue(mockCompletion);
-      mockMissionRepo.findById.mockResolvedValue(null);
-
-      // When & Then
-      await expect(
-        service.updateMissionCompletion(TEST_MISSION_ID, updateData, TEST_USER_ID),
-      ).rejects.toThrow("미션을 찾을 수 없습니다.");
-
-      expect(mockRepo.update).not.toHaveBeenCalled();
-    });
-
     it("Mission 생성자가 아니면 403 에러를 던진다", async () => {
       // Given
       const updateData = { title: "수정된 제목" };
-      const mockCompletion = createMockMissionCompletion();
-      const mockMission = createMockMission({ creatorId: "other-user" });
+      const mockCompletion = createMockMissionCompletion({
+        mission: {
+          id: TEST_MISSION_ID,
+          creatorId: "other-user",
+        },
+      });
 
-      mockRepo.findByMissionId.mockResolvedValue(mockCompletion);
-      mockMissionRepo.findById.mockResolvedValue(mockMission);
+      mockRepo.findById.mockResolvedValue(mockCompletion);
 
       // When & Then
       await expect(
-        service.updateMissionCompletion(TEST_MISSION_ID, updateData, TEST_USER_ID),
+        service.updateMissionCompletion(mockCompletion.id, updateData, TEST_USER_ID),
       ).rejects.toThrow("수정 권한이 없습니다.");
 
       try {
-        await service.updateMissionCompletion(TEST_MISSION_ID, updateData, TEST_USER_ID);
+        await service.updateMissionCompletion(mockCompletion.id, updateData, TEST_USER_ID);
       } catch (error) {
         expect(error instanceof Error && error.cause).toBe(403);
       }
@@ -307,14 +291,12 @@ describe("MissionCompletionService", () => {
       // Given
       const updateData = {};
       const mockCompletion = createMockMissionCompletion();
-      const mockMission = createMockMission();
 
-      mockRepo.findByMissionId.mockResolvedValue(mockCompletion);
-      mockMissionRepo.findById.mockResolvedValue(mockMission);
+      mockRepo.findById.mockResolvedValue(mockCompletion);
 
       // When & Then
       await expect(
-        service.updateMissionCompletion(TEST_MISSION_ID, updateData, TEST_USER_ID),
+        service.updateMissionCompletion(mockCompletion.id, updateData, TEST_USER_ID),
       ).rejects.toThrow("최소 하나의 필드를 수정해야 합니다.");
 
       expect(mockRepo.update).not.toHaveBeenCalled();
@@ -325,24 +307,21 @@ describe("MissionCompletionService", () => {
     it("MissionCompletion을 성공적으로 삭제한다", async () => {
       // Given
       const mockCompletion = createMockMissionCompletion();
-      const mockMission = createMockMission();
 
-      mockRepo.findByMissionId.mockResolvedValue(mockCompletion);
-      mockMissionRepo.findById.mockResolvedValue(mockMission);
+      mockRepo.findById.mockResolvedValue(mockCompletion);
       mockRepo.delete.mockResolvedValue(mockCompletion);
 
       // When
-      await service.deleteMissionCompletion(TEST_MISSION_ID, TEST_USER_ID);
+      await service.deleteMissionCompletion(mockCompletion.id, TEST_USER_ID);
 
       // Then
-      expect(mockRepo.findByMissionId).toHaveBeenCalledWith(TEST_MISSION_ID);
-      expect(mockMissionRepo.findById).toHaveBeenCalledWith(TEST_MISSION_ID);
+      expect(mockRepo.findById).toHaveBeenCalledWith(mockCompletion.id);
       expect(mockRepo.delete).toHaveBeenCalledWith(mockCompletion.id);
     });
 
     it("MissionCompletion이 없으면 404 에러를 던진다", async () => {
       // Given
-      mockRepo.findByMissionId.mockResolvedValue(null);
+      mockRepo.findById.mockResolvedValue(null);
 
       // When & Then
       await expect(
@@ -352,36 +331,24 @@ describe("MissionCompletionService", () => {
       expect(mockRepo.delete).not.toHaveBeenCalled();
     });
 
-    it("Mission이 없으면 404 에러를 던진다", async () => {
-      // Given
-      const mockCompletion = createMockMissionCompletion();
-
-      mockRepo.findByMissionId.mockResolvedValue(mockCompletion);
-      mockMissionRepo.findById.mockResolvedValue(null);
-
-      // When & Then
-      await expect(
-        service.deleteMissionCompletion(TEST_MISSION_ID, TEST_USER_ID),
-      ).rejects.toThrow("미션을 찾을 수 없습니다.");
-
-      expect(mockRepo.delete).not.toHaveBeenCalled();
-    });
-
     it("Mission 생성자가 아니면 403 에러를 던진다", async () => {
       // Given
-      const mockCompletion = createMockMissionCompletion();
-      const mockMission = createMockMission({ creatorId: "other-user" });
+      const mockCompletion = createMockMissionCompletion({
+        mission: {
+          id: TEST_MISSION_ID,
+          creatorId: "other-user",
+        },
+      });
 
-      mockRepo.findByMissionId.mockResolvedValue(mockCompletion);
-      mockMissionRepo.findById.mockResolvedValue(mockMission);
+      mockRepo.findById.mockResolvedValue(mockCompletion);
 
       // When & Then
       await expect(
-        service.deleteMissionCompletion(TEST_MISSION_ID, TEST_USER_ID),
+        service.deleteMissionCompletion(mockCompletion.id, TEST_USER_ID),
       ).rejects.toThrow("삭제 권한이 없습니다.");
 
       try {
-        await service.deleteMissionCompletion(TEST_MISSION_ID, TEST_USER_ID);
+        await service.deleteMissionCompletion(mockCompletion.id, TEST_USER_ID);
       } catch (error) {
         expect(error instanceof Error && error.cause).toBe(403);
       }

@@ -57,20 +57,19 @@ export class MissionCompletionService {
   }
 
   async updateMissionCompletion(
-    missionId: string,
+    id: string,
     input: UpdateMissionCompletionInput,
     userId: string,
   ) {
-    const missionCompletion = await this.getMissionCompletion(missionId);
+    const missionCompletion = await this.repo.findById(id);
 
-    const mission = await this.missionRepo.findById(missionId);
-    if (!mission) {
-      const error = new Error("미션을 찾을 수 없습니다.");
+    if (!missionCompletion) {
+      const error = new Error("미션 완료 데이터를 찾을 수 없습니다.");
       error.cause = 404;
       throw error;
     }
 
-    if (mission.creatorId !== userId) {
+    if (missionCompletion.mission.creatorId !== userId) {
       const error = new Error("수정 권한이 없습니다.");
       error.cause = 403;
       throw error;
@@ -83,26 +82,25 @@ export class MissionCompletionService {
       throw error;
     }
 
-    return await this.repo.update(missionCompletion.id, result.data, userId);
+    return await this.repo.update(id, result.data, userId);
   }
 
-  async deleteMissionCompletion(missionId: string, userId: string): Promise<void> {
-    const missionCompletion = await this.getMissionCompletion(missionId);
+  async deleteMissionCompletion(id: string, userId: string): Promise<void> {
+    const missionCompletion = await this.repo.findById(id);
 
-    const mission = await this.missionRepo.findById(missionId);
-    if (!mission) {
-      const error = new Error("미션을 찾을 수 없습니다.");
+    if (!missionCompletion) {
+      const error = new Error("미션 완료 데이터를 찾을 수 없습니다.");
       error.cause = 404;
       throw error;
     }
 
-    if (mission.creatorId !== userId) {
+    if (missionCompletion.mission.creatorId !== userId) {
       const error = new Error("삭제 권한이 없습니다.");
       error.cause = 403;
       throw error;
     }
 
-    await this.repo.delete(missionCompletion.id);
+    await this.repo.delete(id);
   }
 }
 

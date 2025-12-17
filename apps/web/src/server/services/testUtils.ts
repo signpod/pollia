@@ -55,6 +55,7 @@ export const createMockFileUpload = (overrides: Partial<FileUpload> = {}): FileU
 
 type MissionCompletionWithRelations = MissionCompletion & {
   imageFileUpload: { id: string; publicUrl: string } | null;
+  mission: { id: string; creatorId: string };
 };
 
 export const createMockMissionCompletion = (
@@ -70,5 +71,9 @@ export const createMockMissionCompletion = (
   createdAt: new Date(),
   updatedAt: new Date(),
   imageFileUpload: null,
+  mission: {
+    id: "mission1",
+    creatorId: "user1",
+  },
   ...overrides,
 });
