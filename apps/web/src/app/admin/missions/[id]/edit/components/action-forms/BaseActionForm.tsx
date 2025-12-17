@@ -105,9 +105,12 @@ export function BaseActionFormFields<TFieldValues extends FieldValues>({
               <div className="flex items-center gap-3">
                 <ImageSelector
                   size="large"
-                  imageUrl={mainImagePreviewUrl || undefined}
+                  imageUrl={mainImagePreviewUrl || field.value || undefined}
                   onImageSelect={onMainImageSelect}
-                  onImageDelete={onMainImageDelete}
+                  onImageDelete={() => {
+                    onMainImageDelete();
+                    field.onChange(undefined);
+                  }}
                   disabled={isLoading}
                 />
                 <p className="text-xs text-muted-foreground">액션에 표시될 이미지를 선택하세요.</p>
