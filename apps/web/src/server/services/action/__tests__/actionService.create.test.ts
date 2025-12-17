@@ -355,7 +355,7 @@ describe("ActionService - Create", () => {
 
       // When & Then
       await expect(ctx.service.createScaleAction(request, "user1")).rejects.toThrow(
-        "최소 3개 이상의 척도가 필요합니다.",
+        "최소 3개 이상의 항목이 필요합니다.",
       );
 
       try {
