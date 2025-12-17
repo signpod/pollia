@@ -30,7 +30,7 @@ export function ScaleForm({
     defaultValues: {
       title: initialData?.title || "",
       description: initialData?.description || "",
-      imageUrl: initialData?.imageUrl || "",
+      imageUrl: initialData?.imageUrl,
       options:
         initialData?.options?.map(opt => ({
           id: crypto.randomUUID(),
@@ -46,7 +46,12 @@ export function ScaleForm({
     name: "options",
   });
 
-  const mainImage = useAdminSingleImage({ initialUrl: initialData?.imageUrl });
+  const mainImage = useAdminSingleImage({
+    initialUrl: initialData?.imageUrl,
+    onUploadSuccess: data => {
+      form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
+    },
+  });
 
   const handleSubmit = form.handleSubmit((data: ScaleFormInput) => {
     const formattedOptions: ActionOptionInput[] = data.options.map(opt => ({
@@ -58,7 +63,7 @@ export function ScaleForm({
       type: "SCALE",
       title: data.title,
       description: data.description,
-      imageUrl: mainImage.uploadedData?.publicUrl || data.imageUrl || undefined,
+      imageUrl: data.imageUrl || undefined,
       imageFileUploadId: mainImage.uploadedData?.fileUploadId,
       options: formattedOptions,
     });

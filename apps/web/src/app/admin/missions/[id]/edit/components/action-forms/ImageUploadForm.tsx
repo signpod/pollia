@@ -22,19 +22,24 @@ export function ImageUploadForm({
     defaultValues: {
       title: initialData?.title || "",
       description: initialData?.description || "",
-      imageUrl: initialData?.imageUrl || "",
+      imageUrl: initialData?.imageUrl,
     },
     mode: "onChange",
   });
 
-  const mainImage = useAdminSingleImage({ initialUrl: initialData?.imageUrl });
+  const mainImage = useAdminSingleImage({
+    initialUrl: initialData?.imageUrl,
+    onUploadSuccess: data => {
+      form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
+    },
+  });
 
   const handleSubmit = form.handleSubmit((data: SubjectiveFormInput) => {
     onSubmit({
       type: "IMAGE",
       title: data.title,
       description: data.description,
-      imageUrl: mainImage.uploadedData?.publicUrl || data.imageUrl || undefined,
+      imageUrl: data.imageUrl || undefined,
       imageFileUploadId: mainImage.uploadedData?.fileUploadId,
     });
   });

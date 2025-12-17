@@ -26,7 +26,7 @@ export function TagForm({
     defaultValues: {
       title: initialData?.title || "",
       description: initialData?.description || "",
-      imageUrl: initialData?.imageUrl || "",
+      imageUrl: initialData?.imageUrl,
       maxSelections: initialData?.maxSelections ?? 1,
       options:
         initialData?.options?.map(opt => ({
@@ -42,7 +42,12 @@ export function TagForm({
     name: "options",
   });
 
-  const mainImage = useAdminSingleImage({ initialUrl: initialData?.imageUrl });
+  const mainImage = useAdminSingleImage({
+    initialUrl: initialData?.imageUrl,
+    onUploadSuccess: data => {
+      form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
+    },
+  });
 
   const handleSubmit = form.handleSubmit((data: TagFormInput) => {
     const formattedOptions: ActionOptionInput[] = data.options.map(opt => ({
@@ -53,13 +58,12 @@ export function TagForm({
       type: "TAG",
       title: data.title,
       description: data.description,
-      imageUrl: mainImage.uploadedData?.publicUrl || data.imageUrl || undefined,
+      imageUrl: data.imageUrl || undefined,
       imageFileUploadId: mainImage.uploadedData?.fileUploadId,
       maxSelections: data.maxSelections,
       options: formattedOptions,
     });
   });
-
   const handleAddOption = () => {
     append({
       id: crypto.randomUUID(),

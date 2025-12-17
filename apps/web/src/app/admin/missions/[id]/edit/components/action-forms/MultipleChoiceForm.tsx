@@ -34,14 +34,14 @@ export function MultipleChoiceForm({
     defaultValues: {
       title: initialData?.title || "",
       description: initialData?.description || "",
-      imageUrl: initialData?.imageUrl || "",
+      imageUrl: initialData?.imageUrl,
       maxSelections: initialData?.maxSelections ?? 1,
       options:
         initialData?.options?.map(opt => ({
           id: crypto.randomUUID(),
           title: opt.title,
           description: opt.description || "",
-          imageUrl: opt.imageUrl || "",
+          imageUrl: opt.imageUrl,
         })) || [],
     },
     mode: "onChange",
@@ -52,7 +52,12 @@ export function MultipleChoiceForm({
     name: "options",
   });
 
-  const mainImage = useAdminSingleImage({ initialUrl: initialData?.imageUrl });
+  const mainImage = useAdminSingleImage({
+    initialUrl: initialData?.imageUrl,
+    onUploadSuccess: data => {
+      form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
+    },
+  });
   const optionImages = useAdminMultipleImages();
 
   const handleSubmit = form.handleSubmit((data: MultipleChoiceFormInput) => {
@@ -63,7 +68,7 @@ export function MultipleChoiceForm({
       return {
         title: opt.title,
         description: opt.description || undefined,
-        imageUrl: uploadedData?.publicUrl || opt.imageUrl || undefined,
+        imageUrl: uploadedData?.publicUrl || undefined,
         imageFileUploadId: uploadedData?.fileUploadId,
       };
     });
@@ -72,7 +77,7 @@ export function MultipleChoiceForm({
       type: "MULTIPLE_CHOICE",
       title: data.title,
       description: data.description,
-      imageUrl: mainImage.uploadedData?.publicUrl || data.imageUrl || undefined,
+      imageUrl: data.imageUrl || undefined,
       imageFileUploadId: mainImage.uploadedData?.fileUploadId,
       maxSelections: data.maxSelections,
       options: formattedOptions,
