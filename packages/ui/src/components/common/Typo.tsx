@@ -5,6 +5,7 @@ import { cn } from "../../lib/utils";
 const mainTitleVariants = cva("font-bold leading-[1.5]", {
   variants: {
     size: {
+      large: "text-[28px]",
       medium: "text-[24px]",
       small: "text-[20px]",
     },
