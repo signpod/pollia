@@ -16,10 +16,11 @@ model Mission {
   type             MissionType @default(GENERAL)
   password         String?
 
-  questions Action[]
-  responses MissionResponse[]
-  creator   User              @relation("MissionCreator", fields: [creatorId], references: [id])
-  reward    Reward?           @relation(fields: [rewardId], references: [id])
+  questions  Action[]
+  responses  MissionResponse[]
+  completion MissionCompletion?
+  creator    User               @relation("MissionCreator", fields: [creatorId], references: [id])
+  reward     Reward?            @relation(fields: [rewardId], references: [id])
 
   imageFileUploadId     String?     @map("image_file_upload_id")
   imageFileUpload       FileUpload? @relation("MissionImage", fields: [imageFileUploadId], references: [id])
