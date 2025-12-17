@@ -54,9 +54,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
 
   const { data: reward } = useReadReward(mission?.rewardId || "");
   const { data: participantInfo } = useReadMissionParticipantInfo(missionId);
-  // const { currentParticipants, maxParticipants } = participantInfo?.data ?? {};
-  const { currentParticipants } = participantInfo?.data ?? {};
-  const maxParticipants = 200;
+  const { currentParticipants, maxParticipants } = participantInfo?.data ?? {};
 
   const { activeTab, handleChangeTab } = useSectionScrollSync({
     sections: ["mission-guide", "reward", "participation-method"],
@@ -107,7 +105,9 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                 >{`${formatDeadline(createdAt ?? "")} ~ ${formatDeadline(deadline ?? "")}`}</Typo.Body>
               </div>
 
-              <ParticipantCount current={currentParticipants ?? 0} max={maxParticipants} />
+              {maxParticipants && (
+                <ParticipantCount current={currentParticipants ?? 0} max={maxParticipants} />
+              )}
             </div>
 
             <div id="reward">
