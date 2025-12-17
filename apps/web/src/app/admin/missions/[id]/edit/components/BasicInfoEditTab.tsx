@@ -13,6 +13,13 @@ import {
 } from "@/app/admin/components/shadcn-ui/card";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/app/admin/components/shadcn-ui/select";
 import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
 import {
   type UseFormImageUploadReturn,
@@ -29,6 +36,7 @@ import {
 } from "@/schemas/mission";
 import type { GetMissionResponse } from "@/types/dto";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { MissionType } from "@prisma/client";
 import { RotateCcw } from "lucide-react";
 import { type UseFormReturn, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -97,6 +105,27 @@ function BasicInfoCard({ form }: BasicInfoCardProps) {
           />
           {form.formState.errors.title && (
             <p className="text-sm text-destructive">{form.formState.errors.title.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="type">타입</Label>
+          <Select
+            value={form.watch("type")}
+            onValueChange={value => {
+              form.setValue("type", value as MissionType, { shouldDirty: true });
+            }}
+          >
+            <SelectTrigger id="type">
+              <SelectValue placeholder="미션 타입을 선택하세요" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={MissionType.GENERAL}>일반 미션</SelectItem>
+              <SelectItem value={MissionType.EXPERIENCE_GROUP}>체험단 미션</SelectItem>
+            </SelectContent>
+          </Select>
+          {form.formState.errors.type && (
+            <p className="text-sm text-destructive">{form.formState.errors.type.message}</p>
           )}
         </div>
 
@@ -267,6 +296,7 @@ type MissionData = GetMissionResponse["data"];
 function useBasicInfoForm(mission: MissionData) {
   const defaultValues = {
     title: mission.title,
+    type: mission.type,
     description: mission.description ?? "",
     target: mission.target ?? "",
     imageUrl: mission.imageUrl ?? undefined,
