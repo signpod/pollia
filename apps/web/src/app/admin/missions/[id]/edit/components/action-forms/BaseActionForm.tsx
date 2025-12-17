@@ -10,7 +10,6 @@ import {
   FormMessage,
 } from "@/app/admin/components/shadcn-ui/form";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
-import { Label } from "@/app/admin/components/shadcn-ui/label";
 import { Textarea } from "@/app/admin/components/shadcn-ui/textarea";
 import { ACTION_DESCRIPTION_MAX_LENGTH, ACTION_TITLE_MAX_LENGTH } from "@/schemas/action";
 import type { ReactNode } from "react";
@@ -94,21 +93,30 @@ export function BaseActionFormFields<TFieldValues extends FieldValues>({
         )}
       />
 
-      <div className="space-y-2">
-        <Label className="text-sm font-medium">
-          이미지 <span className="text-muted-foreground">(선택)</span>
-        </Label>
-        <div className="flex items-center gap-3">
-          <ImageSelector
-            size="large"
-            imageUrl={mainImagePreviewUrl || undefined}
-            onImageSelect={onMainImageSelect}
-            onImageDelete={onMainImageDelete}
-            disabled={isLoading}
-          />
-          <p className="text-xs text-muted-foreground">액션에 표시될 이미지를 선택하세요.</p>
-        </div>
-      </div>
+      <FormField
+        control={control}
+        name={"imageUrl" as Path<TFieldValues>}
+        render={({ field }) => (
+          <FormItem>
+            <div className="space-y-2">
+              <FormLabel>
+                이미지 <span className="text-muted-foreground">(선택)</span>
+              </FormLabel>
+              <div className="flex items-center gap-3">
+                <ImageSelector
+                  size="large"
+                  imageUrl={mainImagePreviewUrl || undefined}
+                  onImageSelect={onMainImageSelect}
+                  onImageDelete={onMainImageDelete}
+                  disabled={isLoading}
+                />
+                <p className="text-xs text-muted-foreground">액션에 표시될 이미지를 선택하세요.</p>
+              </div>
+              <FormMessage />
+            </div>
+          </FormItem>
+        )}
+      />
 
       {children}
     </>
