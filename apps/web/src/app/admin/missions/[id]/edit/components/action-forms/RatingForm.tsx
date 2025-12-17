@@ -27,14 +27,19 @@ export function RatingForm({
     mode: "onChange",
   });
 
-  const mainImage = useAdminSingleImage({ initialUrl: initialData?.imageUrl });
+  const mainImage = useAdminSingleImage({
+    initialUrl: initialData?.imageUrl,
+    onUploadSuccess: data => {
+      form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
+    },
+  });
 
   const handleSubmit = form.handleSubmit((data: SubjectiveFormInput) => {
     onSubmit({
       type: "RATING",
       title: data.title,
       description: data.description,
-      imageUrl: mainImage.uploadedData?.publicUrl || data.imageUrl || undefined,
+      imageUrl: data.imageUrl || undefined,
       imageFileUploadId: mainImage.uploadedData?.fileUploadId,
     });
   });
