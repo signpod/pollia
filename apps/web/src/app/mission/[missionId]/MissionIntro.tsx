@@ -15,7 +15,6 @@ import {
   MissionLogo,
   MissionRewardSection,
   ParticipantCount,
-  ParticipationMethodSection,
 } from "./components";
 import { formatDeadline } from "./done/ui/utils/formatDeadline";
 import { BottomButton } from "./ui";
@@ -57,7 +56,8 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
   const { currentParticipants, maxParticipants } = participantInfo?.data ?? {};
 
   const { activeTab, handleChangeTab } = useSectionScrollSync({
-    sections: ["mission-guide", "reward", "participation-method"],
+    // sections: ["mission-guide", "reward", "participation-method"],
+    sections: ["mission-guide", "reward"],
     defaultSection: "mission-guide",
   });
 
@@ -79,7 +79,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                 <Tab.List>
                   <Tab.Item value="mission-guide">미션 안내</Tab.Item>
                   <Tab.Item value="reward">참여 혜택</Tab.Item>
-                  <Tab.Item value="participation-method">참여 방법</Tab.Item>
+                  {/* <Tab.Item value="participation-method">참여 방법</Tab.Item> */}
                 </Tab.List>
               </Tab.Root>
             </div>
@@ -138,7 +138,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
               />
             </div>
 
-            <div id="participation-method">
+            {/* <div id="participation-method">
               <ParticipationMethodSection
                 steps={[
                   {
@@ -156,7 +156,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                   },
                 ]}
               />
-            </div>
+            </div> */}
           </div>
         </div>
 
