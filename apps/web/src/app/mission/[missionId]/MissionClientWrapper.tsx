@@ -13,7 +13,7 @@ interface MissionClientWrapperProps {
 export function MissionClientWrapper({ initialError }: MissionClientWrapperProps) {
   return (
     <LoginModalProvider>
-      <FixedBottomLayout className="bg-background min-h-screen" hasGradient>
+      <FixedBottomLayout className="bg-zinc-700 min-h-screen" hasGradient>
         <FixedTopLayout>
           <MissionIntro initialError={initialError} />
         </FixedTopLayout>

@@ -7,10 +7,10 @@ import { useReadReward } from "@/hooks/reward/useReadReward";
 import { getSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
 import { cleanTiptapHTML } from "@/lib/utils";
 import { FixedBottomLayout, Tab, Typo } from "@repo/ui/components";
-import Link from "next/link";
 import { useParams } from "next/navigation";
 import {
   MissionDescription,
+  MissionFooter,
   MissionImage,
   MissionLogo,
   MissionRewardSection,
@@ -171,16 +171,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
           />
         </FixedBottomLayout.Content>
       </main>
-      <div className="flex justify-center">
-        <Link
-          href={process.env.NEXT_PUBLIC_PRIVACY_POLICY_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-zinc-400"
-        >
-          <Typo.Body size="small">개인정보처리방침</Typo.Body>
-        </Link>
-      </div>
+      <MissionFooter />
     </>
   );
 }
