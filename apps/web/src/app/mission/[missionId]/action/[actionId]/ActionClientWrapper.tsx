@@ -40,6 +40,8 @@ interface ActionClientWrapperProps {
   dehydratedState: DehydratedState;
 }
 
+const SCROLL_OFFSET = 30;
+
 export function ActionClientWrapper({ dehydratedState }: ActionClientWrapperProps) {
   return (
     <HydrationBoundary state={dehydratedState}>
@@ -77,9 +79,10 @@ function ActionContent() {
       return;
     }
 
-    window.scrollTo(0, 0);
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
+    window.scrollTo(0, -SCROLL_OFFSET);
+    document.documentElement.scrollTop = -SCROLL_OFFSET;
+    document.body.scrollTop = -SCROLL_OFFSET;
+
     setSessionStorage(`current-action-id-${missionId}`, actionId);
   }, [actionsIds, actionId, missionId, router]);
 
