@@ -19,17 +19,6 @@ export function useCreateMission(options: UseCreateMissionOptions = {}) {
     },
     onSuccess: data => {
       queryClient.invalidateQueries({
-        queryKey: adminMissionQueryKeys.missions(),
-      });
-      queryClient.invalidateQueries({
-        predicate: query => {
-          const key = query.queryKey;
-          return (
-            Array.isArray(key) && key.length >= 2 && key[0] === "admin" && key[1] === "missions"
-          );
-        },
-      });
-      queryClient.invalidateQueries({
         queryKey: adminMissionQueryKeys.all(),
       });
       options.onSuccess?.(data);
