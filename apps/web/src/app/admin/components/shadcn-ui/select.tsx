@@ -51,8 +51,16 @@ function SelectContent({
   align = "center",
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
+  const [container, setContainer] = React.useState<HTMLElement | null>(null);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const adminRoot = document.querySelector(".admin-root");
+    setContainer(adminRoot as HTMLElement);
+  }, []);
+
   return (
-    <SelectPrimitive.Portal>
+    <SelectPrimitive.Portal container={container}>
       <SelectPrimitive.Content
         data-slot="select-content"
         className={cn(
