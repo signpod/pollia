@@ -1,8 +1,9 @@
 "use client";
 
 import { createMissionCompletion } from "@/actions/mission-completion";
+import { adminMissionCompletionQueryKeys } from "@/app/admin/constants/queryKeys";
 import type { CreateMissionCompletionRequest, CreateMissionCompletionResponse } from "@/types/dto";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface UseCreateMissionCompletionOptions {
   onSuccess?: (data: CreateMissionCompletionResponse) => void;
@@ -10,6 +11,8 @@ interface UseCreateMissionCompletionOptions {
 }
 
 export function useCreateMissionCompletion(options: UseCreateMissionCompletionOptions = {}) {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (
       payload: CreateMissionCompletionRequest,
@@ -17,6 +20,9 @@ export function useCreateMissionCompletion(options: UseCreateMissionCompletionOp
       return createMissionCompletion(payload);
     },
     onSuccess: data => {
+      queryClient.invalidateQueries({
+        queryKey: adminMissionCompletionQueryKeys.all(),
+      });
       options.onSuccess?.(data);
     },
     onError: error => {
