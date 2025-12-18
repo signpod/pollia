@@ -136,13 +136,9 @@ function BasicInfoCard({ form }: BasicInfoCardProps) {
               type="number"
               placeholder="제한 없음"
               min="1"
-              value={form.watch("maxParticipants") ?? ""}
-              onChange={e => {
-                const value = e.target.value;
-                form.setValue("maxParticipants", value === "" ? null : Number(value), {
-                  shouldDirty: true,
-                });
-              }}
+              {...form.register("maxParticipants", {
+                setValueAs: value => (value === "" ? null : Number(value)),
+              })}
             />
             {form.formState.errors.maxParticipants && (
               <p className="text-sm text-destructive">
