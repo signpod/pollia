@@ -1,6 +1,7 @@
 "use client";
 
 import { getMissionPassword } from "@/actions/mission";
+import { PinInput } from "@/app/admin/components/common/PinInput";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,7 +27,6 @@ import { useSetMissionPassword } from "@/app/admin/hooks/use-set-mission-passwor
 import { Check, CheckCircle2, Copy, Dices, Eye, EyeOff, Lock, Trash2, XCircle } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
-import { PinInput } from "./PinInput";
 
 interface PasswordManagementProps {
   missionId: string;
