@@ -23,7 +23,10 @@ export function useUpdateReward(options: UseUpdateRewardOptions = {}) {
       return await updateReward(rewardId, data);
     },
 
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: adminRewardQueryKeys.reward(variables.rewardId),
+      });
       queryClient.invalidateQueries({
         queryKey: adminRewardQueryKeys.all(),
       });
