@@ -1,5 +1,6 @@
 import { ButtonV2, Typo } from "@repo/ui/components";
 import { DeleteIcon } from "lucide-react";
+import { useEffect } from "react";
 
 interface KeyboardProps {
   onPasswordChange: (value: string) => void;
@@ -8,6 +9,21 @@ interface KeyboardProps {
 }
 
 export function Keyboard({ onPasswordChange, onPasswordDelete, disabled }: KeyboardProps) {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (disabled) return;
+
+      if (e.key >= "0" && e.key <= "9") {
+        onPasswordChange(e.key);
+      } else if (e.key === "Backspace" || e.key === "Delete") {
+        onPasswordDelete();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [disabled, onPasswordChange, onPasswordDelete]);
+
   return (
     <div className="grid grid-cols-3 px-5 pb-8 gap-y-4 none-select">
       {Array.from({ length: 9 }).map((_, index) => (
