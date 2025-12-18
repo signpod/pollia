@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/app/admin/components/shadcn-ui/badge";
 import {
   Card,
   CardContent,
@@ -7,9 +8,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
-import { stripHtmlTags } from "@/app/admin/lib/utils";
+import { Separator } from "@/app/admin/components/shadcn-ui/separator";
+import { cn, stripHtmlTags } from "@/app/admin/lib/utils";
 import type { GetMissionResponse } from "@/types/dto";
-import { Calendar, CheckCircle2, Clock, Gift, ImageIcon, XCircle } from "lucide-react";
+import { MissionType } from "@prisma/client";
+import {
+  Calendar,
+  CheckCircle2,
+  Clock,
+  Gift,
+  ImageIcon,
+  type LucideIcon,
+  Tag,
+  XCircle,
+} from "lucide-react";
 import Image from "next/image";
 import { AdminMissionHeader } from "./AdminMissionHeader";
 import { ClientDateDisplay } from "./ClientDateDisplay";
@@ -17,6 +29,55 @@ import { MissionNavigation } from "./MissionNavigation";
 
 interface MissionDetailContentProps {
   mission: GetMissionResponse["data"];
+}
+
+interface StatCardProps {
+  icon: LucideIcon;
+  iconColor: string;
+  label: string;
+  value: React.ReactNode;
+}
+
+function StatCard({ icon: Icon, iconColor, label, value }: StatCardProps) {
+  return (
+    <Card>
+      <CardContent>
+        <div className="flex items-center gap-3">
+          <Icon className={cn("h-4 w-4", iconColor)} />
+          <div className="flex-1 min-w-0">
+            <div className="text-xs text-muted-foreground mb-1">{label}</div>
+            <div className="font-semibold truncate">{value}</div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+interface InfoFieldProps {
+  label: string;
+  value: React.ReactNode;
+  className?: string;
+}
+
+function InfoField({ label, value, className }: InfoFieldProps) {
+  return (
+    <div className={cn("space-y-1", className)}>
+      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
+      <dd className="text-sm">{value}</dd>
+    </div>
+  );
+}
+
+function getMissionTypeLabel(type: MissionType): string {
+  switch (type) {
+    case MissionType.GENERAL:
+      return "일반 미션";
+    case MissionType.EXPERIENCE_GROUP:
+      return "체험단 미션";
+    default:
+      return "알 수 없음";
+  }
 }
 
 export function MissionDetailContent({ mission }: MissionDetailContentProps) {
@@ -30,180 +91,168 @@ export function MissionDetailContent({ mission }: MissionDetailContentProps) {
         isActive={mission.isActive}
       />
 
-      <div className="space-y-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>상태</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {mission.isActive ? (
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-5 w-5 text-green-600" />
-                  <span className="text-lg font-medium">활성</span>
-                </div>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+          <StatCard
+            icon={mission.isActive ? CheckCircle2 : XCircle}
+            iconColor={mission.isActive ? "text-green-600" : "text-muted-foreground"}
+            label="상태"
+            value={
+              <span className={mission.isActive ? "" : "text-muted-foreground"}>
+                {mission.isActive ? "활성" : "비활성"}
+              </span>
+            }
+          />
+
+          <StatCard
+            icon={Tag}
+            iconColor="text-primary"
+            label="타입"
+            value={
+              <Badge
+                variant={mission.type === MissionType.EXPERIENCE_GROUP ? "default" : "secondary"}
+              >
+                {getMissionTypeLabel(mission.type)}
+              </Badge>
+            }
+          />
+
+          <StatCard
+            icon={Clock}
+            iconColor="text-blue-600"
+            label="예상 소요 시간"
+            value={
+              mission.estimatedMinutes ? (
+                `${mission.estimatedMinutes}분`
               ) : (
-                <div className="flex items-center gap-2">
-                  <XCircle className="h-5 w-5 text-gray-400" />
-                  <span className="text-lg font-medium text-muted-foreground">비활성</span>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                <span className="text-sm text-muted-foreground">미설정</span>
+              )
+            }
+          />
 
+          <StatCard
+            icon={Calendar}
+            iconColor="text-orange-600"
+            label="마감일"
+            value={
+              mission.deadline ? (
+                <ClientDateDisplay date={mission.deadline} format="date" />
+              ) : (
+                <span className="text-sm text-muted-foreground">미설정</span>
+              )
+            }
+          />
+
+          <StatCard
+            icon={Gift}
+            iconColor="text-purple-600"
+            label="리워드"
+            value={
+              mission.rewardId ? (
+                "설정됨"
+              ) : (
+                <span className="text-sm text-muted-foreground">미설정</span>
+              )
+            }
+          />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>예상 소요 시간</CardDescription>
+            <CardHeader>
+              <CardTitle>기본 정보</CardTitle>
+              <CardDescription>미션의 핵심 정보</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-muted-foreground" />
-                <span className="text-lg font-medium">
-                  {mission.estimatedMinutes ? (
-                    `${mission.estimatedMinutes}분`
+            <CardContent className="space-y-4">
+              <InfoField label="제목" value={mission.title} />
+
+              <Separator />
+
+              <InfoField
+                label="타겟"
+                value={
+                  mission.target || (
+                    <span className="text-muted-foreground italic">설정되지 않음</span>
+                  )
+                }
+              />
+
+              <Separator />
+
+              <InfoField
+                label="설명"
+                value={
+                  mission.description ? (
+                    <div className="whitespace-pre-wrap">{stripHtmlTags(mission.description)}</div>
                   ) : (
-                    <span className="text-muted-foreground text-base">설정 안 됨</span>
-                  )}
-                </span>
+                    <span className="text-muted-foreground italic">설정되지 않음</span>
+                  )
+                }
+              />
+
+              <Separator />
+
+              <div className="grid grid-cols-2 gap-4">
+                <InfoField label="생성일" value={<ClientDateDisplay date={mission.createdAt} />} />
+                <InfoField label="수정일" value={<ClientDateDisplay date={mission.updatedAt} />} />
               </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>마감일</CardDescription>
+            <CardHeader>
+              <CardTitle>미디어</CardTitle>
+              <CardDescription>이미지 및 로고</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-muted-foreground" />
-                <span className="text-lg font-medium">
-                  {mission.deadline ? (
-                    <ClientDateDisplay date={mission.deadline} format="date" />
+            <CardContent className="space-y-4">
+              <InfoField
+                label="미션 이미지"
+                value={
+                  mission.imageUrl ? (
+                    <Image
+                      src={mission.imageUrl}
+                      alt="미션 이미지"
+                      width={200}
+                      height={200}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 400px"
+                      className="w-auto h-auto max-w-full max-h-64 min-h-32 rounded-lg border mt-2"
+                      style={{ objectFit: "contain" }}
+                      loading="lazy"
+                    />
                   ) : (
-                    <span className="text-muted-foreground text-base">설정 안 됨</span>
-                  )}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
+                    <div className="flex flex-col items-center justify-center h-32 border-2 border-dashed rounded-lg bg-muted/20 mt-2">
+                      <ImageIcon className="h-8 w-8 text-muted-foreground/30 mb-2" />
+                      <span className="text-xs text-muted-foreground">이미지 없음</span>
+                    </div>
+                  )
+                }
+              />
 
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription>리워드</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <Gift className="h-5 w-5 text-muted-foreground" />
-                <span className="text-lg font-medium">
-                  {mission.rewardId ? (
-                    "설정됨"
+              <InfoField
+                label="브랜드 로고"
+                value={
+                  mission.brandLogoUrl ? (
+                    <Image
+                      src={mission.brandLogoUrl}
+                      alt="브랜드 로고"
+                      width={150}
+                      height={80}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 300px"
+                      className="w-auto h-auto max-w-full max-h-32 min-h-16 rounded-lg border bg-gray-50 p-2 mt-2"
+                      style={{ objectFit: "contain" }}
+                      loading="lazy"
+                    />
                   ) : (
-                    <span className="text-muted-foreground text-base">설정 안 됨</span>
-                  )}
-                </span>
-              </div>
+                    <div className="flex flex-col items-center justify-center h-32 border-2 border-dashed rounded-lg bg-muted/20 mt-2">
+                      <ImageIcon className="h-8 w-8 text-muted-foreground/30 mb-2" />
+                      <span className="text-xs text-muted-foreground">이미지 없음</span>
+                    </div>
+                  )
+                }
+              />
             </CardContent>
           </Card>
         </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>기본 정보</CardTitle>
-            <CardDescription>미션의 기본 정보를 확인할 수 있습니다</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <dt className="text-sm font-medium text-muted-foreground">제목</dt>
-                <dd className="text-sm p-3 bg-muted/30 rounded-md border">{mission.title}</dd>
-              </div>
-
-              <div className="space-y-2">
-                <dt className="text-sm font-medium text-muted-foreground">타겟</dt>
-                <dd className="text-sm p-3 bg-muted/30 rounded-md border">
-                  {mission.target || (
-                    <span className="text-muted-foreground italic">설정되지 않음</span>
-                  )}
-                </dd>
-              </div>
-
-              <div className="space-y-2 md:col-span-2">
-                <dt className="text-sm font-medium text-muted-foreground">설명</dt>
-                <dd className="text-sm p-3 bg-muted/30 rounded-md border min-h-[80px]">
-                  {mission.description ? (
-                    stripHtmlTags(mission.description)
-                  ) : (
-                    <span className="text-muted-foreground italic">설정되지 않음</span>
-                  )}
-                </dd>
-              </div>
-
-              <div className="space-y-2">
-                <dt className="text-sm font-medium text-muted-foreground">미션 이미지</dt>
-                <dd>
-                  {mission.imageUrl ? (
-                    <div className="relative">
-                      <Image
-                        src={mission.imageUrl}
-                        alt="미션 이미지"
-                        width={200}
-                        height={200}
-                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 400px"
-                        className="w-auto h-auto max-w-full max-h-64 min-h-32 rounded-lg border"
-                        style={{ objectFit: "contain" }}
-                        loading="lazy"
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-32 border-2 border-dashed rounded-lg bg-muted/20">
-                      <ImageIcon className="h-8 w-8 text-muted-foreground/50 mb-2" />
-                      <span className="text-sm text-muted-foreground">이미지 없음</span>
-                    </div>
-                  )}
-                </dd>
-              </div>
-
-              <div className="space-y-2">
-                <dt className="text-sm font-medium text-muted-foreground">브랜드 로고</dt>
-                <dd>
-                  {mission.brandLogoUrl ? (
-                    <div className="relative">
-                      <Image
-                        src={mission.brandLogoUrl}
-                        alt="브랜드 로고"
-                        width={150}
-                        height={80}
-                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 300px"
-                        className="w-auto h-auto max-w-full max-h-32 min-h-16 rounded-lg border bg-gray-50 p-2"
-                        style={{ objectFit: "contain" }}
-                        loading="lazy"
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-32 border-2 border-dashed rounded-lg bg-muted/20">
-                      <ImageIcon className="h-8 w-8 text-muted-foreground/50 mb-2" />
-                      <span className="text-sm text-muted-foreground">이미지 없음</span>
-                    </div>
-                  )}
-                </dd>
-              </div>
-
-              <div className="space-y-2">
-                <dt className="text-sm font-medium text-muted-foreground">생성일</dt>
-                <dd className="text-sm">
-                  <ClientDateDisplay date={mission.createdAt} />
-                </dd>
-              </div>
-
-              <div className="space-y-2">
-                <dt className="text-sm font-medium text-muted-foreground">수정일</dt>
-                <dd className="text-sm">
-                  <ClientDateDisplay date={mission.updatedAt} />
-                </dd>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
