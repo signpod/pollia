@@ -5,17 +5,19 @@ import type { AnimationRefs } from "./useAnimationRefs";
 export function createContentAnimationTimeline(refs: AnimationRefs) {
   const tl = gsap.timeline({ delay: ANIMATION_DELAYS.CONTENT_ITEMS });
 
-  tl.fromTo(
-    refs.logo.current,
-    { opacity: 0, y: -10 },
-    { opacity: 1, y: 0, duration: ANIMATION_DURATIONS.CONTENT_FADE },
-  );
+  if (refs.logo.current) {
+    tl.fromTo(
+      refs.logo.current,
+      { opacity: 0, y: -10 },
+      { opacity: 1, y: 0, duration: ANIMATION_DURATIONS.CONTENT_FADE },
+    );
+  }
 
   tl.fromTo(
     refs.title.current,
     { opacity: 0, y: -10 },
     { opacity: 1, y: 0, duration: ANIMATION_DURATIONS.CONTENT_FADE },
-    "-=0.1",
+    refs.logo.current ? "-=0.1" : undefined,
   );
 
   tl.fromTo(

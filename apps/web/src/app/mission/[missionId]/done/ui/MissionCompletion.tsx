@@ -52,7 +52,7 @@ export function MissionCompletion() {
 
   useEffect(() => {
     if (!showContent) return;
-    if (!refs.logo.current || !refs.title.current || !refs.infoBox.current) return;
+    if (!refs.title.current || !refs.infoBox.current) return;
 
     const timeline = createContentAnimationTimeline(refs);
 
@@ -64,8 +64,8 @@ export function MissionCompletion() {
   return (
     <div
       className={cn(
-        "relative w-full flex flex-col items-center gap-6 pt-[280px] flex-1 overflow-hidden bg-white",
-        startAfter ? "my-auto pt-0" : "pt-[280px]",
+        "relative w-full flex flex-col items-center gap-6 pt-[25%] flex-1 overflow-hidden bg-white",
+        startAfter ? "my-auto pt-0" : "pt-[25%]",
       )}
     >
       <motion.div

@@ -53,7 +53,7 @@ export function SurveyCardContent({
       {imageUrl && (
         <div
           ref={refs.image}
-          className="w-full aspect-[3/2] overflow-hidden rounded-sm"
+          className="w-full aspect-3/2 overflow-hidden rounded-sm"
           style={{ opacity: 0 }}
         >
           <Image
