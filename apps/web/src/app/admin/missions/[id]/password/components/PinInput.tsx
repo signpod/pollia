@@ -8,9 +8,16 @@ interface PinInputProps {
   onChange: (value: string) => void;
   disabled?: boolean;
   error?: boolean;
+  masked?: boolean;
 }
 
-export function PinInput({ value, onChange, disabled = false, error = false }: PinInputProps) {
+export function PinInput({
+  value,
+  onChange,
+  disabled = false,
+  error = false,
+  masked = false,
+}: PinInputProps) {
   const [pins, setPins] = useState<string[]>(Array(6).fill(""));
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -82,8 +89,9 @@ export function PinInput({ value, onChange, disabled = false, error = false }: P
           onPaste={handlePaste}
           disabled={disabled}
           className={cn(
-            "w-12 h-14 text-center text-2xl font-semibold rounded-lg border-2 transition-all",
+            "w-12 h-14 text-center rounded-lg border-2 transition-all",
             "focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary",
+            masked && pin === "*" ? "text-3xl font-bold" : "text-2xl font-semibold",
             error
               ? "border-destructive focus:ring-destructive focus:border-destructive"
               : "border-input",

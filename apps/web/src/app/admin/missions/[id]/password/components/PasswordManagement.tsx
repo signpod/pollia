@@ -1,5 +1,6 @@
 "use client";
 
+import { getMissionPassword } from "@/actions/mission";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,8 +23,8 @@ import { Separator } from "@/app/admin/components/shadcn-ui/separator";
 import { useReadMission } from "@/app/admin/hooks/use-read-mission";
 import { useRemoveMissionPassword } from "@/app/admin/hooks/use-remove-mission-password";
 import { useSetMissionPassword } from "@/app/admin/hooks/use-set-mission-password";
-import { CheckCircle2, Dices, Lock, Trash2, XCircle } from "lucide-react";
-import { useState } from "react";
+import { Check, CheckCircle2, Copy, Dices, Eye, EyeOff, Lock, Trash2, XCircle } from "lucide-react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { PinInput } from "./PinInput";
 
@@ -39,6 +40,9 @@ export function PasswordManagement({ missionId }: PasswordManagementProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [actualPassword, setActualPassword] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const { data: missionData, isPending } = useReadMission(missionId);
   const setPasswordMutation = useSetMissionPassword(missionId);
@@ -46,6 +50,45 @@ export function PasswordManagement({ missionId }: PasswordManagementProps) {
 
   const mission = missionData?.data;
   const hasPassword = !!mission?.password;
+
+  const handleTogglePasswordVisibility = useCallback(async () => {
+    if (!isPasswordVisible && !actualPassword) {
+      try {
+        const result = await getMissionPassword(missionId);
+        setActualPassword(result.data);
+        setIsPasswordVisible(true);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "비밀번호를 불러올 수 없습니다";
+        toast.error(errorMessage);
+        return;
+      }
+    } else {
+      setIsPasswordVisible(!isPasswordVisible);
+    }
+  }, [isPasswordVisible, actualPassword, missionId]);
+
+  const handleCopyPassword = useCallback(async () => {
+    if (!actualPassword) {
+      try {
+        const result = await getMissionPassword(missionId);
+        setActualPassword(result.data);
+        if (result.data) {
+          await navigator.clipboard.writeText(result.data);
+          setCopied(true);
+          toast.success("비밀번호가 복사되었습니다");
+          setTimeout(() => setCopied(false), 2000);
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "비밀번호를 불러올 수 없습니다";
+        toast.error(errorMessage);
+      }
+    } else {
+      await navigator.clipboard.writeText(actualPassword);
+      setCopied(true);
+      toast.success("비밀번호가 복사되었습니다");
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }, [actualPassword, missionId]);
 
   if (isPending) {
     return (
@@ -86,6 +129,8 @@ export function PasswordManagement({ missionId }: PasswordManagementProps) {
       toast.success("비밀번호가 저장되었습니다");
       setPassword("");
       setError("");
+      setActualPassword(null);
+      setIsPasswordVisible(false);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "비밀번호 저장에 실패했습니다";
       setError(errorMessage);
@@ -104,6 +149,8 @@ export function PasswordManagement({ missionId }: PasswordManagementProps) {
       setPassword("");
       setError("");
       setIsDeleteDialogOpen(false);
+      setActualPassword(null);
+      setIsPasswordVisible(false);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "비밀번호 삭제에 실패했습니다";
       toast.error(errorMessage);
@@ -120,45 +167,58 @@ export function PasswordManagement({ missionId }: PasswordManagementProps) {
           <CardDescription>비밀번호 설정 상태를 확인할 수 있습니다</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              {hasPassword ? (
-                <>
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-50">
-                    <CheckCircle2 className="h-5 w-5 text-green-600" />
-                  </div>
-                  <div>
-                    <div className="font-semibold">비밀번호 설정됨</div>
-                    <div className="text-sm text-muted-foreground">
-                      이 미션은 비밀번호로 보호되고 있습니다
+          <div className="space-y-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                {hasPassword ? (
+                  <>
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-50">
+                      <CheckCircle2 className="h-5 w-5 text-green-600" />
                     </div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-muted">
-                    <XCircle className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <div className="font-semibold text-muted-foreground">비밀번호 미설정</div>
-                    <div className="text-sm text-muted-foreground">
-                      누구나 이 미션에 접근할 수 있습니다
+                    <div>
+                      <div className="font-semibold">비밀번호 설정됨</div>
+                      <div className="text-sm text-muted-foreground">
+                        이 미션은 비밀번호로 보호되고 있습니다
+                      </div>
                     </div>
-                  </div>
-                </>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-muted">
+                      <XCircle className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-muted-foreground">비밀번호 미설정</div>
+                      <div className="text-sm text-muted-foreground">
+                        누구나 이 미션에 접근할 수 있습니다
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+              {hasPassword && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={handleRemove}
+                  disabled={isLoading}
+                  className="gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  삭제
+                </Button>
               )}
             </div>
+
             {hasPassword && (
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={handleRemove}
-                disabled={isLoading}
-                className="gap-2"
-              >
-                <Trash2 className="h-4 w-4" />
-                삭제
-              </Button>
+              <PasswordDisplay
+                isPasswordVisible={isPasswordVisible}
+                actualPassword={actualPassword}
+                copied={copied}
+                onToggleVisibility={handleTogglePasswordVisibility}
+                onCopy={handleCopyPassword}
+                isLoading={isLoading}
+              />
             )}
           </div>
         </CardContent>
@@ -173,7 +233,7 @@ export function PasswordManagement({ missionId }: PasswordManagementProps) {
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Lock className="h-4 w-4 text-muted-foreground" />
-              <label className="text-sm font-medium">비밀번호</label>
+              <span className="text-sm font-medium">비밀번호</span>
             </div>
 
             <PinInput
@@ -211,18 +271,6 @@ export function PasswordManagement({ missionId }: PasswordManagementProps) {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>안내</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>• 비밀번호는 6자리 숫자만 입력 가능합니다.</p>
-          <p>• 비밀번호가 설정된 미션은 사용자가 비밀번호를 입력해야 접근할 수 있습니다.</p>
-          <p>• 비밀번호는 안전하게 암호화되어 저장됩니다.</p>
-          <p>• 랜덤 생성 버튼을 사용하여 안전한 비밀번호를 자동으로 생성할 수 있습니다.</p>
-        </CardContent>
-      </Card>
-
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -244,6 +292,62 @@ export function PasswordManagement({ missionId }: PasswordManagementProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </div>
+  );
+}
+
+interface PasswordDisplayProps {
+  isPasswordVisible: boolean;
+  actualPassword: string | null;
+  copied: boolean;
+  onToggleVisibility: () => void;
+  onCopy: () => void;
+  isLoading: boolean;
+}
+
+function PasswordDisplay({
+  isPasswordVisible,
+  actualPassword,
+  copied,
+  onToggleVisibility,
+  onCopy,
+  isLoading,
+}: PasswordDisplayProps) {
+  const displayValue = isPasswordVisible && actualPassword ? actualPassword : "******";
+
+  return (
+    <div className="space-y-3 p-3 rounded-lg bg-muted/50">
+      <div className="flex items-center justify-between">
+        <PinInput
+          value={displayValue}
+          onChange={() => {}}
+          disabled={true}
+          error={false}
+          masked={!isPasswordVisible}
+        />
+        <div className="flex items-center gap-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={onToggleVisibility}
+            disabled={isLoading}
+            className="size-12"
+          >
+            {isPasswordVisible ? <Eye className="size-5" /> : <EyeOff className="size-5" />}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={onCopy}
+            disabled={isLoading}
+            className="size-12"
+          >
+            {copied ? <Check className="size-5 text-green-600" /> : <Copy className="size-5" />}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
