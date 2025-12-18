@@ -41,12 +41,13 @@ const estimatedMinutesSchema = z
   .max(120, "120 이하여야 합니다")
   .optional();
 
-const maxParticipantsSchema = z
-  .number()
-  .int("정수여야 합니다")
-  .min(1, "1 이상이어야 합니다")
-  .nullable()
-  .optional();
+const maxParticipantsSchema = z.preprocess(val => {
+  if (val === "" || val === null || val === undefined) {
+    return null;
+  }
+  const num = Number(val);
+  return Number.isNaN(num) ? null : num;
+}, z.union([z.number().int("정수여야 합니다").min(1, "1 이상이어야 합니다"), z.null()]).optional());
 
 const actionIdsSchema = z.array(z.string().min(1, "액션 ID가 비어있습니다.")).default([]);
 
