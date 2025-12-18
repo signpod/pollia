@@ -21,24 +21,12 @@ import {
   MISSION_TARGET_MAX_LENGTH,
   MISSION_TITLE_MAX_LENGTH,
 } from "@/schemas/mission";
+import type { CreateMissionRequest } from "@/types/dto/mission";
 import { MissionType } from "@prisma/client";
 import type { UseFormReturn } from "react-hook-form";
 
 interface BasicInfoCardProps {
-  form: UseFormReturn<{
-    title: string;
-    description?: string | undefined;
-    target?: string | undefined;
-    imageUrl?: string | undefined;
-    imageFileUploadId?: string | undefined;
-    brandLogoUrl?: string | undefined;
-    brandLogoFileUploadId?: string | undefined;
-    deadline?: Date | undefined;
-    estimatedMinutes?: number | undefined;
-    type: "GENERAL" | "EXPERIENCE_GROUP";
-    actionIds?: string[] | undefined;
-    isActive?: boolean | undefined;
-  }>;
+  form: UseFormReturn<CreateMissionRequest>;
 }
 
 export function BasicInfoCard({ form }: BasicInfoCardProps) {
@@ -70,27 +58,46 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="type">
-            타입 <span className="text-destructive">*</span>
-          </Label>
-          <Select
-            value={form.watch("type")}
-            onValueChange={value => {
-              form.setValue("type", value as MissionType, { shouldDirty: true });
-            }}
-          >
-            <SelectTrigger id="type">
-              <SelectValue placeholder="미션 타입을 선택하세요" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={MissionType.GENERAL}>일반 미션</SelectItem>
-              <SelectItem value={MissionType.EXPERIENCE_GROUP}>체험단 미션</SelectItem>
-            </SelectContent>
-          </Select>
-          {form.formState.errors.type && (
-            <p className="text-sm text-destructive">{form.formState.errors.type.message}</p>
-          )}
+        <div className="flex gap-10">
+          <div className="space-y-2">
+            <Label htmlFor="type">
+              타입 <span className="text-destructive">*</span>
+            </Label>
+            <Select
+              value={form.watch("type")}
+              onValueChange={value => {
+                form.setValue("type", value as MissionType, { shouldDirty: true });
+              }}
+            >
+              <SelectTrigger id="type">
+                <SelectValue placeholder="미션 타입을 선택하세요" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={MissionType.GENERAL}>일반 미션</SelectItem>
+                <SelectItem value={MissionType.EXPERIENCE_GROUP}>체험단 미션</SelectItem>
+              </SelectContent>
+            </Select>
+            {form.formState.errors.type && (
+              <p className="text-sm text-destructive">{form.formState.errors.type.message}</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="maxParticipants">최대 참여자 수</Label>
+            <Input
+              id="maxParticipants"
+              type="number"
+              placeholder="제한 없음"
+              min="1"
+              {...form.register("maxParticipants", {
+                setValueAs: value => (value === "" ? null : Number(value)),
+              })}
+            />
+            {form.formState.errors.maxParticipants && (
+              <p className="text-sm text-destructive">
+                {form.formState.errors.maxParticipants.message}
+              </p>
+            )}
+          </div>
         </div>
 
         <div className="space-y-2">

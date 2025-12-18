@@ -20,6 +20,7 @@ import {
   ImageIcon,
   type LucideIcon,
   Tag,
+  Users,
   XCircle,
 } from "lucide-react";
 import Image from "next/image";
@@ -152,6 +153,19 @@ export function MissionDetailContent({ mission }: MissionDetailContentProps) {
                 "설정됨"
               ) : (
                 <span className="text-sm text-muted-foreground">미설정</span>
+              )
+            }
+          />
+
+          <StatCard
+            icon={Users}
+            iconColor="text-purple-600"
+            label="최대 참여자 수"
+            value={
+              mission.maxParticipants ? (
+                `${mission.maxParticipants}명`
+              ) : (
+                <span className="text-sm text-foreground">제한 없음</span>
               )
             }
           />
