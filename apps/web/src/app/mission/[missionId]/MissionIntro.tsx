@@ -96,9 +96,9 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
               <MissionImage imageUrl={imageUrl} />
             </div>
           )}
-          <div className="flex w-full flex-col bg-white py-5 rounded-t-3xl pb-0 relative z-10 mt-[-40px]">
-            <div className="bg-white h-6 absolute top-0 left-0 right-0  rounded-t-3xl z-30" />
-            <div className="bg-linear-to-t from-black/25 to-transparent h-[52px] absolute top-[-30px] left-0 right-0 z-20" />
+          <div className="flex w-full flex-col bg-white py-5 rounded-t-3xl pb-0 relative z-10 mt-[-20px]">
+            <div className="bg-white h-5 absolute top-0 left-0 right-0  rounded-t-3xl z-30" />
+            <div className="bg-linear-to-t from-black/25 to-transparent h-[50px] absolute top-[-30px] left-0 right-0 z-20" />
             <div className="sticky top-0 z-30 rounded-t-md mt-[-20px] bg-white px-5">
               {sections.length > 1 && (
                 <Tab.Root value={activeTab} pointColor="secondary" onValueChange={handleChangeTab}>
