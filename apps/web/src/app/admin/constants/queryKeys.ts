@@ -21,3 +21,10 @@ export const adminRewardQueryKeys = {
 } as const;
 
 export type AdminRewardQueryKeys = typeof adminRewardQueryKeys;
+
+export const adminMissionCompletionQueryKeys = {
+  all: () => ["admin", "mission-completion"] as const,
+  missionCompletion: (missionId: string) => ["admin", "mission-completion", missionId] as const,
+} as const;
+
+export type AdminMissionCompletionQueryKeys = typeof adminMissionCompletionQueryKeys;
