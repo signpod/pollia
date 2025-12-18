@@ -119,22 +119,21 @@ function usePinInput({ value, onChange, disabled = false }: UsePinInputProps) {
     [disabled],
   );
 
-  const handleKeyDown = useCallback(
-    (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Backspace" && !pins[index] && index > 0) {
-        inputRefs.current[index - 1]?.focus();
-      }
+  const handleKeyDown = useCallback((index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    const currentValue = (e.target as HTMLInputElement).value;
 
-      if (e.key === "ArrowLeft" && index > 0) {
-        inputRefs.current[index - 1]?.focus();
-      }
+    if (e.key === "Backspace" && !currentValue && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
 
-      if (e.key === "ArrowRight" && index < 5) {
-        inputRefs.current[index + 1]?.focus();
-      }
-    },
-    [pins],
-  );
+    if (e.key === "ArrowLeft" && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+
+    if (e.key === "ArrowRight" && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  }, []);
 
   const handlePaste = useCallback((e: React.ClipboardEvent) => {
     e.preventDefault();
