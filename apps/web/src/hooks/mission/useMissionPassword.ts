@@ -77,7 +77,7 @@ export const useMissionPassword = (missionId: string) => {
   }, [isLockedOut]);
 
   useEffect(() => {
-    if (inputPassword.length === 6 && !isPasswordCorrect) {
+    if (inputPassword.length === 6 && isPasswordCorrect?.data === false) {
       const newErrorCount = errorCount + 1;
       setErrorCount(newErrorCount);
 
@@ -89,7 +89,7 @@ export const useMissionPassword = (missionId: string) => {
 
       setInputPassword([]);
     }
-    if (inputPassword.length === 6 && isPasswordCorrect && firstActionId) {
+    if (inputPassword.length === 6 && isPasswordCorrect?.data === true && firstActionId) {
       router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
     }
   }, [inputPassword, isPasswordCorrect, firstActionId, missionId, router, errorCount]);

@@ -7,7 +7,7 @@ export const useVerifyMissionPassword = ({
   password,
 }: { missionId: string; password: string }) => {
   return useQuery({
-    queryKey: missionQueryKeys.verifyMissionPassword(missionId),
+    queryKey: missionQueryKeys.verifyMissionPassword(missionId, password),
     queryFn: () => verifyMissionPassword(missionId, password),
     staleTime: 5 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000,
