@@ -171,7 +171,9 @@ export default function AdminMissionCreatePage() {
         </p>
       </header>
 
-      <StepIndicator currentStep={currentStep} steps={STEPS} stepLabels={STEP_LABELS} />
+      <div className="max-w-4xl">
+        <StepIndicator currentStep={currentStep} steps={STEPS} stepLabels={STEP_LABELS} />
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
         {renderStep()}

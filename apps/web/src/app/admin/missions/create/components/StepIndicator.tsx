@@ -21,7 +21,10 @@ export function StepIndicator({ currentStep, steps, stepLabels }: StepIndicatorP
         const stepNumber = index + 1;
 
         return (
-          <div key={step} className="flex items-center flex-1">
+          <div
+            key={step}
+            className={cn("flex items-center", index === steps.length - 1 || "flex-1")}
+          >
             <div className="flex flex-col items-center">
               <div
                 className={cn(
