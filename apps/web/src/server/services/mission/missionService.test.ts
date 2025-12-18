@@ -406,9 +406,12 @@ describe("MissionService", () => {
           description: request.description,
           target: undefined,
           imageUrl: undefined,
+          imageFileUploadId: undefined,
           brandLogoUrl: undefined,
+          brandLogoFileUploadId: undefined,
           deadline: request.deadline,
           estimatedMinutes: request.estimatedMinutes,
+          maxParticipants: null,
           type: "GENERAL",
           creatorId: "user-1",
         },
@@ -474,6 +477,7 @@ describe("MissionService", () => {
         {
           title: "수정된 설문",
           description: "수정된 설명",
+          maxParticipants: null,
         },
         "user-1",
       );
