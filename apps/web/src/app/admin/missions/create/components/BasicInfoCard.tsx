@@ -21,12 +21,12 @@ import {
   MISSION_TARGET_MAX_LENGTH,
   MISSION_TITLE_MAX_LENGTH,
 } from "@/schemas/mission";
-import type { CreateMissionRequest } from "@/types/dto/mission";
 import { MissionType } from "@prisma/client";
 import type { UseFormReturn } from "react-hook-form";
+import type { CreateMissionFunnelFormData } from "../schemas";
 
 interface BasicInfoCardProps {
-  form: UseFormReturn<CreateMissionRequest>;
+  form: UseFormReturn<CreateMissionFunnelFormData>;
 }
 
 export function BasicInfoCard({ form }: BasicInfoCardProps) {

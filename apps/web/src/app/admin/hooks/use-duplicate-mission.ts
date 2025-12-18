@@ -19,7 +19,7 @@ export function useDuplicateMission(options: UseDuplicateMissionOptions = {}) {
     },
     onSuccess: data => {
       queryClient.invalidateQueries({
-        queryKey: adminMissionQueryKeys.missions(),
+        queryKey: adminMissionQueryKeys.all(),
       });
       options.onSuccess?.(data);
     },

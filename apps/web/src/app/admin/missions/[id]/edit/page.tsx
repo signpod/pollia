@@ -3,13 +3,14 @@
 import { ErrorBoundary } from "@/app/admin/components/common/ErrorBoundary";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/admin/components/shadcn-ui/tabs";
 import { useReadMission } from "@/app/admin/hooks/use-read-mission";
+import { notFound } from "next/navigation";
 import { Suspense, use } from "react";
 import { AdminMissionHeader } from "../components/AdminMissionHeader";
 import { MissionNavigation } from "../components/MissionNavigation";
 import { ActionsEditTab } from "./components/ActionsEditTab";
 import { BasicInfoEditTab } from "./components/BasicInfoEditTab";
+import { CompletionEditTab } from "./components/CompletionEditTab";
 import { RewardEditTab } from "./components/RewardEditTab";
-import { notFound } from "next/navigation";
 
 interface AdminMissionEditPageProps {
   params: Promise<{ id: string }>;
@@ -37,6 +38,7 @@ export default function AdminMissionEditPage({ params }: AdminMissionEditPagePro
           <TabsTrigger value="basic">기본 정보 수정</TabsTrigger>
           <TabsTrigger value="actions">액션 수정</TabsTrigger>
           <TabsTrigger value="reward">리워드 수정</TabsTrigger>
+          <TabsTrigger value="completion">완료 화면 수정</TabsTrigger>
         </TabsList>
 
         <TabsContent value="basic" className="mt-6">
@@ -55,6 +57,14 @@ export default function AdminMissionEditPage({ params }: AdminMissionEditPagePro
           <ErrorBoundary>
             <Suspense fallback={<div className="text-muted-foreground">로딩 중...</div>}>
               <RewardEditTab missionId={missionId} />
+            </Suspense>
+          </ErrorBoundary>
+        </TabsContent>
+
+        <TabsContent value="completion" className="mt-6">
+          <ErrorBoundary>
+            <Suspense fallback={<div className="text-muted-foreground">로딩 중...</div>}>
+              <CompletionEditTab missionId={missionId} />
             </Suspense>
           </ErrorBoundary>
         </TabsContent>

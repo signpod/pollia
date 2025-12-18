@@ -46,7 +46,8 @@ const maxParticipantsSchema = z
   .int("정수여야 합니다")
   .min(1, "1 이상이어야 합니다")
   .nullable()
-  .optional();
+  .optional()
+  .default(null);
 
 const actionIdsSchema = z.array(z.string().min(1, "액션 ID가 비어있습니다.")).default([]);
 
@@ -96,5 +97,5 @@ export const missionUpdateSchema = z
   });
 
 export type MissionInput = z.infer<typeof missionInputSchema>;
-export type MissionUpdate = z.infer<typeof missionUpdateSchema>;
+export type MissionUpdate = z.input<typeof missionUpdateSchema>;
 export type MissionPasswordInput = z.infer<typeof missionPasswordSchema>;

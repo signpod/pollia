@@ -1,54 +1,169 @@
 "use client";
 
 import { Button } from "@/app/admin/components/shadcn-ui/button";
+import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
 import { useCreateMission } from "@/app/admin/hooks/use-create-mission";
-import { missionInputSchema } from "@/schemas/mission";
-import type { CreateMissionRequest } from "@/types/dto/mission";
+import { useCreateMissionCompletion } from "@/app/admin/hooks/use-create-mission-completion";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ADMIN_ROUTES } from "../../constants/routes";
 import { BasicInfoCard } from "./components/BasicInfoCard";
+import { CompletionStep } from "./components/CompletionStep";
 import { ImageCard } from "./components/ImageCard";
+import { StepIndicator } from "./components/StepIndicator";
+import { type CreateMissionFunnelFormData, createMissionFunnelSchema } from "./schemas";
+import { STEPS, STEP_LABELS, type Step } from "./types";
 
 export default function AdminMissionCreatePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentStepParam = searchParams.get("step");
+  const currentStep: Step =
+    currentStepParam && STEPS.includes(currentStepParam as Step)
+      ? (currentStepParam as Step)
+      : (STEPS[0] as Step);
+  const currentStepIndex = STEPS.indexOf(currentStep);
+  if (currentStepIndex === -1) {
+    throw new Error(`Invalid step: ${currentStep}`);
+  }
+
   const createMission = useCreateMission({
-    onSuccess: data => {
+    onSuccess: async data => {
+      const completion = form.getValues("completion");
+      if (completion?.title && completion?.description) {
+        try {
+          await createMissionCompletion.mutateAsync({
+            title: completion.title,
+            description: completion.description,
+            missionId: data.data.id,
+            ...(completion.imageUrl && { imageUrl: completion.imageUrl }),
+            ...(completion.imageFileUploadId && {
+              imageFileUploadId: completion.imageFileUploadId,
+            }),
+            ...(completion.links && { links: completion.links }),
+          });
+        } catch (error) {
+          console.error("완료 화면 생성 실패:", error);
+          toast.warning("미션은 생성되었지만 완료 화면 생성에 실패했습니다.");
+          router.push(ADMIN_ROUTES.ADMIN_MISSION_EDIT(data.data.id));
+          return;
+        }
+      }
       toast.success("미션이 생성되었습니다.");
       router.push(ADMIN_ROUTES.ADMIN_MISSION_EDIT(data.data.id));
     },
     onError: error => {
-      toast.warning(error.message || "미션 생성 중 오류가 발생했습니다.");
+      toast.error(error.message || "미션 생성 중 오류가 발생했습니다.");
     },
   });
 
-  const form = useForm<CreateMissionRequest>({
-    resolver: zodResolver(missionInputSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      target: "",
-      imageUrl: undefined,
-      imageFileUploadId: undefined,
-      brandLogoUrl: undefined,
-      brandLogoFileUploadId: undefined,
-      estimatedMinutes: undefined,
-      deadline: undefined,
-      maxParticipants: null,
-      type: "GENERAL" as const,
-      isActive: undefined,
-      actionIds: [],
+  const createMissionCompletion = useCreateMissionCompletion({
+    onError: error => {
+      console.error("완료 화면 생성 실패:", error);
     },
   });
 
-  const onSubmit = form.handleSubmit(data => {
-    createMission.mutate(data);
+  const defaultValues: CreateMissionFunnelFormData = {
+    title: "",
+    description: "",
+    target: "",
+    imageUrl: undefined,
+    imageFileUploadId: undefined,
+    brandLogoUrl: undefined,
+    brandLogoFileUploadId: undefined,
+    estimatedMinutes: undefined,
+    deadline: undefined,
+    maxParticipants: null,
+    type: "GENERAL" as const,
+    isActive: undefined,
+    actionIds: [],
+    completion: undefined,
+  };
+
+  const form = useForm<CreateMissionFunnelFormData>({
+    resolver: zodResolver(createMissionFunnelSchema),
+    defaultValues,
   });
+
+  const handleNext = async () => {
+    if (currentStepIndex === STEPS.length - 1) {
+      await handleSubmit();
+      return;
+    }
+
+    const fieldsToValidate = getFieldsForStep(currentStep);
+    const isValid = await form.trigger(fieldsToValidate);
+
+    if (isValid) {
+      const nextStep = STEPS[currentStepIndex + 1];
+      router.push(`?step=${nextStep}`);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStepIndex === 0) {
+      router.back();
+      return;
+    }
+    const prevStep = STEPS[currentStepIndex - 1];
+    router.push(`?step=${prevStep}`);
+  };
+
+  const handleSubmit = form.handleSubmit(async (data: CreateMissionFunnelFormData) => {
+    const { completion, ...missionData } = data;
+    createMission.mutate({
+      title: missionData.title,
+      type: missionData.type,
+      actionIds: Array.isArray(missionData.actionIds) ? missionData.actionIds : [],
+      ...(missionData.description && { description: missionData.description }),
+      ...(missionData.target && { target: missionData.target }),
+      ...(missionData.imageUrl && { imageUrl: missionData.imageUrl }),
+      ...(missionData.imageFileUploadId && { imageFileUploadId: missionData.imageFileUploadId }),
+      ...(missionData.brandLogoUrl && { brandLogoUrl: missionData.brandLogoUrl }),
+      ...(missionData.brandLogoFileUploadId && {
+        brandLogoFileUploadId: missionData.brandLogoFileUploadId,
+      }),
+      ...(missionData.estimatedMinutes && { estimatedMinutes: missionData.estimatedMinutes }),
+      ...(missionData.deadline && { deadline: missionData.deadline }),
+      ...(missionData.maxParticipants !== null && { maxParticipants: missionData.maxParticipants }),
+      ...(missionData.isActive !== undefined && { isActive: missionData.isActive }),
+    });
+  });
+
+  const getFieldsForStep = (step: Step): (keyof CreateMissionFunnelFormData)[] => {
+    switch (step) {
+      case "basic":
+        return ["title", "type"];
+      case "image":
+        return [];
+      case "completion":
+        return [];
+      default:
+        return [];
+    }
+  };
+
+  const renderStep = () => {
+    switch (currentStep) {
+      case "basic":
+        return <BasicInfoCard form={form} />;
+      case "image":
+        return <ImageCard form={form} />;
+      case "completion":
+        return <CompletionStep form={form} />;
+      default:
+        return null;
+    }
+  };
+
+  const isPending = createMission.isPending || createMissionCompletion.isPending;
+  const isLastStep = currentStepIndex === STEPS.length - 1;
 
   return (
-    <div className="px-6 py-8 ">
+    <div className="px-6 py-8">
       <header className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">새 미션 만들기</h1>
         <p className="text-muted-foreground mt-2">
@@ -56,21 +171,36 @@ export default function AdminMissionCreatePage() {
         </p>
       </header>
 
-      <form onSubmit={onSubmit} className="space-y-6 max-w-4xl">
-        <BasicInfoCard form={form} />
-        <ImageCard form={form} />
+      <div className="max-w-4xl">
+        <StepIndicator currentStep={currentStep} steps={STEPS} stepLabels={STEP_LABELS} />
+      </div>
 
-        <div className="flex justify-end gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => router.back()}
-            disabled={createMission.isPending}
-          >
-            취소
+      <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
+        {renderStep()}
+
+        <div className="flex justify-between gap-3">
+          <Button type="button" variant="outline" onClick={handleBack} disabled={isPending}>
+            <ChevronLeft className="size-4" />
+            {currentStepIndex === 0 ? "취소" : "이전"}
           </Button>
-          <Button type="submit" disabled={createMission.isPending}>
-            {createMission.isPending ? "생성 중..." : "미션 생성"}
+          <Button
+            type={isLastStep ? "submit" : "button"}
+            onClick={isLastStep ? undefined : handleNext}
+            disabled={isPending}
+          >
+            {isPending ? (
+              <>
+                <Spinner />
+                {isLastStep ? "생성 중..." : "처리 중..."}
+              </>
+            ) : isLastStep ? (
+              "미션 생성"
+            ) : (
+              <>
+                다음
+                <ChevronRight className="size-4" />
+              </>
+            )}
           </Button>
         </div>
       </form>
