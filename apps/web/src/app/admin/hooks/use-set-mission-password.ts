@@ -13,7 +13,6 @@ export function useSetMissionPassword(missionId: string) {
       queryClient.invalidateQueries({
         queryKey: adminMissionQueryKeys.mission(missionId),
       });
-      console.log("success");
     },
   });
 }
