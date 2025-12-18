@@ -42,8 +42,15 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
     }
   }
 
-  const { mission, firstActionId, isEnabledToResume, nextActionId, isCompleted, missionResponse } =
-    useMissionIntroData(missionId);
+  const {
+    mission,
+    firstActionId,
+    isEnabledToResume,
+    nextActionId,
+    isCompleted,
+    missionResponse,
+    isRequirePassword,
+  } = useMissionIntroData(missionId);
 
   const { showResumeModal } = useSurveyResume({
     isEnabledToResume,
@@ -189,6 +196,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
             showResumeModal={showResumeModal}
             isCompleted={isCompleted}
             hasReward={!!reward}
+            isRequirePassword={isRequirePassword}
           />
         </FixedBottomLayout.Content>
       </main>

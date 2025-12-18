@@ -45,6 +45,7 @@ export interface GetMissionResponse {
     deadline?: Date | null;
     isActive: boolean;
     type: MissionType;
+    password?: string | null;
     creatorId: string;
     rewardId?: string | null;
     createdAt: Date;

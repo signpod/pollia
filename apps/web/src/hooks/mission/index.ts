@@ -7,3 +7,4 @@ export * from "./useMissionResume";
 export * from "./useMissionRewardVisibility";
 export * from "./useMissionSurveyToast";
 export * from "./useSectionScrollSync";
+export * from "./useVerifyMissionPassword";
