@@ -66,12 +66,37 @@ interface UsePinInputProps {
 function usePinInput({ value, onChange, disabled = false }: UsePinInputProps) {
   const [pins, setPins] = useState<string[]>(Array(6).fill(""));
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const isInternalUpdateRef = useRef(false);
+  const nextFocusIndexRef = useRef<number | null>(null);
+  const onChangeRef = useRef(onChange);
 
   useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  useEffect(() => {
+    if (isInternalUpdateRef.current) {
+      isInternalUpdateRef.current = false;
+      return;
+    }
     const digits = value.split("").slice(0, 6);
     const paddedDigits = [...digits, ...Array(6 - digits.length).fill("")];
     setPins(paddedDigits);
   }, [value]);
+
+  useEffect(() => {
+    if (isInternalUpdateRef.current) {
+      const newValue = pins.join("").replace(/\s/g, "");
+      onChangeRef.current(newValue);
+      isInternalUpdateRef.current = false;
+
+      if (nextFocusIndexRef.current !== null) {
+        const focusIndex = nextFocusIndexRef.current;
+        nextFocusIndexRef.current = null;
+        inputRefs.current[focusIndex]?.focus();
+      }
+    }
+  }, [pins]);
 
   const handleChange = useCallback(
     (index: number, digit: string) => {
@@ -81,18 +106,17 @@ function usePinInput({ value, onChange, disabled = false }: UsePinInputProps) {
         return;
       }
 
-      const newPins = [...pins];
-      newPins[index] = digit;
-      setPins(newPins);
-
-      const newValue = newPins.join("").replace(/\s/g, "");
-      onChange(newValue);
-
+      isInternalUpdateRef.current = true;
       if (digit && index < 5) {
-        inputRefs.current[index + 1]?.focus();
+        nextFocusIndexRef.current = index + 1;
       }
+      setPins(prevPins => {
+        const newPins = [...prevPins];
+        newPins[index] = digit;
+        return newPins;
+      });
     },
-    [disabled, pins, onChange],
+    [disabled],
   );
 
   const handleKeyDown = useCallback(

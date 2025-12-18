@@ -51,12 +51,9 @@ function SelectContent({
   align = "center",
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
-  const [container, setContainer] = React.useState<HTMLElement | null>(null);
-
-  React.useEffect(() => {
-    if (typeof window === "undefined") return;
-    const adminRoot = document.querySelector(".admin-root");
-    setContainer(adminRoot as HTMLElement);
+  const container = React.useMemo(() => {
+    if (typeof window === "undefined") return null;
+    return document.querySelector(".admin-root") as HTMLElement;
   }, []);
 
   return (
