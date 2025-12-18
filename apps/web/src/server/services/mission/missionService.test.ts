@@ -871,15 +871,15 @@ describe("MissionService", () => {
       mockRepository.findById.mockResolvedValue(mockMission);
       mockRepository.update.mockResolvedValue({
         ...mockMission,
-        password: "encrypted:1234",
+        password: "encrypted:876098",
       });
 
       // When
-      await missionService.setPassword("mission-1", "1234", "user-1");
+      await missionService.setPassword("mission-1", "876098", "user-1");
 
       // Then
       expect(mockRepository.update).toHaveBeenCalledWith("mission-1", {
-        password: "encrypted:1234",
+        password: "encrypted:876098",
       });
     });
 
@@ -908,12 +908,12 @@ describe("MissionService", () => {
       mockRepository.findById.mockResolvedValue(mockMission);
 
       // When & Then
-      await expect(missionService.setPassword("mission-1", "1234", "user-2")).rejects.toThrow(
+      await expect(missionService.setPassword("mission-1", "876098", "user-2")).rejects.toThrow(
         "비밀번호 설정 권한이 없습니다.",
       );
 
       try {
-        await missionService.setPassword("mission-1", "1234", "user-2");
+        await missionService.setPassword("mission-1", "876098", "user-2");
       } catch (error) {
         expect((error as Error & { cause: number }).cause).toBe(403);
       }
@@ -945,7 +945,7 @@ describe("MissionService", () => {
 
       // When & Then
       await expect(missionService.setPassword("mission-1", "", "user-1")).rejects.toThrow(
-        "비밀번호는 최소 4자 이상이어야 합니다.",
+        "비밀번호는 정확히 6자리여야 합니다.",
       );
 
       try {
