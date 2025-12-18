@@ -102,14 +102,18 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
             <div className="bg-linear-to-t from-black/25 to-transparent h-[50px] absolute top-[-30px] left-0 right-0 z-20" />
             <div className="sticky top-0 z-30 rounded-t-md mt-[-20px] bg-white px-5">
               <Tab.Root value={activeTab} pointColor="secondary" onValueChange={handleChangeTab}>
-                <Tab.List className={cn(sections.length === 1 ? "border-none" : "")}>
+                <Tab.List>
                   <Tab.Item
                     value={SECTION_IDS.MISSION_GUIDE}
                     className={cn(sections.length === 1 ? "mx-auto max-w-[110px]" : "")}
                   >
-                    미션 안내
+                    <Typo.SubTitle size="large">미션 안내</Typo.SubTitle>
                   </Tab.Item>
-                  {reward && <Tab.Item value={SECTION_IDS.REWARD}>참여 혜택</Tab.Item>}
+                  {reward && (
+                    <Tab.Item value={SECTION_IDS.REWARD}>
+                      <Typo.SubTitle size="large">참여 혜택</Typo.SubTitle>
+                    </Tab.Item>
+                  )}
                 </Tab.List>
               </Tab.Root>
             </div>
@@ -133,14 +137,14 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
 
               <div className="flex flex-col gap-1 items-center">
                 <Typo.SubTitle size="large">미션 조건</Typo.SubTitle>
-                <Typo.Body size="small" className="text-info">
+                <Typo.Body size="medium" className="text-info">
                   {target}
                 </Typo.Body>
               </div>
 
               <div className="flex flex-col gap-1 items-center">
                 <Typo.SubTitle size="large">미션 소요 시간</Typo.SubTitle>
-                <Typo.Body size="small" className="text-info">
+                <Typo.Body size="medium" className="text-info">
                   {estimatedMinutes}분
                 </Typo.Body>
               </div>
@@ -148,7 +152,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
               <div className="flex flex-col gap-1 items-center">
                 <Typo.SubTitle size="large">미션 기간</Typo.SubTitle>
                 <Typo.Body
-                  size="small"
+                  size="medium"
                   className="text-info"
                 >{`${formatDeadline(createdAt ?? "")} ~ ${deadlineText}`}</Typo.Body>
               </div>
