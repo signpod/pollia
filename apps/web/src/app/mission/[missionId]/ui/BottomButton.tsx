@@ -26,6 +26,7 @@ interface BottomButtonProps {
   deadline?: Mission["deadline"];
   showResumeModal?: () => boolean;
   isCompleted: boolean;
+  isActive: boolean;
   hasReward: boolean;
   isRequirePassword: boolean;
 }
@@ -34,6 +35,7 @@ export function BottomButton({
   firstActionId,
   initialError,
   deadline,
+  isActive,
   hasReward = false,
   showResumeModal,
   isCompleted,
@@ -47,7 +49,7 @@ export function BottomButton({
   const { isLoggedIn } = useAuth();
   const router = useRouter();
 
-  const isExpired = Boolean(deadline && isBefore(deadline, new Date()));
+  const isExpired = Boolean(deadline && isBefore(deadline, new Date())) || !isActive;
 
   const isDisabled = isExpired || !firstActionId;
   const alreadyCompleted = isCompleted;
