@@ -11,13 +11,13 @@ import {
 import { Label } from "@/app/admin/components/shadcn-ui/label";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { useImageUpload } from "@/hooks/common/useImageUpload";
-import type { CreateMissionRequest } from "@/types/dto/mission";
 import { useEffect, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
+import type { CreateMissionFunnelFormData } from "../schemas";
 
 interface ImageCardProps {
-  form: UseFormReturn<CreateMissionRequest>;
+  form: UseFormReturn<CreateMissionFunnelFormData>;
 }
 
 export function ImageCard({ form }: ImageCardProps) {
