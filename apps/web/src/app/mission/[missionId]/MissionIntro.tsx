@@ -191,7 +191,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
           </div>
         </div>
 
-        <FixedBottomLayout.Content className="flex w-full justify-end bg-transparent backdrop-blur-xl">
+        <FixedBottomLayout.Content className="flex w-full justify-end">
           <BottomButton
             firstActionId={firstActionId ?? ""}
             initialError={initialError}

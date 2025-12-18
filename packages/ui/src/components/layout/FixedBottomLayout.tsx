@@ -12,11 +12,43 @@ interface FixedBottomContextType {
 
 const FixedBottomContext = createContext<FixedBottomContextType | null>(null);
 
+const BLUR_LAYERS = [
+  { heightRatio: 1.0, blur: 0.2 },
+  { heightRatio: 0.92, blur: 0.3 },
+  { heightRatio: 0.85, blur: 0.5 },
+  { heightRatio: 0.77, blur: 0.8 },
+  { heightRatio: 0.68, blur: 1.2 },
+  { heightRatio: 0.58, blur: 1.8 },
+  { heightRatio: 0.48, blur: 2.5 },
+  { heightRatio: 0.37, blur: 3.5 },
+  { heightRatio: 0.25, blur: 5 },
+  { heightRatio: 0.12, blur: 7 },
+];
+
+function GradientBlurLayers({ baseHeight }: { baseHeight: number }) {
+  return (
+    <>
+      {BLUR_LAYERS.map(layer => (
+        <div
+          key={layer.blur}
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-49"
+          style={{
+            height: `${baseHeight * layer.heightRatio}px`,
+            backdropFilter: `blur(${layer.blur}px)`,
+            WebkitBackdropFilter: `blur(${layer.blur}px)`,
+          }}
+        />
+      ))}
+    </>
+  );
+}
+
 interface FixedBottomLayoutProps {
   children: ReactNode;
   className?: string;
   hasBottomGap?: boolean;
   hasGradient?: boolean;
+  hasGradientBlur?: boolean;
 }
 
 export function FixedBottomLayout({
@@ -24,6 +56,7 @@ export function FixedBottomLayout({
   className,
   hasBottomGap = true,
   hasGradient = false,
+  hasGradientBlur = false,
 }: FixedBottomLayoutProps) {
   const [currentContent, setCurrentContent] = useState<ReactNode | null>(null);
   const [contentClassName, setContentClassName] = useState<string | null>(null);
@@ -75,20 +108,21 @@ export function FixedBottomLayout({
             ref={contentRef}
             className={cn(
               "fixed right-0 bottom-0 left-0 z-50",
-              hasGradient ? "bg-transparent" : "bg-white",
+              hasGradient || hasGradientBlur ? "bg-transparent" : "bg-white",
               "mx-auto max-w-lg",
               contentClassName,
             )}
           >
             {hasGradient && (
               <div
-                className="pointer-events-none absolute inset-x-0 bottom-0 z-[49] h-[100px]"
+                className="pointer-events-none absolute inset-x-0 bottom-0 z-49 h-[100px]"
                 style={{
                   backgroundImage:
                     "linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 40%, rgba(255, 255, 255, 1) 100%)",
                 }}
               />
             )}
+            {hasGradientBlur && <GradientBlurLayers baseHeight={contentHeight + 12} />}
             <div className="relative z-50 w-full">{currentContent}</div>
           </div>
         )}
