@@ -23,10 +23,7 @@ export function useUpdateReward(options: UseUpdateRewardOptions = {}) {
       return await updateReward(rewardId, data);
     },
 
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: adminRewardQueryKeys.reward(variables.rewardId),
-      });
+    onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: adminRewardQueryKeys.all(),
       });
@@ -34,7 +31,6 @@ export function useUpdateReward(options: UseUpdateRewardOptions = {}) {
     },
 
     onError: error => {
-      console.error("리워드 수정 실패:", error);
       options.onError?.(error as Error);
     },
   });

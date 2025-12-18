@@ -23,10 +23,7 @@ export function useUpdateMissionCompletion(options: UseUpdateMissionCompletionOp
       return await updateMissionCompletion(id, data);
     },
 
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: adminMissionCompletionQueryKeys.missionCompletion(variables.id),
-      });
+    onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: adminMissionCompletionQueryKeys.all(),
       });
