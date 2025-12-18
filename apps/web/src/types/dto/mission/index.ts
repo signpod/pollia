@@ -43,6 +43,7 @@ export interface GetMissionResponse {
     brandLogoUrl?: string | null;
     estimatedMinutes?: number | null;
     deadline?: Date | null;
+    maxParticipants?: number | null;
     isActive: boolean;
     type: MissionType;
     password?: string | null;

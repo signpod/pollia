@@ -108,27 +108,49 @@ function BasicInfoCard({ form }: BasicInfoCardProps) {
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="type">타입</Label>
-          <Select
-            value={form.watch("type")}
-            onValueChange={value => {
-              form.setValue("type", value as MissionType, { shouldDirty: true });
-            }}
-          >
-            <SelectTrigger id="type">
-              <SelectValue placeholder="미션 타입을 선택하세요" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={MissionType.GENERAL}>일반 미션</SelectItem>
-              <SelectItem value={MissionType.EXPERIENCE_GROUP}>체험단 미션</SelectItem>
-            </SelectContent>
-          </Select>
-          {form.formState.errors.type && (
-            <p className="text-sm text-destructive">{form.formState.errors.type.message}</p>
-          )}
+        <div className="flex gap-10">
+          <div className="space-y-2">
+            <Label htmlFor="type">타입</Label>
+            <Select
+              value={form.watch("type")}
+              onValueChange={value => {
+                form.setValue("type", value as MissionType, { shouldDirty: true });
+              }}
+            >
+              <SelectTrigger id="type">
+                <SelectValue placeholder="미션 타입을 선택하세요" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={MissionType.GENERAL}>일반 미션</SelectItem>
+                <SelectItem value={MissionType.EXPERIENCE_GROUP}>체험단 미션</SelectItem>
+              </SelectContent>
+            </Select>
+            {form.formState.errors.type && (
+              <p className="text-sm text-destructive">{form.formState.errors.type.message}</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="maxParticipants">최대 참여자 수</Label>
+            <Input
+              id="maxParticipants"
+              type="number"
+              placeholder="제한 없음"
+              min="1"
+              value={form.watch("maxParticipants") ?? ""}
+              onChange={e => {
+                const value = e.target.value;
+                form.setValue("maxParticipants", value === "" ? null : Number(value), {
+                  shouldDirty: true,
+                });
+              }}
+            />
+            {form.formState.errors.maxParticipants && (
+              <p className="text-sm text-destructive">
+                {form.formState.errors.maxParticipants.message}
+              </p>
+            )}
+          </div>
         </div>
-
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="description">설명</Label>
@@ -303,6 +325,7 @@ function useBasicInfoForm(mission: MissionData) {
     brandLogoUrl: mission.brandLogoUrl ?? undefined,
     estimatedMinutes: mission.estimatedMinutes ?? undefined,
     deadline: mission.deadline ? new Date(mission.deadline) : undefined,
+    maxParticipants: mission.maxParticipants ?? null,
     isActive: mission.isActive,
   };
 
