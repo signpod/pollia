@@ -15,6 +15,8 @@ export function useMissionIntroData(missionId: string) {
   const nextActionId = actionIds?.data?.actionIds?.[lastActionIndex];
   const isEnabledToResume = !isCompleted && lastActionIndex > 0 && !!nextActionId;
 
+  const isRequirePassword = mission?.data?.password !== null;
+
   return {
     mission: mission?.data,
     actionIds: actionIds?.data.actionIds,
@@ -24,5 +26,6 @@ export function useMissionIntroData(missionId: string) {
     isCompleted,
     isEnabledToResume,
     lastActionIndex,
+    isRequirePassword,
   };
 }

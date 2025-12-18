@@ -152,3 +152,7 @@ body::-webkit-scrollbar-thumb:hover {
 body::-webkit-scrollbar-thumb:active {
   background: linear-gradient(to bottom, rgb(167, 139, 250), rgb(139, 92, 246));
 }
+
+button {
+  cursor: pointer;
+}

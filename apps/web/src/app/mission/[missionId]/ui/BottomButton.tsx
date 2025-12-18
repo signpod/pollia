@@ -27,6 +27,7 @@ interface BottomButtonProps {
   showResumeModal?: () => boolean;
   isCompleted: boolean;
   hasReward: boolean;
+  isRequirePassword: boolean;
 }
 
 export function BottomButton({
@@ -36,6 +37,7 @@ export function BottomButton({
   hasReward = false,
   showResumeModal,
   isCompleted,
+  isRequirePassword,
 }: BottomButtonProps) {
   const { missionId } = useParams<{ missionId: string }>();
   const { handleKakaoLogin } = useKakaoLogin({
@@ -51,15 +53,19 @@ export function BottomButton({
   const alreadyCompleted = isCompleted;
 
   const handleClick = () => {
-    if (!isLoggedIn) {
-      handleKakaoLogin();
-    } else if (showResumeModal) {
-      const modalShown = showResumeModal();
-      if (!modalShown && firstActionId) {
+    if (isRequirePassword) {
+      router.push(ROUTES.MISSION_PASSWORD(missionId));
+    } else {
+      if (!isLoggedIn) {
+        handleKakaoLogin();
+      } else if (showResumeModal) {
+        const modalShown = showResumeModal();
+        if (!modalShown && firstActionId) {
+          router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
+        }
+      } else if (firstActionId) {
         router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
       }
-    } else if (firstActionId) {
-      router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
     }
   };
 
