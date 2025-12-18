@@ -11,25 +11,13 @@ import {
 import { Label } from "@/app/admin/components/shadcn-ui/label";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { useImageUpload } from "@/hooks/common/useImageUpload";
+import type { CreateMissionRequest } from "@/types/dto/mission";
 import { useEffect, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 
 interface ImageCardProps {
-  form: UseFormReturn<{
-    title: string;
-    description?: string | undefined;
-    target?: string | undefined;
-    imageUrl?: string | undefined;
-    imageFileUploadId?: string | undefined;
-    brandLogoUrl?: string | undefined;
-    brandLogoFileUploadId?: string | undefined;
-    deadline?: Date | undefined;
-    estimatedMinutes?: number | undefined;
-    type: "GENERAL" | "EXPERIENCE_GROUP";
-    actionIds?: string[] | undefined;
-    isActive?: boolean | undefined;
-  }>;
+  form: UseFormReturn<CreateMissionRequest>;
 }
 
 export function ImageCard({ form }: ImageCardProps) {

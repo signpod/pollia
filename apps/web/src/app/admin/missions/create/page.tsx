@@ -3,6 +3,7 @@
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { useCreateMission } from "@/app/admin/hooks/use-create-mission";
 import { missionInputSchema } from "@/schemas/mission";
+import type { CreateMissionRequest } from "@/types/dto/mission";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -23,7 +24,7 @@ export default function AdminMissionCreatePage() {
     },
   });
 
-  const form = useForm({
+  const form = useForm<CreateMissionRequest>({
     resolver: zodResolver(missionInputSchema),
     defaultValues: {
       title: "",
