@@ -78,21 +78,23 @@ export const useMissionPassword = (missionId: string) => {
 
   useEffect(() => {
     if (inputPassword.length === 6 && isPasswordCorrect?.data === false) {
-      const newErrorCount = errorCount + 1;
-      setErrorCount(newErrorCount);
+      setErrorCount(prev => {
+        const newErrorCount = prev + 1;
 
-      if (newErrorCount >= MAX_ERROR_COUNT) {
-        const endTime = Date.now() + LOCKOUT_DURATION;
-        setLockoutEndTime(endTime);
-        localStorage.setItem(getLockoutStorageKey(missionId), endTime.toString());
-      }
+        if (newErrorCount >= MAX_ERROR_COUNT) {
+          const endTime = Date.now() + LOCKOUT_DURATION;
+          setLockoutEndTime(endTime);
+          localStorage.setItem(getLockoutStorageKey(missionId), endTime.toString());
+        }
 
+        return newErrorCount;
+      });
       setInputPassword([]);
     }
     if (inputPassword.length === 6 && isPasswordCorrect?.data === true && firstActionId) {
       router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
     }
-  }, [inputPassword, isPasswordCorrect, firstActionId, missionId, router, errorCount]);
+  }, [inputPassword, isPasswordCorrect, firstActionId, missionId, router]);
 
   return {
     inputPassword,
