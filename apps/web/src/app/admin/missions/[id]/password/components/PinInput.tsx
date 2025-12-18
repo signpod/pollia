@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/app/admin/lib/utils";
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface PinInputProps {
   value: string;
@@ -15,8 +15,9 @@ export function PinInput({ value, onChange, disabled = false, error = false }: P
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
-    const digits = value.padEnd(6, "").split("").slice(0, 6);
-    setPins(digits);
+    const digits = value.split("").slice(0, 6);
+    const paddedDigits = [...digits, ...Array(6 - digits.length).fill("")];
+    setPins(paddedDigits);
   }, [value]);
 
   const handleChange = (index: number, digit: string) => {
@@ -69,15 +70,15 @@ export function PinInput({ value, onChange, disabled = false, error = false }: P
       {pins.map((pin, index) => (
         <input
           key={index}
-          ref={(el) => {
+          ref={el => {
             inputRefs.current[index] = el;
           }}
           type="text"
           inputMode="numeric"
           maxLength={1}
           value={pin}
-          onChange={(e) => handleChange(index, e.target.value)}
-          onKeyDown={(e) => handleKeyDown(index, e)}
+          onChange={e => handleChange(index, e.target.value)}
+          onKeyDown={e => handleKeyDown(index, e)}
           onPaste={handlePaste}
           disabled={disabled}
           className={cn(

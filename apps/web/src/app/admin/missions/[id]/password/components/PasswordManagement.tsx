@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/app/admin/components/shadcn-ui/alert-dialog";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import {
   Card,
@@ -28,6 +38,7 @@ function generateRandomPin(): string {
 export function PasswordManagement({ missionId }: PasswordManagementProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const { data: missionData, isPending } = useReadMission(missionId);
   const setPasswordMutation = useSetMissionPassword(missionId);
@@ -82,16 +93,17 @@ export function PasswordManagement({ missionId }: PasswordManagementProps) {
     }
   };
 
-  const handleRemove = async () => {
-    if (!confirm("정말 비밀번호를 삭제하시겠습니까?")) {
-      return;
-    }
+  const handleRemove = () => {
+    setIsDeleteDialogOpen(true);
+  };
 
+  const handleConfirmDelete = async () => {
     try {
       await removePasswordMutation.mutateAsync();
       toast.success("비밀번호가 삭제되었습니다");
       setPassword("");
       setError("");
+      setIsDeleteDialogOpen(false);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "비밀번호 삭제에 실패했습니다";
       toast.error(errorMessage);
@@ -108,31 +120,45 @@ export function PasswordManagement({ missionId }: PasswordManagementProps) {
           <CardDescription>비밀번호 설정 상태를 확인할 수 있습니다</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-3">
-            {hasPassword ? (
-              <>
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-50">
-                  <CheckCircle2 className="h-5 w-5 text-green-600" />
-                </div>
-                <div>
-                  <div className="font-semibold">비밀번호 설정됨</div>
-                  <div className="text-sm text-muted-foreground">
-                    이 미션은 비밀번호로 보호되고 있습니다
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              {hasPassword ? (
+                <>
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-50">
+                    <CheckCircle2 className="h-5 w-5 text-green-600" />
                   </div>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-muted">
-                  <XCircle className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <div>
-                  <div className="font-semibold text-muted-foreground">비밀번호 미설정</div>
-                  <div className="text-sm text-muted-foreground">
-                    누구나 이 미션에 접근할 수 있습니다
+                  <div>
+                    <div className="font-semibold">비밀번호 설정됨</div>
+                    <div className="text-sm text-muted-foreground">
+                      이 미션은 비밀번호로 보호되고 있습니다
+                    </div>
                   </div>
-                </div>
-              </>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-muted">
+                    <XCircle className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-muted-foreground">비밀번호 미설정</div>
+                    <div className="text-sm text-muted-foreground">
+                      누구나 이 미션에 접근할 수 있습니다
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+            {hasPassword && (
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleRemove}
+                disabled={isLoading}
+                className="gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                삭제
+              </Button>
             )}
           </div>
         </CardContent>
@@ -174,28 +200,13 @@ export function PasswordManagement({ missionId }: PasswordManagementProps) {
               랜덤 생성
             </Button>
 
-            <div className="flex gap-3">
-              {hasPassword && (
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={handleRemove}
-                  disabled={isLoading}
-                  className="gap-2"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  삭제
-                </Button>
-              )}
-
-              <Button
-                type="button"
-                onClick={handleSave}
-                disabled={isLoading || password.length !== 6}
-              >
-                저장
-              </Button>
-            </div>
+            <Button
+              type="button"
+              onClick={handleSave}
+              disabled={isLoading || password.length !== 6}
+            >
+              저장
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -211,6 +222,28 @@ export function PasswordManagement({ missionId }: PasswordManagementProps) {
           <p>• 랜덤 생성 버튼을 사용하여 안전한 비밀번호를 자동으로 생성할 수 있습니다.</p>
         </CardContent>
       </Card>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>비밀번호를 삭제하시겠습니까?</AlertDialogTitle>
+            <AlertDialogDescription>
+              이 작업은 되돌릴 수 없습니다. 비밀번호가 삭제되면 누구나 이 미션에 접근할 수 있게
+              됩니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={removePasswordMutation.isPending}>취소</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={removePasswordMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {removePasswordMutation.isPending ? "삭제 중..." : "삭제"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
