@@ -69,6 +69,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
     description,
     target,
     createdAt,
+    isActive,
   } = mission ?? {};
 
   const { data: reward } = useReadReward(mission?.rewardId || "");
@@ -193,6 +194,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
 
         <FixedBottomLayout.Content className="flex w-full justify-end">
           <BottomButton
+            isActive={isActive ?? false}
             firstActionId={firstActionId ?? ""}
             initialError={initialError}
             deadline={deadline}
