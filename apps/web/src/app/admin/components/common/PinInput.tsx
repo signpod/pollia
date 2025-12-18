@@ -136,20 +136,19 @@ function usePinInput({ value, onChange, disabled = false }: UsePinInputProps) {
     [pins],
   );
 
-  const handlePaste = useCallback(
-    (e: React.ClipboardEvent) => {
-      e.preventDefault();
-      const pastedData = e.clipboardData.getData("text");
-      const digits = pastedData.replace(/\D/g, "").slice(0, 6);
+  const handlePaste = useCallback((e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text");
+    const digits = pastedData.replace(/\D/g, "").slice(0, 6);
 
-      if (digits) {
-        onChange(digits);
-        const lastFilledIndex = Math.min(digits.length - 1, 5);
-        inputRefs.current[lastFilledIndex]?.focus();
-      }
-    },
-    [onChange],
-  );
+    if (digits) {
+      isInternalUpdateRef.current = true;
+      const paddedDigits = [...digits.split(""), ...Array(6 - digits.length).fill("")];
+      setPins(paddedDigits);
+      const lastFilledIndex = Math.min(digits.length - 1, 5);
+      nextFocusIndexRef.current = lastFilledIndex;
+    }
+  }, []);
 
   return {
     pins,
