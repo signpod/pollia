@@ -12,34 +12,19 @@ interface FixedBottomContextType {
 
 const FixedBottomContext = createContext<FixedBottomContextType | null>(null);
 
-const BLUR_LAYERS = [
-  { heightRatio: 1.0, blur: 0.2 },
-  { heightRatio: 0.92, blur: 0.3 },
-  { heightRatio: 0.85, blur: 0.5 },
-  { heightRatio: 0.77, blur: 0.8 },
-  { heightRatio: 0.68, blur: 1.2 },
-  { heightRatio: 0.58, blur: 1.8 },
-  { heightRatio: 0.48, blur: 2.5 },
-  { heightRatio: 0.37, blur: 3.5 },
-  { heightRatio: 0.25, blur: 5 },
-  { heightRatio: 0.12, blur: 7 },
-];
-
-function GradientBlurLayers({ baseHeight }: { baseHeight: number }) {
+function GradientBlurLayer({ height }: { height: number }) {
   return (
-    <>
-      {BLUR_LAYERS.map(layer => (
-        <div
-          key={layer.blur}
-          className="pointer-events-none absolute inset-x-0 bottom-0 z-49"
-          style={{
-            height: `${baseHeight * layer.heightRatio}px`,
-            backdropFilter: `blur(${layer.blur}px)`,
-            WebkitBackdropFilter: `blur(${layer.blur}px)`,
-          }}
-        />
-      ))}
-    </>
+    <div
+      className="pointer-events-none absolute inset-x-0 bottom-0 z-49"
+      style={{
+        height: `${height}px`,
+        backdropFilter: "blur(100px)",
+        WebkitBackdropFilter: "blur(100px)",
+        maskImage: "linear-gradient(to bottom, transparent 0%, black 100%)",
+        WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 100%)",
+        background: "rgba(255, 255, 255, 0)",
+      }}
+    />
   );
 }
 
@@ -122,7 +107,7 @@ export function FixedBottomLayout({
                 }}
               />
             )}
-            {hasGradientBlur && <GradientBlurLayers baseHeight={contentHeight + 12} />}
+            {hasGradientBlur && <GradientBlurLayer height={contentHeight + 12} />}
             <div className="relative z-50 w-full">{currentContent}</div>
           </div>
         )}
