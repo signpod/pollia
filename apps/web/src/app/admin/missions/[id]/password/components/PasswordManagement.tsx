@@ -1,32 +1,56 @@
 "use client";
 
 import { Button } from "@/app/admin/components/shadcn-ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/admin/components/shadcn-ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/app/admin/components/shadcn-ui/card";
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
+import { useReadMission } from "@/app/admin/hooks/use-read-mission";
 import { useRemoveMissionPassword } from "@/app/admin/hooks/use-remove-mission-password";
 import { useSetMissionPassword } from "@/app/admin/hooks/use-set-mission-password";
-import type { GetMissionResponse } from "@/types/dto";
 import { CheckCircle2, Dices, Lock, Trash2, XCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { PinInput } from "./PinInput";
 
 interface PasswordManagementProps {
-  mission: GetMissionResponse["data"];
+  missionId: string;
 }
 
 function generateRandomPin(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-export function PasswordManagement({ mission }: PasswordManagementProps) {
+export function PasswordManagement({ missionId }: PasswordManagementProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const setPasswordMutation = useSetMissionPassword(mission.id);
-  const removePasswordMutation = useRemoveMissionPassword(mission.id);
+  const { data: missionData, isPending } = useReadMission(missionId);
+  const setPasswordMutation = useSetMissionPassword(missionId);
+  const removePasswordMutation = useRemoveMissionPassword(missionId);
 
-  const hasPassword = !!mission.password;
+  const mission = missionData?.data;
+  const hasPassword = !!mission?.password;
+
+  if (isPending) {
+    return (
+      <div className="p-8 border border-dashed rounded-lg text-center text-muted-foreground">
+        로딩 중...
+      </div>
+    );
+  }
+
+  if (!mission) {
+    return (
+      <div className="p-8 border border-dashed rounded-lg text-center text-muted-foreground">
+        미션 정보를 불러올 수 없습니다.
+      </div>
+    );
+  }
 
   const handleGenerateRandom = () => {
     const randomPin = generateRandomPin();
@@ -92,7 +116,9 @@ export function PasswordManagement({ mission }: PasswordManagementProps) {
                 </div>
                 <div>
                   <div className="font-semibold">비밀번호 설정됨</div>
-                  <div className="text-sm text-muted-foreground">이 미션은 비밀번호로 보호되고 있습니다</div>
+                  <div className="text-sm text-muted-foreground">
+                    이 미션은 비밀번호로 보호되고 있습니다
+                  </div>
                 </div>
               </>
             ) : (
@@ -102,7 +128,9 @@ export function PasswordManagement({ mission }: PasswordManagementProps) {
                 </div>
                 <div>
                   <div className="font-semibold text-muted-foreground">비밀번호 미설정</div>
-                  <div className="text-sm text-muted-foreground">누구나 이 미션에 접근할 수 있습니다</div>
+                  <div className="text-sm text-muted-foreground">
+                    누구나 이 미션에 접근할 수 있습니다
+                  </div>
                 </div>
               </>
             )}
@@ -122,11 +150,14 @@ export function PasswordManagement({ mission }: PasswordManagementProps) {
               <label className="text-sm font-medium">비밀번호</label>
             </div>
 
-            <PinInput value={password} onChange={setPassword} disabled={isLoading} error={!!error} />
+            <PinInput
+              value={password}
+              onChange={setPassword}
+              disabled={isLoading}
+              error={!!error}
+            />
 
-            {error && (
-              <p className="text-sm text-destructive">{error}</p>
-            )}
+            {error && <p className="text-sm text-destructive">{error}</p>}
           </div>
 
           <Separator />

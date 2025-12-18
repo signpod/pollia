@@ -30,7 +30,7 @@ export default async function MissionPasswordPage({ params }: PageProps) {
           isActive={mission.isActive}
         />
 
-        <PasswordManagement mission={mission} />
+        <PasswordManagement missionId={missionId} />
       </div>
     </HydrationBoundary>
   );
