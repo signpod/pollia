@@ -23,7 +23,7 @@ export default function MissionPassword() {
   } = useMissionPassword(missionId);
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col h-svh overflow-hidden">
       <div className="w-full flex flex-col justify-center flex-1 gap-8 items-center">
         <Typo.MainTitle className="text-center">
           미션 시작을 위한
