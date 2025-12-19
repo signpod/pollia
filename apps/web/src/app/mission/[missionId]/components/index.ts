@@ -6,7 +6,6 @@ export * from "./ActionOptionButton";
 export * from "./MissionReward";
 export * from "./ParticipationStep";
 export * from "./SectionHeader";
-export * from "./ParticipantCount";
 export * from "./MissionRewardSection";
 export * from "./ParticipationMethodSection";
 export * from "./MissionFooter";

@@ -7,7 +7,8 @@ import { createContext, useCallback, useContext, useState } from "react";
 import { cn } from "../../lib/utils";
 import { Typo } from "./Typo";
 
-type CalloutToneVariant = "notice" | "early-urgency" | "high-urgency";
+export type CalloutToneVariant = "notice" | "early-urgency" | "high-urgency";
+
 interface CalloutData {
   id: string;
   title?: string;
@@ -86,7 +87,7 @@ export function CalloutProvider({ children, position = "top-center" }: CalloutPr
               if (!open) dismiss(callout.id);
             }}
             className={cn(
-              "group pointer-events-auto relative flex w-full max-w-sm items-start gap-3 rounded-lg  p-3 pl-4 shadow-lg transition-all",
+              "group pointer-events-auto relative flex w-full max-w-sm items-start gap-3 rounded-sm  p-3 pl-4 transition-all break-keep",
               "data-[state=open]:animate-in data-[state=closed]:animate-out",
               "data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full",
               "data-[state=open]:slide-in-from-top-full data-[state=open]:fade-in-0",
@@ -105,10 +106,7 @@ export function CalloutProvider({ children, position = "top-center" }: CalloutPr
               <Typo.Body size="medium">{callout.description}</Typo.Body>
             </div>
             <ToastPrimitive.Close
-              className={cn(
-                "absolute right-2 top-3 rounded-md p-1 opacity-0 transition-opacity",
-                "hover:bg-black/5 focus:opacity-100 focus:outline-none group-hover:opacity-100",
-              )}
+              className="rounded-md p-1 hover:bg-black/5 focus:outline-none"
               aria-label="닫기"
             >
               <X className="h-4 w-4" />
@@ -116,10 +114,7 @@ export function CalloutProvider({ children, position = "top-center" }: CalloutPr
           </ToastPrimitive.Root>
         ))}
         <ToastPrimitive.Viewport
-          className={cn(
-            "fixed z-[100] flex flex-col gap-2 p-4 outline-none",
-            positionStyles[position],
-          )}
+          className={cn("fixed z-100 flex flex-col gap-2 outline-none", positionStyles[position])}
         />
       </ToastPrimitive.Provider>
     </CalloutContext.Provider>
