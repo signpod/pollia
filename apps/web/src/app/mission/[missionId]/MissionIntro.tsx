@@ -17,6 +17,7 @@ import {
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef } from "react";
 
+import { useReadMissionResponseForMission } from "@/hooks/mission-response";
 import {
   MissionDescription,
   MissionFooter,
@@ -102,6 +103,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
 
   const { data: reward } = useReadReward(mission?.rewardId || "");
   const { data: participantInfo } = useReadMissionParticipantInfo(missionId);
+  const { data: missionResponseData } = useReadMissionResponseForMission({ missionId });
   const { currentParticipants, maxParticipants } = participantInfo?.data ?? {};
 
   const sections = reward
@@ -116,8 +118,16 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
 
   const deadlineText = deadline ? formatDeadline(deadline) : "정원 마감시";
 
+  const isProcessing = Boolean(missionResponseData?.data?.id);
+
   const calloutData = useMemo<{ variant: CalloutToneVariant; description: string } | null>(() => {
-    if (currentParticipants && maxParticipants && currentParticipants / maxParticipants >= 0.9) {
+    if (
+      currentParticipants &&
+      currentParticipants > 0 &&
+      maxParticipants &&
+      currentParticipants / maxParticipants >= 0.9 &&
+      !isProcessing
+    ) {
       return {
         variant: "high-urgency",
         description: reward?.data.id
@@ -125,7 +135,13 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
           : `🚨 남은 인원 단 ${maxParticipants - currentParticipants}명! 빠르게 참여해보세요`,
       };
     }
-    if (currentParticipants && maxParticipants && currentParticipants / maxParticipants >= 0.5) {
+    if (
+      currentParticipants &&
+      currentParticipants > 0 &&
+      maxParticipants &&
+      currentParticipants / maxParticipants >= 0.5 &&
+      !isProcessing
+    ) {
       return {
         variant: "early-urgency",
         description: reward?.data.id
@@ -134,7 +150,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
       };
     }
     return null;
-  }, [currentParticipants, maxParticipants, reward?.data.id]);
+  }, [currentParticipants, maxParticipants, reward?.data.id, isProcessing]);
 
   return (
     <CalloutProvider position="top-center">
@@ -189,6 +205,11 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                 <Typo.Body size="medium" className="text-info">
                   {target}
                 </Typo.Body>
+                {mission?.type === "EXPERIENCE_GROUP" && (
+                  <Typo.Body size="medium" className="text-info">
+                    체험단 미션
+                  </Typo.Body>
+                )}
               </div>
 
               <div className="flex flex-col gap-1 items-center">
