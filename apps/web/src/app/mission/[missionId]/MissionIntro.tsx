@@ -63,12 +63,12 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
     window.scrollTo(0, -30);
   }, []);
 
-  if (typeof window !== "undefined") {
+  useEffect(() => {
     const existingValue = getSessionStorage(`current-action-id-${missionId}`);
     if (!existingValue) {
       setSessionStorage(`current-action-id-${missionId}`, "initial");
     }
-  }
+  }, [missionId]);
 
   const {
     mission,

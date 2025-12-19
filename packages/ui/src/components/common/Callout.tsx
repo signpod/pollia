@@ -87,7 +87,7 @@ export function CalloutProvider({ children, position = "top-center" }: CalloutPr
               if (!open) dismiss(callout.id);
             }}
             className={cn(
-              "group pointer-events-auto relative flex w-full max-w-sm items-start gap-3 rounded-sm  p-3 pl-4 transition-all break-keep",
+              "group pointer-events-auto relative flex w-full max-w-sm items-start gap-3 rounded-sm p-3 pl-4 transition-all break-keep",
               "data-[state=open]:animate-in data-[state=closed]:animate-out",
               "data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full",
               "data-[state=open]:slide-in-from-top-full data-[state=open]:fade-in-0",
@@ -145,7 +145,7 @@ export function Callout({
       role="alert"
       data-state={open ? "open" : "closed"}
       className={cn(
-        "relative flex items-start gap-3 rounded-lg  p-4 transition-all",
+        "relative flex items-start gap-3 rounded-lg p-4 transition-all",
         "data-[state=closed]:hidden",
         variantStyles[variant],
         className,
