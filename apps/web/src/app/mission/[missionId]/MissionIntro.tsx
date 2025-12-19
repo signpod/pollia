@@ -210,7 +210,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                 {mission?.type === "EXPERIENCE_GROUP" && (
                   <Badge
                     variant="secondary"
-                    className="bg-point  flex gap-2 justify-center items-center rounded-sm p-2"
+                    className="bg-point border-none flex gap-2 justify-center items-center rounded-sm p-2"
                   >
                     <Lock className="size-4 text-point" />
                     <Typo.Body size="large" className="text-point">
