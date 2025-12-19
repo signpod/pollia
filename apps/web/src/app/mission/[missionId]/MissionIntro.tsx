@@ -99,7 +99,6 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
     imageUrl,
     description,
     target,
-    createdAt,
     isActive,
   } = mission ?? {};
 
@@ -118,7 +117,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
     scrollOffset: SCROLL_OFFSET,
   });
 
-  const deadlineText = deadline ? formatDeadline(deadline) : "정원 마감시";
+  const deadlineText = deadline ? `${formatDeadline(deadline)} 까지` : "정원 마감시";
 
   const isProcessing = Boolean(missionResponseData?.data?.id);
 
@@ -227,10 +226,9 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
               </div>
               <div className="flex flex-col gap-1 items-center">
                 <Typo.SubTitle size="large">미션 기간</Typo.SubTitle>
-                <Typo.Body
-                  size="large"
-                  className="text-info"
-                >{`${formatDeadline(createdAt ?? "")} ~ ${deadlineText}`}</Typo.Body>
+                <Typo.Body size="large" className="text-info">
+                  {deadlineText}
+                </Typo.Body>
               </div>
             </div>
 
