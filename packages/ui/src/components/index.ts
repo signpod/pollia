@@ -28,6 +28,7 @@ export * from "./common/IconButton";
 export * from "./common/CounterInput";
 export * from "./common/ProcessChip";
 export * from "./common/Toast";
+export * from "./common/Callout";
 export * from "./common/LabelText";
 export * from "./common/Modal";
 export * from "./common/Tab";

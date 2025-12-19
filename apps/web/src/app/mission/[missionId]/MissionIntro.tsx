@@ -6,9 +6,16 @@ import { useReadMissionParticipantInfo } from "@/hooks/participant/useReadMissio
 import { useReadReward } from "@/hooks/reward/useReadReward";
 import { getSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
 import { cleanTiptapHTML, cn } from "@/lib/utils";
-import { FixedBottomLayout, Tab, Typo } from "@repo/ui/components";
+import {
+  CalloutProvider,
+  type CalloutToneVariant,
+  FixedBottomLayout,
+  Tab,
+  Typo,
+  useCallout,
+} from "@repo/ui/components";
 import { useParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import {
   MissionDescription,
@@ -16,7 +23,6 @@ import {
   MissionImage,
   MissionLogo,
   MissionRewardSection,
-  ParticipantCount,
 } from "./components";
 import { formatDeadline } from "./done/ui/utils/formatDeadline";
 import { BottomButton } from "./ui";
@@ -28,6 +34,28 @@ const SECTION_IDS = {
 
 const SCROLL_OFFSET = 30;
 
+function CalloutTrigger({
+  calloutData,
+}: {
+  calloutData: { variant: CalloutToneVariant; description: string } | null;
+}) {
+  const { show } = useCallout();
+  const hasShownRef = useRef(false);
+
+  useEffect(() => {
+    if (calloutData && !hasShownRef.current) {
+      hasShownRef.current = true;
+      show({
+        description: calloutData.description,
+        variant: calloutData.variant,
+        duration: Number.POSITIVE_INFINITY,
+      });
+    }
+  }, [calloutData, show]);
+
+  return null;
+}
+
 export function MissionIntro({ initialError }: { initialError: AuthError | null }) {
   const { missionId } = useParams<{ missionId: string }>();
 
@@ -35,12 +63,12 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
     window.scrollTo(0, -30);
   }, []);
 
-  if (typeof window !== "undefined") {
+  useEffect(() => {
     const existingValue = getSessionStorage(`current-action-id-${missionId}`);
     if (!existingValue) {
       setSessionStorage(`current-action-id-${missionId}`, "initial");
     }
-  }
+  }, [missionId]);
 
   const {
     mission,
@@ -88,8 +116,29 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
 
   const deadlineText = deadline ? formatDeadline(deadline) : "정원 마감시";
 
+  const calloutData = useMemo<{ variant: CalloutToneVariant; description: string } | null>(() => {
+    if (currentParticipants && maxParticipants && currentParticipants / maxParticipants >= 0.9) {
+      return {
+        variant: "high-urgency",
+        description: reward?.data.id
+          ? `🚨 남은 리워드 단 ${maxParticipants - currentParticipants}개! 사라지기 전에 받아보세요`
+          : `🚨 남은 인원 단 ${maxParticipants - currentParticipants}명! 빠르게 참여해보세요`,
+      };
+    }
+    if (currentParticipants && maxParticipants && currentParticipants / maxParticipants >= 0.5) {
+      return {
+        variant: "early-urgency",
+        description: reward?.data.id
+          ? "리워드가 빠르게 줄고 있어요! 바로 참여해보세요"
+          : "참여자가 많은 인기 미션이에요! 바로 참여해보세요",
+      };
+    }
+    return null;
+  }, [currentParticipants, maxParticipants, reward?.data.id]);
+
   return (
-    <>
+    <CalloutProvider position="top-center">
+      <CalloutTrigger calloutData={calloutData} />
       <main className="flex w-full flex-col gap-8">
         <div className="relative">
           {imageUrl && (
@@ -156,10 +205,6 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                   className="text-info"
                 >{`${formatDeadline(createdAt ?? "")} ~ ${deadlineText}`}</Typo.Body>
               </div>
-
-              {maxParticipants && (
-                <ParticipantCount current={currentParticipants ?? 0} max={maxParticipants} />
-              )}
             </div>
 
             {reward && (
@@ -210,6 +255,6 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
         </FixedBottomLayout.Content>
       </main>
       <MissionFooter />
-    </>
+    </CalloutProvider>
   );
 }
