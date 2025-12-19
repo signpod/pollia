@@ -14,9 +14,11 @@ import {
   Typo,
   useCallout,
 } from "@repo/ui/components";
+import { Lock } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import { useReadMissionResponseForMission } from "@/hooks/mission-response";
 import {
   MissionDescription,
@@ -199,26 +201,30 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                   className="text-center"
                 />
               </div>
-
+              Bad
               <div className="flex flex-col gap-1 items-center">
                 <Typo.SubTitle size="large">미션 조건</Typo.SubTitle>
                 <Typo.Body size="medium" className="text-info">
                   {target}
                 </Typo.Body>
                 {mission?.type === "EXPERIENCE_GROUP" && (
-                  <Typo.Body size="medium" className="text-info">
-                    체험단 미션
-                  </Typo.Body>
+                  <Badge
+                    variant="secondary"
+                    className="bg-point  flex gap-2 justify-center items-center rounded-sm p-2"
+                  >
+                    <Lock className="size-4 text-point" />
+                    <Typo.Body size="medium" className="text-point">
+                      체험단 미션
+                    </Typo.Body>
+                  </Badge>
                 )}
               </div>
-
               <div className="flex flex-col gap-1 items-center">
                 <Typo.SubTitle size="large">미션 소요 시간</Typo.SubTitle>
                 <Typo.Body size="medium" className="text-info">
                   {estimatedMinutes}분
                 </Typo.Body>
               </div>
-
               <div className="flex flex-col gap-1 items-center">
                 <Typo.SubTitle size="large">미션 기간</Typo.SubTitle>
                 <Typo.Body
