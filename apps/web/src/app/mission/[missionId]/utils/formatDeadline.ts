@@ -9,3 +9,4 @@ export const formatDeadline = (deadline: string | Date) => {
 
   return `${year}.${month}.${day} ${hours}:${minutes}`;
 };
+

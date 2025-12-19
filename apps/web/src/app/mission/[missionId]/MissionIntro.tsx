@@ -27,8 +27,8 @@ import {
   MissionLogo,
   MissionRewardSection,
 } from "./components";
-import { formatDeadline } from "./done/ui/utils/formatDeadline";
 import { BottomButton } from "./ui";
+import { formatDeadline } from "./utils/formatDeadline";
 
 const SECTION_IDS = {
   MISSION_GUIDE: "mission-guide",
