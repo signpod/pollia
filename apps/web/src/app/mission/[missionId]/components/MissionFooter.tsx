@@ -11,7 +11,7 @@ export function MissionFooter() {
         rel="noopener noreferrer"
         className="text-zinc-400"
       >
-        <Typo.Body size="small" className="text-disabled">
+        <Typo.Body size="medium" className="text-disabled">
           개인정보처리방침
         </Typo.Body>
       </Link>
@@ -24,7 +24,7 @@ export function MissionFooter() {
         className="w-auto h-10 object-contain object-left"
       />
 
-      <Typo.Body size="small" className="text-info">
+      <Typo.Body size="medium" className="text-info">
         © Pollia All rights reserved.
       </Typo.Body>
     </footer>

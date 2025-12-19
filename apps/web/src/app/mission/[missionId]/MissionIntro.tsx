@@ -204,7 +204,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
               Bad
               <div className="flex flex-col gap-1 items-center">
                 <Typo.SubTitle size="large">미션 조건</Typo.SubTitle>
-                <Typo.Body size="medium" className="text-info">
+                <Typo.Body size="large" className="text-info">
                   {target}
                 </Typo.Body>
                 {mission?.type === "EXPERIENCE_GROUP" && (
@@ -213,7 +213,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                     className="bg-point  flex gap-2 justify-center items-center rounded-sm p-2"
                   >
                     <Lock className="size-4 text-point" />
-                    <Typo.Body size="medium" className="text-point">
+                    <Typo.Body size="large" className="text-point">
                       체험단 미션
                     </Typo.Body>
                   </Badge>
@@ -221,14 +221,14 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
               </div>
               <div className="flex flex-col gap-1 items-center">
                 <Typo.SubTitle size="large">미션 소요 시간</Typo.SubTitle>
-                <Typo.Body size="medium" className="text-info">
+                <Typo.Body size="large" className="text-info">
                   {estimatedMinutes}분
                 </Typo.Body>
               </div>
               <div className="flex flex-col gap-1 items-center">
                 <Typo.SubTitle size="large">미션 기간</Typo.SubTitle>
                 <Typo.Body
-                  size="medium"
+                  size="large"
                   className="text-info"
                 >{`${formatDeadline(createdAt ?? "")} ~ ${deadlineText}`}</Typo.Body>
               </div>
