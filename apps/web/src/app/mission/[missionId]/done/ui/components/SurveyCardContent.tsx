@@ -1,7 +1,7 @@
 import { Typo } from "@repo/ui/components";
 import Image from "next/image";
+import { formatDeadline } from "../../../utils/formatDeadline";
 import type { AnimationRefs } from "../animations/useAnimationRefs";
-import { formatDeadline } from "../utils/formatDeadline";
 
 interface SurveyCardContentProps {
   refs: AnimationRefs;

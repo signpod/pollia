@@ -14,9 +14,12 @@ import {
   Typo,
   useCallout,
 } from "@repo/ui/components";
+import { Lock } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef } from "react";
 
+import { Badge } from "@/components/ui/badge";
+import { useReadMissionResponseForMission } from "@/hooks/mission-response";
 import {
   MissionDescription,
   MissionFooter,
@@ -24,8 +27,8 @@ import {
   MissionLogo,
   MissionRewardSection,
 } from "./components";
-import { formatDeadline } from "./done/ui/utils/formatDeadline";
 import { BottomButton } from "./ui";
+import { formatDeadline } from "./utils/formatDeadline";
 
 const SECTION_IDS = {
   MISSION_GUIDE: "mission-guide",
@@ -96,12 +99,12 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
     imageUrl,
     description,
     target,
-    createdAt,
     isActive,
   } = mission ?? {};
 
   const { data: reward } = useReadReward(mission?.rewardId || "");
   const { data: participantInfo } = useReadMissionParticipantInfo(missionId);
+  const { data: missionResponseData } = useReadMissionResponseForMission({ missionId });
   const { currentParticipants, maxParticipants } = participantInfo?.data ?? {};
 
   const sections = reward
@@ -114,10 +117,18 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
     scrollOffset: SCROLL_OFFSET,
   });
 
-  const deadlineText = deadline ? formatDeadline(deadline) : "정원 마감시";
+  const deadlineText = deadline ? `${formatDeadline(deadline)} 까지` : "정원 마감시";
+
+  const isProcessing = Boolean(missionResponseData?.data?.id);
 
   const calloutData = useMemo<{ variant: CalloutToneVariant; description: string } | null>(() => {
-    if (currentParticipants && maxParticipants && currentParticipants / maxParticipants >= 0.9) {
+    if (
+      currentParticipants &&
+      currentParticipants > 0 &&
+      maxParticipants &&
+      currentParticipants / maxParticipants >= 0.9 &&
+      !isProcessing
+    ) {
       return {
         variant: "high-urgency",
         description: reward?.data.id
@@ -125,7 +136,13 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
           : `🚨 남은 인원 단 ${maxParticipants - currentParticipants}명! 빠르게 참여해보세요`,
       };
     }
-    if (currentParticipants && maxParticipants && currentParticipants / maxParticipants >= 0.5) {
+    if (
+      currentParticipants &&
+      currentParticipants > 0 &&
+      maxParticipants &&
+      currentParticipants / maxParticipants >= 0.5 &&
+      !isProcessing
+    ) {
       return {
         variant: "early-urgency",
         description: reward?.data.id
@@ -134,7 +151,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
       };
     }
     return null;
-  }, [currentParticipants, maxParticipants, reward?.data.id]);
+  }, [currentParticipants, maxParticipants, reward?.data.id, isProcessing]);
 
   return (
     <CalloutProvider position="top-center">
@@ -183,27 +200,35 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                   className="text-center"
                 />
               </div>
-
+              Bad
               <div className="flex flex-col gap-1 items-center">
                 <Typo.SubTitle size="large">미션 조건</Typo.SubTitle>
-                <Typo.Body size="medium" className="text-info">
+                <Typo.Body size="large" className="text-info">
                   {target}
                 </Typo.Body>
+                {mission?.type === "EXPERIENCE_GROUP" && (
+                  <Badge
+                    variant="secondary"
+                    className="bg-point border-none flex gap-2 justify-center items-center rounded-sm p-2"
+                  >
+                    <Lock className="size-4 text-point" />
+                    <Typo.Body size="large" className="text-point">
+                      체험단 미션
+                    </Typo.Body>
+                  </Badge>
+                )}
               </div>
-
               <div className="flex flex-col gap-1 items-center">
                 <Typo.SubTitle size="large">미션 소요 시간</Typo.SubTitle>
-                <Typo.Body size="medium" className="text-info">
+                <Typo.Body size="large" className="text-info">
                   {estimatedMinutes}분
                 </Typo.Body>
               </div>
-
               <div className="flex flex-col gap-1 items-center">
                 <Typo.SubTitle size="large">미션 기간</Typo.SubTitle>
-                <Typo.Body
-                  size="medium"
-                  className="text-info"
-                >{`${formatDeadline(createdAt ?? "")} ~ ${deadlineText}`}</Typo.Body>
+                <Typo.Body size="large" className="text-info">
+                  {deadlineText}
+                </Typo.Body>
               </div>
             </div>
 
