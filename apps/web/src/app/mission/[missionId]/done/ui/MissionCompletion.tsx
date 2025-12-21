@@ -1,21 +1,14 @@
 "use client";
-
-import { ROUTES } from "@/constants/routes";
 import { useReadMission } from "@/hooks/mission";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import StarBigIcon from "@public/svgs/star-big.svg";
+import StarYellow from "@public/svgs/star-yellow.svg";
+import { Typo } from "@repo/ui/components";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { animateFinalElements } from "./animations/animateFinalElements";
-import { createContentAnimationTimeline } from "./animations/createContentAnimationTimeline";
 import { createMainAnimationTimeline } from "./animations/createMainAnimationTimeline";
 import { useAnimationRefs } from "./animations/useAnimationRefs";
-import { AnimatedBox } from "./components/AnimatedBox";
-import { CompletionText } from "./components/CompletionText";
-import { MainButton } from "./components/MainButton";
-import { ShareButtons } from "./components/ShareButtons";
-import { ShareTitle } from "./components/ShareTitle";
-import { SurveyCardContent } from "./components/SurveyCardContent";
 
 export function MissionCompletion() {
   const { missionId } = useParams<{ missionId: string }>();
@@ -50,58 +43,39 @@ export function MissionCompletion() {
     };
   }, [refs, handleAnimateFinalElements]);
 
-  useEffect(() => {
-    if (!showContent) return;
-    if (!refs.title.current || !refs.infoBox.current) return;
-
-    const timeline = createContentAnimationTimeline(refs);
-
-    return () => {
-      timeline.kill();
-    };
-  }, [showContent, refs]);
-
   return (
     <div
       className={cn(
-        "relative w-full flex flex-col items-center gap-6 pt-[25%] flex-1 overflow-hidden bg-white",
+        "relative w-full flex flex-col items-center gap-6 pt-[25%] flex-1 overflow-hidden",
+        "bg-linear-to-b from-[#FFE672]/0 via-[#FFE672]/10 to-[#FFE672]/0",
         startAfter ? "my-auto pt-0" : "pt-[25%]",
       )}
     >
-      <motion.div
-        layout
-        transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-        className="relative flex flex-col items-center gap-6 bg-white/80 p-6 w-full"
-      >
-        {/* 공유 제목 */}
-        {showContent && !showFirstText && <ShareTitle ref={refs.afterTitle} />}
+      <Typo.MainTitle size="large" className="text-center">
+        모든 미션 완료!
+      </Typo.MainTitle>
 
-        {/* 메인 박스 */}
-        <AnimatedBox ref={refs.box} showContent={showContent} checkIconRef={refs.checkIcon}>
-          {showContent && (
-            <SurveyCardContent
-              refs={refs}
-              title={title}
-              estimatedMinutes={estimatedMinutes}
-              deadline={deadline}
-              target={target}
-              imageUrl={imageUrl}
-              brandLogoUrl={brandLogoUrl}
-            />
-          )}
-        </AnimatedBox>
-
-        {/* 첫 번째 텍스트 */}
-        {showFirstText && <CompletionText ref={refs.text} title={title} />}
-
-        {/* 공유 버튼들 */}
-        {showContent && <ShareButtons ref={refs.shareButtons} />}
-      </motion.div>
-
-      {/* 하단 버튼 */}
-      {showContent && (
-        <MainButton ref={refs.button} onClick={() => router.push(ROUTES.MISSION(missionId))} />
-      )}
+      <div className="relative pt-[100px] px-[70px]">
+        {[...Array(5)].map((_, i) => {
+          const angle = -90 + (i - 2) * 30;
+          const radian = (angle * Math.PI) / 180;
+          const radius = 120;
+          const x = Math.cos(radian) * radius;
+          const y = Math.sin(radian) * radius;
+          return (
+            <div
+              key={`star-${i}`}
+              className={cn("absolute left-1/2 top-1/2")}
+              style={{
+                transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
+              }}
+            >
+              <StarYellow className={i % 2 === 0 ? "size-10" : "size-8"} />
+            </div>
+          );
+        })}
+        <StarBigIcon className="translate-y-[-40px]" />
+      </div>
     </div>
   );
 }
