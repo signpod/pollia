@@ -1,12 +1,14 @@
 "use client";
 
 import { toast } from "@/components/common/Toast";
+import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { useReadMissionResponseForMission } from "@/hooks/mission-response";
 import { useResetMissionResponse } from "@/hooks/mission-response/useResetMissionResponse";
 import { useCurrentUser } from "@/hooks/user";
 import { UserRole } from "@prisma/client";
 import PollPollE from "@public/svgs/poll-poll-e.svg";
 import { Typo } from "@repo/ui/components";
+import { useQueryClient } from "@tanstack/react-query";
 import { Loader2Icon, TrashIcon, XIcon } from "lucide-react";
 import { useState } from "react";
 
@@ -15,6 +17,8 @@ interface DevToolsProps {
 }
 
 export function DevTools({ missionId }: DevToolsProps) {
+  const queryClient = useQueryClient();
+
   const [isOpen, setIsOpen] = useState(false);
   const { data: currentUser } = useCurrentUser();
   const { data: missionResponse, isLoading: isLoadingResponse } = useReadMissionResponseForMission({
@@ -38,7 +42,30 @@ export function DevTools({ missionId }: DevToolsProps) {
 
     if (window.confirm("정말로 이 미션의 응답을 초기화하시겠습니까?")) {
       resetResponse(response.id, {
-        onSuccess: () => {
+        onSuccess: async () => {
+          await Promise.all([
+            queryClient.invalidateQueries({
+              queryKey: missionQueryKeys.missionParticipant(missionId),
+            }),
+            queryClient.invalidateQueries({
+              queryKey: missionQueryKeys.missionResponseForMission(missionId),
+            }),
+            queryClient.invalidateQueries({
+              queryKey: missionQueryKeys.mission(missionId),
+            }),
+            queryClient.invalidateQueries({
+              queryKey: missionQueryKeys.userAnswerStatus(missionId),
+            }),
+            queryClient.invalidateQueries({
+              queryKey: missionQueryKeys.missionPassword(missionId),
+            }),
+            queryClient.invalidateQueries({
+              queryKey: missionQueryKeys.all(),
+            }),
+            queryClient.invalidateQueries({
+              queryKey: missionQueryKeys.userMissions(),
+            }),
+          ]);
           toast.success("응답이 초기화되었습니다.");
           setIsOpen(false);
         },

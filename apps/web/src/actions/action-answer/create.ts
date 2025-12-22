@@ -30,6 +30,7 @@ function toSubmitAnswersInput(dto: SubmitActionAnswersRequest): SubmitAnswersInp
       scaleValue: a.scaleValue,
       textResponse: a.textResponse,
       imageFileUploadId: a.fileUploadId,
+      imageUrl: a.imageUrl,
     })),
   };
 }

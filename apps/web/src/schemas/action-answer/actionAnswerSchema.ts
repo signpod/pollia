@@ -21,6 +21,7 @@ const scaleAnswerSchema = z
 const actionTypeSchema = z.enum(ActionType);
 
 const imageFileUploadIdSchema = z.string().optional();
+const imageUrlSchema = z.string().optional();
 
 export const actionAnswerInputSchema = z.object({
   responseId: responseIdSchema,
@@ -39,6 +40,7 @@ export const submitAnswerItemSchema = z
     scaleValue: scaleAnswerSchema.optional(),
     textResponse: textAnswerSchema.optional(),
     imageFileUploadId: imageFileUploadIdSchema,
+    imageUrl: imageUrlSchema,
   })
   .refine(
     data => {

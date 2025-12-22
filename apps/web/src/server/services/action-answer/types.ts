@@ -17,6 +17,7 @@ export interface SubmitAnswersInput {
     scaleValue?: number;
     textResponse?: string;
     imageFileUploadId?: string;
+    imageUrl?: string;
   }>;
 }
 

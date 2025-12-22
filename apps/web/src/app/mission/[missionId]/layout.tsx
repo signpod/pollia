@@ -16,7 +16,6 @@ import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { PropsWithChildren } from "react";
-import { DevTools } from "./components";
 
 interface LayoutParams {
   params: Promise<{ missionId: string }>;
@@ -128,10 +127,7 @@ export default async function MissionLayout({
   return (
     <ModalProvider>
       <Providers>
-        <HydrationBoundary state={dehydratedState}>
-          {children}
-          <DevTools missionId={missionId} />
-        </HydrationBoundary>
+        <HydrationBoundary state={dehydratedState}>{children}</HydrationBoundary>
       </Providers>
     </ModalProvider>
   );

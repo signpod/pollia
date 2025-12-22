@@ -124,7 +124,6 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
   const calloutData = useMemo<{ variant: CalloutToneVariant; description: string } | null>(() => {
     if (
       currentParticipants &&
-      currentParticipants > 0 &&
       maxParticipants &&
       currentParticipants / maxParticipants >= 0.9 &&
       !isProcessing
@@ -138,7 +137,6 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
     }
     if (
       currentParticipants &&
-      currentParticipants > 0 &&
       maxParticipants &&
       currentParticipants / maxParticipants >= 0.5 &&
       !isProcessing
@@ -200,7 +198,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                   className="text-center"
                 />
               </div>
-              Bad
+
               <div className="flex flex-col gap-1 items-center">
                 <Typo.SubTitle size="large">미션 조건</Typo.SubTitle>
                 <Typo.Body size="large" className="text-info">
@@ -276,6 +274,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
             isCompleted={isCompleted}
             hasReward={!!reward}
             isRequirePassword={isRequirePassword}
+            hasExistingResponse={!!missionResponse}
           />
         </FixedBottomLayout.Content>
       </main>
