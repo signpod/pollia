@@ -16,7 +16,7 @@ function createMockTrackingActionResponse(
     sessionId: TEST_SESSION_ID,
     userId: TEST_USER_ID,
     actionId: TEST_ACTION_ID,
-    responseContent: { answer: "test answer" },
+    metadata: { responseTime: 1500, device: "mobile" },
     respondedAt: new Date("2024-01-01T10:00:00Z"),
     ...overrides,
   };
@@ -54,7 +54,7 @@ describe("TrackingActionResponseService", () => {
         sessionId: TEST_SESSION_ID,
         userId: TEST_USER_ID,
         actionId: TEST_ACTION_ID,
-        responseContent: { answer: "test" },
+        metadata: { responseTime: 1500, device: "mobile" },
       };
       const mockResponse = createMockTrackingActionResponse(input);
       mockRepo.create.mockResolvedValue(mockResponse);
@@ -75,7 +75,7 @@ describe("TrackingActionResponseService", () => {
         sessionId: TEST_SESSION_ID,
         userId: null,
         actionId: TEST_ACTION_ID,
-        responseContent: { answer: "test" },
+        metadata: { responseTime: 2000 },
       };
       const mockResponse = createMockTrackingActionResponse({ ...input, userId: null });
       mockRepo.create.mockResolvedValue(mockResponse);
@@ -95,11 +95,11 @@ describe("TrackingActionResponseService", () => {
         sessionId: TEST_SESSION_ID,
         userId: TEST_USER_ID,
         actionId: TEST_ACTION_ID,
-        responseContent: { answer: "first" },
+        metadata: { responseTime: 1500, attemptCount: 1 },
       };
       const input2 = {
         ...input1,
-        responseContent: { answer: "second" },
+        metadata: { responseTime: 3000, attemptCount: 2 },
       };
       const mockResponse1 = createMockTrackingActionResponse({
         ...input1,

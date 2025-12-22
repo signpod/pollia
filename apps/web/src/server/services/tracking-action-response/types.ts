@@ -2,7 +2,7 @@ import type { Prisma } from "@prisma/client";
 
 type TrackingActionResponseCreateFields = Pick<
   Prisma.TrackingActionResponseUncheckedCreateInput,
-  "missionId" | "sessionId" | "userId" | "actionId" | "responseContent"
+  "missionId" | "sessionId" | "userId" | "actionId" | "metadata"
 >;
 
 export type RecordActionResponseInput = TrackingActionResponseCreateFields;
