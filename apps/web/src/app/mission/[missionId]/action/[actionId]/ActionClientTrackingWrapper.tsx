@@ -1,6 +1,7 @@
 "use client";
 
 import { useRecordActionEntry } from "@/hooks/tracking";
+import { useAuth } from "@/hooks/user";
 import { getOrCreateSessionId, getUtmParams } from "@/lib/tracking";
 import { useParams } from "next/navigation";
 import { useEffect, useRef } from "react";
@@ -8,6 +9,7 @@ import { useEffect, useRef } from "react";
 export function ActionClientTrackingWrapper({ children }: { children: React.ReactNode }) {
   const { missionId, actionId } = useParams<{ missionId: string; actionId: string }>();
   const { mutate: recordEntry } = useRecordActionEntry();
+  const { user } = useAuth();
   const hasTrackedRef = useRef(false);
 
   useEffect(() => {
@@ -20,12 +22,12 @@ export function ActionClientTrackingWrapper({ children }: { children: React.Reac
       recordEntry({
         missionId,
         sessionId,
-        userId: undefined,
+        userId: user.id || undefined,
         actionId,
         utmParams,
       });
     }
-  }, [missionId, actionId, recordEntry]);
+  }, [missionId, actionId, recordEntry, user.id]);
 
   return <>{children}</>;
 }

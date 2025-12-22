@@ -11,6 +11,7 @@ import {
 } from "@/hooks/mission-response";
 import { useMissionSurveyToast } from "@/hooks/mission/useMissionSurveyToast";
 import { useRecordActionResponse } from "@/hooks/tracking";
+import { useAuth } from "@/hooks/user";
 import { getSessionStorage, removeSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
 import { getOrCreateSessionId } from "@/lib/tracking";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
@@ -115,6 +116,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
   const { missionId } = useParams<{ missionId: string }>();
   const [currentAnswer, setCurrentAnswer] = useState<ActionAnswerItem | null>(null);
   const { showModal } = useModal();
+  const { user } = useAuth();
 
   const { data: missionResponse } = useReadMissionResponseForMission({ missionId });
   const { mutate: recordResponse } = useRecordActionResponse();
@@ -129,7 +131,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
         recordResponse({
           missionId,
           sessionId: getOrCreateSessionId(),
-          userId: undefined,
+          userId: user.id || undefined,
           actionId: currentAnswer.actionId,
           metadata: {
             actionType: currentAnswer.type,
@@ -153,7 +155,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
           recordResponse({
             missionId,
             sessionId: getOrCreateSessionId(),
-            userId: undefined,
+            userId: user.id || undefined,
             actionId: currentAnswer.actionId,
             metadata: {
               actionType: currentAnswer.type,
