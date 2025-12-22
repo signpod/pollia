@@ -12,20 +12,20 @@ interface UseRecordActionEntryOptions {
 }
 
 export function useRecordActionEntry(options: UseRecordActionEntryOptions = {}) {
-  return useMutation({
-    mutationFn: async (payload: RecordActionEntryInput): Promise<void> => {
+  return useMutation<void, Error, RecordActionEntryInput>({
+    mutationFn: async (payload): Promise<void> => {
       await recordActionEntry(payload);
     },
     onSuccess: () => {
       options.onSuccess?.();
     },
-    onError: error => {
+    onError: (error, payload) => {
       const rollbar = new Rollbar(clientConfig);
       rollbar.error("[Tracking] 액션 진입 기록 실패", {
         error,
-        payload: error,
+        payload,
       });
-      options.onError?.(error as Error);
+      options.onError?.(error);
     },
   });
 }

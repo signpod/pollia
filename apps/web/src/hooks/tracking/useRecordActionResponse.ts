@@ -12,20 +12,20 @@ interface UseRecordActionResponseOptions {
 }
 
 export function useRecordActionResponse(options: UseRecordActionResponseOptions = {}) {
-  return useMutation({
-    mutationFn: async (payload: RecordActionResponseInput): Promise<void> => {
+  return useMutation<void, Error, RecordActionResponseInput>({
+    mutationFn: async (payload): Promise<void> => {
       await recordActionResponse(payload);
     },
     onSuccess: () => {
       options.onSuccess?.();
     },
-    onError: error => {
+    onError: (error, payload) => {
       const rollbar = new Rollbar(clientConfig);
       rollbar.error("[Tracking] 액션 응답 기록 실패", {
         error,
-        payload: error,
+        payload,
       });
-      options.onError?.(error as Error);
+      options.onError?.(error);
     },
   });
 }
