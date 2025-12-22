@@ -3,6 +3,7 @@ import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { dehydrate } from "@tanstack/react-query";
 import { notFound } from "next/navigation";
+import { ActionClientTrackingWrapper } from "./ActionClientTrackingWrapper";
 import { ActionClientWrapper } from "./ActionClientWrapper";
 
 export default async function ActionPage({
@@ -30,5 +31,9 @@ export default async function ActionPage({
 
   const dehydratedState = dehydrate(queryClient);
 
-  return <ActionClientWrapper dehydratedState={dehydratedState} />;
+  return (
+    <ActionClientTrackingWrapper>
+      <ActionClientWrapper dehydratedState={dehydratedState} />
+    </ActionClientTrackingWrapper>
+  );
 }
