@@ -3,6 +3,7 @@ import { setSessionStorage } from "@/lib/sessionStorage";
 import { useModal } from "@repo/ui/components";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
+import { useCreateMissionResponse } from "../mission-response/useCreateMissionResponse";
 import { useResetMissionResponse } from "../mission-response/useResetMissionResponse";
 
 interface UseMissionResumeParams {
@@ -24,6 +25,8 @@ export function useSurveyResume({
   const router = useRouter();
   const { mutateAsync: resetMissionResponse, isPending: isResetMissionResponsePending } =
     useResetMissionResponse({ missionId });
+  const { startResponse } = useCreateMissionResponse({ missionId });
+  const { mutateAsync: handleStartResponse } = startResponse;
 
   const showResumeModal = useCallback(() => {
     if (isEnabledToResume && nextActionId && firstActionId) {
@@ -35,6 +38,7 @@ export function useSurveyResume({
         showCancelButton: true,
         onConfirm: () => {
           setSessionStorage(`current-action-id-${missionId}`, "resume");
+          handleStartResponse({ surveyId: missionId });
           router.push(ROUTES.ACTION({ missionId, actionId: nextActionId }));
         },
         onCancel: async () => {

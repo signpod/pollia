@@ -1,5 +1,6 @@
 import { ROUTES } from "@/constants/routes";
 import { AuthError, useKakaoLogin } from "@/hooks/login/useKakaoLogin";
+import { useCreateMissionResponse } from "@/hooks/mission-response";
 import { useAuth } from "@/hooks/user/useAuth";
 import { Mission } from "@prisma/client";
 import KakaoIcon from "@public/svgs/kakao-icon.svg";
@@ -56,6 +57,9 @@ export function BottomButton({
   const isDisabled = isExpired || !firstActionId;
   const alreadyCompleted = isCompleted;
 
+  const { startResponse } = useCreateMissionResponse({ missionId });
+  const { mutateAsync: handleStartResponse } = startResponse;
+
   const handleClick = () => {
     if (!isLoggedIn) {
       handleKakaoLogin();
@@ -70,6 +74,7 @@ export function BottomButton({
     if (showResumeModal) {
       const modalShown = showResumeModal();
       if (!modalShown && firstActionId) {
+        handleStartResponse({ surveyId: missionId });
         router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
       }
     } else if (firstActionId) {
