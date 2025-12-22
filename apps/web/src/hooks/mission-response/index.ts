@@ -2,3 +2,4 @@ export { useStartMissionResponse as useStartSurveyResponse } from "./useStartMis
 export { useSubmitActionAnswer as useSubmitQuestionAnswer } from "./useSubmitActionAnswer";
 export { useSubmitMissionAnswers as useSubmitSurveyAnswers } from "./useSubmitMissionAnswers";
 export { useReadMissionResponseForMission } from "./useReadMissionResponseForMission";
+export { useCreateMissionResponse } from "./useCreateMissionResponse";

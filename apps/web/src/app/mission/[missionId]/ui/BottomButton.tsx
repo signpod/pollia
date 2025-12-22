@@ -1,5 +1,6 @@
 import { ROUTES } from "@/constants/routes";
 import { AuthError, useKakaoLogin } from "@/hooks/login/useKakaoLogin";
+import {} from "@/hooks/mission-response";
 import { useAuth } from "@/hooks/user/useAuth";
 import { Mission } from "@prisma/client";
 import KakaoIcon from "@public/svgs/kakao-icon.svg";
@@ -29,6 +30,7 @@ interface BottomButtonProps {
   isActive: boolean;
   hasReward: boolean;
   isRequirePassword: boolean;
+  hasExistingResponse: boolean;
 }
 
 export function BottomButton({
@@ -40,6 +42,7 @@ export function BottomButton({
   showResumeModal,
   isCompleted,
   isRequirePassword,
+  hasExistingResponse,
 }: BottomButtonProps) {
   const { missionId } = useParams<{ missionId: string }>();
   const { handleKakaoLogin } = useKakaoLogin({
@@ -55,19 +58,23 @@ export function BottomButton({
   const alreadyCompleted = isCompleted;
 
   const handleClick = () => {
-    if (isRequirePassword) {
+    if (!isLoggedIn) {
+      handleKakaoLogin();
+      return;
+    }
+
+    if (isRequirePassword && !hasExistingResponse) {
       router.push(ROUTES.MISSION_PASSWORD(missionId));
-    } else {
-      if (!isLoggedIn) {
-        handleKakaoLogin();
-      } else if (showResumeModal) {
-        const modalShown = showResumeModal();
-        if (!modalShown && firstActionId) {
-          router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
-        }
-      } else if (firstActionId) {
+      return;
+    }
+
+    if (showResumeModal) {
+      const modalShown = showResumeModal();
+      if (!modalShown && firstActionId) {
         router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
       }
+    } else if (firstActionId) {
+      router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
     }
   };
 

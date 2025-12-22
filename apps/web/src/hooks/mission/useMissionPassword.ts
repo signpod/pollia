@@ -1,6 +1,9 @@
+import { toast } from "@/components/common/Toast";
 import { ROUTES } from "@/constants/routes";
+import { setSessionStorage } from "@/lib/sessionStorage";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { useCreateMissionResponse } from "../mission-response";
 import { useMissionIntroData } from "./useMissionIntroData";
 import { useVerifyMissionPassword } from "./useVerifyMissionPassword";
 
@@ -19,6 +22,9 @@ export const useMissionPassword = (missionId: string) => {
   const [remainingSeconds, setRemainingSeconds] = useState(0);
 
   const isLockedOut = remainingSeconds > 0;
+
+  const { startResponse } = useCreateMissionResponse({ missionId });
+  const { mutateAsync: handleStartResponse } = startResponse;
 
   useEffect(() => {
     const stored = localStorage.getItem(getLockoutStorageKey(missionId));
@@ -92,9 +98,21 @@ export const useMissionPassword = (missionId: string) => {
       setInputPassword([]);
     }
     if (inputPassword.length === 6 && isPasswordCorrect?.data === true && firstActionId) {
-      router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
+      handleStartResponse(
+        { surveyId: missionId },
+        {
+          onSuccess: () => {
+            setSessionStorage(`current-action-id-${missionId}`, "initial");
+            router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
+          },
+          onError: error => {
+            toast.warning(error.message || "설문 응답을 시작할 수 없습니다.", { id: "init-error" });
+            router.push(ROUTES.MISSION(missionId));
+          },
+        },
+      );
     }
-  }, [inputPassword, isPasswordCorrect, firstActionId, missionId, router]);
+  }, [inputPassword, isPasswordCorrect, firstActionId, missionId, handleStartResponse, router]);
 
   return {
     inputPassword,

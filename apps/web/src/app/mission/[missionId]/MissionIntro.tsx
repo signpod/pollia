@@ -107,6 +107,9 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
   const { data: missionResponseData } = useReadMissionResponseForMission({ missionId });
   const { currentParticipants, maxParticipants } = participantInfo?.data ?? {};
 
+  console.log("currentParticipants", currentParticipants);
+  console.log("maxParticipants", maxParticipants);
+
   const sections = reward
     ? [SECTION_IDS.MISSION_GUIDE, SECTION_IDS.REWARD]
     : [SECTION_IDS.MISSION_GUIDE];
@@ -124,7 +127,6 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
   const calloutData = useMemo<{ variant: CalloutToneVariant; description: string } | null>(() => {
     if (
       currentParticipants &&
-      currentParticipants > 0 &&
       maxParticipants &&
       currentParticipants / maxParticipants >= 0.9 &&
       !isProcessing
@@ -138,7 +140,6 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
     }
     if (
       currentParticipants &&
-      currentParticipants > 0 &&
       maxParticipants &&
       currentParticipants / maxParticipants >= 0.5 &&
       !isProcessing
@@ -276,6 +277,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
             isCompleted={isCompleted}
             hasReward={!!reward}
             isRequirePassword={isRequirePassword}
+            hasExistingResponse={!!missionResponse}
           />
         </FixedBottomLayout.Content>
       </main>

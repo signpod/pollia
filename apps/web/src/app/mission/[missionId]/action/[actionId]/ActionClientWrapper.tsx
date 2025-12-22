@@ -6,7 +6,6 @@ import { ROUTES } from "@/constants/routes";
 import { useReadActionsDetail } from "@/hooks/action/useReadActionsDetail";
 import {
   useReadMissionResponseForMission,
-  useStartSurveyResponse,
   useSubmitQuestionAnswer,
   useSubmitSurveyAnswers,
 } from "@/hooks/mission-response";
@@ -19,7 +18,7 @@ import type { ActionAnswer } from "@/types/dto/action-answer";
 import { StepProvider, useModal, useStep } from "@repo/ui/components";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActionImage,
   ActionTag,
@@ -112,23 +111,12 @@ function ActionContent() {
 function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
   const router = useRouter();
   const { missionId } = useParams<{ missionId: string }>();
-  const [responseId, setResponseId] = useState<string | null>(null);
   const [currentAnswer, setCurrentAnswer] = useState<ActionAnswerItem | null>(null);
   const { showModal } = useModal();
 
   const { data: missionResponse } = useReadMissionResponseForMission({ missionId });
 
   const toastStorageKey = `mission-toast-${missionId}`;
-
-  const { mutate: startResponse } = useStartSurveyResponse({
-    onSuccess: data => {
-      setResponseId(data.data.id);
-    },
-    onError: () => {
-      toast.warning("설문 응답을 시작할 수 없습니다.", { id: "init-error" });
-      router.push(ROUTES.MISSION(missionId));
-    },
-  });
 
   const { mutateAsync: submitAnswer, isPending: isSubmittingAnswer } = useSubmitQuestionAnswer({
     onSuccess: () => {
@@ -186,14 +174,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
     setCurrentAnswer(answer);
   }, []);
 
-  const hasStartedRef = useRef(false);
-
-  useEffect(() => {
-    if (!hasStartedRef.current) {
-      hasStartedRef.current = true;
-      startResponse({ surveyId: missionId });
-    }
-  }, [missionId, startResponse]);
+  const responseId = missionResponse?.data?.id ?? "";
 
   const isAnswerSameAsSubmitted = useCallback(
     (answer: ActionAnswerItem, submittedAnswers: ActionAnswer[]): boolean => {
@@ -238,7 +219,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
   );
 
   const handleNext = useCallback(async () => {
-    if (!responseId || !currentAnswer) return;
+    if (!currentAnswer) return;
 
     const validationResult = submitAnswerItemSchema.safeParse(currentAnswer);
     if (!validationResult.success) {
@@ -262,7 +243,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
         showCancelButton: true,
         onConfirm: async () => {
           await completeSurveyAsync({
-            responseId,
+            responseId: missionResponse?.data?.answers[0]?.responseId ?? "",
             answers: [
               {
                 actionId: currentAnswer.actionId,
