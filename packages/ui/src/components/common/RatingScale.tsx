@@ -143,7 +143,7 @@ export function RatingScale({
     };
   }, [options, min, max, step, options?.length]);
 
-  const [localValue, setLocalValue] = useState(Math.floor((sliderMax - sliderMin) / 2 + 1));
+  const [localValue, setLocalValue] = useState(Math.floor((sliderMax - sliderMin) / 2));
 
   const thumbPosition = useMemo(() => {
     if (positions.length === 0) {
