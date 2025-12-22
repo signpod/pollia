@@ -1,7 +1,6 @@
 "use client";
 import { missionTitleAtom } from "@/atoms/mission/missionAtoms";
-// TODO: @/schemas_legacy는 deprecated. 새로운 @/schemas/{domain}/ 스키마로 교체 필요
-import { baseInfoSchema } from "@/schemas_legacy/survey/baseInfoSchema";
+import { titleSchema } from "@/schemas/mission/missionSchema";
 import { Input } from "@repo/ui/components";
 import { useAtom } from "jotai";
 import { useCallback, useState } from "react";
@@ -33,11 +32,10 @@ function useMissionTitleForm() {
     setTitle(trimmed);
 
     try {
-      const result = baseInfoSchema.safeParse({ title: trimmed });
+      const result = titleSchema.safeParse(trimmed);
 
       if (!result.success) {
-        const titleError = result.error.issues.find(issue => issue.path[0] === "title");
-        setError(titleError?.message);
+        setError(result.error.issues[0]?.message);
       } else {
         setError(undefined);
       }
