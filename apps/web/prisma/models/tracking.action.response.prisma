@@ -1,10 +1,10 @@
 model TrackingActionResponse {
-  id              String  @id @default(cuid())
-  missionId       String  @map("mission_id")
-  sessionId       String  @map("session_id")
-  userId          String? @map("user_id")
-  actionId        String  @map("action_id")
-  responseContent Json    @map("response_content")
+  id        String  @id @default(cuid())
+  missionId String  @map("mission_id")
+  sessionId String  @map("session_id")
+  userId    String? @map("user_id")
+  actionId  String  @map("action_id")
+  metadata  Json?   @map("metadata")
 
   action  Action  @relation(fields: [actionId], references: [id], onDelete: Cascade)
   user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
