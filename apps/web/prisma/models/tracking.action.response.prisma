@@ -17,5 +17,6 @@ model TrackingActionResponse {
   @@index([userId])
   @@index([actionId])
   @@index([respondedAt])
+  @@index([sessionId, actionId])
   @@map("tracking_action_responses")
 }

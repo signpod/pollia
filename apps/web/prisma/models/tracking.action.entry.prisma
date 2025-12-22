@@ -17,5 +17,6 @@ model TrackingActionEntry {
   @@index([userId])
   @@index([actionId])
   @@index([enteredAt])
+  @@index([sessionId, actionId])
   @@map("tracking_action_entries")
 }
