@@ -1,4 +1,4 @@
-import { trackingActionEntryRepository } from "@/server/repositories/tracking-action-entry/trackingActionEntryRepository";
+import { trackingActionEntryRepository } from "@/server/repositories/tracking-action-entry";
 import type { GetTrackingEntriesOptions, RecordActionEntryInput } from "./types";
 
 export class TrackingActionEntryService {

@@ -1,4 +1,4 @@
-import type { TrackingActionResponseRepository } from "@/server/repositories/tracking-action-response/trackingActionResponseRepository";
+import type { TrackingActionResponseRepository } from "@/server/repositories/tracking-action-response";
 import type { TrackingActionResponse } from "@prisma/client";
 import { TrackingActionResponseService } from "./trackingActionResponseService";
 
@@ -73,7 +73,7 @@ describe("TrackingActionResponseService", () => {
       const input = {
         missionId: TEST_MISSION_ID,
         sessionId: TEST_SESSION_ID,
-        userId: null,
+        userId: undefined,
         actionId: TEST_ACTION_ID,
         metadata: { responseTime: 2000 },
       };

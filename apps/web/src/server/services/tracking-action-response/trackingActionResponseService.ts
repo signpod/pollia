@@ -1,4 +1,4 @@
-import { trackingActionResponseRepository } from "@/server/repositories/tracking-action-response/trackingActionResponseRepository";
+import { trackingActionResponseRepository } from "@/server/repositories/tracking-action-response";
 import type { GetTrackingResponsesOptions, RecordActionResponseInput } from "./types";
 
 export class TrackingActionResponseService {

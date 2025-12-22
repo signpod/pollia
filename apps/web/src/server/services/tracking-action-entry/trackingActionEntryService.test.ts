@@ -1,4 +1,4 @@
-import type { TrackingActionEntryRepository } from "@/server/repositories/tracking-action-entry/trackingActionEntryRepository";
+import type { TrackingActionEntryRepository } from "@/server/repositories/tracking-action-entry";
 import type { TrackingActionEntry } from "@prisma/client";
 import { TrackingActionEntryService } from "./trackingActionEntryService";
 
@@ -75,9 +75,9 @@ describe("TrackingActionEntryService", () => {
         sessionId: TEST_SESSION_ID,
         userId: null,
         actionId: TEST_ACTION_ID,
-        utmParams: null,
+        utmParams: undefined,
       };
-      const mockEntry = createMockTrackingActionEntry({ ...input, userId: null });
+      const mockEntry = createMockTrackingActionEntry({ ...input, userId: null, utmParams: null });
       mockRepo.create.mockResolvedValue(mockEntry);
 
       // When
