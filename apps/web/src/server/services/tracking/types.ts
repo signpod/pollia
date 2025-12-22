@@ -33,3 +33,21 @@ export interface MissionFunnelData {
 export interface GetMissionFunnelOptions {
   utmSource?: string;
 }
+
+export interface SessionMaps {
+  sessionEntries: Map<string, Set<string>>;
+  sessionResponses: Map<string, Set<string>>;
+}
+
+export interface Statistics {
+  totalSessions: number;
+  totalStarted: number;
+  totalCompleted: number;
+  completionRate: number;
+}
+
+export interface ActionSummary {
+  id: string;
+  title: string;
+  order: number;
+}

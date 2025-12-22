@@ -3,25 +3,13 @@ import { missionRepository } from "@/server/repositories/mission/missionReposito
 import { trackingActionEntryRepository } from "@/server/repositories/tracking-action-entry";
 import { trackingActionResponseRepository } from "@/server/repositories/tracking-action-response";
 import { FUNNEL_NODE_ID_PATTERNS, FUNNEL_NODE_LABELS } from "@/server/services/tracking/constants";
-import type { GetMissionFunnelOptions, MissionFunnelData } from "./types";
-
-interface SessionMaps {
-  sessionEntries: Map<string, Set<string>>;
-  sessionResponses: Map<string, Set<string>>;
-}
-
-interface Statistics {
-  totalSessions: number;
-  totalStarted: number;
-  totalCompleted: number;
-  completionRate: number;
-}
-
-interface ActionSummary {
-  id: string;
-  title: string;
-  order: number;
-}
+import type {
+  ActionSummary,
+  GetMissionFunnelOptions,
+  MissionFunnelData,
+  SessionMaps,
+  Statistics,
+} from "./types";
 
 export class TrackingActionService {
   constructor(

@@ -1,7 +1,7 @@
-export { trackingActionService, TrackingActionService } from "./trackingActionService";
+export { TrackingActionService, trackingActionService } from "./trackingActionService";
 export type {
-  FunnelNode,
   FunnelLink,
-  MissionFunnelData,
+  FunnelNode,
   GetMissionFunnelOptions,
+  MissionFunnelData,
 } from "./types";
