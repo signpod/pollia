@@ -2,21 +2,28 @@
 
 import { useRecordActionEntry } from "@/hooks/tracking";
 import { useAuth } from "@/hooks/user";
-import { getOrCreateSessionId, getUtmParams } from "@/lib/tracking";
+import {
+  getOrCreateSessionId,
+  getUtmParams,
+  hasTrackedEntry,
+  markEntryAsTracked,
+} from "@/lib/tracking";
 import { useParams } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 export function ActionClientTrackingWrapper({ children }: { children: React.ReactNode }) {
   const { missionId, actionId } = useParams<{ missionId: string; actionId: string }>();
   const { mutate: recordEntry } = useRecordActionEntry();
   const { user } = useAuth();
-  const hasTrackedRef = useRef(false);
 
   useEffect(() => {
-    if (!hasTrackedRef.current && missionId && actionId) {
-      hasTrackedRef.current = true;
+    if (!missionId || !actionId) return;
 
-      const sessionId = getOrCreateSessionId();
+    const sessionId = getOrCreateSessionId();
+
+    if (!hasTrackedEntry(sessionId, actionId)) {
+      markEntryAsTracked(sessionId, actionId);
+
       const utmParams = getUtmParams();
 
       recordEntry({
