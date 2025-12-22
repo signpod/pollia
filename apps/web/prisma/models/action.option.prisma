@@ -10,7 +10,7 @@ model ActionOption {
   updatedAt    DateTime       @updatedAt @map("updated_at")
   answers      ActionAnswer[]
   action       Action         @relation(fields: [actionId], references: [id], onDelete: Cascade)
-  fileUpload   FileUpload?    @relation("ActionOptionImage", fields: [fileUploadId], references: [id])
+  fileUpload   FileUpload?    @relation(fields: [fileUploadId], references: [id])
 
   @@unique([actionId, order])
   @@index([actionId])

@@ -1,6 +1,5 @@
 import { ActionStepContentProps } from "@/constants/action";
-// TODO: @/schemas_legacy는 deprecated. 새로운 @/schemas/{domain}/ 스키마로 교체 필요
-import { subjectiveResponseSchema } from "@/schemas_legacy/survey/question/response/subjectiveResponseSchema";
+import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
 import type { ActionAnswerItem, GetMissionResponseResponse } from "@/types/dto";
 import { Textarea } from "@repo/ui/components";
@@ -99,8 +98,9 @@ function useSurveySubjectiveValue(
   useEffect(() => {
     setSubjectiveValue(initialTextValue);
     if (initialTextValue.trim()) {
-      const result = subjectiveResponseSchema.safeParse({
+      const result = submitAnswerItemSchema.safeParse({
         actionId,
+        type: ActionType.SUBJECTIVE,
         textResponse: initialTextValue,
       });
       updateCanGoNextRef.current?.(result.success);
@@ -119,8 +119,9 @@ function useSurveySubjectiveValue(
     const value = e.target.value;
     setSubjectiveValue(value);
 
-    const result = subjectiveResponseSchema.safeParse({
+    const result = submitAnswerItemSchema.safeParse({
       actionId,
+      type: ActionType.SUBJECTIVE,
       textResponse: value,
     });
     updateCanGoNext?.(result.success);
@@ -141,8 +142,9 @@ function useSurveySubjectiveValue(
   const feedbackMessage =
     FEEDBACK_MESSAGES[Math.min(subjectiveValue.length, MAX_FEEDBACK_MESSAGE_LENGTH)];
 
-  const validationResult = subjectiveResponseSchema.safeParse({
+  const validationResult = submitAnswerItemSchema.safeParse({
     actionId,
+    type: ActionType.SUBJECTIVE,
     textResponse: subjectiveValue,
   });
 

@@ -1,23 +1,20 @@
-import { useLoginModal } from "@/components/providers/LoginModalProvider";
 import { useCallback } from "react";
 import { useCurrentUser } from "./useCurrentUser";
 
 export function useAuth() {
   const { data: currentUser, isLoading } = useCurrentUser();
-  const { open: openLoginModal } = useLoginModal();
 
   const isLoggedIn = !!currentUser.id;
 
   const requireAuth = useCallback(
     (onSuccess?: () => void) => {
       if (!isLoggedIn) {
-        openLoginModal();
         return false;
       }
       onSuccess?.();
       return true;
     },
-    [isLoggedIn, openLoginModal],
+    [isLoggedIn],
   );
 
   const withAuth = useCallback(
@@ -37,7 +34,6 @@ export function useAuth() {
     isLoading,
     requireAuth,
     withAuth,
-    openLoginModal,
   };
 }
 

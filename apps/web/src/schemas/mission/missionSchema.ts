@@ -7,7 +7,7 @@ export const MISSION_TARGET_MAX_LENGTH = 100;
 
 const missionTypeSchema = z.enum(MissionType);
 
-const titleSchema = z
+export const titleSchema = z
   .string()
   .min(1, "제목을 입력해주세요.")
   .max(MISSION_TITLE_MAX_LENGTH, `제목은 ${MISSION_TITLE_MAX_LENGTH}자를 초과할 수 없습니다.`)

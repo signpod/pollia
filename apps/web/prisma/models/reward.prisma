@@ -11,7 +11,7 @@ model Reward {
   missions      Mission[]
 
   imageFileUploadId String?     @map("image_file_upload_id")
-  imageFileUpload   FileUpload? @relation("RewardImage", fields: [imageFileUploadId], references: [id])
+  imageFileUpload   FileUpload? @relation(fields: [imageFileUploadId], references: [id])
 
   @@map("rewards")
 }

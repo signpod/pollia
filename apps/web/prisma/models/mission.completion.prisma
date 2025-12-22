@@ -1,5 +1,5 @@
 model MissionCompletion {
-  id          String @id @default(cuid())
+  id          String  @id @default(cuid())
   title       String
   description String
   imageUrl    String? @map("image_url")
@@ -9,7 +9,7 @@ model MissionCompletion {
   mission   Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
 
   imageFileUploadId String?     @map("image_file_upload_id")
-  imageFileUpload   FileUpload? @relation("MissionCompletionImage", fields: [imageFileUploadId], references: [id])
+  imageFileUpload   FileUpload? @relation(fields: [imageFileUploadId], references: [id])
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

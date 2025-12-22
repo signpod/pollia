@@ -1,5 +1,4 @@
-// TODO: @/schemas_legacy는 deprecated. 새로운 @/schemas/{domain}/ 스키마로 교체 필요
-import { baseInfoSchema } from "@/schemas_legacy/survey/baseInfoSchema";
+import { titleSchema } from "@/schemas/mission/missionSchema";
 import { ActionSummary, ActionType } from "@/types/domain/action";
 import { atom } from "jotai";
 
@@ -58,10 +57,9 @@ export const missionValidationAtom = atom(get => {
   const trimmedTitle = title.trim();
 
   try {
-    const result = baseInfoSchema.safeParse({ title: trimmedTitle });
+    const result = titleSchema.safeParse(trimmedTitle);
     if (!result.success) {
-      const titleIssue = result.error.issues.find(issue => issue.path[0] === "title");
-      titleError = titleIssue?.message ?? null;
+      titleError = result.error.issues[0]?.message ?? null;
     }
   } catch {
     titleError = null;
