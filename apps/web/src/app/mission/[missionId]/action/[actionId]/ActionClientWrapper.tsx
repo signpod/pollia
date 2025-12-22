@@ -127,6 +127,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
     onSuccess: () => {
       goNext();
 
+      // Fire-and-forget 방식으로 트래킹 [25.12.22/러기]
       if (currentAnswer) {
         recordResponse({
           missionId,
