@@ -10,7 +10,9 @@ import {
   useSubmitSurveyAnswers,
 } from "@/hooks/mission-response";
 import { useMissionSurveyToast } from "@/hooks/mission/useMissionSurveyToast";
+import { useRecordActionResponse } from "@/hooks/tracking";
 import { getSessionStorage, removeSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
+import { getOrCreateSessionId } from "@/lib/tracking";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
 import type { ActionAnswerItem } from "@/types/dto";
@@ -115,12 +117,25 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
   const { showModal } = useModal();
 
   const { data: missionResponse } = useReadMissionResponseForMission({ missionId });
+  const { mutate: recordResponse } = useRecordActionResponse();
 
   const toastStorageKey = `mission-toast-${missionId}`;
 
   const { mutateAsync: submitAnswer, isPending: isSubmittingAnswer } = useSubmitQuestionAnswer({
     onSuccess: () => {
       goNext();
+
+      if (currentAnswer) {
+        recordResponse({
+          missionId,
+          sessionId: getOrCreateSessionId(),
+          userId: undefined,
+          actionId: currentAnswer.actionId,
+          metadata: {
+            actionType: currentAnswer.type,
+          },
+        });
+      }
     },
     onError: () => {
       toast.warning("답변 저장에 실패했습니다.", { id: "submit-answer-error" });
@@ -133,6 +148,19 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
       onSuccess: () => {
         removeSessionStorage(toastStorageKey);
         router.push(ROUTES.MISSION_DONE(missionId));
+
+        if (currentAnswer) {
+          recordResponse({
+            missionId,
+            sessionId: getOrCreateSessionId(),
+            userId: undefined,
+            actionId: currentAnswer.actionId,
+            metadata: {
+              actionType: currentAnswer.type,
+              isFinalSubmit: true,
+            },
+          });
+        }
       },
       onError: () => {
         toast.warning(MISSION_TOAST_MESSAGE.error.message, { id: MISSION_TOAST_MESSAGE.error.id });
