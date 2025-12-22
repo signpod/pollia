@@ -196,10 +196,6 @@ export function TiptapEditor({
     }
   }, [editable, editor]);
 
-  if (!editor) {
-    return null;
-  }
-
   return (
     <div
       className={cn(
@@ -208,9 +204,9 @@ export function TiptapEditor({
         className,
       )}
     >
-      {showToolbar && editable && <TiptapToolbar editor={editor} />}
+      {showToolbar && editable && editor && <TiptapToolbar editor={editor} />}
       <div className={cn("min-h-[120px] p-4", !editable && "p-0")}>
-        <EditorContent editor={editor} />
+        {editor && <EditorContent editor={editor} />}
       </div>
     </div>
   );
