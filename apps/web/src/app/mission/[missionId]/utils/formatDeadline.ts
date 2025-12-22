@@ -1,12 +1,16 @@
 export const formatDeadline = (deadline: string | Date) => {
   const date = new Date(deadline);
 
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const formatted = date.toLocaleString("ko-KR", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
 
-  return `${year}.${month}.${day} ${hours}:${minutes}`;
+  // "2024. 12. 23. 23:30" → "2024.12.23 23:30"
+  return formatted.replace(/\. /g, ".").replace(/\.(\d{2}:)/, " $1");
 };
-
