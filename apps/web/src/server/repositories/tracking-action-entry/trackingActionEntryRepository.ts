@@ -34,6 +34,20 @@ export class TrackingActionEntryRepository {
     });
   }
 
+  async findLatestBySessionAndAction(sessionId: string, actionId: string) {
+    return prisma.trackingActionEntry.findFirst({
+      where: { sessionId, actionId },
+      orderBy: { enteredAt: "desc" },
+    });
+  }
+
+  async findLatestByUserAndAction(userId: string, actionId: string) {
+    return prisma.trackingActionEntry.findFirst({
+      where: { userId, actionId },
+      orderBy: { enteredAt: "desc" },
+    });
+  }
+
   async count(options?: {
     missionId?: string;
     actionId?: string;
@@ -42,6 +56,16 @@ export class TrackingActionEntryRepository {
   }) {
     return prisma.trackingActionEntry.count({
       where: options,
+    });
+  }
+
+  async updateUserIdBySessionId(sessionId: string, userId: string) {
+    return prisma.trackingActionEntry.updateMany({
+      where: {
+        sessionId,
+        userId: null,
+      },
+      data: { userId },
     });
   }
 }
