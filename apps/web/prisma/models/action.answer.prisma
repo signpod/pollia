@@ -12,7 +12,7 @@ model ActionAnswer {
   response    MissionResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
 
   imageFileUploadId String?     @map("image_file_upload_id")
-  imageFileUpload   FileUpload? @relation("ActionAnswerImage", fields: [imageFileUploadId], references: [id])
+  imageFileUpload   FileUpload? @relation(fields: [imageFileUploadId], references: [id])
 
   @@unique([responseId, actionId, optionId])
   @@index([actionId])

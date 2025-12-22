@@ -1,0 +1,21 @@
+model TrackingActionResponse {
+  id              String  @id @default(cuid())
+  missionId       String  @map("mission_id")
+  sessionId       String  @map("session_id")
+  userId          String? @map("user_id")
+  actionId        String  @map("action_id")
+  responseContent Json    @map("response_content")
+
+  action  Action  @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  mission Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  respondedAt DateTime @default(now()) @map("responded_at")
+
+  @@index([missionId])
+  @@index([sessionId])
+  @@index([userId])
+  @@index([actionId])
+  @@index([respondedAt])
+  @@map("tracking_action_responses")
+}

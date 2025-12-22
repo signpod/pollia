@@ -13,8 +13,11 @@ model Action {
   options       ActionOption[]
   mission       Mission?       @relation(fields: [missionId], references: [id], onDelete: Cascade)
 
+  trackingActionEntries   TrackingActionEntry[]
+  trackingActionResponses TrackingActionResponse[]
+
   imageFileUploadId String?     @map("image_file_upload_id")
-  imageFileUpload   FileUpload? @relation("ActionImage", fields: [imageFileUploadId], references: [id])
+  imageFileUpload   FileUpload? @relation(fields: [imageFileUploadId], references: [id])
 
   @@index([missionId])
   @@map("actions")
