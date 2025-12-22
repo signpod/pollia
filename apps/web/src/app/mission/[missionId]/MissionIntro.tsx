@@ -107,9 +107,6 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
   const { data: missionResponseData } = useReadMissionResponseForMission({ missionId });
   const { currentParticipants, maxParticipants } = participantInfo?.data ?? {};
 
-  console.log("currentParticipants", currentParticipants);
-  console.log("maxParticipants", maxParticipants);
-
   const sections = reward
     ? [SECTION_IDS.MISSION_GUIDE, SECTION_IDS.REWARD]
     : [SECTION_IDS.MISSION_GUIDE];
@@ -201,7 +198,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                   className="text-center"
                 />
               </div>
-              Bad
+
               <div className="flex flex-col gap-1 items-center">
                 <Typo.SubTitle size="large">미션 조건</Typo.SubTitle>
                 <Typo.Body size="large" className="text-info">

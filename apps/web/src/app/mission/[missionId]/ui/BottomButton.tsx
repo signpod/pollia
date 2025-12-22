@@ -1,6 +1,5 @@
 import { ROUTES } from "@/constants/routes";
 import { AuthError, useKakaoLogin } from "@/hooks/login/useKakaoLogin";
-import {} from "@/hooks/mission-response";
 import { useAuth } from "@/hooks/user/useAuth";
 import { Mission } from "@prisma/client";
 import KakaoIcon from "@public/svgs/kakao-icon.svg";
