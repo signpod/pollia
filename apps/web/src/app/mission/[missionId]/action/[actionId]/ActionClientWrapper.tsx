@@ -258,7 +258,10 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
                   ? { textResponse: currentAnswer.textResponse }
                   : {}),
                 ...(currentAnswer.type === "IMAGE"
-                  ? { fileUploadId: currentAnswer.imageFileUploadId }
+                  ? {
+                      fileUploadId: currentAnswer.imageFileUploadId,
+                      imageUrl: currentAnswer.imageUrl,
+                    }
                   : {}),
               },
             ],

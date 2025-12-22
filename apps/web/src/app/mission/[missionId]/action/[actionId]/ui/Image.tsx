@@ -23,18 +23,14 @@ export function ActionImage({
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imageFileUploadId, setImageFileUploadId] = useState<string | undefined>(undefined);
 
-  const initialImageUrl = useMemo(() => {
+  const existingAnswer = useMemo(() => {
     if (!missionResponse?.data?.answers || missionResponse.data.answers.length === 0) {
       return null;
     }
-    const answer = missionResponse.data.answers.find(answer => answer.actionId === actionData.id);
-
-    if (!answer) {
-      return null;
-    }
-
-    return answer.imageUrl ?? null;
+    return missionResponse.data.answers.find(answer => answer.actionId === actionData.id) ?? null;
   }, [missionResponse, actionData.id]);
+
+  const initialImageUrl = existingAnswer?.imageUrl ?? null;
 
   const updateCanGoNextRef = useRef(updateCanGoNext);
   const onAnswerChangeRef = useRef(onAnswerChange);
@@ -45,14 +41,18 @@ export function ActionImage({
   }, [updateCanGoNext, onAnswerChange]);
 
   useEffect(() => {
-    const hasExistingAnswer = missionResponse?.data?.answers?.some(
-      answer => answer.actionId === actionData.id,
-    );
-
-    if (hasExistingAnswer) {
+    if (existingAnswer) {
       updateCanGoNextRef.current?.(true);
+
+      const answer: ActionAnswerItem = {
+        actionId: actionData.id,
+        type: ActionType.IMAGE,
+        imageFileUploadId: existingAnswer.imageFileUploadId ?? undefined,
+        imageUrl: existingAnswer.imageUrl ?? undefined,
+      };
+      onAnswerChangeRef.current?.(answer);
     }
-  }, [missionResponse, actionData.id]);
+  }, [existingAnswer, actionData.id]);
 
   useEffect(() => {
     if (imageUrl && imageFileUploadId) {
@@ -60,6 +60,7 @@ export function ActionImage({
         actionId: actionData.id,
         type: ActionType.IMAGE,
         imageFileUploadId: imageFileUploadId,
+        imageUrl: imageUrl,
       };
 
       const validationResult = submitAnswerItemSchema.safeParse(answer);

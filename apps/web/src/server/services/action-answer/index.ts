@@ -150,6 +150,7 @@ export class ActionAnswerService {
       textAnswer?: string;
       scaleAnswer?: number;
       imageFileUploadId?: string;
+      imageUrl?: string;
     }> = [];
 
     for (const answer of parseResult.data.answers) {
@@ -186,6 +187,7 @@ export class ActionAnswerService {
           responseId: parseResult.data.responseId,
           actionId,
           imageFileUploadId: answer.imageFileUploadId,
+          imageUrl: answer.imageUrl,
         });
       } else if (answer.type === ActionType.TAG && answer.selectedOptionIds) {
         for (const optionId of answer.selectedOptionIds) {

@@ -35,7 +35,9 @@ export function useSubmitActionAnswer(options: UseSubmitActionAnswerOptions) {
               ? { scaleValue: answer.scaleValue }
               : {}),
             ...(answer.type === "SUBJECTIVE" ? { textResponse: answer.textResponse } : {}),
-            ...(answer.type === "IMAGE" ? { fileUploadId: answer.imageFileUploadId } : {}),
+            ...(answer.type === "IMAGE"
+              ? { fileUploadId: answer.imageFileUploadId, imageUrl: answer.imageUrl }
+              : {}),
           },
         ],
       });
