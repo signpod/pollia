@@ -273,7 +273,7 @@ describe("MissionResponseService", () => {
 
       // When & Then
       await expect(service.startResponse({ missionId: "mission1" }, mockUser.id)).rejects.toThrow(
-        "미션 참여 정원이 마감되었습니다.",
+        "참여 정원이 마감되었어요.",
       );
 
       try {

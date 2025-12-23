@@ -105,7 +105,7 @@ export class MissionResponseService {
     if (mission.maxParticipants !== null && mission.maxParticipants > 0) {
       const currentParticipants = await this.responseRepo.countByMissionId(missionId);
       if (currentParticipants >= mission.maxParticipants) {
-        const error = new Error("미션 참여 정원이 마감되었습니다.");
+        const error = new Error("참여 정원이 마감되었어요.");
         error.cause = 403;
         throw error;
       }
