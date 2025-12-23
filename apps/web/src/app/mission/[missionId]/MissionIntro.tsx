@@ -28,6 +28,7 @@ import {
   MissionImage,
   MissionLogo,
   MissionRewardSection,
+  SectionHeader,
 } from "./components";
 import { BottomButton } from "./ui";
 import { checkParticipantLimitReached } from "./utils/checkParticipantLimit";
@@ -224,19 +225,17 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
               id={SECTION_IDS.MISSION_GUIDE}
               className="flex w-full flex-col gap-8 px-5 py-8 items-center"
             >
-              <div className="flex w-full flex-col gap-6 justify-center items-center">
-                {/* <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
+              <div className="flex flex-col gap-4 items-center">
+                <SectionHeader badgeText="미션 안내" title={""} />
 
-                <Typo.MainTitle size="large" className="break-keep text-center">
-                  {title}
-                </Typo.MainTitle> */}
-
-                {description && (
-                  <MissionDescription
-                    content={cleanTiptapHTML(description)}
-                    className="text-center"
-                  />
-                )}
+                <div className="flex w-full justify-center items-center rounded-md bg-zinc-50 p-6">
+                  {description && (
+                    <MissionDescription
+                      content={cleanTiptapHTML(description)}
+                      className="text-center"
+                    />
+                  )}
+                </div>
               </div>
 
               <div className="flex flex-col gap-2 items-center">
