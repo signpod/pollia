@@ -13,7 +13,8 @@ export function useMissionIntroData(missionId: string) {
   const isCompleted = missionResponse?.data?.completedAt != null;
   const lastActionIndex = missionResponse?.data?.answers?.length ?? 0;
   const nextActionId = actionIds?.data?.actionIds?.[lastActionIndex];
-  const isEnabledToResume = !isCompleted && nextActionId !== undefined;
+  const hasStartedMission = missionResponse?.data != null;
+  const isEnabledToResume = hasStartedMission && !isCompleted && nextActionId !== undefined;
 
   const isRequirePassword = mission?.data?.password !== null;
 
