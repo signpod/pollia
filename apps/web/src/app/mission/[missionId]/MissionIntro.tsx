@@ -185,23 +185,23 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
           {imageUrl && (
             <div className="overflow-hidden sticky top-0 left-0 right-0 z-10 bg-white">
               <MissionImage imageUrl={imageUrl} />
-              <div className="bg-linear-to-t from-black via-black/50 via-70% to-transparent absolute bottom-0 left-0 right-0 z-20 flex flex-col gap-3 pb-10 pt-6 px-5">
-                <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
-                <Typo.MainTitle size="large" className="break-keep text-white">
-                  {title}
-                </Typo.MainTitle>
-                <motion.div
-                  className="flex justify-center items-center"
-                  animate={{ y: [0, 10, 0] }}
-                  transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-                >
-                  <ChevronDown className="size-6 text-white" />
-                </motion.div>
-              </div>
             </div>
           )}
-          <div className="flex w-full flex-col bg-white py-5 rounded-t-3xl pb-0 relative z-10 mt-[-20px]">
-            <div className="bg-white h-5 absolute top-0 left-0 right-0  rounded-t-3xl z-30" />
+          <div className="flex w-full flex-col bg-white py-5 rounded-t-3xl pb-0 relative z-20 mt-[-20px] overflow-visible">
+            <div className="bg-linear-to-t from-black via-black/50 via-70% to-transparent absolute bottom-[calc(100%-10px)] left-0 right-0 z-30 flex flex-col gap-3 pb-7 pt-6 px-5 pointer-events-none">
+              <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
+              <Typo.MainTitle size="large" className="break-keep text-white">
+                {title}
+              </Typo.MainTitle>
+              <motion.div
+                className="flex justify-center items-center"
+                animate={{ y: [0, 10, 0] }}
+                transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+              >
+                <ChevronDown className="size-6 text-white" />
+              </motion.div>
+            </div>
+            <div className="bg-white h-5 absolute top-0 left-0 right-0 rounded-t-3xl z-30" />
             <div className="sticky top-0 z-30 rounded-t-md mt-[-20px] bg-white py-2">
               <Tab.Root value={activeTab} pointColor="secondary" onValueChange={handleChangeTab}>
                 <Tab.List className="px-5">
@@ -286,7 +286,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
 
             {mission?.type !== MissionType.EXPERIENCE_GROUP && (
               <div className="flex flex-col gap-10 items-center px-5 py-10">
-                <Typo.MainTitle size="large" className="text-center">
+                <Typo.MainTitle size="small" className="text-center">
                   가족, 친구에게
                   <br />
                   공유해주세요 👀
