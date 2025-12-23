@@ -1,107 +1,67 @@
 "use client";
 
-import { ROUTES } from "@/constants/routes";
 import { useReadMission } from "@/hooks/mission";
+import { useReadMissionCompletion } from "@/hooks/mission-completion";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
-import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
-import { animateFinalElements } from "./animations/animateFinalElements";
-import { createContentAnimationTimeline } from "./animations/createContentAnimationTimeline";
-import { createMainAnimationTimeline } from "./animations/createMainAnimationTimeline";
-import { useAnimationRefs } from "./animations/useAnimationRefs";
-import { AnimatedBox } from "./components/AnimatedBox";
-import { CompletionText } from "./components/CompletionText";
-import { MainButton } from "./components/MainButton";
-import { ShareButtons } from "./components/ShareButtons";
-import { ShareTitle } from "./components/ShareTitle";
-import { SurveyCardContent } from "./components/SurveyCardContent";
+import { useParams } from "next/navigation";
+
+import { CompletionMessage, ShareSection, StarAnimation } from "./components";
+import { useMissionCompletionAnimation, useMissionShare } from "./hooks";
 
 export function MissionCompletion() {
   const { missionId } = useParams<{ missionId: string }>();
-  const router = useRouter();
-  const { data: survey } = useReadMission(missionId);
-  const { title, estimatedMinutes, deadline, imageUrl, target, brandLogoUrl } = survey?.data ?? {};
+  const { data: mission } = useReadMission(missionId);
+  const { data: missionCompletion } = useReadMissionCompletion(missionId);
 
-  const refs = useAnimationRefs();
-  const [showContent, setShowContent] = useState(false);
-  const [showFirstText, setShowFirstText] = useState(true);
-  const [startAfter, setStartAfter] = useState(false);
+  const { imageUrl, brandLogoUrl, title: missionTitle } = mission?.data ?? {};
+  const { title, description } = missionCompletion?.data ?? {};
 
-  const handleAnimateFinalElements = useCallback(() => {
-    animateFinalElements(refs);
-  }, [refs]);
+  const { refs, isReversed, showTitle, showDescription, showStarTooltip } =
+    useMissionCompletionAnimation();
 
-  useEffect(() => {
-    if (!refs.box.current) return;
-
-    const timeline = createMainAnimationTimeline(
-      refs,
-      {
-        setShowFirstText,
-        setStartAfter,
-        setShowContent,
-      },
-      handleAnimateFinalElements,
-    );
-
-    return () => {
-      timeline.kill();
-    };
-  }, [refs, handleAnimateFinalElements]);
-
-  useEffect(() => {
-    if (!showContent) return;
-    if (!refs.title.current || !refs.infoBox.current) return;
-
-    const timeline = createContentAnimationTimeline(refs);
-
-    return () => {
-      timeline.kill();
-    };
-  }, [showContent, refs]);
+  const { handleKakaoShare, handleShare, isSharing } = useMissionShare({
+    missionId,
+    title: missionTitle,
+    imageUrl,
+  });
 
   return (
     <div
       className={cn(
-        "relative w-full flex flex-col items-center gap-6 pt-[25%] flex-1 overflow-hidden bg-white",
-        startAfter ? "my-auto pt-0" : "pt-[25%]",
+        "relative w-full flex flex-col items-center gap-6 min-s-svh overflow-hidden",
+        "bg-white",
+        "transition-all duration-300",
+        !showTitle ? "pt-[25%]" : "pt-[20px]",
       )}
     >
-      <motion.div
-        layout
-        transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
-        className="relative flex flex-col items-center gap-6 bg-white/80 p-6 w-full"
-      >
-        {/* 공유 제목 */}
-        {showContent && !showFirstText && <ShareTitle ref={refs.afterTitle} />}
-
-        {/* 메인 박스 */}
-        <AnimatedBox ref={refs.box} showContent={showContent} checkIconRef={refs.checkIcon}>
-          {showContent && (
-            <SurveyCardContent
-              refs={refs}
+      <div
+        ref={refs.gradientRef}
+        className="absolute inset-0 bg-linear-to-b from-[#FFE672]/0 via-[#FFE672]/10 to-[#FFE672]/0 pointer-events-none"
+      />
+      <div className="flex flex-col items-center w-full h-full">
+        {(isReversed ? ["star", "title"] : ["title", "star"]).map(item =>
+          item === "title" ? (
+            <CompletionMessage
+              key={item}
               title={title}
-              estimatedMinutes={estimatedMinutes}
-              deadline={deadline}
-              target={target}
-              imageUrl={imageUrl}
-              brandLogoUrl={brandLogoUrl}
+              description={description}
+              showTitle={showTitle}
+              showDescription={showDescription}
             />
-          )}
-        </AnimatedBox>
-
-        {/* 첫 번째 텍스트 */}
-        {showFirstText && <CompletionText ref={refs.text} title={title} />}
-
-        {/* 공유 버튼들 */}
-        {showContent && <ShareButtons ref={refs.shareButtons} />}
-      </motion.div>
-
-      {/* 하단 버튼 */}
-      {showContent && (
-        <MainButton ref={refs.button} onClick={() => router.push(ROUTES.MISSION(missionId))} />
-      )}
+          ) : (
+            <StarAnimation key={item} ref={refs.starBoxRef} showTooltip={showStarTooltip} />
+          ),
+        )}
+        <ShareSection
+          ref={refs.shareBoxRef}
+          title={title}
+          brandLogoUrl={brandLogoUrl}
+          imageUrl={imageUrl}
+          onKakaoShare={handleKakaoShare}
+          onLinkShare={handleShare}
+          isSharing={isSharing}
+        />
+      </div>
     </div>
   );
 }

@@ -1,13 +1,12 @@
 "use client";
 
-import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import { ComponentPropsWithRef, useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { cn } from "../../lib/utils";
 
-export interface TooltipProps {
-  children: ReactNode;
+export interface TooltipProps extends ComponentPropsWithRef<"div"> {
   id: string;
   placement?: "top" | "bottom";
-  className?: string;
 }
 
 interface Position {
@@ -167,7 +166,7 @@ export const Tooltip = ({ children, id, placement = "top", className = "" }: Too
     >
       <div
         ref={tooltipRef}
-        className={`relative rounded-full bg-white px-4 py-2 opacity-100 ${className}`}
+        className={cn("relative rounded-full bg-white px-4 py-2 opacity-100", className)}
         role="tooltip"
       >
         {children}
