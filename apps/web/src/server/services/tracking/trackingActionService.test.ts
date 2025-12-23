@@ -1,4 +1,4 @@
-import { FUNNEL_NODE_ID_PATTERNS, FUNNEL_NODE_LABELS } from "@/server/services/tracking/constants";
+import { FUNNEL_NODE_LABELS } from "@/server/services/tracking/constants";
 import type { TrackingActionEntry, TrackingActionResponse } from "@prisma/client";
 import {
   type TrackingActionServiceTestContext,
@@ -89,34 +89,28 @@ describe("TrackingActionService", () => {
 
       const result = await context.service.getMissionFunnel(TEST_MISSION_ID, TEST_USER_ID);
 
-      expect(result.nodes).toHaveLength(9);
+      expect(result.nodes).toHaveLength(7);
 
-      const startNode = result.nodes.find(n => n.id === FUNNEL_NODE_ID_PATTERNS.START);
+      const startNode = result.nodes.find(n => n.id === FUNNEL_NODE_LABELS.START);
       expect(startNode).toEqual({
-        id: FUNNEL_NODE_ID_PATTERNS.START,
+        id: FUNNEL_NODE_LABELS.START,
         name: FUNNEL_NODE_LABELS.START,
         type: "start",
         count: 90,
       });
 
       const startToEntry1 = result.links.find(
-        l =>
-          l.source === FUNNEL_NODE_ID_PATTERNS.START &&
-          l.target === FUNNEL_NODE_ID_PATTERNS.ENTRY(TEST_ACTION_1_ID),
+        l => l.source === FUNNEL_NODE_LABELS.START && l.target === "1. 좋아하는 색상은?",
       );
       expect(startToEntry1?.value).toBe(90);
 
       const entry1ToResponse1 = result.links.find(
-        l =>
-          l.source === FUNNEL_NODE_ID_PATTERNS.ENTRY(TEST_ACTION_1_ID) &&
-          l.target === FUNNEL_NODE_ID_PATTERNS.RESPONSE(TEST_ACTION_1_ID),
+        l => l.source === "1. 좋아하는 색상은?" && l.target === "1. 좋아하는 색상은? 완료",
       );
       expect(entry1ToResponse1?.value).toBe(80);
 
       const entry1ToDrop = result.links.find(
-        l =>
-          l.source === FUNNEL_NODE_ID_PATTERNS.ENTRY(TEST_ACTION_1_ID) &&
-          l.target === FUNNEL_NODE_ID_PATTERNS.DROP_RESPONSE(TEST_ACTION_1_ID),
+        l => l.source === "1. 좋아하는 색상은?" && l.target === "1. 좋아하는 색상은? 이탈",
       );
       expect(entry1ToDrop?.value).toBe(10);
 

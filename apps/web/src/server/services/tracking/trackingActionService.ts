@@ -2,7 +2,7 @@ import { actionRepository } from "@/server/repositories/action/actionRepository"
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
 import { trackingActionEntryRepository } from "@/server/repositories/tracking-action-entry";
 import { trackingActionResponseRepository } from "@/server/repositories/tracking-action-response";
-import { FUNNEL_NODE_ID_PATTERNS, FUNNEL_NODE_LABELS } from "@/server/services/tracking/constants";
+import { FUNNEL_NODE_LABELS } from "@/server/services/tracking/constants";
 import type {
   ActionSummary,
   GetMissionFunnelOptions,
@@ -34,7 +34,7 @@ export class TrackingActionService {
     const sessionMaps = await this.buildSessionMaps(missionId);
     const statistics = this.calculateStatistics(actions, sessionMaps);
     const nodes = this.buildNodes(actions, sessionMaps, statistics);
-    const links = this.buildLinks(actions, sessionMaps, statistics);
+    const links = this.buildLinks(actions, sessionMaps);
     const metadata = this.buildMetadata(actions, sessionMaps);
 
     return {
@@ -140,7 +140,7 @@ export class TrackingActionService {
     const { sessionEntries, sessionResponses } = sessionMaps;
 
     const startNode: MissionFunnelData["nodes"][0] = {
-      id: FUNNEL_NODE_ID_PATTERNS.START,
+      id: FUNNEL_NODE_LABELS.START,
       name: FUNNEL_NODE_LABELS.START,
       type: "start",
       count: statistics.totalStarted,
@@ -155,30 +155,26 @@ export class TrackingActionService {
         actionSet.has(action.id),
       ).length;
 
+      const actionLabel = `${action.order}. ${action.title}`;
+
       return [
         {
-          id: FUNNEL_NODE_ID_PATTERNS.ENTRY(action.id),
-          name: `${action.title} ${FUNNEL_NODE_LABELS.ENTRY_SUFFIX}`,
+          id: actionLabel,
+          name: actionLabel,
           type: "entry" as const,
           count: entryCount,
         },
         {
-          id: FUNNEL_NODE_ID_PATTERNS.DROP_ENTRY(action.id),
+          id: `${actionLabel} ${FUNNEL_NODE_LABELS.DROP_SUFFIX}`,
           name: FUNNEL_NODE_LABELS.DROP,
           type: "drop" as const,
           count: 0,
         },
         {
-          id: FUNNEL_NODE_ID_PATTERNS.RESPONSE(action.id),
-          name: `${action.title} ${FUNNEL_NODE_LABELS.RESPONSE_SUFFIX}`,
+          id: `${actionLabel} ${FUNNEL_NODE_LABELS.RESPONSE_SUFFIX}`,
+          name: `${actionLabel} ${FUNNEL_NODE_LABELS.RESPONSE_SUFFIX}`,
           type: "response" as const,
           count: responseCount,
-        },
-        {
-          id: FUNNEL_NODE_ID_PATTERNS.DROP_RESPONSE(action.id),
-          name: FUNNEL_NODE_LABELS.DROP,
-          type: "drop" as const,
-          count: 0,
         },
       ];
     });
@@ -189,7 +185,6 @@ export class TrackingActionService {
   private buildLinks(
     actions: ActionSummary[],
     sessionMaps: SessionMaps,
-    statistics: Statistics,
   ): MissionFunnelData["links"] {
     const { sessionEntries, sessionResponses } = sessionMaps;
 
@@ -204,52 +199,45 @@ export class TrackingActionService {
         actionSet.has(action.id),
       ).length;
 
-      // 첫 번째 액션: 시작 노드에서 연결
-      if (index === 0) {
-        const dropFromStart = statistics.totalStarted - entryCount;
+      const actionLabel = `${action.order}. ${action.title}`;
+      const entryNodeId = actionLabel;
+      const responseNodeId = `${actionLabel} ${FUNNEL_NODE_LABELS.RESPONSE_SUFFIX}`;
+      const dropNodeId = `${actionLabel} ${FUNNEL_NODE_LABELS.DROP_SUFFIX}`;
 
+      if (index === 0) {
         links.push({
-          source: FUNNEL_NODE_ID_PATTERNS.START,
-          target: FUNNEL_NODE_ID_PATTERNS.ENTRY(action.id),
+          source: FUNNEL_NODE_LABELS.START,
+          target: entryNodeId,
           value: entryCount,
         });
-
-        if (dropFromStart > 0) {
-          links.push({
-            source: FUNNEL_NODE_ID_PATTERNS.START,
-            target: FUNNEL_NODE_ID_PATTERNS.DROP_ENTRY(action.id),
-            value: dropFromStart,
-          });
-        }
       } else {
-        // 이전 액션에서 연결
         const previousAction = actions[index - 1];
         if (previousAction) {
           const transitionCount = Array.from(sessionResponses.values()).filter(
             actionSet => actionSet.has(previousAction.id) && actionSet.has(action.id),
           ).length;
 
+          const previousActionLabel = `${previousAction.order}. ${previousAction.title}`;
           links.push({
-            source: FUNNEL_NODE_ID_PATTERNS.RESPONSE(previousAction.id),
-            target: FUNNEL_NODE_ID_PATTERNS.ENTRY(action.id),
+            source: `${previousActionLabel} ${FUNNEL_NODE_LABELS.RESPONSE_SUFFIX}`,
+            target: entryNodeId,
             value: transitionCount,
           });
         }
       }
 
-      // 진입 → 응답 링크
       const dropFromEntryToResponse = entryCount - responseCount;
 
       links.push({
-        source: FUNNEL_NODE_ID_PATTERNS.ENTRY(action.id),
-        target: FUNNEL_NODE_ID_PATTERNS.RESPONSE(action.id),
+        source: entryNodeId,
+        target: responseNodeId,
         value: responseCount,
       });
 
       if (dropFromEntryToResponse > 0) {
         links.push({
-          source: FUNNEL_NODE_ID_PATTERNS.ENTRY(action.id),
-          target: FUNNEL_NODE_ID_PATTERNS.DROP_RESPONSE(action.id),
+          source: entryNodeId,
+          target: dropNodeId,
           value: dropFromEntryToResponse,
         });
       }
