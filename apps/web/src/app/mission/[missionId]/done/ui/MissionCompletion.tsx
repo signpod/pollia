@@ -4,9 +4,11 @@ import { cleanTiptapHTML, cn } from "@/lib/utils";
 import { ButtonV2, TiptapViewer, Tooltip, Typo } from "@repo/ui/components";
 import { motion } from "framer-motion";
 import gsap from "gsap";
+import { Share2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import KakaoIcon from "@public/svgs/kakao-icon.svg";
 import StarBigIcon from "@public/svgs/star-big.svg";
 import StarYellow from "@public/svgs/star-yellow.svg";
 import Image from "next/image";
@@ -196,8 +198,18 @@ export function MissionCompletion() {
               )}
             </div>
             <div className="flex items-center gap-4 w-full">
-              <ButtonV2 className="flex-1">카카오톡 공유</ButtonV2>
-              <ButtonV2 className="flex-1">링크 공유</ButtonV2>
+              <ButtonV2 className="flex-1 bg-[#FEE500] text-default">
+                <div className="flex items-center justify-center w-full gap-2">
+                  <KakaoIcon className="size-4" />
+                  <Typo.ButtonText size="medium">카카오톡 공유</Typo.ButtonText>
+                </div>
+              </ButtonV2>
+              <ButtonV2 className="flex-1" variant="secondary">
+                <div className="flex items-center justify-center w-full gap-2">
+                  <Share2 className="size-4" />
+                  <Typo.ButtonText size="medium">카카오톡 공유</Typo.ButtonText>
+                </div>
+              </ButtonV2>
             </div>
           </div>
         </div>
