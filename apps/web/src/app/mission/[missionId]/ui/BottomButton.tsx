@@ -17,6 +17,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { isBefore } from "date-fns";
 import { motion } from "framer-motion";
 import { useParams, useRouter } from "next/navigation";
+import { checkParticipantLimitReached } from "../utils/checkParticipantLimit";
 
 const TOOLTIP_TEXT = {
   loggedOut: "리워드를 받으려면 로그인이 필요해요 🎁",
@@ -64,11 +65,11 @@ export function BottomButton({
 
   const { currentParticipants, maxParticipants } = missionParticipantInfo?.data ?? {};
 
-  const isParticipantLimitReached =
-    !!maxParticipants &&
-    !!currentParticipants &&
-    currentParticipants >= maxParticipants &&
-    !hasMissionResponse;
+  const isParticipantLimitReached = checkParticipantLimitReached({
+    maxParticipants,
+    currentParticipants,
+    hasExistingResponse: hasMissionResponse,
+  });
 
   const { handleKakaoLogin } = useKakaoLogin({
     initialError,
@@ -105,8 +106,11 @@ export function BottomButton({
     const { currentParticipants: latestCurrent, maxParticipants: latestMax } =
       latestParticipantInfo?.data ?? {};
 
-    const isLimitReached =
-      !!latestMax && !!latestCurrent && latestCurrent >= latestMax && !hasLatestMissionResponse;
+    const isLimitReached = checkParticipantLimitReached({
+      maxParticipants: latestMax,
+      currentParticipants: latestCurrent,
+      hasExistingResponse: hasLatestMissionResponse,
+    });
 
     if (isLimitReached) {
       toast.warning("참여 정원이 마감되었어요.", { id: "participant-limit-error" });
