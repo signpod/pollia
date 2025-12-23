@@ -3,8 +3,7 @@
 import { ROUTES } from "@/constants/routes";
 import { useMissionPassword } from "@/hooks/mission/useMissionPassword";
 import { ButtonV2, Typo } from "@repo/ui/components";
-import { Asterisk, Minus } from "lucide-react";
-import { X } from "lucide-react";
+import { Asterisk, Minus, X } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { Keyboard } from "./ui";
 
