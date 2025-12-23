@@ -89,7 +89,7 @@ describe("TrackingActionService", () => {
 
       const result = await context.service.getMissionFunnel(TEST_MISSION_ID, TEST_USER_ID);
 
-      expect(result.nodes).toHaveLength(7);
+      expect(result.nodes).toHaveLength(6);
 
       const startNode = result.nodes.find(n => n.id === FUNNEL_NODE_LABELS.START);
       expect(startNode).toEqual({
@@ -104,15 +104,20 @@ describe("TrackingActionService", () => {
       );
       expect(startToEntry1?.value).toBe(90);
 
-      const entry1ToResponse1 = result.links.find(
-        l => l.source === "1. 좋아하는 색상은?" && l.target === "1. 좋아하는 색상은? 완료",
+      const entry1ToEntry2 = result.links.find(
+        l => l.source === "1. 좋아하는 색상은?" && l.target === "2. 선호하는 브랜드는?",
       );
-      expect(entry1ToResponse1?.value).toBe(80);
+      expect(entry1ToEntry2?.value).toBe(80);
 
       const entry1ToDrop = result.links.find(
         l => l.source === "1. 좋아하는 색상은?" && l.target === "1. 좋아하는 색상은? 이탈",
       );
       expect(entry1ToDrop?.value).toBe(10);
+
+      const entry2ToResponse = result.links.find(
+        l => l.source === "2. 선호하는 브랜드는?" && l.target === "2. 선호하는 브랜드는? 완료",
+      );
+      expect(entry2ToResponse?.value).toBe(70);
 
       expect(result.metadata.totalStarted).toBe(90);
       expect(result.metadata.totalCompleted).toBe(70);

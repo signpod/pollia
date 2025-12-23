@@ -146,7 +146,7 @@ export class TrackingActionService {
       count: statistics.totalStarted,
     };
 
-    const actionNodes = actions.flatMap(action => {
+    const actionNodes = actions.flatMap((action, index) => {
       const entryCount = Array.from(sessionEntries.values()).filter(actionSet =>
         actionSet.has(action.id),
       ).length;
@@ -156,8 +156,9 @@ export class TrackingActionService {
       ).length;
 
       const actionLabel = `${action.order}. ${action.title}`;
+      const isLastAction = index === actions.length - 1;
 
-      return [
+      const nodes: MissionFunnelData["nodes"] = [
         {
           id: actionLabel,
           name: actionLabel,
@@ -170,13 +171,18 @@ export class TrackingActionService {
           type: "drop" as const,
           count: 0,
         },
-        {
+      ];
+
+      if (isLastAction) {
+        nodes.push({
           id: `${actionLabel} ${FUNNEL_NODE_LABELS.RESPONSE_SUFFIX}`,
           name: `${actionLabel} ${FUNNEL_NODE_LABELS.RESPONSE_SUFFIX}`,
           type: "response" as const,
           count: responseCount,
-        },
-      ];
+        });
+      }
+
+      return nodes;
     });
 
     return [startNode, ...actionNodes];
@@ -201,8 +207,8 @@ export class TrackingActionService {
 
       const actionLabel = `${action.order}. ${action.title}`;
       const entryNodeId = actionLabel;
-      const responseNodeId = `${actionLabel} ${FUNNEL_NODE_LABELS.RESPONSE_SUFFIX}`;
       const dropNodeId = `${actionLabel} ${FUNNEL_NODE_LABELS.DROP_SUFFIX}`;
+      const isLastAction = index === actions.length - 1;
 
       if (index === 0) {
         links.push({
@@ -213,32 +219,41 @@ export class TrackingActionService {
       } else {
         const previousAction = actions[index - 1];
         if (previousAction) {
-          const transitionCount = Array.from(sessionResponses.values()).filter(
-            actionSet => actionSet.has(previousAction.id) && actionSet.has(action.id),
-          ).length;
-
           const previousActionLabel = `${previousAction.order}. ${previousAction.title}`;
           links.push({
-            source: `${previousActionLabel} ${FUNNEL_NODE_LABELS.RESPONSE_SUFFIX}`,
+            source: previousActionLabel,
             target: entryNodeId,
-            value: transitionCount,
+            value: entryCount,
           });
         }
       }
 
-      const dropFromEntryToResponse = entryCount - responseCount;
+      const dropFromEntry = entryCount - responseCount;
 
-      links.push({
-        source: entryNodeId,
-        target: responseNodeId,
-        value: responseCount,
-      });
+      if (isLastAction) {
+        const responseNodeId = `${actionLabel} ${FUNNEL_NODE_LABELS.RESPONSE_SUFFIX}`;
+        links.push({
+          source: entryNodeId,
+          target: responseNodeId,
+          value: responseCount,
+        });
+      } else {
+        const nextAction = actions[index + 1];
+        if (nextAction) {
+          const nextActionLabel = `${nextAction.order}. ${nextAction.title}`;
+          links.push({
+            source: entryNodeId,
+            target: nextActionLabel,
+            value: responseCount,
+          });
+        }
+      }
 
-      if (dropFromEntryToResponse > 0) {
+      if (dropFromEntry > 0) {
         links.push({
           source: entryNodeId,
           target: dropNodeId,
-          value: dropFromEntryToResponse,
+          value: dropFromEntry,
         });
       }
 
