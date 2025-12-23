@@ -1,15 +1,15 @@
-import { MissionFunnelChart } from "@/app/admin/components/MissionFunnelChart";
+import { MissionSankeyChart } from "@/app/admin/components/MissionSankeyChart";
 import type { MissionFunnelData } from "@/types/dto";
 import type { Meta, StoryObj } from "@storybook/react";
 
 const meta = {
-  title: "Admin/MissionFunnelChart",
-  component: MissionFunnelChart,
+  title: "Admin/MissionSankeyChart",
+  component: MissionSankeyChart,
   parameters: {
     layout: "padded",
   },
   tags: ["autodocs"],
-} satisfies Meta<typeof MissionFunnelChart>;
+} satisfies Meta<typeof MissionSankeyChart>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

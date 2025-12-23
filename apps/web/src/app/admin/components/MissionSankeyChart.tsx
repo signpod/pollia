@@ -1,7 +1,7 @@
 import type { FunnelNode, MissionFunnelData } from "@/types/dto";
 import { ResponsiveSankey } from "@nivo/sankey";
 
-interface MissionFunnelChartProps {
+interface MissionSankeyChartProps {
   data: MissionFunnelData;
 }
 
@@ -12,7 +12,7 @@ const NODE_COLORS = {
   drop: "#ef4444", // red-500: 이탈 (경고의 빨강)
 } as const;
 
-export function MissionFunnelChart({ data }: MissionFunnelChartProps) {
+export function MissionSankeyChart({ data }: MissionSankeyChartProps) {
   const usedNodeIds = new Set([...data.links.map(l => l.source), ...data.links.map(l => l.target)]);
 
   return (
