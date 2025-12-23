@@ -18,6 +18,7 @@ import {
   Typo,
   useCallout,
 } from "@repo/ui/components";
+import { motion } from "framer-motion";
 import { Share2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef } from "react";
@@ -32,6 +33,7 @@ import { BottomButton } from "./ui";
 import { checkParticipantLimitReached } from "./utils/checkParticipantLimit";
 import { formatDeadline } from "./utils/formatDeadline";
 
+import ChevronDown from "@public/svgs/chevron-down.svg";
 import KakaoIcon from "@public/svgs/kakao-icon.svg";
 import Lock from "@public/svgs/lock.svg";
 import XLogo from "@public/svgs/x-logo.svg";
@@ -183,11 +185,23 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
           {imageUrl && (
             <div className="overflow-hidden sticky top-0 left-0 right-0 z-10 bg-white">
               <MissionImage imageUrl={imageUrl} />
+              <div className="bg-linear-to-t from-black via-black/50 via-70% to-transparent absolute bottom-0 left-0 right-0 z-20 flex flex-col gap-3 pb-10 pt-6 px-5">
+                <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
+                <Typo.MainTitle size="large" className="break-keep text-white">
+                  {title}
+                </Typo.MainTitle>
+                <motion.div
+                  className="flex justify-center items-center"
+                  animate={{ y: [0, 10, 0] }}
+                  transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+                >
+                  <ChevronDown className="size-6 text-white" />
+                </motion.div>
+              </div>
             </div>
           )}
           <div className="flex w-full flex-col bg-white py-5 rounded-t-3xl pb-0 relative z-10 mt-[-20px]">
             <div className="bg-white h-5 absolute top-0 left-0 right-0  rounded-t-3xl z-30" />
-            <div className="bg-linear-to-t from-black/25 to-transparent h-[50px] absolute top-[-30px] left-0 right-0 z-20" />
             <div className="sticky top-0 z-30 rounded-t-md mt-[-20px] bg-white py-2">
               <Tab.Root value={activeTab} pointColor="secondary" onValueChange={handleChangeTab}>
                 <Tab.List className="px-5">
@@ -211,11 +225,11 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
               className="flex w-full flex-col gap-8 px-5 py-8 items-center"
             >
               <div className="flex w-full flex-col gap-6 justify-center items-center">
-                <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
+                {/* <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
 
                 <Typo.MainTitle size="large" className="break-keep text-center">
                   {title}
-                </Typo.MainTitle>
+                </Typo.MainTitle> */}
 
                 {description && (
                   <MissionDescription
