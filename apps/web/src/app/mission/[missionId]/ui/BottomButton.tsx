@@ -1,10 +1,16 @@
+"use client";
+
+import { toast } from "@/components/common/Toast";
+import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { ROUTES } from "@/constants/routes";
 import { AuthError, useKakaoLogin } from "@/hooks/login/useKakaoLogin";
 import { useCreateMissionResponse } from "@/hooks/mission-response";
+import { useReadMissionParticipantInfo } from "@/hooks/participant";
 import { useAuth } from "@/hooks/user/useAuth";
 import { Mission } from "@prisma/client";
 import KakaoIcon from "@public/svgs/kakao-icon.svg";
 import { ButtonV2, Tooltip, Typo } from "@repo/ui/components";
+import { useQueryClient } from "@tanstack/react-query";
 import { isBefore } from "date-fns";
 import { motion } from "framer-motion";
 import { useParams, useRouter } from "next/navigation";
@@ -19,6 +25,7 @@ const BUTTON_TEXT = {
   loggedOut: "카카오로 로그인하기",
   expired: "마감된 미션이에요",
   alreadyCompleted: "이미 완료한 미션이에요",
+  participantLimitReached: "마감된 미션이에요",
 };
 
 interface BottomButtonProps {
@@ -44,7 +51,13 @@ export function BottomButton({
   isRequirePassword,
   hasExistingResponse,
 }: BottomButtonProps) {
+  const queryClient = useQueryClient();
   const { missionId } = useParams<{ missionId: string }>();
+  const { data: missionParticipantInfo } = useReadMissionParticipantInfo(missionId);
+  const { currentParticipants, maxParticipants } = missionParticipantInfo?.data ?? {};
+  const isParticipantLimitReached =
+    !!maxParticipants && !!currentParticipants && currentParticipants >= maxParticipants;
+
   const { handleKakaoLogin } = useKakaoLogin({
     initialError,
     redirectPath: ROUTES.MISSION(missionId),
@@ -60,7 +73,21 @@ export function BottomButton({
   const { startResponse } = useCreateMissionResponse({ missionId });
   const { mutateAsync: handleStartResponse } = startResponse;
 
-  const handleClick = () => {
+  const handleClick = async () => {
+    await queryClient.refetchQueries({ queryKey: missionQueryKeys.missionParticipant(missionId) });
+
+    const latestParticipantInfo = queryClient.getQueryData<typeof missionParticipantInfo>(
+      missionQueryKeys.missionParticipant(missionId),
+    );
+    const { currentParticipants: latestCurrent, maxParticipants: latestMax } =
+      latestParticipantInfo?.data ?? {};
+    const isLimitReached = !!latestMax && !!latestCurrent && latestCurrent >= latestMax;
+
+    if (isLimitReached) {
+      toast.warning("참여 정원이 마감되었어요.", { id: "participant-limit-error" });
+      return;
+    }
+
     if (!isLoggedIn) {
       handleKakaoLogin();
       return;
@@ -82,6 +109,18 @@ export function BottomButton({
       router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
     }
   };
+
+  if (isParticipantLimitReached) {
+    return (
+      <div className="py-3 px-4 w-full">
+        <ButtonV2 variant="primary" size="large" className="w-full" disabled>
+          <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
+            {BUTTON_TEXT.participantLimitReached}
+          </Typo.ButtonText>
+        </ButtonV2>
+      </div>
+    );
+  }
 
   if (isExpired) {
     return (

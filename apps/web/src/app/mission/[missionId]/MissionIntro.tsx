@@ -122,6 +122,12 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
   const isProcessing = Boolean(missionResponseData?.data?.id);
 
   const calloutData = useMemo<{ variant: CalloutToneVariant; description: string } | null>(() => {
+    if (!!maxParticipants && !!currentParticipants && currentParticipants >= maxParticipants) {
+      return {
+        variant: "notice",
+        description: "정원이 마감되어, 이미 참여한 분들만 진행 가능해요.",
+      };
+    }
     if (
       currentParticipants &&
       maxParticipants &&
