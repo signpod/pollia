@@ -3,10 +3,7 @@
 import { requireAuth } from "@/actions/common/auth";
 import { missionCompletionService } from "@/server/services/mission-completion/missionCompletionService";
 import type { CreateMissionCompletionInput } from "@/server/services/mission-completion/types";
-import type {
-  CreateMissionCompletionRequest,
-  CreateMissionCompletionResponse,
-} from "@/types/dto";
+import type { CreateMissionCompletionRequest, CreateMissionCompletionResponse } from "@/types/dto";
 
 function toCreateMissionCompletionInput(
   dto: CreateMissionCompletionRequest,

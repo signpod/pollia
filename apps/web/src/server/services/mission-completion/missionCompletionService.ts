@@ -56,11 +56,7 @@ export class MissionCompletionService {
     return await this.repo.create(result.data, userId);
   }
 
-  async updateMissionCompletion(
-    id: string,
-    input: UpdateMissionCompletionInput,
-    userId: string,
-  ) {
+  async updateMissionCompletion(id: string, input: UpdateMissionCompletionInput, userId: string) {
     const missionCompletion = await this.repo.findById(id);
 
     if (!missionCompletion) {

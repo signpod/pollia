@@ -1,8 +1,8 @@
 "use client";
 
 import { toast } from "@/components/common/Toast";
-import { setAuthRedirect } from "@/lib/cookie";
 import { useKakaoSdk } from "@/hooks/kakao/useKakaoSdk";
+import { setAuthRedirect } from "@/lib/cookie";
 import { useModal } from "@repo/ui/components";
 import { useCallback, useEffect } from "react";
 

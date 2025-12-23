@@ -133,7 +133,11 @@ describe("ActionService - Mutation", () => {
 
       // Then
       expect(result).toEqual(mockUpdatedAction);
-      expect(ctx.mockActionRepo.update).toHaveBeenCalledWith("action1", { title: "수정된 액션" }, "user1");
+      expect(ctx.mockActionRepo.update).toHaveBeenCalledWith(
+        "action1",
+        { title: "수정된 액션" },
+        "user1",
+      );
       expect(ctx.mockActionRepo.updateWithOptions).not.toHaveBeenCalled();
     });
   });
