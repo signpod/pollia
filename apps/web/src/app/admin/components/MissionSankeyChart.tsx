@@ -135,8 +135,6 @@ export function MissionSankeyChart({ data }: MissionSankeyChartProps) {
         }}
         margin={{ top: 30, right: 160, bottom: 30, left: 60 }}
         layout="horizontal"
-        align="justify"
-        sort="auto"
         colors={(node: { nodeColor: string }) => node.nodeColor}
         nodeOpacity={1}
         nodeHoverOpacity={1}
