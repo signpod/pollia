@@ -1,8 +1,8 @@
 import {
+  type MissionCompletionServiceTestContext,
   createMissionCompletionServiceTestContext,
   createMockMission,
   createMockMissionCompletion,
-  type MissionCompletionServiceTestContext,
 } from "./testUtils";
 
 const TEST_USER_ID = "user1";
@@ -324,9 +324,9 @@ describe("MissionCompletionService", () => {
       mockRepo.findById.mockResolvedValue(null);
 
       // When & Then
-      await expect(
-        service.deleteMissionCompletion("invalid-id", TEST_USER_ID),
-      ).rejects.toThrow("미션 완료 데이터를 찾을 수 없습니다.");
+      await expect(service.deleteMissionCompletion("invalid-id", TEST_USER_ID)).rejects.toThrow(
+        "미션 완료 데이터를 찾을 수 없습니다.",
+      );
 
       expect(mockRepo.delete).not.toHaveBeenCalled();
     });
