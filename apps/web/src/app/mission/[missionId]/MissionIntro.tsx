@@ -193,10 +193,12 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                   {title}
                 </Typo.MainTitle>
 
-                <MissionDescription
-                  content={cleanTiptapHTML(description || "")}
-                  className="text-center"
-                />
+                {description && (
+                  <MissionDescription
+                    content={cleanTiptapHTML(description)}
+                    className="text-center"
+                  />
+                )}
               </div>
 
               <div className="flex flex-col gap-1 items-center">
