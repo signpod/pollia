@@ -45,7 +45,7 @@ export default function AdminMissionTrackingPage({ params }: AdminMissionTrackin
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {isLoading && <Skeleton className="h-[600px] w-full" />}
+          {isLoading && <Skeleton className="h-[450px] w-full" />}
 
           {error && (
             <div className="p-8 border border-destructive rounded-lg text-center text-destructive">
