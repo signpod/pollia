@@ -230,6 +230,14 @@ export class TrackingActionService {
 
       const dropFromEntry = entryCount - responseCount;
 
+      if (dropFromEntry > 0) {
+        links.push({
+          source: entryNodeId,
+          target: dropNodeId,
+          value: dropFromEntry,
+        });
+      }
+
       if (isLastAction) {
         const responseNodeId = `${actionLabel} ${FUNNEL_NODE_LABELS.RESPONSE_SUFFIX}`;
         links.push({
@@ -247,14 +255,6 @@ export class TrackingActionService {
             value: responseCount,
           });
         }
-      }
-
-      if (dropFromEntry > 0) {
-        links.push({
-          source: entryNodeId,
-          target: dropNodeId,
-          value: dropFromEntry,
-        });
       }
 
       return links;

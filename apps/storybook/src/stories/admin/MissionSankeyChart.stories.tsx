@@ -25,10 +25,10 @@ const sampleData: MissionFunnelData = {
   ],
   links: [
     { source: "시작", target: "1. 질문 1", value: 90 },
-    { source: "1. 질문 1", target: "2. 질문 2", value: 80 },
     { source: "1. 질문 1", target: "1. 질문 1 이탈", value: 10 },
-    { source: "2. 질문 2", target: "2. 질문 2 완료", value: 70 },
+    { source: "1. 질문 1", target: "2. 질문 2", value: 80 },
     { source: "2. 질문 2", target: "2. 질문 2 이탈", value: 10 },
+    { source: "2. 질문 2", target: "2. 질문 2 완료", value: 70 },
   ],
   metadata: {
     totalSessions: 100,
@@ -75,10 +75,10 @@ export const HighDropOff: Story = {
       ],
       links: [
         { source: "시작", target: "1. 질문 1", value: 800 },
-        { source: "1. 질문 1", target: "2. 질문 2", value: 500 },
         { source: "1. 질문 1", target: "1. 질문 1 이탈", value: 300 },
-        { source: "2. 질문 2", target: "2. 질문 2 완료", value: 200 },
+        { source: "1. 질문 1", target: "2. 질문 2", value: 500 },
         { source: "2. 질문 2", target: "2. 질문 2 이탈", value: 300 },
+        { source: "2. 질문 2", target: "2. 질문 2 완료", value: 200 },
       ],
       metadata: {
         totalSessions: 1000,
