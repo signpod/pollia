@@ -28,3 +28,9 @@ export const adminMissionCompletionQueryKeys = {
 } as const;
 
 export type AdminMissionCompletionQueryKeys = typeof adminMissionCompletionQueryKeys;
+
+export const trackingQueryKeys = {
+  missionFunnel: (missionId: string) => ["admin", "mission-funnel", missionId] as const,
+} as const;
+
+export type TrackingQueryKeys = typeof trackingQueryKeys;
