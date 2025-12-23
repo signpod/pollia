@@ -4,7 +4,10 @@ import { toast } from "@/components/common/Toast";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { ROUTES } from "@/constants/routes";
 import { AuthError, useKakaoLogin } from "@/hooks/login/useKakaoLogin";
-import { useCreateMissionResponse } from "@/hooks/mission-response";
+import {
+  useCreateMissionResponse,
+  useReadMissionResponseForMission,
+} from "@/hooks/mission-response";
 import { useReadMissionParticipantInfo } from "@/hooks/participant";
 import { useAuth } from "@/hooks/user/useAuth";
 import { Mission } from "@prisma/client";
@@ -22,6 +25,7 @@ const TOOLTIP_TEXT = {
 
 const BUTTON_TEXT = {
   loggedIn: "지금 바로 참여하기",
+  resume: "이어서 진행하기",
   loggedOut: "카카오로 로그인하기",
   expired: "마감된 미션이에요",
   alreadyCompleted: "이미 완료한 미션이에요",
@@ -54,9 +58,17 @@ export function BottomButton({
   const queryClient = useQueryClient();
   const { missionId } = useParams<{ missionId: string }>();
   const { data: missionParticipantInfo } = useReadMissionParticipantInfo(missionId);
+  const { data: missionResponseData } = useReadMissionResponseForMission({ missionId });
+
+  const hasMissionResponse = Boolean(missionResponseData?.data?.id);
+
   const { currentParticipants, maxParticipants } = missionParticipantInfo?.data ?? {};
+
   const isParticipantLimitReached =
-    !!maxParticipants && !!currentParticipants && currentParticipants >= maxParticipants;
+    !!maxParticipants &&
+    !!currentParticipants &&
+    currentParticipants >= maxParticipants &&
+    !hasMissionResponse;
 
   const { handleKakaoLogin } = useKakaoLogin({
     initialError,
@@ -75,13 +87,24 @@ export function BottomButton({
 
   const handleClick = async () => {
     await queryClient.refetchQueries({ queryKey: missionQueryKeys.missionParticipant(missionId) });
+    await queryClient.refetchQueries({
+      queryKey: missionQueryKeys.missionResponseForMission(missionId),
+    });
 
     const latestParticipantInfo = queryClient.getQueryData<typeof missionParticipantInfo>(
       missionQueryKeys.missionParticipant(missionId),
     );
+    const latestMissionResponse = queryClient.getQueryData<typeof missionResponseData>(
+      missionQueryKeys.missionResponseForMission(missionId),
+    );
+
+    const hasLatestMissionResponse = Boolean(latestMissionResponse?.data?.id);
+
     const { currentParticipants: latestCurrent, maxParticipants: latestMax } =
       latestParticipantInfo?.data ?? {};
-    const isLimitReached = !!latestMax && !!latestCurrent && latestCurrent >= latestMax;
+
+    const isLimitReached =
+      !!latestMax && !!latestCurrent && latestCurrent >= latestMax && !hasLatestMissionResponse;
 
     if (isLimitReached) {
       toast.warning("참여 정원이 마감되었어요.", { id: "participant-limit-error" });
@@ -184,7 +207,7 @@ export function BottomButton({
         disabled={isDisabled}
       >
         <Typo.ButtonText size="large" className="relative m-auto flex justify-center items-center">
-          {BUTTON_TEXT.loggedIn}
+          {showResumeModal ? BUTTON_TEXT.resume : BUTTON_TEXT.loggedIn}
           <motion.div
             className="absolute right-[-32px] top-0"
             animate={{ x: [0, 10, 0] }}
