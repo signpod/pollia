@@ -1384,7 +1384,7 @@ describe("MissionService", () => {
 
       // When & Then
       await expect(missionService.checkParticipantLimit("mission-1")).rejects.toThrow(
-        "미션 참여 정원이 마감되었습니다.",
+        "참여 정원이 마감되었어요.",
       );
 
       try {
