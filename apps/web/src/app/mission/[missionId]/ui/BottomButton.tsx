@@ -213,7 +213,7 @@ export function BottomButton({
         disabled={isDisabled}
       >
         <Typo.ButtonText size="large" className="relative m-auto flex justify-center items-center">
-          {showResumeModal ? BUTTON_TEXT.resume : BUTTON_TEXT.loggedIn}
+          {hasMissionResponse ? BUTTON_TEXT.resume : BUTTON_TEXT.loggedIn}
           <motion.div
             className="absolute right-[-32px] top-0"
             animate={{ x: [0, 10, 0] }}
