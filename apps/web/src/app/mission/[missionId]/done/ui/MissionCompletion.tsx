@@ -1,14 +1,18 @@
 "use client";
+import { toast } from "@/components/common/Toast";
+import { ROUTES } from "@/constants/routes";
+import { SHARE_MESSAGES } from "@/constants/shareMessages";
 import { useReadMission } from "@/hooks/mission";
+import { useReadMissionCompletion } from "@/hooks/mission-completion";
+import { useKakaoShare } from "@/hooks/share/useKakaoShare";
 import { cleanTiptapHTML, cn } from "@/lib/utils";
 import { ButtonV2, TiptapViewer, Tooltip, Typo } from "@repo/ui/components";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import { Share2 } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { useReadMissionCompletion } from "@/app/admin/hooks/use-read-mission-completion";
 import KakaoIcon from "@public/svgs/kakao-icon.svg";
 import StarBigIcon from "@public/svgs/star-big.svg";
 import StarYellow from "@public/svgs/star-yellow.svg";
@@ -16,10 +20,56 @@ import Image from "next/image";
 
 export function MissionCompletion() {
   const { missionId } = useParams<{ missionId: string }>();
-  const { data: survey } = useReadMission(missionId);
+  const { data: mission } = useReadMission(missionId);
   const { data: missionCompletion } = useReadMissionCompletion(missionId);
-  const { imageUrl, brandLogoUrl } = survey?.data ?? {};
+  const { imageUrl, brandLogoUrl } = mission?.data ?? {};
   const { title, description } = missionCompletion?.data ?? {};
+
+  const shareUrl = useMemo(() => {
+    if (typeof window === "undefined") return "";
+    return `${window.location.origin}${ROUTES.MISSION(missionId)}`;
+  }, [missionId]);
+
+  const { handleKakaoShare } = useKakaoShare({
+    shareUrl,
+    title: mission?.data?.title,
+    imageUrl: mission?.data?.imageUrl,
+  });
+
+  const [isSharing, setIsSharing] = useState(false);
+
+  const handleShare = useCallback(async () => {
+    if (isSharing) return;
+
+    if (!navigator.share) {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success(SHARE_MESSAGES.clipboard.success);
+      } catch (error) {
+        console.error("클립보드 복사 에러:", error);
+        toast.warning(SHARE_MESSAGES.clipboard.error, {
+          duration: 3000,
+        });
+      }
+      return;
+    }
+
+    setIsSharing(true);
+    try {
+      await navigator.share({
+        title: mission?.data?.title || SHARE_MESSAGES.kakao.title,
+        text: SHARE_MESSAGES.kakao.description,
+        url: shareUrl,
+      });
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        return;
+      }
+      console.error("공유 에러:", error);
+    } finally {
+      setIsSharing(false);
+    }
+  }, [shareUrl, isSharing, mission?.data?.title]);
 
   const starBoxRef = useRef<HTMLDivElement>(null);
   const gradientRef = useRef<HTMLDivElement>(null);
@@ -199,16 +249,27 @@ export function MissionCompletion() {
               )}
             </div>
             <div className="flex items-center gap-4 w-full">
-              <ButtonV2 className="flex-1 bg-[#FEE500] text-default">
+              <ButtonV2
+                className={cn(
+                  "flex-1 bg-[#FEE500] text-default",
+                  "hover:bg-[#FEE500] active:bg-[#FEE500]",
+                )}
+                onClick={handleKakaoShare}
+              >
                 <div className="flex items-center justify-center w-full gap-2">
                   <KakaoIcon className="size-4" />
                   <Typo.ButtonText size="medium">카카오톡 공유</Typo.ButtonText>
                 </div>
               </ButtonV2>
-              <ButtonV2 className="flex-1" variant="secondary">
+              <ButtonV2
+                className="flex-1"
+                variant="secondary"
+                onClick={handleShare}
+                disabled={isSharing}
+              >
                 <div className="flex items-center justify-center w-full gap-2">
                   <Share2 className="size-4" />
-                  <Typo.ButtonText size="medium">카카오톡 공유</Typo.ButtonText>
+                  <Typo.ButtonText size="medium">링크 공유</Typo.ButtonText>
                 </div>
               </ButtonV2>
             </div>
