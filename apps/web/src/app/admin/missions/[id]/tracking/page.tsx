@@ -1,5 +1,12 @@
 "use client";
 import { MissionSankeyChart } from "@/app/admin/components/MissionSankeyChart";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/app/admin/components/shadcn-ui/card";
 import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
 import { useReadMission } from "@/app/admin/hooks/use-read-mission";
 import { useReadMissionFunnel } from "@/app/admin/hooks/use-read-mission-funnel";
@@ -30,20 +37,15 @@ export default function AdminMissionTrackingPage({ params }: AdminMissionTrackin
         isActive={mission.isActive}
       />
 
-      <div className="space-y-8">
-        <div className="space-y-4">
-          <div>
-            <h2 className="text-2xl font-bold">완주율 퍼널</h2>
-            <p className="text-sm text-muted-foreground">
-              미션의 각 단계별 진행률과 이탈 지점을 확인할 수 있습니다
-            </p>
-          </div>
-
-          {isLoading && (
-            <div className="space-y-2">
-              <Skeleton className="h-[600px] w-full" />
-            </div>
-          )}
+      <Card>
+        <CardHeader>
+          <CardTitle>완주율 퍼널</CardTitle>
+          <CardDescription>
+            미션의 각 단계별 진행률과 이탈 지점을 확인할 수 있습니다
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoading && <Skeleton className="h-[600px] w-full" />}
 
           {error && (
             <div className="p-8 border border-destructive rounded-lg text-center text-destructive">
@@ -54,8 +56,8 @@ export default function AdminMissionTrackingPage({ params }: AdminMissionTrackin
           {!isLoading && !error && funnelResponse?.data && (
             <MissionSankeyChart data={funnelResponse.data} />
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

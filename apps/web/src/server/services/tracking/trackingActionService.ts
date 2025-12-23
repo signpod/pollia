@@ -194,6 +194,18 @@ export class TrackingActionService {
   ): MissionFunnelData["links"] {
     const { sessionEntries, sessionResponses } = sessionMaps;
 
+    const firstAction = actions[0];
+    if (!firstAction) {
+      return [];
+    }
+
+    const startLink: MissionFunnelData["links"][0] = {
+      source: FUNNEL_NODE_LABELS.START,
+      target: `${firstAction.order}. ${firstAction.title}`,
+      value: Array.from(sessionEntries.values()).filter(actionSet => actionSet.has(firstAction.id))
+        .length,
+    };
+
     const actionLinks = actions.flatMap((action, index) => {
       const links: MissionFunnelData["links"] = [];
 
@@ -209,24 +221,6 @@ export class TrackingActionService {
       const entryNodeId = actionLabel;
       const dropNodeId = `${actionLabel} ${FUNNEL_NODE_LABELS.DROP_SUFFIX}`;
       const isLastAction = index === actions.length - 1;
-
-      if (index === 0) {
-        links.push({
-          source: FUNNEL_NODE_LABELS.START,
-          target: entryNodeId,
-          value: entryCount,
-        });
-      } else {
-        const previousAction = actions[index - 1];
-        if (previousAction) {
-          const previousActionLabel = `${previousAction.order}. ${previousAction.title}`;
-          links.push({
-            source: previousActionLabel,
-            target: entryNodeId,
-            value: entryCount,
-          });
-        }
-      }
 
       const dropFromEntry = entryCount - responseCount;
 
@@ -260,7 +254,7 @@ export class TrackingActionService {
       return links;
     });
 
-    return actionLinks;
+    return [startLink, ...actionLinks];
   }
 
   private buildMetadata(
