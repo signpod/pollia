@@ -6,13 +6,29 @@ interface MissionSankeyChartProps {
 }
 
 const NODE_COLORS = {
-  start: "#10b981", // emerald-500: 시작 (긍정적인 초록)
-  entry: "#3b82f6", // blue-500: 진입 (중립적인 파랑)
-  response: "#8b5cf6", // violet-500: 완료 (성공적인 보라)
-  drop: "#ef4444", // red-500: 이탈 (경고의 빨강)
+  start: "#10b981",
+  entry: "#3b82f6",
+  response: "#8b5cf6",
+  drop: "#ef4444",
 } as const;
 
 export function MissionSankeyChart({ data }: MissionSankeyChartProps) {
+  if (!data?.nodes || !data?.links || !Array.isArray(data.nodes) || !Array.isArray(data.links)) {
+    return (
+      <div className="h-[600px] w-full flex items-center justify-center border border-dashed rounded-lg">
+        <p className="text-muted-foreground">유효하지 않은 데이터입니다</p>
+      </div>
+    );
+  }
+
+  if (data.nodes.length === 0 || data.links.length === 0) {
+    return (
+      <div className="h-[600px] w-full flex items-center justify-center border border-dashed rounded-lg">
+        <p className="text-muted-foreground">아직 참여한 사용자가 없습니다</p>
+      </div>
+    );
+  }
+
   const usedNodeIds = new Set([...data.links.map(l => l.source), ...data.links.map(l => l.target)]);
 
   return (
