@@ -178,7 +178,7 @@ export function MissionCompletion() {
                     alt="Brand Logo"
                     width={40}
                     height={40}
-                    className="object-contain size-10"
+                    className="object-contain size-10 "
                   />
                 )}
                 <Typo.SubTitle size="large" className="break-keep">
@@ -186,13 +186,13 @@ export function MissionCompletion() {
                 </Typo.SubTitle>
               </div>
               {imageUrl && (
-                <div>
+                <div className="flex items-center justify-center h-full">
                   <Image
                     src={imageUrl}
                     alt="Mission Image"
                     width={72}
-                    height={72}
-                    className="object-cover size-20 rounded-md h-full"
+                    height={140}
+                    className="object-cover w-20 rounded-md h-full"
                   />
                 </div>
               )}
