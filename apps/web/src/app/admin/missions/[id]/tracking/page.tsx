@@ -20,8 +20,8 @@ export default function AdminMissionTrackingPage({ params }: AdminMissionTrackin
   return (
     <div className="max-w-7xl">
       <AdminMissionHeader
-        title="사용자 추적"
-        description="미션에 참여한 사용자들의 활동 내역을 확인할 수 있습니다"
+        title="통계"
+        description="완주율, 디바이스 분포, 참여 패턴 등 미션의 주요 지표를 확인할 수 있습니다"
         nav={<MissionNavigation missionId={missionId} />}
         missionId={missionId}
         isActive={mission.isActive}
