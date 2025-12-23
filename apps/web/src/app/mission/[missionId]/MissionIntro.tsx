@@ -1,11 +1,15 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { AuthError } from "@/hooks/login/useKakaoLogin";
 import { useMissionIntroData, useSectionScrollSync, useSurveyResume } from "@/hooks/mission";
+import { useReadMissionResponseForMission } from "@/hooks/mission-response";
 import { useReadMissionParticipantInfo } from "@/hooks/participant/useReadMissionParticipantInfo";
 import { useReadReward } from "@/hooks/reward/useReadReward";
+import { useMissionShare } from "@/hooks/share/useMissionShare";
 import { getSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
 import { cleanTiptapHTML, cn } from "@/lib/utils";
+import { MissionType } from "@prisma/client";
 import {
   CalloutProvider,
   type CalloutToneVariant,
@@ -14,22 +18,26 @@ import {
   Typo,
   useCallout,
 } from "@repo/ui/components";
-import { Lock } from "lucide-react";
+import { motion } from "framer-motion";
+import { Share2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef } from "react";
-
-import { Badge } from "@/components/ui/badge";
-import { useReadMissionResponseForMission } from "@/hooks/mission-response";
 import {
   MissionDescription,
   MissionFooter,
   MissionImage,
   MissionLogo,
   MissionRewardSection,
+  SectionHeader,
 } from "./components";
 import { BottomButton } from "./ui";
 import { checkParticipantLimitReached } from "./utils/checkParticipantLimit";
 import { formatDeadline } from "./utils/formatDeadline";
+
+import ChevronDown from "@public/svgs/chevron-down.svg";
+import KakaoIcon from "@public/svgs/kakao-icon.svg";
+import Lock from "@public/svgs/lock.svg";
+import XLogo from "@public/svgs/x-logo.svg";
 
 const SECTION_IDS = {
   MISSION_GUIDE: "mission-guide",
@@ -108,6 +116,12 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
   const { data: missionResponseData } = useReadMissionResponseForMission({ missionId });
   const { currentParticipants, maxParticipants } = participantInfo?.data ?? {};
 
+  const { handleKakaoShare, handleLinkShare, handleXShare } = useMissionShare({
+    missionId,
+    title: title ?? undefined,
+    imageUrl: imageUrl ?? undefined,
+  });
+
   const sections = reward
     ? [SECTION_IDS.MISSION_GUIDE, SECTION_IDS.REWARD]
     : [SECTION_IDS.MISSION_GUIDE];
@@ -174,12 +188,24 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
               <MissionImage imageUrl={imageUrl} />
             </div>
           )}
-          <div className="flex w-full flex-col bg-white py-5 rounded-t-3xl pb-0 relative z-10 mt-[-20px]">
-            <div className="bg-white h-5 absolute top-0 left-0 right-0  rounded-t-3xl z-30" />
-            <div className="bg-linear-to-t from-black/25 to-transparent h-[50px] absolute top-[-30px] left-0 right-0 z-20" />
-            <div className="sticky top-0 z-30 rounded-t-md mt-[-20px] bg-white px-5">
+          <div className="flex w-full flex-col bg-white py-5 rounded-t-3xl pb-0 relative z-20 mt-[-20px] overflow-visible">
+            <div className="bg-linear-to-t from-black via-black/50 via-70% to-transparent absolute bottom-[calc(100%-10px)] left-0 right-0 z-30 flex flex-col gap-3 pb-7 pt-6 px-5 pointer-events-none">
+              <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
+              <Typo.MainTitle size="large" className="break-keep text-white">
+                {title}
+              </Typo.MainTitle>
+              <motion.div
+                className="flex justify-center items-center"
+                animate={{ y: [0, 10, 0] }}
+                transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+              >
+                <ChevronDown className="size-6 text-white" />
+              </motion.div>
+            </div>
+            <div className="bg-white h-5 absolute top-0 left-0 right-0 rounded-t-3xl z-30" />
+            <div className="sticky top-0 z-30 rounded-t-md mt-[-20px] bg-white py-2">
               <Tab.Root value={activeTab} pointColor="secondary" onValueChange={handleChangeTab}>
-                <Tab.List>
+                <Tab.List className="px-5">
                   <Tab.Item
                     value={SECTION_IDS.MISSION_GUIDE}
                     className={cn(sections.length === 1 ? "mx-auto max-w-[110px]" : "")}
@@ -199,46 +225,47 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
               id={SECTION_IDS.MISSION_GUIDE}
               className="flex w-full flex-col gap-8 px-5 py-8 items-center"
             >
-              <div className="flex w-full flex-col gap-6">
-                <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
+              <div className="flex flex-col gap-4 items-center">
+                <SectionHeader badgeText="미션 안내" title={""} />
 
-                <Typo.MainTitle size="large" className="break-keep text-center">
-                  {title}
-                </Typo.MainTitle>
-
-                {description && (
-                  <MissionDescription
-                    content={cleanTiptapHTML(description)}
-                    className="text-center"
-                  />
-                )}
+                <div className="flex w-full justify-center items-center rounded-md bg-zinc-50 p-6">
+                  {description && (
+                    <MissionDescription
+                      content={cleanTiptapHTML(description)}
+                      className="text-center"
+                    />
+                  )}
+                </div>
               </div>
 
-              <div className="flex flex-col gap-1 items-center">
-                <Typo.SubTitle size="large">미션 조건</Typo.SubTitle>
-                <Typo.Body size="large" className="text-info">
-                  {target}
-                </Typo.Body>
+              <div className="flex flex-col gap-2 items-center">
+                <div className="flex flex-col gap-1 items-center">
+                  <Typo.SubTitle size="large">참여 조건</Typo.SubTitle>
+                  <Typo.Body size="large" className="text-info">
+                    {target}
+                  </Typo.Body>
+                </div>
+
                 {mission?.type === "EXPERIENCE_GROUP" && (
                   <Badge
                     variant="secondary"
-                    className="bg-point border-none flex gap-2 justify-center items-center rounded-sm p-2"
+                    className="bg-point border-none flex gap-2 justify-center items-center rounded-sm px-3 py-2"
                   >
                     <Lock className="size-4 text-point" />
-                    <Typo.Body size="large" className="text-point">
+                    <Typo.Body size="medium" className="text-point">
                       체험단 미션
                     </Typo.Body>
                   </Badge>
                 )}
               </div>
               <div className="flex flex-col gap-1 items-center">
-                <Typo.SubTitle size="large">미션 소요 시간</Typo.SubTitle>
+                <Typo.SubTitle size="large">예상 소요 시간</Typo.SubTitle>
                 <Typo.Body size="large" className="text-info">
                   {estimatedMinutes}분
                 </Typo.Body>
               </div>
               <div className="flex flex-col gap-1 items-center">
-                <Typo.SubTitle size="large">미션 기간</Typo.SubTitle>
+                <Typo.SubTitle size="large">참여 기간</Typo.SubTitle>
                 <Typo.Body size="large" className="text-info">
                   {deadlineText}
                 </Typo.Body>
@@ -253,6 +280,39 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                   rewardPaymentType={reward?.data.paymentType ?? undefined}
                   brandLogoUrl={brandLogoUrl ?? undefined}
                 />
+              </div>
+            )}
+
+            {mission?.type !== MissionType.EXPERIENCE_GROUP && (
+              <div className="flex flex-col gap-10 items-center px-5 py-10">
+                <Typo.MainTitle size="small" className="text-center">
+                  가족, 친구에게
+                  <br />
+                  공유해주세요 👀
+                </Typo.MainTitle>
+                <div className="flex gap-6 w-full justify-center">
+                  <button
+                    type="button"
+                    className="flex justify-center items-center bg-black rounded-sm p-2"
+                    onClick={handleXShare}
+                  >
+                    <XLogo className="size-6 text-white" />
+                  </button>
+                  <button
+                    type="button"
+                    className="flex justify-center items-center bg-kakao rounded-sm p-2"
+                    onClick={handleKakaoShare}
+                  >
+                    <KakaoIcon className="size-6" />
+                  </button>
+                  <button
+                    type="button"
+                    className="flex justify-center items-center bg-white border border-default rounded-sm p-2"
+                    onClick={handleLinkShare}
+                  >
+                    <Share2 className="size-6" />
+                  </button>
+                </div>
               </div>
             )}
 
