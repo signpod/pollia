@@ -19,5 +19,7 @@ declare namespace NodeJS {
     KAKAO_REST_API_KEY: string;
 
     NEXT_PUBLIC_PRIVACY_POLICY_URL: string;
+
+    NEXT_PUBLIC_GA_ID: string;
   }
 }
