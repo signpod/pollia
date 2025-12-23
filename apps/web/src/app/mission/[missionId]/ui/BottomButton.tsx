@@ -78,6 +78,7 @@ export function BottomButton({
         router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
       }
     } else if (firstActionId) {
+      handleStartResponse({ surveyId: missionId });
       router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
     }
   };

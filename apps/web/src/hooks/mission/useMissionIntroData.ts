@@ -10,10 +10,11 @@ export function useMissionIntroData(missionId: string) {
   const { data: missionResponse } = useReadMissionResponseForMission({ missionId });
 
   const firstActionId = actionIds?.data?.actionIds?.[0];
-  const isCompleted = !!missionResponse?.data?.completedAt;
+  const isCompleted =
+    missionResponse?.data?.completedAt !== null && missionResponse?.data?.completedAt !== undefined;
   const lastActionIndex = missionResponse?.data?.answers?.length ?? 0;
   const nextActionId = actionIds?.data?.actionIds?.[lastActionIndex];
-  const isEnabledToResume = !isCompleted && lastActionIndex > 0 && !!nextActionId;
+  const isEnabledToResume = !isCompleted && nextActionId !== undefined;
 
   const isRequirePassword = mission?.data?.password !== null;
 

@@ -29,6 +29,7 @@ export function useSurveyResume({
   const { mutateAsync: handleStartResponse } = startResponse;
 
   const showResumeModal = useCallback(() => {
+    console.log("showResumeModal", isEnabledToResume, nextActionId, firstActionId);
     if (isEnabledToResume && nextActionId && firstActionId) {
       showModal({
         title: "미션을 계속 진행할까요?",
@@ -38,7 +39,6 @@ export function useSurveyResume({
         showCancelButton: true,
         onConfirm: () => {
           setSessionStorage(`current-action-id-${missionId}`, "resume");
-          handleStartResponse({ surveyId: missionId });
           router.push(ROUTES.ACTION({ missionId, actionId: nextActionId }));
         },
         onCancel: async () => {
@@ -58,6 +58,9 @@ export function useSurveyResume({
     router,
     resetMissionResponse,
     responseId,
+    handleStartResponse,
+    isResetMissionResponsePending,
+    missionId,
   ]);
 
   return { showResumeModal };
