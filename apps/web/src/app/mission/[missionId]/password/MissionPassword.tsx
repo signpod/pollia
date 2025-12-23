@@ -1,8 +1,11 @@
 "use client";
+
+import { ROUTES } from "@/constants/routes";
 import { useMissionPassword } from "@/hooks/mission/useMissionPassword";
-import { Typo } from "@repo/ui/components";
+import { ButtonV2, Typo } from "@repo/ui/components";
 import { Asterisk, Minus } from "lucide-react";
-import { useParams } from "next/navigation";
+import { X } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
 import { Keyboard } from "./ui";
 
 const formatRemainingTime = (seconds: number) => {
@@ -13,6 +16,7 @@ const formatRemainingTime = (seconds: number) => {
 
 export default function MissionPassword() {
   const { missionId } = useParams<{ missionId: string }>();
+  const router = useRouter();
   const {
     inputPassword,
     errorCount,
@@ -22,8 +26,22 @@ export default function MissionPassword() {
     handlePasswordDelete,
   } = useMissionPassword(missionId);
 
+  const handleClose = () => {
+    router.push(ROUTES.MISSION(missionId));
+  };
+
   return (
     <div className="flex flex-col h-svh overflow-hidden">
+      <div className="w-full px-1">
+        <ButtonV2
+          variant="tertiary"
+          size="large"
+          className="flex items-center justify-center p-3"
+          onClick={handleClose}
+        >
+          <X className="size-6" />
+        </ButtonV2>
+      </div>
       <div className="w-full flex flex-col justify-center flex-1 gap-8 items-center">
         <Typo.MainTitle className="text-center">
           미션 시작을 위한

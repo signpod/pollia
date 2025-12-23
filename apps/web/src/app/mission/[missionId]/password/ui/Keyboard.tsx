@@ -44,7 +44,7 @@ export function Keyboard({ onPasswordChange, onPasswordDelete, disabled }: Keybo
           disabled={disabled}
         >
           <div className="flex items-center justify-center w-full h-full">
-            <Typo.MainTitle size="large">{num}</Typo.MainTitle>
+            <Typo.MainTitle size="medium">{num}</Typo.MainTitle>
           </div>
         </ButtonV2>
       ))}
@@ -53,7 +53,7 @@ export function Keyboard({ onPasswordChange, onPasswordDelete, disabled }: Keybo
       </ButtonV2>
       <ButtonV2 variant="tertiary" onClick={() => onPasswordChange("0")} disabled={disabled}>
         <div className="flex items-center justify-center w-full h-full">
-          <Typo.MainTitle size="large">0</Typo.MainTitle>
+          <Typo.MainTitle size="medium">0</Typo.MainTitle>
         </div>
       </ButtonV2>
       <ButtonV2 variant="tertiary" onClick={onPasswordDelete} disabled={disabled}>
