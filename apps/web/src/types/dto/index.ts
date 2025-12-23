@@ -5,3 +5,5 @@ export * from "./mission-response";
 export * from "./reward";
 export * from "./image";
 export * from "./user";
+export * from "./mission-completion";
+export * from "./tracking";

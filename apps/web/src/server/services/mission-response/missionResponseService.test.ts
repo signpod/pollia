@@ -264,6 +264,73 @@ describe("MissionResponseService", () => {
         "종료된 미션입니다.",
       );
     });
+
+    it("정원이 초과되면 403 에러를 던진다", async () => {
+      // Given
+      const mockMission = { id: "mission1", isActive: true, maxParticipants: 50 };
+      mockMissionRepo.findById.mockResolvedValue(mockMission as never);
+      mockResponseRepo.countByMissionId.mockResolvedValue(50);
+
+      // When & Then
+      await expect(service.startResponse({ missionId: "mission1" }, mockUser.id)).rejects.toThrow(
+        "참여 정원이 마감되었어요.",
+      );
+
+      try {
+        await service.startResponse({ missionId: "mission1" }, mockUser.id);
+      } catch (error) {
+        expect(error instanceof Error && error.cause).toBe(403);
+      }
+    });
+
+    it("정원 미달이면 새 Response를 생성한다", async () => {
+      // Given
+      const mockMission = { id: "mission1", isActive: true, maxParticipants: 50 };
+      const mockCreatedResponse = { id: "response1", missionId: "mission1", userId: "user1" };
+      mockMissionRepo.findById.mockResolvedValue(mockMission as never);
+      mockResponseRepo.countByMissionId.mockResolvedValue(49);
+      mockResponseRepo.findByMissionAndUser.mockResolvedValue(null);
+      mockResponseRepo.create.mockResolvedValue(mockCreatedResponse as never);
+
+      // When
+      const result = await service.startResponse({ missionId: "mission1" }, mockUser.id);
+
+      // Then
+      expect(result).toEqual(mockCreatedResponse);
+      expect(mockResponseRepo.create).toHaveBeenCalled();
+    });
+
+    it("maxParticipants가 null이면 정원 체크를 건너뛴다", async () => {
+      // Given
+      const mockMission = { id: "mission1", isActive: true, maxParticipants: null };
+      const mockCreatedResponse = { id: "response1", missionId: "mission1", userId: "user1" };
+      mockMissionRepo.findById.mockResolvedValue(mockMission as never);
+      mockResponseRepo.findByMissionAndUser.mockResolvedValue(null);
+      mockResponseRepo.create.mockResolvedValue(mockCreatedResponse as never);
+
+      // When
+      const result = await service.startResponse({ missionId: "mission1" }, mockUser.id);
+
+      // Then
+      expect(result).toEqual(mockCreatedResponse);
+      expect(mockResponseRepo.countByMissionId).not.toHaveBeenCalled();
+    });
+
+    it("maxParticipants가 0이면 정원 체크를 건너뛴다", async () => {
+      // Given
+      const mockMission = { id: "mission1", isActive: true, maxParticipants: 0 };
+      const mockCreatedResponse = { id: "response1", missionId: "mission1", userId: "user1" };
+      mockMissionRepo.findById.mockResolvedValue(mockMission as never);
+      mockResponseRepo.findByMissionAndUser.mockResolvedValue(null);
+      mockResponseRepo.create.mockResolvedValue(mockCreatedResponse as never);
+
+      // When
+      const result = await service.startResponse({ missionId: "mission1" }, mockUser.id);
+
+      // Then
+      expect(result).toEqual(mockCreatedResponse);
+      expect(mockResponseRepo.countByMissionId).not.toHaveBeenCalled();
+    });
   });
 
   describe("completeResponse", () => {

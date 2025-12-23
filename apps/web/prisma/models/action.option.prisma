@@ -5,12 +5,12 @@ model ActionOption {
   imageUrl     String?        @map("image_url")
   order        Int
   actionId     String         @map("action_id")
-  fileUploadId String?        @unique @map("file_upload_id")
+  fileUploadId String?        @map("file_upload_id")
   createdAt    DateTime       @default(now()) @map("created_at")
   updatedAt    DateTime       @updatedAt @map("updated_at")
   answers      ActionAnswer[]
   action       Action         @relation(fields: [actionId], references: [id], onDelete: Cascade)
-  fileUpload   FileUpload?    @relation("ActionOptionImage", fields: [fileUploadId], references: [id])
+  fileUpload   FileUpload?    @relation(fields: [fileUploadId], references: [id])
 
   @@unique([actionId, order])
   @@index([actionId])

@@ -31,6 +31,7 @@ function toMultipleChoiceInput(dto: CreateMultipleChoiceActionRequest): CreateMu
     title: dto.title,
     description: dto.description,
     imageUrl: dto.imageUrl,
+    imageFileUploadId: dto.imageFileUploadId,
     maxSelections: dto.maxSelections,
     order: dto.order,
     options: dto.options.map(opt => ({
@@ -49,7 +50,15 @@ function toScaleInput(dto: CreateScaleActionRequest): CreateScaleInput {
     title: dto.title,
     description: dto.description,
     imageUrl: dto.imageUrl,
+    imageFileUploadId: dto.imageFileUploadId,
     order: dto.order,
+    options: dto.options.map(opt => ({
+      title: opt.title,
+      description: opt.description,
+      imageUrl: opt.imageUrl,
+      order: opt.order,
+      imageFileUploadId: opt.imageFileUploadId,
+    })),
   };
 }
 
@@ -59,6 +68,7 @@ function toSubjectiveInput(dto: CreateSubjectiveActionRequest): CreateSubjective
     title: dto.title,
     description: dto.description,
     imageUrl: dto.imageUrl,
+    imageFileUploadId: dto.imageFileUploadId,
     order: dto.order,
   };
 }

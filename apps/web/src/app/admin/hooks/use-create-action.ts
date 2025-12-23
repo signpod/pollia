@@ -78,6 +78,14 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageUrl: input.imageUrl,
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
+            options:
+              input.options?.map((opt, index) => ({
+                title: opt.title,
+                description: opt.description,
+                imageUrl: opt.imageUrl,
+                imageFileUploadId: opt.imageFileUploadId,
+                order: opt.order ?? index,
+              })) ?? [],
           };
           return await createScaleAction(request);
         }

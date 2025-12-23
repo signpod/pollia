@@ -1,0 +1,22 @@
+model TrackingActionEntry {
+  id        String  @id @default(cuid())
+  missionId String  @map("mission_id")
+  sessionId String  @map("session_id")
+  userId    String? @map("user_id")
+  actionId  String  @map("action_id")
+  utmParams Json?   @map("utm_params")
+
+  action  Action  @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  mission Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  enteredAt DateTime @default(now()) @map("entered_at")
+
+  @@index([missionId])
+  @@index([sessionId])
+  @@index([userId])
+  @@index([actionId])
+  @@index([enteredAt])
+  @@index([sessionId, actionId])
+  @@map("tracking_action_entries")
+}

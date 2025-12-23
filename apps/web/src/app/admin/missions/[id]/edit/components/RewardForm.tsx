@@ -20,8 +20,8 @@ import {
   SelectValue,
 } from "@/app/admin/components/shadcn-ui/select";
 import { Textarea } from "@/app/admin/components/shadcn-ui/textarea";
-import { ADMIN_STORAGE_BUCKETS } from "@/app/admin/constants/storage";
-import { useAdminSingleImage } from "@/app/admin/hooks/use-admin-image-upload";
+import { useFormImageUpload } from "@/app/admin/hooks/use-form-image-upload";
+import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { rewardInputSchema } from "@/schemas/reward";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PaymentType } from "@prisma/client";
@@ -46,6 +46,7 @@ export function RewardForm({ isLoading, onSubmit, onCancel, initialData }: Rewar
       name: initialData?.name ?? "",
       description: initialData?.description ?? "",
       imageUrl: initialData?.imageUrl,
+      imageFileUploadId: initialData?.imageFileUploadId,
       paymentType: initialData?.paymentType ?? PaymentType.IMMEDIATE,
       scheduledDate: initialData?.scheduledDate,
     },
@@ -53,33 +54,20 @@ export function RewardForm({ isLoading, onSubmit, onCancel, initialData }: Rewar
 
   const paymentType = form.watch("paymentType");
 
-  const {
-    previewUrl: imagePreviewUrl,
-    uploadedData: uploadedImageData,
-    isUploading: isImageUploading,
-    selectImage: handleImageSelect,
-    clearImage: handleImageDelete,
-  } = useAdminSingleImage({
-    bucket: ADMIN_STORAGE_BUCKETS.MISSION_IMAGES,
-    initialUrl: initialData?.imageUrl,
-    onUploadSuccess: data => {
-      form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
-    },
+  const rewardImage = useFormImageUpload({
+    form,
+    urlField: "imageUrl",
+    fileUploadIdField: "imageFileUploadId",
+    bucket: STORAGE_BUCKETS.REWARD_IMAGES,
+    errorMessage: "리워드 이미지 업로드 실패",
   });
 
   const handleSubmit = (data: RewardFormData) => {
     onSubmit(data);
   };
 
-  const handleClearImage = () => {
-    handleImageDelete();
-    form.setValue("imageUrl", undefined, { shouldDirty: true });
-  };
-
-  const isFormDisabled = isLoading || isImageUploading;
-  const hasImageChange = uploadedImageData !== null;
-  const isSaveDisabled =
-    isFormDisabled || (isEditMode && !form.formState.isDirty && !hasImageChange);
+  const isFormDisabled = isLoading || rewardImage.upload.isUploading;
+  const isSaveDisabled = isFormDisabled || (isEditMode && !form.formState.isDirty);
 
   return (
     <Form {...form}>
@@ -128,9 +116,9 @@ export function RewardForm({ isLoading, onSubmit, onCancel, initialData }: Rewar
           <div className="flex items-center gap-3">
             <ImageSelector
               size="large"
-              imageUrl={imagePreviewUrl || undefined}
-              onImageSelect={handleImageSelect}
-              onImageDelete={handleClearImage}
+              imageUrl={rewardImage.imageUrl || undefined}
+              onImageSelect={rewardImage.handleSelect}
+              onImageDelete={rewardImage.handleDelete}
               disabled={isFormDisabled}
             />
             <p className="text-xs text-muted-foreground">리워드에 표시될 이미지를 선택하세요.</p>
@@ -197,7 +185,11 @@ export function RewardForm({ isLoading, onSubmit, onCancel, initialData }: Rewar
             취소
           </Button>
           <Button type="submit" disabled={isSaveDisabled}>
-            {isImageUploading ? "이미지 업로드 중..." : isLoading ? "저장 중..." : "저장"}
+            {rewardImage.upload.isUploading
+              ? "이미지 업로드 중..."
+              : isLoading
+                ? "저장 중..."
+                : "저장"}
           </Button>
         </div>
       </form>

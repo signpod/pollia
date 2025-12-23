@@ -22,19 +22,24 @@ export function ImageUploadForm({
     defaultValues: {
       title: initialData?.title || "",
       description: initialData?.description || "",
-      imageUrl: initialData?.imageUrl || "",
+      imageUrl: initialData?.imageUrl,
     },
     mode: "onChange",
   });
 
-  const mainImage = useAdminSingleImage({ initialUrl: initialData?.imageUrl });
+  const mainImage = useAdminSingleImage({
+    initialUrl: initialData?.imageUrl,
+    onUploadSuccess: data => {
+      form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
+    },
+  });
 
   const handleSubmit = form.handleSubmit((data: SubjectiveFormInput) => {
     onSubmit({
       type: "IMAGE",
       title: data.title,
       description: data.description,
-      imageUrl: mainImage.uploadedData?.publicUrl || data.imageUrl || undefined,
+      imageUrl: data.imageUrl || undefined,
       imageFileUploadId: mainImage.uploadedData?.fileUploadId,
     });
   });
@@ -44,6 +49,7 @@ export function ImageUploadForm({
       <form onSubmit={handleSubmit} className="space-y-6">
         <BaseActionFormFields
           control={form.control}
+          watch={form.watch}
           isLoading={isLoading}
           titlePlaceholder="예: 사진을 업로드해주세요."
           mainImagePreviewUrl={mainImage.previewUrl}

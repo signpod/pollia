@@ -5,9 +5,12 @@ model User {
   createdAt        DateTime          @default(now()) @map("created_at")
   updatedAt        DateTime          @updatedAt @map("updated_at")
   role             UserRole          @default(USER)
-  fileUploads      FileUpload[]      @relation("FileUploader")
+  fileUploads      FileUpload[]
   missionResponses MissionResponse[]
-  missions         Mission[]         @relation("MissionCreator")
+  missions         Mission[]
+
+  trackingActionEntries   TrackingActionEntry[]
+  trackingActionResponses TrackingActionResponse[]
 
   @@map("users")
 }

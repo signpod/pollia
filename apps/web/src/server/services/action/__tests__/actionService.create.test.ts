@@ -197,6 +197,43 @@ describe("ActionService - Create", () => {
         description: "1-5점",
         imageUrl: undefined,
         order: 0,
+        options: [
+          {
+            title: "매우 불만족",
+            description: undefined,
+            imageUrl: undefined,
+            order: 0,
+            imageFileUploadId: undefined,
+          },
+          {
+            title: "불만족",
+            description: undefined,
+            imageUrl: undefined,
+            order: 1,
+            imageFileUploadId: undefined,
+          },
+          {
+            title: "보통",
+            description: undefined,
+            imageUrl: undefined,
+            order: 2,
+            imageFileUploadId: undefined,
+          },
+          {
+            title: "만족",
+            description: undefined,
+            imageUrl: undefined,
+            order: 3,
+            imageFileUploadId: undefined,
+          },
+          {
+            title: "매우 만족",
+            description: undefined,
+            imageUrl: undefined,
+            order: 4,
+            imageFileUploadId: undefined,
+          },
+        ],
       };
       const mockCreatedAction = {
         id: "action1",
@@ -213,7 +250,7 @@ describe("ActionService - Create", () => {
       };
 
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
-      ctx.mockActionRepo.create.mockResolvedValue(mockCreatedAction);
+      ctx.mockActionRepo.createMultipleChoice.mockResolvedValue(mockCreatedAction);
 
       // When
       const result = await ctx.service.createScaleAction(request, "user1");
@@ -225,14 +262,24 @@ describe("ActionService - Create", () => {
       expect(result.type).toBe(ActionType.SCALE);
       expect(result.order).toBe(request.order);
       expect(result.createdAt).toBeDefined();
-      expect(ctx.mockActionRepo.create).toHaveBeenCalledWith({
-        missionId: "mission1",
-        title: request.title,
-        description: request.description,
-        imageUrl: request.imageUrl,
-        type: ActionType.SCALE,
-        order: request.order,
-      });
+      expect(ctx.mockActionRepo.createMultipleChoice).toHaveBeenCalledWith(
+        {
+          missionId: "mission1",
+          title: request.title,
+          description: request.description,
+          imageUrl: request.imageUrl,
+          type: ActionType.SCALE,
+          order: request.order,
+        },
+        request.options.map(opt => ({
+          title: opt.title,
+          description: opt.description,
+          imageUrl: opt.imageUrl,
+          order: opt.order,
+          imageFileUploadId: opt.imageFileUploadId,
+        })),
+        "user1",
+      );
     });
 
     it("Mission 소유자가 아니면 403 에러를 던진다", async () => {
@@ -242,6 +289,11 @@ describe("ActionService - Create", () => {
         missionId: "mission1",
         title: "만족도를 평가해주세요",
         order: 0,
+        options: [
+          { title: "척도 1", order: 0 },
+          { title: "척도 2", order: 1 },
+          { title: "척도 3", order: 2 },
+        ],
       };
 
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
@@ -257,7 +309,7 @@ describe("ActionService - Create", () => {
         expect(error instanceof Error && error.cause).toBe(403);
       }
 
-      expect(ctx.mockActionRepo.create).not.toHaveBeenCalled();
+      expect(ctx.mockActionRepo.createMultipleChoice).not.toHaveBeenCalled();
     });
 
     it("Mission이 없으면 404 에러를 던진다", async () => {
@@ -266,6 +318,11 @@ describe("ActionService - Create", () => {
         missionId: "invalid-mission",
         title: "만족도를 평가해주세요",
         order: 0,
+        options: [
+          { title: "척도 1", order: 0 },
+          { title: "척도 2", order: 1 },
+          { title: "척도 3", order: 2 },
+        ],
       };
 
       ctx.mockMissionRepo.findById.mockResolvedValue(null);
@@ -281,7 +338,33 @@ describe("ActionService - Create", () => {
         expect(error instanceof Error && error.cause).toBe(404);
       }
 
-      expect(ctx.mockActionRepo.create).not.toHaveBeenCalled();
+      expect(ctx.mockActionRepo.createMultipleChoice).not.toHaveBeenCalled();
+    });
+
+    it("옵션이 3개 미만이면 400 에러를 던진다", async () => {
+      // Given
+      const request = {
+        missionId: "mission1",
+        title: "만족도를 평가해주세요",
+        order: 0,
+        options: [
+          { title: "척도 1", order: 0 },
+          { title: "척도 2", order: 1 },
+        ],
+      };
+
+      // When & Then
+      await expect(ctx.service.createScaleAction(request, "user1")).rejects.toThrow(
+        "최소 3개 이상의 항목이 필요합니다.",
+      );
+
+      try {
+        await ctx.service.createScaleAction(request, "user1");
+      } catch (error) {
+        expect(error instanceof Error && error.cause).toBe(400);
+      }
+
+      expect(ctx.mockActionRepo.createMultipleChoice).not.toHaveBeenCalled();
     });
   });
 
@@ -323,14 +406,18 @@ describe("ActionService - Create", () => {
       expect(result.type).toBe(ActionType.SUBJECTIVE);
       expect(result.order).toBe(request.order);
       expect(result.createdAt).toBeDefined();
-      expect(ctx.mockActionRepo.create).toHaveBeenCalledWith({
-        missionId: "mission1",
-        title: request.title,
-        description: request.description,
-        imageUrl: request.imageUrl,
-        type: ActionType.SUBJECTIVE,
-        order: request.order,
-      });
+      expect(ctx.mockActionRepo.create).toHaveBeenCalledWith(
+        {
+          missionId: "mission1",
+          title: request.title,
+          description: request.description,
+          imageUrl: request.imageUrl,
+          imageFileUploadId: undefined,
+          type: ActionType.SUBJECTIVE,
+          order: request.order,
+        },
+        "user1",
+      );
     });
 
     it("Mission 소유자가 아니면 403 에러를 던진다", async () => {

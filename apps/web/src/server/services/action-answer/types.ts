@@ -16,6 +16,8 @@ export interface SubmitAnswersInput {
     selectedOptionIds?: string[];
     scaleValue?: number;
     textResponse?: string;
+    imageFileUploadId?: string;
+    imageUrl?: string;
   }>;
 }
 

@@ -12,16 +12,36 @@ interface FixedBottomContextType {
 
 const FixedBottomContext = createContext<FixedBottomContextType | null>(null);
 
+function GradientBlurLayer({ height }: { height: number }) {
+  return (
+    <div
+      className="pointer-events-none absolute inset-x-0 bottom-0 z-49"
+      style={{
+        height: `${height}px`,
+        backdropFilter: "blur(100px)",
+        WebkitBackdropFilter: "blur(100px)",
+        maskImage: "linear-gradient(to bottom, transparent 0%, black 100%)",
+        WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 100%)",
+        background: "rgba(255, 255, 255, 0)",
+      }}
+    />
+  );
+}
+
 interface FixedBottomLayoutProps {
   children: ReactNode;
   className?: string;
   hasBottomGap?: boolean;
+  hasGradient?: boolean;
+  hasGradientBlur?: boolean;
 }
 
 export function FixedBottomLayout({
   children,
   className,
   hasBottomGap = true,
+  hasGradient = false,
+  hasGradientBlur = false,
 }: FixedBottomLayoutProps) {
   const [currentContent, setCurrentContent] = useState<ReactNode | null>(null);
   const [contentClassName, setContentClassName] = useState<string | null>(null);
@@ -72,12 +92,23 @@ export function FixedBottomLayout({
           <div
             ref={contentRef}
             className={cn(
-              "fixed right-0 bottom-0 left-0 z-50 bg-white",
+              "fixed right-0 bottom-0 left-0 z-50",
+              hasGradient || hasGradientBlur ? "bg-transparent" : "bg-white",
               "mx-auto max-w-lg",
               contentClassName,
             )}
           >
-            {currentContent}
+            {hasGradient && (
+              <div
+                className="pointer-events-none absolute inset-x-0 bottom-0 z-49 h-[100px]"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 40%, rgba(255, 255, 255, 1) 100%)",
+                }}
+              />
+            )}
+            {hasGradientBlur && <GradientBlurLayer height={contentHeight + 12} />}
+            <div className="relative z-50 w-full">{currentContent}</div>
           </div>
         )}
       </div>

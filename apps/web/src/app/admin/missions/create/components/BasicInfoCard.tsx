@@ -1,3 +1,4 @@
+import { CharacterCounter } from "@/app/admin/components/common/InputField";
 import { TiptapEditor } from "@/app/admin/components/common/TiptapEditor";
 import {
   Card,
@@ -8,22 +9,24 @@ import {
 } from "@/app/admin/components/shadcn-ui/card";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/app/admin/components/shadcn-ui/select";
+import {
+  MISSION_DESCRIPTION_MAX_LENGTH,
+  MISSION_TARGET_MAX_LENGTH,
+  MISSION_TITLE_MAX_LENGTH,
+} from "@/schemas/mission";
+import { MissionType } from "@prisma/client";
 import type { UseFormReturn } from "react-hook-form";
+import type { CreateMissionFunnelFormData } from "../schemas";
 
 interface BasicInfoCardProps {
-  form: UseFormReturn<{
-    title: string;
-    description?: string | undefined;
-    target?: string | undefined;
-    imageUrl?: string | undefined;
-    imageFileUploadId?: string | undefined;
-    brandLogoUrl?: string | undefined;
-    brandLogoFileUploadId?: string | undefined;
-    deadline?: Date | undefined;
-    estimatedMinutes?: number | undefined;
-    actionIds?: string[] | undefined;
-    isActive?: boolean | undefined;
-  }>;
+  form: UseFormReturn<CreateMissionFunnelFormData>;
 }
 
 export function BasicInfoCard({ form }: BasicInfoCardProps) {
@@ -35,17 +38,76 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="title">
-            제목 <span className="text-destructive">*</span>
-          </Label>
-          <Input id="title" placeholder="미션 제목을 입력하세요" {...form.register("title")} />
+          <div className="flex items-center justify-between">
+            <Label htmlFor="title">
+              제목 <span className="text-destructive">*</span>
+            </Label>
+            <CharacterCounter
+              current={form.watch("title")?.length || 0}
+              max={MISSION_TITLE_MAX_LENGTH}
+            />
+          </div>
+          <Input
+            id="title"
+            placeholder="미션 제목을 입력하세요"
+            maxLength={MISSION_TITLE_MAX_LENGTH}
+            {...form.register("title")}
+          />
           {form.formState.errors.title && (
             <p className="text-sm text-destructive">{form.formState.errors.title.message}</p>
           )}
         </div>
 
+        <div className="flex gap-10">
+          <div className="space-y-2">
+            <Label htmlFor="type">
+              타입 <span className="text-destructive">*</span>
+            </Label>
+            <Select
+              value={form.watch("type")}
+              onValueChange={value => {
+                form.setValue("type", value as MissionType, { shouldDirty: true });
+              }}
+            >
+              <SelectTrigger id="type">
+                <SelectValue placeholder="미션 타입을 선택하세요" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={MissionType.GENERAL}>일반 미션</SelectItem>
+                <SelectItem value={MissionType.EXPERIENCE_GROUP}>체험단 미션</SelectItem>
+              </SelectContent>
+            </Select>
+            {form.formState.errors.type && (
+              <p className="text-sm text-destructive">{form.formState.errors.type.message}</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="maxParticipants">최대 참여자 수</Label>
+            <Input
+              id="maxParticipants"
+              type="number"
+              placeholder="제한 없음"
+              min="1"
+              {...form.register("maxParticipants", {
+                setValueAs: value => (value === "" ? null : Number(value)),
+              })}
+            />
+            {form.formState.errors.maxParticipants && (
+              <p className="text-sm text-destructive">
+                {form.formState.errors.maxParticipants.message}
+              </p>
+            )}
+          </div>
+        </div>
+
         <div className="space-y-2">
-          <Label htmlFor="description">설명</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="description">설명</Label>
+            <CharacterCounter
+              current={form.watch("description")?.length || 0}
+              max={MISSION_DESCRIPTION_MAX_LENGTH}
+            />
+          </div>
           <TiptapEditor
             content={form.watch("description") || ""}
             onUpdate={content => {
@@ -61,8 +123,19 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="target">대상</Label>
-          <Input id="target" placeholder="미션 대상을 입력하세요" {...form.register("target")} />
+          <div className="flex items-center justify-between">
+            <Label htmlFor="target">대상</Label>
+            <CharacterCounter
+              current={form.watch("target")?.length || 0}
+              max={MISSION_TARGET_MAX_LENGTH}
+            />
+          </div>
+          <Input
+            id="target"
+            placeholder="미션 대상을 입력하세요"
+            maxLength={MISSION_TARGET_MAX_LENGTH}
+            {...form.register("target")}
+          />
           {form.formState.errors.target && (
             <p className="text-sm text-destructive">{form.formState.errors.target.message}</p>
           )}
@@ -75,7 +148,7 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
             type="number"
             placeholder="예상 소요 시간을 입력하세요"
             {...form.register("estimatedMinutes", {
-              valueAsNumber: true,
+              setValueAs: value => (value === "" ? undefined : Number(value)),
             })}
           />
           {form.formState.errors.estimatedMinutes && (

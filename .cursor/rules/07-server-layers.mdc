@@ -108,10 +108,13 @@ create-survey.ts         # 동작-도메인 형식 금지 (CRUD 사용)
 - 에러 처리 없음 (null 반환)
 - 순수 데이터 접근 계층
 
-### 기본 구조
+### Prisma 타입 활용
+
+Repository는 Prisma가 생성한 타입을 **그대로 사용**합니다:
 
 ```typescript
 import prisma from "@/database/utils/prisma/client";
+import { Prisma } from "@prisma/client";
 
 export class SurveyRepository {
   async findById(surveyId: string) {
@@ -120,12 +123,14 @@ export class SurveyRepository {
     });
   }
 
-  async create(data: {
-    title: string;
-    description?: string;
-    creatorId: string;
-  }) {
-    return prisma.survey.create({
+  // Prisma 타입 그대로 사용 (스키마 변경 시 자동 반영)
+  async create(data: Prisma.SurveyUncheckedCreateInput) {
+    return prisma.survey.create({ data });
+  }
+
+  async update(surveyId: string, data: Prisma.SurveyUncheckedUpdateInput) {
+    return prisma.survey.update({
+      where: { id: surveyId },
       data,
     });
   }
@@ -140,6 +145,19 @@ export class SurveyRepository {
 export const surveyRepository = new SurveyRepository();
 ```
 
+**Prisma 타입 선택 기준:**
+
+| 타입 | 사용 시점 |
+|------|----------|
+| `Prisma.XxxUncheckedCreateInput` | relation을 scalar ID로 직접 전달할 때 (예: `creatorId`) |
+| `Prisma.XxxCreateInput` | relation을 connect로 연결할 때 |
+| `Prisma.XxxUncheckedUpdateInput` | 수정 시 scalar ID 직접 사용 |
+
+**장점:**
+- 스키마 변경 시 **코드 수정 불필요** (자동 반영)
+- 불필요한 타입 래핑 제거
+- Prisma가 타입 안전성 보장
+
 ### 필수 요소
 
 - [ ] **Class 기반 구현**
@@ -147,6 +165,7 @@ export const surveyRepository = new SurveyRepository();
 - [ ] **일관된 메서드명** (find*, create*, update*, delete*)
 - [ ] **에러 처리 없음** (null 반환)
 - [ ] **Prisma 쿼리만 포함**
+- [ ] **Prisma 타입 그대로 사용** (`Prisma.XxxUncheckedCreateInput` 등)
 - [ ] **주석 없음** (코드로 의도 표현)
 
 ### 메서드 네이밍 규칙
@@ -188,6 +207,54 @@ removeSurvey()        # remove 대신 delete 사용
 - Repository 조합
 - 검증 및 에러 처리
 - 적절한 타입 사용 (DTO 또는 Service 내부 타입)
+
+### Prisma 타입 활용 (types.ts)
+
+Service 계층의 타입은 Prisma 타입을 **Pick으로 선택**하여 정의합니다:
+
+```typescript
+// types.ts
+import type { Prisma, SurveyType } from "@prisma/client";
+import type { SortOrderType } from "@/types/common/sort";
+
+// Prisma 타입에서 필요한 필드만 Pick
+type SurveyCreateFields = Pick<
+  Prisma.SurveyUncheckedCreateInput,
+  | "title"
+  | "description"
+  | "imageUrl"
+  | "type"
+>;
+
+// 비즈니스 로직 전용 필드는 intersection으로 추가
+export type CreateSurveyInput = SurveyCreateFields & {
+  questionIds?: string[];
+};
+
+// Update는 Create 기반으로 Partial 적용
+export type UpdateSurveyInput = Partial<SurveyCreateFields> & {
+  isActive?: boolean;
+};
+
+export interface GetSurveysOptions {
+  cursor?: string;
+  limit?: number;
+  sortOrder?: SortOrderType;
+}
+```
+
+**장점:**
+- API 경계에서 노출되는 필드를 **명시적으로 제어**
+- 비즈니스 로직 전용 필드 추가 가능 (예: `questionIds`)
+- 스키마 변경 시 **Pick 목록만 수정**
+- 테스트 작성 시 필요 필드가 명확함
+
+**Service vs Repository 타입 비교:**
+
+| 계층 | 타입 정의 방식 | 이유 |
+|------|---------------|------|
+| **Repository** | `Prisma.XxxInput` 그대로 | 데이터 접근 계층은 ORM과 직접 통신 |
+| **Service** | `Pick<Prisma.XxxInput, ...>` | API 경계 제어, 비즈니스 필드 추가 |
 
 ### 기본 구조
 
@@ -248,6 +315,7 @@ export const surveyService = new SurveyService();
 - [ ] **Singleton export** (`export const {도메인}Service = new ...`)
 - [ ] **일관된 메서드명** (get*, create*, update*, delete*, toggle*)
 - [ ] **자체 타입 사용** (`types.ts`에서 import, DTO 사용 금지)
+- [ ] **타입은 Prisma 기반 Pick** (스키마 변경 시 부분 반영)
 - [ ] **에러 처리** (error.cause 설정)
 - [ ] **Validation 로직**
 - [ ] **주석 최소화** (코드로 의도 표현)
@@ -452,11 +520,11 @@ describe("SurveyService", () => {
 
 ### 계층별 핵심 규칙
 
-| 계층 | 파일명 | 구현 방식 | 에러 처리 | 테스트 |
-|------|--------|-----------|-----------|--------|
-| **Repository** | `{도메인}Repository.ts` | Class + Singleton | 없음 (null) | 제외 |
-| **Service** | `{도메인}Service.ts` | Class + Singleton + DI | error.cause throw | 대상 |
-| **Action** | `{동작}.ts` | Function | try-catch + log | 제외 |
+| 계층 | 파일명 | 구현 방식 | 타입 정의 | 에러 처리 | 테스트 |
+|------|--------|-----------|-----------|-----------|--------|
+| **Repository** | `{도메인}Repository.ts` | Class + Singleton | Prisma 타입 그대로 | 없음 (null) | 제외 |
+| **Service** | `{도메인}Service.ts` | Class + Singleton + DI | Pick<Prisma...> | error.cause throw | 대상 |
+| **Action** | `{동작}.ts` | Function | DTO 타입 | try-catch + log | 제외 |
 
 ### 메서드 네이밍
 

@@ -77,6 +77,7 @@ function useCreateMissionButton() {
       target: trimmedTarget !== "" ? trimmedTarget : undefined,
       deadline: deadlineDate ? combineDateAndTime(deadlineDate, deadlineTime) : undefined,
       estimatedMinutes,
+      type: "GENERAL",
       actionIds: selectedActions.map(action => action.id),
     });
   };

@@ -11,8 +11,13 @@ function toCreateMissionInput(dto: CreateMissionRequest): CreateMissionInput {
     description: dto.description,
     target: dto.target,
     imageUrl: dto.imageUrl,
+    imageFileUploadId: dto.imageFileUploadId,
+    brandLogoUrl: dto.brandLogoUrl,
+    brandLogoFileUploadId: dto.brandLogoFileUploadId,
     deadline: dto.deadline,
     estimatedMinutes: dto.estimatedMinutes,
+    maxParticipants: dto.maxParticipants,
+    type: dto.type,
     actionIds: dto.actionIds ?? [],
   };
 }

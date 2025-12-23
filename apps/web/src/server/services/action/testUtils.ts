@@ -1,7 +1,9 @@
 import type { ActionRepository } from "@/server/repositories/action/actionRepository";
 import type { MissionRepository } from "@/server/repositories/mission/missionRepository";
-import type { Mission } from "@prisma/client";
 import { ActionService } from ".";
+
+export { createMockAction, createMockMission } from "../testUtils";
+export { createMockMission as mockMissionFactory } from "../testUtils";
 
 export function createActionServiceTestContext() {
   const mockActionRepo = {
@@ -28,22 +30,3 @@ export function createActionServiceTestContext() {
 }
 
 export type ActionServiceTestContext = ReturnType<typeof createActionServiceTestContext>;
-
-export const mockMissionFactory = (overrides: Partial<Mission> = {}): Mission => ({
-  id: "mission1",
-  title: "미션",
-  description: null,
-  target: null,
-  imageUrl: null,
-  brandLogoUrl: null,
-  estimatedMinutes: null,
-  deadline: null,
-  isActive: true,
-  creatorId: "user1",
-  rewardId: null,
-  imageFileUploadId: null,
-  brandLogoFileUploadId: null,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  ...overrides,
-});

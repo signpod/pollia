@@ -22,13 +22,9 @@ export function TiptapViewer({ content, className }: TiptapViewerProps) {
     },
   });
 
-  if (!editor) {
-    return null;
-  }
-
   return (
     <div className={cn("tiptap-viewer", className)}>
-      <EditorContent editor={editor} />
+      {editor && <EditorContent editor={editor} />}
     </div>
   );
 }

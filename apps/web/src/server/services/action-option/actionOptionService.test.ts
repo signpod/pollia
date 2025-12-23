@@ -1,8 +1,8 @@
 import type { ActionOptionRepository } from "@/server/repositories/action-option/actionOptionRepository";
 import type { ActionRepository } from "@/server/repositories/action/actionRepository";
 import type { MissionRepository } from "@/server/repositories/mission/missionRepository";
-import { ActionType } from "@prisma/client";
 import { ActionOptionService } from ".";
+import { createMockAction, createMockMission } from "../testUtils";
 
 describe("ActionOptionService", () => {
   let service: ActionOptionService;
@@ -80,19 +80,7 @@ describe("ActionOptionService", () => {
   describe("getOptionsByActionId", () => {
     it("Action의 Option 목록을 성공적으로 조회한다", async () => {
       // Given
-      const mockAction = {
-        id: "action1",
-        missionId: "mission1",
-        title: "액션 1",
-        description: null,
-        imageUrl: null,
-        type: ActionType.MULTIPLE_CHOICE,
-        order: 0,
-        maxSelections: null,
-        imageFileUploadId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      const mockAction = createMockAction();
       const mockOptions = [
         {
           id: "option1",
@@ -144,37 +132,8 @@ describe("ActionOptionService", () => {
   });
 
   describe("createOption", () => {
-    const mockAction = {
-      id: "action1",
-      missionId: "mission1",
-      title: "액션 1",
-      description: null,
-      imageUrl: null,
-      type: ActionType.MULTIPLE_CHOICE,
-      order: 0,
-      maxSelections: null,
-      imageFileUploadId: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    const mockMission = {
-      id: "mission1",
-      title: "미션",
-      description: null,
-      target: null,
-      imageUrl: null,
-      brandLogoUrl: null,
-      estimatedMinutes: null,
-      deadline: null,
-      isActive: true,
-      creatorId: "user1",
-      rewardId: null,
-      imageFileUploadId: null,
-      brandLogoFileUploadId: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    const mockAction = createMockAction();
+    const mockMission = createMockMission();
 
     it("Option을 성공적으로 생성한다", async () => {
       // Given
@@ -184,7 +143,7 @@ describe("ActionOptionService", () => {
         description: "설명",
         imageUrl: "https://example.com/image.jpg",
         order: 0,
-        fileUploadId: "file1",
+        imageFileUploadId: "file1",
       };
       const mockCreatedOption = {
         id: "option1",
@@ -228,17 +187,17 @@ describe("ActionOptionService", () => {
       expect(mockOptionRepo.create).not.toHaveBeenCalled();
     });
 
-    it("제목이 100자를 초과하면 400 에러를 던진다", async () => {
+    it("제목이 50자를 초과하면 400 에러를 던진다", async () => {
       // Given
       const invalidData = {
         actionId: "action1",
-        title: "a".repeat(101),
+        title: "a".repeat(51),
         order: 0,
       };
 
       // When & Then
       await expect(service.createOption(invalidData, "user1")).rejects.toThrow(
-        "옵션 제목은 100자를 초과할 수 없습니다.",
+        "옵션 제목은 50자를 초과할 수 없습니다.",
       );
     });
 
@@ -297,37 +256,8 @@ describe("ActionOptionService", () => {
   });
 
   describe("createOptions", () => {
-    const mockAction = {
-      id: "action1",
-      missionId: "mission1",
-      title: "액션 1",
-      description: null,
-      imageUrl: null,
-      type: ActionType.MULTIPLE_CHOICE,
-      order: 0,
-      maxSelections: null,
-      imageFileUploadId: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    const mockMission = {
-      id: "mission1",
-      title: "미션",
-      description: null,
-      target: null,
-      imageUrl: null,
-      brandLogoUrl: null,
-      estimatedMinutes: null,
-      deadline: null,
-      isActive: true,
-      creatorId: "user1",
-      rewardId: null,
-      imageFileUploadId: null,
-      brandLogoFileUploadId: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    const mockAction = createMockAction();
+    const mockMission = createMockMission();
 
     it("여러 Option을 성공적으로 생성한다", async () => {
       // Given
@@ -395,37 +325,8 @@ describe("ActionOptionService", () => {
       updatedAt: new Date(),
     };
 
-    const mockAction = {
-      id: "action1",
-      missionId: "mission1",
-      title: "액션 1",
-      description: null,
-      imageUrl: null,
-      type: ActionType.MULTIPLE_CHOICE,
-      order: 0,
-      maxSelections: null,
-      imageFileUploadId: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    const mockMission = {
-      id: "mission1",
-      title: "미션",
-      description: null,
-      target: null,
-      imageUrl: null,
-      brandLogoUrl: null,
-      estimatedMinutes: null,
-      deadline: null,
-      isActive: true,
-      creatorId: "user1",
-      rewardId: null,
-      imageFileUploadId: null,
-      brandLogoFileUploadId: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    const mockAction = createMockAction();
+    const mockMission = createMockMission();
 
     it("Option을 성공적으로 수정한다", async () => {
       // Given
@@ -448,7 +349,7 @@ describe("ActionOptionService", () => {
 
       // Then
       expect(result).toEqual(mockUpdatedOption);
-      expect(mockOptionRepo.update).toHaveBeenCalledWith("option1", updateData);
+      expect(mockOptionRepo.update).toHaveBeenCalledWith("option1", updateData, "user1");
     });
 
     it("Option이 없으면 404 에러를 던진다", async () => {
@@ -485,37 +386,8 @@ describe("ActionOptionService", () => {
       updatedAt: new Date(),
     };
 
-    const mockAction = {
-      id: "action1",
-      missionId: "mission1",
-      title: "액션 1",
-      description: null,
-      imageUrl: null,
-      type: ActionType.MULTIPLE_CHOICE,
-      order: 0,
-      maxSelections: null,
-      imageFileUploadId: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    const mockMission = {
-      id: "mission1",
-      title: "미션",
-      description: null,
-      target: null,
-      imageUrl: null,
-      brandLogoUrl: null,
-      estimatedMinutes: null,
-      deadline: null,
-      isActive: true,
-      creatorId: "user1",
-      rewardId: null,
-      imageFileUploadId: null,
-      brandLogoFileUploadId: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    const mockAction = createMockAction();
+    const mockMission = createMockMission();
 
     it("Option을 성공적으로 삭제한다", async () => {
       // Given
@@ -559,37 +431,8 @@ describe("ActionOptionService", () => {
   });
 
   describe("deleteOptionsByActionId", () => {
-    const mockAction = {
-      id: "action1",
-      missionId: "mission1",
-      title: "액션 1",
-      description: null,
-      imageUrl: null,
-      type: ActionType.MULTIPLE_CHOICE,
-      order: 0,
-      maxSelections: null,
-      imageFileUploadId: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    const mockMission = {
-      id: "mission1",
-      title: "미션",
-      description: null,
-      target: null,
-      imageUrl: null,
-      brandLogoUrl: null,
-      estimatedMinutes: null,
-      deadline: null,
-      isActive: true,
-      creatorId: "user1",
-      rewardId: null,
-      imageFileUploadId: null,
-      brandLogoFileUploadId: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    const mockAction = createMockAction();
+    const mockMission = createMockMission();
 
     it("Action의 모든 Option을 성공적으로 삭제한다", async () => {
       // Given

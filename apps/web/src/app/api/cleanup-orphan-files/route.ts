@@ -1,4 +1,4 @@
-import { cleanupOrphanFiles } from "@/actions/common/image";
+import { cleanupOrphanFiles } from "@/actions/common/images";
 import { NextRequest, NextResponse } from "next/server";
 
 // GET /api/cleanup-orphan-files

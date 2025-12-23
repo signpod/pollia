@@ -9,26 +9,15 @@ import {
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
-import { ADMIN_STORAGE_BUCKETS } from "@/app/admin/constants/storage";
+import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { useImageUpload } from "@/hooks/common/useImageUpload";
 import { useEffect, useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
+import type { CreateMissionFunnelFormData } from "../schemas";
 
 interface ImageCardProps {
-  form: UseFormReturn<{
-    title: string;
-    description?: string | undefined;
-    target?: string | undefined;
-    imageUrl?: string | undefined;
-    imageFileUploadId?: string | undefined;
-    brandLogoUrl?: string | undefined;
-    brandLogoFileUploadId?: string | undefined;
-    deadline?: Date | undefined;
-    estimatedMinutes?: number | undefined;
-    actionIds?: string[] | undefined;
-    isActive?: boolean | undefined;
-  }>;
+  form: UseFormReturn<CreateMissionFunnelFormData>;
 }
 
 export function ImageCard({ form }: ImageCardProps) {
@@ -46,7 +35,7 @@ export function ImageCard({ form }: ImageCardProps) {
   } | null>(null);
 
   const missionImageUpload = useImageUpload({
-    bucket: ADMIN_STORAGE_BUCKETS.MISSION_IMAGES,
+    bucket: STORAGE_BUCKETS.MISSION_IMAGES,
     onSuccess: result => {
       form.setValue("imageUrl", result.publicUrl);
       form.setValue("imageFileUploadId", result.fileUploadId);
@@ -73,7 +62,7 @@ export function ImageCard({ form }: ImageCardProps) {
   });
 
   const brandLogoUpload = useImageUpload({
-    bucket: ADMIN_STORAGE_BUCKETS.MISSION_IMAGES,
+    bucket: STORAGE_BUCKETS.MISSION_IMAGES,
     onSuccess: result => {
       form.setValue("brandLogoUrl", result.publicUrl);
       form.setValue("brandLogoFileUploadId", result.fileUploadId);
@@ -124,7 +113,6 @@ export function ImageCard({ form }: ImageCardProps) {
     if (missionImageFile) {
       missionImageUpload.deleteImage({
         path: missionImageFile.path,
-        bucket: ADMIN_STORAGE_BUCKETS.MISSION_IMAGES,
       });
     }
 
@@ -152,7 +140,6 @@ export function ImageCard({ form }: ImageCardProps) {
     if (brandLogoFile) {
       brandLogoUpload.deleteImage({
         path: brandLogoFile.path,
-        bucket: ADMIN_STORAGE_BUCKETS.MISSION_IMAGES,
       });
     }
 

@@ -3,10 +3,10 @@ import { z } from "zod";
 const titleSchema = z
   .string()
   .min(1, "옵션 제목을 입력해주세요.")
-  .max(100, "옵션 제목은 100자를 초과할 수 없습니다.")
+  .max(50, "옵션 제목은 50자를 초과할 수 없습니다.")
   .trim();
 
-const descriptionSchema = z.string().optional();
+const descriptionSchema = z.string().max(200, "설명은 200자를 초과할 수 없습니다.").optional();
 
 const imageUrlSchema = z.url({ message: "올바른 URL 형식이 아닙니다." }).optional();
 
@@ -17,7 +17,7 @@ const orderSchema = z
 
 const actionIdSchema = z.string().min(1, "액션 ID가 필요합니다.");
 
-const fileUploadIdSchema = z.string().optional();
+const imageFileUploadIdSchema = z.string().optional();
 
 export const optionInputSchema = z.object({
   actionId: actionIdSchema,
@@ -25,16 +25,18 @@ export const optionInputSchema = z.object({
   description: descriptionSchema,
   imageUrl: imageUrlSchema,
   order: orderSchema,
-  fileUploadId: fileUploadIdSchema,
+  imageFileUploadId: imageFileUploadIdSchema,
 });
 
-const optionItemSchema = z.object({
+export const actionOptionSchema = z.object({
   title: titleSchema,
   description: descriptionSchema,
   imageUrl: imageUrlSchema,
   order: orderSchema,
-  fileUploadId: fileUploadIdSchema,
+  imageFileUploadId: imageFileUploadIdSchema,
 });
+
+const optionItemSchema = actionOptionSchema;
 
 export const optionsInputSchema = z.object({
   actionId: actionIdSchema,
@@ -47,6 +49,7 @@ export const optionUpdateSchema = z
     description: descriptionSchema,
     imageUrl: imageUrlSchema,
     order: orderSchema.optional(),
+    imageFileUploadId: imageFileUploadIdSchema,
   })
   .refine(data => Object.keys(data).length > 0, {
     message: "최소 하나의 필드를 수정해야 합니다.",

@@ -12,12 +12,14 @@ import { Plus } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { BaseActionFormFields } from "./BaseActionForm";
 import { MaxSelectionsField } from "./MaxSelectionsField";
-import { OptionCard } from "./OptionCard";
-import { type MultipleChoiceFormInput, multipleChoiceFormSchema } from "./schemas";
+import { MultipleChoiceOptionCard } from "./MultipleChoiceOptionCard";
+import {
+  MULTIPLE_CHOICE_MAX_OPTIONS,
+  MULTIPLE_CHOICE_MIN_OPTIONS,
+  type MultipleChoiceFormInput,
+  multipleChoiceFormSchema,
+} from "./schemas";
 import type { ActionFormProps, ActionOptionInput, MultipleChoiceFormData } from "./types";
-
-const MIN_OPTIONS = 2;
-const MAX_OPTIONS = 10;
 
 export function MultipleChoiceForm({
   isLoading = false,
@@ -32,14 +34,14 @@ export function MultipleChoiceForm({
     defaultValues: {
       title: initialData?.title || "",
       description: initialData?.description || "",
-      imageUrl: initialData?.imageUrl || "",
+      imageUrl: initialData?.imageUrl,
       maxSelections: initialData?.maxSelections ?? 1,
       options:
         initialData?.options?.map(opt => ({
           id: crypto.randomUUID(),
           title: opt.title,
           description: opt.description || "",
-          imageUrl: opt.imageUrl || "",
+          imageUrl: opt.imageUrl,
         })) || [],
     },
     mode: "onChange",
@@ -50,7 +52,12 @@ export function MultipleChoiceForm({
     name: "options",
   });
 
-  const mainImage = useAdminSingleImage({ initialUrl: initialData?.imageUrl });
+  const mainImage = useAdminSingleImage({
+    initialUrl: initialData?.imageUrl,
+    onUploadSuccess: data => {
+      form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
+    },
+  });
   const optionImages = useAdminMultipleImages();
 
   const handleSubmit = form.handleSubmit((data: MultipleChoiceFormInput) => {
@@ -61,7 +68,7 @@ export function MultipleChoiceForm({
       return {
         title: opt.title,
         description: opt.description || undefined,
-        imageUrl: uploadedData?.publicUrl || opt.imageUrl || undefined,
+        imageUrl: uploadedData?.publicUrl || undefined,
         imageFileUploadId: uploadedData?.fileUploadId,
       };
     });
@@ -70,7 +77,7 @@ export function MultipleChoiceForm({
       type: "MULTIPLE_CHOICE",
       title: data.title,
       description: data.description,
-      imageUrl: mainImage.uploadedData?.publicUrl || data.imageUrl || undefined,
+      imageUrl: data.imageUrl || undefined,
       imageFileUploadId: mainImage.uploadedData?.fileUploadId,
       maxSelections: data.maxSelections,
       options: formattedOptions,
@@ -102,6 +109,7 @@ export function MultipleChoiceForm({
       <form onSubmit={handleSubmit} className="space-y-6">
         <BaseActionFormFields
           control={form.control}
+          watch={form.watch}
           isLoading={isLoading}
           titlePlaceholder="예: 가장 선호하는 옵션을 선택해주세요."
           mainImagePreviewUrl={mainImage.previewUrl}
@@ -135,11 +143,11 @@ export function MultipleChoiceForm({
                 );
 
                 return (
-                  <OptionCard
+                  <MultipleChoiceOptionCard
                     key={field.id}
                     index={index}
                     total={fields.length}
-                    minOptions={MIN_OPTIONS}
+                    minOptions={MULTIPLE_CHOICE_MIN_OPTIONS}
                     title={form.watch(`options.${index}.title`)}
                     description={form.watch(`options.${index}.description`)}
                     imagePreviewUrl={previewUrl}
@@ -178,7 +186,7 @@ export function MultipleChoiceForm({
             size="sm"
             className="w-full"
             onClick={handleAddOption}
-            disabled={isLoading || fields.length >= MAX_OPTIONS}
+            disabled={isLoading || fields.length >= MULTIPLE_CHOICE_MAX_OPTIONS}
           >
             <Plus className="size-4 mr-2" />
             선택지 추가

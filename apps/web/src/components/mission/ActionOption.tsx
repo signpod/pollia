@@ -1,5 +1,6 @@
 "use client";
 
+import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { useImageUpload } from "@/hooks/common/useImageUpload";
 import { cn } from "@/lib/utils";
 import {
@@ -104,7 +105,7 @@ export function SurveyQuestionOption({
   } | null>(null);
 
   const { upload, isUploading, uploadError, deleteImage, isDeleting } = useImageUpload({
-    bucket: "poll-images",
+    bucket: STORAGE_BUCKETS.ACTION_OPTION_IMAGES,
     onSuccess: result => {
       onImageUrlChange?.(result.publicUrl);
       onFileUploadIdChange?.(result.fileUploadId);
@@ -154,7 +155,6 @@ export function SurveyQuestionOption({
     if (uploadedFile) {
       deleteImage({
         path: uploadedFile.path,
-        bucket: "poll-images",
       });
     }
 

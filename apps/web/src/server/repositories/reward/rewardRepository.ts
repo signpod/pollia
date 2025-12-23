@@ -1,4 +1,5 @@
 import prisma from "@/database/utils/prisma/client";
+import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
 import type { PaymentType } from "@prisma/client";
 
 export class RewardRepository {
@@ -15,6 +16,7 @@ export class RewardRepository {
         name: true,
         description: true,
         imageUrl: true,
+        imageFileUploadId: true,
         paymentType: true,
         scheduledDate: true,
         paidAt: true,
@@ -26,13 +28,38 @@ export class RewardRepository {
     });
   }
 
-  async create(data: {
-    name: string;
-    description?: string;
-    imageUrl?: string;
-    paymentType: PaymentType;
-    scheduledDate?: Date;
-  }) {
+  async create(
+    data: {
+      name: string;
+      description?: string;
+      imageUrl?: string;
+      imageFileUploadId?: string;
+      paymentType: PaymentType;
+      scheduledDate?: Date;
+    },
+    userId?: string,
+  ) {
+    if (data.imageFileUploadId && userId) {
+      return prisma.$transaction(async tx => {
+        const reward = await tx.reward.create({
+          data,
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            imageUrl: true,
+            paymentType: true,
+            scheduledDate: true,
+            createdAt: true,
+          },
+        });
+
+        await confirmFileUploads(tx, userId, data.imageFileUploadId);
+
+        return reward;
+      });
+    }
+
     return prisma.reward.create({
       data,
       select: {
@@ -53,10 +80,34 @@ export class RewardRepository {
       name?: string;
       description?: string;
       imageUrl?: string;
+      imageFileUploadId?: string;
       paymentType?: PaymentType;
       scheduledDate?: Date;
     },
+    userId?: string,
   ) {
+    if (data.imageFileUploadId && userId) {
+      return prisma.$transaction(async tx => {
+        const reward = await tx.reward.update({
+          where: { id: rewardId },
+          data,
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            imageUrl: true,
+            paymentType: true,
+            scheduledDate: true,
+            updatedAt: true,
+          },
+        });
+
+        await confirmFileUploads(tx, userId, data.imageFileUploadId);
+
+        return reward;
+      });
+    }
+
     return prisma.reward.update({
       where: { id: rewardId },
       data,

@@ -10,6 +10,7 @@ const nameSchema = z
 const descriptionSchema = z.string().max(500, "설명은 500자를 초과할 수 없습니다.").optional();
 
 const imageUrlSchema = z.url({ message: "올바른 URL 형식이 아닙니다." }).optional();
+const imageFileUploadIdSchema = z.string().optional();
 
 const paymentTypeSchema = z.enum(PaymentType, {
   message: "올바른 지급 유형을 선택해주세요.",
@@ -22,6 +23,7 @@ export const rewardInputSchema = z
     name: nameSchema,
     description: descriptionSchema,
     imageUrl: imageUrlSchema,
+    imageFileUploadId: imageFileUploadIdSchema,
     paymentType: paymentTypeSchema,
     scheduledDate: scheduledDateSchema,
   })
@@ -49,6 +51,7 @@ export const rewardUpdateSchema = z
     name: nameSchema.optional(),
     description: descriptionSchema,
     imageUrl: imageUrlSchema,
+    imageFileUploadId: imageFileUploadIdSchema,
     paymentType: paymentTypeSchema.optional(),
     scheduledDate: scheduledDateSchema,
   })

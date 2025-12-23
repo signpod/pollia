@@ -102,6 +102,15 @@ export class MissionResponseService {
       throw error;
     }
 
+    if (mission.maxParticipants !== null && mission.maxParticipants > 0) {
+      const currentParticipants = await this.responseRepo.countByMissionId(missionId);
+      if (currentParticipants >= mission.maxParticipants) {
+        const error = new Error("참여 정원이 마감되었어요.");
+        error.cause = 403;
+        throw error;
+      }
+    }
+
     const existingResponse = await this.responseRepo.findByMissionAndUser(missionId, userId);
     if (existingResponse) {
       return existingResponse;

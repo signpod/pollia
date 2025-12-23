@@ -27,7 +27,8 @@ export type ActionAnswerItem =
   | {
       actionId: string;
       type: typeof ActionType.IMAGE;
-      textResponse: string;
+      imageFileUploadId?: string;
+      imageUrl?: string;
     }
   | {
       actionId: string;
@@ -52,6 +53,7 @@ export interface SubmitActionAnswersRequest {
     scaleValue?: number;
     textResponse?: string;
     fileUploadId?: string;
+    imageUrl?: string;
   }>;
 }
 

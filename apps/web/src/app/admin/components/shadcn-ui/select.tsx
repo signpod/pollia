@@ -51,8 +51,13 @@ function SelectContent({
   align = "center",
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
+  const container = React.useMemo(() => {
+    if (typeof window === "undefined") return null;
+    return document.querySelector(".admin-root") as HTMLElement;
+  }, []);
+
   return (
-    <SelectPrimitive.Portal>
+    <SelectPrimitive.Portal container={container}>
       <SelectPrimitive.Content
         data-slot="select-content"
         className={cn(

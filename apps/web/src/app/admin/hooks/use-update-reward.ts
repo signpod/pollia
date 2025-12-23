@@ -34,7 +34,6 @@ export function useUpdateReward(options: UseUpdateRewardOptions = {}) {
     },
 
     onError: error => {
-      console.error("리워드 수정 실패:", error);
       options.onError?.(error as Error);
     },
   });

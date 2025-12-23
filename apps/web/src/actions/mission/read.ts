@@ -4,7 +4,11 @@ import { requireAuth } from "@/actions/common/auth";
 import { missionService } from "@/server/services/mission";
 import type { GetUserMissionsOptions } from "@/server/services/mission/types";
 import type { SortOrderType } from "@/types/common/sort";
-import type { GetMissionResponse, GetUserMissionsResponse } from "@/types/dto";
+import type {
+  GetMissionParticipantInfoResponse,
+  GetMissionResponse,
+  GetUserMissionsResponse,
+} from "@/types/dto";
 
 export interface GetUserMissionsRequest {
   cursor?: string;
@@ -60,6 +64,54 @@ export async function getMission(missionId: string): Promise<GetMissionResponse>
       throw error;
     }
     const serverError = new Error("미션을 불러올 수 없습니다.");
+    serverError.cause = 500;
+    throw serverError;
+  }
+}
+
+export async function getMissionPassword(missionId: string) {
+  try {
+    const user = await requireAuth();
+    const password = await missionService.getPassword(missionId, user.id);
+    return { data: password };
+  } catch (error) {
+    console.error("getMissionPassword error:", error);
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("비밀번호 조회 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
+  }
+}
+
+export async function verifyMissionPassword(missionId: string, password: string) {
+  try {
+    const isValid = await missionService.verifyPassword(missionId, password);
+    return { data: isValid };
+  } catch (error) {
+    console.error("verifyMissionPassword error:", error);
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("비밀번호 검증 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
+  }
+}
+
+export async function getMissionParticipantInfo(
+  missionId: string,
+): Promise<GetMissionParticipantInfoResponse> {
+  try {
+    const participantInfo = await missionService.getMissionWithParticipantInfo(missionId);
+    return { data: participantInfo };
+  } catch (error) {
+    console.error("getMissionParticipantInfo error:", error);
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("참여 정보를 불러올 수 없습니다.");
     serverError.cause = 500;
     throw serverError;
   }

@@ -11,6 +11,7 @@ function toCreateRewardInput(dto: CreateRewardRequest): CreateRewardInput {
     name: dto.name,
     description: dto.description,
     imageUrl: dto.imageUrl,
+    imageFileUploadId: dto.imageFileUploadId,
     paymentType: dto.paymentType,
     scheduledDate: dto.scheduledDate,
   };
@@ -18,9 +19,9 @@ function toCreateRewardInput(dto: CreateRewardRequest): CreateRewardInput {
 
 export async function createReward(request: CreateRewardRequest): Promise<CreateRewardResponse> {
   try {
-    await requireAuth();
+    const user = await requireAuth();
     const input = toCreateRewardInput(request);
-    const reward = await rewardService.createReward(input);
+    const reward = await rewardService.createReward(input, user.id);
 
     await updateMission(request.missionId, { rewardId: reward.id });
 

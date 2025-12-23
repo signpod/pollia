@@ -5,6 +5,7 @@ export interface CreateMultipleChoiceInput {
   title: string;
   description?: string;
   imageUrl?: string;
+  imageFileUploadId?: string;
   maxSelections: number;
   order: number;
   options: {
@@ -21,7 +22,15 @@ export interface CreateScaleInput {
   title: string;
   description?: string;
   imageUrl?: string;
+  imageFileUploadId?: string;
   order: number;
+  options: {
+    title: string;
+    description?: string;
+    imageUrl?: string;
+    order: number;
+    imageFileUploadId?: string;
+  }[];
 }
 
 export interface CreateSubjectiveInput {
@@ -29,6 +38,7 @@ export interface CreateSubjectiveInput {
   title: string;
   description?: string;
   imageUrl?: string;
+  imageFileUploadId?: string;
   order: number;
 }
 
@@ -37,6 +47,7 @@ export interface CreateEitherOrInput {
   title: string;
   description?: string;
   imageUrl?: string;
+  imageFileUploadId?: string;
   order: number;
 }
 
@@ -87,6 +98,7 @@ export interface UpdateActionInput {
   title?: string;
   description?: string;
   imageUrl?: string;
+  imageFileUploadId?: string;
   order?: number;
   maxSelections?: number;
   options?: UpdateActionOptionInput[];

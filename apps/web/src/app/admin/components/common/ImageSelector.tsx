@@ -5,7 +5,7 @@ import { cn } from "@/app/admin/lib/utils";
 import { ImagePlus, X } from "lucide-react";
 import { useRef } from "react";
 
-export type ImageSelectorSize = "large" | "medium";
+export type ImageSelectorSize = "large" | "medium" | "small";
 
 export interface ImageSelectorProps {
   size?: ImageSelectorSize;
@@ -15,6 +15,27 @@ export interface ImageSelectorProps {
   disabled?: boolean;
   className?: string;
 }
+
+const sizeStyles = {
+  large: {
+    container: "size-[120px]",
+    iconSize: "size-6",
+    deleteButton: "size-6 -top-2 -right-2",
+  },
+  medium: {
+    container: "size-20",
+    iconSize: "size-5",
+    deleteButton: "size-5 -top-1.5 -right-1.5",
+  },
+  small: {
+    container: "size-12",
+    iconSize: "size-4",
+    deleteButton: "size-4 -top-1 -right-1",
+  },
+} as const;
+
+const checkerboardBg =
+  "bg-[length:16px_16px] bg-[linear-gradient(45deg,#e5e5e5_25%,transparent_25%),linear-gradient(-45deg,#e5e5e5_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#e5e5e5_75%),linear-gradient(-45deg,transparent_75%,#e5e5e5_75%)] bg-[position:0_0,0_8px,8px_-8px,-8px_0px]";
 
 export function ImageSelector({
   size = "large",
@@ -27,18 +48,7 @@ export function ImageSelector({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hasImage = !!imageUrl;
 
-  const sizeStyles = {
-    large: {
-      container: "size-[72px]",
-      iconSize: "size-6",
-      deleteButton: "size-6 -top-2 -right-2",
-    },
-    medium: {
-      container: "size-12",
-      iconSize: "size-6",
-      deleteButton: "size-5 -top-1.5 -right-1.5",
-    },
-  };
+  const styles = sizeStyles[size];
 
   const handleClick = () => {
     if (disabled) return;
@@ -79,17 +89,18 @@ export function ImageSelector({
         disabled={disabled}
         className={cn(
           "relative overflow-hidden rounded-md p-0",
-          sizeStyles[size].container,
+          styles.container,
+          hasImage && checkerboardBg,
           hasImage && "border-0 p-0",
           !hasImage && "bg-muted hover:bg-muted/80",
         )}
         aria-label={hasImage ? "이미지 변경" : "이미지 선택"}
       >
         {hasImage ? (
-          <img src={imageUrl!} alt="선택된 이미지" className="size-full object-cover" />
+          <img src={imageUrl!} alt="선택된 이미지" className="size-full object-contain" />
         ) : (
           <div className="flex size-full items-center justify-center">
-            <ImagePlus className={cn(sizeStyles[size].iconSize, "text-muted-foreground")} />
+            <ImagePlus className={cn(styles.iconSize, "text-muted-foreground")} />
           </div>
         )}
       </Button>
@@ -103,7 +114,7 @@ export function ImageSelector({
           disabled={disabled}
           className={cn(
             "absolute flex items-center justify-center rounded-full",
-            sizeStyles[size].deleteButton,
+            styles.deleteButton,
           )}
           aria-label="이미지 삭제"
         >
@@ -113,4 +124,3 @@ export function ImageSelector({
     </div>
   );
 }
-

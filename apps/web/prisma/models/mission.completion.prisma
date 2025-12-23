@@ -1,0 +1,18 @@
+model MissionCompletion {
+  id          String  @id @default(cuid())
+  title       String
+  description String
+  imageUrl    String? @map("image_url")
+  links       Json?
+
+  missionId String  @unique @map("mission_id")
+  mission   Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  imageFileUploadId String?     @map("image_file_upload_id")
+  imageFileUpload   FileUpload? @relation(fields: [imageFileUploadId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("mission_completions")
+}

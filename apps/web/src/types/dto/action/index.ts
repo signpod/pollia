@@ -41,6 +41,13 @@ export interface CreateScaleActionRequest {
   imageUrl?: string;
   imageFileUploadId?: string;
   order: number;
+  options: {
+    title: string;
+    description?: string;
+    imageUrl?: string;
+    order: number;
+    imageFileUploadId?: string;
+  }[];
 }
 
 export interface CreateScaleActionResponse {
@@ -162,6 +169,7 @@ export interface UpdateActionRequest {
   title?: string;
   description?: string;
   imageUrl?: string;
+  imageFileUploadId?: string;
   order?: number;
   maxSelections?: number;
   options?: UpdateActionOptionRequest[];

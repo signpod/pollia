@@ -13,7 +13,6 @@ import { RadioGroup, RadioGroupItem } from "@/app/admin/components/shadcn-ui/rad
 import { getActionTypeLabel } from "@/app/admin/constants/actionTypes";
 import { cn } from "@/app/admin/lib/utils";
 import {
-  ChevronLeft,
   ClipboardList,
   Hash,
   ImageIcon,
@@ -108,6 +107,7 @@ export function CreateActionDialog({
 
   const handleFormSubmit = (data: ActionFormData) => {
     onSubmit(data);
+    handleOpenChange(false);
   };
 
   const handleCancel = () => {
@@ -120,17 +120,6 @@ export function CreateActionDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[540px]">
         <DialogHeader>
-          {step === "form" && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="absolute left-4 top-4 p-1 h-auto"
-              onClick={handleBack}
-            >
-              <ChevronLeft className="size-5" />
-            </Button>
-          )}
           <DialogTitle>
             {step === "select-type" ? "새 액션 추가" : `${selectedTypeConfig?.label} 액션 추가`}
           </DialogTitle>
