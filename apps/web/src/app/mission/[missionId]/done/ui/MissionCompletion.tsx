@@ -5,9 +5,10 @@ import { ButtonV2, TiptapViewer, Tooltip, Typo } from "@repo/ui/components";
 import { motion } from "framer-motion";
 import gsap from "gsap";
 import { Share2 } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { useReadMissionCompletion } from "@/app/admin/hooks/use-read-mission-completion";
 import KakaoIcon from "@public/svgs/kakao-icon.svg";
 import StarBigIcon from "@public/svgs/star-big.svg";
 import StarYellow from "@public/svgs/star-yellow.svg";
@@ -15,10 +16,10 @@ import Image from "next/image";
 
 export function MissionCompletion() {
   const { missionId } = useParams<{ missionId: string }>();
-  const router = useRouter();
   const { data: survey } = useReadMission(missionId);
-  const { title, estimatedMinutes, deadline, imageUrl, target, brandLogoUrl, description } =
-    survey?.data ?? {};
+  const { data: missionCompletion } = useReadMissionCompletion(missionId);
+  const { imageUrl, brandLogoUrl } = survey?.data ?? {};
+  const { title, description } = missionCompletion?.data ?? {};
 
   const starBoxRef = useRef<HTMLDivElement>(null);
   const gradientRef = useRef<HTMLDivElement>(null);
