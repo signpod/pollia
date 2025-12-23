@@ -7,8 +7,56 @@ const meta = {
   component: MissionSankeyChart,
   parameters: {
     layout: "padded",
+    docs: {
+      description: {
+        component: `# MissionSankeyChart
+
+미션 완주율을 시각화하는 Sankey 다이어그램 컴포넌트입니다.
+
+## 주요 기능
+- 각 단계별 진입자 수와 이탈자 수 시각화
+- 노드 및 링크 호버 시 상세 정보 표시 (인원, 퍼센트)
+- 빈 데이터 상태 처리
+- HSL 색상 팔레트로 테마 대응
+
+## 사용 시나리오
+- 관리자 페이지의 "통계" 탭에서 사용
+- 미션의 각 단계별 이탈률 분석
+- 완주율 모니터링
+
+## 데이터 구조
+\`data\` prop은 다음을 포함합니다:
+- \`nodes\`: 시작, 진입, 응답, 이탈 노드 배열
+- \`links\`: 노드 간 연결 정보 (source, target, value)
+- \`metadata\`: 전체 통계 정보 (totalSessions, completionRate 등)
+        `,
+      },
+    },
   },
   tags: ["autodocs"],
+  argTypes: {
+    data: {
+      description: `미션 완주율 퍼널 데이터
+      
+**구조:**
+- \`nodes\`: 노드 배열 (id, name, type, count)
+  - type: "start" | "entry" | "response" | "drop"
+- \`links\`: 링크 배열 (source, target, value)
+- \`metadata\`: 통계 정보 (totalSessions, totalStarted, totalCompleted, completionRate, actions)
+      `,
+      control: { type: "object" },
+      table: {
+        type: {
+          summary: "MissionFunnelData",
+          detail: `{
+  nodes: FunnelNode[];
+  links: FunnelLink[];
+  metadata: FunnelMetadata;
+}`,
+        },
+      },
+    },
+  },
 } satisfies Meta<typeof MissionSankeyChart>;
 
 export default meta;
@@ -60,6 +108,20 @@ export const Default: Story = {
   args: {
     data: sampleData,
   },
+  parameters: {
+    docs: {
+      description: {
+        story: `**일반적인 완주율 시나리오**
+
+90명이 시작하여 70명이 완료한 경우입니다.
+- 1단계 이탈: 10명 (11%)
+- 2단계 이탈: 10명 (12.5%)
+- 최종 완주율: 77.78%
+
+이 시나리오는 평균적인 이탈률을 보여줍니다.`,
+      },
+    },
+  },
 };
 
 export const HighDropOff: Story = {
@@ -106,6 +168,21 @@ export const HighDropOff: Story = {
       },
     },
   },
+  parameters: {
+    docs: {
+      description: {
+        story: `**높은 이탈률 시나리오**
+
+800명이 시작했지만 200명만 완료한 경우입니다.
+- 1단계 이탈: 300명 (37.5%)
+- 2단계 이탈: 300명 (60%)
+- 최종 완주율: 25%
+
+이탈률이 높은 문제 상황을 시각적으로 확인할 수 있습니다.
+개선이 필요한 단계를 쉽게 파악할 수 있습니다.`,
+      },
+    },
+  },
 };
 
 export const PerfectFunnel: Story = {
@@ -145,6 +222,19 @@ export const PerfectFunnel: Story = {
             entryToResponseRate: 100,
           },
         ],
+      },
+    },
+  },
+  parameters: {
+    docs: {
+      description: {
+        story: `**완벽한 완주율 시나리오**
+
+100명 전원이 모든 단계를 완료한 이상적인 경우입니다.
+- 이탈자: 0명
+- 최종 완주율: 100%
+
+이탈 노드가 표시되지 않아 깔끔한 플로우를 보여줍니다.`,
       },
     },
   },
