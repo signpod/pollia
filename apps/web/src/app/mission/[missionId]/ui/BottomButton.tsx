@@ -86,10 +86,12 @@ export function BottomButton({
   const { mutateAsync: handleStartResponse } = startResponse;
 
   const handleClick = async () => {
-    await queryClient.refetchQueries({ queryKey: missionQueryKeys.missionParticipant(missionId) });
-    await queryClient.refetchQueries({
-      queryKey: missionQueryKeys.missionResponseForMission(missionId),
-    });
+    await Promise.all([
+      queryClient.refetchQueries({ queryKey: missionQueryKeys.missionParticipant(missionId) }),
+      queryClient.refetchQueries({
+        queryKey: missionQueryKeys.missionResponseForMission(missionId),
+      }),
+    ]);
 
     const latestParticipantInfo = queryClient.getQueryData<typeof missionParticipantInfo>(
       missionQueryKeys.missionParticipant(missionId),

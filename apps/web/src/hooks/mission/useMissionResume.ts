@@ -3,7 +3,6 @@ import { setSessionStorage } from "@/lib/sessionStorage";
 import { useModal } from "@repo/ui/components";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
-import { useCreateMissionResponse } from "../mission-response/useCreateMissionResponse";
 import { useResetMissionResponse } from "../mission-response/useResetMissionResponse";
 
 interface UseMissionResumeParams {
@@ -25,11 +24,8 @@ export function useSurveyResume({
   const router = useRouter();
   const { mutateAsync: resetMissionResponse, isPending: isResetMissionResponsePending } =
     useResetMissionResponse({ missionId });
-  const { startResponse } = useCreateMissionResponse({ missionId });
-  const { mutateAsync: handleStartResponse } = startResponse;
 
   const showResumeModal = useCallback(() => {
-    console.log("showResumeModal", isEnabledToResume, nextActionId, firstActionId);
     if (isEnabledToResume && nextActionId && firstActionId) {
       showModal({
         title: "미션을 계속 진행할까요?",
@@ -58,7 +54,6 @@ export function useSurveyResume({
     router,
     resetMissionResponse,
     responseId,
-    handleStartResponse,
     isResetMissionResponsePending,
     missionId,
   ]);
