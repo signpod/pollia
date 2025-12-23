@@ -12,14 +12,15 @@ import { Separator } from "@/app/admin/components/shadcn-ui/separator";
 import { cn, stripHtmlTags } from "@/app/admin/lib/utils";
 import type { GetMissionResponse } from "@/types/dto";
 import { MissionType } from "@prisma/client";
+import { Typo } from "@repo/ui/components";
 import {
   Calendar,
   CheckCircle2,
   Clock,
   Gift,
   ImageIcon,
+  Lock,
   type LucideIcon,
-  Tag,
   Users,
   XCircle,
 } from "lucide-react";
@@ -70,15 +71,12 @@ function InfoField({ label, value, className }: InfoFieldProps) {
   );
 }
 
-function getMissionTypeLabel(type: MissionType): string {
-  switch (type) {
-    case MissionType.GENERAL:
-      return "일반 미션";
-    case MissionType.EXPERIENCE_GROUP:
-      return "체험단 미션";
-    default:
-      return "알 수 없음";
+function getMissionTypeLabel(type: MissionType): string | null {
+  if (type === MissionType.EXPERIENCE_GROUP) {
+    return "체험단 미션";
   }
+
+  return null;
 }
 
 export function MissionDetailContent({ mission }: MissionDetailContentProps) {
@@ -105,18 +103,22 @@ export function MissionDetailContent({ mission }: MissionDetailContentProps) {
             }
           />
 
-          <StatCard
-            icon={Tag}
-            iconColor="text-primary"
-            label="타입"
-            value={
-              <Badge
-                variant={mission.type === MissionType.EXPERIENCE_GROUP ? "default" : "secondary"}
-              >
-                {getMissionTypeLabel(mission.type)}
-              </Badge>
-            }
-          />
+          {getMissionTypeLabel(mission.type) && (
+            <StatCard
+              icon={Lock}
+              iconColor="text-primary"
+              label="타입"
+              value={
+                <Badge
+                  variant={mission.type === MissionType.EXPERIENCE_GROUP ? "default" : "secondary"}
+                >
+                  <Typo.Body size="medium" className="text-primary">
+                    {getMissionTypeLabel(mission.type)}
+                  </Typo.Body>
+                </Badge>
+              }
+            />
+          )}
 
           <StatCard
             icon={Clock}
