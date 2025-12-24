@@ -1,22 +1,9 @@
+import { formatMillisecondsToKorean } from "@/lib/utils";
 import type { MissionFunnelData } from "@/types/dto";
 import { CheckCircle2, Clock, PlayCircle, UserCheck, Users } from "lucide-react";
 
 interface MissionFunnelTextViewProps {
   metadata: MissionFunnelData["metadata"];
-}
-
-function formatTime(ms: number): string {
-  const seconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-
-  if (minutes === 0) {
-    return `${seconds}초`;
-  }
-  if (remainingSeconds === 0) {
-    return `${minutes}분`;
-  }
-  return `${minutes}분 ${remainingSeconds}초`;
 }
 
 export function MissionFunnelTextView({ metadata }: MissionFunnelTextViewProps) {
@@ -70,7 +57,7 @@ export function MissionFunnelTextView({ metadata }: MissionFunnelTextViewProps) 
         {metadata.actions.map(action => {
           const completionRate = action.entryToResponseRate.toFixed(1);
           const avgTimeText = action.averageCompletionTimeMs
-            ? formatTime(action.averageCompletionTimeMs)
+            ? formatMillisecondsToKorean(action.averageCompletionTimeMs)
             : "측정 불가";
 
           return (

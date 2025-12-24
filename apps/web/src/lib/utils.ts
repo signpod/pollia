@@ -35,6 +35,50 @@ export function formatTimeRemainingInDays(milliseconds: number): string {
   return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
 }
 
+/**
+ * 밀리초를 한글 시간 형식으로 변환합니다.
+ * 의미있는 단위만 표시하며, 최대 2개의 단위까지 표시합니다.
+ *
+ * @param ms - 변환할 밀리초
+ * @returns 한글 시간 문자열
+ *
+ * @example
+ * formatMillisecondsToKorean(1000) // "1초"
+ * formatMillisecondsToKorean(65000) // "1분 5초"
+ * formatMillisecondsToKorean(3665000) // "1시간 1분"
+ * formatMillisecondsToKorean(90000000) // "1일 1시간"
+ */
+export function formatMillisecondsToKorean(ms: number): string {
+  const totalSeconds = Math.floor(ms / 1000);
+
+  const days = Math.floor(totalSeconds / (24 * 60 * 60));
+  const hours = Math.floor((totalSeconds % (24 * 60 * 60)) / (60 * 60));
+  const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
+  const seconds = totalSeconds % 60;
+
+  const parts: string[] = [];
+
+  if (days > 0) {
+    parts.push(`${days}일`);
+  }
+  if (hours > 0) {
+    parts.push(`${hours}시간`);
+  }
+  if (minutes > 0) {
+    parts.push(`${minutes}분`);
+  }
+  if (seconds > 0) {
+    parts.push(`${seconds}초`);
+  }
+
+  if (parts.length === 0) {
+    return "0초";
+  }
+
+  // 최대 2개의 단위만 표시 (가독성을 위해)
+  return parts.slice(0, 2).join(" ");
+}
+
 export function getPollStatus(
   startDate: Date | null,
   endDate: Date | null,

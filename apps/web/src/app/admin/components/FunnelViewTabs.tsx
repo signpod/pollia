@@ -8,11 +8,12 @@ import { MissionSankeyChart } from "./MissionSankeyChart";
 
 interface FunnelViewTabsProps {
   data: MissionFunnelData;
+  defaultTab?: "text" | "diagram";
 }
 
-export function FunnelViewTabs({ data }: FunnelViewTabsProps) {
+export function FunnelViewTabs({ data, defaultTab = "text" }: FunnelViewTabsProps) {
   return (
-    <Tabs defaultValue="text" className="w-full">
+    <Tabs defaultValue={defaultTab} className="w-full">
       <TabsList className="grid w-full max-w-[400px] grid-cols-2">
         <TabsTrigger value="text" className="flex items-center gap-2">
           <List className="h-4 w-4" />
