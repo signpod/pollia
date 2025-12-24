@@ -11,9 +11,19 @@ import {
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
 import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
 import { useReadActionsDetail } from "@/app/admin/hooks/use-read-actions-detail";
+import { ACTION_TYPE_LABELS } from "@/constants/action";
 import type { ActionDetail } from "@/types/dto";
 import { ActionType } from "@prisma/client";
-import { AlertCircle, CheckSquare, FileText, ImageIcon, Scale, TextCursor } from "lucide-react";
+import {
+  AlertCircle,
+  CheckSquare,
+  FileText,
+  ImageIcon,
+  Scale,
+  Star,
+  Tag,
+  TextCursor,
+} from "lucide-react";
 import Image from "next/image";
 
 interface MissionActionListProps {
@@ -21,38 +31,54 @@ interface MissionActionListProps {
 }
 
 function getActionTypeInfo(type: ActionType) {
+  const label = ACTION_TYPE_LABELS[type] || "기타";
+
   switch (type) {
     case ActionType.MULTIPLE_CHOICE:
       return {
-        label: "객관식",
+        label,
         icon: CheckSquare,
         color: "text-blue-600 dark:text-blue-400",
         bgColor: "bg-blue-50 dark:bg-blue-950",
       };
     case ActionType.SCALE:
       return {
-        label: "척도형",
+        label,
         icon: Scale,
         color: "text-purple-600 dark:text-purple-400",
         bgColor: "bg-purple-50 dark:bg-purple-950",
       };
     case ActionType.SUBJECTIVE:
       return {
-        label: "주관식",
+        label,
         icon: TextCursor,
         color: "text-green-600 dark:text-green-400",
         bgColor: "bg-green-50 dark:bg-green-950",
       };
     case ActionType.IMAGE:
       return {
-        label: "이미지 업로드",
+        label,
         icon: ImageIcon,
         color: "text-orange-600 dark:text-orange-400",
         bgColor: "bg-orange-50 dark:bg-orange-950",
       };
+    case ActionType.RATING:
+      return {
+        label,
+        icon: Star,
+        color: "text-yellow-600 dark:text-yellow-400",
+        bgColor: "bg-yellow-50 dark:bg-yellow-950",
+      };
+    case ActionType.TAG:
+      return {
+        label,
+        icon: Tag,
+        color: "text-pink-600 dark:text-pink-400",
+        bgColor: "bg-pink-50 dark:bg-pink-950",
+      };
     default:
       return {
-        label: "기타",
+        label,
         icon: FileText,
         color: "text-gray-600 dark:text-gray-400",
         bgColor: "bg-gray-50 dark:bg-gray-950",
