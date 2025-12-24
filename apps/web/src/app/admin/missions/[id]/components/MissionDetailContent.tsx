@@ -72,6 +72,10 @@ function InfoField({ label, value, className }: InfoFieldProps) {
 }
 
 function getMissionTypeLabel(type: MissionType): string | null {
+  if (type === MissionType.GENERAL) {
+    return "일반 미션";
+  }
+
   if (type === MissionType.EXPERIENCE_GROUP) {
     return "체험단 미션";
   }
@@ -112,7 +116,7 @@ export function MissionDetailContent({ mission }: MissionDetailContentProps) {
                 <Badge
                   variant={mission.type === MissionType.EXPERIENCE_GROUP ? "default" : "secondary"}
                 >
-                  <Typo.Body size="medium" className="text-primary">
+                  <Typo.Body size="medium" className="text-muted">
                     {getMissionTypeLabel(mission.type)}
                   </Typo.Body>
                 </Badge>

@@ -151,5 +151,120 @@ describe("TrackingActionService", () => {
       expect(result.metadata.totalCompleted).toBe(60);
       expect(result.metadata.completionRate).toBe(60);
     });
+
+    it("액션별 진행중 개수를 올바르게 계산한다", async () => {
+      const mission = createMockMission({ id: TEST_MISSION_ID, creatorId: TEST_USER_ID });
+      context.mockMissionRepo.findById.mockResolvedValue(mission);
+
+      const actions = [
+        createMockAction(TEST_ACTION_1_ID, "질문 1", 1, TEST_MISSION_ID),
+        createMockAction(TEST_ACTION_2_ID, "질문 2", 2, TEST_MISSION_ID),
+      ];
+      context.mockActionRepo.findDetailsByMissionId.mockResolvedValue(actions);
+
+      const entries = [
+        ...createMockEntries(TEST_ACTION_1_ID, TEST_MISSION_ID, 100),
+        ...createMockEntries(TEST_ACTION_2_ID, TEST_MISSION_ID, 80),
+      ];
+      context.mockEntryRepo.findByMissionId.mockResolvedValue(entries as TrackingActionEntry[]);
+
+      const responses = [
+        ...createMockResponses(TEST_ACTION_1_ID, TEST_MISSION_ID, 80),
+        ...createMockResponses(TEST_ACTION_2_ID, TEST_MISSION_ID, 60),
+      ];
+      context.mockResponseRepo.findByMissionId.mockResolvedValue(
+        responses as TrackingActionResponse[],
+      );
+
+      const result = await context.service.getMissionFunnel(TEST_MISSION_ID, TEST_USER_ID);
+
+      const action1Metadata = result.metadata.actions.find(a => a.id === TEST_ACTION_1_ID);
+      expect(action1Metadata?.entryCount).toBe(100);
+      expect(action1Metadata?.responseCount).toBe(80);
+      expect(action1Metadata?.inProgressCount).toBe(20);
+
+      const action2Metadata = result.metadata.actions.find(a => a.id === TEST_ACTION_2_ID);
+      expect(action2Metadata?.entryCount).toBe(80);
+      expect(action2Metadata?.responseCount).toBe(60);
+      expect(action2Metadata?.inProgressCount).toBe(20);
+    });
+
+    it("액션별 평균 소요 시간을 올바르게 계산한다", async () => {
+      const mission = createMockMission({ id: TEST_MISSION_ID, creatorId: TEST_USER_ID });
+      context.mockMissionRepo.findById.mockResolvedValue(mission);
+
+      const actions = [createMockAction(TEST_ACTION_1_ID, "질문 1", 1, TEST_MISSION_ID)];
+      context.mockActionRepo.findDetailsByMissionId.mockResolvedValue(actions);
+
+      const baseTime = new Date("2024-01-01T00:00:00Z");
+      const entries = [
+        {
+          sessionId: "session-1",
+          actionId: TEST_ACTION_1_ID,
+          missionId: TEST_MISSION_ID,
+          enteredAt: baseTime,
+        },
+        {
+          sessionId: "session-2",
+          actionId: TEST_ACTION_1_ID,
+          missionId: TEST_MISSION_ID,
+          enteredAt: baseTime,
+        },
+        {
+          sessionId: "session-3",
+          actionId: TEST_ACTION_1_ID,
+          missionId: TEST_MISSION_ID,
+          enteredAt: baseTime,
+        },
+      ];
+      context.mockEntryRepo.findByMissionId.mockResolvedValue(entries as TrackingActionEntry[]);
+
+      const responses = [
+        {
+          sessionId: "session-1",
+          actionId: TEST_ACTION_1_ID,
+          missionId: TEST_MISSION_ID,
+          respondedAt: new Date("2024-01-01T00:01:00Z"),
+        },
+        {
+          sessionId: "session-2",
+          actionId: TEST_ACTION_1_ID,
+          missionId: TEST_MISSION_ID,
+          respondedAt: new Date("2024-01-01T00:02:00Z"),
+        },
+        {
+          sessionId: "session-3",
+          actionId: TEST_ACTION_1_ID,
+          missionId: TEST_MISSION_ID,
+          respondedAt: new Date("2024-01-01T00:03:00Z"),
+        },
+      ];
+      context.mockResponseRepo.findByMissionId.mockResolvedValue(
+        responses as TrackingActionResponse[],
+      );
+
+      const result = await context.service.getMissionFunnel(TEST_MISSION_ID, TEST_USER_ID);
+
+      const action1Metadata = result.metadata.actions.find(a => a.id === TEST_ACTION_1_ID);
+      expect(action1Metadata?.averageCompletionTimeMs).toBe(120000);
+    });
+
+    it("응답이 없는 액션의 평균 소요 시간은 null이다", async () => {
+      const mission = createMockMission({ id: TEST_MISSION_ID, creatorId: TEST_USER_ID });
+      context.mockMissionRepo.findById.mockResolvedValue(mission);
+
+      const actions = [createMockAction(TEST_ACTION_1_ID, "질문 1", 1, TEST_MISSION_ID)];
+      context.mockActionRepo.findDetailsByMissionId.mockResolvedValue(actions);
+
+      const entries = createMockEntries(TEST_ACTION_1_ID, TEST_MISSION_ID, 10);
+      context.mockEntryRepo.findByMissionId.mockResolvedValue(entries as TrackingActionEntry[]);
+
+      context.mockResponseRepo.findByMissionId.mockResolvedValue([]);
+
+      const result = await context.service.getMissionFunnel(TEST_MISSION_ID, TEST_USER_ID);
+
+      const action1Metadata = result.metadata.actions.find(a => a.id === TEST_ACTION_1_ID);
+      expect(action1Metadata?.averageCompletionTimeMs).toBeNull();
+    });
   });
 });
