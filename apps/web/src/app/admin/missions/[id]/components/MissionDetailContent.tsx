@@ -10,9 +10,10 @@ import { MissionNavigation } from "./MissionNavigation";
 
 interface MissionDetailContentProps {
   mission: GetMissionResponse["data"];
+  defaultTab?: "basic" | "actions";
 }
 
-export function MissionDetailContent({ mission }: MissionDetailContentProps) {
+export function MissionDetailContent({ mission, defaultTab = "basic" }: MissionDetailContentProps) {
   return (
     <div className="max-w-7xl">
       <AdminMissionHeader
@@ -23,7 +24,7 @@ export function MissionDetailContent({ mission }: MissionDetailContentProps) {
         isActive={mission.isActive}
       />
 
-      <Tabs defaultValue="basic" className="w-full">
+      <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList className="grid w-full max-w-[400px] grid-cols-2 mb-6">
           <TabsTrigger value="basic" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />

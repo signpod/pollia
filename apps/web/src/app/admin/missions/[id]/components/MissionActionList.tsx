@@ -31,6 +31,13 @@ interface MissionActionListProps {
   missionId: string;
 }
 
+const SKELETON_LOADING_COUNT = 3;
+
+/**
+ * 0-based order를 1-based 표시용 번호로 변환
+ */
+const getDisplayOrder = (order: number) => order + 1;
+
 function getActionTypeInfo(type: ActionType) {
   const label = ACTION_TYPE_LABELS[type] || "기타";
 
@@ -98,7 +105,7 @@ function ActionCard({ action }: { action: ActionDetail }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
               <Badge variant="outline" className="shrink-0">
-                액션 {action.order + 1}
+                액션 {getDisplayOrder(action.order)}
               </Badge>
               <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md ${typeInfo.bgColor}`}>
                 <TypeIcon className={`h-3.5 w-3.5 ${typeInfo.color}`} />
@@ -150,7 +157,7 @@ function ActionCard({ action }: { action: ActionDetail }) {
                     >
                       <div className="flex items-start gap-2 mb-2">
                         <Badge variant="outline" className="shrink-0 text-xs">
-                          {option.order + 1}
+                          {getDisplayOrder(option.order)}
                         </Badge>
                         <div className="flex-1 min-w-0">
                           <h5 className="font-medium text-sm mb-1 wrap-break-word">
@@ -209,8 +216,13 @@ export function MissionActionList({ missionId }: MissionActionListProps) {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        {[1, 2, 3].map(i => (
-          <Card key={i}>
+        {Array.from({ length: SKELETON_LOADING_COUNT }).map((_, i) => (
+          <Card
+            key={`skeleton-${
+              // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+              i
+            }`}
+          >
             <CardHeader>
               <Skeleton className="h-6 w-32 mb-2" />
               <Skeleton className="h-8 w-full max-w-md" />
