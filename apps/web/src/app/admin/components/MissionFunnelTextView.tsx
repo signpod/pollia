@@ -22,7 +22,7 @@ function formatTime(ms: number): string {
 export function MissionFunnelTextView({ metadata }: MissionFunnelTextViewProps) {
   if (!metadata) {
     return (
-      <div className="p-8 border border-dashed rounded-lg text-center">
+      <div className="h-[450px] w-full flex items-center justify-center border border-dashed rounded-lg">
         <p className="text-muted-foreground">유효하지 않은 데이터입니다</p>
       </div>
     );
@@ -30,7 +30,7 @@ export function MissionFunnelTextView({ metadata }: MissionFunnelTextViewProps) 
 
   if (metadata.totalStarted === 0) {
     return (
-      <div className="p-8 border border-dashed rounded-lg text-center">
+      <div className="h-[450px] w-full flex items-center justify-center border border-dashed rounded-lg">
         <p className="text-muted-foreground">아직 참여한 사용자가 없습니다</p>
       </div>
     );
