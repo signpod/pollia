@@ -25,6 +25,7 @@ import {
   TextCursor,
 } from "lucide-react";
 import Image from "next/image";
+import { ClientDateDisplay } from "./ClientDateDisplay";
 
 interface MissionActionListProps {
   missionId: string;
@@ -182,14 +183,18 @@ function ActionCard({ action }: { action: ActionDetail }) {
 
         <div className="pt-2">
           <Separator className="mb-4" />
-          <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground">
+          <div className="grid grid-cols-2 gap-4 text-xs">
             <div>
-              <span className="font-medium">생성일:</span>{" "}
-              {new Date(action.createdAt).toLocaleString("ko-KR")}
+              <span className="font-medium text-muted-foreground">생성일: </span>
+              <span className="text-foreground">
+                <ClientDateDisplay date={action.createdAt} format="datetime" />
+              </span>
             </div>
             <div>
-              <span className="font-medium">수정일:</span>{" "}
-              {new Date(action.updatedAt).toLocaleString("ko-KR")}
+              <span className="font-medium text-muted-foreground">수정일: </span>
+              <span className="text-foreground">
+                <ClientDateDisplay date={action.updatedAt} format="datetime" />
+              </span>
             </div>
           </div>
         </div>

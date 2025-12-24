@@ -8,6 +8,7 @@ import {
 } from "@/app/admin/components/shadcn-ui/card";
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
 import { cn, stripHtmlTags } from "@/app/admin/lib/utils";
+import { MISSION_TYPE_LABELS } from "@/constants/action";
 import type { GetMissionResponse } from "@/types/dto";
 import { MissionType } from "@prisma/client";
 import { Typo } from "@repo/ui/components";
@@ -67,19 +68,9 @@ function InfoField({ label, value, className }: InfoFieldProps) {
   );
 }
 
-function getMissionTypeLabel(type: MissionType): string | null {
-  if (type === MissionType.GENERAL) {
-    return "일반 미션";
-  }
-
-  if (type === MissionType.EXPERIENCE_GROUP) {
-    return "체험단 미션";
-  }
-
-  return null;
-}
-
 export function MissionBasicInfo({ mission }: MissionBasicInfoProps) {
+  const missionTypeLabel = MISSION_TYPE_LABELS[mission.type];
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
@@ -94,7 +85,7 @@ export function MissionBasicInfo({ mission }: MissionBasicInfoProps) {
           }
         />
 
-        {getMissionTypeLabel(mission.type) && (
+        {missionTypeLabel && (
           <StatCard
             icon={Lock}
             iconColor="text-primary"
@@ -104,7 +95,7 @@ export function MissionBasicInfo({ mission }: MissionBasicInfoProps) {
                 variant={mission.type === MissionType.EXPERIENCE_GROUP ? "default" : "secondary"}
               >
                 <Typo.Body size="medium" className="text-muted">
-                  {getMissionTypeLabel(mission.type)}
+                  {missionTypeLabel}
                 </Typo.Body>
               </Badge>
             }
@@ -263,4 +254,3 @@ export function MissionBasicInfo({ mission }: MissionBasicInfoProps) {
     </div>
   );
 }
-
