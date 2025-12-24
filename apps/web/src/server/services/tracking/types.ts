@@ -26,6 +26,8 @@ export interface MissionFunnelData {
       entryCount: number;
       responseCount: number;
       entryToResponseRate: number;
+      inProgressCount: number;
+      averageCompletionTimeMs: number | null;
     }>;
   };
 }
@@ -37,6 +39,8 @@ export interface GetMissionFunnelOptions {
 export interface SessionMaps {
   sessionEntries: Map<string, Set<string>>;
   sessionResponses: Map<string, Set<string>>;
+  entries: Array<{ sessionId: string; actionId: string; enteredAt: Date }>;
+  responses: Array<{ sessionId: string; actionId: string; respondedAt: Date }>;
 }
 
 export interface Statistics {
