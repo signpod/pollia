@@ -77,7 +77,7 @@ export function AdminMissionHeader({
       <header className="mb-8 space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">{title}</h1>
             {description && <p className="text-muted-foreground mt-2 pr-10">{description}</p>}
           </div>
 
@@ -90,7 +90,7 @@ export function AdminMissionHeader({
                   onClick={() => setIsDuplicateDialogOpen(true)}
                   disabled={duplicateMission.isPending}
                 >
-                  <CopyPlus className="h-4 w-4" />
+                  <CopyPlus className="h-4 w-4 text-foreground" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>미션 복제</TooltipContent>
@@ -99,7 +99,11 @@ export function AdminMissionHeader({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="outline" size="icon" onClick={handleCopyLink}>
-                  {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  {copied ? (
+                    <Check className="h-4 w-4 text-foreground" />
+                  ) : (
+                    <Copy className="h-4 w-4 text-foreground" />
+                  )}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>{copied ? "복사됨" : "링크 복사"}</TooltipContent>
@@ -108,7 +112,7 @@ export function AdminMissionHeader({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="outline" size="icon" onClick={handleOpenMission}>
-                  <ExternalLink className="h-4 w-4" />
+                  <ExternalLink className="h-4 w-4 text-foreground" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>미션 페이지 열기</TooltipContent>
