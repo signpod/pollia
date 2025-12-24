@@ -122,7 +122,7 @@ function ActionCard({ action }: { action: ActionDetail }) {
           {action.imageUrl && (
             <div className="shrink-0">
               <h4 className="text-sm font-medium text-muted-foreground mb-3">액션 이미지</h4>
-              <div className="relative w-full lg:w-80 aspect-[350/233] rounded-lg overflow-hidden border bg-muted/20">
+              <div className="relative w-full lg:w-80 aspect-350/233 rounded-lg overflow-hidden border bg-muted/20">
                 <Image
                   src={action.imageUrl}
                   alt={action.title}
