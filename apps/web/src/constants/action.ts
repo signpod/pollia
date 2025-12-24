@@ -3,6 +3,7 @@ import React from "react";
 import { ActionType } from "@/types/domain/action";
 import type { ActionAnswerItem, ActionDetail } from "@/types/dto";
 import type { GetMissionResponseResponse } from "@/types/dto/mission-response";
+import { MissionType } from "@prisma/client";
 import { StepConfig } from "@repo/ui/components";
 
 export interface ExtendedActionStepConfig extends StepConfig {
@@ -92,4 +93,9 @@ export const ACTION_TYPE_LABELS: Record<ActionType, string> = {
   [ActionType.RATING]: "평점",
   [ActionType.TAG]: "태그",
   [ActionType.IMAGE]: "이미지",
+};
+
+export const MISSION_TYPE_LABELS: Record<MissionType, string> = {
+  [MissionType.GENERAL]: "일반 미션",
+  [MissionType.EXPERIENCE_GROUP]: "체험단 미션",
 };
