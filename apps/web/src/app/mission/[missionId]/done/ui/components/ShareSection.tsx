@@ -8,28 +8,16 @@ import Image from "next/image";
 import { forwardRef } from "react";
 
 interface ShareSectionProps {
-  title?: string;
-  brandLogoUrl?: string | null;
-  imageUrl?: string | null;
   onKakaoShare: () => void;
   onLinkShare: () => void;
   isSharing: boolean;
 }
 
 export const ShareSection = forwardRef<HTMLDivElement, ShareSectionProps>(
-  ({ title, brandLogoUrl, imageUrl, onKakaoShare, onLinkShare, isSharing }, ref) => {
+  ({ onKakaoShare, onLinkShare, isSharing }, ref) => {
     return (
-      <div
-        ref={ref}
-        className="w-full bg-zinc-50 flex flex-col items-center gap-4 p-10 flex-1 opacity-0 translate-y-[10px]"
-      >
-        <Typo.MainTitle size="small" className="text-center">
-          가족, 친구에게
-          <br />
-          공유해보세요 👀
-        </Typo.MainTitle>
+      <div ref={ref} className="w-full bg-zinc-50 flex flex-col items-center gap-4 p-10 flex-1">
         <div className="flex flex-col items-center gap-6 bg-white rounded-md p-6 w-full">
-          <SharePreviewCard title={title} brandLogoUrl={brandLogoUrl} imageUrl={imageUrl} />
           <ShareButtons
             onKakaoShare={onKakaoShare}
             onLinkShare={onLinkShare}

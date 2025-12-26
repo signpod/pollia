@@ -9,9 +9,7 @@ import { getSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
 import { cleanTiptapHTML, cn } from "@/lib/utils";
 import { MissionType } from "@prisma/client";
 import Gift from "@public/svgs/gift.svg";
-import KakaoIcon from "@public/svgs/kakao-icon.svg";
 import Lock from "@public/svgs/lock.svg";
-import XLogo from "@public/svgs/x-logo.svg";
 import {
   CalloutProvider,
   type CalloutToneVariant,
@@ -20,7 +18,6 @@ import {
   Typo,
   useCallout,
 } from "@repo/ui/components";
-import { Share2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef } from "react";
 import {
@@ -31,6 +28,7 @@ import {
   MissionLogo,
   MissionRewardSection,
   SectionHeader,
+  SocialShareButtons,
 } from "./components";
 import { BottomButton } from "./ui";
 import { checkParticipantLimitReached } from "./utils/checkParticipantLimit";
@@ -294,29 +292,11 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                   <br />
                   공유해주세요 👀
                 </Typo.MainTitle>
-                <div className="flex gap-4 w-full justify-center">
-                  <button
-                    type="button"
-                    className="flex justify-center items-center bg-black rounded-sm p-2"
-                    onClick={handleXShare}
-                  >
-                    <XLogo className="size-6 text-white" />
-                  </button>
-                  <button
-                    type="button"
-                    className="flex justify-center items-center bg-kakao rounded-sm p-2"
-                    onClick={handleKakaoShare}
-                  >
-                    <KakaoIcon className="size-6" />
-                  </button>
-                  <button
-                    type="button"
-                    className="flex justify-center items-center bg-white border border-default rounded-sm p-2"
-                    onClick={handleLinkShare}
-                  >
-                    <Share2 className="size-6" />
-                  </button>
-                </div>
+                <SocialShareButtons
+                  onXShare={handleXShare}
+                  onKakaoShare={handleKakaoShare}
+                  onLinkShare={handleLinkShare}
+                />
               </div>
             )}
 
