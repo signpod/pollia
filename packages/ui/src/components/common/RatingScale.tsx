@@ -331,7 +331,7 @@ function RatingScaleDots({
               }
             >
               {isVertical && (options?.[index]?.title || options?.[index]?.description) && (
-                <div className="absolute left-[calc(100%+24px)] flex flex-row flex-wrap items-center content-center gap-x-3 gap-y-1 h-[80px] w-[calc(100vw-120px)] max-w-[280px]">
+                <div className="absolute left-[calc(100%+24px)] flex flex-row flex-wrap items-center content-center gap-x-3 gap-y-1 h-[80px] w-[calc(100dvw-100px)] max-w-[calc(100dvw-100px)]">
                   {options?.[index]?.title && (
                     <Typo.SubTitle
                       size="large"
