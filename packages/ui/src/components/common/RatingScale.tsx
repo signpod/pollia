@@ -1,10 +1,10 @@
 "use client";
 
+import Check from "@public/svgs/check.svg";
 import { Scale, Typo } from "@repo/ui/components";
 import { useMemo, useState } from "react";
 import type { CSSProperties, ComponentProps } from "react";
 import { cn } from "../../lib/utils";
-
 export interface RatingScaleOption {
   id: string;
   title?: string;
@@ -102,7 +102,7 @@ export function RatingScale({
         options.some(option => (option.description?.toString().length ?? 0) > 0) ||
         options.some(option => (option.title?.trim().length ?? 0) > getTitleLimit(options.length));
 
-      const height = isVertical ? options.length * (288 / 5) : undefined;
+      const height = isVertical ? Math.max(options.length * 80, 350) : undefined;
 
       return {
         positions,
@@ -128,7 +128,7 @@ export function RatingScale({
     const isLast = (index: number) => index === positions.length - 1;
     const isVertical = max > 5;
 
-    const height = isVertical ? positions.length * (288 / 5) : undefined;
+    const height = isVertical ? Math.max(positions.length * 80, 350) : undefined;
 
     return {
       positions,
@@ -205,7 +205,7 @@ export function RatingScale({
         >
           <Scale.Track
             className={cn(
-              "grow overflow-visible rounded-full bg-zinc-100",
+              "grow overflow-visible rounded-full bg-violet-100",
               isVertical ? "h-full w-[6px]" : "h-[6px] w-full",
             )}
           />
@@ -226,12 +226,14 @@ export function RatingScale({
           />
           <Scale.Thumb
             className={cn(
-              "block size-9 rounded-full bg-white shadow-[0_4px_20px_rgba(0,0,0,0.1)]",
+              "size-9 rounded-full bg-violet-400 shadow-[0_3px_6px_rgba(141,93,249,0.3)] inset-shadow-[0_3px_4px_rgba(141,93,249,0.6)] flex items-center justify-center",
               "focus:outline-none",
               "data-[orientation='horizontal']:left-[8px]",
             )}
             style={thumbPosition}
-          />
+          >
+            <Check className="size-5 text-white" />
+          </Scale.Thumb>
         </Scale.Root>
       </div>
     </div>
@@ -329,16 +331,13 @@ function RatingScaleDots({
               }
             >
               {isVertical && (options?.[index]?.title || options?.[index]?.description) && (
-                <div className="absolute left-[calc(100%+24px)] flex items-center gap-3">
+                <div className="absolute left-[calc(100%+24px)] flex flex-row flex-wrap items-center content-center gap-x-3 gap-y-1 h-[80px] w-[calc(100vw-120px)] max-w-[280px]">
                   {options?.[index]?.title && (
                     <Typo.SubTitle
                       size="large"
                       key={`title-${position}`}
-                      style={{
-                        width: "auto",
-                        whiteSpace: "nowrap",
-                      }}
                       className={cn(
+                        "shrink-0",
                         onOptionClick && !disabled && "cursor-pointer",
                         disabled && "cursor-not-allowed opacity-50",
                       )}
@@ -352,7 +351,7 @@ function RatingScaleDots({
                       size="large"
                       key={`order-${position}`}
                       className={cn(
-                        "whitespace-nowrap text-sub",
+                        "text-sub",
                         onOptionClick && !disabled && "cursor-pointer",
                         disabled && "cursor-not-allowed opacity-50",
                       )}
@@ -363,7 +362,7 @@ function RatingScaleDots({
                   )}
                 </div>
               )}
-              <div className="rounded-full transition-colors bg-zinc-200 size-4" />
+              <div className="rounded-full transition-colors bg-violet-200 size-4" />
               {!isVertical && options?.[index]?.title && (
                 <Typo.SubTitle
                   size="large"
