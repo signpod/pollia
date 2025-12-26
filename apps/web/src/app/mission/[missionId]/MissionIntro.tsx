@@ -228,45 +228,45 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
 
             <div
               id={SECTION_IDS.MISSION_GUIDE}
-              className="flex w-full flex-col gap-8 px-5 py-8 items-center"
+              className="flex w-full flex-col gap-0 px-5 items-center"
             >
               {showDetailInfo && (
-                <div className="flex flex-col gap-4 w-full bg-zinc-50 rounded-md p-6">
-                  {detailInfoConfig.map(
-                    ({ key, value }) =>
-                      key &&
-                      value && (
-                        <div className="flex gap-2" key={key}>
-                          <Typo.Body
-                            size="medium"
-                            className="text-info whitespace-nowrap min-w-[100px]"
-                          >
-                            {key}
-                          </Typo.Body>
-                          <Typo.Body size="medium" className="flex-1 break-keep text-right">
-                            {value}
-                          </Typo.Body>
-                        </div>
-                      ),
-                  )}
+                <div className="flex flex-col gap-6 w-full p-5">
+                  <div className="flex flex-col gap-4 w-full bg-zinc-50 rounded-md p-6">
+                    {detailInfoConfig.map(
+                      ({ key, value }) =>
+                        key &&
+                        value && (
+                          <div className="flex gap-2" key={key}>
+                            <Typo.Body
+                              size="medium"
+                              className="text-info whitespace-nowrap min-w-[100px]"
+                            >
+                              {key}
+                            </Typo.Body>
+                            <Typo.Body size="medium" className="flex-1 break-keep text-right">
+                              {value}
+                            </Typo.Body>
+                          </div>
+                        ),
+                    )}
+                  </div>
                 </div>
               )}
 
-              <div className="flex flex-col gap-4 items-center w-full">
+              <div className="flex flex-col gap-6 px-5 py-8 items-center w-full">
                 <SectionHeader badgeText="상세 안내" title={""} />
                 {!!description && !!cleanTiptapHTML(description) && (
-                  <div className="flex w-full justify-center items-center rounded-md bg-zinc-50 p-6">
-                    <MissionDescription
-                      content={cleanTiptapHTML(description)}
-                      className="text-center"
-                    />
-                  </div>
+                  <MissionDescription
+                    content={cleanTiptapHTML(description)}
+                    className="text-center"
+                  />
                 )}
               </div>
             </div>
 
             {reward && (
-              <div id={SECTION_IDS.REWARD}>
+              <div id={SECTION_IDS.REWARD} className="px-5 py-8 w-full">
                 <MissionRewardSection
                   rewardImageUrl={reward?.data.imageUrl ?? undefined}
                   rewardName={reward?.data.name ?? undefined}
@@ -277,13 +277,13 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
             )}
 
             {mission?.type !== MissionType.EXPERIENCE_GROUP && (
-              <div className="flex flex-col gap-10 items-center px-5 py-10">
+              <div className="flex flex-col gap-4 items-center px-5 py-8">
                 <Typo.MainTitle size="small" className="text-center">
                   가족, 친구에게
                   <br />
                   공유해주세요 👀
                 </Typo.MainTitle>
-                <div className="flex gap-6 w-full justify-center">
+                <div className="flex gap-4 w-full justify-center">
                   <button
                     type="button"
                     className="flex justify-center items-center bg-black rounded-sm p-2"

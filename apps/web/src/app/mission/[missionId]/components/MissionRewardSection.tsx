@@ -7,11 +7,11 @@ import { SectionHeader } from "./SectionHeader";
 
 const REWARD_SECTION_BADGE_TEXT = "참여 혜택";
 const REWARD_SECTION_TITLE = (
-  <>
-    참여해주신 모든 분께
+  <Typo.MainTitle size="small" className="text-center">
+    참여해주신 분들께
     <br />
     감사의 선물을 드려요!
-  </>
+  </Typo.MainTitle>
 );
 
 const PAYMENT_TYPE_LABELS: Record<PaymentType, string> = {
@@ -33,7 +33,7 @@ export function MissionRewardSection({
   brandLogoUrl,
 }: MissionRewardSectionProps) {
   return (
-    <div className="flex flex-col gap-8 bg-zinc-50 px-5 py-8">
+    <div className="flex flex-col gap-6 px-5 py-8">
       <SectionHeader badgeText={REWARD_SECTION_BADGE_TEXT} title={REWARD_SECTION_TITLE} />
 
       <div className="w-full rounded-md overflow-hidden bg-white shadow-[0_4px_20px_rgba(0,0,0,0.08)]">

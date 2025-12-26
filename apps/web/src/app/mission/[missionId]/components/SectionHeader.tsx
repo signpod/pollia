@@ -15,7 +15,12 @@ export function SectionHeader({ badgeText, title }: SectionHeaderProps) {
           {badgeText}
         </Typo.SubTitle>
       </div>
-      {title && <Typo.MainTitle size="medium">{title}</Typo.MainTitle>}
+      {title &&
+        (typeof title === "string" ? (
+          <Typo.MainTitle size="medium">{title}</Typo.MainTitle>
+        ) : (
+          title
+        ))}
     </div>
   );
 }
