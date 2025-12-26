@@ -48,6 +48,7 @@ export function RatingScale({
     isLast,
     isVertical,
     height,
+    shouldStackLabels,
   } = useMemo(() => {
     if (options && options.length > 0) {
       const allHaveOrder = options.every(
@@ -110,6 +111,14 @@ export function RatingScale({
         ? Math.max(options.length * OPTION_HEIGHT, MIN_VERTICAL_HEIGHT)
         : undefined;
 
+      const shouldStackLabels =
+        isVertical &&
+        options.some(option => {
+          const titleLength = option.title?.trim().length ?? 0;
+          const descriptionLength = option.description?.trim().length ?? 0;
+          return titleLength + descriptionLength > 20;
+        });
+
       return {
         positions,
         options: sortedOptions,
@@ -120,6 +129,7 @@ export function RatingScale({
         isLast,
         isVertical,
         height,
+        shouldStackLabels,
       };
     }
 
@@ -148,6 +158,7 @@ export function RatingScale({
       isLast,
       isVertical,
       height,
+      shouldStackLabels: false,
     };
   }, [options, min, max, step, options?.length]);
 
@@ -228,6 +239,7 @@ export function RatingScale({
               onChange(value);
             }}
             disabled={disabled}
+            shouldStackLabels={shouldStackLabels}
           />
           <Scale.Thumb
             className={cn(
@@ -253,6 +265,7 @@ interface RatingScaleDotsProps {
   isVertical: boolean;
   onOptionClick?: (value: number) => void;
   disabled?: boolean;
+  shouldStackLabels?: boolean;
 }
 
 function RatingScaleDots({
@@ -261,6 +274,7 @@ function RatingScaleDots({
   isVertical,
   onOptionClick,
   disabled,
+  shouldStackLabels,
 }: RatingScaleDotsProps) {
   const handleOptionClick = (order: number) => {
     if (disabled || !onOptionClick) return;
@@ -330,7 +344,14 @@ function RatingScaleDots({
               }
             >
               {isVertical && (options?.[index]?.title || options?.[index]?.description) && (
-                <div className="absolute left-[calc(100%+24px)] flex flex-row flex-wrap items-center content-center gap-x-3 gap-y-1 h-[80px] w-[calc(100dvw-100px)]">
+                <div
+                  className={cn(
+                    "absolute left-[calc(100%+24px)] flex h-[80px] w-[calc(100dvw-100px)]",
+                    shouldStackLabels
+                      ? "flex-col justify-center gap-y-1"
+                      : "flex-row flex-wrap items-center content-center gap-x-3 gap-y-1",
+                  )}
+                >
                   {options?.[index]?.title && (
                     <Typo.SubTitle
                       size="large"
