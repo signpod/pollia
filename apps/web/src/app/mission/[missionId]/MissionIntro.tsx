@@ -21,6 +21,7 @@ import { Share2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef } from "react";
 import {
+  MissionBadge,
   MissionDescription,
   MissionFooter,
   MissionImage,
@@ -205,38 +206,8 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
               </Typo.MainTitle>
 
               <div className="flex gap-3 items-center">
-                {isRequirePassword && (
-                  <div className="relative flex gap-2 items-center text-white whitespace-nowrap px-3 py-1.5 rounded-full overflow-hidden">
-                    <div className="absolute inset-0 bg-white/20 rounded-full" />
-                    <div
-                      className="absolute inset-0 backdrop-blur-[100px] rounded-full"
-                      style={{
-                        maskImage: "linear-gradient(to top, black 0%, transparent 100%)",
-                        WebkitMaskImage: "linear-gradient(to top, black 0%, transparent 100%)",
-                      }}
-                    />
-                    <Lock className="size-4 relative z-10" />
-                    <Typo.Body size="medium" className="relative z-10">
-                      비밀
-                    </Typo.Body>
-                  </div>
-                )}
-                {hasReward && (
-                  <div className="relative flex gap-2 items-center text-white whitespace-nowrap px-3 py-1.5 rounded-full overflow-hidden">
-                    <div className="absolute inset-0 bg-white/20 rounded-full" />
-                    <div
-                      className="absolute inset-0 backdrop-blur-[100px] rounded-full"
-                      style={{
-                        maskImage: "linear-gradient(to top, black 0%, transparent 100%)",
-                        WebkitMaskImage: "linear-gradient(to top, black 0%, transparent 100%)",
-                      }}
-                    />
-                    <Gift className="size-4 relative z-10" />
-                    <Typo.Body size="medium" className="relative z-10">
-                      리워드
-                    </Typo.Body>
-                  </div>
-                )}
+                {isRequirePassword && <MissionBadge icon={<Lock />} label="비밀" />}
+                {hasReward && <MissionBadge icon={<Gift />} label="리워드" />}
               </div>
 
               <motion.div
