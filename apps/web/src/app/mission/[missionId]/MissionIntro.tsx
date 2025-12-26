@@ -8,6 +8,10 @@ import { useMissionShare } from "@/hooks/share/useMissionShare";
 import { getSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
 import { cleanTiptapHTML, cn } from "@/lib/utils";
 import { MissionType } from "@prisma/client";
+import Gift from "@public/svgs/gift.svg";
+import KakaoIcon from "@public/svgs/kakao-icon.svg";
+import Lock from "@public/svgs/lock.svg";
+import XLogo from "@public/svgs/x-logo.svg";
 import {
   CalloutProvider,
   type CalloutToneVariant,
@@ -16,7 +20,6 @@ import {
   Typo,
   useCallout,
 } from "@repo/ui/components";
-import { motion } from "framer-motion";
 import { Share2 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef } from "react";
@@ -32,12 +35,6 @@ import {
 import { BottomButton } from "./ui";
 import { checkParticipantLimitReached } from "./utils/checkParticipantLimit";
 import { formatDeadline } from "./utils/formatDeadline";
-
-import ChevronDown from "@public/svgs/chevron-down.svg";
-import Gift from "@public/svgs/gift.svg";
-import KakaoIcon from "@public/svgs/kakao-icon.svg";
-import Lock from "@public/svgs/lock.svg";
-import XLogo from "@public/svgs/x-logo.svg";
 
 const SECTION_IDS = {
   MISSION_GUIDE: "mission-guide",
@@ -199,7 +196,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
             </div>
           )}
           <div className="flex w-full flex-col bg-white py-5 rounded-t-3xl pb-0 relative z-20 mt-[-20px] overflow-visible">
-            <div className="bg-linear-to-t from-black via-black/50 via-70% to-transparent absolute bottom-[calc(100%-10px)] left-0 right-0 z-30 flex flex-col gap-3 pb-7 pt-6 px-5 pointer-events-none">
+            <div className="bg-linear-to-t from-black via-black/50 via-70% to-transparent absolute bottom-[calc(100%-10px)] left-0 right-0 z-30 flex flex-col gap-3 pb-2 pt-6 px-5 pointer-events-none">
               <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
               <Typo.MainTitle size="large" className="break-keep text-white">
                 {title}
@@ -210,16 +207,11 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                 {hasReward && <MissionBadge icon={<Gift />} label="리워드" />}
               </div>
 
-              <motion.div
-                className="flex justify-center items-center"
-                animate={{ y: [0, 10, 0] }}
-                transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-              >
-                <ChevronDown className="size-6 text-white" />
-              </motion.div>
+              <div className="h-[84px]" />
             </div>
             <div className="bg-white h-5 absolute top-0 left-0 right-0 rounded-t-3xl z-30" />
             <div className="sticky top-0 z-30 rounded-t-md mt-[-20px] bg-white py-2">
+              <div className="h-1 w-9 rounded-md bg-zinc-300 mx-auto" />
               <Tab.Root value={activeTab} pointColor="secondary" onValueChange={handleChangeTab}>
                 <Tab.List className="px-5">
                   <Tab.Item
