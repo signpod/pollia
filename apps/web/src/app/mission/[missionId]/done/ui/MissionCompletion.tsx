@@ -14,7 +14,8 @@ export function MissionCompletion() {
   const { data: missionCompletion } = useReadMissionCompletion(missionId);
 
   const { imageUrl, brandLogoUrl, title: missionTitle } = mission?.data ?? {};
-  const { title, description } = missionCompletion?.data ?? {};
+  const { title: completionTitle, description: completionDescription } =
+    missionCompletion?.data ?? {};
 
   const { refs, isReversed, showTitle, showDescription, showStarTooltip } =
     useMissionCompletionAnimation();
@@ -43,8 +44,8 @@ export function MissionCompletion() {
           item === "title" ? (
             <CompletionMessage
               key={item}
-              title={title}
-              description={description}
+              title={completionTitle}
+              description={completionDescription}
               showTitle={showTitle}
               showDescription={showDescription}
             />
@@ -54,7 +55,7 @@ export function MissionCompletion() {
         )}
         <ShareSection
           ref={refs.shareBoxRef}
-          title={title}
+          title={missionTitle}
           brandLogoUrl={brandLogoUrl}
           imageUrl={imageUrl}
           onKakaoShare={handleKakaoShare}
