@@ -210,7 +210,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                     value={SECTION_IDS.MISSION_GUIDE}
                     className={cn(sections.length === 1 ? "mx-auto max-w-[110px]" : "")}
                   >
-                    <Typo.SubTitle size="large">미션 안내</Typo.SubTitle>
+                    <Typo.SubTitle size="large">상세 안내</Typo.SubTitle>
                   </Tab.Item>
                   {reward && (
                     <Tab.Item value={SECTION_IDS.REWARD}>
