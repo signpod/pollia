@@ -24,9 +24,6 @@ export function MissionCompletion() {
     links,
   } = missionCompletion?.data ?? {};
 
-  // const { refs, isReversed, showTitle, showDescription, showStarTooltip } =
-  //   useMissionCompletionAnimation();
-
   const { handleKakaoShare, handleShare, handleXShare } = useMissionShare({
     missionId,
     title: missionTitle,
@@ -52,8 +49,15 @@ export function MissionCompletion() {
         }}
         className="absolute inset-0 z-2 aspect-square"
       />
-      <div className="absolute inset-0">
-        {imageUrl && <Image src={imageUrl} alt="Mission Image" width={400} height={400} />}
+      <div className="absolute inset-0 w-full aspect-square">
+        {imageUrl && (
+          <Image
+            src={imageUrl}
+            alt="Mission Image"
+            fill
+            className="object-cover object-top size-full"
+          />
+        )}
       </div>
       <div className="flex flex-col w-full h-full z-3 items-center justify-center gap-6">
         {brandLogoUrl && (
