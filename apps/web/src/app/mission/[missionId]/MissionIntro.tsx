@@ -33,7 +33,9 @@ import { checkParticipantLimitReached } from "./utils/checkParticipantLimit";
 import { formatDeadline } from "./utils/formatDeadline";
 
 import ChevronDown from "@public/svgs/chevron-down.svg";
+import Gift from "@public/svgs/gift.svg";
 import KakaoIcon from "@public/svgs/kakao-icon.svg";
+import Lock from "@public/svgs/lock.svg";
 import XLogo from "@public/svgs/x-logo.svg";
 
 const SECTION_IDS = {
@@ -139,6 +141,8 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
     { key: "참여 기간", value: deadlineText },
   ] as const;
 
+  const hasReward = !!reward?.data.id;
+
   const isProcessing = Boolean(missionResponseData?.data?.id);
 
   const calloutData = useMemo<{ variant: CalloutToneVariant; description: string } | null>(() => {
@@ -199,6 +203,42 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
               <Typo.MainTitle size="large" className="break-keep text-white">
                 {title}
               </Typo.MainTitle>
+
+              <div className="flex gap-3 items-center">
+                {isRequirePassword && (
+                  <div className="relative flex gap-2 items-center text-white whitespace-nowrap px-3 py-1.5 rounded-full overflow-hidden">
+                    <div className="absolute inset-0 bg-white/20 rounded-full" />
+                    <div
+                      className="absolute inset-0 backdrop-blur-[100px] rounded-full"
+                      style={{
+                        maskImage: "linear-gradient(to top, black 0%, transparent 100%)",
+                        WebkitMaskImage: "linear-gradient(to top, black 0%, transparent 100%)",
+                      }}
+                    />
+                    <Lock className="size-4 relative z-10" />
+                    <Typo.Body size="medium" className="relative z-10">
+                      비밀
+                    </Typo.Body>
+                  </div>
+                )}
+                {hasReward && (
+                  <div className="relative flex gap-2 items-center text-white whitespace-nowrap px-3 py-1.5 rounded-full overflow-hidden">
+                    <div className="absolute inset-0 bg-white/20 rounded-full" />
+                    <div
+                      className="absolute inset-0 backdrop-blur-[100px] rounded-full"
+                      style={{
+                        maskImage: "linear-gradient(to top, black 0%, transparent 100%)",
+                        WebkitMaskImage: "linear-gradient(to top, black 0%, transparent 100%)",
+                      }}
+                    />
+                    <Gift className="size-4 relative z-10" />
+                    <Typo.Body size="medium" className="relative z-10">
+                      리워드
+                    </Typo.Body>
+                  </div>
+                )}
+              </div>
+
               <motion.div
                 className="flex justify-center items-center"
                 animate={{ y: [0, 10, 0] }}
@@ -254,15 +294,15 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                 </div>
               )}
 
-              <div className="flex flex-col gap-6 px-5 py-8 items-center w-full">
-                <SectionHeader badgeText="상세 안내" title={""} />
-                {!!description && !!cleanTiptapHTML(description) && (
+              {!!description && !!cleanTiptapHTML(description) && (
+                <div className="flex flex-col gap-6 px-5 py-8 items-center w-full">
+                  <SectionHeader badgeText="상세 안내" title={""} />
                   <MissionDescription
                     content={cleanTiptapHTML(description)}
                     className="text-center"
                   />
-                )}
-              </div>
+                </div>
+              )}
             </div>
 
             {reward && (
