@@ -41,7 +41,12 @@ const SECTION_IDS = {
   REWARD: "reward",
 } as const;
 
-const SCROLL_OFFSET = 30;
+const SCROLL_OFFSET = (sectionId: string) => {
+  if (sectionId === SECTION_IDS.MISSION_GUIDE) {
+    return 60;
+  }
+  return 10;
+};
 const DRAWER_VISIBLE_HEIGHT = 120;
 
 function CalloutTrigger({
@@ -277,8 +282,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                 <MissionRewardSection
                   rewardImageUrl={reward?.data.imageUrl ?? undefined}
                   rewardName={reward?.data.name ?? undefined}
-                  rewardPaymentType={reward?.data.paymentType ?? undefined}
-                  brandLogoUrl={brandLogoUrl ?? undefined}
+                  rewardScheduledDate={reward?.data.scheduledDate ?? undefined}
                 />
               </div>
             )}
