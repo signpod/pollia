@@ -424,6 +424,52 @@ export const WithoutOrder: Story = {
   },
 };
 
+export const VerticalThreeAndFourOptions: Story = {
+  render: () => {
+    const [threeValue, setThreeValue] = useState(2);
+    const [fourValue, setFourValue] = useState(2);
+    return (
+      <div className="flex min-h-[500px] w-[700px] gap-12 p-8">
+        <div className="flex flex-1 flex-col gap-4">
+          <h3 className="text-base font-semibold">3개 옵션 (세로형)</h3>
+          <RatingScale
+            value={threeValue}
+            onChange={setThreeValue}
+            options={[
+              { id: "1", title: "낮음", description: "기대 이하입니다", order: 1 },
+              { id: "2", title: "보통", description: "평균 수준입니다", order: 2 },
+              { id: "3", title: "높음", description: "기대 이상입니다", order: 3 },
+            ]}
+          />
+          <p className="text-sm text-zinc-600">선택된 값: {threeValue}</p>
+        </div>
+        <div className="flex flex-1 flex-col gap-4">
+          <h3 className="text-base font-semibold">4개 옵션 (세로형)</h3>
+          <RatingScale
+            value={fourValue}
+            onChange={setFourValue}
+            options={[
+              { id: "1", title: "매우 불만족", description: "전혀 좋지 않아요", order: 1 },
+              { id: "2", title: "불만족", description: "아쉬운 점이 있어요", order: 2 },
+              { id: "3", title: "만족", description: "괜찮았어요", order: 3 },
+              { id: "4", title: "매우 만족", description: "정말 좋았어요", order: 4 },
+            ]}
+          />
+          <p className="text-sm text-zinc-600">선택된 값: {fourValue}</p>
+        </div>
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "3개 및 4개 옵션을 세로형으로 표시하는 예시입니다. description이 있으면 자동으로 세로형 레이아웃으로 전환됩니다.",
+      },
+    },
+  },
+};
+
 export const VerticalWithLongText: Story = {
   render: () => {
     const [value, setValue] = useState(3);
