@@ -60,7 +60,11 @@ function SurveyMultipleChoiceContent({
     actionData.maxSelections !== null && selectedIds.size >= actionData.maxSelections;
 
   const handleClick = (optionId: string) => {
-    if (isDisabled && !selectedIds.has(optionId) && actionData.maxSelections !== null) {
+    const isSingleSelection = actionData.maxSelections === 1;
+    const isAtMaxAndSelectingNew =
+      isDisabled && !selectedIds.has(optionId) && actionData.maxSelections !== null;
+
+    if (!isSingleSelection && isAtMaxAndSelectingNew) {
       toast.default(`최대 ${actionData.maxSelections}개까지 선택할 수 있어요.`);
       return;
     }
