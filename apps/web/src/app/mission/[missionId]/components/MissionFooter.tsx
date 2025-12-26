@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export function MissionFooter() {
   return (
-    <footer className="w-full px-5 py-4 flex gap-4 items-center justify-between">
+    <footer className="w-full p-5 flex gap-4 items-center justify-between">
       <div className="flex gap-2 items-center">
         <Image
           src="/images/pollia-logo.png"
