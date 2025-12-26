@@ -1,7 +1,6 @@
 "use client";
-
-import { PaymentType } from "@prisma/client";
 import { Typo } from "@repo/ui/components";
+import { formatDate } from "date-fns";
 import Image from "next/image";
 import { SectionHeader } from "./SectionHeader";
 
@@ -14,23 +13,16 @@ const REWARD_SECTION_TITLE = (
   </Typo.MainTitle>
 );
 
-const PAYMENT_TYPE_LABELS: Record<PaymentType, string> = {
-  [PaymentType.IMMEDIATE]: "완료 후 즉시 지급",
-  [PaymentType.SCHEDULED]: "완료 후 예약 지급",
-} as const;
-
 interface MissionRewardSectionProps {
   rewardImageUrl?: string;
   rewardName?: string;
-  rewardPaymentType?: PaymentType;
-  brandLogoUrl?: string;
+  rewardScheduledDate?: Date;
 }
 
 export function MissionRewardSection({
   rewardImageUrl,
   rewardName,
-  rewardPaymentType,
-  brandLogoUrl,
+  rewardScheduledDate,
 }: MissionRewardSectionProps) {
   return (
     <div className="flex flex-col gap-6 px-5 py-8">
@@ -46,27 +38,16 @@ export function MissionRewardSection({
             className="w-full h-auto aspect-square object-cover"
           />
         )}
-        <div className="w-full flex flex-col p-4 gap-3">
-          <div className="w-full flex justify-between items-center">
-            <div className="bg-violet-50 rounded-sm px-3 py-2">
-              <Typo.Body size="medium" className="text-primary">
-                {rewardPaymentType ? PAYMENT_TYPE_LABELS[rewardPaymentType] : ""}
-              </Typo.Body>
-            </div>
-            {brandLogoUrl && (
-              <Image
-                src={brandLogoUrl}
-                alt="Brand Logo"
-                width={40}
-                height={40}
-                className="object-contain"
-              />
-            )}
-          </div>
+        <div className="w-full flex flex-col p-4 gap-3 items-center">
           {rewardName && (
             <Typo.SubTitle size="large" className="break-keep pl-1">
               {rewardName}
             </Typo.SubTitle>
+          )}
+          {rewardScheduledDate && (
+            <div className="ring-1 ring-default rounded-3xl px-3 py-1">
+              {`${formatDate(rewardScheduledDate, "yy.MM.dd")} 순차지급`}
+            </div>
           )}
         </div>
       </div>

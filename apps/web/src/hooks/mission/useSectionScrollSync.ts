@@ -1,9 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+type ScrollOffsetValue = number | ((sectionId: string) => number);
+
+function getScrollOffset(scrollOffset: ScrollOffsetValue, sectionId: string): number {
+  return typeof scrollOffset === "function" ? scrollOffset(sectionId) : scrollOffset;
+}
+
 interface UseSectionScrollSyncOptions {
   sections: string[];
   defaultSection?: string;
-  scrollOffset?: number;
+  scrollOffset?: ScrollOffsetValue;
   onSectionChange?: (sectionId: string) => void;
 }
 
@@ -34,9 +40,10 @@ export function useSectionScrollSync({
       const element = document.getElementById(value);
       if (element) {
         window.history.pushState(null, "", `#${value}`);
+        const offset = getScrollOffset(scrollOffset, value);
         const elementPosition = element.getBoundingClientRect().top + window.scrollY;
         window.scrollTo({
-          top: elementPosition - scrollOffset,
+          top: elementPosition - offset,
           behavior: "smooth",
         });
 
@@ -71,7 +78,8 @@ export function useSectionScrollSync({
 
       for (const [sectionId, element] of sectionElements) {
         const rect = element.getBoundingClientRect();
-        const adjustedTop = rect.top - scrollOffset;
+        const offset = getScrollOffset(scrollOffset, sectionId);
+        const adjustedTop = rect.top - offset;
         const isTopNearViewport = adjustedTop >= -50 && adjustedTop <= 50;
         const isFullyVisible = adjustedTop >= 0 && rect.bottom <= viewportHeight;
 
