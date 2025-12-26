@@ -93,12 +93,19 @@ export function MultipleChoiceProvider({
       setSelectedIds(prev => {
         const newSet = new Set(prev);
 
+        if (maxSelections === 1) {
+          if (newSet.has(optionId)) {
+            newSet.delete(optionId);
+            return newSet;
+          }
+          newSet.clear();
+          newSet.add(optionId);
+          return newSet;
+        }
+
         if (newSet.has(optionId)) {
           newSet.delete(optionId);
         } else {
-          if (maxSelections === 1) {
-            newSet.clear();
-          }
           if (newSet.size < maxSelections) {
             newSet.add(optionId);
           }

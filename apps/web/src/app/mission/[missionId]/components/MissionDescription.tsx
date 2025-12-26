@@ -9,19 +9,15 @@ interface MissionDescriptionProps {
 }
 
 export function MissionDescription({ content, className }: MissionDescriptionProps) {
-  if (!content) return null;
-
   return (
-    <div className="w-full">
-      <TiptapViewer
-        content={content}
-        className={cn(
-          "prose prose-sm break-keep",
-          "max-w-none focus:outline-none",
-          "text-sub",
-          className,
-        )}
-      />
-    </div>
+    <TiptapViewer
+      content={content}
+      className={cn(
+        "prose prose-sm break-keep",
+        "max-w-none focus:outline-none",
+        "text-sub",
+        className,
+      )}
+    />
   );
 }

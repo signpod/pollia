@@ -225,17 +225,16 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
               id={SECTION_IDS.MISSION_GUIDE}
               className="flex w-full flex-col gap-8 px-5 py-8 items-center"
             >
-              <div className="flex flex-col gap-4 items-center">
+              <div className="flex flex-col gap-4 items-center w-full">
                 <SectionHeader badgeText="미션 안내" title={""} />
-
-                <div className="flex w-full justify-center items-center rounded-md bg-zinc-50 p-6">
-                  {description && (
+                {!!description && !!cleanTiptapHTML(description) && (
+                  <div className="flex w-full justify-center items-center rounded-md bg-zinc-50 p-6">
                     <MissionDescription
                       content={cleanTiptapHTML(description)}
                       className="text-center"
                     />
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-col gap-2 items-center">

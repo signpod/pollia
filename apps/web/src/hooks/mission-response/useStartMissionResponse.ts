@@ -1,11 +1,12 @@
 "use client";
 
 import { startMissionResponse } from "@/actions/mission-response";
+import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import type {
   StartMissionResponseRequest,
   StartMissionResponseResponse,
 } from "@/types/dto/mission-response";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface UseStartMissionResponseOptions {
   onSuccess?: (data: StartMissionResponseResponse) => void;
@@ -13,12 +14,17 @@ interface UseStartMissionResponseOptions {
 }
 
 export function useStartMissionResponse(options: UseStartMissionResponseOptions = {}) {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (
       payload: StartMissionResponseRequest,
     ): Promise<StartMissionResponseResponse> => startMissionResponse(payload),
-    onSuccess: data => {
+    onSuccess: (data, payload) => {
       options.onSuccess?.(data);
+      queryClient.invalidateQueries({
+        queryKey: missionQueryKeys.missionResponseForMission(payload.surveyId),
+      });
     },
     onError: error => {
       console.error("❌ 설문 응답 시작 실패:", error);

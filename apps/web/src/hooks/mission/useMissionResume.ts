@@ -4,6 +4,7 @@ import { useModal } from "@repo/ui/components";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { useResetMissionResponse } from "../mission-response/useResetMissionResponse";
+import { useStartMissionResponse } from "../mission-response/useStartMissionResponse";
 
 interface UseMissionResumeParams {
   isEnabledToResume: boolean;
@@ -24,6 +25,13 @@ export function useSurveyResume({
   const router = useRouter();
   const { mutateAsync: resetMissionResponse, isPending: isResetMissionResponsePending } =
     useResetMissionResponse({ missionId });
+  const { mutateAsync: startResponse } = useStartMissionResponse({
+    onSuccess: () => {
+      if (firstActionId) {
+        router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
+      }
+    },
+  });
 
   const showResumeModal = useCallback(() => {
     if (isEnabledToResume && nextActionId && firstActionId) {
@@ -39,7 +47,7 @@ export function useSurveyResume({
         },
         onCancel: async () => {
           await resetMissionResponse(responseId);
-          router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
+          await startResponse({ surveyId: missionId });
         },
         cancelButtonIsLoading: isResetMissionResponsePending,
       });
@@ -56,6 +64,7 @@ export function useSurveyResume({
     responseId,
     isResetMissionResponsePending,
     missionId,
+    startResponse,
   ]);
 
   return { showResumeModal };

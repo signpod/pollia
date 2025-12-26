@@ -5,6 +5,8 @@ import { useReadMissionCompletion } from "@/hooks/mission-completion";
 import { cn } from "@/lib/utils";
 import { useParams } from "next/navigation";
 
+import { ButtonV2, FixedBottomLayout, Typo } from "@repo/ui/components";
+import Link from "next/link";
 import { CompletionMessage, ShareSection, StarAnimation } from "./components";
 import { useMissionCompletionAnimation, useMissionShare } from "./hooks";
 
@@ -14,7 +16,11 @@ export function MissionCompletion() {
   const { data: missionCompletion } = useReadMissionCompletion(missionId);
 
   const { imageUrl, brandLogoUrl, title: missionTitle } = mission?.data ?? {};
-  const { title, description } = missionCompletion?.data ?? {};
+  const {
+    title: completionTitle,
+    description: completionDescription,
+    links,
+  } = missionCompletion?.data ?? {};
 
   const { refs, isReversed, showTitle, showDescription, showStarTooltip } =
     useMissionCompletionAnimation();
@@ -43,8 +49,8 @@ export function MissionCompletion() {
           item === "title" ? (
             <CompletionMessage
               key={item}
-              title={title}
-              description={description}
+              title={completionTitle}
+              description={completionDescription}
               showTitle={showTitle}
               showDescription={showDescription}
             />
@@ -54,7 +60,7 @@ export function MissionCompletion() {
         )}
         <ShareSection
           ref={refs.shareBoxRef}
-          title={title}
+          title={missionTitle}
           brandLogoUrl={brandLogoUrl}
           imageUrl={imageUrl}
           onKakaoShare={handleKakaoShare}
@@ -62,6 +68,29 @@ export function MissionCompletion() {
           isSharing={isSharing}
         />
       </div>
+      {!!links && (
+        <FixedBottomLayout hasGradientBlur>
+          <FixedBottomLayout.Content className="px-5 py-3">
+            <div className="flex gap-2 w-full">
+              {Object.entries(links).map(([key, value], index) => (
+                <ButtonV2
+                  key={key}
+                  variant={index === 0 ? "primary" : "secondary"}
+                  className="flex-1 w-full"
+                >
+                  <Link
+                    href={value}
+                    target="_blank"
+                    className="w-full h-full flex items-center justify-center"
+                  >
+                    <Typo.ButtonText size="large">{key}</Typo.ButtonText>
+                  </Link>
+                </ButtonV2>
+              ))}
+            </div>
+          </FixedBottomLayout.Content>
+        </FixedBottomLayout>
+      )}
     </div>
   );
 }
