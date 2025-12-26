@@ -1,6 +1,4 @@
 "use client";
-
-import { Badge } from "@/components/ui/badge";
 import { AuthError } from "@/hooks/login/useKakaoLogin";
 import { useMissionIntroData, useSectionScrollSync, useSurveyResume } from "@/hooks/mission";
 import { useReadMissionResponseForMission } from "@/hooks/mission-response";
@@ -36,7 +34,6 @@ import { formatDeadline } from "./utils/formatDeadline";
 
 import ChevronDown from "@public/svgs/chevron-down.svg";
 import KakaoIcon from "@public/svgs/kakao-icon.svg";
-import Lock from "@public/svgs/lock.svg";
 import XLogo from "@public/svgs/x-logo.svg";
 
 const SECTION_IDS = {
@@ -132,7 +129,15 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
     scrollOffset: SCROLL_OFFSET,
   });
 
+  const showDetailInfo = !!target || !!estimatedMinutes || !!deadline;
+
   const deadlineText = deadline ? `${formatDeadline(deadline)} 까지` : "정원 마감시";
+
+  const detailInfoConfig = [
+    { key: "참여 조건", value: target },
+    { key: "예상 소요 시간", value: `${estimatedMinutes}분` },
+    { key: "참여 기간", value: deadlineText },
+  ] as const;
 
   const isProcessing = Boolean(missionResponseData?.data?.id);
 
@@ -225,8 +230,30 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
               id={SECTION_IDS.MISSION_GUIDE}
               className="flex w-full flex-col gap-8 px-5 py-8 items-center"
             >
+              {showDetailInfo && (
+                <div className="flex flex-col gap-4 w-full bg-zinc-50 rounded-md p-6">
+                  {detailInfoConfig.map(
+                    ({ key, value }) =>
+                      key &&
+                      value && (
+                        <div className="flex gap-2" key={key}>
+                          <Typo.Body
+                            size="medium"
+                            className="text-info whitespace-nowrap min-w-[100px]"
+                          >
+                            {key}
+                          </Typo.Body>
+                          <Typo.Body size="medium" className="flex-1 break-keep text-right">
+                            {value}
+                          </Typo.Body>
+                        </div>
+                      ),
+                  )}
+                </div>
+              )}
+
               <div className="flex flex-col gap-4 items-center w-full">
-                <SectionHeader badgeText="미션 안내" title={""} />
+                <SectionHeader badgeText="상세 안내" title={""} />
                 {!!description && !!cleanTiptapHTML(description) && (
                   <div className="flex w-full justify-center items-center rounded-md bg-zinc-50 p-6">
                     <MissionDescription
@@ -235,39 +262,6 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                     />
                   </div>
                 )}
-              </div>
-
-              <div className="flex flex-col gap-2 items-center">
-                <div className="flex flex-col gap-1 items-center">
-                  <Typo.SubTitle size="large">참여 조건</Typo.SubTitle>
-                  <Typo.Body size="large" className="text-info">
-                    {target}
-                  </Typo.Body>
-                </div>
-
-                {mission?.type === "EXPERIENCE_GROUP" && (
-                  <Badge
-                    variant="secondary"
-                    className="bg-point border-none flex gap-2 justify-center items-center rounded-sm px-3 py-2"
-                  >
-                    <Lock className="size-4 text-point" />
-                    <Typo.Body size="medium" className="text-point">
-                      체험단 미션
-                    </Typo.Body>
-                  </Badge>
-                )}
-              </div>
-              <div className="flex flex-col gap-1 items-center">
-                <Typo.SubTitle size="large">예상 소요 시간</Typo.SubTitle>
-                <Typo.Body size="large" className="text-info">
-                  {estimatedMinutes}분
-                </Typo.Body>
-              </div>
-              <div className="flex flex-col gap-1 items-center">
-                <Typo.SubTitle size="large">참여 기간</Typo.SubTitle>
-                <Typo.Body size="large" className="text-info">
-                  {deadlineText}
-                </Typo.Body>
               </div>
             </div>
 
