@@ -5,6 +5,10 @@ import { Scale, Typo } from "@repo/ui/components";
 import { useMemo, useState } from "react";
 import type { CSSProperties, ComponentProps } from "react";
 import { cn } from "../../lib/utils";
+
+const OPTION_HEIGHT = 80;
+const MIN_VERTICAL_HEIGHT = 350;
+
 export interface RatingScaleOption {
   id: string;
   title?: string;
@@ -102,7 +106,9 @@ export function RatingScale({
         options.some(option => (option.description?.toString().length ?? 0) > 0) ||
         options.some(option => (option.title?.trim().length ?? 0) > getTitleLimit(options.length));
 
-      const height = isVertical ? Math.max(options.length * 80, 350) : undefined;
+      const height = isVertical
+        ? Math.max(options.length * OPTION_HEIGHT, MIN_VERTICAL_HEIGHT)
+        : undefined;
 
       return {
         positions,
@@ -128,7 +134,9 @@ export function RatingScale({
     const isLast = (index: number) => index === positions.length - 1;
     const isVertical = max > 5;
 
-    const height = isVertical ? Math.max(positions.length * 80, 350) : undefined;
+    const height = isVertical
+      ? Math.max(positions.length * OPTION_HEIGHT, MIN_VERTICAL_HEIGHT)
+      : undefined;
 
     return {
       positions,
@@ -219,9 +227,6 @@ export function RatingScale({
               setLocalValue(value);
               onChange(value);
             }}
-            sliderMin={sliderMin}
-            sliderMax={sliderMax}
-            sliderStep={sliderStep}
             disabled={disabled}
           />
           <Scale.Thumb
@@ -247,9 +252,6 @@ interface RatingScaleDotsProps {
   isLast: (index: number) => boolean;
   isVertical: boolean;
   onOptionClick?: (value: number) => void;
-  sliderMin: number;
-  sliderMax: number;
-  sliderStep: number;
   disabled?: boolean;
 }
 
@@ -258,9 +260,6 @@ function RatingScaleDots({
   options,
   isVertical,
   onOptionClick,
-  sliderMin: _sliderMin,
-  sliderMax: _sliderMax,
-  sliderStep: _sliderStep,
   disabled,
 }: RatingScaleDotsProps) {
   const handleOptionClick = (order: number) => {
@@ -331,7 +330,7 @@ function RatingScaleDots({
               }
             >
               {isVertical && (options?.[index]?.title || options?.[index]?.description) && (
-                <div className="absolute left-[calc(100%+24px)] flex flex-row flex-wrap items-center content-center gap-x-3 gap-y-1 h-[80px] w-[calc(100dvw-100px)] max-w-[calc(100dvw-100px)]">
+                <div className="absolute left-[calc(100%+24px)] flex flex-row flex-wrap items-center content-center gap-x-3 gap-y-1 h-[80px] w-[calc(100dvw-100px)]">
                   {options?.[index]?.title && (
                     <Typo.SubTitle
                       size="large"
