@@ -23,6 +23,7 @@ export function SocialShareButtons({
       {onXShare && (
         <button
           type="button"
+          aria-label="X(트위터)로 공유"
           className="flex justify-center items-center bg-black rounded-sm p-2"
           onClick={onXShare}
         >
@@ -31,6 +32,7 @@ export function SocialShareButtons({
       )}
       <button
         type="button"
+        aria-label="카카오톡으로 공유"
         className="flex justify-center items-center bg-kakao rounded-sm p-2"
         onClick={onKakaoShare}
       >
@@ -38,6 +40,7 @@ export function SocialShareButtons({
       </button>
       <button
         type="button"
+        aria-label="링크 복사"
         className="flex justify-center items-center bg-white border border-default rounded-sm p-2"
         onClick={onLinkShare}
       >
