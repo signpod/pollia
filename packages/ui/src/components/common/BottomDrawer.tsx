@@ -361,12 +361,12 @@ function BottomDrawerHeader({
 
   return (
     <div
-      className={cn("flex items-center justify-between", "px-5 pt-4 pb-3", className)}
+      className={cn("flex items-center justify-between", className)}
       onClick={onClick}
       onKeyDown={onClick ? handleKeyDown : undefined}
       tabIndex={onClick ? 0 : undefined}
     >
-      <div className="flex-1">{children}</div>
+      <div className="flex-1 w-full h-full">{children}</div>
       {showToggleButton && (
         <IconButton
           icon={ChevronUp}

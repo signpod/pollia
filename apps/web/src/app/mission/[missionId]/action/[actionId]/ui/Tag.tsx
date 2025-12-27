@@ -156,15 +156,25 @@ function BottomDrawerContentWithScrollReset({
   const selectedOptions = actionData?.options?.filter(option => selectedIds.has(option.id));
 
   return (
-    <BottomDrawer.Content className="ring-1 ring-default" clickToExpand={false} enableDrag={true}>
+    <BottomDrawer.Content
+      className="ring-1 ring-default shadow-[0_-4px_20px_0px_rgba(9,9,11,0.08)]"
+      clickToExpand={false}
+      enableDrag={true}
+    >
       <BottomDrawer.Header
         showToggleButton={false}
         showCloseButton={false}
-        className="relative h-[74px]"
+        className="relative h-[74px] py-0 px-5"
       >
-        <div className="flex items-center justify-between w-full">
-          <Typo.SubTitle size="large">선택된 항목</Typo.SubTitle>
-          <Typo.SubTitle size="large">{selectedOptions?.length}개</Typo.SubTitle>
+        <div className="flex flex-col gap-4 items-center w-full h-full">
+          <div className="flex items-center justify-center h-5">
+            <div className="h-1 rounded-3xl bg-zinc-300 w-9" />
+          </div>
+
+          <div className="flex items-center justify-between w-full">
+            <Typo.SubTitle size="large">선택된 항목</Typo.SubTitle>
+            <Typo.SubTitle size="large">{selectedOptions?.length}개</Typo.SubTitle>
+          </div>
         </div>
       </BottomDrawer.Header>
       <BottomDrawer.Body>
