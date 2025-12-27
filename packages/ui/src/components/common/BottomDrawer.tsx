@@ -1,11 +1,11 @@
 "use client";
 
-import { motion, useMotionValue, useSpring } from "framer-motion";
+import { animate, motion, useMotionValue, useSpring } from "framer-motion";
 import { ChevronUp } from "lucide-react";
 import * as React from "react";
+import { useEffect } from "react";
 import { cn } from "../../lib/utils";
 import { IconButton } from "./IconButton";
-
 interface BottomDrawerContextType {
   isOpen: boolean;
   open: () => void;
@@ -149,20 +149,62 @@ function BottomDrawerContent({
       : finalExpandedHeight - collapsedHeight
     : finalExpandedHeight - collapsedHeight;
   const y = useMotionValue(initialY);
-  const springConfig = { damping: 40, stiffness: 400 };
+  const springConfig = { damping: 50, stiffness: 500 };
+  const [isDragging, setIsDragging] = React.useState(false);
   const springY = useSpring(y, springConfig);
 
+  const animationRef = React.useRef<ReturnType<typeof animate> | null>(null);
+
   React.useEffect(() => {
-    if (mounted) {
-      y.set(isOpen ? 0 : finalExpandedHeight - collapsedHeight);
+    if (
+      mounted &&
+      !isDragging &&
+      !isDraggingRef.current &&
+      !isDragEndingRef.current &&
+      isClickActionRef.current
+    ) {
+      const targetY = isOpen ? 0 : finalExpandedHeight - collapsedHeight;
+      const currentY = y.get();
+      const distance = Math.abs(currentY - targetY);
+
+      if (distance < 1) {
+        return;
+      }
+
+      if (animationRef.current) {
+        animationRef.current.stop();
+      }
+      animationRef.current = animate(y, targetY, {
+        type: "tween",
+        ease: "easeInOut",
+        duration: 0.3,
+      });
     }
-  }, [isOpen, finalExpandedHeight, collapsedHeight, y, mounted]);
+  }, [isOpen, finalExpandedHeight, collapsedHeight, y, mounted, isDragging]);
 
   const isDraggingRef = React.useRef(false);
   const dragEndTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const isDragEndingRef = React.useRef(false);
+  const pointerStartRef = React.useRef<{ x: number; y: number; time: number } | null>(null);
+  const isClickActionRef = React.useRef(true);
+
+  const handlePointerDown = React.useCallback((e: React.PointerEvent) => {
+    pointerStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      time: Date.now(),
+    };
+    isClickActionRef.current = true;
+  }, []);
 
   const handleDragStart = React.useCallback(() => {
     isDraggingRef.current = true;
+    setIsDragging(true);
+    isClickActionRef.current = false;
+    if (animationRef.current) {
+      animationRef.current.stop();
+      animationRef.current = null;
+    }
     if (dragEndTimeoutRef.current) {
       clearTimeout(dragEndTimeoutRef.current);
       dragEndTimeoutRef.current = null;
@@ -173,48 +215,61 @@ function BottomDrawerContent({
     (_event: PointerEvent, info: { offset: { y: number }; velocity: { y: number } }) => {
       const wasDragging = isDraggingRef.current;
       isDraggingRef.current = false;
+      setIsDragging(false);
 
       if (!wasDragging) return;
 
       const currentY = y.get();
       const maxDragOffset = finalExpandedHeight - collapsedHeight;
-      const snapThreshold = maxDragOffset * 0.1;
+      const dragDistance = Math.abs(info.offset.y);
+      const dragDistanceThreshold = 50;
 
       const velocityThreshold = 100;
       const hasSignificantVelocity = Math.abs(info.velocity.y) > velocityThreshold;
+      const hasSignificantDistance = dragDistance > dragDistanceThreshold;
 
+      let shouldOpen: boolean;
       if (hasSignificantVelocity) {
-        if (info.velocity.y > 0) {
-          close();
-        } else {
-          open();
-        }
+        shouldOpen = info.velocity.y < 0;
+      } else if (hasSignificantDistance) {
+        shouldOpen = info.offset.y < 0;
       } else {
-        if (isOpen) {
-          const shouldClose = currentY > snapThreshold;
-          if (shouldClose) {
-            close();
-          } else {
-            y.set(0);
-          }
-        } else {
-          const shouldOpen = currentY < maxDragOffset - snapThreshold;
-          if (shouldOpen) {
-            open();
-          } else {
-            y.set(finalExpandedHeight - collapsedHeight);
-          }
-        }
+        const midpoint = maxDragOffset / 2;
+        shouldOpen = currentY < midpoint;
       }
+
+      const targetY = shouldOpen ? 0 : maxDragOffset;
+      if (animationRef.current) {
+        animationRef.current.stop();
+        animationRef.current = null;
+      }
+
+      isDragEndingRef.current = true;
+
+      if (shouldOpen) {
+        open();
+      } else {
+        close();
+      }
+
+      const animation = animate(y, targetY, { type: "spring", damping: 50, stiffness: 500 });
+
+      animation.then(() => {
+        setTimeout(() => {
+          isDragEndingRef.current = false;
+          isClickActionRef.current = true;
+        }, 100);
+      });
 
       dragEndTimeoutRef.current = setTimeout(() => {
         dragEndTimeoutRef.current = null;
-      }, 100);
+        isClickActionRef.current = true;
+      }, 150);
     },
-    [isOpen, close, open, y, finalExpandedHeight, collapsedHeight],
+    [close, open, y, finalExpandedHeight, collapsedHeight],
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     return () => {
       if (dragEndTimeoutRef.current) {
         clearTimeout(dragEndTimeoutRef.current);
@@ -224,10 +279,13 @@ function BottomDrawerContent({
 
   const handleClick = React.useCallback(
     (e: React.MouseEvent) => {
-      if (enableDrag) {
+      if (!isClickActionRef.current) {
         return;
       }
-      if (isDraggingRef.current || dragEndTimeoutRef.current) {
+      if (isDraggingRef.current || isDragging || dragEndTimeoutRef.current) {
+        return;
+      }
+      if (enableDrag) {
         return;
       }
       if (!isOpen && clickToExpand) {
@@ -248,7 +306,7 @@ function BottomDrawerContent({
         }
       }
     },
-    [isOpen, clickToExpand, open, enableDrag],
+    [isOpen, clickToExpand, open, enableDrag, isDragging],
   );
 
   const maxDragOffset = finalExpandedHeight - collapsedHeight;
@@ -256,12 +314,13 @@ function BottomDrawerContent({
   return (
     <motion.div
       style={{
-        y: springY,
+        y: isDragging ? y : springY,
         height: finalExpandedHeight,
       }}
       drag={enableDrag ? "y" : false}
       dragConstraints={{ top: 0, bottom: maxDragOffset }}
       dragElastic={0}
+      onPointerDown={handlePointerDown}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onClick={handleClick}

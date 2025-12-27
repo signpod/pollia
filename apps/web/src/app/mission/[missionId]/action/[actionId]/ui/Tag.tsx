@@ -57,7 +57,7 @@ function SurveyMultipleChoiceContent({
   isLoading,
 }: Omit<ActionStepContentProps, "updateCanGoNext" | "onAnswerChange">) {
   const { selectedIds, toggleSelectedId, canGoNext } = useSurveyMultipleChoice();
-  const contentRef = useRef<HTMLLIElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const [expandedHeight, setExpandedHeight] = useState<number>(400);
 
   const isDisabled =
@@ -114,7 +114,7 @@ function SurveyMultipleChoiceContent({
       nextButtonText={nextButtonText}
       isLoading={isLoading}
     >
-      <li ref={contentRef} className="flex flex-wrap gap-3 w-full">
+      <div ref={contentRef} className="flex flex-wrap gap-3 w-full">
         {actionData.options?.map(option => (
           <Chip
             key={option.id}
@@ -123,7 +123,7 @@ function SurveyMultipleChoiceContent({
             onClick={() => handleClick(option.id)}
           />
         ))}
-      </li>
+      </div>
       <BottomDrawer collapsedHeight={146} expandedHeight={expandedHeight}>
         <BottomDrawerContentWithScrollReset
           actionData={actionData}
