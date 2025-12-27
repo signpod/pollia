@@ -1,5 +1,5 @@
-import { useIsMobile } from "@/app/admin/hooks/use-mobile";
 import { toast } from "@/components/common/Toast";
+import { useIsMobile } from "@/hooks/common/useIsMobile";
 import { ActionStepContentProps } from "@/constants/action";
 import { ActionType } from "@/types/domain/action";
 import { BottomDrawer, Typo, useBottomDrawer } from "@repo/ui/components";
