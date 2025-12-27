@@ -1,6 +1,6 @@
 import { toast } from "@/components/common/Toast";
-import { useIsMobile } from "@/hooks/common/useIsMobile";
 import { ActionStepContentProps } from "@/constants/action";
+import { useIsMobile } from "@/hooks/common/useIsMobile";
 import { ActionType } from "@/types/domain/action";
 import { BottomDrawer, Typo, useBottomDrawer } from "@repo/ui/components";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
