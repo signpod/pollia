@@ -2,7 +2,7 @@ import { ActionStepContentProps } from "@/constants/action";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
 import type { ActionAnswerItem } from "@/types/dto";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 import { ImageUpload } from "./ImageUpload";
 
@@ -40,27 +40,18 @@ export function ActionImage({
     onAnswerChangeRef.current = onAnswerChange;
   }, [updateCanGoNext, onAnswerChange]);
 
-  useEffect(() => {
-    if (existingAnswer) {
-      updateCanGoNextRef.current?.(true);
+  const validateAndUpdateAnswer = useCallback(
+    (url: string | null, fileId: string | undefined) => {
+      if (!url || !fileId) {
+        updateCanGoNextRef.current?.(false);
+        return;
+      }
 
       const answer: ActionAnswerItem = {
         actionId: actionData.id,
         type: ActionType.IMAGE,
-        imageFileUploadId: existingAnswer.imageFileUploadId ?? undefined,
-        imageUrl: existingAnswer.imageUrl ?? undefined,
-      };
-      onAnswerChangeRef.current?.(answer);
-    }
-  }, [existingAnswer, actionData.id]);
-
-  useEffect(() => {
-    if (imageUrl && imageFileUploadId) {
-      const answer: ActionAnswerItem = {
-        actionId: actionData.id,
-        type: ActionType.IMAGE,
-        imageFileUploadId: imageFileUploadId,
-        imageUrl: imageUrl,
+        imageFileUploadId: fileId,
+        imageUrl: url,
       };
 
       const validationResult = submitAnswerItemSchema.safeParse(answer);
@@ -69,10 +60,25 @@ export function ActionImage({
       if (validationResult.success) {
         onAnswerChangeRef.current?.(answer);
       }
-    } else {
-      updateCanGoNextRef.current?.(false);
+    },
+    [actionData.id],
+  );
+
+  useEffect(() => {
+    if (existingAnswer) {
+      setImageUrl(existingAnswer.imageUrl ?? null);
+      setImageFileUploadId(existingAnswer.imageFileUploadId ?? undefined);
+
+      validateAndUpdateAnswer(
+        existingAnswer.imageUrl ?? null,
+        existingAnswer.imageFileUploadId ?? undefined,
+      );
     }
-  }, [imageUrl, imageFileUploadId, actionData.id]);
+  }, [existingAnswer, validateAndUpdateAnswer]);
+
+  useEffect(() => {
+    validateAndUpdateAnswer(imageUrl, imageFileUploadId);
+  }, [imageUrl, imageFileUploadId, validateAndUpdateAnswer]);
 
   const handleUploadChange = (
     hasUploadedImage: boolean,

@@ -1,5 +1,6 @@
 import { toast } from "@/components/common/Toast";
 import { ActionStepContentProps } from "@/constants/action";
+import { useIsMobile } from "@/hooks/common/useIsMobile";
 import { ActionType } from "@/types/domain/action";
 import { BottomDrawer, Typo, useBottomDrawer } from "@repo/ui/components";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -78,6 +79,13 @@ function SurveyMultipleChoiceContent({
   useLayoutEffect(() => {
     if (typeof window === "undefined") return;
 
+    const getViewportHeight = () => {
+      if (window.visualViewport) {
+        return window.visualViewport.height;
+      }
+      return document.documentElement.clientHeight || window.innerHeight;
+    };
+
     const updateHeight = () => {
       if (contentRef.current) {
         const children = contentRef.current.children;
@@ -86,8 +94,9 @@ function SurveyMultipleChoiceContent({
           const firstChildRect = firstChild.getBoundingClientRect();
           const firstChildY = firstChildRect.top;
 
-          const calculatedHeight = window.innerHeight - firstChildY;
-          const maxHeight = window.innerHeight * 0.9;
+          const viewportHeight = getViewportHeight();
+          const calculatedHeight = viewportHeight - firstChildY;
+          const maxHeight = viewportHeight * 0.9;
           setExpandedHeight(Math.min(calculatedHeight, maxHeight));
         }
       }
@@ -99,7 +108,16 @@ function SurveyMultipleChoiceContent({
       resizeObserver.observe(contentRef.current);
     }
 
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", updateHeight);
+      return () => {
+        resizeObserver.disconnect();
+        window.visualViewport?.removeEventListener("resize", updateHeight);
+      };
+    }
+
     return () => resizeObserver.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [actionData.options]);
 
   return (
@@ -148,6 +166,7 @@ function BottomDrawerContentWithScrollReset({
 }) {
   const { isOpen, toggle } = useBottomDrawer();
   const bodyRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (isOpen && bodyRef.current) {
@@ -160,8 +179,8 @@ function BottomDrawerContentWithScrollReset({
   return (
     <BottomDrawer.Content
       className="ring-1 ring-default shadow-[0_-4px_20px_0px_rgba(9,9,11,0.08)]"
-      clickToExpand={false}
-      enableDrag={true}
+      clickToExpand={!isMobile}
+      enableDrag={isMobile}
     >
       <BottomDrawer.Header
         showToggleButton={false}
