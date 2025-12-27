@@ -24,6 +24,7 @@ export * from "./common/DateAndTimePicker";
 export * from "./common/TimePicker";
 export * from "./common/Dialog";
 export * from "./common/Drawer";
+export * from "./common/BottomDrawer";
 export * from "./common/IconButton";
 export * from "./common/CounterInput";
 export * from "./common/ProcessChip";

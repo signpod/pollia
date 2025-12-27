@@ -11,7 +11,7 @@ export function Chip({ label, isSelected, className, disabled, ...props }: ChipP
   return (
     <button
       className={cn(
-        "flex items-center justify-center px-4 py-3 ring-1 ring-inset rounded-full gap-3 m-0",
+        "select-none flex items-center justify-center px-4 py-3 ring-1 ring-inset rounded-full gap-3 m-0",
         "transition-colors duration-200 ease-in-out",
         "hover:bg-zinc-50 active:bg-zinc-200 active:ring-point",
         isSelected

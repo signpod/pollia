@@ -56,7 +56,7 @@ export function MultipleChoiceProvider({
     return new Set(questionAnswers.map(answer => answer.optionId).filter(Boolean) as string[]);
   }, [missionResponse, actionId]);
 
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(initialSelectedIds);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set<string>());
   const [canGoNext, setCanGoNext] = useState(false);
 
   // updateCanGoNext와 onAnswerChange ref로 최신 참조 유지
