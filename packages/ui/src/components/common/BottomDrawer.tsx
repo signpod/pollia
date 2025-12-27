@@ -3,7 +3,6 @@
 import { animate, motion, useMotionValue, useSpring } from "framer-motion";
 import { ChevronUp } from "lucide-react";
 import * as React from "react";
-import { useEffect } from "react";
 import { cn } from "../../lib/utils";
 import { IconButton } from "./IconButton";
 interface BottomDrawerContextType {
@@ -84,7 +83,6 @@ interface BottomDrawerContentProps {
   className?: string;
   children: React.ReactNode;
   enableDrag?: boolean;
-  dragThreshold?: number;
   clickToExpand?: boolean;
 }
 
@@ -92,7 +90,6 @@ function BottomDrawerContent({
   className,
   children,
   enableDrag = true,
-  dragThreshold = 50,
   clickToExpand = true,
 }: BottomDrawerContentProps) {
   const { isOpen, open, close, collapsedHeight, expandedHeight, setExpandedHeight } =
@@ -185,17 +182,7 @@ function BottomDrawerContent({
   const isDraggingRef = React.useRef(false);
   const dragEndTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const isDragEndingRef = React.useRef(false);
-  const pointerStartRef = React.useRef<{ x: number; y: number; time: number } | null>(null);
   const isClickActionRef = React.useRef(true);
-
-  const handlePointerDown = React.useCallback((e: React.PointerEvent) => {
-    pointerStartRef.current = {
-      x: e.clientX,
-      y: e.clientY,
-      time: Date.now(),
-    };
-    isClickActionRef.current = true;
-  }, []);
 
   const handleDragStart = React.useCallback(() => {
     isDraggingRef.current = true;
@@ -269,7 +256,7 @@ function BottomDrawerContent({
     [close, open, y, finalExpandedHeight, collapsedHeight],
   );
 
-  useEffect(() => {
+  React.useEffect(() => {
     return () => {
       if (dragEndTimeoutRef.current) {
         clearTimeout(dragEndTimeoutRef.current);
@@ -320,7 +307,6 @@ function BottomDrawerContent({
       drag={enableDrag ? "y" : false}
       dragConstraints={{ top: 0, bottom: maxDragOffset }}
       dragElastic={0}
-      onPointerDown={handlePointerDown}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onClick={handleClick}

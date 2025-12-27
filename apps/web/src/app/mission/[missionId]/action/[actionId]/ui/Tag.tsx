@@ -76,6 +76,8 @@ function SurveyMultipleChoiceContent({
   };
 
   useLayoutEffect(() => {
+    if (typeof window === "undefined") return;
+
     const updateHeight = () => {
       if (contentRef.current) {
         const children = contentRef.current.children;
@@ -98,7 +100,7 @@ function SurveyMultipleChoiceContent({
     }
 
     return () => resizeObserver.disconnect();
-  });
+  }, [actionData.options]);
 
   return (
     <SurveyQuestionTemplate
