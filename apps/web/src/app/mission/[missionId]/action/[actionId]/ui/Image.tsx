@@ -2,7 +2,7 @@ import { ActionStepContentProps } from "@/constants/action";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
 import type { ActionAnswerItem } from "@/types/dto";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 import { ImageUpload } from "./ImageUpload";
 
@@ -40,46 +40,45 @@ export function ActionImage({
     onAnswerChangeRef.current = onAnswerChange;
   }, [updateCanGoNext, onAnswerChange]);
 
+  const validateAndUpdateAnswer = useCallback(
+    (url: string | null, fileId: string | undefined) => {
+      if (!url || !fileId) {
+        updateCanGoNextRef.current?.(false);
+        return;
+      }
+
+      const answer: ActionAnswerItem = {
+        actionId: actionData.id,
+        type: ActionType.IMAGE,
+        imageFileUploadId: fileId,
+        imageUrl: url,
+      };
+
+      const validationResult = submitAnswerItemSchema.safeParse(answer);
+      updateCanGoNextRef.current?.(validationResult.success);
+
+      if (validationResult.success) {
+        onAnswerChangeRef.current?.(answer);
+      }
+    },
+    [actionData.id],
+  );
+
   useEffect(() => {
     if (existingAnswer) {
       setImageUrl(existingAnswer.imageUrl ?? null);
       setImageFileUploadId(existingAnswer.imageFileUploadId ?? undefined);
 
-      const answer: ActionAnswerItem = {
-        actionId: actionData.id,
-        type: ActionType.IMAGE,
-        imageFileUploadId: existingAnswer.imageFileUploadId ?? undefined,
-        imageUrl: existingAnswer.imageUrl ?? undefined,
-      };
-
-      const validationResult = submitAnswerItemSchema.safeParse(answer);
-      updateCanGoNextRef.current?.(validationResult.success);
-
-      if (validationResult.success) {
-        onAnswerChangeRef.current?.(answer);
-      }
+      validateAndUpdateAnswer(
+        existingAnswer.imageUrl ?? null,
+        existingAnswer.imageFileUploadId ?? undefined,
+      );
     }
-  }, [existingAnswer, actionData.id]);
+  }, [existingAnswer, validateAndUpdateAnswer]);
 
   useEffect(() => {
-    if (imageUrl && imageFileUploadId) {
-      const answer: ActionAnswerItem = {
-        actionId: actionData.id,
-        type: ActionType.IMAGE,
-        imageFileUploadId: imageFileUploadId,
-        imageUrl: imageUrl,
-      };
-
-      const validationResult = submitAnswerItemSchema.safeParse(answer);
-      updateCanGoNextRef.current?.(validationResult.success);
-
-      if (validationResult.success) {
-        onAnswerChangeRef.current?.(answer);
-      }
-    } else {
-      updateCanGoNextRef.current?.(false);
-    }
-  }, [imageUrl, imageFileUploadId, actionData.id]);
+    validateAndUpdateAnswer(imageUrl, imageFileUploadId);
+  }, [imageUrl, imageFileUploadId, validateAndUpdateAnswer]);
 
   const handleUploadChange = (
     hasUploadedImage: boolean,
