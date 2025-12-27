@@ -42,7 +42,8 @@ export function ActionImage({
 
   useEffect(() => {
     if (existingAnswer) {
-      updateCanGoNextRef.current?.(true);
+      setImageUrl(existingAnswer.imageUrl ?? null);
+      setImageFileUploadId(existingAnswer.imageFileUploadId ?? undefined);
 
       const answer: ActionAnswerItem = {
         actionId: actionData.id,
@@ -50,7 +51,13 @@ export function ActionImage({
         imageFileUploadId: existingAnswer.imageFileUploadId ?? undefined,
         imageUrl: existingAnswer.imageUrl ?? undefined,
       };
-      onAnswerChangeRef.current?.(answer);
+
+      const validationResult = submitAnswerItemSchema.safeParse(answer);
+      updateCanGoNextRef.current?.(validationResult.success);
+
+      if (validationResult.success) {
+        onAnswerChangeRef.current?.(answer);
+      }
     }
   }, [existingAnswer, actionData.id]);
 
