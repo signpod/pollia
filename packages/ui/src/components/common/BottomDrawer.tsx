@@ -149,7 +149,7 @@ function BottomDrawerContent({
       : finalExpandedHeight - collapsedHeight
     : finalExpandedHeight - collapsedHeight;
   const y = useMotionValue(initialY);
-  const springConfig = { damping: 30, stiffness: 300 };
+  const springConfig = { damping: 40, stiffness: 400 };
   const springY = useSpring(y, springConfig);
 
   React.useEffect(() => {
@@ -178,9 +178,9 @@ function BottomDrawerContent({
 
       const currentY = y.get();
       const maxDragOffset = finalExpandedHeight - collapsedHeight;
-      const midpoint = maxDragOffset / 2;
+      const snapThreshold = maxDragOffset * 0.1;
 
-      const velocityThreshold = 300;
+      const velocityThreshold = 100;
       const hasSignificantVelocity = Math.abs(info.velocity.y) > velocityThreshold;
 
       if (hasSignificantVelocity) {
@@ -191,14 +191,14 @@ function BottomDrawerContent({
         }
       } else {
         if (isOpen) {
-          const shouldClose = currentY > midpoint;
+          const shouldClose = currentY > snapThreshold;
           if (shouldClose) {
             close();
           } else {
             y.set(0);
           }
         } else {
-          const shouldOpen = currentY < midpoint;
+          const shouldOpen = currentY < maxDragOffset - snapThreshold;
           if (shouldOpen) {
             open();
           } else {
@@ -261,7 +261,7 @@ function BottomDrawerContent({
       }}
       drag={enableDrag ? "y" : false}
       dragConstraints={{ top: 0, bottom: maxDragOffset }}
-      dragElastic={0.1}
+      dragElastic={0}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onClick={handleClick}

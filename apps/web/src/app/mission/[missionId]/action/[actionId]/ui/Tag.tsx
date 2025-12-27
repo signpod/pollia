@@ -144,7 +144,7 @@ function BottomDrawerContentWithScrollReset({
   selectedIds: Set<string>;
   handleClick: (optionId: string) => void;
 }) {
-  const { isOpen } = useBottomDrawer();
+  const { isOpen, toggle } = useBottomDrawer();
   const bodyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -164,6 +164,7 @@ function BottomDrawerContentWithScrollReset({
       <BottomDrawer.Header
         showToggleButton={false}
         showCloseButton={false}
+        onClick={toggle}
         className="relative h-[74px] py-0 px-5"
       >
         <div className="flex flex-col gap-4 items-center w-full h-full">
