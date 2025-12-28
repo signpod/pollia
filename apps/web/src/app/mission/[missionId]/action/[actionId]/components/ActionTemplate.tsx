@@ -10,7 +10,7 @@ import { ChevronLeftIcon } from "lucide-react";
 import Image from "next/image";
 import { type PropsWithChildren, useEffect } from "react";
 
-const PROGRESS_BAR_WIDTH = "w-[230px]";
+const PROGRESS_BAR_WIDTH = "w-full";
 const PROGRESS_BAR_CONTAINER_HEIGHT = "h-[60px]";
 
 interface ActionTemplateProps extends PropsWithChildren {
@@ -50,9 +50,9 @@ export function SurveyQuestionTemplate({
     <FixedBottomLayout hasGradient>
       <FixedTopLayout>
         <FixedTopLayout.Content
-          className={cn("flex justify-center items-end", PROGRESS_BAR_CONTAINER_HEIGHT)}
+          className={cn("flex justify-center mt-3 w-full", PROGRESS_BAR_CONTAINER_HEIGHT)}
         >
-          <ProgressBar value={progressValue} className={PROGRESS_BAR_WIDTH} />
+          <ProgressBar value={progressValue} containerClassName={PROGRESS_BAR_WIDTH} />
         </FixedTopLayout.Content>
       </FixedTopLayout>
 
