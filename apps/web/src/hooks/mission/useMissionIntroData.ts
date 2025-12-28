@@ -11,7 +11,9 @@ export function useMissionIntroData(missionId: string) {
 
   const firstActionId = actionIds?.data?.actionIds?.[0];
   const isCompleted = missionResponse?.data?.completedAt != null;
-  const lastActionIndex = missionResponse?.data?.answers?.length ?? 0;
+  const lastActionIndex = missionResponse?.data?.answers?.length
+    ? missionResponse?.data?.answers?.length - 1
+    : 0;
   const nextActionId = actionIds?.data?.actionIds?.[lastActionIndex];
   const hasStartedMission = missionResponse?.data != null;
   const isEnabledToResume = hasStartedMission && !isCompleted && nextActionId !== undefined;

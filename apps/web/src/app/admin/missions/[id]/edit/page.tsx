@@ -3,6 +3,7 @@
 import { ErrorBoundary } from "@/app/admin/components/common/ErrorBoundary";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/admin/components/shadcn-ui/tabs";
 import { useReadMission } from "@/app/admin/hooks/use-read-mission";
+import { CheckCircle2, FileText, Gift, ListChecks } from "lucide-react";
 import { notFound } from "next/navigation";
 import { Suspense, use } from "react";
 import { AdminMissionHeader } from "../components/AdminMissionHeader";
@@ -34,11 +35,23 @@ export default function AdminMissionEditPage({ params }: AdminMissionEditPagePro
       />
 
       <Tabs defaultValue="basic" className="w-full">
-        <TabsList>
-          <TabsTrigger value="basic">기본 정보 수정</TabsTrigger>
-          <TabsTrigger value="actions">액션 수정</TabsTrigger>
-          <TabsTrigger value="reward">리워드 수정</TabsTrigger>
-          <TabsTrigger value="completion">완료 화면 수정</TabsTrigger>
+        <TabsList className="grid w-full max-w-[600px] grid-cols-4 gap-2 mb-6">
+          <TabsTrigger value="basic" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            기본 정보
+          </TabsTrigger>
+          <TabsTrigger value="actions" className="flex items-center gap-2">
+            <ListChecks className="h-4 w-4" />
+            액션
+          </TabsTrigger>
+          <TabsTrigger value="reward" className="flex items-center gap-2">
+            <Gift className="h-4 w-4" />
+            리워드
+          </TabsTrigger>
+          <TabsTrigger value="completion" className="flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4" />
+            완료 화면
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="basic" className="mt-6">

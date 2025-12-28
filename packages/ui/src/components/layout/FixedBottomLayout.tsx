@@ -15,7 +15,7 @@ const FixedBottomContext = createContext<FixedBottomContextType | null>(null);
 function GradientBlurLayer({ height }: { height: number }) {
   return (
     <div
-      className="pointer-events-none absolute inset-x-0 bottom-0 z-49"
+      className="pointer-events-none absolute inset-x-0 bottom-0 z-30"
       style={{
         height: `${height}px`,
         backdropFilter: "blur(100px)",
@@ -100,7 +100,7 @@ export function FixedBottomLayout({
           >
             {hasGradient && (
               <div
-                className="pointer-events-none absolute inset-x-0 bottom-0 z-49 h-[100px]"
+                className="pointer-events-none absolute inset-x-0 bottom-0 z-30 h-[100px]"
                 style={{
                   backgroundImage:
                     "linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 40%, rgba(255, 255, 255, 1) 100%)",

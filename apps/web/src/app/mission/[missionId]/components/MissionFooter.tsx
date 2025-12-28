@@ -4,29 +4,30 @@ import Link from "next/link";
 
 export function MissionFooter() {
   return (
-    <footer className="w-full bg-zinc-700 px-5 py-4 flex flex-col gap-4">
+    <footer className="w-full p-5 flex gap-4 items-center justify-between">
+      <div className="flex gap-2 items-center">
+        <Image
+          src="/images/pollia-logo.png"
+          alt="Pollia"
+          width={50}
+          height={16}
+          className="w-auto h-4 object-contain object-left"
+        />
+        <Typo.Body size="small" className="text-zinc-300">
+          © Pollia All rights reserved.
+        </Typo.Body>
+      </div>
+
       <Link
         href={process.env.NEXT_PUBLIC_PRIVACY_POLICY_URL}
         target="_blank"
         rel="noopener noreferrer"
         className="text-zinc-400"
       >
-        <Typo.Body size="medium" className="text-disabled">
+        <Typo.Body size="small" className="text-info">
           개인정보처리방침
         </Typo.Body>
       </Link>
-
-      <Image
-        src="/images/pollia-logo-white.png"
-        alt="Pollia"
-        width={100}
-        height={100}
-        className="w-auto h-10 object-contain object-left"
-      />
-
-      <Typo.Body size="medium" className="text-info">
-        © Pollia All rights reserved.
-      </Typo.Body>
     </footer>
   );
 }

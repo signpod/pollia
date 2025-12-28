@@ -11,7 +11,7 @@ interface MissionClientWrapperProps {
 
 export function MissionClientWrapper({ initialError }: MissionClientWrapperProps) {
   return (
-    <FixedBottomLayout className="bg-zinc-700 min-h-screen" hasGradientBlur>
+    <FixedBottomLayout className="min-h-screen" hasGradientBlur>
       <FixedTopLayout>
         <MissionIntro initialError={initialError} />
       </FixedTopLayout>

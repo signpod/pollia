@@ -1,5 +1,5 @@
 "use client";
-import { MissionSankeyChart } from "@/app/admin/components/MissionSankeyChart";
+import { FunnelViewTabs } from "@/app/admin/components/FunnelViewTabs";
 import {
   Card,
   CardContent,
@@ -54,7 +54,7 @@ export default function AdminMissionTrackingPage({ params }: AdminMissionTrackin
           )}
 
           {!isLoading && !error && funnelResponse?.data && (
-            <MissionSankeyChart data={funnelResponse.data} />
+            <FunnelViewTabs data={funnelResponse.data} />
           )}
         </CardContent>
       </Card>

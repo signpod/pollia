@@ -111,7 +111,20 @@ export class TrackingActionService {
       return map;
     }, new Map<string, Set<string>>());
 
-    return { sessionEntries, sessionResponses };
+    return {
+      sessionEntries,
+      sessionResponses,
+      entries: entries.map(e => ({
+        sessionId: e.sessionId,
+        actionId: e.actionId,
+        enteredAt: e.enteredAt,
+      })),
+      responses: responses.map(r => ({
+        sessionId: r.sessionId,
+        actionId: r.actionId,
+        respondedAt: r.respondedAt,
+      })),
+    };
   }
 
   private calculateStatistics(actions: ActionSummary[], sessionMaps: SessionMaps): Statistics {
@@ -261,7 +274,7 @@ export class TrackingActionService {
     actions: ActionSummary[],
     sessionMaps: SessionMaps,
   ): MissionFunnelData["metadata"]["actions"] {
-    const { sessionEntries, sessionResponses } = sessionMaps;
+    const { sessionEntries, sessionResponses, entries, responses } = sessionMaps;
 
     return actions.map(action => {
       const entryCount = Array.from(sessionEntries.values()).filter(actionSet =>
@@ -273,6 +286,13 @@ export class TrackingActionService {
       ).length;
 
       const entryToResponseRate = entryCount > 0 ? (responseCount / entryCount) * 100 : 0;
+      const inProgressCount = entryCount - responseCount;
+
+      const averageCompletionTimeMs = this.calculateAverageCompletionTime(
+        action.id,
+        entries,
+        responses,
+      );
 
       return {
         id: action.id,
@@ -281,8 +301,51 @@ export class TrackingActionService {
         entryCount,
         responseCount,
         entryToResponseRate,
+        inProgressCount,
+        averageCompletionTimeMs,
       };
     });
+  }
+
+  private calculateAverageCompletionTime(
+    actionId: string,
+    entries: SessionMaps["entries"],
+    responses: SessionMaps["responses"],
+  ): number | null {
+    const actionEntries = entries.filter(e => e.actionId === actionId);
+    const actionResponses = responses.filter(r => r.actionId === actionId);
+
+    if (actionResponses.length === 0) {
+      return null;
+    }
+
+    const entryMap = new Map<string, Date>();
+    for (const entry of actionEntries) {
+      const key = `${entry.sessionId}-${entry.actionId}`;
+      const existing = entryMap.get(key);
+      if (!existing || entry.enteredAt < existing) {
+        entryMap.set(key, entry.enteredAt);
+      }
+    }
+
+    const completionTimes: number[] = [];
+    for (const response of actionResponses) {
+      const key = `${response.sessionId}-${response.actionId}`;
+      const entryTime = entryMap.get(key);
+      if (entryTime) {
+        const completionTimeMs = response.respondedAt.getTime() - entryTime.getTime();
+        if (completionTimeMs >= 0) {
+          completionTimes.push(completionTimeMs);
+        }
+      }
+    }
+
+    if (completionTimes.length === 0) {
+      return null;
+    }
+
+    const sum = completionTimes.reduce((acc, time) => acc + time, 0);
+    return Math.round(sum / completionTimes.length);
   }
 }
 

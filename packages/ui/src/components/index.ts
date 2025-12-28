@@ -24,6 +24,7 @@ export * from "./common/DateAndTimePicker";
 export * from "./common/TimePicker";
 export * from "./common/Dialog";
 export * from "./common/Drawer";
+export * from "./common/BottomDrawer";
 export * from "./common/IconButton";
 export * from "./common/CounterInput";
 export * from "./common/ProcessChip";
@@ -37,6 +38,7 @@ export * from "./common/TiptapEditor";
 export * from "./common/TiptapViewer";
 export * from "./common/Textarea";
 export * from "./common/ProgressBar";
+export * from "./common/ProgressBarV2";
 export * from "./common/RatingScale";
 export * from "./common/StarScale";
 

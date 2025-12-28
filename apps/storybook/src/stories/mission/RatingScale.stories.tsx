@@ -424,6 +424,106 @@ export const WithoutOrder: Story = {
   },
 };
 
+export const VerticalThreeAndFourOptions: Story = {
+  render: () => {
+    const [threeValue, setThreeValue] = useState(2);
+    const [fourValue, setFourValue] = useState(2);
+    return (
+      <div className="flex min-h-[500px] w-[700px] gap-12 p-8">
+        <div className="flex flex-1 flex-col gap-4">
+          <h3 className="text-base font-semibold">3개 옵션 (세로형)</h3>
+          <RatingScale
+            value={threeValue}
+            onChange={setThreeValue}
+            options={[
+              { id: "1", title: "낮음", description: "기대 이하입니다", order: 1 },
+              { id: "2", title: "보통", description: "평균 수준입니다", order: 2 },
+              { id: "3", title: "높음", description: "기대 이상입니다", order: 3 },
+            ]}
+          />
+          <p className="text-sm text-zinc-600">선택된 값: {threeValue}</p>
+        </div>
+        <div className="flex flex-1 flex-col gap-4">
+          <h3 className="text-base font-semibold">4개 옵션 (세로형)</h3>
+          <RatingScale
+            value={fourValue}
+            onChange={setFourValue}
+            options={[
+              { id: "1", title: "매우 불만족", description: "전혀 좋지 않아요", order: 1 },
+              { id: "2", title: "불만족", description: "아쉬운 점이 있어요", order: 2 },
+              { id: "3", title: "만족", description: "괜찮았어요", order: 3 },
+              { id: "4", title: "매우 만족", description: "정말 좋았어요", order: 4 },
+            ]}
+          />
+          <p className="text-sm text-zinc-600">선택된 값: {fourValue}</p>
+        </div>
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "3개 및 4개 옵션을 세로형으로 표시하는 예시입니다. description이 있으면 자동으로 세로형 레이아웃으로 전환됩니다.",
+      },
+    },
+  },
+};
+
+export const VerticalWithLongText: Story = {
+  render: () => {
+    const [value, setValue] = useState(3);
+    return (
+      <div className="flex min-h-[600px] w-[600px] items-center justify-center p-8">
+        <RatingScale
+          value={value}
+          onChange={setValue}
+          options={[
+            {
+              id: "1",
+              title: "매우 불만족해요",
+              description: "기대에 못 미쳤어요. 개선이 필요합니다.",
+              order: 1,
+            },
+            {
+              id: "2",
+              title: "조금 아쉬워요",
+              description: "몇 가지 좋은 점도 있었지만 부족했어요.",
+              order: 2,
+            },
+            {
+              id: "3",
+              title: "보통이에요",
+              description: "평균 수준이에요. 특별히 좋지도 나쁘지도 않아요. 이해하셨겠죠?",
+              order: 3,
+            },
+            {
+              id: "4",
+              title: "만족스러워요",
+              description: "전반적으로 좋았어요. 다시 이용할 의향이 있어요.",
+              order: 4,
+            },
+            {
+              id: "5",
+              title: "매우 만족해요",
+              description: "정말 훌륭했어요! 주변에 적극 추천하고 싶어요.",
+              order: 5,
+            },
+          ]}
+        />
+      </div>
+    );
+  },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "title은 한 줄, description은 두 줄 이내로 표시되는 텍스트 케이스입니다. title이 길어지면 description이 자동으로 다음 줄로 줄바꿈됩니다.",
+      },
+    },
+  },
+};
+
 export const Interactive: Story = {
   render: () => {
     const [answers, setAnswers] = useState<Record<string, number>>({
