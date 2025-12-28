@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import {
   ButtonV2,
   FixedBottomLayout,
@@ -8,6 +9,9 @@ import {
 import { ChevronLeftIcon } from "lucide-react";
 import Image from "next/image";
 import { type PropsWithChildren, useEffect } from "react";
+
+const PROGRESS_BAR_WIDTH = "w-[230px]";
+const PROGRESS_BAR_CONTAINER_HEIGHT = "h-[60px]";
 
 interface ActionTemplateProps extends PropsWithChildren {
   currentOrder: number;
@@ -45,8 +49,10 @@ export function SurveyQuestionTemplate({
   return (
     <FixedBottomLayout hasGradient>
       <FixedTopLayout>
-        <FixedTopLayout.Content className="flex justify-center items-end h-[60px]">
-          <ProgressBarV2 value={progressValue} className="w-[230px]" />
+        <FixedTopLayout.Content
+          className={cn("flex justify-center items-end", PROGRESS_BAR_CONTAINER_HEIGHT)}
+        >
+          <ProgressBarV2 value={progressValue} className={PROGRESS_BAR_WIDTH} />
         </FixedTopLayout.Content>
       </FixedTopLayout>
 

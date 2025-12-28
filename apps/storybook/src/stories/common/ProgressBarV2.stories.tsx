@@ -42,10 +42,10 @@ import { ProgressBarV2 } from "@repo/ui/components";
 |------|------|---------|-------------|
 | \`value\` | \`number\` | - | 진행률 (0-100) |
 | \`className\` | \`string\` | - | 컨테이너의 CSS 클래스 |
-| \`activeColor\` | \`string\` | \`"bg-icon-default"\` | 활성화된 dash 선의 색상 |
-| \`inactiveColor\` | \`string\` | \`"bg-light"\` | 비활성화된 dash 선의 색상 |
-| \`ticActiveColor\` | \`string\` | \`"bg-icon-default"\` | 활성화된 tic의 색상 |
-| \`ticInactiveColor\` | \`string\` | \`"bg-light"\` | 비활성화된 tic의 색상 |
+| \`activeColor\` | \`string\` | \`"bg-yellow-500"\` | 활성화된 dash 선의 색상 |
+| \`inactiveColor\` | \`string\` | \`"bg-zinc-200"\` | 비활성화된 dash 선의 색상 |
+| \`ticActiveColor\` | \`string\` | - | 활성화된 tic의 색상 (기본값: activeColor) |
+| \`ticInactiveColor\` | \`string\` | - | 비활성화된 tic의 색상 (기본값: inactiveColor) |
 
 ## 예시
 

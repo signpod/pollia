@@ -16,14 +16,18 @@ interface ProgressBarV2Props {
 
 const TIC_POSITIONS = [0, 25, 50, 75, 100];
 const DASHES_PER_SECTION = 5;
+const SECTION_SIZE = 25;
 
 export function ProgressBarV2({
   value,
   className,
   activeColor = "bg-yellow-500",
   inactiveColor = "bg-zinc-200",
+  ticActiveColor,
+  ticInactiveColor,
 }: ProgressBarV2Props) {
   const clampedValue = Math.max(0, Math.min(100, value));
+  const animatedTicsSetRef = React.useRef<Set<number>>(new Set());
 
   const getNextTicAfterActive = () => {
     const activePositions = TIC_POSITIONS.filter(pos => clampedValue > pos);
@@ -48,9 +52,9 @@ export function ProgressBarV2({
   };
 
   const getDashState = (sectionIndex: number, dashIndex: number) => {
-    const sectionStart = sectionIndex * 25;
-    const dashStart = sectionStart + dashIndex * (25 / DASHES_PER_SECTION);
-    const dashEnd = dashStart + 25 / DASHES_PER_SECTION;
+    const sectionStart = sectionIndex * SECTION_SIZE;
+    const dashStart = sectionStart + dashIndex * (SECTION_SIZE / DASHES_PER_SECTION);
+    const dashEnd = dashStart + SECTION_SIZE / DASHES_PER_SECTION;
 
     if (clampedValue >= dashEnd) {
       return "full";
@@ -62,9 +66,9 @@ export function ProgressBarV2({
   };
 
   const getDashFillPercentage = (sectionIndex: number, dashIndex: number) => {
-    const sectionStart = sectionIndex * 25;
-    const dashStart = sectionStart + dashIndex * (25 / DASHES_PER_SECTION);
-    const dashEnd = dashStart + 25 / DASHES_PER_SECTION;
+    const sectionStart = sectionIndex * SECTION_SIZE;
+    const dashStart = sectionStart + dashIndex * (SECTION_SIZE / DASHES_PER_SECTION);
+    const dashEnd = dashStart + SECTION_SIZE / DASHES_PER_SECTION;
 
     if (clampedValue <= dashStart) {
       return 0;
@@ -88,11 +92,19 @@ export function ProgressBarV2({
           return (
             <React.Fragment key={position}>
               {isActive ? (
-                <CheckTick key={`check-${position}`} position={position} />
+                <CheckTick
+                  key={`check-${position}`}
+                  position={position}
+                  animatedTicsSetRef={animatedTicsSetRef}
+                  activeColor={ticActiveColor || activeColor}
+                />
               ) : isCurrent ? (
-                <CurrentTick key={`current-${position}`} />
+                <CurrentTick
+                  key={`current-${position}`}
+                  activeColor={ticActiveColor || activeColor}
+                />
               ) : (
-                <Tick key={`tick-${position}`} />
+                <Tick key={`tick-${position}`} inactiveColor={ticInactiveColor || inactiveColor} />
               )}
 
               {!isLast && (
@@ -103,7 +115,7 @@ export function ProgressBarV2({
 
                     return (
                       <div
-                        key={dashIndex}
+                        key={`dash-${index}-${dashIndex}`}
                         className="relative h-[2px] flex-1 overflow-hidden rounded"
                       >
                         <div
@@ -130,16 +142,22 @@ export function ProgressBarV2({
   );
 }
 
-const animatedTicsSet = new Set<number>();
-
-function CheckTick({ position }: { position: number }) {
-  const shouldAnimateOnMount = React.useRef(!animatedTicsSet.has(position));
+function CheckTick({
+  position,
+  animatedTicsSetRef,
+  activeColor,
+}: {
+  position: number;
+  animatedTicsSetRef: React.MutableRefObject<Set<number>>;
+  activeColor: string;
+}) {
+  const shouldAnimateOnMount = React.useRef(!animatedTicsSetRef.current.has(position));
 
   React.useEffect(() => {
     if (shouldAnimateOnMount.current) {
-      animatedTicsSet.add(position);
+      animatedTicsSetRef.current.add(position);
     }
-  }, [position]);
+  }, [position, animatedTicsSetRef]);
 
   return (
     <motion.div
@@ -148,26 +166,39 @@ function CheckTick({ position }: { position: number }) {
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0 }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
-      className="size-7 bg-yellow-500 rounded-full flex items-center justify-center m-[-8px] shadow-[0_2px_4px_0_rgba(197,95,0,0.2)] inset-shadow-[0_2px_3px_0_rgba(197,95,0,0.2)]"
+      className={cn(
+        "size-7 rounded-full flex items-center justify-center m-[-8px] shadow-[0_2px_4px_0_rgba(197,95,0,0.2)] inset-shadow-[0_2px_3px_0_rgba(197,95,0,0.2)]",
+        activeColor,
+      )}
     >
       <CheckIcon className="size-3 text-white" />
     </motion.div>
   );
 }
 
-function Tick() {
-  return <div className="size-[10px] rounded-full bg-zinc-200" />;
+function Tick({ inactiveColor }: { inactiveColor: string }) {
+  return <div className={cn("size-[10px] rounded-full", inactiveColor)} />;
 }
 
-function CurrentTick() {
+function CurrentTick({ activeColor }: { activeColor: string }) {
+  const getBgWithOpacity = (color: string) => {
+    if (color.includes("yellow-500")) return "bg-yellow-500/20";
+    if (color.includes("blue-500")) return "bg-blue-500/20";
+    if (color.includes("violet-500")) return "bg-violet-500/20";
+    return "bg-yellow-500/20";
+  };
+
   return (
     <motion.div
       initial={{ opacity: 1, scale: 0.8 }}
       animate={{ scale: [0.8, 1.2, 0.8] }}
       transition={{ duration: 1.5, ease: "easeInOut", repeat: Number.POSITIVE_INFINITY }}
-      className="size-7 rounded-full bg-yellow-500/20 flex items-center justify-center m-[-8.5px]"
+      className={cn(
+        "size-7 rounded-full flex items-center justify-center m-[-8.5px]",
+        getBgWithOpacity(activeColor),
+      )}
     >
-      <div className="size-[10px] rounded-full bg-yellow-500" />
+      <div className={cn("size-[10px] rounded-full", activeColor)} />
     </motion.div>
   );
 }
