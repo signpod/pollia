@@ -135,11 +135,11 @@ function useSurveySubjectiveValue(
     }
   }
 
-  const feedbackMessage =
-    FEEDBACK_MESSAGES[Math.min(subjectiveValue.length, MAX_FEEDBACK_MESSAGE_LENGTH)];
-
   function handleBlur() {
     setShowError(true);
+    const feedbackMessage =
+      FEEDBACK_MESSAGES[Math.min(subjectiveValue.length, MAX_FEEDBACK_MESSAGE_LENGTH)] ??
+      FEEDBACK_MESSAGES[1];
     setHelperText(feedbackMessage);
   }
 
@@ -159,7 +159,7 @@ function useSurveySubjectiveValue(
   };
 }
 
-const MAX_FEEDBACK_MESSAGE_LENGTH = 2;
+const MAX_FEEDBACK_MESSAGE_LENGTH = 1;
 
 const FEEDBACK_MESSAGES: Record<number, string> = {
   1: "조금 더 구체적으로 적어주세요! 👀",
