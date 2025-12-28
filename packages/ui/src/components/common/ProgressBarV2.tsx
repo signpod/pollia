@@ -18,6 +18,8 @@ const TIC_POSITIONS = [0, 25, 50, 75, 100];
 const DASHES_PER_SECTION = 5;
 const SECTION_SIZE = 25;
 
+const animatedTicsSet = new Set<string>();
+
 export function ProgressBarV2({
   value,
   className,
@@ -27,7 +29,6 @@ export function ProgressBarV2({
   ticInactiveColor,
 }: ProgressBarV2Props) {
   const clampedValue = Math.max(0, Math.min(100, value));
-  const animatedTicsSetRef = React.useRef<Set<number>>(new Set());
 
   const getNextTicAfterActive = () => {
     const activePositions = TIC_POSITIONS.filter(pos => clampedValue > pos);
@@ -94,8 +95,7 @@ export function ProgressBarV2({
               {isActive ? (
                 <CheckTick
                   key={`check-${position}`}
-                  position={position}
-                  animatedTicsSetRef={animatedTicsSetRef}
+                  layoutId={`tic-${position}`}
                   activeColor={ticActiveColor || activeColor}
                 />
               ) : isCurrent ? (
@@ -143,26 +143,24 @@ export function ProgressBarV2({
 }
 
 function CheckTick({
-  position,
-  animatedTicsSetRef,
+  layoutId,
   activeColor,
 }: {
-  position: number;
-  animatedTicsSetRef: React.MutableRefObject<Set<number>>;
+  layoutId: string;
   activeColor: string;
 }) {
-  const shouldAnimateOnMount = React.useRef(!animatedTicsSetRef.current.has(position));
+  const shouldAnimate = React.useRef(!animatedTicsSet.has(layoutId));
 
   React.useEffect(() => {
-    if (shouldAnimateOnMount.current) {
-      animatedTicsSetRef.current.add(position);
+    if (shouldAnimate.current) {
+      animatedTicsSet.add(layoutId);
     }
-  }, [position, animatedTicsSetRef]);
+  }, [layoutId]);
 
   return (
     <motion.div
-      layoutId={`tic-${position}`}
-      initial={shouldAnimateOnMount.current ? { opacity: 0, scale: 0 } : false}
+      layoutId={layoutId}
+      initial={shouldAnimate.current ? { opacity: 0, scale: 0 } : false}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0 }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
