@@ -3,7 +3,7 @@ import {
   ButtonV2,
   FixedBottomLayout,
   FixedTopLayout,
-  ProgressBarV2,
+  ProgressBar,
   Typo,
 } from "@repo/ui/components";
 import { ChevronLeftIcon } from "lucide-react";
@@ -52,7 +52,7 @@ export function SurveyQuestionTemplate({
         <FixedTopLayout.Content
           className={cn("flex justify-center items-end", PROGRESS_BAR_CONTAINER_HEIGHT)}
         >
-          <ProgressBarV2 value={progressValue} className={PROGRESS_BAR_WIDTH} />
+          <ProgressBar value={progressValue} className={PROGRESS_BAR_WIDTH} />
         </FixedTopLayout.Content>
       </FixedTopLayout>
 

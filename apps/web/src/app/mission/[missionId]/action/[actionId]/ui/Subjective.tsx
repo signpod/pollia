@@ -26,11 +26,10 @@ export function Subjective({
     subjectiveValue,
     handleSubjectiveValueChange,
     handleBlur,
-    feedbackMessage,
+    helperText,
     validationResult,
     showError,
   } = useSurveySubjectiveValue(actionData.id, missionResponse, updateCanGoNext, onAnswerChange);
-
   const isNextDisabled = isNextDisabledProp || !validationResult.success;
   const errorMessage = showError ? validationResult.error?.issues[0]?.message : undefined;
 
@@ -58,7 +57,7 @@ export function Subjective({
         required
         rows={4}
         resize="vertical"
-        helperText={feedbackMessage}
+        helperText={helperText}
         errorMessage={errorMessage}
       />
     </SurveyQuestionTemplate>
@@ -71,6 +70,7 @@ function useSurveySubjectiveValue(
   updateCanGoNext?: (canGoNext: boolean) => void,
   onAnswerChange?: (answer: ActionAnswerItem) => void,
 ) {
+  const [helperText, setHelperText] = useState<string | undefined>(undefined);
   const initialTextValue = useMemo(() => {
     if (!missionResponse?.data?.answers || missionResponse.data.answers.length === 0) {
       return "";
@@ -137,10 +137,11 @@ function useSurveySubjectiveValue(
 
   function handleBlur() {
     setShowError(true);
+    const feedbackMessage =
+      FEEDBACK_MESSAGES[Math.min(subjectiveValue.length, MAX_FEEDBACK_MESSAGE_LENGTH)] ??
+      FEEDBACK_MESSAGES[1];
+    setHelperText(feedbackMessage);
   }
-
-  const feedbackMessage =
-    FEEDBACK_MESSAGES[Math.min(subjectiveValue.length, MAX_FEEDBACK_MESSAGE_LENGTH)];
 
   const validationResult = submitAnswerItemSchema.safeParse({
     actionId,
@@ -152,15 +153,14 @@ function useSurveySubjectiveValue(
     subjectiveValue,
     handleSubjectiveValueChange,
     handleBlur,
-    feedbackMessage,
+    helperText,
     validationResult,
     showError,
   };
 }
 
-const MAX_FEEDBACK_MESSAGE_LENGTH = 2;
+const MAX_FEEDBACK_MESSAGE_LENGTH = 1;
 
 const FEEDBACK_MESSAGES: Record<number, string> = {
-  1: "앗! 혹시 답변하기 곤란하신가요 😔",
-  2: "답변하신 내용이 큰 도움이 되고 있어요! 🫡",
+  1: "조금 더 구체적으로 적어주세요! 👀",
 };
