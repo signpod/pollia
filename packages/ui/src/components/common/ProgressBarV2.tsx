@@ -88,7 +88,7 @@ export function ProgressBarV2({
           return (
             <React.Fragment key={position}>
               {isActive ? (
-                <CheckTick key={`check-${position}`} />
+                <CheckTick key={`check-${position}`} position={position} />
               ) : isCurrent ? (
                 <CurrentTick key={`current-${position}`} />
               ) : (
@@ -130,10 +130,21 @@ export function ProgressBarV2({
   );
 }
 
-function CheckTick() {
+const animatedTicsSet = new Set<number>();
+
+function CheckTick({ position }: { position: number }) {
+  const shouldAnimateOnMount = React.useRef(!animatedTicsSet.has(position));
+
+  React.useEffect(() => {
+    if (shouldAnimateOnMount.current) {
+      animatedTicsSet.add(position);
+    }
+  }, [position]);
+
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0 }}
+      layoutId={`tic-${position}`}
+      initial={shouldAnimateOnMount.current ? { opacity: 0, scale: 0 } : false}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0 }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
