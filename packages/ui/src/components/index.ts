@@ -38,6 +38,7 @@ export * from "./common/TiptapEditor";
 export * from "./common/TiptapViewer";
 export * from "./common/Textarea";
 export * from "./common/ProgressBar";
+export * from "./common/ProgressBarV2";
 export * from "./common/RatingScale";
 export * from "./common/StarScale";
 
