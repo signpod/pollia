@@ -3,6 +3,7 @@
 import { ROUTES } from "@/constants/routes";
 import { useMissionPassword } from "@/hooks/mission/useMissionPassword";
 import { ButtonV2, Typo } from "@repo/ui/components";
+import { motion } from "framer-motion";
 import { Asterisk, Minus, X } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { Keyboard } from "./ui";
@@ -51,7 +52,13 @@ export default function MissionPassword() {
           {Array.from({ length: 6 }, (_, index) => (
             <div key={`password-input-${inputPassword[index]}-${index}`}>
               {inputPassword[index] ? (
-                <Asterisk className="size-7 text-disabled text-point" />
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                >
+                  <Asterisk className="size-7 text-disabled text-point" />
+                </motion.div>
               ) : (
                 <Minus className="size-7 text-disabled" />
               )}
@@ -67,11 +74,16 @@ export default function MissionPassword() {
             </div>
           ) : (
             errorCount > 0 && (
-              <div className="absolute top-[calc(100%+16px)] left-1/2 -translate-x-1/2">
+              <motion.div
+                className="absolute top-[calc(100%+16px)] left-1/2 -translate-x-1/2"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+              >
                 <Typo.Body size="medium" className="text-error whitespace-nowrap">
                   {`비밀번호 입력 오류(${errorCount}/5)`}
                 </Typo.Body>
-              </div>
+              </motion.div>
             )
           )}
         </div>
