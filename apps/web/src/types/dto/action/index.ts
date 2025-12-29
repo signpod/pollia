@@ -1,4 +1,5 @@
 import type { ActionType } from "@/types/domain/action";
+import type { Action, ActionOption } from "@prisma/client";
 
 // ============================================================================
 // Action Creation DTOs
@@ -13,6 +14,7 @@ export interface CreateMultipleChoiceActionRequest {
   imageFileUploadId?: string;
   maxSelections: number;
   order: number;
+  isRequired?: boolean;
   options: {
     title: string;
     description?: string;
@@ -41,6 +43,7 @@ export interface CreateScaleActionRequest {
   imageUrl?: string;
   imageFileUploadId?: string;
   order: number;
+  isRequired?: boolean;
   options: {
     title: string;
     description?: string;
@@ -69,6 +72,7 @@ export interface CreateSubjectiveActionRequest {
   imageUrl?: string;
   imageFileUploadId?: string;
   order: number;
+  isRequired?: boolean;
 }
 
 export interface CreateSubjectiveActionResponse {
@@ -91,6 +95,7 @@ export interface CreateTagActionRequest {
   imageFileUploadId?: string;
   order: number;
   maxSelections?: number;
+  isRequired?: boolean;
   options: {
     title: string;
     description?: string;
@@ -119,6 +124,7 @@ export interface CreateRatingActionRequest {
   imageUrl?: string;
   imageFileUploadId?: string;
   order: number;
+  isRequired?: boolean;
 }
 
 export interface CreateRatingActionResponse {
@@ -140,6 +146,7 @@ export interface CreateImageActionRequest {
   imageUrl?: string;
   imageFileUploadId?: string;
   order: number;
+  isRequired?: boolean;
 }
 
 export interface CreateImageActionResponse {
@@ -172,6 +179,7 @@ export interface UpdateActionRequest {
   imageFileUploadId?: string;
   order?: number;
   maxSelections?: number;
+  isRequired?: boolean;
   options?: UpdateActionOptionRequest[];
 }
 
@@ -179,20 +187,22 @@ export interface UpdateActionRequest {
 // Action Read DTOs
 // ============================================================================
 
+// Action 목록 조회 응답 (options 제외)
 export interface GetActionResponse {
-  data: {
-    id: string;
-    title: string;
-    description?: string | null;
-    imageUrl?: string | null;
-    type: ActionType;
-    order: number;
-    maxSelections: number | null;
-    isRequired: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-    missionId: string | null;
-  }[];
+  data: Pick<
+    Action,
+    | "id"
+    | "title"
+    | "description"
+    | "imageUrl"
+    | "type"
+    | "order"
+    | "maxSelections"
+    | "isRequired"
+    | "createdAt"
+    | "updatedAt"
+    | "missionId"
+  >[];
 }
 
 // Mission의 Action ID 배열 조회 응답 타입
@@ -202,31 +212,27 @@ export interface GetActionIdsResponse {
   };
 }
 
-// Action 상세 조회 응답 타입
+// Action 상세 조회 응답 타입 (options 포함)
 export interface GetActionByIdResponse {
-  data: {
-    id: string;
-    title: string;
-    description: string | null;
-    imageUrl: string | null;
-    type: ActionType;
-    order: number;
-    maxSelections: number | null;
-    isRequired: boolean;
-    missionId: string | null;
-    options: {
-      id: string;
-      title: string;
-      description: string | null;
-      imageUrl: string | null;
-      order: number;
-    }[];
-    createdAt: Date;
-    updatedAt: Date;
+  data: Pick<
+    Action,
+    | "id"
+    | "title"
+    | "description"
+    | "imageUrl"
+    | "type"
+    | "order"
+    | "maxSelections"
+    | "isRequired"
+    | "missionId"
+    | "createdAt"
+    | "updatedAt"
+  > & {
+    options: Pick<ActionOption, "id" | "title" | "description" | "imageUrl" | "order">[];
   };
 }
 
-// Action 상세 타입
+// Action 상세 타입 (surveyId는 missionId의 별칭)
 export interface ActionDetail {
   id: string;
   title: string;
@@ -237,13 +243,7 @@ export interface ActionDetail {
   maxSelections: number | null;
   isRequired: boolean;
   surveyId: string | null;
-  options: {
-    id: string;
-    title: string;
-    description: string | null;
-    imageUrl: string | null;
-    order: number;
-  }[];
+  options: Pick<ActionOption, "id" | "title" | "description" | "imageUrl" | "order">[];
   createdAt: Date;
   updatedAt: Date;
 }
