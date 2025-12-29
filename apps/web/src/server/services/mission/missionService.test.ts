@@ -1,3 +1,4 @@
+import type { ActionRepository } from "@/server/repositories/action/actionRepository";
 import type { MissionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import type { MissionRepository } from "@/server/repositories/mission/missionRepository";
 import { MissionService } from ".";
@@ -12,13 +13,11 @@ describe("MissionService", () => {
   let missionService: MissionService;
   let mockRepository: jest.Mocked<MissionRepository>;
   let mockResponseRepository: jest.Mocked<MissionResponseRepository>;
+  let mockActionRepository: jest.Mocked<ActionRepository>;
 
   beforeEach(() => {
     mockRepository = {
       findById: jest.fn(),
-      findActionIdsByMissionId: jest.fn(),
-      findActionById: jest.fn(),
-      findActionsByMissionId: jest.fn(),
       findByUserId: jest.fn(),
       createWithActions: jest.fn(),
       update: jest.fn(),
@@ -40,7 +39,25 @@ describe("MissionService", () => {
       countCompletedByMissionId: jest.fn(),
     } as jest.Mocked<MissionResponseRepository>;
 
-    missionService = new MissionService(mockRepository, mockResponseRepository);
+    mockActionRepository = {
+      findById: jest.fn(),
+      findByIdWithOptions: jest.fn(),
+      findActionIdsByMissionId: jest.fn(),
+      findDetailsByMissionId: jest.fn(),
+      findMany: jest.fn(),
+      create: jest.fn(),
+      createMultipleChoice: jest.fn(),
+      update: jest.fn(),
+      updateWithOptions: jest.fn(),
+      delete: jest.fn(),
+      updateManyOrders: jest.fn(),
+    } as jest.Mocked<ActionRepository>;
+
+    missionService = new MissionService(
+      mockRepository,
+      mockResponseRepository,
+      mockActionRepository,
+    );
   });
 
   afterEach(() => {
@@ -97,7 +114,7 @@ describe("MissionService", () => {
       const mockActionIds = ["a1", "a2", "a3"];
 
       mockRepository.findById.mockResolvedValue(mockMission);
-      mockRepository.findActionIdsByMissionId.mockResolvedValue(mockActionIds);
+      mockActionRepository.findActionIdsByMissionId.mockResolvedValue(mockActionIds);
 
       // When
       const result = await missionService.getMissionActionIds("mission-1");
@@ -105,7 +122,7 @@ describe("MissionService", () => {
       // Then
       expect(result).toEqual({ actionIds: ["a1", "a2", "a3"] });
       expect(mockRepository.findById).toHaveBeenCalledWith("mission-1");
-      expect(mockRepository.findActionIdsByMissionId).toHaveBeenCalledWith("mission-1");
+      expect(mockActionRepository.findActionIdsByMissionId).toHaveBeenCalledWith("mission-1");
     });
 
     it("Mission이 없으면 404 에러를 던진다", async () => {
@@ -118,7 +135,7 @@ describe("MissionService", () => {
       );
 
       // findActionIdsByMissionId가 호출되지 않았는지 확인
-      expect(mockRepository.findActionIdsByMissionId).not.toHaveBeenCalled();
+      expect(mockActionRepository.findActionIdsByMissionId).not.toHaveBeenCalled();
     });
   });
 
@@ -152,22 +169,23 @@ describe("MissionService", () => {
           },
         ],
         createdAt: new Date("2024-01-01"),
+        isRequired: false,
         updatedAt: new Date("2024-01-01"),
       };
-      mockRepository.findActionById.mockResolvedValue(mockAction);
+      mockActionRepository.findById.mockResolvedValue(mockAction);
 
       // When
       const result = await missionService.getActionById("a1");
 
       // Then
       expect(result).toEqual(mockAction);
-      expect(mockRepository.findActionById).toHaveBeenCalledWith("a1");
-      expect(mockRepository.findActionById).toHaveBeenCalledTimes(1);
+      expect(mockActionRepository.findById).toHaveBeenCalledWith("a1");
+      expect(mockActionRepository.findById).toHaveBeenCalledTimes(1);
     });
 
     it("Action이 없으면 404 에러를 던진다", async () => {
       // Given
-      mockRepository.findActionById.mockResolvedValue(null);
+      mockActionRepository.findById.mockResolvedValue(null);
 
       // When & Then
       await expect(missionService.getActionById("invalid-id")).rejects.toThrow(
@@ -198,6 +216,7 @@ describe("MissionService", () => {
           order: 1,
           maxSelections: 1,
           missionId: "mission-1",
+          imageFileUploadId: null,
           options: [
             {
               id: "opt1",
@@ -208,6 +227,7 @@ describe("MissionService", () => {
             },
           ],
           createdAt: new Date("2024-01-01"),
+          isRequired: false,
           updatedAt: new Date("2024-01-01"),
         },
         {
@@ -219,14 +239,16 @@ describe("MissionService", () => {
           order: 2,
           maxSelections: null,
           missionId: "mission-1",
+          imageFileUploadId: null,
           options: [],
           createdAt: new Date("2024-01-01"),
+          isRequired: false,
           updatedAt: new Date("2024-01-01"),
         },
       ];
 
       mockRepository.findById.mockResolvedValue(mockMission);
-      mockRepository.findActionsByMissionId.mockResolvedValue(mockActions);
+      mockActionRepository.findDetailsByMissionId.mockResolvedValue(mockActions);
 
       // When
       const result = await missionService.getMissionActionsDetail("mission-1");
@@ -237,8 +259,8 @@ describe("MissionService", () => {
       expect(result[0]?.title).toBe("질문 1");
       expect(result[1]?.title).toBe("질문 2");
       expect(mockRepository.findById).toHaveBeenCalledWith("mission-1");
-      expect(mockRepository.findActionsByMissionId).toHaveBeenCalledWith("mission-1");
-      expect(mockRepository.findActionsByMissionId).toHaveBeenCalledTimes(1);
+      expect(mockActionRepository.findDetailsByMissionId).toHaveBeenCalledWith("mission-1");
+      expect(mockActionRepository.findDetailsByMissionId).toHaveBeenCalledTimes(1);
     });
 
     it("Mission이 없으면 404 에러를 던진다", async () => {
@@ -251,7 +273,7 @@ describe("MissionService", () => {
       );
 
       // findActionsByMissionId가 호출되지 않았는지 확인
-      expect(mockRepository.findActionsByMissionId).not.toHaveBeenCalled();
+      expect(mockActionRepository.findDetailsByMissionId).not.toHaveBeenCalled();
     });
 
     it("Mission은 존재하지만 Action이 없으면 빈 배열을 반환한다", async () => {
@@ -259,7 +281,7 @@ describe("MissionService", () => {
       const mockMission = createMockMission({ id: "mission-1", creatorId: "user-1" });
 
       mockRepository.findById.mockResolvedValue(mockMission);
-      mockRepository.findActionsByMissionId.mockResolvedValue([]);
+      mockActionRepository.findDetailsByMissionId.mockResolvedValue([]);
 
       // When
       const result = await missionService.getMissionActionsDetail("mission-1");
@@ -595,6 +617,7 @@ describe("MissionService", () => {
           order: 0,
           maxSelections: 1,
           missionId: "mission-1",
+          imageFileUploadId: null,
           options: [
             {
               id: "opt-1",
@@ -612,6 +635,7 @@ describe("MissionService", () => {
             },
           ],
           createdAt: new Date(),
+          isRequired: false,
           updatedAt: new Date(),
         },
         {
@@ -623,6 +647,7 @@ describe("MissionService", () => {
           order: 1,
           maxSelections: null,
           missionId: "mission-1",
+          imageFileUploadId: null,
           options: [
             {
               id: "opt-3",
@@ -633,6 +658,7 @@ describe("MissionService", () => {
             },
           ],
           createdAt: new Date(),
+          isRequired: false,
           updatedAt: new Date(),
         },
       ];
@@ -651,7 +677,7 @@ describe("MissionService", () => {
       });
 
       mockRepository.findById.mockResolvedValue(mockMission);
-      mockRepository.findActionsByMissionId.mockResolvedValue(mockActions);
+      mockActionRepository.findDetailsByMissionId.mockResolvedValue(mockActions);
       mockRepository.duplicateMission.mockResolvedValue(mockDuplicatedMission);
 
       // When
@@ -727,7 +753,7 @@ describe("MissionService", () => {
         "미션을 찾을 수 없습니다.",
       );
 
-      expect(mockRepository.findActionsByMissionId).not.toHaveBeenCalled();
+      expect(mockActionRepository.findDetailsByMissionId).not.toHaveBeenCalled();
       expect(mockRepository.duplicateMission).not.toHaveBeenCalled();
     });
 
@@ -751,7 +777,7 @@ describe("MissionService", () => {
         expect((error as Error & { cause: number }).cause).toBe(403);
       }
 
-      expect(mockRepository.findActionsByMissionId).not.toHaveBeenCalled();
+      expect(mockActionRepository.findDetailsByMissionId).not.toHaveBeenCalled();
       expect(mockRepository.duplicateMission).not.toHaveBeenCalled();
     });
 
@@ -770,7 +796,7 @@ describe("MissionService", () => {
       });
 
       mockRepository.findById.mockResolvedValue(mockMission);
-      mockRepository.findActionsByMissionId.mockResolvedValue([]);
+      mockActionRepository.findDetailsByMissionId.mockResolvedValue([]);
       mockRepository.duplicateMission.mockResolvedValue(mockDuplicatedMission);
 
       // When
@@ -833,7 +859,7 @@ describe("MissionService", () => {
       };
 
       mockRepository.findById.mockResolvedValue(mockMission);
-      mockRepository.findActionsByMissionId.mockResolvedValue([]);
+      mockActionRepository.findDetailsByMissionId.mockResolvedValue([]);
       mockRepository.duplicateMission.mockResolvedValue(mockDuplicatedMission);
 
       // When

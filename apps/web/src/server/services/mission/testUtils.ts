@@ -1,3 +1,4 @@
+import type { ActionRepository } from "@/server/repositories/action/actionRepository";
 import type { MissionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import type { MissionRepository } from "@/server/repositories/mission/missionRepository";
 import { MissionService } from ".";
@@ -7,9 +8,6 @@ export { createMockMission } from "../testUtils";
 export function createMissionServiceTestContext() {
   const mockRepository = {
     findById: jest.fn(),
-    findActionIdsByMissionId: jest.fn(),
-    findActionById: jest.fn(),
-    findActionsByMissionId: jest.fn(),
     findByUserId: jest.fn(),
     createWithActions: jest.fn(),
     update: jest.fn(),
@@ -31,9 +29,23 @@ export function createMissionServiceTestContext() {
     countCompletedByMissionId: jest.fn(),
   } as jest.Mocked<MissionResponseRepository>;
 
-  const service = new MissionService(mockRepository, mockResponseRepository);
+  const mockActionRepository = {
+    findById: jest.fn(),
+    findByIdWithOptions: jest.fn(),
+    findActionIdsByMissionId: jest.fn(),
+    findDetailsByMissionId: jest.fn(),
+    findMany: jest.fn(),
+    create: jest.fn(),
+    createMultipleChoice: jest.fn(),
+    update: jest.fn(),
+    updateWithOptions: jest.fn(),
+    delete: jest.fn(),
+    updateManyOrders: jest.fn(),
+  } as jest.Mocked<ActionRepository>;
 
-  return { service, mockRepository, mockResponseRepository };
+  const service = new MissionService(mockRepository, mockResponseRepository, mockActionRepository);
+
+  return { service, mockRepository, mockResponseRepository, mockActionRepository };
 }
 
 export type MissionServiceTestContext = ReturnType<typeof createMissionServiceTestContext>;

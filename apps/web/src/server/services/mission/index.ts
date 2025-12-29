@@ -1,5 +1,6 @@
 import { decrypt, encrypt } from "@/lib/crypto";
 import { missionInputSchema, missionPasswordSchema, missionUpdateSchema } from "@/schemas/mission";
+import { actionRepository } from "@/server/repositories/action/actionRepository";
 import { missionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
 import type {
@@ -14,6 +15,7 @@ export class MissionService {
   constructor(
     private repo = missionRepository,
     private responseRepo = missionResponseRepository,
+    private actionRepo = actionRepository,
   ) {}
 
   async getMission(missionId: string) {
@@ -65,12 +67,12 @@ export class MissionService {
 
   async getMissionActionIds(missionId: string) {
     await this.getMission(missionId);
-    const actionIds = await this.repo.findActionIdsByMissionId(missionId);
+    const actionIds = await this.actionRepo.findActionIdsByMissionId(missionId);
     return { actionIds };
   }
 
   async getActionById(actionId: string) {
-    const action = await this.repo.findActionById(actionId);
+    const action = await this.actionRepo.findById(actionId);
 
     if (!action) {
       const error = new Error("액션을 찾을 수 없습니다.");
@@ -83,7 +85,7 @@ export class MissionService {
 
   async getMissionActionsDetail(missionId: string) {
     await this.getMission(missionId);
-    const actions = await this.repo.findActionsByMissionId(missionId);
+    const actions = await this.actionRepo.findDetailsByMissionId(missionId);
     return actions;
   }
 
@@ -184,7 +186,7 @@ export class MissionService {
       throw error;
     }
 
-    const originalActions = await this.repo.findActionsByMissionId(missionId);
+    const originalActions = await this.actionRepo.findDetailsByMissionId(missionId);
 
     const duplicated = await this.repo.duplicateMission(
       {
