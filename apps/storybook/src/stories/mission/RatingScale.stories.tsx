@@ -474,10 +474,11 @@ export const VerticalWithLongText: Story = {
   render: () => {
     const [value, setValue] = useState(3);
     return (
-      <div className="flex min-h-[600px] w-[600px] items-center justify-center p-8">
+      <div className="flex min-h-[600px]  p-8 w-[800px]">
         <RatingScale
           value={value}
           onChange={setValue}
+          className="w-full"
           options={[
             {
               id: "1",
