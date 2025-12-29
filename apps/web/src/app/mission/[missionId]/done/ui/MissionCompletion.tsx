@@ -66,7 +66,7 @@ export function MissionCompletion() {
             alt="Brand Logo"
             width={48}
             height={48}
-            className="bg-white rounded-full size-12 ring-1 ring-default object-center object-cover"
+            className="bg-white rounded-full size-12 ring-1 ring-default object-center object-contain"
           />
         )}
 
