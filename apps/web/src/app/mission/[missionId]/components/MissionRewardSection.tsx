@@ -35,7 +35,7 @@ export function MissionRewardSection({
             alt="reward"
             width={400}
             height={400}
-            className="w-full h-auto aspect-square object-cover"
+            className="w-full h-auto aspect-3/2 object-cover"
           />
         )}
         <div className="w-full flex flex-col p-4 gap-3 items-center">
