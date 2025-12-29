@@ -8,6 +8,31 @@ import { cn } from "../../lib/utils";
 import { Typo } from "./Typo";
 
 type Variant = "default" | "error" | "loading";
+type BadgeVariant = "success" | "error" | "loading";
+
+const PROGRESS_BAR_SIZES = {
+  height: "h-[6px]",
+  width: "w-[120px]",
+  badgeMinHeight: "min-h-[28px]",
+} as const;
+
+const PROGRESSBAR_VARIANT: Record<BadgeVariant, Variant> = {
+  success: "default",
+  error: "error",
+  loading: "loading",
+} as const;
+
+const VARIANT_TO_BADGE_VARIANT: Record<Exclude<Variant, "default">, BadgeVariant> = {
+  error: "error",
+  loading: "loading",
+} as const;
+
+const BADGE_COLOR_CLASSES: Record<BadgeVariant, { icon: string; text: string }> = {
+  success: { icon: "text-point", text: "text-point" },
+  error: { icon: "text-error", text: "text-error" },
+  loading: { icon: "text-info", text: "text-info" },
+} as const;
+
 interface ProgressBarProps extends React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> {
   containerClassName?: string;
   indicatorClassName?: string;
@@ -25,45 +50,36 @@ export function ProgressBarV2({
   value,
   ...props
 }: ProgressBarProps) {
-  const PROGRESSBAR_VARIANT: Record<BadgeVariant, Variant> = {
-    success: "default",
-    error: "error",
-    loading: "loading",
-  };
-
-  const getProgressbarVariant = (): Variant => {
+  const progressbarVariant = React.useMemo((): Variant => {
     if (badgeVariant) {
       return PROGRESSBAR_VARIANT[badgeVariant];
     }
     if (variant && variant !== "default") {
-      const variantToBadgeVariant: Record<Exclude<Variant, "default">, BadgeVariant> = {
-        error: "error",
-        loading: "loading",
-      };
-      return PROGRESSBAR_VARIANT[variantToBadgeVariant[variant]];
+      return PROGRESSBAR_VARIANT[VARIANT_TO_BADGE_VARIANT[variant]];
     }
     return "default";
-  };
+  }, [badgeVariant, variant]);
 
-  const progressbarVariant = getProgressbarVariant();
   const shouldShowBadge = badgeVariant && isBadgeVisible;
 
   return (
     <div className="flex flex-col gap-2 w-full justify-center items-center">
-      <AnimatePresence key={badgeVariant}>
+      <AnimatePresence key={badgeVariant ?? "no-badge"}>
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: shouldShowBadge ? 1 : 0, y: 0 }}
           exit={{ opacity: 0, y: 10 }}
           transition={{ duration: 0.2, ease: "easeInOut" }}
-          className="min-h-[28px]"
+          className={PROGRESS_BAR_SIZES.badgeMinHeight}
         >
           {badgeVariant && <Badge variant={badgeVariant} isVisible={isBadgeVisible} />}
         </motion.div>
       </AnimatePresence>
       <ProgressPrimitive.Root
         className={cn(
-          "bg-zinc-100 relative h-[6px] w-[120px] overflow-hidden rounded-xl",
+          "bg-zinc-100 relative overflow-hidden rounded-xl",
+          PROGRESS_BAR_SIZES.height,
+          PROGRESS_BAR_SIZES.width,
           containerClassName,
         )}
         {...props}
@@ -83,7 +99,6 @@ export function ProgressBarV2({
   );
 }
 
-type BadgeVariant = "success" | "error" | "loading";
 interface BadgeProps {
   variant: BadgeVariant;
   isVisible: boolean;
@@ -93,17 +108,18 @@ const BADGE_TEXT: Record<BadgeVariant, string> = {
   success: "저장 완료",
   error: "오류 발생",
   loading: "저장 중",
-};
+} as const;
 
-const BADGE_ICON: Record<BadgeVariant, null | React.ComponentType<React.SVGProps<SVGSVGElement>>> =
-  {
-    success: Check,
-    error: AlertCircle,
-    loading: Loader2Icon,
-  };
+const BADGE_ICON: Record<BadgeVariant, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
+  success: Check,
+  error: AlertCircle,
+  loading: Loader2Icon,
+} as const;
 
 function Badge({ variant, isVisible }: BadgeProps) {
   const Icon = BADGE_ICON[variant];
+  const colorClasses = BADGE_COLOR_CLASSES[variant];
+
   return (
     <div
       className={cn(
@@ -113,22 +129,10 @@ function Badge({ variant, isVisible }: BadgeProps) {
     >
       {Icon && (
         <Icon
-          className={cn(
-            "size-4",
-            variant === "loading" && "animate-spin text-info",
-            variant === "success" && "text-point",
-            variant === "error" && "text-error",
-          )}
+          className={cn("size-4", variant === "loading" && "animate-spin", colorClasses.icon)}
         />
       )}
-      <Typo.Body
-        size="medium"
-        className={cn(
-          variant === "success" && "text-point",
-          variant === "error" && "text-error",
-          variant === "loading" && "text-info",
-        )}
-      >
+      <Typo.Body size="medium" className={colorClasses.text}>
         {BADGE_TEXT[variant]}
       </Typo.Body>
     </div>
