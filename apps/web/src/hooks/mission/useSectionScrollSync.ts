@@ -32,18 +32,39 @@ export function useSectionScrollSync({
   });
   const isScrollingRef = useRef(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastCalledRef = useRef<{ value: string; timestamp: number } | null>(null);
 
   const handleChangeTab = useCallback(
     (value: string) => {
-      setActiveTab(value);
-      isScrollingRef.current = true;
+      const now = Date.now();
+      const lastCalled = lastCalledRef.current;
+
+      if (
+        lastCalled &&
+        lastCalled.value === value &&
+        now - lastCalled.timestamp < 100
+      ) {
+        return;
+      }
+
+      lastCalledRef.current = { value, timestamp: now };
+
       const element = document.getElementById(value);
-      if (element) {
+      if (!element) return;
+
+      const offset = getScrollOffset(scrollOffset, value);
+      const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+      const targetScrollPosition = elementPosition - offset;
+      const currentScrollPosition = window.scrollY;
+      const scrollDifference = Math.abs(targetScrollPosition - currentScrollPosition);
+
+      if (scrollDifference > 1) {
+        setActiveTab(value);
+        isScrollingRef.current = true;
         window.history.pushState(null, "", `#${value}`);
-        const offset = getScrollOffset(scrollOffset, value);
-        const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+
         window.scrollTo({
-          top: elementPosition - offset,
+          top: targetScrollPosition,
           behavior: "smooth",
         });
 
@@ -53,9 +74,12 @@ export function useSectionScrollSync({
         scrollTimeoutRef.current = setTimeout(() => {
           isScrollingRef.current = false;
         }, 1000);
+      } else if (value !== activeTab) {
+        setActiveTab(value);
+        window.history.pushState(null, "", `#${value}`);
       }
     },
-    [scrollOffset],
+    [activeTab, scrollOffset],
   );
 
   useEffect(() => {
