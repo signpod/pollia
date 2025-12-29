@@ -188,6 +188,7 @@ export interface GetActionResponse {
     type: ActionType;
     order: number;
     maxSelections: number | null;
+    isRequired: boolean;
     createdAt: Date;
     updatedAt: Date;
     missionId: string | null;
@@ -211,6 +212,7 @@ export interface GetActionByIdResponse {
     type: ActionType;
     order: number;
     maxSelections: number | null;
+    isRequired: boolean;
     missionId: string | null;
     options: {
       id: string;
@@ -233,6 +235,7 @@ export interface ActionDetail {
   type: ActionType;
   order: number;
   maxSelections: number | null;
+  isRequired: boolean;
   surveyId: string | null;
   options: {
     id: string;
