@@ -15,7 +15,7 @@ export interface SubmitAnswersInput {
     type: ActionType;
     selectedOptionIds?: string[];
     scaleValue?: number;
-    textResponse?: string;
+    textAnswer?: string;
     fileUploadIds?: string[];
   }>;
 }

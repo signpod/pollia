@@ -28,7 +28,7 @@ function toSubmitAnswersInput(dto: SubmitActionAnswersRequest): SubmitAnswersInp
       type: a.type,
       selectedOptionIds: a.selectedOptionIds,
       scaleValue: a.scaleValue,
-      textResponse: a.textResponse,
+      textAnswer: a.textAnswer,
       fileUploadIds: a.fileUploadIds,
     })),
   };

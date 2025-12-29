@@ -236,7 +236,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
 
       if (answer.type === ActionType.SUBJECTIVE) {
         const submittedTextAnswer = answersForAction[0]?.textAnswer;
-        return submittedTextAnswer !== null && submittedTextAnswer === answer.textResponse;
+        return submittedTextAnswer !== null && submittedTextAnswer === answer.textAnswer;
       }
 
       if (answer.type === ActionType.IMAGE) {
@@ -286,7 +286,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
                   ? { scaleValue: currentAnswer.scaleValue }
                   : {}),
                 ...(currentAnswer.type === "SUBJECTIVE"
-                  ? { textResponse: currentAnswer.textResponse }
+                  ? { textAnswer: currentAnswer.textAnswer }
                   : {}),
                 ...(currentAnswer.type === "IMAGE"
                   ? {

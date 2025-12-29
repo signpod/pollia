@@ -37,7 +37,7 @@ export const submitAnswerItemSchema = z
     type: actionTypeSchema,
     selectedOptionIds: z.array(optionIdSchema).optional(),
     scaleValue: scaleAnswerSchema.optional(),
-    textResponse: textAnswerSchema.optional(),
+    textAnswer: textAnswerSchema.optional(),
     fileUploadIds: fileUploadIdsSchema,
   })
   .refine(
@@ -70,7 +70,7 @@ export const submitAnswerItemSchema = z
   .refine(
     data => {
       if (data.type === ActionType.SUBJECTIVE) {
-        return data.textResponse && data.textResponse.trim().length > 0;
+        return data.textAnswer && data.textAnswer.trim().length > 0;
       }
       return true;
     },

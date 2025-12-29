@@ -168,11 +168,11 @@ export class ActionAnswerService {
           actionId,
           scaleAnswer: answer.scaleValue,
         });
-      } else if (answer.type === ActionType.SUBJECTIVE && answer.textResponse) {
+      } else if (answer.type === ActionType.SUBJECTIVE && answer.textAnswer) {
         answersToCreate.push({
           responseId: parseResult.data.responseId,
           actionId,
-          textAnswer: answer.textResponse,
+          textAnswer: answer.textAnswer,
         });
       } else if (
         answer.type === ActionType.IMAGE &&
