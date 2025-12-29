@@ -6,7 +6,7 @@ model Action {
   type          ActionType
   order         Int
   maxSelections Int?           @map("max_selections")
-  isRequired    Boolean        @default(false) @map("is_required")
+  isRequired    Boolean        @default(true) @map("is_required")
   missionId     String?        @map("mission_id")
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
