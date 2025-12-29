@@ -406,7 +406,7 @@ export const Interactive: Story = {
           </div>
           <div>
             <label className="mb-1 block text-xs font-medium">
-              Variant (badgeVariant가 default일 때만 적용)
+              Variant (badgeVariant가 undefined일 때만 적용)
             </label>
             <div className="flex gap-2">
               {(["default", "error", "loading"] as const).map(v => (
