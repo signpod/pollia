@@ -240,8 +240,9 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
       }
 
       if (answer.type === ActionType.IMAGE) {
-        const submittedImageUrl = answersForAction[0]?.imageFileUploadId;
-        return submittedImageUrl !== null && submittedImageUrl === answer.imageFileUploadId;
+        // TODO: fileUploads 배열 비교로 변경 필요
+        const hasFileUploads = answer.fileUploadIds && answer.fileUploadIds.length > 0;
+        return hasFileUploads === false; // 임시: 항상 제출하도록
       }
 
       return false;
@@ -289,10 +290,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
                   ? { textAnswer: currentAnswer.textAnswer }
                   : {}),
                 ...(currentAnswer.type === "IMAGE"
-                  ? {
-                      fileUploadId: currentAnswer.imageFileUploadId,
-                      imageUrl: currentAnswer.imageUrl,
-                    }
+                  ? { fileUploadIds: currentAnswer.fileUploadIds }
                   : {}),
               },
             ],

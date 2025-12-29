@@ -1,5 +1,3 @@
-import React from "react";
-
 import { ActionType } from "@/types/domain/action";
 import type { ActionAnswerItem, ActionDetail } from "@/types/dto";
 import type { GetMissionResponseResponse } from "@/types/dto/mission-response";
@@ -93,6 +91,16 @@ export const ACTION_TYPE_LABELS: Record<ActionType, string> = {
   [ActionType.RATING]: "평점",
   [ActionType.TAG]: "태그",
   [ActionType.IMAGE]: "이미지",
+  [ActionType.VIDEO]: "동영상",
+  [ActionType.PDF_UPLOAD]: "PDF 업로드",
+  [ActionType.URL]: "URL",
+  [ActionType.DATE]: "날짜",
+  [ActionType.TIME]: "시간",
+  [ActionType.PRIVACY_CONSENT]: "개인정보 동의",
+  [ActionType.NAME]: "이름",
+  [ActionType.ADDRESS]: "주소",
+  [ActionType.PHONE]: "연락처",
+  [ActionType.EMAIL]: "이메일",
 };
 
 export const MISSION_TYPE_LABELS: Record<MissionType, string> = {
