@@ -1,18 +1,18 @@
 model ActionAnswer {
-  id          String          @id @default(cuid())
-  optionId    String?         @map("option_id")
-  textAnswer  String?         @map("text_answer")
-  scaleAnswer Int?            @map("scale_answer")
-  imageUrl    String?         @map("image_url")
-  actionId    String          @map("action_id")
-  responseId  String          @map("response_id")
-  createdAt   DateTime        @default(now()) @map("created_at")
-  action      Action          @relation(fields: [actionId], references: [id], onDelete: Cascade)
-  option      ActionOption?   @relation(fields: [optionId], references: [id], onDelete: Cascade)
-  response    MissionResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  id          String     @id @default(cuid())
+  optionId    String?    @map("option_id")
+  textAnswer  String?    @map("text_answer")
+  scaleAnswer Int?       @map("scale_answer")
+  dateAnswers DateTime[] @map("date_answers")
+  actionId    String     @map("action_id")
+  responseId  String     @map("response_id")
+  createdAt   DateTime   @default(now()) @map("created_at")
 
-  imageFileUploadId String?     @map("image_file_upload_id")
-  imageFileUpload   FileUpload? @relation(fields: [imageFileUploadId], references: [id])
+  action   Action          @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  option   ActionOption?   @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  response MissionResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+
+  fileUploads FileUpload[]
 
   @@unique([responseId, actionId, optionId])
   @@index([actionId])
