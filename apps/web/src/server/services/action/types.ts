@@ -1,92 +1,11 @@
-import type { ActionType } from "@prisma/client";
+import type { ActionType, Prisma } from "@prisma/client";
 
-export interface CreateMultipleChoiceInput {
-  missionId?: string;
-  title: string;
-  description?: string;
-  imageUrl?: string;
-  imageFileUploadId?: string;
-  maxSelections: number;
-  order: number;
-  options: {
-    title: string;
-    description?: string;
-    imageUrl?: string;
-    order: number;
-    imageFileUploadId?: string;
-  }[];
-}
+type BaseActionInput = Omit<
+  Prisma.ActionUncheckedCreateInput,
+  "id" | "createdAt" | "updatedAt" | "type"
+>;
 
-export interface CreateScaleInput {
-  missionId?: string;
-  title: string;
-  description?: string;
-  imageUrl?: string;
-  imageFileUploadId?: string;
-  order: number;
-  options: {
-    title: string;
-    description?: string;
-    imageUrl?: string;
-    order: number;
-    imageFileUploadId?: string;
-  }[];
-}
-
-export interface CreateSubjectiveInput {
-  missionId?: string;
-  title: string;
-  description?: string;
-  imageUrl?: string;
-  imageFileUploadId?: string;
-  order: number;
-}
-
-export interface CreateEitherOrInput {
-  missionId?: string;
-  title: string;
-  description?: string;
-  imageUrl?: string;
-  imageFileUploadId?: string;
-  order: number;
-}
-
-export interface CreateTagInput {
-  missionId?: string;
-  title: string;
-  description?: string;
-  imageUrl?: string;
-  imageFileUploadId?: string;
-  order: number;
-  maxSelections?: number;
-  options: {
-    title: string;
-    description?: string;
-    imageUrl?: string;
-    order: number;
-    imageFileUploadId?: string;
-  }[];
-}
-
-export interface CreateRatingInput {
-  missionId?: string;
-  title: string;
-  description?: string;
-  imageUrl?: string;
-  imageFileUploadId?: string;
-  order: number;
-}
-
-export interface CreateImageInput {
-  missionId?: string;
-  title: string;
-  description?: string;
-  imageUrl?: string;
-  imageFileUploadId?: string;
-  order: number;
-}
-
-export interface UpdateActionOptionInput {
+interface ActionOptionInput {
   title: string;
   description?: string;
   imageUrl?: string;
@@ -94,15 +13,31 @@ export interface UpdateActionOptionInput {
   imageFileUploadId?: string;
 }
 
-export interface UpdateActionInput {
-  title?: string;
-  description?: string;
-  imageUrl?: string;
-  imageFileUploadId?: string;
-  order?: number;
-  maxSelections?: number;
-  options?: UpdateActionOptionInput[];
-}
+export type CreateMultipleChoiceInput = BaseActionInput & {
+  options: ActionOptionInput[];
+};
+
+export type CreateScaleInput = BaseActionInput & {
+  options: ActionOptionInput[];
+};
+
+export type CreateTagInput = BaseActionInput & {
+  options: ActionOptionInput[];
+};
+
+export type CreateSubjectiveInput = BaseActionInput;
+
+export type CreateEitherOrInput = BaseActionInput;
+
+export type CreateRatingInput = BaseActionInput;
+
+export type CreateImageInput = BaseActionInput;
+
+export type UpdateActionOptionInput = Omit<ActionOptionInput, "order"> & {
+  order: number;
+};
+
+export type UpdateActionInput = Prisma.ActionUncheckedUpdateInput;
 
 export interface GetActionsOptions {
   searchQuery?: string;
