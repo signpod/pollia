@@ -28,9 +28,8 @@ function toSubmitAnswersInput(dto: SubmitActionAnswersRequest): SubmitAnswersInp
       type: a.type,
       selectedOptionIds: a.selectedOptionIds,
       scaleValue: a.scaleValue,
-      textResponse: a.textResponse,
-      imageFileUploadId: a.fileUploadId,
-      imageUrl: a.imageUrl,
+      textAnswer: a.textAnswer,
+      fileUploadIds: a.fileUploadIds,
     })),
   };
 }

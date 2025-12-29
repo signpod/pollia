@@ -30,7 +30,8 @@ export function ActionImage({
     return missionResponse.data.answers.find(answer => answer.actionId === actionData.id) ?? null;
   }, [missionResponse, actionData.id]);
 
-  const initialImageUrl = existingAnswer?.imageUrl ?? null;
+  // TODO: fileUploads 배열로 변경 필요 (현재는 첫 번째 파일만 사용)
+  const initialImageUrl = null;
 
   const updateCanGoNextRef = useRef(updateCanGoNext);
   const onAnswerChangeRef = useRef(onAnswerChange);
@@ -50,8 +51,7 @@ export function ActionImage({
       const answer: ActionAnswerItem = {
         actionId: actionData.id,
         type: ActionType.IMAGE,
-        imageFileUploadId: fileId,
-        imageUrl: url,
+        fileUploadIds: [fileId],
       };
 
       const validationResult = submitAnswerItemSchema.safeParse(answer);
@@ -66,13 +66,11 @@ export function ActionImage({
 
   useEffect(() => {
     if (existingAnswer) {
-      setImageUrl(existingAnswer.imageUrl ?? null);
-      setImageFileUploadId(existingAnswer.imageFileUploadId ?? undefined);
+      // TODO: fileUploads 배열에서 첫 번째 파일 사용 (임시)
+      setImageUrl(null);
+      setImageFileUploadId(undefined);
 
-      validateAndUpdateAnswer(
-        existingAnswer.imageUrl ?? null,
-        existingAnswer.imageFileUploadId ?? undefined,
-      );
+      validateAndUpdateAnswer(null, undefined);
     }
   }, [existingAnswer, validateAndUpdateAnswer]);
 

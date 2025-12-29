@@ -34,10 +34,8 @@ export function useSubmitActionAnswer(options: UseSubmitActionAnswerOptions) {
             ...(answer.type === "SCALE" || answer.type === "RATING"
               ? { scaleValue: answer.scaleValue }
               : {}),
-            ...(answer.type === "SUBJECTIVE" ? { textResponse: answer.textResponse } : {}),
-            ...(answer.type === "IMAGE"
-              ? { fileUploadId: answer.imageFileUploadId, imageUrl: answer.imageUrl }
-              : {}),
+            ...(answer.type === "SUBJECTIVE" ? { textAnswer: answer.textAnswer } : {}),
+            ...(answer.type === "IMAGE" ? { fileUploadIds: answer.fileUploadIds } : {}),
           },
         ],
       });

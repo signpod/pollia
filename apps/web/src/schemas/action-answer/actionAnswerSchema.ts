@@ -20,8 +20,7 @@ const scaleAnswerSchema = z
 
 const actionTypeSchema = z.enum(ActionType);
 
-const imageFileUploadIdSchema = z.string().optional();
-const imageUrlSchema = z.string().optional();
+const fileUploadIdsSchema = z.array(z.string()).optional();
 
 export const actionAnswerInputSchema = z.object({
   responseId: responseIdSchema,
@@ -29,7 +28,7 @@ export const actionAnswerInputSchema = z.object({
   optionId: optionIdSchema.optional(),
   textAnswer: textAnswerSchema.optional(),
   scaleAnswer: scaleAnswerSchema.optional(),
-  imageFileUploadId: imageFileUploadIdSchema.optional(),
+  fileUploadIds: fileUploadIdsSchema,
 });
 
 export const submitAnswerItemSchema = z
@@ -38,9 +37,8 @@ export const submitAnswerItemSchema = z
     type: actionTypeSchema,
     selectedOptionIds: z.array(optionIdSchema).optional(),
     scaleValue: scaleAnswerSchema.optional(),
-    textResponse: textAnswerSchema.optional(),
-    imageFileUploadId: imageFileUploadIdSchema,
-    imageUrl: imageUrlSchema,
+    textAnswer: textAnswerSchema.optional(),
+    fileUploadIds: fileUploadIdsSchema,
   })
   .refine(
     data => {
@@ -72,7 +70,7 @@ export const submitAnswerItemSchema = z
   .refine(
     data => {
       if (data.type === ActionType.SUBJECTIVE) {
-        return data.textResponse && data.textResponse.trim().length > 0;
+        return data.textAnswer && data.textAnswer.trim().length > 0;
       }
       return true;
     },
@@ -81,7 +79,7 @@ export const submitAnswerItemSchema = z
   .refine(
     data => {
       if (data.type === ActionType.IMAGE) {
-        return data.imageFileUploadId !== undefined;
+        return data.fileUploadIds && data.fileUploadIds.length > 0;
       }
       return true;
     },

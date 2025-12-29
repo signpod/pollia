@@ -14,13 +14,11 @@ export const ROUTES = {
   // 미션 관련
   MISSION: (id: string) => `/mission/${id}`,
   MISSION_DONE: (id: string) => `/mission/${id}/done`,
-  MISSION_CREATE: "/mission/create",
   MISSION_PASSWORD: (missionId: string) => `/mission/${missionId}/password`,
 
   // 액션 관련
   ACTION: ({ missionId, actionId }: { missionId: string; actionId: string }) =>
     `/mission/${missionId}/action/${actionId}`,
-  ACTION_CREATE: "/mission/action/create",
   ACTION_CREATE_DONE: "/mission/action/create/done",
 } as const;
 

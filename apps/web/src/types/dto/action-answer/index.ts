@@ -12,7 +12,7 @@ export type ActionAnswerItem =
   | {
       actionId: string;
       type: typeof ActionType.SUBJECTIVE;
-      textResponse: string;
+      textAnswer: string;
     }
   | {
       actionId: string;
@@ -27,8 +27,7 @@ export type ActionAnswerItem =
   | {
       actionId: string;
       type: typeof ActionType.IMAGE;
-      imageFileUploadId?: string;
-      imageUrl?: string;
+      fileUploadIds: string[];
     }
   | {
       actionId: string;
@@ -51,9 +50,8 @@ export interface SubmitActionAnswersRequest {
     type: ActionType;
     selectedOptionIds?: string[];
     scaleValue?: number;
-    textResponse?: string;
-    fileUploadId?: string;
-    imageUrl?: string;
+    textAnswer?: string;
+    fileUploadIds?: string[];
   }>;
 }
 

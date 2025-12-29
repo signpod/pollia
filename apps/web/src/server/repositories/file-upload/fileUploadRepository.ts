@@ -47,7 +47,7 @@ export class FileUploadRepository {
         missionImages: { none: {} },
         missionBrandLogos: { none: {} },
         actionImages: { none: {} },
-        actionAnswerImages: { none: {} },
+        actionAnswerId: null,
       },
     });
   }

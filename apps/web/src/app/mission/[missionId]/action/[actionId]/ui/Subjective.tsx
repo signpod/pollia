@@ -101,7 +101,7 @@ function useSurveySubjectiveValue(
       const result = submitAnswerItemSchema.safeParse({
         actionId,
         type: ActionType.SUBJECTIVE,
-        textResponse: initialTextValue,
+        textAnswer: initialTextValue,
       });
       updateCanGoNextRef.current?.(result.success);
 
@@ -109,7 +109,7 @@ function useSurveySubjectiveValue(
         onAnswerChangeRef.current?.({
           actionId,
           type: ActionType.SUBJECTIVE,
-          textResponse: initialTextValue,
+          textAnswer: initialTextValue,
         });
       }
     }
@@ -122,7 +122,7 @@ function useSurveySubjectiveValue(
     const result = submitAnswerItemSchema.safeParse({
       actionId,
       type: ActionType.SUBJECTIVE,
-      textResponse: value,
+      textAnswer: value,
     });
     updateCanGoNext?.(result.success);
 
@@ -130,7 +130,7 @@ function useSurveySubjectiveValue(
       onAnswerChange?.({
         actionId,
         type: ActionType.SUBJECTIVE,
-        textResponse: value.trim(),
+        textAnswer: value.trim(),
       });
     }
   }
@@ -146,7 +146,7 @@ function useSurveySubjectiveValue(
   const validationResult = submitAnswerItemSchema.safeParse({
     actionId,
     type: ActionType.SUBJECTIVE,
-    textResponse: subjectiveValue,
+    textAnswer: subjectiveValue,
   });
 
   return {
