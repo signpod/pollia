@@ -245,8 +245,8 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                   <div className="flex flex-col gap-4 w-full bg-zinc-50 rounded-md p-6">
                     {detailInfoConfig.map(
                       ({ key, value }) =>
-                        key &&
-                        value && (
+                        !!key &&
+                        !!value && (
                           <div className="flex gap-2" key={key}>
                             <Typo.Body
                               size="medium"
