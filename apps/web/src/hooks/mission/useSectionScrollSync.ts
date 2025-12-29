@@ -42,10 +42,20 @@ export function useSectionScrollSync({
         window.history.pushState(null, "", `#${value}`);
         const offset = getScrollOffset(scrollOffset, value);
         const elementPosition = element.getBoundingClientRect().top + window.scrollY;
-        window.scrollTo({
-          top: elementPosition - offset,
-          behavior: "smooth",
-        });
+        const targetScrollPosition = elementPosition - offset;
+        const currentScrollPosition = window.scrollY;
+        
+        if (Math.abs(targetScrollPosition - currentScrollPosition) > 1) {
+          window.scrollTo({
+            top: targetScrollPosition,
+            behavior: "smooth",
+          });
+        } else {
+          window.scrollTo({
+            top: targetScrollPosition,
+            behavior: "auto",
+          });
+        }
 
         if (scrollTimeoutRef.current) {
           clearTimeout(scrollTimeoutRef.current);

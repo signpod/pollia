@@ -224,11 +224,15 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                   <Tab.Item
                     value={SECTION_IDS.MISSION_GUIDE}
                     className={cn(sections.length === 1 ? "mx-auto max-w-[110px]" : "")}
+                    onClick={() => handleChangeTab(SECTION_IDS.MISSION_GUIDE)}
                   >
                     <Typo.SubTitle size="large">상세 안내</Typo.SubTitle>
                   </Tab.Item>
                   {reward && (
-                    <Tab.Item value={SECTION_IDS.REWARD}>
+                    <Tab.Item
+                      value={SECTION_IDS.REWARD}
+                      onClick={() => handleChangeTab(SECTION_IDS.REWARD)}
+                    >
                       <Typo.SubTitle size="large">참여 혜택</Typo.SubTitle>
                     </Tab.Item>
                   )}
