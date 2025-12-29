@@ -143,15 +143,7 @@ export class ActionAnswerService {
 
     await this.answerRepo.deleteByResponseAndActions(parseResult.data.responseId, actionIds);
 
-    const answersToCreate: Array<{
-      responseId: string;
-      actionId: string;
-      optionId?: string;
-      textAnswer?: string;
-      scaleAnswer?: number;
-      imageFileUploadId?: string;
-      imageUrl?: string;
-    }> = [];
+    const answersToCreate: Array<Parameters<typeof this.answerRepo.createMany>[0][number]> = [];
 
     for (const answer of parseResult.data.answers) {
       const actionId = answer.actionId;
@@ -182,12 +174,17 @@ export class ActionAnswerService {
           actionId,
           textAnswer: answer.textResponse,
         });
-      } else if (answer.type === ActionType.IMAGE && answer.imageFileUploadId) {
+      } else if (
+        answer.type === ActionType.IMAGE &&
+        answer.fileUploadIds &&
+        answer.fileUploadIds.length > 0
+      ) {
         answersToCreate.push({
           responseId: parseResult.data.responseId,
           actionId,
-          imageFileUploadId: answer.imageFileUploadId,
-          imageUrl: answer.imageUrl,
+          fileUploads: {
+            connect: answer.fileUploadIds.map(id => ({ id })),
+          },
         });
       } else if (answer.type === ActionType.TAG && answer.selectedOptionIds) {
         for (const optionId of answer.selectedOptionIds) {
