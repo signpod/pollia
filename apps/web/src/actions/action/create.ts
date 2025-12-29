@@ -3,14 +3,6 @@
 import { requireAuth } from "@/actions/common/auth";
 import { actionService } from "@/server/services/action";
 import type {
-  CreateImageInput,
-  CreateMultipleChoiceInput,
-  CreateRatingInput,
-  CreateScaleInput,
-  CreateSubjectiveInput,
-  CreateTagInput,
-} from "@/server/services/action/types";
-import type {
   CreateImageActionRequest,
   CreateImageActionResponse,
   CreateMultipleChoiceActionRequest,
@@ -25,102 +17,12 @@ import type {
   CreateTagActionResponse,
 } from "@/types/dto";
 
-function toMultipleChoiceInput(dto: CreateMultipleChoiceActionRequest): CreateMultipleChoiceInput {
-  return {
-    missionId: dto.missionId,
-    title: dto.title,
-    description: dto.description,
-    imageUrl: dto.imageUrl,
-    imageFileUploadId: dto.imageFileUploadId,
-    maxSelections: dto.maxSelections,
-    order: dto.order,
-    options: dto.options.map(opt => ({
-      title: opt.title,
-      description: opt.description,
-      imageUrl: opt.imageUrl,
-      order: opt.order,
-      imageFileUploadId: opt.imageFileUploadId,
-    })),
-  };
-}
-
-function toScaleInput(dto: CreateScaleActionRequest): CreateScaleInput {
-  return {
-    missionId: dto.missionId,
-    title: dto.title,
-    description: dto.description,
-    imageUrl: dto.imageUrl,
-    imageFileUploadId: dto.imageFileUploadId,
-    order: dto.order,
-    options: dto.options.map(opt => ({
-      title: opt.title,
-      description: opt.description,
-      imageUrl: opt.imageUrl,
-      order: opt.order,
-      imageFileUploadId: opt.imageFileUploadId,
-    })),
-  };
-}
-
-function toSubjectiveInput(dto: CreateSubjectiveActionRequest): CreateSubjectiveInput {
-  return {
-    missionId: dto.missionId,
-    title: dto.title,
-    description: dto.description,
-    imageUrl: dto.imageUrl,
-    imageFileUploadId: dto.imageFileUploadId,
-    order: dto.order,
-  };
-}
-
-function toTagInput(dto: CreateTagActionRequest): CreateTagInput {
-  return {
-    missionId: dto.missionId,
-    title: dto.title,
-    description: dto.description,
-    imageUrl: dto.imageUrl,
-    imageFileUploadId: dto.imageFileUploadId,
-    order: dto.order,
-    maxSelections: dto.maxSelections,
-    options: dto.options.map(opt => ({
-      title: opt.title,
-      description: opt.description,
-      imageUrl: opt.imageUrl,
-      order: opt.order,
-      imageFileUploadId: opt.imageFileUploadId,
-    })),
-  };
-}
-
-function toRatingInput(dto: CreateRatingActionRequest): CreateRatingInput {
-  return {
-    missionId: dto.missionId,
-    title: dto.title,
-    description: dto.description,
-    imageUrl: dto.imageUrl,
-    imageFileUploadId: dto.imageFileUploadId,
-    order: dto.order,
-  };
-}
-
-function toImageInput(dto: CreateImageActionRequest): CreateImageInput {
-  return {
-    missionId: dto.missionId,
-    title: dto.title,
-    description: dto.description,
-    imageUrl: dto.imageUrl,
-    imageFileUploadId: dto.imageFileUploadId,
-    order: dto.order,
-  };
-}
-
 export async function createMultipleChoiceAction(
   request: CreateMultipleChoiceActionRequest,
 ): Promise<CreateMultipleChoiceActionResponse> {
   try {
     const user = await requireAuth();
-    const input = toMultipleChoiceInput(request);
-    const question = await actionService.createMultipleChoiceAction(input, user.id);
+    const question = await actionService.createMultipleChoiceAction(request, user.id);
     const data = { ...question, surveyId: question.missionId };
     return { data };
   } catch (error) {
@@ -139,8 +41,7 @@ export async function createScaleAction(
 ): Promise<CreateScaleActionResponse> {
   try {
     const user = await requireAuth();
-    const input = toScaleInput(request);
-    const question = await actionService.createScaleAction(input, user.id);
+    const question = await actionService.createScaleAction(request, user.id);
     const data = { ...question, surveyId: question.missionId };
 
     return { data };
@@ -160,8 +61,7 @@ export async function createSubjectiveAction(
 ): Promise<CreateSubjectiveActionResponse> {
   try {
     const user = await requireAuth();
-    const input = toSubjectiveInput(request);
-    const question = await actionService.createSubjectiveAction(input, user.id);
+    const question = await actionService.createSubjectiveAction(request, user.id);
 
     const data = { ...question, surveyId: question.missionId };
     return { data };
@@ -181,8 +81,7 @@ export async function createTagAction(
 ): Promise<CreateTagActionResponse> {
   try {
     const user = await requireAuth();
-    const input = toTagInput(request);
-    const question = await actionService.createTagAction(input, user.id);
+    const question = await actionService.createTagAction(request, user.id);
 
     const data = { ...question, surveyId: question.missionId };
     return { data };
@@ -202,8 +101,7 @@ export async function createRatingAction(
 ): Promise<CreateRatingActionResponse> {
   try {
     const user = await requireAuth();
-    const input = toRatingInput(request);
-    const question = await actionService.createRatingAction(input, user.id);
+    const question = await actionService.createRatingAction(request, user.id);
 
     const data = { ...question, surveyId: question.missionId };
     return { data };
@@ -223,8 +121,7 @@ export async function createImageAction(
 ): Promise<CreateImageActionResponse> {
   try {
     const user = await requireAuth();
-    const input = toImageInput(request);
-    const question = await actionService.createImageAction(input, user.id);
+    const question = await actionService.createImageAction(request, user.id);
 
     const data = { ...question, surveyId: question.missionId };
     return { data };

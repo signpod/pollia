@@ -37,7 +37,9 @@ export type UpdateActionOptionInput = Omit<ActionOptionInput, "order"> & {
   order: number;
 };
 
-export type UpdateActionInput = Prisma.ActionUncheckedUpdateInput;
+export type UpdateActionInput = Omit<Prisma.ActionUncheckedUpdateInput, "options"> & {
+  options?: UpdateActionOptionInput[];
+};
 
 export interface GetActionsOptions {
   searchQuery?: string;
