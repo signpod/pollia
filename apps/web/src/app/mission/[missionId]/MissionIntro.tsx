@@ -19,7 +19,7 @@ import {
   useCallout,
 } from "@repo/ui/components";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   MissionBadge,
   MissionDescription,
@@ -133,6 +133,15 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
     scrollOffset: SCROLL_OFFSET,
   });
 
+  const handleTabClick = useCallback(
+    (sectionId: string) => (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      handleChangeTab(sectionId);
+    },
+    [handleChangeTab],
+  );
+
   const showDetailInfo = !!target || !!estimatedMinutes || !!deadline;
 
   const deadlineText = deadline ? `${formatDeadline(deadline)} 까지` : "정원 마감시";
@@ -224,14 +233,14 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                   <Tab.Item
                     value={SECTION_IDS.MISSION_GUIDE}
                     className={cn(sections.length === 1 ? "mx-auto max-w-[110px]" : "")}
-                    onClick={() => handleChangeTab(SECTION_IDS.MISSION_GUIDE)}
+                    onClick={handleTabClick(SECTION_IDS.MISSION_GUIDE)}
                   >
                     <Typo.SubTitle size="large">상세 안내</Typo.SubTitle>
                   </Tab.Item>
                   {reward && (
                     <Tab.Item
                       value={SECTION_IDS.REWARD}
-                      onClick={() => handleChangeTab(SECTION_IDS.REWARD)}
+                      onClick={handleTabClick(SECTION_IDS.REWARD)}
                     >
                       <Typo.SubTitle size="large">참여 혜택</Typo.SubTitle>
                     </Tab.Item>
