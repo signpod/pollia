@@ -94,7 +94,9 @@ export function PdfUploader({
           <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
             {hasFile ? (
               <>
-                <p className="w-full truncate text-left text-sm font-medium">{fileName || "파일명 없음"}</p>
+                <p className="w-full truncate text-left text-sm font-medium">
+                  {fileName || "파일명 없음"}
+                </p>
                 <p className="text-xs text-muted-foreground">PDF • 최대 50MB</p>
               </>
             ) : (
