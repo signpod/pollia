@@ -96,90 +96,17 @@ export class ActionAnswerService {
     const actionIds = validated.answers.map(a => a.actionId);
     const actions = await Promise.all(actionIds.map(id => this.actionRepo.findById(id)));
 
-    for (let i = 0; i < actions.length; i++) {
-      const action = actions[i];
-      if (!action) {
-        this.throwError("일부 액션을 찾을 수 없습니다.", 400);
-      }
-
-      if (action.missionId !== response.missionId) {
-        this.throwError("유효하지 않은 액션이 포함되어 있습니다.", 400);
-      }
-
-      const answer = validated.answers[i];
-      if (!answer) continue;
-
-      if (answer.type !== action.type) {
-        this.throwError("답변 타입이 액션 타입과 일치하지 않습니다.", 400);
-      }
-    }
+    this.validateActions(actions, validated.answers, response.missionId);
 
     await this.answerRepo.deleteByResponseAndActions(validated.responseId, actionIds);
 
     const answersToCreate: Array<Parameters<typeof this.answerRepo.createMany>[0][number]> = [];
 
     for (const answer of validated.answers) {
-      const actionId = answer.actionId;
-
-      if (answer.type === ActionType.MULTIPLE_CHOICE && answer.selectedOptionIds) {
-        for (const optionId of answer.selectedOptionIds) {
-          answersToCreate.push({
-            responseId: validated.responseId,
-            actionId,
-            optionId,
-          });
-        }
-      } else if (answer.type === ActionType.SCALE && answer.scaleValue !== undefined) {
-        answersToCreate.push({
-          responseId: validated.responseId,
-          actionId,
-          scaleAnswer: answer.scaleValue,
-        });
-      } else if (answer.type === ActionType.RATING && answer.scaleValue !== undefined) {
-        answersToCreate.push({
-          responseId: validated.responseId,
-          actionId,
-          scaleAnswer: answer.scaleValue,
-        });
-      } else if (answer.type === ActionType.SUBJECTIVE && answer.textAnswer) {
-        answersToCreate.push({
-          responseId: validated.responseId,
-          actionId,
-          textAnswer: answer.textAnswer,
-        });
-      } else if (
-        answer.type === ActionType.IMAGE &&
-        answer.fileUploadIds &&
-        answer.fileUploadIds.length > 0
-      ) {
-        answersToCreate.push({
-          responseId: validated.responseId,
-          actionId,
-          fileUploads: {
-            connect: answer.fileUploadIds.map(id => ({ id })),
-          },
-        });
-      } else if (answer.type === ActionType.TAG && answer.selectedOptionIds) {
-        for (const optionId of answer.selectedOptionIds) {
-          answersToCreate.push({
-            responseId: validated.responseId,
-            actionId,
-            optionId,
-          });
-        }
-      } else if (answer.type === ActionType.DATE && answer.dateAnswers) {
-        answersToCreate.push({
-          responseId: validated.responseId,
-          actionId,
-          dateAnswers: answer.dateAnswers,
-        });
-      } else if (answer.type === ActionType.TIME && answer.dateAnswers) {
-        answersToCreate.push({
-          responseId: validated.responseId,
-          actionId,
-          dateAnswers: answer.dateAnswers,
-        });
-      }
+      const convertedAnswers = this.convertAnswerToCreateInput(answer, validated.responseId);
+      answersToCreate.push(
+        ...(Array.isArray(convertedAnswers) ? convertedAnswers : [convertedAnswers]),
+      );
     }
 
     await this.answerRepo.createMany(answersToCreate, userId);
@@ -251,6 +178,74 @@ export class ActionAnswerService {
 
   private throwValidationError(message: string): never {
     this.throwError(message, 400);
+  }
+
+  private validateActions(
+    actions: Awaited<ReturnType<typeof this.actionRepo.findById>>[],
+    answers: SubmitAnswersInput["answers"],
+    missionId: string,
+  ): void {
+    for (let i = 0; i < actions.length; i++) {
+      const action = actions[i];
+      if (!action) {
+        this.throwError("일부 액션을 찾을 수 없습니다.", 400);
+      }
+
+      if (action.missionId !== missionId) {
+        this.throwError("유효하지 않은 액션이 포함되어 있습니다.", 400);
+      }
+
+      const answer = answers[i];
+      if (answer && answer.type !== action.type) {
+        this.throwError("답변 타입이 액션 타입과 일치하지 않습니다.", 400);
+      }
+    }
+  }
+
+  private convertAnswerToCreateInput(
+    answer: SubmitAnswersInput["answers"][number],
+    responseId: string,
+  ): Array<Parameters<typeof this.answerRepo.createMany>[0][number]> {
+    const baseData = { responseId, actionId: answer.actionId };
+
+    switch (answer.type) {
+      case ActionType.MULTIPLE_CHOICE:
+      case ActionType.TAG:
+        return (
+          answer.selectedOptionIds?.map(optionId => ({
+            ...baseData,
+            optionId,
+          })) ?? []
+        );
+
+      case ActionType.SCALE:
+      case ActionType.RATING:
+        return answer.scaleValue !== undefined
+          ? [{ ...baseData, scaleAnswer: answer.scaleValue }]
+          : [];
+
+      case ActionType.SUBJECTIVE:
+        return answer.textAnswer ? [{ ...baseData, textAnswer: answer.textAnswer }] : [];
+
+      case ActionType.IMAGE:
+        return answer.fileUploadIds && answer.fileUploadIds.length > 0
+          ? [
+              {
+                ...baseData,
+                fileUploads: {
+                  connect: answer.fileUploadIds.map(id => ({ id })),
+                },
+              },
+            ]
+          : [];
+
+      case ActionType.DATE:
+      case ActionType.TIME:
+        return answer.dateAnswers ? [{ ...baseData, dateAnswers: answer.dateAnswers }] : [];
+
+      default:
+        return [];
+    }
   }
 
   private validateAnswerByActionType(
