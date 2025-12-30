@@ -3,6 +3,7 @@
 import {
   createImageAction,
   createMultipleChoiceAction,
+  createPrivacyConsentAction,
   createRatingAction,
   createScaleAction,
   createSubjectiveAction,
@@ -13,6 +14,7 @@ import type { ActionType } from "@/app/admin/missions/[id]/edit/components/actio
 import type {
   CreateImageActionRequest,
   CreateMultipleChoiceActionRequest,
+  CreatePrivacyConsentActionRequest,
   CreateRatingActionRequest,
   CreateScaleActionRequest,
   CreateSubjectiveActionRequest,
@@ -152,6 +154,19 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             isRequired: input.isRequired,
           };
           return await createImageAction(request);
+        }
+
+        case "PRIVACY_CONSENT": {
+          const request: CreatePrivacyConsentActionRequest = {
+            missionId: input.missionId,
+            title: input.title,
+            description: input.description,
+            imageUrl: input.imageUrl,
+            imageFileUploadId: input.imageFileUploadId,
+            order: input.order,
+            isRequired: input.isRequired,
+          };
+          return await createPrivacyConsentAction(request);
         }
 
         default:
