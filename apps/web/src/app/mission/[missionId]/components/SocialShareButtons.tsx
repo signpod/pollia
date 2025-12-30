@@ -20,6 +20,14 @@ export function SocialShareButtons({
 }: SocialShareButtonsProps) {
   return (
     <div className={cn("flex gap-4 w-full justify-center", className)}>
+      <button
+        type="button"
+        aria-label="카카오톡으로 공유"
+        className="flex justify-center items-center bg-kakao rounded-sm p-2"
+        onClick={onKakaoShare}
+      >
+        <KakaoIcon className="size-6" />
+      </button>
       {onXShare && (
         <button
           type="button"
@@ -30,14 +38,6 @@ export function SocialShareButtons({
           <XLogo className="size-6 text-white" />
         </button>
       )}
-      <button
-        type="button"
-        aria-label="카카오톡으로 공유"
-        className="flex justify-center items-center bg-kakao rounded-sm p-2"
-        onClick={onKakaoShare}
-      >
-        <KakaoIcon className="size-6" />
-      </button>
       <button
         type="button"
         aria-label="링크 복사"
