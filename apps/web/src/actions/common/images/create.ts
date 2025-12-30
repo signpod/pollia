@@ -14,6 +14,7 @@ export async function getUploadUrl(request: UploadImageRequest): Promise<UploadI
         fileSize: request.fileSize,
         fileType: request.fileType,
         bucket: request.bucket,
+        actionType: request.actionType,
       },
       user.id,
     );

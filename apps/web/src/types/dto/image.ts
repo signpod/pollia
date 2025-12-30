@@ -1,10 +1,12 @@
 import type { StorageBucket } from "@/constants/buckets";
+import type { ActionType } from "@prisma/client";
 
 export interface UploadImageRequest {
   fileName: string;
   fileType: string;
   fileSize: number;
   bucket?: StorageBucket;
+  actionType: ActionType;
 }
 
 export interface UploadImageResponse {

@@ -3,6 +3,7 @@
 import { confirmFile, deleteImage, getUploadUrl } from "@/actions/common/images";
 import type { StorageBucket } from "@/constants/buckets";
 import { ConfirmFileRequest, DeleteImageRequest, UploadImageRequest } from "@/types/dto/image";
+import { ActionType } from "@prisma/client";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 
@@ -42,6 +43,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
           fileType: processedFile.type,
           fileSize: processedFile.size,
           bucket: options.bucket,
+          actionType: ActionType.IMAGE,
         };
 
         const { data } = await getUploadUrl(uploadRequest);

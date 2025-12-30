@@ -3,6 +3,7 @@
 import { deleteImage, getUploadUrl } from "@/actions/common/images";
 import { STORAGE_BUCKETS, type StorageBucket } from "@/constants/buckets";
 import type { DeleteImageRequest, UploadImageRequest } from "@/types/dto/image";
+import { ActionType } from "@prisma/client";
 import { useMutation } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -32,6 +33,7 @@ export function useAdminSingleImage(options: UseAdminSingleImageOptions = {}) {
         fileType: file.type,
         fileSize: file.size,
         bucket: options.bucket || STORAGE_BUCKETS.MISSION_IMAGES,
+        actionType: ActionType.IMAGE,
       };
 
       const { data } = await getUploadUrl(uploadRequest);
@@ -128,6 +130,7 @@ export function useAdminMultipleImages(options: UseAdminMultipleImagesOptions = 
         fileType: file.type,
         fileSize: file.size,
         bucket: options.bucket || STORAGE_BUCKETS.MISSION_IMAGES,
+        actionType: ActionType.IMAGE,
       };
 
       const { data } = await getUploadUrl(uploadRequest);
