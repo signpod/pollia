@@ -22,11 +22,6 @@ const PROGRESSBAR_VARIANT: Record<BadgeVariant, Variant> = {
   loading: "loading",
 } as const;
 
-const VARIANT_TO_BADGE_VARIANT: Record<Exclude<Variant, "default">, BadgeVariant> = {
-  error: "error",
-  loading: "loading",
-} as const;
-
 const BADGE_COLOR_CLASSES: Record<BadgeVariant, { icon: string; text: string }> = {
   success: { icon: "text-point", text: "text-point" },
   error: { icon: "text-error", text: "text-error" },
@@ -58,15 +53,18 @@ export function ProgressBarV2({
     if (badgeVariant) {
       return PROGRESSBAR_VARIANT[badgeVariant];
     }
-    if (variant && variant !== "default") {
-      return PROGRESSBAR_VARIANT[VARIANT_TO_BADGE_VARIANT[variant]];
-    }
-    return "default";
+    return variant ?? "default";
   }, [badgeVariant, variant]);
 
-  const shouldShowBadge =
-    (badgeVariant && isBadgeVisible) ||
-    (!badgeVariant && currentOrder !== undefined && totalOrder !== undefined);
+  const shouldShowBadge = React.useMemo(() => {
+    if (badgeVariant && isBadgeVisible) {
+      return true;
+    }
+    if (!badgeVariant && currentOrder !== undefined && totalOrder !== undefined) {
+      return true;
+    }
+    return false;
+  }, [badgeVariant, isBadgeVisible, currentOrder, totalOrder]);
 
   return (
     <div className="flex flex-col gap-1 w-full justify-center items-center">
@@ -98,7 +96,7 @@ export function ProgressBarV2({
             progressbarVariant === "error" && "bg-red-500",
             progressbarVariant === "loading" && "bg-zinc-300",
           )}
-          style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
+          style={{ transform: `translateX(-${100 - (value ?? 0)}%)` }}
         />
       </ProgressPrimitive.Root>
     </div>
@@ -142,7 +140,9 @@ function Badge({ variant, currentOrder, totalOrder }: BadgeProps) {
         </div>
       ) : (
         <div className="flex justify-center items-center gap-1 px-3 py-1">
-          <AnimatePresence key={`order-${currentOrder}-${totalOrder}`}>
+          <AnimatePresence
+            key={`order-${String(currentOrder ?? "none")}-${String(totalOrder ?? "none")}`}
+          >
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
