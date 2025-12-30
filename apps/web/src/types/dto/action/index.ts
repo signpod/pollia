@@ -1,7 +1,7 @@
 import type { ActionType } from "@/types/domain/action";
 import type { Action, ActionOption } from "@prisma/client";
 
-interface BaseActionRequest {
+export interface BaseActionRequest {
   missionId?: string;
   title: string;
   description?: string;
@@ -11,7 +11,7 @@ interface BaseActionRequest {
   isRequired?: boolean;
 }
 
-interface ActionOptionInput {
+export interface ActionOptionInput {
   title: string;
   description?: string;
   imageUrl?: string;
@@ -19,7 +19,7 @@ interface ActionOptionInput {
   imageFileUploadId?: string;
 }
 
-interface BaseActionResponse {
+export interface BaseActionResponse {
   data: {
     id: string;
     missionId: string | null;
