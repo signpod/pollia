@@ -5,6 +5,7 @@ import {
   SCALE_MIN_OPTIONS,
   TAG_MAX_OPTIONS,
   TAG_MIN_OPTIONS,
+  dateInputSchema,
   imageInputSchema,
   multipleChoiceInputSchema,
   privacyConsentInputSchema,
@@ -12,6 +13,7 @@ import {
   scaleInputSchema,
   subjectiveInputSchema,
   tagInputSchema,
+  timeInputSchema,
 } from "@/schemas/action";
 import { actionOptionSchema } from "@/schemas/action-option";
 import { z } from "zod";
@@ -138,6 +140,30 @@ export const privacyConsentFormSchema = privacyConsentInputSchema
     isRequired: z.boolean(),
   });
 
+export const dateFormSchema = dateInputSchema
+  .omit({
+    missionId: true,
+    order: true,
+    imageFileUploadId: true,
+    isRequired: true,
+  })
+  .extend({
+    isRequired: z.boolean(),
+    maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다.").optional(),
+  });
+
+export const timeFormSchema = timeInputSchema
+  .omit({
+    missionId: true,
+    order: true,
+    imageFileUploadId: true,
+    isRequired: true,
+  })
+  .extend({
+    isRequired: z.boolean(),
+    maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다.").optional(),
+  });
+
 export type MultipleChoiceFormInput = z.infer<typeof multipleChoiceFormSchema>;
 export type ScaleFormInput = z.infer<typeof scaleFormSchema>;
 export type SubjectiveFormInput = z.infer<typeof subjectiveFormSchema>;
@@ -145,3 +171,5 @@ export type TagFormInput = z.infer<typeof tagFormSchema>;
 export type RatingFormInput = z.infer<typeof ratingFormSchema>;
 export type ImageUploadFormInput = z.infer<typeof imageUploadFormSchema>;
 export type PrivacyConsentFormInput = z.infer<typeof privacyConsentFormSchema>;
+export type DateFormInput = z.infer<typeof dateFormSchema>;
+export type TimeFormInput = z.infer<typeof timeFormSchema>;

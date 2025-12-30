@@ -11,6 +11,7 @@ import { getActionTypeLabel } from "@/app/admin/constants/actionTypes";
 import type { ActionDetail } from "@/types/dto/action";
 import {
   type ActionFormData,
+  DateForm,
   ImageUploadForm,
   MultipleChoiceForm,
   PrivacyConsentForm,
@@ -18,6 +19,7 @@ import {
   ScaleForm,
   SubjectiveForm,
   TagForm,
+  TimeForm,
 } from "./action-forms";
 
 interface EditActionDialogProps {
@@ -182,6 +184,36 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
             isRequired: action.isRequired,
+          }}
+        />
+      );
+    case "DATE":
+      return (
+        <DateForm
+          isLoading={isLoading}
+          onSubmit={onSubmit}
+          onCancel={onCancel}
+          initialData={{
+            title: action.title,
+            description: action.description || undefined,
+            imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
+            maxSelections: action.maxSelections ?? undefined,
+          }}
+        />
+      );
+    case "TIME":
+      return (
+        <TimeForm
+          isLoading={isLoading}
+          onSubmit={onSubmit}
+          onCancel={onCancel}
+          initialData={{
+            title: action.title,
+            description: action.description || undefined,
+            imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
+            maxSelections: action.maxSelections ?? undefined,
           }}
         />
       );

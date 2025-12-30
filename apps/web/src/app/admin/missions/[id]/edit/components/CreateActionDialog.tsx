@@ -14,6 +14,8 @@ import { getActionTypeLabel } from "@/app/admin/constants/actionTypes";
 import { cn } from "@/app/admin/lib/utils";
 import {
   ClipboardList,
+  Calendar,
+  Clock,
   Hash,
   ImageIcon,
   MessageSquare,
@@ -25,6 +27,7 @@ import { useState } from "react";
 import {
   type ActionFormData,
   type ActionType,
+  DateForm,
   ImageUploadForm,
   MultipleChoiceForm,
   PrivacyConsentForm,
@@ -32,6 +35,7 @@ import {
   ScaleForm,
   SubjectiveForm,
   TagForm,
+  TimeForm,
 } from "./action-forms";
 
 interface CreateActionDialogProps {
@@ -83,6 +87,18 @@ const ACTION_TYPES = [
     label: getActionTypeLabel("PRIVACY_CONSENT"),
     description: "개인정보 수집 및 이용 동의",
     icon: Shield,
+  },
+  {
+    value: "DATE" as const,
+    label: getActionTypeLabel("DATE"),
+    description: "날짜를 선택하여 응답",
+    icon: Calendar,
+  },
+  {
+    value: "TIME" as const,
+    label: getActionTypeLabel("TIME"),
+    description: "시간을 선택하여 응답",
+    icon: Clock,
   },
 ] as const;
 
@@ -234,6 +250,10 @@ function ActionForm({ type, isLoading, onSubmit, onCancel }: ActionFormProps) {
       return <ImageUploadForm isLoading={isLoading} onSubmit={onSubmit} onCancel={onCancel} />;
     case "PRIVACY_CONSENT":
       return <PrivacyConsentForm isLoading={isLoading} onSubmit={onSubmit} onCancel={onCancel} />;
+    case "DATE":
+      return <DateForm isLoading={isLoading} onSubmit={onSubmit} onCancel={onCancel} />;
+    case "TIME":
+      return <TimeForm isLoading={isLoading} onSubmit={onSubmit} onCancel={onCancel} />;
     default:
       return null;
   }
