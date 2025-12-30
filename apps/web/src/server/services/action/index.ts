@@ -278,7 +278,7 @@ export class ActionService {
       dateInputSchema,
       ActionType.DATE,
       userId,
-      (input as { maxSelections?: number }).maxSelections,
+      input.maxSelections,
     );
   }
 
@@ -288,7 +288,7 @@ export class ActionService {
       timeInputSchema,
       ActionType.TIME,
       userId,
-      (input as { maxSelections?: number }).maxSelections,
+      input.maxSelections,
     );
   }
 

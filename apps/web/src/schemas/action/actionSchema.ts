@@ -110,11 +110,11 @@ export const imageInputSchema = baseActionSchema;
 export const privacyConsentInputSchema = baseActionSchema;
 
 export const dateInputSchema = baseActionSchema.extend({
-  maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다.").optional(),
+  maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다."),
 });
 
 export const timeInputSchema = baseActionSchema.extend({
-  maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다.").optional(),
+  maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다."),
 });
 
 export const actionUpdateSchema = z

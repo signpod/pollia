@@ -35,9 +35,13 @@ export type CreateImageInput = BaseActionInput;
 
 export type CreatePrivacyConsentInput = BaseActionInput;
 
-export type CreateDateInput = BaseActionInput;
+export type CreateDateInput = BaseActionInput & {
+  maxSelections: number;
+};
 
-export type CreateTimeInput = BaseActionInput;
+export type CreateTimeInput = BaseActionInput & {
+  maxSelections: number;
+};
 
 export type UpdateActionOptionInput = Omit<ActionOptionInput, "order"> & {
   order: number;

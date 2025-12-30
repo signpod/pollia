@@ -182,7 +182,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
             isRequired: input.isRequired,
-            maxSelections: input.maxSelections,
+            maxSelections: input.maxSelections ?? 1,
           };
           return await createDateAction(request);
         }
@@ -196,7 +196,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
             isRequired: input.isRequired,
-            maxSelections: input.maxSelections,
+            maxSelections: input.maxSelections ?? 1,
           };
           return await createTimeAction(request);
         }
