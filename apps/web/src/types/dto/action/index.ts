@@ -22,7 +22,7 @@ interface ActionOptionInput {
 interface BaseActionResponse {
   data: {
     id: string;
-    missionId: string;
+    missionId: string | null;
     title: string;
     type: ActionType;
     order: number;
