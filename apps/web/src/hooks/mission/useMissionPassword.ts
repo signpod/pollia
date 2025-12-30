@@ -99,7 +99,7 @@ export const useMissionPassword = (missionId: string) => {
     }
     if (inputPassword.length === 6 && isPasswordCorrect?.data === true && firstActionId) {
       handleStartResponse(
-        { surveyId: missionId },
+        { missionId },
         {
           onSuccess: () => {
             setSessionStorage(`current-action-id-${missionId}`, "initial");

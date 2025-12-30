@@ -64,10 +64,19 @@ src/
 │   │       └── surveyRepository.ts
 │   │
 │   └── services/              # Service 계층
-│       └── survey/
-│           ├── surveyService.ts
-│           ├── surveyService.test.ts  # 테스트
-│           └── types.ts       # Service 내부 타입
+│       ├── survey/            # 소규모 서비스 (단일 파일)
+│       │   ├── surveyService.ts
+│       │   ├── surveyService.test.ts
+│       │   └── types.ts
+│       │
+│       └── action/            # 대규모 서비스 (__tests__ 분리)
+│           ├── __tests__/
+│           │   ├── actionService.create.test.ts
+│           │   ├── actionService.mutation.test.ts
+│           │   └── actionService.read.test.ts
+│           ├── index.ts
+│           ├── testUtils.ts
+│           └── types.ts
 │
 ├── schemas/                    # Zod 스키마 (Client + Service 공유)
 │   └── survey/
@@ -439,6 +448,40 @@ export async function createSurvey(
 **테스트 작성 제외:**
 - Repository 계층 (Prisma 쿼리는 테스트하지 않음)
 - Server Action 계층 (인증/에러 처리는 E2E 테스트에서)
+
+### 테스트 파일 구조
+
+**소규모 서비스 (단일 파일):**
+```
+survey/
+  ├── surveyService.ts
+  ├── surveyService.test.ts    # 단일 테스트 파일
+  └── types.ts
+```
+
+**대규모 서비스 (`__tests__/` 분리):**
+
+테스트 파일이 **500줄 이상**이거나 **관심사가 명확히 구분**되는 경우 `__tests__/` 폴더로 분리합니다.
+
+```
+action/
+  ├── __tests__/
+  │   ├── actionService.create.test.ts      # 생성 관련 테스트
+  │   ├── actionService.mutation.test.ts    # 수정/삭제 테스트
+  │   └── actionService.read.test.ts        # 조회 관련 테스트
+  ├── index.ts
+  ├── testUtils.ts
+  └── types.ts
+```
+
+**분리 기준:**
+- 테스트 파일이 500줄 이상
+- CRUD 작업이 명확히 구분됨 (create, read, update/delete)
+- 도메인 특화 로직이 많음 (예: password, validation 등)
+
+**파일 네이밍:**
+- `{서비스명}.{관심사}.test.ts`
+- 예: `actionService.create.test.ts`, `missionService.mutation.test.ts`
 
 ### 기본 구조
 

@@ -23,7 +23,7 @@ export function useStartMissionResponse(options: UseStartMissionResponseOptions 
     onSuccess: (data, payload) => {
       options.onSuccess?.(data);
       queryClient.invalidateQueries({
-        queryKey: missionQueryKeys.missionResponseForMission(payload.surveyId),
+        queryKey: missionQueryKeys.missionResponseForMission(payload.missionId),
       });
     },
     onError: error => {

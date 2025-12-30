@@ -60,6 +60,7 @@ const baseActionSchema = z.object({
   imageUrl: actionImageUrlSchema,
   imageFileUploadId: z.string().optional(),
   order: actionOrderSchema,
+  isRequired: z.boolean().optional().default(true),
 });
 
 export const multipleChoiceInputSchema = baseActionSchema
@@ -106,6 +107,8 @@ export const ratingInputSchema = baseActionSchema;
 
 export const imageInputSchema = baseActionSchema;
 
+export const privacyConsentInputSchema = baseActionSchema;
+
 export const actionUpdateSchema = z
   .object({
     title: actionTitleSchema.optional(),
@@ -114,6 +117,7 @@ export const actionUpdateSchema = z
     imageFileUploadId: z.string().optional(),
     order: actionOrderSchema.optional(),
     maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다.").optional(),
+    isRequired: z.boolean().optional(),
     options: z.array(actionOptionSchema).optional(),
   })
   .refine(data => Object.keys(data).length > 0, {
@@ -127,5 +131,6 @@ export type EitherOrInput = z.infer<typeof eitherOrInputSchema>;
 export type TagInput = z.infer<typeof tagInputSchema>;
 export type RatingInput = z.infer<typeof ratingInputSchema>;
 export type ImageInput = z.infer<typeof imageInputSchema>;
+export type PrivacyConsentInput = z.infer<typeof privacyConsentInputSchema>;
 export type ActionOption = z.infer<typeof actionOptionSchema>;
 export type ActionUpdate = z.infer<typeof actionUpdateSchema>;

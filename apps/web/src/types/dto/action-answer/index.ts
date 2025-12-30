@@ -33,6 +33,11 @@ export type ActionAnswerItem =
       actionId: string;
       type: typeof ActionType.TAG;
       selectedOptionIds: string[];
+    }
+  | {
+      actionId: string;
+      type: typeof ActionType.PRIVACY_CONSENT;
+      booleanAnswer: boolean;
     };
 
 export interface CreateActionAnswerRequest {
@@ -52,6 +57,7 @@ export interface SubmitActionAnswersRequest {
     scaleValue?: number;
     textAnswer?: string;
     fileUploadIds?: string[];
+    booleanAnswer?: boolean;
   }>;
 }
 

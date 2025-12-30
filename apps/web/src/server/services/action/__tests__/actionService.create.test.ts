@@ -79,9 +79,11 @@ describe("ActionService - Create", () => {
           title: request.title,
           description: request.description,
           imageUrl: request.imageUrl,
+          imageFileUploadId: undefined,
           type: ActionType.MULTIPLE_CHOICE,
           order: request.order,
           maxSelections: request.maxSelections,
+          isRequired: true,
         },
         request.options.map(opt => ({
           title: opt.title,
@@ -92,6 +94,90 @@ describe("ActionService - Create", () => {
         })),
         "user1",
       );
+    });
+
+    it("isRequired를 false로 설정하여 선택 액션을 생성한다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+      const request = {
+        missionId: "mission1",
+        title: "좋아하는 색은?",
+        order: 0,
+        maxSelections: 1,
+        isRequired: false,
+        options: [
+          { title: "빨강", order: 0 },
+          { title: "파랑", order: 1 },
+        ],
+      };
+      const mockCreatedAction = {
+        id: "action1",
+        missionId: "mission1",
+        title: request.title,
+        type: ActionType.MULTIPLE_CHOICE,
+        order: request.order,
+        maxSelections: request.maxSelections,
+        description: null,
+        imageUrl: null,
+        isRequired: false,
+        imageFileUploadId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.createMultipleChoice.mockResolvedValue(mockCreatedAction);
+
+      // When
+      const result = await ctx.service.createMultipleChoiceAction(request, "user1");
+
+      // Then
+      expect(result.isRequired).toBe(false);
+      expect(ctx.mockActionRepo.createMultipleChoice).toHaveBeenCalledWith(
+        expect.objectContaining({
+          isRequired: false,
+        }),
+        expect.anything(),
+        "user1",
+      );
+    });
+
+    it("isRequired를 명시하지 않으면 기본값(true)으로 생성한다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+      const request = {
+        missionId: "mission1",
+        title: "좋아하는 색은?",
+        order: 0,
+        maxSelections: 1,
+        options: [
+          { title: "빨강", order: 0 },
+          { title: "파랑", order: 1 },
+        ],
+      };
+      const mockCreatedAction = {
+        id: "action1",
+        missionId: "mission1",
+        title: request.title,
+        type: ActionType.MULTIPLE_CHOICE,
+        order: request.order,
+        maxSelections: request.maxSelections,
+        description: null,
+        imageUrl: null,
+        isRequired: true,
+        imageFileUploadId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.createMultipleChoice.mockResolvedValue(mockCreatedAction);
+
+      // When
+      const result = await ctx.service.createMultipleChoiceAction(request, "user1");
+
+      // Then
+      expect(result.isRequired).toBe(true);
     });
 
     it("Mission 소유자가 아니면 403 에러를 던진다", async () => {
@@ -270,8 +356,10 @@ describe("ActionService - Create", () => {
           title: request.title,
           description: request.description,
           imageUrl: request.imageUrl,
+          imageFileUploadId: undefined,
           type: ActionType.SCALE,
           order: request.order,
+          isRequired: true,
         },
         request.options.map(opt => ({
           title: opt.title,
@@ -418,6 +506,7 @@ describe("ActionService - Create", () => {
           imageFileUploadId: undefined,
           type: ActionType.SUBJECTIVE,
           order: request.order,
+          isRequired: true,
         },
         "user1",
       );
@@ -465,6 +554,111 @@ describe("ActionService - Create", () => {
 
       try {
         await ctx.service.createSubjectiveAction(request, "user1");
+      } catch (error) {
+        expect(error instanceof Error && error.cause).toBe(404);
+      }
+
+      expect(ctx.mockActionRepo.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("createPrivacyConsentAction", () => {
+    it("Privacy Consent Action을 성공적으로 생성한다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+      const request = {
+        missionId: "mission1",
+        title: "개인정보 수집 및 이용 동의",
+        description: "서비스 이용을 위해 개인정보 수집에 동의해주세요",
+        imageUrl: undefined,
+        order: 0,
+      };
+      const mockCreatedAction = {
+        id: "action1",
+        missionId: "mission1",
+        title: request.title,
+        type: ActionType.PRIVACY_CONSENT,
+        order: request.order,
+        maxSelections: null,
+        description: request.description,
+        imageUrl: null,
+        isRequired: true,
+        imageFileUploadId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.create.mockResolvedValue(mockCreatedAction);
+
+      // When
+      const result = await ctx.service.createPrivacyConsentAction(request, "user1");
+
+      // Then
+      expect(result.id).toBe("action1");
+      expect(result.missionId).toBe("mission1");
+      expect(result.title).toBe(request.title);
+      expect(result.type).toBe(ActionType.PRIVACY_CONSENT);
+      expect(result.order).toBe(request.order);
+      expect(result.isRequired).toBe(true);
+      expect(result.createdAt).toBeDefined();
+      expect(ctx.mockActionRepo.create).toHaveBeenCalledWith(
+        {
+          missionId: "mission1",
+          title: request.title,
+          description: request.description,
+          imageUrl: request.imageUrl,
+          imageFileUploadId: undefined,
+          type: ActionType.PRIVACY_CONSENT,
+          order: request.order,
+          isRequired: true,
+        },
+        "user1",
+      );
+    });
+
+    it("Mission 소유자가 아니면 403 에러를 던진다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+      const request = {
+        missionId: "mission1",
+        title: "개인정보 수집 및 이용 동의",
+        order: 0,
+      };
+
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+
+      // When & Then
+      await expect(ctx.service.createPrivacyConsentAction(request, "user2")).rejects.toThrow(
+        "액션을 추가할 권한이 없습니다.",
+      );
+
+      try {
+        await ctx.service.createPrivacyConsentAction(request, "user2");
+      } catch (error) {
+        expect(error instanceof Error && error.cause).toBe(403);
+      }
+
+      expect(ctx.mockActionRepo.create).not.toHaveBeenCalled();
+    });
+
+    it("Mission이 없으면 404 에러를 던진다", async () => {
+      // Given
+      const request = {
+        missionId: "invalid-mission",
+        title: "개인정보 수집 및 이용 동의",
+        order: 0,
+      };
+
+      ctx.mockMissionRepo.findById.mockResolvedValue(null);
+
+      // When & Then
+      await expect(ctx.service.createPrivacyConsentAction(request, "user1")).rejects.toThrow(
+        "존재하지 않는 미션입니다.",
+      );
+
+      try {
+        await ctx.service.createPrivacyConsentAction(request, "user1");
       } catch (error) {
         expect(error instanceof Error && error.cause).toBe(404);
       }

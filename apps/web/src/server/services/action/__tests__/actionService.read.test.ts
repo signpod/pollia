@@ -49,8 +49,35 @@ describe("ActionService - Read", () => {
 
       // Then
       expect(result).toEqual(mockAction);
+      expect(result.isRequired).toBe(false);
       expect(ctx.mockActionRepo.findByIdWithOptions).toHaveBeenCalledWith("action1");
       expect(ctx.mockActionRepo.findByIdWithOptions).toHaveBeenCalledTimes(1);
+    });
+
+    it("필수 액션(isRequired: true)을 조회한다", async () => {
+      // Given
+      const mockRequiredAction = {
+        id: "action2",
+        missionId: "mission1",
+        title: "필수 액션",
+        description: null,
+        imageUrl: null,
+        type: ActionType.SUBJECTIVE,
+        order: 1,
+        maxSelections: null,
+        isRequired: true,
+        imageFileUploadId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        options: [],
+      };
+      ctx.mockActionRepo.findByIdWithOptions.mockResolvedValue(mockRequiredAction);
+
+      // When
+      const result = await ctx.service.getActionById("action2");
+
+      // Then
+      expect(result.isRequired).toBe(true);
     });
 
     it("Action이 없으면 404 에러를 던진다", async () => {
@@ -202,6 +229,7 @@ describe("ActionService - Read", () => {
           maxSelections: 1,
           order: 0,
           imageFileUploadId: null,
+          isRequired: true,
           createdAt: new Date(),
           updatedAt: new Date(),
           missionId: "mission1",
@@ -214,6 +242,8 @@ describe("ActionService - Read", () => {
           imageUrl: null,
           maxSelections: null,
           order: 1,
+          imageFileUploadId: null,
+          isRequired: true,
           createdAt: new Date(),
           updatedAt: new Date(),
           missionId: "mission1",
@@ -226,6 +256,8 @@ describe("ActionService - Read", () => {
           imageUrl: null,
           maxSelections: null,
           order: 2,
+          imageFileUploadId: null,
+          isRequired: true,
           createdAt: new Date(),
           updatedAt: new Date(),
           missionId: "mission1",

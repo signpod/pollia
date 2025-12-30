@@ -2,26 +2,12 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import { actionService } from "@/server/services/action";
-import type { UpdateActionInput } from "@/server/services/action/types";
 import type { UpdateActionRequest } from "@/types/dto/action";
-
-function toUpdateActionInput(dto: UpdateActionRequest): UpdateActionInput {
-  return {
-    title: dto.title,
-    description: dto.description,
-    imageUrl: dto.imageUrl,
-    imageFileUploadId: dto.imageFileUploadId,
-    order: dto.order,
-    maxSelections: dto.maxSelections,
-    options: dto.options,
-  };
-}
 
 export async function updateAction(actionId: string, request: UpdateActionRequest) {
   try {
     const user = await requireAuth();
-    const input = toUpdateActionInput(request);
-    const updatedQuestion = await actionService.updateAction(actionId, input, user.id);
+    const updatedQuestion = await actionService.updateAction(actionId, request, user.id);
     return { data: updatedQuestion };
   } catch (error) {
     console.error("updateAction error:", error);

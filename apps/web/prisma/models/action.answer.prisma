@@ -1,12 +1,14 @@
 model ActionAnswer {
-  id          String     @id @default(cuid())
-  optionId    String?    @map("option_id")
-  textAnswer  String?    @map("text_answer")
-  scaleAnswer Int?       @map("scale_answer")
-  dateAnswers DateTime[] @map("date_answers")
-  actionId    String     @map("action_id")
-  responseId  String     @map("response_id")
-  createdAt   DateTime   @default(now()) @map("created_at")
+  id         String   @id @default(cuid())
+  optionId   String?  @map("option_id")
+  actionId   String   @map("action_id")
+  responseId String   @map("response_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  textAnswer    String?    @map("text_answer")
+  scaleAnswer   Int?       @map("scale_answer")
+  booleanAnswer Boolean?   @map("boolean_answer")
+  dateAnswers   DateTime[] @map("date_answers")
 
   action   Action          @relation(fields: [actionId], references: [id], onDelete: Cascade)
   option   ActionOption?   @relation(fields: [optionId], references: [id], onDelete: Cascade)

@@ -47,7 +47,7 @@ export function useSurveyResume({
         },
         onCancel: async () => {
           await resetMissionResponse(responseId);
-          await startResponse({ surveyId: missionId });
+          await startResponse({ missionId });
         },
         cancelButtonIsLoading: isResetMissionResponsePending,
       });
