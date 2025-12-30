@@ -44,19 +44,24 @@ jobs:
         working-directory: apps/web
         run: npx prisma generate
       
-      # 7. 타입 체크
+      # 7. Storybook 빌드 체크
+      - name: Build Storybook
+        working-directory: apps/storybook
+        run: yarn build
+      
+      # 8. 타입 체크
       - name: Type check
         run: yarn check-types
       
-      # 8. 린트 체크
+      # 9. 린트 체크
       - name: Lint
         run: yarn lint
       
-      # 9. 테스트 실행 (커버리지 포함)
+      # 10. 테스트 실행 (커버리지 포함)
       - name: Run tests with coverage
         run: yarn test:coverage
       
-      # 10. 성공 메시지
+      # 11. 성공 메시지
       - name: All checks passed
         if: success()
         run: echo "✅ All CI checks passed!"
