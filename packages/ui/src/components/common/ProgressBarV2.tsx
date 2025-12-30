@@ -12,7 +12,7 @@ type BadgeVariant = "success" | "error" | "loading";
 
 const PROGRESS_BAR_SIZES = {
   height: "h-[6px]",
-  width: "w-[120px]",
+  width: "w-[160px]",
   badgeMinHeight: "min-h-[28px]",
 } as const;
 
@@ -149,16 +149,16 @@ function Badge({ variant, currentOrder, totalOrder }: BadgeProps) {
               exit={{ opacity: 0, y: 10 }}
               transition={{ duration: 0.2, ease: "easeInOut" }}
             >
-              <Typo.Body size="medium" className="text-info">
+              <Typo.Body size="medium" className="text-info font-extrabold">
                 {currentOrder}
               </Typo.Body>
             </motion.div>
           </AnimatePresence>
 
-          <Typo.Body size="medium" className="text-info">
+          <Typo.Body size="medium" className="text-info font-extrabold">
             /
           </Typo.Body>
-          <Typo.Body size="medium" className="text-info">
+          <Typo.Body size="medium" className="text-info font-extrabold">
             {totalOrder}
           </Typo.Body>
         </div>

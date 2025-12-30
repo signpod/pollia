@@ -3,7 +3,7 @@ import {
   ButtonV2,
   FixedBottomLayout,
   FixedTopLayout,
-  ProgressBar,
+  ProgressBarV2,
   Typo,
 } from "@repo/ui/components";
 import { ChevronLeftIcon } from "lucide-react";
@@ -50,9 +50,13 @@ export function SurveyQuestionTemplate({
     <FixedBottomLayout hasGradient>
       <FixedTopLayout>
         <FixedTopLayout.Content
-          className={cn("flex justify-center mt-3 w-full", PROGRESS_BAR_CONTAINER_HEIGHT)}
+          className={cn("flex justify-center w-full", PROGRESS_BAR_CONTAINER_HEIGHT)}
         >
-          <ProgressBar value={progressValue} containerClassName={PROGRESS_BAR_WIDTH} />
+          <ProgressBarV2
+            value={progressValue}
+            totalOrder={totalActionCount}
+            currentOrder={currentOrder + 1}
+          />
         </FixedTopLayout.Content>
       </FixedTopLayout>
 
@@ -66,7 +70,7 @@ export function SurveyQuestionTemplate({
             </Typo.Body>
           )}
           {imageUrl && (
-            <figure className="relative aspect-[3/2] overflow-hidden rounded-sm">
+            <figure className="relative aspect-3/2 overflow-hidden rounded-sm">
               <Image src={imageUrl} alt={title} fill className="object-cover" />
             </figure>
           )}
