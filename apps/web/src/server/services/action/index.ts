@@ -12,6 +12,7 @@ import {
 import { actionRepository } from "@/server/repositories/action/actionRepository";
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
 import { ActionType } from "@prisma/client";
+import { z } from "zod";
 import type {
   ActionCreatedResult,
   CreateEitherOrInput,
@@ -31,6 +32,126 @@ export class ActionService {
     private actionRepo = actionRepository,
     private missionRepo = missionRepository,
   ) {}
+
+  private async createSimpleAction<T>(
+    input: T,
+    schema: z.ZodType<T>,
+    type: ActionType,
+    userId: string,
+  ): Promise<ActionCreatedResult> {
+    const result = schema.safeParse(input);
+    if (!result.success) {
+      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
+      error.cause = 400;
+      throw error;
+    }
+
+    const validated = result.data as {
+      missionId?: string;
+      title: string;
+      description?: string;
+      imageUrl?: string;
+      imageFileUploadId?: string;
+      order: number;
+      isRequired?: boolean;
+    };
+
+    if (validated.missionId) {
+      await this.verifyMissionAccess(validated.missionId, userId);
+    }
+
+    const action = await this.actionRepo.create(
+      {
+        missionId: validated.missionId,
+        title: validated.title,
+        description: validated.description,
+        imageUrl: validated.imageUrl,
+        imageFileUploadId: validated.imageFileUploadId,
+        type,
+        order: validated.order,
+        isRequired: validated.isRequired,
+      },
+      userId,
+    );
+
+    return {
+      id: action.id,
+      missionId: action.missionId || "",
+      title: action.title,
+      type: action.type,
+      order: action.order,
+      isRequired: action.isRequired,
+      createdAt: action.createdAt,
+    };
+  }
+
+  private async createActionWithOptions<T>(
+    input: T,
+    schema: z.ZodType<T>,
+    type: ActionType,
+    userId: string,
+    maxSelections?: number,
+  ): Promise<ActionCreatedResult> {
+    const result = schema.safeParse(input);
+    if (!result.success) {
+      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
+      error.cause = 400;
+      throw error;
+    }
+
+    const validated = result.data as {
+      missionId?: string;
+      title: string;
+      description?: string;
+      imageUrl?: string;
+      imageFileUploadId?: string;
+      order: number;
+      isRequired?: boolean;
+      options: Array<{
+        title: string;
+        description?: string;
+        imageUrl?: string;
+        order: number;
+        imageFileUploadId?: string;
+      }>;
+    };
+
+    if (validated.missionId) {
+      await this.verifyMissionAccess(validated.missionId, userId);
+    }
+
+    const action = await this.actionRepo.createMultipleChoice(
+      {
+        missionId: validated.missionId,
+        title: validated.title,
+        description: validated.description,
+        imageUrl: validated.imageUrl,
+        imageFileUploadId: validated.imageFileUploadId,
+        type,
+        order: validated.order,
+        maxSelections,
+        isRequired: validated.isRequired,
+      },
+      validated.options.map(opt => ({
+        title: opt.title,
+        description: opt.description,
+        imageUrl: opt.imageUrl,
+        order: opt.order,
+        imageFileUploadId: opt.imageFileUploadId,
+      })),
+      userId,
+    );
+
+    return {
+      id: action.id,
+      missionId: action.missionId || "",
+      title: action.title,
+      type: action.type,
+      order: action.order,
+      isRequired: action.isRequired,
+      createdAt: action.createdAt,
+    };
+  }
 
   async getActionById(actionId: string) {
     const action = await this.actionRepo.findByIdWithOptions(actionId);
@@ -88,332 +209,61 @@ export class ActionService {
     input: CreateMultipleChoiceInput,
     userId: string,
   ): Promise<ActionCreatedResult> {
-    const result = multipleChoiceInputSchema.safeParse(input);
-    if (!result.success) {
-      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
-      error.cause = 400;
-      throw error;
-    }
-
-    if (result.data.missionId) {
-      await this.verifyMissionAccess(result.data.missionId, userId);
-    }
-
-    const action = await this.actionRepo.createMultipleChoice(
-      {
-        missionId: result.data.missionId,
-        title: result.data.title,
-        description: result.data.description,
-        imageUrl: result.data.imageUrl,
-        imageFileUploadId: result.data.imageFileUploadId,
-        type: ActionType.MULTIPLE_CHOICE,
-        order: result.data.order,
-        maxSelections: result.data.maxSelections,
-        isRequired: result.data.isRequired,
-      },
-      result.data.options.map(opt => ({
-        title: opt.title,
-        description: opt.description,
-        imageUrl: opt.imageUrl,
-        order: opt.order,
-        imageFileUploadId: opt.imageFileUploadId,
-      })),
+    return this.createActionWithOptions(
+      input,
+      multipleChoiceInputSchema,
+      ActionType.MULTIPLE_CHOICE,
       userId,
+      (input as { maxSelections: number }).maxSelections,
     );
-
-    return {
-      id: action.id,
-      missionId: action.missionId || "",
-      title: action.title,
-      type: action.type,
-      order: action.order,
-      isRequired: action.isRequired,
-      createdAt: action.createdAt,
-    };
   }
 
   async createScaleAction(input: CreateScaleInput, userId: string): Promise<ActionCreatedResult> {
-    const result = scaleInputSchema.safeParse(input);
-    if (!result.success) {
-      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
-      error.cause = 400;
-      throw error;
-    }
-
-    if (result.data.missionId) {
-      await this.verifyMissionAccess(result.data.missionId, userId);
-    }
-
-    const validated = result.data;
-    const action = await this.actionRepo.createMultipleChoice(
-      {
-        missionId: validated.missionId,
-        title: validated.title,
-        description: validated.description,
-        imageUrl: validated.imageUrl,
-        imageFileUploadId: validated.imageFileUploadId,
-        type: ActionType.SCALE,
-        order: validated.order,
-        isRequired: validated.isRequired,
-      },
-      validated.options.map(opt => ({
-        title: opt.title,
-        description: opt.description,
-        imageUrl: opt.imageUrl,
-        order: opt.order,
-        imageFileUploadId: opt.imageFileUploadId,
-      })),
-      userId,
-    );
-
-    return {
-      id: action.id,
-      missionId: action.missionId || "",
-      title: action.title,
-      type: action.type,
-      order: action.order,
-      isRequired: action.isRequired,
-      createdAt: action.createdAt,
-    };
+    return this.createActionWithOptions(input, scaleInputSchema, ActionType.SCALE, userId);
   }
 
   async createSubjectiveAction(
     input: CreateSubjectiveInput,
     userId: string,
   ): Promise<ActionCreatedResult> {
-    const result = subjectiveInputSchema.safeParse(input);
-    if (!result.success) {
-      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
-      error.cause = 400;
-      throw error;
-    }
-
-    if (result.data.missionId) {
-      await this.verifyMissionAccess(result.data.missionId, userId);
-    }
-
-    const action = await this.actionRepo.create(
-      {
-        missionId: result.data.missionId,
-        title: result.data.title,
-        description: result.data.description,
-        imageUrl: result.data.imageUrl,
-        imageFileUploadId: result.data.imageFileUploadId,
-        type: ActionType.SUBJECTIVE,
-        order: result.data.order,
-        isRequired: result.data.isRequired,
-      },
-      userId,
-    );
-
-    return {
-      id: action.id,
-      missionId: action.missionId || "",
-      title: action.title,
-      type: action.type,
-      order: action.order,
-      isRequired: action.isRequired,
-      createdAt: action.createdAt,
-    };
+    return this.createSimpleAction(input, subjectiveInputSchema, ActionType.SUBJECTIVE, userId);
   }
 
   async createEitherOrAction(
     input: CreateEitherOrInput,
     userId: string,
   ): Promise<ActionCreatedResult> {
-    const result = eitherOrInputSchema.safeParse(input);
-    if (!result.success) {
-      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
-      error.cause = 400;
-      throw error;
-    }
-
-    if (result.data.missionId) {
-      await this.verifyMissionAccess(result.data.missionId, userId);
-    }
-
-    const action = await this.actionRepo.create(
-      {
-        missionId: result.data.missionId,
-        title: result.data.title,
-        description: result.data.description,
-        imageUrl: result.data.imageUrl,
-        imageFileUploadId: result.data.imageFileUploadId,
-        type: ActionType.MULTIPLE_CHOICE,
-        order: result.data.order,
-        isRequired: result.data.isRequired,
-      },
-      userId,
-    );
-
-    return {
-      id: action.id,
-      missionId: action.missionId || "",
-      title: action.title,
-      type: action.type,
-      order: action.order,
-      isRequired: action.isRequired,
-      createdAt: action.createdAt,
-    };
+    return this.createSimpleAction(input, eitherOrInputSchema, ActionType.MULTIPLE_CHOICE, userId);
   }
 
   async createTagAction(input: CreateTagInput, userId: string): Promise<ActionCreatedResult> {
-    const result = tagInputSchema.safeParse(input);
-    if (!result.success) {
-      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
-      error.cause = 400;
-      throw error;
-    }
-
-    if (result.data.missionId) {
-      await this.verifyMissionAccess(result.data.missionId, userId);
-    }
-
-    const action = await this.actionRepo.createMultipleChoice(
-      {
-        missionId: result.data.missionId,
-        title: result.data.title,
-        description: result.data.description,
-        imageUrl: result.data.imageUrl,
-        imageFileUploadId: result.data.imageFileUploadId,
-        type: ActionType.TAG,
-        order: result.data.order,
-        maxSelections: result.data.maxSelections ?? undefined,
-        isRequired: result.data.isRequired,
-      },
-      result.data.options.map(opt => ({
-        title: opt.title,
-        description: opt.description,
-        imageUrl: opt.imageUrl,
-        order: opt.order,
-        imageFileUploadId: opt.imageFileUploadId,
-      })),
+    return this.createActionWithOptions(
+      input,
+      tagInputSchema,
+      ActionType.TAG,
       userId,
+      (input as { maxSelections?: number }).maxSelections,
     );
-
-    return {
-      id: action.id,
-      missionId: action.missionId || "",
-      title: action.title,
-      type: action.type,
-      order: action.order,
-      isRequired: action.isRequired,
-      createdAt: action.createdAt,
-    };
   }
 
   async createRatingAction(input: CreateRatingInput, userId: string): Promise<ActionCreatedResult> {
-    const result = ratingInputSchema.safeParse(input);
-    if (!result.success) {
-      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
-      error.cause = 400;
-      throw error;
-    }
-
-    if (result.data.missionId) {
-      await this.verifyMissionAccess(result.data.missionId, userId);
-    }
-
-    const action = await this.actionRepo.create(
-      {
-        missionId: result.data.missionId,
-        title: result.data.title,
-        description: result.data.description,
-        imageUrl: result.data.imageUrl,
-        imageFileUploadId: result.data.imageFileUploadId,
-        type: ActionType.RATING,
-        order: result.data.order,
-        isRequired: result.data.isRequired,
-      },
-      userId,
-    );
-
-    return {
-      id: action.id,
-      missionId: action.missionId || "",
-      title: action.title,
-      type: action.type,
-      order: action.order,
-      isRequired: action.isRequired,
-      createdAt: action.createdAt,
-    };
+    return this.createSimpleAction(input, ratingInputSchema, ActionType.RATING, userId);
   }
 
   async createImageAction(input: CreateImageInput, userId: string): Promise<ActionCreatedResult> {
-    const result = imageInputSchema.safeParse(input);
-    if (!result.success) {
-      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
-      error.cause = 400;
-      throw error;
-    }
-
-    if (result.data.missionId) {
-      await this.verifyMissionAccess(result.data.missionId, userId);
-    }
-
-    const action = await this.actionRepo.create(
-      {
-        missionId: result.data.missionId,
-        title: result.data.title,
-        description: result.data.description,
-        imageUrl: result.data.imageUrl,
-        imageFileUploadId: result.data.imageFileUploadId,
-        type: ActionType.IMAGE,
-        order: result.data.order,
-        isRequired: result.data.isRequired,
-      },
-      userId,
-    );
-
-    return {
-      id: action.id,
-      missionId: action.missionId || "",
-      title: action.title,
-      type: action.type,
-      order: action.order,
-      isRequired: action.isRequired,
-      createdAt: action.createdAt,
-    };
+    return this.createSimpleAction(input, imageInputSchema, ActionType.IMAGE, userId);
   }
 
   async createPrivacyConsentAction(
     input: CreatePrivacyConsentInput,
     userId: string,
   ): Promise<ActionCreatedResult> {
-    const result = privacyConsentInputSchema.safeParse(input);
-    if (!result.success) {
-      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
-      error.cause = 400;
-      throw error;
-    }
-
-    if (result.data.missionId) {
-      await this.verifyMissionAccess(result.data.missionId, userId);
-    }
-
-    const action = await this.actionRepo.create(
-      {
-        missionId: result.data.missionId,
-        title: result.data.title,
-        description: result.data.description,
-        imageUrl: result.data.imageUrl,
-        imageFileUploadId: result.data.imageFileUploadId,
-        type: ActionType.PRIVACY_CONSENT,
-        order: result.data.order,
-        isRequired: result.data.isRequired,
-      },
+    return this.createSimpleAction(
+      input,
+      privacyConsentInputSchema,
+      ActionType.PRIVACY_CONSENT,
       userId,
     );
-
-    return {
-      id: action.id,
-      missionId: action.missionId || "",
-      title: action.title,
-      type: action.type,
-      order: action.order,
-      isRequired: action.isRequired,
-      createdAt: action.createdAt,
-    };
   }
 
   async updateAction(actionId: string, data: UpdateActionInput, userId: string) {
