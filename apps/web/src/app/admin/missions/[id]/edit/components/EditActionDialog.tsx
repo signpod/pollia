@@ -13,6 +13,7 @@ import {
   type ActionFormData,
   ImageUploadForm,
   MultipleChoiceForm,
+  PrivacyConsentForm,
   RatingForm,
   ScaleForm,
   SubjectiveForm,
@@ -159,6 +160,20 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
     case "IMAGE":
       return (
         <ImageUploadForm
+          isLoading={isLoading}
+          onSubmit={onSubmit}
+          onCancel={onCancel}
+          initialData={{
+            title: action.title,
+            description: action.description || undefined,
+            imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
+          }}
+        />
+      );
+    case "PRIVACY_CONSENT":
+      return (
+        <PrivacyConsentForm
           isLoading={isLoading}
           onSubmit={onSubmit}
           onCancel={onCancel}

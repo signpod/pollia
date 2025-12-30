@@ -1,6 +1,7 @@
 export { BaseActionFormFields } from "./BaseActionForm";
 export { ImageUploadForm } from "./ImageUploadForm";
 export { MultipleChoiceForm } from "./MultipleChoiceForm";
+export { PrivacyConsentForm } from "./PrivacyConsentForm";
 export { RatingForm } from "./RatingForm";
 export { ScaleForm } from "./ScaleForm";
 export { SubjectiveForm } from "./SubjectiveForm";
@@ -13,6 +14,7 @@ export type {
   BaseActionFormData,
   ImageUploadFormData,
   MultipleChoiceFormData,
+  PrivacyConsentFormData,
   RatingFormData,
   ScaleFormData,
   SubjectiveFormData,

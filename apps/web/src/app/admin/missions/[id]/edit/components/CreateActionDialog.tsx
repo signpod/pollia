@@ -17,6 +17,7 @@ import {
   Hash,
   ImageIcon,
   MessageSquare,
+  Shield,
   SlidersHorizontal,
   Star,
 } from "lucide-react";
@@ -26,6 +27,7 @@ import {
   type ActionType,
   ImageUploadForm,
   MultipleChoiceForm,
+  PrivacyConsentForm,
   RatingForm,
   ScaleForm,
   SubjectiveForm,
@@ -75,6 +77,12 @@ const ACTION_TYPES = [
     label: getActionTypeLabel("IMAGE"),
     description: "이미지 파일을 업로드하여 응답",
     icon: ImageIcon,
+  },
+  {
+    value: "PRIVACY_CONSENT" as const,
+    label: getActionTypeLabel("PRIVACY_CONSENT"),
+    description: "개인정보 수집 및 이용 동의",
+    icon: Shield,
   },
 ] as const;
 
@@ -224,6 +232,8 @@ function ActionForm({ type, isLoading, onSubmit, onCancel }: ActionFormProps) {
       return <SubjectiveForm isLoading={isLoading} onSubmit={onSubmit} onCancel={onCancel} />;
     case "IMAGE":
       return <ImageUploadForm isLoading={isLoading} onSubmit={onSubmit} onCancel={onCancel} />;
+    case "PRIVACY_CONSENT":
+      return <PrivacyConsentForm isLoading={isLoading} onSubmit={onSubmit} onCancel={onCancel} />;
     default:
       return null;
   }
