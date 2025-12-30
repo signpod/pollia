@@ -109,6 +109,14 @@ export const imageInputSchema = baseActionSchema;
 
 export const privacyConsentInputSchema = baseActionSchema;
 
+export const dateInputSchema = baseActionSchema.extend({
+  maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다.").optional(),
+});
+
+export const timeInputSchema = baseActionSchema.extend({
+  maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다.").optional(),
+});
+
 export const actionUpdateSchema = z
   .object({
     title: actionTitleSchema.optional(),
@@ -132,5 +140,7 @@ export type TagInput = z.infer<typeof tagInputSchema>;
 export type RatingInput = z.infer<typeof ratingInputSchema>;
 export type ImageInput = z.infer<typeof imageInputSchema>;
 export type PrivacyConsentInput = z.infer<typeof privacyConsentInputSchema>;
+export type DateInput = z.infer<typeof dateInputSchema>;
+export type TimeInput = z.infer<typeof timeInputSchema>;
 export type ActionOption = z.infer<typeof actionOptionSchema>;
 export type ActionUpdate = z.infer<typeof actionUpdateSchema>;

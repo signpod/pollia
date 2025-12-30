@@ -35,6 +35,10 @@ export type CreateImageInput = BaseActionInput;
 
 export type CreatePrivacyConsentInput = BaseActionInput;
 
+export type CreateDateInput = BaseActionInput;
+
+export type CreateTimeInput = BaseActionInput;
+
 export type UpdateActionOptionInput = Omit<ActionOptionInput, "order"> & {
   order: number;
 };
