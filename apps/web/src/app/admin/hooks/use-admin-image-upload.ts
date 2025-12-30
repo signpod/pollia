@@ -1,8 +1,8 @@
 "use client";
 
-import { deleteImage, getUploadUrl } from "@/actions/common/images";
+import { deleteFile, getUploadUrl } from "@/actions/common/files";
 import { STORAGE_BUCKETS, type StorageBucket } from "@/constants/buckets";
-import type { DeleteImageRequest, UploadImageRequest } from "@/types/dto/image";
+import type { DeleteFileRequest, UploadFileRequest } from "@/types/dto/file";
 import { ActionType } from "@prisma/client";
 import { useMutation } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -28,7 +28,7 @@ export function useAdminSingleImage(options: UseAdminSingleImageOptions = {}) {
 
   const uploadMutation = useMutation({
     mutationFn: async (file: File): Promise<UploadedImageData> => {
-      const uploadRequest: UploadImageRequest = {
+      const uploadRequest: UploadFileRequest = {
         fileName: file.name,
         fileType: file.type,
         fileSize: file.size,
@@ -57,7 +57,7 @@ export function useAdminSingleImage(options: UseAdminSingleImageOptions = {}) {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (request: DeleteImageRequest) => deleteImage(request),
+    mutationFn: (request: DeleteFileRequest) => deleteFile(request),
   });
 
   useEffect(() => {
@@ -125,7 +125,7 @@ export function useAdminMultipleImages(options: UseAdminMultipleImagesOptions = 
       id: string;
       file: File;
     }): Promise<{ id: string; data: UploadedImageData }> => {
-      const uploadRequest: UploadImageRequest = {
+      const uploadRequest: UploadFileRequest = {
         fileName: file.name,
         fileType: file.type,
         fileSize: file.size,
@@ -174,7 +174,7 @@ export function useAdminMultipleImages(options: UseAdminMultipleImagesOptions = 
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (request: DeleteImageRequest) => deleteImage(request),
+    mutationFn: (request: DeleteFileRequest) => deleteFile(request),
   });
 
   useEffect(() => {
