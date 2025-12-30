@@ -2,11 +2,15 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import { actionService } from "@/server/services/action";
+import type { ActionCreatedResult } from "@/server/services/action/types";
 import type {
+  BaseActionResponse,
   CreateImageActionRequest,
   CreateImageActionResponse,
   CreateMultipleChoiceActionRequest,
   CreateMultipleChoiceActionResponse,
+  CreatePrivacyConsentActionRequest,
+  CreatePrivacyConsentActionResponse,
   CreateRatingActionRequest,
   CreateRatingActionResponse,
   CreateScaleActionRequest,
@@ -17,121 +21,89 @@ import type {
   CreateTagActionResponse,
 } from "@/types/dto";
 
-export async function createMultipleChoiceAction(
-  request: CreateMultipleChoiceActionRequest,
-): Promise<CreateMultipleChoiceActionResponse> {
+async function createActionHandler<TRequest, TResponse extends BaseActionResponse>(
+  request: TRequest,
+  serviceMethod: (req: TRequest, userId: string) => Promise<ActionCreatedResult>,
+  errorMessage: string,
+): Promise<TResponse> {
   try {
     const user = await requireAuth();
-    const question = await actionService.createMultipleChoiceAction(request, user.id);
-    const data = { ...question, surveyId: question.missionId };
-    return { data };
+    const action = await serviceMethod(request, user.id);
+    const data = { ...action, surveyId: action.missionId };
+    return { data } as unknown as TResponse;
   } catch (error) {
-    console.error("createMultipleChoiceAction error:", error);
+    console.error(`${errorMessage} error:`, error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error("질문 생성 중 오류가 발생했습니다.");
+    const serverError = new Error(`${errorMessage} 생성 중 오류가 발생했습니다.`);
     serverError.cause = 500;
     throw serverError;
   }
+}
+
+export async function createMultipleChoiceAction(
+  request: CreateMultipleChoiceActionRequest,
+): Promise<CreateMultipleChoiceActionResponse> {
+  return createActionHandler(
+    request,
+    actionService.createMultipleChoiceAction.bind(actionService),
+    "질문",
+  );
 }
 
 export async function createScaleAction(
   request: CreateScaleActionRequest,
 ): Promise<CreateScaleActionResponse> {
-  try {
-    const user = await requireAuth();
-    const question = await actionService.createScaleAction(request, user.id);
-    const data = { ...question, surveyId: question.missionId };
-
-    return { data };
-  } catch (error) {
-    console.error("createScaleAction error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("질문 생성 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
-  }
+  return createActionHandler(request, actionService.createScaleAction.bind(actionService), "질문");
 }
 
 export async function createSubjectiveAction(
   request: CreateSubjectiveActionRequest,
 ): Promise<CreateSubjectiveActionResponse> {
-  try {
-    const user = await requireAuth();
-    const question = await actionService.createSubjectiveAction(request, user.id);
-
-    const data = { ...question, surveyId: question.missionId };
-    return { data };
-  } catch (error) {
-    console.error("createSubjectiveAction error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("질문 생성 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
-  }
+  return createActionHandler(
+    request,
+    actionService.createSubjectiveAction.bind(actionService),
+    "질문",
+  );
 }
 
 export async function createTagAction(
   request: CreateTagActionRequest,
 ): Promise<CreateTagActionResponse> {
-  try {
-    const user = await requireAuth();
-    const question = await actionService.createTagAction(request, user.id);
-
-    const data = { ...question, surveyId: question.missionId };
-    return { data };
-  } catch (error) {
-    console.error("createTagAction error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("태그 액션 생성 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
-  }
+  return createActionHandler(
+    request,
+    actionService.createTagAction.bind(actionService),
+    "태그 액션",
+  );
 }
 
 export async function createRatingAction(
   request: CreateRatingActionRequest,
 ): Promise<CreateRatingActionResponse> {
-  try {
-    const user = await requireAuth();
-    const question = await actionService.createRatingAction(request, user.id);
-
-    const data = { ...question, surveyId: question.missionId };
-    return { data };
-  } catch (error) {
-    console.error("createRatingAction error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("평가 액션 생성 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
-  }
+  return createActionHandler(
+    request,
+    actionService.createRatingAction.bind(actionService),
+    "평가 액션",
+  );
 }
 
 export async function createImageAction(
   request: CreateImageActionRequest,
 ): Promise<CreateImageActionResponse> {
-  try {
-    const user = await requireAuth();
-    const question = await actionService.createImageAction(request, user.id);
+  return createActionHandler(
+    request,
+    actionService.createImageAction.bind(actionService),
+    "이미지 액션",
+  );
+}
 
-    const data = { ...question, surveyId: question.missionId };
-    return { data };
-  } catch (error) {
-    console.error("createImageAction error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("이미지 액션 생성 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
-  }
+export async function createPrivacyConsentAction(
+  request: CreatePrivacyConsentActionRequest,
+): Promise<CreatePrivacyConsentActionResponse> {
+  return createActionHandler(
+    request,
+    actionService.createPrivacyConsentAction.bind(actionService),
+    "개인정보 동의 액션",
+  );
 }
