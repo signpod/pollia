@@ -47,7 +47,7 @@ export function DateTimeForm<T extends "DATE" | "TIME">({
       description: initialData?.description || "",
       imageUrl: initialData?.imageUrl,
       isRequired: initialData?.isRequired ?? true,
-      maxSelections: initialData?.maxSelections || 1,
+      maxSelections: initialData?.maxSelections,
     },
     mode: "onChange",
   });
@@ -88,16 +88,14 @@ export function DateTimeForm<T extends "DATE" | "TIME">({
             name="maxSelections"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>
-                  선택 가능 개수 <span className="text-muted-foreground">(선택)</span>
-                </FormLabel>
+                <FormLabel>선택 가능 개수</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
                     min={1}
-                    placeholder="1"
+                    placeholder="1 (기본값)"
                     {...field}
-                    value={field.value || ""}
+                    value={field.value ?? ""}
                     onChange={e =>
                       field.onChange(e.target.value ? Number(e.target.value) : undefined)
                     }

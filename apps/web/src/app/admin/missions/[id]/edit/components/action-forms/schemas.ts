@@ -146,6 +146,7 @@ export const dateFormSchema = dateInputSchema
     order: true,
     imageFileUploadId: true,
     isRequired: true,
+    maxSelections: true,
   })
   .extend({
     isRequired: z.boolean(),
@@ -158,6 +159,7 @@ export const timeFormSchema = timeInputSchema
     order: true,
     imageFileUploadId: true,
     isRequired: true,
+    maxSelections: true,
   })
   .extend({
     isRequired: z.boolean(),
