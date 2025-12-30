@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  createDateAction,
   createImageAction,
   createMultipleChoiceAction,
   createPrivacyConsentAction,
@@ -8,10 +9,12 @@ import {
   createScaleAction,
   createSubjectiveAction,
   createTagAction,
+  createTimeAction,
 } from "@/actions/action/create";
 import { adminActionQueryKeys } from "@/app/admin/constants/queryKeys";
 import type { ActionType } from "@/app/admin/missions/[id]/edit/components/action-forms";
 import type {
+  CreateDateActionRequest,
   CreateImageActionRequest,
   CreateMultipleChoiceActionRequest,
   CreatePrivacyConsentActionRequest,
@@ -19,6 +22,7 @@ import type {
   CreateScaleActionRequest,
   CreateSubjectiveActionRequest,
   CreateTagActionRequest,
+  CreateTimeActionRequest,
 } from "@/types/dto";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -169,8 +173,36 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
           return await createPrivacyConsentAction(request);
         }
 
+        case "DATE": {
+          const request: CreateDateActionRequest = {
+            missionId: input.missionId,
+            title: input.title,
+            description: input.description,
+            imageUrl: input.imageUrl,
+            imageFileUploadId: input.imageFileUploadId,
+            order: input.order,
+            isRequired: input.isRequired,
+            maxSelections: input.maxSelections,
+          };
+          return await createDateAction(request);
+        }
+
+        case "TIME": {
+          const request: CreateTimeActionRequest = {
+            missionId: input.missionId,
+            title: input.title,
+            description: input.description,
+            imageUrl: input.imageUrl,
+            imageFileUploadId: input.imageFileUploadId,
+            order: input.order,
+            isRequired: input.isRequired,
+            maxSelections: input.maxSelections,
+          };
+          return await createTimeAction(request);
+        }
+
         default:
-          throw new Error(`알 수 없는 액션 타입입니다: ${input.type}`);
+          throw new Error(`알 수 없는 액션 타입입니다: ${input.type} (타입: ${typeof input.type})`);
       }
     },
 
