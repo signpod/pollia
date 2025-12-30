@@ -107,6 +107,8 @@ export const ratingInputSchema = baseActionSchema;
 
 export const imageInputSchema = baseActionSchema;
 
+export const privacyConsentInputSchema = baseActionSchema;
+
 export const actionUpdateSchema = z
   .object({
     title: actionTitleSchema.optional(),
@@ -129,5 +131,6 @@ export type EitherOrInput = z.infer<typeof eitherOrInputSchema>;
 export type TagInput = z.infer<typeof tagInputSchema>;
 export type RatingInput = z.infer<typeof ratingInputSchema>;
 export type ImageInput = z.infer<typeof imageInputSchema>;
+export type PrivacyConsentInput = z.infer<typeof privacyConsentInputSchema>;
 export type ActionOption = z.infer<typeof actionOptionSchema>;
 export type ActionUpdate = z.infer<typeof actionUpdateSchema>;
