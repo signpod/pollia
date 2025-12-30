@@ -63,6 +63,16 @@ export type CreateImageActionResponse = BaseActionResponse;
 export type CreatePrivacyConsentActionRequest = BaseActionRequest;
 export type CreatePrivacyConsentActionResponse = BaseActionResponse;
 
+export interface CreateDateActionRequest extends BaseActionRequest {
+  maxSelections: number;
+}
+export type CreateDateActionResponse = BaseActionResponse;
+
+export interface CreateTimeActionRequest extends BaseActionRequest {
+  maxSelections: number;
+}
+export type CreateTimeActionResponse = BaseActionResponse;
+
 export interface UpdateActionOptionRequest {
   title: string;
   description?: string;

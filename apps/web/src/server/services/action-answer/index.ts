@@ -7,6 +7,7 @@ import { actionAnswerRepository } from "@/server/repositories/action-answer/acti
 import { actionRepository } from "@/server/repositories/action/actionRepository";
 import { missionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import { ActionType } from "@prisma/client";
+import { z } from "zod";
 import type { CreateAnswerInput, SubmitAnswersInput, UpdateAnswerInput } from "./types";
 
 export class ActionAnswerService {
@@ -20,15 +21,11 @@ export class ActionAnswerService {
     const answer = await this.answerRepo.findById(answerId);
 
     if (!answer) {
-      const error = new Error("답변을 찾을 수 없습니다.");
-      error.cause = 404;
-      throw error;
+      this.throwError("답변을 찾을 수 없습니다.", 404);
     }
 
     if (answer.response.userId !== userId) {
-      const error = new Error("조회 권한이 없습니다.");
-      error.cause = 403;
-      throw error;
+      this.throwError("조회 권한이 없습니다.", 403);
     }
 
     return answer;
@@ -38,15 +35,11 @@ export class ActionAnswerService {
     const response = await this.responseRepo.findById(responseId);
 
     if (!response) {
-      const error = new Error("응답을 찾을 수 없습니다.");
-      error.cause = 404;
-      throw error;
+      this.throwError("응답을 찾을 수 없습니다.", 404);
     }
 
     if (response.userId !== userId) {
-      const error = new Error("조회 권한이 없습니다.");
-      error.cause = 403;
-      throw error;
+      this.throwError("조회 권한이 없습니다.", 403);
     }
 
     return this.answerRepo.findByResponseId(responseId);
@@ -57,25 +50,21 @@ export class ActionAnswerService {
   }
 
   async createAnswer(input: CreateAnswerInput, userId: string) {
-    const parseResult = actionAnswerInputSchema.safeParse(input);
-    if (!parseResult.success) {
-      const error = new Error(parseResult.error.issues[0]?.message || "유효성 검사 실패");
-      error.cause = 400;
-      throw error;
-    }
+    const validated = this.validateInput(input, actionAnswerInputSchema);
 
-    const { responseId, actionId, optionId, textAnswer, scaleAnswer } = parseResult.data;
+    const { responseId, actionId, optionId, textAnswer, scaleAnswer, dateAnswers } = validated;
 
     await this.verifyResponseOwnership(responseId, userId);
 
     const action = await this.actionRepo.findById(actionId);
     if (!action) {
-      const error = new Error("액션을 찾을 수 없습니다.");
-      error.cause = 404;
-      throw error;
+      this.throwError("액션을 찾을 수 없습니다.", 404);
     }
 
-    this.validateAnswerByActionType({ optionId, textAnswer, scaleAnswer }, action.type);
+    this.validateAnswerByActionType(
+      { optionId, textAnswer, scaleAnswer, dateAnswers },
+      action.type,
+    );
 
     return this.answerRepo.create({
       responseId,
@@ -83,145 +72,63 @@ export class ActionAnswerService {
       optionId,
       textAnswer,
       scaleAnswer,
+      dateAnswers,
     });
   }
 
   async submitAnswers(input: SubmitAnswersInput, userId: string) {
-    const parseResult = submitAnswersSchema.safeParse(input);
-    if (!parseResult.success) {
-      const error = new Error(parseResult.error.issues[0]?.message || "유효성 검사 실패");
-      error.cause = 400;
-      throw error;
-    }
+    const validated = this.validateInput(input, submitAnswersSchema);
 
-    const response = await this.responseRepo.findById(parseResult.data.responseId);
+    const response = await this.responseRepo.findById(validated.responseId);
 
     if (!response) {
-      const error = new Error("응답을 찾을 수 없습니다.");
-      error.cause = 404;
-      throw error;
+      this.throwError("응답을 찾을 수 없습니다.", 404);
     }
 
     if (response.userId !== userId) {
-      const error = new Error("제출 권한이 없습니다.");
-      error.cause = 403;
-      throw error;
+      this.throwError("제출 권한이 없습니다.", 403);
     }
 
     if (response.completedAt) {
-      const error = new Error("이미 완료된 응답입니다.");
-      error.cause = 400;
-      throw error;
+      this.throwError("이미 완료된 응답입니다.", 400);
     }
 
-    const actionIds = parseResult.data.answers.map(a => a.actionId);
+    const actionIds = validated.answers.map(a => a.actionId);
     const actions = await Promise.all(actionIds.map(id => this.actionRepo.findById(id)));
 
-    for (let i = 0; i < actions.length; i++) {
-      const action = actions[i];
-      if (!action) {
-        const error = new Error("일부 액션을 찾을 수 없습니다.");
-        error.cause = 400;
-        throw error;
-      }
+    this.validateActions(actions, validated.answers, response.missionId);
 
-      if (action.missionId !== response.missionId) {
-        const error = new Error("유효하지 않은 액션이 포함되어 있습니다.");
-        error.cause = 400;
-        throw error;
-      }
-
-      const answer = parseResult.data.answers[i];
-      if (!answer) continue;
-
-      if (answer.type !== action.type) {
-        const error = new Error("답변 타입이 액션 타입과 일치하지 않습니다.");
-        error.cause = 400;
-        throw error;
-      }
-    }
-
-    await this.answerRepo.deleteByResponseAndActions(parseResult.data.responseId, actionIds);
+    await this.answerRepo.deleteByResponseAndActions(validated.responseId, actionIds);
 
     const answersToCreate: Array<Parameters<typeof this.answerRepo.createMany>[0][number]> = [];
 
-    for (const answer of parseResult.data.answers) {
-      const actionId = answer.actionId;
-
-      if (answer.type === ActionType.MULTIPLE_CHOICE && answer.selectedOptionIds) {
-        for (const optionId of answer.selectedOptionIds) {
-          answersToCreate.push({
-            responseId: parseResult.data.responseId,
-            actionId,
-            optionId,
-          });
-        }
-      } else if (answer.type === ActionType.SCALE && answer.scaleValue !== undefined) {
-        answersToCreate.push({
-          responseId: parseResult.data.responseId,
-          actionId,
-          scaleAnswer: answer.scaleValue,
-        });
-      } else if (answer.type === ActionType.RATING && answer.scaleValue !== undefined) {
-        answersToCreate.push({
-          responseId: parseResult.data.responseId,
-          actionId,
-          scaleAnswer: answer.scaleValue,
-        });
-      } else if (answer.type === ActionType.SUBJECTIVE && answer.textAnswer) {
-        answersToCreate.push({
-          responseId: parseResult.data.responseId,
-          actionId,
-          textAnswer: answer.textAnswer,
-        });
-      } else if (
-        answer.type === ActionType.IMAGE &&
-        answer.fileUploadIds &&
-        answer.fileUploadIds.length > 0
-      ) {
-        answersToCreate.push({
-          responseId: parseResult.data.responseId,
-          actionId,
-          fileUploads: {
-            connect: answer.fileUploadIds.map(id => ({ id })),
-          },
-        });
-      } else if (answer.type === ActionType.TAG && answer.selectedOptionIds) {
-        for (const optionId of answer.selectedOptionIds) {
-          answersToCreate.push({
-            responseId: parseResult.data.responseId,
-            actionId,
-            optionId,
-          });
-        }
-      }
+    for (const answer of validated.answers) {
+      const convertedAnswers = this.convertAnswerToCreateInput(answer, validated.responseId);
+      answersToCreate.push(
+        ...(Array.isArray(convertedAnswers) ? convertedAnswers : [convertedAnswers]),
+      );
     }
 
     await this.answerRepo.createMany(answersToCreate, userId);
 
     return {
-      responseId: parseResult.data.responseId,
-      answersCount: parseResult.data.answers.length,
+      responseId: validated.responseId,
+      answersCount: validated.answers.length,
       submittedAt: new Date(),
     };
   }
 
   async updateAnswer(answerId: string, input: UpdateAnswerInput, userId: string) {
-    const parseResult = actionAnswerUpdateSchema.safeParse(input);
-    if (!parseResult.success) {
-      const error = new Error(parseResult.error.issues[0]?.message || "유효성 검사 실패");
-      error.cause = 400;
-      throw error;
-    }
+    const validated = this.validateInput(input, actionAnswerUpdateSchema);
 
     const answer = await this.getAnswerById(answerId, userId);
 
     const action = await this.actionRepo.findById(answer.actionId);
     if (action) {
-      this.validateAnswerByActionType(parseResult.data, action.type);
+      this.validateAnswerByActionType(validated, action.type);
     }
 
-    return this.answerRepo.update(answerId, parseResult.data);
+    return this.answerRepo.update(answerId, validated);
   }
 
   async deleteAnswer(answerId: string, userId: string): Promise<void> {
@@ -233,15 +140,11 @@ export class ActionAnswerService {
     const response = await this.responseRepo.findById(responseId);
 
     if (!response) {
-      const error = new Error("응답을 찾을 수 없습니다.");
-      error.cause = 404;
-      throw error;
+      this.throwError("응답을 찾을 수 없습니다.", 404);
     }
 
     if (response.userId !== userId) {
-      const error = new Error("권한이 없습니다.");
-      error.cause = 403;
-      throw error;
+      this.throwError("권한이 없습니다.", 403);
     }
 
     await this.answerRepo.deleteByResponseId(responseId);
@@ -251,41 +154,126 @@ export class ActionAnswerService {
     const response = await this.responseRepo.findById(responseId);
 
     if (!response) {
-      const error = new Error("응답을 찾을 수 없습니다.");
-      error.cause = 404;
-      throw error;
+      this.throwError("응답을 찾을 수 없습니다.", 404);
     }
 
     if (response.userId !== userId) {
-      const error = new Error("권한이 없습니다.");
-      error.cause = 403;
-      throw error;
+      this.throwError("권한이 없습니다.", 403);
+    }
+  }
+
+  private throwError(message: string, statusCode: number): never {
+    const error = new Error(message);
+    error.cause = statusCode;
+    throw error;
+  }
+
+  private validateInput<T>(input: unknown, schema: z.ZodType<T>): T {
+    const result = schema.safeParse(input);
+    if (!result.success) {
+      this.throwError(result.error.issues[0]?.message || "유효성 검사 실패", 400);
+    }
+    return result.data;
+  }
+
+  private throwValidationError(message: string): never {
+    this.throwError(message, 400);
+  }
+
+  private validateActions(
+    actions: Awaited<ReturnType<typeof this.actionRepo.findById>>[],
+    answers: SubmitAnswersInput["answers"],
+    missionId: string,
+  ): void {
+    for (let i = 0; i < actions.length; i++) {
+      const action = actions[i];
+      if (!action) {
+        this.throwError("일부 액션을 찾을 수 없습니다.", 400);
+      }
+
+      if (action.missionId !== missionId) {
+        this.throwError("유효하지 않은 액션이 포함되어 있습니다.", 400);
+      }
+
+      const answer = answers[i];
+      if (answer && answer.type !== action.type) {
+        this.throwError("답변 타입이 액션 타입과 일치하지 않습니다.", 400);
+      }
+    }
+  }
+
+  private convertAnswerToCreateInput(
+    answer: SubmitAnswersInput["answers"][number],
+    responseId: string,
+  ): Array<Parameters<typeof this.answerRepo.createMany>[0][number]> {
+    const baseData = { responseId, actionId: answer.actionId };
+
+    switch (answer.type) {
+      case ActionType.MULTIPLE_CHOICE:
+      case ActionType.TAG:
+        return (
+          answer.selectedOptionIds?.map(optionId => ({
+            ...baseData,
+            optionId,
+          })) ?? []
+        );
+
+      case ActionType.SCALE:
+      case ActionType.RATING:
+        return answer.scaleValue !== undefined
+          ? [{ ...baseData, scaleAnswer: answer.scaleValue }]
+          : [];
+
+      case ActionType.SUBJECTIVE:
+        return answer.textAnswer ? [{ ...baseData, textAnswer: answer.textAnswer }] : [];
+
+      case ActionType.IMAGE:
+        return answer.fileUploadIds && answer.fileUploadIds.length > 0
+          ? [
+              {
+                ...baseData,
+                fileUploads: {
+                  connect: answer.fileUploadIds.map(id => ({ id })),
+                },
+              },
+            ]
+          : [];
+
+      case ActionType.DATE:
+      case ActionType.TIME:
+        return answer.dateAnswers ? [{ ...baseData, dateAnswers: answer.dateAnswers }] : [];
+
+      default:
+        return [];
     }
   }
 
   private validateAnswerByActionType(
-    data: { optionId?: string; textAnswer?: string; scaleAnswer?: number },
+    data: {
+      optionId?: string;
+      textAnswer?: string;
+      scaleAnswer?: number;
+      dateAnswers?: Date[];
+    },
     actionType: ActionType,
   ) {
     if (actionType === ActionType.MULTIPLE_CHOICE && !data.optionId) {
-      const error = new Error("객관식 답변에는 선택지가 필요합니다.");
-      error.cause = 400;
-      throw error;
+      this.throwValidationError("객관식 답변에는 선택지가 필요합니다.");
     }
     if (actionType === ActionType.SCALE && data.scaleAnswer === undefined) {
-      const error = new Error("척도 값을 선택해주세요.");
-      error.cause = 400;
-      throw error;
+      this.throwValidationError("척도 값을 선택해주세요.");
     }
     if (actionType === ActionType.RATING && data.scaleAnswer === undefined) {
-      const error = new Error("별점 값을 선택해주세요.");
-      error.cause = 400;
-      throw error;
+      this.throwValidationError("별점 값을 선택해주세요.");
     }
     if (actionType === ActionType.SUBJECTIVE && !data.textAnswer) {
-      const error = new Error("주관식 답변은 필수입니다.");
-      error.cause = 400;
-      throw error;
+      this.throwValidationError("주관식 답변은 필수입니다.");
+    }
+    if (actionType === ActionType.DATE && (!data.dateAnswers || data.dateAnswers.length === 0)) {
+      this.throwValidationError("날짜를 선택해주세요.");
+    }
+    if (actionType === ActionType.TIME && (!data.dateAnswers || data.dateAnswers.length === 0)) {
+      this.throwValidationError("시간을 선택해주세요.");
     }
   }
 }

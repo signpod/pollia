@@ -1,5 +1,6 @@
 import {
   actionUpdateSchema,
+  dateInputSchema,
   eitherOrInputSchema,
   imageInputSchema,
   multipleChoiceInputSchema,
@@ -8,6 +9,7 @@ import {
   scaleInputSchema,
   subjectiveInputSchema,
   tagInputSchema,
+  timeInputSchema,
 } from "@/schemas/action";
 import { actionRepository } from "@/server/repositories/action/actionRepository";
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
@@ -15,6 +17,7 @@ import { ActionType } from "@prisma/client";
 import { z } from "zod";
 import type {
   ActionCreatedResult,
+  CreateDateInput,
   CreateEitherOrInput,
   CreateImageInput,
   CreateMultipleChoiceInput,
@@ -23,6 +26,7 @@ import type {
   CreateScaleInput,
   CreateSubjectiveInput,
   CreateTagInput,
+  CreateTimeInput,
   GetActionsOptions,
   UpdateActionInput,
 } from "./types";
@@ -38,6 +42,7 @@ export class ActionService {
     schema: z.ZodType<T>,
     type: ActionType,
     userId: string,
+    maxSelections?: number,
   ): Promise<ActionCreatedResult> {
     const result = schema.safeParse(input);
     if (!result.success) {
@@ -69,6 +74,7 @@ export class ActionService {
         imageFileUploadId: validated.imageFileUploadId,
         type,
         order: validated.order,
+        maxSelections,
         isRequired: validated.isRequired,
       },
       userId,
@@ -263,6 +269,26 @@ export class ActionService {
       privacyConsentInputSchema,
       ActionType.PRIVACY_CONSENT,
       userId,
+    );
+  }
+
+  async createDateAction(input: CreateDateInput, userId: string): Promise<ActionCreatedResult> {
+    return this.createSimpleAction(
+      input,
+      dateInputSchema,
+      ActionType.DATE,
+      userId,
+      input.maxSelections,
+    );
+  }
+
+  async createTimeAction(input: CreateTimeInput, userId: string): Promise<ActionCreatedResult> {
+    return this.createSimpleAction(
+      input,
+      timeInputSchema,
+      ActionType.TIME,
+      userId,
+      input.maxSelections,
     );
   }
 

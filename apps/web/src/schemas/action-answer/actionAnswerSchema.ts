@@ -22,6 +22,11 @@ const actionTypeSchema = z.enum(ActionType);
 
 const fileUploadIdsSchema = z.array(z.string()).optional();
 
+const dateAnswersSchema = z
+  .array(z.coerce.date())
+  .min(1, "최소 1개 이상의 날짜를 선택해주세요.")
+  .optional();
+
 export const actionAnswerInputSchema = z.object({
   responseId: responseIdSchema,
   actionId: actionIdSchema,
@@ -29,6 +34,7 @@ export const actionAnswerInputSchema = z.object({
   textAnswer: textAnswerSchema.optional(),
   scaleAnswer: scaleAnswerSchema.optional(),
   fileUploadIds: fileUploadIdsSchema,
+  dateAnswers: dateAnswersSchema,
 });
 
 export const submitAnswerItemSchema = z
@@ -39,6 +45,7 @@ export const submitAnswerItemSchema = z
     scaleValue: scaleAnswerSchema.optional(),
     textAnswer: textAnswerSchema.optional(),
     fileUploadIds: fileUploadIdsSchema,
+    dateAnswers: dateAnswersSchema,
   })
   .refine(
     data => {
@@ -84,6 +91,24 @@ export const submitAnswerItemSchema = z
       return true;
     },
     { message: "이미지는 필수입니다." },
+  )
+  .refine(
+    data => {
+      if (data.type === ActionType.DATE) {
+        return data.dateAnswers && data.dateAnswers.length > 0;
+      }
+      return true;
+    },
+    { message: "날짜를 선택해주세요." },
+  )
+  .refine(
+    data => {
+      if (data.type === ActionType.TIME) {
+        return data.dateAnswers && data.dateAnswers.length > 0;
+      }
+      return true;
+    },
+    { message: "시간을 선택해주세요." },
   );
 
 export const submitAnswersSchema = z.object({
@@ -96,6 +121,7 @@ export const actionAnswerUpdateSchema = z
     optionId: optionIdSchema.optional(),
     textAnswer: textAnswerSchema.optional(),
     scaleAnswer: scaleAnswerSchema.optional(),
+    dateAnswers: dateAnswersSchema,
   })
   .refine(data => Object.keys(data).length > 0, {
     message: "최소 하나의 필드를 수정해야 합니다.",

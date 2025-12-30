@@ -54,6 +54,16 @@ export interface PrivacyConsentFormData extends BaseActionFormData {
   type: "PRIVACY_CONSENT";
 }
 
+export interface DateFormData extends BaseActionFormData {
+  type: "DATE";
+  maxSelections?: number;
+}
+
+export interface TimeFormData extends BaseActionFormData {
+  type: "TIME";
+  maxSelections?: number;
+}
+
 export type ActionFormData =
   | MultipleChoiceFormData
   | ScaleFormData
@@ -61,7 +71,9 @@ export type ActionFormData =
   | TagFormData
   | SubjectiveFormData
   | ImageUploadFormData
-  | PrivacyConsentFormData;
+  | PrivacyConsentFormData
+  | DateFormData
+  | TimeFormData;
 
 export interface ActionFormProps<T extends ActionFormData = ActionFormData> {
   isLoading?: boolean;

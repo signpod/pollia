@@ -5,6 +5,8 @@ import { actionService } from "@/server/services/action";
 import type { ActionCreatedResult } from "@/server/services/action/types";
 import type {
   BaseActionResponse,
+  CreateDateActionRequest,
+  CreateDateActionResponse,
   CreateImageActionRequest,
   CreateImageActionResponse,
   CreateMultipleChoiceActionRequest,
@@ -19,6 +21,8 @@ import type {
   CreateSubjectiveActionResponse,
   CreateTagActionRequest,
   CreateTagActionResponse,
+  CreateTimeActionRequest,
+  CreateTimeActionResponse,
 } from "@/types/dto";
 
 async function createActionHandler<TRequest, TResponse extends BaseActionResponse>(
@@ -104,5 +108,25 @@ export async function createPrivacyConsentAction(
     request,
     actionService.createPrivacyConsentAction.bind(actionService),
     "개인정보 동의 액션",
+  );
+}
+
+export async function createDateAction(
+  request: CreateDateActionRequest,
+): Promise<CreateDateActionResponse> {
+  return createActionHandler(
+    request,
+    actionService.createDateAction.bind(actionService),
+    "날짜 액션",
+  );
+}
+
+export async function createTimeAction(
+  request: CreateTimeActionRequest,
+): Promise<CreateTimeActionResponse> {
+  return createActionHandler(
+    request,
+    actionService.createTimeAction.bind(actionService),
+    "시간 액션",
   );
 }

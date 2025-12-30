@@ -16,7 +16,9 @@ import type { ActionDetail } from "@/types/dto";
 import { ActionType } from "@prisma/client";
 import {
   AlertCircle,
+  Calendar,
   CheckSquare,
+  Clock,
   FileText,
   ImageIcon,
   Scale,
@@ -83,6 +85,20 @@ function getActionTypeInfo(type: ActionType) {
         icon: Tag,
         color: "text-pink-600 dark:text-pink-400",
         bgColor: "bg-pink-50 dark:bg-pink-950",
+      };
+    case ActionType.DATE:
+      return {
+        label,
+        icon: Calendar,
+        color: "text-cyan-600 dark:text-cyan-400",
+        bgColor: "bg-cyan-50 dark:bg-cyan-950",
+      };
+    case ActionType.TIME:
+      return {
+        label,
+        icon: Clock,
+        color: "text-indigo-600 dark:text-indigo-400",
+        bgColor: "bg-indigo-50 dark:bg-indigo-950",
       };
     default:
       return {

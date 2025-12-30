@@ -7,6 +7,8 @@ export const ACTION_TYPE_LABELS = {
   IMAGE: "이미지",
   EITHER_OR: "양자택일",
   PRIVACY_CONSENT: "개인정보 동의",
+  DATE: "날짜",
+  TIME: "시간",
 } as const;
 
 export function getActionTypeLabel(type: string): string {
