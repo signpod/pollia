@@ -6,19 +6,19 @@ import { useAdminSingleImage } from "@/app/admin/hooks/use-admin-image-upload";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { BaseActionFormFields } from "./BaseActionForm";
-import { type RatingFormInput, ratingFormSchema } from "./schemas";
-import type { ActionFormProps, RatingFormData } from "./types";
+import { type PrivacyConsentFormInput, privacyConsentFormSchema } from "./schemas";
+import type { ActionFormProps, PrivacyConsentFormData } from "./types";
 
-export function RatingForm({
+export function PrivacyConsentForm({
   isLoading = false,
   onSubmit,
   onCancel,
   initialData,
-}: ActionFormProps<RatingFormData>) {
+}: ActionFormProps<PrivacyConsentFormData>) {
   const isEditMode = !!initialData;
 
-  const form = useForm<RatingFormInput>({
-    resolver: zodResolver(ratingFormSchema),
+  const form = useForm<PrivacyConsentFormInput>({
+    resolver: zodResolver(privacyConsentFormSchema),
     defaultValues: {
       title: initialData?.title || "",
       description: initialData?.description || "",
@@ -35,9 +35,9 @@ export function RatingForm({
     },
   });
 
-  const handleSubmit = form.handleSubmit((data: RatingFormInput) => {
+  const handleSubmit = form.handleSubmit((data: PrivacyConsentFormInput) => {
     onSubmit({
-      type: "RATING",
+      type: "PRIVACY_CONSENT",
       title: data.title,
       description: data.description,
       imageUrl: data.imageUrl || undefined,
@@ -53,7 +53,7 @@ export function RatingForm({
           control={form.control}
           watch={form.watch}
           isLoading={isLoading}
-          titlePlaceholder="예: 이 상품을 평가해주세요."
+          titlePlaceholder="예: 개인정보 수집 및 이용에 동의합니다."
           mainImagePreviewUrl={mainImage.previewUrl}
           onMainImageSelect={mainImage.selectImage}
           onMainImageDelete={mainImage.clearImage}

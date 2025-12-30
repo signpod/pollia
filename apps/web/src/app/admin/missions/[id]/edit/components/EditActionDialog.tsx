@@ -13,6 +13,7 @@ import {
   type ActionFormData,
   ImageUploadForm,
   MultipleChoiceForm,
+  PrivacyConsentForm,
   RatingForm,
   ScaleForm,
   SubjectiveForm,
@@ -91,6 +92,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
             maxSelections: action.maxSelections ?? 1,
             options: mapOptions(action.options),
           }}
@@ -106,6 +108,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
             options: mapOptions(action.options),
           }}
         />
@@ -120,6 +123,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
           }}
         />
       );
@@ -133,6 +137,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
             maxSelections: action.maxSelections ?? 1,
             options: mapOptions(action.options),
           }}
@@ -148,6 +153,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
           }}
         />
       );
@@ -161,6 +167,21 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
+          }}
+        />
+      );
+    case "PRIVACY_CONSENT":
+      return (
+        <PrivacyConsentForm
+          isLoading={isLoading}
+          onSubmit={onSubmit}
+          onCancel={onCancel}
+          initialData={{
+            title: action.title,
+            description: action.description || undefined,
+            imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
           }}
         />
       );

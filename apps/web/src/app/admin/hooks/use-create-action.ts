@@ -3,6 +3,7 @@
 import {
   createImageAction,
   createMultipleChoiceAction,
+  createPrivacyConsentAction,
   createRatingAction,
   createScaleAction,
   createSubjectiveAction,
@@ -13,6 +14,7 @@ import type { ActionType } from "@/app/admin/missions/[id]/edit/components/actio
 import type {
   CreateImageActionRequest,
   CreateMultipleChoiceActionRequest,
+  CreatePrivacyConsentActionRequest,
   CreateRatingActionRequest,
   CreateScaleActionRequest,
   CreateSubjectiveActionRequest,
@@ -28,6 +30,7 @@ interface CreateActionInput {
   imageUrl?: string;
   imageFileUploadId?: string;
   order: number;
+  isRequired?: boolean;
   options?: {
     title: string;
     description?: string;
@@ -57,6 +60,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageUrl: input.imageUrl,
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
+            isRequired: input.isRequired,
             maxSelections: input.maxSelections ?? 1,
             options:
               input.options?.map((opt, index) => ({
@@ -78,6 +82,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageUrl: input.imageUrl,
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
+            isRequired: input.isRequired,
             options:
               input.options?.map((opt, index) => ({
                 title: opt.title,
@@ -98,6 +103,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageUrl: input.imageUrl,
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
+            isRequired: input.isRequired,
           };
           return await createSubjectiveAction(request);
         }
@@ -110,6 +116,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageUrl: input.imageUrl,
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
+            isRequired: input.isRequired,
             maxSelections: input.maxSelections ?? 1,
             options:
               input.options?.map((opt, index) => ({
@@ -131,6 +138,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageUrl: input.imageUrl,
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
+            isRequired: input.isRequired,
           };
           return await createRatingAction(request);
         }
@@ -143,8 +151,22 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageUrl: input.imageUrl,
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
+            isRequired: input.isRequired,
           };
           return await createImageAction(request);
+        }
+
+        case "PRIVACY_CONSENT": {
+          const request: CreatePrivacyConsentActionRequest = {
+            missionId: input.missionId,
+            title: input.title,
+            description: input.description,
+            imageUrl: input.imageUrl,
+            imageFileUploadId: input.imageFileUploadId,
+            order: input.order,
+            isRequired: input.isRequired,
+          };
+          return await createPrivacyConsentAction(request);
         }
 
         default:

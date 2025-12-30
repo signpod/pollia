@@ -6,7 +6,7 @@ import { useAdminSingleImage } from "@/app/admin/hooks/use-admin-image-upload";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { BaseActionFormFields } from "./BaseActionForm";
-import { type SubjectiveFormInput, subjectiveFormSchema } from "./schemas";
+import { type ImageUploadFormInput, imageUploadFormSchema } from "./schemas";
 import type { ActionFormProps, ImageUploadFormData } from "./types";
 
 export function ImageUploadForm({
@@ -17,12 +17,13 @@ export function ImageUploadForm({
 }: ActionFormProps<ImageUploadFormData>) {
   const isEditMode = !!initialData;
 
-  const form = useForm<SubjectiveFormInput>({
-    resolver: zodResolver(subjectiveFormSchema),
+  const form = useForm<ImageUploadFormInput>({
+    resolver: zodResolver(imageUploadFormSchema),
     defaultValues: {
       title: initialData?.title || "",
       description: initialData?.description || "",
       imageUrl: initialData?.imageUrl,
+      isRequired: initialData?.isRequired ?? true,
     },
     mode: "onChange",
   });
@@ -34,13 +35,14 @@ export function ImageUploadForm({
     },
   });
 
-  const handleSubmit = form.handleSubmit((data: SubjectiveFormInput) => {
+  const handleSubmit = form.handleSubmit((data: ImageUploadFormInput) => {
     onSubmit({
       type: "IMAGE",
       title: data.title,
       description: data.description,
       imageUrl: data.imageUrl || undefined,
       imageFileUploadId: mainImage.uploadedData?.fileUploadId,
+      isRequired: data.isRequired,
     });
   });
 

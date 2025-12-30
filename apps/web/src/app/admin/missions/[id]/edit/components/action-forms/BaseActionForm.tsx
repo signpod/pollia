@@ -4,12 +4,14 @@ import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
 import { CharacterCounter } from "@/app/admin/components/common/InputField";
 import {
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/app/admin/components/shadcn-ui/form";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
+import { Switch } from "@/app/admin/components/shadcn-ui/switch";
 import { Textarea } from "@/app/admin/components/shadcn-ui/textarea";
 import { ACTION_DESCRIPTION_MAX_LENGTH, ACTION_TITLE_MAX_LENGTH } from "@/schemas/action";
 import type { ReactNode } from "react";
@@ -117,6 +119,22 @@ export function BaseActionFormFields<TFieldValues extends FieldValues>({
               </div>
               <FormMessage />
             </div>
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={control}
+        name={"isRequired" as Path<TFieldValues>}
+        render={({ field }) => (
+          <FormItem className="flex items-center justify-between rounded-lg border p-4">
+            <div className="space-y-0.5">
+              <FormLabel className="text-base">필수 응답</FormLabel>
+              <FormDescription>활성화 시 사용자가 반드시 응답해야 합니다.</FormDescription>
+            </div>
+            <FormControl>
+              <Switch checked={field.value} onCheckedChange={field.onChange} disabled={isLoading} />
+            </FormControl>
           </FormItem>
         )}
       />

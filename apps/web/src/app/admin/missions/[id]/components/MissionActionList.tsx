@@ -111,6 +111,16 @@ function ActionCard({ action }: { action: ActionDetail }) {
                 <TypeIcon className={`h-3.5 w-3.5 ${typeInfo.color}`} />
                 <span className={`text-xs font-medium ${typeInfo.color}`}>{typeInfo.label}</span>
               </div>
+              <Badge
+                variant={action.isRequired ? "destructive" : "outline"}
+                className={
+                  action.isRequired
+                    ? "shrink-0 text-xs font-semibold bg-orange-100 text-orange-700 hover:bg-orange-200 border-0 dark:bg-orange-950 dark:text-orange-300"
+                    : "shrink-0 text-xs font-medium text-muted-foreground border-muted-foreground/30"
+                }
+              >
+                {action.isRequired ? "필수" : "선택"}
+              </Badge>
               {action.maxSelections && (
                 <Badge variant="secondary" className="shrink-0">
                   최대 {action.maxSelections}개 선택

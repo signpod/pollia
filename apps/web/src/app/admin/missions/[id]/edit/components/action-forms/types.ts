@@ -1,9 +1,6 @@
 import type { ActionType as PrismaActionType } from "@prisma/client";
 
-export type ActionType = Extract<
-  PrismaActionType,
-  "MULTIPLE_CHOICE" | "SCALE" | "RATING" | "TAG" | "SUBJECTIVE" | "IMAGE"
->;
+export type ActionType = PrismaActionType;
 
 export interface ActionOptionInput {
   title: string;
@@ -17,6 +14,7 @@ export interface BaseActionFormData {
   description?: string;
   imageUrl?: string;
   imageFileUploadId?: string;
+  isRequired?: boolean;
 }
 
 export interface MultipleChoiceFormData extends BaseActionFormData {
@@ -52,13 +50,18 @@ export interface ImageUploadFormData extends BaseActionFormData {
   acceptedFormats?: string[];
 }
 
+export interface PrivacyConsentFormData extends BaseActionFormData {
+  type: "PRIVACY_CONSENT";
+}
+
 export type ActionFormData =
   | MultipleChoiceFormData
   | ScaleFormData
   | RatingFormData
   | TagFormData
   | SubjectiveFormData
-  | ImageUploadFormData;
+  | ImageUploadFormData
+  | PrivacyConsentFormData;
 
 export interface ActionFormProps<T extends ActionFormData = ActionFormData> {
   isLoading?: boolean;
