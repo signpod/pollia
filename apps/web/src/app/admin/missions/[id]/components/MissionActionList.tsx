@@ -25,6 +25,7 @@ import {
   Star,
   Tag,
   TextCursor,
+  Video,
 } from "lucide-react";
 import Image from "next/image";
 import { ClientDateDisplay } from "./ClientDateDisplay";
@@ -71,6 +72,20 @@ function getActionTypeInfo(type: ActionType) {
         icon: ImageIcon,
         color: "text-orange-600 dark:text-orange-400",
         bgColor: "bg-orange-50 dark:bg-orange-950",
+      };
+    case ActionType.PDF:
+      return {
+        label,
+        icon: FileText,
+        color: "text-red-600 dark:text-red-400",
+        bgColor: "bg-red-50 dark:bg-red-950",
+      };
+    case ActionType.VIDEO:
+      return {
+        label,
+        icon: Video,
+        color: "text-violet-600 dark:text-violet-400",
+        bgColor: "bg-violet-50 dark:bg-violet-950",
       };
     case ActionType.RATING:
       return {

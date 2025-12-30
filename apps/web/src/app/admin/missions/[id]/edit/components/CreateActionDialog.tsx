@@ -16,12 +16,14 @@ import {
   Calendar,
   ClipboardList,
   Clock,
+  FileText,
   Hash,
   ImageIcon,
   MessageSquare,
   Shield,
   SlidersHorizontal,
   Star,
+  Video,
 } from "lucide-react";
 import { useState } from "react";
 import {
@@ -81,6 +83,18 @@ const ACTION_TYPES = [
     label: getActionTypeLabel("IMAGE"),
     description: "이미지 파일을 업로드하여 응답",
     icon: ImageIcon,
+  },
+  {
+    value: "PDF" as const,
+    label: getActionTypeLabel("PDF"),
+    description: "PDF 파일을 업로드하여 응답",
+    icon: FileText,
+  },
+  {
+    value: "VIDEO" as const,
+    label: getActionTypeLabel("VIDEO"),
+    description: "동영상 파일을 업로드하여 응답",
+    icon: Video,
   },
   {
     value: "PRIVACY_CONSENT" as const,
