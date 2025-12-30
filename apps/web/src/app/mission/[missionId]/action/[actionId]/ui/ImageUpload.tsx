@@ -2,7 +2,7 @@
 
 import { toast } from "@/components/common/Toast";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
-import { type UploadedImage, useImageUpload } from "@/hooks/common/useImageUpload";
+import { useImageUpload } from "@/hooks/common/useImageUpload";
 import { shouldSkipCrop } from "@/lib/fileValidation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ImageCropModal } from "./components/ImageCropModal";
@@ -11,19 +11,21 @@ import { useBlurThumbnail } from "./hooks/useBlurThumbnail";
 import { useImageCrop } from "./hooks/useImageCrop";
 
 interface ImageUploadProps {
-  initialImageUrl?: string;
-  onUploadChange?: (hasUploadedImage: boolean, imageUrl?: string, fileUploadId?: string) => void;
+  onUploadChange?: (
+    hasUploadedImage: boolean,
+    imageUrls: string[],
+    fileUploadIds: string[],
+  ) => void;
+  onUploadingChange?: (isUploading: boolean) => void;
 }
 
-export function ImageUpload({ initialImageUrl, onUploadChange }: ImageUploadProps) {
-  const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(null);
-  const [isImageLoading, setIsImageLoading] = useState(false);
+export function ImageUpload({ onUploadChange, onUploadingChange }: ImageUploadProps) {
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
   const [imageToCrop, setImageToCrop] = useState<string | null>(null);
   const [originalFile, setOriginalFile] = useState<File | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { blurDataURL, generateBlur, clearBlur } = useBlurThumbnail();
+  const { generateBlur, clearBlur } = useBlurThumbnail();
   const { crop, zoom, rotation, setCrop, setZoom, setRotation, resetCropState, cropImage } =
     useImageCrop();
 
@@ -33,34 +35,22 @@ export function ImageUpload({ initialImageUrl, onUploadChange }: ImageUploadProp
     }
   }, []);
 
-  useEffect(() => {
-    if (initialImageUrl && !uploadedImage) {
-      setUploadedImage({
-        publicUrl: initialImageUrl,
-        path: "",
-        file: new File([], ""),
-        fileUploadId: "",
-        isTemporary: false,
-      });
-      setIsImageLoading(true);
-      onUploadChange?.(true, initialImageUrl);
-    }
-  }, [initialImageUrl, uploadedImage, onUploadChange]);
-
   const { upload, isUploading, uploadError } = useImageUpload({
     bucket: STORAGE_BUCKETS.ACTION_ANSWER_IMAGES,
     onSuccess: result => {
-      setUploadedImage(result);
-      setIsImageLoading(true);
-      onUploadChange?.(true, result.publicUrl, result.fileUploadId);
+      onUploadingChange?.(false);
+      onUploadChange?.(true, [result.publicUrl], [result.fileUploadId]);
     },
     onError: () => {
+      onUploadingChange?.(false);
       toast.warning(uploadError?.message || "파일 업로드에 실패했어요.\n다시 시도해주세요.");
-      setUploadedImage(null);
-      setIsImageLoading(false);
-      onUploadChange?.(false, undefined, undefined);
+      onUploadChange?.(false, [], []);
     },
   });
+
+  useEffect(() => {
+    onUploadingChange?.(isUploading);
+  }, [isUploading, onUploadingChange]);
 
   const handleCropCancel = useCallback(() => {
     setIsCropModalOpen(false);
@@ -77,7 +67,7 @@ export function ImageUpload({ initialImageUrl, onUploadChange }: ImageUploadProp
 
     try {
       setIsCropModalOpen(false);
-      setIsImageLoading(true);
+      onUploadingChange?.(true);
 
       const croppedFile = await cropImage(imageToCrop, originalFile);
       await generateBlur(croppedFile);
@@ -101,6 +91,7 @@ export function ImageUpload({ initialImageUrl, onUploadChange }: ImageUploadProp
     revokeImageUrl,
     resetCropState,
     handleCropCancel,
+    onUploadingChange,
   ]);
 
   const handleFileSelect = useCallback(() => {
@@ -114,11 +105,10 @@ export function ImageUpload({ initialImageUrl, onUploadChange }: ImageUploadProp
         return;
       }
 
-      setUploadedImage(null);
-      setIsImageLoading(false);
       clearBlur();
 
       if (shouldSkipCrop(file)) {
+        onUploadingChange?.(true);
         upload(file);
         if (inputRef.current) {
           inputRef.current.value = "";
@@ -135,7 +125,7 @@ export function ImageUpload({ initialImageUrl, onUploadChange }: ImageUploadProp
         inputRef.current.value = "";
       }
     },
-    [upload, clearBlur],
+    [upload, clearBlur, onUploadingChange],
   );
 
   useEffect(() => {
@@ -149,12 +139,8 @@ export function ImageUpload({ initialImageUrl, onUploadChange }: ImageUploadProp
       <ImageUploadArea
         inputRef={inputRef}
         isUploading={isUploading}
-        uploadedImage={uploadedImage}
-        isImageLoading={isImageLoading}
-        blurDataURL={blurDataURL}
         onFileSelect={handleFileSelect}
         onFileChange={handleFileChange}
-        onImageLoadComplete={() => setIsImageLoading(false)}
       />
       {imageToCrop && (
         <ImageCropModal

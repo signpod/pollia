@@ -2,6 +2,8 @@ import { ActionStepContentProps } from "@/constants/action";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
 import type { ActionAnswerItem } from "@/types/dto";
+import { Loader2Icon } from "lucide-react";
+import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 import { ImageUpload } from "./ImageUpload";
@@ -20,8 +22,10 @@ export function ActionImage({
   missionResponse,
   isLoading,
 }: ActionStepContentProps) {
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [imageFileUploadId, setImageFileUploadId] = useState<string | undefined>(undefined);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [imageFileUploadIds, setImageFileUploadIds] = useState<string[]>([]);
+  const [uploadingImageUrl, setUploadingImageUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const existingAnswer = useMemo(() => {
     if (!missionResponse?.data?.answers || missionResponse.data.answers.length === 0) {
@@ -29,9 +33,6 @@ export function ActionImage({
     }
     return missionResponse.data.answers.find(answer => answer.actionId === actionData.id) ?? null;
   }, [missionResponse, actionData.id]);
-
-  // TODO: fileUploads 배열로 변경 필요 (현재는 첫 번째 파일만 사용)
-  const initialImageUrl = null;
 
   const updateCanGoNextRef = useRef(updateCanGoNext);
   const onAnswerChangeRef = useRef(onAnswerChange);
@@ -42,8 +43,8 @@ export function ActionImage({
   }, [updateCanGoNext, onAnswerChange]);
 
   const validateAndUpdateAnswer = useCallback(
-    (url: string | null, fileId: string | undefined) => {
-      if (!url || !fileId) {
+    (urls: string[], fileIds: string[]) => {
+      if (!urls.length || !fileIds.length) {
         updateCanGoNextRef.current?.(false);
         return;
       }
@@ -51,7 +52,7 @@ export function ActionImage({
       const answer: ActionAnswerItem = {
         actionId: actionData.id,
         type: ActionType.IMAGE,
-        fileUploadIds: [fileId],
+        fileUploadIds: fileIds,
       };
 
       const validationResult = submitAnswerItemSchema.safeParse(answer);
@@ -66,30 +67,37 @@ export function ActionImage({
 
   useEffect(() => {
     if (existingAnswer) {
-      // TODO: fileUploads 배열에서 첫 번째 파일 사용 (임시)
-      setImageUrl(null);
-      setImageFileUploadId(undefined);
-
-      validateAndUpdateAnswer(null, undefined);
+      setImageUrls([]);
+      setImageFileUploadIds([]);
+      validateAndUpdateAnswer([], []);
     }
   }, [existingAnswer, validateAndUpdateAnswer]);
 
   useEffect(() => {
-    validateAndUpdateAnswer(imageUrl, imageFileUploadId);
-  }, [imageUrl, imageFileUploadId, validateAndUpdateAnswer]);
+    validateAndUpdateAnswer(imageUrls, imageFileUploadIds);
+  }, [imageUrls, imageFileUploadIds, validateAndUpdateAnswer]);
 
   const handleUploadChange = (
     hasUploadedImage: boolean,
-    uploadedImageUrl?: string,
-    fileUploadId?: string,
+    newImageUrls: string[],
+    newFileUploadIds: string[],
   ) => {
-    if (hasUploadedImage && uploadedImageUrl) {
-      setImageUrl(uploadedImageUrl);
-      setImageFileUploadId(fileUploadId);
+    if (hasUploadedImage && newImageUrls.length > 0 && newFileUploadIds.length > 0) {
+      const newImageUrl = newImageUrls[0];
+      const newFileUploadId = newFileUploadIds[0];
+
+      if (newImageUrl && newFileUploadId) {
+        setUploadingImageUrl(newImageUrl);
+        setImageUrls(prev => [...prev, newImageUrl]);
+        setImageFileUploadIds(prev => [...prev, newFileUploadId]);
+      }
     } else if (!hasUploadedImage) {
-      setImageUrl(null);
-      setImageFileUploadId(undefined);
+      setUploadingImageUrl(null);
     }
+  };
+
+  const handleUploadingChange = (uploading: boolean) => {
+    setIsUploading(uploading);
   };
 
   return (
@@ -106,10 +114,45 @@ export function ActionImage({
       nextButtonText={nextButtonText}
       isLoading={isLoading}
     >
-      <ImageUpload
-        initialImageUrl={initialImageUrl ?? undefined}
-        onUploadChange={handleUploadChange}
-      />
+      <ImageUpload onUploadChange={handleUploadChange} onUploadingChange={handleUploadingChange} />
+      {(isUploading || imageUrls.length > 0) && (
+        <div className="grid grid-cols-3 gap-4 w-full">
+          {isUploading && imageUrls.length === 0 && (
+            <div className="relative w-full aspect-square rounded-sm overflow-hidden border border-zinc-200 bg-zinc-50 flex items-center justify-center">
+              <div className="flex items-center justify-center bg-black/40 absolute inset-0 z-30">
+                <Loader2Icon className="size-8 animate-spin text-white" />
+              </div>
+            </div>
+          )}
+          {imageUrls.map(imageUrl => {
+            const isImageUploading = uploadingImageUrl === imageUrl;
+            return (
+              <div
+                key={imageUrl}
+                className="relative w-full aspect-square rounded-sm overflow-hidden border border-zinc-200 bg-zinc-50"
+              >
+                {isImageUploading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-30">
+                    <Loader2Icon className="size-8 animate-spin text-white" />
+                  </div>
+                )}
+                <Image
+                  src={imageUrl}
+                  alt="uploaded image"
+                  width={400}
+                  height={400}
+                  className="w-full h-full object-contain"
+                  onLoadingComplete={() => {
+                    if (isImageUploading) {
+                      setUploadingImageUrl(null);
+                    }
+                  }}
+                />
+              </div>
+            );
+          })}
+        </div>
+      )}
     </SurveyQuestionTemplate>
   );
 }
