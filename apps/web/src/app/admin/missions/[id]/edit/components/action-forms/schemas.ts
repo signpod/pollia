@@ -150,7 +150,12 @@ export const dateFormSchema = dateInputSchema
   })
   .extend({
     isRequired: z.boolean(),
-    maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다.").optional(),
+    maxSelections: z
+      .number()
+      .int()
+      .min(1, "선택 가능 개수는 최소 1개입니다.")
+      .max(20, "선택 가능 개수는 최대 20개입니다.")
+      .optional(),
   });
 
 export const timeFormSchema = timeInputSchema
@@ -163,7 +168,12 @@ export const timeFormSchema = timeInputSchema
   })
   .extend({
     isRequired: z.boolean(),
-    maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다.").optional(),
+    maxSelections: z
+      .number()
+      .int()
+      .min(1, "선택 가능 개수는 최소 1개입니다.")
+      .max(20, "선택 가능 개수는 최대 20개입니다.")
+      .optional(),
   });
 
 export type MultipleChoiceFormInput = z.infer<typeof multipleChoiceFormSchema>;

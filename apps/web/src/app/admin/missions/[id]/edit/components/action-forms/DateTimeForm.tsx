@@ -93,6 +93,7 @@ export function DateTimeForm<T extends "DATE" | "TIME">({
                   <Input
                     type="number"
                     min={1}
+                    max={20}
                     placeholder="1 (기본값)"
                     {...field}
                     value={field.value ?? ""}
