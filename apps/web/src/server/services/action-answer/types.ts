@@ -14,6 +14,7 @@ export interface SubmitAnswersInput {
   answers: Array<{
     actionId: string;
     type: ActionType;
+    isRequired: boolean;
     selectedOptionIds?: string[];
     scaleValue?: number;
     textAnswer?: string;

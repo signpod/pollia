@@ -196,8 +196,20 @@ export class ActionAnswerService {
       }
 
       const answer = answers[i];
-      if (answer && answer.type !== action.type) {
+      if (!answer) {
+        continue;
+      }
+
+      if (answer.type !== action.type) {
         this.throwError("답변 타입이 액션 타입과 일치하지 않습니다.", 400);
+      }
+
+      if (answer.isRequired !== action.isRequired) {
+        this.throwError("답변의 필수 여부가 액션과 일치하지 않습니다.", 400);
+      }
+
+      if (action.isRequired && this.isEmptyAnswer(answer)) {
+        this.throwError(`필수 답변이 누락되었습니다. (액션: ${action.title})`, 400);
       }
     }
   }
@@ -215,19 +227,21 @@ export class ActionAnswerService {
           answer.selectedOptionIds?.map(optionId => ({
             ...baseData,
             optionId,
-          })) ?? []
+          })) || [baseData]
         );
 
       case ActionType.SCALE:
       case ActionType.RATING:
         return answer.scaleValue !== undefined
           ? [{ ...baseData, scaleAnswer: answer.scaleValue }]
-          : [];
+          : [baseData];
 
       case ActionType.SUBJECTIVE:
-        return answer.textAnswer ? [{ ...baseData, textAnswer: answer.textAnswer }] : [];
+        return answer.textAnswer ? [{ ...baseData, textAnswer: answer.textAnswer }] : [baseData];
 
       case ActionType.IMAGE:
+      case ActionType.PDF:
+      case ActionType.VIDEO:
         return answer.fileUploadIds && answer.fileUploadIds.length > 0
           ? [
               {
@@ -237,14 +251,43 @@ export class ActionAnswerService {
                 },
               },
             ]
-          : [];
+          : [baseData];
 
       case ActionType.DATE:
       case ActionType.TIME:
-        return answer.dateAnswers ? [{ ...baseData, dateAnswers: answer.dateAnswers }] : [];
+        return answer.dateAnswers && answer.dateAnswers.length > 0
+          ? [{ ...baseData, dateAnswers: answer.dateAnswers }]
+          : [baseData];
 
       default:
-        return [];
+        return [baseData];
+    }
+  }
+
+  private isEmptyAnswer(answer: SubmitAnswersInput["answers"][number]): boolean {
+    switch (answer.type) {
+      case ActionType.MULTIPLE_CHOICE:
+      case ActionType.TAG:
+        return !answer.selectedOptionIds || answer.selectedOptionIds.length === 0;
+
+      case ActionType.SCALE:
+      case ActionType.RATING:
+        return answer.scaleValue === undefined;
+
+      case ActionType.SUBJECTIVE:
+        return !answer.textAnswer;
+
+      case ActionType.IMAGE:
+      case ActionType.PDF:
+      case ActionType.VIDEO:
+        return !answer.fileUploadIds || answer.fileUploadIds.length === 0;
+
+      case ActionType.DATE:
+      case ActionType.TIME:
+        return !answer.dateAnswers || answer.dateAnswers.length === 0;
+
+      default:
+        return true;
     }
   }
 

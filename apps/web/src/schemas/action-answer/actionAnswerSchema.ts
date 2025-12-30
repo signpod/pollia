@@ -41,6 +41,7 @@ export const submitAnswerItemSchema = z
   .object({
     actionId: actionIdSchema,
     type: actionTypeSchema,
+    isRequired: z.boolean(),
     selectedOptionIds: z.array(optionIdSchema).optional(),
     scaleValue: scaleAnswerSchema.optional(),
     textAnswer: textAnswerSchema.optional(),
@@ -49,7 +50,7 @@ export const submitAnswerItemSchema = z
   })
   .refine(
     data => {
-      if (data.type === ActionType.MULTIPLE_CHOICE) {
+      if (data.type === ActionType.MULTIPLE_CHOICE && data.isRequired) {
         return data.selectedOptionIds && data.selectedOptionIds.length > 0;
       }
       return true;
@@ -58,7 +59,16 @@ export const submitAnswerItemSchema = z
   )
   .refine(
     data => {
-      if (data.type === ActionType.SCALE) {
+      if (data.type === ActionType.TAG && data.isRequired) {
+        return data.selectedOptionIds && data.selectedOptionIds.length > 0;
+      }
+      return true;
+    },
+    { message: "최소 1개 이상의 태그를 선택해주세요." },
+  )
+  .refine(
+    data => {
+      if (data.type === ActionType.SCALE && data.isRequired) {
         return data.scaleValue !== undefined;
       }
       return true;
@@ -67,7 +77,7 @@ export const submitAnswerItemSchema = z
   )
   .refine(
     data => {
-      if (data.type === ActionType.RATING) {
+      if (data.type === ActionType.RATING && data.isRequired) {
         return data.scaleValue !== undefined;
       }
       return true;
@@ -76,7 +86,7 @@ export const submitAnswerItemSchema = z
   )
   .refine(
     data => {
-      if (data.type === ActionType.SUBJECTIVE) {
+      if (data.type === ActionType.SUBJECTIVE && data.isRequired) {
         return data.textAnswer && data.textAnswer.trim().length > 0;
       }
       return true;
@@ -85,7 +95,7 @@ export const submitAnswerItemSchema = z
   )
   .refine(
     data => {
-      if (data.type === ActionType.IMAGE) {
+      if (data.type === ActionType.IMAGE && data.isRequired) {
         return data.fileUploadIds && data.fileUploadIds.length > 0;
       }
       return true;
@@ -94,7 +104,25 @@ export const submitAnswerItemSchema = z
   )
   .refine(
     data => {
-      if (data.type === ActionType.DATE) {
+      if (data.type === ActionType.PDF && data.isRequired) {
+        return data.fileUploadIds && data.fileUploadIds.length > 0;
+      }
+      return true;
+    },
+    { message: "PDF 파일은 필수입니다." },
+  )
+  .refine(
+    data => {
+      if (data.type === ActionType.VIDEO && data.isRequired) {
+        return data.fileUploadIds && data.fileUploadIds.length > 0;
+      }
+      return true;
+    },
+    { message: "동영상 파일은 필수입니다." },
+  )
+  .refine(
+    data => {
+      if (data.type === ActionType.DATE && data.isRequired) {
         return data.dateAnswers && data.dateAnswers.length > 0;
       }
       return true;
@@ -103,7 +131,7 @@ export const submitAnswerItemSchema = z
   )
   .refine(
     data => {
-      if (data.type === ActionType.TIME) {
+      if (data.type === ActionType.TIME && data.isRequired) {
         return data.dateAnswers && data.dateAnswers.length > 0;
       }
       return true;

@@ -282,8 +282,8 @@ describe("ActionAnswerService", () => {
         completedAt: null,
       };
       const mockActions = [
-        { id: "q1", missionId: "mission1", type: ActionType.MULTIPLE_CHOICE },
-        { id: "q2", missionId: "mission1", type: ActionType.SCALE },
+        { id: "q1", missionId: "mission1", type: ActionType.MULTIPLE_CHOICE, isRequired: true },
+        { id: "q2", missionId: "mission1", type: ActionType.SCALE, isRequired: true },
       ];
 
       mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
@@ -301,9 +301,10 @@ describe("ActionAnswerService", () => {
             {
               actionId: "q1",
               type: ActionType.MULTIPLE_CHOICE,
+              isRequired: true,
               selectedOptionIds: ["opt1", "opt2"],
             },
-            { actionId: "q2", type: ActionType.SCALE, scaleValue: 4 },
+            { actionId: "q2", type: ActionType.SCALE, isRequired: true, scaleValue: 4 },
           ],
         },
         mockUser.id,
@@ -325,7 +326,7 @@ describe("ActionAnswerService", () => {
         service.submitAnswers(
           {
             responseId: "response1",
-            answers: [{ actionId: "q1", type: ActionType.SCALE, scaleValue: 3 }],
+            answers: [{ actionId: "q1", type: ActionType.SCALE, isRequired: true, scaleValue: 3 }],
           },
           mockUser.id,
         ),
@@ -340,7 +341,12 @@ describe("ActionAnswerService", () => {
         userId: "user1",
         completedAt: null,
       };
-      const mockAction = { id: "q1", missionId: "other-mission", type: ActionType.SCALE };
+      const mockAction = {
+        id: "q1",
+        missionId: "other-mission",
+        type: ActionType.SCALE,
+        isRequired: true,
+      };
 
       mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
       mockActionRepo.findById.mockResolvedValue(mockAction as never);
@@ -350,7 +356,7 @@ describe("ActionAnswerService", () => {
         service.submitAnswers(
           {
             responseId: "response1",
-            answers: [{ actionId: "q1", type: ActionType.SCALE, scaleValue: 3 }],
+            answers: [{ actionId: "q1", type: ActionType.SCALE, isRequired: true, scaleValue: 3 }],
           },
           mockUser.id,
         ),
@@ -365,7 +371,12 @@ describe("ActionAnswerService", () => {
         userId: "user1",
         completedAt: null,
       };
-      const mockAction = { id: "q1", missionId: "mission1", type: ActionType.SCALE };
+      const mockAction = {
+        id: "q1",
+        missionId: "mission1",
+        type: ActionType.SCALE,
+        isRequired: true,
+      };
 
       mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
       mockActionRepo.findById.mockResolvedValue(mockAction as never);
@@ -379,6 +390,7 @@ describe("ActionAnswerService", () => {
               {
                 actionId: "q1",
                 type: ActionType.MULTIPLE_CHOICE,
+                isRequired: true,
                 selectedOptionIds: ["opt1"],
               },
             ],
@@ -386,6 +398,484 @@ describe("ActionAnswerService", () => {
           mockUser.id,
         ),
       ).rejects.toThrow("답변 타입이 액션 타입과 일치하지 않습니다.");
+    });
+
+    it("필수 답변의 isRequired가 false로 제출되면 400 에러를 던진다", async () => {
+      // Given
+      const mockResponse = {
+        id: "response1",
+        missionId: "mission1",
+        userId: "user1",
+        completedAt: null,
+      };
+      const mockAction = {
+        id: "q1",
+        missionId: "mission1",
+        type: ActionType.IMAGE,
+        isRequired: true,
+        title: "프로필 사진 업로드",
+      };
+
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
+
+      // When & Then
+      await expect(
+        service.submitAnswers(
+          {
+            responseId: "response1",
+            answers: [
+              {
+                actionId: "q1",
+                type: ActionType.IMAGE,
+                isRequired: false,
+                fileUploadIds: [],
+              },
+            ],
+          },
+          mockUser.id,
+        ),
+      ).rejects.toThrow("답변의 필수 여부가 액션과 일치하지 않습니다.");
+    });
+
+    it("필수 답변이 비어있으면 400 에러를 던진다 - Zod 검증", async () => {
+      // Given
+      const mockResponse = {
+        id: "response1",
+        missionId: "mission1",
+        userId: "user1",
+        completedAt: null,
+      };
+
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+
+      // When & Then
+      // Zod 스키마에서 먼저 검증되므로 "이미지는 필수입니다." 메시지가 나옴
+      await expect(
+        service.submitAnswers(
+          {
+            responseId: "response1",
+            answers: [
+              {
+                actionId: "q1",
+                type: ActionType.IMAGE,
+                isRequired: true,
+                fileUploadIds: [],
+              },
+            ],
+          },
+          mockUser.id,
+        ),
+      ).rejects.toThrow("이미지는 필수입니다.");
+    });
+
+    it("클라이언트가 잘못된 isRequired를 보내면 서비스 레벨에서 검증한다", async () => {
+      // Given
+      const mockResponse = {
+        id: "response1",
+        missionId: "mission1",
+        userId: "user1",
+        completedAt: null,
+      };
+      const mockAction = {
+        id: "q1",
+        missionId: "mission1",
+        type: ActionType.IMAGE,
+        isRequired: true,
+        title: "프로필 사진 업로드",
+      };
+
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
+
+      // When & Then
+      // 클라이언트가 isRequired=false로 보내고 Zod를 통과했지만,
+      // 서비스 레벨에서 실제 action.isRequired와 비교하여 에러 발생
+      await expect(
+        service.submitAnswers(
+          {
+            responseId: "response1",
+            answers: [
+              {
+                actionId: "q1",
+                type: ActionType.IMAGE,
+                isRequired: false,
+                fileUploadIds: [],
+              },
+            ],
+          },
+          mockUser.id,
+        ),
+      ).rejects.toThrow("답변의 필수 여부가 액션과 일치하지 않습니다.");
+    });
+
+    it("선택적 답변이 비어있어도 성공한다 - IMAGE", async () => {
+      // Given
+      const mockResponse = {
+        id: "response1",
+        missionId: "mission1",
+        userId: "user1",
+        completedAt: null,
+      };
+      const mockAction = {
+        id: "q1",
+        missionId: "mission1",
+        type: ActionType.IMAGE,
+        isRequired: false,
+        title: "추가 사진 (선택)",
+      };
+
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
+      mockAnswerRepo.deleteByResponseAndActions.mockResolvedValue({ count: 0 });
+      mockAnswerRepo.createMany.mockResolvedValue({ count: 1 });
+
+      // When
+      const result = await service.submitAnswers(
+        {
+          responseId: "response1",
+          answers: [
+            {
+              actionId: "q1",
+              type: ActionType.IMAGE,
+              isRequired: false,
+              fileUploadIds: [],
+            },
+          ],
+        },
+        mockUser.id,
+      );
+
+      // Then
+      expect(result.responseId).toBe("response1");
+      expect(result.answersCount).toBe(1);
+      expect(mockAnswerRepo.createMany).toHaveBeenCalledWith(
+        [{ responseId: "response1", actionId: "q1" }],
+        mockUser.id,
+      );
+    });
+
+    it("선택적 답변이 비어있어도 성공한다 - PDF", async () => {
+      // Given
+      const mockResponse = {
+        id: "response1",
+        missionId: "mission1",
+        userId: "user1",
+        completedAt: null,
+      };
+      const mockAction = {
+        id: "q1",
+        missionId: "mission1",
+        type: ActionType.PDF,
+        isRequired: false,
+      };
+
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
+      mockAnswerRepo.deleteByResponseAndActions.mockResolvedValue({ count: 0 });
+      mockAnswerRepo.createMany.mockResolvedValue({ count: 1 });
+
+      // When
+      const result = await service.submitAnswers(
+        {
+          responseId: "response1",
+          answers: [
+            {
+              actionId: "q1",
+              type: ActionType.PDF,
+              isRequired: false,
+              fileUploadIds: undefined,
+            },
+          ],
+        },
+        mockUser.id,
+      );
+
+      // Then
+      expect(result.responseId).toBe("response1");
+      expect(mockAnswerRepo.createMany).toHaveBeenCalledWith(
+        [{ responseId: "response1", actionId: "q1" }],
+        mockUser.id,
+      );
+    });
+
+    it("선택적 답변이 비어있어도 성공한다 - VIDEO", async () => {
+      // Given
+      const mockResponse = {
+        id: "response1",
+        missionId: "mission1",
+        userId: "user1",
+        completedAt: null,
+      };
+      const mockAction = {
+        id: "q1",
+        missionId: "mission1",
+        type: ActionType.VIDEO,
+        isRequired: false,
+      };
+
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
+      mockAnswerRepo.deleteByResponseAndActions.mockResolvedValue({ count: 0 });
+      mockAnswerRepo.createMany.mockResolvedValue({ count: 1 });
+
+      // When
+      const result = await service.submitAnswers(
+        {
+          responseId: "response1",
+          answers: [
+            {
+              actionId: "q1",
+              type: ActionType.VIDEO,
+              isRequired: false,
+            },
+          ],
+        },
+        mockUser.id,
+      );
+
+      // Then
+      expect(result.responseId).toBe("response1");
+      expect(mockAnswerRepo.createMany).toHaveBeenCalledWith(
+        [{ responseId: "response1", actionId: "q1" }],
+        mockUser.id,
+      );
+    });
+
+    it("선택적 주관식 답변이 비어있어도 성공한다", async () => {
+      // Given
+      const mockResponse = {
+        id: "response1",
+        missionId: "mission1",
+        userId: "user1",
+        completedAt: null,
+      };
+      const mockAction = {
+        id: "q1",
+        missionId: "mission1",
+        type: ActionType.SUBJECTIVE,
+        isRequired: false,
+      };
+
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
+      mockAnswerRepo.deleteByResponseAndActions.mockResolvedValue({ count: 0 });
+      mockAnswerRepo.createMany.mockResolvedValue({ count: 1 });
+
+      // When
+      const result = await service.submitAnswers(
+        {
+          responseId: "response1",
+          answers: [
+            {
+              actionId: "q1",
+              type: ActionType.SUBJECTIVE,
+              isRequired: false,
+            },
+          ],
+        },
+        mockUser.id,
+      );
+
+      // Then
+      expect(result.responseId).toBe("response1");
+      expect(mockAnswerRepo.createMany).toHaveBeenCalledWith(
+        [{ responseId: "response1", actionId: "q1" }],
+        mockUser.id,
+      );
+    });
+
+    it("선택적 척도 답변이 비어있어도 성공한다", async () => {
+      // Given
+      const mockResponse = {
+        id: "response1",
+        missionId: "mission1",
+        userId: "user1",
+        completedAt: null,
+      };
+      const mockAction = {
+        id: "q1",
+        missionId: "mission1",
+        type: ActionType.SCALE,
+        isRequired: false,
+      };
+
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
+      mockAnswerRepo.deleteByResponseAndActions.mockResolvedValue({ count: 0 });
+      mockAnswerRepo.createMany.mockResolvedValue({ count: 1 });
+
+      // When
+      const result = await service.submitAnswers(
+        {
+          responseId: "response1",
+          answers: [
+            {
+              actionId: "q1",
+              type: ActionType.SCALE,
+              isRequired: false,
+            },
+          ],
+        },
+        mockUser.id,
+      );
+
+      // Then
+      expect(result.responseId).toBe("response1");
+      expect(mockAnswerRepo.createMany).toHaveBeenCalledWith(
+        [{ responseId: "response1", actionId: "q1" }],
+        mockUser.id,
+      );
+    });
+
+    it("필수 파일 업로드 답변이 있을 때 성공한다 - IMAGE", async () => {
+      // Given
+      const mockResponse = {
+        id: "response1",
+        missionId: "mission1",
+        userId: "user1",
+        completedAt: null,
+      };
+      const mockAction = {
+        id: "q1",
+        missionId: "mission1",
+        type: ActionType.IMAGE,
+        isRequired: true,
+      };
+
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
+      mockAnswerRepo.deleteByResponseAndActions.mockResolvedValue({ count: 0 });
+      mockAnswerRepo.createMany.mockResolvedValue({ count: 1 });
+
+      // When
+      const result = await service.submitAnswers(
+        {
+          responseId: "response1",
+          answers: [
+            {
+              actionId: "q1",
+              type: ActionType.IMAGE,
+              isRequired: true,
+              fileUploadIds: ["file1", "file2"],
+            },
+          ],
+        },
+        mockUser.id,
+      );
+
+      // Then
+      expect(result.responseId).toBe("response1");
+      expect(mockAnswerRepo.createMany).toHaveBeenCalledWith(
+        [
+          {
+            responseId: "response1",
+            actionId: "q1",
+            fileUploads: { connect: [{ id: "file1" }, { id: "file2" }] },
+          },
+        ],
+        mockUser.id,
+      );
+    });
+
+    it("필수 파일 업로드 답변이 있을 때 성공한다 - PDF", async () => {
+      // Given
+      const mockResponse = {
+        id: "response1",
+        missionId: "mission1",
+        userId: "user1",
+        completedAt: null,
+      };
+      const mockAction = {
+        id: "q1",
+        missionId: "mission1",
+        type: ActionType.PDF,
+        isRequired: true,
+      };
+
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
+      mockAnswerRepo.deleteByResponseAndActions.mockResolvedValue({ count: 0 });
+      mockAnswerRepo.createMany.mockResolvedValue({ count: 1 });
+
+      // When
+      const result = await service.submitAnswers(
+        {
+          responseId: "response1",
+          answers: [
+            {
+              actionId: "q1",
+              type: ActionType.PDF,
+              isRequired: true,
+              fileUploadIds: ["pdf-file1"],
+            },
+          ],
+        },
+        mockUser.id,
+      );
+
+      // Then
+      expect(result.responseId).toBe("response1");
+      expect(mockAnswerRepo.createMany).toHaveBeenCalledWith(
+        [
+          {
+            responseId: "response1",
+            actionId: "q1",
+            fileUploads: { connect: [{ id: "pdf-file1" }] },
+          },
+        ],
+        mockUser.id,
+      );
+    });
+
+    it("필수 파일 업로드 답변이 있을 때 성공한다 - VIDEO", async () => {
+      // Given
+      const mockResponse = {
+        id: "response1",
+        missionId: "mission1",
+        userId: "user1",
+        completedAt: null,
+      };
+      const mockAction = {
+        id: "q1",
+        missionId: "mission1",
+        type: ActionType.VIDEO,
+        isRequired: true,
+      };
+
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
+      mockAnswerRepo.deleteByResponseAndActions.mockResolvedValue({ count: 0 });
+      mockAnswerRepo.createMany.mockResolvedValue({ count: 1 });
+
+      // When
+      const result = await service.submitAnswers(
+        {
+          responseId: "response1",
+          answers: [
+            {
+              actionId: "q1",
+              type: ActionType.VIDEO,
+              isRequired: true,
+              fileUploadIds: ["video-file1"],
+            },
+          ],
+        },
+        mockUser.id,
+      );
+
+      // Then
+      expect(result.responseId).toBe("response1");
+      expect(mockAnswerRepo.createMany).toHaveBeenCalledWith(
+        [
+          {
+            responseId: "response1",
+            actionId: "q1",
+            fileUploads: { connect: [{ id: "video-file1" }] },
+          },
+        ],
+        mockUser.id,
+      );
     });
   });
 
