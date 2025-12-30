@@ -6,6 +6,7 @@ export interface CreateAnswerInput {
   optionId?: string;
   textAnswer?: string;
   scaleAnswer?: number;
+  dateAnswers?: Date[];
 }
 
 export interface SubmitAnswersInput {
@@ -17,6 +18,7 @@ export interface SubmitAnswersInput {
     scaleValue?: number;
     textAnswer?: string;
     fileUploadIds?: string[];
+    dateAnswers?: Date[];
   }>;
 }
 
@@ -24,4 +26,5 @@ export interface UpdateAnswerInput {
   optionId?: string;
   textAnswer?: string;
   scaleAnswer?: number;
+  dateAnswers?: Date[];
 }

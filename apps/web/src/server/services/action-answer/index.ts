@@ -64,7 +64,8 @@ export class ActionAnswerService {
       throw error;
     }
 
-    const { responseId, actionId, optionId, textAnswer, scaleAnswer } = parseResult.data;
+    const { responseId, actionId, optionId, textAnswer, scaleAnswer, dateAnswers } =
+      parseResult.data;
 
     await this.verifyResponseOwnership(responseId, userId);
 
@@ -75,7 +76,10 @@ export class ActionAnswerService {
       throw error;
     }
 
-    this.validateAnswerByActionType({ optionId, textAnswer, scaleAnswer }, action.type);
+    this.validateAnswerByActionType(
+      { optionId, textAnswer, scaleAnswer, dateAnswers },
+      action.type,
+    );
 
     return this.answerRepo.create({
       responseId,
@@ -83,6 +87,7 @@ export class ActionAnswerService {
       optionId,
       textAnswer,
       scaleAnswer,
+      dateAnswers,
     });
   }
 
@@ -194,6 +199,18 @@ export class ActionAnswerService {
             optionId,
           });
         }
+      } else if (answer.type === ActionType.DATE && answer.dateAnswers) {
+        answersToCreate.push({
+          responseId: parseResult.data.responseId,
+          actionId,
+          dateAnswers: answer.dateAnswers,
+        });
+      } else if (answer.type === ActionType.TIME && answer.dateAnswers) {
+        answersToCreate.push({
+          responseId: parseResult.data.responseId,
+          actionId,
+          dateAnswers: answer.dateAnswers,
+        });
       }
     }
 
@@ -263,29 +280,38 @@ export class ActionAnswerService {
     }
   }
 
+  private throwValidationError(message: string): never {
+    const error = new Error(message);
+    error.cause = 400;
+    throw error;
+  }
+
   private validateAnswerByActionType(
-    data: { optionId?: string; textAnswer?: string; scaleAnswer?: number },
+    data: {
+      optionId?: string;
+      textAnswer?: string;
+      scaleAnswer?: number;
+      dateAnswers?: Date[];
+    },
     actionType: ActionType,
   ) {
     if (actionType === ActionType.MULTIPLE_CHOICE && !data.optionId) {
-      const error = new Error("객관식 답변에는 선택지가 필요합니다.");
-      error.cause = 400;
-      throw error;
+      this.throwValidationError("객관식 답변에는 선택지가 필요합니다.");
     }
     if (actionType === ActionType.SCALE && data.scaleAnswer === undefined) {
-      const error = new Error("척도 값을 선택해주세요.");
-      error.cause = 400;
-      throw error;
+      this.throwValidationError("척도 값을 선택해주세요.");
     }
     if (actionType === ActionType.RATING && data.scaleAnswer === undefined) {
-      const error = new Error("별점 값을 선택해주세요.");
-      error.cause = 400;
-      throw error;
+      this.throwValidationError("별점 값을 선택해주세요.");
     }
     if (actionType === ActionType.SUBJECTIVE && !data.textAnswer) {
-      const error = new Error("주관식 답변은 필수입니다.");
-      error.cause = 400;
-      throw error;
+      this.throwValidationError("주관식 답변은 필수입니다.");
+    }
+    if (actionType === ActionType.DATE && (!data.dateAnswers || data.dateAnswers.length === 0)) {
+      this.throwValidationError("날짜를 선택해주세요.");
+    }
+    if (actionType === ActionType.TIME && (!data.dateAnswers || data.dateAnswers.length === 0)) {
+      this.throwValidationError("시간을 선택해주세요.");
     }
   }
 }
