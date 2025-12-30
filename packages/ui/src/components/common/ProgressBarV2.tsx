@@ -39,6 +39,8 @@ interface ProgressBarProps extends React.ComponentPropsWithoutRef<typeof Progres
   variant?: Variant;
   badgeVariant?: BadgeVariant;
   isBadgeVisible?: boolean;
+  currentOrder?: number;
+  totalOrder?: number;
 }
 
 export function ProgressBarV2({
@@ -47,6 +49,8 @@ export function ProgressBarV2({
   badgeVariant,
   variant,
   isBadgeVisible = false,
+  currentOrder,
+  totalOrder,
   value,
   ...props
 }: ProgressBarProps) {
@@ -60,10 +64,12 @@ export function ProgressBarV2({
     return "default";
   }, [badgeVariant, variant]);
 
-  const shouldShowBadge = badgeVariant && isBadgeVisible;
+  const shouldShowBadge =
+    (badgeVariant && isBadgeVisible) ||
+    (!badgeVariant && currentOrder !== undefined && totalOrder !== undefined);
 
   return (
-    <div className="flex flex-col gap-2 w-full justify-center items-center">
+    <div className="flex flex-col gap-1 w-full justify-center items-center">
       <AnimatePresence key={badgeVariant ?? "no-badge"}>
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -72,7 +78,7 @@ export function ProgressBarV2({
           transition={{ duration: 0.2, ease: "easeInOut" }}
           className={PROGRESS_BAR_SIZES.badgeMinHeight}
         >
-          {badgeVariant && <Badge variant={badgeVariant} isVisible={isBadgeVisible} />}
+          <Badge variant={badgeVariant} currentOrder={currentOrder} totalOrder={totalOrder} />
         </motion.div>
       </AnimatePresence>
       <ProgressPrimitive.Root
@@ -100,8 +106,9 @@ export function ProgressBarV2({
 }
 
 interface BadgeProps {
-  variant: BadgeVariant;
-  isVisible: boolean;
+  variant?: BadgeVariant;
+  currentOrder?: number;
+  totalOrder?: number;
 }
 
 const BADGE_TEXT: Record<BadgeVariant, string> = {
@@ -116,25 +123,46 @@ const BADGE_ICON: Record<BadgeVariant, React.ComponentType<React.SVGProps<SVGSVG
   loading: Loader2Icon,
 } as const;
 
-function Badge({ variant, isVisible }: BadgeProps) {
-  const Icon = BADGE_ICON[variant];
-  const colorClasses = BADGE_COLOR_CLASSES[variant];
+function Badge({ variant, currentOrder, totalOrder }: BadgeProps) {
+  const Icon = variant ? BADGE_ICON[variant] : undefined;
+  const colorClasses = variant ? BADGE_COLOR_CLASSES[variant] : undefined;
 
   return (
-    <div
-      className={cn(
-        "flex justify-center items-center gap-1 px-3 py-1",
-        isVisible ? "opacity-100" : "opacity-0",
+    <>
+      {variant ? (
+        <div className={cn("flex justify-center items-center gap-1 px-3 py-1")}>
+          {Icon && (
+            <Icon
+              className={cn("size-4", variant === "loading" && "animate-spin", colorClasses?.icon)}
+            />
+          )}
+          <Typo.Body size="medium" className={colorClasses?.text}>
+            {BADGE_TEXT[variant]}
+          </Typo.Body>
+        </div>
+      ) : (
+        <div className="flex justify-center items-center gap-1 px-3 py-1">
+          <AnimatePresence key={`order-${currentOrder}-${totalOrder}`}>
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+            >
+              <Typo.Body size="medium" className="text-info">
+                {currentOrder}
+              </Typo.Body>
+            </motion.div>
+          </AnimatePresence>
+
+          <Typo.Body size="medium" className="text-info">
+            /
+          </Typo.Body>
+          <Typo.Body size="medium" className="text-info">
+            {totalOrder}
+          </Typo.Body>
+        </div>
       )}
-    >
-      {Icon && (
-        <Icon
-          className={cn("size-4", variant === "loading" && "animate-spin", colorClasses.icon)}
-        />
-      )}
-      <Typo.Body size="medium" className={colorClasses.text}>
-        {BADGE_TEXT[variant]}
-      </Typo.Body>
-    </div>
+    </>
   );
 }

@@ -36,6 +36,8 @@ import { ProgressBarV2 } from "@repo/ui/components";
 | \`variant\` | \`"default" \| "error" \| "loading"\` | \`"default"\` | 프로그레스 바의 시각적 스타일 (badgeVariant가 설정되면 무시됨) |
 | \`badgeVariant\` | \`"success" \| "error" \| "loading" \| undefined\` | \`undefined\` | 배지의 상태. 이 값에 따라 프로그레스 바 색상이 자동 결정됨 (success→default, error→error, loading→loading). \`undefined\`일 경우 Badge가 표시되지 않음 |
 | \`isBadgeVisible\` | \`boolean\` | \`false\` | 배지 표시 여부 |
+| \`currentOrder\` | \`number\` | - | 현재 순서 (variant가 없을 때 "currentOrder / totalOrder" 형식으로 표시) |
+| \`totalOrder\` | \`number\` | - | 전체 순서 (variant가 없을 때 "currentOrder / totalOrder" 형식으로 표시) |
 | \`containerClassName\` | \`string\` | - | 배경 컨테이너의 CSS 클래스 |
 | \`indicatorClassName\` | \`string\` | - | 진행 표시 인디케이터의 CSS 클래스 |
 
@@ -44,6 +46,7 @@ import { ProgressBarV2 } from "@repo/ui/components";
 - ✅ 0-100 범위의 진행률 표시
 - ✅ 상태별 variant 지원 (default, error, loading)
 - ✅ 배지로 상태 표시 (success, error, loading) - 아이콘 포함
+- ✅ 순서 표시 (currentOrder / totalOrder) - variant가 없을 때
 - ✅ badgeVariant에 따라 프로그레스 바 색상 자동 결정
 - ✅ 부드러운 애니메이션 전환 (배지 및 로딩 아이콘)
 - ✅ 배경과 인디케이터 개별 스타일 커스터마이징
@@ -64,6 +67,9 @@ import { ProgressBarV2 } from "@repo/ui/components";
 
 // 성공 상태 (badgeVariant에 따라 프로그레스 바가 자동으로 default 색상)
 <ProgressBarV2 value={100} badgeVariant="success" isBadgeVisible={true} />
+
+// 순서 표시 (variant가 없을 때 currentOrder / totalOrder 형식)
+<ProgressBarV2 value={60} currentOrder={3} totalOrder={5} isBadgeVisible={true} />
 \`\`\``,
       },
     },
@@ -95,6 +101,14 @@ import { ProgressBarV2 } from "@repo/ui/components";
     indicatorClassName: {
       control: { type: "text" },
       description: "진행 표시 인디케이터의 CSS 클래스",
+    },
+    currentOrder: {
+      control: { type: "number", min: 0 },
+      description: "현재 순서 (variant가 없을 때 표시)",
+    },
+    totalOrder: {
+      control: { type: "number", min: 0 },
+      description: "전체 순서 (variant가 없을 때 표시)",
     },
   },
 };
@@ -180,6 +194,14 @@ export const States: Story = {
             <p className="mb-2 text-xs text-gray-600">badgeVariant: undefined (배지 없음)</p>
             <div className="w-80">
               <ProgressBarV2 value={50} />
+            </div>
+          </div>
+          <div>
+            <p className="mb-2 text-xs text-gray-600">
+              순서 표시 (variant 없음, currentOrder / totalOrder)
+            </p>
+            <div className="w-80">
+              <ProgressBarV2 value={60} currentOrder={3} totalOrder={5} isBadgeVisible={true} />
             </div>
           </div>
           <div>
@@ -328,6 +350,8 @@ export const Interactive: Story = {
       "success" | "error" | "loading" | undefined
     >(undefined);
     const [isBadgeVisible, setIsBadgeVisible] = React.useState(false);
+    const [currentOrder, setCurrentOrder] = React.useState<number | undefined>(3);
+    const [totalOrder, setTotalOrder] = React.useState<number | undefined>(5);
 
     const increase = () => {
       setProgress(prev => Math.min(prev + 10, 100));
@@ -342,6 +366,8 @@ export const Interactive: Story = {
       setVariant("default");
       setBadgeVariant(undefined);
       setIsBadgeVisible(false);
+      setCurrentOrder(3);
+      setTotalOrder(5);
     };
 
     const effectiveVariant = badgeVariant
@@ -362,15 +388,17 @@ export const Interactive: Story = {
             variant={variant}
             badgeVariant={badgeVariant}
             isBadgeVisible={isBadgeVisible}
+            currentOrder={currentOrder}
+            totalOrder={totalOrder}
           />
           <p className="mt-1 text-xs text-gray-500">현재 프로그레스 바 색상: {effectiveVariant}</p>
         </div>
 
         <div className="mb-4 space-y-3">
           <div>
-            <label className="mb-1 block text-xs font-medium">
+            <div className="mb-1 block text-xs font-medium">
               Badge Variant (이 값에 따라 프로그레스 바 색상이 자동 결정됨)
-            </label>
+            </div>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -405,9 +433,9 @@ export const Interactive: Story = {
             </p>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium">
+            <div className="mb-1 block text-xs font-medium">
               Variant (badgeVariant가 undefined일 때만 적용)
-            </label>
+            </div>
             <div className="flex gap-2">
               {(["default", "error", "loading"] as const).map(v => (
                 <button
@@ -430,7 +458,7 @@ export const Interactive: Story = {
             </div>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium">Badge Visibility</label>
+            <div className="mb-1 block text-xs font-medium">Badge Visibility</div>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -451,6 +479,43 @@ export const Interactive: Story = {
                 표시
               </button>
             </div>
+          </div>
+          <div>
+            <label htmlFor="current-order" className="mb-1 block text-xs font-medium">
+              Current Order
+            </label>
+            <input
+              id="current-order"
+              type="number"
+              min="0"
+              value={currentOrder ?? ""}
+              onChange={e =>
+                setCurrentOrder(e.target.value === "" ? undefined : Number(e.target.value))
+              }
+              className="w-full rounded border border-gray-300 px-3 py-1 text-xs"
+              placeholder="현재 순서"
+            />
+          </div>
+          <div>
+            <label htmlFor="total-order" className="mb-1 block text-xs font-medium">
+              Total Order
+            </label>
+            <input
+              id="total-order"
+              type="number"
+              min="0"
+              value={totalOrder ?? ""}
+              onChange={e =>
+                setTotalOrder(e.target.value === "" ? undefined : Number(e.target.value))
+              }
+              className="w-full rounded border border-gray-300 px-3 py-1 text-xs"
+              placeholder="전체 순서"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              {badgeVariant === undefined && currentOrder !== undefined && totalOrder !== undefined
+                ? `표시: ${currentOrder} / ${totalOrder}`
+                : "variant가 없을 때만 표시됩니다"}
+            </p>
           </div>
         </div>
 
