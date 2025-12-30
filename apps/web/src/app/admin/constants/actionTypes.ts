@@ -6,6 +6,7 @@ export const ACTION_TYPE_LABELS = {
   RATING: "별점",
   IMAGE: "이미지",
   EITHER_OR: "양자택일",
+  PRIVACY_CONSENT: "개인정보 동의",
 } as const;
 
 export function getActionTypeLabel(type: string): string {
