@@ -26,6 +26,7 @@ export interface BaseActionResponse {
     title: string;
     type: ActionType;
     order: number;
+    isRequired: boolean;
     createdAt: Date;
   };
 }
