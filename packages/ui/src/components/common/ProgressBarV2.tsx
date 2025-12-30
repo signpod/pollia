@@ -12,7 +12,7 @@ type BadgeVariant = "success" | "error" | "loading";
 
 const PROGRESS_BAR_SIZES = {
   height: "h-[6px]",
-  width: "w-[120px]",
+  width: "w-[160px]",
   badgeMinHeight: "min-h-[28px]",
 } as const;
 
@@ -38,7 +38,7 @@ interface ProgressBarProps extends React.ComponentPropsWithoutRef<typeof Progres
   totalOrder?: number;
 }
 
-export function ProgressBarV2({
+function ProgressBarV2Component({
   containerClassName,
   indicatorClassName,
   badgeVariant,
@@ -49,6 +49,8 @@ export function ProgressBarV2({
   value,
   ...props
 }: ProgressBarProps) {
+  const currentValue = value ?? 0;
+
   const progressbarVariant = React.useMemo((): Variant => {
     if (badgeVariant) {
       return PROGRESSBAR_VARIANT[badgeVariant];
@@ -88,20 +90,24 @@ export function ProgressBarV2({
         )}
         {...props}
       >
-        <ProgressPrimitive.Indicator
+        <div
           className={cn(
-            "h-full w-full flex-1 transition-all rounded-xl",
+            "h-full flex-1 rounded-xl",
             indicatorClassName,
             progressbarVariant === "default" && "bg-violet-500",
             progressbarVariant === "error" && "bg-red-500",
             progressbarVariant === "loading" && "bg-zinc-300",
           )}
-          style={{ transform: `translateX(-${100 - (value ?? 0)}%)` }}
+          style={{
+            width: `${currentValue}%`,
+          }}
         />
       </ProgressPrimitive.Root>
     </div>
   );
 }
+
+export const ProgressBarV2 = React.memo(ProgressBarV2Component);
 
 interface BadgeProps {
   variant?: BadgeVariant;
@@ -149,16 +155,16 @@ function Badge({ variant, currentOrder, totalOrder }: BadgeProps) {
               exit={{ opacity: 0, y: 10 }}
               transition={{ duration: 0.2, ease: "easeInOut" }}
             >
-              <Typo.Body size="medium" className="text-info">
+              <Typo.Body size="medium" className="text-info font-extrabold">
                 {currentOrder}
               </Typo.Body>
             </motion.div>
           </AnimatePresence>
 
-          <Typo.Body size="medium" className="text-info">
+          <Typo.Body size="medium" className="text-info font-extrabold">
             /
           </Typo.Body>
-          <Typo.Body size="medium" className="text-info">
+          <Typo.Body size="medium" className="text-info font-extrabold">
             {totalOrder}
           </Typo.Body>
         </div>

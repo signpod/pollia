@@ -1,17 +1,8 @@
-import { cn } from "@/lib/utils";
-import {
-  ButtonV2,
-  FixedBottomLayout,
-  FixedTopLayout,
-  ProgressBar,
-  Typo,
-} from "@repo/ui/components";
+import { ButtonV2, FixedBottomLayout, Typo } from "@repo/ui/components";
 import { ChevronLeftIcon } from "lucide-react";
 import Image from "next/image";
 import { type PropsWithChildren, useEffect } from "react";
-
-const PROGRESS_BAR_WIDTH = "w-full";
-const PROGRESS_BAR_CONTAINER_HEIGHT = "h-[60px]";
+import { useProgressBar } from "../providers/ProgressBarProvider";
 
 interface ActionTemplateProps extends PropsWithChildren {
   currentOrder: number;
@@ -41,21 +32,15 @@ export function SurveyQuestionTemplate({
   isLoading,
 }: ActionTemplateProps) {
   const progressValue = ((currentOrder + 1) / totalActionCount) * 100 || 0;
+  const { setProgress } = useProgressBar();
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
-  }, []);
+    setProgress(progressValue, currentOrder + 1, totalActionCount);
+  }, [currentOrder, totalActionCount, progressValue, setProgress]);
 
   return (
     <FixedBottomLayout hasGradient>
-      <FixedTopLayout>
-        <FixedTopLayout.Content
-          className={cn("flex justify-center mt-3 w-full", PROGRESS_BAR_CONTAINER_HEIGHT)}
-        >
-          <ProgressBar value={progressValue} containerClassName={PROGRESS_BAR_WIDTH} />
-        </FixedTopLayout.Content>
-      </FixedTopLayout>
-
       <div className="space-y-8 px-5 pb-5 pt-9">
         {/* 질문 정보 섹션 */}
         <section className="space-y-2">
@@ -66,7 +51,7 @@ export function SurveyQuestionTemplate({
             </Typo.Body>
           )}
           {imageUrl && (
-            <figure className="relative aspect-[3/2] overflow-hidden rounded-sm">
+            <figure className="relative aspect-3/2 overflow-hidden rounded-sm">
               <Image src={imageUrl} alt={title} fill className="object-cover" />
             </figure>
           )}
