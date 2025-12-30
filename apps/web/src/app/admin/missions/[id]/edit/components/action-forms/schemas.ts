@@ -5,9 +5,13 @@ import {
   SCALE_MIN_OPTIONS,
   TAG_MAX_OPTIONS,
   TAG_MIN_OPTIONS,
-  actionDescriptionSchema,
-  actionImageUrlSchema,
-  actionTitleSchema,
+  imageInputSchema,
+  multipleChoiceInputSchema,
+  privacyConsentInputSchema,
+  ratingInputSchema,
+  scaleInputSchema,
+  subjectiveInputSchema,
+  tagInputSchema,
 } from "@/schemas/action";
 import { actionOptionSchema } from "@/schemas/action-option";
 import { z } from "zod";
@@ -26,12 +30,10 @@ const actionOptionFormSchema = actionOptionSchema.omit({ order: true }).extend({
   imageUrl: z.string().optional(),
 });
 
-export const multipleChoiceFormSchema = z
-  .object({
-    title: actionTitleSchema,
-    description: actionDescriptionSchema,
-    imageUrl: actionImageUrlSchema,
-    maxSelections: z.number().int().min(1, "최소 1개 이상 선택 가능해야 합니다."),
+export const multipleChoiceFormSchema = multipleChoiceInputSchema
+  .omit({ missionId: true, order: true, imageFileUploadId: true, isRequired: true })
+  .extend({
+    isRequired: z.boolean(),
     options: z.array(actionOptionFormSchema),
   })
   .refine(
@@ -52,11 +54,10 @@ export const multipleChoiceFormSchema = z
     path: ["maxSelections"],
   });
 
-export const scaleFormSchema = z
-  .object({
-    title: actionTitleSchema,
-    description: actionDescriptionSchema,
-    imageUrl: actionImageUrlSchema,
+export const scaleFormSchema = scaleInputSchema
+  .omit({ missionId: true, order: true, imageFileUploadId: true, isRequired: true })
+  .extend({
+    isRequired: z.boolean(),
     options: z.array(actionOptionFormSchema),
   })
   .refine(
@@ -71,12 +72,10 @@ export const scaleFormSchema = z
     path: ["options"],
   });
 
-export const tagFormSchema = z
-  .object({
-    title: actionTitleSchema,
-    description: actionDescriptionSchema,
-    imageUrl: actionImageUrlSchema,
-    maxSelections: z.number().int().min(1, "최소 1개 이상 선택 가능해야 합니다."),
+export const tagFormSchema = tagInputSchema
+  .omit({ missionId: true, order: true, imageFileUploadId: true, isRequired: true })
+  .extend({
+    isRequired: z.boolean(),
     options: z.array(actionOptionFormSchema),
   })
   .refine(
@@ -90,18 +89,59 @@ export const tagFormSchema = z
     message: "모든 태그에 제목을 입력해주세요.",
     path: ["options"],
   })
-  .refine(data => data.maxSelections <= data.options.length, {
+  .refine(data => !data.maxSelections || data.maxSelections <= data.options.length, {
     message: "선택 가능 개수는 태그 개수를 초과할 수 없습니다.",
     path: ["maxSelections"],
   });
 
-export const subjectiveFormSchema = z.object({
-  title: actionTitleSchema,
-  description: actionDescriptionSchema,
-  imageUrl: actionImageUrlSchema,
-});
+export const subjectiveFormSchema = subjectiveInputSchema
+  .omit({
+    missionId: true,
+    order: true,
+    imageFileUploadId: true,
+    isRequired: true,
+  })
+  .extend({
+    isRequired: z.boolean(),
+  });
+
+export const ratingFormSchema = ratingInputSchema
+  .omit({
+    missionId: true,
+    order: true,
+    imageFileUploadId: true,
+    isRequired: true,
+  })
+  .extend({
+    isRequired: z.boolean(),
+  });
+
+export const imageUploadFormSchema = imageInputSchema
+  .omit({
+    missionId: true,
+    order: true,
+    imageFileUploadId: true,
+    isRequired: true,
+  })
+  .extend({
+    isRequired: z.boolean(),
+  });
+
+export const privacyConsentFormSchema = privacyConsentInputSchema
+  .omit({
+    missionId: true,
+    order: true,
+    imageFileUploadId: true,
+    isRequired: true,
+  })
+  .extend({
+    isRequired: z.boolean(),
+  });
 
 export type MultipleChoiceFormInput = z.infer<typeof multipleChoiceFormSchema>;
 export type ScaleFormInput = z.infer<typeof scaleFormSchema>;
 export type SubjectiveFormInput = z.infer<typeof subjectiveFormSchema>;
 export type TagFormInput = z.infer<typeof tagFormSchema>;
+export type RatingFormInput = z.infer<typeof ratingFormSchema>;
+export type ImageUploadFormInput = z.infer<typeof imageUploadFormSchema>;
+export type PrivacyConsentFormInput = z.infer<typeof privacyConsentFormSchema>;

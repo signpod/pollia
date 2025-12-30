@@ -278,6 +278,7 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
       description: data.description,
       imageUrl: data.imageUrl,
       imageFileUploadId: data.imageFileUploadId,
+      isRequired: data.isRequired,
       order: nextOrder,
       options:
         "options" in data
@@ -392,6 +393,7 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
             description: data.description,
             imageUrl: data.imageUrl,
             imageFileUploadId: data.imageFileUploadId,
+            isRequired: data.isRequired,
             maxSelections: "maxSelections" in data ? data.maxSelections : undefined,
             options:
               "options" in data

@@ -21,6 +21,7 @@ interface UpdateActionInput {
   imageFileUploadId?: string;
   order?: number;
   maxSelections?: number;
+  isRequired?: boolean;
   options?: UpdateActionOptionInput[];
 }
 
@@ -41,6 +42,7 @@ export function useUpdateAction(options: UseUpdateActionOptions = {}) {
         imageFileUploadId: input.imageFileUploadId,
         order: input.order,
         maxSelections: input.maxSelections,
+        isRequired: input.isRequired,
         options: input.options,
       });
     },

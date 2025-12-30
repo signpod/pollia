@@ -31,6 +31,7 @@ export function ScaleForm({
       title: initialData?.title || "",
       description: initialData?.description || "",
       imageUrl: initialData?.imageUrl,
+      isRequired: initialData?.isRequired ?? true,
       options:
         initialData?.options?.map(opt => ({
           id: crypto.randomUUID(),
@@ -66,6 +67,7 @@ export function ScaleForm({
       imageUrl: data.imageUrl || undefined,
       imageFileUploadId: mainImage.uploadedData?.fileUploadId,
       options: formattedOptions,
+      isRequired: data.isRequired,
     });
   });
 

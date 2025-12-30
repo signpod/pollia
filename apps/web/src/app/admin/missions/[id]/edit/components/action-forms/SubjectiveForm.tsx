@@ -23,6 +23,7 @@ export function SubjectiveForm({
       title: initialData?.title || "",
       description: initialData?.description || "",
       imageUrl: initialData?.imageUrl,
+      isRequired: initialData?.isRequired ?? true,
     },
     mode: "onChange",
   });
@@ -41,6 +42,7 @@ export function SubjectiveForm({
       description: data.description,
       imageUrl: data.imageUrl || undefined,
       imageFileUploadId: mainImage.uploadedData?.fileUploadId,
+      isRequired: data.isRequired,
     });
   });
 

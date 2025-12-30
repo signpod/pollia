@@ -91,6 +91,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
             maxSelections: action.maxSelections ?? 1,
             options: mapOptions(action.options),
           }}
@@ -106,6 +107,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
             options: mapOptions(action.options),
           }}
         />
@@ -120,6 +122,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
           }}
         />
       );
@@ -133,6 +136,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
             maxSelections: action.maxSelections ?? 1,
             options: mapOptions(action.options),
           }}
@@ -148,6 +152,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
           }}
         />
       );
@@ -161,6 +166,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
           }}
         />
       );
