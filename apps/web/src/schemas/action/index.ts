@@ -22,6 +22,8 @@ export {
   ratingInputSchema,
   imageInputSchema,
   privacyConsentInputSchema,
+  dateInputSchema,
+  timeInputSchema,
   actionUpdateSchema,
   type MultipleChoiceInput,
   type ScaleInput,
@@ -31,5 +33,7 @@ export {
   type RatingInput,
   type ImageInput,
   type PrivacyConsentInput,
+  type DateInput,
+  type TimeInput,
   type ActionUpdate,
 } from "./actionSchema";
