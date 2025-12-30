@@ -3,6 +3,7 @@ import {
   eitherOrInputSchema,
   imageInputSchema,
   multipleChoiceInputSchema,
+  privacyConsentInputSchema,
   ratingInputSchema,
   scaleInputSchema,
   subjectiveInputSchema,
@@ -16,6 +17,7 @@ import type {
   CreateEitherOrInput,
   CreateImageInput,
   CreateMultipleChoiceInput,
+  CreatePrivacyConsentInput,
   CreateRatingInput,
   CreateScaleInput,
   CreateSubjectiveInput,
@@ -357,6 +359,46 @@ export class ActionService {
         imageUrl: result.data.imageUrl,
         imageFileUploadId: result.data.imageFileUploadId,
         type: ActionType.IMAGE,
+        order: result.data.order,
+        isRequired: result.data.isRequired,
+      },
+      userId,
+    );
+
+    return {
+      id: action.id,
+      missionId: action.missionId || "",
+      title: action.title,
+      type: action.type,
+      order: action.order,
+      isRequired: action.isRequired,
+      createdAt: action.createdAt,
+    };
+  }
+
+  async createPrivacyConsentAction(
+    input: CreatePrivacyConsentInput,
+    userId: string,
+  ): Promise<ActionCreatedResult> {
+    const result = privacyConsentInputSchema.safeParse(input);
+    if (!result.success) {
+      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
+      error.cause = 400;
+      throw error;
+    }
+
+    if (result.data.missionId) {
+      await this.verifyMissionAccess(result.data.missionId, userId);
+    }
+
+    const action = await this.actionRepo.create(
+      {
+        missionId: result.data.missionId,
+        title: result.data.title,
+        description: result.data.description,
+        imageUrl: result.data.imageUrl,
+        imageFileUploadId: result.data.imageFileUploadId,
+        type: ActionType.PRIVACY_CONSENT,
         order: result.data.order,
         isRequired: result.data.isRequired,
       },
