@@ -107,6 +107,7 @@ export class ActionService {
         type: ActionType.MULTIPLE_CHOICE,
         order: result.data.order,
         maxSelections: result.data.maxSelections,
+        isRequired: result.data.isRequired,
       },
       result.data.options.map(opt => ({
         title: opt.title,
@@ -124,6 +125,7 @@ export class ActionService {
       title: action.title,
       type: action.type,
       order: action.order,
+      isRequired: action.isRequired,
       createdAt: action.createdAt,
     };
   }
@@ -150,6 +152,7 @@ export class ActionService {
         imageFileUploadId: validated.imageFileUploadId,
         type: ActionType.SCALE,
         order: validated.order,
+        isRequired: validated.isRequired,
       },
       validated.options.map(opt => ({
         title: opt.title,
@@ -167,6 +170,7 @@ export class ActionService {
       title: action.title,
       type: action.type,
       order: action.order,
+      isRequired: action.isRequired,
       createdAt: action.createdAt,
     };
   }
@@ -195,6 +199,7 @@ export class ActionService {
         imageFileUploadId: result.data.imageFileUploadId,
         type: ActionType.SUBJECTIVE,
         order: result.data.order,
+        isRequired: result.data.isRequired,
       },
       userId,
     );
@@ -205,6 +210,7 @@ export class ActionService {
       title: action.title,
       type: action.type,
       order: action.order,
+      isRequired: action.isRequired,
       createdAt: action.createdAt,
     };
   }
@@ -233,6 +239,7 @@ export class ActionService {
         imageFileUploadId: result.data.imageFileUploadId,
         type: ActionType.MULTIPLE_CHOICE,
         order: result.data.order,
+        isRequired: result.data.isRequired,
       },
       userId,
     );
@@ -243,6 +250,7 @@ export class ActionService {
       title: action.title,
       type: action.type,
       order: action.order,
+      isRequired: action.isRequired,
       createdAt: action.createdAt,
     };
   }
@@ -269,6 +277,7 @@ export class ActionService {
         type: ActionType.TAG,
         order: result.data.order,
         maxSelections: result.data.maxSelections ?? undefined,
+        isRequired: result.data.isRequired,
       },
       result.data.options.map(opt => ({
         title: opt.title,
@@ -286,6 +295,7 @@ export class ActionService {
       title: action.title,
       type: action.type,
       order: action.order,
+      isRequired: action.isRequired,
       createdAt: action.createdAt,
     };
   }
@@ -311,6 +321,7 @@ export class ActionService {
         imageFileUploadId: result.data.imageFileUploadId,
         type: ActionType.RATING,
         order: result.data.order,
+        isRequired: result.data.isRequired,
       },
       userId,
     );
@@ -321,6 +332,7 @@ export class ActionService {
       title: action.title,
       type: action.type,
       order: action.order,
+      isRequired: action.isRequired,
       createdAt: action.createdAt,
     };
   }
@@ -346,6 +358,7 @@ export class ActionService {
         imageFileUploadId: result.data.imageFileUploadId,
         type: ActionType.IMAGE,
         order: result.data.order,
+        isRequired: result.data.isRequired,
       },
       userId,
     );
@@ -356,6 +369,7 @@ export class ActionService {
       title: action.title,
       type: action.type,
       order: action.order,
+      isRequired: action.isRequired,
       createdAt: action.createdAt,
     };
   }

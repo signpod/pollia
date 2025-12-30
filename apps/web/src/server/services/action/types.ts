@@ -1,4 +1,4 @@
-import type { ActionType, Prisma } from "@prisma/client";
+import type { Action, ActionType, Prisma } from "@prisma/client";
 
 type BaseActionInput = Omit<
   Prisma.ActionUncheckedCreateInput,
@@ -49,11 +49,7 @@ export interface GetActionsOptions {
   limit?: number;
 }
 
-export interface ActionCreatedResult {
-  id: string;
-  missionId: string;
-  title: string;
-  type: ActionType;
-  order: number;
-  createdAt: Date;
-}
+export type ActionCreatedResult = Pick<
+  Action,
+  "id" | "missionId" | "title" | "type" | "order" | "isRequired" | "createdAt"
+>;
