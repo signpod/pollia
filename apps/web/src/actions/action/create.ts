@@ -29,8 +29,7 @@ async function createActionHandler<TRequest, TResponse extends BaseActionRespons
   try {
     const user = await requireAuth();
     const action = await serviceMethod(request, user.id);
-    const data = { ...action, surveyId: action.missionId };
-    return { data } as unknown as TResponse;
+    return { data: action } as unknown as TResponse;
   } catch (error) {
     console.error(`${errorMessage} error:`, error);
     if (error instanceof Error && error.cause) {

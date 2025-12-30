@@ -1,7 +1,7 @@
 import type { ActionAnswer } from "../action-answer";
 
 export interface StartMissionResponseRequest {
-  surveyId: string;
+  missionId: string;
 }
 
 export interface CompleteMissionResponseRequest {
@@ -11,7 +11,7 @@ export interface CompleteMissionResponseRequest {
 export interface StartMissionResponseResponse {
   data: {
     id: string;
-    surveyId: string;
+    missionId: string;
     userId: string;
     startedAt: Date;
     completedAt: Date | null;
@@ -22,7 +22,7 @@ export interface StartMissionResponseResponse {
 export interface CompleteMissionResponseResponse {
   data: {
     id: string;
-    surveyId: string;
+    missionId: string;
     userId: string;
     startedAt: Date;
     completedAt: Date | null;
@@ -33,7 +33,7 @@ export interface CompleteMissionResponseResponse {
 export interface GetMissionResponseResponse {
   data: {
     id: string;
-    surveyId: string;
+    missionId: string;
     userId: string;
     startedAt: Date;
     completedAt: Date | null;
@@ -46,7 +46,7 @@ export interface GetMissionResponseResponse {
 export interface GetMyMissionResponsesResponse {
   data: Array<{
     id: string;
-    surveyId: string;
+    missionId: string;
     userId: string;
     startedAt: Date;
     completedAt: Date | null;
@@ -57,7 +57,7 @@ export interface GetMyMissionResponsesResponse {
 export interface GetMissionResponsesResponse {
   data: Array<{
     id: string;
-    surveyId: string;
+    missionId: string;
     userId: string;
     startedAt: Date;
     completedAt: Date | null;

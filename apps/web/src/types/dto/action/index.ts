@@ -132,7 +132,7 @@ export interface ActionDetail {
   order: number;
   maxSelections: number | null;
   isRequired: boolean;
-  surveyId: string | null;
+  missionId: string | null;
   options: Pick<ActionOption, "id" | "title" | "description" | "imageUrl" | "order">[];
   createdAt: Date;
   updatedAt: Date;

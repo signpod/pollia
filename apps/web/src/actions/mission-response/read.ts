@@ -13,8 +13,7 @@ export async function getMissionResponse(responseId: string): Promise<GetMission
   try {
     const user = await requireAuth();
     const response = await missionResponseService.getResponseById(responseId, user.id);
-    const data = { ...response, surveyId: response.missionId };
-    return { data };
+    return { data: response };
   } catch (error) {
     console.error("getMissionResponse error:", error);
     if (error instanceof Error && error.cause) {
@@ -35,8 +34,7 @@ export async function getMyResponseForMission(
     if (!response) {
       return { data: null };
     }
-    const data = { ...response, surveyId: response.missionId };
-    return { data };
+    return { data: response };
   } catch (error) {
     console.error("getMyResponseForMission error:", error);
     if (error instanceof Error && error.cause) {
@@ -52,8 +50,7 @@ export async function getMyResponses(): Promise<GetMyMissionResponsesResponse> {
   try {
     const user = await requireAuth();
     const responses = await missionResponseService.getUserResponses(user.id);
-    const data = responses.map(response => ({ ...response, surveyId: response.missionId }));
-    return { data };
+    return { data: responses };
   } catch (error) {
     console.error("getMyResponses error:", error);
     if (error instanceof Error && error.cause) {
@@ -69,8 +66,7 @@ export async function getMissionResponses(missionId: string): Promise<GetMission
   try {
     const user = await requireAuth();
     const responses = await missionResponseService.getMissionResponses(missionId, user.id);
-    const data = responses.map(response => ({ ...response, surveyId: response.missionId }));
-    return { data };
+    return { data: responses };
   } catch (error) {
     console.error("getMissionResponses error:", error);
     if (error instanceof Error && error.cause) {
