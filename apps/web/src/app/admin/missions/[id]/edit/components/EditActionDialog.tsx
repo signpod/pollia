@@ -172,6 +172,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
             isRequired: action.isRequired,
+            maxSelections: action.maxSelections ?? undefined,
           }}
         />
       );

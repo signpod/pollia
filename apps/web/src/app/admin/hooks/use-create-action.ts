@@ -160,6 +160,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
             isRequired: input.isRequired,
+            maxSelections: input.maxSelections,
           };
           return await createImageAction(request);
         }

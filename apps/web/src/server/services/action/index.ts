@@ -63,6 +63,7 @@ export class ActionService {
       imageFileUploadId?: string;
       order: number;
       isRequired?: boolean;
+      maxSelections?: number;
     };
 
     if (validated.missionId) {
@@ -78,7 +79,7 @@ export class ActionService {
         imageFileUploadId: validated.imageFileUploadId,
         type,
         order: validated.order,
-        maxSelections,
+        maxSelections: maxSelections ?? validated.maxSelections,
         isRequired: validated.isRequired,
       },
       userId,
