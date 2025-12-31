@@ -26,7 +26,7 @@ export function ImageList({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="border-t-2 border-zinc-50 -mx-5" />
+      <div className="border-t-2 border-divider-default -mx-5" />
       <div className="flex w-full justify-end items-center gap-2">
         <Typo.SubTitle size="large" className={cn(imageUrls.length > 0 && "text-point")}>
           {imageUrls.length}
@@ -57,4 +57,3 @@ export function ImageList({
     </div>
   );
 }
-
