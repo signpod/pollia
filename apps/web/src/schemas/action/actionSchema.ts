@@ -105,7 +105,13 @@ export const tagInputSchema = baseActionSchema
 
 export const ratingInputSchema = baseActionSchema;
 
-export const imageInputSchema = baseActionSchema;
+export const imageInputSchema = baseActionSchema.extend({
+  maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다.").optional(),
+});
+
+export const pdfInputSchema = baseActionSchema;
+
+export const videoInputSchema = baseActionSchema;
 
 export const privacyConsentInputSchema = baseActionSchema;
 
@@ -139,6 +145,8 @@ export type EitherOrInput = z.infer<typeof eitherOrInputSchema>;
 export type TagInput = z.infer<typeof tagInputSchema>;
 export type RatingInput = z.infer<typeof ratingInputSchema>;
 export type ImageInput = z.infer<typeof imageInputSchema>;
+export type PdfInput = z.infer<typeof pdfInputSchema>;
+export type VideoInput = z.infer<typeof videoInputSchema>;
 export type PrivacyConsentInput = z.infer<typeof privacyConsentInputSchema>;
 export type DateInput = z.infer<typeof dateInputSchema>;
 export type TimeInput = z.infer<typeof timeInputSchema>;
