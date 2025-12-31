@@ -26,7 +26,7 @@ export function MediaUploadArea({
   const IconComponent = icon === "video" ? VideoIcon : ImageIcon;
 
   return (
-    <div className="flex flex-col gap-2 w-full relative rounded-sm overflow-hidden min-h-[144px]">
+    <div className="flex flex-col gap-2 w-full relative rounded-sm overflow-hidden min-h-[96px]">
       <input
         ref={inputRef}
         type="file"
@@ -44,7 +44,7 @@ export function MediaUploadArea({
         type="button"
         disabled={isUploading}
         className={cn(
-          "absolute inset-0 flex flex-col items-center justify-center gap-3 border border-dashed bg-white border-zinc-300 rounded-sm w-full",
+          "absolute inset-0 flex items-center justify-center gap-3 border border-dashed bg-white border-zinc-300 rounded-sm w-full",
           "hover:bg-zinc-50 active:bg-zinc-100",
           "transition-colors duration-200 ease-in-out",
           "touch-manipulation",
@@ -62,4 +62,3 @@ export function MediaUploadArea({
     </div>
   );
 }
-
