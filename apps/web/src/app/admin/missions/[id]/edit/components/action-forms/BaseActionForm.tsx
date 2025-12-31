@@ -4,7 +4,6 @@ import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
 import { CharacterCounter } from "@/app/admin/components/common/InputField";
 import {
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -127,11 +126,8 @@ export function BaseActionFormFields<TFieldValues extends FieldValues>({
         control={control}
         name={"isRequired" as Path<TFieldValues>}
         render={({ field }) => (
-          <FormItem className="flex items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5">
-              <FormLabel className="text-base">필수 응답</FormLabel>
-              <FormDescription>활성화 시 사용자가 반드시 응답해야 합니다.</FormDescription>
-            </div>
+          <FormItem>
+            <FormLabel>필수 응답</FormLabel>
             <FormControl>
               <Switch checked={field.value} onCheckedChange={field.onChange} disabled={isLoading} />
             </FormControl>
