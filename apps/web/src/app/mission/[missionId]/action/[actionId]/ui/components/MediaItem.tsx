@@ -1,8 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ButtonV2 } from "@repo/ui/components";
-import { Loader2Icon, Trash2 } from "lucide-react";
+import { Loader2Icon, XIcon } from "lucide-react";
 import Image from "next/image";
 
 interface MediaItemProps {
@@ -51,13 +50,13 @@ export function MediaItem({
         </div>
       )}
       {!isUploading && (
-        <ButtonV2
-          variant="secondary"
-          className="absolute top-2 right-2 size-9 ring-0 z-20"
+        <button
+          type="button"
+          className="absolute top-0 right-0 size-9 flex items-center justify-center bg-black/30"
           onClick={() => onDelete(mediaUrl)}
         >
-          <Trash2 className="size-4" />
-        </ButtonV2>
+          <XIcon className="size-4 text-white" />
+        </button>
       )}
     </div>
   );
