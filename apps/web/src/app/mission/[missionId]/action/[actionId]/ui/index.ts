@@ -4,6 +4,7 @@ export * from "./StarScale";
 export * from "./Subjective";
 export * from "./Image";
 export * from "./ImageUpload";
+export * from "./Video";
 export * from "./Url";
 export * from "./Tag";
 export * from "./Chip";

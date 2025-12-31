@@ -42,6 +42,11 @@ export type ActionAnswerItem =
     }
   | {
       actionId: string;
+      type: typeof ActionType.VIDEO;
+      fileUploadIds: string[];
+    }
+  | {
+      actionId: string;
       type: typeof ActionType.TAG;
       isRequired: boolean;
       selectedOptionIds: string[];
