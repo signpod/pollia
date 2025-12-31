@@ -19,6 +19,7 @@ export type ActionAnswerItem =
   | {
       actionId: string;
       type: typeof ActionType.URL;
+      isRequired: boolean;
       textAnswer: string;
     }
   | {

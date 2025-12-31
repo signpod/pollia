@@ -74,6 +74,7 @@ export function ActionUrl({
       const answer: ActionAnswerItem = {
         actionId: actionData.id,
         type: ActionType.URL,
+        isRequired: actionData.isRequired,
         textAnswer: trimmedUrl,
       };
 
