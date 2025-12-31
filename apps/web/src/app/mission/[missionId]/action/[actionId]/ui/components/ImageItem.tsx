@@ -13,7 +13,7 @@ interface ImageItemProps {
 
 export function ImageItem({ imageUrl, isUploading, onDelete, onLoadComplete }: ImageItemProps) {
   return (
-    <div className="relative w-full aspect-square rounded-sm overflow-hidden">
+    <div className="relative w-full aspect-square rounded-sm overflow-hidden bg-black">
       {isUploading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/40 z-30">
           <Loader2Icon className="size-8 animate-spin text-white" />
@@ -22,7 +22,7 @@ export function ImageItem({ imageUrl, isUploading, onDelete, onLoadComplete }: I
       {!isUploading && (
         <ButtonV2
           variant="secondary"
-          className="absolute top-2 right-2 size-9 border-none"
+          className="absolute top-2 right-2 size-9 ring-0"
           onClick={() => onDelete(imageUrl)}
         >
           <Trash2 className="size-4" />
@@ -39,4 +39,3 @@ export function ImageItem({ imageUrl, isUploading, onDelete, onLoadComplete }: I
     </div>
   );
 }
-
