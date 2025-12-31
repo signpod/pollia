@@ -2,6 +2,8 @@ import { ActionType } from "@prisma/client";
 import {
   type ActionServiceTestContext,
   createActionServiceTestContext,
+  createMockActionResponse,
+  expectServiceErrorWithCause,
   mockMissionFactory,
 } from "../testUtils";
 
@@ -45,20 +47,7 @@ describe("ActionService - Create", () => {
           },
         ],
       };
-      const mockCreatedAction = {
-        id: "action1",
-        missionId: "mission1",
-        title: request.title,
-        type: ActionType.MULTIPLE_CHOICE,
-        order: request.order,
-        maxSelections: request.maxSelections,
-        description: request.description,
-        imageUrl: null,
-        isRequired: false,
-        imageFileUploadId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      const mockCreatedAction = createMockActionResponse(request, ActionType.MULTIPLE_CHOICE);
 
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockActionRepo.createMultipleChoice.mockResolvedValue(mockCreatedAction);
@@ -111,20 +100,7 @@ describe("ActionService - Create", () => {
           { title: "파랑", order: 1 },
         ],
       };
-      const mockCreatedAction = {
-        id: "action1",
-        missionId: "mission1",
-        title: request.title,
-        type: ActionType.MULTIPLE_CHOICE,
-        order: request.order,
-        maxSelections: request.maxSelections,
-        description: null,
-        imageUrl: null,
-        isRequired: false,
-        imageFileUploadId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      const mockCreatedAction = createMockActionResponse(request, ActionType.MULTIPLE_CHOICE);
 
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockActionRepo.createMultipleChoice.mockResolvedValue(mockCreatedAction);
@@ -157,20 +133,7 @@ describe("ActionService - Create", () => {
           { title: "파랑", order: 1 },
         ],
       };
-      const mockCreatedAction = {
-        id: "action1",
-        missionId: "mission1",
-        title: request.title,
-        type: ActionType.MULTIPLE_CHOICE,
-        order: request.order,
-        maxSelections: request.maxSelections,
-        description: null,
-        imageUrl: null,
-        isRequired: true,
-        imageFileUploadId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      const mockCreatedAction = createMockActionResponse(request, ActionType.MULTIPLE_CHOICE);
 
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockActionRepo.createMultipleChoice.mockResolvedValue(mockCreatedAction);
@@ -200,15 +163,11 @@ describe("ActionService - Create", () => {
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
 
       // When & Then
-      await expect(ctx.service.createMultipleChoiceAction(request, "user2")).rejects.toThrow(
+      await expectServiceErrorWithCause(
+        ctx.service.createMultipleChoiceAction(request, "user2"),
         "액션을 추가할 권한이 없습니다.",
+        403,
       );
-
-      try {
-        await ctx.service.createMultipleChoiceAction(request, "user2");
-      } catch (error) {
-        expect(error instanceof Error && error.cause).toBe(403);
-      }
 
       expect(ctx.mockActionRepo.createMultipleChoice).not.toHaveBeenCalled();
     });
@@ -247,15 +206,11 @@ describe("ActionService - Create", () => {
       };
 
       // When & Then
-      await expect(ctx.service.createMultipleChoiceAction(request, "user1")).rejects.toThrow(
+      await expectServiceErrorWithCause(
+        ctx.service.createMultipleChoiceAction(request, "user1"),
         "최소 2개 이상의 항목이 필요합니다.",
+        400,
       );
-
-      try {
-        await ctx.service.createMultipleChoiceAction(request, "user1");
-      } catch (error) {
-        expect(error instanceof Error && error.cause).toBe(400);
-      }
 
       expect(ctx.mockActionRepo.createMultipleChoice).not.toHaveBeenCalled();
     });
@@ -329,20 +284,7 @@ describe("ActionService - Create", () => {
           },
         ],
       };
-      const mockCreatedAction = {
-        id: "action1",
-        missionId: "mission1",
-        title: request.title,
-        type: ActionType.SCALE,
-        order: request.order,
-        maxSelections: null,
-        description: request.description,
-        imageUrl: null,
-        isRequired: false,
-        imageFileUploadId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      const mockCreatedAction = createMockActionResponse(request, ActionType.SCALE);
 
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockActionRepo.createMultipleChoice.mockResolvedValue(mockCreatedAction);
@@ -397,15 +339,11 @@ describe("ActionService - Create", () => {
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
 
       // When & Then
-      await expect(ctx.service.createScaleAction(request, "user2")).rejects.toThrow(
+      await expectServiceErrorWithCause(
+        ctx.service.createScaleAction(request, "user2"),
         "액션을 추가할 권한이 없습니다.",
+        403,
       );
-
-      try {
-        await ctx.service.createScaleAction(request, "user2");
-      } catch (error) {
-        expect(error instanceof Error && error.cause).toBe(403);
-      }
 
       expect(ctx.mockActionRepo.createMultipleChoice).not.toHaveBeenCalled();
     });
@@ -427,15 +365,11 @@ describe("ActionService - Create", () => {
       ctx.mockMissionRepo.findById.mockResolvedValue(null);
 
       // When & Then
-      await expect(ctx.service.createScaleAction(request, "user1")).rejects.toThrow(
+      await expectServiceErrorWithCause(
+        ctx.service.createScaleAction(request, "user1"),
         "존재하지 않는 미션입니다.",
+        404,
       );
-
-      try {
-        await ctx.service.createScaleAction(request, "user1");
-      } catch (error) {
-        expect(error instanceof Error && error.cause).toBe(404);
-      }
 
       expect(ctx.mockActionRepo.createMultipleChoice).not.toHaveBeenCalled();
     });
@@ -454,15 +388,11 @@ describe("ActionService - Create", () => {
       };
 
       // When & Then
-      await expect(ctx.service.createScaleAction(request, "user1")).rejects.toThrow(
+      await expectServiceErrorWithCause(
+        ctx.service.createScaleAction(request, "user1"),
         "최소 3개 이상의 항목이 필요합니다.",
+        400,
       );
-
-      try {
-        await ctx.service.createScaleAction(request, "user1");
-      } catch (error) {
-        expect(error instanceof Error && error.cause).toBe(400);
-      }
 
       expect(ctx.mockActionRepo.createMultipleChoice).not.toHaveBeenCalled();
     });
@@ -480,20 +410,7 @@ describe("ActionService - Create", () => {
         order: 0,
         isRequired: true,
       };
-      const mockCreatedAction = {
-        id: "action1",
-        missionId: "mission1",
-        title: request.title,
-        type: ActionType.SUBJECTIVE,
-        order: request.order,
-        maxSelections: null,
-        description: request.description,
-        imageUrl: null,
-        isRequired: false,
-        imageFileUploadId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      const mockCreatedAction = createMockActionResponse(request, ActionType.SUBJECTIVE);
 
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockActionRepo.create.mockResolvedValue(mockCreatedAction);
@@ -536,15 +453,11 @@ describe("ActionService - Create", () => {
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
 
       // When & Then
-      await expect(ctx.service.createSubjectiveAction(request, "user2")).rejects.toThrow(
+      await expectServiceErrorWithCause(
+        ctx.service.createSubjectiveAction(request, "user2"),
         "액션을 추가할 권한이 없습니다.",
+        403,
       );
-
-      try {
-        await ctx.service.createSubjectiveAction(request, "user2");
-      } catch (error) {
-        expect(error instanceof Error && error.cause).toBe(403);
-      }
 
       expect(ctx.mockActionRepo.create).not.toHaveBeenCalled();
     });
@@ -561,15 +474,11 @@ describe("ActionService - Create", () => {
       ctx.mockMissionRepo.findById.mockResolvedValue(null);
 
       // When & Then
-      await expect(ctx.service.createSubjectiveAction(request, "user1")).rejects.toThrow(
+      await expectServiceErrorWithCause(
+        ctx.service.createSubjectiveAction(request, "user1"),
         "존재하지 않는 미션입니다.",
+        404,
       );
-
-      try {
-        await ctx.service.createSubjectiveAction(request, "user1");
-      } catch (error) {
-        expect(error instanceof Error && error.cause).toBe(404);
-      }
 
       expect(ctx.mockActionRepo.create).not.toHaveBeenCalled();
     });
@@ -587,20 +496,7 @@ describe("ActionService - Create", () => {
         order: 0,
         isRequired: true,
       };
-      const mockCreatedAction = {
-        id: "action1",
-        missionId: "mission1",
-        title: request.title,
-        type: ActionType.PRIVACY_CONSENT,
-        order: request.order,
-        maxSelections: null,
-        description: request.description,
-        imageUrl: null,
-        isRequired: true,
-        imageFileUploadId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      const mockCreatedAction = createMockActionResponse(request, ActionType.PRIVACY_CONSENT);
 
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockActionRepo.create.mockResolvedValue(mockCreatedAction);
@@ -644,15 +540,11 @@ describe("ActionService - Create", () => {
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
 
       // When & Then
-      await expect(ctx.service.createPrivacyConsentAction(request, "user2")).rejects.toThrow(
+      await expectServiceErrorWithCause(
+        ctx.service.createPrivacyConsentAction(request, "user2"),
         "액션을 추가할 권한이 없습니다.",
+        403,
       );
-
-      try {
-        await ctx.service.createPrivacyConsentAction(request, "user2");
-      } catch (error) {
-        expect(error instanceof Error && error.cause).toBe(403);
-      }
 
       expect(ctx.mockActionRepo.create).not.toHaveBeenCalled();
     });
@@ -669,15 +561,11 @@ describe("ActionService - Create", () => {
       ctx.mockMissionRepo.findById.mockResolvedValue(null);
 
       // When & Then
-      await expect(ctx.service.createPrivacyConsentAction(request, "user1")).rejects.toThrow(
+      await expectServiceErrorWithCause(
+        ctx.service.createPrivacyConsentAction(request, "user1"),
         "존재하지 않는 미션입니다.",
+        404,
       );
-
-      try {
-        await ctx.service.createPrivacyConsentAction(request, "user1");
-      } catch (error) {
-        expect(error instanceof Error && error.cause).toBe(404);
-      }
 
       expect(ctx.mockActionRepo.create).not.toHaveBeenCalled();
     });
@@ -691,20 +579,9 @@ describe("ActionService - Create", () => {
         order: 0,
         isRequired: true,
       };
-      const mockCreatedAction = {
-        id: "action1",
+      const mockCreatedAction = createMockActionResponse(request, ActionType.MULTIPLE_CHOICE, {
         missionId: null,
-        title: request.title,
-        type: ActionType.MULTIPLE_CHOICE,
-        order: request.order,
-        maxSelections: null,
-        description: null,
-        imageUrl: null,
-        isRequired: false,
-        imageFileUploadId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      });
 
       ctx.mockActionRepo.create.mockResolvedValue(mockCreatedAction);
 
@@ -729,20 +606,7 @@ describe("ActionService - Create", () => {
         order: 0,
         isRequired: true,
       };
-      const mockCreatedAction = {
-        id: "action1",
-        missionId: "mission1",
-        title: request.title,
-        type: ActionType.MULTIPLE_CHOICE,
-        order: request.order,
-        maxSelections: null,
-        description: null,
-        imageUrl: null,
-        isRequired: false,
-        imageFileUploadId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      const mockCreatedAction = createMockActionResponse(request, ActionType.MULTIPLE_CHOICE);
 
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockActionRepo.create.mockResolvedValue(mockCreatedAction);
@@ -773,15 +637,11 @@ describe("ActionService - Create", () => {
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
 
       // When & Then
-      await expect(ctx.service.createEitherOrAction(request, "user2")).rejects.toThrow(
+      await expectServiceErrorWithCause(
+        ctx.service.createEitherOrAction(request, "user2"),
         "액션을 추가할 권한이 없습니다.",
+        403,
       );
-
-      try {
-        await ctx.service.createEitherOrAction(request, "user2");
-      } catch (error) {
-        expect(error instanceof Error && error.cause).toBe(403);
-      }
 
       expect(ctx.mockActionRepo.create).not.toHaveBeenCalled();
     });
@@ -798,15 +658,11 @@ describe("ActionService - Create", () => {
       ctx.mockMissionRepo.findById.mockResolvedValue(null);
 
       // When & Then
-      await expect(ctx.service.createEitherOrAction(request, "user1")).rejects.toThrow(
+      await expectServiceErrorWithCause(
+        ctx.service.createEitherOrAction(request, "user1"),
         "존재하지 않는 미션입니다.",
+        404,
       );
-
-      try {
-        await ctx.service.createEitherOrAction(request, "user1");
-      } catch (error) {
-        expect(error instanceof Error && error.cause).toBe(404);
-      }
 
       expect(ctx.mockActionRepo.create).not.toHaveBeenCalled();
     });
@@ -841,20 +697,7 @@ describe("ActionService - Create", () => {
         maxSelections: 3,
         isRequired: true,
       };
-      const mockCreatedAction = {
-        id: "action1",
-        missionId: "mission1",
-        title: request.title,
-        type: ActionType.DATE,
-        order: request.order,
-        maxSelections: request.maxSelections,
-        description: request.description,
-        imageUrl: null,
-        isRequired: true,
-        imageFileUploadId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      const mockCreatedAction = createMockActionResponse(request, ActionType.DATE);
 
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockActionRepo.create.mockResolvedValue(mockCreatedAction);
@@ -895,20 +738,7 @@ describe("ActionService - Create", () => {
         maxSelections: 1,
         isRequired: false,
       };
-      const mockCreatedAction = {
-        id: "action1",
-        missionId: "mission1",
-        title: request.title,
-        type: ActionType.DATE,
-        order: request.order,
-        maxSelections: request.maxSelections,
-        description: null,
-        imageUrl: null,
-        isRequired: false,
-        imageFileUploadId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      const mockCreatedAction = createMockActionResponse(request, ActionType.DATE);
 
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockActionRepo.create.mockResolvedValue(mockCreatedAction);
@@ -941,15 +771,11 @@ describe("ActionService - Create", () => {
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
 
       // When & Then
-      await expect(ctx.service.createDateAction(request, "user2")).rejects.toThrow(
+      await expectServiceErrorWithCause(
+        ctx.service.createDateAction(request, "user2"),
         "액션을 추가할 권한이 없습니다.",
+        403,
       );
-
-      try {
-        await ctx.service.createDateAction(request, "user2");
-      } catch (error) {
-        expect(error instanceof Error && error.cause).toBe(403);
-      }
 
       expect(ctx.mockActionRepo.create).not.toHaveBeenCalled();
     });
@@ -967,15 +793,11 @@ describe("ActionService - Create", () => {
       ctx.mockMissionRepo.findById.mockResolvedValue(null);
 
       // When & Then
-      await expect(ctx.service.createDateAction(request, "user1")).rejects.toThrow(
+      await expectServiceErrorWithCause(
+        ctx.service.createDateAction(request, "user1"),
         "존재하지 않는 미션입니다.",
+        404,
       );
-
-      try {
-        await ctx.service.createDateAction(request, "user1");
-      } catch (error) {
-        expect(error instanceof Error && error.cause).toBe(404);
-      }
 
       expect(ctx.mockActionRepo.create).not.toHaveBeenCalled();
     });
@@ -1009,20 +831,7 @@ describe("ActionService - Create", () => {
         maxSelections: 2,
         isRequired: true,
       };
-      const mockCreatedAction = {
-        id: "action1",
-        missionId: "mission1",
-        title: request.title,
-        type: ActionType.TIME,
-        order: request.order,
-        maxSelections: request.maxSelections,
-        description: request.description,
-        imageUrl: null,
-        isRequired: true,
-        imageFileUploadId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      const mockCreatedAction = createMockActionResponse(request, ActionType.TIME);
 
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockActionRepo.create.mockResolvedValue(mockCreatedAction);
@@ -1063,20 +872,7 @@ describe("ActionService - Create", () => {
         maxSelections: 1,
         isRequired: false,
       };
-      const mockCreatedAction = {
-        id: "action1",
-        missionId: "mission1",
-        title: request.title,
-        type: ActionType.TIME,
-        order: request.order,
-        maxSelections: request.maxSelections,
-        description: null,
-        imageUrl: null,
-        isRequired: false,
-        imageFileUploadId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      const mockCreatedAction = createMockActionResponse(request, ActionType.TIME);
 
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockActionRepo.create.mockResolvedValue(mockCreatedAction);
@@ -1109,15 +905,11 @@ describe("ActionService - Create", () => {
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
 
       // When & Then
-      await expect(ctx.service.createTimeAction(request, "user2")).rejects.toThrow(
+      await expectServiceErrorWithCause(
+        ctx.service.createTimeAction(request, "user2"),
         "액션을 추가할 권한이 없습니다.",
+        403,
       );
-
-      try {
-        await ctx.service.createTimeAction(request, "user2");
-      } catch (error) {
-        expect(error instanceof Error && error.cause).toBe(403);
-      }
 
       expect(ctx.mockActionRepo.create).not.toHaveBeenCalled();
     });
@@ -1135,15 +927,11 @@ describe("ActionService - Create", () => {
       ctx.mockMissionRepo.findById.mockResolvedValue(null);
 
       // When & Then
-      await expect(ctx.service.createTimeAction(request, "user1")).rejects.toThrow(
+      await expectServiceErrorWithCause(
+        ctx.service.createTimeAction(request, "user1"),
         "존재하지 않는 미션입니다.",
+        404,
       );
-
-      try {
-        await ctx.service.createTimeAction(request, "user1");
-      } catch (error) {
-        expect(error instanceof Error && error.cause).toBe(404);
-      }
 
       expect(ctx.mockActionRepo.create).not.toHaveBeenCalled();
     });
