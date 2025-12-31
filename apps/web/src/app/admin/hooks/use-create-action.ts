@@ -4,12 +4,14 @@ import {
   createDateAction,
   createImageAction,
   createMultipleChoiceAction,
+  createPdfAction,
   createPrivacyConsentAction,
   createRatingAction,
   createScaleAction,
   createSubjectiveAction,
   createTagAction,
   createTimeAction,
+  createVideoAction,
 } from "@/actions/action/create";
 import { adminActionQueryKeys } from "@/app/admin/constants/queryKeys";
 import type { ActionType } from "@/app/admin/missions/[id]/edit/components/action-forms";
@@ -17,12 +19,14 @@ import type {
   CreateDateActionRequest,
   CreateImageActionRequest,
   CreateMultipleChoiceActionRequest,
+  CreatePdfActionRequest,
   CreatePrivacyConsentActionRequest,
   CreateRatingActionRequest,
   CreateScaleActionRequest,
   CreateSubjectiveActionRequest,
   CreateTagActionRequest,
   CreateTimeActionRequest,
+  CreateVideoActionRequest,
 } from "@/types/dto";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -158,6 +162,32 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             isRequired: input.isRequired,
           };
           return await createImageAction(request);
+        }
+
+        case "PDF": {
+          const request: CreatePdfActionRequest = {
+            missionId: input.missionId,
+            title: input.title,
+            description: input.description,
+            imageUrl: input.imageUrl,
+            imageFileUploadId: input.imageFileUploadId,
+            order: input.order,
+            isRequired: input.isRequired,
+          };
+          return await createPdfAction(request);
+        }
+
+        case "VIDEO": {
+          const request: CreateVideoActionRequest = {
+            missionId: input.missionId,
+            title: input.title,
+            description: input.description,
+            imageUrl: input.imageUrl,
+            imageFileUploadId: input.imageFileUploadId,
+            order: input.order,
+            isRequired: input.isRequired,
+          };
+          return await createVideoAction(request);
         }
 
         case "PRIVACY_CONSENT": {
