@@ -1,4 +1,4 @@
-import { XCircleIcon } from "lucide-react";
+import { AlertCircle, XIcon } from "lucide-react";
 import * as React from "react";
 import { cn } from "../../lib/utils";
 import { LabelText } from "./LabelText";
@@ -109,7 +109,7 @@ const Input = ({
         <input
           type={type}
           className={cn(
-            "focus-visible:ring-point flex h-12 w-full rounded-sm bg-white px-3 py-2 pr-8 ring-1 ring-zinc-200 placeholder:text-disabled focus-visible:outline-none disabled:bg-zinc-100 disabled:text-zinc-500",
+            "focus-visible:ring-point flex h-12 w-full rounded-sm bg-white px-4 py-2 pr-8 ring-1 ring-zinc-200 placeholder:text-disabled focus-visible:outline-none disabled:bg-zinc-100 disabled:text-zinc-500",
             bodyVariants({ size: "large" }),
             errorMessage && "ring-red-500 focus-visible:ring-red-500",
             inputClassName || className,
@@ -122,22 +122,25 @@ const Input = ({
           maxLength={maxLength}
           {...props}
         />
-        {shouldShowClearButton && (
-          <button
-            type="button"
-            onMouseDown={e => {
-              e.preventDefault();
-              handleClear();
-            }}
-            className="absolute top-1/2 right-2 flex -translate-y-1/2 items-center justify-center rounded-full transition-colors"
-            aria-label="입력 내용 지우기"
-          >
-            <XCircleIcon size={24} className="fill-zinc-200 text-white" />
-          </button>
-        )}
+        <div className="absolute top-1/2 right-4 flex -translate-y-1/2 items-center justify-center gap-2">
+          {shouldShowClearButton && (
+            <button
+              type="button"
+              onMouseDown={e => {
+                e.preventDefault();
+                handleClear();
+              }}
+              className="flex items-center justify-center "
+              aria-label="입력 내용 지우기"
+            >
+              <XIcon className="size-5" />
+            </button>
+          )}
+          {errorMessage && <AlertCircle className="size-6 text-error" />}
+        </div>
       </div>
       {(helperText || errorMessage) && (
-        <Typo.Body size="small" className={cn(errorMessage ? "text-red-500" : "text-zinc-400")}>
+        <Typo.Body size="medium" className={cn(errorMessage ? "text-red-500" : "text-zinc-400")}>
           {errorMessage || helperText}
         </Typo.Body>
       )}
