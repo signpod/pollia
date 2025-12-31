@@ -10,12 +10,12 @@ interface LabelTextProps extends React.HTMLAttributes<HTMLDivElement>, PropsWith
 export function LabelText({ children, required, className, disabled, ...props }: LabelTextProps) {
   return (
     <div className={cn("flex items-center gap-1", className)} {...props}>
-      <Typo.SubTitle
-        size="large"
+      <Typo.Body
+        size="medium"
         className={cn("text-zinc-950", disabled && "text-zinc-300", "transition-colors")}
       >
         {children}
-      </Typo.SubTitle>
+      </Typo.Body>
       <span
         className={cn(
           "text-sm font-bold text-red-500 transition-opacity",
