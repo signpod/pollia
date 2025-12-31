@@ -136,7 +136,12 @@ export function ActionVideo({
       nextButtonText={nextButtonText}
       isLoading={isLoading}
     >
-      <VideoUpload onUploadChange={handleUploadChange} onUploadingChange={handleUploadingChange} />
+      {videoUrls.length === 0 && (
+        <VideoUpload
+          onUploadChange={handleUploadChange}
+          onUploadingChange={handleUploadingChange}
+        />
+      )}
       <VideoList
         videoUrls={videoUrls}
         uploadingVideoUrl={uploadingVideoUrl}

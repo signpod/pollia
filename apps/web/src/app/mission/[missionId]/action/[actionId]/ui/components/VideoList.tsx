@@ -20,6 +20,7 @@ export function VideoList({
 }: VideoListProps) {
   return (
     <MediaList
+      isSingleUploadMode={true}
       mediaUrls={videoUrls}
       uploadingMediaUrl={uploadingVideoUrl}
       isUploading={isUploading}
