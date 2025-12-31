@@ -24,9 +24,9 @@ export function VideoList({
       uploadingMediaUrl={uploadingVideoUrl}
       isUploading={isUploading}
       maxCount={MAX_IMAGE_UPLOAD_COUNT}
+      mediaType="video"
       onMediaDelete={onVideoDelete}
       onMediaLoadComplete={onVideoLoadComplete}
     />
   );
 }
-

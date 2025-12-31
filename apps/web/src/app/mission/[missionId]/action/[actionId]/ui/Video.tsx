@@ -84,9 +84,13 @@ export function ActionVideo({
         const newFileUploadId = newFileUploadIds[0];
 
         if (newVideoUrl && newFileUploadId) {
-          setUploadingVideoUrl(newVideoUrl);
           setVideoUrls(prev => [...prev, newVideoUrl]);
           setVideoFileUploadIds(prev => [...prev, newFileUploadId]);
+          // 로컬 URL(blob:)인 경우 uploadingVideoUrl 설정하지 않음 (즉시 완료 처리)
+          // TODO: 백엔드 업로드 구현 시 실제 URL인 경우에만 uploadingVideoUrl 설정
+          // if (!newVideoUrl.startsWith("blob:")) {
+          //   setUploadingVideoUrl(newVideoUrl);
+          // }
         }
       } else if (!hasUploadedVideo) {
         setUploadingVideoUrl(null);
@@ -134,7 +138,9 @@ export function ActionVideo({
     >
       <VideoUpload onUploadChange={handleUploadChange} onUploadingChange={handleUploadingChange} />
       <VideoList
-        videoUrls={videoUrls}
+        videoUrls={[
+          "https://lpgfbjohdashthkhxzab.supabase.co/storage/v1/object/public/action-answer-videos/IMG_6672.MOV",
+        ]}
         uploadingVideoUrl={uploadingVideoUrl}
         isUploading={isUploading}
         onVideoDelete={handleVideoDelete}

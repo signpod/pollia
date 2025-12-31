@@ -24,6 +24,7 @@ export function ImageList({
       uploadingMediaUrl={uploadingImageUrl}
       isUploading={isUploading}
       maxCount={MAX_IMAGE_UPLOAD_COUNT}
+      mediaType="image"
       onMediaDelete={onImageDelete}
       onMediaLoadComplete={onImageLoadComplete}
     />

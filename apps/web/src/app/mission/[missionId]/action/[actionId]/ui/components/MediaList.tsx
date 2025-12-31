@@ -3,13 +3,14 @@
 import { cn } from "@/lib/utils";
 import { Typo } from "@repo/ui/components";
 import { Loader2Icon } from "lucide-react";
-import { ImageItem } from "./ImageItem";
+import { MediaItem } from "./MediaItem";
 
 interface MediaListProps {
   mediaUrls: string[];
   uploadingMediaUrl: string | null;
   isUploading: boolean;
   maxCount: number;
+  mediaType: "image" | "video";
   onMediaDelete: (mediaUrl: string) => void;
   onMediaLoadComplete: (mediaUrl: string) => void;
 }
@@ -19,6 +20,7 @@ export function MediaList({
   uploadingMediaUrl,
   isUploading,
   maxCount,
+  mediaType,
   onMediaDelete,
   onMediaLoadComplete,
 }: MediaListProps) {
@@ -46,9 +48,10 @@ export function MediaList({
           </div>
         )}
         {mediaUrls.map(mediaUrl => (
-          <ImageItem
+          <MediaItem
             key={mediaUrl}
-            imageUrl={mediaUrl}
+            mediaUrl={mediaUrl}
+            mediaType={mediaType}
             isUploading={uploadingMediaUrl === mediaUrl}
             onDelete={onMediaDelete}
             onLoadComplete={() => onMediaLoadComplete(mediaUrl)}

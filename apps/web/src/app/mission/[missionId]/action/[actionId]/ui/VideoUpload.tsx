@@ -1,9 +1,10 @@
 "use client";
 
 import { toast } from "@/components/common/Toast";
-import { STORAGE_BUCKETS } from "@/constants/buckets";
-import { useImageUpload } from "@/hooks/common/useImageUpload";
-import { useCallback, useEffect, useRef } from "react";
+// TODO: 백엔드 업로드 구현 시 사용
+// import { STORAGE_BUCKETS } from "@/constants/buckets";
+// import { useImageUpload } from "@/hooks/common/useImageUpload";
+import { useCallback, useRef, useState } from "react";
 import { MediaUploadArea } from "./components/MediaUploadArea";
 
 interface VideoUploadProps {
@@ -17,23 +18,21 @@ interface VideoUploadProps {
 
 export function VideoUpload({ onUploadChange, onUploadingChange }: VideoUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const { upload, isUploading, uploadError } = useImageUpload({
-    bucket: STORAGE_BUCKETS.ACTION_ANSWER_IMAGES,
-    onSuccess: result => {
-      onUploadingChange?.(false);
-      onUploadChange?.(true, [result.publicUrl], [result.fileUploadId]);
-    },
-    onError: () => {
-      onUploadingChange?.(false);
-      toast.warning(uploadError?.message || "파일 업로드에 실패했어요.\n다시 시도해주세요.");
-      onUploadChange?.(false, [], []);
-    },
-  });
-
-  useEffect(() => {
-    onUploadingChange?.(isUploading);
-  }, [isUploading, onUploadingChange]);
+  // TODO: 백엔드 업로드 구현 시 사용
+  // const { upload, isUploading, uploadError } = useImageUpload({
+  //   bucket: STORAGE_BUCKETS.ACTION_ANSWER_IMAGES,
+  //   onSuccess: result => {
+  //     onUploadingChange?.(false);
+  //     onUploadChange?.(true, [result.publicUrl], [result.fileUploadId]);
+  //   },
+  //   onError: () => {
+  //     onUploadingChange?.(false);
+  //     toast.warning(uploadError?.message || "파일 업로드에 실패했어요.\n다시 시도해주세요.");
+  //     onUploadChange?.(false, [], []);
+  //   },
+  // });
 
   const handleFileSelect = useCallback(() => {
     inputRef.current?.click();
@@ -54,14 +53,27 @@ export function VideoUpload({ onUploadChange, onUploadingChange }: VideoUploadPr
         return;
       }
 
+      // 로컬에서만 동작: Object URL 생성
+      setIsUploading(true);
       onUploadingChange?.(true);
-      upload(file);
+
+      const videoUrl = URL.createObjectURL(file);
+      // TODO: 백엔드 업로드 구현 시 실제 fileUploadId 사용
+      const temporaryFileUploadId = `temp-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+
+      // 로컬 URL과 임시 ID 전달
+      onUploadChange?.(true, [videoUrl], [temporaryFileUploadId]);
+      setIsUploading(false);
+      onUploadingChange?.(false);
+
+      // TODO: 백엔드 업로드 구현 시 실제 업로드 로직 사용
+      // upload(file);
 
       if (inputRef.current) {
         inputRef.current.value = "";
       }
     },
-    [upload, onUploadingChange],
+    [onUploadChange, onUploadingChange],
   );
 
   return (
@@ -75,4 +87,3 @@ export function VideoUpload({ onUploadChange, onUploadingChange }: VideoUploadPr
     />
   );
 }
-
