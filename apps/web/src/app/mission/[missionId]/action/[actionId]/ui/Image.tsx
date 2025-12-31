@@ -100,24 +100,23 @@ export function ActionImage({
   }, []);
 
   const handleImageDelete = useCallback((imageUrl: string) => {
+    let deletedIndex = -1;
     setImageUrls(prev => {
       const index = prev.indexOf(imageUrl);
       if (index === -1) return prev;
-
-      setImageFileUploadIds(current => current.filter((_, i) => i !== index));
+      deletedIndex = index;
       return prev.filter(url => url !== imageUrl);
+    });
+    setImageFileUploadIds(prev => {
+      if (deletedIndex === -1) return prev;
+      return prev.filter((_, i) => i !== deletedIndex);
     });
     setUploadingImageUrl(prev => (prev === imageUrl ? null : prev));
   }, []);
 
-  const handleImageLoadComplete = useCallback(
-    (imageUrl: string) => {
-      if (uploadingImageUrl === imageUrl) {
-        setUploadingImageUrl(null);
-      }
-    },
-    [uploadingImageUrl],
-  );
+  const handleImageLoadComplete = useCallback((imageUrl: string) => {
+    setUploadingImageUrl(prev => (prev === imageUrl ? null : prev));
+  }, []);
 
   return (
     <SurveyQuestionTemplate

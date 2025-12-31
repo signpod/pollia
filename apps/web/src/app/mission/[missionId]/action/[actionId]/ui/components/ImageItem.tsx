@@ -9,9 +9,16 @@ interface ImageItemProps {
   isUploading: boolean;
   onDelete: (imageUrl: string) => void;
   onLoadComplete: () => void;
+  alt?: string;
 }
 
-export function ImageItem({ imageUrl, isUploading, onDelete, onLoadComplete }: ImageItemProps) {
+export function ImageItem({
+  imageUrl,
+  isUploading,
+  onDelete,
+  onLoadComplete,
+  alt = "업로드된 이미지",
+}: ImageItemProps) {
   return (
     <div className="relative w-full aspect-square rounded-sm overflow-hidden bg-black">
       {isUploading && (
@@ -30,7 +37,7 @@ export function ImageItem({ imageUrl, isUploading, onDelete, onLoadComplete }: I
       )}
       <Image
         src={imageUrl}
-        alt="uploaded image"
+        alt={alt}
         width={400}
         height={400}
         className="w-full h-full object-contain"

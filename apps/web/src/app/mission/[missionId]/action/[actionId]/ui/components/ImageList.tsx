@@ -1,5 +1,6 @@
 "use client";
 
+import { MAX_IMAGE_UPLOAD_COUNT } from "@/constants/image";
 import { cn } from "@/lib/utils";
 import { Typo } from "@repo/ui/components";
 import { Loader2Icon } from "lucide-react";
@@ -32,28 +33,26 @@ export function ImageList({
           {imageUrls.length}
         </Typo.SubTitle>
         <Typo.SubTitle size="large">/</Typo.SubTitle>
-        <Typo.SubTitle size="large">10</Typo.SubTitle>
+        <Typo.SubTitle size="large">{MAX_IMAGE_UPLOAD_COUNT}</Typo.SubTitle>
       </div>
-      {(isUploading || imageUrls.length > 0) && (
-        <div className="grid grid-cols-3 gap-4 w-full">
-          {isUploading && imageUrls.length === 0 && (
-            <div className="relative w-full aspect-square rounded-sm overflow-hidden border border-zinc-200 bg-zinc-50 flex items-center justify-center">
-              <div className="flex items-center justify-center bg-black/40 absolute inset-0 z-30">
-                <Loader2Icon className="size-8 animate-spin text-white" />
-              </div>
+      <div className="grid grid-cols-3 gap-4 w-full">
+        {isUploading && imageUrls.length === 0 && (
+          <div className="relative w-full aspect-square rounded-sm overflow-hidden border border-zinc-200 bg-zinc-50 flex items-center justify-center">
+            <div className="flex items-center justify-center bg-black/40 absolute inset-0 z-30">
+              <Loader2Icon className="size-8 animate-spin text-white" />
             </div>
-          )}
-          {imageUrls.map(imageUrl => (
-            <ImageItem
-              key={imageUrl}
-              imageUrl={imageUrl}
-              isUploading={uploadingImageUrl === imageUrl}
-              onDelete={onImageDelete}
-              onLoadComplete={() => onImageLoadComplete(imageUrl)}
-            />
-          ))}
-        </div>
-      )}
+          </div>
+        )}
+        {imageUrls.map(imageUrl => (
+          <ImageItem
+            key={imageUrl}
+            imageUrl={imageUrl}
+            isUploading={uploadingImageUrl === imageUrl}
+            onDelete={onImageDelete}
+            onLoadComplete={() => onImageLoadComplete(imageUrl)}
+          />
+        ))}
+      </div>
     </div>
   );
 }

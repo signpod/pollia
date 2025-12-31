@@ -39,6 +39,8 @@ export function ImageUploadNotice() {
       <button
         type="button"
         onClick={toggle}
+        aria-expanded={isOpen}
+        aria-controls="image-upload-notice-content"
         className={cn(
           "flex w-full items-center justify-between text-left transition-all outline-none",
         )}
@@ -52,6 +54,7 @@ export function ImageUploadNotice() {
         />
       </button>
       <motion.div
+        id="image-upload-notice-content"
         ref={contentRef}
         initial={false}
         animate={{
