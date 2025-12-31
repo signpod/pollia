@@ -69,7 +69,7 @@ export function MultipleChoiceForm({
       return {
         title: opt.title,
         description: opt.description || undefined,
-        imageUrl: uploadedData?.publicUrl || undefined,
+        imageUrl: uploadedData?.publicUrl || opt.imageUrl || undefined,
         imageFileUploadId: uploadedData?.fileUploadId,
       };
     });
