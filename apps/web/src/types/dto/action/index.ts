@@ -60,6 +60,12 @@ export type CreateRatingActionResponse = BaseActionResponse;
 export type CreateImageActionRequest = BaseActionRequest;
 export type CreateImageActionResponse = BaseActionResponse;
 
+export type CreatePdfActionRequest = BaseActionRequest;
+export type CreatePdfActionResponse = BaseActionResponse;
+
+export type CreateVideoActionRequest = BaseActionRequest;
+export type CreateVideoActionResponse = BaseActionResponse;
+
 export type CreatePrivacyConsentActionRequest = BaseActionRequest;
 export type CreatePrivacyConsentActionResponse = BaseActionResponse;
 
