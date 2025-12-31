@@ -52,6 +52,7 @@ export function ActionImage({
       const answer: ActionAnswerItem = {
         actionId: actionData.id,
         type: ActionType.IMAGE,
+        isRequired: actionData.isRequired,
         fileUploadIds: fileIds,
       };
 

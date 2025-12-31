@@ -2,7 +2,7 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import { fileUploadService } from "@/server/services/file-upload";
-import type { ConfirmFileRequest, ConfirmFileResponse } from "@/types/dto/image";
+import type { ConfirmFileRequest, ConfirmFileResponse } from "@/types/dto/file";
 
 export async function confirmFile(request: ConfirmFileRequest): Promise<ConfirmFileResponse> {
   try {

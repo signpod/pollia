@@ -25,6 +25,7 @@ interface SurveyMultipleChoiceProviderProps {
   children: React.ReactNode;
   maxSelections: number;
   actionId: string;
+  isRequired: boolean;
   missionResponse?: GetMissionResponseResponse;
   updateCanGoNext?: (canGoNext: boolean) => void;
   onAnswerChange?: (answer: ActionAnswerItem) => void;
@@ -35,6 +36,7 @@ export function MultipleChoiceProvider({
   children,
   maxSelections,
   actionId,
+  isRequired,
   missionResponse,
   updateCanGoNext,
   onAnswerChange,
@@ -74,6 +76,7 @@ export function MultipleChoiceProvider({
       const answer: ActionAnswerItem = {
         actionId,
         type: answerType ?? ActionType.MULTIPLE_CHOICE,
+        isRequired,
         selectedOptionIds: Array.from(initialSelectedIds),
       };
 
@@ -122,6 +125,7 @@ export function MultipleChoiceProvider({
       const answer: ActionAnswerItem = {
         actionId,
         type: answerType ?? ActionType.MULTIPLE_CHOICE,
+        isRequired,
         selectedOptionIds: Array.from(selectedIds),
       };
 

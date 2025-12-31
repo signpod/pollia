@@ -32,7 +32,7 @@ enum ActionType {
   SUBJECTIVE
   IMAGE
   VIDEO
-  PDF_UPLOAD
+  PDF
   URL
   DATE
   TIME

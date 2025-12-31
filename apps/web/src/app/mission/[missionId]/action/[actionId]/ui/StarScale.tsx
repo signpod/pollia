@@ -20,6 +20,7 @@ export function MissionStarScale({
 }: ActionStepContentProps) {
   const { isScaleValueChanged, scaleValue, handleScaleValueChange } = useMissionRatingValue({
     actionId: actionData.id,
+    isRequired: actionData.isRequired,
     missionResponse,
     updateCanGoNext,
     onAnswerChange,

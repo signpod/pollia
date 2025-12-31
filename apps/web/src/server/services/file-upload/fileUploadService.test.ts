@@ -1,5 +1,5 @@
 import { STORAGE_BUCKETS } from "@/constants/buckets";
-import { FileStatus } from "@prisma/client";
+import { ActionType, FileStatus } from "@prisma/client";
 
 import {
   type FileUploadServiceTestContext,
@@ -26,6 +26,7 @@ describe("FileUploadService", () => {
       fileName: "test.jpg",
       fileSize: 1024,
       fileType: "image/jpeg",
+      actionType: ActionType.IMAGE,
     };
 
     it("업로드 URL을 성공적으로 생성한다", async () => {
@@ -83,13 +84,13 @@ describe("FileUploadService", () => {
       );
     });
 
-    it("파일 크기가 10MB를 초과하면 400 에러를 던진다", async () => {
+    it("파일 크기가 5MB를 초과하면 400 에러를 던진다 - IMAGE", async () => {
       // Given
-      const largeFileInput = { ...validInput, fileSize: 11 * 1024 * 1024 };
+      const largeFileInput = { ...validInput, fileSize: 6 * 1024 * 1024 };
 
       // When & Then
       await expect(ctx.service.createUploadUrl(largeFileInput, "user1")).rejects.toThrow(
-        "파일 크기는 10MB를 초과할 수 없습니다.",
+        "파일 크기는 5MB를 초과할 수 없습니다.",
       );
 
       try {
@@ -99,9 +100,14 @@ describe("FileUploadService", () => {
       }
     });
 
-    it("지원하지 않는 파일 형식이면 400 에러를 던진다", async () => {
+    it("지원하지 않는 파일 형식이면 400 에러를 던진다 - IMAGE 타입에 PDF", async () => {
       // Given
-      const invalidFileInput = { ...validInput, fileName: "test.pdf", fileType: "application/pdf" };
+      const invalidFileInput = {
+        ...validInput,
+        fileName: "test.pdf",
+        fileType: "application/pdf",
+        actionType: ActionType.IMAGE,
+      };
 
       // When & Then
       await expect(ctx.service.createUploadUrl(invalidFileInput, "user1")).rejects.toThrow(
@@ -136,6 +142,103 @@ describe("FileUploadService", () => {
       } catch (error) {
         expect(error instanceof Error && error.cause).toBe(500);
       }
+    });
+
+    it("지원하지 않는 액션 타입이면 400 에러를 던진다", async () => {
+      // Given
+      const invalidActionTypeInput = {
+        ...validInput,
+        actionType: ActionType.MULTIPLE_CHOICE,
+      };
+
+      // When & Then
+      await expect(ctx.service.createUploadUrl(invalidActionTypeInput, "user1")).rejects.toThrow(
+        "지원하지 않는 액션 타입입니다",
+      );
+    });
+
+    it("PDF 파일 업로드 URL을 성공적으로 생성한다", async () => {
+      // Given
+      const pdfInput = {
+        fileName: "document.pdf",
+        fileSize: 10 * 1024 * 1024, // 10MB
+        fileType: "application/pdf",
+        actionType: ActionType.PDF,
+      };
+      const mockFileUpload = mockFileUploadFactory({ id: "file-pdf" });
+      ctx.mockRepo.create.mockResolvedValue(mockFileUpload);
+
+      ctx.mockStorageBucket.createSignedUploadUrl.mockResolvedValue({
+        data: { signedUrl: "https://signed-url.com" },
+        error: null,
+      });
+      ctx.mockStorageBucket.getPublicUrl.mockReturnValue({
+        data: { publicUrl: "https://public-url.com" },
+      });
+
+      // When
+      const result = await ctx.service.createUploadUrl(pdfInput, "user1");
+
+      // Then
+      expect(result.fileUploadId).toBe("file-pdf");
+      expect(result.path).toMatch(/\.pdf$/);
+    });
+
+    it("PDF 파일 크기가 50MB를 초과하면 400 에러를 던진다", async () => {
+      // Given
+      const largePdfInput = {
+        fileName: "large.pdf",
+        fileSize: 51 * 1024 * 1024,
+        fileType: "application/pdf",
+        actionType: ActionType.PDF,
+      };
+
+      // When & Then
+      await expect(ctx.service.createUploadUrl(largePdfInput, "user1")).rejects.toThrow(
+        "파일 크기는 50MB를 초과할 수 없습니다.",
+      );
+    });
+
+    it("VIDEO 파일 업로드 URL을 성공적으로 생성한다", async () => {
+      // Given
+      const videoInput = {
+        fileName: "video.mp4",
+        fileSize: 20 * 1024 * 1024, // 20MB
+        fileType: "video/mp4",
+        actionType: ActionType.VIDEO,
+      };
+      const mockFileUpload = mockFileUploadFactory({ id: "file-video" });
+      ctx.mockRepo.create.mockResolvedValue(mockFileUpload);
+
+      ctx.mockStorageBucket.createSignedUploadUrl.mockResolvedValue({
+        data: { signedUrl: "https://signed-url.com" },
+        error: null,
+      });
+      ctx.mockStorageBucket.getPublicUrl.mockReturnValue({
+        data: { publicUrl: "https://public-url.com" },
+      });
+
+      // When
+      const result = await ctx.service.createUploadUrl(videoInput, "user1");
+
+      // Then
+      expect(result.fileUploadId).toBe("file-video");
+      expect(result.path).toMatch(/\.mp4$/);
+    });
+
+    it("VIDEO 파일 크기가 50MB를 초과하면 400 에러를 던진다", async () => {
+      // Given
+      const largeVideoInput = {
+        fileName: "large.mp4",
+        fileSize: 51 * 1024 * 1024,
+        fileType: "video/mp4",
+        actionType: ActionType.VIDEO,
+      };
+
+      // When & Then
+      await expect(ctx.service.createUploadUrl(largeVideoInput, "user1")).rejects.toThrow(
+        "파일 크기는 50MB를 초과할 수 없습니다.",
+      );
     });
   });
 

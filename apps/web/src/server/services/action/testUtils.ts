@@ -2,7 +2,12 @@ import type { ActionRepository } from "@/server/repositories/action/actionReposi
 import type { MissionRepository } from "@/server/repositories/mission/missionRepository";
 import { ActionService } from ".";
 
-export { createMockAction, createMockMission } from "../testUtils";
+export {
+  createMockAction,
+  createMockActionResponse,
+  createMockMission,
+  expectServiceErrorWithCause,
+} from "../testUtils";
 export { createMockMission as mockMissionFactory } from "../testUtils";
 
 export function createActionServiceTestContext() {

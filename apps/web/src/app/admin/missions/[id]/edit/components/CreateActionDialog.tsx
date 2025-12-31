@@ -10,19 +10,8 @@ import {
 } from "@/app/admin/components/shadcn-ui/dialog";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
 import { RadioGroup, RadioGroupItem } from "@/app/admin/components/shadcn-ui/radio-group";
-import { getActionTypeLabel } from "@/app/admin/constants/actionTypes";
+import { ACTION_TYPE_CONFIGS } from "@/app/admin/config/actionTypes";
 import { cn } from "@/app/admin/lib/utils";
-import {
-  Calendar,
-  ClipboardList,
-  Clock,
-  Hash,
-  ImageIcon,
-  MessageSquare,
-  Shield,
-  SlidersHorizontal,
-  Star,
-} from "lucide-react";
 import { useState } from "react";
 import {
   type ActionFormData,
@@ -30,12 +19,14 @@ import {
   DateForm,
   ImageUploadForm,
   MultipleChoiceForm,
+  PdfUploadForm,
   PrivacyConsentForm,
   RatingForm,
   ScaleForm,
   SubjectiveForm,
   TagForm,
   TimeForm,
+  VideoUploadForm,
 } from "./action-forms";
 
 interface CreateActionDialogProps {
@@ -44,63 +35,6 @@ interface CreateActionDialogProps {
   onSubmit: (data: ActionFormData) => void;
   isLoading?: boolean;
 }
-
-const ACTION_TYPES = [
-  {
-    value: "MULTIPLE_CHOICE" as const,
-    label: getActionTypeLabel("MULTIPLE_CHOICE"),
-    description: "여러 선택지 중 하나 이상을 선택",
-    icon: ClipboardList,
-  },
-  {
-    value: "SCALE" as const,
-    label: getActionTypeLabel("SCALE"),
-    description: "관리자가 설정한 스케일로 응답",
-    icon: SlidersHorizontal,
-  },
-  {
-    value: "RATING" as const,
-    label: getActionTypeLabel("RATING"),
-    description: "1~10점인 별점으로 평가",
-    icon: Star,
-  },
-  {
-    value: "TAG" as const,
-    label: getActionTypeLabel("TAG"),
-    description: "여러 태그 중 선택",
-    icon: Hash,
-  },
-  {
-    value: "SUBJECTIVE" as const,
-    label: getActionTypeLabel("SUBJECTIVE"),
-    description: "자유롭게 텍스트로 응답",
-    icon: MessageSquare,
-  },
-  {
-    value: "IMAGE" as const,
-    label: getActionTypeLabel("IMAGE"),
-    description: "이미지 파일을 업로드하여 응답",
-    icon: ImageIcon,
-  },
-  {
-    value: "PRIVACY_CONSENT" as const,
-    label: getActionTypeLabel("PRIVACY_CONSENT"),
-    description: "개인정보 수집 및 이용 동의",
-    icon: Shield,
-  },
-  {
-    value: "DATE" as const,
-    label: getActionTypeLabel("DATE"),
-    description: "날짜를 선택하여 응답",
-    icon: Calendar,
-  },
-  {
-    value: "TIME" as const,
-    label: getActionTypeLabel("TIME"),
-    description: "시간을 선택하여 응답",
-    icon: Clock,
-  },
-] as const;
 
 type Step = "select-type" | "form";
 
@@ -138,7 +72,7 @@ export function CreateActionDialog({
     handleOpenChange(false);
   };
 
-  const selectedTypeConfig = ACTION_TYPES.find(t => t.value === selectedType);
+  const selectedTypeConfig = ACTION_TYPE_CONFIGS.find(t => t.value === selectedType);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -162,7 +96,7 @@ export function CreateActionDialog({
               onValueChange={value => setSelectedType(value as ActionType)}
               className="grid grid-cols-2 gap-3"
             >
-              {ACTION_TYPES.map(actionType => {
+              {ACTION_TYPE_CONFIGS.map(actionType => {
                 const Icon = actionType.icon;
                 const isSelected = selectedType === actionType.value;
                 return (
@@ -248,6 +182,10 @@ function ActionForm({ type, isLoading, onSubmit, onCancel }: ActionFormProps) {
       return <SubjectiveForm isLoading={isLoading} onSubmit={onSubmit} onCancel={onCancel} />;
     case "IMAGE":
       return <ImageUploadForm isLoading={isLoading} onSubmit={onSubmit} onCancel={onCancel} />;
+    case "PDF":
+      return <PdfUploadForm isLoading={isLoading} onSubmit={onSubmit} onCancel={onCancel} />;
+    case "VIDEO":
+      return <VideoUploadForm isLoading={isLoading} onSubmit={onSubmit} onCancel={onCancel} />;
     case "PRIVACY_CONSENT":
       return <PrivacyConsentForm isLoading={isLoading} onSubmit={onSubmit} onCancel={onCancel} />;
     case "DATE":

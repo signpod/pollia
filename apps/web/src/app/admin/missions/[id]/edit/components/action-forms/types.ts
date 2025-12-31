@@ -14,7 +14,7 @@ export interface BaseActionFormData {
   description?: string;
   imageUrl?: string;
   imageFileUploadId?: string;
-  isRequired?: boolean;
+  isRequired: boolean;
 }
 
 export interface MultipleChoiceFormData extends BaseActionFormData {
@@ -40,14 +40,19 @@ export interface TagFormData extends BaseActionFormData {
 
 export interface SubjectiveFormData extends BaseActionFormData {
   type: "SUBJECTIVE";
-  maxLength?: number;
-  placeholder?: string;
 }
 
 export interface ImageUploadFormData extends BaseActionFormData {
   type: "IMAGE";
-  maxFiles?: number;
-  acceptedFormats?: string[];
+  maxSelections?: number;
+}
+
+export interface PdfUploadFormData extends BaseActionFormData {
+  type: "PDF";
+}
+
+export interface VideoUploadFormData extends BaseActionFormData {
+  type: "VIDEO";
 }
 
 export interface PrivacyConsentFormData extends BaseActionFormData {
@@ -71,6 +76,8 @@ export type ActionFormData =
   | TagFormData
   | SubjectiveFormData
   | ImageUploadFormData
+  | PdfUploadFormData
+  | VideoUploadFormData
   | PrivacyConsentFormData
   | DateFormData
   | TimeFormData;

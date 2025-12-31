@@ -11,6 +11,8 @@ import type {
   CreateImageActionResponse,
   CreateMultipleChoiceActionRequest,
   CreateMultipleChoiceActionResponse,
+  CreatePdfActionRequest,
+  CreatePdfActionResponse,
   CreatePrivacyConsentActionRequest,
   CreatePrivacyConsentActionResponse,
   CreateRatingActionRequest,
@@ -23,6 +25,8 @@ import type {
   CreateTagActionResponse,
   CreateTimeActionRequest,
   CreateTimeActionResponse,
+  CreateVideoActionRequest,
+  CreateVideoActionResponse,
 } from "@/types/dto";
 
 async function createActionHandler<TRequest, TResponse extends BaseActionResponse>(
@@ -98,6 +102,26 @@ export async function createImageAction(
     request,
     actionService.createImageAction.bind(actionService),
     "이미지 액션",
+  );
+}
+
+export async function createPdfAction(
+  request: CreatePdfActionRequest,
+): Promise<CreatePdfActionResponse> {
+  return createActionHandler(
+    request,
+    actionService.createPdfAction.bind(actionService),
+    "PDF 액션",
+  );
+}
+
+export async function createVideoAction(
+  request: CreateVideoActionRequest,
+): Promise<CreateVideoActionResponse> {
+  return createActionHandler(
+    request,
+    actionService.createVideoAction.bind(actionService),
+    "Video 액션",
   );
 }
 

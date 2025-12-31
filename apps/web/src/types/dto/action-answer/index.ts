@@ -7,41 +7,49 @@ export type ActionAnswerItem =
   | {
       actionId: string;
       type: typeof ActionType.SCALE;
+      isRequired: boolean;
       scaleValue: number;
     }
   | {
       actionId: string;
       type: typeof ActionType.SUBJECTIVE;
+      isRequired: boolean;
       textAnswer: string;
     }
   | {
       actionId: string;
       type: typeof ActionType.URL;
+      isRequired: boolean;
       textAnswer: string;
     }
   | {
       actionId: string;
       type: typeof ActionType.MULTIPLE_CHOICE;
+      isRequired: boolean;
       selectedOptionIds: string[];
     }
   | {
       actionId: string;
       type: typeof ActionType.RATING;
+      isRequired: boolean;
       scaleValue: number;
     }
   | {
       actionId: string;
       type: typeof ActionType.IMAGE;
+      isRequired: boolean;
       fileUploadIds: string[];
     }
   | {
       actionId: string;
       type: typeof ActionType.TAG;
+      isRequired: boolean;
       selectedOptionIds: string[];
     }
   | {
       actionId: string;
       type: typeof ActionType.PRIVACY_CONSENT;
+      isRequired: boolean;
       booleanAnswer: boolean;
     };
 
@@ -58,6 +66,7 @@ export interface SubmitActionAnswersRequest {
   answers: Array<{
     actionId: string;
     type: ActionType;
+    isRequired: boolean;
     selectedOptionIds?: string[];
     scaleValue?: number;
     textAnswer?: string;

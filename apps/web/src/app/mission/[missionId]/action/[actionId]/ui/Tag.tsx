@@ -26,6 +26,7 @@ export function ActionTag({
     <MultipleChoiceProvider
       maxSelections={actionData.maxSelections ?? 1}
       actionId={actionData.id}
+      isRequired={actionData.isRequired}
       missionResponse={missionResponse}
       updateCanGoNext={updateCanGoNext}
       onAnswerChange={onAnswerChange}

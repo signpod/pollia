@@ -1,7 +1,7 @@
 "use server";
 
 import { fileUploadService } from "@/server/services/file-upload";
-import type { CleanupOrphanFilesResponse } from "@/types/dto/image";
+import type { CleanupOrphanFilesResponse } from "@/types/dto/file";
 
 export async function cleanupOrphanFiles(): Promise<CleanupOrphanFilesResponse> {
   try {

@@ -1,20 +1,17 @@
 import { STORAGE_BUCKETS } from "@/constants/buckets";
+import {
+  getAllowedExtensions,
+  getAllowedMimeTypes,
+  getFileSizeLabel,
+  getMaxFileSize,
+  isFileUploadActionType,
+} from "@/constants/fileUpload";
 import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
 import { fileUploadRepository } from "@/server/repositories/file-upload/fileUploadRepository";
 import { FileStatus, type FileUpload } from "@prisma/client";
 
 import type { CleanupResult, CreateUploadUrlInput, UploadUrlResult } from "./types";
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
-const ALLOWED_IMAGE_TYPES = [
-  "image/jpeg",
-  "image/jpg",
-  "image/png",
-  "image/webp",
-  "image/gif",
-  "image/avif",
-];
-const ALLOWED_IMAGE_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif"];
 const TEMPORARY_FILE_RETENTION_HOURS = 24;
 
 export type SupabaseClientFactory = typeof createServerSupabaseClient;
@@ -160,8 +157,27 @@ export class FileUploadService {
   }
 
   private validateUploadInput(input: CreateUploadUrlInput): void {
-    if (input.fileSize > MAX_FILE_SIZE) {
-      const error = new Error("파일 크기는 10MB를 초과할 수 없습니다.");
+    const { actionType } = input;
+
+    if (!isFileUploadActionType(actionType)) {
+      const error = new Error("파일 업로드를 지원하지 않는 액션 타입입니다.");
+      error.cause = 400;
+      throw error;
+    }
+
+    const maxFileSize = getMaxFileSize(actionType);
+    const allowedMimeTypes = getAllowedMimeTypes(actionType);
+    const allowedExtensions = getAllowedExtensions(actionType);
+    const fileSizeLabel = getFileSizeLabel(actionType);
+
+    if (!maxFileSize || !allowedMimeTypes || !allowedExtensions) {
+      const error = new Error("파일 업로드 설정을 찾을 수 없습니다.");
+      error.cause = 500;
+      throw error;
+    }
+
+    if (input.fileSize > maxFileSize) {
+      const error = new Error(`파일 크기는 ${fileSizeLabel}를 초과할 수 없습니다.`);
       error.cause = 400;
       throw error;
     }
@@ -169,16 +185,18 @@ export class FileUploadService {
     const fileType = input.fileType?.toLowerCase() || "";
     const fileName = input.fileName?.toLowerCase() || "";
 
-    const isImageByExtension = ALLOWED_IMAGE_EXTENSIONS.some(ext => fileName.endsWith(ext));
+    const isValidByExtension = allowedExtensions.some(ext => fileName.endsWith(ext));
 
-    if (!fileType && !isImageByExtension) {
-      const error = new Error("지원하지 않는 파일 형식입니다. (JPEG, PNG, WebP, GIF, AVIF만 가능)");
+    if (!fileType && !isValidByExtension) {
+      const extensionList = allowedExtensions.join(", ");
+      const error = new Error(`지원하지 않는 파일 형식입니다. (${extensionList}만 가능)`);
       error.cause = 400;
       throw error;
     }
 
-    if (fileType && !ALLOWED_IMAGE_TYPES.includes(fileType) && !isImageByExtension) {
-      const error = new Error("지원하지 않는 파일 형식입니다. (JPEG, PNG, WebP, GIF, AVIF만 가능)");
+    if (fileType && !allowedMimeTypes.includes(fileType) && !isValidByExtension) {
+      const extensionList = allowedExtensions.join(", ");
+      const error = new Error(`지원하지 않는 파일 형식입니다. (${extensionList}만 가능)`);
       error.cause = 400;
       throw error;
     }

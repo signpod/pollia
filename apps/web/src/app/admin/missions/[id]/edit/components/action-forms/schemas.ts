@@ -8,12 +8,14 @@ import {
   dateInputSchema,
   imageInputSchema,
   multipleChoiceInputSchema,
+  pdfInputSchema,
   privacyConsentInputSchema,
   ratingInputSchema,
   scaleInputSchema,
   subjectiveInputSchema,
   tagInputSchema,
   timeInputSchema,
+  videoInputSchema,
 } from "@/schemas/action";
 import { actionOptionSchema } from "@/schemas/action-option";
 import { z } from "zod";
@@ -33,9 +35,8 @@ const actionOptionFormSchema = actionOptionSchema.omit({ order: true }).extend({
 });
 
 export const multipleChoiceFormSchema = multipleChoiceInputSchema
-  .omit({ missionId: true, order: true, imageFileUploadId: true, isRequired: true })
+  .omit({ missionId: true, order: true, imageFileUploadId: true })
   .extend({
-    isRequired: z.boolean(),
     options: z.array(actionOptionFormSchema),
   })
   .refine(
@@ -57,9 +58,8 @@ export const multipleChoiceFormSchema = multipleChoiceInputSchema
   });
 
 export const scaleFormSchema = scaleInputSchema
-  .omit({ missionId: true, order: true, imageFileUploadId: true, isRequired: true })
+  .omit({ missionId: true, order: true, imageFileUploadId: true })
   .extend({
-    isRequired: z.boolean(),
     options: z.array(actionOptionFormSchema),
   })
   .refine(
@@ -75,9 +75,8 @@ export const scaleFormSchema = scaleInputSchema
   });
 
 export const tagFormSchema = tagInputSchema
-  .omit({ missionId: true, order: true, imageFileUploadId: true, isRequired: true })
+  .omit({ missionId: true, order: true, imageFileUploadId: true })
   .extend({
-    isRequired: z.boolean(),
     options: z.array(actionOptionFormSchema),
   })
   .refine(
@@ -96,60 +95,60 @@ export const tagFormSchema = tagInputSchema
     path: ["maxSelections"],
   });
 
-export const subjectiveFormSchema = subjectiveInputSchema
-  .omit({
-    missionId: true,
-    order: true,
-    imageFileUploadId: true,
-    isRequired: true,
-  })
-  .extend({
-    isRequired: z.boolean(),
-  });
+export const subjectiveFormSchema = subjectiveInputSchema.omit({
+  missionId: true,
+  order: true,
+  imageFileUploadId: true,
+});
 
-export const ratingFormSchema = ratingInputSchema
-  .omit({
-    missionId: true,
-    order: true,
-    imageFileUploadId: true,
-    isRequired: true,
-  })
-  .extend({
-    isRequired: z.boolean(),
-  });
+export const ratingFormSchema = ratingInputSchema.omit({
+  missionId: true,
+  order: true,
+  imageFileUploadId: true,
+});
 
 export const imageUploadFormSchema = imageInputSchema
   .omit({
     missionId: true,
     order: true,
     imageFileUploadId: true,
-    isRequired: true,
+    maxSelections: true,
   })
   .extend({
-    isRequired: z.boolean(),
+    maxSelections: z
+      .number()
+      .int()
+      .min(1, "선택 가능 개수는 최소 1개입니다.")
+      .max(10, "선택 가능 개수는 최대 10개입니다.")
+      .optional(),
   });
 
-export const privacyConsentFormSchema = privacyConsentInputSchema
-  .omit({
-    missionId: true,
-    order: true,
-    imageFileUploadId: true,
-    isRequired: true,
-  })
-  .extend({
-    isRequired: z.boolean(),
-  });
+export const pdfUploadFormSchema = pdfInputSchema.omit({
+  missionId: true,
+  order: true,
+  imageFileUploadId: true,
+});
+
+export const videoUploadFormSchema = videoInputSchema.omit({
+  missionId: true,
+  order: true,
+  imageFileUploadId: true,
+});
+
+export const privacyConsentFormSchema = privacyConsentInputSchema.omit({
+  missionId: true,
+  order: true,
+  imageFileUploadId: true,
+});
 
 export const dateFormSchema = dateInputSchema
   .omit({
     missionId: true,
     order: true,
     imageFileUploadId: true,
-    isRequired: true,
     maxSelections: true,
   })
   .extend({
-    isRequired: z.boolean(),
     maxSelections: z
       .number()
       .int()
@@ -163,11 +162,9 @@ export const timeFormSchema = timeInputSchema
     missionId: true,
     order: true,
     imageFileUploadId: true,
-    isRequired: true,
     maxSelections: true,
   })
   .extend({
-    isRequired: z.boolean(),
     maxSelections: z
       .number()
       .int()
@@ -182,6 +179,8 @@ export type SubjectiveFormInput = z.infer<typeof subjectiveFormSchema>;
 export type TagFormInput = z.infer<typeof tagFormSchema>;
 export type RatingFormInput = z.infer<typeof ratingFormSchema>;
 export type ImageUploadFormInput = z.infer<typeof imageUploadFormSchema>;
+export type PdfUploadFormInput = z.infer<typeof pdfUploadFormSchema>;
+export type VideoUploadFormInput = z.infer<typeof videoUploadFormSchema>;
 export type PrivacyConsentFormInput = z.infer<typeof privacyConsentFormSchema>;
 export type DateFormInput = z.infer<typeof dateFormSchema>;
 export type TimeFormInput = z.infer<typeof timeFormSchema>;

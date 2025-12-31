@@ -8,7 +8,7 @@ export interface BaseActionRequest {
   imageUrl?: string;
   imageFileUploadId?: string;
   order: number;
-  isRequired?: boolean;
+  isRequired: boolean;
 }
 
 export interface ActionOptionInput {
@@ -57,8 +57,16 @@ export type CreateSubjectiveActionResponse = BaseActionResponse;
 export type CreateRatingActionRequest = BaseActionRequest;
 export type CreateRatingActionResponse = BaseActionResponse;
 
-export type CreateImageActionRequest = BaseActionRequest;
+export interface CreateImageActionRequest extends BaseActionRequest {
+  maxSelections?: number;
+}
 export type CreateImageActionResponse = BaseActionResponse;
+
+export type CreatePdfActionRequest = BaseActionRequest;
+export type CreatePdfActionResponse = BaseActionResponse;
+
+export type CreateVideoActionRequest = BaseActionRequest;
+export type CreateVideoActionResponse = BaseActionResponse;
 
 export type CreatePrivacyConsentActionRequest = BaseActionRequest;
 export type CreatePrivacyConsentActionResponse = BaseActionResponse;

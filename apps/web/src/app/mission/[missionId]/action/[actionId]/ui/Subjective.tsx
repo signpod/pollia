@@ -29,7 +29,13 @@ export function Subjective({
     helperText,
     validationResult,
     showError,
-  } = useSurveySubjectiveValue(actionData.id, missionResponse, updateCanGoNext, onAnswerChange);
+  } = useSurveySubjectiveValue(
+    actionData.id,
+    actionData.isRequired,
+    missionResponse,
+    updateCanGoNext,
+    onAnswerChange,
+  );
   const isNextDisabled = isNextDisabledProp || !validationResult.success;
   const errorMessage = showError ? validationResult.error?.issues[0]?.message : undefined;
 
@@ -66,6 +72,7 @@ export function Subjective({
 
 function useSurveySubjectiveValue(
   actionId: string,
+  isRequired: boolean,
   missionResponse?: GetMissionResponseResponse,
   updateCanGoNext?: (canGoNext: boolean) => void,
   onAnswerChange?: (answer: ActionAnswerItem) => void,
@@ -101,6 +108,7 @@ function useSurveySubjectiveValue(
       const result = submitAnswerItemSchema.safeParse({
         actionId,
         type: ActionType.SUBJECTIVE,
+        isRequired,
         textAnswer: initialTextValue,
       });
       updateCanGoNextRef.current?.(result.success);
@@ -109,11 +117,12 @@ function useSurveySubjectiveValue(
         onAnswerChangeRef.current?.({
           actionId,
           type: ActionType.SUBJECTIVE,
+          isRequired,
           textAnswer: initialTextValue,
         });
       }
     }
-  }, [initialTextValue, actionId]);
+  }, [initialTextValue, actionId, isRequired]);
 
   function handleSubjectiveValueChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     const value = e.target.value;
@@ -122,6 +131,7 @@ function useSurveySubjectiveValue(
     const result = submitAnswerItemSchema.safeParse({
       actionId,
       type: ActionType.SUBJECTIVE,
+      isRequired,
       textAnswer: value,
     });
     updateCanGoNext?.(result.success);
@@ -130,6 +140,7 @@ function useSurveySubjectiveValue(
       onAnswerChange?.({
         actionId,
         type: ActionType.SUBJECTIVE,
+        isRequired,
         textAnswer: value.trim(),
       });
     }

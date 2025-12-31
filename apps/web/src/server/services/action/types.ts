@@ -33,6 +33,10 @@ export type CreateRatingInput = BaseActionInput;
 
 export type CreateImageInput = BaseActionInput;
 
+export type CreatePdfInput = BaseActionInput;
+
+export type CreateVideoInput = BaseActionInput;
+
 export type CreatePrivacyConsentInput = BaseActionInput;
 
 export type CreateDateInput = BaseActionInput & {

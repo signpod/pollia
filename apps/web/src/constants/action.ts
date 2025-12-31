@@ -95,7 +95,7 @@ export const ACTION_TYPE_LABELS: Record<ActionType, string> = {
   [ActionType.TAG]: "태그",
   [ActionType.IMAGE]: "이미지",
   [ActionType.VIDEO]: "동영상",
-  [ActionType.PDF_UPLOAD]: "PDF 업로드",
+  [ActionType.PDF]: "PDF",
   [ActionType.URL]: "URL",
   [ActionType.DATE]: "날짜",
   [ActionType.TIME]: "시간",

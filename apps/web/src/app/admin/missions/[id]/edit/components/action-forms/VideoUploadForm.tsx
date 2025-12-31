@@ -3,30 +3,27 @@
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { useAdminSingleImage } from "@/app/admin/hooks/use-admin-image-upload";
-import { IMAGE_MAX_SELECTIONS } from "@/schemas/action";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { BaseActionFormFields } from "./BaseActionForm";
-import { MaxSelectionsField } from "./MaxSelectionsField";
-import { type ImageUploadFormInput, imageUploadFormSchema } from "./schemas";
-import type { ActionFormProps, ImageUploadFormData } from "./types";
+import { type VideoUploadFormInput, videoUploadFormSchema } from "./schemas";
+import type { ActionFormProps, VideoUploadFormData } from "./types";
 
-export function ImageUploadForm({
+export function VideoUploadForm({
   isLoading = false,
   onSubmit,
   onCancel,
   initialData,
-}: ActionFormProps<ImageUploadFormData>) {
+}: ActionFormProps<VideoUploadFormData>) {
   const isEditMode = !!initialData;
 
-  const form = useForm<ImageUploadFormInput>({
-    resolver: zodResolver(imageUploadFormSchema),
+  const form = useForm<VideoUploadFormInput>({
+    resolver: zodResolver(videoUploadFormSchema),
     defaultValues: {
       title: initialData?.title || "",
       description: initialData?.description || "",
       imageUrl: initialData?.imageUrl,
       isRequired: initialData?.isRequired ?? true,
-      maxSelections: initialData?.maxSelections,
     },
     mode: "onChange",
   });
@@ -38,15 +35,14 @@ export function ImageUploadForm({
     },
   });
 
-  const handleSubmit = form.handleSubmit((data: ImageUploadFormInput) => {
+  const handleSubmit = form.handleSubmit((data: VideoUploadFormInput) => {
     onSubmit({
-      type: "IMAGE",
+      type: "VIDEO",
       title: data.title,
       description: data.description,
       imageUrl: data.imageUrl || undefined,
       imageFileUploadId: mainImage.uploadedData?.fileUploadId,
       isRequired: data.isRequired,
-      maxSelections: data.maxSelections,
     });
   });
 
@@ -57,19 +53,11 @@ export function ImageUploadForm({
           control={form.control}
           watch={form.watch}
           isLoading={isLoading}
-          titlePlaceholder="예: 사진을 업로드해주세요."
+          titlePlaceholder="예: 동영상을 업로드해주세요."
           mainImagePreviewUrl={mainImage.previewUrl}
           onMainImageSelect={mainImage.selectImage}
           onMainImageDelete={mainImage.clearImage}
-        >
-          <MaxSelectionsField
-            control={form.control}
-            name="maxSelections"
-            maxOptions={IMAGE_MAX_SELECTIONS}
-            disabled={isLoading}
-            isOptional={true}
-          />
-        </BaseActionFormFields>
+        />
 
         <div className="flex justify-end gap-3 pt-4">
           <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
