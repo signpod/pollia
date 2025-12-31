@@ -14,12 +14,14 @@ import {
   DateForm,
   ImageUploadForm,
   MultipleChoiceForm,
+  PdfUploadForm,
   PrivacyConsentForm,
   RatingForm,
   ScaleForm,
   SubjectiveForm,
   TagForm,
   TimeForm,
+  VideoUploadForm,
 } from "./action-forms";
 
 interface EditActionDialogProps {
@@ -162,6 +164,34 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
     case "IMAGE":
       return (
         <ImageUploadForm
+          isLoading={isLoading}
+          onSubmit={onSubmit}
+          onCancel={onCancel}
+          initialData={{
+            title: action.title,
+            description: action.description || undefined,
+            imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
+          }}
+        />
+      );
+    case "PDF":
+      return (
+        <PdfUploadForm
+          isLoading={isLoading}
+          onSubmit={onSubmit}
+          onCancel={onCancel}
+          initialData={{
+            title: action.title,
+            description: action.description || undefined,
+            imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
+          }}
+        />
+      );
+    case "VIDEO":
+      return (
+        <VideoUploadForm
           isLoading={isLoading}
           onSubmit={onSubmit}
           onCancel={onCancel}
