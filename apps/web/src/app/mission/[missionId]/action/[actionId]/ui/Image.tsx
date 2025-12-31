@@ -63,7 +63,7 @@ export function ActionImage({
         onAnswerChangeRef.current?.(answer);
       }
     },
-    [actionData.id],
+    [actionData.id, actionData.isRequired],
   );
 
   useEffect(() => {
