@@ -4,11 +4,11 @@ import { ActionType } from "@/types/domain/action";
 import type { ActionAnswerItem } from "@/types/dto";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
-import { ImageUpload } from "./ImageUpload";
-import { ImageList } from "./components/ImageList";
-import { ImageUploadNotice } from "./components/ImageUploadNotice";
+import { VideoUpload } from "./VideoUpload";
+import { VideoList } from "./components/VideoList";
+import { VideoUploadNotice } from "./components/VideoUploadNotice";
 
-export function ActionImage({
+export function ActionVideo({
   actionData,
   currentOrder,
   totalActionCount,
@@ -22,9 +22,9 @@ export function ActionImage({
   missionResponse,
   isLoading,
 }: ActionStepContentProps) {
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
-  const [imageFileUploadIds, setImageFileUploadIds] = useState<string[]>([]);
-  const [uploadingImageUrl, setUploadingImageUrl] = useState<string | null>(null);
+  const [videoUrls, setVideoUrls] = useState<string[]>([]);
+  const [videoFileUploadIds, setVideoFileUploadIds] = useState<string[]>([]);
+  const [uploadingVideoUrl, setUploadingVideoUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   const existingAnswer = useMemo(() => {
@@ -51,7 +51,7 @@ export function ActionImage({
 
       const answer: ActionAnswerItem = {
         actionId: actionData.id,
-        type: ActionType.IMAGE,
+        type: ActionType.VIDEO,
         isRequired: actionData.isRequired,
         fileUploadIds: fileIds,
       };
@@ -68,29 +68,33 @@ export function ActionImage({
 
   useEffect(() => {
     if (existingAnswer) {
-      setImageUrls([]);
-      setImageFileUploadIds([]);
+      setVideoUrls([]);
+      setVideoFileUploadIds([]);
       validateAndUpdateAnswer([], []);
     }
   }, [existingAnswer, validateAndUpdateAnswer]);
 
   useEffect(() => {
-    validateAndUpdateAnswer(imageUrls, imageFileUploadIds);
-  }, [imageUrls, imageFileUploadIds, validateAndUpdateAnswer]);
+    validateAndUpdateAnswer(videoUrls, videoFileUploadIds);
+  }, [videoUrls, videoFileUploadIds, validateAndUpdateAnswer]);
 
   const handleUploadChange = useCallback(
-    (hasUploadedImage: boolean, newImageUrls: string[], newFileUploadIds: string[]) => {
-      if (hasUploadedImage && newImageUrls.length > 0 && newFileUploadIds.length > 0) {
-        const newImageUrl = newImageUrls[0];
+    (hasUploadedVideo: boolean, newVideoUrls: string[], newFileUploadIds: string[]) => {
+      if (hasUploadedVideo && newVideoUrls.length > 0 && newFileUploadIds.length > 0) {
+        const newVideoUrl = newVideoUrls[0];
         const newFileUploadId = newFileUploadIds[0];
 
-        if (newImageUrl && newFileUploadId) {
-          setUploadingImageUrl(newImageUrl);
-          setImageUrls(prev => [...prev, newImageUrl]);
-          setImageFileUploadIds(prev => [...prev, newFileUploadId]);
+        if (newVideoUrl && newFileUploadId) {
+          setVideoUrls(prev => [...prev, newVideoUrl]);
+          setVideoFileUploadIds(prev => [...prev, newFileUploadId]);
+          // 로컬 URL(blob:)인 경우 uploadingVideoUrl 설정하지 않음 (즉시 완료 처리)
+          // TODO: 백엔드 업로드 구현 시 실제 URL인 경우에만 uploadingVideoUrl 설정
+          // if (!newVideoUrl.startsWith("blob:")) {
+          //   setUploadingVideoUrl(newVideoUrl);
+          // }
         }
-      } else if (!hasUploadedImage) {
-        setUploadingImageUrl(null);
+      } else if (!hasUploadedVideo) {
+        setUploadingVideoUrl(null);
       }
     },
     [],
@@ -100,23 +104,23 @@ export function ActionImage({
     setIsUploading(uploading);
   }, []);
 
-  const handleImageDelete = useCallback((imageUrl: string) => {
+  const handleVideoDelete = useCallback((videoUrl: string) => {
     let deletedIndex = -1;
-    setImageUrls(prev => {
-      const index = prev.indexOf(imageUrl);
+    setVideoUrls(prev => {
+      const index = prev.indexOf(videoUrl);
       if (index === -1) return prev;
       deletedIndex = index;
-      return prev.filter(url => url !== imageUrl);
+      return prev.filter(url => url !== videoUrl);
     });
-    setImageFileUploadIds(prev => {
+    setVideoFileUploadIds(prev => {
       if (deletedIndex === -1) return prev;
       return prev.filter((_, i) => i !== deletedIndex);
     });
-    setUploadingImageUrl(prev => (prev === imageUrl ? null : prev));
+    setUploadingVideoUrl(prev => (prev === videoUrl ? null : prev));
   }, []);
 
-  const handleImageLoadComplete = useCallback((imageUrl: string) => {
-    setUploadingImageUrl(prev => (prev === imageUrl ? null : prev));
+  const handleVideoLoadComplete = useCallback((videoUrl: string) => {
+    setUploadingVideoUrl(prev => (prev === videoUrl ? null : prev));
   }, []);
 
   return (
@@ -133,15 +137,20 @@ export function ActionImage({
       nextButtonText={nextButtonText}
       isLoading={isLoading}
     >
-      <ImageUpload onUploadChange={handleUploadChange} onUploadingChange={handleUploadingChange} />
-      <ImageList
-        imageUrls={imageUrls}
-        uploadingImageUrl={uploadingImageUrl}
+      {videoUrls.length === 0 && (
+        <VideoUpload
+          onUploadChange={handleUploadChange}
+          onUploadingChange={handleUploadingChange}
+        />
+      )}
+      <VideoList
+        videoUrls={videoUrls}
+        uploadingVideoUrl={uploadingVideoUrl}
         isUploading={isUploading}
-        onImageDelete={handleImageDelete}
-        onImageLoadComplete={handleImageLoadComplete}
+        onVideoDelete={handleVideoDelete}
+        onVideoLoadComplete={handleVideoLoadComplete}
       />
-      <ImageUploadNotice />
+      <VideoUploadNotice />
     </SurveyQuestionTemplate>
   );
 }
