@@ -4,12 +4,14 @@ import {
   eitherOrInputSchema,
   imageInputSchema,
   multipleChoiceInputSchema,
+  pdfInputSchema,
   privacyConsentInputSchema,
   ratingInputSchema,
   scaleInputSchema,
   subjectiveInputSchema,
   tagInputSchema,
   timeInputSchema,
+  videoInputSchema,
 } from "@/schemas/action";
 import { actionRepository } from "@/server/repositories/action/actionRepository";
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
@@ -21,12 +23,14 @@ import type {
   CreateEitherOrInput,
   CreateImageInput,
   CreateMultipleChoiceInput,
+  CreatePdfInput,
   CreatePrivacyConsentInput,
   CreateRatingInput,
   CreateScaleInput,
   CreateSubjectiveInput,
   CreateTagInput,
   CreateTimeInput,
+  CreateVideoInput,
   GetActionsOptions,
   UpdateActionInput,
 } from "./types";
@@ -258,6 +262,14 @@ export class ActionService {
 
   async createImageAction(input: CreateImageInput, userId: string): Promise<ActionCreatedResult> {
     return this.createSimpleAction(input, imageInputSchema, ActionType.IMAGE, userId);
+  }
+
+  async createPdfAction(input: CreatePdfInput, userId: string): Promise<ActionCreatedResult> {
+    return this.createSimpleAction(input, pdfInputSchema, ActionType.PDF, userId);
+  }
+
+  async createVideoAction(input: CreateVideoInput, userId: string): Promise<ActionCreatedResult> {
+    return this.createSimpleAction(input, videoInputSchema, ActionType.VIDEO, userId);
   }
 
   async createPrivacyConsentAction(
