@@ -39,7 +39,10 @@ export function MediaUploadNotice({ title, noticeItems }: MediaUploadNoticeProps
     setIsOpen(prev => !prev);
   };
 
-  const contentId = `media-upload-notice-content-${title.replace(/\s+/g, "-")}`;
+  const contentId = `media-upload-notice-content-${title
+    .toLowerCase()
+    .replace(/[^a-z0-9가-힣]+/g, "-")
+    .replace(/^-+|-+$/g, "")}`;
 
   return (
     <div className="w-full p-4 rounded-md bg-zinc-50">

@@ -138,9 +138,7 @@ export function ActionVideo({
     >
       <VideoUpload onUploadChange={handleUploadChange} onUploadingChange={handleUploadingChange} />
       <VideoList
-        videoUrls={[
-          "https://lpgfbjohdashthkhxzab.supabase.co/storage/v1/object/public/action-answer-videos/IMG_6672.MOV",
-        ]}
+        videoUrls={videoUrls}
         uploadingVideoUrl={uploadingVideoUrl}
         isUploading={isUploading}
         onVideoDelete={handleVideoDelete}

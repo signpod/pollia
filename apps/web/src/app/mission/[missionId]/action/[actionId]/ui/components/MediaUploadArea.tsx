@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { Typo } from "@repo/ui/components";
-import { ImageIcon } from "lucide-react";
+import { ImageIcon, VideoIcon } from "lucide-react";
 
 interface MediaUploadAreaProps {
   inputRef: React.RefObject<HTMLInputElement | null>;
@@ -11,6 +11,7 @@ interface MediaUploadAreaProps {
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   accept?: string;
   buttonText?: string;
+  icon?: "image" | "video";
 }
 
 export function MediaUploadArea({
@@ -20,7 +21,10 @@ export function MediaUploadArea({
   onFileChange,
   accept = "image/*,.heic,.heif",
   buttonText = "사진 첨부",
+  icon = "image",
 }: MediaUploadAreaProps) {
+  const IconComponent = icon === "video" ? VideoIcon : ImageIcon;
+
   return (
     <div className="flex flex-col gap-2 w-full relative rounded-sm overflow-hidden min-h-[144px]">
       <input
@@ -48,7 +52,7 @@ export function MediaUploadArea({
         )}
       >
         <div className="flex items-center justify-center size-12 bg-light rounded-full">
-          <ImageIcon className="size-6 text-info" />
+          <IconComponent className="size-6 text-info" />
         </div>
 
         <Typo.ButtonText size="large" className="text-info">

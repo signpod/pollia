@@ -53,12 +53,13 @@ export function VideoUpload({ onUploadChange, onUploadingChange }: VideoUploadPr
         return;
       }
 
+      // TODO: 백엔드 업로드 구현 전까지 임시 로직
       // 로컬에서만 동작: Object URL 생성
       setIsUploading(true);
       onUploadingChange?.(true);
 
       const videoUrl = URL.createObjectURL(file);
-      // TODO: 백엔드 업로드 구현 시 실제 fileUploadId 사용
+      // TODO: 백엔드 업로드 구현 시 실제 fileUploadId 사용 (현재는 임시 ID)
       const temporaryFileUploadId = `temp-${Date.now()}-${Math.random().toString(36).substring(7)}`;
 
       // 로컬 URL과 임시 ID 전달
@@ -66,7 +67,7 @@ export function VideoUpload({ onUploadChange, onUploadingChange }: VideoUploadPr
       setIsUploading(false);
       onUploadingChange?.(false);
 
-      // TODO: 백엔드 업로드 구현 시 실제 업로드 로직 사용
+      // TODO: 백엔드 업로드 구현 시 아래 주석 해제하고 위의 임시 로직 제거
       // upload(file);
 
       if (inputRef.current) {
@@ -84,6 +85,7 @@ export function VideoUpload({ onUploadChange, onUploadingChange }: VideoUploadPr
       onFileChange={handleFileChange}
       accept="video/*"
       buttonText="동영상 첨부"
+      icon="video"
     />
   );
 }
