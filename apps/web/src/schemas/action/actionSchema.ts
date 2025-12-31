@@ -65,7 +65,7 @@ const baseActionSchema = z.object({
 
 export const multipleChoiceInputSchema = baseActionSchema
   .extend({
-    maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다."),
+    maxSelections: z.number().int().min(1, "객관식 선택 가능 개수는 최소 1개입니다."),
     options: z
       .array(actionOptionSchema)
       .min(
@@ -75,7 +75,7 @@ export const multipleChoiceInputSchema = baseActionSchema
       .max(MULTIPLE_CHOICE_MAX_OPTIONS, `최대 ${MULTIPLE_CHOICE_MAX_OPTIONS}개까지 가능합니다.`),
   })
   .refine(data => data.maxSelections <= data.options.length, {
-    message: "선택 가능 개수는 옵션 개수를 초과할 수 없습니다.",
+    message: "객관식 선택 가능 개수는 옵션 개수를 초과할 수 없습니다.",
     path: ["maxSelections"],
   });
 
@@ -92,21 +92,21 @@ export const eitherOrInputSchema = baseActionSchema;
 
 export const tagInputSchema = baseActionSchema
   .extend({
-    maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다.").optional(),
+    maxSelections: z.number().int().min(1, "태그 선택 가능 개수는 최소 1개입니다.").optional(),
     options: z
       .array(actionOptionSchema)
       .min(TAG_MIN_OPTIONS, `최소 ${TAG_MIN_OPTIONS}개 이상의 항목이 필요합니다.`)
       .max(TAG_MAX_OPTIONS, `최대 ${TAG_MAX_OPTIONS}개까지 가능합니다.`),
   })
   .refine(data => !data.maxSelections || data.maxSelections <= data.options.length, {
-    message: "선택 가능 개수는 옵션 개수를 초과할 수 없습니다.",
+    message: "태그 선택 가능 개수는 옵션 개수를 초과할 수 없습니다.",
     path: ["maxSelections"],
   });
 
 export const ratingInputSchema = baseActionSchema;
 
 export const imageInputSchema = baseActionSchema.extend({
-  maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다.").optional(),
+  maxSelections: z.number().int().min(1, "이미지 선택 가능 개수는 최소 1개입니다.").optional(),
 });
 
 export const pdfInputSchema = baseActionSchema;
@@ -116,11 +116,11 @@ export const videoInputSchema = baseActionSchema;
 export const privacyConsentInputSchema = baseActionSchema;
 
 export const dateInputSchema = baseActionSchema.extend({
-  maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다."),
+  maxSelections: z.number().int().min(1, "날짜 선택 가능 개수는 최소 1개입니다."),
 });
 
 export const timeInputSchema = baseActionSchema.extend({
-  maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다."),
+  maxSelections: z.number().int().min(1, "시간 선택 가능 개수는 최소 1개입니다."),
 });
 
 export const actionUpdateSchema = z

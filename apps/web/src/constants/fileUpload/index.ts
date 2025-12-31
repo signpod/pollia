@@ -1,5 +1,7 @@
 import { ActionType } from "@prisma/client";
 
+const MB = 1024 * 1024;
+
 export type FileUploadActionType =
   | typeof ActionType.IMAGE
   | typeof ActionType.PDF
@@ -25,9 +27,9 @@ export const ALLOWED_FILE_EXTENSIONS: Record<FileUploadActionType, readonly stri
 } as const;
 
 export const MAX_FILE_SIZE: Record<FileUploadActionType, number> = {
-  [ActionType.IMAGE]: 5 * 1024 * 1024,
-  [ActionType.PDF]: 50 * 1024 * 1024,
-  [ActionType.VIDEO]: 50 * 1024 * 1024,
+  [ActionType.IMAGE]: 5 * MB,
+  [ActionType.PDF]: 50 * MB,
+  [ActionType.VIDEO]: 50 * MB,
 } as const;
 
 export const FILE_SIZE_LABELS: Record<FileUploadActionType, string> = {
