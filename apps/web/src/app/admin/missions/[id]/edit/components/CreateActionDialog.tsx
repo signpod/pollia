@@ -19,12 +19,14 @@ import {
   DateForm,
   ImageUploadForm,
   MultipleChoiceForm,
+  PdfUploadForm,
   PrivacyConsentForm,
   RatingForm,
   ScaleForm,
   SubjectiveForm,
   TagForm,
   TimeForm,
+  VideoUploadForm,
 } from "./action-forms";
 
 interface CreateActionDialogProps {
@@ -180,6 +182,10 @@ function ActionForm({ type, isLoading, onSubmit, onCancel }: ActionFormProps) {
       return <SubjectiveForm isLoading={isLoading} onSubmit={onSubmit} onCancel={onCancel} />;
     case "IMAGE":
       return <ImageUploadForm isLoading={isLoading} onSubmit={onSubmit} onCancel={onCancel} />;
+    case "PDF":
+      return <PdfUploadForm isLoading={isLoading} onSubmit={onSubmit} onCancel={onCancel} />;
+    case "VIDEO":
+      return <VideoUploadForm isLoading={isLoading} onSubmit={onSubmit} onCancel={onCancel} />;
     case "PRIVACY_CONSENT":
       return <PrivacyConsentForm isLoading={isLoading} onSubmit={onSubmit} onCancel={onCancel} />;
     case "DATE":
