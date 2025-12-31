@@ -25,6 +25,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   ActionImage,
   ActionTag,
+  ActionUrl,
   MissionRatingScale,
   MissionStarScale,
   MultipleChoice,
@@ -96,6 +97,7 @@ function ActionContent() {
       Subjective: Subjective,
       Rating: MissionStarScale,
       Image: ActionImage,
+      Url: ActionUrl,
       Tag: ActionTag,
     },
   });
@@ -234,7 +236,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
         return submittedScaleValue !== null && submittedScaleValue === answer.scaleValue;
       }
 
-      if (answer.type === ActionType.SUBJECTIVE) {
+      if (answer.type === ActionType.SUBJECTIVE || answer.type === ActionType.URL) {
         const submittedTextAnswer = answersForAction[0]?.textAnswer;
         return submittedTextAnswer !== null && submittedTextAnswer === answer.textAnswer;
       }
@@ -242,7 +244,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
       if (answer.type === ActionType.IMAGE) {
         // TODO: fileUploads 배열 비교로 변경 필요
         const hasFileUploads = answer.fileUploadIds && answer.fileUploadIds.length > 0;
-        return hasFileUploads === false; // 임시: 항상 제출하도록
+        return hasFileUploads === false; // TODO: 임시: 항상 제출하도록
       }
 
       return false;
