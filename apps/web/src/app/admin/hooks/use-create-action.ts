@@ -38,7 +38,7 @@ interface CreateActionInput {
   imageUrl?: string;
   imageFileUploadId?: string;
   order: number;
-  isRequired?: boolean;
+  isRequired: boolean;
   options?: {
     title: string;
     description?: string;
@@ -68,7 +68,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageUrl: input.imageUrl,
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
-            isRequired: input.isRequired ?? true,
+            isRequired: input.isRequired,
             maxSelections: input.maxSelections ?? 1,
             options:
               input.options?.map((opt, index) => ({
@@ -90,7 +90,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageUrl: input.imageUrl,
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
-            isRequired: input.isRequired ?? true,
+            isRequired: input.isRequired,
             options:
               input.options?.map((opt, index) => ({
                 title: opt.title,
@@ -111,7 +111,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageUrl: input.imageUrl,
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
-            isRequired: input.isRequired ?? true,
+            isRequired: input.isRequired,
           };
           return await createSubjectiveAction(request);
         }
@@ -124,7 +124,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageUrl: input.imageUrl,
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
-            isRequired: input.isRequired ?? true,
+            isRequired: input.isRequired,
             maxSelections: input.maxSelections ?? 1,
             options:
               input.options?.map((opt, index) => ({
@@ -146,7 +146,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageUrl: input.imageUrl,
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
-            isRequired: input.isRequired ?? true,
+            isRequired: input.isRequired,
           };
           return await createRatingAction(request);
         }
@@ -159,7 +159,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageUrl: input.imageUrl,
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
-            isRequired: input.isRequired ?? true,
+            isRequired: input.isRequired,
             maxSelections: input.maxSelections,
           };
           return await createImageAction(request);
@@ -173,7 +173,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageUrl: input.imageUrl,
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
-            isRequired: input.isRequired ?? true,
+            isRequired: input.isRequired,
           };
           return await createPdfAction(request);
         }
@@ -186,7 +186,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageUrl: input.imageUrl,
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
-            isRequired: input.isRequired ?? true,
+            isRequired: input.isRequired,
           };
           return await createVideoAction(request);
         }
@@ -199,7 +199,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageUrl: input.imageUrl,
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
-            isRequired: input.isRequired ?? true,
+            isRequired: input.isRequired,
           };
           return await createPrivacyConsentAction(request);
         }
@@ -212,7 +212,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageUrl: input.imageUrl,
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
-            isRequired: input.isRequired ?? true,
+            isRequired: input.isRequired,
             maxSelections: input.maxSelections ?? 1,
           };
           return await createDateAction(request);
@@ -226,7 +226,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageUrl: input.imageUrl,
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
-            isRequired: input.isRequired ?? true,
+            isRequired: input.isRequired,
             maxSelections: input.maxSelections ?? 1,
           };
           return await createTimeAction(request);

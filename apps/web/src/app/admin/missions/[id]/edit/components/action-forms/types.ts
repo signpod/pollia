@@ -14,7 +14,7 @@ export interface BaseActionFormData {
   description?: string;
   imageUrl?: string;
   imageFileUploadId?: string;
-  isRequired?: boolean;
+  isRequired: boolean;
 }
 
 export interface MultipleChoiceFormData extends BaseActionFormData {

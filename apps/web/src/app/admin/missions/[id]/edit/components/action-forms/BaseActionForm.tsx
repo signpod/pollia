@@ -126,7 +126,7 @@ export function BaseActionFormFields<TFieldValues extends FieldValues>({
         control={control}
         name={"isRequired" as Path<TFieldValues>}
         render={({ field }) => (
-          <FormItem>
+          <FormItem className="space-y-2">
             <FormLabel>필수 응답</FormLabel>
             <FormControl>
               <Switch checked={field.value} onCheckedChange={field.onChange} disabled={isLoading} />

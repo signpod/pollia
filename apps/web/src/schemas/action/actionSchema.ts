@@ -13,9 +13,9 @@ export const MULTIPLE_CHOICE_MAX_OPTIONS = 10;
 export const SCALE_MIN_OPTIONS = 3;
 export const SCALE_MAX_OPTIONS = 10;
 
-export const MAX_IMAGE_SELECTIONS = 10;
-export const MAX_DATE_SELECTIONS = 20;
-export const MAX_TIME_SELECTIONS = 20;
+export const IMAGE_MAX_SELECTIONS = 10;
+export const DATE_MAX_SELECTIONS = 20;
+export const TIME_MAX_SELECTIONS = 20;
 
 export const actionTitleSchema = z
   .string()
