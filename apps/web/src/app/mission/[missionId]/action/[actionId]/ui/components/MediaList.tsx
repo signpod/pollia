@@ -6,7 +6,6 @@ interface MediaListProps {
   mediaUrls: string[];
   uploadingMediaUrl: string | null;
   isUploading: boolean;
-  maxCount: number;
   mediaType: "image" | "video";
   onMediaDelete: (mediaUrl: string) => void;
   onMediaLoadComplete: (mediaUrl: string) => void;
@@ -26,9 +25,9 @@ export function MediaList({
     return null;
   }
 
-  const firstMediaUrl = mediaUrls[0];
-
-  if (isSingleUploadMode && firstMediaUrl) {
+  if (isSingleUploadMode && mediaUrls.length > 0) {
+    const firstMediaUrl = mediaUrls[0];
+    if (!firstMediaUrl) return null;
     return (
       <div className="relative w-full aspect-square rounded-sm overflow-hidden border border-zinc-200 bg-white">
         <MediaItem

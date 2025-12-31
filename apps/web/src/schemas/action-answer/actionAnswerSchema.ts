@@ -104,16 +104,7 @@ export const submitAnswerItemSchema = z
   )
   .refine(
     data => {
-      if (data.type === ActionType.VIDEO) {
-        return data.fileUploadIds && data.fileUploadIds.length > 0;
-      }
-      return true;
-    },
-    { message: "동영상은 필수입니다." },
-  )
-  .refine(
-    data => {
-      if (data.type === ActionType.VIDEO) {
+      if (data.type === ActionType.VIDEO && data.isRequired) {
         return data.fileUploadIds && data.fileUploadIds.length > 0;
       }
       return true;
@@ -128,15 +119,6 @@ export const submitAnswerItemSchema = z
       return true;
     },
     { message: "PDF 파일은 필수입니다." },
-  )
-  .refine(
-    data => {
-      if (data.type === ActionType.VIDEO && data.isRequired) {
-        return data.fileUploadIds && data.fileUploadIds.length > 0;
-      }
-      return true;
-    },
-    { message: "동영상 파일은 필수입니다." },
   )
   .refine(
     data => {

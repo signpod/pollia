@@ -1,6 +1,5 @@
 "use client";
 
-import { MAX_VIDEO_UPLOAD_COUNT } from "@/constants/video";
 import { MediaList } from "./MediaList";
 
 interface VideoListProps {
@@ -24,7 +23,6 @@ export function VideoList({
       mediaUrls={videoUrls}
       uploadingMediaUrl={uploadingVideoUrl}
       isUploading={isUploading}
-      maxCount={MAX_VIDEO_UPLOAD_COUNT}
       mediaType="video"
       onMediaDelete={onVideoDelete}
       onMediaLoadComplete={onVideoLoadComplete}

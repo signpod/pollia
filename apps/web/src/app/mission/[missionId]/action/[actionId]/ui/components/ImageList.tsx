@@ -1,8 +1,8 @@
 "use client";
 
 import { MAX_IMAGE_UPLOAD_COUNT } from "@/constants/image";
+import { cn } from "@/lib/utils";
 import { Typo } from "@repo/ui/components";
-import { cn } from "@repo/ui/lib";
 import { MediaList } from "./MediaList";
 
 interface ImageListProps {
@@ -34,7 +34,6 @@ export function ImageList({
         mediaUrls={imageUrls}
         uploadingMediaUrl={uploadingImageUrl}
         isUploading={isUploading}
-        maxCount={MAX_IMAGE_UPLOAD_COUNT}
         mediaType="image"
         onMediaDelete={onImageDelete}
         onMediaLoadComplete={onImageLoadComplete}

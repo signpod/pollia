@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { Typo } from "@repo/ui/components";
 import { motion } from "framer-motion";
 import { ChevronDownIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 interface MediaUploadNoticeProps {
   title: string;
@@ -15,6 +15,7 @@ export function MediaUploadNotice({ title, noticeItems }: MediaUploadNoticeProps
   const [isOpen, setIsOpen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState<number>(0);
+  const contentId = useId();
 
   useEffect(() => {
     if (contentRef.current) {
@@ -38,11 +39,6 @@ export function MediaUploadNotice({ title, noticeItems }: MediaUploadNoticeProps
   const toggle = () => {
     setIsOpen(prev => !prev);
   };
-
-  const contentId = `media-upload-notice-content-${title
-    .toLowerCase()
-    .replace(/[^a-z0-9가-힣]+/g, "-")
-    .replace(/^-+|-+$/g, "")}`;
 
   return (
     <div className="w-full p-4 rounded-md bg-zinc-50">

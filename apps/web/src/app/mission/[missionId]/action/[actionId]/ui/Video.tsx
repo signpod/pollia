@@ -52,6 +52,7 @@ export function ActionVideo({
       const answer: ActionAnswerItem = {
         actionId: actionData.id,
         type: ActionType.VIDEO,
+        isRequired: actionData.isRequired,
         fileUploadIds: fileIds,
       };
 
@@ -62,7 +63,7 @@ export function ActionVideo({
         onAnswerChangeRef.current?.(answer);
       }
     },
-    [actionData.id],
+    [actionData.id, actionData.isRequired],
   );
 
   useEffect(() => {

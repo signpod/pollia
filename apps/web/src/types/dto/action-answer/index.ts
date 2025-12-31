@@ -43,6 +43,7 @@ export type ActionAnswerItem =
   | {
       actionId: string;
       type: typeof ActionType.VIDEO;
+      isRequired: boolean;
       fileUploadIds: string[];
     }
   | {
