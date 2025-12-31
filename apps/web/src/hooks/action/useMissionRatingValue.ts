@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 interface UseMissionRatingValueOptions {
   actionId: string;
+  isRequired: boolean;
   missionResponse?: GetMissionResponseResponse;
   updateCanGoNext?: (canGoNext: boolean) => void;
   onAnswerChange?: (answer: ActionAnswerItem) => void;
@@ -12,6 +13,7 @@ interface UseMissionRatingValueOptions {
 
 export function useMissionRatingValue({
   actionId,
+  isRequired,
   missionResponse,
   updateCanGoNext,
   onAnswerChange,
@@ -49,6 +51,7 @@ export function useMissionRatingValue({
       onAnswerChangeRef.current?.({
         actionId,
         type: ActionType.RATING,
+        isRequired,
         scaleValue: initialScaleValue,
       });
     }
@@ -64,6 +67,7 @@ export function useMissionRatingValue({
     onAnswerChange?.({
       actionId,
       type: ActionType.RATING,
+      isRequired,
       scaleValue: value,
     });
   };

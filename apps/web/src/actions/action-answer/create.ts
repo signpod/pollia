@@ -26,6 +26,7 @@ function toSubmitAnswersInput(dto: SubmitActionAnswersRequest): SubmitAnswersInp
     answers: dto.answers.map(a => ({
       actionId: a.actionId,
       type: a.type,
+      isRequired: a.isRequired,
       selectedOptionIds: a.selectedOptionIds,
       scaleValue: a.scaleValue,
       textAnswer: a.textAnswer,

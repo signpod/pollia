@@ -1,7 +1,16 @@
 "use client";
 
 import { Button } from "@/app/admin/components/shadcn-ui/button";
-import { Form } from "@/app/admin/components/shadcn-ui/form";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/app/admin/components/shadcn-ui/form";
+import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { useAdminSingleImage } from "@/app/admin/hooks/use-admin-image-upload";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -24,6 +33,7 @@ export function ImageUploadForm({
       description: initialData?.description || "",
       imageUrl: initialData?.imageUrl,
       isRequired: initialData?.isRequired ?? true,
+      maxSelections: initialData?.maxSelections,
     },
     mode: "onChange",
   });
@@ -43,6 +53,7 @@ export function ImageUploadForm({
       imageUrl: data.imageUrl || undefined,
       imageFileUploadId: mainImage.uploadedData?.fileUploadId,
       isRequired: data.isRequired,
+      maxSelections: data.maxSelections,
     });
   });
 
@@ -57,7 +68,35 @@ export function ImageUploadForm({
           mainImagePreviewUrl={mainImage.previewUrl}
           onMainImageSelect={mainImage.selectImage}
           onMainImageDelete={mainImage.clearImage}
-        />
+        >
+          <FormField
+            control={form.control}
+            name="maxSelections"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>선택 가능 개수</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={10}
+                    placeholder="1 (기본값)"
+                    {...field}
+                    value={field.value ?? ""}
+                    onChange={e =>
+                      field.onChange(e.target.value ? Number(e.target.value) : undefined)
+                    }
+                    disabled={isLoading}
+                  />
+                </FormControl>
+                <FormDescription>
+                  사용자가 선택할 수 있는 이미지 개수입니다. 비워두면 자동으로 1개로 설정됩니다.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </BaseActionFormFields>
 
         <div className="flex justify-end gap-3 pt-4">
           <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>

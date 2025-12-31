@@ -28,6 +28,7 @@ export function useSubmitActionAnswer(options: UseSubmitActionAnswerOptions) {
           {
             actionId: answer.actionId,
             type: answer.type,
+            isRequired: answer.isRequired,
             ...(answer.type === "MULTIPLE_CHOICE" || answer.type === "TAG"
               ? { selectedOptionIds: answer.selectedOptionIds }
               : {}),

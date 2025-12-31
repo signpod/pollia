@@ -60,7 +60,7 @@ const baseActionSchema = z.object({
   imageUrl: actionImageUrlSchema,
   imageFileUploadId: z.string().optional(),
   order: actionOrderSchema,
-  isRequired: z.boolean().default(true),
+  isRequired: z.boolean(),
 });
 
 export const multipleChoiceInputSchema = baseActionSchema
