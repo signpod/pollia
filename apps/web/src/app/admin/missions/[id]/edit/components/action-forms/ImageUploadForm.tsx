@@ -1,20 +1,12 @@
 "use client";
 
 import { Button } from "@/app/admin/components/shadcn-ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/app/admin/components/shadcn-ui/form";
-import { Input } from "@/app/admin/components/shadcn-ui/input";
+import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { useAdminSingleImage } from "@/app/admin/hooks/use-admin-image-upload";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { BaseActionFormFields } from "./BaseActionForm";
+import { MaxSelectionsField } from "./MaxSelectionsField";
 import { type ImageUploadFormInput, imageUploadFormSchema } from "./schemas";
 import type { ActionFormProps, ImageUploadFormData } from "./types";
 
@@ -69,32 +61,12 @@ export function ImageUploadForm({
           onMainImageSelect={mainImage.selectImage}
           onMainImageDelete={mainImage.clearImage}
         >
-          <FormField
+          <MaxSelectionsField
             control={form.control}
             name="maxSelections"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>선택 가능 개수</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    min={1}
-                    max={10}
-                    placeholder="1 (기본값)"
-                    {...field}
-                    value={field.value ?? ""}
-                    onChange={e =>
-                      field.onChange(e.target.value ? Number(e.target.value) : undefined)
-                    }
-                    disabled={isLoading}
-                  />
-                </FormControl>
-                <FormDescription>
-                  사용자가 선택할 수 있는 이미지 개수입니다. 비워두면 자동으로 1개로 설정됩니다.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
+            maxOptions={10}
+            disabled={isLoading}
+            isOptional={true}
           />
         </BaseActionFormFields>
 
