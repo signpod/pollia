@@ -2,8 +2,9 @@
 
 import { cn } from "@/lib/utils";
 import { formatFileSize } from "@/lib/utils";
+import PdfIcon from "@public/svgs/pdf-icon.svg";
 import { Typo } from "@repo/ui/components";
-import { FileIcon, Loader2Icon, XIcon } from "lucide-react";
+import { Loader2Icon, XIcon } from "lucide-react";
 
 interface FileItemProps {
   fileName: string;
@@ -22,6 +23,17 @@ export function FileItem({ fileName, fileSize, isUploading, onDelete, onClick }:
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (isUploading) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      e.stopPropagation();
+      if (onClick) {
+        onClick();
+      }
+    }
+  };
+
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onDelete();
@@ -35,10 +47,11 @@ export function FileItem({ fileName, fileSize, isUploading, onDelete, onClick }:
         !isUploading && onClick && "cursor-pointer hover:bg-zinc-50 transition-colors",
       )}
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick && !isUploading ? 0 : undefined}
     >
-      <div className="flex items-center justify-center size-10 bg-light rounded-sm flex-shrink-0">
-        <FileIcon className="size-5 text-info" />
-      </div>
+      <PdfIcon className="size-8 text-info" />
 
       <div className="flex-1 min-w-0">
         <Typo.Body size="medium" className="text-zinc-900 truncate">
@@ -50,12 +63,12 @@ export function FileItem({ fileName, fileSize, isUploading, onDelete, onClick }:
       </div>
 
       {isUploading ? (
-        <Loader2Icon className="size-5 text-info animate-spin flex-shrink-0" />
+        <Loader2Icon className="size-5 text-info animate-spin shrink-0" />
       ) : (
         <button
           type="button"
           onClick={handleDeleteClick}
-          className="flex items-center justify-center size-8 rounded-sm hover:bg-zinc-100 transition-colors flex-shrink-0"
+          className="flex items-center justify-center size-8 rounded-sm hover:bg-zinc-100 transition-colors shrink-0"
         >
           <XIcon className="size-4 text-zinc-500" />
         </button>
@@ -63,4 +76,3 @@ export function FileItem({ fileName, fileSize, isUploading, onDelete, onClick }:
     </div>
   );
 }
-
