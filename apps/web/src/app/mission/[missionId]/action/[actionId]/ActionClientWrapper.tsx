@@ -24,6 +24,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import {
   ActionImage,
+  ActionPdf,
   ActionTag,
   ActionUrl,
   ActionVideo,
@@ -101,6 +102,7 @@ function ActionContent() {
       Video: ActionVideo,
       Url: ActionUrl,
       Tag: ActionTag,
+      Pdf: ActionPdf,
     },
   });
 
@@ -243,7 +245,11 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
         return submittedTextAnswer !== null && submittedTextAnswer === answer.textAnswer;
       }
 
-      if (answer.type === ActionType.IMAGE) {
+      if (
+        answer.type === ActionType.IMAGE ||
+        answer.type === ActionType.VIDEO ||
+        answer.type === ActionType.PDF
+      ) {
         // TODO: fileUploads 배열 비교로 변경 필요
         const hasFileUploads = answer.fileUploadIds && answer.fileUploadIds.length > 0;
         return hasFileUploads === false; // TODO: 임시: 항상 제출하도록
@@ -294,7 +300,9 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
                 ...(currentAnswer.type === "SUBJECTIVE"
                   ? { textAnswer: currentAnswer.textAnswer }
                   : {}),
-                ...(currentAnswer.type === "IMAGE"
+                ...(currentAnswer.type === "IMAGE" ||
+                currentAnswer.type === "VIDEO" ||
+                currentAnswer.type === "PDF"
                   ? { fileUploadIds: currentAnswer.fileUploadIds }
                   : {}),
               },

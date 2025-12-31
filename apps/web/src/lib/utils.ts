@@ -164,3 +164,18 @@ export function cleanTiptapHTML(html: string): string {
 
   return cleaned;
 }
+
+/**
+ * 바이트를 읽기 쉬운 파일 크기 문자열로 변환합니다.
+ * @param bytes - 변환할 바이트 수
+ * @returns 포맷된 파일 크기 문자열 (예: "1.5 MB", "500 KB")
+ */
+export function formatFileSize(bytes: number): string {
+  if (bytes === 0) return "0 Bytes";
+
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
+}

@@ -8,3 +8,4 @@ export * from "./Video";
 export * from "./Url";
 export * from "./Tag";
 export * from "./Chip";
+export * from "./Pdf";
