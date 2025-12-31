@@ -27,6 +27,7 @@ describe("ActionService - Create", () => {
         imageUrl: undefined,
         order: 0,
         maxSelections: 1,
+        isRequired: true,
         options: [
           {
             title: "빨강",
@@ -142,7 +143,7 @@ describe("ActionService - Create", () => {
       );
     });
 
-    it("isRequired를 명시하지 않으면 기본값(true)으로 생성한다", async () => {
+    it("isRequired를 명시적으로 true로 설정하여 필수 액션을 생성한다", async () => {
       // Given
       const mockMission = mockMissionFactory();
       const request = {
@@ -150,6 +151,7 @@ describe("ActionService - Create", () => {
         title: "좋아하는 색은?",
         order: 0,
         maxSelections: 1,
+        isRequired: true,
         options: [
           { title: "빨강", order: 0 },
           { title: "파랑", order: 1 },
@@ -188,6 +190,7 @@ describe("ActionService - Create", () => {
         title: "액션",
         order: 0,
         maxSelections: 1,
+        isRequired: true,
         options: [
           { title: "옵션 1", order: 0 },
           { title: "옵션 2", order: 1 },
@@ -217,6 +220,7 @@ describe("ActionService - Create", () => {
         title: "액션",
         order: 0,
         maxSelections: 1,
+        isRequired: true,
         options: [
           { title: "옵션 1", order: 0 },
           { title: "옵션 2", order: 1 },
@@ -238,6 +242,7 @@ describe("ActionService - Create", () => {
         title: "액션",
         order: 0,
         maxSelections: 1,
+        isRequired: true,
         options: [{ title: "옵션 1", order: 0 }],
       };
 
@@ -262,6 +267,7 @@ describe("ActionService - Create", () => {
         title: "액션",
         order: 0,
         maxSelections: 1,
+        isRequired: true,
         options: [],
       };
 
@@ -284,6 +290,7 @@ describe("ActionService - Create", () => {
         description: "1-5점",
         imageUrl: undefined,
         order: 0,
+        isRequired: true,
         options: [
           {
             title: "매우 불만족",
@@ -379,6 +386,7 @@ describe("ActionService - Create", () => {
         missionId: "mission1",
         title: "만족도를 평가해주세요",
         order: 0,
+        isRequired: true,
         options: [
           { title: "척도 1", order: 0 },
           { title: "척도 2", order: 1 },
@@ -408,6 +416,7 @@ describe("ActionService - Create", () => {
         missionId: "invalid-mission",
         title: "만족도를 평가해주세요",
         order: 0,
+        isRequired: true,
         options: [
           { title: "척도 1", order: 0 },
           { title: "척도 2", order: 1 },
@@ -437,6 +446,7 @@ describe("ActionService - Create", () => {
         missionId: "mission1",
         title: "만족도를 평가해주세요",
         order: 0,
+        isRequired: true,
         options: [
           { title: "척도 1", order: 0 },
           { title: "척도 2", order: 1 },
@@ -468,6 +478,7 @@ describe("ActionService - Create", () => {
         description: "상세히 작성해주세요",
         imageUrl: undefined,
         order: 0,
+        isRequired: true,
       };
       const mockCreatedAction = {
         id: "action1",
@@ -519,6 +530,7 @@ describe("ActionService - Create", () => {
         missionId: "mission1",
         title: "의견을 자유롭게 작성해주세요",
         order: 0,
+        isRequired: true,
       };
 
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
@@ -543,6 +555,7 @@ describe("ActionService - Create", () => {
         missionId: "invalid-mission",
         title: "의견을 자유롭게 작성해주세요",
         order: 0,
+        isRequired: true,
       };
 
       ctx.mockMissionRepo.findById.mockResolvedValue(null);
@@ -572,6 +585,7 @@ describe("ActionService - Create", () => {
         description: "서비스 이용을 위해 개인정보 수집에 동의해주세요",
         imageUrl: undefined,
         order: 0,
+        isRequired: true,
       };
       const mockCreatedAction = {
         id: "action1",
@@ -624,6 +638,7 @@ describe("ActionService - Create", () => {
         missionId: "mission1",
         title: "개인정보 수집 및 이용 동의",
         order: 0,
+        isRequired: true,
       };
 
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
@@ -648,6 +663,7 @@ describe("ActionService - Create", () => {
         missionId: "invalid-mission",
         title: "개인정보 수집 및 이용 동의",
         order: 0,
+        isRequired: true,
       };
 
       ctx.mockMissionRepo.findById.mockResolvedValue(null);
@@ -673,6 +689,7 @@ describe("ActionService - Create", () => {
       const request = {
         title: "A와 B 중 선택하세요",
         order: 0,
+        isRequired: true,
       };
       const mockCreatedAction = {
         id: "action1",
@@ -710,6 +727,7 @@ describe("ActionService - Create", () => {
         missionId: "mission1",
         title: "A와 B 중 선택하세요",
         order: 0,
+        isRequired: true,
       };
       const mockCreatedAction = {
         id: "action1",
@@ -749,6 +767,7 @@ describe("ActionService - Create", () => {
         missionId: "mission1",
         title: "A와 B 중 선택하세요",
         order: 0,
+        isRequired: true,
       };
 
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
@@ -773,6 +792,7 @@ describe("ActionService - Create", () => {
         missionId: "invalid-mission",
         title: "A와 B 중 선택하세요",
         order: 0,
+        isRequired: true,
       };
 
       ctx.mockMissionRepo.findById.mockResolvedValue(null);
@@ -796,6 +816,7 @@ describe("ActionService - Create", () => {
       const request = {
         title: "",
         order: 0,
+        isRequired: true,
       };
 
       // When & Then
@@ -818,6 +839,7 @@ describe("ActionService - Create", () => {
         imageUrl: undefined,
         order: 0,
         maxSelections: 3,
+        isRequired: true,
       };
       const mockCreatedAction = {
         id: "action1",
@@ -913,6 +935,7 @@ describe("ActionService - Create", () => {
         title: "방문 가능한 날짜를 선택해주세요",
         order: 0,
         maxSelections: 1,
+        isRequired: true,
       };
 
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
@@ -938,6 +961,7 @@ describe("ActionService - Create", () => {
         title: "방문 가능한 날짜를 선택해주세요",
         order: 0,
         maxSelections: 1,
+        isRequired: true,
       };
 
       ctx.mockMissionRepo.findById.mockResolvedValue(null);
@@ -962,6 +986,7 @@ describe("ActionService - Create", () => {
         missionId: "mission1",
         title: "방문 가능한 날짜를 선택해주세요",
         order: 0,
+        isRequired: true,
       };
 
       // When & Then
@@ -982,6 +1007,7 @@ describe("ActionService - Create", () => {
         imageUrl: undefined,
         order: 0,
         maxSelections: 2,
+        isRequired: true,
       };
       const mockCreatedAction = {
         id: "action1",
@@ -1077,6 +1103,7 @@ describe("ActionService - Create", () => {
         title: "방문 가능한 시간을 선택해주세요",
         order: 0,
         maxSelections: 1,
+        isRequired: true,
       };
 
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
@@ -1102,6 +1129,7 @@ describe("ActionService - Create", () => {
         title: "방문 가능한 시간을 선택해주세요",
         order: 0,
         maxSelections: 1,
+        isRequired: true,
       };
 
       ctx.mockMissionRepo.findById.mockResolvedValue(null);
@@ -1126,6 +1154,7 @@ describe("ActionService - Create", () => {
         missionId: "mission1",
         title: "방문 가능한 시간을 선택해주세요",
         order: 0,
+        isRequired: true,
       };
 
       // When & Then
