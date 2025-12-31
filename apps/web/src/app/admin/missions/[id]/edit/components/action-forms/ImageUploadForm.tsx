@@ -3,6 +3,7 @@
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { useAdminSingleImage } from "@/app/admin/hooks/use-admin-image-upload";
+import { MAX_IMAGE_SELECTIONS } from "@/schemas/action";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { BaseActionFormFields } from "./BaseActionForm";
@@ -64,7 +65,7 @@ export function ImageUploadForm({
           <MaxSelectionsField
             control={form.control}
             name="maxSelections"
-            maxOptions={10}
+            maxOptions={MAX_IMAGE_SELECTIONS}
             disabled={isLoading}
             isOptional={true}
           />

@@ -3,6 +3,7 @@
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { useAdminSingleImage } from "@/app/admin/hooks/use-admin-image-upload";
+import { MAX_DATE_SELECTIONS, MAX_TIME_SELECTIONS } from "@/schemas/action";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { BaseActionFormFields } from "./BaseActionForm";
@@ -76,7 +77,7 @@ export function DateTimeForm<T extends "DATE" | "TIME">({
           <MaxSelectionsField
             control={form.control}
             name="maxSelections"
-            maxOptions={20}
+            maxOptions={type === "DATE" ? MAX_DATE_SELECTIONS : MAX_TIME_SELECTIONS}
             disabled={isLoading}
           />
         </BaseActionFormFields>

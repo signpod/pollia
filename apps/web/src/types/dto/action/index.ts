@@ -8,7 +8,7 @@ export interface BaseActionRequest {
   imageUrl?: string;
   imageFileUploadId?: string;
   order: number;
-  isRequired?: boolean;
+  isRequired: boolean;
 }
 
 export interface ActionOptionInput {

@@ -13,6 +13,10 @@ export const MULTIPLE_CHOICE_MAX_OPTIONS = 10;
 export const SCALE_MIN_OPTIONS = 3;
 export const SCALE_MAX_OPTIONS = 10;
 
+export const MAX_IMAGE_SELECTIONS = 10;
+export const MAX_DATE_SELECTIONS = 20;
+export const MAX_TIME_SELECTIONS = 20;
+
 export const actionTitleSchema = z
   .string()
   .min(1, "제목을 입력해주세요.")
@@ -130,7 +134,7 @@ export const actionUpdateSchema = z
     imageUrl: actionImageUrlSchema,
     imageFileUploadId: z.string().optional(),
     order: actionOrderSchema.optional(),
-    maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다.").optional(),
+    maxSelections: z.number().int().min(1, "최대 선택 가능 개수는 최소 1개 이상이어야 합니다.").optional(),
     isRequired: z.boolean().optional(),
     options: z.array(actionOptionSchema).optional(),
   })
