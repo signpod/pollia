@@ -16,6 +16,11 @@ export type ActionAnswerItem =
     }
   | {
       actionId: string;
+      type: typeof ActionType.URL;
+      textAnswer: string;
+    }
+  | {
+      actionId: string;
       type: typeof ActionType.MULTIPLE_CHOICE;
       selectedOptionIds: string[];
     }
