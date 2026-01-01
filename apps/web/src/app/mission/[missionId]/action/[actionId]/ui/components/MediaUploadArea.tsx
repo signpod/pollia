@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { Typo } from "@repo/ui/components";
-import { ImageIcon, VideoIcon } from "lucide-react";
+import { FolderPlus, ImageIcon, VideoIcon } from "lucide-react";
 
 interface MediaUploadAreaProps {
   inputRef: React.RefObject<HTMLInputElement | null>;
@@ -11,7 +11,7 @@ interface MediaUploadAreaProps {
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   accept?: string;
   buttonText?: string;
-  icon?: "image" | "video";
+  icon?: "image" | "video" | "file";
 }
 
 export function MediaUploadArea({
@@ -23,7 +23,13 @@ export function MediaUploadArea({
   buttonText = "사진 첨부",
   icon = "image",
 }: MediaUploadAreaProps) {
-  const IconComponent = icon === "video" ? VideoIcon : ImageIcon;
+  const ICON_COMPONENTS = {
+    video: VideoIcon,
+    image: ImageIcon,
+    file: FolderPlus,
+  };
+
+  const IconComponent = ICON_COMPONENTS[icon];
 
   return (
     <div className="flex flex-col gap-2 w-full relative rounded-sm overflow-hidden min-h-[96px]">

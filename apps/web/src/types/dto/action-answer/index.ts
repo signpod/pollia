@@ -48,6 +48,12 @@ export type ActionAnswerItem =
     }
   | {
       actionId: string;
+      type: typeof ActionType.PDF;
+      isRequired: boolean;
+      fileUploadIds: string[];
+    }
+  | {
+      actionId: string;
       type: typeof ActionType.TAG;
       isRequired: boolean;
       selectedOptionIds: string[];

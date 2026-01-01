@@ -56,7 +56,7 @@ export function useMissionScaleValue({
       isRequired,
       scaleValue: initialScaleValue,
     });
-  }, [initialScaleValue, actionId, defaultValue]);
+  }, [initialScaleValue, actionId, defaultValue, isRequired]);
 
   const handleScaleValueChange = (value: number) => {
     if (!isScaleValueChanged) {
