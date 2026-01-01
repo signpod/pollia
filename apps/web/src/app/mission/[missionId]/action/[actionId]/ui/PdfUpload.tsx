@@ -1,7 +1,9 @@
 "use client";
 
 import { toast } from "@/components/common/Toast";
-import { useCallback, useRef, useState } from "react";
+import { STORAGE_BUCKETS } from "@/constants/buckets";
+import { usePdfUpload } from "@/hooks/common/usePdfUpload";
+import { useCallback, useEffect, useRef } from "react";
 import { MediaUploadArea } from "./components/MediaUploadArea";
 
 interface PdfUploadProps {
@@ -16,7 +18,23 @@ interface PdfUploadProps {
 
 export function PdfUpload({ onUploadChange, onUploadingChange }: PdfUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [isUploading, setIsUploading] = useState(false);
+
+  const { upload, isUploading, uploadError } = usePdfUpload({
+    bucket: STORAGE_BUCKETS.ACTION_ANSWER_PDFS,
+    onSuccess: result => {
+      onUploadingChange?.(false);
+      onUploadChange?.(true, [result.publicUrl], [result.fileUploadId], result.file);
+    },
+    onError: () => {
+      onUploadingChange?.(false);
+      toast.warning(uploadError?.message || "파일 업로드에 실패했어요.\n다시 시도해주세요.");
+      onUploadChange?.(false, [], []);
+    },
+  });
+
+  useEffect(() => {
+    onUploadingChange?.(isUploading);
+  }, [isUploading, onUploadingChange]);
 
   const handleFileSelect = useCallback(() => {
     inputRef.current?.click();
@@ -37,31 +55,14 @@ export function PdfUpload({ onUploadChange, onUploadingChange }: PdfUploadProps)
         return;
       }
 
-      // TODO: 백엔드 업로드 구현 전까지 임시 로직
-      // 로컬에서만 동작: Object URL 생성
-      setIsUploading(true);
       onUploadingChange?.(true);
-
-      const fileUrl = URL.createObjectURL(file);
-      // TODO: 백엔드 업로드 구현 시 실제 fileUploadId 사용 (현재는 임시 ID)
-      const temporaryFileUploadId = `temp-${Date.now()}-${Math.random().toString(36).substring(7)}`;
-
-      // 로컬 URL과 임시 ID, 파일 정보 전달
-      // 비동기로 처리하여 로딩 상태가 보이도록 함
-      setTimeout(() => {
-        onUploadChange?.(true, [fileUrl], [temporaryFileUploadId], file);
-        setIsUploading(false);
-        onUploadingChange?.(false);
-      }, 100);
-
-      // TODO: 백엔드 업로드 구현 시 아래 주석 해제하고 위의 임시 로직 제거
-      // upload(file);
+      upload(file);
 
       if (inputRef.current) {
         inputRef.current.value = "";
       }
     },
-    [onUploadChange, onUploadingChange],
+    [upload, onUploadingChange],
   );
 
   return (

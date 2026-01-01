@@ -44,6 +44,12 @@ export function ActionVideo({
 
   const validateAndUpdateAnswer = useCallback(
     (urls: string[], fileIds: string[]) => {
+      // 업로드 중이면 제출 불가
+      if (isUploading) {
+        updateCanGoNextRef.current?.(false);
+        return;
+      }
+
       if (!urls.length || !fileIds.length) {
         updateCanGoNextRef.current?.(false);
         return;
@@ -63,14 +69,40 @@ export function ActionVideo({
         onAnswerChangeRef.current?.(answer);
       }
     },
-    [actionData.id, actionData.isRequired],
+    [actionData.id, actionData.isRequired, isUploading],
   );
 
   useEffect(() => {
     if (existingAnswer) {
-      setVideoUrls([]);
-      setVideoFileUploadIds([]);
-      validateAndUpdateAnswer([], []);
+      const answerWithFileUploads = existingAnswer as typeof existingAnswer & {
+        fileUploads?: Array<{
+          id: string;
+          originalFileName: string;
+          fileSize: number;
+          publicUrl: string;
+        }>;
+      };
+
+      if (answerWithFileUploads.fileUploads && answerWithFileUploads.fileUploads.length > 0) {
+        const videoUrlsFromAnswer = answerWithFileUploads.fileUploads.map(
+          fileUpload => fileUpload.publicUrl,
+        );
+
+        const videoFileUploadIdsFromAnswer = answerWithFileUploads.fileUploads.map(
+          fileUpload => fileUpload.id,
+        );
+
+        setVideoUrls(videoUrlsFromAnswer);
+        setVideoFileUploadIds(videoFileUploadIdsFromAnswer);
+        validateAndUpdateAnswer(videoUrlsFromAnswer, videoFileUploadIdsFromAnswer);
+      } else {
+        // 기존 답변이 있지만 fileUploads가 없는 경우
+        // 이미 제출된 답변이므로 빈 배열로 설정하고 validation 통과
+        setVideoUrls([]);
+        setVideoFileUploadIds([]);
+        // 기존 답변이 이미 제출되어 있으므로 validation 통과 처리
+        updateCanGoNextRef.current?.(true);
+      }
     }
   }, [existingAnswer, validateAndUpdateAnswer]);
 
@@ -79,19 +111,15 @@ export function ActionVideo({
   }, [videoUrls, videoFileUploadIds, validateAndUpdateAnswer]);
 
   const handleUploadChange = useCallback(
-    (hasUploadedVideo: boolean, newVideoUrls: string[], newFileUploadIds: string[]) => {
+    (hasUploadedVideo: boolean, newVideoUrls: string[], newFileUploadIds: string[], file?: File) => {
       if (hasUploadedVideo && newVideoUrls.length > 0 && newFileUploadIds.length > 0) {
         const newVideoUrl = newVideoUrls[0];
         const newFileUploadId = newFileUploadIds[0];
 
         if (newVideoUrl && newFileUploadId) {
+          setUploadingVideoUrl(newVideoUrl);
           setVideoUrls(prev => [...prev, newVideoUrl]);
           setVideoFileUploadIds(prev => [...prev, newFileUploadId]);
-          // 로컬 URL(blob:)인 경우 uploadingVideoUrl 설정하지 않음 (즉시 완료 처리)
-          // TODO: 백엔드 업로드 구현 시 실제 URL인 경우에만 uploadingVideoUrl 설정
-          // if (!newVideoUrl.startsWith("blob:")) {
-          //   setUploadingVideoUrl(newVideoUrl);
-          // }
         }
       } else if (!hasUploadedVideo) {
         setUploadingVideoUrl(null);
@@ -117,6 +145,10 @@ export function ActionVideo({
       return prev.filter((_, i) => i !== deletedIndex);
     });
     setUploadingVideoUrl(prev => (prev === videoUrl ? null : prev));
+    // blob: URL인 경우에만 revokeObjectURL 호출 (기존 답변의 publicUrl은 제외)
+    if (videoUrl.startsWith("blob:")) {
+      URL.revokeObjectURL(videoUrl);
+    }
   }, []);
 
   const handleVideoLoadComplete = useCallback((videoUrl: string) => {

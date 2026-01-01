@@ -50,6 +50,12 @@ export function ActionPdf({
 
   const validateAndUpdateAnswer = useCallback(
     (fileIds: string[]) => {
+      // 업로드 중이면 제출 불가
+      if (isUploading) {
+        updateCanGoNextRef.current?.(false);
+        return;
+      }
+
       if (!fileIds.length) {
         updateCanGoNextRef.current?.(false);
         return;
@@ -69,14 +75,44 @@ export function ActionPdf({
         onAnswerChangeRef.current?.(answer);
       }
     },
-    [actionData.id, actionData.isRequired],
+    [actionData.id, actionData.isRequired, isUploading],
   );
 
   useEffect(() => {
     if (existingAnswer) {
-      setFileInfos([]);
-      setFileUploadIds([]);
-      validateAndUpdateAnswer([]);
+      const answerWithFileUploads = existingAnswer as typeof existingAnswer & {
+        fileUploads?: Array<{
+          id: string;
+          originalFileName: string;
+          fileSize: number;
+          publicUrl: string;
+        }>;
+      };
+
+      if (answerWithFileUploads.fileUploads && answerWithFileUploads.fileUploads.length > 0) {
+        const fileInfosFromAnswer: FileInfo[] = answerWithFileUploads.fileUploads.map(
+          fileUpload => ({
+            fileName: fileUpload.originalFileName,
+            fileSize: fileUpload.fileSize,
+            fileUrl: fileUpload.publicUrl,
+          }),
+        );
+
+        const fileUploadIdsFromAnswer = answerWithFileUploads.fileUploads.map(
+          fileUpload => fileUpload.id,
+        );
+
+        setFileInfos(fileInfosFromAnswer);
+        setFileUploadIds(fileUploadIdsFromAnswer);
+        validateAndUpdateAnswer(fileUploadIdsFromAnswer);
+      } else {
+        // 기존 답변이 있지만 fileUploads가 없는 경우
+        // 이미 제출된 답변이므로 빈 배열로 설정하고 validation 통과
+        setFileInfos([]);
+        setFileUploadIds([]);
+        // 기존 답변이 이미 제출되어 있으므로 validation 통과 처리
+        updateCanGoNextRef.current?.(true);
+      }
     }
   }, [existingAnswer, validateAndUpdateAnswer]);
 
@@ -127,7 +163,10 @@ export function ActionPdf({
       return prev.filter((_, i) => i !== deletedIndex);
     });
     setUploadingFileUrl(prev => (prev === fileUrl ? null : prev));
-    URL.revokeObjectURL(fileUrl);
+    // blob: URL인 경우에만 revokeObjectURL 호출 (기존 답변의 publicUrl은 제외)
+    if (fileUrl.startsWith("blob:")) {
+      URL.revokeObjectURL(fileUrl);
+    }
   }, []);
 
   const handleFileClick = useCallback((fileUrl: string) => {
