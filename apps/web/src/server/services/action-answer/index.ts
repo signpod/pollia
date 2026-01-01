@@ -237,6 +237,7 @@ export class ActionAnswerService {
           : [baseData];
 
       case ActionType.SUBJECTIVE:
+      case ActionType.SHORT_TEXT:
         return answer.textAnswer ? [{ ...baseData, textAnswer: answer.textAnswer }] : [baseData];
 
       case ActionType.IMAGE:
@@ -275,6 +276,7 @@ export class ActionAnswerService {
         return answer.scaleValue === undefined;
 
       case ActionType.SUBJECTIVE:
+      case ActionType.SHORT_TEXT:
         return !answer.textAnswer;
 
       case ActionType.IMAGE:
@@ -311,6 +313,9 @@ export class ActionAnswerService {
     }
     if (actionType === ActionType.SUBJECTIVE && !data.textAnswer) {
       this.throwValidationError("주관식 답변은 필수입니다.");
+    }
+    if (actionType === ActionType.SHORT_TEXT && !data.textAnswer) {
+      this.throwValidationError("답변은 필수입니다.");
     }
     if (actionType === ActionType.DATE && (!data.dateAnswers || data.dateAnswers.length === 0)) {
       this.throwValidationError("날짜를 선택해주세요.");
