@@ -23,6 +23,7 @@ import {
   PrivacyConsentForm,
   RatingForm,
   ScaleForm,
+  ShortTextForm,
   SubjectiveForm,
   TagForm,
   TimeForm,
@@ -180,6 +181,8 @@ function ActionForm({ type, isLoading, onSubmit, onCancel }: ActionFormProps) {
       return <TagForm isLoading={isLoading} onSubmit={onSubmit} onCancel={onCancel} />;
     case "SUBJECTIVE":
       return <SubjectiveForm isLoading={isLoading} onSubmit={onSubmit} onCancel={onCancel} />;
+    case "SHORT_TEXT":
+      return <ShortTextForm isLoading={isLoading} onSubmit={onSubmit} onCancel={onCancel} />;
     case "IMAGE":
       return <ImageUploadForm isLoading={isLoading} onSubmit={onSubmit} onCancel={onCancel} />;
     case "PDF":

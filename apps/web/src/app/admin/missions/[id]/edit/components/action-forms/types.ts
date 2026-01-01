@@ -42,6 +42,10 @@ export interface SubjectiveFormData extends BaseActionFormData {
   type: "SUBJECTIVE";
 }
 
+export interface ShortTextFormData extends BaseActionFormData {
+  type: "SHORT_TEXT";
+}
+
 export interface ImageUploadFormData extends BaseActionFormData {
   type: "IMAGE";
   maxSelections?: number;
@@ -75,6 +79,7 @@ export type ActionFormData =
   | RatingFormData
   | TagFormData
   | SubjectiveFormData
+  | ShortTextFormData
   | ImageUploadFormData
   | PdfUploadFormData
   | VideoUploadFormData
