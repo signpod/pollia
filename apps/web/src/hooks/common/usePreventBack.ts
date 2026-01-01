@@ -83,5 +83,5 @@ export function usePreventBack({
       isRedirectingRef.current = false;
       window.removeEventListener("popstate", handlePopState, { capture: true });
     };
-  }, [redirectTo, enabled, onPopState, currentPath]);
+  }, [redirectTo, enabled, onPopState]);
 }
