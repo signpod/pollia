@@ -22,17 +22,6 @@ export function FileItem({ fileName, fileSize, isUploading, onDelete, onClick }:
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (isUploading) return;
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      e.stopPropagation();
-      if (onClick) {
-        onClick();
-      }
-    }
-  };
-
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onDelete();
@@ -79,13 +68,6 @@ export function FileItem({ fileName, fileSize, isUploading, onDelete, onClick }:
             </div>
           </ButtonV2>
         </div>
-        // <button
-        //   type="button"
-        //   onClick={handleDeleteClick}
-        //   className="flex items-center justify-center size-8 rounded-sm hover:bg-zinc-100 transition-colors shrink-0"
-        // >
-        //   <XIcon className="size-4 text-zinc-500" />
-        // </button>
       )}
     </div>
   );
