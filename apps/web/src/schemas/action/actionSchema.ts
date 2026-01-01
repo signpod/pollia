@@ -92,6 +92,8 @@ export const scaleInputSchema = baseActionSchema.extend({
 
 export const subjectiveInputSchema = baseActionSchema;
 
+export const shortTextInputSchema = baseActionSchema;
+
 export const eitherOrInputSchema = baseActionSchema;
 
 export const tagInputSchema = baseActionSchema
@@ -157,6 +159,7 @@ export const actionUpdateSchema = z
 export type MultipleChoiceInput = z.infer<typeof multipleChoiceInputSchema>;
 export type ScaleInput = z.infer<typeof scaleInputSchema>;
 export type SubjectiveInput = z.infer<typeof subjectiveInputSchema>;
+export type ShortTextInput = z.infer<typeof shortTextInputSchema>;
 export type EitherOrInput = z.infer<typeof eitherOrInputSchema>;
 export type TagInput = z.infer<typeof tagInputSchema>;
 export type RatingInput = z.infer<typeof ratingInputSchema>;

@@ -9,8 +9,14 @@ const optionIdSchema = z.string().min(1, "선택지 ID가 필요합니다.");
 
 const textAnswerSchema = z
   .string()
-  .min(1, "주관식 답변은 필수입니다.")
-  .max(100, "주관식 답변은 100자를 초과할 수 없습니다.")
+  .min(1, "답변은 필수입니다.")
+  .max(500, "답변은 500자를 초과할 수 없습니다.")
+  .trim();
+
+const shortTextAnswerSchema = z
+  .string()
+  .min(1, "답변은 필수입니다.")
+  .max(50, "답변은 50자를 초과할 수 없습니다.")
   .trim();
 
 const scaleAnswerSchema = z
@@ -45,6 +51,7 @@ export const submitAnswerItemSchema = z
     selectedOptionIds: z.array(optionIdSchema).optional(),
     scaleValue: scaleAnswerSchema.optional(),
     textAnswer: textAnswerSchema.optional(),
+    shortTextAnswer: shortTextAnswerSchema.optional(),
     fileUploadIds: fileUploadIdsSchema,
     dateAnswers: dateAnswersSchema,
   })
@@ -92,6 +99,15 @@ export const submitAnswerItemSchema = z
       return true;
     },
     { message: "주관식 답변은 필수입니다." },
+  )
+  .refine(
+    data => {
+      if (data.type === ActionType.SHORT_TEXT && data.isRequired) {
+        return data.shortTextAnswer && data.shortTextAnswer.trim().length > 0;
+      }
+      return true;
+    },
+    { message: "답변은 필수입니다." },
   )
   .refine(
     data => {
