@@ -19,6 +19,8 @@ import type {
   CreateRatingActionResponse,
   CreateScaleActionRequest,
   CreateScaleActionResponse,
+  CreateShortTextActionRequest,
+  CreateShortTextActionResponse,
   CreateSubjectiveActionRequest,
   CreateSubjectiveActionResponse,
   CreateTagActionRequest,
@@ -72,6 +74,16 @@ export async function createSubjectiveAction(
     request,
     actionService.createSubjectiveAction.bind(actionService),
     "질문",
+  );
+}
+
+export async function createShortTextAction(
+  request: CreateShortTextActionRequest,
+): Promise<CreateShortTextActionResponse> {
+  return createActionHandler(
+    request,
+    actionService.createShortTextAction.bind(actionService),
+    "짧은 텍스트",
   );
 }
 

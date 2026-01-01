@@ -27,6 +27,8 @@ export type CreateTagInput = BaseActionInput & {
 
 export type CreateSubjectiveInput = BaseActionInput;
 
+export type CreateShortTextInput = BaseActionInput;
+
 export type CreateEitherOrInput = BaseActionInput;
 
 export type CreateRatingInput = BaseActionInput;

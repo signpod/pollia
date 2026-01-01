@@ -54,6 +54,9 @@ export interface CreateTagActionResponse extends BaseActionResponse {}
 export type CreateSubjectiveActionRequest = BaseActionRequest;
 export type CreateSubjectiveActionResponse = BaseActionResponse;
 
+export type CreateShortTextActionRequest = BaseActionRequest;
+export type CreateShortTextActionResponse = BaseActionResponse;
+
 export type CreateRatingActionRequest = BaseActionRequest;
 export type CreateRatingActionResponse = BaseActionResponse;
 
