@@ -100,14 +100,9 @@ export class ActionAnswerService {
 
     await this.answerRepo.deleteByResponseAndActions(validated.responseId, actionIds);
 
-    const answersToCreate: Array<Parameters<typeof this.answerRepo.createMany>[0][number]> = [];
-
-    for (const answer of validated.answers) {
-      const convertedAnswers = this.convertAnswerToCreateInput(answer, validated.responseId);
-      answersToCreate.push(
-        ...(Array.isArray(convertedAnswers) ? convertedAnswers : [convertedAnswers]),
-      );
-    }
+    const answersToCreate = validated.answers.flatMap(answer =>
+      this.convertAnswerToCreateInput(answer, validated.responseId),
+    );
 
     await this.answerRepo.createMany(answersToCreate, userId);
 
