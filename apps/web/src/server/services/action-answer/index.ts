@@ -79,19 +79,9 @@ export class ActionAnswerService {
   async submitAnswers(input: SubmitAnswersInput, userId: string) {
     const validated = this.validateInput(input, submitAnswersSchema);
 
-    const response = await this.responseRepo.findById(validated.responseId);
-
-    if (!response) {
-      this.throwError("응답을 찾을 수 없습니다.", 404);
-    }
-
-    if (response.userId !== userId) {
-      this.throwError("제출 권한이 없습니다.", 403);
-    }
-
-    if (response.completedAt) {
-      this.throwError("이미 완료된 응답입니다.", 400);
-    }
+    const response = await this.verifyResponseOwnership(validated.responseId, userId, {
+      checkCompleted: true,
+    });
 
     const actionIds = validated.answers.map(a => a.actionId);
     const actions = await Promise.all(actionIds.map(id => this.actionRepo.findById(id)));
@@ -132,20 +122,15 @@ export class ActionAnswerService {
   }
 
   async deleteAnswersByResponseId(responseId: string, userId: string): Promise<void> {
-    const response = await this.responseRepo.findById(responseId);
-
-    if (!response) {
-      this.throwError("응답을 찾을 수 없습니다.", 404);
-    }
-
-    if (response.userId !== userId) {
-      this.throwError("권한이 없습니다.", 403);
-    }
-
+    await this.verifyResponseOwnership(responseId, userId);
     await this.answerRepo.deleteByResponseId(responseId);
   }
 
-  private async verifyResponseOwnership(responseId: string, userId: string): Promise<void> {
+  private async verifyResponseOwnership(
+    responseId: string,
+    userId: string,
+    options?: { checkCompleted?: boolean },
+  ) {
     const response = await this.responseRepo.findById(responseId);
 
     if (!response) {
@@ -155,6 +140,12 @@ export class ActionAnswerService {
     if (response.userId !== userId) {
       this.throwError("권한이 없습니다.", 403);
     }
+
+    if (options?.checkCompleted && response.completedAt) {
+      this.throwError("이미 완료된 응답입니다.", 400);
+    }
+
+    return response;
   }
 
   private throwError(message: string, statusCode: number): never {
