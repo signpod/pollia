@@ -30,15 +30,16 @@ enum ActionType {
   RATING
   TAG
   SUBJECTIVE
+  SHORT_TEXT
   IMAGE
   VIDEO
   PDF
-  URL
+  // URL
   DATE
   TIME
   PRIVACY_CONSENT
-  NAME
-  ADDRESS
-  PHONE
-  EMAIL
+  // NAME
+  // ADDRESS
+  // PHONE
+  // EMAIL
 }
