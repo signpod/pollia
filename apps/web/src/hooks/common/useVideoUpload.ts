@@ -66,11 +66,15 @@ export function useVideoUpload(options: UseVideoUploadOptions = {}) {
       }
     },
     onSuccess: data => {
-      console.log("✅ 동영상 업로드 성공:", data);
+      if (process.env.NODE_ENV === "development") {
+        console.log("✅ 동영상 업로드 성공:", data);
+      }
       options.onSuccess?.(data);
     },
     onError: error => {
-      console.error("❌ 동영상 업로드 실패:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ 동영상 업로드 실패:", error);
+      }
       options.onError?.(error as Error);
     },
   });
@@ -78,20 +82,28 @@ export function useVideoUpload(options: UseVideoUploadOptions = {}) {
   const deleteMutation = useMutation({
     mutationFn: (request: DeleteFileRequest) => deleteFile(request),
     onSuccess: () => {
-      console.log("✅ 동영상 삭제 성공");
+      if (process.env.NODE_ENV === "development") {
+        console.log("✅ 동영상 삭제 성공");
+      }
     },
     onError: error => {
-      console.error("❌ 동영상 삭제 실패:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ 동영상 삭제 실패:", error);
+      }
     },
   });
 
   const confirmMutation = useMutation({
     mutationFn: (request: ConfirmFileRequest) => confirmFile(request),
     onSuccess: () => {
-      console.log("✅ 파일 확정 성공");
+      if (process.env.NODE_ENV === "development") {
+        console.log("✅ 파일 확정 성공");
+      }
     },
     onError: error => {
-      console.error("❌ 파일 확정 실패:", error);
+      if (process.env.NODE_ENV === "development") {
+        console.error("❌ 파일 확정 실패:", error);
+      }
     },
   });
 

@@ -3,7 +3,7 @@
 import { toast } from "@/components/common/Toast";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { useVideoUpload } from "@/hooks/common/useVideoUpload";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 import { MediaUploadArea } from "./components/MediaUploadArea";
 
 interface VideoUploadProps {
@@ -19,22 +19,18 @@ interface VideoUploadProps {
 export function VideoUpload({ onUploadChange, onUploadingChange }: VideoUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { upload, isUploading, uploadError } = useVideoUpload({
+  const { upload, isUploading } = useVideoUpload({
     bucket: STORAGE_BUCKETS.ACTION_ANSWER_VIDEOS,
     onSuccess: result => {
       onUploadingChange?.(false);
       onUploadChange?.(true, [result.publicUrl], [result.fileUploadId], result.file);
     },
-    onError: () => {
+    onError: error => {
       onUploadingChange?.(false);
-      toast.warning(uploadError?.message || "파일 업로드에 실패했어요.\n다시 시도해주세요.");
+      toast.warning(error?.message || "파일 업로드에 실패했어요.\n다시 시도해주세요.");
       onUploadChange?.(false, [], []);
     },
   });
-
-  useEffect(() => {
-    onUploadingChange?.(isUploading);
-  }, [isUploading, onUploadingChange]);
 
   const handleFileSelect = useCallback(() => {
     inputRef.current?.click();

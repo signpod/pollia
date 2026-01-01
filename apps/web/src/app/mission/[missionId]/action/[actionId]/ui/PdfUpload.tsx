@@ -3,7 +3,7 @@
 import { toast } from "@/components/common/Toast";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { usePdfUpload } from "@/hooks/common/usePdfUpload";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 import { MediaUploadArea } from "./components/MediaUploadArea";
 
 interface PdfUploadProps {
@@ -19,22 +19,18 @@ interface PdfUploadProps {
 export function PdfUpload({ onUploadChange, onUploadingChange }: PdfUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { upload, isUploading, uploadError } = usePdfUpload({
+  const { upload, isUploading } = usePdfUpload({
     bucket: STORAGE_BUCKETS.ACTION_ANSWER_PDFS,
     onSuccess: result => {
       onUploadingChange?.(false);
       onUploadChange?.(true, [result.publicUrl], [result.fileUploadId], result.file);
     },
-    onError: () => {
+    onError: error => {
       onUploadingChange?.(false);
-      toast.warning(uploadError?.message || "파일 업로드에 실패했어요.\n다시 시도해주세요.");
+      toast.warning(error?.message || "파일 업로드에 실패했어요.\n다시 시도해주세요.");
       onUploadChange?.(false, [], []);
     },
   });
-
-  useEffect(() => {
-    onUploadingChange?.(isUploading);
-  }, [isUploading, onUploadingChange]);
 
   const handleFileSelect = useCallback(() => {
     inputRef.current?.click();
@@ -48,7 +44,7 @@ export function PdfUpload({ onUploadChange, onUploadingChange }: PdfUploadProps)
       }
 
       if (file.type !== "application/pdf") {
-        toast.warning("PDF 파일만 업로드할 수 있습니다.");
+        toast.warning("PDF 파일만 업로드할 수 있어요.");
         if (inputRef.current) {
           inputRef.current.value = "";
         }

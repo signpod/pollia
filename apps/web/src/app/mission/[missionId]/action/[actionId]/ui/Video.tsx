@@ -43,14 +43,14 @@ export function ActionVideo({
   }, [updateCanGoNext, onAnswerChange]);
 
   const validateAndUpdateAnswer = useCallback(
-    (urls: string[], fileIds: string[]) => {
+    (fileIds: string[]) => {
       // 업로드 중이면 제출 불가
       if (isUploading) {
         updateCanGoNextRef.current?.(false);
         return;
       }
 
-      if (!urls.length || !fileIds.length) {
+      if (!fileIds.length) {
         updateCanGoNextRef.current?.(false);
         return;
       }
@@ -94,7 +94,7 @@ export function ActionVideo({
 
         setVideoUrls(videoUrlsFromAnswer);
         setVideoFileUploadIds(videoFileUploadIdsFromAnswer);
-        validateAndUpdateAnswer(videoUrlsFromAnswer, videoFileUploadIdsFromAnswer);
+        validateAndUpdateAnswer(videoFileUploadIdsFromAnswer);
       } else {
         // 기존 답변이 있지만 fileUploads가 없는 경우
         // 이미 제출된 답변이므로 빈 배열로 설정하고 validation 통과
@@ -107,11 +107,16 @@ export function ActionVideo({
   }, [existingAnswer, validateAndUpdateAnswer]);
 
   useEffect(() => {
-    validateAndUpdateAnswer(videoUrls, videoFileUploadIds);
-  }, [videoUrls, videoFileUploadIds, validateAndUpdateAnswer]);
+    validateAndUpdateAnswer(videoFileUploadIds);
+  }, [videoFileUploadIds, validateAndUpdateAnswer]);
 
   const handleUploadChange = useCallback(
-    (hasUploadedVideo: boolean, newVideoUrls: string[], newFileUploadIds: string[], file?: File) => {
+    (
+      hasUploadedVideo: boolean,
+      newVideoUrls: string[],
+      newFileUploadIds: string[],
+      file?: File,
+    ) => {
       if (hasUploadedVideo && newVideoUrls.length > 0 && newFileUploadIds.length > 0) {
         const newVideoUrl = newVideoUrls[0];
         const newFileUploadId = newFileUploadIds[0];
