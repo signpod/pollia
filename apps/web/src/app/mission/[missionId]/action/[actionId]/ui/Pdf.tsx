@@ -29,7 +29,7 @@ export function ActionPdf({
   isLoading,
 }: ActionStepContentProps) {
   const [fileInfos, setFileInfos] = useState<FileInfo[]>([]);
-  const [fileFileUploadIds, setFileFileUploadIds] = useState<string[]>([]);
+  const [fileUploadIds, setFileUploadIds] = useState<string[]>([]);
   const [uploadingFileUrl, setUploadingFileUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -75,14 +75,14 @@ export function ActionPdf({
   useEffect(() => {
     if (existingAnswer) {
       setFileInfos([]);
-      setFileFileUploadIds([]);
+      setFileUploadIds([]);
       validateAndUpdateAnswer([]);
     }
   }, [existingAnswer, validateAndUpdateAnswer]);
 
   useEffect(() => {
-    validateAndUpdateAnswer(fileFileUploadIds);
-  }, [fileFileUploadIds, validateAndUpdateAnswer]);
+    validateAndUpdateAnswer(fileUploadIds);
+  }, [fileUploadIds, validateAndUpdateAnswer]);
 
   const handleUploadChange = useCallback(
     (hasUploadedFile: boolean, newFileUrls: string[], newFileUploadIds: string[], file?: File) => {
@@ -98,11 +98,7 @@ export function ActionPdf({
             fileUrl: newFileUrl,
           };
           setFileInfos(prev => [...prev, fileInfo]);
-          setFileFileUploadIds(prev => [...prev, newFileUploadId]);
-
-          setTimeout(() => {
-            setUploadingFileUrl(null);
-          }, 500);
+          setFileUploadIds(prev => [...prev, newFileUploadId]);
         }
       } else if (!hasUploadedFile) {
         setUploadingFileUrl(null);
@@ -113,6 +109,9 @@ export function ActionPdf({
 
   const handleUploadingChange = useCallback((uploading: boolean) => {
     setIsUploading(uploading);
+    if (!uploading) {
+      setUploadingFileUrl(null);
+    }
   }, []);
 
   const handleFileDelete = useCallback((fileUrl: string) => {
@@ -123,7 +122,7 @@ export function ActionPdf({
       deletedIndex = index;
       return prev.filter(f => f.fileUrl !== fileUrl);
     });
-    setFileFileUploadIds(prev => {
+    setFileUploadIds(prev => {
       if (deletedIndex === -1) return prev;
       return prev.filter((_, i) => i !== deletedIndex);
     });
