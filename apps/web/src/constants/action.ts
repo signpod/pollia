@@ -33,7 +33,6 @@ interface CreateActionStepsProps {
     Rating: React.ComponentType<ActionStepContentProps>;
     Image: React.ComponentType<ActionStepContentProps>;
     Video: React.ComponentType<ActionStepContentProps>;
-    Url: React.ComponentType<ActionStepContentProps>;
     Tag: React.ComponentType<ActionStepContentProps>;
     Pdf: React.ComponentType<ActionStepContentProps>;
   };
@@ -76,8 +75,6 @@ function getContentComponent(
       return stepComponents.Image;
     case ActionType.VIDEO:
       return stepComponents.Video;
-    case ActionType.URL:
-      return stepComponents.Url;
     case ActionType.TAG:
       return stepComponents.Tag;
     default:
