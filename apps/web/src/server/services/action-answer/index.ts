@@ -1,14 +1,10 @@
-import {
-  actionAnswerInputSchema,
-  actionAnswerUpdateSchema,
-  submitAnswersSchema,
-} from "@/schemas/action-answer";
+import { actionAnswerUpdateSchema, submitAnswersSchema } from "@/schemas/action-answer";
 import { actionAnswerRepository } from "@/server/repositories/action-answer/actionAnswerRepository";
 import { actionRepository } from "@/server/repositories/action/actionRepository";
 import { missionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import { ActionType } from "@prisma/client";
 import { z } from "zod";
-import type { CreateAnswerInput, SubmitAnswersInput, UpdateAnswerInput } from "./types";
+import type { SubmitAnswersInput, UpdateAnswerInput } from "./types";
 
 export class ActionAnswerService {
   constructor(
@@ -47,33 +43,6 @@ export class ActionAnswerService {
 
   async getAnswersByUserId(userId: string) {
     return this.answerRepo.findByUserId(userId);
-  }
-
-  async createAnswer(input: CreateAnswerInput, userId: string) {
-    const validated = this.validateInput(input, actionAnswerInputSchema);
-
-    const { responseId, actionId, optionId, textAnswer, scaleAnswer, dateAnswers } = validated;
-
-    await this.verifyResponseOwnership(responseId, userId);
-
-    const action = await this.actionRepo.findById(actionId);
-    if (!action) {
-      this.throwError("액션을 찾을 수 없습니다.", 404);
-    }
-
-    this.validateAnswerByActionType(
-      { optionId, textAnswer, scaleAnswer, dateAnswers },
-      action.type,
-    );
-
-    return this.answerRepo.create({
-      responseId,
-      actionId,
-      optionId,
-      textAnswer,
-      scaleAnswer,
-      dateAnswers,
-    });
   }
 
   async submitAnswers(input: SubmitAnswersInput, userId: string) {
