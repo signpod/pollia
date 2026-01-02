@@ -89,8 +89,7 @@ export const submitAnswerItemSchema = z
     isRequired: z.boolean(),
     selectedOptionIds: z.array(optionIdSchema).optional(),
     scaleValue: scaleAnswerSchema.optional(),
-    textAnswer: textAnswerSchema.optional(),
-    shortTextAnswer: shortTextAnswerSchema.optional(),
+    textAnswer: z.string().optional(),
     fileUploadIds: fileUploadIdsSchema,
     dateAnswers: dateAnswersSchema,
   })
@@ -142,7 +141,7 @@ export const submitAnswerItemSchema = z
   .refine(
     data => {
       if (data.type === ActionType.SHORT_TEXT && data.isRequired) {
-        return data.shortTextAnswer && data.shortTextAnswer.trim().length > 0;
+        return data.textAnswer && data.textAnswer.trim().length > 0;
       }
       return true;
     },
