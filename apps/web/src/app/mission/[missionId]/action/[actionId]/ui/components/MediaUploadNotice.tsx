@@ -86,4 +86,3 @@ export function MediaUploadNotice({ title, noticeItems }: MediaUploadNoticeProps
     </div>
   );
 }
-

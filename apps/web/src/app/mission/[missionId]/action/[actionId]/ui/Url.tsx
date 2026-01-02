@@ -89,7 +89,7 @@ export function ActionUrl({
         updateCanGoNextRef.current?.(false);
       }
     },
-    [actionData.id, validateUrl],
+    [actionData.id, actionData.isRequired, validateUrl],
   );
 
   useEffect(() => {
