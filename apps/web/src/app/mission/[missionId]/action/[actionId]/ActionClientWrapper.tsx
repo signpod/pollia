@@ -311,7 +311,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
               {
                 actionId: currentAnswer.actionId,
                 type: currentAnswer.type,
-                isRequired: actionData.isRequired,
+                isRequired: currentAnswer.isRequired,
                 ...(currentAnswer.type === "MULTIPLE_CHOICE" || currentAnswer.type === "TAG"
                   ? { selectedOptionIds: currentAnswer.selectedOptionIds }
                   : {}),

@@ -148,15 +148,18 @@ function useSurveySubjectiveValue(
 
   function handleBlur() {
     setShowError(true);
-    const feedbackMessage =
-      FEEDBACK_MESSAGES[Math.min(subjectiveValue.length, MAX_FEEDBACK_MESSAGE_LENGTH)] ??
-      FEEDBACK_MESSAGES[1];
-    setHelperText(feedbackMessage);
+    if (subjectiveValue.length === 1) {
+      const feedbackMessage = FEEDBACK_MESSAGES[1];
+      setHelperText(feedbackMessage);
+    } else {
+      setHelperText(undefined);
+    }
   }
 
   const validationResult = submitAnswerItemSchema.safeParse({
     actionId,
     type: ActionType.SUBJECTIVE,
+    isRequired,
     textAnswer: subjectiveValue,
   });
 
@@ -169,8 +172,6 @@ function useSurveySubjectiveValue(
     showError,
   };
 }
-
-const MAX_FEEDBACK_MESSAGE_LENGTH = 1;
 
 const FEEDBACK_MESSAGES: Record<number, string> = {
   1: "조금 더 구체적으로 적어주세요! 👀",
