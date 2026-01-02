@@ -250,9 +250,30 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
         answer.type === ActionType.VIDEO ||
         answer.type === ActionType.PDF
       ) {
-        // TODO: fileUploads 배열 비교로 변경 필요
-        const hasFileUploads = answer.fileUploadIds && answer.fileUploadIds.length > 0;
-        return hasFileUploads === false; // TODO: 임시: 항상 제출하도록
+        const submittedAnswer = answersForAction[0];
+        if (!submittedAnswer) {
+          return false;
+        }
+
+        const submittedFileUploads = (
+          submittedAnswer as typeof submittedAnswer & {
+            fileUploads?: Array<{ id: string }>;
+          }
+        ).fileUploads;
+
+        const submittedFileUploadIds = submittedFileUploads?.map(f => f.id).sort() ?? [];
+        const currentFileUploadIds = (answer.fileUploadIds ?? []).sort();
+
+        // 둘 다 빈 배열이면 동일하지 않음 (기존 답변 없음)
+        if (submittedFileUploadIds.length === 0 && currentFileUploadIds.length === 0) {
+          return false;
+        }
+
+        return (
+          submittedFileUploadIds.length === currentFileUploadIds.length &&
+          submittedFileUploadIds.length > 0 &&
+          submittedFileUploadIds.every((id, index) => id === currentFileUploadIds[index])
+        );
       }
 
       return false;

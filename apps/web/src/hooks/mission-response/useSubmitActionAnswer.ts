@@ -36,7 +36,11 @@ export function useSubmitActionAnswer(options: UseSubmitActionAnswerOptions) {
               ? { scaleValue: answer.scaleValue }
               : {}),
             ...(answer.type === "SUBJECTIVE" ? { textAnswer: answer.textAnswer } : {}),
-            ...(answer.type === "IMAGE" ? { fileUploadIds: answer.fileUploadIds } : {}),
+            ...(answer.type === "IMAGE" ||
+            answer.type === "VIDEO" ||
+            answer.type === "PDF"
+              ? { fileUploadIds: answer.fileUploadIds }
+              : {}),
           },
         ],
       });

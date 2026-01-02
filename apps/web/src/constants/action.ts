@@ -69,8 +69,7 @@ function getContentComponent(
     case ActionType.RATING:
       return stepComponents.Rating;
     case ActionType.SUBJECTIVE:
-      // return stepComponents.Subjective;
-      return stepComponents.Pdf;
+      return stepComponents.Subjective;
     case ActionType.PDF:
       return stepComponents.Pdf;
     case ActionType.IMAGE:
