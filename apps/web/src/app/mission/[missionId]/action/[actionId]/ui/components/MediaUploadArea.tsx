@@ -12,6 +12,7 @@ interface MediaUploadAreaProps {
   accept?: string;
   buttonText?: string;
   icon?: "image" | "video" | "file";
+  multiple?: boolean;
 }
 
 export function MediaUploadArea({
@@ -22,6 +23,7 @@ export function MediaUploadArea({
   accept = "image/*,.heic,.heif",
   buttonText = "사진 첨부",
   icon = "image",
+  multiple = false,
 }: MediaUploadAreaProps) {
   const ICON_COMPONENTS = {
     video: VideoIcon,
@@ -40,6 +42,7 @@ export function MediaUploadArea({
         className="hidden"
         onChange={onFileChange}
         disabled={isUploading}
+        multiple={multiple}
       />
       <button
         onClick={onFileSelect}

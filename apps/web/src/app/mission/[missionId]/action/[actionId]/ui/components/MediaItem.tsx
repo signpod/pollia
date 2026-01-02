@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Loader2Icon, XIcon } from "lucide-react";
+import { Check, Loader2Icon, XIcon } from "lucide-react";
 import Image from "next/image";
 
 interface MediaItemProps {
@@ -11,6 +11,8 @@ interface MediaItemProps {
   onDelete: (mediaUrl: string) => void;
   onLoadComplete: () => void;
   alt?: string;
+  isSelected?: boolean;
+  onToggle?: (mediaUrl: string) => void;
 }
 
 export function MediaItem({
@@ -20,9 +22,23 @@ export function MediaItem({
   onDelete,
   onLoadComplete,
   alt = "업로드된 미디어",
+  isSelected = false,
+  onToggle,
 }: MediaItemProps) {
+  const handleClick = () => {
+    if (onToggle && !isUploading) {
+      onToggle(mediaUrl);
+    }
+  };
+
   return (
-    <div className="relative w-full aspect-square rounded-sm overflow-hidden bg-black z-0">
+    <div
+      className={cn(
+        "relative w-full aspect-square rounded-sm overflow-hidden bg-black z-0",
+        onToggle && !isUploading && "cursor-pointer",
+      )}
+      onClick={handleClick}
+    >
       {mediaType === "image" ? (
         <Image
           src={mediaUrl}
@@ -50,13 +66,23 @@ export function MediaItem({
         </div>
       )}
       {!isUploading && (
-        <button
-          type="button"
-          className="absolute top-0 right-0 size-9 flex items-center justify-center bg-black/30"
-          onClick={() => onDelete(mediaUrl)}
-        >
-          <XIcon className="size-4 text-white" />
-        </button>
+        <>
+          {isSelected && (
+            <div className="absolute top-2 left-2 size-6 flex items-center justify-center bg-point rounded-full z-40">
+              <Check className="size-4 text-white" />
+            </div>
+          )}
+          <button
+            type="button"
+            className="absolute top-0 right-0 size-9 flex items-center justify-center bg-black/30 z-40"
+            onClick={e => {
+              e.stopPropagation();
+              onDelete(mediaUrl);
+            }}
+          >
+            <XIcon className="size-4 text-white" />
+          </button>
+        </>
       )}
     </div>
   );
