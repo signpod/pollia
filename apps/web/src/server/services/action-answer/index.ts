@@ -94,7 +94,15 @@ export class ActionAnswerService {
 
     const action = await this.actionRepo.findById(answer.actionId);
     if (action) {
-      this.validateAnswerByActionType(validated, action.type);
+      this.validateAnswerByActionType(
+        {
+          responseId: answer.responseId,
+          actionId: answer.actionId,
+          ...validated,
+        },
+        action.type,
+        action.isRequired,
+      );
     }
 
     return this.answerRepo.update(answerId, validated);
@@ -293,35 +301,23 @@ export class ActionAnswerService {
   }
 
   private validateAnswerByActionType(
-    data: {
+    input: {
+      responseId: string;
+      actionId: string;
       optionId?: string;
       textAnswer?: string;
       scaleAnswer?: number;
       dateAnswers?: Date[];
     },
     actionType: ActionType,
+    isRequired: boolean,
   ) {
-    if (actionType === ActionType.MULTIPLE_CHOICE && !data.optionId) {
-      this.throwValidationError("객관식 답변에는 선택지가 필요합니다.");
+    if (!isRequired) {
+      return this.validateInput(input, baseAnswerInputSchema);
     }
-    if (actionType === ActionType.SCALE && data.scaleAnswer === undefined) {
-      this.throwValidationError("척도 값을 선택해주세요.");
-    }
-    if (actionType === ActionType.RATING && data.scaleAnswer === undefined) {
-      this.throwValidationError("별점 값을 선택해주세요.");
-    }
-    if (actionType === ActionType.SUBJECTIVE && !data.textAnswer) {
-      this.throwValidationError("주관식 답변은 필수입니다.");
-    }
-    if (actionType === ActionType.SHORT_TEXT && !data.textAnswer) {
-      this.throwValidationError("답변은 필수입니다.");
-    }
-    if (actionType === ActionType.DATE && (!data.dateAnswers || data.dateAnswers.length === 0)) {
-      this.throwValidationError("날짜를 선택해주세요.");
-    }
-    if (actionType === ActionType.TIME && (!data.dateAnswers || data.dateAnswers.length === 0)) {
-      this.throwValidationError("시간을 선택해주세요.");
-    }
+
+    const schema = this.getSchemaByActionType(actionType);
+    return this.validateInput(input, schema);
   }
 }
 
