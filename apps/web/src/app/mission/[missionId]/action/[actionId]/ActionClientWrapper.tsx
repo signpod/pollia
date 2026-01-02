@@ -26,7 +26,6 @@ import {
   ActionImage,
   ActionPdf,
   ActionTag,
-  ActionUrl,
   ActionVideo,
   MissionRatingScale,
   MissionStarScale,
@@ -100,7 +99,6 @@ function ActionContent() {
       Rating: MissionStarScale,
       Image: ActionImage,
       Video: ActionVideo,
-      Url: ActionUrl,
       Tag: ActionTag,
       Pdf: ActionPdf,
     },
@@ -240,7 +238,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
         return submittedScaleValue !== null && submittedScaleValue === answer.scaleValue;
       }
 
-      if (answer.type === ActionType.SUBJECTIVE || answer.type === ActionType.URL) {
+      if (answer.type === ActionType.SUBJECTIVE || answer.type === ActionType.SHORT_TEXT) {
         const submittedTextAnswer = answersForAction[0]?.textAnswer;
         return submittedTextAnswer !== null && submittedTextAnswer === answer.textAnswer;
       }

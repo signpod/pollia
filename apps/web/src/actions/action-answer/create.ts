@@ -2,23 +2,8 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import { actionAnswerService } from "@/server/services/action-answer";
-import type { CreateAnswerInput, SubmitAnswersInput } from "@/server/services/action-answer/types";
-import type {
-  CreateActionAnswerRequest,
-  CreateActionAnswerResponse,
-  SubmitActionAnswersRequest,
-  SubmitActionAnswersResponse,
-} from "@/types/dto";
-
-function toCreateAnswerInput(dto: CreateActionAnswerRequest): CreateAnswerInput {
-  return {
-    actionId: dto.actionId,
-    responseId: dto.responseId,
-    optionId: dto.optionId,
-    textAnswer: dto.textAnswer,
-    scaleAnswer: dto.scaleAnswer,
-  };
-}
+import type { SubmitAnswersInput } from "@/server/services/action-answer/types";
+import type { SubmitActionAnswersRequest, SubmitActionAnswersResponse } from "@/types/dto";
 
 function toSubmitAnswersInput(dto: SubmitActionAnswersRequest): SubmitAnswersInput {
   return {
@@ -33,27 +18,6 @@ function toSubmitAnswersInput(dto: SubmitActionAnswersRequest): SubmitAnswersInp
       fileUploadIds: a.fileUploadIds,
     })),
   };
-}
-
-export async function createAnswer(
-  request: CreateActionAnswerRequest,
-): Promise<CreateActionAnswerResponse> {
-  try {
-    const user = await requireAuth();
-    const input = toCreateAnswerInput(request);
-    const answer = await actionAnswerService.createAnswer(input, user.id);
-
-    const data = { ...answer, actionId: answer.action.id };
-    return { data };
-  } catch (error) {
-    console.error("createAnswer error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("답변 생성 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
-  }
 }
 
 export async function submitAnswers(

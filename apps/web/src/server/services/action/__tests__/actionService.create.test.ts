@@ -484,6 +484,92 @@ describe("ActionService - Create", () => {
     });
   });
 
+  describe("createShortTextAction", () => {
+    it("Short Text Action을 성공적으로 생성한다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+      const request = {
+        missionId: "mission1",
+        title: "이름을 입력해주세요",
+        description: "실명을 입력해주세요",
+        imageUrl: undefined,
+        order: 0,
+        isRequired: true,
+      };
+      const mockCreatedAction = createMockActionResponse(request, ActionType.SHORT_TEXT);
+
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.create.mockResolvedValue(mockCreatedAction);
+
+      // When
+      const result = await ctx.service.createShortTextAction(request, "user1");
+
+      // Then
+      expect(result.id).toBe("action1");
+      expect(result.missionId).toBe("mission1");
+      expect(result.title).toBe(request.title);
+      expect(result.type).toBe(ActionType.SHORT_TEXT);
+      expect(result.order).toBe(request.order);
+      expect(result.createdAt).toBeDefined();
+      expect(ctx.mockActionRepo.create).toHaveBeenCalledWith(
+        {
+          missionId: "mission1",
+          title: request.title,
+          description: request.description,
+          imageUrl: request.imageUrl,
+          imageFileUploadId: undefined,
+          type: ActionType.SHORT_TEXT,
+          order: request.order,
+          isRequired: true,
+        },
+        "user1",
+      );
+    });
+
+    it("Mission 소유자가 아니면 403 에러를 던진다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+      const request = {
+        missionId: "mission1",
+        title: "이름을 입력해주세요",
+        order: 0,
+        isRequired: true,
+      };
+
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+
+      // When & Then
+      await expectServiceErrorWithCause(
+        ctx.service.createShortTextAction(request, "user2"),
+        "액션을 추가할 권한이 없습니다.",
+        403,
+      );
+
+      expect(ctx.mockActionRepo.create).not.toHaveBeenCalled();
+    });
+
+    it("Mission이 없으면 404 에러를 던진다", async () => {
+      // Given
+      const request = {
+        missionId: "invalid-mission",
+        title: "이름을 입력해주세요",
+        order: 0,
+        isRequired: true,
+      };
+
+      ctx.mockMissionRepo.findById.mockResolvedValue(null);
+
+      // When & Then
+      await expectServiceErrorWithCause(
+        ctx.service.createShortTextAction(request, "user1"),
+        "존재하지 않는 미션입니다.",
+        404,
+      );
+
+      expect(ctx.mockActionRepo.create).not.toHaveBeenCalled();
+    });
+  });
+
   describe("createPrivacyConsentAction", () => {
     it("Privacy Consent Action을 성공적으로 생성한다", async () => {
       // Given

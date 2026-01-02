@@ -127,7 +127,8 @@ export const Interactive: Story = {
   parameters: {
     docs: {
       description: {
-        story: "제목을 클릭하여 아코디언을 열고 닫을 수 있습니다. 부드러운 애니메이션이 적용됩니다.",
+        story:
+          "제목을 클릭하여 아코디언을 열고 닫을 수 있습니다. 부드러운 애니메이션이 적용됩니다.",
       },
     },
   },
@@ -158,4 +159,3 @@ export const LongContent: Story = {
     },
   },
 };
-

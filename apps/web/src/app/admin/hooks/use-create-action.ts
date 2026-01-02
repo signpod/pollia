@@ -8,6 +8,7 @@ import {
   createPrivacyConsentAction,
   createRatingAction,
   createScaleAction,
+  createShortTextAction,
   createSubjectiveAction,
   createTagAction,
   createTimeAction,
@@ -23,6 +24,7 @@ import type {
   CreatePrivacyConsentActionRequest,
   CreateRatingActionRequest,
   CreateScaleActionRequest,
+  CreateShortTextActionRequest,
   CreateSubjectiveActionRequest,
   CreateTagActionRequest,
   CreateTimeActionRequest,
@@ -114,6 +116,19 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             isRequired: input.isRequired,
           };
           return await createSubjectiveAction(request);
+        }
+
+        case "SHORT_TEXT": {
+          const request: CreateShortTextActionRequest = {
+            missionId: input.missionId,
+            title: input.title,
+            description: input.description,
+            imageUrl: input.imageUrl,
+            imageFileUploadId: input.imageFileUploadId,
+            order: input.order,
+            isRequired: input.isRequired,
+          };
+          return await createShortTextAction(request);
         }
 
         case "TAG": {

@@ -154,124 +154,6 @@ describe("ActionAnswerService", () => {
     });
   });
 
-  describe("createAnswer", () => {
-    it("객관식 Answer를 성공적으로 생성한다", async () => {
-      // Given
-      const mockResponse = { id: "response1", userId: "user1", missionId: "mission1" };
-      const mockAction = {
-        id: "action1",
-        missionId: "mission1",
-        type: ActionType.MULTIPLE_CHOICE,
-      };
-      const mockCreatedAnswer = {
-        id: "answer1",
-        responseId: "response1",
-        actionId: "action1",
-        optionId: "option1",
-      };
-
-      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
-      mockActionRepo.findById.mockResolvedValue(mockAction as never);
-      mockAnswerRepo.create.mockResolvedValue(mockCreatedAnswer as never);
-
-      // When
-      const result = await service.createAnswer(
-        { responseId: "response1", actionId: "action1", optionId: "option1" },
-        mockUser.id,
-      );
-
-      // Then
-      expect(result).toEqual(mockCreatedAnswer);
-      expect(mockAnswerRepo.create).toHaveBeenCalled();
-    });
-
-    it("척도 Answer를 성공적으로 생성한다", async () => {
-      // Given
-      const mockResponse = { id: "response1", userId: "user1", missionId: "mission1" };
-      const mockAction = { id: "action1", missionId: "mission1", type: ActionType.SCALE };
-      const mockCreatedAnswer = { id: "answer1", scaleAnswer: 4 };
-
-      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
-      mockActionRepo.findById.mockResolvedValue(mockAction as never);
-      mockAnswerRepo.create.mockResolvedValue(mockCreatedAnswer as never);
-
-      // When
-      const result = await service.createAnswer(
-        { responseId: "response1", actionId: "action1", scaleAnswer: 4 },
-        mockUser.id,
-      );
-
-      // Then
-      expect(result).toEqual(mockCreatedAnswer);
-    });
-
-    it("주관식 Answer를 성공적으로 생성한다", async () => {
-      // Given
-      const mockResponse = { id: "response1", userId: "user1", missionId: "mission1" };
-      const mockAction = {
-        id: "action1",
-        missionId: "mission1",
-        type: ActionType.SUBJECTIVE,
-      };
-      const mockCreatedAnswer = { id: "answer1", textAnswer: "답변 내용" };
-
-      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
-      mockActionRepo.findById.mockResolvedValue(mockAction as never);
-      mockAnswerRepo.create.mockResolvedValue(mockCreatedAnswer as never);
-
-      // When
-      const result = await service.createAnswer(
-        { responseId: "response1", actionId: "action1", textAnswer: "답변 내용" },
-        mockUser.id,
-      );
-
-      // Then
-      expect(result).toEqual(mockCreatedAnswer);
-    });
-
-    it("Action이 없으면 404 에러를 던진다", async () => {
-      // Given
-      const mockResponse = { id: "response1", userId: "user1" };
-      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
-      mockActionRepo.findById.mockResolvedValue(null);
-
-      // When & Then
-      await expect(
-        service.createAnswer(
-          { responseId: "response1", actionId: "invalid-action", optionId: "option1" },
-          mockUser.id,
-        ),
-      ).rejects.toThrow("액션을 찾을 수 없습니다.");
-    });
-
-    it("객관식 액션에 optionId 없으면 400 에러를 던진다", async () => {
-      // Given
-      const mockResponse = { id: "response1", userId: "user1" };
-      const mockAction = { id: "action1", type: ActionType.MULTIPLE_CHOICE };
-
-      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
-      mockActionRepo.findById.mockResolvedValue(mockAction as never);
-
-      // When & Then
-      await expect(
-        service.createAnswer({ responseId: "response1", actionId: "action1" }, mockUser.id),
-      ).rejects.toThrow("객관식 답변에는 선택지가 필요합니다.");
-    });
-
-    it("Response가 없으면 404 에러를 던진다", async () => {
-      // Given
-      mockResponseRepo.findById.mockResolvedValue(null);
-
-      // When & Then
-      await expect(
-        service.createAnswer(
-          { responseId: "invalid-response", actionId: "action1", optionId: "option1" },
-          mockUser.id,
-        ),
-      ).rejects.toThrow("응답을 찾을 수 없습니다.");
-    });
-  });
-
   describe("submitAnswers", () => {
     it("여러 답변을 한번에 제출한다", async () => {
       // Given
@@ -446,11 +328,18 @@ describe("ActionAnswerService", () => {
         userId: "user1",
         completedAt: null,
       };
+      const mockAction = {
+        id: "q1",
+        missionId: "mission1",
+        type: ActionType.IMAGE,
+        isRequired: true,
+        title: "프로필 사진",
+      };
 
       mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
 
       // When & Then
-      // Zod 스키마에서 먼저 검증되므로 "이미지는 필수입니다." 메시지가 나옴
       await expect(
         service.submitAnswers(
           {
@@ -466,7 +355,7 @@ describe("ActionAnswerService", () => {
           },
           mockUser.id,
         ),
-      ).rejects.toThrow("이미지는 필수입니다.");
+      ).rejects.toThrow("필수 답변이 누락되었습니다");
     });
 
     it("클라이언트가 잘못된 isRequired를 보내면 서비스 레벨에서 검증한다", async () => {
@@ -877,6 +766,166 @@ describe("ActionAnswerService", () => {
         mockUser.id,
       );
     });
+
+    it("SUBJECTIVE 답변이 500자일 때 성공한다", async () => {
+      // Given
+      const text500Chars = "a".repeat(500);
+      const mockResponse = {
+        id: "response1",
+        missionId: "mission1",
+        userId: "user1",
+        completedAt: null,
+      };
+      const mockAction = {
+        id: "q1",
+        missionId: "mission1",
+        type: ActionType.SUBJECTIVE,
+        isRequired: true,
+      };
+
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
+      mockAnswerRepo.deleteByResponseAndActions.mockResolvedValue({ count: 0 });
+      mockAnswerRepo.createMany.mockResolvedValue({ count: 1 });
+
+      // When
+      const result = await service.submitAnswers(
+        {
+          responseId: "response1",
+          answers: [
+            {
+              actionId: "q1",
+              type: ActionType.SUBJECTIVE,
+              isRequired: true,
+              textAnswer: text500Chars,
+            },
+          ],
+        },
+        mockUser.id,
+      );
+
+      // Then
+      expect(result.responseId).toBe("response1");
+      expect(mockAnswerRepo.createMany).toHaveBeenCalled();
+    });
+
+    it("SUBJECTIVE 답변이 501자일 때 400 에러를 던진다", async () => {
+      // Given
+      const text501Chars = "a".repeat(501);
+      const mockResponse = {
+        id: "response1",
+        missionId: "mission1",
+        userId: "user1",
+        completedAt: null,
+      };
+      const mockAction = {
+        id: "q1",
+        missionId: "mission1",
+        type: ActionType.SUBJECTIVE,
+        isRequired: true,
+      };
+
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
+
+      // When & Then
+      await expect(
+        service.submitAnswers(
+          {
+            responseId: "response1",
+            answers: [
+              {
+                actionId: "q1",
+                type: ActionType.SUBJECTIVE,
+                isRequired: true,
+                textAnswer: text501Chars,
+              },
+            ],
+          },
+          mockUser.id,
+        ),
+      ).rejects.toThrow("답변은 500자를 초과할 수 없습니다.");
+    });
+
+    it("SHORT_TEXT 답변이 50자일 때 성공한다", async () => {
+      // Given
+      const text50Chars = "a".repeat(50);
+      const mockResponse = {
+        id: "response1",
+        missionId: "mission1",
+        userId: "user1",
+        completedAt: null,
+      };
+      const mockAction = {
+        id: "q1",
+        missionId: "mission1",
+        type: ActionType.SHORT_TEXT,
+        isRequired: true,
+      };
+
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
+      mockAnswerRepo.deleteByResponseAndActions.mockResolvedValue({ count: 0 });
+      mockAnswerRepo.createMany.mockResolvedValue({ count: 1 });
+
+      // When
+      const result = await service.submitAnswers(
+        {
+          responseId: "response1",
+          answers: [
+            {
+              actionId: "q1",
+              type: ActionType.SHORT_TEXT,
+              isRequired: true,
+              textAnswer: text50Chars,
+            },
+          ],
+        },
+        mockUser.id,
+      );
+
+      // Then
+      expect(result.responseId).toBe("response1");
+      expect(mockAnswerRepo.createMany).toHaveBeenCalled();
+    });
+
+    it("SHORT_TEXT 답변이 51자일 때 400 에러를 던진다", async () => {
+      // Given
+      const text51Chars = "a".repeat(51);
+      const mockResponse = {
+        id: "response1",
+        missionId: "mission1",
+        userId: "user1",
+        completedAt: null,
+      };
+      const mockAction = {
+        id: "q1",
+        missionId: "mission1",
+        type: ActionType.SHORT_TEXT,
+        isRequired: true,
+      };
+
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
+
+      // When & Then
+      await expect(
+        service.submitAnswers(
+          {
+            responseId: "response1",
+            answers: [
+              {
+                actionId: "q1",
+                type: ActionType.SHORT_TEXT,
+                isRequired: true,
+                textAnswer: text51Chars,
+              },
+            ],
+          },
+          mockUser.id,
+        ),
+      ).rejects.toThrow("답변은 50자를 초과할 수 없습니다.");
+    });
   });
 
   describe("updateAnswer", () => {
@@ -885,10 +934,15 @@ describe("ActionAnswerService", () => {
       const mockAnswer = {
         id: "answer1",
         actionId: "action1",
+        responseId: "response1",
         optionId: "option1",
         response: { userId: "user1" },
       };
-      const mockAction = { id: "action1", type: ActionType.MULTIPLE_CHOICE };
+      const mockAction = {
+        id: "action1",
+        type: ActionType.MULTIPLE_CHOICE,
+        isRequired: true,
+      };
       const mockUpdatedAnswer = { ...mockAnswer, optionId: "option2" };
 
       mockAnswerRepo.findById.mockResolvedValue(mockAnswer as never);
@@ -901,6 +955,122 @@ describe("ActionAnswerService", () => {
       // Then
       expect(result.optionId).toBe("option2");
       expect(mockAnswerRepo.update).toHaveBeenCalledWith("answer1", { optionId: "option2" });
+    });
+
+    it("SUBJECTIVE 답변을 500자로 수정하면 성공한다", async () => {
+      // Given
+      const text500Chars = "a".repeat(500);
+      const mockAnswer = {
+        id: "answer1",
+        actionId: "action1",
+        responseId: "response1",
+        textAnswer: "기존 답변",
+        response: { userId: "user1" },
+      };
+      const mockAction = {
+        id: "action1",
+        type: ActionType.SUBJECTIVE,
+        isRequired: true,
+      };
+      const mockUpdatedAnswer = { ...mockAnswer, textAnswer: text500Chars };
+
+      mockAnswerRepo.findById.mockResolvedValue(mockAnswer as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
+      mockAnswerRepo.update.mockResolvedValue(mockUpdatedAnswer as never);
+
+      // When
+      const result = await service.updateAnswer(
+        "answer1",
+        { textAnswer: text500Chars },
+        mockUser.id,
+      );
+
+      // Then
+      expect(result.textAnswer).toBe(text500Chars);
+      expect(mockAnswerRepo.update).toHaveBeenCalledWith("answer1", { textAnswer: text500Chars });
+    });
+
+    it("SUBJECTIVE 답변을 501자로 수정하면 400 에러를 던진다", async () => {
+      // Given
+      const text501Chars = "a".repeat(501);
+      const mockAnswer = {
+        id: "answer1",
+        actionId: "action1",
+        responseId: "response1",
+        textAnswer: "기존 답변",
+        response: { userId: "user1" },
+      };
+      const mockAction = {
+        id: "action1",
+        type: ActionType.SUBJECTIVE,
+        isRequired: true,
+      };
+
+      mockAnswerRepo.findById.mockResolvedValue(mockAnswer as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
+
+      // When & Then
+      await expect(
+        service.updateAnswer("answer1", { textAnswer: text501Chars }, mockUser.id),
+      ).rejects.toThrow("답변은 500자를 초과할 수 없습니다.");
+    });
+
+    it("SHORT_TEXT 답변을 50자로 수정하면 성공한다", async () => {
+      // Given
+      const text50Chars = "a".repeat(50);
+      const mockAnswer = {
+        id: "answer1",
+        actionId: "action1",
+        responseId: "response1",
+        textAnswer: "기존 답변",
+        response: { userId: "user1" },
+      };
+      const mockAction = {
+        id: "action1",
+        type: ActionType.SHORT_TEXT,
+        isRequired: true,
+      };
+      const mockUpdatedAnswer = { ...mockAnswer, textAnswer: text50Chars };
+
+      mockAnswerRepo.findById.mockResolvedValue(mockAnswer as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
+      mockAnswerRepo.update.mockResolvedValue(mockUpdatedAnswer as never);
+
+      // When
+      const result = await service.updateAnswer(
+        "answer1",
+        { textAnswer: text50Chars },
+        mockUser.id,
+      );
+
+      // Then
+      expect(result.textAnswer).toBe(text50Chars);
+      expect(mockAnswerRepo.update).toHaveBeenCalledWith("answer1", { textAnswer: text50Chars });
+    });
+
+    it("SHORT_TEXT 답변을 51자로 수정하면 400 에러를 던진다", async () => {
+      // Given
+      const text51Chars = "a".repeat(51);
+      const mockAnswer = {
+        id: "answer1",
+        actionId: "action1",
+        responseId: "response1",
+        textAnswer: "기존 답변",
+        response: { userId: "user1" },
+      };
+      const mockAction = {
+        id: "action1",
+        type: ActionType.SHORT_TEXT,
+        isRequired: true,
+      };
+
+      mockAnswerRepo.findById.mockResolvedValue(mockAnswer as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
+
+      // When & Then
+      await expect(
+        service.updateAnswer("answer1", { textAnswer: text51Chars }, mockUser.id),
+      ).rejects.toThrow("답변은 50자를 초과할 수 없습니다.");
     });
   });
 

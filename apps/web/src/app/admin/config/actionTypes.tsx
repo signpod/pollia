@@ -12,6 +12,7 @@ import {
   Shield,
   SlidersHorizontal,
   Star,
+  Text,
   Video,
 } from "lucide-react";
 
@@ -52,6 +53,12 @@ export const ACTION_TYPE_CONFIGS: readonly ActionTypeConfig[] = [
     label: getActionTypeLabel("SUBJECTIVE"),
     description: "자유롭게 텍스트로 응답",
     icon: MessageSquare,
+  },
+  {
+    value: "SHORT_TEXT",
+    label: getActionTypeLabel("SHORT_TEXT"),
+    description: "짧은 텍스트 입력 (최대 50자)",
+    icon: Text,
   },
   {
     value: "IMAGE",

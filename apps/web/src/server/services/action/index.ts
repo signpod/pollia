@@ -8,6 +8,7 @@ import {
   privacyConsentInputSchema,
   ratingInputSchema,
   scaleInputSchema,
+  shortTextInputSchema,
   subjectiveInputSchema,
   tagInputSchema,
   timeInputSchema,
@@ -27,6 +28,7 @@ import type {
   CreatePrivacyConsentInput,
   CreateRatingInput,
   CreateScaleInput,
+  CreateShortTextInput,
   CreateSubjectiveInput,
   CreateTagInput,
   CreateTimeInput,
@@ -238,6 +240,13 @@ export class ActionService {
     userId: string,
   ): Promise<ActionCreatedResult> {
     return this.createSimpleAction(input, subjectiveInputSchema, ActionType.SUBJECTIVE, userId);
+  }
+
+  async createShortTextAction(
+    input: CreateShortTextInput,
+    userId: string,
+  ): Promise<ActionCreatedResult> {
+    return this.createSimpleAction(input, shortTextInputSchema, ActionType.SHORT_TEXT, userId);
   }
 
   async createEitherOrAction(

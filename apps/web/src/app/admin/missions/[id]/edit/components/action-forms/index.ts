@@ -6,6 +6,7 @@ export { PdfUploadForm } from "./PdfUploadForm";
 export { PrivacyConsentForm } from "./PrivacyConsentForm";
 export { RatingForm } from "./RatingForm";
 export { ScaleForm } from "./ScaleForm";
+export { ShortTextForm } from "./ShortTextForm";
 export { SubjectiveForm } from "./SubjectiveForm";
 export { TagForm } from "./TagForm";
 export { TimeForm } from "./TimeForm";
@@ -23,6 +24,7 @@ export type {
   PrivacyConsentFormData,
   RatingFormData,
   ScaleFormData,
+  ShortTextFormData,
   SubjectiveFormData,
   TagFormData,
   TimeFormData,

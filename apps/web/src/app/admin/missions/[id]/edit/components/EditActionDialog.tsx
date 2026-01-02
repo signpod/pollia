@@ -18,6 +18,7 @@ import {
   PrivacyConsentForm,
   RatingForm,
   ScaleForm,
+  ShortTextForm,
   SubjectiveForm,
   TagForm,
   TimeForm,
@@ -150,6 +151,20 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
     case "SUBJECTIVE":
       return (
         <SubjectiveForm
+          isLoading={isLoading}
+          onSubmit={onSubmit}
+          onCancel={onCancel}
+          initialData={{
+            title: action.title,
+            description: action.description || undefined,
+            imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
+          }}
+        />
+      );
+    case "SHORT_TEXT":
+      return (
+        <ShortTextForm
           isLoading={isLoading}
           onSubmit={onSubmit}
           onCancel={onCancel}

@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ButtonV2, Typo } from "@repo/ui/components";
+import { Typo } from "@repo/ui/components";
 import { Dialog, DialogOverlay, DialogPortal } from "@repo/ui/components";
 import { XIcon } from "lucide-react";
 
@@ -44,15 +44,10 @@ export function PdfViewerModal({ isOpen, pdfUrl, fileName, onClose }: PdfViewerM
           </div>
 
           <div className="flex-1 overflow-hidden">
-            <iframe
-              src={pdfUrl}
-              className="w-full h-full border-0"
-              title={fileName}
-            />
+            <iframe src={pdfUrl} className="w-full h-full border-0" title={fileName} />
           </div>
         </div>
       </DialogPortal>
     </Dialog>
   );
 }
-

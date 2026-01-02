@@ -71,9 +71,10 @@ export function ActionUrl({
 
       // TODO: 백엔드 API 스펙 확인 후 실제 필드명으로 수정 필요
       // 현재는 textAnswer를 사용하지만, urlAnswer 같은 별도 필드가 필요할 수 있음
+      // URL 타입은 현재 지원하지 않으므로, 이 컴포넌트는 사용되지 않습니다. - [2026-01-02-러기]
       const answer: ActionAnswerItem = {
         actionId: actionData.id,
-        type: ActionType.URL,
+        type: ActionType.SHORT_TEXT,
         isRequired: actionData.isRequired,
         textAnswer: trimmedUrl,
       };
@@ -88,7 +89,7 @@ export function ActionUrl({
         updateCanGoNextRef.current?.(false);
       }
     },
-    [actionData.id, validateUrl],
+    [actionData.id, actionData.isRequired, validateUrl],
   );
 
   useEffect(() => {

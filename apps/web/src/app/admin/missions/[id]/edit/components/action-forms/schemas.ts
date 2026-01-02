@@ -12,6 +12,7 @@ import {
   privacyConsentInputSchema,
   ratingInputSchema,
   scaleInputSchema,
+  shortTextInputSchema,
   subjectiveInputSchema,
   tagInputSchema,
   timeInputSchema,
@@ -101,6 +102,12 @@ export const subjectiveFormSchema = subjectiveInputSchema.omit({
   imageFileUploadId: true,
 });
 
+export const shortTextFormSchema = shortTextInputSchema.omit({
+  missionId: true,
+  order: true,
+  imageFileUploadId: true,
+});
+
 export const ratingFormSchema = ratingInputSchema.omit({
   missionId: true,
   order: true,
@@ -176,6 +183,7 @@ export const timeFormSchema = timeInputSchema
 export type MultipleChoiceFormInput = z.infer<typeof multipleChoiceFormSchema>;
 export type ScaleFormInput = z.infer<typeof scaleFormSchema>;
 export type SubjectiveFormInput = z.infer<typeof subjectiveFormSchema>;
+export type ShortTextFormInput = z.infer<typeof shortTextFormSchema>;
 export type TagFormInput = z.infer<typeof tagFormSchema>;
 export type RatingFormInput = z.infer<typeof ratingFormSchema>;
 export type ImageUploadFormInput = z.infer<typeof imageUploadFormSchema>;

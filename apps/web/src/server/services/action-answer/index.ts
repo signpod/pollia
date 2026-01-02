@@ -1,14 +1,25 @@
 import {
-  actionAnswerInputSchema,
   actionAnswerUpdateSchema,
+  baseAnswerInputSchema,
+  dateAnswerInputSchema,
+  imageAnswerInputSchema,
+  multipleChoiceAnswerInputSchema,
+  pdfAnswerInputSchema,
+  ratingAnswerInputSchema,
+  scaleAnswerInputSchema,
+  shortTextAnswerInputSchema,
+  subjectiveAnswerInputSchema,
   submitAnswersSchema,
+  tagAnswerInputSchema,
+  timeAnswerInputSchema,
+  videoAnswerInputSchema,
 } from "@/schemas/action-answer";
 import { actionAnswerRepository } from "@/server/repositories/action-answer/actionAnswerRepository";
 import { actionRepository } from "@/server/repositories/action/actionRepository";
 import { missionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import { ActionType } from "@prisma/client";
 import { z } from "zod";
-import type { CreateAnswerInput, SubmitAnswersInput, UpdateAnswerInput } from "./types";
+import type { SubmitAnswersInput, UpdateAnswerInput } from "./types";
 
 export class ActionAnswerService {
   constructor(
@@ -49,65 +60,42 @@ export class ActionAnswerService {
     return this.answerRepo.findByUserId(userId);
   }
 
-  async createAnswer(input: CreateAnswerInput, userId: string) {
-    const validated = this.validateInput(input, actionAnswerInputSchema);
-
-    const { responseId, actionId, optionId, textAnswer, scaleAnswer, dateAnswers } = validated;
-
-    await this.verifyResponseOwnership(responseId, userId);
-
-    const action = await this.actionRepo.findById(actionId);
-    if (!action) {
-      this.throwError("액션을 찾을 수 없습니다.", 404);
-    }
-
-    this.validateAnswerByActionType(
-      { optionId, textAnswer, scaleAnswer, dateAnswers },
-      action.type,
-    );
-
-    return this.answerRepo.create({
-      responseId,
-      actionId,
-      optionId,
-      textAnswer,
-      scaleAnswer,
-      dateAnswers,
-    });
-  }
-
   async submitAnswers(input: SubmitAnswersInput, userId: string) {
     const validated = this.validateInput(input, submitAnswersSchema);
 
-    const response = await this.responseRepo.findById(validated.responseId);
-
-    if (!response) {
-      this.throwError("응답을 찾을 수 없습니다.", 404);
-    }
-
-    if (response.userId !== userId) {
-      this.throwError("제출 권한이 없습니다.", 403);
-    }
-
-    if (response.completedAt) {
-      this.throwError("이미 완료된 응답입니다.", 400);
-    }
+    const response = await this.verifyResponseOwnership(validated.responseId, userId, {
+      checkCompleted: true,
+    });
 
     const actionIds = validated.answers.map(a => a.actionId);
     const actions = await Promise.all(actionIds.map(id => this.actionRepo.findById(id)));
 
     this.validateActions(actions, validated.answers, response.missionId);
 
+    for (const answer of validated.answers) {
+      const action = actions.find(a => a?.id === answer.actionId);
+      if (action) {
+        this.validateAnswerByActionType(
+          {
+            responseId: validated.responseId,
+            actionId: answer.actionId,
+            optionId: answer.selectedOptionIds?.[0],
+            textAnswer: answer.textAnswer,
+            scaleAnswer: answer.scaleValue,
+            dateAnswers: answer.dateAnswers,
+            fileUploadIds: answer.fileUploadIds,
+          },
+          action.type,
+          action.isRequired,
+        );
+      }
+    }
+
     await this.answerRepo.deleteByResponseAndActions(validated.responseId, actionIds);
 
-    const answersToCreate: Array<Parameters<typeof this.answerRepo.createMany>[0][number]> = [];
-
-    for (const answer of validated.answers) {
-      const convertedAnswers = this.convertAnswerToCreateInput(answer, validated.responseId);
-      answersToCreate.push(
-        ...(Array.isArray(convertedAnswers) ? convertedAnswers : [convertedAnswers]),
-      );
-    }
+    const answersToCreate = validated.answers.flatMap(answer =>
+      this.convertAnswerToCreateInput(answer, validated.responseId),
+    );
 
     await this.answerRepo.createMany(answersToCreate, userId);
 
@@ -125,7 +113,15 @@ export class ActionAnswerService {
 
     const action = await this.actionRepo.findById(answer.actionId);
     if (action) {
-      this.validateAnswerByActionType(validated, action.type);
+      this.validateAnswerByActionType(
+        {
+          responseId: answer.responseId,
+          actionId: answer.actionId,
+          ...validated,
+        },
+        action.type,
+        action.isRequired,
+      );
     }
 
     return this.answerRepo.update(answerId, validated);
@@ -137,20 +133,15 @@ export class ActionAnswerService {
   }
 
   async deleteAnswersByResponseId(responseId: string, userId: string): Promise<void> {
-    const response = await this.responseRepo.findById(responseId);
-
-    if (!response) {
-      this.throwError("응답을 찾을 수 없습니다.", 404);
-    }
-
-    if (response.userId !== userId) {
-      this.throwError("권한이 없습니다.", 403);
-    }
-
+    await this.verifyResponseOwnership(responseId, userId);
     await this.answerRepo.deleteByResponseId(responseId);
   }
 
-  private async verifyResponseOwnership(responseId: string, userId: string): Promise<void> {
+  private async verifyResponseOwnership(
+    responseId: string,
+    userId: string,
+    options?: { checkCompleted?: boolean },
+  ) {
     const response = await this.responseRepo.findById(responseId);
 
     if (!response) {
@@ -160,6 +151,12 @@ export class ActionAnswerService {
     if (response.userId !== userId) {
       this.throwError("권한이 없습니다.", 403);
     }
+
+    if (options?.checkCompleted && response.completedAt) {
+      this.throwError("이미 완료된 응답입니다.", 400);
+    }
+
+    return response;
   }
 
   private throwError(message: string, statusCode: number): never {
@@ -237,6 +234,7 @@ export class ActionAnswerService {
           : [baseData];
 
       case ActionType.SUBJECTIVE:
+      case ActionType.SHORT_TEXT:
         return answer.textAnswer ? [{ ...baseData, textAnswer: answer.textAnswer }] : [baseData];
 
       case ActionType.IMAGE:
@@ -275,6 +273,7 @@ export class ActionAnswerService {
         return answer.scaleValue === undefined;
 
       case ActionType.SUBJECTIVE:
+      case ActionType.SHORT_TEXT:
         return !answer.textAnswer;
 
       case ActionType.IMAGE:
@@ -291,33 +290,54 @@ export class ActionAnswerService {
     }
   }
 
+  private getSchemaByActionType(actionType: ActionType): z.ZodType {
+    switch (actionType) {
+      case ActionType.SUBJECTIVE:
+        return subjectiveAnswerInputSchema;
+      case ActionType.SHORT_TEXT:
+        return shortTextAnswerInputSchema;
+      case ActionType.SCALE:
+        return scaleAnswerInputSchema;
+      case ActionType.RATING:
+        return ratingAnswerInputSchema;
+      case ActionType.MULTIPLE_CHOICE:
+        return multipleChoiceAnswerInputSchema;
+      case ActionType.TAG:
+        return tagAnswerInputSchema;
+      case ActionType.IMAGE:
+        return imageAnswerInputSchema;
+      case ActionType.PDF:
+        return pdfAnswerInputSchema;
+      case ActionType.VIDEO:
+        return videoAnswerInputSchema;
+      case ActionType.DATE:
+        return dateAnswerInputSchema;
+      case ActionType.TIME:
+        return timeAnswerInputSchema;
+      default:
+        return baseAnswerInputSchema;
+    }
+  }
+
   private validateAnswerByActionType(
-    data: {
+    input: {
+      responseId: string;
+      actionId: string;
       optionId?: string;
       textAnswer?: string;
       scaleAnswer?: number;
       dateAnswers?: Date[];
+      fileUploadIds?: string[];
     },
     actionType: ActionType,
+    isRequired: boolean,
   ) {
-    if (actionType === ActionType.MULTIPLE_CHOICE && !data.optionId) {
-      this.throwValidationError("객관식 답변에는 선택지가 필요합니다.");
+    if (!isRequired) {
+      return this.validateInput(input, baseAnswerInputSchema);
     }
-    if (actionType === ActionType.SCALE && data.scaleAnswer === undefined) {
-      this.throwValidationError("척도 값을 선택해주세요.");
-    }
-    if (actionType === ActionType.RATING && data.scaleAnswer === undefined) {
-      this.throwValidationError("별점 값을 선택해주세요.");
-    }
-    if (actionType === ActionType.SUBJECTIVE && !data.textAnswer) {
-      this.throwValidationError("주관식 답변은 필수입니다.");
-    }
-    if (actionType === ActionType.DATE && (!data.dateAnswers || data.dateAnswers.length === 0)) {
-      this.throwValidationError("날짜를 선택해주세요.");
-    }
-    if (actionType === ActionType.TIME && (!data.dateAnswers || data.dateAnswers.length === 0)) {
-      this.throwValidationError("시간을 선택해주세요.");
-    }
+
+    const schema = this.getSchemaByActionType(actionType);
+    return this.validateInput(input, schema);
   }
 }
 

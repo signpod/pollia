@@ -1,6 +1,9 @@
 import { ActionType } from "@prisma/client";
 import { z } from "zod";
 
+export const TEXT_ANSWER_MAX_LENGTH = 500;
+export const SHORT_TEXT_ANSWER_MAX_LENGTH = 50;
+
 const responseIdSchema = z.string().min(1, "응답 ID가 필요합니다.");
 
 const actionIdSchema = z.string().min(1, "액션 ID가 필요합니다.");
@@ -9,8 +12,17 @@ const optionIdSchema = z.string().min(1, "선택지 ID가 필요합니다.");
 
 const textAnswerSchema = z
   .string()
-  .min(1, "주관식 답변은 필수입니다.")
-  .max(100, "주관식 답변은 100자를 초과할 수 없습니다.")
+  .min(1, "답변은 필수입니다.")
+  .max(TEXT_ANSWER_MAX_LENGTH, `답변은 ${TEXT_ANSWER_MAX_LENGTH}자를 초과할 수 없습니다.`)
+  .trim();
+
+const shortTextAnswerSchema = z
+  .string()
+  .min(1, "답변은 필수입니다.")
+  .max(
+    SHORT_TEXT_ANSWER_MAX_LENGTH,
+    `답변은 ${SHORT_TEXT_ANSWER_MAX_LENGTH}자를 초과할 수 없습니다.`,
+  )
   .trim();
 
 const scaleAnswerSchema = z
@@ -27,117 +39,65 @@ const dateAnswersSchema = z
   .min(1, "최소 1개 이상의 날짜를 선택해주세요.")
   .optional();
 
-export const actionAnswerInputSchema = z.object({
+export const baseAnswerInputSchema = z.object({
   responseId: responseIdSchema,
   actionId: actionIdSchema,
-  optionId: optionIdSchema.optional(),
-  textAnswer: textAnswerSchema.optional(),
-  scaleAnswer: scaleAnswerSchema.optional(),
+});
+
+export const subjectiveAnswerInputSchema = baseAnswerInputSchema.extend({
+  textAnswer: textAnswerSchema,
+});
+
+export const shortTextAnswerInputSchema = baseAnswerInputSchema.extend({
+  textAnswer: shortTextAnswerSchema,
+});
+
+export const scaleAnswerInputSchema = baseAnswerInputSchema.extend({
+  scaleAnswer: scaleAnswerSchema,
+});
+
+export const ratingAnswerInputSchema = baseAnswerInputSchema.extend({
+  scaleAnswer: scaleAnswerSchema,
+});
+
+export const multipleChoiceAnswerInputSchema = baseAnswerInputSchema.extend({
+  optionId: optionIdSchema,
+});
+
+export const tagAnswerInputSchema = baseAnswerInputSchema.extend({
+  optionId: optionIdSchema,
+});
+
+export const imageAnswerInputSchema = baseAnswerInputSchema.extend({
+  fileUploadIds: z.array(z.string()).min(1, "최소 1개 이상의 이미지를 업로드해주세요."),
+});
+
+export const pdfAnswerInputSchema = baseAnswerInputSchema.extend({
+  fileUploadIds: z.array(z.string()).min(1, "최소 1개 이상의 PDF를 업로드해주세요."),
+});
+
+export const videoAnswerInputSchema = baseAnswerInputSchema.extend({
+  fileUploadIds: z.array(z.string()).min(1, "최소 1개 이상의 비디오를 업로드해주세요."),
+});
+
+export const dateAnswerInputSchema = baseAnswerInputSchema.extend({
+  dateAnswers: z.array(z.coerce.date()).min(1, "최소 1개 이상의 날짜를 선택해주세요."),
+});
+
+export const timeAnswerInputSchema = baseAnswerInputSchema.extend({
+  dateAnswers: z.array(z.coerce.date()).min(1, "최소 1개 이상의 시간을 선택해주세요."),
+});
+
+export const submitAnswerItemSchema = z.object({
+  actionId: actionIdSchema,
+  type: actionTypeSchema,
+  isRequired: z.boolean(),
+  selectedOptionIds: z.array(optionIdSchema).optional(),
+  scaleValue: scaleAnswerSchema.optional(),
+  textAnswer: z.string().optional(),
   fileUploadIds: fileUploadIdsSchema,
   dateAnswers: dateAnswersSchema,
 });
-
-export const submitAnswerItemSchema = z
-  .object({
-    actionId: actionIdSchema,
-    type: actionTypeSchema,
-    isRequired: z.boolean(),
-    selectedOptionIds: z.array(optionIdSchema).optional(),
-    scaleValue: scaleAnswerSchema.optional(),
-    textAnswer: textAnswerSchema.optional(),
-    fileUploadIds: fileUploadIdsSchema,
-    dateAnswers: dateAnswersSchema,
-  })
-  .refine(
-    data => {
-      if (data.type === ActionType.MULTIPLE_CHOICE && data.isRequired) {
-        return data.selectedOptionIds && data.selectedOptionIds.length > 0;
-      }
-      return true;
-    },
-    { message: "최소 1개 이상의 선택지를 선택해주세요." },
-  )
-  .refine(
-    data => {
-      if (data.type === ActionType.TAG && data.isRequired) {
-        return data.selectedOptionIds && data.selectedOptionIds.length > 0;
-      }
-      return true;
-    },
-    { message: "최소 1개 이상의 태그를 선택해주세요." },
-  )
-  .refine(
-    data => {
-      if (data.type === ActionType.SCALE && data.isRequired) {
-        return data.scaleValue !== undefined;
-      }
-      return true;
-    },
-    { message: "척도 값을 선택해주세요." },
-  )
-  .refine(
-    data => {
-      if (data.type === ActionType.RATING && data.isRequired) {
-        return data.scaleValue !== undefined;
-      }
-      return true;
-    },
-    { message: "별점 값을 선택해주세요." },
-  )
-  .refine(
-    data => {
-      if (data.type === ActionType.SUBJECTIVE && data.isRequired) {
-        return data.textAnswer && data.textAnswer.trim().length > 0;
-      }
-      return true;
-    },
-    { message: "주관식 답변은 필수입니다." },
-  )
-  .refine(
-    data => {
-      if (data.type === ActionType.IMAGE && data.isRequired) {
-        return data.fileUploadIds && data.fileUploadIds.length > 0;
-      }
-      return true;
-    },
-    { message: "이미지는 필수입니다." },
-  )
-  .refine(
-    data => {
-      if (data.type === ActionType.VIDEO && data.isRequired) {
-        return data.fileUploadIds && data.fileUploadIds.length > 0;
-      }
-      return true;
-    },
-    { message: "동영상은 필수입니다." },
-  )
-  .refine(
-    data => {
-      if (data.type === ActionType.PDF && data.isRequired) {
-        return data.fileUploadIds && data.fileUploadIds.length > 0;
-      }
-      return true;
-    },
-    { message: "PDF 파일은 필수입니다." },
-  )
-  .refine(
-    data => {
-      if (data.type === ActionType.DATE && data.isRequired) {
-        return data.dateAnswers && data.dateAnswers.length > 0;
-      }
-      return true;
-    },
-    { message: "날짜를 선택해주세요." },
-  )
-  .refine(
-    data => {
-      if (data.type === ActionType.TIME && data.isRequired) {
-        return data.dateAnswers && data.dateAnswers.length > 0;
-      }
-      return true;
-    },
-    { message: "시간을 선택해주세요." },
-  );
 
 export const submitAnswersSchema = z.object({
   responseId: responseIdSchema,
@@ -147,7 +107,7 @@ export const submitAnswersSchema = z.object({
 export const actionAnswerUpdateSchema = z
   .object({
     optionId: optionIdSchema.optional(),
-    textAnswer: textAnswerSchema.optional(),
+    textAnswer: z.string().optional(),
     scaleAnswer: scaleAnswerSchema.optional(),
     dateAnswers: dateAnswersSchema,
   })
@@ -155,7 +115,6 @@ export const actionAnswerUpdateSchema = z
     message: "최소 하나의 필드를 수정해야 합니다.",
   });
 
-export type ActionAnswerInput = z.infer<typeof actionAnswerInputSchema>;
 export type SubmitAnswers = z.infer<typeof submitAnswersSchema>;
 export type SubmitAnswerItem = z.infer<typeof submitAnswerItemSchema>;
 export type ActionAnswerUpdate = z.infer<typeof actionAnswerUpdateSchema>;
