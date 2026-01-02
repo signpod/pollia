@@ -72,6 +72,24 @@ export class ActionAnswerService {
 
     this.validateActions(actions, validated.answers, response.missionId);
 
+    for (const answer of validated.answers) {
+      const action = actions.find(a => a?.id === answer.actionId);
+      if (action) {
+        this.validateAnswerByActionType(
+          {
+            responseId: validated.responseId,
+            actionId: answer.actionId,
+            optionId: answer.selectedOptionIds?.[0],
+            textAnswer: answer.textAnswer,
+            scaleAnswer: answer.scaleValue,
+            dateAnswers: answer.dateAnswers,
+          },
+          action.type,
+          action.isRequired,
+        );
+      }
+    }
+
     await this.answerRepo.deleteByResponseAndActions(validated.responseId, actionIds);
 
     const answersToCreate = validated.answers.flatMap(answer =>
