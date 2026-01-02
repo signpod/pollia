@@ -1,6 +1,9 @@
 import { ActionType } from "@prisma/client";
 import { z } from "zod";
 
+export const TEXT_ANSWER_MAX_LENGTH = 500;
+export const SHORT_TEXT_ANSWER_MAX_LENGTH = 50;
+
 const responseIdSchema = z.string().min(1, "응답 ID가 필요합니다.");
 
 const actionIdSchema = z.string().min(1, "액션 ID가 필요합니다.");
@@ -10,13 +13,16 @@ const optionIdSchema = z.string().min(1, "선택지 ID가 필요합니다.");
 const textAnswerSchema = z
   .string()
   .min(1, "답변은 필수입니다.")
-  .max(500, "답변은 500자를 초과할 수 없습니다.")
+  .max(TEXT_ANSWER_MAX_LENGTH, `답변은 ${TEXT_ANSWER_MAX_LENGTH}자를 초과할 수 없습니다.`)
   .trim();
 
 const shortTextAnswerSchema = z
   .string()
   .min(1, "답변은 필수입니다.")
-  .max(50, "답변은 50자를 초과할 수 없습니다.")
+  .max(
+    SHORT_TEXT_ANSWER_MAX_LENGTH,
+    `답변은 ${SHORT_TEXT_ANSWER_MAX_LENGTH}자를 초과할 수 없습니다.`,
+  )
   .trim();
 
 const scaleAnswerSchema = z

@@ -1,4 +1,6 @@
 export {
+  TEXT_ANSWER_MAX_LENGTH,
+  SHORT_TEXT_ANSWER_MAX_LENGTH,
   baseAnswerInputSchema,
   actionAnswerUpdateSchema,
   submitAnswersSchema,
