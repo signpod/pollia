@@ -759,6 +759,166 @@ describe("ActionAnswerService", () => {
         mockUser.id,
       );
     });
+
+    it("SUBJECTIVE 답변이 500자일 때 성공한다", async () => {
+      // Given
+      const text500Chars = "a".repeat(500);
+      const mockResponse = {
+        id: "response1",
+        missionId: "mission1",
+        userId: "user1",
+        completedAt: null,
+      };
+      const mockAction = {
+        id: "q1",
+        missionId: "mission1",
+        type: ActionType.SUBJECTIVE,
+        isRequired: true,
+      };
+
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
+      mockAnswerRepo.deleteByResponseAndActions.mockResolvedValue({ count: 0 });
+      mockAnswerRepo.createMany.mockResolvedValue({ count: 1 });
+
+      // When
+      const result = await service.submitAnswers(
+        {
+          responseId: "response1",
+          answers: [
+            {
+              actionId: "q1",
+              type: ActionType.SUBJECTIVE,
+              isRequired: true,
+              textAnswer: text500Chars,
+            },
+          ],
+        },
+        mockUser.id,
+      );
+
+      // Then
+      expect(result.responseId).toBe("response1");
+      expect(mockAnswerRepo.createMany).toHaveBeenCalled();
+    });
+
+    it("SUBJECTIVE 답변이 501자일 때 400 에러를 던진다", async () => {
+      // Given
+      const text501Chars = "a".repeat(501);
+      const mockResponse = {
+        id: "response1",
+        missionId: "mission1",
+        userId: "user1",
+        completedAt: null,
+      };
+      const mockAction = {
+        id: "q1",
+        missionId: "mission1",
+        type: ActionType.SUBJECTIVE,
+        isRequired: true,
+      };
+
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
+
+      // When & Then
+      await expect(
+        service.submitAnswers(
+          {
+            responseId: "response1",
+            answers: [
+              {
+                actionId: "q1",
+                type: ActionType.SUBJECTIVE,
+                isRequired: true,
+                textAnswer: text501Chars,
+              },
+            ],
+          },
+          mockUser.id,
+        ),
+      ).rejects.toThrow("답변은 500자를 초과할 수 없습니다.");
+    });
+
+    it("SHORT_TEXT 답변이 50자일 때 성공한다", async () => {
+      // Given
+      const text50Chars = "a".repeat(50);
+      const mockResponse = {
+        id: "response1",
+        missionId: "mission1",
+        userId: "user1",
+        completedAt: null,
+      };
+      const mockAction = {
+        id: "q1",
+        missionId: "mission1",
+        type: ActionType.SHORT_TEXT,
+        isRequired: true,
+      };
+
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
+      mockAnswerRepo.deleteByResponseAndActions.mockResolvedValue({ count: 0 });
+      mockAnswerRepo.createMany.mockResolvedValue({ count: 1 });
+
+      // When
+      const result = await service.submitAnswers(
+        {
+          responseId: "response1",
+          answers: [
+            {
+              actionId: "q1",
+              type: ActionType.SHORT_TEXT,
+              isRequired: true,
+              textAnswer: text50Chars,
+            },
+          ],
+        },
+        mockUser.id,
+      );
+
+      // Then
+      expect(result.responseId).toBe("response1");
+      expect(mockAnswerRepo.createMany).toHaveBeenCalled();
+    });
+
+    it("SHORT_TEXT 답변이 51자일 때 400 에러를 던진다", async () => {
+      // Given
+      const text51Chars = "a".repeat(51);
+      const mockResponse = {
+        id: "response1",
+        missionId: "mission1",
+        userId: "user1",
+        completedAt: null,
+      };
+      const mockAction = {
+        id: "q1",
+        missionId: "mission1",
+        type: ActionType.SHORT_TEXT,
+        isRequired: true,
+      };
+
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
+
+      // When & Then
+      await expect(
+        service.submitAnswers(
+          {
+            responseId: "response1",
+            answers: [
+              {
+                actionId: "q1",
+                type: ActionType.SHORT_TEXT,
+                isRequired: true,
+                textAnswer: text51Chars,
+              },
+            ],
+          },
+          mockUser.id,
+        ),
+      ).rejects.toThrow("답변은 50자를 초과할 수 없습니다.");
+    });
   });
 
   describe("updateAnswer", () => {
