@@ -83,6 +83,7 @@ export class ActionAnswerService {
             textAnswer: answer.textAnswer,
             scaleAnswer: answer.scaleValue,
             dateAnswers: answer.dateAnswers,
+            fileUploadIds: answer.fileUploadIds,
           },
           action.type,
           action.isRequired,
@@ -326,6 +327,7 @@ export class ActionAnswerService {
       textAnswer?: string;
       scaleAnswer?: number;
       dateAnswers?: Date[];
+      fileUploadIds?: string[];
     },
     actionType: ActionType,
     isRequired: boolean,
