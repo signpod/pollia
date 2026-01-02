@@ -33,14 +33,53 @@ const dateAnswersSchema = z
   .min(1, "최소 1개 이상의 날짜를 선택해주세요.")
   .optional();
 
-export const actionAnswerInputSchema = z.object({
+export const baseAnswerInputSchema = z.object({
   responseId: responseIdSchema,
   actionId: actionIdSchema,
-  optionId: optionIdSchema.optional(),
-  textAnswer: textAnswerSchema.optional(),
-  scaleAnswer: scaleAnswerSchema.optional(),
-  fileUploadIds: fileUploadIdsSchema,
-  dateAnswers: dateAnswersSchema,
+});
+
+export const subjectiveAnswerInputSchema = baseAnswerInputSchema.extend({
+  textAnswer: textAnswerSchema,
+});
+
+export const shortTextAnswerInputSchema = baseAnswerInputSchema.extend({
+  textAnswer: shortTextAnswerSchema,
+});
+
+export const scaleAnswerInputSchema = baseAnswerInputSchema.extend({
+  scaleAnswer: scaleAnswerSchema,
+});
+
+export const ratingAnswerInputSchema = baseAnswerInputSchema.extend({
+  scaleAnswer: scaleAnswerSchema,
+});
+
+export const multipleChoiceAnswerInputSchema = baseAnswerInputSchema.extend({
+  optionId: optionIdSchema,
+});
+
+export const tagAnswerInputSchema = baseAnswerInputSchema.extend({
+  optionId: optionIdSchema,
+});
+
+export const imageAnswerInputSchema = baseAnswerInputSchema.extend({
+  fileUploadIds: z.array(z.string()).min(1, "최소 1개 이상의 이미지를 업로드해주세요."),
+});
+
+export const pdfAnswerInputSchema = baseAnswerInputSchema.extend({
+  fileUploadIds: z.array(z.string()).min(1, "최소 1개 이상의 PDF를 업로드해주세요."),
+});
+
+export const videoAnswerInputSchema = baseAnswerInputSchema.extend({
+  fileUploadIds: z.array(z.string()).min(1, "최소 1개 이상의 비디오를 업로드해주세요."),
+});
+
+export const dateAnswerInputSchema = baseAnswerInputSchema.extend({
+  dateAnswers: z.array(z.coerce.date()).min(1, "최소 1개 이상의 날짜를 선택해주세요."),
+});
+
+export const timeAnswerInputSchema = baseAnswerInputSchema.extend({
+  dateAnswers: z.array(z.coerce.date()).min(1, "최소 1개 이상의 시간을 선택해주세요."),
 });
 
 export const submitAnswerItemSchema = z
@@ -171,7 +210,6 @@ export const actionAnswerUpdateSchema = z
     message: "최소 하나의 필드를 수정해야 합니다.",
   });
 
-export type ActionAnswerInput = z.infer<typeof actionAnswerInputSchema>;
 export type SubmitAnswers = z.infer<typeof submitAnswersSchema>;
 export type SubmitAnswerItem = z.infer<typeof submitAnswerItemSchema>;
 export type ActionAnswerUpdate = z.infer<typeof actionAnswerUpdateSchema>;

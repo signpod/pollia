@@ -1,4 +1,4 @@
-export { createAnswer, submitAnswers } from "./create";
+export { submitAnswers } from "./create";
 export { deleteAnswersByResponse, deleteAnswer } from "./delete";
 export { getAnswersByResponse, getMyAnswers, getAnswer } from "./read";
 export { updateAnswer } from "./update";

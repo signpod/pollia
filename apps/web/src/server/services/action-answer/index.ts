@@ -1,4 +1,19 @@
-import { actionAnswerUpdateSchema, submitAnswersSchema } from "@/schemas/action-answer";
+import {
+  actionAnswerUpdateSchema,
+  baseAnswerInputSchema,
+  dateAnswerInputSchema,
+  imageAnswerInputSchema,
+  multipleChoiceAnswerInputSchema,
+  pdfAnswerInputSchema,
+  ratingAnswerInputSchema,
+  scaleAnswerInputSchema,
+  shortTextAnswerInputSchema,
+  subjectiveAnswerInputSchema,
+  submitAnswersSchema,
+  tagAnswerInputSchema,
+  timeAnswerInputSchema,
+  videoAnswerInputSchema,
+} from "@/schemas/action-answer";
 import { actionAnswerRepository } from "@/server/repositories/action-answer/actionAnswerRepository";
 import { actionRepository } from "@/server/repositories/action/actionRepository";
 import { missionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
@@ -245,6 +260,35 @@ export class ActionAnswerService {
 
       default:
         return true;
+    }
+  }
+
+  private getSchemaByActionType(actionType: ActionType): z.ZodType {
+    switch (actionType) {
+      case ActionType.SUBJECTIVE:
+        return subjectiveAnswerInputSchema;
+      case ActionType.SHORT_TEXT:
+        return shortTextAnswerInputSchema;
+      case ActionType.SCALE:
+        return scaleAnswerInputSchema;
+      case ActionType.RATING:
+        return ratingAnswerInputSchema;
+      case ActionType.MULTIPLE_CHOICE:
+        return multipleChoiceAnswerInputSchema;
+      case ActionType.TAG:
+        return tagAnswerInputSchema;
+      case ActionType.IMAGE:
+        return imageAnswerInputSchema;
+      case ActionType.PDF:
+        return pdfAnswerInputSchema;
+      case ActionType.VIDEO:
+        return videoAnswerInputSchema;
+      case ActionType.DATE:
+        return dateAnswerInputSchema;
+      case ActionType.TIME:
+        return timeAnswerInputSchema;
+      default:
+        return baseAnswerInputSchema;
     }
   }
 
