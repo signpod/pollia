@@ -328,11 +328,18 @@ describe("ActionAnswerService", () => {
         userId: "user1",
         completedAt: null,
       };
+      const mockAction = {
+        id: "q1",
+        missionId: "mission1",
+        type: ActionType.IMAGE,
+        isRequired: true,
+        title: "프로필 사진",
+      };
 
       mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockActionRepo.findById.mockResolvedValue(mockAction as never);
 
       // When & Then
-      // Zod 스키마에서 먼저 검증되므로 "이미지는 필수입니다." 메시지가 나옴
       await expect(
         service.submitAnswers(
           {
@@ -348,7 +355,7 @@ describe("ActionAnswerService", () => {
           },
           mockUser.id,
         ),
-      ).rejects.toThrow("이미지는 필수입니다.");
+      ).rejects.toThrow("필수 답변이 누락되었습니다");
     });
 
     it("클라이언트가 잘못된 isRequired를 보내면 서비스 레벨에서 검증한다", async () => {
