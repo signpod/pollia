@@ -50,12 +50,16 @@ export function MediaUploadArea({
         type="button"
         disabled={isUploading}
         className={cn(
-          "absolute inset-0 flex items-center justify-center gap-3 border border-dashed bg-white border-zinc-300 rounded-sm w-full",
+          "absolute inset-0 flex items-center justify-center gap-3 bg-white rounded-sm w-full",
           "hover:bg-zinc-50 active:bg-zinc-100",
           "transition-colors duration-200 ease-in-out",
           "touch-manipulation",
           isUploading && "opacity-50 cursor-not-allowed",
         )}
+        style={{
+          backgroundColor: "transparent",
+          backgroundImage: `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='8' ry='8' stroke='%23e4e4e7' stroke-width='2' stroke-dasharray='6%2c 6' stroke-dashoffset='0' stroke-linecap='round'/%3e%3c/svg%3e")`,
+        }}
       >
         <div className="flex items-center justify-center size-12 bg-light rounded-full">
           <IconComponent className="size-6 text-info" />
