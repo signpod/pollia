@@ -140,7 +140,7 @@ function TimeButton({ time, isSelected, onClick }: TimeButtonProps) {
       )}
     >
       <div className="flex items-center justify-center w-full">
-        <Typo.ButtonText size="medium" className={isSelected ? "text-violet-500" : "text-zinc-900"}>
+        <Typo.ButtonText size="large" className={isSelected ? "text-violet-500" : "text-zinc-900"}>
           {time}
         </Typo.ButtonText>
       </div>
