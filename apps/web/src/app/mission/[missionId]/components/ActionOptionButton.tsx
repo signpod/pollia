@@ -7,11 +7,10 @@ import { Input, Typo } from "@repo/ui/components";
 import { cva } from "class-variance-authority";
 import { Square } from "lucide-react";
 import Image from "next/image";
-import { ComponentProps } from "react";
 
 type SelectType = "radio" | "checkbox";
 
-interface ActionOptionButtonProps extends ComponentProps<"button"> {
+interface ActionOptionButtonProps {
   title: string;
   description?: string;
   imageUrl?: string;
@@ -22,6 +21,9 @@ interface ActionOptionButtonProps extends ComponentProps<"button"> {
   onTextAnswerChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onTextAnswerBlur?: () => void;
   showOtherError?: boolean;
+  disabled?: boolean;
+  onClick?: () => void;
+  className?: string;
 }
 
 export function ActionOptionButton({
@@ -38,12 +40,7 @@ export function ActionOptionButton({
   onTextAnswerChange,
   onTextAnswerBlur,
   showOtherError = false,
-  ...props
 }: ActionOptionButtonProps) {
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    onClick?.(e);
-  };
-
   const containerVariants = cva(
     cn(
       "w-full flex-1 flex flex-col justify-start items-start p-4 ring-1 ring-inset ring-default rounded-md",
@@ -98,13 +95,8 @@ export function ActionOptionButton({
   const CheckIcon = selectType === "checkbox" ? CheckSquare : CheckCircle;
   const NoneCheckedIcon = selectType === "checkbox" ? Square : null;
 
-  return (
-    <button
-      className={cn(containerVariants({ isSelected }), className)}
-      onClick={handleClick}
-      disabled={disabled}
-      {...props}
-    >
+  const content = (
+    <>
       <div className="flex items-center gap-2 w-full">
         <div className="flex flex-col gap-2 flex-1">
           {imageUrl && (
@@ -155,6 +147,40 @@ export function ActionOptionButton({
           />
         </div>
       )}
+    </>
+  );
+
+  const showInputField = isOther && isSelected;
+
+  if (showInputField) {
+    // Input 내부에 clear 버튼이 있어 <button> 중첩 불가, div + role="button" 사용
+    return (
+      // eslint-disable-next-line jsx-a11y/prefer-tag-over-role
+      <div
+        className={cn(containerVariants({ isSelected }), "cursor-pointer select-none", className)}
+        onClick={onClick}
+        onKeyDown={e => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onClick?.();
+          }
+        }}
+        role="button"
+        tabIndex={0}
+      >
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      className={cn(containerVariants({ isSelected }), className)}
+      onClick={onClick}
+      disabled={disabled}
+    >
+      {content}
     </button>
   );
 }
