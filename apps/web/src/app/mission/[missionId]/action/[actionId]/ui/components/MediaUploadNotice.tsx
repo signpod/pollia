@@ -12,7 +12,7 @@ interface MediaUploadNoticeProps {
 }
 
 export function MediaUploadNotice({ title, noticeItems }: MediaUploadNoticeProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const contentRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState<number>(0);
   const contentId = useId();
