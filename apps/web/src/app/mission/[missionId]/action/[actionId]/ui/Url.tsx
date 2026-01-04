@@ -128,6 +128,7 @@ export function ActionUrl({
       onNext={onNext}
       nextButtonText={nextButtonText}
       isLoading={isLoading}
+      isRequired={actionData.isRequired}
     >
       <Input
         type="url"

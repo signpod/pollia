@@ -134,6 +134,7 @@ function SurveyMultipleChoiceContent({
       onNext={onNext}
       nextButtonText={nextButtonText}
       isLoading={isLoading}
+      isRequired={actionData.isRequired}
     >
       <div ref={contentRef} className="flex flex-wrap gap-3 w-full">
         {actionData.options?.map(option => (

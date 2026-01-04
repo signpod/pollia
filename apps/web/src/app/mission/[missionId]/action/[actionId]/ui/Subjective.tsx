@@ -50,6 +50,7 @@ export function Subjective({
       onNext={onNext}
       nextButtonText={nextButtonText}
       isLoading={isLoading}
+      isRequired={actionData.isRequired}
     >
       <Textarea
         placeholder={ACTION_PLACEHOLDER}

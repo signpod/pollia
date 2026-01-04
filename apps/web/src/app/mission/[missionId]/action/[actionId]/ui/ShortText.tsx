@@ -49,6 +49,7 @@ export function ShortText({
       onNext={onNext}
       nextButtonText={nextButtonText}
       isLoading={isLoading}
+      isRequired={actionData.isRequired}
     >
       <Input
         placeholder={ACTION_PLACEHOLDER}

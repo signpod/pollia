@@ -186,6 +186,7 @@ export function ActionPdf({
       onNext={onNext}
       nextButtonText={nextButtonText}
       isLoading={isLoading}
+      isRequired={actionData.isRequired}
     >
       {fileInfos.length === 0 && (
         <PdfUpload onUploadChange={handleUploadChange} onUploadingChange={handleUploadingChange} />

@@ -1,7 +1,7 @@
 import { ButtonV2, FixedBottomLayout, Typo } from "@repo/ui/components";
 import { ChevronLeftIcon } from "lucide-react";
 import Image from "next/image";
-import { type PropsWithChildren, useEffect } from "react";
+import { type PropsWithChildren, useEffect, useState } from "react";
 import { useProgressBar } from "../providers/ProgressBarProvider";
 
 interface ActionTemplateProps extends PropsWithChildren {
@@ -12,6 +12,7 @@ interface ActionTemplateProps extends PropsWithChildren {
   imageUrl?: string;
   isFirstAction: boolean;
   isNextDisabled: boolean;
+  isRequired?: boolean;
   onPrevious?: () => void;
   onNext?: () => void | Promise<void>;
   nextButtonText?: string;
@@ -26,6 +27,7 @@ export function SurveyQuestionTemplate({
   imageUrl,
   children,
   isNextDisabled,
+  isRequired,
   onPrevious,
   onNext,
   nextButtonText = "다음",
@@ -33,23 +35,48 @@ export function SurveyQuestionTemplate({
 }: ActionTemplateProps) {
   const progressValue = ((currentOrder + 1) / totalActionCount) * 100 || 0;
   const { setProgress } = useProgressBar();
+  const [showRequiredError, setShowRequiredError] = useState(false);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
     setProgress(progressValue, currentOrder + 1, totalActionCount);
   }, [currentOrder, totalActionCount, progressValue, setProgress]);
 
+  useEffect(() => {
+    if (!isNextDisabled) {
+      setShowRequiredError(false);
+    } else if (isNextDisabled && isRequired) {
+      setShowRequiredError(true);
+    }
+  }, [isNextDisabled, isRequired]);
+
+  const handleDisabledButtonClick = () => {
+    if (isNextDisabled && isRequired) {
+      setShowRequiredError(true);
+    }
+  };
+
   return (
     <FixedBottomLayout hasGradient>
       <div className="space-y-8 px-5 pb-5 pt-9">
         {/* 질문 정보 섹션 */}
-        <section className="space-y-2">
-          <Typo.MainTitle size="medium">{title}</Typo.MainTitle>
+        <section className="space-y-2 relative">
+          <Typo.MainTitle size="medium" className="flex gap-1">
+            {title}
+            {isRequired && <span className="text-red-500">*</span>}
+          </Typo.MainTitle>
+
           {description && (
             <Typo.Body size="large" className="text-sub">
               {description}
             </Typo.Body>
           )}
+          {showRequiredError && (
+            <Typo.Body size="medium" className="text-red-500 absolute top-full">
+              필수 입력 사항이에요.
+            </Typo.Body>
+          )}
+
           {imageUrl && (
             <figure className="relative aspect-3/2 overflow-hidden rounded-sm">
               <Image src={imageUrl} alt={title} fill className="object-cover" />
@@ -78,11 +105,22 @@ export function SurveyQuestionTemplate({
             className="flex-1 flex"
             disabled={isNextDisabled}
             loading={isLoading}
-            onClick={async () => {
+            onClick={async e => {
+              if (isNextDisabled && isRequired) {
+                e.preventDefault();
+                handleDisabledButtonClick();
+                return;
+              }
               if (onNext instanceof Promise) {
                 await onNext();
               } else {
                 onNext?.();
+              }
+            }}
+            onKeyDown={e => {
+              if (isNextDisabled && isRequired && (e.key === "Enter" || e.key === " ")) {
+                e.preventDefault();
+                handleDisabledButtonClick();
               }
             }}
           >

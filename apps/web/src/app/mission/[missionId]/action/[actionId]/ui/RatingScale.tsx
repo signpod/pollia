@@ -40,6 +40,7 @@ export function MissionRatingScale({
       onNext={onNext}
       nextButtonText={nextButtonText}
       isLoading={isLoading}
+      isRequired={actionData.isRequired}
     >
       <RatingScale
         options={actionData.options.map(option => ({

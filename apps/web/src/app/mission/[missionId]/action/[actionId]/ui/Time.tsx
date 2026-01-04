@@ -81,6 +81,7 @@ function TimePickerContent({
       onNext={onNext}
       nextButtonText={nextButtonText}
       isLoading={isLoading}
+      isRequired={actionData.isRequired}
     >
       <div className="space-y-8 w-full">
         <div className="space-y-3">
