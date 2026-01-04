@@ -98,6 +98,7 @@ function DatePickerContent({
       onNext={onNext}
       nextButtonText={nextButtonText}
       isLoading={isLoading}
+      isRequired={actionData.isRequired}
     >
       <div className="flex w-full px-4">
         <Calendar

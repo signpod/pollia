@@ -47,6 +47,7 @@ export function MissionStarScale({
       onNext={onNext}
       nextButtonText={nextButtonText}
       isLoading={isLoading}
+      isRequired={actionData.isRequired}
     >
       <StarScale
         value={starRating}

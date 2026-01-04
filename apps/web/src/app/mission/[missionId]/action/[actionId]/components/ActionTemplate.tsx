@@ -12,6 +12,7 @@ interface ActionTemplateProps extends PropsWithChildren {
   imageUrl?: string;
   isFirstAction: boolean;
   isNextDisabled: boolean;
+  isRequired?: boolean;
   onPrevious?: () => void;
   onNext?: () => void | Promise<void>;
   nextButtonText?: string;
@@ -26,6 +27,7 @@ export function SurveyQuestionTemplate({
   imageUrl,
   children,
   isNextDisabled,
+  isRequired,
   onPrevious,
   onNext,
   nextButtonText = "다음",
@@ -44,7 +46,10 @@ export function SurveyQuestionTemplate({
       <div className="space-y-8 px-5 pb-5 pt-9">
         {/* 질문 정보 섹션 */}
         <section className="space-y-2">
-          <Typo.MainTitle size="medium">{title}</Typo.MainTitle>
+          <Typo.MainTitle size="medium" className="flex gap-1">
+            {title}
+            {isRequired && <span className="text-red-500">*</span>}
+          </Typo.MainTitle>
           {description && (
             <Typo.Body size="large" className="text-sub">
               {description}

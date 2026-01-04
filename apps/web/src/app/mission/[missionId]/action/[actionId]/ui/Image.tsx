@@ -132,6 +132,7 @@ export function ActionImage({
       onNext={onNext}
       nextButtonText={nextButtonText}
       isLoading={isLoading}
+      isRequired={actionData.isRequired}
     >
       <ImageUpload onUploadChange={handleUploadChange} onUploadingChange={handleUploadingChange} />
       <ImageList

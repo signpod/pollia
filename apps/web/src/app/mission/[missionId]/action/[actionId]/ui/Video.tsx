@@ -173,6 +173,7 @@ export function ActionVideo({
       onNext={onNext}
       nextButtonText={nextButtonText}
       isLoading={isLoading}
+      isRequired={actionData.isRequired}
     >
       {videoUrls.length === 0 && (
         <VideoUpload
