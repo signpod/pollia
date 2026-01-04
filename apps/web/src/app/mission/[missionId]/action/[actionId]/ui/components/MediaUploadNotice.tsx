@@ -12,7 +12,7 @@ interface MediaUploadNoticeProps {
 }
 
 export function MediaUploadNotice({ title, noticeItems }: MediaUploadNoticeProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
   const contentRef = useRef<HTMLDivElement>(null);
   const [height, setHeight] = useState<number>(0);
   const contentId = useId();
@@ -51,7 +51,7 @@ export function MediaUploadNotice({ title, noticeItems }: MediaUploadNoticeProps
           "flex w-full items-center justify-between text-left transition-all outline-none",
         )}
       >
-        {title}
+        <Typo.SubTitle size="large">{title}</Typo.SubTitle>
         <ChevronDownIcon
           className={cn(
             "size-6 shrink-0 transition-transform duration-300 ease-in-out",
@@ -75,9 +75,9 @@ export function MediaUploadNotice({ title, noticeItems }: MediaUploadNoticeProps
           overflow: "hidden",
         }}
       >
-        <ul className="flex flex-col gap-2 text-disabled pl-5 [&_li::marker]:text-xs pt-4">
+        <ul className="flex flex-col gap-1 text-disabled pl-5 [&_li::marker]:text-xs pt-4">
           {noticeItems.map((item, index) => (
-            <li key={index} className="list-disc list-outside">
+            <li key={`notice-${item.slice(0, 20)}-${index}`} className="list-disc list-outside">
               <Typo.Body size="medium">{item}</Typo.Body>
             </li>
           ))}

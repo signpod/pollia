@@ -24,6 +24,7 @@ export function ImageUploadArea({
       accept="image/*,.heic,.heif"
       buttonText="사진 첨부"
       icon="image"
+      multiple
     />
   );
 }

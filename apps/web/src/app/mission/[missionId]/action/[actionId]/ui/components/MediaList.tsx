@@ -10,6 +10,8 @@ interface MediaListProps {
   onMediaDelete: (mediaUrl: string) => void;
   onMediaLoadComplete: (mediaUrl: string) => void;
   isSingleUploadMode?: boolean;
+  selectedMediaUrl?: string;
+  onMediaToggle?: (mediaUrl: string) => void;
 }
 
 export function MediaList({
@@ -20,6 +22,8 @@ export function MediaList({
   onMediaDelete,
   onMediaLoadComplete,
   isSingleUploadMode = false,
+  selectedMediaUrl,
+  onMediaToggle,
 }: MediaListProps) {
   if (mediaUrls.length === 0) {
     return null;
@@ -36,6 +40,8 @@ export function MediaList({
           isUploading={uploadingMediaUrl === firstMediaUrl}
           onDelete={onMediaDelete}
           onLoadComplete={() => onMediaLoadComplete(firstMediaUrl)}
+          isSelected={selectedMediaUrl === firstMediaUrl}
+          onToggle={onMediaToggle}
         />
       </div>
     );
@@ -59,6 +65,8 @@ export function MediaList({
           isUploading={uploadingMediaUrl === mediaUrl}
           onDelete={onMediaDelete}
           onLoadComplete={() => onMediaLoadComplete(mediaUrl)}
+          isSelected={selectedMediaUrl === mediaUrl}
+          onToggle={onMediaToggle}
         />
       ))}
     </div>
