@@ -140,7 +140,10 @@ const Input = ({
         </div>
       </div>
       {(helperText || errorMessage) && (
-        <Typo.Body size="medium" className={cn(errorMessage ? "text-red-500" : "text-zinc-400")}>
+        <Typo.Body
+          size="medium"
+          className={cn("text-left", errorMessage ? "text-red-500" : "text-zinc-400")}
+        >
           {errorMessage || helperText}
         </Typo.Body>
       )}

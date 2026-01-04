@@ -219,13 +219,26 @@ export class ActionAnswerService {
 
     switch (answer.type) {
       case ActionType.MULTIPLE_CHOICE:
-      case ActionType.TAG:
-        return (
-          answer.selectedOptionIds?.map(optionId => ({
-            ...baseData,
-            optionId,
-          })) || [baseData]
-        );
+      case ActionType.TAG: {
+        const multipleChoiceAnswers = [];
+
+        // Add option-based answers
+        if (answer.selectedOptionIds && answer.selectedOptionIds.length > 0) {
+          multipleChoiceAnswers.push(
+            ...answer.selectedOptionIds.map(optionId => ({
+              ...baseData,
+              optionId,
+            })),
+          );
+        }
+
+        // Add "기타" text answer if provided
+        if (answer.textAnswer) {
+          multipleChoiceAnswers.push({ ...baseData, textAnswer: answer.textAnswer });
+        }
+
+        return multipleChoiceAnswers.length > 0 ? multipleChoiceAnswers : [baseData];
+      }
 
       case ActionType.SCALE:
       case ActionType.RATING:
@@ -266,7 +279,9 @@ export class ActionAnswerService {
     switch (answer.type) {
       case ActionType.MULTIPLE_CHOICE:
       case ActionType.TAG:
-        return !answer.selectedOptionIds || answer.selectedOptionIds.length === 0;
+        return (
+          (!answer.selectedOptionIds || answer.selectedOptionIds.length === 0) && !answer.textAnswer
+        );
 
       case ActionType.SCALE:
       case ActionType.RATING:

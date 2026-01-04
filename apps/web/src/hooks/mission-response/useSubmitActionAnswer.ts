@@ -30,7 +30,10 @@ export function useSubmitActionAnswer(options: UseSubmitActionAnswerOptions) {
             type: answer.type,
             isRequired: answer.isRequired,
             ...(answer.type === "MULTIPLE_CHOICE" || answer.type === "TAG"
-              ? { selectedOptionIds: answer.selectedOptionIds }
+              ? {
+                  selectedOptionIds: answer.selectedOptionIds,
+                  ...(answer.textAnswer ? { textAnswer: answer.textAnswer } : {}),
+                }
               : {}),
             ...(answer.type === "SCALE" || answer.type === "RATING"
               ? { scaleValue: answer.scaleValue }

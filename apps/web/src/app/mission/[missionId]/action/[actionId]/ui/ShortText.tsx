@@ -85,6 +85,7 @@ function useShortTextValue(
 
   const [shortTextValue, setShortTextValue] = useState(initialTextValue);
   const [showError, setShowError] = useState(false);
+  const isInitialMountRef = useRef(true);
 
   const updateCanGoNextRef = useRef(updateCanGoNext);
   const onAnswerChangeRef = useRef(onAnswerChange);
@@ -96,7 +97,7 @@ function useShortTextValue(
 
   useEffect(() => {
     setShortTextValue(initialTextValue);
-    if (initialTextValue.trim()) {
+    if (isInitialMountRef.current && initialTextValue.trim()) {
       const result = submitAnswerItemSchema.safeParse({
         actionId,
         type: ActionType.SHORT_TEXT,
@@ -104,6 +105,18 @@ function useShortTextValue(
         textAnswer: initialTextValue,
       });
       updateCanGoNextRef.current?.(result.success);
+      if (result.success) {
+        onAnswerChangeRef.current?.({
+          actionId,
+          type: ActionType.SHORT_TEXT,
+          isRequired,
+          textAnswer: initialTextValue.trim(),
+        });
+      }
+      isInitialMountRef.current = false;
+    } else if (isInitialMountRef.current) {
+      updateCanGoNextRef.current?.(false);
+      isInitialMountRef.current = false;
     }
   }, [initialTextValue, actionId, isRequired]);
 

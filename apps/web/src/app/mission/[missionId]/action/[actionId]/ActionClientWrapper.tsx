@@ -233,11 +233,20 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
           .map(a => a.optionId)
           .filter((id): id is string => id !== null)
           .sort();
-        const currentOptionIds = [...answer.selectedOptionIds].sort();
-        return (
+        const currentOptionIds = answer.selectedOptionIds
+          ? [...answer.selectedOptionIds].sort()
+          : [];
+
+        const submittedTextAnswer = answersForAction.find(a => a.textAnswer)?.textAnswer ?? "";
+        const currentTextAnswer = answer.textAnswer ?? "";
+
+        const optionsMatch =
           submittedOptionIds.length === currentOptionIds.length &&
-          submittedOptionIds.every((id, index) => id === currentOptionIds[index])
-        );
+          submittedOptionIds.every((id, index) => id === currentOptionIds[index]);
+
+        const textAnswerMatch = submittedTextAnswer === currentTextAnswer;
+
+        return optionsMatch && textAnswerMatch;
       }
 
       if (answer.type === ActionType.SCALE || answer.type === ActionType.RATING) {
