@@ -57,7 +57,17 @@ export function ActionPdf({
       }
 
       if (!fileIds.length) {
-        updateCanGoNextRef.current?.(false);
+        if (!actionData.isRequired) {
+          updateCanGoNextRef.current?.(true);
+          onAnswerChangeRef.current?.({
+            actionId: actionData.id,
+            type: ActionType.PDF,
+            isRequired: actionData.isRequired,
+            fileUploadIds: [],
+          });
+        } else {
+          updateCanGoNextRef.current?.(false);
+        }
         return;
       }
 
