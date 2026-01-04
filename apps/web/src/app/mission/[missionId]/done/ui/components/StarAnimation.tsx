@@ -1,9 +1,9 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Tooltip } from "@repo/ui/components";
 import StarBigIcon from "@public/svgs/star-big.svg";
 import StarYellow from "@public/svgs/star-yellow.svg";
+import { Tooltip } from "@repo/ui/components";
 import { motion } from "framer-motion";
 import { forwardRef } from "react";
 
@@ -70,4 +70,3 @@ export const StarAnimation = forwardRef<HTMLDivElement, StarAnimationProps>(
 );
 
 StarAnimation.displayName = "StarAnimation";
-

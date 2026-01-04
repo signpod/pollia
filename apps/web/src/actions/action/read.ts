@@ -31,8 +31,7 @@ function toGetActionsOptions(dto: GetMissionQuestionsRequest): GetActionsOptions
 export async function getActionById(actionId: string): Promise<GetActionByIdResponse> {
   try {
     const question = await actionService.getActionById(actionId);
-    const data = { ...question, surveyId: question.missionId };
-    return { data };
+    return { data: question };
   } catch (error) {
     console.error("getActionById error:", error);
     if (error instanceof Error && error.cause) {
@@ -65,8 +64,7 @@ export async function getMissionActionsDetail(
 ): Promise<GetMissionActionsDetailResponse> {
   try {
     const questions = await actionService.getMissionActionsDetail(missionId);
-    const data = questions.map(question => ({ ...question, surveyId: question.missionId }));
-    return { data };
+    return { data: questions };
   } catch (error) {
     console.error("getMissionActionsDetail error:", error);
     if (error instanceof Error && error.cause) {
@@ -96,7 +94,7 @@ export async function getMissionActions(
     }
 
     return {
-      data: questions.map(question => ({ ...question, surveyId: question.missionId })),
+      data: questions,
       nextCursor,
     };
   } catch (error) {

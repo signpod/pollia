@@ -3,20 +3,27 @@
 import { cn } from "@/lib/utils";
 import CheckCircle from "@public/svgs/check-circle-filled.svg";
 import CheckSquare from "@public/svgs/check-square-filled.svg";
-import { Typo } from "@repo/ui/components";
+import { Input, Typo } from "@repo/ui/components";
 import { cva } from "class-variance-authority";
 import { Square } from "lucide-react";
 import Image from "next/image";
-import { ComponentProps } from "react";
 
 type SelectType = "radio" | "checkbox";
 
-interface ActionOptionButtonProps extends ComponentProps<"button"> {
+interface ActionOptionButtonProps {
   title: string;
   description?: string;
   imageUrl?: string;
   selectType?: SelectType;
   isSelected?: boolean;
+  isOther?: boolean;
+  textAnswer?: string;
+  onTextAnswerChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onTextAnswerBlur?: () => void;
+  showOtherError?: boolean;
+  disabled?: boolean;
+  onClick?: () => void;
+  className?: string;
 }
 
 export function ActionOptionButton({
@@ -28,15 +35,15 @@ export function ActionOptionButton({
   disabled,
   selectType = "radio",
   isSelected = false,
-  ...props
+  isOther = false,
+  textAnswer = "",
+  onTextAnswerChange,
+  onTextAnswerBlur,
+  showOtherError = false,
 }: ActionOptionButtonProps) {
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    onClick?.(e);
-  };
-
   const containerVariants = cva(
     cn(
-      "w-full flex-1 flex justify-start items-start p-4 ring-1 ring-inset ring-default rounded-md",
+      "w-full flex-1 flex flex-col justify-start items-start p-4 ring-1 ring-inset ring-default rounded-md",
       "disabled:cursor-not-allowed",
     ),
     {
@@ -88,41 +95,92 @@ export function ActionOptionButton({
   const CheckIcon = selectType === "checkbox" ? CheckSquare : CheckCircle;
   const NoneCheckedIcon = selectType === "checkbox" ? Square : null;
 
-  return (
-    <button
-      className={cn(containerVariants({ isSelected }), className)}
-      onClick={handleClick}
-      disabled={disabled}
-      {...props}
-    >
-      <div className="flex flex-col gap-2 flex-1">
-        {imageUrl && (
-          <div className="relative size-12 overflow-hidden rounded-sm">
-            <Image src={imageUrl} fill className={cn("object-cover", imageStyle)} alt="" />
-          </div>
-        )}
-        <div className="flex flex-col gap-0">
-          <Typo.ButtonText size="large" className={titleVariants({ isSelected, disabled })}>
-            {title}
-          </Typo.ButtonText>
-          {description && (
-            <Typo.ButtonText
-              size="medium"
-              className={descriptionVariants({ isSelected, disabled })}
-            >
-              {description}
+  const content = (
+    <>
+      <div className="flex items-center gap-2 w-full">
+        <div className="flex flex-col gap-2 flex-1">
+          {imageUrl && (
+            <div className="relative size-12 overflow-hidden rounded-sm">
+              <Image src={imageUrl} fill className={cn("object-cover", imageStyle)} alt="" />
+            </div>
+          )}
+          <div className="flex flex-col gap-0">
+            <Typo.ButtonText size="large" className={titleVariants({ isSelected, disabled })}>
+              {title}
             </Typo.ButtonText>
+            {description && (
+              <Typo.ButtonText
+                size="medium"
+                className={descriptionVariants({ isSelected, disabled })}
+              >
+                {description}
+              </Typo.ButtonText>
+            )}
+          </div>
+        </div>
+
+        <div className="flex h-full">
+          {isSelected ? (
+            <CheckIcon className={cn("size-6", checkCircleColor)} />
+          ) : (
+            NoneCheckedIcon && <NoneCheckedIcon className={cn("size-6", checkCircleColor)} />
           )}
         </div>
       </div>
 
-      <div className="flex h-full">
-        {isSelected ? (
-          <CheckIcon className={cn("size-6", checkCircleColor)} />
-        ) : (
-          NoneCheckedIcon && <NoneCheckedIcon className={cn("size-6", checkCircleColor)} />
-        )}
+      {isOther && isSelected && (
+        <div
+          className="w-full mt-2 text-zinc-900"
+          onClick={e => e.stopPropagation()}
+          onMouseDown={e => e.stopPropagation()}
+          onKeyDown={e => e.stopPropagation()}
+        >
+          <Input
+            placeholder="기타 의견을 적어주세요"
+            value={textAnswer}
+            onChange={onTextAnswerChange}
+            onBlur={onTextAnswerBlur}
+            onClick={e => e.stopPropagation()}
+            errorMessage={
+              showOtherError && !textAnswer.trim() ? "필수 입력 사항입니다." : undefined
+            }
+          />
+        </div>
+      )}
+    </>
+  );
+
+  const showInputField = isOther && isSelected;
+
+  if (showInputField) {
+    // Input 내부에 clear 버튼이 있어 <button> 중첩 불가, div + role="button" 사용
+    return (
+      // eslint-disable-next-line jsx-a11y/prefer-tag-over-role
+      <div
+        className={cn(containerVariants({ isSelected }), "cursor-pointer select-none", className)}
+        onClick={onClick}
+        onKeyDown={e => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onClick?.();
+          }
+        }}
+        role="button"
+        tabIndex={0}
+      >
+        {content}
       </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      className={cn(containerVariants({ isSelected }), className)}
+      onClick={onClick}
+      disabled={disabled}
+    >
+      {content}
     </button>
   );
 }

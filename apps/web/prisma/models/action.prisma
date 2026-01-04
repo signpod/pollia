@@ -6,6 +6,7 @@ model Action {
   type          ActionType
   order         Int
   maxSelections Int?           @map("max_selections")
+  isRequired    Boolean        @default(true) @map("is_required")
   missionId     String?        @map("mission_id")
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
@@ -29,5 +30,16 @@ enum ActionType {
   RATING
   TAG
   SUBJECTIVE
+  SHORT_TEXT
   IMAGE
+  VIDEO
+  PDF
+  // URL
+  DATE
+  TIME
+  PRIVACY_CONSENT
+  // NAME
+  // ADDRESS
+  // PHONE
+  // EMAIL
 }

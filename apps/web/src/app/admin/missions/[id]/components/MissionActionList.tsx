@@ -16,13 +16,16 @@ import type { ActionDetail } from "@/types/dto";
 import { ActionType } from "@prisma/client";
 import {
   AlertCircle,
+  Calendar,
   CheckSquare,
+  Clock,
   FileText,
   ImageIcon,
   Scale,
   Star,
   Tag,
   TextCursor,
+  Video,
 } from "lucide-react";
 import Image from "next/image";
 import { ClientDateDisplay } from "./ClientDateDisplay";
@@ -70,6 +73,20 @@ function getActionTypeInfo(type: ActionType) {
         color: "text-orange-600 dark:text-orange-400",
         bgColor: "bg-orange-50 dark:bg-orange-950",
       };
+    case ActionType.PDF:
+      return {
+        label,
+        icon: FileText,
+        color: "text-red-600 dark:text-red-400",
+        bgColor: "bg-red-50 dark:bg-red-950",
+      };
+    case ActionType.VIDEO:
+      return {
+        label,
+        icon: Video,
+        color: "text-violet-600 dark:text-violet-400",
+        bgColor: "bg-violet-50 dark:bg-violet-950",
+      };
     case ActionType.RATING:
       return {
         label,
@@ -83,6 +100,20 @@ function getActionTypeInfo(type: ActionType) {
         icon: Tag,
         color: "text-pink-600 dark:text-pink-400",
         bgColor: "bg-pink-50 dark:bg-pink-950",
+      };
+    case ActionType.DATE:
+      return {
+        label,
+        icon: Calendar,
+        color: "text-cyan-600 dark:text-cyan-400",
+        bgColor: "bg-cyan-50 dark:bg-cyan-950",
+      };
+    case ActionType.TIME:
+      return {
+        label,
+        icon: Clock,
+        color: "text-indigo-600 dark:text-indigo-400",
+        bgColor: "bg-indigo-50 dark:bg-indigo-950",
       };
     default:
       return {
@@ -111,6 +142,16 @@ function ActionCard({ action }: { action: ActionDetail }) {
                 <TypeIcon className={`h-3.5 w-3.5 ${typeInfo.color}`} />
                 <span className={`text-xs font-medium ${typeInfo.color}`}>{typeInfo.label}</span>
               </div>
+              <Badge
+                variant={action.isRequired ? "destructive" : "outline"}
+                className={
+                  action.isRequired
+                    ? "shrink-0 text-xs font-semibold bg-orange-100 text-orange-700 hover:bg-orange-200 border-0 dark:bg-orange-950 dark:text-orange-300"
+                    : "shrink-0 text-xs font-medium text-muted-foreground border-muted-foreground/30"
+                }
+              >
+                {action.isRequired ? "필수" : "선택"}
+              </Badge>
               {action.maxSelections && (
                 <Badge variant="secondary" className="shrink-0">
                   최대 {action.maxSelections}개 선택

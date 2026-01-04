@@ -94,7 +94,14 @@ export function MissionBasicInfo({ mission }: MissionBasicInfoProps) {
               <Badge
                 variant={mission.type === MissionType.EXPERIENCE_GROUP ? "default" : "secondary"}
               >
-                <Typo.Body size="medium" className="text-muted">
+                <Typo.Body
+                  size="medium"
+                  className={cn(
+                    mission.type === MissionType.EXPERIENCE_GROUP
+                      ? "text-muted"
+                      : "text-foreground",
+                  )}
+                >
                   {missionTypeLabel}
                 </Typo.Body>
               </Badge>

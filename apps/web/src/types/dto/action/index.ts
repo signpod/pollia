@@ -1,161 +1,88 @@
 import type { ActionType } from "@/types/domain/action";
+import type { Action, ActionOption } from "@prisma/client";
 
-// ============================================================================
-// Action Creation DTOs
-// ============================================================================
-
-// Multiple Choice Question
-export interface CreateMultipleChoiceActionRequest {
+export interface BaseActionRequest {
   missionId?: string;
   title: string;
   description?: string;
   imageUrl?: string;
   imageFileUploadId?: string;
+  order: number;
+  isRequired: boolean;
+}
+
+export interface ActionOptionInput {
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  order: number;
+  imageFileUploadId?: string;
+}
+
+export interface BaseActionResponse {
+  data: {
+    id: string;
+    missionId: string | null;
+    title: string;
+    type: ActionType;
+    order: number;
+    isRequired: boolean;
+    createdAt: Date;
+  };
+}
+
+export interface CreateMultipleChoiceActionRequest extends BaseActionRequest {
   maxSelections: number;
-  order: number;
-  options: {
-    title: string;
-    description?: string;
-    imageUrl?: string;
-    order: number;
-    imageFileUploadId?: string;
-  }[];
+  options: ActionOptionInput[];
 }
 
-export interface CreateMultipleChoiceActionResponse {
-  data: {
-    id: string;
-    missionId: string;
-    title: string;
-    type: ActionType;
-    order: number;
-    createdAt: Date;
-  };
+export interface CreateMultipleChoiceActionResponse extends BaseActionResponse {}
+
+export interface CreateScaleActionRequest extends BaseActionRequest {
+  options: ActionOptionInput[];
 }
 
-// Scale Action
-export interface CreateScaleActionRequest {
-  missionId?: string;
-  title: string;
-  description?: string;
-  imageUrl?: string;
-  imageFileUploadId?: string;
-  order: number;
-  options: {
-    title: string;
-    description?: string;
-    imageUrl?: string;
-    order: number;
-    imageFileUploadId?: string;
-  }[];
-}
+export interface CreateScaleActionResponse extends BaseActionResponse {}
 
-export interface CreateScaleActionResponse {
-  data: {
-    id: string;
-    missionId: string;
-    title: string;
-    type: ActionType;
-    order: number;
-    createdAt: Date;
-  };
-}
-
-// Subjective Action
-export interface CreateSubjectiveActionRequest {
-  missionId?: string;
-  title: string;
-  description?: string;
-  imageUrl?: string;
-  imageFileUploadId?: string;
-  order: number;
-}
-
-export interface CreateSubjectiveActionResponse {
-  data: {
-    id: string;
-    missionId: string;
-    title: string;
-    type: ActionType;
-    order: number;
-    createdAt: Date;
-  };
-}
-
-// Tag Action
-export interface CreateTagActionRequest {
-  missionId?: string;
-  title: string;
-  description?: string;
-  imageUrl?: string;
-  imageFileUploadId?: string;
-  order: number;
+export interface CreateTagActionRequest extends BaseActionRequest {
   maxSelections?: number;
-  options: {
-    title: string;
-    description?: string;
-    imageUrl?: string;
-    order: number;
-    imageFileUploadId?: string;
-  }[];
+  options: ActionOptionInput[];
 }
 
-export interface CreateTagActionResponse {
-  data: {
-    id: string;
-    missionId: string;
-    title: string;
-    type: ActionType;
-    order: number;
-    createdAt: Date;
-  };
-}
+export interface CreateTagActionResponse extends BaseActionResponse {}
 
-// Rating Action
-export interface CreateRatingActionRequest {
-  missionId?: string;
-  title: string;
-  description?: string;
-  imageUrl?: string;
-  imageFileUploadId?: string;
-  order: number;
-}
+export type CreateSubjectiveActionRequest = BaseActionRequest;
+export type CreateSubjectiveActionResponse = BaseActionResponse;
 
-export interface CreateRatingActionResponse {
-  data: {
-    id: string;
-    missionId: string;
-    title: string;
-    type: ActionType;
-    order: number;
-    createdAt: Date;
-  };
-}
+export type CreateShortTextActionRequest = BaseActionRequest;
+export type CreateShortTextActionResponse = BaseActionResponse;
 
-// Image Action
-export interface CreateImageActionRequest {
-  missionId?: string;
-  title: string;
-  description?: string;
-  imageUrl?: string;
-  imageFileUploadId?: string;
-  order: number;
-}
+export type CreateRatingActionRequest = BaseActionRequest;
+export type CreateRatingActionResponse = BaseActionResponse;
 
-export interface CreateImageActionResponse {
-  data: {
-    id: string;
-    missionId: string;
-    title: string;
-    type: ActionType;
-    order: number;
-    createdAt: Date;
-  };
+export interface CreateImageActionRequest extends BaseActionRequest {
+  maxSelections?: number;
 }
+export type CreateImageActionResponse = BaseActionResponse;
 
-// ============================================================================
-// Action Update DTOs
-// ============================================================================
+export type CreatePdfActionRequest = BaseActionRequest;
+export type CreatePdfActionResponse = BaseActionResponse;
+
+export type CreateVideoActionRequest = BaseActionRequest;
+export type CreateVideoActionResponse = BaseActionResponse;
+
+export type CreatePrivacyConsentActionRequest = BaseActionRequest;
+export type CreatePrivacyConsentActionResponse = BaseActionResponse;
+
+export interface CreateDateActionRequest extends BaseActionRequest {
+  maxSelections: number;
+}
+export type CreateDateActionResponse = BaseActionResponse;
+
+export interface CreateTimeActionRequest extends BaseActionRequest {
+  maxSelections: number;
+}
+export type CreateTimeActionResponse = BaseActionResponse;
 
 export interface UpdateActionOptionRequest {
   title: string;
@@ -172,59 +99,52 @@ export interface UpdateActionRequest {
   imageFileUploadId?: string;
   order?: number;
   maxSelections?: number;
+  isRequired?: boolean;
   options?: UpdateActionOptionRequest[];
 }
 
-// ============================================================================
-// Action Read DTOs
-// ============================================================================
-
 export interface GetActionResponse {
-  data: {
-    id: string;
-    title: string;
-    description?: string | null;
-    imageUrl?: string | null;
-    type: ActionType;
-    order: number;
-    maxSelections: number | null;
-    createdAt: Date;
-    updatedAt: Date;
-    missionId: string | null;
-  }[];
+  data: Pick<
+    Action,
+    | "id"
+    | "title"
+    | "description"
+    | "imageUrl"
+    | "type"
+    | "order"
+    | "maxSelections"
+    | "isRequired"
+    | "createdAt"
+    | "updatedAt"
+    | "missionId"
+  >[];
 }
 
-// Mission의 Action ID 배열 조회 응답 타입
 export interface GetActionIdsResponse {
   data: {
     actionIds: string[];
   };
 }
 
-// Action 상세 조회 응답 타입
 export interface GetActionByIdResponse {
-  data: {
-    id: string;
-    title: string;
-    description: string | null;
-    imageUrl: string | null;
-    type: ActionType;
-    order: number;
-    maxSelections: number | null;
-    missionId: string | null;
-    options: {
-      id: string;
-      title: string;
-      description: string | null;
-      imageUrl: string | null;
-      order: number;
-    }[];
-    createdAt: Date;
-    updatedAt: Date;
+  data: Pick<
+    Action,
+    | "id"
+    | "title"
+    | "description"
+    | "imageUrl"
+    | "type"
+    | "order"
+    | "maxSelections"
+    | "isRequired"
+    | "missionId"
+    | "createdAt"
+    | "updatedAt"
+  > & {
+    options: Pick<ActionOption, "id" | "title" | "description" | "imageUrl" | "order">[];
   };
 }
 
-// Action 상세 타입
 export interface ActionDetail {
   id: string;
   title: string;
@@ -233,19 +153,13 @@ export interface ActionDetail {
   type: ActionType;
   order: number;
   maxSelections: number | null;
-  surveyId: string | null;
-  options: {
-    id: string;
-    title: string;
-    description: string | null;
-    imageUrl: string | null;
-    order: number;
-  }[];
+  isRequired: boolean;
+  missionId: string | null;
+  options: Pick<ActionOption, "id" | "title" | "description" | "imageUrl" | "order">[];
   createdAt: Date;
   updatedAt: Date;
 }
 
-// Mission의 모든 Action 상세 조회 응답 타입
 export interface GetMissionActionsDetailResponse {
   data: ActionDetail[];
 }

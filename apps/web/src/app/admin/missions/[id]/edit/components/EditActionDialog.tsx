@@ -11,12 +11,18 @@ import { getActionTypeLabel } from "@/app/admin/constants/actionTypes";
 import type { ActionDetail } from "@/types/dto/action";
 import {
   type ActionFormData,
+  DateForm,
   ImageUploadForm,
   MultipleChoiceForm,
+  PdfUploadForm,
+  PrivacyConsentForm,
   RatingForm,
   ScaleForm,
+  ShortTextForm,
   SubjectiveForm,
   TagForm,
+  TimeForm,
+  VideoUploadForm,
 } from "./action-forms";
 
 interface EditActionDialogProps {
@@ -91,6 +97,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
             maxSelections: action.maxSelections ?? 1,
             options: mapOptions(action.options),
           }}
@@ -106,6 +113,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
             options: mapOptions(action.options),
           }}
         />
@@ -120,6 +128,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
           }}
         />
       );
@@ -133,6 +142,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
             maxSelections: action.maxSelections ?? 1,
             options: mapOptions(action.options),
           }}
@@ -148,6 +158,21 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
+          }}
+        />
+      );
+    case "SHORT_TEXT":
+      return (
+        <ShortTextForm
+          isLoading={isLoading}
+          onSubmit={onSubmit}
+          onCancel={onCancel}
+          initialData={{
+            title: action.title,
+            description: action.description || undefined,
+            imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
           }}
         />
       );
@@ -161,6 +186,80 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
+            maxSelections: action.maxSelections ?? undefined,
+          }}
+        />
+      );
+    case "PDF":
+      return (
+        <PdfUploadForm
+          isLoading={isLoading}
+          onSubmit={onSubmit}
+          onCancel={onCancel}
+          initialData={{
+            title: action.title,
+            description: action.description || undefined,
+            imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
+          }}
+        />
+      );
+    case "VIDEO":
+      return (
+        <VideoUploadForm
+          isLoading={isLoading}
+          onSubmit={onSubmit}
+          onCancel={onCancel}
+          initialData={{
+            title: action.title,
+            description: action.description || undefined,
+            imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
+          }}
+        />
+      );
+    case "PRIVACY_CONSENT":
+      return (
+        <PrivacyConsentForm
+          isLoading={isLoading}
+          onSubmit={onSubmit}
+          onCancel={onCancel}
+          initialData={{
+            title: action.title,
+            description: action.description || undefined,
+            imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
+          }}
+        />
+      );
+    case "DATE":
+      return (
+        <DateForm
+          isLoading={isLoading}
+          onSubmit={onSubmit}
+          onCancel={onCancel}
+          initialData={{
+            title: action.title,
+            description: action.description || undefined,
+            imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
+            maxSelections: action.maxSelections ?? undefined,
+          }}
+        />
+      );
+    case "TIME":
+      return (
+        <TimeForm
+          isLoading={isLoading}
+          onSubmit={onSubmit}
+          onCancel={onCancel}
+          initialData={{
+            title: action.title,
+            description: action.description || undefined,
+            imageUrl: action.imageUrl || undefined,
+            isRequired: action.isRequired,
+            maxSelections: action.maxSelections ?? undefined,
           }}
         />
       );

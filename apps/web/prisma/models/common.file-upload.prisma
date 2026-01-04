@@ -15,14 +15,17 @@ model FileUpload {
   missionImages           Mission[]           @relation("MissionImage")
   missionBrandLogos       Mission[]           @relation("MissionBrandLogo")
   actionImages            Action[]
-  actionAnswerImages      ActionAnswer[]
   rewardImages            Reward[]
   missionCompletionImages MissionCompletion[]
+
+  actionAnswerId String?       @map("action_answer_id")
+  actionAnswer   ActionAnswer? @relation(fields: [actionAnswerId], references: [id], onDelete: Cascade)
 
   user User @relation(fields: [userId], references: [id])
 
   @@index([userId, status])
   @@index([status, createdAt])
+  @@index([actionAnswerId])
   @@map("file_uploads")
 }
 

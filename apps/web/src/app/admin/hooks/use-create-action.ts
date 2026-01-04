@@ -1,22 +1,34 @@
 "use client";
 
 import {
+  createDateAction,
   createImageAction,
   createMultipleChoiceAction,
+  createPdfAction,
+  createPrivacyConsentAction,
   createRatingAction,
   createScaleAction,
+  createShortTextAction,
   createSubjectiveAction,
   createTagAction,
+  createTimeAction,
+  createVideoAction,
 } from "@/actions/action/create";
 import { adminActionQueryKeys } from "@/app/admin/constants/queryKeys";
 import type { ActionType } from "@/app/admin/missions/[id]/edit/components/action-forms";
 import type {
+  CreateDateActionRequest,
   CreateImageActionRequest,
   CreateMultipleChoiceActionRequest,
+  CreatePdfActionRequest,
+  CreatePrivacyConsentActionRequest,
   CreateRatingActionRequest,
   CreateScaleActionRequest,
+  CreateShortTextActionRequest,
   CreateSubjectiveActionRequest,
   CreateTagActionRequest,
+  CreateTimeActionRequest,
+  CreateVideoActionRequest,
 } from "@/types/dto";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -28,6 +40,7 @@ interface CreateActionInput {
   imageUrl?: string;
   imageFileUploadId?: string;
   order: number;
+  isRequired: boolean;
   options?: {
     title: string;
     description?: string;
@@ -57,6 +70,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageUrl: input.imageUrl,
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
+            isRequired: input.isRequired,
             maxSelections: input.maxSelections ?? 1,
             options:
               input.options?.map((opt, index) => ({
@@ -78,6 +92,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageUrl: input.imageUrl,
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
+            isRequired: input.isRequired,
             options:
               input.options?.map((opt, index) => ({
                 title: opt.title,
@@ -98,8 +113,22 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageUrl: input.imageUrl,
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
+            isRequired: input.isRequired,
           };
           return await createSubjectiveAction(request);
+        }
+
+        case "SHORT_TEXT": {
+          const request: CreateShortTextActionRequest = {
+            missionId: input.missionId,
+            title: input.title,
+            description: input.description,
+            imageUrl: input.imageUrl,
+            imageFileUploadId: input.imageFileUploadId,
+            order: input.order,
+            isRequired: input.isRequired,
+          };
+          return await createShortTextAction(request);
         }
 
         case "TAG": {
@@ -110,6 +139,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageUrl: input.imageUrl,
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
+            isRequired: input.isRequired,
             maxSelections: input.maxSelections ?? 1,
             options:
               input.options?.map((opt, index) => ({
@@ -131,6 +161,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageUrl: input.imageUrl,
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
+            isRequired: input.isRequired,
           };
           return await createRatingAction(request);
         }
@@ -143,12 +174,81 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageUrl: input.imageUrl,
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
+            isRequired: input.isRequired,
+            maxSelections: input.maxSelections,
           };
           return await createImageAction(request);
         }
 
+        case "PDF": {
+          const request: CreatePdfActionRequest = {
+            missionId: input.missionId,
+            title: input.title,
+            description: input.description,
+            imageUrl: input.imageUrl,
+            imageFileUploadId: input.imageFileUploadId,
+            order: input.order,
+            isRequired: input.isRequired,
+          };
+          return await createPdfAction(request);
+        }
+
+        case "VIDEO": {
+          const request: CreateVideoActionRequest = {
+            missionId: input.missionId,
+            title: input.title,
+            description: input.description,
+            imageUrl: input.imageUrl,
+            imageFileUploadId: input.imageFileUploadId,
+            order: input.order,
+            isRequired: input.isRequired,
+          };
+          return await createVideoAction(request);
+        }
+
+        case "PRIVACY_CONSENT": {
+          const request: CreatePrivacyConsentActionRequest = {
+            missionId: input.missionId,
+            title: input.title,
+            description: input.description,
+            imageUrl: input.imageUrl,
+            imageFileUploadId: input.imageFileUploadId,
+            order: input.order,
+            isRequired: input.isRequired,
+          };
+          return await createPrivacyConsentAction(request);
+        }
+
+        case "DATE": {
+          const request: CreateDateActionRequest = {
+            missionId: input.missionId,
+            title: input.title,
+            description: input.description,
+            imageUrl: input.imageUrl,
+            imageFileUploadId: input.imageFileUploadId,
+            order: input.order,
+            isRequired: input.isRequired,
+            maxSelections: input.maxSelections ?? 1,
+          };
+          return await createDateAction(request);
+        }
+
+        case "TIME": {
+          const request: CreateTimeActionRequest = {
+            missionId: input.missionId,
+            title: input.title,
+            description: input.description,
+            imageUrl: input.imageUrl,
+            imageFileUploadId: input.imageFileUploadId,
+            order: input.order,
+            isRequired: input.isRequired,
+            maxSelections: input.maxSelections ?? 1,
+          };
+          return await createTimeAction(request);
+        }
+
         default:
-          throw new Error(`알 수 없는 액션 타입입니다: ${input.type}`);
+          throw new Error(`알 수 없는 액션 타입입니다: ${input.type} (타입: ${typeof input.type})`);
       }
     },
 

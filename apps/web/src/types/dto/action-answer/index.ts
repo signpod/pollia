@@ -7,33 +7,76 @@ export type ActionAnswerItem =
   | {
       actionId: string;
       type: typeof ActionType.SCALE;
+      isRequired: boolean;
       scaleValue: number;
     }
   | {
       actionId: string;
       type: typeof ActionType.SUBJECTIVE;
-      textResponse: string;
+      isRequired: boolean;
+      textAnswer: string;
+    }
+  | {
+      actionId: string;
+      type: typeof ActionType.SHORT_TEXT;
+      isRequired: boolean;
+      textAnswer: string;
     }
   | {
       actionId: string;
       type: typeof ActionType.MULTIPLE_CHOICE;
-      selectedOptionIds: string[];
+      isRequired: boolean;
+      selectedOptionIds?: string[];
+      textAnswer?: string;
     }
   | {
       actionId: string;
       type: typeof ActionType.RATING;
+      isRequired: boolean;
       scaleValue: number;
     }
   | {
       actionId: string;
       type: typeof ActionType.IMAGE;
-      imageFileUploadId?: string;
-      imageUrl?: string;
+      isRequired: boolean;
+      fileUploadIds: string[];
+    }
+  | {
+      actionId: string;
+      type: typeof ActionType.VIDEO;
+      isRequired: boolean;
+      fileUploadIds: string[];
+    }
+  | {
+      actionId: string;
+      type: typeof ActionType.PDF;
+      isRequired: boolean;
+      fileUploadIds: string[];
     }
   | {
       actionId: string;
       type: typeof ActionType.TAG;
-      selectedOptionIds: string[];
+      isRequired: boolean;
+      selectedOptionIds?: string[];
+      textAnswer?: string;
+    }
+  | {
+      actionId: string;
+      type: typeof ActionType.PRIVACY_CONSENT;
+      isRequired: boolean;
+      booleanAnswer: boolean;
+    }
+  | {
+      actionId: string;
+      type: typeof ActionType.DATE;
+      isRequired: boolean;
+      dateAnswers?: string[];
+    }
+  | {
+      actionId: string;
+      type: typeof ActionType.TIME;
+      isRequired: boolean;
+      dateAnswers?: string[];
     };
 
 export interface CreateActionAnswerRequest {
@@ -49,11 +92,13 @@ export interface SubmitActionAnswersRequest {
   answers: Array<{
     actionId: string;
     type: ActionType;
+    isRequired: boolean;
     selectedOptionIds?: string[];
     scaleValue?: number;
-    textResponse?: string;
-    fileUploadId?: string;
-    imageUrl?: string;
+    textAnswer?: string;
+    fileUploadIds?: string[];
+    booleanAnswer?: boolean;
+    dateAnswers?: string[];
   }>;
 }
 

@@ -23,6 +23,7 @@ export class MissionResponseRepository {
           include: {
             action: true,
             option: true,
+            fileUploads: true,
           },
         },
       },
@@ -42,6 +43,7 @@ export class MissionResponseRepository {
           include: {
             action: true,
             option: true,
+            fileUploads: true,
           },
         },
       },

@@ -1,9 +1,6 @@
 import type { ActionType as PrismaActionType } from "@prisma/client";
 
-export type ActionType = Extract<
-  PrismaActionType,
-  "MULTIPLE_CHOICE" | "SCALE" | "RATING" | "TAG" | "SUBJECTIVE" | "IMAGE"
->;
+export type ActionType = PrismaActionType;
 
 export interface ActionOptionInput {
   title: string;
@@ -17,6 +14,7 @@ export interface BaseActionFormData {
   description?: string;
   imageUrl?: string;
   imageFileUploadId?: string;
+  isRequired: boolean;
 }
 
 export interface MultipleChoiceFormData extends BaseActionFormData {
@@ -42,14 +40,37 @@ export interface TagFormData extends BaseActionFormData {
 
 export interface SubjectiveFormData extends BaseActionFormData {
   type: "SUBJECTIVE";
-  maxLength?: number;
-  placeholder?: string;
+}
+
+export interface ShortTextFormData extends BaseActionFormData {
+  type: "SHORT_TEXT";
 }
 
 export interface ImageUploadFormData extends BaseActionFormData {
   type: "IMAGE";
-  maxFiles?: number;
-  acceptedFormats?: string[];
+  maxSelections?: number;
+}
+
+export interface PdfUploadFormData extends BaseActionFormData {
+  type: "PDF";
+}
+
+export interface VideoUploadFormData extends BaseActionFormData {
+  type: "VIDEO";
+}
+
+export interface PrivacyConsentFormData extends BaseActionFormData {
+  type: "PRIVACY_CONSENT";
+}
+
+export interface DateFormData extends BaseActionFormData {
+  type: "DATE";
+  maxSelections?: number;
+}
+
+export interface TimeFormData extends BaseActionFormData {
+  type: "TIME";
+  maxSelections?: number;
 }
 
 export type ActionFormData =
@@ -58,7 +79,13 @@ export type ActionFormData =
   | RatingFormData
   | TagFormData
   | SubjectiveFormData
-  | ImageUploadFormData;
+  | ShortTextFormData
+  | ImageUploadFormData
+  | PdfUploadFormData
+  | VideoUploadFormData
+  | PrivacyConsentFormData
+  | DateFormData
+  | TimeFormData;
 
 export interface ActionFormProps<T extends ActionFormData = ActionFormData> {
   isLoading?: boolean;

@@ -32,6 +32,55 @@ export const createMockAction = (overrides: Partial<Action> = {}): Action => ({
   type: "MULTIPLE_CHOICE",
   order: 0,
   maxSelections: null,
+  isRequired: true,
+  imageFileUploadId: null,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  ...overrides,
+});
+
+/**
+ * 서비스 에러와 cause 코드를 함께 검증하는 헬퍼 함수
+ */
+export async function expectServiceErrorWithCause(
+  promise: Promise<unknown>,
+  expectedMessage: string,
+  expectedCause: number,
+): Promise<void> {
+  await expect(promise).rejects.toThrow(expectedMessage);
+
+  try {
+    await promise;
+  } catch (error) {
+    expect(error instanceof Error && error.cause).toBe(expectedCause);
+  }
+}
+
+/**
+ * request 기반으로 mock action 응답을 생성하는 헬퍼 함수
+ * 테스트에서 request의 값이 응답에 반영되는 것을 시뮬레이션
+ */
+export const createMockActionResponse = (
+  request: {
+    title?: string;
+    description?: string | null;
+    imageUrl?: string | null;
+    order: number;
+    maxSelections?: number | null;
+    isRequired: boolean;
+  },
+  type: Action["type"],
+  overrides: Partial<Action> = {},
+): Action => ({
+  id: "action1",
+  missionId: "mission1",
+  title: request.title ?? "액션",
+  description: request.description ?? null,
+  imageUrl: request.imageUrl ?? null,
+  type,
+  order: request.order,
+  maxSelections: request.maxSelections ?? null,
+  isRequired: request.isRequired,
   imageFileUploadId: null,
   createdAt: new Date(),
   updatedAt: new Date(),
@@ -48,6 +97,7 @@ export const createMockFileUpload = (overrides: Partial<FileUpload> = {}): FileU
   mimeType: "image/jpeg",
   bucket: "pollia-images",
   status: FileStatus.TEMPORARY,
+  actionAnswerId: null,
   confirmedAt: null,
   createdAt: new Date(),
   ...overrides,

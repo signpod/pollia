@@ -13,6 +13,10 @@ export const MULTIPLE_CHOICE_MAX_OPTIONS = 10;
 export const SCALE_MIN_OPTIONS = 3;
 export const SCALE_MAX_OPTIONS = 10;
 
+export const IMAGE_MAX_SELECTIONS = 10;
+export const DATE_MAX_SELECTIONS = 20;
+export const TIME_MAX_SELECTIONS = 20;
+
 export const actionTitleSchema = z
   .string()
   .min(1, "제목을 입력해주세요.")
@@ -60,11 +64,12 @@ const baseActionSchema = z.object({
   imageUrl: actionImageUrlSchema,
   imageFileUploadId: z.string().optional(),
   order: actionOrderSchema,
+  isRequired: z.boolean(),
 });
 
 export const multipleChoiceInputSchema = baseActionSchema
   .extend({
-    maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다."),
+    maxSelections: z.number().int().min(1, "최대 선택 가능 개수는 최소 1개 이상이어야 합니다."),
     options: z
       .array(actionOptionSchema)
       .min(
@@ -74,7 +79,7 @@ export const multipleChoiceInputSchema = baseActionSchema
       .max(MULTIPLE_CHOICE_MAX_OPTIONS, `최대 ${MULTIPLE_CHOICE_MAX_OPTIONS}개까지 가능합니다.`),
   })
   .refine(data => data.maxSelections <= data.options.length, {
-    message: "선택 가능 개수는 옵션 개수를 초과할 수 없습니다.",
+    message: "최대 선택 가능 개수는 옵션 개수를 초과할 수 없습니다.",
     path: ["maxSelections"],
   });
 
@@ -87,24 +92,50 @@ export const scaleInputSchema = baseActionSchema.extend({
 
 export const subjectiveInputSchema = baseActionSchema;
 
+export const shortTextInputSchema = baseActionSchema;
+
 export const eitherOrInputSchema = baseActionSchema;
 
 export const tagInputSchema = baseActionSchema
   .extend({
-    maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다.").optional(),
+    maxSelections: z
+      .number()
+      .int()
+      .min(1, "최대 선택 가능 개수는 최소 1개 이상이어야 합니다.")
+      .optional(),
     options: z
       .array(actionOptionSchema)
       .min(TAG_MIN_OPTIONS, `최소 ${TAG_MIN_OPTIONS}개 이상의 항목이 필요합니다.`)
       .max(TAG_MAX_OPTIONS, `최대 ${TAG_MAX_OPTIONS}개까지 가능합니다.`),
   })
   .refine(data => !data.maxSelections || data.maxSelections <= data.options.length, {
-    message: "선택 가능 개수는 옵션 개수를 초과할 수 없습니다.",
+    message: "최대 선택 가능 개수는 옵션 개수를 초과할 수 없습니다.",
     path: ["maxSelections"],
   });
 
 export const ratingInputSchema = baseActionSchema;
 
-export const imageInputSchema = baseActionSchema;
+export const imageInputSchema = baseActionSchema.extend({
+  maxSelections: z
+    .number()
+    .int()
+    .min(1, "최대 선택 가능 개수는 최소 1개 이상이어야 합니다.")
+    .optional(),
+});
+
+export const pdfInputSchema = baseActionSchema;
+
+export const videoInputSchema = baseActionSchema;
+
+export const privacyConsentInputSchema = baseActionSchema;
+
+export const dateInputSchema = baseActionSchema.extend({
+  maxSelections: z.number().int().min(1, "최대 선택 가능 개수는 최소 1개 이상이어야 합니다."),
+});
+
+export const timeInputSchema = baseActionSchema.extend({
+  maxSelections: z.number().int().min(1, "최대 선택 가능 개수는 최소 1개 이상이어야 합니다."),
+});
 
 export const actionUpdateSchema = z
   .object({
@@ -113,7 +144,12 @@ export const actionUpdateSchema = z
     imageUrl: actionImageUrlSchema,
     imageFileUploadId: z.string().optional(),
     order: actionOrderSchema.optional(),
-    maxSelections: z.number().int().min(1, "선택 가능 개수는 최소 1개입니다.").optional(),
+    maxSelections: z
+      .number()
+      .int()
+      .min(1, "최대 선택 가능 개수는 최소 1개 이상이어야 합니다.")
+      .optional(),
+    isRequired: z.boolean().optional(),
     options: z.array(actionOptionSchema).optional(),
   })
   .refine(data => Object.keys(data).length > 0, {
@@ -123,9 +159,15 @@ export const actionUpdateSchema = z
 export type MultipleChoiceInput = z.infer<typeof multipleChoiceInputSchema>;
 export type ScaleInput = z.infer<typeof scaleInputSchema>;
 export type SubjectiveInput = z.infer<typeof subjectiveInputSchema>;
+export type ShortTextInput = z.infer<typeof shortTextInputSchema>;
 export type EitherOrInput = z.infer<typeof eitherOrInputSchema>;
 export type TagInput = z.infer<typeof tagInputSchema>;
 export type RatingInput = z.infer<typeof ratingInputSchema>;
 export type ImageInput = z.infer<typeof imageInputSchema>;
+export type PdfInput = z.infer<typeof pdfInputSchema>;
+export type VideoInput = z.infer<typeof videoInputSchema>;
+export type PrivacyConsentInput = z.infer<typeof privacyConsentInputSchema>;
+export type DateInput = z.infer<typeof dateInputSchema>;
+export type TimeInput = z.infer<typeof timeInputSchema>;
 export type ActionOption = z.infer<typeof actionOptionSchema>;
 export type ActionUpdate = z.infer<typeof actionUpdateSchema>;

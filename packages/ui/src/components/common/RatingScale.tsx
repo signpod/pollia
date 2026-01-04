@@ -2,7 +2,7 @@
 
 import Check from "@public/svgs/check.svg";
 import { Scale, Typo } from "@repo/ui/components";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties, ComponentProps } from "react";
 import { cn } from "../../lib/utils";
 
@@ -163,6 +163,26 @@ export function RatingScale({
   }, [options, min, max, step, options?.length]);
 
   const [localValue, setLocalValue] = useState(Math.floor((sliderMax - sliderMin) / 2));
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const updateWidth = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.offsetWidth);
+      }
+    };
+
+    updateWidth();
+    const resizeObserver = new ResizeObserver(updateWidth);
+    resizeObserver.observe(containerRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
 
   const thumbPosition = useMemo(() => {
     if (positions.length === 0) {
@@ -203,7 +223,8 @@ export function RatingScale({
       {...props}
     >
       <div
-        className={cn("relative", isVertical ? "px-4 py-9" : "w-full px-9 pb-10")}
+        ref={containerRef}
+        className={cn("relative w-full", isVertical ? "px-4 py-9" : "w-full px-9 pb-10")}
         style={isVertical && height ? { height: `${height}px` } : undefined}
       >
         <Scale.Root
@@ -240,6 +261,7 @@ export function RatingScale({
             }}
             disabled={disabled}
             shouldStackLabels={shouldStackLabels}
+            containerWidth={containerWidth}
           />
           <Scale.Thumb
             className={cn(
@@ -266,6 +288,7 @@ interface RatingScaleDotsProps {
   onOptionClick?: (value: number) => void;
   disabled?: boolean;
   shouldStackLabels?: boolean;
+  containerWidth?: number;
 }
 
 function RatingScaleDots({
@@ -275,6 +298,7 @@ function RatingScaleDots({
   onOptionClick,
   disabled,
   shouldStackLabels,
+  containerWidth,
 }: RatingScaleDotsProps) {
   const handleOptionClick = (order: number) => {
     if (disabled || !onOptionClick) return;
@@ -346,11 +370,17 @@ function RatingScaleDots({
               {isVertical && (options?.[index]?.title || options?.[index]?.description) && (
                 <div
                   className={cn(
-                    "absolute left-[calc(100%+24px)] flex h-[80px] w-[calc(100dvw-100px)]",
+                    "absolute flex h-[80px] min-w-[240px]",
                     shouldStackLabels
                       ? "flex-col justify-center gap-y-1"
                       : "flex-row flex-wrap items-center content-center gap-x-3 gap-y-1",
                   )}
+                  style={{
+                    left: "calc(100% + 24px)",
+                    ...(containerWidth !== undefined
+                      ? { width: `calc(${containerWidth}px - 60px)` }
+                      : { right: "0px" }),
+                  }}
                 >
                   {options?.[index]?.title && (
                     <Typo.SubTitle

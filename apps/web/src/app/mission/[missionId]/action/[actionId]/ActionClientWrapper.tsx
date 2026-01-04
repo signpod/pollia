@@ -12,6 +12,7 @@ import {
 import { useMissionSurveyToast } from "@/hooks/mission/useMissionSurveyToast";
 import { useRecordActionResponse } from "@/hooks/tracking";
 import { useAuth } from "@/hooks/user";
+import { formatDateToHHMM, formatDateToYYYYMMDD } from "@/lib/date";
 import { getSessionStorage, removeSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
 import { getOrCreateSessionId } from "@/lib/tracking";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
@@ -23,11 +24,16 @@ import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import {
+  ActionDate,
   ActionImage,
+  ActionPdf,
   ActionTag,
+  ActionTime,
+  ActionVideo,
   MissionRatingScale,
   MissionStarScale,
   MultipleChoice,
+  ShortText,
   Subjective,
 } from "./ui";
 
@@ -94,9 +100,14 @@ function ActionContent() {
       MultipleChoice: MultipleChoice,
       Scale: MissionRatingScale,
       Subjective: Subjective,
+      ShortText: ShortText,
       Rating: MissionStarScale,
       Image: ActionImage,
+      Video: ActionVideo,
       Tag: ActionTag,
+      Pdf: ActionPdf,
+      Date: ActionDate,
+      Time: ActionTime,
     },
   });
 
@@ -222,11 +233,20 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
           .map(a => a.optionId)
           .filter((id): id is string => id !== null)
           .sort();
-        const currentOptionIds = [...answer.selectedOptionIds].sort();
-        return (
+        const currentOptionIds = answer.selectedOptionIds
+          ? [...answer.selectedOptionIds].sort()
+          : [];
+
+        const submittedTextAnswer = answersForAction.find(a => a.textAnswer)?.textAnswer ?? "";
+        const currentTextAnswer = answer.textAnswer ?? "";
+
+        const optionsMatch =
           submittedOptionIds.length === currentOptionIds.length &&
-          submittedOptionIds.every((id, index) => id === currentOptionIds[index])
-        );
+          submittedOptionIds.every((id, index) => id === currentOptionIds[index]);
+
+        const textAnswerMatch = submittedTextAnswer === currentTextAnswer;
+
+        return optionsMatch && textAnswerMatch;
       }
 
       if (answer.type === ActionType.SCALE || answer.type === ActionType.RATING) {
@@ -234,14 +254,68 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
         return submittedScaleValue !== null && submittedScaleValue === answer.scaleValue;
       }
 
-      if (answer.type === ActionType.SUBJECTIVE) {
+      if (answer.type === ActionType.SUBJECTIVE || answer.type === ActionType.SHORT_TEXT) {
         const submittedTextAnswer = answersForAction[0]?.textAnswer;
-        return submittedTextAnswer !== null && submittedTextAnswer === answer.textResponse;
+        return submittedTextAnswer !== null && submittedTextAnswer === answer.textAnswer;
       }
 
-      if (answer.type === ActionType.IMAGE) {
-        const submittedImageUrl = answersForAction[0]?.imageFileUploadId;
-        return submittedImageUrl !== null && submittedImageUrl === answer.imageFileUploadId;
+      if (
+        answer.type === ActionType.IMAGE ||
+        answer.type === ActionType.VIDEO ||
+        answer.type === ActionType.PDF
+      ) {
+        const submittedAnswer = answersForAction[0];
+        if (!submittedAnswer) {
+          return false;
+        }
+
+        const submittedFileUploads = (
+          submittedAnswer as typeof submittedAnswer & {
+            fileUploads?: Array<{ id: string }>;
+          }
+        ).fileUploads;
+
+        const submittedFileUploadIds = submittedFileUploads?.map(f => f.id).sort() ?? [];
+        const currentFileUploadIds = (answer.fileUploadIds ?? []).sort();
+
+        // 둘 다 빈 배열이면 동일하지 않음 (기존 답변 없음)
+        if (submittedFileUploadIds.length === 0 && currentFileUploadIds.length === 0) {
+          return false;
+        }
+
+        return (
+          submittedFileUploadIds.length === currentFileUploadIds.length &&
+          submittedFileUploadIds.length > 0 &&
+          submittedFileUploadIds.every((id, index) => id === currentFileUploadIds[index])
+        );
+      }
+
+      if (answer.type === ActionType.DATE) {
+        const submittedDates = answersForAction
+          .flatMap(a => {
+            if (!a.dateAnswers) return [];
+            return a.dateAnswers.map(d => formatDateToYYYYMMDD(d));
+          })
+          .sort();
+        const currentDates = (answer.dateAnswers || []).map(d => formatDateToYYYYMMDD(d)).sort();
+        return (
+          submittedDates.length === currentDates.length &&
+          submittedDates.every((date, index) => date === currentDates[index])
+        );
+      }
+
+      if (answer.type === ActionType.TIME) {
+        const submittedTimes = answersForAction
+          .flatMap(a => {
+            if (!a.dateAnswers) return [];
+            return a.dateAnswers.map(d => formatDateToHHMM(d));
+          })
+          .sort();
+        const currentTimes = (answer.dateAnswers || []).map(d => formatDateToHHMM(d)).sort();
+        return (
+          submittedTimes.length === currentTimes.length &&
+          submittedTimes.every((time, index) => time === currentTimes[index])
+        );
       }
 
       return false;
@@ -279,6 +353,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
               {
                 actionId: currentAnswer.actionId,
                 type: currentAnswer.type,
+                isRequired: currentAnswer.isRequired,
                 ...(currentAnswer.type === "MULTIPLE_CHOICE" || currentAnswer.type === "TAG"
                   ? { selectedOptionIds: currentAnswer.selectedOptionIds }
                   : {}),
@@ -286,13 +361,18 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
                   ? { scaleValue: currentAnswer.scaleValue }
                   : {}),
                 ...(currentAnswer.type === "SUBJECTIVE"
-                  ? { textResponse: currentAnswer.textResponse }
+                  ? { textAnswer: currentAnswer.textAnswer }
                   : {}),
-                ...(currentAnswer.type === "IMAGE"
-                  ? {
-                      fileUploadId: currentAnswer.imageFileUploadId,
-                      imageUrl: currentAnswer.imageUrl,
-                    }
+                ...(currentAnswer.type === "IMAGE" ||
+                currentAnswer.type === "VIDEO" ||
+                currentAnswer.type === "PDF"
+                  ? { fileUploadIds: currentAnswer.fileUploadIds }
+                  : {}),
+                ...(currentAnswer.type === "DATE"
+                  ? { dateAnswers: currentAnswer.dateAnswers }
+                  : {}),
+                ...(currentAnswer.type === "TIME"
+                  ? { dateAnswers: currentAnswer.dateAnswers }
                   : {}),
               },
             ],

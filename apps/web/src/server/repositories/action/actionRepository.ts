@@ -1,6 +1,6 @@
 import prisma from "@/database/utils/prisma/client";
 import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
-import type { ActionType } from "@prisma/client";
+import type { ActionType, Prisma } from "@prisma/client";
 
 export class ActionRepository {
   async findByIdWithOptions(actionId: string) {
@@ -82,18 +82,6 @@ export class ActionRepository {
             },
           }),
       },
-      select: {
-        id: true,
-        title: true,
-        type: true,
-        description: true,
-        imageUrl: true,
-        maxSelections: true,
-        order: true,
-        createdAt: true,
-        updatedAt: true,
-        missionId: true,
-      },
       orderBy: {
         createdAt: "desc",
       },
@@ -108,16 +96,7 @@ export class ActionRepository {
   }
 
   async createMultipleChoice(
-    data: {
-      missionId?: string;
-      title: string;
-      description?: string;
-      imageUrl?: string;
-      imageFileUploadId?: string;
-      type: ActionType;
-      order: number;
-      maxSelections?: number;
-    },
+    data: Omit<Prisma.ActionUncheckedCreateInput, "id" | "createdAt" | "updatedAt">,
     options: Array<{
       title: string;
       description?: string;
@@ -138,6 +117,7 @@ export class ActionRepository {
           type: data.type,
           order: data.order,
           maxSelections: data.maxSelections,
+          isRequired: data.isRequired,
         },
       });
 
@@ -164,18 +144,10 @@ export class ActionRepository {
   }
 
   async create(
-    data: {
-      missionId?: string;
-      title: string;
-      description?: string;
-      imageUrl?: string;
-      imageFileUploadId?: string;
-      type: ActionType;
-      order: number;
-    },
+    data: Omit<Prisma.ActionUncheckedCreateInput, "id" | "createdAt" | "updatedAt">,
     userId?: string,
   ) {
-    if (data.imageFileUploadId && userId) {
+    if (data.imageFileUploadId && typeof data.imageFileUploadId === "string" && userId) {
       return prisma.$transaction(async tx => {
         const createdAction = await tx.action.create({
           data: {
@@ -186,10 +158,12 @@ export class ActionRepository {
             imageFileUploadId: data.imageFileUploadId,
             type: data.type,
             order: data.order,
+            maxSelections: data.maxSelections,
+            isRequired: data.isRequired,
           },
         });
 
-        await confirmFileUploads(tx, userId, data.imageFileUploadId);
+        await confirmFileUploads(tx, userId, data.imageFileUploadId as string);
 
         return createdAction;
       });
@@ -204,30 +178,21 @@ export class ActionRepository {
         imageFileUploadId: data.imageFileUploadId,
         type: data.type,
         order: data.order,
+        maxSelections: data.maxSelections,
+        isRequired: data.isRequired,
       },
     });
   }
 
-  async update(
-    actionId: string,
-    data: {
-      title?: string;
-      description?: string;
-      imageUrl?: string;
-      imageFileUploadId?: string;
-      order?: number;
-      maxSelections?: number;
-    },
-    userId?: string,
-  ) {
-    if (data.imageFileUploadId && userId) {
+  async update(actionId: string, data: Prisma.ActionUncheckedUpdateInput, userId?: string) {
+    if (data.imageFileUploadId && typeof data.imageFileUploadId === "string" && userId) {
       return prisma.$transaction(async tx => {
         const updatedAction = await tx.action.update({
           where: { id: actionId },
           data,
         });
 
-        await confirmFileUploads(tx, userId, data.imageFileUploadId);
+        await confirmFileUploads(tx, userId, data.imageFileUploadId as string);
 
         return updatedAction;
       });
@@ -241,14 +206,7 @@ export class ActionRepository {
 
   async updateWithOptions(
     actionId: string,
-    data: {
-      title?: string;
-      description?: string;
-      imageUrl?: string;
-      imageFileUploadId?: string;
-      order?: number;
-      maxSelections?: number;
-    },
+    data: Prisma.ActionUncheckedUpdateInput,
     options: Array<{
       title: string;
       description?: string;

@@ -1,0 +1,4 @@
+fix: ActionRenderer와 Subjective 컴포넌트의 isRequired 로직 수정
+
+* ActionRenderer에서 actionData.isRequired 대신 currentAnswer.isRequired를 사용하도록 변경하여 액션 필수 여부 정확도 개선
+* Subjective 컴포넌트의 handleBlur 함수에서 subjectiveValue 길이에 따라 helper text를 설정하도록 수정하여 입력 중 사용자 피드백 개선

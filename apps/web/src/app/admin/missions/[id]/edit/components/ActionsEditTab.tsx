@@ -10,6 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/app/admin/components/shadcn-ui/alert-dialog";
+import { Badge } from "@/app/admin/components/shadcn-ui/badge";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import {
   Card,
@@ -93,6 +94,16 @@ function SortableActionCard({ action, onEdit, onDelete }: SortableActionCardProp
                 <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded">
                   {getActionTypeLabel(action.type)}
                 </span>
+                <Badge
+                  variant={action.isRequired ? "destructive" : "outline"}
+                  className={
+                    action.isRequired
+                      ? "text-xs font-semibold bg-orange-100 text-orange-700 hover:bg-orange-200 border-0 dark:bg-orange-950 dark:text-orange-300"
+                      : "text-xs font-medium text-muted-foreground border-muted-foreground/30"
+                  }
+                >
+                  {action.isRequired ? "필수" : "선택"}
+                </Badge>
                 <span className="text-xs text-muted-foreground">#{action.order + 1}</span>
               </div>
               <h4 className="font-medium mt-1 truncate">{action.title}</h4>
@@ -142,6 +153,16 @@ function ActionCardOverlay({ action }: { action: ActionDetail }) {
               <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded">
                 {getActionTypeLabel(action.type)}
               </span>
+              <Badge
+                variant={action.isRequired ? "destructive" : "outline"}
+                className={
+                  action.isRequired
+                    ? "text-xs font-semibold bg-orange-100 text-orange-700 hover:bg-orange-200 border-0 dark:bg-orange-950 dark:text-orange-300"
+                    : "text-xs font-medium text-muted-foreground border-muted-foreground/30"
+                }
+              >
+                {action.isRequired ? "필수" : "선택"}
+              </Badge>
               <span className="text-xs text-muted-foreground">#{action.order + 1}</span>
             </div>
             <h4 className="font-medium mt-1 truncate">{action.title}</h4>
@@ -278,6 +299,7 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
       description: data.description,
       imageUrl: data.imageUrl,
       imageFileUploadId: data.imageFileUploadId,
+      isRequired: data.isRequired,
       order: nextOrder,
       options:
         "options" in data
@@ -392,6 +414,7 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
             description: data.description,
             imageUrl: data.imageUrl,
             imageFileUploadId: data.imageFileUploadId,
+            isRequired: data.isRequired,
             maxSelections: "maxSelections" in data ? data.maxSelections : undefined,
             options:
               "options" in data

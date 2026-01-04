@@ -1,202 +1,174 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { CheckIcon } from "lucide-react";
+import * as ProgressPrimitive from "@radix-ui/react-progress";
+import { AnimatePresence, motion } from "framer-motion";
+import { AlertCircle, Check, Loader2Icon } from "lucide-react";
 import * as React from "react";
 import { cn } from "../../lib/utils";
+import { Typo } from "./Typo";
 
-interface ProgressBarV2Props {
-  value: number;
-  className?: string;
-  activeColor?: string;
-  inactiveColor?: string;
-  ticActiveColor?: string;
-  ticInactiveColor?: string;
+type Variant = "default" | "error" | "loading";
+type BadgeVariant = "success" | "error" | "loading";
+
+const PROGRESS_BAR_SIZES = {
+  height: "h-[6px]",
+  width: "w-[160px]",
+  badgeMinHeight: "min-h-[28px]",
+} as const;
+
+const PROGRESSBAR_VARIANT: Record<BadgeVariant, Variant> = {
+  success: "default",
+  error: "error",
+  loading: "loading",
+} as const;
+
+const BADGE_COLOR_CLASSES: Record<BadgeVariant, { icon: string; text: string }> = {
+  success: { icon: "text-point", text: "text-point" },
+  error: { icon: "text-error", text: "text-error" },
+  loading: { icon: "text-info", text: "text-info" },
+} as const;
+
+interface ProgressBarProps extends React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> {
+  containerClassName?: string;
+  indicatorClassName?: string;
+  variant?: Variant;
+  badgeVariant?: BadgeVariant;
+  isBadgeVisible?: boolean;
+  currentOrder?: number;
+  totalOrder?: number;
 }
 
-const TIC_POSITIONS = [0, 25, 50, 75, 100];
-const DASHES_PER_SECTION = 5;
-const SECTION_SIZE = 25;
-
-const animatedTicsSet = new Set<string>();
-
-export function ProgressBarV2({
+function ProgressBarV2Component({
+  containerClassName,
+  indicatorClassName,
+  badgeVariant,
+  variant,
+  isBadgeVisible = false,
+  currentOrder,
+  totalOrder,
   value,
-  className,
-  activeColor = "bg-yellow-500",
-  inactiveColor = "bg-zinc-200",
-  ticActiveColor,
-  ticInactiveColor,
-}: ProgressBarV2Props) {
-  const clampedValue = Math.max(0, Math.min(100, value));
+  ...props
+}: ProgressBarProps) {
+  const currentValue = value ?? 0;
 
-  const getNextTicAfterActive = () => {
-    const activePositions = TIC_POSITIONS.filter(pos => clampedValue > pos);
-    if (activePositions.length === 0) {
-      return TIC_POSITIONS[0];
+  const progressbarVariant = React.useMemo((): Variant => {
+    if (badgeVariant) {
+      return PROGRESSBAR_VARIANT[badgeVariant];
     }
-    const lastActivePosition = Math.max(...activePositions);
-    const nextIndex = TIC_POSITIONS.indexOf(lastActivePosition) + 1;
-    return nextIndex < TIC_POSITIONS.length ? TIC_POSITIONS[nextIndex] : null;
-  };
+    return variant ?? "default";
+  }, [badgeVariant, variant]);
 
-  const getTicState = (position: number) => {
-    const nextTicPosition = getNextTicAfterActive();
-
-    if (clampedValue > position) {
-      return "active";
+  const shouldShowBadge = React.useMemo(() => {
+    if (badgeVariant && isBadgeVisible) {
+      return true;
     }
-    if (nextTicPosition === position) {
-      return "current";
+    if (!badgeVariant && currentOrder !== undefined && totalOrder !== undefined) {
+      return true;
     }
-    return "inactive";
-  };
-
-  const getDashState = (sectionIndex: number, dashIndex: number) => {
-    const sectionStart = sectionIndex * SECTION_SIZE;
-    const dashStart = sectionStart + dashIndex * (SECTION_SIZE / DASHES_PER_SECTION);
-    const dashEnd = dashStart + SECTION_SIZE / DASHES_PER_SECTION;
-
-    if (clampedValue >= dashEnd) {
-      return "full";
-    }
-    if (clampedValue > dashStart) {
-      return "partial";
-    }
-    return "empty";
-  };
-
-  const getDashFillPercentage = (sectionIndex: number, dashIndex: number) => {
-    const sectionStart = sectionIndex * SECTION_SIZE;
-    const dashStart = sectionStart + dashIndex * (SECTION_SIZE / DASHES_PER_SECTION);
-    const dashEnd = dashStart + SECTION_SIZE / DASHES_PER_SECTION;
-
-    if (clampedValue <= dashStart) {
-      return 0;
-    }
-    if (clampedValue >= dashEnd) {
-      return 100;
-    }
-
-    const dashProgress = ((clampedValue - dashStart) / (dashEnd - dashStart)) * 100;
-    return dashProgress;
-  };
+    return false;
+  }, [badgeVariant, isBadgeVisible, currentOrder, totalOrder]);
 
   return (
-    <div className={cn("relative w-full", className)}>
-      <div className="relative flex items-center">
-        {TIC_POSITIONS.map((position, index) => {
-          const isActive = getTicState(position) === "active";
-          const isLast = index === TIC_POSITIONS.length - 1;
-          const isCurrent = getTicState(position) === "current";
-
-          return (
-            <React.Fragment key={position}>
-              {isActive ? (
-                <CheckTick
-                  key={`check-${position}`}
-                  layoutId={`tic-${position}`}
-                  activeColor={ticActiveColor || activeColor}
-                />
-              ) : isCurrent ? (
-                <CurrentTick
-                  key={`current-${position}`}
-                  activeColor={ticActiveColor || activeColor}
-                />
-              ) : (
-                <Tick key={`tick-${position}`} inactiveColor={ticInactiveColor || inactiveColor} />
-              )}
-
-              {!isLast && (
-                <div className="flex-1 flex items-center gap-0.5 mx-1">
-                  {Array.from({ length: DASHES_PER_SECTION }).map((_, dashIndex) => {
-                    const dashState = getDashState(index, dashIndex);
-                    const fillPercentage = getDashFillPercentage(index, dashIndex);
-
-                    return (
-                      <div
-                        key={`dash-${index}-${dashIndex}`}
-                        className="relative h-[2px] flex-1 overflow-hidden rounded"
-                      >
-                        <div
-                          className={cn(
-                            "h-full transition-all duration-300 rounded",
-                            dashState === "full" || dashState === "partial"
-                              ? activeColor
-                              : inactiveColor,
-                          )}
-                          style={{
-                            width: dashState === "partial" ? `${fillPercentage}%` : "100%",
-                          }}
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </React.Fragment>
-          );
-        })}
-      </div>
+    <div className="flex flex-col gap-1 w-full justify-center items-center">
+      <AnimatePresence key={badgeVariant ?? "no-badge"}>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: shouldShowBadge ? 1 : 0, y: 0 }}
+          exit={{ opacity: 0, y: 10 }}
+          transition={{ duration: 0.2, ease: "easeInOut" }}
+          className={PROGRESS_BAR_SIZES.badgeMinHeight}
+        >
+          <Badge variant={badgeVariant} currentOrder={currentOrder} totalOrder={totalOrder} />
+        </motion.div>
+      </AnimatePresence>
+      <ProgressPrimitive.Root
+        className={cn(
+          "bg-zinc-100 relative overflow-hidden rounded-xl",
+          PROGRESS_BAR_SIZES.height,
+          PROGRESS_BAR_SIZES.width,
+          containerClassName,
+        )}
+        {...props}
+      >
+        <div
+          className={cn(
+            "h-full flex-1 rounded-xl",
+            indicatorClassName,
+            progressbarVariant === "default" && "bg-violet-500",
+            progressbarVariant === "error" && "bg-red-500",
+            progressbarVariant === "loading" && "bg-zinc-300",
+          )}
+          style={{
+            width: `${currentValue}%`,
+          }}
+        />
+      </ProgressPrimitive.Root>
     </div>
   );
 }
 
-function CheckTick({
-  layoutId,
-  activeColor,
-}: {
-  layoutId: string;
-  activeColor: string;
-}) {
-  const shouldAnimate = React.useRef(!animatedTicsSet.has(layoutId));
+export const ProgressBarV2 = React.memo(ProgressBarV2Component);
 
-  React.useEffect(() => {
-    if (shouldAnimate.current) {
-      animatedTicsSet.add(layoutId);
-    }
-  }, [layoutId]);
-
-  return (
-    <motion.div
-      layoutId={layoutId}
-      initial={shouldAnimate.current ? { opacity: 0, scale: 0 } : false}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0 }}
-      transition={{ duration: 0.3, ease: "easeInOut" }}
-      className={cn(
-        "size-7 rounded-full flex items-center justify-center m-[-8px] shadow-[0_2px_4px_0_rgba(197,95,0,0.2)] inset-shadow-[0_2px_3px_0_rgba(197,95,0,0.2)]",
-        activeColor,
-      )}
-    >
-      <CheckIcon className="size-3 text-white" />
-    </motion.div>
-  );
+interface BadgeProps {
+  variant?: BadgeVariant;
+  currentOrder?: number;
+  totalOrder?: number;
 }
 
-function Tick({ inactiveColor }: { inactiveColor: string }) {
-  return <div className={cn("size-[10px] rounded-full", inactiveColor)} />;
-}
+const BADGE_TEXT: Record<BadgeVariant, string> = {
+  success: "저장 완료",
+  error: "오류 발생",
+  loading: "저장 중",
+} as const;
 
-function CurrentTick({ activeColor }: { activeColor: string }) {
-  const getBgWithOpacity = (color: string) => {
-    if (color.includes("yellow-500")) return "bg-yellow-500/20";
-    if (color.includes("blue-500")) return "bg-blue-500/20";
-    if (color.includes("violet-500")) return "bg-violet-500/20";
-    return "bg-yellow-500/20";
-  };
+const BADGE_ICON: Record<BadgeVariant, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
+  success: Check,
+  error: AlertCircle,
+  loading: Loader2Icon,
+} as const;
+
+function Badge({ variant, currentOrder, totalOrder }: BadgeProps) {
+  const Icon = variant ? BADGE_ICON[variant] : undefined;
+  const colorClasses = variant ? BADGE_COLOR_CLASSES[variant] : undefined;
 
   return (
-    <motion.div
-      initial={{ opacity: 1, scale: 0.8 }}
-      animate={{ scale: [0.8, 1.2, 0.8] }}
-      transition={{ duration: 1.5, ease: "easeInOut", repeat: Number.POSITIVE_INFINITY }}
-      className={cn(
-        "size-7 rounded-full flex items-center justify-center m-[-8.5px]",
-        getBgWithOpacity(activeColor),
+    <>
+      {variant ? (
+        <div className={cn("flex justify-center items-center gap-1 px-3 py-1")}>
+          {Icon && (
+            <Icon
+              className={cn("size-4", variant === "loading" && "animate-spin", colorClasses?.icon)}
+            />
+          )}
+          <Typo.Body size="medium" className={colorClasses?.text}>
+            {BADGE_TEXT[variant]}
+          </Typo.Body>
+        </div>
+      ) : (
+        <div className="flex justify-center items-center gap-1 px-3 py-1">
+          <AnimatePresence
+            key={`order-${String(currentOrder ?? "none")}-${String(totalOrder ?? "none")}`}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.2, ease: "easeInOut" }}
+            >
+              <Typo.Body size="medium" className="text-info font-extrabold">
+                {currentOrder}
+              </Typo.Body>
+            </motion.div>
+          </AnimatePresence>
+
+          <Typo.Body size="medium" className="text-info font-extrabold">
+            /
+          </Typo.Body>
+          <Typo.Body size="medium" className="text-info font-extrabold">
+            {totalOrder}
+          </Typo.Body>
+        </div>
       )}
-    >
-      <div className={cn("size-[10px] rounded-full", activeColor)} />
-    </motion.div>
+    </>
   );
 }

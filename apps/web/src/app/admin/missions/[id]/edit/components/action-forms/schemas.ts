@@ -5,9 +5,18 @@ import {
   SCALE_MIN_OPTIONS,
   TAG_MAX_OPTIONS,
   TAG_MIN_OPTIONS,
-  actionDescriptionSchema,
-  actionImageUrlSchema,
-  actionTitleSchema,
+  dateInputSchema,
+  imageInputSchema,
+  multipleChoiceInputSchema,
+  pdfInputSchema,
+  privacyConsentInputSchema,
+  ratingInputSchema,
+  scaleInputSchema,
+  shortTextInputSchema,
+  subjectiveInputSchema,
+  tagInputSchema,
+  timeInputSchema,
+  videoInputSchema,
 } from "@/schemas/action";
 import { actionOptionSchema } from "@/schemas/action-option";
 import { z } from "zod";
@@ -26,12 +35,9 @@ const actionOptionFormSchema = actionOptionSchema.omit({ order: true }).extend({
   imageUrl: z.string().optional(),
 });
 
-export const multipleChoiceFormSchema = z
-  .object({
-    title: actionTitleSchema,
-    description: actionDescriptionSchema,
-    imageUrl: actionImageUrlSchema,
-    maxSelections: z.number().int().min(1, "최소 1개 이상 선택 가능해야 합니다."),
+export const multipleChoiceFormSchema = multipleChoiceInputSchema
+  .omit({ missionId: true, order: true, imageFileUploadId: true })
+  .extend({
     options: z.array(actionOptionFormSchema),
   })
   .refine(
@@ -52,11 +58,9 @@ export const multipleChoiceFormSchema = z
     path: ["maxSelections"],
   });
 
-export const scaleFormSchema = z
-  .object({
-    title: actionTitleSchema,
-    description: actionDescriptionSchema,
-    imageUrl: actionImageUrlSchema,
+export const scaleFormSchema = scaleInputSchema
+  .omit({ missionId: true, order: true, imageFileUploadId: true })
+  .extend({
     options: z.array(actionOptionFormSchema),
   })
   .refine(
@@ -71,12 +75,9 @@ export const scaleFormSchema = z
     path: ["options"],
   });
 
-export const tagFormSchema = z
-  .object({
-    title: actionTitleSchema,
-    description: actionDescriptionSchema,
-    imageUrl: actionImageUrlSchema,
-    maxSelections: z.number().int().min(1, "최소 1개 이상 선택 가능해야 합니다."),
+export const tagFormSchema = tagInputSchema
+  .omit({ missionId: true, order: true, imageFileUploadId: true })
+  .extend({
     options: z.array(actionOptionFormSchema),
   })
   .refine(
@@ -90,18 +91,104 @@ export const tagFormSchema = z
     message: "모든 태그에 제목을 입력해주세요.",
     path: ["options"],
   })
-  .refine(data => data.maxSelections <= data.options.length, {
+  .refine(data => !data.maxSelections || data.maxSelections <= data.options.length, {
     message: "선택 가능 개수는 태그 개수를 초과할 수 없습니다.",
     path: ["maxSelections"],
   });
 
-export const subjectiveFormSchema = z.object({
-  title: actionTitleSchema,
-  description: actionDescriptionSchema,
-  imageUrl: actionImageUrlSchema,
+export const subjectiveFormSchema = subjectiveInputSchema.omit({
+  missionId: true,
+  order: true,
+  imageFileUploadId: true,
 });
+
+export const shortTextFormSchema = shortTextInputSchema.omit({
+  missionId: true,
+  order: true,
+  imageFileUploadId: true,
+});
+
+export const ratingFormSchema = ratingInputSchema.omit({
+  missionId: true,
+  order: true,
+  imageFileUploadId: true,
+});
+
+export const imageUploadFormSchema = imageInputSchema
+  .omit({
+    missionId: true,
+    order: true,
+    imageFileUploadId: true,
+    maxSelections: true,
+  })
+  .extend({
+    maxSelections: z
+      .number()
+      .int()
+      .min(1, "선택 가능 개수는 최소 1개입니다.")
+      .max(10, "선택 가능 개수는 최대 10개입니다.")
+      .optional(),
+  });
+
+export const pdfUploadFormSchema = pdfInputSchema.omit({
+  missionId: true,
+  order: true,
+  imageFileUploadId: true,
+});
+
+export const videoUploadFormSchema = videoInputSchema.omit({
+  missionId: true,
+  order: true,
+  imageFileUploadId: true,
+});
+
+export const privacyConsentFormSchema = privacyConsentInputSchema.omit({
+  missionId: true,
+  order: true,
+  imageFileUploadId: true,
+});
+
+export const dateFormSchema = dateInputSchema
+  .omit({
+    missionId: true,
+    order: true,
+    imageFileUploadId: true,
+    maxSelections: true,
+  })
+  .extend({
+    maxSelections: z
+      .number()
+      .int()
+      .min(1, "선택 가능 개수는 최소 1개입니다.")
+      .max(20, "선택 가능 개수는 최대 20개입니다.")
+      .optional(),
+  });
+
+export const timeFormSchema = timeInputSchema
+  .omit({
+    missionId: true,
+    order: true,
+    imageFileUploadId: true,
+    maxSelections: true,
+  })
+  .extend({
+    maxSelections: z
+      .number()
+      .int()
+      .min(1, "선택 가능 개수는 최소 1개입니다.")
+      .max(20, "선택 가능 개수는 최대 20개입니다.")
+      .optional(),
+  });
 
 export type MultipleChoiceFormInput = z.infer<typeof multipleChoiceFormSchema>;
 export type ScaleFormInput = z.infer<typeof scaleFormSchema>;
 export type SubjectiveFormInput = z.infer<typeof subjectiveFormSchema>;
+export type ShortTextFormInput = z.infer<typeof shortTextFormSchema>;
 export type TagFormInput = z.infer<typeof tagFormSchema>;
+export type RatingFormInput = z.infer<typeof ratingFormSchema>;
+export type ImageUploadFormInput = z.infer<typeof imageUploadFormSchema>;
+export type PdfUploadFormInput = z.infer<typeof pdfUploadFormSchema>;
+export type VideoUploadFormInput = z.infer<typeof videoUploadFormSchema>;
+export type PrivacyConsentFormInput = z.infer<typeof privacyConsentFormSchema>;
+export type DateFormInput = z.infer<typeof dateFormSchema>;
+export type TimeFormInput = z.infer<typeof timeFormSchema>;

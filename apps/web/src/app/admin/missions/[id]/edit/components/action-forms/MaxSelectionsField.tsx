@@ -15,6 +15,7 @@ interface MaxSelectionsFieldProps<T extends FieldValues> {
   name: Path<T>;
   maxOptions: number;
   disabled?: boolean;
+  isOptional?: boolean;
 }
 
 export function MaxSelectionsField<T extends FieldValues>({
@@ -22,6 +23,7 @@ export function MaxSelectionsField<T extends FieldValues>({
   name,
   maxOptions,
   disabled = false,
+  isOptional = false,
 }: MaxSelectionsFieldProps<T>) {
   return (
     <FormField
@@ -30,16 +32,20 @@ export function MaxSelectionsField<T extends FieldValues>({
       render={({ field }) => (
         <FormItem>
           <FormLabel>
-            최대 선택 가능 개수 <span className="text-destructive">*</span>
+            최대 선택 가능 개수 {!isOptional && <span className="text-destructive">*</span>}
           </FormLabel>
           <FormControl>
             <Input
               type="number"
               min={1}
               max={maxOptions || 10}
-              placeholder="1"
+              placeholder={isOptional ? "1 (기본값)" : "1"}
               {...field}
-              onChange={e => field.onChange(Number(e.target.value) || 1)}
+              value={field.value ?? ""}
+              onChange={e => {
+                const value = e.target.value ? Number(e.target.value) : undefined;
+                field.onChange(isOptional ? value : value || 1);
+              }}
               disabled={disabled}
               className="w-32"
             />

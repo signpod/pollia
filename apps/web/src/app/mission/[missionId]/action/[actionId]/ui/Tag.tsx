@@ -26,6 +26,7 @@ export function ActionTag({
     <MultipleChoiceProvider
       maxSelections={actionData.maxSelections ?? 1}
       actionId={actionData.id}
+      isRequired={actionData.isRequired}
       missionResponse={missionResponse}
       updateCanGoNext={updateCanGoNext}
       onAnswerChange={onAnswerChange}
@@ -133,6 +134,7 @@ function SurveyMultipleChoiceContent({
       onNext={onNext}
       nextButtonText={nextButtonText}
       isLoading={isLoading}
+      isRequired={actionData.isRequired}
     >
       <div ref={contentRef} className="flex flex-wrap gap-3 w-full">
         {actionData.options?.map(option => (

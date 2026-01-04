@@ -26,6 +26,7 @@ describe("ActionService - Mutation", () => {
       type: ActionType.MULTIPLE_CHOICE,
       order: 0,
       maxSelections: 1,
+      isRequired: false,
       imageFileUploadId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -112,6 +113,64 @@ describe("ActionService - Mutation", () => {
       expect(ctx.mockActionRepo.update).not.toHaveBeenCalled();
     });
 
+    it("isRequired를 true로 변경할 수 있다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+      const updateData = {
+        isRequired: true,
+      };
+      const mockUpdatedAction = {
+        ...mockAction,
+        isRequired: true,
+      };
+
+      ctx.mockActionRepo.findById.mockResolvedValue(mockAction);
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.update.mockResolvedValue(mockUpdatedAction);
+
+      // When
+      const result = await ctx.service.updateAction("action1", updateData, "user1");
+
+      // Then
+      expect(result.isRequired).toBe(true);
+      expect(ctx.mockActionRepo.update).toHaveBeenCalledWith(
+        "action1",
+        { isRequired: true },
+        "user1",
+      );
+    });
+
+    it("isRequired를 false로 변경할 수 있다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+      const mockRequiredAction = {
+        ...mockAction,
+        isRequired: true,
+      };
+      const updateData = {
+        isRequired: false,
+      };
+      const mockUpdatedAction = {
+        ...mockRequiredAction,
+        isRequired: false,
+      };
+
+      ctx.mockActionRepo.findById.mockResolvedValue(mockRequiredAction);
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.update.mockResolvedValue(mockUpdatedAction);
+
+      // When
+      const result = await ctx.service.updateAction("action1", updateData, "user1");
+
+      // Then
+      expect(result.isRequired).toBe(false);
+      expect(ctx.mockActionRepo.update).toHaveBeenCalledWith(
+        "action1",
+        { isRequired: false },
+        "user1",
+      );
+    });
+
     it("options가 빈 배열이면 기본 update를 호출한다", async () => {
       // Given
       const mockMission = mockMissionFactory();
@@ -152,6 +211,7 @@ describe("ActionService - Mutation", () => {
       type: ActionType.MULTIPLE_CHOICE,
       order: 0,
       maxSelections: 1,
+      isRequired: false,
       imageFileUploadId: null,
       createdAt: new Date(),
       updatedAt: new Date(),

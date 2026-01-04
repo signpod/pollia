@@ -123,7 +123,7 @@ const Textarea = ({
       <div ref={containerRef} className="grid w-full">
         <textarea
           className={cn(
-            "col-start-1 row-start-1 w-full rounded-sm bg-white px-4 py-3 placeholder:text-disabled min-h-12",
+            "col-start-1 row-start-1 w-full rounded-sm bg-white px-4 py-3 placeholder:text-disabled min-h-4.5rem",
             "focus-visible:outline-none disabled:bg-zinc-100 disabled:text-disabled",
             "transition-all duration-150",
             bodyVariants({ size: "large" }),

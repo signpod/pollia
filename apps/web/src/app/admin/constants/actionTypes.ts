@@ -1,13 +1,20 @@
-export const ACTION_TYPE_LABELS = {
-  MULTIPLE_CHOICE: "객관식",
-  SCALE: "척도형",
-  SUBJECTIVE: "주관식",
-  TAG: "태그",
-  RATING: "별점",
-  IMAGE: "이미지",
-  EITHER_OR: "양자택일",
-} as const;
+import { ActionType } from "@prisma/client";
 
-export function getActionTypeLabel(type: string): string {
-  return ACTION_TYPE_LABELS[type as keyof typeof ACTION_TYPE_LABELS] || type;
+export const ACTION_TYPE_LABELS: Record<ActionType, string> = {
+  MULTIPLE_CHOICE: "여러 선택지",
+  SCALE: "척도형",
+  RATING: "평점",
+  TAG: "태그",
+  SUBJECTIVE: "주관식",
+  SHORT_TEXT: "짧은 텍스트",
+  IMAGE: "이미지",
+  PDF: "PDF",
+  VIDEO: "동영상",
+  DATE: "날짜",
+  TIME: "시간",
+  PRIVACY_CONSENT: "개인정보 동의",
+};
+
+export function getActionTypeLabel(type: ActionType): string {
+  return ACTION_TYPE_LABELS[type];
 }

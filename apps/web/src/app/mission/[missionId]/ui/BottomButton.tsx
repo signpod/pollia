@@ -130,11 +130,11 @@ export function BottomButton({
     if (showResumeModal) {
       const modalShown = showResumeModal();
       if (!modalShown && firstActionId) {
-        handleStartResponse({ surveyId: missionId });
+        handleStartResponse({ missionId });
         router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
       }
     } else if (firstActionId) {
-      handleStartResponse({ surveyId: missionId });
+      handleStartResponse({ missionId });
       router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
     }
   };

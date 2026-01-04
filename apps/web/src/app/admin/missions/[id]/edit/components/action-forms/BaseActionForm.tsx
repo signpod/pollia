@@ -10,6 +10,7 @@ import {
   FormMessage,
 } from "@/app/admin/components/shadcn-ui/form";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
+import { Switch } from "@/app/admin/components/shadcn-ui/switch";
 import { Textarea } from "@/app/admin/components/shadcn-ui/textarea";
 import { ACTION_DESCRIPTION_MAX_LENGTH, ACTION_TITLE_MAX_LENGTH } from "@/schemas/action";
 import type { ReactNode } from "react";
@@ -117,6 +118,19 @@ export function BaseActionFormFields<TFieldValues extends FieldValues>({
               </div>
               <FormMessage />
             </div>
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={control}
+        name={"isRequired" as Path<TFieldValues>}
+        render={({ field }) => (
+          <FormItem className="space-y-2">
+            <FormLabel>필수 응답</FormLabel>
+            <FormControl>
+              <Switch checked={field.value} onCheckedChange={field.onChange} disabled={isLoading} />
+            </FormControl>
           </FormItem>
         )}
       />

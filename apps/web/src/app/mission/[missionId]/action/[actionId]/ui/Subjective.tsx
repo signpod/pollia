@@ -1,12 +1,10 @@
-import { ActionStepContentProps } from "@/constants/action";
+import { ACTION_PLACEHOLDER, ActionStepContentProps } from "@/constants/action";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
 import type { ActionAnswerItem, GetMissionResponseResponse } from "@/types/dto";
 import { Textarea } from "@repo/ui/components";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
-
-const PLACEHOLDER = "답변을 입력해주세요";
 
 export function Subjective({
   actionData,
@@ -29,7 +27,13 @@ export function Subjective({
     helperText,
     validationResult,
     showError,
-  } = useSurveySubjectiveValue(actionData.id, missionResponse, updateCanGoNext, onAnswerChange);
+  } = useSurveySubjectiveValue(
+    actionData.id,
+    actionData.isRequired,
+    missionResponse,
+    updateCanGoNext,
+    onAnswerChange,
+  );
   const isNextDisabled = isNextDisabledProp || !validationResult.success;
   const errorMessage = showError ? validationResult.error?.issues[0]?.message : undefined;
 
@@ -46,9 +50,10 @@ export function Subjective({
       onNext={onNext}
       nextButtonText={nextButtonText}
       isLoading={isLoading}
+      isRequired={actionData.isRequired}
     >
       <Textarea
-        placeholder={PLACEHOLDER}
+        placeholder={ACTION_PLACEHOLDER}
         maxLength={100}
         showLength
         value={subjectiveValue}
@@ -66,6 +71,7 @@ export function Subjective({
 
 function useSurveySubjectiveValue(
   actionId: string,
+  isRequired: boolean,
   missionResponse?: GetMissionResponseResponse,
   updateCanGoNext?: (canGoNext: boolean) => void,
   onAnswerChange?: (answer: ActionAnswerItem) => void,
@@ -101,7 +107,8 @@ function useSurveySubjectiveValue(
       const result = submitAnswerItemSchema.safeParse({
         actionId,
         type: ActionType.SUBJECTIVE,
-        textResponse: initialTextValue,
+        isRequired,
+        textAnswer: initialTextValue,
       });
       updateCanGoNextRef.current?.(result.success);
 
@@ -109,11 +116,20 @@ function useSurveySubjectiveValue(
         onAnswerChangeRef.current?.({
           actionId,
           type: ActionType.SUBJECTIVE,
-          textResponse: initialTextValue,
+          isRequired,
+          textAnswer: initialTextValue,
         });
       }
+    } else if (!isRequired) {
+      updateCanGoNextRef.current?.(true);
+      onAnswerChangeRef.current?.({
+        actionId,
+        type: ActionType.SUBJECTIVE,
+        isRequired,
+        textAnswer: "",
+      });
     }
-  }, [initialTextValue, actionId]);
+  }, [initialTextValue, actionId, isRequired]);
 
   function handleSubjectiveValueChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     const value = e.target.value;
@@ -122,7 +138,8 @@ function useSurveySubjectiveValue(
     const result = submitAnswerItemSchema.safeParse({
       actionId,
       type: ActionType.SUBJECTIVE,
-      textResponse: value,
+      isRequired,
+      textAnswer: value,
     });
     updateCanGoNext?.(result.success);
 
@@ -130,23 +147,27 @@ function useSurveySubjectiveValue(
       onAnswerChange?.({
         actionId,
         type: ActionType.SUBJECTIVE,
-        textResponse: value.trim(),
+        isRequired,
+        textAnswer: value.trim(),
       });
     }
   }
 
   function handleBlur() {
     setShowError(true);
-    const feedbackMessage =
-      FEEDBACK_MESSAGES[Math.min(subjectiveValue.length, MAX_FEEDBACK_MESSAGE_LENGTH)] ??
-      FEEDBACK_MESSAGES[1];
-    setHelperText(feedbackMessage);
+    if (subjectiveValue.length === 1) {
+      const feedbackMessage = FEEDBACK_MESSAGES[1];
+      setHelperText(feedbackMessage);
+    } else {
+      setHelperText(undefined);
+    }
   }
 
   const validationResult = submitAnswerItemSchema.safeParse({
     actionId,
     type: ActionType.SUBJECTIVE,
-    textResponse: subjectiveValue,
+    isRequired,
+    textAnswer: subjectiveValue,
   });
 
   return {
@@ -158,8 +179,6 @@ function useSurveySubjectiveValue(
     showError,
   };
 }
-
-const MAX_FEEDBACK_MESSAGE_LENGTH = 1;
 
 const FEEDBACK_MESSAGES: Record<number, string> = {
   1: "조금 더 구체적으로 적어주세요! 👀",

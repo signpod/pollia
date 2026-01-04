@@ -18,7 +18,7 @@ export function useAuth() {
   );
 
   const withAuth = useCallback(
-    <T extends any[]>(action: (...args: T) => void) => {
+    <T extends unknown[]>(action: (...args: T) => void) => {
       return (...args: T) => {
         if (requireAuth()) {
           action(...args);

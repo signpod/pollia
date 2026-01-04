@@ -28,15 +28,24 @@ export function useSubmitActionAnswer(options: UseSubmitActionAnswerOptions) {
           {
             actionId: answer.actionId,
             type: answer.type,
+            isRequired: answer.isRequired,
             ...(answer.type === "MULTIPLE_CHOICE" || answer.type === "TAG"
-              ? { selectedOptionIds: answer.selectedOptionIds }
+              ? {
+                  selectedOptionIds: answer.selectedOptionIds,
+                  ...(answer.textAnswer ? { textAnswer: answer.textAnswer } : {}),
+                }
               : {}),
             ...(answer.type === "SCALE" || answer.type === "RATING"
               ? { scaleValue: answer.scaleValue }
               : {}),
-            ...(answer.type === "SUBJECTIVE" ? { textResponse: answer.textResponse } : {}),
-            ...(answer.type === "IMAGE"
-              ? { fileUploadId: answer.imageFileUploadId, imageUrl: answer.imageUrl }
+            ...(answer.type === "SUBJECTIVE" || answer.type === "SHORT_TEXT"
+              ? { textAnswer: answer.textAnswer }
+              : {}),
+            ...(answer.type === "IMAGE" || answer.type === "VIDEO" || answer.type === "PDF"
+              ? { fileUploadIds: answer.fileUploadIds }
+              : {}),
+            ...(answer.type === "DATE" || answer.type === "TIME"
+              ? { dateAnswers: answer.dateAnswers }
               : {}),
           },
         ],

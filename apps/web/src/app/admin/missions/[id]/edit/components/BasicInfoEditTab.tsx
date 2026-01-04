@@ -27,6 +27,7 @@ import {
 } from "@/app/admin/hooks/use-form-image-upload";
 import { useReadMission } from "@/app/admin/hooks/use-read-mission";
 import { useUpdateMission } from "@/app/admin/hooks/use-update-mission";
+import { MISSION_TYPE_LABELS } from "@/constants/action";
 import {
   MISSION_DESCRIPTION_MAX_LENGTH,
   MISSION_TARGET_MAX_LENGTH,
@@ -121,8 +122,12 @@ function BasicInfoCard({ form }: BasicInfoCardProps) {
                 <SelectValue placeholder="미션 타입을 선택하세요" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={MissionType.GENERAL}>일반 미션</SelectItem>
-                <SelectItem value={MissionType.EXPERIENCE_GROUP}>체험단 미션</SelectItem>
+                <SelectItem value={MissionType.GENERAL}>
+                  {MISSION_TYPE_LABELS[MissionType.GENERAL]}
+                </SelectItem>
+                <SelectItem value={MissionType.EXPERIENCE_GROUP}>
+                  {MISSION_TYPE_LABELS[MissionType.EXPERIENCE_GROUP]}
+                </SelectItem>
               </SelectContent>
             </Select>
             {form.formState.errors.type && (

@@ -2,106 +2,57 @@
 
 import { toast } from "@/components/common/Toast";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
-import { type UploadedImage, useImageUpload } from "@/hooks/common/useImageUpload";
-import { shouldSkipCrop } from "@/lib/fileValidation";
+import { MAX_IMAGE_UPLOAD_COUNT } from "@/constants/image";
+import { useMultipleImageUpload } from "@/hooks/common/useImageUpload";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ImageCropModal } from "./components/ImageCropModal";
 import { ImageUploadArea } from "./components/ImageUploadArea";
-import { useBlurThumbnail } from "./hooks/useBlurThumbnail";
-import { useImageCrop } from "./hooks/useImageCrop";
 
 interface ImageUploadProps {
-  initialImageUrl?: string;
-  onUploadChange?: (hasUploadedImage: boolean, imageUrl?: string, fileUploadId?: string) => void;
+  currentImageCount?: number;
+  onUploadChange?: (
+    hasUploadedImage: boolean,
+    imageUrls: string[],
+    fileUploadIds: string[],
+  ) => void;
+  onUploadingChange?: (isUploading: boolean) => void;
 }
 
-export function ImageUpload({ initialImageUrl, onUploadChange }: ImageUploadProps) {
-  const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(null);
-  const [isImageLoading, setIsImageLoading] = useState(false);
-  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
-  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
-  const [originalFile, setOriginalFile] = useState<File | null>(null);
+export function ImageUpload({
+  currentImageCount = 0,
+  onUploadChange,
+  onUploadingChange,
+}: ImageUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { blurDataURL, generateBlur, clearBlur } = useBlurThumbnail();
-  const { crop, zoom, rotation, setCrop, setZoom, setRotation, resetCropState, cropImage } =
-    useImageCrop();
+  const [uploadedResults, setUploadedResults] = useState<Array<{ publicUrl: string; fileUploadId: string }>>([]);
 
-  const revokeImageUrl = useCallback((url: string | null) => {
-    if (url) {
-      URL.revokeObjectURL(url);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (initialImageUrl && !uploadedImage) {
-      setUploadedImage({
-        publicUrl: initialImageUrl,
-        path: "",
-        file: new File([], ""),
-        fileUploadId: "",
-        isTemporary: false,
-      });
-      setIsImageLoading(true);
-      onUploadChange?.(true, initialImageUrl);
-    }
-  }, [initialImageUrl, uploadedImage, onUploadChange]);
-
-  const { upload, isUploading, uploadError } = useImageUpload({
+  const { uploadMultiple, isUploading, uploadError } = useMultipleImageUpload({
     bucket: STORAGE_BUCKETS.ACTION_ANSWER_IMAGES,
     onSuccess: result => {
-      setUploadedImage(result);
-      setIsImageLoading(true);
-      onUploadChange?.(true, result.publicUrl, result.fileUploadId);
+      setUploadedResults(prev => {
+        const newResults = [...prev, { publicUrl: result.publicUrl, fileUploadId: result.fileUploadId }];
+        return newResults;
+      });
     },
     onError: () => {
+      onUploadingChange?.(false);
       toast.warning(uploadError?.message || "파일 업로드에 실패했어요.\n다시 시도해주세요.");
-      setUploadedImage(null);
-      setIsImageLoading(false);
-      onUploadChange?.(false, undefined, undefined);
+      setUploadedResults([]);
     },
   });
 
-  const handleCropCancel = useCallback(() => {
-    setIsCropModalOpen(false);
-    revokeImageUrl(imageToCrop);
-    setImageToCrop(null);
-    setOriginalFile(null);
-    resetCropState();
-  }, [imageToCrop, revokeImageUrl, resetCropState]);
-
-  const handleCropComplete = useCallback(async () => {
-    if (!imageToCrop || !originalFile) {
-      return;
+  useEffect(() => {
+    if (uploadedResults.length > 0 && !isUploading) {
+      const imageUrls = uploadedResults.map(r => r.publicUrl);
+      const fileUploadIds = uploadedResults.map(r => r.fileUploadId);
+      onUploadChange?.(true, imageUrls, fileUploadIds);
+      setUploadedResults([]);
     }
+  }, [uploadedResults, isUploading, onUploadChange]);
 
-    try {
-      setIsCropModalOpen(false);
-      setIsImageLoading(true);
-
-      const croppedFile = await cropImage(imageToCrop, originalFile);
-      await generateBlur(croppedFile);
-      upload(croppedFile);
-
-      revokeImageUrl(imageToCrop);
-      setImageToCrop(null);
-      setOriginalFile(null);
-      resetCropState();
-    } catch (error) {
-      console.error("이미지 크롭 실패:", error);
-      toast.warning("이미지 처리에 실패했어요.\n다시 시도해주세요.");
-      handleCropCancel();
-    }
-  }, [
-    imageToCrop,
-    originalFile,
-    cropImage,
-    generateBlur,
-    upload,
-    revokeImageUrl,
-    resetCropState,
-    handleCropCancel,
-  ]);
+  useEffect(() => {
+    onUploadingChange?.(isUploading);
+  }, [isUploading, onUploadingChange]);
 
   const handleFileSelect = useCallback(() => {
     inputRef.current?.click();
@@ -109,67 +60,47 @@ export function ImageUpload({ initialImageUrl, onUploadChange }: ImageUploadProp
 
   const handleFileChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) {
+      const files = Array.from(e.target.files || []);
+      if (files.length === 0) {
         return;
       }
 
-      setUploadedImage(null);
-      setIsImageLoading(false);
-      clearBlur();
-
-      if (shouldSkipCrop(file)) {
-        upload(file);
+      const remainingSlots = MAX_IMAGE_UPLOAD_COUNT - currentImageCount;
+      if (remainingSlots <= 0) {
+        toast.warning(`최대 ${MAX_IMAGE_UPLOAD_COUNT}개까지 업로드할 수 있어요.`);
         if (inputRef.current) {
           inputRef.current.value = "";
         }
         return;
       }
 
-      const imageUrl = URL.createObjectURL(file);
-      setImageToCrop(imageUrl);
-      setOriginalFile(file);
-      setIsCropModalOpen(true);
+      const filesToProcess = files.slice(0, remainingSlots);
+      if (files.length > remainingSlots) {
+        toast.warning(`최대 ${MAX_IMAGE_UPLOAD_COUNT}개까지 업로드할 수 있어요.`);
+      }
+
+      onUploadingChange?.(true);
+      try {
+        await uploadMultiple(filesToProcess);
+        onUploadingChange?.(false);
+      } catch {
+        onUploadingChange?.(false);
+        setUploadedResults([]);
+      }
 
       if (inputRef.current) {
         inputRef.current.value = "";
       }
     },
-    [upload, clearBlur],
+    [uploadMultiple, onUploadingChange, currentImageCount],
   );
 
-  useEffect(() => {
-    return () => {
-      revokeImageUrl(imageToCrop);
-    };
-  }, [imageToCrop, revokeImageUrl]);
-
   return (
-    <>
-      <ImageUploadArea
-        inputRef={inputRef}
-        isUploading={isUploading}
-        uploadedImage={uploadedImage}
-        isImageLoading={isImageLoading}
-        blurDataURL={blurDataURL}
-        onFileSelect={handleFileSelect}
-        onFileChange={handleFileChange}
-        onImageLoadComplete={() => setIsImageLoading(false)}
-      />
-      {imageToCrop && (
-        <ImageCropModal
-          isOpen={isCropModalOpen}
-          imageSrc={imageToCrop}
-          crop={crop}
-          zoom={zoom}
-          rotation={rotation}
-          onCropChange={setCrop}
-          onZoomChange={setZoom}
-          onRotationChange={setRotation}
-          onCancel={handleCropCancel}
-          onComplete={handleCropComplete}
-        />
-      )}
-    </>
+    <ImageUploadArea
+      inputRef={inputRef}
+      isUploading={isUploading}
+      onFileSelect={handleFileSelect}
+      onFileChange={handleFileChange}
+    />
   );
 }

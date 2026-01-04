@@ -27,6 +27,7 @@ export function TagForm({
       title: initialData?.title || "",
       description: initialData?.description || "",
       imageUrl: initialData?.imageUrl,
+      isRequired: initialData?.isRequired ?? true,
       maxSelections: initialData?.maxSelections ?? 1,
       options:
         initialData?.options?.map(opt => ({
@@ -62,6 +63,7 @@ export function TagForm({
       imageFileUploadId: mainImage.uploadedData?.fileUploadId,
       maxSelections: data.maxSelections,
       options: formattedOptions,
+      isRequired: data.isRequired,
     });
   });
   const handleAddOption = () => {

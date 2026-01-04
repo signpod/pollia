@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 interface UseMissionScaleValueOptions {
   actionId: string;
+  isRequired: boolean;
   missionResponse?: GetMissionResponseResponse;
   updateCanGoNext?: (canGoNext: boolean) => void;
   onAnswerChange?: (answer: ActionAnswerItem) => void;
@@ -12,6 +13,7 @@ interface UseMissionScaleValueOptions {
 
 export function useMissionScaleValue({
   actionId,
+  isRequired,
   missionResponse,
   updateCanGoNext,
   onAnswerChange,
@@ -51,9 +53,10 @@ export function useMissionScaleValue({
     onAnswerChangeRef.current?.({
       actionId,
       type: ActionType.SCALE,
+      isRequired,
       scaleValue: initialScaleValue,
     });
-  }, [initialScaleValue, actionId, defaultValue]);
+  }, [initialScaleValue, actionId, defaultValue, isRequired]);
 
   const handleScaleValueChange = (value: number) => {
     if (!isScaleValueChanged) {
@@ -65,6 +68,7 @@ export function useMissionScaleValue({
     onAnswerChange?.({
       actionId,
       type: ActionType.SCALE,
+      isRequired,
       scaleValue: value,
     });
   };

@@ -101,10 +101,6 @@
   --color-muted-foreground: #a1a1aa;
 }
 
-*:where(:not(.admin-root):not(.admin-root *)) {
-  @apply border-border;
-}
-
 html,
 body {
   height: 100%;

@@ -35,6 +35,7 @@ export function MultipleChoiceForm({
       title: initialData?.title || "",
       description: initialData?.description || "",
       imageUrl: initialData?.imageUrl,
+      isRequired: initialData?.isRequired ?? true,
       maxSelections: initialData?.maxSelections ?? 1,
       options:
         initialData?.options?.map(opt => ({
@@ -68,7 +69,7 @@ export function MultipleChoiceForm({
       return {
         title: opt.title,
         description: opt.description || undefined,
-        imageUrl: uploadedData?.publicUrl || undefined,
+        imageUrl: uploadedData?.publicUrl || opt.imageUrl || undefined,
         imageFileUploadId: uploadedData?.fileUploadId,
       };
     });
@@ -81,6 +82,7 @@ export function MultipleChoiceForm({
       imageFileUploadId: mainImage.uploadedData?.fileUploadId,
       maxSelections: data.maxSelections,
       options: formattedOptions,
+      isRequired: data.isRequired,
     });
   });
 

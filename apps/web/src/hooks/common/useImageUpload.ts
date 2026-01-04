@@ -1,8 +1,9 @@
 "use client";
 
-import { confirmFile, deleteImage, getUploadUrl } from "@/actions/common/images";
+import { confirmFile, deleteFile, getUploadUrl } from "@/actions/common/files";
 import type { StorageBucket } from "@/constants/buckets";
-import { ConfirmFileRequest, DeleteImageRequest, UploadImageRequest } from "@/types/dto/image";
+import { ConfirmFileRequest, DeleteFileRequest, UploadFileRequest } from "@/types/dto/file";
+import { ActionType } from "@prisma/client";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 
@@ -37,11 +38,12 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
         // const processedFile = await preprocessImage(file);
         const processedFile = file;
 
-        const uploadRequest: UploadImageRequest = {
+        const uploadRequest: UploadFileRequest = {
           fileName: processedFile.name,
           fileType: processedFile.type,
           fileSize: processedFile.size,
           bucket: options.bucket,
+          actionType: ActionType.IMAGE,
         };
 
         const { data } = await getUploadUrl(uploadRequest);
@@ -78,7 +80,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (request: DeleteImageRequest) => deleteImage(request),
+    mutationFn: (request: DeleteFileRequest) => deleteFile(request),
     onSuccess: () => {
       console.log("✅ 이미지 삭제 성공");
     },

@@ -6,7 +6,7 @@ import { useAdminSingleImage } from "@/app/admin/hooks/use-admin-image-upload";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { BaseActionFormFields } from "./BaseActionForm";
-import { type SubjectiveFormInput, subjectiveFormSchema } from "./schemas";
+import { type RatingFormInput, ratingFormSchema } from "./schemas";
 import type { ActionFormProps, RatingFormData } from "./types";
 
 export function RatingForm({
@@ -17,12 +17,13 @@ export function RatingForm({
 }: ActionFormProps<RatingFormData>) {
   const isEditMode = !!initialData;
 
-  const form = useForm<SubjectiveFormInput>({
-    resolver: zodResolver(subjectiveFormSchema),
+  const form = useForm<RatingFormInput>({
+    resolver: zodResolver(ratingFormSchema),
     defaultValues: {
       title: initialData?.title || "",
       description: initialData?.description || "",
       imageUrl: initialData?.imageUrl,
+      isRequired: initialData?.isRequired ?? true,
     },
     mode: "onChange",
   });
@@ -34,13 +35,14 @@ export function RatingForm({
     },
   });
 
-  const handleSubmit = form.handleSubmit((data: SubjectiveFormInput) => {
+  const handleSubmit = form.handleSubmit((data: RatingFormInput) => {
     onSubmit({
       type: "RATING",
       title: data.title,
       description: data.description,
       imageUrl: data.imageUrl || undefined,
       imageFileUploadId: mainImage.uploadedData?.fileUploadId,
+      isRequired: data.isRequired,
     });
   });
 

@@ -2,7 +2,6 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import { missionResponseService } from "@/server/services/mission-response";
-import type { StartResponseInput } from "@/server/services/mission-response/types";
 import type {
   CompleteMissionResponseRequest,
   CompleteMissionResponseResponse,
@@ -10,21 +9,13 @@ import type {
   StartMissionResponseResponse,
 } from "@/types/dto";
 
-function toStartResponseInput(dto: StartMissionResponseRequest): StartResponseInput {
-  return {
-    missionId: dto.surveyId,
-  };
-}
-
 export async function startMissionResponse(
   request: StartMissionResponseRequest,
 ): Promise<StartMissionResponseResponse> {
   try {
     const user = await requireAuth();
-    const input = toStartResponseInput(request);
-    const response = await missionResponseService.startResponse(input, user.id);
-    const data = { ...response, surveyId: response.missionId };
-    return { data };
+    const response = await missionResponseService.startResponse(request, user.id);
+    return { data: response };
   } catch (error) {
     console.error("startMissionResponse error:", error);
     if (error instanceof Error && error.cause) {
@@ -45,8 +36,7 @@ export async function completeMissionResponse(
       { responseId: request.responseId },
       user.id,
     );
-    const data = { ...response, surveyId: response.missionId };
-    return { data };
+    return { data: response };
   } catch (error) {
     console.error("completeMissionResponse error:", error);
     if (error instanceof Error && error.cause) {
