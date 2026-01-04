@@ -72,11 +72,21 @@ export function TimePickerProvider({
   }, [canGoNext, updateCanGoNext]);
 
   useEffect(() => {
+    const convertTimesToDateStrings = (times: Set<string>): string[] => {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, "0");
+      const day = String(today.getDate()).padStart(2, "0");
+
+      return Array.from(times).map(time => `${year}-${month}-${day}T${time}:00`);
+    };
+
     onAnswerChange({
       actionId,
       type: ActionType.TIME,
       isRequired,
-      dateAnswers: selectedTimes.size > 0 ? Array.from(selectedTimes) : undefined,
+      dateAnswers:
+        selectedTimes.size > 0 ? convertTimesToDateStrings(selectedTimes) : undefined,
     });
   }, [selectedTimes, actionId, isRequired, onAnswerChange]);
 
