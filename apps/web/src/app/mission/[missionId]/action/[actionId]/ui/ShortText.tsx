@@ -98,25 +98,34 @@ function useShortTextValue(
 
   useEffect(() => {
     setShortTextValue(initialTextValue);
-    if (isInitialMountRef.current && initialTextValue.trim()) {
-      const result = submitAnswerItemSchema.safeParse({
-        actionId,
-        type: ActionType.SHORT_TEXT,
-        isRequired,
-        textAnswer: initialTextValue,
-      });
-      updateCanGoNextRef.current?.(result.success);
-      if (result.success) {
+    if (isInitialMountRef.current) {
+      if (initialTextValue.trim()) {
+        const result = submitAnswerItemSchema.safeParse({
+          actionId,
+          type: ActionType.SHORT_TEXT,
+          isRequired,
+          textAnswer: initialTextValue,
+        });
+        updateCanGoNextRef.current?.(result.success);
+        if (result.success) {
+          onAnswerChangeRef.current?.({
+            actionId,
+            type: ActionType.SHORT_TEXT,
+            isRequired,
+            textAnswer: initialTextValue.trim(),
+          });
+        }
+      } else if (!isRequired) {
+        updateCanGoNextRef.current?.(true);
         onAnswerChangeRef.current?.({
           actionId,
           type: ActionType.SHORT_TEXT,
           isRequired,
-          textAnswer: initialTextValue.trim(),
+          textAnswer: "",
         });
+      } else {
+        updateCanGoNextRef.current?.(false);
       }
-      isInitialMountRef.current = false;
-    } else if (isInitialMountRef.current) {
-      updateCanGoNextRef.current?.(false);
       isInitialMountRef.current = false;
     }
   }, [initialTextValue, actionId, isRequired]);

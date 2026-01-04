@@ -106,6 +106,13 @@ export function MultipleChoiceProvider({
       if (validationResult.success) {
         onAnswerChangeRef.current?.(answer);
       }
+    } else if (!isRequired) {
+      updateCanGoNextRef.current?.(true);
+      onAnswerChangeRef.current?.({
+        actionId,
+        type: answerType ?? ActionType.MULTIPLE_CHOICE,
+        isRequired,
+      });
     } else {
       updateCanGoNextRef.current?.(false);
     }
@@ -168,6 +175,14 @@ export function MultipleChoiceProvider({
       if (validationResult.success && isTextAnswerValid && hasValidSelection) {
         onAnswerChange?.(answer);
       }
+    } else if (!isRequired) {
+      setCanGoNext(true);
+      updateCanGoNext?.(true);
+      onAnswerChange?.({
+        actionId,
+        type: answerType ?? ActionType.MULTIPLE_CHOICE,
+        isRequired,
+      });
     } else {
       setCanGoNext(false);
       updateCanGoNext?.(false);

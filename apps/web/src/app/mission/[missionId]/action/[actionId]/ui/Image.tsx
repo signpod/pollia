@@ -45,7 +45,17 @@ export function ActionImage({
   const validateAndUpdateAnswer = useCallback(
     (urls: string[], fileIds: string[]) => {
       if (!urls.length || !fileIds.length) {
-        updateCanGoNextRef.current?.(false);
+        if (!actionData.isRequired) {
+          updateCanGoNextRef.current?.(true);
+          onAnswerChangeRef.current?.({
+            actionId: actionData.id,
+            type: ActionType.IMAGE,
+            isRequired: actionData.isRequired,
+            fileUploadIds: [],
+          });
+        } else {
+          updateCanGoNextRef.current?.(false);
+        }
         return;
       }
 

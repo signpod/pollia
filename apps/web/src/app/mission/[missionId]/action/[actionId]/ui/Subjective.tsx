@@ -120,6 +120,14 @@ function useSurveySubjectiveValue(
           textAnswer: initialTextValue,
         });
       }
+    } else if (!isRequired) {
+      updateCanGoNextRef.current?.(true);
+      onAnswerChangeRef.current?.({
+        actionId,
+        type: ActionType.SUBJECTIVE,
+        isRequired,
+        textAnswer: "",
+      });
     }
   }, [initialTextValue, actionId, isRequired]);
 

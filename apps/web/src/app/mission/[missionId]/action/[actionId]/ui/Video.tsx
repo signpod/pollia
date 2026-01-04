@@ -51,7 +51,17 @@ export function ActionVideo({
       }
 
       if (!fileIds.length) {
-        updateCanGoNextRef.current?.(false);
+        if (!actionData.isRequired) {
+          updateCanGoNextRef.current?.(true);
+          onAnswerChangeRef.current?.({
+            actionId: actionData.id,
+            type: ActionType.VIDEO,
+            isRequired: actionData.isRequired,
+            fileUploadIds: [],
+          });
+        } else {
+          updateCanGoNextRef.current?.(false);
+        }
         return;
       }
 
