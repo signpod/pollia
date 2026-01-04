@@ -2,12 +2,12 @@
 
 import { ActionStepContentProps } from "@/constants/action";
 import { cn } from "@/lib/utils";
-import { Typo } from "@repo/ui/components";
+import { ButtonV2, Typo } from "@repo/ui/components";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 import { TimePickerProvider, useTimePicker } from "./TimePickerProvider";
 
-const AM_HOURS = [8, 9, 10, 11];
-const PM_HOURS = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
+const AM_HOURS = [8, 9, 10, 11] as const;
+const PM_HOURS = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23] as const;
 
 function formatTime(hour: number): string {
   return `${String(hour).padStart(2, "0")}:00`;
@@ -82,7 +82,7 @@ function TimePickerContent({
       nextButtonText={nextButtonText}
       isLoading={isLoading}
     >
-      <div className="space-y-6 w-full">
+      <div className="space-y-8 w-full">
         <div className="space-y-3">
           <Typo.SubTitle size="large">오전</Typo.SubTitle>
           <div className="grid grid-cols-3 gap-3">
@@ -131,19 +131,19 @@ interface TimeButtonProps {
 
 function TimeButton({ time, isSelected, onClick }: TimeButtonProps) {
   return (
-    <button
+    <ButtonV2
       onClick={onClick}
+      variant="secondary"
       className={cn(
-        "px-4 py-3 rounded-lg border-2 transition-all duration-200",
-        "flex items-center justify-center",
-        isSelected
-          ? "border-violet-500 bg-violet-50 text-violet-500"
-          : "border-zinc-200 bg-white text-zinc-900 hover:border-zinc-300 hover:bg-zinc-50",
+        "flex items-center justify-center py-3",
+        isSelected && "ring-point bg-violet-50 text-violet-500",
       )}
     >
-      <Typo.ButtonText size="medium" className={isSelected ? "text-violet-500" : "text-zinc-900"}>
-        {time}
-      </Typo.ButtonText>
-    </button>
+      <div className="flex items-center justify-center w-full">
+        <Typo.ButtonText size="medium" className={isSelected ? "text-violet-500" : "text-zinc-900"}>
+          {time}
+        </Typo.ButtonText>
+      </div>
+    </ButtonV2>
   );
 }
