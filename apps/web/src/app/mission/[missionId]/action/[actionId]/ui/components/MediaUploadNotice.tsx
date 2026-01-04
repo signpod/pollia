@@ -77,7 +77,7 @@ export function MediaUploadNotice({ title, noticeItems }: MediaUploadNoticeProps
       >
         <ul className="flex flex-col gap-1 text-disabled pl-5 [&_li::marker]:text-xs pt-4">
           {noticeItems.map((item, index) => (
-            <li key={index} className="list-disc list-outside">
+            <li key={`notice-${item.slice(0, 20)}-${index}`} className="list-disc list-outside">
               <Typo.Body size="medium">{item}</Typo.Body>
             </li>
           ))}

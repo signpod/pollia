@@ -11,6 +11,8 @@ import { ImageUpload } from "./ImageUpload";
 import { ImageList } from "./components/ImageList";
 import { ImageUploadNotice } from "./components/ImageUploadNotice";
 
+const IMAGE_UPLOAD_ERROR_MESSAGE = "이미지 업로드에 실패했어요.\n다시 시도해주세요." as const;
+
 export function ActionImage({
   actionData,
   currentOrder,
@@ -33,7 +35,7 @@ export function ActionImage({
   const { uploadMultiple } = useMultipleImageUpload({
     bucket: STORAGE_BUCKETS.ACTION_ANSWER_IMAGES,
     onError: () => {
-      toast.warning("이미지 업로드에 실패했어요.\n다시 시도해주세요.");
+      toast.warning(IMAGE_UPLOAD_ERROR_MESSAGE);
     },
   });
 
@@ -102,12 +104,14 @@ export function ActionImage({
     (hasUploadedImage: boolean, newImageUrls: string[], newFileUploadIds: string[]) => {
       if (hasUploadedImage && newImageUrls.length > 0 && newFileUploadIds.length > 0) {
         setImageUrls(prev => {
-          const uniqueUrls = new Set([...prev, ...newImageUrls]);
-          return Array.from(uniqueUrls);
+          const existingUrlsSet = new Set(prev);
+          const filteredNewUrls = newImageUrls.filter(url => !existingUrlsSet.has(url));
+          return [...prev, ...filteredNewUrls];
         });
         setImageFileUploadIds(prev => {
-          const uniqueIds = new Set([...prev, ...newFileUploadIds]);
-          return Array.from(uniqueIds);
+          const existingIdsSet = new Set(prev);
+          const filteredNewIds = newFileUploadIds.filter(id => !existingIdsSet.has(id));
+          return [...prev, ...filteredNewIds];
         });
         if (newImageUrls.length > 0) {
           setUploadingImageUrl(newImageUrls[newImageUrls.length - 1] ?? null);
@@ -155,7 +159,7 @@ export function ActionImage({
 
         const uploadResults = await uploadMultiple([editedFile]);
         if (uploadResults.length === 0) {
-          toast.warning("이미지 업로드에 실패했어요.\n다시 시도해주세요.");
+          toast.warning(IMAGE_UPLOAD_ERROR_MESSAGE);
           setIsUploading(false);
           setUploadingImageUrl(null);
           return;
@@ -165,7 +169,7 @@ export function ActionImage({
         const newFileUploadId = uploadResults[0]?.fileUploadId;
 
         if (!newImageUrl || !newFileUploadId) {
-          toast.warning("이미지 업로드에 실패했어요.\n다시 시도해주세요.");
+          toast.warning(IMAGE_UPLOAD_ERROR_MESSAGE);
           setIsUploading(false);
           setUploadingImageUrl(null);
           return;
@@ -187,7 +191,7 @@ export function ActionImage({
         setIsUploading(false);
       } catch (error) {
         console.error("이미지 편집 업로드 실패:", error);
-        toast.warning("이미지 업로드에 실패했어요.\n다시 시도해주세요.");
+        toast.warning(IMAGE_UPLOAD_ERROR_MESSAGE);
         setIsUploading(false);
         setUploadingImageUrl(null);
       }

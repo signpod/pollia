@@ -38,6 +38,8 @@ export function MediaItem({
         onToggle && !isUploading && "cursor-pointer",
       )}
       onClick={handleClick}
+      aria-selected={isSelected}
+      role={onToggle ? "button" : undefined}
     >
       {mediaType === "image" ? (
         <Image

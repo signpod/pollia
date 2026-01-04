@@ -83,8 +83,9 @@ export function ImageUpload({
       try {
         await uploadMultiple(filesToProcess);
         onUploadingChange?.(false);
-      } catch (error) {
+      } catch {
         onUploadingChange?.(false);
+        setUploadedResults([]);
       }
 
       if (inputRef.current) {

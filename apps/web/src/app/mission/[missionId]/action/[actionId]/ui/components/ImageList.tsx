@@ -63,7 +63,9 @@ export function ImageList({
     try {
       const response = await fetch(imageToEdit);
       const blob = await response.blob();
-      const originalFile = new File([blob], "image.jpg", { type: "image/jpeg" });
+      const urlExtension = originalImageUrl.split(".").pop()?.split("?")[0] || "jpg";
+      const mimeType = blob.type || `image/${urlExtension === "png" ? "png" : "jpeg"}`;
+      const originalFile = new File([blob], `image.${urlExtension}`, { type: mimeType });
 
       const editedFile = await cropImage(imageToEdit, originalFile);
       await onImageEdit(originalImageUrl, editedFile);
