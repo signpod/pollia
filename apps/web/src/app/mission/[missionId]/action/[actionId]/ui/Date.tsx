@@ -186,8 +186,6 @@ function DatePickerContent({
               const isSunday = day.date.getDay() === 0;
               const isSelected = modifiers.selected;
 
-              console.log("day", day);
-
               return (
                 <button
                   {...buttonProps}
