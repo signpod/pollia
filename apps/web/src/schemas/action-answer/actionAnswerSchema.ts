@@ -60,13 +60,23 @@ export const ratingAnswerInputSchema = baseAnswerInputSchema.extend({
   scaleAnswer: scaleAnswerSchema,
 });
 
-export const multipleChoiceAnswerInputSchema = baseAnswerInputSchema.extend({
-  optionId: optionIdSchema,
-});
+export const multipleChoiceAnswerInputSchema = baseAnswerInputSchema
+  .extend({
+    optionId: optionIdSchema.optional(),
+    textAnswer: z.string().optional(),
+  })
+  .refine(data => data.optionId || data.textAnswer, {
+    message: "선택지 또는 기타 의견이 필요합니다.",
+  });
 
-export const tagAnswerInputSchema = baseAnswerInputSchema.extend({
-  optionId: optionIdSchema,
-});
+export const tagAnswerInputSchema = baseAnswerInputSchema
+  .extend({
+    optionId: optionIdSchema.optional(),
+    textAnswer: z.string().optional(),
+  })
+  .refine(data => data.optionId || data.textAnswer, {
+    message: "선택지 또는 기타 의견이 필요합니다.",
+  });
 
 export const imageAnswerInputSchema = baseAnswerInputSchema.extend({
   fileUploadIds: z.array(z.string()).min(1, "최소 1개 이상의 이미지를 업로드해주세요."),

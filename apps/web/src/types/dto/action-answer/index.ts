@@ -26,7 +26,8 @@ export type ActionAnswerItem =
       actionId: string;
       type: typeof ActionType.MULTIPLE_CHOICE;
       isRequired: boolean;
-      selectedOptionIds: string[];
+      selectedOptionIds?: string[];
+      textAnswer?: string;
     }
   | {
       actionId: string;
@@ -56,7 +57,8 @@ export type ActionAnswerItem =
       actionId: string;
       type: typeof ActionType.TAG;
       isRequired: boolean;
-      selectedOptionIds: string[];
+      selectedOptionIds?: string[];
+      textAnswer?: string;
     }
   | {
       actionId: string;

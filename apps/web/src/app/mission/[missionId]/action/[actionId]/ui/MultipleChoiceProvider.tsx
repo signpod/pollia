@@ -15,6 +15,10 @@ interface SurveyMultipleChoiceContextType {
   selectedIds: Set<string>;
   toggleSelectedId: (optionId: string) => void;
   canGoNext: boolean;
+  textAnswer: string;
+  setTextAnswer: (text: string) => void;
+  hasOtherOption: boolean;
+  isOtherSelected: boolean;
 }
 
 const SurveyMultipleChoiceContext = createContext<SurveyMultipleChoiceContextType | undefined>(
@@ -30,6 +34,7 @@ interface SurveyMultipleChoiceProviderProps {
   updateCanGoNext?: (canGoNext: boolean) => void;
   onAnswerChange?: (answer: ActionAnswerItem) => void;
   answerType?: typeof ActionType.MULTIPLE_CHOICE | typeof ActionType.TAG;
+  options?: Array<{ id: string; title: string }>;
 }
 
 export function MultipleChoiceProvider({
@@ -41,7 +46,11 @@ export function MultipleChoiceProvider({
   updateCanGoNext,
   onAnswerChange,
   answerType,
+  options = [],
 }: SurveyMultipleChoiceProviderProps) {
+  // "기타" is a client-side only option, not from backend
+  const hasOtherOption = true;
+  const OTHER_OPTION_ID = "CLIENT_OTHER_OPTION";
   const initialSelectedIds = useMemo(() => {
     if (!missionResponse?.data?.answers || missionResponse.data.answers.length === 0) {
       return new Set<string>();
@@ -60,6 +69,8 @@ export function MultipleChoiceProvider({
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set<string>());
   const [canGoNext, setCanGoNext] = useState(false);
+  const [textAnswer, setTextAnswer] = useState("");
+  const isOtherSelected = selectedIds.has(OTHER_OPTION_ID);
 
   // updateCanGoNext와 onAnswerChange ref로 최신 참조 유지
   const updateCanGoNextRef = useRef(updateCanGoNext);
@@ -72,12 +83,28 @@ export function MultipleChoiceProvider({
   useEffect(() => {
     setSelectedIds(initialSelectedIds);
 
-    if (initialSelectedIds.size > 0) {
+    // Load initial textAnswer from textAnswer field
+    const answerWithText = missionResponse?.data?.answers.find(
+      answer => answer.actionId === actionId && answer.textAnswer,
+    );
+
+    if (answerWithText?.textAnswer) {
+      setTextAnswer(answerWithText.textAnswer);
+      // If there's textAnswer, "기타" was selected
+      setSelectedIds(prev => {
+        const newSet = new Set(prev);
+        newSet.add(OTHER_OPTION_ID);
+        return newSet;
+      });
+    }
+
+    if (initialSelectedIds.size > 0 || answerWithText?.textAnswer) {
       const answer: ActionAnswerItem = {
         actionId,
         type: answerType ?? ActionType.MULTIPLE_CHOICE,
         isRequired,
-        selectedOptionIds: Array.from(initialSelectedIds),
+        ...(initialSelectedIds.size > 0 ? { selectedOptionIds: Array.from(initialSelectedIds) } : {}),
+        ...(answerWithText?.textAnswer ? { textAnswer: answerWithText.textAnswer } : {}),
       };
 
       const validationResult = submitAnswerItemSchema.safeParse(answer);
@@ -89,7 +116,7 @@ export function MultipleChoiceProvider({
     } else {
       updateCanGoNextRef.current?.(false);
     }
-  }, [initialSelectedIds, actionId, answerType]);
+  }, [initialSelectedIds, actionId, answerType, missionResponse, OTHER_OPTION_ID]);
 
   const toggleSelectedId = useCallback(
     (optionId: string) => {
@@ -122,30 +149,58 @@ export function MultipleChoiceProvider({
 
   useEffect(() => {
     if (selectedIds.size > 0) {
+      // Filter out OTHER_OPTION_ID from selectedOptionIds
+      const realOptionIds = Array.from(selectedIds).filter(id => id !== OTHER_OPTION_ID);
+
       const answer: ActionAnswerItem = {
         actionId,
         type: answerType ?? ActionType.MULTIPLE_CHOICE,
         isRequired,
-        selectedOptionIds: Array.from(selectedIds),
+        ...(realOptionIds.length > 0 ? { selectedOptionIds: realOptionIds } : {}),
+        ...(isOtherSelected && textAnswer.trim() ? { textAnswer: textAnswer.trim() } : {}),
       };
 
+      // If "기타" is selected, textAnswer must be filled
+      const isTextAnswerValid = !isOtherSelected || textAnswer.trim().length > 0;
+      // Must have at least one real option OR "기타" with text
+      const hasValidSelection = realOptionIds.length > 0 || (isOtherSelected && textAnswer.trim());
+
       const validationResult = submitAnswerItemSchema.safeParse(answer);
-      const newCanGoNext = validationResult.success;
+      const newCanGoNext = Boolean(
+        validationResult.success && isTextAnswerValid && hasValidSelection,
+      );
       setCanGoNext(newCanGoNext);
       updateCanGoNext?.(newCanGoNext);
 
-      if (validationResult.success) {
+      if (validationResult.success && isTextAnswerValid && hasValidSelection) {
         onAnswerChange?.(answer);
       }
     } else {
       setCanGoNext(false);
       updateCanGoNext?.(false);
     }
-  }, [selectedIds, actionId, updateCanGoNext, onAnswerChange, answerType]);
+  }, [
+    selectedIds,
+    actionId,
+    updateCanGoNext,
+    onAnswerChange,
+    answerType,
+    isOtherSelected,
+    textAnswer,
+    OTHER_OPTION_ID,
+  ]);
 
   const value = useMemo(
-    () => ({ selectedIds, toggleSelectedId, canGoNext }),
-    [selectedIds, toggleSelectedId, canGoNext],
+    () => ({
+      selectedIds,
+      toggleSelectedId,
+      canGoNext,
+      textAnswer,
+      setTextAnswer,
+      hasOtherOption,
+      isOtherSelected,
+    }),
+    [selectedIds, toggleSelectedId, canGoNext, textAnswer, hasOtherOption, isOtherSelected],
   );
 
   return (
