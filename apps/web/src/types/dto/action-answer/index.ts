@@ -63,6 +63,18 @@ export type ActionAnswerItem =
       type: typeof ActionType.PRIVACY_CONSENT;
       isRequired: boolean;
       booleanAnswer: boolean;
+    }
+  | {
+      actionId: string;
+      type: typeof ActionType.DATE;
+      isRequired: boolean;
+      dateAnswers?: string[];
+    }
+  | {
+      actionId: string;
+      type: typeof ActionType.TIME;
+      isRequired: boolean;
+      dateAnswers?: string[];
     };
 
 export interface CreateActionAnswerRequest {
@@ -84,6 +96,7 @@ export interface SubmitActionAnswersRequest {
     textAnswer?: string;
     fileUploadIds?: string[];
     booleanAnswer?: boolean;
+    dateAnswers?: string[];
   }>;
 }
 

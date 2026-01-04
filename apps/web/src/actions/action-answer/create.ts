@@ -16,6 +16,7 @@ function toSubmitAnswersInput(dto: SubmitActionAnswersRequest): SubmitAnswersInp
       scaleValue: a.scaleValue,
       textAnswer: a.textAnswer,
       fileUploadIds: a.fileUploadIds,
+      dateAnswers: a.dateAnswers?.map(dateStr => new Date(dateStr)),
     })),
   };
 }

@@ -35,9 +35,14 @@ export function useSubmitActionAnswer(options: UseSubmitActionAnswerOptions) {
             ...(answer.type === "SCALE" || answer.type === "RATING"
               ? { scaleValue: answer.scaleValue }
               : {}),
-            ...(answer.type === "SUBJECTIVE" ? { textAnswer: answer.textAnswer } : {}),
+            ...(answer.type === "SUBJECTIVE" || answer.type === "SHORT_TEXT"
+              ? { textAnswer: answer.textAnswer }
+              : {}),
             ...(answer.type === "IMAGE" || answer.type === "VIDEO" || answer.type === "PDF"
               ? { fileUploadIds: answer.fileUploadIds }
+              : {}),
+            ...(answer.type === "DATE" || answer.type === "TIME"
+              ? { dateAnswers: answer.dateAnswers }
               : {}),
           },
         ],

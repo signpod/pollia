@@ -12,6 +12,7 @@ import {
 import { useMissionSurveyToast } from "@/hooks/mission/useMissionSurveyToast";
 import { useRecordActionResponse } from "@/hooks/tracking";
 import { useAuth } from "@/hooks/user";
+import { formatDateToHHMM, formatDateToYYYYMMDD } from "@/lib/date";
 import { getSessionStorage, removeSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
 import { getOrCreateSessionId } from "@/lib/tracking";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
@@ -23,9 +24,11 @@ import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import {
+  ActionDate,
   ActionImage,
   ActionPdf,
   ActionTag,
+  ActionTime,
   ActionVideo,
   MissionRatingScale,
   MissionStarScale,
@@ -101,6 +104,8 @@ function ActionContent() {
       Video: ActionVideo,
       Tag: ActionTag,
       Pdf: ActionPdf,
+      Date: ActionDate,
+      Time: ActionTime,
     },
   });
 
@@ -274,6 +279,34 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
         );
       }
 
+      if (answer.type === ActionType.DATE) {
+        const submittedDates = answersForAction
+          .flatMap(a => {
+            if (!a.dateAnswers) return [];
+            return a.dateAnswers.map(d => formatDateToYYYYMMDD(d));
+          })
+          .sort();
+        const currentDates = (answer.dateAnswers || []).map(d => formatDateToYYYYMMDD(d)).sort();
+        return (
+          submittedDates.length === currentDates.length &&
+          submittedDates.every((date, index) => date === currentDates[index])
+        );
+      }
+
+      if (answer.type === ActionType.TIME) {
+        const submittedTimes = answersForAction
+          .flatMap(a => {
+            if (!a.dateAnswers) return [];
+            return a.dateAnswers.map(d => formatDateToHHMM(d));
+          })
+          .sort();
+        const currentTimes = (answer.dateAnswers || []).map(d => formatDateToHHMM(d)).sort();
+        return (
+          submittedTimes.length === currentTimes.length &&
+          submittedTimes.every((time, index) => time === currentTimes[index])
+        );
+      }
+
       return false;
     },
     [],
@@ -323,6 +356,12 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
                 currentAnswer.type === "VIDEO" ||
                 currentAnswer.type === "PDF"
                   ? { fileUploadIds: currentAnswer.fileUploadIds }
+                  : {}),
+                ...(currentAnswer.type === "DATE"
+                  ? { dateAnswers: currentAnswer.dateAnswers }
+                  : {}),
+                ...(currentAnswer.type === "TIME"
+                  ? { dateAnswers: currentAnswer.dateAnswers }
                   : {}),
               },
             ],
