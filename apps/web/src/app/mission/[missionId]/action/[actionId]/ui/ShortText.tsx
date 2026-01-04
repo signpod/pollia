@@ -104,6 +104,14 @@ function useShortTextValue(
         textAnswer: initialTextValue,
       });
       updateCanGoNextRef.current?.(result.success);
+      if (result.success) {
+        onAnswerChangeRef.current?.({
+          actionId,
+          type: ActionType.SHORT_TEXT,
+          isRequired,
+          textAnswer: initialTextValue.trim(),
+        });
+      }
     }
   }, [initialTextValue, actionId, isRequired]);
 
