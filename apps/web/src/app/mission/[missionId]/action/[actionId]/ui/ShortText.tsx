@@ -1,12 +1,13 @@
 import { ACTION_PLACEHOLDER, ActionStepContentProps } from "@/constants/action";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
+import { SHORT_TEXT_ANSWER_MAX_LENGTH } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
 import type { ActionAnswerItem, GetMissionResponseResponse } from "@/types/dto";
-import { Textarea } from "@repo/ui/components";
+import { Input } from "@repo/ui/components";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 
-export function Subjective({
+export function ShortText({
   actionData,
   currentOrder,
   totalActionCount,
@@ -20,22 +21,20 @@ export function Subjective({
   missionResponse,
   isLoading,
 }: ActionStepContentProps) {
-  const {
-    subjectiveValue,
-    handleSubjectiveValueChange,
-    handleBlur,
-    helperText,
-    validationResult,
-    showError,
-  } = useSurveySubjectiveValue(
-    actionData.id,
-    actionData.isRequired,
-    missionResponse,
-    updateCanGoNext,
-    onAnswerChange,
-  );
+  const { shortTextValue, handleShortTextValueChange, handleBlur, validationResult, showError } =
+    useShortTextValue(
+      actionData.id,
+      actionData.isRequired,
+      missionResponse,
+      updateCanGoNext,
+      onAnswerChange,
+    );
   const isNextDisabled = isNextDisabledProp || !validationResult.success;
-  const errorMessage = showError ? validationResult.error?.issues[0]?.message : undefined;
+  const errorMessage = showError
+    ? actionData.isRequired && !shortTextValue.trim()
+      ? "필수 입력 사항이에요."
+      : validationResult.error?.issues[0]?.message
+    : undefined;
 
   return (
     <SurveyQuestionTemplate
@@ -51,31 +50,27 @@ export function Subjective({
       nextButtonText={nextButtonText}
       isLoading={isLoading}
     >
-      <Textarea
+      <Input
         placeholder={ACTION_PLACEHOLDER}
-        maxLength={100}
+        maxLength={SHORT_TEXT_ANSWER_MAX_LENGTH}
         showLength
-        value={subjectiveValue}
-        onChange={handleSubjectiveValueChange}
+        value={shortTextValue}
+        onChange={handleShortTextValueChange}
         onBlur={handleBlur}
         required
-        rows={4}
-        resize="vertical"
-        helperText={helperText}
         errorMessage={errorMessage}
       />
     </SurveyQuestionTemplate>
   );
 }
 
-function useSurveySubjectiveValue(
+function useShortTextValue(
   actionId: string,
   isRequired: boolean,
   missionResponse?: GetMissionResponseResponse,
   updateCanGoNext?: (canGoNext: boolean) => void,
   onAnswerChange?: (answer: ActionAnswerItem) => void,
 ) {
-  const [helperText, setHelperText] = useState<string | undefined>(undefined);
   const initialTextValue = useMemo(() => {
     if (!missionResponse?.data?.answers || missionResponse.data.answers.length === 0) {
       return "";
@@ -88,10 +83,9 @@ function useSurveySubjectiveValue(
     return questionAnswer?.textAnswer ?? "";
   }, [missionResponse, actionId]);
 
-  const [subjectiveValue, setSubjectiveValue] = useState(initialTextValue);
+  const [shortTextValue, setShortTextValue] = useState(initialTextValue);
   const [showError, setShowError] = useState(false);
 
-  // updateCanGoNext와 onAnswerChange ref로 최신 참조 유지
   const updateCanGoNextRef = useRef(updateCanGoNext);
   const onAnswerChangeRef = useRef(onAnswerChange);
 
@@ -101,43 +95,34 @@ function useSurveySubjectiveValue(
   }, [updateCanGoNext, onAnswerChange]);
 
   useEffect(() => {
-    setSubjectiveValue(initialTextValue);
+    setShortTextValue(initialTextValue);
     if (initialTextValue.trim()) {
       const result = submitAnswerItemSchema.safeParse({
         actionId,
-        type: ActionType.SUBJECTIVE,
+        type: ActionType.SHORT_TEXT,
         isRequired,
         textAnswer: initialTextValue,
       });
       updateCanGoNextRef.current?.(result.success);
-
-      if (result.success) {
-        onAnswerChangeRef.current?.({
-          actionId,
-          type: ActionType.SUBJECTIVE,
-          isRequired,
-          textAnswer: initialTextValue,
-        });
-      }
     }
   }, [initialTextValue, actionId, isRequired]);
 
-  function handleSubjectiveValueChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+  function handleShortTextValueChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
-    setSubjectiveValue(value);
+    setShortTextValue(value);
 
     const result = submitAnswerItemSchema.safeParse({
       actionId,
-      type: ActionType.SUBJECTIVE,
+      type: ActionType.SHORT_TEXT,
       isRequired,
       textAnswer: value,
     });
-    updateCanGoNext?.(result.success);
+    updateCanGoNextRef.current?.(result.success);
 
     if (result.success) {
-      onAnswerChange?.({
+      onAnswerChangeRef.current?.({
         actionId,
-        type: ActionType.SUBJECTIVE,
+        type: ActionType.SHORT_TEXT,
         isRequired,
         textAnswer: value.trim(),
       });
@@ -146,31 +131,22 @@ function useSurveySubjectiveValue(
 
   function handleBlur() {
     setShowError(true);
-    if (subjectiveValue.length === 1) {
-      const feedbackMessage = FEEDBACK_MESSAGES[1];
-      setHelperText(feedbackMessage);
-    } else {
-      setHelperText(undefined);
-    }
   }
 
-  const validationResult = submitAnswerItemSchema.safeParse({
-    actionId,
-    type: ActionType.SUBJECTIVE,
-    isRequired,
-    textAnswer: subjectiveValue,
-  });
+  const validationResult = useMemo(() => {
+    return submitAnswerItemSchema.safeParse({
+      actionId,
+      type: ActionType.SHORT_TEXT,
+      isRequired,
+      textAnswer: shortTextValue,
+    });
+  }, [actionId, isRequired, shortTextValue]);
 
   return {
-    subjectiveValue,
-    handleSubjectiveValueChange,
+    shortTextValue,
+    handleShortTextValueChange,
     handleBlur,
-    helperText,
     validationResult,
     showError,
   };
 }
-
-const FEEDBACK_MESSAGES: Record<number, string> = {
-  1: "조금 더 구체적으로 적어주세요! 👀",
-};
