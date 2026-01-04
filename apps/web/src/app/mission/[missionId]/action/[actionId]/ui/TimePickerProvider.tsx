@@ -39,7 +39,15 @@ export function TimePickerProvider({
 
     const submittedTimes = missionResponse.data.answers
       .filter(answer => answer.actionId === actionId)
-      .flatMap(answer => (answer.dateAnswers || []).map(d => new Date(d).toISOString().split("T")[1]?.slice(0, 5) || ""))
+      .flatMap(answer => {
+        if (!answer.dateAnswers) return [];
+        return answer.dateAnswers.map(dateStr => {
+          const date = new Date(dateStr);
+          const hours = String(date.getHours()).padStart(2, "0");
+          const minutes = String(date.getMinutes()).padStart(2, "0");
+          return `${hours}:${minutes}`;
+        });
+      })
       .filter(t => t !== "");
 
     if (submittedTimes.length > 0) {

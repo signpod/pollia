@@ -39,8 +39,17 @@ export function DatePickerProvider({
 
     const submittedDates = missionResponse.data.answers
       .filter(answer => answer.actionId === actionId)
-      .flatMap(answer => (answer.dateAnswers || []).map(d => new Date(d).toISOString().split("T")[0]))
-      .filter((d): d is string => !!d);
+      .flatMap(answer => {
+        if (!answer.dateAnswers) return [];
+        return answer.dateAnswers.map(dateStr => {
+          const date = new Date(dateStr);
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const day = String(date.getDate()).padStart(2, "0");
+          return `${year}-${month}-${day}`;
+        });
+      })
+      .filter(d => d !== "");
 
     if (submittedDates.length > 0) {
       setSelectedDates(new Set(submittedDates));
