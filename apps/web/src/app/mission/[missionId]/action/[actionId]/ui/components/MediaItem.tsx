@@ -68,8 +68,8 @@ export function MediaItem({
       {!isUploading && (
         <>
           {isSelected && (
-            <div className="absolute top-2 left-2 size-6 flex items-center justify-center bg-point rounded-full z-40">
-              <Check className="size-4 text-white" />
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-40">
+              <Check className="size-6 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
             </div>
           )}
           <button
