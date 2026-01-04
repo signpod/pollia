@@ -72,6 +72,18 @@ import { SurveyQuestionOptionButton } from "./components/SurveyQuestionOptionBut
       control: { type: "boolean" },
       description: "비활성화 상태",
     },
+    isOther: {
+      control: { type: "boolean" },
+      description: "기타 옵션 여부 (선택 시 텍스트 입력 필드 표시)",
+    },
+    textAnswer: {
+      control: { type: "text" },
+      description: "기타 옵션의 텍스트 입력 값",
+    },
+    showOtherError: {
+      control: { type: "boolean" },
+      description: "기타 옵션 에러 표시 여부",
+    },
   },
 };
 
@@ -722,6 +734,168 @@ export const RealWorldExample: Story = {
               description="기대에 미치지 못합니다"
               isSelected={selectedSet.has("satisfaction-very-bad")}
               onClick={() => toggle("satisfaction-very-bad")}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  },
+};
+
+// 기타 옵션 상태
+export const OtherOptionStates: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "isOther prop을 사용하여 '기타' 옵션을 구현합니다. 선택 시 텍스트 입력 필드가 표시됩니다.",
+      },
+    },
+  },
+  render: () => (
+    <div className="w-full max-w-[390px] space-y-8">
+      <div>
+        <h3 className="mb-3 text-sm font-medium">미선택 상태</h3>
+        <ActionOptionButton selectType="radio" title="기타" isOther isSelected={false} />
+      </div>
+
+      <div>
+        <h3 className="mb-3 text-sm font-medium">선택 상태 (입력 전)</h3>
+        <ActionOptionButton selectType="radio" title="기타" isOther isSelected={true} textAnswer="" />
+      </div>
+
+      <div>
+        <h3 className="mb-3 text-sm font-medium">선택 상태 (입력 완료)</h3>
+        <ActionOptionButton
+          selectType="radio"
+          title="기타"
+          isOther
+          isSelected={true}
+          textAnswer="직접 입력한 의견입니다"
+        />
+      </div>
+
+      <div>
+        <h3 className="mb-3 text-sm font-medium">에러 상태</h3>
+        <ActionOptionButton
+          selectType="radio"
+          title="기타"
+          isOther
+          isSelected={true}
+          textAnswer=""
+          showOtherError={true}
+        />
+      </div>
+
+      <div>
+        <h3 className="mb-3 text-sm font-medium">Checkbox 타입</h3>
+        <ActionOptionButton
+          selectType="checkbox"
+          title="기타"
+          isOther
+          isSelected={true}
+          textAnswer="체크박스 타입의 기타 옵션"
+        />
+      </div>
+    </div>
+  ),
+};
+
+// 기타 옵션 인터랙티브
+export const OtherOptionInteractive: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story: "기타 옵션의 인터랙션을 테스트합니다. 클릭하여 선택하고 텍스트를 입력해보세요.",
+      },
+    },
+  },
+  render: () => {
+    const [selectedSet, setSelectedSet] = useState<Set<string>>(new Set());
+    const [textAnswers, setTextAnswers] = useState<Record<string, string>>({});
+    const [showErrors, setShowErrors] = useState<Record<string, boolean>>({});
+
+    const toggle = (key: string) => {
+      setSelectedSet(prev => {
+        const next = new Set(prev);
+        if (next.has(key)) {
+          next.delete(key);
+        } else {
+          next.add(key);
+        }
+        return next;
+      });
+    };
+
+    const handleTextChange = (key: string, value: string) => {
+      setTextAnswers(prev => ({ ...prev, [key]: value }));
+      if (value.trim()) {
+        setShowErrors(prev => ({ ...prev, [key]: false }));
+      }
+    };
+
+    const handleBlur = (key: string) => {
+      if (!textAnswers[key]?.trim()) {
+        setShowErrors(prev => ({ ...prev, [key]: true }));
+      }
+    };
+
+    return (
+      <div className="w-full max-w-[390px] space-y-8">
+        <div>
+          <h3 className="mb-3 text-sm font-medium">Radio 타입</h3>
+          <div className="flex flex-col gap-3">
+            <ActionOptionButton
+              selectType="radio"
+              title="옵션 1"
+              isSelected={selectedSet.has("radio-opt1")}
+              onClick={() => toggle("radio-opt1")}
+            />
+            <ActionOptionButton
+              selectType="radio"
+              title="옵션 2"
+              isSelected={selectedSet.has("radio-opt2")}
+              onClick={() => toggle("radio-opt2")}
+            />
+            <ActionOptionButton
+              selectType="radio"
+              title="기타"
+              isOther
+              isSelected={selectedSet.has("radio-other")}
+              onClick={() => toggle("radio-other")}
+              textAnswer={textAnswers["radio-other"] || ""}
+              onTextAnswerChange={e => handleTextChange("radio-other", e.target.value)}
+              onTextAnswerBlur={() => handleBlur("radio-other")}
+              showOtherError={showErrors["radio-other"]}
+            />
+          </div>
+        </div>
+
+        <div>
+          <h3 className="mb-3 text-sm font-medium">Checkbox 타입</h3>
+          <div className="flex flex-col gap-3">
+            <ActionOptionButton
+              selectType="checkbox"
+              title="옵션 A"
+              isSelected={selectedSet.has("checkbox-optA")}
+              onClick={() => toggle("checkbox-optA")}
+            />
+            <ActionOptionButton
+              selectType="checkbox"
+              title="옵션 B"
+              isSelected={selectedSet.has("checkbox-optB")}
+              onClick={() => toggle("checkbox-optB")}
+            />
+            <ActionOptionButton
+              selectType="checkbox"
+              title="기타"
+              isOther
+              isSelected={selectedSet.has("checkbox-other")}
+              onClick={() => toggle("checkbox-other")}
+              textAnswer={textAnswers["checkbox-other"] || ""}
+              onTextAnswerChange={e => handleTextChange("checkbox-other", e.target.value)}
+              onTextAnswerBlur={() => handleBlur("checkbox-other")}
+              showOtherError={showErrors["checkbox-other"]}
             />
           </div>
         </div>
