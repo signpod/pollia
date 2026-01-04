@@ -3,7 +3,7 @@
 import { ActionStepContentProps } from "@/constants/action";
 import { formatDateToYYYYMMDD } from "@/lib/date";
 import { cn } from "@/lib/utils";
-import { Calendar } from "@repo/ui/components";
+import { Calendar, Typo } from "@repo/ui/components";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import * as React from "react";
 
@@ -185,15 +185,15 @@ function DatePickerContent({
                 <button
                   {...buttonProps}
                   className={cn(
-                    "aspect-square w-full rounded-full flex items-center justify-center text-base font-normal transition-all duration-200",
+                    "aspect-squares size-12 rounded-full flex items-center justify-center transition-all duration-200",
                     isSelected && "bg-zinc-950 text-white",
-                    !isSelected && "hover:bg-zinc-100",
+                    !isSelected && "hover:bg-white hover:ring-1 hover:ring-zinc-200",
                     isSunday && !isSelected && !modifiers.outside && "text-red-500",
                     modifiers.disabled && "opacity-50 cursor-not-allowed",
                     modifiers.outside ? "text-zinc-300" : isSelected ? "" : "text-zinc-900",
                   )}
                 >
-                  {day.date.getDate()}
+                  <Typo.ButtonText size="large">{day.date.getDate()}</Typo.ButtonText>
                 </button>
               );
             },
