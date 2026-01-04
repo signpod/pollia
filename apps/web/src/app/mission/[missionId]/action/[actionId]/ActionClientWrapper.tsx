@@ -12,6 +12,7 @@ import {
 import { useMissionSurveyToast } from "@/hooks/mission/useMissionSurveyToast";
 import { useRecordActionResponse } from "@/hooks/tracking";
 import { useAuth } from "@/hooks/user";
+import { formatDateToHHMM, formatDateToYYYYMMDD } from "@/lib/date";
 import { getSessionStorage, removeSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
 import { getOrCreateSessionId } from "@/lib/tracking";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
@@ -280,9 +281,12 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
 
       if (answer.type === ActionType.DATE) {
         const submittedDates = answersForAction
-          .flatMap(a => (a.dateAnswers || []).map(d => new Date(d).toISOString().split("T")[0]))
+          .flatMap(a => {
+            if (!a.dateAnswers) return [];
+            return a.dateAnswers.map(d => formatDateToYYYYMMDD(d));
+          })
           .sort();
-        const currentDates = [...(answer.dateAnswers || [])].sort();
+        const currentDates = (answer.dateAnswers || []).map(d => formatDateToYYYYMMDD(d)).sort();
         return (
           submittedDates.length === currentDates.length &&
           submittedDates.every((date, index) => date === currentDates[index])
@@ -291,10 +295,12 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
 
       if (answer.type === ActionType.TIME) {
         const submittedTimes = answersForAction
-          .flatMap(a => (a.dateAnswers || []).map(d => new Date(d).toISOString().split("T")[1]?.slice(0, 5) || ""))
-          .filter(t => t !== "")
+          .flatMap(a => {
+            if (!a.dateAnswers) return [];
+            return a.dateAnswers.map(d => formatDateToHHMM(d));
+          })
           .sort();
-        const currentTimes = [...(answer.dateAnswers || [])].sort();
+        const currentTimes = (answer.dateAnswers || []).map(d => formatDateToHHMM(d)).sort();
         return (
           submittedTimes.length === currentTimes.length &&
           submittedTimes.every((time, index) => time === currentTimes[index])

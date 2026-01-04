@@ -1,9 +1,10 @@
 "use client";
 
 import { ActionStepContentProps } from "@/constants/action";
+import { formatDateToHHMM } from "@/lib/date";
 import { ActionType } from "@/types/domain/action";
 import type { ActionAnswerItem } from "@/types/dto";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 
 interface TimePickerContextValue {
   selectedTimes: Set<string>;
@@ -33,6 +34,13 @@ export function TimePickerProvider({
   children,
 }: TimePickerProviderProps) {
   const [selectedTimes, setSelectedTimes] = useState<Set<string>>(new Set());
+  const updateCanGoNextRef = useRef(updateCanGoNext);
+  const onAnswerChangeRef = useRef(onAnswerChange);
+
+  useEffect(() => {
+    updateCanGoNextRef.current = updateCanGoNext;
+    onAnswerChangeRef.current = onAnswerChange;
+  }, [updateCanGoNext, onAnswerChange]);
 
   useEffect(() => {
     if (!missionResponse?.data) return;
@@ -41,12 +49,7 @@ export function TimePickerProvider({
       .filter(answer => answer.actionId === actionId)
       .flatMap(answer => {
         if (!answer.dateAnswers) return [];
-        return answer.dateAnswers.map(dateStr => {
-          const date = new Date(dateStr);
-          const hours = String(date.getHours()).padStart(2, "0");
-          const minutes = String(date.getMinutes()).padStart(2, "0");
-          return `${hours}:${minutes}`;
-        });
+        return answer.dateAnswers.map(dateStr => formatDateToHHMM(dateStr));
       })
       .filter(t => t !== "");
 
@@ -75,28 +78,27 @@ export function TimePickerProvider({
 
   const canGoNext = isRequired ? selectedTimes.size > 0 : true;
 
-  useEffect(() => {
-    updateCanGoNext(canGoNext);
-  }, [canGoNext, updateCanGoNext]);
+  const convertTimesToDateStrings = useCallback((times: Set<string>): string[] => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+
+    return Array.from(times).map(time => `${year}-${month}-${day}T${time}:00`);
+  }, []);
 
   useEffect(() => {
-    const convertTimesToDateStrings = (times: Set<string>): string[] => {
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = String(today.getMonth() + 1).padStart(2, "0");
-      const day = String(today.getDate()).padStart(2, "0");
+    updateCanGoNextRef.current?.(canGoNext);
+  }, [canGoNext]);
 
-      return Array.from(times).map(time => `${year}-${month}-${day}T${time}:00`);
-    };
-
-    onAnswerChange({
+  useEffect(() => {
+    onAnswerChangeRef.current?.({
       actionId,
       type: ActionType.TIME,
       isRequired,
-      dateAnswers:
-        selectedTimes.size > 0 ? convertTimesToDateStrings(selectedTimes) : undefined,
+      dateAnswers: selectedTimes.size > 0 ? convertTimesToDateStrings(selectedTimes) : undefined,
     });
-  }, [selectedTimes, actionId, isRequired, onAnswerChange]);
+  }, [selectedTimes, actionId, isRequired, convertTimesToDateStrings]);
 
   return (
     <TimePickerContext.Provider value={{ selectedTimes, toggleTime, canGoNext }}>

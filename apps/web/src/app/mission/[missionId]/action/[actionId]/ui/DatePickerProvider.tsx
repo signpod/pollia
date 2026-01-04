@@ -1,9 +1,10 @@
 "use client";
 
 import { ActionStepContentProps } from "@/constants/action";
+import { formatDateToYYYYMMDD } from "@/lib/date";
 import { ActionType } from "@/types/domain/action";
 import type { ActionAnswerItem } from "@/types/dto";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 interface DatePickerContextValue {
   selectedDates: Set<string>;
@@ -33,6 +34,13 @@ export function DatePickerProvider({
   children,
 }: DatePickerProviderProps) {
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
+  const updateCanGoNextRef = useRef(updateCanGoNext);
+  const onAnswerChangeRef = useRef(onAnswerChange);
+
+  useEffect(() => {
+    updateCanGoNextRef.current = updateCanGoNext;
+    onAnswerChangeRef.current = onAnswerChange;
+  }, [updateCanGoNext, onAnswerChange]);
 
   useEffect(() => {
     if (!missionResponse?.data) return;
@@ -41,13 +49,7 @@ export function DatePickerProvider({
       .filter(answer => answer.actionId === actionId)
       .flatMap(answer => {
         if (!answer.dateAnswers) return [];
-        return answer.dateAnswers.map(dateStr => {
-          const date = new Date(dateStr);
-          const year = date.getFullYear();
-          const month = String(date.getMonth() + 1).padStart(2, "0");
-          const day = String(date.getDate()).padStart(2, "0");
-          return `${year}-${month}-${day}`;
-        });
+        return answer.dateAnswers.map(dateStr => formatDateToYYYYMMDD(dateStr));
       })
       .filter(d => d !== "");
 
@@ -77,17 +79,17 @@ export function DatePickerProvider({
   const canGoNext = isRequired ? selectedDates.size > 0 : true;
 
   useEffect(() => {
-    updateCanGoNext(canGoNext);
-  }, [canGoNext, updateCanGoNext]);
+    updateCanGoNextRef.current?.(canGoNext);
+  }, [canGoNext]);
 
   useEffect(() => {
-    onAnswerChange({
+    onAnswerChangeRef.current?.({
       actionId,
       type: ActionType.DATE,
       isRequired,
       dateAnswers: selectedDates.size > 0 ? Array.from(selectedDates) : undefined,
     });
-  }, [selectedDates, actionId, isRequired, onAnswerChange]);
+  }, [selectedDates, actionId, isRequired]);
 
   return (
     <DatePickerContext.Provider value={{ selectedDates, toggleDate, canGoNext }}>

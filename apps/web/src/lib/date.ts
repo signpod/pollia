@@ -53,6 +53,37 @@ export const getCurrentTime = ({
  * @returns 날짜와 시간이 결합된 Date 객체
  */
 export const combineDateAndTime = (date: Date, time: string): Date => {
+  const [hours, minutes] = time.split(":").map(Number);
+  const combined = new Date(date);
+  combined.setHours(hours, minutes, 0, 0);
+  return combined;
+};
+
+/**
+ * Date 객체 또는 ISO 문자열을 YYYY-MM-DD 형식으로 변환
+ * @param date - 변환할 Date 객체 또는 ISO 문자열
+ * @returns YYYY-MM-DD 형식의 문자열
+ */
+export function formatDateToYYYYMMDD(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Date 객체 또는 ISO 문자열을 HH:mm 형식으로 변환
+ * @param date - 변환할 Date 객체 또는 ISO 문자열
+ * @returns HH:mm 형식의 문자열
+ */
+export function formatDateToHHMM(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  const hours = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
+}
+export const combineDateAndTime = (date: Date, time: string): Date => {
   const dateString = format(date, "yyyy-MM-dd");
   return new Date(`${dateString}T${time}`);
 };

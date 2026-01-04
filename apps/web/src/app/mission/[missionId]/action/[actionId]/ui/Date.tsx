@@ -1,6 +1,8 @@
 "use client";
 
 import { ActionStepContentProps } from "@/constants/action";
+import { formatDateToYYYYMMDD } from "@/lib/date";
+import { cn } from "@/lib/utils";
 import { Calendar } from "@repo/ui/components";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import * as React from "react";
@@ -23,14 +25,18 @@ export function ActionDate({
   missionResponse,
   isLoading,
 }: ActionStepContentProps) {
+  if (!updateCanGoNext || !onAnswerChange) {
+    return null;
+  }
+
   return (
     <DatePickerProvider
       maxSelections={actionData.maxSelections ?? 20}
       actionId={actionData.id}
       isRequired={actionData.isRequired}
       missionResponse={missionResponse}
-      updateCanGoNext={updateCanGoNext ?? (() => {})}
-      onAnswerChange={onAnswerChange ?? (() => {})}
+      updateCanGoNext={updateCanGoNext}
+      onAnswerChange={onAnswerChange}
     >
       <DatePickerContent
         actionData={actionData}
@@ -64,22 +70,19 @@ function DatePickerContent({
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const selectedDateObjects = Array.from(selectedDates).map(dateStr => {
-    const date = new Date(`${dateStr}T00:00:00`);
-    return date;
-  });
+  const selectedDateObjects = React.useMemo(() => {
+    return Array.from(selectedDates).map(dateStr => {
+      return new Date(`${dateStr}T00:00:00`);
+    });
+  }, [selectedDates]);
 
   const handleDateSelect = (dates: Date[] | undefined) => {
     if (!dates) return;
 
-    const newDate = dates[dates.length - 1];
-    if (newDate) {
-      const year = newDate.getFullYear();
-      const month = String(newDate.getMonth() + 1).padStart(2, "0");
-      const day = String(newDate.getDate()).padStart(2, "0");
-      const newDateStr = `${year}-${month}-${day}`;
-      toggleDate(newDateStr);
-    }
+    dates.forEach(date => {
+      const dateStr = formatDateToYYYYMMDD(date);
+      toggleDate(dateStr);
+    });
   };
 
   return (
@@ -124,7 +127,7 @@ function DatePickerContent({
             today: "font-bold",
           }}
           formatters={{
-            formatCaption: (date) => {
+            formatCaption: date => {
               return `${date.getMonth() + 1}월`;
             },
             formatWeekdayName: (weekday: Date) => {
@@ -181,16 +184,14 @@ function DatePickerContent({
               return (
                 <button
                   {...buttonProps}
-                  className={`
-                    aspect-square w-full rounded-full
-                    flex items-center justify-center
-                    text-base font-normal
-                    transition-all duration-200
-                    ${isSelected ? "bg-zinc-950 text-white" : "hover:bg-zinc-100"}
-                    ${isSunday && !isSelected && !modifiers.outside ? "text-red-500" : ""}
-                    ${modifiers.disabled ? "opacity-50 cursor-not-allowed" : ""}
-                    ${modifiers.outside ? "text-zinc-300" : modifiers.selected ? "" : "text-zinc-900"}
-                  `}
+                  className={cn(
+                    "aspect-square w-full rounded-full flex items-center justify-center text-base font-normal transition-all duration-200",
+                    isSelected && "bg-zinc-950 text-white",
+                    !isSelected && "hover:bg-zinc-100",
+                    isSunday && !isSelected && !modifiers.outside && "text-red-500",
+                    modifiers.disabled && "opacity-50 cursor-not-allowed",
+                    modifiers.outside ? "text-zinc-300" : isSelected ? "" : "text-zinc-900",
+                  )}
                 >
                   {day.date.getDate()}
                 </button>
