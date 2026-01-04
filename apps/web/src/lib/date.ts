@@ -55,7 +55,7 @@ export const getCurrentTime = ({
 export const combineDateAndTime = (date: Date, time: string): Date => {
   const [hours, minutes] = time.split(":").map(Number);
   const combined = new Date(date);
-  combined.setHours(hours, minutes, 0, 0);
+  combined.setHours(hours ?? 0, minutes ?? 0, 0, 0);
   return combined;
 };
 
@@ -83,7 +83,7 @@ export function formatDateToHHMM(date: Date | string): string {
   const minutes = String(d.getMinutes()).padStart(2, "0");
   return `${hours}:${minutes}`;
 }
-export const combineDateAndTime = (date: Date, time: string): Date => {
+export const formatDateToYYYYMMDDTHHMM = (date: Date, time: string): Date => {
   const dateString = format(date, "yyyy-MM-dd");
   return new Date(`${dateString}T${time}`);
 };
