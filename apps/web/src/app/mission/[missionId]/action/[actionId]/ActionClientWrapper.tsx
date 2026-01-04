@@ -233,10 +233,12 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
           .map(a => a.optionId)
           .filter((id): id is string => id !== null)
           .sort();
-        const currentOptionIds = answer.selectedOptionIds ? [...answer.selectedOptionIds].sort() : [];
+        const currentOptionIds = answer.selectedOptionIds
+          ? [...answer.selectedOptionIds].sort()
+          : [];
 
-        const submittedTextAnswer = answersForAction.find(a => a.textAnswer)?.textAnswer;
-        const currentTextAnswer = answer.textAnswer;
+        const submittedTextAnswer = answersForAction.find(a => a.textAnswer)?.textAnswer ?? "";
+        const currentTextAnswer = answer.textAnswer ?? "";
 
         const optionsMatch =
           submittedOptionIds.length === currentOptionIds.length &&

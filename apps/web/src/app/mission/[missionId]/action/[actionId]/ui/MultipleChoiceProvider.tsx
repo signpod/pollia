@@ -1,3 +1,4 @@
+import { CLIENT_OTHER_OPTION_ID } from "@/constants/action";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
 import type { ActionAnswerItem, GetMissionResponseResponse } from "@/types/dto";
@@ -17,7 +18,6 @@ interface SurveyMultipleChoiceContextType {
   canGoNext: boolean;
   textAnswer: string;
   setTextAnswer: (text: string) => void;
-  hasOtherOption: boolean;
   isOtherSelected: boolean;
 }
 
@@ -34,7 +34,6 @@ interface SurveyMultipleChoiceProviderProps {
   updateCanGoNext?: (canGoNext: boolean) => void;
   onAnswerChange?: (answer: ActionAnswerItem) => void;
   answerType?: typeof ActionType.MULTIPLE_CHOICE | typeof ActionType.TAG;
-  options?: Array<{ id: string; title: string }>;
 }
 
 export function MultipleChoiceProvider({
@@ -46,11 +45,7 @@ export function MultipleChoiceProvider({
   updateCanGoNext,
   onAnswerChange,
   answerType,
-  options = [],
 }: SurveyMultipleChoiceProviderProps) {
-  // "기타" is a client-side only option, not from backend
-  const hasOtherOption = true;
-  const OTHER_OPTION_ID = "CLIENT_OTHER_OPTION";
   const initialSelectedIds = useMemo(() => {
     if (!missionResponse?.data?.answers || missionResponse.data.answers.length === 0) {
       return new Set<string>();
@@ -70,7 +65,7 @@ export function MultipleChoiceProvider({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set<string>());
   const [canGoNext, setCanGoNext] = useState(false);
   const [textAnswer, setTextAnswer] = useState("");
-  const isOtherSelected = selectedIds.has(OTHER_OPTION_ID);
+  const isOtherSelected = selectedIds.has(CLIENT_OTHER_OPTION_ID);
 
   // updateCanGoNext와 onAnswerChange ref로 최신 참조 유지
   const updateCanGoNextRef = useRef(updateCanGoNext);
@@ -81,29 +76,27 @@ export function MultipleChoiceProvider({
   }, [updateCanGoNext, onAnswerChange]);
 
   useEffect(() => {
-    setSelectedIds(initialSelectedIds);
-
     // Load initial textAnswer from textAnswer field
     const answerWithText = missionResponse?.data?.answers.find(
       answer => answer.actionId === actionId && answer.textAnswer,
     );
 
+    const initialIds = new Set(initialSelectedIds);
     if (answerWithText?.textAnswer) {
       setTextAnswer(answerWithText.textAnswer);
-      // If there's textAnswer, "기타" was selected
-      setSelectedIds(prev => {
-        const newSet = new Set(prev);
-        newSet.add(OTHER_OPTION_ID);
-        return newSet;
-      });
+      initialIds.add(CLIENT_OTHER_OPTION_ID);
     }
 
-    if (initialSelectedIds.size > 0 || answerWithText?.textAnswer) {
+    setSelectedIds(initialIds);
+
+    if (initialIds.size > 0 || answerWithText?.textAnswer) {
       const answer: ActionAnswerItem = {
         actionId,
         type: answerType ?? ActionType.MULTIPLE_CHOICE,
         isRequired,
-        ...(initialSelectedIds.size > 0 ? { selectedOptionIds: Array.from(initialSelectedIds) } : {}),
+        ...(initialSelectedIds.size > 0
+          ? { selectedOptionIds: Array.from(initialSelectedIds) }
+          : {}),
         ...(answerWithText?.textAnswer ? { textAnswer: answerWithText.textAnswer } : {}),
       };
 
@@ -116,7 +109,7 @@ export function MultipleChoiceProvider({
     } else {
       updateCanGoNextRef.current?.(false);
     }
-  }, [initialSelectedIds, actionId, answerType, missionResponse, OTHER_OPTION_ID]);
+  }, [initialSelectedIds, actionId, answerType, isRequired, missionResponse]);
 
   const toggleSelectedId = useCallback(
     (optionId: string) => {
@@ -149,8 +142,8 @@ export function MultipleChoiceProvider({
 
   useEffect(() => {
     if (selectedIds.size > 0) {
-      // Filter out OTHER_OPTION_ID from selectedOptionIds
-      const realOptionIds = Array.from(selectedIds).filter(id => id !== OTHER_OPTION_ID);
+      // Filter out CLIENT_OTHER_OPTION_ID from selectedOptionIds
+      const realOptionIds = Array.from(selectedIds).filter(id => id !== CLIENT_OTHER_OPTION_ID);
 
       const answer: ActionAnswerItem = {
         actionId,
@@ -187,7 +180,7 @@ export function MultipleChoiceProvider({
     answerType,
     isOtherSelected,
     textAnswer,
-    OTHER_OPTION_ID,
+    isRequired,
   ]);
 
   const value = useMemo(
@@ -197,10 +190,9 @@ export function MultipleChoiceProvider({
       canGoNext,
       textAnswer,
       setTextAnswer,
-      hasOtherOption,
       isOtherSelected,
     }),
-    [selectedIds, toggleSelectedId, canGoNext, textAnswer, hasOtherOption, isOtherSelected],
+    [selectedIds, toggleSelectedId, canGoNext, textAnswer, isOtherSelected],
   );
 
   return (

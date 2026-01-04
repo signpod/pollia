@@ -137,13 +137,21 @@ export function ActionOptionButton({
       </div>
 
       {isOther && isSelected && (
-        <div className="w-full mt-2 text-zinc-900" onClick={e => e.stopPropagation()}>
+        <div
+          className="w-full mt-2 text-zinc-900"
+          onClick={e => e.stopPropagation()}
+          onMouseDown={e => e.stopPropagation()}
+          onKeyDown={e => e.stopPropagation()}
+        >
           <Input
             placeholder="기타 의견을 적어주세요"
             value={textAnswer}
             onChange={onTextAnswerChange}
             onBlur={onTextAnswerBlur}
-            errorMessage={showOtherError && !textAnswer.trim() ? "필수 입력 사항입니다." : undefined}
+            onClick={e => e.stopPropagation()}
+            errorMessage={
+              showOtherError && !textAnswer.trim() ? "필수 입력 사항입니다." : undefined
+            }
           />
         </div>
       )}

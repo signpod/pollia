@@ -1,5 +1,5 @@
 import { ActionOptionButton } from "@/app/mission/[missionId]/components";
-import { ActionStepContentProps } from "@/constants/action";
+import { ActionStepContentProps, CLIENT_OTHER_OPTION_ID } from "@/constants/action";
 import { useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 import { MultipleChoiceProvider, useSurveyMultipleChoice } from "./MultipleChoiceProvider";
@@ -26,7 +26,6 @@ export function MultipleChoice({
       missionResponse={missionResponse}
       updateCanGoNext={updateCanGoNext}
       onAnswerChange={onAnswerChange}
-      options={actionData.options?.map(opt => ({ id: opt.id, title: opt.title })) ?? []}
     >
       <SurveyMultipleChoiceContent
         actionData={actionData}
@@ -60,12 +59,10 @@ function SurveyMultipleChoiceContent({
 
   const [showOtherError, setShowOtherError] = useState(false);
 
-  const OTHER_OPTION_ID = "CLIENT_OTHER_OPTION";
-
   // Add "기타" option to the end of options list (client-side only)
   const optionsWithOther = [
     ...(actionData.options || []),
-    { id: OTHER_OPTION_ID, title: "기타", description: null, imageUrl: null, order: 999 },
+    { id: CLIENT_OTHER_OPTION_ID, title: "기타", description: null, imageUrl: null, order: 999 },
   ];
 
   const handleTextAnswerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,7 +94,7 @@ function SurveyMultipleChoiceContent({
     >
       <div className="flex flex-col gap-2 w-full">
         {optionsWithOther.map(option => {
-          const isOther = option.id === OTHER_OPTION_ID;
+          const isOther = option.id === CLIENT_OTHER_OPTION_ID;
           const isSelected = selectedIds.has(option.id);
 
           return (

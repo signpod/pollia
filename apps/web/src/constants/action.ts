@@ -120,3 +120,5 @@ export const MISSION_TYPE_LABELS: Record<MissionType, string> = {
 };
 
 export const ACTION_PLACEHOLDER = "답변을 입력해주세요";
+
+export const CLIENT_OTHER_OPTION_ID = "CLIENT_OTHER_OPTION";

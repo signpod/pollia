@@ -66,7 +66,7 @@ export const multipleChoiceAnswerInputSchema = baseAnswerInputSchema
     textAnswer: z.string().optional(),
   })
   .refine(data => data.optionId || data.textAnswer, {
-    message: "선택지 또는 기타 의견이 필요합니다.",
+    message: "선택지를 선택하거나 기타 의견을 입력해주세요.",
   });
 
 export const tagAnswerInputSchema = baseAnswerInputSchema
@@ -75,7 +75,7 @@ export const tagAnswerInputSchema = baseAnswerInputSchema
     textAnswer: z.string().optional(),
   })
   .refine(data => data.optionId || data.textAnswer, {
-    message: "선택지 또는 기타 의견이 필요합니다.",
+    message: "선택지를 선택하거나 기타 의견을 입력해주세요.",
   });
 
 export const imageAnswerInputSchema = baseAnswerInputSchema.extend({
