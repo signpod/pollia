@@ -118,3 +118,5 @@ export const MISSION_TYPE_LABELS: Record<MissionType, string> = {
   [MissionType.GENERAL]: "일반 미션",
   [MissionType.EXPERIENCE_GROUP]: "체험단 미션",
 };
+
+export const ACTION_PLACEHOLDER = "답변을 입력해주세요";

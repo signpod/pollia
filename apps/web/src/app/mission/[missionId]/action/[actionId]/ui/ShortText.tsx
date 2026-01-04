@@ -1,4 +1,4 @@
-import { ActionStepContentProps } from "@/constants/action";
+import { ACTION_PLACEHOLDER, ActionStepContentProps } from "@/constants/action";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import { SHORT_TEXT_ANSWER_MAX_LENGTH } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
@@ -6,8 +6,6 @@ import type { ActionAnswerItem, GetMissionResponseResponse } from "@/types/dto";
 import { Input } from "@repo/ui/components";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
-
-const PLACEHOLDER = "답변을 입력해주세요";
 
 export function ShortText({
   actionData,
@@ -32,7 +30,11 @@ export function ShortText({
       onAnswerChange,
     );
   const isNextDisabled = isNextDisabledProp || !validationResult.success;
-  const errorMessage = showError ? validationResult.error?.issues[0]?.message : undefined;
+  const errorMessage = showError
+    ? actionData.isRequired && !shortTextValue.trim()
+      ? "필수 입력 사항이에요."
+      : validationResult.error?.issues[0]?.message
+    : undefined;
 
   return (
     <SurveyQuestionTemplate
@@ -49,7 +51,7 @@ export function ShortText({
       isLoading={isLoading}
     >
       <Input
-        placeholder={PLACEHOLDER}
+        placeholder={ACTION_PLACEHOLDER}
         maxLength={SHORT_TEXT_ANSWER_MAX_LENGTH}
         showLength
         value={shortTextValue}
@@ -102,15 +104,6 @@ function useShortTextValue(
         textAnswer: initialTextValue,
       });
       updateCanGoNextRef.current?.(result.success);
-
-      if (result.success) {
-        onAnswerChangeRef.current?.({
-          actionId,
-          type: ActionType.SHORT_TEXT,
-          isRequired,
-          textAnswer: initialTextValue,
-        });
-      }
     }
   }, [initialTextValue, actionId, isRequired]);
 
@@ -124,10 +117,10 @@ function useShortTextValue(
       isRequired,
       textAnswer: value,
     });
-    updateCanGoNext?.(result.success);
+    updateCanGoNextRef.current?.(result.success);
 
     if (result.success) {
-      onAnswerChange?.({
+      onAnswerChangeRef.current?.({
         actionId,
         type: ActionType.SHORT_TEXT,
         isRequired,
@@ -140,12 +133,14 @@ function useShortTextValue(
     setShowError(true);
   }
 
-  const validationResult = submitAnswerItemSchema.safeParse({
-    actionId,
-    type: ActionType.SHORT_TEXT,
-    isRequired,
-    textAnswer: shortTextValue,
-  });
+  const validationResult = useMemo(() => {
+    return submitAnswerItemSchema.safeParse({
+      actionId,
+      type: ActionType.SHORT_TEXT,
+      isRequired,
+      textAnswer: shortTextValue,
+    });
+  }, [actionId, isRequired, shortTextValue]);
 
   return {
     shortTextValue,

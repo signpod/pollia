@@ -1,12 +1,10 @@
-import { ActionStepContentProps } from "@/constants/action";
+import { ACTION_PLACEHOLDER, ActionStepContentProps } from "@/constants/action";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
 import type { ActionAnswerItem, GetMissionResponseResponse } from "@/types/dto";
 import { Textarea } from "@repo/ui/components";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
-
-const PLACEHOLDER = "답변을 입력해주세요";
 
 export function Subjective({
   actionData,
@@ -54,7 +52,7 @@ export function Subjective({
       isLoading={isLoading}
     >
       <Textarea
-        placeholder={PLACEHOLDER}
+        placeholder={ACTION_PLACEHOLDER}
         maxLength={100}
         showLength
         value={subjectiveValue}
