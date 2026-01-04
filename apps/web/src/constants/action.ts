@@ -30,6 +30,7 @@ interface CreateActionStepsProps {
     MultipleChoice: React.ComponentType<ActionStepContentProps>;
     Scale: React.ComponentType<ActionStepContentProps>;
     Subjective: React.ComponentType<ActionStepContentProps>;
+    ShortText: React.ComponentType<ActionStepContentProps>;
     Rating: React.ComponentType<ActionStepContentProps>;
     Image: React.ComponentType<ActionStepContentProps>;
     Video: React.ComponentType<ActionStepContentProps>;
@@ -71,6 +72,8 @@ function getContentComponent(
       return stepComponents.Rating;
     case ActionType.SUBJECTIVE:
       return stepComponents.Subjective;
+    case ActionType.SHORT_TEXT:
+      return stepComponents.ShortText;
     case ActionType.PDF:
       return stepComponents.Pdf;
     case ActionType.IMAGE:

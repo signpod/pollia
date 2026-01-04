@@ -33,6 +33,7 @@ import {
   MissionRatingScale,
   MissionStarScale,
   MultipleChoice,
+  ShortText,
   Subjective,
 } from "./ui";
 
@@ -99,6 +100,7 @@ function ActionContent() {
       MultipleChoice: MultipleChoice,
       Scale: MissionRatingScale,
       Subjective: Subjective,
+      ShortText: ShortText,
       Rating: MissionStarScale,
       Image: ActionImage,
       Video: ActionVideo,
