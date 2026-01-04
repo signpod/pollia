@@ -25,7 +25,7 @@ export function ImageList({
   onImageLoadComplete,
   onImageEdit,
 }: ImageListProps) {
-  const [selectedImages, setSelectedImages] = useState<Set<string>>(new Set());
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [imageToEdit, setImageToEdit] = useState<string | null>(null);
   const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
@@ -34,33 +34,19 @@ export function ImageList({
     useImageCrop();
 
   const handleImageToggle = (imageUrl: string) => {
-    setSelectedImages(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(imageUrl)) {
-        newSet.delete(imageUrl);
-      } else {
-        newSet.add(imageUrl);
-      }
-      return newSet;
-    });
+    setSelectedImage(prev => (prev === imageUrl ? null : imageUrl));
   };
 
   const handleEditClick = useCallback(() => {
-    const selectedArray = Array.from(selectedImages);
-    if (selectedArray.length !== 1) {
+    if (!selectedImage) {
       return;
     }
 
-    const imageUrl = selectedArray[0];
-    if (!imageUrl) {
-      return;
-    }
-
-    setImageToEdit(imageUrl);
-    setOriginalImageUrl(imageUrl);
+    setImageToEdit(selectedImage);
+    setOriginalImageUrl(selectedImage);
     setIsEditModalOpen(true);
     resetCropState();
-  }, [selectedImages, resetCropState]);
+  }, [selectedImage, resetCropState]);
 
   const handleEditCancel = useCallback(() => {
     setIsEditModalOpen(false);
@@ -85,7 +71,7 @@ export function ImageList({
       setIsEditModalOpen(false);
       setImageToEdit(null);
       setOriginalImageUrl(null);
-      setSelectedImages(new Set());
+      setSelectedImage(null);
       resetCropState();
     } catch (error) {
       console.error("이미지 편집 실패:", error);
@@ -93,8 +79,7 @@ export function ImageList({
     }
   }, [imageToEdit, originalImageUrl, onImageEdit, cropImage, handleEditCancel, resetCropState]);
 
-  const selectedCount = selectedImages.size;
-  const canEdit = selectedCount === 1;
+  const canEdit = selectedImage !== null;
 
   return (
     <>
@@ -119,7 +104,7 @@ export function ImageList({
           mediaType="image"
           onMediaDelete={onImageDelete}
           onMediaLoadComplete={onImageLoadComplete}
-          selectedMediaUrls={selectedImages}
+          selectedMediaUrl={selectedImage ?? undefined}
           onMediaToggle={handleImageToggle}
         />
       </div>
