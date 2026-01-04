@@ -138,6 +138,10 @@ function DatePickerContent({
           components={{
             MonthCaption: ({ calendarMonth }) => {
               const displayMonth = calendarMonth.date;
+              const currentDate = new Date();
+              const isCurrentMonth =
+                displayMonth.getFullYear() === currentDate.getFullYear() &&
+                displayMonth.getMonth() === currentDate.getMonth();
 
               const handlePrevMonth = () => {
                 const newDate = new Date(displayMonth);
@@ -152,11 +156,12 @@ function DatePickerContent({
               };
 
               return (
-                <div className="flex justify-between items-center h-12 mb-4">
+                <div className="flex justify-center items-center gap-6 h-12 mb-4">
                   <button
                     type="button"
                     onClick={handlePrevMonth}
-                    className="h-8 w-8 p-0 hover:bg-zinc-100 rounded-md flex items-center justify-center"
+                    disabled={isCurrentMonth}
+                    className="h-8 w-8 p-0 hover:bg-zinc-100 rounded-md flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                   >
                     <ChevronLeft className="h-5 w-5 text-zinc-600" />
                   </button>
