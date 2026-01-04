@@ -45,8 +45,10 @@ export function SurveyQuestionTemplate({
   useEffect(() => {
     if (!isNextDisabled) {
       setShowRequiredError(false);
+    } else if (isNextDisabled && isRequired) {
+      setShowRequiredError(true);
     }
-  }, [isNextDisabled]);
+  }, [isNextDisabled, isRequired]);
 
   const handleDisabledButtonClick = () => {
     if (isNextDisabled && isRequired) {
@@ -97,26 +99,35 @@ export function SurveyQuestionTemplate({
           >
             <ChevronLeftIcon className="size-6" />
           </ButtonV2>
-          <div className="flex-1 flex" onClick={handleDisabledButtonClick}>
-            <ButtonV2
-              variant="primary"
-              size="large"
-              className="flex-1 flex"
-              disabled={isNextDisabled}
-              loading={isLoading}
-              onClick={async () => {
-                if (onNext instanceof Promise) {
-                  await onNext();
-                } else {
-                  onNext?.();
-                }
-              }}
-            >
-              <Typo.ButtonText size="large" className="flex justify-center w-full">
-                {nextButtonText}
-              </Typo.ButtonText>
-            </ButtonV2>
-          </div>
+          <ButtonV2
+            variant="primary"
+            size="large"
+            className="flex-1 flex"
+            disabled={isNextDisabled}
+            loading={isLoading}
+            onClick={async e => {
+              if (isNextDisabled && isRequired) {
+                e.preventDefault();
+                handleDisabledButtonClick();
+                return;
+              }
+              if (onNext instanceof Promise) {
+                await onNext();
+              } else {
+                onNext?.();
+              }
+            }}
+            onKeyDown={e => {
+              if (isNextDisabled && isRequired && (e.key === "Enter" || e.key === " ")) {
+                e.preventDefault();
+                handleDisabledButtonClick();
+              }
+            }}
+          >
+            <Typo.ButtonText size="large" className="flex justify-center w-full">
+              {nextButtonText}
+            </Typo.ButtonText>
+          </ButtonV2>
         </nav>
       </FixedBottomLayout.Content>
     </FixedBottomLayout>
