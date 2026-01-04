@@ -23,9 +23,11 @@ import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import {
+  ActionDate,
   ActionImage,
   ActionPdf,
   ActionTag,
+  ActionTime,
   ActionVideo,
   MissionRatingScale,
   MissionStarScale,
@@ -101,6 +103,8 @@ function ActionContent() {
       Video: ActionVideo,
       Tag: ActionTag,
       Pdf: ActionPdf,
+      Date: ActionDate,
+      Time: ActionTime,
     },
   });
 
@@ -274,6 +278,29 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
         );
       }
 
+      if (answer.type === ActionType.DATE) {
+        const submittedDates = answersForAction
+          .flatMap(a => (a.dateAnswers || []).map(d => new Date(d).toISOString().split("T")[0]))
+          .sort();
+        const currentDates = [...(answer.dateAnswers || [])].sort();
+        return (
+          submittedDates.length === currentDates.length &&
+          submittedDates.every((date, index) => date === currentDates[index])
+        );
+      }
+
+      if (answer.type === ActionType.TIME) {
+        const submittedTimes = answersForAction
+          .flatMap(a => (a.dateAnswers || []).map(d => new Date(d).toISOString().split("T")[1]?.slice(0, 5) || ""))
+          .filter(t => t !== "")
+          .sort();
+        const currentTimes = [...(answer.dateAnswers || [])].sort();
+        return (
+          submittedTimes.length === currentTimes.length &&
+          submittedTimes.every((time, index) => time === currentTimes[index])
+        );
+      }
+
       return false;
     },
     [],
@@ -323,6 +350,12 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
                 currentAnswer.type === "VIDEO" ||
                 currentAnswer.type === "PDF"
                   ? { fileUploadIds: currentAnswer.fileUploadIds }
+                  : {}),
+                ...(currentAnswer.type === "DATE"
+                  ? { dateAnswers: currentAnswer.dateAnswers }
+                  : {}),
+                ...(currentAnswer.type === "TIME"
+                  ? { dateAnswers: currentAnswer.dateAnswers }
                   : {}),
               },
             ],

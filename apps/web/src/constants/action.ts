@@ -35,6 +35,8 @@ interface CreateActionStepsProps {
     Video: React.ComponentType<ActionStepContentProps>;
     Tag: React.ComponentType<ActionStepContentProps>;
     Pdf: React.ComponentType<ActionStepContentProps>;
+    Date: React.ComponentType<ActionStepContentProps>;
+    Time: React.ComponentType<ActionStepContentProps>;
   };
 }
 
@@ -77,6 +79,10 @@ function getContentComponent(
       return stepComponents.Video;
     case ActionType.TAG:
       return stepComponents.Tag;
+    case ActionType.DATE:
+      return stepComponents.Date;
+    case ActionType.TIME:
+      return stepComponents.Time;
     default:
       throw new Error(`Unsupported question type: ${type}`);
   }
