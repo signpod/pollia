@@ -84,7 +84,7 @@ export function BaseActionFormFields<TFieldValues extends FieldValues>({
               <TiptapEditor
                 content={field.value || ""}
                 onUpdate={content => {
-                  field.onChange(content || undefined);
+                  field.onChange(content);
                 }}
                 placeholder="액션에 대한 추가 설명을 입력하세요."
                 showToolbar={true}
@@ -113,7 +113,7 @@ export function BaseActionFormFields<TFieldValues extends FieldValues>({
                   onImageSelect={onMainImageSelect}
                   onImageDelete={() => {
                     onMainImageDelete();
-                    field.onChange(undefined);
+                    field.onChange(null);
                   }}
                   disabled={isLoading}
                 />

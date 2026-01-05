@@ -28,6 +28,7 @@ export function TagForm({
       title: initialData?.title || "",
       description: initialData?.description || "",
       imageUrl: initialData?.imageUrl,
+      imageFileUploadId: initialData?.imageFileUploadId,
       isRequired: initialData?.isRequired ?? true,
       maxSelections: initialData?.maxSelections ?? 1,
       options:
@@ -50,6 +51,7 @@ export function TagForm({
     bucket: STORAGE_BUCKETS.ACTION_IMAGES,
     onUploadSuccess: data => {
       form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
+      form.setValue("imageFileUploadId", data.fileUploadId, { shouldDirty: true });
     },
   });
 
@@ -63,7 +65,7 @@ export function TagForm({
       title: data.title,
       description: data.description,
       imageUrl: data.imageUrl || undefined,
-      imageFileUploadId: mainImage.uploadedData?.fileUploadId,
+      imageFileUploadId: data.imageFileUploadId,
       maxSelections: data.maxSelections,
       options: formattedOptions,
       isRequired: data.isRequired,
@@ -98,7 +100,11 @@ export function TagForm({
           titlePlaceholder="예: 관심사를 태그로 선택해주세요."
           mainImagePreviewUrl={mainImage.previewUrl}
           onMainImageSelect={mainImage.selectImage}
-          onMainImageDelete={mainImage.clearImage}
+          onMainImageDelete={() => {
+            mainImage.clearImage();
+            form.setValue("imageUrl", null, { shouldDirty: true });
+            form.setValue("imageFileUploadId", null, { shouldDirty: true });
+          }}
         />
 
         <MaxSelectionsField

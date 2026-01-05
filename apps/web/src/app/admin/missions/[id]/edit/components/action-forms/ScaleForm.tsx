@@ -32,6 +32,7 @@ export function ScaleForm({
       title: initialData?.title || "",
       description: initialData?.description || "",
       imageUrl: initialData?.imageUrl,
+      imageFileUploadId: initialData?.imageFileUploadId,
       isRequired: initialData?.isRequired ?? true,
       options:
         initialData?.options?.map(opt => ({
@@ -54,6 +55,7 @@ export function ScaleForm({
     bucket: STORAGE_BUCKETS.ACTION_IMAGES,
     onUploadSuccess: data => {
       form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
+      form.setValue("imageFileUploadId", data.fileUploadId, { shouldDirty: true });
     },
   });
 
@@ -68,7 +70,7 @@ export function ScaleForm({
       title: data.title,
       description: data.description,
       imageUrl: data.imageUrl || undefined,
-      imageFileUploadId: mainImage.uploadedData?.fileUploadId,
+      imageFileUploadId: data.imageFileUploadId,
       options: formattedOptions,
       isRequired: data.isRequired,
     });
@@ -104,7 +106,11 @@ export function ScaleForm({
           titlePlaceholder="예: 서비스 만족도를 평가해주세요."
           mainImagePreviewUrl={mainImage.previewUrl}
           onMainImageSelect={mainImage.selectImage}
-          onMainImageDelete={mainImage.clearImage}
+          onMainImageDelete={() => {
+            mainImage.clearImage();
+            form.setValue("imageUrl", null, { shouldDirty: true });
+            form.setValue("imageFileUploadId", null, { shouldDirty: true });
+          }}
         />
 
         <div className="space-y-2">

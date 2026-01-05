@@ -32,12 +32,14 @@ export {
 
 const actionOptionFormSchema = actionOptionSchema.omit({ order: true }).extend({
   id: z.string(),
-  imageUrl: z.string().optional(),
+  imageUrl: z.string().nullable().optional(),
+  imageFileUploadId: z.string().nullable().optional(),
 });
 
 export const multipleChoiceFormSchema = multipleChoiceInputSchema
-  .omit({ missionId: true, order: true, imageFileUploadId: true })
+  .omit({ missionId: true, order: true })
   .extend({
+    imageFileUploadId: z.string().nullable().optional(),
     options: z.array(actionOptionFormSchema),
   })
   .refine(
@@ -59,8 +61,9 @@ export const multipleChoiceFormSchema = multipleChoiceInputSchema
   });
 
 export const scaleFormSchema = scaleInputSchema
-  .omit({ missionId: true, order: true, imageFileUploadId: true })
+  .omit({ missionId: true, order: true })
   .extend({
+    imageFileUploadId: z.string().nullable().optional(),
     options: z.array(actionOptionFormSchema),
   })
   .refine(
@@ -76,8 +79,9 @@ export const scaleFormSchema = scaleInputSchema
   });
 
 export const tagFormSchema = tagInputSchema
-  .omit({ missionId: true, order: true, imageFileUploadId: true })
+  .omit({ missionId: true, order: true })
   .extend({
+    imageFileUploadId: z.string().nullable().optional(),
     options: z.array(actionOptionFormSchema),
   })
   .refine(
@@ -96,32 +100,30 @@ export const tagFormSchema = tagInputSchema
     path: ["maxSelections"],
   });
 
-export const subjectiveFormSchema = subjectiveInputSchema.omit({
-  missionId: true,
-  order: true,
-  imageFileUploadId: true,
-});
+export const subjectiveFormSchema = subjectiveInputSchema
+  .omit({ missionId: true, order: true })
+  .extend({
+    imageFileUploadId: z.string().nullable().optional(),
+  });
 
-export const shortTextFormSchema = shortTextInputSchema.omit({
-  missionId: true,
-  order: true,
-  imageFileUploadId: true,
-});
+export const shortTextFormSchema = shortTextInputSchema
+  .omit({ missionId: true, order: true })
+  .extend({
+    imageFileUploadId: z.string().nullable().optional(),
+  });
 
-export const ratingFormSchema = ratingInputSchema.omit({
-  missionId: true,
-  order: true,
-  imageFileUploadId: true,
+export const ratingFormSchema = ratingInputSchema.omit({ missionId: true, order: true }).extend({
+  imageFileUploadId: z.string().nullable().optional(),
 });
 
 export const imageUploadFormSchema = imageInputSchema
   .omit({
     missionId: true,
     order: true,
-    imageFileUploadId: true,
     maxSelections: true,
   })
   .extend({
+    imageFileUploadId: z.string().nullable().optional(),
     maxSelections: z
       .number()
       .int()
@@ -130,32 +132,30 @@ export const imageUploadFormSchema = imageInputSchema
       .optional(),
   });
 
-export const pdfUploadFormSchema = pdfInputSchema.omit({
-  missionId: true,
-  order: true,
-  imageFileUploadId: true,
+export const pdfUploadFormSchema = pdfInputSchema.omit({ missionId: true, order: true }).extend({
+  imageFileUploadId: z.string().nullable().optional(),
 });
 
-export const videoUploadFormSchema = videoInputSchema.omit({
-  missionId: true,
-  order: true,
-  imageFileUploadId: true,
-});
+export const videoUploadFormSchema = videoInputSchema
+  .omit({ missionId: true, order: true })
+  .extend({
+    imageFileUploadId: z.string().nullable().optional(),
+  });
 
-export const privacyConsentFormSchema = privacyConsentInputSchema.omit({
-  missionId: true,
-  order: true,
-  imageFileUploadId: true,
-});
+export const privacyConsentFormSchema = privacyConsentInputSchema
+  .omit({ missionId: true, order: true })
+  .extend({
+    imageFileUploadId: z.string().nullable().optional(),
+  });
 
 export const dateFormSchema = dateInputSchema
   .omit({
     missionId: true,
     order: true,
-    imageFileUploadId: true,
     maxSelections: true,
   })
   .extend({
+    imageFileUploadId: z.string().nullable().optional(),
     maxSelections: z
       .number()
       .int()
@@ -168,10 +168,10 @@ export const timeFormSchema = timeInputSchema
   .omit({
     missionId: true,
     order: true,
-    imageFileUploadId: true,
     maxSelections: true,
   })
   .extend({
+    imageFileUploadId: z.string().nullable().optional(),
     maxSelections: z
       .number()
       .int()

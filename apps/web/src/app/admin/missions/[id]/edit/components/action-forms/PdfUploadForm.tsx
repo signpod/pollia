@@ -24,6 +24,7 @@ export function PdfUploadForm({
       title: initialData?.title || "",
       description: initialData?.description || "",
       imageUrl: initialData?.imageUrl,
+      imageFileUploadId: initialData?.imageFileUploadId,
       isRequired: initialData?.isRequired ?? true,
     },
     mode: "onChange",
@@ -35,6 +36,7 @@ export function PdfUploadForm({
     bucket: STORAGE_BUCKETS.ACTION_IMAGES,
     onUploadSuccess: data => {
       form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
+      form.setValue("imageFileUploadId", data.fileUploadId, { shouldDirty: true });
     },
   });
 
@@ -44,7 +46,7 @@ export function PdfUploadForm({
       title: data.title,
       description: data.description,
       imageUrl: data.imageUrl || undefined,
-      imageFileUploadId: mainImage.uploadedData?.fileUploadId,
+      imageFileUploadId: data.imageFileUploadId,
       isRequired: data.isRequired,
     });
   });
@@ -59,7 +61,11 @@ export function PdfUploadForm({
           titlePlaceholder="예: PDF 파일을 업로드해주세요."
           mainImagePreviewUrl={mainImage.previewUrl}
           onMainImageSelect={mainImage.selectImage}
-          onMainImageDelete={mainImage.clearImage}
+          onMainImageDelete={() => {
+            mainImage.clearImage();
+            form.setValue("imageUrl", null, { shouldDirty: true });
+            form.setValue("imageFileUploadId", null, { shouldDirty: true });
+          }}
         />
 
         <div className="flex justify-end gap-3 pt-4">

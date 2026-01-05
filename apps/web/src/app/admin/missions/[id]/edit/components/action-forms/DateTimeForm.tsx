@@ -38,6 +38,7 @@ export function DateTimeForm<T extends "DATE" | "TIME">({
       title: initialData?.title || "",
       description: initialData?.description || "",
       imageUrl: initialData?.imageUrl,
+      imageFileUploadId: initialData?.imageFileUploadId,
       isRequired: initialData?.isRequired ?? true,
       maxSelections: initialData?.maxSelections,
     },
@@ -50,6 +51,7 @@ export function DateTimeForm<T extends "DATE" | "TIME">({
     bucket: STORAGE_BUCKETS.ACTION_IMAGES,
     onUploadSuccess: data => {
       form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
+      form.setValue("imageFileUploadId", data.fileUploadId, { shouldDirty: true });
     },
   });
 
@@ -59,7 +61,7 @@ export function DateTimeForm<T extends "DATE" | "TIME">({
       title: data.title,
       description: data.description,
       imageUrl: data.imageUrl || undefined,
-      imageFileUploadId: mainImage.uploadedData?.fileUploadId,
+      imageFileUploadId: data.imageFileUploadId,
       isRequired: data.isRequired,
       maxSelections: data.maxSelections,
     } as T extends "DATE" ? DateFormData : TimeFormData);
@@ -75,7 +77,11 @@ export function DateTimeForm<T extends "DATE" | "TIME">({
           titlePlaceholder={titlePlaceholder}
           mainImagePreviewUrl={mainImage.previewUrl}
           onMainImageSelect={mainImage.selectImage}
-          onMainImageDelete={mainImage.clearImage}
+          onMainImageDelete={() => {
+            mainImage.clearImage();
+            form.setValue("imageUrl", null, { shouldDirty: true });
+            form.setValue("imageFileUploadId", null, { shouldDirty: true });
+          }}
         >
           <MaxSelectionsField
             control={form.control}
