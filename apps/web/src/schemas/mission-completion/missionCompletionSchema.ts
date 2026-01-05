@@ -51,6 +51,10 @@ export const missionCompletionInputSchema = z.object({
   missionId: z.string().min(1, "미션 ID는 필수입니다."),
 });
 
+export const missionCompletionFormSchema = missionCompletionInputSchema.omit({
+  missionId: true,
+});
+
 export const missionCompletionUpdateSchema = z
   .object({
     title: titleSchema.optional(),
@@ -64,4 +68,5 @@ export const missionCompletionUpdateSchema = z
   });
 
 export type MissionCompletionInput = z.infer<typeof missionCompletionInputSchema>;
+export type MissionCompletionForm = z.infer<typeof missionCompletionFormSchema>;
 export type MissionCompletionUpdate = z.infer<typeof missionCompletionUpdateSchema>;

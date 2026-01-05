@@ -32,6 +32,7 @@ import { useState } from "react";
 import { ClientDateDisplay } from "./ClientDateDisplay";
 import { BasicInfoEditDialog } from "./edit/BasicInfoEditDialog";
 import { ImageEditDialog } from "./edit/ImageEditDialog";
+import { MissionCompletionCard } from "./MissionCompletionCard";
 
 interface MissionBasicInfoProps {
   mission: GetMissionResponse["data"];
@@ -282,6 +283,10 @@ export function MissionBasicInfo({ mission }: MissionBasicInfoProps) {
             />
           </CardContent>
         </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <MissionCompletionCard missionId={mission.id} />
       </div>
 
       <BasicInfoEditDialog
