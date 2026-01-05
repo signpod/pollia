@@ -42,12 +42,13 @@ const estimatedMinutesSchema = z
   .optional();
 
 const maxParticipantsSchema = z
-  .number()
-  .int("정수여야 합니다")
-  .min(1, "1 이상이어야 합니다")
-  .nullable()
-  .optional()
-  .default(null);
+  .union([z.string(), z.number(), z.null(), z.undefined()])
+  .transform(val => {
+    if (val === "" || val === null || val === undefined) return null;
+    const num = typeof val === "string" ? Number(val) : val;
+    return num;
+  })
+  .pipe(z.union([z.number().int("정수여야 합니다").min(1, "1 이상이어야 합니다"), z.null()]));
 
 const actionIdsSchema = z.array(z.string().min(1, "액션 ID가 비어있습니다.")).default([]);
 
@@ -87,7 +88,7 @@ export const missionUpdateSchema = z
     brandLogoFileUploadId: brandLogoFileUploadIdSchema,
     deadline: z.date().optional(),
     estimatedMinutes: estimatedMinutesSchema,
-    maxParticipants: maxParticipantsSchema,
+    maxParticipants: maxParticipantsSchema.optional(),
     type: missionTypeSchema.optional(),
     isActive: z.boolean().optional(),
     rewardId: z.string().nullable().optional(),
@@ -96,6 +97,6 @@ export const missionUpdateSchema = z
     message: "최소 하나의 필드를 수정해야 합니다.",
   });
 
-export type MissionInput = z.infer<typeof missionInputSchema>;
+export type MissionInput = z.input<typeof missionInputSchema>;
 export type MissionUpdate = z.input<typeof missionUpdateSchema>;
 export type MissionPasswordInput = z.infer<typeof missionPasswordSchema>;

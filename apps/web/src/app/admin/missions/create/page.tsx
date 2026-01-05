@@ -118,6 +118,8 @@ export default function AdminMissionCreatePage() {
       title: missionData.title,
       type: missionData.type,
       actionIds: Array.isArray(missionData.actionIds) ? missionData.actionIds : [],
+      maxParticipants:
+        typeof missionData.maxParticipants === "number" ? missionData.maxParticipants : null,
       ...(missionData.description && { description: missionData.description }),
       ...(missionData.target && { target: missionData.target }),
       ...(missionData.imageUrl && { imageUrl: missionData.imageUrl }),
@@ -128,7 +130,6 @@ export default function AdminMissionCreatePage() {
       }),
       ...(missionData.estimatedMinutes && { estimatedMinutes: missionData.estimatedMinutes }),
       ...(missionData.deadline && { deadline: missionData.deadline }),
-      ...(missionData.maxParticipants !== null && { maxParticipants: missionData.maxParticipants }),
       ...(missionData.isActive !== undefined && { isActive: missionData.isActive }),
     });
   });
