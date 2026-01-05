@@ -55,10 +55,10 @@ export function useMissionIntroData(missionId: string) {
 
   const answers = missionResponse?.data?.answers ?? [];
   const validActionIds = new Set(answers.filter(isValidAnswer).map(answer => answer.actionId));
-  const validAnswersCount = validActionIds.size;
 
-  const lastActionIndex = validAnswersCount;
-  const nextActionId = actionIds?.data?.actionIds?.[lastActionIndex];
+  const allActionIds = actionIds?.data?.actionIds ?? [];
+  const nextActionIndex = allActionIds.findIndex(actionId => !validActionIds.has(actionId));
+  const nextActionId = nextActionIndex === -1 ? undefined : allActionIds[nextActionIndex];
   const hasStartedMission = missionResponse?.data != null;
   const isEnabledToResume = hasStartedMission && !isCompleted && nextActionId !== undefined;
 
@@ -72,7 +72,7 @@ export function useMissionIntroData(missionId: string) {
     nextActionId,
     isCompleted,
     isEnabledToResume,
-    lastActionIndex,
+    nextActionIndex,
     isRequirePassword,
   };
 }
