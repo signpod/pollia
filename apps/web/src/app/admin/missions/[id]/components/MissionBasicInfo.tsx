@@ -1,4 +1,7 @@
+"use client";
+
 import { Badge } from "@/app/admin/components/shadcn-ui/badge";
+import { Button } from "@/app/admin/components/shadcn-ui/button";
 import {
   Card,
   CardContent,
@@ -20,11 +23,15 @@ import {
   ImageIcon,
   Lock,
   type LucideIcon,
+  Pencil,
   Users,
   XCircle,
 } from "lucide-react";
 import Image from "next/image";
+import { useState } from "react";
 import { ClientDateDisplay } from "./ClientDateDisplay";
+import { BasicInfoEditDialog } from "./edit/BasicInfoEditDialog";
+import { ImageEditDialog } from "./edit/ImageEditDialog";
 
 interface MissionBasicInfoProps {
   mission: GetMissionResponse["data"];
@@ -70,6 +77,8 @@ function InfoField({ label, value, className }: InfoFieldProps) {
 
 export function MissionBasicInfo({ mission }: MissionBasicInfoProps) {
   const missionTypeLabel = MISSION_TYPE_LABELS[mission.type];
+  const [isBasicInfoDialogOpen, setIsBasicInfoDialogOpen] = useState(false);
+  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -165,8 +174,16 @@ export function MissionBasicInfo({ mission }: MissionBasicInfoProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>기본 정보</CardTitle>
-            <CardDescription>미션의 핵심 정보</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>기본 정보</CardTitle>
+                <CardDescription>미션의 핵심 정보</CardDescription>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => setIsBasicInfoDialogOpen(true)}>
+                <Pencil className="h-4 w-4 mr-2" />
+                편집
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <InfoField label="제목" value={mission.title} />
@@ -206,8 +223,16 @@ export function MissionBasicInfo({ mission }: MissionBasicInfoProps) {
 
         <Card>
           <CardHeader>
-            <CardTitle>미디어</CardTitle>
-            <CardDescription>이미지 및 로고</CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>미디어</CardTitle>
+                <CardDescription>이미지 및 로고</CardDescription>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => setIsImageDialogOpen(true)}>
+                <Pencil className="h-4 w-4 mr-2" />
+                편집
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <InfoField
@@ -258,6 +283,18 @@ export function MissionBasicInfo({ mission }: MissionBasicInfoProps) {
           </CardContent>
         </Card>
       </div>
+
+      <BasicInfoEditDialog
+        open={isBasicInfoDialogOpen}
+        onOpenChange={setIsBasicInfoDialogOpen}
+        missionId={mission.id}
+      />
+
+      <ImageEditDialog
+        open={isImageDialogOpen}
+        onOpenChange={setIsImageDialogOpen}
+        missionId={mission.id}
+      />
     </div>
   );
 }
