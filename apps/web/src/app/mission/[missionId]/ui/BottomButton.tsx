@@ -10,6 +10,7 @@ import {
 } from "@/hooks/mission-response";
 import { useReadMissionParticipantInfo } from "@/hooks/participant";
 import { useAuth } from "@/hooks/user/useAuth";
+import { setActionNavCookie } from "@/lib/cookie";
 import { Mission } from "@prisma/client";
 import KakaoIcon from "@public/svgs/kakao-icon.svg";
 import { ButtonV2, Tooltip, Typo } from "@repo/ui/components";
@@ -130,12 +131,22 @@ export function BottomButton({
     if (showResumeModal) {
       const modalShown = showResumeModal();
       if (!modalShown && firstActionId) {
-        router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
-        handleStartResponse({ missionId });
+        try {
+          setActionNavCookie(missionId, "initial");
+          await handleStartResponse({ missionId });
+          router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
+        } catch {
+          toast.warning("미션 시작에 실패했어요. 다시 시도해주세요.", { id: "start-mission-error" });
+        }
       }
     } else if (firstActionId) {
-      router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
-      handleStartResponse({ missionId });
+      try {
+        setActionNavCookie(missionId, "initial");
+        await handleStartResponse({ missionId });
+        router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
+      } catch {
+        toast.warning("미션 시작에 실패했어요. 다시 시도해주세요.", { id: "start-mission-error" });
+      }
     }
   };
 
