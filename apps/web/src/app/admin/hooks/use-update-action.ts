@@ -6,19 +6,19 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface UpdateActionOptionInput {
   title: string;
-  description?: string;
-  imageUrl?: string;
+  description?: string | null;
+  imageUrl?: string | null;
   order: number;
-  imageFileUploadId?: string;
+  imageFileUploadId?: string | null;
 }
 
 interface UpdateActionInput {
   actionId: string;
   missionId: string;
   title?: string;
-  description?: string;
-  imageUrl?: string;
-  imageFileUploadId?: string;
+  description?: string | null;
+  imageUrl?: string | null;
+  imageFileUploadId?: string | null;
   order?: number;
   maxSelections?: number;
   isRequired?: boolean;

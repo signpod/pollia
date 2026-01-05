@@ -4,19 +4,19 @@ import type { Action, ActionOption } from "@prisma/client";
 export interface BaseActionRequest {
   missionId?: string;
   title: string;
-  description?: string;
-  imageUrl?: string;
-  imageFileUploadId?: string;
+  description?: string | null;
+  imageUrl?: string | null;
+  imageFileUploadId?: string | null;
   order: number;
   isRequired: boolean;
 }
 
 export interface ActionOptionInput {
   title: string;
-  description?: string;
-  imageUrl?: string;
+  description?: string | null;
+  imageUrl?: string | null;
   order: number;
-  imageFileUploadId?: string;
+  imageFileUploadId?: string | null;
 }
 
 export interface BaseActionResponse {
@@ -86,17 +86,17 @@ export type CreateTimeActionResponse = BaseActionResponse;
 
 export interface UpdateActionOptionRequest {
   title: string;
-  description?: string;
-  imageUrl?: string;
+  description?: string | null;
+  imageUrl?: string | null;
   order: number;
-  imageFileUploadId?: string;
+  imageFileUploadId?: string | null;
 }
 
 export interface UpdateActionRequest {
   title?: string;
-  description?: string;
-  imageUrl?: string;
-  imageFileUploadId?: string;
+  description?: string | null;
+  imageUrl?: string | null;
+  imageFileUploadId?: string | null;
   order?: number;
   maxSelections?: number;
   isRequired?: boolean;

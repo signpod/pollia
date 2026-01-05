@@ -48,10 +48,10 @@ export class ActionOptionRepository {
     data: {
       actionId: string;
       title: string;
-      description?: string;
-      imageUrl?: string;
+      description?: string | null;
+      imageUrl?: string | null;
       order: number;
-      imageFileUploadId?: string;
+      imageFileUploadId?: string | null;
     },
     userId: string,
   ) {
@@ -79,10 +79,10 @@ export class ActionOptionRepository {
     actionId: string,
     options: Array<{
       title: string;
-      description?: string;
-      imageUrl?: string;
+      description?: string | null;
+      imageUrl?: string | null;
       order: number;
-      imageFileUploadId?: string;
+      imageFileUploadId?: string | null;
     }>,
     userId: string,
   ) {
@@ -115,10 +115,10 @@ export class ActionOptionRepository {
     optionId: string,
     data: {
       title?: string;
-      description?: string;
-      imageUrl?: string;
+      description?: string | null;
+      imageUrl?: string | null;
       order?: number;
-      imageFileUploadId?: string;
+      imageFileUploadId?: string | null;
     },
     userId?: string,
   ) {
@@ -135,7 +135,7 @@ export class ActionOptionRepository {
           },
         });
 
-        await confirmFileUploads(tx, userId, data.imageFileUploadId);
+        await confirmFileUploads(tx, userId, data.imageFileUploadId ?? undefined);
 
         return updatedOption;
       });
