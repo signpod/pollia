@@ -255,9 +255,7 @@ function ImageCard({ form, imageUpload }: ImageCardProps) {
             }}
             disabled={imageUpload.isUploading}
           />
-          {imageUpload.isUploading && (
-            <p className="text-sm text-muted-foreground">업로드 중...</p>
-          )}
+          {imageUpload.isUploading && <p className="text-sm text-muted-foreground">업로드 중...</p>}
         </div>
       </CardContent>
     </Card>

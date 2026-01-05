@@ -190,11 +190,7 @@ export function RewardForm({ isLoading, onSubmit, onCancel, initialData }: Rewar
             취소
           </Button>
           <Button type="submit" disabled={isSaveDisabled}>
-            {rewardImage.isUploading
-              ? "이미지 업로드 중..."
-              : isLoading
-                ? "저장 중..."
-                : "저장"}
+            {rewardImage.isUploading ? "이미지 업로드 중..." : isLoading ? "저장 중..." : "저장"}
           </Button>
         </div>
       </form>

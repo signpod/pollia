@@ -198,11 +198,7 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
   );
 }
 
-export function ImageCard({
-  form,
-  missionImageUpload,
-  brandLogoUpload,
-}: ImageCardProps) {
+export function ImageCard({ form, missionImageUpload, brandLogoUpload }: ImageCardProps) {
   return (
     <Card>
       <CardHeader>

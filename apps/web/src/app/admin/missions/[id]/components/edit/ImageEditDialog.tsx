@@ -92,11 +92,7 @@ function ImageFormContent({ mission, missionId, onSuccess }: ImageFormContentPro
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
-      <ImageCard
-        form={form}
-        missionImageUpload={missionImage}
-        brandLogoUpload={brandLogo}
-      />
+      <ImageCard form={form} missionImageUpload={missionImage} brandLogoUpload={brandLogo} />
       <div className="flex justify-end gap-3">
         <Button
           type="button"
