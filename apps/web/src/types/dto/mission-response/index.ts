@@ -1,4 +1,4 @@
-import type { ActionAnswer } from "../action-answer";
+import type { Action, ActionAnswer, ActionOption, FileUpload } from "@prisma/client";
 
 export interface StartMissionResponseRequest {
   missionId: string;
@@ -39,7 +39,13 @@ export interface GetMissionResponseResponse {
     completedAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
-    answers: ActionAnswer[];
+    answers: Array<
+      ActionAnswer & {
+        action: Action;
+        option: ActionOption | null;
+        fileUploads: FileUpload[];
+      }
+    >;
   };
 }
 

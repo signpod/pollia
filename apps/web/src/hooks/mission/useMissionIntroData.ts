@@ -1,5 +1,44 @@
 import { useReadActionIds, useReadMission } from "@/hooks/mission";
 import { useReadMissionResponseForMission } from "@/hooks/mission-response";
+import type { GetMissionResponseResponse } from "@/types/dto";
+import { ActionType } from "@prisma/client";
+
+type Answer = NonNullable<GetMissionResponseResponse["data"]>["answers"][number];
+
+const isValidAnswer = (answer: Answer): boolean => {
+  if (answer.responseId !== null) return true;
+
+  const { type } = answer.action;
+
+  switch (type) {
+    case ActionType.MULTIPLE_CHOICE:
+    case ActionType.TAG:
+      return answer.optionId !== null;
+
+    case ActionType.SCALE:
+    case ActionType.RATING:
+      return answer.scaleAnswer !== null;
+
+    case ActionType.SUBJECTIVE:
+    case ActionType.SHORT_TEXT:
+      return answer.textAnswer !== null;
+
+    case ActionType.IMAGE:
+    case ActionType.VIDEO:
+    case ActionType.PDF:
+      return answer.fileUploads.length > 0;
+
+    case ActionType.PRIVACY_CONSENT:
+      return answer.booleanAnswer !== null;
+
+    case ActionType.DATE:
+    case ActionType.TIME:
+      return answer.dateAnswers.length > 0;
+
+    default:
+      return true;
+  }
+};
 
 /**
  * 설문 인트로 페이지에 필요한 모든 데이터를 조회하는 훅
@@ -11,9 +50,11 @@ export function useMissionIntroData(missionId: string) {
 
   const firstActionId = actionIds?.data?.actionIds?.[0];
   const isCompleted = missionResponse?.data?.completedAt != null;
-  const lastActionIndex = missionResponse?.data?.answers?.length
-    ? missionResponse?.data?.answers?.length - 1
-    : 0;
+
+  const answers = missionResponse?.data?.answers ?? [];
+  const validAnswersCount = answers.filter(isValidAnswer).length;
+
+  const lastActionIndex = validAnswersCount;
   const nextActionId = actionIds?.data?.actionIds?.[lastActionIndex];
   const hasStartedMission = missionResponse?.data != null;
   const isEnabledToResume = hasStartedMission && !isCompleted && nextActionId !== undefined;
