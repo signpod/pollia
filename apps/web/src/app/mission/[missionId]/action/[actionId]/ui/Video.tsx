@@ -3,6 +3,7 @@ import { useDeleteAnswer } from "@/hooks/action/useDeleteAnswer";
 import { useDeleteFile } from "@/hooks/common/useDeleteFile";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
+import type { FileInfo } from "@/types/domain/file";
 import type { ActionAnswerItem } from "@/types/dto";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
@@ -10,13 +11,7 @@ import { VideoUpload } from "./VideoUpload";
 import { VideoList } from "./components/VideoList";
 import { VideoUploadNotice } from "./components/VideoUploadNotice";
 
-interface VideoInfo {
-  fileName: string;
-  fileSize: number;
-  fileUrl: string;
-  fileUploadId: string;
-  filePath: string;
-}
+type VideoInfo = FileInfo;
 
 export function ActionVideo({
   actionData,
@@ -168,28 +163,31 @@ export function ActionVideo({
 
   const handleVideoDelete = useCallback(
     (videoUrl: string) => {
+      const videoInfo = videoInfos.find(v => v.fileUrl === videoUrl);
+      if (!videoInfo) return;
+
       setVideoInfos(prev => {
-        const videoInfo = prev.find(v => v.fileUrl === videoUrl);
-        if (!videoInfo) return prev;
-
-        deleteFileMutation(videoInfo.filePath);
-
-        if (existingAnswer?.id) {
+        const filtered = prev.filter(v => v.fileUrl !== videoUrl);
+        
+        // 모든 비디오가 삭제되었을 때만 답변 삭제
+        if (filtered.length === 0 && existingAnswer?.id) {
           deleteAnswerMutation(existingAnswer.id);
         }
-
-        setVideoFileUploadIds(prevIds => prevIds.filter(id => id !== videoInfo.fileUploadId));
-
-        if (videoUrl.startsWith("blob:")) {
-          URL.revokeObjectURL(videoUrl);
-        }
-
-        setUploadingVideoUrl(prevUrl => (prevUrl === videoUrl ? null : prevUrl));
-
-        return prev.filter(v => v.fileUrl !== videoUrl);
+        
+        return filtered;
       });
+
+      deleteFileMutation(videoInfo.filePath);
+
+      setVideoFileUploadIds(prevIds => prevIds.filter(id => id !== videoInfo.fileUploadId));
+
+      if (videoUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(videoUrl);
+      }
+
+      setUploadingVideoUrl(prevUrl => (prevUrl === videoUrl ? null : prevUrl));
     },
-    [deleteFileMutation, deleteAnswerMutation, existingAnswer],
+    [deleteFileMutation, deleteAnswerMutation, existingAnswer, videoInfos],
   );
 
   const handleVideoLoadComplete = useCallback((videoUrl: string) => {

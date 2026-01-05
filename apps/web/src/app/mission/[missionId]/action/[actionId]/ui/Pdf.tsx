@@ -3,20 +3,13 @@ import { useDeleteAnswer } from "@/hooks/action/useDeleteAnswer";
 import { useDeleteFile } from "@/hooks/common/useDeleteFile";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
+import type { FileInfo } from "@/types/domain/file";
 import type { ActionAnswerItem } from "@/types/dto";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 import { PdfUpload } from "./PdfUpload";
 import { FileList } from "./components/FileList";
 import { PdfUploadNotice } from "./components/PdfUploadNotice";
-
-interface FileInfo {
-  fileName: string;
-  fileSize: number;
-  fileUrl: string;
-  fileUploadId: string;
-  filePath: string;
-}
 
 export function ActionPdf({
   actionData,
@@ -168,28 +161,31 @@ export function ActionPdf({
 
   const handleFileDelete = useCallback(
     (fileUrl: string) => {
+      const fileInfo = fileInfos.find(f => f.fileUrl === fileUrl);
+      if (!fileInfo) return;
+
       setFileInfos(prev => {
-        const fileInfo = prev.find(f => f.fileUrl === fileUrl);
-        if (!fileInfo) return prev;
-
-        deleteFileMutation(fileInfo.filePath);
-
-        if (existingAnswer?.id) {
+        const filtered = prev.filter(f => f.fileUrl !== fileUrl);
+        
+        // 모든 파일이 삭제되었을 때만 답변 삭제
+        if (filtered.length === 0 && existingAnswer?.id) {
           deleteAnswerMutation(existingAnswer.id);
         }
-
-        setFileUploadIds(prev => prev.filter(id => id !== fileInfo.fileUploadId));
-
-        if (fileUrl.startsWith("blob:")) {
-          URL.revokeObjectURL(fileUrl);
-        }
-
-        setUploadingFileUrl(prev => (prev === fileUrl ? null : prev));
-
-        return prev.filter(f => f.fileUrl !== fileUrl);
+        
+        return filtered;
       });
+
+      deleteFileMutation(fileInfo.filePath);
+
+      setFileUploadIds(prev => prev.filter(id => id !== fileInfo.fileUploadId));
+
+      if (fileUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(fileUrl);
+      }
+
+      setUploadingFileUrl(prev => (prev === fileUrl ? null : prev));
     },
-    [deleteFileMutation, deleteAnswerMutation, existingAnswer],
+    [deleteFileMutation, deleteAnswerMutation, existingAnswer, fileInfos],
   );
 
   const handleFileClick = useCallback((fileUrl: string) => {

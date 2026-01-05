@@ -6,6 +6,7 @@ import { useDeleteFile } from "@/hooks/common/useDeleteFile";
 import { useMultipleImageUpload } from "@/hooks/common/useImageUpload";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
+import type { FileUploadInfo } from "@/types/domain/file";
 import type { ActionAnswerItem } from "@/types/dto";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
@@ -15,11 +16,7 @@ import { ImageUploadNotice } from "./components/ImageUploadNotice";
 
 const IMAGE_UPLOAD_ERROR_MESSAGE = "이미지 업로드에 실패했어요.\n다시 시도해주세요." as const;
 
-interface ImageInfo {
-  fileUrl: string;
-  fileUploadId: string;
-  filePath: string;
-}
+type ImageInfo = FileUploadInfo;
 
 export function ActionImage({
   actionData,
@@ -131,11 +128,18 @@ export function ActionImage({
         newFileUploadIds.length > 0 &&
         newFilePaths.length > 0
       ) {
-        const newImageInfos: ImageInfo[] = newImageUrls.map((url, index) => ({
-          fileUrl: url,
-          fileUploadId: newFileUploadIds[index] ?? "",
-          filePath: newFilePaths[index] ?? "",
-        }));
+        const newImageInfos: ImageInfo[] = newImageUrls
+          .map((url, index) => {
+            const fileUploadId = newFileUploadIds[index];
+            const filePath = newFilePaths[index];
+            if (!fileUploadId || !filePath) return null;
+            return {
+              fileUrl: url,
+              fileUploadId,
+              filePath,
+            };
+          })
+          .filter((info): info is ImageInfo => info !== null);
 
         setImageInfos(prev => {
           const existingUrlsSet = new Set(prev.map(info => info.fileUrl));
@@ -159,26 +163,29 @@ export function ActionImage({
 
   const handleImageDelete = useCallback(
     (imageUrl: string) => {
+      const imageInfo = imageInfos.find(info => info.fileUrl === imageUrl);
+      if (!imageInfo) return;
+
       setImageInfos(prev => {
-        const imageInfo = prev.find(info => info.fileUrl === imageUrl);
-        if (!imageInfo) return prev;
-
-        deleteFileMutation(imageInfo.filePath);
-
-        if (existingAnswer?.id) {
+        const filtered = prev.filter(info => info.fileUrl !== imageUrl);
+        
+        // 모든 이미지가 삭제되었을 때만 답변 삭제
+        if (filtered.length === 0 && existingAnswer?.id) {
           deleteAnswerMutation(existingAnswer.id);
         }
-
-        if (imageUrl.startsWith("blob:")) {
-          URL.revokeObjectURL(imageUrl);
-        }
-
-        setUploadingImageUrl(prevUrl => (prevUrl === imageUrl ? null : prevUrl));
-
-        return prev.filter(info => info.fileUrl !== imageUrl);
+        
+        return filtered;
       });
+
+      deleteFileMutation(imageInfo.filePath);
+
+      if (imageUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(imageUrl);
+      }
+
+      setUploadingImageUrl(prevUrl => (prevUrl === imageUrl ? null : prevUrl));
     },
-    [deleteFileMutation, deleteAnswerMutation, existingAnswer],
+    [deleteFileMutation, deleteAnswerMutation, existingAnswer, imageInfos],
   );
 
   const handleImageLoadComplete = useCallback((imageUrl: string) => {
