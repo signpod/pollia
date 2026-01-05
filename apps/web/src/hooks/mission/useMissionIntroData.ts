@@ -6,8 +6,6 @@ import { ActionType } from "@prisma/client";
 type Answer = NonNullable<GetMissionResponseResponse["data"]>["answers"][number];
 
 const isValidAnswer = (answer: Answer): boolean => {
-  if (answer.responseId !== null) return true;
-
   const { type } = answer.action;
 
   switch (type) {
