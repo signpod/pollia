@@ -33,7 +33,9 @@ export function ActionVideo({
   const [isUploading, setIsUploading] = useState(false);
 
   const { mutate: deleteFileMutation } = useDeleteFile();
-  const { mutate: deleteAnswerMutation } = useDeleteAnswer();
+  const { mutate: deleteAnswerMutation, isPending: isDeletingAnswer } = useDeleteAnswer();
+
+  const prevHadVideosRef = useRef(false);
 
   const existingAnswer = useMemo(() => {
     if (!missionResponse?.data?.answers || missionResponse.data.answers.length === 0) {
@@ -118,6 +120,13 @@ export function ActionVideo({
     validateAndUpdateAnswer(videoFileUploadIds);
   }, [videoFileUploadIds, validateAndUpdateAnswer]);
 
+  useEffect(() => {
+    if (prevHadVideosRef.current && videoInfos.length === 0 && existingAnswer?.id) {
+      deleteAnswerMutation(existingAnswer.id);
+    }
+    prevHadVideosRef.current = videoInfos.length > 0;
+  }, [videoInfos.length, existingAnswer?.id, deleteAnswerMutation]);
+
   const handleUploadChange = useCallback(
     (
       hasUploadedVideo: boolean,
@@ -168,17 +177,11 @@ export function ActionVideo({
       const videoInfo = videoInfos.find(v => v.fileUrl === videoUrl);
       if (!videoInfo) return;
 
-      const willBeEmpty = videoInfos.length === 1;
-
       setVideoInfos(prev => prev.filter(v => v.fileUrl !== videoUrl));
 
       deleteFileMutation(videoInfo.filePath);
 
       setVideoFileUploadIds(prevIds => prevIds.filter(id => id !== videoInfo.fileUploadId));
-
-      if (willBeEmpty && existingAnswer?.id) {
-        deleteAnswerMutation(existingAnswer.id);
-      }
 
       if (videoUrl.startsWith("blob:")) {
         URL.revokeObjectURL(videoUrl);
@@ -186,7 +189,7 @@ export function ActionVideo({
 
       setUploadingVideoUrl(prevUrl => (prevUrl === videoUrl ? null : prevUrl));
     },
-    [deleteFileMutation, deleteAnswerMutation, existingAnswer, videoInfos],
+    [deleteFileMutation, videoInfos],
   );
 
   const handleVideoLoadComplete = useCallback((videoUrl: string) => {
@@ -201,7 +204,7 @@ export function ActionVideo({
       description={actionData.description ?? undefined}
       imageUrl={actionData.imageUrl ?? undefined}
       isFirstAction={isFirstAction}
-      isNextDisabled={isNextDisabledProp}
+      isNextDisabled={isNextDisabledProp || isDeletingAnswer}
       onPrevious={onPrevious}
       onNext={onNext}
       nextButtonText={nextButtonText}

@@ -37,7 +37,9 @@ export function ActionImage({
   const [isUploading, setIsUploading] = useState(false);
 
   const { mutate: deleteFileMutation } = useDeleteFile();
-  const { mutate: deleteAnswerMutation } = useDeleteAnswer();
+  const { mutate: deleteAnswerMutation, isPending: isDeletingAnswer } = useDeleteAnswer();
+
+  const prevHadImagesRef = useRef(false);
 
   const { uploadMultiple } = useMultipleImageUpload({
     bucket: STORAGE_BUCKETS.ACTION_ANSWER_IMAGES,
@@ -115,6 +117,13 @@ export function ActionImage({
     validateAndUpdateAnswer(imageInfos);
   }, [imageInfos, validateAndUpdateAnswer]);
 
+  useEffect(() => {
+    if (prevHadImagesRef.current && imageInfos.length === 0 && existingAnswer?.id) {
+      deleteAnswerMutation(existingAnswer.id);
+    }
+    prevHadImagesRef.current = imageInfos.length > 0;
+  }, [imageInfos.length, existingAnswer?.id, deleteAnswerMutation]);
+
   const handleUploadChange = useCallback(
     (
       hasUploadedImage: boolean,
@@ -166,15 +175,9 @@ export function ActionImage({
       const imageInfo = imageInfos.find(info => info.fileUrl === imageUrl);
       if (!imageInfo) return;
 
-      const willBeEmpty = imageInfos.length === 1;
-
       setImageInfos(prev => prev.filter(info => info.fileUrl !== imageUrl));
 
       deleteFileMutation(imageInfo.filePath);
-
-      if (willBeEmpty && existingAnswer?.id) {
-        deleteAnswerMutation(existingAnswer.id);
-      }
 
       if (imageUrl.startsWith("blob:")) {
         URL.revokeObjectURL(imageUrl);
@@ -182,7 +185,7 @@ export function ActionImage({
 
       setUploadingImageUrl(prevUrl => (prevUrl === imageUrl ? null : prevUrl));
     },
-    [deleteFileMutation, deleteAnswerMutation, existingAnswer, imageInfos],
+    [deleteFileMutation, imageInfos],
   );
 
   const handleImageLoadComplete = useCallback((imageUrl: string) => {
@@ -255,7 +258,7 @@ export function ActionImage({
       description={actionData.description ?? undefined}
       imageUrl={actionData.imageUrl ?? undefined}
       isFirstAction={isFirstAction}
-      isNextDisabled={isNextDisabledProp}
+      isNextDisabled={isNextDisabledProp || isDeletingAnswer}
       onPrevious={onPrevious}
       onNext={onNext}
       nextButtonText={nextButtonText}

@@ -31,7 +31,9 @@ export function ActionPdf({
   const [isUploading, setIsUploading] = useState(false);
 
   const { mutate: deleteFileMutation } = useDeleteFile();
-  const { mutate: deleteAnswerMutation } = useDeleteAnswer();
+  const { mutate: deleteAnswerMutation, isPending: isDeletingAnswer } = useDeleteAnswer();
+
+  const prevHadFilesRef = useRef(false);
 
   const existingAnswer = useMemo(() => {
     if (!missionResponse?.data?.answers || missionResponse.data.answers.length === 0) {
@@ -114,6 +116,13 @@ export function ActionPdf({
     validateAndUpdateAnswer(fileUploadIds);
   }, [fileUploadIds, validateAndUpdateAnswer]);
 
+  useEffect(() => {
+    if (prevHadFilesRef.current && fileInfos.length === 0 && existingAnswer?.id) {
+      deleteAnswerMutation(existingAnswer.id);
+    }
+    prevHadFilesRef.current = fileInfos.length > 0;
+  }, [fileInfos.length, existingAnswer?.id, deleteAnswerMutation]);
+
   const handleUploadChange = useCallback(
     (
       hasUploadedFile: boolean,
@@ -164,17 +173,11 @@ export function ActionPdf({
       const fileInfo = fileInfos.find(f => f.fileUrl === fileUrl);
       if (!fileInfo) return;
 
-      const willBeEmpty = fileInfos.length === 1;
-
       setFileInfos(prev => prev.filter(f => f.fileUrl !== fileUrl));
 
       deleteFileMutation(fileInfo.filePath);
 
       setFileUploadIds(prev => prev.filter(id => id !== fileInfo.fileUploadId));
-
-      if (willBeEmpty && existingAnswer?.id) {
-        deleteAnswerMutation(existingAnswer.id);
-      }
 
       if (fileUrl.startsWith("blob:")) {
         URL.revokeObjectURL(fileUrl);
@@ -182,7 +185,7 @@ export function ActionPdf({
 
       setUploadingFileUrl(prev => (prev === fileUrl ? null : prev));
     },
-    [deleteFileMutation, deleteAnswerMutation, existingAnswer, fileInfos],
+    [deleteFileMutation, fileInfos],
   );
 
   const handleFileClick = useCallback((fileUrl: string) => {
@@ -197,7 +200,7 @@ export function ActionPdf({
       description={actionData.description ?? undefined}
       imageUrl={actionData.imageUrl ?? undefined}
       isFirstAction={isFirstAction}
-      isNextDisabled={isNextDisabledProp}
+      isNextDisabled={isNextDisabledProp || isDeletingAnswer}
       onPrevious={onPrevious}
       onNext={onNext}
       nextButtonText={nextButtonText}
