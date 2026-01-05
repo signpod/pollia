@@ -6,7 +6,11 @@ import { ActionType } from "@prisma/client";
 type Answer = NonNullable<GetMissionResponseResponse["data"]>["answers"][number];
 
 const isValidAnswer = (answer: Answer): boolean => {
-  const { type } = answer.action;
+  const { type, isRequired } = answer.action;
+
+  if (!isRequired) {
+    return true;
+  }
 
   switch (type) {
     case ActionType.MULTIPLE_CHOICE:
@@ -50,9 +54,7 @@ export function useMissionIntroData(missionId: string) {
   const isCompleted = missionResponse?.data?.completedAt != null;
 
   const answers = missionResponse?.data?.answers ?? [];
-  const validActionIds = new Set(
-    answers.filter(isValidAnswer).map(answer => answer.actionId),
-  );
+  const validActionIds = new Set(answers.filter(isValidAnswer).map(answer => answer.actionId));
   const validAnswersCount = validActionIds.size;
 
   const lastActionIndex = validAnswersCount;
