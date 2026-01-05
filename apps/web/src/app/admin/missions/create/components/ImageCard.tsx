@@ -89,7 +89,7 @@ export function ImageCard({ form }: ImageCardProps) {
           <div className="flex flex-col gap-2">
             <ImageSelector
               size="large"
-              imageUrl={brandLogoUrl}
+              imageUrl={brandLogoUrl || undefined}
               onImageSelect={brandLogoUpload.selectImage}
               onImageDelete={handleBrandLogoDelete}
               disabled={brandLogoUpload.isUploading}
