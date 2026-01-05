@@ -50,7 +50,10 @@ export function useMissionIntroData(missionId: string) {
   const isCompleted = missionResponse?.data?.completedAt != null;
 
   const answers = missionResponse?.data?.answers ?? [];
-  const validAnswersCount = answers.filter(isValidAnswer).length;
+  const validActionIds = new Set(
+    answers.filter(isValidAnswer).map(answer => answer.actionId),
+  );
+  const validAnswersCount = validActionIds.size;
 
   const lastActionIndex = validAnswersCount;
   const nextActionId = actionIds?.data?.actionIds?.[lastActionIndex];

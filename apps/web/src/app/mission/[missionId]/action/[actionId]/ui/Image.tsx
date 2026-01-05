@@ -191,8 +191,8 @@ export function ActionImage({
 
   const handleImageEdit = useCallback(
     async (originalImageUrl: string, editedFile: File) => {
-      const originalIndex = imageInfos.findIndex(info => info.fileUrl === originalImageUrl);
-      if (originalIndex === -1) {
+      const originalImageInfo = imageInfos.find(info => info.fileUrl === originalImageUrl);
+      if (!originalImageInfo) {
         return;
       }
 
@@ -233,6 +233,8 @@ export function ActionImage({
           return newInfos;
         });
 
+        deleteFileMutation(originalImageInfo.filePath);
+
         setUploadingImageUrl(null);
         setIsUploading(false);
       } catch (error) {
@@ -242,7 +244,7 @@ export function ActionImage({
         setUploadingImageUrl(null);
       }
     },
-    [imageInfos, uploadMultiple],
+    [imageInfos, uploadMultiple, deleteFileMutation],
   );
 
   return (
