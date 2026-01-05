@@ -40,7 +40,7 @@ export function MissionCompletionCard({ missionId }: MissionCompletionCardProps)
   const completion = completionResponse?.data ?? null;
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
-  const links = completion?.links as Record<string, string> | null | undefined;
+  const links = completion?.links ?? null;
   const linkEntries = links ? Object.entries(links) : [];
 
   return (

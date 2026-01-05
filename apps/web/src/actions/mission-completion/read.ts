@@ -2,13 +2,14 @@
 
 import { missionCompletionService } from "@/server/services/mission-completion/missionCompletionService";
 import type { GetMissionCompletionResponse } from "@/types/dto";
+import { toMissionCompletionData } from "./utils";
 
 export async function getMissionCompletion(
   missionId: string,
 ): Promise<GetMissionCompletionResponse> {
   try {
     const missionCompletion = await missionCompletionService.getMissionCompletion(missionId);
-    return { data: missionCompletion };
+    return { data: toMissionCompletionData(missionCompletion) };
   } catch (error) {
     console.error("getMissionCompletion error:", error);
     if (error instanceof Error && error.cause) {

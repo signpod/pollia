@@ -489,7 +489,7 @@ export function useCompletionForm(completion: MissionCompletionData | null) {
     description: completion?.description ?? "",
     imageUrl: completion?.imageUrl ?? undefined,
     imageFileUploadId: completion?.imageFileUploadId ?? undefined,
-    links: completion?.links ? (completion.links as Record<string, string>) : undefined,
+    links: completion?.links ?? undefined,
   };
 
   const form = useForm<MissionCompletionForm>({
