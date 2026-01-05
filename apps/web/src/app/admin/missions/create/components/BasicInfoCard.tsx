@@ -94,7 +94,11 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
               placeholder="제한 없음"
               min="1"
               {...form.register("maxParticipants", {
-                setValueAs: value => (value === "" ? null : Number(value)),
+                setValueAs: value => {
+                  if (!value || value === "") return null;
+                  const num = Number(value);
+                  return Number.isNaN(num) ? null : num;
+                },
               })}
             />
             {form.formState.errors.maxParticipants && (
@@ -153,7 +157,11 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
             type="number"
             placeholder="예상 소요 시간을 입력하세요"
             {...form.register("estimatedMinutes", {
-              setValueAs: value => (value === "" ? undefined : Number(value)),
+              setValueAs: value => {
+                if (!value || value === "") return undefined;
+                const num = Number(value);
+                return isNaN(num) ? undefined : num;
+              },
             })}
           />
           {form.formState.errors.estimatedMinutes && (
