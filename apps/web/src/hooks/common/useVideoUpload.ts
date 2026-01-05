@@ -1,6 +1,6 @@
 "use client";
 
-import { confirmFile, deleteFile, getUploadUrl } from "@/actions/common/files";
+import { confirmFile, deleteFileByPath, getUploadUrl } from "@/actions/common/files";
 import type { StorageBucket } from "@/constants/buckets";
 import { ConfirmFileRequest, DeleteFileRequest, UploadFileRequest } from "@/types/dto/file";
 import { ActionType } from "@prisma/client";
@@ -80,7 +80,7 @@ export function useVideoUpload(options: UseVideoUploadOptions = {}) {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (request: DeleteFileRequest) => deleteFile(request),
+    mutationFn: (request: DeleteFileRequest) => deleteFileByPath(request),
     onSuccess: () => {
       if (process.env.NODE_ENV === "development") {
         console.log("✅ 동영상 삭제 성공");

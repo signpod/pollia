@@ -1,6 +1,6 @@
 "use client";
 
-import { confirmFile, deleteFile, getUploadUrl } from "@/actions/common/files";
+import { confirmFile, deleteFileByPath, getUploadUrl } from "@/actions/common/files";
 import type { StorageBucket } from "@/constants/buckets";
 import { ConfirmFileRequest, DeleteFileRequest, UploadFileRequest } from "@/types/dto/file";
 import { ActionType } from "@prisma/client";
@@ -80,7 +80,7 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (request: DeleteFileRequest) => deleteFile(request),
+    mutationFn: (request: DeleteFileRequest) => deleteFileByPath(request),
     onSuccess: () => {
       console.log("✅ 이미지 삭제 성공");
     },

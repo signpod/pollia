@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteFile, getUploadUrl } from "@/actions/common/files";
+import { deleteFileByPath, getUploadUrl } from "@/actions/common/files";
 import { STORAGE_BUCKETS, type StorageBucket } from "@/constants/buckets";
 import type { DeleteFileRequest, UploadFileRequest } from "@/types/dto/file";
 import { ActionType } from "@prisma/client";
@@ -57,7 +57,7 @@ export function useAdminSingleImage(options: UseAdminSingleImageOptions = {}) {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (request: DeleteFileRequest) => deleteFile(request),
+    mutationFn: (request: DeleteFileRequest) => deleteFileByPath(request),
   });
 
   useEffect(() => {
@@ -174,7 +174,7 @@ export function useAdminMultipleImages(options: UseAdminMultipleImagesOptions = 
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (request: DeleteFileRequest) => deleteFile(request),
+    mutationFn: (request: DeleteFileRequest) => deleteFileByPath(request),
   });
 
   useEffect(() => {

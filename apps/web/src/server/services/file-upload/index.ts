@@ -64,7 +64,7 @@ export class FileUploadService {
     };
   }
 
-  async deleteFile(filePath: string, userId: string): Promise<void> {
+  async deleteFileByPath(filePath: string, userId: string): Promise<void> {
     const fileUpload = await this.repo.findByFilePathAndUserId(filePath, userId);
 
     if (!fileUpload) {
