@@ -250,8 +250,8 @@ function ImageCard({ form, missionImageUpload, brandLogoUpload }: ImageCardProps
               onImageSelect={missionImageUpload.selectImage}
               onImageDelete={() => {
                 missionImageUpload.clearImage();
-                form.setValue("imageUrl", undefined, { shouldDirty: true });
-                form.setValue("imageFileUploadId", undefined, { shouldDirty: true });
+                form.setValue("imageUrl", null, { shouldDirty: true });
+                form.setValue("imageFileUploadId", null, { shouldDirty: true });
               }}
               disabled={missionImageUpload.isUploading}
             />
@@ -270,8 +270,8 @@ function ImageCard({ form, missionImageUpload, brandLogoUpload }: ImageCardProps
               onImageSelect={brandLogoUpload.selectImage}
               onImageDelete={() => {
                 brandLogoUpload.clearImage();
-                form.setValue("brandLogoUrl", undefined, { shouldDirty: true });
-                form.setValue("brandLogoFileUploadId", undefined, { shouldDirty: true });
+                form.setValue("brandLogoUrl", null, { shouldDirty: true });
+                form.setValue("brandLogoFileUploadId", null, { shouldDirty: true });
               }}
               disabled={brandLogoUpload.isUploading}
             />

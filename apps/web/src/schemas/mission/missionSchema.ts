@@ -26,11 +26,11 @@ const targetSchema = z
   .max(MISSION_TARGET_MAX_LENGTH, `대상은 ${MISSION_TARGET_MAX_LENGTH}자를 초과할 수 없습니다.`)
   .optional();
 
-const imageUrlSchema = z.url({ message: "올바른 URL 형식이 아닙니다." }).optional();
-const imageFileUploadIdSchema = z.string().optional();
+const imageUrlSchema = z.url({ message: "올바른 URL 형식이 아닙니다." }).nullable().optional();
+const imageFileUploadIdSchema = z.string().nullable().optional();
 
-const brandLogoUrlSchema = z.url({ message: "올바른 URL 형식이 아닙니다." }).optional();
-const brandLogoFileUploadIdSchema = z.string().optional();
+const brandLogoUrlSchema = z.url({ message: "올바른 URL 형식이 아닙니다." }).nullable().optional();
+const brandLogoFileUploadIdSchema = z.string().nullable().optional();
 
 const deadlineSchema = z.date().optional();
 
