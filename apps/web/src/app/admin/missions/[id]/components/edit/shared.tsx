@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/app/admin/components/shadcn-ui/select";
-import type { UseFormImageUploadReturn } from "@/app/admin/hooks/use-form-image-upload";
+import type { UseAdminSingleImageReturn } from "@/app/admin/hooks/use-admin-image-upload";
 import { MISSION_TYPE_LABELS } from "@/constants/action";
 import {
   MISSION_DESCRIPTION_MAX_LENGTH,
@@ -39,10 +39,8 @@ export interface BasicInfoCardProps {
 
 export interface ImageCardProps {
   form: UseFormReturn<MissionUpdate>;
-  missionImageUrl: string | undefined;
-  brandLogoUrl: string | undefined;
-  missionImageUpload: UseFormImageUploadReturn;
-  brandLogoUpload: UseFormImageUploadReturn;
+  missionImageUpload: UseAdminSingleImageReturn;
+  brandLogoUpload: UseAdminSingleImageReturn;
 }
 
 export function BasicInfoCard({ form }: BasicInfoCardProps) {
@@ -201,8 +199,7 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
 }
 
 export function ImageCard({
-  missionImageUrl,
-  brandLogoUrl,
+  form,
   missionImageUpload,
   brandLogoUpload,
 }: ImageCardProps) {
@@ -218,22 +215,17 @@ export function ImageCard({
           <div className="flex flex-col gap-2">
             <ImageSelector
               size="large"
-              imageUrl={missionImageUrl}
-              onImageSelect={missionImageUpload.handleSelect}
-              onImageDelete={missionImageUpload.handleDelete}
-              disabled={
-                missionImageUpload.upload.isUploading || missionImageUpload.upload.isDeleting
-              }
+              imageUrl={missionImageUpload.previewUrl || undefined}
+              onImageSelect={missionImageUpload.selectImage}
+              onImageDelete={() => {
+                missionImageUpload.clearImage();
+                form.setValue("imageUrl", undefined, { shouldDirty: true });
+                form.setValue("imageFileUploadId", undefined, { shouldDirty: true });
+              }}
+              disabled={missionImageUpload.isUploading}
             />
-            {(missionImageUpload.upload.isUploading || missionImageUpload.upload.isDeleting) && (
-              <p className="text-sm text-muted-foreground">
-                {missionImageUpload.upload.isUploading ? "업로드 중..." : "삭제 중..."}
-              </p>
-            )}
-            {missionImageUpload.upload.uploadError && (
-              <p className="text-sm text-destructive">
-                업로드 실패: {missionImageUpload.upload.uploadError.message}
-              </p>
+            {missionImageUpload.isUploading && (
+              <p className="text-sm text-muted-foreground">업로드 중...</p>
             )}
           </div>
         </div>
@@ -243,20 +235,17 @@ export function ImageCard({
           <div className="flex flex-col gap-2">
             <ImageSelector
               size="large"
-              imageUrl={brandLogoUrl}
-              onImageSelect={brandLogoUpload.handleSelect}
-              onImageDelete={brandLogoUpload.handleDelete}
-              disabled={brandLogoUpload.upload.isUploading || brandLogoUpload.upload.isDeleting}
+              imageUrl={brandLogoUpload.previewUrl || undefined}
+              onImageSelect={brandLogoUpload.selectImage}
+              onImageDelete={() => {
+                brandLogoUpload.clearImage();
+                form.setValue("brandLogoUrl", undefined, { shouldDirty: true });
+                form.setValue("brandLogoFileUploadId", undefined, { shouldDirty: true });
+              }}
+              disabled={brandLogoUpload.isUploading}
             />
-            {(brandLogoUpload.upload.isUploading || brandLogoUpload.upload.isDeleting) && (
-              <p className="text-sm text-muted-foreground">
-                {brandLogoUpload.upload.isUploading ? "업로드 중..." : "삭제 중..."}
-              </p>
-            )}
-            {brandLogoUpload.upload.uploadError && (
-              <p className="text-sm text-destructive">
-                업로드 실패: {brandLogoUpload.upload.uploadError.message}
-              </p>
+            {brandLogoUpload.isUploading && (
+              <p className="text-sm text-muted-foreground">업로드 중...</p>
             )}
           </div>
         </div>

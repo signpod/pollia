@@ -22,9 +22,9 @@ import {
 } from "@/app/admin/components/shadcn-ui/select";
 import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
 import {
-  type UseFormImageUploadReturn,
-  useFormImageUpload,
-} from "@/app/admin/hooks/use-form-image-upload";
+  type UseAdminSingleImageReturn,
+  useAdminSingleImage,
+} from "@/app/admin/hooks/use-admin-image-upload";
 import { useReadMission } from "@/app/admin/hooks/use-read-mission";
 import { useUpdateMission } from "@/app/admin/hooks/use-update-mission";
 import { MISSION_TYPE_LABELS } from "@/constants/action";
@@ -52,10 +52,8 @@ interface BasicInfoCardProps {
 
 interface ImageCardProps {
   form: UseFormReturn<MissionUpdate>;
-  missionImageUrl: string | undefined;
-  brandLogoUrl: string | undefined;
-  missionImageUpload: UseFormImageUploadReturn;
-  brandLogoUpload: UseFormImageUploadReturn;
+  missionImageUpload: UseAdminSingleImageReturn;
+  brandLogoUpload: UseAdminSingleImageReturn;
 }
 
 interface ActionButtonsProps {
@@ -235,12 +233,7 @@ function BasicInfoCard({ form }: BasicInfoCardProps) {
   );
 }
 
-function ImageCard({
-  missionImageUrl,
-  brandLogoUrl,
-  missionImageUpload,
-  brandLogoUpload,
-}: ImageCardProps) {
+function ImageCard({ form, missionImageUpload, brandLogoUpload }: ImageCardProps) {
   return (
     <Card>
       <CardHeader>
@@ -253,22 +246,17 @@ function ImageCard({
           <div className="flex flex-col gap-2">
             <ImageSelector
               size="large"
-              imageUrl={missionImageUrl}
-              onImageSelect={missionImageUpload.handleSelect}
-              onImageDelete={missionImageUpload.handleDelete}
-              disabled={
-                missionImageUpload.upload.isUploading || missionImageUpload.upload.isDeleting
-              }
+              imageUrl={missionImageUpload.previewUrl || undefined}
+              onImageSelect={missionImageUpload.selectImage}
+              onImageDelete={() => {
+                missionImageUpload.clearImage();
+                form.setValue("imageUrl", undefined, { shouldDirty: true });
+                form.setValue("imageFileUploadId", undefined, { shouldDirty: true });
+              }}
+              disabled={missionImageUpload.isUploading}
             />
-            {(missionImageUpload.upload.isUploading || missionImageUpload.upload.isDeleting) && (
-              <p className="text-sm text-muted-foreground">
-                {missionImageUpload.upload.isUploading ? "업로드 중..." : "삭제 중..."}
-              </p>
-            )}
-            {missionImageUpload.upload.uploadError && (
-              <p className="text-sm text-destructive">
-                업로드 실패: {missionImageUpload.upload.uploadError.message}
-              </p>
+            {missionImageUpload.isUploading && (
+              <p className="text-sm text-muted-foreground">업로드 중...</p>
             )}
           </div>
         </div>
@@ -278,20 +266,17 @@ function ImageCard({
           <div className="flex flex-col gap-2">
             <ImageSelector
               size="large"
-              imageUrl={brandLogoUrl}
-              onImageSelect={brandLogoUpload.handleSelect}
-              onImageDelete={brandLogoUpload.handleDelete}
-              disabled={brandLogoUpload.upload.isUploading || brandLogoUpload.upload.isDeleting}
+              imageUrl={brandLogoUpload.previewUrl || undefined}
+              onImageSelect={brandLogoUpload.selectImage}
+              onImageDelete={() => {
+                brandLogoUpload.clearImage();
+                form.setValue("brandLogoUrl", undefined, { shouldDirty: true });
+                form.setValue("brandLogoFileUploadId", undefined, { shouldDirty: true });
+              }}
+              disabled={brandLogoUpload.isUploading}
             />
-            {(brandLogoUpload.upload.isUploading || brandLogoUpload.upload.isDeleting) && (
-              <p className="text-sm text-muted-foreground">
-                {brandLogoUpload.upload.isUploading ? "업로드 중..." : "삭제 중..."}
-              </p>
-            )}
-            {brandLogoUpload.upload.uploadError && (
-              <p className="text-sm text-destructive">
-                업로드 실패: {brandLogoUpload.upload.uploadError.message}
-              </p>
+            {brandLogoUpload.isUploading && (
+              <p className="text-sm text-muted-foreground">업로드 중...</p>
             )}
           </div>
         </div>
@@ -353,18 +338,20 @@ export function BasicInfoEditTab({ missionId }: BasicInfoEditTabProps) {
 function BasicInfoForm({ mission, missionId }: { mission: MissionData; missionId: string }) {
   const { form, handleReset } = useBasicInfoForm(mission);
 
-  const missionImage = useFormImageUpload({
-    form,
-    urlField: "imageUrl",
-    fileUploadIdField: "imageFileUploadId",
-    errorMessage: "미션 이미지 업로드 실패",
+  const missionImage = useAdminSingleImage({
+    initialUrl: mission.imageUrl ?? undefined,
+    onUploadSuccess: data => {
+      form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
+      form.setValue("imageFileUploadId", data.fileUploadId, { shouldDirty: true });
+    },
   });
 
-  const brandLogo = useFormImageUpload({
-    form,
-    urlField: "brandLogoUrl",
-    fileUploadIdField: "brandLogoFileUploadId",
-    errorMessage: "브랜드 로고 업로드 실패",
+  const brandLogo = useAdminSingleImage({
+    initialUrl: mission.brandLogoUrl ?? undefined,
+    onUploadSuccess: data => {
+      form.setValue("brandLogoUrl", data.publicUrl, { shouldDirty: true });
+      form.setValue("brandLogoFileUploadId", data.fileUploadId, { shouldDirty: true });
+    },
   });
 
   const updateMission = useUpdateMission({
@@ -379,13 +366,7 @@ function BasicInfoForm({ mission, missionId }: { mission: MissionData; missionId
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <BasicInfoCard form={form} />
-      <ImageCard
-        form={form}
-        missionImageUrl={missionImage.imageUrl}
-        brandLogoUrl={brandLogo.imageUrl}
-        missionImageUpload={missionImage}
-        brandLogoUpload={brandLogo}
-      />
+      <ImageCard form={form} missionImageUpload={missionImage} brandLogoUpload={brandLogo} />
       <ActionButtons
         isPending={updateMission.isPending}
         isDirty={form.formState.isDirty}

@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/app/admin/components/shadcn-ui/dialog";
 import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
-import { useFormImageUpload } from "@/app/admin/hooks/use-form-image-upload";
+import { useAdminSingleImage } from "@/app/admin/hooks/use-admin-image-upload";
 import { useReadMission } from "@/app/admin/hooks/use-read-mission";
 import { useUpdateMission } from "@/app/admin/hooks/use-update-mission";
 import type { MissionUpdate } from "@/schemas/mission";
@@ -62,18 +62,20 @@ interface ImageFormContentProps {
 function ImageFormContent({ mission, missionId, onSuccess }: ImageFormContentProps) {
   const { form, handleReset } = useBasicInfoForm(mission);
 
-  const missionImage = useFormImageUpload({
-    form,
-    urlField: "imageUrl",
-    fileUploadIdField: "imageFileUploadId",
-    errorMessage: "미션 이미지 업로드 실패",
+  const missionImage = useAdminSingleImage({
+    initialUrl: mission.imageUrl ?? undefined,
+    onUploadSuccess: data => {
+      form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
+      form.setValue("imageFileUploadId", data.fileUploadId, { shouldDirty: true });
+    },
   });
 
-  const brandLogo = useFormImageUpload({
-    form,
-    urlField: "brandLogoUrl",
-    fileUploadIdField: "brandLogoFileUploadId",
-    errorMessage: "브랜드 로고 업로드 실패",
+  const brandLogo = useAdminSingleImage({
+    initialUrl: mission.brandLogoUrl ?? undefined,
+    onUploadSuccess: data => {
+      form.setValue("brandLogoUrl", data.publicUrl, { shouldDirty: true });
+      form.setValue("brandLogoFileUploadId", data.fileUploadId, { shouldDirty: true });
+    },
   });
 
   const updateMission = useUpdateMission({
@@ -92,8 +94,6 @@ function ImageFormContent({ mission, missionId, onSuccess }: ImageFormContentPro
     <form onSubmit={onSubmit} className="space-y-6">
       <ImageCard
         form={form}
-        missionImageUrl={missionImage.imageUrl}
-        brandLogoUrl={brandLogo.imageUrl}
         missionImageUpload={missionImage}
         brandLogoUpload={brandLogo}
       />

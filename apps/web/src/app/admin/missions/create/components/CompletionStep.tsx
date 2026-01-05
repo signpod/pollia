@@ -13,7 +13,7 @@ import {
 } from "@/app/admin/components/shadcn-ui/card";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
-import { useFormImageUpload } from "@/app/admin/hooks/use-form-image-upload";
+import { useAdminSingleImage } from "@/app/admin/hooks/use-admin-image-upload";
 import {
   MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH,
   MISSION_COMPLETION_TITLE_MAX_LENGTH,
@@ -119,17 +119,25 @@ function LinksSection({ form }: { form: UseFormReturn<CreateMissionFunnelFormDat
 }
 
 export function CompletionStep({ form }: CompletionStepProps) {
-  const imageUpload = useFormImageUpload({
-    form,
-    urlField: "completion.imageUrl",
-    fileUploadIdField: "completion.imageFileUploadId",
-    errorMessage: "이미지 업로드 실패",
+  const imageUpload = useAdminSingleImage({
+    onUploadSuccess: data => {
+      const currentCompletion = form.getValues("completion");
+      form.setValue(
+        "completion",
+        {
+          ...currentCompletion,
+          imageUrl: data.publicUrl,
+          imageFileUploadId: data.fileUploadId,
+        },
+        { shouldDirty: true },
+      );
+    },
   });
 
   const completion = form.watch("completion");
   const completionTitle = completion?.title || "";
   const completionDescription = completion?.description || "";
-  const completionImageUrl = imageUpload.imageUrl;
+  const completionImageUrl = imageUpload.previewUrl || completion?.imageUrl || undefined;
 
   return (
     <div className="space-y-6">
@@ -292,19 +300,21 @@ export function CompletionStep({ form }: CompletionStepProps) {
             <ImageSelector
               size="large"
               imageUrl={completionImageUrl}
-              onImageSelect={imageUpload.handleSelect}
-              onImageDelete={imageUpload.handleDelete}
-              disabled={imageUpload.upload.isUploading || imageUpload.upload.isDeleting}
+              onImageSelect={imageUpload.selectImage}
+              onImageDelete={() => {
+                imageUpload.clearImage();
+                const currentCompletion = form.getValues("completion");
+                if (currentCompletion) {
+                  const { imageUrl, imageFileUploadId, ...rest } = currentCompletion;
+                  form.setValue("completion", Object.keys(rest).length > 0 ? rest : undefined, {
+                    shouldDirty: true,
+                  });
+                }
+              }}
+              disabled={imageUpload.isUploading}
             />
-            {(imageUpload.upload.isUploading || imageUpload.upload.isDeleting) && (
-              <p className="text-sm text-muted-foreground">
-                {imageUpload.upload.isUploading ? "업로드 중..." : "삭제 중..."}
-              </p>
-            )}
-            {imageUpload.upload.uploadError && (
-              <p className="text-sm text-destructive">
-                업로드 실패: {imageUpload.upload.uploadError.message}
-              </p>
+            {imageUpload.isUploading && (
+              <p className="text-sm text-muted-foreground">업로드 중...</p>
             )}
           </div>
         </CardContent>
