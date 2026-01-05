@@ -379,7 +379,7 @@ function LinksSection({ form }: { form: UseFormReturn<MissionCompletionForm> }) 
             }
           }}
         />
-        <Button type="button" onClick={handleAddLink}>
+        <Button type="button" onClick={handleAddLink} aria-label="링크 추가">
           <Plus className="size-4" />
         </Button>
       </div>

@@ -103,16 +103,16 @@ export function MissionCompletionCard({ missionId }: MissionCompletionCardProps)
                 label="이미지"
                 value={
                   completion.imageUrl ? (
-                    <Image
-                      src={completion.imageUrl}
-                      alt="완료 화면 이미지"
-                      width={200}
-                      height={200}
-                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 400px"
-                      className="w-auto h-auto max-w-full max-h-64 min-h-32 rounded-lg border mt-2"
-                      style={{ objectFit: "contain" }}
-                      loading="lazy"
-                    />
+                    <div className="relative w-full max-w-full h-64 mt-2">
+                      <Image
+                        src={completion.imageUrl}
+                        alt="완료 화면 이미지"
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 400px"
+                        className="rounded-lg border object-contain"
+                        loading="lazy"
+                      />
+                    </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center h-32 border-2 border-dashed rounded-lg bg-muted/20 mt-2">
                       <ImageIcon className="h-8 w-8 text-muted-foreground/30 mb-2" />
