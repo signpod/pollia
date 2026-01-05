@@ -164,52 +164,21 @@ export function CompletionStep({ form }: CompletionStepProps) {
               onChange={e => {
                 const value = e.target.value;
                 const currentDescription = completion?.description || "";
-                if (value && currentDescription) {
-                  form.setValue(
-                    "completion",
-                    {
-                      title: value,
-                      description: currentDescription,
-                      ...(completion?.imageUrl && { imageUrl: completion.imageUrl }),
-                      ...(completion?.imageFileUploadId && {
-                        imageFileUploadId: completion.imageFileUploadId,
-                      }),
-                      ...(completion?.links && { links: completion.links }),
-                    },
-                    {
-                      shouldDirty: true,
-                    },
-                  );
-                } else if (!value && !currentDescription) {
-                  form.setValue(
-                    "completion",
-                    completion && (completion.imageUrl || completion.links)
-                      ? {
-                          ...(completion.imageUrl && { imageUrl: completion.imageUrl }),
-                          ...(completion.imageFileUploadId && {
-                            imageFileUploadId: completion.imageFileUploadId,
-                          }),
-                          ...(completion.links && { links: completion.links }),
-                        }
-                      : undefined,
-                    {
-                      shouldDirty: true,
-                    },
-                  );
-                } else {
-                  const partialCompletion: CreateMissionFunnelFormData["completion"] = {
-                    ...(value && { title: value }),
-                    ...(currentDescription && { description: currentDescription }),
+                form.setValue(
+                  "completion",
+                  {
+                    title: value,
+                    description: currentDescription,
                     ...(completion?.imageUrl && { imageUrl: completion.imageUrl }),
                     ...(completion?.imageFileUploadId && {
                       imageFileUploadId: completion.imageFileUploadId,
                     }),
                     ...(completion?.links && { links: completion.links }),
-                  };
-                  form.setValue("completion", partialCompletion, {
+                  },
+                  {
                     shouldDirty: true,
-                  });
-                }
+                  },
+                );
               }}
               maxLength={MISSION_COMPLETION_TITLE_MAX_LENGTH}
             />
@@ -232,52 +201,21 @@ export function CompletionStep({ form }: CompletionStepProps) {
               content={completionDescription}
               onUpdate={content => {
                 const currentTitle = completion?.title || "";
-                if (content && currentTitle) {
-                  form.setValue(
-                    "completion",
-                    {
-                      title: currentTitle,
-                      description: content,
-                      ...(completion?.imageUrl && { imageUrl: completion.imageUrl }),
-                      ...(completion?.imageFileUploadId && {
-                        imageFileUploadId: completion.imageFileUploadId,
-                      }),
-                      ...(completion?.links && { links: completion.links }),
-                    },
-                    {
-                      shouldDirty: true,
-                    },
-                  );
-                } else if (!content && !currentTitle) {
-                  form.setValue(
-                    "completion",
-                    completion && (completion.imageUrl || completion.links)
-                      ? {
-                          ...(completion.imageUrl && { imageUrl: completion.imageUrl }),
-                          ...(completion.imageFileUploadId && {
-                            imageFileUploadId: completion.imageFileUploadId,
-                          }),
-                          ...(completion.links && { links: completion.links }),
-                        }
-                      : undefined,
-                    {
-                      shouldDirty: true,
-                    },
-                  );
-                } else {
-                  const partialCompletion: CreateMissionFunnelFormData["completion"] = {
-                    ...(currentTitle && { title: currentTitle }),
-                    ...(content && { description: content }),
+                form.setValue(
+                  "completion",
+                  {
+                    title: currentTitle,
+                    description: content || "",
                     ...(completion?.imageUrl && { imageUrl: completion.imageUrl }),
                     ...(completion?.imageFileUploadId && {
                       imageFileUploadId: completion.imageFileUploadId,
                     }),
                     ...(completion?.links && { links: completion.links }),
-                  };
-                  form.setValue("completion", partialCompletion, {
+                  },
+                  {
                     shouldDirty: true,
-                  });
-                }
+                  },
+                );
               }}
               placeholder="완료 화면에 표시될 설명을 입력하세요."
             />
@@ -306,7 +244,7 @@ export function CompletionStep({ form }: CompletionStepProps) {
                 const currentCompletion = form.getValues("completion");
                 if (currentCompletion) {
                   const { imageUrl, imageFileUploadId, ...rest } = currentCompletion;
-                  form.setValue("completion", Object.keys(rest).length > 0 ? rest : undefined, {
+                  form.setValue("completion", rest, {
                     shouldDirty: true,
                   });
                 }

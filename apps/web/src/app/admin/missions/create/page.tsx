@@ -33,24 +33,20 @@ export default function AdminMissionCreatePage() {
   const createMission = useCreateMission({
     onSuccess: async data => {
       const completion = form.getValues("completion");
-      if (completion?.title && completion?.description) {
-        try {
-          await createMissionCompletion.mutateAsync({
-            title: completion.title,
-            description: completion.description,
-            missionId: data.data.id,
-            ...(completion.imageUrl && { imageUrl: completion.imageUrl }),
-            ...(completion.imageFileUploadId && {
-              imageFileUploadId: completion.imageFileUploadId,
-            }),
-            ...(completion.links && { links: completion.links }),
-          });
-        } catch (error) {
-          console.error("완료 화면 생성 실패:", error);
-          toast.warning("미션은 생성되었지만 완료 화면 생성에 실패했습니다.");
-          router.push(ADMIN_ROUTES.ADMIN_MISSION_EDIT(data.data.id));
-          return;
-        }
+      try {
+        await createMissionCompletion.mutateAsync({
+          title: completion.title,
+          description: completion.description,
+          missionId: data.data.id,
+          ...(completion.imageUrl && { imageUrl: completion.imageUrl }),
+          ...(completion.imageFileUploadId && {
+            imageFileUploadId: completion.imageFileUploadId,
+          }),
+          ...(completion.links && { links: completion.links }),
+        });
+      } catch (error) {
+        console.error("완료 화면 생성 실패:", error);
+        toast.error("미션 생성 중 오류가 발생했습니다.");
       }
       toast.success("미션이 생성되었습니다.");
       router.push(ADMIN_ROUTES.ADMIN_MISSION_EDIT(data.data.id));
@@ -80,7 +76,13 @@ export default function AdminMissionCreatePage() {
     type: "GENERAL" as const,
     isActive: undefined,
     actionIds: [],
-    completion: undefined,
+    completion: {
+      title: "",
+      description: "",
+      imageUrl: undefined,
+      imageFileUploadId: undefined,
+      links: undefined,
+    },
   };
 
   const form = useForm<CreateMissionFunnelFormData>({
