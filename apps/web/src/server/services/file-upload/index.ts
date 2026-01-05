@@ -88,6 +88,30 @@ export class FileUploadService {
     await this.repo.delete(fileUpload.id);
   }
 
+  async deleteFileById(fileUploadId: string, userId: string): Promise<void> {
+    const fileUpload = await this.repo.findByIdAndUserId(fileUploadId, userId);
+
+    if (!fileUpload) {
+      const error = new Error("파일을 찾을 수 없거나 삭제 권한이 없습니다.");
+      error.cause = 404;
+      throw error;
+    }
+
+    const supabase = await this.createSupabase();
+    const { error: deleteError } = await supabase.storage
+      .from(fileUpload.bucket)
+      .remove([fileUpload.filePath]);
+
+    if (deleteError) {
+      console.error("파일 삭제 실패:", deleteError);
+      const error = new Error("파일 삭제에 실패했습니다.");
+      error.cause = 500;
+      throw error;
+    }
+
+    await this.repo.delete(fileUpload.id);
+  }
+
   async confirmFile(fileUploadId: string, userId: string): Promise<void> {
     const fileUpload = await this.repo.findTemporaryByIdAndUserId(fileUploadId, userId);
 
