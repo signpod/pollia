@@ -12,6 +12,7 @@ import { Separator } from "@/app/admin/components/shadcn-ui/separator";
 import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
 import { useReadActionsDetail } from "@/app/admin/hooks/use-read-actions-detail";
 import { ACTION_TYPE_LABELS } from "@/constants/action";
+import { cleanTiptapHTML } from "@/lib/utils";
 import type { ActionDetail } from "@/types/dto";
 import { ActionType } from "@prisma/client";
 import {
@@ -159,8 +160,13 @@ function ActionCard({ action }: { action: ActionDetail }) {
               )}
             </div>
             <CardTitle className="text-xl">{action.title}</CardTitle>
-            {action.description && (
-              <CardDescription className="mt-2">{action.description}</CardDescription>
+            {action.description && cleanTiptapHTML(action.description) && (
+              <CardDescription className="mt-2">
+                <div
+                  className="prose prose-sm max-w-none text-muted-foreground"
+                  dangerouslySetInnerHTML={{ __html: cleanTiptapHTML(action.description) }}
+                />
+              </CardDescription>
             )}
           </div>
         </div>

@@ -2,7 +2,7 @@ import { actionOptionSchema } from "@/schemas/action-option";
 import { z } from "zod";
 
 export const ACTION_TITLE_MAX_LENGTH = 100;
-export const ACTION_DESCRIPTION_MAX_LENGTH = 500;
+export const ACTION_DESCRIPTION_MAX_LENGTH = 3000;
 export const ACTION_OPTION_TITLE_MAX_LENGTH = 50;
 export const ACTION_OPTION_DESCRIPTION_MAX_LENGTH = 200;
 
