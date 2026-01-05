@@ -95,7 +95,6 @@ describe("MissionService - Mutation", () => {
         {
           title: "수정된 설문",
           description: "수정된 설명",
-          maxParticipants: null,
         },
         "user-1",
       );
