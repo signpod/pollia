@@ -761,7 +761,13 @@ export const OtherOptionStates: Story = {
 
       <div>
         <h3 className="mb-3 text-sm font-medium">선택 상태 (입력 전)</h3>
-        <ActionOptionButton selectType="radio" title="기타" isOther isSelected={true} textAnswer="" />
+        <ActionOptionButton
+          selectType="radio"
+          title="기타"
+          isOther
+          isSelected={true}
+          textAnswer=""
+        />
       </div>
 
       <div>

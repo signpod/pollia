@@ -24,13 +24,7 @@ export function PdfUpload({ onUploadChange, onUploadingChange }: PdfUploadProps)
     bucket: STORAGE_BUCKETS.ACTION_ANSWER_PDFS,
     onSuccess: result => {
       onUploadingChange?.(false);
-      onUploadChange?.(
-        true,
-        [result.publicUrl],
-        [result.fileUploadId],
-        [result.path],
-        result.file,
-      );
+      onUploadChange?.(true, [result.publicUrl], [result.fileUploadId], [result.path], result.file);
     },
     onError: error => {
       onUploadingChange?.(false);
