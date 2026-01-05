@@ -144,14 +144,14 @@ export function CompletionStep({ form }: CompletionStepProps) {
       <Card>
         <CardHeader>
           <CardTitle>완료 화면 정보</CardTitle>
-          <CardDescription>
-            미션 완료 시 표시될 화면의 제목과 설명을 입력하세요. (선택)
-          </CardDescription>
+          <CardDescription>미션 완료 시 표시될 화면의 제목과 설명을 입력하세요.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="completion-title">제목</Label>
+              <Label htmlFor="completion-title">
+                제목 <span className="text-destructive">*</span>
+              </Label>
               <CharacterCounter
                 current={completionTitle?.length || 0}
                 max={MISSION_COMPLETION_TITLE_MAX_LENGTH}
@@ -191,7 +191,9 @@ export function CompletionStep({ form }: CompletionStepProps) {
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="completion-description">설명</Label>
+              <Label htmlFor="completion-description">
+                설명 <span className="text-destructive">*</span>
+              </Label>
               <CharacterCounter
                 current={completionDescription?.length || 0}
                 max={MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH}
