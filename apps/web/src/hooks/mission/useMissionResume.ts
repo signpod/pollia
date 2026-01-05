@@ -1,5 +1,5 @@
 import { ROUTES } from "@/constants/routes";
-import { setSessionStorage } from "@/lib/sessionStorage";
+import { setActionNavCookie } from "@/lib/cookie";
 import { useModal } from "@repo/ui/components";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
@@ -42,7 +42,7 @@ export function useSurveyResume({
         cancelText: "처음부터 다시",
         showCancelButton: true,
         onConfirm: () => {
-          setSessionStorage(`current-action-id-${missionId}`, "resume");
+          setActionNavCookie(missionId, "resume");
           router.push(ROUTES.ACTION({ missionId, actionId: nextActionId }));
         },
         onCancel: async () => {

@@ -5,7 +5,7 @@ import { useReadMissionResponseForMission } from "@/hooks/mission-response";
 import { useReadMissionParticipantInfo } from "@/hooks/participant/useReadMissionParticipantInfo";
 import { useReadReward } from "@/hooks/reward/useReadReward";
 import { useMissionShare } from "@/hooks/share/useMissionShare";
-import { getSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
+import { getActionNavCookie, setActionNavCookie } from "@/lib/cookie";
 import { cleanTiptapHTML, cn } from "@/lib/utils";
 import { MissionType } from "@prisma/client";
 import Gift from "@public/svgs/gift.svg";
@@ -77,9 +77,9 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
   }, []);
 
   useEffect(() => {
-    const existingValue = getSessionStorage(`current-action-id-${missionId}`);
+    const existingValue = getActionNavCookie(missionId);
     if (!existingValue) {
-      setSessionStorage(`current-action-id-${missionId}`, "initial");
+      setActionNavCookie(missionId, "initial");
     }
   }, [missionId]);
 
