@@ -112,27 +112,36 @@ export default function AdminMissionCreatePage() {
     router.push(`?step=${prevStep}`);
   };
 
-  const handleSubmit = form.handleSubmit(async (data: CreateMissionFunnelFormData) => {
-    const { completion, ...missionData } = data;
-    createMission.mutate({
-      title: missionData.title,
-      type: missionData.type,
-      actionIds: Array.isArray(missionData.actionIds) ? missionData.actionIds : [],
-      maxParticipants:
-        typeof missionData.maxParticipants === "number" ? missionData.maxParticipants : null,
-      ...(missionData.description && { description: missionData.description }),
-      ...(missionData.target && { target: missionData.target }),
-      ...(missionData.imageUrl && { imageUrl: missionData.imageUrl }),
-      ...(missionData.imageFileUploadId && { imageFileUploadId: missionData.imageFileUploadId }),
-      ...(missionData.brandLogoUrl && { brandLogoUrl: missionData.brandLogoUrl }),
-      ...(missionData.brandLogoFileUploadId && {
-        brandLogoFileUploadId: missionData.brandLogoFileUploadId,
-      }),
-      ...(missionData.estimatedMinutes && { estimatedMinutes: missionData.estimatedMinutes }),
-      ...(missionData.deadline && { deadline: missionData.deadline }),
-      ...(missionData.isActive !== undefined && { isActive: missionData.isActive }),
-    });
-  });
+  const handleSubmit = form.handleSubmit(
+    async (data: CreateMissionFunnelFormData) => {
+      const { completion, ...missionData } = data;
+
+      const payload = {
+        title: missionData.title,
+        type: missionData.type,
+        actionIds: Array.isArray(missionData.actionIds) ? missionData.actionIds : [],
+        maxParticipants:
+          typeof missionData.maxParticipants === "number" ? missionData.maxParticipants : null,
+        ...(missionData.description && { description: missionData.description }),
+        ...(missionData.target && { target: missionData.target }),
+        ...(missionData.imageUrl && { imageUrl: missionData.imageUrl }),
+        ...(missionData.imageFileUploadId && { imageFileUploadId: missionData.imageFileUploadId }),
+        ...(missionData.brandLogoUrl && { brandLogoUrl: missionData.brandLogoUrl }),
+        ...(missionData.brandLogoFileUploadId && {
+          brandLogoFileUploadId: missionData.brandLogoFileUploadId,
+        }),
+        ...(missionData.estimatedMinutes && { estimatedMinutes: missionData.estimatedMinutes }),
+        ...(missionData.deadline && { deadline: missionData.deadline }),
+        ...(missionData.isActive !== undefined && { isActive: missionData.isActive }),
+      };
+
+      createMission.mutate(payload);
+    },
+    errors => {
+      console.error("❌ 폼 검증 실패:", errors);
+      console.error("🔍 에러 상세:", JSON.stringify(errors, null, 2));
+    },
+  );
 
   const getFieldsForStep = (step: Step): (keyof CreateMissionFunnelFormData)[] => {
     switch (step) {
