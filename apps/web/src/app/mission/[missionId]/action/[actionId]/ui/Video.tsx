@@ -100,7 +100,9 @@ export function ActionVideo({
         filePath: fileUpload.filePath,
       }));
 
-      const videoFileUploadIdsFromAnswer = existingAnswer.fileUploads.map(fileUpload => fileUpload.id);
+      const videoFileUploadIdsFromAnswer = existingAnswer.fileUploads.map(
+        fileUpload => fileUpload.id,
+      );
 
       setVideoInfos(videoInfosFromAnswer);
       setVideoFileUploadIds(videoFileUploadIdsFromAnswer);
@@ -168,12 +170,12 @@ export function ActionVideo({
 
       setVideoInfos(prev => {
         const filtered = prev.filter(v => v.fileUrl !== videoUrl);
-        
+
         // 모든 비디오가 삭제되었을 때만 답변 삭제
         if (filtered.length === 0 && existingAnswer?.id) {
           deleteAnswerMutation(existingAnswer.id);
         }
-        
+
         return filtered;
       });
 

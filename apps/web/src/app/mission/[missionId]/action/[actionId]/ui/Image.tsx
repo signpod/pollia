@@ -168,12 +168,12 @@ export function ActionImage({
 
       setImageInfos(prev => {
         const filtered = prev.filter(info => info.fileUrl !== imageUrl);
-        
+
         // 모든 이미지가 삭제되었을 때만 답변 삭제
         if (filtered.length === 0 && existingAnswer?.id) {
           deleteAnswerMutation(existingAnswer.id);
         }
-        
+
         return filtered;
       });
 

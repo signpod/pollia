@@ -166,12 +166,12 @@ export function ActionPdf({
 
       setFileInfos(prev => {
         const filtered = prev.filter(f => f.fileUrl !== fileUrl);
-        
+
         // 모든 파일이 삭제되었을 때만 답변 삭제
         if (filtered.length === 0 && existingAnswer?.id) {
           deleteAnswerMutation(existingAnswer.id);
         }
-        
+
         return filtered;
       });
 

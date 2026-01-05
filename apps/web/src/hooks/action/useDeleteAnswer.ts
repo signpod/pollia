@@ -10,7 +10,7 @@ export function useDeleteAnswer() {
       return deleteAnswer(answerId);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: missionQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: missionQueryKeys.all() });
     },
   });
 }
