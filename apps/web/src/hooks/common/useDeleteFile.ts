@@ -1,4 +1,4 @@
-import { deleteFile } from "@/actions/common/files";
+import { deleteFileByPath } from "@/actions/common/files";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useDeleteFile() {
@@ -6,7 +6,7 @@ export function useDeleteFile() {
 
   return useMutation({
     mutationFn: async (filePath: string) => {
-      return deleteFile({ path: filePath });
+      return deleteFileByPath({ path: filePath });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["files"] });
