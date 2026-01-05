@@ -1,6 +1,6 @@
 import { toast } from "@/components/common/Toast";
 import { ROUTES } from "@/constants/routes";
-import { setSessionStorage } from "@/lib/sessionStorage";
+import { setActionNavCookie } from "@/lib/cookie";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { useCreateMissionResponse } from "../mission-response";
@@ -102,7 +102,7 @@ export const useMissionPassword = (missionId: string) => {
         { missionId },
         {
           onSuccess: () => {
-            setSessionStorage(`current-action-id-${missionId}`, "initial");
+            setActionNavCookie(missionId, "initial");
             router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
           },
           onError: error => {

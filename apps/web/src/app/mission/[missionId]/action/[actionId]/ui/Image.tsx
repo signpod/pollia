@@ -1,10 +1,13 @@
 import { toast } from "@/components/common/Toast";
 import { ActionStepContentProps } from "@/constants/action";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
+import { useDeleteAnswer } from "@/hooks/action/useDeleteAnswer";
+import { useDeleteFile } from "@/hooks/common/useDeleteFile";
+import { useMultipleImageUpload } from "@/hooks/common/useImageUpload";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
+import type { FileUploadInfo } from "@/types/domain/file";
 import type { ActionAnswerItem } from "@/types/dto";
-import { useMultipleImageUpload } from "@/hooks/common/useImageUpload";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 import { ImageUpload } from "./ImageUpload";
@@ -12,6 +15,8 @@ import { ImageList } from "./components/ImageList";
 import { ImageUploadNotice } from "./components/ImageUploadNotice";
 
 const IMAGE_UPLOAD_ERROR_MESSAGE = "이미지 업로드에 실패했어요.\n다시 시도해주세요." as const;
+
+type ImageInfo = FileUploadInfo;
 
 export function ActionImage({
   actionData,
@@ -27,10 +32,14 @@ export function ActionImage({
   missionResponse,
   isLoading,
 }: ActionStepContentProps) {
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
-  const [imageFileUploadIds, setImageFileUploadIds] = useState<string[]>([]);
+  const [imageInfos, setImageInfos] = useState<ImageInfo[]>([]);
   const [uploadingImageUrl, setUploadingImageUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+
+  const { mutate: deleteFileMutation } = useDeleteFile();
+  const { mutate: deleteAnswerMutation, isPending: isDeletingAnswer } = useDeleteAnswer();
+
+  const prevHadImagesRef = useRef(false);
 
   const { uploadMultiple } = useMultipleImageUpload({
     bucket: STORAGE_BUCKETS.ACTION_ANSWER_IMAGES,
@@ -55,8 +64,8 @@ export function ActionImage({
   }, [updateCanGoNext, onAnswerChange]);
 
   const validateAndUpdateAnswer = useCallback(
-    (urls: string[], fileIds: string[]) => {
-      if (!urls.length || !fileIds.length) {
+    (infos: ImageInfo[]) => {
+      if (!infos.length) {
         if (!actionData.isRequired) {
           updateCanGoNextRef.current?.(true);
           onAnswerChangeRef.current?.({
@@ -75,7 +84,7 @@ export function ActionImage({
         actionId: actionData.id,
         type: ActionType.IMAGE,
         isRequired: actionData.isRequired,
-        fileUploadIds: fileIds,
+        fileUploadIds: infos.map(info => info.fileUploadId),
       };
 
       const validationResult = submitAnswerItemSchema.safeParse(answer);
@@ -89,30 +98,64 @@ export function ActionImage({
   );
 
   useEffect(() => {
-    if (existingAnswer) {
-      setImageUrls([]);
-      setImageFileUploadIds([]);
-      validateAndUpdateAnswer([], []);
+    if (existingAnswer?.fileUploads && existingAnswer.fileUploads.length > 0) {
+      const imageInfosFromAnswer: ImageInfo[] = existingAnswer.fileUploads.map(fileUpload => ({
+        fileUrl: fileUpload.publicUrl,
+        fileUploadId: fileUpload.id,
+        filePath: fileUpload.filePath,
+      }));
+
+      setImageInfos(imageInfosFromAnswer);
+      validateAndUpdateAnswer(imageInfosFromAnswer);
+    } else if (existingAnswer) {
+      setImageInfos([]);
+      updateCanGoNextRef.current?.(true);
     }
   }, [existingAnswer, validateAndUpdateAnswer]);
 
   useEffect(() => {
-    validateAndUpdateAnswer(imageUrls, imageFileUploadIds);
-  }, [imageUrls, imageFileUploadIds, validateAndUpdateAnswer]);
+    validateAndUpdateAnswer(imageInfos);
+  }, [imageInfos, validateAndUpdateAnswer]);
+
+  useEffect(() => {
+    if (prevHadImagesRef.current && imageInfos.length === 0 && existingAnswer?.id) {
+      deleteAnswerMutation(existingAnswer.id);
+    }
+    prevHadImagesRef.current = imageInfos.length > 0;
+  }, [imageInfos.length, existingAnswer?.id, deleteAnswerMutation]);
 
   const handleUploadChange = useCallback(
-    (hasUploadedImage: boolean, newImageUrls: string[], newFileUploadIds: string[]) => {
-      if (hasUploadedImage && newImageUrls.length > 0 && newFileUploadIds.length > 0) {
-        setImageUrls(prev => {
-          const existingUrlsSet = new Set(prev);
-          const filteredNewUrls = newImageUrls.filter(url => !existingUrlsSet.has(url));
-          return [...prev, ...filteredNewUrls];
+    (
+      hasUploadedImage: boolean,
+      newImageUrls: string[],
+      newFileUploadIds: string[],
+      newFilePaths: string[],
+    ) => {
+      if (
+        hasUploadedImage &&
+        newImageUrls.length > 0 &&
+        newFileUploadIds.length > 0 &&
+        newFilePaths.length > 0
+      ) {
+        const newImageInfos: ImageInfo[] = newImageUrls
+          .map((url, index) => {
+            const fileUploadId = newFileUploadIds[index];
+            const filePath = newFilePaths[index];
+            if (!fileUploadId || !filePath) return null;
+            return {
+              fileUrl: url,
+              fileUploadId,
+              filePath,
+            };
+          })
+          .filter((info): info is ImageInfo => info !== null);
+
+        setImageInfos(prev => {
+          const existingUrlsSet = new Set(prev.map(info => info.fileUrl));
+          const filteredNewInfos = newImageInfos.filter(info => !existingUrlsSet.has(info.fileUrl));
+          return [...prev, ...filteredNewInfos];
         });
-        setImageFileUploadIds(prev => {
-          const existingIdsSet = new Set(prev);
-          const filteredNewIds = newFileUploadIds.filter(id => !existingIdsSet.has(id));
-          return [...prev, ...filteredNewIds];
-        });
+
         if (newImageUrls.length > 0) {
           setUploadingImageUrl(newImageUrls[newImageUrls.length - 1] ?? null);
         }
@@ -127,20 +170,23 @@ export function ActionImage({
     setIsUploading(uploading);
   }, []);
 
-  const handleImageDelete = useCallback((imageUrl: string) => {
-    let deletedIndex = -1;
-    setImageUrls(prev => {
-      const index = prev.indexOf(imageUrl);
-      if (index === -1) return prev;
-      deletedIndex = index;
-      return prev.filter(url => url !== imageUrl);
-    });
-    setImageFileUploadIds(prev => {
-      if (deletedIndex === -1) return prev;
-      return prev.filter((_, i) => i !== deletedIndex);
-    });
-    setUploadingImageUrl(prev => (prev === imageUrl ? null : prev));
-  }, []);
+  const handleImageDelete = useCallback(
+    (imageUrl: string) => {
+      const imageInfo = imageInfos.find(info => info.fileUrl === imageUrl);
+      if (!imageInfo) return;
+
+      setImageInfos(prev => prev.filter(info => info.fileUrl !== imageUrl));
+
+      deleteFileMutation(imageInfo.filePath);
+
+      if (imageUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(imageUrl);
+      }
+
+      setUploadingImageUrl(prevUrl => (prevUrl === imageUrl ? null : prevUrl));
+    },
+    [deleteFileMutation, imageInfos],
+  );
 
   const handleImageLoadComplete = useCallback((imageUrl: string) => {
     setUploadingImageUrl(prev => (prev === imageUrl ? null : prev));
@@ -148,8 +194,8 @@ export function ActionImage({
 
   const handleImageEdit = useCallback(
     async (originalImageUrl: string, editedFile: File) => {
-      const originalIndex = imageUrls.indexOf(originalImageUrl);
-      if (originalIndex === -1) {
+      const originalImageInfo = imageInfos.find(info => info.fileUrl === originalImageUrl);
+      if (!originalImageInfo) {
         return;
       }
 
@@ -167,25 +213,30 @@ export function ActionImage({
 
         const newImageUrl = uploadResults[0]?.publicUrl;
         const newFileUploadId = uploadResults[0]?.fileUploadId;
+        const newFilePath = uploadResults[0]?.path;
 
-        if (!newImageUrl || !newFileUploadId) {
+        if (!newImageUrl || !newFileUploadId || !newFilePath) {
           toast.warning(IMAGE_UPLOAD_ERROR_MESSAGE);
           setIsUploading(false);
           setUploadingImageUrl(null);
           return;
         }
 
-        setImageUrls(prev => {
-          const newUrls = [...prev];
-          newUrls[originalIndex] = newImageUrl;
-          return newUrls;
+        setImageInfos(prev => {
+          const currentIndex = prev.findIndex(info => info.fileUrl === originalImageUrl);
+          if (currentIndex === -1) {
+            return prev;
+          }
+          const newInfos = [...prev];
+          newInfos[currentIndex] = {
+            fileUrl: newImageUrl,
+            fileUploadId: newFileUploadId,
+            filePath: newFilePath,
+          };
+          return newInfos;
         });
 
-        setImageFileUploadIds(prev => {
-          const newIds = [...prev];
-          newIds[originalIndex] = newFileUploadId;
-          return newIds;
-        });
+        deleteFileMutation(originalImageInfo.filePath);
 
         setUploadingImageUrl(null);
         setIsUploading(false);
@@ -196,7 +247,7 @@ export function ActionImage({
         setUploadingImageUrl(null);
       }
     },
-    [imageUrls, uploadMultiple],
+    [imageInfos, uploadMultiple, deleteFileMutation],
   );
 
   return (
@@ -207,7 +258,7 @@ export function ActionImage({
       description={actionData.description ?? undefined}
       imageUrl={actionData.imageUrl ?? undefined}
       isFirstAction={isFirstAction}
-      isNextDisabled={isNextDisabledProp}
+      isNextDisabled={isNextDisabledProp || isDeletingAnswer}
       onPrevious={onPrevious}
       onNext={onNext}
       nextButtonText={nextButtonText}
@@ -215,12 +266,12 @@ export function ActionImage({
       isRequired={actionData.isRequired}
     >
       <ImageUpload
-        currentImageCount={imageUrls.length}
+        currentImageCount={imageInfos.length}
         onUploadChange={handleUploadChange}
         onUploadingChange={handleUploadingChange}
       />
       <ImageList
-        imageUrls={imageUrls}
+        imageUrls={imageInfos.map(info => info.fileUrl)}
         uploadingImageUrl={uploadingImageUrl}
         isUploading={isUploading}
         onImageDelete={handleImageDelete}

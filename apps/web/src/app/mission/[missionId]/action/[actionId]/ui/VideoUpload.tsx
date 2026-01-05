@@ -11,6 +11,7 @@ interface VideoUploadProps {
     hasUploadedVideo: boolean,
     videoUrls: string[],
     fileUploadIds: string[],
+    filePaths: string[],
     file?: File,
   ) => void;
   onUploadingChange?: (isUploading: boolean) => void;
@@ -23,12 +24,12 @@ export function VideoUpload({ onUploadChange, onUploadingChange }: VideoUploadPr
     bucket: STORAGE_BUCKETS.ACTION_ANSWER_VIDEOS,
     onSuccess: result => {
       onUploadingChange?.(false);
-      onUploadChange?.(true, [result.publicUrl], [result.fileUploadId], result.file);
+      onUploadChange?.(true, [result.publicUrl], [result.fileUploadId], [result.path], result.file);
     },
     onError: error => {
       onUploadingChange?.(false);
       toast.warning(error?.message || "파일 업로드에 실패했어요.\n다시 시도해주세요.");
-      onUploadChange?.(false, [], []);
+      onUploadChange?.(false, [], [], []);
     },
   });
 

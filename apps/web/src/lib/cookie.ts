@@ -36,3 +36,30 @@ export function getAuthRedirect(): string | null {
 export function clearAuthRedirect(): void {
   document.cookie = "auth_redirect=; path=/; max-age=0";
 }
+
+const ACTION_NAV_COOKIE_PREFIX = "action_nav_";
+
+/**
+ * 액션 네비게이션 쿠키 설정 (클라이언트)
+ * @param missionId - 미션 ID
+ * @param value - "initial", "resume", 또는 actionId
+ */
+export function setActionNavCookie(missionId: string, value: string): void {
+  document.cookie = `${ACTION_NAV_COOKIE_PREFIX}${missionId}=${value}; path=/; max-age=86400; SameSite=Lax`;
+}
+
+/**
+ * 액션 네비게이션 쿠키 조회 (클라이언트)
+ * @param missionId - 미션 ID
+ * @returns 쿠키 값 또는 null
+ */
+export function getActionNavCookie(missionId: string): string | null {
+  const cookies = document.cookie.split("; ");
+  const cookie = cookies.find(c => c.startsWith(`${ACTION_NAV_COOKIE_PREFIX}${missionId}=`));
+
+  if (!cookie) {
+    return null;
+  }
+
+  return cookie.split("=")[1] || null;
+}
