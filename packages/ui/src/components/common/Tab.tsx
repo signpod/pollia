@@ -80,7 +80,7 @@ export function useTab() {
 
   return {
     activeTab: context.activeTab || null,
-    setActiveTab: (value: string) => {
+    setActiveTab: (_value: string) => {
       // Radix UI에서는 프로그래매틱하게 탭을 변경하려면
       // Tabs.Root의 value prop을 controlled로 사용해야 합니다
       console.warn(

@@ -30,9 +30,9 @@ import {
 import Image from "next/image";
 import { useState } from "react";
 import { ClientDateDisplay } from "./ClientDateDisplay";
+import { MissionCompletionCard } from "./MissionCompletionCard";
 import { BasicInfoEditDialog } from "./edit/BasicInfoEditDialog";
 import { ImageEditDialog } from "./edit/ImageEditDialog";
-import { MissionCompletionCard } from "./MissionCompletionCard";
 
 interface MissionBasicInfoProps {
   mission: GetMissionResponse["data"];
