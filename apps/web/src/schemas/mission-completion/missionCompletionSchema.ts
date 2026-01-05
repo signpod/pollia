@@ -1,3 +1,4 @@
+import { stripHtmlTags } from "@/app/admin/lib/utils";
 import { z } from "zod";
 
 export const MISSION_COMPLETION_TITLE_MAX_LENGTH = 100;
@@ -14,12 +15,25 @@ const titleSchema = z
 
 const descriptionSchema = z
   .string()
-  .min(1, "설명을 입력해주세요.")
-  .max(
-    MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH,
-    `설명은 ${MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH}자를 초과할 수 없습니다.`,
+  .trim()
+  .refine(
+    value => {
+      const textContent = stripHtmlTags(value);
+      return textContent.length > 0;
+    },
+    {
+      message: "설명을 입력해주세요.",
+    },
   )
-  .trim();
+  .refine(
+    value => {
+      const textContent = stripHtmlTags(value);
+      return textContent.length <= MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH;
+    },
+    {
+      message: `설명은 ${MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH}자를 초과할 수 없습니다.`,
+    },
+  );
 
 const imageUrlSchema = z.url({ message: "올바른 URL 형식이 아닙니다." }).optional();
 const imageFileUploadIdSchema = z.string().optional();

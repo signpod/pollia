@@ -220,6 +220,7 @@ export function CompletionStep({ form }: CompletionStepProps) {
                 );
               }}
               placeholder="완료 화면에 표시될 설명을 입력하세요."
+              showToolbar={true}
             />
             {form.formState.errors.completion?.description && (
               <p className="text-sm text-destructive">
@@ -248,6 +249,7 @@ export function CompletionStep({ form }: CompletionStepProps) {
                   const { imageUrl, imageFileUploadId, ...rest } = currentCompletion;
                   form.setValue("completion", rest, {
                     shouldDirty: true,
+                    shouldValidate: true,
                   });
                 }
               }}
