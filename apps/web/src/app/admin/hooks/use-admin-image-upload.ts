@@ -15,8 +15,8 @@ export interface UploadedImageData {
 
 export interface UseAdminSingleImageOptions {
   bucket?: StorageBucket;
-  initialUrl?: string;
-  initialFileUploadId?: string;
+  initialUrl?: string | null;
+  initialFileUploadId?: string | null;
   onUploadSuccess?: (data: UploadedImageData) => void;
   onUploadError?: (error: Error) => void;
 }

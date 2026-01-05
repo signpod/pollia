@@ -311,6 +311,7 @@ function CompletionForm({
 
   const imageUpload = useAdminSingleImage({
     initialUrl: missionCompletion.imageUrl ?? undefined,
+    initialFileUploadId: missionCompletion.imageFileUploadId,
     onUploadSuccess: data => {
       form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
       form.setValue("imageFileUploadId", data.fileUploadId, { shouldDirty: true });

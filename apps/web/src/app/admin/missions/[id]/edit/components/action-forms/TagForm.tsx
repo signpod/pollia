@@ -4,6 +4,7 @@ import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
 import { useAdminSingleImage } from "@/app/admin/hooks/use-admin-image-upload";
+import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
@@ -45,6 +46,8 @@ export function TagForm({
 
   const mainImage = useAdminSingleImage({
     initialUrl: initialData?.imageUrl,
+    initialFileUploadId: initialData?.imageFileUploadId,
+    bucket: STORAGE_BUCKETS.ACTION_IMAGES,
     onUploadSuccess: data => {
       form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
     },

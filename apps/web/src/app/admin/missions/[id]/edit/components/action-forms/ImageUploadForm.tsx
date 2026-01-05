@@ -3,6 +3,7 @@
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { useAdminSingleImage } from "@/app/admin/hooks/use-admin-image-upload";
+import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { IMAGE_MAX_SELECTIONS } from "@/schemas/action";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -33,6 +34,8 @@ export function ImageUploadForm({
 
   const mainImage = useAdminSingleImage({
     initialUrl: initialData?.imageUrl,
+    initialFileUploadId: initialData?.imageFileUploadId,
+    bucket: STORAGE_BUCKETS.ACTION_IMAGES,
     onUploadSuccess: data => {
       form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
     },

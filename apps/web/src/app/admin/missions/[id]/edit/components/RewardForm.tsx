@@ -56,6 +56,7 @@ export function RewardForm({ isLoading, onSubmit, onCancel, initialData }: Rewar
 
   const rewardImage = useAdminSingleImage({
     initialUrl: initialData?.imageUrl,
+    initialFileUploadId: initialData?.imageFileUploadId,
     bucket: STORAGE_BUCKETS.REWARD_IMAGES,
     onUploadSuccess: data => {
       form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });

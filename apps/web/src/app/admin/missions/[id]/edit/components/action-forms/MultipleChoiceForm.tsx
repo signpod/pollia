@@ -7,6 +7,7 @@ import {
   useAdminMultipleImages,
   useAdminSingleImage,
 } from "@/app/admin/hooks/use-admin-image-upload";
+import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
@@ -55,6 +56,8 @@ export function MultipleChoiceForm({
 
   const mainImage = useAdminSingleImage({
     initialUrl: initialData?.imageUrl,
+    initialFileUploadId: initialData?.imageFileUploadId,
+    bucket: STORAGE_BUCKETS.ACTION_IMAGES,
     onUploadSuccess: data => {
       form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
     },

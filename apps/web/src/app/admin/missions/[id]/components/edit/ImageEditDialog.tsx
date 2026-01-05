@@ -64,6 +64,7 @@ function ImageFormContent({ mission, missionId, onSuccess }: ImageFormContentPro
 
   const missionImage = useAdminSingleImage({
     initialUrl: mission.imageUrl ?? undefined,
+    initialFileUploadId: mission.imageFileUploadId,
     onUploadSuccess: data => {
       form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
       form.setValue("imageFileUploadId", data.fileUploadId, { shouldDirty: true });
@@ -72,6 +73,7 @@ function ImageFormContent({ mission, missionId, onSuccess }: ImageFormContentPro
 
   const brandLogo = useAdminSingleImage({
     initialUrl: mission.brandLogoUrl ?? undefined,
+    initialFileUploadId: mission.brandLogoFileUploadId,
     onUploadSuccess: data => {
       form.setValue("brandLogoUrl", data.publicUrl, { shouldDirty: true });
       form.setValue("brandLogoFileUploadId", data.fileUploadId, { shouldDirty: true });

@@ -40,7 +40,9 @@ export interface GetMissionResponse {
     description?: string | null;
     target?: string | null;
     imageUrl?: string | null;
+    imageFileUploadId?: string | null;
     brandLogoUrl?: string | null;
+    brandLogoFileUploadId?: string | null;
     estimatedMinutes?: number | null;
     deadline?: Date | null;
     maxParticipants?: number | null;

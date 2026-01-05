@@ -340,6 +340,7 @@ function BasicInfoForm({ mission, missionId }: { mission: MissionData; missionId
 
   const missionImage = useAdminSingleImage({
     initialUrl: mission.imageUrl ?? undefined,
+    initialFileUploadId: mission.imageFileUploadId,
     onUploadSuccess: data => {
       form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
       form.setValue("imageFileUploadId", data.fileUploadId, { shouldDirty: true });
@@ -348,6 +349,7 @@ function BasicInfoForm({ mission, missionId }: { mission: MissionData; missionId
 
   const brandLogo = useAdminSingleImage({
     initialUrl: mission.brandLogoUrl ?? undefined,
+    initialFileUploadId: mission.brandLogoFileUploadId,
     onUploadSuccess: data => {
       form.setValue("brandLogoUrl", data.publicUrl, { shouldDirty: true });
       form.setValue("brandLogoFileUploadId", data.fileUploadId, { shouldDirty: true });
