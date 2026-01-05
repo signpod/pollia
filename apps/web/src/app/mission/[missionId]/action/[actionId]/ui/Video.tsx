@@ -168,20 +168,17 @@ export function ActionVideo({
       const videoInfo = videoInfos.find(v => v.fileUrl === videoUrl);
       if (!videoInfo) return;
 
-      setVideoInfos(prev => {
-        const filtered = prev.filter(v => v.fileUrl !== videoUrl);
+      const willBeEmpty = videoInfos.length === 1;
 
-        // 모든 비디오가 삭제되었을 때만 답변 삭제
-        if (filtered.length === 0 && existingAnswer?.id) {
-          deleteAnswerMutation(existingAnswer.id);
-        }
-
-        return filtered;
-      });
+      setVideoInfos(prev => prev.filter(v => v.fileUrl !== videoUrl));
 
       deleteFileMutation(videoInfo.filePath);
 
       setVideoFileUploadIds(prevIds => prevIds.filter(id => id !== videoInfo.fileUploadId));
+
+      if (willBeEmpty && existingAnswer?.id) {
+        deleteAnswerMutation(existingAnswer.id);
+      }
 
       if (videoUrl.startsWith("blob:")) {
         URL.revokeObjectURL(videoUrl);

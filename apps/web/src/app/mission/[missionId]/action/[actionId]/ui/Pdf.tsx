@@ -164,20 +164,17 @@ export function ActionPdf({
       const fileInfo = fileInfos.find(f => f.fileUrl === fileUrl);
       if (!fileInfo) return;
 
-      setFileInfos(prev => {
-        const filtered = prev.filter(f => f.fileUrl !== fileUrl);
+      const willBeEmpty = fileInfos.length === 1;
 
-        // 모든 파일이 삭제되었을 때만 답변 삭제
-        if (filtered.length === 0 && existingAnswer?.id) {
-          deleteAnswerMutation(existingAnswer.id);
-        }
-
-        return filtered;
-      });
+      setFileInfos(prev => prev.filter(f => f.fileUrl !== fileUrl));
 
       deleteFileMutation(fileInfo.filePath);
 
       setFileUploadIds(prev => prev.filter(id => id !== fileInfo.fileUploadId));
+
+      if (willBeEmpty && existingAnswer?.id) {
+        deleteAnswerMutation(existingAnswer.id);
+      }
 
       if (fileUrl.startsWith("blob:")) {
         URL.revokeObjectURL(fileUrl);

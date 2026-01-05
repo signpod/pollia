@@ -166,18 +166,15 @@ export function ActionImage({
       const imageInfo = imageInfos.find(info => info.fileUrl === imageUrl);
       if (!imageInfo) return;
 
-      setImageInfos(prev => {
-        const filtered = prev.filter(info => info.fileUrl !== imageUrl);
+      const willBeEmpty = imageInfos.length === 1;
 
-        // 모든 이미지가 삭제되었을 때만 답변 삭제
-        if (filtered.length === 0 && existingAnswer?.id) {
-          deleteAnswerMutation(existingAnswer.id);
-        }
-
-        return filtered;
-      });
+      setImageInfos(prev => prev.filter(info => info.fileUrl !== imageUrl));
 
       deleteFileMutation(imageInfo.filePath);
+
+      if (willBeEmpty && existingAnswer?.id) {
+        deleteAnswerMutation(existingAnswer.id);
+      }
 
       if (imageUrl.startsWith("blob:")) {
         URL.revokeObjectURL(imageUrl);
