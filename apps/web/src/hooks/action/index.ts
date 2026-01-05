@@ -1,6 +1,7 @@
 export * from "./useCreateMultipleChoiceAction";
 export * from "./useCreateScaleAction";
 export * from "./useCreateSubjectiveAction";
+export * from "./useDeleteAnswer";
 export * from "./useMissionScaleValue";
 export * from "./useMissionRatingValue";
 export * from "./useMultipleChoiceOptions";
