@@ -1,8 +1,8 @@
 "use client";
 
-import { deleteFileByPath, getUploadUrl } from "@/actions/common/files";
+import { deleteFileById, deleteFileByPath, getUploadUrl } from "@/actions/common/files";
 import { STORAGE_BUCKETS, type StorageBucket } from "@/constants/buckets";
-import type { DeleteFileRequest, UploadFileRequest } from "@/types/dto/file";
+import type { DeleteFileByIdRequest, DeleteFileRequest, UploadFileRequest } from "@/types/dto/file";
 import { ActionType } from "@prisma/client";
 import { useMutation } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -16,13 +16,22 @@ export interface UploadedImageData {
 export interface UseAdminSingleImageOptions {
   bucket?: StorageBucket;
   initialUrl?: string;
+  initialFileUploadId?: string;
   onUploadSuccess?: (data: UploadedImageData) => void;
   onUploadError?: (error: Error) => void;
 }
 
 export function useAdminSingleImage(options: UseAdminSingleImageOptions = {}) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(options.initialUrl || null);
-  const [uploadedData, setUploadedData] = useState<UploadedImageData | null>(null);
+  const [uploadedData, setUploadedData] = useState<UploadedImageData | null>(
+    options.initialFileUploadId && options.initialUrl
+      ? {
+          publicUrl: options.initialUrl,
+          fileUploadId: options.initialFileUploadId,
+          path: "",
+        }
+      : null,
+  );
   const previewUrlRef = useRef(previewUrl);
   previewUrlRef.current = previewUrl;
 
@@ -56,7 +65,11 @@ export function useAdminSingleImage(options: UseAdminSingleImageOptions = {}) {
     },
   });
 
-  const deleteMutation = useMutation({
+  const deleteByIdMutation = useMutation({
+    mutationFn: (request: DeleteFileByIdRequest) => deleteFileById(request),
+  });
+
+  const deleteByPathMutation = useMutation({
     mutationFn: (request: DeleteFileRequest) => deleteFileByPath(request),
   });
 
@@ -82,16 +95,22 @@ export function useAdminSingleImage(options: UseAdminSingleImageOptions = {}) {
 
   const clearImage = useCallback(() => {
     if (uploadedData) {
-      deleteMutation.mutate({
-        path: uploadedData.path,
-      });
+      if (uploadedData.fileUploadId) {
+        deleteByIdMutation.mutate({
+          fileUploadId: uploadedData.fileUploadId,
+        });
+      } else if (uploadedData.path) {
+        deleteByPathMutation.mutate({
+          path: uploadedData.path,
+        });
+      }
     }
     if (previewUrlRef.current?.startsWith("blob:")) {
       URL.revokeObjectURL(previewUrlRef.current);
     }
     setPreviewUrl(null);
     setUploadedData(null);
-  }, [uploadedData, deleteMutation]);
+  }, [uploadedData, deleteByIdMutation, deleteByPathMutation]);
 
   return {
     previewUrl,
@@ -106,13 +125,50 @@ export type UseAdminSingleImageReturn = ReturnType<typeof useAdminSingleImage>;
 
 export interface UseAdminMultipleImagesOptions {
   bucket?: StorageBucket;
+  initialImages?: Array<{
+    id: string;
+    url: string;
+    fileUploadId?: string;
+  }>;
   onUploadSuccess?: (id: string, data: UploadedImageData) => void;
   onUploadError?: (id: string, error: Error) => void;
 }
 
+function createInitialPreviews(
+  initialImages?: UseAdminMultipleImagesOptions["initialImages"],
+): Map<string, string> {
+  const map = new Map<string, string>();
+  if (!initialImages) return map;
+
+  for (const image of initialImages) {
+    map.set(image.id, image.url);
+  }
+  return map;
+}
+
+function createInitialUploadedData(
+  initialImages?: UseAdminMultipleImagesOptions["initialImages"],
+): Map<string, UploadedImageData> {
+  const map = new Map<string, UploadedImageData>();
+  if (!initialImages) return map;
+
+  for (const image of initialImages) {
+    if (!image.fileUploadId) continue;
+
+    map.set(image.id, {
+      publicUrl: image.url,
+      fileUploadId: image.fileUploadId,
+      path: "",
+    });
+  }
+  return map;
+}
+
 export function useAdminMultipleImages(options: UseAdminMultipleImagesOptions = {}) {
-  const [previews, setPreviews] = useState<Map<string, string>>(new Map());
-  const [uploadedDataMap, setUploadedDataMap] = useState<Map<string, UploadedImageData>>(new Map());
+  const [previews, setPreviews] = useState(() => createInitialPreviews(options.initialImages));
+  const [uploadedDataMap, setUploadedDataMap] = useState(() =>
+    createInitialUploadedData(options.initialImages),
+  );
   const [uploadingIds, setUploadingIds] = useState<Set<string>>(new Set());
   const previewsRef = useRef(previews);
   previewsRef.current = previews;
@@ -173,7 +229,11 @@ export function useAdminMultipleImages(options: UseAdminMultipleImagesOptions = 
     },
   });
 
-  const deleteMutation = useMutation({
+  const deleteByIdMutation = useMutation({
+    mutationFn: (request: DeleteFileByIdRequest) => deleteFileById(request),
+  });
+
+  const deleteByPathMutation = useMutation({
     mutationFn: (request: DeleteFileRequest) => deleteFileByPath(request),
   });
 
@@ -207,9 +267,15 @@ export function useAdminMultipleImages(options: UseAdminMultipleImagesOptions = 
     (id: string) => {
       const data = uploadedDataMap.get(id);
       if (data) {
-        deleteMutation.mutate({
-          path: data.path,
-        });
+        if (data.fileUploadId) {
+          deleteByIdMutation.mutate({
+            fileUploadId: data.fileUploadId,
+          });
+        } else if (data.path) {
+          deleteByPathMutation.mutate({
+            path: data.path,
+          });
+        }
       }
 
       setPreviews(prev => {
@@ -228,7 +294,7 @@ export function useAdminMultipleImages(options: UseAdminMultipleImagesOptions = 
         return newMap;
       });
     },
-    [uploadedDataMap, deleteMutation],
+    [uploadedDataMap, deleteByIdMutation, deleteByPathMutation],
   );
 
   const getPreviewUrl = useCallback(
