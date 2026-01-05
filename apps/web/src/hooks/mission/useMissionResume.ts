@@ -46,6 +46,7 @@ export function useSurveyResume({
           router.push(ROUTES.ACTION({ missionId, actionId: nextActionId }));
         },
         onCancel: async () => {
+          setActionNavCookie(missionId, "initial");
           await resetMissionResponse(responseId);
           await startResponse({ missionId });
         },

@@ -220,8 +220,12 @@ export function ActionImage({
         }
 
         setImageInfos(prev => {
+          const currentIndex = prev.findIndex(info => info.fileUrl === originalImageUrl);
+          if (currentIndex === -1) {
+            return prev;
+          }
           const newInfos = [...prev];
-          newInfos[originalIndex] = {
+          newInfos[currentIndex] = {
             fileUrl: newImageUrl,
             fileUploadId: newFileUploadId,
             filePath: newFilePath,
