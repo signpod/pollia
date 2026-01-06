@@ -101,7 +101,7 @@ function DatePickerContent({
       isLoading={isLoading}
       isRequired={actionData.isRequired}
     >
-      <div className="flex w-full px-4">
+      <div className="flex w-full">
         <Calendar
           mode="multiple"
           captionLayout="label"
@@ -121,7 +121,7 @@ function DatePickerContent({
             nav: "hidden",
             caption_label: "text-lg font-semibold",
             weekdays: "flex w-full mb-2",
-            weekday: "flex-1 text-center text-zinc-400 font-normal text-sm",
+            weekday: "flex-1 text-center text-info font-normal text-sm",
             month_grid: "w-full",
             week: "flex w-full gap-1 mb-1",
             day: "flex-1 p-0",
@@ -132,12 +132,17 @@ function DatePickerContent({
             formatCaption: date => {
               return `${date.getMonth() + 1}월`;
             },
-            formatWeekdayName: (weekday: Date) => {
-              const weekdayNames = ["일", "월", "화", "수", "목", "금", "토"];
-              return weekdayNames[weekday.getDay()] || "";
-            },
           }}
           components={{
+            Weekday: ({ children, ...props }) => {
+              return (
+                <th {...props}>
+                  <Typo.SubTitle size="large" className="text-info">
+                    {children}
+                  </Typo.SubTitle>
+                </th>
+              );
+            },
             MonthCaption: ({ calendarMonth }) => {
               const displayMonth = calendarMonth.date;
               const currentDate = new Date();
@@ -167,13 +172,13 @@ function DatePickerContent({
                   >
                     <ChevronLeft className="h-5 w-5 text-zinc-600" />
                   </button>
-                  <span className="text-lg font-semibold">{displayMonth.getMonth() + 1}월</span>
+                  <Typo.SubTitle size="large">{`${displayMonth.getFullYear()}. ${String(displayMonth.getMonth() + 1).padStart(2, "0")}`}</Typo.SubTitle>
                   <button
                     type="button"
                     onClick={handleNextMonth}
                     className="h-8 w-8 p-0 hover:bg-zinc-100 rounded-md flex items-center justify-center"
                   >
-                    <ChevronRight className="h-5 w-5 text-zinc-600" />
+                    <ChevronRight className="size-4 icon-default" />
                   </button>
                 </div>
               );
@@ -181,26 +186,52 @@ function DatePickerContent({
             DayButton: (
               props: {
                 day: { date: Date };
-                modifiers: { selected?: boolean; disabled?: boolean; outside?: boolean };
+                modifiers: {
+                  selected?: boolean;
+                  disabled?: boolean;
+                  outside?: boolean;
+                  today?: boolean;
+                };
               } & React.ButtonHTMLAttributes<HTMLButtonElement>,
             ) => {
               const { day, modifiers, ...buttonProps } = props;
               const isSunday = day.date.getDay() === 0;
               const isSelected = modifiers.selected;
+              const isToday = modifiers.today;
 
               return (
                 <button
                   {...buttonProps}
                   className={cn(
-                    "aspect-squares size-12 rounded-full flex items-center justify-center transition-all duration-200",
-                    isSelected && "bg-zinc-950 text-white",
-                    !isSelected && "hover:bg-white hover:ring-1 hover:ring-zinc-200",
-                    isSunday && !isSelected && !modifiers.outside && "text-red-500",
-                    modifiers.disabled && "opacity-50 cursor-not-allowed",
-                    modifiers.outside ? "text-zinc-300" : isSelected ? "" : "text-zinc-900",
+                    "rounded-sm w-full aspect-[48/55] flex flex-col gap-0 items-center justify-center transition-all duration-200 p-1",
+                    isSelected && "bg-violet-50 text-violet-500",
+                    isToday && !isSelected && "ring-1 ring-zinc-300",
+                    isSunday &&
+                      !isSelected &&
+                      !modifiers.outside &&
+                      !modifiers.disabled &&
+                      "text-red-500",
+                    modifiers.outside
+                      ? "text-zinc-300"
+                      : isSelected
+                        ? ""
+                        : modifiers.disabled
+                          ? ""
+                          : "text-zinc-900",
+                    modifiers.disabled && "cursor-not-allowed text-zinc-300",
                   )}
                 >
-                  <Typo.ButtonText size="large">{day.date.getDate()}</Typo.ButtonText>
+                  <Typo.ButtonText size="medium">{day.date.getDate()}</Typo.ButtonText>
+                  {isToday ? (
+                    <Typo.Body
+                      size="small"
+                      className={cn("text-info", isSelected && "text-violet-500")}
+                    >
+                      오늘
+                    </Typo.Body>
+                  ) : (
+                    <div className="size-6" />
+                  )}
                 </button>
               );
             },
