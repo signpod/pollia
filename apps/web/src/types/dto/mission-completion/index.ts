@@ -1,5 +1,10 @@
 import type { MissionCompletion } from "@prisma/client";
 
+export type MissionCompletionData = Omit<MissionCompletion, "links"> & {
+  links: Record<string, string> | null;
+  imageFileUpload: { id: string; publicUrl: string } | null;
+};
+
 export interface CreateMissionCompletionRequest {
   title: string;
   description: string;
@@ -18,21 +23,15 @@ export interface UpdateMissionCompletionRequest {
 }
 
 export interface GetMissionCompletionResponse {
-  data: MissionCompletion & {
-    imageFileUpload: { id: string; publicUrl: string } | null;
-  };
+  data: MissionCompletionData;
 }
 
 export interface CreateMissionCompletionResponse {
-  data: MissionCompletion & {
-    imageFileUpload: { id: string; publicUrl: string } | null;
-  };
+  data: MissionCompletionData;
 }
 
 export interface UpdateMissionCompletionResponse {
-  data: MissionCompletion & {
-    imageFileUpload: { id: string; publicUrl: string } | null;
-  };
+  data: MissionCompletionData;
 }
 
 export interface DeleteMissionCompletionResponse {

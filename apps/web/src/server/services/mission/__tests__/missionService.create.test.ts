@@ -112,7 +112,7 @@ describe("MissionService - Create", () => {
           brandLogoFileUploadId: undefined,
           deadline: request.deadline,
           estimatedMinutes: request.estimatedMinutes,
-          maxParticipants: null,
+          maxParticipants: undefined,
           type: "GENERAL",
           creatorId: "user-1",
         },

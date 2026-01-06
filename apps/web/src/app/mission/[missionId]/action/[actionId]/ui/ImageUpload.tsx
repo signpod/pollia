@@ -25,13 +25,18 @@ export function ImageUpload({
 }: ImageUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const [uploadedResults, setUploadedResults] = useState<Array<{ publicUrl: string; fileUploadId: string; path: string }>>([]);
+  const [uploadedResults, setUploadedResults] = useState<
+    Array<{ publicUrl: string; fileUploadId: string; path: string }>
+  >([]);
 
   const { uploadMultiple, isUploading, uploadError } = useMultipleImageUpload({
     bucket: STORAGE_BUCKETS.ACTION_ANSWER_IMAGES,
     onSuccess: result => {
       setUploadedResults(prev => {
-        const newResults = [...prev, { publicUrl: result.publicUrl, fileUploadId: result.fileUploadId, path: result.path }];
+        const newResults = [
+          ...prev,
+          { publicUrl: result.publicUrl, fileUploadId: result.fileUploadId, path: result.path },
+        ];
         return newResults;
       });
     },

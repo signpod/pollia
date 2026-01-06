@@ -15,9 +15,9 @@ import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
 import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
 import {
-  type UseFormImageUploadReturn,
-  useFormImageUpload,
-} from "@/app/admin/hooks/use-form-image-upload";
+  type UseAdminSingleImageReturn,
+  useAdminSingleImage,
+} from "@/app/admin/hooks/use-admin-image-upload";
 import { useReadMissionCompletion } from "@/app/admin/hooks/use-read-mission-completion";
 import { useUpdateMissionCompletion } from "@/app/admin/hooks/use-update-mission-completion";
 import {
@@ -47,8 +47,7 @@ interface LinksCardProps {
 
 interface ImageCardProps {
   form: UseFormReturn<MissionCompletionUpdate>;
-  imageUrl: string | undefined;
-  imageUpload: UseFormImageUploadReturn;
+  imageUpload: UseAdminSingleImageReturn;
 }
 
 interface ActionButtonsProps {
@@ -236,7 +235,7 @@ function LinksCard({ form }: LinksCardProps) {
   );
 }
 
-function ImageCard({ form, imageUrl, imageUpload }: ImageCardProps) {
+function ImageCard({ form, imageUpload }: ImageCardProps) {
   return (
     <Card>
       <CardHeader>
@@ -247,21 +246,16 @@ function ImageCard({ form, imageUrl, imageUpload }: ImageCardProps) {
         <div className="space-y-2">
           <ImageSelector
             size="large"
-            imageUrl={imageUrl}
-            onImageSelect={imageUpload.handleSelect}
-            onImageDelete={imageUpload.handleDelete}
-            disabled={imageUpload.upload.isUploading || imageUpload.upload.isDeleting}
+            imageUrl={imageUpload.previewUrl || undefined}
+            onImageSelect={imageUpload.selectImage}
+            onImageDelete={() => {
+              imageUpload.clearImage();
+              form.setValue("imageUrl", undefined, { shouldDirty: true });
+              form.setValue("imageFileUploadId", undefined, { shouldDirty: true });
+            }}
+            disabled={imageUpload.isUploading}
           />
-          {(imageUpload.upload.isUploading || imageUpload.upload.isDeleting) && (
-            <p className="text-sm text-muted-foreground">
-              {imageUpload.upload.isUploading ? "업로드 중..." : "삭제 중..."}
-            </p>
-          )}
-          {imageUpload.upload.uploadError && (
-            <p className="text-sm text-destructive">
-              업로드 실패: {imageUpload.upload.uploadError.message}
-            </p>
-          )}
+          {imageUpload.isUploading && <p className="text-sm text-muted-foreground">업로드 중...</p>}
         </div>
       </CardContent>
     </Card>
@@ -315,11 +309,13 @@ function CompletionForm({
 }) {
   const { form, handleReset } = useCompletionForm(missionCompletion);
 
-  const imageUpload = useFormImageUpload({
-    form,
-    urlField: "imageUrl",
-    fileUploadIdField: "imageFileUploadId",
-    errorMessage: "이미지 업로드 실패",
+  const imageUpload = useAdminSingleImage({
+    initialUrl: missionCompletion.imageUrl ?? undefined,
+    initialFileUploadId: missionCompletion.imageFileUploadId,
+    onUploadSuccess: data => {
+      form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
+      form.setValue("imageFileUploadId", data.fileUploadId, { shouldDirty: true });
+    },
   });
 
   const updateMissionCompletion = useUpdateMissionCompletion({
@@ -334,7 +330,7 @@ function CompletionForm({
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <CompletionFormCard form={form} />
-      <ImageCard form={form} imageUrl={imageUpload.imageUrl} imageUpload={imageUpload} />
+      <ImageCard form={form} imageUpload={imageUpload} />
       <LinksCard form={form} />
       <ActionButtons
         isPending={updateMissionCompletion.isPending}

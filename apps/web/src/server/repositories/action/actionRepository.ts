@@ -209,10 +209,10 @@ export class ActionRepository {
     data: Prisma.ActionUncheckedUpdateInput,
     options: Array<{
       title: string;
-      description?: string;
-      imageUrl?: string;
+      description?: string | null;
+      imageUrl?: string | null;
       order: number;
-      imageFileUploadId?: string;
+      imageFileUploadId?: string | null;
     }>,
     userId: string,
   ) {

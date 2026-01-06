@@ -1,4 +1,5 @@
-import { ButtonV2, FixedBottomLayout, Typo } from "@repo/ui/components";
+import { cleanTiptapHTML } from "@/lib/utils";
+import { ButtonV2, FixedBottomLayout, TiptapViewer, Typo } from "@repo/ui/components";
 import { ChevronLeftIcon } from "lucide-react";
 import Image from "next/image";
 import { type PropsWithChildren, useEffect, useState } from "react";
@@ -64,10 +65,11 @@ export function SurveyQuestionTemplate({
             {isRequired && <span className="text-red-500">*</span>}
           </Typo.MainTitle>
 
-          {description && (
-            <Typo.Body size="large" className="text-sub">
-              {description}
-            </Typo.Body>
+          {description && cleanTiptapHTML(description) && (
+            <TiptapViewer
+              content={cleanTiptapHTML(description)}
+              className="prose prose-sm break-keep max-w-none text-sub"
+            />
           )}
           {showRequiredError && (
             <Typo.Body size="medium" className="text-red-500 absolute top-full">

@@ -136,7 +136,9 @@ export function BottomButton({
           await handleStartResponse({ missionId });
           router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
         } catch {
-          toast.warning("미션 시작에 실패했어요. 다시 시도해주세요.", { id: "start-mission-error" });
+          toast.warning("미션 시작에 실패했어요. 다시 시도해주세요.", {
+            id: "start-mission-error",
+          });
         }
       }
     } else if (firstActionId) {

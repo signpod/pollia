@@ -1,3 +1,4 @@
+import { stripHtmlTags } from "@/app/admin/lib/utils";
 import { z } from "zod";
 
 export const MISSION_COMPLETION_TITLE_MAX_LENGTH = 100;
@@ -14,12 +15,25 @@ const titleSchema = z
 
 const descriptionSchema = z
   .string()
-  .min(1, "설명을 입력해주세요.")
-  .max(
-    MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH,
-    `설명은 ${MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH}자를 초과할 수 없습니다.`,
+  .trim()
+  .refine(
+    value => {
+      const textContent = stripHtmlTags(value);
+      return textContent.length > 0;
+    },
+    {
+      message: "설명을 입력해주세요.",
+    },
   )
-  .trim();
+  .refine(
+    value => {
+      const textContent = stripHtmlTags(value);
+      return textContent.length <= MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH;
+    },
+    {
+      message: `설명은 ${MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH}자를 초과할 수 없습니다.`,
+    },
+  );
 
 const imageUrlSchema = z.url({ message: "올바른 URL 형식이 아닙니다." }).optional();
 const imageFileUploadIdSchema = z.string().optional();
@@ -37,6 +51,10 @@ export const missionCompletionInputSchema = z.object({
   missionId: z.string().min(1, "미션 ID는 필수입니다."),
 });
 
+export const missionCompletionFormSchema = missionCompletionInputSchema.omit({
+  missionId: true,
+});
+
 export const missionCompletionUpdateSchema = z
   .object({
     title: titleSchema.optional(),
@@ -50,4 +68,5 @@ export const missionCompletionUpdateSchema = z
   });
 
 export type MissionCompletionInput = z.infer<typeof missionCompletionInputSchema>;
+export type MissionCompletionForm = z.infer<typeof missionCompletionFormSchema>;
 export type MissionCompletionUpdate = z.infer<typeof missionCompletionUpdateSchema>;

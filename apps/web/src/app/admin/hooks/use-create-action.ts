@@ -36,16 +36,16 @@ interface CreateActionInput {
   missionId: string;
   type: ActionType;
   title: string;
-  description?: string;
-  imageUrl?: string;
-  imageFileUploadId?: string;
+  description?: string | null;
+  imageUrl?: string | null;
+  imageFileUploadId?: string | null;
   order: number;
   isRequired: boolean;
   options?: {
     title: string;
-    description?: string;
-    imageUrl?: string;
-    imageFileUploadId?: string;
+    description?: string | null;
+    imageUrl?: string | null;
+    imageFileUploadId?: string | null;
     order: number;
   }[];
   maxSelections?: number;

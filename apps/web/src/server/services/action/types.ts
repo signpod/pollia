@@ -7,10 +7,10 @@ type BaseActionInput = Omit<
 
 interface ActionOptionInput {
   title: string;
-  description?: string;
-  imageUrl?: string;
+  description?: string | null;
+  imageUrl?: string | null;
   order: number;
-  imageFileUploadId?: string;
+  imageFileUploadId?: string | null;
 }
 
 export type CreateMultipleChoiceInput = BaseActionInput & {

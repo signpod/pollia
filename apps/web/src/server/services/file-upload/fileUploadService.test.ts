@@ -242,7 +242,7 @@ describe("FileUploadService", () => {
     });
   });
 
-  describe("deleteFile", () => {
+  describe("deleteFileByPath", () => {
     it("파일을 성공적으로 삭제한다", async () => {
       // Given
       const mockFileUpload = mockFileUploadFactory();
@@ -250,7 +250,7 @@ describe("FileUploadService", () => {
       ctx.mockStorageBucket.remove.mockResolvedValue({ error: null });
 
       // When
-      await ctx.service.deleteFile(mockFileUpload.filePath, "user1");
+      await ctx.service.deleteFileByPath(mockFileUpload.filePath, "user1");
 
       // Then
       expect(ctx.mockRepo.findByFilePathAndUserId).toHaveBeenCalledWith(
@@ -266,12 +266,12 @@ describe("FileUploadService", () => {
       ctx.mockRepo.findByFilePathAndUserId.mockResolvedValue(null);
 
       // When & Then
-      await expect(ctx.service.deleteFile("invalid/path.jpg", "user1")).rejects.toThrow(
+      await expect(ctx.service.deleteFileByPath("invalid/path.jpg", "user1")).rejects.toThrow(
         "파일을 찾을 수 없거나 삭제 권한이 없습니다.",
       );
 
       try {
-        await ctx.service.deleteFile("invalid/path.jpg", "user1");
+        await ctx.service.deleteFileByPath("invalid/path.jpg", "user1");
       } catch (error) {
         expect(error instanceof Error && error.cause).toBe(404);
       }
@@ -284,12 +284,63 @@ describe("FileUploadService", () => {
       ctx.mockStorageBucket.remove.mockResolvedValue({ error: new Error("Delete error") });
 
       // When & Then
-      await expect(ctx.service.deleteFile(mockFileUpload.filePath, "user1")).rejects.toThrow(
+      await expect(ctx.service.deleteFileByPath(mockFileUpload.filePath, "user1")).rejects.toThrow(
         "이미지 삭제에 실패했습니다.",
       );
 
       try {
-        await ctx.service.deleteFile(mockFileUpload.filePath, "user1");
+        await ctx.service.deleteFileByPath(mockFileUpload.filePath, "user1");
+      } catch (error) {
+        expect(error instanceof Error && error.cause).toBe(500);
+      }
+    });
+  });
+
+  describe("deleteFileById", () => {
+    it("ID로 파일을 성공적으로 삭제한다", async () => {
+      // Given
+      const mockFileUpload = mockFileUploadFactory();
+      ctx.mockRepo.findByIdAndUserId.mockResolvedValue(mockFileUpload);
+      ctx.mockStorageBucket.remove.mockResolvedValue({ error: null });
+
+      // When
+      await ctx.service.deleteFileById(mockFileUpload.id, "user1");
+
+      // Then
+      expect(ctx.mockRepo.findByIdAndUserId).toHaveBeenCalledWith(mockFileUpload.id, "user1");
+      expect(ctx.mockStorageBucket.remove).toHaveBeenCalledWith([mockFileUpload.filePath]);
+      expect(ctx.mockRepo.delete).toHaveBeenCalledWith(mockFileUpload.id);
+    });
+
+    it("파일을 찾을 수 없으면 404 에러를 던진다", async () => {
+      // Given
+      ctx.mockRepo.findByIdAndUserId.mockResolvedValue(null);
+
+      // When & Then
+      await expect(ctx.service.deleteFileById("invalid-id", "user1")).rejects.toThrow(
+        "파일을 찾을 수 없거나 삭제 권한이 없습니다.",
+      );
+
+      try {
+        await ctx.service.deleteFileById("invalid-id", "user1");
+      } catch (error) {
+        expect(error instanceof Error && error.cause).toBe(404);
+      }
+    });
+
+    it("Storage 삭제 실패 시 500 에러를 던진다", async () => {
+      // Given
+      const mockFileUpload = mockFileUploadFactory();
+      ctx.mockRepo.findByIdAndUserId.mockResolvedValue(mockFileUpload);
+      ctx.mockStorageBucket.remove.mockResolvedValue({ error: new Error("Delete error") });
+
+      // When & Then
+      await expect(ctx.service.deleteFileById(mockFileUpload.id, "user1")).rejects.toThrow(
+        "파일 삭제에 실패했습니다.",
+      );
+
+      try {
+        await ctx.service.deleteFileById(mockFileUpload.id, "user1");
       } catch (error) {
         expect(error instanceof Error && error.cause).toBe(500);
       }

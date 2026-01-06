@@ -16,7 +16,7 @@ export interface MultipleChoiceOptionCardProps {
   total: number;
   minOptions: number;
   title: string;
-  description?: string;
+  description?: string | null;
   imagePreviewUrl?: string;
   titlePlaceholder?: string;
   descriptionPlaceholder?: string;

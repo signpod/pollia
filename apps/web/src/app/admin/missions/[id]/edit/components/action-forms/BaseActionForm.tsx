@@ -2,6 +2,7 @@
 
 import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
 import { CharacterCounter } from "@/app/admin/components/common/InputField";
+import { TiptapEditor } from "@/app/admin/components/common/TiptapEditor";
 import {
   FormControl,
   FormField,
@@ -11,7 +12,6 @@ import {
 } from "@/app/admin/components/shadcn-ui/form";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Switch } from "@/app/admin/components/shadcn-ui/switch";
-import { Textarea } from "@/app/admin/components/shadcn-ui/textarea";
 import { ACTION_DESCRIPTION_MAX_LENGTH, ACTION_TITLE_MAX_LENGTH } from "@/schemas/action";
 import type { ReactNode } from "react";
 import type { Control, FieldValues, Path, UseFormWatch } from "react-hook-form";
@@ -81,12 +81,15 @@ export function BaseActionFormFields<TFieldValues extends FieldValues>({
               />
             </div>
             <FormControl>
-              <Textarea
+              <TiptapEditor
+                content={field.value || ""}
+                onUpdate={content => {
+                  field.onChange(content);
+                }}
                 placeholder="액션에 대한 추가 설명을 입력하세요."
-                maxLength={ACTION_DESCRIPTION_MAX_LENGTH}
-                {...field}
-                disabled={isLoading}
-                rows={2}
+                showToolbar={true}
+                className="min-h-[120px]"
+                editable={!isLoading}
               />
             </FormControl>
             <FormMessage />
@@ -110,7 +113,7 @@ export function BaseActionFormFields<TFieldValues extends FieldValues>({
                   onImageSelect={onMainImageSelect}
                   onImageDelete={() => {
                     onMainImageDelete();
-                    field.onChange(undefined);
+                    field.onChange(null);
                   }}
                   disabled={isLoading}
                 />

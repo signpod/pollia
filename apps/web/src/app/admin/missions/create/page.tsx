@@ -33,27 +33,23 @@ export default function AdminMissionCreatePage() {
   const createMission = useCreateMission({
     onSuccess: async data => {
       const completion = form.getValues("completion");
-      if (completion?.title && completion?.description) {
-        try {
-          await createMissionCompletion.mutateAsync({
-            title: completion.title,
-            description: completion.description,
-            missionId: data.data.id,
-            ...(completion.imageUrl && { imageUrl: completion.imageUrl }),
-            ...(completion.imageFileUploadId && {
-              imageFileUploadId: completion.imageFileUploadId,
-            }),
-            ...(completion.links && { links: completion.links }),
-          });
-        } catch (error) {
-          console.error("완료 화면 생성 실패:", error);
-          toast.warning("미션은 생성되었지만 완료 화면 생성에 실패했습니다.");
-          router.push(ADMIN_ROUTES.ADMIN_MISSION_EDIT(data.data.id));
-          return;
-        }
+      try {
+        await createMissionCompletion.mutateAsync({
+          title: completion.title,
+          description: completion.description,
+          missionId: data.data.id,
+          ...(completion.imageUrl && { imageUrl: completion.imageUrl }),
+          ...(completion.imageFileUploadId && {
+            imageFileUploadId: completion.imageFileUploadId,
+          }),
+          ...(completion.links && { links: completion.links }),
+        });
+      } catch (error) {
+        console.error("완료 화면 생성 실패:", error);
+        toast.error("미션 생성 중 오류가 발생했습니다.");
       }
       toast.success("미션이 생성되었습니다.");
-      router.push(ADMIN_ROUTES.ADMIN_MISSION_EDIT(data.data.id));
+      router.push(ADMIN_ROUTES.ADMIN_MISSION(data.data.id));
     },
     onError: error => {
       toast.error(error.message || "미션 생성 중 오류가 발생했습니다.");
@@ -80,7 +76,13 @@ export default function AdminMissionCreatePage() {
     type: "GENERAL" as const,
     isActive: undefined,
     actionIds: [],
-    completion: undefined,
+    completion: {
+      title: "",
+      description: "",
+      imageUrl: undefined,
+      imageFileUploadId: undefined,
+      links: undefined,
+    },
   };
 
   const form = useForm<CreateMissionFunnelFormData>({
@@ -112,26 +114,36 @@ export default function AdminMissionCreatePage() {
     router.push(`?step=${prevStep}`);
   };
 
-  const handleSubmit = form.handleSubmit(async (data: CreateMissionFunnelFormData) => {
-    const { completion, ...missionData } = data;
-    createMission.mutate({
-      title: missionData.title,
-      type: missionData.type,
-      actionIds: Array.isArray(missionData.actionIds) ? missionData.actionIds : [],
-      ...(missionData.description && { description: missionData.description }),
-      ...(missionData.target && { target: missionData.target }),
-      ...(missionData.imageUrl && { imageUrl: missionData.imageUrl }),
-      ...(missionData.imageFileUploadId && { imageFileUploadId: missionData.imageFileUploadId }),
-      ...(missionData.brandLogoUrl && { brandLogoUrl: missionData.brandLogoUrl }),
-      ...(missionData.brandLogoFileUploadId && {
-        brandLogoFileUploadId: missionData.brandLogoFileUploadId,
-      }),
-      ...(missionData.estimatedMinutes && { estimatedMinutes: missionData.estimatedMinutes }),
-      ...(missionData.deadline && { deadline: missionData.deadline }),
-      ...(missionData.maxParticipants !== null && { maxParticipants: missionData.maxParticipants }),
-      ...(missionData.isActive !== undefined && { isActive: missionData.isActive }),
-    });
-  });
+  const handleSubmit = form.handleSubmit(
+    async (data: CreateMissionFunnelFormData) => {
+      const { completion, ...missionData } = data;
+
+      const payload = {
+        title: missionData.title,
+        type: missionData.type,
+        actionIds: Array.isArray(missionData.actionIds) ? missionData.actionIds : [],
+        maxParticipants:
+          typeof missionData.maxParticipants === "number" ? missionData.maxParticipants : null,
+        ...(missionData.description && { description: missionData.description }),
+        ...(missionData.target && { target: missionData.target }),
+        ...(missionData.imageUrl && { imageUrl: missionData.imageUrl }),
+        ...(missionData.imageFileUploadId && { imageFileUploadId: missionData.imageFileUploadId }),
+        ...(missionData.brandLogoUrl && { brandLogoUrl: missionData.brandLogoUrl }),
+        ...(missionData.brandLogoFileUploadId && {
+          brandLogoFileUploadId: missionData.brandLogoFileUploadId,
+        }),
+        ...(missionData.estimatedMinutes && { estimatedMinutes: missionData.estimatedMinutes }),
+        ...(missionData.deadline && { deadline: missionData.deadline }),
+        ...(missionData.isActive !== undefined && { isActive: missionData.isActive }),
+      };
+
+      createMission.mutate(payload);
+    },
+    errors => {
+      console.error("❌ 폼 검증 실패:", errors);
+      console.error("🔍 에러 상세:", JSON.stringify(errors, null, 2));
+    },
+  );
 
   const getFieldsForStep = (step: Step): (keyof CreateMissionFunnelFormData)[] => {
     switch (step) {

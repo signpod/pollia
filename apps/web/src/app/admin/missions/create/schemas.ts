@@ -6,24 +6,10 @@ import {
 } from "@/schemas/mission-completion/missionCompletionSchema";
 import { z } from "zod";
 
-const completionSchemaWithoutMissionId = missionCompletionInputSchema
-  .omit({ missionId: true })
-  .partial()
-  .refine(
-    data => {
-      if (!data || Object.keys(data).length === 0) return true;
-      if (data.title || data.description) {
-        return !!(data.title && data.description);
-      }
-      return true;
-    },
-    {
-      message: "제목과 설명을 모두 입력하거나 모두 비워주세요.",
-    },
-  );
+const completionSchemaWithoutMissionId = missionCompletionInputSchema.omit({ missionId: true });
 
 const baseSchema = missionInputSchema.extend({
-  completion: completionSchemaWithoutMissionId.optional(),
+  completion: completionSchemaWithoutMissionId,
 });
 
 export const createMissionFunnelSchema = baseSchema;
