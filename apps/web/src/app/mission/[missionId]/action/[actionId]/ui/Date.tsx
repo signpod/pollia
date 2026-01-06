@@ -244,7 +244,7 @@ function DatePickerContent({
           }}
         />
       </div>
-      <BottomDrawer collapsedHeight={146} expandedHeight={210}>
+      <BottomDrawer collapsedHeight={140} expandedHeight={210}>
         <SelectedDatesDrawerContent
           selectedDates={selectedDates}
           onRemoveDate={dateStr => {
