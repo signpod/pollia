@@ -34,6 +34,7 @@ export function ActionPdf({
   const { mutate: deleteAnswerMutation, isPending: isDeletingAnswer } = useDeleteAnswer();
 
   const prevHadFilesRef = useRef(false);
+  const isInitializedRef = useRef(false);
 
   const existingAnswer = useMemo(() => {
     if (!missionResponse?.data?.answers || missionResponse.data.answers.length === 0) {
@@ -104,10 +105,14 @@ export function ActionPdf({
 
       setFileInfos(fileInfosFromAnswer);
       setFileUploadIds(fileUploadIdsFromAnswer);
+      prevHadFilesRef.current = true;
+      isInitializedRef.current = true;
       validateAndUpdateAnswer(fileUploadIdsFromAnswer);
     } else if (existingAnswer) {
       setFileInfos([]);
       setFileUploadIds([]);
+      prevHadFilesRef.current = false;
+      isInitializedRef.current = true;
       updateCanGoNextRef.current?.(true);
     }
   }, [existingAnswer, validateAndUpdateAnswer]);
@@ -117,11 +122,14 @@ export function ActionPdf({
   }, [fileUploadIds, validateAndUpdateAnswer]);
 
   useEffect(() => {
+    if (!isInitializedRef.current) return;
+
     if (prevHadFilesRef.current && fileInfos.length === 0 && existingAnswer?.id) {
       deleteAnswerMutation(existingAnswer.id);
     }
     prevHadFilesRef.current = fileInfos.length > 0;
-  }, [fileInfos.length, existingAnswer?.id, deleteAnswerMutation]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fileInfos.length, existingAnswer?.id]);
 
   const handleUploadChange = useCallback(
     (

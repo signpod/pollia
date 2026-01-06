@@ -5,6 +5,7 @@ import { ChevronUp } from "lucide-react";
 import * as React from "react";
 import { cn } from "../../lib/utils";
 import { IconButton } from "./IconButton";
+
 interface BottomDrawerContextType {
   isOpen: boolean;
   open: () => void;
@@ -13,6 +14,10 @@ interface BottomDrawerContextType {
   collapsedHeight: number;
   expandedHeight: number | null;
   setExpandedHeight: (height: number) => void;
+  snapPoints: number[] | null;
+  snapIndex: number;
+  setSnapIndex: (index: number) => void;
+  goToSnapPoint: (index: number) => void;
 }
 
 const BottomDrawerContext = React.createContext<BottomDrawerContextType | undefined>(undefined);
@@ -30,7 +35,10 @@ interface BottomDrawerProviderProps {
   defaultOpen?: boolean;
   collapsedHeight?: number;
   expandedHeight?: number;
+  snapPoints?: number[];
+  defaultSnapIndex?: number;
   onOpenChange?: (isOpen: boolean) => void;
+  onSnapIndexChange?: (index: number) => void;
 }
 
 function BottomDrawerProvider({
@@ -38,12 +46,16 @@ function BottomDrawerProvider({
   defaultOpen = false,
   collapsedHeight = 80,
   expandedHeight: expandedHeightProp,
+  snapPoints: snapPointsProp,
+  defaultSnapIndex = 0,
   onOpenChange,
+  onSnapIndexChange,
 }: BottomDrawerProviderProps) {
   const [isOpen, setIsOpen] = React.useState(defaultOpen);
   const [expandedHeight, setExpandedHeight] = React.useState<number | null>(
     expandedHeightProp ?? null,
   );
+  const [snapIndex, setSnapIndexState] = React.useState(defaultSnapIndex);
 
   const open = React.useCallback(() => {
     setIsOpen(true);
@@ -63,6 +75,23 @@ function BottomDrawerProvider({
     });
   }, [onOpenChange]);
 
+  const setSnapIndex = React.useCallback(
+    (index: number) => {
+      setSnapIndexState(index);
+      onSnapIndexChange?.(index);
+    },
+    [onSnapIndexChange],
+  );
+
+  const goToSnapPoint = React.useCallback(
+    (index: number) => {
+      if (snapPointsProp && index >= 0 && index < snapPointsProp.length) {
+        setSnapIndex(index);
+      }
+    },
+    [snapPointsProp, setSnapIndex],
+  );
+
   const value = React.useMemo(
     () => ({
       isOpen,
@@ -72,8 +101,24 @@ function BottomDrawerProvider({
       collapsedHeight,
       expandedHeight: expandedHeightProp ?? expandedHeight,
       setExpandedHeight,
+      snapPoints: snapPointsProp ?? null,
+      snapIndex,
+      setSnapIndex,
+      goToSnapPoint,
     }),
-    [isOpen, open, close, toggle, collapsedHeight, expandedHeightProp, expandedHeight],
+    [
+      isOpen,
+      open,
+      close,
+      toggle,
+      collapsedHeight,
+      expandedHeightProp,
+      expandedHeight,
+      snapPointsProp,
+      snapIndex,
+      setSnapIndex,
+      goToSnapPoint,
+    ],
   );
 
   return <BottomDrawerContext.Provider value={value}>{children}</BottomDrawerContext.Provider>;
@@ -92,8 +137,17 @@ function BottomDrawerContent({
   enableDrag = true,
   clickToExpand = true,
 }: BottomDrawerContentProps) {
-  const { isOpen, open, close, collapsedHeight, expandedHeight, setExpandedHeight } =
-    useBottomDrawer();
+  const {
+    isOpen,
+    open,
+    close,
+    collapsedHeight,
+    expandedHeight,
+    setExpandedHeight,
+    snapPoints,
+    snapIndex,
+    setSnapIndex,
+  } = useBottomDrawer();
   const contentRef = React.useRef<HTMLDivElement>(null);
   const [calculatedExpandedHeight, setCalculatedExpandedHeight] = React.useState(
     expandedHeight ?? collapsedHeight,
@@ -103,6 +157,10 @@ function BottomDrawerContent({
   React.useEffect(() => {
     setMounted(true);
   }, []);
+
+  const finalExpandedHeight = expandedHeight ?? calculatedExpandedHeight;
+  const hasValidSnapPoints = snapPoints && snapPoints.length > 0;
+  const maxHeight = hasValidSnapPoints ? Math.max(...snapPoints) : finalExpandedHeight;
 
   React.useLayoutEffect(() => {
     if (contentRef.current && !expandedHeight && typeof window !== "undefined" && mounted) {
@@ -120,9 +178,9 @@ function BottomDrawerContent({
           element.style.height = originalHeight;
           element.style.minHeight = originalMinHeight;
 
-          const maxHeight = window.innerHeight * 0.85;
+          const viewportMaxHeight = window.innerHeight * 0.85;
           const finalHeight = Math.max(height, collapsedHeight);
-          const clampedHeight = Math.min(finalHeight, maxHeight);
+          const clampedHeight = Math.min(finalHeight, viewportMaxHeight);
           setCalculatedExpandedHeight(clampedHeight);
           setExpandedHeight(clampedHeight);
         }
@@ -139,12 +197,27 @@ function BottomDrawerContent({
     }
   }, [expandedHeight, collapsedHeight, setExpandedHeight, mounted]);
 
-  const finalExpandedHeight = expandedHeight ?? calculatedExpandedHeight;
-  const initialY = mounted
-    ? isOpen
-      ? 0
-      : finalExpandedHeight - collapsedHeight
-    : finalExpandedHeight - collapsedHeight;
+  const getYForSnapIndex = React.useCallback(
+    (index: number) => {
+      if (snapPoints && snapPoints.length > 0) {
+        const targetHeight = snapPoints[index] ?? snapPoints[0] ?? collapsedHeight;
+        return maxHeight - targetHeight;
+      }
+      return isOpen ? 0 : finalExpandedHeight - collapsedHeight;
+    },
+    [snapPoints, maxHeight, isOpen, finalExpandedHeight, collapsedHeight],
+  );
+
+  const initialY = React.useMemo(() => {
+    if (!mounted) {
+      return hasValidSnapPoints ? maxHeight - (snapPoints[0] ?? collapsedHeight) : finalExpandedHeight - collapsedHeight;
+    }
+    if (hasValidSnapPoints) {
+      return getYForSnapIndex(snapIndex);
+    }
+    return isOpen ? 0 : finalExpandedHeight - collapsedHeight;
+  }, [mounted, hasValidSnapPoints, snapPoints, maxHeight, collapsedHeight, finalExpandedHeight, getYForSnapIndex, snapIndex, isOpen]);
+
   const y = useMotionValue(initialY);
   const springConfig = { damping: 50, stiffness: 500 };
   const [isDragging, setIsDragging] = React.useState(false);
@@ -153,14 +226,8 @@ function BottomDrawerContent({
   const animationRef = React.useRef<ReturnType<typeof animate> | null>(null);
 
   React.useEffect(() => {
-    if (
-      mounted &&
-      !isDragging &&
-      !isDraggingRef.current &&
-      !isDragEndingRef.current &&
-      isClickActionRef.current
-    ) {
-      const targetY = isOpen ? 0 : finalExpandedHeight - collapsedHeight;
+    if (mounted && !isDragging && !isDraggingRef.current && !isDragEndingRef.current && isClickActionRef.current) {
+      const targetY = hasValidSnapPoints ? getYForSnapIndex(snapIndex) : isOpen ? 0 : finalExpandedHeight - collapsedHeight;
       const currentY = y.get();
       const distance = Math.abs(currentY - targetY);
 
@@ -177,7 +244,7 @@ function BottomDrawerContent({
         duration: 0.3,
       });
     }
-  }, [isOpen, finalExpandedHeight, collapsedHeight, y, mounted, isDragging]);
+  }, [isOpen, finalExpandedHeight, collapsedHeight, y, mounted, isDragging, snapPoints, snapIndex, getYForSnapIndex]);
 
   const isDraggingRef = React.useRef(false);
   const dragEndTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
@@ -207,53 +274,96 @@ function BottomDrawerContent({
       if (!wasDragging) return;
 
       const currentY = y.get();
-      const maxDragOffset = finalExpandedHeight - collapsedHeight;
-      const dragDistance = Math.abs(info.offset.y);
-      const dragDistanceThreshold = 50;
-
       const velocityThreshold = 100;
       const hasSignificantVelocity = Math.abs(info.velocity.y) > velocityThreshold;
-      const hasSignificantDistance = dragDistance > dragDistanceThreshold;
 
-      let shouldOpen: boolean;
-      if (hasSignificantVelocity) {
-        shouldOpen = info.velocity.y < 0;
-      } else if (hasSignificantDistance) {
-        shouldOpen = info.offset.y < 0;
+      if (snapPoints && snapPoints.length > 0) {
+        const snapYValues = snapPoints.map((_, i) => getYForSnapIndex(i));
+
+        let targetIndex: number;
+
+        if (hasSignificantVelocity) {
+          const direction = info.velocity.y > 0 ? -1 : 1;
+          targetIndex = Math.max(0, Math.min(snapPoints.length - 1, snapIndex + direction));
+        } else {
+          let closestIndex = 0;
+          let closestDistance = Math.abs(currentY - snapYValues[0]!);
+
+          for (let i = 1; i < snapYValues.length; i++) {
+            const distance = Math.abs(currentY - snapYValues[i]!);
+            if (distance < closestDistance) {
+              closestDistance = distance;
+              closestIndex = i;
+            }
+          }
+          targetIndex = closestIndex;
+        }
+
+        const targetY = snapYValues[targetIndex]!;
+
+        if (animationRef.current) {
+          animationRef.current.stop();
+          animationRef.current = null;
+        }
+
+        isDragEndingRef.current = true;
+        setSnapIndex(targetIndex);
+
+        const animation = animate(y, targetY, { type: "spring", damping: 50, stiffness: 500 });
+
+        animation.then(() => {
+          setTimeout(() => {
+            isDragEndingRef.current = false;
+            isClickActionRef.current = true;
+          }, 100);
+        });
       } else {
-        const midpoint = maxDragOffset / 2;
-        shouldOpen = currentY < midpoint;
+        const maxDragOffset = finalExpandedHeight - collapsedHeight;
+        const dragDistance = Math.abs(info.offset.y);
+        const dragDistanceThreshold = 50;
+
+        const hasSignificantDistance = dragDistance > dragDistanceThreshold;
+
+        let shouldOpen: boolean;
+        if (hasSignificantVelocity) {
+          shouldOpen = info.velocity.y < 0;
+        } else if (hasSignificantDistance) {
+          shouldOpen = info.offset.y < 0;
+        } else {
+          const midpoint = maxDragOffset / 2;
+          shouldOpen = currentY < midpoint;
+        }
+
+        const targetY = shouldOpen ? 0 : maxDragOffset;
+        if (animationRef.current) {
+          animationRef.current.stop();
+          animationRef.current = null;
+        }
+
+        isDragEndingRef.current = true;
+
+        if (shouldOpen) {
+          open();
+        } else {
+          close();
+        }
+
+        const animation = animate(y, targetY, { type: "spring", damping: 50, stiffness: 500 });
+
+        animation.then(() => {
+          setTimeout(() => {
+            isDragEndingRef.current = false;
+            isClickActionRef.current = true;
+          }, 100);
+        });
       }
-
-      const targetY = shouldOpen ? 0 : maxDragOffset;
-      if (animationRef.current) {
-        animationRef.current.stop();
-        animationRef.current = null;
-      }
-
-      isDragEndingRef.current = true;
-
-      if (shouldOpen) {
-        open();
-      } else {
-        close();
-      }
-
-      const animation = animate(y, targetY, { type: "spring", damping: 50, stiffness: 500 });
-
-      animation.then(() => {
-        setTimeout(() => {
-          isDragEndingRef.current = false;
-          isClickActionRef.current = true;
-        }, 100);
-      });
 
       dragEndTimeoutRef.current = setTimeout(() => {
         dragEndTimeoutRef.current = null;
         isClickActionRef.current = true;
       }, 150);
     },
-    [close, open, y, finalExpandedHeight, collapsedHeight],
+    [close, open, y, finalExpandedHeight, collapsedHeight, snapPoints, snapIndex, getYForSnapIndex, setSnapIndex],
   );
 
   React.useEffect(() => {
@@ -296,13 +406,13 @@ function BottomDrawerContent({
     [isOpen, clickToExpand, open, enableDrag, isDragging],
   );
 
-  const maxDragOffset = finalExpandedHeight - collapsedHeight;
+  const maxDragOffset = hasValidSnapPoints ? maxHeight - Math.min(...snapPoints) : finalExpandedHeight - collapsedHeight;
 
   return (
     <motion.div
       style={{
         y: isDragging ? y : springY,
-        height: finalExpandedHeight,
+        height: maxHeight,
       }}
       drag={enableDrag ? "y" : false}
       dragConstraints={{ top: 0, bottom: maxDragOffset }}

@@ -36,6 +36,7 @@ export function ActionVideo({
   const { mutate: deleteAnswerMutation, isPending: isDeletingAnswer } = useDeleteAnswer();
 
   const prevHadVideosRef = useRef(false);
+  const isInitializedRef = useRef(false);
 
   const existingAnswer = useMemo(() => {
     if (!missionResponse?.data?.answers || missionResponse.data.answers.length === 0) {
@@ -108,10 +109,14 @@ export function ActionVideo({
 
       setVideoInfos(videoInfosFromAnswer);
       setVideoFileUploadIds(videoFileUploadIdsFromAnswer);
+      prevHadVideosRef.current = true;
+      isInitializedRef.current = true;
       validateAndUpdateAnswer(videoFileUploadIdsFromAnswer);
     } else if (existingAnswer) {
       setVideoInfos([]);
       setVideoFileUploadIds([]);
+      prevHadVideosRef.current = false;
+      isInitializedRef.current = true;
       updateCanGoNextRef.current?.(true);
     }
   }, [existingAnswer, validateAndUpdateAnswer]);
@@ -121,11 +126,14 @@ export function ActionVideo({
   }, [videoFileUploadIds, validateAndUpdateAnswer]);
 
   useEffect(() => {
+    if (!isInitializedRef.current) return;
+
     if (prevHadVideosRef.current && videoInfos.length === 0 && existingAnswer?.id) {
       deleteAnswerMutation(existingAnswer.id);
     }
     prevHadVideosRef.current = videoInfos.length > 0;
-  }, [videoInfos.length, existingAnswer?.id, deleteAnswerMutation]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [videoInfos.length, existingAnswer?.id]);
 
   const handleUploadChange = useCallback(
     (
