@@ -3,7 +3,7 @@ import { useDeleteAnswer } from "@/hooks/action/useDeleteAnswer";
 import { useDeleteFile } from "@/hooks/common/useDeleteFile";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
-import type { FileInfo, TempFileInfo } from "@/types/domain/file";
+import type { FileInfo } from "@/types/domain/file";
 import type { ActionAnswerItem } from "@/types/dto";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
@@ -25,9 +25,8 @@ export function ActionPdf({
   missionResponse,
   isLoading,
 }: ActionStepContentProps) {
-  const [fileInfos, setFileInfos] = useState<(FileInfo | TempFileInfo)[]>([]);
+  const [fileInfos, setFileInfos] = useState<FileInfo[]>([]);
   const [fileUploadIds, setFileUploadIds] = useState<string[]>([]);
-  const [uploadingFileUrl, setUploadingFileUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   const { mutate: deleteFileMutation } = useDeleteFile();
@@ -131,16 +130,6 @@ export function ActionPdf({
     // biome-ignore lint/correctness/useExhaustiveDependencies: deleteAnswerMutation is stable from useMutation hook
   }, [fileInfos.length, existingAnswer?.id]);
 
-  const handleUploadStart = useCallback((file: File, tempUrl: string) => {
-    setUploadingFileUrl(tempUrl);
-    const tempFileInfo: TempFileInfo = {
-      fileName: file.name,
-      fileSize: file.size,
-      fileUrl: tempUrl,
-    };
-    setFileInfos(prev => [...prev, tempFileInfo]);
-  }, []);
-
   const handleUploadChange = useCallback(
     (
       hasUploadedFile: boolean,
@@ -148,7 +137,6 @@ export function ActionPdf({
       newFileUploadIds: string[],
       newFilePaths: string[],
       file?: File,
-      tempUrl?: string,
     ) => {
       if (
         hasUploadedFile &&
@@ -170,21 +158,9 @@ export function ActionPdf({
             filePath: newFilePath,
           };
 
-          if (tempUrl) {
-            setFileInfos(prev => prev.map(f => (f.fileUrl === tempUrl ? fileInfo : f)));
-            URL.revokeObjectURL(tempUrl);
-          } else {
-            setFileInfos(prev => [...prev, fileInfo]);
-          }
+          setFileInfos(prev => [...prev, fileInfo]);
           setFileUploadIds(prev => [...prev, newFileUploadId]);
-          setUploadingFileUrl(null);
         }
-      } else if (!hasUploadedFile) {
-        if (tempUrl) {
-          setFileInfos(prev => prev.filter(f => f.fileUrl !== tempUrl));
-          URL.revokeObjectURL(tempUrl);
-        }
-        setUploadingFileUrl(null);
       }
     },
     [],
@@ -201,26 +177,15 @@ export function ActionPdf({
 
       setFileInfos(prev => prev.filter(f => f.fileUrl !== fileUrl));
 
-      if ("filePath" in fileInfo && fileInfo.filePath) {
+      if (fileInfo.filePath) {
         deleteFileMutation(fileInfo.filePath);
       }
 
-      if ("fileUploadId" in fileInfo && fileInfo.fileUploadId) {
+      if (fileInfo.fileUploadId) {
         setFileUploadIds(prev => prev.filter(id => id !== fileInfo.fileUploadId));
       }
-
-      if (fileUrl.startsWith("blob:")) {
-        URL.revokeObjectURL(fileUrl);
-      }
-
-      if (uploadingFileUrl === fileUrl) {
-        setIsUploading(false);
-        setUploadingFileUrl(null);
-      } else {
-        setUploadingFileUrl(prev => (prev === fileUrl ? null : prev));
-      }
     },
-    [deleteFileMutation, fileInfos, uploadingFileUrl],
+    [deleteFileMutation, fileInfos],
   );
 
   const handleFileClick = useCallback((fileUrl: string) => {
@@ -242,20 +207,21 @@ export function ActionPdf({
       isLoading={isLoading}
       isRequired={actionData.isRequired}
     >
-      {fileInfos.length === 0 && !isUploading && (
+      {fileInfos.length === 0 && (
         <PdfUpload
           onUploadChange={handleUploadChange}
           onUploadingChange={handleUploadingChange}
-          onUploadStart={handleUploadStart}
         />
       )}
-      <FileList
-        files={fileInfos}
-        uploadingFileUrl={uploadingFileUrl}
-        isUploading={isUploading}
-        onFileDelete={handleFileDelete}
-        onFileClick={handleFileClick}
-      />
+      {fileInfos.length > 0 && (
+        <FileList
+          files={fileInfos}
+          uploadingFileUrl={null}
+          isUploading={false}
+          onFileDelete={handleFileDelete}
+          onFileClick={handleFileClick}
+        />
+      )}
       <PdfUploadNotice />
     </SurveyQuestionTemplate>
   );
