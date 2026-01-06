@@ -47,6 +47,10 @@ export type CreatePageParameters = Parameters<Client["pages"]["create"]>[0];
 
 export type CreateDatabaseParameters = Parameters<Client["databases"]["create"]>[0];
 
+export type DatabasePropertyConfigMap = NonNullable<CreateDatabaseParameters["properties"]>;
+
+export type PagePropertyValueMap = NonNullable<CreatePageParameters["properties"]>;
+
 export const AGGREGATABLE_ACTION_TYPES: ActionType[] = [
   "MULTIPLE_CHOICE",
   "SCALE",

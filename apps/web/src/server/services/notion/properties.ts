@@ -1,62 +1,16 @@
 import type { Mission } from "@prisma/client";
-import type { MissionResponseWithAnswers } from "./types";
-
-export interface NotionPageProperties {
-  title: {
-    title: Array<{
-      type: "text";
-      text: {
-        content: string;
-      };
-    }>;
-  };
-  타겟?: {
-    rich_text: Array<{
-      type: "text";
-      text: {
-        content: string;
-      };
-    }>;
-  };
-  마감일?: {
-    date: {
-      start: string;
-    } | null;
-  };
-  "총 응답자": {
-    number: number;
-  };
-  완주자: {
-    number: number;
-  };
-  "완주율 (%)": {
-    number: number;
-  };
-  타입: {
-    select: {
-      name: string;
-    };
-  };
-  "예상 소요시간"?: {
-    number: number | null;
-  };
-  상태: {
-    select: {
-      name: string;
-    };
-  };
-}
+import type { MissionResponseWithAnswers, PagePropertyValueMap } from "./types";
 
 export function buildPageProperties(
   mission: Mission,
   responses: MissionResponseWithAnswers[],
-): NotionPageProperties {
+): PagePropertyValueMap {
   const totalResponses = responses.length;
   const completedResponses = responses.filter(r => r.completedAt !== null).length;
   const completionRate =
     totalResponses > 0 ? Math.round((completedResponses / totalResponses) * 100) : 0;
 
-  const properties: NotionPageProperties = {
+  const properties: PagePropertyValueMap = {
     title: {
       title: [
         {
