@@ -48,7 +48,6 @@ const SCROLL_OFFSET = (sectionId: string) => {
 
 const HANDLE_HEIGHT = 28;
 const TAB_HEIGHT = 48;
-const GRADIENT_HEADER_HEIGHT = 180;
 const TOP_MARGIN = 40;
 
 function CalloutTrigger({
@@ -79,6 +78,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
   const contentRef = useRef<HTMLDivElement>(null);
   const gradientHeaderRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLDivElement>(null);
+  const bottomButtonRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const existingValue = getActionNavCookie(missionId);
@@ -124,7 +124,8 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
       const imageMaxHeight = (containerWidth * 16) / 9;
       const extraHeight = Math.max(0, viewportHeight - imageMaxHeight);
 
-      const snap1 = HANDLE_HEIGHT + TAB_HEIGHT + extraHeight;
+      const bottomButtonHeight = bottomButtonRef.current?.offsetHeight ?? 110;
+      const snap1 = HANDLE_HEIGHT + TAB_HEIGHT + bottomButtonHeight + extraHeight;
 
       let snap2 = viewportHeight - 100;
       if (gradientHeaderRef.current && titleRef.current) {
@@ -141,15 +142,17 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
     calculateSnapPoints();
     window.addEventListener("resize", calculateSnapPoints);
 
-    let resizeObserver: ResizeObserver | null = null;
+    const resizeObserver = new ResizeObserver(calculateSnapPoints);
     if (gradientHeaderRef.current) {
-      resizeObserver = new ResizeObserver(calculateSnapPoints);
       resizeObserver.observe(gradientHeaderRef.current);
+    }
+    if (bottomButtonRef.current) {
+      resizeObserver.observe(bottomButtonRef.current);
     }
 
     return () => {
       window.removeEventListener("resize", calculateSnapPoints);
-      resizeObserver?.disconnect();
+      resizeObserver.disconnect();
     };
   }, [title]);
 
@@ -353,22 +356,25 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
 
                 <div className="h-32" />
               </div>
-
-              <BottomDrawer.Footer className="border-t border-zinc-100">
-                <BottomButton
-                  isActive={isActive ?? false}
-                  firstActionId={firstActionId ?? ""}
-                  initialError={initialError}
-                  deadline={deadline}
-                  showResumeModal={showResumeModal}
-                  isCompleted={isCompleted}
-                  hasReward={!!reward}
-                  isRequirePassword={isRequirePassword}
-                  hasExistingResponse={!!missionResponse}
-                />
-              </BottomDrawer.Footer>
             </BottomDrawer.Content>
           </BottomDrawer>
+
+          <div
+            ref={bottomButtonRef}
+            className="fixed bottom-0 left-0 right-0 z-[60] mx-auto max-w-lg bg-white border-t border-zinc-100 px-5 py-4 pb-[calc(16px+env(safe-area-inset-bottom))]"
+          >
+            <BottomButton
+              isActive={isActive ?? false}
+              firstActionId={firstActionId ?? ""}
+              initialError={initialError}
+              deadline={deadline}
+              showResumeModal={showResumeModal}
+              isCompleted={isCompleted}
+              hasReward={!!reward}
+              isRequirePassword={isRequirePassword}
+              hasExistingResponse={!!missionResponse}
+            />
+          </div>
         </div>
       </main>
       <MissionFooter />
