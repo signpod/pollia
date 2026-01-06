@@ -3,6 +3,7 @@ export { deleteMission } from "./delete";
 export { duplicateMission } from "./duplicate";
 export {
   getMission,
+  getMissionNotionPage,
   getMissionParticipantInfo,
   getMissionPassword,
   getUserMissions,

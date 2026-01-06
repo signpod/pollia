@@ -1,7 +1,7 @@
 "use client";
 
 import { syncMissionToNotion } from "@/actions/mission";
-import type { SyncMissionToNotionResponse } from "@/actions/mission/sync-to-notion";
+import type { SyncMissionToNotionResponse } from "@/types/dto";
 import { useMutation } from "@tanstack/react-query";
 
 interface UseSyncMissionToNotionOptions {

@@ -5,13 +5,7 @@ import { missionService } from "@/server/services/mission";
 import { missionNotionPageService } from "@/server/services/mission-notion-page";
 import { missionResponseService } from "@/server/services/mission-response";
 import { NotionService } from "@/server/services/notion";
-
-export interface SyncMissionToNotionResponse {
-  data: {
-    notionPageUrl: string;
-    syncedResponseCount: number;
-  };
-}
+import type { SyncMissionToNotionResponse } from "@/types/dto";
 
 export async function syncMissionToNotion(missionId: string): Promise<SyncMissionToNotionResponse> {
   try {

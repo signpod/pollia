@@ -2,9 +2,11 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import { missionService } from "@/server/services/mission";
+import { missionNotionPageService } from "@/server/services/mission-notion-page";
 import type { GetUserMissionsOptions } from "@/server/services/mission/types";
 import type { SortOrderType } from "@/types/common/sort";
 import type {
+  GetMissionNotionPageResponse,
   GetMissionParticipantInfoResponse,
   GetMissionResponse,
   GetUserMissionsResponse,
@@ -112,6 +114,36 @@ export async function getMissionParticipantInfo(
       throw error;
     }
     const serverError = new Error("참여 정보를 불러올 수 없습니다.");
+    serverError.cause = 500;
+    throw serverError;
+  }
+}
+
+export async function getMissionNotionPage(
+  missionId: string,
+): Promise<GetMissionNotionPageResponse> {
+  try {
+    const user = await requireAuth();
+    const notionPage = await missionNotionPageService.getByMissionIdWithAuth(missionId, user.id);
+
+    if (!notionPage) {
+      return { data: null };
+    }
+
+    return {
+      data: {
+        notionPageId: notionPage.notionPageId,
+        notionPageUrl: notionPage.notionPageUrl,
+        lastSyncedAt: notionPage.lastSyncedAt,
+        syncedResponseCount: notionPage.syncedResponseCount,
+      },
+    };
+  } catch (error) {
+    console.error("getMissionNotionPage error:", error);
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("노션 리포트 정보를 불러올 수 없습니다.");
     serverError.cause = 500;
     throw serverError;
   }
