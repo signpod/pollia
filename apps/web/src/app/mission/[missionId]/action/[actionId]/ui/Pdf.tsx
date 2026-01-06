@@ -27,6 +27,7 @@ export function ActionPdf({
 }: ActionStepContentProps) {
   const [fileInfos, setFileInfos] = useState<FileInfo[]>([]);
   const [fileUploadIds, setFileUploadIds] = useState<string[]>([]);
+  const [uploadingFileUrl, setUploadingFileUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   const { mutate: deleteFileMutation } = useDeleteFile();
@@ -127,7 +128,7 @@ export function ActionPdf({
       deleteAnswerMutation(existingAnswer.id);
     }
     prevHadFilesRef.current = fileInfos.length > 0;
-    // biome-ignore lint/correctness/useExhaustiveDependencies: deleteAnswerMutation is stable from useMutation hook
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fileInfos.length, existingAnswer?.id]);
 
   const handleUploadChange = useCallback(
@@ -160,7 +161,10 @@ export function ActionPdf({
 
           setFileInfos(prev => [...prev, fileInfo]);
           setFileUploadIds(prev => [...prev, newFileUploadId]);
+          setUploadingFileUrl(null);
         }
+      } else if (!hasUploadedFile) {
+        setUploadingFileUrl(null);
       }
     },
     [],
@@ -168,6 +172,9 @@ export function ActionPdf({
 
   const handleUploadingChange = useCallback((uploading: boolean) => {
     setIsUploading(uploading);
+    if (!uploading) {
+      setUploadingFileUrl(null);
+    }
   }, []);
 
   const handleFileDelete = useCallback(
@@ -208,16 +215,13 @@ export function ActionPdf({
       isRequired={actionData.isRequired}
     >
       {fileInfos.length === 0 && (
-        <PdfUpload
-          onUploadChange={handleUploadChange}
-          onUploadingChange={handleUploadingChange}
-        />
+        <PdfUpload onUploadChange={handleUploadChange} onUploadingChange={handleUploadingChange} />
       )}
       {fileInfos.length > 0 && (
         <FileList
           files={fileInfos}
-          uploadingFileUrl={null}
-          isUploading={false}
+          uploadingFileUrl={uploadingFileUrl}
+          isUploading={isUploading}
           onFileDelete={handleFileDelete}
           onFileClick={handleFileClick}
         />
