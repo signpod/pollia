@@ -11,15 +11,15 @@ import { MissionType } from "@prisma/client";
 import Gift from "@public/svgs/gift.svg";
 import Lock from "@public/svgs/lock.svg";
 import {
+  BottomDrawer,
   CalloutProvider,
   type CalloutToneVariant,
-  FixedBottomLayout,
   Tab,
   Typo,
   useCallout,
 } from "@repo/ui/components";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   MissionBadge,
   MissionDescription,
@@ -45,7 +45,11 @@ const SCROLL_OFFSET = (sectionId: string) => {
   }
   return 10;
 };
-const DRAWER_VISIBLE_HEIGHT = 120;
+
+const HANDLE_HEIGHT = 28;
+const TAB_HEIGHT = 48;
+const GRADIENT_HEADER_HEIGHT = 180;
+const TOP_MARGIN = 40;
 
 function CalloutTrigger({
   calloutData,
@@ -71,9 +75,34 @@ function CalloutTrigger({
 
 export function MissionIntro({ initialError }: { initialError: AuthError | null }) {
   const { missionId } = useParams<{ missionId: string }>();
+  const [snapPoints, setSnapPoints] = useState<number[]>([200, 300, 400]);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const gradientHeaderRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    window.scrollTo(0, -30);
+    const calculateSnapPoints = () => {
+      const viewportHeight = window.innerHeight;
+      const snap1 = HANDLE_HEIGHT + TAB_HEIGHT;
+
+      let snap2 = viewportHeight - 100;
+      if (gradientHeaderRef.current && titleRef.current) {
+        const headerHeight = gradientHeaderRef.current.offsetHeight;
+        const headerRect = gradientHeaderRef.current.getBoundingClientRect();
+        const titleRect = titleRef.current.getBoundingClientRect();
+        const titleOffset = titleRect.top - headerRect.top;
+        snap2 = viewportHeight + 10 - headerHeight + titleOffset;
+      }
+      const snap3 = viewportHeight - TOP_MARGIN;
+      setSnapPoints([snap1, snap2, snap3]);
+    };
+
+    const timer = setTimeout(calculateSnapPoints, 100);
+    window.addEventListener("resize", calculateSnapPoints);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", calculateSnapPoints);
+    };
   }, []);
 
   useEffect(() => {
@@ -192,22 +221,28 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
   return (
     <CalloutProvider position="top-center">
       <CalloutTrigger calloutData={calloutData} />
-      <main className="flex w-full flex-col gap-8">
-        <div className="relative">
+      <main className="fixed inset-0 overflow-hidden flex justify-center">
+        <div className="relative w-full max-w-lg h-full">
           {imageUrl && (
-            <div
-              className="overflow-hidden sticky top-0 left-0 right-0 z-10 bg-white"
-              style={{ height: `calc(100dvh - ${DRAWER_VISIBLE_HEIGHT}px)` }}
-            >
-              <MissionImage imageUrl={imageUrl} />
+            <div className="absolute inset-0 z-0">
+              <div className="relative w-full h-full">
+                <MissionImage imageUrl={imageUrl} />
+              </div>
             </div>
           )}
-          <div className="flex w-full flex-col bg-white py-5 rounded-t-3xl pb-0 relative z-20 mt-[-20px] overflow-visible">
-            <div className="bg-linear-to-t from-black via-black/50 via-70% to-transparent absolute bottom-[calc(100%-10px)] left-0 right-0 z-30 flex flex-col gap-3 pb-2 pt-6 px-5 pointer-events-none">
+
+        <BottomDrawer snapPoints={snapPoints} defaultSnapIndex={0}>
+          <BottomDrawer.Content className="rounded-t-3xl bg-white shadow-2xl overflow-visible">
+            <div
+              ref={gradientHeaderRef}
+              className="bg-linear-to-t from-black via-black/50 via-70% to-transparent absolute bottom-[calc(100%-20px)] left-0 right-0 z-30 flex flex-col gap-3 pb-2 pt-6 px-5 pointer-events-none rounded-t-3xl"
+            >
               <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
-              <Typo.MainTitle size="large" className="break-keep text-white">
-                {title}
-              </Typo.MainTitle>
+              <div ref={titleRef}>
+                <Typo.MainTitle size="large" className="break-keep text-white">
+                  {title}
+                </Typo.MainTitle>
+              </div>
 
               <div className="flex gap-3 items-center">
                 {isRequirePassword && <MissionBadge icon={<Lock />} label="비밀" />}
@@ -216,9 +251,12 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
 
               <div className="h-[84px]" />
             </div>
-            <div className="bg-white h-5 absolute top-0 left-0 right-0 rounded-t-3xl z-30" />
-            <div className="sticky top-0 z-30 rounded-t-md mt-[-20px] bg-white py-2">
-              <div className="h-1 w-9 rounded-md bg-zinc-300 mx-auto" />
+
+            <div className="bg-white rounded-t-3xl relative z-40">
+              <div className="py-3">
+                <div className="h-1 w-9 rounded-md bg-zinc-300 mx-auto" />
+              </div>
+
               <Tab.Root value={activeTab} pointColor="secondary" onValueChange={handleChangeTab}>
                 <Tab.List className="px-5">
                   <Tab.Item
@@ -236,106 +274,90 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
               </Tab.Root>
             </div>
 
-            <div
-              id={SECTION_IDS.MISSION_GUIDE}
-              className="flex w-full flex-col gap-0 px-5 items-center"
-            >
-              {showDetailInfo && (
-                <div className="flex flex-col gap-6 w-full p-5">
-                  <div className="flex flex-col gap-4 w-full bg-zinc-50 rounded-md p-6">
-                    {detailInfoConfig.map(
-                      ({ key, value }) =>
-                        !!key &&
-                        !!value && (
-                          <div className="flex gap-2" key={key}>
-                            <Typo.Body
-                              size="medium"
-                              className="text-info whitespace-nowrap min-w-[100px]"
-                            >
-                              {key}
-                            </Typo.Body>
-                            <Typo.Body size="medium" className="flex-1 break-keep text-right">
-                              {value}
-                            </Typo.Body>
-                          </div>
-                        ),
-                    )}
+            <div ref={contentRef} className="flex-1 overflow-y-auto bg-white">
+              <div
+                id={SECTION_IDS.MISSION_GUIDE}
+                className="flex w-full flex-col gap-0 px-5 items-center"
+              >
+                {showDetailInfo && (
+                  <div className="flex flex-col gap-6 w-full p-5">
+                    <div className="flex flex-col gap-4 w-full bg-zinc-50 rounded-md p-6">
+                      {detailInfoConfig.map(
+                        ({ key, value }) =>
+                          !!key &&
+                          !!value && (
+                            <div className="flex gap-2" key={key}>
+                              <Typo.Body
+                                size="medium"
+                                className="text-info whitespace-nowrap min-w-[100px]"
+                              >
+                                {key}
+                              </Typo.Body>
+                              <Typo.Body size="medium" className="flex-1 break-keep text-right">
+                                {value}
+                              </Typo.Body>
+                            </div>
+                          ),
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {!!description && !!cleanTiptapHTML(description) && (
-                <div className="flex flex-col gap-6 px-5 py-8 items-center w-full">
-                  <SectionHeader badgeText="상세 안내" title={""} />
-                  <MissionDescription
-                    content={cleanTiptapHTML(description)}
-                    className="text-center"
+                {!!description && !!cleanTiptapHTML(description) && (
+                  <div className="flex flex-col gap-6 px-5 py-8 items-center w-full">
+                    <SectionHeader badgeText="상세 안내" title={""} />
+                    <MissionDescription
+                      content={cleanTiptapHTML(description)}
+                      className="text-center"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {reward && (
+                <div id={SECTION_IDS.REWARD} className="px-5 py-8 w-full">
+                  <MissionRewardSection
+                    rewardImageUrl={reward?.data.imageUrl ?? undefined}
+                    rewardName={reward?.data.name ?? undefined}
+                    rewardScheduledDate={reward?.data.scheduledDate ?? undefined}
                   />
                 </div>
               )}
+
+              {mission?.type !== MissionType.EXPERIENCE_GROUP && (
+                <div className="flex flex-col gap-4 items-center px-5 py-8">
+                  <Typo.MainTitle size="small" className="text-center">
+                    가족, 친구에게
+                    <br />
+                    공유해주세요 👀
+                  </Typo.MainTitle>
+                  <SocialShareButtons
+                    onXShare={handleXShare}
+                    onKakaoShare={handleKakaoShare}
+                    onLinkShare={handleLinkShare}
+                  />
+                </div>
+              )}
+
+              <div className="h-32" />
             </div>
 
-            {reward && (
-              <div id={SECTION_IDS.REWARD} className="px-5 py-8 w-full">
-                <MissionRewardSection
-                  rewardImageUrl={reward?.data.imageUrl ?? undefined}
-                  rewardName={reward?.data.name ?? undefined}
-                  rewardScheduledDate={reward?.data.scheduledDate ?? undefined}
-                />
-              </div>
-            )}
-
-            {mission?.type !== MissionType.EXPERIENCE_GROUP && (
-              <div className="flex flex-col gap-4 items-center px-5 py-8">
-                <Typo.MainTitle size="small" className="text-center">
-                  가족, 친구에게
-                  <br />
-                  공유해주세요 👀
-                </Typo.MainTitle>
-                <SocialShareButtons
-                  onXShare={handleXShare}
-                  onKakaoShare={handleKakaoShare}
-                  onLinkShare={handleLinkShare}
-                />
-              </div>
-            )}
-
-            {/* TODO: 참여 방법 추가 시 실제 데이터 사용 */}
-            {/* <div id="participation-method">
-              <ParticipationMethodSection
-                steps={[
-                  {
-                    title: "전용 링크로 제품 구매하기",
-                    description:
-                      "전용 구매 링크를 통해 ‘스타벅스 홀리데이 블론드 로스트’를 구매해주세요!",
-                  },
-                  {
-                    title: "구매 사진 인증하기",
-                    description: "제품을 받고 영수증과 사진 인증을 진행해주세요!",
-                  },
-                  {
-                    title: "사용 후기 작성하기",
-                    description: "일주일 사용 후, 미션 페이지로 다시 돌아와서 후기 작성하면 끝!",
-                  },
-                ]}
+            <BottomDrawer.Footer className="border-t border-zinc-100">
+              <BottomButton
+                isActive={isActive ?? false}
+                firstActionId={firstActionId ?? ""}
+                initialError={initialError}
+                deadline={deadline}
+                showResumeModal={showResumeModal}
+                isCompleted={isCompleted}
+                hasReward={!!reward}
+                isRequirePassword={isRequirePassword}
+                hasExistingResponse={!!missionResponse}
               />
-            </div> */}
-          </div>
+            </BottomDrawer.Footer>
+          </BottomDrawer.Content>
+        </BottomDrawer>
         </div>
-
-        <FixedBottomLayout.Content className="flex w-full justify-end">
-          <BottomButton
-            isActive={isActive ?? false}
-            firstActionId={firstActionId ?? ""}
-            initialError={initialError}
-            deadline={deadline}
-            showResumeModal={showResumeModal}
-            isCompleted={isCompleted}
-            hasReward={!!reward}
-            isRequirePassword={isRequirePassword}
-            hasExistingResponse={!!missionResponse}
-          />
-        </FixedBottomLayout.Content>
       </main>
       <MissionFooter />
     </CalloutProvider>
