@@ -1,15 +1,21 @@
 "use client";
 
 import { ActionStepContentProps } from "@/constants/action";
+import { useIsMobile } from "@/hooks/common/useIsMobile";
 import { formatDateToYYYYMMDD } from "@/lib/date";
 import { cn } from "@/lib/utils";
-import { Calendar, Typo } from "@repo/ui/components";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { BottomDrawer, Calendar, Typo, useBottomDrawer } from "@repo/ui/components";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import * as React from "react";
 
 import { ko } from "date-fns/locale";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 import { DatePickerProvider, useDatePicker } from "./DatePickerProvider";
+
+function formatDateForDisplay(dateStr: string): string {
+  const [year, month, day] = dateStr.split("-");
+  return `${year}.${Number(month)}.${Number(day)}`;
+}
 
 export function ActionDate({
   actionData,
@@ -238,6 +244,75 @@ function DatePickerContent({
           }}
         />
       </div>
+      <BottomDrawer collapsedHeight={146} expandedHeight={210}>
+        <SelectedDatesDrawerContent
+          selectedDates={selectedDates}
+          onRemoveDate={dateStr => {
+            const newDates = Array.from(selectedDates).filter(d => d !== dateStr);
+            setDates(newDates);
+          }}
+        />
+      </BottomDrawer>
     </SurveyQuestionTemplate>
+  );
+}
+
+function SelectedDatesDrawerContent({
+  selectedDates,
+  onRemoveDate,
+}: {
+  selectedDates: Set<string>;
+  onRemoveDate: (dateStr: string) => void;
+}) {
+  const { toggle } = useBottomDrawer();
+  const isMobile = useIsMobile();
+
+  const handleHeaderClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest("button")) return;
+    toggle();
+  };
+
+  const sortedDates = React.useMemo(() => {
+    return Array.from(selectedDates).sort();
+  }, [selectedDates]);
+
+  return (
+    <BottomDrawer.Content
+      className="ring-1 ring-default shadow-[0_-4px_20px_0px_rgba(9,9,11,0.08)]"
+      clickToExpand={!isMobile}
+      enableDrag={isMobile}
+    >
+      <BottomDrawer.Header
+        showToggleButton
+        showCloseButton={false}
+        onClick={handleHeaderClick}
+        className="relative py-4 px-5"
+      >
+        <div className="flex items-center gap-1">
+          <Typo.SubTitle size="large" className="text-violet-500">
+            {selectedDates.size}
+          </Typo.SubTitle>
+          <Typo.SubTitle size="large">개 선택</Typo.SubTitle>
+        </div>
+      </BottomDrawer.Header>
+      <BottomDrawer.Body className="py-2 px-0">
+        <div className="flex gap-2 overflow-x-auto px-5 pb-[80px] scrollbar-hide">
+          {sortedDates.map(dateStr => (
+            <button
+              key={dateStr}
+              type="button"
+              onClick={() => onRemoveDate(dateStr)}
+              className="flex items-center gap-1 px-3 py-2 bg-violet-50 rounded-full shrink-0"
+            >
+              <Typo.ButtonText size="medium" className="text-violet-500">
+                {formatDateForDisplay(dateStr)}
+              </Typo.ButtonText>
+              <X className="size-4 text-violet-500" />
+            </button>
+          ))}
+        </div>
+      </BottomDrawer.Body>
+    </BottomDrawer.Content>
   );
 }
