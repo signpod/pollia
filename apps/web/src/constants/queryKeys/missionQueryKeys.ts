@@ -11,6 +11,7 @@ export const missionQueryKeys = {
   missionPassword: (missionId: string) => ["mission-password", missionId] as const,
   verifyMissionPassword: (missionId: string, password: string) =>
     ["verify-mission-password", missionId, password] as const,
+  missionNotionPage: (missionId: string) => ["mission-notion-page", missionId] as const,
 } as const;
 
 export type MissionQueryKeys = typeof missionQueryKeys;
