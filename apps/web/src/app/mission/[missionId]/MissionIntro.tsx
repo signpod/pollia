@@ -264,7 +264,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                   {hasReward && <MissionBadge icon={<Gift />} label="리워드" />}
                 </div>
 
-                <div className="h-[84px]" />
+                <div className="h-[56px] w-full" />
               </div>
 
               <div className="bg-white rounded-t-3xl relative z-40">
