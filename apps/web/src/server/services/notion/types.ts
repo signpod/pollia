@@ -1,10 +1,6 @@
 import { Client } from "@notionhq/client";
 import type { Action, ActionType, Mission, MissionResponse } from "@prisma/client";
 
-export interface MissionWithResponses extends Mission {
-  responses: MissionResponseWithAnswers[];
-}
-
 export interface MissionResponseWithAnswers extends MissionResponse {
   answers: ActionAnswerWithRelations[];
 }
@@ -30,8 +26,8 @@ export interface ActionAnswerWithRelations {
 
 export interface CreateMissionReportInput {
   mission: Mission;
-  responses: MissionResponseWithAnswers[];
   actions: Action[];
+  responses: MissionResponseWithAnswers[];
 }
 
 export interface CreateMissionReportResult {
