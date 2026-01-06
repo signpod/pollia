@@ -81,36 +81,6 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
   const titleRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const calculateSnapPoints = () => {
-      const viewportHeight = window.innerHeight;
-      const viewportWidth = window.innerWidth;
-      const containerWidth = Math.min(viewportWidth, 512);
-      const imageMaxHeight = (containerWidth * 16) / 9;
-      const extraHeight = Math.max(0, viewportHeight - imageMaxHeight);
-
-      const snap1 = HANDLE_HEIGHT + TAB_HEIGHT + extraHeight;
-
-      let snap2 = viewportHeight - 100;
-      if (gradientHeaderRef.current && titleRef.current) {
-        const headerHeight = gradientHeaderRef.current.offsetHeight;
-        const headerRect = gradientHeaderRef.current.getBoundingClientRect();
-        const titleRect = titleRef.current.getBoundingClientRect();
-        const titleOffset = titleRect.top - headerRect.top;
-        snap2 = viewportHeight + 10 - headerHeight + titleOffset;
-      }
-      const snap3 = viewportHeight - TOP_MARGIN;
-      setSnapPoints([snap1, snap2, snap3]);
-    };
-
-    const timer = setTimeout(calculateSnapPoints, 100);
-    window.addEventListener("resize", calculateSnapPoints);
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener("resize", calculateSnapPoints);
-    };
-  }, []);
-
-  useEffect(() => {
     const existingValue = getActionNavCookie(missionId);
     if (!existingValue) {
       setActionNavCookie(missionId, "initial");
@@ -145,6 +115,43 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
     target,
     isActive,
   } = mission ?? {};
+
+  useEffect(() => {
+    const calculateSnapPoints = () => {
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+      const containerWidth = Math.min(viewportWidth, 512);
+      const imageMaxHeight = (containerWidth * 16) / 9;
+      const extraHeight = Math.max(0, viewportHeight - imageMaxHeight);
+
+      const snap1 = HANDLE_HEIGHT + TAB_HEIGHT + extraHeight;
+
+      let snap2 = viewportHeight - 100;
+      if (gradientHeaderRef.current && titleRef.current) {
+        const headerHeight = gradientHeaderRef.current.offsetHeight;
+        const headerRect = gradientHeaderRef.current.getBoundingClientRect();
+        const titleRect = titleRef.current.getBoundingClientRect();
+        const titleOffset = titleRect.top - headerRect.top;
+        snap2 = viewportHeight + 10 - headerHeight + titleOffset;
+      }
+      const snap3 = viewportHeight - TOP_MARGIN;
+      setSnapPoints([snap1, snap2, snap3]);
+    };
+
+    calculateSnapPoints();
+    window.addEventListener("resize", calculateSnapPoints);
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (gradientHeaderRef.current) {
+      resizeObserver = new ResizeObserver(calculateSnapPoints);
+      resizeObserver.observe(gradientHeaderRef.current);
+    }
+
+    return () => {
+      window.removeEventListener("resize", calculateSnapPoints);
+      resizeObserver?.disconnect();
+    };
+  }, [title]);
 
   const { data: reward } = useReadReward(mission?.rewardId || "");
   const { data: participantInfo } = useReadMissionParticipantInfo(missionId);
@@ -236,132 +243,132 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
             </div>
           )}
 
-        <BottomDrawer snapPoints={snapPoints} defaultSnapIndex={0}>
-          <BottomDrawer.Content className="rounded-t-3xl bg-white shadow-2xl overflow-visible">
-            <div
-              ref={gradientHeaderRef}
-              className="bg-linear-to-t from-black via-black/50 via-70% to-transparent absolute bottom-[calc(100%-20px)] left-0 right-0 z-30 flex flex-col gap-3 pb-2 pt-6 px-5 pointer-events-none rounded-t-3xl"
-            >
-              <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
-              <div ref={titleRef}>
-                <Typo.MainTitle size="large" className="break-keep text-white">
-                  {title}
-                </Typo.MainTitle>
-              </div>
-
-              <div className="flex gap-3 items-center">
-                {isRequirePassword && <MissionBadge icon={<Lock />} label="비밀" />}
-                {hasReward && <MissionBadge icon={<Gift />} label="리워드" />}
-              </div>
-
-              <div className="h-[84px]" />
-            </div>
-
-            <div className="bg-white rounded-t-3xl relative z-40">
-              <div className="py-3">
-                <div className="h-1 w-9 rounded-md bg-zinc-300 mx-auto" />
-              </div>
-
-              <Tab.Root value={activeTab} pointColor="secondary" onValueChange={handleChangeTab}>
-                <Tab.List className="px-5">
-                  <Tab.Item
-                    value={SECTION_IDS.MISSION_GUIDE}
-                    className={cn(sections.length === 1 ? "mx-auto max-w-[110px]" : "")}
-                  >
-                    <Typo.SubTitle size="large">상세 안내</Typo.SubTitle>
-                  </Tab.Item>
-                  {reward && (
-                    <Tab.Item value={SECTION_IDS.REWARD}>
-                      <Typo.SubTitle size="large">참여 혜택</Typo.SubTitle>
-                    </Tab.Item>
-                  )}
-                </Tab.List>
-              </Tab.Root>
-            </div>
-
-            <div ref={contentRef} className="flex-1 overflow-y-auto bg-white">
+          <BottomDrawer snapPoints={snapPoints} defaultSnapIndex={0}>
+            <BottomDrawer.Content className="rounded-t-3xl bg-white shadow-2xl overflow-visible">
               <div
-                id={SECTION_IDS.MISSION_GUIDE}
-                className="flex w-full flex-col gap-0 px-5 items-center"
+                ref={gradientHeaderRef}
+                className="bg-linear-to-t from-black via-black/50 via-70% to-transparent absolute bottom-[calc(100%-20px)] left-0 right-0 z-30 flex flex-col gap-3 pb-2 pt-6 px-5 pointer-events-none rounded-t-3xl"
               >
-                {showDetailInfo && (
-                  <div className="flex flex-col gap-6 w-full p-5">
-                    <div className="flex flex-col gap-4 w-full bg-zinc-50 rounded-md p-6">
-                      {detailInfoConfig.map(
-                        ({ key, value }) =>
-                          !!key &&
-                          !!value && (
-                            <div className="flex gap-2" key={key}>
-                              <Typo.Body
-                                size="medium"
-                                className="text-info whitespace-nowrap min-w-[100px]"
-                              >
-                                {key}
-                              </Typo.Body>
-                              <Typo.Body size="medium" className="flex-1 break-keep text-right">
-                                {value}
-                              </Typo.Body>
-                            </div>
-                          ),
-                      )}
-                    </div>
-                  </div>
-                )}
+                <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
+                <div ref={titleRef}>
+                  <Typo.MainTitle size="large" className="break-keep text-white">
+                    {title}
+                  </Typo.MainTitle>
+                </div>
 
-                {!!description && !!cleanTiptapHTML(description) && (
-                  <div className="flex flex-col gap-6 px-5 py-8 items-center w-full">
-                    <SectionHeader badgeText="상세 안내" title={""} />
-                    <MissionDescription
-                      content={cleanTiptapHTML(description)}
-                      className="text-center"
+                <div className="flex gap-3 items-center">
+                  {isRequirePassword && <MissionBadge icon={<Lock />} label="비밀" />}
+                  {hasReward && <MissionBadge icon={<Gift />} label="리워드" />}
+                </div>
+
+                <div className="h-[84px]" />
+              </div>
+
+              <div className="bg-white rounded-t-3xl relative z-40">
+                <div className="py-3">
+                  <div className="h-1 w-9 rounded-md bg-zinc-300 mx-auto" />
+                </div>
+
+                <Tab.Root value={activeTab} pointColor="secondary" onValueChange={handleChangeTab}>
+                  <Tab.List className="px-5">
+                    <Tab.Item
+                      value={SECTION_IDS.MISSION_GUIDE}
+                      className={cn(sections.length === 1 ? "mx-auto max-w-[110px]" : "")}
+                    >
+                      <Typo.SubTitle size="large">상세 안내</Typo.SubTitle>
+                    </Tab.Item>
+                    {reward && (
+                      <Tab.Item value={SECTION_IDS.REWARD}>
+                        <Typo.SubTitle size="large">참여 혜택</Typo.SubTitle>
+                      </Tab.Item>
+                    )}
+                  </Tab.List>
+                </Tab.Root>
+              </div>
+
+              <div ref={contentRef} className="flex-1 overflow-y-auto bg-white">
+                <div
+                  id={SECTION_IDS.MISSION_GUIDE}
+                  className="flex w-full flex-col gap-0 px-5 items-center"
+                >
+                  {showDetailInfo && (
+                    <div className="flex flex-col gap-6 w-full p-5">
+                      <div className="flex flex-col gap-4 w-full bg-zinc-50 rounded-md p-6">
+                        {detailInfoConfig.map(
+                          ({ key, value }) =>
+                            !!key &&
+                            !!value && (
+                              <div className="flex gap-2" key={key}>
+                                <Typo.Body
+                                  size="medium"
+                                  className="text-info whitespace-nowrap min-w-[100px]"
+                                >
+                                  {key}
+                                </Typo.Body>
+                                <Typo.Body size="medium" className="flex-1 break-keep text-right">
+                                  {value}
+                                </Typo.Body>
+                              </div>
+                            ),
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {!!description && !!cleanTiptapHTML(description) && (
+                    <div className="flex flex-col gap-6 px-5 py-8 items-center w-full">
+                      <SectionHeader badgeText="상세 안내" title={""} />
+                      <MissionDescription
+                        content={cleanTiptapHTML(description)}
+                        className="text-center"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {reward && (
+                  <div id={SECTION_IDS.REWARD} className="px-5 py-8 w-full">
+                    <MissionRewardSection
+                      rewardImageUrl={reward?.data.imageUrl ?? undefined}
+                      rewardName={reward?.data.name ?? undefined}
+                      rewardScheduledDate={reward?.data.scheduledDate ?? undefined}
                     />
                   </div>
                 )}
+
+                {mission?.type !== MissionType.EXPERIENCE_GROUP && (
+                  <div className="flex flex-col gap-4 items-center px-5 py-8">
+                    <Typo.MainTitle size="small" className="text-center">
+                      가족, 친구에게
+                      <br />
+                      공유해주세요 👀
+                    </Typo.MainTitle>
+                    <SocialShareButtons
+                      onXShare={handleXShare}
+                      onKakaoShare={handleKakaoShare}
+                      onLinkShare={handleLinkShare}
+                    />
+                  </div>
+                )}
+
+                <div className="h-32" />
               </div>
 
-              {reward && (
-                <div id={SECTION_IDS.REWARD} className="px-5 py-8 w-full">
-                  <MissionRewardSection
-                    rewardImageUrl={reward?.data.imageUrl ?? undefined}
-                    rewardName={reward?.data.name ?? undefined}
-                    rewardScheduledDate={reward?.data.scheduledDate ?? undefined}
-                  />
-                </div>
-              )}
-
-              {mission?.type !== MissionType.EXPERIENCE_GROUP && (
-                <div className="flex flex-col gap-4 items-center px-5 py-8">
-                  <Typo.MainTitle size="small" className="text-center">
-                    가족, 친구에게
-                    <br />
-                    공유해주세요 👀
-                  </Typo.MainTitle>
-                  <SocialShareButtons
-                    onXShare={handleXShare}
-                    onKakaoShare={handleKakaoShare}
-                    onLinkShare={handleLinkShare}
-                  />
-                </div>
-              )}
-
-              <div className="h-32" />
-            </div>
-
-            <BottomDrawer.Footer className="border-t border-zinc-100">
-              <BottomButton
-                isActive={isActive ?? false}
-                firstActionId={firstActionId ?? ""}
-                initialError={initialError}
-                deadline={deadline}
-                showResumeModal={showResumeModal}
-                isCompleted={isCompleted}
-                hasReward={!!reward}
-                isRequirePassword={isRequirePassword}
-                hasExistingResponse={!!missionResponse}
-              />
-            </BottomDrawer.Footer>
-          </BottomDrawer.Content>
-        </BottomDrawer>
+              <BottomDrawer.Footer className="border-t border-zinc-100">
+                <BottomButton
+                  isActive={isActive ?? false}
+                  firstActionId={firstActionId ?? ""}
+                  initialError={initialError}
+                  deadline={deadline}
+                  showResumeModal={showResumeModal}
+                  isCompleted={isCompleted}
+                  hasReward={!!reward}
+                  isRequirePassword={isRequirePassword}
+                  hasExistingResponse={!!missionResponse}
+                />
+              </BottomDrawer.Footer>
+            </BottomDrawer.Content>
+          </BottomDrawer>
         </div>
       </main>
       <MissionFooter />

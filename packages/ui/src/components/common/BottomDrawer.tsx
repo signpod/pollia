@@ -159,7 +159,8 @@ function BottomDrawerContent({
   }, []);
 
   const finalExpandedHeight = expandedHeight ?? calculatedExpandedHeight;
-  const maxHeight = snapPoints ? Math.max(...snapPoints) : finalExpandedHeight;
+  const hasValidSnapPoints = snapPoints && snapPoints.length > 0;
+  const maxHeight = hasValidSnapPoints ? Math.max(...snapPoints) : finalExpandedHeight;
 
   React.useLayoutEffect(() => {
     if (contentRef.current && !expandedHeight && typeof window !== "undefined" && mounted) {
@@ -209,13 +210,13 @@ function BottomDrawerContent({
 
   const initialY = React.useMemo(() => {
     if (!mounted) {
-      return snapPoints ? maxHeight - (snapPoints[0] ?? collapsedHeight) : finalExpandedHeight - collapsedHeight;
+      return hasValidSnapPoints ? maxHeight - (snapPoints[0] ?? collapsedHeight) : finalExpandedHeight - collapsedHeight;
     }
-    if (snapPoints) {
+    if (hasValidSnapPoints) {
       return getYForSnapIndex(snapIndex);
     }
     return isOpen ? 0 : finalExpandedHeight - collapsedHeight;
-  }, [mounted, snapPoints, maxHeight, collapsedHeight, finalExpandedHeight, getYForSnapIndex, snapIndex, isOpen]);
+  }, [mounted, hasValidSnapPoints, snapPoints, maxHeight, collapsedHeight, finalExpandedHeight, getYForSnapIndex, snapIndex, isOpen]);
 
   const y = useMotionValue(initialY);
   const springConfig = { damping: 50, stiffness: 500 };
@@ -226,7 +227,7 @@ function BottomDrawerContent({
 
   React.useEffect(() => {
     if (mounted && !isDragging && !isDraggingRef.current && !isDragEndingRef.current && isClickActionRef.current) {
-      const targetY = snapPoints ? getYForSnapIndex(snapIndex) : isOpen ? 0 : finalExpandedHeight - collapsedHeight;
+      const targetY = hasValidSnapPoints ? getYForSnapIndex(snapIndex) : isOpen ? 0 : finalExpandedHeight - collapsedHeight;
       const currentY = y.get();
       const distance = Math.abs(currentY - targetY);
 
@@ -405,7 +406,7 @@ function BottomDrawerContent({
     [isOpen, clickToExpand, open, enableDrag, isDragging],
   );
 
-  const maxDragOffset = snapPoints ? maxHeight - Math.min(...snapPoints) : finalExpandedHeight - collapsedHeight;
+  const maxDragOffset = hasValidSnapPoints ? maxHeight - Math.min(...snapPoints) : finalExpandedHeight - collapsedHeight;
 
   return (
     <motion.div
