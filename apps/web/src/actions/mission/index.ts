@@ -9,3 +9,4 @@ export {
   verifyMissionPassword,
 } from "./read";
 export { removeMissionPassword, setMissionPassword, updateMission } from "./update";
+export { syncMissionToNotion } from "./sync-to-notion";
