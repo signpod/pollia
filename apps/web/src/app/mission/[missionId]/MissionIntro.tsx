@@ -83,7 +83,12 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
   useEffect(() => {
     const calculateSnapPoints = () => {
       const viewportHeight = window.innerHeight;
-      const snap1 = HANDLE_HEIGHT + TAB_HEIGHT;
+      const viewportWidth = window.innerWidth;
+      const containerWidth = Math.min(viewportWidth, 512);
+      const imageMaxHeight = (containerWidth * 16) / 9;
+      const extraHeight = Math.max(0, viewportHeight - imageMaxHeight);
+
+      const snap1 = HANDLE_HEIGHT + TAB_HEIGHT + extraHeight;
 
       let snap2 = viewportHeight - 100;
       if (gradientHeaderRef.current && titleRef.current) {
