@@ -131,6 +131,18 @@ export function ActionPdf({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fileInfos.length, existingAnswer?.id]);
 
+  const handleUploadStart = useCallback((file: File, tempUrl: string) => {
+    setUploadingFileUrl(tempUrl);
+    const tempFileInfo: FileInfo = {
+      fileName: file.name,
+      fileSize: file.size,
+      fileUrl: tempUrl,
+      fileUploadId: "",
+      filePath: "",
+    };
+    setFileInfos(prev => [...prev, tempFileInfo]);
+  }, []);
+
   const handleUploadChange = useCallback(
     (
       hasUploadedFile: boolean,
@@ -138,6 +150,7 @@ export function ActionPdf({
       newFileUploadIds: string[],
       newFilePaths: string[],
       file?: File,
+      tempUrl?: string,
     ) => {
       if (
         hasUploadedFile &&
@@ -151,7 +164,6 @@ export function ActionPdf({
         const newFilePath = newFilePaths[0];
 
         if (newFileUrl && newFileUploadId && newFilePath) {
-          setUploadingFileUrl(newFileUrl);
           const fileInfo: FileInfo = {
             fileName: file.name,
             fileSize: file.size,
@@ -159,10 +171,21 @@ export function ActionPdf({
             fileUploadId: newFileUploadId,
             filePath: newFilePath,
           };
-          setFileInfos(prev => [...prev, fileInfo]);
+
+          if (tempUrl) {
+            setFileInfos(prev => prev.map(f => (f.fileUrl === tempUrl ? fileInfo : f)));
+            URL.revokeObjectURL(tempUrl);
+          } else {
+            setFileInfos(prev => [...prev, fileInfo]);
+          }
           setFileUploadIds(prev => [...prev, newFileUploadId]);
+          setUploadingFileUrl(null);
         }
       } else if (!hasUploadedFile) {
+        if (tempUrl) {
+          setFileInfos(prev => prev.filter(f => f.fileUrl !== tempUrl));
+          URL.revokeObjectURL(tempUrl);
+        }
         setUploadingFileUrl(null);
       }
     },
@@ -171,9 +194,6 @@ export function ActionPdf({
 
   const handleUploadingChange = useCallback((uploading: boolean) => {
     setIsUploading(uploading);
-    if (!uploading) {
-      setUploadingFileUrl(null);
-    }
   }, []);
 
   const handleFileDelete = useCallback(
@@ -183,12 +203,15 @@ export function ActionPdf({
 
       setFileInfos(prev => prev.filter(f => f.fileUrl !== fileUrl));
 
-      deleteFileMutation(fileInfo.filePath);
+      if (fileInfo.filePath) {
+        deleteFileMutation(fileInfo.filePath);
+      }
 
       setFileUploadIds(prev => prev.filter(id => id !== fileInfo.fileUploadId));
 
       if (fileUrl.startsWith("blob:")) {
         URL.revokeObjectURL(fileUrl);
+        setIsUploading(false);
       }
 
       setUploadingFileUrl(prev => (prev === fileUrl ? null : prev));
@@ -215,8 +238,12 @@ export function ActionPdf({
       isLoading={isLoading}
       isRequired={actionData.isRequired}
     >
-      {fileInfos.length === 0 && (
-        <PdfUpload onUploadChange={handleUploadChange} onUploadingChange={handleUploadingChange} />
+      {fileInfos.length === 0 && !isUploading && (
+        <PdfUpload
+          onUploadChange={handleUploadChange}
+          onUploadingChange={handleUploadingChange}
+          onUploadStart={handleUploadStart}
+        />
       )}
       <FileList
         files={fileInfos}
