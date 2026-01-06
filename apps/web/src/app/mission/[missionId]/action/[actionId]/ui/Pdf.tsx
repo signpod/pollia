@@ -211,6 +211,7 @@ export function ActionPdf({
 
       if (fileUrl.startsWith("blob:")) {
         URL.revokeObjectURL(fileUrl);
+        setIsUploading(false);
       }
 
       if (uploadingFileUrl === fileUrl) {
