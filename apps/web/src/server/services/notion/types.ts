@@ -1,28 +1,10 @@
+import type { MissionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import { Client } from "@notionhq/client";
-import type { Action, ActionType, Mission, MissionResponse } from "@prisma/client";
+import type { Action, ActionType, Mission } from "@prisma/client";
 
-export interface MissionResponseWithAnswers extends MissionResponse {
-  answers: ActionAnswerWithRelations[];
-}
-
-export interface ActionAnswerWithRelations {
-  id: string;
-  actionId: string;
-  textAnswer: string | null;
-  scaleAnswer: number | null;
-  booleanAnswer: boolean | null;
-  dateAnswers: Date[];
-  action: Action;
-  option: {
-    id: string;
-    title: string;
-  } | null;
-  fileUploads: {
-    id: string;
-    url: string;
-    filename: string;
-  }[];
-}
+type FindByMissionIdResult = Awaited<ReturnType<MissionResponseRepository["findByMissionId"]>>;
+export type MissionResponseWithAnswers = FindByMissionIdResult[number];
+export type ActionAnswerWithRelations = MissionResponseWithAnswers["answers"][number];
 
 export interface CreateMissionReportInput {
   mission: Mission;

@@ -123,8 +123,8 @@ function buildResponseRowProperties(
       case "VIDEO":
       case "PDF": {
         const fileUpload = answer.fileUploads[0];
-        if (fileUpload?.url) {
-          properties[propertyName] = { url: fileUpload.url };
+        if (fileUpload?.publicUrl) {
+          properties[propertyName] = { url: fileUpload.publicUrl };
         }
         break;
       }
@@ -259,13 +259,15 @@ function buildListDatabase(
       const answer = response.answers.find(a => a.actionId === action.id);
       if (answer) {
         for (const fileUpload of answer.fileUploads) {
-          if (fileUpload.url) {
+          if (fileUpload.publicUrl) {
             rows.push({
               properties: {
                 이미지: {
-                  title: [{ type: "text", text: { content: fileUpload.filename || "이미지" } }],
+                  title: [
+                    { type: "text", text: { content: fileUpload.originalFileName || "이미지" } },
+                  ],
                 },
-                URL: { url: fileUpload.url },
+                URL: { url: fileUpload.publicUrl },
               },
             });
           }
@@ -294,13 +296,15 @@ function buildListDatabase(
       const answer = response.answers.find(a => a.actionId === action.id);
       if (answer) {
         for (const fileUpload of answer.fileUploads) {
-          if (fileUpload.url) {
+          if (fileUpload.publicUrl) {
             rows.push({
               properties: {
                 파일명: {
-                  title: [{ type: "text", text: { content: fileUpload.filename || "파일" } }],
+                  title: [
+                    { type: "text", text: { content: fileUpload.originalFileName || "파일" } },
+                  ],
                 },
-                URL: { url: fileUpload.url },
+                URL: { url: fileUpload.publicUrl },
               },
             });
           }
