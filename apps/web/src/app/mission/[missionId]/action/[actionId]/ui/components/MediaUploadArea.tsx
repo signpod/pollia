@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { Typo } from "@repo/ui/components";
 import { FolderPlus, ImageIcon, Loader2Icon, VideoIcon } from "lucide-react";
 
-const VIDEO_ITEM_LABELS = {
+const UPLOAD_LABELS = {
   uploading: "업로드 중...",
 } as const;
 
@@ -69,7 +69,7 @@ export function MediaUploadArea({
           <div className="flex items-center justify-center w-full gap-1">
             <Loader2Icon className="size-4 text-icon-sub animate-spin shrink-0" />
             <Typo.Body size="medium" className="text-info">
-              {VIDEO_ITEM_LABELS.uploading}
+              {UPLOAD_LABELS.uploading}
             </Typo.Body>
           </div>
         ) : (

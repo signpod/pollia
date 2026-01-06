@@ -3,7 +3,7 @@ import { useDeleteAnswer } from "@/hooks/action/useDeleteAnswer";
 import { useDeleteFile } from "@/hooks/common/useDeleteFile";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
-import type { FileInfo } from "@/types/domain/file";
+import type { FileInfo, TempFileInfo } from "@/types/domain/file";
 import type { ActionAnswerItem } from "@/types/dto";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
@@ -25,7 +25,7 @@ export function ActionPdf({
   missionResponse,
   isLoading,
 }: ActionStepContentProps) {
-  const [fileInfos, setFileInfos] = useState<FileInfo[]>([]);
+  const [fileInfos, setFileInfos] = useState<(FileInfo | TempFileInfo)[]>([]);
   const [fileUploadIds, setFileUploadIds] = useState<string[]>([]);
   const [uploadingFileUrl, setUploadingFileUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -128,17 +128,15 @@ export function ActionPdf({
       deleteAnswerMutation(existingAnswer.id);
     }
     prevHadFilesRef.current = fileInfos.length > 0;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // biome-ignore lint/correctness/useExhaustiveDependencies: deleteAnswerMutation is stable from useMutation hook
   }, [fileInfos.length, existingAnswer?.id]);
 
   const handleUploadStart = useCallback((file: File, tempUrl: string) => {
     setUploadingFileUrl(tempUrl);
-    const tempFileInfo: FileInfo = {
+    const tempFileInfo: TempFileInfo = {
       fileName: file.name,
       fileSize: file.size,
       fileUrl: tempUrl,
-      fileUploadId: "",
-      filePath: "",
     };
     setFileInfos(prev => [...prev, tempFileInfo]);
   }, []);
@@ -203,20 +201,26 @@ export function ActionPdf({
 
       setFileInfos(prev => prev.filter(f => f.fileUrl !== fileUrl));
 
-      if (fileInfo.filePath) {
+      if ("filePath" in fileInfo && fileInfo.filePath) {
         deleteFileMutation(fileInfo.filePath);
       }
 
-      setFileUploadIds(prev => prev.filter(id => id !== fileInfo.fileUploadId));
+      if ("fileUploadId" in fileInfo && fileInfo.fileUploadId) {
+        setFileUploadIds(prev => prev.filter(id => id !== fileInfo.fileUploadId));
+      }
 
       if (fileUrl.startsWith("blob:")) {
         URL.revokeObjectURL(fileUrl);
-        setIsUploading(false);
       }
 
-      setUploadingFileUrl(prev => (prev === fileUrl ? null : prev));
+      if (uploadingFileUrl === fileUrl) {
+        setIsUploading(false);
+        setUploadingFileUrl(null);
+      } else {
+        setUploadingFileUrl(prev => (prev === fileUrl ? null : prev));
+      }
     },
-    [deleteFileMutation, fileInfos],
+    [deleteFileMutation, fileInfos, uploadingFileUrl],
   );
 
   const handleFileClick = useCallback((fileUrl: string) => {
