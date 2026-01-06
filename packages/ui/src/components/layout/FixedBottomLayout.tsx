@@ -99,13 +99,22 @@ export function FixedBottomLayout({
             )}
           >
             {hasGradient && (
-              <div
-                className="pointer-events-none absolute inset-x-0 bottom-0 z-30 h-[100px]"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 40%, rgba(255, 255, 255, 1) 100%)",
-                }}
-              />
+              <>
+                <div
+                  className="pointer-events-none absolute inset-x-0 bottom-0 z-30 h-[100px]"
+                  style={{
+                    backgroundImage:
+                      "linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 40%, rgba(255, 255, 255, 1) 100%)",
+                    paddingBottom: "env(safe-area-inset-bottom)",
+                  }}
+                />
+                <div
+                  className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-white"
+                  style={{
+                    height: "env(safe-area-inset-bottom)",
+                  }}
+                />
+              </>
             )}
             {hasGradientBlur && <GradientBlurLayer height={contentHeight + 12} />}
             <div className="relative z-50 w-full">{currentContent}</div>
