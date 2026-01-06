@@ -108,10 +108,12 @@ export function ActionVideo({
 
       setVideoInfos(videoInfosFromAnswer);
       setVideoFileUploadIds(videoFileUploadIdsFromAnswer);
+      prevHadVideosRef.current = true;
       validateAndUpdateAnswer(videoFileUploadIdsFromAnswer);
     } else if (existingAnswer) {
       setVideoInfos([]);
       setVideoFileUploadIds([]);
+      prevHadVideosRef.current = false;
       updateCanGoNextRef.current?.(true);
     }
   }, [existingAnswer, validateAndUpdateAnswer]);
@@ -125,7 +127,8 @@ export function ActionVideo({
       deleteAnswerMutation(existingAnswer.id);
     }
     prevHadVideosRef.current = videoInfos.length > 0;
-  }, [videoInfos.length, existingAnswer?.id, deleteAnswerMutation]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [videoInfos.length, existingAnswer?.id]);
 
   const handleUploadChange = useCallback(
     (

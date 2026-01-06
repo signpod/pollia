@@ -106,9 +106,11 @@ export function ActionImage({
       }));
 
       setImageInfos(imageInfosFromAnswer);
+      prevHadImagesRef.current = true;
       validateAndUpdateAnswer(imageInfosFromAnswer);
     } else if (existingAnswer) {
       setImageInfos([]);
+      prevHadImagesRef.current = false;
       updateCanGoNextRef.current?.(true);
     }
   }, [existingAnswer, validateAndUpdateAnswer]);
@@ -122,7 +124,8 @@ export function ActionImage({
       deleteAnswerMutation(existingAnswer.id);
     }
     prevHadImagesRef.current = imageInfos.length > 0;
-  }, [imageInfos.length, existingAnswer?.id, deleteAnswerMutation]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [imageInfos.length, existingAnswer?.id]);
 
   const handleUploadChange = useCallback(
     (

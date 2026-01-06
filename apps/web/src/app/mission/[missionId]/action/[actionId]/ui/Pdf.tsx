@@ -104,10 +104,12 @@ export function ActionPdf({
 
       setFileInfos(fileInfosFromAnswer);
       setFileUploadIds(fileUploadIdsFromAnswer);
+      prevHadFilesRef.current = true;
       validateAndUpdateAnswer(fileUploadIdsFromAnswer);
     } else if (existingAnswer) {
       setFileInfos([]);
       setFileUploadIds([]);
+      prevHadFilesRef.current = false;
       updateCanGoNextRef.current?.(true);
     }
   }, [existingAnswer, validateAndUpdateAnswer]);
@@ -121,7 +123,8 @@ export function ActionPdf({
       deleteAnswerMutation(existingAnswer.id);
     }
     prevHadFilesRef.current = fileInfos.length > 0;
-  }, [fileInfos.length, existingAnswer?.id, deleteAnswerMutation]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fileInfos.length, existingAnswer?.id]);
 
   const handleUploadChange = useCallback(
     (
