@@ -79,7 +79,7 @@ export function SurveyQuestionTemplate({
 
           {imageUrl && (
             <figure className="relative aspect-3/2 overflow-hidden rounded-sm">
-              <Image src={imageUrl} alt={title} fill className="object-cover" />
+              <Image src={imageUrl} alt={title} fill className="object-contain h-full" />
             </figure>
           )}
         </section>
