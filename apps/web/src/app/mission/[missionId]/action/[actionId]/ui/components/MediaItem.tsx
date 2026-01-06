@@ -55,7 +55,10 @@ export function MediaItem({
           src={mediaUrl}
           className={cn("w-full h-full object-contain", isUploading && "blur-sm scale-105")}
           controls
-          onLoadedData={onLoadComplete}
+          playsInline
+          preload="metadata"
+          onLoadedMetadata={onLoadComplete}
+          onError={onLoadComplete}
         >
           <track kind="captions" />
         </video>

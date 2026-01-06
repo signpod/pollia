@@ -120,7 +120,7 @@ export function StarScale({
   };
 
   return (
-    <div className={cn("relative w-full px-14", className)} {...props}>
+    <div className={cn("relative w-full px-2 sm:px-14", className)} {...props}>
       <Slider.Root
         value={[value]}
         onValueChange={values => {

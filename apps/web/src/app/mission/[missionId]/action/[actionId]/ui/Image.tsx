@@ -99,6 +99,8 @@ export function ActionImage({
   );
 
   useEffect(() => {
+    if (isInitializedRef.current) return;
+
     if (existingAnswer?.fileUploads && existingAnswer.fileUploads.length > 0) {
       const imageInfosFromAnswer: ImageInfo[] = existingAnswer.fileUploads.map(fileUpload => ({
         fileUrl: fileUpload.publicUrl,
@@ -107,12 +109,10 @@ export function ActionImage({
       }));
 
       setImageInfos(imageInfosFromAnswer);
-      prevHadImagesRef.current = true;
       isInitializedRef.current = true;
       validateAndUpdateAnswer(imageInfosFromAnswer);
     } else if (existingAnswer) {
       setImageInfos([]);
-      prevHadImagesRef.current = false;
       isInitializedRef.current = true;
       updateCanGoNextRef.current?.(true);
     }

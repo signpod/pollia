@@ -264,7 +264,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                   {hasReward && <MissionBadge icon={<Gift />} label="리워드" />}
                 </div>
 
-                <div className="h-[84px]" />
+                <div className="h-[56px] w-full" />
               </div>
 
               <div className="bg-white rounded-t-3xl relative z-40">
@@ -289,7 +289,11 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                 </Tab.Root>
               </div>
 
-              <div ref={contentRef} className="flex-1 overflow-y-auto bg-white">
+              <div
+                ref={contentRef}
+                className="flex-1 overflow-y-auto bg-white"
+                onPointerDownCapture={e => e.stopPropagation()}
+              >
                 <div
                   id={SECTION_IDS.MISSION_GUIDE}
                   className="flex w-full flex-col gap-0 px-5 items-center"

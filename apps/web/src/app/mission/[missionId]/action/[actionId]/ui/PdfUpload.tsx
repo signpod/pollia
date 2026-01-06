@@ -13,20 +13,36 @@ interface PdfUploadProps {
     fileUploadIds: string[],
     filePaths: string[],
     file?: File,
+    tempUrl?: string,
   ) => void;
   onUploadingChange?: (isUploading: boolean) => void;
+  onUploadStart?: (file: File, tempUrl: string) => void;
 }
 
-export function PdfUpload({ onUploadChange, onUploadingChange }: PdfUploadProps) {
+export function PdfUpload({ onUploadChange, onUploadingChange, onUploadStart }: PdfUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const tempUrlRef = useRef<string | null>(null);
 
   const { upload, isUploading } = usePdfUpload({
     bucket: STORAGE_BUCKETS.ACTION_ANSWER_PDFS,
     onSuccess: result => {
+      const tempUrl = tempUrlRef.current;
+      tempUrlRef.current = null;
       onUploadingChange?.(false);
-      onUploadChange?.(true, [result.publicUrl], [result.fileUploadId], [result.path], result.file);
+      onUploadChange?.(
+        true,
+        [result.publicUrl],
+        [result.fileUploadId],
+        [result.path],
+        result.file,
+        tempUrl ?? undefined,
+      );
     },
     onError: error => {
+      if (tempUrlRef.current) {
+        URL.revokeObjectURL(tempUrlRef.current);
+        tempUrlRef.current = null;
+      }
       onUploadingChange?.(false);
       toast.warning(error?.message || "파일 업로드에 실패했어요.\n다시 시도해주세요.");
       onUploadChange?.(false, [], [], []);
@@ -52,6 +68,10 @@ export function PdfUpload({ onUploadChange, onUploadingChange }: PdfUploadProps)
         return;
       }
 
+      const tempUrl = URL.createObjectURL(file);
+      tempUrlRef.current = tempUrl;
+
+      onUploadStart?.(file, tempUrl);
       onUploadingChange?.(true);
       upload(file);
 
@@ -59,7 +79,7 @@ export function PdfUpload({ onUploadChange, onUploadingChange }: PdfUploadProps)
         inputRef.current.value = "";
       }
     },
-    [upload, onUploadingChange],
+    [upload, onUploadingChange, onUploadStart],
   );
 
   return (

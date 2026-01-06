@@ -94,6 +94,8 @@ export function ActionVideo({
   );
 
   useEffect(() => {
+    if (isInitializedRef.current) return;
+
     if (existingAnswer?.fileUploads && existingAnswer.fileUploads.length > 0) {
       const videoInfosFromAnswer: VideoInfo[] = existingAnswer.fileUploads.map(fileUpload => ({
         fileName: fileUpload.originalFileName,
@@ -109,13 +111,11 @@ export function ActionVideo({
 
       setVideoInfos(videoInfosFromAnswer);
       setVideoFileUploadIds(videoFileUploadIdsFromAnswer);
-      prevHadVideosRef.current = true;
       isInitializedRef.current = true;
       validateAndUpdateAnswer(videoFileUploadIdsFromAnswer);
     } else if (existingAnswer) {
       setVideoInfos([]);
       setVideoFileUploadIds([]);
-      prevHadVideosRef.current = false;
       isInitializedRef.current = true;
       updateCanGoNextRef.current?.(true);
     }
