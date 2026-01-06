@@ -92,6 +92,8 @@ export function ActionPdf({
   );
 
   useEffect(() => {
+    if (isInitializedRef.current) return;
+
     if (existingAnswer?.fileUploads && existingAnswer.fileUploads.length > 0) {
       const fileInfosFromAnswer: FileInfo[] = existingAnswer.fileUploads.map(fileUpload => ({
         fileName: fileUpload.originalFileName,
@@ -105,13 +107,11 @@ export function ActionPdf({
 
       setFileInfos(fileInfosFromAnswer);
       setFileUploadIds(fileUploadIdsFromAnswer);
-      prevHadFilesRef.current = true;
       isInitializedRef.current = true;
       validateAndUpdateAnswer(fileUploadIdsFromAnswer);
     } else if (existingAnswer) {
       setFileInfos([]);
       setFileUploadIds([]);
-      prevHadFilesRef.current = false;
       isInitializedRef.current = true;
       updateCanGoNextRef.current?.(true);
     }
