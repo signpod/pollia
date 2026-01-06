@@ -17,7 +17,7 @@ export class NotionService {
     this.client =
       notionClient ||
       new Client({
-        auth: process.env.NOTION_API_KEY,
+        auth: process.env.MISSION_REPORT_NOTION_API_KEY,
       });
   }
 
