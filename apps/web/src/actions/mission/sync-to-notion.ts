@@ -42,11 +42,19 @@ export async function syncMissionToNotion(missionId: string): Promise<SyncMissio
       },
     };
   } catch (error) {
-    console.error("syncMissionToNotion error:", error);
+    console.error("[syncMissionToNotion] 에러 발생:", {
+      missionId,
+      error,
+      errorMessage: error instanceof Error ? error.message : String(error),
+      errorStack: error instanceof Error ? error.stack : undefined,
+    });
+
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error("노션 리포트 생성 중 오류가 발생했습니다.");
+
+    const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류";
+    const serverError = new Error(`노션 리포트 생성 실패: ${errorMessage}`);
     serverError.cause = 500;
     throw serverError;
   }

@@ -35,24 +35,58 @@ export class NotionService {
       throw error;
     }
 
-    const metadata = buildMissionMetadata(mission, responses);
-    const page = await this.createPage(mission, parentPageId, metadata);
-    const notionPageId = page.id;
+    try {
+      console.log("[NotionService] 리포트 생성 시작:", {
+        missionId: mission.id,
+        missionTitle: mission.title,
+        actionsCount: actions.length,
+        responsesCount: responses.length,
+      });
 
-    const responseDb = buildResponseDatabase(actions, responses);
-    await this.createDatabase(notionPageId, responseDb);
+      const metadata = buildMissionMetadata(mission, responses);
+      console.log("[NotionService] 메타데이터 생성 완료");
 
-    const analysisDb = buildAnalysisDatabases(actions, responses);
-    for (const db of analysisDb) {
-      await this.createDatabase(notionPageId, db);
+      const page = await this.createPage(mission, parentPageId, metadata);
+      const notionPageId = page.id;
+      console.log("[NotionService] 페이지 생성 완료:", notionPageId);
+
+      const responseDb = buildResponseDatabase(actions, responses);
+      await this.createDatabase(notionPageId, responseDb);
+      console.log("[NotionService] 응답 데이터베이스 생성 완료");
+
+      const analysisDb = buildAnalysisDatabases(actions, responses);
+      let dbIndex = 0;
+      for (const db of analysisDb) {
+        dbIndex++;
+        await this.createDatabase(notionPageId, db);
+        console.log(`[NotionService] 분석 데이터베이스 ${dbIndex}/${analysisDb.length} 생성 완료`);
+      }
+
+      const publicUrl = await this.makePublicUrl(notionPageId);
+      console.log("[NotionService] 리포트 생성 완료:", publicUrl);
+
+      return {
+        notionPageId,
+        notionPageUrl: publicUrl,
+      };
+    } catch (err) {
+      console.error("[NotionService] 리포트 생성 실패:", {
+        missionId: mission.id,
+        error: err,
+        errorMessage: err instanceof Error ? err.message : String(err),
+        errorStack: err instanceof Error ? err.stack : undefined,
+      });
+
+      if (err instanceof Error && err.cause) {
+        throw err;
+      }
+
+      const error = new Error(
+        `노션 리포트 생성 실패: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      error.cause = 500;
+      throw error;
     }
-
-    const publicUrl = await this.makePublicUrl(notionPageId);
-
-    return {
-      notionPageId,
-      notionPageUrl: publicUrl,
-    };
   }
 
   private async createPage(mission: Mission, parentPageId: string, metadata: MissionMetadata) {
