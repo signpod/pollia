@@ -2,7 +2,11 @@
 
 import { cn } from "@/lib/utils";
 import { Typo } from "@repo/ui/components";
-import { FolderPlus, ImageIcon, VideoIcon } from "lucide-react";
+import { FolderPlus, ImageIcon, Loader2Icon, VideoIcon } from "lucide-react";
+
+const VIDEO_ITEM_LABELS = {
+  uploading: "업로드 중...",
+} as const;
 
 interface MediaUploadAreaProps {
   inputRef: React.RefObject<HTMLInputElement | null>;
@@ -58,16 +62,27 @@ export function MediaUploadArea({
           "hover:bg-zinc-50 active:bg-zinc-100",
           "transition-colors duration-200 ease-in-out",
           "touch-manipulation",
-          isUploading && "opacity-50 cursor-not-allowed",
+          isUploading && "cursor-not-allowed",
         )}
       >
-        <div className="flex items-center justify-center size-12 bg-light rounded-full">
-          <IconComponent className="size-6 text-info" />
-        </div>
+        {isUploading ? (
+          <div className="flex items-center justify-center w-full gap-1">
+            <Loader2Icon className="size-4 text-icon-sub animate-spin shrink-0" />
+            <Typo.Body size="medium" className="text-info">
+              {VIDEO_ITEM_LABELS.uploading}
+            </Typo.Body>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-center size-12 bg-light rounded-full">
+              <IconComponent className="size-6 text-info" />
+            </div>
 
-        <Typo.ButtonText size="large" className="text-info">
-          {buttonText}
-        </Typo.ButtonText>
+            <Typo.ButtonText size="large" className="text-info">
+              {buttonText}
+            </Typo.ButtonText>
+          </>
+        )}
       </button>
     </div>
   );
