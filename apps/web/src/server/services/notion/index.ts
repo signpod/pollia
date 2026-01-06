@@ -26,9 +26,11 @@ export class NotionService {
   ): Promise<CreateMissionReportResult> {
     const { mission, responses, actions } = input;
 
-    const parentPageId = process.env.NOTION_PARENT_PAGE_ID;
+    const parentPageId = process.env.MISSION_REPORT_NOTION_PARENT_PAGE_ID;
     if (!parentPageId) {
-      const error = new Error("NOTION_PARENT_PAGE_ID 환경변수가 설정되지 않았습니다.");
+      const error = new Error(
+        "MISSION_REPORT_NOTION_PARENT_PAGE_ID 환경변수가 설정되지 않았습니다.",
+      );
       error.cause = 500;
       throw error;
     }

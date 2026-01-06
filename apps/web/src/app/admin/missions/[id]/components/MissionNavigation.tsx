@@ -39,6 +39,7 @@ export function MissionNavigation({ missionId }: MissionNavigationProps) {
   const isEditPage = pathname === ADMIN_ROUTES.ADMIN_MISSION_EDIT(missionId);
   const isTrackingPage = pathname === ADMIN_ROUTES.ADMIN_MISSION_TRACKING(missionId);
   const isPasswordPage = pathname === ADMIN_ROUTES.ADMIN_MISSION_PASSWORD(missionId);
+  const isReportPage = pathname === ADMIN_ROUTES.ADMIN_MISSION_REPORT(missionId);
 
   return (
     <nav className="flex gap-1 border-b">
@@ -53,6 +54,9 @@ export function MissionNavigation({ missionId }: MissionNavigationProps) {
       </NavLink>
       <NavLink href={ADMIN_ROUTES.ADMIN_MISSION_PASSWORD(missionId)} isActive={isPasswordPage}>
         비밀번호
+      </NavLink>
+      <NavLink href={ADMIN_ROUTES.ADMIN_MISSION_REPORT(missionId)} isActive={isReportPage}>
+        리포트
       </NavLink>
     </nav>
   );
