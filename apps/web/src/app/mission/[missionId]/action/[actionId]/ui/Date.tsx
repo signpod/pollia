@@ -64,7 +64,7 @@ function DatePickerContent({
   isNextDisabled: isNextDisabledProp,
   isLoading,
 }: Omit<ActionStepContentProps, "updateCanGoNext" | "onAnswerChange">) {
-  const { selectedDates, toggleDate, canGoNext } = useDatePicker();
+  const { selectedDates, setDates, canGoNext } = useDatePicker();
   const [currentMonth, setCurrentMonth] = React.useState<Date>(new Date());
 
   const today = new Date();
@@ -77,12 +77,13 @@ function DatePickerContent({
   }, [selectedDates]);
 
   const handleDateSelect = (dates: Date[] | undefined) => {
-    if (!dates) return;
+    if (!dates) {
+      setDates([]);
+      return;
+    }
 
-    dates.forEach(date => {
-      const dateStr = formatDateToYYYYMMDD(date);
-      toggleDate(dateStr);
-    });
+    const dateStrings = dates.map(date => formatDateToYYYYMMDD(date));
+    setDates(dateStrings);
   };
 
   return (
