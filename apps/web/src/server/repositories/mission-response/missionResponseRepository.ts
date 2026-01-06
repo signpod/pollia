@@ -61,7 +61,13 @@ export class MissionResponseRepository {
             email: true,
           },
         },
-        answers: true,
+        answers: {
+          include: {
+            action: true,
+            option: true,
+            fileUploads: true,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
