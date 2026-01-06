@@ -13,17 +13,12 @@ import { useAuth } from "@/hooks/user/useAuth";
 import { setActionNavCookie } from "@/lib/cookie";
 import { Mission } from "@prisma/client";
 import KakaoIcon from "@public/svgs/kakao-icon.svg";
-import { ButtonV2, Tooltip, Typo } from "@repo/ui/components";
+import { ButtonV2, Typo } from "@repo/ui/components";
 import { useQueryClient } from "@tanstack/react-query";
 import { isBefore } from "date-fns";
 import { motion } from "framer-motion";
 import { useParams, useRouter } from "next/navigation";
 import { checkParticipantLimitReached } from "../utils/checkParticipantLimit";
-
-const TOOLTIP_TEXT = {
-  loggedOut: "리워드를 받으려면 로그인이 필요해요 🎁",
-  loggedOutWithoutModal: "참여하려면 로그인이 필요해요 🍀",
-};
 
 const BUTTON_TEXT = {
   loggedIn: "지금 바로 참여하기",
@@ -51,7 +46,6 @@ export function BottomButton({
   initialError,
   deadline,
   isActive,
-  hasReward = false,
   showResumeModal,
   isCompleted,
   isRequirePassword,
@@ -136,7 +130,9 @@ export function BottomButton({
           await handleStartResponse({ missionId });
           router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
         } catch {
-          toast.warning("미션 시작에 실패했어요. 다시 시도해주세요.", { id: "start-mission-error" });
+          toast.warning("미션 시작에 실패했어요. 다시 시도해주세요.", {
+            id: "start-mission-error",
+          });
         }
       }
     } else if (firstActionId) {
@@ -188,28 +184,21 @@ export function BottomButton({
 
   if (!isLoggedIn) {
     return (
-      <div data-tooltip-id="tooltip-id" className="w-full">
-        <Tooltip id="tooltip-id" placement="top">
-          <Typo.Body size="medium">
-            {hasReward ? TOOLTIP_TEXT.loggedOut : TOOLTIP_TEXT.loggedOutWithoutModal}
-          </Typo.Body>
-        </Tooltip>
-        <div className="py-3 px-4">
-          <ButtonV2
-            variant="primary"
+      <div className="py-3 px-4 w-full">
+        <ButtonV2
+          variant="primary"
+          size="large"
+          className="w-full bg-kakao hover:bg-kakao active:bg-kakao focus:bg-kakao"
+          onClick={handleClick}
+        >
+          <Typo.ButtonText
             size="large"
-            className="w-full bg-kakao hover:bg-kakao active:bg-kakao focus:bg-kakao"
-            onClick={handleClick}
+            className="flex w-full items-center justify-center gap-3 text-default"
           >
-            <Typo.ButtonText
-              size="large"
-              className="flex w-full items-center justify-center gap-3 text-default"
-            >
-              <KakaoIcon className="size-6" />
-              {BUTTON_TEXT.loggedOut}
-            </Typo.ButtonText>
-          </ButtonV2>
-        </div>
+            <KakaoIcon className="size-6" />
+            {BUTTON_TEXT.loggedOut}
+          </Typo.ButtonText>
+        </ButtonV2>
       </div>
     );
   }
