@@ -40,6 +40,7 @@ export function ActionImage({
   const { mutate: deleteAnswerMutation, isPending: isDeletingAnswer } = useDeleteAnswer();
 
   const prevHadImagesRef = useRef(false);
+  const isInitializedRef = useRef(false);
 
   const { uploadMultiple } = useMultipleImageUpload({
     bucket: STORAGE_BUCKETS.ACTION_ANSWER_IMAGES,
@@ -107,10 +108,12 @@ export function ActionImage({
 
       setImageInfos(imageInfosFromAnswer);
       prevHadImagesRef.current = true;
+      isInitializedRef.current = true;
       validateAndUpdateAnswer(imageInfosFromAnswer);
     } else if (existingAnswer) {
       setImageInfos([]);
       prevHadImagesRef.current = false;
+      isInitializedRef.current = true;
       updateCanGoNextRef.current?.(true);
     }
   }, [existingAnswer, validateAndUpdateAnswer]);
@@ -120,6 +123,8 @@ export function ActionImage({
   }, [imageInfos, validateAndUpdateAnswer]);
 
   useEffect(() => {
+    if (!isInitializedRef.current) return;
+
     if (prevHadImagesRef.current && imageInfos.length === 0 && existingAnswer?.id) {
       deleteAnswerMutation(existingAnswer.id);
     }
