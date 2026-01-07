@@ -185,7 +185,7 @@ function DatePickerContent({
                     type="button"
                     onClick={handlePrevMonth}
                     disabled={isCurrentMonth}
-                    className="h-8 w-8 p-0 hover:bg-zinc-100 rounded-md flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                    className="h-8 w-8 p-0 hover:bg-zinc-100 rounded-md flex items-center justify-center disabled:text-zinc-300 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                   >
                     <ChevronLeft className="h-5 w-5 text-zinc-600" />
                   </button>
@@ -231,13 +231,13 @@ function DatePickerContent({
                       !modifiers.disabled &&
                       "text-red-500",
                     modifiers.outside
-                      ? "text-zinc-300"
+                      ? "text-disabled"
                       : isSelected
                         ? ""
                         : modifiers.disabled
                           ? ""
                           : "text-zinc-900",
-                    modifiers.disabled && "cursor-not-allowed text-zinc-300",
+                    modifiers.disabled && "cursor-not-allowed text-disabled",
                   )}
                 >
                   <Typo.ButtonText
@@ -245,10 +245,10 @@ function DatePickerContent({
                     className={cn(
                       isSelected
                         ? "text-violet-500"
-                        : isHoliday || isSunday
-                          ? "text-red-500"
-                          : modifiers.disabled || modifiers.outside
-                            ? "text-zinc-300"
+                        : modifiers.disabled || modifiers.outside
+                          ? "text-disabled"
+                          : isHoliday || isSunday
+                            ? "text-red-500"
                             : "text-zinc-900",
                     )}
                   >
