@@ -9,6 +9,7 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 interface DatePickerContextValue {
   selectedDates: Set<string>;
   toggleDate: (date: string) => void;
+  setDates: (dates: string[]) => void;
   canGoNext: boolean;
 }
 
@@ -76,6 +77,11 @@ export function DatePickerProvider({
     });
   };
 
+  const setDates = (dates: string[]) => {
+    const limitedDates = dates.slice(0, maxSelections);
+    setSelectedDates(new Set(limitedDates));
+  };
+
   const canGoNext = isRequired ? selectedDates.size > 0 : true;
 
   useEffect(() => {
@@ -92,7 +98,7 @@ export function DatePickerProvider({
   }, [selectedDates, actionId, isRequired]);
 
   return (
-    <DatePickerContext.Provider value={{ selectedDates, toggleDate, canGoNext }}>
+    <DatePickerContext.Provider value={{ selectedDates, toggleDate, setDates, canGoNext }}>
       {children}
     </DatePickerContext.Provider>
   );
