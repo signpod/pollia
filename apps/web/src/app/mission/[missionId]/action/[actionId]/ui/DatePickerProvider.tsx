@@ -78,6 +78,11 @@ export function DatePickerProvider({
   };
 
   const setDates = (dates: string[]) => {
+    if (maxSelections === 1 && dates.length > 1) {
+      const lastDate = dates[dates.length - 1];
+      setSelectedDates(new Set(lastDate ? [lastDate] : []));
+      return;
+    }
     const limitedDates = dates.slice(0, maxSelections);
     setSelectedDates(new Set(limitedDates));
   };
