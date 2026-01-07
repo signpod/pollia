@@ -36,7 +36,7 @@ export class NotionService {
     }
 
     try {
-      console.log("[NotionService] 리포트 생성 시작:", {
+      console.log("[NotionService] 리포트 생성/업데이트 시작:", {
         missionId: mission.id,
         missionTitle: mission.title,
         actionsCount: actions.length,
@@ -46,24 +46,38 @@ export class NotionService {
       const metadata = buildMissionMetadata(mission, responses);
       console.log("[NotionService] 메타데이터 생성 완료");
 
-      const page = await this.createMissionPageInDatabase(mission, databaseId, metadata);
-      const notionPageId = page.id;
-      console.log("[NotionService] 페이지 생성 완료:", notionPageId);
+      const existingPageId = await this.findMissionPageInDatabase(databaseId, mission.id);
 
-      const responseDb = buildResponseDatabase(actions, responses);
-      await this.createDatabase(notionPageId, responseDb);
-      console.log("[NotionService] 응답 데이터베이스 생성 완료");
+      let notionPageId: string;
 
-      const analysisDb = buildAnalysisDatabases(actions, responses);
-      let dbIndex = 0;
-      for (const db of analysisDb) {
-        dbIndex++;
-        await this.createDatabase(notionPageId, db);
-        console.log(`[NotionService] 분석 데이터베이스 ${dbIndex}/${analysisDb.length} 생성 완료`);
+      if (existingPageId) {
+        console.log("[NotionService] 기존 페이지 발견, Property 업데이트:", existingPageId);
+        await this.updateMissionPageProperties(existingPageId, mission, metadata);
+        notionPageId = existingPageId;
+        console.log("[NotionService] Property 업데이트 완료");
+      } else {
+        console.log("[NotionService] 기존 페이지 없음, 새 페이지 생성");
+        const page = await this.createMissionPageInDatabase(mission, databaseId, metadata);
+        notionPageId = page.id;
+        console.log("[NotionService] 페이지 생성 완료:", notionPageId);
+
+        const responseDb = buildResponseDatabase(actions, responses);
+        await this.createDatabase(notionPageId, responseDb);
+        console.log("[NotionService] 응답 데이터베이스 생성 완료");
+
+        const analysisDb = buildAnalysisDatabases(actions, responses);
+        let dbIndex = 0;
+        for (const db of analysisDb) {
+          dbIndex++;
+          await this.createDatabase(notionPageId, db);
+          console.log(
+            `[NotionService] 분석 데이터베이스 ${dbIndex}/${analysisDb.length} 생성 완료`,
+          );
+        }
       }
 
       const publicUrl = await this.makePublicUrl(notionPageId);
-      console.log("[NotionService] 리포트 생성 완료:", publicUrl);
+      console.log("[NotionService] 리포트 생성/업데이트 완료:", publicUrl);
 
       return {
         notionPageId,
@@ -178,6 +192,19 @@ export class NotionService {
     }
 
     return properties;
+  }
+
+  private async updateMissionPageProperties(
+    pageId: string,
+    mission: Mission,
+    metadata: MissionMetadata,
+  ): Promise<void> {
+    const properties = this.buildMissionPageProperties(mission, metadata);
+
+    await this.client.pages.update({
+      page_id: pageId,
+      properties,
+    });
   }
 
   private buildHeaderBlocks(mission: Mission, metadata: MissionMetadata): BlockObjectRequest[] {
