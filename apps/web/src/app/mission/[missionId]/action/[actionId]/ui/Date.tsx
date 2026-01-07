@@ -8,6 +8,7 @@ import { BottomDrawer, Calendar, Typo, useBottomDrawer } from "@repo/ui/componen
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import * as React from "react";
 
+import { getHolidayNames } from "@hyunbinseo/holidays-kr";
 import { ko } from "date-fns/locale";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 import { DatePickerProvider, useDatePicker } from "./DatePickerProvider";
@@ -15,6 +16,16 @@ import { DatePickerProvider, useDatePicker } from "./DatePickerProvider";
 function formatDateForDisplay(dateStr: string): string {
   const [year, month, day] = dateStr.split("-");
   return `${year}.${Number(month)}.${Number(day)}`;
+}
+
+function getHolidayName(date: Date): string | null {
+  try {
+    const holidayNames = getHolidayNames(date);
+    const firstHoliday = holidayNames?.[0];
+    return firstHoliday ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export function ActionDate({
@@ -204,12 +215,14 @@ function DatePickerContent({
               const isSunday = day.date.getDay() === 0;
               const isSelected = modifiers.selected;
               const isToday = modifiers.today;
+              const isHoliday = Boolean(getHolidayName(day.date));
 
               return (
                 <button
                   {...buttonProps}
                   className={cn(
-                    "rounded-sm w-full aspect-[48/55] flex flex-col gap-0 items-center justify-center transition-all duration-200 p-1",
+                    "rounded-sm w-full aspect-square flex flex-col gap-0 items-center justify-center transition-all duration-200 p-1",
+                    "hover:bg-zinc-50",
                     isSelected && "bg-violet-50 text-violet-500",
                     isToday && !isSelected && "ring-1 ring-zinc-300",
                     isSunday &&
@@ -227,17 +240,12 @@ function DatePickerContent({
                     modifiers.disabled && "cursor-not-allowed text-zinc-300",
                   )}
                 >
-                  <Typo.ButtonText size="medium">{day.date.getDate()}</Typo.ButtonText>
-                  {isToday ? (
-                    <Typo.Body
-                      size="small"
-                      className={cn("text-info", isSelected && "text-violet-500")}
-                    >
-                      오늘
-                    </Typo.Body>
-                  ) : (
-                    <div className="size-6" />
-                  )}
+                  <Typo.ButtonText
+                    size="medium"
+                    className={cn(isHoliday ? "text-red-500" : "text-info")}
+                  >
+                    {day.date.getDate()}
+                  </Typo.ButtonText>
                 </button>
               );
             },

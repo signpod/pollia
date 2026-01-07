@@ -24,6 +24,8 @@ export function MissionCompletion() {
     links,
   } = missionCompletion?.data ?? {};
 
+  const hasLongLinkKey = Object.keys(links ?? {}).some(key => key.length > 10);
+
   const { handleKakaoShare, handleShare, handleXShare } = useMissionShare({
     missionId,
     title: missionTitle,
@@ -71,13 +73,16 @@ export function MissionCompletion() {
         )}
 
         {completionImageUrl && (
-          <Image
-            src={completionImageUrl}
-            alt="Completion Image"
-            width={240}
-            height={240}
-            className="rounded-lg"
-          />
+          <div className="relative size-[240px] rounded-lg overflow-hidden">
+            <Image
+              src={completionImageUrl}
+              alt="Completion Image"
+              width={240}
+              height={240}
+              className="w-full h-full object-cover"
+              priority
+            />
+          </div>
         )}
         <div className="flex flex-col items-center gap-2">
           {completionTitle && <Typo.MainTitle size="small">{completionTitle}</Typo.MainTitle>}
@@ -99,17 +104,22 @@ export function MissionCompletion() {
       {!!links && (
         <FixedBottomLayout hasGradientBlur>
           <FixedBottomLayout.Content className="px-5 py-3">
-            <div className="flex gap-2 w-full">
+            <div
+              className={cn("flex gap-2 w-full", hasLongLinkKey && "flex-col-reverse")}
+            >
               {Object.entries(links).map(([key, value], index) => (
                 <ButtonV2
                   key={key}
-                  variant={index === 0 ? "primary" : "secondary"}
+                  variant={index === 0 && hasLongLinkKey ? "secondary" : "primary"}
                   className="flex-1 w-full"
                 >
                   <Link
                     href={value}
                     target="_blank"
-                    className="w-full h-full flex items-center justify-center"
+                    className={cn(
+                      "w-full h-full flex items-center justify-center",
+                      hasLongLinkKey && "h-12",
+                    )}
                   >
                     <Typo.ButtonText size="large">{key}</Typo.ButtonText>
                   </Link>

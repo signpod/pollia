@@ -94,7 +94,7 @@ function ProgressBarV2Component({
           className={cn(
             "h-full flex-1 rounded-xl",
             indicatorClassName,
-            progressbarVariant === "default" && "bg-violet-500",
+            progressbarVariant === "default" && "bg-black",
             progressbarVariant === "error" && "bg-red-500",
             progressbarVariant === "loading" && "bg-zinc-300",
           )}

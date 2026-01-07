@@ -1,8 +1,9 @@
-import { cleanTiptapHTML } from "@/lib/utils";
+import { toast } from "@/components/common/Toast";
+import { cleanTiptapHTML, cn } from "@/lib/utils";
 import { ButtonV2, FixedBottomLayout, TiptapViewer, Typo } from "@repo/ui/components";
 import { ChevronLeftIcon } from "lucide-react";
 import Image from "next/image";
-import { type PropsWithChildren, useEffect, useState } from "react";
+import { type PropsWithChildren, useEffect } from "react";
 import { useProgressBar } from "../providers/ProgressBarProvider";
 
 interface ActionTemplateProps extends PropsWithChildren {
@@ -36,33 +37,26 @@ export function SurveyQuestionTemplate({
 }: ActionTemplateProps) {
   const progressValue = ((currentOrder + 1) / totalActionCount) * 100 || 0;
   const { setProgress } = useProgressBar();
-  const [showRequiredError, setShowRequiredError] = useState(false);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
     setProgress(progressValue, currentOrder + 1, totalActionCount);
   }, [currentOrder, totalActionCount, progressValue, setProgress]);
 
-  useEffect(() => {
-    if (!isNextDisabled) {
-      setShowRequiredError(false);
-    }
-  }, [isNextDisabled]);
-
   const handleDisabledButtonClick = () => {
     if (isNextDisabled && isRequired) {
-      setShowRequiredError(true);
+      toast.default("필수 답변 항목이에요.");
     }
   };
 
   return (
     <FixedBottomLayout hasGradient>
-      <div className="space-y-8 px-5 pb-5 pt-9">
+      <div className="space-y-6 px-5 pb-5 pt-[28px]">
         {/* 질문 정보 섹션 */}
         <section className="space-y-2 relative">
+          <RequiredIndicator isRequired={!!isRequired} />
           <Typo.MainTitle size="medium" className="flex gap-1">
             {title}
-            {isRequired && <span className="text-red-500">*</span>}
           </Typo.MainTitle>
 
           {description && cleanTiptapHTML(description) && (
@@ -70,11 +64,6 @@ export function SurveyQuestionTemplate({
               content={cleanTiptapHTML(description)}
               className="prose prose-sm break-keep max-w-none text-sub"
             />
-          )}
-          {showRequiredError && (
-            <Typo.Body size="medium" className="text-red-500 absolute top-full">
-              필수 입력 사항이에요.
-            </Typo.Body>
           )}
 
           {imageUrl && (
@@ -122,5 +111,29 @@ export function SurveyQuestionTemplate({
         </nav>
       </FixedBottomLayout.Content>
     </FixedBottomLayout>
+  );
+}
+
+interface RequiredIndicatorProps {
+  isRequired: boolean;
+}
+
+const REQUIRED_TEXT_LABELS = {
+  required: "필수 답변",
+  optional: "선택 답변",
+} as const;
+
+function RequiredIndicator({ isRequired }: RequiredIndicatorProps) {
+  return (
+    <div
+      className={cn(
+        "flex items-center justify-center rounded-[6px] px-2 py-1 w-fit",
+        isRequired ? "bg-point" : "bg-white ring-1 ring-default",
+      )}
+    >
+      <Typo.Body size="small" className={cn(isRequired ? "text-point" : "text-info")}>
+        {isRequired ? REQUIRED_TEXT_LABELS.required : REQUIRED_TEXT_LABELS.optional}
+      </Typo.Body>
+    </div>
   );
 }

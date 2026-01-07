@@ -8,7 +8,7 @@ interface MissionBadgeProps {
 
 export function MissionBadge({ icon, label }: MissionBadgeProps) {
   return (
-    <div className="relative flex gap-2 items-center text-white whitespace-nowrap px-3 py-1.5 rounded-full overflow-hidden">
+    <div className="relative flex gap-1 items-center text-white whitespace-nowrap px-3 py-1 rounded-full overflow-hidden">
       <div className="absolute inset-0 bg-white/20 rounded-full" />
       <div
         className="absolute inset-0 backdrop-blur-[100px] rounded-full"
