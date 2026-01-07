@@ -8,7 +8,6 @@ import { useParams } from "next/navigation";
 import { ButtonV2, FixedBottomLayout, TiptapViewer, Typo } from "@repo/ui/components";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 import { SocialShareButtons } from "../../components";
 import { useMissionShare } from "./hooks";
 
@@ -16,7 +15,6 @@ export function MissionCompletion() {
   const { missionId } = useParams<{ missionId: string }>();
   const { data: mission } = useReadMission(missionId);
   const { data: missionCompletion } = useReadMissionCompletion(missionId);
-  const [isImageLoaded, setIsImageLoaded] = useState(false);
 
   const { imageUrl, brandLogoUrl, title: missionTitle } = mission?.data ?? {};
   const {
@@ -72,36 +70,18 @@ export function MissionCompletion() {
           />
         )}
 
-        <div
-          className={cn(
-            "grid transition-all duration-300 ease-out",
-            completionImageUrl
-              ? "grid-rows-[1fr] opacity-100"
-              : "grid-rows-[0fr] opacity-0",
-          )}
-        >
-          <div className="overflow-hidden">
-            <div className="relative size-[240px] rounded-lg overflow-hidden">
-              {!isImageLoaded && completionImageUrl && (
-                <div className="absolute inset-0 bg-zinc-200 animate-pulse rounded-lg" />
-              )}
-              {completionImageUrl && (
-                <Image
-                  src={completionImageUrl}
-                  alt="Completion Image"
-                  width={240}
-                  height={240}
-                  className={cn(
-                    "w-full h-full object-cover transition-opacity duration-300",
-                    isImageLoaded ? "opacity-100" : "opacity-0",
-                  )}
-                  onLoad={() => setIsImageLoaded(true)}
-                  priority
-                />
-              )}
-            </div>
+        {completionImageUrl && (
+          <div className="relative size-[240px] rounded-lg overflow-hidden">
+            <Image
+              src={completionImageUrl}
+              alt="Completion Image"
+              width={240}
+              height={240}
+              className="w-full h-full object-cover"
+              priority
+            />
           </div>
-        </div>
+        )}
         <div className="flex flex-col items-center gap-2">
           {completionTitle && <Typo.MainTitle size="small">{completionTitle}</Typo.MainTitle>}
           {completionDescription && cleanTiptapHTML(completionDescription) && (
