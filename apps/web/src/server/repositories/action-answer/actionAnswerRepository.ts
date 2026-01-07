@@ -8,7 +8,7 @@ export class ActionAnswerRepository {
       where: { id },
       include: {
         action: true,
-        option: true,
+        options: true,
         response: {
           select: {
             id: true,
@@ -25,7 +25,7 @@ export class ActionAnswerRepository {
       where: { responseId },
       include: {
         action: true,
-        option: true,
+        options: true,
       },
       orderBy: {
         createdAt: "asc",
@@ -42,7 +42,7 @@ export class ActionAnswerRepository {
       },
       include: {
         action: true,
-        option: true,
+        options: true,
         response: {
           select: {
             id: true,
@@ -65,7 +65,7 @@ export class ActionAnswerRepository {
             userId: true,
           },
         },
-        option: true,
+        options: true,
       },
     });
   }
@@ -77,7 +77,7 @@ export class ActionAnswerRepository {
         actionId,
       },
       include: {
-        option: true,
+        options: true,
       },
     });
   }
@@ -94,7 +94,7 @@ export class ActionAnswerRepository {
           data,
           include: {
             action: true,
-            option: true,
+            options: true,
             fileUploads: true,
           },
         });
@@ -109,7 +109,7 @@ export class ActionAnswerRepository {
       data,
       include: {
         action: true,
-        option: true,
+        options: true,
         fileUploads: true,
       },
     });
@@ -164,7 +164,7 @@ export class ActionAnswerRepository {
           data,
           include: {
             action: true,
-            option: true,
+            options: true,
             fileUploads: true,
           },
         });
@@ -180,7 +180,7 @@ export class ActionAnswerRepository {
       data,
       include: {
         action: true,
-        option: true,
+        options: true,
         fileUploads: true,
       },
     });
