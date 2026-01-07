@@ -17,6 +17,51 @@ function formatDateForDisplay(dateStr: string): string {
   return `${year}.${Number(month)}.${Number(day)}`;
 }
 
+const FIXED_HOLIDAYS: Record<string, string> = {
+  "01-01": "신정",
+  "03-01": "3.1절",
+  "05-05": "어린이날",
+  "06-06": "현충일",
+  "08-15": "광복절",
+  "10-03": "개천절",
+  "10-09": "한글날",
+  "12-25": "성탄절",
+};
+
+const LUNAR_HOLIDAYS: Record<string, string> = {
+  "2025-01-28": "설날",
+  "2025-01-29": "설날",
+  "2025-01-30": "설날",
+  "2025-10-05": "추석",
+  "2025-10-06": "추석",
+  "2025-10-07": "추석",
+  "2026-02-16": "설날",
+  "2026-02-17": "설날",
+  "2026-02-18": "설날",
+  "2026-09-24": "추석",
+  "2026-09-25": "추석",
+  "2026-09-26": "추석",
+  "2027-02-05": "설날",
+  "2027-02-06": "설날",
+  "2027-02-07": "설날",
+  "2027-10-14": "추석",
+  "2027-10-15": "추석",
+  "2027-10-16": "추석",
+};
+
+function getHolidayName(date: Date): string | null {
+  const monthDay = `${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  if (FIXED_HOLIDAYS[monthDay]) {
+    return FIXED_HOLIDAYS[monthDay];
+  }
+
+  const fullDate = `${date.getFullYear()}-${monthDay}`;
+  if (LUNAR_HOLIDAYS[fullDate]) {
+    return LUNAR_HOLIDAYS[fullDate];
+  }
+
+  return null;
+
 export function ActionDate({
   actionData,
   currentOrder,
@@ -204,6 +249,8 @@ function DatePickerContent({
               const isSunday = day.date.getDay() === 0;
               const isSelected = modifiers.selected;
               const isToday = modifiers.today;
+              const holidayName = getHolidayName(day.date);
+              const label = isToday ? "오늘" : holidayName;
 
               return (
                 <button
@@ -228,15 +275,19 @@ function DatePickerContent({
                   )}
                 >
                   <Typo.ButtonText size="medium">{day.date.getDate()}</Typo.ButtonText>
-                  {isToday ? (
+                  {label ? (
                     <Typo.Body
                       size="small"
-                      className={cn("text-info", isSelected && "text-violet-500")}
+                      className={cn(
+                        "text-info",
+                        isSelected && "text-violet-500",
+                        holidayName && !isSelected && !modifiers.disabled && "text-info",
+                      )}
                     >
-                      오늘
+                      {label}
                     </Typo.Body>
                   ) : (
-                    <div className="size-6" />
+                    <div className="h-5" />
                   )}
                 </button>
               );
