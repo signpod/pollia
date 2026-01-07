@@ -45,3 +45,20 @@ export const LISTABLE_ACTION_TYPES: ActionType[] = [
 ];
 
 export const EXCLUDED_ACTION_TYPES: ActionType[] = ["DATE", "TIME", "PRIVACY_CONSENT"];
+
+export const MISSION_DATABASE_PROPERTY_NAMES = {
+  TITLE: "미션 제목",
+  MISSION_ID: "미션 ID",
+  TARGET: "타겟",
+  DEADLINE: "마감일",
+  TOTAL_RESPONSES: "총 응답자",
+  COMPLETED_RESPONSES: "완주자",
+  COMPLETION_RATE: "완주율(%)",
+  TYPE: "미션 타입",
+  ESTIMATED_MINUTES: "예상 소요시간(분)",
+  IS_ACTIVE: "활성 상태",
+  LAST_SYNCED_AT: "마지막 동기화",
+} as const;
+
+export type MissionDatabasePropertyName =
+  (typeof MISSION_DATABASE_PROPERTY_NAMES)[keyof typeof MISSION_DATABASE_PROPERTY_NAMES];

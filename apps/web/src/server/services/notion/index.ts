@@ -2,12 +2,13 @@ import { Client } from "@notionhq/client";
 import type { Mission } from "@prisma/client";
 import { buildAnalysisDatabases, buildResponseDatabase } from "./database-builder";
 import { type MissionMetadata, buildMissionMetadata } from "./properties";
-import type {
-  BlockObjectRequest,
-  CreateMissionReportInput,
-  CreateMissionReportResult,
-  DatabasePropertyConfigMap,
-  PagePropertyValueMap,
+import {
+  type BlockObjectRequest,
+  type CreateMissionReportInput,
+  type CreateMissionReportResult,
+  type DatabasePropertyConfigMap,
+  MISSION_DATABASE_PROPERTY_NAMES,
+  type PagePropertyValueMap,
 } from "./types";
 import { stripHtmlTags, truncateText } from "./utils";
 
@@ -27,11 +28,9 @@ export class NotionService {
   ): Promise<CreateMissionReportResult> {
     const { mission, responses, actions } = input;
 
-    const parentPageId = process.env.MISSION_REPORT_NOTION_PARENT_PAGE_ID;
-    if (!parentPageId) {
-      const error = new Error(
-        "MISSION_REPORT_NOTION_PARENT_PAGE_ID 환경변수가 설정되지 않았습니다.",
-      );
+    const databaseId = process.env.MISSION_REPORT_NOTION_DATABASE_ID;
+    if (!databaseId) {
+      const error = new Error("MISSION_REPORT_NOTION_DATABASE_ID 환경변수가 설정되지 않았습니다.");
       error.cause = 500;
       throw error;
     }
@@ -47,7 +46,7 @@ export class NotionService {
       const metadata = buildMissionMetadata(mission, responses);
       console.log("[NotionService] 메타데이터 생성 완료");
 
-      const page = await this.createPage(mission, parentPageId, metadata);
+      const page = await this.createMissionPageInDatabase(mission, databaseId, metadata);
       const notionPageId = page.id;
       console.log("[NotionService] 페이지 생성 완료:", notionPageId);
 
@@ -90,34 +89,95 @@ export class NotionService {
     }
   }
 
-  private async createPage(mission: Mission, parentPageId: string, metadata: MissionMetadata) {
+  private async createMissionPageInDatabase(
+    mission: Mission,
+    databaseId: string,
+    metadata: MissionMetadata,
+  ) {
     const children = this.buildHeaderBlocks(mission, metadata);
+    const properties = this.buildMissionPageProperties(mission, metadata);
 
     const response = await this.client.pages.create({
       parent: {
-        type: "page_id",
-        page_id: parentPageId,
+        type: "database_id",
+        database_id: databaseId,
       },
       icon: {
         type: "emoji",
         emoji: "📊",
       },
-      properties: {
-        title: {
-          title: [
-            {
-              type: "text",
-              text: {
-                content: `${mission.title} - 리포트`,
-              },
-            },
-          ],
-        },
-      },
+      properties,
       children,
     });
 
     return response;
+  }
+
+  private buildMissionPageProperties(
+    mission: Mission,
+    metadata: MissionMetadata,
+  ): PagePropertyValueMap {
+    const properties: PagePropertyValueMap = {
+      [MISSION_DATABASE_PROPERTY_NAMES.TITLE]: {
+        title: [
+          {
+            type: "text",
+            text: { content: `${mission.title} - 리포트` },
+          },
+        ],
+      },
+      [MISSION_DATABASE_PROPERTY_NAMES.MISSION_ID]: {
+        rich_text: [
+          {
+            type: "text",
+            text: { content: mission.id },
+          },
+        ],
+      },
+      [MISSION_DATABASE_PROPERTY_NAMES.TOTAL_RESPONSES]: {
+        number: metadata.totalResponses,
+      },
+      [MISSION_DATABASE_PROPERTY_NAMES.COMPLETED_RESPONSES]: {
+        number: metadata.completedResponses,
+      },
+      [MISSION_DATABASE_PROPERTY_NAMES.COMPLETION_RATE]: {
+        number: metadata.completionRate,
+      },
+      [MISSION_DATABASE_PROPERTY_NAMES.TYPE]: {
+        select: { name: metadata.type },
+      },
+      [MISSION_DATABASE_PROPERTY_NAMES.IS_ACTIVE]: {
+        checkbox: metadata.isActive,
+      },
+      [MISSION_DATABASE_PROPERTY_NAMES.LAST_SYNCED_AT]: {
+        date: { start: new Date().toISOString() },
+      },
+    };
+
+    if (metadata.target) {
+      properties[MISSION_DATABASE_PROPERTY_NAMES.TARGET] = {
+        rich_text: [
+          {
+            type: "text",
+            text: { content: metadata.target },
+          },
+        ],
+      };
+    }
+
+    if (metadata.deadline) {
+      properties[MISSION_DATABASE_PROPERTY_NAMES.DEADLINE] = {
+        date: { start: metadata.deadline },
+      };
+    }
+
+    if (metadata.estimatedMinutes) {
+      properties[MISSION_DATABASE_PROPERTY_NAMES.ESTIMATED_MINUTES] = {
+        number: metadata.estimatedMinutes,
+      };
+    }
+
+    return properties;
   }
 
   private buildHeaderBlocks(mission: Mission, metadata: MissionMetadata): BlockObjectRequest[] {
@@ -250,6 +310,29 @@ export class NotionService {
     }
 
     return database;
+  }
+
+  private async findMissionPageInDatabase(
+    databaseId: string,
+    missionId: string,
+  ): Promise<string | null> {
+    const response = await this.client.databases.query({
+      database_id: databaseId,
+      filter: {
+        property: MISSION_DATABASE_PROPERTY_NAMES.MISSION_ID,
+        rich_text: {
+          equals: missionId,
+        },
+      },
+      page_size: 1,
+    });
+
+    const firstResult = response.results[0];
+    if (firstResult) {
+      return firstResult.id;
+    }
+
+    return null;
   }
 
   private async makePublicUrl(pageId: string): Promise<string> {
