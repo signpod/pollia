@@ -382,7 +382,10 @@ function DrawerTabContent({
               <Typo.SubTitle size="large">상세 안내</Typo.SubTitle>
             </Tab.Item>
             {reward && (
-              <Tab.Item value={SECTION_IDS.REWARD} onClick={() => handleChangeTab(SECTION_IDS.REWARD)}>
+              <Tab.Item
+                value={SECTION_IDS.REWARD}
+                onClick={() => handleChangeTab(SECTION_IDS.REWARD)}
+              >
                 <Typo.SubTitle size="large">참여 혜택</Typo.SubTitle>
               </Tab.Item>
             )}
