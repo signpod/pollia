@@ -107,3 +107,19 @@ export interface GetMissionParticipantInfoResponse {
     isClosed: boolean;
   };
 }
+
+export interface GetMissionNotionPageResponse {
+  data: {
+    notionPageId: string;
+    notionPageUrl: string;
+    lastSyncedAt: Date;
+    syncedResponseCount: number;
+  } | null;
+}
+
+export interface SyncMissionToNotionResponse {
+  data: {
+    notionPageUrl: string;
+    syncedResponseCount: number;
+  };
+}

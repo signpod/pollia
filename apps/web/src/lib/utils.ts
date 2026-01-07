@@ -79,63 +79,6 @@ export function formatMillisecondsToKorean(ms: number): string {
   return parts.slice(0, 2).join(" ");
 }
 
-export function getPollStatus(
-  startDate: Date | null,
-  endDate: Date | null,
-  _isIndefinite: boolean,
-  currentTime: Date = new Date(),
-): "before" | "active" | "after" {
-  const now = currentTime.getTime();
-  const startTime = startDate ? startDate.getTime() : 0;
-  const endTime = endDate ? endDate.getTime() : Number.POSITIVE_INFINITY;
-
-  if (startDate && now < startTime) return "before";
-
-  if (endDate && now >= endTime) return "after";
-
-  return "active";
-}
-
-export function isPollActive(
-  startDate: Date | null,
-  endDate: Date | null,
-  isIndefinite: boolean,
-  currentTime: Date = new Date(),
-): boolean {
-  return getPollStatus(startDate, endDate, isIndefinite, currentTime) === "active";
-}
-
-export function getPollStatusMessage(
-  startDate: Date | null,
-  endDate: Date | null,
-  isIndefinite: boolean,
-  currentTime: Date = new Date(),
-): string {
-  const status = getPollStatus(startDate, endDate, isIndefinite, currentTime);
-
-  if (status === "after") {
-    return "종료되었어요";
-  }
-
-  if (isIndefinite) {
-    return "종료없이 진행되는 투표에요";
-  }
-
-  const now = currentTime.getTime();
-
-  if (status === "before" && startDate) {
-    const timeUntilStart = startDate.getTime() - now;
-    return `${formatTimeRemainingInDays(timeUntilStart)} 뒤에 만나요`;
-  }
-
-  if (status === "active" && endDate) {
-    const timeRemaining = endDate.getTime() - now;
-    return `${formatTimeRemainingInDays(timeRemaining)} 뒤에 끝나요`;
-  }
-
-  return "";
-}
-
 /**
  * TipTap 에디터에서 생성된 HTML을 정리합니다.
  * - 불필요한 속성 제거 (contenteditable, translate)

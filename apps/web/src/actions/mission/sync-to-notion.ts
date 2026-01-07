@@ -1,0 +1,61 @@
+"use server";
+
+import { requireAuth } from "@/actions/common/auth";
+import { missionService } from "@/server/services/mission";
+import { missionNotionPageService } from "@/server/services/mission-notion-page";
+import { missionResponseService } from "@/server/services/mission-response";
+import { NotionService } from "@/server/services/notion";
+import type { SyncMissionToNotionResponse } from "@/types/dto";
+
+export async function syncMissionToNotion(missionId: string): Promise<SyncMissionToNotionResponse> {
+  try {
+    const user = await requireAuth();
+
+    const mission = await missionService.getMission(missionId);
+
+    if (mission.creatorId !== user.id) {
+      const error = new Error("노션 동기화 권한이 없습니다.");
+      error.cause = 403;
+      throw error;
+    }
+
+    const actions = await missionService.getMissionActionsDetail(missionId);
+    const responses = await missionResponseService.getMissionResponses(missionId, user.id);
+
+    const notionService = new NotionService();
+    const result = await notionService.createOrUpdateMissionReport({
+      mission,
+      actions,
+      responses,
+    });
+
+    await missionNotionPageService.upsertNotionPage(missionId, {
+      notionPageId: result.notionPageId,
+      notionPageUrl: result.notionPageUrl,
+      syncedResponseCount: responses.length,
+    });
+
+    return {
+      data: {
+        notionPageUrl: result.notionPageUrl,
+        syncedResponseCount: responses.length,
+      },
+    };
+  } catch (error) {
+    console.error("[syncMissionToNotion] 에러 발생:", {
+      missionId,
+      error,
+      errorMessage: error instanceof Error ? error.message : String(error),
+      errorStack: error instanceof Error ? error.stack : undefined,
+    });
+
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+
+    const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류";
+    const serverError = new Error(`노션 리포트 생성 실패: ${errorMessage}`);
+    serverError.cause = 500;
+    throw serverError;
+  }
+}
