@@ -8,3 +8,19 @@ export function truncateText(text: string, maxLength: number): string {
 export function stripHtmlTags(html: string): string {
   return html.replace(/<[^>]*>/g, "");
 }
+
+export function buildUniquePropertyName(
+  title: string,
+  index: number,
+  existingNames: Set<string>,
+): string {
+  let propertyName = truncateText(title, 100);
+
+  if (existingNames.has(propertyName)) {
+    const suffix = ` (${index + 1})`;
+    propertyName = truncateText(title, 100 - suffix.length) + suffix;
+  }
+
+  existingNames.add(propertyName);
+  return propertyName;
+}

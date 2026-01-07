@@ -5,7 +5,7 @@ import type {
   PagePropertyValueMap,
 } from "./types";
 import { AGGREGATABLE_ACTION_TYPES, EXCLUDED_ACTION_TYPES, LISTABLE_ACTION_TYPES } from "./types";
-import { truncateText } from "./utils";
+import { buildUniquePropertyName, truncateText } from "./utils";
 
 export interface DatabaseConfig {
   title: string;
@@ -26,8 +26,12 @@ export function buildResponseDatabase(
     "완료 시간": { date: {} },
   };
 
-  for (const action of actions) {
-    const propertyName = truncateText(action.title, 100);
+  const existingNames = new Set<string>(["응답자", "완료 시간"]);
+  const actionPropertyMap = new Map<string, string>();
+
+  actions.forEach((action, i) => {
+    const propertyName = buildUniquePropertyName(action.title, i, existingNames);
+    actionPropertyMap.set(action.id, propertyName);
 
     switch (action.type) {
       case "MULTIPLE_CHOICE":
@@ -56,10 +60,10 @@ export function buildResponseDatabase(
       default:
         properties[propertyName] = { rich_text: {} };
     }
-  }
+  });
 
   const rows = responses.map((response, index) => ({
-    properties: buildResponseRowProperties(response, actions, index + 1),
+    properties: buildResponseRowProperties(response, actions, index + 1, actionPropertyMap),
   }));
 
   return {
@@ -73,6 +77,7 @@ function buildResponseRowProperties(
   response: MissionResponseWithAnswers,
   actions: Action[],
   index: number,
+  actionPropertyMap: Map<string, string>,
 ): PagePropertyValueMap {
   const properties: PagePropertyValueMap = {
     응답자: {
@@ -84,7 +89,11 @@ function buildResponseRowProperties(
   };
 
   for (const action of actions) {
-    const propertyName = truncateText(action.title, 100);
+    const propertyName = actionPropertyMap.get(action.id);
+    if (!propertyName) {
+      continue;
+    }
+
     const answer = response.answers.find(a => a.actionId === action.id);
 
     if (!answer) {
