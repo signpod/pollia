@@ -61,6 +61,7 @@ function getHolidayName(date: Date): string | null {
   }
 
   return null;
+}
 
 export function ActionDate({
   actionData,
