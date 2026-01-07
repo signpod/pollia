@@ -71,13 +71,15 @@ export function MissionCompletion() {
         )}
 
         {completionImageUrl && (
-          <Image
-            src={completionImageUrl}
-            alt="Completion Image"
-            width={240}
-            height={240}
-            className="rounded-lg"
-          />
+          <div className="relative size-[240px] rounded-lg overflow-hidden ">
+            <Image
+              src={completionImageUrl}
+              alt="Completion Image"
+              width={240}
+              height={240}
+              className="w-full h-full object-cover"
+            />
+          </div>
         )}
         <div className="flex flex-col items-center gap-2">
           {completionTitle && <Typo.MainTitle size="small">{completionTitle}</Typo.MainTitle>}
