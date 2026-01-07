@@ -4,6 +4,7 @@ import type {
   MissionResponseWithAnswers,
   PagePropertyValueMap,
 } from "./types";
+import { AGGREGATABLE_ACTION_TYPES, EXCLUDED_ACTION_TYPES, LISTABLE_ACTION_TYPES } from "./types";
 import { truncateText } from "./utils";
 
 export interface DatabaseConfig {
@@ -150,8 +151,6 @@ export function buildAnalysisDatabases(
   responses: MissionResponseWithAnswers[],
 ): DatabaseConfig[] {
   const databases: DatabaseConfig[] = [];
-  const { AGGREGATABLE_ACTION_TYPES, LISTABLE_ACTION_TYPES, EXCLUDED_ACTION_TYPES } =
-    require("./types");
 
   for (const action of actions) {
     if (EXCLUDED_ACTION_TYPES.includes(action.type)) {
