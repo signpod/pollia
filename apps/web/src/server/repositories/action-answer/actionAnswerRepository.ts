@@ -82,7 +82,7 @@ export class ActionAnswerRepository {
     });
   }
 
-  async create(data: Omit<Prisma.ActionAnswerUncheckedCreateInput, "createdAt">, userId?: string) {
+  async create(data: Prisma.ActionAnswerCreateInput, userId?: string) {
     const fileUploadIds =
       data.fileUploads && typeof data.fileUploads === "object" && "connect" in data.fileUploads
         ? (data.fileUploads.connect as { id: string }[]).map(f => f.id)

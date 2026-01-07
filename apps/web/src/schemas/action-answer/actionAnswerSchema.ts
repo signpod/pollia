@@ -116,7 +116,7 @@ export const submitAnswersSchema = z.object({
 
 export const actionAnswerUpdateSchema = z
   .object({
-    optionId: optionIdSchema.optional(),
+    selectedOptionIds: z.array(optionIdSchema).optional(),
     textAnswer: z.string().optional(),
     scaleAnswer: scaleAnswerSchema.optional(),
     dateAnswers: dateAnswersSchema,

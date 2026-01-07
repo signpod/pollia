@@ -17,7 +17,7 @@ import {
 import { actionAnswerRepository } from "@/server/repositories/action-answer/actionAnswerRepository";
 import { actionRepository } from "@/server/repositories/action/actionRepository";
 import { missionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
-import { ActionType } from "@prisma/client";
+import { ActionType, Prisma } from "@prisma/client";
 import { z } from "zod";
 import type { SubmitAnswersInput, UpdateAnswerInput } from "./types";
 
@@ -79,7 +79,7 @@ export class ActionAnswerService {
           {
             responseId: validated.responseId,
             actionId: answer.actionId,
-            optionId: answer.selectedOptionIds?.[0],
+            selectedOptionIds: answer.selectedOptionIds,
             textAnswer: answer.textAnswer,
             scaleAnswer: answer.scaleValue,
             dateAnswers: answer.dateAnswers,
@@ -97,7 +97,8 @@ export class ActionAnswerService {
       this.convertAnswerToCreateInput(answer, validated.responseId),
     );
 
-    await this.answerRepo.createMany(answersToCreate, userId);
+    // Use individual create instead of createMany because of relations
+    await Promise.all(answersToCreate.map(data => this.answerRepo.create(data, userId)));
 
     return {
       responseId: validated.responseId,
@@ -124,7 +125,19 @@ export class ActionAnswerService {
       );
     }
 
-    return this.answerRepo.update(answerId, validated);
+    const { selectedOptionIds, ...otherFields } = validated;
+
+    const updateData: Prisma.ActionAnswerUpdateInput = {
+      ...otherFields,
+    };
+
+    if (selectedOptionIds !== undefined) {
+      updateData.options = {
+        set: selectedOptionIds.map(id => ({ id })),
+      };
+    }
+
+    return this.answerRepo.update(answerId, updateData);
   }
 
   async deleteAnswer(answerId: string, userId: string): Promise<void> {
@@ -214,64 +227,77 @@ export class ActionAnswerService {
   private convertAnswerToCreateInput(
     answer: SubmitAnswersInput["answers"][number],
     responseId: string,
-  ): Array<Parameters<typeof this.answerRepo.createMany>[0][number]> {
-    const baseData = { responseId, actionId: answer.actionId };
+  ): Array<Prisma.ActionAnswerCreateInput> {
+    const baseAnswer = {
+      response: { connect: { id: responseId } },
+      action: { connect: { id: answer.actionId } },
+    };
 
     switch (answer.type) {
       case ActionType.MULTIPLE_CHOICE:
       case ActionType.TAG: {
-        const multipleChoiceAnswers = [];
+        const answerData: Prisma.ActionAnswerCreateInput = { ...baseAnswer };
 
-        // Add option-based answers
+        // Connect multiple options to single answer
         if (answer.selectedOptionIds && answer.selectedOptionIds.length > 0) {
-          multipleChoiceAnswers.push(
-            ...answer.selectedOptionIds.map(optionId => ({
-              ...baseData,
-              optionId,
-            })),
-          );
+          answerData.options = {
+            connect: answer.selectedOptionIds.map(id => ({ id })),
+          };
         }
 
         // Add "기타" text answer if provided
         if (answer.textAnswer) {
-          multipleChoiceAnswers.push({ ...baseData, textAnswer: answer.textAnswer });
+          answerData.textAnswer = answer.textAnswer;
         }
 
-        return multipleChoiceAnswers.length > 0 ? multipleChoiceAnswers : [baseData];
+        return [answerData];
       }
 
       case ActionType.SCALE:
       case ActionType.RATING:
-        return answer.scaleValue !== undefined
-          ? [{ ...baseData, scaleAnswer: answer.scaleValue }]
-          : [baseData];
+        return [
+          {
+            ...baseAnswer,
+            ...(answer.scaleValue !== undefined && { scaleAnswer: answer.scaleValue }),
+          },
+        ];
 
       case ActionType.SUBJECTIVE:
       case ActionType.SHORT_TEXT:
-        return answer.textAnswer ? [{ ...baseData, textAnswer: answer.textAnswer }] : [baseData];
+        return [
+          {
+            ...baseAnswer,
+            ...(answer.textAnswer && { textAnswer: answer.textAnswer }),
+          },
+        ];
 
       case ActionType.IMAGE:
       case ActionType.PDF:
       case ActionType.VIDEO:
-        return answer.fileUploadIds && answer.fileUploadIds.length > 0
-          ? [
-              {
-                ...baseData,
+        return [
+          {
+            ...baseAnswer,
+            ...(answer.fileUploadIds &&
+              answer.fileUploadIds.length > 0 && {
                 fileUploads: {
                   connect: answer.fileUploadIds.map(id => ({ id })),
                 },
-              },
-            ]
-          : [baseData];
+              }),
+          },
+        ];
 
       case ActionType.DATE:
       case ActionType.TIME:
-        return answer.dateAnswers && answer.dateAnswers.length > 0
-          ? [{ ...baseData, dateAnswers: answer.dateAnswers }]
-          : [baseData];
+        return [
+          {
+            ...baseAnswer,
+            ...(answer.dateAnswers &&
+              answer.dateAnswers.length > 0 && { dateAnswers: answer.dateAnswers }),
+          },
+        ];
 
       default:
-        return [baseData];
+        return [baseAnswer];
     }
   }
 
@@ -335,13 +361,8 @@ export class ActionAnswerService {
   }
 
   private validateAnswerByActionType(
-    input: {
-      responseId: string;
-      actionId: string;
-      optionId?: string;
-      textAnswer?: string;
-      scaleAnswer?: number;
-      dateAnswers?: Date[];
+    input: Omit<Prisma.ActionAnswerUncheckedCreateInput, "id" | "createdAt" | "booleanAnswer"> & {
+      selectedOptionIds?: string[];
       fileUploadIds?: string[];
     },
     actionType: ActionType,
