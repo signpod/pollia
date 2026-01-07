@@ -9,7 +9,7 @@ import type {
   DatabasePropertyConfigMap,
   PagePropertyValueMap,
 } from "./types";
-import { stripHtmlTags } from "./utils";
+import { stripHtmlTags, truncateText } from "./utils";
 
 export class NotionService {
   private client: Client;
@@ -161,7 +161,7 @@ export class NotionService {
             {
               type: "text",
               text: {
-                content: stripHtmlTags(mission.description),
+                content: truncateText(stripHtmlTags(mission.description), 2000),
               },
             },
           ],
