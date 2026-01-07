@@ -7,6 +7,8 @@ import { cn } from "../../lib/utils";
 import { IconButton } from "./IconButton";
 
 const MOBILE_BREAKPOINT = 768;
+const SCROLL_SENSITIVITY = 1.2;
+const SNAP_DEBOUNCE_MS = 200;
 
 interface BottomDrawerContextType {
   isOpen: boolean;
@@ -131,12 +133,28 @@ function BottomDrawerContent({
   const rafRef = React.useRef<number | null>(null);
   const pendingDeltaRef = React.useRef(0);
 
+  // Skip animation flag for scroll-based state updates
+  const skipAnimationRef = React.useRef(false);
+
   // Animate drawer position when isOpen changes
   React.useEffect(() => {
+    const drawer = drawerRef.current;
+    if (!drawer) return;
+
     const targetY = isOpen ? 0 : heightDiff;
+
+    // Skip animation if flag is set (from scroll)
+    if (skipAnimationRef.current) {
+      skipAnimationRef.current = false;
+      return;
+    }
+
     // Only animate if position actually needs to change
-    if (drawerRef.current && Math.abs(currentY.current - targetY) > 1) {
-      gsap.to(drawerRef.current, {
+    if (Math.abs(currentY.current - targetY) > 1) {
+      // Kill any ongoing animation first
+      gsap.killTweensOf(drawer);
+
+      gsap.to(drawer, {
         y: targetY,
         duration: 0.3,
         ease: "power2.out",
@@ -144,9 +162,9 @@ function BottomDrawerContent({
           currentY.current = targetY;
         },
       });
-    } else if (drawerRef.current) {
+    } else {
       currentY.current = targetY;
-      gsap.set(drawerRef.current, { y: targetY });
+      drawer.style.transform = `translate3d(0, ${targetY}px, 0)`;
     }
   }, [isOpen, heightDiff]);
 
@@ -188,6 +206,8 @@ function BottomDrawerContent({
   // Store values in refs to avoid stale closures
   const isMobileRef = React.useRef(isMobile);
   const heightDiffRef = React.useRef(heightDiff);
+  const openRef = React.useRef(open);
+  const closeRef = React.useRef(close);
 
   React.useEffect(() => {
     isMobileRef.current = isMobile;
@@ -196,6 +216,11 @@ function BottomDrawerContent({
   React.useEffect(() => {
     heightDiffRef.current = heightDiff;
   }, [heightDiff]);
+
+  React.useEffect(() => {
+    openRef.current = open;
+    closeRef.current = close;
+  }, [open, close]);
 
   // PC: Wheel scroll control - listener attached once
   React.useEffect(() => {
@@ -212,15 +237,24 @@ function BottomDrawerContent({
 
       if (delta === 0) return;
 
+      // Kill any ongoing GSAP animation to prevent conflicts
+      gsap.killTweensOf(drawer);
+
       const newY = Math.min(hDiff, Math.max(0, currentY.current - delta));
       currentY.current = newY;
-      gsap.set(drawer, { y: newY });
 
-      // Debounced snap
+      // Use direct style for better performance during scroll
+      drawer.style.transform = `translate3d(0, ${newY}px, 0)`;
+
+      // Update open/close state without snapping animation
       if (snapTimeoutRef.current) clearTimeout(snapTimeoutRef.current);
       snapTimeoutRef.current = setTimeout(() => {
-        snapTo(currentY.current < hDiff * 0.5);
-      }, 150);
+        const shouldBeOpen = currentY.current < hDiff * 0.5;
+        // Set flag to skip animation when state changes
+        skipAnimationRef.current = true;
+        if (shouldBeOpen) openRef.current();
+        else closeRef.current();
+      }, SNAP_DEBOUNCE_MS);
     };
 
     const handleWheel = (e: WheelEvent) => {
@@ -236,7 +270,8 @@ function BottomDrawerContent({
       // When fully open, check if we should scroll content or close drawer
       if (isFullyOpen && scrollable) {
         const atTop = scrollable.scrollTop <= 0;
-        const atBottom = scrollable.scrollTop + scrollable.clientHeight >= scrollable.scrollHeight - 1;
+        const atBottom =
+          scrollable.scrollTop + scrollable.clientHeight >= scrollable.scrollHeight - 1;
         const scrollingUp = e.deltaY < 0;
         const scrollingDown = e.deltaY > 0;
 
@@ -246,7 +281,7 @@ function BottomDrawerContent({
 
         if (atTop && scrollingUp) {
           e.preventDefault();
-          pendingDeltaRef.current += e.deltaY * 1.5;
+          pendingDeltaRef.current += e.deltaY * SCROLL_SENSITIVITY;
           if (!rafRef.current) {
             rafRef.current = requestAnimationFrame(updateDrawerPosition);
           }
@@ -258,7 +293,7 @@ function BottomDrawerContent({
 
       // Drawer not fully open -> control drawer position
       e.preventDefault();
-      pendingDeltaRef.current += e.deltaY * 1.5;
+      pendingDeltaRef.current += e.deltaY * SCROLL_SENSITIVITY;
 
       if (!rafRef.current) {
         rafRef.current = requestAnimationFrame(updateDrawerPosition);
@@ -304,7 +339,12 @@ function BottomDrawerContent({
     const delta = touch.clientY - startY.current;
     const newY = Math.min(heightDiff, Math.max(0, startDrawerY.current + delta));
     currentY.current = newY;
-    gsap.set(drawerRef.current, { y: newY });
+
+    // Use direct style for better performance during drag
+    if (drawerRef.current) {
+      gsap.killTweensOf(drawerRef.current);
+      drawerRef.current.style.transform = `translate3d(0, ${newY}px, 0)`;
+    }
   };
 
   const onTouchEnd = () => {
@@ -336,7 +376,7 @@ function BottomDrawerContent({
         "mx-auto max-w-lg",
         className,
       )}
-      style={{ height: expandedHeight }}
+      style={{ height: expandedHeight, willChange: "transform" }}
     >
       <div className="flex flex-col h-full">{children}</div>
     </div>
@@ -357,7 +397,11 @@ function BottomDrawerTrigger({ className, children, asChild }: BottomDrawerTrigg
       onClick: (e: React.MouseEvent) => {
         e.stopPropagation();
         toggle();
-        if (typeof children.props === "object" && children.props !== null && "onClick" in children.props) {
+        if (
+          typeof children.props === "object" &&
+          children.props !== null &&
+          "onClick" in children.props
+        ) {
           const onClick = children.props.onClick as ((e: React.MouseEvent) => void) | undefined;
           onClick?.(e);
         }
@@ -408,7 +452,9 @@ function BottomDrawerHeader({
           className={cn("transition-transform", isOpen && "rotate-180")}
         />
       )}
-      {showCloseButton && <IconButton icon={ChevronUp} onClick={close} aria-label="닫기" className="rotate-180" />}
+      {showCloseButton && (
+        <IconButton icon={ChevronUp} onClick={close} aria-label="닫기" className="rotate-180" />
+      )}
     </div>
   );
 }
@@ -419,7 +465,15 @@ interface BottomDrawerBodyProps {
 }
 
 function BottomDrawerBody({ className, children }: BottomDrawerBodyProps) {
-  return <div className={cn("flex-1 overflow-y-auto px-5 py-4", className)}>{children}</div>;
+  return (
+    <div
+      data-drawer-scrollable
+      className={cn("flex-1 overflow-y-auto px-5 py-4", className)}
+      style={{ overscrollBehavior: "contain" }}
+    >
+      {children}
+    </div>
+  );
 }
 
 interface BottomDrawerFooterProps {
