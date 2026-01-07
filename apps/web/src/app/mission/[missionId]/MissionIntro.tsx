@@ -154,7 +154,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
       window.removeEventListener("resize", calculateSnapPoints);
       resizeObserver.disconnect();
     };
-  }, [title]);
+  }, []);
 
   const { data: reward } = useReadReward(mission?.rewardId || "");
   const { data: participantInfo } = useReadMissionParticipantInfo(missionId);
@@ -279,7 +279,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
 
           <div
             ref={bottomButtonRef}
-            className="fixed bottom-0 left-0 right-0 z-[60] mx-auto max-w-lg bg-white border-t border-zinc-100 px-5 py-4 pb-[calc(16px+env(safe-area-inset-bottom))]"
+            className="fixed bottom-0 left-0 right-0 z-60 mx-auto max-w-lg bg-white border-t border-zinc-100 px-5 py-4 pb-[calc(16px+env(safe-area-inset-bottom))]"
           >
             <BottomButton
               isActive={isActive ?? false}
@@ -331,7 +331,11 @@ function DrawerTabContent({
 
   const handleChangeTab = useCallback(
     (value: string) => {
-      setActiveTab(value as (typeof SECTION_IDS)[keyof typeof SECTION_IDS]);
+      if (value !== SECTION_IDS.MISSION_GUIDE && value !== SECTION_IDS.REWARD) {
+        return;
+      }
+
+      setActiveTab(value);
       goToSnapPoint(2);
 
       setTimeout(() => {
