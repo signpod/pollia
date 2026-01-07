@@ -3,14 +3,12 @@ import type { Mission } from "@prisma/client";
 import { buildAnalysisDatabases, buildResponseDatabase } from "./database-builder";
 import { type MissionMetadata, buildMissionMetadata } from "./properties";
 import {
-  type BlockObjectRequest,
   type CreateMissionReportInput,
   type CreateMissionReportResult,
   type DatabasePropertyConfigMap,
   MISSION_DATABASE_PROPERTY_NAMES,
   type PagePropertyValueMap,
 } from "./types";
-import { stripHtmlTags, truncateText } from "./utils";
 
 export class NotionService {
   private client: Client;
@@ -108,7 +106,6 @@ export class NotionService {
     databaseId: string,
     metadata: MissionMetadata,
   ) {
-    const children = this.buildHeaderBlocks(mission, metadata);
     const properties = this.buildMissionPageProperties(mission, metadata);
 
     const response = await this.client.pages.create({
@@ -121,7 +118,6 @@ export class NotionService {
         emoji: "📊",
       },
       properties,
-      children,
     });
 
     return response;
@@ -191,6 +187,28 @@ export class NotionService {
       };
     }
 
+    if (metadata.brandLogoUrl) {
+      properties[MISSION_DATABASE_PROPERTY_NAMES.BRAND_LOGO] = {
+        files: [
+          {
+            name: "브랜드 로고",
+            external: { url: metadata.brandLogoUrl },
+          },
+        ],
+      };
+    }
+
+    if (metadata.description) {
+      properties[MISSION_DATABASE_PROPERTY_NAMES.DESCRIPTION] = {
+        rich_text: [
+          {
+            type: "text",
+            text: { content: metadata.description },
+          },
+        ],
+      };
+    }
+
     return properties;
   }
 
@@ -205,101 +223,6 @@ export class NotionService {
       page_id: pageId,
       properties,
     });
-  }
-
-  private buildHeaderBlocks(mission: Mission, metadata: MissionMetadata): BlockObjectRequest[] {
-    const blocks: BlockObjectRequest[] = [];
-
-    if (mission.brandLogoUrl) {
-      blocks.push({
-        object: "block",
-        type: "image",
-        image: {
-          type: "external",
-          external: {
-            url: mission.brandLogoUrl,
-          },
-        },
-      });
-    }
-
-    blocks.push({
-      object: "block",
-      type: "heading_1",
-      heading_1: {
-        rich_text: [
-          {
-            type: "text",
-            text: {
-              content: mission.title,
-            },
-          },
-        ],
-        color: "default",
-      },
-    });
-
-    if (mission.description) {
-      blocks.push({
-        object: "block",
-        type: "paragraph",
-        paragraph: {
-          rich_text: [
-            {
-              type: "text",
-              text: {
-                content: truncateText(stripHtmlTags(mission.description), 2000),
-              },
-            },
-          ],
-          color: "default",
-        },
-      });
-    }
-
-    const metadataText: string[] = [];
-    if (metadata.target) {
-      metadataText.push(`📌 타겟: ${metadata.target}`);
-    }
-    if (metadata.deadline) {
-      metadataText.push(`📅 마감일: ${metadata.deadline}`);
-    }
-    metadataText.push(`👥 총 응답자: ${metadata.totalResponses}명`);
-    metadataText.push(`✅ 완주자: ${metadata.completedResponses}명`);
-    metadataText.push(`📊 완주율: ${metadata.completionRate}%`);
-    metadataText.push(`🏷️ 타입: ${metadata.type}`);
-    if (metadata.estimatedMinutes) {
-      metadataText.push(`⏱️ 예상 소요시간: ${metadata.estimatedMinutes}분`);
-    }
-    metadataText.push(`🔘 상태: ${metadata.isActive ? "활성" : "비활성"}`);
-
-    blocks.push({
-      object: "block",
-      type: "callout",
-      callout: {
-        rich_text: [
-          {
-            type: "text",
-            text: {
-              content: metadataText.join("\n"),
-            },
-          },
-        ],
-        icon: {
-          type: "emoji",
-          emoji: "ℹ️",
-        },
-        color: "blue_background",
-      },
-    });
-
-    blocks.push({
-      object: "block",
-      type: "divider",
-      divider: {},
-    });
-
-    return blocks;
   }
 
   private async createDatabase(

@@ -48,6 +48,8 @@ export const EXCLUDED_ACTION_TYPES: ActionType[] = ["DATE", "TIME", "PRIVACY_CON
 
 export const MISSION_DATABASE_PROPERTY_NAMES = {
   MISSION_ID: "미션 ID",
+  BRAND_LOGO: "브랜드 로고",
+  DESCRIPTION: "설명",
   TARGET: "타겟",
   DEADLINE: "마감일",
   TOTAL_RESPONSES: "총 응답자",
