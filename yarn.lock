@@ -1981,6 +1981,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@hyunbinseo/holidays-kr@npm:^3.2026.1":
+  version: 3.2026.1
+  resolution: "@hyunbinseo/holidays-kr@npm:3.2026.1"
+  checksum: 10c0/5c98f589d6e495abdce73e7f83a872043db5c138450527bbb59942c3a38f61aca9d61a0bb92221cb0e2869a453c9102765dbfa6f1f52853d302168b6a2064499
+  languageName: node
+  linkType: hard
+
 "@img/colour@npm:^1.0.0":
   version: 1.0.0
   resolution: "@img/colour@npm:1.0.0"
@@ -11099,6 +11106,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"korean-lunar-calendar@npm:^0.3.6":
+  version: 0.3.6
+  resolution: "korean-lunar-calendar@npm:0.3.6"
+  checksum: 10c0/f5993de7374eb284684bf567a4c9e33d8dfc124b4f7bf346ef9779e1757a867b6f54eb5e81d1195caedd81a63b4d468cd41058d580c3bdf97a7036bf8b74dd72
+  languageName: node
+  linkType: hard
+
 "leven@npm:^3.1.0":
   version: 3.1.0
   resolution: "leven@npm:3.1.0"
@@ -12510,6 +12524,7 @@ __metadata:
   resolution: "pollia@workspace:."
   dependencies:
     "@biomejs/biome": "npm:^1.9.4"
+    "@hyunbinseo/holidays-kr": "npm:^3.2026.1"
     corepack: "npm:^0.29.4"
     prettier: "npm:^3.7.4"
     turbo: "npm:^2.5.6"
@@ -15365,6 +15380,7 @@ __metadata:
     jest: "npm:^29.7.0"
     jest-environment-node: "npm:^29.7.0"
     jotai: "npm:^2.14.0"
+    korean-lunar-calendar: "npm:^0.3.6"
     lucide-react: "npm:^0.555.0"
     next: "npm:15.5.7"
     next-themes: "npm:^0.4.6"

@@ -51,7 +51,7 @@ export function SurveyQuestionTemplate({
 
   return (
     <FixedBottomLayout hasGradient>
-      <div className="space-y-8 px-5 pb-5 pt-9">
+      <div className="space-y-6 px-5 pb-5 pt-[28px]">
         {/* 질문 정보 섹션 */}
         <section className="space-y-2 relative">
           <RequiredIndicator isRequired={!!isRequired} />
