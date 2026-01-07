@@ -47,7 +47,6 @@ export const LISTABLE_ACTION_TYPES: ActionType[] = [
 export const EXCLUDED_ACTION_TYPES: ActionType[] = ["DATE", "TIME", "PRIVACY_CONSENT"];
 
 export const MISSION_DATABASE_PROPERTY_NAMES = {
-  TITLE: "미션 제목",
   MISSION_ID: "미션 ID",
   TARGET: "타겟",
   DEADLINE: "마감일",

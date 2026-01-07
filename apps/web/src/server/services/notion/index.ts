@@ -132,7 +132,7 @@ export class NotionService {
     metadata: MissionMetadata,
   ): PagePropertyValueMap {
     const properties: PagePropertyValueMap = {
-      [MISSION_DATABASE_PROPERTY_NAMES.TITLE]: {
+      title: {
         title: [
           {
             type: "text",
