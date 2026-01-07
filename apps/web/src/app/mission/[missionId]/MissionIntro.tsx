@@ -261,8 +261,6 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
                 handleKakaoShare={handleKakaoShare}
                 handleLinkShare={handleLinkShare}
               />
-
-              <MissionFooter />
             </BottomDrawer.Content>
           </BottomDrawer>
 
@@ -448,6 +446,8 @@ function DrawerTabContent({
             />
           </div>
         )}
+
+        <MissionFooter />
 
         <div className="h-32" />
       </div>
