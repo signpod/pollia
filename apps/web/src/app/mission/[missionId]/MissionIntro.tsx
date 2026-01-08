@@ -238,6 +238,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
             <BottomDrawer.Content
               className="bg-white shadow-2xl overflow-visible"
               enableWheelControl
+              preventBodyScroll
             >
               <div className="bg-linear-to-t from-black via-black/50 via-70% to-transparent absolute bottom-[calc(100%-20px)] left-0 right-0 z-30 flex flex-col gap-6 pb-2 pt-6 px-5 pointer-events-none">
                 <div className="flex flex-col gap-2">
