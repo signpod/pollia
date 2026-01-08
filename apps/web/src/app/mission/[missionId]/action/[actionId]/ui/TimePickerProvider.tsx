@@ -9,7 +9,10 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 interface TimePickerContextValue {
   selectedTimes: Set<string>;
   toggleTime: (time: string) => void;
+  addTime: (time: string) => void;
+  removeTime: (time: string) => void;
   canGoNext: boolean;
+  maxSelections: number;
 }
 
 const TimePickerContext = createContext<TimePickerContextValue | null>(null);
@@ -76,6 +79,25 @@ export function TimePickerProvider({
     });
   };
 
+  const addTime = (time: string) => {
+    setSelectedTimes(prev => {
+      if (prev.has(time) || prev.size >= maxSelections) {
+        return prev;
+      }
+      const newSet = new Set(prev);
+      newSet.add(time);
+      return newSet;
+    });
+  };
+
+  const removeTime = (time: string) => {
+    setSelectedTimes(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(time);
+      return newSet;
+    });
+  };
+
   const canGoNext = isRequired ? selectedTimes.size > 0 : true;
 
   const convertTimesToDateStrings = useCallback((times: Set<string>): string[] => {
@@ -101,7 +123,9 @@ export function TimePickerProvider({
   }, [selectedTimes, actionId, isRequired, convertTimesToDateStrings]);
 
   return (
-    <TimePickerContext.Provider value={{ selectedTimes, toggleTime, canGoNext }}>
+    <TimePickerContext.Provider
+      value={{ selectedTimes, toggleTime, addTime, removeTime, canGoNext, maxSelections }}
+    >
       {children}
     </TimePickerContext.Provider>
   );
