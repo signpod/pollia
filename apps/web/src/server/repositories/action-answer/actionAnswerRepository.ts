@@ -151,6 +151,40 @@ export class ActionAnswerRepository {
     });
   }
 
+  async createManyWithRelations(answersData: Prisma.ActionAnswerCreateInput[], userId?: string) {
+    const allFileUploadIds = answersData.flatMap(data => {
+      if (
+        data.fileUploads &&
+        typeof data.fileUploads === "object" &&
+        "connect" in data.fileUploads
+      ) {
+        return (data.fileUploads.connect as { id: string }[]).map(f => f.id);
+      }
+      return [];
+    });
+
+    return prisma.$transaction(async tx => {
+      const createdAnswers = await Promise.all(
+        answersData.map(data =>
+          tx.actionAnswer.create({
+            data,
+            include: {
+              action: true,
+              options: true,
+              fileUploads: true,
+            },
+          }),
+        ),
+      );
+
+      if (allFileUploadIds.length > 0 && userId) {
+        await confirmFileUploads(tx, userId, allFileUploadIds);
+      }
+
+      return createdAnswers;
+    });
+  }
+
   async update(id: string, data: Prisma.ActionAnswerUncheckedUpdateInput, userId?: string) {
     const fileUploadIds =
       data.fileUploads && typeof data.fileUploads === "object" && "set" in data.fileUploads

@@ -1,9 +1,11 @@
 import { ActionOption, ActionAnswer as PrismaActionAnswer } from "@prisma/client";
 import { ActionType } from "@prisma/client";
 
-export type ActionAnswer = PrismaActionAnswer & {
+export type ActionAnswerWithOptions = PrismaActionAnswer & {
   options: ActionOption[];
 };
+
+export type ActionAnswer = ActionAnswerWithOptions;
 
 export type { PrismaActionAnswer };
 

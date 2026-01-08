@@ -97,8 +97,7 @@ export class ActionAnswerService {
       this.convertAnswerToCreateInput(answer, validated.responseId),
     );
 
-    // Use individual create instead of createMany because of relations
-    await Promise.all(answersToCreate.map(data => this.answerRepo.create(data, userId)));
+    await this.answerRepo.createManyWithRelations(answersToCreate, userId);
 
     return {
       responseId: validated.responseId,
