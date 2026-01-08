@@ -100,6 +100,7 @@ function SurveyMultipleChoiceContent({
           />
         ))}
       </div>
+      <div className="h-[120px]" />
       <BottomDrawer collapsedHeight={120} expandedHeight={180}>
         <BottomDrawerContentWithScrollReset
           actionData={actionData}
