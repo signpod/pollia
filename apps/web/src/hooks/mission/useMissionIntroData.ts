@@ -15,7 +15,7 @@ const isValidAnswer = (answer: Answer): boolean => {
   switch (type) {
     case ActionType.MULTIPLE_CHOICE:
     case ActionType.TAG:
-      return answer.optionId !== null;
+      return answer.options.length > 0;
 
     case ActionType.SCALE:
     case ActionType.RATING:

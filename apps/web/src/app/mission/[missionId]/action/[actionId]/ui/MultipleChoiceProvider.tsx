@@ -51,15 +51,15 @@ export function MultipleChoiceProvider({
       return new Set<string>();
     }
 
-    const questionAnswers = missionResponse.data.answers.filter(
-      answer => answer.actionId === actionId && answer.optionId !== null,
+    const questionAnswer = missionResponse.data.answers.find(
+      answer => answer.actionId === actionId && answer.options.length > 0,
     );
 
-    if (questionAnswers.length === 0) {
+    if (!questionAnswer) {
       return new Set<string>();
     }
 
-    return new Set(questionAnswers.map(answer => answer.optionId).filter(Boolean) as string[]);
+    return new Set(questionAnswer.options.map(option => option.id));
   }, [missionResponse, actionId]);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set<string>());
