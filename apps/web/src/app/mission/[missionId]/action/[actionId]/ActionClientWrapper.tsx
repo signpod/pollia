@@ -208,8 +208,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
 
       if (answer.type === ActionType.MULTIPLE_CHOICE || answer.type === ActionType.TAG) {
         const submittedOptionIds = answersForAction
-          .map(a => a.optionId)
-          .filter((id): id is string => id !== null)
+          .flatMap(a => a.options.map(opt => opt.id))
           .sort();
         const currentOptionIds = answer.selectedOptionIds
           ? [...answer.selectedOptionIds].sort()
