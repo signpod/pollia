@@ -1,7 +1,13 @@
-import { ActionAnswer } from "@prisma/client";
+import { ActionOption, ActionAnswer as PrismaActionAnswer } from "@prisma/client";
 import { ActionType } from "@prisma/client";
 
-export type { ActionAnswer };
+export type ActionAnswerWithOptions = PrismaActionAnswer & {
+  options: ActionOption[];
+};
+
+export type ActionAnswer = ActionAnswerWithOptions;
+
+export type { PrismaActionAnswer };
 
 export type ActionAnswerItem =
   | {
@@ -82,7 +88,7 @@ export type ActionAnswerItem =
 export interface CreateActionAnswerRequest {
   responseId: string;
   actionId: string;
-  optionId?: string;
+  selectedOptionIds?: string[];
   textAnswer?: string;
   scaleAnswer?: number;
 }
@@ -103,7 +109,7 @@ export interface SubmitActionAnswersRequest {
 }
 
 export interface UpdateActionAnswerRequest {
-  optionId?: string;
+  selectedOptionIds?: string[];
   textAnswer?: string;
   scaleAnswer?: number;
 }
@@ -113,7 +119,7 @@ export interface CreateActionAnswerResponse {
     id: string;
     responseId: string;
     actionId: string;
-    optionId: string | null;
+    options: ActionOption[];
     textAnswer: string | null;
     scaleAnswer: number | null;
     createdAt: Date;
@@ -133,7 +139,7 @@ export interface GetQuestionAnswerResponse {
     id: string;
     responseId: string;
     actionId: string;
-    optionId: string | null;
+    options: ActionOption[];
     textAnswer: string | null;
     scaleAnswer: number | null;
     createdAt: Date;
@@ -145,7 +151,7 @@ export interface GetAnswersByResponseResponse {
     id: string;
     responseId: string;
     actionId: string;
-    optionId: string | null;
+    options: ActionOption[];
     textAnswer: string | null;
     scaleAnswer: number | null;
     createdAt: Date;
@@ -157,7 +163,7 @@ export interface GetAnswersByUserResponse {
     id: string;
     responseId: string;
     actionId: string;
-    optionId: string | null;
+    options: ActionOption[];
     textAnswer: string | null;
     scaleAnswer: number | null;
     createdAt: Date;

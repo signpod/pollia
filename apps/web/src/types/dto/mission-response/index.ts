@@ -42,7 +42,7 @@ export interface GetMissionResponseResponse {
     answers: Array<
       ActionAnswer & {
         action: Action;
-        option: ActionOption | null;
+        options: ActionOption[];
         fileUploads: FileUpload[];
       }
     >;

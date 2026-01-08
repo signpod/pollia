@@ -15,7 +15,7 @@ export interface SubmitAnswersInput {
 }
 
 export interface UpdateAnswerInput {
-  optionId?: string;
+  selectedOptionIds?: string[];
   textAnswer?: string;
   scaleAnswer?: number;
   dateAnswers?: Date[];

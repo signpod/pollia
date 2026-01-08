@@ -1,6 +1,5 @@
 model ActionAnswer {
   id         String   @id @default(cuid())
-  optionId   String?  @map("option_id")
   actionId   String   @map("action_id")
   responseId String   @map("response_id")
   createdAt  DateTime @default(now()) @map("created_at")
@@ -11,12 +10,12 @@ model ActionAnswer {
   dateAnswers   DateTime[] @map("date_answers")
 
   action   Action          @relation(fields: [actionId], references: [id], onDelete: Cascade)
-  option   ActionOption?   @relation(fields: [optionId], references: [id], onDelete: Cascade)
   response MissionResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
 
   fileUploads FileUpload[]
+  options     ActionOption[]
 
-  @@unique([responseId, actionId, optionId])
+  @@unique([responseId, actionId])
   @@index([actionId])
   @@index([responseId])
   @@map("action_answers")

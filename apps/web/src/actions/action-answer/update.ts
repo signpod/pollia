@@ -7,7 +7,7 @@ import type { GetQuestionAnswerResponse, UpdateActionAnswerRequest } from "@/typ
 
 function toUpdateAnswerInput(dto: UpdateActionAnswerRequest): UpdateAnswerInput {
   return {
-    optionId: dto.optionId,
+    selectedOptionIds: dto.selectedOptionIds,
     textAnswer: dto.textAnswer,
     scaleAnswer: dto.scaleAnswer,
   };
