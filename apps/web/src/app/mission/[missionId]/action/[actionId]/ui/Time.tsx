@@ -278,6 +278,11 @@ function WheelPicker({ items, value, onChange }: WheelPickerProps) {
   const currentIndex = items.indexOf(value);
   const [scrollTop, setScrollTop] = React.useState(currentIndex * itemHeight);
 
+  // Mouse drag state
+  const isDraggingRef = React.useRef(false);
+  const startYRef = React.useRef(0);
+  const startScrollTopRef = React.useRef(0);
+
   React.useEffect(() => {
     if (containerRef.current && currentIndex !== -1) {
       containerRef.current.scrollTop = currentIndex * itemHeight;
@@ -319,6 +324,35 @@ function WheelPicker({ items, value, onChange }: WheelPickerProps) {
     scrollTimeoutRef.current = setTimeout(snapToNearest, 50);
   }, [snapToNearest]);
 
+  // Mouse drag handlers for PC
+  const handleMouseDown = React.useCallback((e: React.MouseEvent) => {
+    isDraggingRef.current = true;
+    startYRef.current = e.clientY;
+    startScrollTopRef.current = containerRef.current?.scrollTop ?? 0;
+    e.preventDefault();
+  }, []);
+
+  const handleMouseMove = React.useCallback((e: React.MouseEvent) => {
+    if (!isDraggingRef.current || !containerRef.current) return;
+
+    const deltaY = startYRef.current - e.clientY;
+    containerRef.current.scrollTop = startScrollTopRef.current + deltaY;
+  }, []);
+
+  const handleMouseUp = React.useCallback(() => {
+    if (isDraggingRef.current) {
+      isDraggingRef.current = false;
+      snapToNearest();
+    }
+  }, [snapToNearest]);
+
+  const handleMouseLeave = React.useCallback(() => {
+    if (isDraggingRef.current) {
+      isDraggingRef.current = false;
+      snapToNearest();
+    }
+  }, [snapToNearest]);
+
   React.useEffect(() => {
     return () => {
       if (scrollTimeoutRef.current) {
@@ -343,8 +377,12 @@ function WheelPicker({ items, value, onChange }: WheelPickerProps) {
     <div
       ref={containerRef}
       onScroll={handleScroll}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseLeave}
       className={cn(
-        "h-[220px] overflow-y-auto",
+        "h-[220px] overflow-y-auto cursor-grab active:cursor-grabbing select-none",
         "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
       )}
     >
