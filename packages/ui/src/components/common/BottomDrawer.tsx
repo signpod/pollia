@@ -124,7 +124,7 @@ function BottomDrawerContent({
   // Touch drag state
   const isDragging = React.useRef(false);
   const startY = React.useRef(0);
-  const startDrawerY = React.useRef(0);
+  const wasOpenOnDragStart = React.useRef(false);
 
   // Snap timeout for debouncing
   const snapTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -132,6 +132,7 @@ function BottomDrawerContent({
   // RAF for throttling
   const rafRef = React.useRef<number | null>(null);
   const pendingDeltaRef = React.useRef(0);
+  const lastWheelIntentRef = React.useRef<"open" | "close" | null>(null);
 
   // Skip animation flag for scroll-based state updates
   const skipAnimationRef = React.useRef(false);
@@ -143,9 +144,16 @@ function BottomDrawerContent({
 
     const targetY = isOpen ? 0 : heightDiff;
 
-    // Skip animation if flag is set (from scroll)
+    // Skip GSAP animation if flag is set (from scroll), but still snap to position
     if (skipAnimationRef.current) {
       skipAnimationRef.current = false;
+      // Use CSS transition for smooth snap
+      drawer.style.transition = "transform 0.3s ease-out";
+      drawer.style.transform = `translate3d(0, ${targetY}px, 0)`;
+      currentY.current = targetY;
+      setTimeout(() => {
+        if (drawer) drawer.style.transition = "";
+      }, 300);
       return;
     }
 
@@ -249,7 +257,8 @@ function BottomDrawerContent({
       // Update open/close state without snapping animation
       if (snapTimeoutRef.current) clearTimeout(snapTimeoutRef.current);
       snapTimeoutRef.current = setTimeout(() => {
-        const shouldBeOpen = currentY.current < hDiff * 0.5;
+        // Snap based on last scroll intent
+        const shouldBeOpen = lastWheelIntentRef.current === "open";
         // Set flag to skip animation when state changes
         skipAnimationRef.current = true;
         if (shouldBeOpen) openRef.current();
@@ -281,6 +290,7 @@ function BottomDrawerContent({
         if (atTop && scrollingUp) {
           e.preventDefault();
           pendingDeltaRef.current += e.deltaY * SCROLL_SENSITIVITY;
+          lastWheelIntentRef.current = "close";
           if (!rafRef.current) {
             rafRef.current = requestAnimationFrame(updateDrawerPosition);
           }
@@ -293,6 +303,7 @@ function BottomDrawerContent({
       // Drawer not fully open -> control drawer position
       e.preventDefault();
       pendingDeltaRef.current += e.deltaY * SCROLL_SENSITIVITY;
+      lastWheelIntentRef.current = e.deltaY > 0 ? "open" : "close";
 
       if (!rafRef.current) {
         rafRef.current = requestAnimationFrame(updateDrawerPosition);
@@ -307,7 +318,7 @@ function BottomDrawerContent({
     };
   }, [enableWheelControl, getScrollable]);
 
-  // Mobile: Touch drag
+  // Mobile: Touch drag (same logic as wheel)
   const onTouchStart = (e: React.TouchEvent) => {
     if (!isMobile || !enableDrag) return;
     const touch = e.touches[0];
@@ -315,7 +326,7 @@ function BottomDrawerContent({
 
     isDragging.current = true;
     startY.current = touch.clientY;
-    startDrawerY.current = currentY.current;
+    wasOpenOnDragStart.current = currentY.current < heightDiff * 0.5;
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
@@ -323,36 +334,80 @@ function BottomDrawerContent({
     const touch = e.touches[0];
     if (!touch) return;
 
+    const drawer = drawerRef.current;
+    if (!drawer) return;
+
+    // Calculate incremental delta (like wheel)
+    // Positive delta = finger up = scroll down (like wheel deltaY > 0)
+    // Negative delta = finger down = scroll up (like wheel deltaY < 0)
+    const delta = startY.current - touch.clientY;
+    startY.current = touch.clientY;
+
     const scrollable = getScrollable();
     const isFullyOpen = currentY.current <= 1;
 
-    if (scrollable && isFullyOpen) {
+    // When fully open, check if we should scroll content or close drawer (same as wheel)
+    if (isFullyOpen && scrollable) {
       const atTop = scrollable.scrollTop <= 0;
-      const delta = touch.clientY - startY.current;
-      if (!atTop || delta <= 0) {
-        isDragging.current = false;
+      const atBottom =
+        scrollable.scrollTop + scrollable.clientHeight >= scrollable.scrollHeight - 1;
+      const scrollingUp = delta < 0; // finger down = scroll up
+      const scrollingDown = delta > 0; // finger up = scroll down
+
+      // If can scroll content, let it scroll naturally
+      if ((scrollingDown && !atBottom) || (scrollingUp && !atTop)) {
         return;
       }
+
+      // At top and trying to scroll up more → control drawer to close it
+      if (atTop && scrollingUp) {
+        gsap.killTweensOf(drawer);
+        const newY = Math.min(heightDiff, Math.max(0, currentY.current - delta * SCROLL_SENSITIVITY));
+        currentY.current = newY;
+        drawer.style.transform = `translate3d(0, ${newY}px, 0)`;
+        return;
+      }
+
+      // Otherwise, don't control drawer
+      return;
     }
 
-    const delta = touch.clientY - startY.current;
-    const newY = Math.min(heightDiff, Math.max(0, startDrawerY.current + delta));
+    // Drawer not fully open → control drawer position
+    gsap.killTweensOf(drawer);
+    const newY = Math.min(heightDiff, Math.max(0, currentY.current - delta * SCROLL_SENSITIVITY));
     currentY.current = newY;
-
-    // Use direct style for better performance during drag
-    if (drawerRef.current) {
-      gsap.killTweensOf(drawerRef.current);
-      drawerRef.current.style.transform = `translate3d(0, ${newY}px, 0)`;
-    }
+    drawer.style.transform = `translate3d(0, ${newY}px, 0)`;
   };
 
   const onTouchEnd = () => {
     if (!isMobile || !isDragging.current) return;
     isDragging.current = false;
 
-    // Snap based on position
-    const threshold = heightDiff * 0.5;
-    snapTo(currentY.current < threshold);
+    const drawer = drawerRef.current;
+    if (!drawer) return;
+
+    // Snap to open or closed with CSS transition
+    // Very sensitive: any movement in the opposite direction triggers snap
+    // If was open and moved down at all → close
+    // If was closed and moved up at all → open
+    const movedDown = currentY.current > heightDiff * 0.02;
+    const movedUp = currentY.current < heightDiff * 0.98;
+    const shouldBeOpen = wasOpenOnDragStart.current ? !movedDown : movedUp;
+    const targetY = shouldBeOpen ? 0 : heightDiff;
+
+    // Enable CSS transition for snap
+    drawer.style.transition = "transform 0.3s ease-out";
+    drawer.style.transform = `translate3d(0, ${targetY}px, 0)`;
+    currentY.current = targetY;
+
+    // Remove transition after animation completes
+    setTimeout(() => {
+      if (drawer) drawer.style.transition = "";
+    }, 300);
+
+    skipAnimationRef.current = true;
+    if (shouldBeOpen) open();
+    else close();
   };
 
   // Click to expand
