@@ -47,20 +47,19 @@ const SURVEY_SUBMIT_MODAL = {
 
 interface ActionClientWrapperProps {
   dehydratedState: DehydratedState;
-  actionIds: string[];
 }
 
 const SCROLL_OFFSET = 30;
 
-export function ActionClientWrapper({ dehydratedState, actionIds }: ActionClientWrapperProps) {
+export function ActionClientWrapper({ dehydratedState }: ActionClientWrapperProps) {
   return (
     <HydrationBoundary state={dehydratedState}>
-      <ActionContent actionIds={actionIds} />
+      <ActionContent />
     </HydrationBoundary>
   );
 }
 
-function ActionContent({ actionIds }: { actionIds: string[] }) {
+function ActionContent() {
   const { missionId, actionId } = useParams<{ missionId: string; actionId: string }>();
   const { data: actions } = useReadActionsDetail(missionId);
 
@@ -303,6 +302,12 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
   const handleNext = useCallback(async () => {
     if (!currentAnswer) return;
 
+    // Check if mission is already completed
+    if (missionResponse?.data?.completedAt) {
+      router.push(ROUTES.MISSION(missionId));
+      return;
+    }
+
     const validationResult = submitAnswerItemSchema.safeParse(currentAnswer);
     if (!validationResult.success) {
       const errorMessage =
@@ -372,6 +377,8 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
     missionResponse,
     isAnswerSameAsSubmitted,
     goNext,
+    router,
+    missionId,
   ]);
 
   const handlePrevious = useCallback(() => {
