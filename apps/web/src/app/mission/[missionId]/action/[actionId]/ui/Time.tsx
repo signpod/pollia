@@ -18,9 +18,15 @@ function formatTimeForDisplay(time: string): string {
   const hourStr = parts[0] ?? "00";
   const minuteStr = parts[1] ?? "00";
   const hour = Number.parseInt(hourStr, 10);
+  const minute = Number.parseInt(minuteStr, 10);
+
+  if (Number.isNaN(hour) || Number.isNaN(minute)) {
+    return "00:00";
+  }
+
   const isAM = hour < 12;
   const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-  return `${isAM ? "오전" : "오후"} ${String(displayHour).padStart(2, "0")} : ${minuteStr}`;
+  return `${isAM ? "오전" : "오후"} ${String(displayHour).padStart(2, "0")} : ${String(minute).padStart(2, "0")}`;
 }
 
 export function ActionTime({
@@ -122,7 +128,7 @@ function TimePickerContent({
               onClick={() => setIsDialogOpen(true)}
               variant="secondary"
               size="large"
-              className="transition-all duration-200 hover:!ring-0 hover:!bg-zinc-50 hover:!text-zinc-900"
+              className="transition-all duration-200 hover:ring-0! hover:bg-zinc-50! hover:text-zinc-900!"
             >
               <div className="flex items-center justify-center gap-3 w-full">
                 <Plus className="size-5" />
@@ -291,7 +297,7 @@ function WheelPicker({ items, value, onChange }: WheelPickerProps) {
     if (items[clampedIndex] && items[clampedIndex] !== value) {
       onChange(items[clampedIndex]);
     }
-  }, [items, value, onChange, itemHeight]);
+  }, [items, value, onChange]);
 
   const animateMomentum = React.useCallback(() => {
     if (!containerRef.current || Math.abs(velocityRef.current) < 0.5) {
@@ -311,7 +317,7 @@ function WheelPicker({ items, value, onChange }: WheelPickerProps) {
       containerRef.current.scrollTop = currentIndex * itemHeight;
       setScrollTop(currentIndex * itemHeight);
     }
-  }, []);
+  }, [currentIndex, itemHeight]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (animationRef.current) {
@@ -439,7 +445,7 @@ function WheelPicker({ items, value, onChange }: WheelPickerProps) {
         const color = getItemColor(index);
         return (
           <div
-            key={item + index}
+            key={item}
             className="flex items-center justify-center"
             style={{ height: `${itemHeight}px`, color }}
           >

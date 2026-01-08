@@ -263,7 +263,6 @@ function BottomDrawerContent({
       const drawer = drawerRef.current;
       if (!drawer) return;
 
-      const hDiff = heightDiffRef.current;
       const scrollable = getScrollable();
       const isFullyOpen = currentY.current <= 1;
 
@@ -306,7 +305,7 @@ function BottomDrawerContent({
       if (snapTimeoutRef.current) clearTimeout(snapTimeoutRef.current);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [enableWheelControl, getScrollable, snapTo]);
+  }, [enableWheelControl, getScrollable]);
 
   // Mobile: Touch drag
   const onTouchStart = (e: React.TouchEvent) => {
@@ -362,10 +361,18 @@ function BottomDrawerContent({
     snapTo(true);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onClick();
+    }
+  };
+
   return (
     <div
       ref={drawerRef}
       onClick={onClick}
+      onKeyDown={handleKeyDown}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
@@ -441,8 +448,23 @@ function BottomDrawerHeader({
 }: BottomDrawerHeaderProps) {
   const { toggle, close, isOpen } = useBottomDrawer();
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      if (onClick) {
+        onClick(e as unknown as React.MouseEvent);
+      }
+    }
+  };
+
   return (
-    <div className={cn("flex items-center justify-between", className)} onClick={onClick}>
+    <div
+      className={cn("flex items-center justify-between", className)}
+      onClick={onClick}
+      onKeyDown={onClick ? handleKeyDown : undefined}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+    >
       <div className="flex-1 w-full h-full">{children}</div>
       {showToggleButton && (
         <IconButton
