@@ -449,7 +449,7 @@ function BottomDrawerHeader({
           icon={ChevronUp}
           onClick={toggle}
           aria-label={isOpen ? "접기" : "펼치기"}
-          className={cn("transition-transform", isOpen && "rotate-180")}
+          className={cn("transition-transform p-0", isOpen && "rotate-180")}
         />
       )}
       {showCloseButton && (

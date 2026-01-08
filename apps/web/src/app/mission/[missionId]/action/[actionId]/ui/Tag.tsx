@@ -100,7 +100,7 @@ function SurveyMultipleChoiceContent({
           />
         ))}
       </div>
-      <BottomDrawer collapsedHeight={140} expandedHeight={210}>
+      <BottomDrawer collapsedHeight={120} expandedHeight={180}>
         <BottomDrawerContentWithScrollReset
           actionData={actionData}
           selectedIds={selectedIds}
@@ -150,7 +150,7 @@ function BottomDrawerContentWithScrollReset({
           <Typo.SubTitle size="large">개 선택</Typo.SubTitle>
         </div>
       </BottomDrawer.Header>
-      <BottomDrawer.Body className="py-2 px-0">
+      <BottomDrawer.Body className="p-0">
         <div className="flex gap-2 overflow-x-auto px-5 pb-[80px] scrollbar-hide">
           {selectedOptions?.map(option => (
             <button
