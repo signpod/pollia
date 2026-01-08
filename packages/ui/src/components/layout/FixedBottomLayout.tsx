@@ -80,7 +80,9 @@ export function FixedBottomLayout({
         {children}
         <div
           style={{
-            paddingBottom: hasBottomGap ? `${contentHeight + 20}px` : "0px",
+            paddingBottom: hasBottomGap
+              ? `calc(${contentHeight + 20}px + env(safe-area-inset-bottom))`
+              : "0px",
           }}
         />
 
@@ -117,7 +119,9 @@ export function FixedBottomLayout({
               </>
             )}
             {hasGradientBlur && <GradientBlurLayer height={contentHeight + 12} />}
-            <div className="relative z-50 w-full">{currentContent}</div>
+            <div className="relative z-50 w-full pb-[env(safe-area-inset-bottom)]">
+              {currentContent}
+            </div>
           </div>
         )}
       </div>
