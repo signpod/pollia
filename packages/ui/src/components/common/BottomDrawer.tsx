@@ -118,11 +118,13 @@ function BottomDrawerContent({
 
   const drawerRef = React.useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = React.useState(false);
-  const currentY = React.useRef(0);
   const heightDiff = expandedHeight - collapsedHeight;
 
+  const currentY = React.useRef(0);
+  const [isInitialized, setIsInitialized] = React.useState(false);
+
   // Touch drag state
-  const isDragging = React.useRef(false);
+  const isDraggingRef = React.useRef(false);
   const startY = React.useRef(0);
   const wasOpenOnDragStart = React.useRef(false);
 
@@ -137,44 +139,47 @@ function BottomDrawerContent({
   // Skip animation flag for scroll-based state updates
   const skipAnimationRef = React.useRef(false);
 
-  // Animate drawer position when isOpen changes
-  React.useEffect(() => {
+  // Set initial position immediately (no animation)
+  React.useLayoutEffect(() => {
     const drawer = drawerRef.current;
     if (!drawer) return;
 
     const targetY = isOpen ? 0 : heightDiff;
 
-    // Skip GSAP animation if flag is set (from scroll), but still snap to position
-    if (skipAnimationRef.current) {
-      skipAnimationRef.current = false;
-      // Use CSS transition for smooth snap
-      drawer.style.transition = "transform 0.3s ease-out";
+    // First time: just set position
+    if (!isInitialized) {
       drawer.style.transform = `translate3d(0, ${targetY}px, 0)`;
       currentY.current = targetY;
-      setTimeout(() => {
-        if (drawer) drawer.style.transition = "";
-      }, 300);
+      setIsInitialized(true);
       return;
     }
 
+    // After init, if heightDiff changed and drawer is closed, update position silently
+    if (!isOpen && Math.abs(currentY.current - targetY) > 1) {
+      drawer.style.transform = `translate3d(0, ${targetY}px, 0)`;
+      currentY.current = targetY;
+    }
+  }, [isOpen, heightDiff, isInitialized]);
+
+  // Animate drawer position when isOpen changes
+  React.useEffect(() => {
+    if (!isInitialized) return;
+    const drawer = drawerRef.current;
+    if (!drawer) return;
+
+    const targetY = isOpen ? 0 : heightDiff;
+
     // Only animate if position actually needs to change
     if (Math.abs(currentY.current - targetY) > 1) {
-      // Kill any ongoing animation first
-      gsap.killTweensOf(drawer);
-
-      gsap.to(drawer, {
-        y: targetY,
-        duration: 0.3,
-        ease: "power2.out",
-        onComplete: () => {
-          currentY.current = targetY;
-        },
-      });
-    } else {
-      currentY.current = targetY;
+      drawer.style.transition = "transform 0.3s ease-out";
       drawer.style.transform = `translate3d(0, ${targetY}px, 0)`;
+      currentY.current = targetY;
+
+      setTimeout(() => {
+        if (drawer) drawer.style.transition = "";
+      }, 300);
     }
-  }, [isOpen, heightDiff]);
+  }, [isOpen, heightDiff, isInitialized]);
 
   // Check if mobile (use touch capability, not just screen width)
   React.useEffect(() => {
@@ -324,13 +329,13 @@ function BottomDrawerContent({
     const touch = e.touches[0];
     if (!touch) return;
 
-    isDragging.current = true;
+    isDraggingRef.current = true;
     startY.current = touch.clientY;
     wasOpenOnDragStart.current = currentY.current < heightDiff * 0.5;
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
-    if (!isMobile || !isDragging.current || !enableDrag) return;
+    if (!isMobile || !isDraggingRef.current || !enableDrag) return;
     const touch = e.touches[0];
     if (!touch) return;
 
@@ -362,7 +367,10 @@ function BottomDrawerContent({
       // At top and trying to scroll up more → control drawer to close it
       if (atTop && scrollingUp) {
         gsap.killTweensOf(drawer);
-        const newY = Math.min(heightDiff, Math.max(0, currentY.current - delta * SCROLL_SENSITIVITY));
+        const newY = Math.min(
+          heightDiff,
+          Math.max(0, currentY.current - delta * SCROLL_SENSITIVITY),
+        );
         currentY.current = newY;
         drawer.style.transform = `translate3d(0, ${newY}px, 0)`;
         return;
@@ -380,8 +388,8 @@ function BottomDrawerContent({
   };
 
   const onTouchEnd = () => {
-    if (!isMobile || !isDragging.current) return;
-    isDragging.current = false;
+    if (!isMobile || !isDraggingRef.current) return;
+    isDraggingRef.current = false;
 
     const drawer = drawerRef.current;
     if (!drawer) return;
@@ -438,7 +446,10 @@ function BottomDrawerContent({
         "mx-auto max-w-lg",
         className,
       )}
-      style={{ height: expandedHeight, willChange: "transform" }}
+      style={{
+        height: expandedHeight,
+        willChange: "transform",
+      }}
     >
       <div className="flex flex-col h-full">{children}</div>
     </div>

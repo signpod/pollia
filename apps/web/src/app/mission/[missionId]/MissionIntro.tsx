@@ -20,7 +20,7 @@ import {
   useCallout,
 } from "@repo/ui/components";
 import { useParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   MissionBadge,
   MissionDescription,
@@ -114,21 +114,26 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
     isActive,
   } = mission ?? {};
 
-  useEffect(() => {
-    const calculateDrawerHeight = () => {
-      const viewportHeight = window.innerHeight;
-      const viewportWidth = window.innerWidth;
-      const containerWidth = Math.min(viewportWidth, 512);
-      const imageMaxHeight = (containerWidth * 16) / 9;
-      const extraHeight = Math.max(0, viewportHeight - imageMaxHeight);
+  const calculateDrawerHeight = useCallback(() => {
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    const containerWidth = Math.min(viewportWidth, 512);
+    const imageMaxHeight = (containerWidth * 16) / 9;
+    const extraHeight = Math.max(0, viewportHeight - imageMaxHeight);
 
-      const bottomButtonHeight = bottomButtonRef.current?.offsetHeight ?? 110;
-      const collapsed = HANDLE_HEIGHT + TAB_HEIGHT + bottomButtonHeight + extraHeight;
-      const expanded = viewportHeight - TOP_MARGIN;
-      setDrawerHeight({ collapsed, expanded });
-    };
+    const bottomButtonHeight = bottomButtonRef.current?.offsetHeight ?? 110;
+    const collapsed = HANDLE_HEIGHT + TAB_HEIGHT + bottomButtonHeight + extraHeight;
+    const expanded = viewportHeight - TOP_MARGIN;
+    setDrawerHeight({ collapsed, expanded });
+  }, []);
 
+  // Calculate drawer height before paint to avoid layout shift
+  useLayoutEffect(() => {
     calculateDrawerHeight();
+  }, [calculateDrawerHeight]);
+
+  // Handle resize events
+  useEffect(() => {
     window.addEventListener("resize", calculateDrawerHeight);
 
     const resizeObserver = new ResizeObserver(calculateDrawerHeight);
@@ -140,7 +145,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
       window.removeEventListener("resize", calculateDrawerHeight);
       resizeObserver.disconnect();
     };
-  }, []);
+  }, [calculateDrawerHeight]);
 
   const { data: reward } = useReadReward(mission?.rewardId || "");
   const { data: participantInfo } = useReadMissionParticipantInfo(missionId);
