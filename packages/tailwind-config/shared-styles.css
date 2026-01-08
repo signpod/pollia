@@ -149,6 +149,42 @@ body::-webkit-scrollbar-thumb:active {
   background: linear-gradient(to bottom, rgb(167, 139, 250), rgb(139, 92, 246));
 }
 
+/* Drawer scrollbar styling */
+[data-drawer-scrollable] {
+  scrollbar-gutter: stable;
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: rgb(228, 228, 231) transparent;
+}
+
+[data-drawer-scrollable]::-webkit-scrollbar {
+  width: 10px;
+}
+
+[data-drawer-scrollable]::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 4px 0;
+}
+
+[data-drawer-scrollable]::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, rgb(228, 228, 231), rgb(212, 212, 216));
+  border-radius: 100px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: all 0.3s ease;
+}
+
+[data-drawer-scrollable]::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, rgb(196, 181, 253), rgb(167, 139, 250));
+  border-radius: 100px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+[data-drawer-scrollable]::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(to bottom, rgb(167, 139, 250), rgb(139, 92, 246));
+}
+
 button {
   cursor: pointer;
 }

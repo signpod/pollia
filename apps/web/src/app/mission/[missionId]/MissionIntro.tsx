@@ -75,9 +75,7 @@ function CalloutTrigger({
 
 export function MissionIntro({ initialError }: { initialError: AuthError | null }) {
   const { missionId } = useParams<{ missionId: string }>();
-  const [snapPoints, setSnapPoints] = useState<number[]>([200, 300, 400]);
-  const gradientHeaderRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLDivElement>(null);
+  const [drawerHeight, setDrawerHeight] = useState({ collapsed: 200, expanded: 400 });
   const bottomButtonRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -117,7 +115,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
   } = mission ?? {};
 
   useEffect(() => {
-    const calculateSnapPoints = () => {
+    const calculateDrawerHeight = () => {
       const viewportHeight = window.innerHeight;
       const viewportWidth = window.innerWidth;
       const containerWidth = Math.min(viewportWidth, 512);
@@ -125,33 +123,21 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
       const extraHeight = Math.max(0, viewportHeight - imageMaxHeight);
 
       const bottomButtonHeight = bottomButtonRef.current?.offsetHeight ?? 110;
-      const snap1 = HANDLE_HEIGHT + TAB_HEIGHT + bottomButtonHeight + extraHeight;
-
-      let snap2 = viewportHeight - 100;
-      if (gradientHeaderRef.current && titleRef.current) {
-        const headerHeight = gradientHeaderRef.current.offsetHeight;
-        const headerRect = gradientHeaderRef.current.getBoundingClientRect();
-        const titleRect = titleRef.current.getBoundingClientRect();
-        const titleOffset = titleRect.top - headerRect.top;
-        snap2 = viewportHeight + 10 - headerHeight + titleOffset;
-      }
-      const snap3 = viewportHeight - TOP_MARGIN;
-      setSnapPoints([snap1, snap2, snap3]);
+      const collapsed = HANDLE_HEIGHT + TAB_HEIGHT + bottomButtonHeight + extraHeight;
+      const expanded = viewportHeight - TOP_MARGIN;
+      setDrawerHeight({ collapsed, expanded });
     };
 
-    calculateSnapPoints();
-    window.addEventListener("resize", calculateSnapPoints);
+    calculateDrawerHeight();
+    window.addEventListener("resize", calculateDrawerHeight);
 
-    const resizeObserver = new ResizeObserver(calculateSnapPoints);
-    if (gradientHeaderRef.current) {
-      resizeObserver.observe(gradientHeaderRef.current);
-    }
+    const resizeObserver = new ResizeObserver(calculateDrawerHeight);
     if (bottomButtonRef.current) {
       resizeObserver.observe(bottomButtonRef.current);
     }
 
     return () => {
-      window.removeEventListener("resize", calculateSnapPoints);
+      window.removeEventListener("resize", calculateDrawerHeight);
       resizeObserver.disconnect();
     };
   }, []);
@@ -230,7 +216,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
   return (
     <CalloutProvider position="top-center">
       <CalloutTrigger calloutData={calloutData} />
-      <main className="fixed inset-0 overflow-hidden flex justify-center">
+      <main className="fixed inset-0 flex justify-center">
         <div className="relative w-full max-w-lg h-full">
           {imageUrl && (
             <div className="absolute inset-0 z-0">
@@ -240,19 +226,20 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
             </div>
           )}
 
-          <BottomDrawer snapPoints={snapPoints} defaultSnapIndex={0}>
-            <BottomDrawer.Content className="rounded-t-3xl bg-white shadow-2xl overflow-visible">
-              <div
-                ref={gradientHeaderRef}
-                className="bg-linear-to-t from-black via-black/50 via-70% to-transparent absolute bottom-[calc(100%-20px)] left-0 right-0 z-30 flex flex-col gap-6 pb-2 pt-6 px-5 pointer-events-none rounded-t-3xl"
-              >
+          <BottomDrawer
+            collapsedHeight={drawerHeight.collapsed}
+            expandedHeight={drawerHeight.expanded}
+          >
+            <BottomDrawer.Content
+              className="bg-white shadow-2xl overflow-visible"
+              enableWheelControl
+            >
+              <div className="bg-linear-to-t from-black via-black/50 via-70% to-transparent absolute bottom-[calc(100%-20px)] left-0 right-0 z-30 flex flex-col gap-6 pb-2 pt-6 px-5 pointer-events-none">
                 <div className="flex flex-col gap-2">
                   <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
-                  <div ref={titleRef}>
-                    <Typo.MainTitle size="large" className="break-keep text-white">
-                      {title}
-                    </Typo.MainTitle>
-                  </div>
+                  <Typo.MainTitle size="large" className="break-keep text-white">
+                    {title}
+                  </Typo.MainTitle>
                 </div>
 
                 <div className="flex gap-3 items-center">
@@ -295,7 +282,6 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
           </div>
         </div>
       </main>
-      <MissionFooter />
     </CalloutProvider>
   );
 }
@@ -323,8 +309,9 @@ function DrawerTabContent({
   handleKakaoShare,
   handleLinkShare,
 }: DrawerTabContentProps) {
-  const { goToSnapPoint } = useBottomDrawer();
+  const { open, progress } = useBottomDrawer();
   const contentRef = useRef<HTMLDivElement>(null);
+  const isFullyOpen = progress >= 0.99;
   const [activeTab, setActiveTab] = useState<(typeof SECTION_IDS)[keyof typeof SECTION_IDS]>(
     SECTION_IDS.MISSION_GUIDE,
   );
@@ -336,7 +323,7 @@ function DrawerTabContent({
       }
 
       setActiveTab(value);
-      goToSnapPoint(2);
+      open();
 
       setTimeout(() => {
         if (contentRef.current) {
@@ -362,7 +349,7 @@ function DrawerTabContent({
         }
       }, 100);
     },
-    [goToSnapPoint],
+    [open],
   );
 
   return (
@@ -395,7 +382,8 @@ function DrawerTabContent({
 
       <div
         ref={contentRef}
-        className="flex-1 overflow-y-auto bg-white"
+        data-drawer-scrollable
+        className={cn("flex-1 bg-white", isFullyOpen ? "overflow-y-auto" : "overflow-hidden")}
         onPointerDownCapture={e => e.stopPropagation()}
       >
         <div
@@ -458,6 +446,8 @@ function DrawerTabContent({
             />
           </div>
         )}
+
+        <MissionFooter />
 
         <div className="h-32" />
       </div>

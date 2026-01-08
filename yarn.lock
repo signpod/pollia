@@ -4415,6 +4415,7 @@ __metadata:
     clsx: "npm:^2.1.1"
     date-fns: "npm:^4.1.0"
     framer-motion: "npm:^12.23.24"
+    gsap: "npm:^3.14.2"
     lucide-react: "npm:^0.543.0"
     react: "npm:^19.1.0"
     react-day-picker: "npm:^9.10.0"
@@ -9622,6 +9623,13 @@ __metadata:
   version: 3.13.0
   resolution: "gsap@npm:3.13.0"
   checksum: 10c0/a42dd2e02467a4abe96409aaf6cd0e5d697c72e05ec13c18c2271330493983aa63cc717c9dd0740fda2f884d0f56c7b98fc18b13500f0c1da94864985840da7c
+  languageName: node
+  linkType: hard
+
+"gsap@npm:^3.14.2":
+  version: 3.14.2
+  resolution: "gsap@npm:3.14.2"
+  checksum: 10c0/8f7d93d58d43c23a8de22630539364fac270e0d1dd8b8747064275dcc177e9c3c944a2eb54a10684e2902011dad0ba9ca3eb5c2a0a3bdb815d4f5401f14519e6
   languageName: node
   linkType: hard
 

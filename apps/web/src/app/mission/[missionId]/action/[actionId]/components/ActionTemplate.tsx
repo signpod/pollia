@@ -1,4 +1,3 @@
-import { toast } from "@/components/common/Toast";
 import { cleanTiptapHTML, cn } from "@/lib/utils";
 import { ButtonV2, FixedBottomLayout, TiptapViewer, Typo } from "@repo/ui/components";
 import { ChevronLeftIcon } from "lucide-react";
@@ -43,12 +42,6 @@ export function SurveyQuestionTemplate({
     setProgress(progressValue, currentOrder + 1, totalActionCount);
   }, [currentOrder, totalActionCount, progressValue, setProgress]);
 
-  const handleDisabledButtonClick = () => {
-    if (isNextDisabled && isRequired) {
-      toast.default("필수 답변 항목이에요.");
-    }
-  };
-
   return (
     <FixedBottomLayout hasGradient>
       <div className="space-y-6 px-5 pb-5 pt-[28px]">
@@ -88,26 +81,24 @@ export function SurveyQuestionTemplate({
           >
             <ChevronLeftIcon className="size-6" />
           </ButtonV2>
-          <div className="flex-1" onClick={handleDisabledButtonClick}>
-            <ButtonV2
-              variant="primary"
-              size="large"
-              className="w-full flex"
-              disabled={isRequired && isNextDisabled}
-              loading={isLoading}
-              onClick={async () => {
-                if (onNext instanceof Promise) {
-                  await onNext();
-                } else {
-                  onNext?.();
-                }
-              }}
-            >
-              <Typo.ButtonText size="large" className="flex justify-center w-full">
-                {nextButtonText}
-              </Typo.ButtonText>
-            </ButtonV2>
-          </div>
+          <ButtonV2
+            variant="primary"
+            size="large"
+            className="w-full flex"
+            disabled={isRequired && isNextDisabled}
+            loading={isLoading}
+            onClick={async () => {
+              if (onNext instanceof Promise) {
+                await onNext();
+              } else {
+                onNext?.();
+              }
+            }}
+          >
+            <Typo.ButtonText size="large" className="flex justify-center w-full">
+              {nextButtonText}
+            </Typo.ButtonText>
+          </ButtonV2>
         </nav>
       </FixedBottomLayout.Content>
     </FixedBottomLayout>

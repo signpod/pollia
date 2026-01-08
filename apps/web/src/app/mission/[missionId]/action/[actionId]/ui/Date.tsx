@@ -185,7 +185,7 @@ function DatePickerContent({
                     type="button"
                     onClick={handlePrevMonth}
                     disabled={isCurrentMonth}
-                    className="h-8 w-8 p-0 hover:bg-zinc-100 rounded-md flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                    className="h-8 w-8 p-0 hover:bg-zinc-100 rounded-md flex items-center justify-center disabled:text-zinc-300 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                   >
                     <ChevronLeft className="h-5 w-5 text-zinc-600" />
                   </button>
@@ -223,7 +223,7 @@ function DatePickerContent({
                   className={cn(
                     "rounded-sm w-full aspect-square flex flex-col gap-0 items-center justify-center transition-all duration-200 p-1",
                     "hover:bg-zinc-50",
-                    isSelected && "bg-violet-50 text-violet-500",
+                    isSelected && "bg-violet-50 text-violet-500 hover:bg-violet-100",
                     isToday && !isSelected && "ring-1 ring-zinc-300",
                     isSunday &&
                       !isSelected &&
@@ -231,18 +231,26 @@ function DatePickerContent({
                       !modifiers.disabled &&
                       "text-red-500",
                     modifiers.outside
-                      ? "text-zinc-300"
+                      ? "text-disabled"
                       : isSelected
                         ? ""
                         : modifiers.disabled
                           ? ""
                           : "text-zinc-900",
-                    modifiers.disabled && "cursor-not-allowed text-zinc-300",
+                    modifiers.disabled && "cursor-not-allowed text-disabled",
                   )}
                 >
                   <Typo.ButtonText
                     size="medium"
-                    className={cn(isHoliday ? "text-red-500" : "text-info")}
+                    className={cn(
+                      isSelected
+                        ? "text-violet-500"
+                        : modifiers.disabled || modifiers.outside
+                          ? "text-disabled"
+                          : isHoliday || isSunday
+                            ? "text-red-500"
+                            : "text-zinc-900",
+                    )}
                   >
                     {day.date.getDate()}
                   </Typo.ButtonText>
@@ -252,7 +260,7 @@ function DatePickerContent({
           }}
         />
       </div>
-      <BottomDrawer collapsedHeight={140} expandedHeight={210}>
+      <BottomDrawer collapsedHeight={120} expandedHeight={180}>
         <SelectedDatesDrawerContent
           selectedDates={selectedDates}
           onRemoveDate={dateStr => {
@@ -304,7 +312,7 @@ function SelectedDatesDrawerContent({
           <Typo.SubTitle size="large">개 선택</Typo.SubTitle>
         </div>
       </BottomDrawer.Header>
-      <BottomDrawer.Body className="py-2 px-0">
+      <BottomDrawer.Body className="p-0">
         <div className="flex gap-2 overflow-x-auto px-5 pb-[80px] scrollbar-hide">
           {sortedDates.map(dateStr => (
             <button
