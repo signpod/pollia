@@ -102,25 +102,14 @@ function buildResponseRowProperties(
     switch (action.type) {
       case "MULTIPLE_CHOICE":
       case "TAG": {
-        const answersForAction = response.answers.filter(a => a.actionId === action.id);
         console.log("[buildResponseRowProperties] MULTIPLE_CHOICE/TAG 디버깅:", {
           actionId: action.id,
           actionTitle: action.title,
-          answersCount: answersForAction.length,
-          answersWithOption: answersForAction.filter(a => a.option).length,
-          optionDetails: answersForAction.map(a => ({
-            hasOption: !!a.option,
-            optionId: a.optionId,
-            optionTitle: a.option?.title,
-          })),
+          answerOptions: answer.options,
+          optionsCount: answer.options.length,
+          optionTitles: answer.options.map(opt => opt.title),
         });
-        const options = answersForAction
-          .filter(a => a.option)
-          .map(a => {
-            if (!a.option) return "";
-            return a.option.title;
-          })
-          .filter(title => title !== "");
+        const options = answer.options.map(opt => opt.title);
         properties[propertyName] = {
           multi_select: options.map(name => ({ name: truncateText(name, 100) })),
         };
