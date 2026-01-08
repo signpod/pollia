@@ -19,6 +19,7 @@ describe("ActionAnswerService 테스트", () => {
       findByResponseAndAction: jest.fn(),
       create: jest.fn(),
       createMany: jest.fn(),
+      createManyWithRelations: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
       deleteByResponseId: jest.fn(),
@@ -194,7 +195,10 @@ describe("ActionAnswerService 테스트", () => {
         } as any),
       );
 
-      mockAnswerRepo.create.mockResolvedValue({ id: "answer-1" } as any);
+      (mockAnswerRepo.createManyWithRelations as jest.Mock).mockResolvedValue([
+        { id: "answer-1" },
+        { id: "answer-2" },
+      ]);
       mockAnswerRepo.deleteByResponseAndActions.mockResolvedValue({ count: 0 } as any);
 
       // When
@@ -206,7 +210,129 @@ describe("ActionAnswerService 테스트", () => {
         answersCount: 2,
       });
       expect(mockAnswerRepo.deleteByResponseAndActions).toHaveBeenCalled();
-      expect(mockAnswerRepo.create).toHaveBeenCalledTimes(2);
+      expect(mockAnswerRepo.createManyWithRelations).toHaveBeenCalledTimes(1);
+    });
+
+    it("트랜잭션으로 여러 답변을 원자적으로 생성한다", async () => {
+      // Given
+      const input = {
+        responseId: "response-1",
+        answers: [
+          {
+            actionId: "action-1",
+            type: ActionType.MULTIPLE_CHOICE,
+            isRequired: true,
+            selectedOptionIds: ["opt-1", "opt-2"],
+          },
+          {
+            actionId: "action-2",
+            type: ActionType.SUBJECTIVE,
+            isRequired: true,
+            textAnswer: "주관식 답변",
+          },
+        ],
+      };
+      const userId = "user-1";
+
+      mockResponseRepo.findById.mockResolvedValue({
+        id: "response-1",
+        userId,
+        missionId: "mission-1",
+        completedAt: null,
+      } as any);
+
+      mockActionRepo.findById.mockImplementation((id: string) =>
+        Promise.resolve({
+          id,
+          type: id === "action-1" ? ActionType.MULTIPLE_CHOICE : ActionType.SUBJECTIVE,
+          isRequired: true,
+          missionId: "mission-1",
+        } as any),
+      );
+
+      (mockAnswerRepo.createManyWithRelations as jest.Mock).mockResolvedValue([
+        { id: "answer-1", actionId: "action-1" },
+        { id: "answer-2", actionId: "action-2" },
+      ]);
+      mockAnswerRepo.deleteByResponseAndActions.mockResolvedValue({ count: 0 } as any);
+
+      // When
+      await service.submitAnswers(input, userId);
+
+      // Then
+      expect(mockAnswerRepo.createManyWithRelations).toHaveBeenCalledTimes(1);
+      const callArgs = (mockAnswerRepo.createManyWithRelations as jest.Mock).mock.calls[0];
+      const answersData = callArgs[0];
+      const passedUserId = callArgs[1];
+
+      expect(passedUserId).toBe(userId);
+      expect(answersData).toHaveLength(2);
+      expect(answersData[0]).toMatchObject({
+        response: { connect: { id: "response-1" } },
+        action: { connect: { id: "action-1" } },
+        options: { connect: [{ id: "opt-1" }, { id: "opt-2" }] },
+      });
+      expect(answersData[1]).toMatchObject({
+        response: { connect: { id: "response-1" } },
+        action: { connect: { id: "action-2" } },
+        textAnswer: "주관식 답변",
+      });
+    });
+
+    it("답변 생성 중 에러 발생 시 모두 롤백된다", async () => {
+      // Given
+      const input = {
+        responseId: "response-1",
+        answers: [
+          {
+            actionId: "action-1",
+            type: ActionType.MULTIPLE_CHOICE,
+            isRequired: true,
+            selectedOptionIds: ["opt-1"],
+          },
+          {
+            actionId: "action-2",
+            type: ActionType.SCALE,
+            isRequired: true,
+            scaleValue: 5,
+          },
+        ],
+      };
+      const userId = "user-1";
+
+      mockResponseRepo.findById.mockResolvedValue({
+        id: "response-1",
+        userId,
+        missionId: "mission-1",
+        completedAt: null,
+      } as any);
+
+      mockActionRepo.findById.mockImplementation((id: string) =>
+        Promise.resolve({
+          id,
+          type: id === "action-1" ? ActionType.MULTIPLE_CHOICE : ActionType.SCALE,
+          isRequired: true,
+          missionId: "mission-1",
+        } as any),
+      );
+
+      mockAnswerRepo.deleteByResponseAndActions.mockResolvedValue({ count: 0 } as any);
+
+      // 트랜잭션 실패 시뮬레이션
+      (mockAnswerRepo.createManyWithRelations as jest.Mock).mockRejectedValue(
+        new Error("Database constraint violation"),
+      );
+
+      // When & Then
+      await expect(service.submitAnswers(input, userId)).rejects.toThrow(
+        "Database constraint violation",
+      );
+
+      // 트랜잭션이 호출되었지만 에러로 인해 실패
+      expect(mockAnswerRepo.createManyWithRelations).toHaveBeenCalledTimes(1);
+
+      // 에러 발생 시 개별 create가 호출되지 않아야 함 (트랜잭션 내에서 모두 롤백)
+      expect(mockAnswerRepo.create).not.toHaveBeenCalled();
     });
 
     it("이미 완료된 응답에는 제출할 수 없다", async () => {
