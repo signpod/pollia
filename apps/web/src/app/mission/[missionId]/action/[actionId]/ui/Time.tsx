@@ -268,155 +268,64 @@ interface WheelPickerProps {
 
 function WheelPicker({ items, value, onChange }: WheelPickerProps) {
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const scrollTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const isSnappingRef = React.useRef(false);
   const itemHeight = 44;
   const visibleItems = 5;
-  const isDraggingRef = React.useRef(false);
-  const startYRef = React.useRef(0);
-  const startScrollRef = React.useRef(0);
-  const velocityRef = React.useRef(0);
-  const lastYRef = React.useRef(0);
-  const lastTimeRef = React.useRef(0);
-  const animationRef = React.useRef<number | null>(null);
+  const paddingItems = Math.floor(visibleItems / 2);
+  const centerOffset = paddingItems * itemHeight;
 
   const currentIndex = items.indexOf(value);
   const [scrollTop, setScrollTop] = React.useState(currentIndex * itemHeight);
-
-  const snapToNearest = React.useCallback(() => {
-    if (!containerRef.current) return;
-
-    const scrollTop = containerRef.current.scrollTop;
-    const newIndex = Math.round(scrollTop / itemHeight);
-    const clampedIndex = Math.max(0, Math.min(items.length - 1, newIndex));
-    const targetScroll = clampedIndex * itemHeight;
-
-    containerRef.current.scrollTo({
-      top: targetScroll,
-      behavior: "smooth",
-    });
-
-    if (items[clampedIndex] && items[clampedIndex] !== value) {
-      onChange(items[clampedIndex]);
-    }
-  }, [items, value, onChange]);
-
-  const animateMomentum = React.useCallback(() => {
-    if (!containerRef.current || Math.abs(velocityRef.current) < 0.5) {
-      snapToNearest();
-      return;
-    }
-
-    containerRef.current.scrollTop += velocityRef.current;
-    setScrollTop(containerRef.current.scrollTop);
-    velocityRef.current *= 0.92;
-
-    animationRef.current = requestAnimationFrame(animateMomentum);
-  }, [snapToNearest]);
 
   React.useEffect(() => {
     if (containerRef.current && currentIndex !== -1) {
       containerRef.current.scrollTop = currentIndex * itemHeight;
       setScrollTop(currentIndex * itemHeight);
     }
-  }, [currentIndex, itemHeight]);
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-    }
-    isDraggingRef.current = true;
-    startYRef.current = e.clientY;
-    lastYRef.current = e.clientY;
-    lastTimeRef.current = Date.now();
-    startScrollRef.current = containerRef.current?.scrollTop ?? 0;
-    velocityRef.current = 0;
-    e.preventDefault();
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-    }
-    isDraggingRef.current = true;
-    const touch = e.touches[0];
-    if (!touch) return;
-    startYRef.current = touch.clientY;
-    lastYRef.current = touch.clientY;
-    lastTimeRef.current = Date.now();
-    startScrollRef.current = containerRef.current?.scrollTop ?? 0;
-    velocityRef.current = 0;
-  };
-
-  const handleMouseMove = React.useCallback((e: MouseEvent) => {
-    if (!isDraggingRef.current || !containerRef.current) return;
-
-    const currentTime = Date.now();
-    const deltaTime = currentTime - lastTimeRef.current;
-    const deltaY = lastYRef.current - e.clientY;
-
-    if (deltaTime > 0) {
-      velocityRef.current = (deltaY / deltaTime) * 16;
-    }
-
-    lastYRef.current = e.clientY;
-    lastTimeRef.current = currentTime;
-
-    const totalDeltaY = startYRef.current - e.clientY;
-    containerRef.current.scrollTop = startScrollRef.current + totalDeltaY;
-    setScrollTop(containerRef.current.scrollTop);
   }, []);
 
-  const handleTouchMove = React.useCallback((e: TouchEvent) => {
-    if (!isDraggingRef.current || !containerRef.current) return;
+  const snapToNearest = React.useCallback(() => {
+    if (!containerRef.current) return;
 
-    const touch = e.touches[0];
-    if (!touch) return;
+    const currentScrollTop = containerRef.current.scrollTop;
+    const newIndex = Math.round(currentScrollTop / itemHeight);
+    const clampedIndex = Math.max(0, Math.min(items.length - 1, newIndex));
+    const targetScroll = clampedIndex * itemHeight;
 
-    const currentTime = Date.now();
-    const deltaTime = currentTime - lastTimeRef.current;
-    const deltaY = lastYRef.current - touch.clientY;
+    isSnappingRef.current = true;
+    containerRef.current.scrollTo({
+      top: targetScroll,
+      behavior: "smooth",
+    });
 
-    if (deltaTime > 0) {
-      velocityRef.current = (deltaY / deltaTime) * 16;
+    setTimeout(() => {
+      isSnappingRef.current = false;
+    }, 150);
+
+    if (items[clampedIndex] && items[clampedIndex] !== value) {
+      onChange(items[clampedIndex]);
     }
+  }, [items, value, onChange]);
 
-    lastYRef.current = touch.clientY;
-    lastTimeRef.current = currentTime;
+  const handleScroll = React.useCallback(() => {
+    if (!containerRef.current || isSnappingRef.current) return;
 
-    const totalDeltaY = startYRef.current - touch.clientY;
-    containerRef.current.scrollTop = startScrollRef.current + totalDeltaY;
     setScrollTop(containerRef.current.scrollTop);
-    e.preventDefault();
-  }, []);
 
-  const handleEnd = React.useCallback(() => {
-    if (!isDraggingRef.current) return;
-    isDraggingRef.current = false;
-
-    if (Math.abs(velocityRef.current) > 1) {
-      animationRef.current = requestAnimationFrame(animateMomentum);
-    } else {
-      snapToNearest();
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
     }
-  }, [animateMomentum, snapToNearest]);
+    scrollTimeoutRef.current = setTimeout(snapToNearest, 50);
+  }, [snapToNearest]);
 
   React.useEffect(() => {
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleEnd);
-    document.addEventListener("touchmove", handleTouchMove, { passive: false });
-    document.addEventListener("touchend", handleEnd);
     return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleEnd);
-      document.removeEventListener("touchmove", handleTouchMove);
-      document.removeEventListener("touchend", handleEnd);
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
       }
     };
-  }, [handleMouseMove, handleTouchMove, handleEnd]);
-
-  const paddingItems = Math.floor(visibleItems / 2);
-  const centerOffset = paddingItems * itemHeight;
+  }, []);
 
   const getItemColor = (index: number) => {
     const itemCenter = centerOffset + index * itemHeight + itemHeight / 2;
@@ -433,10 +342,9 @@ function WheelPicker({ items, value, onChange }: WheelPickerProps) {
   return (
     <div
       ref={containerRef}
-      onMouseDown={handleMouseDown}
-      onTouchStart={handleTouchStart}
+      onScroll={handleScroll}
       className={cn(
-        "h-[220px] overflow-y-scroll cursor-grab active:cursor-grabbing select-none touch-none",
+        "h-[220px] overflow-y-auto",
         "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
       )}
     >
