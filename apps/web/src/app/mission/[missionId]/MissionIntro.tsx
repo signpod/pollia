@@ -389,6 +389,7 @@ function DrawerTabContent({
         ref={contentRef}
         data-drawer-scrollable
         className={cn("flex-1 bg-white", isFullyOpen ? "overflow-y-auto" : "overflow-hidden")}
+        style={{ overscrollBehavior: "contain", touchAction: "pan-y" }}
         onPointerDownCapture={e => e.stopPropagation()}
       >
         <div

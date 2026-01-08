@@ -193,6 +193,23 @@ function BottomDrawerContent({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  // Prevent body scroll on mobile when drawer is mounted
+  React.useEffect(() => {
+    if (!isMobile) return;
+
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+
+    // Prevent body/html scroll
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.documentElement.style.overflow = originalHtmlOverflow;
+    };
+  }, [isMobile]);
+
   // Get scrollable element
   const getScrollable = React.useCallback(() => {
     return drawerRef.current?.querySelector("[data-drawer-scrollable]") as HTMLElement | null;
@@ -323,19 +340,36 @@ function BottomDrawerContent({
     };
   }, [enableWheelControl, getScrollable]);
 
+  // Track if touch started in scrollable area
+  const touchInScrollableRef = React.useRef(false);
+
   // Mobile: Touch drag (same logic as wheel)
   const onTouchStart = (e: React.TouchEvent) => {
     if (!isMobile || !enableDrag) return;
     const touch = e.touches[0];
     if (!touch) return;
 
+    // Check if touch started inside scrollable area when drawer is fully open
+    const scrollable = getScrollable();
+    const isFullyOpen = currentY.current <= 1;
+
+    if (isFullyOpen && scrollable && scrollable.contains(e.target as Node)) {
+      // Mark that touch started in scrollable area
+      touchInScrollableRef.current = true;
+      isDraggingRef.current = false;
+      startY.current = touch.clientY;
+      wasOpenOnDragStart.current = true;
+      return;
+    }
+
+    touchInScrollableRef.current = false;
     isDraggingRef.current = true;
     startY.current = touch.clientY;
     wasOpenOnDragStart.current = currentY.current < heightDiff * 0.5;
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
-    if (!isMobile || !isDraggingRef.current || !enableDrag) return;
+    if (!isMobile || !enableDrag) return;
     const touch = e.touches[0];
     if (!touch) return;
 
@@ -349,6 +383,31 @@ function BottomDrawerContent({
     startY.current = touch.clientY;
 
     const scrollable = getScrollable();
+
+    // Touch started in scrollable area - check if we should transition to drawer control
+    if (touchInScrollableRef.current && scrollable) {
+      const atTop = scrollable.scrollTop <= 0;
+      const scrollingUp = delta < 0; // finger down = scroll up (trying to close)
+
+      // At top and trying to scroll up more → start controlling drawer to close it
+      if (atTop && scrollingUp) {
+        isDraggingRef.current = true;
+        touchInScrollableRef.current = false;
+        gsap.killTweensOf(drawer);
+        const newY = Math.min(
+          heightDiff,
+          Math.max(0, currentY.current - delta * SCROLL_SENSITIVITY),
+        );
+        currentY.current = newY;
+        drawer.style.transform = `translate3d(0, ${newY}px, 0)`;
+      }
+      // Otherwise, let native scroll happen (do nothing)
+      return;
+    }
+
+    // Normal drag mode
+    if (!isDraggingRef.current) return;
+
     const isFullyOpen = currentY.current <= 1;
 
     // When fully open, check if we should scroll content or close drawer (same as wheel)
@@ -388,7 +447,12 @@ function BottomDrawerContent({
   };
 
   const onTouchEnd = () => {
-    if (!isMobile || !isDraggingRef.current) return;
+    if (!isMobile) return;
+
+    // Reset touch in scrollable flag
+    touchInScrollableRef.current = false;
+
+    if (!isDraggingRef.current) return;
     isDraggingRef.current = false;
 
     const drawer = drawerRef.current;
@@ -557,7 +621,7 @@ function BottomDrawerBody({ className, children }: BottomDrawerBodyProps) {
     <div
       data-drawer-scrollable
       className={cn("flex-1 overflow-y-auto px-5 py-4", className)}
-      style={{ overscrollBehavior: "contain" }}
+      style={{ overscrollBehavior: "contain", touchAction: "pan-y" }}
     >
       {children}
     </div>
