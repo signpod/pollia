@@ -15,6 +15,7 @@ model ActionAnswer {
   fileUploads FileUpload[]
   options     ActionOption[]
 
+  @@unique([responseId, actionId])
   @@index([actionId])
   @@index([responseId])
   @@map("action_answers")
