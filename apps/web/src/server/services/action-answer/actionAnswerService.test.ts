@@ -573,7 +573,7 @@ describe("ActionAnswerService 테스트", () => {
     });
   });
 
-  describe("convertAnswerToCreateInput - private 메서드 (블랙박스)", () => {
+  describe("convertAnswerToCreateInput - 내부 동작 검증", () => {
     const responseId = "test-response-id";
 
     it("MULTIPLE_CHOICE: 여러 옵션 선택 시 1개 Answer에 여러 Option connect", () => {

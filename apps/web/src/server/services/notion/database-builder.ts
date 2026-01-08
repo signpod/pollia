@@ -102,13 +102,6 @@ function buildResponseRowProperties(
     switch (action.type) {
       case "MULTIPLE_CHOICE":
       case "TAG": {
-        console.log("[buildResponseRowProperties] MULTIPLE_CHOICE/TAG 디버깅:", {
-          actionId: action.id,
-          actionTitle: action.title,
-          answerOptions: answer.options,
-          optionsCount: answer.options.length,
-          optionTitles: answer.options.map(opt => opt.title),
-        });
         const options = answer.options.map(opt => opt.title);
         properties[propertyName] = {
           multi_select: options.map(name => ({ name: truncateText(name, 100) })),
