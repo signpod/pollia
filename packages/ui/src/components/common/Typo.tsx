@@ -31,7 +31,7 @@ const bodyVariants = cva("leading-[1.5]", {
     size: {
       large: "text-[16px] font-medium",
       medium: "text-[14px] font-semibold",
-      small: "text-[12px] font-medium",
+      small: "text-[12px] font-bold",
     },
   },
   defaultVariants: {

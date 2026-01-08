@@ -2,7 +2,7 @@ import { actionOptionSchema } from "@/schemas/action-option";
 import { z } from "zod";
 
 export const ACTION_TITLE_MAX_LENGTH = 100;
-export const ACTION_DESCRIPTION_MAX_LENGTH = 500;
+export const ACTION_DESCRIPTION_MAX_LENGTH = 3000;
 export const ACTION_OPTION_TITLE_MAX_LENGTH = 50;
 export const ACTION_OPTION_DESCRIPTION_MAX_LENGTH = 200;
 
@@ -29,9 +29,13 @@ export const actionDescriptionSchema = z
     ACTION_DESCRIPTION_MAX_LENGTH,
     `설명은 ${ACTION_DESCRIPTION_MAX_LENGTH}자를 초과할 수 없습니다.`,
   )
+  .nullable()
   .optional();
 
-export const actionImageUrlSchema = z.url({ message: "올바른 URL 형식이 아닙니다." }).optional();
+export const actionImageUrlSchema = z
+  .url({ message: "올바른 URL 형식이 아닙니다." })
+  .nullable()
+  .optional();
 
 export const actionOptionTitleSchema = z
   .string()
@@ -62,7 +66,7 @@ const baseActionSchema = z.object({
   title: actionTitleSchema,
   description: actionDescriptionSchema,
   imageUrl: actionImageUrlSchema,
-  imageFileUploadId: z.string().optional(),
+  imageFileUploadId: z.string().nullable().optional(),
   order: actionOrderSchema,
   isRequired: z.boolean(),
 });
@@ -142,7 +146,7 @@ export const actionUpdateSchema = z
     title: actionTitleSchema.optional(),
     description: actionDescriptionSchema,
     imageUrl: actionImageUrlSchema,
-    imageFileUploadId: z.string().optional(),
+    imageFileUploadId: z.string().nullable().optional(),
     order: actionOrderSchema.optional(),
     maxSelections: z
       .number()

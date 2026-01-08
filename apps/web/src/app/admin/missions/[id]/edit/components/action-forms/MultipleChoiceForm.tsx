@@ -7,6 +7,7 @@ import {
   useAdminMultipleImages,
   useAdminSingleImage,
 } from "@/app/admin/hooks/use-admin-image-upload";
+import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
@@ -35,6 +36,7 @@ export function MultipleChoiceForm({
       title: initialData?.title || "",
       description: initialData?.description || "",
       imageUrl: initialData?.imageUrl,
+      imageFileUploadId: initialData?.imageFileUploadId,
       isRequired: initialData?.isRequired ?? true,
       maxSelections: initialData?.maxSelections ?? 1,
       options:
@@ -43,6 +45,7 @@ export function MultipleChoiceForm({
           title: opt.title,
           description: opt.description || "",
           imageUrl: opt.imageUrl,
+          imageFileUploadId: opt.imageFileUploadId,
         })) || [],
     },
     mode: "onChange",
@@ -55,22 +58,32 @@ export function MultipleChoiceForm({
 
   const mainImage = useAdminSingleImage({
     initialUrl: initialData?.imageUrl,
+    initialFileUploadId: initialData?.imageFileUploadId,
+    bucket: STORAGE_BUCKETS.ACTION_IMAGES,
     onUploadSuccess: data => {
       form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
+      form.setValue("imageFileUploadId", data.fileUploadId, { shouldDirty: true });
     },
   });
-  const optionImages = useAdminMultipleImages();
+  const optionImages = useAdminMultipleImages({
+    onUploadSuccess: (id, data) => {
+      const index = fields.findIndex(field => field.id === id);
+      if (index !== -1) {
+        form.setValue(`options.${index}.imageUrl`, data.publicUrl, { shouldDirty: true });
+        form.setValue(`options.${index}.imageFileUploadId`, data.fileUploadId, {
+          shouldDirty: true,
+        });
+      }
+    },
+  });
 
   const handleSubmit = form.handleSubmit((data: MultipleChoiceFormInput) => {
-    const formattedOptions: ActionOptionInput[] = data.options.map((opt, index) => {
-      const fieldId = fields[index]?.id;
-      const uploadedData = fieldId ? optionImages.getUploadedData(fieldId) : undefined;
-
+    const formattedOptions: ActionOptionInput[] = data.options.map(opt => {
       return {
         title: opt.title,
         description: opt.description || undefined,
-        imageUrl: uploadedData?.publicUrl || opt.imageUrl || undefined,
-        imageFileUploadId: uploadedData?.fileUploadId,
+        imageUrl: opt.imageUrl,
+        imageFileUploadId: opt.imageFileUploadId,
       };
     });
 
@@ -78,8 +91,8 @@ export function MultipleChoiceForm({
       type: "MULTIPLE_CHOICE",
       title: data.title,
       description: data.description,
-      imageUrl: data.imageUrl || undefined,
-      imageFileUploadId: mainImage.uploadedData?.fileUploadId,
+      imageUrl: data.imageUrl,
+      imageFileUploadId: data.imageFileUploadId,
       maxSelections: data.maxSelections,
       options: formattedOptions,
       isRequired: data.isRequired,
@@ -116,7 +129,11 @@ export function MultipleChoiceForm({
           titlePlaceholder="예: 가장 선호하는 옵션을 선택해주세요."
           mainImagePreviewUrl={mainImage.previewUrl}
           onMainImageSelect={mainImage.selectImage}
-          onMainImageDelete={mainImage.clearImage}
+          onMainImageDelete={() => {
+            mainImage.clearImage();
+            form.setValue("imageUrl", null, { shouldDirty: true });
+            form.setValue("imageFileUploadId", null, { shouldDirty: true });
+          }}
         />
 
         <MaxSelectionsField
@@ -141,7 +158,7 @@ export function MultipleChoiceForm({
               {fields.map((field, index) => {
                 const previewUrl = optionImages.getPreviewUrl(
                   field.id,
-                  form.watch(`options.${index}.imageUrl`),
+                  form.watch(`options.${index}.imageUrl`) ?? undefined,
                 );
 
                 return (
@@ -169,7 +186,15 @@ export function MultipleChoiceForm({
                       remove(index);
                     }}
                     onImageSelect={file => optionImages.selectImage(field.id, file)}
-                    onImageDelete={() => optionImages.clearImage(field.id)}
+                    onImageDelete={() => {
+                      optionImages.clearImage(field.id);
+                      form.setValue(`options.${index}.imageUrl`, null, {
+                        shouldDirty: true,
+                      });
+                      form.setValue(`options.${index}.imageFileUploadId`, null, {
+                        shouldDirty: true,
+                      });
+                    }}
                     disabled={isLoading}
                   />
                 );

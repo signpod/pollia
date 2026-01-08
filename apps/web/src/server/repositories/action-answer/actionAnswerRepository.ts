@@ -8,7 +8,7 @@ export class ActionAnswerRepository {
       where: { id },
       include: {
         action: true,
-        option: true,
+        options: true,
         response: {
           select: {
             id: true,
@@ -25,7 +25,7 @@ export class ActionAnswerRepository {
       where: { responseId },
       include: {
         action: true,
-        option: true,
+        options: true,
       },
       orderBy: {
         createdAt: "asc",
@@ -42,7 +42,7 @@ export class ActionAnswerRepository {
       },
       include: {
         action: true,
-        option: true,
+        options: true,
         response: {
           select: {
             id: true,
@@ -65,7 +65,7 @@ export class ActionAnswerRepository {
             userId: true,
           },
         },
-        option: true,
+        options: true,
       },
     });
   }
@@ -77,12 +77,12 @@ export class ActionAnswerRepository {
         actionId,
       },
       include: {
-        option: true,
+        options: true,
       },
     });
   }
 
-  async create(data: Omit<Prisma.ActionAnswerUncheckedCreateInput, "createdAt">, userId?: string) {
+  async create(data: Prisma.ActionAnswerCreateInput, userId?: string) {
     const fileUploadIds =
       data.fileUploads && typeof data.fileUploads === "object" && "connect" in data.fileUploads
         ? (data.fileUploads.connect as { id: string }[]).map(f => f.id)
@@ -94,7 +94,7 @@ export class ActionAnswerRepository {
           data,
           include: {
             action: true,
-            option: true,
+            options: true,
             fileUploads: true,
           },
         });
@@ -109,7 +109,7 @@ export class ActionAnswerRepository {
       data,
       include: {
         action: true,
-        option: true,
+        options: true,
         fileUploads: true,
       },
     });
@@ -151,6 +151,40 @@ export class ActionAnswerRepository {
     });
   }
 
+  async createManyWithRelations(answersData: Prisma.ActionAnswerCreateInput[], userId?: string) {
+    const allFileUploadIds = answersData.flatMap(data => {
+      if (
+        data.fileUploads &&
+        typeof data.fileUploads === "object" &&
+        "connect" in data.fileUploads
+      ) {
+        return (data.fileUploads.connect as { id: string }[]).map(f => f.id);
+      }
+      return [];
+    });
+
+    return prisma.$transaction(async tx => {
+      const createdAnswers = await Promise.all(
+        answersData.map(data =>
+          tx.actionAnswer.create({
+            data,
+            include: {
+              action: true,
+              options: true,
+              fileUploads: true,
+            },
+          }),
+        ),
+      );
+
+      if (allFileUploadIds.length > 0 && userId) {
+        await confirmFileUploads(tx, userId, allFileUploadIds);
+      }
+
+      return createdAnswers;
+    });
+  }
+
   async update(id: string, data: Prisma.ActionAnswerUncheckedUpdateInput, userId?: string) {
     const fileUploadIds =
       data.fileUploads && typeof data.fileUploads === "object" && "set" in data.fileUploads
@@ -164,7 +198,7 @@ export class ActionAnswerRepository {
           data,
           include: {
             action: true,
-            option: true,
+            options: true,
             fileUploads: true,
           },
         });
@@ -180,7 +214,7 @@ export class ActionAnswerRepository {
       data,
       include: {
         action: true,
-        option: true,
+        options: true,
         fileUploads: true,
       },
     });

@@ -40,7 +40,9 @@ export interface GetMissionResponse {
     description?: string | null;
     target?: string | null;
     imageUrl?: string | null;
+    imageFileUploadId?: string | null;
     brandLogoUrl?: string | null;
+    brandLogoFileUploadId?: string | null;
     estimatedMinutes?: number | null;
     deadline?: Date | null;
     maxParticipants?: number | null;
@@ -71,12 +73,12 @@ export interface GetUserMissionsResponse {
 
 export interface UpdateMissionRequest {
   title?: string;
-  description?: string;
-  target?: string;
-  imageUrl?: string;
-  imageFileUploadId?: string;
-  brandLogoUrl?: string;
-  brandLogoFileUploadId?: string;
+  description?: string | null;
+  target?: string | null;
+  imageUrl?: string | null;
+  imageFileUploadId?: string | null;
+  brandLogoUrl?: string | null;
+  brandLogoFileUploadId?: string | null;
   deadline?: Date;
   estimatedMinutes?: number;
   type?: MissionType;
@@ -103,5 +105,21 @@ export interface GetMissionParticipantInfoResponse {
     currentParticipants: number;
     maxParticipants: number | null;
     isClosed: boolean;
+  };
+}
+
+export interface GetMissionNotionPageResponse {
+  data: {
+    notionPageId: string;
+    notionPageUrl: string;
+    lastSyncedAt: Date;
+    syncedResponseCount: number;
+  } | null;
+}
+
+export interface SyncMissionToNotionResponse {
+  data: {
+    notionPageUrl: string;
+    syncedResponseCount: number;
   };
 }

@@ -4,6 +4,7 @@ import { requireAuth } from "@/actions/common/auth";
 import { missionCompletionService } from "@/server/services/mission-completion/missionCompletionService";
 import type { UpdateMissionCompletionInput } from "@/server/services/mission-completion/types";
 import type { UpdateMissionCompletionRequest, UpdateMissionCompletionResponse } from "@/types/dto";
+import { toMissionCompletionData } from "./utils";
 
 function toUpdateMissionCompletionInput(
   dto: UpdateMissionCompletionRequest,
@@ -29,7 +30,7 @@ export async function updateMissionCompletion(
       input,
       user.id,
     );
-    return { data: missionCompletion };
+    return { data: toMissionCompletionData(missionCompletion) };
   } catch (error) {
     console.error("updateMissionCompletion error:", error);
     if (error instanceof Error && error.cause) {

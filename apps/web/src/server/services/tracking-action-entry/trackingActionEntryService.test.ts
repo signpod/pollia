@@ -196,7 +196,7 @@ describe("TrackingActionEntryService", () => {
       mockRepo.findBySessionId.mockResolvedValue(mockEntries);
 
       // When
-      const result = await service.getActionEntries({
+      const _result = await service.getActionEntries({
         sessionId: TEST_SESSION_ID,
         missionId: TEST_MISSION_ID,
         actionId: TEST_ACTION_ID,

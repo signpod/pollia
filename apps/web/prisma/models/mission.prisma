@@ -21,6 +21,7 @@ model Mission {
   completion MissionCompletion?
   creator    User               @relation(fields: [creatorId], references: [id])
   reward     Reward?            @relation(fields: [rewardId], references: [id])
+  notionPage MissionNotionPage?
 
   imageFileUploadId     String?     @map("image_file_upload_id")
   imageFileUpload       FileUpload? @relation("MissionImage", fields: [imageFileUploadId], references: [id])

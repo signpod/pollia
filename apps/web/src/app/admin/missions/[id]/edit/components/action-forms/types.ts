@@ -4,16 +4,16 @@ export type ActionType = PrismaActionType;
 
 export interface ActionOptionInput {
   title: string;
-  description?: string;
-  imageUrl?: string;
-  imageFileUploadId?: string;
+  description?: string | null;
+  imageUrl?: string | null;
+  imageFileUploadId?: string | null;
 }
 
 export interface BaseActionFormData {
   title: string;
-  description?: string;
-  imageUrl?: string;
-  imageFileUploadId?: string;
+  description?: string | null;
+  imageUrl?: string | null;
+  imageFileUploadId?: string | null;
   isRequired: boolean;
 }
 

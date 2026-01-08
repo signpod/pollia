@@ -7,12 +7,12 @@ import type { MissionType } from "@prisma/client";
 
 export interface UpdateMissionRequest {
   title?: string;
-  description?: string;
-  target?: string;
-  imageUrl?: string;
-  imageFileUploadId?: string;
-  brandLogoUrl?: string;
-  brandLogoFileUploadId?: string;
+  description?: string | null;
+  target?: string | null;
+  imageUrl?: string | null;
+  imageFileUploadId?: string | null;
+  brandLogoUrl?: string | null;
+  brandLogoFileUploadId?: string | null;
   deadline?: Date;
   estimatedMinutes?: number;
   maxParticipants?: number | null;

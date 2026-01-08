@@ -3,14 +3,30 @@
 import { ActionStepContentProps } from "@/constants/action";
 import { cn } from "@/lib/utils";
 import { ButtonV2, Typo } from "@repo/ui/components";
+import { Dialog, DialogOverlay, DialogPortal } from "@repo/ui/components";
+import { Plus, X } from "lucide-react";
+import * as React from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 import { TimePickerProvider, useTimePicker } from "./TimePickerProvider";
 
-const AM_HOURS = [8, 9, 10, 11] as const;
-const PM_HOURS = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23] as const;
+function formatTimeForStorage(hour: number, minute: number): string {
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+}
 
-function formatTime(hour: number): string {
-  return `${String(hour).padStart(2, "0")}:00`;
+function formatTimeForDisplay(time: string): string {
+  const parts = time.split(":");
+  const hourStr = parts[0] ?? "00";
+  const minuteStr = parts[1] ?? "00";
+  const hour = Number.parseInt(hourStr, 10);
+  const minute = Number.parseInt(minuteStr, 10);
+
+  if (Number.isNaN(hour) || Number.isNaN(minute)) {
+    return "00:00";
+  }
+
+  const isAM = hour < 12;
+  const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+  return `${isAM ? "오전" : "오후"} ${String(displayHour).padStart(2, "0")} : ${String(minute).padStart(2, "0")}`;
 }
 
 export function ActionTime({
@@ -66,7 +82,14 @@ function TimePickerContent({
   isNextDisabled: isNextDisabledProp,
   isLoading,
 }: Omit<ActionStepContentProps, "updateCanGoNext" | "onAnswerChange">) {
-  const { selectedTimes, toggleTime, canGoNext } = useTimePicker();
+  const { selectedTimes, removeTime, canGoNext, maxSelections } = useTimePicker();
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+
+  const sortedTimes = React.useMemo(() => {
+    return Array.from(selectedTimes).sort();
+  }, [selectedTimes]);
+
+  const canAddMore = selectedTimes.size < maxSelections;
 
   return (
     <SurveyQuestionTemplate
@@ -83,68 +106,354 @@ function TimePickerContent({
       isLoading={isLoading}
       isRequired={actionData.isRequired}
     >
-      <div className="space-y-8 w-full">
-        <div className="space-y-3">
-          <Typo.SubTitle size="large">오전</Typo.SubTitle>
-          <div className="grid grid-cols-3 gap-3">
-            {AM_HOURS.map(hour => {
-              const time = formatTime(hour);
-              const isSelected = selectedTimes.has(time);
-              return (
-                <TimeButton
-                  key={time}
-                  time={time}
-                  isSelected={isSelected}
-                  onClick={() => toggleTime(time)}
-                />
-              );
-            })}
-          </div>
-        </div>
+      <div className="flex flex-col gap-3 w-full justify-center items-center">
+        {sortedTimes.map(time => (
+          <SelectedTimeCard key={time} time={time} onRemove={() => removeTime(time)} />
+        ))}
 
-        <div className="space-y-3">
-          <Typo.SubTitle size="large">오후</Typo.SubTitle>
-          <div className="grid grid-cols-3 gap-3">
-            {PM_HOURS.map(hour => {
-              const time = formatTime(hour);
-              const isSelected = selectedTimes.has(time);
-              return (
-                <TimeButton
-                  key={time}
-                  time={time}
-                  isSelected={isSelected}
-                  onClick={() => toggleTime(time)}
-                />
-              );
-            })}
-          </div>
-        </div>
+        {canAddMore &&
+          (sortedTimes.length > 0 ? (
+            <ButtonV2
+              onClick={() => setIsDialogOpen(true)}
+              variant="tertiary"
+              size="large"
+              className="transition-all duration-200 rounded-full size-12 bg-zinc-50"
+            >
+              <div className="flex items-center justify-center gap-3 w-full">
+                <Plus className="size-5" />
+              </div>
+            </ButtonV2>
+          ) : (
+            <ButtonV2
+              onClick={() => setIsDialogOpen(true)}
+              variant="secondary"
+              size="large"
+              className="transition-all duration-200 hover:ring-0! hover:bg-zinc-50! hover:text-zinc-900!"
+            >
+              <div className="flex items-center justify-center gap-3 w-full">
+                <Plus className="size-5" />
+                <Typo.Body size="large">시간 추가</Typo.Body>
+              </div>
+            </ButtonV2>
+          ))}
       </div>
+
+      <TimeSelectDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
     </SurveyQuestionTemplate>
   );
 }
 
-interface TimeButtonProps {
-  time: string;
-  isSelected: boolean;
-  onClick: () => void;
+function SelectedTimeCard({ time, onRemove }: { time: string; onRemove: () => void }) {
+  return (
+    <div className="flex items-center justify-between p-4 bg-white rounded-sm ring-1 ring-default w-full">
+      <Typo.Body size="large" className="text-zinc-900">
+        {formatTimeForDisplay(time)}
+      </Typo.Body>
+      <button type="button" onClick={onRemove} className="p-1">
+        <X className="size-5" />
+      </button>
+    </div>
+  );
 }
 
-function TimeButton({ time, isSelected, onClick }: TimeButtonProps) {
+interface TimeSelectDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+const PERIODS = ["오전", "오후"] as const;
+const HOURS = Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, "0"));
+const MINUTES = Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, "0"));
+
+function TimeSelectDialog({ open, onOpenChange }: TimeSelectDialogProps) {
+  const { selectedTimes, addTime, maxSelections } = useTimePicker();
+  const [period, setPeriod] = React.useState<"오전" | "오후">("오전");
+  const [hour, setHour] = React.useState("08");
+  const [minute, setMinute] = React.useState("00");
+
+  const canAddMore = selectedTimes.size < maxSelections;
+
+  const getDisplayTime = () => {
+    return `${period}  ${hour} : ${minute}`;
+  };
+
+  const handleConfirm = () => {
+    const hour24 =
+      period === "오후"
+        ? hour === "12"
+          ? 12
+          : Number.parseInt(hour) + 12
+        : hour === "12"
+          ? 0
+          : Number.parseInt(hour);
+    const timeStr = formatTimeForStorage(hour24, Number.parseInt(minute));
+
+    if (!selectedTimes.has(timeStr) && canAddMore) {
+      addTime(timeStr);
+    }
+    onOpenChange(false);
+  };
+
+  const handleClose = () => {
+    onOpenChange(false);
+  };
+
   return (
-    <ButtonV2
-      onClick={onClick}
-      variant="secondary"
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogPortal>
+        <DialogOverlay onClick={handleClose} />
+        <div
+          className={cn(
+            "fixed bottom-0 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg bg-white rounded-t-2xl shadow-[0_-4px_20px_0px_rgba(9,9,11,0.08)]",
+            "animate-in slide-in-from-bottom duration-300",
+          )}
+        >
+          <div className="flex items-center justify-end py-4 px-5">
+            <button type="button" onClick={handleClose} className="text-zinc-900">
+              <Typo.Body size="large">닫기</Typo.Body>
+            </button>
+          </div>
+
+          <div className="flex items-center justify-center py-4">
+            <Typo.MainTitle size="medium" className="text-zinc-900">
+              {getDisplayTime()}
+            </Typo.MainTitle>
+          </div>
+
+          <div className="relative px-5 py-4">
+            <div className="absolute inset-x-5 top-1/2 -translate-y-1/2 h-11 bg-zinc-50 rounded-sm pointer-events-none" />
+
+            <div className="relative flex items-center">
+              <div className="flex-1">
+                <WheelPicker
+                  items={PERIODS}
+                  value={period}
+                  onChange={v => setPeriod(v as "오전" | "오후")}
+                />
+              </div>
+
+              <div className="flex-1 flex items-center">
+                <div className="flex-1">
+                  <WheelPicker items={HOURS} value={hour} onChange={setHour} />
+                </div>
+                <div className="flex items-center justify-center w-6 shrink-0">
+                  <Typo.Body size="large" className="text-zinc-400">
+                    :
+                  </Typo.Body>
+                </div>
+              </div>
+
+              <div className="flex-1">
+                <WheelPicker items={MINUTES} value={minute} onChange={setMinute} />
+              </div>
+            </div>
+          </div>
+
+          <div className="px-5 py-6">
+            <ButtonV2 onClick={handleConfirm} className="w-full">
+              <div className="flex items-center justify-center w-full">확인</div>
+            </ButtonV2>
+          </div>
+        </div>
+      </DialogPortal>
+    </Dialog>
+  );
+}
+
+interface WheelPickerProps {
+  items: readonly string[];
+  value: string;
+  onChange: (value: string) => void;
+}
+
+function WheelPicker({ items, value, onChange }: WheelPickerProps) {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const itemHeight = 44;
+  const visibleItems = 5;
+  const isDraggingRef = React.useRef(false);
+  const startYRef = React.useRef(0);
+  const startScrollRef = React.useRef(0);
+  const velocityRef = React.useRef(0);
+  const lastYRef = React.useRef(0);
+  const lastTimeRef = React.useRef(0);
+  const animationRef = React.useRef<number | null>(null);
+
+  const currentIndex = items.indexOf(value);
+  const [scrollTop, setScrollTop] = React.useState(currentIndex * itemHeight);
+
+  const snapToNearest = React.useCallback(() => {
+    if (!containerRef.current) return;
+
+    const scrollTop = containerRef.current.scrollTop;
+    const newIndex = Math.round(scrollTop / itemHeight);
+    const clampedIndex = Math.max(0, Math.min(items.length - 1, newIndex));
+    const targetScroll = clampedIndex * itemHeight;
+
+    containerRef.current.scrollTo({
+      top: targetScroll,
+      behavior: "smooth",
+    });
+
+    if (items[clampedIndex] && items[clampedIndex] !== value) {
+      onChange(items[clampedIndex]);
+    }
+  }, [items, value, onChange]);
+
+  const animateMomentum = React.useCallback(() => {
+    if (!containerRef.current || Math.abs(velocityRef.current) < 0.5) {
+      snapToNearest();
+      return;
+    }
+
+    containerRef.current.scrollTop += velocityRef.current;
+    setScrollTop(containerRef.current.scrollTop);
+    velocityRef.current *= 0.92;
+
+    animationRef.current = requestAnimationFrame(animateMomentum);
+  }, [snapToNearest]);
+
+  React.useEffect(() => {
+    if (containerRef.current && currentIndex !== -1) {
+      containerRef.current.scrollTop = currentIndex * itemHeight;
+      setScrollTop(currentIndex * itemHeight);
+    }
+  }, [currentIndex, itemHeight]);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+    isDraggingRef.current = true;
+    startYRef.current = e.clientY;
+    lastYRef.current = e.clientY;
+    lastTimeRef.current = Date.now();
+    startScrollRef.current = containerRef.current?.scrollTop ?? 0;
+    velocityRef.current = 0;
+    e.preventDefault();
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+    isDraggingRef.current = true;
+    const touch = e.touches[0];
+    if (!touch) return;
+    startYRef.current = touch.clientY;
+    lastYRef.current = touch.clientY;
+    lastTimeRef.current = Date.now();
+    startScrollRef.current = containerRef.current?.scrollTop ?? 0;
+    velocityRef.current = 0;
+  };
+
+  const handleMouseMove = React.useCallback((e: MouseEvent) => {
+    if (!isDraggingRef.current || !containerRef.current) return;
+
+    const currentTime = Date.now();
+    const deltaTime = currentTime - lastTimeRef.current;
+    const deltaY = lastYRef.current - e.clientY;
+
+    if (deltaTime > 0) {
+      velocityRef.current = (deltaY / deltaTime) * 16;
+    }
+
+    lastYRef.current = e.clientY;
+    lastTimeRef.current = currentTime;
+
+    const totalDeltaY = startYRef.current - e.clientY;
+    containerRef.current.scrollTop = startScrollRef.current + totalDeltaY;
+    setScrollTop(containerRef.current.scrollTop);
+  }, []);
+
+  const handleTouchMove = React.useCallback((e: TouchEvent) => {
+    if (!isDraggingRef.current || !containerRef.current) return;
+
+    const touch = e.touches[0];
+    if (!touch) return;
+
+    const currentTime = Date.now();
+    const deltaTime = currentTime - lastTimeRef.current;
+    const deltaY = lastYRef.current - touch.clientY;
+
+    if (deltaTime > 0) {
+      velocityRef.current = (deltaY / deltaTime) * 16;
+    }
+
+    lastYRef.current = touch.clientY;
+    lastTimeRef.current = currentTime;
+
+    const totalDeltaY = startYRef.current - touch.clientY;
+    containerRef.current.scrollTop = startScrollRef.current + totalDeltaY;
+    setScrollTop(containerRef.current.scrollTop);
+    e.preventDefault();
+  }, []);
+
+  const handleEnd = React.useCallback(() => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+
+    if (Math.abs(velocityRef.current) > 1) {
+      animationRef.current = requestAnimationFrame(animateMomentum);
+    } else {
+      snapToNearest();
+    }
+  }, [animateMomentum, snapToNearest]);
+
+  React.useEffect(() => {
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleEnd);
+    document.addEventListener("touchmove", handleTouchMove, { passive: false });
+    document.addEventListener("touchend", handleEnd);
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleEnd);
+      document.removeEventListener("touchmove", handleTouchMove);
+      document.removeEventListener("touchend", handleEnd);
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [handleMouseMove, handleTouchMove, handleEnd]);
+
+  const paddingItems = Math.floor(visibleItems / 2);
+  const centerOffset = paddingItems * itemHeight;
+
+  const getItemColor = (index: number) => {
+    const itemCenter = centerOffset + index * itemHeight + itemHeight / 2;
+    const viewCenter = scrollTop + centerOffset + itemHeight / 2;
+    const distance = Math.abs(itemCenter - viewCenter);
+    const maxDistance = itemHeight * 2;
+
+    const ratio = Math.min(1, distance / maxDistance);
+    const lightness = Math.round(ratio * 80);
+
+    return `rgb(${lightness}% ${lightness}% ${lightness}%)`;
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      onMouseDown={handleMouseDown}
+      onTouchStart={handleTouchStart}
       className={cn(
-        "flex items-center justify-center py-3",
-        isSelected && "ring-point bg-violet-50 text-violet-500",
+        "h-[220px] overflow-y-scroll cursor-grab active:cursor-grabbing select-none touch-none",
+        "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
       )}
     >
-      <div className="flex items-center justify-center w-full">
-        <Typo.ButtonText size="large" className={isSelected ? "text-violet-500" : "text-zinc-900"}>
-          {time}
-        </Typo.ButtonText>
-      </div>
-    </ButtonV2>
+      <div style={{ height: `${paddingItems * itemHeight}px` }} />
+      {items.map((item, index) => {
+        const color = getItemColor(index);
+        return (
+          <div
+            key={item}
+            className="flex items-center justify-center"
+            style={{ height: `${itemHeight}px`, color }}
+          >
+            <Typo.Body size="large">{item}</Typo.Body>
+          </div>
+        );
+      })}
+      <div style={{ height: `${paddingItems * itemHeight}px` }} />
+    </div>
   );
 }

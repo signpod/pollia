@@ -1,25 +1,26 @@
 "use client";
 import { AuthError } from "@/hooks/login/useKakaoLogin";
-import { useMissionIntroData, useSectionScrollSync, useSurveyResume } from "@/hooks/mission";
+import { useMissionIntroData, useSurveyResume } from "@/hooks/mission";
 import { useReadMissionResponseForMission } from "@/hooks/mission-response";
 import { useReadMissionParticipantInfo } from "@/hooks/participant/useReadMissionParticipantInfo";
 import { useReadReward } from "@/hooks/reward/useReadReward";
 import { useMissionShare } from "@/hooks/share/useMissionShare";
-import { getSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
+import { getActionNavCookie, setActionNavCookie } from "@/lib/cookie";
 import { cleanTiptapHTML, cn } from "@/lib/utils";
 import { MissionType } from "@prisma/client";
 import Gift from "@public/svgs/gift.svg";
 import Lock from "@public/svgs/lock.svg";
 import {
+  BottomDrawer,
   CalloutProvider,
   type CalloutToneVariant,
-  FixedBottomLayout,
   Tab,
   Typo,
+  useBottomDrawer,
   useCallout,
 } from "@repo/ui/components";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   MissionBadge,
   MissionDescription,
@@ -45,7 +46,10 @@ const SCROLL_OFFSET = (sectionId: string) => {
   }
   return 10;
 };
-const DRAWER_VISIBLE_HEIGHT = 120;
+
+const HANDLE_HEIGHT = 28;
+const TAB_HEIGHT = 48;
+const TOP_MARGIN = 40;
 
 function CalloutTrigger({
   calloutData,
@@ -71,15 +75,13 @@ function CalloutTrigger({
 
 export function MissionIntro({ initialError }: { initialError: AuthError | null }) {
   const { missionId } = useParams<{ missionId: string }>();
+  const [drawerHeight, setDrawerHeight] = useState({ collapsed: 200, expanded: 400 });
+  const bottomButtonRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    window.scrollTo(0, -30);
-  }, []);
-
-  useEffect(() => {
-    const existingValue = getSessionStorage(`current-action-id-${missionId}`);
+    const existingValue = getActionNavCookie(missionId);
     if (!existingValue) {
-      setSessionStorage(`current-action-id-${missionId}`, "initial");
+      setActionNavCookie(missionId, "initial");
     }
   }, [missionId]);
 
@@ -112,6 +114,34 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
     isActive,
   } = mission ?? {};
 
+  useEffect(() => {
+    const calculateDrawerHeight = () => {
+      const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
+      const containerWidth = Math.min(viewportWidth, 512);
+      const imageMaxHeight = (containerWidth * 16) / 9;
+      const extraHeight = Math.max(0, viewportHeight - imageMaxHeight);
+
+      const bottomButtonHeight = bottomButtonRef.current?.offsetHeight ?? 110;
+      const collapsed = HANDLE_HEIGHT + TAB_HEIGHT + bottomButtonHeight + extraHeight;
+      const expanded = viewportHeight - TOP_MARGIN;
+      setDrawerHeight({ collapsed, expanded });
+    };
+
+    calculateDrawerHeight();
+    window.addEventListener("resize", calculateDrawerHeight);
+
+    const resizeObserver = new ResizeObserver(calculateDrawerHeight);
+    if (bottomButtonRef.current) {
+      resizeObserver.observe(bottomButtonRef.current);
+    }
+
+    return () => {
+      window.removeEventListener("resize", calculateDrawerHeight);
+      resizeObserver.disconnect();
+    };
+  }, []);
+
   const { data: reward } = useReadReward(mission?.rewardId || "");
   const { data: participantInfo } = useReadMissionParticipantInfo(missionId);
   const { data: missionResponseData } = useReadMissionResponseForMission({ missionId });
@@ -126,12 +156,6 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
   const sections = reward
     ? [SECTION_IDS.MISSION_GUIDE, SECTION_IDS.REWARD]
     : [SECTION_IDS.MISSION_GUIDE];
-
-  const { activeTab, handleChangeTab } = useSectionScrollSync({
-    sections,
-    defaultSection: SECTION_IDS.MISSION_GUIDE,
-    scrollOffset: SCROLL_OFFSET,
-  });
 
   const showDetailInfo = !!target || !!estimatedMinutes || !!deadline;
 
@@ -192,152 +216,241 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
   return (
     <CalloutProvider position="top-center">
       <CalloutTrigger calloutData={calloutData} />
-      <main className="flex w-full flex-col gap-8">
-        <div className="relative">
+      <main className="fixed inset-0 flex justify-center">
+        <div className="relative w-full max-w-lg h-full">
           {imageUrl && (
-            <div
-              className="overflow-hidden sticky top-0 left-0 right-0 z-10 bg-white"
-              style={{ height: `calc(100dvh - ${DRAWER_VISIBLE_HEIGHT}px)` }}
-            >
-              <MissionImage imageUrl={imageUrl} />
+            <div className="absolute inset-0 z-0">
+              <div className="relative w-full h-full">
+                <MissionImage imageUrl={imageUrl} />
+              </div>
             </div>
           )}
-          <div className="flex w-full flex-col bg-white py-5 rounded-t-3xl pb-0 relative z-20 mt-[-20px] overflow-visible">
-            <div className="bg-linear-to-t from-black via-black/50 via-70% to-transparent absolute bottom-[calc(100%-10px)] left-0 right-0 z-30 flex flex-col gap-3 pb-2 pt-6 px-5 pointer-events-none">
-              <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
-              <Typo.MainTitle size="large" className="break-keep text-white">
-                {title}
-              </Typo.MainTitle>
 
-              <div className="flex gap-3 items-center">
-                {isRequirePassword && <MissionBadge icon={<Lock />} label="비밀" />}
-                {hasReward && <MissionBadge icon={<Gift />} label="리워드" />}
-              </div>
-
-              <div className="h-[84px]" />
-            </div>
-            <div className="bg-white h-5 absolute top-0 left-0 right-0 rounded-t-3xl z-30" />
-            <div className="sticky top-0 z-30 rounded-t-md mt-[-20px] bg-white py-2">
-              <div className="h-1 w-9 rounded-md bg-zinc-300 mx-auto" />
-              <Tab.Root value={activeTab} pointColor="secondary" onValueChange={handleChangeTab}>
-                <Tab.List className="px-5">
-                  <Tab.Item
-                    value={SECTION_IDS.MISSION_GUIDE}
-                    className={cn(sections.length === 1 ? "mx-auto max-w-[110px]" : "")}
-                  >
-                    <Typo.SubTitle size="large">상세 안내</Typo.SubTitle>
-                  </Tab.Item>
-                  {reward && (
-                    <Tab.Item value={SECTION_IDS.REWARD}>
-                      <Typo.SubTitle size="large">참여 혜택</Typo.SubTitle>
-                    </Tab.Item>
-                  )}
-                </Tab.List>
-              </Tab.Root>
-            </div>
-
-            <div
-              id={SECTION_IDS.MISSION_GUIDE}
-              className="flex w-full flex-col gap-0 px-5 items-center"
+          <BottomDrawer
+            collapsedHeight={drawerHeight.collapsed}
+            expandedHeight={drawerHeight.expanded}
+          >
+            <BottomDrawer.Content
+              className="bg-white shadow-2xl overflow-visible"
+              enableWheelControl
             >
-              {showDetailInfo && (
-                <div className="flex flex-col gap-6 w-full p-5">
-                  <div className="flex flex-col gap-4 w-full bg-zinc-50 rounded-md p-6">
-                    {detailInfoConfig.map(
-                      ({ key, value }) =>
-                        !!key &&
-                        !!value && (
-                          <div className="flex gap-2" key={key}>
-                            <Typo.Body
-                              size="medium"
-                              className="text-info whitespace-nowrap min-w-[100px]"
-                            >
-                              {key}
-                            </Typo.Body>
-                            <Typo.Body size="medium" className="flex-1 break-keep text-right">
-                              {value}
-                            </Typo.Body>
-                          </div>
-                        ),
-                    )}
-                  </div>
+              <div className="bg-linear-to-t from-black via-black/50 via-70% to-transparent absolute bottom-[calc(100%-20px)] left-0 right-0 z-30 flex flex-col gap-6 pb-2 pt-6 px-5 pointer-events-none">
+                <div className="flex flex-col gap-2">
+                  <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
+                  <Typo.MainTitle size="large" className="break-keep text-white">
+                    {title}
+                  </Typo.MainTitle>
                 </div>
-              )}
 
-              {!!description && !!cleanTiptapHTML(description) && (
-                <div className="flex flex-col gap-6 px-5 py-8 items-center w-full">
-                  <SectionHeader badgeText="상세 안내" title={""} />
-                  <MissionDescription
-                    content={cleanTiptapHTML(description)}
-                    className="text-center"
-                  />
+                <div className="flex gap-3 items-center">
+                  {isRequirePassword && <MissionBadge icon={<Lock />} label="비밀" />}
+                  {hasReward && <MissionBadge icon={<Gift />} label="리워드" />}
                 </div>
-              )}
-            </div>
 
-            {reward && (
-              <div id={SECTION_IDS.REWARD} className="px-5 py-8 w-full">
-                <MissionRewardSection
-                  rewardImageUrl={reward?.data.imageUrl ?? undefined}
-                  rewardName={reward?.data.name ?? undefined}
-                  rewardScheduledDate={reward?.data.scheduledDate ?? undefined}
-                />
+                <div className="h-[56px] w-full" />
               </div>
-            )}
 
-            {mission?.type !== MissionType.EXPERIENCE_GROUP && (
-              <div className="flex flex-col gap-4 items-center px-5 py-8">
-                <Typo.MainTitle size="small" className="text-center">
-                  가족, 친구에게
-                  <br />
-                  공유해주세요 👀
-                </Typo.MainTitle>
-                <SocialShareButtons
-                  onXShare={handleXShare}
-                  onKakaoShare={handleKakaoShare}
-                  onLinkShare={handleLinkShare}
-                />
-              </div>
-            )}
-
-            {/* TODO: 참여 방법 추가 시 실제 데이터 사용 */}
-            {/* <div id="participation-method">
-              <ParticipationMethodSection
-                steps={[
-                  {
-                    title: "전용 링크로 제품 구매하기",
-                    description:
-                      "전용 구매 링크를 통해 ‘스타벅스 홀리데이 블론드 로스트’를 구매해주세요!",
-                  },
-                  {
-                    title: "구매 사진 인증하기",
-                    description: "제품을 받고 영수증과 사진 인증을 진행해주세요!",
-                  },
-                  {
-                    title: "사용 후기 작성하기",
-                    description: "일주일 사용 후, 미션 페이지로 다시 돌아와서 후기 작성하면 끝!",
-                  },
-                ]}
+              <DrawerTabContent
+                sections={sections}
+                reward={reward}
+                showDetailInfo={showDetailInfo}
+                detailInfoConfig={detailInfoConfig}
+                description={description}
+                mission={mission}
+                handleXShare={handleXShare}
+                handleKakaoShare={handleKakaoShare}
+                handleLinkShare={handleLinkShare}
               />
-            </div> */}
+            </BottomDrawer.Content>
+          </BottomDrawer>
+
+          <div
+            ref={bottomButtonRef}
+            className="fixed bottom-0 left-0 right-0 z-60 mx-auto max-w-lg bg-white border-t border-zinc-100 px-5 py-4 pb-[calc(16px+env(safe-area-inset-bottom))]"
+          >
+            <BottomButton
+              isActive={isActive ?? false}
+              firstActionId={firstActionId ?? ""}
+              initialError={initialError}
+              deadline={deadline}
+              showResumeModal={showResumeModal}
+              isCompleted={isCompleted}
+              hasReward={!!reward}
+              isRequirePassword={isRequirePassword}
+              hasExistingResponse={!!missionResponse}
+            />
           </div>
         </div>
-
-        <FixedBottomLayout.Content className="flex w-full justify-end">
-          <BottomButton
-            isActive={isActive ?? false}
-            firstActionId={firstActionId ?? ""}
-            initialError={initialError}
-            deadline={deadline}
-            showResumeModal={showResumeModal}
-            isCompleted={isCompleted}
-            hasReward={!!reward}
-            isRequirePassword={isRequirePassword}
-            hasExistingResponse={!!missionResponse}
-          />
-        </FixedBottomLayout.Content>
       </main>
-      <MissionFooter />
     </CalloutProvider>
+  );
+}
+
+interface DrawerTabContentProps {
+  sections: string[];
+  reward: ReturnType<typeof useReadReward>["data"];
+  showDetailInfo: boolean;
+  detailInfoConfig: readonly { key: string; value: string | null | undefined }[];
+  description: string | null | undefined;
+  mission: ReturnType<typeof useMissionIntroData>["mission"];
+  handleXShare: () => void;
+  handleKakaoShare: () => void;
+  handleLinkShare: () => void;
+}
+
+function DrawerTabContent({
+  sections,
+  reward,
+  showDetailInfo,
+  detailInfoConfig,
+  description,
+  mission,
+  handleXShare,
+  handleKakaoShare,
+  handleLinkShare,
+}: DrawerTabContentProps) {
+  const { open, progress } = useBottomDrawer();
+  const contentRef = useRef<HTMLDivElement>(null);
+  const isFullyOpen = progress >= 0.99;
+  const [activeTab, setActiveTab] = useState<(typeof SECTION_IDS)[keyof typeof SECTION_IDS]>(
+    SECTION_IDS.MISSION_GUIDE,
+  );
+
+  const handleChangeTab = useCallback(
+    (value: string) => {
+      if (value !== SECTION_IDS.MISSION_GUIDE && value !== SECTION_IDS.REWARD) {
+        return;
+      }
+
+      setActiveTab(value);
+      open();
+
+      setTimeout(() => {
+        if (contentRef.current) {
+          const container = contentRef.current;
+
+          if (value === SECTION_IDS.MISSION_GUIDE) {
+            container.scrollTo({
+              top: 0,
+              behavior: "smooth",
+            });
+          } else {
+            const element = document.getElementById(value);
+            if (element) {
+              const elementTop = element.offsetTop;
+              const offset = SCROLL_OFFSET(value);
+
+              container.scrollTo({
+                top: elementTop - offset,
+                behavior: "smooth",
+              });
+            }
+          }
+        }
+      }, 100);
+    },
+    [open],
+  );
+
+  return (
+    <>
+      <div className="bg-white rounded-t-3xl relative z-40">
+        <div className="py-3">
+          <div className="h-1 w-9 rounded-md bg-zinc-300 mx-auto" />
+        </div>
+
+        <Tab.Root value={activeTab} pointColor="secondary" onValueChange={handleChangeTab}>
+          <Tab.List className="px-5">
+            <Tab.Item
+              value={SECTION_IDS.MISSION_GUIDE}
+              className={cn(sections.length === 1 ? "mx-auto max-w-[110px]" : "")}
+              onClick={() => handleChangeTab(SECTION_IDS.MISSION_GUIDE)}
+            >
+              <Typo.SubTitle size="large">상세 안내</Typo.SubTitle>
+            </Tab.Item>
+            {reward && (
+              <Tab.Item
+                value={SECTION_IDS.REWARD}
+                onClick={() => handleChangeTab(SECTION_IDS.REWARD)}
+              >
+                <Typo.SubTitle size="large">참여 혜택</Typo.SubTitle>
+              </Tab.Item>
+            )}
+          </Tab.List>
+        </Tab.Root>
+      </div>
+
+      <div
+        ref={contentRef}
+        data-drawer-scrollable
+        className={cn("flex-1 bg-white", isFullyOpen ? "overflow-y-auto" : "overflow-hidden")}
+        onPointerDownCapture={e => e.stopPropagation()}
+      >
+        <div
+          id={SECTION_IDS.MISSION_GUIDE}
+          className="flex w-full flex-col gap-0 px-5 items-center"
+        >
+          {showDetailInfo && (
+            <div className="flex flex-col gap-6 w-full p-5">
+              <div className="flex flex-col gap-4 w-full bg-zinc-50 rounded-md p-6">
+                {detailInfoConfig.map(
+                  ({ key, value }) =>
+                    !!key &&
+                    !!value && (
+                      <div className="flex gap-2" key={key}>
+                        <Typo.Body
+                          size="medium"
+                          className="text-info whitespace-nowrap min-w-[100px]"
+                        >
+                          {key}
+                        </Typo.Body>
+                        <Typo.Body size="medium" className="flex-1 break-keep text-right">
+                          {value}
+                        </Typo.Body>
+                      </div>
+                    ),
+                )}
+              </div>
+            </div>
+          )}
+
+          {!!description && !!cleanTiptapHTML(description) && (
+            <div className="flex flex-col gap-6 px-5 py-8 items-center w-full">
+              <SectionHeader badgeText="상세 안내" title={""} />
+              <MissionDescription content={cleanTiptapHTML(description)} className="text-center" />
+            </div>
+          )}
+        </div>
+
+        {reward && (
+          <div id={SECTION_IDS.REWARD} className="px-5 py-8 w-full">
+            <MissionRewardSection
+              rewardImageUrl={reward?.data.imageUrl ?? undefined}
+              rewardName={reward?.data.name ?? undefined}
+              rewardScheduledDate={reward?.data.scheduledDate ?? undefined}
+            />
+          </div>
+        )}
+
+        {mission?.type !== MissionType.EXPERIENCE_GROUP && (
+          <div className="flex flex-col gap-4 items-center px-5 py-8">
+            <Typo.MainTitle size="small" className="text-center">
+              가족, 친구에게
+              <br />
+              공유해주세요 👀
+            </Typo.MainTitle>
+            <SocialShareButtons
+              onXShare={handleXShare}
+              onKakaoShare={handleKakaoShare}
+              onLinkShare={handleLinkShare}
+            />
+          </div>
+        )}
+
+        <MissionFooter />
+
+        <div className="h-32" />
+      </div>
+    </>
   );
 }

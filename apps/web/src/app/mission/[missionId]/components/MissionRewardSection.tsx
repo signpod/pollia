@@ -28,20 +28,20 @@ export function MissionRewardSection({
     <div className="flex flex-col gap-6 px-5 py-8">
       <SectionHeader badgeText={REWARD_SECTION_BADGE_TEXT} title={REWARD_SECTION_TITLE} />
 
-      <div className="w-auto rounded-md overflow-hidden bg-white shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
-        <div className="relative w-full max-h-[300px] flex items-center justify-center overflow-hidden">
+      <div className="w-auto rounded-md overflow-hidden bg-white shadow-[0_4px_20px_rgba(0,0,0,0.08)] p-4 flex flex-col gap-4">
+        <div className="aspect-square relative w-full flex items-center justify-center overflow-hidden rounded-sm">
           {rewardImageUrl && (
             <Image
               src={rewardImageUrl}
               alt="reward"
               width={300}
               height={300}
-              className="w-auto h-auto max-w-[300px] max-h-[300px] object-contain z-10 rounded-sm px-4 pt-4"
+              className="w-full h-auto object-contain rounded-sm"
             />
           )}
         </div>
 
-        <div className="w-full flex flex-col p-4 gap-3 items-center">
+        <div className="w-full flex flex-col gap-3 items-center">
           {rewardName && (
             <Typo.SubTitle size="large" className="break-keep pl-1">
               {rewardName}

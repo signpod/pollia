@@ -6,9 +6,13 @@ const titleSchema = z
   .max(50, "옵션 제목은 50자를 초과할 수 없습니다.")
   .trim();
 
-const descriptionSchema = z.string().max(200, "설명은 200자를 초과할 수 없습니다.").optional();
+const descriptionSchema = z
+  .string()
+  .max(200, "설명은 200자를 초과할 수 없습니다.")
+  .nullable()
+  .optional();
 
-const imageUrlSchema = z.url({ message: "올바른 URL 형식이 아닙니다." }).optional();
+const imageUrlSchema = z.url({ message: "올바른 URL 형식이 아닙니다." }).nullable().optional();
 
 const orderSchema = z
   .number()
@@ -17,7 +21,7 @@ const orderSchema = z
 
 const actionIdSchema = z.string().min(1, "액션 ID가 필요합니다.");
 
-const imageFileUploadIdSchema = z.string().optional();
+const imageFileUploadIdSchema = z.string().nullable().optional();
 
 export const optionInputSchema = z.object({
   actionId: actionIdSchema,

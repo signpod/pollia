@@ -3,6 +3,7 @@
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { useAdminSingleImage } from "@/app/admin/hooks/use-admin-image-upload";
+import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { IMAGE_MAX_SELECTIONS } from "@/schemas/action";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -25,6 +26,7 @@ export function ImageUploadForm({
       title: initialData?.title || "",
       description: initialData?.description || "",
       imageUrl: initialData?.imageUrl,
+      imageFileUploadId: initialData?.imageFileUploadId,
       isRequired: initialData?.isRequired ?? true,
       maxSelections: initialData?.maxSelections,
     },
@@ -33,8 +35,11 @@ export function ImageUploadForm({
 
   const mainImage = useAdminSingleImage({
     initialUrl: initialData?.imageUrl,
+    initialFileUploadId: initialData?.imageFileUploadId,
+    bucket: STORAGE_BUCKETS.ACTION_IMAGES,
     onUploadSuccess: data => {
       form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
+      form.setValue("imageFileUploadId", data.fileUploadId, { shouldDirty: true });
     },
   });
 
@@ -43,8 +48,8 @@ export function ImageUploadForm({
       type: "IMAGE",
       title: data.title,
       description: data.description,
-      imageUrl: data.imageUrl || undefined,
-      imageFileUploadId: mainImage.uploadedData?.fileUploadId,
+      imageUrl: data.imageUrl,
+      imageFileUploadId: data.imageFileUploadId,
       isRequired: data.isRequired,
       maxSelections: data.maxSelections,
     });
@@ -60,7 +65,11 @@ export function ImageUploadForm({
           titlePlaceholder="예: 사진을 업로드해주세요."
           mainImagePreviewUrl={mainImage.previewUrl}
           onMainImageSelect={mainImage.selectImage}
-          onMainImageDelete={mainImage.clearImage}
+          onMainImageDelete={() => {
+            mainImage.clearImage();
+            form.setValue("imageUrl", null, { shouldDirty: true });
+            form.setValue("imageFileUploadId", null, { shouldDirty: true });
+          }}
         >
           <MaxSelectionsField
             control={form.control}

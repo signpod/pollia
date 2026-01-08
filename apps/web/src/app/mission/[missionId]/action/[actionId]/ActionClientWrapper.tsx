@@ -12,8 +12,9 @@ import {
 import { useMissionSurveyToast } from "@/hooks/mission/useMissionSurveyToast";
 import { useRecordActionResponse } from "@/hooks/tracking";
 import { useAuth } from "@/hooks/user";
+import { setActionNavCookie } from "@/lib/cookie";
 import { formatDateToHHMM, formatDateToYYYYMMDD } from "@/lib/date";
-import { getSessionStorage, removeSessionStorage, setSessionStorage } from "@/lib/sessionStorage";
+import { removeSessionStorage } from "@/lib/sessionStorage";
 import { getOrCreateSessionId } from "@/lib/tracking";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
@@ -46,53 +47,30 @@ const SURVEY_SUBMIT_MODAL = {
 
 interface ActionClientWrapperProps {
   dehydratedState: DehydratedState;
+  actionIds: string[];
 }
 
 const SCROLL_OFFSET = 30;
 
-export function ActionClientWrapper({ dehydratedState }: ActionClientWrapperProps) {
+export function ActionClientWrapper({ dehydratedState, actionIds }: ActionClientWrapperProps) {
   return (
     <HydrationBoundary state={dehydratedState}>
-      <ActionContent />
+      <ActionContent actionIds={actionIds} />
     </HydrationBoundary>
   );
 }
 
-function ActionContent() {
+function ActionContent({ actionIds }: { actionIds: string[] }) {
   const { missionId, actionId } = useParams<{ missionId: string; actionId: string }>();
-  const router = useRouter();
   const { data: actions } = useReadActionsDetail(missionId);
-  const actionsIds = actions.data.map(action => action.id);
 
   useEffect(() => {
-    const actionIdBefore = getSessionStorage(`current-action-id-${missionId}`);
-    const currentActionIdIndex = actionsIds.findIndex(id => id === actionId);
-    const getIsActionIdBefore = () => {
-      if (!actionIdBefore) return false;
-      if (actionIdBefore === "initial") {
-        return currentActionIdIndex === 0;
-      }
-
-      if (actionIdBefore === "resume") return true;
-
-      return (
-        Math.abs(currentActionIdIndex - actionsIds.findIndex(id => id === actionIdBefore)) <= 1
-      );
-    };
-
-    const isActionIdBefore = getIsActionIdBefore();
-
-    if (!isActionIdBefore) {
-      router.replace(ROUTES.MISSION(missionId));
-      return;
-    }
-
     window.scrollTo(0, -SCROLL_OFFSET);
     document.documentElement.scrollTop = -SCROLL_OFFSET;
     document.body.scrollTop = -SCROLL_OFFSET;
 
-    setSessionStorage(`current-action-id-${missionId}`, actionId);
-  }, [actionsIds, actionId, missionId, router]);
+    setActionNavCookie(missionId, actionId);
+  }, [actionId, missionId]);
 
   const steps = createActionSteps({
     actions: actions.data,
@@ -230,8 +208,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
 
       if (answer.type === ActionType.MULTIPLE_CHOICE || answer.type === ActionType.TAG) {
         const submittedOptionIds = answersForAction
-          .map(a => a.optionId)
-          .filter((id): id is string => id !== null)
+          .flatMap(a => a.options.map(opt => opt.id))
           .sort();
         const currentOptionIds = answer.selectedOptionIds
           ? [...answer.selectedOptionIds].sort()

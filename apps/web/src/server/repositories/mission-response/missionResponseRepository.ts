@@ -22,7 +22,7 @@ export class MissionResponseRepository {
         answers: {
           include: {
             action: true,
-            option: true,
+            options: true,
             fileUploads: true,
           },
         },
@@ -42,7 +42,7 @@ export class MissionResponseRepository {
         answers: {
           include: {
             action: true,
-            option: true,
+            options: true,
             fileUploads: true,
           },
         },
@@ -61,7 +61,13 @@ export class MissionResponseRepository {
             email: true,
           },
         },
-        answers: true,
+        answers: {
+          include: {
+            action: true,
+            options: true,
+            fileUploads: true,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",

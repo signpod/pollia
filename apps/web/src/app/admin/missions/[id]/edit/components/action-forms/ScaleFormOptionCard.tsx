@@ -14,7 +14,7 @@ export interface ScaleFormOptionCardProps {
   total: number;
   minOptions: number;
   title: string;
-  description?: string;
+  description?: string | null;
   titlePlaceholder?: string;
   descriptionPlaceholder?: string;
   onTitleChange: (value: string) => void;

@@ -1,18 +1,15 @@
 import { ActionStepContentProps } from "@/constants/action";
+import { useDeleteAnswer } from "@/hooks/action/useDeleteAnswer";
+import { useDeleteFile } from "@/hooks/common/useDeleteFile";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
+import type { FileInfo } from "@/types/domain/file";
 import type { ActionAnswerItem } from "@/types/dto";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 import { PdfUpload } from "./PdfUpload";
 import { FileList } from "./components/FileList";
 import { PdfUploadNotice } from "./components/PdfUploadNotice";
-
-interface FileInfo {
-  fileName: string;
-  fileSize: number;
-  fileUrl: string;
-}
 
 export function ActionPdf({
   actionData,
@@ -32,6 +29,12 @@ export function ActionPdf({
   const [fileUploadIds, setFileUploadIds] = useState<string[]>([]);
   const [uploadingFileUrl, setUploadingFileUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+
+  const { mutate: deleteFileMutation } = useDeleteFile();
+  const { mutate: deleteAnswerMutation, isPending: isDeletingAnswer } = useDeleteAnswer();
+
+  const prevHadFilesRef = useRef(false);
+  const isInitializedRef = useRef(false);
 
   const existingAnswer = useMemo(() => {
     if (!missionResponse?.data?.answers || missionResponse.data.answers.length === 0) {
@@ -89,40 +92,28 @@ export function ActionPdf({
   );
 
   useEffect(() => {
-    if (existingAnswer) {
-      const answerWithFileUploads = existingAnswer as typeof existingAnswer & {
-        fileUploads?: Array<{
-          id: string;
-          originalFileName: string;
-          fileSize: number;
-          publicUrl: string;
-        }>;
-      };
+    if (isInitializedRef.current) return;
 
-      if (answerWithFileUploads.fileUploads && answerWithFileUploads.fileUploads.length > 0) {
-        const fileInfosFromAnswer: FileInfo[] = answerWithFileUploads.fileUploads.map(
-          fileUpload => ({
-            fileName: fileUpload.originalFileName,
-            fileSize: fileUpload.fileSize,
-            fileUrl: fileUpload.publicUrl,
-          }),
-        );
+    if (existingAnswer?.fileUploads && existingAnswer.fileUploads.length > 0) {
+      const fileInfosFromAnswer: FileInfo[] = existingAnswer.fileUploads.map(fileUpload => ({
+        fileName: fileUpload.originalFileName,
+        fileSize: fileUpload.fileSize,
+        fileUrl: fileUpload.publicUrl,
+        fileUploadId: fileUpload.id,
+        filePath: fileUpload.filePath,
+      }));
 
-        const fileUploadIdsFromAnswer = answerWithFileUploads.fileUploads.map(
-          fileUpload => fileUpload.id,
-        );
+      const fileUploadIdsFromAnswer = existingAnswer.fileUploads.map(fileUpload => fileUpload.id);
 
-        setFileInfos(fileInfosFromAnswer);
-        setFileUploadIds(fileUploadIdsFromAnswer);
-        validateAndUpdateAnswer(fileUploadIdsFromAnswer);
-      } else {
-        // 기존 답변이 있지만 fileUploads가 없는 경우
-        // 이미 제출된 답변이므로 빈 배열로 설정하고 validation 통과
-        setFileInfos([]);
-        setFileUploadIds([]);
-        // 기존 답변이 이미 제출되어 있으므로 validation 통과 처리
-        updateCanGoNextRef.current?.(true);
-      }
+      setFileInfos(fileInfosFromAnswer);
+      setFileUploadIds(fileUploadIdsFromAnswer);
+      isInitializedRef.current = true;
+      validateAndUpdateAnswer(fileUploadIdsFromAnswer);
+    } else if (existingAnswer) {
+      setFileInfos([]);
+      setFileUploadIds([]);
+      isInitializedRef.current = true;
+      updateCanGoNextRef.current?.(true);
     }
   }, [existingAnswer, validateAndUpdateAnswer]);
 
@@ -130,21 +121,47 @@ export function ActionPdf({
     validateAndUpdateAnswer(fileUploadIds);
   }, [fileUploadIds, validateAndUpdateAnswer]);
 
+  useEffect(() => {
+    if (!isInitializedRef.current) return;
+
+    if (prevHadFilesRef.current && fileInfos.length === 0 && existingAnswer?.id) {
+      deleteAnswerMutation(existingAnswer.id);
+    }
+    prevHadFilesRef.current = fileInfos.length > 0;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fileInfos.length, existingAnswer?.id]);
+
   const handleUploadChange = useCallback(
-    (hasUploadedFile: boolean, newFileUrls: string[], newFileUploadIds: string[], file?: File) => {
-      if (hasUploadedFile && newFileUrls.length > 0 && newFileUploadIds.length > 0 && file) {
+    (
+      hasUploadedFile: boolean,
+      newFileUrls: string[],
+      newFileUploadIds: string[],
+      newFilePaths: string[],
+      file?: File,
+    ) => {
+      if (
+        hasUploadedFile &&
+        newFileUrls.length > 0 &&
+        newFileUploadIds.length > 0 &&
+        newFilePaths.length > 0 &&
+        file
+      ) {
         const newFileUrl = newFileUrls[0];
         const newFileUploadId = newFileUploadIds[0];
+        const newFilePath = newFilePaths[0];
 
-        if (newFileUrl && newFileUploadId) {
-          setUploadingFileUrl(newFileUrl);
+        if (newFileUrl && newFileUploadId && newFilePath) {
           const fileInfo: FileInfo = {
             fileName: file.name,
             fileSize: file.size,
             fileUrl: newFileUrl,
+            fileUploadId: newFileUploadId,
+            filePath: newFilePath,
           };
+
           setFileInfos(prev => [...prev, fileInfo]);
           setFileUploadIds(prev => [...prev, newFileUploadId]);
+          setUploadingFileUrl(null);
         }
       } else if (!hasUploadedFile) {
         setUploadingFileUrl(null);
@@ -160,24 +177,23 @@ export function ActionPdf({
     }
   }, []);
 
-  const handleFileDelete = useCallback((fileUrl: string) => {
-    let deletedIndex = -1;
-    setFileInfos(prev => {
-      const index = prev.findIndex(f => f.fileUrl === fileUrl);
-      if (index === -1) return prev;
-      deletedIndex = index;
-      return prev.filter(f => f.fileUrl !== fileUrl);
-    });
-    setFileUploadIds(prev => {
-      if (deletedIndex === -1) return prev;
-      return prev.filter((_, i) => i !== deletedIndex);
-    });
-    setUploadingFileUrl(prev => (prev === fileUrl ? null : prev));
-    // blob: URL인 경우에만 revokeObjectURL 호출 (기존 답변의 publicUrl은 제외)
-    if (fileUrl.startsWith("blob:")) {
-      URL.revokeObjectURL(fileUrl);
-    }
-  }, []);
+  const handleFileDelete = useCallback(
+    (fileUrl: string) => {
+      const fileInfo = fileInfos.find(f => f.fileUrl === fileUrl);
+      if (!fileInfo) return;
+
+      setFileInfos(prev => prev.filter(f => f.fileUrl !== fileUrl));
+
+      if (fileInfo.filePath) {
+        deleteFileMutation(fileInfo.filePath);
+      }
+
+      if (fileInfo.fileUploadId) {
+        setFileUploadIds(prev => prev.filter(id => id !== fileInfo.fileUploadId));
+      }
+    },
+    [deleteFileMutation, fileInfos],
+  );
 
   const handleFileClick = useCallback((fileUrl: string) => {
     window.open(fileUrl, "_blank");
@@ -191,7 +207,7 @@ export function ActionPdf({
       description={actionData.description ?? undefined}
       imageUrl={actionData.imageUrl ?? undefined}
       isFirstAction={isFirstAction}
-      isNextDisabled={isNextDisabledProp}
+      isNextDisabled={isNextDisabledProp || isDeletingAnswer}
       onPrevious={onPrevious}
       onNext={onNext}
       nextButtonText={nextButtonText}
@@ -201,13 +217,15 @@ export function ActionPdf({
       {fileInfos.length === 0 && (
         <PdfUpload onUploadChange={handleUploadChange} onUploadingChange={handleUploadingChange} />
       )}
-      <FileList
-        files={fileInfos}
-        uploadingFileUrl={uploadingFileUrl}
-        isUploading={isUploading}
-        onFileDelete={handleFileDelete}
-        onFileClick={handleFileClick}
-      />
+      {fileInfos.length > 0 && (
+        <FileList
+          files={fileInfos}
+          uploadingFileUrl={uploadingFileUrl}
+          isUploading={isUploading}
+          onFileDelete={handleFileDelete}
+          onFileClick={handleFileClick}
+        />
+      )}
       <PdfUploadNotice />
     </SurveyQuestionTemplate>
   );

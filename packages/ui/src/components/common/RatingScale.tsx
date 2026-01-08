@@ -241,12 +241,18 @@ export function RatingScale({
           step={sliderStep}
           disabled={disabled}
           orientation={isVertical ? "vertical" : "horizontal"}
-          className={cn(isVertical ? "h-full w-6 items-center" : "h-18 w-full items-center")}
+          className={cn(
+            isVertical ? "h-full w-6 items-center" : "h-18 w-full items-center",
+            "pointer-events-none",
+          )}
         >
           <Scale.Track
             className={cn(
-              "grow overflow-visible rounded-full bg-violet-100",
-              isVertical ? "h-full w-[6px]" : "h-[6px] w-full",
+              "relative overflow-visible rounded-full bg-violet-100",
+              "before:content-[''] before:absolute before:pointer-events-auto",
+              isVertical
+                ? "h-full w-[6px] before:inset-y-0 before:-inset-x-[200px]"
+                : "h-[6px] w-full grow before:inset-x-0 before:-inset-y-[200px]",
             )}
           />
           <RatingScaleDots
@@ -266,7 +272,7 @@ export function RatingScale({
           <Scale.Thumb
             className={cn(
               "size-9 rounded-full bg-violet-400 shadow-[0_3px_6px_rgba(141,93,249,0.3)] inset-shadow-[0_3px_4px_rgba(141,93,249,0.6)] flex items-center justify-center",
-              "focus:outline-none",
+              "focus:outline-none pointer-events-auto",
               "data-[orientation='horizontal']:left-[8px]",
             )}
             style={thumbPosition}

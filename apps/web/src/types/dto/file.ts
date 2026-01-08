@@ -24,6 +24,12 @@ export interface DeleteFileRequest {
 
 export type DeleteFileResponse = Record<string, never>;
 
+export interface DeleteFileByIdRequest {
+  fileUploadId: string;
+}
+
+export type DeleteFileByIdResponse = Record<string, never>;
+
 export interface ConfirmFileRequest {
   fileUploadId: string;
 }

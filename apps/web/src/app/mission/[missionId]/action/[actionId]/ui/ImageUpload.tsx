@@ -13,6 +13,7 @@ interface ImageUploadProps {
     hasUploadedImage: boolean,
     imageUrls: string[],
     fileUploadIds: string[],
+    filePaths: string[],
   ) => void;
   onUploadingChange?: (isUploading: boolean) => void;
 }
@@ -24,13 +25,18 @@ export function ImageUpload({
 }: ImageUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const [uploadedResults, setUploadedResults] = useState<Array<{ publicUrl: string; fileUploadId: string }>>([]);
+  const [uploadedResults, setUploadedResults] = useState<
+    Array<{ publicUrl: string; fileUploadId: string; path: string }>
+  >([]);
 
   const { uploadMultiple, isUploading, uploadError } = useMultipleImageUpload({
     bucket: STORAGE_BUCKETS.ACTION_ANSWER_IMAGES,
     onSuccess: result => {
       setUploadedResults(prev => {
-        const newResults = [...prev, { publicUrl: result.publicUrl, fileUploadId: result.fileUploadId }];
+        const newResults = [
+          ...prev,
+          { publicUrl: result.publicUrl, fileUploadId: result.fileUploadId, path: result.path },
+        ];
         return newResults;
       });
     },
@@ -45,7 +51,8 @@ export function ImageUpload({
     if (uploadedResults.length > 0 && !isUploading) {
       const imageUrls = uploadedResults.map(r => r.publicUrl);
       const fileUploadIds = uploadedResults.map(r => r.fileUploadId);
-      onUploadChange?.(true, imageUrls, fileUploadIds);
+      const filePaths = uploadedResults.map(r => r.path);
+      onUploadChange?.(true, imageUrls, fileUploadIds, filePaths);
       setUploadedResults([]);
     }
   }, [uploadedResults, isUploading, onUploadChange]);

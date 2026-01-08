@@ -122,8 +122,10 @@ export function ActionOptionButton({
         <div className="flex h-full">
           {isSelected ? (
             <CheckIcon className={cn("size-6", checkCircleColor)} />
+          ) : NoneCheckedIcon ? (
+            <NoneCheckedIcon className={cn("size-6", checkCircleColor)} />
           ) : (
-            NoneCheckedIcon && <NoneCheckedIcon className={cn("size-6", checkCircleColor)} />
+            <div className="size-6" />
           )}
         </div>
       </div>

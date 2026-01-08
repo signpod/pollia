@@ -1,0 +1,15 @@
+model MissionNotionPage {
+    id                  String   @id @default(cuid())
+    missionId           String   @unique @map("mission_id")
+    notionPageId        String   @map("notion_page_id")
+    notionPageUrl       String   @map("notion_page_url")
+    lastSyncedAt        DateTime @map("last_synced_at")
+    syncedResponseCount Int      @map("synced_response_count")
+    createdAt           DateTime @default(now()) @map("created_at")
+    updatedAt           DateTime @updatedAt @map("updated_at")
+
+    mission Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+    @@index([missionId])
+    @@map("mission_notion_pages")
+}

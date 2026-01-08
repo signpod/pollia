@@ -13,7 +13,7 @@ import {
 } from "@/app/admin/components/shadcn-ui/card";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
-import { useFormImageUpload } from "@/app/admin/hooks/use-form-image-upload";
+import { useAdminSingleImage } from "@/app/admin/hooks/use-admin-image-upload";
 import {
   MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH,
   MISSION_COMPLETION_TITLE_MAX_LENGTH,
@@ -119,31 +119,39 @@ function LinksSection({ form }: { form: UseFormReturn<CreateMissionFunnelFormDat
 }
 
 export function CompletionStep({ form }: CompletionStepProps) {
-  const imageUpload = useFormImageUpload({
-    form,
-    urlField: "completion.imageUrl",
-    fileUploadIdField: "completion.imageFileUploadId",
-    errorMessage: "이미지 업로드 실패",
+  const imageUpload = useAdminSingleImage({
+    onUploadSuccess: data => {
+      const currentCompletion = form.getValues("completion");
+      form.setValue(
+        "completion",
+        {
+          ...currentCompletion,
+          imageUrl: data.publicUrl,
+          imageFileUploadId: data.fileUploadId,
+        },
+        { shouldDirty: true },
+      );
+    },
   });
 
   const completion = form.watch("completion");
   const completionTitle = completion?.title || "";
   const completionDescription = completion?.description || "";
-  const completionImageUrl = imageUpload.imageUrl;
+  const completionImageUrl = imageUpload.previewUrl || completion?.imageUrl || undefined;
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>완료 화면 정보</CardTitle>
-          <CardDescription>
-            미션 완료 시 표시될 화면의 제목과 설명을 입력하세요. (선택)
-          </CardDescription>
+          <CardDescription>미션 완료 시 표시될 화면의 제목과 설명을 입력하세요.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="completion-title">제목</Label>
+              <Label htmlFor="completion-title">
+                제목 <span className="text-destructive">*</span>
+              </Label>
               <CharacterCounter
                 current={completionTitle?.length || 0}
                 max={MISSION_COMPLETION_TITLE_MAX_LENGTH}
@@ -156,52 +164,21 @@ export function CompletionStep({ form }: CompletionStepProps) {
               onChange={e => {
                 const value = e.target.value;
                 const currentDescription = completion?.description || "";
-                if (value && currentDescription) {
-                  form.setValue(
-                    "completion",
-                    {
-                      title: value,
-                      description: currentDescription,
-                      ...(completion?.imageUrl && { imageUrl: completion.imageUrl }),
-                      ...(completion?.imageFileUploadId && {
-                        imageFileUploadId: completion.imageFileUploadId,
-                      }),
-                      ...(completion?.links && { links: completion.links }),
-                    },
-                    {
-                      shouldDirty: true,
-                    },
-                  );
-                } else if (!value && !currentDescription) {
-                  form.setValue(
-                    "completion",
-                    completion && (completion.imageUrl || completion.links)
-                      ? {
-                          ...(completion.imageUrl && { imageUrl: completion.imageUrl }),
-                          ...(completion.imageFileUploadId && {
-                            imageFileUploadId: completion.imageFileUploadId,
-                          }),
-                          ...(completion.links && { links: completion.links }),
-                        }
-                      : undefined,
-                    {
-                      shouldDirty: true,
-                    },
-                  );
-                } else {
-                  const partialCompletion: CreateMissionFunnelFormData["completion"] = {
-                    ...(value && { title: value }),
-                    ...(currentDescription && { description: currentDescription }),
+                form.setValue(
+                  "completion",
+                  {
+                    title: value,
+                    description: currentDescription,
                     ...(completion?.imageUrl && { imageUrl: completion.imageUrl }),
                     ...(completion?.imageFileUploadId && {
                       imageFileUploadId: completion.imageFileUploadId,
                     }),
                     ...(completion?.links && { links: completion.links }),
-                  };
-                  form.setValue("completion", partialCompletion, {
+                  },
+                  {
                     shouldDirty: true,
-                  });
-                }
+                  },
+                );
               }}
               maxLength={MISSION_COMPLETION_TITLE_MAX_LENGTH}
             />
@@ -214,7 +191,9 @@ export function CompletionStep({ form }: CompletionStepProps) {
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="completion-description">설명</Label>
+              <Label htmlFor="completion-description">
+                설명 <span className="text-destructive">*</span>
+              </Label>
               <CharacterCounter
                 current={completionDescription?.length || 0}
                 max={MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH}
@@ -224,54 +203,24 @@ export function CompletionStep({ form }: CompletionStepProps) {
               content={completionDescription}
               onUpdate={content => {
                 const currentTitle = completion?.title || "";
-                if (content && currentTitle) {
-                  form.setValue(
-                    "completion",
-                    {
-                      title: currentTitle,
-                      description: content,
-                      ...(completion?.imageUrl && { imageUrl: completion.imageUrl }),
-                      ...(completion?.imageFileUploadId && {
-                        imageFileUploadId: completion.imageFileUploadId,
-                      }),
-                      ...(completion?.links && { links: completion.links }),
-                    },
-                    {
-                      shouldDirty: true,
-                    },
-                  );
-                } else if (!content && !currentTitle) {
-                  form.setValue(
-                    "completion",
-                    completion && (completion.imageUrl || completion.links)
-                      ? {
-                          ...(completion.imageUrl && { imageUrl: completion.imageUrl }),
-                          ...(completion.imageFileUploadId && {
-                            imageFileUploadId: completion.imageFileUploadId,
-                          }),
-                          ...(completion.links && { links: completion.links }),
-                        }
-                      : undefined,
-                    {
-                      shouldDirty: true,
-                    },
-                  );
-                } else {
-                  const partialCompletion: CreateMissionFunnelFormData["completion"] = {
-                    ...(currentTitle && { title: currentTitle }),
-                    ...(content && { description: content }),
+                form.setValue(
+                  "completion",
+                  {
+                    title: currentTitle,
+                    description: content || "",
                     ...(completion?.imageUrl && { imageUrl: completion.imageUrl }),
                     ...(completion?.imageFileUploadId && {
                       imageFileUploadId: completion.imageFileUploadId,
                     }),
                     ...(completion?.links && { links: completion.links }),
-                  };
-                  form.setValue("completion", partialCompletion, {
+                  },
+                  {
                     shouldDirty: true,
-                  });
-                }
+                  },
+                );
               }}
               placeholder="완료 화면에 표시될 설명을 입력하세요."
+              showToolbar={true}
             />
             {form.formState.errors.completion?.description && (
               <p className="text-sm text-destructive">
@@ -292,19 +241,22 @@ export function CompletionStep({ form }: CompletionStepProps) {
             <ImageSelector
               size="large"
               imageUrl={completionImageUrl}
-              onImageSelect={imageUpload.handleSelect}
-              onImageDelete={imageUpload.handleDelete}
-              disabled={imageUpload.upload.isUploading || imageUpload.upload.isDeleting}
+              onImageSelect={imageUpload.selectImage}
+              onImageDelete={() => {
+                imageUpload.clearImage();
+                const currentCompletion = form.getValues("completion");
+                if (currentCompletion) {
+                  const { imageUrl, imageFileUploadId, ...rest } = currentCompletion;
+                  form.setValue("completion", rest, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                }
+              }}
+              disabled={imageUpload.isUploading}
             />
-            {(imageUpload.upload.isUploading || imageUpload.upload.isDeleting) && (
-              <p className="text-sm text-muted-foreground">
-                {imageUpload.upload.isUploading ? "업로드 중..." : "삭제 중..."}
-              </p>
-            )}
-            {imageUpload.upload.uploadError && (
-              <p className="text-sm text-destructive">
-                업로드 실패: {imageUpload.upload.uploadError.message}
-              </p>
+            {imageUpload.isUploading && (
+              <p className="text-sm text-muted-foreground">업로드 중...</p>
             )}
           </div>
         </CardContent>

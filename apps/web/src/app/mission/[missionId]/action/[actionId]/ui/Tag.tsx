@@ -3,7 +3,7 @@ import { ActionStepContentProps } from "@/constants/action";
 import { useIsMobile } from "@/hooks/common/useIsMobile";
 import { ActionType } from "@/types/domain/action";
 import { BottomDrawer, Typo, useBottomDrawer } from "@repo/ui/components";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { X } from "lucide-react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 import { Chip } from "./Chip";
 import { MultipleChoiceProvider, useSurveyMultipleChoice } from "./MultipleChoiceProvider";
@@ -59,8 +59,6 @@ function SurveyMultipleChoiceContent({
   isLoading,
 }: Omit<ActionStepContentProps, "updateCanGoNext" | "onAnswerChange">) {
   const { selectedIds, toggleSelectedId, canGoNext } = useSurveyMultipleChoice();
-  const contentRef = useRef<HTMLDivElement>(null);
-  const [expandedHeight, setExpandedHeight] = useState<number>(400);
 
   const isDisabled =
     actionData.maxSelections !== null && selectedIds.size >= actionData.maxSelections;
@@ -77,50 +75,6 @@ function SurveyMultipleChoiceContent({
     toggleSelectedId(optionId);
   };
 
-  useLayoutEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const getViewportHeight = () => {
-      if (window.visualViewport) {
-        return window.visualViewport.height;
-      }
-      return document.documentElement.clientHeight || window.innerHeight;
-    };
-
-    const updateHeight = () => {
-      if (contentRef.current) {
-        const children = contentRef.current.children;
-        if (children.length > 0) {
-          const firstChild = children[0] as HTMLElement;
-          const firstChildRect = firstChild.getBoundingClientRect();
-          const firstChildY = firstChildRect.top;
-
-          const viewportHeight = getViewportHeight();
-          const calculatedHeight = viewportHeight - firstChildY;
-          const maxHeight = viewportHeight * 0.9;
-          setExpandedHeight(Math.min(calculatedHeight, maxHeight));
-        }
-      }
-    };
-
-    updateHeight();
-    const resizeObserver = new ResizeObserver(updateHeight);
-    if (contentRef.current) {
-      resizeObserver.observe(contentRef.current);
-    }
-
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener("resize", updateHeight);
-      return () => {
-        resizeObserver.disconnect();
-        window.visualViewport?.removeEventListener("resize", updateHeight);
-      };
-    }
-
-    return () => resizeObserver.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [actionData.options]);
-
   return (
     <SurveyQuestionTemplate
       currentOrder={currentOrder}
@@ -136,7 +90,7 @@ function SurveyMultipleChoiceContent({
       isLoading={isLoading}
       isRequired={actionData.isRequired}
     >
-      <div ref={contentRef} className="flex flex-wrap gap-3 w-full">
+      <div className="flex flex-wrap gap-3 w-full">
         {actionData.options?.map(option => (
           <Chip
             key={option.id}
@@ -146,7 +100,7 @@ function SurveyMultipleChoiceContent({
           />
         ))}
       </div>
-      <BottomDrawer collapsedHeight={146} expandedHeight={expandedHeight}>
+      <BottomDrawer collapsedHeight={120} expandedHeight={180}>
         <BottomDrawerContentWithScrollReset
           actionData={actionData}
           selectedIds={selectedIds}
@@ -166,15 +120,14 @@ function BottomDrawerContentWithScrollReset({
   selectedIds: Set<string>;
   handleClick: (optionId: string) => void;
 }) {
-  const { isOpen, toggle } = useBottomDrawer();
-  const bodyRef = useRef<HTMLDivElement>(null);
+  const { toggle } = useBottomDrawer();
   const isMobile = useIsMobile();
 
-  useEffect(() => {
-    if (isOpen && bodyRef.current) {
-      bodyRef.current.scrollTop = 0;
-    }
-  }, [isOpen]);
+  const handleHeaderClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest("button")) return;
+    toggle();
+  };
 
   const selectedOptions = actionData?.options?.filter(option => selectedIds.has(option.id));
 
@@ -185,31 +138,32 @@ function BottomDrawerContentWithScrollReset({
       enableDrag={isMobile}
     >
       <BottomDrawer.Header
-        showToggleButton={false}
+        showToggleButton
         showCloseButton={false}
-        onClick={toggle}
-        className="relative h-[74px] py-0 px-5"
+        onClick={handleHeaderClick}
+        className="relative py-4 px-5"
       >
-        <div className="flex flex-col gap-4 items-center w-full h-full">
-          <div className="flex items-center justify-center h-5">
-            <div className="h-1 rounded-3xl bg-zinc-300 w-9" />
-          </div>
-
-          <div className="flex items-center justify-between w-full">
-            <Typo.SubTitle size="large">선택된 항목</Typo.SubTitle>
-            <Typo.SubTitle size="large">{selectedOptions?.length}개</Typo.SubTitle>
-          </div>
+        <div className="flex items-center gap-1">
+          <Typo.SubTitle size="large" className="text-violet-500">
+            {selectedOptions?.length ?? 0}
+          </Typo.SubTitle>
+          <Typo.SubTitle size="large">개 선택</Typo.SubTitle>
         </div>
       </BottomDrawer.Header>
-      <BottomDrawer.Body>
-        <div ref={bodyRef} className="flex flex-wrap gap-3 w-full pb-[80px]">
+      <BottomDrawer.Body className="p-0">
+        <div className="flex gap-2 overflow-x-auto px-5 pb-[80px] scrollbar-hide">
           {selectedOptions?.map(option => (
-            <Chip
+            <button
               key={option.id}
-              label={option.title}
-              isSelected={selectedIds.has(option.id)}
+              type="button"
               onClick={() => handleClick(option.id)}
-            />
+              className="flex items-center gap-1 px-3 py-2 bg-violet-50 rounded-full shrink-0"
+            >
+              <Typo.ButtonText size="medium" className="text-violet-500">
+                {option.title}
+              </Typo.ButtonText>
+              <X className="size-4 text-violet-500" />
+            </button>
           ))}
         </div>
       </BottomDrawer.Body>
