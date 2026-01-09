@@ -111,6 +111,11 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
 
   const toastStorageKey = `mission-toast-${missionId}`;
 
+  const handleAlreadyCompleted = useCallback(() => {
+    toast.warning("이미 완료된 미션입니다.", { id: "mission-already-completed" });
+    router.push(ROUTES.MISSION(missionId));
+  }, [missionId, router]);
+
   const { mutateAsync: submitAnswer, isPending: isSubmittingAnswer } = useSubmitQuestionAnswer({
     onSuccess: () => {
       goNext();
@@ -131,6 +136,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
     onError: () => {
       toast.warning("답변 저장에 실패했습니다.", { id: "submit-answer-error" });
     },
+    onAlreadyCompleted: handleAlreadyCompleted,
     missionId,
   });
 
@@ -156,6 +162,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
       onError: () => {
         toast.warning(MISSION_TOAST_MESSAGE.error.message, { id: MISSION_TOAST_MESSAGE.error.id });
       },
+      onAlreadyCompleted: handleAlreadyCompleted,
       missionId,
     });
 
@@ -302,12 +309,6 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
   const handleNext = useCallback(async () => {
     if (!currentAnswer) return;
 
-    // Check if mission is already completed
-    if (missionResponse?.data?.completedAt) {
-      router.push(ROUTES.MISSION(missionId));
-      return;
-    }
-
     const validationResult = submitAnswerItemSchema.safeParse(currentAnswer);
     if (!validationResult.success) {
       const errorMessage =
@@ -374,11 +375,8 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
     submitAnswer,
     completeSurveyAsync,
     showModal,
-    missionResponse,
     isAnswerSameAsSubmitted,
     goNext,
-    router,
-    missionId,
   ]);
 
   const handlePrevious = useCallback(() => {

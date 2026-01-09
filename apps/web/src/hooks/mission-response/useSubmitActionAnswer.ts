@@ -1,6 +1,7 @@
 "use client";
 
 import { submitAnswers } from "@/actions/action-answer";
+import { getMyResponseForMission } from "@/actions/mission-response";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import type { ActionAnswerItem } from "@/types/dto";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -13,6 +14,7 @@ interface SubmitActionAnswerPayload {
 interface UseSubmitActionAnswerOptions {
   onSuccess?: () => void;
   onError?: (error: Error) => void;
+  onAlreadyCompleted?: () => void;
   missionId: string;
 }
 
@@ -22,6 +24,13 @@ export function useSubmitActionAnswer(options: UseSubmitActionAnswerOptions) {
 
   return useMutation({
     mutationFn: async ({ responseId, answer }: SubmitActionAnswerPayload) => {
+      // Fetch fresh mission response to check completion status
+      const freshResponse = await getMyResponseForMission(missionId);
+      if (freshResponse?.data?.completedAt) {
+        options.onAlreadyCompleted?.();
+        throw new Error("이미 완료된 미션입니다.");
+      }
+
       return await submitAnswers({
         responseId,
         answers: [
