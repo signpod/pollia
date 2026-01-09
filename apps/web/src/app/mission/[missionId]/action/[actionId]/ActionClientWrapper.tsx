@@ -309,6 +309,12 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
   const handleNext = useCallback(async () => {
     if (!currentAnswer) return;
 
+    // 현재 답변이 현재 질문의 것인지 확인
+    if (currentAnswer.actionId !== actionData.id) {
+      toast.warning("답변을 다시 입력해주세요.", { id: "answer-mismatch-error" });
+      return;
+    }
+
     const validationResult = submitAnswerItemSchema.safeParse(currentAnswer);
     if (!validationResult.success) {
       const errorMessage =
@@ -331,19 +337,22 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
         showCancelButton: true,
         onConfirm: async () => {
           await completeSurveyAsync({
-            responseId: missionResponse?.data?.answers[0]?.responseId ?? "",
+            responseId,
             answers: [
               {
                 actionId: currentAnswer.actionId,
                 type: currentAnswer.type,
                 isRequired: currentAnswer.isRequired,
                 ...(currentAnswer.type === "MULTIPLE_CHOICE" || currentAnswer.type === "TAG"
-                  ? { selectedOptionIds: currentAnswer.selectedOptionIds }
+                  ? {
+                      selectedOptionIds: currentAnswer.selectedOptionIds,
+                      ...(currentAnswer.textAnswer ? { textAnswer: currentAnswer.textAnswer } : {}),
+                    }
                   : {}),
                 ...(currentAnswer.type === "SCALE" || currentAnswer.type === "RATING"
                   ? { scaleValue: currentAnswer.scaleValue }
                   : {}),
-                ...(currentAnswer.type === "SUBJECTIVE"
+                ...(currentAnswer.type === "SUBJECTIVE" || currentAnswer.type === "SHORT_TEXT"
                   ? { textAnswer: currentAnswer.textAnswer }
                   : {}),
                 ...(currentAnswer.type === "IMAGE" ||
@@ -377,6 +386,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
     showModal,
     isAnswerSameAsSubmitted,
     goNext,
+    actionData.id,
   ]);
 
   const handlePrevious = useCallback(() => {
