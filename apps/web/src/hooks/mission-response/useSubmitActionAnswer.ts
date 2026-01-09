@@ -27,8 +27,7 @@ export function useSubmitActionAnswer(options: UseSubmitActionAnswerOptions) {
       // Fetch fresh mission response to check completion status
       const freshResponse = await getMyResponseForMission(missionId);
       if (freshResponse?.data?.completedAt) {
-        options.onAlreadyCompleted?.();
-        throw new Error("이미 완료된 미션입니다.");
+        throw new Error("ALREADY_COMPLETED");
       }
 
       return await submitAnswers({
@@ -67,6 +66,10 @@ export function useSubmitActionAnswer(options: UseSubmitActionAnswerOptions) {
       });
     },
     onError: error => {
+      if (error instanceof Error && error.message === "ALREADY_COMPLETED") {
+        options.onAlreadyCompleted?.();
+        return;
+      }
       console.error("❌ 답변 제출 실패:", error);
       options.onError?.(error as Error);
     },
