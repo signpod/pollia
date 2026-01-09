@@ -115,6 +115,12 @@ export function MultipleChoiceProvider({
       });
     } else {
       updateCanGoNextRef.current?.(false);
+      // 필수 질문이어도 항상 현재 질문의 답변 상태로 초기화
+      onAnswerChangeRef.current?.({
+        actionId,
+        type: answerType ?? ActionType.MULTIPLE_CHOICE,
+        isRequired,
+      });
     }
   }, [initialSelectedIds, actionId, answerType, isRequired, missionResponse]);
 

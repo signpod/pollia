@@ -128,6 +128,15 @@ function useSurveySubjectiveValue(
         isRequired,
         textAnswer: "",
       });
+    } else {
+      updateCanGoNextRef.current?.(false);
+      // 필수 질문이어도 항상 현재 질문의 답변 상태로 초기화
+      onAnswerChangeRef.current?.({
+        actionId,
+        type: ActionType.SUBJECTIVE,
+        isRequired,
+        textAnswer: "",
+      });
     }
   }, [initialTextValue, actionId, isRequired]);
 
