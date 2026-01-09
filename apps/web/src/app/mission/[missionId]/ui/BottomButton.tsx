@@ -1,7 +1,8 @@
 "use client";
 
 import { toast } from "@/components/common/Toast";
-import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
+import { getMissionParticipantInfo } from "@/actions/mission";
+import { getMyResponseForMission } from "@/actions/mission-response";
 import { ROUTES } from "@/constants/routes";
 import { AuthError, useKakaoLogin } from "@/hooks/login/useKakaoLogin";
 import {
@@ -14,7 +15,6 @@ import { setActionNavCookie } from "@/lib/cookie";
 import { Mission } from "@prisma/client";
 import KakaoIcon from "@public/svgs/kakao-icon.svg";
 import { ButtonV2, Typo } from "@repo/ui/components";
-import { useQueryClient } from "@tanstack/react-query";
 import { isBefore } from "date-fns";
 import { motion } from "framer-motion";
 import { useParams, useRouter } from "next/navigation";
@@ -51,7 +51,6 @@ export function BottomButton({
   isRequirePassword,
   hasExistingResponse,
 }: BottomButtonProps) {
-  const queryClient = useQueryClient();
   const { missionId } = useParams<{ missionId: string }>();
   const { data: missionParticipantInfo } = useReadMissionParticipantInfo(missionId);
   const { data: missionResponseData } = useReadMissionResponseForMission({ missionId });
@@ -82,19 +81,11 @@ export function BottomButton({
   const { mutateAsync: handleStartResponse } = startResponse;
 
   const handleClick = async () => {
-    await Promise.all([
-      queryClient.refetchQueries({ queryKey: missionQueryKeys.missionParticipant(missionId) }),
-      queryClient.refetchQueries({
-        queryKey: missionQueryKeys.missionResponseForMission(missionId),
-      }),
+    // 서버에서 직접 최신 데이터를 가져옴 (캐시 업데이트 없이 체크만)
+    const [latestParticipantInfo, latestMissionResponse] = await Promise.all([
+      getMissionParticipantInfo(missionId),
+      isLoggedIn ? getMyResponseForMission(missionId) : Promise.resolve({ data: null }),
     ]);
-
-    const latestParticipantInfo = queryClient.getQueryData<typeof missionParticipantInfo>(
-      missionQueryKeys.missionParticipant(missionId),
-    );
-    const latestMissionResponse = queryClient.getQueryData<typeof missionResponseData>(
-      missionQueryKeys.missionResponseForMission(missionId),
-    );
 
     const hasLatestMissionResponse = Boolean(latestMissionResponse?.data?.id);
 
