@@ -30,9 +30,11 @@ import { cn } from "../../lib/utils";
 const TabContext = React.createContext<{
   activeTab: string | undefined;
   pointColor: "primary" | "secondary";
+  isInitialRender: boolean;
 }>({
   activeTab: undefined,
   pointColor: "primary",
+  isInitialRender: true,
 });
 
 interface TabRootProps extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root> {
@@ -52,7 +54,12 @@ function TabRoot({
   const [internalActiveTab, setInternalActiveTab] = React.useState<string | undefined>(
     initialTab || defaultValue,
   );
+  const [isInitialRender, setIsInitialRender] = React.useState(true);
   const activeTab = value !== undefined ? value : internalActiveTab;
+
+  React.useEffect(() => {
+    setIsInitialRender(false);
+  }, []);
 
   const handleValueChange = (newValue: string) => {
     if (value === undefined) {
@@ -62,7 +69,7 @@ function TabRoot({
   };
 
   return (
-    <TabContext.Provider value={{ activeTab, pointColor }}>
+    <TabContext.Provider value={{ activeTab, pointColor, isInitialRender }}>
       <TabsPrimitive.Root
         value={value}
         defaultValue={initialTab || defaultValue}
@@ -109,7 +116,7 @@ interface TabItemProps extends React.ComponentPropsWithoutRef<typeof TabsPrimiti
 
 const TabItem = React.forwardRef<React.ElementRef<typeof TabsPrimitive.Trigger>, TabItemProps>(
   ({ children, value, className, ...props }, ref) => {
-    const { activeTab, pointColor } = React.useContext(TabContext);
+    const { activeTab, pointColor, isInitialRender } = React.useContext(TabContext);
     const isActive = activeTab === value;
 
     const tabItemVariants = cva(
@@ -146,7 +153,7 @@ const TabItem = React.forwardRef<React.ElementRef<typeof TabsPrimitive.Trigger>,
               "absolute bottom-0 left-0 right-0 h-0.5",
               pointColor === "primary" ? "bg-primary" : "bg-black",
             )}
-            layoutId={`activeTab-${pointColor}`}
+            layoutId={isInitialRender ? undefined : `activeTab-${pointColor}`}
             transition={{
               type: "spring",
               stiffness: 500,

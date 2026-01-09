@@ -105,6 +105,7 @@ interface BottomDrawerContentProps {
   enableDrag?: boolean;
   enableWheelControl?: boolean;
   clickToExpand?: boolean;
+  preventBodyScroll?: boolean;
 }
 
 function BottomDrawerContent({
@@ -113,6 +114,7 @@ function BottomDrawerContent({
   enableDrag = true,
   enableWheelControl = false,
   clickToExpand = false,
+  preventBodyScroll = false,
 }: BottomDrawerContentProps) {
   const { isOpen, open, close, collapsedHeight, expandedHeight } = useBottomDrawer();
 
@@ -193,9 +195,9 @@ function BottomDrawerContent({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Prevent body scroll on mobile when drawer is mounted
+  // Prevent body scroll on mobile when drawer is mounted (optional)
   React.useEffect(() => {
-    if (!isMobile) return;
+    if (!preventBodyScroll || !isMobile) return;
 
     const originalBodyOverflow = document.body.style.overflow;
     const originalHtmlOverflow = document.documentElement.style.overflow;
@@ -208,7 +210,7 @@ function BottomDrawerContent({
       document.body.style.overflow = originalBodyOverflow;
       document.documentElement.style.overflow = originalHtmlOverflow;
     };
-  }, [isMobile]);
+  }, [preventBodyScroll, isMobile]);
 
   // Get scrollable element
   const getScrollable = React.useCallback(() => {

@@ -47,20 +47,19 @@ const SURVEY_SUBMIT_MODAL = {
 
 interface ActionClientWrapperProps {
   dehydratedState: DehydratedState;
-  actionIds: string[];
 }
 
 const SCROLL_OFFSET = 30;
 
-export function ActionClientWrapper({ dehydratedState, actionIds }: ActionClientWrapperProps) {
+export function ActionClientWrapper({ dehydratedState }: ActionClientWrapperProps) {
   return (
     <HydrationBoundary state={dehydratedState}>
-      <ActionContent actionIds={actionIds} />
+      <ActionContent />
     </HydrationBoundary>
   );
 }
 
-function ActionContent({ actionIds }: { actionIds: string[] }) {
+function ActionContent() {
   const { missionId, actionId } = useParams<{ missionId: string; actionId: string }>();
   const { data: actions } = useReadActionsDetail(missionId);
 
@@ -112,6 +111,11 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
 
   const toastStorageKey = `mission-toast-${missionId}`;
 
+  const handleAlreadyCompleted = useCallback(() => {
+    toast.warning("이미 완료된 미션입니다.", { id: "mission-already-completed" });
+    router.push(ROUTES.MISSION(missionId));
+  }, [missionId, router]);
+
   const { mutateAsync: submitAnswer, isPending: isSubmittingAnswer } = useSubmitQuestionAnswer({
     onSuccess: () => {
       goNext();
@@ -132,6 +136,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
     onError: () => {
       toast.warning("답변 저장에 실패했습니다.", { id: "submit-answer-error" });
     },
+    onAlreadyCompleted: handleAlreadyCompleted,
     missionId,
   });
 
@@ -157,6 +162,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
       onError: () => {
         toast.warning(MISSION_TOAST_MESSAGE.error.message, { id: MISSION_TOAST_MESSAGE.error.id });
       },
+      onAlreadyCompleted: handleAlreadyCompleted,
       missionId,
     });
 
@@ -369,7 +375,6 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
     submitAnswer,
     completeSurveyAsync,
     showModal,
-    missionResponse,
     isAnswerSameAsSubmitted,
     goNext,
   ]);

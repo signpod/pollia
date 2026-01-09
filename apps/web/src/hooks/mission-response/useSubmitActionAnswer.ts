@@ -1,6 +1,7 @@
 "use client";
 
 import { submitAnswers } from "@/actions/action-answer";
+import { getMyResponseForMission } from "@/actions/mission-response";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import type { ActionAnswerItem } from "@/types/dto";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -13,6 +14,7 @@ interface SubmitActionAnswerPayload {
 interface UseSubmitActionAnswerOptions {
   onSuccess?: () => void;
   onError?: (error: Error) => void;
+  onAlreadyCompleted?: () => void;
   missionId: string;
 }
 
@@ -22,6 +24,12 @@ export function useSubmitActionAnswer(options: UseSubmitActionAnswerOptions) {
 
   return useMutation({
     mutationFn: async ({ responseId, answer }: SubmitActionAnswerPayload) => {
+      // Fetch fresh mission response to check completion status
+      const freshResponse = await getMyResponseForMission(missionId);
+      if (freshResponse?.data?.completedAt) {
+        throw new Error("ALREADY_COMPLETED");
+      }
+
       return await submitAnswers({
         responseId,
         answers: [
@@ -58,6 +66,10 @@ export function useSubmitActionAnswer(options: UseSubmitActionAnswerOptions) {
       });
     },
     onError: error => {
+      if (error instanceof Error && error.message === "ALREADY_COMPLETED") {
+        options.onAlreadyCompleted?.();
+        return;
+      }
       console.error("❌ 답변 제출 실패:", error);
       options.onError?.(error as Error);
     },

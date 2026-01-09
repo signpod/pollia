@@ -1,4 +1,5 @@
 import { getActionById, getMissionActionsDetail } from "@/actions/action";
+import { getMyResponseForMission } from "@/actions/mission-response";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { ROUTES } from "@/constants/routes";
 import { getQueryClient } from "@/lib/getQueryClient";
@@ -42,7 +43,7 @@ export default async function ActionPage({
 
   const queryClient = getQueryClient();
 
-  const [action, actionsResponse] = await Promise.all([
+  const [action, actionsResponse, missionResponse] = await Promise.all([
     getActionById(actionId).catch(error => {
       if (error instanceof Error && (error as Error & { cause?: number }).cause === 404) {
         notFound();
@@ -50,7 +51,13 @@ export default async function ActionPage({
       throw error;
     }),
     getMissionActionsDetail(missionId),
+    getMyResponseForMission(missionId).catch(() => ({ data: null })),
   ]);
+
+  // Redirect if mission is already completed
+  if (missionResponse.data?.completedAt) {
+    redirect(ROUTES.MISSION(missionId));
+  }
 
   const actionIds = actionsResponse.data.map(a => a.id);
 
@@ -70,7 +77,7 @@ export default async function ActionPage({
 
   return (
     <ActionClientTrackingWrapper>
-      <ActionClientWrapper dehydratedState={dehydratedState} actionIds={actionIds} />
+      <ActionClientWrapper dehydratedState={dehydratedState} />
     </ActionClientTrackingWrapper>
   );
 }
