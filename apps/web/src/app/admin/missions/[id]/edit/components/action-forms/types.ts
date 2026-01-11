@@ -21,6 +21,7 @@ export interface MultipleChoiceFormData extends BaseActionFormData {
   type: "MULTIPLE_CHOICE";
   options: ActionOptionInput[];
   maxSelections?: number;
+  hasOther?: boolean;
 }
 
 export interface ScaleFormData extends BaseActionFormData {
