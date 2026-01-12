@@ -1,3 +1,5 @@
+"use client";
+
 import { CharacterCounter } from "@/app/admin/components/common/InputField";
 import { NumberField } from "@/app/admin/components/common/NumberField";
 import { TiptapEditor } from "@/app/admin/components/common/TiptapEditor";

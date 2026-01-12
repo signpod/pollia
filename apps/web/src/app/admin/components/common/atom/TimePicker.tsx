@@ -9,6 +9,7 @@ import {
 } from "@/app/admin/components/shadcn-ui/select";
 import { cn } from "@/app/admin/lib/utils";
 import { Clock } from "lucide-react";
+import { useMemo } from "react";
 
 interface TimePickerProps {
   value?: string;
@@ -18,9 +19,7 @@ interface TimePickerProps {
   className?: string;
 }
 
-function generateHours(): string[] {
-  return Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
-}
+const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
 
 function generateMinutes(step: number): string[] {
   const minutes: string[] = [];
@@ -46,8 +45,7 @@ export function TimePicker({
   className,
 }: TimePickerProps) {
   const { hour, minute } = parseTime(value);
-  const hours = generateHours();
-  const minutes = generateMinutes(minuteStep);
+  const minutes = useMemo(() => generateMinutes(minuteStep), [minuteStep]);
 
   const handleHourChange = (newHour: string) => {
     const newMinute = minute || "00";
@@ -67,7 +65,7 @@ export function TimePicker({
           <SelectValue placeholder="시" />
         </SelectTrigger>
         <SelectContent>
-          {hours.map(h => (
+          {HOURS.map(h => (
             <SelectItem key={h} value={h}>
               {h}시
             </SelectItem>
