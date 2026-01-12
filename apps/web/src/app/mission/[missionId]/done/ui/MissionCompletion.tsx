@@ -105,9 +105,7 @@ export function MissionCompletion() {
       {!!links && (
         <FixedBottomLayout hasGradientBlur>
           <FixedBottomLayout.Content className="px-5 py-3">
-            <div
-              className={cn("flex gap-2 w-full", hasLongLinkKey && "flex-col-reverse")}
-            >
+            <div className={cn("flex gap-2 w-full", hasLongLinkKey && "flex-col-reverse")}>
               {Object.entries(links).map(([key, value], index) => (
                 <ButtonV2
                   key={key}

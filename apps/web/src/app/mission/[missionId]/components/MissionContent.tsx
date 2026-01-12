@@ -1,6 +1,6 @@
 import { cleanTiptapHTML } from "@/lib/utils";
-import { Typo } from "@repo/ui/components";
 import { MissionType } from "@prisma/client";
+import { Typo } from "@repo/ui/components";
 import { SECTION_IDS } from "../constants/sectionIds";
 import type { MissionRewardData } from "../types/mission";
 import { MissionDescription } from "./MissionDescription";
