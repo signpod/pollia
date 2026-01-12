@@ -17,9 +17,10 @@
  *   --no-build  빌드 스킵 (이미 빌드된 경우)
  */
 
-const { spawn, execSync } = require("child_process");
-const http = require("http");
-const https = require("https");
+const { spawn, execSync } = require("node:child_process");
+const fs = require("node:fs");
+const http = require("node:http");
+const https = require("node:https");
 
 const DEFAULT_ROUTES = ["/", "/login", "/me"];
 const DEFAULT_RUNS = 3;
@@ -36,9 +37,9 @@ function parseArgs() {
 
   for (const arg of args) {
     if (arg.startsWith("--runs=")) {
-      options.runs = parseInt(arg.split("=")[1], 10);
+      options.runs = Number.parseInt(arg.split("=")[1], 10);
     } else if (arg.startsWith("--port=")) {
-      options.port = parseInt(arg.split("=")[1], 10);
+      options.port = Number.parseInt(arg.split("=")[1], 10);
     } else if (arg === "--no-build") {
       options.skipBuild = true;
     } else if (arg.startsWith("/")) {
@@ -58,13 +59,13 @@ function killPort(port) {
     execSync(`lsof -ti:${port} | xargs kill -9 2>/dev/null || true`, {
       stdio: "ignore",
     });
-  } catch (e) {
+  } catch {
     // ignore
   }
 }
 
 function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 async function waitForServer(port, maxAttempts = 30) {
@@ -72,7 +73,7 @@ async function waitForServer(port, maxAttempts = 30) {
     try {
       await measureRequest(`http://localhost:${port}/`, 2000);
       return true;
-    } catch (e) {
+    } catch {
       await sleep(1000);
     }
   }
@@ -85,11 +86,11 @@ function measureRequest(url, timeout = 30000) {
     let ttfb = null;
 
     const protocol = url.startsWith("https") ? https : http;
-    const req = protocol.get(url, (res) => {
+    const req = protocol.get(url, res => {
       ttfb = Number(process.hrtime.bigint() - startTime) / 1e6; // ms
 
       let data = "";
-      res.on("data", (chunk) => {
+      res.on("data", chunk => {
         data += chunk;
       });
 
@@ -141,7 +142,7 @@ async function measureColdStart(port, route) {
   // 서버 종료
   try {
     process.kill(-serverProcess.pid);
-  } catch (e) {
+  } catch {
     killPort(port);
   }
 
@@ -151,18 +152,13 @@ async function measureColdStart(port, route) {
   };
 }
 
-async function measureWarmStart(port, route) {
-  return await measureRequest(`http://localhost:${port}${route}`);
-}
-
 function formatTable(headers, rows) {
   const colWidths = headers.map((h, i) =>
-    Math.max(h.length, ...rows.map((r) => String(r[i]).length))
+    Math.max(h.length, ...rows.map(r => String(r[i]).length)),
   );
 
-  const separator = colWidths.map((w) => "-".repeat(w + 2)).join("+");
-  const formatRow = (row) =>
-    row.map((cell, i) => ` ${String(cell).padEnd(colWidths[i])} `).join("|");
+  const separator = colWidths.map(w => "-".repeat(w + 2)).join("+");
+  const formatRow = row => row.map((cell, i) => ` ${String(cell).padEnd(colWidths[i])} `).join("|");
 
   return [formatRow(headers), separator, ...rows.map(formatRow)].join("\n");
 }
@@ -196,7 +192,7 @@ async function main() {
     console.log("📦 프로덕션 빌드 중...\n");
     try {
       execSync("yarn build", { stdio: "inherit" });
-    } catch (e) {
+    } catch {
       console.error("❌ 빌드 실패");
       process.exit(1);
     }
@@ -222,9 +218,7 @@ async function main() {
         results[route].coldStart.push(coldResult.ttfb);
         results[route].serverStartup.push(coldResult.serverStartup);
 
-        console.log(
-          `서버시작=${coldResult.serverStartup}ms, TTFB=${coldResult.ttfb}ms`
-        );
+        console.log(`서버시작=${coldResult.serverStartup}ms, TTFB=${coldResult.ttfb}ms`);
       } catch (e) {
         console.log(`❌ 실패: ${e.message}`);
       }
@@ -234,9 +228,9 @@ async function main() {
   }
 
   // 결과 출력
-  console.log("\n" + "=".repeat(70));
+  console.log(`\n${"=".repeat(70)}`);
   console.log("📈 측정 결과 요약");
-  console.log("=".repeat(70) + "\n");
+  console.log(`${"=".repeat(70)}\n`);
 
   const headers = ["Route", "서버시작(avg)", "TTFB(avg)", "TTFB(min)", "TTFB(max)"];
   const rows = [];
@@ -270,29 +264,29 @@ async function main() {
     options: { routes, runs, port },
     results,
     summary: Object.fromEntries(
-      routes.map((route) => [
+      routes.map(route => [
         route,
         {
           ttfb: calculateStats(results[route].coldStart),
           serverStartup: calculateStats(results[route].serverStartup),
         },
-      ])
+      ]),
     ),
   };
 
-  require("fs").writeFileSync(outputPath, JSON.stringify(output, null, 2));
+  fs.writeFileSync(outputPath, JSON.stringify(output, null, 2));
   console.log(`\n💾 결과 저장됨: ${outputPath}`);
 
   // 이전 결과와 비교
-  const previousFiles = require("fs")
+  const previousFiles = fs
     .readdirSync(".")
-    .filter((f) => f.startsWith("cold-start-") && f.endsWith(".json") && f !== outputPath)
+    .filter(f => f.startsWith("cold-start-") && f.endsWith(".json") && f !== outputPath)
     .sort()
     .reverse();
 
   if (previousFiles.length > 0) {
     const prevFile = previousFiles[0];
-    const prevData = JSON.parse(require("fs").readFileSync(prevFile, "utf-8"));
+    const prevData = JSON.parse(fs.readFileSync(prevFile, "utf-8"));
 
     console.log(`\n📊 이전 측정과 비교 (${prevData.gitCommit}):`);
     console.log("-".repeat(50));
@@ -307,7 +301,7 @@ async function main() {
       const arrow = diff < 0 ? "⬇️" : diff > 0 ? "⬆️" : "➡️";
 
       console.log(
-        `${route}: ${prev}ms → ${curr}ms (${diff > 0 ? "+" : ""}${diff}ms, ${pct}%) ${arrow}`
+        `${route}: ${prev}ms → ${curr}ms (${diff > 0 ? "+" : ""}${diff}ms, ${pct}%) ${arrow}`,
       );
     }
   }
@@ -318,7 +312,7 @@ async function main() {
   killPort(port);
 }
 
-main().catch((e) => {
+main().catch(e => {
   console.error("❌ 오류:", e.message);
   process.exit(1);
 });

@@ -12,9 +12,8 @@
  *   node scripts/compare-cold-start.js HEAD~5 HEAD --runs=5 / /admin
  */
 
-const { execSync, spawn } = require("child_process");
-const fs = require("fs");
-const path = require("path");
+const { execSync, spawn } = require("node:child_process");
+const fs = require("node:fs");
 
 const DEFAULT_ROUTES = ["/", "/login"];
 const DEFAULT_RUNS = 3;
@@ -45,7 +44,7 @@ function parseArgs() {
   for (let i = 2; i < args.length; i++) {
     const arg = args[i];
     if (arg.startsWith("--runs=")) {
-      options.runs = parseInt(arg.split("=")[1], 10);
+      options.runs = Number.parseInt(arg.split("=")[1], 10);
     } else if (arg.startsWith("/")) {
       options.routes.push(arg);
     }
@@ -75,19 +74,21 @@ function killPort(port) {
     execSync(`lsof -ti:${port} | xargs kill -9 2>/dev/null || true`, {
       stdio: "ignore",
     });
-  } catch (e) {}
+  } catch {
+    // ignore
+  }
 }
 
 function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 async function waitForServer(port, maxAttempts = 30) {
-  const http = require("http");
+  const http = require("node:http");
   for (let i = 0; i < maxAttempts; i++) {
     try {
       await new Promise((resolve, reject) => {
-        const req = http.get(`http://localhost:${port}/`, (res) => {
+        const req = http.get(`http://localhost:${port}/`, () => {
           resolve(true);
         });
         req.on("error", reject);
@@ -97,7 +98,7 @@ async function waitForServer(port, maxAttempts = 30) {
         });
       });
       return true;
-    } catch (e) {
+    } catch {
       await sleep(1000);
     }
   }
@@ -105,16 +106,15 @@ async function waitForServer(port, maxAttempts = 30) {
 }
 
 function measureRequest(url) {
-  const http = require("http");
+  const http = require("node:http");
   return new Promise((resolve, reject) => {
     const startTime = process.hrtime.bigint();
     let ttfb = null;
 
-    const req = http.get(url, (res) => {
+    const req = http.get(url, res => {
       ttfb = Number(process.hrtime.bigint() - startTime) / 1e6;
 
-      let data = "";
-      res.on("data", (chunk) => (data += chunk));
+      res.on("data", () => {});
       res.on("end", () => {
         resolve({
           ttfb: Math.round(ttfb),
@@ -156,13 +156,13 @@ async function measureColdStart(route, runs) {
         ttfb: result.ttfb,
       });
       process.stdout.write(".");
-    } catch (e) {
+    } catch {
       process.stdout.write("x");
     }
 
     try {
       process.kill(-serverProcess.pid);
-    } catch (e) {
+    } catch {
       killPort(PORT);
     }
 
@@ -200,8 +200,8 @@ async function measureCommit(commit, routes, runs) {
     const measurements = await measureColdStart(route, runs);
     results[route] = {
       measurements,
-      ttfb: calculateStats(measurements.map((m) => m.ttfb)),
-      serverStartup: calculateStats(measurements.map((m) => m.serverStartup)),
+      ttfb: calculateStats(measurements.map(m => m.ttfb)),
+      serverStartup: calculateStats(measurements.map(m => m.serverStartup)),
     };
     console.log(` → avg TTFB: ${results[route].ttfb.avg}ms`);
   }
@@ -210,7 +210,7 @@ async function measureCommit(commit, routes, runs) {
 }
 
 function printComparison(before, after, routes) {
-  console.log("\n" + "=".repeat(70));
+  console.log(`\n${"=".repeat(70)}`);
   console.log("📊 콜드 스타트 비교 결과");
   console.log("=".repeat(70));
   console.log(`\nBefore: ${before.hash} - ${before.message.substring(0, 40)}`);
@@ -218,11 +218,7 @@ function printComparison(before, after, routes) {
 
   console.log("-".repeat(70));
   console.log(
-    "Route".padEnd(20) +
-      "Before(ms)".padEnd(15) +
-      "After(ms)".padEnd(15) +
-      "Diff".padEnd(15) +
-      "Change"
+    `${"Route".padEnd(20)}${"Before(ms)".padEnd(15)}${"After(ms)".padEnd(15)}${"Diff".padEnd(15)}Change`,
   );
   console.log("-".repeat(70));
 
@@ -234,11 +230,7 @@ function printComparison(before, after, routes) {
     const arrow = diff < 0 ? "✅ 개선" : diff > 0 ? "⚠️ 악화" : "➡️ 동일";
 
     console.log(
-      route.padEnd(20) +
-        `${b}`.padEnd(15) +
-        `${a}`.padEnd(15) +
-        `${diff > 0 ? "+" : ""}${diff}`.padEnd(15) +
-        `${pct}% ${arrow}`
+      `${route.padEnd(20)}${`${b}`.padEnd(15)}${`${a}`.padEnd(15)}${`${diff > 0 ? "+" : ""}${diff}`.padEnd(15)}${pct}% ${arrow}`,
     );
   }
 
@@ -282,7 +274,7 @@ async function main() {
       before: beforeResult,
       after: afterResult,
       comparison: Object.fromEntries(
-        routes.map((route) => {
+        routes.map(route => {
           const b = beforeResult.results[route]?.ttfb.avg || 0;
           const a = afterResult.results[route]?.ttfb.avg || 0;
           return [
@@ -294,7 +286,7 @@ async function main() {
               pct: b > 0 ? ((a - b) / b) * 100 : 0,
             },
           ];
-        })
+        }),
       ),
     };
 
@@ -311,7 +303,7 @@ async function main() {
   console.log("\n✅ 비교 완료\n");
 }
 
-main().catch((e) => {
+main().catch(e => {
   console.error("❌ 오류:", e.message);
   killPort(PORT);
   process.exit(1);
