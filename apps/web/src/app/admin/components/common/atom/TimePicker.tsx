@@ -21,6 +21,11 @@ interface TimePickerProps {
 
 const HOURS = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
 
+const TIME_UNIT_LABELS = {
+  hour: "시",
+  minute: "분",
+} as const;
+
 function generateMinutes(step: number): string[] {
   const minutes: string[] = [];
   for (let i = 0; i < 60; i += step) {
@@ -62,12 +67,13 @@ export function TimePicker({
       <Clock className="size-4 text-muted-foreground" />
       <Select value={hour} onValueChange={handleHourChange} disabled={disabled}>
         <SelectTrigger className="w-[80px]">
-          <SelectValue placeholder="시" />
+          <SelectValue placeholder={TIME_UNIT_LABELS.hour} />
         </SelectTrigger>
         <SelectContent>
           {HOURS.map(h => (
             <SelectItem key={h} value={h}>
-              {h}시
+              {h}
+              {TIME_UNIT_LABELS.hour}
             </SelectItem>
           ))}
         </SelectContent>
@@ -75,12 +81,13 @@ export function TimePicker({
       <span className="text-muted-foreground">:</span>
       <Select value={minute} onValueChange={handleMinuteChange} disabled={disabled}>
         <SelectTrigger className="w-[80px]">
-          <SelectValue placeholder="분" />
+          <SelectValue placeholder={TIME_UNIT_LABELS.minute} />
         </SelectTrigger>
         <SelectContent>
           {minutes.map(m => (
             <SelectItem key={m} value={m}>
-              {m}분
+              {m}
+              {TIME_UNIT_LABELS.minute}
             </SelectItem>
           ))}
         </SelectContent>
