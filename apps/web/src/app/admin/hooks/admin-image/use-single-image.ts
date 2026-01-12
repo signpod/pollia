@@ -11,6 +11,8 @@ export function useSingleImage(options: UseSingleImageOptions = {}): UseSingleIm
 
   const [isInitialCleared, setIsInitialCleared] = useState(false);
 
+  const deleteImage = useDeleteImage();
+
   const uploadImage = useUploadImage({
     bucket,
     onUploadSuccess: data => {
@@ -21,8 +23,6 @@ export function useSingleImage(options: UseSingleImageOptions = {}): UseSingleIm
     },
     onUploadError,
   });
-
-  const deleteImage = useDeleteImage();
 
   const previewUrl = useMemo(() => {
     if (uploadImage.previewUrl) {

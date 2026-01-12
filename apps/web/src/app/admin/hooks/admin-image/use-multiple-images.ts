@@ -43,7 +43,6 @@ export function useMultipleImages(options: UseMultipleImagesOptions = {}): UseMu
   const [uploadedDataMap, setUploadedDataMap] = useState<Map<string, UploadedImageData>>(new Map());
   const [uploadingIds, setUploadingIds] = useState<Set<string>>(new Set());
   const [markedInitialIds, setMarkedInitialIds] = useState<Set<string>>(new Set());
-  const [clearedInitialIds, setClearedInitialIds] = useState<Set<string>>(new Set());
 
   const initialFileUploadIdMap = useMemo(
     () => createInitialFileUploadIdMap(initialImages),
@@ -159,7 +158,6 @@ export function useMultipleImages(options: UseMultipleImagesOptions = {}): UseMu
         if (initialFileUploadId) {
           setMarkedInitialIds(prev => new Set(prev).add(initialFileUploadId));
         }
-        setClearedInitialIds(prev => new Set(prev).add(id));
       }
 
       setPreviews(prev => {
@@ -222,7 +220,6 @@ export function useMultipleImages(options: UseMultipleImagesOptions = {}): UseMu
     setPreviews(new Map(initialPreviewsRef.current));
     setUploadedDataMap(new Map());
     setMarkedInitialIds(new Set());
-    setClearedInitialIds(new Set());
   }, [uploadedDataMap, previews, deleteByIdMutation]);
 
   return {
