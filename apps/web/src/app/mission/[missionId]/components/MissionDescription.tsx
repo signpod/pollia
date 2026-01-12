@@ -1,6 +1,4 @@
-"use client";
-
-import { TiptapViewer } from "@repo/ui/components";
+import { TiptapViewer } from "@repo/ui/components/common/TiptapViewer";
 import { cn } from "@repo/ui/lib";
 
 interface MissionDescriptionProps {

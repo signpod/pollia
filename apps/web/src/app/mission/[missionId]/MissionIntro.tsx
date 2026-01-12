@@ -1,13 +1,12 @@
 "use client";
+
 import { AuthError } from "@/hooks/login/useKakaoLogin";
 import { useMissionIntroData, useSurveyResume } from "@/hooks/mission";
 import { useReadMissionResponseForMission } from "@/hooks/mission-response";
 import { useReadMissionParticipantInfo } from "@/hooks/participant/useReadMissionParticipantInfo";
 import { useReadReward } from "@/hooks/reward/useReadReward";
-import { useMissionShare } from "@/hooks/share/useMissionShare";
 import { getActionNavCookie, setActionNavCookie } from "@/lib/cookie";
-import { cleanTiptapHTML, cn } from "@/lib/utils";
-import { MissionType } from "@prisma/client";
+import { cn } from "@/lib/utils";
 import Gift from "@public/svgs/gift.svg";
 import Lock from "@public/svgs/lock.svg";
 import {
@@ -18,20 +17,11 @@ import {
   useCallout,
 } from "@repo/ui/components";
 import { useParams } from "next/navigation";
+import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  MissionBadge,
-  MissionDescription,
-  MissionFooter,
-  MissionImage,
-  MissionLogo,
-  MissionRewardSection,
-  SectionHeader,
-  SocialShareButtons,
-} from "./components";
+import { MissionBadge, MissionImage, MissionLogo } from "./components";
 import { BottomButton } from "./ui";
 import { checkParticipantLimitReached } from "./utils/checkParticipantLimit";
-import { formatDeadline } from "./utils/formatDeadline";
 
 const SECTION_IDS = {
   MISSION_GUIDE: "mission-guide",
@@ -67,7 +57,12 @@ function CalloutTrigger({
   return null;
 }
 
-export function MissionIntro({ initialError }: { initialError: AuthError | null }) {
+interface MissionIntroProps {
+  initialError: AuthError | null;
+  children: ReactNode;
+}
+
+export function MissionIntro({ initialError, children }: MissionIntroProps) {
   const { missionId } = useParams<{ missionId: string }>();
 
   useEffect(() => {
@@ -95,16 +90,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
     responseId: missionResponse?.id ?? "",
   });
 
-  const {
-    brandLogoUrl,
-    title,
-    estimatedMinutes,
-    deadline,
-    imageUrl,
-    description,
-    target,
-    isActive,
-  } = mission ?? {};
+  const { brandLogoUrl, title, deadline, imageUrl, isActive } = mission ?? {};
 
   const [activeTab, setActiveTab] = useState<
     (typeof SECTION_IDS)[keyof typeof SECTION_IDS] | undefined
@@ -202,25 +188,9 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
   const { data: missionResponseData } = useReadMissionResponseForMission({ missionId });
   const { currentParticipants, maxParticipants } = participantInfo?.data ?? {};
 
-  const { handleKakaoShare, handleLinkShare, handleXShare } = useMissionShare({
-    missionId,
-    title: title ?? undefined,
-    imageUrl: imageUrl ?? undefined,
-  });
-
   const sections = reward
     ? [SECTION_IDS.MISSION_GUIDE, SECTION_IDS.REWARD]
     : [SECTION_IDS.MISSION_GUIDE];
-
-  const showDetailInfo = !!target || !!estimatedMinutes || !!deadline;
-
-  const deadlineText = deadline ? `${formatDeadline(deadline)} 까지` : "정원 마감시";
-
-  const detailInfoConfig = [
-    { key: "참여 조건", value: target },
-    { key: "예상 소요 시간", value: `${estimatedMinutes}분` },
-    { key: "참여 기간", value: deadlineText },
-  ] as const;
 
   const hasReward = !!reward?.data.id;
 
@@ -327,16 +297,7 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
             </div>
           )}
 
-          <PageTabContent
-            reward={reward}
-            showDetailInfo={showDetailInfo}
-            detailInfoConfig={detailInfoConfig}
-            description={description}
-            mission={mission}
-            handleXShare={handleXShare}
-            handleKakaoShare={handleKakaoShare}
-            handleLinkShare={handleLinkShare}
-          />
+          {children}
 
           <div
             className="sticky bottom-0 z-60  border-zinc-100 pb-[calc(16px+env(safe-area-inset-bottom))]"
@@ -361,91 +322,5 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
         </div>
       </main>
     </CalloutProvider>
-  );
-}
-
-interface PageTabContentProps {
-  reward: ReturnType<typeof useReadReward>["data"];
-  showDetailInfo: boolean;
-  detailInfoConfig: readonly { key: string; value: string | null | undefined }[];
-  description: string | null | undefined;
-  mission: ReturnType<typeof useMissionIntroData>["mission"];
-  handleXShare: () => void;
-  handleKakaoShare: () => void;
-  handleLinkShare: () => void;
-}
-
-function PageTabContent({
-  reward,
-  showDetailInfo,
-  detailInfoConfig,
-  description,
-  mission,
-  handleXShare,
-  handleKakaoShare,
-  handleLinkShare,
-}: PageTabContentProps) {
-  return (
-    <div className="bg-white">
-      <div id={SECTION_IDS.MISSION_GUIDE} className="flex w-full flex-col gap-0 px-5 items-center">
-        {showDetailInfo && (
-          <div className="flex flex-col gap-6 w-full p-5">
-            <div className="flex flex-col gap-4 w-full bg-zinc-50 rounded-md p-6">
-              {detailInfoConfig.map(
-                ({ key, value }) =>
-                  !!key &&
-                  !!value && (
-                    <div className="flex gap-2" key={key}>
-                      <Typo.Body
-                        size="medium"
-                        className="text-info whitespace-nowrap min-w-[100px]"
-                      >
-                        {key}
-                      </Typo.Body>
-                      <Typo.Body size="medium" className="flex-1 break-keep text-right">
-                        {value}
-                      </Typo.Body>
-                    </div>
-                  ),
-              )}
-            </div>
-          </div>
-        )}
-
-        {!!description && !!cleanTiptapHTML(description) && (
-          <div className="flex flex-col gap-6 px-5 py-8 items-center w-full">
-            <SectionHeader badgeText="상세 안내" title={""} />
-            <MissionDescription content={cleanTiptapHTML(description)} className="text-center" />
-          </div>
-        )}
-      </div>
-
-      {reward && (
-        <div id={SECTION_IDS.REWARD} className="px-5 py-8 w-full">
-          <MissionRewardSection
-            rewardImageUrl={reward?.data.imageUrl ?? undefined}
-            rewardName={reward?.data.name ?? undefined}
-            rewardScheduledDate={reward?.data.scheduledDate ?? undefined}
-          />
-        </div>
-      )}
-
-      {mission?.type !== MissionType.EXPERIENCE_GROUP && (
-        <div className="flex flex-col gap-4 items-center px-5 py-8">
-          <Typo.MainTitle size="small" className="text-center">
-            가족, 친구에게
-            <br />
-            공유해주세요 👀
-          </Typo.MainTitle>
-          <SocialShareButtons
-            onXShare={handleXShare}
-            onKakaoShare={handleKakaoShare}
-            onLinkShare={handleLinkShare}
-          />
-        </div>
-      )}
-
-      <MissionFooter />
-    </div>
   );
 }

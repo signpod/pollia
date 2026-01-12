@@ -12,3 +12,5 @@ export * from "./MissionFooter";
 export * from "./MissionBadge";
 export * from "./DevTools";
 export * from "./SocialShareButtons";
+export * from "./SocialShareButtonsWithData";
+export * from "./MissionContent";

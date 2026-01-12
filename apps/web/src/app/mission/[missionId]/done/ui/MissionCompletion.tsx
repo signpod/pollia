@@ -5,7 +5,8 @@ import { useReadMissionCompletion } from "@/hooks/mission-completion";
 import { cleanTiptapHTML, cn } from "@/lib/utils";
 import { useParams } from "next/navigation";
 
-import { ButtonV2, FixedBottomLayout, TiptapViewer, Typo } from "@repo/ui/components";
+import { ButtonV2, FixedBottomLayout, Typo } from "@repo/ui/components";
+import { TiptapViewer } from "@repo/ui/components/common/TiptapViewer";
 import Image from "next/image";
 import Link from "next/link";
 import { SocialShareButtons } from "../../components";
