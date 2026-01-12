@@ -63,7 +63,7 @@ export function TimePicker({
     <div className={cn("flex items-center gap-1", className)}>
       <Clock className="size-4 text-muted-foreground" />
       <Select value={hour} onValueChange={handleHourChange} disabled={disabled}>
-        <SelectTrigger className="w-[70px]">
+        <SelectTrigger className="w-[80px]">
           <SelectValue placeholder="시" />
         </SelectTrigger>
         <SelectContent>
@@ -76,7 +76,7 @@ export function TimePicker({
       </Select>
       <span className="text-muted-foreground">:</span>
       <Select value={minute} onValueChange={handleMinuteChange} disabled={disabled}>
-        <SelectTrigger className="w-[70px]">
+        <SelectTrigger className="w-[80px]">
           <SelectValue placeholder="분" />
         </SelectTrigger>
         <SelectContent>
