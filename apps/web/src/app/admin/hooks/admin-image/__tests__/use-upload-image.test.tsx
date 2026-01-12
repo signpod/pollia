@@ -251,7 +251,7 @@ describe("useUploadImage", () => {
       // Given
       const blobUrls = ["blob:first-url", "blob:second-url"];
       let callCount = 0;
-      mockCreateObjectURL.mockImplementation(() => blobUrls[callCount++]);
+      mockCreateObjectURL.mockImplementation(() => blobUrls[callCount++] ?? "blob:fallback");
 
       const { result } = renderHook(() => useUploadImage(), {
         wrapper: createWrapper(),
