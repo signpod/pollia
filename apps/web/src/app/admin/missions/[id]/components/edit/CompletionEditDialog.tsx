@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/app/admin/components/shadcn-ui/dialog";
 import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
-import { useSingleImage } from "@/app/admin/hooks/admin-image";
+import { type UploadedImageData, useSingleImage } from "@/app/admin/hooks/admin-image";
 import { useCreateMissionCompletion } from "@/app/admin/hooks/use-create-mission-completion";
 import { useReadMissionCompletion } from "@/app/admin/hooks/use-read-mission-completion";
 import { useUpdateMissionCompletion } from "@/app/admin/hooks/use-update-mission-completion";
@@ -66,7 +66,7 @@ function CompletionFormContent({ completion, missionId, onSuccess }: CompletionF
   const completionImageUpload = useSingleImage({
     initialUrl: completion?.imageUrl ?? undefined,
     initialFileUploadId: completion?.imageFileUploadId ?? undefined,
-    onUploadSuccess: data => {
+    onUploadSuccess: (data: UploadedImageData) => {
       form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
       form.setValue("imageFileUploadId", data.fileUploadId, { shouldDirty: true });
     },

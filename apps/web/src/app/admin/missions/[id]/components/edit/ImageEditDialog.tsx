@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/app/admin/components/shadcn-ui/dialog";
 import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
-import { useSingleImage } from "@/app/admin/hooks/admin-image";
+import { type UploadedImageData, useSingleImage } from "@/app/admin/hooks/admin-image";
 import { useReadMission } from "@/app/admin/hooks/use-read-mission";
 import { useUpdateMission } from "@/app/admin/hooks/use-update-mission";
 import type { MissionUpdate } from "@/schemas/mission";
@@ -65,7 +65,7 @@ function ImageFormContent({ mission, missionId, onSuccess }: ImageFormContentPro
   const missionImage = useSingleImage({
     initialUrl: mission.imageUrl ?? undefined,
     initialFileUploadId: mission.imageFileUploadId,
-    onUploadSuccess: data => {
+    onUploadSuccess: (data: UploadedImageData) => {
       form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
       form.setValue("imageFileUploadId", data.fileUploadId, { shouldDirty: true });
     },
@@ -74,7 +74,7 @@ function ImageFormContent({ mission, missionId, onSuccess }: ImageFormContentPro
   const brandLogo = useSingleImage({
     initialUrl: mission.brandLogoUrl ?? undefined,
     initialFileUploadId: mission.brandLogoFileUploadId,
-    onUploadSuccess: data => {
+    onUploadSuccess: (data: UploadedImageData) => {
       form.setValue("brandLogoUrl", data.publicUrl, { shouldDirty: true });
       form.setValue("brandLogoFileUploadId", data.fileUploadId, { shouldDirty: true });
     },
