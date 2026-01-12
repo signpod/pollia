@@ -1,4 +1,6 @@
-import DOMPurify from "isomorphic-dompurify";
+"use client";
+
+import DOMPurify from "dompurify";
 import { cn } from "../../lib/utils";
 
 export interface TiptapViewerProps {
@@ -7,7 +9,8 @@ export interface TiptapViewerProps {
 }
 
 export function TiptapViewer({ content, className }: TiptapViewerProps) {
-  const sanitizedContent = DOMPurify.sanitize(content);
+  const sanitizedContent =
+    typeof window !== "undefined" ? DOMPurify.sanitize(content) : content;
 
   return (
     <div
