@@ -1,0 +1,576 @@
+{
+  "name": "after-rollback",
+  "timestamp": "2026-01-12T03:56:27.167Z",
+  "git": {
+    "commit": "9b1a7c57",
+    "branch": "feat/fe/bundle-analyzer"
+  },
+  "stats": {
+    "totalParsed": 3062995,
+    "totalGzip": 962851,
+    "chunks": [
+      {
+        "name": "2481-cc36176f2bd94df6.js",
+        "parsed": 433597,
+        "gzip": 135277
+      },
+      {
+        "name": "3169.cdc69c2abc3fc2ba.js",
+        "parsed": 187791,
+        "gzip": 62099
+      },
+      {
+        "name": "7740-958993475f29e2cf.js",
+        "parsed": 184596,
+        "gzip": 59408
+      },
+      {
+        "name": "framework-8a1406d06ccb8049.js",
+        "parsed": 182733,
+        "gzip": 57659
+      },
+      {
+        "name": "87c73c54-dd8d81ac9604067c.js",
+        "parsed": 173023,
+        "gzip": 54247
+      },
+      {
+        "name": "18-725eeb4bbb62c8f7.js",
+        "parsed": 171957,
+        "gzip": 45984
+      },
+      {
+        "name": "main-d84e41a6c72778c0.js",
+        "parsed": 127489,
+        "gzip": 36760
+      },
+      {
+        "name": "9af238c7-e77db8589a74fc22.js",
+        "parsed": 95274,
+        "gzip": 30122
+      },
+      {
+        "name": "6845-2a538625d62c1570.js",
+        "parsed": 80572,
+        "gzip": 24880
+      },
+      {
+        "name": "22747d63-5064a2d69f44cb84.js",
+        "parsed": 77703,
+        "gzip": 24323
+      },
+      {
+        "name": "1801-b7f6cf70d4adb251.js",
+        "parsed": 78941,
+        "gzip": 23911
+      },
+      {
+        "name": "1746-56e191e443abfe50.js",
+        "parsed": 65314,
+        "gzip": 21571
+      },
+      {
+        "name": "app/mission/[missionId]/action/[actionId]/page-75b9ab195421ac8d.js",
+        "parsed": 82763,
+        "gzip": 21253
+      },
+      {
+        "name": "6983-5de78c0ebc526b33.js",
+        "parsed": 74449,
+        "gzip": 21170
+      },
+      {
+        "name": "2839-68b0fec1480bf720.js",
+        "parsed": 65538,
+        "gzip": 20095
+      },
+      {
+        "name": "a79acc74-30b70bdc5b942776.js",
+        "parsed": 51399,
+        "gzip": 19655
+      },
+      {
+        "name": "app/admin/missions/[id]/edit/page-e0f77432be6af6c6.js",
+        "parsed": 102168,
+        "gzip": 18922
+      },
+      {
+        "name": "7064-c1075f290d06d67b.js",
+        "parsed": 55971,
+        "gzip": 18682
+      },
+      {
+        "name": "2781-03901fe93cb10c0c.js",
+        "parsed": 50691,
+        "gzip": 18587
+      },
+      {
+        "name": "6569-99f8a64aabfcc6bc.js",
+        "parsed": 65600,
+        "gzip": 18179
+      },
+      {
+        "name": "app/admin/missions/[id]/page-95c97330c8f415e5.js",
+        "parsed": 51395,
+        "gzip": 13354
+      },
+      {
+        "name": "4526-f61257fbd1e06b3a.js",
+        "parsed": 28252,
+        "gzip": 9261
+      },
+      {
+        "name": "617-d588a50428569982.js",
+        "parsed": 21803,
+        "gzip": 8441
+      },
+      {
+        "name": "7557-697d66e90ee37856.js",
+        "parsed": 24340,
+        "gzip": 8178
+      },
+      {
+        "name": "app/admin/layout-67b376d014c42859.js",
+        "parsed": 27604,
+        "gzip": 8053
+      },
+      {
+        "name": "5082-312ef0efa186c633.js",
+        "parsed": 18762,
+        "gzip": 7410
+      },
+      {
+        "name": "app/admin/page-571415e1c3fef6ca.js",
+        "parsed": 21534,
+        "gzip": 7397
+      },
+      {
+        "name": "app/admin/missions/create/page-239b3c64779f75c6.js",
+        "parsed": 22739,
+        "gzip": 6736
+      },
+      {
+        "name": "app/admin/missions/[id]/report/page-c4093aeaa75f5630.js",
+        "parsed": 18306,
+        "gzip": 6618
+      },
+      {
+        "name": "5868-dbe69d4dbe3ec09b.js",
+        "parsed": 20474,
+        "gzip": 6574
+      },
+      {
+        "name": "5982-3cf926f76de69542.js",
+        "parsed": 18110,
+        "gzip": 6476
+      },
+      {
+        "name": "app/mission/[missionId]/page-bb458007e8a8daf2.js",
+        "parsed": 17049,
+        "gzip": 6166
+      },
+      {
+        "name": "3011-bec4257bfd876e96.js",
+        "parsed": 19420,
+        "gzip": 6084
+      },
+      {
+        "name": "5686-415551de9c249c5b.js",
+        "parsed": 16681,
+        "gzip": 5862
+      },
+      {
+        "name": "app/me/page-63ba0b59dd004604.js",
+        "parsed": 15811,
+        "gzip": 5736
+      },
+      {
+        "name": "5016-43573c24d906283e.js",
+        "parsed": 16988,
+        "gzip": 5706
+      },
+      {
+        "name": "app/mission/[missionId]/password/page-f45300416a383248.js",
+        "parsed": 13303,
+        "gzip": 5417
+      },
+      {
+        "name": "1523-da7582662d17229d.js",
+        "parsed": 15819,
+        "gzip": 5292
+      },
+      {
+        "name": "2536-a7e99ea66c911dce.js",
+        "parsed": 14220,
+        "gzip": 5292
+      },
+      {
+        "name": "7722-91c2b34b0d316b69.js",
+        "parsed": 14066,
+        "gzip": 5102
+      },
+      {
+        "name": "app/layout-7840759a4395cb3e.js",
+        "parsed": 14691,
+        "gzip": 5039
+      },
+      {
+        "name": "5634-084da7357fc89a61.js",
+        "parsed": 11625,
+        "gzip": 4966
+      },
+      {
+        "name": "1347-818b839a6658bd9f.js",
+        "parsed": 14858,
+        "gzip": 4769
+      },
+      {
+        "name": "4784-eed25069d14df971.js",
+        "parsed": 11248,
+        "gzip": 4272
+      },
+      {
+        "name": "9456-5f95340d105f7fbd.js",
+        "parsed": 13270,
+        "gzip": 3994
+      },
+      {
+        "name": "app/me/layout-0298f08c452b5751.js",
+        "parsed": 10500,
+        "gzip": 3807
+      },
+      {
+        "name": "app/admin/missions/[id]/password/page-b1b10300ef4b6065.js",
+        "parsed": 10628,
+        "gzip": 3690
+      },
+      {
+        "name": "1171-1ea4e0914137d9ac.js",
+        "parsed": 9332,
+        "gzip": 3662
+      },
+      {
+        "name": "app/login/admin/page-42e1dc71f1bbd0a4.js",
+        "parsed": 7853,
+        "gzip": 3448
+      },
+      {
+        "name": "2979-faa7202836d615f3.js",
+        "parsed": 7895,
+        "gzip": 3430
+      },
+      {
+        "name": "9664-bbf55e28a0306eec.js",
+        "parsed": 8555,
+        "gzip": 3398
+      },
+      {
+        "name": "app/admin/missions/[id]/tracking/page-025afd2e6bf0defe.js",
+        "parsed": 9930,
+        "gzip": 3326
+      },
+      {
+        "name": "2769-11f50d871c5779b3.js",
+        "parsed": 8973,
+        "gzip": 3209
+      },
+      {
+        "name": "4307-521448f6dcbca3ce.js",
+        "parsed": 8146,
+        "gzip": 3130
+      },
+      {
+        "name": "1023-42384f004e6f8927.js",
+        "parsed": 10148,
+        "gzip": 3128
+      },
+      {
+        "name": "app/login/page-929d7c82035bcf49.js",
+        "parsed": 6651,
+        "gzip": 3065
+      },
+      {
+        "name": "4112-5d50d942e57c9b98.js",
+        "parsed": 8789,
+        "gzip": 3002
+      },
+      {
+        "name": "940-33fc0ffd72fce00c.js",
+        "parsed": 8177,
+        "gzip": 2980
+      },
+      {
+        "name": "5709-cafbeeec1a092ac9.js",
+        "parsed": 6835,
+        "gzip": 2832
+      },
+      {
+        "name": "app/admin/missions/[id]/layout-94a8133cbed3eb66.js",
+        "parsed": 7567,
+        "gzip": 2600
+      },
+      {
+        "name": "7593-5f69d1c76d7f1273.js",
+        "parsed": 6704,
+        "gzip": 2541
+      },
+      {
+        "name": "app/mission/[missionId]/layout-6ba67c77bbad2f84.js",
+        "parsed": 6572,
+        "gzip": 2427
+      },
+      {
+        "name": "app/mission/[missionId]/done/page-177a811028f10335.js",
+        "parsed": 5331,
+        "gzip": 2159
+      },
+      {
+        "name": "webpack-1b50e9e829cc1625.js",
+        "parsed": 3621,
+        "gzip": 1833
+      },
+      {
+        "name": "app/mission/[missionId]/action/[actionId]/layout-09d1c96f861fe587.js",
+        "parsed": 4355,
+        "gzip": 1782
+      },
+      {
+        "name": "5488.fd3384406ee3b6ad.js",
+        "parsed": 3552,
+        "gzip": 1548
+      },
+      {
+        "name": "app/login/done/page-1fdd9c6211696c7d.js",
+        "parsed": 1786,
+        "gzip": 976
+      },
+      {
+        "name": "app/mission/[missionId]/not-found-2be8260cc636637d.js",
+        "parsed": 1686,
+        "gzip": 944
+      },
+      {
+        "name": "app/not-found-864c74c9dc9e7fff.js",
+        "parsed": 1686,
+        "gzip": 944
+      },
+      {
+        "name": "app/global-error-4d910296f005bf6a.js",
+        "parsed": 1391,
+        "gzip": 873
+      },
+      {
+        "name": "app/error-7a6ba91e9c0c8ab5.js",
+        "parsed": 1354,
+        "gzip": 870
+      },
+      {
+        "name": "app/login/layout-c8424e409e48739e.js",
+        "parsed": 1757,
+        "gzip": 478
+      },
+      {
+        "name": "app/mission/[missionId]/done/layout-3caf112e0a57f06f.js",
+        "parsed": 1342,
+        "gzip": 317
+      },
+      {
+        "name": "main-app-61685719a6001965.js",
+        "parsed": 525,
+        "gzip": 230
+      },
+      {
+        "name": "pages/_app-7da1f4024c06e456.js",
+        "parsed": 240,
+        "gzip": 195
+      },
+      {
+        "name": "pages/_error-6b187ff0763e54e2.js",
+        "parsed": 224,
+        "gzip": 184
+      },
+      {
+        "name": "app/admin/missions/[id]/not-found-06839e0363f35bab.js",
+        "parsed": 188,
+        "gzip": 164
+      },
+      {
+        "name": "app/_not-found/page-a105f129dac6e6e6.js",
+        "parsed": 153,
+        "gzip": 140
+      },
+      {
+        "name": "app/admin/settings/page-a105f129dac6e6e6.js",
+        "parsed": 153,
+        "gzip": 140
+      },
+      {
+        "name": "app/api/cleanup-orphan-files/route-a105f129dac6e6e6.js",
+        "parsed": 153,
+        "gzip": 140
+      },
+      {
+        "name": "app/auth/callback/route-a105f129dac6e6e6.js",
+        "parsed": 153,
+        "gzip": 140
+      },
+      {
+        "name": "app/page-a105f129dac6e6e6.js",
+        "parsed": 153,
+        "gzip": 140
+      }
+    ],
+    "packages": [
+      {
+        "name": "next",
+        "parsed": 498679,
+        "gzip": 208116
+      },
+      {
+        "name": "react-dom",
+        "parsed": 171298,
+        "gzip": 54389
+      },
+      {
+        "name": "@nivo/sankey",
+        "parsed": 158018,
+        "gzip": 52804
+      },
+      {
+        "name": "framer-motion",
+        "parsed": 165310,
+        "gzip": 52205
+      },
+      {
+        "name": "prosemirror-view",
+        "parsed": 95187,
+        "gzip": 30064
+      },
+      {
+        "name": "@tanstack/query-core",
+        "parsed": 78052,
+        "gzip": 29725
+      },
+      {
+        "name": "gsap",
+        "parsed": 70262,
+        "gzip": 27530
+      },
+      {
+        "name": "lodash",
+        "parsed": 28393,
+        "gzip": 24805
+      },
+      {
+        "name": "@tiptap/core",
+        "parsed": 77614,
+        "gzip": 24265
+      },
+      {
+        "name": "swiper",
+        "parsed": 80341,
+        "gzip": 24139
+      },
+      {
+        "name": "rollbar",
+        "parsed": 78867,
+        "gzip": 23870
+      },
+      {
+        "name": "lucide-react",
+        "parsed": 32567,
+        "gzip": 22959
+      },
+      {
+        "name": "motion-dom",
+        "parsed": 42545,
+        "gzip": 22447
+      },
+      {
+        "name": "@tiptap/starter-kit",
+        "parsed": 54312,
+        "gzip": 20105
+      },
+      {
+        "name": "zod",
+        "parsed": 64815,
+        "gzip": 19049
+      },
+      {
+        "name": "sonner",
+        "parsed": 67747,
+        "gzip": 18550
+      },
+      {
+        "name": "date-fns",
+        "parsed": 44585,
+        "gzip": 18011
+      },
+      {
+        "name": "@radix-ui/react-select",
+        "parsed": 47599,
+        "gzip": 16539
+      },
+      {
+        "name": "prosemirror-model",
+        "parsed": 45278,
+        "gzip": 14129
+      },
+      {
+        "name": "@prisma/client",
+        "parsed": 35081,
+        "gzip": 13990
+      },
+      {
+        "name": "react-day-picker",
+        "parsed": 45460,
+        "gzip": 13951
+      },
+      {
+        "name": "@dnd-kit/core",
+        "parsed": 40442,
+        "gzip": 13257
+      },
+      {
+        "name": "@tanstack/react-query",
+        "parsed": 22279,
+        "gzip": 11567
+      },
+      {
+        "name": "react-hook-form",
+        "parsed": 30281,
+        "gzip": 10667
+      },
+      {
+        "name": "prosemirror-transform",
+        "parsed": 30237,
+        "gzip": 9005
+      },
+      {
+        "name": "jotai",
+        "parsed": 17176,
+        "gzip": 8497
+      },
+      {
+        "name": "tailwind-merge",
+        "parsed": 24872,
+        "gzip": 7853
+      },
+      {
+        "name": "react-remove-scroll",
+        "parsed": 20351,
+        "gzip": 7659
+      },
+      {
+        "name": "@floating-ui/dom",
+        "parsed": 18716,
+        "gzip": 7281
+      },
+      {
+        "name": "embla-carousel-react",
+        "parsed": 17925,
+        "gzip": 7116
+      }
+    ]
+  }
+}
