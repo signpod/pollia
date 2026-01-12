@@ -2,6 +2,7 @@
 const nextConfig = {
   experimental: {
     optimizePackageImports: [
+      // Radix UI 컴포넌트들 - 트리 쉐이킹 최적화로 사용하는 컴포넌트만 번들에 포함
       "@radix-ui/react-accordion",
       "@radix-ui/react-alert-dialog",
       "@radix-ui/react-checkbox",
@@ -24,11 +25,16 @@ const nextConfig = {
       "@radix-ui/react-toggle",
       "@radix-ui/react-toggle-group",
       "@radix-ui/react-tooltip",
+      // 아이콘 라이브러리 - 사용하는 아이콘만 번들에 포함
       "lucide-react",
+      // 유틸리티 라이브러리 - 사용하는 함수만 번들에 포함
       "date-fns",
       "lodash",
+      // 애니메이션 라이브러리 - 사용하는 컴포넌트만 번들에 포함
       "framer-motion",
+      // 차트 라이브러리 - 사용하는 차트만 번들에 포함
       "recharts",
+      // 드래그 앤 드롭 라이브러리 - 사용하는 기능만 번들에 포함
       "@dnd-kit/core",
       "@dnd-kit/sortable",
     ],
