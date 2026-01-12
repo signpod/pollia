@@ -312,6 +312,7 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
             }))
           : undefined,
       maxSelections: "maxSelections" in data ? data.maxSelections : undefined,
+      hasOther: "hasOther" in data ? data.hasOther : undefined,
     });
   };
 
@@ -416,6 +417,7 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
             imageFileUploadId: data.imageFileUploadId,
             isRequired: data.isRequired,
             maxSelections: "maxSelections" in data ? data.maxSelections : undefined,
+            hasOther: "hasOther" in data ? data.hasOther : undefined,
             options:
               "options" in data
                 ? data.options.map((opt, index) => ({
