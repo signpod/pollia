@@ -3,7 +3,7 @@ const config = {
   preset: "ts-jest",
   testEnvironment: "node",
   roots: ["<rootDir>/src"],
-  testMatch: ["**/__tests__/**/*.ts", "**/?(*.)+(spec|test).ts"],
+  testMatch: ["**/__tests__/**/*.{ts,tsx}", "**/?(*.)+(spec|test).{ts,tsx}"],
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
     "^@public/(.*)$": "<rootDir>/public/$1",

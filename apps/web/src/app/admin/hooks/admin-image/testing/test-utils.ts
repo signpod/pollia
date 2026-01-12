@@ -19,6 +19,7 @@ export function createMockUploadedData(
 export const mockGetUploadUrl = jest.fn();
 export const mockDeleteFileById = jest.fn();
 export const mockDeleteFileByPath = jest.fn();
+export const mockUploadFileToStorage = jest.fn();
 
 export function setupMocks() {
   jest.clearAllMocks();
@@ -34,10 +35,15 @@ export function setupMocks() {
 
   mockDeleteFileById.mockResolvedValue({ success: true });
   mockDeleteFileByPath.mockResolvedValue({ success: true });
+  mockUploadFileToStorage.mockResolvedValue(undefined);
 }
 
 jest.mock("@/actions/common/files", () => ({
   getUploadUrl: (...args: unknown[]) => mockGetUploadUrl(...args),
   deleteFileById: (...args: unknown[]) => mockDeleteFileById(...args),
   deleteFileByPath: (...args: unknown[]) => mockDeleteFileByPath(...args),
+}));
+
+jest.mock("../upload-file-to-storage", () => ({
+  uploadFileToStorage: (...args: unknown[]) => mockUploadFileToStorage(...args),
 }));
