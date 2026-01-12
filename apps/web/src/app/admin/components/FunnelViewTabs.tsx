@@ -3,8 +3,20 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/admin/components/shadcn-ui/tabs";
 import type { MissionFunnelData } from "@/types/dto";
 import { BarChart3, List } from "lucide-react";
+import dynamic from "next/dynamic";
 import { MissionFunnelTextView } from "./MissionFunnelTextView";
-import { MissionSankeyChart } from "./MissionSankeyChart";
+
+const MissionSankeyChart = dynamic(
+  () => import("./MissionSankeyChart").then(mod => mod.MissionSankeyChart),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-[500px] items-center justify-center">
+        <div className="text-muted-foreground">차트 로딩 중...</div>
+      </div>
+    ),
+  },
+);
 
 interface FunnelViewTabsProps {
   data: MissionFunnelData;
