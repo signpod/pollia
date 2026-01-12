@@ -1,7 +1,4 @@
-"use client";
-
-import { EditorContent, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
+import DOMPurify from "isomorphic-dompurify";
 import { cn } from "../../lib/utils";
 
 export interface TiptapViewerProps {
@@ -10,21 +7,12 @@ export interface TiptapViewerProps {
 }
 
 export function TiptapViewer({ content, className }: TiptapViewerProps) {
-  const editor = useEditor({
-    extensions: [StarterKit],
-    content,
-    editable: false,
-    immediatelyRender: false,
-    editorProps: {
-      attributes: {
-        class: "tiptap",
-      },
-    },
-  });
+  const sanitizedContent = DOMPurify.sanitize(content);
 
   return (
-    <div className={cn("tiptap-viewer", className)}>
-      {editor && <EditorContent editor={editor} />}
-    </div>
+    <div
+      className={cn("tiptap-viewer tiptap", className)}
+      dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+    />
   );
 }

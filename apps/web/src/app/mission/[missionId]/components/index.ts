@@ -1,3 +1,4 @@
+// Client Components
 export * from "./MissionDescription";
 export * from "./MissionImage";
 export * from "./MissionLikertScale";
@@ -12,3 +13,7 @@ export * from "./MissionFooter";
 export * from "./MissionBadge";
 export * from "./DevTools";
 export * from "./SocialShareButtons";
+export * from "./SocialShareButtonsWithData";
+
+// Server Components
+export * from "./MissionContent";

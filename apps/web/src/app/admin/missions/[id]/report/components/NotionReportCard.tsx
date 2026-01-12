@@ -44,12 +44,8 @@ export function NotionReportCard({ missionId }: NotionReportCardProps) {
 
   const notionPage = notionPageData?.data;
   const currentResponses = participantData?.data?.currentParticipants ?? 0;
-  const hasNewResponses = notionPage
-    ? currentResponses > notionPage.syncedResponseCount
-    : false;
-  const newResponseCount = notionPage
-    ? currentResponses - notionPage.syncedResponseCount
-    : 0;
+  const hasNewResponses = notionPage ? currentResponses > notionPage.syncedResponseCount : false;
+  const newResponseCount = notionPage ? currentResponses - notionPage.syncedResponseCount : 0;
 
   const handleSync = useCallback(() => {
     syncMutation.mutate(missionId);
@@ -93,18 +89,10 @@ export function NotionReportCard({ missionId }: NotionReportCardProps) {
         <CardContent>
           <div className="flex flex-col items-center justify-center py-8 space-y-4">
             <div className="text-center space-y-2">
-              <p className="text-muted-foreground">
-                아직 노션 리포트가 생성되지 않았습니다.
-              </p>
-              <p className="text-sm text-muted-foreground">
-                현재 응답자 수: {currentResponses}명
-              </p>
+              <p className="text-muted-foreground">아직 노션 리포트가 생성되지 않았습니다.</p>
+              <p className="text-sm text-muted-foreground">현재 응답자 수: {currentResponses}명</p>
             </div>
-            <Button
-              onClick={handleSync}
-              disabled={syncMutation.isPending}
-              className="gap-2"
-            >
+            <Button onClick={handleSync} disabled={syncMutation.isPending} className="gap-2">
               {syncMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -130,9 +118,7 @@ export function NotionReportCard({ missionId }: NotionReportCardProps) {
           <FileText className="h-5 w-5" />
           노션 리포트
         </CardTitle>
-        <CardDescription>
-          파트너에게 공유할 수 있는 노션 리포트입니다.
-        </CardDescription>
+        <CardDescription>파트너에게 공유할 수 있는 노션 리포트입니다.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="rounded-lg border bg-muted/30 p-4 space-y-3">

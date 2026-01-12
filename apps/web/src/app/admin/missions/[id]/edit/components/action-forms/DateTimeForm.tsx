@@ -4,7 +4,6 @@ import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { useAdminSingleImage } from "@/app/admin/hooks/use-admin-image-upload";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
-import { DATE_MAX_SELECTIONS, TIME_MAX_SELECTIONS } from "@/schemas/action";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { BaseActionFormFields } from "./BaseActionForm";
@@ -83,11 +82,7 @@ export function DateTimeForm<T extends "DATE" | "TIME">({
             form.setValue("imageFileUploadId", null, { shouldDirty: true });
           }}
         >
-          <MaxSelectionsField
-            control={form.control}
-            name="maxSelections"
-            disabled={isLoading}
-          />
+          <MaxSelectionsField control={form.control} name="maxSelections" disabled={isLoading} />
         </BaseActionFormFields>
 
         <div className="flex justify-end gap-3 pt-4">
