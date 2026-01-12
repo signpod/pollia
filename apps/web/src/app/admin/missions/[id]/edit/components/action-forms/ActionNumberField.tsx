@@ -8,6 +8,7 @@ import {
   FormMessage,
 } from "@/app/admin/components/shadcn-ui/form";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
+import { useEffect, useState } from "react";
 import type { Control, FieldValues, Path } from "react-hook-form";
 
 interface ActionNumberFieldProps<T extends FieldValues> {
@@ -15,8 +16,6 @@ interface ActionNumberFieldProps<T extends FieldValues> {
   name: Path<T>;
   label: string;
   description: string;
-  min?: number;
-  max?: number;
   placeholder?: string;
   disabled?: boolean;
   isOptional?: boolean;
@@ -27,9 +26,7 @@ export function ActionNumberField<T extends FieldValues>({
   name,
   label,
   description,
-  min = 1,
-  max = 10,
-  placeholder = "1",
+  placeholder,
   disabled = false,
   isOptional = false,
 }: ActionNumberFieldProps<T>) {
@@ -38,32 +35,90 @@ export function ActionNumberField<T extends FieldValues>({
       control={control}
       name={name}
       render={({ field }) => (
-        <FormItem className="flex items-center justify-between rounded-lg border p-3">
-          <div className="space-y-0.5">
-            <FormLabel className="text-sm font-medium">
-              {label} {!isOptional && <span className="text-destructive">*</span>}
-            </FormLabel>
-            <p className="text-xs text-muted-foreground">{description}</p>
-            <FormMessage />
-          </div>
-          <FormControl>
-            <Input
-              type="number"
-              min={min}
-              max={max}
-              placeholder={placeholder}
-              {...field}
-              value={field.value ?? ""}
-              onChange={e => {
-                const value = e.target.value ? Number(e.target.value) : undefined;
-                field.onChange(isOptional ? value : value || min);
-              }}
-              disabled={disabled}
-              className="w-20 text-center"
-            />
-          </FormControl>
-        </FormItem>
+        <ActionNumberInput
+          field={field}
+          label={label}
+          description={description}
+          placeholder={placeholder ?? ""}
+          disabled={disabled}
+          isOptional={isOptional}
+        />
       )}
     />
+  );
+}
+
+interface ActionNumberInputProps {
+  field: {
+    ref: React.Ref<HTMLInputElement>;
+    name: string;
+    value: number | undefined;
+    onChange: (value: number | undefined) => void;
+    onBlur: () => void;
+  };
+  label: string;
+  description: string;
+  placeholder: string;
+  disabled: boolean;
+  isOptional: boolean;
+}
+
+function ActionNumberInput({
+  field,
+  label,
+  description,
+  placeholder,
+  disabled,
+  isOptional,
+}: ActionNumberInputProps) {
+  const [localValue, setLocalValue] = useState<string>(
+    field.value != null ? String(field.value) : "",
+  );
+
+  useEffect(() => {
+    setLocalValue(field.value != null ? String(field.value) : "");
+  }, [field.value]);
+
+  const handleBlur = () => {
+    field.onBlur();
+
+    if (localValue === "") {
+      field.onChange(undefined);
+    } else {
+      const numValue = Number(localValue);
+      if (!Number.isNaN(numValue)) {
+        field.onChange(numValue);
+      }
+    }
+  };
+
+  return (
+    <FormItem className="flex items-center justify-between rounded-lg border p-3">
+      <div className="space-y-0.5">
+        <FormLabel className="text-sm font-medium">
+          {label} {!isOptional && <span className="text-destructive">*</span>}
+        </FormLabel>
+        <p className="text-xs text-muted-foreground">{description}</p>
+        <FormMessage />
+      </div>
+      <FormControl>
+        <Input
+          ref={field.ref}
+          name={field.name}
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          placeholder={placeholder}
+          value={localValue}
+          onChange={e => {
+            const value = e.target.value.replace(/[^0-9]/g, "");
+            setLocalValue(value);
+          }}
+          onBlur={handleBlur}
+          disabled={disabled}
+          className="w-20 text-center"
+        />
+      </FormControl>
+    </FormItem>
   );
 }

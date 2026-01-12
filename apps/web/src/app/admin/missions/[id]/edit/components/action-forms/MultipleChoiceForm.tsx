@@ -95,7 +95,7 @@ export function MultipleChoiceForm({
       description: data.description,
       imageUrl: data.imageUrl,
       imageFileUploadId: data.imageFileUploadId,
-      maxSelections: data.maxSelections,
+      maxSelections: data.maxSelections ?? 1,
       hasOther: data.hasOther,
       options: formattedOptions,
       isRequired: data.isRequired,
@@ -141,12 +141,7 @@ export function MultipleChoiceForm({
 
         <HasOtherField control={form.control} name="hasOther" disabled={isLoading} />
 
-        <MaxSelectionsField
-          control={form.control}
-          name="maxSelections"
-          maxOptions={fields.length}
-          disabled={isLoading}
-        />
+        <MaxSelectionsField control={form.control} name="maxSelections" disabled={isLoading} />
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">

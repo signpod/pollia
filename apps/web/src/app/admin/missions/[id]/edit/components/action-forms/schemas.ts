@@ -37,10 +37,15 @@ const actionOptionFormSchema = actionOptionSchema.omit({ order: true }).extend({
 });
 
 export const multipleChoiceFormSchema = multipleChoiceInputSchema
-  .omit({ missionId: true, order: true })
+  .omit({ missionId: true, order: true, maxSelections: true })
   .extend({
     imageFileUploadId: z.string().nullable().optional(),
     options: z.array(actionOptionFormSchema),
+    maxSelections: z
+      .number()
+      .int()
+      .min(1, "최대 선택 가능 개수는 최소 1개 이상이어야 합니다.")
+      .optional(),
   })
   .refine(
     data =>
@@ -55,7 +60,7 @@ export const multipleChoiceFormSchema = multipleChoiceInputSchema
     message: "모든 선택지에 제목을 입력해주세요.",
     path: ["options"],
   })
-  .refine(data => data.maxSelections <= data.options.length, {
+  .refine(data => !data.maxSelections || data.maxSelections <= data.options.length, {
     message: "선택 가능 개수는 선택지 개수를 초과할 수 없습니다.",
     path: ["maxSelections"],
   });
