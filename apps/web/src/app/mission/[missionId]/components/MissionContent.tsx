@@ -1,6 +1,8 @@
 import { cleanTiptapHTML } from "@/lib/utils";
 import { Typo } from "@repo/ui/components";
 import { MissionType } from "@prisma/client";
+import { SECTION_IDS } from "../constants/sectionIds";
+import type { MissionRewardData } from "../types/mission";
 import { MissionDescription } from "./MissionDescription";
 import { MissionFooter } from "./MissionFooter";
 import { MissionRewardSection } from "./MissionRewardSection";
@@ -16,17 +18,8 @@ export interface MissionContentProps {
   target: string | null;
   estimatedMinutes: number | null;
   deadlineText: string;
-  reward: {
-    imageUrl: string | null;
-    name: string | null;
-    scheduledDate: Date | null;
-  } | null;
+  reward: MissionRewardData | null;
 }
-
-const SECTION_IDS = {
-  MISSION_GUIDE: "mission-guide",
-  REWARD: "reward",
-} as const;
 
 export function MissionContent({
   missionId,

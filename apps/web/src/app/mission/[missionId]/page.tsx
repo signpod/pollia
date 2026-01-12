@@ -2,8 +2,9 @@ import { getAuthError } from "@/lib/getAuthError";
 import { missionService } from "@/server/services/mission";
 import { rewardService } from "@/server/services/reward/rewardService";
 import { headers } from "next/headers";
-import { DevTools, MissionContent } from "./components";
 import { MissionClientWrapper } from "./MissionClientWrapper";
+import { DevTools, MissionContent } from "./components";
+import type { MissionRewardData } from "./types/mission";
 import { formatDeadline } from "./utils/formatDeadline";
 
 export default async function MissionPage({ params }: { params: Promise<{ missionId: string }> }) {
@@ -20,7 +21,10 @@ export default async function MissionPage({ params }: { params: Promise<{ missio
   // 서버에서 데이터 페칭
   const mission = await missionService.getMission(missionId);
   const reward = mission.rewardId
-    ? await rewardService.getReward(mission.rewardId).catch(() => null)
+    ? await rewardService.getReward(mission.rewardId).catch(error => {
+        console.error("리워드 조회 실패:", error);
+        return null;
+      })
     : null;
 
   const deadlineText = mission.deadline
@@ -42,11 +46,11 @@ export default async function MissionPage({ params }: { params: Promise<{ missio
           deadlineText={deadlineText}
           reward={
             reward
-              ? {
+              ? ({
                   imageUrl: reward.imageUrl,
                   name: reward.name,
                   scheduledDate: reward.scheduledDate,
-                }
+                } satisfies MissionRewardData)
               : null
           }
         />

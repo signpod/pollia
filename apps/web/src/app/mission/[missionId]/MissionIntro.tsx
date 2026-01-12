@@ -20,15 +20,11 @@ import { useParams } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MissionBadge, MissionImage, MissionLogo } from "./components";
+import { SECTION_IDS } from "./constants/sectionIds";
 import { BottomButton } from "./ui";
 import { checkParticipantLimitReached } from "./utils/checkParticipantLimit";
 
-const SECTION_IDS = {
-  MISSION_GUIDE: "mission-guide",
-  REWARD: "reward",
-} as const;
-
-const SCROLL_OFFSET = (sectionId: string) => {
+const getScrollOffset = (sectionId: string) => {
   if (sectionId === SECTION_IDS.MISSION_GUIDE) {
     return 60;
   }
@@ -171,7 +167,7 @@ export function MissionIntro({ initialError, children }: MissionIntroProps) {
     const container = scrollContainerRef.current;
     const element = document.getElementById(value);
     if (container && element) {
-      const offset = SCROLL_OFFSET(value);
+      const offset = getScrollOffset(value);
       container.scrollTo({
         top: element.offsetTop - offset,
         behavior: "smooth",
