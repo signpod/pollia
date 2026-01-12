@@ -191,26 +191,13 @@ function BasicInfoCard({ form }: BasicInfoCardProps) {
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="estimatedMinutes">예상 소요 시간 (분)</Label>
-          <Input
-            id="estimatedMinutes"
-            type="number"
-            placeholder="예상 소요 시간을 입력하세요"
-            {...form.register("estimatedMinutes", {
-              setValueAs: value => {
-                if (!value || value === "") return undefined;
-                const num = Number(value);
-                return Number.isNaN(num) ? undefined : num;
-              },
-            })}
-          />
-          {form.formState.errors.estimatedMinutes && (
-            <p className="text-sm text-destructive">
-              {form.formState.errors.estimatedMinutes.message}
-            </p>
-          )}
-        </div>
+        <NumberField
+          control={form.control}
+          name="estimatedMinutes"
+          label="예상 소요 시간 (분)"
+          description="미션 완료에 필요한 예상 시간을 입력합니다."
+          isOptional
+        />
 
         <div className="space-y-2">
           <Label htmlFor="deadline">마감일</Label>
