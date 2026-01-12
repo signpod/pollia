@@ -9,11 +9,9 @@
   "scripts": {
     "dev": "next dev --turbopack --port 3000",
     "build": "prisma generate && next build --turbopack",
-    "analyze": "ANALYZE=true next build",
-    "analyze:save": "node scripts/bundle-analysis/save-snapshot.cjs",
-    "analyze:compare": "node scripts/bundle-analysis/compare.cjs",
     "cold-start": "node scripts/measure-cold-start.cjs",
     "cold-start:compare": "node scripts/compare-cold-start.cjs",
+    "chunks:compare": "node scripts/compare-chunks.cjs",
     "start": "next start",
     "lint": "biome check --write .",
     "check-types": "tsc --noEmit",
@@ -105,7 +103,6 @@
   },
   "devDependencies": {
     "@jridgewell/resolve-uri": "^3.1.2",
-    "@next/bundle-analyzer": "^16.1.1",
     "@svgr/webpack": "^8.1.0",
     "@tailwindcss/postcss": "^4.1.12",
     "@types/jest": "^30.0.0",
