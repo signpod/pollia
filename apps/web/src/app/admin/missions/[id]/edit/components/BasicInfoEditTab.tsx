@@ -2,6 +2,7 @@
 
 import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
 import { CharacterCounter } from "@/app/admin/components/common/InputField";
+import { NumberField } from "@/app/admin/components/common/NumberField";
 import { TiptapEditor } from "@/app/admin/components/common/TiptapEditor";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import {
@@ -11,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
+import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
 import {
@@ -107,17 +109,25 @@ function BasicInfoCard({ form }: BasicInfoCardProps) {
           )}
         </div>
 
-        <div className="flex gap-10">
-          <div className="space-y-2">
-            <Label htmlFor="type">타입</Label>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-center justify-between rounded-lg border p-3">
+            <div className="space-y-0.5">
+              <Label htmlFor="type" className="text-sm font-medium">
+                타입
+              </Label>
+              <p className="text-xs text-muted-foreground">미션의 유형을 선택합니다.</p>
+              {form.formState.errors.type && (
+                <p className="text-sm text-destructive">{form.formState.errors.type.message}</p>
+              )}
+            </div>
             <Select
               value={form.watch("type")}
               onValueChange={value => {
                 form.setValue("type", value as MissionType, { shouldDirty: true });
               }}
             >
-              <SelectTrigger id="type">
-                <SelectValue placeholder="미션 타입을 선택하세요" />
+              <SelectTrigger id="type" className="w-32">
+                <SelectValue placeholder="선택" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={MissionType.GENERAL}>
@@ -128,32 +138,18 @@ function BasicInfoCard({ form }: BasicInfoCardProps) {
                 </SelectItem>
               </SelectContent>
             </Select>
-            {form.formState.errors.type && (
-              <p className="text-sm text-destructive">{form.formState.errors.type.message}</p>
-            )}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="maxParticipants">최대 참여자 수</Label>
-            <Input
-              id="maxParticipants"
-              type="number"
-              placeholder="제한 없음"
-              min="1"
-              {...form.register("maxParticipants", {
-                setValueAs: value => {
-                  if (!value || value === "") return null;
-                  const num = Number(value);
-                  return Number.isNaN(num) ? null : num;
-                },
-              })}
-            />
-            {form.formState.errors.maxParticipants && (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.maxParticipants.message}
-              </p>
-            )}
-          </div>
+
+          <NumberField
+            control={form.control}
+            name="maxParticipants"
+            label="최대 참여자 수"
+            description="비워두면 제한 없음으로 설정됩니다."
+            placeholder="제한 없음"
+            isOptional
+          />
         </div>
+
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="description">설명</Label>
@@ -374,14 +370,16 @@ function BasicInfoForm({ mission, missionId }: { mission: MissionData; missionId
   });
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
-      <BasicInfoCard form={form} />
-      <ImageCard form={form} missionImageUpload={missionImage} brandLogoUpload={brandLogo} />
-      <ActionButtons
-        isPending={updateMission.isPending}
-        isDirty={form.formState.isDirty}
-        onReset={handleReset}
-      />
-    </form>
+    <Form {...form}>
+      <form onSubmit={onSubmit} className="space-y-6">
+        <BasicInfoCard form={form} />
+        <ImageCard form={form} missionImageUpload={missionImage} brandLogoUpload={brandLogo} />
+        <ActionButtons
+          isPending={updateMission.isPending}
+          isDirty={form.formState.isDirty}
+          onReset={handleReset}
+        />
+      </form>
+    </Form>
   );
 }
