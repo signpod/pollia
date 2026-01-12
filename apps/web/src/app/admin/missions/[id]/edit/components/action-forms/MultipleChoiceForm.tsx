@@ -12,6 +12,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { BaseActionFormFields } from "./BaseActionForm";
+import { HasOtherField } from "./HasOtherField";
 import { MaxSelectionsField } from "./MaxSelectionsField";
 import { MultipleChoiceOptionCard } from "./MultipleChoiceOptionCard";
 import {
@@ -38,6 +39,7 @@ export function MultipleChoiceForm({
       imageUrl: initialData?.imageUrl,
       imageFileUploadId: initialData?.imageFileUploadId,
       isRequired: initialData?.isRequired ?? true,
+      hasOther: initialData?.hasOther ?? false,
       maxSelections: initialData?.maxSelections ?? 1,
       options:
         initialData?.options?.map(opt => ({
@@ -93,7 +95,8 @@ export function MultipleChoiceForm({
       description: data.description,
       imageUrl: data.imageUrl,
       imageFileUploadId: data.imageFileUploadId,
-      maxSelections: data.maxSelections,
+      maxSelections: data.maxSelections ?? 1,
+      hasOther: data.hasOther,
       options: formattedOptions,
       isRequired: data.isRequired,
     });
@@ -136,12 +139,9 @@ export function MultipleChoiceForm({
           }}
         />
 
-        <MaxSelectionsField
-          control={form.control}
-          name="maxSelections"
-          maxOptions={fields.length}
-          disabled={isLoading}
-        />
+        <HasOtherField control={form.control} name="hasOther" disabled={isLoading} />
+
+        <MaxSelectionsField control={form.control} name="maxSelections" disabled={isLoading} />
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">

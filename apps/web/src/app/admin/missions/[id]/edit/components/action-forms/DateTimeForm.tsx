@@ -86,7 +86,6 @@ export function DateTimeForm<T extends "DATE" | "TIME">({
           <MaxSelectionsField
             control={form.control}
             name="maxSelections"
-            maxOptions={type === "DATE" ? DATE_MAX_SELECTIONS : TIME_MAX_SELECTIONS}
             disabled={isLoading}
           />
         </BaseActionFormFields>

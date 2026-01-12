@@ -37,10 +37,19 @@ const actionOptionFormSchema = actionOptionSchema.omit({ order: true }).extend({
 });
 
 export const multipleChoiceFormSchema = multipleChoiceInputSchema
-  .omit({ missionId: true, order: true })
+  .omit({ missionId: true, order: true, maxSelections: true })
   .extend({
     imageFileUploadId: z.string().nullable().optional(),
     options: z.array(actionOptionFormSchema),
+    maxSelections: z
+      .number({
+        error: issue =>
+          issue.input === undefined
+            ? "최대 선택 가능 개수를 입력해주세요."
+            : "숫자를 입력해주세요.",
+      })
+      .int()
+      .min(1, "최대 선택 가능 개수는 최소 1개 이상이어야 합니다."),
   })
   .refine(
     data =>

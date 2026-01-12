@@ -33,10 +33,29 @@ export const createMockAction = (overrides: Partial<Action> = {}): Action => ({
   order: 0,
   maxSelections: null,
   isRequired: true,
+  hasOther: false,
   imageFileUploadId: null,
   createdAt: new Date(),
   updatedAt: new Date(),
   ...overrides,
+});
+
+interface MockActionOption {
+  id: string;
+  title: string;
+  description: string | null;
+  imageUrl: string | null;
+  order: number;
+}
+
+type ActionWithOptions = Action & { options: MockActionOption[] };
+
+export const createMockActionWithOptions = (
+  overrides: Partial<Action> = {},
+  options: MockActionOption[] = [],
+): ActionWithOptions => ({
+  ...createMockAction(overrides),
+  options,
 });
 
 /**
@@ -81,6 +100,7 @@ export const createMockActionResponse = (
   order: request.order,
   maxSelections: request.maxSelections ?? null,
   isRequired: request.isRequired,
+  hasOther: false,
   imageFileUploadId: null,
   createdAt: new Date(),
   updatedAt: new Date(),

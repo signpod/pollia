@@ -11,10 +11,10 @@ import {
   FormMessage,
 } from "@/app/admin/components/shadcn-ui/form";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
-import { Switch } from "@/app/admin/components/shadcn-ui/switch";
 import { ACTION_DESCRIPTION_MAX_LENGTH, ACTION_TITLE_MAX_LENGTH } from "@/schemas/action";
 import type { ReactNode } from "react";
 import type { Control, FieldValues, Path, UseFormWatch } from "react-hook-form";
+import { IsRequiredField } from "./IsRequiredField";
 
 interface BaseActionFormFieldsProps<TFieldValues extends FieldValues> {
   control: Control<TFieldValues>;
@@ -101,41 +101,34 @@ export function BaseActionFormFields<TFieldValues extends FieldValues>({
         control={control}
         name={"imageUrl" as Path<TFieldValues>}
         render={({ field }) => (
-          <FormItem>
-            <div className="space-y-2">
-              <FormLabel>
-                이미지 <span className="text-muted-foreground">(선택)</span>
-              </FormLabel>
-              <div className="flex items-center gap-3">
-                <ImageSelector
-                  size="large"
-                  imageUrl={mainImagePreviewUrl || field.value || undefined}
-                  onImageSelect={onMainImageSelect}
-                  onImageDelete={() => {
-                    onMainImageDelete();
-                    field.onChange(null);
-                  }}
-                  disabled={isLoading}
-                />
+          <FormItem className="rounded-lg border p-3">
+            <div className="flex gap-4">
+              <ImageSelector
+                size="large"
+                imageUrl={mainImagePreviewUrl || field.value || undefined}
+                onImageSelect={onMainImageSelect}
+                onImageDelete={() => {
+                  onMainImageDelete();
+                  field.onChange(null);
+                }}
+                disabled={isLoading}
+              />
+              <div className="space-y-0.5 py-1">
+                <FormLabel className="text-sm font-medium">
+                  이미지 <span className="text-muted-foreground">(선택)</span>
+                </FormLabel>
                 <p className="text-xs text-muted-foreground">액션에 표시될 이미지를 선택하세요.</p>
               </div>
-              <FormMessage />
             </div>
+            <FormMessage />
           </FormItem>
         )}
       />
 
-      <FormField
+      <IsRequiredField
         control={control}
         name={"isRequired" as Path<TFieldValues>}
-        render={({ field }) => (
-          <FormItem className="space-y-2">
-            <FormLabel>필수 응답</FormLabel>
-            <FormControl>
-              <Switch checked={field.value} onCheckedChange={field.onChange} disabled={isLoading} />
-            </FormControl>
-          </FormItem>
-        )}
+        disabled={isLoading}
       />
 
       {children}

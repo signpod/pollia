@@ -69,6 +69,7 @@ const baseActionSchema = z.object({
   imageFileUploadId: z.string().nullable().optional(),
   order: actionOrderSchema,
   isRequired: z.boolean(),
+  hasOther: z.boolean().optional(),
 });
 
 export const multipleChoiceInputSchema = baseActionSchema
@@ -154,6 +155,7 @@ export const actionUpdateSchema = z
       .min(1, "최대 선택 가능 개수는 최소 1개 이상이어야 합니다.")
       .optional(),
     isRequired: z.boolean().optional(),
+    hasOther: z.boolean().optional(),
     options: z.array(actionOptionSchema).optional(),
   })
   .refine(data => Object.keys(data).length > 0, {

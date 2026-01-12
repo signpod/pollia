@@ -17,6 +17,8 @@ import {
 import { adminActionQueryKeys } from "@/app/admin/constants/queryKeys";
 import type { ActionType } from "@/app/admin/missions/[id]/edit/components/action-forms";
 import type {
+  ActionOptionInput,
+  BaseActionRequest,
   CreateDateActionRequest,
   CreateImageActionRequest,
   CreateMultipleChoiceActionRequest,
@@ -32,22 +34,10 @@ import type {
 } from "@/types/dto";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-interface CreateActionInput {
+interface CreateActionInput extends BaseActionRequest {
   missionId: string;
   type: ActionType;
-  title: string;
-  description?: string | null;
-  imageUrl?: string | null;
-  imageFileUploadId?: string | null;
-  order: number;
-  isRequired: boolean;
-  options?: {
-    title: string;
-    description?: string | null;
-    imageUrl?: string | null;
-    imageFileUploadId?: string | null;
-    order: number;
-  }[];
+  options?: ActionOptionInput[];
   maxSelections?: number;
 }
 
@@ -71,6 +61,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
             isRequired: input.isRequired,
+            hasOther: input.hasOther,
             maxSelections: input.maxSelections ?? 1,
             options:
               input.options?.map((opt, index) => ({

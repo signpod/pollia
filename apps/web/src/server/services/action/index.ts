@@ -20,6 +20,8 @@ import { ActionType } from "@prisma/client";
 import { z } from "zod";
 import type {
   ActionCreatedResult,
+  BaseActionInput,
+  BaseActionInputWithOptions,
   CreateDateInput,
   CreateEitherOrInput,
   CreateImageInput,
@@ -43,7 +45,7 @@ export class ActionService {
     private missionRepo = missionRepository,
   ) {}
 
-  private async createSimpleAction<T>(
+  private async createSimpleAction<T extends BaseActionInput>(
     input: T,
     schema: z.ZodType<T>,
     type: ActionType,
@@ -57,16 +59,7 @@ export class ActionService {
       throw error;
     }
 
-    const validated = result.data as {
-      missionId?: string;
-      title: string;
-      description?: string;
-      imageUrl?: string;
-      imageFileUploadId?: string;
-      order: number;
-      isRequired?: boolean;
-      maxSelections?: number;
-    };
+    const validated = result.data;
 
     if (validated.missionId) {
       await this.verifyMissionAccess(validated.missionId, userId);
@@ -74,15 +67,9 @@ export class ActionService {
 
     const action = await this.actionRepo.create(
       {
-        missionId: validated.missionId,
-        title: validated.title,
-        description: validated.description,
-        imageUrl: validated.imageUrl,
-        imageFileUploadId: validated.imageFileUploadId,
+        ...validated,
         type,
-        order: validated.order,
         maxSelections: maxSelections ?? validated.maxSelections,
-        isRequired: validated.isRequired,
       },
       userId,
     );
@@ -98,7 +85,7 @@ export class ActionService {
     };
   }
 
-  private async createActionWithOptions<T>(
+  private async createActionWithOptions<T extends BaseActionInputWithOptions>(
     input: T,
     schema: z.ZodType<T>,
     type: ActionType,
@@ -112,45 +99,26 @@ export class ActionService {
       throw error;
     }
 
-    const validated = result.data as {
-      missionId?: string;
-      title: string;
-      description?: string;
-      imageUrl?: string;
-      imageFileUploadId?: string;
-      order: number;
-      isRequired?: boolean;
-      options: Array<{
-        title: string;
-        description?: string;
-        imageUrl?: string;
-        order: number;
-        imageFileUploadId?: string;
-      }>;
-    };
+    const validated = result.data;
 
     if (validated.missionId) {
       await this.verifyMissionAccess(validated.missionId, userId);
     }
 
+    const { options, ...actionData } = validated;
+
     const action = await this.actionRepo.createMultipleChoice(
       {
-        missionId: validated.missionId,
-        title: validated.title,
-        description: validated.description,
-        imageUrl: validated.imageUrl,
-        imageFileUploadId: validated.imageFileUploadId,
+        ...actionData,
         type,
-        order: validated.order,
         maxSelections,
-        isRequired: validated.isRequired,
       },
-      validated.options.map(opt => ({
+      options.map(opt => ({
         title: opt.title,
-        description: opt.description,
-        imageUrl: opt.imageUrl,
+        description: opt.description ?? undefined,
+        imageUrl: opt.imageUrl ?? undefined,
         order: opt.order,
-        imageFileUploadId: opt.imageFileUploadId,
+        imageFileUploadId: opt.imageFileUploadId ?? undefined,
       })),
       userId,
     );
@@ -227,7 +195,7 @@ export class ActionService {
       multipleChoiceInputSchema,
       ActionType.MULTIPLE_CHOICE,
       userId,
-      (input as { maxSelections: number }).maxSelections,
+      input.maxSelections,
     );
   }
 
@@ -262,7 +230,7 @@ export class ActionService {
       tagInputSchema,
       ActionType.TAG,
       userId,
-      (input as { maxSelections?: number }).maxSelections,
+      input.maxSelections,
     );
   }
 

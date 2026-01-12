@@ -32,13 +32,13 @@ export async function syncMissionToNotion(missionId: string): Promise<SyncMissio
     await missionNotionPageService.upsertNotionPage(missionId, {
       notionPageId: result.notionPageId,
       notionPageUrl: result.notionPageUrl,
-      syncedResponseCount: responses.length,
+      syncedResponseCount: result.syncedResponseCount,
     });
 
     return {
       data: {
         notionPageUrl: result.notionPageUrl,
-        syncedResponseCount: responses.length,
+        syncedResponseCount: result.syncedResponseCount,
       },
     };
   } catch (error) {

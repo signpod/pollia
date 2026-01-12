@@ -2,6 +2,7 @@ import { ActionType } from "@prisma/client";
 import {
   type ActionServiceTestContext,
   createActionServiceTestContext,
+  createMockAction,
   mockMissionFactory,
 } from "../testUtils";
 
@@ -17,20 +18,12 @@ describe("ActionService - Mutation", () => {
   });
 
   describe("updateAction", () => {
-    const mockAction = {
-      id: "action1",
-      missionId: "mission1",
+    const mockAction = createMockAction({
       title: "기존 액션",
-      description: null,
-      imageUrl: null,
       type: ActionType.MULTIPLE_CHOICE,
-      order: 0,
       maxSelections: 1,
       isRequired: false,
-      imageFileUploadId: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    });
 
     it("Action을 성공적으로 수정한다", async () => {
       // Given
@@ -202,20 +195,11 @@ describe("ActionService - Mutation", () => {
   });
 
   describe("deleteAction", () => {
-    const mockAction = {
-      id: "action1",
-      missionId: "mission1",
-      title: "액션",
-      description: null,
-      imageUrl: null,
+    const mockAction = createMockAction({
       type: ActionType.MULTIPLE_CHOICE,
-      order: 0,
       maxSelections: 1,
       isRequired: false,
-      imageFileUploadId: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
+    });
 
     it("Action을 성공적으로 삭제한다", async () => {
       // Given

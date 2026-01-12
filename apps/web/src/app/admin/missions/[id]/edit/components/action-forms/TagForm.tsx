@@ -107,12 +107,7 @@ export function TagForm({
           }}
         />
 
-        <MaxSelectionsField
-          control={form.control}
-          name="maxSelections"
-          maxOptions={fields.length}
-          disabled={isLoading}
-        />
+        <MaxSelectionsField control={form.control} name="maxSelections" disabled={isLoading} />
 
         <div className="space-y-2">
           <div className="flex items-center justify-between">

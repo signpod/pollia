@@ -2,7 +2,7 @@ import type { ActionRepository } from "@/server/repositories/action/actionReposi
 import type { MissionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import type { MissionRepository } from "@/server/repositories/mission/missionRepository";
 import { MissionService } from "..";
-import { createMockMission } from "../../testUtils";
+import { createMockActionWithOptions, createMockMission } from "../../testUtils";
 
 describe("MissionService - Read", () => {
   let missionService: MissionService;
@@ -137,36 +137,24 @@ describe("MissionService - Read", () => {
   describe("getActionById", () => {
     it("Action이 존재하면 정상적으로 반환한다", async () => {
       // Given
-      const mockAction = {
-        id: "a1",
-        title: "질문 1",
-        description: "설명",
-        imageUrl: null,
-        type: "MULTIPLE_CHOICE" as const,
-        order: 1,
-        maxSelections: 1,
-        missionId: "mission-1",
-        imageFileUploadId: null,
-        options: [
-          {
-            id: "opt1",
-            title: "선택지 1",
-            description: null,
-            imageUrl: null,
-            order: 1,
-          },
-          {
-            id: "opt2",
-            title: "선택지 2",
-            description: null,
-            imageUrl: null,
-            order: 2,
-          },
+      const mockAction = createMockActionWithOptions(
+        {
+          id: "a1",
+          missionId: "mission-1",
+          title: "질문 1",
+          description: "설명",
+          type: "MULTIPLE_CHOICE",
+          order: 1,
+          maxSelections: 1,
+          isRequired: false,
+          createdAt: new Date("2024-01-01"),
+          updatedAt: new Date("2024-01-01"),
+        },
+        [
+          { id: "opt1", title: "선택지 1", description: null, imageUrl: null, order: 1 },
+          { id: "opt2", title: "선택지 2", description: null, imageUrl: null, order: 2 },
         ],
-        createdAt: new Date("2024-01-01"),
-        isRequired: false,
-        updatedAt: new Date("2024-01-01"),
-      };
+      );
       mockActionRepository.findById.mockResolvedValue(mockAction);
 
       // When
@@ -200,46 +188,36 @@ describe("MissionService - Read", () => {
     it("Mission의 모든 Action 상세를 반환한다", async () => {
       // Given
       const mockMission = createMockMission({ id: "mission-1", creatorId: "user-1" });
+      const testDate = new Date("2024-01-01");
 
       const mockActions = [
-        {
-          id: "a1",
-          title: "질문 1",
-          description: null,
-          imageUrl: null,
-          type: "MULTIPLE_CHOICE" as const,
-          order: 1,
-          maxSelections: 1,
-          missionId: "mission-1",
-          imageFileUploadId: null,
-          options: [
-            {
-              id: "opt1",
-              title: "선택지 1",
-              description: null,
-              imageUrl: null,
-              order: 1,
-            },
-          ],
-          createdAt: new Date("2024-01-01"),
-          isRequired: false,
-          updatedAt: new Date("2024-01-01"),
-        },
-        {
-          id: "a2",
-          title: "질문 2",
-          description: null,
-          imageUrl: null,
-          type: "SCALE" as const,
-          order: 2,
-          maxSelections: null,
-          missionId: "mission-1",
-          imageFileUploadId: null,
-          options: [],
-          createdAt: new Date("2024-01-01"),
-          isRequired: false,
-          updatedAt: new Date("2024-01-01"),
-        },
+        createMockActionWithOptions(
+          {
+            id: "a1",
+            missionId: "mission-1",
+            title: "질문 1",
+            type: "MULTIPLE_CHOICE",
+            order: 1,
+            maxSelections: 1,
+            isRequired: false,
+            createdAt: testDate,
+            updatedAt: testDate,
+          },
+          [{ id: "opt1", title: "선택지 1", description: null, imageUrl: null, order: 1 }],
+        ),
+        createMockActionWithOptions(
+          {
+            id: "a2",
+            missionId: "mission-1",
+            title: "질문 2",
+            type: "SCALE",
+            order: 2,
+            isRequired: false,
+            createdAt: testDate,
+            updatedAt: testDate,
+          },
+          [],
+        ),
       ];
 
       mockRepository.findById.mockResolvedValue(mockMission);
