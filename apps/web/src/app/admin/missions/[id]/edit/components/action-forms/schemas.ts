@@ -60,6 +60,10 @@ export const multipleChoiceFormSchema = multipleChoiceInputSchema
     message: "모든 선택지에 제목을 입력해주세요.",
     path: ["options"],
   })
+  .refine(data => data.maxSelections != null, {
+    message: "최대 선택 가능 개수를 입력해주세요.",
+    path: ["maxSelections"],
+  })
   .refine(data => !data.maxSelections || data.maxSelections <= data.options.length, {
     message: "선택 가능 개수는 선택지 개수를 초과할 수 없습니다.",
     path: ["maxSelections"],
