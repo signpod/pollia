@@ -12,6 +12,8 @@
     "analyze": "ANALYZE=true next build",
     "analyze:save": "node scripts/bundle-analysis/save-snapshot.cjs",
     "analyze:compare": "node scripts/bundle-analysis/compare.cjs",
+    "cold-start": "node scripts/measure-cold-start.cjs",
+    "cold-start:compare": "node scripts/compare-cold-start.cjs",
     "start": "next start",
     "lint": "biome check --write .",
     "check-types": "tsc --noEmit",
