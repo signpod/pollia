@@ -1,9 +1,8 @@
 "use client";
 
-import * as React from "react";
-import { Drawer as DrawerPrimitive } from "vaul";
-
+import { useAdminRootContainer } from "@/app/admin/hooks/use-admin-root-container";
 import { cn } from "@/app/admin/lib/utils";
+import { Drawer as DrawerPrimitive } from "vaul";
 
 function Drawer({ ...props }: React.ComponentProps<typeof DrawerPrimitive.Root>) {
   return <DrawerPrimitive.Root data-slot="drawer" {...props} />;
@@ -42,11 +41,7 @@ function DrawerContent({
   children,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Content>) {
-  const [container, setContainer] = React.useState<HTMLElement | null>(null);
-
-  React.useEffect(() => {
-    setContainer(document.querySelector(".admin-root") as HTMLElement);
-  }, []);
+  const container = useAdminRootContainer();
 
   return (
     <DrawerPortal data-slot="drawer-portal" container={container}>

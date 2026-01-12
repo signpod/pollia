@@ -1,9 +1,8 @@
 "use client";
 
-import * as PopoverPrimitive from "@radix-ui/react-popover";
-import * as React from "react";
-
+import { useAdminRootContainer } from "@/app/admin/hooks/use-admin-root-container";
 import { cn } from "@/app/admin/lib/utils";
+import * as PopoverPrimitive from "@radix-ui/react-popover";
 
 function Popover({ ...props }: React.ComponentProps<typeof PopoverPrimitive.Root>) {
   return <PopoverPrimitive.Root data-slot="popover" {...props} />;
@@ -19,11 +18,7 @@ function PopoverContent({
   sideOffset = 4,
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Content>) {
-  const [container, setContainer] = React.useState<HTMLElement | null>(null);
-
-  React.useEffect(() => {
-    setContainer(document.querySelector(".admin-root") as HTMLElement);
-  }, []);
+  const container = useAdminRootContainer();
 
   return (
     <PopoverPrimitive.Portal container={container}>

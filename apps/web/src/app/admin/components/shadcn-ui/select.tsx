@@ -1,10 +1,9 @@
 "use client";
 
+import { useAdminRootContainer } from "@/app/admin/hooks/use-admin-root-container";
+import { cn } from "@/app/admin/lib/utils";
 import * as SelectPrimitive from "@radix-ui/react-select";
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
-import * as React from "react";
-
-import { cn } from "@/app/admin/lib/utils";
 
 function Select({ ...props }: React.ComponentProps<typeof SelectPrimitive.Root>) {
   return <SelectPrimitive.Root data-slot="select" {...props} />;
@@ -51,11 +50,7 @@ function SelectContent({
   align = "center",
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
-  const [container, setContainer] = React.useState<HTMLElement | null>(null);
-
-  React.useEffect(() => {
-    setContainer(document.querySelector(".admin-root") as HTMLElement);
-  }, []);
+  const container = useAdminRootContainer();
 
   return (
     <SelectPrimitive.Portal container={container}>

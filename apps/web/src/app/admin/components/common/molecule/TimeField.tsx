@@ -34,7 +34,7 @@ export function TimeField<T extends FieldValues>({
       control={control}
       name={name}
       render={({ field }) => (
-        <FormItem className="flex items-center justify-between rounded-lg border p-3">
+        <FormItem className="rounded-lg border p-3 space-y-3">
           <div className="space-y-0.5">
             <FormLabel className="text-sm font-medium">
               {label} {!isOptional && <span className="text-destructive">*</span>}

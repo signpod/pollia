@@ -1,10 +1,9 @@
 "use client";
 
+import { useAdminRootContainer } from "@/app/admin/hooks/use-admin-root-container";
+import { cn } from "@/app/admin/lib/utils";
 import * as SheetPrimitive from "@radix-ui/react-dialog";
 import { XIcon } from "lucide-react";
-import * as React from "react";
-
-import { cn } from "@/app/admin/lib/utils";
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />;
@@ -46,11 +45,7 @@ function SheetContent({
 }: React.ComponentProps<typeof SheetPrimitive.Content> & {
   side?: "top" | "right" | "bottom" | "left";
 }) {
-  const [container, setContainer] = React.useState<HTMLElement | null>(null);
-
-  React.useEffect(() => {
-    setContainer(document.querySelector(".admin-root") as HTMLElement);
-  }, []);
+  const container = useAdminRootContainer();
 
   return (
     <SheetPortal container={container}>
