@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/app/admin/components/shadcn-ui/select";
 import { Textarea } from "@/app/admin/components/shadcn-ui/textarea";
-import { useAdminSingleImage } from "@/app/admin/hooks/use-admin-image-upload";
+import { type UploadedImageData, useSingleImage } from "@/app/admin/hooks/admin-image";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { rewardInputSchema } from "@/schemas/reward";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -54,11 +54,11 @@ export function RewardForm({ isLoading, onSubmit, onCancel, initialData }: Rewar
 
   const paymentType = form.watch("paymentType");
 
-  const rewardImage = useAdminSingleImage({
+  const rewardImage = useSingleImage({
     initialUrl: initialData?.imageUrl,
     initialFileUploadId: initialData?.imageFileUploadId,
     bucket: STORAGE_BUCKETS.REWARD_IMAGES,
-    onUploadSuccess: data => {
+    onUploadSuccess: (data: UploadedImageData) => {
       form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
       form.setValue("imageFileUploadId", data.fileUploadId, { shouldDirty: true });
     },
@@ -119,9 +119,9 @@ export function RewardForm({ isLoading, onSubmit, onCancel, initialData }: Rewar
             <ImageSelector
               size="large"
               imageUrl={rewardImage.previewUrl || undefined}
-              onImageSelect={rewardImage.selectImage}
+              onImageSelect={rewardImage.upload}
               onImageDelete={() => {
-                rewardImage.clearImage();
+                rewardImage.discard();
                 form.setValue("imageUrl", undefined, { shouldDirty: true });
                 form.setValue("imageFileUploadId", undefined, { shouldDirty: true });
               }}

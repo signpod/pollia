@@ -15,9 +15,10 @@ import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
 import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
 import {
-  type UseAdminSingleImageReturn,
-  useAdminSingleImage,
-} from "@/app/admin/hooks/use-admin-image-upload";
+  type UploadedImageData,
+  type UseSingleImageReturn,
+  useSingleImage,
+} from "@/app/admin/hooks/admin-image";
 import { useReadMissionCompletion } from "@/app/admin/hooks/use-read-mission-completion";
 import { useUpdateMissionCompletion } from "@/app/admin/hooks/use-update-mission-completion";
 import {
@@ -47,7 +48,7 @@ interface LinksCardProps {
 
 interface ImageCardProps {
   form: UseFormReturn<MissionCompletionUpdate>;
-  imageUpload: UseAdminSingleImageReturn;
+  imageUpload: UseSingleImageReturn;
 }
 
 interface ActionButtonsProps {
@@ -247,9 +248,9 @@ function ImageCard({ form, imageUpload }: ImageCardProps) {
           <ImageSelector
             size="large"
             imageUrl={imageUpload.previewUrl || undefined}
-            onImageSelect={imageUpload.selectImage}
+            onImageSelect={imageUpload.upload}
             onImageDelete={() => {
-              imageUpload.clearImage();
+              imageUpload.discard();
               form.setValue("imageUrl", undefined, { shouldDirty: true });
               form.setValue("imageFileUploadId", undefined, { shouldDirty: true });
             }}
@@ -309,10 +310,10 @@ function CompletionForm({
 }) {
   const { form, handleReset } = useCompletionForm(missionCompletion);
 
-  const imageUpload = useAdminSingleImage({
+  const imageUpload = useSingleImage({
     initialUrl: missionCompletion.imageUrl ?? undefined,
     initialFileUploadId: missionCompletion.imageFileUploadId,
-    onUploadSuccess: data => {
+    onUploadSuccess: (data: UploadedImageData) => {
       form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
       form.setValue("imageFileUploadId", data.fileUploadId, { shouldDirty: true });
     },

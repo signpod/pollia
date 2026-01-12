@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/app/admin/components/shadcn-ui/select";
-import type { UseAdminSingleImageReturn } from "@/app/admin/hooks/use-admin-image-upload";
+import type { UseSingleImageReturn } from "@/app/admin/hooks/admin-image";
 import { MISSION_TYPE_LABELS } from "@/constants/action";
 import {
   MISSION_DESCRIPTION_MAX_LENGTH,
@@ -52,13 +52,13 @@ export interface BasicInfoCardProps {
 
 export interface ImageCardProps {
   form: UseFormReturn<MissionUpdate>;
-  missionImageUpload: UseAdminSingleImageReturn;
-  brandLogoUpload: UseAdminSingleImageReturn;
+  missionImageUpload: UseSingleImageReturn;
+  brandLogoUpload: UseSingleImageReturn;
 }
 
 export interface CompletionCardProps {
   form: UseFormReturn<MissionCompletionForm>;
-  completionImageUpload: UseAdminSingleImageReturn;
+  completionImageUpload: UseSingleImageReturn;
 }
 
 export function BasicInfoCard({ form }: BasicInfoCardProps) {
@@ -213,9 +213,9 @@ export function ImageCard({ form, missionImageUpload, brandLogoUpload }: ImageCa
             <ImageSelector
               size="large"
               imageUrl={missionImageUpload.previewUrl || undefined}
-              onImageSelect={missionImageUpload.selectImage}
+              onImageSelect={missionImageUpload.upload}
               onImageDelete={() => {
-                missionImageUpload.clearImage();
+                missionImageUpload.discard();
                 form.setValue("imageUrl", null, { shouldDirty: true });
                 form.setValue("imageFileUploadId", null, { shouldDirty: true });
               }}
@@ -233,9 +233,9 @@ export function ImageCard({ form, missionImageUpload, brandLogoUpload }: ImageCa
             <ImageSelector
               size="large"
               imageUrl={brandLogoUpload.previewUrl || undefined}
-              onImageSelect={brandLogoUpload.selectImage}
+              onImageSelect={brandLogoUpload.upload}
               onImageDelete={() => {
-                brandLogoUpload.clearImage();
+                brandLogoUpload.discard();
                 form.setValue("brandLogoUrl", null, { shouldDirty: true });
                 form.setValue("brandLogoFileUploadId", null, { shouldDirty: true });
               }}
@@ -432,9 +432,9 @@ export function CompletionCard({ form, completionImageUpload }: CompletionCardPr
             <ImageSelector
               size="large"
               imageUrl={completionImageUpload.previewUrl || undefined}
-              onImageSelect={completionImageUpload.selectImage}
+              onImageSelect={completionImageUpload.upload}
               onImageDelete={() => {
-                completionImageUpload.clearImage();
+                completionImageUpload.discard();
                 form.setValue("imageUrl", undefined, { shouldDirty: true });
                 form.setValue("imageFileUploadId", undefined, { shouldDirty: true });
               }}

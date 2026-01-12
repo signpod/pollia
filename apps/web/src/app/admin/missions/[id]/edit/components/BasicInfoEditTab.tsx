@@ -25,9 +25,10 @@ import {
 } from "@/app/admin/components/shadcn-ui/select";
 import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
 import {
-  type UseAdminSingleImageReturn,
-  useAdminSingleImage,
-} from "@/app/admin/hooks/use-admin-image-upload";
+  type UploadedImageData,
+  type UseSingleImageReturn,
+  useSingleImage,
+} from "@/app/admin/hooks/admin-image";
 import { useReadMission } from "@/app/admin/hooks/use-read-mission";
 import { useUpdateMission } from "@/app/admin/hooks/use-update-mission";
 import { MISSION_TYPE_LABELS } from "@/constants/action";
@@ -55,8 +56,8 @@ interface BasicInfoCardProps {
 
 interface ImageCardProps {
   form: UseFormReturn<MissionUpdate>;
-  missionImageUpload: UseAdminSingleImageReturn;
-  brandLogoUpload: UseAdminSingleImageReturn;
+  missionImageUpload: UseSingleImageReturn;
+  brandLogoUpload: UseSingleImageReturn;
 }
 
 interface ActionButtonsProps {
@@ -227,9 +228,9 @@ function ImageCard({ form, missionImageUpload, brandLogoUpload }: ImageCardProps
             <ImageSelector
               size="large"
               imageUrl={missionImageUpload.previewUrl || undefined}
-              onImageSelect={missionImageUpload.selectImage}
+              onImageSelect={missionImageUpload.upload}
               onImageDelete={() => {
-                missionImageUpload.clearImage();
+                missionImageUpload.discard();
                 form.setValue("imageUrl", null, { shouldDirty: true });
                 form.setValue("imageFileUploadId", null, { shouldDirty: true });
               }}
@@ -247,9 +248,9 @@ function ImageCard({ form, missionImageUpload, brandLogoUpload }: ImageCardProps
             <ImageSelector
               size="large"
               imageUrl={brandLogoUpload.previewUrl || undefined}
-              onImageSelect={brandLogoUpload.selectImage}
+              onImageSelect={brandLogoUpload.upload}
               onImageDelete={() => {
-                brandLogoUpload.clearImage();
+                brandLogoUpload.discard();
                 form.setValue("brandLogoUrl", null, { shouldDirty: true });
                 form.setValue("brandLogoFileUploadId", null, { shouldDirty: true });
               }}
@@ -318,19 +319,19 @@ export function BasicInfoEditTab({ missionId }: BasicInfoEditTabProps) {
 function BasicInfoForm({ mission, missionId }: { mission: MissionData; missionId: string }) {
   const { form, handleReset } = useBasicInfoForm(mission);
 
-  const missionImage = useAdminSingleImage({
+  const missionImage = useSingleImage({
     initialUrl: mission.imageUrl ?? undefined,
     initialFileUploadId: mission.imageFileUploadId,
-    onUploadSuccess: data => {
+    onUploadSuccess: (data: UploadedImageData) => {
       form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
       form.setValue("imageFileUploadId", data.fileUploadId, { shouldDirty: true });
     },
   });
 
-  const brandLogo = useAdminSingleImage({
+  const brandLogo = useSingleImage({
     initialUrl: mission.brandLogoUrl ?? undefined,
     initialFileUploadId: mission.brandLogoFileUploadId,
-    onUploadSuccess: data => {
+    onUploadSuccess: (data: UploadedImageData) => {
       form.setValue("brandLogoUrl", data.publicUrl, { shouldDirty: true });
       form.setValue("brandLogoFileUploadId", data.fileUploadId, { shouldDirty: true });
     },
