@@ -4,6 +4,7 @@ import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
 import { CharacterCounter } from "@/app/admin/components/common/InputField";
 import { NumberField } from "@/app/admin/components/common/NumberField";
 import { TiptapEditor } from "@/app/admin/components/common/TiptapEditor";
+import { DateTimeField } from "@/app/admin/components/common/molecule/DateTimeField";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import {
   Card,
@@ -199,26 +200,14 @@ function BasicInfoCard({ form }: BasicInfoCardProps) {
           isOptional
         />
 
-        <div className="space-y-2">
-          <Label htmlFor="deadline">마감일</Label>
-          <Input
-            id="deadline"
-            type="datetime-local"
-            value={(() => {
-              const deadline = form.watch("deadline");
-              return deadline ? new Date(deadline).toISOString().slice(0, 16) : "";
-            })()}
-            onChange={e => {
-              const value = e.target.value;
-              form.setValue("deadline", value ? new Date(value) : undefined, {
-                shouldDirty: true,
-              });
-            }}
-          />
-          {form.formState.errors.deadline && (
-            <p className="text-sm text-destructive">{form.formState.errors.deadline.message}</p>
-          )}
-        </div>
+        <DateTimeField
+          control={form.control}
+          name="deadline"
+          label="마감일"
+          description="미션의 마감일을 설정합니다."
+          datePlaceholder="마감일 선택"
+          isOptional
+        />
       </CardContent>
     </Card>
   );
