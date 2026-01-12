@@ -1,14 +1,7 @@
 "use client";
 
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/app/admin/components/shadcn-ui/form";
-import { Input } from "@/app/admin/components/shadcn-ui/input";
 import type { Control, FieldValues, Path } from "react-hook-form";
+import { ActionNumberField } from "./ActionNumberField";
 
 interface MaxSelectionsFieldProps<T extends FieldValues> {
   control: Control<T>;
@@ -26,33 +19,16 @@ export function MaxSelectionsField<T extends FieldValues>({
   isOptional = false,
 }: MaxSelectionsFieldProps<T>) {
   return (
-    <FormField
+    <ActionNumberField
       control={control}
       name={name}
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>
-            최대 선택 가능 개수 {!isOptional && <span className="text-destructive">*</span>}
-          </FormLabel>
-          <FormControl>
-            <Input
-              type="number"
-              min={1}
-              max={maxOptions || 10}
-              placeholder={isOptional ? "1 (기본값)" : "1"}
-              {...field}
-              value={field.value ?? ""}
-              onChange={e => {
-                const value = e.target.value ? Number(e.target.value) : undefined;
-                field.onChange(isOptional ? value : value || 1);
-              }}
-              disabled={disabled}
-              className="w-32"
-            />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )}
+      label="최대 선택 가능 개수"
+      description="응답자가 선택할 수 있는 최대 옵션 개수를 설정합니다."
+      min={1}
+      max={maxOptions || 10}
+      placeholder={isOptional ? "1" : "1"}
+      disabled={disabled}
+      isOptional={isOptional}
     />
   );
 }
