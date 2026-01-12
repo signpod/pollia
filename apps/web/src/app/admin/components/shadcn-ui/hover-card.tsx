@@ -19,8 +19,14 @@ function HoverCardContent({
   sideOffset = 4,
   ...props
 }: React.ComponentProps<typeof HoverCardPrimitive.Content>) {
+  const [container, setContainer] = React.useState<HTMLElement | null>(null);
+
+  React.useEffect(() => {
+    setContainer(document.querySelector(".admin-root") as HTMLElement);
+  }, []);
+
   return (
-    <HoverCardPrimitive.Portal data-slot="hover-card-portal">
+    <HoverCardPrimitive.Portal data-slot="hover-card-portal" container={container}>
       <HoverCardPrimitive.Content
         data-slot="hover-card-content"
         align={align}

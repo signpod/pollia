@@ -42,8 +42,14 @@ function DrawerContent({
   children,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Content>) {
+  const [container, setContainer] = React.useState<HTMLElement | null>(null);
+
+  React.useEffect(() => {
+    setContainer(document.querySelector(".admin-root") as HTMLElement);
+  }, []);
+
   return (
-    <DrawerPortal data-slot="drawer-portal">
+    <DrawerPortal data-slot="drawer-portal" container={container}>
       <DrawerOverlay />
       <DrawerPrimitive.Content
         data-slot="drawer-content"

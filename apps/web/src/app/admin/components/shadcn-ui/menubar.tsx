@@ -58,8 +58,14 @@ function MenubarContent({
   sideOffset = 8,
   ...props
 }: React.ComponentProps<typeof MenubarPrimitive.Content>) {
+  const [container, setContainer] = React.useState<HTMLElement | null>(null);
+
+  React.useEffect(() => {
+    setContainer(document.querySelector(".admin-root") as HTMLElement);
+  }, []);
+
   return (
-    <MenubarPortal>
+    <MenubarPortal container={container}>
       <MenubarPrimitive.Content
         data-slot="menubar-content"
         align={align}
