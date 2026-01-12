@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/app/admin/components/shadcn-ui/button";
+import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
 import { useCreateMission } from "@/app/admin/hooks/use-create-mission";
 import { useCreateMissionCompletion } from "@/app/admin/hooks/use-create-mission-completion";
@@ -187,35 +188,37 @@ export default function AdminMissionCreatePage() {
         <StepIndicator currentStep={currentStep} steps={STEPS} stepLabels={STEP_LABELS} />
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
-        {renderStep()}
+      <Form {...form}>
+        <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
+          {renderStep()}
 
-        <div className="flex justify-between gap-3">
-          <Button type="button" variant="outline" onClick={handleBack} disabled={isPending}>
-            <ChevronLeft className="size-4" />
-            {currentStepIndex === 0 ? "취소" : "이전"}
-          </Button>
-          <Button
-            type={isLastStep ? "submit" : "button"}
-            onClick={isLastStep ? undefined : handleNext}
-            disabled={isPending}
-          >
-            {isPending ? (
-              <>
-                <Spinner />
-                {isLastStep ? "생성 중..." : "처리 중..."}
-              </>
-            ) : isLastStep ? (
-              "미션 생성"
-            ) : (
-              <>
-                다음
-                <ChevronRight className="size-4" />
-              </>
-            )}
-          </Button>
-        </div>
-      </form>
+          <div className="flex justify-between gap-3">
+            <Button type="button" variant="outline" onClick={handleBack} disabled={isPending}>
+              <ChevronLeft className="size-4" />
+              {currentStepIndex === 0 ? "취소" : "이전"}
+            </Button>
+            <Button
+              type={isLastStep ? "submit" : "button"}
+              onClick={isLastStep ? undefined : handleNext}
+              disabled={isPending}
+            >
+              {isPending ? (
+                <>
+                  <Spinner />
+                  {isLastStep ? "생성 중..." : "처리 중..."}
+                </>
+              ) : isLastStep ? (
+                "미션 생성"
+              ) : (
+                <>
+                  다음
+                  <ChevronRight className="size-4" />
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
+      </Form>
     </div>
   );
 }
