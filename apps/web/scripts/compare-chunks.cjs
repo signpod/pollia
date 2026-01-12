@@ -60,7 +60,7 @@ function getChunkSizes(chunksDir) {
     return { chunks, totalSize, totalGzipSize, count: 0 };
   }
 
-  const files = fs.readdirSync(chunksDir).filter((f) => f.endsWith(".js") || f.endsWith(".css"));
+  const files = fs.readdirSync(chunksDir).filter(f => f.endsWith(".js") || f.endsWith(".css"));
 
   for (const file of files) {
     const filePath = path.join(chunksDir, file);
@@ -122,15 +122,15 @@ function generateReport(before, after) {
   lines.push("");
   lines.push("## 요약");
   lines.push("");
-  lines.push(`| 항목 | Before | After | 변화 |`);
-  lines.push(`|------|--------|-------|------|`);
+  lines.push("| 항목 | Before | After | 변화 |");
+  lines.push("|------|--------|-------|------|");
 
   const sizeDiff = after.totalSize - before.totalSize;
   const sizePct = ((sizeDiff / before.totalSize) * 100).toFixed(1);
   const sizeArrow = sizeDiff < 0 ? "↓" : sizeDiff > 0 ? "↑" : "→";
 
   lines.push(
-    `| 총 크기 | ${formatSize(before.totalSize)} | ${formatSize(after.totalSize)} | ${sizeDiff > 0 ? "+" : ""}${formatSize(sizeDiff)} (${sizePct}%) ${sizeArrow} |`
+    `| 총 크기 | ${formatSize(before.totalSize)} | ${formatSize(after.totalSize)} | ${sizeDiff > 0 ? "+" : ""}${formatSize(sizeDiff)} (${sizePct}%) ${sizeArrow} |`,
   );
   lines.push(`| 청크 수 | ${before.count} | ${after.count} | ${after.count - before.count} |`);
   lines.push("");
@@ -182,13 +182,13 @@ function generateReport(before, after) {
   const jsDiff = afterJS - beforeJS;
   const jsPct = beforeJS > 0 ? ((jsDiff / beforeJS) * 100).toFixed(1) : 0;
   lines.push(
-    `| JavaScript | ${formatSize(beforeJS)} | ${formatSize(afterJS)} | ${jsDiff > 0 ? "+" : ""}${formatSize(jsDiff)} (${jsPct}%) |`
+    `| JavaScript | ${formatSize(beforeJS)} | ${formatSize(afterJS)} | ${jsDiff > 0 ? "+" : ""}${formatSize(jsDiff)} (${jsPct}%) |`,
   );
 
   const cssDiff = afterCSS - beforeCSS;
   const cssPct = beforeCSS > 0 ? ((cssDiff / beforeCSS) * 100).toFixed(1) : 0;
   lines.push(
-    `| CSS | ${formatSize(beforeCSS)} | ${formatSize(afterCSS)} | ${cssDiff > 0 ? "+" : ""}${formatSize(cssDiff)} (${cssPct}%) |`
+    `| CSS | ${formatSize(beforeCSS)} | ${formatSize(afterCSS)} | ${cssDiff > 0 ? "+" : ""}${formatSize(cssDiff)} (${cssPct}%) |`,
   );
 
   return lines.join("\n");
@@ -212,7 +212,7 @@ async function main() {
     const after = buildAndMeasure(afterHash);
 
     // 결과 출력
-    console.log("\n" + "=".repeat(60));
+    console.log(`\n${"=".repeat(60)}`);
     console.log("📊 청크 크기 비교 결과");
     console.log("=".repeat(60));
 
@@ -241,7 +241,7 @@ async function main() {
   console.log("\n✅ 비교 완료\n");
 }
 
-main().catch((e) => {
+main().catch(e => {
   console.error("❌ 오류:", e.message);
   process.exit(1);
 });
