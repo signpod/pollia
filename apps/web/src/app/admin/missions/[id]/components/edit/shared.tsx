@@ -178,24 +178,22 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
           )}
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-          <NumberField
-            control={form.control}
-            name="estimatedMinutes"
-            label="예상 소요 시간 (분)"
-            description="미션 완료에 필요한 예상 시간을 입력합니다."
-            isOptional
-          />
+        <NumberField
+          control={form.control}
+          name="estimatedMinutes"
+          label="예상 소요 시간 (분)"
+          description="미션 완료에 필요한 예상 시간을 입력합니다."
+          isOptional
+        />
 
-          <DateTimeField
-            control={form.control}
-            name="deadline"
-            label="마감일"
-            description="미션의 마감일을 설정합니다."
-            datePlaceholder="마감일 선택"
-            isOptional
-          />
-        </div>
+        <DateTimeField
+          control={form.control}
+          name="deadline"
+          label="마감일"
+          description="미션의 마감일을 설정합니다."
+          datePlaceholder="마감일 선택"
+          isOptional
+        />
       </CardContent>
     </Card>
   );
