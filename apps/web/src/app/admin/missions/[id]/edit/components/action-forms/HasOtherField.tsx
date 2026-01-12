@@ -1,7 +1,7 @@
 "use client";
 
+import { ToggleField } from "@/app/admin/components/common/ToggleField";
 import type { Control, FieldValues, Path } from "react-hook-form";
-import { ActionToggleField } from "./ActionToggleField";
 
 interface HasOtherFieldProps<T extends FieldValues> {
   control: Control<T>;
@@ -15,7 +15,7 @@ export function HasOtherField<T extends FieldValues>({
   disabled = false,
 }: HasOtherFieldProps<T>) {
   return (
-    <ActionToggleField
+    <ToggleField
       control={control}
       name={name}
       label="기타 옵션 허용"

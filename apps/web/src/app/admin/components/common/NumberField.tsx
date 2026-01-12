@@ -11,7 +11,7 @@ import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { useEffect, useState } from "react";
 import type { Control, FieldValues, Path } from "react-hook-form";
 
-interface ActionNumberFieldProps<T extends FieldValues> {
+interface NumberFieldProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T>;
   label: string;
@@ -21,7 +21,7 @@ interface ActionNumberFieldProps<T extends FieldValues> {
   isOptional?: boolean;
 }
 
-export function ActionNumberField<T extends FieldValues>({
+export function NumberField<T extends FieldValues>({
   control,
   name,
   label,
@@ -29,13 +29,13 @@ export function ActionNumberField<T extends FieldValues>({
   placeholder,
   disabled = false,
   isOptional = false,
-}: ActionNumberFieldProps<T>) {
+}: NumberFieldProps<T>) {
   return (
     <FormField
       control={control}
       name={name}
       render={({ field }) => (
-        <ActionNumberInput
+        <NumberFieldInput
           field={field}
           label={label}
           description={description}
@@ -48,7 +48,7 @@ export function ActionNumberField<T extends FieldValues>({
   );
 }
 
-interface ActionNumberInputProps {
+interface NumberFieldInputProps {
   field: {
     ref: React.Ref<HTMLInputElement>;
     name: string;
@@ -63,14 +63,14 @@ interface ActionNumberInputProps {
   isOptional: boolean;
 }
 
-function ActionNumberInput({
+function NumberFieldInput({
   field,
   label,
   description,
   placeholder,
   disabled,
   isOptional,
-}: ActionNumberInputProps) {
+}: NumberFieldInputProps) {
   const [localValue, setLocalValue] = useState<string>(
     field.value != null ? String(field.value) : "",
   );

@@ -4,7 +4,7 @@ import { FormControl, FormField, FormItem, FormLabel } from "@/app/admin/compone
 import { Switch } from "@/app/admin/components/shadcn-ui/switch";
 import type { Control, FieldValues, Path } from "react-hook-form";
 
-interface ActionToggleFieldProps<T extends FieldValues> {
+interface ToggleFieldProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T>;
   label: string;
@@ -12,13 +12,13 @@ interface ActionToggleFieldProps<T extends FieldValues> {
   disabled?: boolean;
 }
 
-export function ActionToggleField<T extends FieldValues>({
+export function ToggleField<T extends FieldValues>({
   control,
   name,
   label,
   description,
   disabled = false,
-}: ActionToggleFieldProps<T>) {
+}: ToggleFieldProps<T>) {
   return (
     <FormField
       control={control}

@@ -1,7 +1,7 @@
 "use client";
 
+import { NumberField } from "@/app/admin/components/common/NumberField";
 import type { Control, FieldValues, Path } from "react-hook-form";
-import { ActionToggleField } from "./ActionToggleField";
 
 interface IsRequiredFieldProps<T extends FieldValues> {
   control: Control<T>;
@@ -15,7 +15,7 @@ export function IsRequiredField<T extends FieldValues>({
   disabled = false,
 }: IsRequiredFieldProps<T>) {
   return (
-    <ActionToggleField
+    <NumberField
       control={control}
       name={name}
       label="필수 응답"

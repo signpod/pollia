@@ -1,7 +1,7 @@
 "use client";
 
+import { NumberField } from "@/app/admin/components/common/NumberField";
 import type { Control, FieldValues, Path } from "react-hook-form";
-import { ActionNumberField } from "./ActionNumberField";
 
 interface MaxSelectionsFieldProps<T extends FieldValues> {
   control: Control<T>;
@@ -17,7 +17,7 @@ export function MaxSelectionsField<T extends FieldValues>({
   isOptional = false,
 }: MaxSelectionsFieldProps<T>) {
   return (
-    <ActionNumberField
+    <NumberField
       control={control}
       name={name}
       label="최대 선택 가능 개수"
