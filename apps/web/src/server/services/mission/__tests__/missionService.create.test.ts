@@ -2,7 +2,7 @@ import type { ActionRepository } from "@/server/repositories/action/actionReposi
 import type { MissionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import type { MissionRepository } from "@/server/repositories/mission/missionRepository";
 import { MissionService } from "..";
-import { createMockMission } from "../../testUtils";
+import { createMockActionWithOptions, createMockMission } from "../../testUtils";
 
 describe("MissionService - Create", () => {
   let missionService: MissionService;
@@ -163,17 +163,18 @@ describe("MissionService - Create", () => {
       });
 
       const mockActions = [
-        {
-          id: "action-1",
-          title: "질문 1",
-          description: "설명 1",
-          imageUrl: "https://example.com/action1.jpg",
-          type: "MULTIPLE_CHOICE" as const,
-          order: 0,
-          maxSelections: 1,
-          missionId: "mission-1",
-          imageFileUploadId: null,
-          options: [
+        createMockActionWithOptions(
+          {
+            id: "action-1",
+            missionId: "mission-1",
+            title: "질문 1",
+            description: "설명 1",
+            imageUrl: "https://example.com/action1.jpg",
+            type: "MULTIPLE_CHOICE",
+            maxSelections: 1,
+            isRequired: false,
+          },
+          [
             {
               id: "opt-1",
               title: "선택지 1",
@@ -181,41 +182,20 @@ describe("MissionService - Create", () => {
               imageUrl: "https://example.com/opt1.jpg",
               order: 0,
             },
-            {
-              id: "opt-2",
-              title: "선택지 2",
-              description: null,
-              imageUrl: null,
-              order: 1,
-            },
+            { id: "opt-2", title: "선택지 2", description: null, imageUrl: null, order: 1 },
           ],
-          createdAt: new Date(),
-          isRequired: false,
-          updatedAt: new Date(),
-        },
-        {
-          id: "action-2",
-          title: "질문 2",
-          description: null,
-          imageUrl: null,
-          type: "SCALE" as const,
-          order: 1,
-          maxSelections: null,
-          missionId: "mission-1",
-          imageFileUploadId: null,
-          options: [
-            {
-              id: "opt-3",
-              title: "척도 1",
-              description: null,
-              imageUrl: null,
-              order: 0,
-            },
-          ],
-          createdAt: new Date(),
-          isRequired: false,
-          updatedAt: new Date(),
-        },
+        ),
+        createMockActionWithOptions(
+          {
+            id: "action-2",
+            missionId: "mission-1",
+            title: "질문 2",
+            type: "SCALE",
+            order: 1,
+            isRequired: false,
+          },
+          [{ id: "opt-3", title: "척도 1", description: null, imageUrl: null, order: 0 }],
+        ),
       ];
 
       const mockDuplicatedMission = createMockMission({

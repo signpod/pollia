@@ -5,6 +5,7 @@ import { ActionService } from ".";
 export {
   createMockAction,
   createMockActionResponse,
+  createMockActionWithOptions,
   createMockMission,
   expectServiceErrorWithCause,
 } from "../testUtils";

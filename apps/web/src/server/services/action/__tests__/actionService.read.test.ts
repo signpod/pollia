@@ -2,6 +2,8 @@ import { ActionType } from "@prisma/client";
 import {
   type ActionServiceTestContext,
   createActionServiceTestContext,
+  createMockAction,
+  createMockActionWithOptions,
   mockMissionFactory,
 } from "../testUtils";
 
@@ -19,29 +21,16 @@ describe("ActionService - Read", () => {
   describe("getActionById", () => {
     it("Action을 성공적으로 조회한다", async () => {
       // Given
-      const mockAction = {
-        id: "action1",
-        missionId: "mission1",
-        title: "액션 제목",
-        description: "액션 설명",
-        imageUrl: null,
-        type: ActionType.MULTIPLE_CHOICE,
-        order: 0,
-        maxSelections: 1,
-        isRequired: false,
-        imageFileUploadId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        options: [
-          {
-            id: "option1",
-            title: "옵션 1",
-            description: null,
-            imageUrl: null,
-            order: 0,
-          },
-        ],
-      };
+      const mockAction = createMockActionWithOptions(
+        {
+          title: "액션 제목",
+          description: "액션 설명",
+          type: ActionType.MULTIPLE_CHOICE,
+          maxSelections: 1,
+          isRequired: false,
+        },
+        [{ id: "option1", title: "옵션 1", description: null, imageUrl: null, order: 0 }],
+      );
       ctx.mockActionRepo.findByIdWithOptions.mockResolvedValue(mockAction);
 
       // When
@@ -56,21 +45,16 @@ describe("ActionService - Read", () => {
 
     it("필수 액션(isRequired: true)을 조회한다", async () => {
       // Given
-      const mockRequiredAction = {
-        id: "action2",
-        missionId: "mission1",
-        title: "필수 액션",
-        description: null,
-        imageUrl: null,
-        type: ActionType.SUBJECTIVE,
-        order: 1,
-        maxSelections: null,
-        isRequired: true,
-        imageFileUploadId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        options: [],
-      };
+      const mockRequiredAction = createMockActionWithOptions(
+        {
+          id: "action2",
+          title: "필수 액션",
+          type: ActionType.SUBJECTIVE,
+          order: 1,
+          isRequired: true,
+        },
+        [],
+      );
       ctx.mockActionRepo.findByIdWithOptions.mockResolvedValue(mockRequiredAction);
 
       // When
@@ -133,21 +117,15 @@ describe("ActionService - Read", () => {
       // Given
       const mockMission = mockMissionFactory();
       const mockActions = [
-        {
-          id: "action1",
-          missionId: "mission1",
-          title: "액션 1",
-          description: null,
-          imageUrl: null,
-          type: ActionType.MULTIPLE_CHOICE,
-          order: 0,
-          maxSelections: 1,
-          isRequired: false,
-          imageFileUploadId: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          options: [],
-        },
+        createMockActionWithOptions(
+          {
+            title: "액션 1",
+            type: ActionType.MULTIPLE_CHOICE,
+            maxSelections: 1,
+            isRequired: false,
+          },
+          [],
+        ),
       ];
 
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
@@ -177,34 +155,19 @@ describe("ActionService - Read", () => {
     it("Action 목록을 성공적으로 조회한다", async () => {
       // Given
       const mockActions = [
-        {
-          id: "action1",
+        createMockAction({
           title: "액션 1",
           type: ActionType.MULTIPLE_CHOICE,
-          description: null,
-          imageUrl: null,
           maxSelections: 1,
-          order: 0,
           isRequired: false,
-          imageFileUploadId: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          missionId: "mission1",
-        },
-        {
+        }),
+        createMockAction({
           id: "action2",
           title: "액션 2",
           type: ActionType.SCALE,
-          description: null,
-          imageUrl: null,
-          maxSelections: null,
           order: 1,
           isRequired: false,
-          imageFileUploadId: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          missionId: "mission1",
-        },
+        }),
       ];
 
       ctx.mockActionRepo.findMany.mockResolvedValue(mockActions);
@@ -220,48 +183,23 @@ describe("ActionService - Read", () => {
     it("limit을 초과하는 결과는 마지막 항목을 제거한다", async () => {
       // Given
       const mockActions = [
-        {
-          id: "action1",
+        createMockAction({
           title: "액션 1",
           type: ActionType.MULTIPLE_CHOICE,
-          description: null,
-          imageUrl: null,
           maxSelections: 1,
-          order: 0,
-          imageFileUploadId: null,
-          isRequired: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          missionId: "mission1",
-        },
-        {
+        }),
+        createMockAction({
           id: "action2",
           title: "액션 2",
           type: ActionType.SCALE,
-          description: null,
-          imageUrl: null,
-          maxSelections: null,
           order: 1,
-          imageFileUploadId: null,
-          isRequired: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          missionId: "mission1",
-        },
-        {
+        }),
+        createMockAction({
           id: "action3",
           title: "액션 3",
           type: ActionType.SUBJECTIVE,
-          description: null,
-          imageUrl: null,
-          maxSelections: null,
           order: 2,
-          imageFileUploadId: null,
-          isRequired: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          missionId: "mission1",
-        },
+        }),
       ];
 
       ctx.mockActionRepo.findMany.mockResolvedValue(mockActions);
