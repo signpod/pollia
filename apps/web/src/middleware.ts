@@ -2,11 +2,23 @@ import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
 export const config = {
-  matcher: ["/admin/:path*", "/me"],
+  matcher: [
+    "/admin/:path*",
+    "/me",
+    "/mission/:missionId/action/:path*",
+    "/mission/:missionId/done",
+  ],
 };
+
+const ACTION_NAV_COOKIE_PREFIX = "action_nav_";
+const AUTH_COOKIE_PREFIX = "sb-";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+function hasAuthCookie(request: NextRequest): boolean {
+  return request.cookies.getAll().some(cookie => cookie.name.startsWith(AUTH_COOKIE_PREFIX));
+}
 
 async function getSession(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -35,10 +47,44 @@ async function getSession(request: NextRequest) {
   return { user, response };
 }
 
+function extractMissionId(pathname: string): string | null {
+  const match = pathname.match(/^\/mission\/([^/]+)/);
+  return match?.[1] ?? null;
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   try {
+    // 미션 경로: 쿠키 체크만으로 빠르게 처리 (getUser 호출 안 함)
+    if (pathname.includes("/mission/") && pathname.includes("/action/")) {
+      const missionId = extractMissionId(pathname);
+
+      if (!hasAuthCookie(request)) {
+        const loginUrl = new URL("/login", request.url);
+        loginUrl.searchParams.set("redirect", pathname);
+        return NextResponse.redirect(loginUrl);
+      }
+
+      if (missionId) {
+        const navCookie = request.cookies.get(`${ACTION_NAV_COOKIE_PREFIX}${missionId}`);
+        if (!navCookie?.value) {
+          return NextResponse.redirect(new URL(`/mission/${missionId}`, request.url));
+        }
+      }
+
+      return NextResponse.next();
+    }
+
+    if (pathname.includes("/mission/") && pathname.endsWith("/done")) {
+      if (!hasAuthCookie(request)) {
+        const missionId = extractMissionId(pathname);
+        return NextResponse.redirect(new URL(`/mission/${missionId}`, request.url));
+      }
+      return NextResponse.next();
+    }
+
+    // /admin, /me: 실제 인증 검증 필요 (getUser 호출)
     const { user, response } = await getSession(request);
 
     if (pathname.startsWith("/admin")) {

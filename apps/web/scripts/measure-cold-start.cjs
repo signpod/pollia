@@ -22,7 +22,7 @@ const fs = require("node:fs");
 const http = require("node:http");
 const https = require("node:https");
 
-const DEFAULT_ROUTES = ["/", "/login", "/me"];
+const DEFAULT_ROUTES = ["/", "/login", "/me", "/admin"];
 const DEFAULT_RUNS = 3;
 const DEFAULT_PORT = 3000;
 
