@@ -1,16 +1,12 @@
+import type { Prisma } from "@prisma/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 export interface CreateUserIfNotExistsInput {
   user: SupabaseUser;
   name?: string;
+  phone?: string;
 }
 
-export interface CreateUserData {
-  id: string;
-  email: string;
-  name: string;
-}
+export type CreateUserData = Prisma.UserCreateInput;
 
-export interface UpdateUserInput {
-  name?: string;
-}
+export type UpdateUserInput = Prisma.UserUpdateInput;
