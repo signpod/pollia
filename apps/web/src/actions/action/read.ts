@@ -9,6 +9,7 @@ import type {
   GetMissionActionsDetailResponse,
 } from "@/types/dto";
 import type { ActionType } from "@prisma/client";
+import { cache } from "react";
 
 export interface GetMissionQuestionsRequest {
   searchQuery?: string;
@@ -59,22 +60,22 @@ export async function getMissionActionIds(missionId: string): Promise<GetActionI
   }
 }
 
-export async function getMissionActionsDetail(
-  missionId: string,
-): Promise<GetMissionActionsDetailResponse> {
-  try {
-    const questions = await actionService.getMissionActionsDetail(missionId);
-    return { data: questions };
-  } catch (error) {
-    console.error("getMissionActionsDetail error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
+export const getMissionActionsDetail = cache(
+  async (missionId: string): Promise<GetMissionActionsDetailResponse> => {
+    try {
+      const questions = await actionService.getMissionActionsDetail(missionId);
+      return { data: questions };
+    } catch (error) {
+      console.error("getMissionActionsDetail error:", error);
+      if (error instanceof Error && error.cause) {
+        throw error;
+      }
+      const serverError = new Error("질문 상세 정보를 불러올 수 없습니다.");
+      serverError.cause = 500;
+      throw serverError;
     }
-    const serverError = new Error("질문 상세 정보를 불러올 수 없습니다.");
-    serverError.cause = 500;
-    throw serverError;
-  }
-}
+  },
+);
 
 export async function getMissionActions(
   request?: GetMissionQuestionsRequest,

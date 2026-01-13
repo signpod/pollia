@@ -3,8 +3,9 @@
 import { requireAuth } from "@/actions/common/auth";
 import { userService } from "@/server/services/user/userService";
 import type { GetCurrentUserResponse } from "@/types/dto/user";
+import { cache } from "react";
 
-export async function getCurrentUser(): Promise<GetCurrentUserResponse> {
+export const getCurrentUser = cache(async (): Promise<GetCurrentUserResponse> => {
   try {
     const user = await requireAuth();
     const dbUser = await userService.getUserById(user.id);
@@ -18,4 +19,4 @@ export async function getCurrentUser(): Promise<GetCurrentUserResponse> {
     serverError.cause = 500;
     throw serverError;
   }
-}
+});

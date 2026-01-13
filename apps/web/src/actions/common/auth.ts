@@ -5,8 +5,9 @@ import { userService } from "@/server/services/user/userService";
 import { type GetCurrentUserResponse, UserRole } from "@/types/dto/user";
 import type { User } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
-export async function requireAuth(): Promise<User> {
+export const requireAuth = cache(async (): Promise<User> => {
   const supabase = await createServerSupabaseClient();
   const {
     data: { user },
@@ -20,7 +21,7 @@ export async function requireAuth(): Promise<User> {
   }
 
   return user;
-}
+});
 
 export async function requireAdmin(): Promise<{
   supabaseUser: User;
