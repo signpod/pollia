@@ -18,16 +18,15 @@ export interface KakaoTokenResponse {
 export interface KakaoUserInfo {
   id: number;
   connected_at: string;
-  kakao_account?: {
-    profile?: {
-      nickname?: string;
+  kakao_account: {
+    profile: {
+      nickname: string;
       thumbnail_image_url?: string;
       profile_image_url?: string;
     };
-    email?: string;
-    age_range?: string;
-    birthday?: string;
+    phone_number: string;
     gender?: string;
+    birthyear?: string;
   };
 }
 
