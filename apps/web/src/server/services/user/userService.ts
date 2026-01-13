@@ -20,7 +20,7 @@ export class UserService {
   async createUserIfNotExists(input: CreateUserIfNotExistsInput): Promise<boolean> {
     const { user, name, phone } = input;
 
-    const existingUser = await this.repo.findFirst(user.id);
+    const existingUser = await this.repo.findById(user.id);
 
     if (existingUser) {
       return false;
@@ -50,22 +50,14 @@ export class UserService {
     return providedName || user.user_metadata?.name || user.email?.split("@")[0] || "사용자";
   }
 
-  normalizePhoneNumber(phone: string): string {
+  private normalizePhoneNumber(phone: string): string {
     return phone.replace(/^\+82\s?/, "0").replace(/[^0-9]/g, "");
   }
 
   async updateUser(userId: string, input: UpdateUserInput) {
-    const user = await this.repo.findById(userId);
-
-    if (!user) {
-      const error = new Error("사용자 정보를 찾을 수 없습니다.");
-      error.cause = 404;
-      throw error;
-    }
-
+    await this.getUserById(userId);
     const normalizedInput = this.normalizeUpdateInput(input);
-    const updatedUser = await this.repo.update(userId, normalizedInput);
-    return updatedUser;
+    return this.repo.update(userId, normalizedInput);
   }
 
   private normalizeUpdateInput(input: UpdateUserInput): UpdateUserInput {
@@ -76,14 +68,7 @@ export class UserService {
   }
 
   async deleteUser(userId: string): Promise<void> {
-    const user = await this.repo.findById(userId);
-
-    if (!user) {
-      const error = new Error("사용자 정보를 찾을 수 없습니다.");
-      error.cause = 404;
-      throw error;
-    }
-
+    await this.getUserById(userId);
     await this.repo.delete(userId);
   }
 }

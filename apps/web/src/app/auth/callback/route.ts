@@ -75,14 +75,10 @@ async function authenticateWithKakao(
   });
 }
 
-interface RegisterOrUpdateUserResult {
-  isNewUser: boolean;
-}
-
 async function registerOrUpdateUser(
   user: User,
   kakaoUser: KakaoUserInfo,
-): Promise<RegisterOrUpdateUserResult> {
+): Promise<{ isNewUser: boolean }> {
   const { nickname } = kakaoUser.kakao_account.profile;
   const { phone_number } = kakaoUser.kakao_account;
 

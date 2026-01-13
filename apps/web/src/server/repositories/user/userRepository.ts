@@ -8,12 +8,6 @@ export class UserRepository {
     });
   }
 
-  async findFirst(userId: string) {
-    return prisma.user.findFirst({
-      where: { id: userId },
-    });
-  }
-
   async create(data: Prisma.UserCreateInput) {
     return prisma.user.create({
       data,
