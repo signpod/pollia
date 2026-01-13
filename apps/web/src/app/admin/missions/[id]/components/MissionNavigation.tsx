@@ -36,6 +36,7 @@ function NavLink({ href, isActive, children }: NavLinkProps) {
 export function MissionNavigation({ missionId }: MissionNavigationProps) {
   const pathname = usePathname();
   const isDetailPage = pathname === ADMIN_ROUTES.ADMIN_MISSION(missionId);
+  const isSubmissionsPage = pathname === ADMIN_ROUTES.ADMIN_MISSION_SUBMISSIONS(missionId);
   const isEditPage = pathname === ADMIN_ROUTES.ADMIN_MISSION_EDIT(missionId);
   const isTrackingPage = pathname === ADMIN_ROUTES.ADMIN_MISSION_TRACKING(missionId);
   const isPasswordPage = pathname === ADMIN_ROUTES.ADMIN_MISSION_PASSWORD(missionId);
@@ -45,6 +46,12 @@ export function MissionNavigation({ missionId }: MissionNavigationProps) {
     <nav className="flex gap-1 border-b">
       <NavLink href={ADMIN_ROUTES.ADMIN_MISSION(missionId)} isActive={isDetailPage}>
         상세
+      </NavLink>
+      <NavLink
+        href={ADMIN_ROUTES.ADMIN_MISSION_SUBMISSIONS(missionId)}
+        isActive={isSubmissionsPage}
+      >
+        제출 목록
       </NavLink>
       <NavLink href={ADMIN_ROUTES.ADMIN_MISSION_TRACKING(missionId)} isActive={isTrackingPage}>
         통계
