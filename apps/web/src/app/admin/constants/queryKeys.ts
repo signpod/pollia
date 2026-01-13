@@ -34,3 +34,10 @@ export const trackingQueryKeys = {
 } as const;
 
 export type TrackingQueryKeys = typeof trackingQueryKeys;
+
+export const submissionQueryKeys = {
+  all: () => ["admin", "submission"] as const,
+  list: (missionId: string) => ["admin", "submission", missionId] as const,
+} as const;
+
+export type SubmissionQueryKeys = typeof submissionQueryKeys;
