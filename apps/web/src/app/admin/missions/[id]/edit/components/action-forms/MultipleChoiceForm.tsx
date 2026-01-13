@@ -4,9 +4,10 @@ import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
 import {
-  useAdminMultipleImages,
-  useAdminSingleImage,
-} from "@/app/admin/hooks/use-admin-image-upload";
+  type UploadedImageData,
+  useMultipleImages,
+  useSingleImage,
+} from "@/app/admin/hooks/admin-image";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
@@ -58,17 +59,17 @@ export function MultipleChoiceForm({
     name: "options",
   });
 
-  const mainImage = useAdminSingleImage({
+  const mainImage = useSingleImage({
     initialUrl: initialData?.imageUrl,
     initialFileUploadId: initialData?.imageFileUploadId,
     bucket: STORAGE_BUCKETS.ACTION_IMAGES,
-    onUploadSuccess: data => {
+    onUploadSuccess: (data: UploadedImageData) => {
       form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
       form.setValue("imageFileUploadId", data.fileUploadId, { shouldDirty: true });
     },
   });
-  const optionImages = useAdminMultipleImages({
-    onUploadSuccess: (id, data) => {
+  const optionImages = useMultipleImages({
+    onUploadSuccess: (id: string, data: UploadedImageData) => {
       const index = fields.findIndex(field => field.id === id);
       if (index !== -1) {
         form.setValue(`options.${index}.imageUrl`, data.publicUrl, { shouldDirty: true });
@@ -131,9 +132,9 @@ export function MultipleChoiceForm({
           isLoading={isLoading}
           titlePlaceholder="예: 가장 선호하는 옵션을 선택해주세요."
           mainImagePreviewUrl={mainImage.previewUrl}
-          onMainImageSelect={mainImage.selectImage}
+          onMainImageSelect={mainImage.upload}
           onMainImageDelete={() => {
-            mainImage.clearImage();
+            mainImage.discard();
             form.setValue("imageUrl", null, { shouldDirty: true });
             form.setValue("imageFileUploadId", null, { shouldDirty: true });
           }}
@@ -156,10 +157,10 @@ export function MultipleChoiceForm({
           {fields.length > 0 ? (
             <div>
               {fields.map((field, index) => {
-                const previewUrl = optionImages.getPreviewUrl(
-                  field.id,
-                  form.watch(`options.${index}.imageUrl`) ?? undefined,
-                );
+                const previewUrl =
+                  optionImages.getPreviewUrl(field.id) ??
+                  form.watch(`options.${index}.imageUrl`) ??
+                  undefined;
 
                 return (
                   <MultipleChoiceOptionCard
@@ -182,12 +183,12 @@ export function MultipleChoiceForm({
                     onMoveUp={() => handleMoveUp(index)}
                     onMoveDown={() => handleMoveDown(index)}
                     onDelete={() => {
-                      optionImages.clearImage(field.id);
+                      optionImages.discard(field.id);
                       remove(index);
                     }}
-                    onImageSelect={file => optionImages.selectImage(field.id, file)}
+                    onImageSelect={file => optionImages.upload(field.id, file)}
                     onImageDelete={() => {
-                      optionImages.clearImage(field.id);
+                      optionImages.discard(field.id);
                       form.setValue(`options.${index}.imageUrl`, null, {
                         shouldDirty: true,
                       });

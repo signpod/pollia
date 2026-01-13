@@ -13,7 +13,7 @@ import {
 } from "@/app/admin/components/shadcn-ui/card";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
-import { useAdminSingleImage } from "@/app/admin/hooks/use-admin-image-upload";
+import { type UploadedImageData, useSingleImage } from "@/app/admin/hooks/admin-image";
 import {
   MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH,
   MISSION_COMPLETION_TITLE_MAX_LENGTH,
@@ -119,8 +119,8 @@ function LinksSection({ form }: { form: UseFormReturn<CreateMissionFunnelFormDat
 }
 
 export function CompletionStep({ form }: CompletionStepProps) {
-  const imageUpload = useAdminSingleImage({
-    onUploadSuccess: data => {
+  const imageUpload = useSingleImage({
+    onUploadSuccess: (data: UploadedImageData) => {
       const currentCompletion = form.getValues("completion");
       form.setValue(
         "completion",
@@ -241,9 +241,9 @@ export function CompletionStep({ form }: CompletionStepProps) {
             <ImageSelector
               size="large"
               imageUrl={completionImageUrl}
-              onImageSelect={imageUpload.selectImage}
+              onImageSelect={imageUpload.upload}
               onImageDelete={() => {
-                imageUpload.clearImage();
+                imageUpload.discard();
                 const currentCompletion = form.getValues("completion");
                 if (currentCompletion) {
                   const { imageUrl, imageFileUploadId, ...rest } = currentCompletion;
