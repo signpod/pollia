@@ -1,31 +1,21 @@
 import prisma from "@/database/utils/prisma/client";
 
+const ANSWERS_WITH_RELATIONS = {
+  include: {
+    action: true,
+    options: true,
+    fileUploads: true,
+  },
+} as const;
+
 export class MissionResponseRepository {
   async findById(id: string) {
     return prisma.missionResponse.findUnique({
       where: { id },
       include: {
-        mission: {
-          select: {
-            id: true,
-            title: true,
-            isActive: true,
-          },
-        },
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        answers: {
-          include: {
-            action: true,
-            options: true,
-            fileUploads: true,
-          },
-        },
+        mission: true,
+        user: true,
+        answers: ANSWERS_WITH_RELATIONS,
       },
     });
   }
@@ -39,13 +29,7 @@ export class MissionResponseRepository {
         },
       },
       include: {
-        answers: {
-          include: {
-            action: true,
-            options: true,
-            fileUploads: true,
-          },
-        },
+        answers: ANSWERS_WITH_RELATIONS,
       },
     });
   }
@@ -54,20 +38,8 @@ export class MissionResponseRepository {
     return prisma.missionResponse.findMany({
       where: { missionId },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        answers: {
-          include: {
-            action: true,
-            options: true,
-            fileUploads: true,
-          },
-        },
+        user: true,
+        answers: ANSWERS_WITH_RELATIONS,
       },
       orderBy: {
         createdAt: "desc",
@@ -79,13 +51,7 @@ export class MissionResponseRepository {
     return prisma.missionResponse.findMany({
       where: { userId },
       include: {
-        mission: {
-          select: {
-            id: true,
-            title: true,
-            imageUrl: true,
-          },
-        },
+        mission: true,
         answers: true,
       },
       orderBy: {
@@ -101,12 +67,7 @@ export class MissionResponseRepository {
         completedAt: { not: null },
       },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
+        user: true,
       },
     });
   }
@@ -119,12 +80,7 @@ export class MissionResponseRepository {
         startedAt: new Date(),
       },
       include: {
-        mission: {
-          select: {
-            id: true,
-            title: true,
-          },
-        },
+        mission: true,
       },
     });
   }
