@@ -1,24 +1,22 @@
-import { getAuthError } from "@/lib/getAuthError";
 import { missionService } from "@/server/services/mission";
 import { rewardService } from "@/server/services/reward/rewardService";
-import { headers } from "next/headers";
 import { MissionClientWrapper } from "./MissionClientWrapper";
 import { DevTools, MissionContent } from "./components";
 import type { MissionRewardData } from "./types/mission";
 import { formatDeadline } from "./utils/formatDeadline";
 
+/**
+ * 무한 캐시 설정
+ * On-demand revalidation을 통해 데이터 갱신 시 캐시를 무효화합니다.
+ * Action/Mission 생성/수정/삭제 시 revalidatePath를 호출해야 합니다.
+ */
+export const revalidate = false;
+
 export default async function MissionPage({ params }: { params: Promise<{ missionId: string }> }) {
   const { missionId } = await params;
-  const authError = await getAuthError();
 
-  const headersList = await headers();
-  const host = headersList.get("host") ?? "";
-  const appUrlHost = process.env.NEXT_PUBLIC_APP_URL
-    ? new URL(process.env.NEXT_PUBLIC_APP_URL).host
-    : "";
-  const isDevEnvironment = host === appUrlHost;
+  const isDevEnvironment = process.env.NODE_ENV === "development";
 
-  // 서버에서 데이터 페칭
   const mission = await missionService.getMission(missionId);
   const reward = mission.rewardId
     ? await rewardService.getReward(mission.rewardId).catch(error => {
@@ -34,7 +32,7 @@ export default async function MissionPage({ params }: { params: Promise<{ missio
   return (
     <>
       {isDevEnvironment && <DevTools missionId={missionId} />}
-      <MissionClientWrapper initialError={authError}>
+      <MissionClientWrapper>
         <MissionContent
           missionId={missionId}
           missionType={mission.type}

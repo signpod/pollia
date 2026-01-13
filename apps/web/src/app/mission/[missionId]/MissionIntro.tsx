@@ -1,6 +1,5 @@
 "use client";
 
-import { AuthError } from "@/hooks/login/useKakaoLogin";
 import { useMissionIntroData, useSurveyResume } from "@/hooks/mission";
 import { useReadMissionResponseForMission } from "@/hooks/mission-response";
 import { useReadMissionParticipantInfo } from "@/hooks/participant/useReadMissionParticipantInfo";
@@ -54,11 +53,10 @@ function CalloutTrigger({
 }
 
 interface MissionIntroProps {
-  initialError: AuthError | null;
   children: ReactNode;
 }
 
-export function MissionIntro({ initialError, children }: MissionIntroProps) {
+export function MissionIntro({ children }: MissionIntroProps) {
   const { missionId } = useParams<{ missionId: string }>();
 
   useEffect(() => {
@@ -306,7 +304,6 @@ export function MissionIntro({ initialError, children }: MissionIntroProps) {
             <BottomButton
               isActive={isActive ?? false}
               firstActionId={firstActionId ?? ""}
-              initialError={initialError}
               deadline={deadline}
               showResumeModal={showResumeModal}
               isCompleted={isCompleted}

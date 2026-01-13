@@ -4,7 +4,7 @@ import { getMissionParticipantInfo } from "@/actions/mission";
 import { getMyResponseForMission } from "@/actions/mission-response";
 import { toast } from "@/components/common/Toast";
 import { ROUTES } from "@/constants/routes";
-import { AuthError, useKakaoLogin } from "@/hooks/login/useKakaoLogin";
+import { useKakaoLogin } from "@/hooks/login/useKakaoLogin";
 import {
   useCreateMissionResponse,
   useReadMissionResponseForMission,
@@ -31,7 +31,6 @@ const BUTTON_TEXT = {
 
 interface BottomButtonProps {
   firstActionId?: string;
-  initialError: AuthError | null;
   deadline?: Mission["deadline"];
   showResumeModal?: () => boolean;
   isCompleted: boolean;
@@ -43,7 +42,6 @@ interface BottomButtonProps {
 
 export function BottomButton({
   firstActionId,
-  initialError,
   deadline,
   isActive,
   showResumeModal,
@@ -66,7 +64,6 @@ export function BottomButton({
   });
 
   const { handleKakaoLogin } = useKakaoLogin({
-    initialError,
     redirectPath: ROUTES.MISSION(missionId),
   });
   const { isLoggedIn } = useAuth();
