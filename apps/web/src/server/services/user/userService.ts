@@ -21,13 +21,22 @@ export class UserService {
     const { user, name, phone } = input;
 
     const existingUser = await this.repo.findFirst(user.id);
+    const normalizedPhone = phone ? this.normalizePhoneNumber(phone) : undefined;
 
     if (existingUser) {
+      if (normalizedPhone && existingUser.phone !== normalizedPhone) {
+        await this.repo.update(existingUser.id, { phone: normalizedPhone });
+      }
       return false;
     }
 
+    if (!normalizedPhone) {
+      const error = new Error("전화번호는 필수입니다.");
+      error.cause = 400;
+      throw error;
+    }
+
     const userName = this.determineUserName(user, name);
-    const normalizedPhone = phone ? this.normalizePhoneNumber(phone) : undefined;
 
     await this.repo.create({
       id: user.id,
@@ -53,12 +62,6 @@ export class UserService {
     if (!user) {
       const error = new Error("사용자 정보를 찾을 수 없습니다.");
       error.cause = 404;
-      throw error;
-    }
-
-    if (input.name !== undefined && (!input.name || input.name.trim().length === 0)) {
-      const error = new Error("이름은 필수입니다.");
-      error.cause = 400;
       throw error;
     }
 

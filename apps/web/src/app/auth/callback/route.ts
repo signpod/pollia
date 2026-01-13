@@ -1,7 +1,102 @@
 import { createSessionWithKakao, exchangeKakaoToken, getKakaoUserInfo } from "@/actions/kakao";
 import { createUserIfNotExists } from "@/actions/user";
+import type { KakaoTokenResponse, KakaoUserInfo } from "@/types/external/kakao";
+import type { User } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+
+interface AuthErrorOptions {
+  type: string;
+  message: string;
+  detail?: string | null;
+}
+
+function createErrorResponse(origin: string, options: AuthErrorOptions): NextResponse {
+  const response = NextResponse.redirect(`${origin}/login`);
+  response.cookies.set(
+    "auth_error",
+    JSON.stringify({
+      ...options,
+      timestamp: Date.now(),
+    }),
+    {
+      path: "/",
+      httpOnly: false,
+      maxAge: 10,
+      sameSite: "lax",
+    },
+  );
+  return response;
+}
+
+function handleOAuthError(origin: string, error: string, description: string | null): NextResponse {
+  return createErrorResponse(origin, {
+    type: "oauth_provider_error",
+    message:
+      error === "access_denied"
+        ? "로그인이 취소되었습니다."
+        : "카카오 로그인 중 오류가 발생했습니다.",
+    detail: description,
+  });
+}
+
+function handleLoginError(origin: string, error: unknown): NextResponse {
+  console.error("카카오 로그인 에러:", error);
+  return createErrorResponse(origin, {
+    type: "kakao_login_error",
+    message: "로그인 처리 중 오류가 발생했습니다.",
+    detail: error instanceof Error ? error.message : "Unknown error",
+  });
+}
+
+function handleMissingCode(origin: string): NextResponse {
+  return createErrorResponse(origin, {
+    type: "missing_code",
+    message: "인증 코드가 없습니다. 다시 시도해주세요.",
+  });
+}
+
+async function exchangeToken(code: string, origin: string): Promise<KakaoTokenResponse> {
+  return exchangeKakaoToken({
+    code,
+    redirectUri: `${origin}/auth/callback`,
+  });
+}
+
+async function authenticateWithKakao(
+  tokenData: KakaoTokenResponse,
+  kakaoUser: KakaoUserInfo,
+): Promise<User> {
+  const userName = kakaoUser.kakao_account.profile.nickname;
+  return createSessionWithKakao({
+    idToken: tokenData.id_token,
+    userName,
+  });
+}
+
+async function registerUser(user: User, kakaoUser: KakaoUserInfo): Promise<boolean> {
+  const { nickname } = kakaoUser.kakao_account.profile;
+  const { phone_number } = kakaoUser.kakao_account;
+
+  return createUserIfNotExists({
+    user,
+    name: nickname,
+    phone: phone_number,
+  });
+}
+
+function getRedirectUrl(request: Request, origin: string, path: string): string {
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const isLocalEnv = process.env.NODE_ENV === "development";
+
+  if (isLocalEnv) {
+    return `${origin}${path}`;
+  }
+  if (forwardedHost) {
+    return `https://${forwardedHost}${path}`;
+  }
+  return `${origin}${path}`;
+}
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -16,101 +111,30 @@ export async function GET(request: Request) {
   }
 
   if (oauthError) {
-    const response = NextResponse.redirect(`${origin}/login`);
-    response.cookies.set(
-      "auth_error",
-      JSON.stringify({
-        type: "oauth_provider_error",
-        message:
-          oauthError === "access_denied"
-            ? "로그인이 취소되었습니다."
-            : "카카오 로그인 중 오류가 발생했습니다.",
-        detail: errorDescription,
-        timestamp: Date.now(),
-      }),
-      {
-        path: "/",
-        httpOnly: false,
-        maxAge: 10,
-        sameSite: "lax",
-      },
-    );
-    return response;
+    return handleOAuthError(origin, oauthError, errorDescription);
   }
 
-  if (code) {
-    try {
-      const tokenData = await exchangeKakaoToken({
-        code,
-        redirectUri: `${origin}/auth/callback`,
-      });
+  if (!code) {
+    return handleMissingCode(origin);
+  }
 
-      const kakaoUser = await getKakaoUserInfo(tokenData.access_token);
-      const userName = kakaoUser.kakao_account?.profile?.nickname;
+  try {
+    const tokenData = await exchangeToken(code, origin);
+    const kakaoUser = await getKakaoUserInfo(tokenData.access_token);
+    const user = await authenticateWithKakao(tokenData, kakaoUser);
+    const isNewUser = await registerUser(user, kakaoUser);
 
-      const user = await createSessionWithKakao({
-        idToken: tokenData.id_token,
-        userName,
-      });
-
-      const isNewUser = await createUserIfNotExists({ user, name: userName });
-
-      if (isNewUser && next === "/") {
-        next = "/login/done";
-      }
-
-      cookieStore.set("auth_redirect", "", {
-        path: "/",
-        maxAge: 0,
-      });
-
-      const forwardedHost = request.headers.get("x-forwarded-host");
-      const isLocalEnv = process.env.NODE_ENV === "development";
-
-      if (isLocalEnv) {
-        return NextResponse.redirect(`${origin}${next}`);
-      }
-      if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${next}`);
-      }
-      return NextResponse.redirect(`${origin}${next}`);
-    } catch (error) {
-      console.error("카카오 로그인 에러:", error);
-
-      const response = NextResponse.redirect(`${origin}/login`);
-      response.cookies.set(
-        "auth_error",
-        JSON.stringify({
-          type: "kakao_login_error",
-          message: "로그인 처리 중 오류가 발생했습니다.",
-          detail: error instanceof Error ? error.message : "Unknown error",
-          timestamp: Date.now(),
-        }),
-        {
-          path: "/",
-          httpOnly: false,
-          maxAge: 10,
-          sameSite: "lax",
-        },
-      );
-      return response;
+    if (isNewUser && next === "/") {
+      next = "/login/done";
     }
-  }
 
-  const response = NextResponse.redirect(`${origin}/login`);
-  response.cookies.set(
-    "auth_error",
-    JSON.stringify({
-      type: "missing_code",
-      message: "인증 코드가 없습니다. 다시 시도해주세요.",
-      timestamp: Date.now(),
-    }),
-    {
+    cookieStore.set("auth_redirect", "", {
       path: "/",
-      httpOnly: false,
-      maxAge: 10,
-      sameSite: "lax",
-    },
-  );
-  return response;
+      maxAge: 0,
+    });
+
+    return NextResponse.redirect(getRedirectUrl(request, origin, next));
+  } catch (error) {
+    return handleLoginError(origin, error);
+  }
 }
