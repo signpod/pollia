@@ -51,7 +51,7 @@ export class UserService {
   }
 
   private normalizePhoneNumber(phone: string): string {
-    return phone.replace(/^\+82\s?/, "0").replace(/[^0-9]/g, "");
+    return phone.replace(/^\+82\s?0?/, "0").replace(/[^0-9]/g, "");
   }
 
   async updateUser(userId: string, input: UpdateUserInput) {

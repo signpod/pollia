@@ -8,6 +8,7 @@ const createMockUser = (
     id: string;
     email: string;
     name: string;
+    phone: string | null;
     role: UserRole;
     createdAt: Date;
     updatedAt: Date;
@@ -16,6 +17,7 @@ const createMockUser = (
   id: "user1",
   email: "test@example.com",
   name: "테스트 사용자",
+  phone: "01012345678",
   role: UserRole.USER,
   createdAt: new Date("2025-01-01"),
   updatedAt: new Date("2025-01-01"),
@@ -42,7 +44,6 @@ describe("UserService", () => {
   beforeEach(() => {
     mockRepo = {
       findById: jest.fn(),
-      findFirst: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
@@ -92,23 +93,24 @@ describe("UserService", () => {
       // Given
       const mockUser = createMockUser();
       const supabaseUser = createMockSupabaseUser();
-      mockRepo.findFirst.mockResolvedValue(mockUser);
+      mockRepo.findById.mockResolvedValue(mockUser);
 
       // When
       const result = await service.createUserIfNotExists({
         user: supabaseUser,
+        phone: "+82 010-1234-5678",
       });
 
       // Then
       expect(result).toBe(false);
-      expect(mockRepo.findFirst).toHaveBeenCalledWith("user1");
+      expect(mockRepo.findById).toHaveBeenCalledWith("user1");
       expect(mockRepo.create).not.toHaveBeenCalled();
     });
 
     it("새 사용자를 생성하고 true를 반환한다 (name 제공)", async () => {
       // Given
       const supabaseUser = createMockSupabaseUser();
-      mockRepo.findFirst.mockResolvedValue(null);
+      mockRepo.findById.mockResolvedValue(null);
       const mockCreatedUser = createMockUser({ name: "제공된 이름" });
       mockRepo.create.mockResolvedValue(mockCreatedUser);
 
@@ -116,15 +118,17 @@ describe("UserService", () => {
       const result = await service.createUserIfNotExists({
         user: supabaseUser,
         name: "제공된 이름",
+        phone: "+82 010-1234-5678",
       });
 
       // Then
       expect(result).toBe(true);
-      expect(mockRepo.findFirst).toHaveBeenCalledWith("user1");
+      expect(mockRepo.findById).toHaveBeenCalledWith("user1");
       expect(mockRepo.create).toHaveBeenCalledWith({
         id: "user1",
         email: "test@example.com",
         name: "제공된 이름",
+        phone: "01012345678",
       });
     });
 
@@ -133,13 +137,14 @@ describe("UserService", () => {
       const supabaseUser = createMockSupabaseUser({
         user_metadata: { name: "메타데이터 이름" },
       });
-      mockRepo.findFirst.mockResolvedValue(null);
+      mockRepo.findById.mockResolvedValue(null);
       const mockCreatedUser = createMockUser({ name: "메타데이터 이름" });
       mockRepo.create.mockResolvedValue(mockCreatedUser);
 
       // When
       const result = await service.createUserIfNotExists({
         user: supabaseUser,
+        phone: "01087654321",
       });
 
       // Then
@@ -148,6 +153,7 @@ describe("UserService", () => {
         id: "user1",
         email: "test@example.com",
         name: "메타데이터 이름",
+        phone: "01087654321",
       });
     });
 
@@ -157,13 +163,14 @@ describe("UserService", () => {
         email: "testuser@example.com",
         user_metadata: {},
       });
-      mockRepo.findFirst.mockResolvedValue(null);
+      mockRepo.findById.mockResolvedValue(null);
       const mockCreatedUser = createMockUser({ name: "testuser" });
       mockRepo.create.mockResolvedValue(mockCreatedUser);
 
       // When
       const result = await service.createUserIfNotExists({
         user: supabaseUser,
+        phone: "01011112222",
       });
 
       // Then
@@ -172,6 +179,7 @@ describe("UserService", () => {
         id: "user1",
         email: "testuser@example.com",
         name: "testuser",
+        phone: "01011112222",
       });
     });
 
@@ -181,13 +189,14 @@ describe("UserService", () => {
         email: undefined,
         user_metadata: {},
       });
-      mockRepo.findFirst.mockResolvedValue(null);
+      mockRepo.findById.mockResolvedValue(null);
       const mockCreatedUser = createMockUser({ name: "사용자", email: "" });
       mockRepo.create.mockResolvedValue(mockCreatedUser);
 
       // When
       const result = await service.createUserIfNotExists({
         user: supabaseUser,
+        phone: "01099998888",
       });
 
       // Then
@@ -196,6 +205,7 @@ describe("UserService", () => {
         id: "user1",
         email: "",
         name: "사용자",
+        phone: "01099998888",
       });
     });
 
@@ -205,7 +215,7 @@ describe("UserService", () => {
         email: "testuser@example.com",
         user_metadata: { name: "메타데이터 이름" },
       });
-      mockRepo.findFirst.mockResolvedValue(null);
+      mockRepo.findById.mockResolvedValue(null);
       const mockCreatedUser = createMockUser({ name: "제공된 이름" });
       mockRepo.create.mockResolvedValue(mockCreatedUser);
 
@@ -213,6 +223,7 @@ describe("UserService", () => {
       const result = await service.createUserIfNotExists({
         user: supabaseUser,
         name: "제공된 이름",
+        phone: "01012345678",
       });
 
       // Then
@@ -221,7 +232,33 @@ describe("UserService", () => {
         id: "user1",
         email: "testuser@example.com",
         name: "제공된 이름",
+        phone: "01012345678",
       });
+    });
+
+    it("전화번호가 없으면 400 에러를 던진다", async () => {
+      // Given
+      const supabaseUser = createMockSupabaseUser();
+      mockRepo.findById.mockResolvedValue(null);
+
+      // When & Then
+      await expect(
+        service.createUserIfNotExists({
+          user: supabaseUser,
+          name: "테스트",
+        }),
+      ).rejects.toThrow("전화번호는 필수입니다.");
+
+      try {
+        await service.createUserIfNotExists({
+          user: supabaseUser,
+          name: "테스트",
+        });
+      } catch (error) {
+        expect(error instanceof Error && error.cause).toBe(400);
+      }
+
+      expect(mockRepo.create).not.toHaveBeenCalled();
     });
   });
 
@@ -260,21 +297,19 @@ describe("UserService", () => {
       expect(mockRepo.update).not.toHaveBeenCalled();
     });
 
-    it("이름이 빈 문자열이면 400 에러를 던진다", async () => {
+    it("전화번호를 정규화하여 수정한다", async () => {
       // Given
       const mockUser = createMockUser();
+      const updatedUser = createMockUser({ phone: "01098765432" });
       mockRepo.findById.mockResolvedValue(mockUser);
+      mockRepo.update.mockResolvedValue(updatedUser);
 
-      // When & Then
-      await expect(service.updateUser("user1", { name: "" })).rejects.toThrow("이름은 필수입니다.");
+      // When
+      const result = await service.updateUser("user1", { phone: "+82 010-9876-5432" });
 
-      try {
-        await service.updateUser("user1", { name: "" });
-      } catch (error) {
-        expect(error instanceof Error && error.cause).toBe(400);
-      }
-
-      expect(mockRepo.update).not.toHaveBeenCalled();
+      // Then
+      expect(result.phone).toBe("01098765432");
+      expect(mockRepo.update).toHaveBeenCalledWith("user1", { phone: "01098765432" });
     });
   });
 
