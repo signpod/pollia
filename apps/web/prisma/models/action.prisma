@@ -40,7 +40,7 @@ enum ActionType {
   // URL
   DATE
   TIME
-  PRIVACY_CONSENT
+  // PRIVACY_CONSENT
   // NAME
   // ADDRESS
   // PHONE
