@@ -255,28 +255,5 @@ describe("buildSubmissionTables", () => {
       // Then
       expect(result.completedRows[0]?.answers[0]?.value).toBeNull();
     });
-
-    it("PRIVACY_CONSENT는 동의/미동의로 표시한다", () => {
-      // Given
-      const actions = [
-        createMockAction({ id: "action1", type: "PRIVACY_CONSENT", order: 1 }),
-        createMockAction({ id: "action2", type: "PRIVACY_CONSENT", order: 2 }),
-      ];
-      const response = createMockResponse({
-        completedAt: new Date(),
-        answers: [
-          createMockAnswer("action1", { booleanAnswer: true }),
-          createMockAnswer("action2", { booleanAnswer: false }),
-        ],
-      });
-
-      // When
-      const result = buildSubmissionTables({ actions, responses: [response] });
-
-      // Then
-      const row = result.completedRows[0];
-      expect(row?.answers[0]?.value).toBe("동의");
-      expect(row?.answers[1]?.value).toBe("미동의");
-    });
   });
 });

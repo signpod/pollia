@@ -68,12 +68,6 @@ export type ActionAnswerItem =
     }
   | {
       actionId: string;
-      type: typeof ActionType.PRIVACY_CONSENT;
-      isRequired: boolean;
-      booleanAnswer: boolean;
-    }
-  | {
-      actionId: string;
       type: typeof ActionType.DATE;
       isRequired: boolean;
       dateAnswers?: string[];

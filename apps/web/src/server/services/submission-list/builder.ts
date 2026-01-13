@@ -125,8 +125,6 @@ function formatAnswerValue(
       }
       return null;
     }
-    case "PRIVACY_CONSENT":
-      return answer.booleanAnswer !== null ? (answer.booleanAnswer ? "동의" : "미동의") : null;
     default:
       return answer.textAnswer || null;
   }

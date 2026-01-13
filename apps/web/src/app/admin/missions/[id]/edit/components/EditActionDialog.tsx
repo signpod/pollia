@@ -15,7 +15,6 @@ import {
   ImageUploadForm,
   MultipleChoiceForm,
   PdfUploadForm,
-  PrivacyConsentForm,
   RatingForm,
   ScaleForm,
   ShortTextForm,
@@ -209,20 +208,6 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
     case "VIDEO":
       return (
         <VideoUploadForm
-          isLoading={isLoading}
-          onSubmit={onSubmit}
-          onCancel={onCancel}
-          initialData={{
-            title: action.title,
-            description: action.description || undefined,
-            imageUrl: action.imageUrl || undefined,
-            isRequired: action.isRequired,
-          }}
-        />
-      );
-    case "PRIVACY_CONSENT":
-      return (
-        <PrivacyConsentForm
           isLoading={isLoading}
           onSubmit={onSubmit}
           onCancel={onCancel}

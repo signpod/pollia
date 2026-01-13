@@ -12,7 +12,6 @@ export const ACTION_TYPE_LABELS: Record<ActionType, string> = {
   VIDEO: "동영상",
   DATE: "날짜",
   TIME: "시간",
-  PRIVACY_CONSENT: "개인정보 동의",
 };
 
 export function getActionTypeLabel(type: ActionType): string {

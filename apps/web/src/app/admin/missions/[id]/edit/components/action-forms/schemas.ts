@@ -9,7 +9,6 @@ import {
   imageInputSchema,
   multipleChoiceInputSchema,
   pdfInputSchema,
-  privacyConsentInputSchema,
   ratingInputSchema,
   scaleInputSchema,
   shortTextInputSchema,
@@ -151,12 +150,6 @@ export const videoUploadFormSchema = videoInputSchema
     imageFileUploadId: z.string().nullable().optional(),
   });
 
-export const privacyConsentFormSchema = privacyConsentInputSchema
-  .omit({ missionId: true, order: true })
-  .extend({
-    imageFileUploadId: z.string().nullable().optional(),
-  });
-
 export const dateFormSchema = dateInputSchema
   .omit({
     missionId: true,
@@ -198,6 +191,5 @@ export type RatingFormInput = z.infer<typeof ratingFormSchema>;
 export type ImageUploadFormInput = z.infer<typeof imageUploadFormSchema>;
 export type PdfUploadFormInput = z.infer<typeof pdfUploadFormSchema>;
 export type VideoUploadFormInput = z.infer<typeof videoUploadFormSchema>;
-export type PrivacyConsentFormInput = z.infer<typeof privacyConsentFormSchema>;
 export type DateFormInput = z.infer<typeof dateFormSchema>;
 export type TimeFormInput = z.infer<typeof timeFormSchema>;

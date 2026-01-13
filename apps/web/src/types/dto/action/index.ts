@@ -88,9 +88,6 @@ export type CreatePdfActionResponse = BaseActionResponse;
 export type CreateVideoActionRequest = BaseActionRequest;
 export type CreateVideoActionResponse = BaseActionResponse;
 
-export type CreatePrivacyConsentActionRequest = BaseActionRequest;
-export type CreatePrivacyConsentActionResponse = BaseActionResponse;
-
 export interface CreateDateActionRequest extends BaseActionRequest {
   maxSelections: number;
 }

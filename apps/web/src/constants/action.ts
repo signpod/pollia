@@ -111,7 +111,6 @@ export const ACTION_TYPE_LABELS: Record<ActionType, string> = {
   [ActionType.PDF]: "PDF",
   [ActionType.DATE]: "날짜",
   [ActionType.TIME]: "시간",
-  [ActionType.PRIVACY_CONSENT]: "개인정보 동의",
 };
 
 export const MISSION_TYPE_LABELS: Record<MissionType, string> = {

@@ -5,7 +5,6 @@ import {
   imageInputSchema,
   multipleChoiceInputSchema,
   pdfInputSchema,
-  privacyConsentInputSchema,
   ratingInputSchema,
   scaleInputSchema,
   shortTextInputSchema,
@@ -27,7 +26,6 @@ import type {
   CreateImageInput,
   CreateMultipleChoiceInput,
   CreatePdfInput,
-  CreatePrivacyConsentInput,
   CreateRatingInput,
   CreateScaleInput,
   CreateShortTextInput,
@@ -248,18 +246,6 @@ export class ActionService {
 
   async createVideoAction(input: CreateVideoInput, userId: string): Promise<ActionCreatedResult> {
     return this.createSimpleAction(input, videoInputSchema, ActionType.VIDEO, userId);
-  }
-
-  async createPrivacyConsentAction(
-    input: CreatePrivacyConsentInput,
-    userId: string,
-  ): Promise<ActionCreatedResult> {
-    return this.createSimpleAction(
-      input,
-      privacyConsentInputSchema,
-      ActionType.PRIVACY_CONSENT,
-      userId,
-    );
   }
 
   async createDateAction(input: CreateDateInput, userId: string): Promise<ActionCreatedResult> {
