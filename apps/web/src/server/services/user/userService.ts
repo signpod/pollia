@@ -21,14 +21,12 @@ export class UserService {
     const { user, name, phone } = input;
 
     const existingUser = await this.repo.findFirst(user.id);
-    const normalizedPhone = phone ? this.normalizePhoneNumber(phone) : undefined;
 
     if (existingUser) {
-      if (normalizedPhone && existingUser.phone !== normalizedPhone) {
-        await this.repo.update(existingUser.id, { phone: normalizedPhone });
-      }
       return false;
     }
+
+    const normalizedPhone = phone ? this.normalizePhoneNumber(phone) : undefined;
 
     if (!normalizedPhone) {
       const error = new Error("전화번호는 필수입니다.");
@@ -52,7 +50,7 @@ export class UserService {
     return providedName || user.user_metadata?.name || user.email?.split("@")[0] || "사용자";
   }
 
-  private normalizePhoneNumber(phone: string): string {
+  normalizePhoneNumber(phone: string): string {
     return phone.replace(/^\+82\s?/, "0").replace(/[^0-9]/g, "");
   }
 
@@ -65,8 +63,16 @@ export class UserService {
       throw error;
     }
 
-    const updatedUser = await this.repo.update(userId, input);
+    const normalizedInput = this.normalizeUpdateInput(input);
+    const updatedUser = await this.repo.update(userId, normalizedInput);
     return updatedUser;
+  }
+
+  private normalizeUpdateInput(input: UpdateUserInput): UpdateUserInput {
+    if (typeof input.phone === "string") {
+      return { ...input, phone: this.normalizePhoneNumber(input.phone) };
+    }
+    return input;
   }
 
   async deleteUser(userId: string): Promise<void> {

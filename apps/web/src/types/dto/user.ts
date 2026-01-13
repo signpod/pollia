@@ -1,7 +1,8 @@
-import type { User, UserRole } from "@prisma/client";
+import type { User } from "@prisma/client";
+import { UserRole } from "@prisma/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
-export type { UserRole };
+export { UserRole };
 
 export interface EnsureUserExistsOptions {
   user: SupabaseUser;

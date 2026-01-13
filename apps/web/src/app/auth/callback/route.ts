@@ -1,5 +1,6 @@
 import { createSessionWithKakao, exchangeKakaoToken, getKakaoUserInfo } from "@/actions/kakao";
 import { createUserIfNotExists } from "@/actions/user";
+import { userService } from "@/server/services/user/userService";
 import type { KakaoTokenResponse, KakaoUserInfo } from "@/types/external/kakao";
 import type { User } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
@@ -74,15 +75,28 @@ async function authenticateWithKakao(
   });
 }
 
-async function registerUser(user: User, kakaoUser: KakaoUserInfo): Promise<boolean> {
+interface RegisterOrUpdateUserResult {
+  isNewUser: boolean;
+}
+
+async function registerOrUpdateUser(
+  user: User,
+  kakaoUser: KakaoUserInfo,
+): Promise<RegisterOrUpdateUserResult> {
   const { nickname } = kakaoUser.kakao_account.profile;
   const { phone_number } = kakaoUser.kakao_account;
 
-  return createUserIfNotExists({
+  const isNewUser = await createUserIfNotExists({
     user,
     name: nickname,
     phone: phone_number,
   });
+
+  if (!isNewUser) {
+    await userService.updateUser(user.id, { phone: phone_number });
+  }
+
+  return { isNewUser };
 }
 
 function getRedirectUrl(request: Request, origin: string, path: string): string {
@@ -122,7 +136,7 @@ export async function GET(request: Request) {
     const tokenData = await exchangeToken(code, origin);
     const kakaoUser = await getKakaoUserInfo(tokenData.access_token);
     const user = await authenticateWithKakao(tokenData, kakaoUser);
-    const isNewUser = await registerUser(user, kakaoUser);
+    const { isNewUser } = await registerOrUpdateUser(user, kakaoUser);
 
     if (isNewUser && next === "/") {
       next = "/login/done";
