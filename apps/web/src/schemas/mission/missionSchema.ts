@@ -2,7 +2,7 @@ import { MissionType } from "@prisma/client";
 import { z } from "zod";
 
 export const MISSION_TITLE_MAX_LENGTH = 100;
-export const MISSION_DESCRIPTION_MAX_LENGTH = 500;
+export const MISSION_DESCRIPTION_MAX_LENGTH = 2000;
 export const MISSION_TARGET_MAX_LENGTH = 100;
 
 const missionTypeSchema = z.enum(MissionType);
