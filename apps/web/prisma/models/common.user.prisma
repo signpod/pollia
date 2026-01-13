@@ -1,10 +1,12 @@
 model User {
-  id               String            @id
-  email            String            @unique
-  name             String
-  createdAt        DateTime          @default(now()) @map("created_at")
-  updatedAt        DateTime          @updatedAt @map("updated_at")
-  role             UserRole          @default(USER)
+  id        String   @id
+  email     String   @unique
+  name      String
+  phone     String?  @unique
+  role      UserRole @default(USER)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   fileUploads      FileUpload[]
   missionResponses MissionResponse[]
   missions         Mission[]
