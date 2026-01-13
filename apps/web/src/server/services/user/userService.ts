@@ -18,7 +18,7 @@ export class UserService {
   }
 
   async createUserIfNotExists(input: CreateUserIfNotExistsInput): Promise<boolean> {
-    const { user, name } = input;
+    const { user, name, phone } = input;
 
     const existingUser = await this.repo.findFirst(user.id);
 
@@ -27,11 +27,13 @@ export class UserService {
     }
 
     const userName = this.determineUserName(user, name);
+    const normalizedPhone = phone ? this.normalizePhoneNumber(phone) : undefined;
 
     await this.repo.create({
       id: user.id,
       email: user.email ?? "",
       name: userName,
+      phone: normalizedPhone,
     });
 
     return true;
@@ -39,6 +41,10 @@ export class UserService {
 
   private determineUserName(user: SupabaseUser, providedName?: string): string {
     return providedName || user.user_metadata?.name || user.email?.split("@")[0] || "사용자";
+  }
+
+  private normalizePhoneNumber(phone: string): string {
+    return phone.replace(/^\+82\s?/, "0").replace(/[^0-9]/g, "");
   }
 
   async updateUser(userId: string, input: UpdateUserInput) {
