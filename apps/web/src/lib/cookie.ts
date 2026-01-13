@@ -38,6 +38,32 @@ export function clearAuthRedirect(): void {
 }
 
 const ACTION_NAV_COOKIE_PREFIX = "action_nav_";
+const AUTH_ERROR_COOKIE_NAME = "auth_error";
+
+export interface AuthError {
+  type: string;
+  message: string;
+  detail?: string;
+  timestamp: number;
+}
+
+export function getAuthErrorFromCookie(): AuthError | null {
+  const cookies = document.cookie.split("; ");
+  const authErrorCookie = cookies.find(c => c.startsWith(`${AUTH_ERROR_COOKIE_NAME}=`));
+
+  if (!authErrorCookie) return null;
+
+  try {
+    const value = authErrorCookie.split("=").slice(1).join("=");
+    return JSON.parse(decodeURIComponent(value));
+  } catch {
+    return null;
+  }
+}
+
+export function clearAuthErrorCookie(): void {
+  document.cookie = `${AUTH_ERROR_COOKIE_NAME}=; path=/; max-age=0`;
+}
 
 /**
  * 액션 네비게이션 쿠키 설정 (클라이언트)

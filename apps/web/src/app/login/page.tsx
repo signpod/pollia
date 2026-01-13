@@ -1,8 +1,10 @@
-import { getAuthError } from "@/lib/getAuthError";
+import { Suspense } from "react";
 import { LoginClient } from "./LoginClient";
 
-export default async function LoginPage() {
-  const authError = await getAuthError();
-
-  return <LoginClient initialError={authError} />;
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginClient />
+    </Suspense>
+  );
 }
