@@ -12,6 +12,7 @@ export const useCurrentUser = () => {
       data: {
         id: "",
         email: "",
+        phone: null,
         name: "",
         role: UserRole.USER,
         createdAt: new Date(),
