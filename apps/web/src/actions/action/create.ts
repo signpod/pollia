@@ -3,6 +3,7 @@
 import { requireAuth } from "@/actions/common/auth";
 import { actionService } from "@/server/services/action";
 import type { ActionCreatedResult } from "@/server/services/action/types";
+import { revalidatePath } from "next/cache";
 import type {
   BaseActionResponse,
   CreateDateActionRequest,
@@ -39,6 +40,11 @@ async function createActionHandler<TRequest, TResponse extends BaseActionRespons
   try {
     const user = await requireAuth();
     const action = await serviceMethod(request, user.id);
+
+    if (action.missionId) {
+      revalidatePath(`/mission/${action.missionId}`);
+    }
+
     return { data: action } as TResponse;
   } catch (error) {
     console.error(`${errorMessage} error:`, error);

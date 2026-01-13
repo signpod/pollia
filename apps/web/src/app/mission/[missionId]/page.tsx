@@ -5,7 +5,7 @@ import { DevTools, MissionContent } from "./components";
 import type { MissionRewardData } from "./types/mission";
 import { formatDeadline } from "./utils/formatDeadline";
 
-export const revalidate = 3600;
+export const revalidate = false;
 
 export default async function MissionPage({ params }: { params: Promise<{ missionId: string }> }) {
   const { missionId } = await params;
