@@ -60,6 +60,10 @@ export async function getMissionActionIds(missionId: string): Promise<GetActionI
   }
 }
 
+/**
+ * Request Memoization을 사용하여 동일한 요청 내에서 중복 호출을 방지합니다.
+ * 요청 간 캐시 공유는 되지 않으므로, ISR과 함께 사용할 때는 unstable_cache를 고려하세요.
+ */
 export const getMissionActionsDetail = cache(
   async (missionId: string): Promise<GetMissionActionsDetailResponse> => {
     try {

@@ -9,7 +9,13 @@ export async function deleteAction(actionId: string) {
     const user = await requireAuth();
 
     const action = await actionService.getActionById(actionId);
-    const missionId = action?.missionId;
+    if (!action) {
+      const error = new Error("액션을 찾을 수 없습니다.");
+      error.cause = 404;
+      throw error;
+    }
+
+    const missionId = action.missionId;
 
     await actionService.deleteAction(actionId, user.id);
 

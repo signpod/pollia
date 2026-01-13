@@ -1,4 +1,14 @@
 /**
+ * 클라이언트 전용 쿠키 유틸리티 함수
+ *
+ * 주의: 이 파일의 모든 함수는 클라이언트 컴포넌트에서만 사용 가능합니다.
+ * 서버 컴포넌트에서는 사용할 수 없습니다.
+ * 서버에서 쿠키를 다루려면 Next.js의 cookies() 함수를 사용하세요.
+ */
+
+import { ACTION_NAV_COOKIE_PREFIX, AUTH_ERROR_COOKIE_NAME } from "@/constants/cookie";
+
+/**
  * 로그인 후 돌아갈 경로를 쿠키에 저장
  * @param path - 저장할 경로 (pathname + search)
  */
@@ -36,9 +46,6 @@ export function getAuthRedirect(): string | null {
 export function clearAuthRedirect(): void {
   document.cookie = "auth_redirect=; path=/; max-age=0";
 }
-
-const ACTION_NAV_COOKIE_PREFIX = "action_nav_";
-const AUTH_ERROR_COOKIE_NAME = "auth_error";
 
 export interface AuthError {
   type: string;

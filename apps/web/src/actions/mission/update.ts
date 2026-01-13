@@ -64,6 +64,7 @@ export async function setMissionPassword(missionId: string, password: string) {
   try {
     const user = await requireAuth();
     await missionService.setPassword(missionId, password, user.id);
+    revalidatePath(`/mission/${missionId}`);
     return { success: true };
   } catch (error) {
     console.error("setMissionPassword error:", error);
@@ -80,6 +81,7 @@ export async function removeMissionPassword(missionId: string) {
   try {
     const user = await requireAuth();
     await missionService.removePassword(missionId, user.id);
+    revalidatePath(`/mission/${missionId}`);
     return { success: true };
   } catch (error) {
     console.error("removeMissionPassword error:", error);

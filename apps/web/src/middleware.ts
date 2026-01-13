@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
+import { ACTION_NAV_COOKIE_PREFIX, AUTH_COOKIE_PREFIX } from "@/constants/cookie";
 
 export const config = {
   matcher: [
@@ -9,9 +10,6 @@ export const config = {
     "/mission/:missionId/done",
   ],
 };
-
-const ACTION_NAV_COOKIE_PREFIX = "action_nav_";
-const AUTH_COOKIE_PREFIX = "sb-";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -79,7 +77,10 @@ export async function middleware(request: NextRequest) {
     if (pathname.includes("/mission/") && pathname.endsWith("/done")) {
       if (!hasAuthCookie(request)) {
         const missionId = extractMissionId(pathname);
-        return NextResponse.redirect(new URL(`/mission/${missionId}`, request.url));
+        if (missionId) {
+          return NextResponse.redirect(new URL(`/mission/${missionId}`, request.url));
+        }
+        return NextResponse.redirect(new URL("/login", request.url));
       }
       return NextResponse.next();
     }
@@ -104,6 +105,13 @@ export async function middleware(request: NextRequest) {
     return response;
   } catch (error) {
     console.error("[Middleware] Session check failed:", error);
+    // 보안을 위해 에러 발생 시 로그인 페이지로 리다이렉트
+    if (pathname.startsWith("/admin")) {
+      return NextResponse.redirect(new URL("/login/admin", request.url));
+    }
+    if (pathname === "/me" || pathname.includes("/mission/")) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
     return NextResponse.next();
   }
 }
