@@ -106,7 +106,7 @@ function StatusBadge({ row }: { row: SubmissionRow }) {
   if (row.isCompleted && row.completedAt) {
     const timeStr = formatCompactTime(new Date(row.completedAt));
     return (
-      <span className="inline-flex items-center gap-1.5 text-green-600">
+      <span className="inline-flex items-center gap-1.5 text-green-700">
         <CheckIcon className="size-4" />
         <span className="text-sm">{timeStr}</span>
       </span>

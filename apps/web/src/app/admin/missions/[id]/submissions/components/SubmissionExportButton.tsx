@@ -4,6 +4,7 @@ import { exportSubmissionsCsv } from "@/actions/submission-list";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import type { ExportType } from "@/server/services/submission-list";
 import { useState } from "react";
+import { toast } from "sonner";
 
 interface SubmissionExportButtonProps {
   missionId: string;
@@ -30,7 +31,7 @@ export function SubmissionExportButton({ missionId, exportType }: SubmissionExpo
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("CSV 내보내기 실패:", error);
-      alert("CSV 내보내기에 실패했습니다.");
+      toast.error("CSV 내보내기에 실패했습니다.");
     } finally {
       setIsExporting(false);
     }
