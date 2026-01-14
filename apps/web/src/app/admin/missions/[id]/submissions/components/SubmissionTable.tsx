@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/app/admin/components/shadcn-ui/table";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/app/admin/components/shadcn-ui/tooltip";
 import type { ColumnDef, SubmissionRow } from "@/server/services/submission-list";
 import { CheckIcon, ClockIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -81,13 +82,23 @@ interface ClickableCellProps {
 
 function ClickableCell({ value, onClick, className, children }: ClickableCellProps) {
   const hasCopyableValue = value && value !== "-";
+
+  if (!hasCopyableValue) {
+    return <TableCell className={className}>{children}</TableCell>;
+  }
+
   return (
-    <TableCell
-      className={`${className ?? ""} ${hasCopyableValue ? "cursor-pointer hover:bg-muted/50 transition-colors" : ""}`}
-      onClick={() => hasCopyableValue && onClick(value)}
-    >
-      {children}
-    </TableCell>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <TableCell
+          className={`${className ?? ""} cursor-pointer hover:bg-muted/50 transition-colors`}
+          onClick={() => onClick(value)}
+        >
+          {children}
+        </TableCell>
+      </TooltipTrigger>
+      <TooltipContent>클릭하여 복사</TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -163,7 +174,7 @@ function formatAnswerValue(value: string | null | undefined, type: string): Reac
   return value;
 }
 
-function getCopyValue(value: string | null | undefined, type: string): string | null {
+function getCopyValue(value: string | null | undefined, _type: string): string | null {
   if (value === null || value === undefined) return null;
   return value;
 }
