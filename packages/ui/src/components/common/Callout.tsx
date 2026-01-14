@@ -1,5 +1,7 @@
 "use client";
 
+import AlertIcon from "@public/svgs/callout-allert-icon.svg";
+import NoticeIcon from "@public/svgs/callout-notice-icon.svg";
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import { X } from "lucide-react";
 import type React from "react";
@@ -58,6 +60,12 @@ const positionStyles: Record<NonNullable<CalloutProviderProps["position"]>, stri
   "bottom-right": "bottom-4 right-4",
 };
 
+const iconMap: Record<CalloutToneVariant, React.ReactNode> = {
+  notice: <NoticeIcon className="size-5" />,
+  "early-urgency": <NoticeIcon className="size-5" />,
+  "high-urgency": <AlertIcon className="size-5" />,
+};
+
 export function CalloutProvider({ children, position = "top-center" }: CalloutProviderProps) {
   const [callouts, setCallouts] = useState<CalloutData[]>([]);
 
@@ -87,18 +95,24 @@ export function CalloutProvider({ children, position = "top-center" }: CalloutPr
               if (!open) dismiss(callout.id);
             }}
             className={cn(
-              "group pointer-events-auto relative flex w-full max-w-sm items-start gap-3 rounded-sm p-3 pl-4 transition-all break-keep",
+              "group pointer-events-auto relative flex w-full max-w-lg items-start gap-3 rounded-sm p-3 pl-4 transition-all break-keep",
               "data-[state=open]:animate-in data-[state=closed]:animate-out",
               "data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full",
               "data-[state=open]:slide-in-from-top-full data-[state=open]:fade-in-0",
               variantStyles[callout.variant ?? "notice"],
             )}
           >
-            {callout.icon && (
+            {callout.icon ? (
               <div
                 className={cn("mt-0.5 shrink-0", variantIconStyles[callout.variant ?? "notice"])}
               >
                 {callout.icon}
+              </div>
+            ) : (
+              <div
+                className={cn("mt-0.5 shrink-0", variantIconStyles[callout.variant ?? "notice"])}
+              >
+                {iconMap[callout.variant ?? "notice"]}
               </div>
             )}
             <div className="flex-1 space-y-1">
