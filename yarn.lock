@@ -7740,7 +7740,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"crypto-browserify@npm:^3.12.0":
+"crypto-browserify@npm:^3.12.0, crypto-browserify@npm:^3.12.1":
   version: 3.12.1
   resolution: "crypto-browserify@npm:3.12.1"
   dependencies:
@@ -14450,6 +14450,7 @@ __metadata:
     "@types/node": "npm:^22.15.3"
     "@types/react": "npm:19.1.0"
     "@types/react-dom": "npm:19.1.1"
+    crypto-browserify: "npm:^3.12.1"
     jotai: "npm:^2.14.0"
     next: "npm:15.5.7"
     react: "npm:19.1.2"

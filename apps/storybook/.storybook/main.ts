@@ -22,11 +22,6 @@ const config: StorybookConfig = {
         ...config.resolve.alias,
         "@": join(__dirname, "../../web/src"),
         "@public": join(__dirname, "../../web/public"),
-        "node:crypto": false,
-      };
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        crypto: false,
       };
     }
 
@@ -46,18 +41,20 @@ const config: StorybookConfig = {
       use: ["@svgr/webpack"],
     });
 
-    // tiptap 패키지 번들링 제외 (node:crypto 문제 회피)
-    config.externals = [
-      ...(Array.isArray(config.externals) ? config.externals : []),
-      /^@tiptap\//,
-    ];
+    // node:crypto를 crypto-browserify로 폴리필
+    config.resolve = {
+      ...config.resolve,
+      fallback: {
+        ...config.resolve?.fallback,
+        crypto: require.resolve("crypto-browserify"),
+        stream: false,
+        buffer: false,
+      },
+    };
 
-    // node:crypto를 빈 모듈로 대체
     config.plugins = [
       ...(config.plugins || []),
-      new webpack.NormalModuleReplacementPlugin(/^node:crypto$/, resource => {
-        resource.request = require.resolve("./empty-module.js");
-      }),
+      new webpack.NormalModuleReplacementPlugin(/^node:crypto$/, "crypto-browserify"),
     ];
 
     return config;
