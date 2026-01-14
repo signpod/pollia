@@ -12,14 +12,14 @@ import { ChevronDownIcon } from "lucide-react";
 
 export type StatusFilterValue = "all" | "completed" | "inProgress";
 
+function isStatusFilterValue(value: string): value is StatusFilterValue {
+  return value === "all" || value === "completed" || value === "inProgress";
+}
+
 interface StatusFilterProps {
   value: StatusFilterValue;
   onChange: (value: StatusFilterValue) => void;
-  counts: {
-    all: number;
-    completed: number;
-    inProgress: number;
-  };
+  counts: Record<StatusFilterValue, number>;
 }
 
 const filterLabels: Record<StatusFilterValue, string> = {
@@ -43,7 +43,12 @@ export function StatusFilter({ value, onChange, counts }: StatusFilterProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="min-w-[140px]">
-        <DropdownMenuRadioGroup value={value} onValueChange={v => onChange(v as StatusFilterValue)}>
+        <DropdownMenuRadioGroup
+          value={value}
+          onValueChange={v => {
+            if (isStatusFilterValue(v)) onChange(v);
+          }}
+        >
           <DropdownMenuRadioItem value="all">전체 ({counts.all}명)</DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="completed">
             완료자만 ({counts.completed}명)
