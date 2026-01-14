@@ -6,7 +6,6 @@ import { useReadMissionParticipantInfo } from "@/hooks/participant/useReadMissio
 import { useReadReward } from "@/hooks/reward/useReadReward";
 import { getActionNavCookie, setActionNavCookie } from "@/lib/cookie";
 import { cn } from "@/lib/utils";
-import ChevronDoubleDown from "@public/svgs/chevron-double-down-color.svg";
 import Lock from "@public/svgs/lock.svg";
 import {
   ButtonV2,
@@ -229,9 +228,19 @@ export function MissionIntro({ children }: MissionIntroProps) {
                             repeat: Number.POSITIVE_INFINITY,
                             ease: "easeInOut",
                           }}
-                        >
-                          <ChevronDoubleDown className="size-6" />
-                        </motion.div>
+                          className="size-6"
+                          style={{
+                            background: "linear-gradient(to bottom, rgba(255,255,255,0.3), rgba(255,255,255,1))",
+                            WebkitMaskImage: "url('/svgs/chevron-double-down-color.svg')",
+                            maskImage: "url('/svgs/chevron-double-down-color.svg')",
+                            WebkitMaskSize: "contain",
+                            maskSize: "contain",
+                            WebkitMaskRepeat: "no-repeat",
+                            maskRepeat: "no-repeat",
+                            WebkitMaskPosition: "center",
+                            maskPosition: "center",
+                          }}
+                        />
 
                         <Typo.ButtonText size="large" className="text-white">
                           아래로 내려보세요
