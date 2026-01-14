@@ -1,143 +1,38 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import GiftIcon from "@public/svgs/gift-color-icon.svg";
 import { Typo } from "@repo/ui/components";
-import { ChevronDown, ChevronUp } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
-interface MissionRewardProps {
+export interface MissionRewardProps {
+  rewardImage: string;
   rewardName: string;
-  rewardImage?: string;
-  rewardDescription?: string;
-  onVisibilityChange?: (isVisible: boolean) => void;
 }
 
-const REWARD_TEXT = "미션 리워드";
-
-export function MissionReward({
-  rewardName,
-  rewardImage,
-  rewardDescription,
-  onVisibilityChange,
-}: MissionRewardProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isTruncated, setIsTruncated] = useState(false);
-  const titleRef = useRef<HTMLDivElement>(null);
-  const headerButtonRef = useRef<HTMLButtonElement>(null);
-  const headerDivRef = useRef<HTMLDivElement>(null);
-  const hasNameNewLine = useMemo(() => rewardName.includes("\n"), [rewardName]);
-  const hasChevron = useMemo(() => isTruncated || hasNameNewLine, [isTruncated, hasNameNewLine]);
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: rewardName/rewardDescription 변경 시에만 truncation 체크가 필요하며, resize 이벤트 리스너는 한 번만 등록/해제되어야 함
-  useLayoutEffect(() => {
-    const checkTruncation = () => {
-      const titleElement = titleRef.current;
-
-      const isTitleTruncated = titleElement
-        ? titleElement.scrollWidth > titleElement.clientWidth ||
-          titleElement.scrollHeight > titleElement.clientHeight
-        : false;
-
-      setIsTruncated(isTitleTruncated);
-    };
-
-    checkTruncation();
-    window.addEventListener("resize", checkTruncation);
-
-    return () => {
-      window.removeEventListener("resize", checkTruncation);
-    };
-  }, [rewardName, rewardDescription]);
-
-  useEffect(() => {
-    if (!onVisibilityChange) return;
-
-    const headerElement = headerButtonRef.current || headerDivRef.current;
-    if (!headerElement) return;
-
-    const observer = new IntersectionObserver(
-      entries => {
-        const entry = entries[0];
-        if (entry) {
-          onVisibilityChange(entry.isIntersecting);
-        }
-      },
-      {
-        threshold: 0,
-        rootMargin: "0px 0px -80px 0px",
-      },
-    );
-
-    observer.observe(headerElement);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [onVisibilityChange]);
-
+export function MissionReward({ rewardImage, rewardName }: MissionRewardProps) {
   return (
-    <div className="flex w-full flex-col gap-3">
-      <div className="flex w-full flex-col rounded-sm bg-white px-3 shadow-[0px_4px_20px_0px_rgba(9,9,11,0.08)]">
-        {hasChevron ? (
-          <button
-            ref={headerButtonRef}
-            onClick={() => setIsOpen(!isOpen)}
-            className="flex w-full items-center gap-2 py-3"
-            type="button"
-          >
-            <div className="flex-1">
-              <Typo.Body size="medium" className="text-info text-left">
-                {REWARD_TEXT}
-              </Typo.Body>
-            </div>
-            <div className="shrink-0 size-6 flex items-center justify-center text-disabled">
-              {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-            </div>
-          </button>
-        ) : (
-          <div ref={headerDivRef} className="flex w-full items-center gap-2 py-3">
-            <div className="flex-1">
-              <Typo.Body size="medium" className="text-info text-left">
-                {REWARD_TEXT}
-              </Typo.Body>
-            </div>
-          </div>
-        )}
-
-        <div
-          className={cn(
-            "flex w-full gap-4 border-t border-default py-3",
-            hasNameNewLine || isTruncated ? "items-start" : "items-center",
-          )}
-        >
-          <div className="flex w-full flex-1 flex-col gap-1">
-            <Typo.Body
-              size="medium"
-              ref={titleRef}
-              className={cn("whitespace-pre-line", !isOpen && "line-clamp-2")}
-            >
-              {rewardName}
-            </Typo.Body>
-          </div>
-          {rewardImage && (
-            <div className="flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-light">
-              <Image
-                src={rewardImage}
-                alt={rewardName}
-                width={32}
-                height={32}
-                className="max-h-8 max-w-8 h-auto w-auto object-contain"
-              />
-            </div>
-          )}
+    <div className="flex gap-4 w-full rounded-sm justify-between items-center bg-black/50 p-3">
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-2">
+          <GiftIcon className="size-5" />
+          <Typo.Body size="medium" className="text-zinc-300">
+            해당 미션 완주 시
+          </Typo.Body>
         </div>
+        <Typo.SubTitle size="large" className="break-keep text-white">
+          {rewardName}
+        </Typo.SubTitle>
       </div>
-      {rewardDescription && (
-        <Typo.Body size="small" className="text-info whitespace-pre-line px-1">
-          * {rewardDescription}
-        </Typo.Body>
-      )}
+
+      <div className="relative size-12 rounded-sm overflow-hidden">
+        <Image
+          src={rewardImage}
+          alt={rewardName}
+          width={48}
+          height={48}
+          className="object-contain"
+        />
+      </div>
     </div>
   );
 }

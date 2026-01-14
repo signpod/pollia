@@ -1,13 +1,19 @@
-import { cleanTiptapHTML } from "@/lib/utils";
+"use client";
+
+import { cleanTiptapHTML, cn } from "@/lib/utils";
 import { MissionType } from "@prisma/client";
-import { Typo } from "@repo/ui/components";
+import { Tab, Typo } from "@repo/ui/components";
+import { useRef } from "react";
+import { useMissionIntroContext } from "../MissionIntro";
 import { SECTION_IDS } from "../constants/sectionIds";
 import type { MissionRewardData } from "../types/mission";
 import { MissionDescription } from "./MissionDescription";
 import { MissionFooter } from "./MissionFooter";
+import { MissionLogo } from "./MissionLogo";
 import { MissionRewardSection } from "./MissionRewardSection";
 import { SectionHeader } from "./SectionHeader";
 import { SocialShareButtonsWithData } from "./SocialShareButtonsWithData";
+import { useStickyTabHeader } from "./hooks/useStickyTabHeader";
 
 export interface MissionContentProps {
   missionId: string;
@@ -32,41 +38,55 @@ export function MissionContent({
   deadlineText,
   reward,
 }: MissionContentProps) {
-  const showDetailInfo = !!target || !!estimatedMinutes || !!deadlineText;
+  const { brandLogoUrl, title, scrollContainerRef } = useMissionIntroContext();
 
-  const detailInfoConfig = [
-    { key: "참여 조건", value: target },
-    { key: "예상 소요 시간", value: estimatedMinutes ? `${estimatedMinutes}분` : null },
-    { key: "참여 기간", value: deadlineText },
-  ] as const;
+  const sections = reward
+    ? [SECTION_IDS.MISSION_GUIDE, SECTION_IDS.REWARD]
+    : [SECTION_IDS.MISSION_GUIDE];
+
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const { activeTab, isSticky, handleChangeTab } = useStickyTabHeader({
+    scrollContainerRef,
+    sentinelRef,
+    hasReward: !!reward,
+  });
 
   return (
-    <div className="bg-white">
+    <div className="bg-white relative ">
+      <div ref={sentinelRef} className="h-0" />
+      <header className="sticky top-0 z-50 bg-white">
+        <div
+          className={cn(
+            "overflow-hidden transition-all duration-300 px-5 flex items-center gap-2",
+            isSticky ? "max-h-12 opacity-100 pt-3" : "max-h-0 opacity-0",
+          )}
+        >
+          <MissionLogo logoUrl={brandLogoUrl ?? undefined} size="small" />
+          <Typo.SubTitle size="large" className="truncate">
+            {title}
+          </Typo.SubTitle>
+        </div>
+        <Tab.Root value={activeTab} pointColor="secondary" onValueChange={handleChangeTab}>
+          <Tab.List className="px-5">
+            <Tab.Item
+              value={SECTION_IDS.MISSION_GUIDE}
+              className={cn(sections.length === 1 ? "mx-auto max-w-[110px]" : "")}
+              onClick={() => handleChangeTab(SECTION_IDS.MISSION_GUIDE)}
+            >
+              <Typo.SubTitle size="large">상세 안내</Typo.SubTitle>
+            </Tab.Item>
+            {reward && (
+              <Tab.Item
+                value={SECTION_IDS.REWARD}
+                onClick={() => handleChangeTab(SECTION_IDS.REWARD)}
+              >
+                <Typo.SubTitle size="large">참여 혜택</Typo.SubTitle>
+              </Tab.Item>
+            )}
+          </Tab.List>
+        </Tab.Root>
+      </header>
       <div id={SECTION_IDS.MISSION_GUIDE} className="flex w-full flex-col gap-0 px-5 items-center">
-        {showDetailInfo && (
-          <div className="flex flex-col gap-6 w-full p-5">
-            <div className="flex flex-col gap-4 w-full bg-zinc-50 rounded-md p-6">
-              {detailInfoConfig.map(
-                ({ key, value }) =>
-                  !!key &&
-                  !!value && (
-                    <div className="flex gap-2" key={key}>
-                      <Typo.Body
-                        size="medium"
-                        className="text-info whitespace-nowrap min-w-[100px]"
-                      >
-                        {key}
-                      </Typo.Body>
-                      <Typo.Body size="medium" className="flex-1 break-keep text-right">
-                        {value}
-                      </Typo.Body>
-                    </div>
-                  ),
-              )}
-            </div>
-          </div>
-        )}
-
         {!!description && !!cleanTiptapHTML(description) && (
           <div className="flex flex-col gap-6 px-5 py-8 items-center w-full">
             <SectionHeader badgeText="상세 안내" title={""} />

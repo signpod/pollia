@@ -1,4 +1,5 @@
 import { dirname, join } from "node:path";
+import webpack from "webpack";
 import type { StorybookConfig } from "@storybook/nextjs";
 
 /**
@@ -39,6 +40,22 @@ const config: StorybookConfig = {
       test: /\.svg$/,
       use: ["@svgr/webpack"],
     });
+
+    // node:crypto를 crypto-browserify로 폴리필
+    config.resolve = {
+      ...config.resolve,
+      fallback: {
+        ...config.resolve?.fallback,
+        crypto: require.resolve("crypto-browserify"),
+        stream: false,
+        buffer: false,
+      },
+    };
+
+    config.plugins = [
+      ...(config.plugins || []),
+      new webpack.NormalModuleReplacementPlugin(/^node:crypto$/, "crypto-browserify"),
+    ];
 
     return config;
   },

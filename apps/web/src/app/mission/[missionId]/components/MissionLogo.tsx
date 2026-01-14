@@ -13,7 +13,7 @@ export function MissionLogo({ logoUrl, size = "default" }: MissionLogoProps) {
     <div
       className={cn(
         "relative rounded-full overflow-hidden ring-1 ring-zinc-200 bg-white shrink-0",
-        size === "small" ? "size-7" : "size-15",
+        size === "small" ? "size-7" : "size-10",
       )}
     >
       <Image src={logoUrl} alt="Mission Logo" fill sizes="100%" className="object-contain" />

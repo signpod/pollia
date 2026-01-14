@@ -17,11 +17,13 @@ X 버튼으로 닫을 수 있는 알림 컴포넌트입니다.
 
 ## Variant (Tone)
 
-| Variant | 설명 | 색상 |
-|---------|------|------|
-| \`notice\` | 일반 안내 | 흰색 |
-| \`early-urgency\` | 초기 주의 | 보라색 |
-| \`high-urgency\` | 높은 긴급도 | 빨간색 |
+| Variant | 설명 | 색상 | 기본 아이콘 |
+|---------|------|------|------------|
+| \`notice\` | 일반 안내 | 흰색 | NoticeIcon |
+| \`early-urgency\` | 초기 주의 | 보라색 | AlertIcon |
+| \`high-urgency\` | 높은 긴급도 | 빨간색 | AlertIcon |
+
+> **참고:** icon prop을 전달하지 않으면 variant에 따라 기본 아이콘이 자동으로 표시됩니다.
 
 ## 사용법
 
@@ -42,7 +44,7 @@ function MyComponent() {
       title="알림"
       description="이것은 닫을 수 있는 Callout입니다."
       variant="notice"
-      icon={<Info className="h-5 w-5" />}
+      icon={<Info className="size-5" />}
     />
   );
 }
@@ -74,7 +76,7 @@ function MyComponent() {
       title: "성공",
       description: "작업이 완료되었습니다.",
       variant: "notice",
-      icon: <CheckCircle className="h-5 w-5" />,
+      icon: <CheckCircle className="size-5" />,
       duration: 5000,
     });
   };
@@ -118,9 +120,8 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     title: "알림",
-    description: "이것은 기본 Callout 컴포넌트입니다.",
+    description: "이것은 기본 Callout 컴포넌트입니다. icon을 전달하지 않으면 기본 아이콘이 표시됩니다.",
     variant: "notice",
-    icon: <Info className="h-5 w-5" />,
   },
 };
 
@@ -133,7 +134,6 @@ export const Variants: Story = {
           title="일반 안내"
           description="사용자에게 전달할 일반적인 안내 메시지입니다."
           variant="notice"
-          icon={<Info className="h-5 w-5" />}
         />
       </div>
       <div>
@@ -142,7 +142,6 @@ export const Variants: Story = {
           title="초기 주의"
           description="조금 더 주의가 필요한 상황을 알립니다."
           variant="early-urgency"
-          icon={<Bell className="h-5 w-5" />}
         />
       </div>
       <div>
@@ -151,7 +150,6 @@ export const Variants: Story = {
           title="높은 긴급도"
           description="즉각적인 주의가 필요한 중요한 알림입니다."
           variant="high-urgency"
-          icon={<AlertTriangle className="h-5 w-5" />}
         />
       </div>
     </div>
@@ -159,7 +157,40 @@ export const Variants: Story = {
   parameters: {
     docs: {
       description: {
-        story: "3가지 톤(variant)의 Callout을 확인할 수 있습니다.",
+        story:
+          "3가지 톤(variant)의 Callout을 확인할 수 있습니다. icon prop을 전달하지 않으면 variant에 따라 기본 아이콘이 자동으로 표시됩니다.",
+      },
+    },
+  },
+};
+
+export const WithCustomIcon: Story = {
+  render: () => (
+    <div className="space-y-4 w-[400px]">
+      <div>
+        <h3 className="mb-3 text-sm font-medium text-gray-500">커스텀 아이콘 사용</h3>
+        <Callout
+          title="커스텀 아이콘"
+          description="icon prop으로 원하는 아이콘을 전달할 수 있습니다."
+          variant="notice"
+          icon={<Bell className="size-5" />}
+        />
+      </div>
+      <div>
+        <h3 className="mb-3 text-sm font-medium text-gray-500">기본 아이콘 (icon 미전달)</h3>
+        <Callout
+          title="기본 아이콘"
+          description="icon prop을 전달하지 않으면 variant에 맞는 기본 아이콘이 표시됩니다."
+          variant="notice"
+        />
+      </div>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "icon prop을 전달하면 커스텀 아이콘을 사용할 수 있고, 전달하지 않으면 variant에 따라 기본 아이콘이 자동으로 표시됩니다.",
       },
     },
   },
@@ -176,7 +207,7 @@ export const WithoutTitle: Story = {
           <Callout
             description="제목 없이 설명만 표시되는 Callout입니다."
             variant="notice"
-            icon={<Info className="h-5 w-5" />}
+            icon={<Info className="size-5" />}
           />
         </div>
         <div>
@@ -235,7 +266,7 @@ export const Dismissible: Story = {
           title="일반 안내"
           description="X 버튼을 클릭하면 닫힙니다."
           variant="notice"
-          icon={<Info className="h-5 w-5" />}
+          icon={<Info className="size-5" />}
         />
         <Callout
           open={earlyUrgencyOpen}
@@ -243,7 +274,7 @@ export const Dismissible: Story = {
           title="초기 주의"
           description="X 버튼을 클릭하면 닫힙니다."
           variant="early-urgency"
-          icon={<Bell className="h-5 w-5" />}
+          icon={<Bell className="size-5" />}
         />
         <Callout
           open={highUrgencyOpen}
@@ -251,7 +282,7 @@ export const Dismissible: Story = {
           title="높은 긴급도"
           description="X 버튼을 클릭하면 닫힙니다."
           variant="high-urgency"
-          icon={<AlertTriangle className="h-5 w-5" />}
+          icon={<AlertTriangle className="size-5" />}
         />
         {allClosed && (
           <button
@@ -281,27 +312,33 @@ function ToastStyleCalloutDemo() {
   const showNotice = () => {
     callout.show({
       title: "일반 알림",
-      description: "이것은 notice 스타일의 Callout입니다.",
+      description: "이것은 notice 스타일의 Callout입니다. (기본 아이콘)",
       variant: "notice",
-      icon: <Info className="h-5 w-5" />,
     });
   };
 
   const showEarlyUrgency = () => {
     callout.show({
       title: "주의 필요",
-      description: "조금 더 주의가 필요한 상황입니다.",
+      description: "조금 더 주의가 필요한 상황입니다. (기본 아이콘)",
       variant: "early-urgency",
-      icon: <Bell className="h-5 w-5" />,
     });
   };
 
   const showHighUrgency = () => {
     callout.show({
       title: "긴급 알림",
-      description: "즉각적인 조치가 필요합니다!",
+      description: "즉각적인 조치가 필요합니다! (기본 아이콘)",
       variant: "high-urgency",
-      icon: <AlertTriangle className="h-5 w-5" />,
+    });
+  };
+
+  const showWithCustomIcon = () => {
+    callout.show({
+      title: "커스텀 아이콘",
+      description: "icon prop으로 원하는 아이콘을 전달할 수 있습니다.",
+      variant: "notice",
+      icon: <Bell className="size-5" />,
     });
   };
 
@@ -309,28 +346,36 @@ function ToastStyleCalloutDemo() {
     <div className="flex flex-col gap-3 p-4">
       <h2 className="text-lg font-bold">Toast 스타일 Callout</h2>
       <p className="text-sm text-gray-500 mb-2">
-        버튼을 클릭하면 화면 상단에 Callout이 표시됩니다.
+        버튼을 클릭하면 화면 상단에 Callout이 표시됩니다. icon을 전달하지 않으면 variant에 따라
+        기본 아이콘이 표시됩니다.
       </p>
       <button
         type="button"
         onClick={showNotice}
         className="px-4 py-3 rounded-lg border border-gray-200 bg-white font-semibold hover:bg-gray-50 transition-colors"
       >
-        Notice Callout
+        Notice (기본 아이콘)
       </button>
       <button
         type="button"
         onClick={showEarlyUrgency}
         className="px-4 py-3 rounded-lg border border-gray-200 bg-white font-semibold hover:bg-gray-50 transition-colors"
       >
-        Early Urgency Callout
+        Early Urgency (기본 아이콘)
       </button>
       <button
         type="button"
         onClick={showHighUrgency}
         className="px-4 py-3 rounded-lg border border-gray-200 bg-white font-semibold hover:bg-gray-50 transition-colors"
       >
-        High Urgency Callout
+        High Urgency (기본 아이콘)
+      </button>
+      <button
+        type="button"
+        onClick={showWithCustomIcon}
+        className="px-4 py-3 rounded-lg border border-gray-200 bg-white font-semibold hover:bg-gray-50 transition-colors"
+      >
+        커스텀 아이콘
       </button>
     </div>
   );
@@ -360,7 +405,7 @@ function MultipleCalloutDemo() {
       title: "첫 번째 알림",
       description: "첫 번째 Callout입니다.",
       variant: "notice",
-      icon: <Info className="h-5 w-5" />,
+      icon: <Info className="size-5" />,
     });
 
     setTimeout(() => {
@@ -368,7 +413,7 @@ function MultipleCalloutDemo() {
         title: "두 번째 알림",
         description: "두 번째 Callout입니다.",
         variant: "early-urgency",
-        icon: <Bell className="h-5 w-5" />,
+        icon: <Bell className="size-5" />,
       });
     }, 300);
 
@@ -377,7 +422,7 @@ function MultipleCalloutDemo() {
         title: "세 번째 알림",
         description: "세 번째 Callout입니다.",
         variant: "high-urgency",
-        icon: <AlertTriangle className="h-5 w-5" />,
+        icon: <AlertTriangle className="size-5" />,
       });
     }, 600);
   };
@@ -427,7 +472,7 @@ function PositionDemo() {
       title: "위치 테스트",
       description: "이 Callout의 위치를 확인하세요.",
       variant: "notice",
-      icon: <Info className="h-5 w-5" />,
+      icon: <Info className="size-5" />,
     });
   };
 
