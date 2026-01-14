@@ -1,6 +1,6 @@
+import { ACTION_NAV_COOKIE_PREFIX, AUTH_COOKIE_PREFIX } from "@/constants/cookie";
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
-import { ACTION_NAV_COOKIE_PREFIX, AUTH_COOKIE_PREFIX } from "@/constants/cookie";
 
 export const config = {
   matcher: [
@@ -11,8 +11,8 @@ export const config = {
   ],
 };
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
 function hasAuthCookie(request: NextRequest): boolean {
   return request.cookies.getAll().some(cookie => cookie.name.startsWith(AUTH_COOKIE_PREFIX));
