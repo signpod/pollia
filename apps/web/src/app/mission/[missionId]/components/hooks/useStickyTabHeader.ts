@@ -94,8 +94,12 @@ export function useStickyTabHeader({
     const element = document.getElementById(value);
     if (container && element) {
       const offset = getScrollOffset(value);
+      const containerRect = container.getBoundingClientRect();
+      const elementRect = element.getBoundingClientRect();
+      const targetScrollTop = container.scrollTop + (elementRect.top - containerRect.top) - offset;
+      const minScrollTop = window.innerHeight + 10;
       container.scrollTo({
-        top: element.offsetTop - offset,
+        top: Math.max(targetScrollTop, minScrollTop),
         behavior: "smooth",
       });
     }

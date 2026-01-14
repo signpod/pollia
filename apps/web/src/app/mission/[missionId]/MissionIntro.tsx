@@ -194,6 +194,12 @@ export function MissionIntro({ children }: MissionIntroProps) {
                     variant="tertiary"
                     size="large"
                     className="w-full rounded-full h-12 hover:bg-transparent"
+                    onClick={() => {
+                      scrollContainerRef.current?.scrollTo({
+                        top: window.innerHeight + 10,
+                        behavior: "smooth",
+                      });
+                    }}
                   >
                     <div className="flex items-center justify-center w-full gap-3">
                       <motion.div

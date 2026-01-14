@@ -99,30 +99,6 @@ export function MissionContent({
         </Tab.Root>
       </header>
       <div id={SECTION_IDS.MISSION_GUIDE} className="flex w-full flex-col gap-0 px-5 items-center">
-        {showDetailInfo && (
-          <div className="flex flex-col gap-6 w-full p-5">
-            <div className="flex flex-col gap-4 w-full bg-zinc-50 rounded-md p-6">
-              {detailInfoConfig.map(
-                ({ key, value }) =>
-                  !!key &&
-                  !!value && (
-                    <div className="flex gap-2" key={key}>
-                      <Typo.Body
-                        size="medium"
-                        className="text-info whitespace-nowrap min-w-[100px]"
-                      >
-                        {key}
-                      </Typo.Body>
-                      <Typo.Body size="medium" className="flex-1 break-keep text-right">
-                        {value}
-                      </Typo.Body>
-                    </div>
-                  ),
-              )}
-            </div>
-          </div>
-        )}
-
         {!!description && !!cleanTiptapHTML(description) && (
           <div className="flex flex-col gap-6 px-5 py-8 items-center w-full">
             <SectionHeader badgeText="상세 안내" title={""} />
