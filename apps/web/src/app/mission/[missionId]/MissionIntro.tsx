@@ -18,11 +18,26 @@ import {
 import { motion } from "framer-motion";
 import { useParams } from "next/navigation";
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
-import React from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { MissionImage, MissionLogo, MissionReward } from "./components";
 import { BottomButton } from "./ui";
 import { checkParticipantLimitReached } from "./utils/checkParticipantLimit";
+
+const SCROLL_OFFSET = 10;
+const SCROLL_THROTTLE_MS = 100;
+
+interface MissionIntroContextValue {
+  brandLogoUrl?: string;
+  title?: string;
+  scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
+  titleRef?: React.RefObject<HTMLDivElement | null>;
+}
+
+const MissionIntroContext = createContext<MissionIntroContextValue>({});
+
+export function useMissionIntroContext() {
+  return useContext(MissionIntroContext);
+}
 
 function CalloutTrigger({
   calloutData,
@@ -83,6 +98,7 @@ export function MissionIntro({ children }: MissionIntroProps) {
   const titleRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
+  const throttleTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const container = scrollContainerRef.current;
@@ -97,11 +113,24 @@ export function MissionIntro({ children }: MissionIntroProps) {
       });
     };
 
-    container.addEventListener("scroll", handleScroll);
+    const throttledHandleScroll = () => {
+      if (throttleTimerRef.current) return;
+
+      handleScroll();
+
+      throttleTimerRef.current = setTimeout(() => {
+        throttleTimerRef.current = null;
+      }, SCROLL_THROTTLE_MS);
+    };
+
+    container.addEventListener("scroll", throttledHandleScroll, { passive: true });
     handleScroll();
 
     return () => {
-      container.removeEventListener("scroll", handleScroll);
+      container.removeEventListener("scroll", throttledHandleScroll);
+      if (throttleTimerRef.current) {
+        clearTimeout(throttleTimerRef.current);
+      }
     };
   }, []);
 
@@ -156,119 +185,123 @@ export function MissionIntro({ children }: MissionIntroProps) {
     return null;
   }, [currentParticipants, maxParticipants, reward?.data.id, isProcessing]);
 
+  const contextValue = useMemo<MissionIntroContextValue>(
+    () => ({
+      brandLogoUrl: brandLogoUrl ?? undefined,
+      title,
+      scrollContainerRef,
+      titleRef,
+    }),
+    [brandLogoUrl, title],
+  );
+
   return (
     <CalloutProvider position="top-center">
       <CalloutTrigger calloutData={calloutData} />
-      <main className="flex justify-center bg-background">
-        <div
-          ref={scrollContainerRef}
-          className="relative w-full max-w-lg h-dvh overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-        >
-          {imageUrl && (
-            <div className="relative w-full h-svh min-h-svh">
-              <MissionImage imageUrl={imageUrl} />
-              <div className="bg-linear-to-t from-black via-black/50 via-70% to-transparent absolute bottom-0 left-0 right-0 flex flex-col gap-6 pb-6 pt-12 px-5">
-                <div ref={titleRef} className="flex flex-col gap-3 justify-center items-center">
-                  <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
-                  <div className="break-keep text-white text-center">
-                    <Typo.MainTitle size="large" className="inline text-white">
-                      {title}
-                    </Typo.MainTitle>
-                    {isRequirePassword && (
-                      <Lock className="size-4 text-white inline-block ml-1 align-[0.1em]" />
-                    )}
-                  </div>
-                </div>
-                {reward?.data && (
-                  <div className="flex gap-3 items-center">
-                    {hasReward && (
-                      <MissionReward
-                        rewardImage={reward.data.imageUrl ?? ""}
-                        rewardName={reward.data.name}
-                      />
-                    )}
-                  </div>
-                )}
-                <div>
-                  <ButtonV2
-                    variant="tertiary"
-                    size="large"
-                    className="w-full rounded-full h-12 hover:bg-transparent"
-                    onClick={() => {
-                      scrollContainerRef.current?.scrollTo({
-                        top: window.innerHeight + 10,
-                        behavior: "smooth",
-                      });
-                    }}
-                  >
-                    <div className="flex items-center justify-center w-full gap-3">
-                      <motion.div
-                        animate={{ y: [-2, 2, -2] }}
-                        transition={{
-                          duration: 1,
-                          repeat: Number.POSITIVE_INFINITY,
-                          ease: "easeInOut",
-                        }}
-                      >
-                        <ChevronDoubleDown className="size-6" />
-                      </motion.div>
-
-                      <Typo.ButtonText size="large" className="text-white">
-                        아래로 내려보세요
-                      </Typo.ButtonText>
+      <MissionIntroContext.Provider value={contextValue}>
+        <main className="flex justify-center bg-background">
+          <div
+            ref={scrollContainerRef}
+            className="relative w-full max-w-lg h-dvh overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          >
+            {imageUrl && (
+              <div className="relative w-full h-svh min-h-svh">
+                <MissionImage imageUrl={imageUrl} />
+                <div className="bg-linear-to-t from-black via-black/50 via-70% to-transparent absolute bottom-0 left-0 right-0 flex flex-col gap-6 pb-6 pt-12 px-5">
+                  <div ref={titleRef} className="flex flex-col gap-3 justify-center items-center">
+                    <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
+                    <div className="break-keep text-white text-center">
+                      <Typo.MainTitle size="large" className="inline text-white">
+                        {title}
+                      </Typo.MainTitle>
+                      {isRequirePassword && (
+                        <Lock className="size-4 text-white inline-block ml-1 align-[0.1em]" />
+                      )}
                     </div>
-                  </ButtonV2>
+                  </div>
+                  {reward?.data && (
+                    <div className="flex gap-3 items-center">
+                      {hasReward && (
+                        <MissionReward
+                          rewardImage={reward.data.imageUrl ?? ""}
+                          rewardName={reward.data.name}
+                        />
+                      )}
+                    </div>
+                  )}
+                  <div>
+                    <ButtonV2
+                      variant="tertiary"
+                      size="large"
+                      className="w-full rounded-full h-12 hover:bg-transparent"
+                      onClick={() => {
+                        scrollContainerRef.current?.scrollTo({
+                          top: window.innerHeight + SCROLL_OFFSET,
+                          behavior: "smooth",
+                        });
+                      }}
+                    >
+                      <div className="flex items-center justify-center w-full gap-3">
+                        <motion.div
+                          animate={{ y: [-2, 2, -2] }}
+                          transition={{
+                            duration: 1,
+                            repeat: Number.POSITIVE_INFINITY,
+                            ease: "easeInOut",
+                          }}
+                        >
+                          <ChevronDoubleDown className="size-6" />
+                        </motion.div>
+
+                        <Typo.ButtonText size="large" className="text-white">
+                          아래로 내려보세요
+                        </Typo.ButtonText>
+                      </div>
+                    </ButtonV2>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-
-          {React.isValidElement(children)
-            ? React.cloneElement(children, {
-                ...(children.props as Record<string, unknown>),
-                brandLogoUrl: brandLogoUrl ?? undefined,
-                title,
-                scrollContainerRef,
-                titleRef,
-              } as Record<string, unknown>)
-            : children}
-
-          {/**  fixed bottom 버튼 */}
-          <div
-            className={cn(
-              "sticky bottom-0 z-60 border-zinc-100 transition-all duration-300 ease-out",
-              isScrolled
-                ? "opacity-100 translate-y-0"
-                : "opacity-0 translate-y-full pointer-events-none",
             )}
-            style={{
-              paddingBottom: "calc(16px + env(safe-area-inset-bottom))",
-            }}
-          >
+
+            {children}
+
+            {/**  fixed bottom 버튼 */}
             <div
-              className="pointer-events-none absolute inset-x-0 bottom-0"
+              className={cn(
+                "sticky bottom-0 z-60 border-zinc-100 transition-all duration-300 ease-out",
+                isScrolled
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-full pointer-events-none",
+              )}
               style={{
-                height: "100px",
-                backdropFilter: "blur(100px)",
-                WebkitBackdropFilter: "blur(100px)",
-                maskImage: "linear-gradient(to bottom, transparent 0%, black 100%)",
-                WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 100%)",
-                background: "rgba(255, 255, 255, 0)",
+                paddingBottom: "calc(16px + env(safe-area-inset-bottom))",
               }}
-            />
-            <BottomButton
-              isActive={isActive ?? false}
-              firstActionId={firstActionId ?? ""}
-              deadline={deadline}
-              showResumeModal={showResumeModal}
-              isCompleted={isCompleted}
-              hasReward={!!reward}
-              isRequirePassword={isRequirePassword}
-              hasExistingResponse={!!missionResponse}
-            />
+            >
+              <div
+                className="pointer-events-none absolute inset-x-0 bottom-0"
+                style={{
+                  height: "100px",
+                  backdropFilter: "blur(100px)",
+                  WebkitBackdropFilter: "blur(100px)",
+                  maskImage: "linear-gradient(to bottom, transparent 0%, black 100%)",
+                  WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 100%)",
+                  background: "rgba(255, 255, 255, 0)",
+                }}
+              />
+              <BottomButton
+                isActive={isActive ?? false}
+                firstActionId={firstActionId ?? ""}
+                deadline={deadline}
+                showResumeModal={showResumeModal}
+                isCompleted={isCompleted}
+                hasReward={!!reward}
+                isRequirePassword={isRequirePassword}
+                hasExistingResponse={!!missionResponse}
+              />
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </MissionIntroContext.Provider>
     </CalloutProvider>
   );
 }

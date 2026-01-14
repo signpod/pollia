@@ -4,6 +4,7 @@ import { cleanTiptapHTML, cn } from "@/lib/utils";
 import { MissionType } from "@prisma/client";
 import { Tab, Typo } from "@repo/ui/components";
 import { useRef } from "react";
+import { useMissionIntroContext } from "../MissionIntro";
 import { SECTION_IDS } from "../constants/sectionIds";
 import type { MissionRewardData } from "../types/mission";
 import { MissionDescription } from "./MissionDescription";
@@ -24,10 +25,6 @@ export interface MissionContentProps {
   estimatedMinutes: number | null;
   deadlineText: string;
   reward: MissionRewardData | null;
-  brandLogoUrl: string | null;
-  title: string | null;
-  scrollContainerRef?: React.RefObject<HTMLDivElement>;
-  titleRef?: React.RefObject<HTMLDivElement>;
 }
 
 export function MissionContent({
@@ -40,17 +37,8 @@ export function MissionContent({
   estimatedMinutes,
   deadlineText,
   reward,
-  brandLogoUrl,
-  title,
-  scrollContainerRef,
 }: MissionContentProps) {
-  const showDetailInfo = !!target || !!estimatedMinutes || !!deadlineText;
-
-  const detailInfoConfig = [
-    { key: "참여 조건", value: target },
-    { key: "예상 소요 시간", value: estimatedMinutes ? `${estimatedMinutes}분` : null },
-    { key: "참여 기간", value: deadlineText },
-  ] as const;
+  const { brandLogoUrl, title, scrollContainerRef } = useMissionIntroContext();
 
   const sections = reward
     ? [SECTION_IDS.MISSION_GUIDE, SECTION_IDS.REWARD]

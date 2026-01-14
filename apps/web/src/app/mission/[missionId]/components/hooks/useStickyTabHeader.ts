@@ -9,7 +9,7 @@ const getScrollOffset = (sectionId: string) => {
 };
 
 interface UseStickyTabHeaderOptions {
-  scrollContainerRef?: React.RefObject<HTMLDivElement>;
+  scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
   sentinelRef?: React.RefObject<HTMLDivElement | null>;
   hasReward: boolean;
 }

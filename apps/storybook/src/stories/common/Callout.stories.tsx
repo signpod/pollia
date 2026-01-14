@@ -44,7 +44,7 @@ function MyComponent() {
       title="알림"
       description="이것은 닫을 수 있는 Callout입니다."
       variant="notice"
-      icon={<Info className="h-5 w-5" />}
+      icon={<Info className="size-5" />}
     />
   );
 }
@@ -76,7 +76,7 @@ function MyComponent() {
       title: "성공",
       description: "작업이 완료되었습니다.",
       variant: "notice",
-      icon: <CheckCircle className="h-5 w-5" />,
+      icon: <CheckCircle className="size-5" />,
       duration: 5000,
     });
   };
@@ -173,7 +173,7 @@ export const WithCustomIcon: Story = {
           title="커스텀 아이콘"
           description="icon prop으로 원하는 아이콘을 전달할 수 있습니다."
           variant="notice"
-          icon={<Bell className="h-5 w-5" />}
+          icon={<Bell className="size-5" />}
         />
       </div>
       <div>
@@ -207,7 +207,7 @@ export const WithoutTitle: Story = {
           <Callout
             description="제목 없이 설명만 표시되는 Callout입니다."
             variant="notice"
-            icon={<Info className="h-5 w-5" />}
+            icon={<Info className="size-5" />}
           />
         </div>
         <div>
@@ -266,7 +266,7 @@ export const Dismissible: Story = {
           title="일반 안내"
           description="X 버튼을 클릭하면 닫힙니다."
           variant="notice"
-          icon={<Info className="h-5 w-5" />}
+          icon={<Info className="size-5" />}
         />
         <Callout
           open={earlyUrgencyOpen}
@@ -274,7 +274,7 @@ export const Dismissible: Story = {
           title="초기 주의"
           description="X 버튼을 클릭하면 닫힙니다."
           variant="early-urgency"
-          icon={<Bell className="h-5 w-5" />}
+          icon={<Bell className="size-5" />}
         />
         <Callout
           open={highUrgencyOpen}
@@ -282,7 +282,7 @@ export const Dismissible: Story = {
           title="높은 긴급도"
           description="X 버튼을 클릭하면 닫힙니다."
           variant="high-urgency"
-          icon={<AlertTriangle className="h-5 w-5" />}
+          icon={<AlertTriangle className="size-5" />}
         />
         {allClosed && (
           <button
@@ -338,7 +338,7 @@ function ToastStyleCalloutDemo() {
       title: "커스텀 아이콘",
       description: "icon prop으로 원하는 아이콘을 전달할 수 있습니다.",
       variant: "notice",
-      icon: <Bell className="h-5 w-5" />,
+      icon: <Bell className="size-5" />,
     });
   };
 
@@ -405,7 +405,7 @@ function MultipleCalloutDemo() {
       title: "첫 번째 알림",
       description: "첫 번째 Callout입니다.",
       variant: "notice",
-      icon: <Info className="h-5 w-5" />,
+      icon: <Info className="size-5" />,
     });
 
     setTimeout(() => {
@@ -413,7 +413,7 @@ function MultipleCalloutDemo() {
         title: "두 번째 알림",
         description: "두 번째 Callout입니다.",
         variant: "early-urgency",
-        icon: <Bell className="h-5 w-5" />,
+        icon: <Bell className="size-5" />,
       });
     }, 300);
 
@@ -422,7 +422,7 @@ function MultipleCalloutDemo() {
         title: "세 번째 알림",
         description: "세 번째 Callout입니다.",
         variant: "high-urgency",
-        icon: <AlertTriangle className="h-5 w-5" />,
+        icon: <AlertTriangle className="size-5" />,
       });
     }, 600);
   };
@@ -472,7 +472,7 @@ function PositionDemo() {
       title: "위치 테스트",
       description: "이 Callout의 위치를 확인하세요.",
       variant: "notice",
-      icon: <Info className="h-5 w-5" />,
+      icon: <Info className="size-5" />,
     });
   };
 
