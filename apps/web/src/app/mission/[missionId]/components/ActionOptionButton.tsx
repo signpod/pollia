@@ -43,7 +43,7 @@ export function ActionOptionButton({
 }: ActionOptionButtonProps) {
   const containerVariants = cva(
     cn(
-      "w-full flex-1 flex flex-col justify-start items-start p-4 ring-1 ring-inset ring-default rounded-md",
+      "w-full flex-1 flex flex-col justify-start items-start ring-1 ring-default rounded-md overflow-hidden",
       "disabled:cursor-not-allowed",
     ),
     {
@@ -95,15 +95,71 @@ export function ActionOptionButton({
   const CheckIcon = selectType === "checkbox" ? CheckSquare : CheckCircle;
   const NoneCheckedIcon = selectType === "checkbox" ? Square : null;
 
-  const content = (
+  const content = imageUrl ? (
     <>
-      <div className="flex items-center gap-2 w-full">
-        <div className="flex flex-col gap-2 flex-1">
-          {imageUrl && (
-            <div className="relative size-12 overflow-hidden rounded-sm">
-              <Image src={imageUrl} fill className={cn("object-cover", imageStyle)} alt="" />
+      <div className="relative flex flex-col items-center gap-2 w-full rounded-sm overflow-hidden">
+        <Image
+          src={imageUrl}
+          width={200}
+          height={200}
+          className={cn("object-cover w-full h-full", imageStyle)}
+          alt=""
+          draggable={false}
+        />
+        <div className="flex flex-col gap-2 flex-1 w-full p-3">
+          <div className="flex flex-col gap-0">
+            <Typo.ButtonText size="large" className={titleVariants({ isSelected, disabled })}>
+              {title}
+            </Typo.ButtonText>
+            {description && (
+              <Typo.ButtonText
+                size="medium"
+                className={descriptionVariants({ isSelected, disabled })}
+              >
+                {description}
+              </Typo.ButtonText>
+            )}
+          </div>
+        </div>
+
+        <div className="absolute top-3 right-3">
+          {isSelected ? (
+            <div className="relative flex items-center justify-center">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-5 bg-white z-0 rounded-full" />
+              <CheckIcon className={cn("size-6 z-10 relative", checkCircleColor)} />
             </div>
+          ) : NoneCheckedIcon ? (
+            <NoneCheckedIcon className={cn("size-6", checkCircleColor)} />
+          ) : (
+            <div className="size-6" />
           )}
+        </div>
+      </div>
+
+      {isOther && isSelected && (
+        <div
+          className="w-full mt-2 text-zinc-900"
+          onClick={e => e.stopPropagation()}
+          onMouseDown={e => e.stopPropagation()}
+          onKeyDown={e => e.stopPropagation()}
+        >
+          <Input
+            placeholder="기타 의견을 적어주세요"
+            value={textAnswer}
+            onChange={onTextAnswerChange}
+            onBlur={onTextAnswerBlur}
+            onClick={e => e.stopPropagation()}
+            errorMessage={
+              showOtherError && !textAnswer.trim() ? "필수 입력 사항입니다." : undefined
+            }
+          />
+        </div>
+      )}
+    </>
+  ) : (
+    <>
+      <div className="flex items-center gap-2 w-full p-3">
+        <div className="flex flex-col gap-2 flex-1">
           <div className="flex flex-col gap-0">
             <Typo.ButtonText size="large" className={titleVariants({ isSelected, disabled })}>
               {title}
@@ -132,7 +188,7 @@ export function ActionOptionButton({
 
       {isOther && isSelected && (
         <div
-          className="w-full mt-2 text-zinc-900"
+          className="w-full mt-2 text-zinc-900 p-3"
           onClick={e => e.stopPropagation()}
           onMouseDown={e => e.stopPropagation()}
           onKeyDown={e => e.stopPropagation()}
