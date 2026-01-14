@@ -3,7 +3,6 @@ import { rewardService } from "@/server/services/reward/rewardService";
 import { MissionClientWrapper } from "./MissionClientWrapper";
 import { DevTools, MissionContent } from "./components";
 import type { MissionRewardData } from "./types/mission";
-import { formatDeadline } from "./utils/formatDeadline";
 
 /**
  * 무한 캐시 설정
@@ -25,10 +24,6 @@ export default async function MissionPage({ params }: { params: Promise<{ missio
       })
     : null;
 
-  const deadlineText = mission.deadline
-    ? `${formatDeadline(mission.deadline)} 까지`
-    : "정원 마감시";
-
   return (
     <>
       {isDevEnvironment && <DevTools missionId={missionId} />}
@@ -39,9 +34,6 @@ export default async function MissionPage({ params }: { params: Promise<{ missio
           missionTitle={mission.title}
           missionImageUrl={mission.imageUrl}
           description={mission.description}
-          target={mission.target}
-          estimatedMinutes={mission.estimatedMinutes}
-          deadlineText={deadlineText}
           reward={
             reward
               ? ({

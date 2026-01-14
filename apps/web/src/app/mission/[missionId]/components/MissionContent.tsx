@@ -21,9 +21,6 @@ export interface MissionContentProps {
   missionTitle: string | null;
   missionImageUrl: string | null;
   description: string | null;
-  target: string | null;
-  estimatedMinutes: number | null;
-  deadlineText: string;
   reward: MissionRewardData | null;
 }
 
@@ -33,9 +30,6 @@ export function MissionContent({
   missionTitle,
   missionImageUrl,
   description,
-  target,
-  estimatedMinutes,
-  deadlineText,
   reward,
 }: MissionContentProps) {
   const { brandLogoUrl, title, scrollContainerRef } = useMissionIntroContext();
