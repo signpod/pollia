@@ -24,7 +24,6 @@ import { BottomButton } from "./ui";
 import { checkParticipantLimitReached } from "./utils/checkParticipantLimit";
 
 const SCROLL_OFFSET = 10;
-const SCROLL_THROTTLE_MS = 100;
 
 interface MissionIntroContextValue {
   brandLogoUrl?: string;
@@ -98,39 +97,20 @@ export function MissionIntro({ children }: MissionIntroProps) {
   const titleRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
-  const throttleTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
     const handleScroll = () => {
-      const scrollTop = container.scrollTop;
-      setIsScrolled(prev => {
-        if (scrollTop > 20) return true;
-        if (scrollTop === 0) return false;
-        return prev;
-      });
+      setIsScrolled(container.scrollTop > 5);
     };
 
-    const throttledHandleScroll = () => {
-      if (throttleTimerRef.current) return;
-
-      handleScroll();
-
-      throttleTimerRef.current = setTimeout(() => {
-        throttleTimerRef.current = null;
-      }, SCROLL_THROTTLE_MS);
-    };
-
-    container.addEventListener("scroll", throttledHandleScroll, { passive: true });
+    container.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
 
     return () => {
-      container.removeEventListener("scroll", throttledHandleScroll);
-      if (throttleTimerRef.current) {
-        clearTimeout(throttleTimerRef.current);
-      }
+      container.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
