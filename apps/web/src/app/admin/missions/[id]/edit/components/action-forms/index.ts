@@ -3,7 +3,6 @@ export { DateForm } from "./DateForm";
 export { ImageUploadForm } from "./ImageUploadForm";
 export { MultipleChoiceForm } from "./MultipleChoiceForm";
 export { PdfUploadForm } from "./PdfUploadForm";
-export { PrivacyConsentForm } from "./PrivacyConsentForm";
 export { RatingForm } from "./RatingForm";
 export { ScaleForm } from "./ScaleForm";
 export { ShortTextForm } from "./ShortTextForm";
@@ -21,7 +20,6 @@ export type {
   ImageUploadFormData,
   MultipleChoiceFormData,
   PdfUploadFormData,
-  PrivacyConsentFormData,
   RatingFormData,
   ScaleFormData,
   ShortTextFormData,

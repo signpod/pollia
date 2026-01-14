@@ -5,7 +5,6 @@ import {
   createImageAction,
   createMultipleChoiceAction,
   createPdfAction,
-  createPrivacyConsentAction,
   createRatingAction,
   createScaleAction,
   createShortTextAction,
@@ -23,7 +22,6 @@ import type {
   CreateImageActionRequest,
   CreateMultipleChoiceActionRequest,
   CreatePdfActionRequest,
-  CreatePrivacyConsentActionRequest,
   CreateRatingActionRequest,
   CreateScaleActionRequest,
   CreateShortTextActionRequest,
@@ -195,19 +193,6 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             isRequired: input.isRequired,
           };
           return await createVideoAction(request);
-        }
-
-        case "PRIVACY_CONSENT": {
-          const request: CreatePrivacyConsentActionRequest = {
-            missionId: input.missionId,
-            title: input.title,
-            description: input.description,
-            imageUrl: input.imageUrl,
-            imageFileUploadId: input.imageFileUploadId,
-            order: input.order,
-            isRequired: input.isRequired,
-          };
-          return await createPrivacyConsentAction(request);
         }
 
         case "DATE": {

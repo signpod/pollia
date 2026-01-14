@@ -53,9 +53,6 @@ export function buildResponseDatabase(
       case "DATE":
         properties[propertyName] = { date: {} };
         break;
-      case "PRIVACY_CONSENT":
-        properties[propertyName] = { checkbox: {} };
-        break;
       default:
         properties[propertyName] = { rich_text: {} };
     }
@@ -138,9 +135,6 @@ function buildResponseRowProperties(
             properties[propertyName] = { date: { start: dateString } };
           }
         }
-        break;
-      case "PRIVACY_CONSENT":
-        properties[propertyName] = { checkbox: answer.booleanAnswer ?? false };
         break;
     }
   }

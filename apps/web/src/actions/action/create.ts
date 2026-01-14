@@ -3,7 +3,6 @@
 import { requireAuth } from "@/actions/common/auth";
 import { actionService } from "@/server/services/action";
 import type { ActionCreatedResult } from "@/server/services/action/types";
-import { revalidatePath } from "next/cache";
 import type {
   BaseActionResponse,
   CreateDateActionRequest,
@@ -14,8 +13,6 @@ import type {
   CreateMultipleChoiceActionResponse,
   CreatePdfActionRequest,
   CreatePdfActionResponse,
-  CreatePrivacyConsentActionRequest,
-  CreatePrivacyConsentActionResponse,
   CreateRatingActionRequest,
   CreateRatingActionResponse,
   CreateScaleActionRequest,
@@ -31,6 +28,7 @@ import type {
   CreateVideoActionRequest,
   CreateVideoActionResponse,
 } from "@/types/dto";
+import { revalidatePath } from "next/cache";
 
 async function createActionHandler<TRequest, TResponse extends BaseActionResponse>(
   request: TRequest,
@@ -140,16 +138,6 @@ export async function createVideoAction(
     request,
     actionService.createVideoAction.bind(actionService),
     "Video 액션",
-  );
-}
-
-export async function createPrivacyConsentAction(
-  request: CreatePrivacyConsentActionRequest,
-): Promise<CreatePrivacyConsentActionResponse> {
-  return createActionHandler(
-    request,
-    actionService.createPrivacyConsentAction.bind(actionService),
-    "개인정보 동의 액션",
   );
 }
 
