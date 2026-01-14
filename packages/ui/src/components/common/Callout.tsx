@@ -70,7 +70,7 @@ export function CalloutProvider({ children, position = "top-center" }: CalloutPr
   const [callouts, setCallouts] = useState<CalloutData[]>([]);
 
   const show = useCallback((options: Omit<CalloutData, "id">) => {
-    const id = crypto.randomUUID();
+    const id = Math.random().toString(36).substring(2, 9);
     setCallouts(prev => [...prev, { ...options, id }]);
     return id;
   }, []);

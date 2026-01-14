@@ -39,6 +39,8 @@ export * from "./common/ProgressBar";
 export * from "./common/ProgressBarV2";
 export * from "./common/RatingScale";
 export * from "./common/StarScale";
+export * from "./common/DateAndTimePicker";
+export * from "./common/TiptapEditor";
 
 // Hooks
 export * from "../hooks/useStep";
