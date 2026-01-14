@@ -59,9 +59,12 @@ export function SubmissionTable({ columns, rows, emptyMessage }: SubmissionTable
             {columns.map(column => {
               const answer = row.answers.find(a => a.actionId === column.id);
               const displayValue = formatAnswerValue(answer?.value, column.type);
-              const copyValue = getCopyValue(answer?.value);
               return (
-                <ClickableCell key={column.id} value={copyValue} onClick={handleCellClick}>
+                <ClickableCell
+                  key={column.id}
+                  value={answer?.value ?? null}
+                  onClick={handleCellClick}
+                >
                   {displayValue}
                 </ClickableCell>
               );
@@ -106,7 +109,7 @@ function StatusBadge({ row }: { row: SubmissionRow }) {
   if (row.isCompleted && row.completedAt) {
     const timeStr = formatCompactTime(new Date(row.completedAt));
     return (
-      <span className="inline-flex items-center gap-1.5 text-green-700">
+      <span className="inline-flex items-center gap-1.5 text-success">
         <CheckIcon className="size-4" />
         <span className="text-sm">{timeStr}</span>
       </span>
@@ -171,10 +174,5 @@ function formatAnswerValue(value: string | null | undefined, type: string): Reac
     return <span title={value}>{value.slice(0, 50)}...</span>;
   }
 
-  return value;
-}
-
-function getCopyValue(value: string | null | undefined): string | null {
-  if (value === null || value === undefined) return null;
   return value;
 }
