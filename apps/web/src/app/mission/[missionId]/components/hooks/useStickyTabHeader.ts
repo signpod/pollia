@@ -23,6 +23,7 @@ export function useStickyTabHeader({
     (typeof SECTION_IDS)[keyof typeof SECTION_IDS] | undefined
   >(undefined);
   const [isSticky, setIsSticky] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
   const isUserScrollingRef = useRef(false);
 
   useEffect(() => {
@@ -34,6 +35,7 @@ export function useStickyTabHeader({
         const entry = entries[0];
         if (entry) {
           setIsSticky(!entry.isIntersecting);
+          setHasMounted(true);
         }
       },
       {
@@ -111,7 +113,7 @@ export function useStickyTabHeader({
 
   return {
     activeTab,
-    isSticky,
+    isSticky: hasMounted && isSticky,
     handleChangeTab,
   };
 }
