@@ -85,7 +85,6 @@ export function MissionIntro({ children }: MissionIntroProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const [isScrolled, setIsScrolled] = useState(false);
-  const [showScrollHint, setShowScrollHint] = useState(true);
 
   useEffect(() => {
     const container = scrollContainerRef.current;
@@ -93,12 +92,11 @@ export function MissionIntro({ children }: MissionIntroProps) {
 
     const handleScroll = () => {
       const scrollTop = container.scrollTop;
-      setIsScrolled((prev) => {
+      setIsScrolled(prev => {
         if (scrollTop > 20) return true;
         if (scrollTop === 0) return false;
         return prev;
       });
-      setShowScrollHint(scrollTop === 0);
     };
 
     container.addEventListener("scroll", handleScroll);
