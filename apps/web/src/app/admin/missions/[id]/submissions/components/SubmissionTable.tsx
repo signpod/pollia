@@ -59,7 +59,7 @@ export function SubmissionTable({ columns, rows, emptyMessage }: SubmissionTable
             {columns.map(column => {
               const answer = row.answers.find(a => a.actionId === column.id);
               const displayValue = formatAnswerValue(answer?.value, column.type);
-              const copyValue = getCopyValue(answer?.value, column.type);
+              const copyValue = getCopyValue(answer?.value);
               return (
                 <ClickableCell key={column.id} value={copyValue} onClick={handleCellClick}>
                   {displayValue}
@@ -174,7 +174,7 @@ function formatAnswerValue(value: string | null | undefined, type: string): Reac
   return value;
 }
 
-function getCopyValue(value: string | null | undefined, _type: string): string | null {
+function getCopyValue(value: string | null | undefined): string | null {
   if (value === null || value === undefined) return null;
   return value;
 }
