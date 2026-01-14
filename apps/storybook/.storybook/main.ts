@@ -1,4 +1,5 @@
 import { dirname, join } from "node:path";
+import webpack from "webpack";
 import type { StorybookConfig } from "@storybook/nextjs";
 
 /**
@@ -21,6 +22,11 @@ const config: StorybookConfig = {
         ...config.resolve.alias,
         "@": join(__dirname, "../../web/src"),
         "@public": join(__dirname, "../../web/public"),
+        "node:crypto": false,
+      };
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        crypto: false,
       };
     }
 
@@ -39,6 +45,20 @@ const config: StorybookConfig = {
       test: /\.svg$/,
       use: ["@svgr/webpack"],
     });
+
+    // tiptap 패키지 번들링 제외 (node:crypto 문제 회피)
+    config.externals = [
+      ...(Array.isArray(config.externals) ? config.externals : []),
+      /^@tiptap\//,
+    ];
+
+    // node:crypto를 빈 모듈로 대체
+    config.plugins = [
+      ...(config.plugins || []),
+      new webpack.NormalModuleReplacementPlugin(/^node:crypto$/, resource => {
+        resource.request = require.resolve("./empty-module.js");
+      }),
+    ];
 
     return config;
   },
