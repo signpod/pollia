@@ -9,20 +9,27 @@ import {
   TableRow,
 } from "@/app/admin/components/shadcn-ui/table";
 import type { ColumnDef, SubmissionRow } from "@/server/services/submission-list";
+import { CheckIcon, ClockIcon } from "lucide-react";
+import { toast } from "sonner";
 
 interface SubmissionTableProps {
   columns: ColumnDef[];
   rows: SubmissionRow[];
-  timeLabel: string;
   emptyMessage: string;
 }
 
-export function SubmissionTable({ columns, rows, timeLabel, emptyMessage }: SubmissionTableProps) {
+export function SubmissionTable({ columns, rows, emptyMessage }: SubmissionTableProps) {
   if (rows.length === 0) {
     return (
       <div className="p-8 text-center text-muted-foreground border rounded-lg">{emptyMessage}</div>
     );
   }
+
+  const handleCellClick = (value: string | null | undefined) => {
+    if (!value) return;
+    navigator.clipboard.writeText(value);
+    toast.success("복사되었습니다");
+  };
 
   return (
     <Table className="mb-4">
@@ -30,7 +37,7 @@ export function SubmissionTable({ columns, rows, timeLabel, emptyMessage }: Subm
         <TableRow>
           <TableHead>이름</TableHead>
           <TableHead>전화번호</TableHead>
-          <TableHead>{timeLabel}</TableHead>
+          <TableHead>상태</TableHead>
           {columns.map(column => (
             <TableHead key={column.id}>{column.title}</TableHead>
           ))}
@@ -39,15 +46,23 @@ export function SubmissionTable({ columns, rows, timeLabel, emptyMessage }: Subm
       <TableBody>
         {rows.map(row => (
           <TableRow key={row.id}>
-            <TableCell className="font-medium">{row.user.name}</TableCell>
-            <TableCell>{formatPhoneNumber(row.user.phone)}</TableCell>
-            <TableCell>{formatDateTime(row.time)}</TableCell>
+            <ClickableCell value={row.user.name} onClick={handleCellClick} className="font-medium">
+              {row.user.name}
+            </ClickableCell>
+            <ClickableCell value={formatPhoneNumber(row.user.phone)} onClick={handleCellClick}>
+              {formatPhoneNumber(row.user.phone)}
+            </ClickableCell>
+            <TableCell>
+              <StatusBadge row={row} />
+            </TableCell>
             {columns.map(column => {
               const answer = row.answers.find(a => a.actionId === column.id);
+              const displayValue = formatAnswerValue(answer?.value, column.type);
+              const copyValue = getCopyValue(answer?.value, column.type);
               return (
-                <TableCell key={column.id}>
-                  {formatAnswerValue(answer?.value, column.type)}
-                </TableCell>
+                <ClickableCell key={column.id} value={copyValue} onClick={handleCellClick}>
+                  {displayValue}
+                </ClickableCell>
               );
             })}
           </TableRow>
@@ -55,6 +70,63 @@ export function SubmissionTable({ columns, rows, timeLabel, emptyMessage }: Subm
       </TableBody>
     </Table>
   );
+}
+
+interface ClickableCellProps {
+  value: string | null | undefined;
+  onClick: (value: string | null | undefined) => void;
+  className?: string;
+  children: React.ReactNode;
+}
+
+function ClickableCell({ value, onClick, className, children }: ClickableCellProps) {
+  const hasCopyableValue = value && value !== "-";
+  return (
+    <TableCell
+      className={`${className ?? ""} ${hasCopyableValue ? "cursor-pointer hover:bg-muted/50 transition-colors" : ""}`}
+      onClick={() => hasCopyableValue && onClick(value)}
+    >
+      {children}
+    </TableCell>
+  );
+}
+
+function StatusBadge({ row }: { row: SubmissionRow }) {
+  if (row.isCompleted && row.completedAt) {
+    const timeStr = formatCompactTime(new Date(row.completedAt));
+    return (
+      <span className="inline-flex items-center gap-1.5 text-green-600">
+        <CheckIcon className="size-4" />
+        <span className="text-sm">{timeStr}</span>
+      </span>
+    );
+  }
+
+  return (
+    <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+      <ClockIcon className="size-4" />
+      <span className="text-sm">진행중</span>
+    </span>
+  );
+}
+
+function formatCompactTime(date: Date): string {
+  const now = new Date();
+  const isToday = date.toDateString() === now.toDateString();
+
+  const timeStr = date.toLocaleTimeString("ko-KR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+  if (isToday) {
+    return timeStr;
+  }
+
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  return `${month}.${day} ${timeStr}`;
 }
 
 function formatPhoneNumber(phone: string | null): string {
@@ -65,16 +137,6 @@ function formatPhoneNumber(phone: string | null): string {
   return phone;
 }
 
-function formatDateTime(date: Date): string {
-  return new Date(date).toLocaleString("ko-KR", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
 function formatAnswerValue(value: string | null | undefined, type: string): React.ReactNode {
   if (value === null || value === undefined) {
     return <span className="text-muted-foreground">-</span>;
@@ -82,7 +144,13 @@ function formatAnswerValue(value: string | null | undefined, type: string): Reac
 
   if (type === "IMAGE" || type === "VIDEO" || type === "PDF") {
     return (
-      <a href={value} target="_blank" rel="noopener noreferrer" className="text-primary underline">
+      <a
+        href={value}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-primary underline"
+        onClick={e => e.stopPropagation()}
+      >
         파일 보기
       </a>
     );
@@ -92,5 +160,10 @@ function formatAnswerValue(value: string | null | undefined, type: string): Reac
     return <span title={value}>{value.slice(0, 50)}...</span>;
   }
 
+  return value;
+}
+
+function getCopyValue(value: string | null | undefined, type: string): string | null {
+  if (value === null || value === undefined) return null;
   return value;
 }

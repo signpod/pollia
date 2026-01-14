@@ -41,7 +41,7 @@ export function SubmissionExportButton({ missionId, exportType }: SubmissionExpo
 
   return (
     <Button variant="outline" size="sm" onClick={handleExport} disabled={isExporting}>
-      {isExporting ? "내보내는 중..." : `${label} CSV 다운로드`}
+      {isExporting ? "내보내는 중..." : `${label} 내보내기`}
     </Button>
   );
 }

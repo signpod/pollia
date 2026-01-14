@@ -13,16 +13,13 @@ export function buildSubmissionTables(input: BuildSubmissionTablesInput): Submis
 
   const columns = buildColumns(actions);
 
-  const completedResponses = responses.filter(
-    (r): r is MissionResponseWithUserAndAnswers & { completedAt: Date } => r.completedAt !== null,
-  );
-  const inProgressResponses = responses.filter(r => r.completedAt === null);
-
-  const completedRows = completedResponses.map(r => buildCompletedRow(r, actions));
-  const inProgressRows = inProgressResponses.map(r => buildInProgressRow(r, actions));
+  const allRows = responses.map(r => buildRow(r, actions));
+  const completedRows = allRows.filter(r => r.isCompleted);
+  const inProgressRows = allRows.filter(r => !r.isCompleted);
 
   return {
     columns,
+    allRows,
     completedRows,
     inProgressRows,
   };
@@ -53,32 +50,18 @@ function buildAnswers(
     });
 }
 
-function buildCompletedRow(
-  response: MissionResponseWithUserAndAnswers & { completedAt: Date },
-  actions: Action[],
-): SubmissionRow {
+function buildRow(response: MissionResponseWithUserAndAnswers, actions: Action[]): SubmissionRow {
+  const isCompleted = response.completedAt !== null;
   return {
     id: response.id,
     user: {
       name: response.user.name,
       phone: response.user.phone,
     },
-    time: response.completedAt,
-    answers: buildAnswers(response, actions),
-  };
-}
-
-function buildInProgressRow(
-  response: MissionResponseWithUserAndAnswers,
-  actions: Action[],
-): SubmissionRow {
-  return {
-    id: response.id,
-    user: {
-      name: response.user.name,
-      phone: response.user.phone,
-    },
-    time: response.startedAt,
+    time: isCompleted ? response.completedAt! : response.startedAt,
+    startedAt: response.startedAt,
+    completedAt: response.completedAt,
+    isCompleted,
     answers: buildAnswers(response, actions),
   };
 }

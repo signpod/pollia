@@ -14,6 +14,9 @@ export interface SubmissionRow {
   id: string;
   user: SubmissionUser;
   time: Date;
+  startedAt: Date;
+  completedAt: Date | null;
+  isCompleted: boolean;
   answers: SubmissionAnswer[];
 }
 
@@ -25,6 +28,7 @@ export interface ColumnDef {
 
 export interface SubmissionTablesData {
   columns: ColumnDef[];
+  allRows: SubmissionRow[];
   completedRows: SubmissionRow[];
   inProgressRows: SubmissionRow[];
 }
