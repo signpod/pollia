@@ -51,6 +51,8 @@ export default async function MissionPage({ params }: { params: Promise<{ missio
                 } satisfies MissionRewardData)
               : null
           }
+          brandLogoUrl={mission.brandLogoUrl}
+          title={mission.title}
         />
       </MissionClientWrapper>
     </>

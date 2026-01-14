@@ -136,7 +136,7 @@ export function BottomButton({
 
   if (isParticipantLimitReached) {
     return (
-      <div className="py-3 px-4 w-full">
+      <div className="relative py-3 px-4 w-full">
         <ButtonV2 variant="primary" size="large" className="w-full" disabled>
           <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
             {BUTTON_TEXT.participantLimitReached}
@@ -160,7 +160,7 @@ export function BottomButton({
 
   if (alreadyCompleted) {
     return (
-      <div className="py-3 px-4 w-full">
+      <div className="relative py-3 px-4 w-full">
         <ButtonV2 variant="primary" size="large" className="w-full" disabled>
           <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
             {BUTTON_TEXT.alreadyCompleted}
@@ -172,7 +172,7 @@ export function BottomButton({
 
   if (!isLoggedIn) {
     return (
-      <div className="py-3 px-4 w-full">
+      <div className="relative py-3 px-4 w-full">
         <ButtonV2
           variant="primary"
           size="large"
@@ -192,7 +192,7 @@ export function BottomButton({
   }
 
   return (
-    <div className="py-3 px-4 w-full">
+    <div className="relative py-3 px-4 w-full">
       <ButtonV2
         variant="primary"
         size="large"

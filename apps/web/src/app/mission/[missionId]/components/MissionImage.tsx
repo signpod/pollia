@@ -11,7 +11,7 @@ export function MissionImage({ imageUrl, alt = "Mission Image", className }: Mis
   if (!imageUrl) return null;
 
   return (
-    <div className={cn("w-full h-full overflow-hidden @container", className)}>
+    <div className={cn("w-full h-full overflow-hidden", className)}>
       <div className="relative w-full h-full">
         <Image
           src={imageUrl}
