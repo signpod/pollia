@@ -1,6 +1,5 @@
 "use client";
 
-import { useIsMobile } from "@/hooks/common/useIsMobile";
 import { useMissionIntroData, useSurveyResume } from "@/hooks/mission";
 import { useReadMissionResponseForMission } from "@/hooks/mission-response";
 import { useReadMissionParticipantInfo } from "@/hooks/participant/useReadMissionParticipantInfo";
@@ -83,7 +82,6 @@ export function MissionIntro({ children }: MissionIntroProps) {
 
   const titleRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const isMobile = useIsMobile();
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -192,7 +190,11 @@ export function MissionIntro({ children }: MissionIntroProps) {
                   </div>
                 )}
                 <div>
-                  <ButtonV2 variant="tertiary" size="large" className="w-full rounded-full h-12">
+                  <ButtonV2
+                    variant="tertiary"
+                    size="large"
+                    className="w-full rounded-full h-12 hover:bg-transparent"
+                  >
                     <div className="flex items-center justify-center w-full gap-3">
                       <motion.div
                         animate={{ y: [-2, 2, -2] }}
@@ -234,7 +236,7 @@ export function MissionIntro({ children }: MissionIntroProps) {
                 : "opacity-0 translate-y-full pointer-events-none",
             )}
             style={{
-              paddingBottom: isMobile ? "calc(16px + env(safe-area-inset-bottom))" : "16px",
+              paddingBottom: "calc(16px + env(safe-area-inset-bottom))",
             }}
           >
             <div
