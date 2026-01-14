@@ -60,11 +60,13 @@ function buildDataRow(
 ): string[] {
   const baseData = [escapeCsvField(row.user.name), escapeCsvField(row.user.phone || "")];
 
+  const timeValue = isCompleted && row.completedAt ? row.completedAt : row.startedAt;
+
   if (exportType === "all") {
     baseData.push(isCompleted ? "완료" : "진행중");
-    baseData.push(formatDateTime(row.time));
+    baseData.push(formatDateTime(timeValue));
   } else {
-    baseData.push(formatDateTime(row.time));
+    baseData.push(formatDateTime(timeValue));
   }
 
   const answerData = columns.map(col => {

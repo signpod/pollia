@@ -13,7 +13,6 @@ export interface SubmissionAnswer {
 export interface SubmissionRow {
   id: string;
   user: SubmissionUser;
-  time: Date;
   startedAt: Date;
   completedAt: Date | null;
   isCompleted: boolean;

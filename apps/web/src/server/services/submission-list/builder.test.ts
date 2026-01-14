@@ -88,7 +88,7 @@ describe("buildSubmissionTables", () => {
       expect(result.inProgressRows[0]?.id).toBe("inProgress1");
     });
 
-    it("완료자는 완료 시간을, 진행중은 시작 시간을 time으로 사용한다", () => {
+    it("완료자는 completedAt을, 진행중은 startedAt만 가진다", () => {
       // Given
       const actions = [createMockAction()];
       const completedAt = new Date("2025-01-01T11:00:00Z");
@@ -112,8 +112,10 @@ describe("buildSubmissionTables", () => {
       });
 
       // Then
-      expect(result.completedRows[0]?.time).toEqual(completedAt);
-      expect(result.inProgressRows[0]?.time).toEqual(startedAt);
+      expect(result.completedRows[0]?.completedAt).toEqual(completedAt);
+      expect(result.completedRows[0]?.startedAt).toEqual(startedAt);
+      expect(result.inProgressRows[0]?.completedAt).toBeNull();
+      expect(result.inProgressRows[0]?.startedAt).toEqual(startedAt);
     });
 
     it("Action 순서대로 컬럼을 생성한다", () => {

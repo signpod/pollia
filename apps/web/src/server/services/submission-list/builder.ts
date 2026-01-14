@@ -11,9 +11,10 @@ import type {
 export function buildSubmissionTables(input: BuildSubmissionTablesInput): SubmissionTablesData {
   const { actions, responses } = input;
 
-  const columns = buildColumns(actions);
+  const sortedActions = [...actions].sort((a, b) => a.order - b.order);
+  const columns = buildColumns(sortedActions);
 
-  const allRows = responses.map(r => buildRow(r, actions));
+  const allRows = responses.map(r => buildRow(r, sortedActions));
   const completedRows = allRows.filter(r => r.isCompleted);
   const inProgressRows = allRows.filter(r => !r.isCompleted);
 
@@ -25,44 +26,41 @@ export function buildSubmissionTables(input: BuildSubmissionTablesInput): Submis
   };
 }
 
-function buildColumns(actions: Action[]): ColumnDef[] {
-  return actions
-    .sort((a, b) => a.order - b.order)
-    .map(action => ({
-      id: action.id,
-      title: action.title,
-      type: action.type,
-    }));
+function buildColumns(sortedActions: Action[]): ColumnDef[] {
+  return sortedActions.map(action => ({
+    id: action.id,
+    title: action.title,
+    type: action.type,
+  }));
 }
 
 function buildAnswers(
   response: MissionResponseWithUserAndAnswers,
-  actions: Action[],
+  sortedActions: Action[],
 ): SubmissionAnswer[] {
-  return actions
-    .sort((a, b) => a.order - b.order)
-    .map(action => {
-      const answer = response.answers.find(a => a.actionId === action.id);
-      return {
-        actionId: action.id,
-        value: answer ? formatAnswerValue(answer, action) : null,
-      };
-    });
+  return sortedActions.map(action => {
+    const answer = response.answers.find(a => a.actionId === action.id);
+    return {
+      actionId: action.id,
+      value: answer ? formatAnswerValue(answer, action) : null,
+    };
+  });
 }
 
-function buildRow(response: MissionResponseWithUserAndAnswers, actions: Action[]): SubmissionRow {
-  const isCompleted = response.completedAt !== null;
+function buildRow(
+  response: MissionResponseWithUserAndAnswers,
+  sortedActions: Action[],
+): SubmissionRow {
   return {
     id: response.id,
     user: {
       name: response.user.name,
       phone: response.user.phone,
     },
-    time: isCompleted ? response.completedAt! : response.startedAt,
     startedAt: response.startedAt,
     completedAt: response.completedAt,
-    isCompleted,
-    answers: buildAnswers(response, actions),
+    isCompleted: response.completedAt !== null,
+    answers: buildAnswers(response, sortedActions),
   };
 }
 
