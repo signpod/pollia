@@ -1,5 +1,6 @@
 import { ActionOptionButton } from "@/app/mission/[missionId]/components";
 import { ActionStepContentProps, CLIENT_OTHER_OPTION_ID } from "@/constants/action";
+import { cn } from "@repo/ui/lib";
 import { useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 import { MultipleChoiceProvider, useSurveyMultipleChoice } from "./MultipleChoiceProvider";
@@ -78,6 +79,8 @@ function SurveyMultipleChoiceContent({
     }
   };
 
+  const hasImage = actionData.options?.some(option => !!option.imageUrl);
+
   return (
     <SurveyQuestionTemplate
       currentOrder={currentOrder}
@@ -93,7 +96,7 @@ function SurveyMultipleChoiceContent({
       isLoading={isLoading}
       isRequired={actionData.isRequired}
     >
-      <div className="flex flex-col gap-2 w-full">
+      <div className={cn("gap-2 w-full", hasImage ? "grid grid-cols-2" : "flex flex-col")}>
         {optionsWithOther.map(option => {
           const isOther = option.id === CLIENT_OTHER_OPTION_ID;
           const isSelected = selectedIds.has(option.id);
