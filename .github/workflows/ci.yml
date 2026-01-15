@@ -43,9 +43,20 @@ jobs:
       - name: Generate Prisma Client
         working-directory: apps/web
         run: npx prisma generate
-      
-      # 7. Storybook 빌드 체크
+
+      # 7. 스토리북 관련 파일 변경 감지
+      - name: Check for Storybook changes
+        id: storybook-changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            storybook:
+              - 'apps/storybook/**'
+              - 'packages/ui/**'
+
+      # 8. Storybook 빌드 체크 (관련 파일 변경 시에만)
       - name: Build Storybook
+        if: steps.storybook-changes.outputs.storybook == 'true'
         working-directory: apps/storybook
         run: yarn build
       
