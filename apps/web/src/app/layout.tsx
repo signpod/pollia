@@ -35,14 +35,14 @@ export default function RootLayout({
 }>) {
   return (
     <RollbarProvider config={clientConfig}>
-      <html lang="ko" suppressHydrationWarning>
+      <html lang="ko">
         <head>
           <link
             href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css"
             rel="stylesheet"
           />
         </head>
-        <body className="antialiased" suppressHydrationWarning>
+        <body className="antialiased">
           <GoogleAnalytics />
           <div className="mx-auto min-h-svh max-w-lg bg-background">{children}</div>
         </body>
