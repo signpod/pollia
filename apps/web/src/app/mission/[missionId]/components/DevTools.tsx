@@ -27,8 +27,11 @@ export function DevTools({ missionId }: DevToolsProps) {
   const { mutate: resetResponse, isPending: isResetting } = useResetMissionResponse({ missionId });
 
   const isAdmin = currentUser?.role === UserRole.ADMIN;
+  const isDevEnvironment =
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" || window.location.hostname === "dev.pollia.me");
 
-  if (!isAdmin) {
+  if (!isAdmin || !isDevEnvironment) {
     return null;
   }
 

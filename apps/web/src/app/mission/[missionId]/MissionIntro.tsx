@@ -243,7 +243,7 @@ export function MissionIntro({ children }: MissionIntroProps) {
                           }}
                         />
 
-                        <Typo.ButtonText size="large" className="text-white">
+                        <Typo.ButtonText size="large" className="text-white z-50">
                           아래로 내려보세요
                         </Typo.ButtonText>
                       </div>
@@ -258,7 +258,7 @@ export function MissionIntro({ children }: MissionIntroProps) {
             {/**  블러 배경 (별도 레이어) */}
             <div
               className={cn(
-                "sticky bottom-0 z-50 pointer-events-none transition-opacity duration-300 ease-out",
+                "sticky bottom-0 z-0 pointer-events-none transition-opacity duration-300 ease-out",
               )}
             >
               <div

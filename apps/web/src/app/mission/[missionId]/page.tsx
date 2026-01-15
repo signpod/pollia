@@ -14,8 +14,6 @@ export const revalidate = false;
 export default async function MissionPage({ params }: { params: Promise<{ missionId: string }> }) {
   const { missionId } = await params;
 
-  const isDevEnvironment = process.env.NODE_ENV === "development";
-
   const mission = await missionService.getMission(missionId);
   const reward = mission.rewardId
     ? await rewardService.getReward(mission.rewardId).catch(error => {
@@ -26,7 +24,7 @@ export default async function MissionPage({ params }: { params: Promise<{ missio
 
   return (
     <>
-      {isDevEnvironment && <DevTools missionId={missionId} />}
+      <DevTools missionId={missionId} />
       <MissionClientWrapper>
         <MissionContent
           missionId={missionId}
