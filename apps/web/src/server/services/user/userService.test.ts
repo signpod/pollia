@@ -99,6 +99,7 @@ describe("UserService", () => {
       const result = await service.createUserIfNotExists({
         user: supabaseUser,
         phone: "+82 010-1234-5678",
+        email: "test@example.com",
       });
 
       // Then
@@ -119,6 +120,7 @@ describe("UserService", () => {
         user: supabaseUser,
         name: "제공된 이름",
         phone: "+82 010-1234-5678",
+        email: "test@example.com",
       });
 
       // Then
@@ -145,6 +147,7 @@ describe("UserService", () => {
       const result = await service.createUserIfNotExists({
         user: supabaseUser,
         phone: "01087654321",
+        email: "test@example.com",
       });
 
       // Then
@@ -171,6 +174,7 @@ describe("UserService", () => {
       const result = await service.createUserIfNotExists({
         user: supabaseUser,
         phone: "01011112222",
+        email: "testuser@example.com",
       });
 
       // Then
@@ -190,20 +194,21 @@ describe("UserService", () => {
         user_metadata: {},
       });
       mockRepo.findById.mockResolvedValue(null);
-      const mockCreatedUser = createMockUser({ name: "사용자", email: "" });
+      const mockCreatedUser = createMockUser({ name: "사용자", email: "default@example.com" });
       mockRepo.create.mockResolvedValue(mockCreatedUser);
 
       // When
       const result = await service.createUserIfNotExists({
         user: supabaseUser,
         phone: "01099998888",
+        email: "default@example.com",
       });
 
       // Then
       expect(result).toBe(true);
       expect(mockRepo.create).toHaveBeenCalledWith({
         id: "user1",
-        email: "",
+        email: "default@example.com",
         name: "사용자",
         phone: "01099998888",
       });
@@ -224,6 +229,7 @@ describe("UserService", () => {
         user: supabaseUser,
         name: "제공된 이름",
         phone: "01012345678",
+        email: "testuser@example.com",
       });
 
       // Then
@@ -246,6 +252,7 @@ describe("UserService", () => {
         service.createUserIfNotExists({
           user: supabaseUser,
           name: "테스트",
+          email: "test@example.com",
         }),
       ).rejects.toThrow("전화번호는 필수입니다.");
 
@@ -253,6 +260,7 @@ describe("UserService", () => {
         await service.createUserIfNotExists({
           user: supabaseUser,
           name: "테스트",
+          email: "test@example.com",
         });
       } catch (error) {
         expect(error instanceof Error && error.cause).toBe(400);
