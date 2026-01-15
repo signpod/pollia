@@ -131,7 +131,7 @@ export function MissionWidget(props: MissionWidgetProps) {
     <div className="flex justify-between items-center bg-black/40 rounded-md p-3 h-[50px]">
       <div className="flex items-center gap-2">
         {icon}
-        <Typo.Body size="medium" className="text-white">
+        <Typo.Body size="medium" className="text-zinc-200">
           {title}
         </Typo.Body>
       </div>
