@@ -13,6 +13,8 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
+    console.error("Global Error:", error);
+
     // Root layout and template are not available in the error page
     // so we don't have the RollbarProvider available to use the
     // useRollbar hook so we need to create a new Rollbar instance here
