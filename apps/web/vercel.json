@@ -1,5 +1,5 @@
 {
-  "buildCommand": "NEXT_PUBLIC_ROLLBAR_CODE_VERSION=$VERCEL_GIT_COMMIT_SHA yarn build",
+  "buildCommand": "NEXT_PUBLIC_ROLLBAR_CODE_VERSION=$VERCEL_GIT_COMMIT_SHA yarn build && node scripts/upload-sourcemaps.cjs",
   "crons": [
     {
       "path": "/api/cleanup-orphan-files",
