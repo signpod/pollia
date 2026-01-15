@@ -20,7 +20,6 @@ export function TiptapViewer({ content, className }: TiptapViewerProps) {
     <div
       className={cn("tiptap-viewer tiptap", className)}
       dangerouslySetInnerHTML={{ __html: sanitizedContent }}
-      suppressHydrationWarning
     />
   );
 }
