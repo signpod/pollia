@@ -46,7 +46,7 @@ export function MissionContent({
   });
 
   return (
-    <div className="bg-white relative ">
+    <div className="bg-white relative">
       <div ref={sentinelRef} className="h-0" />
       <header className="sticky top-0 z-50 bg-white">
         <div

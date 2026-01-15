@@ -4,7 +4,7 @@ import { useCurrentUser } from "./useCurrentUser";
 export function useAuth() {
   const { data: currentUser, isLoading } = useCurrentUser();
 
-  const isLoggedIn = !!currentUser.id;
+  const isLoggedIn = !!currentUser?.id;
 
   const requireAuth = useCallback(
     (onSuccess?: () => void) => {

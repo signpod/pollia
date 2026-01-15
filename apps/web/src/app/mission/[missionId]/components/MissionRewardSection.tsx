@@ -48,7 +48,7 @@ export function MissionRewardSection({
             </Typo.SubTitle>
           )}
           {rewardScheduledDate && (
-            <div className="ring-1 ring-default rounded-3xl px-3 py-1" suppressHydrationWarning>
+            <div className="ring-1 ring-default rounded-3xl px-3 py-1">
               <Typo.Body size="medium" className="text-default">
                 {`${formatDate(rewardScheduledDate, "yy.MM.dd")} 순차지급`}
               </Typo.Body>
