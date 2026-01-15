@@ -6,6 +6,8 @@ import { useReadMissionParticipantInfo } from "@/hooks/participant/useReadMissio
 import { useReadReward } from "@/hooks/reward/useReadReward";
 import { getActionNavCookie, setActionNavCookie } from "@/lib/cookie";
 import { cn } from "@/lib/utils";
+import ClockIcon from "@public/svgs/clock-color-icon.svg";
+import GiftIcon from "@public/svgs/gift-color-icon.svg";
 import Lock from "@public/svgs/lock.svg";
 import {
   ButtonV2,
@@ -14,14 +16,14 @@ import {
   Typo,
   useCallout,
 } from "@repo/ui/components";
+import { addHours, isBefore } from "date-fns";
 import { motion } from "framer-motion";
 import { useParams } from "next/navigation";
 import type { ReactNode } from "react";
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { MissionImage, MissionLogo, MissionReward } from "./components";
+import { MissionImage, MissionLogo, MissionWidget } from "./components";
 import { BottomButton } from "./ui";
 import { checkParticipantLimitReached } from "./utils/checkParticipantLimit";
-
 const SCROLL_OFFSET = 10;
 
 interface MissionIntroContextValue {
@@ -118,7 +120,13 @@ export function MissionIntro({ children }: MissionIntroProps) {
   const { data: missionResponseData } = useReadMissionResponseForMission({ missionId });
   const { currentParticipants, maxParticipants } = participantInfo?.data ?? {};
 
-  const hasReward = !!reward?.data.id;
+  const showRewardWidget = !!reward?.data.id;
+  const now = useMemo(() => new Date(), []);
+  const deadlineDate = useMemo(() => (deadline ? new Date(deadline) : null), [deadline]);
+  const showDeadlineWidget = useMemo(
+    () => Boolean(deadlineDate && isBefore(deadlineDate, addHours(now, 24))),
+    [deadlineDate, now],
+  );
 
   const isProcessing = Boolean(missionResponseData?.data?.id);
 
@@ -198,16 +206,25 @@ export function MissionIntro({ children }: MissionIntroProps) {
                       )}
                     </div>
                   </div>
-                  {reward?.data && (
-                    <div className="flex gap-3 items-center">
-                      {hasReward && (
-                        <MissionReward
-                          rewardImage={reward.data.imageUrl ?? ""}
-                          rewardName={reward.data.name}
-                        />
-                      )}
-                    </div>
-                  )}
+                  <div className="flex flex-col gap-2">
+                    {showRewardWidget && (
+                      <MissionWidget
+                        icon={<GiftIcon className="size-5" />}
+                        descType="text"
+                        title="완료 리워드"
+                        description={reward?.data.name ?? ""}
+                      />
+                    )}
+                    {showDeadlineWidget && deadlineDate && (
+                      <MissionWidget
+                        icon={<ClockIcon className="size-5" />}
+                        descType="clock"
+                        title="종료까지"
+                        deadline={deadlineDate}
+                      />
+                    )}
+                  </div>
+
                   <div>
                     <ButtonV2
                       variant="tertiary"
