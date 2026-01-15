@@ -51,9 +51,13 @@ function Colon() {
 }
 
 function CountdownClock({ deadline }: { deadline: Date }) {
-  const [timeLeft, setTimeLeft] = useState(() => calculateTimeLeft(deadline));
+  const [mounted, setMounted] = useState(false);
+  const [timeLeft, setTimeLeft] = useState({ hours: "00", minutes: "00", seconds: "00" });
 
   useEffect(() => {
+    setMounted(true);
+    setTimeLeft(calculateTimeLeft(deadline));
+
     const timer = setInterval(() => {
       setTimeLeft(calculateTimeLeft(deadline));
     }, 1000);
@@ -65,6 +69,10 @@ function CountdownClock({ deadline }: { deadline: Date }) {
   const [h1 = "0", h2 = "0"] = hours.split("");
   const [m1 = "0", m2 = "0"] = minutes.split("");
   const [s1 = "0", s2 = "0"] = seconds.split("");
+
+  if (!mounted) {
+    return null;
+  }
 
   return (
     <div className="flex items-center gap-1">
