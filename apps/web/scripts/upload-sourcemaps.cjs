@@ -4,7 +4,9 @@ const https = require("node:https");
 const { execSync } = require("node:child_process");
 
 const ROLLBAR_TOKEN = process.env.ROLLBAR_SERVER_TOKEN;
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://pollia.me";
+// minified_url은 스키마 없이 //hostname 형식이어야 함
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://pollia.me";
+const BASE_URL = APP_URL.replace(/^https?:/, "");
 
 // Git commit SHA를 code_version으로 사용
 function getCodeVersion() {
