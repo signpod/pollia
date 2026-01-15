@@ -125,7 +125,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
         recordResponse({
           missionId,
           sessionId: getOrCreateSessionId(),
-          userId: user.id || undefined,
+          userId: user?.id || undefined,
           actionId: currentAnswer.actionId,
           metadata: {
             actionType: currentAnswer.type,
@@ -150,7 +150,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
           recordResponse({
             missionId,
             sessionId: getOrCreateSessionId(),
-            userId: user.id || undefined,
+            userId: user?.id || undefined,
             actionId: currentAnswer.actionId,
             metadata: {
               actionType: currentAnswer.type,
