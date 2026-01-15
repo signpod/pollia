@@ -48,7 +48,7 @@ export function SurveyQuestionTemplate({
       <div className="space-y-6 px-5 pb-5 pt-[28px]">
         {/* 질문 정보 섹션 */}
         <section className="space-y-1 relative">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col items-center gap-2">
             <RequiredIndicator isRequired={!!isRequired} />
             <Typo.MainTitle size="medium" className="flex gap-1">
               {title}

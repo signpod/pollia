@@ -230,7 +230,8 @@ export function MissionIntro({ children }: MissionIntroProps) {
                           }}
                           className="size-6"
                           style={{
-                            background: "linear-gradient(to bottom, rgba(255,255,255,0.3), rgba(255,255,255,1))",
+                            background:
+                              "linear-gradient(to bottom, rgba(255,255,255,0.3), rgba(255,255,255,1))",
                             WebkitMaskImage: "url('/svgs/chevron-double-down-color.svg')",
                             maskImage: "url('/svgs/chevron-double-down-color.svg')",
                             WebkitMaskSize: "contain",
@@ -254,6 +255,25 @@ export function MissionIntro({ children }: MissionIntroProps) {
 
             {children}
 
+            {/**  블러 배경 (별도 레이어) */}
+            <div
+              className={cn(
+                "sticky bottom-0 z-50 pointer-events-none transition-opacity duration-300 ease-out",
+              )}
+            >
+              <div
+                className="absolute inset-x-0 bottom-0"
+                style={{
+                  height: "100px",
+                  backdropFilter: "blur(100px)",
+                  WebkitBackdropFilter: "blur(100px)",
+                  maskImage: "linear-gradient(to bottom, transparent 0%, black 100%)",
+                  WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 100%)",
+                  background: "rgba(255, 255, 255, 0)",
+                }}
+              />
+            </div>
+
             {/**  fixed bottom 버튼 */}
             <div
               className={cn(
@@ -266,17 +286,6 @@ export function MissionIntro({ children }: MissionIntroProps) {
                 paddingBottom: "calc(16px + env(safe-area-inset-bottom))",
               }}
             >
-              <div
-                className="pointer-events-none absolute inset-x-0 bottom-0"
-                style={{
-                  height: "100px",
-                  backdropFilter: "blur(100px)",
-                  WebkitBackdropFilter: "blur(100px)",
-                  maskImage: "linear-gradient(to bottom, transparent 0%, black 100%)",
-                  WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 100%)",
-                  background: "rgba(255, 255, 255, 0)",
-                }}
-              />
               <BottomButton
                 isActive={isActive ?? false}
                 firstActionId={firstActionId ?? ""}
