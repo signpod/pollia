@@ -173,15 +173,6 @@ export function DevTools({ missionId }: DevToolsProps) {
               초기화하기
             </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                throw new Error("Rollbar 소스맵 테스트 에러");
-              }}
-              className="w-full h-10 px-4 rounded-md bg-red-600 text-white text-sm font-medium flex items-center justify-center gap-2 hover:bg-red-700 active:bg-red-800 transition-colors"
-            >
-              🧪 테스트 에러 발생
-            </button>
           </div>
         </div>
       )}
