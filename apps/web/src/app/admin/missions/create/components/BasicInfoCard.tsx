@@ -1,5 +1,9 @@
+"use client";
+
 import { CharacterCounter } from "@/app/admin/components/common/InputField";
+import { NumberField } from "@/app/admin/components/common/NumberField";
 import { TiptapEditor } from "@/app/admin/components/common/TiptapEditor";
+import { DateTimeField } from "@/app/admin/components/common/molecule/DateTimeField";
 import {
   Card,
   CardContent,
@@ -150,40 +154,22 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="estimatedMinutes">예상 소요 시간 (분)</Label>
-          <Input
-            id="estimatedMinutes"
-            type="number"
-            placeholder="예상 소요 시간을 입력하세요"
-            {...form.register("estimatedMinutes", {
-              setValueAs: value => {
-                if (!value || value === "") return undefined;
-                const num = Number(value);
-                return Number.isNaN(num) ? undefined : num;
-              },
-            })}
-          />
-          {form.formState.errors.estimatedMinutes && (
-            <p className="text-sm text-destructive">
-              {form.formState.errors.estimatedMinutes.message}
-            </p>
-          )}
-        </div>
+        <NumberField
+          control={form.control}
+          name="estimatedMinutes"
+          label="예상 소요 시간 (분)"
+          description="미션 완료에 필요한 예상 시간을 입력합니다."
+          isOptional
+        />
 
-        <div className="space-y-2">
-          <Label htmlFor="deadline">마감일</Label>
-          <Input
-            id="deadline"
-            type="datetime-local"
-            {...form.register("deadline", {
-              setValueAs: value => (value ? new Date(value) : undefined),
-            })}
-          />
-          {form.formState.errors.deadline && (
-            <p className="text-sm text-destructive">{form.formState.errors.deadline.message}</p>
-          )}
-        </div>
+        <DateTimeField
+          control={form.control}
+          name="deadline"
+          label="마감일"
+          description="미션의 마감일을 설정합니다."
+          datePlaceholder="마감일 선택"
+          isOptional
+        />
       </CardContent>
     </Card>
   );

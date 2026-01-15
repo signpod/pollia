@@ -109,15 +109,8 @@ export class ActionRepository {
     return prisma.$transaction(async tx => {
       const createdAction = await tx.action.create({
         data: {
+          ...data,
           missionId: data.missionId ?? undefined,
-          title: data.title,
-          description: data.description,
-          imageUrl: data.imageUrl,
-          imageFileUploadId: data.imageFileUploadId,
-          type: data.type,
-          order: data.order,
-          maxSelections: data.maxSelections,
-          isRequired: data.isRequired,
         },
       });
 
@@ -151,15 +144,8 @@ export class ActionRepository {
       return prisma.$transaction(async tx => {
         const createdAction = await tx.action.create({
           data: {
+            ...data,
             missionId: data.missionId ?? undefined,
-            title: data.title,
-            description: data.description,
-            imageUrl: data.imageUrl,
-            imageFileUploadId: data.imageFileUploadId,
-            type: data.type,
-            order: data.order,
-            maxSelections: data.maxSelections,
-            isRequired: data.isRequired,
           },
         });
 
@@ -171,15 +157,8 @@ export class ActionRepository {
 
     return prisma.action.create({
       data: {
+        ...data,
         missionId: data.missionId ?? undefined,
-        title: data.title,
-        description: data.description,
-        imageUrl: data.imageUrl,
-        imageFileUploadId: data.imageFileUploadId,
-        type: data.type,
-        order: data.order,
-        maxSelections: data.maxSelections,
-        isRequired: data.isRequired,
       },
     });
   }

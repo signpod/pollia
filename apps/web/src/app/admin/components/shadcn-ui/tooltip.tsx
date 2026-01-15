@@ -1,9 +1,8 @@
 "use client";
 
-import * as TooltipPrimitive from "@radix-ui/react-tooltip";
-import * as React from "react";
-
+import { useAdminRootContainer } from "@/app/admin/hooks/use-admin-root-container";
 import { cn } from "@/app/admin/lib/utils";
+import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 
 function TooltipProvider({
   delayDuration = 0,
@@ -36,8 +35,10 @@ function TooltipContent({
   children,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Content>) {
+  const container = useAdminRootContainer();
+
   return (
-    <TooltipPrimitive.Portal>
+    <TooltipPrimitive.Portal container={container}>
       <TooltipPrimitive.Content
         data-slot="tooltip-content"
         sideOffset={sideOffset}

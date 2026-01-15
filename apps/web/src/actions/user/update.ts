@@ -6,11 +6,13 @@ import { userService } from "@/server/services/user/userService";
 
 export interface UpdateUserRequest {
   name?: string;
+  phone?: string;
 }
 
 function toUpdateUserInput(dto: UpdateUserRequest): UpdateUserInput {
   return {
     name: dto.name,
+    phone: dto.phone,
   };
 }
 

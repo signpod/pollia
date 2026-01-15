@@ -1,9 +1,8 @@
 "use client";
 
-import * as HoverCardPrimitive from "@radix-ui/react-hover-card";
-import * as React from "react";
-
+import { useAdminRootContainer } from "@/app/admin/hooks/use-admin-root-container";
 import { cn } from "@/app/admin/lib/utils";
+import * as HoverCardPrimitive from "@radix-ui/react-hover-card";
 
 function HoverCard({ ...props }: React.ComponentProps<typeof HoverCardPrimitive.Root>) {
   return <HoverCardPrimitive.Root data-slot="hover-card" {...props} />;
@@ -19,8 +18,10 @@ function HoverCardContent({
   sideOffset = 4,
   ...props
 }: React.ComponentProps<typeof HoverCardPrimitive.Content>) {
+  const container = useAdminRootContainer();
+
   return (
-    <HoverCardPrimitive.Portal data-slot="hover-card-portal">
+    <HoverCardPrimitive.Portal data-slot="hover-card-portal" container={container}>
       <HoverCardPrimitive.Content
         data-slot="hover-card-content"
         align={align}

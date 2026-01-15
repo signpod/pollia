@@ -1,5 +1,6 @@
 import { cleanTiptapHTML, cn } from "@/lib/utils";
-import { ButtonV2, FixedBottomLayout, TiptapViewer, Typo } from "@repo/ui/components";
+import { ButtonV2, FixedBottomLayout, Typo } from "@repo/ui/components";
+import { TiptapViewer } from "@repo/ui/components/common/TiptapViewer";
 import { ChevronLeftIcon } from "lucide-react";
 import Image from "next/image";
 import { type PropsWithChildren, useEffect } from "react";
@@ -46,11 +47,13 @@ export function SurveyQuestionTemplate({
     <FixedBottomLayout hasGradient>
       <div className="space-y-6 px-5 pb-5 pt-[28px]">
         {/* 질문 정보 섹션 */}
-        <section className="space-y-2 relative">
-          <RequiredIndicator isRequired={!!isRequired} />
-          <Typo.MainTitle size="medium" className="flex gap-1">
-            {title}
-          </Typo.MainTitle>
+        <section className="space-y-1 relative">
+          <div className="flex flex-col gap-2">
+            <RequiredIndicator isRequired={!!isRequired} />
+            <Typo.MainTitle size="medium" className="flex gap-1">
+              {title}
+            </Typo.MainTitle>
+          </div>
 
           {description && cleanTiptapHTML(description) && (
             <TiptapViewer

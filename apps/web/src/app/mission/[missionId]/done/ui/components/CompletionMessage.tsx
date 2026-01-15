@@ -1,7 +1,8 @@
 "use client";
 
 import { cleanTiptapHTML } from "@/lib/utils";
-import { TiptapViewer, Typo } from "@repo/ui/components";
+import { Typo } from "@repo/ui/components";
+import { TiptapViewer } from "@repo/ui/components/common/TiptapViewer";
 import { motion } from "framer-motion";
 
 interface CompletionMessageProps {

@@ -1,10 +1,10 @@
 "use client";
 
-import { toast } from "@/components/common/Toast";
 import { getMissionParticipantInfo } from "@/actions/mission";
 import { getMyResponseForMission } from "@/actions/mission-response";
+import { toast } from "@/components/common/Toast";
 import { ROUTES } from "@/constants/routes";
-import { AuthError, useKakaoLogin } from "@/hooks/login/useKakaoLogin";
+import { useKakaoLogin } from "@/hooks/login/useKakaoLogin";
 import {
   useCreateMissionResponse,
   useReadMissionResponseForMission,
@@ -18,6 +18,7 @@ import { ButtonV2, Typo } from "@repo/ui/components";
 import { isBefore } from "date-fns";
 import { motion } from "framer-motion";
 import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { checkParticipantLimitReached } from "../utils/checkParticipantLimit";
 
 const BUTTON_TEXT = {
@@ -31,7 +32,6 @@ const BUTTON_TEXT = {
 
 interface BottomButtonProps {
   firstActionId?: string;
-  initialError: AuthError | null;
   deadline?: Mission["deadline"];
   showResumeModal?: () => boolean;
   isCompleted: boolean;
@@ -43,7 +43,6 @@ interface BottomButtonProps {
 
 export function BottomButton({
   firstActionId,
-  initialError,
   deadline,
   isActive,
   showResumeModal,
@@ -66,13 +65,17 @@ export function BottomButton({
   });
 
   const { handleKakaoLogin } = useKakaoLogin({
-    initialError,
     redirectPath: ROUTES.MISSION(missionId),
   });
   const { isLoggedIn } = useAuth();
   const router = useRouter();
 
-  const isExpired = Boolean(deadline && isBefore(deadline, new Date())) || !isActive;
+  const [isExpired, setIsExpired] = useState(!isActive);
+
+  useEffect(() => {
+    const isDeadlinePassed = Boolean(deadline && isBefore(deadline, new Date()));
+    setIsExpired(isDeadlinePassed || !isActive);
+  }, [deadline, isActive]);
 
   const isDisabled = isExpired || !firstActionId;
   const alreadyCompleted = isCompleted;
@@ -139,7 +142,7 @@ export function BottomButton({
 
   if (isParticipantLimitReached) {
     return (
-      <div className="py-3 px-4 w-full">
+      <div className="relative py-3 px-4 w-full">
         <ButtonV2 variant="primary" size="large" className="w-full" disabled>
           <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
             {BUTTON_TEXT.participantLimitReached}
@@ -163,7 +166,7 @@ export function BottomButton({
 
   if (alreadyCompleted) {
     return (
-      <div className="py-3 px-4 w-full">
+      <div className="relative py-3 px-4 w-full">
         <ButtonV2 variant="primary" size="large" className="w-full" disabled>
           <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
             {BUTTON_TEXT.alreadyCompleted}
@@ -175,7 +178,7 @@ export function BottomButton({
 
   if (!isLoggedIn) {
     return (
-      <div className="py-3 px-4 w-full">
+      <div className="relative py-3 px-4 w-full">
         <ButtonV2
           variant="primary"
           size="large"
@@ -195,7 +198,7 @@ export function BottomButton({
   }
 
   return (
-    <div className="py-3 px-4 w-full">
+    <div className="relative py-3 px-4 w-full">
       <ButtonV2
         variant="primary"
         size="large"

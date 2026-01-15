@@ -1,4 +1,4 @@
-import { TiptapViewer } from "@repo/ui/components";
+import { TiptapViewer } from "@repo/ui/components/common/TiptapViewer";
 import type { Meta, StoryObj } from "@storybook/nextjs";
 
 const meta: Meta<typeof TiptapViewer> = {

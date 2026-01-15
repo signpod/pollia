@@ -10,7 +10,7 @@ import PollPollE from "@public/svgs/poll-poll-e.svg";
 import { Typo } from "@repo/ui/components";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2Icon, TrashIcon, XIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface DevToolsProps {
   missionId: string;
@@ -20,15 +20,23 @@ export function DevTools({ missionId }: DevToolsProps) {
   const queryClient = useQueryClient();
 
   const [isOpen, setIsOpen] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
   const { data: currentUser } = useCurrentUser();
   const { data: missionResponse, isLoading: isLoadingResponse } = useReadMissionResponseForMission({
     missionId,
   });
   const { mutate: resetResponse, isPending: isResetting } = useResetMissionResponse({ missionId });
 
-  const isAdmin = currentUser?.role === UserRole.ADMIN;
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
-  if (!isAdmin) {
+  const isAdmin = currentUser?.role === UserRole.ADMIN;
+  const isDevEnvironment =
+    typeof window !== "undefined" &&
+    (window.location.hostname === "localhost" || window.location.hostname === "dev.pollia.me");
+
+  if (!hasMounted || !isAdmin || !isDevEnvironment) {
     return null;
   }
 
@@ -164,6 +172,7 @@ export function DevTools({ missionId }: DevToolsProps) {
               )}
               초기화하기
             </button>
+
           </div>
         </div>
       )}

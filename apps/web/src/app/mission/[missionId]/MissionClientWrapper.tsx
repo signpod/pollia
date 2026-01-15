@@ -1,20 +1,14 @@
 "use client";
 
-import { FixedBottomLayout, FixedTopLayout } from "@repo/ui/components";
+import {} from "@repo/ui/components";
 
-import { AuthError } from "@/hooks/login/useKakaoLogin";
+import type { ReactNode } from "react";
 import { MissionIntro } from "./MissionIntro";
 
 interface MissionClientWrapperProps {
-  initialError: AuthError | null;
+  children: ReactNode;
 }
 
-export function MissionClientWrapper({ initialError }: MissionClientWrapperProps) {
-  return (
-    <FixedBottomLayout className="min-h-screen" hasGradientBlur>
-      <FixedTopLayout>
-        <MissionIntro initialError={initialError} />
-      </FixedTopLayout>
-    </FixedBottomLayout>
-  );
+export function MissionClientWrapper({ children }: MissionClientWrapperProps) {
+  return <MissionIntro>{children}</MissionIntro>;
 }

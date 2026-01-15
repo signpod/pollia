@@ -2,9 +2,8 @@
 
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Form } from "@/app/admin/components/shadcn-ui/form";
-import { useAdminSingleImage } from "@/app/admin/hooks/use-admin-image-upload";
+import { type UploadedImageData, useSingleImage } from "@/app/admin/hooks/admin-image";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
-import { IMAGE_MAX_SELECTIONS } from "@/schemas/action";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { BaseActionFormFields } from "./BaseActionForm";
@@ -33,11 +32,11 @@ export function ImageUploadForm({
     mode: "onChange",
   });
 
-  const mainImage = useAdminSingleImage({
+  const mainImage = useSingleImage({
     initialUrl: initialData?.imageUrl,
     initialFileUploadId: initialData?.imageFileUploadId,
     bucket: STORAGE_BUCKETS.ACTION_IMAGES,
-    onUploadSuccess: data => {
+    onUploadSuccess: (data: UploadedImageData) => {
       form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
       form.setValue("imageFileUploadId", data.fileUploadId, { shouldDirty: true });
     },
@@ -64,9 +63,9 @@ export function ImageUploadForm({
           isLoading={isLoading}
           titlePlaceholder="예: 사진을 업로드해주세요."
           mainImagePreviewUrl={mainImage.previewUrl}
-          onMainImageSelect={mainImage.selectImage}
+          onMainImageSelect={mainImage.upload}
           onMainImageDelete={() => {
-            mainImage.clearImage();
+            mainImage.discard();
             form.setValue("imageUrl", null, { shouldDirty: true });
             form.setValue("imageFileUploadId", null, { shouldDirty: true });
           }}
@@ -74,7 +73,6 @@ export function ImageUploadForm({
           <MaxSelectionsField
             control={form.control}
             name="maxSelections"
-            maxOptions={IMAGE_MAX_SELECTIONS}
             disabled={isLoading}
             isOptional={true}
           />

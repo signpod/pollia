@@ -3,11 +3,18 @@
 import { requireAuth } from "@/actions/common/auth";
 import { actionService } from "@/server/services/action";
 import type { UpdateActionRequest } from "@/types/dto/action";
+import { revalidatePath } from "next/cache";
 
 export async function updateAction(actionId: string, request: UpdateActionRequest) {
   try {
     const user = await requireAuth();
     const updatedQuestion = await actionService.updateAction(actionId, request, user.id);
+
+    if (updatedQuestion.missionId) {
+      revalidatePath(`/mission/${updatedQuestion.missionId}`);
+      revalidatePath(`/mission/${updatedQuestion.missionId}/action/${actionId}`);
+    }
+
     return { data: updatedQuestion };
   } catch (error) {
     console.error("updateAction error:", error);

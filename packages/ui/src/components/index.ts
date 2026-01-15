@@ -34,13 +34,13 @@ export * from "./common/LabelText";
 export * from "./common/Modal";
 export * from "./common/Tab";
 export * from "./common/Select";
-export * from "./common/TiptapEditor";
-export * from "./common/TiptapViewer";
 export * from "./common/Textarea";
 export * from "./common/ProgressBar";
 export * from "./common/ProgressBarV2";
 export * from "./common/RatingScale";
 export * from "./common/StarScale";
+export * from "./common/DateAndTimePicker";
+export * from "./common/TiptapEditor";
 
 // Hooks
 export * from "../hooks/useStep";

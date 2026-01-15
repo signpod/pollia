@@ -1,49 +1,41 @@
 "use client";
-import { AuthError } from "@/hooks/login/useKakaoLogin";
+
 import { useMissionIntroData, useSurveyResume } from "@/hooks/mission";
 import { useReadMissionResponseForMission } from "@/hooks/mission-response";
 import { useReadMissionParticipantInfo } from "@/hooks/participant/useReadMissionParticipantInfo";
 import { useReadReward } from "@/hooks/reward/useReadReward";
-import { useMissionShare } from "@/hooks/share/useMissionShare";
 import { getActionNavCookie, setActionNavCookie } from "@/lib/cookie";
-import { cleanTiptapHTML, cn } from "@/lib/utils";
-import { MissionType } from "@prisma/client";
-import Gift from "@public/svgs/gift.svg";
+import { cn } from "@/lib/utils";
 import Lock from "@public/svgs/lock.svg";
 import {
+  ButtonV2,
   CalloutProvider,
   type CalloutToneVariant,
-  Tab,
   Typo,
   useCallout,
 } from "@repo/ui/components";
+import { motion } from "framer-motion";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  MissionBadge,
-  MissionDescription,
-  MissionFooter,
-  MissionImage,
-  MissionLogo,
-  MissionRewardSection,
-  SectionHeader,
-  SocialShareButtons,
-} from "./components";
+import type { ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { MissionImage, MissionLogo, MissionReward } from "./components";
 import { BottomButton } from "./ui";
 import { checkParticipantLimitReached } from "./utils/checkParticipantLimit";
-import { formatDeadline } from "./utils/formatDeadline";
 
-const SECTION_IDS = {
-  MISSION_GUIDE: "mission-guide",
-  REWARD: "reward",
-} as const;
+const SCROLL_OFFSET = 10;
 
-const SCROLL_OFFSET = (sectionId: string) => {
-  if (sectionId === SECTION_IDS.MISSION_GUIDE) {
-    return 60;
-  }
-  return 30;
-};
+interface MissionIntroContextValue {
+  brandLogoUrl?: string;
+  title?: string;
+  scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
+  titleRef?: React.RefObject<HTMLDivElement | null>;
+}
+
+const MissionIntroContext = createContext<MissionIntroContextValue>({});
+
+export function useMissionIntroContext() {
+  return useContext(MissionIntroContext);
+}
 
 function CalloutTrigger({
   calloutData,
@@ -67,7 +59,11 @@ function CalloutTrigger({
   return null;
 }
 
-export function MissionIntro({ initialError }: { initialError: AuthError | null }) {
+interface MissionIntroProps {
+  children: ReactNode;
+}
+
+export function MissionIntro({ children }: MissionIntroProps) {
   const { missionId } = useParams<{ missionId: string }>();
 
   useEffect(() => {
@@ -95,132 +91,32 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
     responseId: missionResponse?.id ?? "",
   });
 
-  const {
-    brandLogoUrl,
-    title,
-    estimatedMinutes,
-    deadline,
-    imageUrl,
-    description,
-    target,
-    isActive,
-  } = mission ?? {};
+  const { brandLogoUrl, title, deadline, imageUrl, isActive } = mission ?? {};
 
-  const [activeTab, setActiveTab] = useState<
-    (typeof SECTION_IDS)[keyof typeof SECTION_IDS] | undefined
-  >(undefined);
-  const [isTitleVisible, setIsTitleVisible] = useState(true);
   const titleRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const isUserScrollingRef = useRef(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
-    const titleElement = titleRef.current;
-    if (!titleElement) return;
-
-    const observer = new IntersectionObserver(
-      entries => {
-        const entry = entries[0];
-        if (entry) {
-          setIsTitleVisible(entry.isIntersecting);
-        }
-      },
-      { threshold: 0 },
-    );
-
-    observer.observe(titleElement);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    if (isTitleVisible) {
-      setActiveTab(undefined);
-    }
-  }, [isTitleVisible]);
-
-  useEffect(() => {
-    const missionGuideEl = document.getElementById(SECTION_IDS.MISSION_GUIDE);
-    const rewardEl = document.getElementById(SECTION_IDS.REWARD);
-
-    const visibilityMap = new Map<string, boolean>();
-
-    const observer = new IntersectionObserver(
-      entries => {
-        if (isUserScrollingRef.current) return;
-
-        for (const entry of entries) {
-          visibilityMap.set(entry.target.id, entry.isIntersecting);
-        }
-
-        const visibleSections = Array.from(visibilityMap.entries())
-          .filter(([, isVisible]) => isVisible)
-          .map(([id]) => id);
-
-        if (visibleSections.length === 0) {
-          setActiveTab(undefined);
-        } else if (!isTitleVisible) {
-          setActiveTab(visibleSections[0] as (typeof SECTION_IDS)[keyof typeof SECTION_IDS]);
-        }
-      },
-      {
-        rootMargin: "-80px 0px -85% 0px",
-        threshold: 0,
-      },
-    );
-
-    if (missionGuideEl) observer.observe(missionGuideEl);
-    if (rewardEl) observer.observe(rewardEl);
-
-    return () => observer.disconnect();
-  }, [isTitleVisible]);
-
-  const handleChangeTab = (value: string) => {
-    if (value !== SECTION_IDS.MISSION_GUIDE && value !== SECTION_IDS.REWARD) {
-      return;
-    }
-
-    isUserScrollingRef.current = true;
-    setActiveTab(value);
-
     const container = scrollContainerRef.current;
-    const element = document.getElementById(value);
-    if (container && element) {
-      const offset = SCROLL_OFFSET(value);
-      container.scrollTo({
-        top: element.offsetTop - offset,
-        behavior: "smooth",
-      });
-    }
+    if (!container) return;
 
-    setTimeout(() => {
-      isUserScrollingRef.current = false;
-    }, 500);
-  };
+    const handleScroll = () => {
+      setIsScrolled(container.scrollTop > 5);
+    };
+
+    container.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   const { data: reward } = useReadReward(mission?.rewardId || "");
   const { data: participantInfo } = useReadMissionParticipantInfo(missionId);
   const { data: missionResponseData } = useReadMissionResponseForMission({ missionId });
   const { currentParticipants, maxParticipants } = participantInfo?.data ?? {};
-
-  const { handleKakaoShare, handleLinkShare, handleXShare } = useMissionShare({
-    missionId,
-    title: title ?? undefined,
-    imageUrl: imageUrl ?? undefined,
-  });
-
-  const sections = reward
-    ? [SECTION_IDS.MISSION_GUIDE, SECTION_IDS.REWARD]
-    : [SECTION_IDS.MISSION_GUIDE];
-
-  const showDetailInfo = !!target || !!estimatedMinutes || !!deadline;
-
-  const deadlineText = deadline ? `${formatDeadline(deadline)} 까지` : "정원 마감시";
-
-  const detailInfoConfig = [
-    { key: "참여 조건", value: target },
-    { key: "예상 소요 시간", value: `${estimatedMinutes}분` },
-    { key: "참여 기간", value: deadlineText },
-  ] as const;
 
   const hasReward = !!reward?.data.id;
 
@@ -268,184 +164,142 @@ export function MissionIntro({ initialError }: { initialError: AuthError | null 
     return null;
   }, [currentParticipants, maxParticipants, reward?.data.id, isProcessing]);
 
+  const contextValue = useMemo<MissionIntroContextValue>(
+    () => ({
+      brandLogoUrl: brandLogoUrl ?? undefined,
+      title,
+      scrollContainerRef,
+      titleRef,
+    }),
+    [brandLogoUrl, title],
+  );
+
   return (
     <CalloutProvider position="top-center">
       <CalloutTrigger calloutData={calloutData} />
-      <header className="sticky top-0 z-50 bg-white">
-        <div
-          className={cn(
-            "overflow-hidden transition-all duration-300 px-5 flex items-center gap-2",
-            isTitleVisible ? "max-h-0 opacity-0" : "max-h-12 opacity-100 pt-3",
-          )}
-        >
-          <MissionLogo logoUrl={brandLogoUrl ?? undefined} size="small" />
-          <Typo.SubTitle size="large" className="truncate">
-            {title}
-          </Typo.SubTitle>
-        </div>
-        <Tab.Root value={activeTab} pointColor="secondary" onValueChange={handleChangeTab}>
-          <Tab.List className="px-5">
-            <Tab.Item
-              value={SECTION_IDS.MISSION_GUIDE}
-              className={cn(sections.length === 1 ? "mx-auto max-w-[110px]" : "")}
-              onClick={() => handleChangeTab(SECTION_IDS.MISSION_GUIDE)}
-            >
-              <Typo.SubTitle size="large">상세 안내</Typo.SubTitle>
-            </Tab.Item>
-            {reward && (
-              <Tab.Item
-                value={SECTION_IDS.REWARD}
-                onClick={() => handleChangeTab(SECTION_IDS.REWARD)}
-              >
-                <Typo.SubTitle size="large">참여 혜택</Typo.SubTitle>
-              </Tab.Item>
-            )}
-          </Tab.List>
-        </Tab.Root>
-      </header>
-      <main className="flex justify-center bg-white">
-        <div
-          ref={scrollContainerRef}
-          className="relative w-full max-w-lg h-[calc(100svh-48px)] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-        >
-          {imageUrl && (
-            <div className="relative w-full min-h-[calc(100svh-120px)] aspect-9/16">
-              <MissionImage imageUrl={imageUrl} />
-              <div className="bg-linear-to-t from-black via-black/50 via-70% to-transparent absolute bottom-0 left-0 right-0 flex flex-col gap-6 pb-6 pt-12 px-5">
-                <div ref={titleRef} className="flex flex-col gap-2">
-                  <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
-                  <Typo.MainTitle size="large" className="break-keep text-white">
-                    {title}
-                  </Typo.MainTitle>
-                </div>
+      <MissionIntroContext.Provider value={contextValue}>
+        <main className="flex justify-center bg-background">
+          <div
+            ref={scrollContainerRef}
+            className="relative w-full max-w-lg h-dvh overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          >
+            {imageUrl && (
+              <div className="relative w-full h-svh min-h-svh">
+                <MissionImage imageUrl={imageUrl} />
+                <div className="bg-linear-to-t from-black via-black/50 via-70% to-transparent absolute bottom-0 left-0 right-0 flex flex-col gap-6 pb-6 pt-12 px-5">
+                  <div ref={titleRef} className="flex flex-col gap-3 justify-center items-center">
+                    <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
+                    <div className="break-keep text-white text-center">
+                      <Typo.MainTitle size="large" className="inline text-white">
+                        {title}
+                      </Typo.MainTitle>
+                      {isRequirePassword && (
+                        <Lock className="size-4 text-white inline-block ml-1 align-[0.1em]" />
+                      )}
+                    </div>
+                  </div>
+                  {reward?.data && (
+                    <div className="flex gap-3 items-center">
+                      {hasReward && (
+                        <MissionReward
+                          rewardImage={reward.data.imageUrl ?? ""}
+                          rewardName={reward.data.name}
+                        />
+                      )}
+                    </div>
+                  )}
+                  <div>
+                    <ButtonV2
+                      variant="tertiary"
+                      size="large"
+                      className="w-full rounded-full h-12 hover:bg-transparent"
+                      onClick={() => {
+                        scrollContainerRef.current?.scrollTo({
+                          top: window.innerHeight + SCROLL_OFFSET,
+                          behavior: "smooth",
+                        });
+                      }}
+                    >
+                      <div className="flex items-center justify-center w-full gap-3">
+                        <motion.div
+                          animate={{ y: [-2, 2, -2] }}
+                          transition={{
+                            duration: 1,
+                            repeat: Number.POSITIVE_INFINITY,
+                            ease: "easeInOut",
+                          }}
+                          className="size-6"
+                          style={{
+                            background:
+                              "linear-gradient(to bottom, rgba(255,255,255,0.3), rgba(255,255,255,1))",
+                            WebkitMaskImage: "url('/svgs/chevron-double-down-color.svg')",
+                            maskImage: "url('/svgs/chevron-double-down-color.svg')",
+                            WebkitMaskSize: "contain",
+                            maskSize: "contain",
+                            WebkitMaskRepeat: "no-repeat",
+                            maskRepeat: "no-repeat",
+                            WebkitMaskPosition: "center",
+                            maskPosition: "center",
+                          }}
+                        />
 
-                <div className="flex gap-3 items-center">
-                  {isRequirePassword && <MissionBadge icon={<Lock />} label="비밀" />}
-                  {hasReward && <MissionBadge icon={<Gift />} label="리워드" />}
+                        <Typo.ButtonText size="large" className="text-white z-50">
+                          아래로 내려보세요
+                        </Typo.ButtonText>
+                      </div>
+                    </ButtonV2>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <PageTabContent
-            reward={reward}
-            showDetailInfo={showDetailInfo}
-            detailInfoConfig={detailInfoConfig}
-            description={description}
-            mission={mission}
-            handleXShare={handleXShare}
-            handleKakaoShare={handleKakaoShare}
-            handleLinkShare={handleLinkShare}
-          />
+            {children}
 
-          <div
-            className="sticky bottom-0 z-60  border-zinc-100 pb-[calc(16px+env(safe-area-inset-bottom))]"
-            style={{
-              backgroundImage:
-                "linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 40%, rgba(255, 255, 255, 1) 100%)",
-              paddingBottom: "env(safe-area-inset-bottom)",
-            }}
-          >
-            <BottomButton
-              isActive={isActive ?? false}
-              firstActionId={firstActionId ?? ""}
-              initialError={initialError}
-              deadline={deadline}
-              showResumeModal={showResumeModal}
-              isCompleted={isCompleted}
-              hasReward={!!reward}
-              isRequirePassword={isRequirePassword}
-              hasExistingResponse={!!missionResponse}
-            />
-          </div>
-        </div>
-      </main>
-    </CalloutProvider>
-  );
-}
-
-interface PageTabContentProps {
-  reward: ReturnType<typeof useReadReward>["data"];
-  showDetailInfo: boolean;
-  detailInfoConfig: readonly { key: string; value: string | null | undefined }[];
-  description: string | null | undefined;
-  mission: ReturnType<typeof useMissionIntroData>["mission"];
-  handleXShare: () => void;
-  handleKakaoShare: () => void;
-  handleLinkShare: () => void;
-}
-
-function PageTabContent({
-  reward,
-  showDetailInfo,
-  detailInfoConfig,
-  description,
-  mission,
-  handleXShare,
-  handleKakaoShare,
-  handleLinkShare,
-}: PageTabContentProps) {
-  return (
-    <div className="bg-white">
-      <div id={SECTION_IDS.MISSION_GUIDE} className="flex w-full flex-col gap-0 px-5 items-center">
-        {showDetailInfo && (
-          <div className="flex flex-col gap-6 w-full p-5">
-            <div className="flex flex-col gap-4 w-full bg-zinc-50 rounded-md p-6">
-              {detailInfoConfig.map(
-                ({ key, value }) =>
-                  !!key &&
-                  !!value && (
-                    <div className="flex gap-2" key={key}>
-                      <Typo.Body
-                        size="medium"
-                        className="text-info whitespace-nowrap min-w-[100px]"
-                      >
-                        {key}
-                      </Typo.Body>
-                      <Typo.Body size="medium" className="flex-1 break-keep text-right">
-                        {value}
-                      </Typo.Body>
-                    </div>
-                  ),
+            {/**  블러 배경 (별도 레이어) */}
+            <div
+              className={cn(
+                "sticky bottom-0 z-0 pointer-events-none transition-opacity duration-300 ease-out",
               )}
+            >
+              <div
+                className="absolute inset-x-0 bottom-0"
+                style={{
+                  height: "100px",
+                  backdropFilter: "blur(100px)",
+                  WebkitBackdropFilter: "blur(100px)",
+                  maskImage: "linear-gradient(to bottom, transparent 0%, black 100%)",
+                  WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 100%)",
+                  background: "rgba(255, 255, 255, 0)",
+                }}
+              />
+            </div>
+
+            {/**  fixed bottom 버튼 */}
+            <div
+              className={cn(
+                "sticky bottom-0 z-60 border-zinc-100 transition-all duration-300 ease-out",
+                isScrolled
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-full pointer-events-none",
+              )}
+              style={{
+                paddingBottom: "calc(16px + env(safe-area-inset-bottom))",
+              }}
+            >
+              <BottomButton
+                isActive={isActive ?? false}
+                firstActionId={firstActionId ?? ""}
+                deadline={deadline}
+                showResumeModal={showResumeModal}
+                isCompleted={isCompleted}
+                hasReward={!!reward}
+                isRequirePassword={isRequirePassword}
+                hasExistingResponse={!!missionResponse}
+              />
             </div>
           </div>
-        )}
-
-        {!!description && !!cleanTiptapHTML(description) && (
-          <div className="flex flex-col gap-6 px-5 py-8 items-center w-full">
-            <SectionHeader badgeText="상세 안내" title={""} />
-            <MissionDescription content={cleanTiptapHTML(description)} className="text-center" />
-          </div>
-        )}
-      </div>
-
-      {reward && (
-        <div id={SECTION_IDS.REWARD} className="px-5 py-8 w-full">
-          <MissionRewardSection
-            rewardImageUrl={reward?.data.imageUrl ?? undefined}
-            rewardName={reward?.data.name ?? undefined}
-            rewardScheduledDate={reward?.data.scheduledDate ?? undefined}
-          />
-        </div>
-      )}
-
-      {mission?.type !== MissionType.EXPERIENCE_GROUP && (
-        <div className="flex flex-col gap-4 items-center px-5 py-8">
-          <Typo.MainTitle size="small" className="text-center">
-            가족, 친구에게
-            <br />
-            공유해주세요 👀
-          </Typo.MainTitle>
-          <SocialShareButtons
-            onXShare={handleXShare}
-            onKakaoShare={handleKakaoShare}
-            onLinkShare={handleLinkShare}
-          />
-        </div>
-      )}
-
-      <MissionFooter />
-    </div>
+        </main>
+      </MissionIntroContext.Provider>
+    </CalloutProvider>
   );
 }

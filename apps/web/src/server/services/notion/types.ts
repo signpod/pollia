@@ -15,6 +15,7 @@ export interface CreateMissionReportInput {
 export interface CreateMissionReportResult {
   notionPageId: string;
   notionPageUrl: string;
+  syncedResponseCount: number;
 }
 
 export type CreatePageParameters = Parameters<Client["pages"]["create"]>[0];

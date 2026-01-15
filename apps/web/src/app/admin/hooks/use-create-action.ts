@@ -5,7 +5,6 @@ import {
   createImageAction,
   createMultipleChoiceAction,
   createPdfAction,
-  createPrivacyConsentAction,
   createRatingAction,
   createScaleAction,
   createShortTextAction,
@@ -17,11 +16,12 @@ import {
 import { adminActionQueryKeys } from "@/app/admin/constants/queryKeys";
 import type { ActionType } from "@/app/admin/missions/[id]/edit/components/action-forms";
 import type {
+  ActionOptionInput,
+  BaseActionRequest,
   CreateDateActionRequest,
   CreateImageActionRequest,
   CreateMultipleChoiceActionRequest,
   CreatePdfActionRequest,
-  CreatePrivacyConsentActionRequest,
   CreateRatingActionRequest,
   CreateScaleActionRequest,
   CreateShortTextActionRequest,
@@ -32,22 +32,10 @@ import type {
 } from "@/types/dto";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-interface CreateActionInput {
+interface CreateActionInput extends BaseActionRequest {
   missionId: string;
   type: ActionType;
-  title: string;
-  description?: string | null;
-  imageUrl?: string | null;
-  imageFileUploadId?: string | null;
-  order: number;
-  isRequired: boolean;
-  options?: {
-    title: string;
-    description?: string | null;
-    imageUrl?: string | null;
-    imageFileUploadId?: string | null;
-    order: number;
-  }[];
+  options?: ActionOptionInput[];
   maxSelections?: number;
 }
 
@@ -71,6 +59,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
             isRequired: input.isRequired,
+            hasOther: input.hasOther,
             maxSelections: input.maxSelections ?? 1,
             options:
               input.options?.map((opt, index) => ({
@@ -204,19 +193,6 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             isRequired: input.isRequired,
           };
           return await createVideoAction(request);
-        }
-
-        case "PRIVACY_CONSENT": {
-          const request: CreatePrivacyConsentActionRequest = {
-            missionId: input.missionId,
-            title: input.title,
-            description: input.description,
-            imageUrl: input.imageUrl,
-            imageFileUploadId: input.imageFileUploadId,
-            order: input.order,
-            isRequired: input.isRequired,
-          };
-          return await createPrivacyConsentAction(request);
         }
 
         case "DATE": {

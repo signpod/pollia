@@ -9,7 +9,6 @@ import {
   imageInputSchema,
   multipleChoiceInputSchema,
   pdfInputSchema,
-  privacyConsentInputSchema,
   ratingInputSchema,
   scaleInputSchema,
   shortTextInputSchema,
@@ -37,10 +36,19 @@ const actionOptionFormSchema = actionOptionSchema.omit({ order: true }).extend({
 });
 
 export const multipleChoiceFormSchema = multipleChoiceInputSchema
-  .omit({ missionId: true, order: true })
+  .omit({ missionId: true, order: true, maxSelections: true })
   .extend({
     imageFileUploadId: z.string().nullable().optional(),
     options: z.array(actionOptionFormSchema),
+    maxSelections: z
+      .number({
+        error: issue =>
+          issue.input === undefined
+            ? "최대 선택 가능 개수를 입력해주세요."
+            : "숫자를 입력해주세요.",
+      })
+      .int()
+      .min(1, "최대 선택 가능 개수는 최소 1개 이상이어야 합니다."),
   })
   .refine(
     data =>
@@ -142,12 +150,6 @@ export const videoUploadFormSchema = videoInputSchema
     imageFileUploadId: z.string().nullable().optional(),
   });
 
-export const privacyConsentFormSchema = privacyConsentInputSchema
-  .omit({ missionId: true, order: true })
-  .extend({
-    imageFileUploadId: z.string().nullable().optional(),
-  });
-
 export const dateFormSchema = dateInputSchema
   .omit({
     missionId: true,
@@ -189,6 +191,5 @@ export type RatingFormInput = z.infer<typeof ratingFormSchema>;
 export type ImageUploadFormInput = z.infer<typeof imageUploadFormSchema>;
 export type PdfUploadFormInput = z.infer<typeof pdfUploadFormSchema>;
 export type VideoUploadFormInput = z.infer<typeof videoUploadFormSchema>;
-export type PrivacyConsentFormInput = z.infer<typeof privacyConsentFormSchema>;
 export type DateFormInput = z.infer<typeof dateFormSchema>;
 export type TimeFormInput = z.infer<typeof timeFormSchema>;

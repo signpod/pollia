@@ -1,18 +1,14 @@
 "use client";
 import { ROUTES } from "@/constants/routes";
-import { AuthError, useKakaoLogin } from "@/hooks/login/useKakaoLogin";
+import { useKakaoLogin } from "@/hooks/login/useKakaoLogin";
 import { FixedBottomLayout, KakaoLoginButton, Tooltip, Typo } from "@repo/ui/components";
 import { useSearchParams } from "next/navigation";
 import { OnboardingCarousel } from "./OnboardingCarousel";
 
-interface LoginClientProps {
-  initialError: AuthError | null;
-}
-
-export function LoginClient({ initialError }: LoginClientProps) {
+export function LoginClient() {
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get("next") ?? ROUTES.HOME;
-  const { handleKakaoLogin } = useKakaoLogin({ initialError, redirectPath });
+  const { handleKakaoLogin } = useKakaoLogin({ redirectPath });
 
   return (
     <>

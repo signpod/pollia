@@ -1,6 +1,6 @@
 import type { Action, ActionType, Prisma } from "@prisma/client";
 
-type BaseActionInput = Omit<
+export type BaseActionInput = Omit<
   Prisma.ActionUncheckedCreateInput,
   "id" | "createdAt" | "updatedAt" | "type"
 >;
@@ -13,16 +13,18 @@ interface ActionOptionInput {
   imageFileUploadId?: string | null;
 }
 
-export type CreateMultipleChoiceInput = BaseActionInput & {
+export type BaseActionInputWithOptions = BaseActionInput & {
   options: ActionOptionInput[];
 };
 
-export type CreateScaleInput = BaseActionInput & {
-  options: ActionOptionInput[];
+export type CreateMultipleChoiceInput = BaseActionInputWithOptions & {
+  maxSelections: number;
 };
 
-export type CreateTagInput = BaseActionInput & {
-  options: ActionOptionInput[];
+export type CreateScaleInput = BaseActionInputWithOptions;
+
+export type CreateTagInput = BaseActionInputWithOptions & {
+  maxSelections?: number;
 };
 
 export type CreateSubjectiveInput = BaseActionInput;

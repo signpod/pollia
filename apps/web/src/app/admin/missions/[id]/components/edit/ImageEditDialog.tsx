@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/app/admin/components/shadcn-ui/dialog";
 import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
-import { useAdminSingleImage } from "@/app/admin/hooks/use-admin-image-upload";
+import { type UploadedImageData, useSingleImage } from "@/app/admin/hooks/admin-image";
 import { useReadMission } from "@/app/admin/hooks/use-read-mission";
 import { useUpdateMission } from "@/app/admin/hooks/use-update-mission";
 import type { MissionUpdate } from "@/schemas/mission";
@@ -60,21 +60,21 @@ interface ImageFormContentProps {
 }
 
 function ImageFormContent({ mission, missionId, onSuccess }: ImageFormContentProps) {
-  const { form, handleReset } = useBasicInfoForm(mission);
+  const { form, handleReset: handleFormReset } = useBasicInfoForm(mission);
 
-  const missionImage = useAdminSingleImage({
+  const missionImage = useSingleImage({
     initialUrl: mission.imageUrl ?? undefined,
     initialFileUploadId: mission.imageFileUploadId,
-    onUploadSuccess: data => {
+    onUploadSuccess: (data: UploadedImageData) => {
       form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
       form.setValue("imageFileUploadId", data.fileUploadId, { shouldDirty: true });
     },
   });
 
-  const brandLogo = useAdminSingleImage({
+  const brandLogo = useSingleImage({
     initialUrl: mission.brandLogoUrl ?? undefined,
     initialFileUploadId: mission.brandLogoFileUploadId,
-    onUploadSuccess: data => {
+    onUploadSuccess: (data: UploadedImageData) => {
       form.setValue("brandLogoUrl", data.publicUrl, { shouldDirty: true });
       form.setValue("brandLogoFileUploadId", data.fileUploadId, { shouldDirty: true });
     },
@@ -82,11 +82,19 @@ function ImageFormContent({ mission, missionId, onSuccess }: ImageFormContentPro
 
   const updateMission = useUpdateMission({
     onSuccess: () => {
+      missionImage.deleteMarkedInitial();
+      brandLogo.deleteMarkedInitial();
       toast.success("미션 이미지가 수정되었습니다.");
       onSuccess();
     },
     onError: err => toast.error(err.message || "미션 수정 중 오류가 발생했습니다."),
   });
+
+  const handleReset = () => {
+    missionImage.reset();
+    brandLogo.reset();
+    handleFormReset();
+  };
 
   const onSubmit = form.handleSubmit((data: MissionUpdate) => {
     updateMission.mutate({ missionId, data });

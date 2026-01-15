@@ -2,30 +2,30 @@
 
 import { toast } from "@/components/common/Toast";
 import { useKakaoSdk } from "@/hooks/kakao/useKakaoSdk";
-import { setAuthRedirect } from "@/lib/cookie";
+import {
+  type AuthError,
+  clearAuthErrorCookie,
+  getAuthErrorFromCookie,
+  setAuthRedirect,
+} from "@/lib/cookie";
 import { useModal } from "@repo/ui/components";
 import { useCallback, useEffect } from "react";
 
-export interface AuthError {
-  type: string;
-  message: string;
-  detail?: string;
-  timestamp: number;
-}
+export type { AuthError };
 
 interface UseKakaoLoginOptions {
-  initialError?: AuthError | null;
   redirectPath?: string;
 }
 
 export function useKakaoLogin(options: UseKakaoLoginOptions = {}) {
-  const { initialError = null, redirectPath } = options;
+  const { redirectPath } = options;
   const { showModal } = useModal();
   const { isKakaoSdkLoaded } = useKakaoSdk();
 
   useEffect(() => {
-    if (initialError) {
-      const shownErrorKey = `auth_error_shown_${initialError.timestamp}`;
+    const authError = getAuthErrorFromCookie();
+    if (authError) {
+      const shownErrorKey = `auth_error_shown_${authError.timestamp}`;
       const alreadyShown = sessionStorage.getItem(shownErrorKey);
 
       if (!alreadyShown) {
@@ -35,9 +35,10 @@ export function useKakaoLogin(options: UseKakaoLoginOptions = {}) {
           confirmText: "확인",
         });
         sessionStorage.setItem(shownErrorKey, "true");
+        clearAuthErrorCookie();
       }
     }
-  }, [initialError, showModal]);
+  }, [showModal]);
 
   const handleKakaoLogin = useCallback(() => {
     try {

@@ -3,7 +3,7 @@ import type { MissionResponseRepository } from "@/server/repositories/mission-re
 import type { MissionRepository } from "@/server/repositories/mission/missionRepository";
 import { MissionService } from ".";
 
-export { createMockMission } from "../testUtils";
+export { createMockAction, createMockActionWithOptions, createMockMission } from "../testUtils";
 
 export function createMissionServiceTestContext() {
   const mockRepository = {

@@ -1,6 +1,22 @@
 import type { ActionType } from "@/types/domain/action";
 import type { Action, ActionOption } from "@prisma/client";
 
+type ActionResponseFields =
+  | "id"
+  | "title"
+  | "description"
+  | "imageUrl"
+  | "type"
+  | "order"
+  | "maxSelections"
+  | "isRequired"
+  | "hasOther"
+  | "createdAt"
+  | "updatedAt"
+  | "missionId";
+
+type ActionOptionResponseFields = "id" | "title" | "description" | "imageUrl" | "order";
+
 export interface BaseActionRequest {
   missionId?: string;
   title: string;
@@ -9,6 +25,7 @@ export interface BaseActionRequest {
   imageFileUploadId?: string | null;
   order: number;
   isRequired: boolean;
+  hasOther?: boolean;
 }
 
 export interface ActionOptionInput {
@@ -71,9 +88,6 @@ export type CreatePdfActionResponse = BaseActionResponse;
 export type CreateVideoActionRequest = BaseActionRequest;
 export type CreateVideoActionResponse = BaseActionResponse;
 
-export type CreatePrivacyConsentActionRequest = BaseActionRequest;
-export type CreatePrivacyConsentActionResponse = BaseActionResponse;
-
 export interface CreateDateActionRequest extends BaseActionRequest {
   maxSelections: number;
 }
@@ -100,24 +114,12 @@ export interface UpdateActionRequest {
   order?: number;
   maxSelections?: number;
   isRequired?: boolean;
+  hasOther?: boolean;
   options?: UpdateActionOptionRequest[];
 }
 
 export interface GetActionResponse {
-  data: Pick<
-    Action,
-    | "id"
-    | "title"
-    | "description"
-    | "imageUrl"
-    | "type"
-    | "order"
-    | "maxSelections"
-    | "isRequired"
-    | "createdAt"
-    | "updatedAt"
-    | "missionId"
-  >[];
+  data: Pick<Action, ActionResponseFields>[];
 }
 
 export interface GetActionIdsResponse {
@@ -127,21 +129,8 @@ export interface GetActionIdsResponse {
 }
 
 export interface GetActionByIdResponse {
-  data: Pick<
-    Action,
-    | "id"
-    | "title"
-    | "description"
-    | "imageUrl"
-    | "type"
-    | "order"
-    | "maxSelections"
-    | "isRequired"
-    | "missionId"
-    | "createdAt"
-    | "updatedAt"
-  > & {
-    options: Pick<ActionOption, "id" | "title" | "description" | "imageUrl" | "order">[];
+  data: Pick<Action, ActionResponseFields> & {
+    options: Pick<ActionOption, ActionOptionResponseFields>[];
   };
 }
 
@@ -154,8 +143,9 @@ export interface ActionDetail {
   order: number;
   maxSelections: number | null;
   isRequired: boolean;
+  hasOther: boolean;
   missionId: string | null;
-  options: Pick<ActionOption, "id" | "title" | "description" | "imageUrl" | "order">[];
+  options: Pick<ActionOption, ActionOptionResponseFields>[];
   createdAt: Date;
   updatedAt: Date;
 }

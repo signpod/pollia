@@ -2,7 +2,9 @@
 
 import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
 import { CharacterCounter } from "@/app/admin/components/common/InputField";
+import { NumberField } from "@/app/admin/components/common/NumberField";
 import { TiptapEditor } from "@/app/admin/components/common/TiptapEditor";
+import { DateTimeField } from "@/app/admin/components/common/molecule/DateTimeField";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import {
   Card,
@@ -11,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
+import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
 import {
@@ -22,9 +25,10 @@ import {
 } from "@/app/admin/components/shadcn-ui/select";
 import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
 import {
-  type UseAdminSingleImageReturn,
-  useAdminSingleImage,
-} from "@/app/admin/hooks/use-admin-image-upload";
+  type UploadedImageData,
+  type UseSingleImageReturn,
+  useSingleImage,
+} from "@/app/admin/hooks/admin-image";
 import { useReadMission } from "@/app/admin/hooks/use-read-mission";
 import { useUpdateMission } from "@/app/admin/hooks/use-update-mission";
 import { MISSION_TYPE_LABELS } from "@/constants/action";
@@ -52,8 +56,8 @@ interface BasicInfoCardProps {
 
 interface ImageCardProps {
   form: UseFormReturn<MissionUpdate>;
-  missionImageUpload: UseAdminSingleImageReturn;
-  brandLogoUpload: UseAdminSingleImageReturn;
+  missionImageUpload: UseSingleImageReturn;
+  brandLogoUpload: UseSingleImageReturn;
 }
 
 interface ActionButtonsProps {
@@ -107,17 +111,25 @@ function BasicInfoCard({ form }: BasicInfoCardProps) {
           )}
         </div>
 
-        <div className="flex gap-10">
-          <div className="space-y-2">
-            <Label htmlFor="type">타입</Label>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-center justify-between rounded-lg border p-3">
+            <div className="space-y-0.5">
+              <Label htmlFor="type" className="text-sm font-medium">
+                타입
+              </Label>
+              <p className="text-xs text-muted-foreground">미션의 유형을 선택합니다.</p>
+              {form.formState.errors.type && (
+                <p className="text-sm text-destructive">{form.formState.errors.type.message}</p>
+              )}
+            </div>
             <Select
               value={form.watch("type")}
               onValueChange={value => {
                 form.setValue("type", value as MissionType, { shouldDirty: true });
               }}
             >
-              <SelectTrigger id="type">
-                <SelectValue placeholder="미션 타입을 선택하세요" />
+              <SelectTrigger id="type" className="w-32">
+                <SelectValue placeholder="선택" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={MissionType.GENERAL}>
@@ -128,32 +140,18 @@ function BasicInfoCard({ form }: BasicInfoCardProps) {
                 </SelectItem>
               </SelectContent>
             </Select>
-            {form.formState.errors.type && (
-              <p className="text-sm text-destructive">{form.formState.errors.type.message}</p>
-            )}
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="maxParticipants">최대 참여자 수</Label>
-            <Input
-              id="maxParticipants"
-              type="number"
-              placeholder="제한 없음"
-              min="1"
-              {...form.register("maxParticipants", {
-                setValueAs: value => {
-                  if (!value || value === "") return null;
-                  const num = Number(value);
-                  return Number.isNaN(num) ? null : num;
-                },
-              })}
-            />
-            {form.formState.errors.maxParticipants && (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.maxParticipants.message}
-              </p>
-            )}
-          </div>
+
+          <NumberField
+            control={form.control}
+            name="maxParticipants"
+            label="최대 참여자 수"
+            description="비워두면 제한 없음으로 설정됩니다."
+            placeholder="제한 없음"
+            isOptional
+          />
         </div>
+
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="description">설명</Label>
@@ -195,47 +193,22 @@ function BasicInfoCard({ form }: BasicInfoCardProps) {
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="estimatedMinutes">예상 소요 시간 (분)</Label>
-          <Input
-            id="estimatedMinutes"
-            type="number"
-            placeholder="예상 소요 시간을 입력하세요"
-            {...form.register("estimatedMinutes", {
-              setValueAs: value => {
-                if (!value || value === "") return undefined;
-                const num = Number(value);
-                return Number.isNaN(num) ? undefined : num;
-              },
-            })}
-          />
-          {form.formState.errors.estimatedMinutes && (
-            <p className="text-sm text-destructive">
-              {form.formState.errors.estimatedMinutes.message}
-            </p>
-          )}
-        </div>
+        <NumberField
+          control={form.control}
+          name="estimatedMinutes"
+          label="예상 소요 시간 (분)"
+          description="미션 완료에 필요한 예상 시간을 입력합니다."
+          isOptional
+        />
 
-        <div className="space-y-2">
-          <Label htmlFor="deadline">마감일</Label>
-          <Input
-            id="deadline"
-            type="datetime-local"
-            value={(() => {
-              const deadline = form.watch("deadline");
-              return deadline ? new Date(deadline).toISOString().slice(0, 16) : "";
-            })()}
-            onChange={e => {
-              const value = e.target.value;
-              form.setValue("deadline", value ? new Date(value) : undefined, {
-                shouldDirty: true,
-              });
-            }}
-          />
-          {form.formState.errors.deadline && (
-            <p className="text-sm text-destructive">{form.formState.errors.deadline.message}</p>
-          )}
-        </div>
+        <DateTimeField
+          control={form.control}
+          name="deadline"
+          label="마감일"
+          description="미션의 마감일을 설정합니다."
+          datePlaceholder="마감일 선택"
+          isOptional
+        />
       </CardContent>
     </Card>
   );
@@ -255,9 +228,9 @@ function ImageCard({ form, missionImageUpload, brandLogoUpload }: ImageCardProps
             <ImageSelector
               size="large"
               imageUrl={missionImageUpload.previewUrl || undefined}
-              onImageSelect={missionImageUpload.selectImage}
+              onImageSelect={missionImageUpload.upload}
               onImageDelete={() => {
-                missionImageUpload.clearImage();
+                missionImageUpload.discard();
                 form.setValue("imageUrl", null, { shouldDirty: true });
                 form.setValue("imageFileUploadId", null, { shouldDirty: true });
               }}
@@ -275,9 +248,9 @@ function ImageCard({ form, missionImageUpload, brandLogoUpload }: ImageCardProps
             <ImageSelector
               size="large"
               imageUrl={brandLogoUpload.previewUrl || undefined}
-              onImageSelect={brandLogoUpload.selectImage}
+              onImageSelect={brandLogoUpload.upload}
               onImageDelete={() => {
-                brandLogoUpload.clearImage();
+                brandLogoUpload.discard();
                 form.setValue("brandLogoUrl", null, { shouldDirty: true });
                 form.setValue("brandLogoFileUploadId", null, { shouldDirty: true });
               }}
@@ -346,19 +319,19 @@ export function BasicInfoEditTab({ missionId }: BasicInfoEditTabProps) {
 function BasicInfoForm({ mission, missionId }: { mission: MissionData; missionId: string }) {
   const { form, handleReset } = useBasicInfoForm(mission);
 
-  const missionImage = useAdminSingleImage({
+  const missionImage = useSingleImage({
     initialUrl: mission.imageUrl ?? undefined,
     initialFileUploadId: mission.imageFileUploadId,
-    onUploadSuccess: data => {
+    onUploadSuccess: (data: UploadedImageData) => {
       form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
       form.setValue("imageFileUploadId", data.fileUploadId, { shouldDirty: true });
     },
   });
 
-  const brandLogo = useAdminSingleImage({
+  const brandLogo = useSingleImage({
     initialUrl: mission.brandLogoUrl ?? undefined,
     initialFileUploadId: mission.brandLogoFileUploadId,
-    onUploadSuccess: data => {
+    onUploadSuccess: (data: UploadedImageData) => {
       form.setValue("brandLogoUrl", data.publicUrl, { shouldDirty: true });
       form.setValue("brandLogoFileUploadId", data.fileUploadId, { shouldDirty: true });
     },
@@ -374,14 +347,16 @@ function BasicInfoForm({ mission, missionId }: { mission: MissionData; missionId
   });
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
-      <BasicInfoCard form={form} />
-      <ImageCard form={form} missionImageUpload={missionImage} brandLogoUpload={brandLogo} />
-      <ActionButtons
-        isPending={updateMission.isPending}
-        isDirty={form.formState.isDirty}
-        onReset={handleReset}
-      />
-    </form>
+    <Form {...form}>
+      <form onSubmit={onSubmit} className="space-y-6">
+        <BasicInfoCard form={form} />
+        <ImageCard form={form} missionImageUpload={missionImage} brandLogoUpload={brandLogo} />
+        <ActionButtons
+          isPending={updateMission.isPending}
+          isDirty={form.formState.isDirty}
+          onReset={handleReset}
+        />
+      </form>
+    </Form>
   );
 }

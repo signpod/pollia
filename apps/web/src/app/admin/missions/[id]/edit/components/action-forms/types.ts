@@ -21,6 +21,7 @@ export interface MultipleChoiceFormData extends BaseActionFormData {
   type: "MULTIPLE_CHOICE";
   options: ActionOptionInput[];
   maxSelections?: number;
+  hasOther?: boolean;
 }
 
 export interface ScaleFormData extends BaseActionFormData {
@@ -59,10 +60,6 @@ export interface VideoUploadFormData extends BaseActionFormData {
   type: "VIDEO";
 }
 
-export interface PrivacyConsentFormData extends BaseActionFormData {
-  type: "PRIVACY_CONSENT";
-}
-
 export interface DateFormData extends BaseActionFormData {
   type: "DATE";
   maxSelections?: number;
@@ -83,7 +80,6 @@ export type ActionFormData =
   | ImageUploadFormData
   | PdfUploadFormData
   | VideoUploadFormData
-  | PrivacyConsentFormData
   | DateFormData
   | TimeFormData;
 

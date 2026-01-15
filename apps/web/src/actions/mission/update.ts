@@ -4,6 +4,7 @@ import { requireAuth } from "@/actions/common/auth";
 import { missionService } from "@/server/services/mission";
 import type { UpdateMissionInput } from "@/server/services/mission/types";
 import type { MissionType } from "@prisma/client";
+import { revalidatePath } from "next/cache";
 
 export interface UpdateMissionRequest {
   title?: string;
@@ -44,6 +45,9 @@ export async function updateMission(missionId: string, request: UpdateMissionReq
     const user = await requireAuth();
     const input = toUpdateMissionInput(request);
     const updatedMission = await missionService.updateMission(missionId, input, user.id);
+
+    revalidatePath(`/mission/${missionId}`);
+
     return { data: updatedMission };
   } catch (error) {
     console.error("updateMission error:", error);
@@ -60,6 +64,7 @@ export async function setMissionPassword(missionId: string, password: string) {
   try {
     const user = await requireAuth();
     await missionService.setPassword(missionId, password, user.id);
+    revalidatePath(`/mission/${missionId}`);
     return { success: true };
   } catch (error) {
     console.error("setMissionPassword error:", error);
@@ -76,6 +81,7 @@ export async function removeMissionPassword(missionId: string) {
   try {
     const user = await requireAuth();
     await missionService.removePassword(missionId, user.id);
+    revalidatePath(`/mission/${missionId}`);
     return { success: true };
   } catch (error) {
     console.error("removeMissionPassword error:", error);

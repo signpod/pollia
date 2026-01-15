@@ -30,9 +30,6 @@ const isValidAnswer = (answer: Answer): boolean => {
     case ActionType.PDF:
       return answer.fileUploads.length > 0;
 
-    case ActionType.PRIVACY_CONSENT:
-      return answer.booleanAnswer !== null;
-
     case ActionType.DATE:
     case ActionType.TIME:
       return answer.dateAnswers.length > 0;

@@ -9,7 +9,6 @@ import {
   ImageIcon,
   type LucideIcon,
   MessageSquare,
-  Shield,
   SlidersHorizontal,
   Star,
   Text,
@@ -77,12 +76,6 @@ export const ACTION_TYPE_CONFIGS: readonly ActionTypeConfig[] = [
     label: getActionTypeLabel("VIDEO"),
     description: "동영상 파일을 업로드하여 응답",
     icon: Video,
-  },
-  {
-    value: "PRIVACY_CONSENT",
-    label: getActionTypeLabel("PRIVACY_CONSENT"),
-    description: "개인정보 수집 및 이용 동의",
-    icon: Shield,
   },
   {
     value: "DATE",

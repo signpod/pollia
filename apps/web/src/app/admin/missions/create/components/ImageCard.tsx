@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
-import { useAdminSingleImage } from "@/app/admin/hooks/use-admin-image-upload";
+import { type UploadedImageData, useSingleImage } from "@/app/admin/hooks/admin-image";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import type { UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
@@ -20,26 +20,26 @@ interface ImageCardProps {
 }
 
 export function ImageCard({ form }: ImageCardProps) {
-  const missionImageUpload = useAdminSingleImage({
+  const missionImageUpload = useSingleImage({
     bucket: STORAGE_BUCKETS.MISSION_IMAGES,
-    onUploadSuccess: data => {
+    onUploadSuccess: (data: UploadedImageData) => {
       form.setValue("imageUrl", data.publicUrl);
       form.setValue("imageFileUploadId", data.fileUploadId);
     },
-    onUploadError: error => {
+    onUploadError: (error: Error) => {
       toast.error("미션 이미지 업로드 실패", {
         description: error.message,
       });
     },
   });
 
-  const brandLogoUpload = useAdminSingleImage({
+  const brandLogoUpload = useSingleImage({
     bucket: STORAGE_BUCKETS.MISSION_IMAGES,
-    onUploadSuccess: data => {
+    onUploadSuccess: (data: UploadedImageData) => {
       form.setValue("brandLogoUrl", data.publicUrl);
       form.setValue("brandLogoFileUploadId", data.fileUploadId);
     },
-    onUploadError: error => {
+    onUploadError: (error: Error) => {
       toast.error("브랜드 로고 업로드 실패", {
         description: error.message,
       });
@@ -47,13 +47,13 @@ export function ImageCard({ form }: ImageCardProps) {
   });
 
   const handleMissionImageDelete = () => {
-    missionImageUpload.clearImage();
+    missionImageUpload.discard();
     form.setValue("imageFileUploadId", undefined);
     form.setValue("imageUrl", undefined);
   };
 
   const handleBrandLogoDelete = () => {
-    brandLogoUpload.clearImage();
+    brandLogoUpload.discard();
     form.setValue("brandLogoFileUploadId", undefined);
     form.setValue("brandLogoUrl", undefined);
   };
@@ -74,7 +74,7 @@ export function ImageCard({ form }: ImageCardProps) {
             <ImageSelector
               size="large"
               imageUrl={missionImageUrl || undefined}
-              onImageSelect={missionImageUpload.selectImage}
+              onImageSelect={missionImageUpload.upload}
               onImageDelete={handleMissionImageDelete}
               disabled={missionImageUpload.isUploading}
             />
@@ -90,7 +90,7 @@ export function ImageCard({ form }: ImageCardProps) {
             <ImageSelector
               size="large"
               imageUrl={brandLogoUrl || undefined}
-              onImageSelect={brandLogoUpload.selectImage}
+              onImageSelect={brandLogoUpload.upload}
               onImageDelete={handleBrandLogoDelete}
               disabled={brandLogoUpload.isUploading}
             />

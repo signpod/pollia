@@ -1,33 +1,20 @@
 import prisma from "@/database/utils/prisma/client";
+import type { Prisma } from "@prisma/client";
 
 export class UserRepository {
   async findById(userId: string) {
     return prisma.user.findUnique({
       where: { id: userId },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
-      },
     });
   }
 
-  async findFirst(userId: string) {
-    return prisma.user.findFirst({
-      where: { id: userId },
-    });
-  }
-
-  async create(data: { id: string; email: string; name: string }) {
+  async create(data: Prisma.UserCreateInput) {
     return prisma.user.create({
       data,
     });
   }
 
-  async update(userId: string, data: { name?: string }) {
+  async update(userId: string, data: Prisma.UserUpdateInput) {
     return prisma.user.update({
       where: { id: userId },
       data,

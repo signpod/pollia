@@ -2,6 +2,7 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import { actionService } from "@/server/services/action";
+import { revalidatePath } from "next/cache";
 
 export interface ReorderActionsRequest {
   missionId: string;
@@ -16,6 +17,12 @@ export async function reorderActions(request: ReorderActionsRequest) {
       request.actionOrders,
       user.id,
     );
+
+    revalidatePath(`/mission/${request.missionId}`);
+    for (const action of request.actionOrders) {
+      revalidatePath(`/mission/${request.missionId}/action/${action.id}`);
+    }
+
     return { data: result };
   } catch (error) {
     console.error("reorderActions error:", error);

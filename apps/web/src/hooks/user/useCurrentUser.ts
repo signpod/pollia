@@ -12,10 +12,11 @@ export const useCurrentUser = () => {
       data: {
         id: "",
         email: "",
+        phone: null,
         name: "",
         role: UserRole.USER,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: new Date(0),
+        updatedAt: new Date(0),
       },
     },
     staleTime: 5 * 60 * 1000,

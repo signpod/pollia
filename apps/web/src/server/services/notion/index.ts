@@ -65,8 +65,10 @@ export class NotionService {
       }
 
       const responseDb = buildResponseDatabase(actions, responses);
-      await this.createDatabase(notionPageId, responseDb);
-      console.log("[NotionService] 응답 데이터베이스 생성 완료");
+      const { successCount } = await this.createDatabase(notionPageId, responseDb);
+      console.log(
+        `[NotionService] 응답 데이터베이스 생성 완료: ${successCount}/${responses.length}`,
+      );
 
       const publicUrl = await this.makePublicUrl(notionPageId);
       console.log("[NotionService] 리포트 생성/업데이트 완료:", publicUrl);
@@ -74,6 +76,7 @@ export class NotionService {
       return {
         notionPageId,
         notionPageUrl: publicUrl,
+        syncedResponseCount: successCount,
       };
     } catch (err) {
       console.error("[NotionService] 리포트 생성 실패:", {
@@ -243,29 +246,58 @@ export class NotionService {
       properties: config.properties,
     });
 
-    for (const row of config.rows) {
-      await this.client.pages.create({
-        parent: {
-          type: "database_id",
-          database_id: database.id,
-        },
-        properties: row.properties,
-      });
+    const failedRows: Array<{ index: number; error: string }> = [];
+    let successCount = 0;
+
+    for (const [index, row] of config.rows.entries()) {
+      try {
+        await this.client.pages.create({
+          parent: {
+            type: "database_id",
+            database_id: database.id,
+          },
+          properties: row.properties,
+        });
+        successCount++;
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        failedRows.push({ index, error: errorMessage });
+        console.error(
+          `[NotionService] Row ${index + 1}/${config.rows.length} 생성 실패:`,
+          errorMessage,
+        );
+      }
     }
 
-    return database;
+    if (failedRows.length > 0) {
+      console.warn(
+        `[NotionService] 총 ${config.rows.length}개 중 ${failedRows.length}개 row 생성 실패`,
+        failedRows,
+      );
+    }
+
+    return { database, successCount };
   }
 
   private async deletePageChildren(pageId: string): Promise<void> {
-    const response = await this.client.blocks.children.list({
-      block_id: pageId,
-      page_size: 100,
-    });
+    let cursor: string | undefined;
+    let hasMore = true;
 
-    for (const block of response.results) {
-      await this.client.blocks.delete({
-        block_id: block.id,
+    while (hasMore) {
+      const response = await this.client.blocks.children.list({
+        block_id: pageId,
+        page_size: 100,
+        start_cursor: cursor,
       });
+
+      for (const block of response.results) {
+        await this.client.blocks.delete({
+          block_id: block.id,
+        });
+      }
+
+      hasMore = response.has_more;
+      cursor = response.next_cursor ?? undefined;
     }
   }
 

@@ -13,8 +13,6 @@ import type {
   CreateMultipleChoiceActionResponse,
   CreatePdfActionRequest,
   CreatePdfActionResponse,
-  CreatePrivacyConsentActionRequest,
-  CreatePrivacyConsentActionResponse,
   CreateRatingActionRequest,
   CreateRatingActionResponse,
   CreateScaleActionRequest,
@@ -30,6 +28,7 @@ import type {
   CreateVideoActionRequest,
   CreateVideoActionResponse,
 } from "@/types/dto";
+import { revalidatePath } from "next/cache";
 
 async function createActionHandler<TRequest, TResponse extends BaseActionResponse>(
   request: TRequest,
@@ -39,6 +38,11 @@ async function createActionHandler<TRequest, TResponse extends BaseActionRespons
   try {
     const user = await requireAuth();
     const action = await serviceMethod(request, user.id);
+
+    if (action.missionId) {
+      revalidatePath(`/mission/${action.missionId}`);
+    }
+
     return { data: action } as TResponse;
   } catch (error) {
     console.error(`${errorMessage} error:`, error);
@@ -134,16 +138,6 @@ export async function createVideoAction(
     request,
     actionService.createVideoAction.bind(actionService),
     "Video 액션",
-  );
-}
-
-export async function createPrivacyConsentAction(
-  request: CreatePrivacyConsentActionRequest,
-): Promise<CreatePrivacyConsentActionResponse> {
-  return createActionHandler(
-    request,
-    actionService.createPrivacyConsentAction.bind(actionService),
-    "개인정보 동의 액션",
   );
 }
 

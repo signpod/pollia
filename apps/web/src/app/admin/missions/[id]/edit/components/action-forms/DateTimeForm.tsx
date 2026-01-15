@@ -2,9 +2,8 @@
 
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Form } from "@/app/admin/components/shadcn-ui/form";
-import { useAdminSingleImage } from "@/app/admin/hooks/use-admin-image-upload";
+import { type UploadedImageData, useSingleImage } from "@/app/admin/hooks/admin-image";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
-import { DATE_MAX_SELECTIONS, TIME_MAX_SELECTIONS } from "@/schemas/action";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { BaseActionFormFields } from "./BaseActionForm";
@@ -45,11 +44,11 @@ export function DateTimeForm<T extends "DATE" | "TIME">({
     mode: "onChange",
   });
 
-  const mainImage = useAdminSingleImage({
+  const mainImage = useSingleImage({
     initialUrl: initialData?.imageUrl,
     initialFileUploadId: initialData?.imageFileUploadId,
     bucket: STORAGE_BUCKETS.ACTION_IMAGES,
-    onUploadSuccess: data => {
+    onUploadSuccess: (data: UploadedImageData) => {
       form.setValue("imageUrl", data.publicUrl, { shouldDirty: true });
       form.setValue("imageFileUploadId", data.fileUploadId, { shouldDirty: true });
     },
@@ -76,19 +75,14 @@ export function DateTimeForm<T extends "DATE" | "TIME">({
           isLoading={isLoading}
           titlePlaceholder={titlePlaceholder}
           mainImagePreviewUrl={mainImage.previewUrl}
-          onMainImageSelect={mainImage.selectImage}
+          onMainImageSelect={mainImage.upload}
           onMainImageDelete={() => {
-            mainImage.clearImage();
+            mainImage.discard();
             form.setValue("imageUrl", null, { shouldDirty: true });
             form.setValue("imageFileUploadId", null, { shouldDirty: true });
           }}
         >
-          <MaxSelectionsField
-            control={form.control}
-            name="maxSelections"
-            maxOptions={type === "DATE" ? DATE_MAX_SELECTIONS : TIME_MAX_SELECTIONS}
-            disabled={isLoading}
-          />
+          <MaxSelectionsField control={form.control} name="maxSelections" disabled={isLoading} />
         </BaseActionFormFields>
 
         <div className="flex justify-end gap-3 pt-4">

@@ -1,10 +1,9 @@
 "use client";
 
+import { useAdminRootContainer } from "@/app/admin/hooks/use-admin-root-container";
+import { cn } from "@/app/admin/lib/utils";
 import * as MenubarPrimitive from "@radix-ui/react-menubar";
 import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react";
-import * as React from "react";
-
-import { cn } from "@/app/admin/lib/utils";
 
 function Menubar({ className, ...props }: React.ComponentProps<typeof MenubarPrimitive.Root>) {
   return (
@@ -58,8 +57,10 @@ function MenubarContent({
   sideOffset = 8,
   ...props
 }: React.ComponentProps<typeof MenubarPrimitive.Content>) {
+  const container = useAdminRootContainer();
+
   return (
-    <MenubarPortal>
+    <MenubarPortal container={container}>
       <MenubarPrimitive.Content
         data-slot="menubar-content"
         align={align}
