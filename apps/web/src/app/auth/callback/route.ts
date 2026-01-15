@@ -80,12 +80,13 @@ async function registerOrUpdateUser(
   kakaoUser: KakaoUserInfo,
 ): Promise<{ isNewUser: boolean }> {
   const { nickname } = kakaoUser.kakao_account.profile;
-  const { phone_number } = kakaoUser.kakao_account;
+  const { phone_number, account_email } = kakaoUser.kakao_account;
 
   const isNewUser = await createUserIfNotExists({
     user,
     name: nickname,
     phone: phone_number,
+    email: account_email,
   });
 
   if (!isNewUser) {

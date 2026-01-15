@@ -29,12 +29,12 @@ export function ActionClientTrackingWrapper({ children }: { children: React.Reac
       recordEntry({
         missionId,
         sessionId,
-        userId: user.id || undefined,
+        userId: user?.id || undefined,
         actionId,
         utmParams,
       });
     }
-  }, [missionId, actionId, recordEntry, user.id]);
+  }, [missionId, actionId, recordEntry, user?.id]);
 
   return <>{children}</>;
 }

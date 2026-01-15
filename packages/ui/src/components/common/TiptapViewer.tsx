@@ -1,6 +1,7 @@
 "use client";
 
 import DOMPurify from "dompurify";
+import { useEffect, useState } from "react";
 import { cn } from "../../lib/utils";
 
 export interface TiptapViewerProps {
@@ -9,8 +10,11 @@ export interface TiptapViewerProps {
 }
 
 export function TiptapViewer({ content, className }: TiptapViewerProps) {
-  const sanitizedContent =
-    typeof window !== "undefined" ? DOMPurify.sanitize(content) : content;
+  const [sanitizedContent, setSanitizedContent] = useState("");
+
+  useEffect(() => {
+    setSanitizedContent(DOMPurify.sanitize(content));
+  }, [content]);
 
   return (
     <div
