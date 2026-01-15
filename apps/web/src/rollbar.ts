@@ -1,5 +1,11 @@
 import Rollbar from "rollbar";
 
+// Vercel은 VERCEL_GIT_COMMIT_SHA를 자동 제공
+const codeVersion =
+  process.env.NEXT_PUBLIC_ROLLBAR_CODE_VERSION ||
+  process.env.VERCEL_GIT_COMMIT_SHA ||
+  "unknown";
+
 const baseConfig = {
   captureUncaught: true,
   captureUnhandledRejections: true,
@@ -14,7 +20,7 @@ export const clientConfig = {
     client: {
       javascript: {
         source_map_enabled: true,
-        code_version: process.env.NEXT_PUBLIC_ROLLBAR_CODE_VERSION || "unknown",
+        code_version: codeVersion,
         guess_uncaught_frames: true,
       },
     },
@@ -24,5 +30,5 @@ export const clientConfig = {
 export const serverInstance = new Rollbar({
   accessToken: process.env.ROLLBAR_SERVER_TOKEN,
   ...baseConfig,
-  codeVersion: process.env.NEXT_PUBLIC_ROLLBAR_CODE_VERSION || "unknown",
+  codeVersion,
 });

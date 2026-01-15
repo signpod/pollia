@@ -2,6 +2,14 @@
 const nextConfig = {
   productionBrowserSourceMaps: true,
 
+  env: {
+    // Vercel 배포 시 git SHA를 code_version으로 사용
+    NEXT_PUBLIC_ROLLBAR_CODE_VERSION:
+      process.env.NEXT_PUBLIC_ROLLBAR_CODE_VERSION ||
+      process.env.VERCEL_GIT_COMMIT_SHA ||
+      "unknown",
+  },
+
   experimental: {
     optimizePackageImports: [
       // Radix UI 컴포넌트들 - 트리 쉐이킹 최적화로 사용하는 컴포넌트만 번들에 포함

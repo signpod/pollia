@@ -1,0 +1,43 @@
+name: Upload Source Maps to Rollbar
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  upload-sourcemaps:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Generate Prisma Client
+        working-directory: apps/web
+        run: npx prisma generate
+
+      - name: Build with source maps
+        working-directory: apps/web
+        env:
+          NEXT_PUBLIC_ROLLBAR_CODE_VERSION: ${{ github.sha }}
+        run: yarn build
+
+      - name: Upload source maps to Rollbar
+        working-directory: apps/web
+        env:
+          ROLLBAR_SERVER_TOKEN: ${{ secrets.ROLLBAR_SERVER_TOKEN }}
+          NEXT_PUBLIC_APP_URL: https://pollia.me
+          NEXT_PUBLIC_ROLLBAR_CODE_VERSION: ${{ github.sha }}
+        run: node scripts/upload-sourcemaps.cjs
