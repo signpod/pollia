@@ -127,7 +127,9 @@ export default async function MissionLayout({
   return (
     <ModalProvider>
       <Providers>
-        <HydrationBoundary state={dehydratedState}>{children}</HydrationBoundary>
+        <HydrationBoundary state={dehydratedState}>
+          <div suppressHydrationWarning>{children}</div>
+        </HydrationBoundary>
       </Providers>
     </ModalProvider>
   );
