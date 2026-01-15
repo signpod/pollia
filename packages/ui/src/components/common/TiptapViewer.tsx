@@ -16,14 +16,11 @@ export function TiptapViewer({ content, className }: TiptapViewerProps) {
     setSanitizedContent(DOMPurify.sanitize(content));
   }, [content]);
 
-  if (!sanitizedContent) {
-    return <div className={cn("tiptap-viewer tiptap", className)} />;
-  }
-
   return (
     <div
       className={cn("tiptap-viewer tiptap", className)}
       dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+      suppressHydrationWarning
     />
   );
 }
