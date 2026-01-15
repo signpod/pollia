@@ -1,7 +1,7 @@
-const fs = require("fs");
-const path = require("path");
-const https = require("https");
-const { execSync } = require("child_process");
+const fs = require("node:fs");
+const path = require("node:path");
+const https = require("node:https");
+const { execSync } = require("node:child_process");
 
 const ROLLBAR_TOKEN = process.env.ROLLBAR_SERVER_TOKEN;
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://pollia.me";
@@ -17,7 +17,7 @@ function getCodeVersion() {
 
 // FormData 바운더리 생성
 function generateBoundary() {
-  return "----FormBoundary" + Math.random().toString(36).substring(2);
+  return `----FormBoundary${Math.random().toString(36).substring(2)}`;
 }
 
 // 멀티파트 폼 데이터 생성
@@ -32,7 +32,7 @@ function createFormData(boundary, fields, file) {
 
   body += `--${boundary}\r\n`;
   body += `Content-Disposition: form-data; name="source_map"; filename="${path.basename(file.path)}"\r\n`;
-  body += `Content-Type: application/json\r\n\r\n`;
+  body += "Content-Type: application/json\r\n\r\n";
 
   const fileContent = fs.readFileSync(file.path, "utf8");
 
@@ -70,7 +70,9 @@ function uploadSourceMap(minifiedUrl, sourceMapPath) {
 
     const req = https.request(options, (res) => {
       let data = "";
-      res.on("data", (chunk) => (data += chunk));
+      res.on("data", (chunk) => {
+        data += chunk;
+      });
       res.on("end", () => {
         if (res.statusCode === 200) {
           console.log(`✓ Uploaded: ${path.basename(sourceMapPath)}`);
@@ -131,7 +133,7 @@ async function main() {
   }
 
   const codeVersion = getCodeVersion();
-  console.log(`\nUploading source maps to Rollbar...`);
+  console.log("\nUploading source maps to Rollbar...");
   console.log(`Code version: ${codeVersion}`);
   console.log(`Base URL: ${BASE_URL}\n`);
 
@@ -152,7 +154,7 @@ async function main() {
     try {
       await uploadSourceMap(minifiedUrl, sourceMapPath);
       success++;
-    } catch (error) {
+    } catch (_error) {
       failed++;
     }
   }
