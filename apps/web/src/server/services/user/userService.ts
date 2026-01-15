@@ -18,7 +18,7 @@ export class UserService {
   }
 
   async createUserIfNotExists(input: CreateUserIfNotExistsInput): Promise<boolean> {
-    const { user, name, phone } = input;
+    const { user, name, phone, email } = input;
 
     const existingUser = await this.repo.findById(user.id);
 
@@ -38,7 +38,7 @@ export class UserService {
 
     await this.repo.create({
       id: user.id,
-      email: user.email ?? "",
+      email,
       name: userName,
       phone: normalizedPhone,
     });

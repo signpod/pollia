@@ -5,6 +5,7 @@ export interface CreateUserIfNotExistsInput {
   user: SupabaseUser;
   name?: string;
   phone?: string;
+  email: string;
 }
 
 export type CreateUserData = Prisma.UserCreateInput;

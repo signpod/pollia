@@ -25,6 +25,7 @@ export interface KakaoUserInfo {
       profile_image_url?: string;
     };
     phone_number: string;
+    account_email: string;
     gender?: string;
     birthyear?: string;
   };
