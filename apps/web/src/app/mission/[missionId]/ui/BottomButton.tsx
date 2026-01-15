@@ -178,7 +178,7 @@ export function BottomButton({
 
   if (!isLoggedIn) {
     return (
-      <div className="relative py-3 px-4 w-full" suppressHydrationWarning>
+      <div className="relative py-3 px-4 w-full">
         <ButtonV2
           variant="primary"
           size="large"
@@ -198,7 +198,7 @@ export function BottomButton({
   }
 
   return (
-    <div className="relative py-3 px-4 w-full" suppressHydrationWarning>
+    <div className="relative py-3 px-4 w-full">
       <ButtonV2
         variant="primary"
         size="large"
