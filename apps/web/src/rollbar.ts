@@ -17,6 +17,9 @@ export const clientConfig = {
   accessToken: process.env.NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN,
   ...baseConfig,
   payload: {
+    server: {
+      root: "webpack:///./",
+    },
     client: {
       javascript: {
         source_map_enabled: true,
