@@ -56,6 +56,9 @@ function CountdownClock({ deadline }: { deadline: Date }) {
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
     setTimeLeft(calculateTimeLeft(deadline));
 
     const timer = setInterval(() => {
@@ -66,9 +69,12 @@ function CountdownClock({ deadline }: { deadline: Date }) {
   }, [deadline]);
 
   const { hours, minutes, seconds } = timeLeft;
-  const [h1 = "0", h2 = "0"] = hours.split("");
-  const [m1 = "0", m2 = "0"] = minutes.split("");
-  const [s1 = "0", s2 = "0"] = seconds.split("");
+  const h1 = hours[0] ?? "0";
+  const h2 = hours[1] ?? "0";
+  const m1 = minutes[0] ?? "0";
+  const m2 = minutes[1] ?? "0";
+  const s1 = seconds[0] ?? "0";
+  const s2 = seconds[1] ?? "0";
 
   if (!mounted) {
     return null;

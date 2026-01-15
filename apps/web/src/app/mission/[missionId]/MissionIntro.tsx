@@ -121,9 +121,12 @@ export function MissionIntro({ children }: MissionIntroProps) {
   const { currentParticipants, maxParticipants } = participantInfo?.data ?? {};
 
   const showRewardWidget = !!reward?.data.id;
-  const now = new Date();
-  const deadlineDate = deadline ? new Date(deadline) : null;
-  const showDeadlineWidget = Boolean(deadlineDate && isBefore(deadlineDate, addHours(now, 24)));
+  const now = useMemo(() => new Date(), []);
+  const deadlineDate = useMemo(() => (deadline ? new Date(deadline) : null), [deadline]);
+  const showDeadlineWidget = useMemo(
+    () => Boolean(deadlineDate && isBefore(deadlineDate, addHours(now, 24))),
+    [deadlineDate, now],
+  );
 
   const isProcessing = Boolean(missionResponseData?.data?.id);
 
@@ -212,12 +215,12 @@ export function MissionIntro({ children }: MissionIntroProps) {
                         description={reward?.data.name ?? ""}
                       />
                     )}
-                    {showDeadlineWidget && (
+                    {showDeadlineWidget && deadlineDate && (
                       <MissionWidget
                         icon={<ClockIcon className="size-5" />}
                         descType="clock"
                         title="종료까지"
-                        deadline={deadline ?? new Date()}
+                        deadline={deadlineDate}
                       />
                     )}
                   </div>
