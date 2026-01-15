@@ -80,13 +80,21 @@ async function registerOrUpdateUser(
   kakaoUser: KakaoUserInfo,
 ): Promise<{ isNewUser: boolean }> {
   const { nickname } = kakaoUser.kakao_account.profile;
-  const { phone_number, account_email } = kakaoUser.kakao_account;
+  const { phone_number, has_email, email } = kakaoUser.kakao_account;
+
+  if (!has_email || !email) {
+    const error = new Error(
+      "이메일 정보가 필요합니다. 카카오 계정에서 이메일 제공에 동의해주세요.",
+    );
+    error.cause = 400;
+    throw error;
+  }
 
   const isNewUser = await createUserIfNotExists({
     user,
     name: nickname,
     phone: phone_number,
-    email: account_email,
+    email,
   });
 
   if (!isNewUser) {
