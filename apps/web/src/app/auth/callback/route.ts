@@ -69,9 +69,13 @@ async function authenticateWithKakao(
   kakaoUser: KakaoUserInfo,
 ): Promise<User> {
   const userName = kakaoUser.kakao_account.profile.nickname;
+  const email = kakaoUser.kakao_account.email;
+  const phone = kakaoUser.kakao_account.phone_number;
   return createSessionWithKakao({
     idToken: tokenData.id_token,
     userName,
+    email,
+    phone,
   });
 }
 

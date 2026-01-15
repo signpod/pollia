@@ -12,7 +12,7 @@ import type { User } from "@supabase/supabase-js";
  * @throws Supabase 세션 생성 실패 시 에러
  */
 export async function createSessionWithKakao(
-  request: CreateSessionWithKakaoRequest & { userName?: string },
+  request: CreateSessionWithKakaoRequest & { userName?: string; email?: string; phone?: string },
 ): Promise<User> {
   try {
     const supabase = await createServerSupabaseClient();
@@ -34,9 +34,11 @@ export async function createSessionWithKakao(
       throw serverError;
     }
 
-    // Supabase Authentication의 Display Name 설정 - [25.11.12 - 러기]
-    if (request.userName) {
+    if (request.userName || request.email || request.phone) {
+      const normalizedPhone = request.phone?.replace(/[\s-]/g, "");
       await supabase.auth.updateUser({
+        email: request.email,
+        phone: normalizedPhone,
         data: {
           name: request.userName,
           full_name: request.userName,
