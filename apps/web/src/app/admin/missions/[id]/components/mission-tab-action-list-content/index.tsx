@@ -10,27 +10,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/app/admin/components/shadcn-ui/alert-dialog";
-import { Badge } from "@/app/admin/components/shadcn-ui/badge";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/app/admin/components/shadcn-ui/card";
-import { Separator } from "@/app/admin/components/shadcn-ui/separator";
+import { Card, CardContent, CardHeader } from "@/app/admin/components/shadcn-ui/card";
 import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
 import {
+  useCreateAction,
   useDeleteAction,
   useDuplicateAction,
   useReadActionsDetail,
   useReorderActions,
   useUpdateAction,
 } from "@/app/admin/hooks/action";
-import { useCreateAction } from "@/app/admin/hooks/action";
-import { ACTION_TYPE_LABELS } from "@/constants/action";
-import { cleanTiptapHTML } from "@/lib/utils";
 import type { ActionDetail } from "@/types/dto";
 import {
   DndContext,
@@ -46,336 +36,21 @@ import {
   arrayMove,
   horizontalListSortingStrategy,
   sortableKeyboardCoordinates,
-  useSortable,
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { ActionType } from "@prisma/client";
-import {
-  AlertCircle,
-  Calendar,
-  CheckSquare,
-  Clock,
-  Copy,
-  FileText,
-  GripVertical,
-  ImageIcon,
-  Pencil,
-  Plus,
-  Scale,
-  Star,
-  Tag,
-  TextCursor,
-  Trash2,
-  Video,
-} from "lucide-react";
-import Image from "next/image";
+import { AlertCircle, FileText, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { CreateActionDialog } from "../edit/components/CreateActionDialog";
-import { EditActionDialog } from "../edit/components/EditActionDialog";
-import type { ActionFormData } from "../edit/components/action-forms";
-import { ClientDateDisplay } from "./ClientDateDisplay";
+import { CreateActionDialog } from "../../edit/components/CreateActionDialog";
+import { EditActionDialog } from "../../edit/components/EditActionDialog";
+import type { ActionFormData } from "../../edit/components/action-forms";
+import { ActionDetailCard } from "./ActionDetailCard";
+import { SortableActionTab } from "./SortableActionTab";
 
 interface MissionActionListProps {
   missionId: string;
 }
 
-const getDisplayOrder = (order: number) => order + 1;
-
-function getActionTypeInfo(type: ActionType) {
-  const label = ACTION_TYPE_LABELS[type] || "기타";
-
-  switch (type) {
-    case ActionType.MULTIPLE_CHOICE:
-      return {
-        label,
-        icon: CheckSquare,
-        color: "text-blue-600 dark:text-blue-400",
-        bgColor: "bg-blue-50 dark:bg-blue-950",
-      };
-    case ActionType.SCALE:
-      return {
-        label,
-        icon: Scale,
-        color: "text-purple-600 dark:text-purple-400",
-        bgColor: "bg-purple-50 dark:bg-purple-950",
-      };
-    case ActionType.SUBJECTIVE:
-      return {
-        label,
-        icon: TextCursor,
-        color: "text-green-600 dark:text-green-400",
-        bgColor: "bg-green-50 dark:bg-green-950",
-      };
-    case ActionType.IMAGE:
-      return {
-        label,
-        icon: ImageIcon,
-        color: "text-orange-600 dark:text-orange-400",
-        bgColor: "bg-orange-50 dark:bg-orange-950",
-      };
-    case ActionType.PDF:
-      return {
-        label,
-        icon: FileText,
-        color: "text-red-600 dark:text-red-400",
-        bgColor: "bg-red-50 dark:bg-red-950",
-      };
-    case ActionType.VIDEO:
-      return {
-        label,
-        icon: Video,
-        color: "text-violet-600 dark:text-violet-400",
-        bgColor: "bg-violet-50 dark:bg-violet-950",
-      };
-    case ActionType.RATING:
-      return {
-        label,
-        icon: Star,
-        color: "text-yellow-600 dark:text-yellow-400",
-        bgColor: "bg-yellow-50 dark:bg-yellow-950",
-      };
-    case ActionType.TAG:
-      return {
-        label,
-        icon: Tag,
-        color: "text-pink-600 dark:text-pink-400",
-        bgColor: "bg-pink-50 dark:bg-pink-950",
-      };
-    case ActionType.DATE:
-      return {
-        label,
-        icon: Calendar,
-        color: "text-cyan-600 dark:text-cyan-400",
-        bgColor: "bg-cyan-50 dark:bg-cyan-950",
-      };
-    case ActionType.TIME:
-      return {
-        label,
-        icon: Clock,
-        color: "text-indigo-600 dark:text-indigo-400",
-        bgColor: "bg-indigo-50 dark:bg-indigo-950",
-      };
-    default:
-      return {
-        label,
-        icon: FileText,
-        color: "text-gray-600 dark:text-gray-400",
-        bgColor: "bg-gray-50 dark:bg-gray-950",
-      };
-  }
-}
-
-interface SortableTabProps {
-  action: ActionDetail;
-  isSelected: boolean;
-  onSelect: () => void;
-}
-
-function SortableTab({ action, isSelected, onSelect }: SortableTabProps) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: action.id,
-  });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  };
-
-  const typeInfo = getActionTypeInfo(action.type);
-  const TypeIcon = typeInfo.icon;
-
-  return (
-    <div ref={setNodeRef} style={style} className="flex items-center">
-      <button
-        type="button"
-        onClick={onSelect}
-        className={`flex items-center gap-2 px-3 py-2 rounded-t-lg border-b-2 transition-colors ${
-          isSelected
-            ? "bg-background border-primary text-foreground"
-            : "bg-muted/50 border-transparent text-muted-foreground hover:bg-muted"
-        }`}
-      >
-        <div
-          className="cursor-grab active:cursor-grabbing p-0.5 hover:bg-muted rounded"
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical className="size-3.5 text-muted-foreground" />
-        </div>
-        <TypeIcon className={`size-4 ${typeInfo.color}`} />
-        <span className="text-sm font-medium whitespace-nowrap">
-          {getDisplayOrder(action.order)}.{" "}
-          {action.title.length > 15 ? `${action.title.slice(0, 15)}...` : action.title}
-        </span>
-      </button>
-    </div>
-  );
-}
-
-function ActionDetailCard({
-  action,
-  onEdit,
-  onDuplicate,
-  onDelete,
-}: {
-  action: ActionDetail;
-  onEdit: () => void;
-  onDuplicate: () => void;
-  onDelete: () => void;
-}) {
-  const typeInfo = getActionTypeInfo(action.type);
-  const TypeIcon = typeInfo.icon;
-
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2">
-              <Badge variant="outline" className="shrink-0">
-                액션 {getDisplayOrder(action.order)}
-              </Badge>
-              <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md ${typeInfo.bgColor}`}>
-                <TypeIcon className={`h-3.5 w-3.5 ${typeInfo.color}`} />
-                <span className={`text-xs font-medium ${typeInfo.color}`}>{typeInfo.label}</span>
-              </div>
-              <Badge
-                variant={action.isRequired ? "destructive" : "outline"}
-                className={
-                  action.isRequired
-                    ? "shrink-0 text-xs font-semibold bg-orange-100 text-orange-700 hover:bg-orange-200 border-0 dark:bg-orange-950 dark:text-orange-300"
-                    : "shrink-0 text-xs font-medium text-muted-foreground border-muted-foreground/30"
-                }
-              >
-                {action.isRequired ? "필수" : "선택"}
-              </Badge>
-              {action.maxSelections && (
-                <Badge variant="secondary" className="shrink-0">
-                  최대 {action.maxSelections}개 선택
-                </Badge>
-              )}
-            </div>
-            <CardTitle className="text-xl">{action.title}</CardTitle>
-            {action.description && cleanTiptapHTML(action.description) && (
-              <CardDescription className="mt-2">
-                <div
-                  className="prose prose-sm max-w-none text-muted-foreground"
-                  // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
-                  dangerouslySetInnerHTML={{ __html: cleanTiptapHTML(action.description) }}
-                />
-              </CardDescription>
-            )}
-          </div>
-          <div className="flex items-center gap-1">
-            <Button variant="outline" size="sm" onClick={onEdit}>
-              <Pencil className="size-4 mr-1" />
-              편집
-            </Button>
-            <Button variant="outline" size="sm" onClick={onDuplicate}>
-              <Copy className="size-4 mr-1" />
-              복제
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onDelete}
-              className="text-destructive hover:text-destructive"
-            >
-              <Trash2 className="size-4 mr-1" />
-              삭제
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-
-      <CardContent className="space-y-6">
-        <div className="flex flex-col lg:flex-row gap-6">
-          {action.imageUrl && (
-            <div className="shrink-0">
-              <h4 className="text-sm font-medium text-muted-foreground mb-3">액션 이미지</h4>
-              <div className="relative w-full lg:w-80 aspect-350/233 rounded-lg overflow-hidden border bg-muted/20">
-                <Image
-                  src={action.imageUrl}
-                  alt={action.title}
-                  fill
-                  className="object-contain"
-                  sizes="(max-width: 1024px) 100vw, 320px"
-                />
-              </div>
-            </div>
-          )}
-
-          {action.options.length > 0 && (
-            <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-medium text-muted-foreground mb-3">
-                옵션 목록 ({action.options.length}개)
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-5 gap-3">
-                {action.options
-                  .sort((a, b) => a.order - b.order)
-                  .map(option => (
-                    <div
-                      key={option.id}
-                      className="p-3 border rounded-lg bg-card hover:bg-accent/50 transition-colors"
-                    >
-                      <div className="flex items-start gap-2 mb-2">
-                        <Badge variant="outline" className="shrink-0 text-xs">
-                          {getDisplayOrder(option.order)}
-                        </Badge>
-                        <div className="flex-1 min-w-0">
-                          <h5 className="font-medium text-sm mb-1 wrap-break-word">
-                            {option.title}
-                          </h5>
-                          {option.description && (
-                            <p className="text-xs text-muted-foreground wrap-break-words">
-                              {option.description}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      {option.imageUrl && (
-                        <div className="relative w-full aspect-square rounded-md overflow-hidden border bg-muted/20">
-                          <Image
-                            src={option.imageUrl}
-                            alt={option.title}
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 200px"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="pt-2">
-          <Separator className="mb-4" />
-          <div className="grid grid-cols-2 gap-4 text-xs">
-            <div>
-              <span className="font-medium text-muted-foreground">생성일: </span>
-              <span className="text-foreground">
-                <ClientDateDisplay date={action.createdAt} format="datetime" />
-              </span>
-            </div>
-            <div>
-              <span className="font-medium text-muted-foreground">수정일: </span>
-              <span className="text-foreground">
-                <ClientDateDisplay date={action.updatedAt} format="datetime" />
-              </span>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-export function MissionActionList({ missionId }: MissionActionListProps) {
+export function MissionTabActionListContent({ missionId }: MissionActionListProps) {
   const { data: actionsResponse, isLoading, error } = useReadActionsDetail(missionId);
   const [actions, setActions] = useState<ActionDetail[]>([]);
   const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
@@ -583,7 +258,7 @@ export function MissionActionList({ missionId }: MissionActionListProps) {
         <div className="flex items-center gap-1 overflow-x-auto pb-2 border-b">
           <SortableContext items={actions.map(a => a.id)} strategy={horizontalListSortingStrategy}>
             {actions.map(action => (
-              <SortableTab
+              <SortableActionTab
                 key={action.id}
                 action={action}
                 isSelected={action.id === selectedActionId}
