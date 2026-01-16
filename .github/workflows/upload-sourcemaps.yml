@@ -2,7 +2,7 @@ name: Upload Source Maps to Rollbar
 
 on:
   push:
-    branches: [main, dev]
+    branches: [main]
 
 jobs:
   upload-sourcemaps:
