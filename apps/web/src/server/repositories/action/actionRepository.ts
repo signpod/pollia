@@ -129,7 +129,7 @@ export class ActionRepository {
       const allFileUploadIds = [
         data.imageFileUploadId,
         ...options.map(option => option.imageFileUploadId),
-      ].filter(Boolean) as string[];
+      ].filter((id): id is string => Boolean(id));
 
       await confirmFileUploads(tx, userId, allFileUploadIds);
 
@@ -206,7 +206,7 @@ export class ActionRepository {
       const allFileUploadIds = [
         data.imageFileUploadId,
         ...options.map(option => option.imageFileUploadId),
-      ].filter(Boolean) as string[];
+      ].filter((id): id is string => Boolean(id));
 
       await confirmFileUploads(tx, userId, allFileUploadIds);
 
