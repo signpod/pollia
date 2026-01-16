@@ -4,9 +4,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/admin/components
 import type { GetMissionResponse } from "@/types/dto";
 import { FileText, ListChecks } from "lucide-react";
 import { AdminMissionHeader } from "./AdminMissionHeader";
-import { MissionBasicInfo } from "./MissionBasicInfo";
 import { MissionNavigation } from "./MissionNavigation";
 import { MissionTabActionListContent } from "./mission-tab-action-list-content";
+import { MissionTabBasicInfoContent } from "./mission-tab-basic-info-content";
 
 interface MissionDetailContentProps {
   mission: GetMissionResponse["data"];
@@ -37,7 +37,7 @@ export function MissionDetailContent({ mission, defaultTab = "basic" }: MissionD
         </TabsList>
 
         <TabsContent value="basic">
-          <MissionBasicInfo mission={mission} />
+          <MissionTabBasicInfoContent mission={mission} />
         </TabsContent>
 
         <TabsContent value="actions">

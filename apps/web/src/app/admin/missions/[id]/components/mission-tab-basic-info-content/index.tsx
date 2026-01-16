@@ -29,10 +29,10 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+import { BasicInfoEditDialog } from "../edit/BasicInfoEditDialog";
+import { ImageEditDialog } from "../edit/ImageEditDialog";
 import { ClientDateDisplay } from "./ClientDateDisplay";
 import { MissionCompletionCard } from "./MissionCompletionCard";
-import { BasicInfoEditDialog } from "./edit/BasicInfoEditDialog";
-import { ImageEditDialog } from "./edit/ImageEditDialog";
 
 interface MissionBasicInfoProps {
   mission: GetMissionResponse["data"];
@@ -76,7 +76,7 @@ function InfoField({ label, value, className }: InfoFieldProps) {
   );
 }
 
-export function MissionBasicInfo({ mission }: MissionBasicInfoProps) {
+export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
   const missionTypeLabel = MISSION_TYPE_LABELS[mission.type];
   const [isBasicInfoDialogOpen, setIsBasicInfoDialogOpen] = useState(false);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);

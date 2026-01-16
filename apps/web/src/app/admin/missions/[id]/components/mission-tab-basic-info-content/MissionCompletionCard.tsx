@@ -14,7 +14,7 @@ import { cn, stripHtmlTags } from "@/app/admin/lib/utils";
 import { ExternalLink, ImageIcon, Pencil } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
-import { CompletionEditDialog } from "./edit/CompletionEditDialog";
+import { CompletionEditDialog } from "../edit/CompletionEditDialog";
 
 interface MissionCompletionCardProps {
   missionId: string;

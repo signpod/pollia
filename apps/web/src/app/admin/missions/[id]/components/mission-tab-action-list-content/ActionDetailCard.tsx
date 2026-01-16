@@ -14,7 +14,7 @@ import { cleanTiptapHTML } from "@/lib/utils";
 import type { ActionDetail } from "@/types/dto";
 import { Copy, Pencil, Trash2 } from "lucide-react";
 import Image from "next/image";
-import { ClientDateDisplay } from "../ClientDateDisplay";
+import { ClientDateDisplay } from "../mission-tab-basic-info-content/ClientDateDisplay";
 import { getActionTypeInfo, getDisplayOrder } from "./action-type-info";
 
 interface ActionDetailCardProps {
