@@ -6,6 +6,8 @@ import { useReadMissionParticipantInfo } from "@/hooks/participant/useReadMissio
 import { useReadReward } from "@/hooks/reward/useReadReward";
 import { getActionNavCookie, setActionNavCookie } from "@/lib/cookie";
 import { cn } from "@/lib/utils";
+import ClockIcon from "@public/svgs/clock-color-icon.svg";
+import GiftIcon from "@public/svgs/gift-color-icon.svg";
 import Lock from "@public/svgs/lock.svg";
 import {
   ButtonV2,
@@ -14,14 +16,15 @@ import {
   Typo,
   useCallout,
 } from "@repo/ui/components";
+import { addHours, isBefore } from "date-fns";
 import { motion } from "framer-motion";
 import { useParams } from "next/navigation";
 import type { ReactNode } from "react";
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
-import { MissionImage, MissionLogo, MissionReward } from "./components";
+import { FixedBottomContent } from "../../../../../../packages/ui/src/components/layout/FixedBottomLayout";
+import { MissionImage, MissionLogo, MissionWidget } from "./components";
 import { BottomButton } from "./ui";
 import { checkParticipantLimitReached } from "./utils/checkParticipantLimit";
-
 const SCROLL_OFFSET = 10;
 
 interface MissionIntroContextValue {
@@ -118,7 +121,13 @@ export function MissionIntro({ children }: MissionIntroProps) {
   const { data: missionResponseData } = useReadMissionResponseForMission({ missionId });
   const { currentParticipants, maxParticipants } = participantInfo?.data ?? {};
 
-  const hasReward = !!reward?.data.id;
+  const showRewardWidget = !!reward?.data.id;
+  const now = useMemo(() => new Date(), []);
+  const deadlineDate = useMemo(() => (deadline ? new Date(deadline) : null), [deadline]);
+  const showDeadlineWidget = useMemo(
+    () => Boolean(deadlineDate && isBefore(deadlineDate, addHours(now, 24))),
+    [deadlineDate, now],
+  );
 
   const isProcessing = Boolean(missionResponseData?.data?.id);
 
@@ -198,16 +207,25 @@ export function MissionIntro({ children }: MissionIntroProps) {
                       )}
                     </div>
                   </div>
-                  {reward?.data && (
-                    <div className="flex gap-3 items-center">
-                      {hasReward && (
-                        <MissionReward
-                          rewardImage={reward.data.imageUrl ?? ""}
-                          rewardName={reward.data.name}
-                        />
-                      )}
-                    </div>
-                  )}
+                  <div className="flex flex-col gap-2">
+                    {showRewardWidget && (
+                      <MissionWidget
+                        icon={<GiftIcon className="size-5" />}
+                        descType="text"
+                        title="완료 리워드"
+                        description={reward?.data.name ?? ""}
+                      />
+                    )}
+                    {showDeadlineWidget && deadlineDate && (
+                      <MissionWidget
+                        icon={<ClockIcon className="size-5" />}
+                        descType="clock"
+                        title="종료까지"
+                        deadline={deadlineDate}
+                      />
+                    )}
+                  </div>
+
                   <div>
                     <ButtonV2
                       variant="tertiary"
@@ -255,12 +273,8 @@ export function MissionIntro({ children }: MissionIntroProps) {
 
             {children}
 
-            {/**  블러 배경 (별도 레이어) */}
-            <div
-              className={cn(
-                "sticky bottom-0 z-0 pointer-events-none transition-opacity duration-300 ease-out",
-              )}
-            >
+            <FixedBottomContent>
+              {/**  블러 배경 (별도 레이어) */}
               <div
                 className="absolute inset-x-0 bottom-0"
                 style={{
@@ -272,31 +286,30 @@ export function MissionIntro({ children }: MissionIntroProps) {
                   background: "rgba(255, 255, 255, 0)",
                 }}
               />
-            </div>
-
-            {/**  fixed bottom 버튼 */}
-            <div
-              className={cn(
-                "sticky bottom-0 z-60 border-zinc-100 transition-all duration-300 ease-out",
-                isScrolled
-                  ? "opacity-100 translate-y-0"
-                  : "opacity-0 translate-y-full pointer-events-none",
-              )}
-              style={{
-                paddingBottom: "calc(16px + env(safe-area-inset-bottom))",
-              }}
-            >
-              <BottomButton
-                isActive={isActive ?? false}
-                firstActionId={firstActionId ?? ""}
-                deadline={deadline}
-                showResumeModal={showResumeModal}
-                isCompleted={isCompleted}
-                hasReward={!!reward}
-                isRequirePassword={isRequirePassword}
-                hasExistingResponse={!!missionResponse}
-              />
-            </div>
+              {/**  fixed bottom 버튼 */}
+              <div
+                className={cn(
+                  "sticky bottom-0 z-60 border-zinc-100 transition-all duration-300 ease-out",
+                  isScrolled
+                    ? "opacity-100 translate-y-0"
+                    : "opacity-0 translate-y-full pointer-events-none",
+                )}
+                style={{
+                  paddingBottom: "calc(16px + env(safe-area-inset-bottom))",
+                }}
+              >
+                <BottomButton
+                  isActive={isActive ?? false}
+                  firstActionId={firstActionId ?? ""}
+                  deadline={deadline}
+                  showResumeModal={showResumeModal}
+                  isCompleted={isCompleted}
+                  hasReward={!!reward}
+                  isRequirePassword={isRequirePassword}
+                  hasExistingResponse={!!missionResponse}
+                />
+              </div>
+            </FixedBottomContent>
           </div>
         </main>
       </MissionIntroContext.Provider>
