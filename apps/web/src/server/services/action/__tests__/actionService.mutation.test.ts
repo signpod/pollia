@@ -361,4 +361,94 @@ describe("ActionService - Mutation", () => {
       expect(ctx.mockActionRepo.updateManyOrders).toHaveBeenCalledWith([]);
     });
   });
+
+  describe("updateAction with options - upsert 동작", () => {
+    const mockAction = createMockAction({
+      title: "기존 액션",
+      type: ActionType.MULTIPLE_CHOICE,
+      maxSelections: 1,
+      isRequired: true,
+    });
+
+    it("기존 옵션에 id가 있으면 해당 옵션을 업데이트한다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+      const updateData = {
+        title: "수정된 액션",
+        options: [
+          { id: "opt-1", title: "수정된 옵션1", order: 0 },
+          { id: "opt-2", title: "수정된 옵션2", order: 1 },
+        ],
+      };
+      const mockUpdatedAction = { ...mockAction, title: updateData.title };
+
+      ctx.mockActionRepo.findById.mockResolvedValue(mockAction);
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.updateWithOptions.mockResolvedValue(mockUpdatedAction);
+
+      // When
+      await ctx.service.updateAction("action1", updateData, "user1");
+
+      // Then
+      expect(ctx.mockActionRepo.updateWithOptions).toHaveBeenCalledWith(
+        "action1",
+        { title: "수정된 액션" },
+        updateData.options,
+        "user1",
+      );
+    });
+
+    it("id가 없는 옵션은 새로 생성한다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+      const updateData = {
+        title: "수정된 액션",
+        options: [
+          { id: "opt-1", title: "기존 옵션", order: 0 },
+          { title: "새 옵션", order: 1 },
+        ],
+      };
+      const mockUpdatedAction = { ...mockAction, title: updateData.title };
+
+      ctx.mockActionRepo.findById.mockResolvedValue(mockAction);
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.updateWithOptions.mockResolvedValue(mockUpdatedAction);
+
+      // When
+      await ctx.service.updateAction("action1", updateData, "user1");
+
+      // Then
+      expect(ctx.mockActionRepo.updateWithOptions).toHaveBeenCalledWith(
+        "action1",
+        { title: "수정된 액션" },
+        updateData.options,
+        "user1",
+      );
+    });
+
+    it("전달되지 않은 기존 옵션은 삭제 대상이 된다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+      const updateData = {
+        title: "수정된 액션",
+        options: [{ id: "opt-1", title: "유지할 옵션", order: 0 }],
+      };
+      const mockUpdatedAction = { ...mockAction, title: updateData.title };
+
+      ctx.mockActionRepo.findById.mockResolvedValue(mockAction);
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.updateWithOptions.mockResolvedValue(mockUpdatedAction);
+
+      // When
+      await ctx.service.updateAction("action1", updateData, "user1");
+
+      // Then
+      expect(ctx.mockActionRepo.updateWithOptions).toHaveBeenCalledWith(
+        "action1",
+        { title: "수정된 액션" },
+        updateData.options,
+        "user1",
+      );
+    });
+  });
 });

@@ -44,7 +44,7 @@ export function MultipleChoiceForm({
       maxSelections: initialData?.maxSelections ?? 1,
       options:
         initialData?.options?.map(opt => ({
-          id: crypto.randomUUID(),
+          id: opt.id ?? crypto.randomUUID(),
           title: opt.title,
           description: opt.description || "",
           imageUrl: opt.imageUrl,
@@ -83,6 +83,7 @@ export function MultipleChoiceForm({
   const handleSubmit = form.handleSubmit((data: MultipleChoiceFormInput) => {
     const formattedOptions: ActionOptionInput[] = data.options.map(opt => {
       return {
+        id: opt.id,
         title: opt.title,
         description: opt.description || undefined,
         imageUrl: opt.imageUrl,
