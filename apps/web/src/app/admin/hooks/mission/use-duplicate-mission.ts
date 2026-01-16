@@ -24,7 +24,10 @@ export function useDuplicateMission(options: UseDuplicateMissionOptions = {}) {
       options.onSuccess?.(data);
     },
     onError: error => {
+      console.error("미션 복제 실패:", error);
       options.onError?.(error as Error);
     },
   });
 }
+
+export type UseDuplicateMissionReturn = ReturnType<typeof useDuplicateMission>;

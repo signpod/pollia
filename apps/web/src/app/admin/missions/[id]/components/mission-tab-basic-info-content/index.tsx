@@ -14,7 +14,6 @@ import { cn, stripHtmlTags } from "@/app/admin/lib/utils";
 import { MISSION_TYPE_LABELS } from "@/constants/action";
 import type { GetMissionResponse } from "@/types/dto";
 import { MissionType } from "@prisma/client";
-import { Typo } from "@repo/ui/components";
 import {
   Calendar,
   CheckCircle2,
@@ -104,16 +103,16 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
               <Badge
                 variant={mission.type === MissionType.EXPERIENCE_GROUP ? "default" : "secondary"}
               >
-                <Typo.Body
-                  size="medium"
+                <span
                   className={cn(
+                    "text-sm",
                     mission.type === MissionType.EXPERIENCE_GROUP
                       ? "text-muted"
                       : "text-foreground",
                   )}
                 >
                   {missionTypeLabel}
-                </Typo.Body>
+                </span>
               </Badge>
             }
           />

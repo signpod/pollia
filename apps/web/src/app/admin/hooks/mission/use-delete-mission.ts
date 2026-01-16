@@ -23,7 +23,10 @@ export function useDeleteMission(options: UseDeleteMissionOptions = {}) {
       options.onSuccess?.();
     },
     onError: error => {
+      console.error("미션 삭제 실패:", error);
       options.onError?.(error as Error);
     },
   });
 }
+
+export type UseDeleteMissionReturn = ReturnType<typeof useDeleteMission>;

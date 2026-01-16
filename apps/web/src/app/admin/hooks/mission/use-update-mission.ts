@@ -28,7 +28,10 @@ export function useUpdateMission(options: UseUpdateMissionOptions = {}) {
       options.onSuccess?.(data);
     },
     onError: error => {
+      console.error("미션 수정 실패:", error);
       options.onError?.(error as Error);
     },
   });
 }
+
+export type UseUpdateMissionReturn = ReturnType<typeof useUpdateMission>;
