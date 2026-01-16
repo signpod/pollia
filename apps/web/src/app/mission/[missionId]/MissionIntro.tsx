@@ -21,6 +21,7 @@ import { motion } from "framer-motion";
 import { useParams } from "next/navigation";
 import type { ReactNode } from "react";
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { FixedBottomContent } from "../../../../../../packages/ui/src/components/layout/FixedBottomLayout";
 import { MissionImage, MissionLogo, MissionWidget } from "./components";
 import { BottomButton } from "./ui";
 import { checkParticipantLimitReached } from "./utils/checkParticipantLimit";
@@ -272,12 +273,8 @@ export function MissionIntro({ children }: MissionIntroProps) {
 
             {children}
 
-            {/**  블러 배경 (별도 레이어) */}
-            <div
-              className={cn(
-                "sticky bottom-0 z-0 pointer-events-none transition-opacity duration-300 ease-out",
-              )}
-            >
+            <FixedBottomContent>
+              {/**  블러 배경 (별도 레이어) */}
               <div
                 className="absolute inset-x-0 bottom-0"
                 style={{
@@ -289,31 +286,30 @@ export function MissionIntro({ children }: MissionIntroProps) {
                   background: "rgba(255, 255, 255, 0)",
                 }}
               />
-            </div>
-
-            {/**  fixed bottom 버튼 */}
-            <div
-              className={cn(
-                "sticky bottom-0 z-60 border-zinc-100 transition-all duration-300 ease-out",
-                isScrolled
-                  ? "opacity-100 translate-y-0"
-                  : "opacity-0 translate-y-full pointer-events-none",
-              )}
-              style={{
-                paddingBottom: "calc(16px + env(safe-area-inset-bottom))",
-              }}
-            >
-              <BottomButton
-                isActive={isActive ?? false}
-                firstActionId={firstActionId ?? ""}
-                deadline={deadline}
-                showResumeModal={showResumeModal}
-                isCompleted={isCompleted}
-                hasReward={!!reward}
-                isRequirePassword={isRequirePassword}
-                hasExistingResponse={!!missionResponse}
-              />
-            </div>
+              {/**  fixed bottom 버튼 */}
+              <div
+                className={cn(
+                  "sticky bottom-0 z-60 border-zinc-100 transition-all duration-300 ease-out",
+                  isScrolled
+                    ? "opacity-100 translate-y-0"
+                    : "opacity-0 translate-y-full pointer-events-none",
+                )}
+                style={{
+                  paddingBottom: "calc(16px + env(safe-area-inset-bottom))",
+                }}
+              >
+                <BottomButton
+                  isActive={isActive ?? false}
+                  firstActionId={firstActionId ?? ""}
+                  deadline={deadline}
+                  showResumeModal={showResumeModal}
+                  isCompleted={isCompleted}
+                  hasReward={!!reward}
+                  isRequirePassword={isRequirePassword}
+                  hasExistingResponse={!!missionResponse}
+                />
+              </div>
+            </FixedBottomContent>
           </div>
         </main>
       </MissionIntroContext.Provider>
