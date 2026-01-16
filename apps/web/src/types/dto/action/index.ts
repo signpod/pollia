@@ -99,6 +99,7 @@ export interface CreateTimeActionRequest extends BaseActionRequest {
 export type CreateTimeActionResponse = BaseActionResponse;
 
 export interface UpdateActionOptionRequest {
+  id?: string;
   title: string;
   description?: string | null;
   imageUrl?: string | null;

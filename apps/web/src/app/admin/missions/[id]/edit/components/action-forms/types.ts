@@ -3,6 +3,7 @@ import type { ActionType as PrismaActionType } from "@prisma/client";
 export type ActionType = PrismaActionType;
 
 export interface ActionOptionInput {
+  id?: string;
   title: string;
   description?: string | null;
   imageUrl?: string | null;
