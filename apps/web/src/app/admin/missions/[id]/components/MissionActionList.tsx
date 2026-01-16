@@ -1,6 +1,17 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/app/admin/components/shadcn-ui/alert-dialog";
 import { Badge } from "@/app/admin/components/shadcn-ui/badge";
+import { Button } from "@/app/admin/components/shadcn-ui/button";
 import {
   Card,
   CardContent,
@@ -10,36 +21,65 @@ import {
 } from "@/app/admin/components/shadcn-ui/card";
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
 import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
-import { useReadActionsDetail } from "@/app/admin/hooks/action";
+import {
+  useDeleteAction,
+  useDuplicateAction,
+  useReadActionsDetail,
+  useReorderActions,
+  useUpdateAction,
+} from "@/app/admin/hooks/action";
+import { useCreateAction } from "@/app/admin/hooks/action";
 import { ACTION_TYPE_LABELS } from "@/constants/action";
 import { cleanTiptapHTML } from "@/lib/utils";
 import type { ActionDetail } from "@/types/dto";
+import {
+  DndContext,
+  type DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  horizontalListSortingStrategy,
+  sortableKeyboardCoordinates,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { ActionType } from "@prisma/client";
 import {
   AlertCircle,
   Calendar,
   CheckSquare,
   Clock,
+  Copy,
   FileText,
+  GripVertical,
   ImageIcon,
+  Pencil,
+  Plus,
   Scale,
   Star,
   Tag,
   TextCursor,
+  Trash2,
   Video,
 } from "lucide-react";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { CreateActionDialog } from "../edit/components/CreateActionDialog";
+import { EditActionDialog } from "../edit/components/EditActionDialog";
+import type { ActionFormData } from "../edit/components/action-forms";
 import { ClientDateDisplay } from "./ClientDateDisplay";
 
 interface MissionActionListProps {
   missionId: string;
 }
 
-const SKELETON_LOADING_COUNT = 3;
-
-/**
- * 0-based order를 1-based 표시용 번호로 변환
- */
 const getDisplayOrder = (order: number) => order + 1;
 
 function getActionTypeInfo(type: ActionType) {
@@ -126,7 +166,65 @@ function getActionTypeInfo(type: ActionType) {
   }
 }
 
-function ActionCard({ action }: { action: ActionDetail }) {
+interface SortableTabProps {
+  action: ActionDetail;
+  isSelected: boolean;
+  onSelect: () => void;
+}
+
+function SortableTab({ action, isSelected, onSelect }: SortableTabProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: action.id,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const typeInfo = getActionTypeInfo(action.type);
+  const TypeIcon = typeInfo.icon;
+
+  return (
+    <div ref={setNodeRef} style={style} className="flex items-center">
+      <button
+        type="button"
+        onClick={onSelect}
+        className={`flex items-center gap-2 px-3 py-2 rounded-t-lg border-b-2 transition-colors ${
+          isSelected
+            ? "bg-background border-primary text-foreground"
+            : "bg-muted/50 border-transparent text-muted-foreground hover:bg-muted"
+        }`}
+      >
+        <div
+          className="cursor-grab active:cursor-grabbing p-0.5 hover:bg-muted rounded"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="size-3.5 text-muted-foreground" />
+        </div>
+        <TypeIcon className={`size-4 ${typeInfo.color}`} />
+        <span className="text-sm font-medium whitespace-nowrap">
+          {getDisplayOrder(action.order)}.{" "}
+          {action.title.length > 15 ? `${action.title.slice(0, 15)}...` : action.title}
+        </span>
+      </button>
+    </div>
+  );
+}
+
+function ActionDetailCard({
+  action,
+  onEdit,
+  onDuplicate,
+  onDelete,
+}: {
+  action: ActionDetail;
+  onEdit: () => void;
+  onDuplicate: () => void;
+  onDelete: () => void;
+}) {
   const typeInfo = getActionTypeInfo(action.type);
   const TypeIcon = typeInfo.icon;
 
@@ -164,10 +262,30 @@ function ActionCard({ action }: { action: ActionDetail }) {
               <CardDescription className="mt-2">
                 <div
                   className="prose prose-sm max-w-none text-muted-foreground"
+                  // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
                   dangerouslySetInnerHTML={{ __html: cleanTiptapHTML(action.description) }}
                 />
               </CardDescription>
             )}
+          </div>
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="sm" onClick={onEdit}>
+              <Pencil className="size-4 mr-1" />
+              편집
+            </Button>
+            <Button variant="outline" size="sm" onClick={onDuplicate}>
+              <Copy className="size-4 mr-1" />
+              복제
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onDelete}
+              className="text-destructive hover:text-destructive"
+            >
+              <Trash2 className="size-4 mr-1" />
+              삭제
+            </Button>
           </div>
         </div>
       </CardHeader>
@@ -258,28 +376,156 @@ function ActionCard({ action }: { action: ActionDetail }) {
 }
 
 export function MissionActionList({ missionId }: MissionActionListProps) {
-  const { data, isLoading, error } = useReadActionsDetail(missionId);
+  const { data: actionsResponse, isLoading, error } = useReadActionsDetail(missionId);
+  const [actions, setActions] = useState<ActionDetail[]>([]);
+  const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
+
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingAction, setEditingAction] = useState<ActionDetail | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [deletingActionId, setDeletingActionId] = useState<string | null>(null);
+
+  const reorderActions = useReorderActions({
+    onSuccess: () => toast.success("액션 순서가 변경되었습니다."),
+    onError: error => toast.error(error.message || "액션 순서 변경 중 오류가 발생했습니다."),
+  });
+
+  const createAction = useCreateAction({
+    onSuccess: () => {
+      toast.success("액션이 생성되었습니다.");
+      setIsCreateDialogOpen(false);
+    },
+    onError: error => toast.error(error.message || "액션 생성 중 오류가 발생했습니다."),
+  });
+
+  const updateAction = useUpdateAction({
+    onSuccess: () => {
+      toast.success("액션이 수정되었습니다.");
+      setIsEditDialogOpen(false);
+    },
+    onError: error => toast.error(error.message || "액션 수정 중 오류가 발생했습니다."),
+  });
+
+  const deleteActionMutation = useDeleteAction({
+    onSuccess: () => {
+      toast.success("액션이 삭제되었습니다.");
+      setIsDeleteDialogOpen(false);
+      setDeletingActionId(null);
+      if (deletingActionId === selectedActionId) {
+        setSelectedActionId(null);
+      }
+    },
+    onError: error => toast.error(error.message || "액션 삭제 중 오류가 발생했습니다."),
+  });
+
+  const duplicateAction = useDuplicateAction({
+    onSuccess: () => toast.success("액션이 복제되었습니다."),
+    onError: error => toast.error(error.message || "액션 복제 중 오류가 발생했습니다."),
+  });
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  useEffect(() => {
+    if (actionsResponse?.data) {
+      const sorted = [...actionsResponse.data].sort((a, b) => a.order - b.order);
+      setActions(sorted);
+      const firstAction = sorted[0];
+      if (!selectedActionId && firstAction) {
+        setSelectedActionId(firstAction.id);
+      }
+    }
+  }, [actionsResponse?.data, selectedActionId]);
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = actions.findIndex(item => item.id === active.id);
+      const newIndex = actions.findIndex(item => item.id === over.id);
+      const newItems = arrayMove(actions, oldIndex, newIndex);
+      const updatedItems = newItems.map((item, index) => ({ ...item, order: index }));
+
+      setActions(updatedItems);
+
+      reorderActions.mutate({
+        missionId,
+        actionOrders: updatedItems.map(item => ({ id: item.id, order: item.order })),
+      });
+    }
+  };
+
+  const handleEdit = (actionId: string) => {
+    const action = actions.find(a => a.id === actionId);
+    if (action) {
+      setEditingAction(action);
+      setIsEditDialogOpen(true);
+    }
+  };
+
+  const handleDelete = (actionId: string) => {
+    setDeletingActionId(actionId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deletingActionId) return;
+    deleteActionMutation.mutate({ actionId: deletingActionId, missionId });
+  };
+
+  const handleDuplicate = (actionId: string) => {
+    duplicateAction.mutate({ actionId, missionId });
+  };
+
+  const handleCreateSubmit = (data: ActionFormData) => {
+    const nextOrder = actions.length;
+
+    createAction.mutate({
+      missionId,
+      type: data.type,
+      title: data.title,
+      description: data.description,
+      imageUrl: data.imageUrl,
+      imageFileUploadId: data.imageFileUploadId,
+      isRequired: data.isRequired,
+      order: nextOrder,
+      options:
+        "options" in data
+          ? data.options.map((opt, index) => ({
+              title: opt.title,
+              description: opt.description,
+              imageUrl: opt.imageUrl,
+              imageFileUploadId: opt.imageFileUploadId,
+              order: index,
+            }))
+          : undefined,
+      maxSelections: "maxSelections" in data ? data.maxSelections : undefined,
+      hasOther: "hasOther" in data ? data.hasOther : undefined,
+    });
+  };
+
+  const selectedAction = actions.find(a => a.id === selectedActionId);
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        {Array.from({ length: SKELETON_LOADING_COUNT }).map((_, i) => (
-          <Card
-            key={`skeleton-${
-              // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-              i
-            }`}
-          >
-            <CardHeader>
-              <Skeleton className="h-6 w-32 mb-2" />
-              <Skeleton className="h-8 w-full max-w-md" />
-              <Skeleton className="h-4 w-full max-w-lg mt-2" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-48 w-full max-w-2xl" />
-            </CardContent>
-          </Card>
-        ))}
+      <div className="space-y-4">
+        <div className="flex gap-2">
+          {[1, 2, 3].map(i => (
+            <Skeleton key={i} className="h-10 w-32" />
+          ))}
+        </div>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-32 mb-2" />
+            <Skeleton className="h-8 w-full max-w-md" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-48 w-full" />
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -302,40 +548,128 @@ export function MissionActionList({ missionId }: MissionActionListProps) {
     );
   }
 
-  const actions = data?.data ?? [];
-
   if (actions.length === 0) {
     return (
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <FileText className="h-12 w-12 text-muted-foreground/30 mb-4" />
-            <p className="text-sm font-medium text-muted-foreground">아직 추가된 액션이 없습니다</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              미션에 액션을 추가하여 사용자 응답을 수집하세요
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="space-y-4">
+        <Button variant="outline" onClick={() => setIsCreateDialogOpen(true)}>
+          <Plus className="size-4 mr-2" />새 액션 추가
+        </Button>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <FileText className="h-12 w-12 text-muted-foreground/30 mb-4" />
+              <p className="text-sm font-medium text-muted-foreground">
+                아직 추가된 액션이 없습니다
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                미션에 액션을 추가하여 사용자 응답을 수집하세요
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+        <CreateActionDialog
+          open={isCreateDialogOpen}
+          onOpenChange={setIsCreateDialogOpen}
+          onSubmit={handleCreateSubmit}
+          isLoading={createAction.isPending}
+        />
+      </div>
     );
   }
 
-  const sortedActions = [...actions].sort((a, b) => a.order - b.order);
-
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold">액션 목록</h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            총 {actions.length}개의 액션이 등록되어 있습니다
-          </p>
+    <div className="space-y-4">
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <div className="flex items-center gap-1 overflow-x-auto pb-2 border-b">
+          <SortableContext items={actions.map(a => a.id)} strategy={horizontalListSortingStrategy}>
+            {actions.map(action => (
+              <SortableTab
+                key={action.id}
+                action={action}
+                isSelected={action.id === selectedActionId}
+                onSelect={() => setSelectedActionId(action.id)}
+              />
+            ))}
+          </SortableContext>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsCreateDialogOpen(true)}
+            className="shrink-0 ml-2"
+          >
+            <Plus className="size-4" />
+          </Button>
         </div>
-      </div>
+      </DndContext>
 
-      {sortedActions.map(action => (
-        <ActionCard key={action.id} action={action} />
-      ))}
+      {selectedAction && (
+        <ActionDetailCard
+          action={selectedAction}
+          onEdit={() => handleEdit(selectedAction.id)}
+          onDuplicate={() => handleDuplicate(selectedAction.id)}
+          onDelete={() => handleDelete(selectedAction.id)}
+        />
+      )}
+
+      <CreateActionDialog
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        onSubmit={handleCreateSubmit}
+        isLoading={createAction.isPending}
+      />
+
+      <EditActionDialog
+        open={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        action={editingAction}
+        onSubmit={data => {
+          if (!editingAction) return;
+
+          updateAction.mutate({
+            actionId: editingAction.id,
+            missionId,
+            title: data.title,
+            description: data.description,
+            imageUrl: data.imageUrl,
+            imageFileUploadId: data.imageFileUploadId,
+            isRequired: data.isRequired,
+            maxSelections: "maxSelections" in data ? data.maxSelections : undefined,
+            hasOther: "hasOther" in data ? data.hasOther : undefined,
+            options:
+              "options" in data
+                ? data.options.map((opt, index) => ({
+                    title: opt.title,
+                    description: opt.description,
+                    imageUrl: opt.imageUrl,
+                    imageFileUploadId: opt.imageFileUploadId,
+                    order: index,
+                  }))
+                : undefined,
+          });
+        }}
+        isLoading={updateAction.isPending}
+      />
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>액션을 삭제하시겠습니까?</AlertDialogTitle>
+            <AlertDialogDescription>
+              이 작업은 되돌릴 수 없습니다. 액션과 관련된 모든 데이터가 삭제됩니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteActionMutation.isPending}>취소</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={deleteActionMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteActionMutation.isPending ? "삭제 중..." : "삭제"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
