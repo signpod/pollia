@@ -4,7 +4,15 @@ import { setMissionPassword } from "@/actions/mission/update";
 import { adminMissionQueryKeys } from "@/app/admin/constants/queryKeys";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-export function useSetMissionPassword(missionId: string) {
+interface UseSetMissionPasswordOptions {
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+}
+
+export function useSetMissionPassword(
+  missionId: string,
+  options: UseSetMissionPasswordOptions = {},
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -13,6 +21,11 @@ export function useSetMissionPassword(missionId: string) {
       queryClient.invalidateQueries({
         queryKey: adminMissionQueryKeys.mission(missionId),
       });
+      options.onSuccess?.();
+    },
+    onError: error => {
+      console.error("미션 비밀번호 설정 실패:", error);
+      options.onError?.(error as Error);
     },
   });
 }
