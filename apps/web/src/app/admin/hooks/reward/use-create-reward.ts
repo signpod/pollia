@@ -29,6 +29,7 @@ export function useCreateReward(options: UseCreateRewardOptions = {}) {
     },
 
     onError: error => {
+      console.error("리워드 생성 실패:", error);
       options.onError?.(error as Error);
     },
   });

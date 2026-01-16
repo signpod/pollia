@@ -25,6 +25,7 @@ export function useReorderActions(options: UseReorderActionsOptions = {}) {
     },
 
     onError: (error, variables) => {
+      console.error("액션 순서 변경 실패:", error);
       queryClient.invalidateQueries({
         queryKey: adminActionQueryKeys.actions(variables.missionId),
       });

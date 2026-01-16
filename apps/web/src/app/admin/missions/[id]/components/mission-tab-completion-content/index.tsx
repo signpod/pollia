@@ -307,7 +307,6 @@ function CompletionForm({
   missionCompletion,
 }: {
   missionCompletion: MissionCompletionData;
-  missionId: string;
 }) {
   const { form, handleReset } = useCompletionForm(missionCompletion);
 
@@ -359,5 +358,5 @@ export function MissionTabCompletionContent({ missionId }: MissionTabCompletionC
     );
   }
 
-  return <CompletionForm missionCompletion={missionCompletion} missionId={missionId} />;
+  return <CompletionForm missionCompletion={missionCompletion} />;
 }
