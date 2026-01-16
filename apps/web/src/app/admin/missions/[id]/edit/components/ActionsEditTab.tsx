@@ -421,6 +421,7 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
             options:
               "options" in data
                 ? data.options.map((opt, index) => ({
+                    id: opt.id,
                     title: opt.title,
                     description: opt.description,
                     imageUrl: opt.imageUrl,

@@ -80,6 +80,7 @@ interface ActionFormProps {
 function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) {
   const mapOptions = (options: typeof action.options) =>
     options?.map(opt => ({
+      id: opt.id,
       title: opt.title,
       description: opt.description || undefined,
       imageUrl: opt.imageUrl || undefined,
