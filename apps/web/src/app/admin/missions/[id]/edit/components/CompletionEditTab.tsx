@@ -19,8 +19,10 @@ import {
   type UseSingleImageReturn,
   useSingleImage,
 } from "@/app/admin/hooks/admin-image";
-import { useReadMissionCompletion } from "@/app/admin/hooks/use-read-mission-completion";
-import { useUpdateMissionCompletion } from "@/app/admin/hooks/use-update-mission-completion";
+import {
+  useReadMissionCompletion,
+  useUpdateMissionCompletion,
+} from "@/app/admin/hooks/mission-completion";
 import {
   MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH,
   MISSION_COMPLETION_TITLE_MAX_LENGTH,

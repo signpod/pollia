@@ -18,11 +18,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
-import { useCreateReward } from "@/app/admin/hooks/use-create-reward";
-import { useDeleteReward } from "@/app/admin/hooks/use-delete-reward";
-import { useReadMission } from "@/app/admin/hooks/use-read-mission";
-import { useReadReward } from "@/app/admin/hooks/use-read-reward";
-import { useUpdateReward } from "@/app/admin/hooks/use-update-reward";
+import { useReadMission } from "@/app/admin/hooks/mission";
+import {
+  useCreateReward,
+  useDeleteReward,
+  useReadReward,
+  useUpdateReward,
+} from "@/app/admin/hooks/reward";
 import type { Reward } from "@prisma/client";
 import { Calendar, Pencil, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";

@@ -5,7 +5,7 @@ import { ko } from "date-fns/locale";
 import { CalendarDays, Plus } from "lucide-react";
 import Link from "next/link";
 import { ADMIN_ROUTES } from "../constants/routes";
-import { useAdminMissions } from "../hooks/use-admin-missions";
+import { useAdminMissions } from "../hooks/mission";
 import { stripHtmlTags } from "../lib/utils";
 import { Badge } from "./shadcn-ui/badge";
 import { Button } from "./shadcn-ui/button";

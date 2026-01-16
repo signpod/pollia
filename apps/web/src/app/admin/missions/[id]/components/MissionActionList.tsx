@@ -10,7 +10,7 @@ import {
 } from "@/app/admin/components/shadcn-ui/card";
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
 import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
-import { useReadActionsDetail } from "@/app/admin/hooks/use-read-actions-detail";
+import { useReadActionsDetail } from "@/app/admin/hooks/action";
 import { ACTION_TYPE_LABELS } from "@/constants/action";
 import { cleanTiptapHTML } from "@/lib/utils";
 import type { ActionDetail } from "@/types/dto";

@@ -21,9 +21,11 @@ import {
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
-import { useReadMission } from "@/app/admin/hooks/use-read-mission";
-import { useRemoveMissionPassword } from "@/app/admin/hooks/use-remove-mission-password";
-import { useSetMissionPassword } from "@/app/admin/hooks/use-set-mission-password";
+import {
+  useReadMission,
+  useRemoveMissionPassword,
+  useSetMissionPassword,
+} from "@/app/admin/hooks/mission";
 import { Check, CheckCircle2, Copy, Dices, Eye, EyeOff, Lock, Trash2, XCircle } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";

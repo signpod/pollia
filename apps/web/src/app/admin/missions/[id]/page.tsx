@@ -1,6 +1,6 @@
 "use client";
 
-import { useReadMission } from "@/app/admin/hooks/use-read-mission";
+import { useReadMission } from "@/app/admin/hooks/mission";
 import { use } from "react";
 import { MissionDetailContent } from "./components/MissionDetailContent";
 
