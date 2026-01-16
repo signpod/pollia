@@ -1,5 +1,6 @@
 export * from "./use-admin-missions";
 export * from "./use-create-mission";
+export * from "./use-delete-mission";
 export * from "./use-duplicate-mission";
 export * from "./use-read-mission";
 export * from "./use-read-mission-funnel";

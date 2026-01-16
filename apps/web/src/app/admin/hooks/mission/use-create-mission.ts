@@ -19,7 +19,7 @@ export function useCreateMission(options: UseCreateMissionOptions = {}) {
     },
     onSuccess: data => {
       queryClient.invalidateQueries({
-        queryKey: adminMissionQueryKeys.all(),
+        queryKey: adminMissionQueryKeys.missions(),
       });
       options.onSuccess?.(data);
     },
