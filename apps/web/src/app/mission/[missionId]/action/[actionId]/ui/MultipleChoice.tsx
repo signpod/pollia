@@ -60,11 +60,18 @@ function SurveyMultipleChoiceContent({
 
   const [showOtherError, setShowOtherError] = useState(false);
 
-  // Add "기타" option to the end of options list (client-side only)
-  const optionsWithOther = [
-    ...(actionData.options || []),
-    { id: CLIENT_OTHER_OPTION_ID, title: "기타", description: null, imageUrl: null, order: 999 },
-  ];
+  const optionsWithOther = actionData.hasOther
+    ? [
+        ...(actionData.options || []),
+        {
+          id: CLIENT_OTHER_OPTION_ID,
+          title: "기타",
+          description: null,
+          imageUrl: null,
+          order: 999,
+        },
+      ]
+    : actionData.options || [];
 
   const handleTextAnswerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTextAnswer(e.target.value);
