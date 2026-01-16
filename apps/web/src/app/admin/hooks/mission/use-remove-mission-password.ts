@@ -4,7 +4,15 @@ import { removeMissionPassword } from "@/actions/mission/update";
 import { adminMissionQueryKeys } from "@/app/admin/constants/queryKeys";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-export function useRemoveMissionPassword(missionId: string) {
+interface UseRemoveMissionPasswordOptions {
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+}
+
+export function useRemoveMissionPassword(
+  missionId: string,
+  options: UseRemoveMissionPasswordOptions = {},
+) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -13,6 +21,11 @@ export function useRemoveMissionPassword(missionId: string) {
       queryClient.invalidateQueries({
         queryKey: adminMissionQueryKeys.mission(missionId),
       });
+      options.onSuccess?.();
+    },
+    onError: error => {
+      console.error("미션 비밀번호 삭제 실패:", error);
+      options.onError?.(error as Error);
     },
   });
 }

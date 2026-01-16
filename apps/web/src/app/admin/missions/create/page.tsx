@@ -3,8 +3,8 @@
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
-import { useCreateMission } from "@/app/admin/hooks/use-create-mission";
-import { useCreateMissionCompletion } from "@/app/admin/hooks/use-create-mission-completion";
+import { useCreateMission } from "@/app/admin/hooks/mission";
+import { useCreateMissionCompletion } from "@/app/admin/hooks/mission-completion";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";

@@ -12,7 +12,7 @@ import {
 } from "@/app/admin/components/shadcn-ui/alert-dialog";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
 import { Switch } from "@/app/admin/components/shadcn-ui/switch";
-import { useUpdateMission } from "@/app/admin/hooks/use-update-mission";
+import { useUpdateMission } from "@/app/admin/hooks/mission";
 import { useState } from "react";
 import { toast } from "sonner";
 

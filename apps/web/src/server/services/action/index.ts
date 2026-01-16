@@ -136,9 +136,7 @@ export class ActionService {
     const action = await this.actionRepo.findByIdWithOptions(actionId);
 
     if (!action) {
-      const error = new Error("액션을 찾을 수 없습니다.");
-      error.cause = 404;
-      throw error;
+      this.throwActionNotFound();
     }
 
     return action;
@@ -278,9 +276,7 @@ export class ActionService {
 
     const action = await this.actionRepo.findById(actionId);
     if (!action) {
-      const error = new Error("액션을 찾을 수 없습니다.");
-      error.cause = 404;
-      throw error;
+      this.throwActionNotFound();
     }
 
     if (action.missionId) {
@@ -307,9 +303,7 @@ export class ActionService {
   async deleteAction(actionId: string, userId: string): Promise<void> {
     const action = await this.actionRepo.findById(actionId);
     if (!action) {
-      const error = new Error("액션을 찾을 수 없습니다.");
-      error.cause = 404;
-      throw error;
+      this.throwActionNotFound();
     }
 
     if (action.missionId) {
@@ -341,6 +335,66 @@ export class ActionService {
     return { success: true };
   }
 
+  async duplicateAction(
+    actionId: string,
+    missionId: string,
+    userId: string,
+  ): Promise<ActionCreatedResult> {
+    await this.verifyMissionAccess(missionId, userId);
+
+    const original = await this.actionRepo.findByIdWithOptions(actionId);
+    if (!original) {
+      this.throwActionNotFound();
+    }
+
+    if (original.missionId !== missionId) {
+      const error = new Error("해당 미션에 속하지 않는 액션입니다.");
+      error.cause = 400;
+      throw error;
+    }
+
+    const existingActionIds = await this.actionRepo.findActionIdsByMissionId(missionId);
+    const nextOrder = existingActionIds.length;
+
+    const duplicatedTitle = `${original.title} (복사본)`;
+
+    const actionData = {
+      missionId,
+      title: duplicatedTitle,
+      description: original.description,
+      imageUrl: original.imageUrl,
+      type: original.type,
+      order: nextOrder,
+      maxSelections: original.maxSelections,
+      isRequired: original.isRequired,
+      hasOther: original.hasOther,
+    };
+
+    const createdAction =
+      original.options.length > 0
+        ? await this.actionRepo.createMultipleChoice(
+            actionData,
+            original.options.map((opt, index) => ({
+              title: opt.title,
+              description: opt.description ?? undefined,
+              imageUrl: opt.imageUrl ?? undefined,
+              order: index,
+            })),
+            userId,
+          )
+        : await this.actionRepo.create(actionData, userId);
+
+    return {
+      id: createdAction.id,
+      missionId: createdAction.missionId || "",
+      title: createdAction.title,
+      type: createdAction.type,
+      order: createdAction.order,
+      isRequired: createdAction.isRequired,
+      createdAt: createdAction.createdAt,
+    };
+  }
+
   private async verifyMissionAccess(missionId: string, userId: string): Promise<void> {
     const mission = await this.missionRepo.findById(missionId);
 
@@ -355,6 +409,12 @@ export class ActionService {
       error.cause = 403;
       throw error;
     }
+  }
+
+  private throwActionNotFound(): never {
+    const error = new Error("액션을 찾을 수 없습니다.");
+    error.cause = 404;
+    throw error;
   }
 }
 

@@ -1,20 +1,25 @@
 "use client";
 
-import { type ReorderActionsRequest, reorderActions } from "@/actions/action/reorder";
+import { duplicateAction } from "@/actions/action/create";
 import { adminActionQueryKeys } from "@/app/admin/constants/queryKeys";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-interface UseReorderActionsOptions {
+interface DuplicateActionInput {
+  actionId: string;
+  missionId: string;
+}
+
+interface UseDuplicateActionOptions {
   onSuccess?: () => void;
   onError?: (error: Error) => void;
 }
 
-export function useReorderActions(options: UseReorderActionsOptions = {}) {
+export function useDuplicateAction(options: UseDuplicateActionOptions = {}) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (request: ReorderActionsRequest) => {
-      return await reorderActions(request);
+    mutationFn: async (input: DuplicateActionInput) => {
+      return await duplicateAction(input);
     },
 
     onSuccess: (_, variables) => {
@@ -24,13 +29,11 @@ export function useReorderActions(options: UseReorderActionsOptions = {}) {
       options.onSuccess?.();
     },
 
-    onError: (error, variables) => {
-      queryClient.invalidateQueries({
-        queryKey: adminActionQueryKeys.actions(variables.missionId),
-      });
+    onError: error => {
+      console.error("액션 복제 실패:", error);
       options.onError?.(error as Error);
     },
   });
 }
 
-export type UseReorderActionsReturn = ReturnType<typeof useReorderActions>;
+export type UseDuplicateActionReturn = ReturnType<typeof useDuplicateAction>;

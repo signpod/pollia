@@ -26,7 +26,10 @@ export function useCreateMissionCompletion(options: UseCreateMissionCompletionOp
       options.onSuccess?.(data);
     },
     onError: error => {
+      console.error("미션 완료 화면 생성 실패:", error);
       options.onError?.(error as Error);
     },
   });
 }
+
+export type UseCreateMissionCompletionReturn = ReturnType<typeof useCreateMissionCompletion>;

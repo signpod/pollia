@@ -2,7 +2,7 @@
 
 import { ErrorBoundary } from "@/app/admin/components/common/ErrorBoundary";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/admin/components/shadcn-ui/tabs";
-import { useReadMission } from "@/app/admin/hooks/use-read-mission";
+import { useReadMission } from "@/app/admin/hooks/mission";
 import { CheckCircle2, FileText, Gift, ListChecks } from "lucide-react";
 import { notFound } from "next/navigation";
 import { Suspense, use } from "react";

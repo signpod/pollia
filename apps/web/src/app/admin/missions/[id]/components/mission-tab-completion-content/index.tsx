@@ -36,7 +36,7 @@ import { useState } from "react";
 import { type UseFormReturn, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-interface CompletionEditTabProps {
+interface MissionTabCompletionContentProps {
   missionId: string;
 }
 
@@ -305,10 +305,8 @@ function useCompletionForm(missionCompletion: MissionCompletionData) {
 
 function CompletionForm({
   missionCompletion,
-  missionId,
 }: {
   missionCompletion: MissionCompletionData;
-  missionId: string;
 }) {
   const { form, handleReset } = useCompletionForm(missionCompletion);
 
@@ -344,7 +342,7 @@ function CompletionForm({
   );
 }
 
-export function CompletionEditTab({ missionId }: CompletionEditTabProps) {
+export function MissionTabCompletionContent({ missionId }: MissionTabCompletionContentProps) {
   const { data: missionCompletionResponse, isLoading, error } = useReadMissionCompletion(missionId);
   const missionCompletion = missionCompletionResponse?.data;
 
@@ -360,5 +358,5 @@ export function CompletionEditTab({ missionId }: CompletionEditTabProps) {
     );
   }
 
-  return <CompletionForm missionCompletion={missionCompletion} missionId={missionId} />;
+  return <CompletionForm missionCompletion={missionCompletion} />;
 }

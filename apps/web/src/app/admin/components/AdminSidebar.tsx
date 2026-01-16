@@ -23,7 +23,7 @@ import { LogOut, Moon, Sun } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
-import { useAdminMissions } from "../hooks/use-admin-missions";
+import { useAdminMissions } from "../hooks/mission";
 import { cn } from "../lib/utils";
 
 export function AdminSidebar() {
