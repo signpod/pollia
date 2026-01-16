@@ -34,7 +34,7 @@ describe("classifyOptions", () => {
       // Then
       expect(result.toUpdate).toHaveLength(1);
       expect(result.toCreate).toHaveLength(1);
-      expect(result.toCreate[0].title).toBe("새 옵션");
+      expect(result.toCreate[0]?.title).toBe("새 옵션");
       expect(result.toDeleteIds).toHaveLength(0);
     });
 
@@ -115,9 +115,9 @@ describe("classifyOptions", () => {
 
       // Then
       expect(result.toUpdate).toHaveLength(1);
-      expect(result.toUpdate[0].id).toBe("opt-1");
+      expect(result.toUpdate[0]?.id).toBe("opt-1");
       expect(result.toCreate).toHaveLength(1);
-      expect(result.toCreate[0].title).toBe("새로 추가할 옵션");
+      expect(result.toCreate[0]?.title).toBe("새로 추가할 옵션");
       expect(result.toDeleteIds).toEqual(["opt-2", "opt-3"]);
     });
   });
