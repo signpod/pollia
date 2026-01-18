@@ -36,7 +36,7 @@ export function ScaleForm({
       isRequired: initialData?.isRequired ?? true,
       options:
         initialData?.options?.map(opt => ({
-          id: crypto.randomUUID(),
+          id: opt.id ?? crypto.randomUUID(),
           title: opt.title,
           description: opt.description || "",
         })) || [],
@@ -61,6 +61,7 @@ export function ScaleForm({
 
   const handleSubmit = form.handleSubmit((data: ScaleFormInput) => {
     const formattedOptions: ActionOptionInput[] = data.options.map(opt => ({
+      id: opt.id,
       title: opt.title,
       description: opt.description || undefined,
     }));

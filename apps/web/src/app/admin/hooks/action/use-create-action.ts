@@ -236,6 +236,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
     },
 
     onError: error => {
+      console.error("액션 생성 실패:", error);
       options.onError?.(error as Error);
     },
   });

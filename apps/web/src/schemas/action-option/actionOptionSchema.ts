@@ -33,6 +33,7 @@ export const optionInputSchema = z.object({
 });
 
 export const actionOptionSchema = z.object({
+  id: z.string().optional(),
   title: titleSchema,
   description: descriptionSchema,
   imageUrl: imageUrlSchema,

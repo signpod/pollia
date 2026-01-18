@@ -33,7 +33,7 @@ export function TagForm({
       maxSelections: initialData?.maxSelections ?? 1,
       options:
         initialData?.options?.map(opt => ({
-          id: crypto.randomUUID(),
+          id: opt.id ?? crypto.randomUUID(),
           title: opt.title,
         })) || [],
     },
@@ -57,6 +57,7 @@ export function TagForm({
 
   const handleSubmit = form.handleSubmit((data: TagFormInput) => {
     const formattedOptions: ActionOptionInput[] = data.options.map(opt => ({
+      id: opt.id,
       title: opt.title,
     }));
 

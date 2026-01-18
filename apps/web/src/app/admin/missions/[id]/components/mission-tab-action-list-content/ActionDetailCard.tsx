@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@/app/admin/components/shadcn-ui/badge";
+import { Button } from "@/app/admin/components/shadcn-ui/button";
 import {
   Card,
   CardContent,
@@ -9,124 +10,21 @@ import {
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
-import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
-import { useReadActionsDetail } from "@/app/admin/hooks/use-read-actions-detail";
-import { ACTION_TYPE_LABELS } from "@/constants/action";
 import { cleanTiptapHTML } from "@/lib/utils";
 import type { ActionDetail } from "@/types/dto";
-import { ActionType } from "@prisma/client";
-import {
-  AlertCircle,
-  Calendar,
-  CheckSquare,
-  Clock,
-  FileText,
-  ImageIcon,
-  Scale,
-  Star,
-  Tag,
-  TextCursor,
-  Video,
-} from "lucide-react";
+import { Copy, Pencil, Trash2 } from "lucide-react";
 import Image from "next/image";
-import { ClientDateDisplay } from "./ClientDateDisplay";
+import { ClientDateDisplay } from "../mission-tab-basic-info-content/ClientDateDisplay";
+import { getActionTypeInfo, getDisplayOrder } from "./action-type-info";
 
-interface MissionActionListProps {
-  missionId: string;
+interface ActionDetailCardProps {
+  action: ActionDetail;
+  onEdit: () => void;
+  onDuplicate: () => void;
+  onDelete: () => void;
 }
 
-const SKELETON_LOADING_COUNT = 3;
-
-/**
- * 0-based order를 1-based 표시용 번호로 변환
- */
-const getDisplayOrder = (order: number) => order + 1;
-
-function getActionTypeInfo(type: ActionType) {
-  const label = ACTION_TYPE_LABELS[type] || "기타";
-
-  switch (type) {
-    case ActionType.MULTIPLE_CHOICE:
-      return {
-        label,
-        icon: CheckSquare,
-        color: "text-blue-600 dark:text-blue-400",
-        bgColor: "bg-blue-50 dark:bg-blue-950",
-      };
-    case ActionType.SCALE:
-      return {
-        label,
-        icon: Scale,
-        color: "text-purple-600 dark:text-purple-400",
-        bgColor: "bg-purple-50 dark:bg-purple-950",
-      };
-    case ActionType.SUBJECTIVE:
-      return {
-        label,
-        icon: TextCursor,
-        color: "text-green-600 dark:text-green-400",
-        bgColor: "bg-green-50 dark:bg-green-950",
-      };
-    case ActionType.IMAGE:
-      return {
-        label,
-        icon: ImageIcon,
-        color: "text-orange-600 dark:text-orange-400",
-        bgColor: "bg-orange-50 dark:bg-orange-950",
-      };
-    case ActionType.PDF:
-      return {
-        label,
-        icon: FileText,
-        color: "text-red-600 dark:text-red-400",
-        bgColor: "bg-red-50 dark:bg-red-950",
-      };
-    case ActionType.VIDEO:
-      return {
-        label,
-        icon: Video,
-        color: "text-violet-600 dark:text-violet-400",
-        bgColor: "bg-violet-50 dark:bg-violet-950",
-      };
-    case ActionType.RATING:
-      return {
-        label,
-        icon: Star,
-        color: "text-yellow-600 dark:text-yellow-400",
-        bgColor: "bg-yellow-50 dark:bg-yellow-950",
-      };
-    case ActionType.TAG:
-      return {
-        label,
-        icon: Tag,
-        color: "text-pink-600 dark:text-pink-400",
-        bgColor: "bg-pink-50 dark:bg-pink-950",
-      };
-    case ActionType.DATE:
-      return {
-        label,
-        icon: Calendar,
-        color: "text-cyan-600 dark:text-cyan-400",
-        bgColor: "bg-cyan-50 dark:bg-cyan-950",
-      };
-    case ActionType.TIME:
-      return {
-        label,
-        icon: Clock,
-        color: "text-indigo-600 dark:text-indigo-400",
-        bgColor: "bg-indigo-50 dark:bg-indigo-950",
-      };
-    default:
-      return {
-        label,
-        icon: FileText,
-        color: "text-gray-600 dark:text-gray-400",
-        bgColor: "bg-gray-50 dark:bg-gray-950",
-      };
-  }
-}
-
-function ActionCard({ action }: { action: ActionDetail }) {
+export function ActionDetailCard({ action, onEdit, onDuplicate, onDelete }: ActionDetailCardProps) {
   const typeInfo = getActionTypeInfo(action.type);
   const TypeIcon = typeInfo.icon;
 
@@ -164,10 +62,30 @@ function ActionCard({ action }: { action: ActionDetail }) {
               <CardDescription className="mt-2">
                 <div
                   className="prose prose-sm max-w-none text-muted-foreground"
+                  // biome-ignore lint/security/noDangerouslySetInnerHtml: Tiptap HTML content
                   dangerouslySetInnerHTML={{ __html: cleanTiptapHTML(action.description) }}
                 />
               </CardDescription>
             )}
+          </div>
+          <div className="flex items-center gap-1">
+            <Button variant="outline" size="sm" onClick={onEdit}>
+              <Pencil className="size-4 mr-1" />
+              편집
+            </Button>
+            <Button variant="outline" size="sm" onClick={onDuplicate}>
+              <Copy className="size-4 mr-1" />
+              복제
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onDelete}
+              className="text-destructive hover:text-destructive"
+            >
+              <Trash2 className="size-4 mr-1" />
+              삭제
+            </Button>
           </div>
         </div>
       </CardHeader>
@@ -254,88 +172,5 @@ function ActionCard({ action }: { action: ActionDetail }) {
         </div>
       </CardContent>
     </Card>
-  );
-}
-
-export function MissionActionList({ missionId }: MissionActionListProps) {
-  const { data, isLoading, error } = useReadActionsDetail(missionId);
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        {Array.from({ length: SKELETON_LOADING_COUNT }).map((_, i) => (
-          <Card
-            key={`skeleton-${
-              // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-              i
-            }`}
-          >
-            <CardHeader>
-              <Skeleton className="h-6 w-32 mb-2" />
-              <Skeleton className="h-8 w-full max-w-md" />
-              <Skeleton className="h-4 w-full max-w-lg mt-2" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-48 w-full max-w-2xl" />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card className="border-destructive">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-3 text-destructive">
-            <AlertCircle className="h-5 w-5 shrink-0" />
-            <div>
-              <p className="font-medium">액션 목록을 불러올 수 없습니다</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                {error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다"}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const actions = data?.data ?? [];
-
-  if (actions.length === 0) {
-    return (
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <FileText className="h-12 w-12 text-muted-foreground/30 mb-4" />
-            <p className="text-sm font-medium text-muted-foreground">아직 추가된 액션이 없습니다</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              미션에 액션을 추가하여 사용자 응답을 수집하세요
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const sortedActions = [...actions].sort((a, b) => a.order - b.order);
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold">액션 목록</h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            총 {actions.length}개의 액션이 등록되어 있습니다
-          </p>
-        </div>
-      </div>
-
-      {sortedActions.map(action => (
-        <ActionCard key={action.id} action={action} />
-      ))}
-    </div>
   );
 }

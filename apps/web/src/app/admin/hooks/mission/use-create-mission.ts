@@ -19,12 +19,15 @@ export function useCreateMission(options: UseCreateMissionOptions = {}) {
     },
     onSuccess: data => {
       queryClient.invalidateQueries({
-        queryKey: adminMissionQueryKeys.all(),
+        queryKey: adminMissionQueryKeys.missions(),
       });
       options.onSuccess?.(data);
     },
     onError: error => {
+      console.error("미션 생성 실패:", error);
       options.onError?.(error as Error);
     },
   });
 }
+
+export type UseCreateMissionReturn = ReturnType<typeof useCreateMission>;

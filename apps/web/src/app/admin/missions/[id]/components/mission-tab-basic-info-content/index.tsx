@@ -14,7 +14,6 @@ import { cn, stripHtmlTags } from "@/app/admin/lib/utils";
 import { MISSION_TYPE_LABELS } from "@/constants/action";
 import type { GetMissionResponse } from "@/types/dto";
 import { MissionType } from "@prisma/client";
-import { Typo } from "@repo/ui/components";
 import {
   Calendar,
   CheckCircle2,
@@ -29,10 +28,10 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+import { BasicInfoEditDialog } from "../edit/BasicInfoEditDialog";
+import { ImageEditDialog } from "../edit/ImageEditDialog";
 import { ClientDateDisplay } from "./ClientDateDisplay";
 import { MissionCompletionCard } from "./MissionCompletionCard";
-import { BasicInfoEditDialog } from "./edit/BasicInfoEditDialog";
-import { ImageEditDialog } from "./edit/ImageEditDialog";
 
 interface MissionBasicInfoProps {
   mission: GetMissionResponse["data"];
@@ -76,7 +75,7 @@ function InfoField({ label, value, className }: InfoFieldProps) {
   );
 }
 
-export function MissionBasicInfo({ mission }: MissionBasicInfoProps) {
+export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
   const missionTypeLabel = MISSION_TYPE_LABELS[mission.type];
   const [isBasicInfoDialogOpen, setIsBasicInfoDialogOpen] = useState(false);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
@@ -104,16 +103,16 @@ export function MissionBasicInfo({ mission }: MissionBasicInfoProps) {
               <Badge
                 variant={mission.type === MissionType.EXPERIENCE_GROUP ? "default" : "secondary"}
               >
-                <Typo.Body
-                  size="medium"
+                <span
                   className={cn(
+                    "text-sm",
                     mission.type === MissionType.EXPERIENCE_GROUP
                       ? "text-muted"
                       : "text-foreground",
                   )}
                 >
                   {missionTypeLabel}
-                </Typo.Body>
+                </span>
               </Badge>
             }
           />

@@ -46,7 +46,7 @@ describe("MissionService - Read", () => {
       updateWithOptions: jest.fn(),
       delete: jest.fn(),
       updateManyOrders: jest.fn(),
-    } as jest.Mocked<ActionRepository>;
+    } as unknown as jest.Mocked<ActionRepository>;
 
     missionService = new MissionService(
       mockRepository,

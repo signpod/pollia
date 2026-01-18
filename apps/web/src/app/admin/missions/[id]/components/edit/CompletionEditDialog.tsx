@@ -10,9 +10,11 @@ import {
 } from "@/app/admin/components/shadcn-ui/dialog";
 import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
 import { type UploadedImageData, useSingleImage } from "@/app/admin/hooks/admin-image";
-import { useCreateMissionCompletion } from "@/app/admin/hooks/use-create-mission-completion";
-import { useReadMissionCompletion } from "@/app/admin/hooks/use-read-mission-completion";
-import { useUpdateMissionCompletion } from "@/app/admin/hooks/use-update-mission-completion";
+import {
+  useCreateMissionCompletion,
+  useReadMissionCompletion,
+  useUpdateMissionCompletion,
+} from "@/app/admin/hooks/mission-completion";
 import type { MissionCompletionForm } from "@/schemas/mission-completion";
 import { RotateCcw } from "lucide-react";
 import { toast } from "sonner";

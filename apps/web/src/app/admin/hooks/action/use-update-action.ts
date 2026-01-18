@@ -41,6 +41,7 @@ export function useUpdateAction(options: UseUpdateActionOptions = {}) {
     },
 
     onError: error => {
+      console.error("액션 수정 실패:", error);
       options.onError?.(error as Error);
     },
   });

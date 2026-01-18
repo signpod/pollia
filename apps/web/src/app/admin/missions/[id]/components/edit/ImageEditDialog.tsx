@@ -10,8 +10,7 @@ import {
 } from "@/app/admin/components/shadcn-ui/dialog";
 import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
 import { type UploadedImageData, useSingleImage } from "@/app/admin/hooks/admin-image";
-import { useReadMission } from "@/app/admin/hooks/use-read-mission";
-import { useUpdateMission } from "@/app/admin/hooks/use-update-mission";
+import { useReadMission, useUpdateMission } from "@/app/admin/hooks/mission";
 import type { MissionUpdate } from "@/schemas/mission";
 import { RotateCcw } from "lucide-react";
 import { toast } from "sonner";

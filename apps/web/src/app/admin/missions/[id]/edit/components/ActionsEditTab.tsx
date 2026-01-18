@@ -21,11 +21,13 @@ import {
 } from "@/app/admin/components/shadcn-ui/card";
 import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
 import { getActionTypeLabel } from "@/app/admin/constants/actionTypes";
-import { useCreateAction } from "@/app/admin/hooks/use-create-action";
-import { useDeleteAction } from "@/app/admin/hooks/use-delete-action";
-import { useReadActionsDetail } from "@/app/admin/hooks/use-read-actions-detail";
-import { useReorderActions } from "@/app/admin/hooks/use-reorder-actions";
-import { useUpdateAction } from "@/app/admin/hooks/use-update-action";
+import {
+  useCreateAction,
+  useDeleteAction,
+  useReadActionsDetail,
+  useReorderActions,
+  useUpdateAction,
+} from "@/app/admin/hooks/action";
 import type { ActionDetail } from "@/types/dto/action";
 import {
   DndContext,
@@ -421,6 +423,7 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
             options:
               "options" in data
                 ? data.options.map((opt, index) => ({
+                    id: opt.id,
                     title: opt.title,
                     description: opt.description,
                     imageUrl: opt.imageUrl,

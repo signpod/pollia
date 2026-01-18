@@ -8,8 +8,8 @@ import {
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
 import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
-import { useReadMission } from "@/app/admin/hooks/use-read-mission";
-import { useReadSubmissionList } from "@/app/admin/hooks/use-read-submission-list";
+import { useReadMission } from "@/app/admin/hooks/mission";
+import { useReadSubmissionList } from "@/app/admin/hooks/submission";
 import { notFound } from "next/navigation";
 import { use, useMemo, useState } from "react";
 import { AdminMissionHeader } from "../components/AdminMissionHeader";

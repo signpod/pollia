@@ -160,3 +160,34 @@ export async function createTimeAction(
     "시간 액션",
   );
 }
+
+interface DuplicateActionRequest {
+  actionId: string;
+  missionId: string;
+}
+
+export async function duplicateAction(request: DuplicateActionRequest) {
+  try {
+    const user = await requireAuth();
+
+    const result = await actionService.duplicateAction(
+      request.actionId,
+      request.missionId,
+      user.id,
+    );
+
+    if (result.missionId) {
+      revalidatePath(`/mission/${result.missionId}`);
+    }
+
+    return { data: result };
+  } catch (error) {
+    console.error("duplicateAction error:", error);
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("액션 복제 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
+  }
+}

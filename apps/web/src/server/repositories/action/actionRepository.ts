@@ -1,6 +1,7 @@
 import prisma from "@/database/utils/prisma/client";
 import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
 import type { ActionType, Prisma } from "@prisma/client";
+import { type OptionInput, classifyOptions } from "./classifyOptions";
 
 export class ActionRepository {
   async findByIdWithOptions(actionId: string) {
@@ -128,7 +129,7 @@ export class ActionRepository {
       const allFileUploadIds = [
         data.imageFileUploadId,
         ...options.map(option => option.imageFileUploadId),
-      ].filter(Boolean) as string[];
+      ].filter((id): id is string => Boolean(id));
 
       await confirmFileUploads(tx, userId, allFileUploadIds);
 
@@ -186,13 +187,7 @@ export class ActionRepository {
   async updateWithOptions(
     actionId: string,
     data: Prisma.ActionUncheckedUpdateInput,
-    options: Array<{
-      title: string;
-      description?: string | null;
-      imageUrl?: string | null;
-      order: number;
-      imageFileUploadId?: string | null;
-    }>,
+    options: OptionInput[],
     userId: string,
   ) {
     return prisma.$transaction(async tx => {
@@ -201,29 +196,73 @@ export class ActionRepository {
         data,
       });
 
-      await tx.actionOption.deleteMany({
-        where: { actionId },
-      });
+      const existingIds = await this.getExistingOptionIds(tx, actionId);
+      const { toUpdate, toCreate, toDeleteIds } = classifyOptions(existingIds, options);
 
-      await tx.actionOption.createMany({
-        data: options.map(option => ({
-          actionId,
-          title: option.title,
-          description: option.description || null,
-          imageUrl: option.imageUrl,
-          order: option.order,
-          fileUploadId: option.imageFileUploadId,
-        })),
-      });
+      await this.deleteOptions(tx, toDeleteIds);
+      await this.updateOptions(tx, toUpdate);
+      await this.createOptions(tx, actionId, toCreate);
 
       const allFileUploadIds = [
         data.imageFileUploadId,
         ...options.map(option => option.imageFileUploadId),
-      ].filter(Boolean) as string[];
+      ].filter((id): id is string => Boolean(id));
 
       await confirmFileUploads(tx, userId, allFileUploadIds);
 
       return updatedAction;
+    });
+  }
+
+  private async getExistingOptionIds(
+    tx: Prisma.TransactionClient,
+    actionId: string,
+  ): Promise<Set<string>> {
+    const existing = await tx.actionOption.findMany({
+      where: { actionId },
+      select: { id: true },
+    });
+    return new Set(existing.map(o => o.id));
+  }
+
+  private async deleteOptions(tx: Prisma.TransactionClient, ids: string[]) {
+    if (ids.length === 0) return;
+    await tx.actionOption.deleteMany({ where: { id: { in: ids } } });
+  }
+
+  private async updateOptions(tx: Prisma.TransactionClient, options: OptionInput[]) {
+    if (options.length === 0) return;
+    await Promise.all(
+      options.map(opt =>
+        tx.actionOption.update({
+          where: { id: opt.id },
+          data: {
+            title: opt.title,
+            description: opt.description || null,
+            imageUrl: opt.imageUrl,
+            order: opt.order,
+            fileUploadId: opt.imageFileUploadId,
+          },
+        }),
+      ),
+    );
+  }
+
+  private async createOptions(
+    tx: Prisma.TransactionClient,
+    actionId: string,
+    options: OptionInput[],
+  ) {
+    if (options.length === 0) return;
+    await tx.actionOption.createMany({
+      data: options.map(opt => ({
+        actionId,
+        title: opt.title,
+        description: opt.description || null,
+        imageUrl: opt.imageUrl,
+        order: opt.order,
+        fileUploadId: opt.imageFileUploadId,
+      })),
     });
   }
 

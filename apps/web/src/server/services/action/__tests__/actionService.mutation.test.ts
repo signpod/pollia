@@ -3,6 +3,7 @@ import {
   type ActionServiceTestContext,
   createActionServiceTestContext,
   createMockAction,
+  createMockActionWithOptions,
   mockMissionFactory,
 } from "../testUtils";
 
@@ -359,6 +360,244 @@ describe("ActionService - Mutation", () => {
       // Then
       expect(result).toEqual({ success: true });
       expect(ctx.mockActionRepo.updateManyOrders).toHaveBeenCalledWith([]);
+    });
+  });
+
+  describe("updateAction with options - upsert 동작", () => {
+    const mockAction = createMockAction({
+      title: "기존 액션",
+      type: ActionType.MULTIPLE_CHOICE,
+      maxSelections: 1,
+      isRequired: true,
+    });
+
+    it("기존 옵션에 id가 있으면 해당 옵션을 업데이트한다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+      const updateData = {
+        title: "수정된 액션",
+        options: [
+          { id: "opt-1", title: "수정된 옵션1", order: 0 },
+          { id: "opt-2", title: "수정된 옵션2", order: 1 },
+        ],
+      };
+      const mockUpdatedAction = { ...mockAction, title: updateData.title };
+
+      ctx.mockActionRepo.findById.mockResolvedValue(mockAction);
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.updateWithOptions.mockResolvedValue(mockUpdatedAction);
+
+      // When
+      await ctx.service.updateAction("action1", updateData, "user1");
+
+      // Then
+      expect(ctx.mockActionRepo.updateWithOptions).toHaveBeenCalledWith(
+        "action1",
+        { title: "수정된 액션" },
+        updateData.options,
+        "user1",
+      );
+    });
+
+    it("id가 없는 옵션은 새로 생성한다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+      const updateData = {
+        title: "수정된 액션",
+        options: [
+          { id: "opt-1", title: "기존 옵션", order: 0 },
+          { title: "새 옵션", order: 1 },
+        ],
+      };
+      const mockUpdatedAction = { ...mockAction, title: updateData.title };
+
+      ctx.mockActionRepo.findById.mockResolvedValue(mockAction);
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.updateWithOptions.mockResolvedValue(mockUpdatedAction);
+
+      // When
+      await ctx.service.updateAction("action1", updateData, "user1");
+
+      // Then
+      expect(ctx.mockActionRepo.updateWithOptions).toHaveBeenCalledWith(
+        "action1",
+        { title: "수정된 액션" },
+        updateData.options,
+        "user1",
+      );
+    });
+
+    it("전달되지 않은 기존 옵션은 삭제 대상이 된다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+      const updateData = {
+        title: "수정된 액션",
+        options: [{ id: "opt-1", title: "유지할 옵션", order: 0 }],
+      };
+      const mockUpdatedAction = { ...mockAction, title: updateData.title };
+
+      ctx.mockActionRepo.findById.mockResolvedValue(mockAction);
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.updateWithOptions.mockResolvedValue(mockUpdatedAction);
+
+      // When
+      await ctx.service.updateAction("action1", updateData, "user1");
+
+      // Then
+      expect(ctx.mockActionRepo.updateWithOptions).toHaveBeenCalledWith(
+        "action1",
+        { title: "수정된 액션" },
+        updateData.options,
+        "user1",
+      );
+    });
+  });
+
+  describe("duplicateAction", () => {
+    const mockOptions = [
+      { id: "opt-1", title: "옵션1", description: null, imageUrl: null, order: 0 },
+      { id: "opt-2", title: "옵션2", description: "설명", imageUrl: null, order: 1 },
+    ];
+
+    it("옵션이 없는 액션을 성공적으로 복제한다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+      const mockOriginalAction = createMockActionWithOptions(
+        { id: "action1", title: "원본 액션", order: 0 },
+        [],
+      );
+      const mockCreatedAction = createMockAction({
+        id: "action2",
+        title: "원본 액션 (복사본)",
+        order: 1,
+      });
+
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.findByIdWithOptions.mockResolvedValue(mockOriginalAction);
+      ctx.mockActionRepo.findActionIdsByMissionId.mockResolvedValue(["action1"]);
+      ctx.mockActionRepo.create.mockResolvedValue(mockCreatedAction);
+
+      // When
+      const result = await ctx.service.duplicateAction("action1", "mission1", "user1");
+
+      // Then
+      expect(result.id).toBe("action2");
+      expect(result.title).toContain("복사본");
+      expect(ctx.mockActionRepo.create).toHaveBeenCalled();
+      expect(ctx.mockActionRepo.createMultipleChoice).not.toHaveBeenCalled();
+    });
+
+    it("옵션이 있는 액션을 옵션과 함께 복제한다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+      const mockOriginalAction = createMockActionWithOptions(
+        { id: "action1", title: "원본 액션", type: "MULTIPLE_CHOICE", order: 0 },
+        mockOptions,
+      );
+      const mockCreatedAction = createMockAction({
+        id: "action2",
+        title: "원본 액션 (복사본)",
+        order: 1,
+      });
+
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.findByIdWithOptions.mockResolvedValue(mockOriginalAction);
+      ctx.mockActionRepo.findActionIdsByMissionId.mockResolvedValue(["action1"]);
+      ctx.mockActionRepo.createMultipleChoice.mockResolvedValue(mockCreatedAction);
+
+      // When
+      const result = await ctx.service.duplicateAction("action1", "mission1", "user1");
+
+      // Then
+      expect(result.id).toBe("action2");
+      expect(ctx.mockActionRepo.createMultipleChoice).toHaveBeenCalled();
+      expect(ctx.mockActionRepo.create).not.toHaveBeenCalled();
+    });
+
+    it("복제된 액션은 맨 뒤 순서(order)를 가진다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+      const mockOriginalAction = createMockActionWithOptions(
+        { id: "action1", title: "원본 액션", order: 0 },
+        [],
+      );
+      const existingActionIds = ["action1", "action2", "action3"];
+      const mockCreatedAction = createMockAction({
+        id: "action4",
+        title: "원본 액션 (복사본)",
+        order: 3,
+      });
+
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.findByIdWithOptions.mockResolvedValue(mockOriginalAction);
+      ctx.mockActionRepo.findActionIdsByMissionId.mockResolvedValue(existingActionIds);
+      ctx.mockActionRepo.create.mockResolvedValue(mockCreatedAction);
+
+      // When
+      await ctx.service.duplicateAction("action1", "mission1", "user1");
+
+      // Then
+      expect(ctx.mockActionRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({ order: 3 }),
+        "user1",
+      );
+    });
+
+    it("원본 액션이 없으면 404 에러를 던진다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.findByIdWithOptions.mockResolvedValue(null);
+
+      // When & Then
+      await expect(ctx.service.duplicateAction("invalid-id", "mission1", "user1")).rejects.toThrow(
+        "액션을 찾을 수 없습니다.",
+      );
+
+      expect(ctx.mockActionRepo.create).not.toHaveBeenCalled();
+      expect(ctx.mockActionRepo.createMultipleChoice).not.toHaveBeenCalled();
+    });
+
+    it("권한이 없으면 403 에러를 던진다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+
+      // When & Then
+      await expect(ctx.service.duplicateAction("action1", "mission1", "user2")).rejects.toThrow(
+        "액션을 추가할 권한이 없습니다.",
+      );
+
+      expect(ctx.mockActionRepo.findByIdWithOptions).not.toHaveBeenCalled();
+    });
+
+    it("해당 미션에 속하지 않는 액션이면 400 에러를 던진다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+      const mockOriginalAction = createMockActionWithOptions(
+        { id: "action1", missionId: "other-mission", title: "원본 액션", order: 0 },
+        [],
+      );
+
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.findByIdWithOptions.mockResolvedValue(mockOriginalAction);
+
+      // When & Then
+      await expect(ctx.service.duplicateAction("action1", "mission1", "user1")).rejects.toThrow(
+        "해당 미션에 속하지 않는 액션입니다.",
+      );
+
+      expect(ctx.mockActionRepo.create).not.toHaveBeenCalled();
+    });
+
+    it("Mission이 없으면 404 에러를 던진다", async () => {
+      // Given
+      ctx.mockMissionRepo.findById.mockResolvedValue(null);
+
+      // When & Then
+      await expect(
+        ctx.service.duplicateAction("action1", "invalid-mission", "user1"),
+      ).rejects.toThrow("존재하지 않는 미션입니다.");
     });
   });
 });

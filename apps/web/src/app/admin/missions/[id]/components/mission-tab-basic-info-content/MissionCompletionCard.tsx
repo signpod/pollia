@@ -9,12 +9,12 @@ import {
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
-import { useReadMissionCompletion } from "@/app/admin/hooks/use-read-mission-completion";
+import { useReadMissionCompletion } from "@/app/admin/hooks/mission-completion";
 import { cn, stripHtmlTags } from "@/app/admin/lib/utils";
 import { ExternalLink, ImageIcon, Pencil } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
-import { CompletionEditDialog } from "./edit/CompletionEditDialog";
+import { CompletionEditDialog } from "../edit/CompletionEditDialog";
 
 interface MissionCompletionCardProps {
   missionId: string;

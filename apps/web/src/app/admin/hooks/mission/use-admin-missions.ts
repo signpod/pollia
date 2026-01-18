@@ -1,3 +1,5 @@
+"use client";
+
 import { getUserMissions } from "@/actions/mission";
 import { adminMissionQueryKeys } from "@/app/admin/constants/queryKeys";
 import type { SortOrderType } from "@/types/common/sort";
@@ -31,3 +33,5 @@ export function useAdminMissions(options?: { limit?: number; sortOrder?: SortOrd
     isFetchingNextPage: query.isFetchingNextPage,
   };
 }
+
+export type UseAdminMissionsReturn = ReturnType<typeof useAdminMissions>;

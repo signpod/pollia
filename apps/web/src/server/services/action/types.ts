@@ -52,6 +52,7 @@ export type CreateTimeInput = BaseActionInput & {
 };
 
 export type UpdateActionOptionInput = Omit<ActionOptionInput, "order"> & {
+  id?: string;
   order: number;
 };
 

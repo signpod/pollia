@@ -1,9 +1,10 @@
 import { toast } from "@/components/common/Toast";
-import { ActionStepContentProps } from "@/constants/action";
+import { ActionStepContentProps, CLIENT_OTHER_OPTION_ID } from "@/constants/action";
 import { useIsMobile } from "@/hooks/common/useIsMobile";
 import { ActionType } from "@/types/domain/action";
 import { BottomDrawer, Typo, useBottomDrawer } from "@repo/ui/components";
 import { X } from "lucide-react";
+import { useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 import { Chip } from "./Chip";
 import { MultipleChoiceProvider, useSurveyMultipleChoice } from "./MultipleChoiceProvider";
@@ -58,7 +59,10 @@ function SurveyMultipleChoiceContent({
   isNextDisabled: isNextDisabledProp,
   isLoading,
 }: Omit<ActionStepContentProps, "updateCanGoNext" | "onAnswerChange">) {
-  const { selectedIds, toggleSelectedId, canGoNext } = useSurveyMultipleChoice();
+  const { selectedIds, toggleSelectedId, canGoNext, textAnswer, setTextAnswer, isOtherSelected } =
+    useSurveyMultipleChoice();
+
+  const [showOtherError, setShowOtherError] = useState(false);
 
   const isDisabled =
     actionData.maxSelections !== null && selectedIds.size >= actionData.maxSelections;
@@ -73,6 +77,35 @@ function SurveyMultipleChoiceContent({
       return;
     }
     toggleSelectedId(optionId);
+  };
+
+  const handleOtherClick = () => {
+    const isSingleSelection = actionData.maxSelections === 1;
+    const isAtMaxAndSelectingNew =
+      isDisabled && !isOtherSelected && actionData.maxSelections !== null;
+
+    if (!isSingleSelection && isAtMaxAndSelectingNew) {
+      toast.default(`최대 ${actionData.maxSelections}개까지 선택할 수 있어요.`);
+      return;
+    }
+    toggleSelectedId(CLIENT_OTHER_OPTION_ID);
+    if (isOtherSelected) {
+      setTextAnswer("");
+      setShowOtherError(false);
+    }
+  };
+
+  const handleTextAnswerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTextAnswer(e.target.value);
+    if (e.target.value.trim()) {
+      setShowOtherError(false);
+    }
+  };
+
+  const handleTextAnswerBlur = () => {
+    if (isOtherSelected && !textAnswer.trim()) {
+      setShowOtherError(true);
+    }
   };
 
   return (
@@ -90,21 +123,38 @@ function SurveyMultipleChoiceContent({
       isLoading={isLoading}
       isRequired={actionData.isRequired}
     >
-      <div className="flex flex-wrap gap-3 w-full">
-        {actionData.options?.map(option => (
+      <div className="flex flex-col gap-3 w-full">
+        <div className="flex flex-wrap gap-3">
+          {actionData.options?.map(option => (
+            <Chip
+              key={option.id}
+              label={option.title}
+              isSelected={selectedIds.has(option.id)}
+              onClick={() => handleClick(option.id)}
+            />
+          ))}
+        </div>
+        {actionData.hasOther && (
           <Chip
-            key={option.id}
-            label={option.title}
-            isSelected={selectedIds.has(option.id)}
-            onClick={() => handleClick(option.id)}
+            label="기타(직접 입력)"
+            isSelected={isOtherSelected}
+            isOther
+            textValue={textAnswer}
+            onTextChange={handleTextAnswerChange}
+            onTextBlur={handleTextAnswerBlur}
+            onClick={handleOtherClick}
+            showError={showOtherError}
           />
-        ))}
+        )}
       </div>
       <BottomDrawer collapsedHeight={120} expandedHeight={180}>
         <BottomDrawerContentWithScrollReset
           actionData={actionData}
           selectedIds={selectedIds}
           handleClick={handleClick}
+          isOtherSelected={isOtherSelected}
+          textAnswer={textAnswer}
+          onOtherClick={handleOtherClick}
         />
       </BottomDrawer>
     </SurveyQuestionTemplate>
@@ -115,10 +165,16 @@ function BottomDrawerContentWithScrollReset({
   actionData,
   selectedIds,
   handleClick,
+  isOtherSelected,
+  textAnswer,
+  onOtherClick,
 }: {
   actionData: ActionStepContentProps["actionData"];
   selectedIds: Set<string>;
   handleClick: (optionId: string) => void;
+  isOtherSelected: boolean;
+  textAnswer: string;
+  onOtherClick: () => void;
 }) {
   const { toggle } = useBottomDrawer();
   const isMobile = useIsMobile();
@@ -130,6 +186,7 @@ function BottomDrawerContentWithScrollReset({
   };
 
   const selectedOptions = actionData?.options?.filter(option => selectedIds.has(option.id));
+  const totalSelectedCount = (selectedOptions?.length ?? 0) + (isOtherSelected ? 1 : 0);
 
   return (
     <BottomDrawer.Content
@@ -145,7 +202,7 @@ function BottomDrawerContentWithScrollReset({
       >
         <div className="flex items-center gap-1">
           <Typo.SubTitle size="large" className="text-violet-500">
-            {selectedOptions?.length ?? 0}
+            {totalSelectedCount}
           </Typo.SubTitle>
           <Typo.SubTitle size="large">개 선택</Typo.SubTitle>
         </div>
@@ -165,6 +222,18 @@ function BottomDrawerContentWithScrollReset({
               <X className="size-4 text-violet-500" />
             </button>
           ))}
+          {isOtherSelected && (
+            <button
+              type="button"
+              onClick={onOtherClick}
+              className="flex items-center gap-1 px-3 py-2 bg-violet-50 rounded-full shrink-0"
+            >
+              <Typo.ButtonText size="medium" className="text-violet-500">
+                {textAnswer.trim() ? `기타: ${textAnswer.trim()}` : "기타"}
+              </Typo.ButtonText>
+              <X className="size-4 text-violet-500" />
+            </button>
+          )}
         </div>
       </BottomDrawer.Body>
     </BottomDrawer.Content>

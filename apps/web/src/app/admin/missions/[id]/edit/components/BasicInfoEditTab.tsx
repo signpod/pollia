@@ -29,8 +29,7 @@ import {
   type UseSingleImageReturn,
   useSingleImage,
 } from "@/app/admin/hooks/admin-image";
-import { useReadMission } from "@/app/admin/hooks/use-read-mission";
-import { useUpdateMission } from "@/app/admin/hooks/use-update-mission";
+import { useReadMission, useUpdateMission } from "@/app/admin/hooks/mission";
 import { MISSION_TYPE_LABELS } from "@/constants/action";
 import {
   MISSION_DESCRIPTION_MAX_LENGTH,

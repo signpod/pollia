@@ -31,6 +31,7 @@ export function useUpdateMissionCompletion(options: UseUpdateMissionCompletionOp
     },
 
     onError: error => {
+      console.error("미션 완료 화면 수정 실패:", error);
       options.onError?.(error as Error);
     },
   });
