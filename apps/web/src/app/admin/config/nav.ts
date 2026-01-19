@@ -7,6 +7,8 @@ export interface NavItem {
   url: string;
   icon?: LucideIcon;
   items?: NavItem[];
+  missionId?: string;
+  eventId?: string | null;
 }
 
 export interface NavGroup {
@@ -50,6 +52,8 @@ export function createAdminNavConfig(events: EventItem[], missions: MissionItem[
       title: mission.title,
       url: ADMIN_ROUTES.ADMIN_MISSION(mission.id),
       icon: ClipboardList,
+      missionId: mission.id,
+      eventId: mission.eventId,
     }));
 
   const navGroups: NavGroup[] = [];

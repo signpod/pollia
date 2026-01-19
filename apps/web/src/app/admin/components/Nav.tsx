@@ -5,6 +5,12 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/app/admin/components/shadcn-ui/collapsible";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/app/admin/components/shadcn-ui/dropdown-menu";
 import { ScrollArea } from "@/app/admin/components/shadcn-ui/scroll-area";
 import {
   SidebarGroup,
@@ -18,9 +24,10 @@ import {
   SidebarMenuSubItem,
 } from "@/app/admin/components/shadcn-ui/sidebar";
 import type { NavGroup, NavItem } from "@/app/admin/config/nav";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, MoreVertical } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { MissionEventSelector } from "./MissionEventSelector";
 
 interface NavProps {
   config: NavGroup[];
@@ -30,6 +37,11 @@ interface NavProps {
 export function Nav({ config, isActive }: NavProps) {
   const [openGroups, setOpenGroups] = useState<string[]>(config.map(group => group.label));
   const [openEventItems, setOpenEventItems] = useState<string[]>([]);
+  const [selectedMission, setSelectedMission] = useState<{
+    id: string;
+    title: string;
+    eventId: string | null;
+  } | null>(null);
 
   const toggleGroup = (label: string) => {
     setOpenGroups(prev =>
@@ -43,6 +55,14 @@ export function Nav({ config, isActive }: NavProps) {
     setOpenEventItems(prev =>
       prev.includes(url) ? prev.filter(item => item !== url) : [...prev, url],
     );
+  };
+
+  const handleOpenMissionEventSelector = (
+    missionId: string,
+    title: string,
+    eventId: string | null,
+  ) => {
+    setSelectedMission({ id: missionId, title, eventId });
   };
 
   return (
@@ -79,8 +99,10 @@ export function Nav({ config, isActive }: NavProps) {
                             item={item}
                             isActive={isActive}
                             isEventGroup={isEventGroup}
+                            isMissionGroup={isMissionGroup}
                             openEventItems={openEventItems}
                             toggleEventItem={toggleEventItem}
+                            onOpenMissionEventSelector={handleOpenMissionEventSelector}
                           />
                         ))}
                       </SidebarMenu>
@@ -93,8 +115,10 @@ export function Nav({ config, isActive }: NavProps) {
                           item={item}
                           isActive={isActive}
                           isEventGroup={isEventGroup}
+                          isMissionGroup={isMissionGroup}
                           openEventItems={openEventItems}
                           toggleEventItem={toggleEventItem}
+                          onOpenMissionEventSelector={handleOpenMissionEventSelector}
                         />
                       ))}
                     </SidebarMenu>
@@ -105,6 +129,16 @@ export function Nav({ config, isActive }: NavProps) {
           </Collapsible>
         );
       })}
+
+      {selectedMission && (
+        <MissionEventSelector
+          open={!!selectedMission}
+          onOpenChange={open => !open && setSelectedMission(null)}
+          missionId={selectedMission.id}
+          missionTitle={selectedMission.title}
+          currentEventId={selectedMission.eventId}
+        />
+      )}
     </>
   );
 }
@@ -113,27 +147,32 @@ interface NavItemComponentProps {
   item: NavItem;
   isActive: (url: string) => boolean;
   isEventGroup?: boolean;
+  isMissionGroup?: boolean;
   openEventItems?: string[];
   toggleEventItem?: (url: string, e: React.MouseEvent) => void;
+  onOpenMissionEventSelector?: (missionId: string, title: string, eventId: string | null) => void;
 }
 
 function NavItemComponent({
   item,
   isActive,
   isEventGroup,
+  isMissionGroup,
   openEventItems = [],
   toggleEventItem,
+  onOpenMissionEventSelector,
 }: NavItemComponentProps) {
   const hasSubItems = item.items && item.items.length > 0;
   const itemIsActive = isActive(item.url);
   const subItemIsActive = item.items?.some(subItem => isActive(subItem.url)) ?? false;
   const isEventItemOpen = openEventItems.includes(item.url);
 
+  // 이벤트 그룹: 하위 미션이 있는 경우 아코디언으로 표시
   if (hasSubItems && isEventGroup) {
     return (
       <>
         <SidebarMenuItem>
-          <div className="relative flex items-center w-full">
+          <div className="relative flex items-center w-full group">
             <SidebarMenuButton
               asChild
               isActive={itemIsActive || subItemIsActive}
@@ -142,26 +181,30 @@ function NavItemComponent({
             >
               <Link href={item.url}>
                 {item.icon && <item.icon />}
-                <span>{item.title}</span>
+                <span className="flex-1">{item.title}</span>
               </Link>
             </SidebarMenuButton>
-            <button
-              type="button"
-              onClick={e => toggleEventItem?.(item.url, e)}
-              className="absolute right-2 p-1 hover:bg-sidebar-accent rounded-sm transition-colors"
-            >
-              <ChevronRight
-                className={`size-4 transition-transform duration-200 ${isEventItemOpen ? "rotate-90" : ""}`}
-              />
-            </button>
+            {item.items && item.items.length > 0 && (
+              <button
+                type="button"
+                onClick={e => toggleEventItem?.(item.url, e)}
+                className="absolute right-1 p-1.5 hover:bg-sidebar-accent rounded-sm transition-colors z-10"
+                aria-label="미션 목록 토글"
+              >
+                <ChevronRight
+                  className={`size-4 transition-transform duration-200 ${isEventItemOpen ? "rotate-90" : ""}`}
+                />
+              </button>
+            )}
           </div>
         </SidebarMenuItem>
-        {isEventItemOpen && (
+        {isEventItemOpen && item.items && item.items.length > 0 && (
           <SidebarMenuSub>
-            {item.items?.map(subItem => (
+            {item.items.map(subItem => (
               <SidebarMenuSubItem key={subItem.url}>
                 <SidebarMenuSubButton asChild isActive={isActive(subItem.url)}>
                   <Link href={subItem.url}>
+                    {subItem.icon && <subItem.icon className="size-4" />}
                     <span>{subItem.title}</span>
                   </Link>
                 </SidebarMenuSubButton>
@@ -194,6 +237,53 @@ function NavItemComponent({
           ))}
         </SidebarMenuSub>
       </>
+    );
+  }
+
+  // 미션 그룹: Ellipsis 버튼 표시
+  if (isMissionGroup && item.missionId) {
+    return (
+      <SidebarMenuItem className="group/mission">
+        <div className="relative flex items-center w-full">
+          <SidebarMenuButton
+            asChild
+            isActive={itemIsActive}
+            tooltip={item.title}
+            className="flex-1 pr-8"
+          >
+            <Link href={item.url}>
+              {item.icon && <item.icon />}
+              <span className="flex-1">{item.title}</span>
+            </Link>
+          </SidebarMenuButton>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="absolute right-2 p-1 hover:bg-accent rounded-sm transition-all z-10 opacity-0 group-hover/mission:opacity-100"
+                aria-label="미션 옵션"
+                onClick={e => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+              >
+                <MoreVertical className="size-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() => {
+                  if (item.missionId) {
+                    onOpenMissionEventSelector?.(item.missionId, item.title, item.eventId ?? null);
+                  }
+                }}
+              >
+                이벤트 추가
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </SidebarMenuItem>
     );
   }
 

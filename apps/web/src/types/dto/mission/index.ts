@@ -84,6 +84,7 @@ export interface UpdateMissionRequest {
   estimatedMinutes?: number;
   type?: MissionType;
   isActive?: boolean;
+  eventId?: string | null;
 }
 
 export interface UpdateMissionResponse {
