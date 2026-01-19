@@ -1,20 +1,45 @@
 import { missionService } from "@/server/services/mission";
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
+import sharp from "sharp";
 
-const OG_WIDTH = 1200;
-const OG_HEIGHT = 630;
-const IMAGE_SIZE = 630;
+async function fetchAndOptimizeImage(
+  url: string,
+  width?: number,
+  height?: number,
+): Promise<string | null> {
+  try {
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+      },
+    });
 
-const COLORS = {
-  white: "#ffffff",
-  zinc50: "#fafafa",
-  zinc100: "#f4f4f5",
-  zinc200: "#e4e4e7",
-  zinc950: "#09090b",
-  violet500: "#8d5df9",
-  violet100: "#ede9fe",
-};
+    if (!res.ok) return null;
+
+    const arrayBuffer = await res.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // sharp로 PNG 변환 및 리사이즈
+    let sharpInstance = sharp(buffer);
+
+    if (width && height) {
+      sharpInstance = sharpInstance.resize(width, height, {
+        fit: "cover",
+        position: "top",
+      });
+    }
+
+    const pngBuffer = await sharpInstance.png().toBuffer();
+    const base64 = pngBuffer.toString("base64");
+
+    return `data:image/png;base64,${base64}`;
+  } catch (error) {
+    console.error("Image optimization error:", error);
+    return null;
+  }
+}
 
 export async function GET(
   _request: NextRequest,
@@ -26,98 +51,95 @@ export async function GET(
     const mission = await missionService.getMission(missionId);
     const { title, imageUrl, brandLogoUrl } = mission;
 
-    if (!imageUrl) {
-      return new Response("Image not found", { status: 404 });
-    }
+    const displayTitle = title
+      ? title.length > 50
+        ? `${title.substring(0, 47)}...`
+        : title
+      : "";
+
+    // sharp로 이미지 최적화 (PNG 변환)
+    const [missionImage, brandLogo, polliaLogo] = await Promise.all([
+      imageUrl ? fetchAndOptimizeImage(imageUrl, 630, 630) : null,
+      brandLogoUrl ? fetchAndOptimizeImage(brandLogoUrl, 112, 112) : null,
+      fetchAndOptimizeImage(
+        "https://pollia.me/images/pollia-logo.png",
+        undefined,
+        64,
+      ),
+    ]);
 
     return new ImageResponse(
       (
         <div
           style={{
-            width: OG_WIDTH,
-            height: OG_HEIGHT,
+            width: "100%",
+            height: "100%",
             display: "flex",
-            backgroundColor: COLORS.zinc50,
+            backgroundColor: "#fafafa",
           }}
         >
-          {/* 왼쪽: 1:1 비율로 위에서부터 자른 이미지 */}
+          {/* Left: Mission Image */}
           <div
             style={{
-              width: IMAGE_SIZE,
-              height: IMAGE_SIZE,
-              overflow: "hidden",
+              width: 630,
+              height: 630,
               display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "center",
+              backgroundColor: "#e4e4e7",
+              overflow: "hidden",
             }}
           >
-            <img
-              src={imageUrl}
-              alt=""
-              width={IMAGE_SIZE}
-              height={IMAGE_SIZE}
-              style={{
-                objectFit: "cover",
-                objectPosition: "top",
-              }}
-            />
+            {missionImage && (
+              <img src={missionImage} width={630} height={630} />
+            )}
           </div>
 
-          {/* 오른쪽: 미션 정보 */}
+          {/* Right: Content */}
           <div
             style={{
               flex: 1,
               display: "flex",
               flexDirection: "column",
               justifyContent: "center",
-              padding: "48px",
-              gap: "24px",
+              padding: 48,
             }}
           >
-            {/* 브랜드 로고 */}
-            {brandLogoUrl && (
+            {brandLogo && (
               <img
-                src={brandLogoUrl}
-                alt=""
+                src={brandLogo}
                 width={56}
                 height={56}
                 style={{
-                  borderRadius: "50%",
-                  objectFit: "cover",
-                  border: `2px solid ${COLORS.zinc200}`,
+                  borderRadius: 28,
+                  marginBottom: 24,
                 }}
               />
             )}
 
-            {/* 미션 제목 */}
-            {title && (
-              <div
-                style={{
-                  color: COLORS.zinc950,
-                  fontSize: 36,
-                  fontWeight: 700,
-                  lineHeight: 1.3,
-                  wordBreak: "keep-all",
-                }}
-              >
-                {title.length > 50 ? `${title.substring(0, 47)}...` : title}
+            <div
+              style={{
+                color: "#09090b",
+                fontSize: 36,
+                fontWeight: 700,
+                lineHeight: 1.3,
+                marginBottom: 24,
+              }}
+            >
+              {displayTitle}
+            </div>
+
+            {polliaLogo && (
+              <div style={{ marginTop: "auto", display: "flex" }}>
+                <img src={polliaLogo} height={32} />
               </div>
             )}
-
-            {/* Pollia 브랜딩 */}
-            <img
-              src={`${process.env.NEXT_PUBLIC_APP_URL || "https://pollia.me"}/images/pollia-logo.png`}
-              alt="pollia"
-              height={32}
-              style={{
-                marginTop: "auto",
-                objectFit: "contain",
-              }}
-            />
           </div>
         </div>
       ),
       {
-        width: OG_WIDTH,
-        height: OG_HEIGHT,
+        width: 1200,
+        height: 630,
         headers: {
           "Cache-Control": "public, max-age=86400, s-maxage=86400",
         },
