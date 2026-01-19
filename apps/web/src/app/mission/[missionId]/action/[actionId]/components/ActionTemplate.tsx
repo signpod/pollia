@@ -62,13 +62,12 @@ export function SurveyQuestionTemplate({
                 />
               )}
             </div>
-
-            {imageUrl && (
-              <figure className="relative aspect-3/2 overflow-hidden rounded-sm">
-                <Image src={imageUrl} alt={title} fill className="object-contain h-full" />
-              </figure>
-            )}
           </div>
+          {imageUrl && (
+            <figure className="relative aspect-3/2 overflow-hidden rounded-sm">
+              <Image src={imageUrl} alt={title} fill className="object-contain h-full" />
+            </figure>
+          )}
         </section>
 
         {/* 질문 입력 영역 (children) */}
