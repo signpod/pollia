@@ -152,6 +152,7 @@ export function ActionOptionButton({
             onChange={onTextAnswerChange}
             onBlur={onTextAnswerBlur}
             onClick={e => e.stopPropagation()}
+            autoFocus
             errorMessage={
               showOtherError && !textAnswer.trim() ? "필수 입력 사항입니다." : undefined
             }
@@ -202,6 +203,7 @@ export function ActionOptionButton({
             onChange={onTextAnswerChange}
             onBlur={onTextAnswerBlur}
             onClick={e => e.stopPropagation()}
+            autoFocus
             errorMessage={
               showOtherError && !textAnswer.trim() ? "필수 입력 사항입니다." : undefined
             }
