@@ -112,13 +112,13 @@ export class MissionService {
       throw error;
     }
 
-    const validated = result.data;
+    const { actionIds, ...validatedMissionData } = result.data;
     const mission = await this.repo.createWithActions(
       {
-        ...validated,
+        ...validatedMissionData,
         creatorId: userId,
       },
-      validated.actionIds,
+      actionIds,
     );
 
     return mission;
