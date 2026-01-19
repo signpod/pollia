@@ -36,6 +36,8 @@ export function createAdminNavConfig(events: EventItem[], missions: MissionItem[
         title: mission.title,
         url: ADMIN_ROUTES.ADMIN_MISSION(mission.id),
         icon: ClipboardList,
+        missionId: mission.id,
+        eventId: mission.eventId,
       }));
 
     return {

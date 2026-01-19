@@ -199,15 +199,53 @@ function NavItemComponent({
           </div>
         </SidebarMenuItem>
         {isEventItemOpen && item.items && item.items.length > 0 && (
-          <SidebarMenuSub>
+          <SidebarMenuSub className="ml-3.5 mr-0">
             {item.items.map(subItem => (
-              <SidebarMenuSubItem key={subItem.url}>
-                <SidebarMenuSubButton asChild isActive={isActive(subItem.url)}>
-                  <Link href={subItem.url}>
-                    {subItem.icon && <subItem.icon className="size-4" />}
-                    <span>{subItem.title}</span>
-                  </Link>
-                </SidebarMenuSubButton>
+              <SidebarMenuSubItem key={subItem.url} className="group/submission">
+                <div className="relative flex items-center w-full">
+                  <SidebarMenuSubButton
+                    asChild
+                    isActive={isActive(subItem.url)}
+                    className="flex-1 pr-4"
+                  >
+                    <Link href={subItem.url}>
+                      {subItem.icon && <subItem.icon className="size-4" />}
+                      <span className="flex-1">{subItem.title}</span>
+                    </Link>
+                  </SidebarMenuSubButton>
+                  {subItem.missionId && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          className="absolute right-2 p-1 hover:bg-accent rounded-sm transition-all z-10 opacity-0 group-hover/submission:opacity-100"
+                          aria-label="미션 옵션"
+                          onClick={e => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                        >
+                          <MoreVertical className="size-3" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => {
+                            if (subItem.missionId) {
+                              onOpenMissionEventSelector?.(
+                                subItem.missionId,
+                                subItem.title,
+                                subItem.eventId ?? null,
+                              );
+                            }
+                          }}
+                        >
+                          이벤트 변경
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </div>
               </SidebarMenuSubItem>
             ))}
           </SidebarMenuSub>
