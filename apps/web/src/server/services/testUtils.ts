@@ -18,6 +18,7 @@ export const createMockMission = (overrides: Partial<Mission> = {}): Mission => 
   rewardId: null,
   imageFileUploadId: null,
   brandLogoFileUploadId: null,
+  eventId: null,
   createdAt: new Date(),
   updatedAt: new Date(),
   ...overrides,

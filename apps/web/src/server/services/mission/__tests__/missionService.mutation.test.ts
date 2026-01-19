@@ -207,7 +207,7 @@ describe("MissionService - Mutation", () => {
         rewardId: null,
         imageFileUploadId: null,
         brandLogoFileUploadId: null,
-        createdAt: new Date(),
+        eventId: null,        createdAt: new Date(),
         updatedAt: new Date(),
       };
       mockRepository.findById.mockResolvedValue(mockMission);
@@ -244,7 +244,7 @@ describe("MissionService - Mutation", () => {
         rewardId: null,
         imageFileUploadId: null,
         brandLogoFileUploadId: null,
-        createdAt: new Date(),
+        eventId: null,        createdAt: new Date(),
         updatedAt: new Date(),
       };
       mockRepository.findById.mockResolvedValue(mockMission);
@@ -280,7 +280,7 @@ describe("MissionService - Mutation", () => {
         rewardId: null,
         imageFileUploadId: null,
         brandLogoFileUploadId: null,
-        createdAt: new Date(),
+        eventId: null,        createdAt: new Date(),
         updatedAt: new Date(),
       };
       mockRepository.findById.mockResolvedValue(mockMission);
@@ -318,7 +318,7 @@ describe("MissionService - Mutation", () => {
         rewardId: null,
         imageFileUploadId: null,
         brandLogoFileUploadId: null,
-        createdAt: new Date(),
+        eventId: null,        createdAt: new Date(),
         updatedAt: new Date(),
       };
       mockRepository.findById.mockResolvedValue(mockMission);
@@ -350,7 +350,7 @@ describe("MissionService - Mutation", () => {
         rewardId: null,
         imageFileUploadId: null,
         brandLogoFileUploadId: null,
-        createdAt: new Date(),
+        eventId: null,        createdAt: new Date(),
         updatedAt: new Date(),
       };
       mockRepository.findById.mockResolvedValue(mockMission);
@@ -388,7 +388,7 @@ describe("MissionService - Mutation", () => {
         rewardId: null,
         imageFileUploadId: null,
         brandLogoFileUploadId: null,
-        createdAt: new Date(),
+        eventId: null,        createdAt: new Date(),
         updatedAt: new Date(),
       };
       mockRepository.findById.mockResolvedValue(mockMission);
@@ -419,7 +419,7 @@ describe("MissionService - Mutation", () => {
         rewardId: null,
         imageFileUploadId: null,
         brandLogoFileUploadId: null,
-        createdAt: new Date(),
+        eventId: null,        createdAt: new Date(),
         updatedAt: new Date(),
       };
       mockRepository.findById.mockResolvedValue(mockMission);
@@ -450,7 +450,7 @@ describe("MissionService - Mutation", () => {
         rewardId: null,
         imageFileUploadId: null,
         brandLogoFileUploadId: null,
-        createdAt: new Date(),
+        eventId: null,        createdAt: new Date(),
         updatedAt: new Date(),
       };
       mockRepository.findById.mockResolvedValue(mockMission);
@@ -488,7 +488,7 @@ describe("MissionService - Mutation", () => {
         rewardId: null,
         imageFileUploadId: null,
         brandLogoFileUploadId: null,
-        createdAt: new Date(),
+        eventId: null,        createdAt: new Date(),
         updatedAt: new Date(),
       };
       mockRepository.findById.mockResolvedValue(mockMission);
@@ -519,7 +519,7 @@ describe("MissionService - Mutation", () => {
         rewardId: null,
         imageFileUploadId: null,
         brandLogoFileUploadId: null,
-        createdAt: new Date(),
+        eventId: null,        createdAt: new Date(),
         updatedAt: new Date(),
       };
       mockRepository.findById.mockResolvedValue(mockMission);
@@ -550,7 +550,7 @@ describe("MissionService - Mutation", () => {
         rewardId: null,
         imageFileUploadId: null,
         brandLogoFileUploadId: null,
-        createdAt: new Date(),
+        eventId: null,        createdAt: new Date(),
         updatedAt: new Date(),
       };
       mockRepository.findById.mockResolvedValue(mockMission);

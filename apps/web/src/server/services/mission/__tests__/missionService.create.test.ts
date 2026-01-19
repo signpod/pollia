@@ -90,6 +90,7 @@ describe("MissionService - Create", () => {
         rewardId: null,
         imageFileUploadId: null,
         brandLogoFileUploadId: null,
+        eventId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -368,6 +369,7 @@ describe("MissionService - Create", () => {
         rewardId: null,
         imageFileUploadId: null,
         brandLogoFileUploadId: null,
+        eventId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -389,6 +391,7 @@ describe("MissionService - Create", () => {
         rewardId: null,
         imageFileUploadId: null,
         brandLogoFileUploadId: null,
+        eventId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
