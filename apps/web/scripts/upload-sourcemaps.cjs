@@ -70,9 +70,9 @@ function uploadSourceMap(minifiedUrl, sourceMapPath) {
       },
     };
 
-    const req = https.request(options, (res) => {
+    const req = https.request(options, res => {
       let data = "";
-      res.on("data", (chunk) => {
+      res.on("data", chunk => {
         data += chunk;
       });
       res.on("end", () => {
@@ -107,10 +107,7 @@ function findSourceMaps(dir) {
         walkDir(filePath);
       } else if (file.endsWith(".js.map")) {
         const jsFile = filePath.replace(".map", "");
-        const relativePath = path.relative(
-          path.join(process.cwd(), ".next"),
-          jsFile
-        );
+        const relativePath = path.relative(path.join(process.cwd(), ".next"), jsFile);
         const minifiedUrl = `${BASE_URL}/_next/${relativePath}`;
 
         sourceMaps.push({

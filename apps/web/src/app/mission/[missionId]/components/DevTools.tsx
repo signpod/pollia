@@ -172,7 +172,6 @@ export function DevTools({ missionId }: DevToolsProps) {
               )}
               초기화하기
             </button>
-
           </div>
         </div>
       )}
