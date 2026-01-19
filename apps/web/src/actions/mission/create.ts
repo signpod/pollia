@@ -18,6 +18,7 @@ function toCreateMissionInput(dto: CreateMissionRequest): CreateMissionInput {
     estimatedMinutes: dto.estimatedMinutes,
     maxParticipants: dto.maxParticipants,
     type: dto.type,
+    eventId: dto.eventId,
     actionIds: dto.actionIds ?? [],
   };
 }

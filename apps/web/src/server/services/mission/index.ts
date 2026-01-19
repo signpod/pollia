@@ -125,6 +125,7 @@ export class MissionService {
         estimatedMinutes: validated.estimatedMinutes,
         maxParticipants: validated.maxParticipants,
         type: validated.type,
+        eventId: validated.eventId,
         creatorId: userId,
       },
       validated.actionIds,

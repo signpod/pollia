@@ -50,6 +50,8 @@ const maxParticipantsSchema = z
 
 const actionIdsSchema = z.array(z.string().min(1, "액션 ID가 비어있습니다.")).default([]);
 
+const eventIdSchema = z.string().nullable().optional();
+
 const passwordSchema = z
   .string()
   .length(6, "비밀번호는 정확히 6자리여야 합니다.")
@@ -72,6 +74,7 @@ export const missionInputSchema = z.object({
   maxParticipants: maxParticipantsSchema,
   type: missionTypeSchema,
   actionIds: actionIdsSchema,
+  eventId: eventIdSchema,
   isActive: z.boolean().optional(),
 });
 

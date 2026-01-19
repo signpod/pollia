@@ -13,6 +13,7 @@ export interface CreateMissionRequest {
   maxParticipants?: number | null;
   type: MissionType;
   isActive?: boolean;
+  eventId?: string | null;
   actionIds?: string[];
 }
 
