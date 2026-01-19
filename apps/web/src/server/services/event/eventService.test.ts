@@ -159,10 +159,8 @@ describe("EventService", () => {
       const result = await eventService.getUserEvents("user-1", { limit: 2 });
 
       expect(result).toHaveLength(2);
-      if (result[0] && result[1]) {
-        expect(result[0].id).toBe("event-1");
-        expect(result[1].id).toBe("event-2");
-      }
+      expect(result[0]?.id).toBe("event-1");
+      expect(result[1]?.id).toBe("event-2");
     });
 
     it("Event가 없는 User는 빈 배열을 반환한다", async () => {

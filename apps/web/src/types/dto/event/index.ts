@@ -8,17 +8,7 @@ export interface CreateEventRequest {
 }
 
 export interface CreateEventResponse {
-  data: Pick<
-    Event,
-    | "id"
-    | "title"
-    | "description"
-    | "startDate"
-    | "endDate"
-    | "creatorId"
-    | "createdAt"
-    | "updatedAt"
-  >;
+  data: Event;
 }
 
 export interface GetEventResponse {
