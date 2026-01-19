@@ -95,7 +95,7 @@ export function CalloutProvider({ children, position = "top-center" }: CalloutPr
               if (!open) dismiss(callout.id);
             }}
             className={cn(
-              "group pointer-events-auto relative shadow-[0_4px_20px_rgba(0,0,0,0.08)] flex w-full items-start gap-3 rounded-sm p-3 pl-4 transition-all break-keep",
+              "group pointer-events-auto relative shadow-[0_4px_20px_rgba(0,0,0,0.08)] flex w-fit max-w-full items-start gap-3 rounded-sm p-3 pl-4 transition-all break-keep",
               "data-[state=open]:animate-in data-[state=closed]:animate-out",
               "data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full",
               "data-[state=open]:slide-in-from-top-full data-[state=open]:fade-in-0",
@@ -129,7 +129,7 @@ export function CalloutProvider({ children, position = "top-center" }: CalloutPr
         ))}
         <ToastPrimitive.Viewport
           className={cn(
-            "fixed z-100 flex flex-col gap-2 outline-none w-[calc(100%-2rem)] max-w-lg",
+            "fixed z-100 flex flex-col items-center gap-2 outline-none w-[calc(100%-2rem)] max-w-lg",
             positionStyles[position],
           )}
         />

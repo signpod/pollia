@@ -1,7 +1,14 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { CSSProperties, ComponentProps } from "react";
 import { cn } from "../../lib/utils";
+
+interface ScaleContextValue {
+  handleMouseDown: (e: React.MouseEvent) => void;
+  handleTouchStart: (e: React.TouchEvent) => void;
+}
+
+const ScaleContext = createContext<ScaleContextValue | null>(null);
 
 export interface ScaleRootProps
   extends Omit<ComponentProps<"div">, "value" | "onChange" | "onValueChange"> {
@@ -148,29 +155,36 @@ function ScaleRoot({
   }, [isDragging, handleTouchMove, handleTouchEnd]);
 
   return (
-    <div
-      ref={rootRef}
-      className={cn(
-        "relative flex touch-none select-none",
-        orientation === "vertical" ? "flex-col" : "flex-row",
-        disabled && "cursor-not-allowed opacity-50",
-        className,
-      )}
-      onMouseDown={handleMouseDown}
-      onTouchStart={handleTouchStart}
-      data-orientation={orientation}
-      {...props}
-    >
-      {children}
-    </div>
+    <ScaleContext.Provider value={{ handleMouseDown, handleTouchStart }}>
+      <div
+        ref={rootRef}
+        className={cn(
+          "relative flex touch-none select-none",
+          orientation === "vertical" ? "flex-col" : "flex-row",
+          disabled && "cursor-not-allowed opacity-50",
+          className,
+        )}
+        data-orientation={orientation}
+        {...props}
+      >
+        {children}
+      </div>
+    </ScaleContext.Provider>
   );
 }
 
 export interface ScaleTrackProps extends ComponentProps<"div"> {}
 
 function ScaleTrack({ className, children, ...props }: ScaleTrackProps) {
+  const context = useContext(ScaleContext);
+
   return (
-    <div className={cn("relative", className)} {...props}>
+    <div
+      className={cn("relative", className)}
+      onMouseDown={context?.handleMouseDown}
+      onTouchStart={context?.handleTouchStart}
+      {...props}
+    >
       {children}
     </div>
   );
@@ -181,7 +195,7 @@ export interface ScaleThumbProps extends ComponentProps<"div"> {
 }
 
 function ScaleThumb({ className, style, ...props }: ScaleThumbProps) {
-  return <div className={cn("absolute", className)} style={style} {...props} />;
+  return <div className={cn("absolute cursor-pointer", className)} style={style} {...props} />;
 }
 
 export const Scale = {
