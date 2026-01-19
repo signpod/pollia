@@ -1,32 +1,27 @@
 "use client";
 
 import { AdminCard } from "@/app/admin/components/common/organisms/AdminCard";
+import { AdminCreateCard } from "@/app/admin/components/common/organisms/AdminCreateCard";
 import { ADMIN_ROUTES } from "@/app/admin/constants/routes";
 import { stripHtmlTags } from "@/app/admin/lib/utils";
 import type { Mission } from "@prisma/client";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 import { CalendarDays } from "lucide-react";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 interface EventMissionListProps {
+  eventId: string;
   missions: Mission[];
 }
 
-export function EventMissionList({ missions }: EventMissionListProps) {
-  if (missions.length === 0) {
-    return (
-      <div className="space-y-4">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">미션</h2>
-          <p className="text-muted-foreground">이 이벤트에 속한 미션 목록입니다.</p>
-        </div>
-        <div className="flex items-center justify-center h-64 border-2 border-dashed rounded-lg">
-          <p className="text-muted-foreground">이 이벤트에 속한 미션이 없습니다.</p>
-        </div>
-      </div>
-    );
-  }
+export function EventMissionList({ eventId, missions }: EventMissionListProps) {
+  const router = useRouter();
+
+  const handleCreateMission = () => {
+    router.push(`${ADMIN_ROUTES.ADMIN_MISSION_CREATE}?eventId=${eventId}`);
+  };
 
   return (
     <div className="space-y-4">
@@ -35,6 +30,7 @@ export function EventMissionList({ missions }: EventMissionListProps) {
         <p className="text-muted-foreground">이 이벤트에 속한 미션 목록입니다.</p>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <AdminCreateCard onClick={handleCreateMission} label="미션 추가" />
         {missions.map(mission => (
           <AdminCard
             key={mission.id}

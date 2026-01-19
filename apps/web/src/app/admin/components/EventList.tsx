@@ -21,13 +21,11 @@ export function EventList() {
     <>
       <div className="space-y-4">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <button type="button" onClick={() => setIsCreateModalOpen(true)} className="text-left">
-            <AdminCreateCard
-              title="새 이벤트 만들기"
-              description="이벤트를 생성하고 미션을 관리하세요"
-              href="#"
-            />
-          </button>
+          <AdminCreateCard
+            title="새 이벤트 만들기"
+            description="이벤트를 생성하고 미션을 관리하세요"
+            onClick={() => setIsCreateModalOpen(true)}
+          />
 
           {events.map(event => (
             <EventCard key={event.id} event={event} />

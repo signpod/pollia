@@ -22,6 +22,7 @@ export default function AdminMissionCreatePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentStepParam = searchParams.get("step");
+  const eventIdParam = searchParams.get("eventId");
   const currentStep: Step =
     currentStepParam && STEPS.includes(currentStepParam as Step)
       ? (currentStepParam as Step)
@@ -136,6 +137,7 @@ export default function AdminMissionCreatePage() {
         ...(missionData.estimatedMinutes && { estimatedMinutes: missionData.estimatedMinutes }),
         ...(missionData.deadline && { deadline: missionData.deadline }),
         ...(missionData.isActive !== undefined && { isActive: missionData.isActive }),
+        ...(eventIdParam && { eventId: eventIdParam }),
       };
 
       createMission.mutate(payload);

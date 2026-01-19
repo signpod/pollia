@@ -35,7 +35,7 @@ export function EventDetailContent({ eventId }: EventDetailContentProps) {
     <>
       <div className="max-w-7xl space-y-8">
         <AdminEventHeader event={event} onEdit={() => setIsEditModalOpen(true)} />
-        <EventMissionList missions={event.missions} />
+        <EventMissionList eventId={eventId} missions={event.missions} />
       </div>
 
       <EventEditModal open={isEditModalOpen} onOpenChange={setIsEditModalOpen} event={event} />
