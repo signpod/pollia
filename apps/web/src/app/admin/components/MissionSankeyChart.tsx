@@ -150,7 +150,7 @@ export function MissionSankeyChart({ data }: MissionSankeyChartProps) {
         linkContract={0}
         linkBlendMode="normal"
         enableLinkGradient={true}
-        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+        // biome-ignore lint/suspicious/noExplicitAny: node is a valid type
         label={(node: any) => node.id}
         labelOrientation="vertical"
         labelPadding={8}
@@ -168,7 +168,7 @@ export function MissionSankeyChart({ data }: MissionSankeyChartProps) {
             </TooltipContainer>
           );
         }}
-        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+        // biome-ignore lint/suspicious/noExplicitAny: link is a valid type
         linkTooltip={({ link }: { link: any }) => {
           const sourceCount = nodeValueMap.get(link.source.id) || 0;
           const percent = formatPercent(link.value, sourceCount);

@@ -41,7 +41,7 @@ export function AdminCard({ title, description, href, statusBadge, bottomInfo }:
         <CardContent>
           <div className="space-y-2">
             {bottomInfo.map((info, index) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+              // biome-ignore lint/suspicious/noArrayIndexKey: index is used as the key
               <div key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
                 {info}
               </div>
