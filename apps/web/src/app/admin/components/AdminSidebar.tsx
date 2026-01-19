@@ -27,12 +27,14 @@ import { useMemo } from "react";
 import { useAdminMissions } from "../hooks/mission";
 import { cn } from "../lib/utils";
 
+const SIDEBAR_ITEMS_LIMIT = 50;
+
 export function AdminSidebar() {
   const pathname = usePathname();
   const { state } = useSidebar();
   const { isDark, toggleTheme, mounted } = useAdminTheme();
-  const { events } = useAdminEvents({ sortOrder: "latest", limit: 100 });
-  const { missions } = useAdminMissions({ sortOrder: "latest", limit: 100 });
+  const { events } = useAdminEvents({ sortOrder: "latest", limit: SIDEBAR_ITEMS_LIMIT });
+  const { missions } = useAdminMissions({ sortOrder: "latest", limit: SIDEBAR_ITEMS_LIMIT });
 
   const adminNavConfig = useMemo(() => {
     return createAdminNavConfig(events, missions);

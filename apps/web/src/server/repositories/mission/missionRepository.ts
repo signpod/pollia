@@ -23,18 +23,6 @@ export class MissionRepository {
 
     return prisma.mission.findMany({
       where: { creatorId: userId },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        target: true,
-        imageUrl: true,
-        isActive: true,
-        type: true,
-        eventId: true,
-        createdAt: true,
-        updatedAt: true,
-      },
       orderBy: {
         updatedAt: sortOrder === "latest" ? "desc" : "asc",
       },

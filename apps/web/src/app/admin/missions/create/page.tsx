@@ -5,6 +5,7 @@ import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
 import { useCreateMission } from "@/app/admin/hooks/mission";
 import { useCreateMissionCompletion } from "@/app/admin/hooks/mission-completion";
+import type { CreateMissionRequest } from "@/types/dto/mission";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -120,24 +121,22 @@ export default function AdminMissionCreatePage() {
     async (data: CreateMissionFunnelFormData) => {
       const { completion, ...missionData } = data;
 
-      const payload = {
+      const payload: CreateMissionRequest = {
         title: missionData.title,
         type: missionData.type,
         actionIds: Array.isArray(missionData.actionIds) ? missionData.actionIds : [],
         maxParticipants:
           typeof missionData.maxParticipants === "number" ? missionData.maxParticipants : null,
-        ...(missionData.description && { description: missionData.description }),
-        ...(missionData.target && { target: missionData.target }),
-        ...(missionData.imageUrl && { imageUrl: missionData.imageUrl }),
-        ...(missionData.imageFileUploadId && { imageFileUploadId: missionData.imageFileUploadId }),
-        ...(missionData.brandLogoUrl && { brandLogoUrl: missionData.brandLogoUrl }),
-        ...(missionData.brandLogoFileUploadId && {
-          brandLogoFileUploadId: missionData.brandLogoFileUploadId,
-        }),
-        ...(missionData.estimatedMinutes && { estimatedMinutes: missionData.estimatedMinutes }),
-        ...(missionData.deadline && { deadline: missionData.deadline }),
-        ...(missionData.isActive !== undefined && { isActive: missionData.isActive }),
-        ...(eventIdParam && { eventId: eventIdParam }),
+        description: missionData.description || null,
+        target: missionData.target || null,
+        imageUrl: missionData.imageUrl || null,
+        imageFileUploadId: missionData.imageFileUploadId || null,
+        brandLogoUrl: missionData.brandLogoUrl || null,
+        brandLogoFileUploadId: missionData.brandLogoFileUploadId || null,
+        estimatedMinutes: missionData.estimatedMinutes || null,
+        deadline: missionData.deadline || null,
+        isActive: missionData.isActive ?? true,
+        eventId: eventIdParam || null,
       };
 
       createMission.mutate(payload);
