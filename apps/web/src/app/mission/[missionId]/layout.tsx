@@ -23,6 +23,7 @@ interface LayoutParams {
 
 export async function generateMetadata({ params }: LayoutParams): Promise<Metadata> {
   const { missionId } = await params;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://pollia.me";
 
   try {
     const missionResult = await getMission(missionId);
@@ -30,7 +31,7 @@ export async function generateMetadata({ params }: LayoutParams): Promise<Metada
 
     const ogTitle = title || SHARE_MESSAGES.kakao.title;
     const ogDescription = SHARE_MESSAGES.kakao.description;
-    const ogImage = imageUrl || SHARE_IMAGE_PATH;
+    const ogImage = imageUrl ? `${baseUrl}/api/og/${missionId}` : SHARE_IMAGE_PATH;
 
     return {
       title: ogTitle,
@@ -38,7 +39,14 @@ export async function generateMetadata({ params }: LayoutParams): Promise<Metada
       openGraph: {
         title: ogTitle,
         description: ogDescription,
-        images: [ogImage],
+        images: [
+          {
+            url: ogImage,
+            width: 1200,
+            height: 630,
+            alt: ogTitle,
+          },
+        ],
         type: "website",
       },
     };
