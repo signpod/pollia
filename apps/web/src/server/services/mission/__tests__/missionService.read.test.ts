@@ -269,28 +269,21 @@ describe("MissionService - Read", () => {
     it("User의 Mission 목록을 성공적으로 조회한다", async () => {
       // Given
       const mockMissions = [
-        {
+        createMockMission({
           id: "mission-1",
           title: "설문 1",
           description: null,
-          target: null,
-          imageUrl: null,
-          isActive: true,
-          type: "GENERAL" as const,
           createdAt: new Date("2024-01-01"),
           updatedAt: new Date("2024-01-01"),
-        },
-        {
+        }),
+        createMockMission({
           id: "mission-2",
           title: "설문 2",
           description: "설명",
-          target: null,
-          imageUrl: null,
           isActive: false,
-          type: "GENERAL" as const,
           createdAt: new Date("2024-01-02"),
           updatedAt: new Date("2024-01-02"),
-        },
+        }),
       ];
       mockRepository.findByUserId.mockResolvedValue(mockMissions);
 
@@ -307,39 +300,19 @@ describe("MissionService - Read", () => {
     it("limit보다 많은 Mission이 있을 때 마지막 항목을 제거한다", async () => {
       // Given
       const mockMissions = [
-        {
+        createMockMission({
           id: "mission-1",
           title: "설문 1",
-          description: null,
-          target: null,
-          imageUrl: null,
-          isActive: true,
-          type: "GENERAL" as const,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
+        }),
+        createMockMission({
           id: "mission-2",
           title: "설문 2",
-          description: null,
-          target: null,
-          imageUrl: null,
-          isActive: true,
-          type: "GENERAL" as const,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        {
+        }),
+        createMockMission({
           id: "mission-3",
           title: "설문 3",
-          description: null,
-          target: null,
-          imageUrl: null,
           isActive: false,
-          type: "GENERAL" as const,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
+        }),
       ];
       mockRepository.findByUserId.mockResolvedValue(mockMissions);
 
