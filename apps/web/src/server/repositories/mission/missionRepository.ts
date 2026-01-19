@@ -31,6 +31,7 @@ export class MissionRepository {
         imageUrl: true,
         isActive: true,
         type: true,
+        eventId: true,
         createdAt: true,
         updatedAt: true,
       },
