@@ -195,7 +195,7 @@ export function MissionIntro({ children }: MissionIntroProps) {
             {imageUrl && (
               <div className="relative w-full h-svh min-h-svh">
                 <MissionImage imageUrl={imageUrl} />
-                <div className="bg-linear-to-t from-black via-black/50 via-70% to-transparent absolute bottom-0 left-0 right-0 flex flex-col gap-6 pb-6 pt-12 px-5">
+                <div className="bg-linear-to-t from-black via-black/50 via-70% to-transparent absolute bottom-0 left-0 right-0 z-10 flex flex-col gap-6 pb-6 pt-12 px-5">
                   <div ref={titleRef} className="flex flex-col gap-3 justify-center items-center">
                     <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
                     <div className="break-keep text-white text-center">
@@ -226,7 +226,7 @@ export function MissionIntro({ children }: MissionIntroProps) {
                     )}
                   </div>
 
-                  <div>
+                  <div className="relative z-10">
                     <ButtonV2
                       variant="tertiary"
                       size="large"
@@ -261,7 +261,7 @@ export function MissionIntro({ children }: MissionIntroProps) {
                           }}
                         />
 
-                        <Typo.ButtonText size="large" className="text-white z-50">
+                        <Typo.ButtonText size="large" className="text-white">
                           아래로 내려보세요
                         </Typo.ButtonText>
                       </div>
@@ -273,17 +273,26 @@ export function MissionIntro({ children }: MissionIntroProps) {
 
             {children}
 
-            <FixedBottomContent>
-              {/**  블러 배경 (별도 레이어) */}
+            <FixedBottomContent
+              className={isScrolled ? "bg-transparent" : "bg-transparent pointer-events-none"}
+            >
+              {/**  블러 배경 (별도 레이어) - opacity 애니메이션 */}
               <div
                 className="absolute inset-x-0 bottom-0"
                 style={{
                   height: "100px",
+                  opacity: isScrolled ? 1 : 0,
+                  transition: "opacity 0.3s ease-out",
                   backdropFilter: "blur(100px)",
                   WebkitBackdropFilter: "blur(100px)",
-                  maskImage: "linear-gradient(to bottom, transparent 0%, black 100%)",
-                  WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 100%)",
+                  maskImage: isScrolled
+                    ? "linear-gradient(to bottom, transparent 0%, black 100%)"
+                    : "linear-gradient(to bottom, transparent 100%, transparent 100%)",
+                  WebkitMaskImage: isScrolled
+                    ? "linear-gradient(to bottom, transparent 0%, black 100%)"
+                    : "linear-gradient(to bottom, transparent 100%, transparent 100%)",
                   background: "rgba(255, 255, 255, 0)",
+                  pointerEvents: "none",
                 }}
               />
               {/**  fixed bottom 버튼 */}
@@ -291,7 +300,7 @@ export function MissionIntro({ children }: MissionIntroProps) {
                 className={cn(
                   "sticky bottom-0 z-60 border-zinc-100 transition-all duration-300 ease-out",
                   isScrolled
-                    ? "opacity-100 translate-y-0"
+                    ? "opacity-100 translate-y-0 pointer-events-auto"
                     : "opacity-0 translate-y-full pointer-events-none",
                 )}
                 style={{
