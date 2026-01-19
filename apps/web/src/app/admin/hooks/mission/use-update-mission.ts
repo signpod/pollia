@@ -1,7 +1,7 @@
 "use client";
 
 import { updateMission } from "@/actions/mission";
-import { adminMissionQueryKeys } from "@/app/admin/constants/queryKeys";
+import { adminEventQueryKeys, adminMissionQueryKeys } from "@/app/admin/constants/queryKeys";
 import type { UpdateMissionRequest, UpdateMissionResponse } from "@/types/dto/mission";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -27,6 +27,9 @@ export function useUpdateMission(options: UseUpdateMissionOptions = {}) {
       });
       queryClient.invalidateQueries({
         queryKey: adminMissionQueryKeys.all(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: adminEventQueryKeys.all(),
       });
       options.onSuccess?.(data);
     },
