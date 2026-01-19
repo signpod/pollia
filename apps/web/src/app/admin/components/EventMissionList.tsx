@@ -1,6 +1,6 @@
 "use client";
 
-import { AdminCard } from "@/app/admin/components/AdminCard";
+import { AdminCard } from "@/app/admin/components/common/organisms/AdminCard";
 import { ADMIN_ROUTES } from "@/app/admin/constants/routes";
 import { stripHtmlTags } from "@/app/admin/lib/utils";
 import type { Mission } from "@prisma/client";

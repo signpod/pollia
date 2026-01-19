@@ -6,7 +6,7 @@ import { format, isAfter, isBefore } from "date-fns";
 import { ko } from "date-fns/locale";
 import { CalendarDays, CheckCircle } from "lucide-react";
 import React from "react";
-import { AdminCard } from "./AdminCard";
+import { AdminCard } from "./common/organisms/AdminCard";
 
 interface EventCardProps {
   event: Event & { missions?: { id: string }[] };

@@ -5,9 +5,9 @@ import { Card, CardContent, CardHeader } from "@/app/admin/components/shadcn-ui/
 import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
 import { useAdminEvents } from "@/app/admin/hooks/event";
 import { useState } from "react";
-import { AdminCreateCard } from "./AdminCreateCard";
 import { EventCard } from "./EventCard";
 import { EventCreateModal } from "./EventCreateModal";
+import { AdminCreateCard } from "./common/organisms/AdminCreateCard";
 
 export function EventList() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
