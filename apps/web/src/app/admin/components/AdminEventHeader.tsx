@@ -82,9 +82,9 @@ export function AdminEventHeader({ event, onEdit }: AdminEventHeaderProps) {
     },
   });
 
-  const handleOpenDeleteDialog = useCallback(() => {
+  const handleOpenDeleteDialog = () => {
     setIsDeleteDialogOpen(true);
-  }, []);
+  };
 
   const handleConfirmDelete = useCallback(() => {
     deleteEvent.mutate(event.id);
