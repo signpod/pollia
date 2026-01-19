@@ -78,6 +78,12 @@ export function formatDateToYYYYMMDD(date: Date | string): string {
  * @returns HH:mm 형식의 문자열
  */
 export function formatDateToHHMM(date: Date | string): string {
+  if (typeof date === "string") {
+    const timeMatch = date.match(/T(\d{2}):(\d{2})/);
+    if (timeMatch?.[1] && timeMatch?.[2]) {
+      return `${timeMatch[1]}:${timeMatch[2]}`;
+    }
+  }
   const d = typeof date === "string" ? new Date(date) : date;
   const hours = String(d.getHours()).padStart(2, "0");
   const minutes = String(d.getMinutes()).padStart(2, "0");
