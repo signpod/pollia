@@ -47,26 +47,28 @@ export function SurveyQuestionTemplate({
     <FixedBottomLayout hasGradient>
       <div className="space-y-6 px-5 pb-5 pt-[28px]">
         {/* 질문 정보 섹션 */}
-        <section className="space-y-1 relative">
-          <div className="flex flex-col gap-2">
-            <RequiredIndicator isRequired={!!isRequired} />
-            <Typo.MainTitle size="medium" className="flex gap-1">
-              {title}
-            </Typo.MainTitle>
+        <section className="space-y-2 relative">
+          <div className="space-y-1">
+            <div className="flex flex-col gap-2">
+              <RequiredIndicator isRequired={!!isRequired} />
+              <Typo.MainTitle size="medium" className="flex gap-1">
+                {title}
+              </Typo.MainTitle>
+
+              {description && cleanTiptapHTML(description) && (
+                <TiptapViewer
+                  content={cleanTiptapHTML(description)}
+                  className="prose prose-sm break-keep max-w-none text-sub"
+                />
+              )}
+            </div>
+
+            {imageUrl && (
+              <figure className="relative aspect-3/2 overflow-hidden rounded-sm">
+                <Image src={imageUrl} alt={title} fill className="object-contain h-full" />
+              </figure>
+            )}
           </div>
-
-          {description && cleanTiptapHTML(description) && (
-            <TiptapViewer
-              content={cleanTiptapHTML(description)}
-              className="prose prose-sm break-keep max-w-none text-sub"
-            />
-          )}
-
-          {imageUrl && (
-            <figure className="relative aspect-3/2 overflow-hidden rounded-sm">
-              <Image src={imageUrl} alt={title} fill className="object-contain h-full" />
-            </figure>
-          )}
         </section>
 
         {/* 질문 입력 영역 (children) */}
