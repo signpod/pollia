@@ -12,7 +12,5 @@ model Event {
     creator  User      @relation(fields: [creatorId], references: [id])
 
     @@index([creatorId])
-    @@index([startDate])
-    @@index([endDate])
     @@map("events")
 }
