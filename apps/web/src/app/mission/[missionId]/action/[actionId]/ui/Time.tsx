@@ -128,9 +128,9 @@ function TimePickerContent({
               onClick={() => setIsDialogOpen(true)}
               variant="secondary"
               size="large"
-              className="transition-all duration-200 hover:ring-0! hover:bg-zinc-50! hover:text-zinc-900!"
+              className="transition-all duration-200 hover:ring-0! hover:bg-zinc-50! hover:text-zinc-900! w-full"
             >
-              <div className="flex items-center justify-center gap-3 w-full">
+              <div className="w-full flex items-center justify-center gap-3">
                 <Plus className="size-5" />
                 <Typo.Body size="large">시간 추가</Typo.Body>
               </div>
