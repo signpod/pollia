@@ -38,19 +38,14 @@ export function AdminCreateCard({
 
   if (onClick) {
     return (
-      <div
+      <button
+        type="button"
         onClick={onClick}
-        onKeyDown={e => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            onClick();
-          }
-        }}
-        role="button"
-        tabIndex={0}
+        className="w-full text-left"
+        aria-label={`${displayTitle} - ${displayDescription}`}
       >
         {content}
-      </div>
+      </button>
     );
   }
 

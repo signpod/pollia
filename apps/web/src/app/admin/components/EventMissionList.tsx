@@ -3,6 +3,7 @@
 import { AdminCard } from "@/app/admin/components/common/organisms/AdminCard";
 import { AdminCreateCard } from "@/app/admin/components/common/organisms/AdminCreateCard";
 import { ADMIN_ROUTES } from "@/app/admin/constants/routes";
+import { BADGE_COLORS } from "@/app/admin/lib/badge-colors";
 import { stripHtmlTags } from "@/app/admin/lib/utils";
 import type { Mission } from "@prisma/client";
 import { formatDistanceToNow } from "date-fns";
@@ -40,9 +41,7 @@ export function EventMissionList({ eventId, missions }: EventMissionListProps) {
             statusBadge={{
               label: mission.isActive ? "활성" : "비활성",
               variant: mission.isActive ? "default" : "secondary",
-              color: mission.isActive
-                ? "bg-green-500/10 text-green-700 dark:bg-green-500/20 dark:text-green-400 hover:bg-green-500/20"
-                : "bg-gray-500/10 text-gray-700 dark:bg-gray-500/20 dark:text-gray-400",
+              color: mission.isActive ? BADGE_COLORS.active : BADGE_COLORS.inactive,
             }}
             bottomInfo={[
               <React.Fragment key="date">

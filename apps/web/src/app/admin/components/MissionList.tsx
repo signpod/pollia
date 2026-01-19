@@ -6,6 +6,7 @@ import { CalendarDays } from "lucide-react";
 import React from "react";
 import { ADMIN_ROUTES } from "../constants/routes";
 import { useAdminMissions } from "../hooks/mission";
+import { BADGE_COLORS } from "../lib/badge-colors";
 import { stripHtmlTags } from "../lib/utils";
 import { AdminCard } from "./common/organisms/AdminCard";
 import { AdminCreateCard } from "./common/organisms/AdminCreateCard";
@@ -39,9 +40,7 @@ export function MissionList() {
             statusBadge={{
               label: mission.isActive ? "활성" : "비활성",
               variant: mission.isActive ? "default" : "secondary",
-              color: mission.isActive
-                ? "bg-green-500/10 text-green-700 dark:bg-green-500/20 dark:text-green-400 hover:bg-green-500/20"
-                : "bg-gray-500/10 text-gray-700 dark:bg-gray-500/20 dark:text-gray-400",
+              color: mission.isActive ? BADGE_COLORS.active : BADGE_COLORS.inactive,
             }}
             bottomInfo={[
               <React.Fragment key="date">

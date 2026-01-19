@@ -15,9 +15,9 @@ import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/app/admin/components/shadcn-ui/tooltip";
 import { ADMIN_ROUTES } from "@/app/admin/constants/routes";
 import { useDeleteEvent } from "@/app/admin/hooks/event";
+import { formatDateRange } from "@/app/admin/lib/date-utils";
+import { getEventStatus } from "@/app/admin/lib/event-utils";
 import type { Event } from "@prisma/client";
-import { format, isAfter, isBefore } from "date-fns";
-import { ko } from "date-fns/locale";
 import { CalendarDays, CheckCircle, Edit, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
@@ -26,45 +26,6 @@ import { toast } from "sonner";
 interface AdminEventHeaderProps {
   event: Event & { missions?: { id: string }[] };
   onEdit: () => void;
-}
-
-function getEventStatus(event: Event) {
-  const now = new Date();
-
-  if (!event.startDate || !event.endDate) {
-    return {
-      label: "기간 미설정",
-      color: "bg-gray-500/10 text-gray-700 dark:bg-gray-500/20 dark:text-gray-400",
-    };
-  }
-
-  const isOngoing = !isBefore(now, event.startDate) && !isAfter(now, event.endDate);
-  const isUpcoming = isBefore(now, event.startDate);
-  const isEnded = isAfter(now, event.endDate);
-
-  if (isOngoing) {
-    return {
-      label: "진행중",
-      color: "bg-green-500/10 text-green-700 dark:bg-green-500/20 dark:text-green-400",
-    };
-  }
-  if (isUpcoming) {
-    return {
-      label: "예정",
-      color: "bg-blue-500/10 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400",
-    };
-  }
-  if (isEnded) {
-    return {
-      label: "마감",
-      color: "bg-gray-500/10 text-gray-700 dark:bg-gray-500/20 dark:text-gray-400",
-    };
-  }
-
-  return {
-    label: "기간 미설정",
-    color: "bg-gray-500/10 text-gray-700 dark:bg-gray-500/20 dark:text-gray-400",
-  };
 }
 
 export function AdminEventHeader({ event, onEdit }: AdminEventHeaderProps) {
@@ -93,17 +54,6 @@ export function AdminEventHeader({ event, onEdit }: AdminEventHeaderProps) {
   const status = getEventStatus(event);
   const missionCount = event.missions?.length ?? 0;
 
-  const formatDateRange = () => {
-    if (!event.startDate || !event.endDate) {
-      return "기간 미설정";
-    }
-
-    const start = format(new Date(event.startDate), "yyyy년 M월 d일", { locale: ko });
-    const end = format(new Date(event.endDate), "yyyy년 M월 d일", { locale: ko });
-
-    return `${start} ~ ${end}`;
-  };
-
   return (
     <>
       <header className="mb-8 space-y-4">
@@ -121,7 +71,7 @@ export function AdminEventHeader({ event, onEdit }: AdminEventHeaderProps) {
             <div className="flex items-center gap-6 mt-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <CalendarDays className="size-4" />
-                <span>{formatDateRange()}</span>
+                <span>{formatDateRange(event.startDate, event.endDate)}</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle className="size-4" />

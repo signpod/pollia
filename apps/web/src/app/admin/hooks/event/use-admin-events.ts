@@ -5,9 +5,13 @@ import { adminEventQueryKeys } from "@/app/admin/constants/queryKeys";
 import type { SortOrderType } from "@/types/common/sort";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-export function useAdminEvents(options?: { limit?: number; sortOrder?: SortOrderType }) {
-  const limit = options?.limit ?? 10;
-  const sortOrder = options?.sortOrder;
+interface UseAdminEventsOptions {
+  limit?: number;
+  sortOrder?: SortOrderType;
+}
+
+export function useAdminEvents(options: UseAdminEventsOptions = {}) {
+  const { limit = 10, sortOrder } = options;
 
   const query = useInfiniteQuery({
     queryKey: adminEventQueryKeys.events({ limit, sortOrder }),
