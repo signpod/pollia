@@ -14,6 +14,7 @@ type MissionCreateFields = Pick<
   | "estimatedMinutes"
   | "maxParticipants"
   | "type"
+  | "eventId"
 >;
 
 export type CreateMissionInput = MissionCreateFields & {
