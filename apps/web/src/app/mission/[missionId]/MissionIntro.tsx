@@ -101,18 +101,15 @@ export function MissionIntro({ children }: MissionIntroProps) {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
     const handleScroll = () => {
-      setIsScrolled(container.scrollTop > 5);
+      setIsScrolled(window.scrollY > 5);
     };
 
-    container.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
 
     return () => {
-      container.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
@@ -190,7 +187,7 @@ export function MissionIntro({ children }: MissionIntroProps) {
         <main className="flex justify-center bg-background">
           <div
             ref={scrollContainerRef}
-            className="relative w-full max-w-lg h-dvh overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+            className="relative w-full max-w-lg"
           >
             {imageUrl && (
               <div className="relative w-full h-svh min-h-svh">
@@ -232,7 +229,7 @@ export function MissionIntro({ children }: MissionIntroProps) {
                       size="large"
                       className="w-full rounded-full h-12 hover:bg-transparent"
                       onClick={() => {
-                        scrollContainerRef.current?.scrollTo({
+                        window.scrollTo({
                           top: window.innerHeight + SCROLL_OFFSET,
                           behavior: "smooth",
                         });
