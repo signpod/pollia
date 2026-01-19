@@ -98,14 +98,17 @@ export function ActionOptionButton({
   const content = imageUrl ? (
     <>
       <div className="relative flex flex-col items-center gap-0 w-full rounded-sm overflow-hidden">
-        <Image
-          src={imageUrl}
-          width={200}
-          height={200}
-          className={cn("object-cover w-full h-full", imageStyle)}
-          alt=""
-          draggable={false}
-        />
+        <div className="relative aspect-square overflow-hidden rounded-sm">
+          <Image
+            src={imageUrl}
+            width={200}
+            height={200}
+            className={cn("object-cover w-full h-full", imageStyle)}
+            alt=""
+            draggable={false}
+          />
+        </div>
+
         <div className="flex flex-col gap-2 flex-1 w-full p-3">
           <div className="flex flex-col gap-0">
             <Typo.ButtonText size="large" className={titleVariants({ isSelected, disabled })}>
