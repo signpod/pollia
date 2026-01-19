@@ -2,17 +2,7 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import { eventService } from "@/server/services/event";
-import type { UpdateEventInput } from "@/server/services/event/types";
 import type { UpdateEventRequest, UpdateEventResponse } from "@/types/dto/event";
-
-function toUpdateEventInput(dto: UpdateEventRequest): UpdateEventInput {
-  return {
-    title: dto.title,
-    description: dto.description,
-    startDate: dto.startDate,
-    endDate: dto.endDate,
-  };
-}
 
 export async function updateEvent(
   eventId: string,
@@ -20,8 +10,7 @@ export async function updateEvent(
 ): Promise<UpdateEventResponse> {
   try {
     const user = await requireAuth();
-    const input = toUpdateEventInput(request);
-    const event = await eventService.updateEvent(eventId, input, user.id);
+    const event = await eventService.updateEvent(eventId, request, user.id);
     return { data: event };
   } catch (error) {
     console.error("updateEvent error:", error);

@@ -2,23 +2,12 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import { eventService } from "@/server/services/event";
-import type { CreateEventInput } from "@/server/services/event/types";
 import type { CreateEventRequest, CreateEventResponse } from "@/types/dto/event";
-
-function toCreateEventInput(dto: CreateEventRequest): CreateEventInput {
-  return {
-    title: dto.title,
-    description: dto.description,
-    startDate: dto.startDate,
-    endDate: dto.endDate,
-  };
-}
 
 export async function createEvent(request: CreateEventRequest): Promise<CreateEventResponse> {
   try {
     const user = await requireAuth();
-    const input = toCreateEventInput(request);
-    const event = await eventService.createEvent(input, user.id);
+    const event = await eventService.createEvent(request, user.id);
     return { data: event };
   } catch (error) {
     console.error("createEvent error:", error);

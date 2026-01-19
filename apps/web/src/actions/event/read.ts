@@ -2,7 +2,6 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import { eventService } from "@/server/services/event";
-import type { GetUserEventsOptions } from "@/server/services/event/types";
 import type { SortOrderType } from "@/types/common/sort";
 import type {
   GetEventResponse,
@@ -16,23 +15,13 @@ export interface GetUserEventsRequest {
   sortOrder?: SortOrderType;
 }
 
-function toGetUserEventsOptions(dto: GetUserEventsRequest): GetUserEventsOptions {
-  return {
-    cursor: dto.cursor,
-    limit: dto.limit,
-    sortOrder: dto.sortOrder,
-  };
-}
-
 export async function getUserEvents(
   request?: GetUserEventsRequest,
 ): Promise<GetUserEventsResponse & { nextCursor?: string }> {
   try {
     const user = await requireAuth();
     const limit = request?.limit ?? 10;
-    const options = request
-      ? toGetUserEventsOptions({ ...request, limit: limit + 1 })
-      : { limit: limit + 1 };
+    const options = request ? { ...request, limit: limit + 1 } : { limit: limit + 1 };
 
     const events = await eventService.getUserEvents(user.id, options);
 

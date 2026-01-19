@@ -20,6 +20,18 @@ const descriptionSchema = z
 const startDateSchema = z.date().optional();
 const endDateSchema = z.date().optional();
 
+const dateRangeRefine = (data: { startDate?: Date; endDate?: Date }) => {
+  if (data.startDate && data.endDate) {
+    return data.startDate <= data.endDate;
+  }
+  return true;
+};
+
+const dateRangeError = {
+  message: "시작일은 종료일보다 이전이어야 합니다.",
+  path: ["startDate"],
+};
+
 export const eventInputSchema = z
   .object({
     title: titleSchema,
@@ -27,18 +39,7 @@ export const eventInputSchema = z
     startDate: startDateSchema,
     endDate: endDateSchema,
   })
-  .refine(
-    data => {
-      if (data.startDate && data.endDate) {
-        return data.startDate <= data.endDate;
-      }
-      return true;
-    },
-    {
-      message: "시작일은 종료일보다 이전이어야 합니다.",
-      path: ["startDate"],
-    },
-  );
+  .refine(dateRangeRefine, dateRangeError);
 
 export const eventUpdateSchema = z
   .object({
@@ -50,18 +51,7 @@ export const eventUpdateSchema = z
   .refine(data => Object.keys(data).length > 0, {
     message: "최소 하나의 필드를 수정해야 합니다.",
   })
-  .refine(
-    data => {
-      if (data.startDate && data.endDate) {
-        return data.startDate <= data.endDate;
-      }
-      return true;
-    },
-    {
-      message: "시작일은 종료일보다 이전이어야 합니다.",
-      path: ["startDate"],
-    },
-  );
+  .refine(dateRangeRefine, dateRangeError);
 
 export type EventInput = z.input<typeof eventInputSchema>;
 export type EventUpdate = z.input<typeof eventUpdateSchema>;
