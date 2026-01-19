@@ -10,8 +10,6 @@ const nextConfig = {
       "unknown",
   },
 
-  serverExternalPackages: ["sharp"],
-
   experimental: {
     optimizePackageImports: [
       // Radix UI 컴포넌트들 - 트리 쉐이킹 최적화로 사용하는 컴포넌트만 번들에 포함

@@ -14104,7 +14104,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sharp@npm:^0.34.3, sharp@npm:^0.34.5":
+"sharp@npm:^0.34.3":
   version: 0.34.5
   resolution: "sharp@npm:0.34.5"
   dependencies:
@@ -15659,7 +15659,6 @@ __metadata:
     react-resizable-panels: "npm:^3.0.6"
     recharts: "npm:2.15.4"
     rollbar: "npm:^2.26.5"
-    sharp: "npm:^0.34.5"
     sonner: "npm:^2.0.7"
     tailwind-merge: "npm:^3.3.1"
     tailwindcss: "npm:^4.1.12"
