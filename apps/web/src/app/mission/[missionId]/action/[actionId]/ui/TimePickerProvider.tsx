@@ -106,7 +106,13 @@ export function TimePickerProvider({
     const month = String(today.getMonth() + 1).padStart(2, "0");
     const day = String(today.getDate()).padStart(2, "0");
 
-    return Array.from(times).map(time => `${year}-${month}-${day}T${time}:00`);
+    const tzOffset = -today.getTimezoneOffset();
+    const tzSign = tzOffset >= 0 ? "+" : "-";
+    const tzHours = String(Math.floor(Math.abs(tzOffset) / 60)).padStart(2, "0");
+    const tzMinutes = String(Math.abs(tzOffset) % 60).padStart(2, "0");
+    const tzString = `${tzSign}${tzHours}:${tzMinutes}`;
+
+    return Array.from(times).map(time => `${year}-${month}-${day}T${time}:00${tzString}`);
   }, []);
 
   useEffect(() => {
