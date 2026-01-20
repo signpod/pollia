@@ -151,7 +151,7 @@ function AnswerContent({ answer }: { answer: MyMissionResponseAnswer }) {
           {answer.dateAnswers.map((date, idx) => (
             <span
               key={idx}
-              className="rounded-lg bg-zinc-100 px-3 py-1 text-sm font-medium text-zinc-700"
+              className="rounded-lg bg-zinc-50 px-3 py-1 text-sm font-medium text-zinc-700"
             >
               {formatDate(date)}
             </span>
@@ -168,7 +168,7 @@ function AnswerContent({ answer }: { answer: MyMissionResponseAnswer }) {
           {answer.dateAnswers.map((date, idx) => (
             <span
               key={idx}
-              className="rounded-lg bg-zinc-100 px-3 py-1 text-sm font-medium text-zinc-700"
+              className="rounded-lg bg-zinc-50 px-3 py-1 text-sm font-medium text-zinc-700"
             >
               {formatTime(date)}
             </span>
