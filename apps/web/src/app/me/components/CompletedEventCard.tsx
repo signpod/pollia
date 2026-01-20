@@ -1,6 +1,7 @@
 "use client";
 
 import type { MyMissionResponse } from "@/types/dto/mission-response";
+import PollPollE from "@public/svgs/poll-poll-e.svg";
 import { Typo } from "@repo/ui/components";
 import { CheckCircle2Icon, ChevronRightIcon } from "lucide-react";
 import { useState } from "react";
@@ -29,7 +30,7 @@ export function CompletedEventCard({ response }: CompletedEventCardProps) {
         className="flex w-full items-center gap-4 rounded-2xl border border-zinc-100 bg-white p-4 text-left transition-colors hover:bg-zinc-50"
       >
         {mission.imageUrl ? (
-          <div className="h-20 aspect-[2/3] shrink-0 overflow-hidden rounded-xl">
+          <div className="h-20 aspect-2/3 shrink-0 overflow-hidden rounded-xl">
             <img
               src={mission.imageUrl}
               alt={mission.title}
@@ -37,7 +38,9 @@ export function CompletedEventCard({ response }: CompletedEventCardProps) {
             />
           </div>
         ) : (
-          <div className="h-20 aspect-[2/3] shrink-0 rounded-xl bg-zinc-100" />
+          <div className="h-20 aspect-2/3 shrink-0 flex items-center justify-center rounded-xl bg-zinc-100">
+            <PollPollE className="size-8 text-zinc-300" />
+          </div>
         )}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1">

@@ -2,6 +2,7 @@
 
 import { ROUTES } from "@/constants/routes";
 import type { MyMissionResponse } from "@/types/dto/mission-response";
+import PollPollE from "@public/svgs/poll-poll-e.svg";
 import { Typo } from "@repo/ui/components";
 import { ChevronRightIcon, PencilIcon } from "lucide-react";
 import Link from "next/link";
@@ -27,7 +28,9 @@ export function InProgressEventCard({ response }: InProgressEventCardProps) {
             />
           </div>
         ) : (
-          <div className="h-20 aspect-2/3 shrink-0 rounded-xl bg-zinc-100" />
+          <div className="h-20 aspect-2/3 shrink-0 flex items-center justify-center rounded-xl bg-zinc-100">
+            <PollPollE className="size-8 text-zinc-300" />
+          </div>
         )}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1">
