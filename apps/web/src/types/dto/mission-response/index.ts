@@ -49,15 +49,53 @@ export interface GetMissionResponseResponse {
   };
 }
 
-export interface GetMyMissionResponsesResponse {
-  data: Array<{
+export interface MyMissionResponseAnswer {
+  id: string;
+  actionId: string;
+  textAnswer: string | null;
+  scaleAnswer: number | null;
+  booleanAnswer: boolean | null;
+  dateAnswers: Date[];
+  action: {
     id: string;
-    missionId: string;
-    userId: string;
-    startedAt: Date;
-    completedAt: Date | null;
-    createdAt: Date;
+    title: string;
+    type: string;
+    order: number;
+  };
+  options: Array<{
+    id: string;
+    title: string;
+    order: number;
   }>;
+  fileUploads: Array<{
+    id: string;
+    publicUrl: string;
+    originalFileName: string;
+  }>;
+}
+
+export interface MyMissionResponse {
+  id: string;
+  missionId: string;
+  userId: string;
+  startedAt: Date;
+  completedAt: Date | null;
+  createdAt: Date;
+  mission: {
+    id: string;
+    title: string;
+    description: string | null;
+    imageUrl: string | null;
+    estimatedMinutes: number | null;
+    _count: {
+      questions: number;
+    };
+  };
+  answers: MyMissionResponseAnswer[];
+}
+
+export interface GetMyMissionResponsesResponse {
+  data: MyMissionResponse[];
 }
 
 export interface GetMissionResponsesResponse {
