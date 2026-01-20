@@ -16,25 +16,29 @@ import {
 } from "@/app/admin/components/shadcn-ui/sidebar";
 import { createAdminNavConfig } from "@/app/admin/config/nav";
 import { ADMIN_ROUTES } from "@/app/admin/constants/routes";
+import { useAdminEvents } from "@/app/admin/hooks/event";
 import { useAdminTheme } from "@/app/admin/hooks/use-admin-theme";
 import PolliaIcon from "@public/svgs/pollia-icon.svg";
 import PolliaWordmark from "@public/svgs/pollia-wordmark.svg";
-import { LogOut, Moon, Sun } from "lucide-react";
+import { LogOut, Moon, Settings, Sun } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 import { useAdminMissions } from "../hooks/mission";
 import { cn } from "../lib/utils";
 
+const SIDEBAR_ITEMS_LIMIT = 50;
+
 export function AdminSidebar() {
   const pathname = usePathname();
   const { state } = useSidebar();
   const { isDark, toggleTheme, mounted } = useAdminTheme();
-  const { missions } = useAdminMissions({ sortOrder: "latest", limit: 100 });
+  const { events } = useAdminEvents({ sortOrder: "latest", limit: SIDEBAR_ITEMS_LIMIT });
+  const { missions } = useAdminMissions({ sortOrder: "latest", limit: SIDEBAR_ITEMS_LIMIT });
 
   const adminNavConfig = useMemo(() => {
-    return createAdminNavConfig(missions);
-  }, [missions]);
+    return createAdminNavConfig(events, missions);
+  }, [events, missions]);
 
   const isActive = (url: string) => {
     if (url === ADMIN_ROUTES.ADMIN) {
@@ -77,6 +81,14 @@ export function AdminSidebar() {
 
       <SidebarFooter>
         <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="설정">
+              <Link href={ADMIN_ROUTES.ADMIN_SETTINGS}>
+                <Settings />
+                <span>설정</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip={mounted ? (isDark ? "라이트 모드로 전환" : "다크 모드로 전환") : "테마 전환"}

@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "storybook dev -p 6006",
     "build": "storybook build",
-    "lint": "biome check --write ."
+    "lint": "biome check --write --diagnostic-level=error ."
   },
   "dependencies": {
     "@repo/ui": "workspace:*",

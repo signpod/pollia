@@ -41,3 +41,13 @@ export const submissionQueryKeys = {
 } as const;
 
 export type SubmissionQueryKeys = typeof submissionQueryKeys;
+
+export const adminEventQueryKeys = {
+  all: () => ["admin", "event"] as const,
+  events: (params?: { limit?: number; sortOrder?: string }) =>
+    params ? (["admin", "events", params] as const) : (["admin", "events"] as const),
+  event: (eventId: string) => ["admin", "event", eventId] as const,
+  eventWithMissions: (eventId: string) => ["admin", "event", eventId, "missions"] as const,
+} as const;
+
+export type AdminEventQueryKeys = typeof adminEventQueryKeys;

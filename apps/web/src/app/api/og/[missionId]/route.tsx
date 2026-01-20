@@ -18,20 +18,16 @@ async function fetchImageAsBase64(
 ): Promise<string | null> {
   try {
     // wsrv.nl 프록시를 통해 PNG로 변환 및 리사이즈
-    const fetchUrl =
-      width && height ? getProxiedImageUrl(url, width, height) : url;
+    const fetchUrl = width && height ? getProxiedImageUrl(url, width, height) : url;
 
     const res = await fetch(fetchUrl, {
       headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
       },
     });
 
     if (!res.ok) {
-      console.error(
-        `Failed to fetch image: ${fetchUrl}, status: ${res.status}`,
-      );
+      console.error(`Failed to fetch image: ${fetchUrl}, status: ${res.status}`);
       return null;
     }
 
@@ -59,11 +55,7 @@ export async function GET(
     const mission = await missionService.getMission(missionId);
     const { title, imageUrl, brandLogoUrl } = mission;
 
-    const displayTitle = title
-      ? title.length > 50
-        ? `${title.substring(0, 47)}...`
-        : title
-      : "";
+    const displayTitle = title ? (title.length > 50 ? `${title.substring(0, 47)}...` : title) : "";
 
     // wsrv.nl 프록시를 통해 PNG로 변환 및 리사이즈
     const [missionImage, brandLogo, polliaLogo] = await Promise.all([
@@ -73,82 +65,82 @@ export async function GET(
     ]);
 
     return new ImageResponse(
-      (
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          backgroundColor: "#fafafa",
+        }}
+      >
+        {/* Left: Mission Image */}
         <div
           style={{
-            width: "100%",
-            height: "100%",
+            width: 630,
+            height: 630,
             display: "flex",
-            backgroundColor: "#fafafa",
+            alignItems: "flex-start",
+            justifyContent: "center",
+            backgroundColor: "#e4e4e7",
+            overflow: "hidden",
           }}
         >
-          {/* Left: Mission Image */}
-          <div
-            style={{
-              width: 630,
-              height: 630,
-              display: "flex",
-              alignItems: "flex-start",
-              justifyContent: "center",
-              backgroundColor: "#e4e4e7",
-              overflow: "hidden",
-            }}
-          >
-            {missionImage ? (
-              <img
-                src={missionImage}
-                width={630}
-                height={630}
-                style={{
-                  objectFit: "cover",
-                  objectPosition: "top",
-                }}
-              />
-            ) : null}
-          </div>
-
-          {/* Right: Content */}
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              padding: 48,
-            }}
-          >
-            {brandLogo ? (
-              <img
-                src={brandLogo}
-                width={56}
-                height={56}
-                style={{
-                  borderRadius: 28,
-                  marginBottom: 24,
-                }}
-              />
-            ) : null}
-
-            <div
+          {missionImage ? (
+            <img
+              src={missionImage}
+              alt="미션 이미지"
+              width={630}
+              height={630}
               style={{
-                color: "#09090b",
-                fontSize: 36,
-                fontWeight: 700,
-                lineHeight: 1.3,
+                objectFit: "cover",
+                objectPosition: "top",
+              }}
+            />
+          ) : null}
+        </div>
+
+        {/* Right: Content */}
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            padding: 48,
+          }}
+        >
+          {brandLogo ? (
+            <img
+              src={brandLogo}
+              alt="브랜드 로고"
+              width={56}
+              height={56}
+              style={{
+                borderRadius: 28,
                 marginBottom: 24,
               }}
-            >
-              {displayTitle}
-            </div>
+            />
+          ) : null}
 
-            {polliaLogo ? (
-              <div style={{ marginTop: "auto", display: "flex" }}>
-                <img src={polliaLogo} height={32} />
-              </div>
-            ) : null}
+          <div
+            style={{
+              color: "#09090b",
+              fontSize: 36,
+              fontWeight: 700,
+              lineHeight: 1.3,
+              marginBottom: 24,
+            }}
+          >
+            {displayTitle}
           </div>
+
+          {polliaLogo ? (
+            <div style={{ marginTop: "auto", display: "flex" }}>
+              <img src={polliaLogo} alt="Pollia 로고" height={32} />
+            </div>
+          ) : null}
         </div>
-      ),
+      </div>,
       {
         width: 1200,
         height: 630,

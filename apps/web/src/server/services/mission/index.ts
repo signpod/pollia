@@ -3,10 +3,11 @@ import { missionInputSchema, missionPasswordSchema, missionUpdateSchema } from "
 import { actionRepository } from "@/server/repositories/action/actionRepository";
 import { missionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
+import type { Mission } from "@prisma/client";
 import type {
   CreateMissionInput,
   GetUserMissionsOptions,
-  MissionCreatedResult,
+  MissionDuplicateResult,
   MissionWithParticipantInfo,
   UpdateMissionInput,
 } from "./types";
@@ -103,7 +104,7 @@ export class MissionService {
     return missions;
   }
 
-  async createMission(input: CreateMissionInput, userId: string): Promise<MissionCreatedResult> {
+  async createMission(input: CreateMissionInput, userId: string): Promise<Mission> {
     const result = missionInputSchema.safeParse(input);
     if (!result.success) {
       const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
@@ -111,39 +112,16 @@ export class MissionService {
       throw error;
     }
 
-    const validated = result.data;
+    const { actionIds, ...validatedMissionData } = result.data;
     const mission = await this.repo.createWithActions(
       {
-        title: validated.title,
-        description: validated.description,
-        target: validated.target,
-        imageUrl: validated.imageUrl,
-        imageFileUploadId: validated.imageFileUploadId,
-        brandLogoUrl: validated.brandLogoUrl,
-        brandLogoFileUploadId: validated.brandLogoFileUploadId,
-        deadline: validated.deadline,
-        estimatedMinutes: validated.estimatedMinutes,
-        maxParticipants: validated.maxParticipants,
-        type: validated.type,
-        eventId: validated.eventId,
+        ...validatedMissionData,
         creatorId: userId,
       },
-      validated.actionIds,
+      actionIds,
     );
 
-    return {
-      id: mission.id,
-      title: mission.title,
-      description: mission.description,
-      target: mission.target,
-      imageUrl: mission.imageUrl,
-      deadline: mission.deadline,
-      estimatedMinutes: mission.estimatedMinutes,
-      type: mission.type,
-      createdAt: mission.createdAt,
-      updatedAt: mission.updatedAt,
-      creatorId: userId,
-    };
+    return mission;
   }
 
   async updateMission(missionId: string, data: UpdateMissionInput, userId: string) {
@@ -178,7 +156,7 @@ export class MissionService {
     await this.repo.delete(missionId);
   }
 
-  async duplicateMission(missionId: string, userId: string): Promise<MissionCreatedResult> {
+  async duplicateMission(missionId: string, userId: string): Promise<MissionDuplicateResult> {
     const originalMission = await this.getMission(missionId);
 
     if (originalMission.creatorId !== userId) {
@@ -219,16 +197,7 @@ export class MissionService {
     );
 
     return {
-      id: duplicated.id,
-      title: duplicated.title,
-      description: duplicated.description,
-      target: duplicated.target,
-      imageUrl: duplicated.imageUrl,
-      deadline: duplicated.deadline,
-      estimatedMinutes: duplicated.estimatedMinutes,
-      type: duplicated.type,
-      createdAt: duplicated.createdAt,
-      updatedAt: duplicated.updatedAt,
+      ...duplicated,
       creatorId: userId,
     };
   }

@@ -20,6 +20,7 @@ export interface UpdateMissionRequest {
   type?: MissionType;
   isActive?: boolean;
   rewardId?: string | null;
+  eventId?: string | null;
 }
 
 function toUpdateMissionInput(dto: UpdateMissionRequest): UpdateMissionInput {
@@ -37,6 +38,7 @@ function toUpdateMissionInput(dto: UpdateMissionRequest): UpdateMissionInput {
     type: dto.type,
     isActive: dto.isActive,
     rewardId: dto.rewardId,
+    eventId: dto.eventId,
   };
 }
 

@@ -120,7 +120,8 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     title: "알림",
-    description: "이것은 기본 Callout 컴포넌트입니다. icon을 전달하지 않으면 기본 아이콘이 표시됩니다.",
+    description:
+      "이것은 기본 Callout 컴포넌트입니다. icon을 전달하지 않으면 기본 아이콘이 표시됩니다.",
     variant: "notice",
   },
 };
@@ -346,8 +347,8 @@ function ToastStyleCalloutDemo() {
     <div className="flex flex-col gap-3 p-4">
       <h2 className="text-lg font-bold">Toast 스타일 Callout</h2>
       <p className="text-sm text-gray-500 mb-2">
-        버튼을 클릭하면 화면 상단에 Callout이 표시됩니다. icon을 전달하지 않으면 variant에 따라
-        기본 아이콘이 표시됩니다.
+        버튼을 클릭하면 화면 상단에 Callout이 표시됩니다. icon을 전달하지 않으면 variant에 따라 기본
+        아이콘이 표시됩니다.
       </p>
       <button
         type="button"

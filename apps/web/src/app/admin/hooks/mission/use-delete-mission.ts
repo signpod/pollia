@@ -1,7 +1,7 @@
 "use client";
 
 import { deleteMission } from "@/actions/mission/delete";
-import { adminMissionQueryKeys } from "@/app/admin/constants/queryKeys";
+import { adminEventQueryKeys, adminMissionQueryKeys } from "@/app/admin/constants/queryKeys";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface UseDeleteMissionOptions {
@@ -19,6 +19,9 @@ export function useDeleteMission(options: UseDeleteMissionOptions = {}) {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: adminMissionQueryKeys.missions(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: adminEventQueryKeys.all(),
       });
       options.onSuccess?.();
     },
