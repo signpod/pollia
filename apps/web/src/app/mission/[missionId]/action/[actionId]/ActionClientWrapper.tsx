@@ -135,6 +135,8 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
           },
         });
       }
+
+      goNext();
     },
     onError: () => {
       toast.warning("답변 저장에 실패했습니다.", { id: "submit-answer-error" });
@@ -316,6 +318,18 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
     const isSame = isAnswerSameAsSubmitted(currentAnswer, submittedAnswers);
 
     if (isSame) {
+      if (isLastStep && currentAnswer) {
+        recordResponse({
+          missionId,
+          sessionId: getOrCreateSessionId(),
+          userId: user?.id || undefined,
+          actionId: currentAnswer.actionId,
+          metadata: {
+            actionType: currentAnswer.type,
+            isFinalSubmit: true,
+          },
+        });
+      }
       goNext();
       return;
     }
@@ -350,6 +364,10 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
     isAnswerSameAsSubmitted,
     goNext,
     actionData.id,
+    missionId,
+    recordResponse,
+    user?.id,
+    missionResponse?.data?.answers,
   ]);
 
   const handlePrevious = useCallback(() => {

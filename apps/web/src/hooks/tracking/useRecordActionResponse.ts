@@ -1,10 +1,8 @@
 "use client";
 
-import { recordActionResponse } from "@/actions/tracking";
-import { clientConfig } from "@/rollbar";
+import { sendActionResponseBeacon } from "@/lib/tracking";
 import type { RecordActionResponseInput } from "@/server/services/tracking-action-response/types";
 import { useMutation } from "@tanstack/react-query";
-import Rollbar from "rollbar";
 
 interface UseRecordActionResponseOptions {
   onSuccess?: () => void;
@@ -14,17 +12,19 @@ interface UseRecordActionResponseOptions {
 export function useRecordActionResponse(options: UseRecordActionResponseOptions = {}) {
   return useMutation<void, Error, RecordActionResponseInput>({
     mutationFn: async (payload): Promise<void> => {
-      await recordActionResponse(payload);
+      const success = sendActionResponseBeacon(payload);
+
+      if (!success) {
+        throw new Error("Failed to send beacon");
+      }
+
+      return Promise.resolve();
     },
     onSuccess: () => {
       options.onSuccess?.();
     },
     onError: (error, payload) => {
-      const rollbar = new Rollbar(clientConfig);
-      rollbar.error("[Tracking] 액션 응답 기록 실패", {
-        error,
-        payload,
-      });
+      console.error("[Tracking] Failed to record action response:", error, payload);
       options.onError?.(error);
     },
   });

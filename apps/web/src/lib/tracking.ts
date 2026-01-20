@@ -1,3 +1,5 @@
+import type { Prisma } from "@prisma/client";
+
 const SESSION_ID_KEY = "pollia_action_tracking_session_id";
 const TRACKED_ENTRY_PREFIX = "tracked_entry_";
 
@@ -40,4 +42,36 @@ export function getUtmParams(): Record<string, string> | undefined {
   ) as Record<string, string>;
 
   return Object.keys(utmParams).length > 0 ? utmParams : undefined;
+}
+
+type RecordActionResponseInput = Pick<
+  Prisma.TrackingActionResponseUncheckedCreateInput,
+  "missionId" | "sessionId" | "userId" | "actionId" | "metadata"
+>;
+
+export function sendActionResponseBeacon(data: RecordActionResponseInput): boolean {
+  const url = "/api/tracking/record-action-response";
+  const blob = new Blob([JSON.stringify(data)], {
+    type: "application/json",
+  });
+
+  if (typeof navigator !== "undefined" && navigator.sendBeacon) {
+    return navigator.sendBeacon(url, blob);
+  }
+
+  if (typeof fetch !== "undefined") {
+    fetch(url, {
+      method: "POST",
+      body: blob,
+      keepalive: true,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }).catch(err => {
+      console.error("[Tracking] Fallback fetch failed:", err);
+    });
+    return true;
+  }
+
+  return false;
 }
