@@ -214,18 +214,23 @@ export function ActionPdf({
       isLoading={isLoading}
       isRequired={actionData.isRequired}
     >
-      {fileInfos.length === 0 && (
-        <PdfUpload onUploadChange={handleUploadChange} onUploadingChange={handleUploadingChange} />
-      )}
-      {fileInfos.length > 0 && (
-        <FileList
-          files={fileInfos}
-          uploadingFileUrl={uploadingFileUrl}
-          isUploading={isUploading}
-          onFileDelete={handleFileDelete}
-          onFileClick={handleFileClick}
+      <div className="flex flex-col gap-8">
+        <PdfUpload
+          onUploadChange={handleUploadChange}
+          onUploadingChange={handleUploadingChange}
+          currentCount={fileInfos.length}
+          maxCount={1}
         />
-      )}
+        {fileInfos.length > 0 && (
+          <FileList
+            files={fileInfos}
+            uploadingFileUrl={uploadingFileUrl}
+            isUploading={isUploading}
+            onFileDelete={handleFileDelete}
+            onFileClick={handleFileClick}
+          />
+        )}
+      </div>
       <PdfUploadNotice />
     </SurveyQuestionTemplate>
   );

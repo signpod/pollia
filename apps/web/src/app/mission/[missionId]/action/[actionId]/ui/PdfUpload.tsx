@@ -17,9 +17,17 @@ interface PdfUploadProps {
   ) => void;
   onUploadingChange?: (isUploading: boolean) => void;
   onUploadStart?: (file: File, tempUrl: string) => void;
+  currentCount?: number;
+  maxCount?: number;
 }
 
-export function PdfUpload({ onUploadChange, onUploadingChange, onUploadStart }: PdfUploadProps) {
+export function PdfUpload({
+  onUploadChange,
+  onUploadingChange,
+  onUploadStart,
+  currentCount = 0,
+  maxCount = 1,
+}: PdfUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const tempUrlRef = useRef<string | null>(null);
 
@@ -89,8 +97,10 @@ export function PdfUpload({ onUploadChange, onUploadingChange, onUploadStart }: 
       onFileSelect={handleFileSelect}
       onFileChange={handleFileChange}
       accept="application/pdf"
-      buttonText="PDF 첨부"
       icon="file"
+      variant="counter"
+      currentCount={currentCount}
+      maxCount={maxCount}
     />
   );
 }

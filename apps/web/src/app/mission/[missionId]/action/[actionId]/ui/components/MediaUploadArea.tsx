@@ -1,8 +1,11 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import CameraIcon from "@public/svgs/camera-color-icon.svg";
+import PdfIcon from "@public/svgs/pdf-color-icon.svg";
+import VideoIcon from "@public/svgs/video-color-icon.svg";
 import { Typo } from "@repo/ui/components";
-import { FolderPlus, ImageIcon, Loader2Icon, VideoIcon } from "lucide-react";
+import { Loader2Icon } from "lucide-react";
 
 const UPLOAD_LABELS = {
   uploading: "업로드 중...",
@@ -17,6 +20,9 @@ interface MediaUploadAreaProps {
   buttonText?: string;
   icon?: "image" | "video" | "file";
   multiple?: boolean;
+  variant?: "button" | "counter";
+  currentCount?: number;
+  maxCount?: number;
 }
 
 export function MediaUploadArea({
@@ -28,14 +34,65 @@ export function MediaUploadArea({
   buttonText = "사진 첨부",
   icon = "image",
   multiple = false,
+  variant = "button",
+  currentCount = 0,
+  maxCount = 1,
 }: MediaUploadAreaProps) {
   const ICON_COMPONENTS = {
     video: VideoIcon,
-    image: ImageIcon,
-    file: FolderPlus,
+    image: CameraIcon,
+    file: PdfIcon,
   };
 
   const IconComponent = ICON_COMPONENTS[icon];
+  const isMaxReached = variant === "counter" && currentCount >= maxCount;
+
+  if (variant === "counter") {
+    return (
+      <div className="flex flex-col w-full">
+        <input
+          ref={inputRef}
+          type="file"
+          accept={accept}
+          className="hidden"
+          onChange={onFileChange}
+          disabled={isUploading || isMaxReached}
+          multiple={multiple}
+        />
+        <button
+          onClick={onFileSelect}
+          onTouchStart={e => {
+            e.preventDefault();
+            onFileSelect();
+          }}
+          type="button"
+          disabled={isUploading || isMaxReached}
+          className={cn(
+            "flex flex-col items-center justify-center gap-[4px] rounded-2xl w-full py-4",
+            "border border-zinc-200 bg-white",
+            "transition-colors duration-200 ease-in-out",
+            "touch-manipulation",
+            isMaxReached ? "cursor-default" : "hover:bg-zinc-50 active:bg-zinc-100",
+          )}
+        >
+          <div className="flex items-center justify-center size-14 bg-light rounded-full">
+            <IconComponent className="size-7" />
+          </div>
+          <div className="flex items-center gap-1">
+            <Typo.SubTitle
+              size="large"
+              className={cn(currentCount > 0 ? "text-primary" : "text-zinc-400")}
+            >
+              {currentCount}
+            </Typo.SubTitle>
+            <Typo.SubTitle size="large" className="text-zinc-800">
+              / {maxCount}
+            </Typo.SubTitle>
+          </div>
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-2 w-full relative rounded-sm overflow-hidden min-h-[96px]">
@@ -58,7 +115,7 @@ export function MediaUploadArea({
         disabled={isUploading}
         className={cn(
           "absolute inset-0 flex items-center justify-center gap-3 bg-transparent rounded-lg w-full",
-          "border-2 border-dashed border-zinc-200",
+          "border border-default",
           "hover:bg-zinc-50 active:bg-zinc-100",
           "transition-colors duration-200 ease-in-out",
           "touch-manipulation",
@@ -77,7 +134,6 @@ export function MediaUploadArea({
             <div className="flex items-center justify-center size-12 bg-light rounded-full">
               <IconComponent className="size-6 text-info" />
             </div>
-
             <Typo.ButtonText size="large" className="text-info">
               {buttonText}
             </Typo.ButtonText>
