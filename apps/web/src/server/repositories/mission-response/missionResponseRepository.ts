@@ -73,6 +73,7 @@ export class MissionResponseRepository {
                 title: true,
                 type: true,
                 order: true,
+                isRequired: true,
               },
             },
             options: {

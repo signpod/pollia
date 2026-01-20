@@ -256,9 +256,20 @@ export function AnswerDetailModal({ isOpen, onClose, response }: AnswerDetailMod
                                     {answer.action.title}
                                   </Typo.Body>
                                 </div>
-                                <div className="flex shrink-0 items-center gap-1 text-zinc-400">
-                                  {config.icon}
-                                  <span className="text-xs">{config.label}</span>
+                                <div className="flex shrink-0 items-center gap-2">
+                                  <span
+                                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                                      answer.action.isRequired
+                                        ? "bg-rose-50 text-rose-600"
+                                        : "bg-zinc-100 text-zinc-500"
+                                    }`}
+                                  >
+                                    {answer.action.isRequired ? "필수" : "선택"}
+                                  </span>
+                                  <div className="flex items-center gap-1 text-zinc-400">
+                                    {config.icon}
+                                    <span className="text-xs">{config.label}</span>
+                                  </div>
                                 </div>
                               </div>
                               <div className="pl-7">
