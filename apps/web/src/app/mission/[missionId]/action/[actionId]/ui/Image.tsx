@@ -44,8 +44,8 @@ export function ActionImage({
 
   const { uploadMultiple } = useMultipleImageUpload({
     bucket: STORAGE_BUCKETS.ACTION_ANSWER_IMAGES,
-    onError: () => {
-      toast.warning(IMAGE_UPLOAD_ERROR_MESSAGE);
+    onError: error => {
+      toast.warning(error.message || IMAGE_UPLOAD_ERROR_MESSAGE);
     },
   });
 
