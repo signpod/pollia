@@ -322,7 +322,7 @@ function LinksSection({ form }: { form: UseFormReturn<MissionCompletionForm> }) 
             <div key={key} className="flex items-center gap-2">
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium text-muted-foreground mb-1">{key}</div>
-                <div className="text-sm text-foreground truncate">{value}</div>
+                <div className="text-sm text-foreground break-all">{value}</div>
               </div>
               <Button type="button" variant="ghost" size="sm" onClick={() => handleRemoveLink(key)}>
                 <Trash2 className="size-4 text-destructive" />
