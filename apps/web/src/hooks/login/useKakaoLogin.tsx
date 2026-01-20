@@ -67,5 +67,6 @@ export function useKakaoLogin(options: UseKakaoLoginOptions = {}) {
 
   return {
     handleKakaoLogin,
+    isKakaoSdkLoaded,
   };
 }
