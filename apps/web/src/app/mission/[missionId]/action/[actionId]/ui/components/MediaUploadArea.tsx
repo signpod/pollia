@@ -78,7 +78,7 @@ export function MediaUploadArea({
             isMaxReached ? "cursor-default" : "hover:bg-zinc-50 active:bg-zinc-100",
           )}
         >
-          <div className="flex items-center justify-center size-14 bg-zinc-100 rounded-full">
+          <div className="flex items-center justify-center size-14 bg-zinc-50 rounded-full">
             <IconComponent className="size-7" />
           </div>
           <div className="flex items-center gap-1">

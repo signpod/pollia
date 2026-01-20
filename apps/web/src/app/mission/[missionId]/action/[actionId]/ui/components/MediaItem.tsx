@@ -66,7 +66,7 @@ export function MediaItem({
   alt = "업로드된 미디어",
 }: MediaItemProps) {
   return (
-    <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-zinc-300 z-0">
+    <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-zinc-300 z-0 border border-default">
       {mediaType === "image" ? (
         <Image
           src={mediaUrl}

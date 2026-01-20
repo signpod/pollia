@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Input, Typo } from "@repo/ui/components";
 import { motion } from "framer-motion";
+import { useEffect, useRef } from "react";
 
 interface ChipProps {
   label: string;
@@ -28,11 +29,16 @@ export function Chip({
   onClick,
 }: ChipProps) {
   const isOtherExpanded = isOther && isSelected;
+  const hasMountedRef = useRef(false);
+
+  useEffect(() => {
+    hasMountedRef.current = true;
+  }, []);
 
   if (isOther) {
     return (
       <motion.div
-        layout
+        layout={hasMountedRef.current}
         initial={false}
         onClick={onClick}
         className={cn(
@@ -51,7 +57,7 @@ export function Chip({
         }}
       >
         <motion.div
-          layout
+          layout={hasMountedRef.current}
           className={cn(
             "flex",
             isOtherExpanded ? "flex-col gap-3 px-4 py-3" : "items-center px-4 py-3",
@@ -61,13 +67,13 @@ export function Chip({
           }}
         >
           <motion.div
-            layout
+            layout={hasMountedRef.current}
             className="flex items-center"
             transition={{
               layout: { duration: 0.3, ease: [0.4, 0, 0.2, 1] },
             }}
           >
-            <motion.span layout="position">
+            <motion.span layout={hasMountedRef.current ? "position" : false}>
               <Typo.ButtonText
                 size="large"
                 className={cn(
@@ -94,7 +100,6 @@ export function Chip({
                 onChange={onTextChange}
                 onBlur={onTextBlur}
                 onClick={e => e.stopPropagation()}
-                autoFocus
                 errorMessage={showError && !textValue.trim() ? "필수 입력 사항입니다." : undefined}
               />
             </motion.div>

@@ -29,7 +29,7 @@ export function ImageUpload({
     Array<{ publicUrl: string; fileUploadId: string; path: string }>
   >([]);
 
-  const { uploadMultiple, isUploading, uploadError } = useMultipleImageUpload({
+  const { uploadMultiple, isUploading } = useMultipleImageUpload({
     bucket: STORAGE_BUCKETS.ACTION_ANSWER_IMAGES,
     onSuccess: result => {
       setUploadedResults(prev => {
@@ -40,9 +40,9 @@ export function ImageUpload({
         return newResults;
       });
     },
-    onError: () => {
+    onError: error => {
       onUploadingChange?.(false);
-      toast.warning(uploadError?.message || "파일 업로드에 실패했어요.\n다시 시도해주세요.");
+      toast.warning(error.message || "파일 업로드에 실패했어요.\n다시 시도해주세요.");
       setUploadedResults([]);
     },
   });

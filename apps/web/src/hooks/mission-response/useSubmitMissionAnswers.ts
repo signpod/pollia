@@ -1,40 +1,35 @@
 "use client";
 
-import { submitAnswers } from "@/actions/action-answer";
 import { completeMissionResponse, getMyResponseForMission } from "@/actions/mission-response";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
-import type { SubmitActionAnswersRequest, SubmitActionAnswersResponse } from "@/types/dto";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-interface UseSubmitMissionAnswersOptions {
+interface CompleteMissionPayload {
+  responseId: string;
+}
+
+interface UseCompleteMissionOptions {
   missionId: string;
-  onSuccess?: (data: SubmitActionAnswersResponse) => void;
+  onSuccess?: () => void;
   onError?: (error: Error) => void;
   onAlreadyCompleted?: () => void;
 }
 
-export function useSubmitMissionAnswers(options: UseSubmitMissionAnswersOptions) {
+export function useCompleteMission(options: UseCompleteMissionOptions) {
   const queryClient = useQueryClient();
   const { missionId } = options;
 
   return useMutation({
-    mutationFn: async (
-      payload: SubmitActionAnswersRequest,
-    ): Promise<SubmitActionAnswersResponse> => {
-      // Fetch fresh mission response to check completion status
+    mutationFn: async ({ responseId }: CompleteMissionPayload) => {
       const freshResponse = await getMyResponseForMission(missionId);
       if (freshResponse?.data?.completedAt) {
         throw new Error("ALREADY_COMPLETED");
       }
 
-      const submitResult = await submitAnswers(payload);
-
-      await completeMissionResponse({ responseId: payload.responseId });
-
-      return submitResult;
+      return await completeMissionResponse({ responseId });
     },
-    onSuccess: data => {
-      options.onSuccess?.(data);
+    onSuccess: () => {
+      options.onSuccess?.();
       queryClient.invalidateQueries({
         queryKey: missionQueryKeys.missionResponseForMission(missionId),
       });
@@ -44,10 +39,10 @@ export function useSubmitMissionAnswers(options: UseSubmitMissionAnswersOptions)
         options.onAlreadyCompleted?.();
         return;
       }
-      console.error("❌ 설문 답변 제출 실패:", error);
+      console.error("❌ 미션 완료 처리 실패:", error);
       options.onError?.(error as Error);
     },
   });
 }
 
-export type UseSubmitSurveyAnswersReturn = ReturnType<typeof useSubmitMissionAnswers>;
+export type UseCompleteMissionReturn = ReturnType<typeof useCompleteMission>;

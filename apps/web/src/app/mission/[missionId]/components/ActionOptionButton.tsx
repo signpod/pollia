@@ -152,7 +152,6 @@ export function ActionOptionButton({
             onChange={onTextAnswerChange}
             onBlur={onTextAnswerBlur}
             onClick={e => e.stopPropagation()}
-            autoFocus
             errorMessage={
               showOtherError && !textAnswer.trim() ? "필수 입력 사항입니다." : undefined
             }
@@ -192,7 +191,7 @@ export function ActionOptionButton({
 
       {isOther && isSelected && (
         <div
-          className="w-full mt-2 text-zinc-900 p-3"
+          className="w-full text-zinc-900 p-3 pt-0"
           onClick={e => e.stopPropagation()}
           onMouseDown={e => e.stopPropagation()}
           onKeyDown={e => e.stopPropagation()}
@@ -203,7 +202,6 @@ export function ActionOptionButton({
             onChange={onTextAnswerChange}
             onBlur={onTextAnswerBlur}
             onClick={e => e.stopPropagation()}
-            autoFocus
             errorMessage={
               showOtherError && !textAnswer.trim() ? "필수 입력 사항입니다." : undefined
             }

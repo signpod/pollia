@@ -70,13 +70,13 @@ export function FileItem({
   };
 
   return (
-    <div className="flex items-center gap-2 p-4 pr-3 border border-zinc-200 rounded-2xl bg-white">
+    <div className="flex items-center gap-2 p-4 border border-zinc-200 rounded-2xl bg-white">
       <div className="flex items-center justify-center p-3 aspect-square bg-light rounded-full shrink-0">
         <PdfIcon className="size-7" />
       </div>
-      <div className="flex flex-col gap-3 flex-1 min-w-0">
+      <div className="flex flex-col gap-1 flex-1 min-w-0">
         <Typo.Body size="large" className="text-zinc-900 truncate">
-          {fileName}
+          {fileName.split(".")[0]}
         </Typo.Body>
         <Typo.Body size="small" className="text-disabled">
           PDF · {formatFileSize(fileSize)}
