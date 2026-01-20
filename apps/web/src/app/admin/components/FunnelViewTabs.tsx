@@ -18,12 +18,19 @@ const MissionSankeyChart = dynamic(
   },
 );
 
+interface MissionStats {
+  total: number;
+  completed: number;
+  completionRate: number;
+}
+
 interface FunnelViewTabsProps {
   data: MissionFunnelData;
+  missionStats: MissionStats;
   defaultTab?: "text" | "diagram";
 }
 
-export function FunnelViewTabs({ data, defaultTab = "text" }: FunnelViewTabsProps) {
+export function FunnelViewTabs({ data, missionStats, defaultTab = "text" }: FunnelViewTabsProps) {
   return (
     <Tabs defaultValue={defaultTab} className="w-full">
       <TabsList className="grid w-full max-w-[400px] grid-cols-2">
@@ -38,7 +45,7 @@ export function FunnelViewTabs({ data, defaultTab = "text" }: FunnelViewTabsProp
       </TabsList>
 
       <TabsContent value="text" className="mt-6">
-        <MissionFunnelTextView metadata={data.metadata} />
+        <MissionFunnelTextView metadata={data.metadata} missionStats={missionStats} />
       </TabsContent>
 
       <TabsContent value="diagram" className="mt-6">

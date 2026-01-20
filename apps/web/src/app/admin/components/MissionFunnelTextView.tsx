@@ -1,12 +1,19 @@
 import { formatMillisecondsToKorean } from "@/lib/utils";
 import type { MissionFunnelData } from "@/types/dto";
-import { CheckCircle2, Clock, PlayCircle, UserCheck, Users } from "lucide-react";
+import { CheckCircle2, Clock, PlayCircle, Target, UserCheck, Users } from "lucide-react";
+
+interface MissionStats {
+  total: number;
+  completed: number;
+  completionRate: number;
+}
 
 interface MissionFunnelTextViewProps {
   metadata: MissionFunnelData["metadata"];
+  missionStats: MissionStats;
 }
 
-export function MissionFunnelTextView({ metadata }: MissionFunnelTextViewProps) {
+export function MissionFunnelTextView({ metadata, missionStats }: MissionFunnelTextViewProps) {
   if (!metadata) {
     return (
       <div className="h-[450px] w-full flex items-center justify-center border border-dashed rounded-lg">
@@ -15,7 +22,7 @@ export function MissionFunnelTextView({ metadata }: MissionFunnelTextViewProps) 
     );
   }
 
-  if (metadata.totalStarted === 0) {
+  if (metadata.totalStarted === 0 && missionStats.total === 0) {
     return (
       <div className="h-[450px] w-full flex items-center justify-center border border-dashed rounded-lg">
         <p className="text-muted-foreground">아직 참여한 사용자가 없습니다</p>
@@ -27,10 +34,10 @@ export function MissionFunnelTextView({ metadata }: MissionFunnelTextViewProps) 
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pb-6 border-b">
         <div className="flex items-center gap-3">
-          <PlayCircle className="h-5 w-5 text-teal-600 dark:text-teal-400 shrink-0" />
+          <Target className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0" />
           <div>
             <div className="text-sm text-muted-foreground">미션 참여자</div>
-            <div className="text-2xl font-bold text-foreground">{metadata.totalStarted}명</div>
+            <div className="text-2xl font-bold text-foreground">{missionStats.total}명</div>
           </div>
         </div>
 
@@ -38,14 +45,42 @@ export function MissionFunnelTextView({ metadata }: MissionFunnelTextViewProps) 
           <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 shrink-0" />
           <div>
             <div className="text-sm text-muted-foreground">미션 완료자</div>
-            <div className="text-2xl font-bold text-foreground">{metadata.totalCompleted}명</div>
+            <div className="text-2xl font-bold text-foreground">{missionStats.completed}명</div>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           <CheckCircle2 className="h-5 w-5 text-purple-600 dark:text-purple-400 shrink-0" />
           <div>
-            <div className="text-sm text-muted-foreground">완주율</div>
+            <div className="text-sm text-muted-foreground">미션 완주율</div>
+            <div className="text-2xl font-bold text-foreground">
+              {missionStats.completionRate.toFixed(1)}%
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pb-6 border-b">
+        <div className="flex items-center gap-3">
+          <PlayCircle className="h-5 w-5 text-teal-600 dark:text-teal-400 shrink-0" />
+          <div>
+            <div className="text-sm text-muted-foreground">세션 참여자</div>
+            <div className="text-2xl font-bold text-foreground">{metadata.totalStarted}명</div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+          <div>
+            <div className="text-sm text-muted-foreground">세션 완료자</div>
+            <div className="text-2xl font-bold text-foreground">{metadata.totalCompleted}명</div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <CheckCircle2 className="h-5 w-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+          <div>
+            <div className="text-sm text-muted-foreground">세션 완주율</div>
             <div className="text-2xl font-bold text-foreground">
               {metadata.completionRate.toFixed(1)}%
             </div>
