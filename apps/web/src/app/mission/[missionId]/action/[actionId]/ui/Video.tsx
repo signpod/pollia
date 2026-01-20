@@ -8,6 +8,7 @@ import type { ActionAnswerItem } from "@/types/dto";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 import { VideoUpload } from "./VideoUpload";
+import { UploadingPlaceholder } from "./components/UploadingPlaceholder";
 import { VideoList } from "./components/VideoList";
 import { VideoUploadNotice } from "./components/VideoUploadNotice";
 
@@ -31,6 +32,7 @@ export function ActionVideo({
   const [videoFileUploadIds, setVideoFileUploadIds] = useState<string[]>([]);
   const [uploadingVideoUrl, setUploadingVideoUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const { mutate: deleteFileMutation } = useDeleteFile();
   const { mutate: deleteAnswerMutation, isPending: isDeletingAnswer } = useDeleteAnswer();
@@ -177,7 +179,12 @@ export function ActionVideo({
     setIsUploading(uploading);
     if (!uploading) {
       setUploadingVideoUrl(null);
+      setUploadProgress(0);
     }
+  }, []);
+
+  const handleProgressChange = useCallback((progress: number) => {
+    setUploadProgress(progress);
   }, []);
 
   const handleVideoDelete = useCallback(
@@ -204,6 +211,10 @@ export function ActionVideo({
     setUploadingVideoUrl(prev => (prev === videoUrl ? null : prev));
   }, []);
 
+  const handleVideoPreview = useCallback((videoUrl: string) => {
+    window.open(videoUrl, "_blank");
+  }, []);
+
   return (
     <SurveyQuestionTemplate
       currentOrder={currentOrder}
@@ -219,19 +230,26 @@ export function ActionVideo({
       isLoading={isLoading}
       isRequired={actionData.isRequired}
     >
-      {videoInfos.length === 0 && (
+      <div className="grid grid-cols-3 gap-2">
         <VideoUpload
           onUploadChange={handleUploadChange}
           onUploadingChange={handleUploadingChange}
+          onProgressChange={handleProgressChange}
+          currentCount={videoInfos.length}
+          maxCount={1}
         />
-      )}
-      <VideoList
-        videoUrls={videoInfos.map(v => v.fileUrl)}
-        uploadingVideoUrl={uploadingVideoUrl}
-        isUploading={isUploading}
-        onVideoDelete={handleVideoDelete}
-        onVideoLoadComplete={handleVideoLoadComplete}
-      />
+        {isUploading && videoInfos.length === 0 && (
+          <UploadingPlaceholder progress={uploadProgress} />
+        )}
+        <VideoList
+          videoUrls={videoInfos.map(v => v.fileUrl)}
+          uploadingVideoUrl={uploadingVideoUrl}
+          uploadProgress={uploadProgress}
+          onVideoDelete={handleVideoDelete}
+          onVideoLoadComplete={handleVideoLoadComplete}
+          onVideoPreview={handleVideoPreview}
+        />
+      </div>
       <VideoUploadNotice />
     </SurveyQuestionTemplate>
   );

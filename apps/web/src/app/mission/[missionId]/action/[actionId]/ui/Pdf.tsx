@@ -3,7 +3,7 @@ import { useDeleteAnswer } from "@/hooks/action/useDeleteAnswer";
 import { useDeleteFile } from "@/hooks/common/useDeleteFile";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
-import type { FileInfo } from "@/types/domain/file";
+import type { FileInfo, TempFileInfo } from "@/types/domain/file";
 import type { ActionAnswerItem } from "@/types/dto";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
@@ -28,7 +28,9 @@ export function ActionPdf({
   const [fileInfos, setFileInfos] = useState<FileInfo[]>([]);
   const [fileUploadIds, setFileUploadIds] = useState<string[]>([]);
   const [uploadingFileUrl, setUploadingFileUrl] = useState<string | null>(null);
+  const [uploadingFileInfo, setUploadingFileInfo] = useState<TempFileInfo | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const { mutate: deleteFileMutation } = useDeleteFile();
   const { mutate: deleteAnswerMutation, isPending: isDeletingAnswer } = useDeleteAnswer();
@@ -174,7 +176,22 @@ export function ActionPdf({
     setIsUploading(uploading);
     if (!uploading) {
       setUploadingFileUrl(null);
+      setUploadingFileInfo(null);
+      setUploadProgress(0);
     }
+  }, []);
+
+  const handleProgressChange = useCallback((progress: number) => {
+    setUploadProgress(progress);
+  }, []);
+
+  const handleUploadStart = useCallback((file: File, tempUrl: string) => {
+    setUploadingFileUrl(tempUrl);
+    setUploadingFileInfo({
+      fileName: file.name,
+      fileSize: file.size,
+      fileUrl: tempUrl,
+    });
   }, []);
 
   const handleFileDelete = useCallback(
@@ -214,18 +231,26 @@ export function ActionPdf({
       isLoading={isLoading}
       isRequired={actionData.isRequired}
     >
-      {fileInfos.length === 0 && (
-        <PdfUpload onUploadChange={handleUploadChange} onUploadingChange={handleUploadingChange} />
-      )}
-      {fileInfos.length > 0 && (
-        <FileList
-          files={fileInfos}
-          uploadingFileUrl={uploadingFileUrl}
-          isUploading={isUploading}
-          onFileDelete={handleFileDelete}
-          onFileClick={handleFileClick}
+      <div className="flex flex-col gap-3">
+        <PdfUpload
+          onUploadChange={handleUploadChange}
+          onUploadingChange={handleUploadingChange}
+          onProgressChange={handleProgressChange}
+          onUploadStart={handleUploadStart}
+          currentCount={fileInfos.length}
+          maxCount={1}
         />
-      )}
+        {(fileInfos.length > 0 || uploadingFileInfo) && (
+          <FileList
+            files={uploadingFileInfo ? [...fileInfos, uploadingFileInfo] : fileInfos}
+            uploadingFileUrl={uploadingFileUrl}
+            isUploading={isUploading}
+            uploadProgress={uploadProgress}
+            onFileDelete={handleFileDelete}
+            onFileClick={handleFileClick}
+          />
+        )}
+      </div>
       <PdfUploadNotice />
     </SurveyQuestionTemplate>
   );

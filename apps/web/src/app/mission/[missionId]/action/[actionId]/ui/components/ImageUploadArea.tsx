@@ -7,6 +7,8 @@ interface ImageUploadAreaProps {
   isUploading: boolean;
   onFileSelect: () => void;
   onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  currentCount?: number;
+  maxCount?: number;
 }
 
 export function ImageUploadArea({
@@ -14,6 +16,8 @@ export function ImageUploadArea({
   isUploading,
   onFileSelect,
   onFileChange,
+  currentCount = 0,
+  maxCount = 10,
 }: ImageUploadAreaProps) {
   return (
     <MediaUploadArea
@@ -22,9 +26,11 @@ export function ImageUploadArea({
       onFileSelect={onFileSelect}
       onFileChange={onFileChange}
       accept="image/*,.heic,.heif"
-      buttonText="사진 첨부"
       icon="image"
       multiple
+      variant="counter"
+      currentCount={currentCount}
+      maxCount={maxCount}
     />
   );
 }

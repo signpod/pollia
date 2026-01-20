@@ -117,18 +117,16 @@ function TimePickerContent({
               onClick={() => setIsDialogOpen(true)}
               variant="tertiary"
               size="large"
-              className="transition-all duration-200 rounded-full size-12 bg-zinc-50"
+              className="rounded-full size-12 bg-zinc-50"
             >
-              <div className="flex items-center justify-center gap-3 w-full">
-                <Plus className="size-5" />
-              </div>
+              <Plus className="size-5" />
             </ButtonV2>
           ) : (
             <ButtonV2
               onClick={() => setIsDialogOpen(true)}
               variant="secondary"
               size="large"
-              className="transition-all duration-200 hover:ring-0! hover:bg-zinc-50! hover:text-zinc-900! w-full"
+              className="hover:ring-0! hover:bg-zinc-50! hover:text-zinc-900! w-full"
             >
               <div className="w-full flex items-center justify-center gap-3">
                 <Plus className="size-5" />

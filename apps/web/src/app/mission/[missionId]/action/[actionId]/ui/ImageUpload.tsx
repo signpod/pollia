@@ -108,6 +108,8 @@ export function ImageUpload({
       isUploading={isUploading}
       onFileSelect={handleFileSelect}
       onFileChange={handleFileChange}
+      currentCount={currentImageCount}
+      maxCount={MAX_IMAGE_UPLOAD_COUNT}
     />
   );
 }

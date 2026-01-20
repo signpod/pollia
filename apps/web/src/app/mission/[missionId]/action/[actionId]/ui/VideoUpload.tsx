@@ -15,21 +15,35 @@ interface VideoUploadProps {
     file?: File,
   ) => void;
   onUploadingChange?: (isUploading: boolean) => void;
+  onProgressChange?: (progress: number) => void;
+  currentCount?: number;
+  maxCount?: number;
 }
 
-export function VideoUpload({ onUploadChange, onUploadingChange }: VideoUploadProps) {
+export function VideoUpload({
+  onUploadChange,
+  onUploadingChange,
+  onProgressChange,
+  currentCount = 0,
+  maxCount = 1,
+}: VideoUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { upload, isUploading } = useVideoUpload({
     bucket: STORAGE_BUCKETS.ACTION_ANSWER_VIDEOS,
     onSuccess: result => {
       onUploadingChange?.(false);
+      onProgressChange?.(0);
       onUploadChange?.(true, [result.publicUrl], [result.fileUploadId], [result.path], result.file);
     },
     onError: error => {
       onUploadingChange?.(false);
+      onProgressChange?.(0);
       toast.warning(error?.message || "파일 업로드에 실패했어요.\n다시 시도해주세요.");
       onUploadChange?.(false, [], [], []);
+    },
+    onProgress: progress => {
+      onProgressChange?.(progress.percentage);
     },
   });
 
@@ -69,8 +83,10 @@ export function VideoUpload({ onUploadChange, onUploadingChange }: VideoUploadPr
       onFileSelect={handleFileSelect}
       onFileChange={handleFileChange}
       accept="video/*"
-      buttonText="동영상 첨부"
       icon="video"
+      variant="counter"
+      currentCount={currentCount}
+      maxCount={maxCount}
     />
   );
 }

@@ -273,19 +273,20 @@ export function ActionImage({
       isLoading={isLoading}
       isRequired={actionData.isRequired}
     >
-      <ImageUpload
-        currentImageCount={imageInfos.length}
-        onUploadChange={handleUploadChange}
-        onUploadingChange={handleUploadingChange}
-      />
-      <ImageList
-        imageUrls={imageInfos.map(info => info.fileUrl)}
-        uploadingImageUrl={uploadingImageUrl}
-        isUploading={isUploading}
-        onImageDelete={handleImageDelete}
-        onImageLoadComplete={handleImageLoadComplete}
-        onImageEdit={handleImageEdit}
-      />
+      <div className="grid grid-cols-3 gap-2">
+        <ImageUpload
+          currentImageCount={imageInfos.length}
+          onUploadChange={handleUploadChange}
+          onUploadingChange={handleUploadingChange}
+        />
+        <ImageList
+          imageUrls={imageInfos.map(info => info.fileUrl)}
+          uploadingImageUrl={uploadingImageUrl}
+          onImageDelete={handleImageDelete}
+          onImageLoadComplete={handleImageLoadComplete}
+          onImageEdit={handleImageEdit}
+        />
+      </div>
       <ImageUploadNotice />
     </SurveyQuestionTemplate>
   );
