@@ -61,6 +61,7 @@ export interface MyMissionResponseAnswer {
     title: string;
     type: string;
     order: number;
+    isRequired: boolean;
   };
   options: Array<{
     id: string;
