@@ -43,7 +43,7 @@ export class MissionRepository {
       });
 
       if (actionIds.length > 0) {
-        const whenClauses = actionIds.map((id, index) => Prisma.sql`WHEN ${id} THEN ${index + 1}`);
+        const whenClauses = actionIds.map((id, index) => Prisma.sql`WHEN ${id} THEN ${index}`);
 
         await tx.$executeRaw`
           UPDATE "actions"
