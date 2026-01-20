@@ -35,7 +35,7 @@ export function Toaster({ offset = 20 }: { offset?: number }) {
       toastOptions={{
         unstyled: true,
         classNames: {
-          toast: "sonner-toast",
+          toast: "sonner-toast w-full",
         },
       }}
       offset={offset}
