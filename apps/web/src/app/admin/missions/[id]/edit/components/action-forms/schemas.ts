@@ -91,6 +91,7 @@ export const tagFormSchema = tagInputSchema
   .extend({
     imageFileUploadId: z.string().nullable().optional(),
     options: z.array(actionOptionFormSchema),
+    hasOther: z.boolean().optional(),
   })
   .refine(
     data => data.options.length >= TAG_MIN_OPTIONS && data.options.length <= TAG_MAX_OPTIONS,
