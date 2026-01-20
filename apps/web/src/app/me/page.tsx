@@ -1,39 +1,25 @@
-import { getUserMissions } from "@/actions/mission";
-import { getCurrentUser } from "@/actions/user/read";
-import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
+import { getMyResponses } from "@/actions/mission-response";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
-import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";
 import { getQueryClient } from "@/lib/getQueryClient";
-import { dehydrate } from "@tanstack/react-query";
-import { MeClientWrapper } from "./MeClientWrapper";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { Suspense } from "react";
+import { MePageContent } from "./MePageContent";
 
 export default async function MePage() {
   const queryClient = getQueryClient();
 
   await queryClient.prefetchQuery({
-    queryKey: userQueryKeys.currentUser(),
-    queryFn: () => getCurrentUser(),
-  });
-
-  await queryClient.prefetchQuery({
-    queryKey: actionQueryKeys.actions(),
-    queryFn: () => {
-      return getUserMissions();
-    },
-  });
-
-  await queryClient.prefetchInfiniteQuery({
-    queryKey: missionQueryKeys.userMissions(),
-    queryFn: ({ pageParam }) => {
-      return getUserMissions({
-        cursor: pageParam,
-        limit: 10,
-      });
-    },
-    initialPageParam: undefined as string | undefined,
+    queryKey: missionQueryKeys.myResponses(),
+    queryFn: () => getMyResponses(),
   });
 
   const dehydratedState = dehydrate(queryClient);
 
-  return <MeClientWrapper dehydratedState={dehydratedState} />;
+  return (
+    <HydrationBoundary state={dehydratedState}>
+      <Suspense>
+        <MePageContent />
+      </Suspense>
+    </HydrationBoundary>
+  );
 }

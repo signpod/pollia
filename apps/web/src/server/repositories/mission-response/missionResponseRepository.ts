@@ -51,8 +51,50 @@ export class MissionResponseRepository {
     return prisma.missionResponse.findMany({
       where: { userId },
       include: {
-        mission: true,
-        answers: true,
+        mission: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            imageUrl: true,
+            estimatedMinutes: true,
+            _count: {
+              select: {
+                questions: true,
+              },
+            },
+          },
+        },
+        answers: {
+          include: {
+            action: {
+              select: {
+                id: true,
+                title: true,
+                type: true,
+                order: true,
+                isRequired: true,
+              },
+            },
+            options: {
+              select: {
+                id: true,
+                title: true,
+                order: true,
+              },
+              orderBy: {
+                order: "asc",
+              },
+            },
+            fileUploads: {
+              select: {
+                id: true,
+                publicUrl: true,
+                originalFileName: true,
+              },
+            },
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
