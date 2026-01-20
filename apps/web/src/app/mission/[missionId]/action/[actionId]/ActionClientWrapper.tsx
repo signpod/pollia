@@ -5,9 +5,9 @@ import { MISSION_TOAST_MESSAGE } from "@/constants/missionMessages";
 import { ROUTES } from "@/constants/routes";
 import { useReadActionsDetail } from "@/hooks/action/useReadActionsDetail";
 import {
+  useCompleteMission,
   useReadMissionResponseForMission,
   useSubmitQuestionAnswer,
-  useSubmitSurveyAnswers,
 } from "@/hooks/mission-response";
 import { useMissionSurveyToast } from "@/hooks/mission/useMissionSurveyToast";
 import { useRecordActionResponse } from "@/hooks/tracking";
@@ -23,7 +23,7 @@ import type { ActionAnswer } from "@/types/dto/action-answer";
 import { StepProvider, useModal, useStep } from "@repo/ui/components";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActionDate,
   ActionImage,
@@ -105,6 +105,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
   const [currentAnswer, setCurrentAnswer] = useState<ActionAnswerItem | null>(null);
   const { showModal } = useModal();
   const { user } = useAuth();
+  const isFinalSubmitRef = useRef(false);
 
   const { data: missionResponse } = useReadMissionResponseForMission({ missionId });
   const { mutate: recordResponse } = useRecordActionResponse();
@@ -118,9 +119,10 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
 
   const { mutateAsync: submitAnswer, isPending: isSubmittingAnswer } = useSubmitQuestionAnswer({
     onSuccess: () => {
-      goNext();
+      if (!isFinalSubmitRef.current) {
+        goNext();
+      }
 
-      // Fire-and-forget 방식으로 트래킹 [25.12.22/러기]
       if (currentAnswer) {
         recordResponse({
           missionId,
@@ -129,6 +131,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
           actionId: currentAnswer.actionId,
           metadata: {
             actionType: currentAnswer.type,
+            ...(isFinalSubmitRef.current && { isFinalSubmit: true }),
           },
         });
       }
@@ -140,31 +143,17 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
     missionId,
   });
 
-  const { mutateAsync: completeSurveyAsync, isPending: isCompletingSurvey } =
-    useSubmitSurveyAnswers({
-      onSuccess: () => {
-        removeSessionStorage(toastStorageKey);
-        router.push(ROUTES.MISSION_DONE(missionId));
-
-        if (currentAnswer) {
-          recordResponse({
-            missionId,
-            sessionId: getOrCreateSessionId(),
-            userId: user?.id || undefined,
-            actionId: currentAnswer.actionId,
-            metadata: {
-              actionType: currentAnswer.type,
-              isFinalSubmit: true,
-            },
-          });
-        }
-      },
-      onError: () => {
-        toast.warning(MISSION_TOAST_MESSAGE.error.message, { id: MISSION_TOAST_MESSAGE.error.id });
-      },
-      onAlreadyCompleted: handleAlreadyCompleted,
-      missionId,
-    });
+  const { mutateAsync: completeMissionAsync, isPending: isCompletingMission } = useCompleteMission({
+    onSuccess: () => {
+      removeSessionStorage(toastStorageKey);
+      router.push(ROUTES.MISSION_DONE(missionId));
+    },
+    onError: () => {
+      toast.warning(MISSION_TOAST_MESSAGE.error.message, { id: MISSION_TOAST_MESSAGE.error.id });
+    },
+    onAlreadyCompleted: handleAlreadyCompleted,
+    missionId,
+  });
 
   const {
     currentStep,
@@ -336,39 +325,13 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
         ...SURVEY_SUBMIT_MODAL,
         showCancelButton: true,
         onConfirm: async () => {
-          await completeSurveyAsync({
-            responseId,
-            answers: [
-              {
-                actionId: currentAnswer.actionId,
-                type: currentAnswer.type,
-                isRequired: currentAnswer.isRequired,
-                ...(currentAnswer.type === "MULTIPLE_CHOICE" || currentAnswer.type === "TAG"
-                  ? {
-                      selectedOptionIds: currentAnswer.selectedOptionIds,
-                      ...(currentAnswer.textAnswer ? { textAnswer: currentAnswer.textAnswer } : {}),
-                    }
-                  : {}),
-                ...(currentAnswer.type === "SCALE" || currentAnswer.type === "RATING"
-                  ? { scaleValue: currentAnswer.scaleValue }
-                  : {}),
-                ...(currentAnswer.type === "SUBJECTIVE" || currentAnswer.type === "SHORT_TEXT"
-                  ? { textAnswer: currentAnswer.textAnswer }
-                  : {}),
-                ...(currentAnswer.type === "IMAGE" ||
-                currentAnswer.type === "VIDEO" ||
-                currentAnswer.type === "PDF"
-                  ? { fileUploadIds: currentAnswer.fileUploadIds }
-                  : {}),
-                ...(currentAnswer.type === "DATE"
-                  ? { dateAnswers: currentAnswer.dateAnswers }
-                  : {}),
-                ...(currentAnswer.type === "TIME"
-                  ? { dateAnswers: currentAnswer.dateAnswers }
-                  : {}),
-              },
-            ],
-          });
+          isFinalSubmitRef.current = true;
+          try {
+            await submitAnswer({ responseId, answer: currentAnswer });
+            await completeMissionAsync({ responseId });
+          } finally {
+            isFinalSubmitRef.current = false;
+          }
         },
       });
     } else {
@@ -382,7 +345,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
     responseId,
     currentAnswer,
     submitAnswer,
-    completeSurveyAsync,
+    completeMissionAsync,
     showModal,
     isAnswerSameAsSubmitted,
     goNext,
@@ -404,8 +367,8 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
       currentOrder={actionData.order}
       totalActionCount={totalActionCount}
       isFirstAction={isFirstStep}
-      isNextDisabled={!canGoNext || isSubmittingAnswer || isCompletingSurvey}
-      isLoading={isSubmittingAnswer || isCompletingSurvey}
+      isNextDisabled={!canGoNext || isSubmittingAnswer || isCompletingMission}
+      isLoading={isSubmittingAnswer || isCompletingMission}
       onPrevious={handlePrevious}
       onNext={handleNext}
       nextButtonText={isLastStep ? "제출하기" : "다음"}
