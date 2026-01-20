@@ -112,7 +112,6 @@ export function MissionEventSelector({
             <Button
               variant="outline"
               onClick={() => {
-                onOpenChange(false);
                 setIsCreateEventModalOpen(true);
               }}
               disabled={updateMission.isPending}
@@ -137,7 +136,14 @@ export function MissionEventSelector({
         </DialogContent>
       </Dialog>
 
-      <EventCreateModal open={isCreateEventModalOpen} onOpenChange={setIsCreateEventModalOpen} />
+      <EventCreateModal
+        open={isCreateEventModalOpen}
+        onOpenChange={setIsCreateEventModalOpen}
+        onEventCreated={() => {
+          setIsCreateEventModalOpen(false);
+          onOpenChange(false);
+        }}
+      />
     </>
   );
 }
