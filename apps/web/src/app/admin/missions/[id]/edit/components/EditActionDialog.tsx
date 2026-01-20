@@ -144,6 +144,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
             isRequired: action.isRequired,
+            hasOther: action.hasOther,
             maxSelections: action.maxSelections ?? 1,
             options: mapOptions(action.options),
           }}

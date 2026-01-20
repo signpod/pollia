@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus } from "lucide-react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { BaseActionFormFields } from "./BaseActionForm";
+import { HasOtherField } from "./HasOtherField";
 import { MaxSelectionsField } from "./MaxSelectionsField";
 import { TagFormOptionCard } from "./TagFormOptionCard";
 import { TAG_MAX_OPTIONS, TAG_MIN_OPTIONS, type TagFormInput, tagFormSchema } from "./schemas";
@@ -30,6 +31,7 @@ export function TagForm({
       imageUrl: initialData?.imageUrl,
       imageFileUploadId: initialData?.imageFileUploadId,
       isRequired: initialData?.isRequired ?? true,
+      hasOther: initialData?.hasOther ?? false,
       maxSelections: initialData?.maxSelections ?? 1,
       options:
         initialData?.options?.map(opt => ({
@@ -68,6 +70,7 @@ export function TagForm({
       imageUrl: data.imageUrl || undefined,
       imageFileUploadId: data.imageFileUploadId,
       maxSelections: data.maxSelections,
+      hasOther: data.hasOther,
       options: formattedOptions,
       isRequired: data.isRequired,
     });
@@ -107,6 +110,8 @@ export function TagForm({
             form.setValue("imageFileUploadId", null, { shouldDirty: true });
           }}
         />
+
+        <HasOtherField control={form.control} name="hasOther" disabled={isLoading} />
 
         <MaxSelectionsField control={form.control} name="maxSelections" disabled={isLoading} />
 

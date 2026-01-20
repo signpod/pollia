@@ -38,6 +38,7 @@ export interface TagFormData extends BaseActionFormData {
   type: "TAG";
   options: ActionOptionInput[];
   maxSelections?: number;
+  hasOther?: boolean;
 }
 
 export interface SubjectiveFormData extends BaseActionFormData {
