@@ -15,7 +15,7 @@ import { useAuth } from "@/hooks/user";
 import { setActionNavCookie } from "@/lib/cookie";
 import { formatDateToHHMM, formatDateToYYYYMMDD } from "@/lib/date";
 import { removeSessionStorage } from "@/lib/sessionStorage";
-import { getOrCreateSessionId } from "@/lib/tracking";
+import { clearActionSession, getOrCreateSessionId } from "@/lib/tracking";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
 import type { ActionAnswerItem } from "@/types/dto";
@@ -126,7 +126,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
       if (currentAnswer) {
         recordResponse({
           missionId,
-          sessionId: getOrCreateSessionId(),
+          sessionId: getOrCreateSessionId(currentAnswer.actionId),
           userId: user?.id || undefined,
           actionId: currentAnswer.actionId,
           metadata: {
@@ -134,6 +134,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
             ...(isFinalSubmitRef.current && { isFinalSubmit: true }),
           },
         });
+        clearActionSession(currentAnswer.actionId);
       }
 
       goNext();
@@ -318,17 +319,18 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
     const isSame = isAnswerSameAsSubmitted(currentAnswer, submittedAnswers);
 
     if (isSame) {
-      if (isLastStep && currentAnswer) {
+      if (currentAnswer) {
         recordResponse({
           missionId,
-          sessionId: getOrCreateSessionId(),
+          sessionId: getOrCreateSessionId(currentAnswer.actionId),
           userId: user?.id || undefined,
           actionId: currentAnswer.actionId,
           metadata: {
             actionType: currentAnswer.type,
-            isFinalSubmit: true,
+            isFinalSubmit: isLastStep,
           },
         });
+        clearActionSession(currentAnswer.actionId);
       }
       goNext();
       return;

@@ -1,34 +1,55 @@
 import type { Prisma } from "@prisma/client";
 
-const SESSION_ID_KEY = "pollia_action_tracking_session_id";
+const SESSION_ID_PREFIX = "pollia_session_";
+const SESSION_TIMESTAMP_PREFIX = "pollia_session_ts_";
 const TRACKED_ENTRY_PREFIX = "tracked_entry_";
+const SESSION_TTL_MS = 30 * 60 * 1000;
 
 const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"] as const;
 
-export function getOrCreateSessionId(): string {
+export function getOrCreateSessionId(actionId: string): string {
   if (typeof window === "undefined") return "";
 
-  let sessionId = localStorage.getItem(SESSION_ID_KEY);
+  const now = Date.now();
+  const sessionKey = `${SESSION_ID_PREFIX}${actionId}`;
+  const timestampKey = `${SESSION_TIMESTAMP_PREFIX}${actionId}`;
 
-  if (!sessionId) {
+  let sessionId = localStorage.getItem(sessionKey);
+  const timestampStr = localStorage.getItem(timestampKey);
+
+  if (!sessionId || !timestampStr || now - Number(timestampStr) > SESSION_TTL_MS) {
     sessionId = crypto.randomUUID();
-    localStorage.setItem(SESSION_ID_KEY, sessionId);
   }
+
+  localStorage.setItem(sessionKey, sessionId);
+  localStorage.setItem(timestampKey, String(now));
 
   return sessionId;
 }
 
-export function hasTrackedEntry(sessionId: string, actionId: string): boolean {
+export function clearActionSession(actionId: string): void {
+  if (typeof window === "undefined") return;
+
+  const sessionKey = `${SESSION_ID_PREFIX}${actionId}`;
+  const timestampKey = `${SESSION_TIMESTAMP_PREFIX}${actionId}`;
+  const trackedKey = `${TRACKED_ENTRY_PREFIX}${actionId}`;
+
+  localStorage.removeItem(sessionKey);
+  localStorage.removeItem(timestampKey);
+  sessionStorage.removeItem(trackedKey);
+}
+
+export function hasTrackedEntry(actionId: string): boolean {
   if (typeof window === "undefined") return false;
 
-  const trackedKey = `${TRACKED_ENTRY_PREFIX}${sessionId}_${actionId}`;
+  const trackedKey = `${TRACKED_ENTRY_PREFIX}${actionId}`;
   return sessionStorage.getItem(trackedKey) !== null;
 }
 
-export function markEntryAsTracked(sessionId: string, actionId: string): void {
+export function markEntryAsTracked(actionId: string): void {
   if (typeof window === "undefined") return;
 
-  const trackedKey = `${TRACKED_ENTRY_PREFIX}${sessionId}_${actionId}`;
+  const trackedKey = `${TRACKED_ENTRY_PREFIX}${actionId}`;
   sessionStorage.setItem(trackedKey, Date.now().toString());
 }
 
