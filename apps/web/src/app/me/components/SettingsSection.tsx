@@ -16,7 +16,7 @@ function SettingsMenuItem({ icon, label, href }: SettingsMenuItemProps) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-3 rounded-xl px-4 py-3 transition-colors hover:bg-zinc-50"
+      className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-zinc-50"
     >
       <span className="text-zinc-500">{icon}</span>
       <Typo.Body size="large" className="flex-1">
