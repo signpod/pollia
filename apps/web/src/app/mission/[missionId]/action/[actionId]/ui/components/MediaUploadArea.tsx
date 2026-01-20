@@ -48,8 +48,10 @@ export function MediaUploadArea({
   const isMaxReached = variant === "counter" && currentCount >= maxCount;
 
   if (variant === "counter") {
+    const isMediaType = icon === "image" || icon === "video";
+
     return (
-      <div className="flex flex-col w-full">
+      <div className={cn("flex flex-col", isMediaType ? "aspect-square" : "w-full")}>
         <input
           ref={inputRef}
           type="file"
@@ -68,14 +70,15 @@ export function MediaUploadArea({
           type="button"
           disabled={isUploading || isMaxReached}
           className={cn(
-            "flex flex-col items-center justify-center gap-[4px] rounded-2xl w-full py-4",
+            "flex flex-col items-center justify-center gap-1 rounded-2xl w-full h-full",
             "border border-zinc-200 bg-white",
             "transition-colors duration-200 ease-in-out",
             "touch-manipulation",
+            !isMediaType && "py-6",
             isMaxReached ? "cursor-default" : "hover:bg-zinc-50 active:bg-zinc-100",
           )}
         >
-          <div className="flex items-center justify-center size-14 bg-light rounded-full">
+          <div className="flex items-center justify-center size-14 bg-zinc-100 rounded-full">
             <IconComponent className="size-7" />
           </div>
           <div className="flex items-center gap-1">

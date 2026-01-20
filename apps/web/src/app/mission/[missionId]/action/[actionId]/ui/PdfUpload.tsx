@@ -16,6 +16,7 @@ interface PdfUploadProps {
     tempUrl?: string,
   ) => void;
   onUploadingChange?: (isUploading: boolean) => void;
+  onProgressChange?: (progress: number) => void;
   onUploadStart?: (file: File, tempUrl: string) => void;
   currentCount?: number;
   maxCount?: number;
@@ -24,6 +25,7 @@ interface PdfUploadProps {
 export function PdfUpload({
   onUploadChange,
   onUploadingChange,
+  onProgressChange,
   onUploadStart,
   currentCount = 0,
   maxCount = 1,
@@ -37,6 +39,7 @@ export function PdfUpload({
       const tempUrl = tempUrlRef.current;
       tempUrlRef.current = null;
       onUploadingChange?.(false);
+      onProgressChange?.(0);
       onUploadChange?.(
         true,
         [result.publicUrl],
@@ -52,8 +55,12 @@ export function PdfUpload({
         tempUrlRef.current = null;
       }
       onUploadingChange?.(false);
+      onProgressChange?.(0);
       toast.warning(error?.message || "파일 업로드에 실패했어요.\n다시 시도해주세요.");
       onUploadChange?.(false, [], [], []);
+    },
+    onProgress: progress => {
+      onProgressChange?.(progress.percentage);
     },
   });
 

@@ -14,7 +14,8 @@ interface MediaUploadNoticeProps {
 export function MediaUploadNotice({ title, noticeItems }: MediaUploadNoticeProps) {
   const [isOpen, setIsOpen] = useState(true);
   const contentRef = useRef<HTMLDivElement>(null);
-  const [height, setHeight] = useState<number>(0);
+  const [height, setHeight] = useState<number | "auto">("auto");
+  const isInitialMountRef = useRef(true);
   const contentId = useId();
 
   useEffect(() => {
@@ -34,6 +35,7 @@ export function MediaUploadNotice({ title, noticeItems }: MediaUploadNoticeProps
         }
       }
     }
+    isInitialMountRef.current = false;
   }, [isOpen]);
 
   const toggle = () => {
@@ -68,7 +70,7 @@ export function MediaUploadNotice({ title, noticeItems }: MediaUploadNoticeProps
           opacity: isOpen ? 1 : 0,
         }}
         transition={{
-          duration: 0.3,
+          duration: isInitialMountRef.current ? 0 : 0.3,
           ease: "easeInOut",
         }}
         style={{

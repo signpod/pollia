@@ -1,17 +1,13 @@
 "use client";
 
+import type { TempFileInfo } from "@/types/domain/file";
 import { FileItem } from "./FileItem";
 
-interface FileInfo {
-  fileName: string;
-  fileSize: number;
-  fileUrl: string;
-}
-
 interface FileListProps {
-  files: FileInfo[];
+  files: TempFileInfo[];
   uploadingFileUrl: string | null;
   isUploading: boolean;
+  uploadProgress?: number;
   onFileDelete: (fileUrl: string) => void;
   onFileClick?: (fileUrl: string) => void;
 }
@@ -20,6 +16,7 @@ export function FileList({
   files,
   uploadingFileUrl,
   isUploading,
+  uploadProgress,
   onFileDelete,
   onFileClick,
 }: FileListProps) {
@@ -37,6 +34,7 @@ export function FileList({
             fileName={file.fileName}
             fileSize={file.fileSize}
             isUploading={isFileUploading}
+            uploadProgress={isFileUploading ? uploadProgress : undefined}
             onDelete={() => onFileDelete(file.fileUrl)}
             onClick={onFileClick ? () => onFileClick(file.fileUrl) : undefined}
           />

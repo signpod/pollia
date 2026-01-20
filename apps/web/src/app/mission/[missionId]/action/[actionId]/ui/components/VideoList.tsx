@@ -5,27 +5,29 @@ import { MediaList } from "./MediaList";
 interface VideoListProps {
   videoUrls: string[];
   uploadingVideoUrl: string | null;
-  isUploading: boolean;
+  uploadProgress?: number;
   onVideoDelete: (videoUrl: string) => void;
   onVideoLoadComplete: (videoUrl: string) => void;
+  onVideoPreview?: (videoUrl: string) => void;
 }
 
 export function VideoList({
   videoUrls,
   uploadingVideoUrl,
-  isUploading,
+  uploadProgress,
   onVideoDelete,
   onVideoLoadComplete,
+  onVideoPreview,
 }: VideoListProps) {
   return (
     <MediaList
-      isSingleUploadMode={true}
       mediaUrls={videoUrls}
       uploadingMediaUrl={uploadingVideoUrl}
-      isUploading={isUploading}
+      uploadProgress={uploadProgress}
       mediaType="video"
       onMediaDelete={onVideoDelete}
       onMediaLoadComplete={onVideoLoadComplete}
+      onMediaPreview={onVideoPreview}
     />
   );
 }

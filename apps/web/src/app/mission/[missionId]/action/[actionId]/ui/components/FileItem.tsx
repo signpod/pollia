@@ -3,17 +3,67 @@
 import { formatFileSize } from "@/lib/utils";
 import PdfIcon from "@public/svgs/pdf-color-icon.svg";
 import { Typo } from "@repo/ui/components";
-import { Loader2Icon, XIcon } from "lucide-react";
+import { XIcon } from "lucide-react";
+
+interface CircularProgressProps {
+  progress: number;
+  size?: number;
+  strokeWidth?: number;
+}
+
+function CircularProgress({ progress, size = 24, strokeWidth = 3 }: CircularProgressProps) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const offset = circumference - (progress / 100) * circumference;
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      className="transform -rotate-90"
+      role="img"
+      aria-label={`업로드 진행률 ${progress}%`}
+    >
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke="#f4f4f5"
+        strokeWidth={strokeWidth}
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke="#27272a"
+        strokeWidth={strokeWidth}
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
+        strokeLinecap="round"
+        className="transition-all duration-200 ease-out"
+      />
+    </svg>
+  );
+}
 
 interface FileItemProps {
   fileName: string;
   fileSize: number;
   isUploading: boolean;
+  uploadProgress?: number;
   onDelete: () => void;
   onClick?: () => void;
 }
 
-export function FileItem({ fileName, fileSize, isUploading, onDelete }: FileItemProps) {
+export function FileItem({
+  fileName,
+  fileSize,
+  isUploading,
+  uploadProgress = 0,
+  onDelete,
+}: FileItemProps) {
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onDelete();
@@ -34,7 +84,7 @@ export function FileItem({ fileName, fileSize, isUploading, onDelete }: FileItem
       </div>
       <div className="h-full self-start">
         {isUploading ? (
-          <Loader2Icon className="size-6 text-zinc-400 animate-spin shrink-0" />
+          <CircularProgress progress={uploadProgress} />
         ) : (
           <button
             type="button"
