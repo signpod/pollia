@@ -32,14 +32,14 @@ export function MePageContent() {
 
   return (
     <FixedBottomLayout className="bg-background min-h-screen">
-      <div className="space-y-10 px-5 pt-12 pb-8">
+      <div className="space-y-10 p-5">
         <section>
           <Typo.MainTitle size="small" className="mb-3">
             나의 정보
           </Typo.MainTitle>
           <div className="flex items-center gap-3 rounded-2xl border border-zinc-100 bg-white p-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-50">
-              <PolliaIcon className="size-6 text-violet-500" />
+              <PolliaIcon className="size-6 text-violet-300" />
             </div>
             <Typo.Body size="large" className="flex-1 font-medium">
               {user?.name}

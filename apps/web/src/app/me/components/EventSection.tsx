@@ -13,7 +13,10 @@ const ITEMS_PER_PAGE = 6;
 
 function PlaceholderCard() {
   return (
-    <div className="flex w-full items-center gap-4 rounded-2xl border border-transparent p-4" aria-hidden>
+    <div
+      className="flex w-full items-center gap-4 rounded-2xl border border-transparent p-4"
+      aria-hidden
+    >
       <div className="h-20 aspect-[2/3] shrink-0" />
       <div className="min-w-0 flex-1" />
     </div>
@@ -104,8 +107,12 @@ export function EventSection({ inProgressResponses, completedResponses }: EventS
       </Typo.MainTitle>
       <Tab.Root initialTab="in-progress" id="me-events-tab">
         <Tab.List>
-          <Tab.Item value="in-progress">진행중 ({inProgressResponses.length})</Tab.Item>
-          <Tab.Item value="completed">완료 ({completedResponses.length})</Tab.Item>
+          <Tab.Item value="in-progress">
+            <Typo.Body size="large">진행중 ({inProgressResponses.length})</Typo.Body>
+          </Tab.Item>
+          <Tab.Item value="completed">
+            <Typo.Body size="large">완료 ({completedResponses.length})</Typo.Body>
+          </Tab.Item>
         </Tab.List>
         <Tab.Content value="in-progress">
           <div className="flex flex-col gap-3">
