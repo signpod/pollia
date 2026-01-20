@@ -71,7 +71,7 @@ function AnswerContent({ answer }: { answer: MyMissionResponseAnswer }) {
   switch (actionType) {
     case "MULTIPLE_CHOICE":
     case "TAG":
-      if (answer.options.length === 0) {
+      if (answer.options.length === 0 && !answer.textAnswer) {
         return <span className="text-zinc-400">선택 없음</span>;
       }
       return (
@@ -84,6 +84,11 @@ function AnswerContent({ answer }: { answer: MyMissionResponseAnswer }) {
               {option.title}
             </span>
           ))}
+          {answer.textAnswer && (
+            <span className="rounded-full bg-zinc-100 px-3 py-1 text-sm font-medium text-zinc-700">
+              기타: {answer.textAnswer}
+            </span>
+          )}
         </div>
       );
 
