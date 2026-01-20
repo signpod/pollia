@@ -94,7 +94,6 @@ export function Chip({
                 onChange={onTextChange}
                 onBlur={onTextBlur}
                 onClick={e => e.stopPropagation()}
-                autoFocus
                 errorMessage={showError && !textValue.trim() ? "필수 입력 사항입니다." : undefined}
               />
             </motion.div>
