@@ -33,7 +33,7 @@ export function SettingsSection() {
 
   return (
     <section>
-      <Typo.MainTitle size="small" className="mb-4">
+      <Typo.MainTitle size="small" className="mb-3">
         설정
       </Typo.MainTitle>
       <div className="divide-y divide-zinc-100 rounded-2xl border border-zinc-200 bg-white">

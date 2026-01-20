@@ -99,7 +99,7 @@ export function EventSection({ inProgressResponses, completedResponses }: EventS
 
   return (
     <section>
-      <Typo.MainTitle size="small" className="mb-4">
+      <Typo.MainTitle size="small" className="mb-3">
         나의 이벤트
       </Typo.MainTitle>
       <Tab.Root initialTab="in-progress" id="me-events-tab">
