@@ -185,10 +185,7 @@ export function MissionIntro({ children }: MissionIntroProps) {
       <CalloutTrigger calloutData={calloutData} />
       <MissionIntroContext.Provider value={contextValue}>
         <main className="flex justify-center bg-background">
-          <div
-            ref={scrollContainerRef}
-            className="relative w-full max-w-lg"
-          >
+          <div ref={scrollContainerRef} className="relative w-full max-w-lg">
             {imageUrl && (
               <div className="relative w-full h-svh min-h-svh">
                 <MissionImage imageUrl={imageUrl} />
