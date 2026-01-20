@@ -21,7 +21,7 @@ export function useStickyTabHeader({
 }: UseStickyTabHeaderOptions) {
   const [activeTab, setActiveTab] = useState<
     (typeof SECTION_IDS)[keyof typeof SECTION_IDS] | undefined
-  >(undefined);
+  >(SECTION_IDS.MISSION_GUIDE);
   const [isSticky, setIsSticky] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
   const isUserScrollingRef = useRef(false);
@@ -66,10 +66,12 @@ export function useStickyTabHeader({
           .filter(([, isVisible]) => isVisible)
           .map(([id]) => id);
 
-        if (visibleSections.length === 0) {
-          setActiveTab(undefined);
-        } else if (isSticky) {
-          setActiveTab(visibleSections[0] as (typeof SECTION_IDS)[keyof typeof SECTION_IDS]);
+        if (isSticky) {
+          if (visibleSections.length === 0) {
+            setActiveTab(undefined);
+          } else {
+            setActiveTab(visibleSections[0] as (typeof SECTION_IDS)[keyof typeof SECTION_IDS]);
+          }
         }
       },
       {
