@@ -3,7 +3,7 @@
 import { ActionStepContentProps } from "@/constants/action";
 import { cn } from "@/lib/utils";
 import { ButtonV2, Typo } from "@repo/ui/components";
-import { Dialog, DialogOverlay, DialogPortal } from "@repo/ui/components";
+import { Dialog, DialogPortal } from "@repo/ui/components";
 import { Plus, X } from "lucide-react";
 import * as React from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
@@ -196,61 +196,85 @@ function TimeSelectDialog({ open, onOpenChange }: TimeSelectDialogProps) {
     onOpenChange(false);
   };
 
+  React.useEffect(() => {
+    if (!open) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        handleClose();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [open]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogPortal>
-        <DialogOverlay onClick={handleClose} />
-        <div
-          className={cn(
-            "fixed bottom-0 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg bg-white rounded-t-2xl shadow-[0_-4px_20px_0px_rgba(9,9,11,0.08)]",
-            "animate-in slide-in-from-bottom duration-300",
-          )}
-        >
-          <div className="flex items-center justify-end py-4 px-5">
-            <button type="button" onClick={handleClose} className="text-zinc-900">
-              <Typo.Body size="large">닫기</Typo.Body>
-            </button>
-          </div>
-
-          <div className="flex items-center justify-center py-4">
-            <Typo.MainTitle size="medium" className="text-zinc-900">
-              {getDisplayTime()}
-            </Typo.MainTitle>
-          </div>
-
-          <div className="relative px-5 py-4">
-            <div className="absolute inset-x-5 top-1/2 -translate-y-1/2 h-11 bg-zinc-50 rounded-sm pointer-events-none" />
-
-            <div className="relative flex items-center">
-              <div className="flex-1">
-                <WheelPicker
-                  items={PERIODS}
-                  value={period}
-                  onChange={v => setPeriod(v as "오전" | "오후")}
-                />
+        <div className="fixed inset-0 z-50 flex justify-center">
+          <div className="relative w-full max-w-lg">
+            <div
+              className={cn(
+                "absolute inset-0 bg-black/80",
+                "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+              )}
+              data-state="open"
+              onClick={handleClose}
+            />
+            <div
+              className={cn(
+                "absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-[0_-4px_20px_0px_rgba(9,9,11,0.08)]",
+                "animate-in slide-in-from-bottom duration-300",
+              )}
+            >
+              <div className="flex items-center justify-end py-4 px-5">
+                <button type="button" onClick={handleClose} className="text-zinc-900">
+                  <Typo.Body size="large">닫기</Typo.Body>
+                </button>
               </div>
 
-              <div className="flex-1 flex items-center">
-                <div className="flex-1">
-                  <WheelPicker items={HOURS} value={hour} onChange={setHour} />
-                </div>
-                <div className="flex items-center justify-center w-6 shrink-0">
-                  <Typo.Body size="large" className="text-zinc-400">
-                    :
-                  </Typo.Body>
+              <div className="flex items-center justify-center py-4">
+                <Typo.MainTitle size="medium" className="text-zinc-900">
+                  {getDisplayTime()}
+                </Typo.MainTitle>
+              </div>
+
+              <div className="relative px-5 py-4">
+                <div className="absolute inset-x-5 top-1/2 -translate-y-1/2 h-11 bg-zinc-50 rounded-sm pointer-events-none" />
+
+                <div className="relative flex items-center">
+                  <div className="flex-1">
+                    <WheelPicker
+                      items={PERIODS}
+                      value={period}
+                      onChange={v => setPeriod(v as "오전" | "오후")}
+                    />
+                  </div>
+
+                  <div className="flex-1 flex items-center">
+                    <div className="flex-1">
+                      <WheelPicker items={HOURS} value={hour} onChange={setHour} />
+                    </div>
+                    <div className="flex items-center justify-center w-6 shrink-0">
+                      <Typo.Body size="large" className="text-zinc-400">
+                        :
+                      </Typo.Body>
+                    </div>
+                  </div>
+
+                  <div className="flex-1">
+                    <WheelPicker items={MINUTES} value={minute} onChange={setMinute} />
+                  </div>
                 </div>
               </div>
 
-              <div className="flex-1">
-                <WheelPicker items={MINUTES} value={minute} onChange={setMinute} />
+              <div className="px-5 py-6">
+                <ButtonV2 onClick={handleConfirm} className="w-full">
+                  <div className="flex items-center justify-center w-full">확인</div>
+                </ButtonV2>
               </div>
             </div>
-          </div>
-
-          <div className="px-5 py-6">
-            <ButtonV2 onClick={handleConfirm} className="w-full">
-              <div className="flex items-center justify-center w-full">확인</div>
-            </ButtonV2>
           </div>
         </div>
       </DialogPortal>
