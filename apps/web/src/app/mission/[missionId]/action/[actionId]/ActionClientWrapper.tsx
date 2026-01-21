@@ -119,10 +119,6 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
 
   const { mutateAsync: submitAnswer, isPending: isSubmittingAnswer } = useSubmitQuestionAnswer({
     onSuccess: () => {
-      if (!isFinalSubmitRef.current) {
-        goNext();
-      }
-
       if (currentAnswer) {
         recordResponse({
           missionId,
@@ -351,13 +347,13 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
         },
       });
     } else {
+      // console.log("submitAnswer", currentAnswer);
       await submitAnswer({
         responseId,
         answer: currentAnswer,
       });
+      goNext();
     }
-
-    goNext();
   }, [
     isLastStep,
     responseId,
