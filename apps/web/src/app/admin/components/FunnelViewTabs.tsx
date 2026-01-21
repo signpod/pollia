@@ -2,6 +2,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/admin/components/shadcn-ui/tabs";
 import type { MissionFunnelData } from "@/types/dto";
+import type { MissionStats } from "@/types/mission-stats";
 import { BarChart3, List } from "lucide-react";
 import dynamic from "next/dynamic";
 import { MissionFunnelTextView } from "./MissionFunnelTextView";
@@ -20,10 +21,11 @@ const MissionSankeyChart = dynamic(
 
 interface FunnelViewTabsProps {
   data: MissionFunnelData;
+  missionStats: MissionStats;
   defaultTab?: "text" | "diagram";
 }
 
-export function FunnelViewTabs({ data, defaultTab = "text" }: FunnelViewTabsProps) {
+export function FunnelViewTabs({ data, missionStats, defaultTab = "text" }: FunnelViewTabsProps) {
   return (
     <Tabs defaultValue={defaultTab} className="w-full">
       <TabsList className="grid w-full max-w-[400px] grid-cols-2">
@@ -38,7 +40,7 @@ export function FunnelViewTabs({ data, defaultTab = "text" }: FunnelViewTabsProp
       </TabsList>
 
       <TabsContent value="text" className="mt-6">
-        <MissionFunnelTextView metadata={data.metadata} />
+        <MissionFunnelTextView metadata={data.metadata} missionStats={missionStats} />
       </TabsContent>
 
       <TabsContent value="diagram" className="mt-6">

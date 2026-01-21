@@ -15,7 +15,7 @@ import { useAuth } from "@/hooks/user";
 import { setActionNavCookie } from "@/lib/cookie";
 import { formatDateToHHMM, formatDateToYYYYMMDD } from "@/lib/date";
 import { removeSessionStorage } from "@/lib/sessionStorage";
-import { getOrCreateSessionId } from "@/lib/tracking";
+import { clearActionSession, getOrCreateSessionId } from "@/lib/tracking";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
 import type { ActionAnswerItem } from "@/types/dto";
@@ -108,7 +108,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
   const isFinalSubmitRef = useRef(false);
 
   const { data: missionResponse } = useReadMissionResponseForMission({ missionId });
-  const { mutate: recordResponse } = useRecordActionResponse();
+  const recordResponse = useRecordActionResponse();
 
   const toastStorageKey = `mission-toast-${missionId}`;
 
@@ -126,7 +126,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
       if (currentAnswer) {
         recordResponse({
           missionId,
-          sessionId: getOrCreateSessionId(),
+          sessionId: getOrCreateSessionId(currentAnswer.actionId),
           userId: user?.id || undefined,
           actionId: currentAnswer.actionId,
           metadata: {
@@ -134,7 +134,10 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
             ...(isFinalSubmitRef.current && { isFinalSubmit: true }),
           },
         });
+        clearActionSession(currentAnswer.actionId);
       }
+
+      goNext();
     },
     onError: () => {
       toast.warning("답변 저장에 실패했습니다.", { id: "submit-answer-error" });
@@ -316,6 +319,19 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
     const isSame = isAnswerSameAsSubmitted(currentAnswer, submittedAnswers);
 
     if (isSame) {
+      if (currentAnswer) {
+        recordResponse({
+          missionId,
+          sessionId: getOrCreateSessionId(currentAnswer.actionId),
+          userId: user?.id || undefined,
+          actionId: currentAnswer.actionId,
+          metadata: {
+            actionType: currentAnswer.type,
+            isFinalSubmit: isLastStep,
+          },
+        });
+        clearActionSession(currentAnswer.actionId);
+      }
       goNext();
       return;
     }
@@ -350,6 +366,10 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
     isAnswerSameAsSubmitted,
     goNext,
     actionData.id,
+    missionId,
+    recordResponse,
+    user?.id,
+    missionResponse?.data?.answers,
   ]);
 
   const handlePrevious = useCallback(() => {

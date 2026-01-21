@@ -20,9 +20,10 @@ import { toast } from "sonner";
 interface EventCreateModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onEventCreated?: () => void;
 }
 
-export function EventCreateModal({ open, onOpenChange }: EventCreateModalProps) {
+export function EventCreateModal({ open, onOpenChange, onEventCreated }: EventCreateModalProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -33,6 +34,7 @@ export function EventCreateModal({ open, onOpenChange }: EventCreateModalProps) 
       toast.success("이벤트가 생성되었습니다.");
       resetForm();
       onOpenChange(false);
+      onEventCreated?.();
     },
     onError: error => {
       toast.error(error.message || "이벤트 생성 중 오류가 발생했습니다.");

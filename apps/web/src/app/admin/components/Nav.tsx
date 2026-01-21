@@ -23,25 +23,36 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/app/admin/components/shadcn-ui/sidebar";
+import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
 import type { NavGroup, NavItem } from "@/app/admin/config/nav";
 import { ChevronRight, MoreVertical } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MissionEventSelector } from "./MissionEventSelector";
 
 interface NavProps {
   config: NavGroup[];
   isActive: (url: string) => boolean;
+  isLoading?: boolean;
 }
 
-export function Nav({ config, isActive }: NavProps) {
-  const [openGroups, setOpenGroups] = useState<string[]>(config.map(group => group.label));
+export function Nav({ config, isActive, isLoading = false }: NavProps) {
+  const [openGroups, setOpenGroups] = useState<string[]>([]);
   const [openEventItems, setOpenEventItems] = useState<string[]>([]);
   const [selectedMission, setSelectedMission] = useState<{
     id: string;
     title: string;
     eventId: string | null;
   } | null>(null);
+
+  useEffect(() => {
+    if (config.length > 0) {
+      setOpenGroups(prev => {
+        const newGroupLabels = config.map(group => group.label);
+        return [...new Set([...prev, ...newGroupLabels])];
+      });
+    }
+  }, [config]);
 
   const toggleGroup = (label: string) => {
     setOpenGroups(prev =>
@@ -67,31 +78,66 @@ export function Nav({ config, isActive }: NavProps) {
 
   return (
     <>
-      {config.map(group => {
-        const isGroupOpen = openGroups.includes(group.label);
-        const isEventGroup = group.label === "이벤트";
-        const isMissionGroup = group.label === "미션";
-        const shouldScroll = isMissionGroup && group.items.length > 10;
+      {isLoading ? (
+        <>
+          <SidebarGroup>
+            <Skeleton className="h-8 w-full mb-2" />
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+            </div>
+          </SidebarGroup>
+          <SidebarGroup>
+            <Skeleton className="h-8 w-full mb-2" />
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+            </div>
+          </SidebarGroup>
+        </>
+      ) : (
+        config.map(group => {
+          const isGroupOpen = openGroups.includes(group.label);
+          const isEventGroup = group.label === "이벤트";
+          const isMissionGroup = group.label === "미션";
+          const shouldScroll = isMissionGroup && group.items.length > 10;
 
-        return (
-          <Collapsible
-            key={group.label}
-            open={isGroupOpen}
-            onOpenChange={() => toggleGroup(group.label)}
-          >
-            <SidebarGroup>
-              <CollapsibleTrigger asChild>
-                <SidebarGroupLabel className="cursor-pointer hover:bg-sidebar-accent">
-                  <span>{group.label}</span>
-                  <ChevronRight
-                    className={`ml-auto transition-transform duration-200 ${isGroupOpen ? "rotate-90" : ""}`}
-                  />
-                </SidebarGroupLabel>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <SidebarGroupContent>
-                  {shouldScroll ? (
-                    <ScrollArea className="h-[400px]">
+          return (
+            <Collapsible
+              key={group.label}
+              open={isGroupOpen}
+              onOpenChange={() => toggleGroup(group.label)}
+            >
+              <SidebarGroup>
+                <CollapsibleTrigger asChild>
+                  <SidebarGroupLabel className="cursor-pointer hover:bg-sidebar-accent">
+                    <span>{group.label}</span>
+                    <ChevronRight
+                      className={`ml-auto transition-transform duration-200 ${isGroupOpen ? "rotate-90" : ""}`}
+                    />
+                  </SidebarGroupLabel>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarGroupContent>
+                    {shouldScroll ? (
+                      <ScrollArea className="h-[400px]">
+                        <SidebarMenu>
+                          {group.items.map(item => (
+                            <NavItemComponent
+                              key={item.url}
+                              item={item}
+                              isActive={isActive}
+                              isEventGroup={isEventGroup}
+                              isMissionGroup={isMissionGroup}
+                              openEventItems={openEventItems}
+                              toggleEventItem={toggleEventItem}
+                              onOpenMissionEventSelector={handleOpenMissionEventSelector}
+                            />
+                          ))}
+                        </SidebarMenu>
+                      </ScrollArea>
+                    ) : (
                       <SidebarMenu>
                         {group.items.map(item => (
                           <NavItemComponent
@@ -106,29 +152,14 @@ export function Nav({ config, isActive }: NavProps) {
                           />
                         ))}
                       </SidebarMenu>
-                    </ScrollArea>
-                  ) : (
-                    <SidebarMenu>
-                      {group.items.map(item => (
-                        <NavItemComponent
-                          key={item.url}
-                          item={item}
-                          isActive={isActive}
-                          isEventGroup={isEventGroup}
-                          isMissionGroup={isMissionGroup}
-                          openEventItems={openEventItems}
-                          toggleEventItem={toggleEventItem}
-                          onOpenMissionEventSelector={handleOpenMissionEventSelector}
-                        />
-                      ))}
-                    </SidebarMenu>
-                  )}
-                </SidebarGroupContent>
-              </CollapsibleContent>
-            </SidebarGroup>
-          </Collapsible>
-        );
-      })}
+                    )}
+                  </SidebarGroupContent>
+                </CollapsibleContent>
+              </SidebarGroup>
+            </Collapsible>
+          );
+        })
+      )}
 
       {selectedMission && (
         <MissionEventSelector

@@ -131,10 +131,20 @@ export class TrackingActionService {
     const { sessionEntries, sessionResponses } = sessionMaps;
 
     const totalSessions = new Set([...sessionEntries.keys(), ...sessionResponses.keys()]).size;
-    const totalStarted = sessionEntries.size;
-    const totalCompleted = Array.from(sessionResponses.values()).filter(actionSet =>
-      actions.every(action => actionSet.has(action.id)),
-    ).length;
+
+    const firstAction = actions[0];
+    const lastAction = actions[actions.length - 1];
+
+    const totalStarted = firstAction
+      ? Array.from(sessionEntries.values()).filter(actionSet => actionSet.has(firstAction.id))
+          .length
+      : 0;
+
+    const totalCompleted = lastAction
+      ? Array.from(sessionResponses.values()).filter(actionSet => actionSet.has(lastAction.id))
+          .length
+      : 0;
+
     const completionRate = totalStarted > 0 ? (totalCompleted / totalStarted) * 100 : 0;
 
     return {

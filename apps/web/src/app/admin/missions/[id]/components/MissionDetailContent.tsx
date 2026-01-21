@@ -2,17 +2,16 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/admin/components/shadcn-ui/tabs";
 import type { GetMissionResponse } from "@/types/dto";
-import { CheckCircle, FileText, Gift, ListChecks } from "lucide-react";
+import { FileText, Gift, ListChecks } from "lucide-react";
 import { AdminMissionHeader } from "./AdminMissionHeader";
 import { MissionNavigation } from "./MissionNavigation";
 import { MissionTabActionListContent } from "./mission-tab-action-list-content";
 import { MissionTabBasicInfoContent } from "./mission-tab-basic-info-content";
-import { MissionTabCompletionContent } from "./mission-tab-completion-content";
 import { MissionTabRewardContent } from "./mission-tab-reward-content";
 
 interface MissionDetailContentProps {
   mission: GetMissionResponse["data"];
-  defaultTab?: "basic" | "actions" | "reward" | "completion";
+  defaultTab?: "basic" | "actions" | "reward";
 }
 
 export function MissionDetailContent({ mission, defaultTab = "basic" }: MissionDetailContentProps) {
@@ -27,7 +26,7 @@ export function MissionDetailContent({ mission, defaultTab = "basic" }: MissionD
       />
 
       <Tabs defaultValue={defaultTab} className="w-full">
-        <TabsList className="grid w-full max-w-[600px] grid-cols-4 mb-6">
+        <TabsList className="grid w-full max-w-[600px] grid-cols-3 mb-6">
           <TabsTrigger value="basic" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             기본 정보
@@ -39,10 +38,6 @@ export function MissionDetailContent({ mission, defaultTab = "basic" }: MissionD
           <TabsTrigger value="reward" className="flex items-center gap-2">
             <Gift className="h-4 w-4" />
             리워드
-          </TabsTrigger>
-          <TabsTrigger value="completion" className="flex items-center gap-2">
-            <CheckCircle className="h-4 w-4" />
-            완료화면
           </TabsTrigger>
         </TabsList>
 
@@ -56,10 +51,6 @@ export function MissionDetailContent({ mission, defaultTab = "basic" }: MissionD
 
         <TabsContent value="reward">
           <MissionTabRewardContent missionId={mission.id} />
-        </TabsContent>
-
-        <TabsContent value="completion">
-          <MissionTabCompletionContent missionId={mission.id} />
         </TabsContent>
       </Tabs>
     </div>

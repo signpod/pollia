@@ -33,8 +33,14 @@ export function AdminSidebar() {
   const pathname = usePathname();
   const { state } = useSidebar();
   const { isDark, toggleTheme, mounted } = useAdminTheme();
-  const { events } = useAdminEvents({ sortOrder: "latest", limit: SIDEBAR_ITEMS_LIMIT });
-  const { missions } = useAdminMissions({ sortOrder: "latest", limit: SIDEBAR_ITEMS_LIMIT });
+  const { events, isLoading: isEventsLoading } = useAdminEvents({
+    sortOrder: "latest",
+    limit: SIDEBAR_ITEMS_LIMIT,
+  });
+  const { missions, isLoading: isMissionsLoading } = useAdminMissions({
+    sortOrder: "latest",
+    limit: SIDEBAR_ITEMS_LIMIT,
+  });
 
   const adminNavConfig = useMemo(() => {
     return createAdminNavConfig(events, missions);
@@ -48,6 +54,7 @@ export function AdminSidebar() {
   };
 
   const isExpanded = state === "expanded";
+  const isLoading = isEventsLoading || isMissionsLoading;
 
   return (
     <Sidebar collapsible="icon">
@@ -76,7 +83,7 @@ export function AdminSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        <Nav config={adminNavConfig} isActive={isActive} />
+        <Nav config={adminNavConfig} isActive={isActive} isLoading={isLoading} />
       </SidebarContent>
 
       <SidebarFooter>

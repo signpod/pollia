@@ -32,7 +32,7 @@ export function CompletionEditDialog({ open, onOpenChange, missionId }: Completi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto overflow-x-hidden">
         <DialogHeader>
           <DialogTitle>완료 화면 {completion ? "수정" : "생성"}</DialogTitle>
           <DialogDescription>미션 완료 시 사용자에게 표시될 화면을 설정하세요.</DialogDescription>
