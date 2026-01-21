@@ -17,8 +17,6 @@ export function useRecordActionResponse(options: UseRecordActionResponseOptions 
       if (!success) {
         throw new Error("Failed to send beacon");
       }
-
-      return Promise.resolve();
     },
     onSuccess: () => {
       options.onSuccess?.();

@@ -36,5 +36,5 @@ export function ActionClientTrackingWrapper({ children }: { children: React.Reac
     }
   }, [missionId, actionId, recordEntry, user?.id]);
 
-  return <>{children}</>;
+  return children;
 }
