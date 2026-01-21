@@ -59,8 +59,15 @@ function SurveyMultipleChoiceContent({
   isNextDisabled: isNextDisabledProp,
   isLoading,
 }: Omit<ActionStepContentProps, "updateCanGoNext" | "onAnswerChange">) {
-  const { selectedIds, toggleSelectedId, canGoNext, textAnswer, setTextAnswer, isOtherSelected } =
-    useSurveyMultipleChoice();
+  const {
+    selectedIds,
+    toggleSelectedId,
+    canGoNext,
+    textAnswer,
+    setTextAnswer,
+    isOtherSelected,
+    maxSelections,
+  } = useSurveyMultipleChoice();
 
   const [showOtherError, setShowOtherError] = useState(false);
 
@@ -147,16 +154,18 @@ function SurveyMultipleChoiceContent({
           />
         )}
       </div>
-      <BottomDrawer collapsedHeight={120} expandedHeight={180}>
-        <BottomDrawerContentWithScrollReset
-          actionData={actionData}
-          selectedIds={selectedIds}
-          handleClick={handleClick}
-          isOtherSelected={isOtherSelected}
-          textAnswer={textAnswer}
-          onOtherClick={handleOtherClick}
-        />
-      </BottomDrawer>
+      {maxSelections > 1 && (
+        <BottomDrawer collapsedHeight={120} expandedHeight={180}>
+          <BottomDrawerContentWithScrollReset
+            actionData={actionData}
+            selectedIds={selectedIds}
+            handleClick={handleClick}
+            isOtherSelected={isOtherSelected}
+            textAnswer={textAnswer}
+            onOtherClick={handleOtherClick}
+          />
+        </BottomDrawer>
+      )}
     </SurveyQuestionTemplate>
   );
 }
