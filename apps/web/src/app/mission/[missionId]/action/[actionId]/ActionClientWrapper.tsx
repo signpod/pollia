@@ -356,6 +356,8 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
         answer: currentAnswer,
       });
     }
+
+    goNext();
   }, [
     isLastStep,
     responseId,
