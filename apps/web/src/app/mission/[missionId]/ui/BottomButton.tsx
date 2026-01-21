@@ -39,6 +39,7 @@ interface BottomButtonProps {
   hasReward: boolean;
   isRequirePassword: boolean;
   hasExistingResponse: boolean;
+  isResuming?: boolean;
 }
 
 export function BottomButton({
@@ -49,6 +50,7 @@ export function BottomButton({
   isCompleted,
   isRequirePassword,
   hasExistingResponse,
+  isResuming = false,
 }: BottomButtonProps) {
   const { missionId } = useParams<{ missionId: string }>();
   const { data: missionParticipantInfo } = useReadMissionParticipantInfo(missionId);
@@ -71,6 +73,7 @@ export function BottomButton({
   const router = useRouter();
 
   const [isExpired, setIsExpired] = useState(!isActive);
+  const [isStarting, setIsStarting] = useState(false);
 
   useEffect(() => {
     const isDeadlinePassed = Boolean(deadline && isBefore(deadline, new Date()));
@@ -120,10 +123,12 @@ export function BottomButton({
       const modalShown = showResumeModal();
       if (!modalShown && firstActionId) {
         try {
+          setIsStarting(true);
           setActionNavCookie(missionId, "initial");
           await handleStartResponse({ missionId });
           router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
         } catch {
+          setIsStarting(false);
           toast.warning("미션 시작에 실패했어요. 다시 시도해주세요.", {
             id: "start-mission-error",
           });
@@ -131,10 +136,12 @@ export function BottomButton({
       }
     } else if (firstActionId) {
       try {
+        setIsStarting(true);
         setActionNavCookie(missionId, "initial");
         await handleStartResponse({ missionId });
         router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
       } catch {
+        setIsStarting(false);
         toast.warning("미션 시작에 실패했어요. 다시 시도해주세요.", { id: "start-mission-error" });
       }
     }
@@ -205,6 +212,7 @@ export function BottomButton({
         className="w-full"
         onClick={handleClick}
         disabled={isDisabled}
+        loading={isStarting || isResuming}
       >
         <Typo.ButtonText size="large" className="relative m-auto flex justify-center items-center">
           {hasMissionResponse ? BUTTON_TEXT.resume : BUTTON_TEXT.loggedIn}

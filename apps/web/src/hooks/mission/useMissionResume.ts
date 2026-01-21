@@ -2,7 +2,7 @@ import { ROUTES } from "@/constants/routes";
 import { setActionNavCookie } from "@/lib/cookie";
 import { useModal } from "@repo/ui/components";
 import { useRouter } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useResetMissionResponse } from "../mission-response/useResetMissionResponse";
 import { useStartMissionResponse } from "../mission-response/useStartMissionResponse";
 
@@ -23,6 +23,7 @@ export function useSurveyResume({
 }: UseMissionResumeParams) {
   const { showModal } = useModal();
   const router = useRouter();
+  const [isResuming, setIsResuming] = useState(false);
   const { mutateAsync: resetMissionResponse, isPending: isResetMissionResponsePending } =
     useResetMissionResponse({ missionId });
   const { mutateAsync: startResponse } = useStartMissionResponse({
@@ -42,10 +43,12 @@ export function useSurveyResume({
         cancelText: "처음부터 다시",
         showCancelButton: true,
         onConfirm: () => {
+          setIsResuming(true);
           setActionNavCookie(missionId, "resume");
           router.push(ROUTES.ACTION({ missionId, actionId: nextActionId }));
         },
         onCancel: async () => {
+          setIsResuming(true);
           setActionNavCookie(missionId, "initial");
           await resetMissionResponse(responseId);
           await startResponse({ missionId });
@@ -68,7 +71,7 @@ export function useSurveyResume({
     startResponse,
   ]);
 
-  return { showResumeModal };
+  return { showResumeModal, isResuming };
 }
 
 export type UseSurveyResumeReturn = ReturnType<typeof useSurveyResume>;

@@ -86,7 +86,7 @@ export function MissionIntro({ children }: MissionIntroProps) {
     isRequirePassword,
   } = useMissionIntroData(missionId);
 
-  const { showResumeModal } = useSurveyResume({
+  const { showResumeModal, isResuming } = useSurveyResume({
     isEnabledToResume,
     nextActionId,
     firstActionId,
@@ -313,6 +313,7 @@ export function MissionIntro({ children }: MissionIntroProps) {
                   hasReward={!!reward}
                   isRequirePassword={isRequirePassword}
                   hasExistingResponse={!!missionResponse}
+                  isResuming={isResuming}
                 />
               </div>
             </FixedBottomContent>
