@@ -3,9 +3,9 @@
 import { cn } from "@/lib/utils";
 import CheckCircle from "@public/svgs/check-circle-filled.svg";
 import CheckSquare from "@public/svgs/check-square-filled.svg";
+import FilledSquare from "@public/svgs/square-filled.svg";
 import { Input, Typo } from "@repo/ui/components";
 import { cva } from "class-variance-authority";
-import { Square } from "lucide-react";
 import Image from "next/image";
 
 type SelectType = "radio" | "checkbox";
@@ -93,12 +93,12 @@ export function ActionOptionButton({
 
   const imageStyle = disabled ? "opacity-30" : "opacity-100";
   const CheckIcon = selectType === "checkbox" ? CheckSquare : CheckCircle;
-  const NoneCheckedIcon = selectType === "checkbox" ? Square : null;
+  const NoneCheckedIcon = selectType === "checkbox" ? FilledSquare : null;
 
   const content = imageUrl ? (
     <>
       <div className="relative flex flex-col items-center gap-0 w-full rounded-sm overflow-hidden">
-        <div className="relative aspect-square overflow-hidden rounded-sm">
+        <div className="relative aspect-square overflow-hidden rounded-sm w-full">
           <Image
             src={imageUrl}
             width={200}
