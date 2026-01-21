@@ -89,7 +89,7 @@ export function EventEditModal({ open, onOpenChange, event }: EventEditModalProp
               id="event-title"
               value={title}
               onChange={e => setTitle(e.target.value)}
-              placeholder="예: 2024 신년 이벤트"
+              placeholder="예: 신년 이벤트"
               disabled={updateEvent.isPending}
             />
           </div>
