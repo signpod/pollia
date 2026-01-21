@@ -6,6 +6,7 @@ import { cn } from "../../lib/utils";
 interface ScaleContextValue {
   handleMouseDown: (e: React.MouseEvent) => void;
   handleTouchStart: (e: React.TouchEvent) => void;
+  orientation: "horizontal" | "vertical";
 }
 
 const ScaleContext = createContext<ScaleContextValue | null>(null);
@@ -155,7 +156,7 @@ function ScaleRoot({
   }, [isDragging, handleTouchMove, handleTouchEnd]);
 
   return (
-    <ScaleContext.Provider value={{ handleMouseDown, handleTouchStart }}>
+    <ScaleContext.Provider value={{ handleMouseDown, handleTouchStart, orientation }}>
       <div
         ref={rootRef}
         className={cn(
@@ -180,7 +181,10 @@ function ScaleTrack({ className, children, ...props }: ScaleTrackProps) {
 
   return (
     <div
-      className={cn("relative", className)}
+      className={cn(
+        "relative pointer-events-auto before:absolute before:content-[''] before:inset-0 before:block",
+        className,
+      )}
       onMouseDown={context?.handleMouseDown}
       onTouchStart={context?.handleTouchStart}
       {...props}
@@ -195,7 +199,17 @@ export interface ScaleThumbProps extends ComponentProps<"div"> {
 }
 
 function ScaleThumb({ className, style, ...props }: ScaleThumbProps) {
-  return <div className={cn("absolute cursor-pointer", className)} style={style} {...props} />;
+  const context = useContext(ScaleContext);
+
+  return (
+    <div
+      className={cn("absolute cursor-pointer", className)}
+      style={style}
+      onMouseDown={context?.handleMouseDown}
+      onTouchStart={context?.handleTouchStart}
+      {...props}
+    />
+  );
 }
 
 export const Scale = {
