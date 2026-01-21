@@ -87,6 +87,8 @@ export function BottomButton({
   const { mutateAsync: handleStartResponse } = startResponse;
 
   const handleClick = async () => {
+    if (isStarting || isResuming) return;
+
     // 서버에서 직접 최신 데이터를 가져옴 (캐시 업데이트 없이 체크만)
     const [latestParticipantInfo, latestMissionResponse] = await Promise.all([
       getMissionParticipantInfo(missionId),
