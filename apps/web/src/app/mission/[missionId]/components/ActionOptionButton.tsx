@@ -98,7 +98,7 @@ export function ActionOptionButton({
   const content = imageUrl ? (
     <>
       <div className="relative flex flex-col items-center gap-0 w-full rounded-sm overflow-hidden">
-        <div className="relative aspect-square overflow-hidden rounded-sm w-full">
+        <div className="relative aspect-square overflow-hidden rounded-t-sm w-full">
           <Image
             src={imageUrl}
             width={200}
