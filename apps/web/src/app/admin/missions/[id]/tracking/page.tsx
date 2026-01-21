@@ -26,8 +26,8 @@ export default function AdminMissionTrackingPage({ params }: AdminMissionTrackin
   const { data: responsesData } = useReadMissionResponses(missionId);
   const mission = missionResponse?.data;
 
+  const responses = responsesData?.data ?? [];
   const missionStats = useMemo(() => {
-    const responses = responsesData?.data ?? [];
     const total = responses.length;
     const completed = responses.filter(r => r.completedAt !== null).length;
     const completionRate = total > 0 ? (completed / total) * 100 : 0;
@@ -37,7 +37,7 @@ export default function AdminMissionTrackingPage({ params }: AdminMissionTrackin
       completed,
       completionRate,
     };
-  }, [responsesData]);
+  }, [responses]);
 
   if (!mission) return notFound();
 

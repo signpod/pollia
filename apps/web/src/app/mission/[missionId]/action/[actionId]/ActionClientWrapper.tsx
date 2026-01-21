@@ -108,7 +108,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
   const isFinalSubmitRef = useRef(false);
 
   const { data: missionResponse } = useReadMissionResponseForMission({ missionId });
-  const { mutate: recordResponse } = useRecordActionResponse();
+  const recordResponse = useRecordActionResponse();
 
   const toastStorageKey = `mission-toast-${missionId}`;
 
