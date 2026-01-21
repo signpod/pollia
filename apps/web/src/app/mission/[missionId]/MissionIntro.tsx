@@ -201,27 +201,26 @@ export function MissionIntro({ children }: MissionIntroProps) {
                       )}
                     </div>
                   </div>
-                  {showRewardWidget ||
-                    (showDeadlineWidget && (
-                      <div className="flex flex-col gap-2">
-                        {showRewardWidget && (
-                          <MissionWidget
-                            icon={<GiftIcon className="size-5" />}
-                            descType="text"
-                            title="완료 리워드"
-                            description={reward?.data.name ?? ""}
-                          />
-                        )}
-                        {showDeadlineWidget && deadlineDate && (
-                          <MissionWidget
-                            icon={<ClockIcon className="size-5" />}
-                            descType="clock"
-                            title="종료까지"
-                            deadline={deadlineDate}
-                          />
-                        )}
-                      </div>
-                    ))}
+                  {(showRewardWidget || showDeadlineWidget) && (
+                    <div className="flex flex-col gap-2">
+                      {showRewardWidget && (
+                        <MissionWidget
+                          icon={<GiftIcon className="size-5" />}
+                          descType="text"
+                          title="완료 리워드"
+                          description={reward?.data.name ?? ""}
+                        />
+                      )}
+                      {showDeadlineWidget && deadlineDate && (
+                        <MissionWidget
+                          icon={<ClockIcon className="size-5" />}
+                          descType="clock"
+                          title="종료까지"
+                          deadline={deadlineDate}
+                        />
+                      )}
+                    </div>
+                  )}
 
                   <div className="relative z-10">
                     <ButtonV2
