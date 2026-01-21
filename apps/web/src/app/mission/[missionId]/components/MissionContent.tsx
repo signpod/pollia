@@ -32,7 +32,7 @@ export function MissionContent({
   description,
   reward,
 }: MissionContentProps) {
-  const { brandLogoUrl, title, scrollContainerRef } = useMissionIntroContext();
+  const { brandLogoUrl, title } = useMissionIntroContext();
 
   const sections = reward
     ? [SECTION_IDS.MISSION_GUIDE, SECTION_IDS.REWARD]
@@ -40,7 +40,6 @@ export function MissionContent({
 
   const sentinelRef = useRef<HTMLDivElement>(null);
   const { activeTab, isSticky, handleChangeTab } = useStickyTabHeader({
-    scrollContainerRef,
     sentinelRef,
     hasReward: !!reward,
   });

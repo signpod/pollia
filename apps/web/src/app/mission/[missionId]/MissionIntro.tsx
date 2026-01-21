@@ -30,7 +30,6 @@ const SCROLL_OFFSET = 10;
 interface MissionIntroContextValue {
   brandLogoUrl?: string;
   title?: string;
-  scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
   titleRef?: React.RefObject<HTMLDivElement | null>;
 }
 
@@ -97,7 +96,6 @@ export function MissionIntro({ children }: MissionIntroProps) {
   const { brandLogoUrl, title, deadline, imageUrl, isActive } = mission ?? {};
 
   const titleRef = useRef<HTMLDivElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -174,7 +172,6 @@ export function MissionIntro({ children }: MissionIntroProps) {
     () => ({
       brandLogoUrl: brandLogoUrl ?? undefined,
       title,
-      scrollContainerRef,
       titleRef,
     }),
     [brandLogoUrl, title],
@@ -185,7 +182,7 @@ export function MissionIntro({ children }: MissionIntroProps) {
       <CalloutTrigger calloutData={calloutData} />
       <MissionIntroContext.Provider value={contextValue}>
         <main className="flex justify-center bg-background">
-          <div ref={scrollContainerRef} className="relative w-full max-w-lg">
+          <div className="relative w-full max-w-lg">
             {imageUrl && (
               <div className="relative w-full h-svh min-h-svh">
                 <MissionImage imageUrl={imageUrl} />
