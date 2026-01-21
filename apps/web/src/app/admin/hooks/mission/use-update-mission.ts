@@ -23,9 +23,6 @@ export function useUpdateMission(options: UseUpdateMissionOptions = {}) {
       updateMission(missionId, data),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
-        queryKey: adminMissionQueryKeys.mission(variables.missionId),
-      });
-      queryClient.invalidateQueries({
         queryKey: adminMissionQueryKeys.all(),
       });
       queryClient.invalidateQueries({

@@ -27,7 +27,7 @@ export function useDeleteReward(options: UseDeleteRewardOptions = {}) {
     onSuccess: (_, variables) => {
       if (variables.missionId) {
         queryClient.setQueryData<MissionQueryData>(
-          adminMissionQueryKeys.mission(variables.missionId),
+          adminMissionQueryKeys.detail(variables.missionId),
           oldData => {
             if (!oldData) return oldData;
             return {
@@ -47,7 +47,7 @@ export function useDeleteReward(options: UseDeleteRewardOptions = {}) {
 
       if (variables.missionId) {
         queryClient.invalidateQueries({
-          queryKey: adminMissionQueryKeys.mission(variables.missionId),
+          queryKey: adminMissionQueryKeys.detail(variables.missionId),
         });
       }
 

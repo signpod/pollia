@@ -19,7 +19,7 @@ export function useRemoveMissionPassword(
     mutationFn: () => removeMissionPassword(missionId),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: adminMissionQueryKeys.mission(missionId),
+        queryKey: adminMissionQueryKeys.detail(missionId),
       });
       options.onSuccess?.();
     },

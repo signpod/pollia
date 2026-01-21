@@ -10,7 +10,7 @@ export function useAdminMissions(options?: { limit?: number; sortOrder?: SortOrd
   const sortOrder = options?.sortOrder;
 
   const query = useInfiniteQuery({
-    queryKey: adminMissionQueryKeys.missions({ limit, sortOrder }),
+    queryKey: adminMissionQueryKeys.list({ limit, sortOrder }),
     queryFn: ({ pageParam }) => {
       return getUserMissions({
         cursor: pageParam,

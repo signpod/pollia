@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 
 export function useAdminEvent(eventId: string) {
   const query = useQuery({
-    queryKey: adminEventQueryKeys.event(eventId),
+    queryKey: adminEventQueryKeys.detail(eventId),
     queryFn: () => getEvent(eventId),
     staleTime: 5 * 60 * 1000,
   });

@@ -14,7 +14,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
   const queryClient = getAdminQueryClient();
 
   await queryClient.prefetchQuery({
-    queryKey: adminEventQueryKeys.eventWithMissions(id),
+    queryKey: adminEventQueryKeys.detailWithMissions(id),
     queryFn: () => getEventWithMissions(id),
   });
 

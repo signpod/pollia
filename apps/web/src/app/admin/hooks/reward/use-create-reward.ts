@@ -23,7 +23,7 @@ export function useCreateReward(options: UseCreateRewardOptions = {}) {
         queryKey: adminRewardQueryKeys.all(),
       });
       queryClient.invalidateQueries({
-        queryKey: adminMissionQueryKeys.mission(variables.missionId),
+        queryKey: adminMissionQueryKeys.detail(variables.missionId),
       });
       options.onSuccess?.();
     },
