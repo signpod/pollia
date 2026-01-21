@@ -21,7 +21,7 @@ export function useUpdateMission(options: UseUpdateMissionOptions = {}) {
   return useMutation({
     mutationFn: async ({ missionId, data }: UpdateMissionPayload): Promise<UpdateMissionResponse> =>
       updateMission(missionId, data),
-    onSuccess: (data, variables) => {
+    onSuccess: data => {
       queryClient.invalidateQueries({
         queryKey: adminMissionQueryKeys.all(),
       });

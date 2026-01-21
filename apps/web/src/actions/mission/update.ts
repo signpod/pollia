@@ -14,8 +14,8 @@ export interface UpdateMissionRequest {
   imageFileUploadId?: string | null;
   brandLogoUrl?: string | null;
   brandLogoFileUploadId?: string | null;
-  deadline?: Date;
-  estimatedMinutes?: number;
+  deadline?: Date | null;
+  estimatedMinutes?: number | null;
   maxParticipants?: number | null;
   type?: MissionType;
   isActive?: boolean;

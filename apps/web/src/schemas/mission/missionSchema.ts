@@ -88,7 +88,7 @@ export const missionUpdateSchema = z
     imageFileUploadId: imageFileUploadIdSchema,
     brandLogoUrl: brandLogoUrlSchema,
     brandLogoFileUploadId: brandLogoFileUploadIdSchema,
-    deadline: z.date().optional(),
+    deadline: deadlineSchema,
     estimatedMinutes: estimatedMinutesSchema,
     maxParticipants: maxParticipantsSchema.optional(),
     type: missionTypeSchema.optional(),
