@@ -1,11 +1,8 @@
+import { TRACKING_CONFIG, UTM_KEYS } from "@/constants/tracking";
 import type { Prisma } from "@prisma/client";
 
-const SESSION_ID_PREFIX = "pollia_session_";
-const SESSION_TIMESTAMP_PREFIX = "pollia_session_ts_";
-const TRACKED_ENTRY_PREFIX = "tracked_entry_";
-const SESSION_TTL_MS = 30 * 60 * 1000;
-
-const UTM_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"] as const;
+const { SESSION_ID_PREFIX, SESSION_TIMESTAMP_PREFIX, TRACKED_ENTRY_PREFIX, SESSION_TTL_MS } =
+  TRACKING_CONFIG;
 
 export function getOrCreateSessionId(actionId: string): string {
   if (typeof window === "undefined") return "";

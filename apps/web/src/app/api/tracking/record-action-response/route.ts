@@ -16,6 +16,19 @@ export async function POST(request: Request) {
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error("[API] Failed to record action response:", error);
-    return new NextResponse(null, { status: 500 });
+
+    if (error instanceof Error) {
+      if (error.message.includes("validation") || error.message.includes("Invalid")) {
+        return new NextResponse(JSON.stringify({ error: error.message }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    return new NextResponse(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }

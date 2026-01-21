@@ -1,12 +1,12 @@
 "use client";
 
 import { getMissionResponses } from "@/actions/mission-response";
-import { missionResponseQueryKeys } from "@/app/admin/constants/queryKeys";
+import { adminMissionResponseQueryKeys } from "@/app/admin/constants/queryKeys";
 import { useQuery } from "@tanstack/react-query";
 
 export function useReadMissionResponses(missionId: string) {
   return useQuery({
-    queryKey: missionResponseQueryKeys.responses(missionId),
+    queryKey: adminMissionResponseQueryKeys.responses(missionId),
     queryFn: () => getMissionResponses(missionId),
     staleTime: 5 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000,

@@ -45,10 +45,12 @@ export function Nav({ config, isActive, isLoading = false }: NavProps) {
     eventId: string | null;
   } | null>(null);
 
-  // config가 변경되면 모든 그룹을 펼친 상태로 업데이트
   useEffect(() => {
     if (config.length > 0) {
-      setOpenGroups(config.map(group => group.label));
+      setOpenGroups(prev => {
+        const newGroupLabels = config.map(group => group.label);
+        return [...new Set([...prev, ...newGroupLabels])];
+      });
     }
   }, [config]);
 

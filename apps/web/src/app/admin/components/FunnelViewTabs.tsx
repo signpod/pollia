@@ -2,6 +2,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/admin/components/shadcn-ui/tabs";
 import type { MissionFunnelData } from "@/types/dto";
+import type { MissionStats } from "@/types/mission-stats";
 import { BarChart3, List } from "lucide-react";
 import dynamic from "next/dynamic";
 import { MissionFunnelTextView } from "./MissionFunnelTextView";
@@ -17,12 +18,6 @@ const MissionSankeyChart = dynamic(
     ),
   },
 );
-
-interface MissionStats {
-  total: number;
-  completed: number;
-  completionRate: number;
-}
 
 interface FunnelViewTabsProps {
   data: MissionFunnelData;

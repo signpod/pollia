@@ -1,12 +1,7 @@
 import { formatMillisecondsToKorean } from "@/lib/utils";
 import type { MissionFunnelData } from "@/types/dto";
+import type { MissionStats } from "@/types/mission-stats";
 import { CheckCircle2, Clock, PlayCircle, Target, UserCheck, Users } from "lucide-react";
-
-interface MissionStats {
-  total: number;
-  completed: number;
-  completionRate: number;
-}
 
 interface MissionFunnelTextViewProps {
   metadata: MissionFunnelData["metadata"];
