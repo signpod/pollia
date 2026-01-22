@@ -92,16 +92,24 @@ export function useStickyTabHeader({
     isUserScrollingRef.current = true;
     setActiveTab(value);
 
-    const element = document.getElementById(value);
-    if (element) {
-      const offset = getScrollOffset(value);
-      const elementRect = element.getBoundingClientRect();
-      const targetScrollTop = window.scrollY + elementRect.top - offset;
-      const minScrollTop = window.innerHeight + 10;
+    const stickyScrollTop = window.innerHeight + 10;
+
+    if (value === SECTION_IDS.MISSION_GUIDE) {
       window.scrollTo({
-        top: Math.max(targetScrollTop, minScrollTop),
+        top: stickyScrollTop,
         behavior: "smooth",
       });
+    } else {
+      const element = document.getElementById(value);
+      if (element) {
+        const offset = getScrollOffset(value);
+        const elementRect = element.getBoundingClientRect();
+        const targetScrollTop = window.scrollY + elementRect.top - offset;
+        window.scrollTo({
+          top: Math.max(targetScrollTop, stickyScrollTop),
+          behavior: "smooth",
+        });
+      }
     }
 
     setTimeout(() => {
