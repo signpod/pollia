@@ -162,9 +162,22 @@ export function RatingScale({
     };
   }, [options, min, max, step, options?.length]);
 
-  const [localValue, setLocalValue] = useState(Math.floor((sliderMax - sliderMin) / 2));
+  const getDefaultValue = () => {
+    if (value !== undefined && value >= sliderMin && value <= sliderMax) {
+      return value;
+    }
+    return sliderMin + Math.floor((sliderMax - sliderMin) / 2);
+  };
+
+  const [localValue, setLocalValue] = useState(getDefaultValue);
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    if (value !== undefined && value >= sliderMin && value <= sliderMax) {
+      setLocalValue(value);
+    }
+  }, [value, sliderMin, sliderMax]);
 
   useEffect(() => {
     if (!containerRef.current) return;
