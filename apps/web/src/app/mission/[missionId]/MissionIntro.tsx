@@ -41,14 +41,16 @@ export function useMissionIntroContext() {
 
 function CalloutTrigger({
   calloutData,
+  isLoading,
 }: {
   calloutData: { variant: CalloutToneVariant; description: string } | null;
+  isLoading: boolean;
 }) {
   const { show } = useCallout();
   const hasShownRef = useRef(false);
 
   useEffect(() => {
-    if (calloutData && !hasShownRef.current) {
+    if (calloutData && !hasShownRef.current && !isLoading) {
       hasShownRef.current = true;
       show({
         description: calloutData.description,
@@ -56,7 +58,7 @@ function CalloutTrigger({
         duration: Number.POSITIVE_INFINITY,
       });
     }
-  }, [calloutData, show]);
+  }, [calloutData, show, isLoading]);
 
   return null;
 }
@@ -179,7 +181,7 @@ export function MissionIntro({ children }: MissionIntroProps) {
 
   return (
     <CalloutProvider position="top-center">
-      <CalloutTrigger calloutData={calloutData} />
+      <CalloutTrigger calloutData={calloutData} isLoading={isResuming} />
       <MissionIntroContext.Provider value={contextValue}>
         <main className="flex justify-center bg-background">
           <div className="relative w-full max-w-lg">

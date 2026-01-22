@@ -60,7 +60,7 @@ export async function middleware(request: NextRequest) {
 
       if (!hasAuthCookie(request)) {
         const loginUrl = new URL("/login", request.url);
-        loginUrl.searchParams.set("redirect", pathname);
+        loginUrl.searchParams.set("next", pathname);
         return NextResponse.redirect(loginUrl);
       }
 

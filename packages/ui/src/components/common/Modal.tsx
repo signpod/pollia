@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useState } from "react";
+import { createContext, useCallback, useContext, useRef, useState } from "react";
 import { cn } from "../../lib/utils";
 import { Button } from "./Button";
 import { Dialog, DialogOverlay, DialogPortal } from "./Dialog";
@@ -45,6 +45,7 @@ export function ModalProvider({ children }: ModalProviderProps) {
     confirmText: "확인",
     showCancelButton: false,
   });
+  const openTimeRef = useRef(0);
 
   const showModal = useCallback((config: ModalConfig) => {
     setModalConfig({
@@ -52,6 +53,7 @@ export function ModalProvider({ children }: ModalProviderProps) {
       showCancelButton: false,
       ...config,
     });
+    openTimeRef.current = Date.now();
     setIsOpen(true);
   }, []);
 
@@ -65,6 +67,9 @@ export function ModalProvider({ children }: ModalProviderProps) {
   }, []);
 
   const handleConfirm = useCallback(async () => {
+    // 모달 열린 직후 300ms 이내 클릭 무시 (키보드 이벤트 전파 방지)
+    if (Date.now() - openTimeRef.current < 300) return;
+
     const result = modalConfig.onConfirm?.();
     if (result instanceof Promise) {
       setModalConfig(prev => ({ ...prev, confirmButtonIsLoading: true }));
@@ -81,6 +86,9 @@ export function ModalProvider({ children }: ModalProviderProps) {
   }, [modalConfig, close]);
 
   const handleCancel = useCallback(async () => {
+    // 모달 열린 직후 300ms 이내 클릭 무시 (키보드 이벤트 전파 방지)
+    if (Date.now() - openTimeRef.current < 300) return;
+
     const result = modalConfig.onCancel?.();
     if (result instanceof Promise) {
       setModalConfig(prev => ({ ...prev, cancelButtonIsLoading: true }));
