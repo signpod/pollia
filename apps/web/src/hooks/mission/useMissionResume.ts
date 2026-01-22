@@ -37,10 +37,10 @@ export function useSurveyResume({
   const showResumeModal = useCallback(() => {
     if (isEnabledToResume && nextActionId && firstActionId) {
       showModal({
-        title: "미션을 계속 진행할까요?",
-        description: "마지막 지점부터 바로 이어할 수 있어요.",
+        title: "이어서 진행할까요?",
+        description: "최근 저장된 위치에서 이어할 수 있어요",
         confirmText: "이어서 진행",
-        cancelText: "처음부터 다시",
+        cancelText: "다시 시작",
         showCancelButton: true,
         onConfirm: () => {
           setIsResuming(true);
