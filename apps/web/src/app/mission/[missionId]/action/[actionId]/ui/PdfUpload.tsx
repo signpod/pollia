@@ -2,7 +2,9 @@
 
 import { toast } from "@/components/common/Toast";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
+import { FILE_SIZE_LABELS, MAX_FILE_SIZE } from "@/constants/fileUpload";
 import { usePdfUpload } from "@/hooks/common/usePdfUpload";
+import { ActionType } from "@prisma/client";
 import { useCallback, useRef } from "react";
 import { MediaUploadArea } from "./components/MediaUploadArea";
 
@@ -77,6 +79,15 @@ export function PdfUpload({
 
       if (file.type !== "application/pdf") {
         toast.warning("PDF 파일만 업로드할 수 있어요");
+        if (inputRef.current) {
+          inputRef.current.value = "";
+        }
+        return;
+      }
+
+      const maxSize = MAX_FILE_SIZE[ActionType.PDF];
+      if (file.size > maxSize) {
+        toast.warning(`파일 크기는 ${FILE_SIZE_LABELS[ActionType.PDF]}를 초과할 수 없습니다`);
         if (inputRef.current) {
           inputRef.current.value = "";
         }

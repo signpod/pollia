@@ -2,8 +2,10 @@
 
 import { toast } from "@/components/common/Toast";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
+import { FILE_SIZE_LABELS, MAX_FILE_SIZE } from "@/constants/fileUpload";
 import { MAX_IMAGE_UPLOAD_COUNT } from "@/constants/image";
 import { useMultipleImageUpload } from "@/hooks/common/useImageUpload";
+import { ActionType } from "@prisma/client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ImageUploadArea } from "./components/ImageUploadArea";
 
@@ -100,6 +102,16 @@ export function ImageUpload({
       const remainingSlots = MAX_IMAGE_UPLOAD_COUNT - currentImageCount;
       if (remainingSlots <= 0) {
         toast.warning(`최대 ${MAX_IMAGE_UPLOAD_COUNT}개까지 업로드할 수 있어요`);
+        if (inputRef.current) {
+          inputRef.current.value = "";
+        }
+        return;
+      }
+
+      const maxSize = MAX_FILE_SIZE[ActionType.IMAGE];
+      const oversizedFile = files.find(file => file.size > maxSize);
+      if (oversizedFile) {
+        toast.warning(`파일 크기는 ${FILE_SIZE_LABELS[ActionType.IMAGE]}를 초과할 수 없습니다`);
         if (inputRef.current) {
           inputRef.current.value = "";
         }
