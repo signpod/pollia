@@ -51,7 +51,7 @@ interface UseResumeToNextActionParams {
 
 export function useResumeToNextAction({ missionId, answers }: UseResumeToNextActionParams) {
   const router = useRouter();
-  const { data: actionIdsData } = useReadActionIds(missionId);
+  const { data: actionIdsData, isLoading } = useReadActionIds(missionId);
 
   const allActionIds: string[] = actionIdsData?.data?.actionIds ?? [];
   const validActionIds = new Set(answers.filter(isValidAnswer).map(answer => answer.actionId));
@@ -64,14 +64,14 @@ export function useResumeToNextAction({ missionId, answers }: UseResumeToNextAct
     if (!nextActionId) return;
 
     setActionNavCookie(missionId, "resume");
-    console.log("nextActionId", nextActionId);
     router.push(ROUTES.ACTION({ missionId, actionId: nextActionId }));
   }, [missionId, nextActionId, router]);
 
   return {
     nextActionId,
     resumeToNextAction,
-    isReady: allActionIds.length > 0,
+    isReady: !isLoading && allActionIds.length > 0,
+    isLoading,
   };
 }
 
