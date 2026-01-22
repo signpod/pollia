@@ -178,7 +178,7 @@ export function ActionOptionButton({
           </div>
         </div>
 
-        <div className="flex h-full">
+        <div className="self-start">
           {isSelected ? (
             <CheckIcon className={cn("size-6", checkCircleColor)} />
           ) : NoneCheckedIcon ? (

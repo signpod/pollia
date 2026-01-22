@@ -2,7 +2,9 @@
 
 import { toast } from "@/components/common/Toast";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
+import { FILE_SIZE_LABELS, MAX_FILE_SIZE } from "@/constants/fileUpload";
 import { useVideoUpload } from "@/hooks/common/useVideoUpload";
+import { ActionType } from "@prisma/client";
 import { useCallback, useRef } from "react";
 import { MediaUploadArea } from "./components/MediaUploadArea";
 
@@ -59,7 +61,16 @@ export function VideoUpload({
       }
 
       if (!file.type.startsWith("video/")) {
-        toast.warning("동영상 파일만 업로드할 수 있습니다.");
+        toast.warning("동영상 파일만 업로드할 수 있습니다");
+        if (inputRef.current) {
+          inputRef.current.value = "";
+        }
+        return;
+      }
+
+      const maxSize = MAX_FILE_SIZE[ActionType.VIDEO];
+      if (file.size > maxSize) {
+        toast.warning(`파일 크기는 ${FILE_SIZE_LABELS[ActionType.VIDEO]}를 초과할 수 없습니다`);
         if (inputRef.current) {
           inputRef.current.value = "";
         }

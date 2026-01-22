@@ -37,14 +37,14 @@ function LinksSection({ form }: { form: UseFormReturn<CreateMissionFunnelFormDat
 
   const handleAddLink = () => {
     if (!newLinkKey.trim() || !newLinkValue.trim()) {
-      toast.error("링크 이름과 URL을 모두 입력해주세요.");
+      toast.error("링크 이름과 URL을 모두 입력해주세요");
       return;
     }
 
     try {
       new URL(newLinkValue);
     } catch {
-      toast.error("올바른 URL 형식이 아닙니다.");
+      toast.error("올바른 URL 형식이 아닙니다");
       return;
     }
 

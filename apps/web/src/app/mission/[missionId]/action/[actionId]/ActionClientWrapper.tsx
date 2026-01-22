@@ -113,7 +113,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
   const toastStorageKey = `mission-toast-${missionId}`;
 
   const handleAlreadyCompleted = useCallback(() => {
-    toast.warning("이미 완료된 미션입니다.", { id: "mission-already-completed" });
+    toast.warning("이미 완료된 미션입니다", { id: "mission-already-completed" });
     router.push(ROUTES.MISSION(missionId));
   }, [missionId, router]);
 
@@ -136,7 +136,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
       goNext();
     },
     onError: () => {
-      toast.warning("답변 저장에 실패했습니다.", { id: "submit-answer-error" });
+      toast.warning("답변 저장에 실패했습니다", { id: "submit-answer-error" });
     },
     onAlreadyCompleted: handleAlreadyCompleted,
     missionId,
@@ -299,14 +299,14 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
 
     // 현재 답변이 현재 질문의 것인지 확인
     if (currentAnswer.actionId !== actionData.id) {
-      toast.warning("답변을 다시 입력해주세요.", { id: "answer-mismatch-error" });
+      toast.warning("답변을 다시 입력해주세요", { id: "answer-mismatch-error" });
       return;
     }
 
     const validationResult = submitAnswerItemSchema.safeParse(currentAnswer);
     if (!validationResult.success) {
       const errorMessage =
-        validationResult.error.issues[0]?.message || "답변 형식이 올바르지 않습니다.";
+        validationResult.error.issues[0]?.message || "답변 형식이 올바르지 않습니다";
       toast.warning(errorMessage, { id: "answer-validation-error" });
       return;
     }

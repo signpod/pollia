@@ -27,11 +27,11 @@ export function MissionActiveToggle({ missionId, isActive }: MissionActiveToggle
 
   const updateMission = useUpdateMission({
     onSuccess: () => {
-      toast.success("활성화 상태가 변경되었습니다.");
+      toast.success("활성화 상태가 변경되었습니다");
       setPendingValue(null);
     },
     onError: error => {
-      toast.error(error.message || "활성화 상태 변경 중 오류가 발생했습니다.");
+      toast.error(error.message || "활성화 상태 변경 중 오류가 발생했습니다");
       setPendingValue(null);
     },
   });

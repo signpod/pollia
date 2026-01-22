@@ -3,7 +3,8 @@ import { MediaItem } from "./MediaItem";
 
 interface MediaListProps {
   mediaUrls: string[];
-  uploadingMediaUrl: string | null;
+  uploadingMediaUrl?: string | null;
+  uploadingMediaUrls?: string[];
   uploadProgress?: number;
   mediaType: "image" | "video";
   onMediaDelete: (mediaUrl: string) => void;
@@ -16,6 +17,7 @@ interface MediaListProps {
 export function MediaList({
   mediaUrls,
   uploadingMediaUrl,
+  uploadingMediaUrls = [],
   uploadProgress,
   mediaType,
   onMediaDelete,
@@ -24,6 +26,12 @@ export function MediaList({
   onMediaPreview,
   isSingleUploadMode = false,
 }: MediaListProps) {
+  const isMediaUploading = (url: string) => {
+    if (uploadingMediaUrls.includes(url)) return true;
+    if (uploadingMediaUrl === url) return true;
+    return false;
+  };
+
   if (mediaUrls.length === 0) {
     return null;
   }
@@ -31,12 +39,13 @@ export function MediaList({
   if (isSingleUploadMode && mediaUrls.length > 0) {
     const firstMediaUrl = mediaUrls[0];
     if (!firstMediaUrl) return null;
+    const isUploading = isMediaUploading(firstMediaUrl);
     return (
       <MediaItem
         mediaUrl={firstMediaUrl}
         mediaType={mediaType}
-        isUploading={uploadingMediaUrl === firstMediaUrl}
-        uploadProgress={uploadingMediaUrl === firstMediaUrl ? uploadProgress : undefined}
+        isUploading={isUploading}
+        uploadProgress={isUploading ? uploadProgress : undefined}
         onDelete={onMediaDelete}
         onLoadComplete={() => onMediaLoadComplete(firstMediaUrl)}
         onEdit={onMediaEdit}
@@ -47,19 +56,22 @@ export function MediaList({
 
   return (
     <>
-      {mediaUrls.map(mediaUrl => (
-        <MediaItem
-          key={mediaUrl}
-          mediaUrl={mediaUrl}
-          mediaType={mediaType}
-          isUploading={uploadingMediaUrl === mediaUrl}
-          uploadProgress={uploadingMediaUrl === mediaUrl ? uploadProgress : undefined}
-          onDelete={onMediaDelete}
-          onLoadComplete={() => onMediaLoadComplete(mediaUrl)}
-          onEdit={onMediaEdit}
-          onPreview={onMediaPreview}
-        />
-      ))}
+      {mediaUrls.map(mediaUrl => {
+        const isUploading = isMediaUploading(mediaUrl);
+        return (
+          <MediaItem
+            key={mediaUrl}
+            mediaUrl={mediaUrl}
+            mediaType={mediaType}
+            isUploading={isUploading}
+            uploadProgress={isUploading ? uploadProgress : undefined}
+            onDelete={onMediaDelete}
+            onLoadComplete={() => onMediaLoadComplete(mediaUrl)}
+            onEdit={onMediaEdit}
+            onPreview={onMediaPreview}
+          />
+        );
+      })}
     </>
   );
 }

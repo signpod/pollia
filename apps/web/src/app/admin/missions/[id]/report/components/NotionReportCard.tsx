@@ -32,13 +32,13 @@ export function NotionReportCard({ missionId }: NotionReportCardProps) {
 
   const syncMutation = useSyncMissionToNotion({
     onSuccess: data => {
-      toast.success("노션 리포트가 생성되었습니다.");
+      toast.success("노션 리포트가 생성되었습니다");
       queryClient.invalidateQueries({
         queryKey: missionQueryKeys.missionNotionPage(missionId),
       });
     },
     onError: error => {
-      toast.error(error.message || "노션 리포트 생성 중 오류가 발생했습니다.");
+      toast.error(error.message || "노션 리포트 생성 중 오류가 발생했습니다");
     },
   });
 
@@ -55,7 +55,7 @@ export function NotionReportCard({ missionId }: NotionReportCardProps) {
     if (!notionPage?.notionPageUrl) return;
     await navigator.clipboard.writeText(notionPage.notionPageUrl);
     setCopied(true);
-    toast.success("링크가 복사되었습니다.");
+    toast.success("링크가 복사되었습니다");
     setTimeout(() => setCopied(false), 2000);
   }, [notionPage?.notionPageUrl]);
 

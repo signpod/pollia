@@ -187,41 +187,41 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
 
   const reorderActions = useReorderActions({
     onSuccess: () => {
-      toast.success("액션 순서가 변경되었습니다.");
+      toast.success("액션 순서가 변경되었습니다");
     },
     onError: error => {
-      toast.error(error.message || "액션 순서 변경 중 오류가 발생했습니다.");
+      toast.error(error.message || "액션 순서 변경 중 오류가 발생했습니다");
     },
   });
 
   const createAction = useCreateAction({
     onSuccess: () => {
-      toast.success("액션이 생성되었습니다.");
+      toast.success("액션이 생성되었습니다");
       setIsCreateDialogOpen(false);
     },
     onError: error => {
-      toast.error(error.message || "액션 생성 중 오류가 발생했습니다.");
+      toast.error(error.message || "액션 생성 중 오류가 발생했습니다");
     },
   });
 
   const updateAction = useUpdateAction({
     onSuccess: () => {
-      toast.success("액션이 수정되었습니다.");
+      toast.success("액션이 수정되었습니다");
       setIsEditDialogOpen(false);
     },
     onError: error => {
-      toast.error(error.message || "액션 수정 중 오류가 발생했습니다.");
+      toast.error(error.message || "액션 수정 중 오류가 발생했습니다");
     },
   });
 
   const deleteActionMutation = useDeleteAction({
     onSuccess: () => {
-      toast.success("액션이 삭제되었습니다.");
+      toast.success("액션이 삭제되었습니다");
       setIsDeleteDialogOpen(false);
       setDeletingActionId(null);
     },
     onError: error => {
-      toast.error(error.message || "액션 삭제 중 오류가 발생했습니다.");
+      toast.error(error.message || "액션 삭제 중 오류가 발생했습니다");
     },
   });
 

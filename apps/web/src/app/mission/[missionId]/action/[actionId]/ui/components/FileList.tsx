@@ -9,7 +9,6 @@ interface FileListProps {
   isUploading: boolean;
   uploadProgress?: number;
   onFileDelete: (fileUrl: string) => void;
-  onFileClick?: (fileUrl: string) => void;
 }
 
 export function FileList({
@@ -18,7 +17,6 @@ export function FileList({
   isUploading,
   uploadProgress,
   onFileDelete,
-  onFileClick,
 }: FileListProps) {
   if (files.length === 0) {
     return null;
@@ -33,10 +31,10 @@ export function FileList({
             key={file.fileUrl}
             fileName={file.fileName}
             fileSize={file.fileSize}
+            fileUrl={file.fileUrl}
             isUploading={isFileUploading}
             uploadProgress={isFileUploading ? uploadProgress : undefined}
             onDelete={() => onFileDelete(file.fileUrl)}
-            onClick={onFileClick ? () => onFileClick(file.fileUrl) : undefined}
           />
         );
       })}

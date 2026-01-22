@@ -338,8 +338,8 @@ function BasicInfoForm({ mission, missionId }: { mission: MissionData; missionId
   });
 
   const updateMission = useUpdateMission({
-    onSuccess: () => toast.success("미션이 수정되었습니다."),
-    onError: err => toast.error(err.message || "미션 수정 중 오류가 발생했습니다."),
+    onSuccess: () => toast.success("미션이 수정되었습니다"),
+    onError: err => toast.error(err.message || "미션 수정 중 오류가 발생했습니다"),
   });
 
   const onSubmit = form.handleSubmit(data => {

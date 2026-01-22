@@ -212,10 +212,6 @@ export function ActionPdf({
     [deleteFileMutation, fileInfos],
   );
 
-  const handleFileClick = useCallback((fileUrl: string) => {
-    window.open(fileUrl, "_blank");
-  }, []);
-
   return (
     <SurveyQuestionTemplate
       currentOrder={currentOrder}
@@ -247,7 +243,6 @@ export function ActionPdf({
             isUploading={isUploading}
             uploadProgress={uploadProgress}
             onFileDelete={handleFileDelete}
-            onFileClick={handleFileClick}
           />
         )}
       </div>

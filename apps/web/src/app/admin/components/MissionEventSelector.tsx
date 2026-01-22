@@ -44,11 +44,11 @@ export function MissionEventSelector({
 
   const updateMission = useUpdateMission({
     onSuccess: () => {
-      toast.success("미션의 이벤트가 변경되었습니다.");
+      toast.success("미션의 이벤트가 변경되었습니다");
       onOpenChange(false);
     },
     onError: error => {
-      toast.error(error.message || "미션 수정 중 오류가 발생했습니다.");
+      toast.error(error.message || "미션 수정 중 오류가 발생했습니다");
     },
   });
 
