@@ -1,5 +1,6 @@
 "use client";
 
+import { formatToMonthDay } from "@/lib/date";
 import type { MyMissionResponse } from "@/types/dto/mission-response";
 import PollPollE from "@public/svgs/poll-poll-e.svg";
 import { Typo } from "@repo/ui/components";
@@ -9,13 +10,6 @@ import { AnswerDetailModal } from "./AnswerDetailModal";
 
 interface CompletedEventCardProps {
   response: MyMissionResponse;
-}
-
-function formatCompletedDate(date: Date): string {
-  return new Date(date).toLocaleDateString("ko-KR", {
-    month: "long",
-    day: "numeric",
-  });
 }
 
 export function CompletedEventCard({ response }: CompletedEventCardProps) {
@@ -46,7 +40,7 @@ export function CompletedEventCard({ response }: CompletedEventCardProps) {
           <div className="flex items-center gap-1">
             <CheckCircle2Icon className="size-3.5 text-zinc-400" />
             <span className="text-xs font-medium text-zinc-400">
-              {completedAt ? `${formatCompletedDate(completedAt)} 완료` : "완료"}
+              {completedAt ? `${formatToMonthDay(completedAt)} 완료` : "완료"}
             </span>
           </div>
           <Typo.SubTitle className="mt-0.5 truncate">{mission.title}</Typo.SubTitle>

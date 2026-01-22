@@ -93,3 +93,15 @@ export const formatDateToYYYYMMDDTHHMM = (date: Date, time: string): Date => {
   const dateString = format(date, "yyyy-MM-dd");
   return new Date(`${dateString}T${time}`);
 };
+
+/**
+ * Date 객체를 "M월 d일" 형식으로 변환 (한글)
+ * @param date - 변환할 Date 객체
+ * @returns "M월 d일" 형식의 문자열 (예: "1월 22일")
+ */
+export function formatToMonthDay(date: Date): string {
+  return new Date(date).toLocaleDateString("ko-KR", {
+    month: "long",
+    day: "numeric",
+  });
+}
