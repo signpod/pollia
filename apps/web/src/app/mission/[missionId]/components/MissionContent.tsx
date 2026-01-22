@@ -79,7 +79,7 @@ export function MissionContent({
           </Tab.List>
         </Tab.Root>
       </header>
-      <div className="flex w-full flex-col pt-20 px-5 items-center gap-20">
+      <div className="flex w-full flex-col py-20 px-5 items-center gap-20">
         <div id={SECTION_IDS.MISSION_GUIDE}>
           {!!description && !!cleanTiptapHTML(description) && (
             <div className="flex flex-col gap-6 px-5 items-center w-full">
