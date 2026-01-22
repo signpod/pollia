@@ -1,11 +1,9 @@
+import type { EventInput, EventUpdate } from "@/schemas/event";
 import type { Event, Mission } from "@prisma/client";
 
-export interface CreateEventRequest {
-  title: string;
-  description?: string;
-  startDate?: Date;
-  endDate?: Date;
-}
+export type CreateEventRequest = EventInput;
+
+export type UpdateEventRequest = EventUpdate;
 
 export interface CreateEventResponse {
   data: Event;
@@ -23,13 +21,6 @@ export interface GetEventWithMissionsResponse {
 
 export interface GetUserEventsResponse {
   data: Event[];
-}
-
-export interface UpdateEventRequest {
-  title?: string;
-  description?: string;
-  startDate?: Date;
-  endDate?: Date;
 }
 
 export interface UpdateEventResponse {
