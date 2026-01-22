@@ -18,7 +18,7 @@ import { ButtonV2, Typo } from "@repo/ui/components";
 import { isBefore } from "date-fns";
 import { motion } from "framer-motion";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { checkParticipantLimitReached } from "../utils/checkParticipantLimit";
 
 const BUTTON_TEXT = {
@@ -74,6 +74,7 @@ export function BottomButton({
 
   const [isExpired, setIsExpired] = useState(!isActive);
   const [isStarting, setIsStarting] = useState(false);
+  const isActionInitiatedRef = useRef(false);
 
   useEffect(() => {
     const isDeadlinePassed = Boolean(deadline && isBefore(deadline, new Date()));
@@ -87,7 +88,8 @@ export function BottomButton({
   const { mutateAsync: handleStartResponse } = startResponse;
 
   const handleClick = async () => {
-    if (isStarting || isResuming) return;
+    if (isStarting || isResuming || isActionInitiatedRef.current) return;
+    isActionInitiatedRef.current = true;
 
     // 서버에서 직접 최신 데이터를 가져옴 (캐시 업데이트 없이 체크만)
     const [latestParticipantInfo, latestMissionResponse] = await Promise.all([
@@ -107,6 +109,7 @@ export function BottomButton({
     });
 
     if (isLimitReached) {
+      isActionInitiatedRef.current = false;
       toast.warning("참여 정원이 마감되었어요", { id: "participant-limit-error" });
       return;
     }
@@ -123,18 +126,26 @@ export function BottomButton({
 
     if (showResumeModal) {
       const modalShown = showResumeModal();
-      if (!modalShown && firstActionId) {
-        try {
-          setIsStarting(true);
-          setActionNavCookie(missionId, "initial");
-          await handleStartResponse({ missionId });
-          router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
-        } catch {
-          setIsStarting(false);
-          toast.warning("미션 시작에 실패했어요. 다시 시도해주세요", {
-            id: "start-mission-error",
-          });
-        }
+      if (modalShown) {
+        // 모달이 표시되면 모달에서 처리하므로 ref 리셋
+        isActionInitiatedRef.current = false;
+        return;
+      }
+      if (!firstActionId) {
+        isActionInitiatedRef.current = false;
+        return;
+      }
+      try {
+        setIsStarting(true);
+        setActionNavCookie(missionId, "initial");
+        await handleStartResponse({ missionId });
+        router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
+      } catch {
+        isActionInitiatedRef.current = false;
+        setIsStarting(false);
+        toast.warning("미션 시작에 실패했어요. 다시 시도해주세요", {
+          id: "start-mission-error",
+        });
       }
     } else if (firstActionId) {
       try {
@@ -143,9 +154,12 @@ export function BottomButton({
         await handleStartResponse({ missionId });
         router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
       } catch {
+        isActionInitiatedRef.current = false;
         setIsStarting(false);
         toast.warning("미션 시작에 실패했어요. 다시 시도해주세요", { id: "start-mission-error" });
       }
+    } else {
+      isActionInitiatedRef.current = false;
     }
   };
 
