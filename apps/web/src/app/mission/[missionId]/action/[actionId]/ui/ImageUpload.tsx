@@ -7,6 +7,11 @@ import { useMultipleImageUpload } from "@/hooks/common/useImageUpload";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ImageUploadArea } from "./components/ImageUploadArea";
 
+interface UploadStartInfo {
+  file: File;
+  tempUrl: string;
+}
+
 interface ImageUploadProps {
   currentImageCount?: number;
   onUploadChange?: (
@@ -14,36 +19,54 @@ interface ImageUploadProps {
     imageUrls: string[],
     fileUploadIds: string[],
     filePaths: string[],
+    tempUrls?: string[],
   ) => void;
   onUploadingChange?: (isUploading: boolean) => void;
+  onProgressChange?: (progress: number) => void;
+  onUploadStart?: (files: UploadStartInfo[]) => void;
 }
 
 export function ImageUpload({
   currentImageCount = 0,
   onUploadChange,
   onUploadingChange,
+  onProgressChange,
+  onUploadStart,
 }: ImageUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [uploadedResults, setUploadedResults] = useState<
-    Array<{ publicUrl: string; fileUploadId: string; path: string }>
+    Array<{ publicUrl: string; fileUploadId: string; path: string; tempUrl: string }>
   >([]);
+  const [pendingTempUrls, setPendingTempUrls] = useState<string[]>([]);
 
   const { uploadMultiple, isUploading } = useMultipleImageUpload({
     bucket: STORAGE_BUCKETS.ACTION_ANSWER_IMAGES,
     onSuccess: result => {
       setUploadedResults(prev => {
+        const currentIndex = prev.length;
+        const tempUrl = pendingTempUrls[currentIndex] ?? "";
         const newResults = [
           ...prev,
-          { publicUrl: result.publicUrl, fileUploadId: result.fileUploadId, path: result.path },
+          {
+            publicUrl: result.publicUrl,
+            fileUploadId: result.fileUploadId,
+            path: result.path,
+            tempUrl,
+          },
         ];
         return newResults;
       });
     },
     onError: error => {
       onUploadingChange?.(false);
+      onProgressChange?.(0);
       toast.warning(error.message || "파일 업로드에 실패했어요.\n다시 시도해주세요.");
       setUploadedResults([]);
+      setPendingTempUrls([]);
+    },
+    onProgress: progress => {
+      onProgressChange?.(progress.percentage);
     },
   });
 
@@ -52,8 +75,10 @@ export function ImageUpload({
       const imageUrls = uploadedResults.map(r => r.publicUrl);
       const fileUploadIds = uploadedResults.map(r => r.fileUploadId);
       const filePaths = uploadedResults.map(r => r.path);
-      onUploadChange?.(true, imageUrls, fileUploadIds, filePaths);
+      const tempUrls = uploadedResults.map(r => r.tempUrl);
+      onUploadChange?.(true, imageUrls, fileUploadIds, filePaths, tempUrls);
       setUploadedResults([]);
+      setPendingTempUrls([]);
     }
   }, [uploadedResults, isUploading, onUploadChange]);
 
@@ -86,6 +111,14 @@ export function ImageUpload({
         toast.warning(`최대 ${MAX_IMAGE_UPLOAD_COUNT}개까지 업로드할 수 있어요.`);
       }
 
+      const uploadStartInfos: UploadStartInfo[] = filesToProcess.map(file => ({
+        file,
+        tempUrl: URL.createObjectURL(file),
+      }));
+      const tempUrls = uploadStartInfos.map(info => info.tempUrl);
+      setPendingTempUrls(tempUrls);
+      onUploadStart?.(uploadStartInfos);
+
       onUploadingChange?.(true);
       try {
         await uploadMultiple(filesToProcess);
@@ -93,6 +126,7 @@ export function ImageUpload({
       } catch {
         onUploadingChange?.(false);
         setUploadedResults([]);
+        setPendingTempUrls([]);
       }
 
       if (inputRef.current) {

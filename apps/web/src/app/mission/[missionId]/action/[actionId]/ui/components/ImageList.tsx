@@ -7,7 +7,8 @@ import { MediaList } from "./MediaList";
 
 interface ImageListProps {
   imageUrls: string[];
-  uploadingImageUrl: string | null;
+  uploadingImageUrls: string[];
+  uploadProgress?: number;
   onImageDelete: (imageUrl: string) => void;
   onImageLoadComplete: (imageUrl: string) => void;
   onImageEdit?: (originalImageUrl: string, editedFile: File) => Promise<void>;
@@ -15,7 +16,8 @@ interface ImageListProps {
 
 export function ImageList({
   imageUrls,
-  uploadingImageUrl,
+  uploadingImageUrls,
+  uploadProgress,
   onImageDelete,
   onImageLoadComplete,
   onImageEdit,
@@ -77,7 +79,8 @@ export function ImageList({
     <>
       <MediaList
         mediaUrls={imageUrls}
-        uploadingMediaUrl={uploadingImageUrl}
+        uploadingMediaUrls={uploadingImageUrls}
+        uploadProgress={uploadProgress}
         mediaType="image"
         onMediaDelete={onImageDelete}
         onMediaLoadComplete={onImageLoadComplete}

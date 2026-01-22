@@ -13,6 +13,7 @@ import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 import { ImageUpload } from "./ImageUpload";
 import { ImageList } from "./components/ImageList";
 import { ImageUploadNotice } from "./components/ImageUploadNotice";
+import { UploadingPlaceholder } from "./components/UploadingPlaceholder";
 
 const IMAGE_UPLOAD_ERROR_MESSAGE = "이미지 업로드에 실패했어요.\n다시 시도해주세요." as const;
 
@@ -33,8 +34,9 @@ export function ActionImage({
   isLoading,
 }: ActionStepContentProps) {
   const [imageInfos, setImageInfos] = useState<ImageInfo[]>([]);
-  const [uploadingImageUrl, setUploadingImageUrl] = useState<string | null>(null);
+  const [uploadingImageUrls, setUploadingImageUrls] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const { mutate: deleteFileMutation } = useDeleteFile();
   const { mutate: deleteAnswerMutation, isPending: isDeletingAnswer } = useDeleteAnswer();
@@ -138,6 +140,7 @@ export function ActionImage({
       newImageUrls: string[],
       newFileUploadIds: string[],
       newFilePaths: string[],
+      tempUrls?: string[],
     ) => {
       if (
         hasUploadedImage &&
@@ -164,11 +167,16 @@ export function ActionImage({
           return [...prev, ...filteredNewInfos];
         });
 
-        if (newImageUrls.length > 0) {
-          setUploadingImageUrl(newImageUrls[newImageUrls.length - 1] ?? null);
+        if (tempUrls) {
+          tempUrls.forEach(tempUrl => {
+            if (tempUrl.startsWith("blob:")) {
+              URL.revokeObjectURL(tempUrl);
+            }
+          });
+          setUploadingImageUrls([]);
         }
       } else if (!hasUploadedImage) {
-        setUploadingImageUrl(null);
+        setUploadingImageUrls([]);
       }
     },
     [],
@@ -176,7 +184,23 @@ export function ActionImage({
 
   const handleUploadingChange = useCallback((uploading: boolean) => {
     setIsUploading(uploading);
+    if (!uploading) {
+      setUploadProgress(0);
+      setUploadingImageUrls([]);
+    }
   }, []);
+
+  const handleProgressChange = useCallback((progress: number) => {
+    setUploadProgress(progress);
+  }, []);
+
+  const handleUploadStart = useCallback(
+    (files: Array<{ file: File; tempUrl: string }>) => {
+      const tempUrls = files.map(f => f.tempUrl);
+      setUploadingImageUrls(tempUrls);
+    },
+    [],
+  );
 
   const handleImageDelete = useCallback(
     (imageUrl: string) => {
@@ -191,13 +215,13 @@ export function ActionImage({
         URL.revokeObjectURL(imageUrl);
       }
 
-      setUploadingImageUrl(prevUrl => (prevUrl === imageUrl ? null : prevUrl));
+      setUploadingImageUrls(prev => prev.filter(url => url !== imageUrl));
     },
     [deleteFileMutation, imageInfos],
   );
 
   const handleImageLoadComplete = useCallback((imageUrl: string) => {
-    setUploadingImageUrl(prev => (prev === imageUrl ? null : prev));
+    setUploadingImageUrls(prev => prev.filter(url => url !== imageUrl));
   }, []);
 
   const handleImageEdit = useCallback(
@@ -209,13 +233,13 @@ export function ActionImage({
 
       try {
         setIsUploading(true);
-        setUploadingImageUrl(originalImageUrl);
+        setUploadingImageUrls([originalImageUrl]);
 
         const uploadResults = await uploadMultiple([editedFile]);
         if (uploadResults.length === 0) {
           toast.warning(IMAGE_UPLOAD_ERROR_MESSAGE);
           setIsUploading(false);
-          setUploadingImageUrl(null);
+          setUploadingImageUrls([]);
           return;
         }
 
@@ -226,7 +250,7 @@ export function ActionImage({
         if (!newImageUrl || !newFileUploadId || !newFilePath) {
           toast.warning(IMAGE_UPLOAD_ERROR_MESSAGE);
           setIsUploading(false);
-          setUploadingImageUrl(null);
+          setUploadingImageUrls([]);
           return;
         }
 
@@ -246,13 +270,13 @@ export function ActionImage({
 
         deleteFileMutation(originalImageInfo.filePath);
 
-        setUploadingImageUrl(null);
+        setUploadingImageUrls([]);
         setIsUploading(false);
       } catch (error) {
         console.error("이미지 편집 업로드 실패:", error);
         toast.warning(IMAGE_UPLOAD_ERROR_MESSAGE);
         setIsUploading(false);
-        setUploadingImageUrl(null);
+        setUploadingImageUrls([]);
       }
     },
     [imageInfos, uploadMultiple, deleteFileMutation],
@@ -275,13 +299,19 @@ export function ActionImage({
     >
       <div className="grid grid-cols-3 gap-2">
         <ImageUpload
-          currentImageCount={imageInfos.length}
+          currentImageCount={imageInfos.length + uploadingImageUrls.length}
           onUploadChange={handleUploadChange}
           onUploadingChange={handleUploadingChange}
+          onProgressChange={handleProgressChange}
+          onUploadStart={handleUploadStart}
         />
+        {uploadingImageUrls.map(tempUrl => (
+          <UploadingPlaceholder key={tempUrl} progress={uploadProgress} />
+        ))}
         <ImageList
           imageUrls={imageInfos.map(info => info.fileUrl)}
-          uploadingImageUrl={uploadingImageUrl}
+          uploadingImageUrls={uploadingImageUrls}
+          uploadProgress={uploadProgress}
           onImageDelete={handleImageDelete}
           onImageLoadComplete={handleImageLoadComplete}
           onImageEdit={handleImageEdit}
