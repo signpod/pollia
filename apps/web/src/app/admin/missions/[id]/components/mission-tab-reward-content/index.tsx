@@ -72,32 +72,32 @@ function RewardContent({ missionId }: { missionId: string }) {
 
   const createReward = useCreateReward({
     onSuccess: () => {
-      toast.success("리워드가 생성되었습니다.");
+      toast.success("리워드가 생성되었습니다");
       setIsCreateDialogOpen(false);
     },
     onError: error => {
-      toast.error(error.message || "리워드 생성 중 오류가 발생했습니다.");
+      toast.error(error.message || "리워드 생성 중 오류가 발생했습니다");
     },
   });
 
   const updateReward = useUpdateReward({
     onSuccess: () => {
-      toast.success("리워드가 수정되었습니다.");
+      toast.success("리워드가 수정되었습니다");
       setIsEditDialogOpen(false);
     },
     onError: error => {
-      toast.error(error.message || "리워드 수정 중 오류가 발생했습니다.");
+      toast.error(error.message || "리워드 수정 중 오류가 발생했습니다");
     },
   });
 
   const deleteRewardMutation = useDeleteReward({
     onSuccess: () => {
-      toast.success("리워드가 삭제되었습니다.");
+      toast.success("리워드가 삭제되었습니다");
       setIsDeleteDialogOpen(false);
       setDeletingRewardId(null);
     },
     onError: error => {
-      toast.error(error.message || "리워드 삭제 중 오류가 발생했습니다.");
+      toast.error(error.message || "리워드 삭제 중 오류가 발생했습니다");
     },
   });
 

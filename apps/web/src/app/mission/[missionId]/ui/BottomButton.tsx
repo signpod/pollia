@@ -107,7 +107,7 @@ export function BottomButton({
     });
 
     if (isLimitReached) {
-      toast.warning("참여 정원이 마감되었어요.", { id: "participant-limit-error" });
+      toast.warning("참여 정원이 마감되었어요", { id: "participant-limit-error" });
       return;
     }
 
@@ -131,7 +131,7 @@ export function BottomButton({
           router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
         } catch {
           setIsStarting(false);
-          toast.warning("미션 시작에 실패했어요. 다시 시도해주세요.", {
+          toast.warning("미션 시작에 실패했어요. 다시 시도해주세요", {
             id: "start-mission-error",
           });
         }
@@ -144,7 +144,7 @@ export function BottomButton({
         router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
       } catch {
         setIsStarting(false);
-        toast.warning("미션 시작에 실패했어요. 다시 시도해주세요.", { id: "start-mission-error" });
+        toast.warning("미션 시작에 실패했어요. 다시 시도해주세요", { id: "start-mission-error" });
       }
     }
   };

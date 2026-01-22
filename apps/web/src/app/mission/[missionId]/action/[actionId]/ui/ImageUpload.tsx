@@ -99,7 +99,7 @@ export function ImageUpload({
 
       const remainingSlots = MAX_IMAGE_UPLOAD_COUNT - currentImageCount;
       if (remainingSlots <= 0) {
-        toast.warning(`최대 ${MAX_IMAGE_UPLOAD_COUNT}개까지 업로드할 수 있어요.`);
+        toast.warning(`최대 ${MAX_IMAGE_UPLOAD_COUNT}개까지 업로드할 수 있어요`);
         if (inputRef.current) {
           inputRef.current.value = "";
         }
@@ -108,7 +108,7 @@ export function ImageUpload({
 
       const filesToProcess = files.slice(0, remainingSlots);
       if (files.length > remainingSlots) {
-        toast.warning(`최대 ${MAX_IMAGE_UPLOAD_COUNT}개까지 업로드할 수 있어요.`);
+        toast.warning(`최대 ${MAX_IMAGE_UPLOAD_COUNT}개까지 업로드할 수 있어요`);
       }
 
       const uploadStartInfos: UploadStartInfo[] = filesToProcess.map(file => ({

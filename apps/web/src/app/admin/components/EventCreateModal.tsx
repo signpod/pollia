@@ -46,13 +46,13 @@ export function EventCreateModal({ open, onOpenChange, onEventCreated }: EventCr
 
   const createEvent = useCreateEvent({
     onSuccess: () => {
-      toast.success("이벤트가 생성되었습니다.");
+      toast.success("이벤트가 생성되었습니다");
       form.reset();
       onOpenChange(false);
       onEventCreated?.();
     },
     onError: error => {
-      toast.error(error.message || "이벤트 생성 중 오류가 발생했습니다.");
+      toast.error(error.message || "이벤트 생성 중 오류가 발생했습니다");
     },
   });
 

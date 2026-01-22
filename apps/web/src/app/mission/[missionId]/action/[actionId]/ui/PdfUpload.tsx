@@ -76,7 +76,7 @@ export function PdfUpload({
       }
 
       if (file.type !== "application/pdf") {
-        toast.warning("PDF 파일만 업로드할 수 있어요.");
+        toast.warning("PDF 파일만 업로드할 수 있어요");
         if (inputRef.current) {
           inputRef.current.value = "";
         }

@@ -77,19 +77,19 @@ function CompletionFormContent({ completion, missionId, onSuccess }: CompletionF
   const createMutation = useCreateMissionCompletion({
     onSuccess: () => {
       completionImageUpload.deleteMarkedInitial();
-      toast.success("완료 화면이 생성되었습니다.");
+      toast.success("완료 화면이 생성되었습니다");
       onSuccess();
     },
-    onError: err => toast.error(err.message || "완료 화면 생성 중 오류가 발생했습니다."),
+    onError: err => toast.error(err.message || "완료 화면 생성 중 오류가 발생했습니다"),
   });
 
   const updateMutation = useUpdateMissionCompletion({
     onSuccess: () => {
       completionImageUpload.deleteMarkedInitial();
-      toast.success("완료 화면이 수정되었습니다.");
+      toast.success("완료 화면이 수정되었습니다");
       onSuccess();
     },
-    onError: err => toast.error(err.message || "완료 화면 수정 중 오류가 발생했습니다."),
+    onError: err => toast.error(err.message || "완료 화면 수정 중 오류가 발생했습니다"),
   });
 
   const isPending = createMutation.isPending || updateMutation.isPending;

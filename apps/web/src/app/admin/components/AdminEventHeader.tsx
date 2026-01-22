@@ -34,12 +34,12 @@ export function AdminEventHeader({ event, onEdit }: AdminEventHeaderProps) {
 
   const deleteEvent = useDeleteEvent({
     onSuccess: () => {
-      toast.success("이벤트가 삭제되었습니다.");
+      toast.success("이벤트가 삭제되었습니다");
       setIsDeleteDialogOpen(false);
       router.push(ADMIN_ROUTES.ADMIN);
     },
     onError: error => {
-      toast.error(error.message || "이벤트 삭제 중 오류가 발생했습니다.");
+      toast.error(error.message || "이벤트 삭제 중 오류가 발생했습니다");
     },
   });
 

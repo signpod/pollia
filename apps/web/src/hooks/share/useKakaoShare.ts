@@ -106,11 +106,11 @@ export function useKakaoShare({ shareUrl, title, imageUrl }: UseKakaoShareOption
         if (errorMessage.includes("scheme") || errorMessage.includes("handler")) {
           try {
             await navigator.clipboard.writeText(shareUrl);
-            toast.success("링크가 클립보드에 복사되었어요! 카카오톡에 붙여넣어 공유해주세요.", {
+            toast.success("링크가 클립보드에 복사되었어요! 카카오톡에 붙여넣어 공유해주세요", {
               duration: 4000,
             });
           } catch {
-            toast.warning("카카오톡 앱이 설치되어 있지 않거나 열 수 없습니다.", {
+            toast.warning("카카오톡 앱이 설치되어 있지 않거나 열 수 없습니다", {
               duration: 3000,
             });
           }

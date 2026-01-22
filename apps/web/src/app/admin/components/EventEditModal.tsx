@@ -47,11 +47,11 @@ export function EventEditModal({ open, onOpenChange, event }: EventEditModalProp
 
   const updateEvent = useUpdateEvent({
     onSuccess: () => {
-      toast.success("이벤트가 수정되었습니다.");
+      toast.success("이벤트가 수정되었습니다");
       onOpenChange(false);
     },
     onError: error => {
-      toast.error(error.message || "이벤트 수정 중 오류가 발생했습니다.");
+      toast.error(error.message || "이벤트 수정 중 오류가 발생했습니다");
     },
   });
 

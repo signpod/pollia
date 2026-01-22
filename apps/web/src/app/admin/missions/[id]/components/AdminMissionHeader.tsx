@@ -52,23 +52,23 @@ export function AdminMissionHeader({
 
   const duplicateMission = useDuplicateMission({
     onSuccess: data => {
-      toast.success("미션이 복제되었습니다.");
+      toast.success("미션이 복제되었습니다");
       setIsDuplicateDialogOpen(false);
       router.push(ADMIN_ROUTES.ADMIN_MISSION_EDIT(data.data.id));
     },
     onError: error => {
-      toast.error(error.message || "미션 복제 중 오류가 발생했습니다.");
+      toast.error(error.message || "미션 복제 중 오류가 발생했습니다");
     },
   });
 
   const deleteMission = useDeleteMission({
     onSuccess: () => {
-      toast.success("미션이 삭제되었습니다.");
+      toast.success("미션이 삭제되었습니다");
       setIsDeleteDialogOpen(false);
       router.push(ADMIN_ROUTES.ADMIN);
     },
     onError: error => {
-      toast.error(error.message || "미션 삭제 중 오류가 발생했습니다.");
+      toast.error(error.message || "미션 삭제 중 오류가 발생했습니다");
     },
   });
 
@@ -81,7 +81,7 @@ export function AdminMissionHeader({
     const url = getMissionUrl();
     await navigator.clipboard.writeText(url);
     setCopied(true);
-    toast.success("링크가 복사되었습니다.");
+    toast.success("링크가 복사되었습니다");
     setTimeout(() => setCopied(false), 2000);
   }, [getMissionUrl]);
 

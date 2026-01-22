@@ -59,7 +59,7 @@ export function VideoUpload({
       }
 
       if (!file.type.startsWith("video/")) {
-        toast.warning("동영상 파일만 업로드할 수 있습니다.");
+        toast.warning("동영상 파일만 업로드할 수 있습니다");
         if (inputRef.current) {
           inputRef.current.value = "";
         }

@@ -49,13 +49,13 @@ export default function AdminMissionCreatePage() {
         });
       } catch (error) {
         console.error("완료 화면 생성 실패:", error);
-        toast.error("미션 생성 중 오류가 발생했습니다.");
+        toast.error("미션 생성 중 오류가 발생했습니다");
       }
-      toast.success("미션이 생성되었습니다.");
+      toast.success("미션이 생성되었습니다");
       router.push(ADMIN_ROUTES.ADMIN_MISSION(data.data.id));
     },
     onError: error => {
-      toast.error(error.message || "미션 생성 중 오류가 발생했습니다.");
+      toast.error(error.message || "미션 생성 중 오류가 발생했습니다");
     },
   });
 
