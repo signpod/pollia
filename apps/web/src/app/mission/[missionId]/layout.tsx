@@ -11,6 +11,7 @@ import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";
 import { SHARE_IMAGE_PATH, SHARE_MESSAGES } from "@/constants/shareMessages";
 import { checkAuthStatus } from "@/lib/auth";
 import { getQueryClient } from "@/lib/getQueryClient";
+import { NetworkStatusProvider } from "@/components/providers/NetworkStatusProvider";
 import { ModalProvider } from "@repo/ui/components";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import type { Metadata } from "next";
@@ -134,11 +135,13 @@ export default async function MissionLayout({
 
   return (
     <ModalProvider>
-      <Providers>
-        <HydrationBoundary state={dehydratedState}>
-          <div suppressHydrationWarning>{children}</div>
-        </HydrationBoundary>
-      </Providers>
+      <NetworkStatusProvider>
+        <Providers>
+          <HydrationBoundary state={dehydratedState}>
+            <div suppressHydrationWarning>{children}</div>
+          </HydrationBoundary>
+        </Providers>
+      </NetworkStatusProvider>
     </ModalProvider>
   );
 }
