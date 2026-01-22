@@ -51,15 +51,16 @@ function CircularProgress({ progress, size = 24, strokeWidth = 3 }: CircularProg
 interface FileItemProps {
   fileName: string;
   fileSize: number;
+  fileUrl: string;
   isUploading: boolean;
   uploadProgress?: number;
   onDelete: () => void;
-  onClick?: () => void;
 }
 
 export function FileItem({
   fileName,
   fileSize,
+  fileUrl,
   isUploading,
   uploadProgress = 0,
   onDelete,
@@ -69,8 +70,18 @@ export function FileItem({
     onDelete();
   };
 
+  const handleClick = () => {
+    if (!isUploading && fileUrl) {
+      window.open(fileUrl, "_blank", "noopener,noreferrer");
+    }
+  };
+
   return (
-    <div className="flex items-center gap-2 p-4 border border-zinc-200 rounded-2xl bg-white">
+    <button
+      className="flex items-center gap-2 p-4 border border-zinc-200 rounded-2xl bg-white cursor-pointer"
+      onClick={handleClick}
+      type="button"
+    >
       <div className="flex items-center justify-center p-3 aspect-square bg-light rounded-full shrink-0">
         <PdfIcon className="size-7" />
       </div>
@@ -95,6 +106,6 @@ export function FileItem({
           </button>
         )}
       </div>
-    </div>
+    </button>
   );
 }
