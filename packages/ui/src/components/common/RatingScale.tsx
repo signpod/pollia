@@ -264,7 +264,7 @@ export function RatingScale({
               "relative overflow-visible rounded-full bg-violet-100",
               isVertical
                 ? "h-full w-[6px] before:-inset-y-[40px] before:-inset-x-[100px]"
-                : "h-[6px] w-full grow before:-inset-y-[40px] before:-inset-x-[100px]",
+                : "h-[6px] w-full grow before:-inset-y-[100px] before:-inset-x-[40px]",
             )}
           />
           <RatingScaleDots

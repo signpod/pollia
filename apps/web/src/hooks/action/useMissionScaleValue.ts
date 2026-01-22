@@ -32,7 +32,7 @@ export function useMissionScaleValue({
   }, [missionResponse, actionId, defaultValue]);
 
   const [isScaleValueChanged, setIsScaleValueChanged] = useState(false);
-  const [scaleValue, setScaleValue] = useState(initialScaleValue);
+  const [scaleValue, setScaleValue] = useState(defaultValue);
 
   const updateCanGoNextRef = useRef(updateCanGoNext);
   const onAnswerChangeRef = useRef(onAnswerChange);
