@@ -4,7 +4,6 @@ import { useCurrentUser } from "@/hooks/user/useCurrentUser";
 import PolliaFaceGood from "@public/svgs/face/good.svg";
 import KakaoIcon from "@public/svgs/kakao-icon.svg";
 import { Typo } from "@repo/ui/components";
-import { PhoneIcon } from "lucide-react";
 import { useMemo } from "react";
 import { EventSection } from "./components";
 import { useMyResponses } from "./hooks/useMyResponses";
@@ -41,23 +40,24 @@ export function MePageContent() {
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-100">
             <PolliaFaceGood className="size-7 text-violet-300" />
           </div>
-          <div className="flex items-center gap-2">
-            <Typo.Body size="large" className="font-medium">
-              {user?.name}
-            </Typo.Body>
-            <div className="flex items-center gap-0.5 rounded bg-zinc-50 px-1.5 py-0.5">
-              <KakaoIcon className="size-3" />
-              <Typo.Body size="small" className="text-zinc-500">
-                카카오 계정
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              <Typo.Body size="large" className="font-medium">
+                {user?.name}
               </Typo.Body>
+              <div className="flex items-center gap-0.5 rounded bg-zinc-50 px-1.5 py-0.5">
+                <KakaoIcon className="size-3" />
+                <Typo.Body size="small" className="text-zinc-500">
+                  카카오 계정
+                </Typo.Body>
+              </div>
             </div>
+            {user?.phone && (
+              <div className="flex items-center gap-1.5 text-zinc-600">
+                <Typo.Body size="small">{formatPhoneNumber(user.phone)}</Typo.Body>
+              </div>
+            )}
           </div>
-          {user?.phone && (
-            <div className="ml-auto flex items-center gap-1.5 text-zinc-600">
-              <PhoneIcon className="size-3.5 fill-zinc-600" />
-              <Typo.Body size="medium">{formatPhoneNumber(user.phone)}</Typo.Body>
-            </div>
-          )}
         </div>
       </section>
       <EventSection
