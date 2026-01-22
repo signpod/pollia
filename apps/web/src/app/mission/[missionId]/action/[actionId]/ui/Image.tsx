@@ -43,6 +43,7 @@ export function ActionImage({
 
   const prevHadImagesRef = useRef(false);
   const isInitializedRef = useRef(false);
+  const isReuploadingRef = useRef(false);
 
   const { uploadMultiple } = useMultipleImageUpload({
     bucket: STORAGE_BUCKETS.ACTION_ANSWER_IMAGES,
@@ -104,21 +105,59 @@ export function ActionImage({
     if (isInitializedRef.current) return;
 
     if (existingAnswer?.fileUploads && existingAnswer.fileUploads.length > 0) {
-      const imageInfosFromAnswer: ImageInfo[] = existingAnswer.fileUploads.map(fileUpload => ({
-        fileUrl: fileUpload.publicUrl,
-        fileUploadId: fileUpload.id,
-        filePath: fileUpload.filePath,
-      }));
+      const reuploadExistingImages = async () => {
+        if (isReuploadingRef.current) return;
+        isReuploadingRef.current = true;
 
-      setImageInfos(imageInfosFromAnswer);
-      isInitializedRef.current = true;
-      validateAndUpdateAnswer(imageInfosFromAnswer);
+        const imageInfosFromAnswer: ImageInfo[] = existingAnswer.fileUploads.map(fileUpload => ({
+          fileUrl: fileUpload.publicUrl,
+          fileUploadId: fileUpload.id,
+          filePath: fileUpload.filePath,
+        }));
+
+        setImageInfos(imageInfosFromAnswer);
+        isInitializedRef.current = true;
+
+        try {
+          const files = await Promise.all(
+            imageInfosFromAnswer.map(async info => {
+              const response = await fetch(info.fileUrl);
+              const blob = await response.blob();
+              const extension = info.fileUrl.split(".").pop()?.split("?")[0] || "jpg";
+              return new File([blob], `image.${extension}`, { type: blob.type });
+            }),
+          );
+
+          const uploadResults = await uploadMultiple(files);
+
+          if (uploadResults.length > 0) {
+            const newImageInfos: ImageInfo[] = imageInfosFromAnswer
+              .map((oldInfo, index) => {
+                const result = uploadResults[index];
+                if (!result?.fileUploadId || !result?.path) return oldInfo;
+                return {
+                  fileUrl: oldInfo.fileUrl,
+                  fileUploadId: result.fileUploadId,
+                  filePath: result.path,
+                };
+              });
+
+            setImageInfos(newImageInfos);
+            validateAndUpdateAnswer(newImageInfos);
+          }
+        } catch (error) {
+          console.error("기존 이미지 재업로드 실패:", error);
+          validateAndUpdateAnswer(imageInfosFromAnswer);
+        }
+      };
+
+      reuploadExistingImages();
     } else if (existingAnswer) {
       setImageInfos([]);
       isInitializedRef.current = true;
       updateCanGoNextRef.current?.(true);
     }
-  }, [existingAnswer, validateAndUpdateAnswer]);
+  }, [existingAnswer, validateAndUpdateAnswer, uploadMultiple]);
 
   useEffect(() => {
     validateAndUpdateAnswer(imageInfos);
@@ -305,9 +344,6 @@ export function ActionImage({
           onProgressChange={handleProgressChange}
           onUploadStart={handleUploadStart}
         />
-        {uploadingImageUrls.map(tempUrl => (
-          <UploadingPlaceholder key={tempUrl} progress={uploadProgress} />
-        ))}
         <ImageList
           imageUrls={imageInfos.map(info => info.fileUrl)}
           uploadingImageUrls={uploadingImageUrls}
@@ -316,6 +352,9 @@ export function ActionImage({
           onImageLoadComplete={handleImageLoadComplete}
           onImageEdit={handleImageEdit}
         />
+        {uploadingImageUrls.map(tempUrl => (
+          <UploadingPlaceholder key={tempUrl} progress={uploadProgress} />
+        ))}
       </div>
       <ImageUploadNotice />
     </SurveyQuestionTemplate>
