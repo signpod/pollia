@@ -25,7 +25,7 @@ export function MissionRewardSection({
   rewardScheduledDate,
 }: MissionRewardSectionProps) {
   return (
-    <div className="flex flex-col gap-6 px-5 py-8">
+    <div className="flex flex-col gap-6">
       <SectionHeader badgeText={REWARD_SECTION_BADGE_TEXT} title={REWARD_SECTION_TITLE} />
 
       <div className="w-auto rounded-md overflow-hidden bg-white shadow-[0_4px_20px_rgba(0,0,0,0.08)] p-4 flex flex-col gap-4">
