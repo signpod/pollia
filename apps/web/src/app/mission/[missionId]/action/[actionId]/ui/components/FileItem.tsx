@@ -85,11 +85,11 @@ export function FileItem({
       <div className="flex items-center justify-center p-3 aspect-square bg-light rounded-full shrink-0">
         <PdfIcon className="size-7" />
       </div>
-      <div className="flex flex-col gap-1 flex-1 min-w-0">
+      <div className="flex flex-col gap-1 flex-1 min-w-0 items-self-start w-full">
         <Typo.Body size="large" className="text-zinc-900 truncate">
           {fileName.split(".")[0]}
         </Typo.Body>
-        <Typo.Body size="small" className="text-disabled">
+        <Typo.Body size="small" className="flex text-disabled justify-self-start">
           PDF · {formatFileSize(fileSize)}
         </Typo.Body>
       </div>
