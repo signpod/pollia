@@ -16,7 +16,10 @@ export function useDeleteMission(options: UseDeleteMissionOptions = {}) {
     mutationFn: async (missionId: string) => {
       return deleteMission(missionId);
     },
-    onSuccess: () => {
+    onSuccess: (_data, missionId) => {
+      queryClient.removeQueries({
+        queryKey: adminMissionQueryKeys.detail(missionId),
+      });
       queryClient.invalidateQueries({
         queryKey: adminMissionQueryKeys.all(),
       });
