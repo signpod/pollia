@@ -12,7 +12,7 @@ export default async function AdminLayoutRoot({ children }: { children: React.Re
   const queryClient = getAdminQueryClient();
 
   await queryClient.prefetchInfiniteQuery({
-    queryKey: adminMissionQueryKeys.missions(),
+    queryKey: adminMissionQueryKeys.list(),
     queryFn: ({ pageParam }) => {
       return getUserMissions({
         cursor: pageParam,

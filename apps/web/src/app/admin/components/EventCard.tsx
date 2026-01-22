@@ -1,10 +1,9 @@
 "use client";
 
 import { ADMIN_ROUTES } from "@/app/admin/constants/routes";
+import { formatDateRange } from "@/app/admin/lib/date-utils";
 import { getEventStatus } from "@/app/admin/lib/event-utils";
 import type { Event } from "@prisma/client";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
 import { CalendarDays, CheckCircle } from "lucide-react";
 import React from "react";
 import { AdminCard } from "./common/organisms/AdminCard";
@@ -16,17 +15,6 @@ interface EventCardProps {
 export function EventCard({ event }: EventCardProps) {
   const status = getEventStatus(event);
   const missionCount = event.missions?.length ?? 0;
-
-  const formatDateRange = () => {
-    if (!event.startDate || !event.endDate) {
-      return "기간 미설정";
-    }
-
-    const start = format(new Date(event.startDate), "yyyy.MM.dd", { locale: ko });
-    const end = format(new Date(event.endDate), "yyyy.MM.dd", { locale: ko });
-
-    return `${start} ~ ${end}`;
-  };
 
   return (
     <AdminCard
@@ -41,7 +29,7 @@ export function EventCard({ event }: EventCardProps) {
       bottomInfo={[
         <React.Fragment key="date">
           <CalendarDays className="size-4" />
-          <span>{formatDateRange()}</span>
+          <span>{formatDateRange(event.startDate, event.endDate)}</span>
         </React.Fragment>,
         <React.Fragment key="missions">
           <CheckCircle className="size-4" />

@@ -10,11 +10,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/app/admin/components/shadcn-ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/app/admin/components/shadcn-ui/form";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
-import { Label } from "@/app/admin/components/shadcn-ui/label";
 import { Textarea } from "@/app/admin/components/shadcn-ui/textarea";
 import { useCreateEvent } from "@/app/admin/hooks/event";
-import { useState } from "react";
+import { type EventInput, eventInputSchema } from "@/schemas/event";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 interface EventCreateModalProps {
@@ -24,15 +34,20 @@ interface EventCreateModalProps {
 }
 
 export function EventCreateModal({ open, onOpenChange, onEventCreated }: EventCreateModalProps) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
+  const form = useForm<EventInput>({
+    resolver: zodResolver(eventInputSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      startDate: undefined,
+      endDate: undefined,
+    },
+  });
 
   const createEvent = useCreateEvent({
     onSuccess: () => {
       toast.success("이벤트가 생성되었습니다.");
-      resetForm();
+      form.reset();
       onOpenChange(false);
       onEventCreated?.();
     },
@@ -41,29 +56,18 @@ export function EventCreateModal({ open, onOpenChange, onEventCreated }: EventCr
     },
   });
 
-  const resetForm = () => {
-    setTitle("");
-    setDescription("");
-    setStartDate(undefined);
-    setEndDate(undefined);
-  };
-
-  const handleSubmit = () => {
-    if (!title.trim()) {
-      toast.error("이벤트 제목을 입력해주세요.");
-      return;
+  useEffect(() => {
+    if (open) {
+      form.reset();
     }
+  }, [open, form]);
 
-    createEvent.mutate({
-      title: title.trim(),
-      description: description.trim() || undefined,
-      startDate,
-      endDate,
-    });
-  };
+  const handleSubmit = form.handleSubmit((data: EventInput) => {
+    createEvent.mutate(data);
+  });
 
   const handleCancel = () => {
-    resetForm();
+    form.reset();
     onOpenChange(false);
   };
 
@@ -75,55 +79,100 @@ export function EventCreateModal({ open, onOpenChange, onEventCreated }: EventCr
           <DialogDescription>이벤트 정보를 입력하고 미션을 그룹화하세요.</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="event-title">이벤트 제목 *</Label>
-            <Input
-              id="event-title"
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-              placeholder="예: 2024 신년 이벤트"
-              disabled={createEvent.isPending}
+        <Form {...form}>
+          <form onSubmit={handleSubmit} className="space-y-6 py-4">
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    이벤트 제목 <span className="text-destructive">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="예: 신년 이벤트"
+                      disabled={createEvent.isPending}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="event-description">설명</Label>
-            <Textarea
-              id="event-description"
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              placeholder="이벤트에 대한 간단한 설명을 입력하세요"
-              rows={3}
-              disabled={createEvent.isPending}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>설명</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="이벤트에 대한 간단한 설명을 입력하세요"
+                      rows={3}
+                      disabled={createEvent.isPending}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>시작일</Label>
-              <DatePicker
-                value={startDate}
-                onChange={setStartDate}
-                disabled={createEvent.isPending}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="startDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>시작일</FormLabel>
+                    <FormControl>
+                      <DatePicker
+                        value={field.value}
+                        onChange={field.onChange}
+                        disabled={createEvent.isPending}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="endDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>종료일</FormLabel>
+                    <FormControl>
+                      <DatePicker
+                        value={field.value}
+                        onChange={field.onChange}
+                        disabled={createEvent.isPending}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
 
-            <div className="space-y-2">
-              <Label>종료일</Label>
-              <DatePicker value={endDate} onChange={setEndDate} disabled={createEvent.isPending} />
-            </div>
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={handleCancel} disabled={createEvent.isPending}>
-            취소
-          </Button>
-          <Button onClick={handleSubmit} disabled={createEvent.isPending}>
-            {createEvent.isPending ? "생성 중..." : "생성하기"}
-          </Button>
-        </DialogFooter>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCancel}
+                disabled={createEvent.isPending}
+              >
+                취소
+              </Button>
+              <Button type="submit" disabled={createEvent.isPending}>
+                {createEvent.isPending ? "생성 중..." : "생성하기"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

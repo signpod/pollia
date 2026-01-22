@@ -1,8 +1,10 @@
 export const adminMissionQueryKeys = {
-  all: () => ["admin", "mission"] as const,
-  mission: (missionId: string) => ["admin", "mission", missionId] as const,
-  missions: (params?: { limit?: number; sortOrder?: string }) =>
-    params ? (["admin", "missions", params] as const) : (["admin", "missions"] as const),
+  all: () => ["admin", "missions"] as const,
+  list: (params?: { limit?: number; sortOrder?: string }) =>
+    params
+      ? (["admin", "missions", "list", params] as const)
+      : (["admin", "missions", "list"] as const),
+  detail: (missionId: string) => ["admin", "missions", "detail", missionId] as const,
 } as const;
 
 export type AdminMissionQueryKeys = typeof adminMissionQueryKeys;
@@ -50,11 +52,14 @@ export const submissionQueryKeys = {
 export type SubmissionQueryKeys = typeof submissionQueryKeys;
 
 export const adminEventQueryKeys = {
-  all: () => ["admin", "event"] as const,
-  events: (params?: { limit?: number; sortOrder?: string }) =>
-    params ? (["admin", "events", params] as const) : (["admin", "events"] as const),
-  event: (eventId: string) => ["admin", "event", eventId] as const,
-  eventWithMissions: (eventId: string) => ["admin", "event", eventId, "missions"] as const,
+  all: () => ["admin", "events"] as const,
+  list: (params?: { limit?: number; sortOrder?: string }) =>
+    params
+      ? (["admin", "events", "list", params] as const)
+      : (["admin", "events", "list"] as const),
+  detail: (eventId: string) => ["admin", "events", "detail", eventId] as const,
+  detailWithMissions: (eventId: string) =>
+    ["admin", "events", "detail", eventId, "missions"] as const,
 } as const;
 
 export type AdminEventQueryKeys = typeof adminEventQueryKeys;

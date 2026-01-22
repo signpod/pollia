@@ -3,25 +3,8 @@
 import { requireAuth } from "@/actions/common/auth";
 import { missionService } from "@/server/services/mission";
 import type { UpdateMissionInput } from "@/server/services/mission/types";
-import type { MissionType } from "@prisma/client";
+import type { UpdateMissionRequest } from "@/types/dto/mission";
 import { revalidatePath } from "next/cache";
-
-export interface UpdateMissionRequest {
-  title?: string;
-  description?: string | null;
-  target?: string | null;
-  imageUrl?: string | null;
-  imageFileUploadId?: string | null;
-  brandLogoUrl?: string | null;
-  brandLogoFileUploadId?: string | null;
-  deadline?: Date;
-  estimatedMinutes?: number;
-  maxParticipants?: number | null;
-  type?: MissionType;
-  isActive?: boolean;
-  rewardId?: string | null;
-  eventId?: string | null;
-}
 
 function toUpdateMissionInput(dto: UpdateMissionRequest): UpdateMissionInput {
   return {

@@ -19,7 +19,7 @@ export function useSetMissionPassword(
     mutationFn: (password: string) => setMissionPassword(missionId, password),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: adminMissionQueryKeys.mission(missionId),
+        queryKey: adminMissionQueryKeys.detail(missionId),
       });
       options.onSuccess?.();
     },

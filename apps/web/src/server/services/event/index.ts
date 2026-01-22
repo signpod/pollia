@@ -1,5 +1,6 @@
 import { eventInputSchema, eventUpdateSchema } from "@/schemas/event";
 import { eventRepository } from "@/server/repositories/event/eventRepository";
+import type { Event, Mission } from "@prisma/client";
 import type {
   CreateEventInput,
   EventCreatedResult,
@@ -10,7 +11,7 @@ import type {
 export class EventService {
   constructor(private repo = eventRepository) {}
 
-  async getEvent(eventId: string) {
+  async getEvent(eventId: string): Promise<Event> {
     const event = await this.repo.findById(eventId);
 
     if (!event) {
@@ -22,7 +23,7 @@ export class EventService {
     return event;
   }
 
-  async getEventWithMissions(eventId: string) {
+  async getEventWithMissions(eventId: string): Promise<Event & { missions: Mission[] }> {
     const event = await this.repo.findByIdWithMissions(eventId);
 
     if (!event) {
@@ -34,7 +35,7 @@ export class EventService {
     return event;
   }
 
-  async getUserEvents(userId: string, options?: GetUserEventsOptions) {
+  async getUserEvents(userId: string, options?: GetUserEventsOptions): Promise<Event[]> {
     const limit = options?.limit ?? 10;
     const events = await this.repo.findByUserId(userId, {
       ...options,
@@ -77,7 +78,7 @@ export class EventService {
     };
   }
 
-  async updateEvent(eventId: string, data: UpdateEventInput, userId: string) {
+  async updateEvent(eventId: string, data: UpdateEventInput, userId: string): Promise<Event> {
     const event = await this.getEvent(eventId);
 
     if (event.creatorId !== userId) {

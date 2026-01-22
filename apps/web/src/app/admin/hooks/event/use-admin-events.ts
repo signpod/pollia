@@ -14,7 +14,7 @@ export function useAdminEvents(options: UseAdminEventsOptions = {}) {
   const { limit = 10, sortOrder } = options;
 
   const query = useInfiniteQuery({
-    queryKey: adminEventQueryKeys.events({ limit, sortOrder }),
+    queryKey: adminEventQueryKeys.list({ limit, sortOrder }),
     queryFn: ({ pageParam }) => {
       return getUserEvents({
         cursor: pageParam,

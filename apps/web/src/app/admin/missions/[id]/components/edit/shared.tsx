@@ -184,6 +184,7 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
           label="예상 소요 시간 (분)"
           description="미션 완료에 필요한 예상 시간을 입력합니다."
           isOptional
+          transformValue={value => (value === undefined ? null : value)}
         />
 
         <DateTimeField
@@ -259,8 +260,8 @@ export function useBasicInfoForm(mission: MissionData) {
     target: mission.target ?? "",
     imageUrl: mission.imageUrl ?? undefined,
     brandLogoUrl: mission.brandLogoUrl ?? undefined,
-    estimatedMinutes: mission.estimatedMinutes ?? undefined,
-    deadline: mission.deadline ? new Date(mission.deadline) : undefined,
+    estimatedMinutes: mission.estimatedMinutes ?? null,
+    deadline: mission.deadline ? new Date(mission.deadline) : null,
     maxParticipants: mission.maxParticipants ?? null,
     isActive: mission.isActive,
   };

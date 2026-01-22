@@ -127,8 +127,8 @@ export default function AdminMissionCreatePage() {
         actionIds: Array.isArray(missionData.actionIds) ? missionData.actionIds : [],
         maxParticipants:
           typeof missionData.maxParticipants === "number" ? missionData.maxParticipants : null,
-        description: missionData.description || null,
-        target: missionData.target || null,
+        description: missionData.description || undefined,
+        target: missionData.target || undefined,
         imageUrl: missionData.imageUrl || null,
         imageFileUploadId: missionData.imageFileUploadId || null,
         brandLogoUrl: missionData.brandLogoUrl || null,

@@ -20,12 +20,8 @@ export function useUpdateEvent(options?: UseUpdateEventOptions) {
 
   return useMutation({
     mutationFn: ({ eventId, data }: UpdateEventParams) => updateEvent(eventId, data),
-    onSuccess: (data, variables) => {
+    onSuccess: data => {
       queryClient.invalidateQueries({ queryKey: adminEventQueryKeys.all() });
-      queryClient.invalidateQueries({ queryKey: adminEventQueryKeys.event(variables.eventId) });
-      queryClient.invalidateQueries({
-        queryKey: adminEventQueryKeys.eventWithMissions(variables.eventId),
-      });
       options?.onSuccess?.(data);
     },
     onError: options?.onError,

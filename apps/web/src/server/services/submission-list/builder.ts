@@ -94,15 +94,10 @@ function formatAnswerValue(
       const fileUpload = answer.fileUploads[0];
       return fileUpload?.publicUrl || null;
     }
-    case "DATE": {
-      if (answer.dateAnswers.length > 0 && answer.dateAnswers[0]) {
-        return answer.dateAnswers[0].toISOString().split("T")[0] || null;
-      }
-      return null;
-    }
+    case "DATE":
     case "TIME": {
       if (answer.dateAnswers.length > 0 && answer.dateAnswers[0]) {
-        return answer.dateAnswers[0].toISOString().split("T")[1]?.slice(0, 5) || null;
+        return answer.dateAnswers[0].toISOString();
       }
       return null;
     }

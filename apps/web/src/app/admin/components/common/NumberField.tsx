@@ -19,6 +19,7 @@ interface NumberFieldProps<T extends FieldValues> {
   placeholder?: string;
   disabled?: boolean;
   isOptional?: boolean;
+  transformValue?: (value: number | undefined) => number | null | undefined;
 }
 
 export function NumberField<T extends FieldValues>({
@@ -29,6 +30,7 @@ export function NumberField<T extends FieldValues>({
   placeholder,
   disabled = false,
   isOptional = false,
+  transformValue,
 }: NumberFieldProps<T>) {
   return (
     <FormField
@@ -42,6 +44,7 @@ export function NumberField<T extends FieldValues>({
           placeholder={placeholder ?? ""}
           disabled={disabled}
           isOptional={isOptional}
+          transformValue={transformValue}
         />
       )}
     />
@@ -52,8 +55,8 @@ interface NumberFieldInputProps {
   field: {
     ref: React.Ref<HTMLInputElement>;
     name: string;
-    value: number | undefined;
-    onChange: (value: number | undefined) => void;
+    value: number | null | undefined;
+    onChange: (value: number | null | undefined) => void;
     onBlur: () => void;
   };
   label: string;
@@ -61,6 +64,7 @@ interface NumberFieldInputProps {
   placeholder: string;
   disabled: boolean;
   isOptional: boolean;
+  transformValue?: (value: number | undefined) => number | null | undefined;
 }
 
 function NumberFieldInput({
@@ -70,6 +74,7 @@ function NumberFieldInput({
   placeholder,
   disabled,
   isOptional,
+  transformValue,
 }: NumberFieldInputProps) {
   const [localValue, setLocalValue] = useState<string>(
     field.value != null ? String(field.value) : "",
@@ -83,7 +88,9 @@ function NumberFieldInput({
     field.onBlur();
 
     if (localValue === "") {
-      field.onChange(undefined);
+      const emptyValue = undefined;
+      const transformedValue = transformValue ? transformValue(emptyValue) : emptyValue;
+      field.onChange(transformedValue);
     } else {
       const numValue = Number(localValue);
       if (!Number.isNaN(numValue)) {

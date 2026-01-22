@@ -18,7 +18,7 @@ export function useDeleteMission(options: UseDeleteMissionOptions = {}) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: adminMissionQueryKeys.missions(),
+        queryKey: adminMissionQueryKeys.all(),
       });
       queryClient.invalidateQueries({
         queryKey: adminEventQueryKeys.all(),

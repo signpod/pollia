@@ -1,7 +1,7 @@
 "use client";
 
 import { deleteEvent } from "@/actions/event";
-import { adminEventQueryKeys } from "@/app/admin/constants/queryKeys";
+import { adminEventQueryKeys, adminMissionQueryKeys } from "@/app/admin/constants/queryKeys";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface UseDeleteEventOptions {
@@ -16,6 +16,7 @@ export function useDeleteEvent(options?: UseDeleteEventOptions) {
     mutationFn: (eventId: string) => deleteEvent(eventId),
     onSuccess: data => {
       queryClient.invalidateQueries({ queryKey: adminEventQueryKeys.all() });
+      queryClient.invalidateQueries({ queryKey: adminMissionQueryKeys.all() });
       options?.onSuccess?.(data);
     },
     onError: options?.onError,
