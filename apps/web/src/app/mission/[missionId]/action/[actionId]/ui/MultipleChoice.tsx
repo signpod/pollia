@@ -73,7 +73,7 @@ function SurveyMultipleChoiceContent({
   const otherOption = actionData.hasOther
     ? {
         id: CLIENT_OTHER_OPTION_ID,
-        title: "기타",
+        title: "기타(직접입력)",
         description: null,
         imageUrl: null,
         order: 999,

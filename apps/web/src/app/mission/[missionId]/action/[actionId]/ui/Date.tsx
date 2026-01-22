@@ -261,15 +261,17 @@ function DatePickerContent({
           }}
         />
       </div>
-      <BottomDrawer collapsedHeight={120} expandedHeight={180}>
-        <SelectedDatesDrawerContent
-          selectedDates={selectedDates}
-          onRemoveDate={dateStr => {
-            const newDates = Array.from(selectedDates).filter(d => d !== dateStr);
-            setDates(newDates);
-          }}
-        />
-      </BottomDrawer>
+      {actionData.maxSelections && actionData.maxSelections > 1 && (
+        <BottomDrawer collapsedHeight={120} expandedHeight={180}>
+          <SelectedDatesDrawerContent
+            selectedDates={selectedDates}
+            onRemoveDate={dateStr => {
+              const newDates = Array.from(selectedDates).filter(d => d !== dateStr);
+              setDates(newDates);
+            }}
+          />
+        </BottomDrawer>
+      )}
     </SurveyQuestionTemplate>
   );
 }

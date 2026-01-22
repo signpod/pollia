@@ -78,7 +78,7 @@ export function MediaItem({
         />
       ) : (
         <video
-          src={mediaUrl}
+          src={`${mediaUrl}#t=0.001`}
           className={cn(
             "w-full h-full object-cover pointer-events-none",
             isUploading && "blur-sm scale-105",

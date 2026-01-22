@@ -249,10 +249,9 @@ export function RatingScale({
           <Scale.Track
             className={cn(
               "relative overflow-visible rounded-full bg-violet-100",
-              "before:content-[''] before:absolute before:pointer-events-auto",
               isVertical
-                ? "h-full w-[6px] before:-inset-y-[200px] before:-inset-x-4"
-                : "h-[6px] w-full grow before:inset-x-0 before:-inset-y-[200px]",
+                ? "h-full w-[6px] before:-inset-y-[40px] before:-inset-x-[100px]"
+                : "h-[6px] w-full grow before:-inset-y-[40px] before:-inset-x-[100px]",
             )}
           />
           <RatingScaleDots

@@ -23,8 +23,9 @@ export function LoginClient() {
     <div className="flex flex-col items-center justify-center gap-6 my-auto">
       <div className="flex flex-col items-center justify-center gap-1">
         <Typo.MainTitle size="small">카카오 로그인 화면으로 이동합니다</Typo.MainTitle>
-        <Typo.Body size="medium">
-          화면이 자동으로 이동하지 않으면 아래 버튼을 눌러 다시 시도해주세요
+        <Typo.Body size="large" className="text-center text-info">
+          화면이 자동으로 이동하지 않으면 <br />
+          아래 버튼을 눌러 다시 시도해주세요
         </Typo.Body>
       </div>
 

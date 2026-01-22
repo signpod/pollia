@@ -103,15 +103,11 @@ export function CalloutProvider({ children, position = "top-center" }: CalloutPr
             )}
           >
             {callout.icon ? (
-              <div
-                className={cn("mt-0.5 shrink-0", variantIconStyles[callout.variant ?? "notice"])}
-              >
+              <div className={cn("shrink-0", variantIconStyles[callout.variant ?? "notice"])}>
                 {callout.icon}
               </div>
             ) : (
-              <div
-                className={cn("mt-0.5 shrink-0", variantIconStyles[callout.variant ?? "notice"])}
-              >
+              <div className={cn("shrink-0", variantIconStyles[callout.variant ?? "notice"])}>
                 {iconMap[callout.variant ?? "notice"]}
               </div>
             )}
@@ -120,7 +116,7 @@ export function CalloutProvider({ children, position = "top-center" }: CalloutPr
               <Typo.Body size="medium">{callout.description}</Typo.Body>
             </div>
             <ToastPrimitive.Close
-              className="rounded-md p-1 hover:bg-black/5 focus:outline-none"
+              className="rounded-md p-px hover:bg-black/5 focus:outline-none"
               aria-label="닫기"
             >
               <X className="h-4 w-4" />
