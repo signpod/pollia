@@ -66,7 +66,7 @@ export function useStickyTabHeader({
 
         if (isSticky) {
           if (visibleSections.length === 0) {
-            setActiveTab(undefined);
+            setActiveTab(SECTION_IDS.MISSION_GUIDE);
           } else {
             setActiveTab(visibleSections[0] as (typeof SECTION_IDS)[keyof typeof SECTION_IDS]);
           }
