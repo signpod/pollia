@@ -1,5 +1,6 @@
 import { ACTION_PLACEHOLDER, ActionStepContentProps } from "@/constants/action";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
+import { TEXT_ANSWER_MAX_LENGTH } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
 import type { ActionAnswerItem, GetMissionResponseResponse } from "@/types/dto";
 import { Textarea } from "@repo/ui/components";
@@ -54,7 +55,7 @@ export function Subjective({
     >
       <Textarea
         placeholder={ACTION_PLACEHOLDER}
-        maxLength={100}
+        maxLength={TEXT_ANSWER_MAX_LENGTH}
         showLength
         value={subjectiveValue}
         onChange={handleSubjectiveValueChange}
