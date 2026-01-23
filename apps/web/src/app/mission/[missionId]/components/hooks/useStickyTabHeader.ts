@@ -9,19 +9,17 @@ const getScrollOffset = (sectionId: string) => {
 };
 
 interface UseStickyTabHeaderOptions {
-  scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
   sentinelRef?: React.RefObject<HTMLDivElement | null>;
   hasReward: boolean;
 }
 
 export function useStickyTabHeader({
-  scrollContainerRef,
   sentinelRef,
   hasReward,
 }: UseStickyTabHeaderOptions) {
   const [activeTab, setActiveTab] = useState<
     (typeof SECTION_IDS)[keyof typeof SECTION_IDS] | undefined
-  >(undefined);
+  >(SECTION_IDS.MISSION_GUIDE);
   const [isSticky, setIsSticky] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
   const isUserScrollingRef = useRef(false);
@@ -66,10 +64,12 @@ export function useStickyTabHeader({
           .filter(([, isVisible]) => isVisible)
           .map(([id]) => id);
 
-        if (visibleSections.length === 0) {
-          setActiveTab(undefined);
-        } else if (isSticky) {
-          setActiveTab(visibleSections[0] as (typeof SECTION_IDS)[keyof typeof SECTION_IDS]);
+        if (isSticky) {
+          if (visibleSections.length === 0) {
+            setActiveTab(undefined);
+          } else {
+            setActiveTab(visibleSections[0] as (typeof SECTION_IDS)[keyof typeof SECTION_IDS]);
+          }
         }
       },
       {
@@ -92,18 +92,24 @@ export function useStickyTabHeader({
     isUserScrollingRef.current = true;
     setActiveTab(value);
 
-    const container = scrollContainerRef?.current;
-    const element = document.getElementById(value);
-    if (container && element) {
-      const offset = getScrollOffset(value);
-      const containerRect = container.getBoundingClientRect();
-      const elementRect = element.getBoundingClientRect();
-      const targetScrollTop = container.scrollTop + (elementRect.top - containerRect.top) - offset;
-      const minScrollTop = window.innerHeight + 10;
-      container.scrollTo({
-        top: Math.max(targetScrollTop, minScrollTop),
+    const stickyScrollTop = window.innerHeight + 10;
+
+    if (value === SECTION_IDS.MISSION_GUIDE) {
+      window.scrollTo({
+        top: stickyScrollTop,
         behavior: "smooth",
       });
+    } else {
+      const element = document.getElementById(value);
+      if (element) {
+        const offset = getScrollOffset(value);
+        const elementRect = element.getBoundingClientRect();
+        const targetScrollTop = window.scrollY + elementRect.top - offset;
+        window.scrollTo({
+          top: Math.max(targetScrollTop, stickyScrollTop),
+          behavior: "smooth",
+        });
+      }
     }
 
     setTimeout(() => {

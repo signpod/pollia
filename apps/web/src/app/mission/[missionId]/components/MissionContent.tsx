@@ -32,7 +32,7 @@ export function MissionContent({
   description,
   reward,
 }: MissionContentProps) {
-  const { brandLogoUrl, title, scrollContainerRef } = useMissionIntroContext();
+  const { brandLogoUrl, title } = useMissionIntroContext();
 
   const sections = reward
     ? [SECTION_IDS.MISSION_GUIDE, SECTION_IDS.REWARD]
@@ -40,7 +40,6 @@ export function MissionContent({
 
   const sentinelRef = useRef<HTMLDivElement>(null);
   const { activeTab, isSticky, handleChangeTab } = useStickyTabHeader({
-    scrollContainerRef,
     sentinelRef,
     hasReward: !!reward,
   });
@@ -80,39 +79,41 @@ export function MissionContent({
           </Tab.List>
         </Tab.Root>
       </header>
-      <div id={SECTION_IDS.MISSION_GUIDE} className="flex w-full flex-col gap-0 px-5 items-center">
-        {!!description && !!cleanTiptapHTML(description) && (
-          <div className="flex flex-col gap-6 px-5 py-8 items-center w-full">
-            <SectionHeader badgeText="상세 안내" title={""} />
-            <MissionDescription content={cleanTiptapHTML(description)} className="text-center" />
+      <div className="flex w-full flex-col py-20 px-5 items-center gap-20">
+        <div id={SECTION_IDS.MISSION_GUIDE}>
+          {!!description && !!cleanTiptapHTML(description) && (
+            <div className="flex flex-col gap-6 px-5 items-center w-full">
+              <SectionHeader badgeText="상세 안내" title={""} />
+              <MissionDescription content={cleanTiptapHTML(description)} className="text-center" />
+            </div>
+          )}
+        </div>
+
+        {reward && (
+          <div id={SECTION_IDS.REWARD} className="px-5 w-full">
+            <MissionRewardSection
+              rewardImageUrl={reward.imageUrl ?? undefined}
+              rewardName={reward.name ?? undefined}
+              rewardScheduledDate={reward.scheduledDate ?? undefined}
+            />
+          </div>
+        )}
+
+        {missionType !== MissionType.EXPERIENCE_GROUP && (
+          <div className="flex flex-col gap-4 items-center px-5">
+            <Typo.MainTitle size="small" className="text-center">
+              가족, 친구에게
+              <br />
+              공유해주세요 👀
+            </Typo.MainTitle>
+            <SocialShareButtonsWithData
+              missionId={missionId}
+              title={missionTitle ?? undefined}
+              imageUrl={missionImageUrl ?? undefined}
+            />
           </div>
         )}
       </div>
-
-      {reward && (
-        <div id={SECTION_IDS.REWARD} className="px-5 py-8 w-full">
-          <MissionRewardSection
-            rewardImageUrl={reward.imageUrl ?? undefined}
-            rewardName={reward.name ?? undefined}
-            rewardScheduledDate={reward.scheduledDate ?? undefined}
-          />
-        </div>
-      )}
-
-      {missionType !== MissionType.EXPERIENCE_GROUP && (
-        <div className="flex flex-col gap-4 items-center px-5 py-8">
-          <Typo.MainTitle size="small" className="text-center">
-            가족, 친구에게
-            <br />
-            공유해주세요 👀
-          </Typo.MainTitle>
-          <SocialShareButtonsWithData
-            missionId={missionId}
-            title={missionTitle ?? undefined}
-            imageUrl={missionImageUrl ?? undefined}
-          />
-        </div>
-      )}
 
       <MissionFooter />
     </div>

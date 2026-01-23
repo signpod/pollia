@@ -9,7 +9,7 @@
     "./lib": "./src/lib/index.ts"
   },
   "scripts": {
-    "lint": "biome check --write .",
+    "lint": "biome check --write --diagnostic-level=error .",
     "generate:component": "turbo gen react-component",
     "check-types": "tsc --noEmit"
   },

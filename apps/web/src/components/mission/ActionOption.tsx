@@ -42,7 +42,7 @@ function OptionMenuContent({
 
   const handleSaveDescription = () => {
     onDescriptionChange(tempDescription);
-    toast.success("항목 설명이 저장되었습니다.");
+    toast.success("항목 설명이 저장되었습니다");
   };
   return (
     <DrawerContent>

@@ -3,7 +3,7 @@ import { ButtonV2, FixedBottomLayout, Typo } from "@repo/ui/components";
 import { TiptapViewer } from "@repo/ui/components/common/TiptapViewer";
 import { ChevronLeftIcon } from "lucide-react";
 import Image from "next/image";
-import { type PropsWithChildren, useEffect } from "react";
+import { type PropsWithChildren, useEffect, useState } from "react";
 import { useProgressBar } from "../providers/ProgressBarProvider";
 
 interface ActionTemplateProps extends PropsWithChildren {
@@ -47,26 +47,21 @@ export function SurveyQuestionTemplate({
     <FixedBottomLayout hasGradient>
       <div className="space-y-6 px-5 pb-5 pt-[28px]">
         {/* 질문 정보 섹션 */}
-        <section className="space-y-1 relative">
-          <div className="flex flex-col gap-2">
-            <RequiredIndicator isRequired={!!isRequired} />
+        <section className="flex flex-col gap-2 relative">
+          <RequiredIndicator isRequired={!!isRequired} />
+          <div className="flex flex-col gap-1">
             <Typo.MainTitle size="medium" className="flex gap-1">
               {title}
             </Typo.MainTitle>
+            {description && cleanTiptapHTML(description) && (
+              <TiptapViewer
+                content={cleanTiptapHTML(description)}
+                className="prose prose-sm break-keep max-w-none text-sub"
+              />
+            )}
           </div>
 
-          {description && cleanTiptapHTML(description) && (
-            <TiptapViewer
-              content={cleanTiptapHTML(description)}
-              className="prose prose-sm break-keep max-w-none text-sub"
-            />
-          )}
-
-          {imageUrl && (
-            <figure className="relative aspect-3/2 overflow-hidden rounded-sm">
-              <Image src={imageUrl} alt={title} fill className="object-contain h-full" />
-            </figure>
-          )}
+          {imageUrl && <AdaptiveImage src={imageUrl} alt={title} />}
         </section>
 
         {/* 질문 입력 영역 (children) */}
@@ -129,5 +124,30 @@ function RequiredIndicator({ isRequired }: RequiredIndicatorProps) {
         {isRequired ? REQUIRED_TEXT_LABELS.required : REQUIRED_TEXT_LABELS.optional}
       </Typo.Body>
     </div>
+  );
+}
+
+interface AdaptiveImageProps {
+  src: string;
+  alt: string;
+}
+
+function AdaptiveImage({ src, alt }: AdaptiveImageProps) {
+  const [aspectClass, setAspectClass] = useState<"aspect-square" | "aspect-3/2">("aspect-3/2");
+
+  return (
+    <figure className={cn("relative overflow-hidden rounded-sm", aspectClass)}>
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        className="object-cover"
+        onLoad={e => {
+          const img = e.currentTarget;
+          const isPortrait = img.naturalHeight >= img.naturalWidth;
+          setAspectClass(isPortrait ? "aspect-square" : "aspect-3/2");
+        }}
+      />
+    </figure>
   );
 }

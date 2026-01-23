@@ -5,6 +5,7 @@ import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
 import { useCreateMission } from "@/app/admin/hooks/mission";
 import { useCreateMissionCompletion } from "@/app/admin/hooks/mission-completion";
+import type { CreateMissionRequest } from "@/types/dto/mission";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -22,6 +23,7 @@ export default function AdminMissionCreatePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentStepParam = searchParams.get("step");
+  const eventIdParam = searchParams.get("eventId");
   const currentStep: Step =
     currentStepParam && STEPS.includes(currentStepParam as Step)
       ? (currentStepParam as Step)
@@ -47,13 +49,13 @@ export default function AdminMissionCreatePage() {
         });
       } catch (error) {
         console.error("완료 화면 생성 실패:", error);
-        toast.error("미션 생성 중 오류가 발생했습니다.");
+        toast.error("미션 생성 중 오류가 발생했습니다");
       }
-      toast.success("미션이 생성되었습니다.");
+      toast.success("미션이 생성되었습니다");
       router.push(ADMIN_ROUTES.ADMIN_MISSION(data.data.id));
     },
     onError: error => {
-      toast.error(error.message || "미션 생성 중 오류가 발생했습니다.");
+      toast.error(error.message || "미션 생성 중 오류가 발생했습니다");
     },
   });
 
@@ -119,23 +121,22 @@ export default function AdminMissionCreatePage() {
     async (data: CreateMissionFunnelFormData) => {
       const { completion, ...missionData } = data;
 
-      const payload = {
+      const payload: CreateMissionRequest = {
         title: missionData.title,
         type: missionData.type,
         actionIds: Array.isArray(missionData.actionIds) ? missionData.actionIds : [],
         maxParticipants:
           typeof missionData.maxParticipants === "number" ? missionData.maxParticipants : null,
-        ...(missionData.description && { description: missionData.description }),
-        ...(missionData.target && { target: missionData.target }),
-        ...(missionData.imageUrl && { imageUrl: missionData.imageUrl }),
-        ...(missionData.imageFileUploadId && { imageFileUploadId: missionData.imageFileUploadId }),
-        ...(missionData.brandLogoUrl && { brandLogoUrl: missionData.brandLogoUrl }),
-        ...(missionData.brandLogoFileUploadId && {
-          brandLogoFileUploadId: missionData.brandLogoFileUploadId,
-        }),
-        ...(missionData.estimatedMinutes && { estimatedMinutes: missionData.estimatedMinutes }),
-        ...(missionData.deadline && { deadline: missionData.deadline }),
-        ...(missionData.isActive !== undefined && { isActive: missionData.isActive }),
+        description: missionData.description || undefined,
+        target: missionData.target || undefined,
+        imageUrl: missionData.imageUrl || null,
+        imageFileUploadId: missionData.imageFileUploadId || null,
+        brandLogoUrl: missionData.brandLogoUrl || null,
+        brandLogoFileUploadId: missionData.brandLogoFileUploadId || null,
+        estimatedMinutes: missionData.estimatedMinutes || null,
+        deadline: missionData.deadline || null,
+        isActive: missionData.isActive ?? true,
+        eventId: eventIdParam || null,
       };
 
       createMission.mutate(payload);

@@ -3,9 +3,9 @@
 import { cn } from "@/lib/utils";
 import CheckCircle from "@public/svgs/check-circle-filled.svg";
 import CheckSquare from "@public/svgs/check-square-filled.svg";
+import FilledSquare from "@public/svgs/square-filled.svg";
 import { Input, Typo } from "@repo/ui/components";
 import { cva } from "class-variance-authority";
-import { Square } from "lucide-react";
 import Image from "next/image";
 
 type SelectType = "radio" | "checkbox";
@@ -93,19 +93,22 @@ export function ActionOptionButton({
 
   const imageStyle = disabled ? "opacity-30" : "opacity-100";
   const CheckIcon = selectType === "checkbox" ? CheckSquare : CheckCircle;
-  const NoneCheckedIcon = selectType === "checkbox" ? Square : null;
+  const NoneCheckedIcon = selectType === "checkbox" ? FilledSquare : null;
 
   const content = imageUrl ? (
     <>
       <div className="relative flex flex-col items-center gap-0 w-full rounded-sm overflow-hidden">
-        <Image
-          src={imageUrl}
-          width={200}
-          height={200}
-          className={cn("object-cover w-full h-full", imageStyle)}
-          alt=""
-          draggable={false}
-        />
+        <div className="relative aspect-square overflow-hidden rounded-t-sm w-full">
+          <Image
+            src={imageUrl}
+            width={200}
+            height={200}
+            className={cn("object-cover w-full h-full", imageStyle)}
+            alt=""
+            draggable={false}
+          />
+        </div>
+
         <div className="flex flex-col gap-2 flex-1 w-full p-3">
           <div className="flex flex-col gap-0">
             <Typo.ButtonText size="large" className={titleVariants({ isSelected, disabled })}>
@@ -175,7 +178,7 @@ export function ActionOptionButton({
           </div>
         </div>
 
-        <div className="flex h-full">
+        <div className="self-start">
           {isSelected ? (
             <CheckIcon className={cn("size-6", checkCircleColor)} />
           ) : NoneCheckedIcon ? (
@@ -188,7 +191,7 @@ export function ActionOptionButton({
 
       {isOther && isSelected && (
         <div
-          className="w-full mt-2 text-zinc-900 p-3"
+          className="w-full text-zinc-900 p-3 pt-0"
           onClick={e => e.stopPropagation()}
           onMouseDown={e => e.stopPropagation()}
           onKeyDown={e => e.stopPropagation()}

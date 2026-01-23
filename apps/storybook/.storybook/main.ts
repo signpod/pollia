@@ -1,6 +1,6 @@
 import { dirname, join } from "node:path";
-import webpack from "webpack";
 import type { StorybookConfig } from "@storybook/nextjs";
+import webpack from "webpack";
 
 /**
  * This function is used to resolve the absolute path of a package.

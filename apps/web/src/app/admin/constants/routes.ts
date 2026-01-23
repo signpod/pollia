@@ -1,6 +1,7 @@
 const ADMIN_BASE = "/admin";
 
 const MISSIONS_BASE = `${ADMIN_BASE}/missions`;
+const EVENTS_BASE = `${ADMIN_BASE}/events`;
 
 export const ADMIN_ROUTES = {
   ADMIN: ADMIN_BASE,
@@ -13,6 +14,7 @@ export const ADMIN_ROUTES = {
   ADMIN_MISSION_TRACKING: (id: string) => `${MISSIONS_BASE}/${id}/tracking`,
   ADMIN_MISSION_PASSWORD: (id: string) => `${MISSIONS_BASE}/${id}/password`,
   ADMIN_MISSION_REPORT: (id: string) => `${MISSIONS_BASE}/${id}/report`,
+  ADMIN_EVENT: (id: string) => `${EVENTS_BASE}/${id}`,
   ADMIN_SETTINGS: `${ADMIN_BASE}/settings`,
 } as const;
 

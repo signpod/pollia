@@ -78,6 +78,12 @@ export function formatDateToYYYYMMDD(date: Date | string): string {
  * @returns HH:mm 형식의 문자열
  */
 export function formatDateToHHMM(date: Date | string): string {
+  if (typeof date === "string") {
+    const timeMatch = date.match(/T(\d{2}):(\d{2})/);
+    if (timeMatch?.[1] && timeMatch?.[2]) {
+      return `${timeMatch[1]}:${timeMatch[2]}`;
+    }
+  }
   const d = typeof date === "string" ? new Date(date) : date;
   const hours = String(d.getHours()).padStart(2, "0");
   const minutes = String(d.getMinutes()).padStart(2, "0");
@@ -87,3 +93,31 @@ export const formatDateToYYYYMMDDTHHMM = (date: Date, time: string): Date => {
   const dateString = format(date, "yyyy-MM-dd");
   return new Date(`${dateString}T${time}`);
 };
+
+/**
+ * Date 객체를 "M월 d일" 형식으로 변환 (한글)
+ * @param date - 변환할 Date 객체
+ * @returns "M월 d일" 형식의 문자열 (예: "1월 22일")
+ */
+export function formatToMonthDay(date: Date): string {
+  return new Date(date).toLocaleDateString("ko-KR", {
+    month: "long",
+    day: "numeric",
+  });
+}
+
+/**
+ * Date 객체 또는 ISO 문자열을 "YYYY년 M월 d일 오전/오후 h:mm" 형식으로 변환 (한글)
+ * @param date - 변환할 Date 객체 또는 ISO 문자열
+ * @returns "YYYY년 M월 d일 오전/오후 h:mm" 형식의 문자열 (예: "2024년 1월 23일 오후 3:30")
+ */
+export function formatToDateTimeKR(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  return d.toLocaleString("ko-KR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}

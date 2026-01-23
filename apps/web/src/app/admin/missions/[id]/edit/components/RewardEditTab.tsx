@@ -25,6 +25,7 @@ import {
   useReadReward,
   useUpdateReward,
 } from "@/app/admin/hooks/reward";
+import { formatToDateTimeKR } from "@/lib/date";
 import type { Reward } from "@prisma/client";
 import { Calendar, Pencil, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
@@ -77,7 +78,7 @@ function RewardCard({
               {reward.scheduledDate && (
                 <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                   <Calendar className="size-3.5" />
-                  {new Date(reward.scheduledDate).toLocaleDateString("ko-KR")}
+                  {formatToDateTimeKR(reward.scheduledDate)}
                 </span>
               )}
             </div>
@@ -153,32 +154,32 @@ function RewardContent({ missionId }: { missionId: string }) {
 
   const createReward = useCreateReward({
     onSuccess: () => {
-      toast.success("리워드가 생성되었습니다.");
+      toast.success("리워드가 생성되었습니다");
       setIsCreateDialogOpen(false);
     },
     onError: error => {
-      toast.error(error.message || "리워드 생성 중 오류가 발생했습니다.");
+      toast.error(error.message || "리워드 생성 중 오류가 발생했습니다");
     },
   });
 
   const updateReward = useUpdateReward({
     onSuccess: () => {
-      toast.success("리워드가 수정되었습니다.");
+      toast.success("리워드가 수정되었습니다");
       setIsEditDialogOpen(false);
     },
     onError: error => {
-      toast.error(error.message || "리워드 수정 중 오류가 발생했습니다.");
+      toast.error(error.message || "리워드 수정 중 오류가 발생했습니다");
     },
   });
 
   const deleteRewardMutation = useDeleteReward({
     onSuccess: () => {
-      toast.success("리워드가 삭제되었습니다.");
+      toast.success("리워드가 삭제되었습니다");
       setIsDeleteDialogOpen(false);
       setDeletingRewardId(null);
     },
     onError: error => {
-      toast.error(error.message || "리워드 삭제 중 오류가 발생했습니다.");
+      toast.error(error.message || "리워드 삭제 중 오류가 발생했습니다");
     },
   });
 

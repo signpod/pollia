@@ -184,6 +184,7 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
           label="예상 소요 시간 (분)"
           description="미션 완료에 필요한 예상 시간을 입력합니다."
           isOptional
+          transformValue={value => (value === undefined ? null : value)}
         />
 
         <DateTimeField
@@ -259,8 +260,8 @@ export function useBasicInfoForm(mission: MissionData) {
     target: mission.target ?? "",
     imageUrl: mission.imageUrl ?? undefined,
     brandLogoUrl: mission.brandLogoUrl ?? undefined,
-    estimatedMinutes: mission.estimatedMinutes ?? undefined,
-    deadline: mission.deadline ? new Date(mission.deadline) : undefined,
+    estimatedMinutes: mission.estimatedMinutes ?? null,
+    deadline: mission.deadline ? new Date(mission.deadline) : null,
     maxParticipants: mission.maxParticipants ?? null,
     isActive: mission.isActive,
   };
@@ -283,14 +284,14 @@ function LinksSection({ form }: { form: UseFormReturn<MissionCompletionForm> }) 
 
   const handleAddLink = () => {
     if (!newLinkKey.trim() || !newLinkValue.trim()) {
-      toast.error("링크 이름과 URL을 모두 입력해주세요.");
+      toast.error("링크 이름과 URL을 모두 입력해주세요");
       return;
     }
 
     try {
       new URL(newLinkValue);
     } catch {
-      toast.error("올바른 URL 형식이 아닙니다.");
+      toast.error("올바른 URL 형식이 아닙니다");
       return;
     }
 
@@ -322,7 +323,7 @@ function LinksSection({ form }: { form: UseFormReturn<MissionCompletionForm> }) 
             <div key={key} className="flex items-center gap-2">
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium text-muted-foreground mb-1">{key}</div>
-                <div className="text-sm text-foreground truncate">{value}</div>
+                <div className="text-sm text-foreground break-all">{value}</div>
               </div>
               <Button type="button" variant="ghost" size="sm" onClick={() => handleRemoveLink(key)}>
                 <Trash2 className="size-4 text-destructive" />

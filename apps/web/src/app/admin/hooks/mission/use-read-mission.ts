@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 
 export function useReadMission(missionId: string) {
   return useQuery({
-    queryKey: adminMissionQueryKeys.mission(missionId),
+    queryKey: adminMissionQueryKeys.detail(missionId),
     queryFn: () => getMission(missionId),
     staleTime: 5 * 60 * 1000,
     retry: 3,

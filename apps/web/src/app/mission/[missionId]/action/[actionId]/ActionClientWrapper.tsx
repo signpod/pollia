@@ -5,9 +5,9 @@ import { MISSION_TOAST_MESSAGE } from "@/constants/missionMessages";
 import { ROUTES } from "@/constants/routes";
 import { useReadActionsDetail } from "@/hooks/action/useReadActionsDetail";
 import {
+  useCompleteMission,
   useReadMissionResponseForMission,
   useSubmitQuestionAnswer,
-  useSubmitSurveyAnswers,
 } from "@/hooks/mission-response";
 import { useMissionSurveyToast } from "@/hooks/mission/useMissionSurveyToast";
 import { useRecordActionResponse } from "@/hooks/tracking";
@@ -15,7 +15,7 @@ import { useAuth } from "@/hooks/user";
 import { setActionNavCookie } from "@/lib/cookie";
 import { formatDateToHHMM, formatDateToYYYYMMDD } from "@/lib/date";
 import { removeSessionStorage } from "@/lib/sessionStorage";
-import { getOrCreateSessionId } from "@/lib/tracking";
+import { clearActionSession, getOrCreateSessionId } from "@/lib/tracking";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
 import { ActionType } from "@/types/domain/action";
 import type { ActionAnswerItem } from "@/types/dto";
@@ -23,7 +23,7 @@ import type { ActionAnswer } from "@/types/dto/action-answer";
 import { StepProvider, useModal, useStep } from "@repo/ui/components";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActionDate,
   ActionImage,
@@ -105,66 +105,54 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
   const [currentAnswer, setCurrentAnswer] = useState<ActionAnswerItem | null>(null);
   const { showModal } = useModal();
   const { user } = useAuth();
+  const isFinalSubmitRef = useRef(false);
 
   const { data: missionResponse } = useReadMissionResponseForMission({ missionId });
-  const { mutate: recordResponse } = useRecordActionResponse();
+  const recordResponse = useRecordActionResponse();
 
   const toastStorageKey = `mission-toast-${missionId}`;
 
   const handleAlreadyCompleted = useCallback(() => {
-    toast.warning("이미 완료된 미션입니다.", { id: "mission-already-completed" });
+    toast.warning("이미 완료된 미션입니다", { id: "mission-already-completed" });
     router.push(ROUTES.MISSION(missionId));
   }, [missionId, router]);
 
   const { mutateAsync: submitAnswer, isPending: isSubmittingAnswer } = useSubmitQuestionAnswer({
     onSuccess: () => {
-      goNext();
-
-      // Fire-and-forget 방식으로 트래킹 [25.12.22/러기]
       if (currentAnswer) {
         recordResponse({
           missionId,
-          sessionId: getOrCreateSessionId(),
+          sessionId: getOrCreateSessionId(currentAnswer.actionId),
           userId: user?.id || undefined,
           actionId: currentAnswer.actionId,
           metadata: {
             actionType: currentAnswer.type,
+            ...(isFinalSubmitRef.current && { isFinalSubmit: true }),
           },
         });
+        clearActionSession(currentAnswer.actionId);
       }
+
+      goNext();
     },
     onError: () => {
-      toast.warning("답변 저장에 실패했습니다.", { id: "submit-answer-error" });
+      toast.warning("답변 저장에 실패했습니다", { id: "submit-answer-error" });
     },
     onAlreadyCompleted: handleAlreadyCompleted,
     missionId,
   });
 
-  const { mutateAsync: completeSurveyAsync, isPending: isCompletingSurvey } =
-    useSubmitSurveyAnswers({
-      onSuccess: () => {
-        removeSessionStorage(toastStorageKey);
-        router.push(ROUTES.MISSION_DONE(missionId));
-
-        if (currentAnswer) {
-          recordResponse({
-            missionId,
-            sessionId: getOrCreateSessionId(),
-            userId: user?.id || undefined,
-            actionId: currentAnswer.actionId,
-            metadata: {
-              actionType: currentAnswer.type,
-              isFinalSubmit: true,
-            },
-          });
-        }
-      },
-      onError: () => {
-        toast.warning(MISSION_TOAST_MESSAGE.error.message, { id: MISSION_TOAST_MESSAGE.error.id });
-      },
-      onAlreadyCompleted: handleAlreadyCompleted,
-      missionId,
-    });
+  const { mutateAsync: completeMissionAsync, isPending: isCompletingMission } = useCompleteMission({
+    onSuccess: () => {
+      removeSessionStorage(toastStorageKey);
+      router.push(ROUTES.MISSION_DONE(missionId));
+    },
+    onError: () => {
+      toast.warning(MISSION_TOAST_MESSAGE.error.message, { id: MISSION_TOAST_MESSAGE.error.id });
+    },
+    onAlreadyCompleted: handleAlreadyCompleted,
+    missionId,
+  });
 
   const {
     currentStep,
@@ -311,14 +299,14 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
 
     // 현재 답변이 현재 질문의 것인지 확인
     if (currentAnswer.actionId !== actionData.id) {
-      toast.warning("답변을 다시 입력해주세요.", { id: "answer-mismatch-error" });
+      toast.warning("답변을 다시 입력해주세요", { id: "answer-mismatch-error" });
       return;
     }
 
     const validationResult = submitAnswerItemSchema.safeParse(currentAnswer);
     if (!validationResult.success) {
       const errorMessage =
-        validationResult.error.issues[0]?.message || "답변 형식이 올바르지 않습니다.";
+        validationResult.error.issues[0]?.message || "답변 형식이 올바르지 않습니다";
       toast.warning(errorMessage, { id: "answer-validation-error" });
       return;
     }
@@ -327,6 +315,19 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
     const isSame = isAnswerSameAsSubmitted(currentAnswer, submittedAnswers);
 
     if (isSame) {
+      if (currentAnswer) {
+        recordResponse({
+          missionId,
+          sessionId: getOrCreateSessionId(currentAnswer.actionId),
+          userId: user?.id || undefined,
+          actionId: currentAnswer.actionId,
+          metadata: {
+            actionType: currentAnswer.type,
+            isFinalSubmit: isLastStep,
+          },
+        });
+        clearActionSession(currentAnswer.actionId);
+      }
       goNext();
       return;
     }
@@ -336,57 +337,37 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
         ...SURVEY_SUBMIT_MODAL,
         showCancelButton: true,
         onConfirm: async () => {
-          await completeSurveyAsync({
-            responseId,
-            answers: [
-              {
-                actionId: currentAnswer.actionId,
-                type: currentAnswer.type,
-                isRequired: currentAnswer.isRequired,
-                ...(currentAnswer.type === "MULTIPLE_CHOICE" || currentAnswer.type === "TAG"
-                  ? {
-                      selectedOptionIds: currentAnswer.selectedOptionIds,
-                      ...(currentAnswer.textAnswer ? { textAnswer: currentAnswer.textAnswer } : {}),
-                    }
-                  : {}),
-                ...(currentAnswer.type === "SCALE" || currentAnswer.type === "RATING"
-                  ? { scaleValue: currentAnswer.scaleValue }
-                  : {}),
-                ...(currentAnswer.type === "SUBJECTIVE" || currentAnswer.type === "SHORT_TEXT"
-                  ? { textAnswer: currentAnswer.textAnswer }
-                  : {}),
-                ...(currentAnswer.type === "IMAGE" ||
-                currentAnswer.type === "VIDEO" ||
-                currentAnswer.type === "PDF"
-                  ? { fileUploadIds: currentAnswer.fileUploadIds }
-                  : {}),
-                ...(currentAnswer.type === "DATE"
-                  ? { dateAnswers: currentAnswer.dateAnswers }
-                  : {}),
-                ...(currentAnswer.type === "TIME"
-                  ? { dateAnswers: currentAnswer.dateAnswers }
-                  : {}),
-              },
-            ],
-          });
+          isFinalSubmitRef.current = true;
+          try {
+            await submitAnswer({ responseId, answer: currentAnswer });
+            await completeMissionAsync({ responseId });
+          } finally {
+            isFinalSubmitRef.current = false;
+          }
         },
       });
     } else {
+      // console.log("submitAnswer", currentAnswer);
       await submitAnswer({
         responseId,
         answer: currentAnswer,
       });
+      goNext();
     }
   }, [
     isLastStep,
     responseId,
     currentAnswer,
     submitAnswer,
-    completeSurveyAsync,
+    completeMissionAsync,
     showModal,
     isAnswerSameAsSubmitted,
     goNext,
     actionData.id,
+    missionId,
+    recordResponse,
+    user?.id,
+    missionResponse?.data?.answers,
   ]);
 
   const handlePrevious = useCallback(() => {
@@ -404,8 +385,8 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
       currentOrder={actionData.order}
       totalActionCount={totalActionCount}
       isFirstAction={isFirstStep}
-      isNextDisabled={!canGoNext || isSubmittingAnswer || isCompletingSurvey}
-      isLoading={isSubmittingAnswer || isCompletingSurvey}
+      isNextDisabled={!canGoNext || isSubmittingAnswer || isCompletingMission}
+      isLoading={isSubmittingAnswer || isCompletingMission}
       onPrevious={handlePrevious}
       onNext={handleNext}
       nextButtonText={isLastStep ? "제출하기" : "다음"}

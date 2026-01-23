@@ -15,7 +15,7 @@ export default async function MissionPasswordPage({ params }: PageProps) {
   const queryClient = getAdminQueryClient();
 
   const { data: mission } = await queryClient.fetchQuery({
-    queryKey: adminMissionQueryKeys.mission(missionId),
+    queryKey: adminMissionQueryKeys.detail(missionId),
     queryFn: () => getMission(missionId),
   });
 

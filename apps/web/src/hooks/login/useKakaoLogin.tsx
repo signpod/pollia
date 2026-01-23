@@ -43,7 +43,7 @@ export function useKakaoLogin(options: UseKakaoLoginOptions = {}) {
   const handleKakaoLogin = useCallback(() => {
     try {
       if (!isKakaoSdkLoaded || !window.Kakao) {
-        toast.warning("카카오 로그인을 준비 중입니다. 잠시 후 다시 시도해주세요.", {
+        toast.warning("카카오 로그인을 준비 중입니다. 잠시 후 다시 시도해주세요", {
           duration: 3000,
         });
         return;
@@ -59,7 +59,7 @@ export function useKakaoLogin(options: UseKakaoLoginOptions = {}) {
       });
     } catch (error) {
       console.error("카카오 로그인 에러:", error);
-      toast.warning("로그인 중 문제가 발생했습니다.", {
+      toast.warning("로그인 중 문제가 발생했습니다", {
         duration: 3000,
       });
     }
@@ -67,5 +67,6 @@ export function useKakaoLogin(options: UseKakaoLoginOptions = {}) {
 
   return {
     handleKakaoLogin,
+    isKakaoSdkLoaded,
   };
 }

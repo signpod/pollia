@@ -1,6 +1,7 @@
 "use client";
 
 import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
+import { DateTimeField } from "@/app/admin/components/common/molecule/DateTimeField";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import {
   Form,
@@ -160,29 +161,14 @@ export function RewardForm({ isLoading, onSubmit, onCancel, initialData }: Rewar
         />
 
         {paymentType === PaymentType.SCHEDULED && (
-          <FormField
+          <DateTimeField
             control={form.control}
             name="scheduledDate"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  예약 일시 <span className="text-destructive">*</span>
-                </FormLabel>
-                <FormControl>
-                  <Input
-                    type="datetime-local"
-                    {...field}
-                    value={field.value ? new Date(field.value).toISOString().slice(0, 16) : ""}
-                    onChange={e => {
-                      const date = e.target.value ? new Date(e.target.value) : undefined;
-                      field.onChange(date);
-                    }}
-                    disabled={isFormDisabled}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            label="예약 일시"
+            description="리워드가 지급될 날짜와 시간을 선택하세요."
+            datePlaceholder="날짜 선택"
+            disabled={isFormDisabled}
+            minuteStep={5}
           />
         )}
 

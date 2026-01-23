@@ -223,7 +223,8 @@ function DatePickerContent({
                   className={cn(
                     "rounded-sm w-full aspect-square flex flex-col gap-0 items-center justify-center transition-all duration-200 p-1",
                     "hover:bg-zinc-50",
-                    isSelected && "bg-violet-50 text-violet-500 hover:bg-violet-100",
+                    isSelected &&
+                      "bg-violet-50 text-violet-500 hover:bg-violet-100 ring ring-violet-500",
                     isToday && !isSelected && "ring-1 ring-zinc-300",
                     isSunday &&
                       !isSelected &&
@@ -260,15 +261,17 @@ function DatePickerContent({
           }}
         />
       </div>
-      <BottomDrawer collapsedHeight={120} expandedHeight={180}>
-        <SelectedDatesDrawerContent
-          selectedDates={selectedDates}
-          onRemoveDate={dateStr => {
-            const newDates = Array.from(selectedDates).filter(d => d !== dateStr);
-            setDates(newDates);
-          }}
-        />
-      </BottomDrawer>
+      {actionData.maxSelections && actionData.maxSelections > 1 && (
+        <BottomDrawer collapsedHeight={120} expandedHeight={180}>
+          <SelectedDatesDrawerContent
+            selectedDates={selectedDates}
+            onRemoveDate={dateStr => {
+              const newDates = Array.from(selectedDates).filter(d => d !== dateStr);
+              setDates(newDates);
+            }}
+          />
+        </BottomDrawer>
+      )}
     </SurveyQuestionTemplate>
   );
 }

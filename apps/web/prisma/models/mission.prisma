@@ -10,6 +10,7 @@ model Mission {
   maxParticipants  Int?        @map("max_participants")
   creatorId        String      @map("creator_id")
   rewardId         String?     @map("reward_id")
+  eventId          String?     @map("event_id")
   createdAt        DateTime    @default(now()) @map("created_at")
   updatedAt        DateTime    @updatedAt @map("updated_at")
   target           String?
@@ -21,6 +22,7 @@ model Mission {
   completion MissionCompletion?
   creator    User               @relation(fields: [creatorId], references: [id])
   reward     Reward?            @relation(fields: [rewardId], references: [id])
+  event      Event?             @relation(fields: [eventId], references: [id])
   notionPage MissionNotionPage?
 
   imageFileUploadId     String?     @map("image_file_upload_id")
@@ -34,6 +36,7 @@ model Mission {
   @@index([creatorId])
   @@index([isActive])
   @@index([rewardId])
+  @@index([eventId])
   @@map("missions")
 }
 

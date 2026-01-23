@@ -25,12 +25,12 @@ export function MissionRewardSection({
   rewardScheduledDate,
 }: MissionRewardSectionProps) {
   return (
-    <div className="flex flex-col gap-6 px-5 py-8">
+    <div className="flex flex-col gap-6">
       <SectionHeader badgeText={REWARD_SECTION_BADGE_TEXT} title={REWARD_SECTION_TITLE} />
 
       <div className="w-auto rounded-md overflow-hidden bg-white shadow-[0_4px_20px_rgba(0,0,0,0.08)] p-4 flex flex-col gap-4">
-        <div className="aspect-square relative w-full flex items-center justify-center overflow-hidden rounded-sm">
-          {rewardImageUrl && (
+        {rewardImageUrl && (
+          <div className="aspect-square relative w-full flex items-center justify-center overflow-hidden rounded-sm">
             <Image
               src={rewardImageUrl}
               alt="reward"
@@ -38,8 +38,8 @@ export function MissionRewardSection({
               height={300}
               className="w-full h-auto object-contain rounded-sm"
             />
-          )}
-        </div>
+          </div>
+        )}
 
         <div className="w-full flex flex-col gap-3 items-center">
           {rewardName && (

@@ -19,10 +19,10 @@ export function ActionClientTrackingWrapper({ children }: { children: React.Reac
   useEffect(() => {
     if (!missionId || !actionId) return;
 
-    const sessionId = getOrCreateSessionId();
+    const sessionId = getOrCreateSessionId(actionId);
 
-    if (!hasTrackedEntry(sessionId, actionId)) {
-      markEntryAsTracked(sessionId, actionId);
+    if (!hasTrackedEntry(actionId)) {
+      markEntryAsTracked(actionId);
 
       const utmParams = getUtmParams();
 
@@ -36,5 +36,5 @@ export function ActionClientTrackingWrapper({ children }: { children: React.Reac
     }
   }, [missionId, actionId, recordEntry, user?.id]);
 
-  return <>{children}</>;
+  return children;
 }

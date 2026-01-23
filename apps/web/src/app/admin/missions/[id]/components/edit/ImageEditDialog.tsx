@@ -83,10 +83,10 @@ function ImageFormContent({ mission, missionId, onSuccess }: ImageFormContentPro
     onSuccess: () => {
       missionImage.deleteMarkedInitial();
       brandLogo.deleteMarkedInitial();
-      toast.success("미션 이미지가 수정되었습니다.");
+      toast.success("미션 이미지가 수정되었습니다");
       onSuccess();
     },
-    onError: err => toast.error(err.message || "미션 수정 중 오류가 발생했습니다."),
+    onError: err => toast.error(err.message || "미션 수정 중 오류가 발생했습니다"),
   });
 
   const handleReset = () => {

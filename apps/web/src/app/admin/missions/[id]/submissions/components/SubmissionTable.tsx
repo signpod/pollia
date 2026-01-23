@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/app/admin/components/shadcn-ui/table";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/app/admin/components/shadcn-ui/tooltip";
+import { formatDateToHHMM, formatDateToYYYYMMDD } from "@/lib/date";
 import type { ColumnDef, SubmissionRow } from "@/server/services/submission-list";
 import { CheckIcon, ClockIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -154,6 +155,24 @@ function formatPhoneNumber(phone: string | null): string {
 function formatAnswerValue(value: string | null | undefined, type: string): React.ReactNode {
   if (value === null || value === undefined) {
     return <span className="text-muted-foreground">-</span>;
+  }
+
+  if (type === "DATE") {
+    try {
+      const date = new Date(value);
+      return formatDateToYYYYMMDD(date);
+    } catch {
+      return value;
+    }
+  }
+
+  if (type === "TIME") {
+    try {
+      const date = new Date(value);
+      return formatDateToHHMM(date);
+    } catch {
+      return value;
+    }
   }
 
   if (type === "IMAGE" || type === "VIDEO" || type === "PDF") {

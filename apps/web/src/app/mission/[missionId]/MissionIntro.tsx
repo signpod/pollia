@@ -30,7 +30,6 @@ const SCROLL_OFFSET = 10;
 interface MissionIntroContextValue {
   brandLogoUrl?: string;
   title?: string;
-  scrollContainerRef?: React.RefObject<HTMLDivElement | null>;
   titleRef?: React.RefObject<HTMLDivElement | null>;
 }
 
@@ -42,14 +41,16 @@ export function useMissionIntroContext() {
 
 function CalloutTrigger({
   calloutData,
+  isLoading,
 }: {
   calloutData: { variant: CalloutToneVariant; description: string } | null;
+  isLoading: boolean;
 }) {
   const { show } = useCallout();
   const hasShownRef = useRef(false);
 
   useEffect(() => {
-    if (calloutData && !hasShownRef.current) {
+    if (calloutData && !hasShownRef.current && !isLoading) {
       hasShownRef.current = true;
       show({
         description: calloutData.description,
@@ -57,7 +58,7 @@ function CalloutTrigger({
         duration: Number.POSITIVE_INFINITY,
       });
     }
-  }, [calloutData, show]);
+  }, [calloutData, show, isLoading]);
 
   return null;
 }
@@ -86,7 +87,7 @@ export function MissionIntro({ children }: MissionIntroProps) {
     isRequirePassword,
   } = useMissionIntroData(missionId);
 
-  const { showResumeModal } = useSurveyResume({
+  const { showResumeModal, isResuming } = useSurveyResume({
     isEnabledToResume,
     nextActionId,
     firstActionId,
@@ -97,22 +98,18 @@ export function MissionIntro({ children }: MissionIntroProps) {
   const { brandLogoUrl, title, deadline, imageUrl, isActive } = mission ?? {};
 
   const titleRef = useRef<HTMLDivElement>(null);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
     const handleScroll = () => {
-      setIsScrolled(container.scrollTop > 5);
+      setIsScrolled(window.scrollY > 5);
     };
 
-    container.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
 
     return () => {
-      container.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
@@ -177,7 +174,6 @@ export function MissionIntro({ children }: MissionIntroProps) {
     () => ({
       brandLogoUrl: brandLogoUrl ?? undefined,
       title,
-      scrollContainerRef,
       titleRef,
     }),
     [brandLogoUrl, title],
@@ -185,17 +181,14 @@ export function MissionIntro({ children }: MissionIntroProps) {
 
   return (
     <CalloutProvider position="top-center">
-      <CalloutTrigger calloutData={calloutData} />
+      <CalloutTrigger calloutData={calloutData} isLoading={isResuming} />
       <MissionIntroContext.Provider value={contextValue}>
         <main className="flex justify-center bg-background">
-          <div
-            ref={scrollContainerRef}
-            className="relative w-full max-w-lg h-dvh overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-          >
+          <div className="relative w-full max-w-lg">
             {imageUrl && (
               <div className="relative w-full h-svh min-h-svh">
                 <MissionImage imageUrl={imageUrl} />
-                <div className="bg-linear-to-t from-black via-black/50 via-70% to-transparent absolute bottom-0 left-0 right-0 flex flex-col gap-6 pb-6 pt-12 px-5">
+                <div className="bg-linear-to-t from-black via-black/50 via-70% to-transparent absolute bottom-0 left-0 right-0 z-10 flex flex-col gap-6 pb-6 pt-12 px-5">
                   <div ref={titleRef} className="flex flex-col gap-3 justify-center items-center">
                     <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
                     <div className="break-keep text-white text-center">
@@ -207,32 +200,34 @@ export function MissionIntro({ children }: MissionIntroProps) {
                       )}
                     </div>
                   </div>
-                  <div className="flex flex-col gap-2">
-                    {showRewardWidget && (
-                      <MissionWidget
-                        icon={<GiftIcon className="size-5" />}
-                        descType="text"
-                        title="완료 리워드"
-                        description={reward?.data.name ?? ""}
-                      />
-                    )}
-                    {showDeadlineWidget && deadlineDate && (
-                      <MissionWidget
-                        icon={<ClockIcon className="size-5" />}
-                        descType="clock"
-                        title="종료까지"
-                        deadline={deadlineDate}
-                      />
-                    )}
-                  </div>
+                  {(showRewardWidget || showDeadlineWidget) && (
+                    <div className="flex flex-col gap-2">
+                      {showRewardWidget && (
+                        <MissionWidget
+                          icon={<GiftIcon className="size-5" />}
+                          descType="text"
+                          title="완료 리워드"
+                          description={reward?.data.name ?? ""}
+                        />
+                      )}
+                      {showDeadlineWidget && deadlineDate && (
+                        <MissionWidget
+                          icon={<ClockIcon className="size-5" />}
+                          descType="clock"
+                          title="종료까지"
+                          deadline={deadlineDate}
+                        />
+                      )}
+                    </div>
+                  )}
 
-                  <div>
+                  <div className="relative z-10">
                     <ButtonV2
                       variant="tertiary"
                       size="large"
                       className="w-full rounded-full h-12 hover:bg-transparent"
                       onClick={() => {
-                        scrollContainerRef.current?.scrollTo({
+                        window.scrollTo({
                           top: window.innerHeight + SCROLL_OFFSET,
                           behavior: "smooth",
                         });
@@ -261,7 +256,7 @@ export function MissionIntro({ children }: MissionIntroProps) {
                           }}
                         />
 
-                        <Typo.ButtonText size="large" className="text-white z-50">
+                        <Typo.ButtonText size="large" className="text-white">
                           아래로 내려보세요
                         </Typo.ButtonText>
                       </div>
@@ -273,17 +268,26 @@ export function MissionIntro({ children }: MissionIntroProps) {
 
             {children}
 
-            <FixedBottomContent>
-              {/**  블러 배경 (별도 레이어) */}
+            <FixedBottomContent
+              className={isScrolled ? "bg-transparent" : "bg-transparent pointer-events-none"}
+            >
+              {/**  블러 배경 (별도 레이어) - opacity 애니메이션 */}
               <div
                 className="absolute inset-x-0 bottom-0"
                 style={{
                   height: "100px",
+                  opacity: isScrolled ? 1 : 0,
+                  transition: "opacity 0.3s ease-out",
                   backdropFilter: "blur(100px)",
                   WebkitBackdropFilter: "blur(100px)",
-                  maskImage: "linear-gradient(to bottom, transparent 0%, black 100%)",
-                  WebkitMaskImage: "linear-gradient(to bottom, transparent 0%, black 100%)",
+                  maskImage: isScrolled
+                    ? "linear-gradient(to bottom, transparent 0%, black 100%)"
+                    : "linear-gradient(to bottom, transparent 100%, transparent 100%)",
+                  WebkitMaskImage: isScrolled
+                    ? "linear-gradient(to bottom, transparent 0%, black 100%)"
+                    : "linear-gradient(to bottom, transparent 100%, transparent 100%)",
                   background: "rgba(255, 255, 255, 0)",
+                  pointerEvents: "none",
                 }}
               />
               {/**  fixed bottom 버튼 */}
@@ -291,7 +295,7 @@ export function MissionIntro({ children }: MissionIntroProps) {
                 className={cn(
                   "sticky bottom-0 z-60 border-zinc-100 transition-all duration-300 ease-out",
                   isScrolled
-                    ? "opacity-100 translate-y-0"
+                    ? "opacity-100 translate-y-0 pointer-events-auto"
                     : "opacity-0 translate-y-full pointer-events-none",
                 )}
                 style={{
@@ -307,6 +311,7 @@ export function MissionIntro({ children }: MissionIntroProps) {
                   hasReward={!!reward}
                   isRequirePassword={isRequirePassword}
                   hasExistingResponse={!!missionResponse}
+                  isResuming={isResuming}
                 />
               </div>
             </FixedBottomContent>

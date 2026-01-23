@@ -1,7 +1,8 @@
 import { ActionOptionButton } from "@/app/mission/[missionId]/components";
 import { ActionStepContentProps, CLIENT_OTHER_OPTION_ID } from "@/constants/action";
 import { cn } from "@repo/ui/lib";
-import { useState } from "react";
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 import { MultipleChoiceProvider, useSurveyMultipleChoice } from "./MultipleChoiceProvider";
 
@@ -60,18 +61,24 @@ function SurveyMultipleChoiceContent({
 
   const [showOtherError, setShowOtherError] = useState(false);
 
-  const optionsWithOther = actionData.hasOther
-    ? [
-        ...(actionData.options || []),
-        {
-          id: CLIENT_OTHER_OPTION_ID,
-          title: "기타",
-          description: null,
-          imageUrl: null,
-          order: 999,
-        },
-      ]
-    : actionData.options || [];
+  useEffect(() => {
+    if (isOtherSelected) {
+      setTimeout(() => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+      }, 100);
+    }
+  }, [isOtherSelected]);
+
+  const regularOptions = actionData.options || [];
+  const otherOption = actionData.hasOther
+    ? {
+        id: CLIENT_OTHER_OPTION_ID,
+        title: "기타(직접입력)",
+        description: null,
+        imageUrl: null,
+        order: 999,
+      }
+    : null;
 
   const handleTextAnswerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTextAnswer(e.target.value);
@@ -103,34 +110,60 @@ function SurveyMultipleChoiceContent({
       isLoading={isLoading}
       isRequired={actionData.isRequired}
     >
-      <div className={cn("gap-2 w-full", hasImage ? "grid grid-cols-2" : "flex flex-col")}>
-        {optionsWithOther.map(option => {
-          const isOther = option.id === CLIENT_OTHER_OPTION_ID;
-          const isSelected = selectedIds.has(option.id);
+      <div className="flex flex-col gap-2 w-full">
+        <div className={cn("gap-2 w-full", hasImage ? "grid grid-cols-2" : "flex flex-col")}>
+          {regularOptions.map(option => {
+            const isSelected = selectedIds.has(option.id);
 
-          return (
-            <ActionOptionButton
-              key={option.id}
-              selectType={isMultipleChoice ? "checkbox" : "radio"}
-              imageUrl={option.imageUrl ?? undefined}
-              title={option.title}
-              description={option.description ?? undefined}
-              isSelected={isSelected}
-              disabled={
-                isMultipleChoice &&
-                !isSelected &&
-                actionData.maxSelections !== null &&
-                selectedIds.size >= actionData.maxSelections
-              }
-              onClick={() => toggleSelectedId(option.id)}
-              isOther={isOther}
-              textAnswer={textAnswer}
-              onTextAnswerChange={handleTextAnswerChange}
-              onTextAnswerBlur={handleTextAnswerBlur}
-              showOtherError={showOtherError}
-            />
-          );
-        })}
+            return (
+              <ActionOptionButton
+                key={option.id}
+                selectType={isMultipleChoice ? "checkbox" : "radio"}
+                imageUrl={option.imageUrl ?? undefined}
+                title={option.title}
+                description={option.description ?? undefined}
+                isSelected={isSelected}
+                disabled={
+                  isMultipleChoice &&
+                  !isSelected &&
+                  actionData.maxSelections !== null &&
+                  selectedIds.size >= actionData.maxSelections
+                }
+                onClick={() => toggleSelectedId(option.id)}
+              />
+            );
+          })}
+        </div>
+
+        {otherOption && (
+          <div className="w-full">
+            <motion.div
+              initial={false}
+              animate={{
+                width: isOtherSelected || !hasImage ? "100%" : "calc(50% - 4px)",
+              }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
+              <ActionOptionButton
+                selectType={isMultipleChoice ? "checkbox" : "radio"}
+                title={otherOption.title}
+                isSelected={isOtherSelected}
+                disabled={
+                  isMultipleChoice &&
+                  !isOtherSelected &&
+                  actionData.maxSelections !== null &&
+                  selectedIds.size >= actionData.maxSelections
+                }
+                onClick={() => toggleSelectedId(otherOption.id)}
+                isOther
+                textAnswer={textAnswer}
+                onTextAnswerChange={handleTextAnswerChange}
+                onTextAnswerBlur={handleTextAnswerBlur}
+                showOtherError={showOtherError}
+              />
+            </motion.div>
+          </div>
+        )}
       </div>
     </SurveyQuestionTemplate>
   );

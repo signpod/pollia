@@ -2,6 +2,7 @@
 
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Card, CardContent } from "@/app/admin/components/shadcn-ui/card";
+import { formatToDateTimeKR } from "@/lib/date";
 import type { Reward } from "@prisma/client";
 import { Calendar, Pencil, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
@@ -43,7 +44,7 @@ export function RewardCard({ reward, onEdit, onDelete }: RewardCardProps) {
               {reward.scheduledDate && (
                 <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                   <Calendar className="size-3.5" />
-                  {new Date(reward.scheduledDate).toLocaleDateString("ko-KR")}
+                  {formatToDateTimeKR(reward.scheduledDate)}
                 </span>
               )}
             </div>

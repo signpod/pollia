@@ -3,7 +3,7 @@ import {
   MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH,
   MISSION_COMPLETION_TITLE_MAX_LENGTH,
   missionCompletionInputSchema,
-} from "@/schemas/mission-completion/missionCompletionSchema";
+} from "@/schemas/mission-completion";
 import { z } from "zod";
 
 const completionSchemaWithoutMissionId = missionCompletionInputSchema.omit({ missionId: true });

@@ -23,17 +23,6 @@ export class MissionRepository {
 
     return prisma.mission.findMany({
       where: { creatorId: userId },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        target: true,
-        imageUrl: true,
-        isActive: true,
-        type: true,
-        createdAt: true,
-        updatedAt: true,
-      },
       orderBy: {
         updatedAt: sortOrder === "latest" ? "desc" : "asc",
       },
@@ -54,7 +43,7 @@ export class MissionRepository {
       });
 
       if (actionIds.length > 0) {
-        const whenClauses = actionIds.map((id, index) => Prisma.sql`WHEN ${id} THEN ${index + 1}`);
+        const whenClauses = actionIds.map((id, index) => Prisma.sql`WHEN ${id} THEN ${index}`);
 
         await tx.$executeRaw`
           UPDATE "actions"

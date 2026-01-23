@@ -19,6 +19,7 @@ interface SurveyMultipleChoiceContextType {
   textAnswer: string;
   setTextAnswer: (text: string) => void;
   isOtherSelected: boolean;
+  maxSelections: number;
 }
 
 const SurveyMultipleChoiceContext = createContext<SurveyMultipleChoiceContextType | undefined>(
@@ -212,8 +213,9 @@ export function MultipleChoiceProvider({
       textAnswer,
       setTextAnswer,
       isOtherSelected,
+      maxSelections,
     }),
-    [selectedIds, toggleSelectedId, canGoNext, textAnswer, isOtherSelected],
+    [selectedIds, toggleSelectedId, canGoNext, textAnswer, isOtherSelected, maxSelections],
   );
 
   return (

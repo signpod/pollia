@@ -1,7 +1,15 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import type { CSSProperties, ComponentProps } from "react";
 import { cn } from "../../lib/utils";
+
+interface ScaleContextValue {
+  handleMouseDown: (e: React.MouseEvent) => void;
+  registerTouchElement: (element: HTMLElement | null) => void;
+  orientation: "horizontal" | "vertical";
+}
+
+const ScaleContext = createContext<ScaleContextValue | null>(null);
 
 export interface ScaleRootProps
   extends Omit<ComponentProps<"div">, "value" | "onChange" | "onValueChange"> {
@@ -27,6 +35,7 @@ function ScaleRoot({
   ...props
 }: ScaleRootProps) {
   const rootRef = useRef<HTMLDivElement>(null);
+  const touchElementsRef = useRef<Set<HTMLElement>>(new Set());
   const [isDragging, setIsDragging] = useState(false);
   const [dragValue, setDragValue] = useState<number | null>(null);
 
@@ -98,7 +107,7 @@ function ScaleRoot({
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
   const handleTouchStart = useCallback(
-    (e: React.TouchEvent) => {
+    (e: TouchEvent) => {
       if (disabled) return;
       e.preventDefault();
       setIsDragging(true);
@@ -113,6 +122,25 @@ function ScaleRoot({
     },
     [disabled, getValueFromPosition, onValueChange],
   );
+
+  const registerTouchElement = useCallback((element: HTMLElement | null) => {
+    if (element) {
+      touchElementsRef.current.add(element);
+    }
+  }, []);
+
+  useEffect(() => {
+    const elements = touchElementsRef.current;
+    elements.forEach(element => {
+      element.addEventListener("touchstart", handleTouchStart, { passive: false });
+    });
+
+    return () => {
+      elements.forEach(element => {
+        element.removeEventListener("touchstart", handleTouchStart);
+      });
+    };
+  }, [handleTouchStart]);
 
   const handleTouchMove = useCallback(
     (e: TouchEvent) => {
@@ -148,29 +176,39 @@ function ScaleRoot({
   }, [isDragging, handleTouchMove, handleTouchEnd]);
 
   return (
-    <div
-      ref={rootRef}
-      className={cn(
-        "relative flex touch-none select-none",
-        orientation === "vertical" ? "flex-col" : "flex-row",
-        disabled && "cursor-not-allowed opacity-50",
-        className,
-      )}
-      onMouseDown={handleMouseDown}
-      onTouchStart={handleTouchStart}
-      data-orientation={orientation}
-      {...props}
-    >
-      {children}
-    </div>
+    <ScaleContext.Provider value={{ handleMouseDown, registerTouchElement, orientation }}>
+      <div
+        ref={rootRef}
+        className={cn(
+          "relative flex touch-none select-none",
+          orientation === "vertical" ? "flex-col" : "flex-row",
+          disabled && "cursor-not-allowed opacity-50",
+          className,
+        )}
+        data-orientation={orientation}
+        {...props}
+      >
+        {children}
+      </div>
+    </ScaleContext.Provider>
   );
 }
 
 export interface ScaleTrackProps extends ComponentProps<"div"> {}
 
 function ScaleTrack({ className, children, ...props }: ScaleTrackProps) {
+  const context = useContext(ScaleContext);
+
   return (
-    <div className={cn("relative", className)} {...props}>
+    <div
+      ref={context?.registerTouchElement}
+      className={cn(
+        "relative pointer-events-auto before:absolute before:content-[''] before:inset-0 before:block",
+        className,
+      )}
+      onMouseDown={context?.handleMouseDown}
+      {...props}
+    >
       {children}
     </div>
   );
@@ -181,7 +219,17 @@ export interface ScaleThumbProps extends ComponentProps<"div"> {
 }
 
 function ScaleThumb({ className, style, ...props }: ScaleThumbProps) {
-  return <div className={cn("absolute", className)} style={style} {...props} />;
+  const context = useContext(ScaleContext);
+
+  return (
+    <div
+      ref={context?.registerTouchElement}
+      className={cn("absolute cursor-pointer", className)}
+      style={style}
+      onMouseDown={context?.handleMouseDown}
+      {...props}
+    />
+  );
 }
 
 export const Scale = {

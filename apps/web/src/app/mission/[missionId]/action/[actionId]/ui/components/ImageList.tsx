@@ -1,8 +1,5 @@
 "use client";
 
-import { MAX_IMAGE_UPLOAD_COUNT } from "@/constants/image";
-import { cn } from "@/lib/utils";
-import { ButtonV2, Typo } from "@repo/ui/components";
 import { useCallback, useState } from "react";
 import { useImageCrop } from "../hooks/useImageCrop";
 import { ImageCropModal } from "./ImageCropModal";
@@ -10,8 +7,8 @@ import { MediaList } from "./MediaList";
 
 interface ImageListProps {
   imageUrls: string[];
-  uploadingImageUrl: string | null;
-  isUploading: boolean;
+  uploadingImageUrls: string[];
+  uploadProgress?: number;
   onImageDelete: (imageUrl: string) => void;
   onImageLoadComplete: (imageUrl: string) => void;
   onImageEdit?: (originalImageUrl: string, editedFile: File) => Promise<void>;
@@ -19,13 +16,12 @@ interface ImageListProps {
 
 export function ImageList({
   imageUrls,
-  uploadingImageUrl,
-  isUploading,
+  uploadingImageUrls,
+  uploadProgress,
   onImageDelete,
   onImageLoadComplete,
   onImageEdit,
 }: ImageListProps) {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [imageToEdit, setImageToEdit] = useState<string | null>(null);
   const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
@@ -33,20 +29,15 @@ export function ImageList({
   const { crop, zoom, rotation, setCrop, setZoom, setRotation, resetCropState, cropImage } =
     useImageCrop();
 
-  const handleImageToggle = (imageUrl: string) => {
-    setSelectedImage(prev => (prev === imageUrl ? null : imageUrl));
-  };
-
-  const handleEditClick = useCallback(() => {
-    if (!selectedImage) {
-      return;
-    }
-
-    setImageToEdit(selectedImage);
-    setOriginalImageUrl(selectedImage);
-    setIsEditModalOpen(true);
-    resetCropState();
-  }, [selectedImage, resetCropState]);
+  const handleEditClick = useCallback(
+    (imageUrl: string) => {
+      setImageToEdit(imageUrl);
+      setOriginalImageUrl(imageUrl);
+      setIsEditModalOpen(true);
+      resetCropState();
+    },
+    [resetCropState],
+  );
 
   const handleEditCancel = useCallback(() => {
     setIsEditModalOpen(false);
@@ -73,7 +64,6 @@ export function ImageList({
       setIsEditModalOpen(false);
       setImageToEdit(null);
       setOriginalImageUrl(null);
-      setSelectedImage(null);
       resetCropState();
     } catch (error) {
       console.error("이미지 편집 실패:", error);
@@ -81,35 +71,21 @@ export function ImageList({
     }
   }, [imageToEdit, originalImageUrl, onImageEdit, cropImage, handleEditCancel, resetCropState]);
 
-  const canEdit = selectedImage !== null;
+  if (imageUrls.length === 0) {
+    return null;
+  }
 
   return (
     <>
-      <div className="flex flex-col gap-6">
-        <div className="flex justify-between items-center">
-          <div className="flex w-full items-center gap-2">
-            <Typo.SubTitle size="large" className={cn(imageUrls.length > 0 && "text-point")}>
-              {imageUrls.length}
-            </Typo.SubTitle>
-            <Typo.SubTitle size="large">/</Typo.SubTitle>
-            <Typo.SubTitle size="large">{MAX_IMAGE_UPLOAD_COUNT}</Typo.SubTitle>
-          </div>
-          <ButtonV2 onClick={handleEditClick} disabled={!canEdit}>
-            이미지 편집
-          </ButtonV2>
-        </div>
-
-        <MediaList
-          mediaUrls={imageUrls}
-          uploadingMediaUrl={uploadingImageUrl}
-          isUploading={isUploading}
-          mediaType="image"
-          onMediaDelete={onImageDelete}
-          onMediaLoadComplete={onImageLoadComplete}
-          selectedMediaUrl={selectedImage ?? undefined}
-          onMediaToggle={handleImageToggle}
-        />
-      </div>
+      <MediaList
+        mediaUrls={imageUrls}
+        uploadingMediaUrls={uploadingImageUrls}
+        uploadProgress={uploadProgress}
+        mediaType="image"
+        onMediaDelete={onImageDelete}
+        onMediaLoadComplete={onImageLoadComplete}
+        onMediaEdit={handleEditClick}
+      />
 
       {imageToEdit && (
         <ImageCropModal

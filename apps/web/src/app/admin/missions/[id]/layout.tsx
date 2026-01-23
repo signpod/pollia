@@ -14,7 +14,7 @@ export default async function AdminMissionLayout({ children, params }: AdminMiss
   const queryClient = getAdminQueryClient();
 
   await queryClient.prefetchQuery({
-    queryKey: adminMissionQueryKeys.mission(missionId),
+    queryKey: adminMissionQueryKeys.detail(missionId),
     queryFn: () => getMission(missionId),
   });
 

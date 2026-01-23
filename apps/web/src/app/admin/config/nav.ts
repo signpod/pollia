@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { ClipboardList, Settings } from "lucide-react";
+import { Calendar, ClipboardList } from "lucide-react";
 import { ADMIN_ROUTES } from "../constants/routes";
 
 export interface NavItem {
@@ -7,6 +7,8 @@ export interface NavItem {
   url: string;
   icon?: LucideIcon;
   items?: NavItem[];
+  missionId?: string;
+  eventId?: string | null;
 }
 
 export interface NavGroup {
@@ -18,29 +20,59 @@ export interface NavGroup {
 export interface MissionItem {
   id: string;
   title: string;
+  eventId: string | null;
 }
 
-export function createAdminNavConfig(missions: MissionItem[]): NavGroup[] {
-  const missionItems: NavItem[] = missions.map(mission => ({
-    title: mission.title,
-    url: ADMIN_ROUTES.ADMIN_MISSION(mission.id),
-    icon: ClipboardList,
-  }));
+export interface EventItem {
+  id: string;
+  title: string;
+}
 
-  return [
-    {
+export function createAdminNavConfig(events: EventItem[], missions: MissionItem[]): NavGroup[] {
+  const eventGroups: NavItem[] = events.map(event => {
+    const eventMissions = missions
+      .filter(mission => mission.eventId === event.id)
+      .map(mission => ({
+        title: mission.title,
+        url: ADMIN_ROUTES.ADMIN_MISSION(mission.id),
+        icon: ClipboardList,
+        missionId: mission.id,
+        eventId: mission.eventId,
+      }));
+
+    return {
+      title: event.title,
+      url: ADMIN_ROUTES.ADMIN_EVENT(event.id),
+      icon: Calendar,
+      items: eventMissions,
+    };
+  });
+
+  const unassignedMissions = missions
+    .filter(mission => mission.eventId === null)
+    .map(mission => ({
+      title: mission.title,
+      url: ADMIN_ROUTES.ADMIN_MISSION(mission.id),
+      icon: ClipboardList,
+      missionId: mission.id,
+      eventId: mission.eventId,
+    }));
+
+  const navGroups: NavGroup[] = [];
+
+  if (eventGroups.length > 0) {
+    navGroups.push({
+      label: "이벤트",
+      items: eventGroups,
+    });
+  }
+
+  if (unassignedMissions.length > 0) {
+    navGroups.push({
       label: "미션",
-      items: missionItems,
-    },
-    {
-      label: "시스템",
-      items: [
-        {
-          title: "설정",
-          url: ADMIN_ROUTES.ADMIN_SETTINGS,
-          icon: Settings,
-        },
-      ],
-    },
-  ];
+      items: unassignedMissions,
+    });
+  }
+
+  return navGroups;
 }

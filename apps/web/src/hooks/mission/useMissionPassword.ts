@@ -106,7 +106,7 @@ export const useMissionPassword = (missionId: string) => {
             router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
           },
           onError: error => {
-            toast.warning(error.message || "설문 응답을 시작할 수 없습니다.", { id: "init-error" });
+            toast.warning(error.message || "설문 응답을 시작할 수 없습니다", { id: "init-error" });
             router.push(ROUTES.MISSION(missionId));
           },
         },

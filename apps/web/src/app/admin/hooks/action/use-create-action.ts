@@ -129,6 +129,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
             isRequired: input.isRequired,
+            hasOther: input.hasOther,
             maxSelections: input.maxSelections ?? 1,
             options:
               input.options?.map((opt, index) => ({

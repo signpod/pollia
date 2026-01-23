@@ -1,30 +1,37 @@
 "use client";
-import { Loader2Icon } from "lucide-react";
 import { MediaItem } from "./MediaItem";
 
 interface MediaListProps {
   mediaUrls: string[];
-  uploadingMediaUrl: string | null;
-  isUploading: boolean;
+  uploadingMediaUrl?: string | null;
+  uploadingMediaUrls?: string[];
+  uploadProgress?: number;
   mediaType: "image" | "video";
   onMediaDelete: (mediaUrl: string) => void;
   onMediaLoadComplete: (mediaUrl: string) => void;
+  onMediaEdit?: (mediaUrl: string) => void;
+  onMediaPreview?: (mediaUrl: string) => void;
   isSingleUploadMode?: boolean;
-  selectedMediaUrl?: string;
-  onMediaToggle?: (mediaUrl: string) => void;
 }
 
 export function MediaList({
   mediaUrls,
   uploadingMediaUrl,
-  isUploading,
+  uploadingMediaUrls = [],
+  uploadProgress,
   mediaType,
   onMediaDelete,
   onMediaLoadComplete,
+  onMediaEdit,
+  onMediaPreview,
   isSingleUploadMode = false,
-  selectedMediaUrl,
-  onMediaToggle,
 }: MediaListProps) {
+  const isMediaUploading = (url: string) => {
+    if (uploadingMediaUrls.includes(url)) return true;
+    if (uploadingMediaUrl === url) return true;
+    return false;
+  };
+
   if (mediaUrls.length === 0) {
     return null;
   }
@@ -32,43 +39,39 @@ export function MediaList({
   if (isSingleUploadMode && mediaUrls.length > 0) {
     const firstMediaUrl = mediaUrls[0];
     if (!firstMediaUrl) return null;
+    const isUploading = isMediaUploading(firstMediaUrl);
     return (
-      <div className="relative w-full aspect-square rounded-sm overflow-hidden border border-zinc-200 bg-white">
-        <MediaItem
-          mediaUrl={firstMediaUrl}
-          mediaType={mediaType}
-          isUploading={uploadingMediaUrl === firstMediaUrl}
-          onDelete={onMediaDelete}
-          onLoadComplete={() => onMediaLoadComplete(firstMediaUrl)}
-          isSelected={selectedMediaUrl === firstMediaUrl}
-          onToggle={onMediaToggle}
-        />
-      </div>
+      <MediaItem
+        mediaUrl={firstMediaUrl}
+        mediaType={mediaType}
+        isUploading={isUploading}
+        uploadProgress={isUploading ? uploadProgress : undefined}
+        onDelete={onMediaDelete}
+        onLoadComplete={() => onMediaLoadComplete(firstMediaUrl)}
+        onEdit={onMediaEdit}
+        onPreview={onMediaPreview}
+      />
     );
   }
 
   return (
-    <div className="grid grid-cols-3 gap-4 w-full">
-      {isUploading && mediaUrls.length === 0 && (
-        <div className="relative w-full aspect-square rounded-sm overflow-hidden border border-zinc-200 bg-white">
-          <div className="absolute inset-0 bg-black/40 z-20" />
-          <div className="absolute inset-0 flex items-center justify-center z-30">
-            <Loader2Icon className="size-8 animate-spin text-white" />
-          </div>
-        </div>
-      )}
-      {mediaUrls.map(mediaUrl => (
-        <MediaItem
-          key={mediaUrl}
-          mediaUrl={mediaUrl}
-          mediaType={mediaType}
-          isUploading={uploadingMediaUrl === mediaUrl}
-          onDelete={onMediaDelete}
-          onLoadComplete={() => onMediaLoadComplete(mediaUrl)}
-          isSelected={selectedMediaUrl === mediaUrl}
-          onToggle={onMediaToggle}
-        />
-      ))}
-    </div>
+    <>
+      {mediaUrls.map(mediaUrl => {
+        const isUploading = isMediaUploading(mediaUrl);
+        return (
+          <MediaItem
+            key={mediaUrl}
+            mediaUrl={mediaUrl}
+            mediaType={mediaType}
+            isUploading={isUploading}
+            uploadProgress={isUploading ? uploadProgress : undefined}
+            onDelete={onMediaDelete}
+            onLoadComplete={() => onMediaLoadComplete(mediaUrl)}
+            onEdit={onMediaEdit}
+            onPreview={onMediaPreview}
+          />
+        );
+      })}
+    </>
   );
 }

@@ -74,11 +74,11 @@ export function DevTools({ missionId }: DevToolsProps) {
               queryKey: missionQueryKeys.userMissions(),
             }),
           ]);
-          toast.success("응답이 초기화되었습니다.");
+          toast.success("응답이 초기화되었습니다");
           setIsOpen(false);
         },
         onError: () => {
-          toast.warning("응답 초기화에 실패했습니다.");
+          toast.warning("응답 초기화에 실패했습니다");
         },
       });
     }
@@ -172,7 +172,6 @@ export function DevTools({ missionId }: DevToolsProps) {
               )}
               초기화하기
             </button>
-
           </div>
         </div>
       )}

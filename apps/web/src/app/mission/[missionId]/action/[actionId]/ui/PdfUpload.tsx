@@ -2,7 +2,9 @@
 
 import { toast } from "@/components/common/Toast";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
+import { FILE_SIZE_LABELS, MAX_FILE_SIZE } from "@/constants/fileUpload";
 import { usePdfUpload } from "@/hooks/common/usePdfUpload";
+import { ActionType } from "@prisma/client";
 import { useCallback, useRef } from "react";
 import { MediaUploadArea } from "./components/MediaUploadArea";
 
@@ -16,10 +18,20 @@ interface PdfUploadProps {
     tempUrl?: string,
   ) => void;
   onUploadingChange?: (isUploading: boolean) => void;
+  onProgressChange?: (progress: number) => void;
   onUploadStart?: (file: File, tempUrl: string) => void;
+  currentCount?: number;
+  maxCount?: number;
 }
 
-export function PdfUpload({ onUploadChange, onUploadingChange, onUploadStart }: PdfUploadProps) {
+export function PdfUpload({
+  onUploadChange,
+  onUploadingChange,
+  onProgressChange,
+  onUploadStart,
+  currentCount = 0,
+  maxCount = 1,
+}: PdfUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const tempUrlRef = useRef<string | null>(null);
 
@@ -29,6 +41,7 @@ export function PdfUpload({ onUploadChange, onUploadingChange, onUploadStart }: 
       const tempUrl = tempUrlRef.current;
       tempUrlRef.current = null;
       onUploadingChange?.(false);
+      onProgressChange?.(0);
       onUploadChange?.(
         true,
         [result.publicUrl],
@@ -44,8 +57,12 @@ export function PdfUpload({ onUploadChange, onUploadingChange, onUploadStart }: 
         tempUrlRef.current = null;
       }
       onUploadingChange?.(false);
+      onProgressChange?.(0);
       toast.warning(error?.message || "파일 업로드에 실패했어요.\n다시 시도해주세요.");
       onUploadChange?.(false, [], [], []);
+    },
+    onProgress: progress => {
+      onProgressChange?.(progress.percentage);
     },
   });
 
@@ -61,7 +78,16 @@ export function PdfUpload({ onUploadChange, onUploadingChange, onUploadStart }: 
       }
 
       if (file.type !== "application/pdf") {
-        toast.warning("PDF 파일만 업로드할 수 있어요.");
+        toast.warning("PDF 파일만 업로드할 수 있어요");
+        if (inputRef.current) {
+          inputRef.current.value = "";
+        }
+        return;
+      }
+
+      const maxSize = MAX_FILE_SIZE[ActionType.PDF];
+      if (file.size > maxSize) {
+        toast.warning(`파일 크기는 ${FILE_SIZE_LABELS[ActionType.PDF]}를 초과할 수 없습니다`);
         if (inputRef.current) {
           inputRef.current.value = "";
         }
@@ -89,8 +115,10 @@ export function PdfUpload({ onUploadChange, onUploadingChange, onUploadStart }: 
       onFileSelect={handleFileSelect}
       onFileChange={handleFileChange}
       accept="application/pdf"
-      buttonText="PDF 첨부"
       icon="file"
+      variant="counter"
+      currentCount={currentCount}
+      maxCount={maxCount}
     />
   );
 }

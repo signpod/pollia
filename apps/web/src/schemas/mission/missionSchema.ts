@@ -32,13 +32,14 @@ const imageFileUploadIdSchema = z.string().nullable().optional();
 const brandLogoUrlSchema = z.url({ message: "올바른 URL 형식이 아닙니다." }).nullable().optional();
 const brandLogoFileUploadIdSchema = z.string().nullable().optional();
 
-const deadlineSchema = z.date().optional();
+const deadlineSchema = z.date().nullable().optional();
 
 const estimatedMinutesSchema = z
   .number()
   .int("정수여야 합니다")
   .min(1, "1 이상이어야 합니다")
   .max(120, "120 이하여야 합니다")
+  .nullable()
   .optional();
 
 const maxParticipantsSchema = z
@@ -49,6 +50,8 @@ const maxParticipantsSchema = z
   .optional();
 
 const actionIdsSchema = z.array(z.string().min(1, "액션 ID가 비어있습니다.")).default([]);
+
+const eventIdSchema = z.string().nullable().optional();
 
 const passwordSchema = z
   .string()
@@ -72,6 +75,7 @@ export const missionInputSchema = z.object({
   maxParticipants: maxParticipantsSchema,
   type: missionTypeSchema,
   actionIds: actionIdsSchema,
+  eventId: eventIdSchema,
   isActive: z.boolean().optional(),
 });
 
@@ -84,12 +88,13 @@ export const missionUpdateSchema = z
     imageFileUploadId: imageFileUploadIdSchema,
     brandLogoUrl: brandLogoUrlSchema,
     brandLogoFileUploadId: brandLogoFileUploadIdSchema,
-    deadline: z.date().optional(),
+    deadline: deadlineSchema,
     estimatedMinutes: estimatedMinutesSchema,
     maxParticipants: maxParticipantsSchema.optional(),
     type: missionTypeSchema.optional(),
     isActive: z.boolean().optional(),
     rewardId: z.string().nullable().optional(),
+    eventId: eventIdSchema,
   })
   .refine(data => Object.keys(data).length > 0, {
     message: "최소 하나의 필드를 수정해야 합니다.",

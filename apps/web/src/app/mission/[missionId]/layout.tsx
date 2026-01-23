@@ -11,6 +11,7 @@ import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";
 import { SHARE_IMAGE_PATH, SHARE_MESSAGES } from "@/constants/shareMessages";
 import { checkAuthStatus } from "@/lib/auth";
 import { getQueryClient } from "@/lib/getQueryClient";
+import { NetworkStatusProvider } from "@/components/providers/NetworkStatusProvider";
 import { ModalProvider } from "@repo/ui/components";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import type { Metadata } from "next";
@@ -23,6 +24,7 @@ interface LayoutParams {
 
 export async function generateMetadata({ params }: LayoutParams): Promise<Metadata> {
   const { missionId } = await params;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://pollia.me";
 
   try {
     const missionResult = await getMission(missionId);
@@ -30,7 +32,7 @@ export async function generateMetadata({ params }: LayoutParams): Promise<Metada
 
     const ogTitle = title || SHARE_MESSAGES.kakao.title;
     const ogDescription = SHARE_MESSAGES.kakao.description;
-    const ogImage = imageUrl || SHARE_IMAGE_PATH;
+    const ogImage = imageUrl ? `${baseUrl}/api/og/${missionId}` : SHARE_IMAGE_PATH;
 
     return {
       title: ogTitle,
@@ -38,7 +40,14 @@ export async function generateMetadata({ params }: LayoutParams): Promise<Metada
       openGraph: {
         title: ogTitle,
         description: ogDescription,
-        images: [ogImage],
+        images: [
+          {
+            url: ogImage,
+            width: 1200,
+            height: 630,
+            alt: ogTitle,
+          },
+        ],
         type: "website",
       },
     };
@@ -126,11 +135,13 @@ export default async function MissionLayout({
 
   return (
     <ModalProvider>
-      <Providers>
-        <HydrationBoundary state={dehydratedState}>
-          <div suppressHydrationWarning>{children}</div>
-        </HydrationBoundary>
-      </Providers>
+      <NetworkStatusProvider>
+        <Providers>
+          <HydrationBoundary state={dehydratedState}>
+            <div suppressHydrationWarning>{children}</div>
+          </HydrationBoundary>
+        </Providers>
+      </NetworkStatusProvider>
     </ModalProvider>
   );
 }

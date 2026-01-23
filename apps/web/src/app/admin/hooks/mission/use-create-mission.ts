@@ -1,7 +1,7 @@
 "use client";
 
 import { createMission } from "@/actions/mission";
-import { adminMissionQueryKeys } from "@/app/admin/constants/queryKeys";
+import { adminEventQueryKeys, adminMissionQueryKeys } from "@/app/admin/constants/queryKeys";
 import type { CreateMissionRequest, CreateMissionResponse } from "@/types/dto/mission";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -17,10 +17,17 @@ export function useCreateMission(options: UseCreateMissionOptions = {}) {
     mutationFn: async (payload: CreateMissionRequest): Promise<CreateMissionResponse> => {
       return createMission(payload);
     },
-    onSuccess: data => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({
-        queryKey: adminMissionQueryKeys.missions(),
+        queryKey: adminMissionQueryKeys.all(),
       });
+
+      if (variables.eventId) {
+        queryClient.invalidateQueries({
+          queryKey: adminEventQueryKeys.all(),
+        });
+      }
+
       options.onSuccess?.(data);
     },
     onError: error => {

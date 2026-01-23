@@ -11,7 +11,7 @@ interface MissionClientWrapperProps {
 
 export function MissionClientWrapper({ children }: MissionClientWrapperProps) {
   return (
-    <FixedBottomLayout hasGradientBlur>
+    <FixedBottomLayout>
       <MissionIntro>{children}</MissionIntro>
     </FixedBottomLayout>
   );

@@ -117,12 +117,12 @@ export function PasswordManagement({ missionId }: PasswordManagementProps) {
 
   const handleSave = async () => {
     if (password.length !== 6) {
-      setError("6자리 숫자를 모두 입력해주세요.");
+      setError("6자리 숫자를 모두 입력해주세요");
       return;
     }
 
     if (!/^\d{6}$/.test(password)) {
-      setError("숫자만 입력 가능합니다.");
+      setError("숫자만 입력 가능합니다");
       return;
     }
 
