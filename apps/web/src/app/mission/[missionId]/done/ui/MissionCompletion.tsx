@@ -36,7 +36,7 @@ export function MissionCompletion() {
   return (
     <div
       className={cn(
-        "relative w-full flex flex-col items-center gap-6 min-s-svh overflow-hidden",
+        "relative w-full flex flex-col items-center gap-6 min-s-svh overflow-hidden py-20",
         "bg-white",
       )}
     >
