@@ -105,3 +105,19 @@ export function formatToMonthDay(date: Date): string {
     day: "numeric",
   });
 }
+
+/**
+ * Date 객체 또는 ISO 문자열을 "YYYY년 M월 d일 오전/오후 h:mm" 형식으로 변환 (한글)
+ * @param date - 변환할 Date 객체 또는 ISO 문자열
+ * @returns "YYYY년 M월 d일 오전/오후 h:mm" 형식의 문자열 (예: "2024년 1월 23일 오후 3:30")
+ */
+export function formatToDateTimeKR(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  return d.toLocaleString("ko-KR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
