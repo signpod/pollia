@@ -18,7 +18,7 @@ import { ButtonV2, Typo } from "@repo/ui/components";
 import { isBefore } from "date-fns";
 import { motion } from "framer-motion";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { checkParticipantLimitReached } from "../utils/checkParticipantLimit";
 
 const BUTTON_TEXT = {
@@ -26,6 +26,7 @@ const BUTTON_TEXT = {
   resume: "이어서 진행하기",
   loggedOut: "카카오로 로그인하기",
   expired: "마감된 미션이에요",
+  notActive: "현재 참여할 수 없는 미션이에요",
   alreadyCompleted: "이미 완료한 미션이에요",
   participantLimitReached: "마감된 미션이에요",
 };
@@ -72,16 +73,12 @@ export function BottomButton({
   const { isLoggedIn } = useAuth();
   const router = useRouter();
 
-  const [isExpired, setIsExpired] = useState(!isActive);
   const [isStarting, setIsStarting] = useState(false);
   const isActionInitiatedRef = useRef(false);
 
-  useEffect(() => {
-    const isDeadlinePassed = Boolean(deadline && isBefore(deadline, new Date()));
-    setIsExpired(isDeadlinePassed || !isActive);
-  }, [deadline, isActive]);
+  const isDeadlinePassed = Boolean(deadline && isBefore(deadline, new Date()));
 
-  const isDisabled = isExpired || !firstActionId;
+  const isDisabled = isDeadlinePassed || !firstActionId;
   const alreadyCompleted = isCompleted;
 
   const { startResponse } = useCreateMissionResponse({ missionId });
@@ -175,7 +172,19 @@ export function BottomButton({
     );
   }
 
-  if (isExpired) {
+  if (!isActive) {
+    return (
+      <div className="relative py-3 px-4 w-full">
+        <ButtonV2 variant="primary" size="large" className="w-full" disabled>
+          <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
+            {BUTTON_TEXT.notActive}
+          </Typo.ButtonText>
+        </ButtonV2>
+      </div>
+    );
+  }
+
+  if (isDeadlinePassed) {
     return (
       <div className="py-3 px-4 w-full">
         <ButtonV2 variant="primary" size="large" className="w-full" disabled>
