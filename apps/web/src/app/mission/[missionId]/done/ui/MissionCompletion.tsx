@@ -36,7 +36,7 @@ export function MissionCompletion() {
   return (
     <div
       className={cn(
-        "relative w-full flex flex-col items-center gap-6 min-s-svh overflow-hidden",
+        "relative w-full flex flex-col items-center gap-6 min-s-svh overflow-hidden py-20",
         "bg-white",
       )}
     >
@@ -109,7 +109,7 @@ export function MissionCompletion() {
               {Object.entries(links).map(([key, value], index) => (
                 <ButtonV2
                   key={key}
-                  variant={index === 0 && hasLongLinkKey ? "secondary" : "primary"}
+                  variant={index % 2 !== 0 ? "secondary" : "primary"}
                   className="flex-1 w-full"
                 >
                   <Link

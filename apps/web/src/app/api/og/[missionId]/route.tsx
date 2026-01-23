@@ -2,6 +2,22 @@ import { missionService } from "@/server/services/mission";
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 
+const SUIT_FONT_URL = "https://cdn.jsdelivr.net/gh/sunn-us/SUIT@2/fonts/static/woff/SUIT-Bold.woff";
+
+async function loadSuitFont(): Promise<ArrayBuffer | null> {
+  try {
+    const response = await fetch(SUIT_FONT_URL);
+    if (!response.ok) {
+      console.error(`Failed to fetch SUIT font: ${response.status}`);
+      return null;
+    }
+    return await response.arrayBuffer();
+  } catch (error) {
+    console.error("SUIT font fetch error:", error);
+    return null;
+  }
+}
+
 /**
  * wsrv.nl 이미지 프록시를 사용해 이미지를 PNG로 변환하고 리사이즈
  * https://wsrv.nl/docs/
@@ -63,11 +79,12 @@ export async function GET(
 
     const displayTitle = title ? (title.length > 50 ? `${title.substring(0, 47)}...` : title) : "";
 
-    // wsrv.nl 프록시를 통해 PNG로 변환 및 리사이즈
-    const [missionImage, brandLogo, polliaLogo] = await Promise.all([
+    // wsrv.nl 프록시를 통해 PNG로 변환 및 리사이즈, SUIT 폰트 로드
+    const [missionImage, brandLogo, polliaLogo, suitFont] = await Promise.all([
       imageUrl ? fetchImageAsBase64(imageUrl, 300, 300, "cover") : null,
       brandLogoUrl ? fetchImageAsBase64(brandLogoUrl, 56, 56, "contain") : null,
       fetchImageAsBase64("https://pollia.me/images/pollia-logo.png", 100, 32, "contain"),
+      loadSuitFont(),
     ]);
 
     return new ImageResponse(
@@ -119,11 +136,12 @@ export async function GET(
             <img
               src={brandLogo}
               alt="브랜드 로고"
-              width={56}
-              height={56}
+              width={88}
+              height={88}
               style={{
-                borderRadius: 28,
+                borderRadius: 44,
                 marginBottom: 24,
+                border: "1px solid #e4e4e7",
               }}
             />
           ) : null}
@@ -131,10 +149,11 @@ export async function GET(
           <div
             style={{
               color: "#09090b",
-              fontSize: 36,
-              fontWeight: 700,
+              fontSize: 48,
+              fontWeight: 900,
               lineHeight: 1.3,
               marginBottom: 24,
+              fontFamily: "SUIT",
             }}
           >
             {displayTitle}
@@ -142,7 +161,7 @@ export async function GET(
 
           {polliaLogo ? (
             <div style={{ marginTop: "auto", display: "flex" }}>
-              <img src={polliaLogo} alt="Pollia 로고" height={32} />
+              <img src={polliaLogo} alt="Pollia 로고" height={36} />
             </div>
           ) : null}
         </div>
@@ -153,6 +172,16 @@ export async function GET(
         headers: {
           "Cache-Control": "public, max-age=86400, s-maxage=86400",
         },
+        fonts: suitFont
+          ? [
+              {
+                name: "SUIT",
+                data: suitFont,
+                weight: 700,
+                style: "normal",
+              },
+            ]
+          : undefined,
       },
     );
   } catch (error) {
