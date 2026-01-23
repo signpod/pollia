@@ -24,11 +24,9 @@ jobs:
           fi
       
       - name: Enable Corepack
-        if: steps.prisma-changes.outputs.changed == 'true'
         run: corepack enable
       
       - name: Setup Node.js
-        if: steps.prisma-changes.outputs.changed == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -46,5 +44,21 @@ jobs:
           DIRECT_URL: ${{ secrets.PRODUCTION_DIRECT_URL }}
         run: yarn db:deploy
       
-      - name: Trigger Vercel Deploy
-        run: curl -X POST ${{ secrets.VERCEL_PRODUCTION_DEPLOY_HOOK_URL }}
+      - name: Install Vercel CLI
+        run: yarn global add vercel@latest
+      
+      - name: Pull Vercel Environment
+        working-directory: apps/web
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+      
+      - name: Deploy to Vercel Production
+        working-directory: apps/web
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: vercel deploy --prod --token=$VERCEL_TOKEN
