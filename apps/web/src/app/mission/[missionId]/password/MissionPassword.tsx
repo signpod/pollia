@@ -4,7 +4,7 @@ import { ROUTES } from "@/constants/routes";
 import { useMissionPassword } from "@/hooks/mission/useMissionPassword";
 import { ButtonV2, Typo } from "@repo/ui/components";
 import { motion } from "framer-motion";
-import { Asterisk, Minus, X } from "lucide-react";
+import { Asterisk, Loader2Icon, Minus, X } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { Keyboard } from "./ui";
 
@@ -24,6 +24,7 @@ export default function MissionPassword() {
     remainingSeconds,
     handlePasswordChange,
     handlePasswordDelete,
+    isSubmitting,
   } = useMissionPassword(missionId);
 
   const handleClose = () => {
@@ -64,7 +65,11 @@ export default function MissionPassword() {
               )}
             </div>
           ))}
-          {isLockedOut ? (
+          {isSubmitting ? (
+            <div className="absolute top-[calc(100%+16px)] left-1/2 -translate-x-1/2">
+              <Loader2Icon className="size-6 animate-spin text-point" />
+            </div>
+          ) : isLockedOut ? (
             <div className="absolute top-[calc(100%+16px)] left-1/2 -translate-x-1/2">
               <Typo.Body size="medium" className="text-error whitespace-nowrap text-center">
                 입력 횟수를 초과했습니다.

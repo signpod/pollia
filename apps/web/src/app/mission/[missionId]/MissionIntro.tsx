@@ -5,6 +5,7 @@ import { useReadMissionResponseForMission } from "@/hooks/mission-response";
 import { useReadMissionParticipantInfo } from "@/hooks/participant/useReadMissionParticipantInfo";
 import { useReadReward } from "@/hooks/reward/useReadReward";
 import { getActionNavCookie, setActionNavCookie } from "@/lib/cookie";
+import { formatDateToLocalString } from "@/lib/date";
 import { cn } from "@/lib/utils";
 import ClockIcon from "@public/svgs/clock-color-icon.svg";
 import GiftIcon from "@public/svgs/gift-color-icon.svg";
@@ -191,12 +192,19 @@ export function MissionIntro({ children }: MissionIntroProps) {
                 <div className="bg-linear-to-t from-black via-black/50 via-70% to-transparent absolute bottom-0 left-0 right-0 z-10 flex flex-col gap-6 pb-6 pt-12 px-5">
                   <div ref={titleRef} className="flex flex-col gap-3 justify-center items-center">
                     <MissionLogo logoUrl={brandLogoUrl ?? undefined} />
-                    <div className="break-keep text-white text-center">
-                      <Typo.MainTitle size="large" className="inline text-white">
-                        {title}
-                      </Typo.MainTitle>
-                      {isRequirePassword && (
-                        <Lock className="size-4 text-white inline-block ml-1 align-[0.1em]" />
+                    <div className="flex flex-col gap-1 justify-center items-center">
+                      <div className="break-keep text-white text-center">
+                        <Typo.MainTitle size="large" className="inline text-white">
+                          {title}
+                        </Typo.MainTitle>
+                        {isRequirePassword && (
+                          <Lock className="size-4 text-white inline-block ml-1 align-[0.1em]" />
+                        )}
+                      </div>
+                      {deadlineDate && (
+                        <Typo.Body size="medium" className="text-zinc-300">
+                          {`${formatDateToLocalString(deadlineDate).replaceAll("-", ".")} 까지`}
+                        </Typo.Body>
                       )}
                     </div>
                   </div>

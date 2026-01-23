@@ -122,5 +122,6 @@ export const useMissionPassword = (missionId: string) => {
     handlePasswordChange,
     handlePasswordDelete,
     isPasswordCorrect: isPasswordCorrect?.data,
+    isSubmitting: startResponse.isPending,
   };
 };
