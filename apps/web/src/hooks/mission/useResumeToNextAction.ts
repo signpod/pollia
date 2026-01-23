@@ -64,7 +64,6 @@ export function useResumeToNextAction({ missionId, answers }: UseResumeToNextAct
     if (!nextActionId) return;
 
     setActionNavCookie(missionId, "resume");
-    console.log("nextActionId", nextActionId);
     router.push(ROUTES.ACTION({ missionId, actionId: nextActionId }));
   }, [missionId, nextActionId, router]);
 
