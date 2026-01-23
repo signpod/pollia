@@ -6,19 +6,25 @@ import { NextRequest } from "next/server";
  * wsrv.nl 이미지 프록시를 사용해 이미지를 PNG로 변환하고 리사이즈
  * https://wsrv.nl/docs/
  */
-function getProxiedImageUrl(url: string, width: number, height: number): string {
+function getProxiedImageUrl(
+  url: string,
+  width: number,
+  height: number,
+  fit: "cover" | "contain" = "cover",
+): string {
   const encodedUrl = encodeURIComponent(url);
-  return `https://wsrv.nl/?url=${encodedUrl}&w=${width}&h=${height}&fit=cover&output=png`;
+  return `https://wsrv.nl/?url=${encodedUrl}&w=${width}&h=${height}&fit=${fit}&output=png`;
 }
 
 async function fetchImageAsBase64(
   url: string,
   width?: number,
   height?: number,
+  fit: "cover" | "contain" = "cover",
 ): Promise<string | null> {
   try {
     // wsrv.nl 프록시를 통해 PNG로 변환 및 리사이즈
-    const fetchUrl = width && height ? getProxiedImageUrl(url, width, height) : url;
+    const fetchUrl = width && height ? getProxiedImageUrl(url, width, height, fit) : url;
 
     const res = await fetch(fetchUrl, {
       headers: {
@@ -59,9 +65,9 @@ export async function GET(
 
     // wsrv.nl 프록시를 통해 PNG로 변환 및 리사이즈
     const [missionImage, brandLogo, polliaLogo] = await Promise.all([
-      imageUrl ? fetchImageAsBase64(imageUrl, 300, 300) : null,
-      brandLogoUrl ? fetchImageAsBase64(brandLogoUrl, 56, 56) : null,
-      fetchImageAsBase64("https://pollia.me/images/pollia-logo.png", 100, 32),
+      imageUrl ? fetchImageAsBase64(imageUrl, 300, 300, "cover") : null,
+      brandLogoUrl ? fetchImageAsBase64(brandLogoUrl, 56, 56, "contain") : null,
+      fetchImageAsBase64("https://pollia.me/images/pollia-logo.png", 100, 32, "contain"),
     ]);
 
     return new ImageResponse(

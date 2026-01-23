@@ -5,7 +5,7 @@ import { cn } from "../../lib/utils";
 
 interface ScaleContextValue {
   handleMouseDown: (e: React.MouseEvent) => void;
-  handleTouchStart: (e: React.TouchEvent) => void;
+  registerTouchElement: (element: HTMLElement | null) => void;
   orientation: "horizontal" | "vertical";
 }
 
@@ -35,6 +35,7 @@ function ScaleRoot({
   ...props
 }: ScaleRootProps) {
   const rootRef = useRef<HTMLDivElement>(null);
+  const touchElementsRef = useRef<Set<HTMLElement>>(new Set());
   const [isDragging, setIsDragging] = useState(false);
   const [dragValue, setDragValue] = useState<number | null>(null);
 
@@ -106,7 +107,7 @@ function ScaleRoot({
   }, [isDragging, handleMouseMove, handleMouseUp]);
 
   const handleTouchStart = useCallback(
-    (e: React.TouchEvent) => {
+    (e: TouchEvent) => {
       if (disabled) return;
       e.preventDefault();
       setIsDragging(true);
@@ -121,6 +122,25 @@ function ScaleRoot({
     },
     [disabled, getValueFromPosition, onValueChange],
   );
+
+  const registerTouchElement = useCallback((element: HTMLElement | null) => {
+    if (element) {
+      touchElementsRef.current.add(element);
+    }
+  }, []);
+
+  useEffect(() => {
+    const elements = touchElementsRef.current;
+    elements.forEach(element => {
+      element.addEventListener("touchstart", handleTouchStart, { passive: false });
+    });
+
+    return () => {
+      elements.forEach(element => {
+        element.removeEventListener("touchstart", handleTouchStart);
+      });
+    };
+  }, [handleTouchStart]);
 
   const handleTouchMove = useCallback(
     (e: TouchEvent) => {
@@ -156,7 +176,7 @@ function ScaleRoot({
   }, [isDragging, handleTouchMove, handleTouchEnd]);
 
   return (
-    <ScaleContext.Provider value={{ handleMouseDown, handleTouchStart, orientation }}>
+    <ScaleContext.Provider value={{ handleMouseDown, registerTouchElement, orientation }}>
       <div
         ref={rootRef}
         className={cn(
@@ -181,12 +201,12 @@ function ScaleTrack({ className, children, ...props }: ScaleTrackProps) {
 
   return (
     <div
+      ref={context?.registerTouchElement}
       className={cn(
         "relative pointer-events-auto before:absolute before:content-[''] before:inset-0 before:block",
         className,
       )}
       onMouseDown={context?.handleMouseDown}
-      onTouchStart={context?.handleTouchStart}
       {...props}
     >
       {children}
@@ -203,10 +223,10 @@ function ScaleThumb({ className, style, ...props }: ScaleThumbProps) {
 
   return (
     <div
+      ref={context?.registerTouchElement}
       className={cn("absolute cursor-pointer", className)}
       style={style}
       onMouseDown={context?.handleMouseDown}
-      onTouchStart={context?.handleTouchStart}
       {...props}
     />
   );
