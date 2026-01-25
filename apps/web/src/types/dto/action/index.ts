@@ -15,7 +15,13 @@ type ActionResponseFields =
   | "updatedAt"
   | "missionId";
 
-type ActionOptionResponseFields = "id" | "title" | "description" | "imageUrl" | "order";
+type ActionOptionResponseFields =
+  | "id"
+  | "title"
+  | "description"
+  | "imageUrl"
+  | "fileUploadId"
+  | "order";
 
 export interface BaseActionRequest {
   missionId?: string;
@@ -140,6 +146,7 @@ export interface ActionDetail {
   title: string;
   description: string | null;
   imageUrl: string | null;
+  imageFileUploadId: string | null;
   type: ActionType;
   order: number;
   maxSelections: number | null;
