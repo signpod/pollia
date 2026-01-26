@@ -13,10 +13,7 @@ interface UseStickyTabHeaderOptions {
   hasReward: boolean;
 }
 
-export function useStickyTabHeader({
-  sentinelRef,
-  hasReward,
-}: UseStickyTabHeaderOptions) {
+export function useStickyTabHeader({ sentinelRef, hasReward }: UseStickyTabHeaderOptions) {
   const [activeTab, setActiveTab] = useState<
     (typeof SECTION_IDS)[keyof typeof SECTION_IDS] | undefined
   >(SECTION_IDS.MISSION_GUIDE);
