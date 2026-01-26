@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/app/admin/components/shadcn-ui/select";
 import type { UseSingleImageReturn } from "@/app/admin/hooks/admin-image";
-import { MISSION_TYPE_LABELS } from "@/constants/action";
+import { MISSION_TYPE_LABELS } from "@/constants/mission";
 import {
   MISSION_DESCRIPTION_MAX_LENGTH,
   MISSION_TARGET_MAX_LENGTH,

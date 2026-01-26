@@ -30,7 +30,7 @@ import {
   useSingleImage,
 } from "@/app/admin/hooks/admin-image";
 import { useReadMission, useUpdateMission } from "@/app/admin/hooks/mission";
-import { MISSION_TYPE_LABELS } from "@/constants/action";
+import { MISSION_TYPE_LABELS } from "@/constants/mission";
 import {
   MISSION_DESCRIPTION_MAX_LENGTH,
   MISSION_TARGET_MAX_LENGTH,

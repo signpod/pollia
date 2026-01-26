@@ -11,7 +11,7 @@ import {
 } from "@/app/admin/components/shadcn-ui/card";
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
 import { cn, stripHtmlTags } from "@/app/admin/lib/utils";
-import { MISSION_TYPE_LABELS } from "@/constants/action";
+import { MISSION_TYPE_LABELS } from "@/constants/mission";
 import type { GetMissionResponse } from "@/types/dto";
 import { MissionType } from "@prisma/client";
 import {
