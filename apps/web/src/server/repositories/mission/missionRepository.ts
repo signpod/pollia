@@ -40,6 +40,32 @@ export class MissionRepository {
     });
   }
 
+  async findAll(options?: {
+    cursor?: string;
+    limit?: number;
+    sortOrder?: SortOrderType;
+    category?: MissionCategory;
+  }) {
+    const limit = options?.limit ?? 10;
+    const sortOrder = options?.sortOrder ?? "latest";
+
+    return prisma.mission.findMany({
+      where: {
+        ...(options?.category && { category: options.category }),
+      },
+      orderBy: {
+        updatedAt: sortOrder === "latest" ? "desc" : "asc",
+      },
+      take: limit + 1,
+      ...(options?.cursor && {
+        cursor: {
+          id: options.cursor,
+        },
+        skip: 1,
+      }),
+    });
+  }
+
   async createWithActions(data: Prisma.MissionUncheckedCreateInput, actionIds: string[]) {
     return prisma.$transaction(async tx => {
       const createdMission = await tx.mission.create({

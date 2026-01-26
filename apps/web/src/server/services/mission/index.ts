@@ -104,6 +104,20 @@ export class MissionService {
     return missions;
   }
 
+  async getAllMissions(options?: GetUserMissionsOptions) {
+    const limit = options?.limit ?? 10;
+    const missions = await this.repo.findAll({
+      ...options,
+      limit,
+    });
+
+    if (missions.length > limit) {
+      missions.pop();
+    }
+
+    return missions;
+  }
+
   async createMission(input: CreateMissionInput, userId: string): Promise<Mission> {
     const result = missionInputSchema.safeParse(input);
     if (!result.success) {

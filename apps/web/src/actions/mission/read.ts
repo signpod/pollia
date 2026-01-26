@@ -20,7 +20,23 @@ export interface GetUserMissionsRequest {
   category?: MissionCategory;
 }
 
+export interface GetAllMissionsRequest {
+  cursor?: string;
+  limit?: number;
+  sortOrder?: SortOrderType;
+  category?: MissionCategory;
+}
+
 function toGetUserMissionsOptions(dto: GetUserMissionsRequest): GetUserMissionsOptions {
+  return {
+    cursor: dto.cursor,
+    limit: dto.limit,
+    sortOrder: dto.sortOrder,
+    category: dto.category,
+  };
+}
+
+function toGetAllMissionsOptions(dto: GetAllMissionsRequest): GetUserMissionsOptions {
   return {
     cursor: dto.cursor,
     limit: dto.limit,
@@ -50,6 +66,36 @@ export async function getUserMissions(
     return { data: missions, nextCursor };
   } catch (error) {
     console.error("getUserMissions error:", error);
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("미션 목록을 불러올 수 없습니다.");
+    serverError.cause = 500;
+    throw serverError;
+  }
+}
+
+export async function getAllMissions(
+  request?: GetAllMissionsRequest,
+): Promise<GetUserMissionsResponse & { nextCursor?: string }> {
+  try {
+    await requireAuth();
+    const limit = request?.limit ?? 10;
+    const options = request
+      ? toGetAllMissionsOptions({ ...request, limit: limit + 1 })
+      : { limit: limit + 1 };
+
+    const missions = await missionService.getAllMissions(options);
+
+    let nextCursor: string | undefined = undefined;
+    if (missions.length > limit) {
+      const nextItem = missions.pop();
+      nextCursor = nextItem?.id;
+    }
+
+    return { data: missions, nextCursor };
+  } catch (error) {
+    console.error("getAllMissions error:", error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
