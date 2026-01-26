@@ -29,7 +29,16 @@ describe("ActionService - Read", () => {
           maxSelections: 1,
           isRequired: false,
         },
-        [{ id: "option1", title: "옵션 1", description: null, imageUrl: null, order: 0 }],
+        [
+          {
+            id: "option1",
+            title: "옵션 1",
+            description: null,
+            imageUrl: null,
+            fileUploadId: null,
+            order: 0,
+          },
+        ],
       );
       ctx.mockActionRepo.findByIdWithOptions.mockResolvedValue(mockAction);
 

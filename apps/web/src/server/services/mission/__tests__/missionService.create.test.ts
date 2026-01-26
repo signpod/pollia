@@ -181,9 +181,17 @@ describe("MissionService - Create", () => {
               title: "선택지 1",
               description: null,
               imageUrl: "https://example.com/opt1.jpg",
+              fileUploadId: null,
               order: 0,
             },
-            { id: "opt-2", title: "선택지 2", description: null, imageUrl: null, order: 1 },
+            {
+              id: "opt-2",
+              title: "선택지 2",
+              description: null,
+              imageUrl: null,
+              fileUploadId: null,
+              order: 1,
+            },
           ],
         ),
         createMockActionWithOptions(
@@ -195,7 +203,16 @@ describe("MissionService - Create", () => {
             order: 1,
             isRequired: false,
           },
-          [{ id: "opt-3", title: "척도 1", description: null, imageUrl: null, order: 0 }],
+          [
+            {
+              id: "opt-3",
+              title: "척도 1",
+              description: null,
+              imageUrl: null,
+              fileUploadId: null,
+              order: 0,
+            },
+          ],
         ),
       ];
 
