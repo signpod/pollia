@@ -1,132 +1,31 @@
-import type { ActionType } from "@/types/domain/action";
+import type {
+  DateInput,
+  ImageInput,
+  MultipleChoiceInput,
+  PdfInput,
+  RatingInput,
+  ScaleInput,
+  ShortTextInput,
+  SubjectiveInput,
+  TagInput,
+  TimeInput,
+  VideoInput,
+} from "@/schemas/action";
+import type { ActionUpdate } from "@/schemas/action";
+import type { OptionItem } from "@/schemas/action-option";
 import type { Action, ActionOption } from "@prisma/client";
 
-type ActionResponseFields =
-  | "id"
-  | "title"
-  | "description"
-  | "imageUrl"
-  | "type"
-  | "order"
-  | "maxSelections"
-  | "isRequired"
-  | "hasOther"
-  | "createdAt"
-  | "updatedAt"
-  | "missionId";
+// Response Types - Prisma 기반
 
-type ActionOptionResponseFields =
-  | "id"
-  | "title"
-  | "description"
-  | "imageUrl"
-  | "fileUploadId"
-  | "order";
-
-export interface BaseActionRequest {
-  missionId?: string;
-  title: string;
-  description?: string | null;
-  imageUrl?: string | null;
-  imageFileUploadId?: string | null;
-  order: number;
-  isRequired: boolean;
-  hasOther?: boolean;
-}
-
-export interface ActionOptionInput {
-  title: string;
-  description?: string | null;
-  imageUrl?: string | null;
-  order: number;
-  imageFileUploadId?: string | null;
-}
-
-export interface BaseActionResponse {
-  data: {
-    id: string;
-    missionId: string | null;
-    title: string;
-    type: ActionType;
-    order: number;
-    isRequired: boolean;
-    createdAt: Date;
-  };
-}
-
-export interface CreateMultipleChoiceActionRequest extends BaseActionRequest {
-  maxSelections: number;
-  options: ActionOptionInput[];
-}
-
-export interface CreateMultipleChoiceActionResponse extends BaseActionResponse {}
-
-export interface CreateScaleActionRequest extends BaseActionRequest {
-  options: ActionOptionInput[];
-}
-
-export interface CreateScaleActionResponse extends BaseActionResponse {}
-
-export interface CreateTagActionRequest extends BaseActionRequest {
-  maxSelections?: number;
-  options: ActionOptionInput[];
-}
-
-export interface CreateTagActionResponse extends BaseActionResponse {}
-
-export type CreateSubjectiveActionRequest = BaseActionRequest;
-export type CreateSubjectiveActionResponse = BaseActionResponse;
-
-export type CreateShortTextActionRequest = BaseActionRequest;
-export type CreateShortTextActionResponse = BaseActionResponse;
-
-export type CreateRatingActionRequest = BaseActionRequest;
-export type CreateRatingActionResponse = BaseActionResponse;
-
-export interface CreateImageActionRequest extends BaseActionRequest {
-  maxSelections?: number;
-}
-export type CreateImageActionResponse = BaseActionResponse;
-
-export type CreatePdfActionRequest = BaseActionRequest;
-export type CreatePdfActionResponse = BaseActionResponse;
-
-export type CreateVideoActionRequest = BaseActionRequest;
-export type CreateVideoActionResponse = BaseActionResponse;
-
-export interface CreateDateActionRequest extends BaseActionRequest {
-  maxSelections: number;
-}
-export type CreateDateActionResponse = BaseActionResponse;
-
-export interface CreateTimeActionRequest extends BaseActionRequest {
-  maxSelections: number;
-}
-export type CreateTimeActionResponse = BaseActionResponse;
-
-export interface UpdateActionOptionRequest {
-  id?: string;
-  title: string;
-  description?: string | null;
-  imageUrl?: string | null;
-  order: number;
-  imageFileUploadId?: string | null;
-}
-
-export interface UpdateActionRequest {
-  title?: string;
-  description?: string | null;
-  imageUrl?: string | null;
-  imageFileUploadId?: string | null;
-  order?: number;
-  maxSelections?: number;
-  isRequired?: boolean;
-  hasOther?: boolean;
-  options?: UpdateActionOptionRequest[];
-}
+export type ActionDetail = Action & {
+  options: Pick<
+    ActionOption,
+    "id" | "title" | "description" | "imageUrl" | "fileUploadId" | "order"
+  >[];
+};
 
 export interface GetActionResponse {
-  data: Pick<Action, ActionResponseFields>[];
+  data: Action[];
 }
 
 export interface GetActionIdsResponse {
@@ -136,28 +35,59 @@ export interface GetActionIdsResponse {
 }
 
 export interface GetActionByIdResponse {
-  data: Pick<Action, ActionResponseFields> & {
-    options: Pick<ActionOption, ActionOptionResponseFields>[];
+  data: Action & {
+    options: Pick<
+      ActionOption,
+      "id" | "title" | "description" | "imageUrl" | "fileUploadId" | "order"
+    >[];
   };
-}
-
-export interface ActionDetail {
-  id: string;
-  title: string;
-  description: string | null;
-  imageUrl: string | null;
-  imageFileUploadId: string | null;
-  type: ActionType;
-  order: number;
-  maxSelections: number | null;
-  isRequired: boolean;
-  hasOther: boolean;
-  missionId: string | null;
-  options: Pick<ActionOption, ActionOptionResponseFields>[];
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export interface GetMissionActionsDetailResponse {
   data: ActionDetail[];
 }
+
+export interface BaseActionResponse {
+  data: {
+    id: string;
+    missionId: string | null;
+    title: string;
+    type: Action["type"];
+    order: number;
+    isRequired: boolean;
+    createdAt: Date;
+  };
+}
+
+export interface CreateMultipleChoiceActionResponse extends BaseActionResponse {}
+export interface CreateScaleActionResponse extends BaseActionResponse {}
+export interface CreateTagActionResponse extends BaseActionResponse {}
+export type CreateSubjectiveActionResponse = BaseActionResponse;
+export type CreateShortTextActionResponse = BaseActionResponse;
+export type CreateRatingActionResponse = BaseActionResponse;
+export type CreateImageActionResponse = BaseActionResponse;
+export type CreatePdfActionResponse = BaseActionResponse;
+export type CreateVideoActionResponse = BaseActionResponse;
+export type CreateDateActionResponse = BaseActionResponse;
+export type CreateTimeActionResponse = BaseActionResponse;
+
+// Request Types - Schema 기반
+
+export type CreateMultipleChoiceActionRequest = MultipleChoiceInput;
+export type CreateScaleActionRequest = ScaleInput;
+export type CreateTagActionRequest = TagInput;
+export type CreateSubjectiveActionRequest = SubjectiveInput;
+export type CreateShortTextActionRequest = ShortTextInput;
+export type CreateRatingActionRequest = RatingInput;
+export type CreateImageActionRequest = ImageInput;
+export type CreatePdfActionRequest = PdfInput;
+export type CreateVideoActionRequest = VideoInput;
+export type CreateDateActionRequest = DateInput;
+export type CreateTimeActionRequest = TimeInput;
+
+export type UpdateActionRequest = ActionUpdate;
+export type UpdateActionOptionRequest = OptionItem;
+
+// 하위 호환성을 위한 타입 alias
+export type BaseActionRequest = SubjectiveInput;
+export type ActionOptionInput = OptionItem;

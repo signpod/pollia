@@ -46,6 +46,7 @@ interface MockActionOption {
   title: string;
   description: string | null;
   imageUrl: string | null;
+  fileUploadId: string | null;
   order: number;
 }
 

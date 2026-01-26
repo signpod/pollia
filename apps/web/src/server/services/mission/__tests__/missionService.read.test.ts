@@ -151,8 +151,8 @@ describe("MissionService - Read", () => {
           updatedAt: new Date("2024-01-01"),
         },
         [
-          { id: "opt1", title: "선택지 1", description: null, imageUrl: null, order: 1 },
-          { id: "opt2", title: "선택지 2", description: null, imageUrl: null, order: 2 },
+          { id: "opt1", title: "선택지 1", description: null, imageUrl: null, fileUploadId: null, order: 1 },
+          { id: "opt2", title: "선택지 2", description: null, imageUrl: null, fileUploadId: null, order: 2 },
         ],
       );
       mockActionRepository.findById.mockResolvedValue(mockAction);
@@ -203,7 +203,7 @@ describe("MissionService - Read", () => {
             createdAt: testDate,
             updatedAt: testDate,
           },
-          [{ id: "opt1", title: "선택지 1", description: null, imageUrl: null, order: 1 }],
+          [{ id: "opt1", title: "선택지 1", description: null, imageUrl: null, fileUploadId: null, order: 1 }],
         ),
         createMockActionWithOptions(
           {
