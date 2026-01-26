@@ -84,6 +84,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
       title: opt.title,
       description: opt.description || undefined,
       imageUrl: opt.imageUrl || undefined,
+      imageFileUploadId: opt.fileUploadId || undefined,
     })) || [];
 
   switch (action.type) {
@@ -97,6 +98,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            imageFileUploadId: action.imageFileUploadId || undefined,
             isRequired: action.isRequired,
             hasOther: action.hasOther,
             maxSelections: action.maxSelections ?? 1,
@@ -114,6 +116,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            imageFileUploadId: action.imageFileUploadId || undefined,
             isRequired: action.isRequired,
             options: mapOptions(action.options),
           }}
@@ -129,6 +132,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            imageFileUploadId: action.imageFileUploadId || undefined,
             isRequired: action.isRequired,
           }}
         />
@@ -143,6 +147,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            imageFileUploadId: action.imageFileUploadId || undefined,
             isRequired: action.isRequired,
             hasOther: action.hasOther,
             maxSelections: action.maxSelections ?? 1,
@@ -160,6 +165,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            imageFileUploadId: action.imageFileUploadId || undefined,
             isRequired: action.isRequired,
           }}
         />
@@ -174,6 +180,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            imageFileUploadId: action.imageFileUploadId || undefined,
             isRequired: action.isRequired,
           }}
         />
@@ -188,6 +195,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            imageFileUploadId: action.imageFileUploadId || undefined,
             isRequired: action.isRequired,
             maxSelections: action.maxSelections ?? undefined,
           }}
@@ -203,6 +211,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            imageFileUploadId: action.imageFileUploadId || undefined,
             isRequired: action.isRequired,
           }}
         />
@@ -217,6 +226,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            imageFileUploadId: action.imageFileUploadId || undefined,
             isRequired: action.isRequired,
           }}
         />
@@ -231,6 +241,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            imageFileUploadId: action.imageFileUploadId || undefined,
             isRequired: action.isRequired,
             maxSelections: action.maxSelections ?? undefined,
           }}
@@ -246,6 +257,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             title: action.title,
             description: action.description || undefined,
             imageUrl: action.imageUrl || undefined,
+            imageFileUploadId: action.imageFileUploadId || undefined,
             isRequired: action.isRequired,
             maxSelections: action.maxSelections ?? undefined,
           }}

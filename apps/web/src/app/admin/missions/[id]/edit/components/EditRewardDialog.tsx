@@ -52,6 +52,7 @@ export function EditRewardDialog({
               name: reward.name,
               description: reward.description || undefined,
               imageUrl: reward.imageUrl || undefined,
+              imageFileUploadId: reward.imageFileUploadId || undefined,
               paymentType: reward.paymentType,
               scheduledDate: reward.scheduledDate || undefined,
             }}
