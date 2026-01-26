@@ -19,10 +19,8 @@ const getProductionHostname = (): string | null => {
 
 const productionHostname = getProductionHostname();
 
-const isClientProductionHost =
-  typeof window !== "undefined" &&
-  productionHostname !== null &&
-  window.location.hostname === productionHostname;
+const isClientProductionDeployment =
+  process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
 
 const baseConfig = {
   captureUncaught: true,
@@ -33,7 +31,7 @@ const baseConfig = {
 export const clientConfig = {
   accessToken: process.env.NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN,
   ...baseConfig,
-  enabled: isProduction && isClientProductionHost,
+  enabled: isProduction && isClientProductionDeployment,
   payload: {
     server: {
       root: "webpack:///./",
