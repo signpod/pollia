@@ -1,7 +1,7 @@
 import prisma from "@/database/utils/prisma/client";
 import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
 import type { SortOrderType } from "@/types/common/sort";
-import { type ActionType, type MissionType, Prisma } from "@prisma/client";
+import { type ActionType, type MissionCategory, type MissionType, Prisma } from "@prisma/client";
 
 export class MissionRepository {
   async findById(missionId: string) {
@@ -16,13 +16,17 @@ export class MissionRepository {
       cursor?: string;
       limit?: number;
       sortOrder?: SortOrderType;
+      category?: MissionCategory;
     },
   ) {
     const limit = options?.limit ?? 10;
     const sortOrder = options?.sortOrder ?? "latest";
 
     return prisma.mission.findMany({
-      where: { creatorId: userId },
+      where: {
+        creatorId: userId,
+        ...(options?.category && { category: options.category }),
+      },
       orderBy: {
         updatedAt: sortOrder === "latest" ? "desc" : "asc",
       },

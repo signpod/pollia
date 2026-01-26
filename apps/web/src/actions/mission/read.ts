@@ -11,11 +11,13 @@ import type {
   GetMissionResponse,
   GetUserMissionsResponse,
 } from "@/types/dto";
+import type { MissionCategory } from "@prisma/client";
 
 export interface GetUserMissionsRequest {
   cursor?: string;
   limit?: number;
   sortOrder?: SortOrderType;
+  category?: MissionCategory;
 }
 
 function toGetUserMissionsOptions(dto: GetUserMissionsRequest): GetUserMissionsOptions {
@@ -23,6 +25,7 @@ function toGetUserMissionsOptions(dto: GetUserMissionsRequest): GetUserMissionsO
     cursor: dto.cursor,
     limit: dto.limit,
     sortOrder: dto.sortOrder,
+    category: dto.category,
   };
 }
 
