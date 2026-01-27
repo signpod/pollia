@@ -52,10 +52,15 @@ export function AppHeader({
     return (
       <header className="sticky top-0 z-50 border-b border-default bg-default">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6">
-          <Link href="/" className="flex items-center gap-1.5">
-            <PolliaIcon className="size-5 text-primary" />
-            <PolliaWordmark className="h-4 text-black" />
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-1.5">
+              <PolliaIcon className="size-5 text-primary" />
+              <PolliaWordmark className="h-4 text-black" />
+            </Link>
+            <Typo.Body size="small" className="hidden text-info sm:block">
+              세상을 발견하는 재밌는 방법
+            </Typo.Body>
+          </div>
 
           <nav className="flex items-center gap-8">
             <div className="hidden gap-6 md:flex">
@@ -91,14 +96,6 @@ export function AppHeader({
                   </Link>
                 </>
               )}
-              {/* {isLoggedIn && (
-                <Link
-                  href="/me"
-                  className="flex h-9 items-center px-3 text-sm font-medium text-sub transition-colors hover:text-default"
-                >
-                  내 정보
-                </Link>
-              )} */}
             </div>
           </nav>
         </div>
