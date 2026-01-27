@@ -5,6 +5,8 @@ import { ROUTES } from "@/constants/routes";
 import { ModalProvider, Toaster } from "@repo/ui/components";
 import { MeFooter, MeHeader } from "./components";
 
+export const dynamic = "force-dynamic";
+
 export default function MeLayout({ children }: { children: React.ReactNode }) {
   return (
     <ModalProvider>
