@@ -8,6 +8,8 @@ import { AdminLayout } from "./components/AdminLayout";
 import { AdminQueryProvider } from "./components/AdminQueryProvider";
 import { AdminGate } from "./components/guards/AdminGate";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminLayoutRoot({ children }: { children: React.ReactNode }) {
   const queryClient = getAdminQueryClient();
 
