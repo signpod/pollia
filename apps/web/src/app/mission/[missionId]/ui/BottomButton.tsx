@@ -18,7 +18,7 @@ import { ButtonV2, Typo } from "@repo/ui/components";
 import { isBefore } from "date-fns";
 import { motion } from "framer-motion";
 import { useParams, useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { checkParticipantLimitReached } from "../utils/checkParticipantLimit";
 
 const BUTTON_TEXT = {
@@ -76,7 +76,13 @@ export function BottomButton({
   const [isStarting, setIsStarting] = useState(false);
   const isActionInitiatedRef = useRef(false);
 
-  const isDeadlinePassed = Boolean(deadline && isBefore(deadline, new Date()));
+  const [isDeadlinePassed, setIsDeadlinePassed] = useState(false);
+
+  useEffect(() => {
+    if (deadline) {
+      setIsDeadlinePassed(isBefore(deadline, new Date()));
+    }
+  }, [deadline]);
 
   const isDisabled = isDeadlinePassed || !firstActionId;
   const alreadyCompleted = isCompleted;

@@ -76,25 +76,21 @@ function CountdownClock({ deadline }: { deadline: Date }) {
   const s1 = seconds[0] ?? "0";
   const s2 = seconds[1] ?? "0";
 
-  if (!mounted) {
-    return null;
-  }
-
   return (
     <div className="flex items-center gap-1">
       <div className="flex items-center gap-0">
-        <AnimatedDigit digit={h1} />
-        <AnimatedDigit digit={h2} />
+        <AnimatedDigit digit={mounted ? h1 : "0"} />
+        <AnimatedDigit digit={mounted ? h2 : "0"} />
       </div>
       <Colon />
       <div className="flex items-center gap-0">
-        <AnimatedDigit digit={m1} />
-        <AnimatedDigit digit={m2} />
+        <AnimatedDigit digit={mounted ? m1 : "0"} />
+        <AnimatedDigit digit={mounted ? m2 : "0"} />
       </div>
       <Colon />
       <div className="flex items-center gap-0">
-        <AnimatedDigit digit={s1} />
-        <AnimatedDigit digit={s2} />
+        <AnimatedDigit digit={mounted ? s1 : "0"} />
+        <AnimatedDigit digit={mounted ? s2 : "0"} />
       </div>
     </div>
   );
