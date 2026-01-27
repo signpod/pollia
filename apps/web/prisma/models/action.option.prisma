@@ -12,7 +12,14 @@ model ActionOption {
   action       Action         @relation(fields: [actionId], references: [id], onDelete: Cascade)
   fileUpload   FileUpload?    @relation(fields: [fileUploadId], references: [id])
 
+  nextAction       Action?            @relation("OptionToAction", fields: [nextActionId], references: [id], onDelete: SetNull)
+  nextCompletion   MissionCompletion? @relation("OptionToCompletion", fields: [nextCompletionId], references: [id], onDelete: SetNull)
+  nextActionId     String?            @map("next_action_id")
+  nextCompletionId String?            @map("next_completion_id")
+
   @@unique([actionId, order])
   @@index([actionId])
+  @@index([nextActionId])
+  @@index([nextCompletionId])
   @@map("action_options")
 }
