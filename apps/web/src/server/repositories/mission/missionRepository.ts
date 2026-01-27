@@ -145,7 +145,7 @@ export class MissionRepository {
       description?: string | null;
       imageUrl?: string | null;
       type: ActionType;
-      order: number;
+      order: number | null;
       maxSelections?: number | null;
       options: Array<{
         title: string;

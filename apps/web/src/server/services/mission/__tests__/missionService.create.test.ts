@@ -478,6 +478,7 @@ describe("MissionService - Create", () => {
         imageFileUploadId: null,
         brandLogoFileUploadId: null,
         eventId: null,
+        entryActionId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };

@@ -95,7 +95,7 @@ export function MissionFunnelTextView({ metadata, missionStats }: MissionFunnelT
               <div className="flex items-center justify-between gap-2 mb-3">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="text-xs font-medium text-muted-foreground shrink-0">
-                    액션 {action.order + 1}
+                    액션 {action.order ? `#${action.order + 1}` : "순서 없음"}
                   </span>
                   <h3 className="text-sm font-semibold text-foreground truncate">{action.title}</h3>
                 </div>
