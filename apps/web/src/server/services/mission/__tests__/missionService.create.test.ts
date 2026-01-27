@@ -14,6 +14,7 @@ describe("MissionService - Create", () => {
     mockRepository = {
       findById: jest.fn(),
       findByUserId: jest.fn(),
+      findAll: jest.fn(),
       createWithActions: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
@@ -71,6 +72,7 @@ describe("MissionService - Create", () => {
         deadline: new Date("2024-12-31"),
         estimatedMinutes: 10,
         type: "GENERAL" as const,
+        category: "EVENT" as const,
         actionIds: ["a1", "a2"],
       };
       const mockCreatedMission = {
@@ -85,6 +87,7 @@ describe("MissionService - Create", () => {
         isActive: true,
         maxParticipants: null,
         type: "GENERAL" as const,
+        category: "EVENT" as const,
         password: null,
         creatorId: "user-1",
         rewardId: null,
@@ -115,6 +118,7 @@ describe("MissionService - Create", () => {
           estimatedMinutes: request.estimatedMinutes,
           maxParticipants: undefined,
           type: "GENERAL",
+          category: "EVENT",
           creatorId: "user-1",
         },
         ["a1", "a2"],
@@ -132,12 +136,97 @@ describe("MissionService - Create", () => {
         deadline: undefined,
         estimatedMinutes: undefined,
         type: "GENERAL" as const,
+        category: "EVENT" as const,
         actionIds: ["a1"],
       };
 
       // When & Then
       await expect(missionService.createMission(request, "user-1")).rejects.toThrow(
         "제목을 입력해주세요.",
+      );
+
+      try {
+        await missionService.createMission(request, "user-1");
+      } catch (error) {
+        expect((error as Error & { cause: number }).cause).toBe(400);
+      }
+    });
+
+    it("제목이 1자일 때 성공한다", async () => {
+      // Given
+      const request = {
+        title: "A",
+        description: undefined,
+        target: undefined,
+        imageUrl: undefined,
+        brandLogoUrl: undefined,
+        deadline: undefined,
+        estimatedMinutes: undefined,
+        type: "GENERAL" as const,
+        category: "EVENT" as const,
+        actionIds: [],
+      };
+      const mockCreatedMission = createMockMission({
+        id: "mission-1",
+        title: "A",
+      });
+      mockRepository.createWithActions.mockResolvedValue(mockCreatedMission);
+
+      // When
+      const result = await missionService.createMission(request, "user-1");
+
+      // Then
+      expect(result.title).toBe("A");
+    });
+
+    it("제목이 100자일 때 성공한다", async () => {
+      // Given
+      const title = "A".repeat(100);
+      const request = {
+        title,
+        description: undefined,
+        target: undefined,
+        imageUrl: undefined,
+        brandLogoUrl: undefined,
+        deadline: undefined,
+        estimatedMinutes: undefined,
+        type: "GENERAL" as const,
+        category: "EVENT" as const,
+        actionIds: [],
+      };
+      const mockCreatedMission = createMockMission({
+        id: "mission-1",
+        title,
+      });
+      mockRepository.createWithActions.mockResolvedValue(mockCreatedMission);
+
+      // When
+      const result = await missionService.createMission(request, "user-1");
+
+      // Then
+      expect(result.title).toBe(title);
+      expect(result.title.length).toBe(100);
+    });
+
+    it("제목이 101자일 때 400 에러를 던진다", async () => {
+      // Given
+      const title = "A".repeat(101);
+      const request = {
+        title,
+        description: undefined,
+        target: undefined,
+        imageUrl: undefined,
+        brandLogoUrl: undefined,
+        deadline: undefined,
+        estimatedMinutes: undefined,
+        type: "GENERAL" as const,
+        category: "EVENT" as const,
+        actionIds: [],
+      };
+
+      // When & Then
+      await expect(missionService.createMission(request, "user-1")).rejects.toThrow(
+        "제목은 100자를 초과할 수 없습니다.",
       );
 
       try {
@@ -381,6 +470,7 @@ describe("MissionService - Create", () => {
         isActive: true,
         maxParticipants: null,
         type: "GENERAL" as const,
+        category: "EVENT" as const,
         password: null,
         creatorId: "user-1",
         rewardId: null,
@@ -403,6 +493,7 @@ describe("MissionService - Create", () => {
         isActive: false,
         maxParticipants: null,
         type: "GENERAL" as const,
+        category: "EVENT" as const,
         password: null,
         creatorId: "user-1",
         rewardId: null,

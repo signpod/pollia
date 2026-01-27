@@ -79,6 +79,7 @@ describe("EventService", () => {
             updatedAt: new Date("2024-01-01"),
             target: null,
             type: "GENERAL" as const,
+            category: "EVENT" as const,
             password: null,
             imageFileUploadId: null,
             brandLogoFileUploadId: null,
