@@ -32,7 +32,7 @@ export {
 const actionOptionFormSchema = actionOptionSchema.omit({ order: true }).extend({
   id: z.string(),
   imageUrl: z.string().nullable().optional(),
-  imageFileUploadId: z.string().nullable().optional(),
+  fileUploadId: z.string().nullable().optional(),
 });
 
 export const multipleChoiceFormSchema = multipleChoiceInputSchema

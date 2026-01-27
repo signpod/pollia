@@ -84,7 +84,7 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
       title: opt.title,
       description: opt.description || undefined,
       imageUrl: opt.imageUrl || undefined,
-      imageFileUploadId: opt.fileUploadId || undefined,
+      fileUploadId: opt.fileUploadId || undefined,
     })) || [];
 
   switch (action.type) {

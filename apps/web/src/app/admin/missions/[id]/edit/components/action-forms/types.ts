@@ -7,7 +7,7 @@ export interface ActionOptionInput {
   title: string;
   description?: string | null;
   imageUrl?: string | null;
-  imageFileUploadId?: string | null;
+  fileUploadId?: string | null;
 }
 
 export interface BaseActionFormData {

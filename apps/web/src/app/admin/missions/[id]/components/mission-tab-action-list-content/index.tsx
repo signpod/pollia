@@ -170,10 +170,11 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
       options:
         "options" in data
           ? data.options.map((opt, index) => ({
+              id: opt.id,
               title: opt.title,
               description: opt.description,
               imageUrl: opt.imageUrl,
-              imageFileUploadId: opt.imageFileUploadId,
+              fileUploadId: opt.fileUploadId,
               order: index,
             }))
           : undefined,
@@ -313,10 +314,11 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
             options:
               "options" in data
                 ? data.options.map((opt, index) => ({
+                    id: opt.id,
                     title: opt.title,
                     description: opt.description,
                     imageUrl: opt.imageUrl,
-                    imageFileUploadId: opt.imageFileUploadId,
+                    fileUploadId: opt.fileUploadId,
                     order: index,
                   }))
                 : undefined,

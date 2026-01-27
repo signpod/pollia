@@ -311,7 +311,7 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
               title: opt.title,
               description: opt.description,
               imageUrl: opt.imageUrl,
-              imageFileUploadId: opt.imageFileUploadId,
+              fileUploadId: opt.fileUploadId,
               order: index,
             }))
           : undefined,
@@ -429,7 +429,7 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
                     title: opt.title,
                     description: opt.description,
                     imageUrl: opt.imageUrl,
-                    imageFileUploadId: opt.imageFileUploadId,
+                    fileUploadId: opt.fileUploadId,
                     order: index,
                   }))
                 : undefined,
