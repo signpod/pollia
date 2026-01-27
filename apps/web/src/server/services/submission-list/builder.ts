@@ -11,7 +11,7 @@ import type {
 export function buildSubmissionTables(input: BuildSubmissionTablesInput): SubmissionTablesData {
   const { actions, responses } = input;
 
-  const sortedActions = [...actions].sort((a, b) => a.order - b.order);
+  const sortedActions = [...actions].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   const columns = buildColumns(sortedActions);
 
   const allRows = responses.map(r => buildRow(r, sortedActions));

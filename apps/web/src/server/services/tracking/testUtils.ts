@@ -26,6 +26,8 @@ export function createMockAction(
     isRequired: false,
     hasOther: false,
     imageFileUploadId: null,
+    nextActionId: null,
+    nextCompletionId: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     options: [],

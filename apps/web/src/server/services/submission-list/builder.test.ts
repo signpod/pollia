@@ -16,6 +16,8 @@ const createMockAction = (overrides: Partial<Action> = {}): Action => ({
   updatedAt: new Date("2025-01-01"),
   missionId: "mission1",
   imageFileUploadId: null,
+  nextActionId: null,
+  nextCompletionId: null,
   ...overrides,
 });
 

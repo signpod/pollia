@@ -1,5 +1,6 @@
 import prisma from "@/database/utils/prisma/client";
 import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
+import type { Prisma } from "@prisma/client";
 
 export class ActionOptionRepository {
   async findById(optionId: string) {
@@ -45,30 +46,19 @@ export class ActionOptionRepository {
   }
 
   async create(
-    data: {
-      actionId: string;
-      title: string;
-      description?: string | null;
-      imageUrl?: string | null;
-      order: number;
-      imageFileUploadId?: string | null;
-    },
+    data: Omit<Prisma.ActionOptionUncheckedCreateInput, "id" | "createdAt" | "updatedAt">,
     userId: string,
   ) {
     return prisma.$transaction(async tx => {
       const createdOption = await tx.actionOption.create({
         data: {
-          actionId: data.actionId,
-          title: data.title,
-          description: data.description || null,
-          imageUrl: data.imageUrl,
-          order: data.order,
-          fileUploadId: data.imageFileUploadId,
+          ...data,
+          fileUploadId: data.fileUploadId ?? undefined,
         },
       });
 
-      if (data.imageFileUploadId) {
-        await confirmFileUploads(tx, userId, data.imageFileUploadId);
+      if (data.fileUploadId) {
+        await confirmFileUploads(tx, userId, data.fileUploadId);
       }
 
       return createdOption;
@@ -77,30 +67,21 @@ export class ActionOptionRepository {
 
   async createMany(
     actionId: string,
-    options: Array<{
-      title: string;
-      description?: string | null;
-      imageUrl?: string | null;
-      order: number;
-      imageFileUploadId?: string | null;
-    }>,
+    options: Array<
+      Omit<Prisma.ActionOptionUncheckedCreateInput, "id" | "actionId" | "createdAt" | "updatedAt">
+    >,
     userId: string,
   ) {
     return prisma.$transaction(async tx => {
       await tx.actionOption.createMany({
         data: options.map(option => ({
           actionId,
-          title: option.title,
-          description: option.description || null,
-          imageUrl: option.imageUrl,
-          order: option.order,
-          fileUploadId: option.imageFileUploadId,
+          ...option,
+          fileUploadId: option.fileUploadId ?? undefined,
         })),
       });
 
-      const fileUploadIds = options
-        .map(option => option.imageFileUploadId)
-        .filter(Boolean) as string[];
+      const fileUploadIds = options.map(option => option.fileUploadId).filter(Boolean) as string[];
 
       await confirmFileUploads(tx, userId, fileUploadIds);
 
@@ -111,31 +92,17 @@ export class ActionOptionRepository {
     });
   }
 
-  async update(
-    optionId: string,
-    data: {
-      title?: string;
-      description?: string | null;
-      imageUrl?: string | null;
-      order?: number;
-      imageFileUploadId?: string | null;
-    },
-    userId?: string,
-  ) {
-    if (data.imageFileUploadId && userId) {
+  async update(optionId: string, data: Prisma.ActionOptionUncheckedUpdateInput, userId?: string) {
+    const fileUploadId = typeof data.fileUploadId === "string" ? data.fileUploadId : undefined;
+
+    if (fileUploadId && userId) {
       return prisma.$transaction(async tx => {
         const updatedOption = await tx.actionOption.update({
           where: { id: optionId },
-          data: {
-            title: data.title,
-            description: data.description,
-            imageUrl: data.imageUrl,
-            order: data.order,
-            fileUploadId: data.imageFileUploadId,
-          },
+          data,
         });
 
-        await confirmFileUploads(tx, userId, data.imageFileUploadId ?? undefined);
+        await confirmFileUploads(tx, userId, fileUploadId);
 
         return updatedOption;
       });
@@ -143,13 +110,7 @@ export class ActionOptionRepository {
 
     return prisma.actionOption.update({
       where: { id: optionId },
-      data: {
-        title: data.title,
-        description: data.description,
-        imageUrl: data.imageUrl,
-        order: data.order,
-        fileUploadId: data.imageFileUploadId,
-      },
+      data,
     });
   }
 

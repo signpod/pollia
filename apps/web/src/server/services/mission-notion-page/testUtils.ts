@@ -40,6 +40,7 @@ export const createMockMission = (overrides: Partial<Mission> = {}): Mission => 
   creatorId: "user1",
   rewardId: null,
   eventId: null,
+  entryActionId: null,
   createdAt: new Date(),
   updatedAt: new Date(),
   ...overrides,

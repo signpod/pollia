@@ -48,7 +48,7 @@ export function MultipleChoiceForm({
           title: opt.title,
           description: opt.description || "",
           imageUrl: opt.imageUrl,
-          imageFileUploadId: opt.imageFileUploadId,
+          fileUploadId: opt.fileUploadId,
         })) || [],
     },
     mode: "onChange",
@@ -73,7 +73,7 @@ export function MultipleChoiceForm({
       const index = fields.findIndex(field => field.id === id);
       if (index !== -1) {
         form.setValue(`options.${index}.imageUrl`, data.publicUrl, { shouldDirty: true });
-        form.setValue(`options.${index}.imageFileUploadId`, data.fileUploadId, {
+        form.setValue(`options.${index}.fileUploadId`, data.fileUploadId, {
           shouldDirty: true,
         });
       }
@@ -87,7 +87,7 @@ export function MultipleChoiceForm({
         title: opt.title,
         description: opt.description || undefined,
         imageUrl: opt.imageUrl,
-        imageFileUploadId: opt.imageFileUploadId,
+        fileUploadId: opt.fileUploadId,
       };
     });
 
@@ -193,7 +193,7 @@ export function MultipleChoiceForm({
                       form.setValue(`options.${index}.imageUrl`, null, {
                         shouldDirty: true,
                       });
-                      form.setValue(`options.${index}.imageFileUploadId`, null, {
+                      form.setValue(`options.${index}.fileUploadId`, null, {
                         shouldDirty: true,
                       });
                     }}

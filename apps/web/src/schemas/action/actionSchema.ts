@@ -70,6 +70,8 @@ const baseActionSchema = z.object({
   order: actionOrderSchema,
   isRequired: z.boolean(),
   hasOther: z.boolean().optional(),
+  nextActionId: z.string().nullable().optional(),
+  nextCompletionId: z.string().nullable().optional(),
 });
 
 export const multipleChoiceInputSchema = baseActionSchema
@@ -157,6 +159,8 @@ export const actionUpdateSchema = z
     isRequired: z.boolean().optional(),
     hasOther: z.boolean().optional(),
     options: z.array(actionOptionSchema).optional(),
+    nextActionId: z.string().nullable().optional(),
+    nextCompletionId: z.string().nullable().optional(),
   })
   .refine(data => Object.keys(data).length > 0, {
     message: "최소 하나의 필드를 수정해야 합니다.",

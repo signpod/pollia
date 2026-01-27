@@ -22,7 +22,7 @@ export interface MissionFunnelData {
     actions: Array<{
       id: string;
       title: string;
-      order: number;
+      order: number | null;
       entryCount: number;
       responseCount: number;
       entryToResponseRate: number;
@@ -53,5 +53,5 @@ export interface Statistics {
 export interface ActionSummary {
   id: string;
   title: string;
-  order: number;
+  order: number | null;
 }

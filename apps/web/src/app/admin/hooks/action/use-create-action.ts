@@ -66,7 +66,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
                 title: opt.title,
                 description: opt.description,
                 imageUrl: opt.imageUrl,
-                imageFileUploadId: opt.imageFileUploadId,
+                fileUploadId: opt.fileUploadId,
                 order: opt.order ?? index,
               })) ?? [],
           };
@@ -87,7 +87,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
                 title: opt.title,
                 description: opt.description,
                 imageUrl: opt.imageUrl,
-                imageFileUploadId: opt.imageFileUploadId,
+                fileUploadId: opt.fileUploadId,
                 order: opt.order ?? index,
               })) ?? [],
           };
@@ -136,7 +136,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
                 title: opt.title,
                 description: opt.description,
                 imageUrl: opt.imageUrl,
-                imageFileUploadId: opt.imageFileUploadId,
+                fileUploadId: opt.fileUploadId,
                 order: opt.order ?? index,
               })) ?? [],
           };

@@ -60,7 +60,7 @@ export interface MyMissionResponseAnswer {
     id: string;
     title: string;
     type: string;
-    order: number;
+    order: number | null;
     isRequired: boolean;
   };
   options: Array<{

@@ -1,4 +1,4 @@
-import type { MissionCompletionData } from "@/types/dto";
+import type { MissionCompletionData, MissionCompletionWithMission } from "@/types/dto";
 import type { MissionCompletion } from "@prisma/client";
 
 /**
@@ -80,6 +80,27 @@ export function toMissionCompletionData<
     imageFileUpload: { id: string; publicUrl: string } | null;
   },
 >(raw: T): MissionCompletionData {
+  return {
+    ...raw,
+    links: parseLinks(raw.links),
+  };
+}
+
+/**
+ * Prisma MissionCompletion을 MissionCompletionWithMission DTO로 변환
+ *
+ * mission 관계를 포함한 MissionCompletion을 DTO로 변환할 때 사용합니다.
+ *
+ * @template T - MissionCompletion, imageFileUpload, mission 관계를 포함하는 타입
+ * @param raw - Prisma에서 조회한 MissionCompletion 데이터
+ * @returns 타입 안전한 MissionCompletionWithMission DTO
+ */
+export function toMissionCompletionWithMission<
+  T extends MissionCompletion & {
+    imageFileUpload: { id: string; publicUrl: string } | null;
+    mission: { id: string; creatorId: string };
+  },
+>(raw: T): MissionCompletionWithMission {
   return {
     ...raw,
     links: parseLinks(raw.links),

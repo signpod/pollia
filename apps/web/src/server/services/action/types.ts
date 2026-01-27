@@ -11,6 +11,8 @@ interface ActionOptionInput {
   imageUrl?: string | null;
   order: number;
   imageFileUploadId?: string | null;
+  nextActionId?: string | null;
+  nextCompletionId?: string | null;
 }
 
 export type BaseActionInputWithOptions = BaseActionInput & {
@@ -70,5 +72,13 @@ export interface GetActionsOptions {
 
 export type ActionCreatedResult = Pick<
   Action,
-  "id" | "missionId" | "title" | "type" | "order" | "isRequired" | "createdAt"
+  | "id"
+  | "missionId"
+  | "title"
+  | "type"
+  | "order"
+  | "isRequired"
+  | "createdAt"
+  | "nextActionId"
+  | "nextCompletionId"
 >;

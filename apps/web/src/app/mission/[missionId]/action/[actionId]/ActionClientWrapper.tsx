@@ -169,7 +169,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
   const ContentComponent = stepConfig.content;
   const actionData = stepConfig.actionData;
 
-  const currentOrder = actionData.order;
+  const currentOrder = actionData.order ?? 0;
 
   useMissionSurveyToast({
     currentOrder,
@@ -382,7 +382,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
     <ContentComponent
       key={actionData.id}
       actionData={actionData}
-      currentOrder={actionData.order}
+      currentOrder={actionData.order ?? 0}
       totalActionCount={totalActionCount}
       isFirstAction={isFirstStep}
       isNextDisabled={!canGoNext || isSubmittingAnswer || isCompletingMission}

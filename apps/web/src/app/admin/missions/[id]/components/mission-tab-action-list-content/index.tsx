@@ -106,7 +106,7 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
 
   useEffect(() => {
     if (actionsResponse?.data) {
-      const sorted = [...actionsResponse.data].sort((a, b) => a.order - b.order);
+      const sorted = [...actionsResponse.data].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
       setActions(sorted);
       const firstAction = sorted[0];
       if (!selectedActionId && firstAction) {
@@ -170,10 +170,11 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
       options:
         "options" in data
           ? data.options.map((opt, index) => ({
+              id: opt.id,
               title: opt.title,
               description: opt.description,
               imageUrl: opt.imageUrl,
-              imageFileUploadId: opt.imageFileUploadId,
+              fileUploadId: opt.fileUploadId,
               order: index,
             }))
           : undefined,
@@ -313,10 +314,11 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
             options:
               "options" in data
                 ? data.options.map((opt, index) => ({
+                    id: opt.id,
                     title: opt.title,
                     description: opt.description,
                     imageUrl: opt.imageUrl,
-                    imageFileUploadId: opt.imageFileUploadId,
+                    fileUploadId: opt.fileUploadId,
                     order: index,
                   }))
                 : undefined,

@@ -190,7 +190,7 @@ export function AnswerDetailModal({ isOpen, onClose, response }: AnswerDetailMod
   const { mission, answers } = response;
 
   const sortedAnswers = useMemo(
-    () => [...answers].sort((a, b) => a.action.order - b.action.order),
+    () => [...answers].sort((a, b) => (a.action.order ?? 0) - (b.action.order ?? 0)),
     [answers],
   );
 

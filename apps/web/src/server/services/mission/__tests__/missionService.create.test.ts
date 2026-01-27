@@ -94,6 +94,7 @@ describe("MissionService - Create", () => {
         imageFileUploadId: null,
         brandLogoFileUploadId: null,
         eventId: null,
+        entryActionId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -342,6 +343,7 @@ describe("MissionService - Create", () => {
           type: "GENERAL",
           isActive: false,
           creatorId: "user-1",
+          entryActionId: null,
         },
         [
           {
@@ -351,18 +353,24 @@ describe("MissionService - Create", () => {
             type: "MULTIPLE_CHOICE",
             order: 0,
             maxSelections: 1,
+            nextActionId: null,
+            nextCompletionId: null,
             options: [
               {
                 title: "선택지 1",
                 description: null,
                 imageUrl: "https://example.com/opt1.jpg",
                 order: 0,
+                nextActionId: null,
+                nextCompletionId: null,
               },
               {
                 title: "선택지 2",
                 description: null,
                 imageUrl: null,
                 order: 1,
+                nextActionId: null,
+                nextCompletionId: null,
               },
             ],
           },
@@ -373,12 +381,16 @@ describe("MissionService - Create", () => {
             type: "SCALE",
             order: 1,
             maxSelections: null,
+            nextActionId: null,
+            nextCompletionId: null,
             options: [
               {
                 title: "척도 1",
                 description: null,
                 imageUrl: null,
                 order: 0,
+                nextActionId: null,
+                nextCompletionId: null,
               },
             ],
           },
@@ -477,6 +489,7 @@ describe("MissionService - Create", () => {
         imageFileUploadId: null,
         brandLogoFileUploadId: null,
         eventId: null,
+        entryActionId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -500,6 +513,7 @@ describe("MissionService - Create", () => {
         imageFileUploadId: null,
         brandLogoFileUploadId: null,
         eventId: null,
+        entryActionId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
