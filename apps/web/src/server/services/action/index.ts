@@ -80,6 +80,8 @@ export class ActionService {
       order: action.order,
       isRequired: action.isRequired,
       createdAt: action.createdAt,
+      nextActionId: action.nextActionId,
+      nextCompletionId: action.nextCompletionId,
     };
   }
 
@@ -117,6 +119,8 @@ export class ActionService {
         imageUrl: opt.imageUrl ?? undefined,
         order: opt.order,
         imageFileUploadId: opt.imageFileUploadId ?? undefined,
+        nextActionId: opt.nextActionId ?? null,
+        nextCompletionId: opt.nextCompletionId ?? null,
       })),
       userId,
     );
@@ -129,6 +133,8 @@ export class ActionService {
       order: action.order,
       isRequired: action.isRequired,
       createdAt: action.createdAt,
+      nextActionId: action.nextActionId,
+      nextCompletionId: action.nextCompletionId,
     };
   }
 
@@ -368,6 +374,8 @@ export class ActionService {
       maxSelections: original.maxSelections,
       isRequired: original.isRequired,
       hasOther: original.hasOther,
+      nextActionId: null,
+      nextCompletionId: null,
     };
 
     const createdAction =
@@ -379,6 +387,8 @@ export class ActionService {
               description: opt.description ?? undefined,
               imageUrl: opt.imageUrl ?? undefined,
               order: index,
+              nextActionId: null,
+              nextCompletionId: null,
             })),
             userId,
           )
@@ -392,6 +402,8 @@ export class ActionService {
       order: createdAction.order,
       isRequired: createdAction.isRequired,
       createdAt: createdAction.createdAt,
+      nextActionId: createdAction.nextActionId,
+      nextCompletionId: createdAction.nextCompletionId,
     };
   }
 

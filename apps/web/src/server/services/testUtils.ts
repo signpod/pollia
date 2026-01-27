@@ -1,4 +1,4 @@
-import type { Action, FileUpload, Mission, MissionCompletion } from "@prisma/client";
+import type { Action, ActionOption, FileUpload, Mission, MissionCompletion } from "@prisma/client";
 import { FileStatus, MissionCategory, MissionType } from "@prisma/client";
 
 export const createMockMission = (overrides: Partial<Mission> = {}): Mission => ({
@@ -45,23 +45,29 @@ export const createMockAction = (overrides: Partial<Action> = {}): Action => ({
   ...overrides,
 });
 
-interface MockActionOption {
-  id: string;
-  title: string;
-  description: string | null;
-  imageUrl: string | null;
-  fileUploadId: string | null;
-  order: number;
-}
+type ActionWithOptions = Action & { options: ActionOption[] };
 
-type ActionWithOptions = Action & { options: MockActionOption[] };
+export const createMockActionOption = (overrides: Partial<ActionOption> = {}): ActionOption => ({
+  id: "option1",
+  actionId: "action1",
+  title: "옵션",
+  description: null,
+  imageUrl: null,
+  fileUploadId: null,
+  order: 0,
+  nextActionId: null,
+  nextCompletionId: null,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  ...overrides,
+});
 
 export const createMockActionWithOptions = (
   overrides: Partial<Action> = {},
-  options: MockActionOption[] = [],
+  options: Partial<ActionOption>[] = [],
 ): ActionWithOptions => ({
   ...createMockAction(overrides),
-  options,
+  options: options.map(opt => createMockActionOption(opt)),
 });
 
 /**

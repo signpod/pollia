@@ -193,6 +193,7 @@ export class MissionService {
         isActive: false,
         type: originalMission.type,
         creatorId: userId,
+        entryActionId: null,
       },
       originalActions.map(action => ({
         title: action.title,
@@ -201,11 +202,15 @@ export class MissionService {
         type: action.type,
         order: action.order,
         maxSelections: action.maxSelections,
+        nextActionId: null,
+        nextCompletionId: null,
         options: action.options.map(opt => ({
           title: opt.title,
           description: opt.description,
           imageUrl: opt.imageUrl,
           order: opt.order,
+          nextActionId: null,
+          nextCompletionId: null,
         })),
       })),
     );

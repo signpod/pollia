@@ -81,6 +81,8 @@ describe("ActionService - Create", () => {
           imageUrl: opt.imageUrl,
           order: opt.order,
           imageFileUploadId: opt.imageFileUploadId,
+          nextActionId: null,
+          nextCompletionId: null,
         })),
         "user1",
       );
@@ -316,6 +318,8 @@ describe("ActionService - Create", () => {
           imageUrl: opt.imageUrl,
           order: opt.order,
           imageFileUploadId: opt.imageFileUploadId,
+          nextActionId: null,
+          nextCompletionId: null,
         })),
         "user1",
       );

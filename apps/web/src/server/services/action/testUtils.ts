@@ -4,6 +4,7 @@ import { ActionService } from ".";
 
 export {
   createMockAction,
+  createMockActionOption,
   createMockActionResponse,
   createMockActionWithOptions,
   createMockMission,

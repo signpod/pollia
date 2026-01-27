@@ -139,6 +139,7 @@ export class MissionRepository {
       isActive: boolean;
       type: MissionType;
       creatorId: string;
+      entryActionId?: string | null;
     },
     actionsData: Array<{
       title: string;
@@ -147,11 +148,15 @@ export class MissionRepository {
       type: ActionType;
       order: number | null;
       maxSelections?: number | null;
+      nextActionId?: string | null;
+      nextCompletionId?: string | null;
       options: Array<{
         title: string;
         description?: string | null;
         imageUrl?: string | null;
         order: number;
+        nextActionId?: string | null;
+        nextCompletionId?: string | null;
       }>;
     }>,
   ) {
@@ -168,6 +173,7 @@ export class MissionRepository {
           isActive: missionData.isActive,
           type: missionData.type,
           creatorId: missionData.creatorId,
+          entryActionId: missionData.entryActionId,
         },
       });
 
@@ -181,6 +187,8 @@ export class MissionRepository {
             type: actionData.type,
             order: actionData.order,
             maxSelections: actionData.maxSelections,
+            nextActionId: actionData.nextActionId,
+            nextCompletionId: actionData.nextCompletionId,
           },
         });
 
@@ -192,6 +200,8 @@ export class MissionRepository {
               description: opt.description,
               imageUrl: opt.imageUrl,
               order: opt.order,
+              nextActionId: opt.nextActionId,
+              nextCompletionId: opt.nextCompletionId,
             })),
           });
         }
