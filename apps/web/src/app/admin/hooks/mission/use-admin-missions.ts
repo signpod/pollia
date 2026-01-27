@@ -3,19 +3,26 @@
 import { getUserMissions } from "@/actions/mission";
 import { adminMissionQueryKeys } from "@/app/admin/constants/queryKeys";
 import type { SortOrderType } from "@/types/common/sort";
+import type { MissionCategory } from "@prisma/client";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-export function useAdminMissions(options?: { limit?: number; sortOrder?: SortOrderType }) {
+export function useAdminMissions(options?: {
+  limit?: number;
+  sortOrder?: SortOrderType;
+  category?: MissionCategory;
+}) {
   const limit = options?.limit ?? 10;
   const sortOrder = options?.sortOrder;
+  const category = options?.category;
 
   const query = useInfiniteQuery({
-    queryKey: adminMissionQueryKeys.list({ limit, sortOrder }),
+    queryKey: adminMissionQueryKeys.list({ limit, sortOrder, category }),
     queryFn: ({ pageParam }) => {
       return getUserMissions({
         cursor: pageParam,
         limit,
         sortOrder,
+        category,
       });
     },
     initialPageParam: "",
