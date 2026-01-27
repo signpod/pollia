@@ -6,6 +6,7 @@ const codeVersion =
 
 const isProduction = process.env.NODE_ENV === "production";
 const isProductionDeployment = process.env.VERCEL_ENV === "production";
+const isPreviewDeployment = process.env.VERCEL_ENV === "preview";
 
 const getProductionHostname = (): string | null => {
   const url = process.env.NEXT_PUBLIC_APP_URL;
@@ -21,6 +22,8 @@ const productionHostname = getProductionHostname();
 
 const isClientProductionDeployment =
   process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
+const isClientPreviewDeployment =
+  process.env.NEXT_PUBLIC_VERCEL_ENV === "preview";
 
 const baseConfig = {
   captureUncaught: true,
@@ -31,7 +34,7 @@ const baseConfig = {
 export const clientConfig = {
   accessToken: process.env.NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN,
   ...baseConfig,
-  enabled: isProduction,
+  enabled: isProduction && (isClientProductionDeployment || isClientPreviewDeployment),
   payload: {
     server: {
       root: "webpack:///./",
@@ -49,6 +52,6 @@ export const clientConfig = {
 export const serverInstance = new Rollbar({
   accessToken: process.env.ROLLBAR_SERVER_TOKEN,
   ...baseConfig,
-  enabled: isProduction && isProductionDeployment,
+  enabled: isProduction && (isProductionDeployment || isPreviewDeployment),
   codeVersion,
 });
