@@ -79,6 +79,7 @@ export const missionInputSchema = z.object({
   actionIds: actionIdsSchema,
   eventId: eventIdSchema,
   isActive: z.boolean().optional(),
+  entryActionId: z.string().nullable().optional(),
 });
 
 export const missionUpdateSchema = z
@@ -98,6 +99,7 @@ export const missionUpdateSchema = z
     isActive: z.boolean().optional(),
     rewardId: z.string().nullable().optional(),
     eventId: eventIdSchema,
+    entryActionId: z.string().nullable().optional(),
   })
   .refine(data => Object.keys(data).length > 0, {
     message: "최소 하나의 필드를 수정해야 합니다.",

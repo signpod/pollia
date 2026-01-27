@@ -39,6 +39,8 @@ export const actionOptionSchema = z.object({
   imageUrl: imageUrlSchema,
   order: orderSchema,
   imageFileUploadId: imageFileUploadIdSchema,
+  nextActionId: z.string().nullable().optional(),
+  nextCompletionId: z.string().nullable().optional(),
 });
 
 const optionItemSchema = actionOptionSchema;
@@ -55,6 +57,8 @@ export const optionUpdateSchema = z
     imageUrl: imageUrlSchema,
     order: orderSchema.optional(),
     imageFileUploadId: imageFileUploadIdSchema,
+    nextActionId: z.string().nullable().optional(),
+    nextCompletionId: z.string().nullable().optional(),
   })
   .refine(data => Object.keys(data).length > 0, {
     message: "최소 하나의 필드를 수정해야 합니다.",
