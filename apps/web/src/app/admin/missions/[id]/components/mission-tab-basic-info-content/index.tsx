@@ -11,7 +11,7 @@ import {
 } from "@/app/admin/components/shadcn-ui/card";
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
 import { cn, stripHtmlTags } from "@/app/admin/lib/utils";
-import { MISSION_TYPE_LABELS } from "@/constants/mission";
+import { MISSION_CATEGORY_LABELS, MISSION_TYPE_LABELS } from "@/constants/mission";
 import type { GetMissionResponse } from "@/types/dto";
 import { MissionType } from "@prisma/client";
 import {
@@ -23,6 +23,7 @@ import {
   Lock,
   type LucideIcon,
   Pencil,
+  Tag,
   Users,
   XCircle,
 } from "lucide-react";
@@ -77,6 +78,7 @@ function InfoField({ label, value, className }: InfoFieldProps) {
 
 export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
   const missionTypeLabel = MISSION_TYPE_LABELS[mission.type];
+  const missionCategoryLabel = MISSION_CATEGORY_LABELS[mission.category];
   const [isBasicInfoDialogOpen, setIsBasicInfoDialogOpen] = useState(false);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
 
@@ -113,6 +115,19 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
                 >
                   {missionTypeLabel}
                 </span>
+              </Badge>
+            }
+          />
+        )}
+
+        {missionCategoryLabel && (
+          <StatCard
+            icon={Tag}
+            iconColor="text-indigo-600"
+            label="카테고리"
+            value={
+              <Badge variant="outline">
+                <span className="text-sm">{missionCategoryLabel}</span>
               </Badge>
             }
           />

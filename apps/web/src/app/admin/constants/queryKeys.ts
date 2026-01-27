@@ -1,6 +1,6 @@
 export const adminMissionQueryKeys = {
   all: () => ["admin", "missions"] as const,
-  list: (params?: { limit?: number; sortOrder?: string; category?: string }) =>
+  list: (params?: { limit?: number; sortOrder?: string }) =>
     params
       ? (["admin", "missions", "list", params] as const)
       : (["admin", "missions", "list"] as const),
