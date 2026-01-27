@@ -16,6 +16,7 @@ export function createMissionCompletionServiceTestContext() {
   const mockMissionRepository = {
     findById: jest.fn(),
     findByUserId: jest.fn(),
+    findAll: jest.fn(),
     findActionIdsByMissionId: jest.fn(),
     findActionById: jest.fn(),
     findActionsByMissionId: jest.fn(),

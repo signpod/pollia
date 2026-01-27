@@ -7,18 +7,7 @@ import type { CreateMissionRequest, CreateMissionResponse } from "@/types/dto";
 
 function toCreateMissionInput(dto: CreateMissionRequest): CreateMissionInput {
   return {
-    title: dto.title,
-    description: dto.description,
-    target: dto.target,
-    imageUrl: dto.imageUrl,
-    imageFileUploadId: dto.imageFileUploadId,
-    brandLogoUrl: dto.brandLogoUrl,
-    brandLogoFileUploadId: dto.brandLogoFileUploadId,
-    deadline: dto.deadline,
-    estimatedMinutes: dto.estimatedMinutes,
-    maxParticipants: dto.maxParticipants,
-    type: dto.type,
-    eventId: dto.eventId,
+    ...dto,
     actionIds: dto.actionIds ?? [],
   };
 }

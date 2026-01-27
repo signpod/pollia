@@ -77,6 +77,7 @@ export default function AdminMissionCreatePage() {
     deadline: undefined,
     maxParticipants: null,
     type: "GENERAL" as const,
+    category: "EVENT" as const,
     isActive: undefined,
     actionIds: [],
     completion: {
@@ -124,6 +125,7 @@ export default function AdminMissionCreatePage() {
       const payload: CreateMissionRequest = {
         title: missionData.title,
         type: missionData.type,
+        category: missionData.category,
         actionIds: Array.isArray(missionData.actionIds) ? missionData.actionIds : [],
         maxParticipants:
           typeof missionData.maxParticipants === "number" ? missionData.maxParticipants : null,

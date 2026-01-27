@@ -9,6 +9,7 @@ export function createMissionServiceTestContext() {
   const mockRepository = {
     findById: jest.fn(),
     findByUserId: jest.fn(),
+    findAll: jest.fn(),
     createWithActions: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),

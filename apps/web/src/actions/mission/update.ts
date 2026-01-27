@@ -7,22 +7,7 @@ import type { UpdateMissionRequest } from "@/types/dto/mission";
 import { revalidatePath } from "next/cache";
 
 function toUpdateMissionInput(dto: UpdateMissionRequest): UpdateMissionInput {
-  return {
-    title: dto.title,
-    description: dto.description,
-    target: dto.target,
-    imageUrl: dto.imageUrl,
-    imageFileUploadId: dto.imageFileUploadId,
-    brandLogoUrl: dto.brandLogoUrl,
-    brandLogoFileUploadId: dto.brandLogoFileUploadId,
-    deadline: dto.deadline,
-    estimatedMinutes: dto.estimatedMinutes,
-    maxParticipants: dto.maxParticipants,
-    type: dto.type,
-    isActive: dto.isActive,
-    rewardId: dto.rewardId,
-    eventId: dto.eventId,
-  };
+  return { ...dto };
 }
 
 export async function updateMission(missionId: string, request: UpdateMissionRequest) {

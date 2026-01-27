@@ -1,5 +1,5 @@
 import type { Action, FileUpload, Mission, MissionCompletion } from "@prisma/client";
-import { FileStatus, MissionType } from "@prisma/client";
+import { FileStatus, MissionCategory, MissionType } from "@prisma/client";
 
 export const createMockMission = (overrides: Partial<Mission> = {}): Mission => ({
   id: "mission1",
@@ -13,6 +13,7 @@ export const createMockMission = (overrides: Partial<Mission> = {}): Mission => 
   isActive: true,
   maxParticipants: null,
   type: MissionType.GENERAL,
+  category: MissionCategory.EVENT,
   password: null,
   creatorId: "user1",
   rewardId: null,
