@@ -1,6 +1,7 @@
 export * from "../action";
 export * from "./useCreateMission";
 export * from "./useReadMissions";
+export * from "./useReadAllMissions";
 export * from "./useReadMission";
 export * from "./useMissionIntroData";
 export * from "./useMissionResume";

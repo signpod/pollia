@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { GoogleAnalytics } from "@/components/common/GoogleAnalytics";
+import { RootWrapper } from "@/components/common/RootWrapper";
 import { clientConfig } from "@/rollbar";
 import { Provider as RollbarProvider } from "@rollbar/react";
 
@@ -44,7 +45,7 @@ export default function RootLayout({
         </head>
         <body className="antialiased">
           <GoogleAnalytics />
-          <div className="mx-auto min-h-svh max-w-lg bg-background">{children}</div>
+          <RootWrapper>{children}</RootWrapper>
         </body>
       </html>
     </RollbarProvider>

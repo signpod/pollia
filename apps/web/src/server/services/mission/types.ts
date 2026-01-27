@@ -1,5 +1,5 @@
 import type { SortOrderType } from "@/types/common/sort";
-import type { Mission, MissionCategory, Prisma } from "@prisma/client";
+import type { Mission, MissionCategory, MissionType, Prisma } from "@prisma/client";
 
 type MissionCreateFields = Omit<
   Prisma.MissionUncheckedCreateInput,
@@ -20,6 +20,7 @@ export interface GetUserMissionsOptions {
   limit?: number;
   sortOrder?: SortOrderType;
   category?: MissionCategory;
+  type?: MissionType;
 }
 
 export interface MissionWithParticipantInfo {

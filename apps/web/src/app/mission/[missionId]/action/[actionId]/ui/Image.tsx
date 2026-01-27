@@ -131,16 +131,15 @@ export function ActionImage({
           const uploadResults = await uploadMultiple(files);
 
           if (uploadResults.length > 0) {
-            const newImageInfos: ImageInfo[] = imageInfosFromAnswer
-              .map((oldInfo, index) => {
-                const result = uploadResults[index];
-                if (!result?.fileUploadId || !result?.path) return oldInfo;
-                return {
-                  fileUrl: oldInfo.fileUrl,
-                  fileUploadId: result.fileUploadId,
-                  filePath: result.path,
-                };
-              });
+            const newImageInfos: ImageInfo[] = imageInfosFromAnswer.map((oldInfo, index) => {
+              const result = uploadResults[index];
+              if (!result?.fileUploadId || !result?.path) return oldInfo;
+              return {
+                fileUrl: oldInfo.fileUrl,
+                fileUploadId: result.fileUploadId,
+                filePath: result.path,
+              };
+            });
 
             setImageInfos(newImageInfos);
             validateAndUpdateAnswer(newImageInfos);
@@ -233,13 +232,10 @@ export function ActionImage({
     setUploadProgress(progress);
   }, []);
 
-  const handleUploadStart = useCallback(
-    (files: Array<{ file: File; tempUrl: string }>) => {
-      const tempUrls = files.map(f => f.tempUrl);
-      setUploadingImageUrls(tempUrls);
-    },
-    [],
-  );
+  const handleUploadStart = useCallback((files: Array<{ file: File; tempUrl: string }>) => {
+    const tempUrls = files.map(f => f.tempUrl);
+    setUploadingImageUrls(tempUrls);
+  }, []);
 
   const handleImageDelete = useCallback(
     (imageUrl: string) => {
