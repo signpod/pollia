@@ -120,12 +120,15 @@ export function MissionIntro({ children }: MissionIntroProps) {
   const { currentParticipants, maxParticipants } = participantInfo?.data ?? {};
 
   const showRewardWidget = !!reward?.data.id;
-  const now = useMemo(() => new Date(), []);
   const deadlineDate = useMemo(() => (deadline ? new Date(deadline) : null), [deadline]);
-  const showDeadlineWidget = useMemo(
-    () => Boolean(deadlineDate && isBefore(deadlineDate, addHours(now, 24))),
-    [deadlineDate, now],
-  );
+  const [showDeadlineWidget, setShowDeadlineWidget] = useState(false);
+
+  useEffect(() => {
+    if (deadlineDate) {
+      const now = new Date();
+      setShowDeadlineWidget(isBefore(deadlineDate, addHours(now, 24)));
+    }
+  }, [deadlineDate]);
 
   const isProcessing = Boolean(missionResponseData?.data?.id);
 
