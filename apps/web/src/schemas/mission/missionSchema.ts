@@ -1,4 +1,4 @@
-import { MissionType } from "@prisma/client";
+import { MissionCategory, MissionType } from "@prisma/client";
 import { z } from "zod";
 
 export const MISSION_TITLE_MAX_LENGTH = 100;
@@ -6,6 +6,7 @@ export const MISSION_DESCRIPTION_MAX_LENGTH = 2000;
 export const MISSION_TARGET_MAX_LENGTH = 100;
 
 const missionTypeSchema = z.enum(MissionType);
+const missionCategorySchema = z.enum(MissionCategory);
 
 export const titleSchema = z
   .string()
@@ -74,6 +75,7 @@ export const missionInputSchema = z.object({
   estimatedMinutes: estimatedMinutesSchema,
   maxParticipants: maxParticipantsSchema,
   type: missionTypeSchema,
+  category: missionCategorySchema,
   actionIds: actionIdsSchema,
   eventId: eventIdSchema,
   isActive: z.boolean().optional(),
@@ -92,6 +94,7 @@ export const missionUpdateSchema = z
     estimatedMinutes: estimatedMinutesSchema,
     maxParticipants: maxParticipantsSchema.optional(),
     type: missionTypeSchema.optional(),
+    category: missionCategorySchema.optional(),
     isActive: z.boolean().optional(),
     rewardId: z.string().nullable().optional(),
     eventId: eventIdSchema,

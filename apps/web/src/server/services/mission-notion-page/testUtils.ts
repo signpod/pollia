@@ -35,6 +35,7 @@ export const createMockMission = (overrides: Partial<Mission> = {}): Mission => 
   maxParticipants: null,
   isActive: true,
   type: "GENERAL",
+  category: "EVENT",
   password: null,
   creatorId: "user1",
   rewardId: null,
