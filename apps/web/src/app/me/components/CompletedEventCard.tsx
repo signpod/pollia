@@ -5,7 +5,7 @@ import type { MyMissionResponse } from "@/types/dto/mission-response";
 import PollPollE from "@public/svgs/poll-poll-e.svg";
 import { Typo } from "@repo/ui/components";
 import { CheckCircle2Icon, ChevronRightIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnswerDetailModal } from "./AnswerDetailModal";
 
 interface CompletedEventCardProps {
@@ -15,6 +15,13 @@ interface CompletedEventCardProps {
 export function CompletedEventCard({ response }: CompletedEventCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { mission, completedAt } = response;
+  const [formattedCompletedAt, setFormattedCompletedAt] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (completedAt) {
+      setFormattedCompletedAt(formatToMonthDay(completedAt));
+    }
+  }, [completedAt]);
 
   return (
     <>
@@ -40,7 +47,7 @@ export function CompletedEventCard({ response }: CompletedEventCardProps) {
           <div className="flex items-center gap-1">
             <CheckCircle2Icon className="size-3.5 text-zinc-400" />
             <span className="text-xs font-medium text-zinc-400">
-              {completedAt ? `${formatToMonthDay(completedAt)} 완료` : "완료"}
+              {formattedCompletedAt ? `${formattedCompletedAt} 완료` : "완료"}
             </span>
           </div>
           <Typo.SubTitle className="mt-0.5 truncate">{mission.title}</Typo.SubTitle>
