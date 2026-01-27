@@ -120,12 +120,17 @@ export function MissionIntro({ children }: MissionIntroProps) {
   const { currentParticipants, maxParticipants } = participantInfo?.data ?? {};
 
   const showRewardWidget = !!reward?.data.id;
-  const now = useMemo(() => new Date(), []);
   const deadlineDate = useMemo(() => (deadline ? new Date(deadline) : null), [deadline]);
-  const showDeadlineWidget = useMemo(
-    () => Boolean(deadlineDate && isBefore(deadlineDate, addHours(now, 24))),
-    [deadlineDate, now],
-  );
+  const [showDeadlineWidget, setShowDeadlineWidget] = useState(false);
+  const [formattedDeadline, setFormattedDeadline] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (deadlineDate) {
+      const now = new Date();
+      setShowDeadlineWidget(isBefore(deadlineDate, addHours(now, 24)));
+      setFormattedDeadline(formatDateToLocalString(deadlineDate).replaceAll("-", "."));
+    }
+  }, [deadlineDate]);
 
   const isProcessing = Boolean(missionResponseData?.data?.id);
 
@@ -201,9 +206,9 @@ export function MissionIntro({ children }: MissionIntroProps) {
                           <Lock className="size-4 text-white inline-block ml-1 align-[0.1em]" />
                         )}
                       </div>
-                      {deadlineDate && (
+                      {formattedDeadline && (
                         <Typo.Body size="medium" className="text-zinc-300">
-                          {`${formatDateToLocalString(deadlineDate).replaceAll("-", ".")} 까지`}
+                          {`${formattedDeadline} 까지`}
                         </Typo.Body>
                       )}
                     </div>
