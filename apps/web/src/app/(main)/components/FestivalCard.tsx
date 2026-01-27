@@ -1,32 +1,44 @@
+"use client";
+
 import type { FestivalData } from "@/types/dto/festival";
+import PolliaIcon from "@public/svgs/pollia-icon.svg";
 import { Typo } from "@repo/ui/components";
 import { Calendar, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { CategoryBadge, getRandomCategory } from "./CategoryBadge";
+import { useState } from "react";
+import { CategoryBadge } from "./CategoryBadge";
 
 interface FestivalCardProps {
   festival: FestivalData;
 }
 
 export function FestivalCard({ festival }: FestivalCardProps) {
-  const category = getRandomCategory(festival.id);
+  const [imageError, setImageError] = useState(false);
+  const showFallback = imageError || !festival.imageUrl;
 
   return (
     <Link
       href={`/festivals/${festival.id}`}
-      className="group block overflow-hidden rounded-xl border border-default bg-default transition-all hover:-translate-y-1 hover:shadow-effect-default"
+      className="group block overflow-hidden rounded-xl bg-default transition-all hover:-translate-y-1 hover:shadow-effect-default shadow-[0_4px_20px_rgba(0,0,0,0.08)]"
     >
       <div className="relative h-36 overflow-hidden">
-        <Image
-          src={festival.imageUrl}
-          alt={festival.title}
-          fill
-          className="object-cover transition-transform group-hover:scale-105"
-          unoptimized={festival.imageUrl.includes("visitkorea")}
-        />
+        {showFallback ? (
+          <div className="flex h-full w-full items-center justify-center bg-zinc-50">
+            <PolliaIcon className="size-16 text-violet-200" />
+          </div>
+        ) : (
+          <Image
+            src={festival.imageUrl}
+            alt={festival.title}
+            fill
+            className="object-cover transition-transform group-hover:scale-105"
+            unoptimized={festival.imageUrl.includes("visitkorea")}
+            onError={() => setImageError(true)}
+          />
+        )}
         <span className="absolute left-3 top-3">
-          <CategoryBadge category={category} />
+          <CategoryBadge category="EVENT" />
         </span>
       </div>
       <div className="p-4">

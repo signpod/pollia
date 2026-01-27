@@ -1,10 +1,15 @@
+"use client";
+
 import { stripHtmlTags } from "@/app/admin/lib/utils";
+import type { MissionCategory } from "@prisma/client";
 import GiftIcon from "@public/svgs/gift-color-icon.svg";
+import PolliaIcon from "@public/svgs/pollia-icon.svg";
 import { ProgressBar, Typo } from "@repo/ui/components";
 import { Calendar, Clock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { CategoryBadge, getRandomCategory } from "./CategoryBadge";
+import { useState } from "react";
+import { CategoryBadge } from "./CategoryBadge";
 
 export interface SurveyCardData {
   id: string;
@@ -16,6 +21,8 @@ export interface SurveyCardData {
   reward: string | null;
   currentParticipants: number;
   maxParticipants: number;
+  category: MissionCategory;
+  createdAt: string;
 }
 
 interface SurveyCardProps {
@@ -23,23 +30,31 @@ interface SurveyCardProps {
 }
 
 export function SurveyCard({ survey }: SurveyCardProps) {
+  const [imageError, setImageError] = useState(false);
   const progressPercent = (survey.currentParticipants / survey.maxParticipants) * 100;
-  const category = getRandomCategory(survey.id);
+  const showFallback = imageError || !survey.imageUrl;
 
   return (
     <Link
       href={`/mission/${survey.id}`}
-      className="group flex h-full flex-col overflow-hidden rounded-xl border border-default bg-default transition-all hover:-translate-y-1 hover:shadow-effect-default"
+      className=" shadow-[0_4px_20px_rgba(0,0,0,0.08)] group flex h-full flex-col overflow-hidden rounded-xl bg-default transition-all hover:-translate-y-1 hover:shadow-effect-default"
     >
       <div className="relative h-36 shrink-0 overflow-hidden">
-        <Image
-          src={survey.imageUrl}
-          alt={survey.title}
-          fill
-          className="object-cover transition-transform group-hover:scale-105"
-        />
+        {showFallback ? (
+          <div className="flex h-full w-full items-center justify-center bg-zinc-50">
+            <PolliaIcon className="size-16 text-violet-200" />
+          </div>
+        ) : (
+          <Image
+            src={survey.imageUrl}
+            alt={survey.title}
+            fill
+            className="object-cover transition-transform group-hover:scale-105"
+            onError={() => setImageError(true)}
+          />
+        )}
         <span className="absolute left-3 top-3">
-          <CategoryBadge category={category} />
+          <CategoryBadge category={survey.category} />
         </span>
         {survey.reward && (
           <span className="absolute right-3 top-3 rounded bg-zinc-900/70 px-2.5 py-1 text-xs font-semibold text-yellow-400">

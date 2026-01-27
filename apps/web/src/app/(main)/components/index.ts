@@ -5,6 +5,7 @@ export * from "./ChipFilter";
 export * from "./FestivalCard";
 export * from "./FestivalSection";
 export * from "./Header";
+export * from "./MainContent";
 export * from "./SectionHeader";
 export * from "./SurveyCard";
 export * from "./SurveySection";
