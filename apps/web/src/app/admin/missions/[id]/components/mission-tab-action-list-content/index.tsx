@@ -106,7 +106,7 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
 
   useEffect(() => {
     if (actionsResponse?.data) {
-      const sorted = [...actionsResponse.data].sort((a, b) => a.order - b.order);
+      const sorted = [...actionsResponse.data].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
       setActions(sorted);
       const firstAction = sorted[0];
       if (!selectedActionId && firstAction) {

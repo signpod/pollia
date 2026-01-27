@@ -106,7 +106,9 @@ function SortableActionCard({ action, onEdit, onDelete }: SortableActionCardProp
                 >
                   {action.isRequired ? "필수" : "선택"}
                 </Badge>
-                <span className="text-xs text-muted-foreground">#{action.order + 1}</span>
+                <span className="text-xs text-muted-foreground">
+                  {action.order ? `#${action.order + 1}` : "순서 없음"}
+                </span>
               </div>
               <h4 className="font-medium mt-1 truncate">{action.title}</h4>
             </div>
@@ -165,7 +167,7 @@ function ActionCardOverlay({ action }: { action: ActionDetail }) {
               >
                 {action.isRequired ? "필수" : "선택"}
               </Badge>
-              <span className="text-xs text-muted-foreground">#{action.order + 1}</span>
+              <span className="text-xs text-muted-foreground">#{(action.order ?? 0) + 1}</span>
             </div>
             <h4 className="font-medium mt-1 truncate">{action.title}</h4>
           </div>
@@ -238,7 +240,7 @@ export function ActionsEditTab({ missionId }: ActionsEditTabProps) {
 
   useEffect(() => {
     if (actionsResponse?.data) {
-      setActions([...actionsResponse.data].sort((a, b) => a.order - b.order));
+      setActions([...actionsResponse.data].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)));
     }
   }, [actionsResponse?.data]);
 
