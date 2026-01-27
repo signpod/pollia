@@ -2,6 +2,7 @@
 import { Typo } from "@repo/ui/components";
 import { formatDate } from "date-fns";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import { SectionHeader } from "./SectionHeader";
 
 const REWARD_SECTION_BADGE_TEXT = "참여 혜택";
@@ -24,6 +25,14 @@ export function MissionRewardSection({
   rewardName,
   rewardScheduledDate,
 }: MissionRewardSectionProps) {
+  const [formattedScheduledDate, setFormattedScheduledDate] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (rewardScheduledDate) {
+      setFormattedScheduledDate(formatDate(rewardScheduledDate, "yy.MM.dd"));
+    }
+  }, [rewardScheduledDate]);
+
   return (
     <div className="flex flex-col gap-6">
       <SectionHeader badgeText={REWARD_SECTION_BADGE_TEXT} title={REWARD_SECTION_TITLE} />
@@ -47,10 +56,10 @@ export function MissionRewardSection({
               {rewardName}
             </Typo.SubTitle>
           )}
-          {rewardScheduledDate && (
+          {formattedScheduledDate && (
             <div className="ring-1 ring-default rounded-3xl px-3 py-1">
               <Typo.Body size="medium" className="text-default">
-                {`${formatDate(rewardScheduledDate, "yy.MM.dd")} 순차지급`}
+                {`${formattedScheduledDate} 순차지급`}
               </Typo.Body>
             </div>
           )}
