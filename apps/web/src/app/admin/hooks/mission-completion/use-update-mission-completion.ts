@@ -25,7 +25,7 @@ export function useUpdateMissionCompletion(options: UseUpdateMissionCompletionOp
 
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: adminMissionCompletionQueryKeys.all(),
+        queryKey: adminMissionCompletionQueryKeys.all,
       });
       options.onSuccess?.();
     },

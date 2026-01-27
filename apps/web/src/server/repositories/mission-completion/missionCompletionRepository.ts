@@ -38,6 +38,27 @@ export class MissionCompletionRepository {
     });
   }
 
+  async findAllByMissionId(missionId: string) {
+    return prisma.missionCompletion.findMany({
+      where: { missionId },
+      include: {
+        imageFileUpload: {
+          select: {
+            id: true,
+            publicUrl: true,
+          },
+        },
+        mission: {
+          select: {
+            id: true,
+            creatorId: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+  }
+
   async create(data: Prisma.MissionCompletionUncheckedCreateInput, userId?: string) {
     const imageFileUploadId =
       typeof data.imageFileUploadId === "string" ? data.imageFileUploadId : undefined;

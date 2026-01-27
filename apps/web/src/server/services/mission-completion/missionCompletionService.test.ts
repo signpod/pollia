@@ -74,7 +74,6 @@ describe("MissionCompletionService", () => {
       });
 
       mockMissionRepo.findById.mockResolvedValue(mockMission);
-      mockRepo.findByMissionId.mockResolvedValue(null);
       mockRepo.create.mockResolvedValue(mockCreatedCompletion);
 
       // When
@@ -83,7 +82,6 @@ describe("MissionCompletionService", () => {
       // Then
       expect(result).toEqual(mockCreatedCompletion);
       expect(mockMissionRepo.findById).toHaveBeenCalledWith(TEST_MISSION_ID);
-      expect(mockRepo.findByMissionId).toHaveBeenCalledWith(TEST_MISSION_ID);
       expect(mockRepo.create).toHaveBeenCalledWith(createData, TEST_USER_ID);
     });
 
@@ -134,33 +132,6 @@ describe("MissionCompletionService", () => {
       expect(mockRepo.create).not.toHaveBeenCalled();
     });
 
-    it("이미 MissionCompletion이 존재하면 409 에러를 던진다", async () => {
-      // Given
-      const createData = {
-        title: "미션 완료!",
-        description: "축하합니다!",
-        missionId: TEST_MISSION_ID,
-      };
-      const mockMission = createMockMission();
-      const existingCompletion = createMockMissionCompletion();
-
-      mockMissionRepo.findById.mockResolvedValue(mockMission);
-      mockRepo.findByMissionId.mockResolvedValue(existingCompletion);
-
-      // When & Then
-      await expect(service.createMissionCompletion(createData, TEST_USER_ID)).rejects.toThrow(
-        "이미 미션 완료 데이터가 존재합니다.",
-      );
-
-      try {
-        await service.createMissionCompletion(createData, TEST_USER_ID);
-      } catch (error) {
-        expect(error instanceof Error && error.cause).toBe(409);
-      }
-
-      expect(mockRepo.create).not.toHaveBeenCalled();
-    });
-
     it("제목이 없으면 400 에러를 던진다", async () => {
       // Given
       const invalidData = {
@@ -171,7 +142,6 @@ describe("MissionCompletionService", () => {
       const mockMission = createMockMission();
 
       mockMissionRepo.findById.mockResolvedValue(mockMission);
-      mockRepo.findByMissionId.mockResolvedValue(null);
 
       // When & Then
       await expect(service.createMissionCompletion(invalidData, TEST_USER_ID)).rejects.toThrow(
@@ -191,7 +161,6 @@ describe("MissionCompletionService", () => {
       const mockMission = createMockMission();
 
       mockMissionRepo.findById.mockResolvedValue(mockMission);
-      mockRepo.findByMissionId.mockResolvedValue(null);
 
       // When & Then
       await expect(service.createMissionCompletion(invalidData, TEST_USER_ID)).rejects.toThrow();
@@ -209,7 +178,6 @@ describe("MissionCompletionService", () => {
       const mockMission = createMockMission();
 
       mockMissionRepo.findById.mockResolvedValue(mockMission);
-      mockRepo.findByMissionId.mockResolvedValue(null);
 
       // When & Then
       await expect(service.createMissionCompletion(invalidData, TEST_USER_ID)).rejects.toThrow(
@@ -217,6 +185,155 @@ describe("MissionCompletionService", () => {
       );
 
       expect(mockRepo.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("getCompletionsByMissionId", () => {
+    it("빈 배열을 성공적으로 반환한다 (Completion이 없는 경우)", async () => {
+      // Given
+      const mockMission = createMockMission();
+      mockMissionRepo.findById.mockResolvedValue(mockMission);
+      mockRepo.findAllByMissionId.mockResolvedValue([]);
+
+      // When
+      const result = await service.getCompletionsByMissionId(TEST_MISSION_ID, TEST_USER_ID);
+
+      // Then
+      expect(result).toEqual([]);
+      expect(mockMissionRepo.findById).toHaveBeenCalledWith(TEST_MISSION_ID);
+      expect(mockRepo.findAllByMissionId).toHaveBeenCalledWith(TEST_MISSION_ID);
+      expect(mockMissionRepo.findById).toHaveBeenCalledTimes(1);
+      expect(mockRepo.findAllByMissionId).toHaveBeenCalledTimes(1);
+    });
+
+    it("단일 Completion을 성공적으로 반환한다", async () => {
+      // Given
+      const mockMission = createMockMission();
+      const mockCompletion = createMockMissionCompletion({
+        title: "첫 번째 완료화면",
+      });
+      mockMissionRepo.findById.mockResolvedValue(mockMission);
+      mockRepo.findAllByMissionId.mockResolvedValue([mockCompletion]);
+
+      // When
+      const result = await service.getCompletionsByMissionId(TEST_MISSION_ID, TEST_USER_ID);
+
+      // Then
+      expect(result).toHaveLength(1);
+      expect(result[0]).toEqual(mockCompletion);
+      expect(mockRepo.findAllByMissionId).toHaveBeenCalledWith(TEST_MISSION_ID);
+    });
+
+    it("여러 Completion을 생성 시간 순서대로 반환한다", async () => {
+      // Given
+      const mockMission = createMockMission();
+      const oldestCompletion = createMockMissionCompletion({
+        id: "completion1",
+        title: "첫 번째 완료화면",
+        createdAt: new Date("2024-01-01"),
+      });
+      const middleCompletion = createMockMissionCompletion({
+        id: "completion2",
+        title: "두 번째 완료화면",
+        createdAt: new Date("2024-01-02"),
+      });
+      const newestCompletion = createMockMissionCompletion({
+        id: "completion3",
+        title: "세 번째 완료화면",
+        createdAt: new Date("2024-01-03"),
+      });
+
+      mockMissionRepo.findById.mockResolvedValue(mockMission);
+      mockRepo.findAllByMissionId.mockResolvedValue([
+        oldestCompletion,
+        middleCompletion,
+        newestCompletion,
+      ]);
+
+      // When
+      const result = await service.getCompletionsByMissionId(TEST_MISSION_ID, TEST_USER_ID);
+
+      // Then
+      expect(result).toHaveLength(3);
+      expect(result[0]!.id).toBe("completion1");
+      expect(result[1]!.id).toBe("completion2");
+      expect(result[2]!.id).toBe("completion3");
+      expect(result[0]!.title).toBe("첫 번째 완료화면");
+      expect(result[1]!.title).toBe("두 번째 완료화면");
+      expect(result[2]!.title).toBe("세 번째 완료화면");
+    });
+
+    it("Mission이 없으면 404 에러를 던진다", async () => {
+      // Given
+      mockMissionRepo.findById.mockResolvedValue(null);
+
+      // When & Then
+      await expect(
+        service.getCompletionsByMissionId("invalid-mission-id", TEST_USER_ID),
+      ).rejects.toThrow("미션을 찾을 수 없습니다.");
+
+      try {
+        await service.getCompletionsByMissionId("invalid-mission-id", TEST_USER_ID);
+      } catch (error) {
+        expect(error instanceof Error && error.cause).toBe(404);
+      }
+
+      expect(mockRepo.findAllByMissionId).not.toHaveBeenCalled();
+    });
+
+    it("Mission 생성자가 아니면 403 에러를 던진다", async () => {
+      // Given
+      const mockMission = createMockMission({ creatorId: "other-user" });
+      mockMissionRepo.findById.mockResolvedValue(mockMission);
+
+      // When & Then
+      await expect(
+        service.getCompletionsByMissionId(TEST_MISSION_ID, TEST_USER_ID),
+      ).rejects.toThrow("조회 권한이 없습니다.");
+
+      try {
+        await service.getCompletionsByMissionId(TEST_MISSION_ID, TEST_USER_ID);
+      } catch (error) {
+        expect(error instanceof Error && error.cause).toBe(403);
+      }
+
+      expect(mockRepo.findAllByMissionId).not.toHaveBeenCalled();
+    });
+
+    it("동일 Mission에 대한 여러 Completion이 모두 반환된다 (다중 엔딩)", async () => {
+      // Given
+      const mockMission = createMockMission();
+      const happyEndingCompletion = createMockMissionCompletion({
+        id: "happy-ending",
+        title: "해피 엔딩",
+        description: "축하합니다! 최고의 결과입니다.",
+      });
+      const normalEndingCompletion = createMockMissionCompletion({
+        id: "normal-ending",
+        title: "노말 엔딩",
+        description: "미션을 완료했습니다.",
+      });
+      const badEndingCompletion = createMockMissionCompletion({
+        id: "bad-ending",
+        title: "배드 엔딩",
+        description: "아쉽게 끝났습니다.",
+      });
+
+      mockMissionRepo.findById.mockResolvedValue(mockMission);
+      mockRepo.findAllByMissionId.mockResolvedValue([
+        happyEndingCompletion,
+        normalEndingCompletion,
+        badEndingCompletion,
+      ]);
+
+      // When
+      const result = await service.getCompletionsByMissionId(TEST_MISSION_ID, TEST_USER_ID);
+
+      // Then
+      expect(result).toHaveLength(3);
+      expect(result.map(c => c.id)).toEqual(["happy-ending", "normal-ending", "bad-ending"]);
+      expect(mockRepo.findAllByMissionId).toHaveBeenCalledWith(TEST_MISSION_ID);
+      expect(mockRepo.findAllByMissionId).toHaveBeenCalledTimes(1);
     });
   });
 
