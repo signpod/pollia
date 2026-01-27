@@ -33,7 +33,7 @@ export function FestivalContent({ festival }: FestivalContentProps) {
         <section className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <div className="h-6 w-1 rounded-full bg-violet-500" />
-            <Typo.SubTitle size="large">상세 정보</Typo.SubTitle>
+            <Typo.SubTitle size="large">한눈에 보기</Typo.SubTitle>
           </div>
 
           <div className="flex flex-col gap-3 rounded-xl bg-zinc-50 p-4">
@@ -77,7 +77,7 @@ export function FestivalContent({ festival }: FestivalContentProps) {
           <section className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
               <div className="h-6 w-1 rounded-full bg-violet-500" />
-              <Typo.SubTitle size="large">소개</Typo.SubTitle>
+              <Typo.SubTitle size="large">이런 축제예요</Typo.SubTitle>
             </div>
             <Typo.Body size="medium" className="whitespace-pre-wrap text-sub leading-relaxed">
               {festival.description}
@@ -86,19 +86,22 @@ export function FestivalContent({ festival }: FestivalContentProps) {
         )}
 
         {festival.address && (
-          <section className="flex flex-col items-center gap-3">
-            <Typo.Body size="medium" className="text-center text-sub">
-              축제 장소가 궁금하다면?
-            </Typo.Body>
+          <section className="flex flex-col gap-3">
+            <div className="flex gap-2">
+              <div className="h-6 w-1 rounded-full bg-violet-500" />
+              <Typo.SubTitle size="large">여기서 만나요</Typo.SubTitle>
+            </div>
             <Link
               href={getNaverMapUrl(festival.address)}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full"
             >
-              <ButtonV2 variant="secondary" size="large" className="w-full gap-2">
-                <MapPin className="size-4" />
-                네이버 지도에서 보기
+              <ButtonV2 variant="primary" size="large" className="w-full">
+                <div className="flex items-center gap-2">
+                  <MapPin className="size-4" />
+                  네이버 지도에서 보기
+                </div>
               </ButtonV2>
             </Link>
           </section>
