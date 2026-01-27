@@ -45,6 +45,7 @@ export class MissionRepository {
     limit?: number;
     sortOrder?: SortOrderType;
     category?: MissionCategory;
+    type?: MissionType;
   }) {
     const limit = options?.limit ?? 10;
     const sortOrder = options?.sortOrder ?? "latest";
@@ -52,6 +53,7 @@ export class MissionRepository {
     return prisma.mission.findMany({
       where: {
         ...(options?.category && { category: options.category }),
+        ...(options?.type && { type: options.type }),
       },
       orderBy: {
         updatedAt: sortOrder === "latest" ? "desc" : "asc",

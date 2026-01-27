@@ -1,5 +1,6 @@
 import { getAllMissions } from "@/actions/mission";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
+import { MissionType } from "@prisma/client";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 export const useReadAllMissions = (params?: { options?: { limit?: number } }) => {
@@ -9,6 +10,7 @@ export const useReadAllMissions = (params?: { options?: { limit?: number } }) =>
       return getAllMissions({
         cursor: pageParam,
         limit: params?.options?.limit ?? 10,
+        type: MissionType.GENERAL,
       });
     },
     initialPageParam: undefined as string | undefined,
