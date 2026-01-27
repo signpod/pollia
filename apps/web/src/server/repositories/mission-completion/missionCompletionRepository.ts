@@ -24,7 +24,7 @@ export class MissionCompletionRepository {
   }
 
   async findByMissionId(missionId: string) {
-    return prisma.missionCompletion.findUnique({
+    return prisma.missionCompletion.findFirst({
       where: { missionId },
       include: {
         imageFileUpload: {
@@ -34,6 +34,7 @@ export class MissionCompletionRepository {
           },
         },
       },
+      orderBy: { createdAt: "asc" },
     });
   }
 
