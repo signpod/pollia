@@ -33,3 +33,24 @@ export async function updateAnswer(
     throw serverError;
   }
 }
+
+export async function updateAnswerWithPruning(
+  answerId: string,
+  request: UpdateActionAnswerRequest,
+): Promise<GetQuestionAnswerResponse> {
+  try {
+    const user = await requireAuth();
+    const input = toUpdateAnswerInput(request);
+    const answer = await actionAnswerService.updateAnswerWithPruning(answerId, input, user.id);
+    const data = { ...answer, actionId: answer.action.id };
+    return { data };
+  } catch (error) {
+    console.error("updateAnswerWithPruning error:", error);
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("답변 수정 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
+  }
+}
