@@ -1,5 +1,6 @@
 "use client";
 
+import { ROUTES } from "@/constants/routes";
 import { Typo } from "@repo/ui/components";
 import { ChevronRight } from "lucide-react";
 import Image from "next/image";
@@ -19,11 +20,11 @@ export function BannerSlider() {
   return (
     <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
       <Link
-        href={`/mission/${FEATURED_MISSION.id}`}
+        href={`https://pollia.me/${ROUTES.MISSION(FEATURED_MISSION.id)}`}
         className="group grid overflow-hidden rounded-2xl bg-zinc-900 md:grid-cols-[1fr_2fr]"
       >
         {/* 이미지 영역 */}
-        <div className="relative aspect-[4/3] md:aspect-auto md:min-h-[280px] lg:min-h-[320px]">
+        <div className="relative aspect-4/3 md:aspect-auto md:min-h-[280px] lg:min-h-[320px]">
           {/* 블러 배경 */}
           <Image
             src={FEATURED_MISSION.imageUrl}
@@ -61,7 +62,10 @@ export function BannerSlider() {
             {FEATURED_MISSION.description}
           </Typo.Body>
 
-          <button className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-zinc-900 transition-all group-hover:gap-2.5 group-hover:bg-zinc-100">
+          <button
+            className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-zinc-900 transition-all group-hover:gap-2.5 group-hover:bg-zinc-100"
+            type="button"
+          >
             지금 신청하기
             <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </button>
