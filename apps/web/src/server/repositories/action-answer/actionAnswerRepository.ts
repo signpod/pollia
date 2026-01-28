@@ -243,14 +243,6 @@ export class ActionAnswerRepository {
     });
   }
 
-  async deleteManyByIds(ids: string[]) {
-    return prisma.actionAnswer.deleteMany({
-      where: {
-        id: { in: ids },
-      },
-    });
-  }
-
   /**
    * 선택된 옵션에 따라 유효하지 않게 된 답변들을 수집합니다.
    *
