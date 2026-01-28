@@ -139,6 +139,37 @@ export class ActionAnswerService {
     return this.answerRepo.update(answerId, updateData);
   }
 
+  async updateAnswerWithPruning(answerId: string, input: UpdateAnswerInput, userId: string) {
+    const validated = this.validateInput(input, actionAnswerUpdateSchema);
+    const answer = await this.getAnswerById(answerId, userId);
+    const action = await this.actionRepo.findById(answer.actionId);
+    if (action) {
+      this.validateAnswerByActionType(
+        {
+          responseId: answer.responseId,
+          actionId: answer.actionId,
+          ...validated,
+        },
+        action.type,
+        action.isRequired,
+      );
+    }
+    const { selectedOptionIds, ...otherFields } = validated;
+    const updateData: Prisma.ActionAnswerUpdateInput = {
+      ...otherFields,
+    };
+    if (selectedOptionIds !== undefined) {
+      updateData.options = {
+        set: selectedOptionIds.map(id => ({ id })),
+      };
+    }
+    const result = await this.answerRepo.updateWithPruning(answerId, updateData);
+    if (!result) {
+      this.throwError("답변 업데이트에 실패했습니다.", 500);
+    }
+    return result;
+  }
+
   async deleteAnswer(answerId: string, userId: string): Promise<void> {
     await this.getAnswerById(answerId, userId);
     await this.answerRepo.delete(answerId);

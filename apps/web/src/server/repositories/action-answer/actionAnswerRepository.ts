@@ -2,6 +2,8 @@ import prisma from "@/database/utils/prisma/client";
 import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
 import { Prisma } from "@prisma/client";
 
+type PrismaTransaction = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+
 export class ActionAnswerRepository {
   async findById(id: string) {
     return prisma.actionAnswer.findUnique({
@@ -238,6 +240,124 @@ export class ActionAnswerRepository {
         responseId,
         actionId: { in: actionIds },
       },
+    });
+  }
+
+  /**
+   * 선택된 옵션에 따라 유효하지 않게 된 답변들을 수집합니다.
+   *
+   * BFS 알고리즘을 사용하여 다음 로직으로 답변을 탐색합니다:
+   * 1. 주어진 옵션들의 nextActionId를 시작점으로 큐에 추가
+   * 2. 각 액션에 대해 사용자의 답변이 있는지 확인
+   * 3. 답변이 있으면 삭제 대상에 추가
+   * 4. 완료 화면으로 분기되지 않으면 다음 액션들을 큐에 추가
+   * 5. 순환 참조 방지를 위해 방문한 액션은 Set으로 관리
+   *
+   * @param responseId - 응답 ID
+   * @param optionIds - 수집을 시작할 옵션 ID 배열
+   * @param tx - 트랜잭션 클라이언트 (선택)
+   * @returns 삭제해야 할 답변 ID 배열
+   */
+  async collectInvalidAnswersByOptions(
+    responseId: string,
+    optionIds: string[],
+    tx?: PrismaTransaction,
+  ): Promise<string[]> {
+    const client = tx || prisma;
+    const answersToDelete: string[] = [];
+    const visitedActions = new Set<string>();
+
+    const options = await client.actionOption.findMany({
+      where: { id: { in: optionIds } },
+      select: {
+        id: true,
+        nextActionId: true,
+        nextCompletionId: true,
+      },
+    });
+
+    const allAnswers = await client.actionAnswer.findMany({
+      where: { responseId },
+      include: {
+        options: {
+          select: {
+            id: true,
+            nextActionId: true,
+            nextCompletionId: true,
+          },
+        },
+      },
+    });
+
+    const answersByActionId = new Map(allAnswers.map(answer => [answer.actionId, answer]));
+
+    const queue: string[] = options
+      .map(opt => opt.nextActionId)
+      .filter((id): id is string => id !== null);
+
+    while (queue.length > 0) {
+      const actionId = queue.shift();
+      if (!actionId) continue;
+
+      if (visitedActions.has(actionId)) continue;
+      visitedActions.add(actionId);
+
+      const userAnswer = answersByActionId.get(actionId);
+
+      if (!userAnswer) continue;
+
+      answersToDelete.push(userAnswer.id);
+
+      const hasCompletion = userAnswer.options.some(opt => opt.nextCompletionId !== null);
+      if (hasCompletion) continue;
+
+      const nextActionIds = userAnswer.options
+        .map(opt => opt.nextActionId)
+        .filter((id): id is string => id !== null);
+      queue.push(...nextActionIds);
+    }
+
+    return answersToDelete;
+  }
+
+  async updateWithPruning(answerId: string, updateData: Prisma.ActionAnswerUpdateInput) {
+    return prisma.$transaction(async tx => {
+      const answer = await tx.actionAnswer.findFirst({
+        where: { id: answerId },
+        include: {
+          options: {
+            select: { id: true },
+          },
+        },
+      });
+
+      if (!answer) {
+        return null;
+      }
+
+      const oldOptionIds = answer.options.map(opt => opt.id);
+
+      const invalidAnswerIds = await this.collectInvalidAnswersByOptions(
+        answer.responseId,
+        oldOptionIds,
+        tx,
+      );
+
+      if (invalidAnswerIds.length > 0) {
+        await tx.actionAnswer.deleteMany({
+          where: { id: { in: invalidAnswerIds } },
+        });
+      }
+
+      return tx.actionAnswer.update({
+        where: { id: answerId },
+        data: updateData,
+        include: {
+          action: true,
+          options: true,
+          fileUploads: true,
+        },
+      });
     });
   }
 }
