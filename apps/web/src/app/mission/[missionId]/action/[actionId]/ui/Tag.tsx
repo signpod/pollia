@@ -32,6 +32,8 @@ export function ActionTag({
       updateCanGoNext={updateCanGoNext}
       onAnswerChange={onAnswerChange}
       answerType={ActionType.TAG}
+      options={actionData.options ?? []}
+      actionNextCompletionId={actionData.nextCompletionId}
     >
       <SurveyMultipleChoiceContent
         actionData={actionData}

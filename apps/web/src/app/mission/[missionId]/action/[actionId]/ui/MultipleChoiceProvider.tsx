@@ -26,6 +26,12 @@ const SurveyMultipleChoiceContext = createContext<SurveyMultipleChoiceContextTyp
   undefined,
 );
 
+interface ActionOption {
+  id: string;
+  nextActionId?: string | null;
+  nextCompletionId?: string | null;
+}
+
 interface SurveyMultipleChoiceProviderProps {
   children: React.ReactNode;
   maxSelections: number;
@@ -35,6 +41,8 @@ interface SurveyMultipleChoiceProviderProps {
   updateCanGoNext?: (canGoNext: boolean) => void;
   onAnswerChange?: (answer: ActionAnswerItem) => void;
   answerType?: typeof ActionType.MULTIPLE_CHOICE | typeof ActionType.TAG;
+  options?: ActionOption[];
+  actionNextCompletionId?: string | null;
 }
 
 export function MultipleChoiceProvider({
@@ -46,6 +54,8 @@ export function MultipleChoiceProvider({
   updateCanGoNext,
   onAnswerChange,
   answerType,
+  options = [],
+  actionNextCompletionId,
 }: SurveyMultipleChoiceProviderProps) {
   const initialSelectedIds = useMemo(() => {
     if (!missionResponse?.data?.answers || missionResponse.data.answers.length === 0) {
@@ -96,9 +106,15 @@ export function MultipleChoiceProvider({
         type: answerType ?? ActionType.MULTIPLE_CHOICE,
         isRequired,
         ...(initialSelectedIds.size > 0
-          ? { selectedOptionIds: Array.from(initialSelectedIds) }
+          ? {
+              selectedOptions: Array.from(initialSelectedIds).map(optionId => ({
+                optionId,
+                nextActionId: "",
+              })),
+            }
           : {}),
         ...(answerWithText?.textAnswer ? { textAnswer: answerWithText.textAnswer } : {}),
+        ...(actionNextCompletionId && { nextCompletionId: actionNextCompletionId }),
       };
 
       const validationResult = submitAnswerItemSchema.safeParse(answer);
@@ -113,6 +129,7 @@ export function MultipleChoiceProvider({
         actionId,
         type: answerType ?? ActionType.MULTIPLE_CHOICE,
         isRequired,
+        ...(actionNextCompletionId && { nextCompletionId: actionNextCompletionId }),
       });
     } else {
       updateCanGoNextRef.current?.(false);
@@ -121,9 +138,10 @@ export function MultipleChoiceProvider({
         actionId,
         type: answerType ?? ActionType.MULTIPLE_CHOICE,
         isRequired,
+        ...(actionNextCompletionId && { nextCompletionId: actionNextCompletionId }),
       });
     }
-  }, [initialSelectedIds, actionId, answerType, isRequired, missionResponse]);
+  }, [initialSelectedIds, actionId, answerType, isRequired, missionResponse, actionNextCompletionId]);
 
   const toggleSelectedId = useCallback(
     (optionId: string) => {
@@ -159,12 +177,24 @@ export function MultipleChoiceProvider({
       // Filter out CLIENT_OTHER_OPTION_ID from selectedOptionIds
       const realOptionIds = Array.from(selectedIds).filter(id => id !== CLIENT_OTHER_OPTION_ID);
 
+      // 단일 선택인 경우 선택된 option의 nextActionId, nextCompletionId 가져오기
+      const selectedOption =
+        maxSelections === 1 && realOptionIds.length === 1
+          ? options.find(opt => opt.id === realOptionIds[0])
+          : null;
+      const nextActionId = selectedOption?.nextActionId ?? undefined;
+      // 옵션의 nextCompletionId가 없으면 action의 nextCompletionId 사용
+      const nextCompletionId =
+        selectedOption?.nextCompletionId ?? actionNextCompletionId ?? undefined;
+
       const answer: ActionAnswerItem = {
         actionId,
         type: answerType ?? ActionType.MULTIPLE_CHOICE,
         isRequired,
         ...(realOptionIds.length > 0 ? { selectedOptionIds: realOptionIds } : {}),
         ...(isOtherSelected && textAnswer.trim() ? { textAnswer: textAnswer.trim() } : {}),
+        ...(nextActionId ? { nextActionId } : {}),
+        ...(nextCompletionId ? { nextCompletionId } : {}),
       };
 
       // If "기타" is selected, textAnswer must be filled
@@ -189,6 +219,7 @@ export function MultipleChoiceProvider({
         actionId,
         type: answerType ?? ActionType.MULTIPLE_CHOICE,
         isRequired,
+        ...(actionNextCompletionId && { nextCompletionId: actionNextCompletionId }),
       });
     } else {
       setCanGoNext(false);
@@ -203,6 +234,9 @@ export function MultipleChoiceProvider({
     isOtherSelected,
     textAnswer,
     isRequired,
+    maxSelections,
+    options,
+    actionNextCompletionId,
   ]);
 
   const value = useMemo(

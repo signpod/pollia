@@ -55,6 +55,8 @@ export function ActionTime({
       missionResponse={missionResponse}
       updateCanGoNext={updateCanGoNext}
       onAnswerChange={onAnswerChange}
+      nextActionId={actionData.nextActionId}
+      nextCompletionId={actionData.nextCompletionId}
     >
       <TimePickerContent
         actionData={actionData}

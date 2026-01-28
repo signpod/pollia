@@ -9,6 +9,8 @@ interface UseMissionRatingValueOptions {
   updateCanGoNext?: (canGoNext: boolean) => void;
   onAnswerChange?: (answer: ActionAnswerItem) => void;
   defaultValue: number;
+  nextActionId?: string | null;
+  nextCompletionId?: string | null;
 }
 
 export function useMissionRatingValue({
@@ -18,6 +20,8 @@ export function useMissionRatingValue({
   updateCanGoNext,
   onAnswerChange,
   defaultValue,
+  nextActionId,
+  nextCompletionId,
 }: UseMissionRatingValueOptions) {
   const initialScaleValue = useMemo(() => {
     if (!missionResponse?.data?.answers || missionResponse.data.answers.length === 0) {
@@ -53,9 +57,11 @@ export function useMissionRatingValue({
         type: ActionType.RATING,
         isRequired,
         scaleValue: initialScaleValue,
+        ...(nextActionId && { nextActionId }),
+        ...(nextCompletionId && { nextCompletionId }),
       });
     }
-  }, [initialScaleValue, actionId, defaultValue, isRequired]);
+  }, [initialScaleValue, actionId, defaultValue, isRequired, nextActionId, nextCompletionId]);
 
   const handleScaleValueChange = (value: number) => {
     if (!isScaleValueChanged) {
@@ -69,6 +75,8 @@ export function useMissionRatingValue({
       type: ActionType.RATING,
       isRequired,
       scaleValue: value,
+      ...(nextActionId && { nextActionId }),
+      ...(nextCompletionId && { nextCompletionId }),
     });
   };
 

@@ -34,6 +34,8 @@ export function Subjective({
     missionResponse,
     updateCanGoNext,
     onAnswerChange,
+    actionData.nextActionId,
+    actionData.nextCompletionId,
   );
   const isNextDisabled = isNextDisabledProp || !validationResult.success;
   const errorMessage = showError ? validationResult.error?.issues[0]?.message : undefined;
@@ -76,6 +78,8 @@ function useSurveySubjectiveValue(
   missionResponse?: GetMissionResponseResponse,
   updateCanGoNext?: (canGoNext: boolean) => void,
   onAnswerChange?: (answer: ActionAnswerItem) => void,
+  nextActionId?: string | null,
+  nextCompletionId?: string | null,
 ) {
   const [helperText, setHelperText] = useState<string | undefined>(undefined);
   const initialTextValue = useMemo(() => {
@@ -119,6 +123,8 @@ function useSurveySubjectiveValue(
           type: ActionType.SUBJECTIVE,
           isRequired,
           textAnswer: initialTextValue,
+          ...(nextActionId && { nextActionId }),
+          ...(nextCompletionId && { nextCompletionId }),
         });
       }
     } else if (!isRequired) {
@@ -128,6 +134,8 @@ function useSurveySubjectiveValue(
         type: ActionType.SUBJECTIVE,
         isRequired,
         textAnswer: "",
+        ...(nextActionId && { nextActionId }),
+        ...(nextCompletionId && { nextCompletionId }),
       });
     } else {
       updateCanGoNextRef.current?.(false);
@@ -137,9 +145,11 @@ function useSurveySubjectiveValue(
         type: ActionType.SUBJECTIVE,
         isRequired,
         textAnswer: "",
+        ...(nextActionId && { nextActionId }),
+        ...(nextCompletionId && { nextCompletionId }),
       });
     }
-  }, [initialTextValue, actionId, isRequired]);
+  }, [initialTextValue, actionId, isRequired, nextActionId, nextCompletionId]);
 
   function handleSubjectiveValueChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     const value = e.target.value;
@@ -159,6 +169,8 @@ function useSurveySubjectiveValue(
         type: ActionType.SUBJECTIVE,
         isRequired,
         textAnswer: value.trim(),
+        ...(nextActionId && { nextActionId }),
+        ...(nextCompletionId && { nextCompletionId }),
       });
     }
   }

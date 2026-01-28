@@ -54,6 +54,8 @@ export function ActionDate({
       missionResponse={missionResponse}
       updateCanGoNext={updateCanGoNext}
       onAnswerChange={onAnswerChange}
+      nextActionId={actionData.nextActionId}
+      nextCompletionId={actionData.nextCompletionId}
     >
       <DatePickerContent
         actionData={actionData}
