@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader } from "@/app/admin/components/shadcn-ui/
 import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
 import { useReadCompletions } from "@/app/admin/hooks/mission-completion";
 import { CompletionEditDialog } from "@/app/admin/missions/[id]/components/edit/CompletionEditDialog";
+import type { MissionCompletionWithMission } from "@/types/dto";
 import { AlertCircle, Award, Plus } from "lucide-react";
 import { useState } from "react";
 import { CompletionDetailCard } from "./CompletionDetailCard";
@@ -21,7 +22,20 @@ export function MissionTabCompletionContent({ missionId }: MissionTabCompletionC
   const [selectedCompletionId, setSelectedCompletionId] = useState<string | null>(
     completions[0]?.id ?? null,
   );
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [editingCompletion, setEditingCompletion] = useState<MissionCompletionWithMission | null>(
+    null,
+  );
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const handleCreateNew = () => {
+    setEditingCompletion(null);
+    setIsDialogOpen(true);
+  };
+
+  const handleEdit = (completion: MissionCompletionWithMission) => {
+    setEditingCompletion(completion);
+    setIsDialogOpen(true);
+  };
 
   if (isPending) {
     return (
@@ -61,7 +75,7 @@ export function MissionTabCompletionContent({ missionId }: MissionTabCompletionC
     <>
       <div className="space-y-6">
         <div className="flex justify-end">
-          <Button onClick={() => setIsCreateDialogOpen(true)}>
+          <Button onClick={handleCreateNew}>
             <Plus className="h-4 w-4 mr-2" />새 완료화면
           </Button>
         </div>
@@ -100,7 +114,7 @@ export function MissionTabCompletionContent({ missionId }: MissionTabCompletionC
 
             <div>
               {selectedCompletion ? (
-                <CompletionDetailCard completion={selectedCompletion} missionId={missionId} />
+                <CompletionDetailCard completion={selectedCompletion} onEdit={handleEdit} />
               ) : (
                 <Card>
                   <CardContent className="flex items-center justify-center py-12">
@@ -114,9 +128,10 @@ export function MissionTabCompletionContent({ missionId }: MissionTabCompletionC
       </div>
 
       <CompletionEditDialog
-        open={isCreateDialogOpen}
-        onOpenChange={setIsCreateDialogOpen}
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
         missionId={missionId}
+        completion={editingCompletion}
       />
     </>
   );

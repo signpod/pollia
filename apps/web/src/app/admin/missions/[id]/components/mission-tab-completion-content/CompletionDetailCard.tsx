@@ -14,7 +14,6 @@ import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/admin/components/shadcn-ui/card";
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
 import { useDeleteCompletion } from "@/app/admin/hooks/mission-completion";
-import { CompletionEditDialog } from "@/app/admin/missions/[id]/components/edit/CompletionEditDialog";
 import { cn, stripHtmlTags } from "@/app/admin/lib/utils";
 import type { MissionCompletionWithMission } from "@/types/dto";
 import { ExternalLink, ImageIcon, Pencil, Trash2 } from "lucide-react";
@@ -23,7 +22,7 @@ import { useState } from "react";
 
 interface CompletionDetailCardProps {
   completion: MissionCompletionWithMission;
-  missionId: string;
+  onEdit: (completion: MissionCompletionWithMission) => void;
 }
 
 interface InfoFieldProps {
@@ -41,8 +40,7 @@ function InfoField({ label, value, className }: InfoFieldProps) {
   );
 }
 
-export function CompletionDetailCard({ completion, missionId }: CompletionDetailCardProps) {
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+export function CompletionDetailCard({ completion, onEdit }: CompletionDetailCardProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const deleteCompletion = useDeleteCompletion();
 
@@ -61,7 +59,7 @@ export function CompletionDetailCard({ completion, missionId }: CompletionDetail
           <div className="flex items-center justify-between">
             <CardTitle>완료 화면 상세</CardTitle>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => setIsEditDialogOpen(true)}>
+              <Button variant="outline" size="sm" onClick={() => onEdit(completion)}>
                 <Pencil className="h-4 w-4 mr-2" />
                 수정
               </Button>
@@ -166,12 +164,6 @@ export function CompletionDetailCard({ completion, missionId }: CompletionDetail
           />
         </CardContent>
       </Card>
-
-      <CompletionEditDialog
-        open={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        missionId={missionId}
-      />
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
