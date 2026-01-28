@@ -240,6 +240,14 @@ export class ActionAnswerRepository {
       },
     });
   }
+
+  async deleteManyByIds(ids: string[]) {
+    return prisma.actionAnswer.deleteMany({
+      where: {
+        id: { in: ids },
+      },
+    });
+  }
 }
 
 export const actionAnswerRepository = new ActionAnswerRepository();
