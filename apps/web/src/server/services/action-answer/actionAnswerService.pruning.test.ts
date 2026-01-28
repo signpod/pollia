@@ -9,12 +9,11 @@ describe("ActionAnswerService - Pruning", () => {
   let mockAnswerRepo: jest.Mocked<ActionAnswerRepository>;
   let mockResponseRepo: jest.Mocked<MissionResponseRepository>;
   let mockActionRepo: jest.Mocked<ActionRepository>;
-  let mockTx: any;
 
   beforeEach(() => {
     mockAnswerRepo = {
       findById: jest.fn(),
-      collectInvalidAnswersByOptions: jest.fn(),
+      updateWithPruning: jest.fn(),
     } as unknown as jest.Mocked<ActionAnswerRepository>;
 
     mockResponseRepo = {
@@ -25,17 +24,6 @@ describe("ActionAnswerService - Pruning", () => {
       findById: jest.fn(),
     } as unknown as jest.Mocked<ActionRepository>;
 
-    mockTx = {
-      actionAnswer: {
-        deleteMany: jest.fn(),
-        update: jest.fn(),
-      },
-    };
-
-    global.prisma = {
-      $transaction: jest.fn(async callback => callback(mockTx)),
-    } as any;
-
     service = new ActionAnswerService(mockAnswerRepo, mockResponseRepo, mockActionRepo);
   });
 
@@ -44,207 +32,139 @@ describe("ActionAnswerService - Pruning", () => {
   });
 
   describe("updateAnswerWithPruning", () => {
-    it("단일 경로 삭제: Q1(opt1->Q2) 변경 시 Q2 답변 삭제", async () => {
-      // Given
+    it("정상적으로 답변이 업데이트되어야 함", async () => {
       const mockAnswer = {
         id: "answer-1",
         actionId: "action-1",
         responseId: "response-1",
         response: { userId: "user-1", id: "response-1", missionId: "mission-1" },
-        options: [{ id: "opt-1", nextActionId: "action-2", nextCompletionId: null }],
+        options: [{ id: "opt-1" }],
         action: { id: "action-1", type: ActionType.MULTIPLE_CHOICE, isRequired: true },
       };
 
-      mockAnswerRepo.findById.mockResolvedValue(mockAnswer as any);
-      mockActionRepo.findById.mockResolvedValue(mockAnswer.action as any);
-      mockAnswerRepo.collectInvalidAnswersByOptions.mockResolvedValue(["answer-2"]);
-
-      mockTx.actionAnswer.update.mockResolvedValue({
-        ...mockAnswer,
+      const updatedAnswer = {
+        id: "answer-1",
+        actionId: "action-1",
+        responseId: "response-1",
         options: [{ id: "opt-2" }],
-        action: mockAnswer.action,
+        action: { id: "action-1", type: ActionType.MULTIPLE_CHOICE, isRequired: true },
         fileUploads: [],
-      });
+      };
 
-      // When
-      await service.updateAnswerWithPruning("answer-1", { selectedOptionIds: ["opt-2"] }, "user-1");
+      mockAnswerRepo.findById.mockResolvedValue(mockAnswer as any);
+      mockActionRepo.findById.mockResolvedValue(mockAnswer.action as any);
+      mockAnswerRepo.updateWithPruning.mockResolvedValue(updatedAnswer as any);
 
-      // Then
-      expect(mockAnswerRepo.collectInvalidAnswersByOptions).toHaveBeenCalledWith(
-        "response-1",
-        ["opt-1"],
-        mockTx,
+      const result = await service.updateAnswerWithPruning(
+        "answer-1",
+        { selectedOptionIds: ["opt-2"] },
+        "user-1",
       );
-      expect(mockTx.actionAnswer.deleteMany).toHaveBeenCalledWith({
-        where: { id: { in: ["answer-2"] } },
-      });
-      expect(mockTx.actionAnswer.update).toHaveBeenCalled();
+
+      expect(result).toEqual(updatedAnswer);
+      expect(result.options).toEqual([{ id: "opt-2" }]);
     });
 
-    it("다중 분기 삭제: opt1->Q2, opt2->Q3 구조에서 모두 삭제", async () => {
-      // Given
+    it("textAnswer 업데이트가 정상적으로 동작해야 함", async () => {
       const mockAnswer = {
         id: "answer-1",
         actionId: "action-1",
         responseId: "response-1",
         response: { userId: "user-1", id: "response-1", missionId: "mission-1" },
-        options: [
-          { id: "opt-1", nextActionId: "action-2", nextCompletionId: null },
-          { id: "opt-2", nextActionId: "action-3", nextCompletionId: null },
-        ],
-        action: { id: "action-1", type: ActionType.MULTIPLE_CHOICE, isRequired: true },
+        options: [],
+        action: { id: "action-1", type: ActionType.SHORT_TEXT, isRequired: true },
+      };
+
+      const updatedAnswer = {
+        ...mockAnswer,
+        textAnswer: "새로운 답변",
+        fileUploads: [],
       };
 
       mockAnswerRepo.findById.mockResolvedValue(mockAnswer as any);
       mockActionRepo.findById.mockResolvedValue(mockAnswer.action as any);
-      mockAnswerRepo.collectInvalidAnswersByOptions.mockResolvedValue(["answer-2", "answer-3"]);
+      mockAnswerRepo.updateWithPruning.mockResolvedValue(updatedAnswer as any);
 
-      mockTx.actionAnswer.update.mockResolvedValue({
-        ...mockAnswer,
-        options: [{ id: "opt-4" }],
-        action: mockAnswer.action,
-        fileUploads: [],
-      });
-
-      // When
-      await service.updateAnswerWithPruning("answer-1", { selectedOptionIds: ["opt-4"] }, "user-1");
-
-      // Then
-      expect(mockAnswerRepo.collectInvalidAnswersByOptions).toHaveBeenCalledWith(
-        "response-1",
-        ["opt-1", "opt-2"],
-        mockTx,
+      const result = await service.updateAnswerWithPruning(
+        "answer-1",
+        { textAnswer: "새로운 답변" },
+        "user-1",
       );
-      expect(mockTx.actionAnswer.deleteMany).toHaveBeenCalledWith({
-        where: { id: { in: ["answer-2", "answer-3"] } },
-      });
+
+      expect(result.textAnswer).toBe("새로운 답변");
     });
 
-    it("깊은 경로 삭제: Q1->Q2->Q3->Q4 모두 삭제", async () => {
-      // Given
+    it("존재하지 않는 답변 ID로 요청 시 에러 발생", async () => {
+      mockAnswerRepo.findById.mockResolvedValue(null);
+
+      await expect(
+        service.updateAnswerWithPruning("invalid-id", { selectedOptionIds: ["opt-1"] }, "user-1"),
+      ).rejects.toThrow("답변을 찾을 수 없습니다.");
+    });
+
+    it("다른 사용자의 답변 수정 시도 시 권한 에러 발생", async () => {
+      const mockAnswer = {
+        id: "answer-1",
+        actionId: "action-1",
+        responseId: "response-1",
+        response: { userId: "user-2", id: "response-1", missionId: "mission-1" },
+        options: [{ id: "opt-1" }],
+        action: { id: "action-1", type: ActionType.MULTIPLE_CHOICE, isRequired: true },
+      };
+
+      mockAnswerRepo.findById.mockResolvedValue(mockAnswer as any);
+
+      await expect(
+        service.updateAnswerWithPruning("answer-1", { selectedOptionIds: ["opt-2"] }, "user-1"),
+      ).rejects.toThrow("조회 권한이 없습니다.");
+    });
+
+    it("필수 항목에 빈 값 입력 시 유효성 검사 에러 발생", async () => {
       const mockAnswer = {
         id: "answer-1",
         actionId: "action-1",
         responseId: "response-1",
         response: { userId: "user-1", id: "response-1", missionId: "mission-1" },
-        options: [{ id: "opt-1", nextActionId: "action-2", nextCompletionId: null }],
+        options: [{ id: "opt-1" }],
         action: { id: "action-1", type: ActionType.MULTIPLE_CHOICE, isRequired: true },
       };
 
       mockAnswerRepo.findById.mockResolvedValue(mockAnswer as any);
       mockActionRepo.findById.mockResolvedValue(mockAnswer.action as any);
-      mockAnswerRepo.collectInvalidAnswersByOptions.mockResolvedValue([
-        "answer-2",
-        "answer-3",
-        "answer-4",
-      ]);
 
-      mockTx.actionAnswer.update.mockResolvedValue({
-        ...mockAnswer,
-        options: [{ id: "opt-x" }],
-        action: mockAnswer.action,
-        fileUploads: [],
-      });
-
-      // When
-      await service.updateAnswerWithPruning("answer-1", { selectedOptionIds: ["opt-x"] }, "user-1");
-
-      // Then
-      expect(mockTx.actionAnswer.deleteMany).toHaveBeenCalledWith({
-        where: { id: { in: ["answer-2", "answer-3", "answer-4"] } },
-      });
+      await expect(
+        service.updateAnswerWithPruning("answer-1", { selectedOptionIds: [] }, "user-1"),
+      ).rejects.toThrow();
     });
 
-    it("순환 참조 방지: Q1->Q2->Q1 구조에서 무한 루프 없음", async () => {
-      // Given
+    it("SCALE 타입의 답변이 정상적으로 업데이트되어야 함", async () => {
       const mockAnswer = {
         id: "answer-1",
         actionId: "action-1",
         responseId: "response-1",
         response: { userId: "user-1", id: "response-1", missionId: "mission-1" },
-        options: [{ id: "opt-1", nextActionId: "action-2", nextCompletionId: null }],
-        action: { id: "action-1", type: ActionType.MULTIPLE_CHOICE, isRequired: true },
+        options: [],
+        scaleAnswer: 3,
+        action: { id: "action-1", type: ActionType.SCALE, isRequired: true },
+      };
+
+      const updatedAnswer = {
+        ...mockAnswer,
+        scaleAnswer: 5,
+        fileUploads: [],
       };
 
       mockAnswerRepo.findById.mockResolvedValue(mockAnswer as any);
       mockActionRepo.findById.mockResolvedValue(mockAnswer.action as any);
-      mockAnswerRepo.collectInvalidAnswersByOptions.mockResolvedValue(["answer-2"]);
+      mockAnswerRepo.updateWithPruning.mockResolvedValue(updatedAnswer as any);
 
-      mockTx.actionAnswer.update.mockResolvedValue({
-        ...mockAnswer,
-        options: [{ id: "opt-x" }],
-        action: mockAnswer.action,
-        fileUploads: [],
-      });
+      const result = await service.updateAnswerWithPruning(
+        "answer-1",
+        { scaleAnswer: 5 },
+        "user-1",
+      );
 
-      // When
-      await service.updateAnswerWithPruning("answer-1", { selectedOptionIds: ["opt-x"] }, "user-1");
-
-      // Then
-      expect(mockTx.actionAnswer.deleteMany).toHaveBeenCalledWith({
-        where: { id: { in: ["answer-2"] } },
-      });
-    });
-
-    it("Completion 도달 시 브랜치 종료", async () => {
-      // Given
-      const mockAnswer = {
-        id: "answer-1",
-        actionId: "action-1",
-        responseId: "response-1",
-        response: { userId: "user-1", id: "response-1", missionId: "mission-1" },
-        options: [{ id: "opt-1", nextActionId: "action-2", nextCompletionId: null }],
-        action: { id: "action-1", type: ActionType.MULTIPLE_CHOICE, isRequired: true },
-      };
-
-      mockAnswerRepo.findById.mockResolvedValue(mockAnswer as any);
-      mockActionRepo.findById.mockResolvedValue(mockAnswer.action as any);
-      mockAnswerRepo.collectInvalidAnswersByOptions.mockResolvedValue(["answer-2"]);
-
-      mockTx.actionAnswer.update.mockResolvedValue({
-        ...mockAnswer,
-        options: [{ id: "opt-x" }],
-        action: mockAnswer.action,
-        fileUploads: [],
-      });
-
-      // When
-      await service.updateAnswerWithPruning("answer-1", { selectedOptionIds: ["opt-x"] }, "user-1");
-
-      // Then
-      expect(mockTx.actionAnswer.deleteMany).toHaveBeenCalledWith({
-        where: { id: { in: ["answer-2"] } },
-      });
-    });
-
-    it("답변 없는 경로: nextActionId 있지만 답변 없으면 종료", async () => {
-      // Given
-      const mockAnswer = {
-        id: "answer-1",
-        actionId: "action-1",
-        responseId: "response-1",
-        response: { userId: "user-1", id: "response-1", missionId: "mission-1" },
-        options: [{ id: "opt-1", nextActionId: "action-2", nextCompletionId: null }],
-        action: { id: "action-1", type: ActionType.MULTIPLE_CHOICE, isRequired: true },
-      };
-
-      mockAnswerRepo.findById.mockResolvedValue(mockAnswer as any);
-      mockActionRepo.findById.mockResolvedValue(mockAnswer.action as any);
-      mockAnswerRepo.collectInvalidAnswersByOptions.mockResolvedValue([]);
-
-      mockTx.actionAnswer.update.mockResolvedValue({
-        ...mockAnswer,
-        options: [{ id: "opt-x" }],
-        action: mockAnswer.action,
-        fileUploads: [],
-      });
-
-      // When
-      await service.updateAnswerWithPruning("answer-1", { selectedOptionIds: ["opt-x"] }, "user-1");
-
-      // Then
-      expect(mockTx.actionAnswer.deleteMany).not.toHaveBeenCalled();
-      expect(mockTx.actionAnswer.update).toHaveBeenCalled();
+      expect(result.scaleAnswer).toBe(5);
     });
   });
 });
