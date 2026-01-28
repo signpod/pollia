@@ -12,7 +12,6 @@ import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
 import { type UploadedImageData, useSingleImage } from "@/app/admin/hooks/admin-image";
 import {
   useCreateMissionCompletion,
-  useReadMissionCompletion,
   useUpdateMissionCompletion,
 } from "@/app/admin/hooks/mission-completion";
 import type { MissionCompletionForm } from "@/schemas/mission-completion";
@@ -24,12 +23,15 @@ interface CompletionEditDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   missionId: string;
+  completion: MissionCompletionData | null;
 }
 
-export function CompletionEditDialog({ open, onOpenChange, missionId }: CompletionEditDialogProps) {
-  const { data: completionResponse, isLoading } = useReadMissionCompletion(missionId);
-  const completion = completionResponse?.data ?? null;
-
+export function CompletionEditDialog({
+  open,
+  onOpenChange,
+  missionId,
+  completion,
+}: CompletionEditDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto overflow-x-hidden">
@@ -38,19 +40,11 @@ export function CompletionEditDialog({ open, onOpenChange, missionId }: Completi
           <DialogDescription>미션 완료 시 사용자에게 표시될 화면을 설정하세요.</DialogDescription>
         </DialogHeader>
 
-        {isLoading && (
-          <div className="flex items-center justify-center py-12">
-            <p className="text-muted-foreground">완료 화면 정보를 불러오는 중...</p>
-          </div>
-        )}
-
-        {!isLoading && (
-          <CompletionFormContent
-            completion={completion}
-            missionId={missionId}
-            onSuccess={() => onOpenChange(false)}
-          />
-        )}
+        <CompletionFormContent
+          completion={completion}
+          missionId={missionId}
+          onSuccess={() => onOpenChange(false)}
+        />
       </DialogContent>
     </Dialog>
   );

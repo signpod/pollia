@@ -14,16 +14,15 @@ import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/admin/components/shadcn-ui/card";
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
 import { useDeleteCompletion } from "@/app/admin/hooks/mission-completion";
-import { CompletionEditDialog } from "@/app/admin/missions/[id]/components/edit/CompletionEditDialog";
 import { cn, stripHtmlTags } from "@/app/admin/lib/utils";
 import type { MissionCompletionWithMission } from "@/types/dto";
-import { ExternalLink, ImageIcon, Pencil, Trash2 } from "lucide-react";
+import { ExternalLink, ImageIcon, Pencil, Trash2, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
 interface CompletionDetailCardProps {
   completion: MissionCompletionWithMission;
-  missionId: string;
+  onEdit: (completion: MissionCompletionWithMission) => void;
 }
 
 interface InfoFieldProps {
@@ -41,13 +40,13 @@ function InfoField({ label, value, className }: InfoFieldProps) {
   );
 }
 
-export function CompletionDetailCard({ completion, missionId }: CompletionDetailCardProps) {
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+export function CompletionDetailCard({ completion, onEdit }: CompletionDetailCardProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const deleteCompletion = useDeleteCompletion();
 
   const links = completion.links ?? null;
   const linkEntries = links ? Object.entries(links) : [];
+  const isDeleting = deleteCompletion.isPending;
 
   const handleDelete = async () => {
     await deleteCompletion.mutateAsync(completion.id);
@@ -61,7 +60,12 @@ export function CompletionDetailCard({ completion, missionId }: CompletionDetail
           <div className="flex items-center justify-between">
             <CardTitle>완료 화면 상세</CardTitle>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => setIsEditDialogOpen(true)}>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => onEdit(completion)}
+                disabled={isDeleting}
+              >
                 <Pencil className="h-4 w-4 mr-2" />
                 수정
               </Button>
@@ -70,6 +74,7 @@ export function CompletionDetailCard({ completion, missionId }: CompletionDetail
                 size="sm"
                 onClick={() => setIsDeleteDialogOpen(true)}
                 className="text-destructive hover:text-destructive"
+                disabled={isDeleting}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 삭제
@@ -167,12 +172,6 @@ export function CompletionDetailCard({ completion, missionId }: CompletionDetail
         </CardContent>
       </Card>
 
-      <CompletionEditDialog
-        open={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        missionId={missionId}
-      />
-
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -184,12 +183,20 @@ export function CompletionDetailCard({ completion, missionId }: CompletionDetail
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>취소</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>취소</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
+              disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              삭제
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  삭제 중...
+                </>
+              ) : (
+                "삭제"
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

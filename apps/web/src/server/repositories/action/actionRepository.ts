@@ -208,6 +208,16 @@ export class ActionRepository {
 
   private async updateOptions(tx: Prisma.TransactionClient, options: OptionInput[]) {
     if (options.length === 0) return;
+
+    await Promise.all(
+      options.map((opt, index) =>
+        tx.actionOption.update({
+          where: { id: opt.id },
+          data: { order: 10000 + index },
+        }),
+      ),
+    );
+
     await Promise.all(
       options.map(opt => {
         const { id, ...data } = opt;

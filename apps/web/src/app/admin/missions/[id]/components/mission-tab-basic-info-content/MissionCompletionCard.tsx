@@ -164,6 +164,7 @@ export function MissionCompletionCard({ missionId }: MissionCompletionCardProps)
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
         missionId={missionId}
+        completion={completion}
       />
     </>
   );

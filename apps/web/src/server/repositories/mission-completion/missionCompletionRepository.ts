@@ -23,6 +23,7 @@ export class MissionCompletionRepository {
     });
   }
 
+  //TODO: "다중미션완료" 서비스로 마이그레이션 이후 삭제
   async findByMissionId(missionId: string) {
     return prisma.missionCompletion.findFirst({
       where: { missionId },
