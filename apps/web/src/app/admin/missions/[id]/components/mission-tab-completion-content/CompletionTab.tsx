@@ -28,21 +28,33 @@ export function CompletionTab({ completion, isSelected, onClick }: CompletionTab
         onClick={onClick}
         className={cn(
           "w-full h-auto p-3 justify-start hover:bg-accent/50 transition-colors",
-          isSelected && "bg-accent",
+          isSelected && "bg-accent border-2 border-primary/20",
         )}
       >
         <div className="flex items-center gap-3 w-full min-w-0">
           {hasImage ? (
-            <div className="relative w-12 h-12 shrink-0 rounded-md overflow-hidden bg-muted">
-              <Image src={imageUrl} alt={completion.title} fill sizes="48px" className="object-cover" />
+            <div className="relative w-12 h-12 shrink-0 rounded-md overflow-hidden bg-muted border border-border">
+              <Image 
+                src={imageUrl} 
+                alt={completion.title} 
+                fill 
+                sizes="48px" 
+                className="object-cover"
+                loading="lazy"
+              />
             </div>
           ) : (
-            <div className="w-12 h-12 shrink-0 rounded-md bg-muted flex items-center justify-center">
+            <div className="w-12 h-12 shrink-0 rounded-md bg-muted border border-border flex items-center justify-center">
               <ImageIcon className="h-6 w-6 text-muted-foreground/30" />
             </div>
           )}
           <div className="flex-1 min-w-0 text-left">
-            <h4 className="font-medium text-sm truncate">{completion.title}</h4>
+            <h4 className={cn(
+              "text-sm truncate",
+              isSelected ? "font-semibold text-foreground" : "font-medium text-foreground/80"
+            )}>
+              {completion.title}
+            </h4>
             <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
               <Calendar className="h-3 w-3" />
               <span>{formattedDate}</span>
