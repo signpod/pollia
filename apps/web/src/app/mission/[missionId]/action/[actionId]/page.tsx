@@ -11,12 +11,20 @@ import { ActionClientWrapper } from "./ActionClientWrapper";
 
 const ACTION_NAV_COOKIE_PREFIX = "action_nav_";
 
+interface ActionWithOptions {
+  id: string;
+  nextActionId?: string | null;
+  options: Array<{ nextActionId?: string | null }>;
+}
+
 function validateActionNavigation(
   cookieValue: string | undefined,
   actionId: string,
-  actionIds: string[],
+  actions: ActionWithOptions[],
 ): boolean {
   if (!cookieValue) return false;
+
+  const actionIds = actions.map(a => a.id);
 
   if (cookieValue === "initial") {
     return actionIds[0] === actionId;
@@ -31,7 +39,23 @@ function validateActionNavigation(
 
   if (currentIndex === -1 || cookieIndex === -1) return false;
 
-  return Math.abs(currentIndex - cookieIndex) <= 1;
+  // 1. 앞으로 점프(nextActionId) 허용
+  if (currentIndex >= cookieIndex) return true;
+
+  // 2. 인접 이동(±1, 이전/다음 버튼) 허용
+  if (Math.abs(currentIndex - cookieIndex) <= 1) return true;
+
+  // 3. nextActionId로 연결된 액션으로 되돌아가기 허용
+  // targetAction이 cookieAction을 nextActionId로 가리키고 있으면 허용 (option 레벨 또는 action 레벨)
+  const targetAction = actions.find(a => a.id === actionId);
+  if (targetAction) {
+    const hasNextActionIdToCookie =
+      targetAction.options.some(opt => opt.nextActionId === cookieValue) ||
+      targetAction.nextActionId === cookieValue;
+    if (hasNextActionIdToCookie) return true;
+  }
+
+  return false;
 }
 
 export default async function ActionPage({
@@ -59,12 +83,14 @@ export default async function ActionPage({
     redirect(ROUTES.MISSION(missionId));
   }
 
-  const actionIds = actionsResponse.data.map(a => a.id);
-
   const cookieStore = await cookies();
   const navCookie = cookieStore.get(`${ACTION_NAV_COOKIE_PREFIX}${missionId}`);
 
-  const isValidNavigation = validateActionNavigation(navCookie?.value, actionId, actionIds);
+  const isValidNavigation = validateActionNavigation(
+    navCookie?.value,
+    actionId,
+    actionsResponse.data,
+  );
 
   if (!isValidNavigation) {
     redirect(ROUTES.MISSION(missionId));
