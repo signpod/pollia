@@ -2,7 +2,7 @@ import type { ActionAnswerRepository } from "@/server/repositories/action-answer
 import type { ActionRepository } from "@/server/repositories/action/actionRepository";
 import type { MissionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import { ActionType } from "@prisma/client";
-import { ActionAnswerService } from "./index";
+import { ActionAnswerService } from "../index";
 
 describe("ActionAnswerService - Pruning", () => {
   let service: ActionAnswerService;
