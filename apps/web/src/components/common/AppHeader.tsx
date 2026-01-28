@@ -81,20 +81,12 @@ export function AppHeader({
             <div className="flex items-center gap-2">
               {rightContent}
               {showAuth && !isLoggedIn && (
-                <>
-                  <Link
-                    href="/login"
-                    className="flex h-9 items-center px-3 text-sm font-medium text-sub transition-colors hover:text-default"
-                  >
-                    로그인
-                  </Link>
-                  <Link
-                    href="/register"
-                    className="flex h-9 items-center rounded-lg bg-violet-500 px-4 text-sm font-medium text-white transition-colors hover:bg-violet-600"
-                  >
-                    회원가입
-                  </Link>
-                </>
+                <Link
+                  href="/login"
+                  className="flex h-9 items-center px-3 text-sm font-medium text-sub transition-colors hover:text-default"
+                >
+                  로그인
+                </Link>
               )}
             </div>
           </nav>
