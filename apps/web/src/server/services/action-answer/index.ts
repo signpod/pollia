@@ -163,7 +163,11 @@ export class ActionAnswerService {
         set: selectedOptionIds.map(id => ({ id })),
       };
     }
-    return this.answerRepo.updateWithPruning(answerId, updateData);
+    const result = await this.answerRepo.updateWithPruning(answerId, updateData);
+    if (!result) {
+      this.throwError("답변 업데이트에 실패했습니다.", 500);
+    }
+    return result;
   }
 
   async deleteAnswer(answerId: string, userId: string): Promise<void> {
