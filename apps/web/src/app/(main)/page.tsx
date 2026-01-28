@@ -7,7 +7,7 @@ import type { SurveyCardData } from "./components/SurveyCard";
 import { ITEMS_PER_PAGE } from "./constants";
 import { calculateDaysLeft, formatDuration } from "./utils";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function MainPage() {
   const [missions, festivalResponse] = await Promise.all([
