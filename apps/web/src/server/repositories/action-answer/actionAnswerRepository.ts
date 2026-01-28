@@ -284,6 +284,21 @@ export class ActionAnswerRepository {
       },
     });
 
+    const allAnswers = await client.actionAnswer.findMany({
+      where: { responseId },
+      include: {
+        options: {
+          select: {
+            id: true,
+            nextActionId: true,
+            nextCompletionId: true,
+          },
+        },
+      },
+    });
+
+    const answersByActionId = new Map(allAnswers.map(answer => [answer.actionId, answer]));
+
     const queue: string[] = options
       .map(opt => opt.nextActionId)
       .filter((id): id is string => id !== null);
@@ -295,18 +310,7 @@ export class ActionAnswerRepository {
       if (visitedActions.has(actionId)) continue;
       visitedActions.add(actionId);
 
-      const userAnswer = await client.actionAnswer.findFirst({
-        where: { responseId, actionId },
-        include: {
-          options: {
-            select: {
-              id: true,
-              nextActionId: true,
-              nextCompletionId: true,
-            },
-          },
-        },
-      });
+      const userAnswer = answersByActionId.get(actionId);
 
       if (!userAnswer) continue;
 
