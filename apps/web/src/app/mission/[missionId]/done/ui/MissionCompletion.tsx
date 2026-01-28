@@ -1,7 +1,7 @@
 "use client";
 
 import { useReadMission } from "@/hooks/mission";
-import { useReadMissionCompletion } from "@/hooks/mission-completion";
+import { useReadMissionCompletion, useReadMissionCompletionById } from "@/hooks/mission-completion";
 import { cleanTiptapHTML, cn } from "@/lib/utils";
 import { useParams } from "next/navigation";
 
@@ -12,10 +12,17 @@ import Link from "next/link";
 import { SocialShareButtons } from "../../components";
 import { useMissionShare } from "./hooks";
 
-export function MissionCompletion() {
+interface MissionCompletionProps {
+  completionId?: string;
+}
+
+export function MissionCompletion({ completionId }: MissionCompletionProps) {
   const { missionId } = useParams<{ missionId: string }>();
   const { data: mission } = useReadMission(missionId);
-  const { data: missionCompletion } = useReadMissionCompletion(missionId);
+  const { data: missionCompletionByMission } = useReadMissionCompletion(missionId);
+  const { data: missionCompletionById } = useReadMissionCompletionById(missionId, completionId ?? null);
+
+  const missionCompletion = completionId ? missionCompletionById : missionCompletionByMission;
 
   const { imageUrl, brandLogoUrl, title: missionTitle } = mission?.data ?? {};
   const {
