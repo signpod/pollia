@@ -2,6 +2,8 @@ import prisma from "@/database/utils/prisma/client";
 import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
 import { Prisma } from "@prisma/client";
 
+type PrismaTransaction = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+
 export class ActionAnswerRepository {
   async findById(id: string) {
     return prisma.actionAnswer.findUnique({
@@ -247,6 +249,64 @@ export class ActionAnswerRepository {
         id: { in: ids },
       },
     });
+  }
+
+  async collectInvalidAnswersByOptions(
+    responseId: string,
+    optionIds: string[],
+    tx?: PrismaTransaction,
+  ): Promise<string[]> {
+    const client = tx || prisma;
+    const answersToDelete: string[] = [];
+    const visitedActions = new Set<string>();
+
+    const options = await client.actionOption.findMany({
+      where: { id: { in: optionIds } },
+      select: {
+        id: true,
+        nextActionId: true,
+        nextCompletionId: true,
+      },
+    });
+
+    const queue: string[] = options
+      .map(opt => opt.nextActionId)
+      .filter((id): id is string => id !== null);
+
+    while (queue.length > 0) {
+      const actionId = queue.shift();
+      if (!actionId) continue;
+
+      if (visitedActions.has(actionId)) continue;
+      visitedActions.add(actionId);
+
+      const userAnswer = await client.actionAnswer.findFirst({
+        where: { responseId, actionId },
+        include: {
+          options: {
+            select: {
+              id: true,
+              nextActionId: true,
+              nextCompletionId: true,
+            },
+          },
+        },
+      });
+
+      if (!userAnswer) continue;
+
+      answersToDelete.push(userAnswer.id);
+
+      const hasCompletion = userAnswer.options.some(opt => opt.nextCompletionId !== null);
+      if (hasCompletion) continue;
+
+      const nextActionIds = userAnswer.options
+        .map(opt => opt.nextActionId)
+        .filter((id): id is string => id !== null);
+      queue.push(...nextActionIds);
+    }
+
+    return answersToDelete;
   }
 }
 
