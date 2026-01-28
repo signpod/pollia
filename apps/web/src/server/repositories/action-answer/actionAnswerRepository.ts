@@ -308,6 +308,47 @@ export class ActionAnswerRepository {
 
     return answersToDelete;
   }
+
+  async updateWithPruning(answerId: string, updateData: Prisma.ActionAnswerUpdateInput) {
+    return prisma.$transaction(async tx => {
+      const answer = await tx.actionAnswer.findFirst({
+        where: { id: answerId },
+        include: {
+          options: {
+            select: { id: true },
+          },
+        },
+      });
+
+      if (!answer) {
+        throw new Error("답변을 찾을 수 없습니다.");
+      }
+
+      const oldOptionIds = answer.options.map(opt => opt.id);
+
+      const invalidAnswerIds = await this.collectInvalidAnswersByOptions(
+        answer.responseId,
+        oldOptionIds,
+        tx,
+      );
+
+      if (invalidAnswerIds.length > 0) {
+        await tx.actionAnswer.deleteMany({
+          where: { id: { in: invalidAnswerIds } },
+        });
+      }
+
+      return tx.actionAnswer.update({
+        where: { id: answerId },
+        data: updateData,
+        include: {
+          action: true,
+          options: true,
+          fileUploads: true,
+        },
+      });
+    });
+  }
 }
 
 export const actionAnswerRepository = new ActionAnswerRepository();
