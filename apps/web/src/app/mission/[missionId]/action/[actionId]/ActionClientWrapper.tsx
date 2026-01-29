@@ -94,7 +94,7 @@ function ActionContent() {
 
   return (
     <StepProvider syncWithUrl steps={steps} initialStep={initialStep >= 0 ? initialStep : 0}>
-      <ActionRenderer totalActionCount={actions.data.length} actions={actions.data} />
+      <ActionRenderer actions={actions.data} />
     </StepProvider>
   );
 }
@@ -108,7 +108,6 @@ interface ActionForProgress {
 }
 
 interface ActionRendererProps {
-  totalActionCount: number;
   actions: ActionForProgress[];
 }
 
@@ -196,7 +195,7 @@ function calculateProgressInfo(
   return { currentOrder, totalCount };
 }
 
-function ActionRenderer({ totalActionCount, actions }: ActionRendererProps) {
+function ActionRenderer({ actions }: ActionRendererProps) {
   const router = useRouter();
   const { missionId } = useParams<{ missionId: string }>();
 
@@ -213,7 +212,6 @@ function ActionRenderer({ totalActionCount, actions }: ActionRendererProps) {
     goToStep,
     steps,
     isFirstStep,
-    isLastStep,
     canGoNext,
     updateStepConfig,
   } = useStep();
