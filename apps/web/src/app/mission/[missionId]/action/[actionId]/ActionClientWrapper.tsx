@@ -31,6 +31,7 @@ import {
   ActionTag,
   ActionTime,
   ActionVideo,
+  Branch,
   MissionRatingScale,
   MissionStarScale,
   MultipleChoice,
@@ -85,6 +86,7 @@ function ActionContent() {
       Pdf: ActionPdf,
       Date: ActionDate,
       Time: ActionTime,
+      Branch: Branch,
     },
   });
 

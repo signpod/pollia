@@ -1,0 +1,103 @@
+import { ActionOptionButton } from "@/app/mission/[missionId]/components";
+import { ActionStepContentProps } from "@/constants/action";
+import { ActionType } from "@prisma/client";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { SurveyQuestionTemplate } from "../components/ActionTemplate";
+
+export function Branch({
+  actionData,
+  currentOrder,
+  totalActionCount,
+  isFirstAction,
+  onPrevious,
+  onNext,
+  nextButtonText,
+  isNextDisabled,
+  updateCanGoNext,
+  onAnswerChange,
+  missionResponse,
+  isLoading,
+}: ActionStepContentProps) {
+  const options = actionData.options ?? [];
+
+  const existingAnswer = useMemo(() => {
+    const answers = missionResponse?.data?.answers ?? [];
+    return answers.find(a => a.actionId === actionData.id);
+  }, [missionResponse?.data?.answers, actionData.id]);
+
+  const [selectedId, setSelectedId] = useState<string | null>(() => {
+    const firstOption = existingAnswer?.options?.[0];
+    return firstOption?.id ?? null;
+  });
+
+  useEffect(() => {
+    const firstOption = existingAnswer?.options?.[0];
+    if (firstOption) {
+      setSelectedId(firstOption.id);
+    }
+  }, [existingAnswer]);
+
+  const canGoNext = useMemo(() => {
+    if (!actionData.isRequired) return true;
+    return selectedId !== null;
+  }, [actionData.isRequired, selectedId]);
+
+  useEffect(() => {
+    updateCanGoNext?.(canGoNext);
+  }, [canGoNext, updateCanGoNext]);
+
+  const handleSelect = useCallback(
+    (optionId: string) => {
+      setSelectedId(optionId);
+
+      const selectedOption = options.find(opt => opt.id === optionId);
+
+      onAnswerChange?.({
+        actionId: actionData.id,
+        type: ActionType.BRANCH,
+        isRequired: actionData.isRequired,
+        selectedOptionIds: [optionId],
+        nextActionId: selectedOption?.nextActionId ?? actionData.nextActionId ?? undefined,
+        nextCompletionId: selectedOption?.nextCompletionId ?? actionData.nextCompletionId ?? undefined,
+      });
+    },
+    [actionData, options, onAnswerChange],
+  );
+
+  const hasImage = options.some(option => !!option.imageUrl);
+
+  return (
+    <SurveyQuestionTemplate
+      currentOrder={currentOrder}
+      totalActionCount={totalActionCount}
+      title={actionData.title}
+      description={actionData.description ?? undefined}
+      imageUrl={actionData.imageUrl ?? undefined}
+      isFirstAction={isFirstAction}
+      isNextDisabled={isNextDisabled || !canGoNext}
+      onPrevious={onPrevious}
+      onNext={onNext}
+      nextButtonText={nextButtonText}
+      isLoading={isLoading}
+      isRequired={actionData.isRequired}
+    >
+      <div className={hasImage ? "grid grid-cols-2 gap-2 w-full" : "flex flex-col gap-2 w-full"}>
+        {options.map(option => {
+          const isSelected = selectedId === option.id;
+
+          return (
+            <ActionOptionButton
+              key={option.id}
+              selectType="radio"
+              imageUrl={option.imageUrl ?? undefined}
+              title={option.title}
+              description={option.description ?? undefined}
+              isSelected={isSelected}
+              onClick={() => handleSelect(option.id)}
+            />
+          );
+        })}
+      </div>
+    </SurveyQuestionTemplate>
+  );
+}

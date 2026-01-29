@@ -1,3 +1,4 @@
+export * from "./Branch";
 export * from "./MultipleChoice";
 export * from "./RatingScale";
 export * from "./StarScale";
