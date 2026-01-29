@@ -5,6 +5,7 @@ import {
   ClipboardList,
   Clock,
   FileText,
+  GitBranch,
   Hash,
   ImageIcon,
   type LucideIcon,
@@ -88,5 +89,11 @@ export const ACTION_TYPE_CONFIGS: readonly ActionTypeConfig[] = [
     label: getActionTypeLabel("TIME"),
     description: "시간을 선택하여 응답",
     icon: Clock,
+  },
+  {
+    value: "BRANCH",
+    label: getActionTypeLabel("BRANCH"),
+    description: "선택에 따라 시나리오가 분기",
+    icon: GitBranch,
   },
 ] as const;
