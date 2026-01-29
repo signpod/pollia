@@ -9,6 +9,7 @@ export {
   MULTIPLE_CHOICE_MAX_OPTIONS,
   SCALE_MIN_OPTIONS,
   SCALE_MAX_OPTIONS,
+  BRANCH_OPTIONS_COUNT,
   IMAGE_MAX_SELECTIONS,
   DATE_MAX_SELECTIONS,
   TIME_MAX_SELECTIONS,
@@ -30,6 +31,7 @@ export {
   privacyConsentInputSchema,
   dateInputSchema,
   timeInputSchema,
+  branchInputSchema,
   actionUpdateSchema,
   type MultipleChoiceInput,
   type ScaleInput,
@@ -44,5 +46,6 @@ export {
   type PrivacyConsentInput,
   type DateInput,
   type TimeInput,
+  type BranchInput,
   type ActionUpdate,
 } from "./actionSchema";

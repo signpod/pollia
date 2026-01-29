@@ -12,6 +12,7 @@ export const MULTIPLE_CHOICE_MIN_OPTIONS = 2;
 export const MULTIPLE_CHOICE_MAX_OPTIONS = 10;
 export const SCALE_MIN_OPTIONS = 3;
 export const SCALE_MAX_OPTIONS = 10;
+export const BRANCH_OPTIONS_COUNT = 2;
 
 export const IMAGE_MAX_SELECTIONS = 10;
 export const DATE_MAX_SELECTIONS = 20;
@@ -144,6 +145,23 @@ export const timeInputSchema = baseActionSchema.extend({
   maxSelections: z.number().int().min(1, "최대 선택 가능 개수는 최소 1개 이상이어야 합니다."),
 });
 
+export const branchInputSchema = baseActionSchema
+  .extend({
+    maxSelections: z.literal(1),
+    hasOther: z.literal(false),
+    options: z
+      .array(
+        actionOptionSchema.extend({
+          nextActionId: z.string().nullable().optional(),
+        }),
+      )
+      .length(
+        BRANCH_OPTIONS_COUNT,
+        `분기 액션은 정확히 ${BRANCH_OPTIONS_COUNT}개의 선택지가 필요합니다.`,
+      ),
+  })
+  .omit({ nextActionId: true, nextCompletionId: true });
+
 export const actionUpdateSchema = z
   .object({
     title: actionTitleSchema.optional(),
@@ -179,5 +197,6 @@ export type VideoInput = z.infer<typeof videoInputSchema>;
 export type PrivacyConsentInput = z.infer<typeof privacyConsentInputSchema>;
 export type DateInput = z.infer<typeof dateInputSchema>;
 export type TimeInput = z.infer<typeof timeInputSchema>;
+export type BranchInput = z.infer<typeof branchInputSchema>;
 export type ActionOption = z.infer<typeof actionOptionSchema>;
 export type ActionUpdate = z.infer<typeof actionUpdateSchema>;

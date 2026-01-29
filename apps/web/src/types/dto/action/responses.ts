@@ -48,3 +48,4 @@ export type CreatePdfActionResponse = BaseActionResponse;
 export type CreateVideoActionResponse = BaseActionResponse;
 export type CreateDateActionResponse = BaseActionResponse;
 export type CreateTimeActionResponse = BaseActionResponse;
+export type CreateBranchActionResponse = BaseActionResponse;
