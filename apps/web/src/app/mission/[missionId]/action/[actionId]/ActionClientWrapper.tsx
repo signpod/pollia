@@ -23,7 +23,7 @@ import type { ActionAnswer } from "@/types/dto/action-answer";
 import { StepProvider, useModal, useStep } from "@repo/ui/components";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActionDate,
   ActionImage,
@@ -94,22 +94,108 @@ function ActionContent() {
 
   return (
     <StepProvider syncWithUrl steps={steps} initialStep={initialStep >= 0 ? initialStep : 0}>
-      <ActionRenderer totalActionCount={actions.data.length} actions={actions.data} />
+      <ActionRenderer actions={actions.data} />
     </StepProvider>
   );
 }
 
-interface ActionRendererProps {
-  totalActionCount: number;
-  actions: Array<{
-    id: string;
-    order: number | null;
-    nextActionId?: string | null;
-    options: Array<{ id: string; nextActionId?: string | null; nextCompletionId?: string | null }>;
-  }>;
+interface ActionForProgress {
+  id: string;
+  order: number | null;
+  nextActionId?: string | null;
+  nextCompletionId?: string | null;
+  options: Array<{ id: string; nextActionId?: string | null; nextCompletionId?: string | null }>;
 }
 
-function ActionRenderer({ totalActionCount, actions }: ActionRendererProps) {
+interface ActionRendererProps {
+  actions: ActionForProgress[];
+}
+
+function calculateRemainingPath(
+  currentActionId: string,
+  actions: ActionForProgress[],
+  submittedAnswerMap: Map<string, string[]>,
+  visited: Set<string> = new Set(),
+): number {
+  if (visited.has(currentActionId)) return 0;
+  visited.add(currentActionId);
+
+  const currentAction = actions.find(a => a.id === currentActionId);
+  if (!currentAction) return 0;
+
+  let nextActionId: string | null | undefined = null;
+  let hasCompletionId = false;
+
+  // 1. 제출된 답변에서 선택된 옵션의 nextActionId/nextCompletionId 확인
+  const submittedOptionIds = submittedAnswerMap.get(currentActionId);
+  if (submittedOptionIds?.length) {
+    const selectedOptionId = submittedOptionIds[0];
+    const selectedOption = currentAction.options.find(o => o.id === selectedOptionId);
+    if (selectedOption?.nextCompletionId) {
+      hasCompletionId = true;
+    } else if (selectedOption?.nextActionId) {
+      nextActionId = selectedOption.nextActionId;
+    }
+  }
+
+  // 2. action 레벨 nextCompletionId 확인
+  if (!nextActionId && !hasCompletionId && currentAction.nextCompletionId) {
+    hasCompletionId = true;
+  }
+
+  // 3. action 레벨 nextActionId 확인
+  if (!nextActionId && !hasCompletionId && currentAction.nextActionId) {
+    nextActionId = currentAction.nextActionId;
+  }
+
+  // 4. 순차적으로 다음 액션 (order 기반)
+  if (!nextActionId && !hasCompletionId) {
+    const currentOrder = currentAction.order ?? 0;
+    const nextAction = actions.find(a => (a.order ?? 0) === currentOrder + 1);
+    if (nextAction) {
+      nextActionId = nextAction.id;
+    }
+  }
+
+  // 다음 액션이 없거나 완료 화면으로 가면 현재가 마지막
+  if (!nextActionId || hasCompletionId) return 1;
+
+  // 재귀적으로 남은 경로 계산
+  return 1 + calculateRemainingPath(nextActionId, actions, submittedAnswerMap, visited);
+}
+
+interface ProgressInfo {
+  currentOrder: number;
+  totalCount: number;
+}
+
+function calculateProgressInfo(
+  currentActionId: string,
+  actions: ActionForProgress[],
+  answeredActionIds: string[],
+  submittedAnswerMap: Map<string, string[]>,
+): ProgressInfo {
+  // 현재 액션이 이미 응답된 것인지 확인
+  const isCurrentAnswered = answeredActionIds.includes(currentActionId);
+
+  // 응답한 액션 수 (현재 액션 제외)
+  const answeredCount = isCurrentAnswered
+    ? answeredActionIds.indexOf(currentActionId)
+    : answeredActionIds.length;
+
+  // 현재 액션에서 끝까지의 남은 경로
+  const remainingPath = calculateRemainingPath(currentActionId, actions, submittedAnswerMap);
+
+  // 현재 순서 = 응답한 액션 수 + 1
+  const currentOrder = answeredCount + 1;
+
+  // 전체 = 응답한 액션 수 + 남은 경로
+  const totalCount = answeredCount + remainingPath;
+
+  return { currentOrder, totalCount };
+}
+
+function ActionRenderer({ actions }: ActionRendererProps) {
   const router = useRouter();
   const { missionId } = useParams<{ missionId: string }>();
 
@@ -126,7 +212,6 @@ function ActionRenderer({ totalActionCount, actions }: ActionRendererProps) {
     goToStep,
     steps,
     isFirstStep,
-    isLastStep,
     canGoNext,
     updateStepConfig,
   } = useStep();
@@ -192,11 +277,35 @@ function ActionRenderer({ totalActionCount, actions }: ActionRendererProps) {
   const ContentComponent = stepConfig.content;
   const actionData = stepConfig.actionData;
 
-  const currentOrder = actionData.order ?? 0;
+  // 응답한 액션 ID 목록 및 선택된 옵션 맵 (순서 유지, 제출된 답변 기반)
+  const { answeredActionIds, submittedAnswerMap } = useMemo(() => {
+    const answers = missionResponse?.data?.answers ?? [];
+    const seen = new Set<string>();
+    const ordered: string[] = [];
+    const answerMap = new Map<string, string[]>();
+
+    for (const answer of answers) {
+      if (!seen.has(answer.actionId)) {
+        seen.add(answer.actionId);
+        ordered.push(answer.actionId);
+      }
+      // 옵션 ID 수집 (MULTIPLE_CHOICE, TAG 등)
+      if (answer.options?.length) {
+        const optionIds = answer.options.map(opt => opt.id);
+        answerMap.set(answer.actionId, optionIds);
+      }
+    }
+    return { answeredActionIds: ordered, submittedAnswerMap: answerMap };
+  }, [missionResponse?.data?.answers]);
+
+  // 동적 progress 계산 (제출된 답변 기반으로만 계산)
+  const progressInfo = useMemo(() => {
+    return calculateProgressInfo(actionData.id, actions, answeredActionIds, submittedAnswerMap);
+  }, [actionData.id, actions, answeredActionIds, submittedAnswerMap]);
 
   useMissionSurveyToast({
-    currentOrder,
-    totalActionCount,
+    currentOrder: progressInfo.currentOrder - 1,
+    totalActionCount: progressInfo.totalCount,
     toastStorageKey,
   });
 
@@ -337,6 +446,11 @@ function ActionRenderer({ totalActionCount, actions }: ActionRendererProps) {
     const submittedAnswers = missionResponse?.data?.answers ?? [];
     const isSame = isAnswerSameAsSubmitted(currentAnswer, submittedAnswers);
 
+    // 실제 마지막 스텝인지 계산 (분기 고려)
+    const isActualLast =
+      !!currentAnswer?.nextCompletionId ||
+      progressInfo.currentOrder === progressInfo.totalCount;
+
     if (isSame) {
       if (currentAnswer) {
         recordResponse({
@@ -346,7 +460,7 @@ function ActionRenderer({ totalActionCount, actions }: ActionRendererProps) {
           actionId: currentAnswer.actionId,
           metadata: {
             actionType: currentAnswer.type,
-            isFinalSubmit: isLastStep,
+            isFinalSubmit: isActualLast,
           },
         });
         clearActionSession(currentAnswer.actionId);
@@ -363,7 +477,7 @@ function ActionRenderer({ totalActionCount, actions }: ActionRendererProps) {
 
     const nextCompletionIdForSubmit = currentAnswer?.nextCompletionId;
 
-    if (isLastStep || nextCompletionIdForSubmit) {
+    if (isActualLast) {
       showModal({
         ...SURVEY_SUBMIT_MODAL,
         showCancelButton: true,
@@ -384,7 +498,7 @@ function ActionRenderer({ totalActionCount, actions }: ActionRendererProps) {
       });
     }
   }, [
-    isLastStep,
+    progressInfo,
     responseId,
     currentAnswer,
     submitAnswer,
@@ -431,18 +545,24 @@ function ActionRenderer({ totalActionCount, actions }: ActionRendererProps) {
     goBack();
   }, [isFirstStep, goBack, goToStep, missionId, router, actionData.id, actions, steps]);
 
+  // 실제 마지막 스텝인지 확인 (분기 고려, UI용)
+  const isActualLastStep = useMemo(() => {
+    if (currentAnswer?.nextCompletionId) return true;
+    return progressInfo.currentOrder === progressInfo.totalCount;
+  }, [currentAnswer?.nextCompletionId, progressInfo]);
+
   return (
     <ContentComponent
       key={actionData.id}
       actionData={actionData}
-      currentOrder={actionData.order ?? 0}
-      totalActionCount={totalActionCount}
+      currentOrder={progressInfo.currentOrder - 1}
+      totalActionCount={progressInfo.totalCount}
       isFirstAction={isFirstStep}
       isNextDisabled={!canGoNext || isSubmittingAnswer || isCompletingMission}
       isLoading={isSubmittingAnswer || isCompletingMission}
       onPrevious={handlePrevious}
       onNext={handleNext}
-      nextButtonText={isLastStep ? "제출하기" : "다음"}
+      nextButtonText={isActualLastStep ? "제출하기" : "다음"}
       updateCanGoNext={updateCanGoNext}
       onAnswerChange={handleAnswerChange}
       missionResponse={missionResponse?.data ? missionResponse : undefined}

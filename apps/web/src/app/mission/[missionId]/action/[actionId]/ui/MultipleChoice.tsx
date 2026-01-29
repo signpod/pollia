@@ -29,6 +29,7 @@ export function MultipleChoice({
       updateCanGoNext={updateCanGoNext}
       onAnswerChange={onAnswerChange}
       options={actionData.options ?? []}
+      actionNextActionId={actionData.nextActionId}
       actionNextCompletionId={actionData.nextCompletionId}
     >
       <SurveyMultipleChoiceContent

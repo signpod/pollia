@@ -42,6 +42,7 @@ interface SurveyMultipleChoiceProviderProps {
   onAnswerChange?: (answer: ActionAnswerItem) => void;
   answerType?: typeof ActionType.MULTIPLE_CHOICE | typeof ActionType.TAG;
   options?: ActionOption[];
+  actionNextActionId?: string | null;
   actionNextCompletionId?: string | null;
 }
 
@@ -55,6 +56,7 @@ export function MultipleChoiceProvider({
   onAnswerChange,
   answerType,
   options = [],
+  actionNextActionId,
   actionNextCompletionId,
 }: SurveyMultipleChoiceProviderProps) {
   const initialSelectedIds = useMemo(() => {
@@ -114,6 +116,7 @@ export function MultipleChoiceProvider({
             }
           : {}),
         ...(answerWithText?.textAnswer ? { textAnswer: answerWithText.textAnswer } : {}),
+        ...(actionNextActionId && { nextActionId: actionNextActionId }),
         ...(actionNextCompletionId && { nextCompletionId: actionNextCompletionId }),
       };
 
@@ -129,6 +132,7 @@ export function MultipleChoiceProvider({
         actionId,
         type: answerType ?? ActionType.MULTIPLE_CHOICE,
         isRequired,
+        ...(actionNextActionId && { nextActionId: actionNextActionId }),
         ...(actionNextCompletionId && { nextCompletionId: actionNextCompletionId }),
       });
     } else {
@@ -138,10 +142,11 @@ export function MultipleChoiceProvider({
         actionId,
         type: answerType ?? ActionType.MULTIPLE_CHOICE,
         isRequired,
+        ...(actionNextActionId && { nextActionId: actionNextActionId }),
         ...(actionNextCompletionId && { nextCompletionId: actionNextCompletionId }),
       });
     }
-  }, [initialSelectedIds, actionId, answerType, isRequired, missionResponse, actionNextCompletionId]);
+  }, [initialSelectedIds, actionId, answerType, isRequired, missionResponse, actionNextActionId, actionNextCompletionId]);
 
   const toggleSelectedId = useCallback(
     (optionId: string) => {
@@ -182,7 +187,8 @@ export function MultipleChoiceProvider({
         maxSelections === 1 && realOptionIds.length === 1
           ? options.find(opt => opt.id === realOptionIds[0])
           : null;
-      const nextActionId = selectedOption?.nextActionId ?? undefined;
+      // 옵션의 nextActionId가 없으면 action의 nextActionId 사용
+      const nextActionId = selectedOption?.nextActionId ?? actionNextActionId ?? undefined;
       // 옵션의 nextCompletionId가 없으면 action의 nextCompletionId 사용
       const nextCompletionId =
         selectedOption?.nextCompletionId ?? actionNextCompletionId ?? undefined;
@@ -219,6 +225,7 @@ export function MultipleChoiceProvider({
         actionId,
         type: answerType ?? ActionType.MULTIPLE_CHOICE,
         isRequired,
+        ...(actionNextActionId && { nextActionId: actionNextActionId }),
         ...(actionNextCompletionId && { nextCompletionId: actionNextCompletionId }),
       });
     } else {
@@ -236,6 +243,7 @@ export function MultipleChoiceProvider({
     isRequired,
     maxSelections,
     options,
+    actionNextActionId,
     actionNextCompletionId,
   ]);
 
