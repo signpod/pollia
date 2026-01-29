@@ -1,5 +1,6 @@
 import {
   actionUpdateSchema,
+  branchInputSchema,
   dateInputSchema,
   eitherOrInputSchema,
   imageInputSchema,
@@ -21,6 +22,7 @@ import type {
   ActionCreatedResult,
   BaseActionInput,
   BaseActionInputWithOptions,
+  CreateBranchInput,
   CreateDateInput,
   CreateEitherOrInput,
   CreateImageInput,
@@ -270,6 +272,10 @@ export class ActionService {
       userId,
       input.maxSelections,
     );
+  }
+
+  async createBranchAction(input: CreateBranchInput, userId: string): Promise<ActionCreatedResult> {
+    return this.createActionWithOptions(input, branchInputSchema, ActionType.BRANCH, userId, 1);
   }
 
   async updateAction(actionId: string, data: UpdateActionInput, userId: string) {

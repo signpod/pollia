@@ -110,6 +110,7 @@ export const ACTION_TYPE_LABELS: Record<ActionType, string> = {
   [ActionType.PDF]: "PDF",
   [ActionType.DATE]: "날짜",
   [ActionType.TIME]: "시간",
+  [ActionType.BRANCH]: "분기",
 };
 
 export const ACTION_PLACEHOLDER = "답변을 입력해주세요";

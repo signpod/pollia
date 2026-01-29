@@ -53,6 +53,11 @@ export type CreateTimeInput = BaseActionInput & {
   maxSelections: number;
 };
 
+export type CreateBranchInput = BaseActionInputWithOptions & {
+  maxSelections: 1;
+  hasOther: false;
+};
+
 export type UpdateActionOptionInput = Omit<ActionOptionInput, "order"> & {
   id?: string;
   order: number;
