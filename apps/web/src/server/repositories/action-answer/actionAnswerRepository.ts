@@ -248,9 +248,13 @@ export class ActionAnswerRepository {
    *
    * BFS 알고리즘을 사용하여 다음 로직으로 답변을 탐색합니다:
    * 1. 주어진 옵션들의 nextActionId를 시작점으로 큐에 추가
+   *    - ActionOption.nextActionId 우선 (1순위)
+   *    - null이면 Action.nextActionId 사용 (2순위, 폴백)
    * 2. 각 액션에 대해 사용자의 답변이 있는지 확인
    * 3. 답변이 있으면 삭제 대상에 추가
    * 4. 완료 화면으로 분기되지 않으면 다음 액션들을 큐에 추가
+   *    - 각 옵션에 대해 ActionOption.nextActionId 우선, null이면 Action.nextActionId 사용
+   *    - 중복 제거하여 큐에 추가
    * 5. 순환 참조 방지를 위해 방문한 액션은 Set으로 관리
    *
    * @param responseId - 응답 ID
@@ -303,6 +307,7 @@ export class ActionAnswerRepository {
 
     const answersByActionId = new Map(allAnswers.map(answer => [answer.actionId, answer]));
 
+    // 초기 큐: ActionOption.nextActionId 우선, 없으면 Action.nextActionId 사용
     const queue: string[] = options
       .map(opt => opt.nextActionId || opt.action.nextActionId)
       .filter((id): id is string => id !== null);
@@ -323,6 +328,7 @@ export class ActionAnswerRepository {
       const hasCompletion = userAnswer.options.some(opt => opt.nextCompletionId !== null);
       if (hasCompletion) continue;
 
+      // 다음 액션: 각 옵션에서 ActionOption.nextActionId 우선, 없으면 Action.nextActionId 사용
       const nextActionIds = userAnswer.options
         .map(opt => opt.nextActionId || userAnswer.action.nextActionId)
         .filter((id): id is string => id !== null);
