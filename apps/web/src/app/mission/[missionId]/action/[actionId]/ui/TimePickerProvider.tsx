@@ -25,6 +25,8 @@ interface TimePickerProviderProps {
   updateCanGoNext: (canGoNext: boolean) => void;
   onAnswerChange: (answer: ActionAnswerItem) => void;
   children: React.ReactNode;
+  nextActionId?: string | null;
+  nextCompletionId?: string | null;
 }
 
 export function TimePickerProvider({
@@ -35,6 +37,8 @@ export function TimePickerProvider({
   updateCanGoNext,
   onAnswerChange,
   children,
+  nextActionId,
+  nextCompletionId,
 }: TimePickerProviderProps) {
   const [selectedTimes, setSelectedTimes] = useState<Set<string>>(new Set());
   const updateCanGoNextRef = useRef(updateCanGoNext);
@@ -125,8 +129,10 @@ export function TimePickerProvider({
       type: ActionType.TIME,
       isRequired,
       dateAnswers: selectedTimes.size > 0 ? convertTimesToDateStrings(selectedTimes) : undefined,
+      ...(nextActionId && { nextActionId }),
+      ...(nextCompletionId && { nextCompletionId }),
     });
-  }, [selectedTimes, actionId, isRequired, convertTimesToDateStrings]);
+  }, [selectedTimes, actionId, isRequired, convertTimesToDateStrings, nextActionId, nextCompletionId]);
 
   return (
     <TimePickerContext.Provider

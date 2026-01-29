@@ -25,6 +25,8 @@ export function MissionStarScale({
     updateCanGoNext,
     onAnswerChange,
     defaultValue: 0,
+    nextActionId: actionData.nextActionId,
+    nextCompletionId: actionData.nextCompletionId,
   });
 
   const starRating = scaleValueToStarRating(scaleValue);

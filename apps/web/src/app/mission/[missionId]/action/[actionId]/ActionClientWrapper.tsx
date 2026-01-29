@@ -94,18 +94,42 @@ function ActionContent() {
 
   return (
     <StepProvider syncWithUrl steps={steps} initialStep={initialStep >= 0 ? initialStep : 0}>
-      <ActionRenderer totalActionCount={actions.data.length} />
+      <ActionRenderer totalActionCount={actions.data.length} actions={actions.data} />
     </StepProvider>
   );
 }
 
-function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
+interface ActionRendererProps {
+  totalActionCount: number;
+  actions: Array<{
+    id: string;
+    order: number | null;
+    nextActionId?: string | null;
+    options: Array<{ id: string; nextActionId?: string | null; nextCompletionId?: string | null }>;
+  }>;
+}
+
+function ActionRenderer({ totalActionCount, actions }: ActionRendererProps) {
   const router = useRouter();
   const { missionId } = useParams<{ missionId: string }>();
+
   const [currentAnswer, setCurrentAnswer] = useState<ActionAnswerItem | null>(null);
   const { showModal } = useModal();
   const { user } = useAuth();
   const isFinalSubmitRef = useRef(false);
+
+  const {
+    currentStep,
+    currentStepConfig,
+    goNext,
+    goBack,
+    goToStep,
+    steps,
+    isFirstStep,
+    isLastStep,
+    canGoNext,
+    updateStepConfig,
+  } = useStep();
 
   const { data: missionResponse } = useReadMissionResponseForMission({ missionId });
   const recordResponse = useRecordActionResponse();
@@ -118,7 +142,7 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
   }, [missionId, router]);
 
   const { mutateAsync: submitAnswer, isPending: isSubmittingAnswer } = useSubmitQuestionAnswer({
-    onSuccess: () => {
+    onSuccess: async () => {
       if (currentAnswer) {
         recordResponse({
           missionId,
@@ -133,7 +157,12 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
         clearActionSession(currentAnswer.actionId);
       }
 
-      goNext();
+      // 모달을 통한 최종 제출일 경우, 라우팅은 handleNext에서 처리
+      if (isFinalSubmitRef.current) {
+        return;
+      }
+
+      goNext(currentAnswer?.nextActionId);
     },
     onError: () => {
       toast.warning("답변 저장에 실패했습니다", { id: "submit-answer-error" });
@@ -143,10 +172,6 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
   });
 
   const { mutateAsync: completeMissionAsync, isPending: isCompletingMission } = useCompleteMission({
-    onSuccess: () => {
-      removeSessionStorage(toastStorageKey);
-      router.push(ROUTES.MISSION_DONE(missionId));
-    },
     onError: () => {
       toast.warning(MISSION_TOAST_MESSAGE.error.message, { id: MISSION_TOAST_MESSAGE.error.id });
     },
@@ -154,16 +179,14 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
     missionId,
   });
 
-  const {
-    currentStep,
-    currentStepConfig,
-    goNext,
-    goBack,
-    isFirstStep,
-    isLastStep,
-    canGoNext,
-    updateStepConfig,
-  } = useStep();
+  const handleCompleteMission = useCallback(
+    async (responseId: string, completionId?: string) => {
+      await completeMissionAsync({ responseId });
+      removeSessionStorage(toastStorageKey);
+      router.push(ROUTES.MISSION_DONE(missionId, completionId));
+    },
+    [completeMissionAsync, missionId, router, toastStorageKey],
+  );
 
   const stepConfig = currentStepConfig as unknown as ExtendedActionStepConfig;
   const ContentComponent = stepConfig.content;
@@ -328,11 +351,19 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
         });
         clearActionSession(currentAnswer.actionId);
       }
-      goNext();
+
+      if (currentAnswer?.nextCompletionId) {
+        handleCompleteMission(responseId, currentAnswer.nextCompletionId);
+        return;
+      }
+
+      goNext(currentAnswer?.nextActionId);
       return;
     }
 
-    if (isLastStep) {
+    const nextCompletionIdForSubmit = currentAnswer?.nextCompletionId;
+
+    if (isLastStep || nextCompletionIdForSubmit) {
       showModal({
         ...SURVEY_SUBMIT_MODAL,
         showCancelButton: true,
@@ -340,26 +371,24 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
           isFinalSubmitRef.current = true;
           try {
             await submitAnswer({ responseId, answer: currentAnswer });
-            await completeMissionAsync({ responseId });
+            await handleCompleteMission(responseId, nextCompletionIdForSubmit);
           } finally {
             isFinalSubmitRef.current = false;
           }
         },
       });
     } else {
-      // console.log("submitAnswer", currentAnswer);
       await submitAnswer({
         responseId,
         answer: currentAnswer,
       });
-      goNext();
     }
   }, [
     isLastStep,
     responseId,
     currentAnswer,
     submitAnswer,
-    completeMissionAsync,
+    handleCompleteMission,
     showModal,
     isAnswerSameAsSubmitted,
     goNext,
@@ -373,10 +402,34 @@ function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
   const handlePrevious = useCallback(() => {
     if (isFirstStep) {
       router.push(ROUTES.MISSION(missionId));
-    } else {
-      goBack();
+      return;
     }
-  }, [isFirstStep, goBack, missionId, router]);
+
+    // 현재 액션을 nextActionId로 가리키고 있는 source 액션 찾기
+    const currentActionId = actionData.id;
+
+    // 1. option 레벨 nextActionId 확인 (MULTIPLE_CHOICE)
+    // 2. action 레벨 nextActionId 확인 (모든 타입)
+    const sourceAction = actions.find(
+      action =>
+        action.options.some(option => option.nextActionId === currentActionId) ||
+        action.nextActionId === currentActionId,
+    );
+
+    if (sourceAction) {
+      // nextActionId로 연결된 source 액션이 있으면 그 액션으로 이동
+      const sourceIndex = steps.findIndex(
+        step => (step as unknown as ExtendedActionStepConfig).actionData.id === sourceAction.id,
+      );
+      if (sourceIndex !== -1) {
+        goToStep(sourceIndex);
+        return;
+      }
+    }
+
+    // 없으면 order상 이전 액션으로 이동
+    goBack();
+  }, [isFirstStep, goBack, goToStep, missionId, router, actionData.id, actions, steps]);
 
   return (
     <ContentComponent

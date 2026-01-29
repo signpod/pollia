@@ -77,6 +77,8 @@ export function ActionImage({
             type: ActionType.IMAGE,
             isRequired: actionData.isRequired,
             fileUploadIds: [],
+            ...(actionData.nextActionId && { nextActionId: actionData.nextActionId }),
+            ...(actionData.nextCompletionId && { nextCompletionId: actionData.nextCompletionId }),
           });
         } else {
           updateCanGoNextRef.current?.(false);
@@ -89,6 +91,8 @@ export function ActionImage({
         type: ActionType.IMAGE,
         isRequired: actionData.isRequired,
         fileUploadIds: infos.map(info => info.fileUploadId),
+        ...(actionData.nextActionId && { nextActionId: actionData.nextActionId }),
+        ...(actionData.nextCompletionId && { nextCompletionId: actionData.nextCompletionId }),
       };
 
       const validationResult = submitAnswerItemSchema.safeParse(answer);
@@ -98,7 +102,7 @@ export function ActionImage({
         onAnswerChangeRef.current?.(answer);
       }
     },
-    [actionData.id, actionData.isRequired],
+    [actionData.id, actionData.isRequired, actionData.nextActionId, actionData.nextCompletionId],
   );
 
   useEffect(() => {

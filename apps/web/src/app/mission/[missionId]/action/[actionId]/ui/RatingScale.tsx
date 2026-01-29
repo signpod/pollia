@@ -25,6 +25,8 @@ export function MissionRatingScale({
     updateCanGoNext,
     onAnswerChange,
     defaultValue: actionData.options.length > 0 ? Math.floor(actionData.options.length / 2) : 0,
+    nextActionId: actionData.nextActionId,
+    nextCompletionId: actionData.nextCompletionId,
   });
 
   return (

@@ -69,6 +69,8 @@ export function ActionPdf({
             type: ActionType.PDF,
             isRequired: actionData.isRequired,
             fileUploadIds: [],
+            ...(actionData.nextActionId && { nextActionId: actionData.nextActionId }),
+            ...(actionData.nextCompletionId && { nextCompletionId: actionData.nextCompletionId }),
           });
         } else {
           updateCanGoNextRef.current?.(false);
@@ -81,6 +83,8 @@ export function ActionPdf({
         type: ActionType.PDF,
         isRequired: actionData.isRequired,
         fileUploadIds: fileIds,
+        ...(actionData.nextActionId && { nextActionId: actionData.nextActionId }),
+        ...(actionData.nextCompletionId && { nextCompletionId: actionData.nextCompletionId }),
       };
 
       const validationResult = submitAnswerItemSchema.safeParse(answer);
@@ -90,7 +94,7 @@ export function ActionPdf({
         onAnswerChangeRef.current?.(answer);
       }
     },
-    [actionData.id, actionData.isRequired, isUploading],
+    [actionData.id, actionData.isRequired, isUploading, actionData.nextActionId, actionData.nextCompletionId],
   );
 
   useEffect(() => {

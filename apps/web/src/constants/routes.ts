@@ -13,7 +13,8 @@ export const ROUTES = {
 
   // 미션 관련
   MISSION: (id: string) => `/mission/${id}`,
-  MISSION_DONE: (id: string) => `/mission/${id}/done`,
+  MISSION_DONE: (id: string, completionId?: string) =>
+    completionId ? `/mission/${id}/done?id=${completionId}` : `/mission/${id}/done`,
   MISSION_PASSWORD: (missionId: string) => `/mission/${missionId}/password`,
 
   // 액션 관련

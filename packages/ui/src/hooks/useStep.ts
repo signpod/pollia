@@ -16,7 +16,7 @@ export interface StepContextValue {
   steps: StepConfig[];
 
   goToStep: (stepIndex: number) => void;
-  goNext: () => void;
+  goNext: (nextActionId?: string) => void;
   goBack: () => void;
 
   updateStepConfig: (stepIndex: number, updates: Partial<StepConfig>) => void;
@@ -71,6 +71,7 @@ export function StepProvider({
             return;
           }
           const stepId = steps[stepIndex]?.id;
+
           if (!stepId) {
             console.error("❌ question id가 없습니다.");
             return;
@@ -98,11 +99,25 @@ export function StepProvider({
     [currentStep, steps.length, onStepChange, onComplete, syncWithUrl, router, steps],
   );
 
-  const goNext = useCallback(() => {
-    if (canGoNext && !isLastStep) {
-      goToStep(currentStep + 1);
-    }
-  }, [canGoNext, isLastStep, currentStep, goToStep]);
+  const goNext = useCallback(
+    (nextActionId?: string) => {
+      if (!canGoNext) return;
+
+      if (nextActionId) {
+        const nextIndex = steps.findIndex(step => step.id === nextActionId);
+        if (nextIndex !== -1) {
+          goToStep(nextIndex);
+          return;
+        }
+        console.warn("nextActionId not found in steps:", nextActionId);
+      }
+
+      if (!isLastStep) {
+        goToStep(currentStep + 1);
+      }
+    },
+    [canGoNext, isLastStep, currentStep, goToStep, steps],
+  );
 
   const goBack = useCallback(() => {
     if (canGoBack && !isFirstStep) {

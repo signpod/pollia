@@ -28,6 +28,8 @@ export function ShortText({
       missionResponse,
       updateCanGoNext,
       onAnswerChange,
+      actionData.nextActionId,
+      actionData.nextCompletionId,
     );
   const isNextDisabled = isNextDisabledProp || !validationResult.success;
   const errorMessage = showError
@@ -71,6 +73,8 @@ function useShortTextValue(
   missionResponse?: GetMissionResponseResponse,
   updateCanGoNext?: (canGoNext: boolean) => void,
   onAnswerChange?: (answer: ActionAnswerItem) => void,
+  nextActionId?: string | null,
+  nextCompletionId?: string | null,
 ) {
   const initialTextValue = useMemo(() => {
     if (!missionResponse?.data?.answers || missionResponse.data.answers.length === 0) {
@@ -113,6 +117,8 @@ function useShortTextValue(
             type: ActionType.SHORT_TEXT,
             isRequired,
             textAnswer: initialTextValue.trim(),
+            ...(nextActionId && { nextActionId }),
+            ...(nextCompletionId && { nextCompletionId }),
           });
         }
       } else if (!isRequired) {
@@ -122,6 +128,8 @@ function useShortTextValue(
           type: ActionType.SHORT_TEXT,
           isRequired,
           textAnswer: "",
+          ...(nextActionId && { nextActionId }),
+          ...(nextCompletionId && { nextCompletionId }),
         });
       } else {
         updateCanGoNextRef.current?.(false);
@@ -131,11 +139,13 @@ function useShortTextValue(
           type: ActionType.SHORT_TEXT,
           isRequired,
           textAnswer: "",
+          ...(nextActionId && { nextActionId }),
+          ...(nextCompletionId && { nextCompletionId }),
         });
       }
       isInitialMountRef.current = false;
     }
-  }, [initialTextValue, actionId, isRequired]);
+  }, [initialTextValue, actionId, isRequired, nextActionId, nextCompletionId]);
 
   function handleShortTextValueChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value;
@@ -155,6 +165,8 @@ function useShortTextValue(
         type: ActionType.SHORT_TEXT,
         isRequired,
         textAnswer: value.trim(),
+        ...(nextActionId && { nextActionId }),
+        ...(nextCompletionId && { nextCompletionId }),
       });
     }
   }

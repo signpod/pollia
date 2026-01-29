@@ -1,6 +1,6 @@
 "use client";
 
-import { submitAnswers } from "@/actions/action-answer";
+import { submitAnswers, updateAnswerWithPruning } from "@/actions/action-answer";
 import { getMyResponseForMission } from "@/actions/mission-response";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import type { ActionAnswerItem } from "@/types/dto";
@@ -28,6 +28,20 @@ export function useSubmitActionAnswer(options: UseSubmitActionAnswerOptions) {
       const freshResponse = await getMyResponseForMission(missionId);
       if (freshResponse?.data?.completedAt) {
         throw new Error("ALREADY_COMPLETED");
+      }
+
+      // 분기 처리되는 multiple choice (nextActionId가 있는 경우)에서 기존 답변이 있으면 updateAnswerWithPruning 사용
+      if (answer.type === "MULTIPLE_CHOICE" && answer.nextActionId) {
+        const existingAnswer = freshResponse?.data?.answers.find(
+          a => a.actionId === answer.actionId,
+        );
+
+        if (existingAnswer) {
+          return await updateAnswerWithPruning(existingAnswer.id, {
+            selectedOptionIds: answer.selectedOptionIds,
+            ...(answer.textAnswer ? { textAnswer: answer.textAnswer } : {}),
+          });
+        }
       }
 
       return await submitAnswers({

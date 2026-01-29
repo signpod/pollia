@@ -23,6 +23,8 @@ interface DatePickerProviderProps {
   updateCanGoNext: (canGoNext: boolean) => void;
   onAnswerChange: (answer: ActionAnswerItem) => void;
   children: React.ReactNode;
+  nextActionId?: string | null;
+  nextCompletionId?: string | null;
 }
 
 export function DatePickerProvider({
@@ -33,6 +35,8 @@ export function DatePickerProvider({
   updateCanGoNext,
   onAnswerChange,
   children,
+  nextActionId,
+  nextCompletionId,
 }: DatePickerProviderProps) {
   const [selectedDates, setSelectedDates] = useState<Set<string>>(new Set());
   const updateCanGoNextRef = useRef(updateCanGoNext);
@@ -99,8 +103,10 @@ export function DatePickerProvider({
       type: ActionType.DATE,
       isRequired,
       dateAnswers: selectedDates.size > 0 ? Array.from(selectedDates) : undefined,
+      ...(nextActionId && { nextActionId }),
+      ...(nextCompletionId && { nextCompletionId }),
     });
-  }, [selectedDates, actionId, isRequired]);
+  }, [selectedDates, actionId, isRequired, nextActionId, nextCompletionId]);
 
   return (
     <DatePickerContext.Provider value={{ selectedDates, toggleDate, setDates, canGoNext }}>
