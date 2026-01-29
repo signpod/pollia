@@ -38,6 +38,10 @@ describe("ActionAnswerRepository - collectInvalidAnswersByOptions", () => {
           id: "answer-2",
           actionId: "action-2",
           responseId: "response-1",
+          action: {
+            id: "action-2",
+            nextActionId: null,
+          },
           options: [
             {
               id: "opt-2",
@@ -50,6 +54,10 @@ describe("ActionAnswerRepository - collectInvalidAnswersByOptions", () => {
           id: "answer-3",
           actionId: "action-3",
           responseId: "response-1",
+          action: {
+            id: "action-3",
+            nextActionId: null,
+          },
           options: [
             {
               id: "opt-3",
@@ -111,6 +119,10 @@ describe("ActionAnswerRepository - collectInvalidAnswersByOptions", () => {
           id: "answer-2",
           actionId: "action-2",
           responseId: "response-1",
+          action: {
+            id: "action-2",
+            nextActionId: null,
+          },
           options: [
             {
               id: "opt-2",
@@ -123,6 +135,10 @@ describe("ActionAnswerRepository - collectInvalidAnswersByOptions", () => {
           id: "answer-3",
           actionId: "action-3",
           responseId: "response-1",
+          action: {
+            id: "action-3",
+            nextActionId: null,
+          },
           options: [
             {
               id: "opt-3",
@@ -152,6 +168,10 @@ describe("ActionAnswerRepository - collectInvalidAnswersByOptions", () => {
           id: "answer-2",
           actionId: "action-2",
           responseId: "response-1",
+          action: {
+            id: "action-2",
+            nextActionId: null,
+          },
           options: [
             {
               id: "opt-2",
@@ -164,6 +184,10 @@ describe("ActionAnswerRepository - collectInvalidAnswersByOptions", () => {
           id: "answer-3",
           actionId: "action-3",
           responseId: "response-1",
+          action: {
+            id: "action-3",
+            nextActionId: null,
+          },
           options: [],
         },
       ] as any);
@@ -203,6 +227,10 @@ describe("ActionAnswerRepository - collectInvalidAnswersByOptions", () => {
           id: "answer-2",
           actionId: "action-2",
           responseId: "response-1",
+          action: {
+            id: "action-2",
+            nextActionId: null,
+          },
           options: [
             {
               id: "opt-2a",
@@ -220,12 +248,20 @@ describe("ActionAnswerRepository - collectInvalidAnswersByOptions", () => {
           id: "answer-3",
           actionId: "action-3",
           responseId: "response-1",
+          action: {
+            id: "action-3",
+            nextActionId: null,
+          },
           options: [],
         },
         {
           id: "answer-4",
           actionId: "action-4",
           responseId: "response-1",
+          action: {
+            id: "action-4",
+            nextActionId: null,
+          },
           options: [],
         },
       ] as any);
@@ -249,6 +285,10 @@ describe("ActionAnswerRepository - collectInvalidAnswersByOptions", () => {
           id: "answer-2",
           actionId: "action-2",
           responseId: "response-1",
+          action: {
+            id: "action-2",
+            nextActionId: null,
+          },
           options: [
             {
               id: "opt-2",

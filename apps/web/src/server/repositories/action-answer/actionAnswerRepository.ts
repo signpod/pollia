@@ -324,9 +324,10 @@ export class ActionAnswerRepository {
       if (hasCompletion) continue;
 
       const nextActionIds = userAnswer.options
-        .map(opt => opt.nextActionId)
+        .map(opt => opt.nextActionId || userAnswer.action.nextActionId)
         .filter((id): id is string => id !== null);
-      queue.push(...nextActionIds);
+      const uniqueNextActionIds = [...new Set(nextActionIds)];
+      queue.push(...uniqueNextActionIds);
     }
 
     return answersToDelete;
