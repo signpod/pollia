@@ -11,6 +11,7 @@ import { getActionTypeLabel } from "@/app/admin/constants/actionTypes";
 import type { ActionDetail } from "@/types/dto/action";
 import {
   type ActionFormData,
+  BranchForm,
   DateForm,
   ImageUploadForm,
   MultipleChoiceForm,
@@ -260,6 +261,22 @@ function ActionForm({ action, isLoading, onSubmit, onCancel }: ActionFormProps) 
             imageFileUploadId: action.imageFileUploadId || undefined,
             isRequired: action.isRequired,
             maxSelections: action.maxSelections ?? undefined,
+          }}
+        />
+      );
+    case "BRANCH":
+      return (
+        <BranchForm
+          isLoading={isLoading}
+          onSubmit={onSubmit}
+          onCancel={onCancel}
+          initialData={{
+            title: action.title,
+            description: action.description || undefined,
+            imageUrl: action.imageUrl || undefined,
+            imageFileUploadId: action.imageFileUploadId || undefined,
+            isRequired: action.isRequired,
+            options: mapOptions(action.options),
           }}
         />
       );

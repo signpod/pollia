@@ -24,6 +24,7 @@ interface BaseActionFormFieldsProps<TFieldValues extends FieldValues> {
   mainImagePreviewUrl: string | null;
   onMainImageSelect: (file: File) => void;
   onMainImageDelete: () => void;
+  hideIsRequired?: boolean;
   children?: ReactNode;
 }
 
@@ -35,6 +36,7 @@ export function BaseActionFormFields<TFieldValues extends FieldValues>({
   mainImagePreviewUrl,
   onMainImageSelect,
   onMainImageDelete,
+  hideIsRequired = false,
   children,
 }: BaseActionFormFieldsProps<TFieldValues>) {
   const titleValue = watch("title" as Path<TFieldValues>) as string | undefined;
@@ -125,11 +127,13 @@ export function BaseActionFormFields<TFieldValues extends FieldValues>({
         )}
       />
 
-      <IsRequiredField
-        control={control}
-        name={"isRequired" as Path<TFieldValues>}
-        disabled={isLoading}
-      />
+      {!hideIsRequired && (
+        <IsRequiredField
+          control={control}
+          name={"isRequired" as Path<TFieldValues>}
+          disabled={isLoading}
+        />
+      )}
 
       {children}
     </>

@@ -16,6 +16,7 @@ import { useState } from "react";
 import {
   type ActionFormData,
   type ActionType,
+  BranchForm,
   DateForm,
   ImageUploadForm,
   MultipleChoiceForm,
@@ -192,6 +193,8 @@ function ActionForm({ type, isLoading, onSubmit, onCancel }: ActionFormProps) {
       return <DateForm isLoading={isLoading} onSubmit={onSubmit} onCancel={onCancel} />;
     case "TIME":
       return <TimeForm isLoading={isLoading} onSubmit={onSubmit} onCancel={onCancel} />;
+    case "BRANCH":
+      return <BranchForm isLoading={isLoading} onSubmit={onSubmit} onCancel={onCancel} />;
     default:
       return null;
   }

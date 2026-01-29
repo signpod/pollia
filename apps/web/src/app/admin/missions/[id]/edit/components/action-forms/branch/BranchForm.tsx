@@ -129,6 +129,7 @@ export function BranchForm({
             form.setValue("imageUrl", null, { shouldDirty: true });
             form.setValue("imageFileUploadId", null, { shouldDirty: true });
           }}
+          hideIsRequired={true}
         />
 
         <div className="space-y-2">
