@@ -28,8 +28,8 @@ describe("ActionService - createBranchAction", () => {
         description: "경로를 선택해주세요",
         imageUrl: undefined,
         order: 0,
-        maxSelections: 1,
-        hasOther: false,
+        maxSelections: 1 as const,
+        hasOther: false as const,
         isRequired: true,
         options: [
           {
@@ -74,7 +74,7 @@ describe("ActionService - createBranchAction", () => {
           title: request.title,
           description: request.description,
           imageUrl: request.imageUrl,
-          imageFileUploadId: undefined,
+          hasOther: false,
           type: ActionType.BRANCH,
           order: request.order,
           maxSelections: 1,
@@ -111,8 +111,8 @@ describe("ActionService - createBranchAction", () => {
         missionId: "mission1",
         title: "경로 선택",
         order: 0,
-        maxSelections: 1,
-        hasOther: false,
+        maxSelections: 1 as const,
+        hasOther: false as const,
         isRequired: true,
         options: [
           {
@@ -140,7 +140,7 @@ describe("ActionService - createBranchAction", () => {
       expect(ctx.mockActionRepo.createMultipleChoice).toHaveBeenCalledWith(
         expect.objectContaining({
           type: ActionType.BRANCH,
-          maxSelections: 1,
+          maxSelections: 1 as const,
         }),
         expect.arrayContaining([
           expect.objectContaining({
@@ -163,8 +163,8 @@ describe("ActionService - createBranchAction", () => {
         missionId: "mission1",
         title: "경로 선택",
         order: 0,
-        maxSelections: 1,
-        hasOther: false,
+        maxSelections: 1 as const,
+        hasOther: false as const,
         isRequired: true,
         options: [
           {
@@ -199,8 +199,8 @@ describe("ActionService - createBranchAction", () => {
         missionId: "mission1",
         title: "경로 선택",
         order: 0,
-        maxSelections: 1,
-        hasOther: false,
+        maxSelections: 1 as const,
+        hasOther: false as const,
         isRequired: true,
         options: [
           { title: "옵션 1", order: 0 },
@@ -218,7 +218,7 @@ describe("ActionService - createBranchAction", () => {
       // Then
       expect(ctx.mockActionRepo.createMultipleChoice).toHaveBeenCalledWith(
         expect.objectContaining({
-          maxSelections: 1,
+          maxSelections: 1 as const,
         }),
         expect.anything(),
         "user1",
@@ -232,8 +232,8 @@ describe("ActionService - createBranchAction", () => {
         missionId: "mission1",
         title: "경로 선택",
         order: 0,
-        maxSelections: 1,
-        hasOther: false,
+        maxSelections: 1 as const,
+        hasOther: false as const,
         isRequired: true,
         options: [
           { title: "옵션 1", order: 0 },
@@ -266,8 +266,8 @@ describe("ActionService - createBranchAction", () => {
         missionId: "mission1",
         title: "경로 선택",
         order: 0,
-        maxSelections: 1,
-        hasOther: false,
+        maxSelections: 1 as const,
+        hasOther: false as const,
         isRequired: true,
         options: [],
       };
@@ -288,8 +288,8 @@ describe("ActionService - createBranchAction", () => {
         missionId: "mission1",
         title: "경로 선택",
         order: 0,
-        maxSelections: 1,
-        hasOther: false,
+        maxSelections: 1 as const,
+        hasOther: false as const,
         isRequired: true,
         options: [{ title: "옵션 1", order: 0 }],
       };
@@ -310,8 +310,8 @@ describe("ActionService - createBranchAction", () => {
         missionId: "mission1",
         title: "경로 선택",
         order: 0,
-        maxSelections: 1,
-        hasOther: false,
+        maxSelections: 1 as const,
+        hasOther: false as const,
         isRequired: true,
         options: [
           { title: "옵션 1", order: 0 },
@@ -338,8 +338,8 @@ describe("ActionService - createBranchAction", () => {
         missionId: "mission1",
         title: "",
         order: 0,
-        maxSelections: 1,
-        hasOther: false,
+        maxSelections: 1 as const,
+        hasOther: false as const,
         isRequired: true,
         options: [
           { title: "옵션 1", order: 0 },
@@ -364,8 +364,8 @@ describe("ActionService - createBranchAction", () => {
         missionId: "mission1",
         title: longTitle,
         order: 0,
-        maxSelections: 1,
-        hasOther: false,
+        maxSelections: 1 as const,
+        hasOther: false as const,
         isRequired: true,
         options: [
           { title: "옵션 1", order: 0 },
@@ -389,8 +389,8 @@ describe("ActionService - createBranchAction", () => {
         missionId: "mission1",
         title: "경로 선택",
         order: 0,
-        maxSelections: 1,
-        hasOther: false,
+        maxSelections: 1 as const,
+        hasOther: false as const,
         isRequired: true,
         options: [
           { title: "", order: 0 },
@@ -414,14 +414,14 @@ describe("ActionService - createBranchAction", () => {
         missionId: "mission1",
         title: "경로 선택",
         order: 0,
-        maxSelections: 2,
-        hasOther: false,
+        maxSelections: 2 as const,
+        hasOther: false as const,
         isRequired: true,
         options: [
           { title: "옵션 1", order: 0 },
           { title: "옵션 2", order: 1 },
         ],
-      };
+      } as any;
 
       // When & Then
       await expect(ctx.service.createBranchAction(request, "user1")).rejects.toThrow();
@@ -435,14 +435,14 @@ describe("ActionService - createBranchAction", () => {
         missionId: "mission1",
         title: "경로 선택",
         order: 0,
-        maxSelections: 1,
-        hasOther: true,
+        maxSelections: 1 as const,
+        hasOther: true as const,
         isRequired: true,
         options: [
           { title: "옵션 1", order: 0 },
           { title: "옵션 2", order: 1 },
         ],
-      };
+      } as any;
 
       // When & Then
       await expect(ctx.service.createBranchAction(request, "user1")).rejects.toThrow();
@@ -458,8 +458,8 @@ describe("ActionService - createBranchAction", () => {
         missionId: "invalid-mission",
         title: "경로 선택",
         order: 0,
-        maxSelections: 1,
-        hasOther: false,
+        maxSelections: 1 as const,
+        hasOther: false as const,
         isRequired: true,
         options: [
           { title: "옵션 1", order: 0 },
@@ -486,8 +486,8 @@ describe("ActionService - createBranchAction", () => {
         missionId: "mission1",
         title: "경로 선택",
         order: 0,
-        maxSelections: 1,
-        hasOther: false,
+        maxSelections: 1 as const,
+        hasOther: false as const,
         isRequired: true,
         options: [
           { title: "옵션 1", order: 0 },
@@ -514,8 +514,8 @@ describe("ActionService - createBranchAction", () => {
       const request = {
         title: "경로 선택",
         order: 0,
-        maxSelections: 1,
-        hasOther: false,
+        maxSelections: 1 as const,
+        hasOther: false as const,
         isRequired: true,
         options: [
           { title: "옵션 1", order: 0 },
