@@ -1,10 +1,12 @@
 import {
+  BRANCH_OPTIONS_COUNT,
   MULTIPLE_CHOICE_MAX_OPTIONS,
   MULTIPLE_CHOICE_MIN_OPTIONS,
   SCALE_MAX_OPTIONS,
   SCALE_MIN_OPTIONS,
   TAG_MAX_OPTIONS,
   TAG_MIN_OPTIONS,
+  branchInputSchema,
   dateInputSchema,
   imageInputSchema,
   multipleChoiceInputSchema,
@@ -21,6 +23,7 @@ import { actionOptionSchema } from "@/schemas/action-option";
 import { z } from "zod";
 
 export {
+  BRANCH_OPTIONS_COUNT,
   MULTIPLE_CHOICE_MAX_OPTIONS,
   MULTIPLE_CHOICE_MIN_OPTIONS,
   SCALE_MAX_OPTIONS,
@@ -33,6 +36,7 @@ const actionOptionFormSchema = actionOptionSchema.omit({ order: true }).extend({
   id: z.string(),
   imageUrl: z.string().nullable().optional(),
   fileUploadId: z.string().nullable().optional(),
+  nextActionId: z.string().nullable().optional(),
 });
 
 export const multipleChoiceFormSchema = multipleChoiceInputSchema
@@ -182,6 +186,17 @@ export const timeFormSchema = timeInputSchema
       .optional(),
   });
 
+export const branchFormSchema = branchInputSchema
+  .omit({ missionId: true, order: true, maxSelections: true, hasOther: true })
+  .extend({
+    imageFileUploadId: z.string().nullable().optional(),
+    options: z.array(actionOptionFormSchema).length(BRANCH_OPTIONS_COUNT),
+  })
+  .refine(data => data.options.every(opt => opt.title.trim().length > 0), {
+    message: "모든 선택지에 제목을 입력해주세요.",
+    path: ["options"],
+  });
+
 export type MultipleChoiceFormInput = z.infer<typeof multipleChoiceFormSchema>;
 export type ScaleFormInput = z.infer<typeof scaleFormSchema>;
 export type SubjectiveFormInput = z.infer<typeof subjectiveFormSchema>;
@@ -193,3 +208,4 @@ export type PdfUploadFormInput = z.infer<typeof pdfUploadFormSchema>;
 export type VideoUploadFormInput = z.infer<typeof videoUploadFormSchema>;
 export type DateFormInput = z.infer<typeof dateFormSchema>;
 export type TimeFormInput = z.infer<typeof timeFormSchema>;
+export type BranchFormInput = z.infer<typeof branchFormSchema>;

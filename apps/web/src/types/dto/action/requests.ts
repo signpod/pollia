@@ -1,4 +1,5 @@
 import type {
+  BranchInput,
   DateInput,
   ImageInput,
   MultipleChoiceInput,
@@ -25,6 +26,7 @@ export type CreatePdfActionRequest = PdfInput;
 export type CreateVideoActionRequest = VideoInput;
 export type CreateDateActionRequest = DateInput;
 export type CreateTimeActionRequest = TimeInput;
+export type CreateBranchActionRequest = BranchInput;
 
 export type UpdateActionRequest = ActionUpdate;
 export type UpdateActionOptionRequest = OptionItem;

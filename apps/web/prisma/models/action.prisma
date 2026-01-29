@@ -51,6 +51,7 @@ enum ActionType {
   // URL
   DATE
   TIME
+  BRANCH
   // PRIVACY_CONSENT
   // NAME
   // ADDRESS

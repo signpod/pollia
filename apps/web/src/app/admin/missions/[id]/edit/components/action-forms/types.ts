@@ -8,6 +8,7 @@ export interface ActionOptionInput {
   description?: string | null;
   imageUrl?: string | null;
   fileUploadId?: string | null;
+  nextActionId?: string | null;
 }
 
 export interface BaseActionFormData {
@@ -72,6 +73,11 @@ export interface TimeFormData extends BaseActionFormData {
   maxSelections?: number;
 }
 
+export interface BranchFormData extends BaseActionFormData {
+  type: "BRANCH";
+  options: ActionOptionInput[];
+}
+
 export type ActionFormData =
   | MultipleChoiceFormData
   | ScaleFormData
@@ -83,7 +89,8 @@ export type ActionFormData =
   | PdfUploadFormData
   | VideoUploadFormData
   | DateFormData
-  | TimeFormData;
+  | TimeFormData
+  | BranchFormData;
 
 export interface ActionFormProps<T extends ActionFormData = ActionFormData> {
   isLoading?: boolean;

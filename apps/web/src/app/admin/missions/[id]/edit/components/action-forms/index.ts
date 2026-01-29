@@ -1,4 +1,5 @@
 export { BaseActionFormFields } from "./BaseActionForm";
+export { BranchForm } from "./branch";
 export { DateForm } from "./DateForm";
 export { ImageUploadForm } from "./ImageUploadForm";
 export { MultipleChoiceForm } from "./MultipleChoiceForm";
@@ -16,6 +17,7 @@ export type {
   ActionOptionInput,
   ActionType,
   BaseActionFormData,
+  BranchFormData,
   DateFormData,
   ImageUploadFormData,
   MultipleChoiceFormData,
