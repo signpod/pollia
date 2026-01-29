@@ -251,5 +251,156 @@ describe("ActionAnswerRepository - collectInvalidAnswersByOptions", () => {
 
       expect(result).toEqual(["answer-2"]);
     });
+
+    it("ActionOption에 nextActionId가 없고 Action에 있는 경우 폴백으로 사용한다", async () => {
+      mockActionOptionFindMany.mockResolvedValue([
+        {
+          id: "opt-1",
+          nextActionId: null,
+          nextCompletionId: null,
+          action: {
+            id: "action-1",
+            nextActionId: "action-2",
+          },
+        },
+      ] as any);
+
+      mockActionAnswerFindMany.mockResolvedValue([
+        {
+          id: "answer-2",
+          actionId: "action-2",
+          responseId: "response-1",
+          action: {
+            id: "action-2",
+            nextActionId: "action-3",
+          },
+          options: [
+            {
+              id: "opt-2",
+              nextActionId: null,
+              nextCompletionId: null,
+            },
+          ],
+        },
+        {
+          id: "answer-3",
+          actionId: "action-3",
+          responseId: "response-1",
+          action: {
+            id: "action-3",
+            nextActionId: null,
+          },
+          options: [],
+        },
+      ] as any);
+
+      const result = await repository.collectInvalidAnswersByOptions("response-1", ["opt-1"]);
+
+      expect(result).toEqual(["answer-2", "answer-3"]);
+    });
+
+    it("ActionOption의 nextActionId가 Action의 nextActionId보다 우선순위가 높다", async () => {
+      mockActionOptionFindMany.mockResolvedValue([
+        {
+          id: "opt-1",
+          nextActionId: "action-3",
+          nextCompletionId: null,
+          action: {
+            id: "action-1",
+            nextActionId: "action-4",
+          },
+        },
+      ] as any);
+
+      mockActionAnswerFindMany.mockResolvedValue([
+        {
+          id: "answer-3",
+          actionId: "action-3",
+          responseId: "response-1",
+          action: {
+            id: "action-3",
+            nextActionId: null,
+          },
+          options: [],
+        },
+        {
+          id: "answer-4",
+          actionId: "action-4",
+          responseId: "response-1",
+          action: {
+            id: "action-4",
+            nextActionId: null,
+          },
+          options: [],
+        },
+      ] as any);
+
+      const result = await repository.collectInvalidAnswersByOptions("response-1", ["opt-1"]);
+
+      expect(result).toEqual(["answer-3"]);
+    });
+
+    it("혼합 케이스: ActionOption과 Action의 nextActionId를 적절히 사용한다", async () => {
+      mockActionOptionFindMany.mockResolvedValue([
+        {
+          id: "opt-1",
+          nextActionId: "action-2",
+          nextCompletionId: null,
+          action: {
+            id: "action-1",
+            nextActionId: "action-99",
+          },
+        },
+      ] as any);
+
+      mockActionAnswerFindMany.mockResolvedValue([
+        {
+          id: "answer-2",
+          actionId: "action-2",
+          responseId: "response-1",
+          action: {
+            id: "action-2",
+            nextActionId: "action-3",
+          },
+          options: [
+            {
+              id: "opt-2",
+              nextActionId: null,
+              nextCompletionId: null,
+            },
+          ],
+        },
+        {
+          id: "answer-3",
+          actionId: "action-3",
+          responseId: "response-1",
+          action: {
+            id: "action-3",
+            nextActionId: null,
+          },
+          options: [
+            {
+              id: "opt-3",
+              nextActionId: "action-4",
+              nextCompletionId: null,
+            },
+          ],
+        },
+        {
+          id: "answer-4",
+          actionId: "action-4",
+          responseId: "response-1",
+          action: {
+            id: "action-4",
+            nextActionId: null,
+          },
+          options: [],
+        },
+      ] as any);
+
+      const result = await repository.collectInvalidAnswersByOptions("response-1", ["opt-1"]);
+
+      expect(result).toEqual(["answer-2", "answer-3", "answer-4"]);
+    });
   });
 });
