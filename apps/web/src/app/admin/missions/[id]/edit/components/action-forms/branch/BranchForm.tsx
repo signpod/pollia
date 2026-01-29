@@ -16,6 +16,24 @@ import { BRANCH_OPTIONS_COUNT, type BranchFormInput, branchFormSchema } from "..
 import type { ActionFormProps, ActionOptionInput, BranchFormData } from "../types";
 import { BranchOptionCard } from "./BranchOptionCard";
 
+interface BranchOptionFormData {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string | null;
+  fileUploadId: string | null;
+  nextActionId: string | null;
+}
+
+const createEmptyBranchOption = (): BranchOptionFormData => ({
+  id: crypto.randomUUID(),
+  title: "",
+  description: "",
+  imageUrl: null,
+  fileUploadId: null,
+  nextActionId: null,
+});
+
 export function BranchForm({
   isLoading = false,
   onSubmit,
@@ -42,24 +60,7 @@ export function BranchForm({
               fileUploadId: opt.fileUploadId,
               nextActionId: opt.nextActionId,
             }))
-          : [
-              {
-                id: crypto.randomUUID(),
-                title: "",
-                description: "",
-                imageUrl: null,
-                fileUploadId: null,
-                nextActionId: null,
-              },
-              {
-                id: crypto.randomUUID(),
-                title: "",
-                description: "",
-                imageUrl: null,
-                fileUploadId: null,
-                nextActionId: null,
-              },
-            ],
+          : [createEmptyBranchOption(), createEmptyBranchOption()],
     },
     mode: "onChange",
   });

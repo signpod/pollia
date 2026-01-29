@@ -145,10 +145,13 @@ export const timeInputSchema = baseActionSchema.extend({
   maxSelections: z.number().int().min(1, "최대 선택 가능 개수는 최소 1개 이상이어야 합니다."),
 });
 
+export const BRANCH_MAX_SELECTIONS = 1;
+export const BRANCH_HAS_OTHER = false;
+
 export const branchInputSchema = baseActionSchema
   .extend({
-    maxSelections: z.literal(1),
-    hasOther: z.literal(false),
+    maxSelections: z.literal(BRANCH_MAX_SELECTIONS),
+    hasOther: z.literal(BRANCH_HAS_OTHER),
     options: z
       .array(
         actionOptionSchema.extend({

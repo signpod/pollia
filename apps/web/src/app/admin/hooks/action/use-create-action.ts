@@ -16,6 +16,7 @@ import {
 } from "@/actions/action/create";
 import { adminActionQueryKeys } from "@/app/admin/constants/queryKeys";
 import type { ActionType } from "@/app/admin/missions/[id]/edit/components/action-forms";
+import { BRANCH_HAS_OTHER, BRANCH_MAX_SELECTIONS } from "@/schemas/action";
 import type {
   ActionOptionInput,
   BaseActionRequest,
@@ -235,8 +236,8 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
             isRequired: input.isRequired,
-            maxSelections: 1,
-            hasOther: false,
+            maxSelections: BRANCH_MAX_SELECTIONS,
+            hasOther: BRANCH_HAS_OTHER,
             options:
               input.options?.map((opt, index) => ({
                 title: opt.title,
