@@ -80,6 +80,12 @@ describe("ActionAnswerRepository - collectInvalidAnswersByOptions", () => {
       expect(mockActionAnswerFindMany).toHaveBeenCalledWith({
         where: { responseId: "response-1" },
         include: {
+          action: {
+            select: {
+              id: true,
+              nextActionId: true,
+            },
+          },
           options: {
             select: {
               id: true,

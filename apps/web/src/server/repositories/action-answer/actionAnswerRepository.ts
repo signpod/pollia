@@ -285,6 +285,12 @@ export class ActionAnswerRepository {
     const allAnswers = await client.actionAnswer.findMany({
       where: { responseId },
       include: {
+        action: {
+          select: {
+            id: true,
+            nextActionId: true,
+          },
+        },
         options: {
           select: {
             id: true,
