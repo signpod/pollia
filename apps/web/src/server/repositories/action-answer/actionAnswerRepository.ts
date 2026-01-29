@@ -304,7 +304,7 @@ export class ActionAnswerRepository {
     const answersByActionId = new Map(allAnswers.map(answer => [answer.actionId, answer]));
 
     const queue: string[] = options
-      .map(opt => opt.nextActionId)
+      .map(opt => opt.nextActionId || opt.action.nextActionId)
       .filter((id): id is string => id !== null);
 
     while (queue.length > 0) {
