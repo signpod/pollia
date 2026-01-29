@@ -244,19 +244,8 @@ export class ActionAnswerRepository {
   }
 
   /**
-   * 선택된 옵션에 따라 유효하지 않게 된 답변들을 수집합니다.
-   *
-   * BFS 알고리즘을 사용하여 다음 로직으로 답변을 탐색합니다:
-   * 1. 주어진 옵션들의 nextActionId를 시작점으로 큐에 추가
-   * 2. 각 액션에 대해 사용자의 답변이 있는지 확인
-   * 3. 답변이 있으면 삭제 대상에 추가
-   * 4. 완료 화면으로 분기되지 않으면 다음 액션들을 큐에 추가
-   * 5. 순환 참조 방지를 위해 방문한 액션은 Set으로 관리
-   *
-   * @param responseId - 응답 ID
-   * @param optionIds - 수집을 시작할 옵션 ID 배열
-   * @param tx - 트랜잭션 클라이언트 (선택)
-   * @returns 삭제해야 할 답변 ID 배열
+   * BFS로 nextActionId를 탐색하여 무효화된 답변 ID 반환
+   * - ActionOption.nextActionId 우선, null이면 Action.nextActionId 폴백
    */
   async collectInvalidAnswersByOptions(
     responseId: string,
@@ -273,12 +262,24 @@ export class ActionAnswerRepository {
         id: true,
         nextActionId: true,
         nextCompletionId: true,
+        action: {
+          select: {
+            id: true,
+            nextActionId: true,
+          },
+        },
       },
     });
 
     const allAnswers = await client.actionAnswer.findMany({
       where: { responseId },
       include: {
+        action: {
+          select: {
+            id: true,
+            nextActionId: true,
+          },
+        },
         options: {
           select: {
             id: true,
@@ -291,8 +292,9 @@ export class ActionAnswerRepository {
 
     const answersByActionId = new Map(allAnswers.map(answer => [answer.actionId, answer]));
 
+    // 초기 큐: ActionOption.nextActionId 우선, 없으면 Action.nextActionId 사용
     const queue: string[] = options
-      .map(opt => opt.nextActionId)
+      .map(opt => opt.nextActionId || opt.action.nextActionId)
       .filter((id): id is string => id !== null);
 
     while (queue.length > 0) {
@@ -311,10 +313,12 @@ export class ActionAnswerRepository {
       const hasCompletion = userAnswer.options.some(opt => opt.nextCompletionId !== null);
       if (hasCompletion) continue;
 
+      // 다음 액션: 각 옵션에서 ActionOption.nextActionId 우선, 없으면 Action.nextActionId 사용
       const nextActionIds = userAnswer.options
-        .map(opt => opt.nextActionId)
+        .map(opt => opt.nextActionId || userAnswer.action.nextActionId)
         .filter((id): id is string => id !== null);
-      queue.push(...nextActionIds);
+      const uniqueNextActionIds = [...new Set(nextActionIds)];
+      queue.push(...uniqueNextActionIds);
     }
 
     return answersToDelete;
