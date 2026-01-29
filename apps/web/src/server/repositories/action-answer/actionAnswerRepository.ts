@@ -273,6 +273,12 @@ export class ActionAnswerRepository {
         id: true,
         nextActionId: true,
         nextCompletionId: true,
+        action: {
+          select: {
+            id: true,
+            nextActionId: true,
+          },
+        },
       },
     });
 
