@@ -3,6 +3,7 @@ import { toast } from "@/components/common/Toast";
 import { ExtendedActionStepConfig, createActionSteps } from "@/constants/action";
 import { MISSION_TOAST_MESSAGE } from "@/constants/missionMessages";
 import { ROUTES } from "@/constants/routes";
+import { useActionProgress, type ActionForProgress } from "@/hooks/action";
 import { useReadActionsDetail } from "@/hooks/action/useReadActionsDetail";
 import {
   useCompleteMission,
@@ -106,100 +107,8 @@ function ActionContent() {
   );
 }
 
-interface ActionForProgress {
-  id: string;
-  order: number | null;
-  nextActionId?: string | null;
-  nextCompletionId?: string | null;
-  options: Array<{ id: string; nextActionId?: string | null; nextCompletionId?: string | null }>;
-}
-
 interface ActionRendererProps {
   actions: ActionForProgress[];
-}
-
-function calculateRemainingPath(
-  currentActionId: string,
-  actions: ActionForProgress[],
-  submittedAnswerMap: Map<string, string[]>,
-  visited: Set<string> = new Set(),
-): number {
-  if (visited.has(currentActionId)) return 0;
-  visited.add(currentActionId);
-
-  const currentAction = actions.find(a => a.id === currentActionId);
-  if (!currentAction) return 0;
-
-  let nextActionId: string | null | undefined = null;
-  let hasCompletionId = false;
-
-  // 1. 제출된 답변에서 선택된 옵션의 nextActionId/nextCompletionId 확인
-  const submittedOptionIds = submittedAnswerMap.get(currentActionId);
-  if (submittedOptionIds?.length) {
-    const selectedOptionId = submittedOptionIds[0];
-    const selectedOption = currentAction.options.find(o => o.id === selectedOptionId);
-    if (selectedOption?.nextCompletionId) {
-      hasCompletionId = true;
-    } else if (selectedOption?.nextActionId) {
-      nextActionId = selectedOption.nextActionId;
-    }
-  }
-
-  // 2. action 레벨 nextCompletionId 확인
-  if (!nextActionId && !hasCompletionId && currentAction.nextCompletionId) {
-    hasCompletionId = true;
-  }
-
-  // 3. action 레벨 nextActionId 확인
-  if (!nextActionId && !hasCompletionId && currentAction.nextActionId) {
-    nextActionId = currentAction.nextActionId;
-  }
-
-  // 4. 순차적으로 다음 액션 (order 기반)
-  if (!nextActionId && !hasCompletionId) {
-    const currentOrder = currentAction.order ?? 0;
-    const nextAction = actions.find(a => (a.order ?? 0) === currentOrder + 1);
-    if (nextAction) {
-      nextActionId = nextAction.id;
-    }
-  }
-
-  // 다음 액션이 없거나 완료 화면으로 가면 현재가 마지막
-  if (!nextActionId || hasCompletionId) return 1;
-
-  // 재귀적으로 남은 경로 계산
-  return 1 + calculateRemainingPath(nextActionId, actions, submittedAnswerMap, visited);
-}
-
-interface ProgressInfo {
-  currentOrder: number;
-  totalCount: number;
-}
-
-function calculateProgressInfo(
-  currentActionId: string,
-  actions: ActionForProgress[],
-  answeredActionIds: string[],
-  submittedAnswerMap: Map<string, string[]>,
-): ProgressInfo {
-  // 현재 액션이 이미 응답된 것인지 확인
-  const isCurrentAnswered = answeredActionIds.includes(currentActionId);
-
-  // 응답한 액션 수 (현재 액션 제외)
-  const answeredCount = isCurrentAnswered
-    ? answeredActionIds.indexOf(currentActionId)
-    : answeredActionIds.length;
-
-  // 현재 액션에서 끝까지의 남은 경로
-  const remainingPath = calculateRemainingPath(currentActionId, actions, submittedAnswerMap);
-
-  // 현재 순서 = 응답한 액션 수 + 1
-  const currentOrder = answeredCount + 1;
-
-  // 전체 = 응답한 액션 수 + 남은 경로
-  const totalCount = answeredCount + remainingPath;
-
-  return { currentOrder, totalCount };
 }
 
 function ActionRenderer({ actions }: ActionRendererProps) {
@@ -305,10 +214,8 @@ function ActionRenderer({ actions }: ActionRendererProps) {
     return { answeredActionIds: ordered, submittedAnswerMap: answerMap };
   }, [missionResponse?.data?.answers]);
 
-  // 동적 progress 계산 (제출된 답변 기반으로만 계산)
-  const progressInfo = useMemo(() => {
-    return calculateProgressInfo(actionData.id, actions, answeredActionIds, submittedAnswerMap);
-  }, [actionData.id, actions, answeredActionIds, submittedAnswerMap]);
+  // 동적 progress 계산 (order 기반, 페이지 이동 시에만 업데이트)
+  const progressInfo = useActionProgress({ actionId: actionData.id, actions });
 
   useMissionSurveyToast({
     currentOrder: progressInfo.currentOrder - 1,
