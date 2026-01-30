@@ -1,6 +1,5 @@
 import { ActionType } from "@/types/domain/action";
-import type { ActionAnswerItem, ActionDetail } from "@/types/dto";
-import type { GetMissionResponseResponse } from "@/types/dto/mission-response";
+import type { ActionDetail } from "@/types/dto";
 import { StepConfig } from "@repo/ui/components";
 
 export interface ExtendedActionStepConfig extends StepConfig {
@@ -10,17 +9,6 @@ export interface ExtendedActionStepConfig extends StepConfig {
 
 export interface ActionStepContentProps {
   actionData: ActionDetail;
-  currentOrder: number;
-  totalActionCount: number;
-  isFirstAction: boolean;
-  isNextDisabled: boolean;
-  onPrevious?: () => void;
-  onNext?: () => void;
-  nextButtonText?: string;
-  updateCanGoNext?: (canGoNext: boolean) => void;
-  onAnswerChange?: (answer: ActionAnswerItem) => void;
-  missionResponse?: GetMissionResponseResponse;
-  isLoading?: boolean;
 }
 
 interface CreateActionStepsProps {
