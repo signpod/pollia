@@ -179,25 +179,19 @@ interface ProgressInfo {
 function calculateProgressInfo(
   currentActionId: string,
   actions: ActionForProgress[],
-  answeredActionIds: string[],
-  submittedAnswerMap: Map<string, string[]>,
 ): ProgressInfo {
-  // 현재 액션이 이미 응답된 것인지 확인
-  const isCurrentAnswered = answeredActionIds.includes(currentActionId);
+  // 현재 액션의 order를 currentOrder로 사용 (order는 0부터 시작하므로 +1)
+  const currentAction = actions.find(a => a.id === currentActionId);
+  const currentOrder = (currentAction?.order ?? 0) + 1;
 
-  // 응답한 액션 수 (현재 액션 제외)
-  const answeredCount = isCurrentAnswered
-    ? answeredActionIds.indexOf(currentActionId)
-    : answeredActionIds.length;
+  // 빈 answerMap으로 기본 경로 계산
+  const answerMap = new Map<string, string[]>();
 
   // 현재 액션에서 끝까지의 남은 경로
-  const remainingPath = calculateRemainingPath(currentActionId, actions, submittedAnswerMap);
+  const remainingPath = calculateRemainingPath(currentActionId, actions, answerMap);
 
-  // 현재 순서 = 응답한 액션 수 + 1
-  const currentOrder = answeredCount + 1;
-
-  // 전체 = 응답한 액션 수 + 남은 경로
-  const totalCount = answeredCount + remainingPath;
+  // 전체 = 현재 순서 + 남은 경로 - 1 (현재 액션이 remainingPath에 포함되므로)
+  const totalCount = currentOrder + remainingPath - 1;
 
   return { currentOrder, totalCount };
 }
@@ -305,10 +299,10 @@ function ActionRenderer({ actions }: ActionRendererProps) {
     return { answeredActionIds: ordered, submittedAnswerMap: answerMap };
   }, [missionResponse?.data?.answers]);
 
-  // 동적 progress 계산 (제출된 답변 기반으로만 계산)
+  // 동적 progress 계산 (order 기반, 페이지 이동 시에만 업데이트)
   const progressInfo = useMemo(() => {
-    return calculateProgressInfo(actionData.id, actions, answeredActionIds, submittedAnswerMap);
-  }, [actionData.id, actions, answeredActionIds, submittedAnswerMap]);
+    return calculateProgressInfo(actionData.id, actions);
+  }, [actionData.id, actions]);
 
   useMissionSurveyToast({
     currentOrder: progressInfo.currentOrder - 1,
