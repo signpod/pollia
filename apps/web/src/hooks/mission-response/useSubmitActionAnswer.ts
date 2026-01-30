@@ -152,10 +152,9 @@ export function useSubmitActionAnswer(options: UseSubmitActionAnswerOptions) {
       const existingAnswer = submittedAnswers.find(a => a.actionId === answer.actionId);
 
       if (existingAnswer) {
-        if (answer.type === ActionType.MULTIPLE_CHOICE || answer.type === ActionType.BRANCH) {
+        if (answer.type === ActionType.BRANCH) {
           const data = await updateAnswerWithPruning(existingAnswer.id, {
             selectedOptionIds: answer.selectedOptionIds,
-            ...("textAnswer" in answer && answer.textAnswer ? { textAnswer: answer.textAnswer } : {}),
           });
           return { skipped: false, data };
         }
