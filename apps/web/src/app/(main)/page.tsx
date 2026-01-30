@@ -15,7 +15,7 @@ export default async function MainPage() {
     getFestivals({ numOfRows: ITEMS_PER_PAGE }),
   ]);
 
-  const projects: SurveyCardData[] = missions.map((mission) => ({
+  const projects: SurveyCardData[] = missions.map(mission => ({
     id: mission.id,
     title: mission.title,
     description: mission.description ?? "",
@@ -32,7 +32,7 @@ export default async function MainPage() {
   const festivals = festivalResponse.data;
 
   return (
-    <main className="min-h-screen bg-light">
+    <main className="min-h-screen bg-light pb-20">
       <BannerSlider />
       <MainContent initialProjects={projects} initialFestivals={festivals} />
       <ChannelTalk />

@@ -22,20 +22,20 @@ export function ChannelTalk() {
       return;
     }
 
-    const ch = function (...args: unknown[]) {
+    const ch = ((...args: unknown[]) => {
       ch.c(args);
-    } as {
+    }) as {
       (command: string, options?: Record<string, unknown>): void;
       q: unknown[][];
       c: (args: unknown[]) => void;
     };
     ch.q = [];
-    ch.c = function (args: unknown[]) {
+    ch.c = (args: unknown[]) => {
       ch.q.push(args);
     };
     window.ChannelIO = ch as Window["ChannelIO"];
 
-    function loadScript() {
+    const loadScript = () => {
       if (window.ChannelIOInitialized) return;
       window.ChannelIOInitialized = true;
 
@@ -48,7 +48,7 @@ export function ChannelTalk() {
       if (firstScript?.parentNode) {
         firstScript.parentNode.insertBefore(script, firstScript);
       }
-    }
+    };
 
     if (document.readyState === "complete") {
       loadScript();

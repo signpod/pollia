@@ -1,6 +1,6 @@
 import Providers from "@/components/providers/QueryProvider";
 import { ModalProvider, Toaster } from "@repo/ui/components";
-import { Header } from "./components";
+import { Footer, Header } from "./components";
 
 export default function MainLayout({
   children,
@@ -12,6 +12,7 @@ export default function MainLayout({
       <Providers>
         <Header />
         {children}
+        <Footer />
         <Toaster />
       </Providers>
     </ModalProvider>
