@@ -1,6 +1,7 @@
 import { getActionById, getMissionActionsDetail } from "@/actions/action";
 import { getMyResponseForMission } from "@/actions/mission-response";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
+import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { ROUTES } from "@/constants/routes";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { dehydrate } from "@tanstack/react-query";
@@ -98,6 +99,7 @@ export default async function ActionPage({
 
   queryClient.setQueryData(actionQueryKeys.actions({ missionId }), actionsResponse);
   queryClient.setQueryData(actionQueryKeys.action(actionId), action);
+  queryClient.setQueryData(missionQueryKeys.missionResponseForMission(missionId), missionResponse);
 
   const dehydratedState = dehydrate(queryClient);
 

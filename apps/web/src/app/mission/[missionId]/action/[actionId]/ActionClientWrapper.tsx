@@ -455,8 +455,7 @@ function ActionRenderer({ actions }: ActionRendererProps) {
 
     // 실제 마지막 스텝인지 계산 (분기 고려)
     const isActualLast =
-      !!currentAnswer?.nextCompletionId ||
-      progressInfo.currentOrder === progressInfo.totalCount;
+      !!currentAnswer?.nextCompletionId || progressInfo.currentOrder === progressInfo.totalCount;
 
     if (isSame) {
       if (currentAnswer) {
