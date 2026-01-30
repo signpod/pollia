@@ -2,22 +2,12 @@ import { ActionStepContentProps } from "@/constants/action";
 import { useMissionScaleValue } from "@/hooks/action";
 import { RatingScale } from "@repo/ui/components";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
+import { useActionContext } from "../providers/ActionContext";
 import { getScaleClassName } from "../utils";
 
-export function MissionRatingScale({
-  actionData,
-  currentOrder,
-  totalActionCount,
-  isFirstAction,
-  onPrevious,
-  onNext,
-  nextButtonText,
-  isNextDisabled: isNextDisabledProp,
-  updateCanGoNext,
-  onAnswerChange,
-  missionResponse,
-  isLoading,
-}: ActionStepContentProps) {
+export function MissionRatingScale({ actionData }: ActionStepContentProps) {
+  const { updateCanGoNext, onAnswerChange, missionResponse } = useActionContext();
+
   const { scaleValue, handleScaleValueChange } = useMissionScaleValue({
     actionId: actionData.id,
     isRequired: actionData.isRequired,
@@ -31,17 +21,9 @@ export function MissionRatingScale({
 
   return (
     <SurveyQuestionTemplate
-      currentOrder={currentOrder}
-      totalActionCount={totalActionCount}
       title={actionData.title}
       description={actionData.description ?? undefined}
       imageUrl={actionData.imageUrl ?? undefined}
-      isFirstAction={isFirstAction}
-      isNextDisabled={isNextDisabledProp}
-      onPrevious={onPrevious}
-      onNext={onNext}
-      nextButtonText={nextButtonText}
-      isLoading={isLoading}
       isRequired={actionData.isRequired}
     >
       <RatingScale

@@ -7,6 +7,7 @@ import { Dialog, DialogPortal } from "@repo/ui/components";
 import { Plus, X } from "lucide-react";
 import * as React from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
+import { useActionContext } from "../providers/ActionContext";
 import { TimePickerProvider, useTimePicker } from "./TimePickerProvider";
 
 function formatTimeForStorage(hour: number, minute: number): string {
@@ -29,23 +30,8 @@ function formatTimeForDisplay(time: string): string {
   return `${isAM ? "오전" : "오후"} ${String(displayHour).padStart(2, "0")} : ${String(minute).padStart(2, "0")}`;
 }
 
-export function ActionTime({
-  actionData,
-  currentOrder,
-  totalActionCount,
-  isFirstAction,
-  onPrevious,
-  onNext,
-  nextButtonText,
-  isNextDisabled,
-  updateCanGoNext,
-  onAnswerChange,
-  missionResponse,
-  isLoading,
-}: ActionStepContentProps) {
-  if (!updateCanGoNext || !onAnswerChange) {
-    return null;
-  }
+export function ActionTime({ actionData }: ActionStepContentProps) {
+  const { updateCanGoNext, onAnswerChange, missionResponse } = useActionContext();
 
   return (
     <TimePickerProvider
@@ -58,32 +44,12 @@ export function ActionTime({
       nextActionId={actionData.nextActionId}
       nextCompletionId={actionData.nextCompletionId}
     >
-      <TimePickerContent
-        actionData={actionData}
-        currentOrder={currentOrder}
-        totalActionCount={totalActionCount}
-        isFirstAction={isFirstAction}
-        isNextDisabled={isNextDisabled}
-        onPrevious={onPrevious}
-        onNext={onNext}
-        nextButtonText={nextButtonText}
-        isLoading={isLoading}
-      />
+      <TimePickerContent actionData={actionData} />
     </TimePickerProvider>
   );
 }
 
-function TimePickerContent({
-  actionData,
-  currentOrder,
-  totalActionCount,
-  isFirstAction,
-  onPrevious,
-  onNext,
-  nextButtonText,
-  isNextDisabled: isNextDisabledProp,
-  isLoading,
-}: Omit<ActionStepContentProps, "updateCanGoNext" | "onAnswerChange">) {
+function TimePickerContent({ actionData }: ActionStepContentProps) {
   const { selectedTimes, removeTime, canGoNext, maxSelections } = useTimePicker();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
@@ -95,17 +61,9 @@ function TimePickerContent({
 
   return (
     <SurveyQuestionTemplate
-      currentOrder={currentOrder}
-      totalActionCount={totalActionCount}
       title={actionData.title}
       description={actionData.description ?? undefined}
       imageUrl={actionData.imageUrl ?? undefined}
-      isFirstAction={isFirstAction}
-      isNextDisabled={isNextDisabledProp || !canGoNext}
-      onPrevious={onPrevious}
-      onNext={onNext}
-      nextButtonText={nextButtonText}
-      isLoading={isLoading}
       isRequired={actionData.isRequired}
     >
       <div className="flex flex-col gap-3 w-full justify-center items-center">
@@ -302,7 +260,6 @@ function WheelPicker({ items, value, onChange }: WheelPickerProps) {
   const currentIndex = items.indexOf(value);
   const [scrollTop, setScrollTop] = React.useState(currentIndex * itemHeight);
 
-  // Drag state refs
   const isDraggingRef = React.useRef(false);
   const startYRef = React.useRef(0);
   const startScrollTopRef = React.useRef(0);
@@ -348,7 +305,6 @@ function WheelPicker({ items, value, onChange }: WheelPickerProps) {
     scrollTimeoutRef.current = setTimeout(snapToNearest, 50);
   }, [snapToNearest]);
 
-  // Mouse drag handlers for PC
   const handleMouseDown = React.useCallback((e: React.MouseEvent) => {
     isDraggingRef.current = true;
     startYRef.current = e.clientY;
@@ -377,7 +333,6 @@ function WheelPicker({ items, value, onChange }: WheelPickerProps) {
     }
   }, [snapToNearest]);
 
-  // Touch drag handlers for mobile
   const handleTouchStart = React.useCallback((e: React.TouchEvent) => {
     const touch = e.touches[0];
     if (!touch) return;

@@ -11,6 +11,7 @@ import * as React from "react";
 import { getHolidayNames } from "@hyunbinseo/holidays-kr";
 import { ko } from "date-fns/locale";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
+import { useActionContext } from "../providers/ActionContext";
 import { DatePickerProvider, useDatePicker } from "./DatePickerProvider";
 
 function formatDateForDisplay(dateStr: string): string {
@@ -28,23 +29,8 @@ function getHolidayName(date: Date): string | null {
   }
 }
 
-export function ActionDate({
-  actionData,
-  currentOrder,
-  totalActionCount,
-  isFirstAction,
-  onPrevious,
-  onNext,
-  nextButtonText,
-  isNextDisabled,
-  updateCanGoNext,
-  onAnswerChange,
-  missionResponse,
-  isLoading,
-}: ActionStepContentProps) {
-  if (!updateCanGoNext || !onAnswerChange) {
-    return null;
-  }
+export function ActionDate({ actionData }: ActionStepContentProps) {
+  const { updateCanGoNext, onAnswerChange, missionResponse } = useActionContext();
 
   return (
     <DatePickerProvider
@@ -57,32 +43,12 @@ export function ActionDate({
       nextActionId={actionData.nextActionId}
       nextCompletionId={actionData.nextCompletionId}
     >
-      <DatePickerContent
-        actionData={actionData}
-        currentOrder={currentOrder}
-        totalActionCount={totalActionCount}
-        isFirstAction={isFirstAction}
-        isNextDisabled={isNextDisabled}
-        onPrevious={onPrevious}
-        onNext={onNext}
-        nextButtonText={nextButtonText}
-        isLoading={isLoading}
-      />
+      <DatePickerContent actionData={actionData} />
     </DatePickerProvider>
   );
 }
 
-function DatePickerContent({
-  actionData,
-  currentOrder,
-  totalActionCount,
-  isFirstAction,
-  onPrevious,
-  onNext,
-  nextButtonText,
-  isNextDisabled: isNextDisabledProp,
-  isLoading,
-}: Omit<ActionStepContentProps, "updateCanGoNext" | "onAnswerChange">) {
+function DatePickerContent({ actionData }: ActionStepContentProps) {
   const { selectedDates, setDates, canGoNext } = useDatePicker();
   const [currentMonth, setCurrentMonth] = React.useState<Date>(new Date());
 
@@ -107,17 +73,9 @@ function DatePickerContent({
 
   return (
     <SurveyQuestionTemplate
-      currentOrder={currentOrder}
-      totalActionCount={totalActionCount}
       title={actionData.title}
       description={actionData.description ?? undefined}
       imageUrl={actionData.imageUrl ?? undefined}
-      isFirstAction={isFirstAction}
-      isNextDisabled={isNextDisabledProp || !canGoNext}
-      onPrevious={onPrevious}
-      onNext={onNext}
-      nextButtonText={nextButtonText}
-      isLoading={isLoading}
       isRequired={actionData.isRequired}
     >
       <div className="flex w-full">

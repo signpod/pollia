@@ -2,27 +2,18 @@ import { toast } from "@/components/common/Toast";
 import { ActionStepContentProps, CLIENT_OTHER_OPTION_ID } from "@/constants/action";
 import { useIsMobile } from "@/hooks/common/useIsMobile";
 import { ActionType } from "@/types/domain/action";
+import type { ActionDetail } from "@/types/dto";
 import { BottomDrawer, Typo, useBottomDrawer } from "@repo/ui/components";
 import { X } from "lucide-react";
 import { useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
+import { useActionContext } from "../providers/ActionContext";
 import { Chip } from "./Chip";
 import { MultipleChoiceProvider, useSurveyMultipleChoice } from "./MultipleChoiceProvider";
 
-export function ActionTag({
-  actionData,
-  currentOrder,
-  totalActionCount,
-  isFirstAction,
-  onPrevious,
-  onNext,
-  nextButtonText,
-  isNextDisabled,
-  updateCanGoNext,
-  onAnswerChange,
-  missionResponse,
-  isLoading,
-}: ActionStepContentProps) {
+export function ActionTag({ actionData }: ActionStepContentProps) {
+  const { updateCanGoNext, onAnswerChange, missionResponse } = useActionContext();
+
   return (
     <MultipleChoiceProvider
       maxSelections={actionData.maxSelections ?? 1}
@@ -36,36 +27,15 @@ export function ActionTag({
       actionNextActionId={actionData.nextActionId}
       actionNextCompletionId={actionData.nextCompletionId}
     >
-      <SurveyMultipleChoiceContent
-        actionData={actionData}
-        currentOrder={currentOrder}
-        totalActionCount={totalActionCount}
-        isFirstAction={isFirstAction}
-        isNextDisabled={isNextDisabled}
-        onPrevious={onPrevious}
-        onNext={onNext}
-        nextButtonText={nextButtonText}
-        isLoading={isLoading}
-      />
+      <SurveyMultipleChoiceContent actionData={actionData} />
     </MultipleChoiceProvider>
   );
 }
 
-function SurveyMultipleChoiceContent({
-  actionData,
-  currentOrder,
-  totalActionCount,
-  isFirstAction,
-  onPrevious,
-  onNext,
-  nextButtonText,
-  isNextDisabled: isNextDisabledProp,
-  isLoading,
-}: Omit<ActionStepContentProps, "updateCanGoNext" | "onAnswerChange">) {
+function SurveyMultipleChoiceContent({ actionData }: ActionStepContentProps) {
   const {
     selectedIds,
     toggleSelectedId,
-    canGoNext,
     textAnswer,
     setTextAnswer,
     isOtherSelected,
@@ -120,17 +90,9 @@ function SurveyMultipleChoiceContent({
 
   return (
     <SurveyQuestionTemplate
-      currentOrder={currentOrder}
-      totalActionCount={totalActionCount}
       title={actionData.title}
       description={actionData.description ?? undefined}
       imageUrl={actionData.imageUrl ?? undefined}
-      isFirstAction={isFirstAction}
-      isNextDisabled={isNextDisabledProp || !canGoNext}
-      onPrevious={onPrevious}
-      onNext={onNext}
-      nextButtonText={nextButtonText}
-      isLoading={isLoading}
       isRequired={actionData.isRequired}
     >
       <div className="flex flex-col gap-3 w-full">
@@ -181,7 +143,7 @@ function BottomDrawerContentWithScrollReset({
   textAnswer,
   onOtherClick,
 }: {
-  actionData: ActionStepContentProps["actionData"];
+  actionData: ActionDetail;
   selectedIds: Set<string>;
   handleClick: (optionId: string) => void;
   isOtherSelected: boolean;

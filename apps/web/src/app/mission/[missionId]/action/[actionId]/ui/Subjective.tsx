@@ -6,21 +6,11 @@ import type { ActionAnswerItem, GetMissionResponseResponse } from "@/types/dto";
 import { Textarea } from "@repo/ui/components";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
+import { useActionContext } from "../providers/ActionContext";
 
-export function Subjective({
-  actionData,
-  currentOrder,
-  totalActionCount,
-  isFirstAction,
-  onPrevious,
-  onNext,
-  nextButtonText,
-  isNextDisabled: isNextDisabledProp,
-  updateCanGoNext,
-  onAnswerChange,
-  missionResponse,
-  isLoading,
-}: ActionStepContentProps) {
+export function Subjective({ actionData }: ActionStepContentProps) {
+  const { updateCanGoNext, onAnswerChange, missionResponse } = useActionContext();
+
   const {
     subjectiveValue,
     handleSubjectiveValueChange,
@@ -37,22 +27,14 @@ export function Subjective({
     actionData.nextActionId,
     actionData.nextCompletionId,
   );
-  const isNextDisabled = isNextDisabledProp || !validationResult.success;
+
   const errorMessage = showError ? validationResult.error?.issues[0]?.message : undefined;
 
   return (
     <SurveyQuestionTemplate
-      currentOrder={currentOrder}
-      totalActionCount={totalActionCount}
       title={actionData.title}
       description={actionData.description ?? undefined}
       imageUrl={actionData.imageUrl ?? undefined}
-      isFirstAction={isFirstAction}
-      isNextDisabled={isNextDisabled}
-      onPrevious={onPrevious}
-      onNext={onNext}
-      nextButtonText={nextButtonText}
-      isLoading={isLoading}
       isRequired={actionData.isRequired}
     >
       <Textarea
@@ -97,7 +79,6 @@ function useSurveySubjectiveValue(
   const [subjectiveValue, setSubjectiveValue] = useState(initialTextValue);
   const [showError, setShowError] = useState(false);
 
-  // updateCanGoNext와 onAnswerChange ref로 최신 참조 유지
   const updateCanGoNextRef = useRef(updateCanGoNext);
   const onAnswerChangeRef = useRef(onAnswerChange);
 
@@ -139,7 +120,6 @@ function useSurveySubjectiveValue(
       });
     } else {
       updateCanGoNextRef.current?.(false);
-      // 필수 질문이어도 항상 현재 질문의 답변 상태로 초기화
       onAnswerChangeRef.current?.({
         actionId,
         type: ActionType.SUBJECTIVE,

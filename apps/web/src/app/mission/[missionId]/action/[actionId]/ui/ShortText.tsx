@@ -6,21 +6,11 @@ import type { ActionAnswerItem, GetMissionResponseResponse } from "@/types/dto";
 import { Input } from "@repo/ui/components";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
+import { useActionContext } from "../providers/ActionContext";
 
-export function ShortText({
-  actionData,
-  currentOrder,
-  totalActionCount,
-  isFirstAction,
-  onPrevious,
-  onNext,
-  nextButtonText,
-  isNextDisabled: isNextDisabledProp,
-  updateCanGoNext,
-  onAnswerChange,
-  missionResponse,
-  isLoading,
-}: ActionStepContentProps) {
+export function ShortText({ actionData }: ActionStepContentProps) {
+  const { updateCanGoNext, onAnswerChange, missionResponse } = useActionContext();
+
   const { shortTextValue, handleShortTextValueChange, handleBlur, validationResult, showError } =
     useShortTextValue(
       actionData.id,
@@ -31,7 +21,7 @@ export function ShortText({
       actionData.nextActionId,
       actionData.nextCompletionId,
     );
-  const isNextDisabled = isNextDisabledProp || !validationResult.success;
+
   const errorMessage = showError
     ? actionData.isRequired && !shortTextValue.trim()
       ? "필수 입력 사항이에요."
@@ -40,17 +30,9 @@ export function ShortText({
 
   return (
     <SurveyQuestionTemplate
-      currentOrder={currentOrder}
-      totalActionCount={totalActionCount}
       title={actionData.title}
       description={actionData.description ?? undefined}
       imageUrl={actionData.imageUrl ?? undefined}
-      isFirstAction={isFirstAction}
-      isNextDisabled={isNextDisabled}
-      onPrevious={onPrevious}
-      onNext={onNext}
-      nextButtonText={nextButtonText}
-      isLoading={isLoading}
       isRequired={actionData.isRequired}
     >
       <Input
@@ -133,7 +115,6 @@ function useShortTextValue(
         });
       } else {
         updateCanGoNextRef.current?.(false);
-        // 필수 질문이어도 항상 현재 질문의 답변 상태로 초기화
         onAnswerChangeRef.current?.({
           actionId,
           type: ActionType.SHORT_TEXT,

@@ -7,24 +7,14 @@ import type { FileInfo, TempFileInfo } from "@/types/domain/file";
 import type { ActionAnswerItem } from "@/types/dto";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
+import { useActionContext } from "../providers/ActionContext";
 import { PdfUpload } from "./PdfUpload";
 import { FileList } from "./components/FileList";
 import { PdfUploadNotice } from "./components/PdfUploadNotice";
 
-export function ActionPdf({
-  actionData,
-  currentOrder,
-  totalActionCount,
-  isFirstAction,
-  onPrevious,
-  onNext,
-  nextButtonText,
-  isNextDisabled: isNextDisabledProp,
-  updateCanGoNext,
-  onAnswerChange,
-  missionResponse,
-  isLoading,
-}: ActionStepContentProps) {
+export function ActionPdf({ actionData }: ActionStepContentProps) {
+  const { updateCanGoNext, onAnswerChange, missionResponse } = useActionContext();
+
   const [fileInfos, setFileInfos] = useState<FileInfo[]>([]);
   const [fileUploadIds, setFileUploadIds] = useState<string[]>([]);
   const [uploadingFileUrl, setUploadingFileUrl] = useState<string | null>(null);
@@ -55,7 +45,6 @@ export function ActionPdf({
 
   const validateAndUpdateAnswer = useCallback(
     (fileIds: string[]) => {
-      // 업로드 중이면 제출 불가
       if (isUploading) {
         updateCanGoNextRef.current?.(false);
         return;
@@ -218,17 +207,9 @@ export function ActionPdf({
 
   return (
     <SurveyQuestionTemplate
-      currentOrder={currentOrder}
-      totalActionCount={totalActionCount}
       title={actionData.title}
       description={actionData.description ?? undefined}
       imageUrl={actionData.imageUrl ?? undefined}
-      isFirstAction={isFirstAction}
-      isNextDisabled={isNextDisabledProp || isDeletingAnswer}
-      onPrevious={onPrevious}
-      onNext={onNext}
-      nextButtonText={nextButtonText}
-      isLoading={isLoading}
       isRequired={actionData.isRequired}
     >
       <div className="flex flex-col gap-3">
