@@ -7,6 +7,7 @@ import type { FileInfo } from "@/types/domain/file";
 import type { ActionAnswerItem } from "@/types/dto";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
+import { useActionContext } from "../providers/ActionContext";
 import { VideoUpload } from "./VideoUpload";
 import { UploadingPlaceholder } from "./components/UploadingPlaceholder";
 import { VideoList } from "./components/VideoList";
@@ -14,20 +15,9 @@ import { VideoUploadNotice } from "./components/VideoUploadNotice";
 
 type VideoInfo = FileInfo;
 
-export function ActionVideo({
-  actionData,
-  currentOrder,
-  totalActionCount,
-  isFirstAction,
-  onPrevious,
-  onNext,
-  nextButtonText,
-  isNextDisabled: isNextDisabledProp,
-  updateCanGoNext,
-  onAnswerChange,
-  missionResponse,
-  isLoading,
-}: ActionStepContentProps) {
+export function ActionVideo({ actionData }: ActionStepContentProps) {
+  const { updateCanGoNext, onAnswerChange, missionResponse } = useActionContext();
+
   const [videoInfos, setVideoInfos] = useState<VideoInfo[]>([]);
   const [videoFileUploadIds, setVideoFileUploadIds] = useState<string[]>([]);
   const [uploadingVideoUrl, setUploadingVideoUrl] = useState<string | null>(null);
@@ -57,7 +47,6 @@ export function ActionVideo({
 
   const validateAndUpdateAnswer = useCallback(
     (fileIds: string[]) => {
-      // 업로드 중이면 제출 불가
       if (isUploading) {
         updateCanGoNextRef.current?.(false);
         return;
@@ -221,17 +210,9 @@ export function ActionVideo({
 
   return (
     <SurveyQuestionTemplate
-      currentOrder={currentOrder}
-      totalActionCount={totalActionCount}
       title={actionData.title}
       description={actionData.description ?? undefined}
       imageUrl={actionData.imageUrl ?? undefined}
-      isFirstAction={isFirstAction}
-      isNextDisabled={isNextDisabledProp || isDeletingAnswer}
-      onPrevious={onPrevious}
-      onNext={onNext}
-      nextButtonText={nextButtonText}
-      isLoading={isLoading}
       isRequired={actionData.isRequired}
     >
       <div className="grid grid-cols-3 gap-2">

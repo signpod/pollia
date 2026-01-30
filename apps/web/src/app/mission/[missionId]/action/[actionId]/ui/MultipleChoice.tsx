@@ -4,22 +4,12 @@ import { cn } from "@repo/ui/lib";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
+import { useActionContext } from "../providers/ActionContext";
 import { MultipleChoiceProvider, useSurveyMultipleChoice } from "./MultipleChoiceProvider";
 
-export function MultipleChoice({
-  actionData,
-  currentOrder,
-  totalActionCount,
-  isFirstAction,
-  onPrevious,
-  onNext,
-  nextButtonText,
-  isNextDisabled,
-  updateCanGoNext,
-  onAnswerChange,
-  missionResponse,
-  isLoading,
-}: ActionStepContentProps) {
+export function MultipleChoice({ actionData }: ActionStepContentProps) {
+  const { updateCanGoNext, onAnswerChange, missionResponse } = useActionContext();
+
   return (
     <MultipleChoiceProvider
       maxSelections={actionData.maxSelections ?? 1}
@@ -32,34 +22,14 @@ export function MultipleChoice({
       actionNextActionId={actionData.nextActionId}
       actionNextCompletionId={actionData.nextCompletionId}
     >
-      <SurveyMultipleChoiceContent
-        actionData={actionData}
-        currentOrder={currentOrder}
-        totalActionCount={totalActionCount}
-        isFirstAction={isFirstAction}
-        isNextDisabled={isNextDisabled}
-        onPrevious={onPrevious}
-        onNext={onNext}
-        nextButtonText={nextButtonText}
-        isLoading={isLoading}
-      />
+      <SurveyMultipleChoiceContent actionData={actionData} />
     </MultipleChoiceProvider>
   );
 }
 
-function SurveyMultipleChoiceContent({
-  actionData,
-  currentOrder,
-  totalActionCount,
-  isFirstAction,
-  onPrevious,
-  onNext,
-  nextButtonText,
-  isNextDisabled: isNextDisabledProp,
-  isLoading,
-}: Omit<ActionStepContentProps, "updateCanGoNext" | "onAnswerChange">) {
+function SurveyMultipleChoiceContent({ actionData }: ActionStepContentProps) {
   const isMultipleChoice = !!actionData.maxSelections && actionData.maxSelections > 1;
-  const { selectedIds, toggleSelectedId, canGoNext, textAnswer, setTextAnswer, isOtherSelected } =
+  const { selectedIds, toggleSelectedId, textAnswer, setTextAnswer, isOtherSelected } =
     useSurveyMultipleChoice();
 
   const [showOtherError, setShowOtherError] = useState(false);
@@ -100,17 +70,9 @@ function SurveyMultipleChoiceContent({
 
   return (
     <SurveyQuestionTemplate
-      currentOrder={currentOrder}
-      totalActionCount={totalActionCount}
       title={actionData.title}
       description={actionData.description ?? undefined}
       imageUrl={actionData.imageUrl ?? undefined}
-      isFirstAction={isFirstAction}
-      isNextDisabled={isNextDisabledProp || !canGoNext}
-      onPrevious={onPrevious}
-      onNext={onNext}
-      nextButtonText={nextButtonText}
-      isLoading={isLoading}
       isRequired={actionData.isRequired}
     >
       <div className="flex flex-col gap-2 w-full">

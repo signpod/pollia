@@ -5,21 +5,11 @@ import type { ActionAnswerItem } from "@/types/dto";
 import { Input } from "@repo/ui/components";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
+import { useActionContext } from "../providers/ActionContext";
 
-export function ActionUrl({
-  actionData,
-  currentOrder,
-  totalActionCount,
-  isFirstAction,
-  onPrevious,
-  onNext,
-  nextButtonText,
-  isNextDisabled: isNextDisabledProp,
-  updateCanGoNext,
-  onAnswerChange,
-  missionResponse,
-  isLoading,
-}: ActionStepContentProps) {
+export function ActionUrl({ actionData }: ActionStepContentProps) {
+  const { updateCanGoNext, onAnswerChange, missionResponse } = useActionContext();
+
   const [url, setUrl] = useState<string>("");
   const [urlError, setUrlError] = useState<string | null>(null);
 
@@ -69,9 +59,6 @@ export function ActionUrl({
 
       setUrlError(null);
 
-      // TODO: 백엔드 API 스펙 확인 후 실제 필드명으로 수정 필요
-      // 현재는 textAnswer를 사용하지만, urlAnswer 같은 별도 필드가 필요할 수 있음
-      // URL 타입은 현재 지원하지 않으므로, 이 컴포넌트는 사용되지 않습니다. - [2026-01-02-러기]
       const answer: ActionAnswerItem = {
         actionId: actionData.id,
         type: ActionType.SHORT_TEXT,
@@ -94,15 +81,8 @@ export function ActionUrl({
 
   useEffect(() => {
     if (existingAnswer) {
-      // TODO: 백엔드 응답 구조 확인 후 실제 필드명으로 수정 필요
-      // const existingUrl = existingAnswer.urlAnswer || existingAnswer.textAnswer;
-      // if (existingUrl) {
-      //   setUrl(existingUrl);
-      //   validateAndUpdateAnswer(existingUrl);
-      // } else {
       setUrl("");
       validateAndUpdateAnswer("");
-      // }
     }
   }, [existingAnswer, validateAndUpdateAnswer]);
 
@@ -117,17 +97,9 @@ export function ActionUrl({
 
   return (
     <SurveyQuestionTemplate
-      currentOrder={currentOrder}
-      totalActionCount={totalActionCount}
       title={actionData.title}
       description={actionData.description ?? undefined}
       imageUrl={actionData.imageUrl ?? undefined}
-      isFirstAction={isFirstAction}
-      isNextDisabled={isNextDisabledProp}
-      onPrevious={onPrevious}
-      onNext={onNext}
-      nextButtonText={nextButtonText}
-      isLoading={isLoading}
       isRequired={actionData.isRequired}
     >
       <Input

@@ -1,9 +1,8 @@
 "use client";
 
-import { ActionStepContentProps } from "@/constants/action";
 import { formatDateToYYYYMMDD } from "@/lib/date";
 import { ActionType } from "@/types/domain/action";
-import type { ActionAnswerItem } from "@/types/dto";
+import type { ActionAnswerItem, GetMissionResponseResponse } from "@/types/dto";
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 interface DatePickerContextValue {
@@ -19,7 +18,7 @@ interface DatePickerProviderProps {
   maxSelections: number;
   actionId: string;
   isRequired: boolean;
-  missionResponse?: ActionStepContentProps["missionResponse"];
+  missionResponse?: GetMissionResponseResponse;
   updateCanGoNext: (canGoNext: boolean) => void;
   onAnswerChange: (answer: ActionAnswerItem) => void;
   children: React.ReactNode;

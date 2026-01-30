@@ -4,37 +4,33 @@ import { TiptapViewer } from "@repo/ui/components/common/TiptapViewer";
 import { ChevronLeftIcon } from "lucide-react";
 import Image from "next/image";
 import { type PropsWithChildren, useEffect, useState } from "react";
+import { useActionContext } from "../providers/ActionContext";
 import { useProgressBar } from "../providers/ProgressBarProvider";
 
 interface ActionTemplateProps extends PropsWithChildren {
-  currentOrder: number;
-  totalActionCount: number;
   title: string;
   description?: string;
   imageUrl?: string;
-  isFirstAction: boolean;
-  isNextDisabled: boolean;
   isRequired?: boolean;
-  onPrevious?: () => void;
-  onNext?: () => void | Promise<void>;
-  nextButtonText?: string;
-  isLoading?: boolean;
 }
 
 export function SurveyQuestionTemplate({
-  currentOrder,
-  totalActionCount,
   title,
   description,
   imageUrl,
   children,
-  isNextDisabled,
   isRequired,
-  onPrevious,
-  onNext,
-  nextButtonText = "다음",
-  isLoading,
 }: ActionTemplateProps) {
+  const {
+    currentOrder,
+    totalActionCount,
+    onPrevious,
+    onNext,
+    nextButtonText,
+    isLoading,
+    isNextDisabled,
+  } = useActionContext();
+
   const progressValue = ((currentOrder + 1) / totalActionCount) * 100 || 0;
   const { setProgress } = useProgressBar();
 
@@ -46,7 +42,6 @@ export function SurveyQuestionTemplate({
   return (
     <FixedBottomLayout hasGradient>
       <div className="space-y-6 px-5 pb-5 pt-[28px]">
-        {/* 질문 정보 섹션 */}
         <section className="flex flex-col gap-2 relative">
           <RequiredIndicator isRequired={!!isRequired} />
           <div className="flex flex-col gap-1">
@@ -64,11 +59,9 @@ export function SurveyQuestionTemplate({
           {imageUrl && <AdaptiveImage src={imageUrl} alt={title} />}
         </section>
 
-        {/* 질문 입력 영역 (children) */}
         {children}
       </div>
 
-      {/* 네비게이션 버튼 */}
       <FixedBottomLayout.Content className="px-5 py-3">
         <nav className="flex gap-2">
           <ButtonV2

@@ -3,21 +3,11 @@ import { ActionStepContentProps } from "@/constants/action";
 import { ActionType } from "@prisma/client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
+import { useActionContext } from "../providers/ActionContext";
 
-export function Branch({
-  actionData,
-  currentOrder,
-  totalActionCount,
-  isFirstAction,
-  onPrevious,
-  onNext,
-  nextButtonText,
-  isNextDisabled,
-  updateCanGoNext,
-  onAnswerChange,
-  missionResponse,
-  isLoading,
-}: ActionStepContentProps) {
+export function Branch({ actionData }: ActionStepContentProps) {
+  const { updateCanGoNext, onAnswerChange, missionResponse } = useActionContext();
+
   const options = actionData.options ?? [];
 
   const existingAnswer = useMemo(() => {
@@ -68,17 +58,9 @@ export function Branch({
 
   return (
     <SurveyQuestionTemplate
-      currentOrder={currentOrder}
-      totalActionCount={totalActionCount}
       title={actionData.title}
       description={actionData.description ?? undefined}
       imageUrl={actionData.imageUrl ?? undefined}
-      isFirstAction={isFirstAction}
-      isNextDisabled={isNextDisabled || !canGoNext}
-      onPrevious={onPrevious}
-      onNext={onNext}
-      nextButtonText={nextButtonText}
-      isLoading={isLoading}
       isRequired={actionData.isRequired}
     >
       <div className={hasImage ? "grid grid-cols-2 gap-2 w-full" : "flex flex-col gap-2 w-full"}>

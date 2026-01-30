@@ -10,6 +10,7 @@ import type { FileUploadInfo } from "@/types/domain/file";
 import type { ActionAnswerItem } from "@/types/dto";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
+import { useActionContext } from "../providers/ActionContext";
 import { ImageUpload } from "./ImageUpload";
 import { ImageList } from "./components/ImageList";
 import { ImageUploadNotice } from "./components/ImageUploadNotice";
@@ -19,20 +20,9 @@ const IMAGE_UPLOAD_ERROR_MESSAGE = "이미지 업로드에 실패했어요.\n다
 
 type ImageInfo = FileUploadInfo;
 
-export function ActionImage({
-  actionData,
-  currentOrder,
-  totalActionCount,
-  isFirstAction,
-  onPrevious,
-  onNext,
-  nextButtonText,
-  isNextDisabled: isNextDisabledProp,
-  updateCanGoNext,
-  onAnswerChange,
-  missionResponse,
-  isLoading,
-}: ActionStepContentProps) {
+export function ActionImage({ actionData }: ActionStepContentProps) {
+  const { updateCanGoNext, onAnswerChange, missionResponse } = useActionContext();
+
   const [imageInfos, setImageInfos] = useState<ImageInfo[]>([]);
   const [uploadingImageUrls, setUploadingImageUrls] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -323,17 +313,9 @@ export function ActionImage({
 
   return (
     <SurveyQuestionTemplate
-      currentOrder={currentOrder}
-      totalActionCount={totalActionCount}
       title={actionData.title}
       description={actionData.description ?? undefined}
       imageUrl={actionData.imageUrl ?? undefined}
-      isFirstAction={isFirstAction}
-      isNextDisabled={isNextDisabledProp || isDeletingAnswer}
-      onPrevious={onPrevious}
-      onNext={onNext}
-      nextButtonText={nextButtonText}
-      isLoading={isLoading}
       isRequired={actionData.isRequired}
     >
       <div className="grid grid-cols-3 gap-2">
