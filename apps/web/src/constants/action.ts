@@ -37,6 +37,7 @@ interface CreateActionStepsProps {
     Pdf: React.ComponentType<ActionStepContentProps>;
     Date: React.ComponentType<ActionStepContentProps>;
     Time: React.ComponentType<ActionStepContentProps>;
+    Branch: React.ComponentType<ActionStepContentProps>;
   };
 }
 
@@ -85,6 +86,8 @@ function getContentComponent(
       return stepComponents.Date;
     case ActionType.TIME:
       return stepComponents.Time;
+    case ActionType.BRANCH:
+      return stepComponents.Branch;
     default:
       throw new Error(`Unsupported question type: ${type}`);
   }

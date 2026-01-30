@@ -31,6 +31,7 @@ import {
   ActionTag,
   ActionTime,
   ActionVideo,
+  Branch,
   MissionRatingScale,
   MissionStarScale,
   MultipleChoice,
@@ -71,6 +72,11 @@ function ActionContent() {
     setActionNavCookie(missionId, actionId);
   }, [actionId, missionId]);
 
+  // 클라이언트 네비게이션 시 데이터가 아직 hydration 되지 않은 경우 대기
+  if (!actions.data || actions.data.length === 0) {
+    return null;
+  }
+
   const steps = createActionSteps({
     actions: actions.data,
     stepComponents: {
@@ -85,6 +91,7 @@ function ActionContent() {
       Pdf: ActionPdf,
       Date: ActionDate,
       Time: ActionTime,
+      Branch: Branch,
     },
   });
 

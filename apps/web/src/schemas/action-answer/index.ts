@@ -11,6 +11,7 @@ export {
   ratingAnswerInputSchema,
   multipleChoiceAnswerInputSchema,
   tagAnswerInputSchema,
+  branchAnswerInputSchema,
   imageAnswerInputSchema,
   pdfAnswerInputSchema,
   videoAnswerInputSchema,

@@ -1,14 +1,21 @@
 "use client";
 
-import { submitAnswers, updateAnswerWithPruning } from "@/actions/action-answer";
+import { submitAnswers, updateAnswer, updateAnswerWithPruning } from "@/actions/action-answer";
 import { getMyResponseForMission } from "@/actions/mission-response";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
-import type { ActionAnswerItem } from "@/types/dto";
+import { formatDateToHHMM, formatDateToYYYYMMDD } from "@/lib/date";
+import type { ActionAnswer, ActionAnswerItem } from "@/types/dto";
+import { ActionType } from "@prisma/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface SubmitActionAnswerPayload {
   responseId: string;
   answer: ActionAnswerItem;
+}
+
+export interface SubmitActionAnswerResult {
+  skipped: boolean;
+  data?: unknown;
 }
 
 interface UseSubmitActionAnswerOptions {
@@ -18,62 +25,206 @@ interface UseSubmitActionAnswerOptions {
   missionId: string;
 }
 
+function isAnswerSameAsSubmitted(
+  answer: ActionAnswerItem,
+  submittedAnswers: ActionAnswer[],
+): boolean {
+  const answersForAction = submittedAnswers.filter(
+    submitted => submitted.actionId === answer.actionId,
+  );
+
+  if (answersForAction.length === 0) {
+    return false;
+  }
+
+  if (
+    answer.type === ActionType.MULTIPLE_CHOICE ||
+    answer.type === ActionType.TAG ||
+    answer.type === ActionType.BRANCH
+  ) {
+    const submittedOptionIds = answersForAction.flatMap(a => a.options.map(opt => opt.id)).sort();
+    const currentOptionIds = answer.selectedOptionIds ? [...answer.selectedOptionIds].sort() : [];
+
+    const submittedTextAnswer = answersForAction.find(a => a.textAnswer)?.textAnswer ?? "";
+    const currentTextAnswer = "textAnswer" in answer ? (answer.textAnswer ?? "") : "";
+
+    const optionsMatch =
+      submittedOptionIds.length === currentOptionIds.length &&
+      submittedOptionIds.every((id, index) => id === currentOptionIds[index]);
+
+    const textAnswerMatch = submittedTextAnswer === currentTextAnswer;
+
+    return optionsMatch && textAnswerMatch;
+  }
+
+  if (answer.type === ActionType.SCALE || answer.type === ActionType.RATING) {
+    const submittedScaleValue = answersForAction[0]?.scaleAnswer;
+    return submittedScaleValue !== null && submittedScaleValue === answer.scaleValue;
+  }
+
+  if (answer.type === ActionType.SUBJECTIVE || answer.type === ActionType.SHORT_TEXT) {
+    const submittedTextAnswer = answersForAction[0]?.textAnswer;
+    return submittedTextAnswer !== null && submittedTextAnswer === answer.textAnswer;
+  }
+
+  if (
+    answer.type === ActionType.IMAGE ||
+    answer.type === ActionType.VIDEO ||
+    answer.type === ActionType.PDF
+  ) {
+    const submittedAnswer = answersForAction[0];
+    if (!submittedAnswer) {
+      return false;
+    }
+
+    const submittedFileUploads = (
+      submittedAnswer as typeof submittedAnswer & {
+        fileUploads?: Array<{ id: string }>;
+      }
+    ).fileUploads;
+
+    const submittedFileUploadIds = submittedFileUploads?.map(f => f.id).sort() ?? [];
+    const currentFileUploadIds = (answer.fileUploadIds ?? []).sort();
+
+    if (submittedFileUploadIds.length === 0 && currentFileUploadIds.length === 0) {
+      return false;
+    }
+
+    return (
+      submittedFileUploadIds.length === currentFileUploadIds.length &&
+      submittedFileUploadIds.length > 0 &&
+      submittedFileUploadIds.every((id, index) => id === currentFileUploadIds[index])
+    );
+  }
+
+  if (answer.type === ActionType.DATE) {
+    const submittedDates = answersForAction
+      .flatMap(a => {
+        if (!a.dateAnswers) return [];
+        return a.dateAnswers.map(d => formatDateToYYYYMMDD(d));
+      })
+      .sort();
+    const currentDates = (answer.dateAnswers || []).map(d => formatDateToYYYYMMDD(d)).sort();
+    return (
+      submittedDates.length === currentDates.length &&
+      submittedDates.every((date, index) => date === currentDates[index])
+    );
+  }
+
+  if (answer.type === ActionType.TIME) {
+    const submittedTimes = answersForAction
+      .flatMap(a => {
+        if (!a.dateAnswers) return [];
+        return a.dateAnswers.map(d => formatDateToHHMM(d));
+      })
+      .sort();
+    const currentTimes = (answer.dateAnswers || []).map(d => formatDateToHHMM(d)).sort();
+    return (
+      submittedTimes.length === currentTimes.length &&
+      submittedTimes.every((time, index) => time === currentTimes[index])
+    );
+  }
+
+  return false;
+}
+
 export function useSubmitActionAnswer(options: UseSubmitActionAnswerOptions) {
   const queryClient = useQueryClient();
   const { missionId } = options;
 
   return useMutation({
-    mutationFn: async ({ responseId, answer }: SubmitActionAnswerPayload) => {
-      // Fetch fresh mission response to check completion status
+    mutationFn: async ({
+      responseId,
+      answer,
+    }: SubmitActionAnswerPayload): Promise<SubmitActionAnswerResult> => {
       const freshResponse = await getMyResponseForMission(missionId);
       if (freshResponse?.data?.completedAt) {
-        throw new Error("ALREADY_COMPLETED");
+        throw new Error("이미 완료된 미션입니다.");
       }
 
-      // 분기 처리되는 multiple choice (nextActionId가 있는 경우)에서 기존 답변이 있으면 updateAnswerWithPruning 사용
-      if (answer.type === "MULTIPLE_CHOICE" && answer.nextActionId) {
-        const existingAnswer = freshResponse?.data?.answers.find(
-          a => a.actionId === answer.actionId,
-        );
+      const submittedAnswers = freshResponse?.data?.answers ?? [];
+      const isSame = isAnswerSameAsSubmitted(answer, submittedAnswers);
 
-        if (existingAnswer) {
-          return await updateAnswerWithPruning(existingAnswer.id, {
+      if (isSame) {
+        return { skipped: true };
+      }
+
+      const existingAnswer = submittedAnswers.find(a => a.actionId === answer.actionId);
+
+      if (existingAnswer) {
+        if (answer.type === ActionType.MULTIPLE_CHOICE || answer.type === ActionType.BRANCH) {
+          const data = await updateAnswerWithPruning(existingAnswer.id, {
             selectedOptionIds: answer.selectedOptionIds,
-            ...(answer.textAnswer ? { textAnswer: answer.textAnswer } : {}),
+            ...("textAnswer" in answer && answer.textAnswer ? { textAnswer: answer.textAnswer } : {}),
           });
+          return { skipped: false, data };
+        }
+
+        const updateData = (() => {
+          switch (answer.type) {
+            case ActionType.TAG:
+              return {
+                selectedOptionIds: answer.selectedOptionIds,
+                ...(answer.textAnswer ? { textAnswer: answer.textAnswer } : {}),
+              };
+            case ActionType.SCALE:
+            case ActionType.RATING:
+              return { scaleAnswer: answer.scaleValue };
+            case ActionType.SUBJECTIVE:
+            case ActionType.SHORT_TEXT:
+              return { textAnswer: answer.textAnswer };
+            default:
+              return null;
+          }
+        })();
+
+        if (updateData) {
+          const data = await updateAnswer(existingAnswer.id, updateData);
+          return { skipped: false, data };
         }
       }
 
-      return await submitAnswers({
+      const data = await submitAnswers({
         responseId,
         answers: [
           {
             actionId: answer.actionId,
             type: answer.type,
             isRequired: answer.isRequired,
-            ...(answer.type === "MULTIPLE_CHOICE" || answer.type === "TAG"
+            ...(answer.type === ActionType.MULTIPLE_CHOICE ||
+            answer.type === ActionType.TAG ||
+            answer.type === ActionType.BRANCH
               ? {
                   selectedOptionIds: answer.selectedOptionIds,
-                  ...(answer.textAnswer ? { textAnswer: answer.textAnswer } : {}),
+                  ...("textAnswer" in answer && answer.textAnswer
+                    ? { textAnswer: answer.textAnswer }
+                    : {}),
                 }
               : {}),
-            ...(answer.type === "SCALE" || answer.type === "RATING"
+            ...(answer.type === ActionType.SCALE || answer.type === ActionType.RATING
               ? { scaleValue: answer.scaleValue }
               : {}),
-            ...(answer.type === "SUBJECTIVE" || answer.type === "SHORT_TEXT"
+            ...(answer.type === ActionType.SUBJECTIVE || answer.type === ActionType.SHORT_TEXT
               ? { textAnswer: answer.textAnswer }
               : {}),
-            ...(answer.type === "IMAGE" || answer.type === "VIDEO" || answer.type === "PDF"
+            ...(answer.type === ActionType.IMAGE ||
+            answer.type === ActionType.VIDEO ||
+            answer.type === ActionType.PDF
               ? { fileUploadIds: answer.fileUploadIds }
               : {}),
-            ...(answer.type === "DATE" || answer.type === "TIME"
+            ...(answer.type === ActionType.DATE || answer.type === ActionType.TIME
               ? { dateAnswers: answer.dateAnswers }
               : {}),
           },
         ],
       });
+
+      return { skipped: false, data };
     },
-    onSuccess: () => {
+    onSuccess: result => {
+      if (result.skipped) {
+        return;
+      }
       options.onSuccess?.();
       queryClient.invalidateQueries({
         queryKey: missionQueryKeys.missionResponseForMission(missionId),
