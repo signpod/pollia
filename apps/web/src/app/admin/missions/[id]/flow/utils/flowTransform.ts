@@ -5,8 +5,6 @@ import type { Edge, Node } from "@xyflow/react";
 const VERTICAL_SPACING = 150;
 const HORIZONTAL_SPACING = 300;
 const START_X = 400;
-const UNREACHABLE_ACTION_X = 100;
-const UNREACHABLE_COMPLETION_X = 700;
 
 // Node type constants
 const NODE_TYPES = {
@@ -145,30 +143,6 @@ function processActionConnections(
   }
 }
 
-function addUnprocessedNodes(
-  actions: (Action & { options: ActionOption[] })[],
-  completions: MissionCompletion[],
-  processedNodes: Set<string>,
-  nodes: FlowNode[],
-  startY: number,
-): void {
-  let currentY = startY;
-
-  actions.forEach(action => {
-    if (!processedNodes.has(action.id)) {
-      nodes.push(createActionNode(action, UNREACHABLE_ACTION_X, currentY));
-      currentY += VERTICAL_SPACING;
-    }
-  });
-
-  completions.forEach(completion => {
-    if (!processedNodes.has(completion.id)) {
-      nodes.push(createCompletionNode(completion, UNREACHABLE_COMPLETION_X, currentY));
-      currentY += VERTICAL_SPACING;
-    }
-  });
-}
-
 // Main transformation function
 export function transformToFlowGraph(data: FlowGraphData): {
   nodes: FlowNode[];
@@ -222,8 +196,6 @@ export function transformToFlowGraph(data: FlowGraphData): {
       nodes.push(createCompletionNode(completion, current.x, current.y));
     }
   }
-
-  addUnprocessedNodes(actions, completions, processedNodes, nodes, currentY);
 
   return { nodes, edges };
 }
