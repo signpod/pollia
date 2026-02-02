@@ -87,10 +87,10 @@ export function FlowCanvas({ missionId }: FlowCanvasProps) {
       const edge = edgesState.find(e => e.id === edgeId);
       if (!edge) return;
 
-      const { source, sourceHandle } = edge;
+      const { source, target, sourceHandle } = edge;
 
       if (source === "start") {
-        connections.disconnectStart();
+        await connections.disconnectStart(target);
         return;
       }
 
@@ -98,11 +98,11 @@ export function FlowCanvas({ missionId }: FlowCanvasProps) {
       if (!sourceNode) return;
 
       if (sourceHandle && sourceNode.type === "branch-action") {
-        connections.disconnectBranchOption(source, sourceHandle);
+        await connections.disconnectBranchOption(source, sourceHandle);
         return;
       }
 
-      connections.disconnectAction(source);
+      await connections.disconnectAction(source);
     },
     [edgesState, nodesState, connections],
   );

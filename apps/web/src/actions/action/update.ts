@@ -2,6 +2,7 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import { actionService } from "@/server/services/action";
+import { missionService } from "@/server/services/mission";
 import type { UpdateActionRequest } from "@/types/dto/action";
 import { revalidatePath } from "next/cache";
 
@@ -128,6 +129,29 @@ export async function connectBranchOption(
       throw error;
     }
     const serverError = new Error("브랜치 옵션 연결 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
+  }
+}
+
+export async function disconnectStartWithCleanup(targetActionId: string, missionId: string) {
+  try {
+    const user = await requireAuth();
+
+    await actionService.disconnectActionWithCleanup(targetActionId, missionId, user.id);
+
+    await missionService.updateMission(missionId, { entryActionId: null }, user.id);
+
+    revalidatePath(`/admin/missions/${missionId}/flow`);
+    revalidatePath(`/mission/${missionId}`);
+
+    return { success: true };
+  } catch (error) {
+    console.error("disconnectStartWithCleanup error:", error);
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("시작 노드 연결 해제 중 오류가 발생했습니다.");
     serverError.cause = 500;
     throw serverError;
   }
