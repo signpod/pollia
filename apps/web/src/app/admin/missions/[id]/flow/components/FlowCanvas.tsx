@@ -10,7 +10,7 @@ import {
   useEdgesState,
   useNodesState,
 } from "@xyflow/react";
-import { useCallback } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import "@xyflow/react/dist/style.css";
 
 import { useFlowConnections } from "@/app/admin/hooks/flow/use-flow-connections";
@@ -39,10 +39,29 @@ export function FlowCanvas({ missionId }: FlowCanvasProps) {
   const { handleStartConnection, handleBranchConnection, handleActionConnection } =
     useFlowConnections(missionId);
 
-  const [nodesState, , onNodesChange] = useNodesState(nodes);
+  const [nodesState, setNodes, onNodesChange] = useNodesState(nodes);
   const [edgesState, setEdges, onEdgesChange] = useEdgesState(edges);
 
   const validation = useFlowValidation(nodesState, edgesState);
+
+  useEffect(() => {
+    setNodes(nodes);
+  }, [nodes, setNodes]);
+
+  useEffect(() => {
+    setEdges(edges);
+  }, [edges, setEdges]);
+
+  const nodesWithValidation = useMemo(() => {
+    return nodesState.map(node => ({
+      ...node,
+      data: {
+        ...node.data,
+        isUnreachable: validation.unreachableNodes.has(node.id),
+        isDeadEnd: validation.deadEndNodes.has(node.id),
+      },
+    }));
+  }, [nodesState, validation]);
 
   const onConnect = useCallback(
     (connection: Connection) => {
@@ -81,7 +100,7 @@ export function FlowCanvas({ missionId }: FlowCanvasProps) {
 
   return (
     <ReactFlow
-      nodes={nodesState}
+      nodes={nodesWithValidation}
       edges={edgesState}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
