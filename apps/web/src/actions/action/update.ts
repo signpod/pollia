@@ -42,7 +42,7 @@ export async function disconnectActionWithCleanup(actionId: string, missionId: s
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error("액션 연결 끊기 중 오류가 발생했습니다.");
+    const serverError = new Error("액션 연결 해제 중 오류가 발생했습니다.");
     serverError.cause = 500;
     throw serverError;
   }
@@ -67,7 +67,7 @@ export async function disconnectBranchOptionWithCleanup(
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error("브랜치 옵션 연결 끊기 중 오류가 발생했습니다.");
+    const serverError = new Error("브랜치 옵션 연결 해제 중 오류가 발생했습니다.");
     serverError.cause = 500;
     throw serverError;
   }

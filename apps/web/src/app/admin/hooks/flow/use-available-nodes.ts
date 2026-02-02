@@ -5,8 +5,8 @@ import { useReadCompletions } from "@/app/admin/hooks/mission-completion/use-rea
 import { useMemo } from "react";
 
 export function useAvailableNodes(missionId: string, connectedNodeIds: Set<string>) {
-  const { data: actionsData } = useReadActionsDetail(missionId);
-  const { data: completionsData } = useReadCompletions(missionId);
+  const { data: actionsData, isError: isActionsError } = useReadActionsDetail(missionId);
+  const { data: completionsData, isError: isCompletionsError } = useReadCompletions(missionId);
 
   const availableActions = useMemo(() => {
     const actions = actionsData?.data ?? [];
@@ -18,7 +18,11 @@ export function useAvailableNodes(missionId: string, connectedNodeIds: Set<strin
     return completions.filter(completion => !connectedNodeIds.has(completion.id));
   }, [completionsData, connectedNodeIds]);
 
-  return { availableActions, availableCompletions };
+  return {
+    availableActions,
+    availableCompletions,
+    isError: isActionsError || isCompletionsError,
+  };
 }
 
 export type UseAvailableNodesReturn = ReturnType<typeof useAvailableNodes>;

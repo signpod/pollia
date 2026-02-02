@@ -212,8 +212,11 @@ export function FlowCanvas({ missionId }: FlowCanvasProps) {
 
   if (error) {
     return (
-      <div className="flex h-full items-center justify-center">
+      <div className="flex h-full flex-col items-center justify-center gap-4">
         <p className="text-destructive">플로우를 불러오는데 실패했습니다</p>
+        <p className="text-sm text-muted-foreground">
+          {error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다"}
+        </p>
       </div>
     );
   }

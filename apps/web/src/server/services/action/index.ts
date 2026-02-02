@@ -472,48 +472,55 @@ export class ActionService {
   }
 
   async disconnectActionWithCleanup(actionId: string, missionId: string, userId: string) {
-    const action = await this.actionRepo.findById(actionId);
-    if (!action) {
-      this.throwActionNotFound();
-    }
+    try {
+      const action = await this.actionRepo.findById(actionId);
+      if (!action) {
+        this.throwActionNotFound();
+      }
 
-    if (action.missionId) {
-      await this.verifyMissionAccess(action.missionId, userId);
-    }
+      if (action.missionId) {
+        await this.verifyMissionAccess(action.missionId, userId);
+      }
 
-    await this.actionRepo.update(
-      actionId,
-      {
-        nextActionId: null,
-        nextCompletionId: null,
-      },
-      userId,
-    );
-
-    const reachableIds = await this.calculateReachableActionIds(missionId);
-    const allActions = await this.actionRepo.findDetailsByMissionId(missionId);
-
-    for (const currentAction of allActions) {
-      if (reachableIds.includes(currentAction.id)) continue;
-
-      await this.actionRepo.update(currentAction.id, {
-        nextActionId: null,
-        nextCompletionId: null,
-      });
-
-      const hasOptionConnection = currentAction.options.some(
-        opt => opt.nextActionId || opt.nextCompletionId,
-      );
-
-      if (hasOptionConnection) {
-        const cleanedOptions = currentAction.options.map(opt => ({
-          ...opt,
+      await this.actionRepo.update(
+        actionId,
+        {
           nextActionId: null,
           nextCompletionId: null,
-        }));
+        },
+        userId,
+      );
 
-        await this.actionRepo.updateWithOptions(currentAction.id, {}, cleanedOptions, userId);
+      const reachableIds = await this.calculateReachableActionIds(missionId);
+      const allActions = await this.actionRepo.findDetailsByMissionId(missionId);
+
+      for (const currentAction of allActions) {
+        if (reachableIds.includes(currentAction.id)) continue;
+
+        await this.actionRepo.update(currentAction.id, {
+          nextActionId: null,
+          nextCompletionId: null,
+        });
+
+        const hasOptionConnection = currentAction.options.some(
+          opt => opt.nextActionId || opt.nextCompletionId,
+        );
+
+        if (hasOptionConnection) {
+          const cleanedOptions = currentAction.options.map(opt => ({
+            ...opt,
+            nextActionId: null,
+            nextCompletionId: null,
+          }));
+
+          await this.actionRepo.updateWithOptions(currentAction.id, {}, cleanedOptions, userId);
+        }
       }
+
+      console.log(`액션 연결 해제 및 정리 완료: ${actionId}`);
+    } catch (error) {
+      console.error("액션 연결 해제 실패:", error);
+      throw error;
     }
   }
 
@@ -523,51 +530,58 @@ export class ActionService {
     missionId: string,
     userId: string,
   ) {
-    const action = await this.actionRepo.findByIdWithOptions(actionId);
-    if (!action) {
-      this.throwActionNotFound();
-    }
+    try {
+      const action = await this.actionRepo.findByIdWithOptions(actionId);
+      if (!action) {
+        this.throwActionNotFound();
+      }
 
-    if (action.missionId) {
-      await this.verifyMissionAccess(action.missionId, userId);
-    }
+      if (action.missionId) {
+        await this.verifyMissionAccess(action.missionId, userId);
+      }
 
-    const updatedOptions = action.options.map(opt =>
-      opt.id === optionId
-        ? {
+      const updatedOptions = action.options.map(opt =>
+        opt.id === optionId
+          ? {
+              ...opt,
+              nextActionId: null,
+              nextCompletionId: null,
+            }
+          : opt,
+      );
+
+      await this.actionRepo.updateWithOptions(actionId, {}, updatedOptions, userId);
+
+      const reachableIds = await this.calculateReachableActionIds(missionId);
+      const allActions = await this.actionRepo.findDetailsByMissionId(missionId);
+
+      for (const currentAction of allActions) {
+        if (reachableIds.includes(currentAction.id)) continue;
+
+        await this.actionRepo.update(currentAction.id, {
+          nextActionId: null,
+          nextCompletionId: null,
+        });
+
+        const hasOptionConnection = currentAction.options.some(
+          opt => opt.nextActionId || opt.nextCompletionId,
+        );
+
+        if (hasOptionConnection) {
+          const cleanedOptions = currentAction.options.map(opt => ({
             ...opt,
             nextActionId: null,
             nextCompletionId: null,
-          }
-        : opt,
-    );
+          }));
 
-    await this.actionRepo.updateWithOptions(actionId, {}, updatedOptions, userId);
-
-    const reachableIds = await this.calculateReachableActionIds(missionId);
-    const allActions = await this.actionRepo.findDetailsByMissionId(missionId);
-
-    for (const currentAction of allActions) {
-      if (reachableIds.includes(currentAction.id)) continue;
-
-      await this.actionRepo.update(currentAction.id, {
-        nextActionId: null,
-        nextCompletionId: null,
-      });
-
-      const hasOptionConnection = currentAction.options.some(
-        opt => opt.nextActionId || opt.nextCompletionId,
-      );
-
-      if (hasOptionConnection) {
-        const cleanedOptions = currentAction.options.map(opt => ({
-          ...opt,
-          nextActionId: null,
-          nextCompletionId: null,
-        }));
-
-        await this.actionRepo.updateWithOptions(currentAction.id, {}, cleanedOptions, userId);
+          await this.actionRepo.updateWithOptions(currentAction.id, {}, cleanedOptions, userId);
+        }
       }
+
+      console.log(`브랜치 옵션 연결 해제 및 정리 완료: ${actionId} - ${optionId}`);
+    } catch (error) {
+      console.error("브랜치 옵션 연결 해제 실패:", error);
+      throw error;
     }
   }
 
@@ -575,26 +589,35 @@ export class ActionService {
     sourceActionId: string,
     targetId: string,
     isCompletion: boolean,
-    missionId: string,
+    _missionId: string,
     userId: string,
   ) {
-    const action = await this.actionRepo.findById(sourceActionId);
-    if (!action) {
-      this.throwActionNotFound();
-    }
+    try {
+      const action = await this.actionRepo.findById(sourceActionId);
+      if (!action) {
+        this.throwActionNotFound();
+      }
 
-    if (action.missionId) {
-      await this.verifyMissionAccess(action.missionId, userId);
-    }
+      if (action.missionId) {
+        await this.verifyMissionAccess(action.missionId, userId);
+      }
 
-    await this.actionRepo.update(
-      sourceActionId,
-      {
-        nextActionId: isCompletion ? null : targetId,
-        nextCompletionId: isCompletion ? targetId : null,
-      },
-      userId,
-    );
+      await this.actionRepo.update(
+        sourceActionId,
+        {
+          nextActionId: isCompletion ? null : targetId,
+          nextCompletionId: isCompletion ? targetId : null,
+        },
+        userId,
+      );
+
+      console.log(
+        `액션 연결 완료: ${sourceActionId} -> ${targetId} (${isCompletion ? "완료화면" : "액션"})`,
+      );
+    } catch (error) {
+      console.error("액션 연결 실패:", error);
+      throw error;
+    }
   }
 
   async connectBranchOption(
@@ -602,29 +625,38 @@ export class ActionService {
     optionId: string,
     targetId: string,
     isCompletion: boolean,
-    missionId: string,
+    _missionId: string,
     userId: string,
   ) {
-    const action = await this.actionRepo.findByIdWithOptions(actionId);
-    if (!action) {
-      this.throwActionNotFound();
+    try {
+      const action = await this.actionRepo.findByIdWithOptions(actionId);
+      if (!action) {
+        this.throwActionNotFound();
+      }
+
+      if (action.missionId) {
+        await this.verifyMissionAccess(action.missionId, userId);
+      }
+
+      const updatedOptions = action.options.map(opt =>
+        opt.id === optionId
+          ? {
+              ...opt,
+              nextActionId: isCompletion ? null : targetId,
+              nextCompletionId: isCompletion ? targetId : null,
+            }
+          : opt,
+      );
+
+      await this.actionRepo.updateWithOptions(actionId, {}, updatedOptions, userId);
+
+      console.log(
+        `브랜치 옵션 연결 완료: ${actionId}/${optionId} -> ${targetId} (${isCompletion ? "완료화면" : "액션"})`,
+      );
+    } catch (error) {
+      console.error("브랜치 옵션 연결 실패:", error);
+      throw error;
     }
-
-    if (action.missionId) {
-      await this.verifyMissionAccess(action.missionId, userId);
-    }
-
-    const updatedOptions = action.options.map(opt =>
-      opt.id === optionId
-        ? {
-            ...opt,
-            nextActionId: isCompletion ? null : targetId,
-            nextCompletionId: isCompletion ? targetId : null,
-          }
-        : opt,
-    );
-
-    await this.actionRepo.updateWithOptions(actionId, {}, updatedOptions, userId);
   }
 }
 
