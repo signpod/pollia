@@ -334,6 +334,7 @@ export function FlowCanvas({ missionId }: FlowCanvasProps) {
         onSelectAction={handleSelectAction}
         onSelectCompletion={handleSelectCompletion}
         trigger={<div />}
+        connectedNodeIds={connectedNodeIds}
       />
 
       {menuState && (

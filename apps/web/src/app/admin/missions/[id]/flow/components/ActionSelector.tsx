@@ -10,8 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/app/admin/components/shadcn-ui/dropdown-menu";
 import { ACTION_TYPE_CONFIGS } from "@/app/admin/config/actionTypes";
-import { useReadActionsDetail } from "@/app/admin/hooks/action/use-read-actions-detail";
-import { useReadCompletions } from "@/app/admin/hooks/mission-completion/use-read-completions";
+import { useAvailableNodes } from "@/app/admin/hooks/flow/use-available-nodes";
 import { CompletionEditDialog } from "@/app/admin/missions/[id]/components/edit/CompletionEditDialog";
 import { CreateActionDialog } from "@/app/admin/missions/[id]/edit/components/CreateActionDialog";
 import { CheckCircle, Plus } from "lucide-react";
@@ -25,6 +24,7 @@ interface ActionSelectorProps {
   onSelectAction: (actionId: string) => void;
   onSelectCompletion: (completionId: string) => void;
   trigger: React.ReactNode;
+  connectedNodeIds: Set<string>;
 }
 
 export function ActionSelector({
@@ -35,15 +35,12 @@ export function ActionSelector({
   onSelectAction,
   onSelectCompletion,
   trigger,
+  connectedNodeIds,
 }: ActionSelectorProps) {
   const [createActionOpen, setCreateActionOpen] = useState(false);
   const [createCompletionOpen, setCreateCompletionOpen] = useState(false);
 
-  const { data: actionsData } = useReadActionsDetail(missionId);
-  const { data: completionsData } = useReadCompletions(missionId);
-
-  const actions = actionsData?.data ?? [];
-  const completions = completionsData?.data ?? [];
+  const { availableActions, availableCompletions } = useAvailableNodes(missionId, connectedNodeIds);
 
   const handleSelectAction = (actionId: string) => {
     onSelectAction(actionId);
@@ -70,11 +67,11 @@ export function ActionSelector({
       <DropdownMenu open={open} onOpenChange={onOpenChange}>
         <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
         <DropdownMenuContent className="w-80 max-h-[400px]">
-          {actions.length > 0 && (
+          {availableActions.length > 0 && (
             <>
               <DropdownMenuLabel>기존 액션 선택</DropdownMenuLabel>
               <DropdownMenuGroup>
-                {actions.map(action => {
+                {availableActions.map(action => {
                   const config = ACTION_TYPE_CONFIGS.find(c => c.value === action.type);
                   const Icon = config?.icon;
                   return (
@@ -88,12 +85,12 @@ export function ActionSelector({
             </>
           )}
 
-          {sourceType !== "start" && completions.length > 0 && (
+          {sourceType !== "start" && availableCompletions.length > 0 && (
             <>
-              {actions.length > 0 && <DropdownMenuSeparator />}
+              {availableActions.length > 0 && <DropdownMenuSeparator />}
               <DropdownMenuLabel>완료 화면 선택</DropdownMenuLabel>
               <DropdownMenuGroup>
-                {completions.map(completion => (
+                {availableCompletions.map(completion => (
                   <DropdownMenuItem
                     key={completion.id}
                     onClick={() => handleSelectCompletion(completion.id)}

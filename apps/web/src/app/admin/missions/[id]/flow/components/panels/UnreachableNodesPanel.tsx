@@ -3,8 +3,7 @@
 import { Badge } from "@/app/admin/components/shadcn-ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/admin/components/shadcn-ui/card";
 import { ACTION_TYPE_CONFIGS } from "@/app/admin/config/actionTypes";
-import { useReadActionsDetail } from "@/app/admin/hooks/action/use-read-actions-detail";
-import { useReadCompletions } from "@/app/admin/hooks/mission-completion/use-read-completions";
+import { useAvailableNodes } from "@/app/admin/hooks/flow/use-available-nodes";
 import { AlertCircle, CheckCircle } from "lucide-react";
 
 interface UnreachableNodesPanelProps {
@@ -13,18 +12,9 @@ interface UnreachableNodesPanelProps {
 }
 
 export function UnreachableNodesPanel({ missionId, connectedNodeIds }: UnreachableNodesPanelProps) {
-  const { data: actionsData } = useReadActionsDetail(missionId);
-  const { data: completionsData } = useReadCompletions(missionId);
+  const { availableActions, availableCompletions } = useAvailableNodes(missionId, connectedNodeIds);
 
-  const actions = actionsData?.data ?? [];
-  const completions = completionsData?.data ?? [];
-
-  const unreachableActions = actions.filter(action => !connectedNodeIds.has(action.id));
-  const unreachableCompletions = completions.filter(
-    completion => !connectedNodeIds.has(completion.id),
-  );
-
-  const totalUnreachable = unreachableActions.length + unreachableCompletions.length;
+  const totalUnreachable = availableActions.length + availableCompletions.length;
 
   if (totalUnreachable === 0) {
     return null;
@@ -43,7 +33,7 @@ export function UnreachableNodesPanel({ missionId, connectedNodeIds }: Unreachab
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 max-h-[300px] overflow-y-auto">
-          {unreachableActions.map(action => {
+          {availableActions.map(action => {
             const config = ACTION_TYPE_CONFIGS.find(c => c.value === action.type);
             const Icon = config?.icon;
 
@@ -59,7 +49,7 @@ export function UnreachableNodesPanel({ missionId, connectedNodeIds }: Unreachab
               </div>
             );
           })}
-          {unreachableCompletions.map(completion => (
+          {availableCompletions.map(completion => (
             <div key={completion.id} className="flex items-start gap-2 p-2 border rounded-lg">
               <CheckCircle className="size-4 mt-0.5 text-muted-foreground" />
               <div className="flex-1 min-w-0">
