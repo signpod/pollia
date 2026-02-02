@@ -12,13 +12,12 @@ type ActionNodeData = {
   isUnreachable?: boolean;
   isDeadEnd?: boolean;
   onPlusClick?: () => void;
-  onNodeClick?: () => void;
 };
 
 export type ActionNodeType = Node<ActionNodeData, "action">;
 
 export function ActionNode({ data }: NodeProps<ActionNodeType>) {
-  const { action, isUnreachable, isDeadEnd, onPlusClick, onNodeClick } = data;
+  const { action, isUnreachable, isDeadEnd, onPlusClick } = data;
 
   if (!action) return null;
 
@@ -33,9 +32,7 @@ export function ActionNode({ data }: NodeProps<ActionNodeType>) {
         "min-w-[250px]",
         isUnreachable && "opacity-50 grayscale",
         isDeadEnd && "border-red-500",
-        onNodeClick && hasConnection && "cursor-pointer hover:border-primary",
       )}
-      onClick={hasConnection ? onNodeClick : undefined}
     >
       <Handle type="target" position={Position.Top} isConnectable={false} />
       <CardContent className="px-4">

@@ -15,10 +15,9 @@ import { useFlowConnections } from "@/app/admin/hooks/flow/use-flow-connections"
 import { useFlowGraph } from "@/app/admin/hooks/flow/use-flow-graph";
 import { useFlowValidation } from "@/app/admin/hooks/flow/use-flow-validation";
 import type { FlowNode } from "@/app/admin/missions/[id]/flow/utils/flowTransform";
-import type { ActionOption } from "@prisma/client";
 
 import { ActionSelector } from "./ActionSelector";
-import { NodeActionMenu } from "./NodeActionMenu";
+import { EdgeWithDeleteButton } from "./edges/EdgeWithDeleteButton";
 import { ActionNode } from "./nodes/ActionNode";
 import { BranchActionNode } from "./nodes/BranchActionNode";
 import { CompletionNode } from "./nodes/CompletionNode";
@@ -33,6 +32,10 @@ const nodeTypes = {
   completion: CompletionNode,
 };
 
+const edgeTypes = {
+  default: EdgeWithDeleteButton,
+};
+
 interface FlowCanvasProps {
   missionId: string;
 }
@@ -42,16 +45,6 @@ type SelectorState = {
   nodeId: string;
   nodeType: "start" | "action" | "branch-option";
   optionId?: string;
-};
-
-type MenuState = {
-  open: boolean;
-  nodeId: string;
-  nodeType: "action" | "branch-option";
-  optionId?: string;
-  targetId: string;
-  targetTitle: string;
-  targetType: "action" | "completion";
 };
 
 export function FlowCanvas({ missionId }: FlowCanvasProps) {
@@ -66,8 +59,6 @@ export function FlowCanvas({ missionId }: FlowCanvasProps) {
     nodeId: "",
     nodeType: "start",
   });
-
-  const [menuState, setMenuState] = useState<MenuState | null>(null);
 
   const validation = useFlowValidation(nodesState, edgesState);
 
@@ -91,44 +82,32 @@ export function FlowCanvas({ missionId }: FlowCanvasProps) {
     [],
   );
 
-  const handleNodeClick = useCallback(
-    (
-      nodeId: string,
-      targetId: string,
-      targetTitle: string,
-      targetType: "action" | "completion",
-    ) => {
-      setMenuState({
-        open: true,
-        nodeId,
-        nodeType: "action",
-        targetId,
-        targetTitle,
-        targetType,
-      });
-    },
-    [],
-  );
+  const handleEdgeDelete = useCallback(
+    (edgeId: string) => {
+      const edge = edgesState.find(e => e.id === edgeId);
+      if (!edge) return;
 
-  const handleOptionClick = useCallback(
-    (
-      actionId: string,
-      optionId: string,
-      targetId: string,
-      targetTitle: string,
-      targetType: "action" | "completion",
-    ) => {
-      setMenuState({
-        open: true,
-        nodeId: actionId,
-        nodeType: "branch-option",
-        optionId,
-        targetId,
-        targetTitle,
-        targetType,
-      });
+      const { source, sourceHandle } = edge;
+
+      if (source === "start") {
+        connections.disconnectStart();
+        return;
+      }
+
+      const sourceNode = nodesState.find(n => n.id === source) as FlowNode | undefined;
+      if (!sourceNode) return;
+
+      if (sourceHandle && sourceNode.type === "branch-action") {
+        const action = sourceNode.data.action;
+        if (action?.options) {
+          connections.disconnectBranchOption(source, sourceHandle, action.options);
+        }
+        return;
+      }
+
+      connections.disconnectAction(source);
     },
-    [],
+    [edgesState, nodesState, connections],
   );
 
   const handleSelectAction = useCallback(
@@ -179,33 +158,6 @@ export function FlowCanvas({ missionId }: FlowCanvasProps) {
     [selectorState, nodesState, connections],
   );
 
-  const handleDisconnect = useCallback(() => {
-    if (!menuState) return;
-
-    const { nodeId, nodeType, optionId } = menuState;
-
-    if (nodeType === "branch-option" && optionId) {
-      const node = nodesState.find(n => n.id === nodeId) as FlowNode | undefined;
-      const action = node?.data.action;
-      if (action?.options) {
-        connections.disconnectBranchOption(nodeId, optionId, action.options);
-      }
-    } else {
-      connections.disconnectAction(nodeId);
-    }
-  }, [menuState, nodesState, connections]);
-
-  const handleReconnect = useCallback(() => {
-    if (!menuState) return;
-
-    setSelectorState({
-      open: true,
-      nodeId: menuState.nodeId,
-      nodeType: menuState.nodeType,
-      optionId: menuState.optionId,
-    });
-  }, [menuState]);
-
   const connectedNodeIds = useMemo(() => {
     const ids = new Set<string>(["start"]);
     nodesState.forEach(node => {
@@ -236,52 +188,22 @@ export function FlowCanvas({ missionId }: FlowCanvasProps) {
       }
 
       if (flowNode.type === "action") {
-        const action = flowNode.data.action;
-        const targetId = action?.nextActionId || action?.nextCompletionId;
-        const targetNode = nodesState.find(n => n.id === targetId) as FlowNode | undefined;
-
         return {
           ...flowNode,
           data: {
             ...baseData,
             onPlusClick: () => handlePlusClick(flowNode.id, "action"),
-            onNodeClick: targetNode
-              ? () =>
-                  handleNodeClick(
-                    flowNode.id,
-                    targetNode.id,
-                    targetNode.data.action?.title || targetNode.data.completion?.title || "",
-                    targetNode.type === "completion" ? "completion" : "action",
-                  )
-              : undefined,
           },
         };
       }
 
       if (flowNode.type === "branch-action") {
-        const action = flowNode.data.action;
-
         return {
           ...flowNode,
           data: {
             ...baseData,
             onOptionPlusClick: (optionId: string) =>
               handlePlusClick(flowNode.id, "branch-option", optionId),
-            onOptionClick: (optionId: string) => {
-              const option = action?.options.find((o: ActionOption) => o.id === optionId);
-              const targetId = option?.nextActionId || option?.nextCompletionId;
-              const targetNode = nodesState.find(n => n.id === targetId) as FlowNode | undefined;
-
-              if (targetNode) {
-                handleOptionClick(
-                  flowNode.id,
-                  optionId,
-                  targetNode.id,
-                  targetNode.data.action?.title || targetNode.data.completion?.title || "",
-                  targetNode.type === "completion" ? "completion" : "action",
-                );
-              }
-            },
           },
         };
       }
@@ -291,7 +213,17 @@ export function FlowCanvas({ missionId }: FlowCanvasProps) {
         data: baseData,
       };
     });
-  }, [nodesState, validation, handlePlusClick, handleNodeClick, handleOptionClick]);
+  }, [nodesState, validation, handlePlusClick]);
+
+  const edgesWithHandlers = useMemo(() => {
+    return edgesState.map(edge => ({
+      ...edge,
+      data: {
+        ...edge.data,
+        onDelete: handleEdgeDelete,
+      },
+    }));
+  }, [edgesState, handleEdgeDelete]);
 
   if (isLoading) {
     return (
@@ -313,10 +245,14 @@ export function FlowCanvas({ missionId }: FlowCanvasProps) {
     <>
       <ReactFlow
         nodes={nodesWithHandlers}
-        edges={edgesState}
+        edges={edgesWithHandlers}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        defaultEdgeOptions={{
+          style: { strokeWidth: 2 },
+        }}
         fitView
       >
         <Background />
@@ -336,20 +272,6 @@ export function FlowCanvas({ missionId }: FlowCanvasProps) {
         trigger={<div />}
         connectedNodeIds={connectedNodeIds}
       />
-
-      {menuState && (
-        <NodeActionMenu
-          open={menuState.open}
-          onOpenChange={open => setMenuState(prev => (prev ? { ...prev, open } : null))}
-          currentConnection={{
-            targetId: menuState.targetId,
-            targetTitle: menuState.targetTitle,
-            targetType: menuState.targetType,
-          }}
-          onDisconnect={handleDisconnect}
-          onReconnect={handleReconnect}
-        />
-      )}
     </>
   );
 }

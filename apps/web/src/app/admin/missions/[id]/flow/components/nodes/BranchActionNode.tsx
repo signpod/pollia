@@ -12,13 +12,12 @@ type BranchActionNodeData = {
   isUnreachable?: boolean;
   isDeadEnd?: boolean;
   onOptionPlusClick?: (optionId: string) => void;
-  onOptionClick?: (optionId: string) => void;
 };
 
 export type BranchActionNodeType = Node<BranchActionNodeData, "branch-action">;
 
 export function BranchActionNode({ data }: NodeProps<BranchActionNodeType>) {
-  const { action, isUnreachable, isDeadEnd, onOptionPlusClick, onOptionClick } = data;
+  const { action, isUnreachable, isDeadEnd, onOptionPlusClick } = data;
 
   if (!action) return null;
 
@@ -47,28 +46,7 @@ export function BranchActionNode({ data }: NodeProps<BranchActionNodeType>) {
             const hasConnection = option.nextActionId || option.nextCompletionId;
 
             return (
-              <div
-                key={option.id}
-                className={cn(
-                  "relative border rounded p-3",
-                  onOptionClick && hasConnection && "cursor-pointer hover:border-primary",
-                )}
-                onClick={
-                  hasConnection && onOptionClick ? () => onOptionClick(option.id) : undefined
-                }
-                onKeyDown={
-                  hasConnection && onOptionClick
-                    ? e => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          onOptionClick(option.id);
-                        }
-                      }
-                    : undefined
-                }
-                role={hasConnection && onOptionClick ? "button" : undefined}
-                tabIndex={hasConnection && onOptionClick ? 0 : undefined}
-              >
+              <div key={option.id} className="relative border rounded p-3">
                 <p className="text-xs font-medium mb-1">옵션 {index + 1}</p>
                 <p className="text-xs text-muted-foreground line-clamp-2">{option.title}</p>
 
