@@ -18,7 +18,6 @@ import { adminActionQueryKeys } from "@/app/admin/constants/queryKeys";
 import type { ActionType } from "@/app/admin/missions/[id]/edit/components/action-forms";
 import { BRANCH_HAS_OTHER, BRANCH_MAX_SELECTIONS } from "@/schemas/action";
 import type {
-  ActionOptionInput,
   BaseActionRequest,
   CreateBranchActionRequest,
   CreateDateActionRequest,
@@ -35,10 +34,20 @@ import type {
 } from "@/types/dto";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+interface ActionOptionInputWithOptionalOrder {
+  id?: string;
+  title: string;
+  description?: string | null;
+  imageUrl?: string | null;
+  fileUploadId?: string | null;
+  nextActionId?: string | null;
+  order?: number;
+}
+
 interface CreateActionInput extends BaseActionRequest {
   missionId: string;
   type: ActionType;
-  options?: ActionOptionInput[];
+  options?: ActionOptionInputWithOptionalOrder[];
   maxSelections?: number;
 }
 

@@ -10,11 +10,13 @@ import {
   DropdownMenuTrigger,
 } from "@/app/admin/components/shadcn-ui/dropdown-menu";
 import { ACTION_TYPE_CONFIGS } from "@/app/admin/config/actionTypes";
+import { useCreateAction } from "@/app/admin/hooks/action/use-create-action";
 import { useAvailableNodes } from "@/app/admin/hooks/flow/use-available-nodes";
 import { CompletionEditDialog } from "@/app/admin/missions/[id]/components/edit/CompletionEditDialog";
 import { CreateActionDialog } from "@/app/admin/missions/[id]/edit/components/CreateActionDialog";
 import { CheckCircle, Plus } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 interface ActionSelectorProps {
   open: boolean;
@@ -41,6 +43,22 @@ export function ActionSelector({
   const [createCompletionOpen, setCreateCompletionOpen] = useState(false);
 
   const { availableActions, availableCompletions } = useAvailableNodes(missionId, connectedNodeIds);
+
+  const nextOrder = useMemo(() => {
+    if (availableActions.length === 0) return 0;
+    const maxOrder = Math.max(...availableActions.map(action => action.order ?? 0));
+    return maxOrder + 1;
+  }, [availableActions]);
+
+  const createAction = useCreateAction({
+    onSuccess: () => {
+      toast.success("액션이 생성되었습니다");
+      setCreateActionOpen(false);
+    },
+    onError: error => {
+      toast.error(error.message || "액션 생성 중 오류가 발생했습니다");
+    },
+  });
 
   const handleSelectAction = (actionId: string) => {
     onSelectAction(actionId);
@@ -124,7 +142,11 @@ export function ActionSelector({
         open={createActionOpen}
         onOpenChange={setCreateActionOpen}
         onSubmit={data => {
-          console.log("Create action:", data);
+          createAction.mutate({
+            missionId,
+            order: nextOrder,
+            ...data,
+          });
         }}
       />
 
