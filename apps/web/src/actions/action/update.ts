@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
+import { logger } from "@/lib/logger";
 import { actionService } from "@/server/services/action";
 import { missionService } from "@/server/services/mission";
 import type { UpdateActionRequest } from "@/types/dto/action";
@@ -18,7 +19,11 @@ export async function updateAction(actionId: string, request: UpdateActionReques
 
     return { data: updatedAction };
   } catch (error) {
-    console.error("updateAction error:", error);
+    logger.error("액션 수정 실패", {
+      actionId,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -39,7 +44,12 @@ export async function disconnectActionWithCleanup(actionId: string, missionId: s
 
     return { success: true };
   } catch (error) {
-    console.error("disconnectActionWithCleanup error:", error);
+    logger.error("액션 연결 해제 실패", {
+      actionId,
+      missionId,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -64,7 +74,13 @@ export async function disconnectBranchOptionWithCleanup(
 
     return { success: true };
   } catch (error) {
-    console.error("disconnectBranchOptionWithCleanup error:", error);
+    logger.error("브랜치 옵션 연결 해제 실패", {
+      actionId,
+      optionId,
+      missionId,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -90,7 +106,14 @@ export async function connectAction(
 
     return { success: true };
   } catch (error) {
-    console.error("connectAction error:", error);
+    logger.error("액션 연결 실패", {
+      sourceActionId,
+      targetId,
+      isCompletion,
+      missionId,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -124,7 +147,15 @@ export async function connectBranchOption(
 
     return { success: true };
   } catch (error) {
-    console.error("connectBranchOption error:", error);
+    logger.error("브랜치 옵션 연결 실패", {
+      actionId,
+      optionId,
+      targetId,
+      isCompletion,
+      missionId,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     if (error instanceof Error && error.cause) {
       throw error;
     }
@@ -147,7 +178,12 @@ export async function disconnectStartWithCleanup(targetActionId: string, mission
 
     return { success: true };
   } catch (error) {
-    console.error("disconnectStartWithCleanup error:", error);
+    logger.error("시작 노드 연결 해제 실패", {
+      targetActionId,
+      missionId,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     if (error instanceof Error && error.cause) {
       throw error;
     }

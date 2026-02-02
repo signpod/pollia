@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import {
   actionUpdateSchema,
   branchInputSchema,
@@ -519,7 +520,12 @@ export class ActionService {
 
       console.log(`액션 연결 해제 및 정리 완료: ${actionId}`);
     } catch (error) {
-      console.error("액션 연결 해제 실패:", error);
+      logger.error("액션 연결 해제 실패", {
+        actionId,
+        missionId,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       throw error;
     }
   }
@@ -580,7 +586,13 @@ export class ActionService {
 
       console.log(`브랜치 옵션 연결 해제 및 정리 완료: ${actionId} - ${optionId}`);
     } catch (error) {
-      console.error("브랜치 옵션 연결 해제 실패:", error);
+      logger.error("브랜치 옵션 연결 해제 실패", {
+        actionId,
+        optionId,
+        missionId,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       throw error;
     }
   }
@@ -615,7 +627,13 @@ export class ActionService {
         `액션 연결 완료: ${sourceActionId} -> ${targetId} (${isCompletion ? "완료화면" : "액션"})`,
       );
     } catch (error) {
-      console.error("액션 연결 실패:", error);
+      logger.error("액션 연결 실패", {
+        sourceActionId,
+        targetId,
+        isCompletion,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       throw error;
     }
   }
@@ -654,7 +672,14 @@ export class ActionService {
         `브랜치 옵션 연결 완료: ${actionId}/${optionId} -> ${targetId} (${isCompletion ? "완료화면" : "액션"})`,
       );
     } catch (error) {
-      console.error("브랜치 옵션 연결 실패:", error);
+      logger.error("브랜치 옵션 연결 실패", {
+        actionId,
+        optionId,
+        targetId,
+        isCompletion,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       throw error;
     }
   }
