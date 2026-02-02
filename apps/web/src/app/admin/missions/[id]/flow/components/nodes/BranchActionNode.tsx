@@ -21,54 +21,69 @@ export function BranchActionNode({ data }: NodeProps<BranchActionNodeType>) {
 
   if (!action) return null;
 
+  const optionCount = action.options.length;
+  const getHandlePosition = (index: number) => {
+    return `${(100 / (optionCount + 1)) * (index + 1)}%`;
+  };
+
   return (
-    <Card
-      className={cn(
-        "min-w-[350px]",
-        isUnreachable && "opacity-50 grayscale",
-        isDeadEnd && "border-red-500",
-      )}
-    >
+    <div className={cn("relative min-w-[400px]", isUnreachable && "opacity-50 grayscale")}>
       <Handle type="target" position={Position.Top} isConnectable={false} />
-      <CardContent className="px-4">
-        {isUnreachable && (
-          <Badge variant="destructive" className="mb-2">
-            🚫 도달 불가
-          </Badge>
-        )}
-        <div className="flex items-center gap-2 mb-4">
-          <GitBranch className="size-4" />
-          <span className="text-sm font-medium">분기</span>
-        </div>
-        <p className="text-sm mb-4">{action.title}</p>
-        <div className="grid grid-cols-2 gap-3">
-          {action.options.map((option, index) => {
-            const hasConnection = option.nextActionId || option.nextCompletionId;
 
-            return (
-              <div key={option.id} className="relative border rounded p-3">
-                <p className="text-xs font-medium mb-1">옵션 {index + 1}</p>
-                <p className="text-xs text-muted-foreground line-clamp-2">{option.title}</p>
+      <Card className={cn(isDeadEnd && "border-red-500")}>
+        <CardContent className="px-4">
+          {isUnreachable && (
+            <Badge variant="destructive" className="mb-2">
+              🚫 도달 불가
+            </Badge>
+          )}
+          <div className="flex items-center gap-2 mb-2">
+            <GitBranch className="size-4" />
+            <span className="text-sm font-medium">분기</span>
+          </div>
+          <p className="text-sm">{action.title}</p>
+        </CardContent>
+      </Card>
 
-                {!hasConnection && onOptionPlusClick && (
-                  <div className="flex justify-center mt-2">
-                    <PlusButton onOpenSelector={() => onOptionPlusClick(option.id)} />
-                  </div>
-                )}
+      <div className="flex gap-4 mt-4 mb-4">
+        {action.options.map((option, index) => {
+          const hasConnection = option.nextActionId || option.nextCompletionId;
 
-                <Handle
-                  type="source"
-                  position={Position.Bottom}
-                  id={option.id}
-                  style={{ left: index === 0 ? "25%" : "75%" }}
-                  isConnectable={false}
-                />
-              </div>
-            );
-          })}
-        </div>
-        {isDeadEnd && <p className="text-xs text-destructive mt-2">⚠️ 다음 단계 미설정</p>}
-      </CardContent>
-    </Card>
+          return (
+            <div
+              key={option.id}
+              className="flex-1 bg-white border-2 border-gray-200 rounded-lg p-4 shadow-sm"
+            >
+              <p className="text-xs font-semibold text-gray-500 mb-1">옵션 {index + 1}</p>
+              <p className="text-sm font-medium line-clamp-2">{option.title}</p>
+
+              {!hasConnection && onOptionPlusClick && (
+                <div className="flex justify-center mt-3">
+                  <PlusButton onOpenSelector={() => onOptionPlusClick(option.id)} />
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {isDeadEnd && <p className="text-xs text-destructive mb-2">⚠️ 다음 단계 미설정</p>}
+
+      {action.options.map((option, index) => (
+        <Handle
+          key={option.id}
+          type="source"
+          position={Position.Bottom}
+          id={option.id}
+          style={{
+            left: getHandlePosition(index),
+            background: "#555",
+            width: "12px",
+            height: "12px",
+          }}
+          isConnectable={false}
+        />
+      ))}
+    </div>
   );
 }
