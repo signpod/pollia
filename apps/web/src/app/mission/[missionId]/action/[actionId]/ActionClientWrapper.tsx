@@ -6,6 +6,7 @@ import {
   useActionProgress,
   useActionSubmit,
   type ActionForProgress,
+  type SubmittedAnswerForProgress,
 } from "@/hooks/action";
 import { useReadActionsDetail } from "@/hooks/action/useReadActionsDetail";
 import { useReadMissionResponseForMission } from "@/hooks/mission-response";
@@ -111,7 +112,19 @@ function ActionRenderer({ actions }: ActionRendererProps) {
   } = useActionNavigation({ missionId, actions });
 
   const { data: missionResponse } = useReadMissionResponseForMission({ missionId });
-  const progressInfo = useActionProgress({ actionId: actionData.id, actions });
+
+  const submittedAnswers: SubmittedAnswerForProgress[] | undefined = useMemo(() => {
+    return missionResponse?.data?.answers?.map(answer => ({
+      actionId: answer.actionId,
+      options: answer.options,
+    }));
+  }, [missionResponse?.data?.answers]);
+
+  const progressInfo = useActionProgress({
+    actionId: actionData.id,
+    actions,
+    submittedAnswers,
+  });
 
   const toastStorageKey = `mission-toast-${missionId}`;
   useMissionSurveyToast({
