@@ -62,6 +62,7 @@ function AnswerContent({ answer }: { answer: MyMissionResponseAnswer }) {
     case "MULTIPLE_CHOICE":
     case "TAG":
     case "BRANCH":
+    case "SCALE":
       if (answer.options.length === 0 && !answer.textAnswer) {
         return <span className="text-zinc-400">선택 없음</span>;
       }
@@ -82,8 +83,6 @@ function AnswerContent({ answer }: { answer: MyMissionResponseAnswer }) {
           )}
         </div>
       );
-
-    case "SCALE":
     case "RATING":
       if (answer.scaleAnswer === null) {
         return <span className="text-zinc-400">응답 없음</span>;
