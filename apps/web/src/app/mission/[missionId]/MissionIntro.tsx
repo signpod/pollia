@@ -203,7 +203,7 @@ export function MissionIntro({ children }: MissionIntroProps) {
                           {title}
                         </Typo.MainTitle>
                         {isRequirePassword && (
-                          <Lock className="size-4 text-white inline-block ml-1 align-[0.1em]" />
+                          <Lock className="size-5 text-white inline-block ml-1 align-[0.1em]" />
                         )}
                       </div>
                       {formattedDeadline && (
