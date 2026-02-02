@@ -31,7 +31,7 @@ export function BranchActionNode({ data }: NodeProps<BranchActionNodeType>) {
       )}
     >
       <Handle type="target" position={Position.Top} isConnectable={false} />
-      <CardContent className="p-4">
+      <CardContent className="px-4">
         {isUnreachable && (
           <Badge variant="destructive" className="mb-2">
             🚫 도달 불가

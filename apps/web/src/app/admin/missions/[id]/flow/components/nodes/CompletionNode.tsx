@@ -18,7 +18,7 @@ export function CompletionNode({ data }: NodeProps<CompletionNodeType>) {
   return (
     <Card className="min-w-[200px] border-green-500 bg-green-50">
       <Handle type="target" position={Position.Top} />
-      <CardContent className="p-4">
+      <CardContent className="px-4">
         <div className="flex items-center gap-2">
           <CheckCircle className="size-4 text-green-600" />
           <span className="text-sm font-medium">완료 화면</span>

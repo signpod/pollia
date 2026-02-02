@@ -17,7 +17,7 @@ export function StartNode({ data }: NodeProps<StartNodeType>) {
 
   return (
     <Card className="min-w-[200px]">
-      <CardContent className="p-4">
+      <CardContent className="px-4">
         <div className="flex items-center gap-2 mb-2">
           <Rocket className="size-4" />
           <span className="text-sm font-medium">시작</span>
