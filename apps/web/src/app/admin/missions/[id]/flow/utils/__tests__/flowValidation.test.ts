@@ -75,8 +75,8 @@ describe("validateFlowGraph - 블랙박스 테스트", () => {
       // Then: missing-entry 오류
       expect(result.isValid).toBe(false);
       expect(result.errors).toHaveLength(1);
-      expect(result.errors[0].type).toBe("missing-entry");
-      expect(result.errors[0].nodeId).toBe("start");
+      expect(result.errors[0]?.type).toBe("missing-entry");
+      expect(result.errors[0]?.nodeId).toBe("start");
     });
 
     it("Start 노드는 있지만 연결이 없으면 missing-entry 오류가 발생해야 한다", () => {
@@ -260,7 +260,7 @@ describe("validateFlowGraph - 블랙박스 테스트", () => {
       // Then: missing-entry 오류
       expect(result.isValid).toBe(false);
       expect(result.errors).toHaveLength(1);
-      expect(result.errors[0].type).toBe("missing-entry");
+      expect(result.errors[0]?.type).toBe("missing-entry");
     });
 
     it("Start 노드만 있는 경우는 missing-entry 오류가 발생해야 한다", () => {
