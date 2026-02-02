@@ -2,46 +2,56 @@
 
 import { useUpdateAction } from "@/app/admin/hooks/action/use-update-action";
 import { useUpdateMission } from "@/app/admin/hooks/mission/use-update-mission";
-import type { FlowNode } from "@/app/admin/missions/[id]/flow/utils/flowTransform";
 import type { ActionOption } from "@prisma/client";
-import type { Connection } from "@xyflow/react";
 import { useCallback } from "react";
 
 export function useFlowConnections(missionId: string) {
   const updateMission = useUpdateMission();
   const updateAction = useUpdateAction();
 
-  const handleStartConnection = useCallback(
-    (connection: Connection) => {
-      if (!connection.target) return;
-
+  const connectStartToAction = useCallback(
+    (targetActionId: string) => {
       updateMission.mutate({
         missionId,
-        data: { entryActionId: connection.target },
+        data: { entryActionId: targetActionId },
       });
     },
     [missionId, updateMission],
   );
 
-  const handleBranchConnection = useCallback(
-    (connection: Connection, sourceNode: FlowNode, isCompletion: boolean) => {
-      if (!connection.target || !connection.source) return;
+  const connectActionToTarget = useCallback(
+    (actionId: string, targetId: string, isCompletion: boolean) => {
+      updateAction.mutate({
+        actionId,
+        missionId,
+        ...(isCompletion
+          ? { nextCompletionId: targetId, nextActionId: null }
+          : { nextActionId: targetId, nextCompletionId: null }),
+      });
+    },
+    [missionId, updateAction],
+  );
 
-      const action = sourceNode.data.action;
-      if (!action) return;
-
-      const updatedOptions = action.options.map((opt: ActionOption) =>
-        opt.id === connection.sourceHandle
+  const connectBranchOptionToTarget = useCallback(
+    (
+      actionId: string,
+      optionId: string,
+      options: ActionOption[],
+      targetId: string,
+      isCompletion: boolean,
+    ) => {
+      const updatedOptions = options.map(opt =>
+        opt.id === optionId
           ? {
               ...opt,
-              nextActionId: isCompletion ? null : connection.target,
-              nextCompletionId: isCompletion ? connection.target : null,
+              nextActionId: isCompletion ? null : targetId,
+              nextCompletionId: isCompletion ? targetId : null,
             }
           : opt,
       );
 
       updateAction.mutate({
-        actionId: connection.source,
+        actionId,
         missionId,
         options: updatedOptions,
       });
@@ -49,25 +59,53 @@ export function useFlowConnections(missionId: string) {
     [missionId, updateAction],
   );
 
-  const handleActionConnection = useCallback(
-    (connection: Connection, isCompletion: boolean) => {
-      if (!connection.target || !connection.source) return;
-
+  const disconnectAction = useCallback(
+    (actionId: string) => {
       updateAction.mutate({
-        actionId: connection.source,
+        actionId,
         missionId,
-        ...(isCompletion
-          ? { nextCompletionId: connection.target, nextActionId: null }
-          : { nextActionId: connection.target, nextCompletionId: null }),
+        nextActionId: null,
+        nextCompletionId: null,
       });
     },
     [missionId, updateAction],
   );
 
+  const disconnectBranchOption = useCallback(
+    (actionId: string, optionId: string, options: ActionOption[]) => {
+      const updatedOptions = options.map(opt =>
+        opt.id === optionId
+          ? {
+              ...opt,
+              nextActionId: null,
+              nextCompletionId: null,
+            }
+          : opt,
+      );
+
+      updateAction.mutate({
+        actionId,
+        missionId,
+        options: updatedOptions,
+      });
+    },
+    [missionId, updateAction],
+  );
+
+  const disconnectStart = useCallback(() => {
+    updateMission.mutate({
+      missionId,
+      data: { entryActionId: null },
+    });
+  }, [missionId, updateMission]);
+
   return {
-    handleStartConnection,
-    handleBranchConnection,
-    handleActionConnection,
+    connectStartToAction,
+    connectActionToTarget,
+    connectBranchOptionToTarget,
+    disconnectAction,
+    disconnectBranchOption,
+    disconnectStart,
   };
 }
 
