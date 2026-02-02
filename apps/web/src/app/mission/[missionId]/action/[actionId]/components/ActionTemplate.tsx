@@ -1,9 +1,9 @@
+import { AdaptiveImage } from "@/components/common/AdaptiveImage";
 import { cleanTiptapHTML, cn } from "@/lib/utils";
 import { ButtonV2, FixedBottomLayout, Typo } from "@repo/ui/components";
 import { TiptapViewer } from "@repo/ui/components/common/TiptapViewer";
 import { ChevronLeftIcon } from "lucide-react";
-import Image from "next/image";
-import { type PropsWithChildren, useEffect, useState } from "react";
+import { type PropsWithChildren, useEffect } from "react";
 import { useActionContext } from "../providers/ActionContext";
 import { useProgressBar } from "../providers/ProgressBarProvider";
 
@@ -123,27 +123,3 @@ function RequiredIndicator({ isRequired }: RequiredIndicatorProps) {
   );
 }
 
-interface AdaptiveImageProps {
-  src: string;
-  alt: string;
-}
-
-function AdaptiveImage({ src, alt }: AdaptiveImageProps) {
-  const [aspectClass, setAspectClass] = useState<"aspect-square" | "aspect-3/2">("aspect-3/2");
-
-  return (
-    <figure className={cn("relative overflow-hidden rounded-sm", aspectClass)}>
-      <Image
-        src={src}
-        alt={alt}
-        fill
-        className="object-cover"
-        onLoad={e => {
-          const img = e.currentTarget;
-          const isPortrait = img.naturalHeight >= img.naturalWidth;
-          setAspectClass(isPortrait ? "aspect-square" : "aspect-3/2");
-        }}
-      />
-    </figure>
-  );
-}
