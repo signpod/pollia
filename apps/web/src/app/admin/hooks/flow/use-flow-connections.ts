@@ -1,13 +1,18 @@
 "use client";
 
-import { useUpdateAction } from "@/app/admin/hooks/action/use-update-action";
+import {
+  connectAction,
+  connectBranchOption,
+  disconnectActionWithCleanup,
+  disconnectBranchOptionWithCleanup,
+} from "@/actions/action";
 import { useUpdateMission } from "@/app/admin/hooks/mission/use-update-mission";
-import type { ActionOption } from "@prisma/client";
 import { useCallback } from "react";
+import { useTransition } from "react";
 
 export function useFlowConnections(missionId: string) {
   const updateMission = useUpdateMission();
-  const updateAction = useUpdateAction();
+  const [isPending, startTransition] = useTransition();
 
   const connectStartToAction = useCallback(
     (targetActionId: string) => {
@@ -21,75 +26,38 @@ export function useFlowConnections(missionId: string) {
 
   const connectActionToTarget = useCallback(
     (actionId: string, targetId: string, isCompletion: boolean) => {
-      updateAction.mutate({
-        actionId,
-        missionId,
-        ...(isCompletion
-          ? { nextCompletionId: targetId, nextActionId: null }
-          : { nextActionId: targetId, nextCompletionId: null }),
+      startTransition(async () => {
+        await connectAction(actionId, targetId, isCompletion, missionId);
       });
     },
-    [missionId, updateAction],
+    [missionId],
   );
 
   const connectBranchOptionToTarget = useCallback(
-    (
-      actionId: string,
-      optionId: string,
-      options: ActionOption[],
-      targetId: string,
-      isCompletion: boolean,
-    ) => {
-      const updatedOptions = options.map(opt =>
-        opt.id === optionId
-          ? {
-              ...opt,
-              nextActionId: isCompletion ? null : targetId,
-              nextCompletionId: isCompletion ? targetId : null,
-            }
-          : opt,
-      );
-
-      updateAction.mutate({
-        actionId,
-        missionId,
-        options: updatedOptions,
+    (actionId: string, optionId: string, targetId: string, isCompletion: boolean) => {
+      startTransition(async () => {
+        await connectBranchOption(actionId, optionId, targetId, isCompletion, missionId);
       });
     },
-    [missionId, updateAction],
+    [missionId],
   );
 
   const disconnectAction = useCallback(
     (actionId: string) => {
-      updateAction.mutate({
-        actionId,
-        missionId,
-        nextActionId: null,
-        nextCompletionId: null,
+      startTransition(async () => {
+        await disconnectActionWithCleanup(actionId, missionId);
       });
     },
-    [missionId, updateAction],
+    [missionId],
   );
 
   const disconnectBranchOption = useCallback(
-    (actionId: string, optionId: string, options: ActionOption[]) => {
-      const updatedOptions = options.map(opt =>
-        opt.id === optionId
-          ? {
-              ...opt,
-              nextActionId: null,
-              nextCompletionId: null,
-            }
-          : opt,
-      );
-
-      updateAction.mutate({
-        actionId,
-        missionId,
-        options: updatedOptions,
+    (actionId: string, optionId: string) => {
+      startTransition(async () => {
+        await disconnectBranchOptionWithCleanup(actionId, optionId, missionId);
       });
     },
-    [missionId, updateAction],
+    [missionId],
   );
 
   const disconnectStart = useCallback(() => {
@@ -106,6 +74,7 @@ export function useFlowConnections(missionId: string) {
     disconnectAction,
     disconnectBranchOption,
     disconnectStart,
+    isPending,
   };
 }
 

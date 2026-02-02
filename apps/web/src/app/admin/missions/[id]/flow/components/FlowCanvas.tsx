@@ -98,10 +98,7 @@ export function FlowCanvas({ missionId }: FlowCanvasProps) {
       if (!sourceNode) return;
 
       if (sourceHandle && sourceNode.type === "branch-action") {
-        const action = sourceNode.data.action;
-        if (action?.options) {
-          connections.disconnectBranchOption(source, sourceHandle, action.options);
-        }
+        connections.disconnectBranchOption(source, sourceHandle);
         return;
       }
 
@@ -117,22 +114,12 @@ export function FlowCanvas({ missionId }: FlowCanvasProps) {
       if (nodeType === "start") {
         connections.connectStartToAction(targetActionId);
       } else if (nodeType === "branch-option" && optionId) {
-        const node = nodesState.find(n => n.id === nodeId) as FlowNode | undefined;
-        const action = node?.data.action;
-        if (action?.options) {
-          connections.connectBranchOptionToTarget(
-            nodeId,
-            optionId,
-            action.options,
-            targetActionId,
-            false,
-          );
-        }
+        connections.connectBranchOptionToTarget(nodeId, optionId, targetActionId, false);
       } else {
         connections.connectActionToTarget(nodeId, targetActionId, false);
       }
     },
-    [selectorState, nodesState, connections],
+    [selectorState, connections],
   );
 
   const handleSelectCompletion = useCallback(
@@ -140,22 +127,12 @@ export function FlowCanvas({ missionId }: FlowCanvasProps) {
       const { nodeId, nodeType, optionId } = selectorState;
 
       if (nodeType === "branch-option" && optionId) {
-        const node = nodesState.find(n => n.id === nodeId) as FlowNode | undefined;
-        const action = node?.data.action;
-        if (action?.options) {
-          connections.connectBranchOptionToTarget(
-            nodeId,
-            optionId,
-            action.options,
-            targetCompletionId,
-            true,
-          );
-        }
+        connections.connectBranchOptionToTarget(nodeId, optionId, targetCompletionId, true);
       } else {
         connections.connectActionToTarget(nodeId, targetCompletionId, true);
       }
     },
-    [selectorState, nodesState, connections],
+    [selectorState, connections],
   );
 
   const connectedNodeIds = useMemo(() => {
