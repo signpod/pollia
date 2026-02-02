@@ -308,7 +308,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
   });
 
   describe("도달 불가능한 노드 (Unreachable)", () => {
-    it("Entry Action과 연결되지 않은 Action은 별도 영역에 배치되어야 한다", () => {
+    it("Entry Action과 연결되지 않은 Action은 그래프에 포함되지 않는다", () => {
       // Given: ActionA는 연결됨, ActionB는 고아 노드
       const actionA = createAction({
         id: "action-a",
@@ -330,16 +330,16 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
       // When
       const result = transformToFlowGraph(data);
 
-      // Then: 모든 노드가 포함되어야 함 (Start, ActionA, Completion, ActionB)
-      expect(result.nodes).toHaveLength(4);
-      expect(result.nodes.map(n => n.id)).toContain("action-b");
+      // Then: 연결된 노드만 포함되어야 함 (Start, ActionA, Completion)
+      expect(result.nodes).toHaveLength(3);
+      expect(result.nodes.map(n => n.id)).not.toContain("action-b");
 
-      // Then: ActionB로 연결되는 엣지는 없어야 함
+      // Then: ActionB로 연결되는 엣지도 없어야 함
       const edgesToB = result.edges.filter(e => e.target === "action-b");
       expect(edgesToB).toHaveLength(0);
     });
 
-    it("연결되지 않은 Completion도 별도 영역에 배치되어야 한다", () => {
+    it("연결되지 않은 Completion은 그래프에 포함되지 않는다", () => {
       // Given: CompletionA는 연결됨, CompletionB는 고아 노드
       const action = createAction({
         id: "action-1",
@@ -358,10 +358,10 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
       // When
       const result = transformToFlowGraph(data);
 
-      // Then: CompletionB도 노드로 포함되어야 함
-      expect(result.nodes.map(n => n.id)).toContain("completion-b");
+      // Then: CompletionB는 포함되지 않아야 함
+      expect(result.nodes.map(n => n.id)).not.toContain("completion-b");
 
-      // Then: CompletionB로 연결되는 엣지는 없어야 함
+      // Then: CompletionB로 연결되는 엣지도 없어야 함
       const edgesToB = result.edges.filter(e => e.target === "completion-b");
       expect(edgesToB).toHaveLength(0);
     });
