@@ -5,22 +5,27 @@ import { cn } from "@/app/admin/lib/utils";
 import type { Action, ActionOption } from "@prisma/client";
 import { Handle, Position } from "@xyflow/react";
 import type { Node, NodeProps } from "@xyflow/react";
+import { PlusButton } from "../PlusButton";
 
 type ActionNodeData = {
   action?: Action & { options: ActionOption[] };
   isUnreachable?: boolean;
   isDeadEnd?: boolean;
+  onPlusClick?: () => void;
+  onNodeClick?: () => void;
 };
 
 export type ActionNodeType = Node<ActionNodeData, "action">;
 
 export function ActionNode({ data }: NodeProps<ActionNodeType>) {
-  const { action, isUnreachable, isDeadEnd } = data;
+  const { action, isUnreachable, isDeadEnd, onPlusClick, onNodeClick } = data;
 
   if (!action) return null;
 
   const config = ACTION_TYPE_CONFIGS.find(c => c.value === action.type);
   const Icon = config?.icon;
+
+  const hasConnection = action.nextActionId || action.nextCompletionId;
 
   return (
     <Card
@@ -28,9 +33,11 @@ export function ActionNode({ data }: NodeProps<ActionNodeType>) {
         "min-w-[250px]",
         isUnreachable && "opacity-50 grayscale",
         isDeadEnd && "border-red-500",
+        onNodeClick && hasConnection && "cursor-pointer hover:border-primary",
       )}
+      onClick={hasConnection ? onNodeClick : undefined}
     >
-      <Handle type="target" position={Position.Top} />
+      <Handle type="target" position={Position.Top} isConnectable={false} />
       <CardContent className="p-4">
         {isUnreachable && (
           <Badge variant="destructive" className="mb-2">
@@ -43,8 +50,14 @@ export function ActionNode({ data }: NodeProps<ActionNodeType>) {
         </div>
         <p className="text-sm line-clamp-2">{action.title}</p>
         {isDeadEnd && <p className="text-xs text-destructive mt-2">⚠️ 다음 단계 미설정</p>}
+
+        {!hasConnection && onPlusClick && (
+          <div className="flex justify-center mt-3">
+            <PlusButton onOpenSelector={onPlusClick} />
+          </div>
+        )}
       </CardContent>
-      <Handle type="source" position={Position.Bottom} />
+      <Handle type="source" position={Position.Bottom} isConnectable={false} />
     </Card>
   );
 }
