@@ -1,6 +1,7 @@
 "use client";
 
 import type { MyMissionResponse, MyMissionResponseAnswer } from "@/types/dto/mission-response";
+import { ActionType } from "@prisma/client";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Typo } from "@repo/ui/components";
 import { AnimatePresence, motion } from "framer-motion";
@@ -8,6 +9,7 @@ import {
   CalendarIcon,
   CheckSquareIcon,
   FileTextIcon,
+  GitBranchIcon,
   ImageIcon,
   MessageSquareIcon,
   StarIcon,
@@ -23,19 +25,6 @@ interface AnswerDetailModalProps {
   response: MyMissionResponse;
 }
 
-type ActionType =
-  | "MULTIPLE_CHOICE"
-  | "SCALE"
-  | "RATING"
-  | "TAG"
-  | "SUBJECTIVE"
-  | "SHORT_TEXT"
-  | "IMAGE"
-  | "VIDEO"
-  | "PDF"
-  | "DATE"
-  | "TIME";
-
 const ACTION_TYPE_CONFIG: Record<ActionType, { icon: React.ReactNode; label: string }> = {
   MULTIPLE_CHOICE: { icon: <CheckSquareIcon className="h-4 w-4" />, label: "객관식" },
   TAG: { icon: <TagIcon className="h-4 w-4" />, label: "태그" },
@@ -48,6 +37,7 @@ const ACTION_TYPE_CONFIG: Record<ActionType, { icon: React.ReactNode; label: str
   PDF: { icon: <FileTextIcon className="h-4 w-4" />, label: "PDF" },
   DATE: { icon: <CalendarIcon className="h-4 w-4" />, label: "날짜" },
   TIME: { icon: <CalendarIcon className="h-4 w-4" />, label: "시간" },
+  BRANCH: { icon: <GitBranchIcon className="h-4 w-4" />, label: "분기" },
 };
 
 function formatDate(date: Date): string {
@@ -71,6 +61,7 @@ function AnswerContent({ answer }: { answer: MyMissionResponseAnswer }) {
   switch (actionType) {
     case "MULTIPLE_CHOICE":
     case "TAG":
+    case "BRANCH":
       if (answer.options.length === 0 && !answer.textAnswer) {
         return <span className="text-zinc-400">선택 없음</span>;
       }
