@@ -15,10 +15,15 @@ import { useUpdateMission } from "@/app/admin/hooks/mission/use-update-mission";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { useTransition } from "react";
+import { toast } from "sonner";
 
 export function useFlowConnections(missionId: string) {
   const queryClient = useQueryClient();
-  const updateMission = useUpdateMission();
+  const updateMission = useUpdateMission({
+    onError: error => {
+      toast.error(error.message || "미션 수정 중 오류가 발생했습니다");
+    },
+  });
   const [isPending, startTransition] = useTransition();
 
   const invalidateFlowQueries = useCallback(async () => {
@@ -44,8 +49,14 @@ export function useFlowConnections(missionId: string) {
   const connectActionToTarget = useCallback(
     (actionId: string, targetId: string, isCompletion: boolean) => {
       startTransition(async () => {
-        await connectAction(actionId, targetId, isCompletion, missionId);
-        await invalidateFlowQueries();
+        try {
+          await connectAction(actionId, targetId, isCompletion, missionId);
+          await invalidateFlowQueries();
+          toast.success("액션이 연결되었습니다");
+        } catch (error) {
+          console.error("액션 연결 실패:", error);
+          toast.error(error instanceof Error ? error.message : "액션 연결 중 오류가 발생했습니다");
+        }
       });
     },
     [missionId, invalidateFlowQueries],
@@ -54,8 +65,16 @@ export function useFlowConnections(missionId: string) {
   const connectBranchOptionToTarget = useCallback(
     (actionId: string, optionId: string, targetId: string, isCompletion: boolean) => {
       startTransition(async () => {
-        await connectBranchOption(actionId, optionId, targetId, isCompletion, missionId);
-        await invalidateFlowQueries();
+        try {
+          await connectBranchOption(actionId, optionId, targetId, isCompletion, missionId);
+          await invalidateFlowQueries();
+          toast.success("브랜치 옵션이 연결되었습니다");
+        } catch (error) {
+          console.error("브랜치 옵션 연결 실패:", error);
+          toast.error(
+            error instanceof Error ? error.message : "브랜치 옵션 연결 중 오류가 발생했습니다",
+          );
+        }
       });
     },
     [missionId, invalidateFlowQueries],
@@ -64,8 +83,16 @@ export function useFlowConnections(missionId: string) {
   const disconnectAction = useCallback(
     (actionId: string) => {
       startTransition(async () => {
-        await disconnectActionWithCleanup(actionId, missionId);
-        await invalidateFlowQueries();
+        try {
+          await disconnectActionWithCleanup(actionId, missionId);
+          await invalidateFlowQueries();
+          toast.success("액션 연결이 해제되었습니다");
+        } catch (error) {
+          console.error("액션 연결 해제 실패:", error);
+          toast.error(
+            error instanceof Error ? error.message : "액션 연결 해제 중 오류가 발생했습니다",
+          );
+        }
       });
     },
     [missionId, invalidateFlowQueries],
@@ -74,8 +101,16 @@ export function useFlowConnections(missionId: string) {
   const disconnectBranchOption = useCallback(
     (actionId: string, optionId: string) => {
       startTransition(async () => {
-        await disconnectBranchOptionWithCleanup(actionId, optionId, missionId);
-        await invalidateFlowQueries();
+        try {
+          await disconnectBranchOptionWithCleanup(actionId, optionId, missionId);
+          await invalidateFlowQueries();
+          toast.success("브랜치 옵션 연결이 해제되었습니다");
+        } catch (error) {
+          console.error("브랜치 옵션 연결 해제 실패:", error);
+          toast.error(
+            error instanceof Error ? error.message : "브랜치 옵션 연결 해제 중 오류가 발생했습니다",
+          );
+        }
       });
     },
     [missionId, invalidateFlowQueries],

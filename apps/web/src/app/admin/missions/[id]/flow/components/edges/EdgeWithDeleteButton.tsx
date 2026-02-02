@@ -27,14 +27,18 @@ export function EdgeWithDeleteButton(props: EdgeProps) {
     targetPosition,
   });
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (
       data &&
       typeof data === "object" &&
       "onDelete" in data &&
       typeof data.onDelete === "function"
     ) {
-      data.onDelete(id);
+      try {
+        await data.onDelete(id);
+      } catch (error) {
+        console.error("엣지 삭제 실패:", error);
+      }
     }
   };
 

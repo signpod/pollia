@@ -83,7 +83,7 @@ export function FlowCanvas({ missionId }: FlowCanvasProps) {
   );
 
   const handleEdgeDelete = useCallback(
-    (edgeId: string) => {
+    async (edgeId: string) => {
       const edge = edgesState.find(e => e.id === edgeId);
       if (!edge) return;
 
