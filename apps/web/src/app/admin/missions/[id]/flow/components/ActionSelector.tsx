@@ -42,7 +42,10 @@ export function ActionSelector({
   const [createActionOpen, setCreateActionOpen] = useState(false);
   const [createCompletionOpen, setCreateCompletionOpen] = useState(false);
 
-  const { availableActions, availableCompletions } = useAvailableNodes(missionId, connectedNodeIds);
+  const { availableActions, availableCompletions, isError } = useAvailableNodes(
+    missionId,
+    connectedNodeIds,
+  );
 
   const nextOrder = useMemo(() => {
     if (availableActions.length === 0) return 0;
@@ -85,7 +88,11 @@ export function ActionSelector({
       <DropdownMenu open={open} onOpenChange={onOpenChange}>
         <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
         <DropdownMenuContent className="w-80 max-h-[400px]">
-          {availableActions.length > 0 && (
+          {isError && (
+            <div className="p-4 text-sm text-destructive">액션 목록을 불러오는데 실패했습니다.</div>
+          )}
+
+          {!isError && availableActions.length > 0 && (
             <>
               <DropdownMenuLabel>기존 액션 선택</DropdownMenuLabel>
               <DropdownMenuGroup>
@@ -103,7 +110,7 @@ export function ActionSelector({
             </>
           )}
 
-          {sourceType !== "start" && availableCompletions.length > 0 && (
+          {!isError && sourceType !== "start" && availableCompletions.length > 0 && (
             <>
               {availableActions.length > 0 && <DropdownMenuSeparator />}
               <DropdownMenuLabel>완료 화면 선택</DropdownMenuLabel>
@@ -121,20 +128,22 @@ export function ActionSelector({
             </>
           )}
 
-          <DropdownMenuSeparator />
+          {!isError && <DropdownMenuSeparator />}
 
-          <DropdownMenuGroup>
-            <DropdownMenuItem onClick={handleCreateAction}>
-              <Plus className="size-4" />
-              <span>새 액션 만들기</span>
-            </DropdownMenuItem>
-            {sourceType !== "start" && (
-              <DropdownMenuItem onClick={handleCreateCompletion}>
+          {!isError && (
+            <DropdownMenuGroup>
+              <DropdownMenuItem onClick={handleCreateAction}>
                 <Plus className="size-4" />
-                <span>새 완료화면 만들기</span>
+                <span>새 액션 만들기</span>
               </DropdownMenuItem>
-            )}
-          </DropdownMenuGroup>
+              {sourceType !== "start" && (
+                <DropdownMenuItem onClick={handleCreateCompletion}>
+                  <Plus className="size-4" />
+                  <span>새 완료화면 만들기</span>
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuGroup>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 

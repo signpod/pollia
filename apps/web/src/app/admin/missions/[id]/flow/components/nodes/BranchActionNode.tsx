@@ -34,7 +34,7 @@ export function BranchActionNode({ data }: NodeProps<BranchActionNodeType>) {
         <CardContent className="px-4">
           {isUnreachable && (
             <Badge variant="destructive" className="mb-2">
-              🚫 도달 불가
+              도달 불가
             </Badge>
           )}
           <div className="flex items-center gap-2 mb-2">
@@ -67,7 +67,7 @@ export function BranchActionNode({ data }: NodeProps<BranchActionNodeType>) {
         })}
       </div>
 
-      {isDeadEnd && <p className="text-xs text-destructive mb-2">⚠️ 다음 단계 미설정</p>}
+      {isDeadEnd && <p className="text-xs text-destructive mb-2">다음 단계 미설정</p>}
 
       {action.options.map((option, index) => (
         <Handle
@@ -75,11 +75,9 @@ export function BranchActionNode({ data }: NodeProps<BranchActionNodeType>) {
           type="source"
           position={Position.Bottom}
           id={option.id}
+          className="!bg-muted-foreground !w-3 !h-3"
           style={{
             left: getHandlePosition(index),
-            background: "#555",
-            width: "12px",
-            height: "12px",
           }}
           isConnectable={false}
         />

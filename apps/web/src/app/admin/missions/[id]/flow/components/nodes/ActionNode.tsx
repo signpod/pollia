@@ -38,7 +38,7 @@ export function ActionNode({ data }: NodeProps<ActionNodeType>) {
       <CardContent className="px-4">
         {isUnreachable && (
           <Badge variant="destructive" className="mb-2">
-            🚫 도달 불가
+            도달 불가
           </Badge>
         )}
         <div className="flex items-center gap-2 mb-2">
@@ -46,7 +46,7 @@ export function ActionNode({ data }: NodeProps<ActionNodeType>) {
           <span className="text-sm font-medium">{config?.label}</span>
         </div>
         <p className="text-sm line-clamp-2">{action.title}</p>
-        {isDeadEnd && <p className="text-xs text-destructive mt-2">⚠️ 다음 단계 미설정</p>}
+        {isDeadEnd && <p className="text-xs text-destructive mt-2">다음 단계 미설정</p>}
 
         {!hasConnection && onPlusClick && (
           <div className="flex justify-center mt-3">

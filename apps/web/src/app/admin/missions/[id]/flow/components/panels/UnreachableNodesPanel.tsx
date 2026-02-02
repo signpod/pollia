@@ -12,9 +12,30 @@ interface UnreachableNodesPanelProps {
 }
 
 export function UnreachableNodesPanel({ missionId, connectedNodeIds }: UnreachableNodesPanelProps) {
-  const { availableActions, availableCompletions } = useAvailableNodes(missionId, connectedNodeIds);
+  const { availableActions, availableCompletions, isError } = useAvailableNodes(
+    missionId,
+    connectedNodeIds,
+  );
 
   const totalUnreachable = availableActions.length + availableCompletions.length;
+
+  if (isError) {
+    return (
+      <div className="absolute left-4 bottom-4 z-10">
+        <Card className="w-[300px]">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <AlertCircle className="size-4 text-destructive" />
+              오류 발생
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">노드 목록을 불러오는데 실패했습니다.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (totalUnreachable === 0) {
     return null;

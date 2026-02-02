@@ -84,6 +84,8 @@ export function FlowCanvas({ missionId }: FlowCanvasProps) {
 
   const handleEdgeDelete = useCallback(
     async (edgeId: string) => {
+      if (connections.isPending) return;
+
       const edge = edgesState.find(e => e.id === edgeId);
       if (!edge) return;
 
@@ -104,7 +106,7 @@ export function FlowCanvas({ missionId }: FlowCanvasProps) {
 
       await connections.disconnectAction(source);
     },
-    [edgesState, nodesState, connections],
+    [connections, edgesState, nodesState],
   );
 
   const handleSelectAction = useCallback(
@@ -238,6 +240,13 @@ export function FlowCanvas({ missionId }: FlowCanvasProps) {
         <Background />
         <Controls />
         <MiniMap />
+        {connections.isPending && (
+          <div className="absolute top-4 right-4 z-10">
+            <div className="bg-primary text-primary-foreground px-3 py-1.5 rounded-md text-sm font-medium shadow-lg">
+              연결 작업 중...
+            </div>
+          </div>
+        )}
         <ErrorSummaryPanel validation={validation} />
         <UnreachableNodesPanel missionId={missionId} connectedNodeIds={connectedNodeIds} />
       </ReactFlow>
