@@ -236,6 +236,17 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
           }),
         ]),
       );
+
+      // Then: Branch option edge들에 priority가 설정되어야 함
+      const option1Edge = result.edges.find(
+        e => e.source === "branch-1" && e.sourceHandle === "option-1",
+      );
+      const option2Edge = result.edges.find(
+        e => e.source === "branch-1" && e.sourceHandle === "option-2",
+      );
+
+      expect(option1Edge?.layoutOptions).toEqual({ "elk.priority": "100" });
+      expect(option2Edge?.layoutOptions).toEqual({ "elk.priority": "0" });
     });
 
     it("Branch의 옵션이 Completion을 가리킬 수 있어야 한다", async () => {
@@ -425,6 +436,185 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
 
       const completionNode = result.nodes.find(n => n.id === "completion-1");
       expect(completionNode?.type).toBe("completion");
+    });
+  });
+
+  describe("Branch Port 기반 수평 정렬", () => {
+    it("Option2만 연결된 경우 다음 노드가 오른쪽에 위치해야 한다", async () => {
+      const branchAction = createAction({
+        id: "branch-1",
+        type: "BRANCH",
+      });
+      const nextAction = createAction({ id: "action-next" });
+      const mission = createMission({ entryActionId: "branch-1" });
+
+      const data: FlowGraphData = {
+        mission,
+        actions: [
+          {
+            ...branchAction,
+            options: [
+              {
+                id: "option-1",
+                title: "Option 1",
+                description: null,
+                imageUrl: null,
+                order: 0,
+                actionId: "branch-1",
+                fileUploadId: null,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                nextActionId: null,
+                nextCompletionId: null,
+              },
+              {
+                id: "option-2",
+                title: "Option 2",
+                description: null,
+                imageUrl: null,
+                order: 1,
+                actionId: "branch-1",
+                fileUploadId: null,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                nextActionId: "action-next",
+                nextCompletionId: null,
+              },
+            ],
+          },
+          { ...nextAction, options: [] },
+        ],
+        completions: [],
+      };
+
+      const result = await transformToFlowGraph(data);
+
+      const branchNode = result.nodes.find(n => n.id === "branch-1");
+      const nextNode = result.nodes.find(n => n.id === "action-next");
+
+      expect(branchNode).toBeDefined();
+      expect(nextNode).toBeDefined();
+
+      expect(nextNode!.position.x).toBeGreaterThan(branchNode!.position.x);
+    });
+
+    it("Option1만 연결된 경우 다음 노드가 왼쪽에 위치해야 한다", async () => {
+      const branchAction = createAction({
+        id: "branch-1",
+        type: "BRANCH",
+      });
+      const nextAction = createAction({ id: "action-next" });
+      const mission = createMission({ entryActionId: "branch-1" });
+
+      const data: FlowGraphData = {
+        mission,
+        actions: [
+          {
+            ...branchAction,
+            options: [
+              {
+                id: "option-1",
+                title: "Option 1",
+                description: null,
+                imageUrl: null,
+                order: 0,
+                actionId: "branch-1",
+                fileUploadId: null,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                nextActionId: "action-next",
+                nextCompletionId: null,
+              },
+              {
+                id: "option-2",
+                title: "Option 2",
+                description: null,
+                imageUrl: null,
+                order: 1,
+                actionId: "branch-1",
+                fileUploadId: null,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                nextActionId: null,
+                nextCompletionId: null,
+              },
+            ],
+          },
+          { ...nextAction, options: [] },
+        ],
+        completions: [],
+      };
+
+      const result = await transformToFlowGraph(data);
+
+      const branchNode = result.nodes.find(n => n.id === "branch-1");
+      const nextNode = result.nodes.find(n => n.id === "action-next");
+
+      expect(branchNode).toBeDefined();
+      expect(nextNode).toBeDefined();
+
+      expect(nextNode!.position.x).toBeLessThanOrEqual(branchNode!.position.x + 50);
+    });
+
+    it("두 Option이 모두 연결된 경우 다음 노드들이 수평으로 분산되어야 한다", async () => {
+      const branchAction = createAction({
+        id: "branch-1",
+        type: "BRANCH",
+      });
+      const actionA = createAction({ id: "action-a" });
+      const actionB = createAction({ id: "action-b" });
+      const mission = createMission({ entryActionId: "branch-1" });
+
+      const data: FlowGraphData = {
+        mission,
+        actions: [
+          {
+            ...branchAction,
+            options: [
+              {
+                id: "option-1",
+                title: "Option 1",
+                description: null,
+                imageUrl: null,
+                order: 0,
+                actionId: "branch-1",
+                fileUploadId: null,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                nextActionId: "action-a",
+                nextCompletionId: null,
+              },
+              {
+                id: "option-2",
+                title: "Option 2",
+                description: null,
+                imageUrl: null,
+                order: 1,
+                actionId: "branch-1",
+                fileUploadId: null,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                nextActionId: "action-b",
+                nextCompletionId: null,
+              },
+            ],
+          },
+          { ...actionA, options: [] },
+          { ...actionB, options: [] },
+        ],
+        completions: [],
+      };
+
+      const result = await transformToFlowGraph(data);
+
+      const nodeA = result.nodes.find(n => n.id === "action-a");
+      const nodeB = result.nodes.find(n => n.id === "action-b");
+
+      expect(nodeA).toBeDefined();
+      expect(nodeB).toBeDefined();
+
+      expect(nodeB!.position.x).toBeGreaterThan(nodeA!.position.x);
+      expect(nodeB!.position.x - nodeA!.position.x).toBeGreaterThanOrEqual(80);
     });
   });
 });

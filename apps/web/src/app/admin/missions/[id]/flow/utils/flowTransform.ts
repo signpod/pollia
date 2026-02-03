@@ -27,6 +27,12 @@ export interface FlowNode extends Node {
   };
 }
 
+export interface FlowEdge extends Edge {
+  layoutOptions?: {
+    "elk.priority"?: string;
+  };
+}
+
 interface NodeToProcess {
   id: string;
 }
@@ -59,15 +65,28 @@ function createCompletionNode(completion: MissionCompletion): FlowNode {
   };
 }
 
-function createEdge(source: string, target: string, sourceHandle?: string): Edge {
+function createEdge(
+  source: string,
+  target: string,
+  sourceHandle?: string,
+  priority?: number,
+): FlowEdge {
   const id = sourceHandle ? `${source}-${sourceHandle}-${target}` : `${source}-${target}`;
 
-  return {
+  const edge: FlowEdge = {
     id,
     source,
     target,
     ...(sourceHandle && { sourceHandle }),
   };
+
+  if (priority !== undefined) {
+    edge.layoutOptions = {
+      "elk.priority": priority.toString(),
+    };
+  }
+
+  return edge;
 }
 
 const elk = new ELK();
@@ -79,10 +98,97 @@ const NODE_SIZES = {
   completion: { width: 400, height: 100 },
 } as const;
 
+interface ElkNode {
+  id: string;
+  x?: number;
+  y?: number;
+  width: number;
+  height: number;
+  ports?: ElkPort[];
+}
+
+interface ElkPort {
+  id: string;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+}
+
+function calculatePortX(
+  node: ElkNode,
+  portId: string,
+  sortedOptions: { id: string; order: number }[],
+): number | null {
+  if (!node.x) return null;
+
+  const portIndex = sortedOptions.findIndex(opt => opt.id === portId);
+  if (portIndex === -1) return null;
+
+  const optionCount = sortedOptions.length;
+  const portPercentage = (100 / (optionCount + 1)) * (portIndex + 1);
+  const portX = node.x + (node.width * portPercentage) / 100;
+
+  return portX;
+}
+
+function adjustNodesForPortAlignment(
+  layoutedGraph: { children?: ElkNode[] },
+  edges: FlowEdge[],
+  originalNodes: FlowNode[],
+): void {
+  if (!layoutedGraph.children) return;
+
+  const portEdges = edges.filter(e => e.sourceHandle);
+
+  portEdges.forEach(edge => {
+    const sourceNode = layoutedGraph.children?.find(n => n.id === edge.source);
+    const targetNode = layoutedGraph.children?.find(n => n.id === edge.target);
+
+    if (!sourceNode || !targetNode || !edge.sourceHandle) return;
+
+    const originalNode = originalNodes.find(n => n.id === edge.source);
+    if (!originalNode || originalNode.type !== "branch-action" || !originalNode.data.action) return;
+
+    const sortedOptions = [...originalNode.data.action.options].sort((a, b) => a.order - b.order);
+    const portX = calculatePortX(sourceNode, edge.sourceHandle, sortedOptions);
+    if (portX === null) return;
+
+    targetNode.x = portX - targetNode.width / 2;
+  });
+
+  const layers = new Map<number, ElkNode[]>();
+  layoutedGraph.children.forEach(node => {
+    if (node.y === undefined) return;
+    const layerNodes = layers.get(node.y) || [];
+    layerNodes.push(node);
+    layers.set(node.y, layerNodes);
+  });
+
+  layers.forEach(layerNodes => {
+    layerNodes.sort((a, b) => (a.x ?? 0) - (b.x ?? 0));
+
+    for (let i = 1; i < layerNodes.length; i++) {
+      const prev = layerNodes[i - 1];
+      const curr = layerNodes[i];
+
+      if (!prev || !curr || prev.x === undefined || curr.x === undefined) continue;
+
+      const prevRight = prev.x + prev.width;
+      const minSpacing = 80;
+      const requiredLeft = prevRight + minSpacing;
+
+      if (curr.x < requiredLeft) {
+        curr.x = requiredLeft;
+      }
+    }
+  });
+}
+
 export async function getLayoutedElements(
   nodes: FlowNode[],
-  edges: Edge[],
-): Promise<{ nodes: FlowNode[]; edges: Edge[] }> {
+  edges: FlowEdge[],
+): Promise<{ nodes: FlowNode[]; edges: FlowEdge[] }> {
   const graph = {
     id: "root",
     layoutOptions: {
@@ -90,23 +196,58 @@ export async function getLayoutedElements(
       "elk.layered.spacing.nodeNodeBetweenLayers": "100",
       "elk.spacing.nodeNode": "80",
       "elk.direction": "DOWN",
+      "elk.layered.considerModelOrder.strategy": "PREFER_EDGES",
+      "elk.layered.crossingMinimization.semiInteractive": "true",
     },
     children: nodes.map(node => {
       const size = NODE_SIZES[node.type as keyof typeof NODE_SIZES] || { width: 400, height: 150 };
-      return {
+      const elkNode: {
+        id: string;
+        width: number;
+        height: number;
+        ports?: Array<{ id: string; layoutOptions: Record<string, string> }>;
+      } = {
         id: node.id,
         width: size.width,
         height: size.height,
       };
+
+      if (node.type === NODE_TYPES.BRANCH_ACTION && node.data.action) {
+        const sortedOptions = [...node.data.action.options].sort((a, b) => a.order - b.order);
+        elkNode.ports = sortedOptions.map((option, index) => ({
+          id: option.id,
+          layoutOptions: {
+            "elk.port.side": "SOUTH",
+            "elk.port.index": index.toString(),
+          },
+        }));
+      }
+
+      return elkNode;
     }),
-    edges: edges.map(edge => ({
-      id: edge.id,
-      sources: [edge.source],
-      targets: [edge.target],
-    })),
+    edges: edges.map(edge => {
+      const elkEdge: {
+        id: string;
+        sources: string[];
+        targets: string[];
+        layoutOptions?: Record<string, string>;
+      } = {
+        id: edge.id,
+        sources: [edge.sourceHandle || edge.source],
+        targets: [edge.target],
+      };
+
+      if (edge.layoutOptions) {
+        elkEdge.layoutOptions = edge.layoutOptions;
+      }
+
+      return elkEdge;
+    }),
   };
 
   const layoutedGraph = await elk.layout(graph);
+
+  adjustNodesForPortAlignment(layoutedGraph, edges, nodes);
 
   const layoutedNodes = nodes.map(node => {
     const layoutedNode = layoutedGraph.children?.find(n => n.id === node.id);
@@ -125,12 +266,13 @@ export async function getLayoutedElements(
 function processBranchOption(
   action: Action & { options: ActionOption[] },
   option: ActionOption,
+  priority: number,
   processedNodes: Set<string>,
   nodeQueue: NodeToProcess[],
-  edges: Edge[],
+  edges: FlowEdge[],
 ): void {
   if (option.nextActionId) {
-    edges.push(createEdge(action.id, option.nextActionId, option.id));
+    edges.push(createEdge(action.id, option.nextActionId, option.id, priority));
 
     if (!processedNodes.has(option.nextActionId)) {
       nodeQueue.push({ id: option.nextActionId });
@@ -138,7 +280,7 @@ function processBranchOption(
   }
 
   if (option.nextCompletionId) {
-    edges.push(createEdge(action.id, option.nextCompletionId, option.id));
+    edges.push(createEdge(action.id, option.nextCompletionId, option.id, priority));
 
     if (!processedNodes.has(option.nextCompletionId)) {
       nodeQueue.push({ id: option.nextCompletionId });
@@ -150,7 +292,7 @@ function processActionConnections(
   action: Action & { options: ActionOption[] },
   processedNodes: Set<string>,
   nodeQueue: NodeToProcess[],
-  edges: Edge[],
+  edges: FlowEdge[],
 ): void {
   if (action.nextActionId) {
     edges.push(createEdge(action.id, action.nextActionId));
@@ -172,11 +314,11 @@ function processActionConnections(
 // Main transformation function
 export async function transformToFlowGraph(data: FlowGraphData): Promise<{
   nodes: FlowNode[];
-  edges: Edge[];
+  edges: FlowEdge[];
 }> {
   const { mission, actions, completions } = data;
   const nodes: FlowNode[] = [];
-  const edges: Edge[] = [];
+  const edges: FlowEdge[] = [];
 
   nodes.push(createStartNode(mission));
 
@@ -207,8 +349,11 @@ export async function transformToFlowGraph(data: FlowGraphData): Promise<{
       const isBranch = action.type === "BRANCH";
       if (isBranch && action.options.length > 0) {
         const sortedOptions = [...action.options].sort((a, b) => a.order - b.order);
+        const maxOrder = Math.max(...sortedOptions.map(o => o.order));
+
         sortedOptions.forEach(option => {
-          processBranchOption(action, option, processedNodes, nodeQueue, edges);
+          const priority = (maxOrder - option.order) * 100;
+          processBranchOption(action, option, priority, processedNodes, nodeQueue, edges);
         });
       } else {
         processActionConnections(action, processedNodes, nodeQueue, edges);
