@@ -26,6 +26,7 @@ export function SurveyQuestionTemplate({
     totalActionCount,
     onPrevious,
     onNext,
+    onPrefetchNext,
     nextButtonText,
     isLoading,
     isNextDisabled,
@@ -78,6 +79,8 @@ export function SurveyQuestionTemplate({
             className="w-full flex"
             disabled={isRequired && isNextDisabled}
             loading={isLoading}
+            onMouseEnter={onPrefetchNext}
+            onFocus={onPrefetchNext}
             onClick={async () => {
               if (onNext instanceof Promise) {
                 await onNext();

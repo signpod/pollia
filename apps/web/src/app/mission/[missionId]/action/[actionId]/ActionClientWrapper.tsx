@@ -1,22 +1,21 @@
 "use client";
 
 import { ExtendedActionStepConfig, createActionSteps } from "@/constants/action";
+import { ROUTES } from "@/constants/routes";
 import {
-  useActionNavigation,
-  useActionProgress,
-  useActionSubmit,
   type ActionForProgress,
   type SubmittedAnswerForProgress,
+  useActionProgress,
 } from "@/hooks/action";
 import { useReadActionsDetail } from "@/hooks/action/useReadActionsDetail";
 import { useReadMissionResponseForMission } from "@/hooks/mission-response";
 import { useMissionSurveyToast } from "@/hooks/mission/useMissionSurveyToast";
 import { setActionNavCookie } from "@/lib/cookie";
-import type { ActionAnswerItem } from "@/types/dto";
-import { StepProvider } from "@repo/ui/components";
+import type { ActionAnswerItem, ActionDetail } from "@/types/dto";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useClientActionSubmit } from "./hooks/useClientActionSubmit";
 import { ActionProvider } from "./providers/ActionContext";
 import {
   ActionDate,
@@ -35,6 +34,21 @@ import {
 
 const SCROLL_OFFSET = 30;
 
+const STEP_COMPONENTS = {
+  MultipleChoice: MultipleChoice,
+  Scale: MissionRatingScale,
+  Subjective: Subjective,
+  ShortText: ShortText,
+  Rating: MissionStarScale,
+  Image: ActionImage,
+  Video: ActionVideo,
+  Tag: ActionTag,
+  Pdf: ActionPdf,
+  Date: ActionDate,
+  Time: ActionTime,
+  Branch: Branch,
+} as const;
+
 interface ActionClientWrapperProps {
   dehydratedState: DehydratedState;
 }
@@ -48,7 +62,11 @@ export function ActionClientWrapper({ dehydratedState }: ActionClientWrapperProp
 }
 
 function ActionContent() {
-  const { missionId, actionId } = useParams<{ missionId: string; actionId: string }>();
+  const { missionId, actionId } = useParams<{
+    missionId: string;
+    actionId: string;
+  }>();
+  const router = useRouter();
   const { data: actions } = useReadActionsDetail(missionId);
 
   useEffect(() => {
@@ -59,57 +77,76 @@ function ActionContent() {
     setActionNavCookie(missionId, actionId);
   }, [actionId, missionId]);
 
+  const navigateToAction = useCallback(
+    (nextActionId: string) => {
+      router.push(ROUTES.ACTION({ missionId, actionId: nextActionId }));
+    },
+    [missionId, router],
+  );
+
+  const navigateToDone = useCallback(
+    (completionId?: string) => {
+      // done 페이지는 서버 렌더링 필요
+      router.push(ROUTES.MISSION_DONE(missionId, completionId));
+    },
+    [missionId, router],
+  );
+
+  const navigateToMission = useCallback(() => {
+    router.push(ROUTES.MISSION(missionId));
+  }, [missionId, router]);
+
   if (!actions.data || actions.data.length === 0) {
     return null;
   }
 
   const steps = createActionSteps({
     actions: actions.data,
-    stepComponents: {
-      MultipleChoice: MultipleChoice,
-      Scale: MissionRatingScale,
-      Subjective: Subjective,
-      ShortText: ShortText,
-      Rating: MissionStarScale,
-      Image: ActionImage,
-      Video: ActionVideo,
-      Tag: ActionTag,
-      Pdf: ActionPdf,
-      Date: ActionDate,
-      Time: ActionTime,
-      Branch: Branch,
-    },
+    stepComponents: STEP_COMPONENTS,
   });
 
-  const initialStep = steps.findIndex(
+  const currentStep = steps.find(
     step => (step as ExtendedActionStepConfig).actionData.id === actionId,
-  );
+  ) as ExtendedActionStepConfig | undefined;
+
+  if (!currentStep) {
+    return null;
+  }
 
   return (
-    <StepProvider syncWithUrl steps={steps} initialStep={initialStep >= 0 ? initialStep : 0}>
-      <ActionRenderer actions={actions.data} />
-    </StepProvider>
+    <ActionRenderer
+      actions={actions.data}
+      currentActionData={currentStep.actionData}
+      steps={steps}
+      missionId={missionId}
+      navigateToAction={navigateToAction}
+      navigateToDone={navigateToDone}
+      navigateToMission={navigateToMission}
+    />
   );
 }
 
 interface ActionRendererProps {
   actions: ActionForProgress[];
+  currentActionData: ActionDetail;
+  steps: ReturnType<typeof createActionSteps>;
+  missionId: string;
+  navigateToAction: (actionId: string) => void;
+  navigateToDone: (completionId?: string) => void;
+  navigateToMission: () => void;
 }
 
-function ActionRenderer({ actions }: ActionRendererProps) {
-  const { missionId } = useParams<{ missionId: string }>();
+function ActionRenderer({
+  actions,
+  currentActionData,
+  steps,
+  missionId,
+  navigateToAction,
+  navigateToDone,
+  navigateToMission,
+}: ActionRendererProps) {
   const [currentAnswer, setCurrentAnswer] = useState<ActionAnswerItem | null>(null);
-
-  const {
-    currentStep,
-    currentStepConfig,
-    goNext,
-    canGoNext,
-    updateStepConfig,
-    isFirstStep,
-    actionData,
-    handlePrevious,
-  } = useActionNavigation({ missionId, actions });
+  const [canGoNext, setCanGoNext] = useState(false);
 
   const { data: missionResponse } = useReadMissionResponseForMission({ missionId });
 
@@ -121,7 +158,7 @@ function ActionRenderer({ actions }: ActionRendererProps) {
   }, [missionResponse?.data?.answers]);
 
   const progressInfo = useActionProgress({
-    actionId: actionData.id,
+    actionId: currentActionData.id,
     actions,
     submittedAnswers,
   });
@@ -133,27 +170,51 @@ function ActionRenderer({ actions }: ActionRendererProps) {
     toastStorageKey,
   });
 
-  const { submit, isSubmitting, isCompleting, isActualLastStep } = useActionSubmit({
+  // 첫 번째 액션인지 확인
+  const isFirstStep = actions[0]?.id === currentActionData.id;
+
+  const { submit, isSubmitting, isActualLastStep } = useClientActionSubmit({
     missionId,
-    actionData,
+    actionData: currentActionData,
     progressInfo,
     currentAnswer,
-    goNext,
+    navigateToAction,
+    navigateToDone,
+    navigateToMission,
   });
 
-  const updateCanGoNext = useCallback(
-    (canGoNextValue: boolean) => {
-      updateStepConfig(currentStep, { canGoNext: canGoNextValue });
-    },
-    [currentStep, updateStepConfig],
-  );
+  const updateCanGoNext = useCallback((value: boolean) => {
+    setCanGoNext(value);
+  }, []);
 
   const handleAnswerChange = useCallback((answer: ActionAnswerItem) => {
     setCurrentAnswer(answer);
   }, []);
 
-  const stepConfig = currentStepConfig as unknown as ExtendedActionStepConfig;
-  const ContentComponent = stepConfig.content;
+  // 이전 버튼 핸들러
+  const handlePrevious = useCallback(() => {
+    if (isFirstStep) {
+      navigateToMission();
+      return;
+    }
+
+    // 현재 액션을 가리키는 이전 액션 찾기
+    const sourceAction = actions.find(
+      action =>
+        action.options.some(option => option.nextActionId === currentActionData.id) ||
+        action.nextActionId === currentActionData.id,
+    );
+
+    if (sourceAction) {
+      navigateToAction(sourceAction.id);
+    }
+  }, [isFirstStep, actions, currentActionData.id, navigateToAction, navigateToMission]);
+
+  // 현재 스텝의 컴포넌트 찾기
+  const currentStep = steps.find(
+    step => (step as ExtendedActionStepConfig).actionData.id === currentActionData.id,
+  ) as ExtendedActionStepConfig;
+  const ContentComponent = currentStep.content;
 
   const contextValue = useMemo(
     () => ({
@@ -162,9 +223,10 @@ function ActionRenderer({ actions }: ActionRendererProps) {
       isFirstAction: isFirstStep,
       onPrevious: handlePrevious,
       onNext: submit,
+      onPrefetchNext: () => {}, // 클라이언트 네비게이션이므로 prefetch 불필요
       nextButtonText: isActualLastStep ? "제출하기" : "다음",
-      isLoading: isSubmitting || isCompleting,
-      isNextDisabled: !canGoNext || isSubmitting || isCompleting,
+      isLoading: isSubmitting,
+      isNextDisabled: !canGoNext || isSubmitting,
       updateCanGoNext,
       onAnswerChange: handleAnswerChange,
       missionResponse: missionResponse?.data ? missionResponse : undefined,
@@ -177,7 +239,6 @@ function ActionRenderer({ actions }: ActionRendererProps) {
       submit,
       isActualLastStep,
       isSubmitting,
-      isCompleting,
       canGoNext,
       updateCanGoNext,
       handleAnswerChange,
@@ -187,7 +248,7 @@ function ActionRenderer({ actions }: ActionRendererProps) {
 
   return (
     <ActionProvider value={contextValue}>
-      <ContentComponent key={actionData.id} actionData={actionData} />
+      <ContentComponent key={currentActionData.id} actionData={currentActionData} />
     </ActionProvider>
   );
 }

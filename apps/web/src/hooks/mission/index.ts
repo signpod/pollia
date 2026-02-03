@@ -12,3 +12,4 @@ export * from "./useSectionScrollSync";
 export * from "./useVerifyMissionPassword";
 export * from "./useSyncMissionToNotion";
 export * from "./useReadMissionNotionPage";
+export * from "./useMissionStart";

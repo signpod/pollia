@@ -106,10 +106,13 @@ function getAllPossibleNextIds(action: ActionForProgress, actions: ActionForProg
   }
 
   if (nextIds.length === 0 && !action.nextCompletionId) {
-    const currentOrder = action.order ?? 0;
-    const nextAction = actions.find(a => (a.order ?? 0) === currentOrder + 1);
-    if (nextAction) {
-      nextIds.push(nextAction.id);
+    const hasOptionCompletion = action.options.some(opt => opt.nextCompletionId);
+    if (!hasOptionCompletion) {
+      const currentOrder = action.order ?? 0;
+      const nextAction = actions.find(a => (a.order ?? 0) === currentOrder + 1);
+      if (nextAction) {
+        nextIds.push(nextAction.id);
+      }
     }
   }
 
