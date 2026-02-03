@@ -15,6 +15,7 @@ import type { ActionAnswerItem, ActionDetail } from "@/types/dto";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useClientActionSubmit } from "./hooks/useClientActionSubmit";
 import { ActionProvider } from "./providers/ActionContext";
 import {
   ActionDate,
@@ -30,7 +31,6 @@ import {
   ShortText,
   Subjective,
 } from "./ui";
-import { useClientActionSubmit } from "./hooks/useClientActionSubmit";
 
 const SCROLL_OFFSET = 30;
 
@@ -62,55 +62,26 @@ export function ActionClientWrapper({ dehydratedState }: ActionClientWrapperProp
 }
 
 function ActionContent() {
-  const { missionId, actionId: initialActionId } = useParams<{
+  const { missionId, actionId } = useParams<{
     missionId: string;
     actionId: string;
   }>();
   const router = useRouter();
   const { data: actions } = useReadActionsDetail(missionId);
 
-  // 클라이언트 상태로 현재 액션 관리
-  const [currentActionId, setCurrentActionId] = useState(initialActionId);
-
-  // 브라우저 뒤로가기/앞으로가기 지원
-  useEffect(() => {
-    const handlePopState = () => {
-      const match = window.location.pathname.match(/\/action\/([^/]+)/);
-      if (match?.[1]) {
-        setCurrentActionId(match[1]);
-      }
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
-
-  // 스크롤 및 쿠키 설정
   useEffect(() => {
     window.scrollTo(0, -SCROLL_OFFSET);
     document.documentElement.scrollTop = -SCROLL_OFFSET;
     document.body.scrollTop = -SCROLL_OFFSET;
 
-    setActionNavCookie(missionId, currentActionId);
+    setActionNavCookie(missionId, actionId);
+  }, [actionId, missionId]);
 
-    // 성능 측정 종료
-    const navStart = sessionStorage.getItem("nav-start");
-    if (navStart) {
-      const duration = Date.now() - Number.parseInt(navStart, 10);
-      console.log(`[Performance] 페이지 전환 시간: ${duration}ms`);
-      sessionStorage.removeItem("nav-start");
-    }
-  }, [currentActionId, missionId]);
-
-  // 클라이언트 네비게이션 (서버 요청 없이 URL만 변경)
   const navigateToAction = useCallback(
     (nextActionId: string) => {
-      sessionStorage.setItem("nav-start", Date.now().toString());
-      const url = ROUTES.ACTION({ missionId, actionId: nextActionId });
-      window.history.pushState(null, "", url);
-      setCurrentActionId(nextActionId);
+      router.push(ROUTES.ACTION({ missionId, actionId: nextActionId }));
     },
-    [missionId],
+    [missionId, router],
   );
 
   const navigateToDone = useCallback(
@@ -135,7 +106,7 @@ function ActionContent() {
   });
 
   const currentStep = steps.find(
-    step => (step as ExtendedActionStepConfig).actionData.id === currentActionId,
+    step => (step as ExtendedActionStepConfig).actionData.id === actionId,
   ) as ExtendedActionStepConfig | undefined;
 
   if (!currentStep) {
