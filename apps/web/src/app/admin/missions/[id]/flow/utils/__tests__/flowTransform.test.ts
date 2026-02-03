@@ -1,5 +1,5 @@
 import type { Action, Mission, MissionCompletion } from "@prisma/client";
-import { transformToFlowGraph } from "../flowTransform";
+import { transformToFlowGraphWithLayout } from "../flowTransform";
 import type { FlowGraphData } from "../flowTransform";
 
 describe("transformToFlowGraph - 블랙박스 테스트", () => {
@@ -61,7 +61,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
   });
 
   describe("빈 플로우", () => {
-    it("Entry Action이 없는 경우, Start 노드만 생성되어야 한다", () => {
+    it("Entry Action이 없는 경우, Start 노드만 생성되어야 한다", async () => {
       // Given: Entry Action이 없는 미션
       const mission = createMission({ entryActionId: null });
       const data: FlowGraphData = {
@@ -71,7 +71,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
       };
 
       // When: 플로우 그래프로 변환
-      const result = transformToFlowGraph(data);
+      const result = await transformToFlowGraphWithLayout(data);
 
       // Then: Start 노드만 있어야 함
       expect(result.nodes).toHaveLength(1);
@@ -83,7 +83,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
   });
 
   describe("단순 선형 플로우", () => {
-    it("Action → Completion 순서로 노드와 엣지가 생성되어야 한다", () => {
+    it("Action → Completion 순서로 노드와 엣지가 생성되어야 한다", async () => {
       // Given: A → Completion 플로우
       const action = createAction({
         id: "action-1",
@@ -99,7 +99,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
       };
 
       // When
-      const result = transformToFlowGraph(data);
+      const result = await transformToFlowGraphWithLayout(data);
 
       // Then: Start, Action, Completion 노드가 생성되어야 함
       expect(result.nodes).toHaveLength(3);
@@ -113,7 +113,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
       ]);
     });
 
-    it("Action → Action → Completion 체인이 올바르게 연결되어야 한다", () => {
+    it("Action → Action → Completion 체인이 올바르게 연결되어야 한다", async () => {
       // Given: A → B → Completion
       const actionA = createAction({
         id: "action-a",
@@ -136,7 +136,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
       };
 
       // When
-      const result = transformToFlowGraph(data);
+      const result = await transformToFlowGraphWithLayout(data);
 
       // Then: 4개 노드 (Start, A, B, Completion)
       expect(result.nodes).toHaveLength(4);
@@ -158,7 +158,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
   });
 
   describe("분기 플로우 (Branch Action)", () => {
-    it("Branch Action의 각 옵션이 서로 다른 타겟으로 연결되어야 한다", () => {
+    it("Branch Action의 각 옵션이 서로 다른 타겟으로 연결되어야 한다", async () => {
       // Given: Branch(opt1→ActionA, opt2→ActionB)
       const branchAction = createAction({
         id: "branch-1",
@@ -209,7 +209,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
       };
 
       // When
-      const result = transformToFlowGraph(data);
+      const result = await transformToFlowGraphWithLayout(data);
 
       // Then: 4개 노드 (Start, Branch, ActionA, ActionB)
       expect(result.nodes).toHaveLength(4);
@@ -236,9 +236,20 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
           }),
         ]),
       );
+
+      // Then: Branch option edge들에 priority가 설정되어야 함
+      const option1Edge = result.edges.find(
+        e => e.source === "branch-1" && e.sourceHandle === "option-1",
+      );
+      const option2Edge = result.edges.find(
+        e => e.source === "branch-1" && e.sourceHandle === "option-2",
+      );
+
+      expect(option1Edge?.layoutOptions).toEqual({ "elk.priority": "100" });
+      expect(option2Edge?.layoutOptions).toEqual({ "elk.priority": "0" });
     });
 
-    it("Branch의 옵션이 Completion을 가리킬 수 있어야 한다", () => {
+    it("Branch의 옵션이 Completion을 가리킬 수 있어야 한다", async () => {
       // Given: Branch(opt1→CompletionA, opt2→CompletionB)
       const branchAction = createAction({
         id: "branch-1",
@@ -287,7 +298,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
       };
 
       // When
-      const result = transformToFlowGraph(data);
+      const result = await transformToFlowGraphWithLayout(data);
 
       // Then: Branch → 두 Completion으로 연결
       expect(result.edges).toEqual(
@@ -308,7 +319,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
   });
 
   describe("도달 불가능한 노드 (Unreachable)", () => {
-    it("Entry Action과 연결되지 않은 Action은 그래프에 포함되지 않는다", () => {
+    it("Entry Action과 연결되지 않은 Action은 그래프에 포함되지 않는다", async () => {
       // Given: ActionA는 연결됨, ActionB는 고아 노드
       const actionA = createAction({
         id: "action-a",
@@ -328,7 +339,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
       };
 
       // When
-      const result = transformToFlowGraph(data);
+      const result = await transformToFlowGraphWithLayout(data);
 
       // Then: 연결된 노드만 포함되어야 함 (Start, ActionA, Completion)
       expect(result.nodes).toHaveLength(3);
@@ -339,7 +350,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
       expect(edgesToB).toHaveLength(0);
     });
 
-    it("연결되지 않은 Completion은 그래프에 포함되지 않는다", () => {
+    it("연결되지 않은 Completion은 그래프에 포함되지 않는다", async () => {
       // Given: CompletionA는 연결됨, CompletionB는 고아 노드
       const action = createAction({
         id: "action-1",
@@ -356,7 +367,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
       };
 
       // When
-      const result = transformToFlowGraph(data);
+      const result = await transformToFlowGraphWithLayout(data);
 
       // Then: CompletionB는 포함되지 않아야 함
       expect(result.nodes.map(n => n.id)).not.toContain("completion-b");
@@ -368,17 +379,17 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
   });
 
   describe("노드 타입 구분", () => {
-    it("Start 노드는 'start' 타입이어야 한다", () => {
+    it("Start 노드는 'start' 타입이어야 한다", async () => {
       const mission = createMission();
       const data: FlowGraphData = { mission, actions: [], completions: [] };
 
-      const result = transformToFlowGraph(data);
+      const result = await transformToFlowGraphWithLayout(data);
 
       const startNode = result.nodes.find(n => n.id === "start");
       expect(startNode?.type).toBe("start");
     });
 
-    it("일반 Action은 'action' 타입이어야 한다", () => {
+    it("일반 Action은 'action' 타입이어야 한다", async () => {
       const action = createAction({ id: "action-1", type: "MULTIPLE_CHOICE" });
       const mission = createMission({ entryActionId: "action-1" });
       const data: FlowGraphData = {
@@ -387,13 +398,13 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
         completions: [],
       };
 
-      const result = transformToFlowGraph(data);
+      const result = await transformToFlowGraphWithLayout(data);
 
       const actionNode = result.nodes.find(n => n.id === "action-1");
       expect(actionNode?.type).toBe("action");
     });
 
-    it("Branch Action은 'branch-action' 타입이어야 한다", () => {
+    it("Branch Action은 'branch-action' 타입이어야 한다", async () => {
       const action = createAction({ id: "branch-1", type: "BRANCH" });
       const mission = createMission({ entryActionId: "branch-1" });
       const data: FlowGraphData = {
@@ -402,13 +413,13 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
         completions: [],
       };
 
-      const result = transformToFlowGraph(data);
+      const result = await transformToFlowGraphWithLayout(data);
 
       const branchNode = result.nodes.find(n => n.id === "branch-1");
       expect(branchNode?.type).toBe("branch-action");
     });
 
-    it("Completion은 'completion' 타입이어야 한다", () => {
+    it("Completion은 'completion' 타입이어야 한다", async () => {
       const action = createAction({
         id: "action-1",
         nextCompletionId: "completion-1",
@@ -421,10 +432,201 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
         completions: [completion],
       };
 
-      const result = transformToFlowGraph(data);
+      const result = await transformToFlowGraphWithLayout(data);
 
       const completionNode = result.nodes.find(n => n.id === "completion-1");
       expect(completionNode?.type).toBe("completion");
+    });
+  });
+
+  describe("Branch Port 기반 수평 정렬", () => {
+    it("Option2만 연결된 경우 다음 노드가 오른쪽에 위치해야 한다", async () => {
+      const branchAction = createAction({
+        id: "branch-1",
+        type: "BRANCH",
+      });
+      const nextAction = createAction({ id: "action-next" });
+      const mission = createMission({ entryActionId: "branch-1" });
+
+      const data: FlowGraphData = {
+        mission,
+        actions: [
+          {
+            ...branchAction,
+            options: [
+              {
+                id: "option-1",
+                title: "Option 1",
+                description: null,
+                imageUrl: null,
+                order: 0,
+                actionId: "branch-1",
+                fileUploadId: null,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                nextActionId: null,
+                nextCompletionId: null,
+              },
+              {
+                id: "option-2",
+                title: "Option 2",
+                description: null,
+                imageUrl: null,
+                order: 1,
+                actionId: "branch-1",
+                fileUploadId: null,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                nextActionId: "action-next",
+                nextCompletionId: null,
+              },
+            ],
+          },
+          { ...nextAction, options: [] },
+        ],
+        completions: [],
+      };
+
+      const result = await transformToFlowGraphWithLayout(data);
+
+      const branchNode = result.nodes.find(n => n.id === "branch-1");
+      const nextNode = result.nodes.find(n => n.id === "action-next");
+
+      expect(branchNode).toBeDefined();
+      expect(nextNode).toBeDefined();
+
+      if (!branchNode || !nextNode) {
+        throw new Error("노드를 찾을 수 없습니다");
+      }
+
+      expect(nextNode.position.x).toBeGreaterThan(branchNode.position.x);
+    });
+
+    it("Option1만 연결된 경우 다음 노드가 왼쪽에 위치해야 한다", async () => {
+      const branchAction = createAction({
+        id: "branch-1",
+        type: "BRANCH",
+      });
+      const nextAction = createAction({ id: "action-next" });
+      const mission = createMission({ entryActionId: "branch-1" });
+
+      const data: FlowGraphData = {
+        mission,
+        actions: [
+          {
+            ...branchAction,
+            options: [
+              {
+                id: "option-1",
+                title: "Option 1",
+                description: null,
+                imageUrl: null,
+                order: 0,
+                actionId: "branch-1",
+                fileUploadId: null,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                nextActionId: "action-next",
+                nextCompletionId: null,
+              },
+              {
+                id: "option-2",
+                title: "Option 2",
+                description: null,
+                imageUrl: null,
+                order: 1,
+                actionId: "branch-1",
+                fileUploadId: null,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                nextActionId: null,
+                nextCompletionId: null,
+              },
+            ],
+          },
+          { ...nextAction, options: [] },
+        ],
+        completions: [],
+      };
+
+      const result = await transformToFlowGraphWithLayout(data);
+
+      const branchNode = result.nodes.find(n => n.id === "branch-1");
+      const nextNode = result.nodes.find(n => n.id === "action-next");
+
+      expect(branchNode).toBeDefined();
+      expect(nextNode).toBeDefined();
+
+      if (!branchNode || !nextNode) {
+        throw new Error("노드를 찾을 수 없습니다");
+      }
+
+      expect(nextNode.position.x).toBeLessThanOrEqual(branchNode.position.x + 50);
+    });
+
+    it("두 Option이 모두 연결된 경우 다음 노드들이 수평으로 분산되어야 한다", async () => {
+      const branchAction = createAction({
+        id: "branch-1",
+        type: "BRANCH",
+      });
+      const actionA = createAction({ id: "action-a" });
+      const actionB = createAction({ id: "action-b" });
+      const mission = createMission({ entryActionId: "branch-1" });
+
+      const data: FlowGraphData = {
+        mission,
+        actions: [
+          {
+            ...branchAction,
+            options: [
+              {
+                id: "option-1",
+                title: "Option 1",
+                description: null,
+                imageUrl: null,
+                order: 0,
+                actionId: "branch-1",
+                fileUploadId: null,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                nextActionId: "action-a",
+                nextCompletionId: null,
+              },
+              {
+                id: "option-2",
+                title: "Option 2",
+                description: null,
+                imageUrl: null,
+                order: 1,
+                actionId: "branch-1",
+                fileUploadId: null,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                nextActionId: "action-b",
+                nextCompletionId: null,
+              },
+            ],
+          },
+          { ...actionA, options: [] },
+          { ...actionB, options: [] },
+        ],
+        completions: [],
+      };
+
+      const result = await transformToFlowGraphWithLayout(data);
+
+      const nodeA = result.nodes.find(n => n.id === "action-a");
+      const nodeB = result.nodes.find(n => n.id === "action-b");
+
+      expect(nodeA).toBeDefined();
+      expect(nodeB).toBeDefined();
+
+      if (!nodeA || !nodeB) {
+        throw new Error("노드를 찾을 수 없습니다");
+      }
+
+      expect(nodeB.position.x).toBeGreaterThan(nodeA.position.x);
+      expect(nodeB.position.x - nodeA.position.x).toBeGreaterThanOrEqual(80);
     });
   });
 });

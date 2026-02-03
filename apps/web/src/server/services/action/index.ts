@@ -517,8 +517,6 @@ export class ActionService {
           await this.actionRepo.updateWithOptions(currentAction.id, {}, cleanedOptions, userId);
         }
       }
-
-      console.log(`액션 연결 해제 및 정리 완료: ${actionId}`);
     } catch (error) {
       logger.error("액션 연결 해제 실패", {
         actionId,
@@ -583,8 +581,6 @@ export class ActionService {
           await this.actionRepo.updateWithOptions(currentAction.id, {}, cleanedOptions, userId);
         }
       }
-
-      console.log(`브랜치 옵션 연결 해제 및 정리 완료: ${actionId} - ${optionId}`);
     } catch (error) {
       logger.error("브랜치 옵션 연결 해제 실패", {
         actionId,
@@ -621,10 +617,6 @@ export class ActionService {
           nextCompletionId: isCompletion ? targetId : null,
         },
         userId,
-      );
-
-      console.log(
-        `액션 연결 완료: ${sourceActionId} -> ${targetId} (${isCompletion ? "완료화면" : "액션"})`,
       );
     } catch (error) {
       logger.error("액션 연결 실패", {
@@ -667,10 +659,6 @@ export class ActionService {
       );
 
       await this.actionRepo.updateWithOptions(actionId, {}, updatedOptions, userId);
-
-      console.log(
-        `브랜치 옵션 연결 완료: ${actionId}/${optionId} -> ${targetId} (${isCompletion ? "완료화면" : "액션"})`,
-      );
     } catch (error) {
       logger.error("브랜치 옵션 연결 실패", {
         actionId,

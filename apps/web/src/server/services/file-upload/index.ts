@@ -146,8 +146,6 @@ export class FileUploadService {
     );
     const temporaryOrphanFiles = await this.repo.findTemporaryOlderThan(temporaryCutoffTime);
 
-    console.log(`TEMPORARY 고아 파일 ${temporaryOrphanFiles.length}개 발견`);
-
     for (const file of temporaryOrphanFiles) {
       const result = await this.deleteFileFromStorageAndDB(supabase, file);
       if (result.success) {
@@ -159,8 +157,6 @@ export class FileUploadService {
 
     const unreferencedFiles = await this.repo.findUnreferencedOlderThan(new Date());
 
-    console.log(`참조 없는 고아 파일 ${unreferencedFiles.length}개 발견`);
-
     for (const file of unreferencedFiles) {
       const result = await this.deleteFileFromStorageAndDB(supabase, file);
       if (result.success) {
@@ -169,8 +165,6 @@ export class FileUploadService {
         failedFiles.push(file.filePath);
       }
     }
-
-    console.log(`고아 파일 정리 완료: 성공 ${deletedFiles.length}개, 실패 ${failedFiles.length}개`);
 
     return {
       deletedCount: deletedFiles.length,
@@ -247,7 +241,6 @@ export class FileUploadService {
       }
 
       await this.repo.delete(file.id);
-      console.log(`고아 파일 삭제 완료: ${file.filePath}`);
       return { success: true };
     } catch (error) {
       console.error(`파일 처리 실패: ${file.filePath}`, error);
