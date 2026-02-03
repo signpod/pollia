@@ -22,7 +22,7 @@ const SURVEY_SUBMIT_MODAL = {
   cancelText: "취소",
 } as const;
 
-function buildCacheAnswerEntry(answer: ActionAnswerItem) {
+function buildCacheAnswerEntry(answer: ActionAnswerItem, actionData: ActionDetail) {
   const base = {
     actionId: answer.actionId,
     action: {
@@ -30,18 +30,24 @@ function buildCacheAnswerEntry(answer: ActionAnswerItem) {
       type: answer.type,
       isRequired: answer.isRequired,
     },
-    options: [] as { id: string }[],
+    options: [] as { id: string; nextActionId?: string | null; nextCompletionId?: string | null }[],
     textAnswer: null as string | null,
     scaleAnswer: null as number | null,
     dateAnswers: [] as Date[],
     fileUploads: [] as { id: string }[],
-    // 다음 액션 정보 저장
     nextActionId: answer.nextActionId,
     nextCompletionId: answer.nextCompletionId,
   };
 
   if ("selectedOptionIds" in answer && answer.selectedOptionIds) {
-    base.options = answer.selectedOptionIds.map(id => ({ id }));
+    base.options = answer.selectedOptionIds.map(id => {
+      const actionOption = actionData.options?.find(opt => opt.id === id);
+      return {
+        id,
+        nextActionId: actionOption?.nextActionId ?? null,
+        nextCompletionId: actionOption?.nextCompletionId ?? null,
+      };
+    });
   }
   if ("textAnswer" in answer && answer.textAnswer) {
     base.textAnswer = answer.textAnswer;
@@ -120,7 +126,7 @@ export function useClientActionSubmit({
         if (!oldData?.data) return oldData;
 
         const existingIndex = oldData.data.answers.findIndex(a => a.actionId === answer.actionId);
-        const newAnswerEntry = buildCacheAnswerEntry(answer);
+        const newAnswerEntry = buildCacheAnswerEntry(answer, actionData);
 
         const updatedAnswers =
           existingIndex >= 0
@@ -143,7 +149,7 @@ export function useClientActionSubmit({
         } as GetMissionResponseResponse;
       });
     },
-    [queryClient, queryKey],
+    [queryClient, queryKey, actionData],
   );
 
   const rollbackCache = useCallback(() => {
