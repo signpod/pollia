@@ -495,7 +495,11 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
       expect(branchNode).toBeDefined();
       expect(nextNode).toBeDefined();
 
-      expect(nextNode!.position.x).toBeGreaterThan(branchNode!.position.x);
+      if (!branchNode || !nextNode) {
+        throw new Error("노드를 찾을 수 없습니다");
+      }
+
+      expect(nextNode.position.x).toBeGreaterThan(branchNode.position.x);
     });
 
     it("Option1만 연결된 경우 다음 노드가 왼쪽에 위치해야 한다", async () => {
@@ -553,7 +557,11 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
       expect(branchNode).toBeDefined();
       expect(nextNode).toBeDefined();
 
-      expect(nextNode!.position.x).toBeLessThanOrEqual(branchNode!.position.x + 50);
+      if (!branchNode || !nextNode) {
+        throw new Error("노드를 찾을 수 없습니다");
+      }
+
+      expect(nextNode.position.x).toBeLessThanOrEqual(branchNode.position.x + 50);
     });
 
     it("두 Option이 모두 연결된 경우 다음 노드들이 수평으로 분산되어야 한다", async () => {
@@ -613,8 +621,12 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
       expect(nodeA).toBeDefined();
       expect(nodeB).toBeDefined();
 
-      expect(nodeB!.position.x).toBeGreaterThan(nodeA!.position.x);
-      expect(nodeB!.position.x - nodeA!.position.x).toBeGreaterThanOrEqual(80);
+      if (!nodeA || !nodeB) {
+        throw new Error("노드를 찾을 수 없습니다");
+      }
+
+      expect(nodeB.position.x).toBeGreaterThan(nodeA.position.x);
+      expect(nodeB.position.x - nodeA.position.x).toBeGreaterThanOrEqual(80);
     });
   });
 });
