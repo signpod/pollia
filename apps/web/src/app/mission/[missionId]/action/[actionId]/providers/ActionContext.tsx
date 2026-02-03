@@ -10,6 +10,7 @@ interface ActionContextValue {
   isFirstAction: boolean;
   onPrevious: () => void;
   onNext: () => void | Promise<void>;
+  onPrefetchNext: () => void;
   nextButtonText: string;
   isLoading: boolean;
   isNextDisabled: boolean;
