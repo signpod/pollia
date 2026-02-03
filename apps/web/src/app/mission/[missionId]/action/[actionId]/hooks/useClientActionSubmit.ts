@@ -35,8 +35,8 @@ function buildCacheAnswerEntry(answer: ActionAnswerItem, actionData: ActionDetai
     scaleAnswer: null as number | null,
     dateAnswers: [] as Date[],
     fileUploads: [] as { id: string }[],
-    nextActionId: answer.nextActionId,
-    nextCompletionId: answer.nextCompletionId,
+    nextActionId: answer.nextActionId ?? actionData.nextActionId ?? null,
+    nextCompletionId: answer.nextCompletionId ?? actionData.nextCompletionId ?? null,
   };
 
   if ("selectedOptionIds" in answer && answer.selectedOptionIds) {
