@@ -35,18 +35,24 @@ export class MissionService {
     const mission = await this.getMission(missionId);
     const currentParticipants = await this.responseRepo.countByMissionId(missionId);
 
+    const isNotStarted = mission.startDate ? mission.startDate > new Date() : false;
     const isDeadlinePassed = mission.deadline ? mission.deadline < new Date() : false;
     const isParticipantLimitReached =
       mission.maxParticipants !== null &&
       mission.maxParticipants > 0 &&
       currentParticipants >= mission.maxParticipants;
 
-    const isClosed = !mission.isActive || isDeadlinePassed || isParticipantLimitReached;
+    const isClosed =
+      !mission.isActive || isNotStarted || isDeadlinePassed || isParticipantLimitReached;
 
     return {
+      mission,
       currentParticipants,
       maxParticipants: mission.maxParticipants,
       isClosed,
+      isNotStarted,
+      isDeadlinePassed,
+      isParticipantLimitReached,
     };
   }
 
