@@ -16,18 +16,6 @@ export function useFlowSelector() {
     nodeType: "start",
   });
 
-  const handlePlusClick = useCallback(
-    (nodeId: string, nodeType: "start" | "action" | "branch-option", optionId?: string) => {
-      setSelectorState({
-        open: true,
-        nodeId,
-        nodeType,
-        optionId,
-      });
-    },
-    [],
-  );
-
   const openSelector = useCallback(
     (nodeId: string, nodeType: "start" | "action" | "branch-option", optionId?: string) => {
       setSelectorState({
@@ -46,9 +34,9 @@ export function useFlowSelector() {
 
   return {
     selectorState,
-    handlePlusClick,
     openSelector,
     closeSelector,
+    handlePlusClick: openSelector,
   };
 }
 

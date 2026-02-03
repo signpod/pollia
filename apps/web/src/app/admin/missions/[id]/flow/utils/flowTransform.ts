@@ -98,6 +98,19 @@ const NODE_SIZES = {
   completion: { width: 400, height: 100 },
 } as const;
 
+const ELK_LAYOUT_CONFIG = {
+  algorithm: "layered",
+  spacing: {
+    nodeNodeBetweenLayers: 100,
+    nodeNode: 80,
+  },
+  direction: "DOWN",
+  considerModelOrder: "PREFER_EDGES",
+  crossingMinimization: "true",
+} as const;
+
+const MIN_NODE_SPACING = 80;
+
 interface ElkNode {
   id: string;
   x?: number;
@@ -120,12 +133,14 @@ function calculatePortX(
   portId: string,
   sortedOptions: { id: string; order: number }[],
 ): number | null {
-  if (!node.x) return null;
+  if (node.x === undefined) return null;
 
   const portIndex = sortedOptions.findIndex(opt => opt.id === portId);
   if (portIndex === -1) return null;
 
   const optionCount = sortedOptions.length;
+  if (optionCount === 0) return null;
+
   const portPercentage = (100 / (optionCount + 1)) * (portIndex + 1);
   const portX = node.x + (node.width * portPercentage) / 100;
 
@@ -175,8 +190,7 @@ function adjustNodesForPortAlignment(
       if (!prev || !curr || prev.x === undefined || curr.x === undefined) continue;
 
       const prevRight = prev.x + prev.width;
-      const minSpacing = 80;
-      const requiredLeft = prevRight + minSpacing;
+      const requiredLeft = prevRight + MIN_NODE_SPACING;
 
       if (curr.x < requiredLeft) {
         curr.x = requiredLeft;
@@ -192,12 +206,13 @@ export async function getLayoutedElements(
   const graph = {
     id: "root",
     layoutOptions: {
-      "elk.algorithm": "layered",
-      "elk.layered.spacing.nodeNodeBetweenLayers": "100",
-      "elk.spacing.nodeNode": "80",
-      "elk.direction": "DOWN",
-      "elk.layered.considerModelOrder.strategy": "PREFER_EDGES",
-      "elk.layered.crossingMinimization.semiInteractive": "true",
+      "elk.algorithm": ELK_LAYOUT_CONFIG.algorithm,
+      "elk.layered.spacing.nodeNodeBetweenLayers":
+        ELK_LAYOUT_CONFIG.spacing.nodeNodeBetweenLayers.toString(),
+      "elk.spacing.nodeNode": ELK_LAYOUT_CONFIG.spacing.nodeNode.toString(),
+      "elk.direction": ELK_LAYOUT_CONFIG.direction,
+      "elk.layered.considerModelOrder.strategy": ELK_LAYOUT_CONFIG.considerModelOrder,
+      "elk.layered.crossingMinimization.semiInteractive": ELK_LAYOUT_CONFIG.crossingMinimization,
     },
     children: nodes.map(node => {
       const size = NODE_SIZES[node.type as keyof typeof NODE_SIZES] || { width: 400, height: 150 };
