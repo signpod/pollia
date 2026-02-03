@@ -6,6 +6,7 @@ model Mission {
   brandLogoUrl     String?         @map("brand_logo_url")
   estimatedMinutes Int?            @map("estimated_minutes")
   deadline         DateTime?
+  startDate        DateTime?       @map("start_date")
   isActive         Boolean         @default(true) @map("is_active")
   maxParticipants  Int?            @map("max_participants")
   creatorId        String          @map("creator_id")
