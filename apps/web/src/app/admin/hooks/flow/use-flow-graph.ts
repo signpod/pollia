@@ -5,12 +5,9 @@ import { useReadCompletions } from "@/app/admin/hooks/mission-completion/use-rea
 import { useReadMission } from "@/app/admin/hooks/mission/use-read-mission";
 import { transformToFlowGraph } from "@/app/admin/missions/[id]/flow/utils/flowTransform";
 import type { Edge, Node } from "@xyflow/react";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
 export function useFlowGraph(missionId: string) {
-  const [nodes, setNodes] = useState<Node[]>([]);
-  const [edges, setEdges] = useState<Edge[]>([]);
-
   const {
     data: missionData,
     isLoading: missionLoading,
@@ -29,25 +26,16 @@ export function useFlowGraph(missionId: string) {
     error: completionsError,
   } = useReadCompletions(missionId);
 
-  useEffect(() => {
-    async function transformGraph() {
-      if (!missionData?.data || !actionsData?.data || !completionsData?.data) {
-        setNodes([]);
-        setEdges([]);
-        return;
-      }
-
-      const result = await transformToFlowGraph({
-        mission: missionData.data,
-        actions: actionsData.data,
-        completions: completionsData.data,
-      });
-
-      setNodes(result.nodes);
-      setEdges(result.edges);
+  const { nodes, edges } = useMemo(() => {
+    if (!missionData?.data || !actionsData?.data || !completionsData?.data) {
+      return { nodes: [] as Node[], edges: [] as Edge[] };
     }
 
-    transformGraph();
+    return transformToFlowGraph({
+      mission: missionData.data,
+      actions: actionsData.data,
+      completions: completionsData.data,
+    });
   }, [missionData, actionsData, completionsData]);
 
   return {

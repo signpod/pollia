@@ -1,5 +1,5 @@
 import type { Action, Mission, MissionCompletion } from "@prisma/client";
-import { transformToFlowGraph } from "../flowTransform";
+import { transformToFlowGraphWithLayout } from "../flowTransform";
 import type { FlowGraphData } from "../flowTransform";
 
 describe("transformToFlowGraph - 블랙박스 테스트", () => {
@@ -71,7 +71,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
       };
 
       // When: 플로우 그래프로 변환
-      const result = await transformToFlowGraph(data);
+      const result = await transformToFlowGraphWithLayout(data);
 
       // Then: Start 노드만 있어야 함
       expect(result.nodes).toHaveLength(1);
@@ -99,7 +99,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
       };
 
       // When
-      const result = await transformToFlowGraph(data);
+      const result = await transformToFlowGraphWithLayout(data);
 
       // Then: Start, Action, Completion 노드가 생성되어야 함
       expect(result.nodes).toHaveLength(3);
@@ -136,7 +136,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
       };
 
       // When
-      const result = await transformToFlowGraph(data);
+      const result = await transformToFlowGraphWithLayout(data);
 
       // Then: 4개 노드 (Start, A, B, Completion)
       expect(result.nodes).toHaveLength(4);
@@ -209,7 +209,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
       };
 
       // When
-      const result = await transformToFlowGraph(data);
+      const result = await transformToFlowGraphWithLayout(data);
 
       // Then: 4개 노드 (Start, Branch, ActionA, ActionB)
       expect(result.nodes).toHaveLength(4);
@@ -298,7 +298,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
       };
 
       // When
-      const result = await transformToFlowGraph(data);
+      const result = await transformToFlowGraphWithLayout(data);
 
       // Then: Branch → 두 Completion으로 연결
       expect(result.edges).toEqual(
@@ -339,7 +339,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
       };
 
       // When
-      const result = await transformToFlowGraph(data);
+      const result = await transformToFlowGraphWithLayout(data);
 
       // Then: 연결된 노드만 포함되어야 함 (Start, ActionA, Completion)
       expect(result.nodes).toHaveLength(3);
@@ -367,7 +367,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
       };
 
       // When
-      const result = await transformToFlowGraph(data);
+      const result = await transformToFlowGraphWithLayout(data);
 
       // Then: CompletionB는 포함되지 않아야 함
       expect(result.nodes.map(n => n.id)).not.toContain("completion-b");
@@ -383,7 +383,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
       const mission = createMission();
       const data: FlowGraphData = { mission, actions: [], completions: [] };
 
-      const result = await transformToFlowGraph(data);
+      const result = await transformToFlowGraphWithLayout(data);
 
       const startNode = result.nodes.find(n => n.id === "start");
       expect(startNode?.type).toBe("start");
@@ -398,7 +398,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
         completions: [],
       };
 
-      const result = await transformToFlowGraph(data);
+      const result = await transformToFlowGraphWithLayout(data);
 
       const actionNode = result.nodes.find(n => n.id === "action-1");
       expect(actionNode?.type).toBe("action");
@@ -413,7 +413,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
         completions: [],
       };
 
-      const result = await transformToFlowGraph(data);
+      const result = await transformToFlowGraphWithLayout(data);
 
       const branchNode = result.nodes.find(n => n.id === "branch-1");
       expect(branchNode?.type).toBe("branch-action");
@@ -432,7 +432,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
         completions: [completion],
       };
 
-      const result = await transformToFlowGraph(data);
+      const result = await transformToFlowGraphWithLayout(data);
 
       const completionNode = result.nodes.find(n => n.id === "completion-1");
       expect(completionNode?.type).toBe("completion");
@@ -487,7 +487,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
         completions: [],
       };
 
-      const result = await transformToFlowGraph(data);
+      const result = await transformToFlowGraphWithLayout(data);
 
       const branchNode = result.nodes.find(n => n.id === "branch-1");
       const nextNode = result.nodes.find(n => n.id === "action-next");
@@ -545,7 +545,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
         completions: [],
       };
 
-      const result = await transformToFlowGraph(data);
+      const result = await transformToFlowGraphWithLayout(data);
 
       const branchNode = result.nodes.find(n => n.id === "branch-1");
       const nextNode = result.nodes.find(n => n.id === "action-next");
@@ -605,7 +605,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
         completions: [],
       };
 
-      const result = await transformToFlowGraph(data);
+      const result = await transformToFlowGraphWithLayout(data);
 
       const nodeA = result.nodes.find(n => n.id === "action-a");
       const nodeB = result.nodes.find(n => n.id === "action-b");

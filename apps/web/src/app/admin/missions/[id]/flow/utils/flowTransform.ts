@@ -311,11 +311,10 @@ function processActionConnections(
   }
 }
 
-// Main transformation function
-export async function transformToFlowGraph(data: FlowGraphData): Promise<{
+function buildFlowGraphStructure(data: FlowGraphData): {
   nodes: FlowNode[];
   edges: FlowEdge[];
-}> {
+} {
   const { mission, actions, completions } = data;
   const nodes: FlowNode[] = [];
   const edges: FlowEdge[] = [];
@@ -365,5 +364,20 @@ export async function transformToFlowGraph(data: FlowGraphData): Promise<{
     }
   }
 
+  return { nodes, edges };
+}
+
+export function transformToFlowGraph(data: FlowGraphData): {
+  nodes: FlowNode[];
+  edges: FlowEdge[];
+} {
+  return buildFlowGraphStructure(data);
+}
+
+export async function transformToFlowGraphWithLayout(data: FlowGraphData): Promise<{
+  nodes: FlowNode[];
+  edges: FlowEdge[];
+}> {
+  const { nodes, edges } = buildFlowGraphStructure(data);
   return getLayoutedElements(nodes, edges);
 }

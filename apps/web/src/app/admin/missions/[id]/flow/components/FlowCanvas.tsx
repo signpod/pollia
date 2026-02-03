@@ -8,7 +8,7 @@ import {
   useEdgesState,
   useNodesState,
 } from "@xyflow/react";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "@xyflow/react/dist/style.css";
 
 import { useFlowConnectionHandler } from "@/app/admin/hooks/flow/use-flow-connection-handler";
@@ -18,6 +18,8 @@ import { useFlowGraph } from "@/app/admin/hooks/flow/use-flow-graph";
 import { useFlowNodeEnrichment } from "@/app/admin/hooks/flow/use-flow-node-enrichment";
 import { useFlowSelector } from "@/app/admin/hooks/flow/use-flow-selector";
 import { useFlowValidation } from "@/app/admin/hooks/flow/use-flow-validation";
+import { getLayoutedElements } from "@/app/admin/missions/[id]/flow/utils/flowTransform";
+import type { Edge, Node } from "@xyflow/react";
 
 import { ActionSelector } from "./ActionSelector";
 import { EdgeWithDeleteButton } from "./edges/EdgeWithDeleteButton";
@@ -44,11 +46,15 @@ interface FlowCanvasProps {
 }
 
 export function FlowCanvas({ missionId }: FlowCanvasProps) {
-  const { nodes, edges, isLoading, error } = useFlowGraph(missionId);
+  const { nodes: rawNodes, edges: rawEdges, isLoading, error } = useFlowGraph(missionId);
   const connections = useFlowConnections(missionId);
 
-  const [nodesState, setNodes, onNodesChange] = useNodesState(nodes);
-  const [edgesState, setEdges, onEdgesChange] = useEdgesState(edges);
+  const [layoutedNodes, setLayoutedNodes] = useState<Node[]>([]);
+  const [layoutedEdges, setLayoutedEdges] = useState<Edge[]>([]);
+  const [isLayouting, setIsLayouting] = useState(false);
+
+  const [nodesState, setNodes, onNodesChange] = useNodesState(layoutedNodes);
+  const [edgesState, setEdges, onEdgesChange] = useEdgesState(layoutedEdges);
 
   const validation = useFlowValidation(nodesState, edgesState);
   const selector = useFlowSelector();
@@ -65,9 +71,44 @@ export function FlowCanvas({ missionId }: FlowCanvasProps) {
   );
 
   useEffect(() => {
-    setNodes(nodes);
-    setEdges(edges);
-  }, [nodes, edges, setNodes, setEdges]);
+    let cancelled = false;
+
+    async function applyLayout() {
+      if (rawNodes.length === 0 && rawEdges.length === 0) {
+        setLayoutedNodes([]);
+        setLayoutedEdges([]);
+        return;
+      }
+
+      setIsLayouting(true);
+
+      try {
+        const layouted = await getLayoutedElements(rawNodes, rawEdges);
+
+        if (!cancelled) {
+          setLayoutedNodes(layouted.nodes);
+          setLayoutedEdges(layouted.edges);
+        }
+      } catch (error) {
+        console.error("레이아웃 적용 실패:", error);
+      } finally {
+        if (!cancelled) {
+          setIsLayouting(false);
+        }
+      }
+    }
+
+    applyLayout();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [rawNodes, rawEdges]);
+
+  useEffect(() => {
+    setNodes(layoutedNodes);
+    setEdges(layoutedEdges);
+  }, [layoutedNodes, layoutedEdges, setNodes, setEdges]);
 
   const connectedNodeIds = useMemo(() => {
     const ids = new Set<string>(["start"]);
@@ -79,10 +120,12 @@ export function FlowCanvas({ missionId }: FlowCanvasProps) {
     return ids;
   }, [nodesState]);
 
-  if (isLoading) {
+  if (isLoading || isLayouting) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p className="text-muted-foreground">플로우를 불러오는 중...</p>
+        <p className="text-muted-foreground">
+          {isLoading ? "플로우를 불러오는 중..." : "레이아웃을 적용하는 중..."}
+        </p>
       </div>
     );
   }
