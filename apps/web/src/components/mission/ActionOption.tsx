@@ -127,9 +127,6 @@ export function SurveyQuestionOption({
         setPreviewUrl("");
       }
     },
-    onProgress: progress => {
-      console.log(`옵션 이미지 업로드 진행률: ${progress.percentage}%`);
-    },
   });
 
   useEffect(() => {
