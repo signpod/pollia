@@ -321,7 +321,6 @@ export function MissionIntro({ children }: MissionIntroProps) {
                   deadline={deadline}
                   showResumeModal={showResumeModal}
                   isCompleted={isCompleted}
-                  hasReward={!!reward}
                   isRequirePassword={isRequirePassword}
                   hasExistingResponse={!!missionResponse}
                   isResuming={isResuming}
