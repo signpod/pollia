@@ -1,10 +1,8 @@
+"use client";
+
 import type { Action, ActionOption, Mission, MissionCompletion } from "@prisma/client";
 import type { Edge, Node } from "@xyflow/react";
-
-// Layout constants
-const VERTICAL_SPACING = 150;
-const HORIZONTAL_SPACING = 300;
-const START_X = 400;
+import ELK from "elkjs/lib/elk.bundled.js";
 
 // Node type constants
 const NODE_TYPES = {
@@ -29,40 +27,34 @@ export interface FlowNode extends Node {
   };
 }
 
-interface NodePosition {
+interface NodeToProcess {
   id: string;
-  x: number;
-  y: number;
 }
 
-function createStartNode(mission: Mission, y: number): FlowNode {
+function createStartNode(mission: Mission): FlowNode {
   return {
     id: NODE_TYPES.START,
     type: NODE_TYPES.START,
-    position: { x: START_X, y },
+    position: { x: 0, y: 0 },
     data: { mission },
   };
 }
 
-function createActionNode(
-  action: Action & { options: ActionOption[] },
-  x: number,
-  y: number,
-): FlowNode {
+function createActionNode(action: Action & { options: ActionOption[] }): FlowNode {
   const isBranch = action.type === "BRANCH";
   return {
     id: action.id,
     type: isBranch ? NODE_TYPES.BRANCH_ACTION : NODE_TYPES.ACTION,
-    position: { x, y },
+    position: { x: 0, y: 0 },
     data: { action },
   };
 }
 
-function createCompletionNode(completion: MissionCompletion, x: number, y: number): FlowNode {
+function createCompletionNode(completion: MissionCompletion): FlowNode {
   return {
     id: completion.id,
     type: NODE_TYPES.COMPLETION,
-    position: { x, y },
+    position: { x: 0, y: 0 },
     data: { completion },
   };
 }
@@ -78,27 +70,70 @@ function createEdge(source: string, target: string, sourceHandle?: string): Edge
   };
 }
 
-function calculateBranchX(baseX: number, optionIndex: number): number {
-  return baseX + (optionIndex === 0 ? -HORIZONTAL_SPACING / 2 : HORIZONTAL_SPACING / 2);
+const elk = new ELK();
+
+const NODE_SIZES = {
+  start: { width: 400, height: 100 },
+  action: { width: 400, height: 150 },
+  "branch-action": { width: 400, height: 300 },
+  completion: { width: 400, height: 100 },
+} as const;
+
+export async function getLayoutedElements(
+  nodes: FlowNode[],
+  edges: Edge[],
+): Promise<{ nodes: FlowNode[]; edges: Edge[] }> {
+  const graph = {
+    id: "root",
+    layoutOptions: {
+      "elk.algorithm": "layered",
+      "elk.layered.spacing.nodeNodeBetweenLayers": "100",
+      "elk.spacing.nodeNode": "80",
+      "elk.direction": "DOWN",
+    },
+    children: nodes.map(node => {
+      const size = NODE_SIZES[node.type as keyof typeof NODE_SIZES] || { width: 400, height: 150 };
+      return {
+        id: node.id,
+        width: size.width,
+        height: size.height,
+      };
+    }),
+    edges: edges.map(edge => ({
+      id: edge.id,
+      sources: [edge.source],
+      targets: [edge.target],
+    })),
+  };
+
+  const layoutedGraph = await elk.layout(graph);
+
+  const layoutedNodes = nodes.map(node => {
+    const layoutedNode = layoutedGraph.children?.find(n => n.id === node.id);
+    return {
+      ...node,
+      position: {
+        x: layoutedNode?.x ?? 0,
+        y: layoutedNode?.y ?? 0,
+      },
+    };
+  });
+
+  return { nodes: layoutedNodes, edges };
 }
 
 function processBranchOption(
   action: Action & { options: ActionOption[] },
   option: ActionOption,
-  optionIndex: number,
-  current: NodePosition,
   processedNodes: Set<string>,
-  nodeQueue: NodePosition[],
+  nodeQueue: NodeToProcess[],
   edges: Edge[],
 ): void {
-  const branchX = calculateBranchX(current.x, optionIndex);
-  const branchY = current.y + VERTICAL_SPACING;
-
   if (option.nextActionId) {
     edges.push(createEdge(action.id, option.nextActionId, option.id));
 
     if (!processedNodes.has(option.nextActionId)) {
-      nodeQueue.push({ id: option.nextActionId, x: branchX, y: branchY });
+      nodeQueue.push({ id: option.nextActionId });
     }
   }
 
@@ -106,27 +141,22 @@ function processBranchOption(
     edges.push(createEdge(action.id, option.nextCompletionId, option.id));
 
     if (!processedNodes.has(option.nextCompletionId)) {
-      nodeQueue.push({ id: option.nextCompletionId, x: branchX, y: branchY });
+      nodeQueue.push({ id: option.nextCompletionId });
     }
   }
 }
 
 function processActionConnections(
   action: Action & { options: ActionOption[] },
-  current: NodePosition,
   processedNodes: Set<string>,
-  nodeQueue: NodePosition[],
+  nodeQueue: NodeToProcess[],
   edges: Edge[],
 ): void {
   if (action.nextActionId) {
     edges.push(createEdge(action.id, action.nextActionId));
 
     if (!processedNodes.has(action.nextActionId)) {
-      nodeQueue.push({
-        id: action.nextActionId,
-        x: current.x,
-        y: current.y + VERTICAL_SPACING,
-      });
+      nodeQueue.push({ id: action.nextActionId });
     }
   }
 
@@ -134,39 +164,31 @@ function processActionConnections(
     edges.push(createEdge(action.id, action.nextCompletionId));
 
     if (!processedNodes.has(action.nextCompletionId)) {
-      nodeQueue.push({
-        id: action.nextCompletionId,
-        x: current.x,
-        y: current.y + VERTICAL_SPACING,
-      });
+      nodeQueue.push({ id: action.nextCompletionId });
     }
   }
 }
 
 // Main transformation function
-export function transformToFlowGraph(data: FlowGraphData): {
+export async function transformToFlowGraph(data: FlowGraphData): Promise<{
   nodes: FlowNode[];
   edges: Edge[];
-} {
+}> {
   const { mission, actions, completions } = data;
   const nodes: FlowNode[] = [];
   const edges: Edge[] = [];
 
-  let currentY = 0;
-
-  nodes.push(createStartNode(mission, currentY));
+  nodes.push(createStartNode(mission));
 
   if (mission.entryActionId) {
     edges.push(createEdge(NODE_TYPES.START, mission.entryActionId));
   }
 
-  currentY += VERTICAL_SPACING;
-
   const processedNodes = new Set<string>();
-  const nodeQueue: NodePosition[] = [];
+  const nodeQueue: NodeToProcess[] = [];
 
   if (mission.entryActionId) {
-    nodeQueue.push({ id: mission.entryActionId, x: START_X, y: currentY });
+    nodeQueue.push({ id: mission.entryActionId });
   }
 
   while (nodeQueue.length > 0) {
@@ -180,23 +202,23 @@ export function transformToFlowGraph(data: FlowGraphData): {
     const completion = completions.find(c => c.id === current.id);
 
     if (action) {
-      nodes.push(createActionNode(action, current.x, current.y));
+      nodes.push(createActionNode(action));
 
       const isBranch = action.type === "BRANCH";
       if (isBranch && action.options.length > 0) {
         const sortedOptions = [...action.options].sort((a, b) => a.order - b.order);
-        sortedOptions.forEach((option, index) => {
-          processBranchOption(action, option, index, current, processedNodes, nodeQueue, edges);
+        sortedOptions.forEach(option => {
+          processBranchOption(action, option, processedNodes, nodeQueue, edges);
         });
       } else {
-        processActionConnections(action, current, processedNodes, nodeQueue, edges);
+        processActionConnections(action, processedNodes, nodeQueue, edges);
       }
     }
 
     if (completion) {
-      nodes.push(createCompletionNode(completion, current.x, current.y));
+      nodes.push(createCompletionNode(completion));
     }
   }
 
-  return { nodes, edges };
+  return getLayoutedElements(nodes, edges);
 }

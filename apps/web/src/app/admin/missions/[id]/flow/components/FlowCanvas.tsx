@@ -63,25 +63,9 @@ export function FlowCanvas({ missionId }: FlowCanvasProps) {
   const validation = useFlowValidation(nodesState, edgesState);
 
   useEffect(() => {
-    setNodes(prevNodes => {
-      const prevNodesMap = new Map(prevNodes.map(n => [n.id, n]));
-
-      return nodes.map(newNode => {
-        const prevNode = prevNodesMap.get(newNode.id);
-        if (prevNode) {
-          return {
-            ...newNode,
-            position: prevNode.position,
-          };
-        }
-        return newNode;
-      });
-    });
-  }, [nodes, setNodes]);
-
-  useEffect(() => {
+    setNodes(nodes);
     setEdges(edges);
-  }, [edges, setEdges]);
+  }, [nodes, edges, setNodes, setEdges]);
 
   const handlePlusClick = useCallback(
     (nodeId: string, nodeType: "start" | "action" | "branch-option", optionId?: string) => {

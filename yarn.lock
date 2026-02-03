@@ -8624,6 +8624,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"elkjs@npm:^0.11.0":
+  version: 0.11.0
+  resolution: "elkjs@npm:0.11.0"
+  checksum: 10c0/e3515eab869facd8c7acbb1d7d8a0f61686ec7ec4b42fd5c86b864216ee48a47f85376565d06f3f18d73b5a2c5de47aec7a4126ff059235d2a90099aee481b21
+  languageName: node
+  linkType: hard
+
 "elliptic@npm:^6.5.3, elliptic@npm:^6.6.1":
   version: 6.6.1
   resolution: "elliptic@npm:6.6.1"
@@ -15777,6 +15784,7 @@ __metadata:
     cmdk: "npm:^1.1.1"
     date-fns: "npm:^4.1.0"
     dotenv-cli: "npm:^10.0.0"
+    elkjs: "npm:^0.11.0"
     embla-carousel-react: "npm:^8.6.0"
     framer-motion: "npm:^12.23.15"
     gsap: "npm:^3.13.0"
