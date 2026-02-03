@@ -184,7 +184,8 @@ export function transformToFlowGraph(data: FlowGraphData): {
 
       const isBranch = action.type === "BRANCH";
       if (isBranch && action.options.length > 0) {
-        action.options.forEach((option, index) => {
+        const sortedOptions = [...action.options].sort((a, b) => a.order - b.order);
+        sortedOptions.forEach((option, index) => {
           processBranchOption(action, option, index, current, processedNodes, nodeQueue, edges);
         });
       } else {

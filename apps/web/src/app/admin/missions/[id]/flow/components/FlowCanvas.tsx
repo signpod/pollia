@@ -63,7 +63,20 @@ export function FlowCanvas({ missionId }: FlowCanvasProps) {
   const validation = useFlowValidation(nodesState, edgesState);
 
   useEffect(() => {
-    setNodes(nodes);
+    setNodes(prevNodes => {
+      const prevNodesMap = new Map(prevNodes.map(n => [n.id, n]));
+
+      return nodes.map(newNode => {
+        const prevNode = prevNodesMap.get(newNode.id);
+        if (prevNode) {
+          return {
+            ...newNode,
+            position: prevNode.position,
+          };
+        }
+        return newNode;
+      });
+    });
   }, [nodes, setNodes]);
 
   useEffect(() => {
