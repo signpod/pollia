@@ -166,6 +166,7 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
           description="미션의 시작일을 설정합니다."
           datePlaceholder="시작일 선택"
           isOptional
+          supportNull
         />
 
         <DateTimeField
@@ -175,6 +176,7 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
           description="미션의 마감일을 설정합니다."
           datePlaceholder="마감일 선택"
           isOptional
+          supportNull
         />
       </CardContent>
     </Card>
