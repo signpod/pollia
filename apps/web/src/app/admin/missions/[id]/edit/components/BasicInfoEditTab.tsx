@@ -209,11 +209,22 @@ function BasicInfoCard({ form }: BasicInfoCardProps) {
 
         <DateTimeField
           control={form.control}
+          name="startDate"
+          label="시작일"
+          description="미션의 시작일을 설정합니다."
+          datePlaceholder="시작일 선택"
+          isOptional
+          supportNull
+        />
+
+        <DateTimeField
+          control={form.control}
           name="deadline"
           label="마감일"
           description="미션의 마감일을 설정합니다."
           datePlaceholder="마감일 선택"
           isOptional
+          supportNull
         />
       </CardContent>
     </Card>
@@ -298,6 +309,7 @@ function useBasicInfoForm(mission: MissionData) {
     imageUrl: mission.imageUrl ?? undefined,
     brandLogoUrl: mission.brandLogoUrl ?? undefined,
     estimatedMinutes: mission.estimatedMinutes ?? undefined,
+    startDate: mission.startDate ? new Date(mission.startDate) : undefined,
     deadline: mission.deadline ? new Date(mission.deadline) : undefined,
     maxParticipants: mission.maxParticipants ?? null,
     isActive: mission.isActive,

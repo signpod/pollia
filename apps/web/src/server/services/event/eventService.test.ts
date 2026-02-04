@@ -69,6 +69,7 @@ describe("EventService", () => {
             imageUrl: null,
             brandLogoUrl: null,
             estimatedMinutes: null,
+            startDate: null,
             deadline: null,
             isActive: true,
             maxParticipants: null,

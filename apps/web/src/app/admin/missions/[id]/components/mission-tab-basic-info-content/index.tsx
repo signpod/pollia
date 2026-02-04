@@ -148,6 +148,19 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
 
         <StatCard
           icon={Calendar}
+          iconColor="text-green-600"
+          label="시작일"
+          value={
+            mission.startDate ? (
+              <ClientDateDisplay date={mission.startDate} format="date" />
+            ) : (
+              <span className="text-sm text-muted-foreground">미설정</span>
+            )
+          }
+        />
+
+        <StatCard
+          icon={Calendar}
           iconColor="text-orange-600"
           label="마감일"
           value={

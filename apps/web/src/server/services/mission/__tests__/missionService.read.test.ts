@@ -424,11 +424,15 @@ describe("MissionService - Read", () => {
       const result = await missionService.getMissionWithParticipantInfo("mission-1");
 
       // Then
-      expect(result).toEqual({
+      expect(result).toMatchObject({
         currentParticipants: 45,
         maxParticipants: 100,
         isClosed: false,
+        isNotStarted: false,
+        isDeadlinePassed: false,
+        isParticipantLimitReached: false,
       });
+      expect(result.mission.id).toBe("mission-1");
     });
 
     it("maxParticipants가 null이면 isClosed는 false이다", async () => {
@@ -503,6 +507,65 @@ describe("MissionService - Read", () => {
 
       // Then
       expect(result.isClosed).toBe(true);
+    });
+
+    it("시작일이 미래이면 isClosed는 true이다", async () => {
+      // Given
+      const futureDate = new Date("2030-12-31");
+      const mockMission = createMockMission({
+        id: "mission-1",
+        isActive: true,
+        maxParticipants: 100,
+        startDate: futureDate,
+        deadline: null,
+      });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockResponseRepository.countByMissionId.mockResolvedValue(10);
+
+      // When
+      const result = await missionService.getMissionWithParticipantInfo("mission-1");
+
+      // Then
+      expect(result.isClosed).toBe(true);
+    });
+
+    it("시작일이 과거이면 isClosed는 false이다", async () => {
+      // Given
+      const pastDate = new Date("2020-01-01");
+      const mockMission = createMockMission({
+        id: "mission-1",
+        isActive: true,
+        maxParticipants: 100,
+        startDate: pastDate,
+        deadline: null,
+      });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockResponseRepository.countByMissionId.mockResolvedValue(10);
+
+      // When
+      const result = await missionService.getMissionWithParticipantInfo("mission-1");
+
+      // Then
+      expect(result.isClosed).toBe(false);
+    });
+
+    it("시작일이 null이면 isClosed는 false이다", async () => {
+      // Given
+      const mockMission = createMockMission({
+        id: "mission-1",
+        isActive: true,
+        maxParticipants: 100,
+        startDate: null,
+        deadline: null,
+      });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockResponseRepository.countByMissionId.mockResolvedValue(10);
+
+      // When
+      const result = await missionService.getMissionWithParticipantInfo("mission-1");
+
+      // Then
+      expect(result.isClosed).toBe(false);
     });
 
     it("미션이 없으면 404 에러를 던진다", async () => {

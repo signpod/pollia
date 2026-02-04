@@ -24,9 +24,13 @@ export interface GetUserMissionsOptions {
 }
 
 export interface MissionWithParticipantInfo {
+  mission: Mission;
   currentParticipants: number;
   maxParticipants: number | null;
   isClosed: boolean;
+  isNotStarted: boolean;
+  isDeadlinePassed: boolean;
+  isParticipantLimitReached: boolean;
 }
 
 export interface MissionDuplicateResult

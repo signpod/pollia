@@ -9,6 +9,7 @@ export const createMockMission = (overrides: Partial<Mission> = {}): Mission => 
   imageUrl: null,
   brandLogoUrl: null,
   estimatedMinutes: null,
+  startDate: null,
   deadline: null,
   isActive: true,
   maxParticipants: null,
