@@ -11,8 +11,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Download, Ellipsis, Share2, Upload } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { useMissionShare } from "./hooks";
+import { useImageMenu, useMissionShare } from "./hooks";
 
 interface MissionCompletionProps {
   completionId?: string;
@@ -45,43 +44,10 @@ export function MissionCompletion({ completionId }: MissionCompletionProps) {
     imageUrl,
   });
 
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!isMenuOpen) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setIsMenuOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isMenuOpen]);
-
-  const handleImageSave = async () => {
-    if (!completionImageUrl) return;
-    setIsMenuOpen(false);
-    const response = await fetch(completionImageUrl);
-    const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${completionTitle ?? "image"}.png`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleImageShare = async () => {
-    if (!completionImageUrl) return;
-    setIsMenuOpen(false);
-    const response = await fetch(completionImageUrl);
-    const blob = await response.blob();
-    const file = new File([blob], `${completionTitle ?? "image"}.png`, { type: blob.type });
-    if (navigator.share) {
-      await navigator.share({ files: [file] });
-    }
-  };
+  const { isMenuOpen, menuRef, toggleMenu, handleImageSave, handleImageShare } = useImageMenu({
+    imageUrl: completionImageUrl ?? "",
+    title: completionTitle,
+  });
 
   return (
     <div className="relative flex min-h-svh w-full flex-col items-center bg-white">
@@ -101,7 +67,7 @@ export function MissionCompletion({ completionId }: MissionCompletionProps) {
               <button
                 type="button"
                 className="rounded-xl border border-zinc-100 bg-white p-3"
-                onClick={() => setIsMenuOpen(prev => !prev)}
+                onClick={toggleMenu}
               >
                 <Ellipsis className="size-5 text-zinc-900" />
               </button>
