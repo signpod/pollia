@@ -4,8 +4,9 @@ import { ActionStepContentProps } from "@/constants/action";
 import { cn } from "@/lib/utils";
 import { ButtonV2, Typo } from "@repo/ui/components";
 import { Dialog, DialogPortal } from "@repo/ui/components";
-import { Plus, X } from "lucide-react";
+import { Plus, X, XIcon } from "lucide-react";
 import * as React from "react";
+import { useCallback } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 import { useActionContext } from "../providers/ActionContext";
 import { TimePickerProvider, useTimePicker } from "./TimePickerProvider";
@@ -50,7 +51,7 @@ export function ActionTime({ actionData }: ActionStepContentProps) {
 }
 
 function TimePickerContent({ actionData }: ActionStepContentProps) {
-  const { selectedTimes, removeTime, canGoNext, maxSelections } = useTimePicker();
+  const { selectedTimes, removeTime, maxSelections } = useTimePicker();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
 
   const sortedTimes = React.useMemo(() => {
@@ -67,33 +68,22 @@ function TimePickerContent({ actionData }: ActionStepContentProps) {
       isRequired={actionData.isRequired}
     >
       <div className="flex flex-col gap-3 w-full justify-center items-center">
+        {canAddMore && (
+          <ButtonV2
+            onClick={() => setIsDialogOpen(true)}
+            variant="secondary"
+            size="large"
+            className="hover:ring-0! hover:bg-zinc-50! hover:text-zinc-900! w-full h-[56px]"
+          >
+            <div className="w-full flex items-center justify-center gap-3">
+              <Plus className="size-5" />
+              <Typo.ButtonText size="large">시간 추가</Typo.ButtonText>
+            </div>
+          </ButtonV2>
+        )}
         {sortedTimes.map(time => (
           <SelectedTimeCard key={time} time={time} onRemove={() => removeTime(time)} />
         ))}
-
-        {canAddMore &&
-          (sortedTimes.length > 0 ? (
-            <ButtonV2
-              onClick={() => setIsDialogOpen(true)}
-              variant="tertiary"
-              size="large"
-              className="rounded-full size-12 bg-zinc-50"
-            >
-              <Plus className="size-5" />
-            </ButtonV2>
-          ) : (
-            <ButtonV2
-              onClick={() => setIsDialogOpen(true)}
-              variant="secondary"
-              size="large"
-              className="hover:ring-0! hover:bg-zinc-50! hover:text-zinc-900! w-full"
-            >
-              <div className="w-full flex items-center justify-center gap-3">
-                <Plus className="size-5" />
-                <Typo.Body size="large">시간 추가</Typo.Body>
-              </div>
-            </ButtonV2>
-          ))}
       </div>
 
       <TimeSelectDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} />
@@ -103,12 +93,16 @@ function TimePickerContent({ actionData }: ActionStepContentProps) {
 
 function SelectedTimeCard({ time, onRemove }: { time: string; onRemove: () => void }) {
   return (
-    <div className="flex items-center justify-between p-4 bg-white rounded-sm ring-1 ring-default w-full">
-      <Typo.Body size="large" className="text-zinc-900">
+    <div className="flex items-center justify-center p-4 bg-light rounded-sm w-full relative">
+      <Typo.MainTitle size="small" className="text-zinc-900">
         {formatTimeForDisplay(time)}
-      </Typo.Body>
-      <button type="button" onClick={onRemove} className="p-1">
-        <X className="size-5" />
+      </Typo.MainTitle>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="p-[6px] absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-black"
+      >
+        <X className="size-3 text-white" strokeWidth={4} />
       </button>
     </div>
   );
@@ -152,9 +146,9 @@ function TimeSelectDialog({ open, onOpenChange }: TimeSelectDialogProps) {
     onOpenChange(false);
   };
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     onOpenChange(false);
-  };
+  }, [onOpenChange]);
 
   React.useEffect(() => {
     if (!open) return;
@@ -167,14 +161,15 @@ function TimeSelectDialog({ open, onOpenChange }: TimeSelectDialogProps) {
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [open]);
+  }, [open, handleClose]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogPortal>
         <div className="fixed inset-0 z-50 flex justify-center">
           <div className="relative w-full max-w-lg">
-            <div
+            <button
+              type="button"
               className={cn(
                 "absolute inset-0 bg-black/80",
                 "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
@@ -188,9 +183,16 @@ function TimeSelectDialog({ open, onOpenChange }: TimeSelectDialogProps) {
                 "animate-in slide-in-from-bottom duration-300",
               )}
             >
-              <div className="flex items-center justify-end py-4 px-5">
+              <div className="flex items-center justify-between p-5">
+                <div className="flex items-center gap-1">
+                  <Typo.SubTitle size="large" className="text-violet-500">
+                    {selectedTimes.size}
+                  </Typo.SubTitle>
+                  <Typo.SubTitle size="large">{`/ ${maxSelections} 개 선택`}</Typo.SubTitle>
+                </div>
+
                 <button type="button" onClick={handleClose} className="text-zinc-900">
-                  <Typo.Body size="large">닫기</Typo.Body>
+                  <XIcon className="size-6" />
                 </button>
               </div>
 
@@ -201,7 +203,7 @@ function TimeSelectDialog({ open, onOpenChange }: TimeSelectDialogProps) {
               </div>
 
               <div className="relative px-5 py-4">
-                <div className="absolute inset-x-5 top-1/2 -translate-y-1/2 h-11 bg-zinc-50 rounded-sm pointer-events-none" />
+                <div className="absolute inset-x-5 top-1/2 -translate-y-1/2 h-11 bg-violet-50 rounded-sm pointer-events-none" />
 
                 <div className="relative flex items-center">
                   <div className="flex-1">
@@ -269,7 +271,7 @@ function WheelPicker({ items, value, onChange }: WheelPickerProps) {
       containerRef.current.scrollTop = currentIndex * itemHeight;
       setScrollTop(currentIndex * itemHeight);
     }
-  }, []);
+  }, [currentIndex]);
 
   const snapToNearest = React.useCallback(() => {
     if (!containerRef.current) return;
@@ -400,13 +402,17 @@ function WheelPicker({ items, value, onChange }: WheelPickerProps) {
       <div style={{ height: `${paddingItems * itemHeight}px` }} />
       {items.map((item, index) => {
         const color = getItemColor(index);
+        const isCenter = index === currentIndex;
+
         return (
           <div
             key={item}
             className="flex items-center justify-center"
             style={{ height: `${itemHeight}px`, color }}
           >
-            <Typo.Body size="large">{item}</Typo.Body>
+            <Typo.ButtonText size="large" className={cn(isCenter && "text-violet-500")}>
+              {item}
+            </Typo.ButtonText>
           </div>
         );
       })}
