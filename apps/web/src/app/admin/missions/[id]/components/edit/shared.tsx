@@ -1,8 +1,7 @@
 import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
-import { CharacterCounter, InputField } from "@/app/admin/components/common/InputField";
+import { InputField } from "@/app/admin/components/common/InputField";
 import { NumberField } from "@/app/admin/components/common/NumberField";
 import { SelectField } from "@/app/admin/components/common/SelectField";
-import { TiptapEditor } from "@/app/admin/components/common/TiptapEditor";
 import { TiptapField } from "@/app/admin/components/common/TiptapField";
 import { DateTimeField } from "@/app/admin/components/common/molecule/DateTimeField";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
@@ -354,52 +353,27 @@ export function CompletionCard({ form, completionImageUpload }: CompletionCardPr
           <CardDescription>미션 완료 시 표시될 화면의 제목과 설명을 입력하세요.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="completion-title">
-                제목 <span className="text-destructive">*</span>
-              </Label>
-              <CharacterCounter
-                current={form.watch("title")?.length || 0}
-                max={MISSION_COMPLETION_TITLE_MAX_LENGTH}
-              />
-            </div>
-            <Input
-              id="completion-title"
-              placeholder="예: 미션을 완료하셨습니다!"
-              maxLength={MISSION_COMPLETION_TITLE_MAX_LENGTH}
-              {...form.register("title")}
-            />
-            {form.formState.errors.title && (
-              <p className="text-sm text-destructive">{form.formState.errors.title.message}</p>
-            )}
-          </div>
+          <InputField
+            control={form.control}
+            name="title"
+            label="제목"
+            description="미션 완료 시 표시될 제목을 입력하세요."
+            placeholder="예: 미션을 완료하셨습니다!"
+            maxLength={MISSION_COMPLETION_TITLE_MAX_LENGTH}
+            showCounter
+          />
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="completion-description">
-                설명 <span className="text-destructive">*</span>
-              </Label>
-              <CharacterCounter
-                current={form.watch("description")?.length || 0}
-                max={MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH}
-              />
-            </div>
-            <TiptapEditor
-              content={form.watch("description") || ""}
-              onUpdate={content => {
-                form.setValue("description", content || "", { shouldDirty: true });
-              }}
-              placeholder="완료 화면에 표시될 설명을 입력하세요."
-              showToolbar={true}
-              className="min-h-[200px]"
-            />
-            {form.formState.errors.description && (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.description.message}
-              </p>
-            )}
-          </div>
+          <TiptapField
+            control={form.control}
+            name="description"
+            label="설명"
+            description="완료 화면에 표시될 설명을 입력하세요."
+            placeholder="완료 화면에 표시될 설명을 입력하세요."
+            maxLength={MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH}
+            showCounter
+            showToolbar
+            minHeight="200px"
+          />
         </CardContent>
       </Card>
 
