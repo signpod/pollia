@@ -129,7 +129,6 @@ export function MultipleChoiceForm({
       <form onSubmit={handleSubmit} className="space-y-6">
         <BaseActionFormFields
           control={form.control}
-          watch={form.watch}
           isLoading={isLoading}
           titlePlaceholder="예: 가장 선호하는 옵션을 선택해주세요."
           mainImagePreviewUrl={mainImage.previewUrl}

@@ -56,7 +56,6 @@ export function RatingForm({
       <form onSubmit={handleSubmit} className="space-y-6">
         <BaseActionFormFields
           control={form.control}
-          watch={form.watch}
           isLoading={isLoading}
           titlePlaceholder="예: 이 상품을 평가해주세요."
           mainImagePreviewUrl={mainImage.previewUrl}

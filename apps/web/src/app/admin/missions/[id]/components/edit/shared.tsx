@@ -3,6 +3,7 @@ import { CharacterCounter, InputField } from "@/app/admin/components/common/Inpu
 import { NumberField } from "@/app/admin/components/common/NumberField";
 import { SelectField } from "@/app/admin/components/common/SelectField";
 import { TiptapEditor } from "@/app/admin/components/common/TiptapEditor";
+import { TiptapField } from "@/app/admin/components/common/TiptapField";
 import { DateTimeField } from "@/app/admin/components/common/molecule/DateTimeField";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import {
@@ -110,27 +111,18 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
           ]}
         />
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="description">설명</Label>
-            <CharacterCounter
-              current={form.watch("description")?.length || 0}
-              max={MISSION_DESCRIPTION_MAX_LENGTH}
-            />
-          </div>
-          <TiptapEditor
-            content={form.watch("description") || ""}
-            onUpdate={content => {
-              form.setValue("description", content || undefined, { shouldDirty: true });
-            }}
-            placeholder="미션에 대한 설명을 입력하세요"
-            showToolbar={true}
-            className="min-h-[200px]"
-          />
-          {form.formState.errors.description && (
-            <p className="text-sm text-destructive">{form.formState.errors.description.message}</p>
-          )}
-        </div>
+        <TiptapField
+          control={form.control}
+          name="description"
+          label="설명"
+          description="미션에 대한 설명을 입력하세요."
+          placeholder="미션에 대한 설명을 입력하세요"
+          maxLength={MISSION_DESCRIPTION_MAX_LENGTH}
+          showCounter
+          showToolbar
+          minHeight="200px"
+          isOptional
+        />
 
         <NumberField
           control={form.control}

@@ -99,7 +99,6 @@ export function TagForm({
       <form onSubmit={handleSubmit} className="space-y-6">
         <BaseActionFormFields
           control={form.control}
-          watch={form.watch}
           isLoading={isLoading}
           titlePlaceholder="예: 관심사를 태그로 선택해주세요."
           mainImagePreviewUrl={mainImage.previewUrl}
