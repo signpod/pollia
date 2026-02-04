@@ -1,14 +1,6 @@
 "use client";
 
-import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/app/admin/components/shadcn-ui/card";
-import { Label } from "@/app/admin/components/shadcn-ui/label";
+import { ImageSelectField } from "@/app/admin/components/common/ImageSelectField";
 import { type UploadedImageData, useSingleImage } from "@/app/admin/hooks/admin-image";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import type { UseFormReturn } from "react-hook-form";
@@ -58,48 +50,34 @@ export function ImageCard({ form }: ImageCardProps) {
     form.setValue("brandLogoUrl", undefined);
   };
 
-  const missionImageUrl = missionImageUpload.previewUrl || form.watch("imageUrl");
-  const brandLogoUrl = brandLogoUpload.previewUrl || form.watch("brandLogoUrl");
-
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>이미지</CardTitle>
-        <CardDescription>미션 이미지와 브랜드 로고를 업로드하세요.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="space-y-2">
-          <Label>미션 이미지</Label>
-          <div className="flex flex-col gap-2">
-            <ImageSelector
-              size="large"
-              imageUrl={missionImageUrl || undefined}
-              onImageSelect={missionImageUpload.upload}
-              onImageDelete={handleMissionImageDelete}
-              disabled={missionImageUpload.isUploading}
-            />
-            {missionImageUpload.isUploading && (
-              <p className="text-sm text-muted-foreground">업로드 중...</p>
-            )}
-          </div>
-        </div>
+    <>
+      <ImageSelectField
+        control={form.control}
+        name="imageUrl"
+        label="미션 이미지"
+        description={
+          missionImageUpload.isUploading ? "업로드 중..." : "미션을 대표하는 이미지를 업로드하세요."
+        }
+        onImageSelect={missionImageUpload.upload}
+        onImageDelete={handleMissionImageDelete}
+        disabled={missionImageUpload.isUploading}
+        size="large"
+        isOptional
+      />
 
-        <div className="space-y-2">
-          <Label>브랜드 로고</Label>
-          <div className="flex flex-col gap-2">
-            <ImageSelector
-              size="large"
-              imageUrl={brandLogoUrl || undefined}
-              onImageSelect={brandLogoUpload.upload}
-              onImageDelete={handleBrandLogoDelete}
-              disabled={brandLogoUpload.isUploading}
-            />
-            {brandLogoUpload.isUploading && (
-              <p className="text-sm text-muted-foreground">업로드 중...</p>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+      <ImageSelectField
+        control={form.control}
+        name="brandLogoUrl"
+        label="브랜드 로고"
+        description={
+          brandLogoUpload.isUploading ? "업로드 중..." : "브랜드를 나타내는 로고를 업로드하세요."
+        }
+        onImageSelect={brandLogoUpload.upload}
+        onImageDelete={handleBrandLogoDelete}
+        disabled={brandLogoUpload.isUploading}
+        isOptional
+      />
+    </>
   );
 }

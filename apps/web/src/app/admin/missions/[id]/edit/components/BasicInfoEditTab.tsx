@@ -1,6 +1,6 @@
 "use client";
 
-import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
+import { ImageSelectField } from "@/app/admin/components/common/ImageSelectField";
 import { InputField } from "@/app/admin/components/common/InputField";
 import { NumberField } from "@/app/admin/components/common/NumberField";
 import { SelectField } from "@/app/admin/components/common/SelectField";
@@ -15,7 +15,6 @@ import {
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
 import { Form } from "@/app/admin/components/shadcn-ui/form";
-import { Label } from "@/app/admin/components/shadcn-ui/label";
 import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
 import {
   type UploadedImageData,
@@ -44,10 +43,6 @@ interface BasicInfoEditTabProps {
 
 interface BasicInfoCardProps {
   form: UseFormReturn<MissionUpdate>;
-}
-
-interface ImageCardProps {
-  form: UseFormReturn<MissionUpdate>;
   missionImageUpload: UseSingleImageReturn;
   brandLogoUpload: UseSingleImageReturn;
 }
@@ -74,7 +69,7 @@ function ErrorState() {
   );
 }
 
-function BasicInfoCard({ form }: BasicInfoCardProps) {
+function BasicInfoCard({ form, missionImageUpload, brandLogoUpload }: BasicInfoCardProps) {
   return (
     <Card>
       <CardHeader>
@@ -197,58 +192,44 @@ function BasicInfoCard({ form }: BasicInfoCardProps) {
           isOptional
           supportNull
         />
-      </CardContent>
-    </Card>
-  );
-}
 
-function ImageCard({ form, missionImageUpload, brandLogoUpload }: ImageCardProps) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>이미지</CardTitle>
-        <CardDescription>미션 이미지와 브랜드 로고를 수정하세요.</CardDescription>
-      </CardHeader>
-      <CardContent className="flex gap-10">
-        <div className="space-y-2">
-          <Label>미션 이미지</Label>
-          <div className="flex flex-col gap-2">
-            <ImageSelector
-              size="large"
-              imageUrl={missionImageUpload.previewUrl || undefined}
-              onImageSelect={missionImageUpload.upload}
-              onImageDelete={() => {
-                missionImageUpload.discard();
-                form.setValue("imageUrl", null, { shouldDirty: true });
-                form.setValue("imageFileUploadId", null, { shouldDirty: true });
-              }}
-              disabled={missionImageUpload.isUploading}
-            />
-            {missionImageUpload.isUploading && (
-              <p className="text-sm text-muted-foreground">업로드 중...</p>
-            )}
-          </div>
-        </div>
+        <ImageSelectField
+          control={form.control}
+          name="imageUrl"
+          label="미션 이미지"
+          description={
+            missionImageUpload.isUploading
+              ? "업로드 중..."
+              : "미션을 대표하는 이미지를 업로드하세요."
+          }
+          onImageSelect={missionImageUpload.upload}
+          onImageDelete={() => {
+            missionImageUpload.discard();
+            form.setValue("imageUrl", null, { shouldDirty: true });
+            form.setValue("imageFileUploadId", null, { shouldDirty: true });
+          }}
+          disabled={missionImageUpload.isUploading}
+          size="large"
+          isOptional
+        />
 
-        <div className="space-y-2">
-          <Label>브랜드 로고</Label>
-          <div className="flex flex-col gap-2">
-            <ImageSelector
-              size="large"
-              imageUrl={brandLogoUpload.previewUrl || undefined}
-              onImageSelect={brandLogoUpload.upload}
-              onImageDelete={() => {
-                brandLogoUpload.discard();
-                form.setValue("brandLogoUrl", null, { shouldDirty: true });
-                form.setValue("brandLogoFileUploadId", null, { shouldDirty: true });
-              }}
-              disabled={brandLogoUpload.isUploading}
-            />
-            {brandLogoUpload.isUploading && (
-              <p className="text-sm text-muted-foreground">업로드 중...</p>
-            )}
-          </div>
-        </div>
+        <ImageSelectField
+          control={form.control}
+          name="brandLogoUrl"
+          label="브랜드 로고"
+          description={
+            brandLogoUpload.isUploading ? "업로드 중..." : "브랜드를 나타내는 로고를 업로드하세요."
+          }
+          onImageSelect={brandLogoUpload.upload}
+          onImageDelete={() => {
+            brandLogoUpload.discard();
+            form.setValue("brandLogoUrl", null, { shouldDirty: true });
+            form.setValue("brandLogoFileUploadId", null, { shouldDirty: true });
+          }}
+          disabled={brandLogoUpload.isUploading}
+          size="large"
+          isOptional
+        />
       </CardContent>
     </Card>
   );
@@ -339,8 +320,7 @@ function BasicInfoForm({ mission, missionId }: { mission: MissionData; missionId
   return (
     <Form {...form}>
       <form onSubmit={onSubmit} className="space-y-6">
-        <BasicInfoCard form={form} />
-        <ImageCard form={form} missionImageUpload={missionImage} brandLogoUpload={brandLogo} />
+        <BasicInfoCard form={form} missionImageUpload={missionImage} brandLogoUpload={brandLogo} />
         <ActionButtons
           isPending={updateMission.isPending}
           isDirty={form.formState.isDirty}

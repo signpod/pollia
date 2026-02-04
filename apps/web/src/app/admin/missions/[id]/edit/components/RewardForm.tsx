@@ -1,6 +1,6 @@
 "use client";
 
-import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
+import { ImageSelectField } from "@/app/admin/components/common/ImageSelectField";
 import { DateTimeField } from "@/app/admin/components/common/molecule/DateTimeField";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import {
@@ -12,7 +12,6 @@ import {
   FormMessage,
 } from "@/app/admin/components/shadcn-ui/form";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
-import { Label } from "@/app/admin/components/shadcn-ui/label";
 import {
   Select,
   SelectContent,
@@ -112,25 +111,23 @@ export function RewardForm({ isLoading, onSubmit, onCancel, initialData }: Rewar
           )}
         />
 
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">
-            이미지 <span className="text-muted-foreground">(선택)</span>
-          </Label>
-          <div className="flex items-center gap-3">
-            <ImageSelector
-              size="large"
-              imageUrl={rewardImage.previewUrl || undefined}
-              onImageSelect={rewardImage.upload}
-              onImageDelete={() => {
-                rewardImage.discard();
-                form.setValue("imageUrl", undefined, { shouldDirty: true });
-                form.setValue("imageFileUploadId", undefined, { shouldDirty: true });
-              }}
-              disabled={isFormDisabled}
-            />
-            <p className="text-xs text-muted-foreground">리워드에 표시될 이미지를 선택하세요.</p>
-          </div>
-        </div>
+        <ImageSelectField
+          control={form.control}
+          name="imageUrl"
+          label="이미지"
+          description={
+            rewardImage.isUploading ? "업로드 중..." : "리워드에 표시될 이미지를 선택하세요."
+          }
+          onImageSelect={rewardImage.upload}
+          onImageDelete={() => {
+            rewardImage.discard();
+            form.setValue("imageUrl", undefined, { shouldDirty: true });
+            form.setValue("imageFileUploadId", undefined, { shouldDirty: true });
+          }}
+          disabled={isFormDisabled}
+          size="large"
+          isOptional
+        />
 
         <FormField
           control={form.control}

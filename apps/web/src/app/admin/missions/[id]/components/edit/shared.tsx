@@ -1,4 +1,4 @@
-import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
+import { ImageSelectField } from "@/app/admin/components/common/ImageSelectField";
 import { InputField } from "@/app/admin/components/common/InputField";
 import { NumberField } from "@/app/admin/components/common/NumberField";
 import { SelectField } from "@/app/admin/components/common/SelectField";
@@ -13,7 +13,6 @@ import {
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
-import { Label } from "@/app/admin/components/shadcn-ui/label";
 import type { UseSingleImageReturn } from "@/app/admin/hooks/admin-image";
 import { MISSION_CATEGORY_LABELS, MISSION_TYPE_LABELS } from "@/constants/mission";
 import {
@@ -179,53 +178,41 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
 
 export function ImageCard({ form, missionImageUpload, brandLogoUpload }: ImageCardProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>이미지</CardTitle>
-        <CardDescription>미션 이미지와 브랜드 로고를 수정하세요.</CardDescription>
-      </CardHeader>
-      <CardContent className="flex gap-10">
-        <div className="space-y-2">
-          <Label>미션 이미지</Label>
-          <div className="flex flex-col gap-2">
-            <ImageSelector
-              size="large"
-              imageUrl={missionImageUpload.previewUrl || undefined}
-              onImageSelect={missionImageUpload.upload}
-              onImageDelete={() => {
-                missionImageUpload.discard();
-                form.setValue("imageUrl", null, { shouldDirty: true });
-                form.setValue("imageFileUploadId", null, { shouldDirty: true });
-              }}
-              disabled={missionImageUpload.isUploading}
-            />
-            {missionImageUpload.isUploading && (
-              <p className="text-sm text-muted-foreground">업로드 중...</p>
-            )}
-          </div>
-        </div>
+    <>
+      <ImageSelectField
+        control={form.control}
+        name="imageUrl"
+        label="미션 이미지"
+        description={
+          missionImageUpload.isUploading ? "업로드 중..." : "미션을 대표하는 이미지를 업로드하세요."
+        }
+        onImageSelect={missionImageUpload.upload}
+        onImageDelete={() => {
+          missionImageUpload.discard();
+          form.setValue("imageUrl", null, { shouldDirty: true });
+          form.setValue("imageFileUploadId", null, { shouldDirty: true });
+        }}
+        disabled={missionImageUpload.isUploading}
+        isOptional
+      />
 
-        <div className="space-y-2">
-          <Label>브랜드 로고</Label>
-          <div className="flex flex-col gap-2">
-            <ImageSelector
-              size="large"
-              imageUrl={brandLogoUpload.previewUrl || undefined}
-              onImageSelect={brandLogoUpload.upload}
-              onImageDelete={() => {
-                brandLogoUpload.discard();
-                form.setValue("brandLogoUrl", null, { shouldDirty: true });
-                form.setValue("brandLogoFileUploadId", null, { shouldDirty: true });
-              }}
-              disabled={brandLogoUpload.isUploading}
-            />
-            {brandLogoUpload.isUploading && (
-              <p className="text-sm text-muted-foreground">업로드 중...</p>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+      <ImageSelectField
+        control={form.control}
+        name="brandLogoUrl"
+        label="브랜드 로고"
+        description={
+          brandLogoUpload.isUploading ? "업로드 중..." : "브랜드를 나타내는 로고를 업로드하세요."
+        }
+        onImageSelect={brandLogoUpload.upload}
+        onImageDelete={() => {
+          brandLogoUpload.discard();
+          form.setValue("brandLogoUrl", null, { shouldDirty: true });
+          form.setValue("brandLogoFileUploadId", null, { shouldDirty: true });
+        }}
+        disabled={brandLogoUpload.isUploading}
+        isOptional
+      />
+    </>
   );
 }
 
@@ -374,31 +361,25 @@ export function CompletionCard({ form, completionImageUpload }: CompletionCardPr
             showToolbar
             minHeight="200px"
           />
-        </CardContent>
-      </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>이미지</CardTitle>
-          <CardDescription>완료 화면에 표시될 이미지를 설정하세요. (선택)</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <ImageSelector
-              size="large"
-              imageUrl={completionImageUpload.previewUrl || undefined}
-              onImageSelect={completionImageUpload.upload}
-              onImageDelete={() => {
-                completionImageUpload.discard();
-                form.setValue("imageUrl", undefined, { shouldDirty: true });
-                form.setValue("imageFileUploadId", undefined, { shouldDirty: true });
-              }}
-              disabled={completionImageUpload.isUploading}
-            />
-            {completionImageUpload.isUploading && (
-              <p className="text-sm text-muted-foreground">업로드 중...</p>
-            )}
-          </div>
+          <ImageSelectField
+            control={form.control}
+            name="imageUrl"
+            label="이미지"
+            description={
+              completionImageUpload.isUploading
+                ? "업로드 중..."
+                : "완료 화면에 표시될 이미지를 선택하세요."
+            }
+            onImageSelect={completionImageUpload.upload}
+            onImageDelete={() => {
+              completionImageUpload.discard();
+              form.setValue("imageUrl", undefined, { shouldDirty: true });
+              form.setValue("imageFileUploadId", undefined, { shouldDirty: true });
+            }}
+            disabled={completionImageUpload.isUploading}
+            isOptional
+          />
         </CardContent>
       </Card>
 

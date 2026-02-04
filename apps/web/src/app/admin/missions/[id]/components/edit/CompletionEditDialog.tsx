@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/app/admin/components/shadcn-ui/dialog";
+import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
 import { type UploadedImageData, useSingleImage } from "@/app/admin/hooks/admin-image";
 import {
@@ -105,22 +106,24 @@ function CompletionFormContent({ completion, missionId, onSuccess }: CompletionF
   });
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
-      <CompletionCard form={form} completionImageUpload={completionImageUpload} />
-      <div className="flex justify-end gap-3">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleReset}
-          disabled={isPending || !form.formState.isDirty}
-        >
-          <RotateCcw className="size-4" />
-          초기화
-        </Button>
-        <Button type="submit" disabled={isPending || !form.formState.isDirty}>
-          {isPending ? <Spinner /> : "저장하기"}
-        </Button>
-      </div>
-    </form>
+    <Form {...form}>
+      <form onSubmit={onSubmit} className="space-y-6">
+        <CompletionCard form={form} completionImageUpload={completionImageUpload} />
+        <div className="flex justify-end gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleReset}
+            disabled={isPending || !form.formState.isDirty}
+          >
+            <RotateCcw className="size-4" />
+            초기화
+          </Button>
+          <Button type="submit" disabled={isPending || !form.formState.isDirty}>
+            {isPending ? <Spinner /> : "저장하기"}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }

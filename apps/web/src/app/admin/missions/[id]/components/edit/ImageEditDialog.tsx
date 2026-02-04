@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/app/admin/components/shadcn-ui/dialog";
+import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
 import { type UploadedImageData, useSingleImage } from "@/app/admin/hooks/admin-image";
 import { useReadMission, useUpdateMission } from "@/app/admin/hooks/mission";
@@ -100,22 +101,24 @@ function ImageFormContent({ mission, missionId, onSuccess }: ImageFormContentPro
   });
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
-      <ImageCard form={form} missionImageUpload={missionImage} brandLogoUpload={brandLogo} />
-      <div className="flex justify-end gap-3">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={handleReset}
-          disabled={updateMission.isPending || !form.formState.isDirty}
-        >
-          <RotateCcw className="size-4" />
-          초기화
-        </Button>
-        <Button type="submit" disabled={updateMission.isPending || !form.formState.isDirty}>
-          {updateMission.isPending ? <Spinner /> : "저장하기"}
-        </Button>
-      </div>
-    </form>
+    <Form {...form}>
+      <form onSubmit={onSubmit} className="space-y-6">
+        <ImageCard form={form} missionImageUpload={missionImage} brandLogoUpload={brandLogo} />
+        <div className="flex justify-end gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleReset}
+            disabled={updateMission.isPending || !form.formState.isDirty}
+          >
+            <RotateCcw className="size-4" />
+            초기화
+          </Button>
+          <Button type="submit" disabled={updateMission.isPending || !form.formState.isDirty}>
+            {updateMission.isPending ? <Spinner /> : "저장하기"}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 }
