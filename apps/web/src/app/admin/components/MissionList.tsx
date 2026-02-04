@@ -73,12 +73,16 @@ function MissionListSkeleton() {
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 6 }).map((_, i) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: i is used as the key
-        <Card key={i}>
+        <Card key={i} className="h-[180px]">
           <CardHeader className="pb-3">
-            <Skeleton className="h-5 w-3/4" />
+            <div className="flex items-start justify-between gap-2">
+              <Skeleton className="h-5 w-3/4" />
+              <Skeleton className="h-5 w-16" />
+            </div>
             <Skeleton className="h-4 w-full mt-2" />
+            <Skeleton className="h-4 w-2/3" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex-1 flex flex-col justify-end">
             <Skeleton className="h-4 w-1/3" />
           </CardContent>
         </Card>

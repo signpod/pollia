@@ -38,7 +38,7 @@ export function AdminCard({ title, description, href, statusBadge, bottomInfo }:
           </div>
           {description && <CardDescription className="line-clamp-2">{description}</CardDescription>}
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex-1 flex flex-col justify-end">
           <div className="space-y-2">
             {bottomInfo.map((info, index) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: index is used as the key
