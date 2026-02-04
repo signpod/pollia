@@ -143,47 +143,33 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
           )}
         </div>
 
-        <div className="flex gap-10">
-          <div className="space-y-2">
-            <Label htmlFor="maxParticipants">최대 참여자 수</Label>
-            <Input
-              id="maxParticipants"
-              type="number"
-              placeholder="제한 없음"
-              min="1"
-              {...form.register("maxParticipants", {
-                setValueAs: value => {
-                  if (!value || value === "") return null;
-                  const num = Number(value);
-                  return Number.isNaN(num) ? null : num;
-                },
-              })}
-            />
-            {form.formState.errors.maxParticipants && (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.maxParticipants.message}
-              </p>
-            )}
-          </div>
+        <NumberField
+          control={form.control}
+          name="maxParticipants"
+          label="최대 참여자 수"
+          description="비워두면 제한 없음으로 설정됩니다."
+          placeholder="제한 없음"
+          isOptional
+          transformValue={value => (value === undefined ? null : value)}
+        />
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="target">대상</Label>
-              <CharacterCounter
-                current={form.watch("target")?.length || 0}
-                max={MISSION_TARGET_MAX_LENGTH}
-              />
-            </div>
-            <Input
-              id="target"
-              placeholder="미션 대상을 입력하세요"
-              maxLength={MISSION_TARGET_MAX_LENGTH}
-              {...form.register("target")}
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="target">대상</Label>
+            <CharacterCounter
+              current={form.watch("target")?.length || 0}
+              max={MISSION_TARGET_MAX_LENGTH}
             />
-            {form.formState.errors.target && (
-              <p className="text-sm text-destructive">{form.formState.errors.target.message}</p>
-            )}
           </div>
+          <Input
+            id="target"
+            placeholder="미션 대상을 입력하세요"
+            maxLength={MISSION_TARGET_MAX_LENGTH}
+            {...form.register("target")}
+          />
+          {form.formState.errors.target && (
+            <p className="text-sm text-destructive">{form.formState.errors.target.message}</p>
+          )}
         </div>
 
         <NumberField
