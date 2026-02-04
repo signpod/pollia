@@ -83,6 +83,20 @@ export const useMissionPassword = (missionId: string) => {
   }, [isLockedOut]);
 
   useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      if (isLockedOut) return;
+      const pasted = e.clipboardData?.getData("text") ?? "";
+      const digits = pasted.replace(/\D/g, "").slice(0, 6).split("");
+      if (digits.length > 0) {
+        setInputPassword(digits);
+      }
+    };
+
+    document.addEventListener("paste", handlePaste);
+    return () => document.removeEventListener("paste", handlePaste);
+  }, [isLockedOut]);
+
+  useEffect(() => {
     if (inputPassword.length === 6 && isPasswordCorrect?.data === false) {
       setErrorCount(prev => {
         const newErrorCount = prev + 1;
