@@ -176,6 +176,7 @@ function ActionRenderer({
   const { submit, isSubmitting, isActualLastStep } = useClientActionSubmit({
     missionId,
     actionData: currentActionData,
+    actions,
     progressInfo,
     currentAnswer,
     navigateToAction,
@@ -207,8 +208,14 @@ function ActionRenderer({
 
     if (sourceAction) {
       navigateToAction(sourceAction.id);
+    } else {
+      const currentOrder = currentActionData.order ?? 0;
+      const prevAction = actions.find(a => (a.order ?? 0) === currentOrder - 1);
+      if (prevAction) {
+        navigateToAction(prevAction.id);
+      }
     }
-  }, [isFirstStep, actions, currentActionData.id, navigateToAction, navigateToMission]);
+  }, [isFirstStep, actions, currentActionData, navigateToAction, navigateToMission]);
 
   // 현재 스텝의 컴포넌트 찾기
   const currentStep = steps.find(
