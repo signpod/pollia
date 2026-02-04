@@ -97,6 +97,7 @@ describe("MissionService - Create", () => {
         entryActionId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
+        startDate: null,
       };
       mockRepository.createWithActions.mockResolvedValue(mockCreatedMission);
 
@@ -492,6 +493,7 @@ describe("MissionService - Create", () => {
         entryActionId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
+        startDate: null,
       };
 
       const mockDuplicatedMission = {
@@ -516,6 +518,7 @@ describe("MissionService - Create", () => {
         entryActionId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
+        startDate: null,
       };
 
       mockRepository.findById.mockResolvedValue(mockMission);

@@ -10,6 +10,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
     imageUrl: null,
     brandLogoUrl: null,
     estimatedMinutes: null,
+    startDate: null,
     deadline: null,
     isActive: true,
     maxParticipants: null,
