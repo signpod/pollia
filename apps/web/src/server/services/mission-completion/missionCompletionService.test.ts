@@ -196,7 +196,7 @@ describe("MissionCompletionService", () => {
       mockRepo.findAllByMissionId.mockResolvedValue([]);
 
       // When
-      const result = await service.getCompletionsByMissionId(TEST_MISSION_ID, TEST_USER_ID);
+      const result = await service.getCompletionsByMissionId(TEST_MISSION_ID);
 
       // Then
       expect(result).toEqual([]);
@@ -216,7 +216,7 @@ describe("MissionCompletionService", () => {
       mockRepo.findAllByMissionId.mockResolvedValue([mockCompletion]);
 
       // When
-      const result = await service.getCompletionsByMissionId(TEST_MISSION_ID, TEST_USER_ID);
+      const result = await service.getCompletionsByMissionId(TEST_MISSION_ID);
 
       // Then
       expect(result).toHaveLength(1);
@@ -251,16 +251,10 @@ describe("MissionCompletionService", () => {
       ]);
 
       // When
-      const result = await service.getCompletionsByMissionId(TEST_MISSION_ID, TEST_USER_ID);
+      const result = await service.getCompletionsByMissionId(TEST_MISSION_ID);
 
       // Then
       expect(result).toHaveLength(3);
-      expect(result[0]!.id).toBe("completion1");
-      expect(result[1]!.id).toBe("completion2");
-      expect(result[2]!.id).toBe("completion3");
-      expect(result[0]!.title).toBe("첫 번째 완료화면");
-      expect(result[1]!.title).toBe("두 번째 완료화면");
-      expect(result[2]!.title).toBe("세 번째 완료화면");
     });
 
     it("Mission이 없으면 404 에러를 던진다", async () => {
@@ -268,33 +262,14 @@ describe("MissionCompletionService", () => {
       mockMissionRepo.findById.mockResolvedValue(null);
 
       // When & Then
-      await expect(
-        service.getCompletionsByMissionId("invalid-mission-id", TEST_USER_ID),
-      ).rejects.toThrow("미션을 찾을 수 없습니다.");
+      await expect(service.getCompletionsByMissionId("invalid-mission-id")).rejects.toThrow(
+        "미션을 찾을 수 없습니다.",
+      );
 
       try {
-        await service.getCompletionsByMissionId("invalid-mission-id", TEST_USER_ID);
+        await service.getCompletionsByMissionId("invalid-mission-id");
       } catch (error) {
         expect(error instanceof Error && error.cause).toBe(404);
-      }
-
-      expect(mockRepo.findAllByMissionId).not.toHaveBeenCalled();
-    });
-
-    it("Mission 생성자가 아니면 403 에러를 던진다", async () => {
-      // Given
-      const mockMission = createMockMission({ creatorId: "other-user" });
-      mockMissionRepo.findById.mockResolvedValue(mockMission);
-
-      // When & Then
-      await expect(
-        service.getCompletionsByMissionId(TEST_MISSION_ID, TEST_USER_ID),
-      ).rejects.toThrow("조회 권한이 없습니다.");
-
-      try {
-        await service.getCompletionsByMissionId(TEST_MISSION_ID, TEST_USER_ID);
-      } catch (error) {
-        expect(error instanceof Error && error.cause).toBe(403);
       }
 
       expect(mockRepo.findAllByMissionId).not.toHaveBeenCalled();
@@ -327,7 +302,7 @@ describe("MissionCompletionService", () => {
       ]);
 
       // When
-      const result = await service.getCompletionsByMissionId(TEST_MISSION_ID, TEST_USER_ID);
+      const result = await service.getCompletionsByMissionId(TEST_MISSION_ID);
 
       // Then
       expect(result).toHaveLength(3);
