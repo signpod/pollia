@@ -7,9 +7,11 @@ import { useParams } from "next/navigation";
 
 import { ButtonV2, FixedBottomLayout, Typo } from "@repo/ui/components";
 import { TiptapViewer } from "@repo/ui/components/common/TiptapViewer";
+import { AnimatePresence, motion } from "framer-motion";
+import { Download, Ellipsis, Share2, Upload } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { SocialShareButtons } from "../../components";
+import { useEffect, useRef, useState } from "react";
 import { useMissionShare } from "./hooks";
 
 interface MissionCompletionProps {
@@ -27,7 +29,7 @@ export function MissionCompletion({ completionId }: MissionCompletionProps) {
 
   const missionCompletion = completionId ? missionCompletionById : missionCompletionByMission;
 
-  const { imageUrl, brandLogoUrl, title: missionTitle } = mission?.data ?? {};
+  const { imageUrl, title: missionTitle } = mission?.data ?? {};
   const {
     title: completionTitle,
     description: completionDescription,
@@ -37,96 +39,143 @@ export function MissionCompletion({ completionId }: MissionCompletionProps) {
 
   const hasLongLinkKey = Object.keys(links ?? {}).some(key => key.length > 10);
 
-  const { handleKakaoShare, handleShare, handleXShare } = useMissionShare({
+  const { handleShare } = useMissionShare({
     missionId,
     title: missionTitle,
     imageUrl,
   });
 
-  return (
-    <div
-      className={cn(
-        "relative w-full flex flex-col items-center gap-6 min-s-svh overflow-hidden py-20",
-        "bg-white",
-      )}
-    >
-      <div className="bg-linear-to-t from-white to-transparent absolute inset-0 z-3 aspect-square" />
-      <div
-        style={{
-          maskClip: "content-box",
-          maskImage:
-            "linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 40%, rgba(255, 255, 255, 1) 100%)",
-          WebkitMaskImage:
-            "linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 40%, rgba(255, 255, 255, 1) 100%)",
-          backdropFilter: "blur(5px)",
-        }}
-        className="absolute inset-0 z-2 aspect-square"
-      />
-      <div className="absolute inset-0 w-full aspect-square">
-        {imageUrl && (
-          <Image
-            src={imageUrl}
-            alt="Mission Image"
-            fill
-            className="object-cover object-top size-full"
-          />
-        )}
-      </div>
-      <div className="flex flex-col w-full h-full z-3 items-center justify-center gap-6">
-        {brandLogoUrl && (
-          <Image
-            src={brandLogoUrl}
-            alt="Brand Logo"
-            width={48}
-            height={48}
-            className="bg-white rounded-full size-12 ring-1 ring-default object-center object-cover"
-          />
-        )}
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isMenuOpen]);
+
+  const handleImageSave = async () => {
+    if (!completionImageUrl) return;
+    setIsMenuOpen(false);
+    const response = await fetch(completionImageUrl);
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${completionTitle ?? "image"}.png`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImageShare = async () => {
+    if (!completionImageUrl) return;
+    setIsMenuOpen(false);
+    const response = await fetch(completionImageUrl);
+    const blob = await response.blob();
+    const file = new File([blob], `${completionTitle ?? "image"}.png`, { type: blob.type });
+    if (navigator.share) {
+      await navigator.share({ files: [file] });
+    }
+  };
+
+  return (
+    <div className="relative flex min-h-svh w-full flex-col items-center bg-white">
+      <div className="flex w-full flex-col items-center gap-10 px-5 pt-5 pb-10">
         {completionImageUrl && (
-          <div className="relative size-[240px] rounded-lg overflow-hidden">
+          <div className="relative w-full overflow-hidden rounded-[28px] shadow-[0_4px_20px_rgba(9,9,11,0.16)]">
             <Image
               src={completionImageUrl}
               alt="Completion Image"
-              width={240}
-              height={240}
-              className="w-full h-full object-cover"
+              width={0}
+              height={0}
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 400px"
+              className="h-auto w-full object-contain"
               priority
             />
+            <div ref={menuRef} className="absolute right-4 top-4 flex flex-col items-end gap-2">
+              <button
+                type="button"
+                className="rounded-xl border border-zinc-100 bg-white p-3"
+                onClick={() => setIsMenuOpen(prev => !prev)}
+              >
+                <Ellipsis className="size-5 text-zinc-900" />
+              </button>
+              <AnimatePresence>
+                {isMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9, y: -4 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: -4 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    className="origin-top-right flex flex-col gap-1 rounded-xl bg-white p-2 shadow-[0_4px_20px_rgba(9,9,11,0.16)]"
+                  >
+                    <button
+                      type="button"
+                      className="flex items-center gap-2 rounded-lg px-3 py-2"
+                      onClick={handleImageSave}
+                    >
+                      <Download className="size-4 text-zinc-950" />
+                      <Typo.ButtonText size="medium">이미지 저장</Typo.ButtonText>
+                    </button>
+                    <button
+                      type="button"
+                      className="flex items-center gap-2 rounded-lg px-3 py-2"
+                      onClick={handleImageShare}
+                    >
+                      <Upload className="size-4 text-zinc-950" />
+                      <Typo.ButtonText size="medium">이미지 공유</Typo.ButtonText>
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         )}
-        <div className="flex flex-col items-center gap-2 px-5">
-          {completionTitle && <Typo.MainTitle size="small">{completionTitle}</Typo.MainTitle>}
+
+        <div className="flex w-full flex-col items-center gap-4 text-center">
+          {completionTitle && (
+            <Typo.MainTitle size="large" className="break-keep">
+              {completionTitle}
+            </Typo.MainTitle>
+          )}
           {completionDescription && cleanTiptapHTML(completionDescription) && (
             <TiptapViewer
               content={cleanTiptapHTML(completionDescription)}
-              className="text-center"
+              className="text-center break-keep"
             />
           )}
         </div>
 
-        <SocialShareButtons
-          onXShare={handleXShare}
-          onKakaoShare={handleKakaoShare}
-          onLinkShare={handleShare}
-        />
+        <ButtonV2
+          variant="tertiary"
+          leftIcon={Share2}
+          onClick={handleShare}
+          className="rounded-4xl px-6 py-4 bg-zinc-100 text-default"
+        >
+          <Typo.ButtonText size="large">미션 공유</Typo.ButtonText>
+        </ButtonV2>
       </div>
 
       {!!links && (
         <FixedBottomLayout hasGradientBlur>
           <FixedBottomLayout.Content className="px-5 py-3">
-            <div className={cn("flex gap-2 w-full", hasLongLinkKey && "flex-col-reverse")}>
+            <div className={cn("flex w-full gap-2", hasLongLinkKey && "flex-col-reverse")}>
               {Object.entries(links).map(([key, value], index) => (
                 <ButtonV2
                   key={key}
                   variant={index % 2 !== 0 ? "secondary" : "primary"}
-                  className="flex-1 w-full"
+                  className="w-full flex-1"
                 >
                   <Link
                     href={value}
                     target="_blank"
                     className={cn(
-                      "w-full h-full flex items-center justify-center",
+                      "flex h-full w-full items-center justify-center",
                       hasLongLinkKey && "h-12",
                     )}
                   >
