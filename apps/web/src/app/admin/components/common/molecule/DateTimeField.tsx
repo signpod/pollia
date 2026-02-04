@@ -106,33 +106,33 @@ export function DateTimeField<T extends FieldValues>({
         if (supportNull) {
           return (
             <FormItem className="rounded-lg border p-3">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 space-y-3">
-                  <div className="space-y-0.5">
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <div className="space-y-0.5 flex-1">
                     <FormLabel className="text-sm font-medium">
                       {label} {!isOptional && <span className="text-destructive">*</span>}
                     </FormLabel>
                     <p className="text-xs text-muted-foreground">{description}</p>
                     <FormMessage />
                   </div>
-                  <FormControl>
-                    <div className="flex items-center gap-2">
-                      <DatePicker
-                        value={date}
-                        onChange={handleDateChange}
-                        placeholder={datePlaceholder}
-                        disabled={!isEnabled || disabled}
-                      />
-                      <TimePicker
-                        value={time}
-                        onChange={handleTimeChange}
-                        disabled={!isEnabled || disabled}
-                        minuteStep={minuteStep}
-                      />
-                    </div>
-                  </FormControl>
+                  <Switch checked={isEnabled} onCheckedChange={handleToggle} disabled={disabled} />
                 </div>
-                <Switch checked={isEnabled} onCheckedChange={handleToggle} disabled={disabled} />
+                <FormControl>
+                  <div className="flex items-center gap-2">
+                    <DatePicker
+                      value={date}
+                      onChange={handleDateChange}
+                      placeholder={datePlaceholder}
+                      disabled={!isEnabled || disabled}
+                    />
+                    <TimePicker
+                      value={time}
+                      onChange={handleTimeChange}
+                      disabled={!isEnabled || disabled}
+                      minuteStep={minuteStep}
+                    />
+                  </div>
+                </FormControl>
               </div>
             </FormItem>
           );
