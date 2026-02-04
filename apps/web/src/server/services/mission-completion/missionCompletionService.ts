@@ -24,18 +24,12 @@ export class MissionCompletionService {
     return missionCompletion;
   }
 
-  async getCompletionsByMissionId(missionId: string, userId: string) {
+  async getCompletionsByMissionId(missionId: string) {
     const mission = await this.missionRepo.findById(missionId);
 
     if (!mission) {
       const error = new Error("미션을 찾을 수 없습니다.");
       error.cause = 404;
-      throw error;
-    }
-
-    if (mission.creatorId !== userId) {
-      const error = new Error("조회 권한이 없습니다.");
-      error.cause = 403;
       throw error;
     }
 

@@ -1,6 +1,5 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
 import { missionCompletionService } from "@/server/services/mission-completion/missionCompletionService";
 import type { GetMissionCompletionsResponse } from "@/types/dto";
 import { toMissionCompletionWithMission } from "./utils";
@@ -9,11 +8,7 @@ export async function getCompletionsByMissionId(
   missionId: string,
 ): Promise<GetMissionCompletionsResponse> {
   try {
-    const user = await requireAuth();
-    const completions = await missionCompletionService.getCompletionsByMissionId(
-      missionId,
-      user.id,
-    );
+    const completions = await missionCompletionService.getCompletionsByMissionId(missionId);
     return { data: completions.map(toMissionCompletionWithMission) };
   } catch (error) {
     console.error("getCompletionsByMissionId error:", error);
