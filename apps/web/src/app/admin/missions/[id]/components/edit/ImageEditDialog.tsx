@@ -1,5 +1,6 @@
 "use client";
 
+import { ImageSelectField } from "@/app/admin/components/common/ImageSelectField";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import {
   Dialog,
@@ -15,7 +16,7 @@ import { useReadMission, useUpdateMission } from "@/app/admin/hooks/mission";
 import type { MissionUpdate } from "@/schemas/mission";
 import { RotateCcw } from "lucide-react";
 import { toast } from "sonner";
-import { ImageCard, type MissionData, useBasicInfoForm } from "./shared";
+import { type MissionData, useBasicInfoForm } from "./shared";
 
 interface ImageEditDialogProps {
   open: boolean;
@@ -103,7 +104,41 @@ function ImageFormContent({ mission, missionId, onSuccess }: ImageFormContentPro
   return (
     <Form {...form}>
       <form onSubmit={onSubmit} className="space-y-6">
-        <ImageCard form={form} missionImageUpload={missionImage} brandLogoUpload={brandLogo} />
+        <div className="space-y-4">
+          <ImageSelectField
+            control={form.control}
+            name="imageUrl"
+            label="미션 이미지"
+            description={
+              missionImage.isUploading ? "업로드 중..." : "미션을 대표하는 이미지를 업로드하세요."
+            }
+            onImageSelect={missionImage.upload}
+            onImageDelete={() => {
+              missionImage.discard();
+              form.setValue("imageUrl", null, { shouldDirty: true });
+              form.setValue("imageFileUploadId", null, { shouldDirty: true });
+            }}
+            disabled={missionImage.isUploading}
+            isOptional
+          />
+
+          <ImageSelectField
+            control={form.control}
+            name="brandLogoUrl"
+            label="브랜드 로고"
+            description={
+              brandLogo.isUploading ? "업로드 중..." : "브랜드를 나타내는 로고를 업로드하세요."
+            }
+            onImageSelect={brandLogo.upload}
+            onImageDelete={() => {
+              brandLogo.discard();
+              form.setValue("brandLogoUrl", null, { shouldDirty: true });
+              form.setValue("brandLogoFileUploadId", null, { shouldDirty: true });
+            }}
+            disabled={brandLogo.isUploading}
+            isOptional
+          />
+        </div>
         <div className="flex justify-end gap-3">
           <Button
             type="button"

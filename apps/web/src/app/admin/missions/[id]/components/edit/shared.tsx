@@ -1,19 +1,10 @@
-import { ImageSelectField } from "@/app/admin/components/common/ImageSelectField";
 import { InputField } from "@/app/admin/components/common/InputField";
 import { NumberField } from "@/app/admin/components/common/NumberField";
 import { SelectField } from "@/app/admin/components/common/SelectField";
 import { TiptapField } from "@/app/admin/components/common/TiptapField";
 import { DateTimeField } from "@/app/admin/components/common/molecule/DateTimeField";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/app/admin/components/shadcn-ui/card";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
-import type { UseSingleImageReturn } from "@/app/admin/hooks/admin-image";
 import { MISSION_CATEGORY_LABELS, MISSION_TYPE_LABELS } from "@/constants/mission";
 import {
   MISSION_DESCRIPTION_MAX_LENGTH,
@@ -23,8 +14,6 @@ import {
   missionUpdateSchema,
 } from "@/schemas/mission";
 import {
-  MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH,
-  MISSION_COMPLETION_TITLE_MAX_LENGTH,
   type MissionCompletionForm,
   missionCompletionFormSchema,
 } from "@/schemas/mission-completion";
@@ -43,174 +32,117 @@ export interface BasicInfoCardProps {
   form: UseFormReturn<MissionUpdate>;
 }
 
-export interface ImageCardProps {
-  form: UseFormReturn<MissionUpdate>;
-  missionImageUpload: UseSingleImageReturn;
-  brandLogoUpload: UseSingleImageReturn;
-}
-
-export interface CompletionCardProps {
-  form: UseFormReturn<MissionCompletionForm>;
-  completionImageUpload: UseSingleImageReturn;
-}
-
 export function BasicInfoCard({ form }: BasicInfoCardProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>기본 정보</CardTitle>
-        <CardDescription>미션의 제목과 설명을 수정하세요.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <InputField
-          control={form.control}
-          name="title"
-          label="제목"
-          description="미션의 제목을 입력하세요."
-          placeholder="미션 제목을 입력하세요"
-          maxLength={MISSION_TITLE_MAX_LENGTH}
-          showCounter
-        />
-
-        <SelectField
-          control={form.control}
-          name="type"
-          label="타입"
-          description="미션의 유형을 선택합니다."
-          options={[
-            { value: MissionType.GENERAL, label: MISSION_TYPE_LABELS[MissionType.GENERAL] },
-            {
-              value: MissionType.EXPERIENCE_GROUP,
-              label: MISSION_TYPE_LABELS[MissionType.EXPERIENCE_GROUP],
-            },
-          ]}
-        />
-
-        <SelectField
-          control={form.control}
-          name="category"
-          label="카테고리"
-          description="미션의 카테고리를 선택합니다."
-          options={[
-            {
-              value: MissionCategory.PROMOTION,
-              label: MISSION_CATEGORY_LABELS[MissionCategory.PROMOTION],
-            },
-            { value: MissionCategory.EVENT, label: MISSION_CATEGORY_LABELS[MissionCategory.EVENT] },
-            {
-              value: MissionCategory.RESEARCH,
-              label: MISSION_CATEGORY_LABELS[MissionCategory.RESEARCH],
-            },
-            {
-              value: MissionCategory.CHALLENGE,
-              label: MISSION_CATEGORY_LABELS[MissionCategory.CHALLENGE],
-            },
-            { value: MissionCategory.QUIZ, label: MISSION_CATEGORY_LABELS[MissionCategory.QUIZ] },
-          ]}
-        />
-
-        <TiptapField
-          control={form.control}
-          name="description"
-          label="설명"
-          description="미션에 대한 설명을 입력하세요."
-          placeholder="미션에 대한 설명을 입력하세요"
-          maxLength={MISSION_DESCRIPTION_MAX_LENGTH}
-          showCounter
-          showToolbar
-          minHeight="200px"
-          isOptional
-        />
-
-        <NumberField
-          control={form.control}
-          name="maxParticipants"
-          label="최대 참여자 수"
-          description="비워두면 제한 없음으로 설정됩니다."
-          placeholder="제한 없음"
-          isOptional
-          transformValue={value => (value === undefined ? null : value)}
-        />
-
-        <InputField
-          control={form.control}
-          name="target"
-          label="대상"
-          description="미션 대상을 입력하세요."
-          placeholder="미션 대상을 입력하세요"
-          maxLength={MISSION_TARGET_MAX_LENGTH}
-          showCounter
-          isOptional
-        />
-
-        <NumberField
-          control={form.control}
-          name="estimatedMinutes"
-          label="예상 소요 시간 (분)"
-          description="미션 완료에 필요한 예상 시간을 입력합니다."
-          isOptional
-          transformValue={value => (value === undefined ? null : value)}
-        />
-
-        <DateTimeField
-          control={form.control}
-          name="startDate"
-          label="시작일"
-          description="미션의 시작일을 설정합니다."
-          datePlaceholder="시작일 선택"
-          isOptional
-          supportNull
-        />
-
-        <DateTimeField
-          control={form.control}
-          name="deadline"
-          label="마감일"
-          description="미션의 마감일을 설정합니다."
-          datePlaceholder="마감일 선택"
-          isOptional
-          supportNull
-        />
-      </CardContent>
-    </Card>
-  );
-}
-
-export function ImageCard({ form, missionImageUpload, brandLogoUpload }: ImageCardProps) {
-  return (
     <>
-      <ImageSelectField
+      <InputField
         control={form.control}
-        name="imageUrl"
-        label="미션 이미지"
-        description={
-          missionImageUpload.isUploading ? "업로드 중..." : "미션을 대표하는 이미지를 업로드하세요."
-        }
-        onImageSelect={missionImageUpload.upload}
-        onImageDelete={() => {
-          missionImageUpload.discard();
-          form.setValue("imageUrl", null, { shouldDirty: true });
-          form.setValue("imageFileUploadId", null, { shouldDirty: true });
-        }}
-        disabled={missionImageUpload.isUploading}
+        name="title"
+        label="제목"
+        description="미션의 제목을 입력하세요."
+        placeholder="미션 제목을 입력하세요"
+        maxLength={MISSION_TITLE_MAX_LENGTH}
+        showCounter
+      />
+
+      <SelectField
+        control={form.control}
+        name="type"
+        label="타입"
+        description="미션의 유형을 선택합니다."
+        options={[
+          { value: MissionType.GENERAL, label: MISSION_TYPE_LABELS[MissionType.GENERAL] },
+          {
+            value: MissionType.EXPERIENCE_GROUP,
+            label: MISSION_TYPE_LABELS[MissionType.EXPERIENCE_GROUP],
+          },
+        ]}
+      />
+
+      <SelectField
+        control={form.control}
+        name="category"
+        label="카테고리"
+        description="미션의 카테고리를 선택합니다."
+        options={[
+          {
+            value: MissionCategory.PROMOTION,
+            label: MISSION_CATEGORY_LABELS[MissionCategory.PROMOTION],
+          },
+          { value: MissionCategory.EVENT, label: MISSION_CATEGORY_LABELS[MissionCategory.EVENT] },
+          {
+            value: MissionCategory.RESEARCH,
+            label: MISSION_CATEGORY_LABELS[MissionCategory.RESEARCH],
+          },
+          {
+            value: MissionCategory.CHALLENGE,
+            label: MISSION_CATEGORY_LABELS[MissionCategory.CHALLENGE],
+          },
+          { value: MissionCategory.QUIZ, label: MISSION_CATEGORY_LABELS[MissionCategory.QUIZ] },
+        ]}
+      />
+
+      <TiptapField
+        control={form.control}
+        name="description"
+        label="설명"
+        description="미션에 대한 설명을 입력하세요."
+        placeholder="미션에 대한 설명을 입력하세요"
+        maxLength={MISSION_DESCRIPTION_MAX_LENGTH}
+        showCounter
+        showToolbar
+        minHeight="200px"
         isOptional
       />
 
-      <ImageSelectField
+      <NumberField
         control={form.control}
-        name="brandLogoUrl"
-        label="브랜드 로고"
-        description={
-          brandLogoUpload.isUploading ? "업로드 중..." : "브랜드를 나타내는 로고를 업로드하세요."
-        }
-        onImageSelect={brandLogoUpload.upload}
-        onImageDelete={() => {
-          brandLogoUpload.discard();
-          form.setValue("brandLogoUrl", null, { shouldDirty: true });
-          form.setValue("brandLogoFileUploadId", null, { shouldDirty: true });
-        }}
-        disabled={brandLogoUpload.isUploading}
+        name="maxParticipants"
+        label="최대 참여자 수"
+        description="비워두면 제한 없음으로 설정됩니다."
+        placeholder="제한 없음"
         isOptional
+        transformValue={value => (value === undefined ? null : value)}
+      />
+
+      <InputField
+        control={form.control}
+        name="target"
+        label="대상"
+        description="미션 대상을 입력하세요."
+        placeholder="미션 대상을 입력하세요"
+        maxLength={MISSION_TARGET_MAX_LENGTH}
+        showCounter
+        isOptional
+      />
+
+      <NumberField
+        control={form.control}
+        name="estimatedMinutes"
+        label="예상 소요 시간 (분)"
+        description="미션 완료에 필요한 예상 시간을 입력합니다."
+        isOptional
+        transformValue={value => (value === undefined ? null : value)}
+      />
+
+      <DateTimeField
+        control={form.control}
+        name="startDate"
+        label="시작일"
+        description="미션의 시작일을 설정합니다."
+        datePlaceholder="시작일 선택"
+        isOptional
+        supportNull
+      />
+
+      <DateTimeField
+        control={form.control}
+        name="deadline"
+        label="마감일"
+        description="미션의 마감일을 설정합니다."
+        datePlaceholder="마감일 선택"
+        isOptional
+        supportNull
       />
     </>
   );
@@ -242,7 +174,7 @@ export function useBasicInfoForm(mission: MissionData) {
   return { form, handleReset };
 }
 
-function LinksSection({ form }: { form: UseFormReturn<MissionCompletionForm> }) {
+export function LinksSection({ form }: { form: UseFormReturn<MissionCompletionForm> }) {
   const links = form.watch("links") || {};
   const linkEntries = Object.entries(links);
   const [newLinkKey, setNewLinkKey] = useState("");
@@ -327,71 +259,6 @@ function LinksSection({ form }: { form: UseFormReturn<MissionCompletionForm> }) 
           <Plus className="size-4" />
         </Button>
       </div>
-    </div>
-  );
-}
-
-export function CompletionCard({ form, completionImageUpload }: CompletionCardProps) {
-  return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>완료 화면 정보</CardTitle>
-          <CardDescription>미션 완료 시 표시될 화면의 제목과 설명을 입력하세요.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <InputField
-            control={form.control}
-            name="title"
-            label="제목"
-            description="미션 완료 시 표시될 제목을 입력하세요."
-            placeholder="예: 미션을 완료하셨습니다!"
-            maxLength={MISSION_COMPLETION_TITLE_MAX_LENGTH}
-            showCounter
-          />
-
-          <TiptapField
-            control={form.control}
-            name="description"
-            label="설명"
-            description="완료 화면에 표시될 설명을 입력하세요."
-            placeholder="완료 화면에 표시될 설명을 입력하세요."
-            maxLength={MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH}
-            showCounter
-            showToolbar
-            minHeight="200px"
-          />
-
-          <ImageSelectField
-            control={form.control}
-            name="imageUrl"
-            label="이미지"
-            description={
-              completionImageUpload.isUploading
-                ? "업로드 중..."
-                : "완료 화면에 표시될 이미지를 선택하세요."
-            }
-            onImageSelect={completionImageUpload.upload}
-            onImageDelete={() => {
-              completionImageUpload.discard();
-              form.setValue("imageUrl", undefined, { shouldDirty: true });
-              form.setValue("imageFileUploadId", undefined, { shouldDirty: true });
-            }}
-            disabled={completionImageUpload.isUploading}
-            isOptional
-          />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>링크</CardTitle>
-          <CardDescription>완료 화면에 표시될 추가 링크를 설정하세요. (선택)</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <LinksSection form={form} />
-        </CardContent>
-      </Card>
     </div>
   );
 }
