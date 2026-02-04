@@ -10,6 +10,7 @@ import { isAnswerSameAsSubmitted } from "@/lib/answer/compareAnswers";
 import { removeSessionStorage } from "@/lib/sessionStorage";
 import { clearActionSession, getOrCreateSessionId } from "@/lib/tracking";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
+import type { ActionForProgress } from "@/hooks/action";
 import type { ActionAnswerItem, ActionDetail, GetMissionResponseResponse } from "@/types/dto";
 import { useModal } from "@repo/ui/components";
 import { useQueryClient } from "@tanstack/react-query";
@@ -73,6 +74,7 @@ interface ProgressInfo {
 interface UseClientActionSubmitParams {
   missionId: string;
   actionData: ActionDetail;
+  actions: ActionForProgress[];
   progressInfo: ProgressInfo;
   currentAnswer: ActionAnswerItem | null;
   navigateToAction: (actionId: string) => void;
@@ -91,9 +93,16 @@ type CacheData = GetMissionResponseResponse | { data: null };
 // 진행 중인 제출을 추적하는 전역 Set (컴포넌트 간 공유)
 const pendingSubmissions = new Set<string>();
 
+function findNextActionByOrder(currentAction: ActionForProgress, actions: ActionForProgress[]): string | null {
+  const currentOrder = currentAction.order ?? 0;
+  const nextAction = actions.find(a => (a.order ?? 0) === currentOrder + 1);
+  return nextAction?.id ?? null;
+}
+
 export function useClientActionSubmit({
   missionId,
   actionData,
+  actions,
   progressInfo,
   currentAnswer,
   navigateToAction,
@@ -169,9 +178,14 @@ export function useClientActionSubmit({
         navigateToDone(answer.nextCompletionId);
       } else if (answer.nextActionId) {
         navigateToAction(answer.nextActionId);
+      } else {
+        const nextByOrder = findNextActionByOrder(actionData, actions);
+        if (nextByOrder) {
+          navigateToAction(nextByOrder);
+        }
       }
     },
-    [navigateToAction, navigateToDone, toastStorageKey],
+    [navigateToAction, navigateToDone, toastStorageKey, actionData, actions],
   );
 
   const executeSubmitAndNavigate = useCallback(
@@ -280,6 +294,11 @@ export function useClientActionSubmit({
           )?.nextActionId;
           if (nextActionId) {
             navigateToAction(nextActionId);
+          } else {
+            const nextByOrder = findNextActionByOrder(actionData, actions);
+            if (nextByOrder) {
+              navigateToAction(nextByOrder);
+            }
           }
         }
         return;

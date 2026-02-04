@@ -44,7 +44,7 @@ export function ImageCropModal({
         <DialogOverlay onClick={onCancel} />
         <div
           className={cn(
-            "fixed top-[50%] left-[50%] z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white shadow-lg",
+            "fixed top-[50%] left-[50%] z-50 w-[calc(100%-40px)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white shadow-lg",
             "flex flex-col",
           )}
         >
@@ -65,7 +65,7 @@ export function ImageCropModal({
           <div className="border-t border-divider-default p-4">
             <div className="mb-4 flex flex-col gap-4">
               <div className="flex items-center gap-3">
-                <Typo.Body size="small" className="w-16 text-sub">
+                <Typo.Body size="small" className="w-16 text-sub shrink-0">
                   확대/축소
                 </Typo.Body>
                 <Slider.Root
@@ -86,7 +86,7 @@ export function ImageCropModal({
                 </Typo.Body>
               </div>
               <div className="flex items-center gap-3">
-                <Typo.Body size="small" className="w-16 text-sub">
+                <Typo.Body size="small" className="w-16 text-sub shrink-0">
                   회전
                 </Typo.Body>
                 <Slider.Root
