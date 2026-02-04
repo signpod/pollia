@@ -10,6 +10,7 @@ import {
   FormMessage,
 } from "@/app/admin/components/shadcn-ui/form";
 import { Switch } from "@/app/admin/components/shadcn-ui/switch";
+import { AnimatePresence, motion } from "framer-motion";
 import { useRef } from "react";
 import type { Control, FieldValues, Path } from "react-hook-form";
 
@@ -117,22 +118,39 @@ export function DateTimeField<T extends FieldValues>({
                   </div>
                   <Switch checked={isEnabled} onCheckedChange={handleToggle} disabled={disabled} />
                 </div>
-                <FormControl>
-                  <div className="flex items-center gap-2">
-                    <DatePicker
-                      value={date}
-                      onChange={handleDateChange}
-                      placeholder={datePlaceholder}
-                      disabled={!isEnabled || disabled}
-                    />
-                    <TimePicker
-                      value={time}
-                      onChange={handleTimeChange}
-                      disabled={!isEnabled || disabled}
-                      minuteStep={minuteStep}
-                    />
-                  </div>
-                </FormControl>
+                <AnimatePresence initial={false}>
+                  {isEnabled && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 40 }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{
+                        duration: 0.2,
+                        ease: [0.4, 0, 0.2, 1],
+                      }}
+                      className="overflow-hidden w-full"
+                    >
+                      <FormControl>
+                        <div className="flex items-center gap-2 w-full">
+                          <DatePicker
+                            value={date}
+                            onChange={handleDateChange}
+                            placeholder={datePlaceholder}
+                            disabled={disabled}
+                            className="flex-1 min-w-0"
+                          />
+                          <TimePicker
+                            value={time}
+                            onChange={handleTimeChange}
+                            disabled={disabled}
+                            minuteStep={minuteStep}
+                            className="shrink-0"
+                          />
+                        </div>
+                      </FormControl>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </FormItem>
           );
