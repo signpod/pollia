@@ -15,12 +15,11 @@ export function Branch({ actionData }: ActionStepContentProps) {
     return answers.find(a => a.actionId === actionData.id);
   }, [missionResponse?.data?.answers, actionData.id]);
 
-  const [selectedId, setSelectedId] = useState<string | null>(() => {
-    const firstOption = existingAnswer?.options?.[0];
-    return firstOption?.id ?? null;
-  });
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
+    setIsHydrated(true);
     const firstOption = existingAnswer?.options?.[0];
     if (firstOption) {
       setSelectedId(firstOption.id);
@@ -65,7 +64,7 @@ export function Branch({ actionData }: ActionStepContentProps) {
     >
       <div className={hasImage ? "grid grid-cols-2 gap-2 w-full" : "flex flex-col gap-2 w-full"}>
         {options.map(option => {
-          const isSelected = selectedId === option.id;
+          const isSelected = isHydrated && selectedId === option.id;
 
           return (
             <ActionOptionButton
