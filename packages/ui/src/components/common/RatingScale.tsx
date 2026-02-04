@@ -405,7 +405,7 @@ function RatingScaleDots({
                       size="large"
                       key={`title-${position}`}
                       className={cn(
-                        "shrink-0",
+                        "shrink-0 pointer-events-auto",
                         onOptionClick && !disabled && "cursor-pointer",
                         disabled && "cursor-not-allowed opacity-50",
                       )}
@@ -419,7 +419,7 @@ function RatingScaleDots({
                       size="large"
                       key={`order-${position}`}
                       className={cn(
-                        "text-sub",
+                        "text-sub pointer-events-auto",
                         onOptionClick && !disabled && "cursor-pointer",
                         disabled && "cursor-not-allowed opacity-50",
                       )}

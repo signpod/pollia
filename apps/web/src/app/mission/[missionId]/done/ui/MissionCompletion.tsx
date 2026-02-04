@@ -20,7 +20,10 @@ export function MissionCompletion({ completionId }: MissionCompletionProps) {
   const { missionId } = useParams<{ missionId: string }>();
   const { data: mission } = useReadMission(missionId);
   const { data: missionCompletionByMission } = useReadMissionCompletion(missionId);
-  const { data: missionCompletionById } = useReadMissionCompletionById(missionId, completionId ?? null);
+  const { data: missionCompletionById } = useReadMissionCompletionById(
+    missionId,
+    completionId ?? null,
+  );
 
   const missionCompletion = completionId ? missionCompletionById : missionCompletionByMission;
 
@@ -92,7 +95,7 @@ export function MissionCompletion({ completionId }: MissionCompletionProps) {
             />
           </div>
         )}
-        <div className="flex flex-col items-center gap-2">
+        <div className="flex flex-col items-center gap-2 px-5">
           {completionTitle && <Typo.MainTitle size="small">{completionTitle}</Typo.MainTitle>}
           {completionDescription && cleanTiptapHTML(completionDescription) && (
             <TiptapViewer
