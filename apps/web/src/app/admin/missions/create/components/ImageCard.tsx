@@ -62,7 +62,6 @@ export function ImageCard({ form }: ImageCardProps) {
         onImageSelect={missionImageUpload.upload}
         onImageDelete={handleMissionImageDelete}
         disabled={missionImageUpload.isUploading}
-        size="large"
         isOptional
       />
 

@@ -125,7 +125,6 @@ export function RewardForm({ isLoading, onSubmit, onCancel, initialData }: Rewar
             form.setValue("imageFileUploadId", undefined, { shouldDirty: true });
           }}
           disabled={isFormDisabled}
-          size="large"
           isOptional
         />
 

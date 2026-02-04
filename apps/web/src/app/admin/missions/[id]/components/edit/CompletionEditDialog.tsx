@@ -154,7 +154,6 @@ function CompletionFormContent({ completion, missionId, onSuccess }: CompletionF
               form.setValue("imageFileUploadId", undefined, { shouldDirty: true });
             }}
             disabled={completionImageUpload.isUploading}
-            size="large"
             isOptional
           />
         </div>

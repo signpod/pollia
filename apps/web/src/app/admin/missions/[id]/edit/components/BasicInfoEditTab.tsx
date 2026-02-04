@@ -209,7 +209,6 @@ function BasicInfoCard({ form, missionImageUpload, brandLogoUpload }: BasicInfoC
             form.setValue("imageFileUploadId", null, { shouldDirty: true });
           }}
           disabled={missionImageUpload.isUploading}
-          size="large"
           isOptional
         />
 
@@ -227,7 +226,6 @@ function BasicInfoCard({ form, missionImageUpload, brandLogoUpload }: BasicInfoC
             form.setValue("brandLogoFileUploadId", null, { shouldDirty: true });
           }}
           disabled={brandLogoUpload.isUploading}
-          size="large"
           isOptional
         />
       </CardContent>

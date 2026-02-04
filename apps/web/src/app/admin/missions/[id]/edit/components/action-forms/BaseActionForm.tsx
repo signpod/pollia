@@ -64,7 +64,6 @@ export function BaseActionFormFields<TFieldValues extends FieldValues>({
           <FormItem className="rounded-lg border p-3">
             <div className="flex gap-4">
               <ImageSelector
-                size="large"
                 imageUrl={mainImagePreviewUrl || field.value || undefined}
                 onImageSelect={onMainImageSelect}
                 onImageDelete={() => {
