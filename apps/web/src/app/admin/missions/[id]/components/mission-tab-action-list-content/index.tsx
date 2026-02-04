@@ -34,8 +34,8 @@ import {
 import {
   SortableContext,
   arrayMove,
-  horizontalListSortingStrategy,
   sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { AlertCircle, FileText, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -188,20 +188,17 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <div className="flex gap-2">
-          {[1, 2, 3].map(i => (
-            <Skeleton key={i} className="h-10 w-32" />
-          ))}
+        <div className="flex justify-end">
+          <Skeleton className="h-10 w-40" />
         </div>
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-32 mb-2" />
-            <Skeleton className="h-8 w-full max-w-md" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-48 w-full" />
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-[300px_1fr] gap-6">
+          <div className="space-y-2">
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+          <Skeleton className="h-96 w-full" />
+        </div>
       </div>
     );
   }
@@ -227,9 +224,11 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
   if (actions.length === 0) {
     return (
       <div className="space-y-4">
-        <Button variant="outline" onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="size-4 mr-2" />새 액션 추가
-        </Button>
+        <div className="flex justify-end">
+          <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <Plus className="size-4 mr-2" />새 액션 추가
+          </Button>
+        </div>
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -254,38 +253,58 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
   }
 
   return (
-    <div className="space-y-4">
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <div className="flex items-center gap-1 overflow-x-auto pb-2 border-b">
-          <SortableContext items={actions.map(a => a.id)} strategy={horizontalListSortingStrategy}>
-            {actions.map(action => (
-              <SortableActionTab
-                key={action.id}
-                action={action}
-                isSelected={action.id === selectedActionId}
-                onSelect={() => setSelectedActionId(action.id)}
-              />
-            ))}
-          </SortableContext>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsCreateDialogOpen(true)}
-            className="shrink-0 ml-2"
-          >
-            <Plus className="size-4" />
-          </Button>
-        </div>
-      </DndContext>
+    <div className="space-y-6">
+      <div className="flex justify-end">
+        <Button onClick={() => setIsCreateDialogOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />새 액션 추가
+        </Button>
+      </div>
 
-      {selectedAction && (
-        <ActionDetailCard
-          action={selectedAction}
-          onEdit={() => handleEdit(selectedAction.id)}
-          onDuplicate={() => handleDuplicate(selectedAction.id)}
-          onDelete={() => handleDelete(selectedAction.id)}
-        />
-      )}
+      <div className="grid grid-cols-[300px_1fr] gap-6">
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <div className="space-y-2">
+            <Card>
+              <CardHeader className="pb-3">
+                <h3 className="text-sm font-semibold text-muted-foreground">
+                  액션 목록 ({actions.length})
+                </h3>
+              </CardHeader>
+              <CardContent className="space-y-1 max-h-[600px] overflow-y-auto">
+                <SortableContext
+                  items={actions.map(a => a.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {actions.map(action => (
+                    <SortableActionTab
+                      key={action.id}
+                      action={action}
+                      isSelected={action.id === selectedActionId}
+                      onSelect={() => setSelectedActionId(action.id)}
+                    />
+                  ))}
+                </SortableContext>
+              </CardContent>
+            </Card>
+          </div>
+        </DndContext>
+
+        <div>
+          {selectedAction ? (
+            <ActionDetailCard
+              action={selectedAction}
+              onEdit={() => handleEdit(selectedAction.id)}
+              onDuplicate={() => handleDuplicate(selectedAction.id)}
+              onDelete={() => handleDelete(selectedAction.id)}
+            />
+          ) : (
+            <Card>
+              <CardContent className="flex items-center justify-center py-12">
+                <p className="text-muted-foreground">액션을 선택하세요</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
 
       <CreateActionDialog
         open={isCreateDialogOpen}
