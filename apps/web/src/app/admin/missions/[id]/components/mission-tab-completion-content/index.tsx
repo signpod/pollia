@@ -1,10 +1,12 @@
 "use client";
 
+import { MobilePreviewPanel } from "@/app/admin/components/common/MobilePreviewPanel";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Card, CardContent, CardHeader } from "@/app/admin/components/shadcn-ui/card";
 import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
 import { useReadCompletions } from "@/app/admin/hooks/mission-completion";
 import { CompletionEditDialog } from "@/app/admin/missions/[id]/components/edit/CompletionEditDialog";
+import { MissionCompletionPage } from "@/components/common/pages/MissionCompletionPage";
 import type { MissionCompletionWithMission } from "@/types/dto";
 import {
   DndContext,
@@ -22,9 +24,10 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { AlertCircle, Award, Plus } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CompletionDetailCard } from "./CompletionDetailCard";
 import { CompletionTab } from "./CompletionTab";
+import { usePreviewImageMenu } from "./hooks";
 
 interface MissionTabCompletionContentProps {
   missionId: string;
@@ -56,10 +59,15 @@ export function MissionTabCompletionContent({ missionId }: MissionTabCompletionC
   const [completions, setCompletions] = useState<MissionCompletionWithMission[]>([]);
 
   const [selectedCompletionId, setSelectedCompletionId] = useState<string | null>(null);
+  const previewAnchorRef = useRef<HTMLDivElement>(null);
   const [editingCompletion, setEditingCompletion] = useState<MissionCompletionWithMission | null>(
     null,
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const { isMenuOpen, menuRef, toggleMenu, handleImageSave, handleImageShare } =
+    usePreviewImageMenu();
+  const noop = () => {};
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -125,7 +133,7 @@ export function MissionTabCompletionContent({ missionId }: MissionTabCompletionC
         <div className="flex justify-end">
           <Skeleton className="h-10 w-40" />
         </div>
-        <div className="grid grid-cols-[300px_1fr] gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6">
           <div className="space-y-2">
             <Skeleton className="h-20 w-full" />
             <Skeleton className="h-20 w-full" />
@@ -173,7 +181,7 @@ export function MissionTabCompletionContent({ missionId }: MissionTabCompletionC
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-[300px_1fr] gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] xl:grid-cols-[300px_1fr_auto] gap-6">
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
@@ -216,6 +224,8 @@ export function MissionTabCompletionContent({ missionId }: MissionTabCompletionC
                 </Card>
               )}
             </div>
+
+            <div ref={previewAnchorRef} className="hidden xl:block" />
           </div>
         )}
       </div>
@@ -226,6 +236,25 @@ export function MissionTabCompletionContent({ missionId }: MissionTabCompletionC
         missionId={missionId}
         completion={editingCompletion}
       />
+
+      {selectedCompletion && (
+        <MobilePreviewPanel anchor={previewAnchorRef}>
+          <MissionCompletionPage
+            imageUrl={selectedCompletion.imageUrl}
+            title={selectedCompletion.title}
+            description={selectedCompletion.description}
+            links={selectedCompletion.links as Record<string, string> | undefined}
+            imageMenu={{
+              isOpen: isMenuOpen,
+              menuRef,
+              onToggle: toggleMenu,
+              onSave: handleImageSave,
+              onShare: handleImageShare,
+            }}
+            onShare={noop}
+          />
+        </MobilePreviewPanel>
+      )}
     </>
   );
 }
