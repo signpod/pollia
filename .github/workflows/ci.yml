@@ -144,6 +144,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-turbo-
       
+      - name: Generate Prisma Client
+        working-directory: apps/web
+        run: npx prisma generate
+      
       - name: Run tests with coverage
         run: yarn test:coverage
 
