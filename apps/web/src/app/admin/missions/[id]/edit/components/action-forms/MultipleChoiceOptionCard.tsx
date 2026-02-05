@@ -1,9 +1,10 @@
 "use client";
 
 import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
-import { InputWithCounter } from "@/app/admin/components/common/InputField";
+import { CharacterCounter } from "@/app/admin/components/common/InputField";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Card, CardContent } from "@/app/admin/components/shadcn-ui/card";
+import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { cn } from "@/app/admin/lib/utils";
 import {
   ACTION_OPTION_DESCRIPTION_MAX_LENGTH,
@@ -76,24 +77,35 @@ export function MultipleChoiceOptionCard({
           </div>
 
           <div className="flex-1 space-y-2 min-w-0">
-            <InputWithCounter
-              placeholder={titlePlaceholder}
-              value={title}
-              onChange={e => onTitleChange(e.target.value)}
-              disabled={disabled}
-              maxLength={ACTION_OPTION_TITLE_MAX_LENGTH}
-              currentLength={title.length}
-              className="h-9 text-sm"
-            />
-            <InputWithCounter
-              placeholder={descriptionPlaceholder}
-              value={description || ""}
-              onChange={e => onDescriptionChange(e.target.value)}
-              disabled={disabled}
-              maxLength={ACTION_OPTION_DESCRIPTION_MAX_LENGTH}
-              currentLength={description?.length || 0}
-              className="h-9 text-sm"
-            />
+            <div className="space-y-1">
+              <Input
+                placeholder={titlePlaceholder}
+                value={title}
+                onChange={e => onTitleChange(e.target.value)}
+                disabled={disabled}
+                maxLength={ACTION_OPTION_TITLE_MAX_LENGTH}
+                className="h-9 text-sm"
+              />
+              <div className="flex justify-end">
+                <CharacterCounter current={title.length} max={ACTION_OPTION_TITLE_MAX_LENGTH} />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Input
+                placeholder={descriptionPlaceholder}
+                value={description || ""}
+                onChange={e => onDescriptionChange(e.target.value)}
+                disabled={disabled}
+                maxLength={ACTION_OPTION_DESCRIPTION_MAX_LENGTH}
+                className="h-9 text-sm"
+              />
+              <div className="flex justify-end">
+                <CharacterCounter
+                  current={description?.length || 0}
+                  max={ACTION_OPTION_DESCRIPTION_MAX_LENGTH}
+                />
+              </div>
+            </div>
           </div>
 
           <div className="flex flex-col gap-1 shrink-0">
