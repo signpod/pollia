@@ -161,6 +161,7 @@ function BottomDrawerContentWithScrollReset({
 
   const selectedOptions = actionData?.options?.filter(option => selectedIds.has(option.id));
   const totalSelectedCount = (selectedOptions?.length ?? 0) + (isOtherSelected ? 1 : 0);
+  const maxSelections = actionData.maxSelections ?? 1;
 
   return (
     <BottomDrawer.Content
@@ -178,7 +179,7 @@ function BottomDrawerContentWithScrollReset({
           <Typo.SubTitle size="large" className="text-violet-500">
             {totalSelectedCount}
           </Typo.SubTitle>
-          <Typo.SubTitle size="large">개 선택</Typo.SubTitle>
+          <Typo.SubTitle size="large">{`/ ${maxSelections} 개 선택`}</Typo.SubTitle>
         </div>
       </BottomDrawer.Header>
       <BottomDrawer.Body className="p-0">

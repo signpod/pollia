@@ -49,7 +49,7 @@ export function ActionDate({ actionData }: ActionStepContentProps) {
 }
 
 function DatePickerContent({ actionData }: ActionStepContentProps) {
-  const { selectedDates, setDates, canGoNext } = useDatePicker();
+  const { selectedDates, setDates } = useDatePicker();
   const [currentMonth, setCurrentMonth] = React.useState<Date>(new Date());
 
   const today = new Date();
@@ -225,6 +225,7 @@ function DatePickerContent({ actionData }: ActionStepContentProps) {
         <BottomDrawer collapsedHeight={120} expandedHeight={180}>
           <SelectedDatesDrawerContent
             selectedDates={selectedDates}
+            maxSelections={actionData.maxSelections}
             onRemoveDate={dateStr => {
               const newDates = Array.from(selectedDates).filter(d => d !== dateStr);
               setDates(newDates);
@@ -238,9 +239,11 @@ function DatePickerContent({ actionData }: ActionStepContentProps) {
 
 function SelectedDatesDrawerContent({
   selectedDates,
+  maxSelections,
   onRemoveDate,
 }: {
   selectedDates: Set<string>;
+  maxSelections: number;
   onRemoveDate: (dateStr: string) => void;
 }) {
   const { toggle } = useBottomDrawer();
@@ -272,7 +275,7 @@ function SelectedDatesDrawerContent({
           <Typo.SubTitle size="large" className="text-violet-500">
             {selectedDates.size}
           </Typo.SubTitle>
-          <Typo.SubTitle size="large">개 선택</Typo.SubTitle>
+          <Typo.SubTitle size="large">{`/ ${maxSelections} 개 선택`}</Typo.SubTitle>
         </div>
       </BottomDrawer.Header>
       <BottomDrawer.Body className="p-0">
