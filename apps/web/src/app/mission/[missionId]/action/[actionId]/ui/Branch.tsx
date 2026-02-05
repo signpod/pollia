@@ -1,7 +1,7 @@
 import { ActionOptionButton } from "@/app/mission/[missionId]/components";
 import { ActionStepContentProps } from "@/constants/action";
 import { ActionType } from "@prisma/client";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SurveyQuestionTemplate } from "../components/ActionTemplate";
 import { useActionContext } from "../providers/ActionContext";
 
@@ -9,6 +9,8 @@ export function Branch({ actionData }: ActionStepContentProps) {
   const { updateCanGoNext, onAnswerChange, missionResponse } = useActionContext();
 
   const options = actionData.options ?? [];
+  const onAnswerChangeRef = useRef(onAnswerChange);
+  onAnswerChangeRef.current = onAnswerChange;
 
   const existingAnswer = useMemo(() => {
     const answers = missionResponse?.data?.answers ?? [];
@@ -23,8 +25,18 @@ export function Branch({ actionData }: ActionStepContentProps) {
     const firstOption = existingAnswer?.options?.[0];
     if (firstOption) {
       setSelectedId(firstOption.id);
+
+      const selectedOption = options.find(opt => opt.id === firstOption.id);
+      onAnswerChangeRef.current?.({
+        actionId: actionData.id,
+        type: ActionType.BRANCH,
+        isRequired: actionData.isRequired,
+        selectedOptionIds: [firstOption.id],
+        nextActionId: selectedOption?.nextActionId ?? actionData.nextActionId ?? undefined,
+        nextCompletionId: selectedOption?.nextCompletionId ?? actionData.nextCompletionId ?? undefined,
+      });
     }
-  }, [existingAnswer]);
+  }, [existingAnswer, actionData.id, actionData.isRequired, actionData.nextActionId, actionData.nextCompletionId, options]);
 
   const canGoNext = useMemo(() => {
     if (!actionData.isRequired) return true;
