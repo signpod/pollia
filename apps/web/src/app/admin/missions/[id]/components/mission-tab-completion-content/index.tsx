@@ -67,7 +67,6 @@ export function MissionTabCompletionContent({ missionId }: MissionTabCompletionC
 
   const { isMenuOpen, menuRef, toggleMenu, handleImageSave, handleImageShare } =
     usePreviewImageMenu();
-  const noop = () => {};
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -251,7 +250,6 @@ export function MissionTabCompletionContent({ missionId }: MissionTabCompletionC
               onSave: handleImageSave,
               onShare: handleImageShare,
             }}
-            onShare={noop}
           />
         </MobilePreviewPanel>
       )}
