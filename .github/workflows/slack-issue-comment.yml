@@ -9,12 +9,28 @@ jobs:
     if: github.event.issue.pull_request != null
     runs-on: ubuntu-latest
     steps:
-      - name: Send issue comment notification to Slack
+      - name: Prepare notification data
+        id: prepare
+        env:
+          REPOSITORY: ${{ github.event.repository.name }}
+          TITLE: ${{ github.event.issue.title }}
+          NUMBER: ${{ github.event.issue.number }}
+          COMMENTER: ${{ github.event.comment.user.login }}
+          COMMENT: ${{ github.event.comment.body }}
+          URL: ${{ github.event.comment.html_url }}
+        run: |
+          PAYLOAD=$(node -e "
+            const text = \`💬 *[PR COMMENT]* *\${process.env.REPOSITORY}* - \${process.env.TITLE} (#\${process.env.NUMBER})
+          👤 *Commenter:* \${process.env.COMMENTER}
+          💬 *Comment:* \${process.env.COMMENT}
+          🔗 \${process.env.URL}\`;
+            console.log(JSON.stringify({ text }));
+          ")
+          echo "payload=$PAYLOAD" >> $GITHUB_OUTPUT
+
+      - name: Send notification to Slack
         uses: slackapi/slack-github-action@v1.25.0
         with:
-          payload: |
-            {
-              "text": "💬 *[PR COMMENT]* *${{ github.event.repository.name }}* - ${{ github.event.issue.title }} (#${{ github.event.issue.number }})\n👤 *Commenter:* ${{ github.event.comment.user.login }}\n💬 *Comment:* ${{ github.event.comment.body }}\n🔗 ${{ github.event.comment.html_url }}"
-            }
+          payload: ${{ steps.prepare.outputs.payload }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

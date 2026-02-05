@@ -8,13 +8,31 @@ jobs:
   slack:
     runs-on: ubuntu-latest
     steps:
-      - name: Send PR review request notification to Slack
+      - name: Prepare notification data
+        id: prepare
+        env:
+          REPOSITORY: ${{ github.event.repository.name }}
+          TITLE: ${{ github.event.pull_request.title }}
+          NUMBER: ${{ github.event.pull_request.number }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          REVIEWER: ${{ github.event.requested_reviewer.login }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+          URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          PAYLOAD=$(node -e "
+            const text = \`📝 *[PR REVIEW REQUEST]* *\${process.env.REPOSITORY}* - \${process.env.TITLE} (#\${process.env.NUMBER})
+          👤 *Author:* \${process.env.AUTHOR}
+          👀 *Reviewer:* \${process.env.REVIEWER}
+          🔀 *Branch:* \\\`\${process.env.BRANCH}\\\`
+          🔗 \${process.env.URL}\`;
+            console.log(JSON.stringify({ text }));
+          ")
+          echo "payload=$PAYLOAD" >> $GITHUB_OUTPUT
+
+      - name: Send notification to Slack
         uses: slackapi/slack-github-action@v1.25.0
         with:
-          payload: |
-            {
-              "text": "📝 *[PR REVIEW REQUEST]* *${{ github.event.repository.name }}* - ${{ github.event.pull_request.title }} (#${{ github.event.pull_request.number }})\n👤 *Author:* ${{ github.event.pull_request.user.login }}\n👀 *Reviewer:* ${{ github.event.requested_reviewer.login }}\n🔀 *Branch:* `${{ github.event.pull_request.head.ref }}`\n🔗 ${{ github.event.pull_request.html_url }}"
-            }
+          payload: ${{ steps.prepare.outputs.payload }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
