@@ -21,7 +21,7 @@ export default async function MissionPasswordPage({ params }: PageProps) {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <div className="max-w-7xl">
+      <>
         <AdminMissionHeader
           title="비밀번호 관리"
           description={mission.title}
@@ -31,7 +31,7 @@ export default async function MissionPasswordPage({ params }: PageProps) {
         />
 
         <PasswordManagement missionId={missionId} />
-      </div>
+      </>
     </HydrationBoundary>
   );
 }

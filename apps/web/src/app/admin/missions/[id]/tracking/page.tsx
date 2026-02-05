@@ -42,7 +42,7 @@ export default function AdminMissionTrackingPage({ params }: AdminMissionTrackin
   if (!mission) return notFound();
 
   return (
-    <div className="max-w-7xl">
+    <>
       <AdminMissionHeader
         title="통계"
         description="트래킹, 디바이스 분포, 참여 패턴 등 미션의 주요 지표를 확인할 수 있습니다"
@@ -70,6 +70,6 @@ export default function AdminMissionTrackingPage({ params }: AdminMissionTrackin
           )}
         </CardContent>
       </Card>
-    </div>
+    </>
   );
 }

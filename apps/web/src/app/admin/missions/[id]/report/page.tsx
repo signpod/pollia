@@ -21,7 +21,7 @@ export default async function MissionReportPage({ params }: PageProps) {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <div className="max-w-7xl">
+      <>
         <AdminMissionHeader
           title="노션 리포트"
           description={mission.title}
@@ -33,7 +33,7 @@ export default async function MissionReportPage({ params }: PageProps) {
         <div className="max-w-3xl">
           <NotionReportCard missionId={missionId} />
         </div>
-      </div>
+      </>
     </HydrationBoundary>
   );
 }

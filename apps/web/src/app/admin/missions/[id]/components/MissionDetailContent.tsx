@@ -17,7 +17,7 @@ interface MissionDetailContentProps {
 
 export function MissionDetailContent({ mission, defaultTab = "basic" }: MissionDetailContentProps) {
   return (
-    <div className="max-w-7xl">
+    <>
       <AdminMissionHeader
         title="미션 상세"
         description={mission.title}
@@ -62,6 +62,6 @@ export function MissionDetailContent({ mission, defaultTab = "basic" }: MissionD
           <MissionTabRewardContent missionId={mission.id} />
         </TabsContent>
       </Tabs>
-    </div>
+    </>
   );
 }

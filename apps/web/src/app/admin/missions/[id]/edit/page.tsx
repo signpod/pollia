@@ -24,7 +24,7 @@ export default function AdminMissionEditPage({ params }: AdminMissionEditPagePro
   if (!mission) return notFound();
 
   return (
-    <div className="max-w-7xl">
+    <>
       <AdminMissionHeader
         title="미션 수정"
         description="미션의 기본 정보, 액션, 리워드를 수정합니다"
@@ -69,6 +69,6 @@ export default function AdminMissionEditPage({ params }: AdminMissionEditPagePro
           </ErrorBoundary>
         </TabsContent>
       </Tabs>
-    </div>
+    </>
   );
 }
