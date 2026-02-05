@@ -1,24 +1,16 @@
 "use client";
 
 import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
-import { CharacterCounter } from "@/app/admin/components/common/InputField";
-import { TiptapEditor } from "@/app/admin/components/common/TiptapEditor";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/app/admin/components/shadcn-ui/form";
-import { Input } from "@/app/admin/components/shadcn-ui/input";
+import { InputField } from "@/app/admin/components/common/InputField";
+import { TiptapField } from "@/app/admin/components/common/TiptapField";
+import { FormField, FormItem, FormLabel, FormMessage } from "@/app/admin/components/shadcn-ui/form";
 import { ACTION_DESCRIPTION_MAX_LENGTH, ACTION_TITLE_MAX_LENGTH } from "@/schemas/action";
 import type { ReactNode } from "react";
-import type { Control, FieldValues, Path, UseFormWatch } from "react-hook-form";
+import type { Control, FieldValues, Path } from "react-hook-form";
 import { IsRequiredField } from "./IsRequiredField";
 
 interface BaseActionFormFieldsProps<TFieldValues extends FieldValues> {
   control: Control<TFieldValues>;
-  watch: UseFormWatch<TFieldValues>;
   isLoading?: boolean;
   titlePlaceholder?: string;
   mainImagePreviewUrl: string | null;
@@ -30,7 +22,6 @@ interface BaseActionFormFieldsProps<TFieldValues extends FieldValues> {
 
 export function BaseActionFormFields<TFieldValues extends FieldValues>({
   control,
-  watch,
   isLoading = false,
   titlePlaceholder = "예: 가장 선호하는 옵션을 선택해주세요.",
   mainImagePreviewUrl,
@@ -39,64 +30,31 @@ export function BaseActionFormFields<TFieldValues extends FieldValues>({
   hideIsRequired = false,
   children,
 }: BaseActionFormFieldsProps<TFieldValues>) {
-  const titleValue = watch("title" as Path<TFieldValues>) as string | undefined;
-  const descriptionValue = watch("description" as Path<TFieldValues>) as string | undefined;
-
   return (
     <>
-      <FormField
+      <InputField
         control={control}
         name={"title" as Path<TFieldValues>}
-        render={({ field }) => (
-          <FormItem>
-            <div className="flex items-center justify-between">
-              <FormLabel>
-                제목 <span className="text-destructive">*</span>
-              </FormLabel>
-              <CharacterCounter current={titleValue?.length || 0} max={ACTION_TITLE_MAX_LENGTH} />
-            </div>
-            <FormControl>
-              <Input
-                placeholder={titlePlaceholder}
-                maxLength={ACTION_TITLE_MAX_LENGTH}
-                {...field}
-                disabled={isLoading}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
+        label="제목"
+        description="액션의 제목을 입력하세요."
+        placeholder={titlePlaceholder}
+        maxLength={ACTION_TITLE_MAX_LENGTH}
+        showCounter
+        disabled={isLoading}
       />
 
-      <FormField
+      <TiptapField
         control={control}
         name={"description" as Path<TFieldValues>}
-        render={({ field }) => (
-          <FormItem>
-            <div className="flex items-center justify-between">
-              <FormLabel>
-                설명 <span className="text-muted-foreground">(선택)</span>
-              </FormLabel>
-              <CharacterCounter
-                current={descriptionValue?.length || 0}
-                max={ACTION_DESCRIPTION_MAX_LENGTH}
-              />
-            </div>
-            <FormControl>
-              <TiptapEditor
-                content={field.value || ""}
-                onUpdate={content => {
-                  field.onChange(content);
-                }}
-                placeholder="액션에 대한 추가 설명을 입력하세요."
-                showToolbar={true}
-                className="min-h-[120px]"
-                editable={!isLoading}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
+        label="설명"
+        description="액션에 대한 추가 설명을 입력하세요."
+        placeholder="액션에 대한 추가 설명을 입력하세요."
+        maxLength={ACTION_DESCRIPTION_MAX_LENGTH}
+        showCounter
+        showToolbar
+        minHeight="120px"
+        disabled={isLoading}
+        isOptional
       />
 
       <FormField
@@ -106,7 +64,6 @@ export function BaseActionFormFields<TFieldValues extends FieldValues>({
           <FormItem className="rounded-lg border p-3">
             <div className="flex gap-4">
               <ImageSelector
-                size="large"
                 imageUrl={mainImagePreviewUrl || field.value || undefined}
                 onImageSelect={onMainImageSelect}
                 onImageDelete={() => {

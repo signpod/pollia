@@ -71,7 +71,6 @@ export function DateTimeForm<T extends "DATE" | "TIME">({
       <form onSubmit={handleSubmit} className="space-y-6">
         <BaseActionFormFields
           control={form.control}
-          watch={form.watch}
           isLoading={isLoading}
           titlePlaceholder={titlePlaceholder}
           mainImagePreviewUrl={mainImage.previewUrl}

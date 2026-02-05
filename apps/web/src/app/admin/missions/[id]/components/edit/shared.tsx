@@ -1,20 +1,10 @@
-import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
-import { CharacterCounter } from "@/app/admin/components/common/InputField";
+import { InputField } from "@/app/admin/components/common/InputField";
 import { NumberField } from "@/app/admin/components/common/NumberField";
 import { SelectField } from "@/app/admin/components/common/SelectField";
-import { TiptapEditor } from "@/app/admin/components/common/TiptapEditor";
+import { TiptapField } from "@/app/admin/components/common/TiptapField";
 import { DateTimeField } from "@/app/admin/components/common/molecule/DateTimeField";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/app/admin/components/shadcn-ui/card";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
-import { Label } from "@/app/admin/components/shadcn-ui/label";
-import type { UseSingleImageReturn } from "@/app/admin/hooks/admin-image";
 import { MISSION_CATEGORY_LABELS, MISSION_TYPE_LABELS } from "@/constants/mission";
 import {
   MISSION_DESCRIPTION_MAX_LENGTH,
@@ -24,8 +14,6 @@ import {
   missionUpdateSchema,
 } from "@/schemas/mission";
 import {
-  MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH,
-  MISSION_COMPLETION_TITLE_MAX_LENGTH,
   type MissionCompletionForm,
   missionCompletionFormSchema,
 } from "@/schemas/mission-completion";
@@ -44,216 +32,119 @@ export interface BasicInfoCardProps {
   form: UseFormReturn<MissionUpdate>;
 }
 
-export interface ImageCardProps {
-  form: UseFormReturn<MissionUpdate>;
-  missionImageUpload: UseSingleImageReturn;
-  brandLogoUpload: UseSingleImageReturn;
-}
-
-export interface CompletionCardProps {
-  form: UseFormReturn<MissionCompletionForm>;
-  completionImageUpload: UseSingleImageReturn;
-}
-
 export function BasicInfoCard({ form }: BasicInfoCardProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>기본 정보</CardTitle>
-        <CardDescription>미션의 제목과 설명을 수정하세요.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="title">
-              제목 <span className="text-destructive">*</span>
-            </Label>
-            <CharacterCounter
-              current={form.watch("title")?.length || 0}
-              max={MISSION_TITLE_MAX_LENGTH}
-            />
-          </div>
-          <Input
-            id="title"
-            placeholder="미션 제목을 입력하세요"
-            maxLength={MISSION_TITLE_MAX_LENGTH}
-            {...form.register("title")}
-          />
-          {form.formState.errors.title && (
-            <p className="text-sm text-destructive">{form.formState.errors.title.message}</p>
-          )}
-        </div>
+    <>
+      <InputField
+        control={form.control}
+        name="title"
+        label="제목"
+        description="미션의 제목을 입력하세요."
+        placeholder="미션 제목을 입력하세요"
+        maxLength={MISSION_TITLE_MAX_LENGTH}
+        showCounter
+      />
 
-        <SelectField
-          control={form.control}
-          name="type"
-          label="타입"
-          description="미션의 유형을 선택합니다."
-          options={[
-            { value: MissionType.GENERAL, label: MISSION_TYPE_LABELS[MissionType.GENERAL] },
-            {
-              value: MissionType.EXPERIENCE_GROUP,
-              label: MISSION_TYPE_LABELS[MissionType.EXPERIENCE_GROUP],
-            },
-          ]}
-        />
+      <SelectField
+        control={form.control}
+        name="type"
+        label="타입"
+        description="미션의 유형을 선택합니다."
+        options={[
+          { value: MissionType.GENERAL, label: MISSION_TYPE_LABELS[MissionType.GENERAL] },
+          {
+            value: MissionType.EXPERIENCE_GROUP,
+            label: MISSION_TYPE_LABELS[MissionType.EXPERIENCE_GROUP],
+          },
+        ]}
+      />
 
-        <SelectField
-          control={form.control}
-          name="category"
-          label="카테고리"
-          description="미션의 카테고리를 선택합니다."
-          options={[
-            {
-              value: MissionCategory.PROMOTION,
-              label: MISSION_CATEGORY_LABELS[MissionCategory.PROMOTION],
-            },
-            { value: MissionCategory.EVENT, label: MISSION_CATEGORY_LABELS[MissionCategory.EVENT] },
-            {
-              value: MissionCategory.RESEARCH,
-              label: MISSION_CATEGORY_LABELS[MissionCategory.RESEARCH],
-            },
-            {
-              value: MissionCategory.CHALLENGE,
-              label: MISSION_CATEGORY_LABELS[MissionCategory.CHALLENGE],
-            },
-            { value: MissionCategory.QUIZ, label: MISSION_CATEGORY_LABELS[MissionCategory.QUIZ] },
-          ]}
-        />
+      <SelectField
+        control={form.control}
+        name="category"
+        label="카테고리"
+        description="미션의 카테고리를 선택합니다."
+        options={[
+          {
+            value: MissionCategory.PROMOTION,
+            label: MISSION_CATEGORY_LABELS[MissionCategory.PROMOTION],
+          },
+          { value: MissionCategory.EVENT, label: MISSION_CATEGORY_LABELS[MissionCategory.EVENT] },
+          {
+            value: MissionCategory.RESEARCH,
+            label: MISSION_CATEGORY_LABELS[MissionCategory.RESEARCH],
+          },
+          {
+            value: MissionCategory.CHALLENGE,
+            label: MISSION_CATEGORY_LABELS[MissionCategory.CHALLENGE],
+          },
+          { value: MissionCategory.QUIZ, label: MISSION_CATEGORY_LABELS[MissionCategory.QUIZ] },
+        ]}
+      />
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="description">설명</Label>
-            <CharacterCounter
-              current={form.watch("description")?.length || 0}
-              max={MISSION_DESCRIPTION_MAX_LENGTH}
-            />
-          </div>
-          <TiptapEditor
-            content={form.watch("description") || ""}
-            onUpdate={content => {
-              form.setValue("description", content || undefined, { shouldDirty: true });
-            }}
-            placeholder="미션에 대한 설명을 입력하세요"
-            showToolbar={true}
-            className="min-h-[200px]"
-          />
-          {form.formState.errors.description && (
-            <p className="text-sm text-destructive">{form.formState.errors.description.message}</p>
-          )}
-        </div>
+      <TiptapField
+        control={form.control}
+        name="description"
+        label="설명"
+        description="미션에 대한 설명을 입력하세요."
+        placeholder="미션에 대한 설명을 입력하세요"
+        maxLength={MISSION_DESCRIPTION_MAX_LENGTH}
+        showCounter
+        showToolbar
+        minHeight="200px"
+        isOptional
+      />
 
-        <NumberField
-          control={form.control}
-          name="maxParticipants"
-          label="최대 참여자 수"
-          description="비워두면 제한 없음으로 설정됩니다."
-          placeholder="제한 없음"
-          isOptional
-          transformValue={value => (value === undefined ? null : value)}
-        />
+      <NumberField
+        control={form.control}
+        name="maxParticipants"
+        label="최대 참여자 수"
+        description="비워두면 제한 없음으로 설정됩니다."
+        placeholder="제한 없음"
+        isOptional
+        transformValue={value => (value === undefined ? null : value)}
+      />
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="target">대상</Label>
-            <CharacterCounter
-              current={form.watch("target")?.length || 0}
-              max={MISSION_TARGET_MAX_LENGTH}
-            />
-          </div>
-          <Input
-            id="target"
-            placeholder="미션 대상을 입력하세요"
-            maxLength={MISSION_TARGET_MAX_LENGTH}
-            {...form.register("target")}
-          />
-          {form.formState.errors.target && (
-            <p className="text-sm text-destructive">{form.formState.errors.target.message}</p>
-          )}
-        </div>
+      <InputField
+        control={form.control}
+        name="target"
+        label="대상"
+        description="미션 대상을 입력하세요."
+        placeholder="미션 대상을 입력하세요"
+        maxLength={MISSION_TARGET_MAX_LENGTH}
+        showCounter
+        isOptional
+      />
 
-        <NumberField
-          control={form.control}
-          name="estimatedMinutes"
-          label="예상 소요 시간 (분)"
-          description="미션 완료에 필요한 예상 시간을 입력합니다."
-          isOptional
-          transformValue={value => (value === undefined ? null : value)}
-        />
+      <NumberField
+        control={form.control}
+        name="estimatedMinutes"
+        label="예상 소요 시간 (분)"
+        description="미션 완료에 필요한 예상 시간을 입력합니다."
+        isOptional
+        transformValue={value => (value === undefined ? null : value)}
+      />
 
-        <DateTimeField
-          control={form.control}
-          name="startDate"
-          label="시작일"
-          description="미션의 시작일을 설정합니다."
-          datePlaceholder="시작일 선택"
-          isOptional
-          supportNull
-        />
+      <DateTimeField
+        control={form.control}
+        name="startDate"
+        label="시작일"
+        description="미션의 시작일을 설정합니다."
+        datePlaceholder="시작일 선택"
+        isOptional
+        supportNull
+      />
 
-        <DateTimeField
-          control={form.control}
-          name="deadline"
-          label="마감일"
-          description="미션의 마감일을 설정합니다."
-          datePlaceholder="마감일 선택"
-          isOptional
-          supportNull
-        />
-      </CardContent>
-    </Card>
-  );
-}
-
-export function ImageCard({ form, missionImageUpload, brandLogoUpload }: ImageCardProps) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>이미지</CardTitle>
-        <CardDescription>미션 이미지와 브랜드 로고를 수정하세요.</CardDescription>
-      </CardHeader>
-      <CardContent className="flex gap-10">
-        <div className="space-y-2">
-          <Label>미션 이미지</Label>
-          <div className="flex flex-col gap-2">
-            <ImageSelector
-              size="large"
-              imageUrl={missionImageUpload.previewUrl || undefined}
-              onImageSelect={missionImageUpload.upload}
-              onImageDelete={() => {
-                missionImageUpload.discard();
-                form.setValue("imageUrl", null, { shouldDirty: true });
-                form.setValue("imageFileUploadId", null, { shouldDirty: true });
-              }}
-              disabled={missionImageUpload.isUploading}
-            />
-            {missionImageUpload.isUploading && (
-              <p className="text-sm text-muted-foreground">업로드 중...</p>
-            )}
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label>브랜드 로고</Label>
-          <div className="flex flex-col gap-2">
-            <ImageSelector
-              size="large"
-              imageUrl={brandLogoUpload.previewUrl || undefined}
-              onImageSelect={brandLogoUpload.upload}
-              onImageDelete={() => {
-                brandLogoUpload.discard();
-                form.setValue("brandLogoUrl", null, { shouldDirty: true });
-                form.setValue("brandLogoFileUploadId", null, { shouldDirty: true });
-              }}
-              disabled={brandLogoUpload.isUploading}
-            />
-            {brandLogoUpload.isUploading && (
-              <p className="text-sm text-muted-foreground">업로드 중...</p>
-            )}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+      <DateTimeField
+        control={form.control}
+        name="deadline"
+        label="마감일"
+        description="미션의 마감일을 설정합니다."
+        datePlaceholder="마감일 선택"
+        isOptional
+        supportNull
+      />
+    </>
   );
 }
 
@@ -283,7 +174,7 @@ export function useBasicInfoForm(mission: MissionData) {
   return { form, handleReset };
 }
 
-function LinksSection({ form }: { form: UseFormReturn<MissionCompletionForm> }) {
+export function LinksSection({ form }: { form: UseFormReturn<MissionCompletionForm> }) {
   const links = form.watch("links") || {};
   const linkEntries = Object.entries(links);
   const [newLinkKey, setNewLinkKey] = useState("");
@@ -368,102 +259,6 @@ function LinksSection({ form }: { form: UseFormReturn<MissionCompletionForm> }) 
           <Plus className="size-4" />
         </Button>
       </div>
-    </div>
-  );
-}
-
-export function CompletionCard({ form, completionImageUpload }: CompletionCardProps) {
-  return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>완료 화면 정보</CardTitle>
-          <CardDescription>미션 완료 시 표시될 화면의 제목과 설명을 입력하세요.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="completion-title">
-                제목 <span className="text-destructive">*</span>
-              </Label>
-              <CharacterCounter
-                current={form.watch("title")?.length || 0}
-                max={MISSION_COMPLETION_TITLE_MAX_LENGTH}
-              />
-            </div>
-            <Input
-              id="completion-title"
-              placeholder="예: 미션을 완료하셨습니다!"
-              maxLength={MISSION_COMPLETION_TITLE_MAX_LENGTH}
-              {...form.register("title")}
-            />
-            {form.formState.errors.title && (
-              <p className="text-sm text-destructive">{form.formState.errors.title.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="completion-description">
-                설명 <span className="text-destructive">*</span>
-              </Label>
-              <CharacterCounter
-                current={form.watch("description")?.length || 0}
-                max={MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH}
-              />
-            </div>
-            <TiptapEditor
-              content={form.watch("description") || ""}
-              onUpdate={content => {
-                form.setValue("description", content || "", { shouldDirty: true });
-              }}
-              placeholder="완료 화면에 표시될 설명을 입력하세요."
-              showToolbar={true}
-              className="min-h-[200px]"
-            />
-            {form.formState.errors.description && (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.description.message}
-              </p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>이미지</CardTitle>
-          <CardDescription>완료 화면에 표시될 이미지를 설정하세요. (선택)</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <ImageSelector
-              size="large"
-              imageUrl={completionImageUpload.previewUrl || undefined}
-              onImageSelect={completionImageUpload.upload}
-              onImageDelete={() => {
-                completionImageUpload.discard();
-                form.setValue("imageUrl", undefined, { shouldDirty: true });
-                form.setValue("imageFileUploadId", undefined, { shouldDirty: true });
-              }}
-              disabled={completionImageUpload.isUploading}
-            />
-            {completionImageUpload.isUploading && (
-              <p className="text-sm text-muted-foreground">업로드 중...</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>링크</CardTitle>
-          <CardDescription>완료 화면에 표시될 추가 링크를 설정하세요. (선택)</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <LinksSection form={form} />
-        </CardContent>
-      </Card>
     </div>
   );
 }

@@ -3,7 +3,9 @@
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { cn } from "@/app/admin/lib/utils";
 import type { MissionCompletionWithMission } from "@/types/dto";
-import { Calendar, ImageIcon } from "lucide-react";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { Calendar, GripVertical, ImageIcon } from "lucide-react";
 import Image from "next/image";
 
 interface CompletionTabProps {
@@ -13,6 +15,16 @@ interface CompletionTabProps {
 }
 
 export function CompletionTab({ completion, isSelected, onClick }: CompletionTabProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: completion.id,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
   const hasImage = !!completion.imageUrl;
   const imageUrl = completion.imageUrl || "";
   const formattedDate = new Date(completion.createdAt).toLocaleDateString("ko-KR", {
@@ -22,7 +34,7 @@ export function CompletionTab({ completion, isSelected, onClick }: CompletionTab
   });
 
   return (
-    <div className="w-full">
+    <div ref={setNodeRef} style={style} className="w-full">
       <Button
         variant="ghost"
         onClick={onClick}
@@ -32,13 +44,20 @@ export function CompletionTab({ completion, isSelected, onClick }: CompletionTab
         )}
       >
         <div className="flex items-center gap-3 w-full min-w-0">
+          <div
+            className="cursor-grab active:cursor-grabbing p-1 hover:bg-muted rounded shrink-0"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="size-4 text-muted-foreground" />
+          </div>
           {hasImage ? (
             <div className="relative w-12 h-12 shrink-0 rounded-md overflow-hidden bg-muted border border-border">
-              <Image 
-                src={imageUrl} 
-                alt={completion.title} 
-                fill 
-                sizes="48px" 
+              <Image
+                src={imageUrl}
+                alt={completion.title}
+                fill
+                sizes="48px"
                 className="object-cover"
                 loading="lazy"
               />
@@ -49,10 +68,12 @@ export function CompletionTab({ completion, isSelected, onClick }: CompletionTab
             </div>
           )}
           <div className="flex-1 min-w-0 text-left">
-            <h4 className={cn(
-              "text-sm truncate",
-              isSelected ? "font-semibold text-foreground" : "font-medium text-foreground/80"
-            )}>
+            <h4
+              className={cn(
+                "text-sm truncate",
+                isSelected ? "font-semibold text-foreground" : "font-medium text-foreground/80",
+              )}
+            >
               {completion.title}
             </h4>
             <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">

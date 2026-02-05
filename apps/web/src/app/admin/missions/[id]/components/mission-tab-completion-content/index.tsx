@@ -6,8 +6,23 @@ import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
 import { useReadCompletions } from "@/app/admin/hooks/mission-completion";
 import { CompletionEditDialog } from "@/app/admin/missions/[id]/components/edit/CompletionEditDialog";
 import type { MissionCompletionWithMission } from "@/types/dto";
+import {
+  DndContext,
+  type DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { AlertCircle, Award, Plus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CompletionDetailCard } from "./CompletionDetailCard";
 import { CompletionTab } from "./CompletionTab";
 
@@ -15,17 +30,84 @@ interface MissionTabCompletionContentProps {
   missionId: string;
 }
 
+const STORAGE_KEY = (missionId: string) => `completion-order-${missionId}`;
+
+const saveOrder = (missionId: string, order: string[]) => {
+  try {
+    localStorage.setItem(STORAGE_KEY(missionId), JSON.stringify(order));
+  } catch (error) {
+    console.error("Failed to save completion order to localStorage:", error);
+  }
+};
+
+const loadOrder = (missionId: string): string[] | null => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY(missionId));
+    return stored ? JSON.parse(stored) : null;
+  } catch (error) {
+    console.error("Failed to load completion order from localStorage:", error);
+    return null;
+  }
+};
+
 export function MissionTabCompletionContent({ missionId }: MissionTabCompletionContentProps) {
   const { data: completionsResponse, isPending, error } = useReadCompletions(missionId);
-  const completions = completionsResponse?.data ?? [];
+  const rawCompletions = completionsResponse?.data ?? [];
+  const [completions, setCompletions] = useState<MissionCompletionWithMission[]>([]);
 
-  const [selectedCompletionId, setSelectedCompletionId] = useState<string | null>(
-    completions[0]?.id ?? null,
-  );
+  const [selectedCompletionId, setSelectedCompletionId] = useState<string | null>(null);
   const [editingCompletion, setEditingCompletion] = useState<MissionCompletionWithMission | null>(
     null,
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  useEffect(() => {
+    if (rawCompletions.length > 0) {
+      const savedOrder = loadOrder(missionId);
+      let orderedCompletions: MissionCompletionWithMission[];
+
+      if (savedOrder && savedOrder.length === rawCompletions.length) {
+        orderedCompletions = savedOrder
+          .map(id => rawCompletions.find(c => c.id === id))
+          .filter((c): c is MissionCompletionWithMission => c !== undefined);
+
+        const newIds = rawCompletions.filter(c => !savedOrder.includes(c.id));
+        orderedCompletions = [...orderedCompletions, ...newIds];
+      } else {
+        orderedCompletions = rawCompletions;
+      }
+
+      setCompletions(orderedCompletions);
+
+      if (!selectedCompletionId && orderedCompletions[0]) {
+        setSelectedCompletionId(orderedCompletions[0].id);
+      }
+    }
+  }, [rawCompletions, missionId, selectedCompletionId]);
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setCompletions(prevCompletions => {
+        const oldIndex = prevCompletions.findIndex(item => item.id === active.id);
+        const newIndex = prevCompletions.findIndex(item => item.id === over.id);
+        const newItems = arrayMove(prevCompletions, oldIndex, newIndex);
+
+        saveOrder(
+          missionId,
+          newItems.map(item => item.id),
+        );
+
+        return newItems;
+      });
+    }
+  };
 
   const handleCreateNew = () => {
     setEditingCompletion(null);
@@ -92,25 +174,36 @@ export function MissionTabCompletionContent({ missionId }: MissionTabCompletionC
           </Card>
         ) : (
           <div className="grid grid-cols-[300px_1fr] gap-6">
-            <div className="space-y-2">
-              <Card>
-                <CardHeader className="pb-3">
-                  <h3 className="text-sm font-semibold text-muted-foreground">
-                    완료화면 목록 ({completions.length})
-                  </h3>
-                </CardHeader>
-                <CardContent className="space-y-1 max-h-[600px] overflow-y-auto">
-                  {completions.map(completion => (
-                    <CompletionTab
-                      key={completion.id}
-                      completion={completion}
-                      isSelected={completion.id === selectedCompletionId}
-                      onClick={() => setSelectedCompletionId(completion.id)}
-                    />
-                  ))}
-                </CardContent>
-              </Card>
-            </div>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <div className="space-y-2">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <h3 className="text-sm font-semibold text-muted-foreground">
+                      완료화면 목록 ({completions.length})
+                    </h3>
+                  </CardHeader>
+                  <CardContent className="space-y-1 max-h-[600px] overflow-y-auto">
+                    <SortableContext
+                      items={completions.map(c => c.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {completions.map(completion => (
+                        <CompletionTab
+                          key={completion.id}
+                          completion={completion}
+                          isSelected={completion.id === selectedCompletionId}
+                          onClick={() => setSelectedCompletionId(completion.id)}
+                        />
+                      ))}
+                    </SortableContext>
+                  </CardContent>
+                </Card>
+              </div>
+            </DndContext>
 
             <div>
               {selectedCompletion ? (

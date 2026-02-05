@@ -7,25 +7,11 @@ import {
   FormLabel,
   FormMessage,
 } from "@/app/admin/components/shadcn-ui/form";
-import { Input } from "@/app/admin/components/shadcn-ui/input";
-import { cn } from "@/app/admin/lib/utils";
+import { Textarea } from "@/app/admin/components/shadcn-ui/textarea";
 import type { Control, FieldValues, Path } from "react-hook-form";
+import { CharacterCounter } from "./InputField";
 
-interface CharacterCounterProps {
-  current: number;
-  max: number;
-}
-
-function CharacterCounter({ current, max }: CharacterCounterProps) {
-  const isOver = current > max;
-  return (
-    <span className={cn("text-xs", isOver ? "text-destructive" : "text-muted-foreground")}>
-      {current}/{max}자
-    </span>
-  );
-}
-
-interface InputFieldProps<T extends FieldValues> {
+interface TextareaFieldProps<T extends FieldValues> {
   control: Control<T>;
   name: Path<T>;
   label: string;
@@ -35,9 +21,11 @@ interface InputFieldProps<T extends FieldValues> {
   isOptional?: boolean;
   maxLength?: number;
   showCounter?: boolean;
+  rows?: number;
+  className?: string;
 }
 
-export function InputField<T extends FieldValues>({
+export function TextareaField<T extends FieldValues>({
   control,
   name,
   label,
@@ -47,7 +35,9 @@ export function InputField<T extends FieldValues>({
   isOptional = false,
   maxLength,
   showCounter = false,
-}: InputFieldProps<T>) {
+  rows = 4,
+  className,
+}: TextareaFieldProps<T>) {
   return (
     <FormField
       control={control}
@@ -67,12 +57,17 @@ export function InputField<T extends FieldValues>({
             <FormMessage />
           </div>
           <FormControl>
-            <Input {...field} placeholder={placeholder} disabled={disabled} maxLength={maxLength} />
+            <Textarea
+              {...field}
+              placeholder={placeholder}
+              disabled={disabled}
+              maxLength={maxLength}
+              rows={rows}
+              className={className}
+            />
           </FormControl>
         </FormItem>
       )}
     />
   );
 }
-
-export { CharacterCounter };

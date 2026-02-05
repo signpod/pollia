@@ -56,7 +56,6 @@ export function SubjectiveForm({
       <form onSubmit={handleSubmit} className="space-y-6">
         <BaseActionFormFields
           control={form.control}
-          watch={form.watch}
           isLoading={isLoading}
           titlePlaceholder="예: 자유롭게 의견을 작성해주세요."
           mainImagePreviewUrl={mainImage.previewUrl}

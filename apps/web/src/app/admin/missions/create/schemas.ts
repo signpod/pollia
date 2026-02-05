@@ -8,9 +8,11 @@ import { z } from "zod";
 
 const completionSchemaWithoutMissionId = missionCompletionInputSchema.omit({ missionId: true });
 
-const baseSchema = missionInputSchema.extend({
-  completion: completionSchemaWithoutMissionId,
-});
+const baseSchema = missionInputSchema.merge(
+  z.object({
+    completion: completionSchemaWithoutMissionId,
+  }),
+);
 
 export const createMissionFunnelSchema = baseSchema;
 
