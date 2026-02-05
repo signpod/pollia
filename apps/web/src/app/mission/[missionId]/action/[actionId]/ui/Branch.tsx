@@ -8,7 +8,7 @@ import { useActionContext } from "../providers/ActionContext";
 export function Branch({ actionData }: ActionStepContentProps) {
   const { updateCanGoNext, onAnswerChange, missionResponse } = useActionContext();
 
-  const options = actionData.options ?? [];
+  const options = useMemo(() => actionData.options ?? [], [actionData.options]);
   const onAnswerChangeRef = useRef(onAnswerChange);
   onAnswerChangeRef.current = onAnswerChange;
 
