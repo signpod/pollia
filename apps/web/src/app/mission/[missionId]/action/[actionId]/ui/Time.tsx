@@ -267,7 +267,7 @@ function WheelPicker({ items, value, onChange }: WheelPickerProps) {
   const startScrollTopRef = React.useRef(0);
 
   React.useEffect(() => {
-    if (containerRef.current && currentIndex !== -1) {
+    if (containerRef.current && currentIndex !== -1 && !isSnappingRef.current) {
       containerRef.current.scrollTop = currentIndex * itemHeight;
       setScrollTop(currentIndex * itemHeight);
     }
