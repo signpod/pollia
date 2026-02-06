@@ -15,7 +15,7 @@ import {
   createVideoAction,
 } from "@/actions/action/create";
 import { adminActionQueryKeys } from "@/app/admin/constants/queryKeys";
-import type { ActionType } from "@/app/admin/missions/[id]/edit/components/action-forms";
+import type { ActionType } from "@/app/admin/missions/[id]/components/mission-tab-action-list-content/action-forms";
 import { BRANCH_HAS_OTHER, BRANCH_MAX_SELECTIONS } from "@/schemas/action";
 import type {
   BaseActionRequest,

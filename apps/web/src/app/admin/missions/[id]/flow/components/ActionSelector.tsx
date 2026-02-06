@@ -13,7 +13,7 @@ import { ACTION_TYPE_CONFIGS } from "@/app/admin/config/actionTypes";
 import { useCreateAction } from "@/app/admin/hooks/action/use-create-action";
 import { useAvailableNodes } from "@/app/admin/hooks/flow/use-available-nodes";
 import { CompletionEditDialog } from "@/app/admin/missions/[id]/components/edit/CompletionEditDialog";
-import { CreateActionDialog } from "@/app/admin/missions/[id]/edit/components/CreateActionDialog";
+import { CreateActionDialog } from "@/app/admin/missions/[id]/components/mission-tab-action-list-content/CreateActionDialog";
 import { CheckCircle, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";

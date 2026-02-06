@@ -41,7 +41,7 @@ export function AdminMissionHeader({
   description,
   nav,
   missionId,
-  isActive,
+  isActive: _isActive,
 }: AdminMissionHeaderProps) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
@@ -53,7 +53,7 @@ export function AdminMissionHeader({
     onSuccess: data => {
       toast.success("미션이 복제되었습니다");
       setIsDuplicateDialogOpen(false);
-      router.push(ADMIN_ROUTES.ADMIN_MISSION_EDIT(data.data.id));
+      router.push(ADMIN_ROUTES.ADMIN_MISSION(data.data.id));
     },
     onError: error => {
       toast.error(error.message || "미션 복제 중 오류가 발생했습니다");
