@@ -250,6 +250,7 @@ export function MissionTabCompletionContent({ missionId }: MissionTabCompletionC
               onSave: handleImageSave,
               onShare: handleImageShare,
             }}
+            onShare={handleImageShare}
           />
         </MobilePreviewPanel>
       )}
