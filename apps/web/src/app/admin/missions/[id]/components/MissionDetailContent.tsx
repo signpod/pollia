@@ -30,7 +30,7 @@ export function MissionDetailContent({ mission, defaultTab = "basic" }: MissionD
         <TabsList className="grid w-full max-w-[800px] grid-cols-4 mb-6">
           <TabsTrigger value="basic" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            기본 정보
+            인트로
           </TabsTrigger>
           <TabsTrigger value="actions" className="flex items-center gap-2">
             <ListChecks className="h-4 w-4" />

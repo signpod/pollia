@@ -1,7 +1,7 @@
 "use client";
 
 import { ImageSelectField } from "@/app/admin/components/common/ImageSelectField";
-import { DateTimeField } from "@/app/admin/components/common/molecule/DateTimeField";
+import { DateTimeField } from "@/app/admin/components/common/molecules/DateTimeField";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import {
   Form,
