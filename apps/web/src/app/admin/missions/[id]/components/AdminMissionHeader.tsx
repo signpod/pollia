@@ -27,7 +27,6 @@ import { Check, Copy, CopyPlus, ExternalLink, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useCallback, useState } from "react";
 import { toast } from "sonner";
-import { MissionActiveToggle } from "./MissionActiveToggle";
 
 interface AdminMissionHeaderProps {
   title: string;
@@ -166,8 +165,6 @@ export function AdminMissionHeader({
               </TooltipTrigger>
               <TooltipContent>미션 삭제</TooltipContent>
             </Tooltip>
-
-            <MissionActiveToggle missionId={missionId} isActive={isActive} />
           </div>
         </div>
         {nav && <div>{nav}</div>}

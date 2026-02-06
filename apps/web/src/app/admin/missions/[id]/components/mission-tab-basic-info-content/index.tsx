@@ -1,7 +1,15 @@
 "use client";
 
 import { MobilePreviewPanel } from "@/app/admin/components/common/MobilePreviewPanel";
-import { Badge } from "@/app/admin/components/shadcn-ui/badge";
+import { ToggleField } from "@/app/admin/components/common/ToggleField";
+import {
+  BadgeView,
+  DateView,
+  ImageView,
+  LabeledView,
+  NumberView,
+  TextView,
+} from "@/app/admin/components/common/molecules/viewers";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import {
   Card,
@@ -10,71 +18,26 @@ import {
   CardHeader,
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
+import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
-import { cn, stripHtmlTags } from "@/app/admin/lib/utils";
+import { useUpdateMission } from "@/app/admin/hooks/mission/use-update-mission";
+import { stripHtmlTags } from "@/app/admin/lib/utils";
 import { MISSION_CATEGORY_LABELS, MISSION_TYPE_LABELS } from "@/constants/mission";
 import type { GetMissionResponse } from "@/types/dto";
 import { MissionType } from "@prisma/client";
-import {
-  Calendar,
-  CheckCircle2,
-  Clock,
-  Gift,
-  ImageIcon,
-  Lock,
-  type LucideIcon,
-  Pencil,
-  Tag,
-  Users,
-  XCircle,
-} from "lucide-react";
-import Image from "next/image";
-import { useRef, useState } from "react";
+import { Pencil } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
 import { BasicInfoEditDialog } from "../edit/BasicInfoEditDialog";
 import { ImageEditDialog } from "../edit/ImageEditDialog";
-import { ClientDateDisplay } from "./ClientDateDisplay";
 import { IntroMobilePreviewPlaceholder } from "./IntroMobilePreviewPlaceholder";
 
 interface MissionBasicInfoProps {
   mission: GetMissionResponse["data"];
 }
 
-interface StatCardProps {
-  icon: LucideIcon;
-  iconColor: string;
-  label: string;
-  value: React.ReactNode;
-}
-
-function StatCard({ icon: Icon, iconColor, label, value }: StatCardProps) {
-  return (
-    <Card>
-      <CardContent>
-        <div className="flex items-center gap-3">
-          <Icon className={cn("h-4 w-4", iconColor)} />
-          <div className="flex-1 min-w-0">
-            <div className="text-xs text-muted-foreground mb-1">{label}</div>
-            <div className="font-semibold truncate">{value}</div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-interface InfoFieldProps {
-  label: string;
-  value: React.ReactNode;
-  className?: string;
-}
-
-function InfoField({ label, value, className }: InfoFieldProps) {
-  return (
-    <div className={cn("space-y-1", className)}>
-      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
-      <dd className="text-sm">{value}</dd>
-    </div>
-  );
+interface ActiveFormValues {
+  isActive: boolean;
 }
 
 export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
@@ -84,238 +47,143 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
   const previewAnchorRef = useRef<HTMLDivElement>(null);
 
+  const typeBadgeVariant = mission.type === MissionType.EXPERIENCE_GROUP ? "default" : "secondary";
+
+  const form = useForm<ActiveFormValues>({
+    defaultValues: {
+      isActive: mission.isActive,
+    },
+  });
+
+  const updateMission = useUpdateMission();
+
+  useEffect(() => {
+    form.reset({ isActive: mission.isActive });
+  }, [mission.isActive, form]);
+
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === "isActive" && value.isActive !== undefined) {
+        updateMission.mutate({
+          missionId: mission.id,
+          data: { isActive: value.isActive },
+        });
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form, mission.id, updateMission]);
+
   return (
     <>
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-          <StatCard
-            icon={mission.isActive ? CheckCircle2 : XCircle}
-            iconColor={mission.isActive ? "text-green-600" : "text-muted-foreground"}
-            label="상태"
-            value={
-              <span className={mission.isActive ? "" : "text-muted-foreground"}>
-                {mission.isActive ? "활성" : "비활성"}
-              </span>
-            }
-          />
-
-          {missionTypeLabel && (
-            <StatCard
-              icon={Lock}
-              iconColor="text-primary"
-              label="타입"
-              value={
-                <Badge
-                  variant={mission.type === MissionType.EXPERIENCE_GROUP ? "default" : "secondary"}
-                >
-                  <span
-                    className={cn(
-                      "text-sm",
-                      mission.type === MissionType.EXPERIENCE_GROUP
-                        ? "text-muted"
-                        : "text-foreground",
-                    )}
-                  >
-                    {missionTypeLabel}
-                  </span>
-                </Badge>
-              }
-            />
-          )}
-
-          {missionCategoryLabel && (
-            <StatCard
-              icon={Tag}
-              iconColor="text-indigo-600"
-              label="카테고리"
-              value={
-                <Badge variant="outline">
-                  <span className="text-sm">{missionCategoryLabel}</span>
-                </Badge>
-              }
-            />
-          )}
-
-          <StatCard
-            icon={Clock}
-            iconColor="text-blue-600"
-            label="예상 소요 시간"
-            value={
-              mission.estimatedMinutes ? (
-                `${mission.estimatedMinutes}분`
-              ) : (
-                <span className="text-sm text-muted-foreground">미설정</span>
-              )
-            }
-          />
-
-          <StatCard
-            icon={Calendar}
-            iconColor="text-green-600"
-            label="시작일"
-            value={
-              mission.startDate ? (
-                <ClientDateDisplay date={mission.startDate} format="date" />
-              ) : (
-                <span className="text-sm text-muted-foreground">미설정</span>
-              )
-            }
-          />
-
-          <StatCard
-            icon={Calendar}
-            iconColor="text-orange-600"
-            label="마감일"
-            value={
-              mission.deadline ? (
-                <ClientDateDisplay date={mission.deadline} format="date" />
-              ) : (
-                <span className="text-sm text-muted-foreground">미설정</span>
-              )
-            }
-          />
-
-          <StatCard
-            icon={Gift}
-            iconColor="text-purple-600"
-            label="리워드"
-            value={
-              mission.rewardId ? (
-                "설정됨"
-              ) : (
-                <span className="text-sm text-muted-foreground">미설정</span>
-              )
-            }
-          />
-
-          <StatCard
-            icon={Users}
-            iconColor="text-purple-600"
-            label="최대 참여자 수"
-            value={
-              mission.maxParticipants ? (
-                `${mission.maxParticipants}명`
-              ) : (
-                <span className="text-sm text-foreground">제한 없음</span>
-              )
-            }
-          />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-[1fr_1fr_auto] gap-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>인트로 설정</CardTitle>
-                  <CardDescription>미션 인트로 화면에 표시되는 정보</CardDescription>
-                </div>
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_auto] gap-6">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>인트로 정보</CardTitle>
+                <CardDescription>미션 인트로 화면에 표시되는 정보</CardDescription>
+              </div>
+              <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={() => setIsBasicInfoDialogOpen(true)}>
                   <Pencil className="h-4 w-4 mr-2" />
-                  편집
+                  기본 정보 편집
                 </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <InfoField label="제목" value={mission.title} />
-
-              <Separator />
-
-              <InfoField
-                label="타겟"
-                value={
-                  mission.target || (
-                    <span className="text-muted-foreground italic">설정되지 않음</span>
-                  )
-                }
-              />
-
-              <Separator />
-
-              <InfoField
-                label="설명"
-                value={
-                  mission.description ? (
-                    <div className="whitespace-pre-wrap">{stripHtmlTags(mission.description)}</div>
-                  ) : (
-                    <span className="text-muted-foreground italic">설정되지 않음</span>
-                  )
-                }
-              />
-
-              <Separator />
-
-              <div className="grid grid-cols-2 gap-4">
-                <InfoField label="생성일" value={<ClientDateDisplay date={mission.createdAt} />} />
-                <InfoField label="수정일" value={<ClientDateDisplay date={mission.updatedAt} />} />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>미디어</CardTitle>
-                  <CardDescription>인트로 화면 이미지 및 로고</CardDescription>
-                </div>
                 <Button variant="outline" size="sm" onClick={() => setIsImageDialogOpen(true)}>
                   <Pencil className="h-4 w-4 mr-2" />
-                  편집
+                  미디어 편집
                 </Button>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <InfoField
-                label="미션 이미지"
-                value={
-                  mission.imageUrl ? (
-                    <Image
-                      src={mission.imageUrl}
-                      alt="미션 이미지"
-                      width={200}
-                      height={200}
-                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 400px"
-                      className="w-auto h-auto max-w-full max-h-64 min-h-32 rounded-lg border mt-2"
-                      style={{ objectFit: "contain" }}
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-32 border-2 border-dashed rounded-lg bg-muted/20 mt-2">
-                      <ImageIcon className="h-8 w-8 text-muted-foreground/30 mb-2" />
-                      <span className="text-xs text-muted-foreground">이미지 없음</span>
-                    </div>
-                  )
-                }
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <Form {...form}>
+              <ToggleField
+                control={form.control}
+                name="isActive"
+                label="활성 상태"
+                description="미션을 활성화하거나 비활성화합니다"
+                disabled={updateMission.isPending}
               />
+            </Form>
 
-              <InfoField
-                label="브랜드 로고"
-                value={
-                  mission.brandLogoUrl ? (
-                    <Image
-                      src={mission.brandLogoUrl}
-                      alt="브랜드 로고"
-                      width={150}
-                      height={80}
-                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 300px"
-                      className="w-auto h-auto max-w-full max-h-32 min-h-16 rounded-lg border bg-gray-50 p-2 mt-2"
-                      style={{ objectFit: "contain" }}
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-32 border-2 border-dashed rounded-lg bg-muted/20 mt-2">
-                      <ImageIcon className="h-8 w-8 text-muted-foreground/30 mb-2" />
-                      <span className="text-xs text-muted-foreground">이미지 없음</span>
-                    </div>
-                  )
-                }
-              />
-            </CardContent>
-          </Card>
+            <Separator />
 
-          <div ref={previewAnchorRef} className="hidden xl:block" />
-        </div>
+            <section className="space-y-3">
+              <h3 className="text-sm font-medium text-muted-foreground">기본 정보</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <LabeledView label="타입">
+                  <BadgeView value={missionTypeLabel} variant={typeBadgeVariant} />
+                </LabeledView>
+                <LabeledView label="카테고리">
+                  <BadgeView value={missionCategoryLabel} variant="outline" />
+                </LabeledView>
+              </div>
+              <LabeledView label="제목">
+                <TextView value={mission.title} />
+              </LabeledView>
+              <LabeledView label="타겟">
+                <TextView value={mission.target} />
+              </LabeledView>
+              <LabeledView label="설명">
+                <TextView
+                  value={mission.description ? stripHtmlTags(mission.description) : null}
+                  multiline
+                />
+              </LabeledView>
+            </section>
+
+            <Separator />
+
+            <section className="space-y-3">
+              <h3 className="text-sm font-medium text-muted-foreground">일정 및 설정</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <LabeledView label="시작일">
+                  <DateView value={mission.startDate} dateFormat="date" />
+                </LabeledView>
+                <LabeledView label="마감일">
+                  <DateView value={mission.deadline} dateFormat="date" />
+                </LabeledView>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <LabeledView label="예상 소요 시간">
+                  <NumberView value={mission.estimatedMinutes} unit="분" />
+                </LabeledView>
+                <LabeledView label="최대 참여자 수">
+                  <NumberView value={mission.maxParticipants} unit="명" placeholder="제한 없음" />
+                </LabeledView>
+              </div>
+            </section>
+
+            <Separator />
+
+            <section className="space-y-3">
+              <h3 className="text-sm font-medium text-muted-foreground">미디어</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <LabeledView label="미션 이미지">
+                  <ImageView src={mission.imageUrl} alt="미션 이미지" size="lg" />
+                </LabeledView>
+                <LabeledView label="브랜드 로고">
+                  <ImageView src={mission.brandLogoUrl} alt="브랜드 로고" size="md" />
+                </LabeledView>
+              </div>
+            </section>
+
+            <Separator />
+
+            <section>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <LabeledView label="생성일">
+                  <DateView value={mission.createdAt} dateFormat="datetime" />
+                </LabeledView>
+                <LabeledView label="수정일">
+                  <DateView value={mission.updatedAt} dateFormat="datetime" />
+                </LabeledView>
+              </div>
+            </section>
+          </CardContent>
+        </Card>
+
+        <div ref={previewAnchorRef} className="hidden xl:block" />
       </div>
 
       <MobilePreviewPanel anchor={previewAnchorRef}>
