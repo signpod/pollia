@@ -27,7 +27,6 @@ export default async function MissionFlowPage({ params }: FlowPageProps) {
           description={mission.title}
           nav={<MissionNavigation missionId={missionId} />}
           missionId={missionId}
-          isActive={mission.isActive}
         />
 
         <FlowEditor missionId={missionId} />

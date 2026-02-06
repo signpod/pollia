@@ -33,7 +33,6 @@ interface AdminMissionHeaderProps {
   description?: string;
   nav?: ReactNode;
   missionId: string;
-  isActive: boolean;
 }
 
 export function AdminMissionHeader({
@@ -41,7 +40,6 @@ export function AdminMissionHeader({
   description,
   nav,
   missionId,
-  isActive: _isActive,
 }: AdminMissionHeaderProps) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);

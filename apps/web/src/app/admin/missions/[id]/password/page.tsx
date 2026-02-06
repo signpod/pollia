@@ -27,7 +27,6 @@ export default async function MissionPasswordPage({ params }: PageProps) {
           description={mission.title}
           nav={<MissionNavigation missionId={missionId} />}
           missionId={missionId}
-          isActive={mission.isActive}
         />
 
         <PasswordManagement missionId={missionId} />

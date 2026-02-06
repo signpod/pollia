@@ -61,7 +61,6 @@ export default function AdminMissionSubmissionsPage({ params }: AdminMissionSubm
         description="미션에 참여한 사용자들의 응답 데이터를 확인하고 CSV로 내보낼 수 있습니다"
         nav={<MissionNavigation missionId={missionId} />}
         missionId={missionId}
-        isActive={mission.isActive}
       />
 
       <div className="space-y-6">

@@ -23,7 +23,6 @@ export function MissionDetailContent({ mission, defaultTab = "basic" }: MissionD
         description={mission.title}
         nav={<MissionNavigation missionId={mission.id} />}
         missionId={mission.id}
-        isActive={mission.isActive}
       />
 
       <Tabs defaultValue={defaultTab} className="w-full">

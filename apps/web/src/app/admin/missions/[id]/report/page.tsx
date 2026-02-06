@@ -27,7 +27,6 @@ export default async function MissionReportPage({ params }: PageProps) {
           description={mission.title}
           nav={<MissionNavigation missionId={missionId} />}
           missionId={missionId}
-          isActive={mission.isActive}
         />
 
         <div className="max-w-3xl">

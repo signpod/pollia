@@ -48,7 +48,6 @@ export default function AdminMissionTrackingPage({ params }: AdminMissionTrackin
         description="트래킹, 디바이스 분포, 참여 패턴 등 미션의 주요 지표를 확인할 수 있습니다"
         nav={<MissionNavigation missionId={missionId} />}
         missionId={missionId}
-        isActive={mission.isActive}
       />
 
       <Card>
