@@ -19,7 +19,7 @@ export function TiptapViewer({ content, className }: TiptapViewerProps) {
   return (
     <div
       className={cn("tiptap-viewer tiptap", className)}
-      // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
+      // biome-ignore lint/security/noDangerouslySetInnerHtml: TiptapViewer 사용안함. (번들사이즈 줄이기)
       dangerouslySetInnerHTML={{ __html: sanitizedContent }}
     />
   );
