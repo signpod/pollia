@@ -4,9 +4,14 @@ import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { cn } from "@/app/admin/lib/utils";
 import type { Editor } from "@tiptap/core";
 import Placeholder from "@tiptap/extension-placeholder";
+import { TextAlign } from "@tiptap/extension-text-align";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import {
+  AlignCenter,
+  AlignJustify,
+  AlignLeft,
+  AlignRight,
   Bold,
   Code,
   Heading1,
@@ -142,6 +147,51 @@ function TiptapToolbar({ editor }: TiptapToolbarProps) {
           <Code className="size-4" />
         </Button>
       </div>
+
+      <div className="mx-1 h-4 w-px bg-border" />
+
+      <div className="flex gap-1">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => editor.chain().focus().setTextAlign("left").run()}
+          className={cn(editor.isActive({ textAlign: "left" }) && "bg-accent")}
+          aria-label="왼쪽 정렬"
+        >
+          <AlignLeft className="size-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => editor.chain().focus().setTextAlign("center").run()}
+          className={cn(editor.isActive({ textAlign: "center" }) && "bg-accent")}
+          aria-label="가운데 정렬"
+        >
+          <AlignCenter className="size-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => editor.chain().focus().setTextAlign("right").run()}
+          className={cn(editor.isActive({ textAlign: "right" }) && "bg-accent")}
+          aria-label="오른쪽 정렬"
+        >
+          <AlignRight className="size-4" />
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => editor.chain().focus().setTextAlign("justify").run()}
+          className={cn(editor.isActive({ textAlign: "justify" }) && "bg-accent")}
+          aria-label="양쪽 정렬"
+        >
+          <AlignJustify className="size-4" />
+        </Button>
+      </div>
     </div>
   );
 }
@@ -159,6 +209,7 @@ export function TiptapEditor({
   const editor = useEditor({
     extensions: [
       StarterKit,
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
       Placeholder.configure({
         placeholder: placeholder || "내용을 입력하세요...",
         emptyEditorClass: "is-editor-empty",
