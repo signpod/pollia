@@ -89,14 +89,14 @@ export function MissionCompletionTemplate({
         </div>
       )}
 
-      <div className="flex w-full flex-col items-center gap-4 text-center">
+      <div className="flex w-full flex-col items-center gap-4">
         {title && (
           <Typo.MainTitle size="large" className="break-keep">
             {title}
           </Typo.MainTitle>
         )}
         {description && cleanTiptapHTML(description) && (
-          <TiptapViewer content={cleanTiptapHTML(description)} className="text-center break-keep" />
+          <TiptapViewer content={cleanTiptapHTML(description)} className="break-keep w-full" />
         )}
       </div>
 
