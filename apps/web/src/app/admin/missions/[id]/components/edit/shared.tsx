@@ -2,7 +2,7 @@ import { InputField } from "@/app/admin/components/common/InputField";
 import { NumberField } from "@/app/admin/components/common/NumberField";
 import { SelectField } from "@/app/admin/components/common/SelectField";
 import { TiptapField } from "@/app/admin/components/common/TiptapField";
-import { DateTimeField } from "@/app/admin/components/common/molecule/DateTimeField";
+import { DateTimeField } from "@/app/admin/components/common/molecules/DateTimeField";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { MISSION_CATEGORY_LABELS, MISSION_TYPE_LABELS } from "@/constants/mission";

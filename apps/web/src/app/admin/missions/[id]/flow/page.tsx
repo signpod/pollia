@@ -21,17 +21,16 @@ export default async function MissionFlowPage({ params }: FlowPageProps) {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <div className="max-w-7xl">
+      <>
         <AdminMissionHeader
           title="플로우 편집"
           description={mission.title}
           nav={<MissionNavigation missionId={missionId} />}
           missionId={missionId}
-          isActive={mission.isActive}
         />
 
         <FlowEditor missionId={missionId} />
-      </div>
+      </>
     </HydrationBoundary>
   );
 }

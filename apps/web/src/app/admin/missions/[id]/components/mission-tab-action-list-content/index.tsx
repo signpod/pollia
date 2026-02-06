@@ -40,9 +40,9 @@ import {
 import { AlertCircle, FileText, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { CreateActionDialog } from "../../edit/components/CreateActionDialog";
-import { EditActionDialog } from "../../edit/components/EditActionDialog";
-import type { ActionFormData } from "../../edit/components/action-forms";
+import { CreateActionDialog } from "./CreateActionDialog";
+import { EditActionDialog } from "./EditActionDialog";
+import type { ActionFormData } from "./action-forms";
 import { ActionDetailCard } from "./ActionDetailCard";
 import { SortableActionTab } from "./SortableActionTab";
 

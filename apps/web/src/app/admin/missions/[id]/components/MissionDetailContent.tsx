@@ -17,20 +17,19 @@ interface MissionDetailContentProps {
 
 export function MissionDetailContent({ mission, defaultTab = "basic" }: MissionDetailContentProps) {
   return (
-    <div className="max-w-7xl">
+    <>
       <AdminMissionHeader
         title="미션 상세"
         description={mission.title}
         nav={<MissionNavigation missionId={mission.id} />}
         missionId={mission.id}
-        isActive={mission.isActive}
       />
 
       <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList className="grid w-full max-w-[800px] grid-cols-4 mb-6">
           <TabsTrigger value="basic" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
-            기본 정보
+            인트로
           </TabsTrigger>
           <TabsTrigger value="actions" className="flex items-center gap-2">
             <ListChecks className="h-4 w-4" />
@@ -62,6 +61,6 @@ export function MissionDetailContent({ mission, defaultTab = "basic" }: MissionD
           <MissionTabRewardContent missionId={mission.id} />
         </TabsContent>
       </Tabs>
-    </div>
+    </>
   );
 }

@@ -27,14 +27,12 @@ import { Check, Copy, CopyPlus, ExternalLink, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useCallback, useState } from "react";
 import { toast } from "sonner";
-import { MissionActiveToggle } from "./MissionActiveToggle";
 
 interface AdminMissionHeaderProps {
   title: string;
   description?: string;
   nav?: ReactNode;
   missionId: string;
-  isActive: boolean;
 }
 
 export function AdminMissionHeader({
@@ -42,7 +40,6 @@ export function AdminMissionHeader({
   description,
   nav,
   missionId,
-  isActive,
 }: AdminMissionHeaderProps) {
   const router = useRouter();
   const [copied, setCopied] = useState(false);
@@ -54,7 +51,7 @@ export function AdminMissionHeader({
     onSuccess: data => {
       toast.success("미션이 복제되었습니다");
       setIsDuplicateDialogOpen(false);
-      router.push(ADMIN_ROUTES.ADMIN_MISSION_EDIT(data.data.id));
+      router.push(ADMIN_ROUTES.ADMIN_MISSION(data.data.id));
     },
     onError: error => {
       toast.error(error.message || "미션 복제 중 오류가 발생했습니다");
@@ -166,8 +163,6 @@ export function AdminMissionHeader({
               </TooltipTrigger>
               <TooltipContent>미션 삭제</TooltipContent>
             </Tooltip>
-
-            <MissionActiveToggle missionId={missionId} isActive={isActive} />
           </div>
         </div>
         {nav && <div>{nav}</div>}

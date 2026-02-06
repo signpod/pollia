@@ -55,13 +55,12 @@ export default function AdminMissionSubmissionsPage({ params }: AdminMissionSubm
   if (!mission) return notFound();
 
   return (
-    <div className="max-w-7xl">
+    <>
       <AdminMissionHeader
         title="제출 목록"
         description="미션에 참여한 사용자들의 응답 데이터를 확인하고 CSV로 내보낼 수 있습니다"
         nav={<MissionNavigation missionId={missionId} />}
         missionId={missionId}
-        isActive={mission.isActive}
       />
 
       <div className="space-y-6">
@@ -97,6 +96,6 @@ export default function AdminMissionSubmissionsPage({ params }: AdminMissionSubm
           </CardContent>
         </Card>
       </div>
-    </div>
+    </>
   );
 }
