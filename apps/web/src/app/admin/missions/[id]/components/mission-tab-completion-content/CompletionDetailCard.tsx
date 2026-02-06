@@ -13,31 +13,21 @@ import {
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/admin/components/shadcn-ui/card";
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
+import {
+  DateView,
+  ImageView,
+  LabeledView,
+  TextView,
+} from "@/app/admin/components/common/molecules/viewers";
 import { useDeleteCompletion } from "@/app/admin/hooks/mission-completion";
-import { cn, stripHtmlTags } from "@/app/admin/lib/utils";
+import { stripHtmlTags } from "@/app/admin/lib/utils";
 import type { MissionCompletionWithMission } from "@/types/dto";
-import { ExternalLink, ImageIcon, Pencil, Trash2, Loader2 } from "lucide-react";
-import Image from "next/image";
+import { ExternalLink, Pencil, Trash2, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 interface CompletionDetailCardProps {
   completion: MissionCompletionWithMission;
   onEdit: (completion: MissionCompletionWithMission) => void;
-}
-
-interface InfoFieldProps {
-  label: string;
-  value: React.ReactNode;
-  className?: string;
-}
-
-function InfoField({ label, value, className }: InfoFieldProps) {
-  return (
-    <div className={cn("space-y-1", className)}>
-      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
-      <dd className="text-sm">{value}</dd>
-    </div>
-  );
 }
 
 export function CompletionDetailCard({ completion, onEdit }: CompletionDetailCardProps) {
@@ -60,9 +50,9 @@ export function CompletionDetailCard({ completion, onEdit }: CompletionDetailCar
           <div className="flex items-center justify-between">
             <CardTitle>완료 화면 상세</CardTitle>
             <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => onEdit(completion)}
                 disabled={isDeleting}
               >
@@ -83,92 +73,61 @@ export function CompletionDetailCard({ completion, onEdit }: CompletionDetailCar
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <InfoField label="제목" value={completion.title} />
+          <LabeledView label="제목">
+            <TextView value={completion.title} />
+          </LabeledView>
 
           <Separator />
 
-          <InfoField
-            label="설명"
-            value={
-              completion.description ? (
-                <div className="whitespace-pre-wrap">{stripHtmlTags(completion.description)}</div>
-              ) : (
-                <span className="text-muted-foreground italic">설정되지 않음</span>
-              )
-            }
-          />
+          <LabeledView label="설명">
+            <TextView
+              value={completion.description ? stripHtmlTags(completion.description) : null}
+              multiline
+            />
+          </LabeledView>
 
           <Separator />
 
-          <InfoField
-            label="이미지"
-            value={
-              completion.imageUrl ? (
-                <div className="relative w-full max-w-full h-64 mt-2">
-                  <Image
-                    src={completion.imageUrl}
-                    alt="완료 화면 이미지"
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 400px"
-                    className="rounded-lg border object-contain"
-                    loading="lazy"
-                  />
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-32 border-2 border-dashed rounded-lg bg-muted/20 mt-2">
-                  <ImageIcon className="h-8 w-8 text-muted-foreground/30 mb-2" />
-                  <span className="text-xs text-muted-foreground">이미지 없음</span>
-                </div>
-              )
-            }
-          />
+          <LabeledView label="이미지">
+            <ImageView src={completion.imageUrl} alt="완료 화면 이미지" size="lg" />
+          </LabeledView>
 
           {linkEntries.length > 0 && (
             <>
               <Separator />
-              <InfoField
-                label="링크"
-                value={
-                  <div className="space-y-2 mt-2">
-                    {linkEntries.map(([key, value]) => (
-                      <div
-                        key={key}
-                        className="flex items-center gap-2 p-2 rounded-md border bg-muted/20"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs font-medium text-muted-foreground mb-0.5">
-                            {key}
-                          </div>
-                          <a
-                            href={value}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-primary hover:underline flex items-center gap-1 truncate"
-                          >
-                            {value}
-                            <ExternalLink className="h-3 w-3 shrink-0" />
-                          </a>
+              <LabeledView label="링크">
+                <div className="space-y-2">
+                  {linkEntries.map(([key, value]) => (
+                    <div
+                      key={key}
+                      className="flex items-center gap-2 p-2 rounded-md border bg-muted/20"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-medium text-muted-foreground mb-0.5">
+                          {key}
                         </div>
+                        <a
+                          href={value}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary hover:underline flex items-center gap-1 truncate"
+                        >
+                          {value}
+                          <ExternalLink className="h-3 w-3 shrink-0" />
+                        </a>
                       </div>
-                    ))}
-                  </div>
-                }
-              />
+                    </div>
+                  ))}
+                </div>
+              </LabeledView>
             </>
           )}
 
           <Separator />
 
-          <InfoField
-            label="생성일"
-            value={new Date(completion.createdAt).toLocaleString("ko-KR", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          />
+          <LabeledView label="생성일">
+            <DateView value={completion.createdAt} dateFormat="datetime" />
+          </LabeledView>
         </CardContent>
       </Card>
 
