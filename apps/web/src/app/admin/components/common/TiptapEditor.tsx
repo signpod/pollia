@@ -4,9 +4,15 @@ import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { cn } from "@/app/admin/lib/utils";
 import type { Editor } from "@tiptap/core";
 import Placeholder from "@tiptap/extension-placeholder";
+import { TextAlign } from "@tiptap/extension-text-align";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import type { LucideIcon } from "lucide-react";
 import {
+  AlignCenter,
+  AlignJustify,
+  AlignLeft,
+  AlignRight,
   Bold,
   Code,
   Heading1,
@@ -18,6 +24,17 @@ import {
   Quote,
 } from "lucide-react";
 import { useEffect, useRef } from "react";
+
+const ALIGN_OPTIONS: ReadonlyArray<{
+  value: string;
+  icon: LucideIcon;
+  label: string;
+}> = [
+  { value: "left", icon: AlignLeft, label: "왼쪽 정렬" },
+  { value: "center", icon: AlignCenter, label: "가운데 정렬" },
+  { value: "right", icon: AlignRight, label: "오른쪽 정렬" },
+  { value: "justify", icon: AlignJustify, label: "양쪽 정렬" },
+];
 
 export interface TiptapEditorProps {
   content?: string;
@@ -142,6 +159,24 @@ function TiptapToolbar({ editor }: TiptapToolbarProps) {
           <Code className="size-4" />
         </Button>
       </div>
+
+      <div className="mx-1 h-4 w-px bg-border" />
+
+      <div className="flex gap-1">
+        {ALIGN_OPTIONS.map(({ value, icon: Icon, label }) => (
+          <Button
+            key={value}
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => editor.chain().focus().setTextAlign(value).run()}
+            className={cn(editor.isActive({ textAlign: value }) && "bg-accent")}
+            aria-label={label}
+          >
+            <Icon className="size-4" />
+          </Button>
+        ))}
+      </div>
     </div>
   );
 }
@@ -159,6 +194,7 @@ export function TiptapEditor({
   const editor = useEditor({
     extensions: [
       StarterKit,
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
       Placeholder.configure({
         placeholder: placeholder || "내용을 입력하세요...",
         emptyEditorClass: "is-editor-empty",
