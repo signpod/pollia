@@ -7,6 +7,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { TextAlign } from "@tiptap/extension-text-align";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import type { LucideIcon } from "lucide-react";
 import {
   AlignCenter,
   AlignJustify,
@@ -23,6 +24,17 @@ import {
   Quote,
 } from "lucide-react";
 import { useEffect, useRef } from "react";
+
+const ALIGN_OPTIONS: ReadonlyArray<{
+  value: string;
+  icon: LucideIcon;
+  label: string;
+}> = [
+  { value: "left", icon: AlignLeft, label: "왼쪽 정렬" },
+  { value: "center", icon: AlignCenter, label: "가운데 정렬" },
+  { value: "right", icon: AlignRight, label: "오른쪽 정렬" },
+  { value: "justify", icon: AlignJustify, label: "양쪽 정렬" },
+];
 
 export interface TiptapEditorProps {
   content?: string;
@@ -151,46 +163,19 @@ function TiptapToolbar({ editor }: TiptapToolbarProps) {
       <div className="mx-1 h-4 w-px bg-border" />
 
       <div className="flex gap-1">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => editor.chain().focus().setTextAlign("left").run()}
-          className={cn(editor.isActive({ textAlign: "left" }) && "bg-accent")}
-          aria-label="왼쪽 정렬"
-        >
-          <AlignLeft className="size-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => editor.chain().focus().setTextAlign("center").run()}
-          className={cn(editor.isActive({ textAlign: "center" }) && "bg-accent")}
-          aria-label="가운데 정렬"
-        >
-          <AlignCenter className="size-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => editor.chain().focus().setTextAlign("right").run()}
-          className={cn(editor.isActive({ textAlign: "right" }) && "bg-accent")}
-          aria-label="오른쪽 정렬"
-        >
-          <AlignRight className="size-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => editor.chain().focus().setTextAlign("justify").run()}
-          className={cn(editor.isActive({ textAlign: "justify" }) && "bg-accent")}
-          aria-label="양쪽 정렬"
-        >
-          <AlignJustify className="size-4" />
-        </Button>
+        {ALIGN_OPTIONS.map(({ value, icon: Icon, label }) => (
+          <Button
+            key={value}
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => editor.chain().focus().setTextAlign(value).run()}
+            className={cn(editor.isActive({ textAlign: value }) && "bg-accent")}
+            aria-label={label}
+          >
+            <Icon className="size-4" />
+          </Button>
+        ))}
       </div>
     </div>
   );
