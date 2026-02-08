@@ -92,10 +92,7 @@ export function useStickyTabHeader({ sentinelRef, hasReward }: UseStickyTabHeade
     const stickyScrollTop = window.innerHeight + 10;
 
     if (value === SECTION_IDS.MISSION_GUIDE) {
-      window.scrollTo({
-        top: stickyScrollTop,
-        behavior: "smooth",
-      });
+      window.scrollTo({ top: stickyScrollTop, behavior: "smooth" });
     } else {
       const element = document.getElementById(value);
       if (element) {

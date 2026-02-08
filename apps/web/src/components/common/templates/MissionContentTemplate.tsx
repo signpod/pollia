@@ -1,48 +1,54 @@
 "use client";
 
+import {
+  MissionDescription,
+  MissionFooter,
+  MissionLogo,
+  MissionRewardSection,
+  SectionHeader,
+} from "@/app/mission/[missionId]/components";
+import { SECTION_IDS } from "@/app/mission/[missionId]/constants/sectionIds";
 import { cleanTiptapHTML, cn } from "@/lib/utils";
 import { MissionType } from "@prisma/client";
 import { Tab, Typo } from "@repo/ui/components";
-import { useRef } from "react";
-import { useMissionIntroContext } from "../MissionIntro";
-import { SECTION_IDS } from "../constants/sectionIds";
-import type { MissionRewardData } from "../types/mission";
-import { MissionDescription } from "./MissionDescription";
-import { MissionFooter } from "./MissionFooter";
-import { MissionLogo } from "./MissionLogo";
-import { MissionRewardSection } from "./MissionRewardSection";
-import { SectionHeader } from "./SectionHeader";
-import { SocialShareButtonsWithData } from "./SocialShareButtonsWithData";
-import { useStickyTabHeader } from "./hooks/useStickyTabHeader";
+import type { RefObject } from "react";
+import type { ReactNode } from "react";
 
-export interface MissionContentProps {
-  missionId: string;
-  missionType: MissionType | null;
-  missionTitle: string | null;
-  missionImageUrl: string | null;
-  description: string | null;
-  reward: MissionRewardData | null;
+export interface MissionContentTemplateReward {
+  imageUrl?: string | null;
+  name?: string | null;
+  scheduledDate?: Date | null;
 }
 
-export function MissionContent({
-  missionId,
-  missionType,
-  missionTitle,
-  missionImageUrl,
+export interface MissionContentTemplateProps {
+  brandLogoUrl?: string;
+  title?: string | null;
+  isSticky?: boolean;
+  activeTab?: string;
+  onChangeTab?: (value: string) => void;
+  sentinelRef?: RefObject<HTMLDivElement | null>;
+  description: string | null;
+  reward: MissionContentTemplateReward | null;
+  missionType: MissionType | null;
+  shareButtons?: ReactNode;
+}
+
+export function MissionContentTemplate({
+  brandLogoUrl,
+  title,
+  isSticky = false,
+  activeTab = SECTION_IDS.MISSION_GUIDE,
+  onChangeTab,
+  sentinelRef,
   description,
   reward,
-}: MissionContentProps) {
-  const { brandLogoUrl, title } = useMissionIntroContext();
-
+  missionType,
+  shareButtons,
+}: MissionContentTemplateProps) {
   const sections = reward
     ? [SECTION_IDS.MISSION_GUIDE, SECTION_IDS.REWARD]
     : [SECTION_IDS.MISSION_GUIDE];
-
-  const sentinelRef = useRef<HTMLDivElement>(null);
-  const { activeTab, isSticky, handleChangeTab } = useStickyTabHeader({
-    sentinelRef,
-    hasReward: !!reward,
-  });
+  const hasDescription = !!description && !!cleanTiptapHTML(description);
 
   return (
     <div className="bg-white relative">
@@ -59,19 +65,23 @@ export function MissionContent({
             {title}
           </Typo.SubTitle>
         </div>
-        <Tab.Root value={activeTab} pointColor="secondary" onValueChange={handleChangeTab}>
+        <Tab.Root
+          value={activeTab}
+          pointColor="secondary"
+          onValueChange={onChangeTab ?? (() => {})}
+        >
           <Tab.List className="px-5">
             <Tab.Item
               value={SECTION_IDS.MISSION_GUIDE}
               className={cn(sections.length === 1 ? "mx-auto max-w-[110px]" : "")}
-              onClick={() => handleChangeTab(SECTION_IDS.MISSION_GUIDE)}
+              onClick={() => onChangeTab?.(SECTION_IDS.MISSION_GUIDE)}
             >
               <Typo.SubTitle size="large">상세 안내</Typo.SubTitle>
             </Tab.Item>
             {reward && (
               <Tab.Item
                 value={SECTION_IDS.REWARD}
-                onClick={() => handleChangeTab(SECTION_IDS.REWARD)}
+                onClick={() => onChangeTab?.(SECTION_IDS.REWARD)}
               >
                 <Typo.SubTitle size="large">참여 혜택</Typo.SubTitle>
               </Tab.Item>
@@ -81,7 +91,7 @@ export function MissionContent({
       </header>
       <div className="flex w-full flex-col py-20 px-5 items-center gap-20">
         <div id={SECTION_IDS.MISSION_GUIDE}>
-          {!!description && !!cleanTiptapHTML(description) && (
+          {hasDescription && (
             <div className="flex flex-col gap-6 px-5 items-center w-full">
               <SectionHeader badgeText="상세 안내" title={""} />
               <MissionDescription content={cleanTiptapHTML(description)} className="text-center" />
@@ -106,11 +116,7 @@ export function MissionContent({
               <br />
               공유해주세요 👀
             </Typo.MainTitle>
-            <SocialShareButtonsWithData
-              missionId={missionId}
-              title={missionTitle ?? undefined}
-              imageUrl={missionImageUrl ?? undefined}
-            />
+            {shareButtons}
           </div>
         )}
       </div>
