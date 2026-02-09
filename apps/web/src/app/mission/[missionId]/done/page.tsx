@@ -2,9 +2,11 @@ import { getMissionActionsDetail } from "@/actions/action";
 import { getCompletionsByMissionId, getMissionCompletion } from "@/actions/mission-completion";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
+import { ROUTES } from "@/constants/routes";
 import { getQueryClient } from "@/lib/getQueryClient";
 import type { GetMissionCompletionResponse } from "@/types/dto";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
+import { redirect } from "next/navigation";
 import { MissionCompletion } from "./ui";
 import { RouteWrapper } from "./ui/RouteWrapper";
 
@@ -18,6 +20,18 @@ export default async function MissionPage({
   const { missionId } = await params;
   const { id: completionId } = await searchParams;
   const queryClient = getQueryClient();
+
+  if (!completionId) {
+    const { data: actions } = await getMissionActionsDetail(missionId);
+
+    const isBranched = actions.some(
+      action => action.nextCompletionId || action.options?.some(opt => opt.nextCompletionId),
+    );
+
+    if (isBranched) {
+      redirect(ROUTES.MISSION(missionId));
+    }
+  }
 
   const prefetchPromises = [
     queryClient.prefetchQuery({
