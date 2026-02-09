@@ -1,6 +1,6 @@
 "use client";
 
-import { useCurrentUser } from "@/hooks/user/useCurrentUser";
+import type { User } from "@prisma/client";
 import PolliaFaceGood from "@public/svgs/face/good.svg";
 import KakaoIcon from "@public/svgs/kakao-icon.svg";
 import { Typo } from "@repo/ui/components";
@@ -19,8 +19,12 @@ function formatPhoneNumber(phone: string): string {
   return phone;
 }
 
-export function MePageContent() {
-  const { data: user } = useCurrentUser();
+interface MePageContentProps {
+  initialUser: User;
+}
+
+export function MePageContent({ initialUser }: MePageContentProps) {
+  const user = initialUser;
   const { data } = useMyResponses();
   const responses = data?.data ?? [];
 
