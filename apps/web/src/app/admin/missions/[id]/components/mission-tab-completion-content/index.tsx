@@ -128,18 +128,13 @@ export function MissionTabCompletionContent({ missionId }: MissionTabCompletionC
 
   if (isPending) {
     return (
-      <div className="space-y-4">
-        <div className="flex justify-end">
-          <Skeleton className="h-10 w-40" />
+      <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6">
+        <div className="space-y-2">
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-20 w-full" />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6">
-          <div className="space-y-2">
-            <Skeleton className="h-20 w-full" />
-            <Skeleton className="h-20 w-full" />
-            <Skeleton className="h-20 w-full" />
-          </div>
-          <Skeleton className="h-96 w-full" />
-        </div>
+        <Skeleton className="h-96 w-full" />
       </div>
     );
   }
@@ -162,37 +157,48 @@ export function MissionTabCompletionContent({ missionId }: MissionTabCompletionC
 
   return (
     <>
-      <div className="space-y-6">
-        <div className="flex justify-end">
-          <Button onClick={handleCreateNew}>
-            <Plus className="h-4 w-4 mr-2" />새 완료화면
-          </Button>
-        </div>
-
-        {completions.length === 0 ? (
+      {completions.length === 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6">
           <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <Award className="h-12 w-12 text-muted-foreground/30 mb-4" />
-              <p className="text-lg font-medium text-muted-foreground mb-2">완료 화면이 없습니다</p>
-              <p className="text-sm text-muted-foreground mb-4">
-                새 완료화면 버튼을 클릭하여 생성하세요.
-              </p>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-semibold text-muted-foreground">완료화면 목록 (0)</h3>
+                <Button size="sm" onClick={handleCreateNew}>
+                  <Plus className="h-4 w-4 mr-1" />추가
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <Award className="h-12 w-12 text-muted-foreground/30 mb-4" />
+                <p className="text-lg font-medium text-muted-foreground mb-2">완료 화면이 없습니다</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  추가 버튼을 클릭하여 생성하세요.
+                </p>
+              </div>
             </CardContent>
           </Card>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] xl:grid-cols-[300px_1fr_auto] gap-6">
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <div className="space-y-2">
-                <Card>
-                  <CardHeader className="pb-3">
+          <div />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] xl:grid-cols-[300px_1fr_auto] gap-6">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <div className="space-y-2">
+              <Card>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
                     <h3 className="text-sm font-semibold text-muted-foreground">
                       완료화면 목록 ({completions.length})
                     </h3>
-                  </CardHeader>
+                    <Button size="sm" onClick={handleCreateNew}>
+                      <Plus className="h-4 w-4 mr-1" />추가
+                    </Button>
+                  </div>
+                </CardHeader>
                   <CardContent className="space-y-1 max-h-[600px] overflow-y-auto">
                     <SortableContext
                       items={completions.map(c => c.id)}
@@ -225,9 +231,8 @@ export function MissionTabCompletionContent({ missionId }: MissionTabCompletionC
             </div>
 
             <div ref={previewAnchorRef} className="hidden xl:block" />
-          </div>
-        )}
-      </div>
+        </div>
+      )}
 
       <CompletionEditDialog
         open={isDialogOpen}

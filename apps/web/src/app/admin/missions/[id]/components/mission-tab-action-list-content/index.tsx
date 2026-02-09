@@ -187,18 +187,13 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <div className="flex justify-end">
-          <Skeleton className="h-10 w-40" />
+      <div className="grid grid-cols-[300px_1fr] gap-6">
+        <div className="space-y-2">
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-20 w-full" />
         </div>
-        <div className="grid grid-cols-[300px_1fr] gap-6">
-          <div className="space-y-2">
-            <Skeleton className="h-20 w-full" />
-            <Skeleton className="h-20 w-full" />
-            <Skeleton className="h-20 w-full" />
-          </div>
-          <Skeleton className="h-96 w-full" />
-        </div>
+        <Skeleton className="h-96 w-full" />
       </div>
     );
   }
@@ -223,13 +218,16 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
 
   if (actions.length === 0) {
     return (
-      <div className="space-y-4">
-        <div className="flex justify-end">
-          <Button onClick={() => setIsCreateDialogOpen(true)}>
-            <Plus className="size-4 mr-2" />새 액션 추가
-          </Button>
-        </div>
+      <div className="grid grid-cols-[300px_1fr] gap-6">
         <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-muted-foreground">액션 목록 (0)</h3>
+              <Button size="sm" onClick={() => setIsCreateDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-1" />추가
+              </Button>
+            </div>
+          </CardHeader>
           <CardContent className="pt-6">
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <FileText className="h-12 w-12 text-muted-foreground/30 mb-4" />
@@ -242,6 +240,7 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
             </div>
           </CardContent>
         </Card>
+        <div />
         <CreateActionDialog
           open={isCreateDialogOpen}
           onOpenChange={setIsCreateDialogOpen}
@@ -253,22 +252,21 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-end">
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />새 액션 추가
-        </Button>
-      </div>
-
-      <div className="grid grid-cols-[300px_1fr] gap-6">
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <div className="space-y-2">
-            <Card>
-              <CardHeader className="pb-3">
+    <>
+    <div className="grid grid-cols-[300px_1fr] gap-6">
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <div className="space-y-2">
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-muted-foreground">
                   액션 목록 ({actions.length})
                 </h3>
-              </CardHeader>
+                <Button size="sm" onClick={() => setIsCreateDialogOpen(true)}>
+                  <Plus className="h-4 w-4 mr-1" />추가
+                </Button>
+              </div>
+            </CardHeader>
               <CardContent className="space-y-1 max-h-[600px] overflow-y-auto">
                 <SortableContext
                   items={actions.map(a => a.id)}
@@ -366,6 +364,6 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }
