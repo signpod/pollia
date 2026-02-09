@@ -23,6 +23,7 @@ import { Separator } from "@/app/admin/components/shadcn-ui/separator";
 import { useUpdateMission } from "@/app/admin/hooks/mission/use-update-mission";
 import { stripHtmlTags } from "@/app/admin/lib/utils";
 import { MISSION_CATEGORY_LABELS, MISSION_TYPE_LABELS } from "@/constants/mission";
+import { ROUTES } from "@/constants/routes";
 import type { GetMissionResponse } from "@/types/dto";
 import { MissionType } from "@prisma/client";
 import { Pencil } from "lucide-react";
@@ -30,7 +31,6 @@ import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { BasicInfoEditDialog } from "../edit/BasicInfoEditDialog";
 import { ImageEditDialog } from "../edit/ImageEditDialog";
-import { IntroMobilePreviewPlaceholder } from "./IntroMobilePreviewPlaceholder";
 
 interface MissionBasicInfoProps {
   mission: GetMissionResponse["data"];
@@ -186,14 +186,7 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
         <div ref={previewAnchorRef} className="hidden xl:block" />
       </div>
 
-      <MobilePreviewPanel anchor={previewAnchorRef}>
-        <IntroMobilePreviewPlaceholder
-          imageUrl={mission.imageUrl}
-          brandLogoUrl={mission.brandLogoUrl}
-          title={mission.title}
-          deadline={mission.deadline}
-        />
-      </MobilePreviewPanel>
+      <MobilePreviewPanel anchor={previewAnchorRef} url={ROUTES.MISSION(mission.id)} />
 
       <BasicInfoEditDialog
         open={isBasicInfoDialogOpen}

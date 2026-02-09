@@ -19,7 +19,7 @@ export function MissionFooter() {
       </div>
 
       <Link
-        href={process.env.NEXT_PUBLIC_PRIVACY_POLICY_URL}
+        href={process.env.NEXT_PUBLIC_PRIVACY_POLICY_URL ?? "#"}
         target="_blank"
         rel="noopener noreferrer"
         className="text-zinc-400"

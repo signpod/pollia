@@ -1,7 +1,8 @@
 import { missionService } from "@/server/services/mission";
 import { rewardService } from "@/server/services/reward/rewardService";
 import { MissionClientWrapper } from "./MissionClientWrapper";
-import { DevTools, MissionContent } from "./components";
+import { MissionPageWrapper } from "./MissionPageWrapper";
+import { DevTools } from "./components";
 import type { MissionRewardData } from "./types/mission";
 
 /**
@@ -26,7 +27,7 @@ export default async function MissionPage({ params }: { params: Promise<{ missio
     <>
       <DevTools missionId={missionId} />
       <MissionClientWrapper>
-        <MissionContent
+        <MissionPageWrapper
           missionId={missionId}
           missionType={mission.type}
           missionTitle={mission.title}
