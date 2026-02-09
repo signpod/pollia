@@ -12,6 +12,7 @@ import { CalloutProvider, type CalloutToneVariant, useCallout } from "@repo/ui/c
 import { addHours, isBefore } from "date-fns";
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { MissionRewardData } from "./types/mission";
+import { BottomButton } from "./ui";
 import { checkParticipantLimitReached } from "./utils/checkParticipantLimit";
 
 interface MissionIntroContextValue {
@@ -183,19 +184,26 @@ export function MissionPageWrapper({
             showDeadlineWidget={showDeadlineWidget}
             deadlineDate={deadlineDate}
             titleRef={titleRef}
-            isActive={isActive ?? false}
-            firstActionId={firstActionId ?? ""}
-            deadline={deadline}
-            showResumeModal={showResumeModal}
-            isCompleted={isCompleted}
-            hasExistingResponse={!!missionResponse}
-            isResuming={isResuming}
+            contextBrandLogoUrl={brandLogoUrl ?? undefined}
+            contextTitle={title}
             missionId={missionId}
             missionType={missionType}
             missionTitle={missionTitle}
             missionImageUrl={missionImageUrl}
             description={description}
             reward={reward}
+            bottomButton={
+              <BottomButton
+                isActive={isActive ?? false}
+                firstActionId={firstActionId ?? ""}
+                deadline={deadline ?? undefined}
+                showResumeModal={showResumeModal}
+                isCompleted={isCompleted}
+                isRequirePassword={isRequirePassword}
+                hasExistingResponse={!!missionResponse}
+                isResuming={isResuming}
+              />
+            }
           />
         </main>
       </MissionIntroContext.Provider>

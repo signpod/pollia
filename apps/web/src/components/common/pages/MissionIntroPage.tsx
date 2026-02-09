@@ -1,14 +1,12 @@
 "use client";
 
-import { useMissionIntroContext } from "@/app/mission/[missionId]/MissionPageWrapper";
 import { SocialShareButtonsWithData } from "@/app/mission/[missionId]/components/SocialShareButtonsWithData";
 import { useStickyTabHeader } from "@/app/mission/[missionId]/components/hooks/useStickyTabHeader";
 import type { MissionRewardData } from "@/app/mission/[missionId]/types/mission";
-import { BottomButton } from "@/app/mission/[missionId]/ui";
 import { cn } from "@/lib/utils";
-import type { Mission } from "@prisma/client";
 import { MissionType } from "@prisma/client";
 import { FixedBottomLayout } from "@repo/ui/components";
+import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { MissionContentTemplate } from "../templates/MissionContentTemplate";
 import { MissionIntroTemplate } from "../templates/MissionIntroTemplate";
@@ -17,20 +15,16 @@ import type { MissionIntroTemplateProps } from "../templates/MissionIntroTemplat
 const SCROLL_OFFSET = 10;
 
 export interface MissionIntroPageProps extends MissionIntroTemplateProps {
-  isActive: boolean;
-  firstActionId: string;
-  deadline?: Mission["deadline"] | null;
-  showResumeModal?: () => boolean;
-  isCompleted: boolean;
   isRequirePassword: boolean;
-  hasExistingResponse: boolean;
-  isResuming?: boolean;
   missionId: string;
   missionType: MissionType | null;
   missionTitle: string | null;
   missionImageUrl: string | null;
   description: string | null;
   reward: MissionRewardData | null;
+  contextBrandLogoUrl?: string;
+  contextTitle?: string;
+  bottomButton?: ReactNode;
 }
 
 export function MissionIntroPage({
@@ -44,21 +38,16 @@ export function MissionIntroPage({
   showDeadlineWidget,
   deadlineDate,
   titleRef,
-  isActive,
-  firstActionId,
-  deadline,
-  showResumeModal,
-  isCompleted,
-  hasExistingResponse,
-  isResuming,
   missionId,
   missionType,
   missionTitle,
   missionImageUrl,
   description,
   reward,
+  contextBrandLogoUrl,
+  contextTitle,
+  bottomButton,
 }: MissionIntroPageProps) {
-  const { brandLogoUrl: contextBrandLogoUrl, title: contextTitle } = useMissionIntroContext();
   const [isScrolled, setIsScrolled] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const { activeTab, isSticky, handleChangeTab } = useStickyTabHeader({
@@ -99,7 +88,7 @@ export function MissionIntroPage({
         onScrollDown={handleScrollDown}
       >
         <MissionContentTemplate
-          brandLogoUrl={contextBrandLogoUrl ?? undefined}
+          brandLogoUrl={contextBrandLogoUrl}
           title={contextTitle}
           isSticky={isSticky}
           activeTab={activeTab}
@@ -150,16 +139,7 @@ export function MissionIntroPage({
             paddingBottom: "calc(16px + env(safe-area-inset-bottom))",
           }}
         >
-          <BottomButton
-            isActive={isActive}
-            firstActionId={firstActionId}
-            deadline={deadline ?? undefined}
-            showResumeModal={showResumeModal}
-            isCompleted={isCompleted}
-            isRequirePassword={isRequirePassword}
-            hasExistingResponse={hasExistingResponse}
-            isResuming={isResuming}
-          />
+          {bottomButton}
         </div>
       </FixedBottomLayout.Content>
     </div>
