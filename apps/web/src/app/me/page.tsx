@@ -1,7 +1,9 @@
 import { getMissionActionIds } from "@/actions/action";
 import { getMyResponses } from "@/actions/mission-response";
+import { getCurrentUser } from "@/actions/user";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
+import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { Suspense } from "react";
@@ -10,10 +12,16 @@ import { MePageContent } from "./MePageContent";
 export default async function MePage() {
   const queryClient = getQueryClient();
 
-  const myResponsesData = await queryClient.fetchQuery({
-    queryKey: missionQueryKeys.myResponses(),
-    queryFn: () => getMyResponses(),
-  });
+  const [myResponsesData, userData] = await Promise.all([
+    queryClient.fetchQuery({
+      queryKey: missionQueryKeys.myResponses(),
+      queryFn: () => getMyResponses(),
+    }),
+    queryClient.fetchQuery({
+      queryKey: userQueryKeys.currentUser(),
+      queryFn: () => getCurrentUser(),
+    }),
+  ]);
 
   const inProgressMissionIds =
     myResponsesData?.data
@@ -34,7 +42,7 @@ export default async function MePage() {
   return (
     <HydrationBoundary state={dehydratedState}>
       <Suspense>
-        <MePageContent />
+        <MePageContent initialUser={userData.data} />
       </Suspense>
     </HydrationBoundary>
   );
