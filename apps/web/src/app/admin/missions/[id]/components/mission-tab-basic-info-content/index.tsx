@@ -1,9 +1,9 @@
 "use client";
 
 import { MobilePreviewPanel } from "@/app/admin/components/common/MobilePreviewPanel";
+import { SelectField } from "@/app/admin/components/common/SelectField";
 import { ToggleField } from "@/app/admin/components/common/ToggleField";
 import {
-  BadgeView,
   DateView,
   ImageView,
   LabeledView,
@@ -22,10 +22,10 @@ import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
 import { useUpdateMission } from "@/app/admin/hooks/mission/use-update-mission";
 import { stripHtmlTags } from "@/app/admin/lib/utils";
-import { MISSION_CATEGORY_LABELS, MISSION_TYPE_LABELS } from "@/constants/mission";
+import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { ROUTES } from "@/constants/routes";
 import type { GetMissionResponse } from "@/types/dto";
-import { MissionType } from "@prisma/client";
+import { MissionCategory, MissionType } from "@prisma/client";
 import { Pencil } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -36,42 +36,65 @@ interface MissionBasicInfoProps {
   mission: GetMissionResponse["data"];
 }
 
-interface ActiveFormValues {
+interface InlineToggleFormValues {
   isActive: boolean;
+  isExposed: boolean;
+  category: MissionCategory;
 }
 
 export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
-  const missionTypeLabel = MISSION_TYPE_LABELS[mission.type];
-  const missionCategoryLabel = MISSION_CATEGORY_LABELS[mission.category];
   const [isBasicInfoDialogOpen, setIsBasicInfoDialogOpen] = useState(false);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
   const previewAnchorRef = useRef<HTMLDivElement>(null);
 
-  const typeBadgeVariant = mission.type === MissionType.EXPERIENCE_GROUP ? "default" : "secondary";
-
-  const form = useForm<ActiveFormValues>({
+  const form = useForm<InlineToggleFormValues>({
     defaultValues: {
       isActive: mission.isActive,
+      isExposed: mission.type === MissionType.GENERAL,
+      category: mission.category,
     },
   });
 
   const updateMission = useUpdateMission();
 
   useEffect(() => {
-    form.reset({ isActive: mission.isActive });
-  }, [mission.isActive, form]);
+    form.reset({
+      isActive: mission.isActive,
+      isExposed: mission.type === MissionType.GENERAL,
+      category: mission.category,
+    });
+  }, [mission.isActive, mission.type, mission.category, form]);
 
   useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === "isActive" && value.isActive !== undefined) {
+    const subscription = form.watch((value, { name, type }) => {
+      if (type !== "change") return;
+      if (name === "isActive" && value.isActive !== undefined && value.isActive !== mission.isActive) {
         updateMission.mutate({
           missionId: mission.id,
           data: { isActive: value.isActive },
         });
       }
+      if (
+        name === "isExposed" &&
+        value.isExposed !== undefined &&
+        value.isExposed !== (mission.type === MissionType.GENERAL)
+      ) {
+        updateMission.mutate({
+          missionId: mission.id,
+          data: {
+            type: value.isExposed ? MissionType.GENERAL : MissionType.EXPERIENCE_GROUP,
+          },
+        });
+      }
+      if (name === "category" && value.category !== undefined && value.category !== mission.category) {
+        updateMission.mutate({
+          missionId: mission.id,
+          data: { category: value.category },
+        });
+      }
     });
     return () => subscription.unsubscribe();
-  }, [form, mission.id, updateMission]);
+  }, [form, mission.id, mission.isActive, mission.type, mission.category, updateMission]);
 
   return (
     <>
@@ -83,40 +106,67 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
                 <CardTitle>인트로 정보</CardTitle>
                 <CardDescription>미션 인트로 화면에 표시되는 정보</CardDescription>
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => setIsBasicInfoDialogOpen(true)}>
-                  <Pencil className="h-4 w-4 mr-2" />
-                  기본 정보 편집
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => setIsImageDialogOpen(true)}>
-                  <Pencil className="h-4 w-4 mr-2" />
-                  미디어 편집
-                </Button>
-              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
             <Form {...form}>
-              <ToggleField
-                control={form.control}
-                name="isActive"
-                label="활성 상태"
-                description="미션을 활성화하거나 비활성화합니다"
-                disabled={updateMission.isPending}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <ToggleField
+                  control={form.control}
+                  name="isActive"
+                  label="활성 상태"
+                  description="미션을 활성화하거나 비활성화합니다"
+                  disabled={updateMission.isPending}
+                />
+                <ToggleField
+                  control={form.control}
+                  name="isExposed"
+                  label="노출여부"
+                  description="노출 시 미션 목록에 표시됩니다"
+                  disabled={updateMission.isPending}
+                />
+                <SelectField
+                  control={form.control}
+                  name="category"
+                  label="카테고리"
+                  description="미션의 카테고리를 선택합니다."
+                  options={[
+                    {
+                      value: MissionCategory.PROMOTION,
+                      label: MISSION_CATEGORY_LABELS[MissionCategory.PROMOTION],
+                    },
+                    {
+                      value: MissionCategory.EVENT,
+                      label: MISSION_CATEGORY_LABELS[MissionCategory.EVENT],
+                    },
+                    {
+                      value: MissionCategory.RESEARCH,
+                      label: MISSION_CATEGORY_LABELS[MissionCategory.RESEARCH],
+                    },
+                    {
+                      value: MissionCategory.CHALLENGE,
+                      label: MISSION_CATEGORY_LABELS[MissionCategory.CHALLENGE],
+                    },
+                    {
+                      value: MissionCategory.QUIZ,
+                      label: MISSION_CATEGORY_LABELS[MissionCategory.QUIZ],
+                    },
+                  ]}
+                  disabled={updateMission.isPending}
+                />
+              </div>
             </Form>
 
             <Separator />
 
             <section className="space-y-3">
-              <h3 className="text-sm font-medium text-muted-foreground">기본 정보</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <LabeledView label="타입">
-                  <BadgeView value={missionTypeLabel} variant={typeBadgeVariant} />
-                </LabeledView>
-                <LabeledView label="카테고리">
-                  <BadgeView value={missionCategoryLabel} variant="outline" />
-                </LabeledView>
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium text-muted-foreground">기본 정보</h3>
+
+                <Button variant="outline" size="sm" onClick={() => setIsBasicInfoDialogOpen(true)}>
+                  <Pencil className="h-4 w-4 mr-2" />
+                  기본 정보 편집
+                </Button>
               </div>
               <LabeledView label="제목">
                 <TextView value={mission.title} />
@@ -157,7 +207,13 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
             <Separator />
 
             <section className="space-y-3">
-              <h3 className="text-sm font-medium text-muted-foreground">미디어</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium text-muted-foreground">미디어</h3>
+                <Button variant="outline" size="sm" onClick={() => setIsImageDialogOpen(true)}>
+                  <Pencil className="h-4 w-4 mr-2" />
+                  미디어 편집
+                </Button>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <LabeledView label="미션 이미지">
                   <ImageView src={mission.imageUrl} alt="미션 이미지" size="lg" />

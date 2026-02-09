@@ -12,13 +12,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
-import { MISSION_CATEGORY_LABELS, MISSION_TYPE_LABELS } from "@/constants/mission";
+import { ToggleField } from "@/app/admin/components/common/ToggleField";
+import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import {
   MISSION_DESCRIPTION_MAX_LENGTH,
   MISSION_TARGET_MAX_LENGTH,
   MISSION_TITLE_MAX_LENGTH,
 } from "@/schemas/mission";
-import { MissionCategory, MissionType } from "@prisma/client";
+import { MissionCategory } from "@prisma/client";
 import type { UseFormReturn } from "react-hook-form";
 import type { CreateMissionFunnelFormData } from "../schemas";
 
@@ -44,47 +45,38 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
           showCounter
         />
 
-        <div className="grid grid-cols-2 gap-4">
-          <SelectField
-            control={form.control}
-            name="type"
-            label="타입"
-            description="미션의 유형을 선택합니다."
-            options={[
-              { value: MissionType.GENERAL, label: MISSION_TYPE_LABELS[MissionType.GENERAL] },
-              {
-                value: MissionType.EXPERIENCE_GROUP,
-                label: MISSION_TYPE_LABELS[MissionType.EXPERIENCE_GROUP],
-              },
-            ]}
-          />
+        <ToggleField
+          control={form.control}
+          name="isExposed"
+          label="노출여부"
+          description="노출 시 미션 목록에 표시됩니다"
+        />
 
-          <SelectField
-            control={form.control}
-            name="category"
-            label="카테고리"
-            description="미션의 카테고리를 선택합니다."
-            options={[
-              {
-                value: MissionCategory.PROMOTION,
-                label: MISSION_CATEGORY_LABELS[MissionCategory.PROMOTION],
-              },
-              {
-                value: MissionCategory.EVENT,
-                label: MISSION_CATEGORY_LABELS[MissionCategory.EVENT],
-              },
-              {
-                value: MissionCategory.RESEARCH,
-                label: MISSION_CATEGORY_LABELS[MissionCategory.RESEARCH],
-              },
-              {
-                value: MissionCategory.CHALLENGE,
-                label: MISSION_CATEGORY_LABELS[MissionCategory.CHALLENGE],
-              },
-              { value: MissionCategory.QUIZ, label: MISSION_CATEGORY_LABELS[MissionCategory.QUIZ] },
-            ]}
-          />
-        </div>
+        <SelectField
+          control={form.control}
+          name="category"
+          label="카테고리"
+          description="미션의 카테고리를 선택합니다."
+          options={[
+            {
+              value: MissionCategory.PROMOTION,
+              label: MISSION_CATEGORY_LABELS[MissionCategory.PROMOTION],
+            },
+            {
+              value: MissionCategory.EVENT,
+              label: MISSION_CATEGORY_LABELS[MissionCategory.EVENT],
+            },
+            {
+              value: MissionCategory.RESEARCH,
+              label: MISSION_CATEGORY_LABELS[MissionCategory.RESEARCH],
+            },
+            {
+              value: MissionCategory.CHALLENGE,
+              label: MISSION_CATEGORY_LABELS[MissionCategory.CHALLENGE],
+            },
+            { value: MissionCategory.QUIZ, label: MISSION_CATEGORY_LABELS[MissionCategory.QUIZ] },
+          ]}
+        />
 
         <NumberField
           control={form.control}
