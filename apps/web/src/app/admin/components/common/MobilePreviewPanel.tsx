@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@repo/ui/lib";
 import type { ReactNode } from "react";
 import { type RefObject, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
@@ -24,8 +25,10 @@ export function MobilePreviewPanel({ anchor, url, children }: MobilePreviewPanel
   return createPortal(
     <div className="flex flex-col items-center">
       <div
-        className="relative bg-zinc-900 rounded-[40px] p-3 shadow-2xl"
-        style={{ width: DEVICE_SIZE.width + 24, height: DEVICE_SIZE.height + 24 }}
+        className={cn(
+          "relative bg-zinc-900 rounded-[40px] p-3 shadow-2xl",
+          `w-[${DEVICE_SIZE.width + 24}px] h-[${DEVICE_SIZE.height + 24}px]`,
+        )}
       >
         <div
           className="relative flex flex-col bg-white rounded-[28px] overflow-hidden"
@@ -39,14 +42,12 @@ export function MobilePreviewPanel({ anchor, url, children }: MobilePreviewPanel
             <iframe
               title="미션 미리보기"
               src={url}
-              className="h-full w-full border-0"
-              style={{ width: DEVICE_SIZE.width, height: DEVICE_SIZE.height }}
+              className={cn("w-full h-full border-0 overflow-y-scroll")}
             />
           ) : (
             children
           )}
         </div>
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-[120px] h-[4px] bg-zinc-600 rounded-full" />
       </div>
     </div>,
     anchor.current,

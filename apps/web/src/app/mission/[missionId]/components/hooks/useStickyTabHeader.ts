@@ -35,6 +35,7 @@ export function useStickyTabHeader({ sentinelRef, hasReward }: UseStickyTabHeade
       },
       {
         threshold: 0,
+        root: document,
         rootMargin: "0px 0px 0px 0px",
       },
     );
