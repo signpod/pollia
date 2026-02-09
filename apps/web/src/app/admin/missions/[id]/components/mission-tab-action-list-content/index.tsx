@@ -40,11 +40,11 @@ import {
 import { AlertCircle, FileText, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { ActionDetailCard } from "./ActionDetailCard";
 import { CreateActionDialog } from "./CreateActionDialog";
 import { EditActionDialog } from "./EditActionDialog";
-import type { ActionFormData } from "./action-forms";
-import { ActionDetailCard } from "./ActionDetailCard";
 import { SortableActionTab } from "./SortableActionTab";
+import type { ActionFormData } from "./action-forms";
 
 interface MissionActionListProps {
   missionId: string;
@@ -224,7 +224,8 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold text-muted-foreground">액션 목록 (0)</h3>
               <Button size="sm" onClick={() => setIsCreateDialogOpen(true)}>
-                <Plus className="h-4 w-4 mr-1" />추가
+                <Plus className="h-4 w-4 mr-1" />
+                추가
               </Button>
             </div>
           </CardHeader>
@@ -253,20 +254,21 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
 
   return (
     <>
-    <div className="grid grid-cols-[300px_1fr] gap-6">
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <div className="space-y-2">
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-muted-foreground">
-                  액션 목록 ({actions.length})
-                </h3>
-                <Button size="sm" onClick={() => setIsCreateDialogOpen(true)}>
-                  <Plus className="h-4 w-4 mr-1" />추가
-                </Button>
-              </div>
-            </CardHeader>
+      <div className="grid grid-cols-[300px_1fr] gap-6">
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <div className="space-y-2">
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-muted-foreground">
+                    액션 목록 ({actions.length})
+                  </h3>
+                  <Button size="sm" onClick={() => setIsCreateDialogOpen(true)}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    추가
+                  </Button>
+                </div>
+              </CardHeader>
               <CardContent className="space-y-1 max-h-[600px] overflow-y-auto">
                 <SortableContext
                   items={actions.map(a => a.id)}
