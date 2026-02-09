@@ -1,11 +1,9 @@
 import { InputField } from "@/app/admin/components/common/InputField";
 import { NumberField } from "@/app/admin/components/common/NumberField";
-import { SelectField } from "@/app/admin/components/common/SelectField";
 import { TiptapField } from "@/app/admin/components/common/TiptapField";
 import { DateTimeField } from "@/app/admin/components/common/molecules/DateTimeField";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
-import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import {
   MISSION_DESCRIPTION_MAX_LENGTH,
   MISSION_TARGET_MAX_LENGTH,
@@ -19,7 +17,6 @@ import {
 } from "@/schemas/mission-completion";
 import type { GetMissionCompletionResponse, GetMissionResponse } from "@/types/dto";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MissionCategory } from "@prisma/client";
 import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { type UseFormReturn, useForm } from "react-hook-form";
@@ -43,29 +40,6 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
         placeholder="미션 제목을 입력하세요"
         maxLength={MISSION_TITLE_MAX_LENGTH}
         showCounter
-      />
-
-      <SelectField
-        control={form.control}
-        name="category"
-        label="카테고리"
-        description="미션의 카테고리를 선택합니다."
-        options={[
-          {
-            value: MissionCategory.PROMOTION,
-            label: MISSION_CATEGORY_LABELS[MissionCategory.PROMOTION],
-          },
-          { value: MissionCategory.EVENT, label: MISSION_CATEGORY_LABELS[MissionCategory.EVENT] },
-          {
-            value: MissionCategory.RESEARCH,
-            label: MISSION_CATEGORY_LABELS[MissionCategory.RESEARCH],
-          },
-          {
-            value: MissionCategory.CHALLENGE,
-            label: MISSION_CATEGORY_LABELS[MissionCategory.CHALLENGE],
-          },
-          { value: MissionCategory.QUIZ, label: MISSION_CATEGORY_LABELS[MissionCategory.QUIZ] },
-        ]}
       />
 
       <TiptapField
@@ -138,7 +112,6 @@ export function useBasicInfoForm(mission: MissionData) {
   const defaultValues = {
     title: mission.title,
     type: mission.type,
-    category: mission.category,
     description: mission.description ?? "",
     target: mission.target ?? "",
     imageUrl: mission.imageUrl ?? undefined,

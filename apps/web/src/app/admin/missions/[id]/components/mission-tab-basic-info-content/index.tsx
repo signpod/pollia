@@ -1,9 +1,9 @@
 "use client";
 
 import { MobilePreviewPanel } from "@/app/admin/components/common/MobilePreviewPanel";
+import { SelectField } from "@/app/admin/components/common/SelectField";
 import { ToggleField } from "@/app/admin/components/common/ToggleField";
 import {
-  BadgeView,
   DateView,
   ImageView,
   LabeledView,
@@ -25,7 +25,7 @@ import { stripHtmlTags } from "@/app/admin/lib/utils";
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { ROUTES } from "@/constants/routes";
 import type { GetMissionResponse } from "@/types/dto";
-import { MissionType } from "@prisma/client";
+import { MissionCategory, MissionType } from "@prisma/client";
 import { Pencil } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -39,10 +39,10 @@ interface MissionBasicInfoProps {
 interface InlineToggleFormValues {
   isActive: boolean;
   isExposed: boolean;
+  category: MissionCategory;
 }
 
 export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
-  const missionCategoryLabel = MISSION_CATEGORY_LABELS[mission.category];
   const [isBasicInfoDialogOpen, setIsBasicInfoDialogOpen] = useState(false);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
   const previewAnchorRef = useRef<HTMLDivElement>(null);
@@ -51,6 +51,7 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
     defaultValues: {
       isActive: mission.isActive,
       isExposed: mission.type === MissionType.GENERAL,
+      category: mission.category,
     },
   });
 
@@ -60,8 +61,9 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
     form.reset({
       isActive: mission.isActive,
       isExposed: mission.type === MissionType.GENERAL,
+      category: mission.category,
     });
-  }, [mission.isActive, mission.type, form]);
+  }, [mission.isActive, mission.type, mission.category, form]);
 
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
@@ -77,6 +79,12 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
           data: {
             type: value.isExposed ? MissionType.GENERAL : MissionType.EXPERIENCE_GROUP,
           },
+        });
+      }
+      if (name === "category" && value.category !== undefined) {
+        updateMission.mutate({
+          missionId: mission.id,
+          data: { category: value.category },
         });
       }
     });
@@ -122,6 +130,35 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
                   description="노출 시 미션 목록에 표시됩니다"
                   disabled={updateMission.isPending}
                 />
+                <SelectField
+                  control={form.control}
+                  name="category"
+                  label="카테고리"
+                  description="미션의 카테고리를 선택합니다."
+                  options={[
+                    {
+                      value: MissionCategory.PROMOTION,
+                      label: MISSION_CATEGORY_LABELS[MissionCategory.PROMOTION],
+                    },
+                    {
+                      value: MissionCategory.EVENT,
+                      label: MISSION_CATEGORY_LABELS[MissionCategory.EVENT],
+                    },
+                    {
+                      value: MissionCategory.RESEARCH,
+                      label: MISSION_CATEGORY_LABELS[MissionCategory.RESEARCH],
+                    },
+                    {
+                      value: MissionCategory.CHALLENGE,
+                      label: MISSION_CATEGORY_LABELS[MissionCategory.CHALLENGE],
+                    },
+                    {
+                      value: MissionCategory.QUIZ,
+                      label: MISSION_CATEGORY_LABELS[MissionCategory.QUIZ],
+                    },
+                  ]}
+                  disabled={updateMission.isPending}
+                />
               </div>
             </Form>
 
@@ -129,11 +166,6 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
 
             <section className="space-y-3">
               <h3 className="text-sm font-medium text-muted-foreground">기본 정보</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <LabeledView label="카테고리">
-                  <BadgeView value={missionCategoryLabel} variant="outline" />
-                </LabeledView>
-              </div>
               <LabeledView label="제목">
                 <TextView value={mission.title} />
               </LabeledView>
