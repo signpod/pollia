@@ -22,7 +22,7 @@ import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
 import { useUpdateMission } from "@/app/admin/hooks/mission/use-update-mission";
 import { stripHtmlTags } from "@/app/admin/lib/utils";
-import { MISSION_CATEGORY_LABELS, MISSION_TYPE_LABELS } from "@/constants/mission";
+import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { ROUTES } from "@/constants/routes";
 import type { GetMissionResponse } from "@/types/dto";
 import { MissionType } from "@prisma/client";
@@ -36,30 +36,32 @@ interface MissionBasicInfoProps {
   mission: GetMissionResponse["data"];
 }
 
-interface ActiveFormValues {
+interface InlineToggleFormValues {
   isActive: boolean;
+  isExposed: boolean;
 }
 
 export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
-  const missionTypeLabel = MISSION_TYPE_LABELS[mission.type];
   const missionCategoryLabel = MISSION_CATEGORY_LABELS[mission.category];
   const [isBasicInfoDialogOpen, setIsBasicInfoDialogOpen] = useState(false);
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
   const previewAnchorRef = useRef<HTMLDivElement>(null);
 
-  const typeBadgeVariant = mission.type === MissionType.EXPERIENCE_GROUP ? "default" : "secondary";
-
-  const form = useForm<ActiveFormValues>({
+  const form = useForm<InlineToggleFormValues>({
     defaultValues: {
       isActive: mission.isActive,
+      isExposed: mission.type === MissionType.GENERAL,
     },
   });
 
   const updateMission = useUpdateMission();
 
   useEffect(() => {
-    form.reset({ isActive: mission.isActive });
-  }, [mission.isActive, form]);
+    form.reset({
+      isActive: mission.isActive,
+      isExposed: mission.type === MissionType.GENERAL,
+    });
+  }, [mission.isActive, mission.type, form]);
 
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
@@ -67,6 +69,14 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
         updateMission.mutate({
           missionId: mission.id,
           data: { isActive: value.isActive },
+        });
+      }
+      if (name === "isExposed" && value.isExposed !== undefined) {
+        updateMission.mutate({
+          missionId: mission.id,
+          data: {
+            type: value.isExposed ? MissionType.GENERAL : MissionType.EXPERIENCE_GROUP,
+          },
         });
       }
     });
@@ -97,13 +107,22 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
           </CardHeader>
           <CardContent className="space-y-6">
             <Form {...form}>
-              <ToggleField
-                control={form.control}
-                name="isActive"
-                label="활성 상태"
-                description="미션을 활성화하거나 비활성화합니다"
-                disabled={updateMission.isPending}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <ToggleField
+                  control={form.control}
+                  name="isActive"
+                  label="활성 상태"
+                  description="미션을 활성화하거나 비활성화합니다"
+                  disabled={updateMission.isPending}
+                />
+                <ToggleField
+                  control={form.control}
+                  name="isExposed"
+                  label="노출여부"
+                  description="노출 시 미션 목록에 표시됩니다"
+                  disabled={updateMission.isPending}
+                />
+              </div>
             </Form>
 
             <Separator />
@@ -111,9 +130,6 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
             <section className="space-y-3">
               <h3 className="text-sm font-medium text-muted-foreground">기본 정보</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <LabeledView label="타입">
-                  <BadgeView value={missionTypeLabel} variant={typeBadgeVariant} />
-                </LabeledView>
                 <LabeledView label="카테고리">
                   <BadgeView value={missionCategoryLabel} variant="outline" />
                 </LabeledView>

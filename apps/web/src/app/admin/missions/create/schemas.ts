@@ -8,7 +8,11 @@ import { z } from "zod";
 
 const completionSchemaWithoutMissionId = missionCompletionInputSchema.omit({ missionId: true });
 
-const baseSchema = missionInputSchema.merge(
+const missionFormSchema = missionInputSchema
+  .omit({ type: true })
+  .merge(z.object({ isExposed: z.boolean() }));
+
+const baseSchema = missionFormSchema.merge(
   z.object({
     completion: completionSchemaWithoutMissionId,
   }),

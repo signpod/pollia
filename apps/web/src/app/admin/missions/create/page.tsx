@@ -6,6 +6,7 @@ import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
 import { useCreateMission } from "@/app/admin/hooks/mission";
 import { useCreateMissionCompletion } from "@/app/admin/hooks/mission-completion";
 import type { CreateMissionRequest } from "@/types/dto/mission";
+import { MissionType } from "@prisma/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -77,7 +78,7 @@ export default function AdminMissionCreatePage() {
     startDate: null,
     deadline: null,
     maxParticipants: null,
-    type: "GENERAL" as const,
+    isExposed: true,
     category: "EVENT" as const,
     isActive: undefined,
     actionIds: [],
@@ -125,7 +126,7 @@ export default function AdminMissionCreatePage() {
 
       const payload: CreateMissionRequest = {
         title: missionData.title,
-        type: missionData.type,
+        type: missionData.isExposed ? MissionType.GENERAL : MissionType.EXPERIENCE_GROUP,
         category: missionData.category,
         actionIds: Array.isArray(missionData.actionIds) ? missionData.actionIds : [],
         maxParticipants:
@@ -154,7 +155,7 @@ export default function AdminMissionCreatePage() {
   const getFieldsForStep = (step: Step): (keyof CreateMissionFunnelFormData)[] => {
     switch (step) {
       case "basic":
-        return ["title", "type"];
+        return ["title", "isExposed"];
       case "image":
         return [];
       case "completion":

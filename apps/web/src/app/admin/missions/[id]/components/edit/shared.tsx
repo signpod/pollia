@@ -5,7 +5,7 @@ import { TiptapField } from "@/app/admin/components/common/TiptapField";
 import { DateTimeField } from "@/app/admin/components/common/molecules/DateTimeField";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
-import { MISSION_CATEGORY_LABELS, MISSION_TYPE_LABELS } from "@/constants/mission";
+import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import {
   MISSION_DESCRIPTION_MAX_LENGTH,
   MISSION_TARGET_MAX_LENGTH,
@@ -19,7 +19,7 @@ import {
 } from "@/schemas/mission-completion";
 import type { GetMissionCompletionResponse, GetMissionResponse } from "@/types/dto";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { MissionCategory, MissionType } from "@prisma/client";
+import { MissionCategory } from "@prisma/client";
 import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { type UseFormReturn, useForm } from "react-hook-form";
@@ -43,20 +43,6 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
         placeholder="미션 제목을 입력하세요"
         maxLength={MISSION_TITLE_MAX_LENGTH}
         showCounter
-      />
-
-      <SelectField
-        control={form.control}
-        name="type"
-        label="타입"
-        description="미션의 유형을 선택합니다."
-        options={[
-          { value: MissionType.GENERAL, label: MISSION_TYPE_LABELS[MissionType.GENERAL] },
-          {
-            value: MissionType.EXPERIENCE_GROUP,
-            label: MISSION_TYPE_LABELS[MissionType.EXPERIENCE_GROUP],
-          },
-        ]}
       />
 
       <SelectField
