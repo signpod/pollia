@@ -101,16 +101,6 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
                 <CardTitle>인트로 정보</CardTitle>
                 <CardDescription>미션 인트로 화면에 표시되는 정보</CardDescription>
               </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={() => setIsBasicInfoDialogOpen(true)}>
-                  <Pencil className="h-4 w-4 mr-2" />
-                  기본 정보 편집
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => setIsImageDialogOpen(true)}>
-                  <Pencil className="h-4 w-4 mr-2" />
-                  미디어 편집
-                </Button>
-              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -165,7 +155,14 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
             <Separator />
 
             <section className="space-y-3">
-              <h3 className="text-sm font-medium text-muted-foreground">기본 정보</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium text-muted-foreground">기본 정보</h3>
+
+                <Button variant="outline" size="sm" onClick={() => setIsBasicInfoDialogOpen(true)}>
+                  <Pencil className="h-4 w-4 mr-2" />
+                  기본 정보 편집
+                </Button>
+              </div>
               <LabeledView label="제목">
                 <TextView value={mission.title} />
               </LabeledView>
@@ -205,7 +202,13 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
             <Separator />
 
             <section className="space-y-3">
-              <h3 className="text-sm font-medium text-muted-foreground">미디어</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium text-muted-foreground">미디어</h3>
+                <Button variant="outline" size="sm" onClick={() => setIsImageDialogOpen(true)}>
+                  <Pencil className="h-4 w-4 mr-2" />
+                  미디어 편집
+                </Button>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <LabeledView label="미션 이미지">
                   <ImageView src={mission.imageUrl} alt="미션 이미지" size="lg" />
