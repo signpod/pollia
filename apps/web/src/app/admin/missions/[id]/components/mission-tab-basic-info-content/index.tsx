@@ -66,14 +66,19 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
   }, [mission.isActive, mission.type, mission.category, form]);
 
   useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === "isActive" && value.isActive !== undefined) {
+    const subscription = form.watch((value, { name, type }) => {
+      if (type !== "change") return;
+      if (name === "isActive" && value.isActive !== undefined && value.isActive !== mission.isActive) {
         updateMission.mutate({
           missionId: mission.id,
           data: { isActive: value.isActive },
         });
       }
-      if (name === "isExposed" && value.isExposed !== undefined) {
+      if (
+        name === "isExposed" &&
+        value.isExposed !== undefined &&
+        value.isExposed !== (mission.type === MissionType.GENERAL)
+      ) {
         updateMission.mutate({
           missionId: mission.id,
           data: {
@@ -81,7 +86,7 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
           },
         });
       }
-      if (name === "category" && value.category !== undefined) {
+      if (name === "category" && value.category !== undefined && value.category !== mission.category) {
         updateMission.mutate({
           missionId: mission.id,
           data: { category: value.category },
@@ -89,7 +94,7 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
       }
     });
     return () => subscription.unsubscribe();
-  }, [form, mission.id, updateMission]);
+  }, [form, mission.id, mission.isActive, mission.type, mission.category, updateMission]);
 
   return (
     <>
