@@ -18,11 +18,13 @@ model Mission {
   type             MissionType     @default(GENERAL)
   category         MissionCategory @default(EVENT)
   password         String?
+  likesCount       Int             @default(0) @map("likes_count")
   entryActionId    String?         @map("entry_action_id")
 
   questions   Action[]
   responses   MissionResponse[]
   completions MissionCompletion[]
+  likes       MissionLike[]
   creator     User                @relation(fields: [creatorId], references: [id])
   reward      Reward?             @relation(fields: [rewardId], references: [id])
   event       Event?              @relation(fields: [eventId], references: [id])
