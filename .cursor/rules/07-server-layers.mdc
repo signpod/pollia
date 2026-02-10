@@ -173,6 +173,12 @@ export const surveyRepository = new SurveyRepository();
 - 불필요한 타입 래핑 제거
 - Prisma가 타입 안전성 보장
 
+### 트랜잭션 (tx) 관리 원칙
+
+- **트랜잭션은 서비스 계층에서 생성·관리한다.** 여러 작업을 한 트랜잭션으로 묶어야 할 때는 서비스에서 `prisma.$transaction(async (tx) => { ... })` 를 실행하고, 그 콜백 안에서 필요한 DB 작업을 수행한다.
+- **트랜잭션에 참여해야 하는 레포지토리 호출**은 서비스가 같은 `tx`를 넘겨서 한다. 레포지토리 메서드는 필요 시 클라이언트를 **파라미터 초깃값**으로 받는다 (`client: Prisma.TransactionClient = prisma`). 트랜잭션 밖에서는 인자를 생략해 전역 `prisma`가 쓰이게 하고, 트랜잭션 안에서는 서비스가 `tx`를 넘긴다. 서비스는 트랜잭션 경계만 정하고, 실제 쿼리는 레포지토리에 두며 Prisma가 서비스로 새어 나오지 않게 한다.
+- 트랜잭션이 필요할 때마다 “레포에 새 메서드 하나 더 만들어서 그 안에서만 `$transaction` 돌린다”는 방식보다, **서비스에서 tx를 만들고 레포에 넘기는 방식**을 우선으로 고려한다.
+
 ### 필수 요소
 
 - [ ] **Class 기반 구현**
@@ -182,6 +188,7 @@ export const surveyRepository = new SurveyRepository();
 - [ ] **Prisma 쿼리만 포함**
 - [ ] **Prisma 타입 그대로 사용** (`Prisma.XxxUncheckedCreateInput` 등)
 - [ ] **주석 없음** (코드로 의도 표현)
+- [ ] **트랜잭션** 필요 시 서비스에서 `$transaction` 실행 후, 참여하는 레포 메서드에 `tx` 전달 (레포 메서드는 `client: TransactionClient = prisma` 파라미터 초깃값 사용)
 
 ### 메서드 네이밍 규칙
 
@@ -271,6 +278,35 @@ export interface GetSurveysOptions {
 | **Repository** | `Prisma.XxxInput` 그대로 | 데이터 접근 계층은 ORM과 직접 통신 |
 | **Service** | `Pick<Prisma.XxxInput, ...>` | API 경계 제어, 비즈니스 필드 추가 |
 
+### 스키마 기반 Service의 types.ts 생략
+
+Zod 스키마가 End-to-End 검증의 원천이고 `parseSchema()`로 Service에서 직접 검증하는 경우, **별도 `types.ts` 없이 스키마 타입을 직접 import**합니다:
+
+```typescript
+// types.ts 불필요 - 스키마 타입을 직접 사용
+import {
+  type RewardInput,
+  type RewardUpdate,
+  rewardInputSchema,
+  rewardUpdateSchema,
+} from "@/schemas/reward";
+
+export class RewardService {
+  async createReward(input: RewardInput, userId: string) {
+    const validated = parseSchema(rewardInputSchema, input);
+    return await this.repo.create(validated, userId);
+  }
+}
+```
+
+**types.ts가 필요한 경우 vs 불필요한 경우:**
+
+| 조건 | types.ts | 이유 |
+|------|----------|------|
+| 스키마 없이 Prisma 타입만 사용 | **필요** | Pick으로 API 경계 제어 |
+| 비즈니스 전용 필드 추가 필요 (예: `questionIds`) | **필요** | 스키마에 없는 필드 정의 |
+| Zod 스키마가 타입의 원천이고 추가 필드 없음 | **불필요** | 스키마 타입 직접 import |
+
 ### 기본 구조
 
 ```typescript
@@ -329,8 +365,8 @@ export const surveyService = new SurveyService();
 - [ ] **Constructor Injection** (테스트용 Mock 주입)
 - [ ] **Singleton export** (`export const {도메인}Service = new ...`)
 - [ ] **일관된 메서드명** (get*, create*, update*, delete*, toggle*)
-- [ ] **자체 타입 사용** (`types.ts`에서 import, DTO 사용 금지)
-- [ ] **타입은 Prisma 기반 Pick** (스키마 변경 시 부분 반영)
+- [ ] **자체 타입 사용** (`types.ts` 또는 스키마 타입 직접 import, DTO 사용 금지)
+- [ ] **타입은 Prisma 기반 Pick 또는 Zod 스키마 타입** (스키마 기반 Service는 types.ts 생략 가능)
 - [ ] **에러 처리** (error.cause 설정)
 - [ ] **Validation 로직**
 - [ ] **주석 최소화** (코드로 의도 표현)

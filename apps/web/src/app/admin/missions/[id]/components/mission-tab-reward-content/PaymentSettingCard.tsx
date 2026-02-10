@@ -11,23 +11,19 @@ import {
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
 import { Form } from "@/app/admin/components/shadcn-ui/form";
+import { cn } from "@/app/admin/lib/utils";
 import { formatToDateTimeKR } from "@/lib/date";
-import { cn } from "@/lib/utils";
+import { rewardBaseSchema } from "@/schemas/reward";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PaymentType } from "@prisma/client";
 import type { Reward } from "@prisma/client";
 import { Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import type { z } from "zod";
 
-const paymentSettingFormSchema = z
-  .object({
-    paymentType: z.enum(PaymentType, {
-      message: "올바른 지급 유형을 선택해주세요.",
-    }),
-    scheduledDate: z.date().optional(),
-  })
+const paymentSettingFormSchema = rewardBaseSchema
+  .pick({ paymentType: true, scheduledDate: true })
   .refine(
     data => {
       if (data.paymentType === PaymentType.SCHEDULED && !data.scheduledDate) {

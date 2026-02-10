@@ -3,6 +3,8 @@ import { confirmFileUploads } from "@/server/repositories/common/confirmFileUplo
 import type { SortOrderType } from "@/types/common/sort";
 import { type ActionType, type MissionCategory, type MissionType, Prisma } from "@prisma/client";
 
+type TransactionClient = Prisma.TransactionClient;
+
 export class MissionRepository {
   async findById(missionId: string) {
     return prisma.mission.findUnique({
@@ -95,6 +97,13 @@ export class MissionRepository {
       await confirmFileUploads(tx, data.creatorId, fileUploadIds);
 
       return createdMission;
+    });
+  }
+
+  async updateLikesCount(missionId: string, delta: number, client: TransactionClient = prisma) {
+    return client.mission.update({
+      where: { id: missionId },
+      data: { likesCount: { increment: delta } },
     });
   }
 
