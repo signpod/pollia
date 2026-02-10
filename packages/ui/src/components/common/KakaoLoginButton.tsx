@@ -5,10 +5,8 @@ import { Typo } from "./Typo";
 export function KakaoLoginButton(props: ButtonProps) {
   return (
     <Button
-      className={cn(
-        "bg-kakao hover:bg-kakao active:bg-kakao focus:bg-kakao text-zinc-900",
-        props.className,
-      )}
+      variant="primary"
+      className={props.className}
       {...props}
       leftIcon={
         <svg

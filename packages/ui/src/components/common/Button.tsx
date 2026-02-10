@@ -5,7 +5,7 @@ import * as React from "react";
 import { cn } from "../../lib";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap gap-[var(--space-lg)] rounded-[var(--radius-sm)] px-[var(--space-lg)] h-12 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-[var(--radius-sm)] px-[var(--space-lg)] h-12 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -20,6 +20,10 @@ const buttonVariants = cva(
         ghost:
           "bg-white text-[var(--color-zinc-950)] active:bg-[var(--color-zinc-50)] disabled:bg-[var(--color-zinc-100)] disabled:text-[var(--color-zinc-300)]",
       },
+      iconGap: {
+        default: "gap-[var(--space-lg)]",
+        compact: "gap-2",
+      },
       fullWidth: {
         true: "w-full",
         false: "",
@@ -31,6 +35,7 @@ const buttonVariants = cva(
     },
     defaultVariants: {
       variant: "primary",
+      iconGap: "default",
     },
   },
 );
@@ -41,6 +46,7 @@ export interface ButtonProps
   textAlign?: "left" | "center" | "right";
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
+  inlineIcon?: boolean;
   loading?: boolean;
   asChild?: boolean;
 }
@@ -50,9 +56,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     {
       className,
       variant,
+      iconGap,
       fullWidth = false,
       leftIcon,
       rightIcon,
+      inlineIcon = false,
       asChild = false,
       children,
       loading = false,
@@ -65,22 +73,25 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     return (
       <Comp
-        className={cn(buttonVariants({ variant, fullWidth, loading }), className)}
+        className={cn(buttonVariants({ variant, iconGap, fullWidth, loading }), className)}
         ref={ref}
         {...props}
       >
-        {leftIcon && <span>{leftIcon}</span>}
+        {leftIcon && !inlineIcon && <span>{leftIcon}</span>}
         <div
           className={cn(
-            "flex w-full items-center",
+            "flex items-center gap-2",
+            !inlineIcon && "w-full",
             textAlign === "left" && "justify-start",
             textAlign === "center" && "justify-center",
             textAlign === "right" && "justify-end",
           )}
         >
+          {inlineIcon && leftIcon && <span>{leftIcon}</span>}
           {loading ? <Loader2Icon className="h-4 w-4 animate-spin" /> : children}
+          {inlineIcon && rightIcon && <span>{rightIcon}</span>}
         </div>
-        {rightIcon && <span>{rightIcon}</span>}
+        {rightIcon && !inlineIcon && <span>{rightIcon}</span>}
       </Comp>
     );
   },
