@@ -1,7 +1,9 @@
 "use client";
 
 import type { FestivalData } from "@/types/dto/festival";
-import { Inbox, Loader2 } from "lucide-react";
+import PollPollE from "@public/svgs/poll-poll-e.svg";
+import { EmptyState } from "@repo/ui/components";
+import { Loader2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useInfiniteContent } from "../hooks";
 import { type Category, CategoryFilter } from "./CategoryFilter";
@@ -30,20 +32,23 @@ export function MainContent({ initialProjects, initialFestivals }: MainContentPr
       if (item.type === "project") {
         return item.data.category === selectedCategory;
       }
+      if (item.type === "festival") {
+        return selectedCategory === "EVENT";
+      }
       return false;
     });
   }, [selectedCategory, mixedContent]);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
+    <div>
       <div className="mb-6">
         <CategoryFilter selected={selectedCategory} onSelect={setSelectedCategory} />
       </div>
 
       {filteredContent.length > 0 ? (
         <>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredContent.map(item =>
+          <div className="grid grid-cols-2 gap-4 px-5">
+            {filteredContent.map((item) =>
               item.type === "project" ? (
                 <SurveyCard key={`project-${item.data.id}`} survey={item.data} />
               ) : (
@@ -61,11 +66,12 @@ export function MainContent({ initialProjects, initialFestivals }: MainContentPr
           </div>
         </>
       ) : (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-default bg-white py-16">
-          <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-zinc-100">
-            <Inbox className="size-8 text-zinc-400" />
-          </div>
-          <p className="text-sm text-sub">진행 중인 컨텐츠가 없어요</p>
+        <div className="px-5">
+          <EmptyState
+            icon={<PollPollE className="size-30 text-zinc-200" />}
+            title="아직 준비 중이에요"
+            description="새로운 컨텐츠가 곧 찾아올 거예요!"
+          />
         </div>
       )}
     </div>
