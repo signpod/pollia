@@ -13,7 +13,7 @@ const CATEGORY_STYLES: Record<MissionCategory, CategoryConfig> = {
     textClass: "text-orange-600",
   },
   EVENT: {
-    label: "행사",
+    label: "이벤트",
     bgClass: "bg-pink-100/90",
     textClass: "text-pink-600",
   },
@@ -32,6 +32,16 @@ const CATEGORY_STYLES: Record<MissionCategory, CategoryConfig> = {
     bgClass: "bg-purple-100/90",
     textClass: "text-purple-600",
   },
+};
+
+// TODO: PSYCHOLOGICAL_TEST enum이 Prisma에 추가되면 여기에도 라벨 추가
+export const CATEGORY_LABELS: Record<string, string> = {
+  PROMOTION: "프로모션",
+  EVENT: "이벤트",
+  RESEARCH: "리서치",
+  CHALLENGE: "챌린지",
+  QUIZ: "퀴즈/게임",
+  PSYCHOLOGICAL_TEST: "심리테스트",
 };
 
 interface CategoryBadgeProps {
