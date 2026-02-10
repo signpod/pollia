@@ -82,6 +82,7 @@ describe("EventService", () => {
             type: "GENERAL" as const,
             category: "EVENT" as const,
             password: null,
+            likesCount: 0,
             imageFileUploadId: null,
             brandLogoFileUploadId: null,
             entryActionId: null,

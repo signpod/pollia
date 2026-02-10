@@ -22,6 +22,7 @@ describe("MissionService - Mutation", () => {
       findAll: jest.fn(),
       createWithActions: jest.fn(),
       update: jest.fn(),
+      updateLikesCount: jest.fn(),
       delete: jest.fn(),
       duplicateMission: jest.fn(),
     } as jest.Mocked<MissionRepository>;

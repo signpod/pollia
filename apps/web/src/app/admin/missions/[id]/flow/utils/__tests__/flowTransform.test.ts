@@ -23,6 +23,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
     type: "GENERAL",
     category: "EVENT",
     password: null,
+    likesCount: 0,
     entryActionId: null,
     imageFileUploadId: null,
     brandLogoFileUploadId: null,
