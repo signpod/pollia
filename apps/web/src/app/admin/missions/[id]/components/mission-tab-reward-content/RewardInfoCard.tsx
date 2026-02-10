@@ -13,25 +13,22 @@ import {
 } from "@/app/admin/components/shadcn-ui/card";
 import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { type UploadedImageData, useSingleImage } from "@/app/admin/hooks/admin-image";
+import { cn } from "@/app/admin/lib/utils";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
-import { cn } from "@/lib/utils";
+import { rewardBaseSchema } from "@/schemas/reward";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Reward } from "@prisma/client";
 import { Pencil } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import type { z } from "zod";
 
-const rewardInfoFormSchema = z.object({
-  name: z
-    .string()
-    .min(1, "Reward 이름을 입력해주세요.")
-    .max(100, "Reward 이름은 100자를 초과할 수 없습니다.")
-    .trim(),
-  description: z.string().max(500, "설명은 500자를 초과할 수 없습니다.").optional(),
-  imageUrl: z.url({ message: "올바른 URL 형식이 아닙니다." }).optional(),
-  imageFileUploadId: z.string().optional(),
+const rewardInfoFormSchema = rewardBaseSchema.pick({
+  name: true,
+  description: true,
+  imageUrl: true,
+  imageFileUploadId: true,
 });
 
 type RewardInfoFormData = z.infer<typeof rewardInfoFormSchema>;
@@ -185,8 +182,8 @@ export function RewardInfoCard({ reward, onUpdate, isLoading }: RewardInfoCardPr
                 alt={reward.name}
                 width={100}
                 height={100}
-                className="rounded-lg object-cover outline outline-zinc-200"
-                sizes="48px"
+                className="rounded-lg object-cover border"
+                sizes="100px"
               />
             )}
             <div className="flex-1 min-w-0">

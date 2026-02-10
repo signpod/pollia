@@ -1,6 +1,6 @@
 import {
-  type CreateRewardInput,
-  type UpdateRewardInput,
+  type RewardInput,
+  type RewardUpdate,
   rewardInputSchema,
   rewardUpdateSchema,
 } from "@/schemas/reward";
@@ -26,12 +26,12 @@ export class RewardService {
     return await this.repo.findMany();
   }
 
-  async createReward(input: CreateRewardInput, userId: string) {
+  async createReward(input: RewardInput, userId: string) {
     const validated = parseSchema(rewardInputSchema, input);
     return await this.repo.create(validated, userId);
   }
 
-  async updateReward(rewardId: string, input: UpdateRewardInput, userId: string) {
+  async updateReward(rewardId: string, input: RewardUpdate, userId: string) {
     await this.getReward(rewardId);
     const validated = parseSchema(rewardUpdateSchema, input);
     return await this.repo.update(rewardId, validated, userId);

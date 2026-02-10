@@ -258,6 +258,35 @@ export interface GetSurveysOptions {
 | **Repository** | `Prisma.XxxInput` 그대로 | 데이터 접근 계층은 ORM과 직접 통신 |
 | **Service** | `Pick<Prisma.XxxInput, ...>` | API 경계 제어, 비즈니스 필드 추가 |
 
+### 스키마 기반 Service의 types.ts 생략
+
+Zod 스키마가 End-to-End 검증의 원천이고 `parseSchema()`로 Service에서 직접 검증하는 경우, **별도 `types.ts` 없이 스키마 타입을 직접 import**합니다:
+
+```typescript
+// types.ts 불필요 - 스키마 타입을 직접 사용
+import {
+  type RewardInput,
+  type RewardUpdate,
+  rewardInputSchema,
+  rewardUpdateSchema,
+} from "@/schemas/reward";
+
+export class RewardService {
+  async createReward(input: RewardInput, userId: string) {
+    const validated = parseSchema(rewardInputSchema, input);
+    return await this.repo.create(validated, userId);
+  }
+}
+```
+
+**types.ts가 필요한 경우 vs 불필요한 경우:**
+
+| 조건 | types.ts | 이유 |
+|------|----------|------|
+| 스키마 없이 Prisma 타입만 사용 | **필요** | Pick으로 API 경계 제어 |
+| 비즈니스 전용 필드 추가 필요 (예: `questionIds`) | **필요** | 스키마에 없는 필드 정의 |
+| Zod 스키마가 타입의 원천이고 추가 필드 없음 | **불필요** | 스키마 타입 직접 import |
+
 ### Zod 검증 유틸 (parseSchema)
 
 Zod 스키마 검증은 **공통 유틸** `parseSchema`를 사용합니다:
