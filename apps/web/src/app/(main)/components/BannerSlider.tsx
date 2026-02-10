@@ -94,8 +94,9 @@ export function BannerSlider() {
                 src={m.imageUrl}
                 alt={m.title}
                 fill
+                sizes="(max-width: 600px) 100vw, 600px"
                 className="object-cover"
-                priority={index === 0}
+                priority
               />
             </Link>
           ))}
@@ -109,8 +110,9 @@ export function BannerSlider() {
                 <Image
                   src={mission.brandLogoUrl}
                   alt="brand logo"
-                  fill
-                  className="object-cover"
+                  width={60}
+                  height={60}
+                  className="size-full object-cover"
                 />
               ) : (
                 <div className="flex size-full items-center justify-center">

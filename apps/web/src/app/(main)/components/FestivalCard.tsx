@@ -30,6 +30,7 @@ export function FestivalCard({ festival }: FestivalCardProps) {
             src={festival.imageUrl}
             alt={festival.title}
             fill
+            sizes="(max-width: 600px) 50vw, 300px"
             className="object-cover"
             unoptimized={festival.imageUrl.includes("visitkorea")}
             onError={() => setImageError(true)}

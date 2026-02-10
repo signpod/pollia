@@ -50,6 +50,7 @@ export function SurveyCard({ survey }: SurveyCardProps) {
             src={survey.imageUrl}
             alt={survey.title}
             fill
+            sizes="(max-width: 600px) 50vw, 300px"
             className="object-cover"
             onError={() => setImageError(true)}
           />
