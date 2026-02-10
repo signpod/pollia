@@ -4,21 +4,23 @@ import { Prisma } from "@prisma/client";
 type TransactionClient = Prisma.TransactionClient;
 
 export class MissionLikeRepository {
-  async findByMissionAndUser(missionId: string, userId: string) {
-    return prisma.missionLike.findUnique({
+  async findByMissionAndUser(
+    missionId: string,
+    userId: string,
+    client: TransactionClient = prisma,
+  ) {
+    return client.missionLike.findUnique({
       where: {
         missionId_userId: { missionId, userId },
       },
     });
   }
 
-  async findManyByMissionIdsAndUser(missionIds: string[], userId: string) {
-    if (missionIds.length === 0) return [];
+  async findManyByUserId(userId: string) {
     return prisma.missionLike.findMany({
-      where: {
-        missionId: { in: missionIds },
-        userId,
-      },
+      where: { userId },
+      include: { mission: true },
+      orderBy: { createdAt: "desc" },
     });
   }
 
