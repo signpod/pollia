@@ -17,7 +17,7 @@ const paymentTypeSchema = z.enum(PaymentType, {
 });
 
 const scheduledDateSchema = z.date().optional();
-const paidAtSchema = z.date().optional();
+const paidAtSchema = z.date().optional().nullable();
 
 export const rewardInputSchema = z
   .object({
