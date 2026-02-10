@@ -29,11 +29,7 @@ export function StatusView({
       )}
     >
       {showIcon &&
-        (active ? (
-          <CheckCircle2 className="h-4 w-4" />
-        ) : (
-          <XCircle className="h-4 w-4" />
-        ))}
+        (active ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />)}
       <span>{active ? activeLabel : inactiveLabel}</span>
     </span>
   );

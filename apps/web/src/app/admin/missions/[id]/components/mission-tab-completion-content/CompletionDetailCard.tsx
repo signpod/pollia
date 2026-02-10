@@ -1,6 +1,12 @@
 "use client";
 
 import {
+  DateView,
+  ImageView,
+  LabeledView,
+  TextView,
+} from "@/app/admin/components/common/molecules/viewers";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -13,16 +19,10 @@ import {
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/admin/components/shadcn-ui/card";
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
-import {
-  DateView,
-  ImageView,
-  LabeledView,
-  TextView,
-} from "@/app/admin/components/common/molecules/viewers";
 import { useDeleteCompletion } from "@/app/admin/hooks/mission-completion";
 import { stripHtmlTags } from "@/app/admin/lib/utils";
 import type { MissionCompletionWithMission } from "@/types/dto";
-import { ExternalLink, Pencil, Trash2, Loader2 } from "lucide-react";
+import { ExternalLink, Loader2, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 interface CompletionDetailCardProps {

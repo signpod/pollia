@@ -33,10 +33,18 @@ export function Branch({ actionData }: ActionStepContentProps) {
         isRequired: actionData.isRequired,
         selectedOptionIds: [firstOption.id],
         nextActionId: selectedOption?.nextActionId ?? actionData.nextActionId ?? undefined,
-        nextCompletionId: selectedOption?.nextCompletionId ?? actionData.nextCompletionId ?? undefined,
+        nextCompletionId:
+          selectedOption?.nextCompletionId ?? actionData.nextCompletionId ?? undefined,
       });
     }
-  }, [existingAnswer, actionData.id, actionData.isRequired, actionData.nextActionId, actionData.nextCompletionId, options]);
+  }, [
+    existingAnswer,
+    actionData.id,
+    actionData.isRequired,
+    actionData.nextActionId,
+    actionData.nextCompletionId,
+    options,
+  ]);
 
   const canGoNext = useMemo(() => {
     if (!actionData.isRequired) return true;
@@ -59,7 +67,8 @@ export function Branch({ actionData }: ActionStepContentProps) {
         isRequired: actionData.isRequired,
         selectedOptionIds: [optionId],
         nextActionId: selectedOption?.nextActionId ?? actionData.nextActionId ?? undefined,
-        nextCompletionId: selectedOption?.nextCompletionId ?? actionData.nextCompletionId ?? undefined,
+        nextCompletionId:
+          selectedOption?.nextCompletionId ?? actionData.nextCompletionId ?? undefined,
       });
     },
     [actionData, options, onAnswerChange],

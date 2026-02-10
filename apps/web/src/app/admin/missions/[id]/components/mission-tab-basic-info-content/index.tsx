@@ -68,7 +68,11 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
   useEffect(() => {
     const subscription = form.watch((value, { name, type }) => {
       if (type !== "change") return;
-      if (name === "isActive" && value.isActive !== undefined && value.isActive !== mission.isActive) {
+      if (
+        name === "isActive" &&
+        value.isActive !== undefined &&
+        value.isActive !== mission.isActive
+      ) {
         updateMission.mutate({
           missionId: mission.id,
           data: { isActive: value.isActive },
@@ -86,7 +90,11 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
           },
         });
       }
-      if (name === "category" && value.category !== undefined && value.category !== mission.category) {
+      if (
+        name === "category" &&
+        value.category !== undefined &&
+        value.category !== mission.category
+      ) {
         updateMission.mutate({
           missionId: mission.id,
           data: { category: value.category },

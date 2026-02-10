@@ -30,7 +30,7 @@ export const useReadFestivalsInfinite = (options: UseReadFestivalsOptions = {}) 
   return useInfiniteQuery({
     queryKey: festivalQueryKeys.infinite(areaCode),
     queryFn: ({ pageParam = 1 }) => getFestivals({ areaCode, numOfRows, pageNo: pageParam }),
-    getNextPageParam: (lastPage) => {
+    getNextPageParam: lastPage => {
       const totalPages = Math.ceil(lastPage.totalCount / lastPage.numOfRows);
       if (lastPage.pageNo < totalPages) {
         return lastPage.pageNo + 1;

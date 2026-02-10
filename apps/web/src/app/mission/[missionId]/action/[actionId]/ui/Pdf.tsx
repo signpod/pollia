@@ -11,20 +11,13 @@ import { usePdfUploadState } from "./usePdfUploadState";
 export function ActionPdf({ actionData }: ActionStepContentProps) {
   const { updateCanGoNext, onAnswerChange, missionResponse } = useActionContext();
 
-  const {
-    fileInfos,
-    uploadState,
-    addFile,
-    removeFile,
-    startUpload,
-    updateProgress,
-    cancelUpload,
-  } = usePdfUploadState({
-    actionData,
-    missionResponse,
-    onAnswerChange,
-    updateCanGoNext,
-  });
+  const { fileInfos, uploadState, addFile, removeFile, startUpload, updateProgress, cancelUpload } =
+    usePdfUploadState({
+      actionData,
+      missionResponse,
+      onAnswerChange,
+      updateCanGoNext,
+    });
 
   const handleUploadChange = useCallback(
     (

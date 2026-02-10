@@ -4,6 +4,7 @@ import { InputField } from "@/app/admin/components/common/InputField";
 import { NumberField } from "@/app/admin/components/common/NumberField";
 import { SelectField } from "@/app/admin/components/common/SelectField";
 import { TiptapField } from "@/app/admin/components/common/TiptapField";
+import { ToggleField } from "@/app/admin/components/common/ToggleField";
 import { DateTimeField } from "@/app/admin/components/common/molecules/DateTimeField";
 import {
   Card,
@@ -12,7 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
-import { ToggleField } from "@/app/admin/components/common/ToggleField";
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import {
   MISSION_DESCRIPTION_MAX_LENGTH,

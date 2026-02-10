@@ -1,8 +1,8 @@
 import { getFestival } from "@/actions/festival";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { FestivalIntro } from "./components/FestivalIntro";
 import { FestivalContent } from "./components/FestivalContent";
+import { FestivalIntro } from "./components/FestivalIntro";
 
 export const revalidate = 86400; // 24시간 (온디맨드 ISR)
 

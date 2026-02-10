@@ -1,7 +1,7 @@
 "use client";
 
-import { getAllMissions } from "@/actions/mission";
 import { getFestivals } from "@/actions/festival";
+import { getAllMissions } from "@/actions/mission";
 import type { FestivalData } from "@/types/dto/festival";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { SurveyCardData } from "../components/SurveyCard";
@@ -39,17 +39,17 @@ export function useInfiniteContent({
   const missionCursorRef = useRef<string | undefined>(
     initialProjects.length >= ITEMS_PER_PAGE
       ? initialProjects[initialProjects.length - 1]?.id
-      : undefined
+      : undefined,
   );
   const festivalPageRef = useRef<number | undefined>(
-    initialFestivals.length >= ITEMS_PER_PAGE ? 2 : undefined
+    initialFestivals.length >= ITEMS_PER_PAGE ? 2 : undefined,
   );
   const hasMoreMissionsRef = useRef(initialProjects.length >= ITEMS_PER_PAGE);
   const hasMoreFestivalsRef = useRef(initialFestivals.length >= ITEMS_PER_PAGE);
   const isLoadingRef = useRef(false);
 
   const [hasNextPage, setHasNextPage] = useState(
-    initialProjects.length >= ITEMS_PER_PAGE || initialFestivals.length >= ITEMS_PER_PAGE
+    initialProjects.length >= ITEMS_PER_PAGE || initialFestivals.length >= ITEMS_PER_PAGE,
   );
 
   const loadMore = useCallback(async () => {
@@ -67,7 +67,7 @@ export function useInfiniteContent({
               cursor: missionCursorRef.current,
               limit: ITEMS_PER_PAGE,
             });
-            const newProjects = result.data.map((mission) => ({
+            const newProjects = result.data.map(mission => ({
               id: mission.id,
               title: mission.title,
               description: mission.description ?? "",
@@ -80,7 +80,7 @@ export function useInfiniteContent({
               category: mission.category,
               createdAt: mission.createdAt.toISOString(),
             }));
-            setAdditionalProjects((prev) => [...prev, ...newProjects]);
+            setAdditionalProjects(prev => [...prev, ...newProjects]);
 
             if (result.nextCursor) {
               missionCursorRef.current = result.nextCursor;
@@ -103,7 +103,7 @@ export function useInfiniteContent({
               numOfRows: ITEMS_PER_PAGE,
               pageNo: festivalPageRef.current,
             });
-            setAdditionalFestivals((prev) => [...prev, ...result.data]);
+            setAdditionalFestivals(prev => [...prev, ...result.data]);
 
             const totalPages = Math.ceil(result.totalCount / result.numOfRows);
             if (result.pageNo < totalPages) {
@@ -131,7 +131,7 @@ export function useInfiniteContent({
     if (!element) return;
 
     const observer = new IntersectionObserver(
-      (entries) => {
+      entries => {
         const [entry] = entries;
         if (
           entry?.isIntersecting &&
@@ -141,7 +141,7 @@ export function useInfiniteContent({
           loadMore();
         }
       },
-      { threshold: 0, rootMargin: "100px" }
+      { threshold: 0, rootMargin: "100px" },
     );
     observer.observe(element);
 
@@ -150,20 +150,20 @@ export function useInfiniteContent({
 
   const projects = useMemo(
     () => [...initialProjects, ...additionalProjects],
-    [initialProjects, additionalProjects]
+    [initialProjects, additionalProjects],
   );
 
   const festivals = useMemo(
     () => [...initialFestivals, ...additionalFestivals],
-    [initialFestivals, additionalFestivals]
+    [initialFestivals, additionalFestivals],
   );
 
   const mixedContent: ContentItem[] = useMemo(() => {
-    const projectItems: ContentItem[] = projects.map((project) => ({
+    const projectItems: ContentItem[] = projects.map(project => ({
       type: "project",
       data: project,
     }));
-    const festivalItems: ContentItem[] = festivals.map((festival) => ({
+    const festivalItems: ContentItem[] = festivals.map(festival => ({
       type: "festival",
       data: festival,
     }));
@@ -171,10 +171,8 @@ export function useInfiniteContent({
     const allItems = [...projectItems, ...festivalItems];
 
     allItems.sort((a, b) => {
-      const dateA =
-        a.type === "project" ? new Date(a.data.createdAt) : new Date(a.data.startDate);
-      const dateB =
-        b.type === "project" ? new Date(b.data.createdAt) : new Date(b.data.startDate);
+      const dateA = a.type === "project" ? new Date(a.data.createdAt) : new Date(a.data.startDate);
+      const dateB = b.type === "project" ? new Date(b.data.createdAt) : new Date(b.data.startDate);
       return dateB.getTime() - dateA.getTime();
     });
 

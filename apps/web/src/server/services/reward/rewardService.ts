@@ -1,6 +1,11 @@
-import { rewardInputSchema, rewardUpdateSchema } from "@/schemas/reward";
+import {
+  type CreateRewardInput,
+  type UpdateRewardInput,
+  rewardInputSchema,
+  rewardUpdateSchema,
+} from "@/schemas/reward";
 import { rewardRepository } from "@/server/repositories/reward/rewardRepository";
-import type { CreateRewardInput, UpdateRewardInput } from "./types";
+import { parseSchema } from "@/server/services/common/parseSchema";
 
 export class RewardService {
   constructor(private repo = rewardRepository) {}
@@ -22,27 +27,14 @@ export class RewardService {
   }
 
   async createReward(input: CreateRewardInput, userId: string) {
-    const result = rewardInputSchema.safeParse(input);
-    if (!result.success) {
-      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
-      error.cause = 400;
-      throw error;
-    }
-
-    return await this.repo.create(result.data, userId);
+    const validated = parseSchema(rewardInputSchema, input);
+    return await this.repo.create(validated, userId);
   }
 
   async updateReward(rewardId: string, input: UpdateRewardInput, userId: string) {
     await this.getReward(rewardId);
-
-    const result = rewardUpdateSchema.safeParse(input);
-    if (!result.success) {
-      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
-      error.cause = 400;
-      throw error;
-    }
-
-    return await this.repo.update(rewardId, result.data, userId);
+    const validated = parseSchema(rewardUpdateSchema, input);
+    return await this.repo.update(rewardId, validated, userId);
   }
 
   async deleteReward(rewardId: string): Promise<void> {

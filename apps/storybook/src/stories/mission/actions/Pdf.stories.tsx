@@ -1,6 +1,6 @@
 import { ActionPdf } from "@/app/mission/[missionId]/action/[actionId]/ui";
-import type { Meta, StoryObj } from "@storybook/nextjs";
 import type { GetMissionResponseResponse } from "@/types/dto";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 import { ActionMockProvider, createMockMissionResponse } from "./ActionMockProvider";
 
 const meta: Meta<typeof ActionPdf> = {
@@ -27,7 +27,9 @@ PDF 파일 업로드 액션 컴포넌트입니다.
   tags: ["autodocs"],
   decorators: [
     (Story, context) => {
-      const missionResponse = context.parameters.missionResponse as GetMissionResponseResponse | undefined;
+      const missionResponse = context.parameters.missionResponse as
+        | GetMissionResponseResponse
+        | undefined;
       return (
         <ActionMockProvider missionResponse={missionResponse}>
           <Story />

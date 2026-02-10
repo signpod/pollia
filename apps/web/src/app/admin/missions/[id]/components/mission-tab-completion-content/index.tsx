@@ -164,14 +164,17 @@ export function MissionTabCompletionContent({ missionId }: MissionTabCompletionC
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-muted-foreground">완료화면 목록 (0)</h3>
                 <Button size="sm" onClick={handleCreateNew}>
-                  <Plus className="h-4 w-4 mr-1" />추가
+                  <Plus className="h-4 w-4 mr-1" />
+                  추가
                 </Button>
               </div>
             </CardHeader>
             <CardContent className="pt-6">
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Award className="h-12 w-12 text-muted-foreground/30 mb-4" />
-                <p className="text-lg font-medium text-muted-foreground mb-2">완료 화면이 없습니다</p>
+                <p className="text-lg font-medium text-muted-foreground mb-2">
+                  완료 화면이 없습니다
+                </p>
                 <p className="text-sm text-muted-foreground mb-4">
                   추가 버튼을 클릭하여 생성하세요.
                 </p>
@@ -195,42 +198,43 @@ export function MissionTabCompletionContent({ missionId }: MissionTabCompletionC
                       완료화면 목록 ({completions.length})
                     </h3>
                     <Button size="sm" onClick={handleCreateNew}>
-                      <Plus className="h-4 w-4 mr-1" />추가
+                      <Plus className="h-4 w-4 mr-1" />
+                      추가
                     </Button>
                   </div>
                 </CardHeader>
-                  <CardContent className="space-y-1 max-h-[600px] overflow-y-auto">
-                    <SortableContext
-                      items={completions.map(c => c.id)}
-                      strategy={verticalListSortingStrategy}
-                    >
-                      {completions.map(completion => (
-                        <CompletionTab
-                          key={completion.id}
-                          completion={completion}
-                          isSelected={completion.id === selectedCompletionId}
-                          onClick={() => setSelectedCompletionId(completion.id)}
-                        />
-                      ))}
-                    </SortableContext>
-                  </CardContent>
-                </Card>
-              </div>
-            </DndContext>
-
-            <div>
-              {selectedCompletion ? (
-                <CompletionDetailCard completion={selectedCompletion} onEdit={handleEdit} />
-              ) : (
-                <Card>
-                  <CardContent className="flex items-center justify-center py-12">
-                    <p className="text-muted-foreground">완료 화면을 선택하세요</p>
-                  </CardContent>
-                </Card>
-              )}
+                <CardContent className="space-y-1 max-h-[600px] overflow-y-auto">
+                  <SortableContext
+                    items={completions.map(c => c.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {completions.map(completion => (
+                      <CompletionTab
+                        key={completion.id}
+                        completion={completion}
+                        isSelected={completion.id === selectedCompletionId}
+                        onClick={() => setSelectedCompletionId(completion.id)}
+                      />
+                    ))}
+                  </SortableContext>
+                </CardContent>
+              </Card>
             </div>
+          </DndContext>
 
-            <div ref={previewAnchorRef} className="hidden xl:block" />
+          <div>
+            {selectedCompletion ? (
+              <CompletionDetailCard completion={selectedCompletion} onEdit={handleEdit} />
+            ) : (
+              <Card>
+                <CardContent className="flex items-center justify-center py-12">
+                  <p className="text-muted-foreground">완료 화면을 선택하세요</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          <div ref={previewAnchorRef} className="hidden xl:block" />
         </div>
       )}
 

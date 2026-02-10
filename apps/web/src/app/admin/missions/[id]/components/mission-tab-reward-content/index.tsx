@@ -10,13 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/app/admin/components/shadcn-ui/alert-dialog";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/app/admin/components/shadcn-ui/card";
+import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { useReadMission } from "@/app/admin/hooks/mission";
 import {
   useCreateReward,
@@ -24,29 +18,38 @@ import {
   useReadReward,
   useUpdateReward,
 } from "@/app/admin/hooks/reward";
-import type { Reward } from "@prisma/client";
+import type { UpdateRewardRequest } from "@/types/dto";
+import { Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { ActualPaymentCard } from "./ActualPaymentCard";
 import { CreateRewardDialog } from "./CreateRewardDialog";
-import { EditRewardDialog } from "./EditRewardDialog";
-import { EmptyRewardCard, LoadingSkeleton, RewardCard } from "./RewardCard";
+import { PaymentSettingCard } from "./PaymentSettingCard";
+import { EmptyRewardCard, LoadingSkeleton } from "./RewardCard";
 import type { RewardFormData } from "./RewardForm";
+import { RewardInfoCard } from "./RewardInfoCard";
 
 interface MissionTabRewardContentProps {
   missionId: string;
 }
 
-function RewardCardWrapper({
+function RewardCardsContent({
   rewardId,
-  onEdit,
   onDelete,
 }: {
   rewardId: string;
-  onEdit: (reward: Reward) => void;
   onDelete: (rewardId: string) => void;
 }) {
   const { data: rewardResponse, isLoading } = useReadReward(rewardId);
   const reward = rewardResponse?.data;
+  const updateReward = useUpdateReward({
+    onSuccess: () => {
+      toast.success("리워드가 수정되었습니다");
+    },
+    onError: error => {
+      toast.error(error.message || "리워드 수정 중 오류가 발생했습니다");
+    },
+  });
 
   if (isLoading) {
     return <LoadingSkeleton />;
@@ -56,8 +59,47 @@ function RewardCardWrapper({
     return null;
   }
 
+  const handleUpdate = (data: UpdateRewardRequest) => {
+    updateReward.mutate({ rewardId: reward.id, data });
+  };
+
+  const handleConfirmPayment = (paidAt: Date | null) => {
+    updateReward.mutate({ rewardId: reward.id, data: { paidAt } });
+  };
+
   return (
-    <RewardCard reward={reward} onEdit={() => onEdit(reward)} onDelete={() => onDelete(rewardId)} />
+    <div className="space-y-6">
+      <div className="flex justify-end">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => onDelete(rewardId)}
+          disabled={updateReward.isPending}
+          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+        >
+          <Trash2 className="size-4" />
+          리워드 삭제
+        </Button>
+      </div>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <RewardInfoCard
+          reward={reward}
+          onUpdate={handleUpdate}
+          isLoading={updateReward.isPending}
+        />
+        <PaymentSettingCard
+          reward={reward}
+          onUpdate={handleUpdate}
+          isLoading={updateReward.isPending}
+        />
+        <ActualPaymentCard
+          reward={reward}
+          onConfirmPayment={handleConfirmPayment}
+          isLoading={updateReward.isPending}
+        />
+      </div>
+    </div>
   );
 }
 
@@ -65,9 +107,7 @@ function RewardContent({ missionId }: { missionId: string }) {
   const { data: missionResponse } = useReadMission(missionId);
   const mission = missionResponse?.data;
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [editingReward, setEditingReward] = useState<Reward | null>(null);
   const [deletingRewardId, setDeletingRewardId] = useState<string | null>(null);
 
   const createReward = useCreateReward({
@@ -77,16 +117,6 @@ function RewardContent({ missionId }: { missionId: string }) {
     },
     onError: error => {
       toast.error(error.message || "리워드 생성 중 오류가 발생했습니다");
-    },
-  });
-
-  const updateReward = useUpdateReward({
-    onSuccess: () => {
-      toast.success("리워드가 수정되었습니다");
-      setIsEditDialogOpen(false);
-    },
-    onError: error => {
-      toast.error(error.message || "리워드 수정 중 오류가 발생했습니다");
     },
   });
 
@@ -105,11 +135,6 @@ function RewardContent({ missionId }: { missionId: string }) {
     setIsCreateDialogOpen(true);
   };
 
-  const handleEdit = (reward: Reward) => {
-    setEditingReward(reward);
-    setIsEditDialogOpen(true);
-  };
-
   const handleDelete = (rewardId: string) => {
     setDeletingRewardId(rewardId);
     setIsDeleteDialogOpen(true);
@@ -122,14 +147,6 @@ function RewardContent({ missionId }: { missionId: string }) {
 
   const handleCreateSubmit = (data: RewardFormData) => {
     createReward.mutate({ ...data, missionId });
-  };
-
-  const handleEditSubmit = (data: RewardFormData) => {
-    if (!editingReward) return;
-    updateReward.mutate({
-      rewardId: editingReward.id,
-      data,
-    });
   };
 
   if (!mission?.rewardId) {
@@ -148,15 +165,7 @@ function RewardContent({ missionId }: { missionId: string }) {
 
   return (
     <>
-      <RewardCardWrapper rewardId={mission.rewardId} onEdit={handleEdit} onDelete={handleDelete} />
-
-      <EditRewardDialog
-        open={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
-        reward={editingReward}
-        onSubmit={handleEditSubmit}
-        isLoading={updateReward.isPending}
-      />
+      <RewardCardsContent rewardId={mission.rewardId} onDelete={handleDelete} />
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
@@ -185,15 +194,7 @@ function RewardContent({ missionId }: { missionId: string }) {
 export function MissionTabRewardContent({ missionId }: MissionTabRewardContentProps) {
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>리워드</CardTitle>
-          <CardDescription>미션 완료 시 지급되는 리워드를 관리합니다.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <RewardContent missionId={missionId} />
-        </CardContent>
-      </Card>
+      <RewardContent missionId={missionId} />
     </div>
   );
 }

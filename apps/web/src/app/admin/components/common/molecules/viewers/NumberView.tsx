@@ -9,12 +9,7 @@ interface NumberViewProps {
   className?: string;
 }
 
-export function NumberView({
-  value,
-  unit,
-  placeholder = "미설정",
-  className,
-}: NumberViewProps) {
+export function NumberView({ value, unit, placeholder = "미설정", className }: NumberViewProps) {
   if (value === null || value === undefined) {
     return <span className="text-muted-foreground">{placeholder}</span>;
   }

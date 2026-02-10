@@ -3,6 +3,7 @@
 import { submitAnswerOnly } from "@/actions/action-answer";
 import { toast } from "@/components/common/Toast";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
+import type { ActionForProgress } from "@/hooks/action";
 import { useReadMissionResponseForMission } from "@/hooks/mission-response";
 import { useRecordActionResponse } from "@/hooks/tracking";
 import { useAuth } from "@/hooks/user";
@@ -10,7 +11,6 @@ import { isAnswerSameAsSubmitted } from "@/lib/answer/compareAnswers";
 import { removeSessionStorage } from "@/lib/sessionStorage";
 import { clearActionSession, getOrCreateSessionId } from "@/lib/tracking";
 import { submitAnswerItemSchema } from "@/schemas/action-answer";
-import type { ActionForProgress } from "@/hooks/action";
 import type { ActionAnswerItem, ActionDetail, GetMissionResponseResponse } from "@/types/dto";
 import { useModal } from "@repo/ui/components";
 import { useQueryClient } from "@tanstack/react-query";
@@ -93,7 +93,10 @@ type CacheData = GetMissionResponseResponse | { data: null };
 // 진행 중인 제출을 추적하는 전역 Set (컴포넌트 간 공유)
 const pendingSubmissions = new Set<string>();
 
-function findNextActionByOrder(currentAction: ActionForProgress, actions: ActionForProgress[]): string | null {
+function findNextActionByOrder(
+  currentAction: ActionForProgress,
+  actions: ActionForProgress[],
+): string | null {
   const currentOrder = currentAction.order ?? 0;
   const nextAction = actions.find(a => (a.order ?? 0) === currentOrder + 1);
   return nextAction?.id ?? null;
@@ -272,7 +275,7 @@ export function useClientActionSubmit({
       // 현재 액션에 이미 제출된 답변이 있으면 다음으로 이동
       const submittedAnswers = missionResponse?.data?.answers ?? [];
       const existingAnswer = submittedAnswers.find(a => a.actionId === actionData.id) as
-        | (typeof submittedAnswers)[number] & { nextActionId?: string; nextCompletionId?: string }
+        | ((typeof submittedAnswers)[number] & { nextActionId?: string; nextCompletionId?: string })
         | undefined;
       if (existingAnswer) {
         const isActualLast =

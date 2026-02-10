@@ -61,20 +61,15 @@ export function BottomButton({
 }: BottomButtonProps) {
   const { missionId } = useParams<{ missionId: string }>();
 
-  const {
-    handleClick,
-    isStarting,
-    isLoggedIn,
-    hasMissionResponse,
-    isParticipantLimitReached,
-  } = useMissionStart({
-    missionId,
-    firstActionId,
-    isRequirePassword,
-    hasExistingResponse,
-    showResumeModal,
-    isResuming,
-  });
+  const { handleClick, isStarting, isLoggedIn, hasMissionResponse, isParticipantLimitReached } =
+    useMissionStart({
+      missionId,
+      firstActionId,
+      isRequirePassword,
+      hasExistingResponse,
+      showResumeModal,
+      isResuming,
+    });
 
   const [isDeadlinePassed, setIsDeadlinePassed] = useState(false);
 

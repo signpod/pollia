@@ -1,6 +1,6 @@
 import { ActionImage } from "@/app/mission/[missionId]/action/[actionId]/ui";
-import type { Meta, StoryObj } from "@storybook/nextjs";
 import type { GetMissionResponseResponse } from "@/types/dto";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 import { ActionMockProvider, createMockMissionResponse } from "./ActionMockProvider";
 
 const meta: Meta<typeof ActionImage> = {
@@ -28,7 +28,9 @@ const meta: Meta<typeof ActionImage> = {
   tags: ["autodocs"],
   decorators: [
     (Story, context) => {
-      const missionResponse = context.parameters.missionResponse as GetMissionResponseResponse | undefined;
+      const missionResponse = context.parameters.missionResponse as
+        | GetMissionResponseResponse
+        | undefined;
       return (
         <ActionMockProvider missionResponse={missionResponse}>
           <Story />
@@ -134,9 +136,30 @@ export const WithUploadedImages: Story = {
   render: () => <ActionImage actionData={uploadedImagesActionData} />,
   parameters: {
     missionResponse: createMockMissionResponse(uploadedImagesActionData.id, [
-      { id: "file-1", publicUrl: "https://picsum.photos/200/200?random=10", filePath: "mock/image1.jpg", fileName: "사진1.jpg", fileSize: 1024 * 200, mimeType: "image/jpeg" },
-      { id: "file-2", publicUrl: "https://picsum.photos/200/200?random=11", filePath: "mock/image2.jpg", fileName: "사진2.jpg", fileSize: 1024 * 150, mimeType: "image/jpeg" },
-      { id: "file-3", publicUrl: "https://picsum.photos/200/200?random=12", filePath: "mock/image3.jpg", fileName: "사진3.jpg", fileSize: 1024 * 180, mimeType: "image/jpeg" },
+      {
+        id: "file-1",
+        publicUrl: "https://picsum.photos/200/200?random=10",
+        filePath: "mock/image1.jpg",
+        fileName: "사진1.jpg",
+        fileSize: 1024 * 200,
+        mimeType: "image/jpeg",
+      },
+      {
+        id: "file-2",
+        publicUrl: "https://picsum.photos/200/200?random=11",
+        filePath: "mock/image2.jpg",
+        fileName: "사진2.jpg",
+        fileSize: 1024 * 150,
+        mimeType: "image/jpeg",
+      },
+      {
+        id: "file-3",
+        publicUrl: "https://picsum.photos/200/200?random=12",
+        filePath: "mock/image3.jpg",
+        fileName: "사진3.jpg",
+        fileSize: 1024 * 180,
+        mimeType: "image/jpeg",
+      },
     ]),
     docs: {
       description: {

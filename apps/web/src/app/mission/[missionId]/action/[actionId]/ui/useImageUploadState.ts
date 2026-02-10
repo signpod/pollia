@@ -60,10 +60,7 @@ export function useImageUploadState({
   }, [missionResponse, actionData.id]);
 
   // 파생 상태
-  const fileUploadIds = useMemo(
-    () => imageInfos.map(i => i.fileUploadId),
-    [imageInfos],
-  );
+  const fileUploadIds = useMemo(() => imageInfos.map(i => i.fileUploadId), [imageInfos]);
 
   const canGoNext = useMemo(() => {
     if (uploadState.isUploading) return false;

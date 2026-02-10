@@ -256,6 +256,7 @@ describe("RewardService", () => {
         imageUrl: null,
         paymentType: "IMMEDIATE" as PaymentType,
         scheduledDate: null,
+        paidAt: null,
         updatedAt: new Date("2025-01-02"),
       };
       mockRepo.update.mockResolvedValue(mockUpdatedReward);
@@ -284,6 +285,7 @@ describe("RewardService", () => {
         imageUrl: null,
         paymentType: "IMMEDIATE" as PaymentType,
         scheduledDate: null,
+        paidAt: null,
         updatedAt: new Date("2025-01-02"),
       };
       mockRepo.update.mockResolvedValue(mockUpdatedReward);
@@ -314,6 +316,7 @@ describe("RewardService", () => {
         imageUrl: null,
         paymentType: "IMMEDIATE" as PaymentType,
         scheduledDate: null,
+        paidAt: null,
         updatedAt: new Date("2025-01-02"),
       };
       mockRepo.update.mockResolvedValue(mockUpdatedReward);

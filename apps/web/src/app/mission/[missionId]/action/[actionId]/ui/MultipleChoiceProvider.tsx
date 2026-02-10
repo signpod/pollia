@@ -146,7 +146,15 @@ export function MultipleChoiceProvider({
         ...(actionNextCompletionId && { nextCompletionId: actionNextCompletionId }),
       });
     }
-  }, [initialSelectedIds, actionId, answerType, isRequired, missionResponse, actionNextActionId, actionNextCompletionId]);
+  }, [
+    initialSelectedIds,
+    actionId,
+    answerType,
+    isRequired,
+    missionResponse,
+    actionNextActionId,
+    actionNextCompletionId,
+  ]);
 
   const toggleSelectedId = useCallback(
     (optionId: string) => {

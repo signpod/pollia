@@ -19,8 +19,7 @@ const getProductionHostname = (): string | null => {
 
 const productionHostname = getProductionHostname();
 
-const isClientProductionDeployment =
-  process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
+const isClientProductionDeployment = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
 
 const baseConfig = {
   captureUncaught: true,

@@ -58,11 +58,7 @@ export function SelectField<T extends FieldValues>({
             <FormMessage />
           </div>
           <FormControl>
-            <Select
-              value={field.value}
-              onValueChange={field.onChange}
-              disabled={disabled}
-            >
+            <Select value={field.value} onValueChange={field.onChange} disabled={disabled}>
               <SelectTrigger className={className ?? "w-32"}>
                 <SelectValue placeholder={placeholder} />
               </SelectTrigger>
