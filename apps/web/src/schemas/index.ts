@@ -5,3 +5,4 @@ export * from "./mission-response";
 export * from "./action-answer";
 export * from "./reward";
 export * from "./mission-completion";
+export * from "./mission-like";
