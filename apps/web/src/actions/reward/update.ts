@@ -1,29 +1,13 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
-import type { UpdateRewardInput } from "@/schemas/reward";
 import { rewardService } from "@/server/services/reward/rewardService";
-import type { UpdateRewardRequest, UpdateRewardResponse } from "@/types/dto";
+import type { UpdateRewardRequest } from "@/types/dto";
 
-function toUpdateRewardInput(dto: UpdateRewardRequest): UpdateRewardInput {
-  return {
-    name: dto.name,
-    description: dto.description,
-    imageUrl: dto.imageUrl,
-    imageFileUploadId: dto.imageFileUploadId,
-    paymentType: dto.paymentType,
-    scheduledDate: dto.scheduledDate,
-  };
-}
-
-export async function updateReward(
-  rewardId: string,
-  request: UpdateRewardRequest,
-): Promise<UpdateRewardResponse> {
+export async function updateReward(rewardId: string, request: UpdateRewardRequest) {
   try {
     const user = await requireAuth();
-    const input = toUpdateRewardInput(request);
-    const reward = await rewardService.updateReward(rewardId, input, user.id);
+    const reward = await rewardService.updateReward(rewardId, request, user.id);
     return { data: reward };
   } catch (error) {
     console.error("updateReward error:", error);
