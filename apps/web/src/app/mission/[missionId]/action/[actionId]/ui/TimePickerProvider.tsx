@@ -131,7 +131,14 @@ export function TimePickerProvider({
       ...(nextActionId && { nextActionId }),
       ...(nextCompletionId && { nextCompletionId }),
     });
-  }, [selectedTimes, actionId, isRequired, convertTimesToDateStrings, nextActionId, nextCompletionId]);
+  }, [
+    selectedTimes,
+    actionId,
+    isRequired,
+    convertTimesToDateStrings,
+    nextActionId,
+    nextCompletionId,
+  ]);
 
   return (
     <TimePickerContext.Provider

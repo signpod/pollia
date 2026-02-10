@@ -3,9 +3,7 @@ export const festivalQueryKeys = {
   list: (areaCode?: string) =>
     areaCode ? (["festival", "list", areaCode] as const) : (["festival", "list"] as const),
   infinite: (areaCode?: string) =>
-    areaCode
-      ? (["festival", "infinite", areaCode] as const)
-      : (["festival", "infinite"] as const),
+    areaCode ? (["festival", "infinite", areaCode] as const) : (["festival", "infinite"] as const),
   detail: (festivalId: string) => ["festival", "detail", festivalId] as const,
 } as const;
 

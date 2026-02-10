@@ -1,6 +1,6 @@
 import { ActionVideo } from "@/app/mission/[missionId]/action/[actionId]/ui";
-import type { Meta, StoryObj } from "@storybook/nextjs";
 import type { GetMissionResponseResponse } from "@/types/dto";
+import type { Meta, StoryObj } from "@storybook/nextjs";
 import { ActionMockProvider, createMockMissionResponse } from "./ActionMockProvider";
 
 const meta: Meta<typeof ActionVideo> = {
@@ -28,7 +28,9 @@ const meta: Meta<typeof ActionVideo> = {
   tags: ["autodocs"],
   decorators: [
     (Story, context) => {
-      const missionResponse = context.parameters.missionResponse as GetMissionResponseResponse | undefined;
+      const missionResponse = context.parameters.missionResponse as
+        | GetMissionResponseResponse
+        | undefined;
       return (
         <ActionMockProvider missionResponse={missionResponse}>
           <Story />
@@ -118,7 +120,8 @@ export const WithUploadedVideo: Story = {
     missionResponse: createMockMissionResponse(uploadedVideoActionData.id, [
       {
         id: "file-1",
-        publicUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+        publicUrl:
+          "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
         filePath: "mock/video1.mp4",
         fileName: "제품소개영상.mp4",
         fileSize: 1024 * 1024 * 5,

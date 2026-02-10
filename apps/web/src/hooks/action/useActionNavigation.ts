@@ -1,8 +1,8 @@
 "use client";
 
+import { ExtendedActionStepConfig } from "@/constants/action";
 import { ROUTES } from "@/constants/routes";
 import type { ActionForProgress } from "@/hooks/action";
-import { ExtendedActionStepConfig } from "@/constants/action";
 import { useStep } from "@repo/ui/components";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";

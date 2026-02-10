@@ -34,7 +34,10 @@ export function useMyResponses() {
     const responseData = responsesQuery.data;
     if (!responseData?.data) return responseData;
 
-    const actionsMap = new Map<string, Map<string, { options: Array<{ id: string; order: number; title: string }> }>>();
+    const actionsMap = new Map<
+      string,
+      Map<string, { options: Array<{ id: string; order: number; title: string }> }>
+    >();
 
     actionsQueries.forEach((query, index) => {
       const missionId = missionIds[index];
@@ -63,7 +66,9 @@ export function useMyResponses() {
 
         return {
           ...answer,
-          options: [{ id: selectedOption.id, title: selectedOption.title, order: selectedOption.order }],
+          options: [
+            { id: selectedOption.id, title: selectedOption.title, order: selectedOption.order },
+          ],
         };
       });
 

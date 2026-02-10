@@ -60,9 +60,7 @@ export function IntroMobilePreviewPlaceholder({
             <h1 className="text-white text-center text-xl font-bold break-keep">
               {title || "미션 제목을 입력해주세요"}
             </h1>
-            {formattedDeadline && (
-              <p className="text-zinc-300 text-sm">{formattedDeadline} 까지</p>
-            )}
+            {formattedDeadline && <p className="text-zinc-300 text-sm">{formattedDeadline} 까지</p>}
           </div>
         </div>
 
@@ -78,12 +76,7 @@ export function IntroMobilePreviewPlaceholder({
         </div>
       </div>
 
-      <div
-        className={cn(
-          "absolute top-4 left-0 right-0 z-20",
-          "flex justify-center",
-        )}
-      >
+      <div className={cn("absolute top-4 left-0 right-0 z-20", "flex justify-center")}>
         <div className="bg-amber-500/90 text-black text-xs font-medium px-3 py-1.5 rounded-full">
           여기에 프론트오피스 인트로 컴포넌트를 연결하세요
         </div>

@@ -57,7 +57,7 @@ export function CategoryFilter({ selected, onSelect }: CategoryFilterProps) {
       className={cn(
         "flex gap-2 overflow-x-auto pb-2",
         "[&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]",
-        isDragging ? "cursor-grabbing" : "cursor-grab"
+        isDragging ? "cursor-grabbing" : "cursor-grab",
       )}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}

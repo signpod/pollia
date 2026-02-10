@@ -455,8 +455,22 @@ describe("ActionService - Mutation", () => {
 
   describe("duplicateAction", () => {
     const mockOptions = [
-      { id: "opt-1", title: "옵션1", description: null, imageUrl: null, fileUploadId: null, order: 0 },
-      { id: "opt-2", title: "옵션2", description: "설명", imageUrl: null, fileUploadId: null, order: 1 },
+      {
+        id: "opt-1",
+        title: "옵션1",
+        description: null,
+        imageUrl: null,
+        fileUploadId: null,
+        order: 0,
+      },
+      {
+        id: "opt-2",
+        title: "옵션2",
+        description: "설명",
+        imageUrl: null,
+        fileUploadId: null,
+        order: 1,
+      },
     ];
 
     it("옵션이 없는 액션을 성공적으로 복제한다", async () => {

@@ -26,7 +26,7 @@ export function MainContent({ initialProjects, initialFestivals }: MainContentPr
     if (selectedCategory === "all") {
       return mixedContent;
     }
-    return mixedContent.filter((item) => {
+    return mixedContent.filter(item => {
       if (item.type === "project") {
         return item.data.category === selectedCategory;
       }
@@ -43,12 +43,12 @@ export function MainContent({ initialProjects, initialFestivals }: MainContentPr
       {filteredContent.length > 0 ? (
         <>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredContent.map((item) =>
+            {filteredContent.map(item =>
               item.type === "project" ? (
                 <SurveyCard key={`project-${item.data.id}`} survey={item.data} />
               ) : (
                 <FestivalCard key={`festival-${item.data.id}`} festival={item.data} />
-              )
+              ),
             )}
           </div>
 
