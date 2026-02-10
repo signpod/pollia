@@ -64,22 +64,35 @@ src/
 │   │       └── surveyRepository.ts
 │   │
 │   └── services/              # Service 계층
-│       ├── common/
-│       │   └── parseSchema.ts # Zod 검증 공통 유틸
-│       └── survey/
-│           ├── surveyService.ts
-│           ├── surveyService.test.ts  # 테스트
-│           └── types.ts       # Service 내부 타입
+│       ├── survey/            # 소규모 서비스 (단일 파일)
+│       │   ├── surveyService.ts
+│       │   ├── surveyService.test.ts
+│       │   └── types.ts
+│       │
+│       └── action/            # 대규모 서비스 (__tests__ 분리)
+│           ├── __tests__/
+│           │   ├── actionService.create.test.ts
+│           │   ├── actionService.mutation.test.ts
+│           │   └── actionService.read.test.ts
+│           ├── index.ts
+│           ├── testUtils.ts
+│           └── types.ts
 │
 ├── schemas/                    # Zod 스키마 (Client + Service 공유)
 │   └── survey/
 │       ├── index.ts           # re-export
 │       └── surveySchema.ts
 │
-└── types/dto/                 # DTO 타입 정의 (Client 사용)
-    ├── index.ts
-    └── survey/
-        └── index.ts
+└── types/dto/                 # DTO 타입 정의
+    ├── index.ts               # 전체 re-export
+    ├── mission/
+    │   ├── index.ts           # re-export (requests + responses)
+    │   ├── requests.ts        # Request DTOs (Zod 스키마 기반)
+    │   └── responses.ts       # Response DTOs (Prisma 타입 기반)
+    └── event/
+        ├── index.ts
+        ├── requests.ts
+        └── responses.ts
 ```
 
 ### 네이밍 규칙
@@ -160,6 +173,12 @@ export const surveyRepository = new SurveyRepository();
 - 불필요한 타입 래핑 제거
 - Prisma가 타입 안전성 보장
 
+### 트랜잭션 (tx) 관리 원칙
+
+- **트랜잭션은 서비스 계층에서 생성·관리한다.** 여러 작업을 한 트랜잭션으로 묶어야 할 때는 서비스에서 `prisma.$transaction(async (tx) => { ... })` 를 실행하고, 그 콜백 안에서 필요한 DB 작업을 수행한다.
+- **트랜잭션에 참여해야 하는 레포지토리 호출**은 서비스가 같은 `tx`를 넘겨서 한다. 레포지토리 메서드는 필요 시 클라이언트를 **파라미터 초깃값**으로 받는다 (`client: Prisma.TransactionClient = prisma`). 트랜잭션 밖에서는 인자를 생략해 전역 `prisma`가 쓰이게 하고, 트랜잭션 안에서는 서비스가 `tx`를 넘긴다. 서비스는 트랜잭션 경계만 정하고, 실제 쿼리는 레포지토리에 두며 Prisma가 서비스로 새어 나오지 않게 한다.
+- 트랜잭션이 필요할 때마다 “레포에 새 메서드 하나 더 만들어서 그 안에서만 `$transaction` 돌린다”는 방식보다, **서비스에서 tx를 만들고 레포에 넘기는 방식**을 우선으로 고려한다.
+
 ### 필수 요소
 
 - [ ] **Class 기반 구현**
@@ -169,6 +188,7 @@ export const surveyRepository = new SurveyRepository();
 - [ ] **Prisma 쿼리만 포함**
 - [ ] **Prisma 타입 그대로 사용** (`Prisma.XxxUncheckedCreateInput` 등)
 - [ ] **주석 없음** (코드로 의도 표현)
+- [ ] **트랜잭션** 필요 시 서비스에서 `$transaction` 실행 후, 참여하는 레포 메서드에 `tx` 전달 (레포 메서드는 `client: TransactionClient = prisma` 파라미터 초깃값 사용)
 
 ### 메서드 네이밍 규칙
 
@@ -287,50 +307,11 @@ export class RewardService {
 | 비즈니스 전용 필드 추가 필요 (예: `questionIds`) | **필요** | 스키마에 없는 필드 정의 |
 | Zod 스키마가 타입의 원천이고 추가 필드 없음 | **불필요** | 스키마 타입 직접 import |
 
-### Zod 검증 유틸 (parseSchema)
-
-Zod 스키마 검증은 **공통 유틸** `parseSchema`를 사용합니다:
-
-```typescript
-// server/services/common/parseSchema.ts
-import type { z } from "zod";
-
-export function parseSchema<T extends z.ZodTypeAny>(schema: T, input: unknown): z.output<T> {
-  const result = schema.safeParse(input);
-  if (!result.success) {
-    const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
-    error.cause = 400;
-    throw error;
-  }
-  return result.data;
-}
-```
-
-**사용 규칙:**
-- Service에서 Zod 검증 시 반드시 `parseSchema` 사용
-- safeParse + 수동 에러 생성 패턴 금지 (보일러플레이트 제거)
-- 반환값은 Zod output 타입으로 자동 추론
-
-```typescript
-// 올바른 사용
-const validated = parseSchema(surveyInputSchema, input);
-return await this.repo.create(validated, userId);
-
-// 잘못된 사용 (직접 safeParse 금지)
-const result = surveyInputSchema.safeParse(input);
-if (!result.success) {
-  const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
-  error.cause = 400;
-  throw error;
-}
-```
-
 ### 기본 구조
 
 ```typescript
-import { surveyInputSchema, type CreateSurveyInput } from "@/schemas/survey";
 import { surveyRepository } from "@/server/repositories/survey/surveyRepository";
-import { parseSchema } from "@/server/services/common/parseSchema";
+import type { CreateSurveyInput } from "./types";
 
 export class SurveyService {
   constructor(private repo = surveyRepository) {}
@@ -348,12 +329,18 @@ export class SurveyService {
   }
 
   async createSurvey(input: CreateSurveyInput, userId: string) {
-    const validated = parseSchema(surveyInputSchema, input);
+    if (!input.title || input.title.trim().length === 0) {
+      const error = new Error("제목은 필수입니다.");
+      error.cause = 400;
+      throw error;
+    }
 
-    return await this.repo.create({
-      ...validated,
+    const survey = await this.repo.create({
+      ...input,
       creatorId: userId,
     });
+
+    return survey;
   }
 
   async deleteSurvey(surveyId: string, userId: string): Promise<void> {
@@ -378,17 +365,15 @@ export const surveyService = new SurveyService();
 - [ ] **Constructor Injection** (테스트용 Mock 주입)
 - [ ] **Singleton export** (`export const {도메인}Service = new ...`)
 - [ ] **일관된 메서드명** (get*, create*, update*, delete*, toggle*)
-- [ ] **Input 타입은 Zod 스키마에서 파생** (`@/schemas/{도메인}` import)
-- [ ] **Zod 검증은 parseSchema 유틸 사용** (직접 safeParse 금지)
+- [ ] **자체 타입 사용** (`types.ts` 또는 스키마 타입 직접 import, DTO 사용 금지)
+- [ ] **타입은 Prisma 기반 Pick 또는 Zod 스키마 타입** (스키마 기반 Service는 types.ts 생략 가능)
 - [ ] **에러 처리** (error.cause 설정)
+- [ ] **Validation 로직**
 - [ ] **주석 최소화** (코드로 의도 표현)
 
 ### 에러 처리 패턴
 
 ```typescript
-// Zod 검증 실패 (400) - parseSchema 사용
-const validated = parseSchema(surveyInputSchema, input);
-
 // 리소스 없음 (404)
 const survey = await this.repo.findById(surveyId);
 if (!survey) {
@@ -401,6 +386,13 @@ if (!survey) {
 if (survey.creatorId !== userId) {
   const error = new Error("삭제 권한이 없습니다.");
   error.cause = 403;
+  throw error;
+}
+
+// 잘못된 요청 (400)
+if (!data.title || data.title.trim().length === 0) {
+  const error = new Error("제목은 필수입니다.");
+  error.cause = 400;
   throw error;
 }
 
@@ -429,16 +421,14 @@ if (existing) {
 
 ### 기본 구조
 
-Action은 **반환 타입 어노테이션을 생략**하고 TypeScript 자동 추론에 의존합니다.
-Response DTO를 수동 정의하지 않습니다.
-
 ```typescript
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
 import { surveyService } from "@/server/services/survey/surveyService";
+import type { GetSurveyResponse } from "@/types/dto";
 
-export async function getSurvey(surveyId: string) {
+export async function getSurvey(surveyId: string): Promise<GetSurveyResponse> {
   try {
     const survey = await surveyService.getSurvey(surveyId);
     return { data: survey };
@@ -453,12 +443,17 @@ export async function getSurvey(surveyId: string) {
   }
 }
 
-export async function createSurvey(request: CreateSurveyRequest) {
+export async function createSurvey(
+  request: CreateSurveyRequest,
+): Promise<CreateSurveyResponse> {
   try {
     const user = await requireAuth();
-    const { missionId, ...input } = request;
 
-    const survey = await surveyService.createSurvey(input, user.id);
+    const survey = await surveyService.createSurvey({
+      title: request.title,
+      description: request.description,
+      creatorId: user.id,
+    });
 
     return { data: survey };
   } catch (error) {
@@ -480,7 +475,7 @@ export async function createSurvey(request: CreateSurveyRequest) {
 - [ ] **Service 호출** (비즈니스 로직 없음)
 - [ ] **try-catch 에러 처리**
 - [ ] **console.error 로깅**
-- [ ] **`{ data: ... }` 형식 반환** (반환 타입 어노테이션 생략, 자동 추론)
+- [ ] **DTO 변환** (`{ data: ... }` 형식)
 - [ ] **에러 재throw** (error.cause 유지)
 
 ---
@@ -489,57 +484,150 @@ export async function createSurvey(request: CreateSurveyRequest) {
 
 ### 역할
 
-- Server Action과 Client 간 Request 타입 정의
-- Response 타입은 Action 반환값에서 자동 추론 (별도 정의 불필요)
+- Server Action과 Client 간 데이터 전송
+- Request DTO: Client → Server 요청 데이터
+- Response DTO: Server → Client 응답 데이터
+- 타입 안전성 보장
 
-### Request DTO
+### DTO 디렉토리 구조
+
+```
+types/dto/
+├── index.ts                   # 전체 re-export
+├── mission/
+│   ├── index.ts               # re-export
+│   ├── requests.ts            # Request DTOs
+│   └── responses.ts           # Response DTOs
+├── event/
+│   ├── index.ts
+│   ├── requests.ts
+│   └── responses.ts
+└── mission-completion/
+    ├── index.ts
+    ├── requests.ts
+    └── responses.ts
+```
+
+### Request DTO vs Response DTO
+
+| 구분 | Request DTO | Response DTO |
+|------|-------------|--------------|
+| **타입 원천** | Zod 스키마 (`z.input<typeof schema>`) | Prisma 엔티티 타입 |
+| **목적** | 유효성 검증 + 타입 안전성 | 데이터베이스 응답 표현 |
+| **사용처** | Client 폼 → Server Action | Server Action → Client |
+| **예시** | `CreateMissionRequest`, `UpdateMissionRequest` | `GetMissionResponse`, `CreateMissionResponse` |
+
+### Request DTO 작성 규칙
 
 **Request DTO는 Zod 스키마에서 파생합니다.**
 
 ```typescript
-// types/dto/survey/index.ts
-import type { SurveyInput, SurveyUpdate } from "@/schemas/survey";
+// types/dto/mission/requests.ts
+import type { MissionInput, MissionUpdate } from "@/schemas/mission";
 
-export type CreateSurveyRequest = SurveyInput;
-export type UpdateSurveyRequest = SurveyUpdate;
+// Zod 스키마 타입을 그대로 사용
+export type CreateMissionRequest = MissionInput;
+export type UpdateMissionRequest = MissionUpdate;
 
-// 관계 파라미터가 필요한 경우 intersection
-export type CreateSurveyRequest = SurveyInput & { missionId: string };
+// 추가 Request가 필요한 경우만 직접 정의
+export interface DuplicateMissionRequest {
+  missionId: string;
+}
 ```
 
-**원칙:**
+**이유:**
 - **Single Source of Truth**: 스키마가 유효성 검증과 타입의 원천
 - **자동 동기화**: 스키마 수정 시 Request DTO도 자동 반영
-- **수동 인터페이스 정의 금지**: Zod에서 파생되지 않는 Request 타입은 지양
+- **중복 제거**: 타입 정의를 두 번 작성할 필요 없음
 
-### Response DTO
+### Response DTO 작성 규칙
 
-**Response DTO는 정의하지 않습니다.**
-
-Action 함수의 반환 타입을 TypeScript가 자동 추론하고, tanstack-query 훅에서도 자동으로 타입이 전파됩니다.
-
-```
-Repository(Prisma select) -> Service -> Action(반환 타입 자동 추론) -> Hook(tanstack-query 자동 추론) -> UI
-```
+**Response DTO는 Prisma 타입을 재사용합니다.**
 
 ```typescript
-// 올바른 사용: 반환 타입 어노테이션 없음
-export async function getSurvey(surveyId: string) {
-  const survey = await surveyService.getSurvey(surveyId);
-  return { data: survey };
+// types/dto/mission/responses.ts
+import type { Mission } from "@prisma/client";
+
+// Prisma 엔티티를 그대로 감싸는 형태
+export interface CreateMissionResponse {
+  data: Mission;
 }
 
-// 잘못된 사용: 수동 Response 인터페이스
-export async function getSurvey(surveyId: string): Promise<GetSurveyResponse> { ... }
+export interface GetMissionResponse {
+  data: Mission;
+}
+
+export interface GetUserMissionsResponse {
+  data: Mission[];
+}
+
+// 커스텀 응답 구조가 필요한 경우
+export interface GetMissionParticipantInfoResponse {
+  data: {
+    currentParticipants: number;
+    maxParticipants: number | null;
+    isClosed: boolean;
+  };
+}
+```
+
+**이유:**
+- **타입 안전성**: DB에서 이미 검증된 데이터
+- **자동 반영**: Prisma 스키마 변경 시 자동 업데이트
+- **중복 제거**: 엔티티 타입을 재정의할 필요 없음
+
+### Index 파일 패턴
+
+```typescript
+// types/dto/mission/index.ts
+export * from "./requests";
+export * from "./responses";
+```
+
+**장점:**
+- 도메인 단위로 import 가능: `import { CreateMissionRequest, GetMissionResponse } from "@/types/dto/mission"`
+- 파일 분리로 관심사 명확히 구분
+
+### DTO 사용 예시
+
+**Client → Server (Request DTO):**
+
+```typescript
+// Client 폼
+import type { CreateMissionRequest } from "@/types/dto/mission";
+
+const handleSubmit = async (data: CreateMissionRequest) => {
+  await createMission(data);
+};
+```
+
+**Server → Client (Response DTO):**
+
+```typescript
+// Server Action
+import type { GetMissionResponse } from "@/types/dto/mission";
+
+export async function getMission(id: string): Promise<GetMissionResponse> {
+  const mission = await missionService.getMission(id);
+  return { data: mission };  // Prisma 엔티티를 그대로 반환
+}
 ```
 
 ### DTO 체크리스트
 
-- [ ] `/types/dto/{도메인}/index.ts` 파일 생성
-- [ ] Request 타입은 `@/schemas/{도메인}`에서 import하여 type alias로 정의
-- [ ] 관계 파라미터가 필요한 경우만 intersection (`& { missionId: string }`)
-- [ ] Response 인터페이스는 정의하지 않음 (Action 반환 타입 자동 추론)
-- [ ] `/types/dto/index.ts`에 도메인 re-export 추가
+새로운 도메인 DTO 구현 시:
+
+- [ ] `/types/dto/{도메인}/` 폴더 생성
+- [ ] `requests.ts` 작성
+  - [ ] Zod 스키마에서 Request 타입 import
+  - [ ] `type CreateXxxRequest = XxxInput` 형태로 정의
+  - [ ] 추가 Request만 직접 interface 정의
+- [ ] `responses.ts` 작성
+  - [ ] Prisma 엔티티 타입 import
+  - [ ] `{ data: Entity }` 형태로 Response 정의
+  - [ ] 커스텀 구조가 필요한 경우만 직접 정의
+- [ ] `index.ts`에서 requests + responses re-export
+- [ ] `/types/dto/index.ts`에 도메인 추가
 
 ---
 
@@ -553,6 +641,40 @@ export async function getSurvey(surveyId: string): Promise<GetSurveyResponse> { 
 **테스트 작성 제외:**
 - Repository 계층 (Prisma 쿼리는 테스트하지 않음)
 - Server Action 계층 (인증/에러 처리는 E2E 테스트에서)
+
+### 테스트 파일 구조
+
+**소규모 서비스 (단일 파일):**
+```
+survey/
+  ├── surveyService.ts
+  ├── surveyService.test.ts    # 단일 테스트 파일
+  └── types.ts
+```
+
+**대규모 서비스 (`__tests__/` 분리):**
+
+테스트 파일이 **500줄 이상**이거나 **관심사가 명확히 구분**되는 경우 `__tests__/` 폴더로 분리합니다.
+
+```
+action/
+  ├── __tests__/
+  │   ├── actionService.create.test.ts      # 생성 관련 테스트
+  │   ├── actionService.mutation.test.ts    # 수정/삭제 테스트
+  │   └── actionService.read.test.ts        # 조회 관련 테스트
+  ├── index.ts
+  ├── testUtils.ts
+  └── types.ts
+```
+
+**분리 기준:**
+- 테스트 파일이 500줄 이상
+- CRUD 작업이 명확히 구분됨 (create, read, update/delete)
+- 도메인 특화 로직이 많음 (예: password, validation 등)
+
+**파일 네이밍:**
+- `{서비스명}.{관심사}.test.ts`
+- 예: `actionService.create.test.ts`, `missionService.mutation.test.ts`
 
 ### 기본 구조
 
@@ -637,9 +759,10 @@ describe("SurveyService", () => {
 | 계층 | 파일명 | 구현 방식 | 타입 정의 | 에러 처리 | 테스트 |
 |------|--------|-----------|-----------|-----------|--------|
 | **Repository** | `{도메인}Repository.ts` | Class + Singleton | Prisma 타입 그대로 | 없음 (null) | 제외 |
-| **Service** | `{도메인}Service.ts` | Class + Singleton + DI | Zod 스키마 파생 + parseSchema 검증 | error.cause throw | 대상 |
-| **Action** | `{동작}.ts` | Function | Request: DTO, Response: 자동 추론 | try-catch + log | 제외 |
-| **DTO Request** | `types/dto/{도메인}/index.ts` | Type Alias | Zod 스키마 파생 | - | - |
+| **Service** | `{도메인}Service.ts` | Class + Singleton + DI | Pick<Prisma...> | error.cause throw | 대상 |
+| **Action** | `{동작}.ts` | Function | DTO 타입 | try-catch + log | 제외 |
+| **DTO Request** | `requests.ts` | Type Alias | Zod 스키마 파생 | - | - |
+| **DTO Response** | `responses.ts` | Interface | Prisma 타입 재사용 | - | - |
 
 ### 메서드 네이밍
 
