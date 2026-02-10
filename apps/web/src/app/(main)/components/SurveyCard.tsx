@@ -2,11 +2,11 @@
 
 import type { MissionCategory } from "@prisma/client";
 import PolliaIcon from "@public/svgs/pollia-icon.svg";
-import { Heart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { CATEGORY_LABELS } from "./CategoryBadge";
+import { MissionLikeButton } from "./MissionLikeButton";
 
 export interface SurveyCardData {
   id: string;
@@ -55,16 +55,7 @@ export function SurveyCard({ survey }: SurveyCardProps) {
             onError={() => setImageError(true)}
           />
         )}
-        <button
-          type="button"
-          className="absolute bottom-3 right-3 text-zinc-400"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-        >
-          <Heart className="size-6 fill-white/40 text-zinc-200" />
-        </button>
+        <MissionLikeButton missionId={survey.id} className="absolute bottom-3 right-3" />
       </div>
 
       <div className="mt-3 flex flex-col gap-2">
