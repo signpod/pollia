@@ -1,6 +1,10 @@
-import { rewardInputSchema, rewardUpdateSchema } from "@/schemas/reward";
+import {
+  type CreateRewardInput,
+  type UpdateRewardInput,
+  rewardInputSchema,
+  rewardUpdateSchema,
+} from "@/schemas/reward";
 import { rewardRepository } from "@/server/repositories/reward/rewardRepository";
-import type { CreateRewardInput, UpdateRewardInput } from "./types";
 
 export class RewardService {
   constructor(private repo = rewardRepository) {}

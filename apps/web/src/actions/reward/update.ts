@@ -1,8 +1,8 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
+import type { UpdateRewardInput } from "@/schemas/reward";
 import { rewardService } from "@/server/services/reward/rewardService";
-import type { UpdateRewardInput } from "@/server/services/reward/types";
 import type { UpdateRewardRequest, UpdateRewardResponse } from "@/types/dto";
 
 function toUpdateRewardInput(dto: UpdateRewardRequest): UpdateRewardInput {

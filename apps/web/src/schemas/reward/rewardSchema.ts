@@ -17,6 +17,7 @@ const paymentTypeSchema = z.enum(PaymentType, {
 });
 
 const scheduledDateSchema = z.date().optional();
+const paidAtSchema = z.date().optional();
 
 export const rewardInputSchema = z
   .object({
@@ -54,6 +55,7 @@ export const rewardUpdateSchema = z
     imageFileUploadId: imageFileUploadIdSchema,
     paymentType: paymentTypeSchema.optional(),
     scheduledDate: scheduledDateSchema,
+    paidAt: paidAtSchema,
   })
   .refine(data => Object.keys(data).length > 0, {
     message: "최소 하나의 필드를 수정해야 합니다.",
@@ -79,3 +81,6 @@ export const rewardUpdateSchema = z
 
 export type RewardInput = z.infer<typeof rewardInputSchema>;
 export type RewardUpdate = z.infer<typeof rewardUpdateSchema>;
+
+export type CreateRewardInput = RewardInput;
+export type UpdateRewardInput = RewardUpdate;

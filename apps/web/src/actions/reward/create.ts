@@ -2,8 +2,8 @@
 
 import { requireAuth } from "@/actions/common/auth";
 import { updateMission } from "@/actions/mission/update";
+import type { CreateRewardInput } from "@/schemas/reward";
 import { rewardService } from "@/server/services/reward/rewardService";
-import type { CreateRewardInput } from "@/server/services/reward/types";
 import type { CreateRewardRequest, CreateRewardResponse } from "@/types/dto";
 
 function toCreateRewardInput(dto: CreateRewardRequest): CreateRewardInput {
