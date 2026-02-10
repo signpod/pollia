@@ -79,6 +79,9 @@ export function useInfiniteContent({
               maxParticipants: mission.maxParticipants ?? 100,
               category: mission.category,
               createdAt: mission.createdAt.toISOString(),
+              isActive: mission.isActive,
+              deadline: mission.deadline?.toISOString() ?? null,
+              startDate: (mission as unknown as { startDate?: Date }).startDate?.toISOString() ?? null,
             }));
             setAdditionalProjects(prev => [...prev, ...newProjects]);
 

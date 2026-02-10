@@ -27,12 +27,15 @@ export default async function MainPage() {
     maxParticipants: mission.maxParticipants ?? 100,
     category: mission.category,
     createdAt: mission.createdAt.toISOString(),
+    isActive: mission.isActive,
+    deadline: mission.deadline?.toISOString() ?? null,
+    startDate: (mission as unknown as { startDate?: Date }).startDate?.toISOString() ?? null,
   }));
 
   const festivals = festivalResponse.data;
 
   return (
-    <main className="min-h-screen bg-light pb-20">
+    <main className="min-h-screen bg-white pb-10 flex flex-col gap-6">
       <BannerSlider />
       <MainContent initialProjects={projects} initialFestivals={festivals} />
       <ChannelTalk />
