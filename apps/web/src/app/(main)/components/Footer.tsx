@@ -8,7 +8,7 @@ export function Footer() {
     <footer className="flex items-end justify-between bg-white p-5">
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-[2.775px]">
-          <PolliaIcon className="size-[11px]" />
+          <PolliaIcon className="size-[11px] text-primary" />
           <PolliaWordmark className="h-4 w-auto" />
         </div>
         <Typo.Body size="small" className="text-zinc-300">

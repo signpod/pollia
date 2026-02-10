@@ -40,14 +40,11 @@ export function MainContent({ initialProjects, initialFestivals }: MainContentPr
   }, [selectedCategory, mixedContent]);
 
   return (
-    <div>
-      <div className="mb-6">
-        <CategoryFilter selected={selectedCategory} onSelect={setSelectedCategory} />
-      </div>
-
+    <div className="flex flex-col gap-6">
+      <CategoryFilter selected={selectedCategory} onSelect={setSelectedCategory} />
       {filteredContent.length > 0 ? (
         <>
-          <div className="grid grid-cols-2 gap-4 px-5">
+          <div className="grid grid-cols-2 gap-10 px-5">
             {filteredContent.map((item) =>
               item.type === "project" ? (
                 <SurveyCard key={`project-${item.data.id}`} survey={item.data} />

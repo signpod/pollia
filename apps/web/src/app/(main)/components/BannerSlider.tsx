@@ -71,7 +71,7 @@ export function BannerSlider() {
   const mission = FEATURED_MISSIONS[currentIndex];
 
   return (
-    <section className="px-5 pt-4">
+    <section className="px-5">
       <div
         ref={containerRef}
         className="relative aspect-square w-full overflow-hidden rounded-2xl shadow-[0_4px_20px_rgba(9,9,11,0.08)]"
