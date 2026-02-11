@@ -35,6 +35,8 @@ const TAB_LABELS = {
   },
 } as const;
 
+const TAB_LABELS_KEYS = Object.keys(TAB_LABELS) as (keyof typeof TAB_LABELS)[];
+
 export function MissionDetailContent({ mission, defaultTab = "basic" }: MissionDetailContentProps) {
   return (
     <>
@@ -47,12 +49,15 @@ export function MissionDetailContent({ mission, defaultTab = "basic" }: MissionD
 
       <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList className="grid w-full max-w-[800px] grid-cols-4 mb-6">
-          {Object.values(TAB_LABELS).map(tab => (
-            <TabsTrigger key={tab.label} value={tab.label} className="flex items-center gap-2">
-              <tab.icon className="h-4 w-4" />
-              {tab.label}
-            </TabsTrigger>
-          ))}
+          {TAB_LABELS_KEYS.map(key => {
+            const tab = TAB_LABELS[key];
+            return (
+              <TabsTrigger key={key} value={key} className="flex items-center gap-2">
+                <tab.icon className="h-4 w-4" />
+                {tab.label}
+              </TabsTrigger>
+            );
+          })}
         </TabsList>
 
         <TabsContent value="basic">
