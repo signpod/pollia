@@ -25,7 +25,7 @@ export function MeLikedMissionCard({ mission }: MeLikedMissionCardProps) {
           </div>
         ) : (
           <Image
-            src={mission.imageUrl}
+            src={mission.imageUrl!}
             alt={mission.title}
             fill
             sizes="(max-width: 600px) 50vw, 300px"
