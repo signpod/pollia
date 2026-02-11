@@ -4,10 +4,11 @@ import type { FestivalData } from "@/types/dto/festival";
 import PollPollE from "@public/svgs/poll-poll-e.svg";
 import { EmptyState } from "@repo/ui/components";
 import { Loader2 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useInfiniteContent } from "../hooks";
 import { type Category, CategoryFilter } from "./CategoryFilter";
 import { FestivalCard } from "./FestivalCard";
+import { StickyCategoryTab } from "./StickyCategoryTab";
 import type { SurveyCardData } from "./SurveyCard";
 import { SurveyCard } from "./SurveyCard";
 
@@ -18,6 +19,36 @@ interface MainContentProps {
 
 export function MainContent({ initialProjects, initialFestivals }: MainContentProps) {
   const [selectedCategory, setSelectedCategory] = useState<Category>("all");
+  const [isCategoryFilterHidden, setIsCategoryFilterHidden] = useState(false);
+  const categoryFilterRef = useRef<HTMLDivElement>(null);
+
+  const HEADER_HEIGHT = 48;
+
+  const handleCategoryChange = (category: Category) => {
+    setSelectedCategory(category);
+    const el = categoryFilterRef.current;
+    if (el) {
+      const top = el.getBoundingClientRect().top + window.scrollY - HEADER_HEIGHT;
+      window.scrollTo({ top, behavior: "instant" });
+    }
+  };
+
+  useEffect(() => {
+    const el = categoryFilterRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry) {
+          setIsCategoryFilterHidden(!entry.isIntersecting);
+        }
+      },
+      { threshold: 0 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const { mixedContent, isLoadingMore, hasNextPage, observerRef } = useInfiniteContent({
     initialProjects,
@@ -41,7 +72,14 @@ export function MainContent({ initialProjects, initialFestivals }: MainContentPr
 
   return (
     <div className="flex flex-col gap-6">
-      <CategoryFilter selected={selectedCategory} onSelect={setSelectedCategory} />
+      <StickyCategoryTab
+        selected={selectedCategory}
+        onSelect={handleCategoryChange}
+        visible={isCategoryFilterHidden}
+      />
+      <div ref={categoryFilterRef}>
+        <CategoryFilter selected={selectedCategory} onSelect={handleCategoryChange} />
+      </div>
       {filteredContent.length > 0 ? (
         <>
           <div className="grid grid-cols-2 gap-10 px-5">
