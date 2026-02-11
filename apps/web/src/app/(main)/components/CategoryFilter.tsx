@@ -9,7 +9,14 @@ import CategoryTestIcon from "@public/svgs/category-test-icon.svg";
 import type { ComponentType, SVGProps } from "react";
 
 // TODO: Prisma에 PSYCHOLOGICAL_TEST enum이 추가되면 MissionCategory 타입으로 변경
-export type Category = "all" | "PROMOTION" | "EVENT" | "RESEARCH" | "CHALLENGE" | "QUIZ" | "PSYCHOLOGICAL_TEST";
+export type Category =
+  | "all"
+  | "PROMOTION"
+  | "EVENT"
+  | "RESEARCH"
+  | "CHALLENGE"
+  | "QUIZ"
+  | "PSYCHOLOGICAL_TEST";
 
 interface CategoryItem {
   id: Category;
@@ -36,7 +43,7 @@ export function CategoryFilter({ selected, onSelect }: CategoryFilterProps) {
   return (
     <div className="overflow-x-auto bg-white scrollbar-hide">
       <div className="flex min-w-full items-start justify-between gap-4 px-6 py-2">
-        {CATEGORIES.map((category) => {
+        {CATEGORIES.map(category => {
           const isSelected = selected === category.id;
           const Icon = category.icon;
 
@@ -51,15 +58,12 @@ export function CategoryFilter({ selected, onSelect }: CategoryFilterProps) {
                 <Icon className="size-8" />
               </div>
               <div className="flex flex-col items-center gap-0.5">
-                <span className="text-sm font-semibold text-default">
-                  {category.label}
-                </span>
+                <span className="text-sm font-semibold text-default">{category.label}</span>
                 <div className="flex items-center justify-center size-3">
-                <span
-                  className={`size-[4px] rounded-full ${isSelected ? "bg-zinc-800" : "bg-transparent"}`}
-                />
+                  <span
+                    className={`size-[4px] rounded-full ${isSelected ? "bg-zinc-800" : "bg-transparent"}`}
+                  />
                 </div>
-
               </div>
             </button>
           );

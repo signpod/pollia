@@ -16,10 +16,7 @@ export function FestivalCard({ festival }: FestivalCardProps) {
   const showFallback = imageError || !festival.imageUrl;
 
   return (
-    <Link
-      href={`/festivals/${festival.id}`}
-      className="group flex flex-col overflow-hidden"
-    >
+    <Link href={`/festivals/${festival.id}`} className="group flex flex-col overflow-hidden">
       <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-default">
         {showFallback ? (
           <div className="flex size-full items-center justify-center bg-zinc-50">
@@ -39,7 +36,7 @@ export function FestivalCard({ festival }: FestivalCardProps) {
         <button
           type="button"
           className="absolute bottom-3 right-3 text-zinc-400"
-          onClick={(e) => {
+          onClick={e => {
             e.preventDefault();
             e.stopPropagation();
           }}

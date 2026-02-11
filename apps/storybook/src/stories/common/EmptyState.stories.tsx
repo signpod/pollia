@@ -125,10 +125,7 @@ export const Variants: Story = {
       </div>
       <div>
         <h3 className="mb-3 text-sm font-medium text-gray-500">아이콘 + 타이틀</h3>
-        <EmptyState
-          icon={<Inbox className="size-30 text-zinc-300" />}
-          title="검색 결과가 없어요"
-        />
+        <EmptyState icon={<Inbox className="size-30 text-zinc-300" />} title="검색 결과가 없어요" />
       </div>
       <div>
         <h3 className="mb-3 text-sm font-medium text-gray-500">타이틀만</h3>

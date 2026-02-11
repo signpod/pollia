@@ -33,7 +33,7 @@ export const useMissionLike = (missionId: string) => {
 
       queryClient.setQueryData<{ isLiked: boolean; likesCount: number }>(
         missionLikeQueryKeys.likeStatus(missionId),
-        (oldData) => {
+        oldData => {
           if (!oldData) return oldData;
           return {
             isLiked: !oldData.isLiked,
@@ -58,10 +58,7 @@ export const useMissionLike = (missionId: string) => {
 
     onError: (_, __, context) => {
       if (context?.previousData) {
-        queryClient.setQueryData(
-          missionLikeQueryKeys.likeStatus(missionId),
-          context.previousData,
-        );
+        queryClient.setQueryData(missionLikeQueryKeys.likeStatus(missionId), context.previousData);
       }
       toast.warning(LIKE_MESSAGES.error);
     },

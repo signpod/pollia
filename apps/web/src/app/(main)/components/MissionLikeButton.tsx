@@ -1,7 +1,7 @@
 "use client";
 
-import { useAuth } from "@/hooks/user/useAuth";
 import { useMissionLike, useMissionLikeStatus } from "@/hooks/mission-like";
+import { useAuth } from "@/hooks/user/useAuth";
 import { cn } from "@/lib/utils";
 import { Heart } from "lucide-react";
 

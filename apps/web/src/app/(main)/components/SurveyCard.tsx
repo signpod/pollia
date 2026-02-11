@@ -36,10 +36,7 @@ export function SurveyCard({ survey }: SurveyCardProps) {
   const categoryLabel = CATEGORY_LABELS[survey.category] ?? survey.category;
 
   return (
-    <Link
-      href={`/mission/${survey.id}`}
-      className="group flex flex-col overflow-hidden"
-    >
+    <Link href={`/mission/${survey.id}`} className="group flex flex-col overflow-hidden">
       <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-default">
         {showFallback ? (
           <div className="flex size-full items-center justify-center bg-zinc-50">

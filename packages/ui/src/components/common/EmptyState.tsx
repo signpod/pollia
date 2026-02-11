@@ -18,9 +18,7 @@ export function EmptyState({ icon, title, description, action, className }: Empt
           <div className="flex flex-col items-center gap-1 text-center">
             <p className="text-xl font-bold text-default">{title}</p>
             {description && (
-              <div className="text-base font-medium leading-[1.6] text-info">
-                {description}
-              </div>
+              <div className="text-base font-medium leading-[1.6] text-info">{description}</div>
             )}
           </div>
         </div>

@@ -1,4 +1,3 @@
-import { cn } from "../../lib";
 import { Button, ButtonProps } from "./Button";
 import { Typo } from "./Typo";
 

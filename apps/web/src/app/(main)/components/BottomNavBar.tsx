@@ -1,8 +1,8 @@
 "use client";
 
 import { ROUTES } from "@/constants/routes";
-import { Heart,  Search } from "lucide-react";
 import HomeIcon from "@public/svgs/home-icon.svg";
+import { Heart, Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 

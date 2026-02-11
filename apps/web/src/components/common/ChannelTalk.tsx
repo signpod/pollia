@@ -63,7 +63,7 @@ export function ChannelTalk() {
 
     return () => {
       window.ChannelIO?.("shutdown");
-      delete window.ChannelIO;
+      window.ChannelIO = undefined;
       window.ChannelIOInitialized = false;
     };
   }, []);

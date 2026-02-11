@@ -6,10 +6,10 @@ export const useMissionLikeStatus = (missionId: string) => {
   return useQuery({
     queryKey: missionLikeQueryKeys.likeStatus(missionId),
     queryFn: () => getMissionLikeStatus(missionId),
-    select: (data) => data.data,
+    select: data => data.data,
     staleTime: 5 * 60 * 1000,
     retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 };
 

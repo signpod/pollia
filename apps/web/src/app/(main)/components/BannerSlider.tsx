@@ -1,13 +1,13 @@
 "use client";
 
 import { ROUTES } from "@/constants/routes";
+import { cn } from "@/lib/utils";
+import PlayIcon from "@public/svgs/play-icon.svg";
 import PolliaIcon from "@public/svgs/pollia-icon.svg";
 import { Typo } from "@repo/ui/components";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import PlayIcon from "@public/svgs/play-icon.svg";
-import { cn } from "@/lib/utils";
 
 // TODO: 데이터 수정 필요
 const FEATURED_MISSIONS = [
@@ -37,11 +37,11 @@ export function BannerSlider() {
   const total = FEATURED_MISSIONS.length;
 
   const goToNext = useCallback(() => {
-    setCurrentIndex((prev) => (prev + 1) % total);
+    setCurrentIndex(prev => (prev + 1) % total);
   }, [total]);
 
   const goToPrev = useCallback(() => {
-    setCurrentIndex((prev) => (prev - 1 + total) % total);
+    setCurrentIndex(prev => (prev - 1 + total) % total);
   }, [total]);
 
   useEffect(() => {
@@ -105,7 +105,12 @@ export function BannerSlider() {
         {/* 그라데이션 + 로고 + 타이틀 (슬라이드 트랙 밖, fade-up 애니메이션) */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-b from-transparent to-zinc-800 px-10 pb-10 pt-[60px]">
           <div key={currentIndex} className="flex flex-col gap-3 animate-fade-up">
-            <div className={cn("shrink-0 overflow-hidden rounded-full border-[1.25px] border-zinc-200 bg-white", "size-[40px] sm:size-[60px]")}>
+            <div
+              className={cn(
+                "shrink-0 overflow-hidden rounded-full border-[1.25px] border-zinc-200 bg-white",
+                "size-[40px] sm:size-[60px]",
+              )}
+            >
               {mission?.brandLogoUrl ? (
                 <Image
                   src={mission.brandLogoUrl}
