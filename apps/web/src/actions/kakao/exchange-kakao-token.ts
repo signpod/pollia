@@ -31,6 +31,7 @@ export async function exchangeKakaoToken(
         client_id: kakaoRestApiKey,
         redirect_uri: request.redirectUri,
         code: request.code,
+        client_secret: process.env.KAKAO_CLIENT_SECRET,
       }),
     });
 
