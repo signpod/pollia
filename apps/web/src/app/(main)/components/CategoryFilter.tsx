@@ -17,7 +17,7 @@ interface CategoryItem {
   icon: ComponentType<SVGProps<SVGSVGElement>>;
 }
 
-const CATEGORIES: CategoryItem[] = [
+export const CATEGORIES: CategoryItem[] = [
   { id: "all", label: "전체", icon: CategoryAllIcon },
   { id: "EVENT", label: "이벤트", icon: CategoryEventIcon },
   { id: "CHALLENGE", label: "챌린지", icon: CategoryChallengeIcon },
