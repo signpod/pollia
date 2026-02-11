@@ -32,7 +32,7 @@ export function MePageContent({ initialUser }: MePageContentProps) {
   }, [responses]);
 
   return (
-    <div className="flex flex-col gap-10 py-6">
+    <div className="flex flex-col gap-15 py-10">
       <section className="flex flex-col items-center gap-4 px-5">
         {/* TODO: 프로필 이미지 연결 */}
         <UserAvatar size="large" />

@@ -76,7 +76,7 @@ const RewardsTab = memo(function RewardsTab() {
   if (!rewards || rewards.length === 0) return <EmptyState message="받은 리워드가 없어요" />;
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-10">
       {REWARD_SECTIONS_CONFIG.map(({ key, title, label, href }) => {
         const items = grouped[key];
         if (items?.length === 0) return null;
