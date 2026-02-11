@@ -7,21 +7,6 @@ const codeVersion =
 const isProduction = process.env.NODE_ENV === "production";
 const isProductionDeployment = process.env.VERCEL_ENV === "production";
 
-const getProductionHostname = (): string | null => {
-  const url = process.env.NEXT_PUBLIC_APP_URL;
-  if (!url) return null;
-  try {
-    return new URL(url).hostname;
-  } catch {
-    return null;
-  }
-};
-
-const productionHostname = getProductionHostname();
-
-const isClientProductionDeployment =
-  process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
-
 const baseConfig = {
   captureUncaught: true,
   captureUnhandledRejections: true,
