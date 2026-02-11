@@ -1,7 +1,7 @@
 "use client";
 
+import { UserAvatar } from "@/components/common/UserAvatar";
 import type { User } from "@prisma/client";
-import PolliaFaceGood from "@public/svgs/face/good.svg";
 import { ButtonV2, Tooltip, Typo } from "@repo/ui/components";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { EventSection, MeFooter, RecommendedProjects } from "./components";
@@ -34,9 +34,8 @@ export function MePageContent({ initialUser }: MePageContentProps) {
   return (
     <div className="flex flex-col gap-10 py-6">
       <section className="flex flex-col items-center gap-4 px-5">
-        <div className="flex size-20 items-center justify-center rounded-full bg-violet-100">
-          <PolliaFaceGood className="size-12 text-violet-300" />
-        </div>
+        {/* TODO: 프로필 이미지 연결 */}
+        <UserAvatar size="large" />
         <div className="flex flex-col items-center gap-1">
           <Typo.MainTitle size="medium">{user.name}</Typo.MainTitle>
           <Typo.Body size="medium" className="text-info">

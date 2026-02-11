@@ -1,11 +1,11 @@
 "use client";
 
+import { UserAvatar } from "@/components/common/UserAvatar";
 import { ROUTES } from "@/constants/routes";
 import { useCurrentUser } from "@/hooks/user";
-import PolliaFaceGood from "@public/svgs/face/good.svg";
 import PolliaIcon from "@public/svgs/pollia-icon.svg";
 import PolliaWordmark from "@public/svgs/pollia-wordmark.svg";
-import { ButtonV2, Typo } from "@repo/ui/components";
+import { Typo } from "@repo/ui/components";
 import { ChevronLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -36,9 +36,7 @@ export function ProfileHeader({ showBack = false, fallbackRight }: ProfileHeader
       {currentUser ? (
         <button onClick={() => router.push(ROUTES.ME)}>
           <div className="flex items-center gap-2">
-            <div className="flex size-6 items-center justify-center rounded-full bg-violet-100">
-              <PolliaFaceGood className="size-4 text-violet-300" />
-            </div>
+            <UserAvatar size="small" />
             <Typo.Body size="small" className="font-medium text-zinc-700">
               {currentUser.name}
             </Typo.Body>
