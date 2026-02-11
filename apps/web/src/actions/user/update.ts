@@ -1,25 +1,26 @@
 "use server";
 
 import { requireAuth } from "@/actions/common/auth";
+import { userUpdateSchema } from "@/schemas/user";
 import type { UpdateUserInput } from "@/server/services/user/types";
 import { userService } from "@/server/services/user/userService";
-
-export interface UpdateUserRequest {
-  name?: string;
-  phone?: string;
-}
+import type { UpdateUserRequest } from "@/types/dto/user";
 
 function toUpdateUserInput(dto: UpdateUserRequest): UpdateUserInput {
   return {
     name: dto.name,
     phone: dto.phone,
+    profileImageFileUploadId: dto.profileImageFileUploadId,
   };
 }
 
 export async function updateUser(request: UpdateUserRequest) {
   try {
     const user = await requireAuth();
-    const input = toUpdateUserInput(request);
+
+    const validated = userUpdateSchema.parse(request);
+    const input = toUpdateUserInput(validated);
+
     const updatedUser = await userService.updateUser(user.id, input);
     return { data: updatedUser };
   } catch (error) {
