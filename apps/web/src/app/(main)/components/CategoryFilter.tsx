@@ -1,5 +1,6 @@
 "use client";
 
+import { MissionCategory } from "@prisma/client";
 import CategoryAllIcon from "@public/svgs/category-all-icon.svg";
 import CategoryChallengeIcon from "@public/svgs/category-challenge-icon.svg";
 import CategoryEventIcon from "@public/svgs/category-event-icon.svg";
@@ -8,15 +9,7 @@ import CategoryResearchIcon from "@public/svgs/category-research-icon.svg";
 import CategoryTestIcon from "@public/svgs/category-test-icon.svg";
 import type { ComponentType, SVGProps } from "react";
 
-// TODO: Prisma에 PSYCHOLOGICAL_TEST enum이 추가되면 MissionCategory 타입으로 변경
-export type Category =
-  | "all"
-  | "PROMOTION"
-  | "EVENT"
-  | "RESEARCH"
-  | "CHALLENGE"
-  | "QUIZ"
-  | "PSYCHOLOGICAL_TEST";
+export type Category = MissionCategory | "all";
 
 interface CategoryItem {
   id: Category;
@@ -26,12 +19,11 @@ interface CategoryItem {
 
 export const CATEGORIES: CategoryItem[] = [
   { id: "all", label: "전체", icon: CategoryAllIcon },
-  { id: "EVENT", label: "이벤트", icon: CategoryEventIcon },
-  { id: "CHALLENGE", label: "챌린지", icon: CategoryChallengeIcon },
-  { id: "RESEARCH", label: "리서치", icon: CategoryResearchIcon },
-  // TODO: Prisma에 PSYCHOLOGICAL_TEST enum 추가 후 id 변경
-  { id: "PSYCHOLOGICAL_TEST", label: "심리테스트", icon: CategoryTestIcon },
-  { id: "QUIZ", label: "퀴즈/게임", icon: CategoryQuizIcon },
+  { id: MissionCategory.EVENT, label: "이벤트", icon: CategoryEventIcon },
+  { id: MissionCategory.CHALLENGE, label: "챌린지", icon: CategoryChallengeIcon },
+  { id: MissionCategory.RESEARCH, label: "리서치", icon: CategoryResearchIcon },
+  { id: MissionCategory.TEST, label: "심리테스트", icon: CategoryTestIcon },
+  { id: MissionCategory.QUIZ, label: "퀴즈/게임", icon: CategoryQuizIcon },
 ];
 
 interface CategoryFilterProps {

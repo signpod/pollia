@@ -41,7 +41,6 @@ export const CATEGORY_LABELS: Record<string, string> = {
   RESEARCH: "리서치",
   CHALLENGE: "챌린지",
   QUIZ: "퀴즈/게임",
-  PSYCHOLOGICAL_TEST: "심리테스트",
 };
 
 interface CategoryBadgeProps {
