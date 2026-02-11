@@ -59,8 +59,8 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
           description="미션의 카테고리를 선택합니다."
           options={[
             {
-              value: MissionCategory.PROMOTION,
-              label: MISSION_CATEGORY_LABELS[MissionCategory.PROMOTION],
+              value: MissionCategory.TEST,
+              label: MISSION_CATEGORY_LABELS[MissionCategory.TEST],
             },
             {
               value: MissionCategory.EVENT,

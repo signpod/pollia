@@ -1,4 +1,4 @@
-import type { MissionCategory } from "@prisma/client";
+import { MissionCategory } from "@prisma/client";
 
 interface CategoryConfig {
   label: string;
@@ -7,8 +7,8 @@ interface CategoryConfig {
 }
 
 const CATEGORY_STYLES: Record<MissionCategory, CategoryConfig> = {
-  PROMOTION: {
-    label: "프로모션",
+  [MissionCategory.TEST]: {
+    label: "심리테스트",
     bgClass: "bg-orange-100/90",
     textClass: "text-orange-600",
   },
@@ -34,9 +34,9 @@ const CATEGORY_STYLES: Record<MissionCategory, CategoryConfig> = {
   },
 };
 
-// TODO: PSYCHOLOGICAL_TEST enum이 Prisma에 추가되면 여기에도 라벨 추가
+//TODO: 이거 중복임 SSoT관점에서 제거요망 - 박정우 2026-02-11
 export const CATEGORY_LABELS: Record<string, string> = {
-  PROMOTION: "프로모션",
+  TEST: "심리테스트",
   EVENT: "이벤트",
   RESEARCH: "리서치",
   CHALLENGE: "챌린지",
