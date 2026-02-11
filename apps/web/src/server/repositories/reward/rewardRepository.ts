@@ -31,6 +31,10 @@ export class RewardRepository {
         scheduledDate: true,
         paidAt: true,
         createdAt: true,
+        missions: {
+          select: { id: true },
+          take: 1,
+        },
       },
       orderBy: {
         createdAt: "desc",

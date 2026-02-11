@@ -1,8 +1,12 @@
 import { getMissionActionIds } from "@/actions/action";
+import { getLikedMissions } from "@/actions/mission-like/read";
 import { getMyResponses } from "@/actions/mission-response";
+import { getRewards } from "@/actions/reward/read";
 import { getCurrentUser } from "@/actions/user";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
+import { missionLikeQueryKeys } from "@/constants/queryKeys/missionLikeQueryKeys";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
+import { rewardQueryKeys } from "@/constants/queryKeys/rewardQueryKeys";
 import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
@@ -20,6 +24,14 @@ export default async function MePage() {
     queryClient.fetchQuery({
       queryKey: userQueryKeys.currentUser(),
       queryFn: () => getCurrentUser(),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: rewardQueryKeys.all(),
+      queryFn: () => getRewards(),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: missionLikeQueryKeys.likedMissions(),
+      queryFn: () => getLikedMissions(),
     }),
   ]);
 

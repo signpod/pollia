@@ -10,7 +10,7 @@ export default function MainLayout({
   return (
     <ModalProvider>
       <Providers>
-        <div className="mx-auto w-full max-w-[600px] pb-20 shadow-[0px_4px_20px_0px_rgba(9,9,11,0.08)]">
+        <div className="pb-20">
           <Header />
           {children}
           <Footer />

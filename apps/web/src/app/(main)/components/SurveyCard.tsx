@@ -5,7 +5,7 @@ import PolliaIcon from "@public/svgs/pollia-icon.svg";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { CATEGORY_LABELS } from "./CategoryBadge";
+import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { MissionLikeButton } from "./MissionLikeButton";
 
 export interface SurveyCardData {
@@ -33,7 +33,7 @@ export function SurveyCard({ survey }: SurveyCardProps) {
   const [imageError, setImageError] = useState(false);
   const showFallback = imageError || !survey.imageUrl;
 
-  const categoryLabel = CATEGORY_LABELS[survey.category] ?? survey.category;
+  const categoryLabel = MISSION_CATEGORY_LABELS[survey.category] ?? survey.category;
 
   return (
     <Link href={`/mission/${survey.id}`} className="group flex flex-col overflow-hidden">

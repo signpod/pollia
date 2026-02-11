@@ -1,11 +1,9 @@
 "use client";
 
-import { ROUTES } from "@/constants/routes";
+import { ProfileHeader } from "@/components/common/ProfileHeader";
 import { useKakaoLogin } from "@/hooks/login/useKakaoLogin";
-import { useCurrentUser } from "@/hooks/user";
-import PolliaIcon from "@public/svgs/pollia-icon.svg";
-import PolliaWordmark from "@public/svgs/pollia-wordmark.svg";
 import {
+  ButtonV2,
   DrawerContent,
   DrawerProvider,
   IconButton,
@@ -14,15 +12,14 @@ import {
   useDrawer,
 } from "@repo/ui/components";
 import { X } from "lucide-react";
-import Link from "next/link";
 
 function LoginDrawerTrigger() {
   const { open } = useDrawer();
 
   return (
-    <button type="button" onClick={open} className="text-sub">
+    <ButtonV2 variant="secondary" size="medium" onClick={open} className="text-sub">
       <Typo.Body size="medium">로그인/가입</Typo.Body>
-    </button>
+    </ButtonV2>
   );
 }
 
@@ -49,22 +46,15 @@ function LoginDrawerContent() {
   );
 }
 
-export function Header() {
-  const { data: currentUser } = useCurrentUser();
-  const isLoggedIn = !!currentUser;
-
+function LoginDrawer() {
   return (
-    <header className="sticky top-0 z-50 flex h-12 items-center justify-between bg-white px-5">
-      <Link href={ROUTES.HOME} className="flex items-center gap-[2.775px] py-3">
-        <PolliaIcon className="size-[11px] text-primary" />
-        <PolliaWordmark className="h-[22px] text-black" />
-      </Link>
-      {!isLoggedIn && (
-        <DrawerProvider>
-          <LoginDrawerTrigger />
-          <LoginDrawerContent />
-        </DrawerProvider>
-      )}
-    </header>
+    <DrawerProvider>
+      <LoginDrawerTrigger />
+      <LoginDrawerContent />
+    </DrawerProvider>
   );
+}
+
+export function Header() {
+  return <ProfileHeader fallbackRight={<LoginDrawer />} />;
 }

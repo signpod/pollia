@@ -36,7 +36,17 @@ export function useMyResponses() {
 
     const actionsMap = new Map<
       string,
-      Map<string, { options: Array<{ id: string; order: number; title: string }> }>
+      Map<
+        string,
+        {
+          options: Array<{
+            id: string;
+            order: number;
+            title: string;
+            nextCompletionId: string | null;
+          }>;
+        }
+      >
     >();
 
     actionsQueries.forEach((query, index) => {
@@ -67,7 +77,12 @@ export function useMyResponses() {
         return {
           ...answer,
           options: [
-            { id: selectedOption.id, title: selectedOption.title, order: selectedOption.order },
+            {
+              id: selectedOption.id,
+              title: selectedOption.title,
+              order: selectedOption.order,
+              nextCompletionId: selectedOption.nextCompletionId,
+            },
           ],
         };
       });

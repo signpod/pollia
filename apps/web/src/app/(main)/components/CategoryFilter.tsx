@@ -1,5 +1,6 @@
 "use client";
 
+import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { MissionCategory } from "@prisma/client";
 import CategoryAllIcon from "@public/svgs/category-all-icon.svg";
 import CategoryChallengeIcon from "@public/svgs/category-challenge-icon.svg";
@@ -19,11 +20,11 @@ interface CategoryItem {
 
 export const CATEGORIES: CategoryItem[] = [
   { id: "all", label: "전체", icon: CategoryAllIcon },
-  { id: MissionCategory.EVENT, label: "이벤트", icon: CategoryEventIcon },
-  { id: MissionCategory.CHALLENGE, label: "챌린지", icon: CategoryChallengeIcon },
-  { id: MissionCategory.RESEARCH, label: "리서치", icon: CategoryResearchIcon },
-  { id: MissionCategory.TEST, label: "심리테스트", icon: CategoryTestIcon },
-  { id: MissionCategory.QUIZ, label: "퀴즈/게임", icon: CategoryQuizIcon },
+  { id: MissionCategory.EVENT, label: MISSION_CATEGORY_LABELS[MissionCategory.EVENT], icon: CategoryEventIcon },
+  { id: MissionCategory.CHALLENGE, label: MISSION_CATEGORY_LABELS[MissionCategory.CHALLENGE], icon: CategoryChallengeIcon },
+  { id: MissionCategory.RESEARCH, label: MISSION_CATEGORY_LABELS[MissionCategory.RESEARCH], icon: CategoryResearchIcon },
+  { id: MissionCategory.TEST, label: MISSION_CATEGORY_LABELS[MissionCategory.TEST], icon: CategoryTestIcon },
+  { id: MissionCategory.QUIZ, label: MISSION_CATEGORY_LABELS[MissionCategory.QUIZ], icon: CategoryQuizIcon },
 ];
 
 interface CategoryFilterProps {

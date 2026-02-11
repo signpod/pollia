@@ -1,46 +1,32 @@
+import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { MissionCategory } from "@prisma/client";
 
-interface CategoryConfig {
-  label: string;
+interface CategoryStyle {
   bgClass: string;
   textClass: string;
 }
 
-const CATEGORY_STYLES: Record<MissionCategory, CategoryConfig> = {
+const CATEGORY_STYLES: Record<MissionCategory, CategoryStyle> = {
   [MissionCategory.TEST]: {
-    label: "심리테스트",
     bgClass: "bg-orange-100/90",
     textClass: "text-orange-600",
   },
-  EVENT: {
-    label: "이벤트",
+  [MissionCategory.EVENT]: {
     bgClass: "bg-pink-100/90",
     textClass: "text-pink-600",
   },
-  RESEARCH: {
-    label: "리서치",
+  [MissionCategory.RESEARCH]: {
     bgClass: "bg-blue-100/90",
     textClass: "text-blue-600",
   },
-  CHALLENGE: {
-    label: "챌린지",
+  [MissionCategory.CHALLENGE]: {
     bgClass: "bg-emerald-100/90",
     textClass: "text-emerald-600",
   },
-  QUIZ: {
-    label: "퀴즈",
+  [MissionCategory.QUIZ]: {
     bgClass: "bg-purple-100/90",
     textClass: "text-purple-600",
   },
-};
-
-//TODO: 이거 중복임 SSoT관점에서 제거요망 - 박정우 2026-02-11
-export const CATEGORY_LABELS: Record<string, string> = {
-  TEST: "심리테스트",
-  EVENT: "이벤트",
-  RESEARCH: "리서치",
-  CHALLENGE: "챌린지",
-  QUIZ: "퀴즈/게임",
 };
 
 interface CategoryBadgeProps {
@@ -54,7 +40,7 @@ export function CategoryBadge({ category }: CategoryBadgeProps) {
     <span
       className={`rounded-md px-2 py-1 text-xs font-semibold ${config.bgClass} ${config.textClass}`}
     >
-      {config.label}
+      {MISSION_CATEGORY_LABELS[category]}
     </span>
   );
 }

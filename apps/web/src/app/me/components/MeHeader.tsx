@@ -1,7 +1,7 @@
 "use client";
 
-import { AppHeader } from "@/components/common/AppHeader";
+import { ProfileHeader } from "@/components/common/ProfileHeader";
 
 export function MeHeader() {
-  return <AppHeader variant="default" showAdmin showInquiry />;
+  return <ProfileHeader showBack />;
 }
