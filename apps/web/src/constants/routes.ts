@@ -10,6 +10,11 @@ export const ROUTES = {
   // 메인 페이지
   HOME: "/",
   ME: "/me",
+  ME_IN_PROGRESS: "/me/in-progress",
+  ME_COMPLETED: "/me/completed",
+  ME_REWARDS_PENDING: "/me/rewards/pending",
+  ME_REWARDS_PAID: "/me/rewards/paid",
+  ME_LIKED: "/me/liked",
 
   // 미션 관련
   MISSION: (id: string) => `/mission/${id}`,

@@ -1,161 +1,177 @@
 "use client";
 
+import { ROUTES } from "@/constants/routes";
 import type { MyMissionResponse } from "@/types/dto/mission-response";
 import { Tab, Typo } from "@repo/ui/components";
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useCallback } from "react";
-import { CompletedEventCard } from "./CompletedEventCard";
+import { useSearchParams } from "next/navigation";
+import { memo, useCallback, useMemo, useState } from "react";
+import { useLikedMissions } from "../hooks/useLikedMissions";
+import { type UseRewardsReturn, useRewards } from "../hooks/useRewards";
 import { EmptyState } from "./EmptyState";
-import { InProgressEventCard } from "./InProgressEventCard";
+import { InProgressGrid } from "./InProgressGrid";
+import { MeLikedMissionCard } from "./MeLikedMissionCard";
+import { MeProjectCard } from "./MeProjectCard";
+import { RewardCard } from "./RewardCard";
+import { SectionHeader } from "./SectionHeader";
 
-const ITEMS_PER_PAGE = 6;
+const MAX_PREVIEW = 4;
+const MAX_REWARDS_PREVIEW = 3;
 
-function PlaceholderCard() {
+type RewardItem = NonNullable<UseRewardsReturn["data"]>[number];
+
+const InProgressTab = memo(function InProgressTab({
+  responses,
+}: { responses: MyMissionResponse[] }) {
+  if (responses.length === 0) return <EmptyState message="참여 중인 프로젝트가 없어요" />;
   return (
-    <div
-      className="flex w-full items-center gap-4 rounded-2xl border border-transparent p-4"
-      aria-hidden
-    >
-      <div className="h-20 aspect-[2/3] shrink-0" />
-      <div className="min-w-0 flex-1" />
+    <div className="flex flex-col gap-8">
+      <SectionHeader
+        label="참여 중인 프로젝트"
+        count={responses.length}
+        href={ROUTES.ME_IN_PROGRESS}
+      />
+      <InProgressGrid responses={responses.slice(0, MAX_PREVIEW)} />
     </div>
   );
-}
+});
+
+const CompletedTab = memo(function CompletedTab({
+  responses,
+}: { responses: MyMissionResponse[] }) {
+  if (responses.length === 0) return <EmptyState message="완료한 프로젝트가 없어요" />;
+  return (
+    <div className="flex flex-col gap-8">
+      <SectionHeader
+        label="참여 완료한 프로젝트"
+        count={responses.length}
+        href={ROUTES.ME_COMPLETED}
+      />
+      <div className="grid grid-cols-2 gap-x-4 gap-y-10">
+        {responses.slice(0, MAX_PREVIEW).map(response => (
+          <MeProjectCard key={response.id} response={response} variant="completed" />
+        ))}
+      </div>
+    </div>
+  );
+});
+
+const REWARD_SECTIONS_CONFIG = [
+  { key: "pending", title: "지급 예정", label: "지급 예정 리워드", href: ROUTES.ME_REWARDS_PENDING },
+  { key: "paid", title: "지급 완료", label: "지급 완료 리워드", href: ROUTES.ME_REWARDS_PAID },
+] as const;
+
+const RewardsTab = memo(function RewardsTab() {
+  const { data: rewards } = useRewards();
+
+  const grouped = useMemo(() => {
+    const result: Record<string, RewardItem[]> = { pending: [], paid: [] };
+    if (!rewards) return result;
+    for (const r of rewards) {
+      if (r.paidAt === null) result.pending?.push(r);
+      else result.paid?.push(r);
+    }
+    return result;
+  }, [rewards]);
+
+  if (!rewards || rewards.length === 0) return <EmptyState message="받은 리워드가 없어요" />;
+
+  return (
+    <div className="flex flex-col gap-8">
+      {REWARD_SECTIONS_CONFIG.map(({ key, title, label, href }) => {
+        const items = grouped[key];
+        if (items?.length === 0) return null;
+        return (
+          <div key={key} className="flex flex-col gap-4">
+            <Typo.MainTitle size="small">{title}</Typo.MainTitle>
+            <SectionHeader label={label} count={items?.length ?? 0} href={href} />
+            <div className="flex flex-col gap-6">
+              {items?.slice(0, MAX_REWARDS_PREVIEW).map(reward => (
+                <RewardCard key={reward.id} reward={reward} />
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+});
+
+const LikedTab = memo(function LikedTab() {
+  const { data: likedMissions } = useLikedMissions();
+
+  if (!likedMissions || likedMissions.length === 0)
+    return <EmptyState message="찜한 프로젝트가 없어요" />;
+
+  return (
+    <div className="flex flex-col gap-8">
+      <SectionHeader label="찜한 프로젝트" count={likedMissions.length} href={ROUTES.ME_LIKED} />
+      <div className="grid grid-cols-2 gap-4">
+        {likedMissions.slice(0, MAX_PREVIEW).map(mission => (
+          <MeLikedMissionCard key={mission.id} mission={mission} />
+        ))}
+      </div>
+    </div>
+  );
+});
 
 interface EventSectionProps {
   inProgressResponses: MyMissionResponse[];
   completedResponses: MyMissionResponse[];
 }
 
-interface PaginationProps {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-}
+const TABS = [
+  { value: "in-progress", label: "참여 중" },
+  { value: "completed", label: "참여 완료" },
+  { value: "rewards", label: "리워드" },
+  { value: "liked", label: "찜" },
+] as const;
 
-function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
-  if (totalPages <= 1) return null;
-
-  return (
-    <div className="mt-4 flex items-center justify-center gap-2">
-      <button
-        type="button"
-        onClick={() => onPageChange(currentPage - 1)}
-        disabled={currentPage === 1}
-        className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-200 disabled:opacity-40"
-      >
-        <ChevronLeftIcon className="size-4 text-zinc-600" />
-      </button>
-      <span className="px-2 text-sm text-zinc-600">
-        {currentPage} / {totalPages}
-      </span>
-      <button
-        type="button"
-        onClick={() => onPageChange(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        className="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-200 disabled:opacity-40"
-      >
-        <ChevronRightIcon className="size-4 text-zinc-600" />
-      </button>
-    </div>
-  );
-}
+const DEFAULT_TAB = TABS[0].value;
+const VALID_TAB_VALUES = new Set(TABS.map(t => t.value));
 
 export function EventSection({ inProgressResponses, completedResponses }: EventSectionProps) {
-  const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
-
-  const inProgressPage = Number(searchParams.get("ip")) || 1;
-  const completedPage = Number(searchParams.get("cp")) || 1;
-
-  const inProgressTotalPages = Math.ceil(inProgressResponses.length / ITEMS_PER_PAGE);
-  const completedTotalPages = Math.ceil(completedResponses.length / ITEMS_PER_PAGE);
-
-  const createQueryString = useCallback(
-    (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.set(name, value);
-      return params.toString();
-    },
-    [searchParams],
+  const initialTab = searchParams.get("tab");
+  const [currentTab, setCurrentTab] = useState<string>(
+    VALID_TAB_VALUES.has(initialTab as (typeof TABS)[number]["value"])
+      ? (initialTab as string)
+      : DEFAULT_TAB,
   );
 
-  const setInProgressPage = (page: number) => {
-    router.push(`${pathname}?${createQueryString("ip", String(page))}`, { scroll: false });
+  const handleTabChange = useCallback((value: string) => {
+    setCurrentTab(value);
+    const url = new URL(window.location.href);
+    if (value === DEFAULT_TAB) {
+      url.searchParams.delete("tab");
+    } else {
+      url.searchParams.set("tab", value);
+    }
+    window.history.replaceState(null, "", url.toString());
+  }, []);
+
+  const tabContent: Record<string, React.ReactNode> = {
+    "in-progress": <InProgressTab responses={inProgressResponses} />,
+    completed: <CompletedTab responses={completedResponses} />,
+    rewards: <RewardsTab />,
+    liked: <LikedTab />,
   };
-
-  const setCompletedPage = (page: number) => {
-    router.push(`${pathname}?${createQueryString("cp", String(page))}`, { scroll: false });
-  };
-
-  const paginatedInProgress = inProgressResponses.slice(
-    (inProgressPage - 1) * ITEMS_PER_PAGE,
-    inProgressPage * ITEMS_PER_PAGE,
-  );
-
-  const paginatedCompleted = completedResponses.slice(
-    (completedPage - 1) * ITEMS_PER_PAGE,
-    completedPage * ITEMS_PER_PAGE,
-  );
 
   return (
     <section>
-      <Typo.MainTitle size="small" className="mb-3">
-        나의 이벤트
-      </Typo.MainTitle>
-      <Tab.Root initialTab="in-progress" id="me-events-tab">
+      <Tab.Root value={currentTab} onValueChange={handleTabChange} id="me-events-tab" pointColor="secondary">
         <Tab.List>
-          <Tab.Item value="in-progress">
-            <Typo.Body size="large">진행중 ({inProgressResponses.length})</Typo.Body>
-          </Tab.Item>
-          <Tab.Item value="completed">
-            <Typo.Body size="large">완료 ({completedResponses.length})</Typo.Body>
-          </Tab.Item>
+          {TABS.map(tab => (
+            <Tab.Item key={tab.value} value={tab.value}>
+              <Typo.Body size="large">{tab.label}</Typo.Body>
+            </Tab.Item>
+          ))}
         </Tab.List>
-        <Tab.Content value="in-progress">
-          <div className="flex flex-col gap-3">
-            {paginatedInProgress.length > 0 ? (
-              <>
-                {paginatedInProgress.map(response => (
-                  <InProgressEventCard key={response.id} response={response} />
-                ))}
-                {Array.from({ length: ITEMS_PER_PAGE - paginatedInProgress.length }).map((_, i) => (
-                  <PlaceholderCard key={`placeholder-${i}`} />
-                ))}
-              </>
-            ) : (
-              <EmptyState message="진행중인 이벤트가 없어요" />
-            )}
-          </div>
-          <Pagination
-            currentPage={inProgressPage}
-            totalPages={inProgressTotalPages}
-            onPageChange={setInProgressPage}
-          />
-        </Tab.Content>
-        <Tab.Content value="completed">
-          <div className="flex flex-col gap-3">
-            {paginatedCompleted.length > 0 ? (
-              <>
-                {paginatedCompleted.map(response => (
-                  <CompletedEventCard key={response.id} response={response} />
-                ))}
-                {Array.from({ length: ITEMS_PER_PAGE - paginatedCompleted.length }).map((_, i) => (
-                  <PlaceholderCard key={`placeholder-${i}`} />
-                ))}
-              </>
-            ) : (
-              <EmptyState message="완료한 이벤트가 없어요" />
-            )}
-          </div>
-          <Pagination
-            currentPage={completedPage}
-            totalPages={completedTotalPages}
-            onPageChange={setCompletedPage}
-          />
-        </Tab.Content>
+
+        {TABS.map(tab => (
+          <Tab.Content key={tab.value} value={tab.value} className="px-5 m-0 pt-8">
+            {tabContent[tab.value]}
+          </Tab.Content>
+        ))}
       </Tab.Root>
     </section>
   );

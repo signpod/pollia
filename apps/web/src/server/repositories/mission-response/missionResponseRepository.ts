@@ -58,6 +58,8 @@ export class MissionResponseRepository {
             description: true,
             imageUrl: true,
             estimatedMinutes: true,
+            category: true,
+            deadline: true,
             _count: {
               select: {
                 questions: true,
@@ -74,6 +76,7 @@ export class MissionResponseRepository {
                 type: true,
                 order: true,
                 isRequired: true,
+                nextCompletionId: true,
               },
             },
             options: {
@@ -81,6 +84,7 @@ export class MissionResponseRepository {
                 id: true,
                 title: true,
                 order: true,
+                nextCompletionId: true,
               },
               orderBy: {
                 order: "asc",
