@@ -1,15 +1,12 @@
 "use client";
 
-import { stripHtmlTags } from "@/app/admin/lib/utils";
 import type { MissionCategory } from "@prisma/client";
-import GiftIcon from "@public/svgs/gift-color-icon.svg";
 import PolliaIcon from "@public/svgs/pollia-icon.svg";
-import { ProgressBar, Typo } from "@repo/ui/components";
-import { Calendar, Clock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { CategoryBadge } from "./CategoryBadge";
+import { CATEGORY_LABELS } from "./CategoryBadge";
+import { MissionLikeButton } from "./MissionLikeButton";
 
 export interface SurveyCardData {
   id: string;
@@ -23,6 +20,9 @@ export interface SurveyCardData {
   maxParticipants: number;
   category: MissionCategory;
   createdAt: string;
+  isActive: boolean;
+  deadline: string | null;
+  startDate: string | null;
 }
 
 interface SurveyCardProps {
@@ -31,17 +31,15 @@ interface SurveyCardProps {
 
 export function SurveyCard({ survey }: SurveyCardProps) {
   const [imageError, setImageError] = useState(false);
-  const progressPercent = (survey.currentParticipants / survey.maxParticipants) * 100;
   const showFallback = imageError || !survey.imageUrl;
 
+  const categoryLabel = CATEGORY_LABELS[survey.category] ?? survey.category;
+
   return (
-    <Link
-      href={`/mission/${survey.id}`}
-      className=" shadow-[0_4px_20px_rgba(0,0,0,0.08)] group flex h-full flex-col overflow-hidden rounded-xl bg-default transition-all hover:-translate-y-1 hover:shadow-effect-default"
-    >
-      <div className="relative h-36 shrink-0 overflow-hidden">
+    <Link href={`/mission/${survey.id}`} className="group flex flex-col overflow-hidden">
+      <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-default">
         {showFallback ? (
-          <div className="flex h-full w-full items-center justify-center bg-zinc-50">
+          <div className="flex size-full items-center justify-center bg-zinc-50">
             <PolliaIcon className="size-16 text-violet-200" />
           </div>
         ) : (
@@ -49,52 +47,23 @@ export function SurveyCard({ survey }: SurveyCardProps) {
             src={survey.imageUrl}
             alt={survey.title}
             fill
-            className="object-cover transition-transform group-hover:scale-105"
+            sizes="(max-width: 600px) 50vw, 300px"
+            className="object-cover"
             onError={() => setImageError(true)}
           />
         )}
-        <span className="absolute left-3 top-3">
-          <CategoryBadge category={survey.category} />
-        </span>
-        {survey.reward && (
-          <span className="absolute right-3 top-3 rounded bg-zinc-900/70 px-2.5 py-1 text-xs font-semibold text-yellow-400">
-            <GiftIcon className="size-3.5" aria-hidden="true" />
-            {survey.reward}
-          </span>
-        )}
+        <MissionLikeButton missionId={survey.id} className="absolute bottom-3 right-3" />
       </div>
-      <div className="flex flex-1 flex-col p-4">
-        <div className="mb-2 flex items-center gap-3 text-xs text-info">
-          <span className="flex items-center gap-1">
-            <Clock className="h-3.5 w-3.5" aria-hidden="true" />
-            {survey.duration}
-          </span>
-          <span className="flex items-center gap-1">
-            <Calendar className="h-3.5 w-3.5" aria-hidden="true" />
-            D-{survey.daysLeft}
-          </span>
-        </div>
-        <div className="flex-1">
-          <Typo.SubTitle className="mb-1.5 line-clamp-2 text-sm">{survey.title}</Typo.SubTitle>
-          <Typo.Body size="small" className="line-clamp-2 text-sub">
-            {stripHtmlTags(survey.description)}
-          </Typo.Body>
+
+      <div className="mt-3 flex flex-col gap-2">
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-bold text-info">{categoryLabel}</span>
+          <p className="line-clamp-2 text-base font-bold leading-normal text-default">
+            {survey.title}
+          </p>
         </div>
 
-        <div className="mt-auto pt-3">
-          <div className="mb-1.5 flex justify-between text-xs">
-            <span className="text-info">참여 현황</span>
-            <span className="font-semibold text-violet-500">
-              {survey.currentParticipants.toLocaleString()} /{" "}
-              {survey.maxParticipants.toLocaleString()}명
-            </span>
-          </div>
-          <ProgressBar
-            value={progressPercent}
-            containerClassName="h-1 rounded-full"
-            indicatorClassName="bg-violet-500 rounded-full"
-          />
-        </div>
+        {/* TODO: 상태 뱃지 (진행 상태, 반응 상태, 남은 기한) 데이터 연동 후 추가 */}
       </div>
     </Link>
   );

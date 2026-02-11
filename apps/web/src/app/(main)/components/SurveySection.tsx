@@ -24,6 +24,9 @@ export function SurveySection() {
     maxParticipants: mission.maxParticipants ?? 100,
     category: mission.category,
     createdAt: mission.createdAt.toISOString(),
+    isActive: mission.isActive,
+    deadline: mission.deadline?.toISOString() ?? null,
+    startDate: (mission as unknown as { startDate?: Date }).startDate?.toISOString() ?? null,
   }));
 
   const totalCount = missions.length;

@@ -8,6 +8,7 @@ import {
 import { FixedTopContent, FixedTopLayout as FixedTopLayoutBase } from "./layout/FixedTopLayout";
 
 export * from "./common/Button";
+export * from "./common/EmptyState";
 export * from "./common/ButtonV2";
 export * from "./common/FloatingButton";
 export * from "./common/Input";

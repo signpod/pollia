@@ -1,4 +1,5 @@
 export * from "./BannerSlider";
+export * from "./BottomNavBar";
 export * from "./CategoryBadge";
 export * from "./CategoryFilter";
 export * from "./ChipFilter";

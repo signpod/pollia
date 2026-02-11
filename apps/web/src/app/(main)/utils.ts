@@ -13,3 +13,16 @@ export function formatDuration(minutes: number | null): string {
   const mins = minutes % 60;
   return mins > 0 ? `약 ${hours}시간 ${mins}분` : `약 ${hours}시간`;
 }
+
+export function computeMissionStatus(
+  isActive: boolean,
+  deadline: string | null,
+  startDate: string | null,
+): string | null {
+  const now = new Date();
+
+  if (!isActive) return "마감";
+  if (deadline && new Date(deadline) < now) return "마감";
+  if (startDate && new Date(startDate) > now) return "예정";
+  return "모집 중";
+}
