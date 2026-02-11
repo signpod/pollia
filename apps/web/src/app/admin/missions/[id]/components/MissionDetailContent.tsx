@@ -1,6 +1,7 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/admin/components/shadcn-ui/tabs";
+import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import type { GetMissionResponse } from "@/types/dto";
 import { Award, FileText, Gift, ListChecks } from "lucide-react";
 import { AdminMissionHeader } from "./AdminMissionHeader";
@@ -15,11 +16,30 @@ interface MissionDetailContentProps {
   defaultTab?: "basic" | "actions" | "completion" | "reward";
 }
 
+const TAB_LABELS = {
+  basic: {
+    label: "인트로",
+    icon: FileText,
+  },
+  actions: {
+    label: "액션 목록",
+    icon: ListChecks,
+  },
+  completion: {
+    label: "완료화면",
+    icon: Award,
+  },
+  reward: {
+    label: "리워드",
+    icon: Gift,
+  },
+} as const;
+
 export function MissionDetailContent({ mission, defaultTab = "basic" }: MissionDetailContentProps) {
   return (
     <>
       <AdminMissionHeader
-        title="미션 상세"
+        title={`${UBQUITOUS_CONSTANTS.MISSION} 상세`}
         description={mission.title}
         nav={<MissionNavigation missionId={mission.id} />}
         missionId={mission.id}
@@ -27,22 +47,12 @@ export function MissionDetailContent({ mission, defaultTab = "basic" }: MissionD
 
       <Tabs defaultValue={defaultTab} className="w-full">
         <TabsList className="grid w-full max-w-[800px] grid-cols-4 mb-6">
-          <TabsTrigger value="basic" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            인트로
-          </TabsTrigger>
-          <TabsTrigger value="actions" className="flex items-center gap-2">
-            <ListChecks className="h-4 w-4" />
-            액션 목록
-          </TabsTrigger>
-          <TabsTrigger value="completion" className="flex items-center gap-2">
-            <Award className="h-4 w-4" />
-            완료화면
-          </TabsTrigger>
-          <TabsTrigger value="reward" className="flex items-center gap-2">
-            <Gift className="h-4 w-4" />
-            리워드
-          </TabsTrigger>
+          {Object.values(TAB_LABELS).map(tab => (
+            <TabsTrigger key={tab.label} value={tab.label} className="flex items-center gap-2">
+              <tab.icon className="h-4 w-4" />
+              {tab.label}
+            </TabsTrigger>
+          ))}
         </TabsList>
 
         <TabsContent value="basic">
