@@ -10,7 +10,9 @@ import {
 } from "@/app/admin/components/shadcn-ui/card";
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
 import { useReadMissionCompletion } from "@/app/admin/hooks/mission-completion";
-import { cn, stripHtmlTags } from "@/app/admin/lib/utils";
+import { cn } from "@/app/admin/lib/utils";
+import { cleanTiptapHTML } from "@/lib/utils";
+import { TiptapViewer } from "@repo/ui/components/common/TiptapViewer";
 import { ExternalLink, ImageIcon, Pencil } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
@@ -87,10 +89,11 @@ export function MissionCompletionCard({ missionId }: MissionCompletionCardProps)
               <InfoField
                 label="설명"
                 value={
-                  completion.description ? (
-                    <div className="whitespace-pre-wrap">
-                      {stripHtmlTags(completion.description)}
-                    </div>
+                  completion.description && cleanTiptapHTML(completion.description) ? (
+                    <TiptapViewer
+                      content={cleanTiptapHTML(completion.description)}
+                      className="max-w-[600px] border"
+                    />
                   ) : (
                     <span className="text-muted-foreground italic">설정되지 않음</span>
                   )

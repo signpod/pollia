@@ -21,11 +21,12 @@ import {
 import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
 import { useUpdateMission } from "@/app/admin/hooks/mission/use-update-mission";
-import { stripHtmlTags } from "@/app/admin/lib/utils";
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { ROUTES } from "@/constants/routes";
+import { cleanTiptapHTML } from "@/lib/utils";
 import type { GetMissionResponse } from "@/types/dto";
 import { MissionCategory, MissionType } from "@prisma/client";
+import { TiptapViewer } from "@repo/ui/components/common/TiptapViewer";
 import { Pencil } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -183,10 +184,14 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
                 <TextView value={mission.target} />
               </LabeledView>
               <LabeledView label="설명">
-                <TextView
-                  value={mission.description ? stripHtmlTags(mission.description) : null}
-                  multiline
-                />
+                {mission.description && cleanTiptapHTML(mission.description) ? (
+                  <TiptapViewer
+                    content={cleanTiptapHTML(mission.description)}
+                    className="max-w-[600px] border"
+                  />
+                ) : (
+                  <span className="text-muted-foreground italic">설정되지 않음</span>
+                )}
               </LabeledView>
             </section>
 
