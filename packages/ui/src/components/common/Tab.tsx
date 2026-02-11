@@ -31,15 +31,18 @@ const TabContext = React.createContext<{
   activeTab: string | undefined;
   pointColor: "primary" | "secondary";
   isInitialRender: boolean;
+  scrollable: boolean;
 }>({
   activeTab: undefined,
   pointColor: "primary",
   isInitialRender: true,
+  scrollable: false,
 });
 
 interface TabRootProps extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root> {
   initialTab?: string;
   pointColor?: "primary" | "secondary";
+  scrollable?: boolean;
 }
 
 function TabRoot({
@@ -48,6 +51,7 @@ function TabRoot({
   defaultValue,
   value,
   pointColor = "primary",
+  scrollable = false,
   onValueChange,
   ...props
 }: TabRootProps) {
@@ -69,7 +73,7 @@ function TabRoot({
   };
 
   return (
-    <TabContext.Provider value={{ activeTab, pointColor, isInitialRender }}>
+    <TabContext.Provider value={{ activeTab, pointColor, isInitialRender, scrollable }}>
       <TabsPrimitive.Root
         value={value}
         defaultValue={initialTab || defaultValue}
@@ -159,11 +163,11 @@ interface TabItemProps extends React.ComponentPropsWithoutRef<typeof TabsPrimiti
 
 const TabItem = React.forwardRef<React.ElementRef<typeof TabsPrimitive.Trigger>, TabItemProps>(
   ({ children, value, className, ...props }, ref) => {
-    const { activeTab, pointColor } = React.useContext(TabContext);
+    const { activeTab, pointColor, scrollable } = React.useContext(TabContext);
     const isActive = activeTab === value;
 
     const tabItemVariants = cva(
-      "relative px-4 py-3 flex-1 text-center select-none transition-colors",
+      cn("relative px-4 py-3 text-center select-none transition-colors", scrollable ? "shrink-0" : "flex-1"),
       {
         variants: {
           isActive: {
