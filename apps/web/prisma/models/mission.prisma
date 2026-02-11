@@ -53,7 +53,7 @@ enum MissionType {
 }
 
 enum MissionCategory {
-  PROMOTION
+  TEST
   EVENT
   RESEARCH
   CHALLENGE
