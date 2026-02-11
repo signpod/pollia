@@ -61,10 +61,21 @@ export class UserService {
   }
 
   private normalizeUpdateInput(input: UpdateUserInput): UpdateUserInput {
-    if (typeof input.phone === "string") {
-      return { ...input, phone: this.normalizePhoneNumber(input.phone) };
+    const result: UpdateUserInput = {};
+
+    if (input.name !== undefined) {
+      result.name = input.name;
     }
-    return input;
+
+    if (typeof input.phone === "string") {
+      result.phone = this.normalizePhoneNumber(input.phone);
+    }
+
+    if (input.profileImageFileUploadId !== undefined) {
+      result.profileImageFileUploadId = input.profileImageFileUploadId;
+    }
+
+    return result;
   }
 
   async deleteUser(userId: string): Promise<void> {

@@ -10,4 +10,8 @@ export interface CreateUserIfNotExistsInput {
 
 export type CreateUserData = Prisma.UserCreateInput;
 
-export type UpdateUserInput = Prisma.UserUpdateInput;
+export interface UpdateUserInput {
+  name?: string;
+  phone?: string;
+  profileImageFileUploadId?: string | null;
+}

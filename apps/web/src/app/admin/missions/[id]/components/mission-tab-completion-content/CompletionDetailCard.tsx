@@ -20,8 +20,9 @@ import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/admin/components/shadcn-ui/card";
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
 import { useDeleteCompletion } from "@/app/admin/hooks/mission-completion";
-import { stripHtmlTags } from "@/app/admin/lib/utils";
+import { cleanTiptapHTML } from "@/lib/utils";
 import type { MissionCompletionWithMission } from "@/types/dto";
+import { TiptapViewer } from "@repo/ui/components/common/TiptapViewer";
 import { ExternalLink, Loader2, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 
@@ -80,10 +81,14 @@ export function CompletionDetailCard({ completion, onEdit }: CompletionDetailCar
           <Separator />
 
           <LabeledView label="설명">
-            <TextView
-              value={completion.description ? stripHtmlTags(completion.description) : null}
-              multiline
-            />
+            {completion.description && cleanTiptapHTML(completion.description) ? (
+              <TiptapViewer
+                content={cleanTiptapHTML(completion.description)}
+                className="max-w-[600px] border"
+              />
+            ) : (
+              <span className="text-muted-foreground italic">설정되지 않음</span>
+            )}
           </LabeledView>
 
           <Separator />

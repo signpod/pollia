@@ -10,6 +10,7 @@ const createMockUser = (
     name: string;
     phone: string | null;
     role: UserRole;
+    profileImageFileUploadId: string | null;
     createdAt: Date;
     updatedAt: Date;
   }> = {},
@@ -19,6 +20,7 @@ const createMockUser = (
   name: "테스트 사용자",
   phone: "01012345678",
   role: UserRole.USER,
+  profileImageFileUploadId: null,
   createdAt: new Date("2025-01-01"),
   updatedAt: new Date("2025-01-01"),
   ...overrides,
