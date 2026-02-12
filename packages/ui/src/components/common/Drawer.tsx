@@ -68,7 +68,7 @@ export function DrawerContent({ className, children }: DrawerContentProps) {
       const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = "hidden";
 
-      const ch = (window as Record<string, unknown>).ChannelIO as
+      const ch = (window as unknown as Record<string, unknown>).ChannelIO as
         | ((cmd: string) => void)
         | undefined;
       ch?.("hideChannelButton");
