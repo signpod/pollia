@@ -11,14 +11,10 @@ interface StickyCategoryTabProps {
 }
 
 export function StickyCategoryTab({ selected, onSelect, visible }: StickyCategoryTabProps) {
+  if (!visible) return null;
+
   return (
-    <div
-      className={cn(
-        "sticky top-12 z-40 overflow-hidden bg-white",
-        "transition-[max-height,opacity] duration-200",
-        visible ? "max-h-12 opacity-100" : "max-h-0 opacity-0",
-      )}
-    >
+    <div className="sticky top-12 z-40 overflow-hidden bg-white">
       <Tab.Root
         value={selected}
         onValueChange={v => onSelect(v as Category)}
