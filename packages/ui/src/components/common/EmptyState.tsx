@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { cn } from "../../lib/utils";
+import { Typo } from "./Typo";
 
 interface EmptyStateProps {
   icon?: ReactNode;
@@ -16,9 +17,11 @@ export function EmptyState({ icon, title, description, action, className }: Empt
         <div className="flex flex-col items-center gap-6">
           {icon}
           <div className="flex flex-col items-center gap-1 text-center">
-            <p className="text-xl font-bold text-default">{title}</p>
+            <Typo.MainTitle size="small">{title}</Typo.MainTitle>
             {description && (
-              <div className="text-base font-medium leading-[1.6] text-info">{description}</div>
+              <Typo.Body size="large" className="text-info">
+                {description}
+              </Typo.Body>
             )}
           </div>
         </div>
