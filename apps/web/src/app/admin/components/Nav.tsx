@@ -25,6 +25,7 @@ import {
 } from "@/app/admin/components/shadcn-ui/sidebar";
 import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
 import type { NavGroup, NavItem } from "@/app/admin/config/nav";
+import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { ChevronRight, MoreVertical } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -99,8 +100,8 @@ export function Nav({ config, isActive, isLoading = false }: NavProps) {
       ) : (
         config.map(group => {
           const isGroupOpen = openGroups.includes(group.label);
-          const isEventGroup = group.label === "이벤트";
-          const isMissionGroup = group.label === "미션";
+          const isEventGroup = group.label === UBQUITOUS_CONSTANTS.EVENT;
+          const isMissionGroup = group.label === UBQUITOUS_CONSTANTS.MISSION;
           const shouldScroll = isMissionGroup && group.items.length > 10;
 
           return (

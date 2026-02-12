@@ -17,27 +17,31 @@ export function MeFooter() {
       <div className="flex flex-col">
         {INQUIRY_URL && (
           <Link href={INQUIRY_URL} target="_blank" rel="noopener noreferrer" className="h-12 pl-2">
-            <Typo.ButtonText size="large">
-              고객센터
-            </Typo.ButtonText>
+            <Typo.ButtonText size="large">고객센터</Typo.ButtonText>
           </Link>
         )}
         {INQUIRY_URL && (
           <Link href={INQUIRY_URL} target="_blank" rel="noopener noreferrer" className="h-12 pl-2">
-            <Typo.ButtonText size="large">
-              제휴문의
-            </Typo.ButtonText>
+            <Typo.ButtonText size="large">제휴문의</Typo.ButtonText>
           </Link>
         )}
         {PRIVACY_POLICY_URL && (
-          <Link href={PRIVACY_POLICY_URL} target="_blank" rel="noopener noreferrer" className="h-12 pl-2">
-            <Typo.ButtonText size="large">
-              이용약관/개인정보처리방침
-            </Typo.ButtonText>
+          <Link
+            href={PRIVACY_POLICY_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="h-12 pl-2"
+          >
+            <Typo.ButtonText size="large">이용약관/개인정보처리방침</Typo.ButtonText>
           </Link>
         )}
       </div>
-      <ButtonV2 variant="secondary" size="large" onClick={handleLogout} className="self-start rounded-4xl">
+      <ButtonV2
+        variant="secondary"
+        size="large"
+        onClick={handleLogout}
+        className="self-start rounded-4xl"
+      >
         <Typo.ButtonText size="large" className="w-auto">
           로그아웃
         </Typo.ButtonText>

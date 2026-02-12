@@ -17,7 +17,12 @@ export function MeLikedMissionCard({ mission }: MeLikedMissionCardProps) {
   const categoryLabel = MISSION_CATEGORY_LABELS[mission.category] ?? mission.category;
 
   return (
-    <a href={`/mission/${mission.id}`} target="_blank" rel="noopener noreferrer" className="flex flex-col overflow-hidden">
+    <a
+      href={`/mission/${mission.id}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex flex-col overflow-hidden"
+    >
       <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-zinc-100">
         {showFallback ? (
           <div className="flex size-full items-center justify-center bg-zinc-50">

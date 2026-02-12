@@ -1,7 +1,7 @@
 "use client";
 
-import { ActionProvider } from "@/app/mission/[missionId]/action/[actionId]/providers/ActionContext";
-import { ProgressBarProvider } from "@/app/mission/[missionId]/action/[actionId]/providers/ProgressBarProvider";
+import { ActionProvider } from "@/components/common/templates/action/common/ActionContext";
+import { ProgressBarProvider } from "@/components/common/templates/action/common/ProgressBarProvider";
 import type { ActionAnswerItem, GetMissionResponseResponse } from "@/types/dto";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { type ReactNode, useState } from "react";

@@ -1,4 +1,4 @@
-import { ActionPdf } from "@/app/mission/[missionId]/action/[actionId]/ui";
+import { ActionPdf } from "@/components/common/templates/action";
 import type { GetMissionResponseResponse } from "@/types/dto";
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { ActionMockProvider, createMockMissionResponse } from "./ActionMockProvider";

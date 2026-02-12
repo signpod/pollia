@@ -1,5 +1,6 @@
 "use client";
 
+import { MobilePreviewPanel } from "@/app/admin/components/common/MobilePreviewPanel";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +22,7 @@ import {
   useReorderActions,
   useUpdateAction,
 } from "@/app/admin/hooks/action";
+import { MissionActionPage } from "@/components/common/pages/MissionActionPage";
 import type { ActionDetail } from "@/types/dto";
 import {
   DndContext,
@@ -38,7 +40,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { AlertCircle, FileText, Plus } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ActionDetailCard } from "./ActionDetailCard";
 import { CreateActionDialog } from "./CreateActionDialog";
@@ -54,6 +56,7 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
   const { data: actionsResponse, isLoading, error } = useReadActionsDetail(missionId);
   const [actions, setActions] = useState<ActionDetail[]>([]);
   const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
+  const previewAnchorRef = useRef<HTMLDivElement>(null);
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -187,7 +190,7 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-[300px_1fr] gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6">
         <div className="space-y-2">
           <Skeleton className="h-20 w-full" />
           <Skeleton className="h-20 w-full" />
@@ -218,7 +221,7 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
 
   if (actions.length === 0) {
     return (
-      <div className="grid grid-cols-[300px_1fr] gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6">
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
@@ -254,7 +257,7 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
 
   return (
     <>
-      <div className="grid grid-cols-[300px_1fr] gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] xl:grid-cols-[300px_1fr_auto] gap-6">
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <div className="space-y-2">
             <Card>
@@ -304,6 +307,8 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
             </Card>
           )}
         </div>
+
+        <div ref={previewAnchorRef} className="hidden xl:block" />
       </div>
 
       <CreateActionDialog
@@ -366,6 +371,16 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {selectedAction && (
+        <MobilePreviewPanel anchor={previewAnchorRef}>
+          <MissionActionPage
+            actionData={selectedAction}
+            currentOrder={actions.findIndex(a => a.id === selectedAction.id)}
+            totalActionCount={actions.length}
+          />
+        </MobilePreviewPanel>
+      )}
     </>
   );
 }

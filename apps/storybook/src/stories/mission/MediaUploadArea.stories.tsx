@@ -1,4 +1,4 @@
-import { MediaUploadArea } from "@/app/mission/[missionId]/action/[actionId]/ui/components/MediaUploadArea";
+import { MediaUploadArea } from "@/components/common/templates/action/common/MediaUploadArea";
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { useRef, useState } from "react";
 

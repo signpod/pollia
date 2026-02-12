@@ -1,5 +1,6 @@
 "use client";
 
+import { ActionProvider } from "@/components/common/templates/action/common/ActionContext";
 import { ExtendedActionStepConfig, createActionSteps } from "@/constants/action";
 import { ROUTES } from "@/constants/routes";
 import {
@@ -16,38 +17,8 @@ import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useClientActionSubmit } from "./hooks/useClientActionSubmit";
-import { ActionProvider } from "./providers/ActionContext";
-import {
-  ActionDate,
-  ActionImage,
-  ActionPdf,
-  ActionTag,
-  ActionTime,
-  ActionVideo,
-  Branch,
-  MissionRatingScale,
-  MissionStarScale,
-  MultipleChoice,
-  ShortText,
-  Subjective,
-} from "./ui";
 
 const SCROLL_OFFSET = 30;
-
-const STEP_COMPONENTS = {
-  MultipleChoice: MultipleChoice,
-  Scale: MissionRatingScale,
-  Subjective: Subjective,
-  ShortText: ShortText,
-  Rating: MissionStarScale,
-  Image: ActionImage,
-  Video: ActionVideo,
-  Tag: ActionTag,
-  Pdf: ActionPdf,
-  Date: ActionDate,
-  Time: ActionTime,
-  Branch: Branch,
-} as const;
 
 interface ActionClientWrapperProps {
   dehydratedState: DehydratedState;
@@ -102,7 +73,6 @@ function ActionContent() {
 
   const steps = createActionSteps({
     actions: actions.data,
-    stepComponents: STEP_COMPONENTS,
   });
 
   const currentStep = steps.find(
@@ -114,7 +84,7 @@ function ActionContent() {
   }
 
   return (
-    <ActionRenderer
+    <ActionStepWrapper
       actions={actions.data}
       currentActionData={currentStep.actionData}
       steps={steps}
@@ -126,7 +96,7 @@ function ActionContent() {
   );
 }
 
-interface ActionRendererProps {
+interface ActionStepWrapperProps {
   actions: ActionForProgress[];
   currentActionData: ActionDetail;
   steps: ReturnType<typeof createActionSteps>;
@@ -136,7 +106,7 @@ interface ActionRendererProps {
   navigateToMission: () => void;
 }
 
-function ActionRenderer({
+function ActionStepWrapper({
   actions,
   currentActionData,
   steps,
@@ -144,7 +114,7 @@ function ActionRenderer({
   navigateToAction,
   navigateToDone,
   navigateToMission,
-}: ActionRendererProps) {
+}: ActionStepWrapperProps) {
   const [currentAnswer, setCurrentAnswer] = useState<ActionAnswerItem | null>(null);
   const [canGoNext, setCanGoNext] = useState(false);
 
@@ -170,7 +140,6 @@ function ActionRenderer({
     toastStorageKey,
   });
 
-  // 첫 번째 액션인지 확인
   const isFirstStep = actions[0]?.id === currentActionData.id;
 
   const { submit, isSubmitting, isActualLastStep } = useClientActionSubmit({
@@ -192,14 +161,12 @@ function ActionRenderer({
     setCurrentAnswer(answer);
   }, []);
 
-  // 이전 버튼 핸들러
   const handlePrevious = useCallback(() => {
     if (isFirstStep) {
       navigateToMission();
       return;
     }
 
-    // 현재 액션을 가리키는 이전 액션 찾기
     const sourceAction = actions.find(
       action =>
         action.options.some(option => option.nextActionId === currentActionData.id) ||
@@ -217,11 +184,10 @@ function ActionRenderer({
     }
   }, [isFirstStep, actions, currentActionData, navigateToAction, navigateToMission]);
 
-  // 현재 스텝의 컴포넌트 찾기
   const currentStep = steps.find(
-    step => (step as ExtendedActionStepConfig).actionData.id === currentActionData.id,
-  ) as ExtendedActionStepConfig;
-  const ContentComponent = currentStep.content;
+    (step): step is ExtendedActionStepConfig => step.actionData.id === currentActionData.id,
+  );
+  const ContentComponent = currentStep?.content;
 
   const contextValue = useMemo(
     () => ({
@@ -252,6 +218,11 @@ function ActionRenderer({
       missionResponse,
     ],
   );
+
+  if (!ContentComponent) {
+    //TODO: 예외처리
+    return <div>ContentComponent not found</div>;
+  }
 
   return (
     <ActionProvider value={contextValue}>

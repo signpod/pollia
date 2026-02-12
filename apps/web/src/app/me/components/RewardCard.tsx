@@ -64,7 +64,9 @@ export function RewardCard({ reward }: RewardCardProps) {
             {badgeText}
           </Typo.Body>
         </span>
-        <Typo.SubTitle size="large" className="truncate">{reward.name}</Typo.SubTitle>
+        <Typo.SubTitle size="large" className="truncate">
+          {reward.name}
+        </Typo.SubTitle>
       </div>
     </div>
   );

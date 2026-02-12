@@ -39,13 +39,24 @@ const TabContext = React.createContext<{
   scrollable: false,
 });
 
-interface TabRootProps extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root> {
-  initialTab?: string;
+interface TabRootProps<T extends string = string>
+  extends Omit<
+    React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root>,
+    "defaultValue" | "value" | "onValueChange"
+  > {
+  initialTab?: T;
+  defaultValue?: T;
+  value?: T;
+  onValueChange?: (value: T) => void;
   pointColor?: "primary" | "secondary";
   scrollable?: boolean;
 }
 
-function TabRoot({
+interface ValueChangeBridge<T extends string = string> {
+  invoke(value: T): void;
+}
+
+function TabRoot<T extends string = string>({
   children,
   initialTab,
   defaultValue,
@@ -54,7 +65,7 @@ function TabRoot({
   scrollable = false,
   onValueChange,
   ...props
-}: TabRootProps) {
+}: TabRootProps<T>) {
   const [internalActiveTab, setInternalActiveTab] = React.useState<string | undefined>(
     initialTab || defaultValue,
   );
@@ -65,19 +76,21 @@ function TabRoot({
     setIsInitialRender(false);
   }, []);
 
-  const handleValueChange = (newValue: string) => {
-    if (value === undefined) {
-      setInternalActiveTab(newValue);
-    }
-    onValueChange?.(newValue);
-  };
+  const changeBridge: ValueChangeBridge<T> | null = onValueChange
+    ? { invoke: onValueChange }
+    : null;
 
   return (
     <TabContext.Provider value={{ activeTab, pointColor, isInitialRender, scrollable }}>
       <TabsPrimitive.Root
         value={value}
         defaultValue={initialTab || defaultValue}
-        onValueChange={handleValueChange}
+        onValueChange={newValue => {
+          if (value === undefined) {
+            setInternalActiveTab(newValue);
+          }
+          changeBridge?.invoke(newValue as T);
+        }}
         {...props}
       >
         {children}

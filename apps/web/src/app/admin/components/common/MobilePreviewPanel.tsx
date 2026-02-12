@@ -45,7 +45,7 @@ export function MobilePreviewPanel({ anchor, url, children }: MobilePreviewPanel
               className="w-full h-full border-0 overflow-y-scroll"
             />
           ) : (
-            children
+            <div className="h-full overflow-y-auto">{children}</div>
           )}
         </div>
       </div>
