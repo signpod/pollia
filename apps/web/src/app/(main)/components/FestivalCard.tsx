@@ -1,7 +1,7 @@
 "use client";
 
 import type { FestivalData } from "@/types/dto/festival";
-import PolliaIcon from "@public/svgs/pollia-icon.svg";
+import thumbnailFallback from "@public/images/thumbnail-fallback.png";
 import { Heart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,21 +18,15 @@ export function FestivalCard({ festival }: FestivalCardProps) {
   return (
     <Link href={`/festivals/${festival.id}`} className="group flex flex-col overflow-hidden">
       <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-default">
-        {showFallback ? (
-          <div className="flex size-full items-center justify-center bg-zinc-50">
-            <PolliaIcon className="size-16 text-violet-200" />
-          </div>
-        ) : (
-          <Image
-            src={festival.imageUrl}
-            alt={festival.title}
-            fill
-            sizes="(max-width: 600px) 50vw, 300px"
-            className="object-cover"
-            unoptimized={festival.imageUrl.includes("visitkorea")}
-            onError={() => setImageError(true)}
-          />
-        )}
+        <Image
+          src={showFallback ? thumbnailFallback : festival.imageUrl}
+          alt={festival.title}
+          fill
+          sizes="(max-width: 600px) 50vw, 300px"
+          className="object-cover"
+          unoptimized={!showFallback && festival.imageUrl.includes("visitkorea")}
+          onError={() => setImageError(true)}
+        />
         <button
           type="button"
           className="absolute bottom-3 right-3 text-zinc-400"

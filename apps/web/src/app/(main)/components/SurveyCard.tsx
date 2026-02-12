@@ -1,7 +1,7 @@
 "use client";
 
 import type { MissionCategory } from "@prisma/client";
-import PolliaIcon from "@public/svgs/pollia-icon.svg";
+import thumbnailFallback from "@public/images/thumbnail-fallback.png";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -38,20 +38,14 @@ export function SurveyCard({ survey }: SurveyCardProps) {
   return (
     <Link href={`/mission/${survey.id}`} className="group flex flex-col overflow-hidden">
       <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-default">
-        {showFallback ? (
-          <div className="flex size-full items-center justify-center bg-zinc-50">
-            <PolliaIcon className="size-16 text-violet-200" />
-          </div>
-        ) : (
-          <Image
-            src={survey.imageUrl}
-            alt={survey.title}
-            fill
-            sizes="(max-width: 600px) 50vw, 300px"
-            className="object-cover"
-            onError={() => setImageError(true)}
-          />
-        )}
+        <Image
+          src={showFallback ? thumbnailFallback : survey.imageUrl}
+          alt={survey.title}
+          fill
+          sizes="(max-width: 600px) 50vw, 300px"
+          className="object-cover"
+          onError={() => setImageError(true)}
+        />
         <MissionLikeButton missionId={survey.id} className="absolute bottom-3 right-3" />
       </div>
 
