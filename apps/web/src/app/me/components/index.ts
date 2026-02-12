@@ -1,6 +1,5 @@
 export { AnswerDetailModal } from "./AnswerDetailModal";
 export { CompletedEventCard } from "./CompletedEventCard";
-export { EmptyState } from "./EmptyState";
 export { MyProjectTabs } from "./MyProjectTabs";
 export { InProgressEventCard } from "./InProgressEventCard";
 export { MeFooter } from "./MeFooter";
