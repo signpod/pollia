@@ -34,7 +34,12 @@ export function CompletedContent() {
 
   return (
     <div className="flex flex-col">
-      <Tab.Root value={category} onValueChange={v => setCategory(v as CategoryFilter)} pointColor="secondary" scrollable>
+      <Tab.Root
+        value={category}
+        onValueChange={v => setCategory(v as CategoryFilter)}
+        pointColor="secondary"
+        scrollable
+      >
         <Tab.List>
           {CATEGORY_TABS.map(tab => (
             <Tab.Item key={tab.id} value={tab.id}>
