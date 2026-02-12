@@ -105,7 +105,7 @@ const TabList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
 >(({ className, children, ...props }, ref) => {
-  const { activeTab, pointColor, isInitialRender } = React.useContext(TabContext);
+  const { activeTab, pointColor, isInitialRender, scrollable } = React.useContext(TabContext);
   const innerRef = React.useRef<HTMLDivElement>(null);
   const [indicator, setIndicator] = React.useState({ left: 0, width: 0 });
 
@@ -131,7 +131,11 @@ const TabList = React.forwardRef<
   return (
     <TabsPrimitive.List
       ref={mergedRef}
-      className={cn("relative flex w-full items-center border-b border-gray-200", className)}
+      className={cn(
+        "relative flex w-full items-center border-b border-gray-200",
+        scrollable && "overflow-x-auto scrollbar-hide",
+        className,
+      )}
       {...props}
     >
       {children}
@@ -167,7 +171,7 @@ const TabItem = React.forwardRef<React.ElementRef<typeof TabsPrimitive.Trigger>,
     const isActive = activeTab === value;
 
     const tabItemVariants = cva(
-      cn("relative px-4 py-3 text-center select-none transition-colors", scrollable ? "shrink-0" : "flex-1"),
+      cn("relative px-4 py-3 text-center select-none transition-colors flex-1", scrollable && "min-w-fit"),
       {
         variants: {
           isActive: {
