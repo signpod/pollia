@@ -73,7 +73,7 @@ export function MissionIntroPage({
   };
 
   return (
-    <div className="relative w-full max-w-lg">
+    <div className="relative w-full">
       <MissionIntroTemplate
         imageUrl={imageUrl}
         brandLogoUrl={brandLogoUrl}
