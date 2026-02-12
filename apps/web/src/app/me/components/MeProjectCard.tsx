@@ -40,30 +40,29 @@ function CardAction({
   });
   const deleteMutation = useDeleteMissionResponse();
 
-  const handleOpenInNewTab = useCallback(() => {
-    const missionId = response.mission.id;
-    if (variant === "in-progress") {
-      if (!nextActionId) return;
-      setActionNavCookie(missionId, "resume");
-      window.open(ROUTES.ACTION({ missionId, actionId: nextActionId }), "_blank");
-    } else {
-      const completionId = resolveCompletionId(response.answers);
-      window.open(ROUTES.MISSION_DONE(missionId, completionId), "_blank");
-    }
-  }, [response, variant, nextActionId]);
+  const handleOpenInNewTab = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const missionId = response.mission.id;
+      if (variant === "in-progress") {
+        if (!nextActionId) return;
+        setActionNavCookie(missionId, "resume");
+        window.open(ROUTES.ACTION({ missionId, actionId: nextActionId }), "_blank");
+      } else {
+        const completionId = resolveCompletionId(response.answers);
+        window.open(ROUTES.MISSION_DONE(missionId, completionId), "_blank");
+      }
+    },
+    [response, variant, nextActionId],
+  );
 
   if (variant === "expired") {
     return (
-      <ButtonV2
-        variant="secondary"
-        size="medium"
-        onClick={() => deleteMutation.mutate(response.id)}
-        disabled={deleteMutation.isPending}
-        className="w-full"
-      >
+      <ButtonV2 variant="tertiary" size="medium" disabled className="w-full">
         <div className="flex w-full items-center justify-center">
-          <Typo.ButtonText size="medium" className="text-red-500">
-            삭제하기
+          <Typo.ButtonText size="medium" className="text-disabled">
+            만료된 프로젝트
           </Typo.ButtonText>
         </div>
       </ButtonV2>
