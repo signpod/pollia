@@ -29,7 +29,7 @@ export function MissionLikeButton({ missionId, className }: MissionLikeButtonPro
   return (
     <button
       type="button"
-      className={cn("text-zinc-400", className)}
+      className={cn("relative z-10 text-zinc-400", className)}
       onClick={handleClick}
       disabled={isPending}
     >

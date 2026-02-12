@@ -6,8 +6,10 @@ import { missionLikeQueryKeys } from "@/constants/queryKeys/missionLikeQueryKeys
 import type { ToggleMissionLikeResponse } from "@/types/dto/mission-like";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+type LikeStatusCache = { data: { isLiked: boolean; likesCount: number } };
+
 interface MissionLikeContext {
-  previousData: { isLiked: boolean; likesCount: number } | undefined;
+  previousData: LikeStatusCache | undefined;
 }
 
 const LIKE_MESSAGES = {
@@ -27,19 +29,20 @@ export const useMissionLike = (missionId: string) => {
         queryKey: missionLikeQueryKeys.likeStatus(missionId),
       });
 
-      const previousData = queryClient.getQueryData<{ isLiked: boolean; likesCount: number }>(
+      const previousData = queryClient.getQueryData<LikeStatusCache>(
         missionLikeQueryKeys.likeStatus(missionId),
       );
 
-      queryClient.setQueryData<{ isLiked: boolean; likesCount: number }>(
+      queryClient.setQueryData<LikeStatusCache>(
         missionLikeQueryKeys.likeStatus(missionId),
         oldData => {
-          if (!oldData) return oldData;
+          if (!oldData) return { data: { isLiked: true, likesCount: 1 } };
+          const { isLiked, likesCount } = oldData.data;
           return {
-            isLiked: !oldData.isLiked,
-            likesCount: oldData.isLiked
-              ? Math.max(0, oldData.likesCount - 1)
-              : oldData.likesCount + 1,
+            data: {
+              isLiked: !isLiked,
+              likesCount: isLiked ? Math.max(0, likesCount - 1) : likesCount + 1,
+            },
           };
         },
       );
