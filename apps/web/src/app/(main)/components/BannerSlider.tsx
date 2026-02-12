@@ -103,7 +103,7 @@ export function BannerSlider() {
         </div>
 
         {/* 그라데이션 + 로고 + 타이틀 (슬라이드 트랙 밖, fade-up 애니메이션) */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-b from-transparent to-zinc-800 px-10 pb-10 pt-[60px]">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-b from-transparent to-[#27272A] px-10 pb-10 pt-[60px]">
           <div key={currentIndex} className="flex flex-col gap-3 animate-fade-up">
             <div
               className={cn(

@@ -31,15 +31,18 @@ const TabContext = React.createContext<{
   activeTab: string | undefined;
   pointColor: "primary" | "secondary";
   isInitialRender: boolean;
+  scrollable: boolean;
 }>({
   activeTab: undefined,
   pointColor: "primary",
   isInitialRender: true,
+  scrollable: false,
 });
 
 interface TabRootProps extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Root> {
   initialTab?: string;
   pointColor?: "primary" | "secondary";
+  scrollable?: boolean;
 }
 
 function TabRoot({
@@ -48,6 +51,7 @@ function TabRoot({
   defaultValue,
   value,
   pointColor = "primary",
+  scrollable = false,
   onValueChange,
   ...props
 }: TabRootProps) {
@@ -69,7 +73,7 @@ function TabRoot({
   };
 
   return (
-    <TabContext.Provider value={{ activeTab, pointColor, isInitialRender }}>
+    <TabContext.Provider value={{ activeTab, pointColor, isInitialRender, scrollable }}>
       <TabsPrimitive.Root
         value={value}
         defaultValue={initialTab || defaultValue}
@@ -100,13 +104,60 @@ export function useTab() {
 const TabList = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.List>
->(({ className, ...props }, ref) => (
-  <TabsPrimitive.List
-    ref={ref}
-    className={cn("relative flex w-full items-center border-b border-gray-200", className)}
-    {...props}
-  />
-));
+>(({ className, children, ...props }, ref) => {
+  const { activeTab, pointColor, isInitialRender, scrollable } = React.useContext(TabContext);
+  const innerRef = React.useRef<HTMLDivElement>(null);
+  const [indicator, setIndicator] = React.useState({ left: 0, width: 0 });
+
+  React.useEffect(() => {
+    const list = innerRef.current;
+    if (!list || !activeTab) return;
+
+    const activeEl = list.querySelector<HTMLElement>('[data-state="active"]');
+    if (!activeEl) return;
+
+    setIndicator({ left: activeEl.offsetLeft, width: activeEl.offsetWidth });
+  }, [activeTab]);
+
+  const mergedRef = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      (innerRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+      if (typeof ref === "function") ref(node);
+      else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+    },
+    [ref],
+  );
+
+  return (
+    <TabsPrimitive.List
+      ref={mergedRef}
+      className={cn(
+        "relative flex w-full items-center border-b border-gray-200",
+        scrollable && "overflow-x-auto scrollbar-hide",
+        className,
+      )}
+      {...props}
+    >
+      {children}
+      {indicator.width > 0 && (
+        <motion.div
+          className={cn(
+            "absolute bottom-0 left-0 h-0.5",
+            pointColor === "primary" ? "bg-primary" : "bg-black",
+          )}
+          initial={false}
+          animate={{ x: indicator.left }}
+          style={{ width: indicator.width }}
+          transition={
+            isInitialRender
+              ? { duration: 0 }
+              : { type: "tween", duration: 0.25, ease: "easeInOut" }
+          }
+        />
+      )}
+    </TabsPrimitive.List>
+  );
+});
 TabList.displayName = TabsPrimitive.List.displayName;
 
 interface TabItemProps extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger> {
@@ -116,11 +167,11 @@ interface TabItemProps extends React.ComponentPropsWithoutRef<typeof TabsPrimiti
 
 const TabItem = React.forwardRef<React.ElementRef<typeof TabsPrimitive.Trigger>, TabItemProps>(
   ({ children, value, className, ...props }, ref) => {
-    const { activeTab, pointColor, isInitialRender } = React.useContext(TabContext);
+    const { activeTab, pointColor, scrollable } = React.useContext(TabContext);
     const isActive = activeTab === value;
 
     const tabItemVariants = cva(
-      "relative px-4 py-3 flex-1 text-center select-none transition-colors",
+      cn("relative px-4 py-3 text-center select-none transition-colors flex-1", scrollable && "min-w-fit"),
       {
         variants: {
           isActive: {
@@ -146,21 +197,6 @@ const TabItem = React.forwardRef<React.ElementRef<typeof TabsPrimitive.Trigger>,
         {...props}
       >
         {children}
-        {isActive && (
-          <motion.div
-            key={`${value}-${pointColor}`}
-            className={cn(
-              "absolute bottom-0 left-0 right-0 h-0.5",
-              pointColor === "primary" ? "bg-primary" : "bg-black",
-            )}
-            layoutId={isInitialRender ? undefined : `activeTab-${pointColor}`}
-            transition={{
-              type: "spring",
-              stiffness: 500,
-              damping: 30,
-            }}
-          />
-        )}
       </TabsPrimitive.Trigger>
     );
   },

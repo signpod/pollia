@@ -8,9 +8,9 @@ import { MeHeader } from "./MeHeader";
 const SUB_PAGE_HEADERS: Record<string, string> = {
   "/me/in-progress": "참여 중인 프로젝트",
   "/me/completed": "참여 완료한 프로젝트",
-  "/me/rewards/pending": "지급 예정 리워드",
-  "/me/rewards/paid": "지급 완료 리워드",
-  "/me/liked": "찜한 프로젝트",
+  "/me/rewards/pending": "지급 예정",
+  "/me/rewards/paid": "지급 완료",
+  "/me/liked": "찜",
 };
 
 export function MeLayoutShell({ children }: { children: React.ReactNode }) {

@@ -125,7 +125,7 @@ export function CalloutProvider({ children, position = "top-center" }: CalloutPr
         ))}
         <ToastPrimitive.Viewport
           className={cn(
-            "fixed z-100 flex flex-col items-center gap-2 outline-none w-[calc(100%-2rem)] max-w-lg",
+            "fixed z-100 flex flex-col items-center gap-2 outline-none w-[calc(100%-2rem)] max-w-[600px]",
             positionStyles[position],
           )}
         />

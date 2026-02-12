@@ -6,6 +6,7 @@ import { useCurrentUser } from "@/hooks/user";
 import PolliaIcon from "@public/svgs/pollia-icon.svg";
 import PolliaWordmark from "@public/svgs/pollia-wordmark.svg";
 import { Typo } from "@repo/ui/components";
+import { cn } from "@repo/ui/lib";
 import { ChevronLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -21,10 +22,19 @@ export function ProfileHeader({ showBack = false, fallbackRight }: ProfileHeader
   const { data: currentUser } = useCurrentUser();
 
   return (
-    <header className="sticky top-0 z-50 flex h-12 items-center justify-between bg-white px-5">
-      <div className="flex items-center gap-1">
+    <header
+      className={cn(
+        "sticky top-0 z-50 flex h-12 items-center justify-between bg-white px-5",
+        showBack && "pr-5 pl-0",
+      )}
+    >
+      <div className="flex items-center">
         {showBack && (
-          <button type="button" onClick={() => router.back()} className="text-zinc-600">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="size-12 flex items-center justify-center"
+          >
             <ChevronLeftIcon className="size-5" />
           </button>
         )}
@@ -34,7 +44,7 @@ export function ProfileHeader({ showBack = false, fallbackRight }: ProfileHeader
         </Link>
       </div>
       {currentUser ? (
-        <button onClick={() => router.push(ROUTES.ME)}>
+        <button onClick={() => router.push(ROUTES.ME)} type="button">
           <div className="flex items-center gap-2">
             <UserAvatar size="small" />
             <Typo.Body size="small" className="font-medium text-zinc-700">

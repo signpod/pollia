@@ -120,7 +120,7 @@ export function DrawerContent({ className, children }: DrawerContentProps) {
             "relative z-10 w-full",
             "bg-background rounded-t-lg shadow-lg",
             "flex max-h-[85vh] flex-col overflow-hidden",
-            "mx-auto max-w-lg",
+            "mx-auto max-w-[600px]",
             //TODO: Safe Area 설정
             "pb-10",
             className,

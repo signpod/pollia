@@ -21,14 +21,13 @@ export function MainContent({ initialProjects, initialFestivals }: MainContentPr
   const [selectedCategory, setSelectedCategory] = useState<Category>("all");
   const [isCategoryFilterHidden, setIsCategoryFilterHidden] = useState(false);
   const categoryFilterRef = useRef<HTMLDivElement>(null);
-
   const HEADER_HEIGHT = 48;
 
-  const handleCategoryChange = (category: Category) => {
+  const handleStickyCategoryChange = (category: Category) => {
     setSelectedCategory(category);
     const el = categoryFilterRef.current;
     if (el) {
-      const top = el.getBoundingClientRect().top + window.scrollY - HEADER_HEIGHT;
+      const top = el.getBoundingClientRect().top + window.scrollY - HEADER_HEIGHT + el.offsetHeight / 2 + 4;
       window.scrollTo({ top, behavior: "instant" });
     }
   };
@@ -43,7 +42,7 @@ export function MainContent({ initialProjects, initialFestivals }: MainContentPr
           setIsCategoryFilterHidden(!entry.isIntersecting);
         }
       },
-      { threshold: 0 },
+      { threshold: 0.5, rootMargin: `-${HEADER_HEIGHT}px 0px 0px 0px` },
     );
 
     observer.observe(el);
@@ -74,11 +73,11 @@ export function MainContent({ initialProjects, initialFestivals }: MainContentPr
     <div className="flex flex-col gap-6">
       <StickyCategoryTab
         selected={selectedCategory}
-        onSelect={handleCategoryChange}
+        onSelect={handleStickyCategoryChange}
         visible={isCategoryFilterHidden}
       />
       <div ref={categoryFilterRef}>
-        <CategoryFilter selected={selectedCategory} onSelect={handleCategoryChange} />
+        <CategoryFilter selected={selectedCategory} onSelect={setSelectedCategory} />
       </div>
       {filteredContent.length > 0 ? (
         <>
