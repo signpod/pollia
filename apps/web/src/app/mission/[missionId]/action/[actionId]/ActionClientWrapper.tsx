@@ -170,7 +170,6 @@ function ActionRenderer({
     toastStorageKey,
   });
 
-  // 첫 번째 액션인지 확인
   const isFirstStep = actions[0]?.id === currentActionData.id;
 
   const { submit, isSubmitting, isActualLastStep } = useClientActionSubmit({
@@ -192,14 +191,12 @@ function ActionRenderer({
     setCurrentAnswer(answer);
   }, []);
 
-  // 이전 버튼 핸들러
   const handlePrevious = useCallback(() => {
     if (isFirstStep) {
       navigateToMission();
       return;
     }
 
-    // 현재 액션을 가리키는 이전 액션 찾기
     const sourceAction = actions.find(
       action =>
         action.options.some(option => option.nextActionId === currentActionData.id) ||
@@ -217,11 +214,10 @@ function ActionRenderer({
     }
   }, [isFirstStep, actions, currentActionData, navigateToAction, navigateToMission]);
 
-  // 현재 스텝의 컴포넌트 찾기
   const currentStep = steps.find(
-    step => (step as ExtendedActionStepConfig).actionData.id === currentActionData.id,
-  ) as ExtendedActionStepConfig;
-  const ContentComponent = currentStep.content;
+    (step): step is ExtendedActionStepConfig => step.actionData.id === currentActionData.id,
+  );
+  const ContentComponent = currentStep?.content;
 
   const contextValue = useMemo(
     () => ({
@@ -252,6 +248,11 @@ function ActionRenderer({
       missionResponse,
     ],
   );
+
+  if (!ContentComponent) {
+    //TODO: 예외처리
+    return <div>ContentComponent not found</div>;
+  }
 
   return (
     <ActionProvider value={contextValue}>
