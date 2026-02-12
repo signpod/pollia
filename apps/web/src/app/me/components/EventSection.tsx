@@ -24,28 +24,18 @@ const InProgressTab = memo(function InProgressTab({
 }: { responses: MyMissionResponse[] }) {
   if (responses.length === 0) return <EmptyState message="참여 중인 프로젝트가 없어요" />;
   return (
-    <div className="flex flex-col gap-8">
-      <SectionHeader
-        label="참여 중인 프로젝트"
-        count={responses.length}
-        href={ROUTES.ME_IN_PROGRESS}
-      />
+    <div className="flex flex-col gap-4">
+      <SectionHeader label="총" count={responses.length} href={ROUTES.ME_IN_PROGRESS} />
       <InProgressGrid responses={responses.slice(0, MAX_PREVIEW)} />
     </div>
   );
 });
 
-const CompletedTab = memo(function CompletedTab({
-  responses,
-}: { responses: MyMissionResponse[] }) {
+const CompletedTab = memo(function CompletedTab({ responses }: { responses: MyMissionResponse[] }) {
   if (responses.length === 0) return <EmptyState message="완료한 프로젝트가 없어요" />;
   return (
-    <div className="flex flex-col gap-8">
-      <SectionHeader
-        label="참여 완료한 프로젝트"
-        count={responses.length}
-        href={ROUTES.ME_COMPLETED}
-      />
+    <div className="flex flex-col gap-4">
+      <SectionHeader label="총" count={responses.length} href={ROUTES.ME_COMPLETED} />
       <div className="grid grid-cols-2 gap-x-4 gap-y-10">
         {responses.slice(0, MAX_PREVIEW).map(response => (
           <MeProjectCard key={response.id} response={response} variant="completed" />
@@ -56,8 +46,12 @@ const CompletedTab = memo(function CompletedTab({
 });
 
 const REWARD_SECTIONS_CONFIG = [
-  { key: "pending", title: "지급 예정", label: "지급 예정 리워드", href: ROUTES.ME_REWARDS_PENDING },
-  { key: "paid", title: "지급 완료", label: "지급 완료 리워드", href: ROUTES.ME_REWARDS_PAID },
+  {
+    key: "pending",
+    label: "지급 예정 총",
+    href: ROUTES.ME_REWARDS_PENDING,
+  },
+  { key: "paid", label: "지급 완료 총", href: ROUTES.ME_REWARDS_PAID },
 ] as const;
 
 const RewardsTab = memo(function RewardsTab() {
@@ -77,12 +71,11 @@ const RewardsTab = memo(function RewardsTab() {
 
   return (
     <div className="flex flex-col gap-10">
-      {REWARD_SECTIONS_CONFIG.map(({ key, title, label, href }) => {
+      {REWARD_SECTIONS_CONFIG.map(({ key, label, href }) => {
         const items = grouped[key];
         if (items?.length === 0) return null;
         return (
           <div key={key} className="flex flex-col gap-4">
-            <Typo.MainTitle size="small">{title}</Typo.MainTitle>
             <SectionHeader label={label} count={items?.length ?? 0} href={href} />
             <div className="flex flex-col gap-6">
               {items?.slice(0, MAX_REWARDS_PREVIEW).map(reward => (
@@ -103,8 +96,8 @@ const LikedTab = memo(function LikedTab() {
     return <EmptyState message="찜한 프로젝트가 없어요" />;
 
   return (
-    <div className="flex flex-col gap-8">
-      <SectionHeader label="찜한 프로젝트" count={likedMissions.length} href={ROUTES.ME_LIKED} />
+    <div className="flex flex-col gap-4">
+      <SectionHeader label="총" count={likedMissions.length} href={ROUTES.ME_LIKED} />
       <div className="grid grid-cols-2 gap-4">
         {likedMissions.slice(0, MAX_PREVIEW).map(mission => (
           <MeLikedMissionCard key={mission.id} mission={mission} />
@@ -158,7 +151,13 @@ export function EventSection({ inProgressResponses, completedResponses }: EventS
 
   return (
     <section>
-      <Tab.Root value={currentTab} onValueChange={handleTabChange} id="me-events-tab" pointColor="secondary">
+      <Tab.Root
+        value={currentTab}
+        onValueChange={handleTabChange}
+        id="me-events-tab"
+        pointColor="secondary"
+        scrollable
+      >
         <Tab.List>
           {TABS.map(tab => (
             <Tab.Item key={tab.value} value={tab.value}>

@@ -12,10 +12,9 @@ export function SectionHeader({ label, count, href }: SectionHeaderProps) {
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-1">
-        <Typo.SubTitle size="large" className="text-info">
-          {label}
+        <Typo.SubTitle size="large">
+          {label} {count}개
         </Typo.SubTitle>
-        <Typo.SubTitle size="large">{count}개</Typo.SubTitle>
       </div>
       <Link href={href} className="flex items-center gap-0.5 text-zinc-500">
         <Typo.ButtonText size="medium">전체보기</Typo.ButtonText>

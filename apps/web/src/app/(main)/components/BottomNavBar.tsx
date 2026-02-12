@@ -11,14 +11,14 @@ const NAV_ITEMS = [
   // TODO: 검색 페이지 구현 후 disabled 해제
   { href: "/search", icon: Search, label: "검색", disabled: true },
   // TODO: 좋아요 페이지 구현 후 disabled 해제
-  { href: "/likes", icon: Heart, label: "좋아요", disabled: true },
+  { href: ROUTES.ME_LIKED, icon: Heart, label: "좋아요", disabled: false },
 ] as const;
 
 export function BottomNavBar() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed bottom-0 left-1/2 z-50 flex w-full max-w-[600px] -translate-x-1/2 items-center justify-between bg-white px-5 py-3 shadow-[0px_-4px_20px_0px_rgba(9,9,11,0.16)]">
+    <nav className="fixed bottom-0 left-1/2 z-50 flex w-full max-w-[600px] -translate-x-1/2 items-center justify-between bg-white px-5 py-2 shadow-[0px_-4px_20px_0px_rgba(9,9,11,0.16)]">
       {NAV_ITEMS.map(({ href, icon: Icon, label, disabled }) => {
         const isActive = !disabled && pathname === href;
 
