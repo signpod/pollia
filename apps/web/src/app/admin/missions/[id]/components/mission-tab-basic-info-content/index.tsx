@@ -22,7 +22,6 @@ import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
 import { useUpdateMission } from "@/app/admin/hooks/mission/use-update-mission";
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
-import { ROUTES } from "@/constants/routes";
 import { cleanTiptapHTML } from "@/lib/utils";
 import type { GetMissionResponse } from "@/types/dto";
 import { MissionCategory, MissionType } from "@prisma/client";
@@ -255,7 +254,8 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
         <div ref={previewAnchorRef} className="hidden xl:block" />
       </div>
 
-      <MobilePreviewPanel anchor={previewAnchorRef} url={ROUTES.MISSION(mission.id)} />
+      {/* <MobilePreviewPanel anchor={previewAnchorRef} url={ROUTES.MISSION(mission.id)} /> */}
+      <MobilePreviewPanel anchor={previewAnchorRef} url={"/"} />
 
       <BasicInfoEditDialog
         open={isBasicInfoDialogOpen}
