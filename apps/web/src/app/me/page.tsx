@@ -54,7 +54,7 @@ export default async function MePage() {
   return (
     <HydrationBoundary state={dehydratedState}>
       <Suspense>
-        <MePageContent initialUser={userData.data} />
+        <MePageContent user={{ name: userData.data.name, email: userData.data.email }} />
       </Suspense>
     </HydrationBoundary>
   );

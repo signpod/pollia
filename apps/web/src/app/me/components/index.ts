@@ -7,5 +7,6 @@ export { MeFooter } from "./MeFooter";
 export { MeHeader } from "./MeHeader";
 export { MeLikedMissionCard } from "./MeLikedMissionCard";
 export { MeProjectCard } from "./MeProjectCard";
+export { ProfileSection } from "./ProfileSection";
 export { RecommendedProjects } from "./RecommendedProjects";
 export { RewardCard } from "./RewardCard";

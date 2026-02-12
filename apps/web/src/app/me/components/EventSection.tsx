@@ -6,6 +6,7 @@ import { Tab, Typo } from "@repo/ui/components";
 import { useSearchParams } from "next/navigation";
 import { memo, useCallback, useMemo, useState } from "react";
 import { useLikedMissions } from "../hooks/useLikedMissions";
+import { useMyResponses } from "../hooks/useMyResponses";
 import { type UseRewardsReturn, useRewards } from "../hooks/useRewards";
 import { EmptyState } from "./EmptyState";
 import { InProgressGrid } from "./InProgressGrid";
@@ -107,11 +108,6 @@ const LikedTab = memo(function LikedTab() {
   );
 });
 
-interface EventSectionProps {
-  inProgressResponses: MyMissionResponse[];
-  completedResponses: MyMissionResponse[];
-}
-
 const TABS = [
   { value: "in-progress", label: "참여 중" },
   { value: "completed", label: "참여 완료" },
@@ -122,7 +118,8 @@ const TABS = [
 const DEFAULT_TAB = TABS[0].value;
 const VALID_TAB_VALUES = new Set(TABS.map(t => t.value));
 
-export function EventSection({ inProgressResponses, completedResponses }: EventSectionProps) {
+export function EventSection() {
+  const { data } = useMyResponses();
   const searchParams = useSearchParams();
   const initialTab = searchParams.get("tab");
   const [currentTab, setCurrentTab] = useState<string>(
@@ -130,6 +127,17 @@ export function EventSection({ inProgressResponses, completedResponses }: EventS
       ? (initialTab as string)
       : DEFAULT_TAB,
   );
+
+  const { inProgressResponses, completedResponses } = useMemo(() => {
+    const responses = data?.data ?? [];
+    const inProgress: MyMissionResponse[] = [];
+    const completed: MyMissionResponse[] = [];
+    for (const r of responses) {
+      if (r.completedAt === null) inProgress.push(r);
+      else completed.push(r);
+    }
+    return { inProgressResponses: inProgress, completedResponses: completed };
+  }, [data]);
 
   const handleTabChange = useCallback((value: string) => {
     setCurrentTab(value);
