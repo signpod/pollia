@@ -1,15 +1,20 @@
 "use client";
 
 import { signOut } from "@/actions/common/auth";
+import { ROUTES } from "@/constants/routes";
 import { ButtonV2, Typo } from "@repo/ui/components";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const INQUIRY_URL = process.env.NEXT_PUBLIC_INQUIRY_URL;
 const PRIVACY_POLICY_URL = process.env.NEXT_PUBLIC_PRIVACY_POLICY_URL;
 
 export function MeFooter() {
+  const router = useRouter();
+
   const handleLogout = async () => {
-    await signOut("/");
+    await signOut();
+    router.push(ROUTES.HOME);
   };
 
   return (
