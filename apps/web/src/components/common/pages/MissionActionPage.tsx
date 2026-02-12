@@ -4,7 +4,6 @@ import { ActionRenderer } from "@/components/common/templates/action";
 import { ActionProvider } from "@/components/common/templates/action/common/ActionContext";
 import { ProgressBarProvider } from "@/components/common/templates/action/common/ProgressBarProvider";
 import type { ActionAnswerItem, ActionDetail } from "@/types/dto";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
 export interface MissionActionPageProps {
@@ -18,7 +17,6 @@ export function MissionActionPage({
   currentOrder = 0,
   totalActionCount = 1,
 }: MissionActionPageProps) {
-  const [queryClient] = useState(() => new QueryClient());
   const [canGoNext, setCanGoNext] = useState(false);
 
   const ActionComponent = ActionRenderer(actionData.type);
@@ -42,14 +40,12 @@ export function MissionActionPage({
   );
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <div className="min-h-svh bg-white">
-        <ProgressBarProvider>
-          <ActionProvider value={contextValue}>
-            <ActionComponent actionData={actionData} />
-          </ActionProvider>
-        </ProgressBarProvider>
-      </div>
-    </QueryClientProvider>
+    <div className="min-h-svh bg-white">
+      <ProgressBarProvider>
+        <ActionProvider value={contextValue}>
+          <ActionComponent actionData={actionData} />
+        </ActionProvider>
+      </ProgressBarProvider>
+    </div>
   );
 }
