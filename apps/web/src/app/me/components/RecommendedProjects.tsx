@@ -1,5 +1,6 @@
 "use client";
 
+import { MissionLikeButton } from "@/app/(main)/components/MissionLikeButton";
 import { getAllMissions } from "@/actions/mission/read";
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
@@ -43,6 +44,7 @@ function RecommendedCard({
               onError={() => setImageError(true)}
             />
           )}
+          <MissionLikeButton missionId={mission.id} className="absolute bottom-3 right-3" />
         </div>
         <div className="mt-2 flex flex-col gap-0.5">
           <Typo.Body size="small" className="text-info">{categoryLabel}</Typo.Body>
