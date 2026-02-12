@@ -52,8 +52,8 @@ interface TabRootProps<T extends string = string>
   scrollable?: boolean;
 }
 
-interface ValueChangeBridge {
-  invoke(value: string): void;
+interface ValueChangeBridge<T extends string = string> {
+  invoke(value: T): void;
 }
 
 function TabRoot<T extends string = string>({
@@ -76,7 +76,9 @@ function TabRoot<T extends string = string>({
     setIsInitialRender(false);
   }, []);
 
-  const changeBridge: ValueChangeBridge | null = onValueChange ? { invoke: onValueChange } : null;
+  const changeBridge: ValueChangeBridge<T> | null = onValueChange
+    ? { invoke: onValueChange }
+    : null;
 
   return (
     <TabContext.Provider value={{ activeTab, pointColor, isInitialRender, scrollable }}>
@@ -87,7 +89,7 @@ function TabRoot<T extends string = string>({
           if (value === undefined) {
             setInternalActiveTab(newValue);
           }
-          changeBridge?.invoke(newValue);
+          changeBridge?.invoke(newValue as T);
         }}
         {...props}
       >
