@@ -2,7 +2,6 @@
 
 import type { FestivalData } from "@/types/dto/festival";
 import thumbnailFallback from "@public/images/thumbnail-fallback.png";
-import { Heart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -27,16 +26,6 @@ export function FestivalCard({ festival }: FestivalCardProps) {
           unoptimized={!showFallback && festival.imageUrl.includes("visitkorea")}
           onError={() => setImageError(true)}
         />
-        <button
-          type="button"
-          className="absolute bottom-3 right-3 text-zinc-400"
-          onClick={e => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-        >
-          <Heart className="size-6 fill-white/40 text-zinc-200" />
-        </button>
       </div>
 
       <div className="mt-3 flex flex-col gap-2">
