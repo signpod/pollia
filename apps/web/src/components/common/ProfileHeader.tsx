@@ -6,6 +6,7 @@ import { useCurrentUser } from "@/hooks/user";
 import PolliaIcon from "@public/svgs/pollia-icon.svg";
 import PolliaWordmark from "@public/svgs/pollia-wordmark.svg";
 import { Typo } from "@repo/ui/components";
+import { cn } from "@repo/ui/lib";
 import { ChevronLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -21,7 +22,12 @@ export function ProfileHeader({ showBack = false, fallbackRight }: ProfileHeader
   const { data: currentUser } = useCurrentUser();
 
   return (
-    <header className="sticky top-0 z-50 flex h-12 items-center justify-between bg-white pr-5">
+    <header
+      className={cn(
+        "sticky top-0 z-50 flex h-12 items-center justify-between bg-white px-5",
+        showBack && "pr-5 pl-0",
+      )}
+    >
       <div className="flex items-center">
         {showBack && (
           <button
