@@ -30,7 +30,7 @@ export {
   Branch,
 };
 
-export function getActionComponent(type: ActionType): ComponentType<ActionStepContentProps> {
+export function ActionRenderer(type: ActionType): ComponentType<ActionStepContentProps> {
   switch (type) {
     case ActionType.MULTIPLE_CHOICE:
       return MultipleChoice;

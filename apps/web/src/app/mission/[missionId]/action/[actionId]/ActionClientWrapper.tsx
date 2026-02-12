@@ -17,37 +17,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useClientActionSubmit } from "./hooks/useClientActionSubmit";
 import { ActionProvider } from "./providers/ActionContext";
-import {
-  ActionDate,
-  ActionImage,
-  ActionPdf,
-  ActionTag,
-  ActionTime,
-  ActionVideo,
-  Branch,
-  MissionRatingScale,
-  MissionStarScale,
-  MultipleChoice,
-  ShortText,
-  Subjective,
-} from "./ui";
 
 const SCROLL_OFFSET = 30;
-
-const STEP_COMPONENTS = {
-  MultipleChoice: MultipleChoice,
-  Scale: MissionRatingScale,
-  Subjective: Subjective,
-  ShortText: ShortText,
-  Rating: MissionStarScale,
-  Image: ActionImage,
-  Video: ActionVideo,
-  Tag: ActionTag,
-  Pdf: ActionPdf,
-  Date: ActionDate,
-  Time: ActionTime,
-  Branch: Branch,
-} as const;
 
 interface ActionClientWrapperProps {
   dehydratedState: DehydratedState;
@@ -102,7 +73,6 @@ function ActionContent() {
 
   const steps = createActionSteps({
     actions: actions.data,
-    stepComponents: STEP_COMPONENTS,
   });
 
   const currentStep = steps.find(
@@ -114,7 +84,7 @@ function ActionContent() {
   }
 
   return (
-    <ActionRenderer
+    <ActionStepWrapper
       actions={actions.data}
       currentActionData={currentStep.actionData}
       steps={steps}
@@ -126,7 +96,7 @@ function ActionContent() {
   );
 }
 
-interface ActionRendererProps {
+interface ActionStepWrapperProps {
   actions: ActionForProgress[];
   currentActionData: ActionDetail;
   steps: ReturnType<typeof createActionSteps>;
@@ -136,7 +106,7 @@ interface ActionRendererProps {
   navigateToMission: () => void;
 }
 
-function ActionRenderer({
+function ActionStepWrapper({
   actions,
   currentActionData,
   steps,
@@ -144,7 +114,7 @@ function ActionRenderer({
   navigateToAction,
   navigateToDone,
   navigateToMission,
-}: ActionRendererProps) {
+}: ActionStepWrapperProps) {
   const [currentAnswer, setCurrentAnswer] = useState<ActionAnswerItem | null>(null);
   const [canGoNext, setCanGoNext] = useState(false);
 
