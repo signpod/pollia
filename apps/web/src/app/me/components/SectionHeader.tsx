@@ -6,9 +6,10 @@ interface SectionHeaderProps {
   label: string;
   count: number;
   href: string;
+  showViewAll?: boolean;
 }
 
-export function SectionHeader({ label, count, href }: SectionHeaderProps) {
+export function SectionHeader({ label, count, href, showViewAll = true }: SectionHeaderProps) {
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-1">
@@ -16,10 +17,12 @@ export function SectionHeader({ label, count, href }: SectionHeaderProps) {
           {label} {count}개
         </Typo.SubTitle>
       </div>
-      <Link href={href} className="flex items-center gap-0.5 text-zinc-500">
-        <Typo.ButtonText size="medium">전체보기</Typo.ButtonText>
-        <ChevronRightIcon className="size-4" />
-      </Link>
+      {showViewAll && (
+        <Link href={href} className="flex items-center gap-0.5 text-zinc-500">
+          <Typo.ButtonText size="medium">전체보기</Typo.ButtonText>
+          <ChevronRightIcon className="size-4" />
+        </Link>
+      )}
     </div>
   );
 }

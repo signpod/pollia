@@ -1,20 +1,22 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { Tab } from "@repo/ui/components";
+import type { RefObject } from "react";
 import { CATEGORIES, type Category } from "./CategoryFilter";
 
 interface StickyCategoryTabProps {
+  containerRef?: RefObject<HTMLDivElement | null>;
   selected: Category;
   onSelect: (category: Category) => void;
-  visible: boolean;
 }
 
-export function StickyCategoryTab({ selected, onSelect, visible }: StickyCategoryTabProps) {
-  if (!visible) return null;
-
+export function StickyCategoryTab({ containerRef, selected, onSelect }: StickyCategoryTabProps) {
   return (
-    <div className="sticky top-12 z-40 overflow-hidden bg-white">
+    <div
+      ref={containerRef}
+      className="fixed top-12 left-1/2 z-40 w-full max-w-[600px] -translate-x-1/2 overflow-hidden bg-white transition-opacity duration-150"
+      style={{ opacity: 0, pointerEvents: "none" }}
+    >
       <Tab.Root
         value={selected}
         onValueChange={v => onSelect(v as Category)}

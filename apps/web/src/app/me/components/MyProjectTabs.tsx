@@ -2,7 +2,9 @@
 
 import { ROUTES } from "@/constants/routes";
 import type { MyMissionResponse } from "@/types/dto/mission-response";
-import { EmptyState, Tab, Typo } from "@repo/ui/components";
+import PolliaFaceVeryGood from "@public/svgs/face/very-good-face-full.svg";
+import { ButtonV2, EmptyState, Tab, Typo } from "@repo/ui/components";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { memo } from "react";
 import { useGroupedRewards } from "../hooks/useGroupedRewards";
@@ -16,6 +18,18 @@ import { SectionHeader } from "./SectionHeader";
 
 const MAX_PREVIEW = 4;
 const MAX_REWARDS_PREVIEW = 3;
+
+function BrowseAction() {
+  return (
+    <div className="flex justify-center">
+      <Link href={ROUTES.HOME}>
+        <ButtonV2 variant="primary" className="w-auto rounded-4xl">
+          <Typo.ButtonText size="large">구경하러 가기</Typo.ButtonText>
+        </ButtonV2>
+      </Link>
+    </div>
+  );
+}
 
 interface TabSectionProps {
   count: number;
@@ -66,26 +80,49 @@ export function MyProjectTabs() {
 const InProgressTab = memo(function InProgressTab({
   responses,
 }: { responses: MyMissionResponse[] }) {
+  if (responses.length === 0) {
+    return (
+      <EmptyState
+        icon={<PolliaFaceVeryGood className="size-30 text-zinc-200" />}
+        title="참여중인 프로젝트가 없어요"
+        description={
+          <>
+            아래 버튼을 눌러
+            <br />
+            새로운 프로젝트를 구경해보세요 🤩
+          </>
+        }
+        action={<BrowseAction />}
+      />
+    );
+  }
+
   return (
-    <TabSection
-      count={responses.length}
-      emptyMessage="참여 중인 프로젝트가 없어요"
-      label="총"
-      href={ROUTES.ME_IN_PROGRESS}
-    >
+    <TabSection count={responses.length} emptyMessage="" label="총" href={ROUTES.ME_IN_PROGRESS}>
       <InProgressGrid responses={responses.slice(0, MAX_PREVIEW)} />
     </TabSection>
   );
 });
 
 const CompletedTab = memo(function CompletedTab({ responses }: { responses: MyMissionResponse[] }) {
+  if (responses.length === 0) {
+    return (
+      <EmptyState
+        icon={<PolliaFaceVeryGood className="size-30 text-zinc-200" />}
+        title="완료한 프로젝트가 없어요"
+        description={
+          <>
+            프로젝트를 완료하고
+            <br />이 곳에서 결과를 다시 확인해보세요 🎵
+          </>
+        }
+        action={<BrowseAction />}
+      />
+    );
+  }
+
   return (
-    <TabSection
-      count={responses.length}
-      emptyMessage="완료한 프로젝트가 없어요"
-      label="총"
-      href={ROUTES.ME_COMPLETED}
-    >
+    <TabSection count={responses.length} emptyMessage="" label="총" href={ROUTES.ME_COMPLETED}>
       <div className="grid grid-cols-2 gap-x-4 gap-y-10">
         {responses.slice(0, MAX_PREVIEW).map(response => (
           <MeProjectCard key={response.id} response={response} variant="completed" />
@@ -103,7 +140,22 @@ const REWARD_SECTIONS_CONFIG = [
 const RewardsTab = memo(function RewardsTab() {
   const { rewards, grouped } = useGroupedRewards();
 
-  if (!rewards || rewards.length === 0) return <EmptyState title="받은 리워드가 없어요" />;
+  if (!rewards || rewards.length === 0) {
+    return (
+      <EmptyState
+        icon={<PolliaFaceVeryGood className="size-30 text-zinc-200" />}
+        title="받은 리워드가 없어요"
+        description={
+          <>
+            아래 버튼을 눌러
+            <br />
+            리워드가 있는 프로젝트를 찾아보세요 🎁
+          </>
+        }
+        action={<BrowseAction />}
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col gap-10">
@@ -133,15 +185,27 @@ const RewardsTab = memo(function RewardsTab() {
 const LikedTab = memo(function LikedTab() {
   const { data: likedMissions } = useLikedMissions();
 
+  if (!likedMissions || likedMissions.length === 0) {
+    return (
+      <EmptyState
+        icon={<PolliaFaceVeryGood className="size-30 text-zinc-300" />}
+        title="찜한 프로젝트가 없어요"
+        description={
+          <>
+            아래 버튼을 눌러
+            <br />
+            마음에 드는 프로젝트를 찜해보세요 ❤️
+          </>
+        }
+        action={<BrowseAction />}
+      />
+    );
+  }
+
   return (
-    <TabSection
-      count={likedMissions?.length ?? 0}
-      emptyMessage="찜한 프로젝트가 없어요"
-      label="총"
-      href={ROUTES.ME_LIKED_TAB}
-    >
+    <TabSection count={likedMissions.length} emptyMessage="" label="총" href={ROUTES.ME_LIKED_TAB}>
       <div className="grid grid-cols-2 gap-4">
-        {likedMissions?.slice(0, MAX_PREVIEW).map(mission => (
+        {likedMissions.slice(0, MAX_PREVIEW).map(mission => (
           <MeLikedMissionCard key={mission.id} mission={mission} />
         ))}
       </div>
@@ -153,7 +217,7 @@ function TabSection({ count, emptyMessage, label, href, children }: TabSectionPr
   if (count === 0) return <EmptyState title={emptyMessage} />;
   return (
     <div className="flex flex-col gap-4">
-      <SectionHeader label={label} count={count} href={href} />
+      <SectionHeader label={label} count={count} href={href} showViewAll={count >= MAX_PREVIEW} />
       {children}
     </div>
   );

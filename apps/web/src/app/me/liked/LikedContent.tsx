@@ -1,8 +1,11 @@
 "use client";
 
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
+import { ROUTES } from "@/constants/routes";
 import { MissionCategory } from "@prisma/client";
-import { Tab, Typo } from "@repo/ui/components";
+import PolliaFaceVeryGood from "@public/svgs/face/very-good-face-full.svg";
+import { ButtonV2, EmptyState, Tab, Typo } from "@repo/ui/components";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { MeLikedMissionCard } from "../components/MeLikedMissionCard";
 import { useLikedMissions } from "../hooks/useLikedMissions";
@@ -46,7 +49,7 @@ export function LikedContent() {
         </Tab.List>
       </Tab.Root>
 
-      <div className="px-5 py-4">
+      <div className="flex flex-1 flex-col px-5 py-4">
         {filteredMissions.length > 0 ? (
           <div className="grid grid-cols-2 gap-4">
             {filteredMissions.map(mission => (
@@ -54,10 +57,27 @@ export function LikedContent() {
             ))}
           </div>
         ) : (
-          <div className="flex items-center justify-center py-20">
-            <Typo.Body size="medium" className="text-zinc-400">
-              찜한 프로젝트가 없어요
-            </Typo.Body>
+          <div className="flex min-h-[50dvh] items-center justify-center">
+            <EmptyState
+              icon={<PolliaFaceVeryGood className="size-30 text-zinc-200" />}
+              title="찜한 프로젝트가 없어요"
+              description={
+                <>
+                  아래 버튼을 눌러
+                  <br />
+                  마음에 드는 프로젝트를 찜해보세요 ❤️
+                </>
+              }
+              action={
+                <div className="flex justify-center">
+                  <Link href={ROUTES.HOME}>
+                    <ButtonV2 variant="primary" className="w-auto">
+                      <Typo.ButtonText size="large">구경하러 가기</Typo.ButtonText>
+                    </ButtonV2>
+                  </Link>
+                </div>
+              }
+            />
           </div>
         )}
       </div>

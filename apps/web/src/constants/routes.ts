@@ -15,6 +15,7 @@ export const ROUTES = {
   ME_REWARDS_PENDING: "/me/rewards/pending",
   ME_REWARDS_PAID: "/me/rewards/paid",
   ME_LIKED_TAB: "/me?tab=liked",
+  LIKES: "/likes",
 
   // 미션 관련
   MISSION: (id: string) => `/mission/${id}`,
