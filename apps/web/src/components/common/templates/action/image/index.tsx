@@ -8,6 +8,10 @@ import { ImageUploadNotice } from "./ImageUploadNotice";
 
 type ImageInfo = FileUploadInfo;
 
+const EMPTY_ARRAY: string[] = [];
+const NOOP = () => {};
+const NOOP_ASYNC = async () => {};
+
 export interface ImageUploadState {
   imageInfos: ImageInfo[];
   uploadState: {
@@ -31,10 +35,22 @@ export interface ImageUploadState {
 }
 
 export interface ActionImageProps extends ActionStepContentProps {
-  upload: ImageUploadState;
+  upload?: ImageUploadState;
 }
 
-export function ActionImage({ actionData, upload }: ActionImageProps) {
+const DEFAULT_UPLOAD_STATE: ImageUploadState = {
+  imageInfos: [],
+  uploadState: { isUploading: false, progress: 0, tempUrls: EMPTY_ARRAY },
+  onUploadChange: NOOP,
+  onUploadingChange: NOOP,
+  onProgressChange: NOOP,
+  onUploadStart: NOOP,
+  onImageDelete: NOOP,
+  onImageLoadComplete: NOOP,
+  onImageEdit: NOOP_ASYNC,
+};
+
+export function ActionImage({ actionData, upload = DEFAULT_UPLOAD_STATE }: ActionImageProps) {
   const {
     imageInfos,
     uploadState,

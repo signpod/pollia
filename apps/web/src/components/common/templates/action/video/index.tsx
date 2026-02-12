@@ -8,6 +8,8 @@ import { VideoUploadNotice } from "./VideoUploadNotice";
 
 type VideoInfo = FileInfo;
 
+const NOOP = () => {};
+
 export interface VideoUploadState {
   videoInfos: VideoInfo[];
   uploadState: {
@@ -30,10 +32,21 @@ export interface VideoUploadState {
 }
 
 export interface ActionVideoProps extends ActionStepContentProps {
-  upload: VideoUploadState;
+  upload?: VideoUploadState;
 }
 
-export function ActionVideo({ actionData, upload }: ActionVideoProps) {
+const DEFAULT_UPLOAD_STATE: VideoUploadState = {
+  videoInfos: [],
+  uploadState: { isUploading: false, progress: 0, uploadingUrl: null },
+  onUploadChange: NOOP,
+  onUploadingChange: NOOP,
+  onProgressChange: NOOP,
+  onVideoDelete: NOOP,
+  onVideoLoadComplete: NOOP,
+  onVideoPreview: NOOP,
+};
+
+export function ActionVideo({ actionData, upload = DEFAULT_UPLOAD_STATE }: ActionVideoProps) {
   const {
     videoInfos,
     uploadState,

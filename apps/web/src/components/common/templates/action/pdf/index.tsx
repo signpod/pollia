@@ -11,6 +11,8 @@ interface TempFileInfo {
   fileUrl: string;
 }
 
+const NOOP = () => {};
+
 export interface PdfUploadState {
   fileInfos: FileInfo[];
   uploadState: {
@@ -31,10 +33,19 @@ export interface PdfUploadState {
 }
 
 export interface ActionPdfProps extends ActionStepContentProps {
-  upload: PdfUploadState;
+  upload?: PdfUploadState;
 }
 
-export function ActionPdf({ actionData, upload }: ActionPdfProps) {
+const DEFAULT_UPLOAD_STATE: PdfUploadState = {
+  fileInfos: [],
+  uploadState: { isUploading: false, progress: 0, tempFileInfo: null },
+  onUploadChange: NOOP,
+  onUploadingChange: NOOP,
+  onProgressChange: NOOP,
+  onFileDelete: NOOP,
+};
+
+export function ActionPdf({ actionData, upload = DEFAULT_UPLOAD_STATE }: ActionPdfProps) {
   const {
     fileInfos,
     uploadState,
@@ -60,7 +71,7 @@ export function ActionPdf({ actionData, upload }: ActionPdfProps) {
           onUploadChange={onUploadChange}
           onUploadingChange={onUploadingChange}
           onProgressChange={onProgressChange}
-          onUploadStart={() => {}}
+          onUploadStart={NOOP}
           currentCount={fileInfos.length}
           maxCount={1}
         />
