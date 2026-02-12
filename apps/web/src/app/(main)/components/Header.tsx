@@ -8,7 +8,7 @@ function LoginDrawerTrigger() {
   const { open } = useDrawer();
 
   return (
-    <ButtonV2 variant="secondary" size="medium" onClick={open} className="text-sub">
+    <ButtonV2 variant="tertiary" size="medium" onClick={open} className="text-sub">
       <Typo.Body size="medium">로그인/가입</Typo.Body>
     </ButtonV2>
   );
