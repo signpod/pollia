@@ -12,7 +12,7 @@ const NAV_ITEMS = [
   { href: ROUTES.HOME, icon: HomeIcon, label: "홈", disabled: false },
   // TODO: 검색 페이지 구현 후 disabled 해제
   { href: "/search", icon: Search, label: "검색", disabled: true },
-  { href: ROUTES.ME_LIKED_TAB, icon: Heart, label: "좋아요", disabled: false },
+  { href: ROUTES.LIKES, icon: Heart, label: "좋아요", disabled: false },
 ] as const;
 
 export function BottomNavBar() {
@@ -21,7 +21,7 @@ export function BottomNavBar() {
   const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
-    router.prefetch(ROUTES.ME_LIKED_TAB);
+    router.prefetch(ROUTES.LIKES);
   }, [router]);
 
   return (
