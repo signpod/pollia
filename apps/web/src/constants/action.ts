@@ -1,4 +1,3 @@
-import { ActionRenderer } from "@/components/common/templates/action";
 import { ActionType } from "@/types/domain/action";
 import type { ActionDetail } from "@/types/dto";
 import { StepConfig } from "@repo/ui/components";
@@ -11,27 +10,6 @@ export interface ExtendedActionStepConfig extends StepConfig {
 export interface ActionStepContentProps {
   actionData: ActionDetail;
 }
-
-interface CreateActionStepsProps {
-  actions: ActionDetail[];
-}
-
-export const createActionSteps = ({
-  actions,
-}: CreateActionStepsProps): ExtendedActionStepConfig[] => {
-  return actions.map(action => {
-    const ContentComponent = ActionRenderer(action.type);
-
-    return {
-      id: action.id,
-      title: action.title,
-      canGoNext: false,
-      canGoBack: true,
-      actionData: action,
-      content: ContentComponent,
-    };
-  });
-};
 
 export const ACTION_TYPES: ActionType[] = [
   ActionType.MULTIPLE_CHOICE,

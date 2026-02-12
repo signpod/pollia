@@ -1,7 +1,8 @@
 "use client";
 
+import { createActionSteps } from "@/components/common/templates/action";
 import { ActionProvider } from "@/components/common/templates/action/common/ActionContext";
-import { ExtendedActionStepConfig, createActionSteps } from "@/constants/action";
+import type { ExtendedActionStepConfig } from "@/constants/action";
 import { ROUTES } from "@/constants/routes";
 import {
   type ActionForProgress,

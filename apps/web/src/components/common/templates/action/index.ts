@@ -1,5 +1,6 @@
-import type { ActionStepContentProps } from "@/constants/action";
+import type { ActionStepContentProps, ExtendedActionStepConfig } from "@/constants/action";
 import { ActionType } from "@/types/domain/action";
+import type { ActionDetail } from "@/types/dto";
 import type { ComponentType } from "react";
 
 import { Branch } from "./branch";
@@ -29,6 +30,23 @@ export {
   ActionTime,
   Branch,
 };
+
+export function createActionSteps({
+  actions,
+}: { actions: ActionDetail[] }): ExtendedActionStepConfig[] {
+  return actions.map(action => {
+    const ContentComponent = ActionRenderer(action.type);
+
+    return {
+      id: action.id,
+      title: action.title,
+      canGoNext: false,
+      canGoBack: true,
+      actionData: action,
+      content: ContentComponent,
+    };
+  });
+}
 
 export function ActionRenderer(type: ActionType): ComponentType<ActionStepContentProps> {
   switch (type) {
