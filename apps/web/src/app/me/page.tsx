@@ -1,6 +1,7 @@
 import { getMissionActionIds } from "@/actions/action";
 import { getLikedMissions } from "@/actions/mission-like/read";
 import { getMyResponses } from "@/actions/mission-response";
+import { getAllMissions } from "@/actions/mission/read";
 import { getRewards } from "@/actions/reward/read";
 import { getCurrentUser } from "@/actions/user";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
@@ -32,6 +33,10 @@ export default async function MePage() {
     queryClient.prefetchQuery({
       queryKey: missionLikeQueryKeys.likedMissions(),
       queryFn: () => getLikedMissions(),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: [...missionQueryKeys.allMissions(), "recommended"],
+      queryFn: () => getAllMissions({ limit: 6 }),
     }),
   ]);
 
