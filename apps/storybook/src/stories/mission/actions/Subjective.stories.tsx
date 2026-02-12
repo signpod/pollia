@@ -1,4 +1,4 @@
-import { Subjective } from "@/app/mission/[missionId]/action/[actionId]/ui";
+import { Subjective } from "@/components/common/templates/action";
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { ActionMockProvider } from "./ActionMockProvider";
 

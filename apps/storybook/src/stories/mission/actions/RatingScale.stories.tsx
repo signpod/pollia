@@ -1,4 +1,4 @@
-import { MissionRatingScale } from "@/app/mission/[missionId]/action/[actionId]/ui";
+import { MissionRatingScale } from "@/components/common/templates/action";
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { ActionMockProvider } from "./ActionMockProvider";
 
