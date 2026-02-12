@@ -47,7 +47,9 @@ function RecommendedCard({
           <MissionLikeButton missionId={mission.id} className="absolute bottom-3 right-3" />
         </div>
         <div className="mt-2 flex flex-col gap-0.5">
-          <Typo.Body size="small" className="text-info">{categoryLabel}</Typo.Body>
+          <Typo.Body size="small" className="text-info">
+            {categoryLabel}
+          </Typo.Body>
           <Typo.SubTitle size="large" className="line-clamp-2 text-default">
             {mission.title}
           </Typo.SubTitle>
@@ -75,7 +77,9 @@ export function RecommendedProjects({ userName }: RecommendedProjectsProps) {
 
   return (
     <section className="flex flex-col gap-6">
-      <Typo.MainTitle size="small" className="px-5">{userName}님의 추천 프로젝트</Typo.MainTitle>
+      <Typo.MainTitle size="small" className="px-5">
+        {userName}님의 추천 프로젝트
+      </Typo.MainTitle>
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex">
           {missions.map(mission => (

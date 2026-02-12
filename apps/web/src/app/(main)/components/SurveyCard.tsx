@@ -1,11 +1,11 @@
 "use client";
 
+import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import type { MissionCategory } from "@prisma/client";
 import thumbnailFallback from "@public/images/thumbnail-fallback.png";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { MissionLikeButton } from "./MissionLikeButton";
 
 export interface SurveyCardData {

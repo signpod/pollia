@@ -20,11 +20,31 @@ interface CategoryItem {
 
 export const CATEGORIES: CategoryItem[] = [
   { id: "all", label: "전체", icon: CategoryAllIcon },
-  { id: MissionCategory.EVENT, label: MISSION_CATEGORY_LABELS[MissionCategory.EVENT], icon: CategoryEventIcon },
-  { id: MissionCategory.CHALLENGE, label: MISSION_CATEGORY_LABELS[MissionCategory.CHALLENGE], icon: CategoryChallengeIcon },
-  { id: MissionCategory.RESEARCH, label: MISSION_CATEGORY_LABELS[MissionCategory.RESEARCH], icon: CategoryResearchIcon },
-  { id: MissionCategory.TEST, label: MISSION_CATEGORY_LABELS[MissionCategory.TEST], icon: CategoryTestIcon },
-  { id: MissionCategory.QUIZ, label: MISSION_CATEGORY_LABELS[MissionCategory.QUIZ], icon: CategoryQuizIcon },
+  {
+    id: MissionCategory.EVENT,
+    label: MISSION_CATEGORY_LABELS[MissionCategory.EVENT],
+    icon: CategoryEventIcon,
+  },
+  {
+    id: MissionCategory.CHALLENGE,
+    label: MISSION_CATEGORY_LABELS[MissionCategory.CHALLENGE],
+    icon: CategoryChallengeIcon,
+  },
+  {
+    id: MissionCategory.RESEARCH,
+    label: MISSION_CATEGORY_LABELS[MissionCategory.RESEARCH],
+    icon: CategoryResearchIcon,
+  },
+  {
+    id: MissionCategory.TEST,
+    label: MISSION_CATEGORY_LABELS[MissionCategory.TEST],
+    icon: CategoryTestIcon,
+  },
+  {
+    id: MissionCategory.QUIZ,
+    label: MISSION_CATEGORY_LABELS[MissionCategory.QUIZ],
+    icon: CategoryQuizIcon,
+  },
 ];
 
 interface CategoryFilterProps {

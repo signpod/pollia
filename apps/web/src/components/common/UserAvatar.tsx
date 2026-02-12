@@ -1,9 +1,9 @@
 "use client";
 
 import PolliaFaceVeryGood from "@public/svgs/face/very-good.svg";
+import { cn } from "@repo/ui/lib";
 import Image from "next/image";
 import { useState } from "react";
-import { cn } from "@repo/ui/lib";
 
 const SIZE_VARIANTS = {
   small: { container: "size-6", icon: "size-4" },
