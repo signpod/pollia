@@ -126,8 +126,7 @@ export function DrawerContent({ className, children }: DrawerContentProps) {
             "bg-background rounded-t-lg shadow-lg",
             "flex max-h-[85vh] flex-col overflow-hidden",
             "mx-auto max-w-[600px]",
-            //TODO: Safe Area 설정
-            "pb-10",
+            "pb-[env(safe-area-inset-bottom)]",
             className,
           )}
           onClick={e => e.stopPropagation()}
