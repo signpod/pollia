@@ -118,7 +118,7 @@ const TABS = [
 const DEFAULT_TAB = TABS[0].value;
 const VALID_TAB_VALUES = new Set(TABS.map(t => t.value));
 
-export function EventSection() {
+export function MyProjectTabs() {
   const { data } = useMyResponses();
   const searchParams = useSearchParams();
   const initialTab = searchParams.get("tab");
