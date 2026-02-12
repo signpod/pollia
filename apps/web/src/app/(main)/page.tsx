@@ -35,7 +35,7 @@ export default async function MainPage() {
   const festivals = festivalResponse.data;
 
   return (
-    <main className="min-h-screen bg-white pb-10 flex flex-col">
+    <main className="min-h-screen bg-white pb-10 flex flex-col gap-6">
       <BannerSlider />
       <MainContent initialProjects={projects} initialFestivals={festivals} />
       <ChannelTalk />
