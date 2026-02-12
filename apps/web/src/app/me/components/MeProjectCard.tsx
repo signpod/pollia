@@ -9,6 +9,7 @@ import type { MyMissionResponse, MyMissionResponseAnswer } from "@/types/dto/mis
 import PollPollE from "@public/svgs/poll-poll-e.svg";
 import { ButtonV2, Typo } from "@repo/ui/components";
 import Image from "next/image";
+import Link from "next/link";
 import { useCallback, useState } from "react";
 import { useDeleteMissionResponse } from "../hooks/useDeleteMissionResponse";
 
@@ -70,12 +71,7 @@ function CardAction({
   }
 
   return (
-    <ButtonV2
-      variant="secondary"
-      size="medium"
-      onClick={handleOpenInNewTab}
-      className="w-full"
-    >
+    <ButtonV2 variant="secondary" size="medium" onClick={handleOpenInNewTab} className="w-full">
       <div className="flex w-full items-center justify-center">
         <Typo.ButtonText size="medium">
           {variant === "in-progress" ? "이어하기" : "결과 다시보기"}
@@ -97,11 +93,13 @@ export function MeProjectCard({ response, variant }: MeProjectCardProps) {
   const { mission } = response;
   const [imageError, setImageError] = useState(false);
   const showFallback = imageError || !mission.imageUrl;
-  const categoryLabel = MISSION_CATEGORY_LABELS[mission.category as keyof typeof MISSION_CATEGORY_LABELS] ?? mission.category;
+  const categoryLabel =
+    MISSION_CATEGORY_LABELS[mission.category as keyof typeof MISSION_CATEGORY_LABELS] ??
+    mission.category;
   const isCompleted = variant === "completed";
 
   return (
-    <div className="flex flex-col overflow-hidden">
+    <Link href={ROUTES.MISSION(mission.id)} className="flex flex-col overflow-hidden">
       <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-zinc-100">
         {showFallback ? (
           <div className="flex size-full items-center justify-center bg-zinc-50">
@@ -121,7 +119,9 @@ export function MeProjectCard({ response, variant }: MeProjectCardProps) {
       </div>
       <div className="mt-3 flex flex-col gap-2">
         <div className="flex flex-col gap-1">
-          <Typo.Body size="small" className="text-info">{categoryLabel}</Typo.Body>
+          <Typo.Body size="small" className="text-info">
+            {categoryLabel}
+          </Typo.Body>
           <Typo.SubTitle size="large" className="line-clamp-2 min-h-[48px] text-default">
             {mission.title}
           </Typo.SubTitle>
@@ -133,6 +133,6 @@ export function MeProjectCard({ response, variant }: MeProjectCardProps) {
         )}
         <CardAction response={response} variant={variant} />
       </div>
-    </div>
+    </Link>
   );
 }
