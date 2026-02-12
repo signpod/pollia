@@ -19,27 +19,31 @@ interface MainContentProps {
 
 export function MainContent({ initialProjects, initialFestivals }: MainContentProps) {
   const [selectedCategory, setSelectedCategory] = useState<Category>("all");
-  const [isCategoryFilterHidden, setIsCategoryFilterHidden] = useState(false);
   const categoryFilterRef = useRef<HTMLDivElement>(null);
+  const stickyRef = useRef<HTMLDivElement>(null);
   const HEADER_HEIGHT = 48;
 
   const handleStickyCategoryChange = (category: Category) => {
     setSelectedCategory(category);
     const el = categoryFilterRef.current;
     if (el) {
-      const top = el.getBoundingClientRect().top + window.scrollY - HEADER_HEIGHT + el.offsetHeight / 2 + 4;
+      const top =
+        el.getBoundingClientRect().top + window.scrollY - HEADER_HEIGHT + el.offsetHeight / 2 + 4;
       window.scrollTo({ top, behavior: "instant" });
     }
   };
 
   useEffect(() => {
     const el = categoryFilterRef.current;
-    if (!el) return;
+    const sticky = stickyRef.current;
+    if (!el || !sticky) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry) {
-          setIsCategoryFilterHidden(!entry.isIntersecting);
+          const hidden = !entry.isIntersecting;
+          sticky.style.opacity = hidden ? "1" : "0";
+          sticky.style.pointerEvents = hidden ? "auto" : "none";
         }
       },
       { threshold: 0.5, rootMargin: `-${HEADER_HEIGHT}px 0px 0px 0px` },
@@ -72,9 +76,9 @@ export function MainContent({ initialProjects, initialFestivals }: MainContentPr
   return (
     <div className="flex flex-col gap-6">
       <StickyCategoryTab
+        containerRef={stickyRef}
         selected={selectedCategory}
         onSelect={handleStickyCategoryChange}
-        visible={isCategoryFilterHidden}
       />
       <div ref={categoryFilterRef}>
         <CategoryFilter selected={selectedCategory} onSelect={setSelectedCategory} />
