@@ -1,5 +1,6 @@
 "use client";
 
+import { ActionProvider } from "@/components/common/templates/action/common/ActionContext";
 import { ExtendedActionStepConfig, createActionSteps } from "@/constants/action";
 import { ROUTES } from "@/constants/routes";
 import {
@@ -16,7 +17,6 @@ import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useClientActionSubmit } from "./hooks/useClientActionSubmit";
-import { ActionProvider } from "./providers/ActionContext";
 
 const SCROLL_OFFSET = 30;
 
