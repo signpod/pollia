@@ -1,60 +1,48 @@
 import { ActionStepContentProps } from "@/constants/action";
 import type { FileInfo } from "@/types/domain/file";
-import { useCallback } from "react";
-import { useActionContext } from "../common/ActionContext";
 import { SurveyQuestionTemplate } from "../common/ActionTemplate";
 import { FileList } from "./FileList";
 import { PdfUpload } from "./PdfUpload";
 import { PdfUploadNotice } from "./PdfUploadNotice";
-import { usePdfUploadState } from "./usePdfUploadState";
 
-export function ActionPdf({ actionData }: ActionStepContentProps) {
-  const { updateCanGoNext, onAnswerChange, missionResponse } = useActionContext();
+interface TempFileInfo {
+  fileName: string;
+  fileSize: number;
+  fileUrl: string;
+}
 
-  const { fileInfos, uploadState, addFile, removeFile, startUpload, updateProgress, cancelUpload } =
-    usePdfUploadState({
-      actionData,
-      missionResponse,
-      onAnswerChange,
-      updateCanGoNext,
-    });
+export interface PdfUploadState {
+  fileInfos: FileInfo[];
+  uploadState: {
+    isUploading: boolean;
+    progress: number;
+    tempFileInfo: TempFileInfo | null;
+  };
+  onUploadChange: (
+    hasUploadedFile: boolean,
+    newFileUrls: string[],
+    newFileUploadIds: string[],
+    newFilePaths: string[],
+    file?: File,
+  ) => void;
+  onUploadingChange: (isUploading: boolean) => void;
+  onProgressChange: (progress: number) => void;
+  onFileDelete: (fileUrl: string) => void;
+}
 
-  const handleUploadChange = useCallback(
-    (
-      hasUploadedFile: boolean,
-      newFileUrls: string[],
-      newFileUploadIds: string[],
-      newFilePaths: string[],
-      file?: File,
-    ) => {
-      if (!hasUploadedFile) {
-        cancelUpload();
-        return;
-      }
+export interface ActionPdfProps extends ActionStepContentProps {
+  upload: PdfUploadState;
+}
 
-      const [url, id, path] = [newFileUrls[0], newFileUploadIds[0], newFilePaths[0]];
-      if (url && id && path && file) {
-        const fileInfo: FileInfo = {
-          fileName: file.name,
-          fileSize: file.size,
-          fileUrl: url,
-          fileUploadId: id,
-          filePath: path,
-        };
-        addFile(fileInfo);
-      }
-    },
-    [addFile, cancelUpload],
-  );
-
-  const handleUploadingChange = useCallback(
-    (isUploading: boolean) => {
-      if (!isUploading) {
-        cancelUpload();
-      }
-    },
-    [cancelUpload],
-  );
+export function ActionPdf({ actionData, upload }: ActionPdfProps) {
+  const {
+    fileInfos,
+    uploadState,
+    onUploadChange,
+    onUploadingChange,
+    onProgressChange,
+    onFileDelete,
+  } = upload;
 
   const displayFiles = uploadState.tempFileInfo
     ? [...fileInfos, uploadState.tempFileInfo]
@@ -69,10 +57,10 @@ export function ActionPdf({ actionData }: ActionStepContentProps) {
     >
       <div className="flex flex-col gap-3">
         <PdfUpload
-          onUploadChange={handleUploadChange}
-          onUploadingChange={handleUploadingChange}
-          onProgressChange={updateProgress}
-          onUploadStart={startUpload}
+          onUploadChange={onUploadChange}
+          onUploadingChange={onUploadingChange}
+          onProgressChange={onProgressChange}
+          onUploadStart={() => {}}
           currentCount={fileInfos.length}
           maxCount={1}
         />
@@ -82,7 +70,7 @@ export function ActionPdf({ actionData }: ActionStepContentProps) {
             uploadingFileUrl={uploadState.tempFileInfo?.fileUrl ?? null}
             isUploading={uploadState.isUploading}
             uploadProgress={uploadState.progress}
-            onFileDelete={removeFile}
+            onFileDelete={onFileDelete}
           />
         )}
       </div>

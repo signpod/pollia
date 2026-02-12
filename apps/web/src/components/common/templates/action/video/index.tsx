@@ -1,78 +1,49 @@
 import { ActionStepContentProps } from "@/constants/action";
 import type { FileInfo } from "@/types/domain/file";
-import { useCallback } from "react";
-import { useActionContext } from "../common/ActionContext";
 import { SurveyQuestionTemplate } from "../common/ActionTemplate";
 import { UploadingPlaceholder } from "../common/UploadingPlaceholder";
 import { VideoList } from "./VideoList";
 import { VideoUpload } from "./VideoUpload";
 import { VideoUploadNotice } from "./VideoUploadNotice";
-import { useVideoUploadState } from "./useVideoUploadState";
 
 type VideoInfo = FileInfo;
 
-export function ActionVideo({ actionData }: ActionStepContentProps) {
-  const { updateCanGoNext, onAnswerChange, missionResponse } = useActionContext();
+export interface VideoUploadState {
+  videoInfos: VideoInfo[];
+  uploadState: {
+    isUploading: boolean;
+    progress: number;
+    uploadingUrl: string | null;
+  };
+  onUploadChange: (
+    hasUploadedVideo: boolean,
+    newVideoUrls: string[],
+    newFileUploadIds: string[],
+    newFilePaths: string[],
+    file?: File,
+  ) => void;
+  onUploadingChange: (isUploading: boolean) => void;
+  onProgressChange: (progress: number) => void;
+  onVideoDelete: (videoUrl: string) => void;
+  onVideoLoadComplete: (videoUrl: string) => void;
+  onVideoPreview: (videoUrl: string) => void;
+}
 
+export interface ActionVideoProps extends ActionStepContentProps {
+  upload: VideoUploadState;
+}
+
+export function ActionVideo({ actionData, upload }: ActionVideoProps) {
   const {
     videoInfos,
     uploadState,
-    addVideo,
-    removeVideo,
-    startUpload,
-    updateProgress,
-    finishUpload,
-    onVideoLoaded,
-  } = useVideoUploadState({
-    actionData,
-    missionResponse,
-    onAnswerChange,
-    updateCanGoNext,
-  });
-
-  const handleUploadChange = useCallback(
-    (
-      hasUploadedVideo: boolean,
-      newVideoUrls: string[],
-      newFileUploadIds: string[],
-      newFilePaths: string[],
-      file?: File,
-    ) => {
-      if (!hasUploadedVideo) {
-        finishUpload();
-        return;
-      }
-
-      const [url, id, path] = [newVideoUrls[0], newFileUploadIds[0], newFilePaths[0]];
-      if (url && id && path && file) {
-        const videoInfo: VideoInfo = {
-          fileName: file.name,
-          fileSize: file.size,
-          fileUrl: url,
-          fileUploadId: id,
-          filePath: path,
-        };
-        addVideo(videoInfo);
-        finishUpload();
-      }
-    },
-    [addVideo, finishUpload],
-  );
-
-  const handleUploadingChange = useCallback(
-    (isUploading: boolean) => {
-      if (isUploading) {
-        startUpload();
-      } else {
-        finishUpload();
-      }
-    },
-    [startUpload, finishUpload],
-  );
-
-  const handleVideoPreview = useCallback((videoUrl: string) => {
-    window.open(videoUrl, "_blank");
-  }, []);
+    onUploadChange,
+    onUploadingChange,
+    onProgressChange,
+    onVideoDelete,
+    onVideoLoadComplete,
+    onVideoPreview,
+  } = upload;
 
   return (
     <SurveyQuestionTemplate
@@ -83,9 +54,9 @@ export function ActionVideo({ actionData }: ActionStepContentProps) {
     >
       <div className="grid grid-cols-3 gap-2">
         <VideoUpload
-          onUploadChange={handleUploadChange}
-          onUploadingChange={handleUploadingChange}
-          onProgressChange={updateProgress}
+          onUploadChange={onUploadChange}
+          onUploadingChange={onUploadingChange}
+          onProgressChange={onProgressChange}
           currentCount={videoInfos.length}
           maxCount={1}
         />
@@ -96,9 +67,9 @@ export function ActionVideo({ actionData }: ActionStepContentProps) {
           videoUrls={videoInfos.map(v => v.fileUrl)}
           uploadingVideoUrl={uploadState.uploadingUrl}
           uploadProgress={uploadState.progress}
-          onVideoDelete={removeVideo}
-          onVideoLoadComplete={onVideoLoaded}
-          onVideoPreview={handleVideoPreview}
+          onVideoDelete={onVideoDelete}
+          onVideoLoadComplete={onVideoLoadComplete}
+          onVideoPreview={onVideoPreview}
         />
       </div>
       <VideoUploadNotice />
