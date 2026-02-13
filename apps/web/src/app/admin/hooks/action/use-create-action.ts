@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  createBranchAction,
   createDateAction,
   createImageAction,
   createMultipleChoiceAction,
@@ -14,10 +15,11 @@ import {
   createVideoAction,
 } from "@/actions/action/create";
 import { adminActionQueryKeys } from "@/app/admin/constants/queryKeys";
-import type { ActionType } from "@/app/admin/missions/[id]/edit/components/action-forms";
+import type { ActionType } from "@/app/admin/missions/[id]/components/mission-tab-action-list-content/action-forms";
+import { BRANCH_HAS_OTHER, BRANCH_MAX_SELECTIONS } from "@/schemas/action";
 import type {
-  ActionOptionInput,
   BaseActionRequest,
+  CreateBranchActionRequest,
   CreateDateActionRequest,
   CreateImageActionRequest,
   CreateMultipleChoiceActionRequest,
@@ -32,10 +34,20 @@ import type {
 } from "@/types/dto";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+interface ActionOptionInputWithOptionalOrder {
+  id?: string;
+  title: string;
+  description?: string | null;
+  imageUrl?: string | null;
+  fileUploadId?: string | null;
+  nextActionId?: string | null;
+  order?: number;
+}
+
 interface CreateActionInput extends BaseActionRequest {
   missionId: string;
   type: ActionType;
-  options?: ActionOptionInput[];
+  options?: ActionOptionInputWithOptionalOrder[];
   maxSelections?: number;
 }
 
@@ -66,7 +78,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
                 title: opt.title,
                 description: opt.description,
                 imageUrl: opt.imageUrl,
-                imageFileUploadId: opt.imageFileUploadId,
+                fileUploadId: opt.fileUploadId,
                 order: opt.order ?? index,
               })) ?? [],
           };
@@ -87,7 +99,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
                 title: opt.title,
                 description: opt.description,
                 imageUrl: opt.imageUrl,
-                imageFileUploadId: opt.imageFileUploadId,
+                fileUploadId: opt.fileUploadId,
                 order: opt.order ?? index,
               })) ?? [],
           };
@@ -136,7 +148,7 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
                 title: opt.title,
                 description: opt.description,
                 imageUrl: opt.imageUrl,
-                imageFileUploadId: opt.imageFileUploadId,
+                fileUploadId: opt.fileUploadId,
                 order: opt.order ?? index,
               })) ?? [],
           };
@@ -222,6 +234,29 @@ export function useCreateAction(options: UseCreateActionOptions = {}) {
             maxSelections: input.maxSelections ?? 1,
           };
           return await createTimeAction(request);
+        }
+
+        case "BRANCH": {
+          const request: CreateBranchActionRequest = {
+            missionId: input.missionId,
+            title: input.title,
+            description: input.description,
+            imageUrl: input.imageUrl,
+            imageFileUploadId: input.imageFileUploadId,
+            order: input.order,
+            isRequired: input.isRequired,
+            maxSelections: BRANCH_MAX_SELECTIONS,
+            hasOther: BRANCH_HAS_OTHER,
+            options:
+              input.options?.map((opt, index) => ({
+                title: opt.title,
+                description: opt.description,
+                imageUrl: opt.imageUrl,
+                fileUploadId: opt.fileUploadId,
+                order: opt.order ?? index,
+              })) ?? [],
+          };
+          return await createBranchAction(request);
         }
 
         default:

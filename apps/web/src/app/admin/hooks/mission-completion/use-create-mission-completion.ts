@@ -21,7 +21,7 @@ export function useCreateMissionCompletion(options: UseCreateMissionCompletionOp
     },
     onSuccess: data => {
       queryClient.invalidateQueries({
-        queryKey: adminMissionCompletionQueryKeys.all(),
+        queryKey: adminMissionCompletionQueryKeys.all,
       });
       options.onSuccess?.(data);
     },

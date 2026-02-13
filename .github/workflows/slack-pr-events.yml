@@ -8,17 +8,42 @@ jobs:
   slack:
     runs-on: ubuntu-latest
     steps:
-      - name: Send PR event notification to Slack
+      - name: Prepare notification data
+        id: prepare
+        env:
+          ACTION: ${{ github.event.action }}
+          MERGED: ${{ github.event.pull_request.merged }}
+          REPOSITORY: ${{ github.event.repository.name }}
+          TITLE: ${{ github.event.pull_request.title }}
+          NUMBER: ${{ github.event.pull_request.number }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+          URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          PAYLOAD=$(node -e "
+            const action = process.env.ACTION;
+            const merged = process.env.MERGED === 'true';
+            let emoji;
+            if (action === 'closed' && merged) {
+              emoji = '🚀 [PR MERGED]';
+            } else if (action === 'closed') {
+              emoji = '❌ [PR CLOSED]';
+            } else if (action === 'reopened') {
+              emoji = '🔄 [PR REOPENED]';
+            } else {
+              emoji = '💬 [PR OPEN]';
+            }
+            const text = \`\${emoji} *\${process.env.REPOSITORY}* - \${process.env.TITLE} (#\${process.env.NUMBER})
+          👤 *Author:* \${process.env.AUTHOR}
+          🔀 *Branch:* \\\`\${process.env.BRANCH}\\\`
+          🔗 \${process.env.URL}\`;
+            console.log(JSON.stringify({ text }));
+          ")
+          echo "payload=$PAYLOAD" >> $GITHUB_OUTPUT
+
+      - name: Send notification to Slack
         uses: slackapi/slack-github-action@v1.25.0
         with:
-          payload: |
-            {
-              "text": "${{ 
-                github.event.action == 'closed' && github.event.pull_request.merged == true && '🚀 [PR MERGED]' || 
-                github.event.action == 'closed' && '❌ [PR CLOSED]' || 
-                github.event.action == 'reopened' && '🔄 [PR REOPENED]' ||
-                '💬 [PR OPEN]' 
-              }} *${{ github.event.repository.name }}* - ${{ github.event.pull_request.title }} (#${{ github.event.pull_request.number }})\n👤 *Author:* ${{ github.event.pull_request.user.login }}\n🔀 *Branch:* `${{ github.event.pull_request.head.ref }}`\n🔗 ${{ github.event.pull_request.html_url }}"
-            }
+          payload: ${{ steps.prepare.outputs.payload }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

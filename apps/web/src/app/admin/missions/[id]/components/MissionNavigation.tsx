@@ -37,7 +37,7 @@ export function MissionNavigation({ missionId }: MissionNavigationProps) {
   const pathname = usePathname();
   const isDetailPage = pathname === ADMIN_ROUTES.ADMIN_MISSION(missionId);
   const isSubmissionsPage = pathname === ADMIN_ROUTES.ADMIN_MISSION_SUBMISSIONS(missionId);
-  const isEditPage = pathname === ADMIN_ROUTES.ADMIN_MISSION_EDIT(missionId);
+  const isFlowPage = pathname === ADMIN_ROUTES.ADMIN_MISSION_FLOW(missionId);
   const isTrackingPage = pathname === ADMIN_ROUTES.ADMIN_MISSION_TRACKING(missionId);
   const isPasswordPage = pathname === ADMIN_ROUTES.ADMIN_MISSION_PASSWORD(missionId);
   const isReportPage = pathname === ADMIN_ROUTES.ADMIN_MISSION_REPORT(missionId);
@@ -47,6 +47,9 @@ export function MissionNavigation({ missionId }: MissionNavigationProps) {
       <NavLink href={ADMIN_ROUTES.ADMIN_MISSION(missionId)} isActive={isDetailPage}>
         상세
       </NavLink>
+      <NavLink href={ADMIN_ROUTES.ADMIN_MISSION_FLOW(missionId)} isActive={isFlowPage}>
+        플로우
+      </NavLink>
       <NavLink
         href={ADMIN_ROUTES.ADMIN_MISSION_SUBMISSIONS(missionId)}
         isActive={isSubmissionsPage}
@@ -55,9 +58,6 @@ export function MissionNavigation({ missionId }: MissionNavigationProps) {
       </NavLink>
       <NavLink href={ADMIN_ROUTES.ADMIN_MISSION_TRACKING(missionId)} isActive={isTrackingPage}>
         통계
-      </NavLink>
-      <NavLink href={ADMIN_ROUTES.ADMIN_MISSION_EDIT(missionId)} isActive={isEditPage}>
-        편집
       </NavLink>
       <NavLink href={ADMIN_ROUTES.ADMIN_MISSION_PASSWORD(missionId)} isActive={isPasswordPage}>
         비밀번호

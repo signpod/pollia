@@ -30,6 +30,8 @@ export function useUpdateAction(options: UseUpdateActionOptions = {}) {
         isRequired: input.isRequired,
         hasOther: input.hasOther,
         options: input.options,
+        nextActionId: input.nextActionId,
+        nextCompletionId: input.nextCompletionId,
       });
     },
 

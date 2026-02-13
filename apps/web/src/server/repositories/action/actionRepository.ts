@@ -9,13 +9,6 @@ export class ActionRepository {
       where: { id: actionId },
       include: {
         options: {
-          select: {
-            id: true,
-            title: true,
-            description: true,
-            imageUrl: true,
-            order: true,
-          },
           orderBy: { order: "asc" },
         },
       },
@@ -42,13 +35,6 @@ export class ActionRepository {
       where: { missionId },
       include: {
         options: {
-          select: {
-            id: true,
-            title: true,
-            description: true,
-            imageUrl: true,
-            order: true,
-          },
           orderBy: { order: "asc" },
         },
       },
@@ -98,13 +84,7 @@ export class ActionRepository {
 
   async createMultipleChoice(
     data: Omit<Prisma.ActionUncheckedCreateInput, "id" | "createdAt" | "updatedAt">,
-    options: Array<{
-      title: string;
-      description?: string;
-      imageUrl?: string;
-      order: number;
-      imageFileUploadId?: string;
-    }>,
+    options: OptionInput[],
     userId: string,
   ) {
     return prisma.$transaction(async tx => {
@@ -117,18 +97,14 @@ export class ActionRepository {
 
       await tx.actionOption.createMany({
         data: options.map(option => ({
+          ...option,
           actionId: createdAction.id,
-          title: option.title,
-          description: option.description || null,
-          imageUrl: option.imageUrl,
-          order: option.order,
-          fileUploadId: option.imageFileUploadId,
         })),
       });
 
       const allFileUploadIds = [
         data.imageFileUploadId,
-        ...options.map(option => option.imageFileUploadId),
+        ...options.map(option => option.fileUploadId),
       ].filter((id): id is string => Boolean(id));
 
       await confirmFileUploads(tx, userId, allFileUploadIds);
@@ -205,7 +181,7 @@ export class ActionRepository {
 
       const allFileUploadIds = [
         data.imageFileUploadId,
-        ...options.map(option => option.imageFileUploadId),
+        ...options.map(option => option.fileUploadId),
       ].filter((id): id is string => Boolean(id));
 
       await confirmFileUploads(tx, userId, allFileUploadIds);
@@ -232,19 +208,24 @@ export class ActionRepository {
 
   private async updateOptions(tx: Prisma.TransactionClient, options: OptionInput[]) {
     if (options.length === 0) return;
+
     await Promise.all(
-      options.map(opt =>
+      options.map((opt, index) =>
         tx.actionOption.update({
           where: { id: opt.id },
-          data: {
-            title: opt.title,
-            description: opt.description || null,
-            imageUrl: opt.imageUrl,
-            order: opt.order,
-            fileUploadId: opt.imageFileUploadId,
-          },
+          data: { order: 10000 + index },
         }),
       ),
+    );
+
+    await Promise.all(
+      options.map(opt => {
+        const { id, ...data } = opt;
+        return tx.actionOption.update({
+          where: { id },
+          data: data as Prisma.ActionOptionUncheckedUpdateInput,
+        });
+      }),
     );
   }
 
@@ -256,12 +237,8 @@ export class ActionRepository {
     if (options.length === 0) return;
     await tx.actionOption.createMany({
       data: options.map(opt => ({
+        ...opt,
         actionId,
-        title: opt.title,
-        description: opt.description || null,
-        imageUrl: opt.imageUrl,
-        order: opt.order,
-        fileUploadId: opt.imageFileUploadId,
       })),
     });
   }

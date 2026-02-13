@@ -7,6 +7,7 @@ import { useCreateMission } from "@/app/admin/hooks/mission";
 import { useCreateMissionCompletion } from "@/app/admin/hooks/mission-completion";
 import type { CreateMissionRequest } from "@/types/dto/mission";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { MissionType } from "@prisma/client";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -74,9 +75,11 @@ export default function AdminMissionCreatePage() {
     brandLogoUrl: undefined,
     brandLogoFileUploadId: undefined,
     estimatedMinutes: undefined,
-    deadline: undefined,
+    startDate: null,
+    deadline: null,
     maxParticipants: null,
-    type: "GENERAL" as const,
+    isExposed: true,
+    category: "EVENT" as const,
     isActive: undefined,
     actionIds: [],
     completion: {
@@ -123,7 +126,8 @@ export default function AdminMissionCreatePage() {
 
       const payload: CreateMissionRequest = {
         title: missionData.title,
-        type: missionData.type,
+        type: missionData.isExposed ? MissionType.GENERAL : MissionType.EXPERIENCE_GROUP,
+        category: missionData.category,
         actionIds: Array.isArray(missionData.actionIds) ? missionData.actionIds : [],
         maxParticipants:
           typeof missionData.maxParticipants === "number" ? missionData.maxParticipants : null,
@@ -134,6 +138,7 @@ export default function AdminMissionCreatePage() {
         brandLogoUrl: missionData.brandLogoUrl || null,
         brandLogoFileUploadId: missionData.brandLogoFileUploadId || null,
         estimatedMinutes: missionData.estimatedMinutes || null,
+        startDate: missionData.startDate || null,
         deadline: missionData.deadline || null,
         isActive: missionData.isActive ?? true,
         eventId: eventIdParam || null,
@@ -150,7 +155,7 @@ export default function AdminMissionCreatePage() {
   const getFieldsForStep = (step: Step): (keyof CreateMissionFunnelFormData)[] => {
     switch (step) {
       case "basic":
-        return ["title", "type"];
+        return ["title", "isExposed"];
       case "image":
         return [];
       case "completion":

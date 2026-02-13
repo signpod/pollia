@@ -56,12 +56,16 @@ function EventListSkeleton() {
               <Skeleton className="h-5 w-3/4" />
               <Skeleton className="h-5 w-16" />
             </div>
-            <Skeleton className="h-4 w-full mt-2" />
-            <Skeleton className="h-4 w-2/3" />
+            <div className="space-y-1">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+            </div>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <Skeleton className="h-4 w-1/2" />
-            <Skeleton className="h-4 w-1/3" />
+          <CardContent className="flex-1 flex flex-col justify-end">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-4 w-1/3" />
+            </div>
           </CardContent>
         </Card>
       ))}

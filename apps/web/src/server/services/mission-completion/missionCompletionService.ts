@@ -24,6 +24,18 @@ export class MissionCompletionService {
     return missionCompletion;
   }
 
+  async getCompletionsByMissionId(missionId: string) {
+    const mission = await this.missionRepo.findById(missionId);
+
+    if (!mission) {
+      const error = new Error("미션을 찾을 수 없습니다.");
+      error.cause = 404;
+      throw error;
+    }
+
+    return await this.repo.findAllByMissionId(missionId);
+  }
+
   async createMissionCompletion(input: CreateMissionCompletionInput, userId: string) {
     const mission = await this.missionRepo.findById(input.missionId);
 
@@ -36,13 +48,6 @@ export class MissionCompletionService {
     if (mission.creatorId !== userId) {
       const error = new Error("생성 권한이 없습니다.");
       error.cause = 403;
-      throw error;
-    }
-
-    const existingCompletion = await this.repo.findByMissionId(input.missionId);
-    if (existingCompletion) {
-      const error = new Error("이미 미션 완료 데이터가 존재합니다.");
-      error.cause = 409;
       throw error;
     }
 

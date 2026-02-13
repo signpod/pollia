@@ -8,7 +8,12 @@ import { z } from "zod";
 
 const completionSchemaWithoutMissionId = missionCompletionInputSchema.omit({ missionId: true });
 
-const baseSchema = missionInputSchema.extend({
+// 폼에서는 isExposed(boolean) 사용, API 제출 시 type(MissionType)으로 변환
+const missionFormSchema = missionInputSchema
+  .omit({ type: true })
+  .extend({ isExposed: z.boolean() });
+
+const baseSchema = missionFormSchema.extend({
   completion: completionSchemaWithoutMissionId,
 });
 

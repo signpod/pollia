@@ -4,7 +4,7 @@ model Action {
   description   String?
   imageUrl      String?    @map("image_url")
   type          ActionType
-  order         Int
+  order         Int?
   maxSelections Int?       @map("max_selections")
   isRequired    Boolean    @default(true) @map("is_required")
   hasOther      Boolean    @default(false) @map("has_other")
@@ -17,6 +17,15 @@ model Action {
   answers ActionAnswer[]
   options ActionOption[]
 
+  nextActionId     String? @map("next_action_id")
+  nextCompletionId String? @map("next_completion_id")
+
+  nextAction          Action?            @relation("ActionFlow", fields: [nextActionId], references: [id], onDelete: SetNull)
+  previousActions     Action[]           @relation("ActionFlow")
+  nextCompletion      MissionCompletion? @relation("ActionToCompletion", fields: [nextCompletionId], references: [id], onDelete: SetNull)
+  entryMissions       Mission[]          @relation("MissionEntry")
+  optionsPointingHere ActionOption[]     @relation("OptionToAction")
+
   trackingActionEntries   TrackingActionEntry[]
   trackingActionResponses TrackingActionResponse[]
 
@@ -24,6 +33,8 @@ model Action {
   imageFileUpload   FileUpload? @relation(fields: [imageFileUploadId], references: [id])
 
   @@index([missionId])
+  @@index([nextActionId])
+  @@index([nextCompletionId])
   @@map("actions")
 }
 
@@ -40,6 +51,7 @@ enum ActionType {
   // URL
   DATE
   TIME
+  BRANCH
   // PRIVACY_CONSENT
   // NAME
   // ADDRESS

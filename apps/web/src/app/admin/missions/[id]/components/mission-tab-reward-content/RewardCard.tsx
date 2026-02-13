@@ -1,68 +1,7 @@
 "use client";
 
-import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Card, CardContent } from "@/app/admin/components/shadcn-ui/card";
-import { formatToDateTimeKR } from "@/lib/date";
-import type { Reward } from "@prisma/client";
-import { Calendar, Pencil, Plus, Trash2 } from "lucide-react";
-import Image from "next/image";
-
-interface RewardCardProps {
-  reward: Reward;
-  onEdit: () => void;
-  onDelete: () => void;
-}
-
-export function RewardCard({ reward, onEdit, onDelete }: RewardCardProps) {
-  const paymentTypeLabel = reward.paymentType === "IMMEDIATE" ? "즉시 지급" : "예약 지급";
-
-  return (
-    <Card>
-      <CardContent>
-        <div className="flex items-start gap-4">
-          {reward.imageUrl && (
-            <Image
-              src={reward.imageUrl}
-              alt={reward.name}
-              width={48}
-              height={48}
-              className="rounded-lg object-cover"
-              sizes="48px"
-            />
-          )}
-
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-lg">{reward.name}</h3>
-            {reward.description && (
-              <p className="text-muted-foreground mt-1 text-sm">{reward.description}</p>
-            )}
-
-            <div className="flex items-center gap-4 mt-3">
-              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-muted px-2.5 py-1 rounded-full">
-                {paymentTypeLabel}
-              </span>
-              {reward.scheduledDate && (
-                <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Calendar className="size-3.5" />
-                  {formatToDateTimeKR(reward.scheduledDate)}
-                </span>
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <Button variant="ghost" size="sm" onClick={onEdit}>
-              <Pencil className="size-4" />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={onDelete}>
-              <Trash2 className="size-4 text-destructive" />
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+import { Plus } from "lucide-react";
 
 interface EmptyRewardCardProps {
   onCreate: () => void;

@@ -1,4 +1,4 @@
-import { MediaUploadNotice } from "@/app/mission/[missionId]/action/[actionId]/ui/components/MediaUploadNotice";
+import { MediaUploadNotice } from "@/components/common/templates/action/common/MediaUploadNotice";
 import type { Meta, StoryObj } from "@storybook/nextjs";
 
 const meta: Meta<typeof MediaUploadNotice> = {

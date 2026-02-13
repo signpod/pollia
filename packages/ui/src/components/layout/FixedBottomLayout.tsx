@@ -96,7 +96,7 @@ export function FixedBottomLayout({
             className={cn(
               "fixed right-0 bottom-0 left-0 z-50",
               hasGradient || hasGradientBlur ? "bg-transparent" : "bg-white",
-              "mx-auto max-w-lg",
+              "mx-auto max-w-[600px]",
               contentClassName,
             )}
           >

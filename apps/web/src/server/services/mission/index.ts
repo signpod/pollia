@@ -35,18 +35,24 @@ export class MissionService {
     const mission = await this.getMission(missionId);
     const currentParticipants = await this.responseRepo.countByMissionId(missionId);
 
+    const isNotStarted = mission.startDate ? mission.startDate > new Date() : false;
     const isDeadlinePassed = mission.deadline ? mission.deadline < new Date() : false;
     const isParticipantLimitReached =
       mission.maxParticipants !== null &&
       mission.maxParticipants > 0 &&
       currentParticipants >= mission.maxParticipants;
 
-    const isClosed = !mission.isActive || isDeadlinePassed || isParticipantLimitReached;
+    const isClosed =
+      !mission.isActive || isNotStarted || isDeadlinePassed || isParticipantLimitReached;
 
     return {
+      mission,
       currentParticipants,
       maxParticipants: mission.maxParticipants,
       isClosed,
+      isNotStarted,
+      isDeadlinePassed,
+      isParticipantLimitReached,
     };
   }
 
@@ -93,6 +99,20 @@ export class MissionService {
   async getUserMissions(userId: string, options?: GetUserMissionsOptions) {
     const limit = options?.limit ?? 10;
     const missions = await this.repo.findByUserId(userId, {
+      ...options,
+      limit,
+    });
+
+    if (missions.length > limit) {
+      missions.pop();
+    }
+
+    return missions;
+  }
+
+  async getAllMissions(options?: GetUserMissionsOptions) {
+    const limit = options?.limit ?? 10;
+    const missions = await this.repo.findAll({
       ...options,
       limit,
     });
@@ -179,6 +199,7 @@ export class MissionService {
         isActive: false,
         type: originalMission.type,
         creatorId: userId,
+        entryActionId: null,
       },
       originalActions.map(action => ({
         title: action.title,
@@ -187,11 +208,15 @@ export class MissionService {
         type: action.type,
         order: action.order,
         maxSelections: action.maxSelections,
+        nextActionId: null,
+        nextCompletionId: null,
         options: action.options.map(opt => ({
           title: opt.title,
           description: opt.description,
           imageUrl: opt.imageUrl,
           order: opt.order,
+          nextActionId: null,
+          nextCompletionId: null,
         })),
       })),
     );

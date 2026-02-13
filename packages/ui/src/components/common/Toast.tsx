@@ -13,7 +13,7 @@ interface ToastProps {
 
 function ToastContent({ message, icon: Icon, iconClassName }: ToastProps) {
   return (
-    <div className="mx-auto flex w-full max-w-lg justify-center">
+    <div className="mx-auto flex w-full max-w-[600px] justify-center">
       <div className={cn("flex items-center gap-3 rounded-sm px-4 py-3 bg-non-modal-bg-default")}>
         {Icon && <Icon className={cn("size-6 shrink-0", iconClassName)} strokeWidth={2} />}
         <Typo.ButtonText

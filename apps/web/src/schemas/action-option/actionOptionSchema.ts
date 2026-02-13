@@ -21,7 +21,7 @@ const orderSchema = z
 
 const actionIdSchema = z.string().min(1, "액션 ID가 필요합니다.");
 
-const imageFileUploadIdSchema = z.string().nullable().optional();
+const fileUploadIdSchema = z.string().nullable().optional();
 
 export const optionInputSchema = z.object({
   actionId: actionIdSchema,
@@ -29,7 +29,7 @@ export const optionInputSchema = z.object({
   description: descriptionSchema,
   imageUrl: imageUrlSchema,
   order: orderSchema,
-  imageFileUploadId: imageFileUploadIdSchema,
+  fileUploadId: fileUploadIdSchema,
 });
 
 export const actionOptionSchema = z.object({
@@ -38,7 +38,9 @@ export const actionOptionSchema = z.object({
   description: descriptionSchema,
   imageUrl: imageUrlSchema,
   order: orderSchema,
-  imageFileUploadId: imageFileUploadIdSchema,
+  fileUploadId: fileUploadIdSchema,
+  nextActionId: z.string().nullable().optional(),
+  nextCompletionId: z.string().nullable().optional(),
 });
 
 const optionItemSchema = actionOptionSchema;
@@ -54,7 +56,9 @@ export const optionUpdateSchema = z
     description: descriptionSchema,
     imageUrl: imageUrlSchema,
     order: orderSchema.optional(),
-    imageFileUploadId: imageFileUploadIdSchema,
+    fileUploadId: fileUploadIdSchema,
+    nextActionId: z.string().nullable().optional(),
+    nextCompletionId: z.string().nullable().optional(),
   })
   .refine(data => Object.keys(data).length > 0, {
     message: "최소 하나의 필드를 수정해야 합니다.",

@@ -1,55 +1,31 @@
 "use client";
-import { toast } from "@/components/common/Toast";
-import { ExtendedActionStepConfig, createActionSteps } from "@/constants/action";
-import { MISSION_TOAST_MESSAGE } from "@/constants/missionMessages";
+
+import { createActionSteps } from "@/components/common/templates/action";
+import { ActionProvider } from "@/components/common/templates/action/common/ActionContext";
+import type { ExtendedActionStepConfig } from "@/constants/action";
 import { ROUTES } from "@/constants/routes";
-import { useReadActionsDetail } from "@/hooks/action/useReadActionsDetail";
 import {
-  useCompleteMission,
-  useReadMissionResponseForMission,
-  useSubmitQuestionAnswer,
-} from "@/hooks/mission-response";
+  type ActionForProgress,
+  type SubmittedAnswerForProgress,
+  type UseActionProgressParams,
+  useActionProgress,
+} from "@/hooks/action";
+import { useReadActionsDetail } from "@/hooks/action/useReadActionsDetail";
+import { useReadMission } from "@/hooks/mission";
+import { useReadMissionResponseForMission } from "@/hooks/mission-response";
 import { useMissionSurveyToast } from "@/hooks/mission/useMissionSurveyToast";
-import { useRecordActionResponse } from "@/hooks/tracking";
-import { useAuth } from "@/hooks/user";
 import { setActionNavCookie } from "@/lib/cookie";
-import { formatDateToHHMM, formatDateToYYYYMMDD } from "@/lib/date";
-import { removeSessionStorage } from "@/lib/sessionStorage";
-import { clearActionSession, getOrCreateSessionId } from "@/lib/tracking";
-import { submitAnswerItemSchema } from "@/schemas/action-answer";
-import { ActionType } from "@/types/domain/action";
-import type { ActionAnswerItem } from "@/types/dto";
-import type { ActionAnswer } from "@/types/dto/action-answer";
-import { StepProvider, useModal, useStep } from "@repo/ui/components";
+import type { ActionAnswerItem, ActionDetail } from "@/types/dto";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  ActionDate,
-  ActionImage,
-  ActionPdf,
-  ActionTag,
-  ActionTime,
-  ActionVideo,
-  MissionRatingScale,
-  MissionStarScale,
-  MultipleChoice,
-  ShortText,
-  Subjective,
-} from "./ui";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useClientActionSubmit } from "./hooks/useClientActionSubmit";
 
-const SURVEY_SUBMIT_MODAL = {
-  title: "미션을 최종적으로 제출할까요?",
-  description: "제출 이후에는 답변을 수정하거나\n다시 참여할 수 없어요",
-  confirmText: "제출하기",
-  cancelText: "취소",
-} as const;
+const SCROLL_OFFSET = 30;
 
 interface ActionClientWrapperProps {
   dehydratedState: DehydratedState;
 }
-
-const SCROLL_OFFSET = 30;
 
 export function ActionClientWrapper({ dehydratedState }: ActionClientWrapperProps) {
   return (
@@ -60,8 +36,13 @@ export function ActionClientWrapper({ dehydratedState }: ActionClientWrapperProp
 }
 
 function ActionContent() {
-  const { missionId, actionId } = useParams<{ missionId: string; actionId: string }>();
+  const { missionId, actionId } = useParams<{
+    missionId: string;
+    actionId: string;
+  }>();
+  const router = useRouter();
   const { data: actions } = useReadActionsDetail(missionId);
+  const { data: missionData } = useReadMission(missionId);
 
   useEffect(() => {
     window.scrollTo(0, -SCROLL_OFFSET);
@@ -71,328 +52,189 @@ function ActionContent() {
     setActionNavCookie(missionId, actionId);
   }, [actionId, missionId]);
 
-  const steps = createActionSteps({
-    actions: actions.data,
-    stepComponents: {
-      MultipleChoice: MultipleChoice,
-      Scale: MissionRatingScale,
-      Subjective: Subjective,
-      ShortText: ShortText,
-      Rating: MissionStarScale,
-      Image: ActionImage,
-      Video: ActionVideo,
-      Tag: ActionTag,
-      Pdf: ActionPdf,
-      Date: ActionDate,
-      Time: ActionTime,
+  const navigateToAction = useCallback(
+    (nextActionId: string) => {
+      router.push(ROUTES.ACTION({ missionId, actionId: nextActionId }));
     },
-  });
-
-  const initialStep = steps.findIndex(
-    step => (step as ExtendedActionStepConfig).actionData.id === actionId,
+    [missionId, router],
   );
 
-  return (
-    <StepProvider syncWithUrl steps={steps} initialStep={initialStep >= 0 ? initialStep : 0}>
-      <ActionRenderer totalActionCount={actions.data.length} />
-    </StepProvider>
+  const navigateToDone = useCallback(
+    (completionId?: string) => {
+      // done 페이지는 서버 렌더링 필요
+      router.push(ROUTES.MISSION_DONE(missionId, completionId));
+    },
+    [missionId, router],
   );
-}
 
-function ActionRenderer({ totalActionCount }: { totalActionCount: number }) {
-  const router = useRouter();
-  const { missionId } = useParams<{ missionId: string }>();
-  const [currentAnswer, setCurrentAnswer] = useState<ActionAnswerItem | null>(null);
-  const { showModal } = useModal();
-  const { user } = useAuth();
-  const isFinalSubmitRef = useRef(false);
-
-  const { data: missionResponse } = useReadMissionResponseForMission({ missionId });
-  const recordResponse = useRecordActionResponse();
-
-  const toastStorageKey = `mission-toast-${missionId}`;
-
-  const handleAlreadyCompleted = useCallback(() => {
-    toast.warning("이미 완료된 미션입니다", { id: "mission-already-completed" });
+  const navigateToMission = useCallback(() => {
     router.push(ROUTES.MISSION(missionId));
   }, [missionId, router]);
 
-  const { mutateAsync: submitAnswer, isPending: isSubmittingAnswer } = useSubmitQuestionAnswer({
-    onSuccess: () => {
-      if (currentAnswer) {
-        recordResponse({
-          missionId,
-          sessionId: getOrCreateSessionId(currentAnswer.actionId),
-          userId: user?.id || undefined,
-          actionId: currentAnswer.actionId,
-          metadata: {
-            actionType: currentAnswer.type,
-            ...(isFinalSubmitRef.current && { isFinalSubmit: true }),
-          },
-        });
-        clearActionSession(currentAnswer.actionId);
-      }
+  if (!actions.data || actions.data.length === 0) {
+    return null;
+  }
 
-      goNext();
-    },
-    onError: () => {
-      toast.warning("답변 저장에 실패했습니다", { id: "submit-answer-error" });
-    },
-    onAlreadyCompleted: handleAlreadyCompleted,
-    missionId,
+  const steps = createActionSteps({
+    actions: actions.data,
   });
 
-  const { mutateAsync: completeMissionAsync, isPending: isCompletingMission } = useCompleteMission({
-    onSuccess: () => {
-      removeSessionStorage(toastStorageKey);
-      router.push(ROUTES.MISSION_DONE(missionId));
-    },
-    onError: () => {
-      toast.warning(MISSION_TOAST_MESSAGE.error.message, { id: MISSION_TOAST_MESSAGE.error.id });
-    },
-    onAlreadyCompleted: handleAlreadyCompleted,
-    missionId,
-  });
+  const currentStep = steps.find(
+    step => (step as ExtendedActionStepConfig).actionData.id === actionId,
+  ) as ExtendedActionStepConfig | undefined;
 
-  const {
-    currentStep,
-    currentStepConfig,
-    goNext,
-    goBack,
-    isFirstStep,
-    isLastStep,
-    canGoNext,
-    updateStepConfig,
-  } = useStep();
+  if (!currentStep) {
+    return null;
+  }
 
-  const stepConfig = currentStepConfig as unknown as ExtendedActionStepConfig;
-  const ContentComponent = stepConfig.content;
-  const actionData = stepConfig.actionData;
+  return (
+    <ActionStepWrapper
+      actions={actions.data}
+      currentActionData={currentStep.actionData}
+      steps={steps}
+      missionId={missionId}
+      entryActionId={missionData?.data?.entryActionId}
+      navigateToAction={navigateToAction}
+      navigateToDone={navigateToDone}
+      navigateToMission={navigateToMission}
+    />
+  );
+}
 
-  const currentOrder = actionData.order;
+interface ActionStepWrapperProps {
+  actions: ActionForProgress[];
+  currentActionData: ActionDetail;
+  steps: ReturnType<typeof createActionSteps>;
+  missionId: string;
+  entryActionId?: string | null;
+  navigateToAction: (actionId: string) => void;
+  navigateToDone: (completionId?: string) => void;
+  navigateToMission: () => void;
+}
 
+function ActionStepWrapper({
+  actions,
+  currentActionData,
+  steps,
+  missionId,
+  entryActionId,
+  navigateToAction,
+  navigateToDone,
+  navigateToMission,
+}: ActionStepWrapperProps) {
+  const [currentAnswer, setCurrentAnswer] = useState<ActionAnswerItem | null>(null);
+  const [canGoNext, setCanGoNext] = useState(false);
+
+  const { data: missionResponse } = useReadMissionResponseForMission({ missionId });
+
+  const submittedAnswers: SubmittedAnswerForProgress[] | undefined = useMemo(() => {
+    return missionResponse?.data?.answers?.map(answer => ({
+      actionId: answer.actionId,
+      options: answer.options,
+    }));
+  }, [missionResponse?.data?.answers]);
+
+  const progressInfo = useActionProgress({
+    actionId: currentActionData.id,
+    actions,
+    submittedAnswers,
+    entryActionId,
+  } satisfies UseActionProgressParams);
+
+  const toastStorageKey = `mission-toast-${missionId}`;
   useMissionSurveyToast({
-    currentOrder,
-    totalActionCount,
+    currentOrder: progressInfo.currentOrder - 1,
+    totalActionCount: progressInfo.totalCount,
     toastStorageKey,
   });
 
-  const updateCanGoNext = useCallback(
-    (canGoNext: boolean) => {
-      updateStepConfig(currentStep, { canGoNext });
-    },
-    [currentStep, updateStepConfig],
-  );
+  const isFirstStep = currentActionData.id === (entryActionId ?? actions[0]?.id);
+
+  const { submit, isSubmitting, isActualLastStep } = useClientActionSubmit({
+    missionId,
+    actionData: currentActionData,
+    actions,
+    progressInfo,
+    currentAnswer,
+    navigateToAction,
+    navigateToDone,
+    navigateToMission,
+  });
+
+  const updateCanGoNext = useCallback((value: boolean) => {
+    setCanGoNext(value);
+  }, []);
 
   const handleAnswerChange = useCallback((answer: ActionAnswerItem) => {
     setCurrentAnswer(answer);
   }, []);
 
-  const responseId = missionResponse?.data?.id ?? "";
-
-  const isAnswerSameAsSubmitted = useCallback(
-    (answer: ActionAnswerItem, submittedAnswers: ActionAnswer[]): boolean => {
-      const answersForAction = submittedAnswers.filter(
-        submitted => submitted.actionId === answer.actionId,
-      );
-
-      if (answersForAction.length === 0) {
-        return false;
-      }
-
-      if (answer.type === ActionType.MULTIPLE_CHOICE || answer.type === ActionType.TAG) {
-        const submittedOptionIds = answersForAction
-          .flatMap(a => a.options.map(opt => opt.id))
-          .sort();
-        const currentOptionIds = answer.selectedOptionIds
-          ? [...answer.selectedOptionIds].sort()
-          : [];
-
-        const submittedTextAnswer = answersForAction.find(a => a.textAnswer)?.textAnswer ?? "";
-        const currentTextAnswer = answer.textAnswer ?? "";
-
-        const optionsMatch =
-          submittedOptionIds.length === currentOptionIds.length &&
-          submittedOptionIds.every((id, index) => id === currentOptionIds[index]);
-
-        const textAnswerMatch = submittedTextAnswer === currentTextAnswer;
-
-        return optionsMatch && textAnswerMatch;
-      }
-
-      if (answer.type === ActionType.SCALE || answer.type === ActionType.RATING) {
-        const submittedScaleValue = answersForAction[0]?.scaleAnswer;
-        return submittedScaleValue !== null && submittedScaleValue === answer.scaleValue;
-      }
-
-      if (answer.type === ActionType.SUBJECTIVE || answer.type === ActionType.SHORT_TEXT) {
-        const submittedTextAnswer = answersForAction[0]?.textAnswer;
-        return submittedTextAnswer !== null && submittedTextAnswer === answer.textAnswer;
-      }
-
-      if (
-        answer.type === ActionType.IMAGE ||
-        answer.type === ActionType.VIDEO ||
-        answer.type === ActionType.PDF
-      ) {
-        const submittedAnswer = answersForAction[0];
-        if (!submittedAnswer) {
-          return false;
-        }
-
-        const submittedFileUploads = (
-          submittedAnswer as typeof submittedAnswer & {
-            fileUploads?: Array<{ id: string }>;
-          }
-        ).fileUploads;
-
-        const submittedFileUploadIds = submittedFileUploads?.map(f => f.id).sort() ?? [];
-        const currentFileUploadIds = (answer.fileUploadIds ?? []).sort();
-
-        // 둘 다 빈 배열이면 동일하지 않음 (기존 답변 없음)
-        if (submittedFileUploadIds.length === 0 && currentFileUploadIds.length === 0) {
-          return false;
-        }
-
-        return (
-          submittedFileUploadIds.length === currentFileUploadIds.length &&
-          submittedFileUploadIds.length > 0 &&
-          submittedFileUploadIds.every((id, index) => id === currentFileUploadIds[index])
-        );
-      }
-
-      if (answer.type === ActionType.DATE) {
-        const submittedDates = answersForAction
-          .flatMap(a => {
-            if (!a.dateAnswers) return [];
-            return a.dateAnswers.map(d => formatDateToYYYYMMDD(d));
-          })
-          .sort();
-        const currentDates = (answer.dateAnswers || []).map(d => formatDateToYYYYMMDD(d)).sort();
-        return (
-          submittedDates.length === currentDates.length &&
-          submittedDates.every((date, index) => date === currentDates[index])
-        );
-      }
-
-      if (answer.type === ActionType.TIME) {
-        const submittedTimes = answersForAction
-          .flatMap(a => {
-            if (!a.dateAnswers) return [];
-            return a.dateAnswers.map(d => formatDateToHHMM(d));
-          })
-          .sort();
-        const currentTimes = (answer.dateAnswers || []).map(d => formatDateToHHMM(d)).sort();
-        return (
-          submittedTimes.length === currentTimes.length &&
-          submittedTimes.every((time, index) => time === currentTimes[index])
-        );
-      }
-
-      return false;
-    },
-    [],
-  );
-
-  const handleNext = useCallback(async () => {
-    if (!currentAnswer) return;
-
-    // 현재 답변이 현재 질문의 것인지 확인
-    if (currentAnswer.actionId !== actionData.id) {
-      toast.warning("답변을 다시 입력해주세요", { id: "answer-mismatch-error" });
-      return;
-    }
-
-    const validationResult = submitAnswerItemSchema.safeParse(currentAnswer);
-    if (!validationResult.success) {
-      const errorMessage =
-        validationResult.error.issues[0]?.message || "답변 형식이 올바르지 않습니다";
-      toast.warning(errorMessage, { id: "answer-validation-error" });
-      return;
-    }
-
-    const submittedAnswers = missionResponse?.data?.answers ?? [];
-    const isSame = isAnswerSameAsSubmitted(currentAnswer, submittedAnswers);
-
-    if (isSame) {
-      if (currentAnswer) {
-        recordResponse({
-          missionId,
-          sessionId: getOrCreateSessionId(currentAnswer.actionId),
-          userId: user?.id || undefined,
-          actionId: currentAnswer.actionId,
-          metadata: {
-            actionType: currentAnswer.type,
-            isFinalSubmit: isLastStep,
-          },
-        });
-        clearActionSession(currentAnswer.actionId);
-      }
-      goNext();
-      return;
-    }
-
-    if (isLastStep) {
-      showModal({
-        ...SURVEY_SUBMIT_MODAL,
-        showCancelButton: true,
-        onConfirm: async () => {
-          isFinalSubmitRef.current = true;
-          try {
-            await submitAnswer({ responseId, answer: currentAnswer });
-            await completeMissionAsync({ responseId });
-          } finally {
-            isFinalSubmitRef.current = false;
-          }
-        },
-      });
-    } else {
-      // console.log("submitAnswer", currentAnswer);
-      await submitAnswer({
-        responseId,
-        answer: currentAnswer,
-      });
-      goNext();
-    }
-  }, [
-    isLastStep,
-    responseId,
-    currentAnswer,
-    submitAnswer,
-    completeMissionAsync,
-    showModal,
-    isAnswerSameAsSubmitted,
-    goNext,
-    actionData.id,
-    missionId,
-    recordResponse,
-    user?.id,
-    missionResponse?.data?.answers,
-  ]);
-
   const handlePrevious = useCallback(() => {
     if (isFirstStep) {
-      router.push(ROUTES.MISSION(missionId));
-    } else {
-      goBack();
+      navigateToMission();
+      return;
     }
-  }, [isFirstStep, goBack, missionId, router]);
+
+    const sourceAction = actions.find(
+      action =>
+        action.options.some(option => option.nextActionId === currentActionData.id) ||
+        action.nextActionId === currentActionData.id,
+    );
+
+    if (sourceAction) {
+      navigateToAction(sourceAction.id);
+    } else {
+      const currentOrder = currentActionData.order ?? 0;
+      const prevAction = actions.find(a => (a.order ?? 0) === currentOrder - 1);
+      if (prevAction) {
+        navigateToAction(prevAction.id);
+      }
+    }
+  }, [isFirstStep, actions, currentActionData, navigateToAction, navigateToMission]);
+
+  const currentStep = steps.find(
+    (step): step is ExtendedActionStepConfig => step.actionData.id === currentActionData.id,
+  );
+  const ContentComponent = currentStep?.content;
+
+  const contextValue = useMemo(
+    () => ({
+      currentOrder: progressInfo.currentOrder - 1,
+      totalActionCount: progressInfo.totalCount,
+      isFirstAction: isFirstStep,
+      onPrevious: handlePrevious,
+      onNext: submit,
+      onPrefetchNext: () => {}, // 클라이언트 네비게이션이므로 prefetch 불필요
+      nextButtonText: isActualLastStep ? "제출하기" : "다음",
+      isLoading: isSubmitting,
+      isNextDisabled: !canGoNext || isSubmitting,
+      updateCanGoNext,
+      onAnswerChange: handleAnswerChange,
+      missionResponse: missionResponse?.data ? missionResponse : undefined,
+    }),
+    [
+      progressInfo.currentOrder,
+      progressInfo.totalCount,
+      isFirstStep,
+      handlePrevious,
+      submit,
+      isActualLastStep,
+      isSubmitting,
+      canGoNext,
+      updateCanGoNext,
+      handleAnswerChange,
+      missionResponse,
+    ],
+  );
+
+  if (!ContentComponent) {
+    //TODO: 예외처리
+    return <div>ContentComponent not found</div>;
+  }
 
   return (
-    <ContentComponent
-      key={actionData.id}
-      actionData={actionData}
-      currentOrder={actionData.order}
-      totalActionCount={totalActionCount}
-      isFirstAction={isFirstStep}
-      isNextDisabled={!canGoNext || isSubmittingAnswer || isCompletingMission}
-      isLoading={isSubmittingAnswer || isCompletingMission}
-      onPrevious={handlePrevious}
-      onNext={handleNext}
-      nextButtonText={isLastStep ? "제출하기" : "다음"}
-      updateCanGoNext={updateCanGoNext}
-      onAnswerChange={handleAnswerChange}
-      missionResponse={missionResponse?.data ? missionResponse : undefined}
-    />
+    <ActionProvider value={contextValue}>
+      <ContentComponent key={currentActionData.id} actionData={currentActionData} />
+    </ActionProvider>
   );
 }

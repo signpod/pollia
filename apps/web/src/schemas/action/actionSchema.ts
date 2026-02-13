@@ -12,6 +12,7 @@ export const MULTIPLE_CHOICE_MIN_OPTIONS = 2;
 export const MULTIPLE_CHOICE_MAX_OPTIONS = 10;
 export const SCALE_MIN_OPTIONS = 3;
 export const SCALE_MAX_OPTIONS = 10;
+export const BRANCH_OPTIONS_COUNT = 2;
 
 export const IMAGE_MAX_SELECTIONS = 10;
 export const DATE_MAX_SELECTIONS = 20;
@@ -70,6 +71,8 @@ const baseActionSchema = z.object({
   order: actionOrderSchema,
   isRequired: z.boolean(),
   hasOther: z.boolean().optional(),
+  nextActionId: z.string().nullable().optional(),
+  nextCompletionId: z.string().nullable().optional(),
 });
 
 export const multipleChoiceInputSchema = baseActionSchema
@@ -142,6 +145,26 @@ export const timeInputSchema = baseActionSchema.extend({
   maxSelections: z.number().int().min(1, "최대 선택 가능 개수는 최소 1개 이상이어야 합니다."),
 });
 
+export const BRANCH_MAX_SELECTIONS = 1;
+export const BRANCH_HAS_OTHER = false;
+
+export const branchInputSchema = baseActionSchema
+  .extend({
+    maxSelections: z.literal(BRANCH_MAX_SELECTIONS),
+    hasOther: z.literal(BRANCH_HAS_OTHER),
+    options: z
+      .array(
+        actionOptionSchema.extend({
+          nextActionId: z.string().nullable().optional(),
+        }),
+      )
+      .length(
+        BRANCH_OPTIONS_COUNT,
+        `분기 액션은 정확히 ${BRANCH_OPTIONS_COUNT}개의 선택지가 필요합니다.`,
+      ),
+  })
+  .omit({ nextActionId: true, nextCompletionId: true });
+
 export const actionUpdateSchema = z
   .object({
     title: actionTitleSchema.optional(),
@@ -157,6 +180,8 @@ export const actionUpdateSchema = z
     isRequired: z.boolean().optional(),
     hasOther: z.boolean().optional(),
     options: z.array(actionOptionSchema).optional(),
+    nextActionId: z.string().nullable().optional(),
+    nextCompletionId: z.string().nullable().optional(),
   })
   .refine(data => Object.keys(data).length > 0, {
     message: "최소 하나의 필드를 수정해야 합니다.",
@@ -175,5 +200,6 @@ export type VideoInput = z.infer<typeof videoInputSchema>;
 export type PrivacyConsentInput = z.infer<typeof privacyConsentInputSchema>;
 export type DateInput = z.infer<typeof dateInputSchema>;
 export type TimeInput = z.infer<typeof timeInputSchema>;
+export type BranchInput = z.infer<typeof branchInputSchema>;
 export type ActionOption = z.infer<typeof actionOptionSchema>;
 export type ActionUpdate = z.infer<typeof actionUpdateSchema>;

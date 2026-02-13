@@ -1,4 +1,5 @@
 export {
+  rewardBaseSchema,
   rewardInputSchema,
   rewardUpdateSchema,
   type RewardInput,

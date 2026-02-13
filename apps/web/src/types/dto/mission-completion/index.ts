@@ -5,6 +5,12 @@ export type MissionCompletionData = Omit<MissionCompletion, "links"> & {
   imageFileUpload: { id: string; publicUrl: string } | null;
 };
 
+export type MissionCompletionWithMission = Omit<MissionCompletion, "links"> & {
+  links: Record<string, string> | null;
+  imageFileUpload: { id: string; publicUrl: string } | null;
+  mission: { id: string; creatorId: string };
+};
+
 export interface CreateMissionCompletionRequest {
   title: string;
   description: string;
@@ -24,6 +30,10 @@ export interface UpdateMissionCompletionRequest {
 
 export interface GetMissionCompletionResponse {
   data: MissionCompletionData;
+}
+
+export interface GetMissionCompletionsResponse {
+  data: MissionCompletionWithMission[];
 }
 
 export interface CreateMissionCompletionResponse {

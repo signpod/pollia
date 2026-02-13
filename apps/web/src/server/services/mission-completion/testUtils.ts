@@ -8,6 +8,7 @@ export function createMissionCompletionServiceTestContext() {
   const mockRepository = {
     findById: jest.fn(),
     findByMissionId: jest.fn(),
+    findAllByMissionId: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
@@ -16,11 +17,13 @@ export function createMissionCompletionServiceTestContext() {
   const mockMissionRepository = {
     findById: jest.fn(),
     findByUserId: jest.fn(),
+    findAll: jest.fn(),
     findActionIdsByMissionId: jest.fn(),
     findActionById: jest.fn(),
     findActionsByMissionId: jest.fn(),
     createWithActions: jest.fn(),
     update: jest.fn(),
+    updateLikesCount: jest.fn(),
     delete: jest.fn(),
     duplicateMission: jest.fn(),
   } as jest.Mocked<MissionRepository>;

@@ -60,13 +60,15 @@ export interface MyMissionResponseAnswer {
     id: string;
     title: string;
     type: string;
-    order: number;
+    order: number | null;
     isRequired: boolean;
+    nextCompletionId: string | null;
   };
   options: Array<{
     id: string;
     title: string;
     order: number;
+    nextCompletionId: string | null;
   }>;
   fileUploads: Array<{
     id: string;
@@ -88,6 +90,8 @@ export interface MyMissionResponse {
     description: string | null;
     imageUrl: string | null;
     estimatedMinutes: number | null;
+    category: string;
+    deadline: Date | null;
     _count: {
       questions: number;
     };

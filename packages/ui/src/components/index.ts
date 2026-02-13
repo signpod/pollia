@@ -8,6 +8,7 @@ import {
 import { FixedTopContent, FixedTopLayout as FixedTopLayoutBase } from "./layout/FixedTopLayout";
 
 export * from "./common/Button";
+export * from "./common/EmptyState";
 export * from "./common/ButtonV2";
 export * from "./common/FloatingButton";
 export * from "./common/Input";
@@ -40,8 +41,6 @@ export * from "./common/ProgressBarV2";
 export * from "./common/RatingScale";
 export * from "./common/StarScale";
 export * from "./common/DateAndTimePicker";
-export * from "./common/TiptapEditor";
-
 // Hooks
 export * from "../hooks/useStep";
 

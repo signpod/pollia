@@ -1,11 +1,6 @@
-export interface OptionInput {
-  id?: string;
-  title: string;
-  description?: string | null;
-  imageUrl?: string | null;
-  order: number;
-  imageFileUploadId?: string | null;
-}
+import type { Prisma } from "@prisma/client";
+
+export type OptionInput = Omit<Prisma.ActionOptionUncheckedCreateInput, "actionId">;
 
 export interface ClassifiedOptions {
   toUpdate: OptionInput[];

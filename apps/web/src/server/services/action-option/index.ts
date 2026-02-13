@@ -42,7 +42,7 @@ export class ActionOptionService {
       description?: string;
       imageUrl?: string;
       order: number;
-      imageFileUploadId?: string;
+      fileUploadId?: string;
     },
     userId: string,
   ): Promise<ActionOption> {
@@ -64,7 +64,7 @@ export class ActionOptionService {
         description: result.data.description,
         imageUrl: result.data.imageUrl,
         order: result.data.order,
-        imageFileUploadId: result.data.imageFileUploadId,
+        fileUploadId: result.data.fileUploadId,
       },
       userId,
     );
@@ -78,7 +78,7 @@ export class ActionOptionService {
       description?: string;
       imageUrl?: string;
       order: number;
-      imageFileUploadId?: string;
+      fileUploadId?: string;
     }>,
     userId: string,
   ): Promise<ActionOption[]> {
@@ -91,7 +91,19 @@ export class ActionOptionService {
 
     await this.verifyActionAccess(actionId, userId);
 
-    const createdOptions = await this.optionRepo.createMany(actionId, result.data.options, userId);
+    const createdOptions = await this.optionRepo.createMany(
+      actionId,
+      result.data.options.map(opt => ({
+        title: opt.title,
+        description: opt.description,
+        imageUrl: opt.imageUrl,
+        order: opt.order,
+        fileUploadId: opt.fileUploadId,
+        nextActionId: opt.nextActionId,
+        nextCompletionId: opt.nextCompletionId,
+      })),
+      userId,
+    );
     return createdOptions;
   }
 
@@ -102,7 +114,7 @@ export class ActionOptionService {
       description?: string;
       imageUrl?: string;
       order?: number;
-      imageFileUploadId?: string;
+      fileUploadId?: string;
     },
     userId: string,
   ): Promise<ActionOption> {
@@ -117,7 +129,13 @@ export class ActionOptionService {
 
     await this.verifyActionAccess(option.actionId, userId);
 
-    const updatedOption = await this.optionRepo.update(optionId, result.data, userId);
+    const updatedOption = await this.optionRepo.update(
+      optionId,
+      {
+        ...result.data,
+      },
+      userId,
+    );
     return updatedOption;
   }
 

@@ -4,6 +4,7 @@ export const missionQueryKeys = {
   userAnswerStatus: (missionId: string) => ["user-answer-status", missionId] as const,
   userMissions: (userId?: string) =>
     userId ? (["user-missions", userId] as const) : (["user-missions"] as const),
+  allMissions: () => ["all-missions"] as const,
   all: () => ["mission"] as const,
   missionResponseForMission: (missionId: string) =>
     ["mission-response-for-mission", missionId] as const,

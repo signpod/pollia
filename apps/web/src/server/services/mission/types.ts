@@ -1,20 +1,9 @@
 import type { SortOrderType } from "@/types/common/sort";
-import type { Mission, Prisma } from "@prisma/client";
+import type { Mission, MissionCategory, MissionType, Prisma } from "@prisma/client";
 
-type MissionCreateFields = Pick<
+type MissionCreateFields = Omit<
   Prisma.MissionUncheckedCreateInput,
-  | "title"
-  | "description"
-  | "target"
-  | "imageUrl"
-  | "imageFileUploadId"
-  | "brandLogoUrl"
-  | "brandLogoFileUploadId"
-  | "deadline"
-  | "estimatedMinutes"
-  | "maxParticipants"
-  | "type"
-  | "eventId"
+  "id" | "creatorId" | "createdAt" | "updatedAt" | "isActive" | "rewardId" | "password"
 >;
 
 export type CreateMissionInput = MissionCreateFields & {
@@ -30,12 +19,18 @@ export interface GetUserMissionsOptions {
   cursor?: string;
   limit?: number;
   sortOrder?: SortOrderType;
+  category?: MissionCategory;
+  type?: MissionType;
 }
 
 export interface MissionWithParticipantInfo {
+  mission: Mission;
   currentParticipants: number;
   maxParticipants: number | null;
   isClosed: boolean;
+  isNotStarted: boolean;
+  isDeadlinePassed: boolean;
+  isParticipantLimitReached: boolean;
 }
 
 export interface MissionDuplicateResult

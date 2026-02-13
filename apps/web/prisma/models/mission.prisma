@@ -1,29 +1,35 @@
 model Mission {
-  id               String      @id @default(cuid())
+  id               String          @id @default(cuid())
   title            String
   description      String?
-  imageUrl         String?     @map("image_url")
-  brandLogoUrl     String?     @map("brand_logo_url")
-  estimatedMinutes Int?        @map("estimated_minutes")
+  imageUrl         String?         @map("image_url")
+  brandLogoUrl     String?         @map("brand_logo_url")
+  estimatedMinutes Int?            @map("estimated_minutes")
   deadline         DateTime?
-  isActive         Boolean     @default(true) @map("is_active")
-  maxParticipants  Int?        @map("max_participants")
-  creatorId        String      @map("creator_id")
-  rewardId         String?     @map("reward_id")
-  eventId          String?     @map("event_id")
-  createdAt        DateTime    @default(now()) @map("created_at")
-  updatedAt        DateTime    @updatedAt @map("updated_at")
+  startDate        DateTime?       @map("start_date")
+  isActive         Boolean         @default(true) @map("is_active")
+  maxParticipants  Int?            @map("max_participants")
+  creatorId        String          @map("creator_id")
+  rewardId         String?         @map("reward_id")
+  eventId          String?         @map("event_id")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
   target           String?
-  type             MissionType @default(GENERAL)
+  type             MissionType     @default(GENERAL)
+  category         MissionCategory @default(EVENT)
   password         String?
+  likesCount       Int             @default(0) @map("likes_count")
+  entryActionId    String?         @map("entry_action_id")
 
-  questions  Action[]
-  responses  MissionResponse[]
-  completion MissionCompletion?
-  creator    User               @relation(fields: [creatorId], references: [id])
-  reward     Reward?            @relation(fields: [rewardId], references: [id])
-  event      Event?             @relation(fields: [eventId], references: [id])
-  notionPage MissionNotionPage?
+  questions   Action[]
+  responses   MissionResponse[]
+  completions MissionCompletion[]
+  likes       MissionLike[]
+  creator     User                @relation(fields: [creatorId], references: [id])
+  reward      Reward?             @relation(fields: [rewardId], references: [id])
+  event       Event?              @relation(fields: [eventId], references: [id])
+  notionPage  MissionNotionPage?
+  entryAction Action?             @relation("MissionEntry", fields: [entryActionId], references: [id], onDelete: SetNull)
 
   imageFileUploadId     String?     @map("image_file_upload_id")
   imageFileUpload       FileUpload? @relation("MissionImage", fields: [imageFileUploadId], references: [id])
@@ -37,10 +43,19 @@ model Mission {
   @@index([isActive])
   @@index([rewardId])
   @@index([eventId])
+  @@index([entryActionId])
   @@map("missions")
 }
 
 enum MissionType {
   GENERAL
   EXPERIENCE_GROUP
+}
+
+enum MissionCategory {
+  TEST
+  EVENT
+  RESEARCH
+  CHALLENGE
+  QUIZ
 }

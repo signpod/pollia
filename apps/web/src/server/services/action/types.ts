@@ -11,6 +11,8 @@ interface ActionOptionInput {
   imageUrl?: string | null;
   order: number;
   imageFileUploadId?: string | null;
+  nextActionId?: string | null;
+  nextCompletionId?: string | null;
 }
 
 export type BaseActionInputWithOptions = BaseActionInput & {
@@ -51,6 +53,11 @@ export type CreateTimeInput = BaseActionInput & {
   maxSelections: number;
 };
 
+export type CreateBranchInput = BaseActionInputWithOptions & {
+  maxSelections: 1;
+  hasOther: false;
+};
+
 export type UpdateActionOptionInput = Omit<ActionOptionInput, "order"> & {
   id?: string;
   order: number;
@@ -70,5 +77,13 @@ export interface GetActionsOptions {
 
 export type ActionCreatedResult = Pick<
   Action,
-  "id" | "missionId" | "title" | "type" | "order" | "isRequired" | "createdAt"
+  | "id"
+  | "missionId"
+  | "title"
+  | "type"
+  | "order"
+  | "isRequired"
+  | "createdAt"
+  | "nextActionId"
+  | "nextCompletionId"
 >;

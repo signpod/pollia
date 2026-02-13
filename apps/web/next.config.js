@@ -10,6 +10,16 @@ const nextConfig = {
       "unknown",
   },
 
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        "web-worker": false,
+      };
+    }
+    return config;
+  },
+
   experimental: {
     optimizePackageImports: [
       // Radix UI 컴포넌트들 - 트리 쉐이킹 최적화로 사용하는 컴포넌트만 번들에 포함
@@ -67,6 +77,12 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "jjrsknqxiqbzqiraexpc.supabase.co",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "http",
+        hostname: "tong.visitkorea.or.kr",
         port: "",
         pathname: "/**",
       },

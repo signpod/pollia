@@ -21,7 +21,7 @@ export interface ActionTypeInfo {
   bgColor: string;
 }
 
-export const getDisplayOrder = (order: number) => order + 1;
+export const getDisplayOrder = (order: number | null) => (order ? `#${order + 1}` : null);
 
 export function getActionTypeInfo(type: ActionType): ActionTypeInfo {
   const label = ACTION_TYPE_LABELS[type] || "기타";

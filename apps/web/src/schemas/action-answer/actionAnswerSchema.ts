@@ -84,6 +84,10 @@ export const tagAnswerInputSchema = baseAnswerInputSchema
     },
   );
 
+export const branchAnswerInputSchema = baseAnswerInputSchema.extend({
+  selectedOptionIds: z.array(optionIdSchema).min(1, "최소 1개 이상의 선택지를 선택해주세요."),
+});
+
 export const imageAnswerInputSchema = baseAnswerInputSchema.extend({
   fileUploadIds: z.array(z.string()).min(1, "최소 1개 이상의 이미지를 업로드해주세요."),
 });

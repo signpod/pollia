@@ -1,25 +1,13 @@
 "use client";
 
-import { getMissionParticipantInfo } from "@/actions/mission";
-import { getMyResponseForMission } from "@/actions/mission-response";
-import { toast } from "@/components/common/Toast";
-import { ROUTES } from "@/constants/routes";
-import { useKakaoLogin } from "@/hooks/login/useKakaoLogin";
-import {
-  useCreateMissionResponse,
-  useReadMissionResponseForMission,
-} from "@/hooks/mission-response";
-import { useReadMissionParticipantInfo } from "@/hooks/participant";
-import { useAuth } from "@/hooks/user/useAuth";
-import { setActionNavCookie } from "@/lib/cookie";
+import { useMissionStart } from "@/hooks/mission/useMissionStart";
 import { Mission } from "@prisma/client";
 import KakaoIcon from "@public/svgs/kakao-icon.svg";
 import { ButtonV2, Typo } from "@repo/ui/components";
 import { isBefore } from "date-fns";
 import { motion } from "framer-motion";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
-import { checkParticipantLimitReached } from "../utils/checkParticipantLimit";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const BUTTON_TEXT = {
   loggedIn: "지금 바로 참여하기",
@@ -31,13 +19,31 @@ const BUTTON_TEXT = {
   participantLimitReached: "마감된 미션이에요",
 };
 
+const BOUNCE_ANIMATION = { x: [0, 10, 0] };
+const BOUNCE_TRANSITION = {
+  duration: 1,
+  repeat: Number.POSITIVE_INFINITY,
+  ease: "easeInOut" as const,
+};
+
+function DisabledButton({ text }: { text: string }) {
+  return (
+    <div className="relative py-3 px-4 w-full">
+      <ButtonV2 variant="primary" size="large" className="w-full" disabled>
+        <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
+          {text}
+        </Typo.ButtonText>
+      </ButtonV2>
+    </div>
+  );
+}
+
 interface BottomButtonProps {
   firstActionId?: string;
   deadline?: Mission["deadline"];
   showResumeModal?: () => boolean;
   isCompleted: boolean;
   isActive: boolean;
-  hasReward: boolean;
   isRequirePassword: boolean;
   hasExistingResponse: boolean;
   isResuming?: boolean;
@@ -54,27 +60,16 @@ export function BottomButton({
   isResuming = false,
 }: BottomButtonProps) {
   const { missionId } = useParams<{ missionId: string }>();
-  const { data: missionParticipantInfo } = useReadMissionParticipantInfo(missionId);
-  const { data: missionResponseData } = useReadMissionResponseForMission({ missionId });
 
-  const hasMissionResponse = Boolean(missionResponseData?.data?.id);
-
-  const { currentParticipants, maxParticipants } = missionParticipantInfo?.data ?? {};
-
-  const isParticipantLimitReached = checkParticipantLimitReached({
-    maxParticipants,
-    currentParticipants,
-    hasExistingResponse: hasMissionResponse,
-  });
-
-  const { handleKakaoLogin } = useKakaoLogin({
-    redirectPath: ROUTES.MISSION(missionId),
-  });
-  const { isLoggedIn } = useAuth();
-  const router = useRouter();
-
-  const [isStarting, setIsStarting] = useState(false);
-  const isActionInitiatedRef = useRef(false);
+  const { handleClick, isStarting, isLoggedIn, hasMissionResponse, isParticipantLimitReached } =
+    useMissionStart({
+      missionId,
+      firstActionId,
+      isRequirePassword,
+      hasExistingResponse,
+      showResumeModal,
+      isResuming,
+    });
 
   const [isDeadlinePassed, setIsDeadlinePassed] = useState(false);
 
@@ -84,134 +79,20 @@ export function BottomButton({
     }
   }, [deadline]);
 
-  const isDisabled = isDeadlinePassed || !firstActionId;
-  const alreadyCompleted = isCompleted;
-
-  const { startResponse } = useCreateMissionResponse({ missionId });
-  const { mutateAsync: handleStartResponse } = startResponse;
-
-  const handleClick = async () => {
-    if (isStarting || isResuming || isActionInitiatedRef.current) return;
-    isActionInitiatedRef.current = true;
-
-    // 서버에서 직접 최신 데이터를 가져옴 (캐시 업데이트 없이 체크만)
-    const [latestParticipantInfo, latestMissionResponse] = await Promise.all([
-      getMissionParticipantInfo(missionId),
-      isLoggedIn ? getMyResponseForMission(missionId) : Promise.resolve({ data: null }),
-    ]);
-
-    const hasLatestMissionResponse = Boolean(latestMissionResponse?.data?.id);
-
-    const { currentParticipants: latestCurrent, maxParticipants: latestMax } =
-      latestParticipantInfo?.data ?? {};
-
-    const isLimitReached = checkParticipantLimitReached({
-      maxParticipants: latestMax,
-      currentParticipants: latestCurrent,
-      hasExistingResponse: hasLatestMissionResponse,
-    });
-
-    if (isLimitReached) {
-      isActionInitiatedRef.current = false;
-      toast.warning("참여 정원이 마감되었어요", { id: "participant-limit-error" });
-      return;
-    }
-
-    if (!isLoggedIn) {
-      handleKakaoLogin();
-      return;
-    }
-
-    if (isRequirePassword && !hasExistingResponse) {
-      router.push(ROUTES.MISSION_PASSWORD(missionId));
-      return;
-    }
-
-    if (showResumeModal) {
-      const modalShown = showResumeModal();
-      if (modalShown) {
-        // 모달이 표시되면 모달에서 처리하므로 ref 리셋
-        isActionInitiatedRef.current = false;
-        return;
-      }
-      if (!firstActionId) {
-        isActionInitiatedRef.current = false;
-        return;
-      }
-      try {
-        setIsStarting(true);
-        setActionNavCookie(missionId, "initial");
-        await handleStartResponse({ missionId });
-        router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
-      } catch {
-        isActionInitiatedRef.current = false;
-        setIsStarting(false);
-        toast.warning("미션 시작에 실패했어요. 다시 시도해주세요", {
-          id: "start-mission-error",
-        });
-      }
-    } else if (firstActionId) {
-      try {
-        setIsStarting(true);
-        setActionNavCookie(missionId, "initial");
-        await handleStartResponse({ missionId });
-        router.push(ROUTES.ACTION({ missionId, actionId: firstActionId }));
-      } catch {
-        isActionInitiatedRef.current = false;
-        setIsStarting(false);
-        toast.warning("미션 시작에 실패했어요. 다시 시도해주세요", { id: "start-mission-error" });
-      }
-    } else {
-      isActionInitiatedRef.current = false;
-    }
-  };
-
   if (isParticipantLimitReached) {
-    return (
-      <div className="relative py-3 px-4 w-full">
-        <ButtonV2 variant="primary" size="large" className="w-full" disabled>
-          <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
-            {BUTTON_TEXT.participantLimitReached}
-          </Typo.ButtonText>
-        </ButtonV2>
-      </div>
-    );
+    return <DisabledButton text={BUTTON_TEXT.participantLimitReached} />;
   }
 
   if (!isActive) {
-    return (
-      <div className="relative py-3 px-4 w-full">
-        <ButtonV2 variant="primary" size="large" className="w-full" disabled>
-          <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
-            {BUTTON_TEXT.notActive}
-          </Typo.ButtonText>
-        </ButtonV2>
-      </div>
-    );
+    return <DisabledButton text={BUTTON_TEXT.notActive} />;
   }
 
   if (isDeadlinePassed) {
-    return (
-      <div className="py-3 px-4 w-full">
-        <ButtonV2 variant="primary" size="large" className="w-full" disabled>
-          <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
-            {BUTTON_TEXT.expired}
-          </Typo.ButtonText>
-        </ButtonV2>
-      </div>
-    );
+    return <DisabledButton text={BUTTON_TEXT.expired} />;
   }
 
-  if (alreadyCompleted) {
-    return (
-      <div className="relative py-3 px-4 w-full">
-        <ButtonV2 variant="primary" size="large" className="w-full" disabled>
-          <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
-            {BUTTON_TEXT.alreadyCompleted}
-          </Typo.ButtonText>
-        </ButtonV2>
-      </div>
-    );
+  if (isCompleted) {
+    return <DisabledButton text={BUTTON_TEXT.alreadyCompleted} />;
   }
 
   if (!isLoggedIn) {
@@ -242,15 +123,15 @@ export function BottomButton({
         size="large"
         className="w-full"
         onClick={handleClick}
-        disabled={isDisabled}
+        disabled={isDeadlinePassed || !firstActionId}
         loading={isStarting || isResuming}
       >
         <Typo.ButtonText size="large" className="relative m-auto flex justify-center items-center">
           {hasMissionResponse ? BUTTON_TEXT.resume : BUTTON_TEXT.loggedIn}
           <motion.div
             className="absolute right-[-32px] top-0"
-            animate={{ x: [0, 10, 0] }}
-            transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+            animate={BOUNCE_ANIMATION}
+            transition={BOUNCE_TRANSITION}
           >
             <Typo.ButtonText size="large" className="w-full">
               👉

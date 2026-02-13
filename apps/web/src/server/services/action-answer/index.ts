@@ -1,6 +1,7 @@
 import {
   actionAnswerUpdateSchema,
   baseAnswerInputSchema,
+  branchAnswerInputSchema,
   dateAnswerInputSchema,
   imageAnswerInputSchema,
   multipleChoiceAnswerInputSchema,
@@ -139,6 +140,37 @@ export class ActionAnswerService {
     return this.answerRepo.update(answerId, updateData);
   }
 
+  async updateAnswerWithPruning(answerId: string, input: UpdateAnswerInput, userId: string) {
+    const validated = this.validateInput(input, actionAnswerUpdateSchema);
+    const answer = await this.getAnswerById(answerId, userId);
+    const action = await this.actionRepo.findById(answer.actionId);
+    if (action) {
+      this.validateAnswerByActionType(
+        {
+          responseId: answer.responseId,
+          actionId: answer.actionId,
+          ...validated,
+        },
+        action.type,
+        action.isRequired,
+      );
+    }
+    const { selectedOptionIds, ...otherFields } = validated;
+    const updateData: Prisma.ActionAnswerUpdateInput = {
+      ...otherFields,
+    };
+    if (selectedOptionIds !== undefined) {
+      updateData.options = {
+        set: selectedOptionIds.map(id => ({ id })),
+      };
+    }
+    const result = await this.answerRepo.updateWithPruning(answerId, updateData);
+    if (!result) {
+      this.throwError("답변 업데이트에 실패했습니다.", 500);
+    }
+    return result;
+  }
+
   async deleteAnswer(answerId: string, userId: string): Promise<void> {
     await this.getAnswerById(answerId, userId);
     await this.answerRepo.delete(answerId);
@@ -234,7 +266,8 @@ export class ActionAnswerService {
 
     switch (answer.type) {
       case ActionType.MULTIPLE_CHOICE:
-      case ActionType.TAG: {
+      case ActionType.TAG:
+      case ActionType.BRANCH: {
         const answerData: Prisma.ActionAnswerCreateInput = { ...baseAnswer };
 
         // Connect multiple options to single answer
@@ -244,7 +277,7 @@ export class ActionAnswerService {
           };
         }
 
-        // Add "기타" text answer if provided
+        // Add "기타" text answer if provided (not applicable for BRANCH)
         if (answer.textAnswer) {
           answerData.textAnswer = answer.textAnswer;
         }
@@ -308,6 +341,9 @@ export class ActionAnswerService {
           (!answer.selectedOptionIds || answer.selectedOptionIds.length === 0) && !answer.textAnswer
         );
 
+      case ActionType.BRANCH:
+        return !answer.selectedOptionIds || answer.selectedOptionIds.length === 0;
+
       case ActionType.SCALE:
       case ActionType.RATING:
         return answer.scaleValue === undefined;
@@ -344,6 +380,8 @@ export class ActionAnswerService {
         return multipleChoiceAnswerInputSchema;
       case ActionType.TAG:
         return tagAnswerInputSchema;
+      case ActionType.BRANCH:
+        return branchAnswerInputSchema;
       case ActionType.IMAGE:
         return imageAnswerInputSchema;
       case ActionType.PDF:

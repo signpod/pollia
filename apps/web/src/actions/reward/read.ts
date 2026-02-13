@@ -1,9 +1,8 @@
 "use server";
 
 import { rewardService } from "@/server/services/reward/rewardService";
-import type { GetRewardResponse, GetRewardsResponse } from "@/types/dto";
 
-export async function getReward(rewardId: string): Promise<GetRewardResponse> {
+export async function getReward(rewardId: string) {
   try {
     const reward = await rewardService.getReward(rewardId);
     return { data: reward };
@@ -18,7 +17,7 @@ export async function getReward(rewardId: string): Promise<GetRewardResponse> {
   }
 }
 
-export async function getRewards(): Promise<GetRewardsResponse> {
+export async function getRewards() {
   try {
     const rewards = await rewardService.getRewards();
     return { data: rewards };

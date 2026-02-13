@@ -1,7 +1,9 @@
 import prisma from "@/database/utils/prisma/client";
 import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
 import type { SortOrderType } from "@/types/common/sort";
-import { type ActionType, type MissionType, Prisma } from "@prisma/client";
+import { type ActionType, type MissionCategory, type MissionType, Prisma } from "@prisma/client";
+
+type TransactionClient = Prisma.TransactionClient;
 
 export class MissionRepository {
   async findById(missionId: string) {
@@ -16,13 +18,45 @@ export class MissionRepository {
       cursor?: string;
       limit?: number;
       sortOrder?: SortOrderType;
+      category?: MissionCategory;
     },
   ) {
     const limit = options?.limit ?? 10;
     const sortOrder = options?.sortOrder ?? "latest";
 
     return prisma.mission.findMany({
-      where: { creatorId: userId },
+      where: {
+        creatorId: userId,
+        ...(options?.category && { category: options.category }),
+      },
+      orderBy: {
+        updatedAt: sortOrder === "latest" ? "desc" : "asc",
+      },
+      take: limit + 1,
+      ...(options?.cursor && {
+        cursor: {
+          id: options.cursor,
+        },
+        skip: 1,
+      }),
+    });
+  }
+
+  async findAll(options?: {
+    cursor?: string;
+    limit?: number;
+    sortOrder?: SortOrderType;
+    category?: MissionCategory;
+    type?: MissionType;
+  }) {
+    const limit = options?.limit ?? 10;
+    const sortOrder = options?.sortOrder ?? "latest";
+
+    return prisma.mission.findMany({
+      where: {
+        ...(options?.category && { category: options.category }),
+        ...(options?.type && { type: options.type }),
+      },
       orderBy: {
         updatedAt: sortOrder === "latest" ? "desc" : "asc",
       },
@@ -63,6 +97,13 @@ export class MissionRepository {
       await confirmFileUploads(tx, data.creatorId, fileUploadIds);
 
       return createdMission;
+    });
+  }
+
+  async updateLikesCount(missionId: string, delta: number, client: TransactionClient = prisma) {
+    return client.mission.update({
+      where: { id: missionId },
+      data: { likesCount: { increment: delta } },
     });
   }
 
@@ -109,19 +150,24 @@ export class MissionRepository {
       isActive: boolean;
       type: MissionType;
       creatorId: string;
+      entryActionId?: string | null;
     },
     actionsData: Array<{
       title: string;
       description?: string | null;
       imageUrl?: string | null;
       type: ActionType;
-      order: number;
+      order: number | null;
       maxSelections?: number | null;
+      nextActionId?: string | null;
+      nextCompletionId?: string | null;
       options: Array<{
         title: string;
         description?: string | null;
         imageUrl?: string | null;
         order: number;
+        nextActionId?: string | null;
+        nextCompletionId?: string | null;
       }>;
     }>,
   ) {
@@ -138,6 +184,7 @@ export class MissionRepository {
           isActive: missionData.isActive,
           type: missionData.type,
           creatorId: missionData.creatorId,
+          entryActionId: missionData.entryActionId,
         },
       });
 
@@ -151,6 +198,8 @@ export class MissionRepository {
             type: actionData.type,
             order: actionData.order,
             maxSelections: actionData.maxSelections,
+            nextActionId: actionData.nextActionId,
+            nextCompletionId: actionData.nextCompletionId,
           },
         });
 
@@ -162,6 +211,8 @@ export class MissionRepository {
               description: opt.description,
               imageUrl: opt.imageUrl,
               order: opt.order,
+              nextActionId: opt.nextActionId,
+              nextCompletionId: opt.nextCompletionId,
             })),
           });
         }

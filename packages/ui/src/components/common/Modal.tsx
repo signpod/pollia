@@ -112,7 +112,7 @@ export function ModalProvider({ children }: ModalProviderProps) {
         <DialogPortal>
           <DialogOverlay
             onClick={close}
-            className="inset-auto top-0 bottom-0 left-1/2 w-full max-w-lg -translate-x-1/2"
+            className="inset-auto top-0 bottom-0 left-1/2 w-full max-w-[600px] -translate-x-1/2"
           />
           <div
             className={cn(

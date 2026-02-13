@@ -2,6 +2,8 @@ import prisma from "@/database/utils/prisma/client";
 import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
 import { Prisma } from "@prisma/client";
 
+type PrismaTransaction = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+
 export class ActionAnswerRepository {
   async findById(id: string) {
     return prisma.actionAnswer.findUnique({
@@ -238,6 +240,128 @@ export class ActionAnswerRepository {
         responseId,
         actionId: { in: actionIds },
       },
+    });
+  }
+
+  /**
+   * BFS로 nextActionId를 탐색하여 무효화된 답변 ID 반환
+   * - ActionOption.nextActionId 우선, null이면 Action.nextActionId 폴백
+   */
+  async collectInvalidAnswersByOptions(
+    responseId: string,
+    optionIds: string[],
+    tx?: PrismaTransaction,
+  ): Promise<string[]> {
+    const client = tx || prisma;
+    const answersToDelete: string[] = [];
+    const visitedActions = new Set<string>();
+
+    const options = await client.actionOption.findMany({
+      where: { id: { in: optionIds } },
+      select: {
+        id: true,
+        nextActionId: true,
+        nextCompletionId: true,
+        action: {
+          select: {
+            id: true,
+            nextActionId: true,
+          },
+        },
+      },
+    });
+
+    const allAnswers = await client.actionAnswer.findMany({
+      where: { responseId },
+      include: {
+        action: {
+          select: {
+            id: true,
+            nextActionId: true,
+          },
+        },
+        options: {
+          select: {
+            id: true,
+            nextActionId: true,
+            nextCompletionId: true,
+          },
+        },
+      },
+    });
+
+    const answersByActionId = new Map(allAnswers.map(answer => [answer.actionId, answer]));
+
+    // 초기 큐: ActionOption.nextActionId 우선, 없으면 Action.nextActionId 사용
+    const queue: string[] = options
+      .map(opt => opt.nextActionId || opt.action.nextActionId)
+      .filter((id): id is string => id !== null);
+
+    while (queue.length > 0) {
+      const actionId = queue.shift();
+      if (!actionId) continue;
+
+      if (visitedActions.has(actionId)) continue;
+      visitedActions.add(actionId);
+
+      const userAnswer = answersByActionId.get(actionId);
+
+      if (!userAnswer) continue;
+
+      answersToDelete.push(userAnswer.id);
+
+      const hasCompletion = userAnswer.options.some(opt => opt.nextCompletionId !== null);
+      if (hasCompletion) continue;
+
+      // 다음 액션: 각 옵션에서 ActionOption.nextActionId 우선, 없으면 Action.nextActionId 사용
+      const nextActionIds = userAnswer.options
+        .map(opt => opt.nextActionId || userAnswer.action.nextActionId)
+        .filter((id): id is string => id !== null);
+      const uniqueNextActionIds = [...new Set(nextActionIds)];
+      queue.push(...uniqueNextActionIds);
+    }
+
+    return answersToDelete;
+  }
+
+  async updateWithPruning(answerId: string, updateData: Prisma.ActionAnswerUpdateInput) {
+    return prisma.$transaction(async tx => {
+      const answer = await tx.actionAnswer.findFirst({
+        where: { id: answerId },
+        include: {
+          options: {
+            select: { id: true },
+          },
+        },
+      });
+
+      if (!answer) {
+        return null;
+      }
+
+      const oldOptionIds = answer.options.map(opt => opt.id);
+
+      const invalidAnswerIds = await this.collectInvalidAnswersByOptions(
+        answer.responseId,
+        oldOptionIds,
+        tx,
+      );
+
+      if (invalidAnswerIds.length > 0) {
+        await tx.actionAnswer.deleteMany({
+          where: { id: { in: invalidAnswerIds } },
+        });
+      }
+
+      return tx.actionAnswer.update({
+        where: { id: answerId },
+        data: updateData,
+        include: {
+          action: true,
+          options: true,
+          fileUploads: true,
+        },
+      });
     });
   }
 }

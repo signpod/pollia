@@ -1,4 +1,4 @@
-import { MissionType } from "@prisma/client";
+import { MissionCategory, MissionType } from "@prisma/client";
 import { z } from "zod";
 
 export const MISSION_TITLE_MAX_LENGTH = 100;
@@ -6,6 +6,7 @@ export const MISSION_DESCRIPTION_MAX_LENGTH = 2000;
 export const MISSION_TARGET_MAX_LENGTH = 100;
 
 const missionTypeSchema = z.enum(MissionType);
+const missionCategorySchema = z.enum(MissionCategory);
 
 export const titleSchema = z
   .string()
@@ -32,6 +33,7 @@ const imageFileUploadIdSchema = z.string().nullable().optional();
 const brandLogoUrlSchema = z.url({ message: "올바른 URL 형식이 아닙니다." }).nullable().optional();
 const brandLogoFileUploadIdSchema = z.string().nullable().optional();
 
+const startDateSchema = z.date().nullable().optional();
 const deadlineSchema = z.date().nullable().optional();
 
 const estimatedMinutesSchema = z
@@ -53,6 +55,18 @@ const actionIdsSchema = z.array(z.string().min(1, "액션 ID가 비어있습니�
 
 const eventIdSchema = z.string().nullable().optional();
 
+const dateRangeRefine = (data: { startDate?: Date | null; deadline?: Date | null }) => {
+  if (data.startDate && data.deadline) {
+    return data.startDate <= data.deadline;
+  }
+  return true;
+};
+
+const dateRangeError = {
+  message: "시작일은 마감일보다 이전이어야 합니다.",
+  path: ["startDate"],
+};
+
 const passwordSchema = z
   .string()
   .length(6, "비밀번호는 정확히 6자리여야 합니다.")
@@ -62,22 +76,27 @@ export const missionPasswordSchema = z.object({
   password: passwordSchema,
 });
 
-export const missionInputSchema = z.object({
-  title: titleSchema,
-  description: descriptionSchema,
-  target: targetSchema,
-  imageUrl: imageUrlSchema,
-  imageFileUploadId: imageFileUploadIdSchema,
-  brandLogoUrl: brandLogoUrlSchema,
-  brandLogoFileUploadId: brandLogoFileUploadIdSchema,
-  deadline: deadlineSchema,
-  estimatedMinutes: estimatedMinutesSchema,
-  maxParticipants: maxParticipantsSchema,
-  type: missionTypeSchema,
-  actionIds: actionIdsSchema,
-  eventId: eventIdSchema,
-  isActive: z.boolean().optional(),
-});
+export const missionInputSchema = z
+  .object({
+    title: titleSchema,
+    description: descriptionSchema,
+    target: targetSchema,
+    imageUrl: imageUrlSchema,
+    imageFileUploadId: imageFileUploadIdSchema,
+    brandLogoUrl: brandLogoUrlSchema,
+    brandLogoFileUploadId: brandLogoFileUploadIdSchema,
+    startDate: startDateSchema,
+    deadline: deadlineSchema,
+    estimatedMinutes: estimatedMinutesSchema,
+    maxParticipants: maxParticipantsSchema,
+    type: missionTypeSchema,
+    category: missionCategorySchema,
+    actionIds: actionIdsSchema,
+    eventId: eventIdSchema,
+    isActive: z.boolean().optional(),
+    entryActionId: z.string().nullable().optional(),
+  })
+  .refine(dateRangeRefine, dateRangeError);
 
 export const missionUpdateSchema = z
   .object({
@@ -88,17 +107,21 @@ export const missionUpdateSchema = z
     imageFileUploadId: imageFileUploadIdSchema,
     brandLogoUrl: brandLogoUrlSchema,
     brandLogoFileUploadId: brandLogoFileUploadIdSchema,
+    startDate: startDateSchema,
     deadline: deadlineSchema,
     estimatedMinutes: estimatedMinutesSchema,
     maxParticipants: maxParticipantsSchema.optional(),
     type: missionTypeSchema.optional(),
+    category: missionCategorySchema.optional(),
     isActive: z.boolean().optional(),
     rewardId: z.string().nullable().optional(),
     eventId: eventIdSchema,
+    entryActionId: z.string().nullable().optional(),
   })
   .refine(data => Object.keys(data).length > 0, {
     message: "최소 하나의 필드를 수정해야 합니다.",
-  });
+  })
+  .refine(dateRangeRefine, dateRangeError);
 
 export type MissionInput = z.input<typeof missionInputSchema>;
 export type MissionUpdate = z.input<typeof missionUpdateSchema>;

@@ -19,8 +19,10 @@ describe("MissionService - Mutation", () => {
     mockRepository = {
       findById: jest.fn(),
       findByUserId: jest.fn(),
+      findAll: jest.fn(),
       createWithActions: jest.fn(),
       update: jest.fn(),
+      updateLikesCount: jest.fn(),
       delete: jest.fn(),
       duplicateMission: jest.fn(),
     } as jest.Mocked<MissionRepository>;
@@ -229,6 +231,57 @@ describe("MissionService - Mutation", () => {
       await expectServiceErrorWithCause(
         missionService.setPassword("mission-1", "", "user-1"),
         "비밀번호는 정확히 6자리여야 합니다.",
+        400,
+      );
+    });
+
+    it("5자 비밀번호면 400 에러를 던진다", async () => {
+      // Given
+      const mockMission = createMockMission({
+        type: "EXPERIENCE_GROUP",
+        password: null,
+        creatorId: "user-1",
+      });
+      mockRepository.findById.mockResolvedValue(mockMission);
+
+      // When & Then
+      await expectServiceErrorWithCause(
+        missionService.setPassword("mission-1", "12345", "user-1"),
+        "비밀번호는 정확히 6자리여야 합니다.",
+        400,
+      );
+    });
+
+    it("7자 비밀번호면 400 에러를 던진다", async () => {
+      // Given
+      const mockMission = createMockMission({
+        type: "EXPERIENCE_GROUP",
+        password: null,
+        creatorId: "user-1",
+      });
+      mockRepository.findById.mockResolvedValue(mockMission);
+
+      // When & Then
+      await expectServiceErrorWithCause(
+        missionService.setPassword("mission-1", "1234567", "user-1"),
+        "비밀번호는 정확히 6자리여야 합니다.",
+        400,
+      );
+    });
+
+    it("숫자가 아닌 문자가 포함되면 400 에러를 던진다", async () => {
+      // Given
+      const mockMission = createMockMission({
+        type: "EXPERIENCE_GROUP",
+        password: null,
+        creatorId: "user-1",
+      });
+      mockRepository.findById.mockResolvedValue(mockMission);
+
+      // When & Then
+      await expectServiceErrorWithCause(
+        missionService.setPassword("mission-1", "abcdef", "user-1"),
+        "비밀번호는 6자리 숫자만 가능합니다.",
         400,
       );
     });

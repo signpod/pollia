@@ -14,8 +14,10 @@ describe("MissionService - Read", () => {
     mockRepository = {
       findById: jest.fn(),
       findByUserId: jest.fn(),
+      findAll: jest.fn(),
       createWithActions: jest.fn(),
       update: jest.fn(),
+      updateLikesCount: jest.fn(),
       delete: jest.fn(),
       duplicateMission: jest.fn(),
     } as jest.Mocked<MissionRepository>;
@@ -151,8 +153,22 @@ describe("MissionService - Read", () => {
           updatedAt: new Date("2024-01-01"),
         },
         [
-          { id: "opt1", title: "선택지 1", description: null, imageUrl: null, order: 1 },
-          { id: "opt2", title: "선택지 2", description: null, imageUrl: null, order: 2 },
+          {
+            id: "opt1",
+            title: "선택지 1",
+            description: null,
+            imageUrl: null,
+            fileUploadId: null,
+            order: 1,
+          },
+          {
+            id: "opt2",
+            title: "선택지 2",
+            description: null,
+            imageUrl: null,
+            fileUploadId: null,
+            order: 2,
+          },
         ],
       );
       mockActionRepository.findById.mockResolvedValue(mockAction);
@@ -203,7 +219,16 @@ describe("MissionService - Read", () => {
             createdAt: testDate,
             updatedAt: testDate,
           },
-          [{ id: "opt1", title: "선택지 1", description: null, imageUrl: null, order: 1 }],
+          [
+            {
+              id: "opt1",
+              title: "선택지 1",
+              description: null,
+              imageUrl: null,
+              fileUploadId: null,
+              order: 1,
+            },
+          ],
         ),
         createMockActionWithOptions(
           {
@@ -324,6 +349,64 @@ describe("MissionService - Read", () => {
       expect(result[0]?.id).toBe("mission-1");
       expect(result[1]?.id).toBe("mission-2");
     });
+
+    it("limit이 1일 때 정상 작동한다", async () => {
+      // Given
+      const mockMissions = [
+        createMockMission({ id: "mission-1" }),
+        createMockMission({ id: "mission-2" }),
+      ];
+      mockRepository.findByUserId.mockResolvedValue(mockMissions);
+
+      // When
+      const result = await missionService.getUserMissions("user-1", { limit: 1 });
+
+      // Then
+      expect(result).toHaveLength(1);
+      expect(result[0]?.id).toBe("mission-1");
+    });
+
+    it("결과가 limit와 정확히 같을 때 모두 반환한다", async () => {
+      // Given
+      const mockMissions = [
+        createMockMission({ id: "mission-1" }),
+        createMockMission({ id: "mission-2" }),
+      ];
+      mockRepository.findByUserId.mockResolvedValue(mockMissions);
+
+      // When
+      const result = await missionService.getUserMissions("user-1", { limit: 2 });
+
+      // Then
+      expect(result).toHaveLength(2);
+      expect(result[0]?.id).toBe("mission-1");
+      expect(result[1]?.id).toBe("mission-2");
+    });
+
+    it("결과가 limit보다 적을 때 모두 반환한다", async () => {
+      // Given
+      const mockMissions = [createMockMission({ id: "mission-1" })];
+      mockRepository.findByUserId.mockResolvedValue(mockMissions);
+
+      // When
+      const result = await missionService.getUserMissions("user-1", { limit: 10 });
+
+      // Then
+      expect(result).toHaveLength(1);
+      expect(result[0]?.id).toBe("mission-1");
+    });
+
+    it("빈 배열일 때 빈 배열을 반환한다", async () => {
+      // Given
+      mockRepository.findByUserId.mockResolvedValue([]);
+
+      // When
+      const result = await missionService.getUserMissions("user-1");
+
+      // Then
+      expect(result).toEqual([]);
+      expect(result).toHaveLength(0);
+    });
   });
 
   describe("getMissionWithParticipantInfo", () => {
@@ -342,11 +425,15 @@ describe("MissionService - Read", () => {
       const result = await missionService.getMissionWithParticipantInfo("mission-1");
 
       // Then
-      expect(result).toEqual({
+      expect(result).toMatchObject({
         currentParticipants: 45,
         maxParticipants: 100,
         isClosed: false,
+        isNotStarted: false,
+        isDeadlinePassed: false,
+        isParticipantLimitReached: false,
       });
+      expect(result.mission.id).toBe("mission-1");
     });
 
     it("maxParticipants가 null이면 isClosed는 false이다", async () => {
@@ -423,6 +510,65 @@ describe("MissionService - Read", () => {
       expect(result.isClosed).toBe(true);
     });
 
+    it("시작일이 미래이면 isClosed는 true이다", async () => {
+      // Given
+      const futureDate = new Date("2030-12-31");
+      const mockMission = createMockMission({
+        id: "mission-1",
+        isActive: true,
+        maxParticipants: 100,
+        startDate: futureDate,
+        deadline: null,
+      });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockResponseRepository.countByMissionId.mockResolvedValue(10);
+
+      // When
+      const result = await missionService.getMissionWithParticipantInfo("mission-1");
+
+      // Then
+      expect(result.isClosed).toBe(true);
+    });
+
+    it("시작일이 과거이면 isClosed는 false이다", async () => {
+      // Given
+      const pastDate = new Date("2020-01-01");
+      const mockMission = createMockMission({
+        id: "mission-1",
+        isActive: true,
+        maxParticipants: 100,
+        startDate: pastDate,
+        deadline: null,
+      });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockResponseRepository.countByMissionId.mockResolvedValue(10);
+
+      // When
+      const result = await missionService.getMissionWithParticipantInfo("mission-1");
+
+      // Then
+      expect(result.isClosed).toBe(false);
+    });
+
+    it("시작일이 null이면 isClosed는 false이다", async () => {
+      // Given
+      const mockMission = createMockMission({
+        id: "mission-1",
+        isActive: true,
+        maxParticipants: 100,
+        startDate: null,
+        deadline: null,
+      });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockResponseRepository.countByMissionId.mockResolvedValue(10);
+
+      // When
+      const result = await missionService.getMissionWithParticipantInfo("mission-1");
+
+      // Then
+      expect(result.isClosed).toBe(false);
+    });
+
     it("미션이 없으면 404 에러를 던진다", async () => {
       // Given
       mockRepository.findById.mockResolvedValue(null);
@@ -474,6 +620,19 @@ describe("MissionService - Read", () => {
       expect(mockResponseRepository.countByMissionId).not.toHaveBeenCalled();
     });
 
+    it("정원 직전(n-1)이면 에러 없이 통과한다", async () => {
+      // Given
+      const mockMission = createMockMission({
+        id: "mission-1",
+        maxParticipants: 50,
+      });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockResponseRepository.countByMissionId.mockResolvedValue(49);
+
+      // When & Then
+      await expect(missionService.checkParticipantLimit("mission-1")).resolves.not.toThrow();
+    });
+
     it("정원 초과 시 403 에러를 던진다", async () => {
       // Given
       const mockMission = createMockMission({
@@ -493,6 +652,61 @@ describe("MissionService - Read", () => {
       } catch (error) {
         expect(error instanceof Error && error.cause).toBe(403);
       }
+    });
+
+    it("정원 초과(n+1) 시 403 에러를 던진다", async () => {
+      // Given
+      const mockMission = createMockMission({
+        id: "mission-1",
+        maxParticipants: 50,
+      });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockResponseRepository.countByMissionId.mockResolvedValue(51);
+
+      // When & Then
+      await expect(missionService.checkParticipantLimit("mission-1")).rejects.toThrow(
+        "참여 정원이 마감되었어요.",
+      );
+
+      try {
+        await missionService.checkParticipantLimit("mission-1");
+      } catch (error) {
+        expect(error instanceof Error && error.cause).toBe(403);
+      }
+    });
+
+    it("최소 정원(1)이 꽉 차면 403 에러를 던진다", async () => {
+      // Given
+      const mockMission = createMockMission({
+        id: "mission-1",
+        maxParticipants: 1,
+      });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockResponseRepository.countByMissionId.mockResolvedValue(1);
+
+      // When & Then
+      await expect(missionService.checkParticipantLimit("mission-1")).rejects.toThrow(
+        "참여 정원이 마감되었어요.",
+      );
+
+      try {
+        await missionService.checkParticipantLimit("mission-1");
+      } catch (error) {
+        expect(error instanceof Error && error.cause).toBe(403);
+      }
+    });
+
+    it("최소 정원(1)이 비어있으면 에러 없이 통과한다", async () => {
+      // Given
+      const mockMission = createMockMission({
+        id: "mission-1",
+        maxParticipants: 1,
+      });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockResponseRepository.countByMissionId.mockResolvedValue(0);
+
+      // When & Then
+      await expect(missionService.checkParticipantLimit("mission-1")).resolves.not.toThrow();
     });
 
     it("미션이 없으면 404 에러를 던진다", async () => {

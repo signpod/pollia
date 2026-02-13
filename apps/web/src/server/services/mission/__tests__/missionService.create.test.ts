@@ -14,8 +14,10 @@ describe("MissionService - Create", () => {
     mockRepository = {
       findById: jest.fn(),
       findByUserId: jest.fn(),
+      findAll: jest.fn(),
       createWithActions: jest.fn(),
       update: jest.fn(),
+      updateLikesCount: jest.fn(),
       delete: jest.fn(),
       duplicateMission: jest.fn(),
     } as jest.Mocked<MissionRepository>;
@@ -71,6 +73,7 @@ describe("MissionService - Create", () => {
         deadline: new Date("2024-12-31"),
         estimatedMinutes: 10,
         type: "GENERAL" as const,
+        category: "EVENT" as const,
         actionIds: ["a1", "a2"],
       };
       const mockCreatedMission = {
@@ -85,14 +88,18 @@ describe("MissionService - Create", () => {
         isActive: true,
         maxParticipants: null,
         type: "GENERAL" as const,
+        category: "EVENT" as const,
         password: null,
+        likesCount: 0,
         creatorId: "user-1",
         rewardId: null,
         imageFileUploadId: null,
         brandLogoFileUploadId: null,
         eventId: null,
+        entryActionId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
+        startDate: null,
       };
       mockRepository.createWithActions.mockResolvedValue(mockCreatedMission);
 
@@ -115,6 +122,7 @@ describe("MissionService - Create", () => {
           estimatedMinutes: request.estimatedMinutes,
           maxParticipants: undefined,
           type: "GENERAL",
+          category: "EVENT",
           creatorId: "user-1",
         },
         ["a1", "a2"],
@@ -132,12 +140,97 @@ describe("MissionService - Create", () => {
         deadline: undefined,
         estimatedMinutes: undefined,
         type: "GENERAL" as const,
+        category: "EVENT" as const,
         actionIds: ["a1"],
       };
 
       // When & Then
       await expect(missionService.createMission(request, "user-1")).rejects.toThrow(
         "제목을 입력해주세요.",
+      );
+
+      try {
+        await missionService.createMission(request, "user-1");
+      } catch (error) {
+        expect((error as Error & { cause: number }).cause).toBe(400);
+      }
+    });
+
+    it("제목이 1자일 때 성공한다", async () => {
+      // Given
+      const request = {
+        title: "A",
+        description: undefined,
+        target: undefined,
+        imageUrl: undefined,
+        brandLogoUrl: undefined,
+        deadline: undefined,
+        estimatedMinutes: undefined,
+        type: "GENERAL" as const,
+        category: "EVENT" as const,
+        actionIds: [],
+      };
+      const mockCreatedMission = createMockMission({
+        id: "mission-1",
+        title: "A",
+      });
+      mockRepository.createWithActions.mockResolvedValue(mockCreatedMission);
+
+      // When
+      const result = await missionService.createMission(request, "user-1");
+
+      // Then
+      expect(result.title).toBe("A");
+    });
+
+    it("제목이 100자일 때 성공한다", async () => {
+      // Given
+      const title = "A".repeat(100);
+      const request = {
+        title,
+        description: undefined,
+        target: undefined,
+        imageUrl: undefined,
+        brandLogoUrl: undefined,
+        deadline: undefined,
+        estimatedMinutes: undefined,
+        type: "GENERAL" as const,
+        category: "EVENT" as const,
+        actionIds: [],
+      };
+      const mockCreatedMission = createMockMission({
+        id: "mission-1",
+        title,
+      });
+      mockRepository.createWithActions.mockResolvedValue(mockCreatedMission);
+
+      // When
+      const result = await missionService.createMission(request, "user-1");
+
+      // Then
+      expect(result.title).toBe(title);
+      expect(result.title.length).toBe(100);
+    });
+
+    it("제목이 101자일 때 400 에러를 던진다", async () => {
+      // Given
+      const title = "A".repeat(101);
+      const request = {
+        title,
+        description: undefined,
+        target: undefined,
+        imageUrl: undefined,
+        brandLogoUrl: undefined,
+        deadline: undefined,
+        estimatedMinutes: undefined,
+        type: "GENERAL" as const,
+        category: "EVENT" as const,
+        actionIds: [],
+      };
+
+      // When & Then
+      await expect(missionService.createMission(request, "user-1")).rejects.toThrow(
+        "제목은 100자를 초과할 수 없습니다.",
       );
 
       try {
@@ -181,9 +274,17 @@ describe("MissionService - Create", () => {
               title: "선택지 1",
               description: null,
               imageUrl: "https://example.com/opt1.jpg",
+              fileUploadId: null,
               order: 0,
             },
-            { id: "opt-2", title: "선택지 2", description: null, imageUrl: null, order: 1 },
+            {
+              id: "opt-2",
+              title: "선택지 2",
+              description: null,
+              imageUrl: null,
+              fileUploadId: null,
+              order: 1,
+            },
           ],
         ),
         createMockActionWithOptions(
@@ -195,7 +296,16 @@ describe("MissionService - Create", () => {
             order: 1,
             isRequired: false,
           },
-          [{ id: "opt-3", title: "척도 1", description: null, imageUrl: null, order: 0 }],
+          [
+            {
+              id: "opt-3",
+              title: "척도 1",
+              description: null,
+              imageUrl: null,
+              fileUploadId: null,
+              order: 0,
+            },
+          ],
         ),
       ];
 
@@ -236,6 +346,7 @@ describe("MissionService - Create", () => {
           type: "GENERAL",
           isActive: false,
           creatorId: "user-1",
+          entryActionId: null,
         },
         [
           {
@@ -245,18 +356,24 @@ describe("MissionService - Create", () => {
             type: "MULTIPLE_CHOICE",
             order: 0,
             maxSelections: 1,
+            nextActionId: null,
+            nextCompletionId: null,
             options: [
               {
                 title: "선택지 1",
                 description: null,
                 imageUrl: "https://example.com/opt1.jpg",
                 order: 0,
+                nextActionId: null,
+                nextCompletionId: null,
               },
               {
                 title: "선택지 2",
                 description: null,
                 imageUrl: null,
                 order: 1,
+                nextActionId: null,
+                nextCompletionId: null,
               },
             ],
           },
@@ -267,12 +384,16 @@ describe("MissionService - Create", () => {
             type: "SCALE",
             order: 1,
             maxSelections: null,
+            nextActionId: null,
+            nextCompletionId: null,
             options: [
               {
                 title: "척도 1",
                 description: null,
                 imageUrl: null,
                 order: 0,
+                nextActionId: null,
+                nextCompletionId: null,
               },
             ],
           },
@@ -364,14 +485,18 @@ describe("MissionService - Create", () => {
         isActive: true,
         maxParticipants: null,
         type: "GENERAL" as const,
+        category: "EVENT" as const,
         password: null,
+        likesCount: 0,
         creatorId: "user-1",
         rewardId: null,
         imageFileUploadId: null,
         brandLogoFileUploadId: null,
         eventId: null,
+        entryActionId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
+        startDate: null,
       };
 
       const mockDuplicatedMission = {
@@ -386,14 +511,18 @@ describe("MissionService - Create", () => {
         isActive: false,
         maxParticipants: null,
         type: "GENERAL" as const,
+        category: "EVENT" as const,
         password: null,
+        likesCount: 0,
         creatorId: "user-1",
         rewardId: null,
         imageFileUploadId: null,
         brandLogoFileUploadId: null,
         eventId: null,
+        entryActionId: null,
         createdAt: new Date(),
         updatedAt: new Date(),
+        startDate: null,
       };
 
       mockRepository.findById.mockResolvedValue(mockMission);

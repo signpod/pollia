@@ -1,0 +1,14 @@
+model MissionLike {
+  id        String   @id @default(cuid())
+  missionId String   @map("mission_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  mission Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([missionId, userId])
+  @@index([userId])
+  @@index([missionId])
+  @@map("mission_likes")
+}

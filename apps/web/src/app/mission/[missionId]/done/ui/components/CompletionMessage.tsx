@@ -35,7 +35,7 @@ export function CompletionMessage({
       )}
       {showDescription && description && (
         <motion.div {...fadeInAnimation}>
-          <TiptapViewer content={cleanTiptapHTML(description)} className="break-keep text-center" />
+          <TiptapViewer content={cleanTiptapHTML(description)} className="break-keep" />
         </motion.div>
       )}
     </div>

@@ -239,7 +239,6 @@ export function CompletionStep({ form }: CompletionStepProps) {
         <CardContent>
           <div className="space-y-2">
             <ImageSelector
-              size="large"
               imageUrl={completionImageUrl}
               onImageSelect={imageUpload.upload}
               onImageDelete={() => {

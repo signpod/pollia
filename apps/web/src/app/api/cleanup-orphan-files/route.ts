@@ -15,19 +15,10 @@ export async function GET(request: NextRequest) {
 
     const startTime = Date.now();
 
-    console.log("🧹 고아 파일 정리 작업 시작...");
-
     const result = await cleanupOrphanFiles();
 
     const endTime = Date.now();
     const duration = endTime - startTime;
-
-    console.log("✅ 고아 파일 정리 완료:", {
-      deletedCount: result.deletedCount,
-      failedCount: result.failedCount,
-      duration: `${duration}ms`,
-      timestamp: new Date().toISOString(),
-    });
 
     return NextResponse.json({
       success: true,

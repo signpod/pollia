@@ -1,5 +1,6 @@
 "use client";
 
+import { MobilePreviewPanel } from "@/app/admin/components/common/MobilePreviewPanel";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +22,7 @@ import {
   useReorderActions,
   useUpdateAction,
 } from "@/app/admin/hooks/action";
+import { MissionActionPage } from "@/components/common/pages/MissionActionPage";
 import type { ActionDetail } from "@/types/dto";
 import {
   DndContext,
@@ -34,17 +36,17 @@ import {
 import {
   SortableContext,
   arrayMove,
-  horizontalListSortingStrategy,
   sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { AlertCircle, FileText, Plus } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { CreateActionDialog } from "../../edit/components/CreateActionDialog";
-import { EditActionDialog } from "../../edit/components/EditActionDialog";
-import type { ActionFormData } from "../../edit/components/action-forms";
 import { ActionDetailCard } from "./ActionDetailCard";
+import { CreateActionDialog } from "./CreateActionDialog";
+import { EditActionDialog } from "./EditActionDialog";
 import { SortableActionTab } from "./SortableActionTab";
+import type { ActionFormData } from "./action-forms";
 
 interface MissionActionListProps {
   missionId: string;
@@ -54,6 +56,7 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
   const { data: actionsResponse, isLoading, error } = useReadActionsDetail(missionId);
   const [actions, setActions] = useState<ActionDetail[]>([]);
   const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
+  const previewAnchorRef = useRef<HTMLDivElement>(null);
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -106,7 +109,7 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
 
   useEffect(() => {
     if (actionsResponse?.data) {
-      const sorted = [...actionsResponse.data].sort((a, b) => a.order - b.order);
+      const sorted = [...actionsResponse.data].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
       setActions(sorted);
       const firstAction = sorted[0];
       if (!selectedActionId && firstAction) {
@@ -170,10 +173,11 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
       options:
         "options" in data
           ? data.options.map((opt, index) => ({
+              id: opt.id,
               title: opt.title,
               description: opt.description,
               imageUrl: opt.imageUrl,
-              imageFileUploadId: opt.imageFileUploadId,
+              fileUploadId: opt.fileUploadId,
               order: index,
             }))
           : undefined,
@@ -186,21 +190,13 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <div className="flex gap-2">
-          {[1, 2, 3].map(i => (
-            <Skeleton key={i} className="h-10 w-32" />
-          ))}
+      <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6">
+        <div className="space-y-2">
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-20 w-full" />
         </div>
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-32 mb-2" />
-            <Skeleton className="h-8 w-full max-w-md" />
-          </CardHeader>
-          <CardContent>
-            <Skeleton className="h-48 w-full" />
-          </CardContent>
-        </Card>
+        <Skeleton className="h-96 w-full" />
       </div>
     );
   }
@@ -225,11 +221,17 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
 
   if (actions.length === 0) {
     return (
-      <div className="space-y-4">
-        <Button variant="outline" onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="size-4 mr-2" />새 액션 추가
-        </Button>
+      <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6">
         <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-muted-foreground">액션 목록 (0)</h3>
+              <Button size="sm" onClick={() => setIsCreateDialogOpen(true)}>
+                <Plus className="h-4 w-4 mr-1" />
+                추가
+              </Button>
+            </div>
+          </CardHeader>
           <CardContent className="pt-6">
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <FileText className="h-12 w-12 text-muted-foreground/30 mb-4" />
@@ -242,6 +244,7 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
             </div>
           </CardContent>
         </Card>
+        <div />
         <CreateActionDialog
           open={isCreateDialogOpen}
           onOpenChange={setIsCreateDialogOpen}
@@ -253,38 +256,60 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
   }
 
   return (
-    <div className="space-y-4">
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <div className="flex items-center gap-1 overflow-x-auto pb-2 border-b">
-          <SortableContext items={actions.map(a => a.id)} strategy={horizontalListSortingStrategy}>
-            {actions.map(action => (
-              <SortableActionTab
-                key={action.id}
-                action={action}
-                isSelected={action.id === selectedActionId}
-                onSelect={() => setSelectedActionId(action.id)}
-              />
-            ))}
-          </SortableContext>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsCreateDialogOpen(true)}
-            className="shrink-0 ml-2"
-          >
-            <Plus className="size-4" />
-          </Button>
-        </div>
-      </DndContext>
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] xl:grid-cols-[300px_1fr_auto] gap-6">
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <div className="space-y-2">
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-muted-foreground">
+                    액션 목록 ({actions.length})
+                  </h3>
+                  <Button size="sm" onClick={() => setIsCreateDialogOpen(true)}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    추가
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-1 max-h-[600px] overflow-y-auto">
+                <SortableContext
+                  items={actions.map(a => a.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {actions.map(action => (
+                    <SortableActionTab
+                      key={action.id}
+                      action={action}
+                      isSelected={action.id === selectedActionId}
+                      onSelect={() => setSelectedActionId(action.id)}
+                    />
+                  ))}
+                </SortableContext>
+              </CardContent>
+            </Card>
+          </div>
+        </DndContext>
 
-      {selectedAction && (
-        <ActionDetailCard
-          action={selectedAction}
-          onEdit={() => handleEdit(selectedAction.id)}
-          onDuplicate={() => handleDuplicate(selectedAction.id)}
-          onDelete={() => handleDelete(selectedAction.id)}
-        />
-      )}
+        <div>
+          {selectedAction ? (
+            <ActionDetailCard
+              action={selectedAction}
+              onEdit={() => handleEdit(selectedAction.id)}
+              onDuplicate={() => handleDuplicate(selectedAction.id)}
+              onDelete={() => handleDelete(selectedAction.id)}
+            />
+          ) : (
+            <Card>
+              <CardContent className="flex items-center justify-center py-12">
+                <p className="text-muted-foreground">액션을 선택하세요</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        <div ref={previewAnchorRef} className="hidden xl:block" />
+      </div>
 
       <CreateActionDialog
         open={isCreateDialogOpen}
@@ -313,10 +338,11 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
             options:
               "options" in data
                 ? data.options.map((opt, index) => ({
+                    id: opt.id,
                     title: opt.title,
                     description: opt.description,
                     imageUrl: opt.imageUrl,
-                    imageFileUploadId: opt.imageFileUploadId,
+                    fileUploadId: opt.fileUploadId,
                     order: index,
                   }))
                 : undefined,
@@ -345,6 +371,16 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+
+      {selectedAction && (
+        <MobilePreviewPanel anchor={previewAnchorRef}>
+          <MissionActionPage
+            actionData={selectedAction}
+            currentOrder={actions.findIndex(a => a.id === selectedAction.id)}
+            totalActionCount={actions.length}
+          />
+        </MobilePreviewPanel>
+      )}
+    </>
   );
 }

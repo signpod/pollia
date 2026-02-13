@@ -11,27 +11,35 @@ permissions:
   pull-requests: read
 
 jobs:
-  ci:
+  setup:
+    name: Setup
     runs-on: ubuntu-latest
-    
     steps:
-      # 1. 코드 체크아웃
       - name: Checkout code
         uses: actions/checkout@v4
       
-      # 2. Corepack 활성화 (Yarn 4 사용)
       - name: Enable Corepack
         run: corepack enable
       
-      # 3. Node.js 설정
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'yarn'
       
-      # 4. Turborepo 캐시 설정
-      - name: Setup Turborepo cache
+      - name: Cache dependencies
+        id: cache-deps
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-deps-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-deps-
+      
+      - name: Cache Turborepo
         uses: actions/cache@v4
         with:
           path: .turbo
@@ -39,18 +47,21 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-turbo-
       
-      # 5. 의존성 설치
       - name: Install dependencies
+        if: steps.cache-deps.outputs.cache-hit != 'true'
         run: yarn install --immutable
-      
-      # 6. Prisma 클라이언트 생성
-      - name: Generate Prisma Client
-        working-directory: apps/web
-        run: npx prisma generate
 
-      # 7. 스토리북 관련 파일 변경 감지
+  check-changes:
+    name: Check changes
+    runs-on: ubuntu-latest
+    outputs:
+      storybook: ${{ steps.filter.outputs.storybook }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
       - name: Check for Storybook changes
-        id: storybook-changes
+        id: filter
         uses: dorny/paths-filter@v3
         with:
           filters: |
@@ -58,26 +69,235 @@ jobs:
               - 'apps/storybook/**'
               - 'packages/ui/**'
 
-      # 8. Storybook 빌드 체크 (관련 파일 변경 시에만)
-      - name: Build Storybook
-        if: steps.storybook-changes.outputs.storybook == 'true'
-        working-directory: apps/storybook
-        run: yarn build
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
       
-      # 8. 타입 체크
-      - name: Type check
-        run: yarn check-types
+      - name: Enable Corepack
+        run: corepack enable
       
-      # 9. 린트 체크
-      - name: Lint
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'yarn'
+      
+      - name: Restore dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-deps-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-deps-
+      
+      - name: Restore Turborepo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+      
+      - name: Run lint
         run: yarn lint
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
       
-      # 10. 테스트 실행 (커버리지 포함)
+      - name: Enable Corepack
+        run: corepack enable
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'yarn'
+      
+      - name: Restore dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-deps-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-deps-
+      
+      - name: Restore Turborepo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+      
+      - name: Generate Prisma Client
+        working-directory: apps/web
+        run: npx prisma generate
+      
       - name: Run tests with coverage
         run: yarn test:coverage
-      
-      # 11. 성공 메시지
-      - name: All checks passed
-        if: success()
-        run: echo "✅ All CI checks passed!"
 
+  type-check-ui:
+    name: Type check (UI)
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Enable Corepack
+        run: corepack enable
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'yarn'
+      
+      - name: Restore dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-deps-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-deps-
+      
+      - name: Restore Turborepo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+      
+      - name: Type check UI package
+        working-directory: packages/ui
+        run: yarn check-types
+
+  type-check-web:
+    name: Type check (Web)
+    runs-on: ubuntu-latest
+    needs: [setup, type-check-ui]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Enable Corepack
+        run: corepack enable
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'yarn'
+      
+      - name: Restore dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-deps-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-deps-
+      
+      - name: Restore Turborepo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+      
+      - name: Generate Prisma Client
+        working-directory: apps/web
+        run: npx prisma generate
+      
+      - name: Type check web app
+        working-directory: apps/web
+        run: yarn check-types
+
+  storybook-build:
+    name: Build Storybook
+    runs-on: ubuntu-latest
+    needs: [setup, check-changes]
+    if: needs.check-changes.outputs.storybook == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Enable Corepack
+        run: corepack enable
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'yarn'
+      
+      - name: Restore dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            apps/*/node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-deps-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-deps-
+      
+      - name: Restore Turborepo cache
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+      
+      - name: Build Storybook
+        working-directory: apps/storybook
+        run: yarn build
+
+  ci-success:
+    name: All checks passed
+    runs-on: ubuntu-latest
+    needs: [lint, test, type-check-web, storybook-build]
+    if: always()
+    steps:
+      - name: Check all jobs status
+        run: |
+          if [ "${{ needs.lint.result }}" != "success" ]; then
+            echo "Lint failed"
+            exit 1
+          fi
+          if [ "${{ needs.test.result }}" != "success" ]; then
+            echo "Test failed"
+            exit 1
+          fi
+          if [ "${{ needs.type-check-web.result }}" != "success" ]; then
+            echo "Type check failed"
+            exit 1
+          fi
+          if [ "${{ needs.storybook-build.result }}" != "success" ] && [ "${{ needs.storybook-build.result }}" != "skipped" ]; then
+            echo "Storybook build failed"
+            exit 1
+          fi
+          echo "✅ All CI checks passed!"

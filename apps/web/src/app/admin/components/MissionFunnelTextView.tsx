@@ -93,12 +93,9 @@ export function MissionFunnelTextView({ metadata, missionStats }: MissionFunnelT
           return (
             <div key={action.id} className="p-4 border rounded-lg bg-card">
               <div className="flex items-center justify-between gap-2 mb-3">
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-xs font-medium text-muted-foreground shrink-0">
-                    액션 {action.order + 1}
-                  </span>
-                  <h3 className="text-sm font-semibold text-foreground truncate">{action.title}</h3>
-                </div>
+                <h3 className="text-sm font-semibold text-foreground truncate min-w-0">
+                  {action.title}
+                </h3>
                 <span className="text-sm font-semibold text-purple-600 dark:text-purple-400 shrink-0">
                   {completionRate}%
                 </span>

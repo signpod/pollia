@@ -52,10 +52,11 @@ export function DrawerProvider({ children, defaultOpen = false }: DrawerProvider
 
 interface DrawerContentProps {
   className?: string;
+  containerClassName?: string;
   children: React.ReactNode;
 }
 
-export function DrawerContent({ className, children }: DrawerContentProps) {
+export function DrawerContent({ className, containerClassName, children }: DrawerContentProps) {
   const { isOpen, close } = useDrawer();
   const [mounted, setMounted] = React.useState(false);
 
@@ -66,11 +67,16 @@ export function DrawerContent({ className, children }: DrawerContentProps) {
   React.useEffect(() => {
     if (isOpen) {
       const originalOverflow = document.body.style.overflow;
-
       document.body.style.overflow = "hidden";
+
+      const ch = (window as unknown as Record<string, unknown>).ChannelIO as
+        | ((cmd: string) => void)
+        | undefined;
+      ch?.("hideChannelButton");
 
       return () => {
         document.body.style.overflow = originalOverflow;
+        ch?.("showChannelButton");
       };
     }
   }, [isOpen]);
@@ -97,7 +103,7 @@ export function DrawerContent({ className, children }: DrawerContentProps) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className="fixed inset-0 z-50 flex items-end justify-center"
+        className={cn("fixed inset-0 z-50 flex items-end justify-center", containerClassName)}
       >
         <motion.div
           initial={{ opacity: 0 }}
@@ -120,9 +126,8 @@ export function DrawerContent({ className, children }: DrawerContentProps) {
             "relative z-10 w-full",
             "bg-background rounded-t-lg shadow-lg",
             "flex max-h-[85vh] flex-col overflow-hidden",
-            "mx-auto max-w-lg",
-            //TODO: Safe Area 설정
-            "pb-10",
+            "mx-auto max-w-[600px]",
+            "pb-[env(safe-area-inset-bottom)]",
             className,
           )}
           onClick={e => e.stopPropagation()}

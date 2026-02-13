@@ -6,4 +6,6 @@ export * from "./reward";
 export * from "./file";
 export * from "./user";
 export * from "./mission-completion";
+export * from "./mission-like";
 export * from "./tracking";
+export * from "./festival";

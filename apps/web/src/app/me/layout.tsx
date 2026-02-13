@@ -3,7 +3,9 @@ import { NetworkStatusProvider } from "@/components/providers/NetworkStatusProvi
 import Providers from "@/components/providers/QueryProvider";
 import { ROUTES } from "@/constants/routes";
 import { ModalProvider, Toaster } from "@repo/ui/components";
-import { MeFooter, MeHeader } from "./components";
+import { MeLayoutShell } from "./components/MeLayoutShell";
+
+export const dynamic = "force-dynamic";
 
 export default function MeLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -11,12 +13,7 @@ export default function MeLayout({ children }: { children: React.ReactNode }) {
       <NetworkStatusProvider>
         <AuthGate currentPath={ROUTES.ME}>
           <Providers>
-            <div className="flex flex-col min-h-screen">
-              <MeHeader />
-              <div className="flex flex-col flex-1">{children}</div>
-              <div className="h-px w-full bg-zinc-100" />
-              <MeFooter />
-            </div>
+            <MeLayoutShell>{children}</MeLayoutShell>
             <Toaster />
           </Providers>
         </AuthGate>

@@ -17,16 +17,18 @@ const paymentTypeSchema = z.enum(PaymentType, {
 });
 
 const scheduledDateSchema = z.date().optional();
+const paidAtSchema = z.date().optional().nullable();
 
-export const rewardInputSchema = z
-  .object({
-    name: nameSchema,
-    description: descriptionSchema,
-    imageUrl: imageUrlSchema,
-    imageFileUploadId: imageFileUploadIdSchema,
-    paymentType: paymentTypeSchema,
-    scheduledDate: scheduledDateSchema,
-  })
+export const rewardBaseSchema = z.object({
+  name: nameSchema,
+  description: descriptionSchema,
+  imageUrl: imageUrlSchema,
+  imageFileUploadId: imageFileUploadIdSchema,
+  paymentType: paymentTypeSchema,
+  scheduledDate: scheduledDateSchema,
+});
+
+export const rewardInputSchema = rewardBaseSchema
   .refine(
     data => {
       if (data.paymentType === PaymentType.SCHEDULED && !data.scheduledDate) {
@@ -46,14 +48,11 @@ export const rewardInputSchema = z
     { message: "예약 일시는 현재 시간보다 이후여야 합니다." },
   );
 
-export const rewardUpdateSchema = z
-  .object({
+export const rewardUpdateSchema = rewardBaseSchema
+  .extend({
     name: nameSchema.optional(),
-    description: descriptionSchema,
-    imageUrl: imageUrlSchema,
-    imageFileUploadId: imageFileUploadIdSchema,
     paymentType: paymentTypeSchema.optional(),
-    scheduledDate: scheduledDateSchema,
+    paidAt: paidAtSchema,
   })
   .refine(data => Object.keys(data).length > 0, {
     message: "최소 하나의 필드를 수정해야 합니다.",

@@ -1,3 +1,4 @@
+import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import type { LucideIcon } from "lucide-react";
 import { Calendar, ClipboardList } from "lucide-react";
 import { ADMIN_ROUTES } from "../constants/routes";
@@ -62,14 +63,14 @@ export function createAdminNavConfig(events: EventItem[], missions: MissionItem[
 
   if (eventGroups.length > 0) {
     navGroups.push({
-      label: "이벤트",
+      label: UBQUITOUS_CONSTANTS.EVENT,
       items: eventGroups,
     });
   }
 
   if (unassignedMissions.length > 0) {
     navGroups.push({
-      label: "미션",
+      label: UBQUITOUS_CONSTANTS.MISSION,
       items: unassignedMissions,
     });
   }

@@ -4,7 +4,6 @@
   "private": true,
   "exports": {
     "./components": "./src/components/index.ts",
-    "./components/common/TiptapEditor": "./src/components/common/TiptapEditor.tsx",
     "./components/common/TiptapViewer": "./src/components/common/TiptapViewer.tsx",
     "./lib": "./src/lib/index.ts"
   },
@@ -31,12 +30,6 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-toast": "^1.2.15",
-    "@tiptap/core": "^3.13.0",
-    "@tiptap/extension-placeholder": "^3.13.0",
-    "@tiptap/extensions": "^3.13.0",
-    "@tiptap/pm": "^3.13.0",
-    "@tiptap/react": "^3.13.0",
-    "@tiptap/starter-kit": "^3.13.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",

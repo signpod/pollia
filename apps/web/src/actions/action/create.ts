@@ -5,6 +5,8 @@ import { actionService } from "@/server/services/action";
 import type { ActionCreatedResult } from "@/server/services/action/types";
 import type {
   BaseActionResponse,
+  CreateBranchActionRequest,
+  CreateBranchActionResponse,
   CreateDateActionRequest,
   CreateDateActionResponse,
   CreateImageActionRequest,
@@ -158,6 +160,16 @@ export async function createTimeAction(
     request,
     actionService.createTimeAction.bind(actionService),
     "시간 액션",
+  );
+}
+
+export async function createBranchAction(
+  request: CreateBranchActionRequest,
+): Promise<CreateBranchActionResponse> {
+  return createActionHandler(
+    request,
+    actionService.createBranchAction.bind(actionService),
+    "분기 액션",
   );
 }
 

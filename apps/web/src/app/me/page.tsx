@@ -1,19 +1,44 @@
 import { getMissionActionIds } from "@/actions/action";
+import { getLikedMissions } from "@/actions/mission-like/read";
 import { getMyResponses } from "@/actions/mission-response";
+import { getAllMissions } from "@/actions/mission/read";
+import { getRewards } from "@/actions/reward/read";
+import { getCurrentUser } from "@/actions/user";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
+import { missionLikeQueryKeys } from "@/constants/queryKeys/missionLikeQueryKeys";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
+import { rewardQueryKeys } from "@/constants/queryKeys/rewardQueryKeys";
+import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";
 import { getQueryClient } from "@/lib/getQueryClient";
-import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { MePageContent } from "./MePageContent";
 
 export default async function MePage() {
   const queryClient = getQueryClient();
 
-  const myResponsesData = await queryClient.fetchQuery({
-    queryKey: missionQueryKeys.myResponses(),
-    queryFn: () => getMyResponses(),
-  });
+  const [myResponsesData, userData] = await Promise.all([
+    queryClient.fetchQuery({
+      queryKey: missionQueryKeys.myResponses(),
+      queryFn: () => getMyResponses(),
+    }),
+    queryClient.fetchQuery({
+      queryKey: userQueryKeys.currentUser(),
+      queryFn: () => getCurrentUser(),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: rewardQueryKeys.all(),
+      queryFn: () => getRewards(),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: missionLikeQueryKeys.likedMissions(),
+      queryFn: () => getLikedMissions(),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: [...missionQueryKeys.allMissions(), "recommended"],
+      queryFn: () => getAllMissions({ limit: 6 }),
+    }),
+  ]);
 
   const inProgressMissionIds =
     myResponsesData?.data
@@ -34,7 +59,7 @@ export default async function MePage() {
   return (
     <HydrationBoundary state={dehydratedState}>
       <Suspense>
-        <MePageContent />
+        <MePageContent user={{ name: userData.data.name, email: userData.data.email }} />
       </Suspense>
     </HydrationBoundary>
   );

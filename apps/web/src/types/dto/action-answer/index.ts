@@ -15,49 +15,66 @@ export type ActionAnswerItem =
       type: typeof ActionType.SCALE;
       isRequired: boolean;
       scaleValue: number;
+      nextActionId?: string;
+      nextCompletionId?: string;
     }
   | {
       actionId: string;
       type: typeof ActionType.SUBJECTIVE;
       isRequired: boolean;
       textAnswer: string;
+      nextActionId?: string;
+      nextCompletionId?: string;
     }
   | {
       actionId: string;
       type: typeof ActionType.SHORT_TEXT;
       isRequired: boolean;
       textAnswer: string;
+      nextActionId?: string;
+      nextCompletionId?: string;
     }
   | {
       actionId: string;
       type: typeof ActionType.MULTIPLE_CHOICE;
       isRequired: boolean;
+      selectedOptions?: { optionId: string; nextActionId: string }[];
       selectedOptionIds?: string[];
       textAnswer?: string;
+      nextActionId?: string;
+      nextCompletionId?: string;
     }
   | {
       actionId: string;
       type: typeof ActionType.RATING;
       isRequired: boolean;
       scaleValue: number;
+      nextActionId?: string;
+      nextCompletionId?: string;
     }
   | {
       actionId: string;
       type: typeof ActionType.IMAGE;
       isRequired: boolean;
       fileUploadIds: string[];
+      nextActionId?: string;
+      nextCompletionId?: string;
     }
   | {
       actionId: string;
       type: typeof ActionType.VIDEO;
       isRequired: boolean;
       fileUploadIds: string[];
+      nextActionId?: string;
+      nextCompletionId?: string;
     }
   | {
       actionId: string;
       type: typeof ActionType.PDF;
       isRequired: boolean;
       fileUploadIds: string[];
+      nextActionId?: string;
+      nextCompletionId?: string;
     }
   | {
       actionId: string;
@@ -65,18 +82,32 @@ export type ActionAnswerItem =
       isRequired: boolean;
       selectedOptionIds?: string[];
       textAnswer?: string;
+      nextActionId?: string;
+      nextCompletionId?: string;
     }
   | {
       actionId: string;
       type: typeof ActionType.DATE;
       isRequired: boolean;
       dateAnswers?: string[];
+      nextActionId?: string;
+      nextCompletionId?: string;
     }
   | {
       actionId: string;
       type: typeof ActionType.TIME;
       isRequired: boolean;
       dateAnswers?: string[];
+      nextActionId?: string;
+      nextCompletionId?: string;
+    }
+  | {
+      actionId: string;
+      type: typeof ActionType.BRANCH;
+      isRequired: boolean;
+      selectedOptionIds?: string[];
+      nextActionId?: string;
+      nextCompletionId?: string;
     };
 
 export interface CreateActionAnswerRequest {

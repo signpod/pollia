@@ -21,7 +21,8 @@ model FileUpload {
   actionAnswerId String?       @map("action_answer_id")
   actionAnswer   ActionAnswer? @relation(fields: [actionAnswerId], references: [id], onDelete: Cascade)
 
-  user User @relation(fields: [userId], references: [id])
+  user             User  @relation("UserFileUploads", fields: [userId], references: [id])
+  userProfileImage User? @relation("UserProfileImage")
 
   @@index([userId, status])
   @@index([status, createdAt])

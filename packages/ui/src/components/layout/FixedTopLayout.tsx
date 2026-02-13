@@ -57,7 +57,7 @@ export function FixedTopLayout({ children, className, hasTopGap = true }: FixedT
             ref={contentRef}
             className={cn(
               "fixed top-0 right-0 left-0 z-50 bg-white",
-              "mx-auto max-w-lg",
+              "mx-auto max-w-[600px]",
               contentClassName,
             )}
           >

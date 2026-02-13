@@ -17,6 +17,7 @@ const createMockReward = (
     paidAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
+    missions: { id: string }[];
   }> = {},
 ) => ({
   id: "reward1",
@@ -29,6 +30,7 @@ const createMockReward = (
   paidAt: null,
   createdAt: new Date("2025-01-01"),
   updatedAt: new Date("2025-01-01"),
+  missions: [] as { id: string }[],
   ...overrides,
 });
 
@@ -256,6 +258,7 @@ describe("RewardService", () => {
         imageUrl: null,
         paymentType: "IMMEDIATE" as PaymentType,
         scheduledDate: null,
+        paidAt: null,
         updatedAt: new Date("2025-01-02"),
       };
       mockRepo.update.mockResolvedValue(mockUpdatedReward);
@@ -284,6 +287,7 @@ describe("RewardService", () => {
         imageUrl: null,
         paymentType: "IMMEDIATE" as PaymentType,
         scheduledDate: null,
+        paidAt: null,
         updatedAt: new Date("2025-01-02"),
       };
       mockRepo.update.mockResolvedValue(mockUpdatedReward);
@@ -314,6 +318,7 @@ describe("RewardService", () => {
         imageUrl: null,
         paymentType: "IMMEDIATE" as PaymentType,
         scheduledDate: null,
+        paidAt: null,
         updatedAt: new Date("2025-01-02"),
       };
       mockRepo.update.mockResolvedValue(mockUpdatedReward);

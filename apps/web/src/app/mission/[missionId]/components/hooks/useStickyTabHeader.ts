@@ -13,10 +13,7 @@ interface UseStickyTabHeaderOptions {
   hasReward: boolean;
 }
 
-export function useStickyTabHeader({
-  sentinelRef,
-  hasReward,
-}: UseStickyTabHeaderOptions) {
+export function useStickyTabHeader({ sentinelRef, hasReward }: UseStickyTabHeaderOptions) {
   const [activeTab, setActiveTab] = useState<
     (typeof SECTION_IDS)[keyof typeof SECTION_IDS] | undefined
   >(SECTION_IDS.MISSION_GUIDE);
@@ -38,6 +35,7 @@ export function useStickyTabHeader({
       },
       {
         threshold: 0,
+        root: document,
         rootMargin: "0px 0px 0px 0px",
       },
     );
@@ -66,7 +64,7 @@ export function useStickyTabHeader({
 
         if (isSticky) {
           if (visibleSections.length === 0) {
-            setActiveTab(undefined);
+            setActiveTab(SECTION_IDS.MISSION_GUIDE);
           } else {
             setActiveTab(visibleSections[0] as (typeof SECTION_IDS)[keyof typeof SECTION_IDS]);
           }
@@ -95,10 +93,7 @@ export function useStickyTabHeader({
     const stickyScrollTop = window.innerHeight + 10;
 
     if (value === SECTION_IDS.MISSION_GUIDE) {
-      window.scrollTo({
-        top: stickyScrollTop,
-        behavior: "smooth",
-      });
+      window.scrollTo({ top: stickyScrollTop, behavior: "smooth" });
     } else {
       const element = document.getElementById(value);
       if (element) {

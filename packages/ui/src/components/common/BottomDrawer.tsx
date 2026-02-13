@@ -509,7 +509,7 @@ function BottomDrawerContent({
         "fixed bottom-0 left-0 right-0 z-50",
         "bg-background rounded-t-lg shadow-lg",
         "flex flex-col overflow-hidden",
-        "mx-auto max-w-lg",
+        "mx-auto max-w-[600px]",
         className,
       )}
       style={{
