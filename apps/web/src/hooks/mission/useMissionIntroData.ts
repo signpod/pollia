@@ -134,7 +134,7 @@ export function useMissionIntroData(missionId: string) {
   const { data: missionResponse } = useReadMissionResponseForMission({ missionId });
   const { data: actionsData } = useReadActionsDetail(missionId);
 
-  const firstActionId = actionIds?.data?.actionIds?.[0];
+  const firstActionId = mission?.data.entryActionId ?? actionIds?.data?.actionIds?.[0];
   const isCompleted = missionResponse?.data?.completedAt != null;
 
   const answers = missionResponse?.data?.answers ?? [];

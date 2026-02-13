@@ -1,5 +1,6 @@
 import { getActionById, getMissionActionsDetail } from "@/actions/action";
 import { getMyResponseForMission } from "@/actions/mission-response";
+import { getMission } from "@/actions/mission/read";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { ROUTES } from "@/constants/routes";
 import { getQueryClient } from "@/lib/getQueryClient";
@@ -21,13 +22,15 @@ function validateActionNavigation(
   cookieValue: string | undefined,
   actionId: string,
   actions: ActionWithOptions[],
+  entryActionId?: string | null,
 ): boolean {
   if (!cookieValue) return false;
 
   const actionIds = actions.map(a => a.id);
 
   if (cookieValue === "initial") {
-    return actionIds[0] === actionId;
+    const validEntryId = entryActionId ?? actionIds[0];
+    return validEntryId === actionId;
   }
 
   if (cookieValue === "resume") {
@@ -67,7 +70,7 @@ export default async function ActionPage({
 
   const queryClient = getQueryClient();
 
-  const [action, actionsResponse, missionResponse] = await Promise.all([
+  const [action, actionsResponse, missionResponse, missionData] = await Promise.all([
     getActionById(actionId).catch(error => {
       if (error instanceof Error && (error as Error & { cause?: number }).cause === 404) {
         notFound();
@@ -76,6 +79,7 @@ export default async function ActionPage({
     }),
     getMissionActionsDetail(missionId),
     getMyResponseForMission(missionId).catch(() => ({ data: null })),
+    getMission(missionId),
   ]);
 
   // Redirect if mission is already completed
@@ -90,6 +94,7 @@ export default async function ActionPage({
     navCookie?.value,
     actionId,
     actionsResponse.data,
+    missionData.data.entryActionId,
   );
 
   if (!isValidNavigation) {
