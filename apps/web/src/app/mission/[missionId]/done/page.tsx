@@ -1,5 +1,6 @@
 import { getMissionActionsDetail } from "@/actions/action";
 import { getCompletionsByMissionId, getMissionCompletion } from "@/actions/mission-completion";
+import { getMyResponseForMission } from "@/actions/mission-response";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
 import { ROUTES } from "@/constants/routes";
@@ -21,15 +22,36 @@ export default async function MissionPage({
   const { id: completionId } = await searchParams;
   const queryClient = getQueryClient();
 
+  const missionResponse = await getMyResponseForMission(missionId).catch(() => ({ data: null }));
+  if (!missionResponse.data?.completedAt) {
+    redirect(ROUTES.MISSION(missionId));
+  }
+
   if (!completionId) {
     const { data: actions } = await getMissionActionsDetail(missionId);
-
     const isBranched = actions.some(
       action => action.nextCompletionId || action.options?.some(opt => opt.nextCompletionId),
     );
 
     if (isBranched) {
-      redirect(ROUTES.MISSION(missionId));
+      const answers = missionResponse.data.answers;
+      let userCompletionId: string | null = null;
+
+      for (const answer of answers) {
+        const optionCompletionId = answer.options?.find(
+          opt => opt.nextCompletionId,
+        )?.nextCompletionId;
+        if (optionCompletionId) {
+          userCompletionId = optionCompletionId;
+        }
+        if (answer.action?.nextCompletionId) {
+          userCompletionId = answer.action.nextCompletionId;
+        }
+      }
+
+      if (userCompletionId) {
+        redirect(ROUTES.MISSION_DONE(missionId, userCompletionId));
+      }
     }
   }
 

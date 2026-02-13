@@ -220,22 +220,18 @@ export function useClientActionSubmit({
       // 1. 캐시 낙관적 업데이트
       updateCacheOptimistically(answer);
 
-      // 2. 먼저 이동! (즉시 반응)
-      navigateToNext(answer, isActualLast);
-      setIsSubmitting(false);
+      if (isActualLast) {
+        // 마지막 단계: 서버 저장 완료 후 이동 (completedAt 반영 필요)
+        try {
+          const result = await submitAnswerOnly({
+            missionId,
+            responseId,
+            answer,
+            isLastAction: true,
+          });
 
-      // 3. 백그라운드에서 저장
-      submitAnswerOnly({
-        missionId,
-        responseId,
-        answer,
-        isLastAction: isActualLast,
-      })
-        .then(result => {
           if (!result.success) {
-            // 캐시 롤백
             rollbackCache();
-
             if (result.code === "ALREADY_COMPLETED") {
               handleAlreadyCompleted();
             } else {
@@ -244,11 +240,42 @@ export function useClientActionSubmit({
               });
               navigateToAction(currentActionId);
             }
+            return;
           }
-        })
-        .finally(() => {
+
+          navigateToNext(answer, isActualLast);
+        } finally {
+          setIsSubmitting(false);
           pendingSubmissions.delete(currentActionId);
-        });
+        }
+      } else {
+        // 중간 단계: 먼저 이동, 백그라운드에서 저장 (기존 optimistic)
+        navigateToNext(answer, isActualLast);
+        setIsSubmitting(false);
+
+        submitAnswerOnly({
+          missionId,
+          responseId,
+          answer,
+          isLastAction: false,
+        })
+          .then(result => {
+            if (!result.success) {
+              rollbackCache();
+              if (result.code === "ALREADY_COMPLETED") {
+                handleAlreadyCompleted();
+              } else {
+                toast.warning("답변 저장에 실패했습니다. 다시 시도해주세요.", {
+                  id: "submit-answer-error",
+                });
+                navigateToAction(currentActionId);
+              }
+            }
+          })
+          .finally(() => {
+            pendingSubmissions.delete(currentActionId);
+          });
+      }
     },
     [
       missionId,
