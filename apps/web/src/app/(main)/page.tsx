@@ -1,5 +1,4 @@
 import { getFestivals } from "@/actions/festival";
-import { ChannelTalk } from "@/components/common/ChannelTalk";
 import { missionService } from "@/server/services/mission";
 import { BannerSlider } from "./components/BannerSlider";
 import { MainContent } from "./components/MainContent";
@@ -38,7 +37,6 @@ export default async function MainPage() {
     <main className="min-h-screen bg-white pb-10 flex flex-col gap-6">
       <BannerSlider />
       <MainContent initialProjects={projects} initialFestivals={festivals} />
-      <ChannelTalk />
     </main>
   );
 }
