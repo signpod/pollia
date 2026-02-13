@@ -2,6 +2,7 @@
 
 import { ROUTES } from "@/constants/routes";
 import { useAuth } from "@/hooks/user";
+import HomeIconFilled from "@public/svgs/home-icon-filled.svg";
 import HomeIcon from "@public/svgs/home-icon.svg";
 import { Tooltip, Typo, useDrawer } from "@repo/ui/components";
 import { Heart, Search } from "lucide-react";
@@ -37,16 +38,17 @@ function BottomNavBarContent() {
   };
 
   return (
-    <nav className="mx-5 flex items-center justify-between rounded-full bg-white shadow-[0px_4px_20px_0px_rgba(9,9,11,0.16)]">
+    <nav className="mx-5 flex items-center justify-center gap-0 rounded-full bg-white shadow-[0px_4px_20px_0px_rgba(9,9,11,0.16)] px-1">
       <Link
         href={ROUTES.HOME}
         className="flex flex-1 flex-col items-center justify-center h-12"
         aria-label="홈"
       >
-        <HomeIcon
-          className={`size-5 ${pathname === ROUTES.HOME ? "text-default" : "text-disabled"}`}
-          strokeWidth={pathname === ROUTES.HOME ? 2 : 1.5}
-        />
+        {pathname === ROUTES.HOME ? (
+          <HomeIconFilled className="size-6 text-default" />
+        ) : (
+          <HomeIcon className="size-6 text-disabled" strokeWidth={1.5} />
+        )}
       </Link>
 
       <span
@@ -58,7 +60,7 @@ function BottomNavBarContent() {
         onMouseLeave={() => setShowTooltip(false)}
         onClick={() => setShowTooltip(prev => !prev)}
       >
-        <Search className="size-5 text-disabled" strokeWidth={1.5} />
+        <Search className="size-6 text-disabled" strokeWidth={1.5} />
       </span>
 
       <Link
@@ -68,7 +70,8 @@ function BottomNavBarContent() {
         onClick={handleLikesClick}
       >
         <Heart
-          className={`size-5 ${pathname === ROUTES.LIKES ? "text-default" : "text-disabled"}`}
+          className={`size-6 ${pathname === ROUTES.LIKES ? "text-default" : "text-disabled"}`}
+          fill={pathname === ROUTES.LIKES ? "currentColor" : "none"}
           strokeWidth={pathname === ROUTES.LIKES ? 2 : 1.5}
         />
       </Link>
