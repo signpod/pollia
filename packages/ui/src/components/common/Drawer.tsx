@@ -52,10 +52,11 @@ export function DrawerProvider({ children, defaultOpen = false }: DrawerProvider
 
 interface DrawerContentProps {
   className?: string;
+  containerClassName?: string;
   children: React.ReactNode;
 }
 
-export function DrawerContent({ className, children }: DrawerContentProps) {
+export function DrawerContent({ className, containerClassName, children }: DrawerContentProps) {
   const { isOpen, close } = useDrawer();
   const [mounted, setMounted] = React.useState(false);
 
@@ -102,7 +103,7 @@ export function DrawerContent({ className, children }: DrawerContentProps) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className="fixed inset-0 z-50 flex items-end justify-center"
+        className={cn("fixed inset-0 z-50 flex items-end justify-center", containerClassName)}
       >
         <motion.div
           initial={{ opacity: 0 }}
@@ -126,8 +127,7 @@ export function DrawerContent({ className, children }: DrawerContentProps) {
             "bg-background rounded-t-lg shadow-lg",
             "flex max-h-[85vh] flex-col overflow-hidden",
             "mx-auto max-w-[600px]",
-            //TODO: Safe Area 설정
-            "pb-10",
+            "pb-[env(safe-area-inset-bottom)]",
             className,
           )}
           onClick={e => e.stopPropagation()}

@@ -23,7 +23,7 @@ function BrowseAction() {
   return (
     <div className="flex justify-center">
       <Link href={ROUTES.HOME}>
-        <ButtonV2 variant="primary" className="w-auto rounded-4xl">
+        <ButtonV2 variant="primary" className="w-auto">
           <Typo.ButtonText size="large">구경하러 가기</Typo.ButtonText>
         </ButtonV2>
       </Link>

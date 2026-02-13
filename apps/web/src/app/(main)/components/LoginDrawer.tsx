@@ -17,7 +17,7 @@ function LoginDrawerContent() {
   const { handleKakaoLogin } = useKakaoLogin();
 
   return (
-    <DrawerContent className="max-w-[600px]">
+    <DrawerContent containerClassName="mx-auto max-w-[600px]">
       <div className="relative px-5 pb-5 pt-5">
         <IconButton icon={X} onClick={close} aria-label="닫기" className="absolute right-5 top-5" />
         <div className="flex flex-col items-center gap-6 pt-4 pb-2">
