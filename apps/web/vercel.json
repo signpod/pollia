@@ -4,5 +4,11 @@
       "path": "/api/cleanup-orphan-files",
       "schedule": "0 2 * * 0"
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "dev": true,
+      "*": false
+    }
+  }
 }
