@@ -26,7 +26,7 @@ interface AdminCardProps {
 export function AdminCard({ title, description, href, statusBadge, bottomInfo }: AdminCardProps) {
   return (
     <Link href={href}>
-      <Card className="h-[180px] hover:shadow-md hover:bg-muted/30 transition-shadow cursor-pointer">
+      <Card className="min-h-[180px] hover:shadow-md hover:bg-muted/30 transition-shadow cursor-pointer">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between gap-2">
             <CardTitle className="text-lg line-clamp-1 flex-1">{title}</CardTitle>
@@ -42,7 +42,10 @@ export function AdminCard({ title, description, href, statusBadge, bottomInfo }:
           <div className="space-y-2">
             {bottomInfo.map((info, index) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: index is used as the key
-              <div key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div
+                key={index}
+                className="flex items-start gap-2 text-sm leading-5 text-muted-foreground [&>span]:min-w-0 [&>span]:break-words [&>svg]:mt-0.5 [&>svg]:shrink-0"
+              >
                 {info}
               </div>
             ))}
