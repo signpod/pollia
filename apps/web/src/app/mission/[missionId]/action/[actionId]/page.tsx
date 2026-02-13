@@ -48,14 +48,22 @@ function validateActionNavigation(
   // 2. 인접 이동(±1, 이전/다음 버튼) 허용
   if (Math.abs(currentIndex - cookieIndex) <= 1) return true;
 
-  // 3. nextActionId로 연결된 액션으로 되돌아가기 허용
-  // targetAction이 cookieAction을 nextActionId로 가리키고 있으면 허용 (option 레벨 또는 action 레벨)
+  // 3. cookieAction이 nextActionId로 현재 actionId를 가리키고 있으면 허용 (분기 점프)
+  const cookieAction = actions.find(a => a.id === cookieValue);
+  if (cookieAction) {
+    const pointsToTarget =
+      cookieAction.options.some(opt => opt.nextActionId === actionId) ||
+      cookieAction.nextActionId === actionId;
+    if (pointsToTarget) return true;
+  }
+
+  // 4. targetAction이 cookieAction을 nextActionId로 가리키고 있으면 허용 (되돌아가기)
   const targetAction = actions.find(a => a.id === actionId);
   if (targetAction) {
-    const hasNextActionIdToCookie =
+    const pointsToCookie =
       targetAction.options.some(opt => opt.nextActionId === cookieValue) ||
       targetAction.nextActionId === cookieValue;
-    if (hasNextActionIdToCookie) return true;
+    if (pointsToCookie) return true;
   }
 
   return false;
