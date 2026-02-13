@@ -10,6 +10,7 @@ import {
   useActionProgress,
 } from "@/hooks/action";
 import { useReadActionsDetail } from "@/hooks/action/useReadActionsDetail";
+import { useReadMission } from "@/hooks/mission";
 import { useReadMissionResponseForMission } from "@/hooks/mission-response";
 import { useMissionSurveyToast } from "@/hooks/mission/useMissionSurveyToast";
 import { setActionNavCookie } from "@/lib/cookie";
@@ -40,6 +41,7 @@ function ActionContent() {
   }>();
   const router = useRouter();
   const { data: actions } = useReadActionsDetail(missionId);
+  const { data: missionData } = useReadMission(missionId);
 
   useEffect(() => {
     window.scrollTo(0, -SCROLL_OFFSET);
@@ -90,6 +92,7 @@ function ActionContent() {
       currentActionData={currentStep.actionData}
       steps={steps}
       missionId={missionId}
+      entryActionId={missionData?.data?.entryActionId}
       navigateToAction={navigateToAction}
       navigateToDone={navigateToDone}
       navigateToMission={navigateToMission}
@@ -102,6 +105,7 @@ interface ActionStepWrapperProps {
   currentActionData: ActionDetail;
   steps: ReturnType<typeof createActionSteps>;
   missionId: string;
+  entryActionId?: string | null;
   navigateToAction: (actionId: string) => void;
   navigateToDone: (completionId?: string) => void;
   navigateToMission: () => void;
@@ -112,6 +116,7 @@ function ActionStepWrapper({
   currentActionData,
   steps,
   missionId,
+  entryActionId,
   navigateToAction,
   navigateToDone,
   navigateToMission,
@@ -132,6 +137,7 @@ function ActionStepWrapper({
     actionId: currentActionData.id,
     actions,
     submittedAnswers,
+    entryActionId,
   });
 
   const toastStorageKey = `mission-toast-${missionId}`;

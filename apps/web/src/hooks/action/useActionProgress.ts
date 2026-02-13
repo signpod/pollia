@@ -18,8 +18,16 @@ interface ProgressInfo {
   totalCount: number;
 }
 
-function findRootAction(actions: ActionForProgress[]): ActionForProgress | null {
+function findRootAction(
+  actions: ActionForProgress[],
+  entryActionId?: string | null,
+): ActionForProgress | null {
   if (actions.length === 0) return null;
+
+  if (entryActionId) {
+    const entry = actions.find(a => a.id === entryActionId);
+    if (entry) return entry;
+  }
 
   const firstAction = actions[0];
   if (!firstAction) return null;
@@ -65,8 +73,9 @@ function calculatePathFromRoot(
   targetActionId: string,
   actions: ActionForProgress[],
   submittedAnswerMap: Map<string, SubmittedAnswerForProgress>,
+  entryActionId?: string | null,
 ): number {
-  const root = findRootAction(actions);
+  const root = findRootAction(actions, entryActionId);
   if (!root) return 1;
 
   let currentId: string | null = root.id;
@@ -119,7 +128,7 @@ function getAllPossibleNextIds(action: ActionForProgress, actions: ActionForProg
   return nextIds;
 }
 
-function calculateMaxDistanceBFS(startActionId: string, actions: ActionForProgress[]): number {
+function calculateMaxRemainingSteps(startActionId: string, actions: ActionForProgress[]): number {
   const actionMap = new Map(actions.map(a => [a.id, a]));
   let maxDistance = 0;
 
@@ -131,7 +140,6 @@ function calculateMaxDistanceBFS(startActionId: string, actions: ActionForProgre
     if (!item) break;
 
     const { id, distance } = item;
-
     if (visited.has(id)) continue;
     visited.add(id);
 
@@ -168,6 +176,7 @@ function calculateProgressInfo(
   currentActionId: string,
   actions: ActionForProgress[],
   submittedAnswers: SubmittedAnswerForProgress[] | undefined,
+  entryActionId?: string | null,
 ): ProgressInfo {
   if (actions.length === 0) {
     return { currentOrder: 1, totalCount: 1 };
@@ -175,11 +184,16 @@ function calculateProgressInfo(
 
   const submittedAnswerMap = buildSubmittedAnswerMap(submittedAnswers);
 
-  const currentOrder = calculatePathFromRoot(currentActionId, actions, submittedAnswerMap);
+  const currentOrder = calculatePathFromRoot(
+    currentActionId,
+    actions,
+    submittedAnswerMap,
+    entryActionId,
+  );
 
-  const maxDistanceFromCurrent = calculateMaxDistanceBFS(currentActionId, actions);
+  const remaining = calculateMaxRemainingSteps(currentActionId, actions);
 
-  const totalCount = currentOrder + maxDistanceFromCurrent - 1;
+  const totalCount = currentOrder + remaining - 1;
 
   return { currentOrder, totalCount };
 }
@@ -188,16 +202,18 @@ interface UseActionProgressParams {
   actionId: string;
   actions: ActionForProgress[];
   submittedAnswers?: SubmittedAnswerForProgress[];
+  entryActionId?: string | null;
 }
 
 export function useActionProgress({
   actionId,
   actions,
   submittedAnswers,
+  entryActionId,
 }: UseActionProgressParams): ProgressInfo {
   return useMemo(() => {
-    return calculateProgressInfo(actionId, actions, submittedAnswers);
-  }, [actionId, actions, submittedAnswers]);
+    return calculateProgressInfo(actionId, actions, submittedAnswers, entryActionId);
+  }, [actionId, actions, submittedAnswers, entryActionId]);
 }
 
 export type UseActionProgressReturn = ReturnType<typeof useActionProgress>;
