@@ -19,7 +19,7 @@ export const clientConfig = {
   enabled: isProduction,
   payload: {
     server: {
-      root: "webpack:///./",
+      root: "turbopack:///[project]/",
     },
     client: {
       javascript: {
