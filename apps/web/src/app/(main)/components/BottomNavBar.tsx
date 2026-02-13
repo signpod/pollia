@@ -37,14 +37,14 @@ function BottomNavBarContent() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-1/2 z-50 flex w-full max-w-[600px] -translate-x-1/2 items-center justify-between bg-white px-5 py-2 shadow-[0px_-4px_20px_0px_rgba(9,9,11,0.16)]">
+    <nav className="mx-5 flex items-center justify-between rounded-full bg-white shadow-[0px_4px_20px_0px_rgba(9,9,11,0.16)]">
       <Link
         href={ROUTES.HOME}
         className="flex flex-1 flex-col items-center justify-center h-12"
         aria-label="홈"
       >
         <HomeIcon
-          className={`size-6 ${pathname === ROUTES.HOME ? "text-default" : "text-disabled"}`}
+          className={`size-5 ${pathname === ROUTES.HOME ? "text-default" : "text-disabled"}`}
           strokeWidth={pathname === ROUTES.HOME ? 2 : 1.5}
         />
       </Link>
@@ -58,7 +58,7 @@ function BottomNavBarContent() {
         onMouseLeave={() => setShowTooltip(false)}
         onClick={() => setShowTooltip(prev => !prev)}
       >
-        <Search className="size-6 text-disabled" strokeWidth={1.5} />
+        <Search className="size-5 text-disabled" strokeWidth={1.5} />
       </span>
 
       <Link
@@ -68,7 +68,7 @@ function BottomNavBarContent() {
         onClick={handleLikesClick}
       >
         <Heart
-          className={`size-6 ${pathname === ROUTES.LIKES ? "text-default" : "text-disabled"}`}
+          className={`size-5 ${pathname === ROUTES.LIKES ? "text-default" : "text-disabled"}`}
           strokeWidth={pathname === ROUTES.LIKES ? 2 : 1.5}
         />
       </Link>
