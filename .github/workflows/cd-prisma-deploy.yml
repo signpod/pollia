@@ -44,21 +44,16 @@ jobs:
           DIRECT_URL: ${{ secrets.PRODUCTION_DIRECT_URL }}
         run: yarn db:deploy
       
-      - name: Install Vercel CLI
-        run: yarn global add vercel@latest
-      
       - name: Pull Vercel Environment
-        working-directory: apps/web
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: vercel pull --yes --environment=production --token=$VERCEL_TOKEN
+        run: yarn dlx vercel@latest pull --yes --environment=production --token=$VERCEL_TOKEN
       
       - name: Deploy to Vercel Production
-        working-directory: apps/web
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: vercel deploy --prod --token=$VERCEL_TOKEN
+        run: yarn dlx vercel@latest deploy --prod --token=$VERCEL_TOKEN
