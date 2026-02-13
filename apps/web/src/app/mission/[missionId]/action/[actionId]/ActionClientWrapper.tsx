@@ -7,6 +7,7 @@ import { ROUTES } from "@/constants/routes";
 import {
   type ActionForProgress,
   type SubmittedAnswerForProgress,
+  type UseActionProgressParams,
   useActionProgress,
 } from "@/hooks/action";
 import { useReadActionsDetail } from "@/hooks/action/useReadActionsDetail";
@@ -138,7 +139,7 @@ function ActionStepWrapper({
     actions,
     submittedAnswers,
     entryActionId,
-  });
+  } satisfies UseActionProgressParams);
 
   const toastStorageKey = `mission-toast-${missionId}`;
   useMissionSurveyToast({
@@ -147,7 +148,7 @@ function ActionStepWrapper({
     toastStorageKey,
   });
 
-  const isFirstStep = actions[0]?.id === currentActionData.id;
+  const isFirstStep = currentActionData.id === (entryActionId ?? actions[0]?.id);
 
   const { submit, isSubmitting, isActualLastStep } = useClientActionSubmit({
     missionId,

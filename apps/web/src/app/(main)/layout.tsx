@@ -1,5 +1,5 @@
 import Providers from "@/components/providers/QueryProvider";
-import { ModalProvider, Toaster } from "@repo/ui/components";
+import { FixedBottomLayout, ModalProvider } from "@repo/ui/components";
 import { BottomNavBar, Footer, Header } from "./components";
 
 export default function MainLayout({
@@ -10,13 +10,14 @@ export default function MainLayout({
   return (
     <ModalProvider>
       <Providers>
-        <div className="pb-20">
+        <FixedBottomLayout hasGradientBlur>
           <Header />
           {children}
           <Footer />
-        </div>
-        <BottomNavBar />
-        <Toaster />
+          <FixedBottomLayout.Content className="py-3">
+            <BottomNavBar />
+          </FixedBottomLayout.Content>
+        </FixedBottomLayout>
       </Providers>
     </ModalProvider>
   );

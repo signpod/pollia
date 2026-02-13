@@ -52,9 +52,6 @@ function DatePickerContent({ actionData }: ActionStepContentProps) {
   const { selectedDates, setDates } = useDatePicker();
   const [currentMonth, setCurrentMonth] = React.useState<Date>(new Date());
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
   const selectedDateObjects = React.useMemo(() => {
     return Array.from(selectedDates).map(dateStr => {
       return new Date(`${dateStr}T00:00:00`);
@@ -88,7 +85,7 @@ function DatePickerContent({ actionData }: ActionStepContentProps) {
           onMonthChange={setCurrentMonth}
           selected={selectedDateObjects}
           onSelect={handleDateSelect}
-          disabled={{ before: today }}
+          disabled={false}
           className="w-full"
           classNames={{
             root: "w-full",
@@ -122,10 +119,6 @@ function DatePickerContent({ actionData }: ActionStepContentProps) {
             },
             MonthCaption: ({ calendarMonth }) => {
               const displayMonth = calendarMonth.date;
-              const currentDate = new Date();
-              const isCurrentMonth =
-                displayMonth.getFullYear() === currentDate.getFullYear() &&
-                displayMonth.getMonth() === currentDate.getMonth();
 
               const handlePrevMonth = () => {
                 const newDate = new Date(displayMonth);
@@ -144,7 +137,7 @@ function DatePickerContent({ actionData }: ActionStepContentProps) {
                   <button
                     type="button"
                     onClick={handlePrevMonth}
-                    disabled={isCurrentMonth}
+                    disabled={false}
                     className="h-8 w-8 p-0 hover:bg-zinc-100 rounded-md flex items-center justify-center disabled:text-zinc-300 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                   >
                     <ChevronLeft className="h-5 w-5 text-zinc-600" />

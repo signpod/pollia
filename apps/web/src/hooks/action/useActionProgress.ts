@@ -198,7 +198,7 @@ function calculateProgressInfo(
   return { currentOrder, totalCount };
 }
 
-interface UseActionProgressParams {
+export interface UseActionProgressParams {
   actionId: string;
   actions: ActionForProgress[];
   submittedAnswers?: SubmittedAnswerForProgress[];
