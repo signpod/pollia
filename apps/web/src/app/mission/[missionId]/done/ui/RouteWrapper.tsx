@@ -9,9 +9,7 @@ export function RouteWrapper({ children }: PropsWithChildren) {
   const { missionId } = useParams<{ missionId: string }>();
 
   usePreventBack({
-    enabled: true,
     redirectTo: ROUTES.MISSION(missionId),
-    currentPath: ROUTES.MISSION_DONE(missionId),
   });
 
   return <>{children}</>;

@@ -7,7 +7,6 @@ import type { CSSProperties, ComponentProps } from "react";
 import { cn } from "../../lib/utils";
 
 const OPTION_HEIGHT = 80;
-const MIN_VERTICAL_HEIGHT = 350;
 
 export interface RatingScaleOption {
   id: string;
@@ -107,9 +106,7 @@ export function RatingScale({
         options.some(option => (option.description?.toString().length ?? 0) > 0) ||
         options.some(option => (option.title?.trim().length ?? 0) > getTitleLimit(options.length));
 
-      const height = isVertical
-        ? Math.max(options.length * OPTION_HEIGHT, MIN_VERTICAL_HEIGHT)
-        : undefined;
+      const height = isVertical ? options.length * OPTION_HEIGHT : undefined;
 
       const shouldStackLabels =
         isVertical &&
@@ -144,9 +141,7 @@ export function RatingScale({
     const isLast = (index: number) => index === positions.length - 1;
     const isVertical = max > 5;
 
-    const height = isVertical
-      ? Math.max(positions.length * OPTION_HEIGHT, MIN_VERTICAL_HEIGHT)
-      : undefined;
+    const height = isVertical ? positions.length * OPTION_HEIGHT : undefined;
 
     return {
       positions,
@@ -232,7 +227,11 @@ export function RatingScale({
 
   return (
     <div
-      className={cn("flex gap-5", isVertical ? "flex-row h-full" : "flex-col w-full", className)}
+      className={cn(
+        "flex",
+        isVertical ? "flex-row h-full gap-0" : "flex-col w-full gap-5",
+        className,
+      )}
       {...props}
     >
       <div

@@ -2,11 +2,11 @@
 
 import { ROUTES } from "@/constants/routes";
 import { cn } from "@/lib/utils";
+import PauseIcon from "@public/svgs/pause-icon.svg";
 import PlayIcon from "@public/svgs/play-icon.svg";
 import PolliaIcon from "@public/svgs/pollia-icon.svg";
 import { Typo } from "@repo/ui/components";
 import Image from "next/image";
-import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 // TODO: 데이터 수정 필요
@@ -29,9 +29,14 @@ const FEATURED_MISSIONS = [
 
 export function BannerSlider() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [swipeKey, setSwipeKey] = useState(0);
   const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
   const touchDeltaX = useRef(0);
+  const isHorizontalSwipe = useRef(false);
   const isDragging = useRef(false);
+  const isSwiped = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const total = FEATURED_MISSIONS.length;
@@ -45,27 +50,97 @@ export function BannerSlider() {
   }, [total]);
 
   useEffect(() => {
-    if (total <= 1) return;
+    if (total <= 1 || !isPlaying) return;
     const interval = setInterval(goToNext, 3000);
     return () => clearInterval(interval);
-  }, [goToNext, total]);
+  }, [goToNext, total, isPlaying, swipeKey]);
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0]?.clientX ?? 0;
-    isDragging.current = true;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging.current) return;
-    touchDeltaX.current = (e.touches[0]?.clientX ?? 0) - touchStartX.current;
-  };
-
-  const handleTouchEnd = () => {
+  const finishDrag = useCallback(() => {
     if (!isDragging.current) return;
     isDragging.current = false;
-    if (touchDeltaX.current < -50) goToNext();
-    else if (touchDeltaX.current > 50) goToPrev();
+    if (touchDeltaX.current < -50) {
+      isSwiped.current = true;
+      goToNext();
+      setSwipeKey(k => k + 1);
+    } else if (touchDeltaX.current > 50) {
+      isSwiped.current = true;
+      goToPrev();
+      setSwipeKey(k => k + 1);
+    }
     touchDeltaX.current = 0;
+    isHorizontalSwipe.current = false;
+  }, [goToNext, goToPrev]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const startDrag = (x: number, y: number) => {
+      touchStartX.current = x;
+      touchStartY.current = y;
+      touchDeltaX.current = 0;
+      isDragging.current = true;
+      isSwiped.current = false;
+      isHorizontalSwipe.current = false;
+    };
+
+    const moveDrag = (x: number, y: number, preventDefault: () => void) => {
+      if (!isDragging.current) return;
+      const dx = x - touchStartX.current;
+      const dy = y - touchStartY.current;
+      touchDeltaX.current = dx;
+
+      if (!isHorizontalSwipe.current && Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 5) {
+        isHorizontalSwipe.current = true;
+      }
+
+      if (isHorizontalSwipe.current) {
+        preventDefault();
+      }
+    };
+
+    const onTouchStart = (e: TouchEvent) => {
+      startDrag(e.touches[0]?.clientX ?? 0, e.touches[0]?.clientY ?? 0);
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      moveDrag(e.touches[0]?.clientX ?? 0, e.touches[0]?.clientY ?? 0, () => e.preventDefault());
+    };
+
+    const onMouseDown = (e: MouseEvent) => {
+      e.preventDefault();
+      startDrag(e.clientX, e.clientY);
+    };
+
+    const onMouseMove = (e: MouseEvent) => {
+      moveDrag(e.clientX, e.clientY, () => e.preventDefault());
+    };
+
+    const onDragEnd = () => finishDrag();
+
+    container.addEventListener("touchstart", onTouchStart, { passive: false });
+    container.addEventListener("touchmove", onTouchMove, { passive: false });
+    container.addEventListener("touchend", onDragEnd);
+    container.addEventListener("mousedown", onMouseDown);
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onDragEnd);
+
+    return () => {
+      container.removeEventListener("touchstart", onTouchStart);
+      container.removeEventListener("touchmove", onTouchMove);
+      container.removeEventListener("touchend", onDragEnd);
+      container.removeEventListener("mousedown", onMouseDown);
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onDragEnd);
+    };
+  }, [finishDrag]);
+
+  const handleSlideClick = (missionId: string) => {
+    if (isSwiped.current) {
+      isSwiped.current = false;
+      return;
+    }
+    window.location.href = `https://pollia.me/${ROUTES.MISSION(missionId)}`;
   };
 
   const mission = FEATURED_MISSIONS[currentIndex];
@@ -75,9 +150,7 @@ export function BannerSlider() {
       <div
         ref={containerRef}
         className="relative aspect-square w-full overflow-hidden rounded-2xl shadow-[0_4px_20px_rgba(9,9,11,0.08)]"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        style={{ touchAction: "pan-y" }}
       >
         {/* 슬라이드 영역 (이미지) */}
         <div
@@ -85,20 +158,26 @@ export function BannerSlider() {
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
           {FEATURED_MISSIONS.map((m, index) => (
-            <Link
+            <div
               key={m.id + index}
-              href={`https://pollia.me/${ROUTES.MISSION(m.id)}`}
-              className="relative size-full shrink-0"
+              className="relative size-full shrink-0 cursor-grab select-none active:cursor-grabbing"
+              role="button"
+              tabIndex={0}
+              onClick={() => handleSlideClick(m.id)}
+              onKeyDown={e => {
+                if (e.key === "Enter") handleSlideClick(m.id);
+              }}
             >
               <Image
                 src={m.imageUrl}
                 alt={m.title}
                 fill
                 sizes="(max-width: 600px) 100vw, 600px"
-                className="object-cover"
+                className="pointer-events-none select-none object-cover"
+                draggable={false}
                 priority
               />
-            </Link>
+            </div>
           ))}
         </div>
 
@@ -137,9 +216,13 @@ export function BannerSlider() {
               <button
                 type="button"
                 className="flex size-[26px] items-center justify-center rounded-full bg-black/40"
-                onClick={goToNext}
+                onClick={() => setIsPlaying(prev => !prev)}
               >
-                <PlayIcon className="size-[18px] fill-white" />
+                {isPlaying ? (
+                  <PauseIcon className="size-[18px] text-white" />
+                ) : (
+                  <PlayIcon className="size-[18px] fill-white" />
+                )}
               </button>
               <span className="rounded-md bg-black/40 px-2 py-1">
                 <Typo.Body size="small" className="text-white">
