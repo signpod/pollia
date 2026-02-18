@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { missionService } from "@/server/services/mission";
 import { missionNotionPageService } from "@/server/services/mission-notion-page";
 import type { GetUserMissionsOptions } from "@/server/services/mission/types";
@@ -53,7 +53,7 @@ export async function getUserMissions(
   request?: GetUserMissionsRequest,
 ): Promise<GetUserMissionsResponse & { nextCursor?: string }> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const limit = request?.limit ?? 10;
     const options = request
       ? toGetUserMissionsOptions({ ...request, limit: limit + 1 })
@@ -83,7 +83,7 @@ export async function getAllMissions(
   request?: GetAllMissionsRequest,
 ): Promise<GetUserMissionsResponse & { nextCursor?: string }> {
   try {
-    await requireAuth();
+    await requireActiveUser();
     const limit = request?.limit ?? 10;
     const options = request
       ? toGetAllMissionsOptions({ ...request, limit: limit + 1 })
@@ -126,7 +126,7 @@ export async function getMission(missionId: string): Promise<GetMissionResponse>
 
 export async function getMissionPassword(missionId: string) {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const password = await missionService.getPassword(missionId, user.id);
     return { data: password };
   } catch (error) {
@@ -176,7 +176,7 @@ export async function getMissionNotionPage(
   missionId: string,
 ): Promise<GetMissionNotionPageResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const notionPage = await missionNotionPageService.getByMissionIdWithAuth(missionId, user.id);
 
     if (!notionPage) {

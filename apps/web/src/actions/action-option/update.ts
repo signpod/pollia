@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { actionOptionService } from "@/server/services/action-option";
 import type { ActionOption } from "@prisma/client";
 
@@ -15,7 +15,7 @@ export async function updateOption(
   },
 ): Promise<{ data: ActionOption }> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
 
     const updatedOption = await actionOptionService.updateOption(optionId, data, user.id);
 

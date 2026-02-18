@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { missionService } from "@/server/services/mission";
 import type { DuplicateMissionRequest, DuplicateMissionResponse } from "@/types/dto";
 
@@ -8,7 +8,7 @@ export async function duplicateMission(
   request: DuplicateMissionRequest,
 ): Promise<DuplicateMissionResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const duplicated = await missionService.duplicateMission(request.missionId, user.id);
 
     return {

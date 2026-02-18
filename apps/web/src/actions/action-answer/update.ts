@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { actionAnswerService } from "@/server/services/action-answer";
 import type { UpdateAnswerInput } from "@/server/services/action-answer/types";
 import type { GetQuestionAnswerResponse, UpdateActionAnswerRequest } from "@/types/dto";
@@ -18,7 +18,7 @@ export async function updateAnswer(
   request: UpdateActionAnswerRequest,
 ): Promise<GetQuestionAnswerResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const input = toUpdateAnswerInput(request);
     const answer = await actionAnswerService.updateAnswer(answerId, input, user.id);
     const data = { ...answer, actionId: answer.action.id };
@@ -39,7 +39,7 @@ export async function updateAnswerWithPruning(
   request: UpdateActionAnswerRequest,
 ): Promise<GetQuestionAnswerResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const input = toUpdateAnswerInput(request);
     const answer = await actionAnswerService.updateAnswerWithPruning(answerId, input, user.id);
     const data = { ...answer, actionId: answer.action.id };

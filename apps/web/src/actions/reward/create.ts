@@ -1,13 +1,13 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { updateMission } from "@/actions/mission/update";
 import { rewardService } from "@/server/services/reward/rewardService";
 import type { CreateRewardRequest } from "@/types/dto";
 
 export async function createReward(request: CreateRewardRequest) {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const { missionId, ...input } = request;
     const reward = await rewardService.createReward(input, user.id);
 

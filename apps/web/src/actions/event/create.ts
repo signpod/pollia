@@ -1,12 +1,12 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { eventService } from "@/server/services/event";
 import type { CreateEventRequest, CreateEventResponse } from "@/types/dto/event";
 
 export async function createEvent(request: CreateEventRequest): Promise<CreateEventResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const event = await eventService.createEvent(request, user.id);
     return { data: event };
   } catch (error) {

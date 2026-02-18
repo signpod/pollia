@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
 import { missionLikeService } from "@/server/services/mission-like";
 
@@ -31,7 +31,7 @@ export async function getMissionLikeStatus(missionId: string) {
 
 export async function getLikedMissions() {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const missions = await missionLikeService.getLikedMissions(user.id);
     return { data: missions };
   } catch (error) {

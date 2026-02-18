@@ -1,12 +1,12 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { actionService } from "@/server/services/action";
 import { revalidatePath } from "next/cache";
 
 export async function deleteAction(actionId: string) {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
 
     const action = await actionService.getActionById(actionId);
     if (!action) {

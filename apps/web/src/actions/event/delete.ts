@@ -1,12 +1,12 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { eventService } from "@/server/services/event";
 import type { DeleteEventResponse } from "@/types/dto/event";
 
 export async function deleteEvent(eventId: string): Promise<DeleteEventResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     await eventService.deleteEvent(eventId, user.id);
     return { data: { success: true } };
   } catch (error) {

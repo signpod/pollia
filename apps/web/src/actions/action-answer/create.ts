@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { actionAnswerService } from "@/server/services/action-answer";
 import type { SubmitAnswersInput } from "@/server/services/action-answer/types";
 import type { SubmitActionAnswersRequest, SubmitActionAnswersResponse } from "@/types/dto";
@@ -25,7 +25,7 @@ export async function submitAnswers(
   request: SubmitActionAnswersRequest,
 ): Promise<SubmitActionAnswersResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const input = toSubmitAnswersInput(request);
     const result = await actionAnswerService.submitAnswers(input, user.id);
     return { data: result };

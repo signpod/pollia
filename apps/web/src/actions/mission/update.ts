@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { missionService } from "@/server/services/mission";
 import type { UpdateMissionInput } from "@/server/services/mission/types";
 import type { UpdateMissionRequest } from "@/types/dto/mission";
@@ -12,7 +12,7 @@ function toUpdateMissionInput(dto: UpdateMissionRequest): UpdateMissionInput {
 
 export async function updateMission(missionId: string, request: UpdateMissionRequest) {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const input = toUpdateMissionInput(request);
     const updatedMission = await missionService.updateMission(missionId, input, user.id);
 
@@ -32,7 +32,7 @@ export async function updateMission(missionId: string, request: UpdateMissionReq
 
 export async function setMissionPassword(missionId: string, password: string) {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     await missionService.setPassword(missionId, password, user.id);
     revalidatePath(`/mission/${missionId}`);
     return { success: true };
@@ -49,7 +49,7 @@ export async function setMissionPassword(missionId: string, password: string) {
 
 export async function removeMissionPassword(missionId: string) {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     await missionService.removePassword(missionId, user.id);
     revalidatePath(`/mission/${missionId}`);
     return { success: true };

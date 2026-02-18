@@ -1,11 +1,11 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { actionAnswerService } from "@/server/services/action-answer";
 
 export async function deleteAnswer(answerId: string): Promise<{ message: string }> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     await actionAnswerService.deleteAnswer(answerId, user.id);
     return { message: "답변이 삭제되었습니다." };
   } catch (error) {
@@ -21,7 +21,7 @@ export async function deleteAnswer(answerId: string): Promise<{ message: string 
 
 export async function deleteAnswersByResponse(responseId: string): Promise<{ message: string }> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     await actionAnswerService.deleteAnswersByResponseId(responseId, user.id);
     return { message: "답변들이 삭제되었습니다." };
   } catch (error) {
