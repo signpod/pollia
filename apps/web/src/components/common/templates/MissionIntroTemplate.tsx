@@ -19,6 +19,8 @@ export interface MissionIntroTemplateProps {
   rewardName?: string;
   showDeadlineWidget?: boolean;
   deadlineDate?: Date | null;
+  showOpenWidget?: boolean;
+  openDate?: Date | null;
   titleRef?: RefObject<HTMLDivElement | null>;
   onScrollDown?: () => void;
   children?: ReactNode;
@@ -34,6 +36,8 @@ export function MissionIntroTemplate({
   rewardName = "",
   showDeadlineWidget,
   deadlineDate,
+  showOpenWidget,
+  openDate,
   titleRef,
   onScrollDown,
   children,
@@ -63,7 +67,7 @@ export function MissionIntroTemplate({
               )}
             </div>
           </div>
-          {(showRewardWidget || showDeadlineWidget) && (
+          {(showRewardWidget || showDeadlineWidget || showOpenWidget) && (
             <div className="flex flex-col gap-2">
               {showRewardWidget && (
                 <MissionWidget
@@ -71,6 +75,14 @@ export function MissionIntroTemplate({
                   descType="text"
                   title="완료 리워드"
                   description={rewardName}
+                />
+              )}
+              {showOpenWidget && openDate && (
+                <MissionWidget
+                  icon={<ClockIcon className="size-5" />}
+                  descType="clock"
+                  title="오픈까지"
+                  deadline={openDate}
                 />
               )}
               {showDeadlineWidget && deadlineDate && (

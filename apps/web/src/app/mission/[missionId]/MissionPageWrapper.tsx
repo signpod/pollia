@@ -93,7 +93,7 @@ export function MissionPageWrapper({
     responseId: missionResponse?.id ?? "",
   });
 
-  const { brandLogoUrl, title, deadline, imageUrl, isActive } = mission ?? {};
+  const { brandLogoUrl, title, deadline, startDate, imageUrl, isActive } = mission ?? {};
 
   const titleRef = useRef<HTMLDivElement>(null);
 
@@ -104,16 +104,27 @@ export function MissionPageWrapper({
 
   const showRewardWidget = !!rewardQuery?.data?.id;
   const deadlineDate = useMemo(() => (deadline ? new Date(deadline) : null), [deadline]);
+  const startDateObj = useMemo(() => (startDate ? new Date(startDate) : null), [startDate]);
   const [showDeadlineWidget, setShowDeadlineWidget] = useState(false);
+  const [showOpenWidget, setShowOpenWidget] = useState(false);
   const [formattedDeadline, setFormattedDeadline] = useState<string | null>(null);
 
   useEffect(() => {
+    const now = new Date();
+
     if (deadlineDate) {
-      const now = new Date();
-      setShowDeadlineWidget(isBefore(deadlineDate, addHours(now, 24)));
+      const isExpired = isBefore(deadlineDate, now);
+      const isWithin24h = isBefore(deadlineDate, addHours(now, 24));
+      setShowDeadlineWidget(!isExpired && isWithin24h);
       setFormattedDeadline(formatDateToLocalString(deadlineDate).replaceAll("-", "."));
     }
-  }, [deadlineDate]);
+
+    if (startDateObj) {
+      const isNotOpenYet = isBefore(now, startDateObj);
+      const isWithin24h = isBefore(startDateObj, addHours(now, 24));
+      setShowOpenWidget(isNotOpenYet && isWithin24h);
+    }
+  }, [deadlineDate, startDateObj]);
 
   const isProcessing = Boolean(missionResponseData?.data?.id);
 
@@ -183,6 +194,8 @@ export function MissionPageWrapper({
             rewardName={reward?.name ?? rewardQuery?.data?.name ?? ""}
             showDeadlineWidget={showDeadlineWidget}
             deadlineDate={deadlineDate}
+            showOpenWidget={showOpenWidget}
+            openDate={startDateObj}
             titleRef={titleRef}
             contextBrandLogoUrl={brandLogoUrl ?? undefined}
             contextTitle={title}
