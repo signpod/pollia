@@ -167,8 +167,14 @@ async function getFestivalFromSearch(festivalId: string): Promise<FestivalData |
   }
 }
 
+const EMPTY_RESPONSE: GetFestivalsResponse = {
+  data: [],
+  totalCount: 0,
+  pageNo: 1,
+  numOfRows: 0,
+};
+
 async function getFestivalsWithCache(request: GetFestivalsRequest): Promise<GetFestivalsResponse> {
-  // 오늘 날짜를 고정하여 캐시 키 일관성 유지
   const today = new Date();
   const eventStartDate = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, "0")}${String(today.getDate()).padStart(2, "0")}`;
 
@@ -184,31 +190,45 @@ async function getFestivalsWithCache(request: GetFestivalsRequest): Promise<GetF
 
   const url = `${TOUR_API_BASE_URL}/searchFestival2?serviceKey=${TOUR_API_SERVICE_KEY}&${params.toString()}`;
 
-  const response = await fetch(url, {
-    next: { revalidate: 86400, tags: ["festivals"] },
-  });
+  try {
+    const response = await fetch(url, {
+      next: { revalidate: 86400, tags: ["festivals"] },
+    });
 
-  if (!response.ok) {
-    throw new Error(`API request failed: ${response.status}`);
+    if (!response.ok) {
+      console.error(`Tour API request failed: ${response.status}`);
+      return EMPTY_RESPONSE;
+    }
+
+    const text = await response.text();
+
+    if (text.startsWith("<?xml") || text.startsWith("<")) {
+      console.error("Tour API returned XML error response");
+      return EMPTY_RESPONSE;
+    }
+
+    const data: TourApiResponse<TourApiFestivalItem> = JSON.parse(text);
+
+    if (data.response?.header?.resultCode !== "0000") {
+      console.error(`Tour API error: ${data.response?.header?.resultMsg ?? "Unknown error"}`);
+      return EMPTY_RESPONSE;
+    }
+
+    const items = data.response.body.items?.item ?? [];
+    const festivals = Array.isArray(items)
+      ? items.map(transformFestivalItem)
+      : [transformFestivalItem(items)];
+
+    return {
+      data: festivals,
+      totalCount: data.response.body.totalCount,
+      pageNo: data.response.body.pageNo,
+      numOfRows: data.response.body.numOfRows,
+    };
+  } catch (error) {
+    console.error("getFestivalsWithCache error:", error);
+    return EMPTY_RESPONSE;
   }
-
-  const data: TourApiResponse<TourApiFestivalItem> = await response.json();
-
-  if (data.response.header.resultCode !== "0000") {
-    throw new Error(`API error: ${data.response.header.resultMsg}`);
-  }
-
-  const items = data.response.body.items?.item ?? [];
-  const festivals = Array.isArray(items)
-    ? items.map(transformFestivalItem)
-    : [transformFestivalItem(items)];
-
-  return {
-    data: festivals,
-    totalCount: data.response.body.totalCount,
-    pageNo: data.response.body.pageNo,
-    numOfRows: data.response.body.numOfRows,
-  };
 }
 
 async function fetchDetailCommon(contentId: string) {
@@ -300,7 +320,7 @@ async function fetchDetailIntro(contentId: string) {
 export async function getFestivals(request?: GetFestivalsRequest): Promise<GetFestivalsResponse> {
   if (!TOUR_API_SERVICE_KEY) {
     console.error("TOUR_API_SERVICE_KEY is not set");
-    throw new Error("API 키가 설정되지 않았습니다.");
+    return EMPTY_RESPONSE;
   }
 
   const today = new Date();
@@ -328,13 +348,22 @@ export async function getFestivals(request?: GetFestivalsRequest): Promise<GetFe
     });
 
     if (!response.ok) {
-      throw new Error(`API request failed: ${response.status}`);
+      console.error(`Tour API request failed: ${response.status}`);
+      return EMPTY_RESPONSE;
     }
 
-    const data: TourApiResponse<TourApiFestivalItem> = await response.json();
+    const text = await response.text();
 
-    if (data.response.header.resultCode !== "0000") {
-      throw new Error(`API error: ${data.response.header.resultMsg}`);
+    if (text.startsWith("<?xml") || text.startsWith("<")) {
+      console.error("Tour API returned XML error response");
+      return EMPTY_RESPONSE;
+    }
+
+    const data: TourApiResponse<TourApiFestivalItem> = JSON.parse(text);
+
+    if (data.response?.header?.resultCode !== "0000") {
+      console.error(`Tour API error: ${data.response?.header?.resultMsg ?? "Unknown error"}`);
+      return EMPTY_RESPONSE;
     }
 
     const items = data.response.body.items?.item ?? [];
@@ -351,6 +380,6 @@ export async function getFestivals(request?: GetFestivalsRequest): Promise<GetFe
     };
   } catch (error) {
     console.error("getFestivals error:", error);
-    throw new Error("축제 정보를 불러올 수 없습니다.");
+    return EMPTY_RESPONSE;
   }
 }
