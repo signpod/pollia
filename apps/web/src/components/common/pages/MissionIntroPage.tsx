@@ -37,6 +37,8 @@ export function MissionIntroPage({
   rewardName,
   showDeadlineWidget,
   deadlineDate,
+  showOpenWidget,
+  openDate,
   titleRef,
   missionId,
   missionType,
@@ -84,6 +86,8 @@ export function MissionIntroPage({
         rewardName={rewardName}
         showDeadlineWidget={showDeadlineWidget}
         deadlineDate={deadlineDate}
+        showOpenWidget={showOpenWidget}
+        openDate={openDate}
         titleRef={titleRef}
         onScrollDown={handleScrollDown}
       >
