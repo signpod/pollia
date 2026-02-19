@@ -5,6 +5,8 @@ import { getQueryClient } from "@/lib/getQueryClient";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { Suspense } from "react";
 
+export const dynamic = "force-dynamic";
+
 export default async function LikesPage() {
   const queryClient = getQueryClient();
 
