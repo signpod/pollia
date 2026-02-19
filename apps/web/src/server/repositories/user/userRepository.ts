@@ -1,6 +1,6 @@
 import prisma from "@/database/utils/prisma/client";
 import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
-import type { Prisma } from "@prisma/client";
+import { type Prisma, UserStatus } from "@prisma/client";
 
 export class UserRepository {
   async findById(userId: string) {
@@ -40,6 +40,31 @@ export class UserRepository {
   async delete(userId: string) {
     return prisma.user.delete({
       where: { id: userId },
+    });
+  }
+
+  async startWithdrawal(userId: string, reason?: string) {
+    return prisma.user.update({
+      where: { id: userId, status: UserStatus.ACTIVE },
+      data: {
+        status: UserStatus.WITHDRAWING,
+        withdrawalReason: reason ?? null,
+      },
+    });
+  }
+
+  async completeWithdrawal(userId: string) {
+    return prisma.user.update({
+      where: { id: userId, status: UserStatus.WITHDRAWING },
+      data: {
+        status: UserStatus.WITHDRAWN,
+        email: `withdrawn+${userId}@withdrawn.local`,
+        name: "탈퇴한 사용자",
+        phone: null,
+        profileImageFileUploadId: null,
+        withdrawnAt: new Date(),
+        authDeletedAt: new Date(),
+      },
     });
   }
 }

@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { isAnswerSameAsSubmitted } from "@/lib/answer/compareAnswers";
 import { actionAnswerService } from "@/server/services/action-answer";
 import { missionResponseService } from "@/server/services/mission-response";
@@ -26,7 +26,7 @@ export async function submitAnswerOnly(params: SubmitAnswerParams): Promise<Subm
   const { missionId, responseId, answer, isLastAction } = params;
 
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
 
     const freshResponse = await missionResponseService.getResponseByMissionAndUser(
       missionId,

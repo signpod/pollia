@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { eventService } from "@/server/services/event";
 import type { SortOrderType } from "@/types/common/sort";
 import type {
@@ -19,7 +19,7 @@ export async function getUserEvents(
   request?: GetUserEventsRequest,
 ): Promise<GetUserEventsResponse & { nextCursor?: string }> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const limit = request?.limit ?? 10;
     const options = request ? { ...request, limit: limit + 1 } : { limit: limit + 1 };
 

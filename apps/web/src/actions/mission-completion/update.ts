@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { missionCompletionService } from "@/server/services/mission-completion/missionCompletionService";
 import type { UpdateMissionCompletionInput } from "@/server/services/mission-completion/types";
 import type { UpdateMissionCompletionRequest, UpdateMissionCompletionResponse } from "@/types/dto";
@@ -23,7 +23,7 @@ export async function updateMissionCompletion(
   request: UpdateMissionCompletionRequest,
 ): Promise<UpdateMissionCompletionResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const input = toUpdateMissionCompletionInput(request);
     const missionCompletion = await missionCompletionService.updateMissionCompletion(
       id,

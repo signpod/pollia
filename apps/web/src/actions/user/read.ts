@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { userService } from "@/server/services/user/userService";
 import type { GetCurrentUserResponse } from "@/types/dto/user";
 import { cache } from "react";
@@ -11,7 +11,7 @@ import { cache } from "react";
  */
 export const getCurrentUser = cache(async (): Promise<GetCurrentUserResponse> => {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const dbUser = await userService.getUserById(user.id);
     return { data: dbUser };
   } catch (error) {

@@ -1,5 +1,5 @@
 import type { UserRepository } from "@/server/repositories/user/userRepository";
-import { UserRole } from "@prisma/client";
+import { UserRole, UserStatus } from "@prisma/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { UserService } from "./userService";
 
@@ -10,9 +10,13 @@ const createMockUser = (
     name: string;
     phone: string | null;
     role: UserRole;
+    status: UserStatus;
     profileImageFileUploadId: string | null;
     createdAt: Date;
     updatedAt: Date;
+    withdrawnAt: Date | null;
+    withdrawalReason: string | null;
+    authDeletedAt: Date | null;
   }> = {},
 ) => ({
   id: "user1",
@@ -20,9 +24,13 @@ const createMockUser = (
   name: "테스트 사용자",
   phone: "01012345678",
   role: UserRole.USER,
+  status: UserStatus.ACTIVE,
   profileImageFileUploadId: null,
   createdAt: new Date("2025-01-01"),
   updatedAt: new Date("2025-01-01"),
+  withdrawnAt: null,
+  withdrawalReason: null,
+  authDeletedAt: null,
   ...overrides,
 });
 
@@ -49,6 +57,8 @@ describe("UserService", () => {
       create: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
+      startWithdrawal: jest.fn(),
+      completeWithdrawal: jest.fn(),
     } as jest.Mocked<UserRepository>;
 
     service = new UserService(mockRepo);
@@ -321,6 +331,23 @@ describe("UserService", () => {
       expect(result.phone).toBe("01098765432");
       expect(mockRepo.update).toHaveBeenCalledWith("user1", { phone: "01098765432" });
     });
+
+    it("프로필 이미지를 수정한다", async () => {
+      // Given
+      const mockUser = createMockUser();
+      const updatedUser = createMockUser({ profileImageFileUploadId: "file-123" });
+      mockRepo.findById.mockResolvedValue(mockUser);
+      mockRepo.update.mockResolvedValue(updatedUser);
+
+      // When
+      const result = await service.updateUser("user1", { profileImageFileUploadId: "file-123" });
+
+      // Then
+      expect(result.profileImageFileUploadId).toBe("file-123");
+      expect(mockRepo.update).toHaveBeenCalledWith("user1", {
+        profileImageFileUploadId: "file-123",
+      });
+    });
   });
 
   describe("deleteUser", () => {
@@ -354,6 +381,180 @@ describe("UserService", () => {
       }
 
       expect(mockRepo.delete).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("startWithdrawal", () => {
+    it("ACTIVE 사용자를 WITHDRAWING으로 전환한다 (사유 있음)", async () => {
+      // Given
+      const activeUser = createMockUser({ status: UserStatus.ACTIVE });
+      const withdrawingUser = createMockUser({
+        status: UserStatus.WITHDRAWING,
+        withdrawalReason: "서비스 불만족",
+      });
+      mockRepo.findById.mockResolvedValue(activeUser);
+      mockRepo.startWithdrawal.mockResolvedValue(withdrawingUser);
+
+      // When
+      const result = await service.startWithdrawal("user1", "서비스 불만족");
+
+      // Then
+      expect(result.status).toBe("started");
+      expect(result.user.status).toBe(UserStatus.WITHDRAWING);
+      expect(mockRepo.startWithdrawal).toHaveBeenCalledWith("user1", "서비스 불만족");
+    });
+
+    it("ACTIVE 사용자를 WITHDRAWING으로 전환한다 (사유 없음)", async () => {
+      // Given
+      const activeUser = createMockUser({ status: UserStatus.ACTIVE });
+      const withdrawingUser = createMockUser({
+        status: UserStatus.WITHDRAWING,
+        withdrawalReason: null,
+      });
+      mockRepo.findById.mockResolvedValue(activeUser);
+      mockRepo.startWithdrawal.mockResolvedValue(withdrawingUser);
+
+      // When
+      const result = await service.startWithdrawal("user1");
+
+      // Then
+      expect(result.status).toBe("started");
+      expect(mockRepo.startWithdrawal).toHaveBeenCalledWith("user1", undefined);
+    });
+
+    it("WITHDRAWING 사용자는 멱등하게 already_withdrawing을 반환한다", async () => {
+      // Given
+      const withdrawingUser = createMockUser({ status: UserStatus.WITHDRAWING });
+      mockRepo.findById.mockResolvedValue(withdrawingUser);
+
+      // When
+      const result = await service.startWithdrawal("user1", "새 사유");
+
+      // Then
+      expect(result.status).toBe("already_withdrawing");
+      expect(result.user).toEqual(withdrawingUser);
+      expect(mockRepo.startWithdrawal).not.toHaveBeenCalled();
+    });
+
+    it("WITHDRAWN 사용자는 멱등하게 already_withdrawn을 반환한다", async () => {
+      // Given
+      const withdrawnUser = createMockUser({
+        status: UserStatus.WITHDRAWN,
+        withdrawnAt: new Date("2025-06-01"),
+      });
+      mockRepo.findById.mockResolvedValue(withdrawnUser);
+
+      // When
+      const result = await service.startWithdrawal("user1");
+
+      // Then
+      expect(result.status).toBe("already_withdrawn");
+      expect(result.user).toEqual(withdrawnUser);
+      expect(mockRepo.startWithdrawal).not.toHaveBeenCalled();
+    });
+
+    it("존재하지 않는 사용자는 404 에러를 던진다", async () => {
+      // Given
+      mockRepo.findById.mockResolvedValue(null);
+
+      // When & Then
+      await expect(service.startWithdrawal("invalid-id")).rejects.toThrow(
+        "사용자 정보를 찾을 수 없습니다.",
+      );
+
+      try {
+        await service.startWithdrawal("invalid-id");
+      } catch (error) {
+        expect(error instanceof Error && error.cause).toBe(404);
+      }
+
+      expect(mockRepo.startWithdrawal).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("completeWithdrawal", () => {
+    it("WITHDRAWING 사용자를 WITHDRAWN으로 전환하고 익명화한다", async () => {
+      // Given
+      const withdrawingUser = createMockUser({ status: UserStatus.WITHDRAWING });
+      const withdrawnUser = createMockUser({
+        status: UserStatus.WITHDRAWN,
+        email: "withdrawn+user1@withdrawn.local",
+        name: "탈퇴한 사용자",
+        phone: null,
+        profileImageFileUploadId: null,
+        withdrawnAt: new Date("2025-06-01"),
+        authDeletedAt: new Date("2025-06-01"),
+      });
+      mockRepo.findById.mockResolvedValue(withdrawingUser);
+      mockRepo.completeWithdrawal.mockResolvedValue(withdrawnUser);
+
+      // When
+      const result = await service.completeWithdrawal("user1");
+
+      // Then
+      expect(result.status).toBe("completed");
+      expect(result.user.status).toBe(UserStatus.WITHDRAWN);
+      expect(result.user.email).toBe("withdrawn+user1@withdrawn.local");
+      expect(result.user.name).toBe("탈퇴한 사용자");
+      expect(result.user.phone).toBeNull();
+      expect(result.user.profileImageFileUploadId).toBeNull();
+      expect(result.user.withdrawnAt).not.toBeNull();
+      expect(result.user.authDeletedAt).not.toBeNull();
+      expect(mockRepo.completeWithdrawal).toHaveBeenCalledWith("user1");
+    });
+
+    it("WITHDRAWN 사용자는 멱등하게 already_withdrawn을 반환한다", async () => {
+      // Given
+      const withdrawnUser = createMockUser({
+        status: UserStatus.WITHDRAWN,
+        withdrawnAt: new Date("2025-06-01"),
+      });
+      mockRepo.findById.mockResolvedValue(withdrawnUser);
+
+      // When
+      const result = await service.completeWithdrawal("user1");
+
+      // Then
+      expect(result.status).toBe("already_withdrawn");
+      expect(result.user).toEqual(withdrawnUser);
+      expect(mockRepo.completeWithdrawal).not.toHaveBeenCalled();
+    });
+
+    it("ACTIVE 사용자는 409 에러를 던진다 (잘못된 상태 전이)", async () => {
+      // Given
+      const activeUser = createMockUser({ status: UserStatus.ACTIVE });
+      mockRepo.findById.mockResolvedValue(activeUser);
+
+      // When & Then
+      await expect(service.completeWithdrawal("user1")).rejects.toThrow(
+        "탈퇴 진행 중인 계정만 완료할 수 있습니다.",
+      );
+
+      try {
+        await service.completeWithdrawal("user1");
+      } catch (error) {
+        expect(error instanceof Error && error.cause).toBe(409);
+      }
+
+      expect(mockRepo.completeWithdrawal).not.toHaveBeenCalled();
+    });
+
+    it("존재하지 않는 사용자는 404 에러를 던진다", async () => {
+      // Given
+      mockRepo.findById.mockResolvedValue(null);
+
+      // When & Then
+      await expect(service.completeWithdrawal("invalid-id")).rejects.toThrow(
+        "사용자 정보를 찾을 수 없습니다.",
+      );
+
+      try {
+        await service.completeWithdrawal("invalid-id");
+      } catch (error) {
+        expect(error instanceof Error && error.cause).toBe(404);
+      }
+
+      expect(mockRepo.completeWithdrawal).not.toHaveBeenCalled();
     });
   });
 });

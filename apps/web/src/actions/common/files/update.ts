@@ -1,12 +1,12 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { fileUploadService } from "@/server/services/file-upload";
 import type { ConfirmFileRequest, ConfirmFileResponse } from "@/types/dto/file";
 
 export async function confirmFile(request: ConfirmFileRequest): Promise<ConfirmFileResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     await fileUploadService.confirmFile(request.fileUploadId, user.id);
     return {};
   } catch (error) {

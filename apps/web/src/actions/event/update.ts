@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { eventService } from "@/server/services/event";
 import type { UpdateEventRequest, UpdateEventResponse } from "@/types/dto/event";
 
@@ -9,7 +9,7 @@ export async function updateEvent(
   request: UpdateEventRequest,
 ): Promise<UpdateEventResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const event = await eventService.updateEvent(eventId, request, user.id);
     return { data: event };
   } catch (error) {

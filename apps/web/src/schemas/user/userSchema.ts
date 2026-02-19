@@ -29,5 +29,14 @@ export const userUpdateSchema = z
     message: "최소 하나의 필드를 수정해야 합니다.",
   });
 
+export const userWithdrawalSchema = z.object({
+  reason: z
+    .string()
+    .max(500, { error: "탈퇴 사유는 500자를 초과할 수 없습니다." })
+    .trim()
+    .optional(),
+});
+
 export type UserInput = z.infer<typeof userInputSchema>;
 export type UserUpdate = z.infer<typeof userUpdateSchema>;
+export type UserWithdrawal = z.infer<typeof userWithdrawalSchema>;

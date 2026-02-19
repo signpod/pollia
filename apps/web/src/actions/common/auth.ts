@@ -3,13 +3,14 @@
 import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
 import { userService } from "@/server/services/user/userService";
 import { type GetCurrentUserResponse, UserRole } from "@/types/dto/user";
+import { UserStatus } from "@prisma/client";
 import type { User } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
 /**
- * Request Memoization을 사용하여 동일한 요청 내에서 중복 호출을 방지합니다.
- * 요청 간 캐시 공유는 되지 않으므로, ISR과 함께 사용할 때는 unstable_cache를 고려하세요.
+ * 순수 인증만 수행합니다. Supabase Auth 토큰을 검증하여 사용자를 식별합니다.
+ * 탈퇴 상태 등 비즈니스 로직 인가는 포함하지 않습니다.
  */
 export const requireAuth = cache(async (): Promise<User> => {
   const supabase = await createServerSupabaseClient();
@@ -27,6 +28,24 @@ export const requireAuth = cache(async (): Promise<User> => {
   return user;
 });
 
+/**
+ * 인증 + 활성 상태 인가를 수행합니다.
+ * 탈퇴 처리된(WITHDRAWING, WITHDRAWN) 계정은 403으로 차단합니다.
+ */
+export const requireActiveUser = cache(async (): Promise<User> => {
+  const user = await requireAuth();
+
+  const dbUser = await userService.getUserById(user.id);
+
+  if (dbUser.status !== UserStatus.ACTIVE) {
+    const error = new Error("탈퇴 처리된 계정입니다.");
+    error.cause = 403;
+    throw error;
+  }
+
+  return user;
+});
+
 export async function requireAdmin(): Promise<{
   supabaseUser: User;
   dbUser: GetCurrentUserResponse["data"];
@@ -36,6 +55,12 @@ export async function requireAdmin(): Promise<{
   try {
     const dbUser = await userService.getUserById(supabaseUser.id);
 
+    if (dbUser.status !== UserStatus.ACTIVE) {
+      const error = new Error("탈퇴 처리된 계정입니다.");
+      error.cause = 403;
+      throw error;
+    }
+
     if (dbUser.role !== UserRole.ADMIN) {
       const error = new Error("관리자 권한이 필요합니다.");
       error.cause = 403;
@@ -44,13 +69,7 @@ export async function requireAdmin(): Promise<{
 
     return { supabaseUser, dbUser };
   } catch (error) {
-    if (error instanceof Error && error.cause === 404) {
-      const authError = new Error("사용자 정보를 찾을 수 없습니다.");
-      authError.cause = 401;
-      throw authError;
-    }
-
-    if (error instanceof Error && error.cause === 403) {
+    if (error instanceof Error && (error.cause === 404 || error.cause === 403)) {
       throw error;
     }
 

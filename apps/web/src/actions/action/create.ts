@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { actionService } from "@/server/services/action";
 import type { ActionCreatedResult } from "@/server/services/action/types";
 import type {
@@ -38,7 +38,7 @@ async function createActionHandler<TRequest, TResponse extends BaseActionRespons
   errorMessage: string,
 ): Promise<TResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const action = await serviceMethod(request, user.id);
 
     if (action.missionId) {
@@ -180,7 +180,7 @@ interface DuplicateActionRequest {
 
 export async function duplicateAction(request: DuplicateActionRequest) {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
 
     const result = await actionService.duplicateAction(
       request.actionId,

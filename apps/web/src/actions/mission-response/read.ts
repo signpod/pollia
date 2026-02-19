@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { missionResponseService } from "@/server/services/mission-response";
 import type {
   GetMissionResponseResponse,
@@ -11,7 +11,7 @@ import type {
 
 export async function getMissionResponse(responseId: string): Promise<GetMissionResponseResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const response = await missionResponseService.getResponseById(responseId, user.id);
     return { data: response };
   } catch (error) {
@@ -29,7 +29,7 @@ export async function getMyResponseForMission(
   missionId: string,
 ): Promise<GetMissionResponseResponse | { data: null }> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const response = await missionResponseService.getResponseByMissionAndUser(missionId, user.id);
     if (!response) {
       return { data: null };
@@ -48,7 +48,7 @@ export async function getMyResponseForMission(
 
 export async function getMyResponses(): Promise<GetMyMissionResponsesResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const responses = await missionResponseService.getUserResponses(user.id);
     return { data: responses };
   } catch (error) {
@@ -64,7 +64,7 @@ export async function getMyResponses(): Promise<GetMyMissionResponsesResponse> {
 
 export async function getMissionResponses(missionId: string): Promise<GetMissionResponsesResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const responses = await missionResponseService.getMissionResponses(missionId, user.id);
     return { data: responses };
   } catch (error) {
@@ -80,7 +80,7 @@ export async function getMissionResponses(missionId: string): Promise<GetMission
 
 export async function getMissionStats(missionId: string): Promise<GetMissionStatsResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const stats = await missionResponseService.getMissionStats(missionId, user.id);
     return { data: stats };
   } catch (error) {

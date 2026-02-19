@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { missionResponseService } from "@/server/services/mission-response";
 import type { DeleteMissionResponseResponse } from "@/types/dto";
 
@@ -8,7 +8,7 @@ export async function deleteMissionResponse(
   responseId: string,
 ): Promise<DeleteMissionResponseResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     await missionResponseService.deleteResponse(responseId, user.id);
     return { message: "응답이 삭제되었습니다." };
   } catch (error) {

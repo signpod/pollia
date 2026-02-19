@@ -1,12 +1,12 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { fileUploadService } from "@/server/services/file-upload";
 import type { UploadFileRequest, UploadFileResponse } from "@/types/dto/file";
 
 export async function getUploadUrl(request: UploadFileRequest): Promise<UploadFileResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
 
     const result = await fileUploadService.createUploadUrl(
       {
