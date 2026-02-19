@@ -28,7 +28,7 @@ export function FestivalContent({ festival }: FestivalContentProps) {
   const endDateFormatted = formatFullDate(festival.endDate);
 
   return (
-    <div className="relative bg-white">
+    <div className="relative bg-white w-full">
       <div className="flex w-full flex-col gap-8 px-5 py-10">
         <section className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
