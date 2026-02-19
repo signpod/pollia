@@ -59,7 +59,7 @@ export function MyProjectTabs() {
         pointColor="secondary"
         scrollable
       >
-        <Tab.List>
+        <Tab.List className="sticky top-12 z-10 bg-white">
           {tabs.map(tab => (
             <Tab.Item key={tab.value} value={tab.value}>
               <Typo.Body size="large">{tab.label}</Typo.Body>
