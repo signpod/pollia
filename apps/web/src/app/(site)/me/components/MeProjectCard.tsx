@@ -7,7 +7,7 @@ import { useResumeToNextAction } from "@/hooks/mission/useResumeToNextAction";
 import { setActionNavCookie } from "@/lib/cookie";
 import { cn } from "@/lib/utils";
 import type { MyMissionResponse, MyMissionResponseAnswer } from "@/types/dto/mission-response";
-import PollPollE from "@public/svgs/poll-poll-e.svg";
+import thumbnailFallback from "@public/images/thumbnail-fallback.png";
 import { ButtonV2, Typo } from "@repo/ui/components";
 import Image from "next/image";
 import Link from "next/link";
@@ -105,20 +105,14 @@ export function MeProjectCard({ response, variant, lineClamp = 1 }: MeProjectCar
     >
       <div className="flex flex-col gap-3">
         <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-zinc-100">
-          {showFallback ? (
-            <div className="flex size-full items-center justify-center bg-zinc-50">
-              <PollPollE className="size-16 text-zinc-200" />
-            </div>
-          ) : (
-            <Image
-              src={mission.imageUrl ?? ""}
-              alt={mission.title}
-              fill
-              sizes="(max-width: 600px) 50vw, 300px"
-              className="object-cover"
-              onError={() => setImageError(true)}
-            />
-          )}
+          <Image
+            src={showFallback ? thumbnailFallback : (mission.imageUrl ?? "")}
+            alt={mission.title}
+            fill
+            sizes="(max-width: 600px) 50vw, 300px"
+            className="object-cover"
+            onError={() => setImageError(true)}
+          />
           <MissionLikeButton missionId={mission.id} className="absolute bottom-3 right-3" />
         </div>
         <div className="flex flex-col gap-2">
