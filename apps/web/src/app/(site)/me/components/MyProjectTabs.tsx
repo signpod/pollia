@@ -170,7 +170,7 @@ const RewardsTab = memo(function RewardsTab() {
             label={label}
             href={href}
           >
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-4">
               {items?.slice(0, MAX_REWARDS_PREVIEW).map(reward => (
                 <RewardCard key={reward.id} reward={reward} />
               ))}
