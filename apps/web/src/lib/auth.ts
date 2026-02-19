@@ -27,10 +27,14 @@ export async function checkAuthStatus(): Promise<{
       isAuthenticated: isActiveUser,
       user: isActiveUser ? user : null,
     };
-  } catch {
-    return {
-      isAuthenticated: false,
-      user: null,
-    };
+  } catch (error) {
+    if (error instanceof Error && error.cause === 404) {
+      throw error;
+    }
+
+    console.error("[checkAuthStatus] 사용자 인증 상태 확인 실패:", error);
+    const serverError = new Error("인증 상태 확인 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
   }
 }
