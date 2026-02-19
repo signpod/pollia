@@ -47,7 +47,7 @@ export function ProfileHeader({ showBack = false, fallbackRight }: ProfileHeader
         <button onClick={() => router.push(ROUTES.ME)} type="button">
           <div className="flex items-center gap-2">
             <UserAvatar size="small" />
-            <Typo.Body size="small" className="font-medium text-zinc-700">
+            <Typo.Body size="medium" className="font-medium text-zinc-700">
               {currentUser.name}
             </Typo.Body>
           </div>
