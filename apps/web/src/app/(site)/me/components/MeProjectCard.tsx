@@ -5,19 +5,20 @@ import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { ROUTES } from "@/constants/routes";
 import { useResumeToNextAction } from "@/hooks/mission/useResumeToNextAction";
 import { setActionNavCookie } from "@/lib/cookie";
+import { cn } from "@/lib/utils";
 import type { MyMissionResponse, MyMissionResponseAnswer } from "@/types/dto/mission-response";
 import PollPollE from "@public/svgs/poll-poll-e.svg";
 import { ButtonV2, Typo } from "@repo/ui/components";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useState } from "react";
-import { useDeleteMissionResponse } from "../hooks/useDeleteMissionResponse";
 
 export type MeProjectCardVariant = "in-progress" | "completed" | "expired";
 
 interface MeProjectCardProps {
   response: MyMissionResponse;
   variant: MeProjectCardVariant;
+  lineClamp?: number;
 }
 
 function resolveCompletionId(answers: MyMissionResponseAnswer[]): string | undefined {
@@ -38,7 +39,6 @@ function CardAction({
     missionId: response.mission.id,
     answers: response.answers,
   });
-  const deleteMutation = useDeleteMissionResponse();
 
   const handleOpenInNewTab = useCallback(
     (e: React.MouseEvent) => {
@@ -88,7 +88,7 @@ function formatCompletedDate(date: Date): string {
   return `${yy}.${mm}.${dd} 완료`;
 }
 
-export function MeProjectCard({ response, variant }: MeProjectCardProps) {
+export function MeProjectCard({ response, variant, lineClamp = 1 }: MeProjectCardProps) {
   const { mission } = response;
   const [imageError, setImageError] = useState(false);
   const showFallback = imageError || !mission.imageUrl;
@@ -96,44 +96,50 @@ export function MeProjectCard({ response, variant }: MeProjectCardProps) {
     MISSION_CATEGORY_LABELS[mission.category as keyof typeof MISSION_CATEGORY_LABELS] ??
     mission.category;
   const isCompleted = variant === "completed";
+  const titleClassName = cn("text-default", lineClamp > 1 ? "line-clamp-2" : "line-clamp-1");
 
   return (
-    <Link href={ROUTES.MISSION(mission.id)} className="flex flex-col overflow-hidden">
-      <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-zinc-100">
-        {showFallback ? (
-          <div className="flex size-full items-center justify-center bg-zinc-50">
-            <PollPollE className="size-16 text-zinc-200" />
-          </div>
-        ) : (
-          <Image
-            src={mission.imageUrl ?? ""}
-            alt={mission.title}
-            fill
-            sizes="(max-width: 600px) 50vw, 300px"
-            className="object-cover"
-            onError={() => setImageError(true)}
-          />
-        )}
-        <MissionLikeButton missionId={mission.id} className="absolute bottom-3 right-3" />
-      </div>
-      <div className="mt-3 flex flex-col gap-2">
-        <div className="flex flex-col gap-1">
+    <Link
+      href={ROUTES.MISSION(mission.id)}
+      className="flex flex-col overflow-hidden h-auto justify-between gap-3"
+    >
+      <div className="flex flex-col gap-3">
+        <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-zinc-100">
+          {showFallback ? (
+            <div className="flex size-full items-center justify-center bg-zinc-50">
+              <PollPollE className="size-16 text-zinc-200" />
+            </div>
+          ) : (
+            <Image
+              src={mission.imageUrl ?? ""}
+              alt={mission.title}
+              fill
+              sizes="(max-width: 600px) 50vw, 300px"
+              className="object-cover"
+              onError={() => setImageError(true)}
+            />
+          )}
+          <MissionLikeButton missionId={mission.id} className="absolute bottom-3 right-3" />
+        </div>
+        <div className="flex flex-col gap-2">
           <Typo.Body size="small" className="text-info">
             {categoryLabel}
           </Typo.Body>
-          <Typo.SubTitle size="large" className="line-clamp-2 min-h-[48px] text-default">
+          <Typo.SubTitle size="large" className={titleClassName}>
             {mission.title}
           </Typo.SubTitle>
+
+          {isCompleted && response.completedAt && (
+            <span className="w-fit rounded-[6px] bg-zinc-100 px-2 py-1">
+              <Typo.Body size="small" className="text-zinc-500">
+                {formatCompletedDate(response.completedAt)}
+              </Typo.Body>
+            </span>
+          )}
         </div>
-        {isCompleted && response.completedAt && (
-          <span className="w-fit rounded-[6px] bg-zinc-100 px-2 py-1">
-            <Typo.Body size="small" className="text-zinc-500">
-              {formatCompletedDate(response.completedAt)}
-            </Typo.Body>
-          </span>
-        )}
-        <CardAction response={response} variant={variant} />
       </div>
+
+      <CardAction response={response} variant={variant} />
     </Link>
   );
 }
