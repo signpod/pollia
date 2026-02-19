@@ -18,9 +18,6 @@ export const clientConfig = {
   ...baseConfig,
   enabled: isProduction,
   payload: {
-    server: {
-      root: "webpack:///./",
-    },
     client: {
       javascript: {
         source_map_enabled: true,
