@@ -16,7 +16,7 @@ const FEATURED_MISSIONS = [
     title: "2026 초미세 습관 형성\n프로젝트 참가 신청 1",
     brandLogoUrl: "",
     imageUrl:
-      "https://jjrsknqxiqbzqiraexpc.supabase.co/storage/v1/object/public/mission-images/f54437e4-95c6-4232-b927-f2b995b09a14/1768522947884.jpg",
+      "https://lpgfbjohdashthkhxzab.supabase.co/storage/v1/object/public/mission-images/ca3afe20-e1ba-423a-a6d5-6c7662b40451/1770098871007.jpg",
   },
   {
     id: "cmkg52ncy000gla04ya80cyo2",
@@ -28,7 +28,9 @@ const FEATURED_MISSIONS = [
 ];
 
 export function BannerSlider() {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const total = FEATURED_MISSIONS.length;
+  const [displayIndex, setDisplayIndex] = useState(1);
+  const [isTransitioning, setIsTransitioning] = useState(true);
   const [isPlaying, setIsPlaying] = useState(true);
   const [swipeKey, setSwipeKey] = useState(0);
   const touchStartX = useRef(0);
@@ -38,16 +40,43 @@ export function BannerSlider() {
   const isDragging = useRef(false);
   const isSwiped = useRef(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
 
-  const total = FEATURED_MISSIONS.length;
+  const extendedSlides = [
+    FEATURED_MISSIONS[total - 1]!,
+    ...FEATURED_MISSIONS,
+    FEATURED_MISSIONS[0]!,
+  ];
+
+  const realIndex = (((displayIndex - 1) % total) + total) % total;
 
   const goToNext = useCallback(() => {
-    setCurrentIndex(prev => (prev + 1) % total);
-  }, [total]);
+    setIsTransitioning(true);
+    setDisplayIndex(prev => prev + 1);
+  }, []);
 
   const goToPrev = useCallback(() => {
-    setCurrentIndex(prev => (prev - 1 + total) % total);
-  }, [total]);
+    setIsTransitioning(true);
+    setDisplayIndex(prev => prev - 1);
+  }, []);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+
+    const handleTransitionEnd = () => {
+      if (displayIndex >= total + 1) {
+        setIsTransitioning(false);
+        setDisplayIndex(1);
+      } else if (displayIndex <= 0) {
+        setIsTransitioning(false);
+        setDisplayIndex(total);
+      }
+    };
+
+    track.addEventListener("transitionend", handleTransitionEnd);
+    return () => track.removeEventListener("transitionend", handleTransitionEnd);
+  }, [displayIndex, total]);
 
   useEffect(() => {
     if (total <= 1 || !isPlaying) return;
@@ -143,7 +172,7 @@ export function BannerSlider() {
     window.location.href = `https://pollia.me/${ROUTES.MISSION(missionId)}`;
   };
 
-  const mission = FEATURED_MISSIONS[currentIndex];
+  const mission = FEATURED_MISSIONS[realIndex];
 
   return (
     <section className="px-5">
@@ -154,10 +183,14 @@ export function BannerSlider() {
       >
         {/* 슬라이드 영역 (이미지) */}
         <div
-          className="flex h-full transition-transform duration-500 ease-in-out"
-          style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+          ref={trackRef}
+          className={cn(
+            "flex h-full",
+            isTransitioning && "transition-transform duration-500 ease-in-out",
+          )}
+          style={{ transform: `translateX(-${displayIndex * 100}%)` }}
         >
-          {FEATURED_MISSIONS.map((m, index) => (
+          {extendedSlides.map((m, index) => (
             <div
               key={m.id + index}
               className="relative size-full shrink-0 cursor-grab select-none active:cursor-grabbing"
@@ -183,7 +216,7 @@ export function BannerSlider() {
 
         {/* 그라데이션 + 로고 + 타이틀 (슬라이드 트랙 밖, fade-up 애니메이션) */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-b from-transparent to-[#27272A] px-10 pb-10 pt-[60px]">
-          <div key={currentIndex} className="flex flex-col gap-3 animate-fade-up">
+          <div key={realIndex} className="flex flex-col gap-3 animate-fade-up">
             <div
               className={cn(
                 "shrink-0 overflow-hidden rounded-full border-[1.25px] border-zinc-200 bg-white",
@@ -226,7 +259,7 @@ export function BannerSlider() {
               </button>
               <span className="rounded-md bg-black/40 px-2 py-1">
                 <Typo.Body size="small" className="text-white">
-                  {currentIndex + 1} / {total}
+                  {realIndex + 1} / {total}
                 </Typo.Body>
               </span>
             </div>
