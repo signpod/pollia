@@ -4,7 +4,7 @@ import { getAllMissions } from "@/actions/mission/read";
 import { MissionLikeButton } from "@/app/(site)/(main)/components/MissionLikeButton";
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
-import { MissionCategory } from "@prisma/client";
+import { MissionCategory, MissionType } from "@prisma/client";
 import PollPollE from "@public/svgs/poll-poll-e.svg";
 import { Typo } from "@repo/ui/components";
 import { useQuery } from "@tanstack/react-query";
@@ -68,7 +68,7 @@ export function RecommendedProjects({ userName }: RecommendedProjectsProps) {
 
   const { data: missions } = useQuery({
     queryKey: [...missionQueryKeys.allMissions(), "recommended"],
-    queryFn: () => getAllMissions({ limit: 6 }),
+    queryFn: () => getAllMissions({ limit: 6, type: MissionType.GENERAL }),
     select: data => data.data,
     staleTime: 5 * 60 * 1000,
   });
