@@ -35,7 +35,7 @@ export function ProfileHeader({ showBack = false, fallbackRight }: ProfileHeader
             onClick={() => router.back()}
             className="size-12 flex items-center justify-center"
           >
-            <ChevronLeftIcon className="size-5" />
+            <ChevronLeftIcon className="size-6" />
           </button>
         )}
         <Link href={ROUTES.HOME} className="flex items-center gap-[2.775px] py-3">

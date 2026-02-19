@@ -33,7 +33,7 @@ export function MeLayoutShell({ children }: { children: React.ReactNode }) {
             onClick={() => router.back()}
             className="size-12 flex items-center justify-center"
           >
-            <ChevronLeftIcon className="size-5" />
+            <ChevronLeftIcon className="size-6" />
           </button>
           <Typo.SubTitle className="text-base">{subPageTitle}</Typo.SubTitle>
         </header>
