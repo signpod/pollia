@@ -1,7 +1,7 @@
 "use client";
 
-import { MissionLikeButton } from "@/app/(main)/components/MissionLikeButton";
 import { getAllMissions } from "@/actions/mission/read";
+import { MissionLikeButton } from "@/app/(site)/(main)/components/MissionLikeButton";
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { MissionCategory } from "@prisma/client";

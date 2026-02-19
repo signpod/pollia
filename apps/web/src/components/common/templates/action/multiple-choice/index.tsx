@@ -1,4 +1,4 @@
-import { ActionOptionButton } from "@/app/mission/[missionId]/components";
+import { ActionOptionButton } from "@/app/(site)/mission/[missionId]/components";
 import { ActionStepContentProps, CLIENT_OTHER_OPTION_ID } from "@/constants/action";
 import { cn } from "@repo/ui/lib";
 import { motion } from "framer-motion";

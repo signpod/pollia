@@ -1,7 +1,7 @@
 "use client";
 
 import { Footer } from "../(main)/components";
-import { MyProjectTabs, MeFooter, ProfileSection, RecommendedProjects } from "./components";
+import { MeFooter, MyProjectTabs, ProfileSection, RecommendedProjects } from "./components";
 
 interface MePageContentProps {
   user: { name: string; email: string };
