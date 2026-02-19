@@ -72,7 +72,12 @@ export default async function MissionLayout({
   const { missionId } = await params;
   const queryClient = getQueryClient();
 
-  const { isAuthenticated } = await checkAuthStatus();
+  const { isAuthenticated } = await checkAuthStatus().catch(error => {
+    if (error instanceof Error && (error as Error & { cause?: number }).cause === 404) {
+      notFound();
+    }
+    throw error;
+  });
 
   const missionResult = await getMission(missionId).catch(error => {
     if (error instanceof Error && (error as Error & { cause?: number }).cause === 404) {
