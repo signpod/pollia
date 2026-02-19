@@ -17,6 +17,12 @@ const nextConfig = {
         "web-worker": false,
       };
     }
+
+    config.module.rules.push({
+      test: /\.svg$/,
+      use: ["@svgr/webpack"],
+    });
+
     return config;
   },
 
