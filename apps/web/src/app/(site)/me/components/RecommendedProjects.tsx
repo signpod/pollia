@@ -8,6 +8,7 @@ import { ROUTES } from "@/constants/routes";
 import { MissionCategory, MissionType } from "@prisma/client";
 import PollPollE from "@public/svgs/poll-poll-e.svg";
 import { Typo } from "@repo/ui/components";
+import { cn } from "@repo/ui/lib";
 import { useQuery } from "@tanstack/react-query";
 import useEmblaCarousel from "embla-carousel-react";
 import Image from "next/image";
@@ -18,18 +19,19 @@ interface RecommendedProjectsProps {
   userName: string;
 }
 
-function RecommendedCard({
-  mission,
-}: {
+interface RecommendedCardProps {
   mission: { id: string; title: string; imageUrl: string | null; category: MissionCategory };
-}) {
+  className?: string;
+}
+
+function RecommendedCard({ mission, className }: RecommendedCardProps) {
   const [imageError, setImageError] = useState(false);
   const showFallback = imageError || !mission.imageUrl;
   const categoryLabel = MISSION_CATEGORY_LABELS[mission.category] ?? mission.category;
 
   return (
-    <div className="shrink-0 pl-4 first:pl-5">
-      <Link href={ROUTES.MISSION(mission.id)} className="flex w-[200px] flex-col">
+    <div className="shrink-0 pl-2 sm:pl-4 first:pl-5">
+      <Link href={ROUTES.MISSION(mission.id)} className={cn("flex w-[200px] flex-col", className)}>
         <div className="relative aspect-square w-full overflow-hidden rounded-2xl ring-1 ring-zinc-100">
           {showFallback ? (
             <div className="flex size-full items-center justify-center bg-zinc-50">
@@ -84,7 +86,11 @@ export function RecommendedProjects({ userName }: RecommendedProjectsProps) {
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex">
           {missions.map(mission => (
-            <RecommendedCard key={mission.id} mission={mission} />
+            <RecommendedCard
+              key={mission.id}
+              mission={mission}
+              className="w-[159.5px] sm:w-[200px]"
+            />
           ))}
         </div>
       </div>
