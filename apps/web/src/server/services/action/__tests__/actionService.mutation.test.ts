@@ -230,7 +230,7 @@ describe("ActionService - Mutation", () => {
         "mission1",
         expect.anything(),
       );
-      expect(ctx.mockActionRepo.updateOrder).toHaveBeenCalledWith("action3", 0, expect.anything());
+      expect(ctx.mockActionRepo.updateOrder).toHaveBeenCalledTimes(1);
       expect(ctx.mockActionRepo.updateOrder).toHaveBeenCalledWith("action2", 1, expect.anything());
     });
 

@@ -348,7 +348,9 @@ export class ActionService {
       });
 
       await Promise.all(
-        remaining.map((action, index) => this.actionRepo.updateOrder(action.id, index, tx)),
+        remaining.flatMap((action, index) =>
+          action.order === index ? [] : [this.actionRepo.updateOrder(action.id, index, tx)],
+        ),
       );
     });
   }
