@@ -59,7 +59,7 @@ function CardAction({
 
   if (variant === "expired") {
     return (
-      <ButtonV2 variant="tertiary" size="medium" disabled className="w-full">
+      <ButtonV2 variant="secondary" size="medium" disabled className="w-full">
         <div className="flex w-full items-center justify-center">
           <Typo.ButtonText size="medium" className="text-disabled">
             만료된 프로젝트

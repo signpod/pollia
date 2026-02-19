@@ -188,7 +188,7 @@ const LikedTab = memo(function LikedTab() {
   if (!likedMissions || likedMissions.length === 0) {
     return (
       <EmptyState
-        icon={<PolliaFaceVeryGood className="size-30 text-zinc-300" />}
+        icon={<PolliaFaceVeryGood className="size-30 text-zinc-200" />}
         title="찜한 프로젝트가 없어요"
         description={
           <>
