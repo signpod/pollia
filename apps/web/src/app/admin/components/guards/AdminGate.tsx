@@ -18,6 +18,10 @@ export async function AdminGate({ children }: AdminGateProps) {
         console.warn("[AdminGate] 403 Forbidden - 관리자 권한 없음:", error.message);
         notFound();
       }
+      if (error.cause === 404) {
+        console.warn("[AdminGate] 404 Not Found - 사용자 정보 없음:", error.message);
+        notFound();
+      }
     }
     throw error;
   }
