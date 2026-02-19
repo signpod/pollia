@@ -4,7 +4,6 @@ export * from "./CategoryBadge";
 export * from "./CategoryFilter";
 export * from "./ChipFilter";
 export * from "./FestivalCard";
-export * from "./FestivalSection";
 export * from "./Footer";
 export * from "./Header";
 export * from "./MainContent";
