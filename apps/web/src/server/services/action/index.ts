@@ -1,3 +1,4 @@
+import prisma from "@/database/utils/prisma/client";
 import { logger } from "@/lib/logger";
 import {
   actionUpdateSchema,
@@ -321,14 +322,35 @@ export class ActionService {
 
     if (action.missionId) {
       await this.verifyMissionAccess(action.missionId, userId);
-    }
-
-    if (action.missionId) {
-      await this.actionRepo.deleteAndReindexMissionActionOrders(actionId, action.missionId);
+      await this.deleteAndReindexOrders(actionId, action.missionId);
       return;
     }
 
     await this.actionRepo.delete(actionId);
+  }
+
+  private async deleteAndReindexOrders(actionId: string, missionId: string): Promise<void> {
+    await prisma.$transaction(async tx => {
+      await this.actionRepo.delete(actionId, tx);
+
+      const remaining = await this.actionRepo.findOrdersByMissionId(missionId, tx);
+
+      remaining.sort((a, b) => {
+        const aOrder = a.order ?? Number.MAX_SAFE_INTEGER;
+        const bOrder = b.order ?? Number.MAX_SAFE_INTEGER;
+        if (aOrder !== bOrder) return aOrder - bOrder;
+
+        const aCreated = a.createdAt.getTime();
+        const bCreated = b.createdAt.getTime();
+        if (aCreated !== bCreated) return aCreated - bCreated;
+
+        return a.id.localeCompare(b.id);
+      });
+
+      await Promise.all(
+        remaining.map((action, index) => this.actionRepo.updateOrder(action.id, index, tx)),
+      );
+    });
   }
 
   async reorderActions(

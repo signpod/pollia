@@ -243,43 +243,23 @@ export class ActionRepository {
     });
   }
 
-  async delete(actionId: string) {
-    return prisma.action.delete({
+  async delete(actionId: string, client: Prisma.TransactionClient = prisma) {
+    return client.action.delete({
       where: { id: actionId },
     });
   }
 
-  async deleteAndReindexMissionActionOrders(actionId: string, missionId: string) {
-    return prisma.$transaction(async tx => {
-      await tx.action.delete({
-        where: { id: actionId },
-      });
+  async findOrdersByMissionId(missionId: string, client: Prisma.TransactionClient = prisma) {
+    return client.action.findMany({
+      where: { missionId },
+      select: { id: true, order: true, createdAt: true },
+    });
+  }
 
-      const remaining = await tx.action.findMany({
-        where: { missionId },
-        select: { id: true, order: true, createdAt: true },
-      });
-
-      remaining.sort((a, b) => {
-        const aOrder = a.order ?? Number.MAX_SAFE_INTEGER;
-        const bOrder = b.order ?? Number.MAX_SAFE_INTEGER;
-        if (aOrder !== bOrder) return aOrder - bOrder;
-
-        const aCreated = a.createdAt.getTime();
-        const bCreated = b.createdAt.getTime();
-        if (aCreated !== bCreated) return aCreated - bCreated;
-
-        return a.id.localeCompare(b.id);
-      });
-
-      await Promise.all(
-        remaining.map((action, index) =>
-          tx.action.update({
-            where: { id: action.id },
-            data: { order: index },
-          }),
-        ),
-      );
+  async updateOrder(actionId: string, order: number, client: Prisma.TransactionClient = prisma) {
+    return client.action.update({
+      where: { id: actionId },
+      data: { order },
     });
   }
 

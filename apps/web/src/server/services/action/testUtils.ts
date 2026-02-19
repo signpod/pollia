@@ -24,7 +24,8 @@ export function createActionServiceTestContext() {
     update: jest.fn(),
     updateWithOptions: jest.fn(),
     delete: jest.fn(),
-    deleteAndReindexMissionActionOrders: jest.fn(),
+    findOrdersByMissionId: jest.fn(),
+    updateOrder: jest.fn(),
     updateManyOrders: jest.fn(),
   } as unknown as jest.Mocked<ActionRepository>;
 
