@@ -85,7 +85,7 @@ function formatCompletedDate(date: Date): string {
   const yy = String(d.getFullYear()).slice(2);
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const dd = String(d.getDate()).padStart(2, "0");
-  return `${yy}.${mm}.${dd} 응답`;
+  return `${yy}.${mm}.${dd} 완료`;
 }
 
 export function MeProjectCard({ response, variant }: MeProjectCardProps) {
@@ -127,7 +127,9 @@ export function MeProjectCard({ response, variant }: MeProjectCardProps) {
         </div>
         {isCompleted && response.completedAt && (
           <span className="w-fit rounded-[6px] bg-zinc-100 px-2 py-1">
-            <Typo.Body size="small">{formatCompletedDate(response.completedAt)}</Typo.Body>
+            <Typo.Body size="small" className="text-zinc-500">
+              {formatCompletedDate(response.completedAt)}
+            </Typo.Body>
           </span>
         )}
         <CardAction response={response} variant={variant} />
