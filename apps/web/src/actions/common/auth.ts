@@ -35,20 +35,11 @@ export const requireAuth = cache(async (): Promise<User> => {
 export const requireActiveUser = cache(async (): Promise<User> => {
   const user = await requireAuth();
 
-  try {
-    const dbUser = await userService.getUserById(user.id);
+  const dbUser = await userService.getUserById(user.id);
 
-    if (dbUser.status !== UserStatus.ACTIVE) {
-      const error = new Error("탈퇴 처리된 계정입니다.");
-      error.cause = 403;
-      throw error;
-    }
-  } catch (error) {
-    if (error instanceof Error && (error.cause === 403 || error.cause === 404)) {
-      const authError = new Error("탈퇴 처리된 계정입니다.");
-      authError.cause = 403;
-      throw authError;
-    }
+  if (dbUser.status !== UserStatus.ACTIVE) {
+    const error = new Error("탈퇴 처리된 계정입니다.");
+    error.cause = 403;
     throw error;
   }
 
