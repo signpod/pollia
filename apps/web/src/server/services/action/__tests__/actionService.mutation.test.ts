@@ -7,6 +7,13 @@ import {
   mockMissionFactory,
 } from "../testUtils";
 
+jest.mock("@/database/utils/prisma/client", () => ({
+  __esModule: true,
+  default: {
+    $transaction: (fn: (tx: unknown) => Promise<unknown>) => fn({}),
+  },
+}));
+
 describe("ActionService - Mutation", () => {
   let ctx: ActionServiceTestContext;
 
@@ -202,18 +209,43 @@ describe("ActionService - Mutation", () => {
       isRequired: false,
     });
 
-    it("Action을 성공적으로 삭제한다", async () => {
+    it("missionId가 있는 Action 삭제 시 트랜잭션으로 삭제 후 order를 재정렬한다", async () => {
       // Given
       const mockMission = mockMissionFactory();
       ctx.mockActionRepo.findById.mockResolvedValue(mockAction);
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockActionRepo.delete.mockResolvedValue(mockAction);
+      ctx.mockActionRepo.findOrdersByMissionId.mockResolvedValue([
+        { id: "action2", order: 2, createdAt: new Date("2025-01-02") },
+        { id: "action3", order: 0, createdAt: new Date("2025-01-01") },
+      ]);
+      ctx.mockActionRepo.updateOrder.mockResolvedValue({} as never);
+
+      // When
+      await ctx.service.deleteAction("action1", "user1");
+
+      // Then
+      expect(ctx.mockActionRepo.delete).toHaveBeenCalledWith("action1", expect.anything());
+      expect(ctx.mockActionRepo.findOrdersByMissionId).toHaveBeenCalledWith(
+        "mission1",
+        expect.anything(),
+      );
+      expect(ctx.mockActionRepo.updateOrder).toHaveBeenCalledTimes(1);
+      expect(ctx.mockActionRepo.updateOrder).toHaveBeenCalledWith("action2", 1, expect.anything());
+    });
+
+    it("missionId가 없는 Action은 order 재정렬 없이 삭제한다", async () => {
+      // Given
+      const mockDraftAction = createMockAction({ missionId: null });
+      ctx.mockActionRepo.findById.mockResolvedValue(mockDraftAction);
+      ctx.mockActionRepo.delete.mockResolvedValue(mockDraftAction);
 
       // When
       await ctx.service.deleteAction("action1", "user1");
 
       // Then
       expect(ctx.mockActionRepo.delete).toHaveBeenCalledWith("action1");
+      expect(ctx.mockActionRepo.findOrdersByMissionId).not.toHaveBeenCalled();
     });
 
     it("Action이 없으면 404 에러를 던진다", async () => {
@@ -226,6 +258,7 @@ describe("ActionService - Mutation", () => {
       );
 
       expect(ctx.mockActionRepo.delete).not.toHaveBeenCalled();
+      expect(ctx.mockActionRepo.findOrdersByMissionId).not.toHaveBeenCalled();
     });
 
     it("권한이 없으면 403 에러를 던진다", async () => {
@@ -240,6 +273,7 @@ describe("ActionService - Mutation", () => {
       );
 
       expect(ctx.mockActionRepo.delete).not.toHaveBeenCalled();
+      expect(ctx.mockActionRepo.findOrdersByMissionId).not.toHaveBeenCalled();
     });
   });
 

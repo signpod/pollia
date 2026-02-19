@@ -1,8 +1,8 @@
 "use client";
 
-import { SocialShareButtonsWithData } from "@/app/mission/[missionId]/components/SocialShareButtonsWithData";
-import { useStickyTabHeader } from "@/app/mission/[missionId]/components/hooks/useStickyTabHeader";
-import type { MissionRewardData } from "@/app/mission/[missionId]/types/mission";
+import { SocialShareButtonsWithData } from "@/app/(site)/mission/[missionId]/components/SocialShareButtonsWithData";
+import { useStickyTabHeader } from "@/app/(site)/mission/[missionId]/components/hooks/useStickyTabHeader";
+import type { MissionRewardData } from "@/app/(site)/mission/[missionId]/types/mission";
 import { cn } from "@/lib/utils";
 import { MissionType } from "@prisma/client";
 import { FixedBottomLayout } from "@repo/ui/components";

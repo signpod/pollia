@@ -14,7 +14,7 @@ import { useAuth } from "@/hooks/user/useAuth";
 import { setActionNavCookie } from "@/lib/cookie";
 import { useRouter } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
-import { checkParticipantLimitReached } from "../../app/mission/[missionId]/utils/checkParticipantLimit";
+import { checkParticipantLimitReached } from "../../app/(site)/mission/[missionId]/utils/checkParticipantLimit";
 
 interface UseMissionStartParams {
   missionId: string;

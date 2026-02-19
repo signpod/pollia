@@ -243,9 +243,23 @@ export class ActionRepository {
     });
   }
 
-  async delete(actionId: string) {
-    return prisma.action.delete({
+  async delete(actionId: string, client: Prisma.TransactionClient = prisma) {
+    return client.action.delete({
       where: { id: actionId },
+    });
+  }
+
+  async findOrdersByMissionId(missionId: string, client: Prisma.TransactionClient = prisma) {
+    return client.action.findMany({
+      where: { missionId },
+      select: { id: true, order: true, createdAt: true },
+    });
+  }
+
+  async updateOrder(actionId: string, order: number, client: Prisma.TransactionClient = prisma) {
+    return client.action.update({
+      where: { id: actionId },
+      data: { order },
     });
   }
 

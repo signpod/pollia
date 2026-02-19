@@ -1,6 +1,6 @@
 "use client";
 
-import { MissionLikeButton } from "@/app/(main)/components/MissionLikeButton";
+import { MissionLikeButton } from "@/app/(site)/(main)/components/MissionLikeButton";
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { ROUTES } from "@/constants/routes";
 import { useResumeToNextAction } from "@/hooks/mission/useResumeToNextAction";

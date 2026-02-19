@@ -1,5 +1,5 @@
 import { getLikedMissions } from "@/actions/mission-like/read";
-import { LikedContent } from "@/app/me/liked/LikedContent";
+import { LikedContent } from "@/app/(site)/me/liked/LikedContent";
 import { missionLikeQueryKeys } from "@/constants/queryKeys/missionLikeQueryKeys";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";

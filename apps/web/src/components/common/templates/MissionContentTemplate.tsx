@@ -6,8 +6,8 @@ import {
   MissionLogo,
   MissionRewardSection,
   SectionHeader,
-} from "@/app/mission/[missionId]/components";
-import { SECTION_IDS } from "@/app/mission/[missionId]/constants/sectionIds";
+} from "@/app/(site)/mission/[missionId]/components";
+import { SECTION_IDS } from "@/app/(site)/mission/[missionId]/constants/sectionIds";
 import { cleanTiptapHTML, cn } from "@/lib/utils";
 import { MissionType } from "@prisma/client";
 import { Tab, Typo } from "@repo/ui/components";
