@@ -7,6 +7,7 @@ const config = {
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
     "^@public/(.*)$": "<rootDir>/public/$1",
+    "^server-only$": "<rootDir>/src/test-utils/jest/server-only.ts",
   },
   collectCoverageFrom: [
     "src/**/*.{ts,tsx}",
