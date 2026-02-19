@@ -323,6 +323,11 @@ export class ActionService {
       await this.verifyMissionAccess(action.missionId, userId);
     }
 
+    if (action.missionId) {
+      await this.actionRepo.deleteAndReindexMissionActionOrders(actionId, action.missionId);
+      return;
+    }
+
     await this.actionRepo.delete(actionId);
   }
 

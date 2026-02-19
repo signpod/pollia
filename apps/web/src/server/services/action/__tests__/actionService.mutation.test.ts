@@ -207,13 +207,30 @@ describe("ActionService - Mutation", () => {
       const mockMission = mockMissionFactory();
       ctx.mockActionRepo.findById.mockResolvedValue(mockAction);
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
-      ctx.mockActionRepo.delete.mockResolvedValue(mockAction);
+      ctx.mockActionRepo.deleteAndReindexMissionActionOrders.mockResolvedValue(undefined as never);
+
+      // When
+      await ctx.service.deleteAction("action1", "user1");
+
+      // Then
+      expect(ctx.mockActionRepo.deleteAndReindexMissionActionOrders).toHaveBeenCalledWith(
+        "action1",
+        "mission1",
+      );
+    });
+
+    it("missionId가 없는 Action은 order 재정렬 없이 삭제한다", async () => {
+      // Given
+      const mockDraftAction = createMockAction({ missionId: null });
+      ctx.mockActionRepo.findById.mockResolvedValue(mockDraftAction);
+      ctx.mockActionRepo.delete.mockResolvedValue(mockDraftAction);
 
       // When
       await ctx.service.deleteAction("action1", "user1");
 
       // Then
       expect(ctx.mockActionRepo.delete).toHaveBeenCalledWith("action1");
+      expect(ctx.mockActionRepo.deleteAndReindexMissionActionOrders).not.toHaveBeenCalled();
     });
 
     it("Action이 없으면 404 에러를 던진다", async () => {
@@ -226,6 +243,7 @@ describe("ActionService - Mutation", () => {
       );
 
       expect(ctx.mockActionRepo.delete).not.toHaveBeenCalled();
+      expect(ctx.mockActionRepo.deleteAndReindexMissionActionOrders).not.toHaveBeenCalled();
     });
 
     it("권한이 없으면 403 에러를 던진다", async () => {
@@ -240,6 +258,7 @@ describe("ActionService - Mutation", () => {
       );
 
       expect(ctx.mockActionRepo.delete).not.toHaveBeenCalled();
+      expect(ctx.mockActionRepo.deleteAndReindexMissionActionOrders).not.toHaveBeenCalled();
     });
   });
 
