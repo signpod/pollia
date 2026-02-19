@@ -1,4 +1,4 @@
-import { MissionLikertScale } from "@/app/mission/[missionId]/components";
+import { MissionLikertScale } from "@/app/(site)/mission/[missionId]/components";
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { useState } from "react";
 
