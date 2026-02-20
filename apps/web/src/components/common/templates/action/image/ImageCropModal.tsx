@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { ButtonV2, Slider, Typo } from "@repo/ui/components";
 import { Dialog, DialogOverlay, DialogPortal } from "@repo/ui/components";
-import { CustomCropper } from "./CustomCropper";
+import { type CropShape, CustomCropper } from "./CustomCropper";
 import { CROP_CONSTANTS } from "./hooks/useImageCrop";
 
 interface ImageCropModalProps {
@@ -12,6 +12,7 @@ interface ImageCropModalProps {
   crop: { x: number; y: number };
   zoom: number;
   rotation: number;
+  cropShape?: CropShape;
   onCropChange: (crop: { x: number; y: number }) => void;
   onZoomChange: (zoom: number) => void;
   onRotationChange: (rotation: number) => void;
@@ -25,6 +26,7 @@ export function ImageCropModal({
   crop,
   zoom,
   rotation,
+  cropShape,
   onCropChange,
   onZoomChange,
   onRotationChange,
@@ -58,6 +60,7 @@ export function ImageCropModal({
               crop={crop}
               zoom={zoom}
               rotation={rotation}
+              cropShape={cropShape}
               onCropChange={onCropChange}
             />
           </div>
