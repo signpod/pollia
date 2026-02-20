@@ -1,5 +1,6 @@
 "use client";
 
+import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import type { ReactNode } from "react";
 import { type RefObject, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
@@ -54,7 +55,7 @@ export function MobilePreviewPanel({ anchor, url, children }: MobilePreviewPanel
               )}
               <iframe
                 key={url}
-                title="미션 미리보기"
+                title={`${UBQUITOUS_CONSTANTS.MISSION} 미리보기`}
                 src={url}
                 className="w-full h-full border-0 overflow-y-scroll"
                 onLoad={() => setIframeLoading(false)}

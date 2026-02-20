@@ -21,6 +21,7 @@ import {
 import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Textarea } from "@/app/admin/components/shadcn-ui/textarea";
 import { useUpdateEvent } from "@/app/admin/hooks/event";
+import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { type EventUpdate, eventUpdateSchema } from "@/schemas/event";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Event } from "@prisma/client";
@@ -47,11 +48,11 @@ export function EventEditModal({ open, onOpenChange, event }: EventEditModalProp
 
   const updateEvent = useUpdateEvent({
     onSuccess: () => {
-      toast.success("이벤트가 수정되었습니다");
+      toast.success(`${UBQUITOUS_CONSTANTS.EVENT}이 수정되었습니다`);
       onOpenChange(false);
     },
     onError: error => {
-      toast.error(error.message || "이벤트 수정 중 오류가 발생했습니다");
+      toast.error(error.message || `${UBQUITOUS_CONSTANTS.EVENT} 수정 중 오류가 발생했습니다`);
     },
   });
 
@@ -81,8 +82,8 @@ export function EventEditModal({ open, onOpenChange, event }: EventEditModalProp
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>이벤트 편집</DialogTitle>
-          <DialogDescription>이벤트 정보를 수정합니다.</DialogDescription>
+          <DialogTitle>{UBQUITOUS_CONSTANTS.EVENT} 편집</DialogTitle>
+          <DialogDescription>{UBQUITOUS_CONSTANTS.EVENT} 정보를 수정합니다.</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -93,12 +94,12 @@ export function EventEditModal({ open, onOpenChange, event }: EventEditModalProp
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    이벤트 제목 <span className="text-destructive">*</span>
+                    {UBQUITOUS_CONSTANTS.EVENT} 제목 <span className="text-destructive">*</span>
                   </FormLabel>
                   <FormControl>
                     <Input
                       {...field}
-                      placeholder="예: 신년 이벤트"
+                      placeholder={`예: 신년 ${UBQUITOUS_CONSTANTS.EVENT}`}
                       disabled={updateEvent.isPending}
                     />
                   </FormControl>
@@ -116,7 +117,7 @@ export function EventEditModal({ open, onOpenChange, event }: EventEditModalProp
                   <FormControl>
                     <Textarea
                       {...field}
-                      placeholder="이벤트에 대한 간단한 설명을 입력하세요"
+                      placeholder={`${UBQUITOUS_CONSTANTS.EVENT}에 대한 간단한 설명을 입력하세요`}
                       rows={3}
                       disabled={updateEvent.isPending}
                     />

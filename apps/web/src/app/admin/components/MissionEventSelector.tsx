@@ -19,6 +19,7 @@ import {
 } from "@/app/admin/components/shadcn-ui/select";
 import { useAdminEvents } from "@/app/admin/hooks/event";
 import { useUpdateMission } from "@/app/admin/hooks/mission";
+import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useState } from "react";
 import { toast } from "sonner";
 import { EventCreateModal } from "./EventCreateModal";
@@ -44,11 +45,13 @@ export function MissionEventSelector({
 
   const updateMission = useUpdateMission({
     onSuccess: () => {
-      toast.success("미션의 이벤트가 변경되었습니다");
+      toast.success(
+        `${UBQUITOUS_CONSTANTS.MISSION}의 ${UBQUITOUS_CONSTANTS.EVENT}이 변경되었습니다`,
+      );
       onOpenChange(false);
     },
     onError: error => {
-      toast.error(error.message || "미션 수정 중 오류가 발생했습니다");
+      toast.error(error.message || `${UBQUITOUS_CONSTANTS.MISSION} 수정 중 오류가 발생했습니다`);
     },
   });
 
@@ -70,25 +73,26 @@ export function MissionEventSelector({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>이벤트 할당</DialogTitle>
+            <DialogTitle>{UBQUITOUS_CONSTANTS.EVENT} 할당</DialogTitle>
             <DialogDescription>
-              미션 "{missionTitle}"에 이벤트를 할당하거나 해제합니다.
+              {UBQUITOUS_CONSTANTS.MISSION} &quot;{missionTitle}&quot;에 {UBQUITOUS_CONSTANTS.EVENT}
+              을 할당하거나 해제합니다.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label>이벤트 선택</Label>
+              <Label>{UBQUITOUS_CONSTANTS.EVENT} 선택</Label>
               <Select
                 value={selectedEventId ?? "none"}
                 onValueChange={value => setSelectedEventId(value === "none" ? null : value)}
                 disabled={updateMission.isPending}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="이벤트를 선택하세요" />
+                  <SelectValue placeholder={`${UBQUITOUS_CONSTANTS.EVENT}을 선택하세요`} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">이벤트 없음</SelectItem>
+                  <SelectItem value="none">{UBQUITOUS_CONSTANTS.EVENT} 없음</SelectItem>
                   {events.map(event => (
                     <SelectItem key={event.id} value={event.id}>
                       {event.title}
@@ -105,7 +109,7 @@ export function MissionEventSelector({
                 disabled={updateMission.isPending}
                 className="w-full"
               >
-                이벤트 할당 해제
+                {UBQUITOUS_CONSTANTS.EVENT} 할당 해제
               </Button>
             )}
 
@@ -117,7 +121,7 @@ export function MissionEventSelector({
               disabled={updateMission.isPending}
               className="w-full"
             >
-              새 이벤트 만들기
+              새 {UBQUITOUS_CONSTANTS.EVENT} 만들기
             </Button>
           </div>
 

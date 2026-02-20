@@ -4,6 +4,7 @@ import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Card, CardContent, CardHeader } from "@/app/admin/components/shadcn-ui/card";
 import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
 import { useAdminEvents } from "@/app/admin/hooks/event";
+import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useState } from "react";
 import { EventCard } from "./EventCard";
 import { EventCreateModal } from "./EventCreateModal";
@@ -22,8 +23,8 @@ export function EventList() {
       <div className="space-y-4">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <AdminCreateCard
-            title="새 이벤트 만들기"
-            description="이벤트를 생성하고 미션을 관리하세요"
+            title={`새 ${UBQUITOUS_CONSTANTS.EVENT} 만들기`}
+            description={`${UBQUITOUS_CONSTANTS.EVENT}을 생성하고 ${UBQUITOUS_CONSTANTS.MISSION}을 관리하세요`}
             onClick={() => setIsCreateModalOpen(true)}
           />
 
