@@ -25,7 +25,7 @@ import {
 } from "@/app/admin/components/shadcn-ui/sidebar";
 import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
 import type { NavGroup, NavItem } from "@/app/admin/config/nav";
-import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { ChevronRight, MoreVertical } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -100,8 +100,8 @@ export function Nav({ config, isActive, isLoading = false }: NavProps) {
       ) : (
         config.map(group => {
           const isGroupOpen = openGroups.includes(group.label);
-          const isEventGroup = group.label === UBQUITOUS_CONSTANTS.EVENT;
-          const isMissionGroup = group.label === UBQUITOUS_CONSTANTS.MISSION;
+          const isEventGroup = group.label === UBIQUITOUS_CONSTANTS.EVENT;
+          const isMissionGroup = group.label === UBIQUITOUS_CONSTANTS.MISSION;
           const shouldScroll = isMissionGroup && group.items.length > 10;
 
           return (
@@ -199,7 +199,7 @@ function NavItemComponent({
   const subItemIsActive = item.items?.some(subItem => isActive(subItem.url)) ?? false;
   const isEventItemOpen = openEventItems.includes(item.url);
 
-  // 이벤트 그룹: 하위 미션이 있는 경우 아코디언으로 표시
+  // 캠페인 그룹: 하위 프로젝트가 있는 경우 아코디언으로 표시
   if (hasSubItems && isEventGroup) {
     return (
       <>
@@ -221,7 +221,7 @@ function NavItemComponent({
                 type="button"
                 onClick={e => toggleEventItem?.(item.url, e)}
                 className="absolute right-1 p-1.5 hover:bg-sidebar-accent rounded-sm transition-colors z-10"
-                aria-label="미션 목록 토글"
+                aria-label={`${UBIQUITOUS_CONSTANTS.MISSION} 목록 토글`}
               >
                 <ChevronRight
                   className={`size-4 transition-transform duration-200 ${isEventItemOpen ? "rotate-90" : ""}`}
@@ -251,7 +251,7 @@ function NavItemComponent({
                         <button
                           type="button"
                           className="absolute right-2 p-1 hover:bg-accent rounded-sm transition-all z-10 opacity-0 group-hover/submission:opacity-100"
-                          aria-label="미션 옵션"
+                          aria-label={`${UBIQUITOUS_CONSTANTS.MISSION} 옵션`}
                           onClick={e => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -272,7 +272,7 @@ function NavItemComponent({
                             }
                           }}
                         >
-                          이벤트 변경
+                          {UBIQUITOUS_CONSTANTS.EVENT} 변경
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -310,7 +310,7 @@ function NavItemComponent({
     );
   }
 
-  // 미션 그룹: Ellipsis 버튼 표시
+  // 프로젝트 그룹: Ellipsis 버튼 표시
   if (isMissionGroup && item.missionId) {
     return (
       <SidebarMenuItem className="group/mission">
@@ -331,7 +331,7 @@ function NavItemComponent({
               <button
                 type="button"
                 className="absolute right-2 p-1 hover:bg-accent rounded-sm transition-all z-10 opacity-0 group-hover/mission:opacity-100"
-                aria-label="미션 옵션"
+                aria-label={`${UBIQUITOUS_CONSTANTS.MISSION} 옵션`}
                 onClick={e => {
                   e.preventDefault();
                   e.stopPropagation();
@@ -348,7 +348,7 @@ function NavItemComponent({
                   }
                 }}
               >
-                이벤트 추가
+                {UBIQUITOUS_CONSTANTS.EVENT} 추가
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

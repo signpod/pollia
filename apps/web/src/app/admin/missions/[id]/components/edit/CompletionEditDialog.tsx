@@ -18,6 +18,7 @@ import {
   useCreateMissionCompletion,
   useUpdateMissionCompletion,
 } from "@/app/admin/hooks/mission-completion";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import {
   MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH,
   MISSION_COMPLETION_TITLE_MAX_LENGTH,
@@ -45,7 +46,9 @@ export function CompletionEditDialog({
       <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto overflow-x-hidden">
         <DialogHeader>
           <DialogTitle>완료 화면 {completion ? "수정" : "생성"}</DialogTitle>
-          <DialogDescription>미션 완료 시 사용자에게 표시될 화면을 설정하세요.</DialogDescription>
+          <DialogDescription>
+            {UBIQUITOUS_CONSTANTS.MISSION} 완료 시 사용자에게 표시될 화면을 설정하세요.
+          </DialogDescription>
         </DialogHeader>
 
         <CompletionFormContent
@@ -120,8 +123,8 @@ function CompletionFormContent({ completion, missionId, onSuccess }: CompletionF
             control={form.control}
             name="title"
             label="제목"
-            description="미션 완료 시 표시될 제목을 입력하세요."
-            placeholder="예: 미션을 완료하셨습니다!"
+            description={`${UBIQUITOUS_CONSTANTS.MISSION} 완료 시 표시될 제목을 입력하세요.`}
+            placeholder={`예: ${UBIQUITOUS_CONSTANTS.MISSION}을 완료하셨습니다!`}
             maxLength={MISSION_COMPLETION_TITLE_MAX_LENGTH}
             showCounter
           />

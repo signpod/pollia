@@ -4,6 +4,7 @@ import { TiptapField } from "@/app/admin/components/common/TiptapField";
 import { DateTimeField } from "@/app/admin/components/common/molecules/DateTimeField";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Input } from "@/app/admin/components/shadcn-ui/input";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import {
   MISSION_DESCRIPTION_MAX_LENGTH,
   MISSION_TARGET_MAX_LENGTH,
@@ -36,8 +37,8 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
         control={form.control}
         name="title"
         label="제목"
-        description="미션의 제목을 입력하세요."
-        placeholder="미션 제목을 입력하세요"
+        description={`${UBIQUITOUS_CONSTANTS.MISSION}의 제목을 입력하세요.`}
+        placeholder={`${UBIQUITOUS_CONSTANTS.MISSION} 제목을 입력하세요`}
         maxLength={MISSION_TITLE_MAX_LENGTH}
         showCounter
       />
@@ -46,8 +47,8 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
         control={form.control}
         name="description"
         label="설명"
-        description="미션에 대한 설명을 입력하세요."
-        placeholder="미션에 대한 설명을 입력하세요"
+        description={`${UBIQUITOUS_CONSTANTS.MISSION}에 대한 설명을 입력하세요.`}
+        placeholder={`${UBIQUITOUS_CONSTANTS.MISSION}에 대한 설명을 입력하세요`}
         maxLength={MISSION_DESCRIPTION_MAX_LENGTH}
         showCounter
         showToolbar
@@ -69,8 +70,8 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
         control={form.control}
         name="target"
         label="대상"
-        description="미션 대상을 입력하세요."
-        placeholder="미션 대상을 입력하세요"
+        description={`${UBIQUITOUS_CONSTANTS.MISSION} 대상을 입력하세요.`}
+        placeholder={`${UBIQUITOUS_CONSTANTS.MISSION} 대상을 입력하세요`}
         maxLength={MISSION_TARGET_MAX_LENGTH}
         showCounter
         isOptional
@@ -80,7 +81,7 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
         control={form.control}
         name="estimatedMinutes"
         label="예상 소요 시간 (분)"
-        description="미션 완료에 필요한 예상 시간을 입력합니다."
+        description={`${UBIQUITOUS_CONSTANTS.MISSION} 완료에 필요한 예상 시간을 입력합니다.`}
         isOptional
         transformValue={value => (value === undefined ? null : value)}
       />
@@ -89,7 +90,7 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
         control={form.control}
         name="startDate"
         label="시작일"
-        description="미션의 시작일을 설정합니다."
+        description={`${UBIQUITOUS_CONSTANTS.MISSION}의 시작일을 설정합니다.`}
         datePlaceholder="시작일 선택"
         isOptional
         supportNull
@@ -99,7 +100,7 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
         control={form.control}
         name="deadline"
         label="마감일"
-        description="미션의 마감일을 설정합니다."
+        description={`${UBIQUITOUS_CONSTANTS.MISSION}의 마감일을 설정합니다.`}
         datePlaceholder="마감일 선택"
         isOptional
         supportNull

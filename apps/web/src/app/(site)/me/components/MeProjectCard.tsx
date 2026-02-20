@@ -39,7 +39,6 @@ function CardAction({
     missionId: response.mission.id,
     answers: response.answers,
   });
-
   const handleOpenInNewTab = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();

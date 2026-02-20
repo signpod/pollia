@@ -27,6 +27,11 @@ export const ROUTES = {
   ACTION: ({ missionId, actionId }: { missionId: string; actionId: string }) =>
     `/mission/${missionId}/action/${actionId}`,
   ACTION_CREATE_DONE: "/mission/action/create/done",
+
+  MISSION_ACTION_PREVIEW: (missionId: string, actionId: string) =>
+    `/preview/action/${missionId}/${actionId}`,
+  MISSION_COMPLETION_PREVIEW: (missionId: string, completionId: string) =>
+    `/preview/completion/${missionId}/${completionId}`,
 } as const;
 
 export type Routes = typeof ROUTES;

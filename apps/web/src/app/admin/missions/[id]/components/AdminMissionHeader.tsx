@@ -23,6 +23,7 @@ import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/app/admin/components/shadcn-ui/tooltip";
 import { ADMIN_ROUTES } from "@/app/admin/constants/routes";
 import { useDeleteMission, useDuplicateMission } from "@/app/admin/hooks/mission";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { Check, Copy, CopyPlus, ExternalLink, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useCallback, useState } from "react";
@@ -49,23 +50,23 @@ export function AdminMissionHeader({
 
   const duplicateMission = useDuplicateMission({
     onSuccess: data => {
-      toast.success("미션이 복제되었습니다");
+      toast.success(`${UBIQUITOUS_CONSTANTS.MISSION}이 복제되었습니다`);
       setIsDuplicateDialogOpen(false);
       router.push(ADMIN_ROUTES.ADMIN_MISSION(data.data.id));
     },
     onError: error => {
-      toast.error(error.message || "미션 복제 중 오류가 발생했습니다");
+      toast.error(error.message || `${UBIQUITOUS_CONSTANTS.MISSION} 복제 중 오류가 발생했습니다`);
     },
   });
 
   const deleteMission = useDeleteMission({
     onSuccess: () => {
-      toast.success("미션이 삭제되었습니다");
+      toast.success(`${UBIQUITOUS_CONSTANTS.MISSION}이 삭제되었습니다`);
       setIsDeleteDialogOpen(false);
       router.push(ADMIN_ROUTES.ADMIN);
     },
     onError: error => {
-      toast.error(error.message || "미션 삭제 중 오류가 발생했습니다");
+      toast.error(error.message || `${UBIQUITOUS_CONSTANTS.MISSION} 삭제 중 오류가 발생했습니다`);
     },
   });
 
@@ -124,7 +125,7 @@ export function AdminMissionHeader({
                   <CopyPlus className="h-4 w-4 text-foreground" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>미션 복제</TooltipContent>
+              <TooltipContent>{UBIQUITOUS_CONSTANTS.MISSION} 복제</TooltipContent>
             </Tooltip>
 
             <Tooltip>
@@ -146,7 +147,7 @@ export function AdminMissionHeader({
                   <ExternalLink className="h-4 w-4 text-foreground" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>미션 페이지 열기</TooltipContent>
+              <TooltipContent>{UBIQUITOUS_CONSTANTS.MISSION} 페이지 열기</TooltipContent>
             </Tooltip>
 
             <Tooltip>
@@ -161,7 +162,7 @@ export function AdminMissionHeader({
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>미션 삭제</TooltipContent>
+              <TooltipContent>{UBIQUITOUS_CONSTANTS.MISSION} 삭제</TooltipContent>
             </Tooltip>
           </div>
         </div>
@@ -171,10 +172,11 @@ export function AdminMissionHeader({
       <AlertDialog open={isDuplicateDialogOpen} onOpenChange={setIsDuplicateDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>미션을 복제하시겠습니까?</AlertDialogTitle>
+            <AlertDialogTitle>{UBIQUITOUS_CONSTANTS.MISSION}을 복제하시겠습니까?</AlertDialogTitle>
             <AlertDialogDescription>
-              미션의 모든 액션과 옵션이 함께 복제됩니다. 복제된 미션은 비활성 상태로 생성되며, 제목
-              끝에 " - 복사본"이 추가됩니다.
+              {UBIQUITOUS_CONSTANTS.MISSION}의 모든 액션과 옵션이 함께 복제됩니다. 복제된{" "}
+              {UBIQUITOUS_CONSTANTS.MISSION}은 비활성 상태로 생성되며, 제목 끝에 " - 복사본"이
+              추가됩니다.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -192,9 +194,10 @@ export function AdminMissionHeader({
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>미션을 삭제하시겠습니까?</DialogTitle>
+            <DialogTitle>{UBIQUITOUS_CONSTANTS.MISSION}을 삭제하시겠습니까?</DialogTitle>
             <DialogDescription>
-              이 작업은 되돌릴 수 없습니다. 미션과 관련된 모든 데이터가 삭제됩니다.
+              이 작업은 되돌릴 수 없습니다. {UBIQUITOUS_CONSTANTS.MISSION}과 관련된 모든 데이터가
+              삭제됩니다.
               <br />
               정말로 삭제하려면 아래에 <strong>"삭제"</strong>를 입력해주세요.
             </DialogDescription>

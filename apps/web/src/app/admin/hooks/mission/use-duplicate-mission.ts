@@ -2,6 +2,7 @@
 
 import { duplicateMission } from "@/actions/mission";
 import { adminMissionQueryKeys } from "@/app/admin/constants/queryKeys";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import type { DuplicateMissionRequest, DuplicateMissionResponse } from "@/types/dto";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -24,7 +25,7 @@ export function useDuplicateMission(options: UseDuplicateMissionOptions = {}) {
       options.onSuccess?.(data);
     },
     onError: error => {
-      console.error("미션 복제 실패:", error);
+      console.error(`${UBIQUITOUS_CONSTANTS.MISSION} 복제 실패:`, error);
       options.onError?.(error as Error);
     },
   });

@@ -1,6 +1,7 @@
 "use server";
 
 import { requireActiveUser } from "@/actions/common/auth";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { missionService } from "@/server/services/mission";
 import type { UpdateMissionInput } from "@/server/services/mission/types";
 import type { UpdateMissionRequest } from "@/types/dto/mission";
@@ -24,7 +25,7 @@ export async function updateMission(missionId: string, request: UpdateMissionReq
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error("미션 수정 중 오류가 발생했습니다.");
+    const serverError = new Error(`${UBIQUITOUS_CONSTANTS.MISSION} 수정 중 오류가 발생했습니다.`);
     serverError.cause = 500;
     throw serverError;
   }

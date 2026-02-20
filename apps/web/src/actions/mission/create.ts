@@ -1,6 +1,7 @@
 "use server";
 
 import { requireActiveUser } from "@/actions/common/auth";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { missionService } from "@/server/services/mission";
 import type { CreateMissionInput } from "@/server/services/mission/types";
 import type { CreateMissionRequest, CreateMissionResponse } from "@/types/dto";
@@ -23,7 +24,7 @@ export async function createMission(request: CreateMissionRequest): Promise<Crea
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error("미션 생성 중 오류가 발생했습니다.");
+    const serverError = new Error(`${UBIQUITOUS_CONSTANTS.MISSION} 생성 중 오류가 발생했습니다.`);
     serverError.cause = 500;
     throw serverError;
   }

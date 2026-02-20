@@ -11,6 +11,7 @@ import {
 import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
 import { useReadMission, useUpdateMission } from "@/app/admin/hooks/mission";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import type { MissionUpdate } from "@/schemas/mission";
 import { RotateCcw } from "lucide-react";
 import { toast } from "sonner";
@@ -31,12 +32,16 @@ export function BasicInfoEditDialog({ open, onOpenChange, missionId }: BasicInfo
       <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>기본 정보 수정</DialogTitle>
-          <DialogDescription>미션의 제목, 설명, 대상 등 기본 정보를 수정하세요.</DialogDescription>
+          <DialogDescription>
+            {UBIQUITOUS_CONSTANTS.MISSION}의 제목, 설명, 대상 등 기본 정보를 수정하세요.
+          </DialogDescription>
         </DialogHeader>
 
         {isLoading && (
           <div className="flex items-center justify-center py-12">
-            <p className="text-muted-foreground">미션 정보를 불러오는 중...</p>
+            <p className="text-muted-foreground">
+              {UBIQUITOUS_CONSTANTS.MISSION} 정보를 불러오는 중...
+            </p>
           </div>
         )}
 
@@ -63,10 +68,11 @@ function BasicInfoFormContent({ mission, missionId, onSuccess }: BasicInfoFormCo
 
   const updateMission = useUpdateMission({
     onSuccess: () => {
-      toast.success("미션 기본 정보가 수정되었습니다");
+      toast.success(`${UBIQUITOUS_CONSTANTS.MISSION} 기본 정보가 수정되었습니다`);
       onSuccess();
     },
-    onError: err => toast.error(err.message || "미션 수정 중 오류가 발생했습니다"),
+    onError: err =>
+      toast.error(err.message || `${UBIQUITOUS_CONSTANTS.MISSION} 수정 중 오류가 발생했습니다`),
   });
 
   const onSubmit = form.handleSubmit((data: MissionUpdate) => {

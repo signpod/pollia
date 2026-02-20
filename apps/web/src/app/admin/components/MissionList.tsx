@@ -1,5 +1,6 @@
 "use client";
 
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 import { CalendarDays } from "lucide-react";
@@ -26,8 +27,8 @@ export function MissionList() {
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <AdminCreateCard
-          title="새 미션 만들기"
-          description="클릭하여 미션을 생성하세요"
+          title={`새 ${UBIQUITOUS_CONSTANTS.MISSION} 만들기`}
+          description={`클릭하여 ${UBIQUITOUS_CONSTANTS.MISSION}을 생성하세요`}
           href={ADMIN_ROUTES.ADMIN_MISSION_CREATE}
         />
 

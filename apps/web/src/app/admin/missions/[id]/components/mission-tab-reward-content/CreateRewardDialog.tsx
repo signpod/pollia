@@ -7,6 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/app/admin/components/shadcn-ui/dialog";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { RewardForm, type RewardFormData } from "./RewardForm";
 
 interface CreateRewardDialogProps {
@@ -35,7 +36,9 @@ export function CreateRewardDialog({
       <DialogContent className="sm:max-w-[540px]">
         <DialogHeader>
           <DialogTitle>리워드 추가</DialogTitle>
-          <DialogDescription>미션 완료 시 지급할 리워드를 설정하세요.</DialogDescription>
+          <DialogDescription>
+            {UBIQUITOUS_CONSTANTS.MISSION} 완료 시 지급할 리워드를 설정하세요.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="py-2">
