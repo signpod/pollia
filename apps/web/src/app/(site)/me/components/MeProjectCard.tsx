@@ -59,24 +59,52 @@ function CardAction({
 
   if (variant === "expired") {
     return (
-      <ButtonV2 variant="secondary" size="medium" disabled className="w-full">
-        <div className="flex w-full items-center justify-center">
-          <Typo.ButtonText size="medium" className="text-disabled">
-            만료된 프로젝트
-          </Typo.ButtonText>
-        </div>
-      </ButtonV2>
+      <>
+        <ButtonV2 variant="secondary" size="medium" disabled className="w-full sm:hidden">
+          <div className="flex w-full items-center justify-center">
+            <Typo.ButtonText size="medium" className="text-disabled">
+              마감
+            </Typo.ButtonText>
+          </div>
+        </ButtonV2>
+        <ButtonV2 variant="secondary" size="large" disabled className="hidden w-full sm:block">
+          <div className="flex w-full items-center justify-center">
+            <Typo.ButtonText size="large" className="text-disabled">
+              마감
+            </Typo.ButtonText>
+          </div>
+        </ButtonV2>
+      </>
     );
   }
 
   return (
-    <ButtonV2 variant="secondary" size="medium" onClick={handleOpenInNewTab} className="w-full">
-      <div className="flex w-full items-center justify-center">
-        <Typo.ButtonText size="medium">
-          {variant === "in-progress" ? "이어하기" : "결과 다시보기"}
-        </Typo.ButtonText>
-      </div>
-    </ButtonV2>
+    <>
+      <ButtonV2
+        variant="secondary"
+        size="medium"
+        onClick={handleOpenInNewTab}
+        className="w-full sm:hidden"
+      >
+        <div className="flex w-full items-center justify-center">
+          <Typo.ButtonText size="medium">
+            {variant === "in-progress" ? "이어하기" : "결과 다시보기"}
+          </Typo.ButtonText>
+        </div>
+      </ButtonV2>
+      <ButtonV2
+        variant="secondary"
+        size="large"
+        onClick={handleOpenInNewTab}
+        className="hidden w-full sm:block"
+      >
+        <div className="flex w-full items-center justify-center">
+          <Typo.ButtonText size="large">
+            {variant === "in-progress" ? "이어하기" : "결과 다시보기"}
+          </Typo.ButtonText>
+        </div>
+      </ButtonV2>
+    </>
   );
 }
 
