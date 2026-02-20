@@ -32,7 +32,7 @@ export function NotionReportCard({ missionId }: NotionReportCardProps) {
   const { data: participantData } = useReadMissionParticipantInfo(missionId);
 
   const syncMutation = useSyncMissionToNotion({
-    onSuccess: data => {
+    onSuccess: _data => {
       toast.success("노션 리포트가 생성되었습니다");
       queryClient.invalidateQueries({
         queryKey: missionQueryKeys.missionNotionPage(missionId),
