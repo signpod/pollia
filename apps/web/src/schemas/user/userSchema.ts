@@ -3,9 +3,10 @@ import { z } from "zod";
 export const nameSchema = z
   .string()
   .trim()
-  .min(2, "닉네임은 2자 이상이어야 합니다.")
-  .max(10, "닉네임은 10자를 초과할 수 없습니다.")
-  .regex(/^[가-힣a-zA-Z]+$/, "한글, 영어만 입력 가능합니다.");
+  .regex(/^[가-힣a-zA-Z]+$/, "공백, 숫자, 특수문자, 이모티콘은 사용할 수 없어요")
+  .refine(value => value.length >= 2 && value.length <= 10, {
+    message: "한글, 영문 2-10자 조합으로 입력해주세요.",
+  });
 
 const phoneSchema = z.string().optional();
 
