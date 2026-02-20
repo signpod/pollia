@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader } from "@/app/admin/components/shadcn-ui/
 import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
 import { useReadCompletions } from "@/app/admin/hooks/mission-completion";
 import { CompletionEditDialog } from "@/app/admin/missions/[id]/components/edit/CompletionEditDialog";
-import { MissionCompletionPage } from "@/components/common/pages/MissionCompletionPage";
+import { ROUTES } from "@/constants/routes";
 import type { MissionCompletionWithMission } from "@/types/dto";
 import {
   DndContext,
@@ -27,7 +27,6 @@ import { AlertCircle, Award, Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { CompletionDetailCard } from "./CompletionDetailCard";
 import { CompletionTab } from "./CompletionTab";
-import { usePreviewImageMenu } from "./hooks";
 
 interface MissionTabCompletionContentProps {
   missionId: string;
@@ -64,9 +63,6 @@ export function MissionTabCompletionContent({ missionId }: MissionTabCompletionC
     null,
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const { isMenuOpen, menuRef, toggleMenu, handleImageSave, handleImageShare } =
-    usePreviewImageMenu();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -246,22 +242,10 @@ export function MissionTabCompletionContent({ missionId }: MissionTabCompletionC
       />
 
       {selectedCompletion && (
-        <MobilePreviewPanel anchor={previewAnchorRef}>
-          <MissionCompletionPage
-            imageUrl={selectedCompletion.imageUrl}
-            title={selectedCompletion.title}
-            description={selectedCompletion.description}
-            links={selectedCompletion.links as Record<string, string> | undefined}
-            imageMenu={{
-              isOpen: isMenuOpen,
-              menuRef,
-              onToggle: toggleMenu,
-              onSave: handleImageSave,
-              onShare: handleImageShare,
-            }}
-            onShare={handleImageShare}
-          />
-        </MobilePreviewPanel>
+        <MobilePreviewPanel
+          anchor={previewAnchorRef}
+          url={ROUTES.MISSION_COMPLETION_PREVIEW(missionId, selectedCompletion.id)}
+        />
       )}
     </>
   );

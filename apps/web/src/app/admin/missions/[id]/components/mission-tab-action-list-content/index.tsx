@@ -22,8 +22,9 @@ import {
   useReorderActions,
   useUpdateAction,
 } from "@/app/admin/hooks/action";
-import { MissionActionPage } from "@/components/common/pages/MissionActionPage";
+import { ROUTES } from "@/constants/routes";
 import type { ActionDetail } from "@/types/dto";
+
 import {
   DndContext,
   type DragEndEvent,
@@ -373,13 +374,10 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
       </AlertDialog>
 
       {selectedAction && (
-        <MobilePreviewPanel anchor={previewAnchorRef}>
-          <MissionActionPage
-            actionData={selectedAction}
-            currentOrder={actions.findIndex(a => a.id === selectedAction.id)}
-            totalActionCount={actions.length}
-          />
-        </MobilePreviewPanel>
+        <MobilePreviewPanel
+          anchor={previewAnchorRef}
+          url={ROUTES.MISSION_ACTION_PREVIEW(missionId, selectedAction.id)}
+        />
       )}
     </>
   );

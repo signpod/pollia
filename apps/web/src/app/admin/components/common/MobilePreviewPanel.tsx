@@ -14,10 +14,17 @@ const DEVICE_SIZE = { width: 393, height: 852 };
 
 export function MobilePreviewPanel({ anchor, url, children }: MobilePreviewPanelProps) {
   const [mounted, setMounted] = useState(false);
+  const [iframeLoading, setIframeLoading] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (url) {
+      setIframeLoading(true);
+    }
+  }, [url]);
 
   if (!mounted || !anchor.current) return null;
 
@@ -39,11 +46,20 @@ export function MobilePreviewPanel({ anchor, url, children }: MobilePreviewPanel
           }}
         >
           {url ? (
-            <iframe
-              title="미션 미리보기"
-              src={url}
-              className="w-full h-full border-0 overflow-y-scroll"
-            />
+            <>
+              {iframeLoading && (
+                <div className="absolute inset-0 z-10 flex items-center justify-center bg-white">
+                  <div className="size-8 animate-spin rounded-full border-4 border-gray-200 border-t-gray-500" />
+                </div>
+              )}
+              <iframe
+                key={url}
+                title="미션 미리보기"
+                src={url}
+                className="w-full h-full border-0 overflow-y-scroll"
+                onLoad={() => setIframeLoading(false)}
+              />
+            </>
           ) : (
             <div className="h-full overflow-y-auto">{children}</div>
           )}
