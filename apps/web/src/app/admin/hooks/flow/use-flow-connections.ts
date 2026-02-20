@@ -13,6 +13,7 @@ import {
   adminMissionQueryKeys,
 } from "@/app/admin/constants/queryKeys";
 import { useUpdateMission } from "@/app/admin/hooks/mission/use-update-mission";
+import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
@@ -21,7 +22,7 @@ export function useFlowConnections(missionId: string) {
   const queryClient = useQueryClient();
   const updateMission = useUpdateMission({
     onError: error => {
-      toast.error(error.message || "미션 수정 중 오류가 발생했습니다");
+      toast.error(error.message || `${UBQUITOUS_CONSTANTS.MISSION} 수정 중 오류가 발생했습니다`);
     },
   });
   const [isPending, setIsPending] = useState(false);

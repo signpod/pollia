@@ -2,6 +2,7 @@
 
 import { deleteMission } from "@/actions/mission/delete";
 import { adminEventQueryKeys, adminMissionQueryKeys } from "@/app/admin/constants/queryKeys";
+import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface UseDeleteMissionOptions {
@@ -29,7 +30,7 @@ export function useDeleteMission(options: UseDeleteMissionOptions = {}) {
       options.onSuccess?.();
     },
     onError: error => {
-      console.error("미션 삭제 실패:", error);
+      console.error(`${UBQUITOUS_CONSTANTS.MISSION} 삭제 실패:`, error);
       options.onError?.(error as Error);
     },
   });

@@ -2,6 +2,7 @@
 
 import { updateMissionCompletion } from "@/actions/mission-completion";
 import { adminMissionCompletionQueryKeys } from "@/app/admin/constants/queryKeys";
+import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import type { UpdateMissionCompletionRequest } from "@/types/dto";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -31,7 +32,7 @@ export function useUpdateMissionCompletion(options: UseUpdateMissionCompletionOp
     },
 
     onError: error => {
-      console.error("미션 완료 화면 수정 실패:", error);
+      console.error(`${UBQUITOUS_CONSTANTS.MISSION} 완료 화면 수정 실패:`, error);
       options.onError?.(error as Error);
     },
   });
