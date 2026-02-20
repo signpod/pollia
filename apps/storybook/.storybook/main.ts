@@ -22,6 +22,7 @@ const config: StorybookConfig = {
         ...config.resolve.alias,
         "@": join(__dirname, "../../web/src"),
         "@public": join(__dirname, "../../web/public"),
+        "server-only": false,
       };
     }
 
