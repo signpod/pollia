@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import * as React from "react";
 import { cn } from "../../lib/utils";
 import { LabelText } from "./LabelText";
@@ -14,6 +15,7 @@ export interface TextareaProps
   textareaClassName?: string;
   resize?: "none" | "vertical" | "horizontal" | "both";
   ref?: React.Ref<HTMLTextAreaElement>;
+  onClear?: () => void;
 }
 
 const Textarea = ({
@@ -32,6 +34,7 @@ const Textarea = ({
   resize = "vertical",
   className,
   ref,
+  onClear,
   ...props
 }: TextareaProps) => {
   const [internalValue, setInternalValue] = React.useState(
@@ -41,7 +44,7 @@ const Textarea = ({
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [isFocused, setIsFocused] = React.useState(false);
 
-  React.useImperativeHandle(ref, () => textareaRef.current!);
+  React.useImperativeHandle(ref, () => textareaRef.current as HTMLTextAreaElement);
 
   // textarea가 리사이즈될 때 container도 따라가도록 동기화
   React.useEffect(() => {
@@ -106,6 +109,25 @@ const Textarea = ({
     setIsFocused(false);
   };
 
+  const handleClear = () => {
+    setInternalValue("");
+    onClear?.();
+    if (onChange) {
+      const textarea = textareaRef.current;
+      if (textarea) {
+        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+          window.HTMLTextAreaElement.prototype,
+          "value",
+        )?.set;
+        nativeInputValueSetter?.call(textarea, "");
+        textarea.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    }
+    textareaRef.current?.focus();
+  };
+
+  const hasValue = currentValue.toString().length > 0;
+
   const resizeClassMap = {
     none: "resize-none",
     vertical: "resize-y",
@@ -128,6 +150,7 @@ const Textarea = ({
             "transition-all duration-150",
             bodyVariants({ size: "large" }),
             resizeClassMap[resize],
+            "pr-10",
             errorMessage && "ring-1 ring-error",
             !errorMessage && isFocused && "ring-1 ring-point",
             !errorMessage && !isFocused && "ring-1 ring-default",
@@ -142,6 +165,17 @@ const Textarea = ({
           rows={rows}
           {...props}
         />
+        {hasValue && (
+          <button
+            type="button"
+            className="col-start-1 row-start-1 self-start justify-self-end mt-3 mr-4 text-zinc-400 hover:text-zinc-600 transition-colors"
+            onMouseDown={e => e.preventDefault()}
+            onClick={handleClear}
+            tabIndex={-1}
+          >
+            <X className="size-5 text-default" />
+          </button>
+        )}
         {showLength && maxLength && (
           <Typo.Body
             size="small"
