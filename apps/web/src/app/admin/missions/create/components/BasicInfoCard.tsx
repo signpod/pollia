@@ -14,7 +14,7 @@ import {
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
-import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import {
   MISSION_DESCRIPTION_MAX_LENGTH,
   MISSION_TARGET_MAX_LENGTH,
@@ -33,15 +33,17 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
     <Card>
       <CardHeader>
         <CardTitle>기본 정보</CardTitle>
-        <CardDescription>{UBQUITOUS_CONSTANTS.MISSION}의 제목과 설명을 입력하세요.</CardDescription>
+        <CardDescription>
+          {UBIQUITOUS_CONSTANTS.MISSION}의 제목과 설명을 입력하세요.
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <InputField
           control={form.control}
           name="title"
           label="제목"
-          description={`${UBQUITOUS_CONSTANTS.MISSION}의 제목을 입력하세요.`}
-          placeholder={`${UBQUITOUS_CONSTANTS.MISSION} 제목을 입력하세요`}
+          description={`${UBIQUITOUS_CONSTANTS.MISSION}의 제목을 입력하세요.`}
+          placeholder={`${UBIQUITOUS_CONSTANTS.MISSION} 제목을 입력하세요`}
           maxLength={MISSION_TITLE_MAX_LENGTH}
           showCounter
         />
@@ -50,14 +52,14 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
           control={form.control}
           name="isExposed"
           label="노출여부"
-          description={`노출 시 ${UBQUITOUS_CONSTANTS.MISSION} 목록에 표시됩니다`}
+          description={`노출 시 ${UBIQUITOUS_CONSTANTS.MISSION} 목록에 표시됩니다`}
         />
 
         <SelectField
           control={form.control}
           name="category"
           label="카테고리"
-          description={`${UBQUITOUS_CONSTANTS.MISSION}의 카테고리를 선택합니다.`}
+          description={`${UBIQUITOUS_CONSTANTS.MISSION}의 카테고리를 선택합니다.`}
           options={[
             {
               value: MissionCategory.TEST,
@@ -93,8 +95,8 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
           control={form.control}
           name="description"
           label="설명"
-          description={`${UBQUITOUS_CONSTANTS.MISSION}에 대한 설명을 입력하세요.`}
-          placeholder={`${UBQUITOUS_CONSTANTS.MISSION}에 대한 설명을 입력하세요`}
+          description={`${UBIQUITOUS_CONSTANTS.MISSION}에 대한 설명을 입력하세요.`}
+          placeholder={`${UBIQUITOUS_CONSTANTS.MISSION}에 대한 설명을 입력하세요`}
           maxLength={MISSION_DESCRIPTION_MAX_LENGTH}
           showCounter
           showToolbar
@@ -106,8 +108,8 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
           control={form.control}
           name="target"
           label="대상"
-          description={`${UBQUITOUS_CONSTANTS.MISSION} 대상을 입력하세요.`}
-          placeholder={`${UBQUITOUS_CONSTANTS.MISSION} 대상을 입력하세요`}
+          description={`${UBIQUITOUS_CONSTANTS.MISSION} 대상을 입력하세요.`}
+          placeholder={`${UBIQUITOUS_CONSTANTS.MISSION} 대상을 입력하세요`}
           maxLength={MISSION_TARGET_MAX_LENGTH}
           showCounter
           isOptional
@@ -117,7 +119,7 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
           control={form.control}
           name="estimatedMinutes"
           label="예상 소요 시간 (분)"
-          description={`${UBQUITOUS_CONSTANTS.MISSION} 완료에 필요한 예상 시간을 입력합니다.`}
+          description={`${UBIQUITOUS_CONSTANTS.MISSION} 완료에 필요한 예상 시간을 입력합니다.`}
           isOptional
           transformValue={value => (value === undefined ? null : value)}
         />
@@ -126,7 +128,7 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
           control={form.control}
           name="startDate"
           label="시작일"
-          description={`${UBQUITOUS_CONSTANTS.MISSION}의 시작일을 설정합니다.`}
+          description={`${UBIQUITOUS_CONSTANTS.MISSION}의 시작일을 설정합니다.`}
           datePlaceholder="시작일 선택"
           isOptional
           supportNull
@@ -136,7 +138,7 @@ export function BasicInfoCard({ form }: BasicInfoCardProps) {
           control={form.control}
           name="deadline"
           label="마감일"
-          description={`${UBQUITOUS_CONSTANTS.MISSION}의 마감일을 설정합니다.`}
+          description={`${UBIQUITOUS_CONSTANTS.MISSION}의 마감일을 설정합니다.`}
           datePlaceholder="마감일 선택"
           isOptional
           supportNull

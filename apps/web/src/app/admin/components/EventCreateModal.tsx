@@ -21,7 +21,7 @@ import {
 import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Textarea } from "@/app/admin/components/shadcn-ui/textarea";
 import { useCreateEvent } from "@/app/admin/hooks/event";
-import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { type EventInput, eventInputSchema } from "@/schemas/event";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
@@ -47,13 +47,13 @@ export function EventCreateModal({ open, onOpenChange, onEventCreated }: EventCr
 
   const createEvent = useCreateEvent({
     onSuccess: () => {
-      toast.success(`${UBQUITOUS_CONSTANTS.EVENT}이 생성되었습니다`);
+      toast.success(`${UBIQUITOUS_CONSTANTS.EVENT}이 생성되었습니다`);
       form.reset();
       onOpenChange(false);
       onEventCreated?.();
     },
     onError: error => {
-      toast.error(error.message || `${UBQUITOUS_CONSTANTS.EVENT} 생성 중 오류가 발생했습니다`);
+      toast.error(error.message || `${UBIQUITOUS_CONSTANTS.EVENT} 생성 중 오류가 발생했습니다`);
     },
   });
 
@@ -76,9 +76,9 @@ export function EventCreateModal({ open, onOpenChange, onEventCreated }: EventCr
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>새 {UBQUITOUS_CONSTANTS.EVENT} 만들기</DialogTitle>
+          <DialogTitle>새 {UBIQUITOUS_CONSTANTS.EVENT} 만들기</DialogTitle>
           <DialogDescription>
-            {UBQUITOUS_CONSTANTS.EVENT} 정보를 입력하고 {UBQUITOUS_CONSTANTS.MISSION}을
+            {UBIQUITOUS_CONSTANTS.EVENT} 정보를 입력하고 {UBIQUITOUS_CONSTANTS.MISSION}을
             그룹화하세요.
           </DialogDescription>
         </DialogHeader>
@@ -91,12 +91,12 @@ export function EventCreateModal({ open, onOpenChange, onEventCreated }: EventCr
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    {UBQUITOUS_CONSTANTS.EVENT} 제목 <span className="text-destructive">*</span>
+                    {UBIQUITOUS_CONSTANTS.EVENT} 제목 <span className="text-destructive">*</span>
                   </FormLabel>
                   <FormControl>
                     <Input
                       {...field}
-                      placeholder={`예: 신년 ${UBQUITOUS_CONSTANTS.EVENT}`}
+                      placeholder={`예: 신년 ${UBIQUITOUS_CONSTANTS.EVENT}`}
                       disabled={createEvent.isPending}
                     />
                   </FormControl>
@@ -114,7 +114,7 @@ export function EventCreateModal({ open, onOpenChange, onEventCreated }: EventCr
                   <FormControl>
                     <Textarea
                       {...field}
-                      placeholder={`${UBQUITOUS_CONSTANTS.EVENT}에 대한 간단한 설명을 입력하세요`}
+                      placeholder={`${UBIQUITOUS_CONSTANTS.EVENT}에 대한 간단한 설명을 입력하세요`}
                       rows={3}
                       disabled={createEvent.isPending}
                     />

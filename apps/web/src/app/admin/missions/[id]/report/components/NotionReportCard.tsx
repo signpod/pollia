@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
-import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useReadMissionNotionPage, useSyncMissionToNotion } from "@/hooks/mission";
 import { useReadMissionParticipantInfo } from "@/hooks/participant/useReadMissionParticipantInfo";
 import { useQueryClient } from "@tanstack/react-query";
@@ -32,7 +32,7 @@ export function NotionReportCard({ missionId }: NotionReportCardProps) {
   const { data: participantData } = useReadMissionParticipantInfo(missionId);
 
   const syncMutation = useSyncMissionToNotion({
-    onSuccess: _data => {
+    onSuccess: () => {
       toast.success("노션 리포트가 생성되었습니다");
       queryClient.invalidateQueries({
         queryKey: missionQueryKeys.missionNotionPage(missionId),
@@ -84,7 +84,7 @@ export function NotionReportCard({ missionId }: NotionReportCardProps) {
             노션 리포트
           </CardTitle>
           <CardDescription>
-            {UBQUITOUS_CONSTANTS.MISSION} 응답 데이터를 노션 페이지로 생성하여 파트너에게 공유할 수
+            {UBIQUITOUS_CONSTANTS.MISSION} 응답 데이터를 노션 페이지로 생성하여 파트너에게 공유할 수
             있습니다.
           </CardDescription>
         </CardHeader>

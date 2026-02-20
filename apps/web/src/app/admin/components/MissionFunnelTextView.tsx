@@ -1,4 +1,4 @@
-import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { formatMillisecondsToKorean } from "@/lib/utils";
 import type { MissionFunnelData } from "@/types/dto";
 import type { MissionStats } from "@/types/mission-stats";
@@ -33,7 +33,7 @@ export function MissionFunnelTextView({ metadata, missionStats }: MissionFunnelT
           <Target className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0" />
           <div>
             <div className="text-sm text-muted-foreground">
-              {UBQUITOUS_CONSTANTS.MISSION} 참여자
+              {UBIQUITOUS_CONSTANTS.MISSION} 참여자
             </div>
             <div className="text-2xl font-bold text-foreground">{missionStats.total}명</div>
           </div>
@@ -43,7 +43,7 @@ export function MissionFunnelTextView({ metadata, missionStats }: MissionFunnelT
           <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 shrink-0" />
           <div>
             <div className="text-sm text-muted-foreground">
-              {UBQUITOUS_CONSTANTS.MISSION} 완료자
+              {UBIQUITOUS_CONSTANTS.MISSION} 완료자
             </div>
             <div className="text-2xl font-bold text-foreground">{missionStats.completed}명</div>
           </div>
@@ -53,7 +53,7 @@ export function MissionFunnelTextView({ metadata, missionStats }: MissionFunnelT
           <CheckCircle2 className="h-5 w-5 text-purple-600 dark:text-purple-400 shrink-0" />
           <div>
             <div className="text-sm text-muted-foreground">
-              {UBQUITOUS_CONSTANTS.MISSION} 완주율
+              {UBIQUITOUS_CONSTANTS.MISSION} 완주율
             </div>
             <div className="text-2xl font-bold text-foreground">
               {missionStats.completionRate.toFixed(1)}%

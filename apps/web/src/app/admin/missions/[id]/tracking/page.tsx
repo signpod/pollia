@@ -10,7 +10,7 @@ import {
 import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
 import { useReadMission, useReadMissionFunnel } from "@/app/admin/hooks/mission";
 import { useReadMissionResponses } from "@/app/admin/hooks/mission-response";
-import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { notFound } from "next/navigation";
 import { use, useMemo } from "react";
 import { AdminMissionHeader } from "../components/AdminMissionHeader";
@@ -46,7 +46,7 @@ export default function AdminMissionTrackingPage({ params }: AdminMissionTrackin
     <>
       <AdminMissionHeader
         title="통계"
-        description={`트래킹, 디바이스 분포, 참여 패턴 등 ${UBQUITOUS_CONSTANTS.MISSION}의 주요 지표를 확인할 수 있습니다`}
+        description={`트래킹, 디바이스 분포, 참여 패턴 등 ${UBIQUITOUS_CONSTANTS.MISSION}의 주요 지표를 확인할 수 있습니다`}
         nav={<MissionNavigation missionId={missionId} />}
         missionId={missionId}
       />
@@ -55,7 +55,7 @@ export default function AdminMissionTrackingPage({ params }: AdminMissionTrackin
         <CardHeader>
           <CardTitle>트래킹 퍼널</CardTitle>
           <CardDescription>
-            {UBQUITOUS_CONSTANTS.MISSION}의 각 단계별 트래킹 데이터를 확인할 수 있습니다
+            {UBIQUITOUS_CONSTANTS.MISSION}의 각 단계별 트래킹 데이터를 확인할 수 있습니다
           </CardDescription>
         </CardHeader>
         <CardContent>

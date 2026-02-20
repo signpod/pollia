@@ -1,6 +1,6 @@
 "use client";
 
-import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import type { ReactNode } from "react";
 import { type RefObject, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
@@ -15,7 +15,7 @@ const DEVICE_SIZE = { width: 393, height: 852 };
 
 export function MobilePreviewPanel({ anchor, url, children }: MobilePreviewPanelProps) {
   const [mounted, setMounted] = useState(false);
-  const [iframeLoading, setIframeLoading] = useState(false);
+  const [iframeLoading, setIframeLoading] = useState(!!url);
 
   useEffect(() => {
     setMounted(true);
@@ -55,7 +55,7 @@ export function MobilePreviewPanel({ anchor, url, children }: MobilePreviewPanel
               )}
               <iframe
                 key={url}
-                title={`${UBQUITOUS_CONSTANTS.MISSION} 미리보기`}
+                title={`${UBIQUITOUS_CONSTANTS.MISSION} 미리보기`}
                 src={url}
                 className="w-full h-full border-0 overflow-y-scroll"
                 onLoad={() => setIframeLoading(false)}

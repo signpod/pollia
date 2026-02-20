@@ -2,7 +2,7 @@
 
 import { createMissionCompletion } from "@/actions/mission-completion";
 import { adminMissionCompletionQueryKeys } from "@/app/admin/constants/queryKeys";
-import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import type { CreateMissionCompletionRequest, CreateMissionCompletionResponse } from "@/types/dto";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -27,7 +27,7 @@ export function useCreateMissionCompletion(options: UseCreateMissionCompletionOp
       options.onSuccess?.(data);
     },
     onError: error => {
-      console.error(`${UBQUITOUS_CONSTANTS.MISSION} 완료 화면 생성 실패:`, error);
+      console.error(`${UBIQUITOUS_CONSTANTS.MISSION} 완료 화면 생성 실패:`, error);
       options.onError?.(error as Error);
     },
   });

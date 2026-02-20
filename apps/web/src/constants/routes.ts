@@ -28,7 +28,6 @@ export const ROUTES = {
     `/mission/${missionId}/action/${actionId}`,
   ACTION_CREATE_DONE: "/mission/action/create/done",
 
-  // 어드민 미리보기 관련
   MISSION_ACTION_PREVIEW: (missionId: string, actionId: string) =>
     `/preview/action/${missionId}/${actionId}`,
   MISSION_COMPLETION_PREVIEW: (missionId: string, completionId: string) =>

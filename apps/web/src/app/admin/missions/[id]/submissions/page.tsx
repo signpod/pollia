@@ -10,7 +10,7 @@ import {
 import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
 import { useReadMission } from "@/app/admin/hooks/mission";
 import { useReadSubmissionList } from "@/app/admin/hooks/submission";
-import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { notFound } from "next/navigation";
 import { use, useMemo, useState } from "react";
 import { AdminMissionHeader } from "../components/AdminMissionHeader";
@@ -59,7 +59,7 @@ export default function AdminMissionSubmissionsPage({ params }: AdminMissionSubm
     <>
       <AdminMissionHeader
         title="제출 목록"
-        description={`${UBQUITOUS_CONSTANTS.MISSION}에 참여한 사용자들의 응답 데이터를 확인하고 CSV로 내보낼 수 있습니다`}
+        description={`${UBIQUITOUS_CONSTANTS.MISSION}에 참여한 사용자들의 응답 데이터를 확인하고 CSV로 내보낼 수 있습니다`}
         nav={<MissionNavigation missionId={missionId} />}
         missionId={missionId}
       />
@@ -70,7 +70,7 @@ export default function AdminMissionSubmissionsPage({ params }: AdminMissionSubm
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>제출 현황</CardTitle>
-                <CardDescription>{UBQUITOUS_CONSTANTS.MISSION} 참여자 목록</CardDescription>
+                <CardDescription>{UBIQUITOUS_CONSTANTS.MISSION} 참여자 목록</CardDescription>
               </div>
               <div className="flex items-center gap-3">
                 <StatusFilter value={filter} onChange={setFilter} counts={counts} />

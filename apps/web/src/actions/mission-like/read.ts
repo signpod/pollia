@@ -1,7 +1,7 @@
 "use server";
 
 import { requireActiveUser } from "@/actions/common/auth";
-import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
 import { missionLikeService } from "@/server/services/mission-like";
 
@@ -41,7 +41,7 @@ export async function getLikedMissions() {
       throw error;
     }
     const serverError = new Error(
-      `좋아요한 ${UBQUITOUS_CONSTANTS.MISSION} 목록을 불러올 수 없습니다.`,
+      `좋아요한 ${UBIQUITOUS_CONSTANTS.MISSION} 목록을 불러올 수 없습니다.`,
     );
     serverError.cause = 500;
     throw serverError;

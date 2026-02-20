@@ -2,7 +2,7 @@
 
 import { setMissionPassword } from "@/actions/mission/update";
 import { adminMissionQueryKeys } from "@/app/admin/constants/queryKeys";
-import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface UseSetMissionPasswordOptions {
@@ -25,7 +25,7 @@ export function useSetMissionPassword(
       options.onSuccess?.();
     },
     onError: error => {
-      console.error(`${UBQUITOUS_CONSTANTS.MISSION} 비밀번호 설정 실패:`, error);
+      console.error(`${UBIQUITOUS_CONSTANTS.MISSION} 비밀번호 설정 실패:`, error);
       options.onError?.(error as Error);
     },
   });

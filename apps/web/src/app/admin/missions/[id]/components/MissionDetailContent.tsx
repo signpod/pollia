@@ -1,7 +1,7 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/admin/components/shadcn-ui/tabs";
-import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import type { GetMissionResponse } from "@/types/dto";
 import { Award, FileText, Gift, ListChecks } from "lucide-react";
 import { AdminMissionHeader } from "./AdminMissionHeader";
@@ -41,7 +41,7 @@ export function MissionDetailContent({ mission, defaultTab = "basic" }: MissionD
   return (
     <>
       <AdminMissionHeader
-        title={`${UBQUITOUS_CONSTANTS.MISSION} 상세`}
+        title={`${UBIQUITOUS_CONSTANTS.MISSION} 상세`}
         description={mission.title}
         nav={<MissionNavigation missionId={mission.id} />}
         missionId={mission.id}

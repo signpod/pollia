@@ -2,7 +2,7 @@
 
 import { createMission } from "@/actions/mission";
 import { adminEventQueryKeys, adminMissionQueryKeys } from "@/app/admin/constants/queryKeys";
-import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import type { CreateMissionRequest, CreateMissionResponse } from "@/types/dto/mission";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -32,7 +32,7 @@ export function useCreateMission(options: UseCreateMissionOptions = {}) {
       options.onSuccess?.(data);
     },
     onError: error => {
-      console.error(`${UBQUITOUS_CONSTANTS.MISSION} 생성 실패:`, error);
+      console.error(`${UBIQUITOUS_CONSTANTS.MISSION} 생성 실패:`, error);
       options.onError?.(error as Error);
     },
   });

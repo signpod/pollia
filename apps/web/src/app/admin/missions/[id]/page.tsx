@@ -1,7 +1,7 @@
 "use client";
 
 import { useReadMission } from "@/app/admin/hooks/mission";
-import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { use } from "react";
 import { MissionDetailContent } from "./components/MissionDetailContent";
 
@@ -26,7 +26,9 @@ export default function AdminMissionPage({ params }: AdminMissionPageProps) {
   if (error) {
     return (
       <div className="p-8 border border-destructive rounded-lg text-center">
-        <p className="text-destructive">{UBQUITOUS_CONSTANTS.MISSION} 정보를 불러올 수 없습니다.</p>
+        <p className="text-destructive">
+          {UBIQUITOUS_CONSTANTS.MISSION} 정보를 불러올 수 없습니다.
+        </p>
         <p className="text-sm text-muted-foreground mt-2">{error.message}</p>
       </div>
     );
@@ -35,7 +37,7 @@ export default function AdminMissionPage({ params }: AdminMissionPageProps) {
   if (!data?.data) {
     return (
       <div className="p-8 border border-dashed rounded-lg text-center text-muted-foreground">
-        {UBQUITOUS_CONSTANTS.MISSION}을 찾을 수 없습니다.
+        {UBIQUITOUS_CONSTANTS.MISSION}을 찾을 수 없습니다.
       </div>
     );
   }

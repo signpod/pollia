@@ -3,7 +3,7 @@
 import { ADMIN_ROUTES } from "@/app/admin/constants/routes";
 import { formatDateRange } from "@/app/admin/lib/date-utils";
 import { getEventStatus } from "@/app/admin/lib/event-utils";
-import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import type { Event } from "@prisma/client";
 import { CalendarDays, CheckCircle } from "lucide-react";
 import React from "react";
@@ -35,7 +35,7 @@ export function EventCard({ event }: EventCardProps) {
         <React.Fragment key="missions">
           <CheckCircle className="size-4" />
           <span>
-            {UBQUITOUS_CONSTANTS.MISSION} {missionCount}개
+            {UBIQUITOUS_CONSTANTS.MISSION} {missionCount}개
           </span>
         </React.Fragment>,
       ]}

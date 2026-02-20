@@ -13,7 +13,7 @@ import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
 import { type UploadedImageData, useSingleImage } from "@/app/admin/hooks/admin-image";
 import { useReadMission, useUpdateMission } from "@/app/admin/hooks/mission";
-import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import type { MissionUpdate } from "@/schemas/mission";
 import { RotateCcw } from "lucide-react";
 import { toast } from "sonner";
@@ -35,14 +35,14 @@ export function ImageEditDialog({ open, onOpenChange, missionId }: ImageEditDial
         <DialogHeader>
           <DialogTitle>미디어 수정</DialogTitle>
           <DialogDescription>
-            {UBQUITOUS_CONSTANTS.MISSION} 이미지와 브랜드 로고를 수정하세요.
+            {UBIQUITOUS_CONSTANTS.MISSION} 이미지와 브랜드 로고를 수정하세요.
           </DialogDescription>
         </DialogHeader>
 
         {isLoading && (
           <div className="flex items-center justify-center py-12">
             <p className="text-muted-foreground">
-              {UBQUITOUS_CONSTANTS.MISSION} 정보를 불러오는 중...
+              {UBIQUITOUS_CONSTANTS.MISSION} 정보를 불러오는 중...
             </p>
           </div>
         )}
@@ -90,11 +90,11 @@ function ImageFormContent({ mission, missionId, onSuccess }: ImageFormContentPro
     onSuccess: () => {
       missionImage.deleteMarkedInitial();
       brandLogo.deleteMarkedInitial();
-      toast.success(`${UBQUITOUS_CONSTANTS.MISSION} 이미지가 수정되었습니다`);
+      toast.success(`${UBIQUITOUS_CONSTANTS.MISSION} 이미지가 수정되었습니다`);
       onSuccess();
     },
     onError: err =>
-      toast.error(err.message || `${UBQUITOUS_CONSTANTS.MISSION} 수정 중 오류가 발생했습니다`),
+      toast.error(err.message || `${UBIQUITOUS_CONSTANTS.MISSION} 수정 중 오류가 발생했습니다`),
   });
 
   const handleReset = () => {
@@ -114,11 +114,11 @@ function ImageFormContent({ mission, missionId, onSuccess }: ImageFormContentPro
           <ImageSelectField
             control={form.control}
             name="imageUrl"
-            label={`${UBQUITOUS_CONSTANTS.MISSION} 이미지`}
+            label={`${UBIQUITOUS_CONSTANTS.MISSION} 이미지`}
             description={
               missionImage.isUploading
                 ? "업로드 중..."
-                : `${UBQUITOUS_CONSTANTS.MISSION}을 대표하는 이미지를 업로드하세요.`
+                : `${UBIQUITOUS_CONSTANTS.MISSION}을 대표하는 이미지를 업로드하세요.`
             }
             onImageSelect={missionImage.upload}
             onImageDelete={() => {

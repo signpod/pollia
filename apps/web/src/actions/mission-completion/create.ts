@@ -1,7 +1,7 @@
 "use server";
 
 import { requireActiveUser } from "@/actions/common/auth";
-import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { missionCompletionService } from "@/server/services/mission-completion/missionCompletionService";
 import type { CreateMissionCompletionInput } from "@/server/services/mission-completion/types";
 import type { CreateMissionCompletionRequest, CreateMissionCompletionResponse } from "@/types/dto";
@@ -38,7 +38,7 @@ export async function createMissionCompletion(
       throw error;
     }
     const serverError = new Error(
-      `${UBQUITOUS_CONSTANTS.MISSION} 완료 데이터 생성 중 오류가 발생했습니다.`,
+      `${UBIQUITOUS_CONSTANTS.MISSION} 완료 데이터 생성 중 오류가 발생했습니다.`,
     );
     serverError.cause = 500;
     throw serverError;

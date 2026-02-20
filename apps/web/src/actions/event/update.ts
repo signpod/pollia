@@ -1,7 +1,7 @@
 "use server";
 
 import { requireActiveUser } from "@/actions/common/auth";
-import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { eventService } from "@/server/services/event";
 import type { UpdateEventRequest, UpdateEventResponse } from "@/types/dto/event";
 
@@ -18,7 +18,7 @@ export async function updateEvent(
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error(`${UBQUITOUS_CONSTANTS.EVENT} 수정 중 오류가 발생했습니다.`);
+    const serverError = new Error(`${UBIQUITOUS_CONSTANTS.EVENT} 수정 중 오류가 발생했습니다.`);
     serverError.cause = 500;
     throw serverError;
   }

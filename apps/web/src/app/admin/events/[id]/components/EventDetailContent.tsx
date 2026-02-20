@@ -4,7 +4,7 @@ import { AdminEventHeader } from "@/app/admin/components/AdminEventHeader";
 import { EventEditModal } from "@/app/admin/components/EventEditModal";
 import { EventMissionList } from "@/app/admin/components/EventMissionList";
 import { useAdminEventWithMissions } from "@/app/admin/hooks/event";
-import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useState } from "react";
 
 interface EventDetailContentProps {
@@ -27,7 +27,7 @@ export function EventDetailContent({ eventId }: EventDetailContentProps) {
   if (!event) {
     return (
       <div className="flex items-center justify-center h-96">
-        <p className="text-muted-foreground">{UBQUITOUS_CONSTANTS.EVENT}을 찾을 수 없습니다.</p>
+        <p className="text-muted-foreground">{UBIQUITOUS_CONSTANTS.EVENT}을 찾을 수 없습니다.</p>
       </div>
     );
   }
