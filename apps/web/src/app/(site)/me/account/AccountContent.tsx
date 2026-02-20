@@ -24,7 +24,9 @@ function formatPhoneNumber(phone: string | null | undefined): string {
 function InfoField({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-1">
-      <Typo.Body size="medium">{label}</Typo.Body>
+      <Typo.Body size="medium" className="text-sub">
+        {label}
+      </Typo.Body>
       <Typo.Body size="large">{value}</Typo.Body>
     </div>
   );
