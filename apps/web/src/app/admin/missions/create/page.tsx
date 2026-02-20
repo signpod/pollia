@@ -5,6 +5,7 @@ import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { Spinner } from "@/app/admin/components/shadcn-ui/spinner";
 import { useCreateMission } from "@/app/admin/hooks/mission";
 import { useCreateMissionCompletion } from "@/app/admin/hooks/mission-completion";
+import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import type { CreateMissionRequest } from "@/types/dto/mission";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MissionType } from "@prisma/client";
@@ -50,13 +51,13 @@ export default function AdminMissionCreatePage() {
         });
       } catch (error) {
         console.error("완료 화면 생성 실패:", error);
-        toast.error("미션 생성 중 오류가 발생했습니다");
+        toast.error(`${UBQUITOUS_CONSTANTS.MISSION} 생성 중 오류가 발생했습니다`);
       }
-      toast.success("미션이 생성되었습니다");
+      toast.success(`${UBQUITOUS_CONSTANTS.MISSION}이 생성되었습니다`);
       router.push(ADMIN_ROUTES.ADMIN_MISSION(data.data.id));
     },
     onError: error => {
-      toast.error(error.message || "미션 생성 중 오류가 발생했습니다");
+      toast.error(error.message || `${UBQUITOUS_CONSTANTS.MISSION} 생성 중 오류가 발생했습니다`);
     },
   });
 
@@ -184,9 +185,12 @@ export default function AdminMissionCreatePage() {
   return (
     <div className="px-6 py-8">
       <header className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">새 미션 만들기</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          새 {UBQUITOUS_CONSTANTS.MISSION} 만들기
+        </h1>
         <p className="text-muted-foreground mt-2">
-          미션의 기본 정보를 입력하세요. 액션과 리워드는 생성 후 추가할 수 있습니다.
+          {UBQUITOUS_CONSTANTS.MISSION}의 기본 정보를 입력하세요. 액션과 리워드는 생성 후 추가할 수
+          있습니다.
         </p>
       </header>
 
@@ -214,7 +218,7 @@ export default function AdminMissionCreatePage() {
                   {isLastStep ? "생성 중..." : "처리 중..."}
                 </>
               ) : isLastStep ? (
-                "미션 생성"
+                `${UBQUITOUS_CONSTANTS.MISSION} 생성`
               ) : (
                 <>
                   다음

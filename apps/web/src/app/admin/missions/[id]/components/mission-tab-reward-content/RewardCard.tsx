@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent } from "@/app/admin/components/shadcn-ui/card";
+import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { Plus } from "lucide-react";
 
 interface EmptyRewardCardProps {
@@ -20,7 +21,7 @@ export function EmptyRewardCard({ onCreate }: EmptyRewardCardProps) {
           </div>
           <h3 className="font-medium text-muted-foreground">리워드 추가하기</h3>
           <p className="text-sm text-muted-foreground/70 mt-1">
-            미션 완료 시 지급할 리워드를 설정하세요
+            {UBQUITOUS_CONSTANTS.MISSION} 완료 시 지급할 리워드를 설정하세요
           </p>
         </div>
       </CardContent>

@@ -23,6 +23,7 @@ import {
   useUpdateAction,
 } from "@/app/admin/hooks/action";
 import { ROUTES } from "@/constants/routes";
+import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import type { ActionDetail } from "@/types/dto";
 
 import {
@@ -240,7 +241,7 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
                 아직 추가된 액션이 없습니다
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                미션에 액션을 추가하여 사용자 응답을 수집하세요
+                {UBQUITOUS_CONSTANTS.MISSION}에 액션을 추가하여 사용자 응답을 수집하세요
               </p>
             </div>
           </CardContent>

@@ -23,6 +23,7 @@ import { Separator } from "@/app/admin/components/shadcn-ui/separator";
 import { useUpdateMission } from "@/app/admin/hooks/mission/use-update-mission";
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { ROUTES } from "@/constants/routes";
+import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { cleanTiptapHTML } from "@/lib/utils";
 import type { GetMissionResponse } from "@/types/dto";
 import { MissionCategory, MissionType } from "@prisma/client";
@@ -113,7 +114,9 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>인트로 정보</CardTitle>
-                <CardDescription>미션 인트로 화면에 표시되는 정보</CardDescription>
+                <CardDescription>
+                  {UBQUITOUS_CONSTANTS.MISSION} 인트로 화면에 표시되는 정보
+                </CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -124,21 +127,21 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
                   control={form.control}
                   name="isActive"
                   label="활성 상태"
-                  description="미션을 활성화하거나 비활성화합니다"
+                  description={`${UBQUITOUS_CONSTANTS.MISSION}을 활성화하거나 비활성화합니다`}
                   disabled={updateMission.isPending}
                 />
                 <ToggleField
                   control={form.control}
                   name="isExposed"
                   label="노출여부"
-                  description="노출 시 미션 목록에 표시됩니다"
+                  description={`노출 시 ${UBQUITOUS_CONSTANTS.MISSION} 목록에 표시됩니다`}
                   disabled={updateMission.isPending}
                 />
                 <SelectField
                   control={form.control}
                   name="category"
                   label="카테고리"
-                  description="미션의 카테고리를 선택합니다."
+                  description={`${UBQUITOUS_CONSTANTS.MISSION}의 카테고리를 선택합니다.`}
                   options={[
                     {
                       value: MissionCategory.TEST,
@@ -228,8 +231,12 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
                 </Button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <LabeledView label="미션 이미지">
-                  <ImageView src={mission.imageUrl} alt="미션 이미지" size="lg" />
+                <LabeledView label={`${UBQUITOUS_CONSTANTS.MISSION} 이미지`}>
+                  <ImageView
+                    src={mission.imageUrl}
+                    alt={`${UBQUITOUS_CONSTANTS.MISSION} 이미지`}
+                    size="lg"
+                  />
                 </LabeledView>
                 <LabeledView label="브랜드 로고">
                   <ImageView src={mission.brandLogoUrl} alt="브랜드 로고" size="md" />

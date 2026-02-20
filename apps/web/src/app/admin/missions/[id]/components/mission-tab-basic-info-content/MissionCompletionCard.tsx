@@ -11,6 +11,7 @@ import {
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
 import { useReadMissionCompletion } from "@/app/admin/hooks/mission-completion";
 import { cn } from "@/app/admin/lib/utils";
+import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { cleanTiptapHTML } from "@/lib/utils";
 import { TiptapViewer } from "@repo/ui/components/common/TiptapViewer";
 import { ExternalLink, ImageIcon, Pencil } from "lucide-react";
@@ -52,7 +53,7 @@ export function MissionCompletionCard({ missionId }: MissionCompletionCardProps)
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>완료 화면</CardTitle>
-              <CardDescription>미션 완료 시 표시되는 화면</CardDescription>
+              <CardDescription>{UBQUITOUS_CONSTANTS.MISSION} 완료 시 표시되는 화면</CardDescription>
             </div>
             <Button variant="outline" size="sm" onClick={() => setIsEditDialogOpen(true)}>
               <Pencil className="h-4 w-4 mr-2" />

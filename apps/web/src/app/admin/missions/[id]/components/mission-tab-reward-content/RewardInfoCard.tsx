@@ -15,6 +15,7 @@ import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { type UploadedImageData, useSingleImage } from "@/app/admin/hooks/admin-image";
 import { cn } from "@/app/admin/lib/utils";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
+import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { rewardBaseSchema } from "@/schemas/reward";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { Reward } from "@prisma/client";
@@ -121,7 +122,7 @@ export function RewardInfoCard({ reward, onUpdate, isLoading }: RewardInfoCardPr
                 control={form.control}
                 name="name"
                 label="리워드 이름"
-                description="미션 완료 시 사용자에게 표시될 리워드 이름입니다."
+                description={`${UBQUITOUS_CONSTANTS.MISSION} 완료 시 사용자에게 표시될 리워드 이름입니다.`}
                 placeholder="예: 스타벅스 아메리카노"
                 disabled={isFormDisabled}
                 maxLength={100}

@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/app/admin/lib/utils";
+import UBQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { ImageIcon } from "lucide-react";
 import Image from "next/image";
 
@@ -38,7 +39,9 @@ export function IntroMobilePreviewPlaceholder({
       ) : (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-zinc-800">
           <ImageIcon className="h-16 w-16 text-zinc-600 mb-4" />
-          <p className="text-zinc-500 text-sm">미션 이미지를 설정해주세요</p>
+          <p className="text-zinc-500 text-sm">
+            {UBQUITOUS_CONSTANTS.MISSION} 이미지를 설정해주세요
+          </p>
         </div>
       )}
 
@@ -58,7 +61,7 @@ export function IntroMobilePreviewPlaceholder({
 
           <div className="flex flex-col gap-1 justify-center items-center">
             <h1 className="text-white text-center text-xl font-bold break-keep">
-              {title || "미션 제목을 입력해주세요"}
+              {title || `${UBQUITOUS_CONSTANTS.MISSION} 제목을 입력해주세요`}
             </h1>
             {formattedDeadline && <p className="text-zinc-300 text-sm">{formattedDeadline} 까지</p>}
           </div>
