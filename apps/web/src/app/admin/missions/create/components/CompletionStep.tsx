@@ -2,7 +2,7 @@
 
 import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
 import { CharacterCounter } from "@/app/admin/components/common/InputField";
-import { TiptapEditor } from "@/app/admin/components/common/TiptapEditor";
+import { TiptapEditor } from "@/app/admin/components/common/tiptap";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import {
   Card,

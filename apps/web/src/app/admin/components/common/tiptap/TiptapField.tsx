@@ -10,7 +10,7 @@ import {
 import { cn } from "@/app/admin/lib/utils";
 import type { Control, FieldValues, Path } from "react-hook-form";
 import { useWatch } from "react-hook-form";
-import { CharacterCounter } from "./InputField";
+import { CharacterCounter } from "../InputField";
 import { TiptapEditor } from "./TiptapEditor";
 
 function getTextLength(html: string): number {

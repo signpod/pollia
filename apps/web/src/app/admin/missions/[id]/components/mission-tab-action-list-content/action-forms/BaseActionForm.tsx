@@ -2,7 +2,7 @@
 
 import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
 import { InputField } from "@/app/admin/components/common/InputField";
-import { TiptapField } from "@/app/admin/components/common/TiptapField";
+import { TiptapField } from "@/app/admin/components/common/tiptap";
 import { FormField, FormItem, FormLabel, FormMessage } from "@/app/admin/components/shadcn-ui/form";
 import { ACTION_DESCRIPTION_MAX_LENGTH, ACTION_TITLE_MAX_LENGTH } from "@/schemas/action";
 import type { ReactNode } from "react";

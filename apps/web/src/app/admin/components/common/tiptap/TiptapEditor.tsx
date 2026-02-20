@@ -1,5 +1,7 @@
 "use client";
 
+import "./tiptap.css";
+
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { cn } from "@/app/admin/lib/utils";
 import type { Editor } from "@tiptap/core";
@@ -205,7 +207,7 @@ export function TiptapEditor({
     immediatelyRender: false,
     editorProps: {
       attributes: {
-        class: "tiptap",
+        class: "tiptap-admin",
       },
     },
     onUpdate: ({ editor }: { editor: Editor }) => {

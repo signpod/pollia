@@ -6,6 +6,7 @@ import {
   LabeledView,
   TextView,
 } from "@/app/admin/components/common/molecules/viewers";
+import { TiptapViewer } from "@/app/admin/components/common/tiptap";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +23,6 @@ import { Separator } from "@/app/admin/components/shadcn-ui/separator";
 import { useDeleteCompletion } from "@/app/admin/hooks/mission-completion";
 import { cleanTiptapHTML } from "@/lib/utils";
 import type { MissionCompletionWithMission } from "@/types/dto";
-import { TiptapViewer } from "@repo/ui/components/common/TiptapViewer";
 import { ExternalLink, Loader2, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 
@@ -115,9 +115,9 @@ export function CompletionDetailCard({ completion, onEdit }: CompletionDetailCar
                           href={value}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm text-primary hover:underline flex items-center gap-1 truncate"
+                          className="text-sm text-primary hover:underline flex items-center gap-1 max-w-full overflow-hidden"
                         >
-                          {value}
+                          <span className="truncate min-w-0">{value}</span>
                           <ExternalLink className="h-3 w-3 shrink-0" />
                         </a>
                       </div>

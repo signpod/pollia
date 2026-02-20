@@ -1,6 +1,9 @@
 "use client";
 
-import { MobilePreviewPanel } from "@/app/admin/components/common/MobilePreviewPanel";
+import {
+  MobilePreviewPanel,
+  useMobilePreviewRefresh,
+} from "@/app/admin/components/common/MobilePreviewPanel";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -59,6 +62,7 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
   const [actions, setActions] = useState<ActionDetail[]>([]);
   const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
   const previewAnchorRef = useRef<HTMLDivElement>(null);
+  const { refreshKey, refresh } = useMobilePreviewRefresh();
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -83,6 +87,7 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
     onSuccess: () => {
       toast.success("액션이 수정되었습니다");
       setIsEditDialogOpen(false);
+      refresh();
     },
     onError: error => toast.error(error.message || "액션 수정 중 오류가 발생했습니다"),
   });
@@ -378,6 +383,7 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
         <MobilePreviewPanel
           anchor={previewAnchorRef}
           url={ROUTES.MISSION_ACTION_PREVIEW(missionId, selectedAction.id)}
+          refreshKey={refreshKey}
         />
       )}
     </>

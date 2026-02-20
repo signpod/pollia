@@ -2,7 +2,7 @@
 
 import { ImageSelectField } from "@/app/admin/components/common/ImageSelectField";
 import { InputField } from "@/app/admin/components/common/InputField";
-import { TiptapField } from "@/app/admin/components/common/TiptapField";
+import { TiptapField } from "@/app/admin/components/common/tiptap";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import {
   Dialog,
@@ -33,6 +33,7 @@ interface CompletionEditDialogProps {
   onOpenChange: (open: boolean) => void;
   missionId: string;
   completion: MissionCompletionData | null;
+  onSuccess?: () => void;
 }
 
 export function CompletionEditDialog({
@@ -40,6 +41,7 @@ export function CompletionEditDialog({
   onOpenChange,
   missionId,
   completion,
+  onSuccess,
 }: CompletionEditDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -54,7 +56,10 @@ export function CompletionEditDialog({
         <CompletionFormContent
           completion={completion}
           missionId={missionId}
-          onSuccess={() => onOpenChange(false)}
+          onSuccess={() => {
+            onOpenChange(false);
+            onSuccess?.();
+          }}
         />
       </DialogContent>
     </Dialog>

@@ -2955,6 +2955,29 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mui/material-nextjs@npm:^7.3.8":
+  version: 7.3.8
+  resolution: "@mui/material-nextjs@npm:7.3.8"
+  dependencies:
+    "@babel/runtime": "npm:^7.28.6"
+  peerDependencies:
+    "@emotion/cache": ^11.11.0
+    "@emotion/react": ^11.11.4
+    "@emotion/server": ^11.11.0
+    "@types/react": ^17.0.0 || ^18.0.0 || ^19.0.0
+    next: ^13.0.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
+    react: ^17.0.0 || ^18.0.0 || ^19.0.0
+  peerDependenciesMeta:
+    "@emotion/cache":
+      optional: true
+    "@emotion/server":
+      optional: true
+    "@types/react":
+      optional: true
+  checksum: 10c0/0d647f9951c9f8e99c34d7fa6ec8a123a7a2e8a9e046bd62ab34bf61142a520fdee132660448bb3949b02ac10306eef25a70b13865339f9b8419ce4e886ddede
+  languageName: node
+  linkType: hard
+
 "@mui/material@npm:^7.3.8":
   version: 7.3.8
   resolution: "@mui/material@npm:7.3.8"
@@ -16409,8 +16432,12 @@ __metadata:
     "@dnd-kit/core": "npm:^6.3.1"
     "@dnd-kit/sortable": "npm:^10.0.0"
     "@dnd-kit/utilities": "npm:^3.2.2"
+    "@emotion/react": "npm:^11.14.0"
+    "@emotion/styled": "npm:^11.14.1"
     "@hookform/resolvers": "npm:^5.2.2"
     "@jridgewell/resolve-uri": "npm:^3.1.2"
+    "@mui/material": "npm:^7.3.8"
+    "@mui/material-nextjs": "npm:^7.3.8"
     "@nivo/sankey": "npm:^0.99.0"
     "@notionhq/client": "npm:^2.2.15"
     "@prisma/client": "npm:^6.19.0"

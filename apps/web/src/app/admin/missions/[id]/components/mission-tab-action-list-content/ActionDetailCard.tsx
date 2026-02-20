@@ -127,9 +127,11 @@ export function ActionDetailCard({ action, onEdit, onDuplicate, onDelete }: Acti
                           {getDisplayOrder(option.order)}
                         </Badge>
                         <div className="flex-1 min-w-0">
-                          <h5 className="font-medium text-sm mb-1 break-words">{option.title}</h5>
+                          <h5 className="font-medium text-sm mb-1 wrap-break-word">
+                            {option.title}
+                          </h5>
                           {option.description && (
-                            <p className="text-xs text-muted-foreground break-words">
+                            <p className="text-xs text-muted-foreground wrap-break-word">
                               {option.description}
                             </p>
                           )}

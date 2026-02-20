@@ -10,6 +10,7 @@ import {
   NumberView,
   TextView,
 } from "@/app/admin/components/common/molecules/viewers";
+import { TiptapViewer } from "@/app/admin/components/common/tiptap";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import {
   Card,
@@ -27,7 +28,6 @@ import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { cleanTiptapHTML } from "@/lib/utils";
 import type { GetMissionResponse } from "@/types/dto";
 import { MissionCategory, MissionType } from "@prisma/client";
-import { TiptapViewer } from "@repo/ui/components/common/TiptapViewer";
 import { Pencil } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
