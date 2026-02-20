@@ -2,6 +2,7 @@
 
 import { UserAvatar } from "@/components/common/UserAvatar";
 import { useCurrentUser } from "@/hooks/user/useCurrentUser";
+import { useProfileImageUrl } from "@/hooks/user/useProfileImageUrl";
 import type { User } from "@prisma/client";
 import { ButtonV2, Typo } from "@repo/ui/components";
 
@@ -30,11 +31,12 @@ function InfoField({ label, value }: { label: string; value: string }) {
 
 export function AccountContent({ user: initialUser }: AccountContentProps) {
   const { data: user = initialUser } = useCurrentUser();
+  const profileImageUrl = useProfileImageUrl();
 
   return (
     <div className="flex flex-col gap-8 py-5">
       <div className="flex justify-center">
-        <UserAvatar size="large" />
+        <UserAvatar size="large" imageUrl={profileImageUrl} />
       </div>
       <div className="flex flex-col gap-8 px-5">
         <InfoField label="닉네임" value={user.name} />

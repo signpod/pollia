@@ -3,6 +3,7 @@
 import { UserAvatar } from "@/components/common/UserAvatar";
 import { ROUTES } from "@/constants/routes";
 import { useCurrentUser } from "@/hooks/user";
+import { useProfileImageUrl } from "@/hooks/user/useProfileImageUrl";
 import PolliaIcon from "@public/svgs/pollia-icon.svg";
 import PolliaWordmark from "@public/svgs/pollia-wordmark.svg";
 import { Typo } from "@repo/ui/components";
@@ -20,6 +21,7 @@ interface ProfileHeaderProps {
 export function ProfileHeader({ showBack = false, fallbackRight }: ProfileHeaderProps) {
   const router = useRouter();
   const { data: currentUser } = useCurrentUser();
+  const profileImageUrl = useProfileImageUrl();
 
   return (
     <header
@@ -46,7 +48,7 @@ export function ProfileHeader({ showBack = false, fallbackRight }: ProfileHeader
       {currentUser ? (
         <button onClick={() => router.push(ROUTES.ME)} type="button">
           <div className="flex items-center gap-2">
-            <UserAvatar size="small" />
+            <UserAvatar size="small" imageUrl={profileImageUrl} />
             <Typo.Body size="medium" className="font-medium text-zinc-700">
               {currentUser.name}
             </Typo.Body>

@@ -2,6 +2,7 @@
 
 import { UserAvatar } from "@/components/common/UserAvatar";
 import { ROUTES } from "@/constants/routes";
+import { useProfileImageUrl } from "@/hooks/user/useProfileImageUrl";
 import { ButtonV2, Typo } from "@repo/ui/components";
 import { useRouter } from "next/navigation";
 
@@ -12,10 +13,11 @@ interface ProfileSectionProps {
 
 export function ProfileSection({ name, email }: ProfileSectionProps) {
   const router = useRouter();
+  const profileImageUrl = useProfileImageUrl();
 
   return (
     <section className="flex flex-col items-center gap-4 px-5">
-      <UserAvatar size="large" />
+      <UserAvatar size="large" imageUrl={profileImageUrl} />
       <div className="flex flex-col items-center gap-1">
         <Typo.MainTitle size="medium">{name}</Typo.MainTitle>
         <Typo.Body size="medium" className="text-info">
