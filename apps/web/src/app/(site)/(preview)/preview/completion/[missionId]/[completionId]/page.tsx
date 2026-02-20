@@ -1,6 +1,6 @@
 import { getCompletionsByMissionId } from "@/actions/mission-completion";
-import { MissionCompletionPage } from "@/components/common/pages/MissionCompletionPage";
 import { notFound } from "next/navigation";
+import { CompletionPreviewClient } from "./CompletionPreviewClient";
 
 interface CompletionPreviewPageProps {
   params: Promise<{ missionId: string; completionId: string }>;
@@ -17,7 +17,7 @@ export default async function CompletionPreviewPage({ params }: CompletionPrevie
   }
 
   return (
-    <MissionCompletionPage
+    <CompletionPreviewClient
       imageUrl={completion.imageUrl}
       title={completion.title}
       description={completion.description ?? undefined}
