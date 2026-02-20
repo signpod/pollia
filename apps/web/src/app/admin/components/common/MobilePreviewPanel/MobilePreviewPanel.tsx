@@ -8,12 +8,18 @@ import { createPortal } from "react-dom";
 interface MobilePreviewPanelProps {
   anchor: RefObject<HTMLElement | null>;
   url?: string;
+  refreshKey?: number;
   children?: ReactNode;
 }
 
 const DEVICE_SIZE = { width: 393, height: 852 };
 
-export function MobilePreviewPanel({ anchor, url, children }: MobilePreviewPanelProps) {
+export function MobilePreviewPanel({
+  anchor,
+  url,
+  refreshKey = 0,
+  children,
+}: MobilePreviewPanelProps) {
   const [mounted, setMounted] = useState(false);
   const [iframeLoading, setIframeLoading] = useState(!!url);
 
@@ -54,7 +60,7 @@ export function MobilePreviewPanel({ anchor, url, children }: MobilePreviewPanel
                 </div>
               )}
               <iframe
-                key={url}
+                key={`${url}-${refreshKey}`}
                 title={`${UBIQUITOUS_CONSTANTS.MISSION} 미리보기`}
                 src={url}
                 className="w-full h-full border-0 overflow-y-scroll"

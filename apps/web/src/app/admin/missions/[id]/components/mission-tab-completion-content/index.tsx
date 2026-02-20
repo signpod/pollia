@@ -1,6 +1,9 @@
 "use client";
 
-import { MobilePreviewPanel } from "@/app/admin/components/common/MobilePreviewPanel";
+import {
+  MobilePreviewPanel,
+  useMobilePreviewRefresh,
+} from "@/app/admin/components/common/MobilePreviewPanel";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Card, CardContent, CardHeader } from "@/app/admin/components/shadcn-ui/card";
 import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
@@ -59,6 +62,7 @@ export function MissionTabCompletionContent({ missionId }: MissionTabCompletionC
 
   const [selectedCompletionId, setSelectedCompletionId] = useState<string | null>(null);
   const previewAnchorRef = useRef<HTMLDivElement>(null);
+  const { refreshKey, refresh } = useMobilePreviewRefresh();
   const [editingCompletion, setEditingCompletion] = useState<MissionCompletionWithMission | null>(
     null,
   );
@@ -239,12 +243,14 @@ export function MissionTabCompletionContent({ missionId }: MissionTabCompletionC
         onOpenChange={setIsDialogOpen}
         missionId={missionId}
         completion={editingCompletion}
+        onSuccess={refresh}
       />
 
       {selectedCompletion && (
         <MobilePreviewPanel
           anchor={previewAnchorRef}
           url={ROUTES.MISSION_COMPLETION_PREVIEW(missionId, selectedCompletion.id)}
+          refreshKey={refreshKey}
         />
       )}
     </>
