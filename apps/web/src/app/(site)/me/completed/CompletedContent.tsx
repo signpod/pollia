@@ -53,7 +53,12 @@ export function CompletedContent() {
         {filteredResponses.length > 0 ? (
           <div className="grid grid-cols-2 gap-x-4 gap-y-10">
             {filteredResponses.map(response => (
-              <MeProjectCard key={response.id} response={response} variant="completed" />
+              <MeProjectCard
+                key={response.id}
+                response={response}
+                variant="completed"
+                lineClamp={1}
+              />
             ))}
           </div>
         ) : (

@@ -59,7 +59,7 @@ export function MyProjectTabs() {
         pointColor="secondary"
         scrollable
       >
-        <Tab.List>
+        <Tab.List className="sticky top-12 z-10 bg-white">
           {tabs.map(tab => (
             <Tab.Item key={tab.value} value={tab.value}>
               <Typo.Body size="large">{tab.label}</Typo.Body>
@@ -170,7 +170,7 @@ const RewardsTab = memo(function RewardsTab() {
             label={label}
             href={href}
           >
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-4">
               {items?.slice(0, MAX_REWARDS_PREVIEW).map(reward => (
                 <RewardCard key={reward.id} reward={reward} />
               ))}
@@ -188,7 +188,7 @@ const LikedTab = memo(function LikedTab() {
   if (!likedMissions || likedMissions.length === 0) {
     return (
       <EmptyState
-        icon={<PolliaFaceVeryGood className="size-30 text-zinc-300" />}
+        icon={<PolliaFaceVeryGood className="size-30 text-zinc-200" />}
         title="찜한 프로젝트가 없어요"
         description={
           <>

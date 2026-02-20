@@ -3,6 +3,7 @@
 import { getFestivals } from "@/actions/festival";
 import { getAllMissions } from "@/actions/mission";
 import type { FestivalData } from "@/types/dto/festival";
+import { MissionType } from "@prisma/client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { SurveyCardData } from "../components/SurveyCard";
 import { ITEMS_PER_PAGE } from "../constants";
@@ -66,6 +67,7 @@ export function useInfiniteContent({
             const result = await getAllMissions({
               cursor: missionCursorRef.current,
               limit: ITEMS_PER_PAGE,
+              type: MissionType.GENERAL,
             });
             const newProjects = result.data.map(mission => ({
               id: mission.id,

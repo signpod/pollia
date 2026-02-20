@@ -24,6 +24,7 @@
   --color-poll-accent: oklch(0.7 0.15 300);
 
   /* Breakpoints */
+  --breakpoint-sm: 480px;
   --breakpoint-3xl: 1920px;
 
   /* Typography */

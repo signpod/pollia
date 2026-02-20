@@ -10,6 +10,7 @@ import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { rewardQueryKeys } from "@/constants/queryKeys/rewardQueryKeys";
 import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";
 import { getQueryClient } from "@/lib/getQueryClient";
+import { MissionType } from "@prisma/client";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { MePageContent } from "./MePageContent";
@@ -36,7 +37,7 @@ export default async function MePage() {
     }),
     queryClient.prefetchQuery({
       queryKey: [...missionQueryKeys.allMissions(), "recommended"],
-      queryFn: () => getAllMissions({ limit: 6 }),
+      queryFn: () => getAllMissions({ limit: 6, type: MissionType.GENERAL }),
     }),
   ]);
 

@@ -18,15 +18,25 @@ export function MeFooter() {
   };
 
   return (
-    <footer className="flex flex-col gap-2 p-5">
+    <footer className="flex flex-col gap-2 px-5">
       <div className="flex flex-col">
         {INQUIRY_URL && (
-          <Link href={INQUIRY_URL} target="_blank" rel="noopener noreferrer" className="h-12 pl-2">
+          <Link
+            href={INQUIRY_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="h-12 pl-2 flex items-center"
+          >
             <Typo.ButtonText size="large">고객센터</Typo.ButtonText>
           </Link>
         )}
         {INQUIRY_URL && (
-          <Link href={INQUIRY_URL} target="_blank" rel="noopener noreferrer" className="h-12 pl-2">
+          <Link
+            href={INQUIRY_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="h-12 pl-2 flex items-center"
+          >
             <Typo.ButtonText size="large">제휴문의</Typo.ButtonText>
           </Link>
         )}
@@ -35,7 +45,7 @@ export function MeFooter() {
             href={PRIVACY_POLICY_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="h-12 pl-2"
+            className="h-12 pl-2 flex items-center"
           >
             <Typo.ButtonText size="large">이용약관/개인정보처리방침</Typo.ButtonText>
           </Link>

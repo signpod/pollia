@@ -1,5 +1,6 @@
 import { getFestivals } from "@/actions/festival";
 import { missionService } from "@/server/services/mission";
+import { MissionType } from "@prisma/client";
 import { BannerSlider } from "./components/BannerSlider";
 import { MainContent } from "./components/MainContent";
 import type { SurveyCardData } from "./components/SurveyCard";
@@ -10,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export default async function MainPage() {
   const [missions, festivalResponse] = await Promise.all([
-    missionService.getAllMissions({ limit: ITEMS_PER_PAGE }),
+    missionService.getAllMissions({ limit: ITEMS_PER_PAGE, type: MissionType.GENERAL }),
     getFestivals({ numOfRows: ITEMS_PER_PAGE }),
   ]);
 
