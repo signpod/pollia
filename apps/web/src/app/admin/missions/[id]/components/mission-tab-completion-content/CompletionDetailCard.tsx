@@ -6,6 +6,7 @@ import {
   LabeledView,
   TextView,
 } from "@/app/admin/components/common/molecules/viewers";
+import { TiptapViewer } from "@/app/admin/components/common/tiptap";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +23,6 @@ import { Separator } from "@/app/admin/components/shadcn-ui/separator";
 import { useDeleteCompletion } from "@/app/admin/hooks/mission-completion";
 import { cleanTiptapHTML } from "@/lib/utils";
 import type { MissionCompletionWithMission } from "@/types/dto";
-import { TiptapViewer } from "@repo/ui/components/common/TiptapViewer";
 import { ExternalLink, Loader2, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 

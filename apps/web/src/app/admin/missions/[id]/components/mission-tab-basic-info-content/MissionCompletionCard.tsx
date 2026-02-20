@@ -1,5 +1,6 @@
 "use client";
 
+import { TiptapViewer } from "@/app/admin/components/common/tiptap";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import {
   Card,
@@ -13,7 +14,6 @@ import { useReadMissionCompletion } from "@/app/admin/hooks/mission-completion";
 import { cn } from "@/app/admin/lib/utils";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { cleanTiptapHTML } from "@/lib/utils";
-import { TiptapViewer } from "@repo/ui/components/common/TiptapViewer";
 import { ExternalLink, ImageIcon, Pencil } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";

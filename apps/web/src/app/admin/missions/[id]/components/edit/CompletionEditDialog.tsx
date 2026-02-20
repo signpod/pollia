@@ -2,7 +2,7 @@
 
 import { ImageSelectField } from "@/app/admin/components/common/ImageSelectField";
 import { InputField } from "@/app/admin/components/common/InputField";
-import { TiptapField } from "@/app/admin/components/common/TiptapField";
+import { TiptapField } from "@/app/admin/components/common/tiptap";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import {
   Dialog,
