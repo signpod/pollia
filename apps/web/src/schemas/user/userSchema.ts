@@ -1,10 +1,11 @@
 import { z } from "zod";
 
-const nameSchema = z
+export const nameSchema = z
   .string()
-  .min(1, "이름을 입력해주세요.")
-  .max(50, "이름은 50자를 초과할 수 없습니다.")
-  .trim();
+  .trim()
+  .min(2, "닉네임은 2자 이상이어야 합니다.")
+  .max(10, "닉네임은 10자를 초과할 수 없습니다.")
+  .regex(/^[가-힣a-zA-Z]+$/, "한글, 영어만 입력 가능합니다.");
 
 const phoneSchema = z.string().optional();
 

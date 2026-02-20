@@ -2,6 +2,7 @@
 
 import { UserAvatar } from "@/components/common/UserAvatar";
 import { useUpdateUserName } from "@/hooks/user/useUpdateUserName";
+import { nameSchema } from "@/schemas/user/userSchema";
 import { ButtonV2, Input, Typo } from "@repo/ui/components";
 import { XIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -16,12 +17,15 @@ export function AccountEditContent({ userName }: AccountEditContentProps) {
   const [name, setName] = useState(userName);
   const { mutate: updateName, isPending } = useUpdateUserName();
 
-  const isChanged = name.trim() !== userName;
-  const isValid = name.trim().length > 0;
+  const trimmed = name.trim();
+  const validation = nameSchema.safeParse(trimmed);
+  const isChanged = trimmed !== userName;
+  const errorMessage =
+    trimmed.length > 0 && !validation.success ? validation.error.issues[0]?.message : undefined;
 
   const handleSubmit = () => {
-    if (!isChanged || !isValid) return;
-    updateName(name.trim(), {
+    if (!isChanged || !validation.success) return;
+    updateName(trimmed, {
       onSuccess: () => router.back(),
     });
   };
@@ -39,7 +43,7 @@ export function AccountEditContent({ userName }: AccountEditContentProps) {
         <ButtonV2
           variant="tertiary"
           size="medium"
-          disabled={!isChanged || !isValid || isPending}
+          disabled={!isChanged || !validation.success || isPending}
           onClick={handleSubmit}
           className="px-4"
         >
@@ -50,7 +54,13 @@ export function AccountEditContent({ userName }: AccountEditContentProps) {
         <div className="flex justify-center">
           <UserAvatar size="large" />
         </div>
-        <Input label="닉네임" value={name} onChange={e => setName(e.target.value)} maxLength={50} />
+        <Input
+          label="닉네임"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          maxLength={10}
+          errorMessage={errorMessage}
+        />
       </div>
     </div>
   );
