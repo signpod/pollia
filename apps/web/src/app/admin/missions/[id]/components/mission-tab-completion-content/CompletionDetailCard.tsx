@@ -115,9 +115,9 @@ export function CompletionDetailCard({ completion, onEdit }: CompletionDetailCar
                           href={value}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-sm text-primary hover:underline flex items-center gap-1 truncate"
+                          className="text-sm text-primary hover:underline flex items-center gap-1 max-w-full overflow-hidden"
                         >
-                          {value}
+                          <span className="truncate min-w-0">{value}</span>
                           <ExternalLink className="h-3 w-3 shrink-0" />
                         </a>
                       </div>

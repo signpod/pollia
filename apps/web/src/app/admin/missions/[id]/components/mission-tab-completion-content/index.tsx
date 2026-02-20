@@ -222,7 +222,7 @@ export function MissionTabCompletionContent({ missionId }: MissionTabCompletionC
             </div>
           </DndContext>
 
-          <div>
+          <div className="min-w-0">
             {selectedCompletion ? (
               <CompletionDetailCard completion={selectedCompletion} onEdit={handleEdit} />
             ) : (
