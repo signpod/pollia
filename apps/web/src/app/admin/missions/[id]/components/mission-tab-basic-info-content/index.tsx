@@ -3,6 +3,8 @@
 import { MobilePreviewPanel } from "@/app/admin/components/common/MobilePreviewPanel";
 import { SelectField } from "@/app/admin/components/common/SelectField";
 import { ToggleField } from "@/app/admin/components/common/ToggleField";
+import { AdminImageCropDialog } from "@/app/admin/components/common/cropper/AdminImageCropDialog";
+import { useImageCropper } from "@/app/admin/components/common/cropper/use-image-cropper";
 import {
   DateView,
   ImageView,
@@ -21,6 +23,7 @@ import {
 } from "@/app/admin/components/shadcn-ui/card";
 import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
+import { type UseSingleImageReturn, useSingleImage } from "@/app/admin/hooks/admin-image";
 import { useUpdateMission } from "@/app/admin/hooks/mission/use-update-mission";
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { ROUTES } from "@/constants/routes";
@@ -29,10 +32,10 @@ import { cleanTiptapHTML } from "@/lib/utils";
 import type { GetMissionResponse } from "@/types/dto";
 import { MissionCategory, MissionType } from "@prisma/client";
 import { Pencil } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { BasicInfoEditDialog } from "../edit/BasicInfoEditDialog";
-import { ImageEditDialog } from "../edit/ImageEditDialog";
 
 interface MissionBasicInfoProps {
   mission: GetMissionResponse["data"];
@@ -46,8 +49,13 @@ interface InlineToggleFormValues {
 
 export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
   const [isBasicInfoDialogOpen, setIsBasicInfoDialogOpen] = useState(false);
-  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
   const previewAnchorRef = useRef<HTMLDivElement>(null);
+  const projectImageInputRef = useRef<HTMLInputElement>(null);
+  const brandLogoInputRef = useRef<HTMLInputElement>(null);
+  const projectImageManagerRef = useRef<UseSingleImageReturn | null>(null);
+  const brandLogoManagerRef = useRef<UseSingleImageReturn | null>(null);
+  const projectImageCropper = useImageCropper({ fileNamePrefix: `mission-image-${mission.id}` });
+  const brandLogoCropper = useImageCropper({ fileNamePrefix: `brand-logo-${mission.id}` });
 
   const form = useForm<InlineToggleFormValues>({
     defaultValues: {
@@ -58,6 +66,72 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
   });
 
   const updateMission = useUpdateMission();
+  const updateMissionMedia = useUpdateMission();
+
+  const missionImage = useSingleImage({
+    initialUrl: mission.imageUrl ?? undefined,
+    initialFileUploadId: mission.imageFileUploadId,
+    onUploadSuccess: data => {
+      updateMissionMedia.mutate(
+        {
+          missionId: mission.id,
+          data: {
+            imageUrl: data.publicUrl,
+            imageFileUploadId: data.fileUploadId,
+          },
+        },
+        {
+          onSuccess: () => {
+            projectImageManagerRef.current?.deleteMarkedInitial();
+            toast.success(`${UBIQUITOUS_CONSTANTS.MISSION} 이미지가 수정되었습니다`);
+          },
+          onError: error => {
+            projectImageManagerRef.current?.discard();
+            projectImageManagerRef.current?.unmarkInitial();
+            toast.error(
+              error.message || `${UBIQUITOUS_CONSTANTS.MISSION} 이미지 저장에 실패했습니다`,
+            );
+          },
+        },
+      );
+    },
+    onUploadError: error => {
+      toast.error(error.message || `${UBIQUITOUS_CONSTANTS.MISSION} 이미지 업로드에 실패했습니다`);
+    },
+  });
+
+  const brandLogoImage = useSingleImage({
+    initialUrl: mission.brandLogoUrl ?? undefined,
+    initialFileUploadId: mission.brandLogoFileUploadId,
+    onUploadSuccess: data => {
+      updateMissionMedia.mutate(
+        {
+          missionId: mission.id,
+          data: {
+            brandLogoUrl: data.publicUrl,
+            brandLogoFileUploadId: data.fileUploadId,
+          },
+        },
+        {
+          onSuccess: () => {
+            brandLogoManagerRef.current?.deleteMarkedInitial();
+            toast.success("브랜드 로고가 수정되었습니다");
+          },
+          onError: error => {
+            brandLogoManagerRef.current?.discard();
+            brandLogoManagerRef.current?.unmarkInitial();
+            toast.error(error.message || "브랜드 로고 저장에 실패했습니다");
+          },
+        },
+      );
+    },
+    onUploadError: error => {
+      toast.error(error.message || "브랜드 로고 업로드에 실패했습니다");
+    },
+  });
+
+  projectImageManagerRef.current = missionImage;
+  brandLogoManagerRef.current = brandLogoImage;
 
   useEffect(() => {
     form.reset({
@@ -105,6 +179,25 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
     });
     return () => subscription.unsubscribe();
   }, [form, mission.id, mission.isActive, mission.type, mission.category, updateMission]);
+
+  const handleProjectImageInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      projectImageCropper.openWithFile(file);
+    }
+    e.target.value = "";
+  };
+
+  const handleBrandLogoInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      brandLogoCropper.openWithFile(file);
+    }
+    e.target.value = "";
+  };
+
+  const isProjectImageBusy = missionImage.isUploading || updateMissionMedia.isPending;
+  const isBrandLogoBusy = brandLogoImage.isUploading || updateMissionMedia.isPending;
 
   return (
     <>
@@ -223,24 +316,74 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
             <Separator />
 
             <section className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium text-muted-foreground">미디어</h3>
-                <Button variant="outline" size="sm" onClick={() => setIsImageDialogOpen(true)}>
-                  <Pencil className="h-4 w-4 mr-2" />
-                  미디어 편집
-                </Button>
-              </div>
+              <h3 className="text-sm font-medium text-muted-foreground">미디어</h3>
+              <input
+                ref={projectImageInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleProjectImageInputChange}
+              />
+              <input
+                ref={brandLogoInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleBrandLogoInputChange}
+              />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <LabeledView label={`${UBIQUITOUS_CONSTANTS.MISSION} 이미지`}>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">{`${UBIQUITOUS_CONSTANTS.MISSION} 이미지`}</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={isProjectImageBusy}
+                      onClick={() => {
+                        if (mission.imageUrl) {
+                          projectImageCropper.openWithImageUrl(
+                            mission.imageUrl,
+                            `mission-image-${mission.id}.jpg`,
+                          );
+                          return;
+                        }
+                        projectImageInputRef.current?.click();
+                      }}
+                    >
+                      <Pencil className="h-4 w-4 mr-2" />
+                      {mission.imageUrl ? "편집" : "이미지 추가"}
+                    </Button>
+                  </div>
                   <ImageView
                     src={mission.imageUrl}
                     alt={`${UBIQUITOUS_CONSTANTS.MISSION} 이미지`}
                     size="lg"
                   />
-                </LabeledView>
-                <LabeledView label="브랜드 로고">
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">브랜드 로고</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={isBrandLogoBusy}
+                      onClick={() => {
+                        if (mission.brandLogoUrl) {
+                          brandLogoCropper.openWithImageUrl(
+                            mission.brandLogoUrl,
+                            `brand-logo-${mission.id}.jpg`,
+                          );
+                          return;
+                        }
+                        brandLogoInputRef.current?.click();
+                      }}
+                    >
+                      <Pencil className="h-4 w-4 mr-2" />
+                      {mission.brandLogoUrl ? "편집" : "이미지 추가"}
+                    </Button>
+                  </div>
                   <ImageView src={mission.brandLogoUrl} alt="브랜드 로고" size="md" />
-                </LabeledView>
+                </div>
               </div>
             </section>
 
@@ -270,10 +413,38 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
         missionId={mission.id}
       />
 
-      <ImageEditDialog
-        open={isImageDialogOpen}
-        onOpenChange={setIsImageDialogOpen}
-        missionId={mission.id}
+      <AdminImageCropDialog
+        open={projectImageCropper.isOpen}
+        imageSrc={projectImageCropper.imageSrc}
+        aspect={9 / 16}
+        title={`${UBIQUITOUS_CONSTANTS.MISSION} 이미지 편집`}
+        description="이미지를 9:16 비율로 맞춰 저장합니다."
+        fileName={projectImageCropper.fileName}
+        onOpenChange={open => {
+          if (!open) {
+            projectImageCropper.close();
+          }
+        }}
+        onConfirm={file => {
+          missionImage.upload(file);
+        }}
+      />
+
+      <AdminImageCropDialog
+        open={brandLogoCropper.isOpen}
+        imageSrc={brandLogoCropper.imageSrc}
+        aspect={1}
+        title="브랜드 로고 편집"
+        description="이미지를 1:1 비율로 맞춰 저장합니다."
+        fileName={brandLogoCropper.fileName}
+        onOpenChange={open => {
+          if (!open) {
+            brandLogoCropper.close();
+          }
+        }}
+        onConfirm={file => {
+          brandLogoImage.upload(file);
+        }}
       />
     </>
   );
