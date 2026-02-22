@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { useRef } from "react";
 
 interface ProjectImageEditorCardProps {
@@ -18,6 +18,7 @@ interface ProjectImageEditorCardProps {
   disabled?: boolean;
   onAddFile: (file: File) => void;
   onEdit: () => void;
+  onDelete: () => void;
 }
 
 export function ProjectImageEditorCard({
@@ -26,6 +27,7 @@ export function ProjectImageEditorCard({
   disabled = false,
   onAddFile,
   onEdit,
+  onDelete,
 }: ProjectImageEditorCardProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const hasImage = Boolean(imageUrl);
@@ -35,22 +37,36 @@ export function ProjectImageEditorCard({
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-sm font-medium">{`${missionLabel} 이미지`}</CardTitle>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={disabled}
-            onClick={() => {
-              if (hasImage) {
-                onEdit();
-                return;
-              }
-              inputRef.current?.click();
-            }}
-          >
-            <Pencil className="h-4 w-4 mr-2" />
-            {hasImage ? "편집" : "이미지 추가"}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={disabled}
+              onClick={() => {
+                if (hasImage) {
+                  onEdit();
+                  return;
+                }
+                inputRef.current?.click();
+              }}
+            >
+              <Pencil className="h-4 w-4 mr-2" />
+              {hasImage ? "편집" : "이미지 추가"}
+            </Button>
+            {hasImage ? (
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                disabled={disabled}
+                onClick={onDelete}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                삭제
+              </Button>
+            ) : null}
+          </div>
         </div>
         <CardDescription>권장 비율 9:16</CardDescription>
       </CardHeader>

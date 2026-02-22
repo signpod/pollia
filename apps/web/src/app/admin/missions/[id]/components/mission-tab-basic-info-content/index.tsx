@@ -314,6 +314,31 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
                       `mission-image-${mission.id}.jpg`,
                     );
                   }}
+                  onDelete={() => {
+                    missionImage.discard();
+                    updateMission.mutate(
+                      {
+                        missionId: mission.id,
+                        data: {
+                          imageUrl: null,
+                          imageFileUploadId: null,
+                        },
+                      },
+                      {
+                        onSuccess: () => {
+                          missionImage.deleteMarkedInitial();
+                          toast.success(`${UBIQUITOUS_CONSTANTS.MISSION} 이미지가 삭제되었습니다`);
+                        },
+                        onError: error => {
+                          missionImage.unmarkInitial();
+                          toast.error(
+                            error.message ||
+                              `${UBIQUITOUS_CONSTANTS.MISSION} 이미지 삭제에 실패했습니다`,
+                          );
+                        },
+                      },
+                    );
+                  }}
                 />
                 <BrandLogoEditorCard
                   imageUrl={mission.brandLogoUrl}
@@ -324,6 +349,28 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
                     brandLogoCropper.openWithImageUrl(
                       mission.brandLogoUrl,
                       `brand-logo-${mission.id}.jpg`,
+                    );
+                  }}
+                  onDelete={() => {
+                    brandLogoImage.discard();
+                    updateMission.mutate(
+                      {
+                        missionId: mission.id,
+                        data: {
+                          brandLogoUrl: null,
+                          brandLogoFileUploadId: null,
+                        },
+                      },
+                      {
+                        onSuccess: () => {
+                          brandLogoImage.deleteMarkedInitial();
+                          toast.success("브랜드 로고가 삭제되었습니다");
+                        },
+                        onError: error => {
+                          brandLogoImage.unmarkInitial();
+                          toast.error(error.message || "브랜드 로고 삭제에 실패했습니다");
+                        },
+                      },
                     );
                   }}
                 />
