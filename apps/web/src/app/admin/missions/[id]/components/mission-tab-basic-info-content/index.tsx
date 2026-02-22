@@ -1,6 +1,9 @@
 "use client";
 
-import { MobilePreviewPanel } from "@/app/admin/components/common/MobilePreviewPanel";
+import {
+  MobilePreviewPanel,
+  useMobilePreviewRefresh,
+} from "@/app/admin/components/common/MobilePreviewPanel";
 import { SelectField } from "@/app/admin/components/common/SelectField";
 import { ToggleField } from "@/app/admin/components/common/ToggleField";
 import { AdminImageCropDialog } from "@/app/admin/components/common/cropper/AdminImageCropDialog";
@@ -51,6 +54,7 @@ interface InlineToggleFormValues {
 export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
   const [isBasicInfoDialogOpen, setIsBasicInfoDialogOpen] = useState(false);
   const previewAnchorRef = useRef<HTMLDivElement>(null);
+  const { refreshKey, refresh } = useMobilePreviewRefresh();
   const projectImageManagerRef = useRef<UseSingleImageReturn | null>(null);
   const brandLogoManagerRef = useRef<UseSingleImageReturn | null>(null);
   const projectImageCropper = useImageCropper({ fileNamePrefix: `mission-image-${mission.id}` });
@@ -81,6 +85,7 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
         {
           onSuccess: () => {
             projectImageManagerRef.current?.deleteMarkedInitial();
+            refresh();
             toast.success(`${UBIQUITOUS_CONSTANTS.MISSION} 이미지가 수정되었습니다`);
           },
           onError: error => {
@@ -113,6 +118,7 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
         {
           onSuccess: () => {
             brandLogoManagerRef.current?.deleteMarkedInitial();
+            refresh();
             toast.success("브랜드 로고가 수정되었습니다");
           },
           onError: error => {
@@ -306,15 +312,20 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
                   missionLabel={UBIQUITOUS_CONSTANTS.MISSION}
                   imageUrl={mission.imageUrl}
                   disabled={isProjectImageBusy}
-                  onAddFile={file => projectImageCropper.openWithFile(file)}
+                  onAddFile={file => {
+                    refresh();
+                    projectImageCropper.openWithFile(file);
+                  }}
                   onEdit={() => {
                     if (!mission.imageUrl) return;
+                    refresh();
                     projectImageCropper.openWithImageUrl(
                       mission.imageUrl,
                       `mission-image-${mission.id}.jpg`,
                     );
                   }}
                   onDelete={() => {
+                    refresh();
                     missionImage.discard();
                     updateMission.mutate(
                       {
@@ -327,6 +338,7 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
                       {
                         onSuccess: () => {
                           missionImage.deleteMarkedInitial();
+                          refresh();
                           toast.success(`${UBIQUITOUS_CONSTANTS.MISSION} 이미지가 삭제되었습니다`);
                         },
                         onError: error => {
@@ -343,15 +355,20 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
                 <BrandLogoEditorCard
                   imageUrl={mission.brandLogoUrl}
                   disabled={isBrandLogoBusy}
-                  onAddFile={file => brandLogoCropper.openWithFile(file)}
+                  onAddFile={file => {
+                    refresh();
+                    brandLogoCropper.openWithFile(file);
+                  }}
                   onEdit={() => {
                     if (!mission.brandLogoUrl) return;
+                    refresh();
                     brandLogoCropper.openWithImageUrl(
                       mission.brandLogoUrl,
                       `brand-logo-${mission.id}.jpg`,
                     );
                   }}
                   onDelete={() => {
+                    refresh();
                     brandLogoImage.discard();
                     updateMission.mutate(
                       {
@@ -364,6 +381,7 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
                       {
                         onSuccess: () => {
                           brandLogoImage.deleteMarkedInitial();
+                          refresh();
                           toast.success("브랜드 로고가 삭제되었습니다");
                         },
                         onError: error => {
@@ -395,7 +413,11 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
         <div ref={previewAnchorRef} className="hidden xl:block" />
       </div>
 
-      <MobilePreviewPanel anchor={previewAnchorRef} url={ROUTES.MISSION(mission.id)} />
+      <MobilePreviewPanel
+        anchor={previewAnchorRef}
+        url={ROUTES.MISSION(mission.id)}
+        refreshKey={refreshKey}
+      />
 
       <BasicInfoEditDialog
         open={isBasicInfoDialogOpen}
