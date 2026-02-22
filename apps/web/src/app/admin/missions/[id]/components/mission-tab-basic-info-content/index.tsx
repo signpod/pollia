@@ -7,7 +7,6 @@ import { AdminImageCropDialog } from "@/app/admin/components/common/cropper/Admi
 import { useImageCropper } from "@/app/admin/components/common/cropper/use-image-cropper";
 import {
   DateView,
-  ImageView,
   LabeledView,
   NumberView,
   TextView,
@@ -32,10 +31,12 @@ import { cleanTiptapHTML } from "@/lib/utils";
 import type { GetMissionResponse } from "@/types/dto";
 import { MissionCategory, MissionType } from "@prisma/client";
 import { Pencil } from "lucide-react";
-import { type ChangeEvent, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { BasicInfoEditDialog } from "../edit/BasicInfoEditDialog";
+import { BrandLogoEditorCard } from "./BrandLogoEditorCard";
+import { ProjectImageEditorCard } from "./ProjectImageEditorCard";
 
 interface MissionBasicInfoProps {
   mission: GetMissionResponse["data"];
@@ -50,8 +51,6 @@ interface InlineToggleFormValues {
 export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
   const [isBasicInfoDialogOpen, setIsBasicInfoDialogOpen] = useState(false);
   const previewAnchorRef = useRef<HTMLDivElement>(null);
-  const projectImageInputRef = useRef<HTMLInputElement>(null);
-  const brandLogoInputRef = useRef<HTMLInputElement>(null);
   const projectImageManagerRef = useRef<UseSingleImageReturn | null>(null);
   const brandLogoManagerRef = useRef<UseSingleImageReturn | null>(null);
   const projectImageCropper = useImageCropper({ fileNamePrefix: `mission-image-${mission.id}` });
@@ -180,22 +179,6 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
     return () => subscription.unsubscribe();
   }, [form, mission.id, mission.isActive, mission.type, mission.category, updateMission]);
 
-  const handleProjectImageInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      projectImageCropper.openWithFile(file);
-    }
-    e.target.value = "";
-  };
-
-  const handleBrandLogoInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      brandLogoCropper.openWithFile(file);
-    }
-    e.target.value = "";
-  };
-
   const isProjectImageBusy = missionImage.isUploading || updateMissionMedia.isPending;
   const isBrandLogoBusy = brandLogoImage.isUploading || updateMissionMedia.isPending;
 
@@ -317,73 +300,32 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
 
             <section className="space-y-3">
               <h3 className="text-sm font-medium text-muted-foreground">미디어</h3>
-              <input
-                ref={projectImageInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleProjectImageInputChange}
-              />
-              <input
-                ref={brandLogoInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleBrandLogoInputChange}
-              />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">{`${UBIQUITOUS_CONSTANTS.MISSION} 이미지`}</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={isProjectImageBusy}
-                      onClick={() => {
-                        if (mission.imageUrl) {
-                          projectImageCropper.openWithImageUrl(
-                            mission.imageUrl,
-                            `mission-image-${mission.id}.jpg`,
-                          );
-                          return;
-                        }
-                        projectImageInputRef.current?.click();
-                      }}
-                    >
-                      <Pencil className="h-4 w-4 mr-2" />
-                      {mission.imageUrl ? "편집" : "이미지 추가"}
-                    </Button>
-                  </div>
-                  <ImageView
-                    src={mission.imageUrl}
-                    alt={`${UBIQUITOUS_CONSTANTS.MISSION} 이미지`}
-                    size="lg"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">브랜드 로고</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={isBrandLogoBusy}
-                      onClick={() => {
-                        if (mission.brandLogoUrl) {
-                          brandLogoCropper.openWithImageUrl(
-                            mission.brandLogoUrl,
-                            `brand-logo-${mission.id}.jpg`,
-                          );
-                          return;
-                        }
-                        brandLogoInputRef.current?.click();
-                      }}
-                    >
-                      <Pencil className="h-4 w-4 mr-2" />
-                      {mission.brandLogoUrl ? "편집" : "이미지 추가"}
-                    </Button>
-                  </div>
-                  <ImageView src={mission.brandLogoUrl} alt="브랜드 로고" size="md" />
-                </div>
+                <ProjectImageEditorCard
+                  missionLabel={UBIQUITOUS_CONSTANTS.MISSION}
+                  imageUrl={mission.imageUrl}
+                  disabled={isProjectImageBusy}
+                  onAddFile={file => projectImageCropper.openWithFile(file)}
+                  onEdit={() => {
+                    if (!mission.imageUrl) return;
+                    projectImageCropper.openWithImageUrl(
+                      mission.imageUrl,
+                      `mission-image-${mission.id}.jpg`,
+                    );
+                  }}
+                />
+                <BrandLogoEditorCard
+                  imageUrl={mission.brandLogoUrl}
+                  disabled={isBrandLogoBusy}
+                  onAddFile={file => brandLogoCropper.openWithFile(file)}
+                  onEdit={() => {
+                    if (!mission.brandLogoUrl) return;
+                    brandLogoCropper.openWithImageUrl(
+                      mission.brandLogoUrl,
+                      `brand-logo-${mission.id}.jpg`,
+                    );
+                  }}
+                />
               </div>
             </section>
 
