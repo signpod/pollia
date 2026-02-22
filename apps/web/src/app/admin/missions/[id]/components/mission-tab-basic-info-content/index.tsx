@@ -65,13 +65,12 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
   });
 
   const updateMission = useUpdateMission();
-  const updateMissionMedia = useUpdateMission();
 
   const missionImage = useSingleImage({
     initialUrl: mission.imageUrl ?? undefined,
     initialFileUploadId: mission.imageFileUploadId,
     onUploadSuccess: data => {
-      updateMissionMedia.mutate(
+      updateMission.mutate(
         {
           missionId: mission.id,
           data: {
@@ -103,7 +102,7 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
     initialUrl: mission.brandLogoUrl ?? undefined,
     initialFileUploadId: mission.brandLogoFileUploadId,
     onUploadSuccess: data => {
-      updateMissionMedia.mutate(
+      updateMission.mutate(
         {
           missionId: mission.id,
           data: {
@@ -129,8 +128,10 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
     },
   });
 
-  projectImageManagerRef.current = missionImage;
-  brandLogoManagerRef.current = brandLogoImage;
+  useEffect(() => {
+    projectImageManagerRef.current = missionImage;
+    brandLogoManagerRef.current = brandLogoImage;
+  }, [missionImage, brandLogoImage]);
 
   useEffect(() => {
     form.reset({
@@ -179,8 +180,8 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
     return () => subscription.unsubscribe();
   }, [form, mission.id, mission.isActive, mission.type, mission.category, updateMission]);
 
-  const isProjectImageBusy = missionImage.isUploading || updateMissionMedia.isPending;
-  const isBrandLogoBusy = brandLogoImage.isUploading || updateMissionMedia.isPending;
+  const isProjectImageBusy = missionImage.isUploading || updateMission.isPending;
+  const isBrandLogoBusy = brandLogoImage.isUploading || updateMission.isPending;
 
   return (
     <>
@@ -361,7 +362,7 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
         aspect={9 / 16}
         title={`${UBIQUITOUS_CONSTANTS.MISSION} 이미지 편집`}
         description="이미지를 9:16 비율로 맞춰 저장합니다."
-        fileName={projectImageCropper.fileName}
+        fileName={projectImageCropper.fileName ?? `mission-image-${mission.id}.jpg`}
         onOpenChange={open => {
           if (!open) {
             projectImageCropper.close();
@@ -378,7 +379,7 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
         aspect={1}
         title="브랜드 로고 편집"
         description="이미지를 1:1 비율로 맞춰 저장합니다."
-        fileName={brandLogoCropper.fileName}
+        fileName={brandLogoCropper.fileName ?? `brand-logo-${mission.id}.jpg`}
         onOpenChange={open => {
           if (!open) {
             brandLogoCropper.close();

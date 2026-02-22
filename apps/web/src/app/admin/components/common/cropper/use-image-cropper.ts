@@ -78,7 +78,7 @@ export function useImageCropper({ fileNamePrefix }: UseImageCropperOptions) {
   return {
     isOpen,
     imageSrc: source?.imageSrc ?? null,
-    fileName: source?.fileName ?? `${fileNamePrefix}-${Date.now()}.jpg`,
+    fileName: source?.fileName ?? null,
     openWithFile,
     openWithImageUrl,
     close,
