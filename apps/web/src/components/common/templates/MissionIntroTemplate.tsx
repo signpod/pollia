@@ -12,6 +12,7 @@ import { ButtonV2, Typo } from "@repo/ui/components";
 import { motion } from "framer-motion";
 import type { RefObject } from "react";
 import type { ReactNode } from "react";
+import { ProfileHeader } from "../ProfileHeader";
 
 export interface MissionIntroTemplateProps {
   imageUrl?: string | null;
@@ -50,6 +51,7 @@ export function MissionIntroTemplate({
 
   return (
     <>
+      <ProfileHeader />
       <div className="relative w-full h-svh min-h-svh">
         <MissionImage imageUrl={effectiveImageUrl} />
         <div className="bg-linear-to-t from-[#27272A] via-[#27272A]/50 via-70% to-transparent absolute bottom-0 left-0 right-0 z-10 flex flex-col gap-6 pb-6 pt-12 px-5">
