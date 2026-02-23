@@ -24,6 +24,7 @@ export function createMissionNotionPageServiceTestContext() {
 export const createMockMission = (overrides: Partial<Mission> = {}): Mission => ({
   id: "mission1",
   title: "테스트 미션",
+  choseong: "",
   description: null,
   target: null,
   imageUrl: null,

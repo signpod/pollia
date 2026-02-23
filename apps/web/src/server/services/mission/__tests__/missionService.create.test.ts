@@ -1,8 +1,16 @@
 import type { ActionRepository } from "@/server/repositories/action/actionRepository";
 import type { MissionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import type { MissionRepository } from "@/server/repositories/mission/missionRepository";
+import { searchSyncOutboxRepository } from "@/server/repositories/search-sync-outbox";
 import { MissionService } from "..";
 import { createMockActionWithOptions, createMockMission } from "../../testUtils";
+
+jest.mock("@/database/utils/prisma/client", () => ({
+  __esModule: true,
+  default: {
+    $transaction: jest.fn(async callback => callback({})),
+  },
+}));
 
 describe("MissionService - Create", () => {
   let missionService: MissionService;
@@ -55,10 +63,14 @@ describe("MissionService - Create", () => {
       mockResponseRepository,
       mockActionRepository,
     );
+    jest.spyOn(searchSyncOutboxRepository, "create").mockResolvedValue({
+      id: "outbox-default",
+    } as never);
   });
 
   afterEach(() => {
     jest.clearAllMocks();
+    jest.restoreAllMocks();
   });
 
   describe("createMission", () => {
@@ -79,6 +91,7 @@ describe("MissionService - Create", () => {
       const mockCreatedMission = {
         id: "mission-1",
         title: request.title,
+        choseong: "",
         description: request.description,
         target: null,
         imageUrl: null,
@@ -102,13 +115,13 @@ describe("MissionService - Create", () => {
         startDate: null,
       };
       mockRepository.createWithActions.mockResolvedValue(mockCreatedMission);
-
       // When
       const result = await missionService.createMission(request, "user-1");
 
       // Then
       expect(result.id).toBe("mission-1");
       expect(result.title).toBe("새 설문");
+      expect(searchSyncOutboxRepository.create).toHaveBeenCalledTimes(1);
       expect(mockRepository.createWithActions).toHaveBeenCalledWith(
         {
           title: request.title,
@@ -126,6 +139,7 @@ describe("MissionService - Create", () => {
           creatorId: "user-1",
         },
         ["a1", "a2"],
+        expect.anything(),
       );
     });
 
@@ -148,6 +162,7 @@ describe("MissionService - Create", () => {
       await expect(missionService.createMission(request, "user-1")).rejects.toThrow(
         "제목을 입력해주세요.",
       );
+      expect(searchSyncOutboxRepository.create).not.toHaveBeenCalled();
 
       try {
         await missionService.createMission(request, "user-1");
@@ -175,6 +190,9 @@ describe("MissionService - Create", () => {
         title: "A",
       });
       mockRepository.createWithActions.mockResolvedValue(mockCreatedMission);
+      jest.spyOn(searchSyncOutboxRepository, "create").mockResolvedValue({
+        id: "outbox-1",
+      } as never);
 
       // When
       const result = await missionService.createMission(request, "user-1");
@@ -325,7 +343,6 @@ describe("MissionService - Create", () => {
       mockRepository.findById.mockResolvedValue(mockMission);
       mockActionRepository.findDetailsByMissionId.mockResolvedValue(mockActions);
       mockRepository.duplicateMission.mockResolvedValue(mockDuplicatedMission);
-
       // When
       const result = await missionService.duplicateMission("mission-1", "user-1");
 
@@ -333,6 +350,7 @@ describe("MissionService - Create", () => {
       expect(result.id).toBe("mission-2");
       expect(result.title).toBe("원본 미션 - 복사본");
       expect(result.creatorId).toBe("user-1");
+      expect(searchSyncOutboxRepository.create).toHaveBeenCalledTimes(1);
 
       expect(mockRepository.duplicateMission).toHaveBeenCalledWith(
         {
@@ -398,6 +416,7 @@ describe("MissionService - Create", () => {
             ],
           },
         ],
+        expect.anything(),
       );
     });
 
@@ -468,6 +487,7 @@ describe("MissionService - Create", () => {
           creatorId: "user-1",
         }),
         [],
+        expect.anything(),
       );
     });
 
@@ -476,6 +496,7 @@ describe("MissionService - Create", () => {
       const mockMission = {
         id: "mission-1",
         title: "활성 미션",
+        choseong: "",
         description: null,
         target: null,
         imageUrl: null,
@@ -502,6 +523,7 @@ describe("MissionService - Create", () => {
       const mockDuplicatedMission = {
         id: "mission-2",
         title: "활성 미션 - 복사본",
+        choseong: "",
         description: null,
         target: null,
         imageUrl: null,
@@ -538,6 +560,7 @@ describe("MissionService - Create", () => {
           isActive: false,
         }),
         expect.any(Array),
+        expect.anything(),
       );
     });
   });

@@ -6,6 +6,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
   const createMission = (overrides?: Partial<Mission>): Mission => ({
     id: "mission-1",
     title: "Test Mission",
+    choseong: "",
     description: null,
     imageUrl: null,
     brandLogoUrl: null,
