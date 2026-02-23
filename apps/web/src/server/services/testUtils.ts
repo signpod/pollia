@@ -4,6 +4,7 @@ import { FileStatus, MissionCategory, MissionType } from "@prisma/client";
 export const createMockMission = (overrides: Partial<Mission> = {}): Mission => ({
   id: "mission1",
   title: "미션",
+  choseong: "",
   description: null,
   target: null,
   imageUrl: null,

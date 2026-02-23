@@ -65,6 +65,7 @@ describe("EventService", () => {
           {
             id: "mission-1",
             title: "미션 1",
+            choseong: "",
             description: null,
             imageUrl: null,
             brandLogoUrl: null,

@@ -5,6 +5,13 @@ import { searchSyncOutboxRepository } from "@/server/repositories/search-sync-ou
 import { MissionService } from "..";
 import { createMockActionWithOptions, createMockMission } from "../../testUtils";
 
+jest.mock("@/database/utils/prisma/client", () => ({
+  __esModule: true,
+  default: {
+    $transaction: jest.fn(async callback => callback({})),
+  },
+}));
+
 describe("MissionService - Create", () => {
   let missionService: MissionService;
   let mockRepository: jest.Mocked<MissionRepository>;
@@ -56,10 +63,14 @@ describe("MissionService - Create", () => {
       mockResponseRepository,
       mockActionRepository,
     );
+    jest.spyOn(searchSyncOutboxRepository, "create").mockResolvedValue({
+      id: "outbox-default",
+    } as never);
   });
 
   afterEach(() => {
     jest.clearAllMocks();
+    jest.restoreAllMocks();
   });
 
   describe("createMission", () => {
@@ -80,6 +91,7 @@ describe("MissionService - Create", () => {
       const mockCreatedMission = {
         id: "mission-1",
         title: request.title,
+        choseong: "",
         description: request.description,
         target: null,
         imageUrl: null,
@@ -103,10 +115,6 @@ describe("MissionService - Create", () => {
         startDate: null,
       };
       mockRepository.createWithActions.mockResolvedValue(mockCreatedMission);
-      jest.spyOn(searchSyncOutboxRepository, "create").mockResolvedValue({
-        id: "outbox-1",
-      } as never);
-
       // When
       const result = await missionService.createMission(request, "user-1");
 
@@ -131,6 +139,7 @@ describe("MissionService - Create", () => {
           creatorId: "user-1",
         },
         ["a1", "a2"],
+        expect.anything(),
       );
     });
 
@@ -153,6 +162,7 @@ describe("MissionService - Create", () => {
       await expect(missionService.createMission(request, "user-1")).rejects.toThrow(
         "제목을 입력해주세요.",
       );
+      expect(searchSyncOutboxRepository.create).not.toHaveBeenCalled();
 
       try {
         await missionService.createMission(request, "user-1");
@@ -333,10 +343,6 @@ describe("MissionService - Create", () => {
       mockRepository.findById.mockResolvedValue(mockMission);
       mockActionRepository.findDetailsByMissionId.mockResolvedValue(mockActions);
       mockRepository.duplicateMission.mockResolvedValue(mockDuplicatedMission);
-      jest.spyOn(searchSyncOutboxRepository, "create").mockResolvedValue({
-        id: "outbox-2",
-      } as never);
-
       // When
       const result = await missionService.duplicateMission("mission-1", "user-1");
 
@@ -410,6 +416,7 @@ describe("MissionService - Create", () => {
             ],
           },
         ],
+        expect.anything(),
       );
     });
 
@@ -480,6 +487,7 @@ describe("MissionService - Create", () => {
           creatorId: "user-1",
         }),
         [],
+        expect.anything(),
       );
     });
 
@@ -488,6 +496,7 @@ describe("MissionService - Create", () => {
       const mockMission = {
         id: "mission-1",
         title: "활성 미션",
+        choseong: "",
         description: null,
         target: null,
         imageUrl: null,
@@ -514,6 +523,7 @@ describe("MissionService - Create", () => {
       const mockDuplicatedMission = {
         id: "mission-2",
         title: "활성 미션 - 복사본",
+        choseong: "",
         description: null,
         target: null,
         imageUrl: null,
@@ -550,6 +560,7 @@ describe("MissionService - Create", () => {
           isActive: false,
         }),
         expect.any(Array),
+        expect.anything(),
       );
     });
   });
