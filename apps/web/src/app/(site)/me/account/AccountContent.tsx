@@ -36,7 +36,7 @@ export function AccountContent({ user: initialUser }: AccountContentProps) {
   const profileImageUrl = useProfileImageUrl();
 
   return (
-    <div className="flex flex-col gap-8 py-5">
+    <div className="flex flex-col gap-8 py-10">
       <div className="flex justify-center">
         <UserAvatar size="large" imageUrl={profileImageUrl} />
       </div>
