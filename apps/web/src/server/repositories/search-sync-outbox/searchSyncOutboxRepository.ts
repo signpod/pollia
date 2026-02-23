@@ -35,19 +35,29 @@ export class SearchSyncOutboxRepository {
 
   async markProcessing(ids: string[], client: TransactionClient = prisma) {
     if (ids.length === 0) {
-      return { count: 0 };
+      return { count: 0, ids: [] as string[] };
     }
 
-    return client.searchSyncOutbox.updateMany({
-      where: {
-        id: { in: ids },
-        status: SearchSyncStatus.PENDING,
-      },
-      data: {
-        status: SearchSyncStatus.PROCESSING,
-        errorMessage: null,
-      },
-    });
+    const claimedIds: string[] = [];
+
+    for (const id of ids) {
+      const result = await client.searchSyncOutbox.updateMany({
+        where: {
+          id,
+          status: SearchSyncStatus.PENDING,
+        },
+        data: {
+          status: SearchSyncStatus.PROCESSING,
+          errorMessage: null,
+        },
+      });
+
+      if (result.count > 0) {
+        claimedIds.push(id);
+      }
+    }
+
+    return { count: claimedIds.length, ids: claimedIds };
   }
 
   async markDone(id: string, processedAt: Date = new Date(), client: TransactionClient = prisma) {
@@ -68,13 +78,16 @@ export class SearchSyncOutboxRepository {
     errorMessage: string,
     client: TransactionClient = prisma,
   ) {
+    const status = nextRetryAt ? SearchSyncStatus.PENDING : SearchSyncStatus.FAILED;
+
     return client.searchSyncOutbox.update({
       where: { id },
       data: {
-        status: SearchSyncStatus.FAILED,
+        status,
         retryCount,
         nextRetryAt,
         errorMessage,
+        processedAt: null,
       },
     });
   }
