@@ -10,11 +10,10 @@ import GiftIcon from "@public/svgs/gift-color-icon.svg";
 import Lock from "@public/svgs/lock.svg";
 import { ButtonV2, Typo } from "@repo/ui/components";
 import { motion } from "framer-motion";
-import type { RefObject } from "react";
-import type { ReactNode } from "react";
-import { ProfileHeader } from "../ProfileHeader";
+import type { ReactNode, RefObject } from "react";
 
 export interface MissionIntroTemplateProps {
+  header?: ReactNode;
   imageUrl?: string | null;
   brandLogoUrl?: string;
   title?: string | null;
@@ -32,6 +31,7 @@ export interface MissionIntroTemplateProps {
 }
 
 export function MissionIntroTemplate({
+  header,
   imageUrl,
   brandLogoUrl,
   title,
@@ -51,7 +51,7 @@ export function MissionIntroTemplate({
 
   return (
     <>
-      <ProfileHeader />
+      {header}
       <div className="relative w-full h-svh min-h-svh">
         <MissionImage imageUrl={effectiveImageUrl} />
         <div className="bg-linear-to-t from-[#27272A] via-[#27272A]/50 via-70% to-transparent absolute bottom-0 left-0 right-0 z-10 flex flex-col gap-6 pb-6 pt-12 px-5">

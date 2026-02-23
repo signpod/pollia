@@ -1,5 +1,6 @@
 "use client";
 
+import { ProfileHeader } from "@/components/common/ProfileHeader";
 import { cn } from "@/lib/utils";
 import { ButtonV2, FixedBottomLayout, Typo } from "@repo/ui/components";
 import Link from "next/link";
@@ -36,6 +37,7 @@ export function MissionCompletionPage({
   return (
     <div className="relative flex min-h-svh w-full flex-col items-center bg-white">
       <MissionCompletionTemplate
+        header={<ProfileHeader />}
         imageUrl={imageUrl}
         title={title}
         description={description}
