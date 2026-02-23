@@ -22,6 +22,8 @@ const SUB_PAGE_HEADERS: Record<string, string | SubPageConfig> = {
     title: "계정관리",
     rightAction: <AccountRightAction />,
   },
+  [ROUTES.ME_ACCOUNT_WITHDRAW]: "회원탈퇴",
+  [ROUTES.ME_PARTNERSHIP]: "제휴 문의",
 };
 
 const CUSTOM_HEADER_PAGES = new Set<string>([ROUTES.ME_ACCOUNT_EDIT]);

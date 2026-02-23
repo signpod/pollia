@@ -30,16 +30,9 @@ export function MeFooter() {
             <Typo.ButtonText size="large">고객센터</Typo.ButtonText>
           </Link>
         )}
-        {INQUIRY_URL && (
-          <Link
-            href={INQUIRY_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="h-12 pl-2 flex items-center"
-          >
-            <Typo.ButtonText size="large">제휴문의</Typo.ButtonText>
-          </Link>
-        )}
+        <Link href={ROUTES.ME_PARTNERSHIP} className="h-12 pl-2 flex items-center">
+          <Typo.ButtonText size="large">제휴문의</Typo.ButtonText>
+        </Link>
         {PRIVACY_POLICY_URL && (
           <Link
             href={PRIVACY_POLICY_URL}

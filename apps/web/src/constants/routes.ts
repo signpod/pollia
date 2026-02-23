@@ -16,6 +16,8 @@ export const ROUTES = {
   ME_REWARDS_PAID: "/me/rewards/paid",
   ME_ACCOUNT: "/me/account",
   ME_ACCOUNT_EDIT: "/me/account/edit",
+  ME_ACCOUNT_WITHDRAW: "/me/account/withdraw",
+  ME_PARTNERSHIP: "/me/partnership",
   ME_LIKED_TAB: "/me?tab=liked",
   LIKES: "/likes",
 
