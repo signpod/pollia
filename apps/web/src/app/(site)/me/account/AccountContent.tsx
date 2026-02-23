@@ -5,6 +5,7 @@ import { useCurrentUser } from "@/hooks/user/useCurrentUser";
 import { useProfileImageUrl } from "@/hooks/user/useProfileImageUrl";
 import type { User } from "@prisma/client";
 import { ButtonV2, Typo } from "@repo/ui/components";
+import { useRouter } from "next/navigation";
 
 interface AccountContentProps {
   user: User;
@@ -30,6 +31,7 @@ function InfoField({ label, value }: { label: string; value: string }) {
 }
 
 export function AccountContent({ user: initialUser }: AccountContentProps) {
+  const router = useRouter();
   const { data: user = initialUser } = useCurrentUser();
   const profileImageUrl = useProfileImageUrl();
 
@@ -42,7 +44,12 @@ export function AccountContent({ user: initialUser }: AccountContentProps) {
         <InfoField label="닉네임" value={user.name} />
         <InfoField label="휴대폰 번호" value={formatPhoneNumber(user.phone)} />
         <InfoField label="연결된 카카오 계정" value={user.email} />
-        <ButtonV2 variant="tertiary" size="medium" className="self-start p-0">
+        <ButtonV2
+          variant="tertiary"
+          size="medium"
+          className="self-start p-0"
+          onClick={() => router.push("/me/account/withdraw")}
+        >
           <Typo.ButtonText size="medium" className="text-disabled">
             회원탈퇴
           </Typo.ButtonText>
