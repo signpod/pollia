@@ -14,14 +14,16 @@ const FEATURED_MISSIONS = [
   {
     id: "cmkg52ncy000gla04ya80cyo2",
     title: "2026 초미세 습관 형성\n프로젝트 참가 신청 1",
-    brandLogoUrl: "",
+    brandLogoUrl:
+      "https://jjrsknqxiqbzqiraexpc.supabase.co/storage/v1/object/public/mission-images/f54437e4-95c6-4232-b927-f2b995b09a14/1768804605338.jpg",
     imageUrl:
       "https://lpgfbjohdashthkhxzab.supabase.co/storage/v1/object/public/mission-images/ca3afe20-e1ba-423a-a6d5-6c7662b40451/1770098871007.jpg",
   },
   {
     id: "cmkg52ncy000gla04ya80cyo2",
     title: "2026 초미세 습관 형성\n프로젝트 참가 신청 2",
-    brandLogoUrl: "",
+    brandLogoUrl:
+      "https://jjrsknqxiqbzqiraexpc.supabase.co/storage/v1/object/public/mission-images/f54437e4-95c6-4232-b927-f2b995b09a14/1768804605338.jpg",
     imageUrl:
       "https://jjrsknqxiqbzqiraexpc.supabase.co/storage/v1/object/public/mission-images/f54437e4-95c6-4232-b927-f2b995b09a14/1768522947884.jpg",
   },
