@@ -1,5 +1,7 @@
 "use client";
 
+import { AdminImageCropDialog } from "@/app/admin/components/common/cropper/AdminImageCropDialog";
+import { useImageCropper } from "@/app/admin/components/common/cropper/use-image-cropper";
 import {
   DateView,
   ImageView,
@@ -20,24 +22,71 @@ import {
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/admin/components/shadcn-ui/card";
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
+import { type UseSingleImageReturn, useSingleImage } from "@/app/admin/hooks/admin-image";
 import { useDeleteCompletion } from "@/app/admin/hooks/mission-completion";
+import { useUpdateMissionCompletion } from "@/app/admin/hooks/mission-completion";
 import { cleanTiptapHTML } from "@/lib/utils";
 import type { MissionCompletionWithMission } from "@/types/dto";
 import { ExternalLink, Loader2, Pencil, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 interface CompletionDetailCardProps {
   completion: MissionCompletionWithMission;
   onEdit: (completion: MissionCompletionWithMission) => void;
+  onPreviewRefresh?: () => void;
 }
 
-export function CompletionDetailCard({ completion, onEdit }: CompletionDetailCardProps) {
+export function CompletionDetailCard({
+  completion,
+  onEdit,
+  onPreviewRefresh,
+}: CompletionDetailCardProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const completionImageManagerRef = useRef<UseSingleImageReturn | null>(null);
+  const completionImageCropper = useImageCropper({
+    fileNamePrefix: `completion-image-${completion.id}`,
+  });
   const deleteCompletion = useDeleteCompletion();
+  const updateCompletion = useUpdateMissionCompletion({
+    onSuccess: () => {
+      completionImageManagerRef.current?.deleteMarkedInitial();
+      onPreviewRefresh?.();
+      toast.success("완료화면 이미지가 수정되었습니다");
+    },
+    onError: error => {
+      completionImageManagerRef.current?.discard();
+      completionImageManagerRef.current?.unmarkInitial();
+      toast.error(error.message || "완료화면 이미지 수정에 실패했습니다");
+    },
+  });
+
+  const completionImage = useSingleImage({
+    initialUrl: completion.imageUrl ?? undefined,
+    initialFileUploadId: completion.imageFileUploadId ?? undefined,
+    onUploadSuccess: data => {
+      updateCompletion.mutate({
+        id: completion.id,
+        data: {
+          imageUrl: data.publicUrl,
+          imageFileUploadId: data.fileUploadId,
+        },
+      });
+    },
+    onUploadError: error => {
+      toast.error(error.message || "완료화면 이미지 업로드에 실패했습니다");
+    },
+  });
 
   const links = completion.links ?? null;
   const linkEntries = links ? Object.entries(links) : [];
   const isDeleting = deleteCompletion.isPending;
+  const isImageBusy = completionImage.isUploading || updateCompletion.isPending;
+
+  useEffect(() => {
+    completionImageManagerRef.current = completionImage;
+  }, [completionImage]);
 
   const handleDelete = async () => {
     await deleteCompletion.mutateAsync(completion.id);
@@ -94,7 +143,67 @@ export function CompletionDetailCard({ completion, onEdit }: CompletionDetailCar
           <Separator />
 
           <LabeledView label="이미지">
-            <ImageView src={completion.imageUrl} alt="완료 화면 이미지" size="lg" />
+            <div className="space-y-3">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    onPreviewRefresh?.();
+                    completionImageCropper.openWithFile(file);
+                  }
+                  e.target.value = "";
+                }}
+              />
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isImageBusy || isDeleting}
+                  onClick={() => {
+                    onPreviewRefresh?.();
+                    if (completion.imageUrl) {
+                      completionImageCropper.openWithImageUrl(
+                        completion.imageUrl,
+                        `completion-image-${completion.id}.jpg`,
+                      );
+                      return;
+                    }
+                    fileInputRef.current?.click();
+                  }}
+                >
+                  <Pencil className="h-4 w-4 mr-2" />
+                  {completion.imageUrl ? "편집" : "이미지 추가"}
+                </Button>
+                {completion.imageUrl ? (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    disabled={isImageBusy || isDeleting}
+                    onClick={() => {
+                      onPreviewRefresh?.();
+                      completionImage.discard();
+                      updateCompletion.mutate({
+                        id: completion.id,
+                        data: {
+                          imageUrl: undefined,
+                          imageFileUploadId: undefined,
+                        },
+                      });
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    이미지 삭제
+                  </Button>
+                ) : null}
+              </div>
+              <ImageView src={completion.imageUrl} alt="완료 화면 이미지" size="lg" />
+            </div>
           </LabeledView>
 
           {linkEntries.length > 0 && (
@@ -165,6 +274,23 @@ export function CompletionDetailCard({ completion, onEdit }: CompletionDetailCar
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AdminImageCropDialog
+        open={completionImageCropper.isOpen}
+        imageSrc={completionImageCropper.imageSrc}
+        aspect={3 / 4}
+        title="완료화면 이미지 편집"
+        description="이미지를 3:4 비율로 맞춰 저장합니다."
+        fileName={completionImageCropper.fileName ?? `completion-image-${completion.id}.jpg`}
+        onOpenChange={open => {
+          if (!open) {
+            completionImageCropper.close();
+          }
+        }}
+        onConfirm={file => {
+          completionImage.upload(file);
+        }}
+      />
     </>
   );
 }
