@@ -21,15 +21,25 @@ export class MissionResponseRepository {
   }
 
   async findByMissionAndUser(missionId: string, userId: string) {
-    return prisma.missionResponse.findUnique({
-      where: {
-        missionId_userId: {
-          missionId,
-          userId,
-        },
-      },
+    return prisma.missionResponse.findFirst({
+      where: { missionId, userId },
       include: {
         answers: ANSWERS_WITH_RELATIONS,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  }
+
+  async findByMissionAndGuest(missionId: string, guestId: string) {
+    return prisma.missionResponse.findFirst({
+      where: { missionId, guestId },
+      include: {
+        answers: ANSWERS_WITH_RELATIONS,
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
   }
@@ -118,11 +128,12 @@ export class MissionResponseRepository {
     });
   }
 
-  async create(data: { missionId: string; userId: string }) {
+  async create(data: { missionId: string; userId?: string | null; guestId?: string | null }) {
     return prisma.missionResponse.create({
       data: {
         missionId: data.missionId,
-        userId: data.userId,
+        userId: data.userId ?? null,
+        guestId: data.guestId ?? null,
         startedAt: new Date(),
       },
       include: {
@@ -151,6 +162,15 @@ export class MissionResponseRepository {
       where: {
         missionId,
         userId,
+      },
+    });
+  }
+
+  async deleteByMissionAndGuest(missionId: string, guestId: string) {
+    return prisma.missionResponse.deleteMany({
+      where: {
+        missionId,
+        guestId,
       },
     });
   }
