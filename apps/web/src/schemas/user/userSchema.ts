@@ -1,4 +1,14 @@
+import { MAX_FILE_SIZE } from "@/constants/fileUpload";
+import { ActionType } from "@prisma/client";
 import { z } from "zod";
+
+const PROFILE_IMAGE_MAX_SIZE = MAX_FILE_SIZE[ActionType.IMAGE];
+
+export const profileImageSchema = z
+  .instanceof(File)
+  .refine(file => file.size <= PROFILE_IMAGE_MAX_SIZE, {
+    message: "프로필 이미지는 5MB를 초과할 수 없습니다.",
+  });
 
 export const nameSchema = z
   .string()
@@ -39,6 +49,17 @@ export const userWithdrawalSchema = z.object({
     .optional(),
 });
 
+export const withdrawalFormSchema = z
+  .object({
+    reason: z.string().min(1, "탈퇴 사유를 선택해주세요."),
+    customReason: z.string().optional(),
+  })
+  .refine(data => data.reason !== "other" || (data.customReason?.trim() ?? "").length > 0, {
+    message: "탈퇴 사유를 입력해주세요.",
+    path: ["customReason"],
+  });
+
 export type UserInput = z.infer<typeof userInputSchema>;
 export type UserUpdate = z.infer<typeof userUpdateSchema>;
 export type UserWithdrawal = z.infer<typeof userWithdrawalSchema>;
+export type WithdrawalForm = z.infer<typeof withdrawalFormSchema>;
