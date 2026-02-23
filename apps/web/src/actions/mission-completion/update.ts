@@ -10,25 +10,13 @@ import { toMissionCompletionData } from "./utils";
 function toUpdateMissionCompletionInput(
   dto: UpdateMissionCompletionRequest,
 ): UpdateMissionCompletionInput {
-  const input: UpdateMissionCompletionInput = {};
-
-  if (dto.title !== undefined) {
-    input.title = dto.title;
-  }
-  if (dto.description !== undefined) {
-    input.description = dto.description;
-  }
-  if (dto.imageUrl !== undefined) {
-    input.imageUrl = dto.imageUrl;
-  }
-  if (dto.imageFileUploadId !== undefined) {
-    input.imageFileUploadId = dto.imageFileUploadId;
-  }
-  if (dto.links !== undefined) {
-    input.links = dto.links;
-  }
-
-  return input;
+  return {
+    title: dto.title,
+    description: dto.description,
+    imageUrl: dto.imageUrl,
+    imageFileUploadId: dto.imageFileUploadId,
+    links: dto.links,
+  };
 }
 
 export async function updateMissionCompletion(

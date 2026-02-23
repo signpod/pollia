@@ -27,12 +27,17 @@ export function useImageEditWithCrop({
 }: UseImageEditWithCropOptions) {
   const cropper = useImageCropper({ fileNamePrefix });
   const uploadedFileIdRef = useRef<string | null>(null);
+  const imageRef = useRef<UseSingleImageReturn | null>(null);
 
   const image = useSingleImage({
     initialUrl: initialUrl ?? undefined,
     initialFileUploadId: initialFileUploadId ?? undefined,
     onUploadError,
   });
+
+  useEffect(() => {
+    imageRef.current = image;
+  }, [image]);
 
   useEffect(() => {
     const uploaded = image.uploadedData;
@@ -43,8 +48,10 @@ export function useImageEditWithCrop({
       return;
     }
     uploadedFileIdRef.current = uploaded.fileUploadId;
-    onUploadSuccess(uploaded, image);
-  }, [image, onUploadSuccess]);
+    if (imageRef.current) {
+      onUploadSuccess(uploaded, imageRef.current);
+    }
+  }, [image.uploadedData, onUploadSuccess]);
 
   const openFromFile = useCallback(
     (file: File) => {
