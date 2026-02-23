@@ -42,7 +42,7 @@ const SelectTrigger = React.forwardRef<
     ref={ref}
     className={cn(
       "flex h-12 w-full items-center justify-between rounded-[var(--radius-sm)] bg-white",
-      "px-[var(--space-lg)] py-3 text-sm",
+      "px-4 py-3 text-[16px] font-medium leading-[1.5]",
       "ring-1 ring-[var(--color-zinc-200)]",
       "hover:ring-[var(--color-violet-500)]",
       "focus:outline-none focus:ring-2 focus:ring-[var(--color-violet-500)]",
@@ -55,7 +55,7 @@ const SelectTrigger = React.forwardRef<
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      <ChevronDown className="h-4 w-4 opacity-50" />
+      <ChevronDown className="size-6 text-zinc-500" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ));
@@ -115,7 +115,7 @@ const SelectContent = React.forwardRef<
       <SelectScrollUpButton />
       <SelectPrimitive.Viewport
         className={cn(
-          "p-1",
+          "p-2",
           position === "popper" &&
             "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]",
         )}
@@ -147,23 +147,20 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-pointer select-none items-center",
-      "rounded-[var(--radius-xs)] py-2 pl-8 pr-2",
-      "text-sm outline-none",
-      "focus:bg-[var(--color-violet-50)] focus:text-[var(--color-violet-900)]",
+      "flex h-12 w-full cursor-pointer select-none items-center justify-between",
+      "rounded-lg px-4",
+      "text-base font-bold outline-none",
+      "focus:bg-zinc-100",
       "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       "transition-colors",
       className,
     )}
     {...props}
   >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-      <SelectPrimitive.ItemIndicator>
-        <Check className="h-4 w-4 text-[var(--color-violet-500)]" />
-      </SelectPrimitive.ItemIndicator>
-    </span>
-
     <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+    <SelectPrimitive.ItemIndicator>
+      <Check className="size-5" />
+    </SelectPrimitive.ItemIndicator>
   </SelectPrimitive.Item>
 ));
 SelectItem.displayName = SelectPrimitive.Item.displayName;
