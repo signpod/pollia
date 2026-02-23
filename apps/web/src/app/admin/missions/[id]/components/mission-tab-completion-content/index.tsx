@@ -224,7 +224,11 @@ export function MissionTabCompletionContent({ missionId }: MissionTabCompletionC
 
           <div className="min-w-0">
             {selectedCompletion ? (
-              <CompletionDetailCard completion={selectedCompletion} onEdit={handleEdit} />
+              <CompletionDetailCard
+                completion={selectedCompletion}
+                onEdit={handleEdit}
+                onPreviewRefresh={refresh}
+              />
             ) : (
               <Card>
                 <CardContent className="flex items-center justify-center py-12">
