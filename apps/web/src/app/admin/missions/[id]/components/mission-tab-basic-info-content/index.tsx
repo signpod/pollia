@@ -333,7 +333,7 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
                           toast.success(`${UBIQUITOUS_CONSTANTS.MISSION} 이미지가 삭제되었습니다`);
                         },
                         onError: error => {
-                          projectImageEdit.image.unmarkInitial();
+                          projectImageEdit.image.reset();
                           toast.error(
                             error.message ||
                               `${UBIQUITOUS_CONSTANTS.MISSION} 이미지 삭제에 실패했습니다`,
@@ -375,7 +375,7 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
                           toast.success("브랜드 로고가 삭제되었습니다");
                         },
                         onError: error => {
-                          brandLogoEdit.image.unmarkInitial();
+                          brandLogoEdit.image.reset();
                           toast.error(error.message || "브랜드 로고 삭제에 실패했습니다");
                         },
                       },

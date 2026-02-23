@@ -170,7 +170,7 @@ export function CompletionDetailCard({
                       toast.success("완료화면 이미지가 삭제되었습니다");
                     },
                     onError: error => {
-                      completionImageEdit.image.unmarkInitial();
+                      completionImageEdit.image.reset();
                       toast.error(error.message || "완료화면 이미지 삭제에 실패했습니다");
                     },
                   },
