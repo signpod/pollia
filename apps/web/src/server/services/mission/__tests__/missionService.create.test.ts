@@ -1,6 +1,7 @@
 import type { ActionRepository } from "@/server/repositories/action/actionRepository";
 import type { MissionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import type { MissionRepository } from "@/server/repositories/mission/missionRepository";
+import { searchSyncOutboxRepository } from "@/server/repositories/search-sync-outbox";
 import { MissionService } from "..";
 import { createMockActionWithOptions, createMockMission } from "../../testUtils";
 
@@ -102,6 +103,9 @@ describe("MissionService - Create", () => {
         startDate: null,
       };
       mockRepository.createWithActions.mockResolvedValue(mockCreatedMission);
+      jest.spyOn(searchSyncOutboxRepository, "create").mockResolvedValue({
+        id: "outbox-1",
+      } as never);
 
       // When
       const result = await missionService.createMission(request, "user-1");
@@ -109,6 +113,7 @@ describe("MissionService - Create", () => {
       // Then
       expect(result.id).toBe("mission-1");
       expect(result.title).toBe("새 설문");
+      expect(searchSyncOutboxRepository.create).toHaveBeenCalledTimes(1);
       expect(mockRepository.createWithActions).toHaveBeenCalledWith(
         {
           title: request.title,
@@ -175,6 +180,9 @@ describe("MissionService - Create", () => {
         title: "A",
       });
       mockRepository.createWithActions.mockResolvedValue(mockCreatedMission);
+      jest.spyOn(searchSyncOutboxRepository, "create").mockResolvedValue({
+        id: "outbox-1",
+      } as never);
 
       // When
       const result = await missionService.createMission(request, "user-1");
@@ -325,6 +333,9 @@ describe("MissionService - Create", () => {
       mockRepository.findById.mockResolvedValue(mockMission);
       mockActionRepository.findDetailsByMissionId.mockResolvedValue(mockActions);
       mockRepository.duplicateMission.mockResolvedValue(mockDuplicatedMission);
+      jest.spyOn(searchSyncOutboxRepository, "create").mockResolvedValue({
+        id: "outbox-2",
+      } as never);
 
       // When
       const result = await missionService.duplicateMission("mission-1", "user-1");
@@ -333,6 +344,7 @@ describe("MissionService - Create", () => {
       expect(result.id).toBe("mission-2");
       expect(result.title).toBe("원본 미션 - 복사본");
       expect(result.creatorId).toBe("user-1");
+      expect(searchSyncOutboxRepository.create).toHaveBeenCalledTimes(1);
 
       expect(mockRepository.duplicateMission).toHaveBeenCalledWith(
         {

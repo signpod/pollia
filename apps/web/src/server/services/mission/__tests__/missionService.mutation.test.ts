@@ -1,6 +1,7 @@
 import type { ActionRepository } from "@/server/repositories/action/actionRepository";
 import type { MissionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import type { MissionRepository } from "@/server/repositories/mission/missionRepository";
+import { searchSyncOutboxRepository } from "@/server/repositories/search-sync-outbox";
 import { MissionService } from "..";
 import { createMockMission, expectServiceErrorWithCause } from "../../testUtils";
 
@@ -81,6 +82,9 @@ describe("MissionService - Mutation", () => {
       };
       mockRepository.findById.mockResolvedValue(mockMission);
       mockRepository.update.mockResolvedValue(mockUpdatedMission);
+      jest.spyOn(searchSyncOutboxRepository, "create").mockResolvedValue({
+        id: "outbox-update-1",
+      } as never);
 
       // When
       const result = await missionService.updateMission(
@@ -92,6 +96,7 @@ describe("MissionService - Mutation", () => {
       // Then
       expect(result.title).toBe("수정된 설문");
       expect(result.description).toBe("수정된 설명");
+      expect(searchSyncOutboxRepository.create).toHaveBeenCalledTimes(1);
       expect(mockRepository.update).toHaveBeenCalledWith(
         "mission-1",
         {
@@ -145,11 +150,15 @@ describe("MissionService - Mutation", () => {
       const mockMission = createMockMission({ id: "mission-1", creatorId: "user-1" });
       mockRepository.findById.mockResolvedValue(mockMission);
       mockRepository.delete.mockResolvedValue(mockMission);
+      jest.spyOn(searchSyncOutboxRepository, "create").mockResolvedValue({
+        id: "outbox-delete-1",
+      } as never);
 
       // When
       await missionService.deleteMission("mission-1", "user-1");
 
       // Then
+      expect(searchSyncOutboxRepository.create).toHaveBeenCalledTimes(1);
       expect(mockRepository.delete).toHaveBeenCalledWith("mission-1");
     });
 
