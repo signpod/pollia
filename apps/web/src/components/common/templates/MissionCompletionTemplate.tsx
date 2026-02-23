@@ -41,7 +41,7 @@ export function MissionCompletionTemplate({
             width={0}
             height={0}
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 400px"
-            className="h-auto w-full object-contain"
+            className="h-auto w-full"
             priority
           />
           {imageMenu && (
