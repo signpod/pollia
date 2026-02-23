@@ -3,16 +3,19 @@ model MissionResponse {
   startedAt   DateTime       @default(now()) @map("started_at")
   completedAt DateTime?      @map("completed_at")
   missionId   String         @map("mission_id")
-  userId      String         @map("user_id")
+  userId      String?        @map("user_id")
+  guestId     String?        @map("guest_id")
   createdAt   DateTime       @default(now()) @map("created_at")
   updatedAt   DateTime       @updatedAt @map("updated_at")
   answers     ActionAnswer[]
   mission     Mission        @relation(fields: [missionId], references: [id], onDelete: Cascade)
-  user        User           @relation(fields: [userId], references: [id])
+  user        User?          @relation(fields: [userId], references: [id])
 
-  @@unique([missionId, userId])
   @@index([missionId])
   @@index([userId])
+  @@index([guestId])
+  @@index([missionId, userId])
+  @@index([missionId, guestId])
   @@index([completedAt])
   @@map("mission_responses")
 }
