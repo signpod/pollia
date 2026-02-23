@@ -3,14 +3,14 @@
 import { Typo } from "@repo/ui/components";
 import { useMemo } from "react";
 import { RewardCard } from "../components/RewardCard";
-import { useRewards } from "../hooks/useRewards";
+import { useUserRewards } from "../hooks/useUserRewards";
 
 interface RewardListContentProps {
   type: "pending" | "paid";
 }
 
 export function RewardListContent({ type }: RewardListContentProps) {
-  const { data: rewards } = useRewards();
+  const { data: rewards } = useUserRewards();
 
   const filtered = useMemo(() => {
     if (!rewards) return [];
