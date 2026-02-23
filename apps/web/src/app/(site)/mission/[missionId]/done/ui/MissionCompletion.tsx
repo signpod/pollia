@@ -8,9 +8,10 @@ import { useImageMenu, useMissionShare } from "./hooks";
 
 interface MissionCompletionProps {
   completionId?: string;
+  initialImageUrl?: string | null;
 }
 
-export function MissionCompletion({ completionId }: MissionCompletionProps) {
+export function MissionCompletion({ completionId, initialImageUrl }: MissionCompletionProps) {
   const { missionId } = useParams<{ missionId: string }>();
   const { data: mission } = useReadMission(missionId);
   const { data: missionCompletionByMission } = useReadMissionCompletion(missionId);
@@ -42,7 +43,7 @@ export function MissionCompletion({ completionId }: MissionCompletionProps) {
 
   return (
     <MissionCompletionPage
-      imageUrl={completionImageUrl}
+      imageUrl={completionImageUrl ?? initialImageUrl}
       title={completionTitle}
       description={completionDescription}
       links={links ?? undefined}

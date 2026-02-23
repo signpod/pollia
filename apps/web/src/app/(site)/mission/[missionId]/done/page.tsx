@@ -87,10 +87,21 @@ export default async function MissionPage({
 
   await Promise.all(prefetchPromises);
 
+  const completionData = completionId
+    ? queryClient.getQueryData<GetMissionCompletionResponse>(
+        missionCompletionQueryKeys.missionCompletionById(missionId, completionId),
+      )
+    : queryClient.getQueryData<GetMissionCompletionResponse>(
+        missionCompletionQueryKeys.missionCompletion(missionId),
+      );
+
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <RouteWrapper>
-        <MissionCompletion completionId={completionId} />
+        <MissionCompletion
+          completionId={completionId}
+          initialImageUrl={completionData?.data?.imageUrl}
+        />
       </RouteWrapper>
     </HydrationBoundary>
   );

@@ -138,7 +138,7 @@ export function MissionPageWrapper({
     if (isLimitReached) {
       return {
         variant: "notice",
-        description: "정원이 마감되어, 이미 참여한 분들만 진행 가능해요.",
+        description: "정원이 마감되어, 이미 참여한 분들만 진행 가능해요",
       };
     }
     if (

@@ -40,9 +40,10 @@ function CardAction({
     answers: response.answers,
   });
   const handleOpenInNewTab = useCallback(
-    (e: React.MouseEvent) => {
+    (e: React.MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
       e.stopPropagation();
+      e.currentTarget.blur();
       const missionId = response.mission.id;
       if (variant === "in-progress") {
         if (!nextActionId) return;

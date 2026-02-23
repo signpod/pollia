@@ -1,12 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
-import { type UseRewardsReturn, useRewards } from "./useRewards";
+import { type UseUserRewardsReturn, useUserRewards } from "./useUserRewards";
 
-type RewardItem = NonNullable<UseRewardsReturn["data"]>[number];
+type RewardItem = NonNullable<UseUserRewardsReturn["data"]>[number];
 
 export function useGroupedRewards() {
-  const { data: rewards } = useRewards();
+  const { data: rewards } = useUserRewards();
 
   const grouped = useMemo(() => {
     const result: Record<string, RewardItem[]> = { pending: [], paid: [] };

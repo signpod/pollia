@@ -41,14 +41,15 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-12 w-full items-center justify-between rounded-[var(--radius-sm)] bg-white",
-      "px-4 py-3 text-[16px] font-medium leading-[1.5]",
-      "ring-1 ring-[var(--color-zinc-200)]",
-      "hover:ring-[var(--color-violet-500)]",
-      "focus:outline-none focus:ring-2 focus:ring-[var(--color-violet-500)]",
+      "flex h-12 w-full items-center justify-between rounded-sm bg-white",
+      "px-4 py-3 text-[16px] font-medium leading-normal",
+      "ring-1 ring-(--color-zinc-200)",
+      "hover:ring-(--color-violet-500)",
+      "focus:outline-none focus:ring-2 focus:ring-(--color-violet-500)",
       "disabled:cursor-not-allowed disabled:opacity-50",
       "transition-colors",
       "[&>span]:line-clamp-1",
+      "[&>span[data-placeholder]]:text-zinc-500",
       className,
     )}
     {...props}
@@ -98,8 +99,8 @@ const SelectContent = React.forwardRef<
       ref={ref}
       className={cn(
         "relative z-50 max-h-96 min-w-[8rem] overflow-hidden",
-        "rounded-[var(--radius-sm)] bg-white",
-        "ring-1 ring-[var(--color-zinc-200)] shadow-lg",
+        "rounded-sm bg-white",
+        "ring-1 ring-zinc-200 shadow-lg",
         "data-[state=open]:animate-in data-[state=closed]:animate-out",
         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
         "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
@@ -134,7 +135,7 @@ const SelectLabel = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Label
     ref={ref}
-    className={cn("py-1.5 pl-8 pr-2 text-sm font-semibold text-[var(--color-zinc-700)]", className)}
+    className={cn("py-1.5 pl-8 pr-2 text-sm font-semibold text-zinc-700", className)}
     {...props}
   />
 ));
@@ -150,8 +151,9 @@ const SelectItem = React.forwardRef<
       "flex h-12 w-full cursor-pointer select-none items-center justify-between",
       "rounded-lg px-4",
       "text-base font-bold outline-none",
-      "focus:bg-zinc-100",
-      "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "data-[state=checked]:bg-violet-50 data-[state=checked]:text-violet-500 data-[state=checked]:rounded-sm",
+      "focus:bg-zinc-50 focus:rounded-sm",
+      "data-disabled:pointer-events-none data-disabled:opacity-50",
       "transition-colors",
       className,
     )}
@@ -159,7 +161,7 @@ const SelectItem = React.forwardRef<
   >
     <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
     <SelectPrimitive.ItemIndicator>
-      <Check className="size-5" />
+      <Check className="size-5 text-violet-500" />
     </SelectPrimitive.ItemIndicator>
   </SelectPrimitive.Item>
 ));
@@ -171,7 +173,7 @@ const SelectSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Separator
     ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-[var(--color-zinc-200)]", className)}
+    className={cn("-mx-1 my-1 h-px bg-zinc-200", className)}
     {...props}
   />
 ));
