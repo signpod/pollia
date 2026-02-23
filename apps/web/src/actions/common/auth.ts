@@ -1,10 +1,12 @@
 "use server";
 
+import { GUEST_ID_COOKIE_MAX_AGE_SECONDS, GUEST_ID_COOKIE_NAME } from "@/constants/cookie";
 import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
 import { userService } from "@/server/services/user/userService";
 import { type GetCurrentUserResponse, UserRole } from "@/types/dto/user";
 import { UserStatus } from "@prisma/client";
 import type { User } from "@supabase/supabase-js";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
@@ -92,4 +94,47 @@ export async function signOut(redirectTo?: string): Promise<void> {
   if (redirectTo) {
     redirect(redirectTo);
   }
+}
+
+export type MissionActor =
+  | { userId: string; guestId: null; isGuest: false }
+  | {
+      userId: null;
+      guestId: string;
+      isGuest: true;
+    };
+
+export async function resolveMissionActor(): Promise<MissionActor> {
+  try {
+    const user = await requireActiveUser();
+    return {
+      userId: user.id,
+      guestId: null,
+      isGuest: false,
+    };
+  } catch (error) {
+    if (!(error instanceof Error) || error.cause !== 401) {
+      throw error;
+    }
+  }
+
+  const cookieStore = await cookies();
+  const existingGuestId = cookieStore.get(GUEST_ID_COOKIE_NAME)?.value;
+  const guestId = existingGuestId || crypto.randomUUID();
+
+  if (!existingGuestId) {
+    cookieStore.set(GUEST_ID_COOKIE_NAME, guestId, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: GUEST_ID_COOKIE_MAX_AGE_SECONDS,
+    });
+  }
+
+  return {
+    userId: null,
+    guestId,
+    isGuest: true,
+  };
 }

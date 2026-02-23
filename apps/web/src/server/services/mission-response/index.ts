@@ -1,7 +1,12 @@
 import { completeResponseInputSchema, startResponseInputSchema } from "@/schemas/mission-response";
 import { missionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
-import type { CompleteResponseInput, ResponseStats, StartResponseInput } from "./types";
+import type {
+  CompleteResponseInput,
+  ResponseActor,
+  ResponseStats,
+  StartResponseInput,
+} from "./types";
 
 export class MissionResponseService {
   constructor(
@@ -9,7 +14,8 @@ export class MissionResponseService {
     private missionRepo = missionRepository,
   ) {}
 
-  async getResponseById(responseId: string, userId: string) {
+  async getResponseById(responseId: string, actor: string | ResponseActor) {
+    const normalizedActor = this.normalizeActor(actor);
     const response = await this.responseRepo.findById(responseId);
 
     if (!response) {
@@ -18,7 +24,7 @@ export class MissionResponseService {
       throw error;
     }
 
-    if (response.userId !== userId) {
+    if (!this.isResponseOwner(response, normalizedActor)) {
       const error = new Error("조회 권한이 없습니다.");
       error.cause = 403;
       throw error;
@@ -29,6 +35,20 @@ export class MissionResponseService {
 
   async getResponseByMissionAndUser(missionId: string, userId: string) {
     return this.responseRepo.findByMissionAndUser(missionId, userId);
+  }
+
+  async getResponseByMissionAndActor(missionId: string, actor: string | ResponseActor) {
+    const normalizedActor = this.normalizeActor(actor);
+
+    if (normalizedActor.userId) {
+      return this.responseRepo.findByMissionAndUser(missionId, normalizedActor.userId);
+    }
+
+    if (normalizedActor.guestId) {
+      return this.responseRepo.findByMissionAndGuest(missionId, normalizedActor.guestId);
+    }
+
+    return null;
   }
 
   async getUserResponses(userId: string) {
@@ -78,7 +98,8 @@ export class MissionResponseService {
     };
   }
 
-  async startResponse(input: StartResponseInput, userId: string) {
+  async startResponse(input: StartResponseInput, actor: string | ResponseActor) {
+    const normalizedActor = this.normalizeActor(actor);
     const parseResult = startResponseInputSchema.safeParse(input);
     if (!parseResult.success) {
       const error = new Error(parseResult.error.issues[0]?.message || "유효성 검사 실패");
@@ -102,6 +123,22 @@ export class MissionResponseService {
       throw error;
     }
 
+    const allowGuestResponse =
+      "allowGuestResponse" in mission
+        ? Boolean((mission as { allowGuestResponse?: boolean }).allowGuestResponse)
+        : false;
+    const allowMultipleResponses =
+      "allowMultipleResponses" in mission
+        ? Boolean((mission as { allowMultipleResponses?: boolean }).allowMultipleResponses)
+        : false;
+    const isGuestActor = !normalizedActor.userId && !!normalizedActor.guestId;
+
+    if (isGuestActor && !allowGuestResponse) {
+      const error = new Error("로그인이 필요한 미션입니다.");
+      error.cause = 401;
+      throw error;
+    }
+
     if (mission.maxParticipants !== null && mission.maxParticipants > 0) {
       const currentParticipants = await this.responseRepo.countByMissionId(missionId);
       if (currentParticipants >= mission.maxParticipants) {
@@ -111,18 +148,22 @@ export class MissionResponseService {
       }
     }
 
-    const existingResponse = await this.responseRepo.findByMissionAndUser(missionId, userId);
-    if (existingResponse) {
-      return existingResponse;
+    if (!allowMultipleResponses) {
+      const existingResponse = await this.getResponseByMissionAndActor(missionId, normalizedActor);
+      if (existingResponse) {
+        return existingResponse;
+      }
     }
 
     return this.responseRepo.create({
       missionId,
-      userId,
+      userId: normalizedActor.userId,
+      guestId: normalizedActor.guestId,
     });
   }
 
-  async completeResponse(input: CompleteResponseInput, userId: string) {
+  async completeResponse(input: CompleteResponseInput, actor: string | ResponseActor) {
+    const normalizedActor = this.normalizeActor(actor);
     const parseResult = completeResponseInputSchema.safeParse(input);
     if (!parseResult.success) {
       const error = new Error(parseResult.error.issues[0]?.message || "유효성 검사 실패");
@@ -138,7 +179,7 @@ export class MissionResponseService {
       throw error;
     }
 
-    if (response.userId !== userId) {
+    if (!this.isResponseOwner(response, normalizedActor)) {
       const error = new Error("완료 권한이 없습니다.");
       error.cause = 403;
       throw error;
@@ -153,7 +194,8 @@ export class MissionResponseService {
     return this.responseRepo.updateCompletedAt(parseResult.data.responseId);
   }
 
-  async deleteResponse(responseId: string, userId: string): Promise<void> {
+  async deleteResponse(responseId: string, actor: string | ResponseActor): Promise<void> {
+    const normalizedActor = this.normalizeActor(actor);
     const response = await this.responseRepo.findById(responseId);
 
     if (!response) {
@@ -162,7 +204,7 @@ export class MissionResponseService {
       throw error;
     }
 
-    if (response.userId !== userId) {
+    if (!this.isResponseOwner(response, normalizedActor)) {
       const error = new Error("삭제 권한이 없습니다.");
       error.cause = 403;
       throw error;
@@ -171,7 +213,11 @@ export class MissionResponseService {
     await this.responseRepo.delete(responseId);
   }
 
-  async verifyResponseOwnership(responseId: string, userId: string): Promise<boolean> {
+  async verifyResponseOwnership(
+    responseId: string,
+    actor: string | ResponseActor,
+  ): Promise<boolean> {
+    const normalizedActor = this.normalizeActor(actor);
     const response = await this.responseRepo.findById(responseId);
 
     if (!response) {
@@ -180,7 +226,40 @@ export class MissionResponseService {
       throw error;
     }
 
-    return response.userId === userId;
+    return this.isResponseOwner(response, normalizedActor);
+  }
+
+  private normalizeActor(actor: string | ResponseActor): Required<ResponseActor> {
+    if (typeof actor === "string") {
+      return { userId: actor, guestId: null };
+    }
+
+    return {
+      userId: actor.userId ?? null,
+      guestId: actor.guestId ?? null,
+    };
+  }
+
+  private isResponseOwner(
+    response: Awaited<ReturnType<typeof this.responseRepo.findById>>,
+    actor: Required<ResponseActor>,
+  ) {
+    if (!response) {
+      return false;
+    }
+
+    const responseGuestId =
+      "guestId" in response ? ((response as { guestId?: string | null }).guestId ?? null) : null;
+
+    if (actor.userId) {
+      return response.userId === actor.userId;
+    }
+
+    if (actor.guestId) {
+      return responseGuestId === actor.guestId;
+    }
+
+    return false;
   }
 }
 

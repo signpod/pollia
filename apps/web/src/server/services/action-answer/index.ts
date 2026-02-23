@@ -20,6 +20,7 @@ import { actionRepository } from "@/server/repositories/action/actionRepository"
 import { missionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import { ActionType, Prisma } from "@prisma/client";
 import { z } from "zod";
+import type { ResponseActor } from "../mission-response/types";
 import type { SubmitAnswersInput, UpdateAnswerInput } from "./types";
 
 export class ActionAnswerService {
@@ -29,28 +30,30 @@ export class ActionAnswerService {
     private actionRepo = actionRepository,
   ) {}
 
-  async getAnswerById(answerId: string, userId: string) {
+  async getAnswerById(answerId: string, actor: string | ResponseActor) {
+    const normalizedActor = this.normalizeActor(actor);
     const answer = await this.answerRepo.findById(answerId);
 
     if (!answer) {
       this.throwError("답변을 찾을 수 없습니다.", 404);
     }
 
-    if (answer.response.userId !== userId) {
+    if (!this.isResponseOwner(answer.response, normalizedActor)) {
       this.throwError("조회 권한이 없습니다.", 403);
     }
 
     return answer;
   }
 
-  async getAnswersByResponseId(responseId: string, userId: string) {
+  async getAnswersByResponseId(responseId: string, actor: string | ResponseActor) {
+    const normalizedActor = this.normalizeActor(actor);
     const response = await this.responseRepo.findById(responseId);
 
     if (!response) {
       this.throwError("응답을 찾을 수 없습니다.", 404);
     }
 
-    if (response.userId !== userId) {
+    if (!this.isResponseOwner(response, normalizedActor)) {
       this.throwError("조회 권한이 없습니다.", 403);
     }
 
@@ -61,10 +64,11 @@ export class ActionAnswerService {
     return this.answerRepo.findByUserId(userId);
   }
 
-  async submitAnswers(input: SubmitAnswersInput, userId: string) {
+  async submitAnswers(input: SubmitAnswersInput, actor: string | ResponseActor) {
+    const normalizedActor = this.normalizeActor(actor);
     const validated = this.validateInput(input, submitAnswersSchema);
 
-    const response = await this.verifyResponseOwnership(validated.responseId, userId, {
+    const response = await this.verifyResponseOwnership(validated.responseId, normalizedActor, {
       checkCompleted: true,
     });
 
@@ -98,7 +102,10 @@ export class ActionAnswerService {
       this.convertAnswerToCreateInput(answer, validated.responseId),
     );
 
-    await this.answerRepo.createManyWithRelations(answersToCreate, userId);
+    await this.answerRepo.createManyWithRelations(
+      answersToCreate,
+      normalizedActor.userId || undefined,
+    );
 
     return {
       responseId: validated.responseId,
@@ -107,10 +114,11 @@ export class ActionAnswerService {
     };
   }
 
-  async updateAnswer(answerId: string, input: UpdateAnswerInput, userId: string) {
+  async updateAnswer(answerId: string, input: UpdateAnswerInput, actor: string | ResponseActor) {
+    const normalizedActor = this.normalizeActor(actor);
     const validated = this.validateInput(input, actionAnswerUpdateSchema);
 
-    const answer = await this.getAnswerById(answerId, userId);
+    const answer = await this.getAnswerById(answerId, normalizedActor);
 
     const action = await this.actionRepo.findById(answer.actionId);
     if (action) {
@@ -137,12 +145,17 @@ export class ActionAnswerService {
       };
     }
 
-    return this.answerRepo.update(answerId, updateData);
+    return this.answerRepo.update(answerId, updateData, normalizedActor.userId || undefined);
   }
 
-  async updateAnswerWithPruning(answerId: string, input: UpdateAnswerInput, userId: string) {
+  async updateAnswerWithPruning(
+    answerId: string,
+    input: UpdateAnswerInput,
+    actor: string | ResponseActor,
+  ) {
+    const normalizedActor = this.normalizeActor(actor);
     const validated = this.validateInput(input, actionAnswerUpdateSchema);
-    const answer = await this.getAnswerById(answerId, userId);
+    const answer = await this.getAnswerById(answerId, normalizedActor);
     const action = await this.actionRepo.findById(answer.actionId);
     if (action) {
       this.validateAnswerByActionType(
@@ -171,19 +184,24 @@ export class ActionAnswerService {
     return result;
   }
 
-  async deleteAnswer(answerId: string, userId: string): Promise<void> {
-    await this.getAnswerById(answerId, userId);
+  async deleteAnswer(answerId: string, actor: string | ResponseActor): Promise<void> {
+    const normalizedActor = this.normalizeActor(actor);
+    await this.getAnswerById(answerId, normalizedActor);
     await this.answerRepo.delete(answerId);
   }
 
-  async deleteAnswersByResponseId(responseId: string, userId: string): Promise<void> {
-    await this.verifyResponseOwnership(responseId, userId);
+  async deleteAnswersByResponseId(
+    responseId: string,
+    actor: string | ResponseActor,
+  ): Promise<void> {
+    const normalizedActor = this.normalizeActor(actor);
+    await this.verifyResponseOwnership(responseId, normalizedActor);
     await this.answerRepo.deleteByResponseId(responseId);
   }
 
   private async verifyResponseOwnership(
     responseId: string,
-    userId: string,
+    actor: Required<ResponseActor>,
     options?: { checkCompleted?: boolean },
   ) {
     const response = await this.responseRepo.findById(responseId);
@@ -192,7 +210,7 @@ export class ActionAnswerService {
       this.throwError("응답을 찾을 수 없습니다.", 404);
     }
 
-    if (response.userId !== userId) {
+    if (!this.isResponseOwner(response, actor)) {
       this.throwError("권한이 없습니다.", 403);
     }
 
@@ -201,6 +219,37 @@ export class ActionAnswerService {
     }
 
     return response;
+  }
+
+  private normalizeActor(actor: string | ResponseActor): Required<ResponseActor> {
+    if (typeof actor === "string") {
+      return { userId: actor, guestId: null };
+    }
+
+    return {
+      userId: actor.userId ?? null,
+      guestId: actor.guestId ?? null,
+    };
+  }
+
+  private isResponseOwner(
+    response: { userId?: string | null } & Record<string, unknown>,
+    actor: Required<ResponseActor>,
+  ) {
+    const responseGuestId =
+      typeof response.guestId === "string" || response.guestId === null
+        ? (response.guestId as string | null)
+        : null;
+
+    if (actor.userId) {
+      return response.userId === actor.userId;
+    }
+
+    if (actor.guestId) {
+      return responseGuestId === actor.guestId;
+    }
+
+    return false;
   }
 
   private throwError(message: string, statusCode: number): never {

@@ -1,6 +1,6 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { resolveMissionActor } from "@/actions/common/auth";
 import { isAnswerSameAsSubmitted } from "@/lib/answer/compareAnswers";
 import { actionAnswerService } from "@/server/services/action-answer";
 import { missionResponseService } from "@/server/services/mission-response";
@@ -26,11 +26,11 @@ export async function submitAnswerOnly(params: SubmitAnswerParams): Promise<Subm
   const { missionId, responseId, answer, isLastAction } = params;
 
   try {
-    const user = await requireActiveUser();
+    const actor = await resolveMissionActor();
 
-    const freshResponse = await missionResponseService.getResponseByMissionAndUser(
+    const freshResponse = await missionResponseService.getResponseByMissionAndActor(
       missionId,
-      user.id,
+      actor,
     );
     if (freshResponse?.completedAt) {
       return { success: false, error: "이미 완료된 미션입니다.", code: "ALREADY_COMPLETED" };
@@ -47,12 +47,12 @@ export async function submitAnswerOnly(params: SubmitAnswerParams): Promise<Subm
           await actionAnswerService.updateAnswerWithPruning(
             existingAnswer.id,
             { selectedOptionIds: answer.selectedOptionIds },
-            user.id,
+            actor,
           );
         } else {
           const updateData = buildUpdateData(answer);
           if (updateData) {
-            await actionAnswerService.updateAnswer(existingAnswer.id, updateData, user.id);
+            await actionAnswerService.updateAnswer(existingAnswer.id, updateData, actor);
           }
         }
       } else {
@@ -61,13 +61,13 @@ export async function submitAnswerOnly(params: SubmitAnswerParams): Promise<Subm
             responseId,
             answers: [buildAnswerPayload(answer)],
           },
-          user.id,
+          actor,
         );
       }
     }
 
     if (isLastAction || answer.nextCompletionId) {
-      await missionResponseService.completeResponse({ responseId }, user.id);
+      await missionResponseService.completeResponse({ responseId }, actor);
     }
 
     return { success: true };

@@ -1,6 +1,6 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { requireActiveUser, resolveMissionActor } from "@/actions/common/auth";
 import { missionResponseService } from "@/server/services/mission-response";
 import type {
   GetMissionResponseResponse,
@@ -29,8 +29,8 @@ export async function getMyResponseForMission(
   missionId: string,
 ): Promise<GetMissionResponseResponse | { data: null }> {
   try {
-    const user = await requireActiveUser();
-    const response = await missionResponseService.getResponseByMissionAndUser(missionId, user.id);
+    const actor = await resolveMissionActor();
+    const response = await missionResponseService.getResponseByMissionAndActor(missionId, actor);
     if (!response) {
       return { data: null };
     }

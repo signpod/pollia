@@ -1,6 +1,6 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { resolveMissionActor } from "@/actions/common/auth";
 import { missionResponseService } from "@/server/services/mission-response";
 import type {
   CompleteMissionResponseRequest,
@@ -13,8 +13,8 @@ export async function startMissionResponse(
   request: StartMissionResponseRequest,
 ): Promise<StartMissionResponseResponse> {
   try {
-    const user = await requireActiveUser();
-    const response = await missionResponseService.startResponse(request, user.id);
+    const actor = await resolveMissionActor();
+    const response = await missionResponseService.startResponse(request, actor);
     return { data: response };
   } catch (error) {
     console.error("startMissionResponse error:", error);
@@ -31,10 +31,10 @@ export async function completeMissionResponse(
   request: CompleteMissionResponseRequest,
 ): Promise<CompleteMissionResponseResponse> {
   try {
-    const user = await requireActiveUser();
+    const actor = await resolveMissionActor();
     const response = await missionResponseService.completeResponse(
       { responseId: request.responseId },
-      user.id,
+      actor,
     );
     return { data: response };
   } catch (error) {
