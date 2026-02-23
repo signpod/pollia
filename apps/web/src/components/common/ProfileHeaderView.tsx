@@ -34,21 +34,16 @@ export function ProfileHeaderView({
         showBack && "pr-5 pl-0",
       )}
     >
-      <div className="flex items-center">
-        {showBack && (
-          <button
-            type="button"
-            onClick={onBack}
-            className="size-12 flex items-center justify-center"
-          >
-            <ChevronLeftIcon className="size-6" />
-          </button>
-        )}
+      {showBack ? (
+        <button type="button" onClick={onBack} className="size-12 flex items-center justify-center">
+          <ChevronLeftIcon className="size-6" />
+        </button>
+      ) : (
         <Link href={ROUTES.HOME} className="flex items-center gap-[2.775px] py-3">
           <PolliaIcon className="size-4 text-primary" />
           <PolliaWordmark className="h-[22px] text-black" />
         </Link>
-      </div>
+      )}
       {user ? (
         <button onClick={onProfileClick} type="button">
           <div className="flex items-center gap-2">

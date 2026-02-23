@@ -1,10 +1,8 @@
 "use client";
 
-import {
-  MissionImage,
-  MissionLogo,
-  MissionWidget,
-} from "@/app/(site)/mission/[missionId]/components";
+import { MissionImage } from "@/app/(site)/mission/[missionId]/components/MissionImage";
+import { MissionLogo } from "@/app/(site)/mission/[missionId]/components/MissionLogo";
+import { MissionWidget } from "@/app/(site)/mission/[missionId]/components/MissionWidget";
 import ClockIcon from "@public/svgs/clock-color-icon.svg";
 import GiftIcon from "@public/svgs/gift-color-icon.svg";
 import Lock from "@public/svgs/lock.svg";
