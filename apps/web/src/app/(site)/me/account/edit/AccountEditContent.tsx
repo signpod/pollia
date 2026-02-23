@@ -110,7 +110,7 @@ export function AccountEditContent({ userName }: AccountEditContentProps) {
           {isPending ? (
             <Loader2Icon className="size-5 animate-spin" />
           ) : (
-            <Typo.SubTitle className="text-base">완료</Typo.SubTitle>
+            <Typo.ButtonText size="medium">완료</Typo.ButtonText>
           )}
         </ButtonV2>
       </header>
