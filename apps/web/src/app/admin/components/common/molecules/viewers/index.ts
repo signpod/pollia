@@ -1,5 +1,6 @@
 export { BadgeView } from "./BadgeView";
 export { DateView } from "./DateView";
+export { ImageEditableView } from "./ImageEditableView";
 export { ImageView } from "./ImageView";
 export { LabeledView } from "./LabeledView";
 export { NumberView } from "./NumberView";

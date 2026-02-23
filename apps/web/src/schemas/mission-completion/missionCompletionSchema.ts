@@ -37,6 +37,11 @@ const descriptionSchema = z
 
 const imageUrlSchema = z.url({ message: "올바른 URL 형식이 아닙니다." }).optional();
 const imageFileUploadIdSchema = z.string().optional();
+const updateImageUrlSchema = z
+  .url({ message: "올바른 URL 형식이 아닙니다." })
+  .nullable()
+  .optional();
+const updateImageFileUploadIdSchema = z.string().nullable().optional();
 
 const linksSchema = z
   .record(z.string(), z.url({ message: "올바른 URL 형식이 아닙니다." }))
@@ -59,8 +64,8 @@ export const missionCompletionUpdateSchema = z
   .object({
     title: titleSchema.optional(),
     description: descriptionSchema.optional(),
-    imageUrl: imageUrlSchema,
-    imageFileUploadId: imageFileUploadIdSchema,
+    imageUrl: updateImageUrlSchema,
+    imageFileUploadId: updateImageFileUploadIdSchema,
     links: linksSchema,
   })
   .refine(data => Object.keys(data).length > 0, {

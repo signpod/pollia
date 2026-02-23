@@ -7,9 +7,10 @@ import {
 import { SelectField } from "@/app/admin/components/common/SelectField";
 import { ToggleField } from "@/app/admin/components/common/ToggleField";
 import { AdminImageCropDialog } from "@/app/admin/components/common/cropper/AdminImageCropDialog";
-import { useImageCropper } from "@/app/admin/components/common/cropper/use-image-cropper";
+import { useImageEditWithCrop } from "@/app/admin/components/common/cropper/use-image-edit-with-crop";
 import {
   DateView,
+  ImageEditableView,
   LabeledView,
   NumberView,
   TextView,
@@ -25,7 +26,6 @@ import {
 } from "@/app/admin/components/shadcn-ui/card";
 import { Form } from "@/app/admin/components/shadcn-ui/form";
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
-import { type UseSingleImageReturn, useSingleImage } from "@/app/admin/hooks/admin-image";
 import { useUpdateMission } from "@/app/admin/hooks/mission/use-update-mission";
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { ROUTES } from "@/constants/routes";
@@ -38,8 +38,6 @@ import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { BasicInfoEditDialog } from "../edit/BasicInfoEditDialog";
-import { BrandLogoEditorCard } from "./BrandLogoEditorCard";
-import { ProjectImageEditorCard } from "./ProjectImageEditorCard";
 
 interface MissionBasicInfoProps {
   mission: GetMissionResponse["data"];
@@ -55,10 +53,6 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
   const [isBasicInfoDialogOpen, setIsBasicInfoDialogOpen] = useState(false);
   const previewAnchorRef = useRef<HTMLDivElement>(null);
   const { refreshKey, refresh } = useMobilePreviewRefresh();
-  const projectImageManagerRef = useRef<UseSingleImageReturn | null>(null);
-  const brandLogoManagerRef = useRef<UseSingleImageReturn | null>(null);
-  const projectImageCropper = useImageCropper({ fileNamePrefix: `mission-image-${mission.id}` });
-  const brandLogoCropper = useImageCropper({ fileNamePrefix: `brand-logo-${mission.id}` });
 
   const form = useForm<InlineToggleFormValues>({
     defaultValues: {
@@ -70,10 +64,12 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
 
   const updateMission = useUpdateMission();
 
-  const missionImage = useSingleImage({
-    initialUrl: mission.imageUrl ?? undefined,
+  const projectImageEdit = useImageEditWithCrop({
+    fileNamePrefix: `mission-image-${mission.id}`,
+    initialUrl: mission.imageUrl,
     initialFileUploadId: mission.imageFileUploadId,
-    onUploadSuccess: data => {
+    onBeforeOpen: refresh,
+    onUploadSuccess: (data, image) => {
       updateMission.mutate(
         {
           missionId: mission.id,
@@ -84,13 +80,13 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
         },
         {
           onSuccess: () => {
-            projectImageManagerRef.current?.deleteMarkedInitial();
+            image.deleteMarkedInitial();
             refresh();
             toast.success(`${UBIQUITOUS_CONSTANTS.MISSION} 이미지가 수정되었습니다`);
           },
           onError: error => {
-            projectImageManagerRef.current?.discard();
-            projectImageManagerRef.current?.unmarkInitial();
+            image.discard();
+            image.unmarkInitial();
             toast.error(
               error.message || `${UBIQUITOUS_CONSTANTS.MISSION} 이미지 저장에 실패했습니다`,
             );
@@ -103,10 +99,12 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
     },
   });
 
-  const brandLogoImage = useSingleImage({
-    initialUrl: mission.brandLogoUrl ?? undefined,
+  const brandLogoEdit = useImageEditWithCrop({
+    fileNamePrefix: `brand-logo-${mission.id}`,
+    initialUrl: mission.brandLogoUrl,
     initialFileUploadId: mission.brandLogoFileUploadId,
-    onUploadSuccess: data => {
+    onBeforeOpen: refresh,
+    onUploadSuccess: (data, image) => {
       updateMission.mutate(
         {
           missionId: mission.id,
@@ -117,13 +115,13 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
         },
         {
           onSuccess: () => {
-            brandLogoManagerRef.current?.deleteMarkedInitial();
+            image.deleteMarkedInitial();
             refresh();
             toast.success("브랜드 로고가 수정되었습니다");
           },
           onError: error => {
-            brandLogoManagerRef.current?.discard();
-            brandLogoManagerRef.current?.unmarkInitial();
+            image.discard();
+            image.unmarkInitial();
             toast.error(error.message || "브랜드 로고 저장에 실패했습니다");
           },
         },
@@ -133,11 +131,6 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
       toast.error(error.message || "브랜드 로고 업로드에 실패했습니다");
     },
   });
-
-  useEffect(() => {
-    projectImageManagerRef.current = missionImage;
-    brandLogoManagerRef.current = brandLogoImage;
-  }, [missionImage, brandLogoImage]);
 
   useEffect(() => {
     form.reset({
@@ -186,8 +179,8 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
     return () => subscription.unsubscribe();
   }, [form, mission.id, mission.isActive, mission.type, mission.category, updateMission]);
 
-  const isProjectImageBusy = missionImage.isUploading || updateMission.isPending;
-  const isBrandLogoBusy = brandLogoImage.isUploading || updateMission.isPending;
+  const isProjectImageBusy = projectImageEdit.image.isUploading || updateMission.isPending;
+  const isBrandLogoBusy = brandLogoEdit.image.isUploading || updateMission.isPending;
 
   return (
     <>
@@ -308,25 +301,23 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
             <section className="space-y-3">
               <h3 className="text-sm font-medium text-muted-foreground">미디어</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <ProjectImageEditorCard
-                  missionLabel={UBIQUITOUS_CONSTANTS.MISSION}
+                <ImageEditableView
+                  title={`${UBIQUITOUS_CONSTANTS.MISSION} 이미지`}
+                  description="권장 비율 9:16"
                   imageUrl={mission.imageUrl}
+                  imageAlt={`${UBIQUITOUS_CONSTANTS.MISSION} 이미지`}
+                  imageSize="lg"
                   disabled={isProjectImageBusy}
-                  onAddFile={file => {
-                    refresh();
-                    projectImageCropper.openWithFile(file);
-                  }}
-                  onEdit={() => {
-                    if (!mission.imageUrl) return;
-                    refresh();
-                    projectImageCropper.openWithImageUrl(
+                  onAddFile={projectImageEdit.handleAddFile}
+                  onEdit={() =>
+                    projectImageEdit.handleEditImage(
                       mission.imageUrl,
                       `mission-image-${mission.id}.jpg`,
-                    );
-                  }}
+                    )
+                  }
                   onDelete={() => {
                     refresh();
-                    missionImage.discard();
+                    projectImageEdit.image.discard();
                     updateMission.mutate(
                       {
                         missionId: mission.id,
@@ -337,12 +328,12 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
                       },
                       {
                         onSuccess: () => {
-                          missionImage.deleteMarkedInitial();
+                          projectImageEdit.image.deleteMarkedInitial();
                           refresh();
                           toast.success(`${UBIQUITOUS_CONSTANTS.MISSION} 이미지가 삭제되었습니다`);
                         },
                         onError: error => {
-                          missionImage.unmarkInitial();
+                          projectImageEdit.image.unmarkInitial();
                           toast.error(
                             error.message ||
                               `${UBIQUITOUS_CONSTANTS.MISSION} 이미지 삭제에 실패했습니다`,
@@ -352,24 +343,23 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
                     );
                   }}
                 />
-                <BrandLogoEditorCard
+                <ImageEditableView
+                  title="브랜드 로고"
+                  description="권장 비율 1:1"
                   imageUrl={mission.brandLogoUrl}
+                  imageAlt="브랜드 로고"
+                  imageSize="md"
                   disabled={isBrandLogoBusy}
-                  onAddFile={file => {
-                    refresh();
-                    brandLogoCropper.openWithFile(file);
-                  }}
-                  onEdit={() => {
-                    if (!mission.brandLogoUrl) return;
-                    refresh();
-                    brandLogoCropper.openWithImageUrl(
+                  onAddFile={brandLogoEdit.handleAddFile}
+                  onEdit={() =>
+                    brandLogoEdit.handleEditImage(
                       mission.brandLogoUrl,
                       `brand-logo-${mission.id}.jpg`,
-                    );
-                  }}
+                    )
+                  }
                   onDelete={() => {
                     refresh();
-                    brandLogoImage.discard();
+                    brandLogoEdit.image.discard();
                     updateMission.mutate(
                       {
                         missionId: mission.id,
@@ -380,12 +370,12 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
                       },
                       {
                         onSuccess: () => {
-                          brandLogoImage.deleteMarkedInitial();
+                          brandLogoEdit.image.deleteMarkedInitial();
                           refresh();
                           toast.success("브랜드 로고가 삭제되었습니다");
                         },
                         onError: error => {
-                          brandLogoImage.unmarkInitial();
+                          brandLogoEdit.image.unmarkInitial();
                           toast.error(error.message || "브랜드 로고 삭제에 실패했습니다");
                         },
                       },
@@ -426,36 +416,36 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
       />
 
       <AdminImageCropDialog
-        open={projectImageCropper.isOpen}
-        imageSrc={projectImageCropper.imageSrc}
+        open={projectImageEdit.cropper.isOpen}
+        imageSrc={projectImageEdit.cropper.imageSrc}
         aspect={9 / 16}
         title={`${UBIQUITOUS_CONSTANTS.MISSION} 이미지 편집`}
         description="이미지를 9:16 비율로 맞춰 저장합니다."
-        fileName={projectImageCropper.fileName ?? `mission-image-${mission.id}.jpg`}
+        fileName={projectImageEdit.cropper.fileName ?? `mission-image-${mission.id}.jpg`}
         onOpenChange={open => {
           if (!open) {
-            projectImageCropper.close();
+            projectImageEdit.cropper.close();
           }
         }}
         onConfirm={file => {
-          missionImage.upload(file);
+          projectImageEdit.image.upload(file);
         }}
       />
 
       <AdminImageCropDialog
-        open={brandLogoCropper.isOpen}
-        imageSrc={brandLogoCropper.imageSrc}
+        open={brandLogoEdit.cropper.isOpen}
+        imageSrc={brandLogoEdit.cropper.imageSrc}
         aspect={1}
         title="브랜드 로고 편집"
         description="이미지를 1:1 비율로 맞춰 저장합니다."
-        fileName={brandLogoCropper.fileName ?? `brand-logo-${mission.id}.jpg`}
+        fileName={brandLogoEdit.cropper.fileName ?? `brand-logo-${mission.id}.jpg`}
         onOpenChange={open => {
           if (!open) {
-            brandLogoCropper.close();
+            brandLogoEdit.cropper.close();
           }
         }}
         onConfirm={file => {
-          brandLogoImage.upload(file);
+          brandLogoEdit.image.upload(file);
         }}
       />
     </>
