@@ -14,7 +14,7 @@ export default function MainLayout({
           <Header />
           {children}
           <Footer />
-          <FixedBottomLayout.Content className="py-3">
+          <FixedBottomLayout.Content className="px-0">
             <BottomNavBar />
           </FixedBottomLayout.Content>
         </FixedBottomLayout>
