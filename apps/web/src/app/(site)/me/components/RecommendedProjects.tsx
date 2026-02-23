@@ -6,7 +6,7 @@ import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { ROUTES } from "@/constants/routes";
 import { MissionCategory, MissionType } from "@prisma/client";
-import PollPollE from "@public/svgs/poll-poll-e.svg";
+import thumbnailFallback from "@public/images/thumbnail-fallback.png";
 import { Typo } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
 import { useQuery } from "@tanstack/react-query";
@@ -14,7 +14,6 @@ import useEmblaCarousel from "embla-carousel-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-
 interface RecommendedProjectsProps {
   userName: string;
 }
@@ -33,20 +32,14 @@ function RecommendedCard({ mission, className }: RecommendedCardProps) {
     <div className="shrink-0 pl-2 sm:pl-4 first:pl-5">
       <Link href={ROUTES.MISSION(mission.id)} className={cn("flex w-[200px] flex-col", className)}>
         <div className="relative aspect-square w-full overflow-hidden rounded-2xl ring-1 ring-zinc-100">
-          {showFallback ? (
-            <div className="flex size-full items-center justify-center bg-zinc-50">
-              <PollPollE className="size-10 text-zinc-200" />
-            </div>
-          ) : (
-            <Image
-              src={mission.imageUrl ?? ""}
-              alt={mission.title}
-              fill
-              sizes="200px"
-              className="object-cover"
-              onError={() => setImageError(true)}
-            />
-          )}
+          <Image
+            src={showFallback ? thumbnailFallback : (mission.imageUrl ?? "")}
+            alt={mission.title}
+            fill
+            sizes="200px"
+            className="object-cover"
+            onError={() => setImageError(true)}
+          />
           <MissionLikeButton missionId={mission.id} className="absolute bottom-3 right-3" />
         </div>
         <div className="mt-2 flex flex-col gap-0.5">
