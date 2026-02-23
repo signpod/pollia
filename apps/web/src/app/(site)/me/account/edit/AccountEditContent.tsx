@@ -114,7 +114,7 @@ export function AccountEditContent({ userName }: AccountEditContentProps) {
           )}
         </ButtonV2>
       </header>
-      <div className="flex flex-col gap-10 px-5 py-5">
+      <div className="flex flex-col gap-10 px-5 py-10">
         <div className="flex justify-center">
           <UserAvatar
             size="large"
