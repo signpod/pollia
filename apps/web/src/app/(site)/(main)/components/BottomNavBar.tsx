@@ -37,43 +37,61 @@ function BottomNavBarContent() {
     }
   };
 
+  const isHome = pathname === ROUTES.HOME;
+  const isLikes = pathname === ROUTES.LIKES;
+
   return (
-    <nav className="mx-5 flex items-center justify-center gap-0 rounded-full bg-white shadow-[0px_4px_20px_0px_rgba(9,9,11,0.16)] px-1">
+    <nav className="flex w-full items-center border-t border-zinc-100 bg-white shadow-[0px_4px_20px_0px_rgba(9,9,11,0.08)]">
       <Link
         href={ROUTES.HOME}
-        className="flex flex-1 flex-col items-center justify-center h-12"
+        className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2"
         aria-label="홈"
       >
-        {pathname === ROUTES.HOME ? (
-          <HomeIconFilled className="size-6 text-default" />
+        {isHome ? (
+          <HomeIconFilled className="size-6 text-black" />
         ) : (
-          <HomeIcon className="size-6 text-disabled" strokeWidth={1.5} />
+          <HomeIcon className="size-6 text-zinc-400" strokeWidth={1.5} />
         )}
+        <Typo.Body
+          size="small"
+          className={`text-[11px] font-bold leading-normal ${isHome ? "text-black" : "text-zinc-400"}`}
+        >
+          홈
+        </Typo.Body>
       </Link>
 
       <span
         data-tooltip-id="nav-search"
-        className="flex flex-1 cursor-not-allowed flex-col items-center justify-center h-12 opacity-30"
+        className="flex flex-1 cursor-not-allowed flex-col items-center justify-center gap-0.5 py-2 opacity-30"
         aria-label="검색"
         aria-disabled="true"
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
         onClick={() => setShowTooltip(prev => !prev)}
       >
-        <Search className="size-6 text-disabled" strokeWidth={1.5} />
+        <Search className="size-6 text-zinc-400" strokeWidth={1.5} />
+        <Typo.Body size="small" className="text-[11px] font-bold leading-normal text-zinc-400">
+          검색
+        </Typo.Body>
       </span>
 
       <Link
         href={ROUTES.LIKES}
-        className="flex flex-1 flex-col items-center justify-center h-12"
-        aria-label="좋아요"
+        className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2"
+        aria-label="찜"
         onClick={handleLikesClick}
       >
         <Heart
-          className={`size-6 ${pathname === ROUTES.LIKES ? "text-default" : "text-disabled"}`}
-          fill={pathname === ROUTES.LIKES ? "currentColor" : "none"}
-          strokeWidth={pathname === ROUTES.LIKES ? 2 : 1.5}
+          className={`size-6 ${isLikes ? "text-black" : "text-zinc-400"}`}
+          fill={isLikes ? "currentColor" : "none"}
+          strokeWidth={isLikes ? 2 : 1.5}
         />
+        <Typo.Body
+          size="small"
+          className={`text-[11px] font-bold leading-normal ${isLikes ? "text-black" : "text-zinc-400"}`}
+        >
+          찜
+        </Typo.Body>
       </Link>
 
       {showTooltip && (
