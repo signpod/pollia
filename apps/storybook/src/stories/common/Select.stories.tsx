@@ -71,7 +71,7 @@ export const Default: Story = {
     <div className="w-[200px]">
       <Select defaultValue="apple">
         <SelectTrigger>
-          <SelectValue placeholder="과일을 선택하세요" />
+          <SelectValue>과일을 선택하세요</SelectValue>
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="apple">사과</SelectItem>
@@ -100,7 +100,7 @@ export const Sizes: Story = {
         <h3 className="mb-3 text-sm font-medium">Small (120px)</h3>
         <Select defaultValue="option1">
           <SelectTrigger className="w-[120px]">
-            <SelectValue />
+            <SelectValue>전체</SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="option1">전체</SelectItem>
@@ -128,7 +128,7 @@ export const Sizes: Story = {
         <h3 className="mb-3 text-sm font-medium">Large (300px)</h3>
         <Select defaultValue="option1">
           <SelectTrigger className="w-[300px]">
-            <SelectValue />
+            <SelectValue>매우 긴 옵션 텍스트 예시</SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="option1">매우 긴 옵션 텍스트 예시</SelectItem>
@@ -142,7 +142,7 @@ export const Sizes: Story = {
         <h3 className="mb-3 text-sm font-medium">Full Width</h3>
         <Select defaultValue="option1">
           <SelectTrigger className="w-full">
-            <SelectValue />
+            <SelectValue>옵션 1</SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="option1">옵션 1</SelectItem>

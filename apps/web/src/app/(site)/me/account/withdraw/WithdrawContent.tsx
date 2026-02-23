@@ -119,12 +119,18 @@ export function WithdrawContent({ userName }: WithdrawContentProps) {
           <div className="flex flex-col gap-3">
             <Select value={reason} onValueChange={setReason}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="선택해주세요" />
+                <SelectValue>
+                  <Typo.Body size="large">
+                    {reason
+                      ? WITHDRAWAL_REASONS.find(r => r.value === reason)?.label
+                      : "선택해주세요"}
+                  </Typo.Body>
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {WITHDRAWAL_REASONS.map(({ value, label }) => (
                   <SelectItem key={value} value={value}>
-                    {label}
+                    <Typo.ButtonText size="medium">{label}</Typo.ButtonText>
                   </SelectItem>
                 ))}
               </SelectContent>
