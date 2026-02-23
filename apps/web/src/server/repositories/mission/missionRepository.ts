@@ -70,34 +70,36 @@ export class MissionRepository {
     });
   }
 
-  async createWithActions(data: Prisma.MissionUncheckedCreateInput, actionIds: string[]) {
-    return prisma.$transaction(async tx => {
-      const createdMission = await tx.mission.create({
-        data,
-      });
-
-      if (actionIds.length > 0) {
-        const whenClauses = actionIds.map((id, index) => Prisma.sql`WHEN ${id} THEN ${index}`);
-
-        await tx.$executeRaw`
-          UPDATE "actions"
-          SET "mission_id" = ${createdMission.id},
-              "order" = CASE "id" ${Prisma.join(whenClauses, " ")} END
-          WHERE "id" IN (${Prisma.join(
-            actionIds.map(id => Prisma.sql`${id}`),
-            ",",
-          )})
-        `;
-      }
-
-      const fileUploadIds = [data.imageFileUploadId, data.brandLogoFileUploadId].filter(
-        Boolean,
-      ) as string[];
-
-      await confirmFileUploads(tx, data.creatorId, fileUploadIds);
-
-      return createdMission;
+  async createWithActions(
+    data: Prisma.MissionUncheckedCreateInput,
+    actionIds: string[],
+    client: TransactionClient = prisma,
+  ) {
+    const createdMission = await client.mission.create({
+      data,
     });
+
+    if (actionIds.length > 0) {
+      const whenClauses = actionIds.map((id, index) => Prisma.sql`WHEN ${id} THEN ${index}`);
+
+      await client.$executeRaw`
+        UPDATE "actions"
+        SET "mission_id" = ${createdMission.id},
+            "order" = CASE "id" ${Prisma.join(whenClauses, " ")} END
+        WHERE "id" IN (${Prisma.join(
+          actionIds.map(id => Prisma.sql`${id}`),
+          ",",
+        )})
+      `;
+    }
+
+    const fileUploadIds = [data.imageFileUploadId, data.brandLogoFileUploadId].filter(
+      Boolean,
+    ) as string[];
+
+    await confirmFileUploads(client, data.creatorId, fileUploadIds);
+
+    return createdMission;
   }
 
   async updateLikesCount(missionId: string, delta: number, client: TransactionClient = prisma) {
@@ -107,33 +109,31 @@ export class MissionRepository {
     });
   }
 
-  async update(missionId: string, data: Prisma.MissionUncheckedUpdateInput, userId?: string) {
+  async update(
+    missionId: string,
+    data: Prisma.MissionUncheckedUpdateInput,
+    userId?: string,
+    client: TransactionClient = prisma,
+  ) {
     const fileUploadIds = [
       typeof data.imageFileUploadId === "string" ? data.imageFileUploadId : undefined,
       typeof data.brandLogoFileUploadId === "string" ? data.brandLogoFileUploadId : undefined,
     ].filter(Boolean) as string[];
 
-    if (fileUploadIds.length > 0 && userId) {
-      return prisma.$transaction(async tx => {
-        const updatedMission = await tx.mission.update({
-          where: { id: missionId },
-          data,
-        });
-
-        await confirmFileUploads(tx, userId, fileUploadIds);
-
-        return updatedMission;
-      });
-    }
-
-    return prisma.mission.update({
+    const updatedMission = await client.mission.update({
       where: { id: missionId },
       data,
     });
+
+    if (fileUploadIds.length > 0 && userId) {
+      await confirmFileUploads(client, userId, fileUploadIds);
+    }
+
+    return updatedMission;
   }
 
-  async delete(missionId: string) {
-    return prisma.mission.delete({
+  async delete(missionId: string, client: TransactionClient = prisma) {
+    return client.mission.delete({
       where: { id: missionId },
     });
   }
@@ -170,56 +170,55 @@ export class MissionRepository {
         nextCompletionId?: string | null;
       }>;
     }>,
+    client: TransactionClient = prisma,
   ) {
-    return prisma.$transaction(async tx => {
-      const newMission = await tx.mission.create({
+    const newMission = await client.mission.create({
+      data: {
+        title: missionData.title,
+        description: missionData.description,
+        target: missionData.target,
+        imageUrl: missionData.imageUrl,
+        brandLogoUrl: missionData.brandLogoUrl,
+        deadline: missionData.deadline,
+        estimatedMinutes: missionData.estimatedMinutes,
+        isActive: missionData.isActive,
+        type: missionData.type,
+        creatorId: missionData.creatorId,
+        entryActionId: missionData.entryActionId,
+      },
+    });
+
+    for (const actionData of actionsData) {
+      const newAction = await client.action.create({
         data: {
-          title: missionData.title,
-          description: missionData.description,
-          target: missionData.target,
-          imageUrl: missionData.imageUrl,
-          brandLogoUrl: missionData.brandLogoUrl,
-          deadline: missionData.deadline,
-          estimatedMinutes: missionData.estimatedMinutes,
-          isActive: missionData.isActive,
-          type: missionData.type,
-          creatorId: missionData.creatorId,
-          entryActionId: missionData.entryActionId,
+          missionId: newMission.id,
+          title: actionData.title,
+          description: actionData.description,
+          imageUrl: actionData.imageUrl,
+          type: actionData.type,
+          order: actionData.order,
+          maxSelections: actionData.maxSelections,
+          nextActionId: actionData.nextActionId,
+          nextCompletionId: actionData.nextCompletionId,
         },
       });
 
-      for (const actionData of actionsData) {
-        const newAction = await tx.action.create({
-          data: {
-            missionId: newMission.id,
-            title: actionData.title,
-            description: actionData.description,
-            imageUrl: actionData.imageUrl,
-            type: actionData.type,
-            order: actionData.order,
-            maxSelections: actionData.maxSelections,
-            nextActionId: actionData.nextActionId,
-            nextCompletionId: actionData.nextCompletionId,
-          },
+      if (actionData.options.length > 0) {
+        await client.actionOption.createMany({
+          data: actionData.options.map(opt => ({
+            actionId: newAction.id,
+            title: opt.title,
+            description: opt.description,
+            imageUrl: opt.imageUrl,
+            order: opt.order,
+            nextActionId: opt.nextActionId,
+            nextCompletionId: opt.nextCompletionId,
+          })),
         });
-
-        if (actionData.options.length > 0) {
-          await tx.actionOption.createMany({
-            data: actionData.options.map(opt => ({
-              actionId: newAction.id,
-              title: opt.title,
-              description: opt.description,
-              imageUrl: opt.imageUrl,
-              order: opt.order,
-              nextActionId: opt.nextActionId,
-              nextCompletionId: opt.nextCompletionId,
-            })),
-          });
-        }
       }
+    }
 
-      return newMission;
-    });
+    return newMission;
   }
 }
 
