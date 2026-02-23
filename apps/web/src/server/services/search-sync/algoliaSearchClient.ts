@@ -5,7 +5,6 @@ export interface AlgoliaSearchClientLike {
   saveObjects<T extends { objectID: string }>(indexName: string, objects: T[]): Promise<void>;
   deleteObject(indexName: string, objectID: string): Promise<void>;
   deleteObjects(indexName: string, objectIDs: string[]): Promise<void>;
-  searchObjects<T>(indexName: string, query: string, hitsPerPage?: number): Promise<T[]>;
 }
 
 export class AlgoliaSearchClient implements AlgoliaSearchClientLike {
@@ -54,18 +53,6 @@ export class AlgoliaSearchClient implements AlgoliaSearchClientLike {
     });
   }
 
-  async searchObjects<T>(indexName: string, query: string, hitsPerPage = 20): Promise<T[]> {
-    const response = await this.getClient().searchSingleIndex({
-      indexName,
-      searchParams: {
-        query,
-        hitsPerPage,
-      },
-    });
-
-    return (response.hits ?? []) as T[];
-  }
-
   private getClient() {
     if (this.client) {
       return this.client;
@@ -77,17 +64,17 @@ export class AlgoliaSearchClient implements AlgoliaSearchClientLike {
 
   private createClient() {
     const appId = process.env.ALGOLIA_APP_ID;
-    const adminApiKey = process.env.ALGOLIA_ADMIN_API_KEY;
+    const writeApiKey = process.env.ALGOLIA_WRITE_API_KEY;
 
     if (!appId) {
       throw new Error("ALGOLIA_APP_ID 환경변수가 설정되지 않았습니다.");
     }
 
-    if (!adminApiKey) {
+    if (!writeApiKey) {
       throw new Error("ALGOLIA_ADMIN_API_KEY 환경변수가 설정되지 않았습니다.");
     }
 
-    return algoliasearch(appId, adminApiKey);
+    return algoliasearch(appId, writeApiKey);
   }
 }
 

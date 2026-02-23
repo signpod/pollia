@@ -1,7 +1,5 @@
 import type { Mission, MissionCategory } from "@prisma/client";
 
-export const MISSION_SEARCH_INDEX_NAME = "missions";
-
 export const missionSearchableAttributes = {
   P1: ["title"],
   P2: ["title", "choseong"],

@@ -20,7 +20,7 @@ import { useAdminEvents } from "@/app/admin/hooks/event";
 import { useAdminTheme } from "@/app/admin/hooks/use-admin-theme";
 import PolliaIcon from "@public/svgs/pollia-icon.svg";
 import PolliaWordmark from "@public/svgs/pollia-wordmark.svg";
-import { LogOut, Moon, Settings, Sun } from "lucide-react";
+import { LogOut, Moon, Search, Settings, Sun } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
@@ -88,6 +88,14 @@ export function AdminSidebar() {
 
       <SidebarFooter>
         <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip="검색 테스트">
+              <Link href={ADMIN_ROUTES.ADMIN_SEARCH_TEMP}>
+                <Search />
+                <span>검색 테스트</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton asChild tooltip="설정">
               <Link href={ADMIN_ROUTES.ADMIN_SETTINGS}>

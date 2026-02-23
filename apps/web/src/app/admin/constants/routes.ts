@@ -16,6 +16,7 @@ export const ADMIN_ROUTES = {
   ADMIN_MISSION_REPORT: (id: string) => `${MISSIONS_BASE}/${id}/report`,
   ADMIN_EVENT: (id: string) => `${EVENTS_BASE}/${id}`,
   ADMIN_SETTINGS: `${ADMIN_BASE}/settings`,
+  ADMIN_SEARCH_TEMP: `${ADMIN_BASE}/search-temp`,
 } as const;
 
 export type AdminRoutes = typeof ADMIN_ROUTES;

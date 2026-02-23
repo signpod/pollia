@@ -1,4 +1,4 @@
-import { MISSION_SEARCH_INDEX_NAME, toMissionSearchRecord } from "@/server/search";
+import { toMissionSearchRecord } from "@/server/search";
 import { type AlgoliaSearchClientLike, algoliaSearchClient } from "./algoliaSearchClient";
 
 type MissionForSearchSync = Parameters<typeof toMissionSearchRecord>[0];
@@ -19,7 +19,11 @@ export class MissionSearchSyncService {
   }
 
   private getIndexName(): string {
-    return this.indexName || MISSION_SEARCH_INDEX_NAME;
+    if (!this.indexName) {
+      throw new Error("ALGOLIA_INDEX_NAME 환경변수가 설정되지 않았습니다.");
+    }
+
+    return this.indexName;
   }
 }
 
