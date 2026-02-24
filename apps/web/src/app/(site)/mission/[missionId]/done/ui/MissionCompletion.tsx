@@ -8,7 +8,7 @@ import { useReadMissionCompletion, useReadMissionCompletionById } from "@/hooks/
 import { useReadReward } from "@/hooks/reward/useReadReward";
 import { MissionType } from "@prisma/client";
 import { useParams } from "next/navigation";
-import { useImageMenu, useMissionShare } from "./hooks";
+import { useImageMenu } from "./hooks";
 
 interface MissionCompletionProps {
   completionId?: string;
@@ -32,14 +32,7 @@ export function MissionCompletion({ completionId, initialImageUrl }: MissionComp
     title: completionTitle,
     description: completionDescription,
     imageUrl: completionImageUrl,
-    links,
   } = missionCompletion?.data ?? {};
-
-  const { handleShare } = useMissionShare({
-    missionId,
-    title: missionTitle,
-    imageUrl,
-  });
 
   const { isMenuOpen, menuRef, toggleMenu, handleImageSave, handleImageShare } = useImageMenu({
     imageUrl: completionImageUrl ?? "",
@@ -71,7 +64,7 @@ export function MissionCompletion({ completionId, initialImageUrl }: MissionComp
           />
         ) : undefined
       }
-      links={links ?? undefined}
+      hasReward={!!reward}
       imageMenu={{
         isOpen: isMenuOpen,
         menuRef,
@@ -79,7 +72,6 @@ export function MissionCompletion({ completionId, initialImageUrl }: MissionComp
         onSave: handleImageSave,
         onShare: handleImageShare,
       }}
-      onShare={handleShare}
     />
   );
 }
