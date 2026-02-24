@@ -135,7 +135,7 @@ describe("MissionResponseService", () => {
 
       // Then
       expect(result).toEqual(mockResponses);
-      expect(mockResponseRepo.findByMissionId).toHaveBeenCalledWith("mission1");
+      expect(mockResponseRepo.findByMissionId).toHaveBeenCalledWith("mission1", undefined);
     });
 
     it("Mission이 없으면 404 에러를 던진다", async () => {
