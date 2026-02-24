@@ -450,7 +450,7 @@ describe("ActionAnswerService 테스트", () => {
 
       // Then
       expect(result.textAnswer).toBe("수정된 답변");
-      expect(mockAnswerRepo.update).toHaveBeenCalledWith(answerId, input);
+      expect(mockAnswerRepo.update).toHaveBeenCalledWith(answerId, input, userId);
     });
 
     it("선택한 옵션을 수정할 수 있다 (M:N 관계)", async () => {
@@ -482,11 +482,15 @@ describe("ActionAnswerService 테스트", () => {
       await service.updateAnswer(answerId, input, userId);
 
       // Then
-      expect(mockAnswerRepo.update).toHaveBeenCalledWith(answerId, {
-        options: {
-          set: [{ id: "opt-3" }, { id: "opt-4" }],
+      expect(mockAnswerRepo.update).toHaveBeenCalledWith(
+        answerId,
+        {
+          options: {
+            set: [{ id: "opt-3" }, { id: "opt-4" }],
+          },
         },
-      });
+        userId,
+      );
     });
 
     it("다른 사용자의 답변을 수정할 수 없다", async () => {
