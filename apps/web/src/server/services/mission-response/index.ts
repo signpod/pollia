@@ -2,13 +2,15 @@ import { completeResponseInputSchema, startResponseInputSchema } from "@/schemas
 import { actionRepository } from "@/server/repositories/action/actionRepository";
 import { missionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
-import type {
-  CleanupAbuseMetaResult,
-  CompleteResponseInput,
-  ResponseActor,
-  ResponseRequestMeta,
-  ResponseStats,
-  StartResponseInput,
+import {
+  type CleanupAbuseMetaResult,
+  type CompleteResponseInput,
+  type ResponseActor,
+  type ResponseRequestMeta,
+  type ResponseStats,
+  type StartResponseInput,
+  isResponseOwner,
+  normalizeActor,
 } from "./types";
 
 const ABUSE_LOG_RETENTION_DAYS = 90;
@@ -21,7 +23,7 @@ export class MissionResponseService {
   ) {}
 
   async getResponseById(responseId: string, actor: string | ResponseActor) {
-    const normalizedActor = this.normalizeActor(actor);
+    const normalizedActor = normalizeActor(actor);
     const response = await this.responseRepo.findById(responseId);
 
     if (!response) {
@@ -30,7 +32,7 @@ export class MissionResponseService {
       throw error;
     }
 
-    if (!this.isResponseOwner(response, normalizedActor)) {
+    if (!isResponseOwner(response, normalizedActor)) {
       const error = new Error("조회 권한이 없습니다.");
       error.cause = 403;
       throw error;
@@ -44,7 +46,7 @@ export class MissionResponseService {
   }
 
   async getResponseByMissionAndActor(missionId: string, actor: string | ResponseActor) {
-    const normalizedActor = this.normalizeActor(actor);
+    const normalizedActor = normalizeActor(actor);
 
     if (normalizedActor.userId) {
       return this.responseRepo.findByMissionAndUser(missionId, normalizedActor.userId);
@@ -105,7 +107,7 @@ export class MissionResponseService {
   }
 
   async startResponse(input: StartResponseInput, actor: string | ResponseActor) {
-    const normalizedActor = this.normalizeActor(actor);
+    const normalizedActor = normalizeActor(actor);
     const parseResult = startResponseInputSchema.safeParse(input);
     if (!parseResult.success) {
       const error = new Error(parseResult.error.issues[0]?.message || "유효성 검사 실패");
@@ -177,7 +179,7 @@ export class MissionResponseService {
     actor: string | ResponseActor,
     requestMeta?: ResponseRequestMeta,
   ) {
-    const normalizedActor = this.normalizeActor(actor);
+    const normalizedActor = normalizeActor(actor);
     const parseResult = completeResponseInputSchema.safeParse(input);
     if (!parseResult.success) {
       const error = new Error(parseResult.error.issues[0]?.message || "유효성 검사 실패");
@@ -193,7 +195,7 @@ export class MissionResponseService {
       throw error;
     }
 
-    if (!this.isResponseOwner(response, normalizedActor)) {
+    if (!isResponseOwner(response, normalizedActor)) {
       const error = new Error("완료 권한이 없습니다.");
       error.cause = 403;
       throw error;
@@ -237,7 +239,7 @@ export class MissionResponseService {
   }
 
   async deleteResponse(responseId: string, actor: string | ResponseActor): Promise<void> {
-    const normalizedActor = this.normalizeActor(actor);
+    const normalizedActor = normalizeActor(actor);
     const response = await this.responseRepo.findById(responseId);
 
     if (!response) {
@@ -246,7 +248,7 @@ export class MissionResponseService {
       throw error;
     }
 
-    if (!this.isResponseOwner(response, normalizedActor)) {
+    if (!isResponseOwner(response, normalizedActor)) {
       const error = new Error("삭제 권한이 없습니다.");
       error.cause = 403;
       throw error;
@@ -259,7 +261,7 @@ export class MissionResponseService {
     responseId: string,
     actor: string | ResponseActor,
   ): Promise<boolean> {
-    const normalizedActor = this.normalizeActor(actor);
+    const normalizedActor = normalizeActor(actor);
     const response = await this.responseRepo.findById(responseId);
 
     if (!response) {
@@ -268,40 +270,7 @@ export class MissionResponseService {
       throw error;
     }
 
-    return this.isResponseOwner(response, normalizedActor);
-  }
-
-  private normalizeActor(actor: string | ResponseActor): Required<ResponseActor> {
-    if (typeof actor === "string") {
-      return { userId: actor, guestId: null };
-    }
-
-    return {
-      userId: actor.userId ?? null,
-      guestId: actor.guestId ?? null,
-    };
-  }
-
-  private isResponseOwner(
-    response: Awaited<ReturnType<typeof this.responseRepo.findById>>,
-    actor: Required<ResponseActor>,
-  ) {
-    if (!response) {
-      return false;
-    }
-
-    const responseGuestId =
-      "guestId" in response ? ((response as { guestId?: string | null }).guestId ?? null) : null;
-
-    if (actor.userId) {
-      return response.userId === actor.userId;
-    }
-
-    if (actor.guestId) {
-      return responseGuestId === actor.guestId;
-    }
-
-    return false;
+    return isResponseOwner(response, normalizedActor);
   }
 }
 
