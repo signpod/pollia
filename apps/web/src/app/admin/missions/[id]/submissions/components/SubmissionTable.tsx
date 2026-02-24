@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/app/admin/components/shadcn-ui/badge";
 import {
   Table,
   TableBody,
@@ -11,7 +12,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/app/admin/components/shadcn-ui/tooltip";
 import { formatDateToHHMM, formatDateToYYYYMMDD } from "@/lib/date";
 import type { ColumnDef, SubmissionRow } from "@/server/services/submission-list";
-import { CheckIcon, ClockIcon } from "lucide-react";
+import { CheckIcon, ClockIcon, UserIcon } from "lucide-react";
 import { toast } from "sonner";
 
 interface SubmissionTableProps {
@@ -48,8 +49,15 @@ export function SubmissionTable({ columns, rows, emptyMessage }: SubmissionTable
       <TableBody>
         {rows.map(row => (
           <TableRow key={row.id}>
-            <ClickableCell value={row.user.name} onClick={handleCellClick} className="font-medium">
-              {row.user.name}
+            <ClickableCell
+              value={row.user.guestId ?? row.user.name}
+              onClick={handleCellClick}
+              className="font-medium"
+            >
+              <div className="flex items-center gap-1.5">
+                {row.user.name}
+                {row.user.guestId && <GuestBadge guestId={row.user.guestId} />}
+              </div>
             </ClickableCell>
             <ClickableCell value={formatPhoneNumber(row.user.phone)} onClick={handleCellClick}>
               {formatPhoneNumber(row.user.phone)}
@@ -150,6 +158,24 @@ function formatPhoneNumber(phone: string | null): string {
     return `${phone.slice(0, 3)}-${phone.slice(3, 7)}-${phone.slice(7)}`;
   }
   return phone;
+}
+
+function GuestBadge({ guestId }: { guestId: string }) {
+  const shortId = guestId.slice(0, 8);
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Badge
+          variant="outline"
+          className="text-[10px] px-1.5 py-0 gap-1 font-normal text-muted-foreground"
+        >
+          <UserIcon className="size-2.5" />
+          {shortId}
+        </Badge>
+      </TooltipTrigger>
+      <TooltipContent>Guest ID: {guestId}</TooltipContent>
+    </Tooltip>
+  );
 }
 
 function formatAnswerValue(value: string | null | undefined, type: string): React.ReactNode {
