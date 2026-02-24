@@ -135,6 +135,11 @@ export class ActionAnswerService {
     const answer = await this.getAnswerById(answerId, normalizedActor);
 
     const action = await this.actionRepo.findById(answer.actionId);
+
+    if (!normalizedActor.userId && action) {
+      this.blockGuestFileUploadAction(action.type);
+    }
+
     if (action) {
       this.validateAnswerByActionType(
         {
@@ -171,6 +176,11 @@ export class ActionAnswerService {
     const validated = this.validateInput(input, actionAnswerUpdateSchema);
     const answer = await this.getAnswerById(answerId, normalizedActor);
     const action = await this.actionRepo.findById(answer.actionId);
+
+    if (!normalizedActor.userId && action) {
+      this.blockGuestFileUploadAction(action.type);
+    }
+
     if (action) {
       this.validateAnswerByActionType(
         {
@@ -264,6 +274,16 @@ export class ActionAnswerService {
     }
 
     return false;
+  }
+
+  private blockGuestFileUploadAction(actionType: ActionType): void {
+    if (
+      actionType === ActionType.IMAGE ||
+      actionType === ActionType.PDF ||
+      actionType === ActionType.VIDEO
+    ) {
+      this.throwError("파일 업로드 답변은 로그인 후 수정할 수 있습니다.", 403);
+    }
   }
 
   private throwError(message: string, statusCode: number): never {

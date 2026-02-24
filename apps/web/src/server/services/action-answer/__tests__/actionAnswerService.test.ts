@@ -729,4 +729,184 @@ describe("ActionAnswerService 테스트", () => {
       });
     });
   });
+
+  describe("게스트 정책", () => {
+    const guestActor = { userId: null, guestId: "guest-uuid-1" };
+    const userActor = { userId: "user-1", guestId: null };
+
+    describe("submitAnswers - 게스트 파일 업로드 차단", () => {
+      const fileUploadTypes = [ActionType.IMAGE, ActionType.PDF, ActionType.VIDEO] as const;
+
+      it.each(fileUploadTypes)("게스트가 %s 타입 답변을 제출하면 403 에러", async actionType => {
+        // Given
+        const input = {
+          responseId: "response-1",
+          answers: [
+            {
+              actionId: "action-1",
+              type: actionType,
+              isRequired: true,
+              fileUploadIds: ["file-1"],
+            },
+          ],
+        };
+
+        // When & Then
+        await expect(service.submitAnswers(input, guestActor)).rejects.toThrow(
+          "파일 업로드 답변은 로그인 후 제출할 수 있습니다.",
+        );
+      });
+
+      it("게스트가 텍스트 타입 답변을 제출할 수 있다", async () => {
+        // Given
+        const input = {
+          responseId: "response-1",
+          answers: [
+            {
+              actionId: "action-1",
+              type: ActionType.SUBJECTIVE,
+              isRequired: true,
+              textAnswer: "답변 내용",
+            },
+          ],
+        };
+
+        mockResponseRepo.findById.mockResolvedValue({
+          id: "response-1",
+          userId: null,
+          guestId: "guest-uuid-1",
+          missionId: "mission-1",
+          completedAt: null,
+        } as any);
+
+        mockActionRepo.findById.mockResolvedValue({
+          id: "action-1",
+          type: ActionType.SUBJECTIVE,
+          isRequired: true,
+          missionId: "mission-1",
+        } as any);
+
+        mockAnswerRepo.deleteByResponseAndActions.mockResolvedValue({ count: 0 } as any);
+        (mockAnswerRepo.createManyWithRelations as jest.Mock).mockResolvedValue([
+          { id: "answer-1" },
+        ]);
+
+        // When
+        const result = await service.submitAnswers(input, guestActor);
+
+        // Then
+        expect(result).toMatchObject({
+          responseId: "response-1",
+          answersCount: 1,
+        });
+      });
+    });
+
+    describe("updateAnswer - 게스트 파일 업로드 타입 차단", () => {
+      const fileUploadTypes = [ActionType.IMAGE, ActionType.PDF, ActionType.VIDEO] as const;
+
+      it.each(fileUploadTypes)(
+        "게스트가 %s 타입 액션의 답변을 수정하면 403 에러",
+        async actionType => {
+          // Given
+          const mockAnswer = {
+            id: "answer-1",
+            actionId: "action-1",
+            responseId: "response-1",
+            response: { userId: null, guestId: "guest-uuid-1", id: "response-1", missionId: "m1" },
+          };
+          mockAnswerRepo.findById.mockResolvedValue(mockAnswer as any);
+          mockActionRepo.findById.mockResolvedValue({
+            id: "action-1",
+            type: actionType,
+            isRequired: true,
+            missionId: "m1",
+          } as any);
+
+          // When & Then
+          await expect(
+            service.updateAnswer("answer-1", { textAnswer: "test" }, guestActor),
+          ).rejects.toThrow("파일 업로드 답변은 로그인 후 수정할 수 있습니다.");
+        },
+      );
+
+      it("게스트가 텍스트 타입 액션의 답변을 수정할 수 있다", async () => {
+        // Given
+        const mockAnswer = {
+          id: "answer-1",
+          actionId: "action-1",
+          responseId: "response-1",
+          response: { userId: null, guestId: "guest-uuid-1", id: "response-1", missionId: "m1" },
+        };
+        mockAnswerRepo.findById.mockResolvedValue(mockAnswer as any);
+        mockActionRepo.findById.mockResolvedValue({
+          id: "action-1",
+          type: ActionType.SUBJECTIVE,
+          isRequired: false,
+          missionId: "m1",
+        } as any);
+        mockAnswerRepo.update.mockResolvedValue({ id: "answer-1" } as any);
+
+        // When
+        const result = await service.updateAnswer(
+          "answer-1",
+          { textAnswer: "수정된 답변" },
+          guestActor,
+        );
+
+        // Then
+        expect(result).toMatchObject({ id: "answer-1" });
+        expect(mockAnswerRepo.update).toHaveBeenCalled();
+      });
+
+      it("회원은 파일 업로드 타입 답변도 수정할 수 있다", async () => {
+        // Given
+        const mockAnswer = {
+          id: "answer-1",
+          actionId: "action-1",
+          responseId: "response-1",
+          response: { userId: "user-1", id: "response-1", missionId: "m1" },
+        };
+        mockAnswerRepo.findById.mockResolvedValue(mockAnswer as any);
+        mockActionRepo.findById.mockResolvedValue({
+          id: "action-1",
+          type: ActionType.IMAGE,
+          isRequired: false,
+          missionId: "m1",
+        } as any);
+        mockAnswerRepo.update.mockResolvedValue({ id: "answer-1" } as any);
+
+        // When
+        const result = await service.updateAnswer("answer-1", { textAnswer: "caption" }, userActor);
+
+        // Then
+        expect(result).toMatchObject({ id: "answer-1" });
+        expect(mockAnswerRepo.update).toHaveBeenCalled();
+      });
+    });
+
+    describe("updateAnswerWithPruning - 게스트 파일 업로드 타입 차단", () => {
+      it("게스트가 파일 업로드 타입 액션의 답변을 수정하면 403 에러", async () => {
+        // Given
+        const mockAnswer = {
+          id: "answer-1",
+          actionId: "action-1",
+          responseId: "response-1",
+          response: { userId: null, guestId: "guest-uuid-1", id: "response-1", missionId: "m1" },
+        };
+        mockAnswerRepo.findById.mockResolvedValue(mockAnswer as any);
+        mockActionRepo.findById.mockResolvedValue({
+          id: "action-1",
+          type: ActionType.IMAGE,
+          isRequired: true,
+          missionId: "m1",
+        } as any);
+
+        // When & Then
+        await expect(
+          service.updateAnswerWithPruning("answer-1", { selectedOptionIds: ["opt-1"] }, guestActor),
+        ).rejects.toThrow("파일 업로드 답변은 로그인 후 수정할 수 있습니다.");
+      });
+    });
+  });
 });
