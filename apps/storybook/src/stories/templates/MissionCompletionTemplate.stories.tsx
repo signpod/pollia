@@ -63,7 +63,6 @@ function ImageMenuWrapper({
   imageUrl,
   title,
   description,
-  onShare,
 }: {
   imageUrl?: string;
   title?: string;
@@ -93,7 +92,6 @@ function ImageMenuWrapper({
             setIsOpen(false);
           },
         }}
-        onShare={onShare}
       />
     </div>
   );
@@ -186,7 +184,6 @@ export const ImageMenuOpen: Story = {
             onSave: () => alert("이미지 저장"),
             onShare: () => alert("이미지 공유"),
           }}
-          onShare={() => alert("미션 공유")}
         />
       </div>
     );

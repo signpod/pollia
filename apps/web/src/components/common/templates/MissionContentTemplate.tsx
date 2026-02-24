@@ -4,6 +4,7 @@ import { MissionDescription } from "@/app/(site)/mission/[missionId]/components/
 import { MissionFooter } from "@/app/(site)/mission/[missionId]/components/MissionFooter";
 import { MissionLogo } from "@/app/(site)/mission/[missionId]/components/MissionLogo";
 import { MissionRewardSection } from "@/app/(site)/mission/[missionId]/components/MissionRewardSection";
+import { MissionShareSection } from "@/app/(site)/mission/[missionId]/components/MissionShareSection";
 import { SECTION_IDS } from "@/app/(site)/mission/[missionId]/constants/sectionIds";
 import { cleanTiptapHTML, cn } from "@/lib/utils";
 import { MissionType } from "@prisma/client";
@@ -106,15 +107,8 @@ export function MissionContentTemplate({
           </div>
         )}
 
-        {missionType !== MissionType.EXPERIENCE_GROUP && (
-          <div className="bg-white rounded-2xl p-5 flex items-center gap-0 w-full justify-between">
-            <Typo.SubTitle size="large" className="shrink-0">
-              가족, 친구에게
-              <br />
-              공유해보세요
-            </Typo.SubTitle>
-            {shareButtons}
-          </div>
+        {missionType !== MissionType.EXPERIENCE_GROUP && shareButtons && (
+          <MissionShareSection shareButtons={shareButtons} />
         )}
       </div>
 

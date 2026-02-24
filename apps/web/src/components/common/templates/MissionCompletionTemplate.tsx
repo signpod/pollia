@@ -1,10 +1,11 @@
 "use client";
 
+import { MissionShareSection } from "@/app/(site)/mission/[missionId]/components/MissionShareSection";
 import { cleanTiptapHTML } from "@/lib/utils";
-import { ButtonV2, Typo } from "@repo/ui/components";
+import { Typo } from "@repo/ui/components";
 import { TiptapViewer } from "@repo/ui/components/common/TiptapViewer";
 import { AnimatePresence, motion } from "framer-motion";
-import { Download, Ellipsis, Share2, Upload } from "lucide-react";
+import { Download, Ellipsis, Upload } from "lucide-react";
 import Image from "next/image";
 import type { ReactNode, RefObject } from "react";
 
@@ -13,6 +14,8 @@ export interface MissionCompletionTemplateProps {
   imageUrl?: string | null;
   title?: string;
   description?: string;
+  reward?: ReactNode;
+  shareButtons?: ReactNode;
 
   imageMenu?: {
     isOpen: boolean;
@@ -21,8 +24,6 @@ export interface MissionCompletionTemplateProps {
     onSave: () => void;
     onShare: () => void;
   };
-
-  onShare?: () => void;
 }
 
 export function MissionCompletionTemplate({
@@ -30,13 +31,14 @@ export function MissionCompletionTemplate({
   imageUrl,
   title,
   description,
+  reward,
+  shareButtons,
   imageMenu,
-  onShare,
 }: MissionCompletionTemplateProps) {
   return (
     <div className="relative w-full">
       {header}
-      <div className="flex w-full flex-col items-center gap-10 px-5 pt-5 pb-10">
+      <div className="flex w-full flex-col items-center gap-10 pt-2 pb-10 px-5">
         {imageUrl && (
           <div className="relative w-full overflow-hidden rounded-[28px] shadow-[0_4px_20px_rgba(9,9,11,0.16)]">
             <Image
@@ -93,26 +95,25 @@ export function MissionCompletionTemplate({
           </div>
         )}
 
-        <div className="flex w-full flex-col items-center gap-4">
+        <div className="flex w-full flex-col items-center gap-8">
           {title && (
-            <Typo.MainTitle size="large" className="break-keep">
+            <Typo.MainTitle size="large" className="break-keep text-center">
               {title}
             </Typo.MainTitle>
           )}
           {description && cleanTiptapHTML(description) && (
-            <TiptapViewer content={cleanTiptapHTML(description)} className="break-keep w-full" />
+            <TiptapViewer
+              content={cleanTiptapHTML(description)}
+              className="break-keep w-full p-5"
+            />
           )}
         </div>
 
-        {onShare && (
-          <ButtonV2
-            variant="tertiary"
-            leftIcon={Share2}
-            onClick={onShare}
-            className="rounded-4xl px-6 py-4 bg-zinc-100 text-default"
-          >
-            <Typo.ButtonText size="large">미션 공유</Typo.ButtonText>
-          </ButtonV2>
+        {(reward || shareButtons) && (
+          <div className="flex w-full flex-col gap-8">
+            {reward}
+            {shareButtons && <MissionShareSection shareButtons={shareButtons} />}
+          </div>
         )}
       </div>
     </div>
