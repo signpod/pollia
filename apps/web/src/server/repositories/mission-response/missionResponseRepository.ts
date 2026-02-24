@@ -44,9 +44,12 @@ export class MissionResponseRepository {
     });
   }
 
-  async findByMissionId(missionId: string) {
+  async findByMissionId(missionId: string, options?: { membersOnly?: boolean }) {
     return prisma.missionResponse.findMany({
-      where: { missionId },
+      where: {
+        missionId,
+        ...(options?.membersOnly && { userId: { not: null } }),
+      },
       include: {
         user: true,
         answers: ANSWERS_WITH_RELATIONS,
