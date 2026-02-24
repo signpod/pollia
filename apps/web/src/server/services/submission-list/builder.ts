@@ -54,8 +54,9 @@ function buildRow(
   return {
     id: response.id,
     user: {
-      name: response.user.name,
-      phone: response.user.phone,
+      name: response.user?.name ?? "게스트",
+      phone: response.user?.phone ?? null,
+      guestId: response.guestId,
     },
     startedAt: response.startedAt,
     completedAt: response.completedAt,

@@ -3,6 +3,7 @@ import type { Action, ActionType, User } from "@prisma/client";
 export interface SubmissionUser {
   name: string;
   phone: string | null;
+  guestId: string | null;
 }
 
 export interface SubmissionAnswer {
@@ -36,7 +37,8 @@ export interface MissionResponseWithUserAndAnswers {
   id: string;
   startedAt: Date;
   completedAt: Date | null;
-  user: Pick<User, "name" | "phone">;
+  guestId: string | null;
+  user: Pick<User, "name" | "phone"> | null;
   answers: Array<{
     actionId: string;
     textAnswer: string | null;

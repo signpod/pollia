@@ -73,6 +73,8 @@ describe("EventService", () => {
             startDate: null,
             deadline: null,
             isActive: true,
+            allowGuestResponse: false,
+            allowMultipleResponses: false,
             maxParticipants: null,
             creatorId: "user-1",
             rewardId: null,

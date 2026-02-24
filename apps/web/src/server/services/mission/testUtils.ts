@@ -20,6 +20,7 @@ export function createMissionServiceTestContext() {
   const mockResponseRepository = {
     findById: jest.fn(),
     findByMissionAndUser: jest.fn(),
+    findByMissionAndGuest: jest.fn(),
     findByMissionId: jest.fn(),
     findByUserId: jest.fn(),
     findCompletedByMissionId: jest.fn(),
@@ -27,6 +28,7 @@ export function createMissionServiceTestContext() {
     updateCompletedAt: jest.fn(),
     delete: jest.fn(),
     deleteByMissionAndUser: jest.fn(),
+    deleteByMissionAndGuest: jest.fn(),
     countByMissionId: jest.fn(),
     countCompletedByMissionId: jest.fn(),
   } as jest.Mocked<MissionResponseRepository>;

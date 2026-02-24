@@ -27,6 +27,7 @@ const createMockResponse = (
   id: "response1",
   startedAt: new Date("2025-01-01T10:00:00Z"),
   completedAt: null,
+  guestId: null,
   user: {
     name: "홍길동",
     phone: "01012345678",
