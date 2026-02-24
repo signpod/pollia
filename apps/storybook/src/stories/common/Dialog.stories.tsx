@@ -144,7 +144,7 @@ export const States: Story = {
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold">기본 Dialog</h2>
                 <DialogClose asChild>
-                  <button className="rounded-sm opacity-70 hover:opacity-100">
+                  <button type="button" className="rounded-sm opacity-70 hover:opacity-100">
                     <X className="h-4 w-4" />
                   </button>
                 </DialogClose>
@@ -174,7 +174,7 @@ export const States: Story = {
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-red-800">정말 계속하시겠습니까?</h2>
                 <DialogClose asChild>
-                  <button className="rounded-sm opacity-70 hover:opacity-100">
+                  <button type="button" className="rounded-sm opacity-70 hover:opacity-100">
                     <X className="h-4 w-4" />
                   </button>
                 </DialogClose>
