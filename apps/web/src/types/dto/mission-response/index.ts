@@ -8,36 +8,31 @@ export interface CompleteMissionResponseRequest {
   responseId: string;
 }
 
+export interface MissionResponseActor {
+  userId: string | null;
+  guestId: string | null;
+}
+
+export interface MissionResponseBase extends MissionResponseActor {
+  id: string;
+  missionId: string;
+  startedAt: Date;
+  completedAt: Date | null;
+  createdAt: Date;
+}
+
 export interface StartMissionResponseResponse {
-  data: {
-    id: string;
-    missionId: string;
-    userId: string;
-    startedAt: Date;
-    completedAt: Date | null;
-    createdAt: Date;
-  };
+  data: MissionResponseBase;
 }
 
 export interface CompleteMissionResponseResponse {
-  data: {
-    id: string;
-    missionId: string;
-    userId: string;
-    startedAt: Date;
-    completedAt: Date | null;
+  data: MissionResponseBase & {
     updatedAt: Date;
   };
 }
 
 export interface GetMissionResponseResponse {
-  data: {
-    id: string;
-    missionId: string;
-    userId: string;
-    startedAt: Date;
-    completedAt: Date | null;
-    createdAt: Date;
+  data: MissionResponseBase & {
     updatedAt: Date;
     answers: Array<
       ActionAnswer & {
@@ -47,6 +42,13 @@ export interface GetMissionResponseResponse {
       }
     >;
   };
+}
+
+export interface MissionResponseListItem extends MissionResponseBase {
+  user?: {
+    name: string;
+    phone: string | null;
+  } | null;
 }
 
 export interface MyMissionResponseAnswer {
@@ -77,13 +79,7 @@ export interface MyMissionResponseAnswer {
   }>;
 }
 
-export interface MyMissionResponse {
-  id: string;
-  missionId: string;
-  userId: string;
-  startedAt: Date;
-  completedAt: Date | null;
-  createdAt: Date;
+export interface MyMissionResponse extends MissionResponseBase {
   mission: {
     id: string;
     title: string;
@@ -104,14 +100,7 @@ export interface GetMyMissionResponsesResponse {
 }
 
 export interface GetMissionResponsesResponse {
-  data: Array<{
-    id: string;
-    missionId: string;
-    userId: string;
-    startedAt: Date;
-    completedAt: Date | null;
-    createdAt: Date;
-  }>;
+  data: MissionResponseListItem[];
 }
 
 export interface GetMissionStatsResponse {

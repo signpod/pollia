@@ -42,6 +42,19 @@ export class ActionRepository {
     });
   }
 
+  async hasFileUploadActionByMissionId(missionId: string) {
+    const count = await prisma.action.count({
+      where: {
+        missionId,
+        type: {
+          in: ["IMAGE", "PDF", "VIDEO"],
+        },
+      },
+    });
+
+    return count > 0;
+  }
+
   async findMany(options?: {
     searchQuery?: string;
     selectedActionTypes?: ActionType[];

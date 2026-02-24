@@ -1,6 +1,7 @@
 "use server";
 
-import { requireActiveUser } from "@/actions/common/auth";
+import { resolveMissionActor } from "@/actions/common/auth";
+import { getRequestMeta } from "@/actions/common/requestMeta";
 import { isAnswerSameAsSubmitted } from "@/lib/answer/compareAnswers";
 import { actionAnswerService } from "@/server/services/action-answer";
 import { missionResponseService } from "@/server/services/mission-response";
@@ -25,18 +26,24 @@ export type SubmitAnswerResult =
 export async function submitAnswerOnly(params: SubmitAnswerParams): Promise<SubmitAnswerResult> {
   const { missionId, responseId, answer, isLastAction } = params;
 
-  try {
-    const user = await requireActiveUser();
+  if (!responseId) {
+    return { success: false, error: "유효하지 않은 응답입니다.", code: "VALIDATION_ERROR" };
+  }
 
-    const freshResponse = await missionResponseService.getResponseByMissionAndUser(
-      missionId,
-      user.id,
-    );
-    if (freshResponse?.completedAt) {
+  try {
+    const actor = await resolveMissionActor();
+
+    const response = await missionResponseService.getResponseById(responseId, actor);
+
+    if (response.missionId !== missionId) {
+      return { success: false, error: "유효하지 않은 응답입니다.", code: "VALIDATION_ERROR" };
+    }
+
+    if (response.completedAt) {
       return { success: false, error: "이미 완료된 미션입니다.", code: "ALREADY_COMPLETED" };
     }
 
-    const submittedAnswers = freshResponse?.answers ?? [];
+    const submittedAnswers = response.answers ?? [];
     const isSame = isAnswerSameAsSubmitted(answer, submittedAnswers);
 
     if (!isSame) {
@@ -47,12 +54,12 @@ export async function submitAnswerOnly(params: SubmitAnswerParams): Promise<Subm
           await actionAnswerService.updateAnswerWithPruning(
             existingAnswer.id,
             { selectedOptionIds: answer.selectedOptionIds },
-            user.id,
+            actor,
           );
         } else {
           const updateData = buildUpdateData(answer);
           if (updateData) {
-            await actionAnswerService.updateAnswer(existingAnswer.id, updateData, user.id);
+            await actionAnswerService.updateAnswer(existingAnswer.id, updateData, actor);
           }
         }
       } else {
@@ -61,18 +68,29 @@ export async function submitAnswerOnly(params: SubmitAnswerParams): Promise<Subm
             responseId,
             answers: [buildAnswerPayload(answer)],
           },
-          user.id,
+          actor,
         );
       }
     }
 
     if (isLastAction || answer.nextCompletionId) {
-      await missionResponseService.completeResponse({ responseId }, user.id);
+      const requestMeta = await getRequestMeta();
+      await missionResponseService.completeResponse({ responseId }, actor, requestMeta);
     }
 
     return { success: true };
   } catch (error) {
     console.error("submitAnswerOnly error:", error);
+
+    const statusCode = error instanceof Error ? (error.cause as number) : undefined;
+    if (statusCode && statusCode >= 400 && statusCode < 500) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "유효하지 않은 요청입니다.",
+        code: "VALIDATION_ERROR",
+      };
+    }
+
     return {
       success: false,
       error: error instanceof Error ? error.message : "답변 제출 중 오류가 발생했습니다.",

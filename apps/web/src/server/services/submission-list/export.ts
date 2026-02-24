@@ -20,7 +20,7 @@ export function buildCsvContent(input: BuildCsvContentInput): string {
 }
 
 function buildHeaders(columns: ColumnDef[], exportType: ExportType): string[] {
-  const baseHeaders = ["이름", "전화번호"];
+  const baseHeaders = ["이름", "전화번호", "게스트 ID"];
 
   if (exportType === "all") {
     baseHeaders.push("상태", "시간");
@@ -58,7 +58,11 @@ function buildDataRow(
   columns: ColumnDef[],
   exportType: ExportType,
 ): string[] {
-  const baseData = [escapeCsvField(row.user.name), escapeCsvField(row.user.phone || "")];
+  const baseData = [
+    escapeCsvField(row.user.name),
+    escapeCsvField(row.user.phone || ""),
+    escapeCsvField(row.user.guestId || ""),
+  ];
 
   const timeValue = isCompleted && row.completedAt ? row.completedAt : row.startedAt;
 

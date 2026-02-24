@@ -14,13 +14,18 @@ describe("MissionResponseService", () => {
     mockResponseRepo = {
       findById: jest.fn(),
       findByMissionAndUser: jest.fn(),
+      findByMissionAndGuest: jest.fn(),
       findByMissionId: jest.fn(),
       findByUserId: jest.fn(),
       findCompletedByMissionId: jest.fn(),
       create: jest.fn(),
       updateCompletedAt: jest.fn(),
+      findLatestCompletedAtByActor: jest.fn(),
+      updateCompletedAtWithAbuseMeta: jest.fn(),
+      nullifyAbuseMetaOlderThan: jest.fn(),
       delete: jest.fn(),
       deleteByMissionAndUser: jest.fn(),
+      deleteByMissionAndGuest: jest.fn(),
       countByMissionId: jest.fn(),
       countCompletedByMissionId: jest.fn(),
     } as unknown as jest.Mocked<MissionResponseRepository>;
@@ -34,6 +39,7 @@ describe("MissionResponseService", () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+    jest.useRealTimers();
   });
 
   describe("getResponseById", () => {
@@ -226,6 +232,7 @@ describe("MissionResponseService", () => {
       expect(mockResponseRepo.create).toHaveBeenCalledWith({
         missionId: "mission1",
         userId: mockUser.id,
+        guestId: null,
       });
     });
 
@@ -334,19 +341,104 @@ describe("MissionResponseService", () => {
   });
 
   describe("completeResponse", () => {
-    it("Response를 완료 처리한다", async () => {
+    it("첫 완료 시 메타와 함께 완료 처리한다", async () => {
       // Given
-      const mockResponse = { id: "response1", userId: "user1", completedAt: null };
-      const mockUpdatedResponse = { ...mockResponse, completedAt: now };
+      jest.useFakeTimers().setSystemTime(now);
+      const mockResponse = {
+        id: "response1",
+        missionId: "mission1",
+        userId: "user1",
+        completedAt: null,
+      };
+      const mockUpdatedResponse = {
+        ...mockResponse,
+        completedAt: now,
+        ipAddress: "1.1.1.1",
+        userAgent: "jest-agent",
+        submissionIntervalSeconds: null,
+      };
       mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
-      mockResponseRepo.updateCompletedAt.mockResolvedValue(mockUpdatedResponse as never);
+      mockResponseRepo.findLatestCompletedAtByActor.mockResolvedValue(null);
+      mockResponseRepo.updateCompletedAtWithAbuseMeta.mockResolvedValue(
+        mockUpdatedResponse as never,
+      );
 
       // When
-      const result = await service.completeResponse({ responseId: "response1" }, mockUser.id);
+      const result = await service.completeResponse({ responseId: "response1" }, mockUser.id, {
+        ipAddress: "1.1.1.1",
+        userAgent: "jest-agent",
+      });
 
       // Then
       expect(result.completedAt).toBeTruthy();
-      expect(mockResponseRepo.updateCompletedAt).toHaveBeenCalledWith("response1");
+      expect(mockResponseRepo.findLatestCompletedAtByActor).toHaveBeenCalledWith({
+        missionId: "mission1",
+        userId: "user1",
+        guestId: null,
+      });
+      expect(mockResponseRepo.updateCompletedAtWithAbuseMeta).toHaveBeenCalledWith("response1", {
+        completedAt: now,
+        ipAddress: "1.1.1.1",
+        userAgent: "jest-agent",
+        submissionIntervalSeconds: null,
+      });
+    });
+
+    it("직전 완료가 있으면 제출 간격(초)을 저장한다", async () => {
+      // Given
+      jest.useFakeTimers().setSystemTime(now);
+      const previousCompletedAt = new Date(now.getTime() - 15_000);
+      const mockResponse = {
+        id: "response1",
+        missionId: "mission1",
+        userId: "user1",
+        completedAt: null,
+      };
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockResponseRepo.findLatestCompletedAtByActor.mockResolvedValue(previousCompletedAt);
+      mockResponseRepo.updateCompletedAtWithAbuseMeta.mockResolvedValue({
+        ...mockResponse,
+        completedAt: now,
+      } as never);
+
+      // When
+      await service.completeResponse({ responseId: "response1" }, mockUser.id);
+
+      // Then
+      expect(mockResponseRepo.updateCompletedAtWithAbuseMeta).toHaveBeenCalledWith("response1", {
+        completedAt: now,
+        ipAddress: null,
+        userAgent: null,
+        submissionIntervalSeconds: 15,
+      });
+    });
+
+    it("requestMeta가 없으면 ipAddress와 userAgent를 null로 저장한다", async () => {
+      // Given
+      jest.useFakeTimers().setSystemTime(now);
+      const mockResponse = {
+        id: "response1",
+        missionId: "mission1",
+        userId: "user1",
+        completedAt: null,
+      };
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockResponseRepo.findLatestCompletedAtByActor.mockResolvedValue(null);
+      mockResponseRepo.updateCompletedAtWithAbuseMeta.mockResolvedValue({
+        ...mockResponse,
+        completedAt: now,
+      } as never);
+
+      // When
+      await service.completeResponse({ responseId: "response1" }, mockUser.id);
+
+      // Then
+      expect(mockResponseRepo.updateCompletedAtWithAbuseMeta).toHaveBeenCalledWith("response1", {
+        completedAt: now,
+        ipAddress: null,
+        userAgent: null,
+        submissionIntervalSeconds: null,
+      });
     });
 
     it("Response가 없으면 404 에러를 던진다", async () => {
@@ -379,6 +471,42 @@ describe("MissionResponseService", () => {
       await expect(
         service.completeResponse({ responseId: "response1" }, mockUser.id),
       ).rejects.toThrow("이미 완료된 응답입니다.");
+    });
+  });
+
+  describe("cleanupAbuseMeta", () => {
+    it("기본 보관일(90일) 기준으로 메타를 정리한다", async () => {
+      // Given
+      jest.useFakeTimers().setSystemTime(now);
+      mockResponseRepo.nullifyAbuseMetaOlderThan.mockResolvedValue(7);
+
+      // When
+      const result = await service.cleanupAbuseMeta();
+
+      // Then
+      const expectedCutoff = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+      expect(mockResponseRepo.nullifyAbuseMetaOlderThan).toHaveBeenCalledWith(expectedCutoff);
+      expect(result).toEqual({
+        clearedCount: 7,
+        cutoffDate: expectedCutoff,
+      });
+    });
+
+    it("커스텀 보관일 기준으로 메타를 정리한다", async () => {
+      // Given
+      jest.useFakeTimers().setSystemTime(now);
+      mockResponseRepo.nullifyAbuseMetaOlderThan.mockResolvedValue(3);
+
+      // When
+      const result = await service.cleanupAbuseMeta(30);
+
+      // Then
+      const expectedCutoff = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      expect(mockResponseRepo.nullifyAbuseMetaOlderThan).toHaveBeenCalledWith(expectedCutoff);
+      expect(result).toEqual({
+        clearedCount: 3,
+        cutoffDate: expectedCutoff,
+      });
     });
   });
 

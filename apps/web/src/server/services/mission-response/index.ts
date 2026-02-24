@@ -1,15 +1,29 @@
 import { completeResponseInputSchema, startResponseInputSchema } from "@/schemas/mission-response";
+import { actionRepository } from "@/server/repositories/action/actionRepository";
 import { missionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
-import type { CompleteResponseInput, ResponseStats, StartResponseInput } from "./types";
+import {
+  type CleanupAbuseMetaResult,
+  type CompleteResponseInput,
+  type ResponseActor,
+  type ResponseRequestMeta,
+  type ResponseStats,
+  type StartResponseInput,
+  isResponseOwner,
+  normalizeActor,
+} from "./types";
+
+const ABUSE_LOG_RETENTION_DAYS = 90;
 
 export class MissionResponseService {
   constructor(
     private responseRepo = missionResponseRepository,
     private missionRepo = missionRepository,
+    private actionRepo = actionRepository,
   ) {}
 
-  async getResponseById(responseId: string, userId: string) {
+  async getResponseById(responseId: string, actor: string | ResponseActor) {
+    const normalizedActor = normalizeActor(actor);
     const response = await this.responseRepo.findById(responseId);
 
     if (!response) {
@@ -18,7 +32,7 @@ export class MissionResponseService {
       throw error;
     }
 
-    if (response.userId !== userId) {
+    if (!isResponseOwner(response, normalizedActor)) {
       const error = new Error("조회 권한이 없습니다.");
       error.cause = 403;
       throw error;
@@ -29,6 +43,20 @@ export class MissionResponseService {
 
   async getResponseByMissionAndUser(missionId: string, userId: string) {
     return this.responseRepo.findByMissionAndUser(missionId, userId);
+  }
+
+  async getResponseByMissionAndActor(missionId: string, actor: string | ResponseActor) {
+    const normalizedActor = normalizeActor(actor);
+
+    if (normalizedActor.userId) {
+      return this.responseRepo.findByMissionAndUser(missionId, normalizedActor.userId);
+    }
+
+    if (normalizedActor.guestId) {
+      return this.responseRepo.findByMissionAndGuest(missionId, normalizedActor.guestId);
+    }
+
+    return null;
   }
 
   async getUserResponses(userId: string) {
@@ -78,7 +106,8 @@ export class MissionResponseService {
     };
   }
 
-  async startResponse(input: StartResponseInput, userId: string) {
+  async startResponse(input: StartResponseInput, actor: string | ResponseActor) {
+    const normalizedActor = normalizeActor(actor);
     const parseResult = startResponseInputSchema.safeParse(input);
     if (!parseResult.success) {
       const error = new Error(parseResult.error.issues[0]?.message || "유효성 검사 실패");
@@ -102,6 +131,26 @@ export class MissionResponseService {
       throw error;
     }
 
+    const allowGuestResponse = mission.allowGuestResponse;
+    const allowMultipleResponses = mission.allowMultipleResponses;
+    const isGuestActor = !normalizedActor.userId && !!normalizedActor.guestId;
+
+    if (isGuestActor && !allowGuestResponse) {
+      const error = new Error("로그인이 필요한 미션입니다.");
+      error.cause = 401;
+      throw error;
+    }
+
+    if (isGuestActor) {
+      const hasFileUploadAction = await this.actionRepo.hasFileUploadActionByMissionId(missionId);
+
+      if (hasFileUploadAction) {
+        const error = new Error("파일 업로드 문항이 포함된 미션은 로그인 후 참여할 수 있습니다.");
+        error.cause = 403;
+        throw error;
+      }
+    }
+
     if (mission.maxParticipants !== null && mission.maxParticipants > 0) {
       const currentParticipants = await this.responseRepo.countByMissionId(missionId);
       if (currentParticipants >= mission.maxParticipants) {
@@ -111,18 +160,26 @@ export class MissionResponseService {
       }
     }
 
-    const existingResponse = await this.responseRepo.findByMissionAndUser(missionId, userId);
-    if (existingResponse) {
-      return existingResponse;
+    if (!allowMultipleResponses) {
+      const existingResponse = await this.getResponseByMissionAndActor(missionId, normalizedActor);
+      if (existingResponse) {
+        return existingResponse;
+      }
     }
 
     return this.responseRepo.create({
       missionId,
-      userId,
+      userId: normalizedActor.userId,
+      guestId: normalizedActor.guestId,
     });
   }
 
-  async completeResponse(input: CompleteResponseInput, userId: string) {
+  async completeResponse(
+    input: CompleteResponseInput,
+    actor: string | ResponseActor,
+    requestMeta?: ResponseRequestMeta,
+  ) {
+    const normalizedActor = normalizeActor(actor);
     const parseResult = completeResponseInputSchema.safeParse(input);
     if (!parseResult.success) {
       const error = new Error(parseResult.error.issues[0]?.message || "유효성 검사 실패");
@@ -138,7 +195,7 @@ export class MissionResponseService {
       throw error;
     }
 
-    if (response.userId !== userId) {
+    if (!isResponseOwner(response, normalizedActor)) {
       const error = new Error("완료 권한이 없습니다.");
       error.cause = 403;
       throw error;
@@ -150,10 +207,39 @@ export class MissionResponseService {
       throw error;
     }
 
-    return this.responseRepo.updateCompletedAt(parseResult.data.responseId);
+    const completedAt = new Date();
+    const latestCompletedAt = await this.responseRepo.findLatestCompletedAtByActor({
+      missionId: response.missionId,
+      userId: normalizedActor.userId,
+      guestId: normalizedActor.guestId,
+    });
+
+    const submissionIntervalSeconds = latestCompletedAt
+      ? Math.max(0, Math.floor((completedAt.getTime() - latestCompletedAt.getTime()) / 1000))
+      : null;
+
+    return this.responseRepo.updateCompletedAtWithAbuseMeta(parseResult.data.responseId, {
+      completedAt,
+      ipAddress: requestMeta?.ipAddress ?? null,
+      userAgent: requestMeta?.userAgent ?? null,
+      submissionIntervalSeconds,
+    });
   }
 
-  async deleteResponse(responseId: string, userId: string): Promise<void> {
+  async cleanupAbuseMeta(
+    retentionDays: number = ABUSE_LOG_RETENTION_DAYS,
+  ): Promise<CleanupAbuseMetaResult> {
+    const cutoffDate = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
+    const clearedCount = await this.responseRepo.nullifyAbuseMetaOlderThan(cutoffDate);
+
+    return {
+      clearedCount,
+      cutoffDate,
+    };
+  }
+
+  async deleteResponse(responseId: string, actor: string | ResponseActor): Promise<void> {
+    const normalizedActor = normalizeActor(actor);
     const response = await this.responseRepo.findById(responseId);
 
     if (!response) {
@@ -162,7 +248,7 @@ export class MissionResponseService {
       throw error;
     }
 
-    if (response.userId !== userId) {
+    if (!isResponseOwner(response, normalizedActor)) {
       const error = new Error("삭제 권한이 없습니다.");
       error.cause = 403;
       throw error;
@@ -171,7 +257,11 @@ export class MissionResponseService {
     await this.responseRepo.delete(responseId);
   }
 
-  async verifyResponseOwnership(responseId: string, userId: string): Promise<boolean> {
+  async verifyResponseOwnership(
+    responseId: string,
+    actor: string | ResponseActor,
+  ): Promise<boolean> {
+    const normalizedActor = normalizeActor(actor);
     const response = await this.responseRepo.findById(responseId);
 
     if (!response) {
@@ -180,7 +270,7 @@ export class MissionResponseService {
       throw error;
     }
 
-    return response.userId === userId;
+    return isResponseOwner(response, normalizedActor);
   }
 }
 

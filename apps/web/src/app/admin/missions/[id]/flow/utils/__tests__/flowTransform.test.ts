@@ -14,6 +14,8 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
     startDate: null,
     deadline: null,
     isActive: true,
+    allowGuestResponse: false,
+    allowMultipleResponses: false,
     maxParticipants: null,
     creatorId: "creator-1",
     rewardId: null,
