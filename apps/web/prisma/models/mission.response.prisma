@@ -1,15 +1,18 @@
 model MissionResponse {
-  id          String         @id @default(cuid())
-  startedAt   DateTime       @default(now()) @map("started_at")
-  completedAt DateTime?      @map("completed_at")
-  missionId   String         @map("mission_id")
-  userId      String?        @map("user_id")
-  guestId     String?        @map("guest_id")
-  createdAt   DateTime       @default(now()) @map("created_at")
-  updatedAt   DateTime       @updatedAt @map("updated_at")
-  answers     ActionAnswer[]
-  mission     Mission        @relation(fields: [missionId], references: [id], onDelete: Cascade)
-  user        User?          @relation(fields: [userId], references: [id])
+  id                        String         @id @default(cuid())
+  startedAt                 DateTime       @default(now()) @map("started_at")
+  completedAt               DateTime?      @map("completed_at")
+  missionId                 String         @map("mission_id")
+  userId                    String?        @map("user_id")
+  guestId                   String?        @map("guest_id")
+  ipAddress                 String?        @map("ip_address")
+  userAgent                 String?        @map("user_agent")
+  submissionIntervalSeconds Int?           @map("submission_interval_seconds")
+  createdAt                 DateTime       @default(now()) @map("created_at")
+  updatedAt                 DateTime       @updatedAt @map("updated_at")
+  answers                   ActionAnswer[]
+  mission                   Mission        @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  user                      User?          @relation(fields: [userId], references: [id])
 
   @@index([missionId])
   @@index([userId])
@@ -17,5 +20,7 @@ model MissionResponse {
   @@index([missionId, userId])
   @@index([missionId, guestId])
   @@index([completedAt])
+  @@index([missionId, userId, completedAt])
+  @@index([missionId, guestId, completedAt])
   @@map("mission_responses")
 }
