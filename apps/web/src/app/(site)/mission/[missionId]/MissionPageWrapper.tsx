@@ -93,7 +93,7 @@ export function MissionPageWrapper({
     responseId: missionResponse?.id ?? "",
   });
 
-  const { brandLogoUrl, title, deadline, startDate, imageUrl, isActive } = mission ?? {};
+  const { brandLogoUrl, title, deadline, startDate, createdAt, imageUrl, isActive } = mission ?? {};
 
   const titleRef = useRef<HTMLDivElement>(null);
 
@@ -112,11 +112,23 @@ export function MissionPageWrapper({
   useEffect(() => {
     const now = new Date();
 
+    const formatDot = (date: Date) => formatDateToLocalString(date).replaceAll("-", ".");
+    const startFormatted = startDateObj
+      ? formatDot(startDateObj)
+      : createdAt
+        ? formatDot(new Date(createdAt))
+        : null;
+
     if (deadlineDate) {
       const isExpired = isBefore(deadlineDate, now);
       const isWithin24h = isBefore(deadlineDate, addHours(now, 24));
       setShowDeadlineWidget(!isExpired && isWithin24h);
-      setFormattedDeadline(formatDateToLocalString(deadlineDate).replaceAll("-", "."));
+      const deadlineFormatted = formatDot(deadlineDate);
+      setFormattedDeadline(
+        startFormatted ? `${startFormatted} - ${deadlineFormatted}` : deadlineFormatted,
+      );
+    } else if (startFormatted) {
+      setFormattedDeadline(`${startFormatted} - 마감`);
     }
 
     if (startDateObj) {
@@ -124,7 +136,7 @@ export function MissionPageWrapper({
       const isWithin24h = isBefore(startDateObj, addHours(now, 24));
       setShowOpenWidget(isNotOpenYet && isWithin24h);
     }
-  }, [deadlineDate, startDateObj]);
+  }, [deadlineDate, startDateObj, createdAt]);
 
   const isProcessing = Boolean(missionResponseData?.data?.id);
 

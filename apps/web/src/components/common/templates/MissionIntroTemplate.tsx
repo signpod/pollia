@@ -67,7 +67,7 @@ export function MissionIntroTemplate({
                 </div>
                 {formattedDeadline && (
                   <Typo.Body size="medium" className="text-zinc-300">
-                    {`${formattedDeadline} 까지`}
+                    {`${formattedDeadline}까지`}
                   </Typo.Body>
                 )}
               </div>
