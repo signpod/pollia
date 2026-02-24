@@ -51,7 +51,7 @@ export function RewardCard({ reward }: RewardCardProps) {
             alt={reward.name}
             fill
             sizes="118px"
-            className="object-cover"
+            className="object-contain"
             onError={() => setImageError(true)}
           />
         )}
