@@ -3,11 +3,15 @@ import { actionRepository } from "@/server/repositories/action/actionRepository"
 import { missionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
 import type {
+  CleanupAbuseMetaResult,
   CompleteResponseInput,
   ResponseActor,
+  ResponseRequestMeta,
   ResponseStats,
   StartResponseInput,
 } from "./types";
+
+const ABUSE_LOG_RETENTION_DAYS = 90;
 
 export class MissionResponseService {
   constructor(
@@ -168,7 +172,11 @@ export class MissionResponseService {
     });
   }
 
-  async completeResponse(input: CompleteResponseInput, actor: string | ResponseActor) {
+  async completeResponse(
+    input: CompleteResponseInput,
+    actor: string | ResponseActor,
+    requestMeta?: ResponseRequestMeta,
+  ) {
     const normalizedActor = this.normalizeActor(actor);
     const parseResult = completeResponseInputSchema.safeParse(input);
     if (!parseResult.success) {
@@ -197,7 +205,35 @@ export class MissionResponseService {
       throw error;
     }
 
-    return this.responseRepo.updateCompletedAt(parseResult.data.responseId);
+    const completedAt = new Date();
+    const latestCompletedAt = await this.responseRepo.findLatestCompletedAtByActor({
+      missionId: response.missionId,
+      userId: normalizedActor.userId,
+      guestId: normalizedActor.guestId,
+    });
+
+    const submissionIntervalSeconds = latestCompletedAt
+      ? Math.max(0, Math.floor((completedAt.getTime() - latestCompletedAt.getTime()) / 1000))
+      : null;
+
+    return this.responseRepo.updateCompletedAtWithAbuseMeta(parseResult.data.responseId, {
+      completedAt,
+      ipAddress: requestMeta?.ipAddress ?? null,
+      userAgent: requestMeta?.userAgent ?? null,
+      submissionIntervalSeconds,
+    });
+  }
+
+  async cleanupAbuseMeta(
+    retentionDays: number = ABUSE_LOG_RETENTION_DAYS,
+  ): Promise<CleanupAbuseMetaResult> {
+    const cutoffDate = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
+    const clearedCount = await this.responseRepo.nullifyAbuseMetaOlderThan(cutoffDate);
+
+    return {
+      clearedCount,
+      cutoffDate,
+    };
   }
 
   async deleteResponse(responseId: string, actor: string | ResponseActor): Promise<void> {
