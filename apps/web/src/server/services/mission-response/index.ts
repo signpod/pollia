@@ -1,4 +1,5 @@
 import { completeResponseInputSchema, startResponseInputSchema } from "@/schemas/mission-response";
+import { actionRepository } from "@/server/repositories/action/actionRepository";
 import { missionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
 import type {
@@ -12,6 +13,7 @@ export class MissionResponseService {
   constructor(
     private responseRepo = missionResponseRepository,
     private missionRepo = missionRepository,
+    private actionRepo = actionRepository,
   ) {}
 
   async getResponseById(responseId: string, actor: string | ResponseActor) {
@@ -123,20 +125,24 @@ export class MissionResponseService {
       throw error;
     }
 
-    const allowGuestResponse =
-      "allowGuestResponse" in mission
-        ? Boolean((mission as { allowGuestResponse?: boolean }).allowGuestResponse)
-        : false;
-    const allowMultipleResponses =
-      "allowMultipleResponses" in mission
-        ? Boolean((mission as { allowMultipleResponses?: boolean }).allowMultipleResponses)
-        : false;
+    const allowGuestResponse = mission.allowGuestResponse;
+    const allowMultipleResponses = mission.allowMultipleResponses;
     const isGuestActor = !normalizedActor.userId && !!normalizedActor.guestId;
 
     if (isGuestActor && !allowGuestResponse) {
       const error = new Error("로그인이 필요한 미션입니다.");
       error.cause = 401;
       throw error;
+    }
+
+    if (isGuestActor) {
+      const hasFileUploadAction = await this.actionRepo.hasFileUploadActionByMissionId(missionId);
+
+      if (hasFileUploadAction) {
+        const error = new Error("파일 업로드 문항이 포함된 미션은 로그인 후 참여할 수 있습니다.");
+        error.cause = 403;
+        throw error;
+      }
     }
 
     if (mission.maxParticipants !== null && mission.maxParticipants > 0) {

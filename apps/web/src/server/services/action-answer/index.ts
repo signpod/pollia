@@ -68,6 +68,20 @@ export class ActionAnswerService {
     const normalizedActor = this.normalizeActor(actor);
     const validated = this.validateInput(input, submitAnswersSchema);
 
+    if (!normalizedActor.userId) {
+      const hasFileUploadAnswer = validated.answers.some(
+        answer =>
+          answer.type === ActionType.IMAGE ||
+          answer.type === ActionType.PDF ||
+          answer.type === ActionType.VIDEO ||
+          (answer.fileUploadIds && answer.fileUploadIds.length > 0),
+      );
+
+      if (hasFileUploadAnswer) {
+        this.throwError("파일 업로드 답변은 로그인 후 제출할 수 있습니다.", 403);
+      }
+    }
+
     const response = await this.verifyResponseOwnership(validated.responseId, normalizedActor, {
       checkCompleted: true,
     });
