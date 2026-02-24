@@ -1,6 +1,7 @@
 "use server";
 
 import { resolveMissionActor } from "@/actions/common/auth";
+import { getRequestMeta } from "@/actions/common/requestMeta";
 import { isAnswerSameAsSubmitted } from "@/lib/answer/compareAnswers";
 import { actionAnswerService } from "@/server/services/action-answer";
 import { missionResponseService } from "@/server/services/mission-response";
@@ -67,7 +68,8 @@ export async function submitAnswerOnly(params: SubmitAnswerParams): Promise<Subm
     }
 
     if (isLastAction || answer.nextCompletionId) {
-      await missionResponseService.completeResponse({ responseId }, actor);
+      const requestMeta = await getRequestMeta();
+      await missionResponseService.completeResponse({ responseId }, actor, requestMeta);
     }
 
     return { success: true };

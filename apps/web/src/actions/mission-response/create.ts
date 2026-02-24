@@ -1,6 +1,7 @@
 "use server";
 
 import { resolveMissionActor } from "@/actions/common/auth";
+import { getRequestMeta } from "@/actions/common/requestMeta";
 import { missionResponseService } from "@/server/services/mission-response";
 import type {
   CompleteMissionResponseRequest,
@@ -32,9 +33,11 @@ export async function completeMissionResponse(
 ): Promise<CompleteMissionResponseResponse> {
   try {
     const actor = await resolveMissionActor();
+    const requestMeta = await getRequestMeta();
     const response = await missionResponseService.completeResponse(
       { responseId: request.responseId },
       actor,
+      requestMeta,
     );
     return { data: response };
   } catch (error) {
