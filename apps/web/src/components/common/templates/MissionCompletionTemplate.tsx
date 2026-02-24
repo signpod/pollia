@@ -36,9 +36,9 @@ export function MissionCompletionTemplate({
   imageMenu,
 }: MissionCompletionTemplateProps) {
   return (
-    <div className="relative w-full">
+    <div className="relative w-full bg-zinc-50">
       {header}
-      <div className="flex w-full flex-col items-center gap-10 pt-2 pb-10 px-5">
+      <div className="flex w-full flex-col items-center gap-10 pt-5 pb-10 px-5">
         {imageUrl && (
           <div className="relative w-full overflow-hidden rounded-[28px] shadow-[0_4px_20px_rgba(9,9,11,0.16)]">
             <Image
@@ -101,20 +101,25 @@ export function MissionCompletionTemplate({
               {title}
             </Typo.MainTitle>
           )}
-          {description && cleanTiptapHTML(description) && (
-            <TiptapViewer
-              content={cleanTiptapHTML(description)}
-              className="break-keep w-full p-5"
-            />
-          )}
-        </div>
 
-        {(reward || shareButtons) && (
-          <div className="flex w-full flex-col gap-8">
-            {reward}
-            {shareButtons && <MissionShareSection shareButtons={shareButtons} />}
+          <div className="flex w-full flex-col gap-5">
+            {description && cleanTiptapHTML(description) && (
+              <div className="bg-white rounded-2xl p-5 flex flex-col gap-4 w-full">
+                <TiptapViewer
+                  content={cleanTiptapHTML(description)}
+                  className="break-keep w-full"
+                />
+              </div>
+            )}
+
+            {(reward || shareButtons) && (
+              <div className="flex w-full flex-col gap-8">
+                {reward}
+                {shareButtons && <MissionShareSection shareButtons={shareButtons} />}
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
