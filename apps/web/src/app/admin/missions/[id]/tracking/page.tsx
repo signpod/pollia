@@ -7,11 +7,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
+import { Label } from "@/app/admin/components/shadcn-ui/label";
 import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
+import { Switch } from "@/app/admin/components/shadcn-ui/switch";
 import { useReadMission, useReadMissionFunnel } from "@/app/admin/hooks/mission";
 import { useReadMissionResponses } from "@/app/admin/hooks/mission-response";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
-import { notFound } from "next/navigation";
+import { notFound, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { use, useMemo } from "react";
 import { AdminMissionHeader } from "../components/AdminMissionHeader";
 import { MissionNavigation } from "../components/MissionNavigation";
@@ -22,10 +24,29 @@ interface AdminMissionTrackingPageProps {
 
 export default function AdminMissionTrackingPage({ params }: AdminMissionTrackingPageProps) {
   const { id: missionId } = use(params);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const membersOnly = searchParams.get("membersOnly") === "true";
+
   const { data: missionResponse } = useReadMission(missionId);
-  const { data: funnelResponse, isLoading, error } = useReadMissionFunnel(missionId);
-  const { data: responsesData } = useReadMissionResponses(missionId);
+  const {
+    data: funnelResponse,
+    isLoading,
+    error,
+  } = useReadMissionFunnel(missionId, { membersOnly });
+  const { data: responsesData } = useReadMissionResponses(missionId, { membersOnly });
   const mission = missionResponse?.data;
+
+  const handleMembersOnlyChange = (checked: boolean) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (checked) {
+      params.set("membersOnly", "true");
+    } else {
+      params.delete("membersOnly");
+    }
+    router.replace(`${pathname}?${params.toString()}`);
+  };
 
   const responses = responsesData?.data ?? [];
   const missionStats = useMemo(() => {
@@ -53,10 +74,24 @@ export default function AdminMissionTrackingPage({ params }: AdminMissionTrackin
 
       <Card>
         <CardHeader>
-          <CardTitle>트래킹 퍼널</CardTitle>
-          <CardDescription>
-            {UBIQUITOUS_CONSTANTS.MISSION}의 각 단계별 트래킹 데이터를 확인할 수 있습니다
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>트래킹 퍼널</CardTitle>
+              <CardDescription>
+                {UBIQUITOUS_CONSTANTS.MISSION}의 각 단계별 트래킹 데이터를 확인할 수 있습니다
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch
+                id="members-only"
+                checked={membersOnly}
+                onCheckedChange={handleMembersOnlyChange}
+              />
+              <Label htmlFor="members-only" className="text-sm cursor-pointer whitespace-nowrap">
+                회원 응답만 보기
+              </Label>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading && <Skeleton className="h-[450px] w-full" />}
