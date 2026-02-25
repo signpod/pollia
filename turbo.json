@@ -23,7 +23,13 @@
         "ALGOLIA_APP_ID",
         "ALGOLIA_WRITE_API_KEY",
         "ALGOLIA_SEARCH_API_KEY",
-        "ALGOLIA_INDEX_NAME"
+        "ALGOLIA_INDEX_NAME",
+        "MISSION_PASSWORD_SECRET_KEY",
+        "MISSION_REPORT_NOTION_API_KEY",
+        "MISSION_REPORT_NOTION_DATABASE_ID",
+        "TOUR_API_SERVICE_KEY",
+        "KAKAO_CLIENT_SECRET",
+        "REVALIDATION_SECRET"
       ]
     },
     "build:storybook": {

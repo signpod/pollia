@@ -4,9 +4,9 @@ import Link from "next/link";
 export default function LoginDonePage() {
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-6 px-5">
-      <Typo.Title size="large" className="text-center">
+      <Typo.MainTitle size="large" className="text-center">
         가입이 완료되었어요
-      </Typo.Title>
+      </Typo.MainTitle>
       <Typo.Body size="medium" className="text-center text-sub">
         이제 폴리아와 함께 다양한 미션에 참여해 보세요.
       </Typo.Body>

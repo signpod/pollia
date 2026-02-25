@@ -32,7 +32,8 @@ function InfoField({ label, value }: { label: string; value: string }) {
 
 export function AccountContent({ user: initialUser }: AccountContentProps) {
   const router = useRouter();
-  const { data: user = initialUser } = useCurrentUser();
+  const { data } = useCurrentUser();
+  const user = data ?? initialUser;
   const profileImageUrl = useProfileImageUrl();
 
   return (

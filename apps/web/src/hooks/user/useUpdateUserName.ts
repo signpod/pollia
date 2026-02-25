@@ -33,10 +33,10 @@ export const useUpdateUserName = () => {
       );
 
       queryClient.setQueryData<GetCurrentUserResponse>(userQueryKeys.currentUser(), oldData => {
-        if (!oldData) return oldData;
+        if (!oldData?.data) return oldData;
         return {
           data: { ...oldData.data, name },
-        };
+        } as GetCurrentUserResponse;
       });
 
       return { previousData };
