@@ -73,7 +73,7 @@ export function ActionsSection() {
       );
       setOpenIndex(previewActions.length);
       setActiveActionIndex(previewActions.length);
-    } catch (_e) {
+    } catch (e) {
       toast.error("질문 추가에 실패했습니다.", {
         description: e instanceof Error ? e.message : undefined,
       });
