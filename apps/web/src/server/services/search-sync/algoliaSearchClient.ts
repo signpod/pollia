@@ -24,6 +24,10 @@ export function getAlgoliaClient(): AlgoliaClient {
   return sharedClient;
 }
 
+export function resetAlgoliaClientForTest(): void {
+  sharedClient = null;
+}
+
 export interface AlgoliaSearchClientLike {
   saveObject<T extends { objectID: string }>(indexName: string, object: T): Promise<void>;
   saveObjects<T extends { objectID: string }>(indexName: string, objects: T[]): Promise<void>;

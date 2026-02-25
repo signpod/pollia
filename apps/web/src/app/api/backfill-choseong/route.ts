@@ -1,5 +1,5 @@
 import prisma from "@/database/utils/prisma/client";
-import { toChoseong } from "@/server/search";
+import { toChoseong, toMissionSearchRecord } from "@/server/search";
 import { getAlgoliaClient } from "@/server/services/search-sync";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -30,17 +30,23 @@ export async function POST(request: NextRequest) {
       orderBy: { createdAt: "asc" },
     });
 
-    let dbUpdated = 0;
-    for (const mission of missions) {
-      const computed = toChoseong(mission.title);
-      if (mission.choseong !== computed) {
-        await prisma.mission.update({
-          where: { id: mission.id },
-          data: { choseong: computed },
-        });
-        dbUpdated++;
-      }
+    const updateOps = missions
+      .map(mission => ({
+        id: mission.id,
+        choseong: toChoseong(mission.title),
+        current: mission.choseong,
+      }))
+      .filter(({ choseong, current }) => choseong !== current);
+
+    if (updateOps.length > 0) {
+      await prisma.$transaction(
+        updateOps.map(({ id, choseong }) =>
+          prisma.mission.update({ where: { id }, data: { choseong } }),
+        ),
+      );
     }
+
+    const dbUpdated = updateOps.length;
 
     const refreshed =
       dbUpdated > 0
@@ -64,23 +70,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "ALGOLIA_INDEX_NAME not set" }, { status: 500 });
     }
 
-    const records = refreshed.map(m => ({
-      objectID: m.id,
-      title: m.title,
-      choseong: m.choseong,
-      description: m.description ?? "",
-      category: m.category,
-      isActive: m.isActive,
-      likesCount: m.likesCount,
-      createdAt: m.createdAt.toISOString(),
-    }));
+    const records = refreshed.map(toMissionSearchRecord);
 
     const client = getAlgoliaClient();
     const chunkSize = 200;
     let uploaded = 0;
 
     for (let i = 0; i < records.length; i += chunkSize) {
-      const chunk = records.slice(i, i + chunkSize);
+      const chunk = records.slice(i, i + chunkSize).map(r => ({ ...r }));
       await client.saveObjects({ indexName, objects: chunk });
       uploaded += chunk.length;
     }
