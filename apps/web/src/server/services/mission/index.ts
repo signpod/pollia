@@ -8,6 +8,7 @@ import {
   type SearchSyncOutboxRepository,
   searchSyncOutboxRepository,
 } from "@/server/repositories/search-sync-outbox";
+import { toChoseong } from "@/server/search";
 import { type Mission, SearchSyncAction, SearchSyncEntityType } from "@prisma/client";
 import type {
   CreateMissionInput,
@@ -143,6 +144,7 @@ export class MissionService {
       const createdMission = await this.repo.createWithActions(
         {
           ...validatedMissionData,
+          choseong: toChoseong(validatedMissionData.title),
           creatorId: userId,
         },
         actionIds,
@@ -179,8 +181,12 @@ export class MissionService {
       throw error;
     }
 
+    const updateData = result.data.title
+      ? { ...result.data, choseong: toChoseong(result.data.title) }
+      : result.data;
+
     const updatedMission = await prisma.$transaction(async tx => {
-      const missionForUpdate = await this.repo.update(missionId, result.data, userId, tx);
+      const missionForUpdate = await this.repo.update(missionId, updateData, userId, tx);
       await this.outboxRepo.create(
         {
           entityType: SearchSyncEntityType.MISSION,
@@ -228,10 +234,13 @@ export class MissionService {
 
     const originalActions = await this.actionRepo.findDetailsByMissionId(missionId);
 
+    const duplicateTitle = `${originalMission.title} - 복사본`;
+
     const duplicated = await prisma.$transaction(async tx => {
       const duplicatedMission = await this.repo.duplicateMission(
         {
-          title: `${originalMission.title} - 복사본`,
+          title: duplicateTitle,
+          choseong: toChoseong(duplicateTitle),
           description: originalMission.description,
           target: originalMission.target,
           imageUrl: originalMission.imageUrl,

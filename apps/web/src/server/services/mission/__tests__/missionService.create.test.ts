@@ -133,6 +133,7 @@ describe("MissionService - Create", () => {
         {
           title: request.title,
           description: request.description,
+          choseong: expect.any(String),
           target: undefined,
           imageUrl: undefined,
           imageFileUploadId: undefined,
@@ -362,6 +363,7 @@ describe("MissionService - Create", () => {
       expect(mockRepository.duplicateMission).toHaveBeenCalledWith(
         {
           title: "원본 미션 - 복사본",
+          choseong: expect.any(String),
           description: "설명",
           target: "대상",
           imageUrl: "https://example.com/image.jpg",

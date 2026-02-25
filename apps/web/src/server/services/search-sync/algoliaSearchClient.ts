@@ -1,5 +1,33 @@
 import { algoliasearch } from "algoliasearch";
 
+export type AlgoliaClient = ReturnType<typeof algoliasearch>;
+
+let sharedClient: AlgoliaClient | null = null;
+
+export function getAlgoliaClient(): AlgoliaClient {
+  if (sharedClient) {
+    return sharedClient;
+  }
+
+  const appId = process.env.ALGOLIA_APP_ID;
+  const writeApiKey = process.env.ALGOLIA_WRITE_API_KEY;
+
+  if (!appId) {
+    throw new Error("ALGOLIA_APP_ID 환경변수가 설정되지 않았습니다.");
+  }
+
+  if (!writeApiKey) {
+    throw new Error("ALGOLIA_WRITE_API_KEY 환경변수가 설정되지 않았습니다.");
+  }
+
+  sharedClient = algoliasearch(appId, writeApiKey);
+  return sharedClient;
+}
+
+export function resetAlgoliaClientForTest(): void {
+  sharedClient = null;
+}
+
 export interface AlgoliaSearchClientLike {
   saveObject<T extends { objectID: string }>(indexName: string, object: T): Promise<void>;
   saveObjects<T extends { objectID: string }>(indexName: string, objects: T[]): Promise<void>;
@@ -8,11 +36,7 @@ export interface AlgoliaSearchClientLike {
 }
 
 export class AlgoliaSearchClient implements AlgoliaSearchClientLike {
-  private client: ReturnType<typeof algoliasearch> | null;
-
-  constructor(client?: ReturnType<typeof algoliasearch>) {
-    this.client = client ?? null;
-  }
+  constructor(private client?: AlgoliaClient) {}
 
   async saveObject<T extends { objectID: string }>(indexName: string, object: T): Promise<void> {
     await this.getClient().saveObject({
@@ -53,28 +77,8 @@ export class AlgoliaSearchClient implements AlgoliaSearchClientLike {
     });
   }
 
-  private getClient() {
-    if (this.client) {
-      return this.client;
-    }
-
-    this.client = this.createClient();
-    return this.client;
-  }
-
-  private createClient() {
-    const appId = process.env.ALGOLIA_APP_ID;
-    const writeApiKey = process.env.ALGOLIA_WRITE_API_KEY;
-
-    if (!appId) {
-      throw new Error("ALGOLIA_APP_ID 환경변수가 설정되지 않았습니다.");
-    }
-
-    if (!writeApiKey) {
-      throw new Error("ALGOLIA_ADMIN_API_KEY 환경변수가 설정되지 않았습니다.");
-    }
-
-    return algoliasearch(appId, writeApiKey);
+  private getClient(): AlgoliaClient {
+    return this.client ?? getAlgoliaClient();
   }
 }
 

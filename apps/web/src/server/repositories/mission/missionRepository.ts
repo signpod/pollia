@@ -141,6 +141,7 @@ export class MissionRepository {
   async duplicateMission(
     missionData: {
       title: string;
+      choseong?: string;
       description?: string | null;
       target?: string | null;
       imageUrl?: string | null;

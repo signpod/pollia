@@ -114,6 +114,7 @@ describe("MissionService - Mutation", () => {
         {
           title: "수정된 설문",
           description: "수정된 설명",
+          choseong: expect.any(String),
         },
         "user-1",
         expect.anything(),
