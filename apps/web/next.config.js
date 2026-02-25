@@ -2,14 +2,6 @@
 const nextConfig = {
   productionBrowserSourceMaps: true,
 
-  env: {
-    // Vercel 배포 시 git SHA를 code_version으로 사용
-    NEXT_PUBLIC_ROLLBAR_CODE_VERSION:
-      process.env.NEXT_PUBLIC_ROLLBAR_CODE_VERSION ||
-      process.env.VERCEL_GIT_COMMIT_SHA ||
-      "unknown",
-  },
-
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {

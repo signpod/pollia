@@ -1,6 +1,4 @@
 import { GoogleAnalytics } from "@/components/common/GoogleAnalytics";
-import { clientConfig } from "@/rollbar";
-import { Provider as RollbarProvider } from "@rollbar/react";
 import type { Metadata, Viewport } from "next";
 
 export const metadata: Metadata = {
@@ -34,19 +32,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <RollbarProvider config={clientConfig}>
-      <html lang="ko">
-        <head>
-          <link
-            href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css"
-            rel="stylesheet"
-          />
-        </head>
-        <body className="antialiased">
-          <GoogleAnalytics />
-          {children}
-        </body>
-      </html>
-    </RollbarProvider>
+    <html lang="ko">
+      <head>
+        <link
+          href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="antialiased">
+        <GoogleAnalytics />
+        {children}
+      </body>
+    </html>
   );
 }
