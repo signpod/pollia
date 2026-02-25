@@ -138,12 +138,12 @@ export function MissionInfoSection() {
   const handleDescriptionChange = (value: string) => {
     setDescription(value);
     setHasUnsavedChanges(true);
-    scheduleSave({ description: value || undefined });
+    scheduleSave({ description: value ?? "" });
   };
 
   const handleDescriptionBlur = () => {
     flushDebounce();
-    saveMission({ description: description || undefined });
+    saveMission({ description: description ?? "" });
   };
 
   const handleCategoryChange = (value: MissionCategory) => {

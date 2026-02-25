@@ -228,7 +228,7 @@ export function MarkdownEditor({
         }
       </style>
       {label && (
-        <label className="block">
+        <label className="block cursor-text" onClick={() => editor?.commands.focus()}>
           <Typo.Body size={labelSize} className="font-medium text-zinc-900">
             {label}
           </Typo.Body>
@@ -241,7 +241,11 @@ export function MarkdownEditor({
         )}
       >
         {editor && <MarkdownEditorToolbar editor={editor} />}
-        <div style={minHeightStyle()} className="relative overflow-visible">
+        <div
+          style={minHeightStyle()}
+          className="relative cursor-text overflow-visible"
+          onClick={() => editor?.commands.focus()}
+        >
           {editor && <EditorContent editor={editor} />}
         </div>
         {maxLength != null && (
