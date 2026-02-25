@@ -15,15 +15,21 @@ export function Footer() {
           © Pollia All rights reserved.
         </Typo.Body>
       </div>
-      <Link
-        href={process.env.NEXT_PUBLIC_PRIVACY_POLICY_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
+      {process.env.NEXT_PUBLIC_PRIVACY_POLICY_URL ? (
+        <Link
+          href={process.env.NEXT_PUBLIC_PRIVACY_POLICY_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Typo.Body size="small" className="text-info">
+            개인정보처리방침
+          </Typo.Body>
+        </Link>
+      ) : (
         <Typo.Body size="small" className="text-info">
           개인정보처리방침
         </Typo.Body>
-      </Link>
+      )}
     </footer>
   );
 }

@@ -80,12 +80,6 @@ const nextConfig = {
         port: "",
         pathname: "/**",
       },
-      {
-        protocol: "http",
-        hostname: "tong.visitkorea.or.kr",
-        port: "",
-        pathname: "/**",
-      },
     ],
     formats: ["image/avif", "image/webp"],
   },

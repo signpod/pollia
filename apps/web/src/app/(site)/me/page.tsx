@@ -12,20 +12,25 @@ import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { MissionType } from "@prisma/client";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { MePageContent } from "./MePageContent";
 
 export default async function MePage() {
   const queryClient = getQueryClient();
 
-  const [myResponsesData, userData] = await Promise.all([
+  const userData = await queryClient.fetchQuery({
+    queryKey: userQueryKeys.currentUser(),
+    queryFn: () => getCurrentUser(),
+  });
+  if (!userData.data) {
+    redirect("/login");
+  }
+
+  const [myResponsesData] = await Promise.all([
     queryClient.fetchQuery({
       queryKey: missionQueryKeys.myResponses(),
       queryFn: () => getMyResponses(),
-    }),
-    queryClient.fetchQuery({
-      queryKey: userQueryKeys.currentUser(),
-      queryFn: () => getCurrentUser(),
     }),
     queryClient.prefetchQuery({
       queryKey: rewardQueryKeys.all(),

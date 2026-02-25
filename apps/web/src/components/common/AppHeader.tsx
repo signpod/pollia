@@ -30,7 +30,6 @@ interface AppHeaderProps {
 const defaultNavLinks: NavLink[] = [
   { href: "/", label: "홈" },
   { href: "/surveys", label: "설문조사" },
-  { href: "/festivals", label: "지역축제" },
   { href: "/activity", label: "내 활동" },
 ];
 

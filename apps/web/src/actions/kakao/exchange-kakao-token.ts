@@ -21,6 +21,15 @@ export async function exchangeKakaoToken(
       throw error;
     }
 
+    const clientSecret = process.env.KAKAO_CLIENT_SECRET;
+    if (!clientSecret) {
+      const error = new Error(
+        "KAKAO_CLIENT_SECRET이 설정되지 않았습니다. 카카오 개발자 콘솔에서 Client Secret을 발급 후 설정하세요.",
+      );
+      error.cause = 500;
+      throw error;
+    }
+
     const tokenResponse = await fetch("https://kauth.kakao.com/oauth/token", {
       method: "POST",
       headers: {
@@ -29,9 +38,9 @@ export async function exchangeKakaoToken(
       body: new URLSearchParams({
         grant_type: "authorization_code",
         client_id: kakaoRestApiKey,
+        client_secret: clientSecret,
         redirect_uri: request.redirectUri,
         code: request.code,
-        client_secret: process.env.KAKAO_CLIENT_SECRET,
       }),
     });
 
