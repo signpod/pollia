@@ -9,6 +9,7 @@ export const ROUTES = {
 
   // 메인 페이지
   HOME: "/",
+  SEARCH: "/search",
   ME: "/me",
   ME_IN_PROGRESS: "/me/in-progress",
   ME_COMPLETED: "/me/completed",
@@ -20,6 +21,7 @@ export const ROUTES = {
   ME_PARTNERSHIP: "/me/partnership",
   ME_LIKED_TAB: "/me?tab=liked",
   LIKES: "/likes",
+  CREATE: "/create",
 
   // 미션 관련
   MISSION: (id: string) => `/mission/${id}`,

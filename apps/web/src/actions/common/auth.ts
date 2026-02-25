@@ -113,7 +113,9 @@ export async function resolveMissionActor(): Promise<MissionActor> {
       isGuest: false,
     };
   } catch (error) {
-    if (!(error instanceof Error) || error.cause !== 401) {
+    const isUnauthenticated = error instanceof Error && error.cause === 401;
+    const isWithdrawn = error instanceof Error && error.cause === 403;
+    if (!(error instanceof Error) || (!isUnauthenticated && !isWithdrawn)) {
       throw error;
     }
   }

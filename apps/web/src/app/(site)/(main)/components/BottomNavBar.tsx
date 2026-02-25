@@ -4,11 +4,11 @@ import { ROUTES } from "@/constants/routes";
 import { useAuth } from "@/hooks/user";
 import HomeIconFilled from "@public/svgs/home-icon-filled.svg";
 import HomeIcon from "@public/svgs/home-icon.svg";
-import { Tooltip, Typo, useDrawer } from "@repo/ui/components";
-import { Heart, Search } from "lucide-react";
+import { Typo, useDrawer } from "@repo/ui/components";
+import { Heart, Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { LoginDrawer } from "./LoginDrawer";
 
 export function BottomNavBar() {
@@ -24,10 +24,10 @@ function BottomNavBarContent() {
   const router = useRouter();
   const { isLoggedIn } = useAuth();
   const { open: openLoginDrawer } = useDrawer();
-  const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
     router.prefetch(ROUTES.LIKES);
+    router.prefetch(ROUTES.CREATE);
   }, [router]);
 
   const handleLikesClick = (e: React.MouseEvent) => {
@@ -37,8 +37,16 @@ function BottomNavBarContent() {
     }
   };
 
+  const handleCreateClick = (e: React.MouseEvent) => {
+    if (!isLoggedIn) {
+      e.preventDefault();
+      openLoginDrawer();
+    }
+  };
+
   const isHome = pathname === ROUTES.HOME;
   const isLikes = pathname === ROUTES.LIKES;
+  const isCreate = pathname === ROUTES.CREATE;
 
   return (
     <nav className="flex w-full items-center border-t border-zinc-100 bg-white shadow-[0px_4px_20px_0px_rgba(9,9,11,0.08)]">
@@ -60,20 +68,23 @@ function BottomNavBarContent() {
         </Typo.Body>
       </Link>
 
-      <span
-        data-tooltip-id="nav-search"
-        className="flex flex-1 cursor-not-allowed flex-col items-center justify-center gap-0.5 py-2 opacity-30"
-        aria-label="검색"
-        aria-disabled="true"
-        onMouseEnter={() => setShowTooltip(true)}
-        onMouseLeave={() => setShowTooltip(false)}
-        onClick={() => setShowTooltip(prev => !prev)}
+      <Link
+        href={ROUTES.CREATE}
+        className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2"
+        aria-label="만들기"
+        onClick={handleCreateClick}
       >
-        <Search className="size-6 text-zinc-400" strokeWidth={1.5} />
-        <Typo.Body size="small" className="text-[11px] font-bold leading-normal text-zinc-400">
-          검색
+        <Plus
+          className={`size-6 ${isCreate ? "text-black" : "text-zinc-400"}`}
+          strokeWidth={isCreate ? 2 : 1.5}
+        />
+        <Typo.Body
+          size="small"
+          className={`text-[11px] font-bold leading-normal ${isCreate ? "text-black" : "text-zinc-400"}`}
+        >
+          만들기
         </Typo.Body>
-      </span>
+      </Link>
 
       <Link
         href={ROUTES.LIKES}
@@ -93,14 +104,6 @@ function BottomNavBarContent() {
           찜
         </Typo.Body>
       </Link>
-
-      {showTooltip && (
-        <Tooltip id="nav-search" placement="top">
-          <Typo.Body size="small" className="text-zinc-600 whitespace-nowrap">
-            준비중이에요! 조금만 기다려주세요 😊
-          </Typo.Body>
-        </Tooltip>
-      )}
     </nav>
   );
 }

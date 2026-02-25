@@ -21,7 +21,7 @@ export const missionSearchConfig = {
 type MissionRecordFields = Pick<
   Mission,
   "id" | "title" | "choseong" | "description" | "category" | "isActive" | "likesCount" | "createdAt"
->;
+> & { imageUrl?: string | null };
 
 export interface MissionSearchRecord {
   objectID: string;
@@ -32,6 +32,7 @@ export interface MissionSearchRecord {
   isActive: boolean;
   likesCount: number;
   createdAt: string;
+  imageUrl?: string;
 }
 
 export function toMissionSearchRecord(mission: MissionRecordFields): MissionSearchRecord {
@@ -44,5 +45,6 @@ export function toMissionSearchRecord(mission: MissionRecordFields): MissionSear
     isActive: mission.isActive,
     likesCount: mission.likesCount,
     createdAt: mission.createdAt.toISOString(),
+    imageUrl: mission.imageUrl ?? undefined,
   };
 }

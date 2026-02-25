@@ -3,8 +3,9 @@
   "private": true,
   "scripts": {
     "git:clean-branches": "git branch | grep -v 'main\\|dev' | xargs git branch -D && git branch -r | grep -v 'main\\|dev' | sed 's/origin\\///' | xargs -I {} git branch -dr origin/{}",
-    "build": "turbo run build",
-    "build:clean": "yarn clean:cache && turbo run build",
+    "build": "turbo run build --filter=./apps/web",
+    "build:storybook": "turbo run build --filter=./apps/storybook",
+    "build:clean": "yarn clean:cache && turbo run build --filter=./apps/web",
     "test": "turbo run test",
     "test:watch": "turbo run test:watch",
     "test:coverage": "turbo run test:coverage",
