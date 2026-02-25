@@ -111,10 +111,11 @@ describe("MissionService - Mutation", () => {
       expect(searchSyncOutboxRepository.create).toHaveBeenCalledTimes(1);
       expect(mockRepository.update).toHaveBeenCalledWith(
         "mission-1",
-        {
+        expect.objectContaining({
           title: "수정된 설문",
           description: "수정된 설명",
-        },
+          choseong: expect.any(String),
+        }),
         "user-1",
         expect.anything(),
       );

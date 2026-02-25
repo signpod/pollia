@@ -3,6 +3,46 @@ const { algoliasearch } = require("algoliasearch");
 
 const prisma = new PrismaClient();
 
+const HANGUL_BASE = 44032;
+const HANGUL_LAST = 55203;
+const HANGUL_CYCLE = 588;
+const CHOSEONG_TABLE = [
+  "ㄱ",
+  "ㄲ",
+  "ㄴ",
+  "ㄷ",
+  "ㄸ",
+  "ㄹ",
+  "ㅁ",
+  "ㅂ",
+  "ㅃ",
+  "ㅅ",
+  "ㅆ",
+  "ㅇ",
+  "ㅈ",
+  "ㅉ",
+  "ㅊ",
+  "ㅋ",
+  "ㅌ",
+  "ㅍ",
+  "ㅎ",
+];
+
+function toChoseong(value) {
+  return Array.from(value.normalize("NFC"))
+    .map(char => {
+      if (char === " ") return "";
+      const code = char.charCodeAt(0);
+      if (code >= HANGUL_BASE && code <= HANGUL_LAST) {
+        const idx = Math.floor((code - HANGUL_BASE) / HANGUL_CYCLE);
+        return CHOSEONG_TABLE[idx] ?? "";
+      }
+      if (/[a-zA-Z0-9]/.test(char)) return char.toLowerCase();
+      return "";
+    })
+    .join("");
+}
+
 async function main() {
   const appId = process.env.ALGOLIA_APP_ID;
   const writeApiKey = process.env.ALGOLIA_WRITE_API_KEY;
@@ -38,35 +78,62 @@ async function main() {
     orderBy: { createdAt: "asc" },
   });
 
-  const records = missions.map(mission => ({
-    objectID: mission.id,
-    title: mission.title,
-    choseong: mission.choseong,
-    description: mission.description ?? "",
-    category: mission.category,
-    isActive: mission.isActive,
-    likesCount: mission.likesCount,
-    createdAt: mission.createdAt.toISOString(),
-  }));
+  console.log(`[Backfill] total missions=${missions.length}`);
 
-  console.log(`[Backfill] total missions=${records.length}`);
-
-  if (records.length === 0) {
-    console.log("[Backfill] nothing to upload");
+  if (missions.length === 0) {
+    console.log("[Backfill] nothing to process");
     return;
   }
+
+  let dbUpdated = 0;
+  for (const mission of missions) {
+    const computed = toChoseong(mission.title);
+    if (mission.choseong !== computed) {
+      await prisma.mission.update({
+        where: { id: mission.id },
+        data: { choseong: computed },
+      });
+      dbUpdated++;
+    }
+  }
+  console.log(`[Backfill] DB choseong updated=${dbUpdated}/${missions.length}`);
+
+  const refreshed =
+    dbUpdated > 0
+      ? await prisma.mission.findMany({
+          select: {
+            id: true,
+            title: true,
+            choseong: true,
+            description: true,
+            category: true,
+            isActive: true,
+            likesCount: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: "asc" },
+        })
+      : missions;
+
+  const records = refreshed.map(m => ({
+    objectID: m.id,
+    title: m.title,
+    choseong: m.choseong,
+    description: m.description ?? "",
+    category: m.category,
+    isActive: m.isActive,
+    likesCount: m.likesCount,
+    createdAt: m.createdAt.toISOString(),
+  }));
 
   const client = algoliasearch(appId, writeApiKey);
 
   let uploaded = 0;
   for (let i = 0; i < records.length; i += chunkSize) {
     const chunk = records.slice(i, i + chunkSize);
-    await client.saveObjects({
-      indexName,
-      objects: chunk,
-    });
+    await client.saveObjects({ indexName, objects: chunk });
     uploaded += chunk.length;
-    console.log(`[Backfill] uploaded ${uploaded}/${records.length}`);
+    console.log(`[Backfill] algolia uploaded ${uploaded}/${records.length}`);
   }
 
   console.log("[Backfill] completed");
