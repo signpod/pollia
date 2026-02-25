@@ -62,10 +62,13 @@ export async function getMyResponses(): Promise<GetMyMissionResponsesResponse> {
   }
 }
 
-export async function getMissionResponses(missionId: string): Promise<GetMissionResponsesResponse> {
+export async function getMissionResponses(
+  missionId: string,
+  options?: { membersOnly?: boolean },
+): Promise<GetMissionResponsesResponse> {
   try {
     const user = await requireActiveUser();
-    const responses = await missionResponseService.getMissionResponses(missionId, user.id);
+    const responses = await missionResponseService.getMissionResponses(missionId, user.id, options);
     return { data: responses };
   } catch (error) {
     console.error("getMissionResponses error:", error);

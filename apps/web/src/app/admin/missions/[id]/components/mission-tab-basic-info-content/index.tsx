@@ -47,6 +47,8 @@ interface InlineToggleFormValues {
   isActive: boolean;
   isExposed: boolean;
   category: MissionCategory;
+  allowGuestResponse: boolean;
+  allowMultipleResponses: boolean;
 }
 
 export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
@@ -59,6 +61,8 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
       isActive: mission.isActive,
       isExposed: mission.type === MissionType.GENERAL,
       category: mission.category,
+      allowGuestResponse: mission.allowGuestResponse,
+      allowMultipleResponses: mission.allowMultipleResponses,
     },
   });
 
@@ -137,8 +141,17 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
       isActive: mission.isActive,
       isExposed: mission.type === MissionType.GENERAL,
       category: mission.category,
+      allowGuestResponse: mission.allowGuestResponse,
+      allowMultipleResponses: mission.allowMultipleResponses,
     });
-  }, [mission.isActive, mission.type, mission.category, form]);
+  }, [
+    mission.isActive,
+    mission.type,
+    mission.category,
+    mission.allowGuestResponse,
+    mission.allowMultipleResponses,
+    form,
+  ]);
 
   useEffect(() => {
     const subscription = form.watch((value, { name, type }) => {
@@ -175,9 +188,38 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
           data: { category: value.category },
         });
       }
+      if (
+        name === "allowGuestResponse" &&
+        value.allowGuestResponse !== undefined &&
+        value.allowGuestResponse !== mission.allowGuestResponse
+      ) {
+        updateMission.mutate({
+          missionId: mission.id,
+          data: { allowGuestResponse: value.allowGuestResponse },
+        });
+      }
+      if (
+        name === "allowMultipleResponses" &&
+        value.allowMultipleResponses !== undefined &&
+        value.allowMultipleResponses !== mission.allowMultipleResponses
+      ) {
+        updateMission.mutate({
+          missionId: mission.id,
+          data: { allowMultipleResponses: value.allowMultipleResponses },
+        });
+      }
     });
     return () => subscription.unsubscribe();
-  }, [form, mission.id, mission.isActive, mission.type, mission.category, updateMission]);
+  }, [
+    form,
+    mission.id,
+    mission.isActive,
+    mission.type,
+    mission.category,
+    mission.allowGuestResponse,
+    mission.allowMultipleResponses,
+    updateMission,
+  ]);
 
   const isProjectImageBusy = projectImageEdit.image.isUploading || updateMission.isPending;
   const isBrandLogoBusy = brandLogoEdit.image.isUploading || updateMission.isPending;
@@ -240,6 +282,20 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
                       label: MISSION_CATEGORY_LABELS[MissionCategory.QUIZ],
                     },
                   ]}
+                  disabled={updateMission.isPending}
+                />
+                <ToggleField
+                  control={form.control}
+                  name="allowGuestResponse"
+                  label="비회원 참여 허용"
+                  description="비회원(게스트)도 참여할 수 있도록 허용합니다"
+                  disabled={updateMission.isPending}
+                />
+                <ToggleField
+                  control={form.control}
+                  name="allowMultipleResponses"
+                  label="다중 응답 허용"
+                  description="동일 사용자가 여러 번 응답할 수 있도록 허용합니다"
                   disabled={updateMission.isPending}
                 />
               </div>

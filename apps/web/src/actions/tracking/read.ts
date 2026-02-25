@@ -4,10 +4,13 @@ import { requireActiveUser } from "@/actions/common/auth";
 import { trackingActionService } from "@/server/services/tracking";
 import type { GetMissionFunnelResponse } from "@/types/dto";
 
-export async function getMissionFunnel(missionId: string): Promise<GetMissionFunnelResponse> {
+export async function getMissionFunnel(
+  missionId: string,
+  options?: { membersOnly?: boolean },
+): Promise<GetMissionFunnelResponse> {
   try {
     const user = await requireActiveUser();
-    const funnelData = await trackingActionService.getMissionFunnel(missionId, user.id);
+    const funnelData = await trackingActionService.getMissionFunnel(missionId, user.id, options);
     return { data: funnelData };
   } catch (error) {
     console.error("getMissionFunnel error:", error);

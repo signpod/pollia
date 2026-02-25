@@ -34,21 +34,24 @@ export const adminMissionCompletionQueryKeys = {
 export type AdminMissionCompletionQueryKeys = typeof adminMissionCompletionQueryKeys;
 
 export const trackingQueryKeys = {
-  missionFunnel: (missionId: string) => ["admin", "mission-funnel", missionId] as const,
+  missionFunnel: (missionId: string, options?: { membersOnly?: boolean }) =>
+    ["admin", "mission-funnel", missionId, options ?? {}] as const,
 } as const;
 
 export type TrackingQueryKeys = typeof trackingQueryKeys;
 
 export const adminMissionResponseQueryKeys = {
   all: () => ["admin", "mission-response"] as const,
-  responses: (missionId: string) => ["admin", "mission-response", "responses", missionId] as const,
+  responses: (missionId: string, options?: { membersOnly?: boolean }) =>
+    ["admin", "mission-response", "responses", missionId, options ?? {}] as const,
 } as const;
 
 export type AdminMissionResponseQueryKeys = typeof adminMissionResponseQueryKeys;
 
 export const submissionQueryKeys = {
   all: () => ["admin", "submission"] as const,
-  list: (missionId: string) => ["admin", "submission", missionId] as const,
+  list: (missionId: string, options?: { membersOnly?: boolean }) =>
+    ["admin", "submission", missionId, options ?? {}] as const,
 } as const;
 
 export type SubmissionQueryKeys = typeof submissionQueryKeys;

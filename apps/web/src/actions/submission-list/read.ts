@@ -12,12 +12,15 @@ export interface GetSubmissionListResponse {
   data: SubmissionTablesData;
 }
 
-export async function getSubmissionList(missionId: string): Promise<GetSubmissionListResponse> {
+export async function getSubmissionList(
+  missionId: string,
+  options?: { membersOnly?: boolean },
+): Promise<GetSubmissionListResponse> {
   try {
     await requireAdmin();
 
     const [responses, actions] = await Promise.all([
-      missionResponseRepository.findByMissionId(missionId),
+      missionResponseRepository.findByMissionId(missionId, options),
       actionRepository.findDetailsByMissionId(missionId),
     ]);
 

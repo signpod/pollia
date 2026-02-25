@@ -34,6 +34,7 @@ export interface MissionFunnelData {
 
 export interface GetMissionFunnelOptions {
   utmSource?: string;
+  membersOnly?: boolean;
 }
 
 export interface SessionMaps {

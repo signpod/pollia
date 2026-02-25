@@ -7,11 +7,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/app/admin/components/shadcn-ui/card";
+import { Label } from "@/app/admin/components/shadcn-ui/label";
 import { Skeleton } from "@/app/admin/components/shadcn-ui/skeleton";
+import { Switch } from "@/app/admin/components/shadcn-ui/switch";
 import { useReadMission } from "@/app/admin/hooks/mission";
 import { useReadSubmissionList } from "@/app/admin/hooks/submission";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
-import { notFound } from "next/navigation";
+import { notFound, usePathname, useRouter, useSearchParams } from "next/navigation";
 import { use, useMemo, useState } from "react";
 import { AdminMissionHeader } from "../components/AdminMissionHeader";
 import { MissionNavigation } from "../components/MissionNavigation";
@@ -25,10 +27,29 @@ interface AdminMissionSubmissionsPageProps {
 
 export default function AdminMissionSubmissionsPage({ params }: AdminMissionSubmissionsPageProps) {
   const { id: missionId } = use(params);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const membersOnly = searchParams.get("membersOnly") === "true";
+
   const { data: missionResponse } = useReadMission(missionId);
-  const { data: submissionResponse, isLoading, error } = useReadSubmissionList(missionId);
+  const {
+    data: submissionResponse,
+    isLoading,
+    error,
+  } = useReadSubmissionList(missionId, { membersOnly });
   const mission = missionResponse?.data;
   const [filter, setFilter] = useState<StatusFilterValue>("all");
+
+  const handleMembersOnlyChange = (checked: boolean) => {
+    const params = new URLSearchParams(searchParams.toString());
+    if (checked) {
+      params.set("membersOnly", "true");
+    } else {
+      params.delete("membersOnly");
+    }
+    router.replace(`${pathname}?${params.toString()}`);
+  };
 
   const tableData = submissionResponse?.data;
 
@@ -73,6 +94,19 @@ export default function AdminMissionSubmissionsPage({ params }: AdminMissionSubm
                 <CardDescription>{UBIQUITOUS_CONSTANTS.MISSION} 참여자 목록</CardDescription>
               </div>
               <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="members-only"
+                    checked={membersOnly}
+                    onCheckedChange={handleMembersOnlyChange}
+                  />
+                  <Label
+                    htmlFor="members-only"
+                    className="text-sm cursor-pointer whitespace-nowrap"
+                  >
+                    회원 응답만 보기
+                  </Label>
+                </div>
                 <StatusFilter value={filter} onChange={setFilter} counts={counts} />
                 <SubmissionExportButton missionId={missionId} exportType={filter} />
               </div>

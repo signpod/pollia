@@ -22,7 +22,7 @@ export class TrackingActionService {
   async getMissionFunnel(
     missionId: string,
     userId: string,
-    _options: GetMissionFunnelOptions = {},
+    options: GetMissionFunnelOptions = {},
   ): Promise<MissionFunnelData> {
     await this.validateAccess(missionId, userId);
 
@@ -31,7 +31,7 @@ export class TrackingActionService {
       return this.emptyFunnelData();
     }
 
-    const sessionMaps = await this.buildSessionMaps(missionId);
+    const sessionMaps = await this.buildSessionMaps(missionId, options);
     const statistics = this.calculateStatistics(actions, sessionMaps);
     const nodes = this.buildNodes(actions, sessionMaps, statistics);
     const links = this.buildLinks(actions, sessionMaps);
@@ -87,9 +87,13 @@ export class TrackingActionService {
     };
   }
 
-  private async buildSessionMaps(missionId: string): Promise<SessionMaps> {
-    const entries = await this.entryRepo.findByMissionId(missionId);
-    const responses = await this.responseRepo.findByMissionId(missionId);
+  private async buildSessionMaps(
+    missionId: string,
+    options?: GetMissionFunnelOptions,
+  ): Promise<SessionMaps> {
+    const repoOptions = options?.membersOnly ? { membersOnly: true } : undefined;
+    const entries = await this.entryRepo.findByMissionId(missionId, repoOptions);
+    const responses = await this.responseRepo.findByMissionId(missionId, repoOptions);
 
     const sessionEntries = entries.reduce((map, entry) => {
       const existingSet = map.get(entry.sessionId);

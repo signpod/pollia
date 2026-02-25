@@ -63,7 +63,11 @@ export class MissionResponseService {
     return this.responseRepo.findByUserId(userId);
   }
 
-  async getMissionResponses(missionId: string, userId: string) {
+  async getMissionResponses(
+    missionId: string,
+    userId: string,
+    options?: { membersOnly?: boolean },
+  ) {
     const mission = await this.missionRepo.findById(missionId);
 
     if (!mission) {
@@ -78,7 +82,7 @@ export class MissionResponseService {
       throw error;
     }
 
-    return this.responseRepo.findByMissionId(missionId);
+    return this.responseRepo.findByMissionId(missionId, options);
   }
 
   async getMissionStats(missionId: string, userId: string): Promise<ResponseStats> {
