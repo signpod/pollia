@@ -20,7 +20,7 @@ const createMissionFormRewardSchema = z.object({
   scheduledDate: z.date().optional(),
 });
 
-export const createMissionFormSchema = z.object({
+const createMissionFormBaseSchema = z.object({
   title: titleSchema,
   description: z
     .string()
@@ -30,8 +30,18 @@ export const createMissionFormSchema = z.object({
     )
     .optional(),
   hasReward: z.boolean(),
-  reward: createMissionFormRewardSchema.optional(),
 });
+
+export const createMissionFormSchema = z.discriminatedUnion("hasReward", [
+  createMissionFormBaseSchema.extend({
+    hasReward: z.literal(false),
+    reward: z.unknown().optional(),
+  }),
+  createMissionFormBaseSchema.extend({
+    hasReward: z.literal(true),
+    reward: createMissionFormRewardSchema,
+  }),
+]);
 
 export type CreateMissionFormData = z.infer<typeof createMissionFormSchema>;
 

@@ -1,19 +1,15 @@
 "use client";
 
 import { MissionIntroPage } from "@/components/common/pages/MissionIntroPage";
-import { ROUTES } from "@/constants/routes";
 import { useMissionIntroData, useSurveyResume } from "@/hooks/mission";
 import { useReadMissionResponseForMission } from "@/hooks/mission-response";
 import { useReadMissionParticipantInfo } from "@/hooks/participant/useReadMissionParticipantInfo";
 import { useReadReward } from "@/hooks/reward/useReadReward";
-import { useCurrentUser } from "@/hooks/user/useCurrentUser";
 import { getActionNavCookie, setActionNavCookie } from "@/lib/cookie";
 import { formatDateToLocalString } from "@/lib/date";
 import { MissionType } from "@prisma/client";
-import { CalloutProvider, type CalloutToneVariant, Typo, useCallout } from "@repo/ui/components";
+import { CalloutProvider, type CalloutToneVariant, useCallout } from "@repo/ui/components";
 import { addHours, isBefore } from "date-fns";
-import { Settings } from "lucide-react";
-import Link from "next/link";
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { MissionRewardData } from "./types/mission";
 import { BottomButton } from "./ui";
@@ -96,9 +92,6 @@ export function MissionPageWrapper({
     missionId,
     responseId: missionResponse?.id ?? "",
   });
-
-  const { data: currentUser } = useCurrentUser();
-  const isCreator = currentUser?.id != null && currentUser.id === mission?.creatorId;
 
   const { brandLogoUrl, title, deadline, startDate, imageUrl, isActive } = mission ?? {};
 
@@ -190,17 +183,6 @@ export function MissionPageWrapper({
     <CalloutProvider position="top-center">
       <CalloutTrigger calloutData={calloutData} isLoading={isResuming} />
       <MissionIntroContext.Provider value={contextValue}>
-        {isCreator && (
-          <Link
-            href={ROUTES.MISSION_MANAGE_ACTIONS(missionId)}
-            className="flex items-center justify-center gap-2 border-b border-violet-100 bg-violet-50 px-4 py-2.5"
-          >
-            <Settings className="size-4 text-violet-600" />
-            <Typo.Body size="small" className="font-medium text-violet-700">
-              액션 설정하기
-            </Typo.Body>
-          </Link>
-        )}
         <main className="flex justify-center bg-background">
           <MissionIntroPage
             imageUrl={imageUrl}

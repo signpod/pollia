@@ -33,6 +33,36 @@ import {
   createMissionFormSchema,
 } from "./schema";
 
+interface RewardFormValues {
+  name: string;
+  description?: string;
+  paymentType: PaymentType;
+  scheduledDate?: Date;
+}
+
+const DEFAULT_REWARD_VALUES: RewardFormValues = {
+  name: "",
+  description: "",
+  paymentType: PaymentType.IMMEDIATE,
+  scheduledDate: undefined,
+};
+
+function isRewardFormValues(value: unknown): value is RewardFormValues {
+  return typeof value === "object" && value !== null && "name" in value && "paymentType" in value;
+}
+
+function getRewardErrorMessage(
+  errors: ReturnType<typeof useForm<CreateMissionFormData>>["formState"]["errors"],
+  field: "name" | "description" | "paymentType" | "scheduledDate",
+): string | undefined {
+  if (!errors.reward || typeof errors.reward !== "object") {
+    return undefined;
+  }
+
+  const rewardErrors = errors.reward as Record<string, { message?: string } | undefined>;
+  return rewardErrors[field]?.message;
+}
+
 export function CreateMissionClient() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,6 +72,8 @@ export function CreateMissionClient() {
     handleSubmit,
     watch,
     setValue,
+    getValues,
+    clearErrors,
     formState: { errors },
   } = useForm<CreateMissionFormData>({
     resolver: zodResolver(createMissionFormSchema),
@@ -49,17 +81,14 @@ export function CreateMissionClient() {
       title: "",
       description: "",
       hasReward: false,
-      reward: {
-        name: "",
-        description: "",
-        paymentType: PaymentType.IMMEDIATE,
-        scheduledDate: undefined,
-      },
+      reward: undefined,
     },
   });
 
   const hasReward = watch("hasReward");
-  const rewardPaymentType = watch("reward.paymentType");
+  const reward = watch("reward");
+  const rewardPaymentType =
+    hasReward && isRewardFormValues(reward) ? reward.paymentType : undefined;
 
   const onSubmit = async (data: CreateMissionFormData) => {
     setIsSubmitting(true);
@@ -86,14 +115,15 @@ export function CreateMissionClient() {
       const missionResult = await createMission(missionPayload);
       const missionId = missionResult.data.id;
 
-      if (data.hasReward && data.reward?.name) {
+      if (data.hasReward) {
+        const rewardData = data.reward;
         try {
           await createReward({
             missionId,
-            name: data.reward.name,
-            description: data.reward.description,
-            paymentType: data.reward.paymentType,
-            scheduledDate: data.reward.scheduledDate,
+            name: rewardData.name,
+            description: rewardData.description,
+            paymentType: rewardData.paymentType,
+            scheduledDate: rewardData.scheduledDate,
           });
         } catch {
           toast({
@@ -105,7 +135,7 @@ export function CreateMissionClient() {
       }
 
       toast({ message: `${UBIQUITOUS_CONSTANTS.MISSION}이 생성되었습니다.` });
-      router.push(ROUTES.MISSION(missionId));
+      router.push(ROUTES.MISSION_MANAGE_ACTIONS(missionId));
     } catch (error) {
       const message =
         error instanceof Error
@@ -167,7 +197,20 @@ export function CreateMissionClient() {
             <LabelText required={false}>완료 리워드 설정</LabelText>
             <Toggle
               checked={hasReward}
-              onCheckedChange={checked => setValue("hasReward", checked)}
+              onCheckedChange={checked => {
+                setValue("hasReward", checked, { shouldDirty: true, shouldValidate: true });
+
+                if (checked) {
+                  const currentReward = getValues("reward");
+                  if (!isRewardFormValues(currentReward)) {
+                    setValue("reward", { ...DEFAULT_REWARD_VALUES }, { shouldDirty: true });
+                  }
+                  return;
+                }
+
+                setValue("reward", undefined, { shouldDirty: true, shouldValidate: true });
+                clearErrors("reward");
+              }}
             />
           </div>
           <Typo.Body size="medium" className="text-zinc-400">
@@ -190,7 +233,7 @@ export function CreateMissionClient() {
                   required
                   placeholder="예: 스타벅스 아메리카노"
                   maxLength={100}
-                  errorMessage={errors.reward?.name?.message}
+                  errorMessage={getRewardErrorMessage(errors, "name")}
                   value={field.value ?? ""}
                   onChange={field.onChange}
                 />
@@ -207,7 +250,7 @@ export function CreateMissionClient() {
                   placeholder="리워드에 대한 설명을 입력하세요"
                   maxLength={500}
                   rows={2}
-                  errorMessage={errors.reward?.description?.message}
+                  errorMessage={getRewardErrorMessage(errors, "description")}
                   value={field.value ?? ""}
                   onChange={field.onChange}
                 />
@@ -232,9 +275,9 @@ export function CreateMissionClient() {
                   </Select>
                 )}
               />
-              {errors.reward?.paymentType && (
+              {getRewardErrorMessage(errors, "paymentType") && (
                 <Typo.Body size="medium" className="text-red-500">
-                  {errors.reward.paymentType.message}
+                  {getRewardErrorMessage(errors, "paymentType")}
                 </Typo.Body>
               )}
             </div>
@@ -280,9 +323,9 @@ export function CreateMissionClient() {
                     );
                   }}
                 />
-                {errors.reward?.scheduledDate && (
+                {getRewardErrorMessage(errors, "scheduledDate") && (
                   <Typo.Body size="medium" className="text-red-500">
-                    {errors.reward.scheduledDate.message}
+                    {getRewardErrorMessage(errors, "scheduledDate")}
                   </Typo.Body>
                 )}
               </div>
