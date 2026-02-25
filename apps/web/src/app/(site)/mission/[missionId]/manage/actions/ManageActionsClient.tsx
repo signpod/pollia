@@ -1,7 +1,6 @@
 "use client";
 
 import { getCompletionsByMissionId } from "@/actions/mission-completion";
-import { updateMission } from "@/actions/mission/update";
 import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useReadActionsDetail } from "@/hooks/action";
@@ -14,29 +13,20 @@ import {
   DrawerProvider,
   EmptyState,
   Typo,
-  toast,
   useDrawer,
 } from "@repo/ui/components";
 import { useQuery } from "@tanstack/react-query";
-import { AlertCircle, ChevronLeft, Plus } from "lucide-react";
+import { ChevronLeft, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { ActionCard } from "./components/ActionCard";
 import { ActionForm, type ActionFormValues } from "./components/ActionForm";
 import { ActionTypeSelector } from "./components/ActionTypeSelector";
-import {
-  type CreateActionInput,
-  useManageCreateAction,
-  useManageDeleteAction,
-  useManageReorderActions,
-  useManageUpdateAction,
-} from "./hooks";
+import { type DrawerMode, useManageActionsController } from "./logic";
 
 interface ManageActionsClientProps {
   missionId: string;
 }
-
-type DrawerMode = "closed" | "type-select" | "create" | "edit";
 
 export function ManageActionsClient({ missionId }: ManageActionsClientProps) {
   const router = useRouter();
@@ -61,199 +51,7 @@ export function ManageActionsClient({ missionId }: ManageActionsClientProps) {
       })),
     [completionsData],
   );
-
-  const [drawerMode, setDrawerMode] = useState<DrawerMode>("closed");
-  const [selectedType, setSelectedType] = useState<ActionType | null>(null);
-  const [editingAction, setEditingAction] = useState<ActionDetail | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<ActionDetail | null>(null);
-
-  const createAction = useManageCreateAction({
-    onSuccess: async data => {
-      if (actions.length === 0 && data?.data?.id) {
-        try {
-          await updateMission(missionId, { entryActionId: data.data.id });
-        } catch {
-          toast({
-            message: "시작 액션 설정 중 오류가 발생했습니다.",
-            icon: AlertCircle,
-            iconClassName: "text-red-500",
-          });
-        }
-      }
-      toast({ message: "액션이 추가되었습니다." });
-      closeDrawer();
-    },
-    onError: error => {
-      toast({
-        message: error.message || "액션 추가에 실패했습니다.",
-        icon: AlertCircle,
-        iconClassName: "text-red-500",
-      });
-    },
-  });
-
-  const updateAction = useManageUpdateAction({
-    onSuccess: () => {
-      toast({ message: "액션이 수정되었습니다." });
-      closeDrawer();
-    },
-    onError: error => {
-      toast({
-        message: error.message || "액션 수정에 실패했습니다.",
-        icon: AlertCircle,
-        iconClassName: "text-red-500",
-      });
-    },
-  });
-
-  const deleteAction = useManageDeleteAction({
-    onSuccess: () => {
-      toast({ message: "액션이 삭제되었습니다." });
-      setDeleteTarget(null);
-    },
-    onError: error => {
-      toast({
-        message: error.message || "액션 삭제에 실패했습니다.",
-        icon: AlertCircle,
-        iconClassName: "text-red-500",
-      });
-    },
-  });
-
-  const reorderActions = useManageReorderActions({
-    onError: error => {
-      toast({
-        message: error.message || "순서 변경에 실패했습니다.",
-        icon: AlertCircle,
-        iconClassName: "text-red-500",
-      });
-    },
-  });
-
-  const closeDrawer = useCallback(() => {
-    setDrawerMode("closed");
-    setSelectedType(null);
-    setEditingAction(null);
-  }, []);
-
-  const handleTypeSelect = (type: ActionType) => {
-    setSelectedType(type);
-    setDrawerMode("create");
-  };
-
-  const handleEdit = (action: ActionDetail) => {
-    setEditingAction(action);
-    setSelectedType(action.type);
-    setDrawerMode("edit");
-  };
-
-  const handleDeleteConfirm = () => {
-    if (!deleteTarget) return;
-    deleteAction.mutate({ actionId: deleteTarget.id, missionId });
-  };
-
-  const handleMoveUp = (action: ActionDetail) => {
-    const idx = actions.findIndex(a => a.id === action.id);
-    if (idx <= 0) return;
-
-    const newActions = [...actions];
-    const prev = newActions[idx - 1];
-    const curr = newActions[idx];
-    if (!prev || !curr) return;
-    newActions[idx - 1] = curr;
-    newActions[idx] = prev;
-    reorderActions.mutate({
-      missionId,
-      actionOrders: newActions.map((a, i) => ({ id: a.id, order: i })),
-    });
-  };
-
-  const handleMoveDown = (action: ActionDetail) => {
-    const idx = actions.findIndex(a => a.id === action.id);
-    if (idx < 0 || idx >= actions.length - 1) return;
-
-    const newActions = [...actions];
-    const curr = newActions[idx];
-    const next = newActions[idx + 1];
-    if (!curr || !next) return;
-    newActions[idx] = next;
-    newActions[idx + 1] = curr;
-    reorderActions.mutate({
-      missionId,
-      actionOrders: newActions.map((a, i) => ({ id: a.id, order: i })),
-    });
-  };
-
-  const handleCreateSubmit = (values: ActionFormValues) => {
-    if (!selectedType) return;
-
-    const input: CreateActionInput = {
-      missionId,
-      type: selectedType,
-      title: values.title,
-      description: values.description,
-      isRequired: values.isRequired,
-      order: actions.length,
-      imageUrl: null,
-      imageFileUploadId: null,
-      hasOther: values.hasOther,
-      nextActionId: values.nextActionId,
-      nextCompletionId: values.nextCompletionId,
-      ...(values.maxSelections !== undefined && { maxSelections: values.maxSelections }),
-      ...(values.options && {
-        options: values.options.map((o, i) => ({
-          title: o.title,
-          description: o.description,
-          nextActionId: o.nextActionId,
-          order: i,
-        })),
-      }),
-    };
-
-    createAction.mutate(input);
-  };
-
-  const handleEditSubmit = (values: ActionFormValues) => {
-    if (!editingAction) return;
-
-    updateAction.mutate({
-      actionId: editingAction.id,
-      missionId,
-      title: values.title,
-      description: values.description,
-      isRequired: values.isRequired,
-      hasOther: values.hasOther,
-      nextActionId: values.nextActionId,
-      nextCompletionId: values.nextCompletionId,
-      ...(values.maxSelections !== undefined && { maxSelections: values.maxSelections }),
-      ...(values.options && {
-        options: values.options.map((o, i) => ({
-          id: o.id,
-          title: o.title,
-          description: o.description,
-          nextActionId: o.nextActionId,
-          order: i,
-        })),
-      }),
-    });
-  };
-
-  const getEditInitialValues = (action: ActionDetail): ActionFormValues => ({
-    title: action.title,
-    description: action.description,
-    isRequired: action.isRequired,
-    hasOther: action.hasOther ?? false,
-    maxSelections: action.maxSelections ?? 1,
-    options: action.options?.map(o => ({
-      id: o.id,
-      title: o.title,
-      description: o.description,
-      nextActionId: o.nextActionId,
-      order: o.order,
-    })),
-    nextActionId: action.nextActionId,
-    nextCompletionId: action.nextCompletionId,
-  });
+  const controller = useManageActionsController({ missionId, actions });
 
   return (
     <DrawerProvider>
@@ -285,17 +83,17 @@ export function ManageActionsClient({ missionId }: ManageActionsClientProps) {
                 index={index}
                 total={actions.length}
                 allActions={actions}
-                onEdit={handleEdit}
-                onDelete={setDeleteTarget}
-                onMoveUp={handleMoveUp}
-                onMoveDown={handleMoveDown}
+                onEdit={controller.handleEdit}
+                onDelete={controller.setDeleteTarget}
+                onMoveUp={controller.handleMoveUp}
+                onMoveDown={controller.handleMoveDown}
               />
             ))
           )}
 
           <button
             type="button"
-            onClick={() => setDrawerMode("type-select")}
+            onClick={controller.openTypeSelector}
             className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-zinc-200 bg-white py-4 text-zinc-500 transition-colors hover:border-violet-300 hover:text-violet-500"
           >
             <Plus className="size-5" />
@@ -305,27 +103,28 @@ export function ManageActionsClient({ missionId }: ManageActionsClientProps) {
           </button>
         </div>
 
-        {deleteTarget && (
+        {controller.deleteTarget && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6">
             <div className="w-full max-w-sm rounded-2xl bg-white p-6">
               <Typo.SubTitle className="mb-2">액션 삭제</Typo.SubTitle>
               <Typo.Body size="medium" className="mb-6 text-zinc-500">
-                "{deleteTarget.title}" 액션을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+                "{controller.deleteTarget.title}" 액션을 삭제하시겠습니까? 이 작업은 되돌릴 수
+                없습니다.
               </Typo.Body>
               <div className="flex gap-3">
                 <Button
                   variant="secondary"
                   fullWidth
-                  onClick={() => setDeleteTarget(null)}
-                  disabled={deleteAction.isPending}
+                  onClick={() => controller.setDeleteTarget(null)}
+                  disabled={controller.isDeleteLoading}
                 >
                   취소
                 </Button>
                 <Button
                   fullWidth
-                  onClick={handleDeleteConfirm}
-                  loading={deleteAction.isPending}
-                  disabled={deleteAction.isPending}
+                  onClick={controller.handleDeleteConfirm}
+                  loading={controller.isDeleteLoading}
+                  disabled={controller.isDeleteLoading}
                   className="bg-red-500 hover:bg-red-600"
                 >
                   삭제
@@ -336,18 +135,18 @@ export function ManageActionsClient({ missionId }: ManageActionsClientProps) {
         )}
 
         <ActionDrawerContent
-          mode={drawerMode}
-          selectedType={selectedType}
-          editingAction={editingAction}
+          mode={controller.drawerMode}
+          selectedType={controller.selectedType}
+          editingAction={controller.editingAction}
           actions={actions}
           completionOptions={completionOptions}
-          isCreateLoading={createAction.isPending}
-          isUpdateLoading={updateAction.isPending}
-          onTypeSelect={handleTypeSelect}
-          onCreateSubmit={handleCreateSubmit}
-          onEditSubmit={handleEditSubmit}
-          onClose={closeDrawer}
-          getEditInitialValues={getEditInitialValues}
+          isCreateLoading={controller.isCreateLoading}
+          isUpdateLoading={controller.isUpdateLoading}
+          onTypeSelect={controller.handleTypeSelect}
+          onCreateSubmit={controller.handleCreateSubmit}
+          onEditSubmit={controller.handleEditSubmit}
+          onClose={controller.closeDrawer}
+          getEditInitialValues={controller.getEditInitialValues}
         />
       </div>
     </DrawerProvider>

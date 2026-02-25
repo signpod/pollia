@@ -41,6 +41,7 @@ interface ActionOptionInputWithOptionalOrder {
   imageUrl?: string | null;
   fileUploadId?: string | null;
   nextActionId?: string | null;
+  nextCompletionId?: string | null;
   order?: number;
 }
 
@@ -73,12 +74,16 @@ export function useManageCreateAction(options: UseManageCreateActionOptions = {}
             isRequired: input.isRequired,
             hasOther: input.hasOther,
             maxSelections: input.maxSelections ?? 1,
+            nextActionId: input.nextActionId,
+            nextCompletionId: input.nextCompletionId,
             options:
               input.options?.map((opt, index) => ({
                 title: opt.title,
                 description: opt.description,
                 imageUrl: opt.imageUrl,
                 fileUploadId: opt.fileUploadId,
+                nextActionId: opt.nextActionId,
+                nextCompletionId: opt.nextCompletionId,
                 order: opt.order ?? index,
               })) ?? [],
           };
@@ -94,12 +99,16 @@ export function useManageCreateAction(options: UseManageCreateActionOptions = {}
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
             isRequired: input.isRequired,
+            nextActionId: input.nextActionId,
+            nextCompletionId: input.nextCompletionId,
             options:
               input.options?.map((opt, index) => ({
                 title: opt.title,
                 description: opt.description,
                 imageUrl: opt.imageUrl,
                 fileUploadId: opt.fileUploadId,
+                nextActionId: opt.nextActionId,
+                nextCompletionId: opt.nextCompletionId,
                 order: opt.order ?? index,
               })) ?? [],
           };
@@ -115,6 +124,8 @@ export function useManageCreateAction(options: UseManageCreateActionOptions = {}
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
             isRequired: input.isRequired,
+            nextActionId: input.nextActionId,
+            nextCompletionId: input.nextCompletionId,
           };
           return await createSubjectiveAction(request);
         }
@@ -128,6 +139,8 @@ export function useManageCreateAction(options: UseManageCreateActionOptions = {}
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
             isRequired: input.isRequired,
+            nextActionId: input.nextActionId,
+            nextCompletionId: input.nextCompletionId,
           };
           return await createShortTextAction(request);
         }
@@ -143,12 +156,16 @@ export function useManageCreateAction(options: UseManageCreateActionOptions = {}
             isRequired: input.isRequired,
             hasOther: input.hasOther,
             maxSelections: input.maxSelections ?? 1,
+            nextActionId: input.nextActionId,
+            nextCompletionId: input.nextCompletionId,
             options:
               input.options?.map((opt, index) => ({
                 title: opt.title,
                 description: opt.description,
                 imageUrl: opt.imageUrl,
                 fileUploadId: opt.fileUploadId,
+                nextActionId: opt.nextActionId,
+                nextCompletionId: opt.nextCompletionId,
                 order: opt.order ?? index,
               })) ?? [],
           };
@@ -164,6 +181,8 @@ export function useManageCreateAction(options: UseManageCreateActionOptions = {}
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
             isRequired: input.isRequired,
+            nextActionId: input.nextActionId,
+            nextCompletionId: input.nextCompletionId,
           };
           return await createRatingAction(request);
         }
@@ -178,6 +197,8 @@ export function useManageCreateAction(options: UseManageCreateActionOptions = {}
             order: input.order,
             isRequired: input.isRequired,
             maxSelections: input.maxSelections,
+            nextActionId: input.nextActionId,
+            nextCompletionId: input.nextCompletionId,
           };
           return await createImageAction(request);
         }
@@ -191,6 +212,8 @@ export function useManageCreateAction(options: UseManageCreateActionOptions = {}
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
             isRequired: input.isRequired,
+            nextActionId: input.nextActionId,
+            nextCompletionId: input.nextCompletionId,
           };
           return await createPdfAction(request);
         }
@@ -204,6 +227,8 @@ export function useManageCreateAction(options: UseManageCreateActionOptions = {}
             imageFileUploadId: input.imageFileUploadId,
             order: input.order,
             isRequired: input.isRequired,
+            nextActionId: input.nextActionId,
+            nextCompletionId: input.nextCompletionId,
           };
           return await createVideoAction(request);
         }
@@ -218,6 +243,8 @@ export function useManageCreateAction(options: UseManageCreateActionOptions = {}
             order: input.order,
             isRequired: input.isRequired,
             maxSelections: input.maxSelections ?? 1,
+            nextActionId: input.nextActionId,
+            nextCompletionId: input.nextCompletionId,
           };
           return await createDateAction(request);
         }
@@ -232,6 +259,8 @@ export function useManageCreateAction(options: UseManageCreateActionOptions = {}
             order: input.order,
             isRequired: input.isRequired,
             maxSelections: input.maxSelections ?? 1,
+            nextActionId: input.nextActionId,
+            nextCompletionId: input.nextCompletionId,
           };
           return await createTimeAction(request);
         }
@@ -253,6 +282,8 @@ export function useManageCreateAction(options: UseManageCreateActionOptions = {}
                 description: opt.description,
                 imageUrl: opt.imageUrl,
                 fileUploadId: opt.fileUploadId,
+                nextActionId: opt.nextActionId,
+                nextCompletionId: opt.nextCompletionId,
                 order: opt.order ?? index,
               })) ?? [],
           };

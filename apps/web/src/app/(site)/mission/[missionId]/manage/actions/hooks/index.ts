@@ -2,3 +2,5 @@ export { useManageCreateAction, type CreateActionInput } from "./useManageCreate
 export { useManageUpdateAction } from "./useManageUpdateAction";
 export { useManageDeleteAction } from "./useManageDeleteAction";
 export { useManageReorderActions } from "./useManageReorderActions";
+export { useManageConnectAction } from "./useManageConnectAction";
+export { useManageConnectBranchOption } from "./useManageConnectBranchOption";

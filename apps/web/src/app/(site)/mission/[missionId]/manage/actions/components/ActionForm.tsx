@@ -43,6 +43,7 @@ interface OptionFormItem {
   title: string;
   description?: string | null;
   nextActionId?: string | null;
+  nextCompletionId?: string | null;
   order: number;
 }
 
