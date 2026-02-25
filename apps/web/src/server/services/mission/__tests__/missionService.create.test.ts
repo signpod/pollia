@@ -130,14 +130,22 @@ describe("MissionService - Create", () => {
       expect(result.title).toBe("새 설문");
       expect(searchSyncOutboxRepository.create).toHaveBeenCalledTimes(1);
       expect(mockRepository.createWithActions).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           title: request.title,
           description: request.description,
           choseong: expect.any(String),
+          target: undefined,
+          imageUrl: undefined,
+          imageFileUploadId: undefined,
+          brandLogoUrl: undefined,
+          brandLogoFileUploadId: undefined,
+          deadline: request.deadline,
+          estimatedMinutes: request.estimatedMinutes,
+          maxParticipants: undefined,
           type: "GENERAL",
           category: "EVENT",
           creatorId: "user-1",
-        }),
+        },
         ["a1", "a2"],
         expect.anything(),
       );
@@ -353,14 +361,20 @@ describe("MissionService - Create", () => {
       expect(searchSyncOutboxRepository.create).toHaveBeenCalledTimes(1);
 
       expect(mockRepository.duplicateMission).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           title: "원본 미션 - 복사본",
           choseong: expect.any(String),
           description: "설명",
+          target: "대상",
+          imageUrl: "https://example.com/image.jpg",
+          brandLogoUrl: "https://example.com/logo.jpg",
+          deadline: mockMission.deadline,
+          estimatedMinutes: 10,
           type: "GENERAL",
           isActive: false,
           creatorId: "user-1",
-        }),
+          entryActionId: null,
+        },
         [
           {
             title: "질문 1",
