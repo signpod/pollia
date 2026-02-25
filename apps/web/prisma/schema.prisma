@@ -2,6 +2,7 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// DATABASE_URL는 풀러(6543) 사용 시 쿼리스트링에 ?pgbouncer=true 포함 필요 (42P05 방지)
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
