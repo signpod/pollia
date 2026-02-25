@@ -68,7 +68,7 @@ export function ImageCard({ form }: ImageCardProps) {
           {UBIQUITOUS_CONSTANTS.MISSION} 이미지
         </Typo.Body>
         <ImageSelector
-          imageUrl={missionImageUrl}
+          imageUrl={missionImageUrl ?? undefined}
           onImageSelect={file => missionImageUpload.upload(file)}
           onImageDelete={handleMissionImageDelete}
           disabled={missionImageUpload.isUploading}
@@ -85,7 +85,7 @@ export function ImageCard({ form }: ImageCardProps) {
           브랜드 로고
         </Typo.Body>
         <ImageSelector
-          imageUrl={brandLogoUrl}
+          imageUrl={brandLogoUrl ?? undefined}
           onImageSelect={file => brandLogoUpload.upload(file)}
           onImageDelete={handleBrandLogoDelete}
           disabled={brandLogoUpload.isUploading}

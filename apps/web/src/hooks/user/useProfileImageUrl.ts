@@ -5,8 +5,9 @@ import { useCurrentUser } from "./useCurrentUser";
 export const useProfileImageUrl = () => {
   const { data: user } = useCurrentUser();
   const fileUploadId = user?.profileImageFileUploadId;
+  const kakaoProfileImageUrl = user?.kakaoProfileImageUrl ?? null;
 
-  const { data: profileImageUrl } = useQuery({
+  const { data: storageImageUrl } = useQuery({
     queryKey: ["profile-image", fileUploadId],
     queryFn: () => getFileUploadById(fileUploadId!),
     enabled: !!fileUploadId,
@@ -14,7 +15,7 @@ export const useProfileImageUrl = () => {
     staleTime: 5 * 60 * 1000,
   });
 
-  return profileImageUrl ?? null;
+  return storageImageUrl ?? kakaoProfileImageUrl;
 };
 
 export type UseProfileImageUrlReturn = ReturnType<typeof useProfileImageUrl>;

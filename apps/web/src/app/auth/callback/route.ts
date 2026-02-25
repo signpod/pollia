@@ -1,5 +1,6 @@
 import { createSessionWithKakao, exchangeKakaoToken, getKakaoUserInfo } from "@/actions/kakao";
 import { createUserIfNotExists } from "@/actions/user";
+import { generateNickname } from "@/lib/nickname";
 import { userService } from "@/server/services/user/userService";
 import type { KakaoTokenResponse, KakaoUserInfo } from "@/types/external/kakao";
 import type { User } from "@supabase/supabase-js";
@@ -64,6 +65,11 @@ async function exchangeToken(code: string, origin: string): Promise<KakaoTokenRe
   });
 }
 
+function getKakaoProfileImageUrl(kakaoUser: KakaoUserInfo): string | undefined {
+  const profile = kakaoUser.kakao_account?.profile;
+  return profile?.profile_image_url ?? profile?.thumbnail_image_url;
+}
+
 async function authenticateWithKakao(
   tokenData: KakaoTokenResponse,
   kakaoUser: KakaoUserInfo,
@@ -83,8 +89,8 @@ async function registerOrUpdateUser(
   user: User,
   kakaoUser: KakaoUserInfo,
 ): Promise<{ isNewUser: boolean }> {
-  const { nickname } = kakaoUser.kakao_account.profile;
   const { phone_number, has_email, email } = kakaoUser.kakao_account;
+  const kakaoProfileImageUrl = getKakaoProfileImageUrl(kakaoUser);
 
   if (!has_email || !email) {
     const error = new Error(
@@ -94,15 +100,20 @@ async function registerOrUpdateUser(
     throw error;
   }
 
+  const nickname = generateNickname();
   const isNewUser = await createUserIfNotExists({
     user,
     name: nickname,
     phone: phone_number,
     email,
+    kakaoProfileImageUrl: kakaoProfileImageUrl ?? null,
   });
 
   if (!isNewUser) {
-    await userService.updateUser(user.id, { phone: phone_number });
+    await userService.updateUser(user.id, {
+      phone: phone_number,
+      kakaoProfileImageUrl: kakaoProfileImageUrl ?? null,
+    });
   }
 
   return { isNewUser };

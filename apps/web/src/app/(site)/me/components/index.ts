@@ -3,7 +3,6 @@ export { CompletedEventCard } from "./CompletedEventCard";
 export { MyProjectTabs } from "./MyProjectTabs";
 export { InProgressEventCard } from "./InProgressEventCard";
 export { MeFooter } from "./MeFooter";
-export { MeHeader } from "./MeHeader";
 export { MeLikedMissionCard } from "./MeLikedMissionCard";
 export { MeProjectCard } from "./MeProjectCard";
 export { ProfileSection } from "./ProfileSection";

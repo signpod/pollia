@@ -19,7 +19,7 @@ export class UserService {
   }
 
   async createUserIfNotExists(input: CreateUserIfNotExistsInput): Promise<boolean> {
-    const { user, name, phone, email } = input;
+    const { user, name, phone, email, kakaoProfileImageUrl } = input;
 
     const existingUser = await this.repo.findById(user.id);
 
@@ -42,6 +42,7 @@ export class UserService {
       email,
       name: userName,
       phone: normalizedPhone,
+      kakaoProfileImageUrl: kakaoProfileImageUrl ?? undefined,
     });
 
     return true;
@@ -74,6 +75,10 @@ export class UserService {
 
     if (input.profileImageFileUploadId !== undefined) {
       result.profileImageFileUploadId = input.profileImageFileUploadId;
+    }
+
+    if (input.kakaoProfileImageUrl !== undefined) {
+      result.kakaoProfileImageUrl = input.kakaoProfileImageUrl;
     }
 
     return result;

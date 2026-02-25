@@ -6,6 +6,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useMyResponses } from "./useMyResponses";
 
 const TABS = [
+  { value: "my-content", label: "나의 콘텐츠" },
   { value: "in-progress", label: "참여 중" },
   { value: "completed", label: "참여 완료" },
   { value: "rewards", label: "리워드" },

@@ -37,7 +37,7 @@ export function SurveyCard({ survey }: SurveyCardProps) {
 
   return (
     <Link href={`/mission/${survey.id}`} className="group flex flex-col overflow-hidden">
-      <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-default">
+      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-default">
         <Image
           src={showFallback ? thumbnailFallback : survey.imageUrl}
           alt={survey.title}

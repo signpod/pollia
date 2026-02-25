@@ -8,6 +8,7 @@ import { useRef, useState } from "react";
 
 const SIZE_VARIANTS = {
   small: { container: "size-6", icon: "size-4" },
+  medium: { container: "size-8", icon: "size-5" },
   large: { container: "size-[96px]", icon: "size-[68px]" },
 } as const;
 
@@ -57,7 +58,7 @@ export function UserAvatar({
             src={imageUrl}
             alt="프로필"
             fill
-            sizes={size === "large" ? "80px" : "24px"}
+            sizes={size === "large" ? "80px" : size === "medium" ? "32px" : "24px"}
             className="object-cover"
             onError={() => setImageError(true)}
           />

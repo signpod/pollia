@@ -15,13 +15,13 @@ export const ROUTES = {
   ME_COMPLETED: "/me/completed",
   ME_REWARDS_PENDING: "/me/rewards/pending",
   ME_REWARDS_PAID: "/me/rewards/paid",
-  ME_ACCOUNT: "/me/account",
-  ME_ACCOUNT_EDIT: "/me/account/edit",
   ME_ACCOUNT_WITHDRAW: "/me/account/withdraw",
   ME_PARTNERSHIP: "/me/partnership",
   ME_LIKED_TAB: "/me?tab=liked",
+  ME_MY_CONTENT: "/me?tab=my-content",
   LIKES: "/likes",
   CREATE: "/create",
+  CREATE_EDITOR: (missionId: string) => `/create/${missionId}`,
 
   // 미션 관련
   MISSION: (id: string) => `/mission/${id}`,

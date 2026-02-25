@@ -30,7 +30,7 @@ export function ProfileHeaderView({
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 grid h-12 grid-cols-[auto_1fr_auto] items-center gap-2 bg-white px-3 sm:px-5",
+        "sticky top-0 z-50 grid h-12 sm:h-14 grid-cols-[auto_1fr_auto] items-center gap-2 bg-white px-3 sm:px-5",
         showBack && "pl-0",
       )}
     >
@@ -66,9 +66,9 @@ export function ProfileHeaderView({
       <div className="flex min-w-0 justify-end">
         {user ? (
           <button onClick={onProfileClick} type="button">
-            <div className="flex items-center gap-2">
-              <UserAvatar size="small" imageUrl={profileImageUrl} />
-              <Typo.Body size="medium" className="hidden font-medium text-zinc-700 sm:block">
+            <div className="flex items-center gap-2 sm:gap-2.5">
+              <UserAvatar size="medium" imageUrl={profileImageUrl} className="!size-6 sm:!size-8" />
+              <Typo.Body size="small" className="hidden font-medium text-zinc-700 sm:block">
                 {user.name}
               </Typo.Body>
             </div>

@@ -1,14 +1,17 @@
 "use client";
 
+import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { ROUTES } from "@/constants/routes";
 import type { MyMissionResponse } from "@/types/dto/mission-response";
 import PolliaFaceVeryGood from "@public/svgs/face/very-good-face-full.svg";
 import { ButtonV2, EmptyState, Tab, Typo } from "@repo/ui/components";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { memo } from "react";
 import { useGroupedRewards } from "../hooks/useGroupedRewards";
 import { useLikedMissions } from "../hooks/useLikedMissions";
+import { useMyContentMissions } from "../hooks/useMyContentMissions";
 import { useMyProjectTabs } from "../hooks/useMyProjectTabs";
 import { InProgressGrid } from "./InProgressGrid";
 import { MeLikedMissionCard } from "./MeLikedMissionCard";
@@ -48,6 +51,7 @@ export function MyProjectTabs() {
     completed: <CompletedTab responses={completedResponses} />,
     rewards: <RewardsTab />,
     liked: <LikedTab />,
+    "my-content": <MyContentTab />,
   };
 
   return (
@@ -59,7 +63,7 @@ export function MyProjectTabs() {
         pointColor="secondary"
         scrollable
       >
-        <Tab.List className="sticky top-12 z-10 bg-white">
+        <Tab.List className="bg-white">
           {tabs.map(tab => (
             <Tab.Item key={tab.value} value={tab.value}>
               <Typo.Body size="large">{tab.label}</Typo.Body>
@@ -208,6 +212,73 @@ const LikedTab = memo(function LikedTab() {
         {likedMissions.slice(0, MAX_PREVIEW).map(mission => (
           <MeLikedMissionCard key={mission.id} mission={mission} />
         ))}
+      </div>
+    </TabSection>
+  );
+});
+
+function MyContentAction() {
+  return (
+    <div className="flex justify-center">
+      <Link href={ROUTES.CREATE}>
+        <ButtonV2 variant="primary" className="w-auto">
+          <Plus className="mr-1 size-4" />
+          <Typo.ButtonText size="large">만들러 가기</Typo.ButtonText>
+        </ButtonV2>
+      </Link>
+    </div>
+  );
+}
+
+const MyContentTab = memo(function MyContentTab() {
+  const { data, isLoading } = useMyContentMissions();
+  const missions = data?.data ?? [];
+
+  if (isLoading) {
+    return null;
+  }
+
+  if (missions.length === 0) {
+    return (
+      <EmptyState
+        icon={<PolliaFaceVeryGood className="size-30 text-zinc-200" />}
+        title="만든 콘텐츠가 없어요"
+        description={
+          <>
+            아래 버튼을 눌러
+            <br />새 미션을 만들어 보세요 ✨
+          </>
+        }
+        action={<MyContentAction />}
+      />
+    );
+  }
+
+  return (
+    <TabSection count={missions.length} emptyMessage="" label="총" href={ROUTES.ME_MY_CONTENT}>
+      <div className="flex flex-col gap-4">
+        {missions.slice(0, MAX_PREVIEW).map(mission => (
+          <Link
+            key={mission.id}
+            href={ROUTES.CREATE_EDITOR(mission.id)}
+            className="flex items-center justify-between rounded-xl border border-zinc-200 bg-white p-4 transition-colors hover:bg-zinc-50"
+          >
+            <div className="min-w-0 flex-1">
+              <Typo.Body size="medium" className="font-medium text-zinc-900 truncate">
+                {mission.title || "제목 없음"}
+              </Typo.Body>
+              <Typo.Body size="small" className="text-zinc-500">
+                {MISSION_CATEGORY_LABELS[mission.category] ?? mission.category}
+              </Typo.Body>
+            </div>
+            <Typo.Body size="small" className="shrink-0 text-zinc-400">
+              편집 →
+            </Typo.Body>
+          </Link>
+        ))}
+      </div>
+      <div className="mt-4 flex justify-center">
+        <MyContentAction />
       </div>
     </TabSection>
   );

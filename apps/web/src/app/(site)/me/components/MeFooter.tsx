@@ -33,6 +33,9 @@ export function MeFooter() {
         <Link href={ROUTES.ME_PARTNERSHIP} className="h-12 pl-2 flex items-center">
           <Typo.ButtonText size="large">제휴문의</Typo.ButtonText>
         </Link>
+        <Link href={ROUTES.ME_ACCOUNT_WITHDRAW} className="h-12 pl-2 flex items-center">
+          <Typo.ButtonText size="large">회원탈퇴</Typo.ButtonText>
+        </Link>
         {PRIVACY_POLICY_URL && (
           <Link
             href={PRIVACY_POLICY_URL}

@@ -53,8 +53,8 @@ export function AppHeader({
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:h-16 sm:px-6">
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-1.5">
-              <PolliaIcon className="size-5 text-primary" />
-              <PolliaWordmark className="h-4 text-black" />
+              <PolliaIcon className="size-6 text-primary" />
+              <PolliaWordmark className="h-5 text-black" />
             </Link>
             <Typo.Body size="small" className="hidden text-info sm:block">
               세상을 발견하는 재밌는 방법
@@ -97,8 +97,8 @@ export function AppHeader({
   return (
     <header className="sticky top-0 z-10 flex items-center justify-between border-b border-zinc-100 bg-white/60 px-5 py-3 backdrop-blur-md">
       <Link href="/" className="flex items-center gap-1.5">
-        <PolliaIcon className="size-5 text-primary" />
-        <PolliaWordmark className="h-4 text-black" />
+        <PolliaIcon className="size-6 text-primary" />
+        <PolliaWordmark className="h-5 text-black" />
       </Link>
       <div className="flex items-center gap-3">
         {rightContent}

@@ -10,13 +10,12 @@ export const profileImageSchema = z
     message: "프로필 이미지는 5MB를 초과할 수 없습니다.",
   });
 
-export const nameSchema = z
+export const nicknameSchema = z
   .string()
   .trim()
-  .regex(/^[가-힣a-zA-Z]+$/, "공백, 숫자, 특수문자, 이모티콘은 사용할 수 없어요")
-  .refine(value => value.length >= 2 && value.length <= 10, {
-    message: "한글, 영문 2-10자 조합으로 입력해주세요.",
-  });
+  .regex(/^[가-힣a-zA-Z0-9]+$/, "띄어쓰기와 특수문자는 사용할 수 없어요")
+  .min(2, "닉네임은 2자 이상이어야 해요")
+  .max(20, "닉네임은 20자 이하여야 해요");
 
 const phoneSchema = z.string().optional();
 
@@ -26,14 +25,14 @@ const profileImageFileUploadIdSchema = z.string().optional().nullable();
 
 export const userInputSchema = z.object({
   email: emailSchema,
-  name: nameSchema,
+  name: nicknameSchema,
   phone: phoneSchema,
   profileImageFileUploadId: profileImageFileUploadIdSchema,
 });
 
 export const userUpdateSchema = z
   .object({
-    name: nameSchema.optional(),
+    name: nicknameSchema.optional(),
     phone: phoneSchema,
     profileImageFileUploadId: profileImageFileUploadIdSchema,
   })

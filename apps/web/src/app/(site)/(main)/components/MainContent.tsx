@@ -12,7 +12,7 @@ interface MainContentProps {
 }
 
 export function MainContent({ initialProjects }: MainContentProps) {
-  const { mixedContent, isLoadingMore, hasNextPage, observerRef } = useInfiniteContent({
+  const { mixedContent, isLoadingMore, observerRef } = useInfiniteContent({
     initialProjects,
   });
 
@@ -20,18 +20,14 @@ export function MainContent({ initialProjects }: MainContentProps) {
     <div className="flex flex-col gap-6">
       {mixedContent.length > 0 ? (
         <>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-10 px-5">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-10 px-5 md:grid-cols-3">
             {mixedContent.map(item => (
               <SurveyCard key={`project-${item.data.id}`} survey={item.data} />
             ))}
           </div>
 
           <div ref={observerRef} className="mt-8 flex h-10 justify-center">
-            {isLoadingMore ? (
-              <Loader2 className="size-6 animate-spin text-violet-500" />
-            ) : !hasNextPage ? (
-              <p className="text-sm text-sub">모든 컨텐츠를 불러왔어요</p>
-            ) : null}
+            {isLoadingMore ? <Loader2 className="size-6 animate-spin text-violet-500" /> : null}
           </div>
         </>
       ) : (

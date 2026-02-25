@@ -8,6 +8,7 @@ model User {
 
   profileImageFileUploadId String?     @unique @map("profile_image_file_upload_id")
   profileImageFileUpload   FileUpload? @relation("UserProfileImage", fields: [profileImageFileUploadId], references: [id], onDelete: SetNull)
+  kakaoProfileImageUrl     String?     @map("kakao_profile_image_url")
 
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @updatedAt @map("updated_at")
