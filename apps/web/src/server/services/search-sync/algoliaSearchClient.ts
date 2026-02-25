@@ -71,7 +71,7 @@ export class AlgoliaSearchClient implements AlgoliaSearchClientLike {
     }
 
     if (!writeApiKey) {
-      throw new Error("ALGOLIA_ADMIN_API_KEY 환경변수가 설정되지 않았습니다.");
+      throw new Error("ALGOLIA_WRITE_API_KEY 환경변수가 설정되지 않았습니다.");
     }
 
     return algoliasearch(appId, writeApiKey);

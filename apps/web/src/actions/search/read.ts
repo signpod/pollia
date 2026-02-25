@@ -18,7 +18,8 @@ export async function searchMissions(
 ): Promise<SearchMissionsResponse> {
   try {
     await requireAdmin();
-    const data = await missionSearchReadService.searchMissions(request.query, request.hitsPerPage);
+    const hitsPerPage = Math.max(1, Math.min(request.hitsPerPage ?? 20, 100));
+    const data = await missionSearchReadService.searchMissions(request.query, hitsPerPage);
     return { data };
   } catch (error) {
     console.error("searchMissions error:", error);
