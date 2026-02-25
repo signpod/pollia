@@ -25,9 +25,6 @@
 | 파일 | 적용 범위 |
 |------|----------|
 | `01-ui-components.mdc` | `packages/ui/**` |
-| `02-storybook.mdc` | `apps/storybook/**` |
-| `03-storybook-patterns.mdc` | `apps/storybook/**` |
-| `04-storybook-docs.mdc` | `apps/storybook/**` |
 | `05-prisma-schema.mdc` | `apps/web/prisma/**` |
 | `06-hooks-tanstack-query.mdc` | `apps/web/src/hooks/**` |
 | `07-server-layers.mdc` | `apps/web/src/server/**`, `apps/web/src/actions/**` |

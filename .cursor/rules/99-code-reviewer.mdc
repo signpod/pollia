@@ -23,9 +23,6 @@ alwaysApply: false
 프로젝트의 `.cursor/rules/` 디렉토리에 정의된 모든 규칙을 준수하는지 확인:
 
 - `01-ui-components.mdc`: UI 컴포넌트 작성 규칙
-- `02-storybook.mdc`: 스토리북 기본 구조
-- `03-storybook-patterns.mdc`: 스토리 작성 패턴
-- `04-storybook-docs.mdc`: argTypes & 문서화
 - `05-prisma-schema.mdc`: Prisma 스키마 구조 및 컨벤션
 - `06-hooks-tanstack-query.mdc`: React Hooks 및 TanStack Query 컨벤션
 - `07-server-layers.mdc`: Server 계층 아키텍처 컨벤션
@@ -67,15 +64,12 @@ alwaysApply: false
 
 **`packages/ui/src/components/` (공통 컴포넌트)**
 - 도메인 로직 없는 순수 UI 컴포넌트
-- **Storybook 작성 필수**
 - 재사용 가능한 범용 컴포넌트
 
 **`apps/web/src/components/` (도메인 컴포넌트)**
 - 설문, 유저 등 도메인 로직 포함
-- Storybook 선택 사항
 
 **체크 포인트:**
-- `@repo/ui`에 추가된 컴포넌트에 Storybook이 없으면 **Critical**
 - 도메인 종속 컴포넌트가 `@repo/ui`에 있으면 **High**
 - 공통 컴포넌트가 `apps/web`에만 있으면 **Medium** (재사용 가능성 검토)
 
@@ -143,7 +137,6 @@ alwaysApply: false
 - [ ] 중복 코드 없음
 - [ ] 네이밍 일관성
 - [ ] UI 컴포넌트 분리 적절
-- [ ] Storybook 작성 (필요 시)
 - [ ] Hooks 사용 적절
 - [ ] 하드코딩 없음
 ```
