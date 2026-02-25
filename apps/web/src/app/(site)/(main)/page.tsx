@@ -1,4 +1,3 @@
-import { serverInstance as rollbar } from "@/rollbar";
 import { missionService } from "@/server/services/mission";
 import { MissionType } from "@prisma/client";
 import { BannerSlider } from "./components/BannerSlider";
@@ -41,7 +40,6 @@ export default async function MainPage() {
     projects = toSurveyCardData(missions);
   } catch (error) {
     console.error("[MainPage] missionService.getAllMissions failed:", error);
-    rollbar.error(error);
     projects = [];
   }
 
