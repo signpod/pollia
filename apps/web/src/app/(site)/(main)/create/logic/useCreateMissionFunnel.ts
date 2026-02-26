@@ -4,10 +4,12 @@ import { createMission } from "@/actions/mission";
 import { updateMission } from "@/actions/mission/update";
 import { createReward } from "@/actions/reward/create";
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
+import { ROUTES } from "@/constants/routes";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { MissionCategory } from "@prisma/client";
 import { toast } from "@repo/ui/components";
 import { AlertCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { useWatch } from "react-hook-form";
 import { mapCreateMissionRequest, mapCreateRewardRequest, mapIntroUpdateRequest } from "./mappers";
@@ -39,6 +41,7 @@ const PREV_STEP: Partial<Record<CreateMissionStep, Exclude<CreateMissionStep, "s
 };
 
 export function useCreateMissionFunnel({ form }: UseCreateMissionFunnelParams) {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState<CreateMissionStep>("category");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<CreateMissionSuccessResult | null>(null);
@@ -133,9 +136,6 @@ export function useCreateMissionFunnel({ form }: UseCreateMissionFunnelParams) {
         }
       }
 
-      setResult({ missionId, warnings });
-      setCurrentStep("success");
-
       toast({
         message:
           warnings.length > 0
@@ -146,6 +146,9 @@ export function useCreateMissionFunnel({ form }: UseCreateMissionFunnelParams) {
           iconClassName: "text-red-500",
         }),
       });
+
+      setResult({ missionId, warnings });
+      router.replace(ROUTES.EDITOR_MISSION(missionId));
 
       return true;
     } catch (error) {
@@ -158,7 +161,7 @@ export function useCreateMissionFunnel({ form }: UseCreateMissionFunnelParams) {
     } finally {
       setIsSubmitting(false);
     }
-  }, [form]);
+  }, [form, router]);
 
   const goNext = useCallback(async () => {
     if (currentStep === "success") return;
