@@ -73,6 +73,14 @@ export function ProfileSection() {
               <Typo.Body size="small"> 카카오 연동</Typo.Body>
             </span>
           </div>
+          <div className="flex items-center gap-2 rounded-sm bg-violet-50 px-3 py-2">
+            <span className="flex size-5 items-center justify-center rounded-full bg-violet-500 text-[11px] font-bold text-white">
+              P
+            </span>
+            <Typo.Body size="medium" className="font-bold text-violet-700">
+              100
+            </Typo.Body>
+          </div>
         </div>
       </section>
     </section>
