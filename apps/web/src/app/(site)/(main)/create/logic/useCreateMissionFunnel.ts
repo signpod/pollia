@@ -9,6 +9,7 @@ import { MissionCategory } from "@prisma/client";
 import { toast } from "@repo/ui/components";
 import { AlertCircle } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
+import { useWatch } from "react-hook-form";
 import { mapCreateMissionRequest, mapCreateRewardRequest, mapIntroUpdateRequest } from "./mappers";
 import {
   CREATE_MISSION_PROGRESS_STEPS,
@@ -41,6 +42,7 @@ export function useCreateMissionFunnel({ form }: UseCreateMissionFunnelParams) {
   const [currentStep, setCurrentStep] = useState<CreateMissionStep>("category");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<CreateMissionSuccessResult | null>(null);
+  const category = useWatch({ control: form.control, name: "category" });
 
   const validateCurrentStep = useCallback(async () => {
     if (currentStep === "category") {
@@ -224,20 +226,14 @@ export function useCreateMissionFunnel({ form }: UseCreateMissionFunnelParams) {
 
   const screenTitle = useMemo(() => {
     if (currentStep === "success") return `${UBIQUITOUS_CONSTANTS.MISSION} 생성 완료`;
-    if (currentStep === "mode") {
-      const category = form.getValues("category");
-      if (category) {
-        return `${MISSION_CATEGORY_LABELS[category]} 만들기`;
-      }
+    if (currentStep === "mode" && category) {
+      return `${MISSION_CATEGORY_LABELS[category]} 만들기`;
     }
-    if (currentStep === "project-info") {
-      const category = form.getValues("category");
-      if (category) {
-        return `${MISSION_CATEGORY_LABELS[category]} 정보 입력`;
-      }
+    if (currentStep === "project-info" && category) {
+      return `${MISSION_CATEGORY_LABELS[category]} 정보 입력`;
     }
     return STEP_TITLES[currentStep];
-  }, [currentStep, form]);
+  }, [category, currentStep]);
 
   const nextButtonLabel =
     currentStep === "reward-settings" ? `${UBIQUITOUS_CONSTANTS.MISSION} 생성` : "다음";

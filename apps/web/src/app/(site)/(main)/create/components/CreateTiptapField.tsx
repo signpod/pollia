@@ -5,18 +5,43 @@ import { LabelText, TiptapEditor, Typo } from "@repo/ui/components";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import type { CreateMissionFormData } from "../schema";
 
+function decodeHtmlEntities(text: string): string {
+  const namedEntities: Record<string, string> = {
+    amp: "&",
+    lt: "<",
+    gt: ">",
+    quot: '"',
+    apos: "'",
+    nbsp: " ",
+  };
+
+  return text.replace(/&(#x?[0-9a-fA-F]+|[a-zA-Z]+);/g, (_, entity: string) => {
+    if (entity.startsWith("#x") || entity.startsWith("#X")) {
+      const code = Number.parseInt(entity.slice(2), 16);
+      return Number.isNaN(code) ? `&${entity};` : String.fromCodePoint(code);
+    }
+
+    if (entity.startsWith("#")) {
+      const code = Number.parseInt(entity.slice(1), 10);
+      return Number.isNaN(code) ? `&${entity};` : String.fromCodePoint(code);
+    }
+
+    return namedEntities[entity] ?? `&${entity};`;
+  });
+}
+
 function getTextLength(html: string): number {
   if (!html) return 0;
 
-  const text = html.replace(/<[^>]*>/g, "");
-
   if (typeof document !== "undefined") {
     const div = document.createElement("div");
-    div.innerHTML = text;
-    return div.textContent?.trim().length || 0;
+    div.innerHTML = html;
+    return div.textContent?.replace(/\u00a0/g, " ").trim().length || 0;
   }
 
-  return text.trim().length;
+  const textWithoutTags = html.replace(/<[^>]*>/g, "");
+  const decodedText = decodeHtmlEntities(textWithoutTags);
+  return decodedText.trim().length;
 }
 
 interface CreateTiptapFieldProps {

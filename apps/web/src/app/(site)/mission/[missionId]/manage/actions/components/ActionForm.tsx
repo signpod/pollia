@@ -32,9 +32,12 @@ import {
 import { Plus, Trash2 } from "lucide-react";
 import { useCallback, useState } from "react";
 
-let optionKeyCounter = 0;
 function generateOptionKey() {
-  return `opt-${++optionKeyCounter}-${Date.now()}`;
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  return `opt-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
 interface OptionFormItem {
