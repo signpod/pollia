@@ -128,11 +128,12 @@ function ActionStepWrapper({
   const { data: missionResponse } = useReadMissionResponseForMission({ missionId });
 
   const submittedAnswers: SubmittedAnswerForProgress[] | undefined = useMemo(() => {
+    if (missionResponse?.data?.completedAt) return undefined;
     return missionResponse?.data?.answers?.map(answer => ({
       actionId: answer.actionId,
       options: answer.options,
     }));
-  }, [missionResponse?.data?.answers]);
+  }, [missionResponse?.data?.answers, missionResponse?.data?.completedAt]);
 
   const progressInfo = useActionProgress({
     actionId: currentActionData.id,
@@ -210,7 +211,8 @@ function ActionStepWrapper({
       isNextDisabled: !canGoNext || isSubmitting,
       updateCanGoNext,
       onAnswerChange: handleAnswerChange,
-      missionResponse: missionResponse?.data ? missionResponse : undefined,
+      missionResponse:
+        missionResponse?.data && !missionResponse.data.completedAt ? missionResponse : undefined,
     }),
     [
       progressInfo.currentOrder,
