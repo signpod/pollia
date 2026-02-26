@@ -1,13 +1,16 @@
 import { ProgressBarProvider } from "@/components/common/templates/action/common/ProgressBarProvider";
-import { AuthGate } from "@/components/providers/AuthGate";
+// import { AuthGate } from "@/components/providers/AuthGate";
 import Providers from "@/components/providers/QueryProvider";
 
 export default function ActionLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AuthGate>
-      <Providers>
-        <ProgressBarProvider>{children}</ProgressBarProvider>
-      </Providers>
-    </AuthGate>
+    // <AuthGate>
+    //   <Providers>
+    //     <ProgressBarProvider>{children}</ProgressBarProvider>
+    //   </Providers>
+    // </AuthGate>
+    <Providers>
+      <ProgressBarProvider>{children}</ProgressBarProvider>
+    </Providers>
   );
 }

@@ -54,15 +54,10 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   try {
-    // 미션 경로: 쿠키 체크만으로 빠르게 처리 (getUser 호출 안 함)
+    // 미션 경로: nav 쿠키로 인트로 페이지 경유 여부 확인
+    // 인증은 서버 액션(resolveMissionActor)에서 처리
     if (pathname.includes("/mission/") && pathname.includes("/action/")) {
       const missionId = extractMissionId(pathname);
-
-      if (!hasAuthCookie(request)) {
-        const loginUrl = new URL("/login", request.url);
-        loginUrl.searchParams.set("next", pathname);
-        return NextResponse.redirect(loginUrl);
-      }
 
       if (missionId) {
         const navCookie = request.cookies.get(`${ACTION_NAV_COOKIE_PREFIX}${missionId}`);
@@ -75,13 +70,15 @@ export async function middleware(request: NextRequest) {
     }
 
     if (pathname.includes("/mission/") && pathname.endsWith("/done")) {
-      if (!hasAuthCookie(request)) {
-        const missionId = extractMissionId(pathname);
-        if (missionId) {
+      const missionId = extractMissionId(pathname);
+
+      if (missionId) {
+        const navCookie = request.cookies.get(`${ACTION_NAV_COOKIE_PREFIX}${missionId}`);
+        if (!navCookie?.value) {
           return NextResponse.redirect(new URL(`/mission/${missionId}`, request.url));
         }
-        return NextResponse.redirect(new URL("/login", request.url));
       }
+
       return NextResponse.next();
     }
 
