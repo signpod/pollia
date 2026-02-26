@@ -3,8 +3,17 @@
 import { ROUTES } from "@/constants/routes";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useReadActionsDetail } from "@/hooks/action";
-import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { Button, Dialog, DialogOverlay, DialogPortal, EmptyState, Typo } from "@repo/ui/components";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogOverlay,
+  DialogPortal,
+  DialogTitle,
+  EmptyState,
+  Typo,
+} from "@repo/ui/components";
 import { ChevronLeft, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
@@ -130,8 +139,7 @@ export function ManageActionsClient({ missionId }: ManageActionsClientProps) {
         <DialogPortal>
           <DialogOverlay />
           {controller.deleteTarget ? (
-            <DialogPrimitive.Content
-              className="fixed top-1/2 left-1/2 z-[51] w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 focus:outline-none"
+            <DialogContent
               onInteractOutside={event => {
                 if (controller.isDeleteLoading) {
                   event.preventDefault();
@@ -143,15 +151,15 @@ export function ManageActionsClient({ missionId }: ManageActionsClientProps) {
                 }
               }}
             >
-              <DialogPrimitive.Title asChild>
+              <DialogTitle asChild>
                 <Typo.SubTitle className="mb-2">액션 삭제</Typo.SubTitle>
-              </DialogPrimitive.Title>
-              <DialogPrimitive.Description asChild>
+              </DialogTitle>
+              <DialogDescription asChild>
                 <Typo.Body size="medium" className="mb-6 text-zinc-500">
                   "{controller.deleteTarget.title}" 액션을 삭제하시겠습니까? 이 작업은 되돌릴 수
                   없습니다.
                 </Typo.Body>
-              </DialogPrimitive.Description>
+              </DialogDescription>
               <div className="flex gap-3">
                 <Button
                   variant="secondary"
@@ -171,7 +179,7 @@ export function ManageActionsClient({ missionId }: ManageActionsClientProps) {
                   삭제
                 </Button>
               </div>
-            </DialogPrimitive.Content>
+            </DialogContent>
           ) : null}
         </DialogPortal>
       </Dialog>

@@ -1,6 +1,5 @@
 import { TiptapEditor } from "@repo/ui/components";
 import type { Meta, StoryObj } from "@storybook/nextjs";
-import React from "react";
 
 const SAMPLE_CONTENT = `
   <h2>프로젝트 소개</h2>
@@ -59,20 +58,13 @@ function ControlledEditor({
   editable?: boolean;
   showToolbar?: boolean;
 }) {
-  const [value, setValue] = React.useState(content ?? "");
-
-  React.useEffect(() => {
-    setValue(content ?? "");
-  }, [content]);
-
   return (
     <div className="w-[720px]">
       <TiptapEditor
-        content={value}
+        content={content}
         placeholder={placeholder}
         editable={editable}
         showToolbar={showToolbar}
-        onUpdate={setValue}
         className="min-h-[220px] ring-1 ring-zinc-200"
       />
     </div>
