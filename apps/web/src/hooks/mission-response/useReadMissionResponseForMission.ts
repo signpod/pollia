@@ -4,24 +4,24 @@ import { getMissionActionsDetail } from "@/actions/action";
 import { getMyResponseForMission } from "@/actions/mission-response";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
-import { useCurrentUser } from "@/hooks/user";
+import { useCurrentUser } from "@/hooks/user/useCurrentUser";
 import { useQueries } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 export function useReadMissionResponseForMission({ missionId }: { missionId: string }) {
   const { data: currentUser } = useCurrentUser();
-  const isLoggedIn = !!currentUser?.id;
+  const actorKey = currentUser?.id ?? "guest";
 
   const results = useQueries({
     queries: [
       {
-        queryKey: missionQueryKeys.missionResponseForMission(missionId),
+        queryKey: [...missionQueryKeys.missionResponseForMission(missionId), actorKey],
         queryFn: () => getMyResponseForMission(missionId),
         staleTime: 5 * 60 * 1000,
         refetchInterval: 5 * 60 * 1000,
         retry: 3,
         retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
-        enabled: !!missionId && isLoggedIn,
+        enabled: !!missionId,
       },
       {
         queryKey: actionQueryKeys.actions({ missionId }),
@@ -30,7 +30,7 @@ export function useReadMissionResponseForMission({ missionId }: { missionId: str
         refetchInterval: 5 * 60 * 1000,
         retry: 3,
         retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
-        enabled: !!missionId && isLoggedIn,
+        enabled: !!missionId,
       },
     ],
   });
