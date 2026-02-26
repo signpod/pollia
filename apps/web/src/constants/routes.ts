@@ -22,6 +22,7 @@ export const ROUTES = {
   ME_REWARDS_TAB: "/me?tab=rewards",
   ME_LIKED_TAB: "/me?tab=liked",
   LIKES: "/likes",
+  SEARCH: "/search",
 
   // 미션 관련
   MISSION: (id: string) => `/mission/${id}`,

@@ -11,6 +11,18 @@ export interface SearchMissionsRequest {
 
 export interface SearchMissionsResponse {
   data: MissionSearchRecord[];
+  error?: string;
+}
+
+export async function searchMissionsPublic(query: string): Promise<SearchMissionsResponse> {
+  try {
+    const data = await missionSearchReadService.searchMissions(query, 10);
+    return { data };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "알 수 없는 오류";
+    console.error("searchMissionsPublic error:", message);
+    return { data: [], error: message };
+  }
 }
 
 export async function searchMissions(
