@@ -3,6 +3,7 @@
 import { createMission } from "@/actions/mission";
 import { updateMission } from "@/actions/mission/update";
 import { createReward } from "@/actions/reward/create";
+import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { MissionCategory } from "@prisma/client";
 import { toast } from "@repo/ui/components";
@@ -223,8 +224,20 @@ export function useCreateMissionFunnel({ form }: UseCreateMissionFunnelParams) {
 
   const screenTitle = useMemo(() => {
     if (currentStep === "success") return `${UBIQUITOUS_CONSTANTS.MISSION} 생성 완료`;
+    if (currentStep === "mode") {
+      const category = form.getValues("category");
+      if (category) {
+        return `${MISSION_CATEGORY_LABELS[category]} 만들기`;
+      }
+    }
+    if (currentStep === "project-info") {
+      const category = form.getValues("category");
+      if (category) {
+        return `${MISSION_CATEGORY_LABELS[category]} 정보 입력`;
+      }
+    }
     return STEP_TITLES[currentStep];
-  }, [currentStep]);
+  }, [currentStep, form]);
 
   const nextButtonLabel =
     currentStep === "reward-settings" ? `${UBIQUITOUS_CONSTANTS.MISSION} 생성` : "다음";
