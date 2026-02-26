@@ -103,14 +103,12 @@ function RewardBottomSheet({
   );
 }
 
-function RewardClaimButton({ hasReward }: { hasReward: boolean }) {
+function CompletionBottomButton({ hasReward }: { hasReward: boolean }) {
   const { isLoggedIn } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
   const { handleKakaoLogin } = useKakaoLogin({ redirectPath: pathname });
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-
-  if (!hasReward) return null;
 
   if (!isLoggedIn) {
     return (
@@ -123,7 +121,9 @@ function RewardClaimButton({ hasReward }: { hasReward: boolean }) {
           >
             <div className="flex items-center justify-center w-full gap-6 text-default">
               <KakaoIcon className="size-6" />
-              <Typo.ButtonText size="large">로그인하고 리워드 받기</Typo.ButtonText>
+              <Typo.ButtonText size="large">
+                {hasReward ? "로그인하고 리워드 받기" : "로그인하고 결과 저장하기"}
+              </Typo.ButtonText>
             </div>
           </ButtonV2>
         </FixedBottomLayout.Content>
@@ -131,26 +131,48 @@ function RewardClaimButton({ hasReward }: { hasReward: boolean }) {
     );
   }
 
-  return (
-    <>
-      <FixedBottomLayout hasGradientBlur>
-        <FixedBottomLayout.Content className="px-5 py-3">
-          <ButtonV2 variant="primary" className="w-full" onClick={() => setIsSheetOpen(true)}>
-            <div className="flex items-center justify-center w-full gap-6">
-              <KakaoIcon className="size-6" />
+  if (hasReward) {
+    return (
+      <>
+        <FixedBottomLayout hasGradientBlur>
+          <FixedBottomLayout.Content className="px-5 py-3">
+            <ButtonV2 variant="primary" className="w-full" onClick={() => setIsSheetOpen(true)}>
               <Typo.ButtonText size="large">리워드 받기</Typo.ButtonText>
+            </ButtonV2>
+          </FixedBottomLayout.Content>
+        </FixedBottomLayout>
+
+        <RewardBottomSheet
+          isOpen={isSheetOpen}
+          onClose={() => setIsSheetOpen(false)}
+          onGoHome={() => router.push(ROUTES.HOME)}
+          onGoRewards={() => router.push(ROUTES.ME_REWARDS_TAB)}
+        />
+      </>
+    );
+  }
+
+  return (
+    <FixedBottomLayout hasGradientBlur>
+      <FixedBottomLayout.Content className="px-5 py-3">
+        <div className="flex gap-2 w-full">
+          <ButtonV2 variant="secondary" className="flex-1" onClick={() => router.push(ROUTES.HOME)}>
+            <div className="flex items-center justify-center w-full">
+              <Typo.ButtonText size="large">홈으로 가기</Typo.ButtonText>
             </div>
           </ButtonV2>
-        </FixedBottomLayout.Content>
-      </FixedBottomLayout>
-
-      <RewardBottomSheet
-        isOpen={isSheetOpen}
-        onClose={() => setIsSheetOpen(false)}
-        onGoHome={() => router.push(ROUTES.HOME)}
-        onGoRewards={() => router.push(ROUTES.ME_REWARDS_TAB)}
-      />
-    </>
+          <ButtonV2
+            variant="primary"
+            className="flex-1"
+            onClick={() => router.push(ROUTES.ME_COMPLETED_TAB)}
+          >
+            <div className="flex items-center justify-center w-full">
+              <Typo.ButtonText size="large">마이페이지</Typo.ButtonText>
+            </div>
+          </ButtonV2>
+        </div>
+      </FixedBottomLayout.Content>
+    </FixedBottomLayout>
   );
 }
 
@@ -175,7 +197,7 @@ export function MissionCompletionPage({
         shareButtons={shareButtons}
         imageMenu={imageMenu}
       />
-      {hasReward && <RewardClaimButton hasReward={hasReward} />}
+      <CompletionBottomButton hasReward={!!hasReward} />
     </div>
   );
 }

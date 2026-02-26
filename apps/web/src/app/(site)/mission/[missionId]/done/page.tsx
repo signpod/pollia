@@ -1,12 +1,16 @@
 import { getMissionActionsDetail } from "@/actions/action";
 import { getCompletionsByMissionId, getMissionCompletion } from "@/actions/mission-completion";
 import { getMyResponseForMission } from "@/actions/mission-response";
+import { claimGuestResponses } from "@/actions/mission-response/claimGuestResponses";
+import { GUEST_ID_COOKIE_NAME } from "@/constants/cookie";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
 import { ROUTES } from "@/constants/routes";
+import { checkAuthStatus } from "@/lib/auth";
 import { getQueryClient } from "@/lib/getQueryClient";
 import type { GetMissionCompletionResponse } from "@/types/dto";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { MissionCompletion } from "./ui";
 import { RouteWrapper } from "./ui/RouteWrapper";
@@ -21,6 +25,14 @@ export default async function MissionPage({
   const { missionId } = await params;
   const { id: completionId } = await searchParams;
   const queryClient = getQueryClient();
+
+  const { isAuthenticated } = await checkAuthStatus().catch(() => ({ isAuthenticated: false }));
+  if (isAuthenticated) {
+    const cookieStore = await cookies();
+    if (cookieStore.get(GUEST_ID_COOKIE_NAME)?.value) {
+      await claimGuestResponses().catch(() => {});
+    }
+  }
 
   const missionResponse = await getMyResponseForMission(missionId).catch(() => ({ data: null }));
   if (!missionResponse.data?.completedAt) {

@@ -70,15 +70,6 @@ export async function middleware(request: NextRequest) {
     }
 
     if (pathname.includes("/mission/") && pathname.endsWith("/done")) {
-      const missionId = extractMissionId(pathname);
-
-      if (missionId) {
-        const navCookie = request.cookies.get(`${ACTION_NAV_COOKIE_PREFIX}${missionId}`);
-        if (!navCookie?.value) {
-          return NextResponse.redirect(new URL(`/mission/${missionId}`, request.url));
-        }
-      }
-
       return NextResponse.next();
     }
 
