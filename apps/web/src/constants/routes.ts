@@ -9,6 +9,7 @@ export const ROUTES = {
 
   // 메인 페이지
   HOME: "/",
+  CREATE_MISSION: "/create",
   ME: "/me",
   ME_IN_PROGRESS: "/me/in-progress",
   ME_COMPLETED: "/me/completed",
@@ -28,6 +29,10 @@ export const ROUTES = {
   MISSION_DONE: (id: string, completionId?: string) =>
     completionId ? `/mission/${id}/done?id=${completionId}` : `/mission/${id}/done`,
   MISSION_PASSWORD: (missionId: string) => `/mission/${missionId}/password`,
+  MISSION_MANAGE_ACTIONS: (missionId: string) => `/mission/${missionId}/manage/actions`,
+  MISSION_MANAGE_ACTIONS_NEW: (missionId: string) => `/mission/${missionId}/manage/actions/new`,
+  MISSION_MANAGE_ACTIONS_EDIT: (missionId: string, actionId: string) =>
+    `/mission/${missionId}/manage/actions/${actionId}/edit`,
 
   // 액션 관련
   ACTION: ({ missionId, actionId }: { missionId: string; actionId: string }) =>

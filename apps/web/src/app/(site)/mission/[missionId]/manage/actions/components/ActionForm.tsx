@@ -1,0 +1,528 @@
+"use client";
+
+import { ACTION_TYPE_LABELS } from "@/constants/action";
+import {
+  ACTION_DESCRIPTION_MAX_LENGTH,
+  ACTION_OPTION_TITLE_MAX_LENGTH,
+  ACTION_TITLE_MAX_LENGTH,
+  BRANCH_OPTIONS_COUNT,
+  MULTIPLE_CHOICE_MAX_OPTIONS,
+  MULTIPLE_CHOICE_MIN_OPTIONS,
+  SCALE_MAX_OPTIONS,
+  SCALE_MIN_OPTIONS,
+  TAG_MAX_OPTIONS,
+  TAG_MIN_OPTIONS,
+} from "@/schemas/action";
+import type { ActionDetail } from "@/types/dto";
+import { ActionType } from "@prisma/client";
+import {
+  Button,
+  CounterInput,
+  Input,
+  LabelText,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Textarea,
+  Toggle,
+  Typo,
+} from "@repo/ui/components";
+import { Plus, Trash2 } from "lucide-react";
+import { useCallback, useState } from "react";
+
+function generateOptionKey() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+
+  return `opt-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+interface OptionFormItem {
+  _key: string;
+  id?: string;
+  title: string;
+  description?: string | null;
+  nextActionId?: string | null;
+  nextCompletionId?: string | null;
+  order: number;
+}
+
+export interface ActionFormValues {
+  title: string;
+  description?: string | null;
+  isRequired: boolean;
+  hasOther?: boolean;
+  maxSelections?: number;
+  options?: Omit<OptionFormItem, "_key">[];
+  nextActionId?: string | null;
+  nextCompletionId?: string | null;
+}
+
+interface ActionFormProps {
+  actionType: ActionType;
+  initialValues?: ActionFormValues;
+  editingAction?: ActionDetail | null;
+  allActions: ActionDetail[];
+  completionOptions: Array<{ id: string; title: string }>;
+  isLoading: boolean;
+  onSubmit: (values: ActionFormValues) => void;
+  onCancel: () => void;
+}
+
+const NEEDS_OPTIONS: ActionType[] = [
+  ActionType.MULTIPLE_CHOICE,
+  ActionType.SCALE,
+  ActionType.TAG,
+  ActionType.BRANCH,
+];
+
+const NEEDS_MAX_SELECTIONS: ActionType[] = [
+  ActionType.MULTIPLE_CHOICE,
+  ActionType.TAG,
+  ActionType.IMAGE,
+  ActionType.DATE,
+  ActionType.TIME,
+];
+
+function getDefaultOptions(type: ActionType): OptionFormItem[] {
+  if (type === ActionType.BRANCH) {
+    return Array.from({ length: BRANCH_OPTIONS_COUNT }, (_, i) => ({
+      _key: generateOptionKey(),
+      title: "",
+      order: i,
+    }));
+  }
+  return [
+    { _key: generateOptionKey(), title: "", order: 0 },
+    { _key: generateOptionKey(), title: "", order: 1 },
+  ];
+}
+
+function getOptionLimits(type: ActionType): { min: number; max: number } {
+  switch (type) {
+    case ActionType.MULTIPLE_CHOICE:
+      return { min: MULTIPLE_CHOICE_MIN_OPTIONS, max: MULTIPLE_CHOICE_MAX_OPTIONS };
+    case ActionType.SCALE:
+      return { min: SCALE_MIN_OPTIONS, max: SCALE_MAX_OPTIONS };
+    case ActionType.TAG:
+      return { min: TAG_MIN_OPTIONS, max: TAG_MAX_OPTIONS };
+    case ActionType.BRANCH:
+      return { min: BRANCH_OPTIONS_COUNT, max: BRANCH_OPTIONS_COUNT };
+    default:
+      return { min: 0, max: 0 };
+  }
+}
+
+const BRANCH_ACTION_PREFIX = "action:";
+const BRANCH_COMPLETION_PREFIX = "completion:";
+
+function getBranchTargetValue(option: OptionFormItem): string {
+  if (option.nextActionId) {
+    return `${BRANCH_ACTION_PREFIX}${option.nextActionId}`;
+  }
+  if (option.nextCompletionId) {
+    return `${BRANCH_COMPLETION_PREFIX}${option.nextCompletionId}`;
+  }
+  return "";
+}
+
+function parseBranchTargetValue(value: string): {
+  nextActionId: string | null;
+  nextCompletionId: string | null;
+} {
+  if (!value) {
+    return { nextActionId: null, nextCompletionId: null };
+  }
+
+  if (value.startsWith(BRANCH_COMPLETION_PREFIX)) {
+    return {
+      nextActionId: null,
+      nextCompletionId: value.slice(BRANCH_COMPLETION_PREFIX.length) || null,
+    };
+  }
+
+  if (value.startsWith(BRANCH_ACTION_PREFIX)) {
+    return {
+      nextActionId: value.slice(BRANCH_ACTION_PREFIX.length) || null,
+      nextCompletionId: null,
+    };
+  }
+
+  return {
+    nextActionId: value || null,
+    nextCompletionId: null,
+  };
+}
+
+export function ActionForm({
+  actionType,
+  initialValues,
+  editingAction,
+  allActions,
+  completionOptions,
+  isLoading,
+  onSubmit,
+  onCancel,
+}: ActionFormProps) {
+  const [title, setTitle] = useState(initialValues?.title ?? "");
+  const [description, setDescription] = useState(initialValues?.description ?? "");
+  const [isRequired, setIsRequired] = useState(initialValues?.isRequired ?? true);
+  const [hasOther, setHasOther] = useState(initialValues?.hasOther ?? false);
+  const [maxSelections, setMaxSelections] = useState(initialValues?.maxSelections ?? 1);
+  const [options, setOptions] = useState<OptionFormItem[]>(() => {
+    if (initialValues?.options) {
+      return initialValues.options.map(o => ({ ...o, _key: generateOptionKey() }));
+    }
+    return NEEDS_OPTIONS.includes(actionType) ? getDefaultOptions(actionType) : [];
+  });
+  const [nextActionId, setNextActionId] = useState<string | null>(
+    initialValues?.nextActionId ?? null,
+  );
+  const [nextCompletionId, setNextCompletionId] = useState<string | null>(
+    initialValues?.nextCompletionId ?? null,
+  );
+  const [nextLinkType, setNextLinkType] = useState<"action" | "completion">(
+    initialValues?.nextCompletionId ? "completion" : "action",
+  );
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const needsOptions = NEEDS_OPTIONS.includes(actionType);
+  const needsMaxSelections = NEEDS_MAX_SELECTIONS.includes(actionType);
+  const isBranch = actionType === ActionType.BRANCH;
+  const optionLimits = getOptionLimits(actionType);
+
+  const selectableActions = allActions.filter(a => !editingAction || a.id !== editingAction.id);
+  const hasLinkTargets = selectableActions.length > 0 || completionOptions.length > 0;
+
+  const validate = useCallback((): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!title.trim()) {
+      newErrors.title = "제목을 입력해주세요.";
+    } else if (title.length > ACTION_TITLE_MAX_LENGTH) {
+      newErrors.title = `제목은 ${ACTION_TITLE_MAX_LENGTH}자를 초과할 수 없습니다.`;
+    }
+
+    if (needsOptions) {
+      const emptyOptions = options.filter(o => !o.title.trim());
+      if (emptyOptions.length > 0) {
+        newErrors.options = "모든 항목의 제목을 입력해주세요.";
+      }
+      if (options.length < optionLimits.min) {
+        newErrors.options = `최소 ${optionLimits.min}개 이상의 항목이 필요합니다.`;
+      }
+    }
+
+    if (hasLinkTargets) {
+      if (isBranch) {
+        const missingBranchNext = options.some(o => !o.nextActionId && !o.nextCompletionId);
+        if (missingBranchNext) {
+          newErrors.branchNextAction = "모든 분기 옵션의 다음 이동을 설정해주세요.";
+        }
+      } else {
+        if (nextLinkType === "action" && !nextActionId) {
+          newErrors.nextLink = "다음 이동할 액션을 선택해주세요.";
+        }
+        if (nextLinkType === "completion" && !nextCompletionId) {
+          newErrors.nextLink = "완료 화면을 선택해주세요.";
+        }
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }, [
+    title,
+    needsOptions,
+    options,
+    optionLimits.min,
+    isBranch,
+    nextLinkType,
+    nextActionId,
+    nextCompletionId,
+    hasLinkTargets,
+  ]);
+
+  const handleSubmit = () => {
+    if (!validate()) return;
+
+    const values: ActionFormValues = {
+      title: title.trim(),
+      description: description?.trim() || null,
+      isRequired,
+      ...(needsMaxSelections && { maxSelections }),
+      ...(actionType === ActionType.MULTIPLE_CHOICE && { hasOther }),
+      ...(actionType === ActionType.TAG && { hasOther }),
+      ...(needsOptions && {
+        options: options.map((o, i) => {
+          const { _key, ...rest } = o;
+          return { ...rest, title: o.title.trim(), order: i };
+        }),
+      }),
+      ...(!isBranch && nextLinkType === "action" && { nextActionId, nextCompletionId: null }),
+      ...(!isBranch && nextLinkType === "completion" && { nextCompletionId, nextActionId: null }),
+    };
+
+    onSubmit(values);
+  };
+
+  const addOption = () => {
+    if (options.length >= optionLimits.max) return;
+    setOptions([...options, { _key: generateOptionKey(), title: "", order: options.length }]);
+  };
+
+  const removeOption = (index: number) => {
+    if (options.length <= optionLimits.min) return;
+    setOptions(options.filter((_, i) => i !== index));
+  };
+
+  const updateOption = (index: number, field: keyof OptionFormItem, value: string | null) => {
+    setOptions(options.map((o, i) => (i === index ? { ...o, [field]: value } : o)));
+  };
+
+  return (
+    <div className="flex flex-col gap-5 p-4">
+      <Typo.SubTitle>
+        {editingAction ? "액션 수정" : `${ACTION_TYPE_LABELS[actionType]} 액션 추가`}
+      </Typo.SubTitle>
+
+      <Input
+        label="제목"
+        required
+        placeholder="액션 제목을 입력해주세요"
+        maxLength={ACTION_TITLE_MAX_LENGTH}
+        value={title}
+        onChange={e => setTitle(e.target.value)}
+        errorMessage={errors.title}
+      />
+
+      <Textarea
+        label="설명"
+        placeholder="액션에 대한 설명을 입력해주세요"
+        maxLength={ACTION_DESCRIPTION_MAX_LENGTH}
+        rows={3}
+        value={description ?? ""}
+        onChange={e => setDescription(e.target.value)}
+      />
+
+      <div className="flex items-center justify-between">
+        <LabelText required={false}>필수 응답</LabelText>
+        <Toggle checked={isRequired} onCheckedChange={setIsRequired} />
+      </div>
+
+      {needsMaxSelections && !isBranch && (
+        <div className="flex items-center justify-between">
+          <LabelText required={false}>최대 선택 수</LabelText>
+          <CounterInput
+            value={maxSelections}
+            onChange={setMaxSelections}
+            min={1}
+            max={needsOptions ? options.length : 10}
+          />
+        </div>
+      )}
+
+      {(actionType === ActionType.MULTIPLE_CHOICE || actionType === ActionType.TAG) && (
+        <div className="flex items-center justify-between">
+          <LabelText required={false}>기타 옵션 허용</LabelText>
+          <Toggle checked={hasOther} onCheckedChange={setHasOther} />
+        </div>
+      )}
+
+      {needsOptions && (
+        <div className="flex flex-col gap-3">
+          <LabelText required>
+            항목 ({options.length}/{optionLimits.max})
+          </LabelText>
+          {options.map((option, index) => (
+            <div
+              key={option._key}
+              className="flex flex-col gap-2 rounded-lg border border-zinc-100 bg-zinc-50 p-3"
+            >
+              <div className="flex items-center gap-2">
+                <Typo.Body size="small" className="shrink-0 font-medium text-zinc-500">
+                  {index + 1}
+                </Typo.Body>
+                <input
+                  type="text"
+                  placeholder="항목 제목"
+                  maxLength={ACTION_OPTION_TITLE_MAX_LENGTH}
+                  value={option.title}
+                  onChange={e => updateOption(index, "title", e.target.value)}
+                  className="flex-1 rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-violet-400"
+                />
+                {!isBranch && options.length > optionLimits.min && (
+                  <button
+                    type="button"
+                    onClick={() => removeOption(index)}
+                    className="rounded p-1 text-zinc-400 hover:text-red-500"
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                )}
+              </div>
+
+              {isBranch && (
+                <div className="ml-6">
+                  {hasLinkTargets ? (
+                    <Select
+                      value={getBranchTargetValue(option)}
+                      onValueChange={val => {
+                        const parsed = parseBranchTargetValue(val);
+                        setOptions(
+                          options.map((currentOption, currentIndex) =>
+                            currentIndex === index
+                              ? {
+                                  ...currentOption,
+                                  nextActionId: parsed.nextActionId,
+                                  nextCompletionId: parsed.nextCompletionId,
+                                }
+                              : currentOption,
+                          ),
+                        );
+                      }}
+                    >
+                      <SelectTrigger className="h-9 text-sm">
+                        <SelectValue placeholder="분기 이동할 대상 선택" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {selectableActions.map(a => (
+                          <SelectItem key={a.id} value={`${BRANCH_ACTION_PREFIX}${a.id}`}>
+                            #{(a.order ?? 0) + 1} {a.title}
+                          </SelectItem>
+                        ))}
+                        {completionOptions.map(c => (
+                          <SelectItem key={c.id} value={`${BRANCH_COMPLETION_PREFIX}${c.id}`}>
+                            [완료] {c.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Typo.Body size="small" className="text-zinc-400">
+                      다른 액션을 먼저 추가해주세요.
+                    </Typo.Body>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+
+          {errors.options && (
+            <Typo.Body size="small" className="text-red-500">
+              {errors.options}
+            </Typo.Body>
+          )}
+          {errors.branchNextAction && (
+            <Typo.Body size="small" className="text-red-500">
+              {errors.branchNextAction}
+            </Typo.Body>
+          )}
+
+          {!isBranch && options.length < optionLimits.max && (
+            <button
+              type="button"
+              onClick={addOption}
+              className="flex items-center justify-center gap-1 rounded-lg border border-dashed border-zinc-300 py-2.5 text-sm text-zinc-500 transition-colors hover:border-violet-400 hover:text-violet-500"
+            >
+              <Plus className="size-4" />
+              항목 추가
+            </button>
+          )}
+        </div>
+      )}
+
+      {!isBranch && (
+        <div className="flex flex-col gap-3 rounded-lg border border-violet-100 bg-violet-50/50 p-4">
+          <LabelText required={hasLinkTargets}>다음 이동 설정</LabelText>
+
+          {!hasLinkTargets ? (
+            <Typo.Body size="small" className="text-zinc-400">
+              다른 액션이나 완료 화면을 먼저 추가한 후 설정할 수 있습니다.
+            </Typo.Body>
+          ) : (
+            <>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setNextLinkType("action")}
+                  className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-colors ${
+                    nextLinkType === "action"
+                      ? "border-violet-400 bg-violet-500 text-white"
+                      : "border-zinc-200 bg-white text-zinc-600"
+                  }`}
+                >
+                  다음 액션
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNextLinkType("completion")}
+                  className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-colors ${
+                    nextLinkType === "completion"
+                      ? "border-violet-400 bg-violet-500 text-white"
+                      : "border-zinc-200 bg-white text-zinc-600"
+                  }`}
+                >
+                  완료 화면
+                </button>
+              </div>
+
+              {nextLinkType === "action" ? (
+                <Select
+                  value={nextActionId ?? ""}
+                  onValueChange={val => setNextActionId(val || null)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="다음 이동할 액션을 선택하세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {selectableActions.map(a => (
+                      <SelectItem key={a.id} value={a.id}>
+                        #{(a.order ?? 0) + 1} {a.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Select
+                  value={nextCompletionId ?? ""}
+                  onValueChange={val => setNextCompletionId(val || null)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="완료 화면을 선택하세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {completionOptions.map(c => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+
+              {errors.nextLink && (
+                <Typo.Body size="small" className="text-red-500">
+                  {errors.nextLink}
+                </Typo.Body>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      <div className="flex gap-3 pb-4 pt-2">
+        <Button variant="secondary" fullWidth onClick={onCancel} disabled={isLoading}>
+          취소
+        </Button>
+        <Button fullWidth onClick={handleSubmit} loading={isLoading} disabled={isLoading}>
+          {editingAction ? "수정" : "추가"}
+        </Button>
+      </div>
+    </div>
+  );
+}
