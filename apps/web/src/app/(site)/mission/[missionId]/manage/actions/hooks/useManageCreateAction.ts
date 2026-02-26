@@ -62,232 +62,135 @@ export function useManageCreateAction(options: UseManageCreateActionOptions = {}
 
   return useMutation({
     mutationFn: async (input: CreateActionInput) => {
+      const baseFields = {
+        missionId: input.missionId,
+        title: input.title,
+        description: input.description,
+        imageUrl: input.imageUrl,
+        imageFileUploadId: input.imageFileUploadId,
+        order: input.order,
+        isRequired: input.isRequired,
+        nextActionId: input.nextActionId,
+        nextCompletionId: input.nextCompletionId,
+      };
+
+      const branchBaseFields = {
+        missionId: input.missionId,
+        title: input.title,
+        description: input.description,
+        imageUrl: input.imageUrl,
+        imageFileUploadId: input.imageFileUploadId,
+        order: input.order,
+        isRequired: input.isRequired,
+      };
+
+      const buildOptions = (options?: ActionOptionInputWithOptionalOrder[]) =>
+        options?.map((opt, index) => ({
+          title: opt.title,
+          description: opt.description,
+          imageUrl: opt.imageUrl,
+          fileUploadId: opt.fileUploadId,
+          nextActionId: opt.nextActionId,
+          nextCompletionId: opt.nextCompletionId,
+          order: opt.order ?? index,
+        })) ?? [];
+
       switch (input.type) {
         case "MULTIPLE_CHOICE": {
           const request: CreateMultipleChoiceActionRequest = {
-            missionId: input.missionId,
-            title: input.title,
-            description: input.description,
-            imageUrl: input.imageUrl,
-            imageFileUploadId: input.imageFileUploadId,
-            order: input.order,
-            isRequired: input.isRequired,
+            ...baseFields,
             hasOther: input.hasOther,
             maxSelections: input.maxSelections ?? 1,
-            nextActionId: input.nextActionId,
-            nextCompletionId: input.nextCompletionId,
-            options:
-              input.options?.map((opt, index) => ({
-                title: opt.title,
-                description: opt.description,
-                imageUrl: opt.imageUrl,
-                fileUploadId: opt.fileUploadId,
-                nextActionId: opt.nextActionId,
-                nextCompletionId: opt.nextCompletionId,
-                order: opt.order ?? index,
-              })) ?? [],
+            options: buildOptions(input.options),
           };
-          return await createMultipleChoiceAction(request);
+          return createMultipleChoiceAction(request);
         }
 
         case "SCALE": {
           const request: CreateScaleActionRequest = {
-            missionId: input.missionId,
-            title: input.title,
-            description: input.description,
-            imageUrl: input.imageUrl,
-            imageFileUploadId: input.imageFileUploadId,
-            order: input.order,
-            isRequired: input.isRequired,
-            nextActionId: input.nextActionId,
-            nextCompletionId: input.nextCompletionId,
-            options:
-              input.options?.map((opt, index) => ({
-                title: opt.title,
-                description: opt.description,
-                imageUrl: opt.imageUrl,
-                fileUploadId: opt.fileUploadId,
-                nextActionId: opt.nextActionId,
-                nextCompletionId: opt.nextCompletionId,
-                order: opt.order ?? index,
-              })) ?? [],
+            ...baseFields,
+            options: buildOptions(input.options),
           };
-          return await createScaleAction(request);
+          return createScaleAction(request);
         }
 
         case "SUBJECTIVE": {
           const request: CreateSubjectiveActionRequest = {
-            missionId: input.missionId,
-            title: input.title,
-            description: input.description,
-            imageUrl: input.imageUrl,
-            imageFileUploadId: input.imageFileUploadId,
-            order: input.order,
-            isRequired: input.isRequired,
-            nextActionId: input.nextActionId,
-            nextCompletionId: input.nextCompletionId,
+            ...baseFields,
           };
-          return await createSubjectiveAction(request);
+          return createSubjectiveAction(request);
         }
 
         case "SHORT_TEXT": {
           const request: CreateShortTextActionRequest = {
-            missionId: input.missionId,
-            title: input.title,
-            description: input.description,
-            imageUrl: input.imageUrl,
-            imageFileUploadId: input.imageFileUploadId,
-            order: input.order,
-            isRequired: input.isRequired,
-            nextActionId: input.nextActionId,
-            nextCompletionId: input.nextCompletionId,
+            ...baseFields,
           };
-          return await createShortTextAction(request);
+          return createShortTextAction(request);
         }
 
         case "TAG": {
           const request: CreateTagActionRequest = {
-            missionId: input.missionId,
-            title: input.title,
-            description: input.description,
-            imageUrl: input.imageUrl,
-            imageFileUploadId: input.imageFileUploadId,
-            order: input.order,
-            isRequired: input.isRequired,
+            ...baseFields,
             hasOther: input.hasOther,
             maxSelections: input.maxSelections ?? 1,
-            nextActionId: input.nextActionId,
-            nextCompletionId: input.nextCompletionId,
-            options:
-              input.options?.map((opt, index) => ({
-                title: opt.title,
-                description: opt.description,
-                imageUrl: opt.imageUrl,
-                fileUploadId: opt.fileUploadId,
-                nextActionId: opt.nextActionId,
-                nextCompletionId: opt.nextCompletionId,
-                order: opt.order ?? index,
-              })) ?? [],
+            options: buildOptions(input.options),
           };
-          return await createTagAction(request);
+          return createTagAction(request);
         }
 
         case "RATING": {
           const request: CreateRatingActionRequest = {
-            missionId: input.missionId,
-            title: input.title,
-            description: input.description,
-            imageUrl: input.imageUrl,
-            imageFileUploadId: input.imageFileUploadId,
-            order: input.order,
-            isRequired: input.isRequired,
-            nextActionId: input.nextActionId,
-            nextCompletionId: input.nextCompletionId,
+            ...baseFields,
           };
-          return await createRatingAction(request);
+          return createRatingAction(request);
         }
 
         case "IMAGE": {
           const request: CreateImageActionRequest = {
-            missionId: input.missionId,
-            title: input.title,
-            description: input.description,
-            imageUrl: input.imageUrl,
-            imageFileUploadId: input.imageFileUploadId,
-            order: input.order,
-            isRequired: input.isRequired,
+            ...baseFields,
             maxSelections: input.maxSelections,
-            nextActionId: input.nextActionId,
-            nextCompletionId: input.nextCompletionId,
           };
-          return await createImageAction(request);
+          return createImageAction(request);
         }
 
         case "PDF": {
           const request: CreatePdfActionRequest = {
-            missionId: input.missionId,
-            title: input.title,
-            description: input.description,
-            imageUrl: input.imageUrl,
-            imageFileUploadId: input.imageFileUploadId,
-            order: input.order,
-            isRequired: input.isRequired,
-            nextActionId: input.nextActionId,
-            nextCompletionId: input.nextCompletionId,
+            ...baseFields,
           };
-          return await createPdfAction(request);
+          return createPdfAction(request);
         }
 
         case "VIDEO": {
           const request: CreateVideoActionRequest = {
-            missionId: input.missionId,
-            title: input.title,
-            description: input.description,
-            imageUrl: input.imageUrl,
-            imageFileUploadId: input.imageFileUploadId,
-            order: input.order,
-            isRequired: input.isRequired,
-            nextActionId: input.nextActionId,
-            nextCompletionId: input.nextCompletionId,
+            ...baseFields,
           };
-          return await createVideoAction(request);
+          return createVideoAction(request);
         }
 
         case "DATE": {
           const request: CreateDateActionRequest = {
-            missionId: input.missionId,
-            title: input.title,
-            description: input.description,
-            imageUrl: input.imageUrl,
-            imageFileUploadId: input.imageFileUploadId,
-            order: input.order,
-            isRequired: input.isRequired,
+            ...baseFields,
             maxSelections: input.maxSelections ?? 1,
-            nextActionId: input.nextActionId,
-            nextCompletionId: input.nextCompletionId,
           };
-          return await createDateAction(request);
+          return createDateAction(request);
         }
 
         case "TIME": {
           const request: CreateTimeActionRequest = {
-            missionId: input.missionId,
-            title: input.title,
-            description: input.description,
-            imageUrl: input.imageUrl,
-            imageFileUploadId: input.imageFileUploadId,
-            order: input.order,
-            isRequired: input.isRequired,
+            ...baseFields,
             maxSelections: input.maxSelections ?? 1,
-            nextActionId: input.nextActionId,
-            nextCompletionId: input.nextCompletionId,
           };
-          return await createTimeAction(request);
+          return createTimeAction(request);
         }
 
         case "BRANCH": {
           const request: CreateBranchActionRequest = {
-            missionId: input.missionId,
-            title: input.title,
-            description: input.description,
-            imageUrl: input.imageUrl,
-            imageFileUploadId: input.imageFileUploadId,
-            order: input.order,
-            isRequired: input.isRequired,
+            ...branchBaseFields,
             maxSelections: BRANCH_MAX_SELECTIONS,
             hasOther: BRANCH_HAS_OTHER,
-            options:
-              input.options?.map((opt, index) => ({
-                title: opt.title,
-                description: opt.description,
-                imageUrl: opt.imageUrl,
-                fileUploadId: opt.fileUploadId,
-                nextActionId: opt.nextActionId,
-                nextCompletionId: opt.nextCompletionId,
-                order: opt.order ?? index,
-              })) ?? [],
+            options: buildOptions(input.options),
           };
-          return await createBranchAction(request);
+          return createBranchAction(request);
         }
 
         default:

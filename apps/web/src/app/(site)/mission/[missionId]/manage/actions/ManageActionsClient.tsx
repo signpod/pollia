@@ -3,7 +3,8 @@
 import { ROUTES } from "@/constants/routes";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useReadActionsDetail } from "@/hooks/action";
-import { Button, EmptyState, Typo } from "@repo/ui/components";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { Button, Dialog, DialogOverlay, DialogPortal, EmptyState, Typo } from "@repo/ui/components";
 import { ChevronLeft, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
@@ -118,36 +119,62 @@ export function ManageActionsClient({ missionId }: ManageActionsClientProps) {
         </button>
       </div>
 
-      {controller.deleteTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-6">
-            <Typo.SubTitle className="mb-2">액션 삭제</Typo.SubTitle>
-            <Typo.Body size="medium" className="mb-6 text-zinc-500">
-              "{controller.deleteTarget.title}" 액션을 삭제하시겠습니까? 이 작업은 되돌릴 수
-              없습니다.
-            </Typo.Body>
-            <div className="flex gap-3">
-              <Button
-                variant="secondary"
-                fullWidth
-                onClick={() => controller.setDeleteTarget(null)}
-                disabled={controller.isDeleteLoading}
-              >
-                취소
-              </Button>
-              <Button
-                fullWidth
-                onClick={controller.handleDeleteConfirm}
-                loading={controller.isDeleteLoading}
-                disabled={controller.isDeleteLoading}
-                className="bg-red-500 hover:bg-red-600"
-              >
-                삭제
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Dialog
+        open={Boolean(controller.deleteTarget)}
+        onOpenChange={open => {
+          if (!open && !controller.isDeleteLoading) {
+            controller.setDeleteTarget(null);
+          }
+        }}
+      >
+        <DialogPortal>
+          <DialogOverlay />
+          {controller.deleteTarget ? (
+            <DialogPrimitive.Content
+              className="fixed top-1/2 left-1/2 z-[51] w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 focus:outline-none"
+              onInteractOutside={event => {
+                if (controller.isDeleteLoading) {
+                  event.preventDefault();
+                }
+              }}
+              onEscapeKeyDown={event => {
+                if (controller.isDeleteLoading) {
+                  event.preventDefault();
+                }
+              }}
+            >
+              <DialogPrimitive.Title asChild>
+                <Typo.SubTitle className="mb-2">액션 삭제</Typo.SubTitle>
+              </DialogPrimitive.Title>
+              <DialogPrimitive.Description asChild>
+                <Typo.Body size="medium" className="mb-6 text-zinc-500">
+                  "{controller.deleteTarget.title}" 액션을 삭제하시겠습니까? 이 작업은 되돌릴 수
+                  없습니다.
+                </Typo.Body>
+              </DialogPrimitive.Description>
+              <div className="flex gap-3">
+                <Button
+                  variant="secondary"
+                  fullWidth
+                  onClick={() => controller.setDeleteTarget(null)}
+                  disabled={controller.isDeleteLoading}
+                >
+                  취소
+                </Button>
+                <Button
+                  fullWidth
+                  onClick={controller.handleDeleteConfirm}
+                  loading={controller.isDeleteLoading}
+                  disabled={controller.isDeleteLoading}
+                  className="bg-red-500 hover:bg-red-600"
+                >
+                  삭제
+                </Button>
+              </div>
+            </DialogPrimitive.Content>
+          ) : null}
+        </DialogPortal>
+      </Dialog>
     </div>
   );
 }

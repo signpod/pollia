@@ -4,7 +4,6 @@
   "private": true,
   "exports": {
     "./components": "./src/components/index.ts",
-    "./components/common/TiptapEditor": "./src/components/common/TiptapEditor.tsx",
     "./components/common/TiptapViewer": "./src/components/common/TiptapViewer.tsx",
     "./lib": "./src/lib/index.ts"
   },

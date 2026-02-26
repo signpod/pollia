@@ -61,6 +61,8 @@ export function CreateRewardSettingsStep() {
   const reward = watch("reward");
   const rewardPaymentType =
     hasReward && isRewardFormValues(reward) ? reward.paymentType : undefined;
+  const paymentTypeError = getRewardErrorMessage(errors, "paymentType");
+  const scheduledDateError = getRewardErrorMessage(errors, "scheduledDate");
 
   return (
     <div className="flex flex-col gap-6">
@@ -143,9 +145,9 @@ export function CreateRewardSettingsStep() {
                 </Select>
               )}
             />
-            {getRewardErrorMessage(errors, "paymentType") ? (
+            {paymentTypeError ? (
               <Typo.Body size="medium" className="text-red-500">
-                {getRewardErrorMessage(errors, "paymentType")}
+                {paymentTypeError}
               </Typo.Body>
             ) : null}
           </div>
@@ -192,9 +194,9 @@ export function CreateRewardSettingsStep() {
                   );
                 }}
               />
-              {getRewardErrorMessage(errors, "scheduledDate") ? (
+              {scheduledDateError ? (
                 <Typo.Body size="medium" className="text-red-500">
-                  {getRewardErrorMessage(errors, "scheduledDate")}
+                  {scheduledDateError}
                 </Typo.Body>
               ) : null}
             </div>
