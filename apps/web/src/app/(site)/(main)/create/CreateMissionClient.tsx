@@ -66,17 +66,19 @@ export function CreateMissionClient() {
     <FormProvider {...form}>
       <div className="bg-white px-5 py-6">
         <header className="mb-4 flex items-center gap-3">
-          {showBackButton ? (
-            <button
-              type="button"
-              aria-label="이전 단계로 이동"
-              onClick={controller.goBack}
-              disabled={!controller.canGoBack || controller.isSubmitting}
-              className="flex size-8 items-center justify-center rounded-full border border-zinc-200 text-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              <ChevronLeft className="size-5" />
-            </button>
-          ) : null}
+          <button
+            type="button"
+            aria-label="이전 단계로 이동"
+            aria-hidden={!showBackButton}
+            tabIndex={showBackButton ? 0 : -1}
+            onClick={controller.goBack}
+            disabled={!showBackButton || !controller.canGoBack || controller.isSubmitting}
+            className={`flex size-8 items-center justify-center rounded-full border border-zinc-200 text-zinc-700 disabled:cursor-not-allowed disabled:opacity-40 ${
+              showBackButton ? "" : "pointer-events-none opacity-0"
+            }`}
+          >
+            <ChevronLeft className="size-5" />
+          </button>
           <Typo.SubTitle>{controller.screenTitle}</Typo.SubTitle>
         </header>
 

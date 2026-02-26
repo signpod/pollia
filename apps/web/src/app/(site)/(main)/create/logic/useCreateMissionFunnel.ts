@@ -172,10 +172,22 @@ export function useCreateMissionFunnel({ form }: UseCreateMissionFunnelParams) {
   }, [currentStep, handleSubmit, validateCurrentStep]);
 
   const goBack = useCallback(() => {
+    if (currentStep === "mode") {
+      form.setValue("category", null, { shouldDirty: true, shouldValidate: false });
+      form.setValue("creationMode", null, { shouldDirty: true, shouldValidate: false });
+      form.clearErrors("category");
+      form.clearErrors("creationMode");
+    }
+
+    if (currentStep === "project-info") {
+      form.setValue("creationMode", null, { shouldDirty: true, shouldValidate: false });
+      form.clearErrors("creationMode");
+    }
+
     const prev = PREV_STEP[currentStep];
     if (!prev) return;
     setCurrentStep(prev);
-  }, [currentStep]);
+  }, [currentStep, form]);
 
   const selectCategory = useCallback(
     (category: MissionCategory) => {
