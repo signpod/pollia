@@ -26,7 +26,7 @@ export function MissionRewardSection({
 
   return (
     <div className="bg-white rounded-2xl p-5 flex flex-col gap-4">
-      <SectionHeader title="참여 혜택" subtitle="참여해주신 분들께 감사의 선물을 드려요!" />
+      <SectionHeader title="참여 리워드" subtitle="참여해주신 분들께 감사의 선물을 드려요!" />
 
       <div className="flex flex-col gap-3">
         {rewardImageUrl && (

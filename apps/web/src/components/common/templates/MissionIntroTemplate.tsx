@@ -78,7 +78,7 @@ export function MissionIntroTemplate({
                   <MissionWidget
                     icon={<GiftIcon className="size-5" />}
                     descType="text"
-                    title="완료 리워드"
+                    title="리워드"
                     description={rewardName}
                   />
                 )}
