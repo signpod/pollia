@@ -94,7 +94,6 @@ export function MissionIntroPage({
         onScrollDown={handleScrollDown}
       >
         <MissionContentTemplate
-          brandLogoUrl={contextBrandLogoUrl}
           title={contextTitle}
           isSticky={isSticky}
           activeTab={activeTab}

@@ -1,9 +1,10 @@
-import { missionService } from "@/server/services/mission";
-import { rewardService } from "@/server/services/reward/rewardService";
+import { getMission } from "@/actions/mission";
+import { getReward } from "@/actions/reward";
+import { getQueryClient } from "@/lib/getQueryClient";
+import { dehydrate } from "@tanstack/react-query";
 import { MissionClientWrapper } from "./MissionClientWrapper";
 import { MissionPageWrapper } from "./MissionPageWrapper";
 import { DevTools } from "./components";
-import type { MissionRewardData } from "./types/mission";
 
 /**
  * 무한 캐시 설정
@@ -15,34 +16,14 @@ export const revalidate = false;
 export default async function MissionPage({ params }: { params: Promise<{ missionId: string }> }) {
   const { missionId } = await params;
 
-  const mission = await missionService.getMission(missionId);
-  const reward = mission.rewardId
-    ? await rewardService.getReward(mission.rewardId).catch(error => {
-        console.error("리워드 조회 실패:", error);
-        return null;
-      })
-    : null;
+  const mission = await getMission(missionId);
+  const reward = mission.data.rewardId ? await getReward(mission.data.rewardId) : null;
 
   return (
     <>
       <DevTools missionId={missionId} />
-      <MissionClientWrapper>
-        <MissionPageWrapper
-          missionId={missionId}
-          missionType={mission.type}
-          missionTitle={mission.title}
-          missionImageUrl={mission.imageUrl}
-          description={mission.description}
-          reward={
-            reward
-              ? ({
-                  imageUrl: reward.imageUrl,
-                  name: reward.name,
-                  scheduledDate: reward.scheduledDate,
-                } satisfies MissionRewardData)
-              : null
-          }
-        />
+      <MissionClientWrapper dehydratedState={dehydrate(getQueryClient())}>
+        <MissionPageWrapper mission={mission.data} reward={reward?.data ?? null} />
       </MissionClientWrapper>
     </>
   );

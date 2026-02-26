@@ -5,15 +5,6 @@ import { formatDate } from "date-fns";
 import { useEffect, useState } from "react";
 import { SectionHeader } from "./SectionHeader";
 
-const REWARD_SECTION_BADGE_TEXT = "참여 혜택";
-const REWARD_SECTION_TITLE = (
-  <Typo.MainTitle size="small" className="text-center">
-    참여해주신 분들께
-    <br />
-    감사의 선물을 드려요!
-  </Typo.MainTitle>
-);
-
 interface MissionRewardSectionProps {
   rewardImageUrl?: string;
   rewardName?: string;
@@ -34,23 +25,21 @@ export function MissionRewardSection({
   }, [rewardScheduledDate]);
 
   return (
-    <div className="flex flex-col gap-6">
-      <SectionHeader badgeText={REWARD_SECTION_BADGE_TEXT} title={REWARD_SECTION_TITLE} />
+    <div className="bg-white rounded-2xl p-5 flex flex-col gap-4">
+      <SectionHeader title="참여 리워드" subtitle="참여해주신 분들께 감사의 선물을 드려요!" />
 
-      <div className="w-auto rounded-md overflow-hidden bg-white shadow-[0_4px_20px_rgba(0,0,0,0.08)] p-4 flex flex-col gap-4">
-        {rewardImageUrl && <AdaptiveImage src={rewardImageUrl} alt="reward" />}
-        <div className="w-full flex flex-col gap-3 items-center">
-          {rewardName && (
-            <Typo.SubTitle size="large" className="break-keep pl-1">
-              {rewardName}
-            </Typo.SubTitle>
-          )}
+      <div className="flex flex-col gap-3">
+        {rewardImageUrl && (
+          <div className="rounded-lg overflow-hidden">
+            <AdaptiveImage src={rewardImageUrl} alt="reward" />
+          </div>
+        )}
+        <div className="flex flex-col">
+          {rewardName && <Typo.SubTitle size="large">{rewardName}</Typo.SubTitle>}
           {formattedScheduledDate && (
-            <div className="ring-1 ring-default rounded-3xl px-3 py-1">
-              <Typo.Body size="medium" className="text-default">
-                {`${formattedScheduledDate} 순차지급`}
-              </Typo.Body>
-            </div>
+            <Typo.Body size="medium" className="text-zinc-400">
+              {`${formattedScheduledDate} 순차 지급`}
+            </Typo.Body>
           )}
         </div>
       </div>

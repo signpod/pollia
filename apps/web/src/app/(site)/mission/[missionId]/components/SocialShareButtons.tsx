@@ -19,7 +19,7 @@ export function SocialShareButtons({
   className,
 }: SocialShareButtonsProps) {
   return (
-    <div className={cn("flex gap-4 w-full justify-center", className)}>
+    <div className={cn("flex gap-4 justify-center", className)}>
       <button
         type="button"
         aria-label="카카오톡으로 공유"

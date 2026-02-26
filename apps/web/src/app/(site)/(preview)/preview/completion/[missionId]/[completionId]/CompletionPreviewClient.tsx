@@ -7,14 +7,12 @@ interface CompletionPreviewClientProps {
   imageUrl?: string | null;
   title?: string;
   description?: string;
-  links?: Record<string, string>;
 }
 
 export function CompletionPreviewClient({
   imageUrl,
   title,
   description,
-  links,
 }: CompletionPreviewClientProps) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -24,7 +22,6 @@ export function CompletionPreviewClient({
       imageUrl={imageUrl}
       title={title}
       description={description}
-      links={links}
       imageMenu={{
         isOpen,
         menuRef,
@@ -32,7 +29,6 @@ export function CompletionPreviewClient({
         onSave: () => {},
         onShare: () => {},
       }}
-      onShare={() => {}}
     />
   );
 }

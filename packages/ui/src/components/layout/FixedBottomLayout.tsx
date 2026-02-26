@@ -80,9 +80,7 @@ export function FixedBottomLayout({
         {children}
         <div
           style={{
-            paddingBottom: hasBottomGap
-              ? `calc(${contentHeight + 20}px + env(safe-area-inset-bottom))`
-              : "0px",
+            paddingBottom: "72px",
           }}
         />
 

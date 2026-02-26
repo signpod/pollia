@@ -7,7 +7,7 @@ import { useReadMissionParticipantInfo } from "@/hooks/participant/useReadMissio
 import { useReadReward } from "@/hooks/reward/useReadReward";
 import { getActionNavCookie, setActionNavCookie } from "@/lib/cookie";
 import { formatDateToLocalString } from "@/lib/date";
-import { MissionType } from "@prisma/client";
+import { Mission } from "@prisma/client";
 import { CalloutProvider, type CalloutToneVariant, useCallout } from "@repo/ui/components";
 import { addHours, isBefore } from "date-fns";
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -52,22 +52,21 @@ function CalloutTrigger({
 }
 
 interface MissionPageWrapperProps {
-  missionId: string;
-  missionType: MissionType | null;
-  missionTitle: string | null;
-  missionImageUrl: string | null;
-  description: string | null;
+  mission: Mission;
   reward: MissionRewardData | null;
 }
 
-export function MissionPageWrapper({
-  missionId,
-  missionType,
-  missionTitle,
-  missionImageUrl,
-  description,
-  reward,
-}: MissionPageWrapperProps) {
+export function MissionPageWrapper({ mission, reward }: MissionPageWrapperProps) {
+  const {
+    id: missionId,
+    type: missionType,
+    title: missionTitle,
+    imageUrl: missionImageUrl,
+    description,
+    allowGuestResponse,
+    allowMultipleResponses,
+  } = mission;
+
   useEffect(() => {
     const existingValue = getActionNavCookie(missionId);
     if (!existingValue) {
@@ -76,7 +75,6 @@ export function MissionPageWrapper({
   }, [missionId]);
 
   const {
-    mission,
     firstActionId,
     isEnabledToResume,
     nextActionId,
@@ -93,7 +91,7 @@ export function MissionPageWrapper({
     responseId: missionResponse?.id ?? "",
   });
 
-  const { brandLogoUrl, title, deadline, startDate, imageUrl, isActive } = mission ?? {};
+  const { brandLogoUrl, title, deadline, startDate, createdAt, imageUrl, isActive } = mission ?? {};
 
   const titleRef = useRef<HTMLDivElement>(null);
 
@@ -112,11 +110,23 @@ export function MissionPageWrapper({
   useEffect(() => {
     const now = new Date();
 
+    const formatDot = (date: Date) => formatDateToLocalString(date).replaceAll("-", ".");
+    const startFormatted = startDateObj
+      ? formatDot(startDateObj)
+      : createdAt
+        ? formatDot(new Date(createdAt))
+        : null;
+
     if (deadlineDate) {
       const isExpired = isBefore(deadlineDate, now);
       const isWithin24h = isBefore(deadlineDate, addHours(now, 24));
       setShowDeadlineWidget(!isExpired && isWithin24h);
-      setFormattedDeadline(formatDateToLocalString(deadlineDate).replaceAll("-", "."));
+      const deadlineFormatted = formatDot(deadlineDate);
+      setFormattedDeadline(
+        startFormatted ? `${startFormatted} - ${deadlineFormatted}` : deadlineFormatted,
+      );
+    } else if (startFormatted) {
+      setFormattedDeadline(`${startFormatted} - 마감`);
     }
 
     if (startDateObj) {
@@ -124,7 +134,7 @@ export function MissionPageWrapper({
       const isWithin24h = isBefore(startDateObj, addHours(now, 24));
       setShowOpenWidget(isNotOpenYet && isWithin24h);
     }
-  }, [deadlineDate, startDateObj]);
+  }, [deadlineDate, startDateObj, createdAt]);
 
   const isProcessing = Boolean(missionResponseData?.data?.id);
 
@@ -215,6 +225,8 @@ export function MissionPageWrapper({
                 isRequirePassword={isRequirePassword}
                 hasExistingResponse={!!missionResponse}
                 isResuming={isResuming}
+                allowGuestResponse={allowGuestResponse}
+                allowMultipleResponses={allowMultipleResponses}
               />
             }
           />

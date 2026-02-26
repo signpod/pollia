@@ -1,16 +1,15 @@
 "use client";
 
-import {
-  MissionDescription,
-  MissionFooter,
-  MissionLogo,
-  MissionRewardSection,
-  SectionHeader,
-} from "@/app/(site)/mission/[missionId]/components";
+import { MissionDescription } from "@/app/(site)/mission/[missionId]/components/MissionDescription";
+import { MissionFooter } from "@/app/(site)/mission/[missionId]/components/MissionFooter";
+import { MissionRewardSection } from "@/app/(site)/mission/[missionId]/components/MissionRewardSection";
+import { MissionShareSection } from "@/app/(site)/mission/[missionId]/components/MissionShareSection";
 import { SECTION_IDS } from "@/app/(site)/mission/[missionId]/constants/sectionIds";
 import { cleanTiptapHTML, cn } from "@/lib/utils";
 import { MissionType } from "@prisma/client";
 import { Tab, Typo } from "@repo/ui/components";
+import { ChevronLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 import type { RefObject } from "react";
 import type { ReactNode } from "react";
 
@@ -21,7 +20,6 @@ export interface MissionContentTemplateReward {
 }
 
 export interface MissionContentTemplateProps {
-  brandLogoUrl?: string;
   title?: string | null;
   isSticky?: boolean;
   activeTab?: string;
@@ -34,7 +32,6 @@ export interface MissionContentTemplateProps {
 }
 
 export function MissionContentTemplate({
-  brandLogoUrl,
   title,
   isSticky = false,
   activeTab = SECTION_IDS.MISSION_GUIDE,
@@ -49,18 +46,25 @@ export function MissionContentTemplate({
     ? [SECTION_IDS.MISSION_GUIDE, SECTION_IDS.REWARD]
     : [SECTION_IDS.MISSION_GUIDE];
   const hasDescription = !!description && !!cleanTiptapHTML(description);
+  const router = useRouter();
 
   return (
-    <div className="bg-white relative">
+    <div className="bg-zinc-50 relative">
       <div ref={sentinelRef} className="h-0" />
       <header className="sticky top-0 z-50 bg-white">
         <div
           className={cn(
-            "overflow-hidden transition-all duration-300 px-5 flex items-center gap-2",
-            isSticky ? "max-h-12 opacity-100 pt-3" : "max-h-0 opacity-0",
+            "overflow-hidden transition-all duration-300 flex items-center gap-2 h-12",
+            isSticky ? "max-h-12 opacity-100" : "max-h-0 opacity-0",
           )}
         >
-          <MissionLogo logoUrl={brandLogoUrl ?? undefined} size="small" />
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="shrink-0 size-12 flex items-center justify-center"
+          >
+            <ChevronLeft className="size-6" />
+          </button>
           <Typo.SubTitle size="large" className="truncate">
             {title}
           </Typo.SubTitle>
@@ -83,24 +87,24 @@ export function MissionContentTemplate({
                 value={SECTION_IDS.REWARD}
                 onClick={() => onChangeTab?.(SECTION_IDS.REWARD)}
               >
-                <Typo.SubTitle size="large">참여 혜택</Typo.SubTitle>
+                <Typo.SubTitle size="large">참여 리워드</Typo.SubTitle>
               </Tab.Item>
             )}
           </Tab.List>
         </Tab.Root>
       </header>
-      <div className="flex w-full flex-col py-20 px-5 items-center gap-20">
+      <div className="flex w-full flex-col px-5 pt-5 pb-10 gap-5">
         <div id={SECTION_IDS.MISSION_GUIDE}>
           {hasDescription && (
-            <div className="flex flex-col gap-6 px-5 items-center w-full">
-              <SectionHeader badgeText="상세 안내" title={""} />
-              <MissionDescription content={cleanTiptapHTML(description)} className="text-center" />
+            <div className="bg-white rounded-2xl p-5 flex flex-col gap-4 w-full">
+              <Typo.MainTitle size="small">상세 안내</Typo.MainTitle>
+              <MissionDescription content={cleanTiptapHTML(description)} />
             </div>
           )}
         </div>
 
         {reward && (
-          <div id={SECTION_IDS.REWARD} className="px-5 w-full">
+          <div id={SECTION_IDS.REWARD}>
             <MissionRewardSection
               rewardImageUrl={reward.imageUrl ?? undefined}
               rewardName={reward.name ?? undefined}
@@ -109,15 +113,8 @@ export function MissionContentTemplate({
           </div>
         )}
 
-        {missionType !== MissionType.EXPERIENCE_GROUP && (
-          <div className="flex flex-col gap-4 items-center px-5">
-            <Typo.MainTitle size="small" className="text-center">
-              가족, 친구에게
-              <br />
-              공유해주세요 👀
-            </Typo.MainTitle>
-            {shareButtons}
-          </div>
+        {missionType !== MissionType.EXPERIENCE_GROUP && shareButtons && (
+          <MissionShareSection shareButtons={shareButtons} />
         )}
       </div>
 

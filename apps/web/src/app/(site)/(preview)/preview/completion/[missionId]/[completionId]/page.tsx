@@ -21,7 +21,6 @@ export default async function CompletionPreviewPage({ params }: CompletionPrevie
       imageUrl={completion.imageUrl}
       title={completion.title}
       description={completion.description ?? undefined}
-      links={completion.links ?? undefined}
     />
   );
 }

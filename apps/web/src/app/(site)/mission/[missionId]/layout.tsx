@@ -1,10 +1,12 @@
 import { getMissionActionIds } from "@/actions/action";
 import { getMission, getMissionParticipantInfo } from "@/actions/mission";
 import { getMyResponseForMission } from "@/actions/mission-response";
+import { claimGuestResponses } from "@/actions/mission-response/claimGuestResponses";
 import { getReward } from "@/actions/reward/read";
 import { getCurrentUser } from "@/actions/user";
 import { NetworkStatusProvider } from "@/components/providers/NetworkStatusProvider";
 import Providers from "@/components/providers/QueryProvider";
+import { GUEST_ID_COOKIE_NAME } from "@/constants/cookie";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { rewardQueryKeys } from "@/constants/queryKeys/rewardQueryKeys";
@@ -15,6 +17,7 @@ import { getQueryClient } from "@/lib/getQueryClient";
 import { ModalProvider } from "@repo/ui/components";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import type { PropsWithChildren } from "react";
 
@@ -98,23 +101,28 @@ export default async function MissionLayout({
   ];
 
   if (isAuthenticated) {
-    prefetchPromises.push(
+    const cookieStore = await cookies();
+    const hasGuestCookie = !!cookieStore.get(GUEST_ID_COOKIE_NAME)?.value;
+
+    const [currentUserResult] = await Promise.all([
       queryClient
-        .prefetchQuery({
+        .fetchQuery({
           queryKey: userQueryKeys.currentUser(),
           queryFn: () => getCurrentUser(),
         })
-        .catch(() => {
-          // 로그인하지 않은 경우 에러 무시
-        }),
+        .catch(() => null),
+      hasGuestCookie ? claimGuestResponses().catch(() => {}) : Promise.resolve(),
+    ]);
+
+    const actorKey = currentUserResult?.data?.id ?? "guest";
+
+    prefetchPromises.push(
       queryClient
         .prefetchQuery({
-          queryKey: missionQueryKeys.missionResponseForMission(missionId),
+          queryKey: [...missionQueryKeys.missionResponseForMission(missionId), actorKey],
           queryFn: () => getMyResponseForMission(missionId),
         })
-        .catch(() => {
-          // 로그인하지 않은 경우 에러 무시
-        }),
+        .catch(() => {}),
     );
   }
 
