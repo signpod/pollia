@@ -1,9 +1,10 @@
 "use client";
 
 import { Separator } from "@/components/ui/separator";
+import { ROUTES } from "@/constants/routes";
 import type { GetMissionResponse } from "@/types/dto";
 import type { PaymentType } from "@prisma/client";
-import { Typo } from "@repo/ui/components";
+import { useEffect, useState } from "react";
 import { ActionSettingsCard } from "./ActionSettingsCard";
 import { useEditorMissionTab } from "./EditorMissionTabContext";
 import { MissionStatsDashboard } from "./MissionStatsDashboard";
@@ -24,13 +25,27 @@ interface EditorMissionTabContentProps {
   reward: RewardSnapshot | null;
 }
 
-function renderPreviewPlaceholder() {
+function MissionIntroPreview({ missionId }: { missionId: string }) {
+  const previewUrl = ROUTES.MISSION(missionId);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setIsLoading(true);
+  }, [previewUrl]);
+
   return (
-    <div className="border border-zinc-200 bg-white px-5 py-6">
-      <Typo.SubTitle>미리보기</Typo.SubTitle>
-      <Typo.Body size="medium" className="mt-2 text-zinc-500">
-        미리보기 탭은 다음 단계에서 연결합니다.
-      </Typo.Body>
+    <div className="relative h-[calc(100vh-120px)] min-h-[720px] w-full overflow-hidden bg-white">
+      {isLoading && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/90">
+          <div className="size-8 animate-spin rounded-full border-4 border-zinc-200 border-t-zinc-500" />
+        </div>
+      )}
+      <iframe
+        title="프로젝트 인트로 미리보기"
+        src={previewUrl}
+        className="h-full w-full border-0"
+        onLoad={() => setIsLoading(false)}
+      />
     </div>
   );
 }
@@ -47,7 +62,7 @@ export function EditorMissionTabContent({
   }
 
   if (currentTab === "preview") {
-    return renderPreviewPlaceholder();
+    return <MissionIntroPreview missionId={missionId} />;
   }
 
   return (

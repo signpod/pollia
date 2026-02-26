@@ -36,6 +36,8 @@ function buildDefaultValues(mission: GetMissionResponse["data"]): CreateMissionF
     allowMultipleResponses: mission.allowMultipleResponses,
     imageUrl: mission.imageUrl ?? null,
     imageFileUploadId: mission.imageFileUploadId ?? null,
+    brandLogoUrl: mission.brandLogoUrl ?? null,
+    brandLogoFileUploadId: mission.brandLogoFileUploadId ?? null,
   };
 }
 
@@ -47,6 +49,9 @@ export function ProjectBasicInfoCard({ mission }: ProjectBasicInfoCardProps) {
 
   const thumbnailCropper = useImageCropper({
     fileNamePrefix: `mission-thumbnail-${mission.id}`,
+  });
+  const brandLogoCropper = useImageCropper({
+    fileNamePrefix: `brand-logo-${mission.id}`,
   });
 
   const thumbnailImageUpload = useSingleImage({
@@ -65,13 +70,35 @@ export function ProjectBasicInfoCard({ mission }: ProjectBasicInfoCardProps) {
       });
     },
   });
+  const brandLogoImageUpload = useSingleImage({
+    initialUrl: mission.brandLogoUrl,
+    initialFileUploadId: mission.brandLogoFileUploadId,
+    bucket: STORAGE_BUCKETS.MISSION_IMAGES,
+    onUploadSuccess: data => {
+      form.setValue("brandLogoUrl", data.publicUrl, { shouldDirty: true });
+      form.setValue("brandLogoFileUploadId", data.fileUploadId, { shouldDirty: true });
+    },
+    onUploadError: error => {
+      toast({
+        message: error.message || "브랜드 로고 업로드에 실패했습니다.",
+        icon: AlertCircle,
+        iconClassName: "text-red-500",
+      });
+    },
+  });
 
   const isThumbnailBusy = form.formState.isSubmitting || thumbnailImageUpload.isUploading;
+  const isBrandLogoBusy = form.formState.isSubmitting || brandLogoImageUpload.isUploading;
 
   const handleThumbnailDelete = () => {
     thumbnailImageUpload.discard();
     form.setValue("imageUrl", null, { shouldDirty: true });
     form.setValue("imageFileUploadId", null, { shouldDirty: true });
+  };
+  const handleBrandLogoDelete = () => {
+    brandLogoImageUpload.discard();
+    form.setValue("brandLogoUrl", null, { shouldDirty: true });
+    form.setValue("brandLogoFileUploadId", null, { shouldDirty: true });
   };
 
   const handleSubmit = form.handleSubmit(async values => {
@@ -85,9 +112,12 @@ export function ProjectBasicInfoCard({ mission }: ProjectBasicInfoCardProps) {
         allowMultipleResponses: values.allowMultipleResponses,
         imageUrl: values.imageUrl ?? null,
         imageFileUploadId: values.imageFileUploadId ?? null,
+        brandLogoUrl: values.brandLogoUrl ?? null,
+        brandLogoFileUploadId: values.brandLogoFileUploadId ?? null,
       });
 
       thumbnailImageUpload.deleteMarkedInitial();
+      brandLogoImageUpload.deleteMarkedInitial();
       form.reset(values);
       toast({ message: `${UBIQUITOUS_CONSTANTS.MISSION} 기본 정보가 수정되었습니다.` });
     } catch (error) {
@@ -133,6 +163,26 @@ export function ProjectBasicInfoCard({ mission }: ProjectBasicInfoCardProps) {
             </div>
           </div>
 
+          <div className="rounded-xl border border-zinc-200 bg-white px-4 py-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col gap-1">
+                <Typo.SubTitle>브랜드 로고</Typo.SubTitle>
+                <Typo.Body size="medium" className="text-zinc-500">
+                  {brandLogoImageUpload.isUploading
+                    ? "업로드 중..."
+                    : "브랜드 로고를 1:1 비율로 설정합니다."}
+                </Typo.Body>
+              </div>
+              <ImageSelector
+                size="large"
+                imageUrl={brandLogoImageUpload.previewUrl ?? undefined}
+                onImageSelect={file => brandLogoCropper.openWithFile(file)}
+                onImageDelete={handleBrandLogoDelete}
+                disabled={isBrandLogoBusy}
+              />
+            </div>
+          </div>
+
           <CreateProjectInfoStep />
 
           <div className="flex justify-end">
@@ -142,6 +192,7 @@ export function ProjectBasicInfoCard({ mission }: ProjectBasicInfoCardProps) {
               disabled={
                 form.formState.isSubmitting ||
                 thumbnailImageUpload.isUploading ||
+                brandLogoImageUpload.isUploading ||
                 !form.formState.isDirty
               }
             >
@@ -165,6 +216,22 @@ export function ProjectBasicInfoCard({ mission }: ProjectBasicInfoCardProps) {
         }}
         onConfirm={file => {
           thumbnailImageUpload.upload(file);
+        }}
+      />
+      <AdminImageCropDialog
+        open={brandLogoCropper.isOpen}
+        imageSrc={brandLogoCropper.imageSrc}
+        aspect={1}
+        title="브랜드 로고 편집"
+        description="이미지를 1:1 비율로 맞춰 저장합니다."
+        fileName={brandLogoCropper.fileName ?? `brand-logo-${mission.id}.jpg`}
+        onOpenChange={open => {
+          if (!open) {
+            brandLogoCropper.close();
+          }
+        }}
+        onConfirm={file => {
+          brandLogoImageUpload.upload(file);
         }}
       />
     </div>
