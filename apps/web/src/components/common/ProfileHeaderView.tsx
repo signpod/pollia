@@ -13,6 +13,7 @@ import type { ReactNode } from "react";
 export interface ProfileHeaderViewProps {
   showBack?: boolean;
   fallbackRight?: ReactNode;
+  searchInput?: ReactNode;
   user?: { name: string } | null;
   profileImageUrl?: string | null;
   onBack?: () => void;
@@ -22,6 +23,7 @@ export interface ProfileHeaderViewProps {
 export function ProfileHeaderView({
   showBack = false,
   fallbackRight,
+  searchInput,
   user,
   profileImageUrl,
   onBack,
@@ -30,7 +32,7 @@ export function ProfileHeaderView({
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 flex h-12 items-center justify-between bg-white px-5",
+        "sticky top-0 z-50 flex h-15 items-center justify-between bg-white px-5",
         showBack && "pr-5 pl-0",
       )}
     >
@@ -39,11 +41,12 @@ export function ProfileHeaderView({
           <ChevronLeftIcon className="size-6" />
         </button>
       ) : (
-        <Link href={ROUTES.HOME} className="flex items-center gap-[2.775px] py-3">
+        <Link href={ROUTES.HOME} className="flex shrink-0 items-center gap-[2.775px] py-3">
           <PolliaIcon className="size-4 text-primary" />
           <PolliaWordmark className="h-[22px] text-black" />
         </Link>
       )}
+      {searchInput && <div className="mx-3 flex-1">{searchInput}</div>}
       {user ? (
         <button onClick={onProfileClick} type="button">
           <div className="flex items-center gap-2">
