@@ -43,6 +43,11 @@ export function MeFooter() {
             <Typo.ButtonText size="large">이용약관/개인정보처리방침</Typo.ButtonText>
           </Link>
         )}
+        <Link href={ROUTES.ME_ACCOUNT_WITHDRAW} className="h-12 pl-2 flex items-center">
+          <Typo.ButtonText size="large" className="text-disabled">
+            회원탈퇴
+          </Typo.ButtonText>
+        </Link>
       </div>
       <ButtonV2
         variant="secondary"
