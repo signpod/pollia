@@ -126,20 +126,18 @@ function ParticipationTab({
   const filtered = filter === "in-progress" ? inProgressResponses : completedResponses;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-h-[420px] flex-col gap-4">
       <SectionHeader
         label="총"
         count={filtered.length}
         showViewAll={false}
         rightAction={
-          <div className="flex items-center gap-2">
+          <div className="flex h-8 items-center rounded-full bg-zinc-100 p-0.5">
             <button
               type="button"
               onClick={() => setFilter("in-progress")}
-              className={`inline-flex h-7 items-center justify-center rounded-full px-3 text-sm font-bold transition-colors ${
-                filter === "in-progress"
-                  ? "bg-violet-50 text-violet-500"
-                  : "bg-zinc-100 text-zinc-500"
+              className={`inline-flex h-7 items-center justify-center rounded-full px-3 text-xs font-bold transition-colors ${
+                filter === "in-progress" ? "bg-white text-violet-500" : "text-zinc-400"
               }`}
             >
               진행 중 {inProgressResponses.length}
@@ -147,10 +145,8 @@ function ParticipationTab({
             <button
               type="button"
               onClick={() => setFilter("completed")}
-              className={`inline-flex h-7 items-center justify-center rounded-full px-3 text-sm font-bold transition-colors ${
-                filter === "completed"
-                  ? "bg-violet-50 text-violet-500"
-                  : "bg-zinc-100 text-zinc-500"
+              className={`inline-flex h-7 items-center justify-center rounded-full px-3 text-xs font-bold transition-colors ${
+                filter === "completed" ? "bg-white text-violet-500" : "text-zinc-400"
               }`}
             >
               완료 {completedResponses.length}
@@ -479,13 +475,11 @@ const MyContentTab = memo(function MyContentTab() {
       label="총"
       href={ROUTES.ME_MY_CONTENT}
       rightAction={
-        <Link href={ROUTES.CREATE_MISSION}>
-          <ButtonV2 variant="secondary" size="medium">
-            <div className="flex items-center justify-center gap-2">
-              <PencilIcon className="size-4" />
-              <Typo.ButtonText size="medium">새 컨텐츠</Typo.ButtonText>
-            </div>
-          </ButtonV2>
+        <Link
+          href={ROUTES.CREATE_MISSION}
+          className="flex items-center gap-1.5 rounded-full bg-violet-50 px-3.5 py-1.5 text-sm font-semibold text-violet-600 transition-colors hover:bg-violet-100"
+        >
+          <PencilIcon className="size-[13px]" />새 콘텐츠
         </Link>
       }
     >
