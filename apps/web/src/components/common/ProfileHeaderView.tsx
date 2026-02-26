@@ -51,7 +51,7 @@ export function ProfileHeaderView({
         <button onClick={onProfileClick} type="button">
           <div className="flex items-center gap-2">
             <UserAvatar size="small" imageUrl={profileImageUrl} />
-            <Typo.Body size="medium" className="font-medium text-zinc-700">
+            <Typo.Body size="medium" className="hidden font-medium text-zinc-700 sm:block">
               {user.name}
             </Typo.Body>
           </div>
