@@ -2,11 +2,11 @@
 
 import { signOut } from "@/actions/common/auth";
 import { ROUTES } from "@/constants/routes";
-import { ButtonV2, Typo } from "@repo/ui/components";
+import { Typo } from "@repo/ui/components";
+import { ChevronRightIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-const INQUIRY_URL = process.env.NEXT_PUBLIC_INQUIRY_URL;
 const PRIVACY_POLICY_URL = process.env.NEXT_PUBLIC_PRIVACY_POLICY_URL;
 
 export function MeFooter() {
@@ -18,47 +18,34 @@ export function MeFooter() {
   };
 
   return (
-    <footer className="flex flex-col gap-2 px-5">
-      <div className="flex flex-col">
-        {INQUIRY_URL && (
-          <Link
-            href={INQUIRY_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="h-12 pl-2 flex items-center"
-          >
-            <Typo.ButtonText size="large">고객센터</Typo.ButtonText>
-          </Link>
-        )}
-        <Link href={ROUTES.ME_PARTNERSHIP} className="h-12 pl-2 flex items-center">
-          <Typo.ButtonText size="large">제휴문의</Typo.ButtonText>
+    <footer className="flex flex-col divide-y divide-zinc-100 px-5 text-default">
+      <Link href={ROUTES.ME_PARTNERSHIP} className="flex items-center justify-between py-4">
+        <Typo.Body size="large">제휴 문의</Typo.Body>
+        <ChevronRightIcon className="size-4 text-zinc-400" />
+      </Link>
+      {PRIVACY_POLICY_URL && (
+        <Link
+          href={PRIVACY_POLICY_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-between py-4"
+        >
+          <Typo.Body size="large">이용약관 / 개인정보처리방침</Typo.Body>
+          <ChevronRightIcon className="size-4 text-zinc-400" />
         </Link>
-        {PRIVACY_POLICY_URL && (
-          <Link
-            href={PRIVACY_POLICY_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="h-12 pl-2 flex items-center"
-          >
-            <Typo.ButtonText size="large">이용약관/개인정보처리방침</Typo.ButtonText>
-          </Link>
-        )}
-        <Link href={ROUTES.ME_ACCOUNT_WITHDRAW} className="h-12 pl-2 flex items-center">
-          <Typo.ButtonText size="large" className="text-disabled">
-            회원탈퇴
-          </Typo.ButtonText>
-        </Link>
-      </div>
-      <ButtonV2
-        variant="secondary"
-        size="large"
+      )}
+      <button
+        type="button"
         onClick={handleLogout}
-        className="self-start rounded-4xl"
+        className="flex items-center justify-between py-4"
       >
-        <Typo.ButtonText size="large" className="w-auto">
-          로그아웃
-        </Typo.ButtonText>
-      </ButtonV2>
+        <Typo.Body size="large">로그아웃</Typo.Body>
+        <ChevronRightIcon className="size-4 text-zinc-400" />
+      </button>
+      <Link href={ROUTES.ME_ACCOUNT_WITHDRAW} className="flex items-center justify-between py-4">
+        <Typo.Body size="large">회원 탈퇴</Typo.Body>
+        <ChevronRightIcon className="size-4 text-zinc-400" />
+      </Link>
     </footer>
   );
 }
