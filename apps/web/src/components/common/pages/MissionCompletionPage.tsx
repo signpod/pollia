@@ -1,12 +1,15 @@
 "use client";
 
 import { NavigableProfileHeader } from "@/components/common/NavigableProfileHeader";
+import { ROUTES } from "@/constants/routes";
 import { useKakaoLogin } from "@/hooks/login/useKakaoLogin";
 import { useAuth } from "@/hooks/user/useAuth";
 import KakaoIcon from "@public/svgs/kakao-icon.svg";
 import { ButtonV2, FixedBottomLayout, Typo } from "@repo/ui/components";
-import { usePathname } from "next/navigation";
-import type { ReactNode, RefObject } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { usePathname, useRouter } from "next/navigation";
+import { type ReactNode, type RefObject, useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { MissionCompletionTemplate } from "../templates/MissionCompletionTemplate";
 
 export interface MissionCompletionPageProps {
@@ -27,28 +30,127 @@ export interface MissionCompletionPageProps {
   };
 }
 
+function RewardBottomSheet({
+  isOpen,
+  onClose,
+  onGoHome,
+  onGoRewards,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onGoHome: () => void;
+  onGoRewards: () => void;
+}) {
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    },
+    [onClose],
+  );
+
+  useEffect(() => {
+    if (!isOpen) return;
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, handleKeyDown]);
+
+  return createPortal(
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
+          <motion.div
+            className="absolute inset-0 mx-auto max-w-[600px] bg-black/40"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          />
+          <motion.div
+            className="relative w-full max-w-[600px]"
+            onClick={e => e.stopPropagation()}
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
+          >
+            <div className="rounded-t-2xl bg-white shadow-[0px_4px_20px_0px_rgba(9,9,11,0.16)]">
+              <div className="flex flex-col items-center gap-2 p-5">
+                <Typo.MainTitle size="small">리워드 지급이 접수되었어요</Typo.MainTitle>
+                <Typo.Body size="medium" className="text-center text-zinc-500 whitespace-pre-line">
+                  {
+                    "리워드는 안내에 따라 검수 후 지급될 예정이에요\n자세한 내역은 마이페이지 > 리워드에서\n확인할 수 있어요"
+                  }
+                </Typo.Body>
+              </div>
+              <div className="flex gap-2 px-5 py-3">
+                <ButtonV2 variant="secondary" className="flex-1" onClick={onGoHome}>
+                  <div className="flex items-center justify-center w-full">
+                    <Typo.ButtonText size="large">홈으로 가기</Typo.ButtonText>
+                  </div>
+                </ButtonV2>
+                <ButtonV2 variant="primary" className="flex-1" onClick={onGoRewards}>
+                  <div className="flex items-center justify-center w-full">
+                    <Typo.ButtonText size="large">내 리워드 보기</Typo.ButtonText>
+                  </div>
+                </ButtonV2>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>,
+    document.body,
+  );
+}
+
 function RewardClaimButton({ hasReward }: { hasReward: boolean }) {
   const { isLoggedIn } = useAuth();
   const pathname = usePathname();
+  const router = useRouter();
   const { handleKakaoLogin } = useKakaoLogin({ redirectPath: pathname });
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-  if (isLoggedIn || !hasReward) return null;
+  if (!hasReward) return null;
+
+  if (!isLoggedIn) {
+    return (
+      <FixedBottomLayout hasGradientBlur>
+        <FixedBottomLayout.Content className="px-5 py-3">
+          <ButtonV2
+            variant="primary"
+            className="w-full bg-kakao hover:bg-kakao active:bg-kakao focus:bg-kakao"
+            onClick={handleKakaoLogin}
+          >
+            <div className="flex items-center justify-center w-full gap-6 text-default">
+              <KakaoIcon className="size-6" />
+              <Typo.ButtonText size="large">로그인하고 리워드 받기</Typo.ButtonText>
+            </div>
+          </ButtonV2>
+        </FixedBottomLayout.Content>
+      </FixedBottomLayout>
+    );
+  }
 
   return (
-    <FixedBottomLayout hasGradientBlur>
-      <FixedBottomLayout.Content className="px-5 py-3">
-        <ButtonV2
-          variant="primary"
-          className="w-full bg-kakao hover:bg-kakao active:bg-kakao focus:bg-kakao"
-          onClick={handleKakaoLogin}
-        >
-          <div className="flex items-center justify-center w-full gap-6 text-default">
-            <KakaoIcon className="size-6" />
-            <Typo.ButtonText size="large">로그인하고 리워드 받기</Typo.ButtonText>
-          </div>
-        </ButtonV2>
-      </FixedBottomLayout.Content>
-    </FixedBottomLayout>
+    <>
+      <FixedBottomLayout hasGradientBlur>
+        <FixedBottomLayout.Content className="px-5 py-3">
+          <ButtonV2 variant="primary" className="w-full" onClick={() => setIsSheetOpen(true)}>
+            <div className="flex items-center justify-center w-full gap-6">
+              <KakaoIcon className="size-6" />
+              <Typo.ButtonText size="large">리워드 받기</Typo.ButtonText>
+            </div>
+          </ButtonV2>
+        </FixedBottomLayout.Content>
+      </FixedBottomLayout>
+
+      <RewardBottomSheet
+        isOpen={isSheetOpen}
+        onClose={() => setIsSheetOpen(false)}
+        onGoHome={() => router.push(ROUTES.HOME)}
+        onGoRewards={() => router.push(ROUTES.ME_REWARDS_TAB)}
+      />
+    </>
   );
 }
 
@@ -63,7 +165,7 @@ export function MissionCompletionPage({
   imageMenu,
 }: MissionCompletionPageProps) {
   return (
-    <div className="relative flex w-full flex-col items-center bg-red-600 h-auto">
+    <div className="relative flex w-full flex-col items-center h-auto">
       <MissionCompletionTemplate
         header={header}
         imageUrl={imageUrl}
