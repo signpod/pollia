@@ -7,18 +7,35 @@ import { rewardInputSchema } from "@/schemas/reward";
 import { MissionCategory, PaymentType } from "@prisma/client";
 import { z } from "zod";
 
-const createMissionFormRewardSchema = z.object({
-  name: z
-    .string()
-    .min(1, "리워드 이름을 입력해주세요.")
-    .max(100, "리워드 이름은 100자를 초과할 수 없습니다.")
-    .trim(),
-  description: z.string().max(500, "설명은 500자를 초과할 수 없습니다.").optional(),
-  paymentType: z.enum(PaymentType, {
-    message: "올바른 지급 유형을 선택해주세요.",
-  }),
-  scheduledDate: z.date().optional(),
-});
+const createMissionFormRewardSchema = z
+  .object({
+    name: z
+      .string()
+      .min(1, "리워드 이름을 입력해주세요.")
+      .max(100, "리워드 이름은 100자를 초과할 수 없습니다.")
+      .trim(),
+    description: z.string().max(500, "설명은 500자를 초과할 수 없습니다.").optional(),
+    paymentType: z.enum(PaymentType, {
+      message: "올바른 지급 유형을 선택해주세요.",
+    }),
+    scheduledDate: z.date().optional(),
+  })
+  .refine(data => !(data.paymentType === PaymentType.SCHEDULED && !data.scheduledDate), {
+    message: "예약 지급의 경우 예약 일시는 필수입니다.",
+    path: ["scheduledDate"],
+  })
+  .refine(
+    data =>
+      !(
+        data.paymentType === PaymentType.SCHEDULED &&
+        data.scheduledDate &&
+        data.scheduledDate <= new Date()
+      ),
+    {
+      message: "예약 일시는 현재 시간보다 이후여야 합니다.",
+      path: ["scheduledDate"],
+    },
+  );
 
 const createMissionFormBaseSchema = z.object({
   category: z

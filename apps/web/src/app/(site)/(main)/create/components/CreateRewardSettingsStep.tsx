@@ -134,7 +134,31 @@ export function CreateRewardSettingsStep() {
               control={control}
               name="reward.paymentType"
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select
+                  value={field.value}
+                  onValueChange={value => {
+                    field.onChange(value);
+
+                    if (value === PaymentType.SCHEDULED) {
+                      const currentScheduledDate = getValues("reward.scheduledDate");
+                      if (!currentScheduledDate) {
+                        const defaultScheduledDate = new Date();
+                        defaultScheduledDate.setDate(defaultScheduledDate.getDate() + 1);
+                        defaultScheduledDate.setHours(12, 0, 0, 0);
+                        setValue("reward.scheduledDate", defaultScheduledDate, {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        });
+                      }
+                      return;
+                    }
+
+                    setValue("reward.scheduledDate", undefined, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    });
+                  }}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="지급 유형을 선택하세요" />
                   </SelectTrigger>
@@ -171,7 +195,10 @@ export function CreateRewardSettingsStep() {
                       field.onChange(undefined);
                       return;
                     }
-                    const current = dateValue ?? new Date();
+                    const current = dateValue ?? newDate;
+                    if (!dateValue) {
+                      current.setHours(12, 0, 0, 0);
+                    }
                     newDate.setHours(current.getHours(), current.getMinutes(), 0, 0);
                     field.onChange(newDate);
                   };
