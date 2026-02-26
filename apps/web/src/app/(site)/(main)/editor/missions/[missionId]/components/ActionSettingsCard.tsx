@@ -12,9 +12,12 @@ import {
   useManageUpdateAction,
 } from "@/app/(site)/mission/[missionId]/manage/actions/hooks";
 import {
+  hasDraftActionReference,
+  makeDraftActionId,
   mapCreateActionInput,
   mapEditInitialValues,
   mapUpdateActionInput,
+  resolveDraftActionReferences,
 } from "@/app/(site)/mission/[missionId]/manage/actions/logic";
 import { ACTION_TYPE_LABELS } from "@/constants/action";
 import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
@@ -180,6 +183,27 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
     [existingActions, draftItems],
   );
 
+  const linkTargets = useMemo(() => {
+    const existingTargets = existingActions.map(action => ({
+      id: action.id,
+      title: action.title,
+      order: action.order ?? 0,
+    }));
+
+    const draftTargets = draftItems.map((draft, index) => {
+      const itemKey = getDraftItemKey(draft.key);
+      const draftType = actionTypeByItemKey[itemKey] ?? ActionType.SUBJECTIVE;
+
+      return {
+        id: makeDraftActionId(draft.key),
+        title: `[임시] ${ACTION_TYPE_LABELS[draftType]} 액션`,
+        order: existingActions.length + index,
+      };
+    });
+
+    return [...existingTargets, ...draftTargets];
+  }, [existingActions, draftItems, actionTypeByItemKey]);
+
   const handleAddDraft = () => {
     const draftKey = createDraftKey();
     const itemKey = getDraftItemKey(draftKey);
@@ -269,41 +293,94 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
     }
 
     try {
-      for (const action of changedExistingActions) {
-        const key = getExistingItemKey(action.id);
-        const submission = submissionsByKey.get(key);
-        if (!submission) continue;
-
-        await updateAction.mutateAsync(
-          mapUpdateActionInput({
-            missionId,
-            editingActionId: action.id,
-            values: submission.values,
-            actionType: submission.actionType,
-            previousActionType: action.type,
-          }),
-        );
-      }
-
       let firstCreatedActionId: string | null = null;
+      const tempToRealActionIdMap = new Map<string, string>();
+      const createdDraftRecords: Array<{
+        createdId: string;
+        submission: ActionSubmission;
+        hasDraftReference: boolean;
+      }> = [];
 
       for (const [index, draft] of draftSnapshot.entries()) {
         const key = getDraftItemKey(draft.key);
         const submission = submissionsByKey.get(key);
         if (!submission) continue;
 
+        const hasDraftReference = hasDraftActionReference(submission.values);
+        const sanitizedValues = resolveDraftActionReferences(
+          submission.values,
+          tempToRealActionIdMap,
+          true,
+        );
+
         const created = await createAction.mutateAsync(
           mapCreateActionInput({
             missionId,
             selectedType: submission.actionType,
-            values: submission.values,
+            values: sanitizedValues,
             order: existingSnapshot.length + index,
           }),
         );
 
-        if (!firstCreatedActionId) {
-          firstCreatedActionId = created?.data?.id ?? null;
+        const createdId = created?.data?.id;
+        if (!createdId) {
+          throw new Error("액션 생성 결과를 확인할 수 없습니다.");
         }
+
+        tempToRealActionIdMap.set(makeDraftActionId(draft.key), createdId);
+        createdDraftRecords.push({
+          createdId,
+          submission,
+          hasDraftReference,
+        });
+
+        if (!firstCreatedActionId) {
+          firstCreatedActionId = createdId;
+        }
+      }
+
+      for (const action of changedExistingActions) {
+        const key = getExistingItemKey(action.id);
+        const submission = submissionsByKey.get(key);
+        if (!submission) continue;
+
+        const resolvedValues = resolveDraftActionReferences(
+          submission.values,
+          tempToRealActionIdMap,
+          true,
+        );
+
+        await updateAction.mutateAsync(
+          mapUpdateActionInput({
+            missionId,
+            editingActionId: action.id,
+            values: resolvedValues,
+            actionType: submission.actionType,
+            previousActionType: action.type,
+          }),
+        );
+      }
+
+      for (const createdDraft of createdDraftRecords) {
+        if (!createdDraft.hasDraftReference) {
+          continue;
+        }
+
+        const resolvedValues = resolveDraftActionReferences(
+          createdDraft.submission.values,
+          tempToRealActionIdMap,
+          true,
+        );
+
+        await updateAction.mutateAsync(
+          mapUpdateActionInput({
+            missionId,
+            editingActionId: createdDraft.createdId,
+            values: resolvedValues,
+            actionType: createdDraft.submission.actionType,
+            previousActionType: createdDraft.submission.actionType,
+          }),
+        );
       }
 
       if (existingSnapshot.length === 0 && firstCreatedActionId) {
@@ -375,6 +452,9 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
                 item.kind === "existing"
                   ? item.action.title
                   : `${ACTION_TYPE_LABELS[itemType]} 액션`;
+              const currentActionId =
+                item.kind === "existing" ? item.action.id : makeDraftActionId(item.draft.key);
+              const formLinkTargets = linkTargets.filter(target => target.id !== currentActionId);
 
               return (
                 <div key={item.key} className="overflow-hidden rounded-xl border border-zinc-200">
@@ -420,7 +500,7 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
                         actionType={itemType}
                         editingAction={item.action}
                         initialValues={mapEditInitialValues(item.action)}
-                        allActions={existingActions}
+                        allActions={formLinkTargets}
                         completionOptions={completionOptions}
                         isLoading={isSaving}
                         onSubmit={NOOP}
@@ -436,7 +516,7 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
                           formRefs.current[item.key] = instance;
                         }}
                         actionType={itemType}
-                        allActions={existingActions}
+                        allActions={formLinkTargets}
                         completionOptions={completionOptions}
                         isLoading={isSaving}
                         onSubmit={NOOP}

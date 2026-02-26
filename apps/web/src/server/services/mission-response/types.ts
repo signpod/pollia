@@ -27,6 +27,22 @@ export interface ResponseStats {
   completionRate: number;
 }
 
+export interface GetMissionResponsesPageOptions {
+  page: number;
+  pageSize: number;
+  membersOnly?: boolean;
+}
+
+export interface MissionResponsesPageResult<TResponse> {
+  responses: TResponse[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    totalRows: number;
+    totalPages: number;
+  };
+}
+
 export type NormalizedActor = {
   userId: string | null;
   guestId: string | null;

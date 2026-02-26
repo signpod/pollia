@@ -40,6 +40,7 @@ describe("MissionService - Mutation", () => {
       findByMissionAndUser: jest.fn(),
       findByMissionAndGuest: jest.fn(),
       findByMissionId: jest.fn(),
+      findByMissionIdPaged: jest.fn(),
       findByUserId: jest.fn(),
       findCompletedByMissionId: jest.fn(),
       create: jest.fn(),
@@ -51,6 +52,7 @@ describe("MissionService - Mutation", () => {
       deleteByMissionAndUser: jest.fn(),
       deleteByMissionAndGuest: jest.fn(),
       countByMissionId: jest.fn(),
+      countByMissionIdFiltered: jest.fn(),
       countCompletedByMissionId: jest.fn(),
     } as jest.Mocked<MissionResponseRepository>;
 

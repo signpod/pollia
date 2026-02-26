@@ -4,6 +4,51 @@ import type { ActionFormValues } from "../components/ActionForm";
 import type { CreateActionInput } from "../hooks";
 
 const OPTION_BASED_TYPES = new Set<ActionType>(["MULTIPLE_CHOICE", "SCALE", "TAG", "BRANCH"]);
+export const DRAFT_ACTION_ID_PREFIX = "draft:";
+
+export function makeDraftActionId(draftKey: string) {
+  return `${DRAFT_ACTION_ID_PREFIX}${draftKey}`;
+}
+
+export function isDraftActionId(actionId: string | null | undefined): actionId is string {
+  return Boolean(actionId?.startsWith(DRAFT_ACTION_ID_PREFIX));
+}
+
+export function hasDraftActionReference(values: ActionFormValues): boolean {
+  if (isDraftActionId(values.nextActionId)) {
+    return true;
+  }
+
+  return values.options?.some(option => isDraftActionId(option.nextActionId) === true) ?? false;
+}
+
+export function resolveDraftActionReferences(
+  values: ActionFormValues,
+  idMap: Map<string, string>,
+  unresolvedToNull = true,
+): ActionFormValues {
+  const resolveActionId = (actionId: string | null | undefined) => {
+    if (!isDraftActionId(actionId)) {
+      return actionId ?? null;
+    }
+
+    const resolved = idMap.get(actionId);
+    if (resolved) {
+      return resolved;
+    }
+
+    return unresolvedToNull ? null : actionId;
+  };
+
+  return {
+    ...values,
+    nextActionId: resolveActionId(values.nextActionId),
+    options: values.options?.map(option => ({
+      ...option,
+      nextActionId: resolveActionId(option.nextActionId),
+    })),
+  };
+}
 
 export function mapCreateActionInput(params: {
   missionId: string;

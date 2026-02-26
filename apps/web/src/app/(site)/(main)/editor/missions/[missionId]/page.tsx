@@ -16,5 +16,5 @@ export default async function EditorMissionPage({ params }: EditorMissionPagePro
         .catch(() => null)
     : null;
 
-  return <EditorMissionTabContent mission={mission} reward={reward} />;
+  return <EditorMissionTabContent missionId={missionId} mission={mission} reward={reward} />;
 }

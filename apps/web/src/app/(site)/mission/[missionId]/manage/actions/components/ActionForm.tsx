@@ -70,7 +70,7 @@ interface ActionFormProps {
   actionType: ActionType;
   initialValues?: ActionFormValues;
   editingAction?: ActionDetail | null;
-  allActions: ActionDetail[];
+  allActions: Array<Pick<ActionDetail, "id" | "title" | "order">>;
   completionOptions: Array<{ id: string; title: string }>;
   isLoading: boolean;
   onSubmit: (values: ActionFormValues) => void;

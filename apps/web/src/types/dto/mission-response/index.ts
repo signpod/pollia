@@ -1,3 +1,4 @@
+import type { ColumnDef, SubmissionRow } from "@/server/services/submission-list";
 import type { Action, ActionAnswer, ActionOption, FileUpload } from "@prisma/client";
 
 export interface StartMissionResponseRequest {
@@ -108,6 +109,19 @@ export interface GetMissionStatsResponse {
     total: number;
     completed: number;
     completionRate: number;
+  };
+}
+
+export interface GetMissionResponsesPageResponse {
+  data: {
+    columns: ColumnDef[];
+    rows: SubmissionRow[];
+    pagination: {
+      page: number;
+      pageSize: number;
+      totalRows: number;
+      totalPages: number;
+    };
   };
 }
 

@@ -27,6 +27,7 @@ const createMockResponse = (
   id: "response1",
   startedAt: new Date("2025-01-01T10:00:00Z"),
   completedAt: null,
+  userId: "user-1",
   guestId: null,
   user: {
     name: "홍길동",
@@ -154,6 +155,39 @@ describe("buildSubmissionTables", () => {
       expect(result.completedRows[0]?.user.name).toBe("김철수");
       expect(result.completedRows[0]?.user.phone).toBe("01098765432");
     });
+
+    it("respondentId를 userId 우선으로 구성한다", () => {
+      // Given
+      const actions = [createMockAction()];
+      const response = createMockResponse({
+        userId: "member-123",
+        guestId: "guest-123",
+        completedAt: new Date(),
+      });
+
+      // When
+      const result = buildSubmissionTables({ actions, responses: [response] });
+
+      // Then
+      expect(result.completedRows[0]?.respondentId).toBe("member-123");
+    });
+
+    it("responseAt은 completedAt을 우선 사용한다", () => {
+      // Given
+      const actions = [createMockAction()];
+      const startedAt = new Date("2025-01-01T10:00:00Z");
+      const completedAt = new Date("2025-01-01T11:00:00Z");
+      const response = createMockResponse({
+        startedAt,
+        completedAt,
+      });
+
+      // When
+      const result = buildSubmissionTables({ actions, responses: [response] });
+
+      // Then
+      expect(result.completedRows[0]?.responseAt).toEqual(completedAt);
+    });
   });
 
   describe("엣지 케이스", () => {
@@ -259,6 +293,37 @@ describe("buildSubmissionTables", () => {
 
       // Then
       expect(result.completedRows[0]?.answers[0]?.value).toBeNull();
+    });
+
+    it("userId가 없으면 guestId를 respondentId로 사용한다", () => {
+      // Given
+      const actions = [createMockAction()];
+      const response = createMockResponse({
+        userId: null,
+        guestId: "guest-uuid-1",
+      });
+
+      // When
+      const result = buildSubmissionTables({ actions, responses: [response] });
+
+      // Then
+      expect(result.inProgressRows[0]?.respondentId).toBe("guest-uuid-1");
+    });
+
+    it("completedAt이 없으면 startedAt을 responseAt으로 사용한다", () => {
+      // Given
+      const actions = [createMockAction()];
+      const startedAt = new Date("2025-01-01T10:00:00Z");
+      const response = createMockResponse({
+        startedAt,
+        completedAt: null,
+      });
+
+      // When
+      const result = buildSubmissionTables({ actions, responses: [response] });
+
+      // Then
+      expect(result.inProgressRows[0]?.responseAt).toEqual(startedAt);
     });
   });
 });

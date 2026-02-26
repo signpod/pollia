@@ -5,8 +5,8 @@ import type { GetMissionResponse } from "@/types/dto";
 import type { PaymentType } from "@prisma/client";
 import { Typo } from "@repo/ui/components";
 import { ActionSettingsCard } from "./ActionSettingsCard";
-import type { EditorTabValue } from "./EditorMissionTabContext";
 import { useEditorMissionTab } from "./EditorMissionTabContext";
+import { MissionStatsDashboard } from "./MissionStatsDashboard";
 import { ProjectBasicInfoCard } from "./ProjectBasicInfoCard";
 import { RewardSettingsCard } from "./RewardSettingsCard";
 
@@ -19,22 +19,12 @@ interface RewardSnapshot {
 }
 
 interface EditorMissionTabContentProps {
+  missionId: string;
   mission: GetMissionResponse["data"];
   reward: RewardSnapshot | null;
 }
 
-function renderPlaceholder(tab: Extract<EditorTabValue, "stats" | "preview">) {
-  if (tab === "stats") {
-    return (
-      <div className="border border-zinc-200 bg-white px-5 py-6">
-        <Typo.SubTitle>통계</Typo.SubTitle>
-        <Typo.Body size="medium" className="mt-2 text-zinc-500">
-          통계 탭은 다음 단계에서 연결합니다.
-        </Typo.Body>
-      </div>
-    );
-  }
-
+function renderPreviewPlaceholder() {
   return (
     <div className="border border-zinc-200 bg-white px-5 py-6">
       <Typo.SubTitle>미리보기</Typo.SubTitle>
@@ -45,11 +35,19 @@ function renderPlaceholder(tab: Extract<EditorTabValue, "stats" | "preview">) {
   );
 }
 
-export function EditorMissionTabContent({ mission, reward }: EditorMissionTabContentProps) {
+export function EditorMissionTabContent({
+  missionId,
+  mission,
+  reward,
+}: EditorMissionTabContentProps) {
   const { currentTab } = useEditorMissionTab();
 
-  if (currentTab !== "editor") {
-    return renderPlaceholder(currentTab);
+  if (currentTab === "stats") {
+    return <MissionStatsDashboard missionId={missionId} />;
+  }
+
+  if (currentTab === "preview") {
+    return renderPreviewPlaceholder();
   }
 
   return (

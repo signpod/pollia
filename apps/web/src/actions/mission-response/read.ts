@@ -1,9 +1,12 @@
 "use server";
 
 import { requireActiveUser, resolveMissionActor } from "@/actions/common/auth";
+import { actionRepository } from "@/server/repositories/action/actionRepository";
 import { missionResponseService } from "@/server/services/mission-response";
+import { buildSubmissionTables } from "@/server/services/submission-list";
 import type {
   GetMissionResponseResponse,
+  GetMissionResponsesPageResponse,
   GetMissionResponsesResponse,
   GetMissionStatsResponse,
   GetMyMissionResponsesResponse,
@@ -92,6 +95,53 @@ export async function getMissionStats(missionId: string): Promise<GetMissionStat
       throw error;
     }
     const serverError = new Error("통계 조회 중 오류가 발생했습니다.");
+    serverError.cause = 500;
+    throw serverError;
+  }
+}
+
+export async function getMissionResponsesPage(
+  missionId: string,
+  options?: { page?: number; pageSize?: number; membersOnly?: boolean },
+): Promise<GetMissionResponsesPageResponse> {
+  const DEFAULT_PAGE = 1;
+  const DEFAULT_PAGE_SIZE = 20;
+  const MAX_PAGE_SIZE = 100;
+
+  try {
+    const user = await requireActiveUser();
+
+    const page = Math.max(DEFAULT_PAGE, Math.floor(options?.page ?? DEFAULT_PAGE));
+    const pageSize = Math.min(
+      MAX_PAGE_SIZE,
+      Math.max(DEFAULT_PAGE, Math.floor(options?.pageSize ?? DEFAULT_PAGE_SIZE)),
+    );
+
+    const pageResult = await missionResponseService.getMissionResponsesPage(missionId, user.id, {
+      page,
+      pageSize,
+      membersOnly: options?.membersOnly,
+    });
+    const actions = await actionRepository.findDetailsByMissionId(missionId);
+
+    const submissionRows = buildSubmissionTables({
+      responses: pageResult.responses,
+      actions,
+    });
+
+    return {
+      data: {
+        columns: submissionRows.columns,
+        rows: submissionRows.allRows,
+        pagination: pageResult.pagination,
+      },
+    };
+  } catch (error) {
+    console.error("getMissionResponsesPage error:", error);
+    if (error instanceof Error && error.cause) {
+      throw error;
+    }
+    const serverError = new Error("응답 목록 페이지 조회 중 오류가 발생했습니다.");
     serverError.cause = 500;
     throw serverError;
   }

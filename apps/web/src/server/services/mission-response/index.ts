@@ -1,10 +1,15 @@
 import { completeResponseInputSchema, startResponseInputSchema } from "@/schemas/mission-response";
 import { actionRepository } from "@/server/repositories/action/actionRepository";
-import { missionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
+import {
+  type MissionResponseRepository,
+  missionResponseRepository,
+} from "@/server/repositories/mission-response/missionResponseRepository";
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
 import {
   type CleanupAbuseMetaResult,
   type CompleteResponseInput,
+  type GetMissionResponsesPageOptions,
+  type MissionResponsesPageResult,
   type ResponseActor,
   type ResponseRequestMeta,
   type ResponseStats,
@@ -107,6 +112,45 @@ export class MissionResponseService {
       total,
       completed,
       completionRate: total > 0 ? (completed / total) * 100 : 0,
+    };
+  }
+
+  async getMissionResponsesPage(
+    missionId: string,
+    userId: string,
+    options: GetMissionResponsesPageOptions,
+  ): Promise<
+    MissionResponsesPageResult<
+      Awaited<ReturnType<MissionResponseRepository["findByMissionIdPaged"]>>[number]
+    >
+  > {
+    const mission = await this.missionRepo.findById(missionId);
+
+    if (!mission) {
+      const error = new Error("미션을 찾을 수 없습니다.");
+      error.cause = 404;
+      throw error;
+    }
+
+    if (mission.creatorId !== userId) {
+      const error = new Error("조회 권한이 없습니다.");
+      error.cause = 403;
+      throw error;
+    }
+
+    const [responses, totalRows] = await Promise.all([
+      this.responseRepo.findByMissionIdPaged(missionId, options),
+      this.responseRepo.countByMissionIdFiltered(missionId, { membersOnly: options.membersOnly }),
+    ]);
+
+    return {
+      responses,
+      pagination: {
+        page: options.page,
+        pageSize: options.pageSize,
+        totalRows,
+        totalPages: Math.ceil(totalRows / options.pageSize),
+      },
     };
   }
 
