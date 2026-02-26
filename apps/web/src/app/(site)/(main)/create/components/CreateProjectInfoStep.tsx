@@ -1,12 +1,13 @@
 "use client";
 
-import { Input, Textarea, Toggle, Typo } from "@repo/ui/components";
+import { Input, Toggle, Typo } from "@repo/ui/components";
 import { Controller, useFormContext } from "react-hook-form";
 import {
   type CreateMissionFormData,
   MISSION_DESCRIPTION_MAX_LENGTH,
   MISSION_TITLE_MAX_LENGTH,
 } from "../schema";
+import { CreateTiptapField } from "./CreateTiptapField";
 
 function IntroToggleRow({
   label,
@@ -58,20 +59,15 @@ export function CreateProjectInfoStep() {
         )}
       />
 
-      <Controller
-        control={control}
+      <CreateTiptapField
         name="description"
-        render={({ field }) => (
-          <Textarea
-            label="설명"
-            placeholder="프로젝트에 대한 설명을 입력해주세요"
-            maxLength={MISSION_DESCRIPTION_MAX_LENGTH}
-            rows={4}
-            errorMessage={errors.description?.message}
-            value={field.value ?? ""}
-            onChange={field.onChange}
-          />
-        )}
+        label="설명"
+        description="프로젝트에 대한 설명을 입력해주세요."
+        placeholder="프로젝트에 대한 설명을 입력해주세요"
+        isOptional
+        maxLength={MISSION_DESCRIPTION_MAX_LENGTH}
+        showCounter
+        showToolbar
       />
 
       <Controller

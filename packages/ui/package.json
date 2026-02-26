@@ -4,6 +4,7 @@
   "private": true,
   "exports": {
     "./components": "./src/components/index.ts",
+    "./components/common/TiptapEditor": "./src/components/common/TiptapEditor.tsx",
     "./components/common/TiptapViewer": "./src/components/common/TiptapViewer.tsx",
     "./lib": "./src/lib/index.ts"
   },
@@ -21,6 +22,11 @@
     "typescript": "5.9.2"
   },
   "dependencies": {
+    "@tiptap/core": "^3.19.0",
+    "@tiptap/extension-placeholder": "^3.19.0",
+    "@tiptap/extension-text-align": "^3.19.0",
+    "@tiptap/react": "^3.19.0",
+    "@tiptap/starter-kit": "^3.19.0",
     "@emotion/is-prop-valid": "^1.4.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-label": "^2.1.7",
