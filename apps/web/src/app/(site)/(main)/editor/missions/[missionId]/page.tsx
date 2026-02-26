@@ -1,8 +1,6 @@
 import { getMission } from "@/actions/mission";
 import { getReward } from "@/actions/reward/read";
-import { Separator } from "@/components/ui/separator";
-import { ProjectBasicInfoCard } from "./components/ProjectBasicInfoCard";
-import { RewardSettingsCard } from "./components/RewardSettingsCard";
+import { EditorMissionTabContent } from "./components/EditorMissionTabContent";
 
 interface EditorMissionPageProps {
   params: Promise<{ missionId: string }>;
@@ -18,11 +16,5 @@ export default async function EditorMissionPage({ params }: EditorMissionPagePro
         .catch(() => null)
     : null;
 
-  return (
-    <>
-      <ProjectBasicInfoCard mission={mission} />
-      <Separator className="h-2" />
-      <RewardSettingsCard mission={mission} initialReward={reward} />
-    </>
-  );
+  return <EditorMissionTabContent mission={mission} reward={reward} />;
 }

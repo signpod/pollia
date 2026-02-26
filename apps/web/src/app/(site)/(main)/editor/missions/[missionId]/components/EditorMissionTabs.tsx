@@ -1,40 +1,13 @@
 "use client";
 
-import { ROUTES } from "@/constants/routes";
 import { Tab, Typo } from "@repo/ui/components";
-import { useRouter, useSelectedLayoutSegment } from "next/navigation";
+import { type EditorTabValue, useEditorMissionTab } from "./EditorMissionTabContext";
 
-interface EditorMissionTabsProps {
-  missionId: string;
-}
-
-type EditorTabValue = "editor" | "stats" | "preview";
-
-function resolveCurrentTab(segment: string | null): EditorTabValue {
-  if (segment === "stats") return "stats";
-  if (segment === "preview") return "preview";
-  return "editor";
-}
-
-export function EditorMissionTabs({ missionId }: EditorMissionTabsProps) {
-  const router = useRouter();
-  const segment = useSelectedLayoutSegment();
-  const currentTab = resolveCurrentTab(segment);
+export function EditorMissionTabs() {
+  const { currentTab, setCurrentTab } = useEditorMissionTab();
 
   const handleTabChange = (tab: string) => {
-    const nextTab = tab as EditorTabValue;
-
-    if (nextTab === "editor") {
-      router.push(ROUTES.EDITOR_MISSION(missionId));
-      return;
-    }
-
-    if (nextTab === "stats") {
-      router.push(ROUTES.EDITOR_MISSION_STATS(missionId));
-      return;
-    }
-
-    router.push(ROUTES.EDITOR_MISSION_PREVIEW(missionId));
+    setCurrentTab(tab as EditorTabValue);
   };
 
   return (
