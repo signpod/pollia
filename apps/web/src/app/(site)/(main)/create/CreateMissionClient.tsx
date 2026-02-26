@@ -130,7 +130,7 @@ export function CreateMissionClient() {
             tabIndex={showBackButton ? 0 : -1}
             onClick={controller.goBack}
             disabled={!showBackButton || !controller.canGoBack || controller.isSubmitting}
-            className={`flex size-8 items-center justify-center rounded-full border border-zinc-200 text-zinc-700 disabled:cursor-not-allowed disabled:opacity-40 ${
+            className={`flex size-8 items-center justify-center rounded-full text-zinc-700 disabled:cursor-not-allowed disabled:opacity-40 ${
               showBackButton ? "" : "pointer-events-none opacity-0"
             }`}
           >
