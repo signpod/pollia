@@ -45,6 +45,23 @@ const CREATE_STEP_INDEX: Record<CreateMissionStep, number> = CREATE_STEP_ORDER.r
   {} as Record<CreateMissionStep, number>,
 );
 
+const STEP_TRANSITION_VARIANTS = {
+  enter: (direction: 1 | -1) => ({
+    x: direction > 0 ? "24%" : "-24%",
+    opacity: 0.7,
+  }),
+  center: {
+    x: "0%",
+    opacity: 1,
+    transition: { duration: 0.24, ease: [0.22, 1, 0.36, 1] as const },
+  },
+  exit: (direction: 1 | -1) => ({
+    x: direction > 0 ? "-20%" : "20%",
+    opacity: 0.7,
+    transition: { duration: 0.18, ease: [0.4, 0, 1, 1] as const },
+  }),
+};
+
 export function CreateMissionClient() {
   const form = useForm<CreateMissionFormData>({
     resolver: zodResolver(createMissionFormSchema),
@@ -130,43 +147,34 @@ export function CreateMissionClient() {
           </Typo.Body>
         </div>
 
-        <div
-          className={`relative pb-3 ${
-            controller.currentStep === "project-info" ? "overflow-visible" : "overflow-hidden"
-          }`}
-        >
-          <AnimatePresence mode="wait" initial={false} custom={direction}>
-            <motion.div
-              key={controller.currentStep}
-              custom={direction}
-              initial={{ x: direction > 0 ? "24%" : "-24%", opacity: 0.7 }}
-              animate={{
-                x: "0%",
-                opacity: 1,
-                transition: { duration: 0.24, ease: [0.22, 1, 0.36, 1] },
-              }}
-              exit={{
-                x: direction > 0 ? "-20%" : "20%",
-                opacity: 0.7,
-                transition: { duration: 0.18, ease: [0.4, 0, 1, 1] },
-              }}
-              className="will-change-transform"
-            >
-              {renderCurrentStep()}
-              {showNextButton ? (
-                <div className="pb-4 pt-3">
-                  <Button
-                    fullWidth
-                    loading={controller.isSubmitting}
-                    disabled={controller.isSubmitting}
-                    onClick={controller.goNext}
-                  >
-                    {controller.nextButtonLabel}
-                  </Button>
-                </div>
-              ) : null}
-            </motion.div>
-          </AnimatePresence>
+        <div className="relative overflow-x-hidden overflow-y-visible pb-3">
+          <div className="px-1 py-1">
+            <AnimatePresence mode="wait" initial={false} custom={direction}>
+              <motion.div
+                key={controller.currentStep}
+                custom={direction}
+                variants={STEP_TRANSITION_VARIANTS}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                className="will-change-transform"
+              >
+                {renderCurrentStep()}
+                {showNextButton ? (
+                  <div className="pb-4 pt-3">
+                    <Button
+                      fullWidth
+                      loading={controller.isSubmitting}
+                      disabled={controller.isSubmitting}
+                      onClick={controller.goNext}
+                    >
+                      {controller.nextButtonLabel}
+                    </Button>
+                  </div>
+                ) : null}
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </FormProvider>
