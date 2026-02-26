@@ -206,7 +206,7 @@ function ParticipationListItem({
         setActionNavCookie(mission.id, "resume");
         window.open(ROUTES.ACTION({ missionId: mission.id, actionId: nextActionId }), "_blank");
       } else {
-        window.open(ROUTES.MISSION(mission.id), "_blank");
+        window.open(ROUTES.MISSION_DONE(mission.id), "_blank");
       }
     },
     [mission.id, filter, nextActionId],
