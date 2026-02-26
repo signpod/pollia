@@ -4,7 +4,7 @@ import {
   titleSchema,
 } from "@/schemas/mission/missionSchema";
 import { rewardInputSchema } from "@/schemas/reward";
-import { PaymentType } from "@prisma/client";
+import { MissionCategory, PaymentType } from "@prisma/client";
 import { z } from "zod";
 
 const createMissionFormRewardSchema = z.object({
@@ -21,6 +21,18 @@ const createMissionFormRewardSchema = z.object({
 });
 
 const createMissionFormBaseSchema = z.object({
+  category: z
+    .enum(MissionCategory)
+    .nullable()
+    .refine(value => value !== null, {
+      message: "카테고리를 선택해주세요.",
+    }),
+  creationMode: z
+    .enum(["custom", "template"])
+    .nullable()
+    .refine(value => value !== null, {
+      message: "생성 방식을 선택해주세요.",
+    }),
   title: titleSchema,
   description: z
     .string()
@@ -29,6 +41,10 @@ const createMissionFormBaseSchema = z.object({
       `설명은 ${MISSION_DESCRIPTION_MAX_LENGTH}자를 초과할 수 없습니다.`,
     )
     .optional(),
+  isActive: z.boolean(),
+  isExposed: z.boolean(),
+  allowGuestResponse: z.boolean(),
+  allowMultipleResponses: z.boolean(),
   hasReward: z.boolean(),
 });
 
