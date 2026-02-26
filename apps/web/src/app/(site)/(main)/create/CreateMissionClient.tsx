@@ -3,13 +3,16 @@
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Typo } from "@repo/ui/components";
+import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { CreateCategoryStep } from "./components/CreateCategoryStep";
 import { CreateModeStep } from "./components/CreateModeStep";
 import { CreateProjectInfoStep } from "./components/CreateProjectInfoStep";
 import { CreateRewardSettingsStep } from "./components/CreateRewardSettingsStep";
 import { CreateSuccessScreen } from "./components/CreateSuccessScreen";
+import { type CreateMissionStep } from "./logic/types";
 import { useCreateMissionFunnel } from "./logic/useCreateMissionFunnel";
 import { type CreateMissionFormData, createMissionFormSchema } from "./schema";
 
@@ -26,6 +29,22 @@ const CREATE_FORM_DEFAULT_VALUES: CreateMissionFormData = {
   allowMultipleResponses: false,
 };
 
+const CREATE_STEP_ORDER: CreateMissionStep[] = [
+  "category",
+  "mode",
+  "project-info",
+  "reward-settings",
+  "success",
+];
+
+const CREATE_STEP_INDEX: Record<CreateMissionStep, number> = CREATE_STEP_ORDER.reduce(
+  (acc, step, index) => {
+    acc[step] = index;
+    return acc;
+  },
+  {} as Record<CreateMissionStep, number>,
+);
+
 export function CreateMissionClient() {
   const form = useForm<CreateMissionFormData>({
     resolver: zodResolver(createMissionFormSchema),
@@ -33,6 +52,27 @@ export function CreateMissionClient() {
   });
 
   const controller = useCreateMissionFunnel({ form });
+  const prevStepRef = useRef<CreateMissionStep>(controller.currentStep);
+  const lastDirectionRef = useRef<1 | -1>(1);
+
+  const direction: 1 | -1 = (() => {
+    const prevStep = prevStepRef.current;
+    const nextStep = controller.currentStep;
+
+    if (prevStep === nextStep) {
+      return lastDirectionRef.current;
+    }
+
+    const prevIndex = CREATE_STEP_INDEX[prevStep];
+    const nextIndex = CREATE_STEP_INDEX[nextStep];
+    const nextDirection: 1 | -1 = nextIndex > prevIndex ? 1 : -1;
+    lastDirectionRef.current = nextDirection;
+    return nextDirection;
+  })();
+
+  useEffect(() => {
+    prevStepRef.current = controller.currentStep;
+  }, [controller.currentStep]);
 
   const renderCurrentStep = () => {
     switch (controller.currentStep) {
@@ -90,22 +130,44 @@ export function CreateMissionClient() {
           </Typo.Body>
         </div>
 
-        <div className="pb-3">{renderCurrentStep()}</div>
-
-        {showNextButton ? (
-          <div className="pb-4 pt-2">
-            {showNextButton ? (
-              <Button
-                fullWidth
-                loading={controller.isSubmitting}
-                disabled={controller.isSubmitting}
-                onClick={controller.goNext}
-              >
-                {controller.nextButtonLabel}
-              </Button>
-            ) : null}
-          </div>
-        ) : null}
+        <div
+          className={`relative pb-3 ${
+            controller.currentStep === "project-info" ? "overflow-visible" : "overflow-hidden"
+          }`}
+        >
+          <AnimatePresence mode="wait" initial={false} custom={direction}>
+            <motion.div
+              key={controller.currentStep}
+              custom={direction}
+              initial={{ x: direction > 0 ? "24%" : "-24%", opacity: 0.7 }}
+              animate={{
+                x: "0%",
+                opacity: 1,
+                transition: { duration: 0.24, ease: [0.22, 1, 0.36, 1] },
+              }}
+              exit={{
+                x: direction > 0 ? "-20%" : "20%",
+                opacity: 0.7,
+                transition: { duration: 0.18, ease: [0.4, 0, 1, 1] },
+              }}
+              className="will-change-transform"
+            >
+              {renderCurrentStep()}
+              {showNextButton ? (
+                <div className="pb-4 pt-3">
+                  <Button
+                    fullWidth
+                    loading={controller.isSubmitting}
+                    disabled={controller.isSubmitting}
+                    onClick={controller.goNext}
+                  >
+                    {controller.nextButtonLabel}
+                  </Button>
+                </div>
+              ) : null}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
     </FormProvider>
   );

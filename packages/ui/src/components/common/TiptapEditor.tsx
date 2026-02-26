@@ -76,7 +76,7 @@ function ToolbarButton({
 
 function TiptapToolbar({ editor }: TiptapToolbarProps) {
   return (
-    <div className="flex flex-wrap items-center gap-1 border-b border-border bg-muted/50 p-2">
+    <div className="relative flex flex-wrap items-center gap-1 bg-muted/50 p-2 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-border">
       <div className="flex gap-1">
         <ToolbarButton
           active={editor.isActive("bold")}
@@ -228,7 +228,9 @@ export function TiptapEditor({
   }, [editable, editor]);
 
   return (
-    <div className={cn("tiptap-editor overflow-hidden rounded-md bg-background", className)}>
+    <div
+      className={cn("tiptap-editor overflow-hidden rounded-md border-0 bg-background", className)}
+    >
       {showToolbar && editable && editor && <TiptapToolbar editor={editor} />}
       <div className={cn("min-h-[120px] p-4", !editable && "p-0")}>
         {editor && <EditorContent editor={editor} />}
