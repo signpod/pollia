@@ -8,9 +8,10 @@ import { useReadActionsDetail } from "@/hooks/action";
 import { ActionType } from "@prisma/client";
 import { Typo, toast } from "@repo/ui/components";
 import { useQuery } from "@tanstack/react-query";
+import { AnimatePresence, motion } from "framer-motion";
 import { AlertCircle, ChevronLeft } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { ActionForm, type ActionFormValues } from "../components/ActionForm";
 import { ActionTypeSelector } from "../components/ActionTypeSelector";
 import {
@@ -64,6 +65,7 @@ export function ManageActionCreateClient({ missionId }: ManageActionCreateClient
   const selectedType = useMemo(() => parseActionType(searchParams.get("type")), [searchParams]);
   const connectionIntent = useMemo(() => parseConnectionIntent(searchParams), [searchParams]);
   const listRoute = ROUTES.MISSION_MANAGE_ACTIONS(missionId);
+  const [direction, setDirection] = useState<1 | -1>(1);
 
   const { data: actionsData, isLoading: actionsLoading } = useReadActionsDetail(missionId);
 
@@ -95,6 +97,7 @@ export function ManageActionCreateClient({ missionId }: ManageActionCreateClient
     createAction.isPending || connectAction.isPending || connectBranchOption.isPending;
 
   const handleSelectType = (type: ActionType) => {
+    setDirection(1);
     const nextParams = new URLSearchParams(searchParams.toString());
     nextParams.set("type", type);
     router.replace(`${pathname}?${nextParams.toString()}`);
@@ -102,6 +105,7 @@ export function ManageActionCreateClient({ missionId }: ManageActionCreateClient
 
   const handleBack = () => {
     if (selectedType) {
+      setDirection(-1);
       const nextParams = new URLSearchParams(searchParams.toString());
       nextParams.delete("type");
       const queryString = nextParams.toString();
@@ -198,20 +202,39 @@ export function ManageActionCreateClient({ missionId }: ManageActionCreateClient
         <Typo.SubTitle>{screenTitle}</Typo.SubTitle>
       </header>
 
-      <div className="pb-6">
-        {selectedType ? (
-          <ActionForm
-            key={`create-${selectedType}`}
-            actionType={selectedType}
-            allActions={actions}
-            completionOptions={completionOptions}
-            isLoading={isSubmitting || actionsLoading}
-            onSubmit={handleCreate}
-            onCancel={handleBack}
-          />
-        ) : (
-          <ActionTypeSelector onSelect={handleSelectType} />
-        )}
+      <div className="relative overflow-hidden pb-6">
+        <AnimatePresence mode="wait" initial={false} custom={direction}>
+          <motion.div
+            key={selectedType ? `create-form-${selectedType}` : "create-type-selector"}
+            custom={direction}
+            initial={{ x: direction > 0 ? "24%" : "-24%", opacity: 0.7 }}
+            animate={{
+              x: "0%",
+              opacity: 1,
+              transition: { duration: 0.24, ease: [0.22, 1, 0.36, 1] },
+            }}
+            exit={{
+              x: direction > 0 ? "-20%" : "20%",
+              opacity: 0.7,
+              transition: { duration: 0.18, ease: [0.4, 0, 1, 1] },
+            }}
+            className="will-change-transform"
+          >
+            {selectedType ? (
+              <ActionForm
+                key={`create-${selectedType}`}
+                actionType={selectedType}
+                allActions={actions}
+                completionOptions={completionOptions}
+                isLoading={isSubmitting || actionsLoading}
+                onSubmit={handleCreate}
+                onCancel={handleBack}
+              />
+            ) : (
+              <ActionTypeSelector onSelect={handleSelectType} />
+            )}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );
