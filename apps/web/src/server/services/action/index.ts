@@ -297,9 +297,28 @@ export class ActionService {
       await this.verifyMissionAccess(action.missionId, userId);
     }
 
-    const { options, ...actionData } = result.data;
+    const { options, type, ...restActionData } = result.data;
+    const nextType = type ?? action.type;
+    const isTypeChanged = type !== undefined && type !== action.type;
 
-    if (options && options.length > 0) {
+    if (isTypeChanged && this.isOptionBasedActionType(nextType) && options === undefined) {
+      const error = new Error("해당 액션 유형은 옵션을 포함해야 합니다.");
+      error.cause = 400;
+      throw error;
+    }
+
+    if (isTypeChanged && nextType === ActionType.BRANCH && options?.length !== 2) {
+      const error = new Error("분기 액션은 정확히 2개의 옵션이 필요합니다.");
+      error.cause = 400;
+      throw error;
+    }
+
+    const actionData = {
+      ...restActionData,
+      ...(type !== undefined && { type }),
+    };
+
+    if (options !== undefined) {
       const updatedAction = await this.actionRepo.updateWithOptions(
         actionId,
         actionData,
@@ -312,6 +331,15 @@ export class ActionService {
     const updatedAction = await this.actionRepo.update(actionId, actionData, userId);
 
     return updatedAction;
+  }
+
+  private isOptionBasedActionType(type: ActionType): boolean {
+    return (
+      type === ActionType.MULTIPLE_CHOICE ||
+      type === ActionType.SCALE ||
+      type === ActionType.TAG ||
+      type === ActionType.BRANCH
+    );
   }
 
   async deleteAction(actionId: string, userId: string): Promise<void> {

@@ -52,6 +52,12 @@ const Textarea = ({
     const container = containerRef.current;
     if (!textarea || !container) return;
 
+    // 가로 리사이즈가 불가능한 모드에서는 폭 고정을 적용하지 않는다.
+    if (resize === "none" || resize === "vertical") {
+      container.style.maxWidth = "";
+      return;
+    }
+
     let previousWidth: number | null = null;
 
     const resizeObserver = new ResizeObserver(entries => {
@@ -77,7 +83,7 @@ const Textarea = ({
     return () => {
       resizeObserver.disconnect();
     };
-  }, []);
+  }, [resize]);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;

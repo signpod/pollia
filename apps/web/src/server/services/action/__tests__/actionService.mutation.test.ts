@@ -114,6 +114,79 @@ describe("ActionService - Mutation", () => {
       expect(ctx.mockActionRepo.update).not.toHaveBeenCalled();
     });
 
+    it("타입 변경과 함께 options가 전달되면 updateWithOptions를 호출한다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+      const updateData = {
+        type: ActionType.BRANCH,
+        options: [
+          { id: "option1", title: "분기 1", order: 0 },
+          { id: "option2", title: "분기 2", order: 1 },
+        ],
+      };
+      const mockUpdatedAction = {
+        ...mockAction,
+        type: ActionType.BRANCH,
+      };
+
+      ctx.mockActionRepo.findById.mockResolvedValue(mockAction);
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockActionRepo.updateWithOptions.mockResolvedValue(mockUpdatedAction);
+
+      // When
+      const result = await ctx.service.updateAction("action1", updateData, "user1");
+
+      // Then
+      expect(result).toEqual(mockUpdatedAction);
+      expect(ctx.mockActionRepo.updateWithOptions).toHaveBeenCalledWith(
+        "action1",
+        { type: ActionType.BRANCH },
+        updateData.options,
+        "user1",
+      );
+      expect(ctx.mockActionRepo.update).not.toHaveBeenCalled();
+    });
+
+    it("옵션이 필요한 타입으로 변경 시 options가 없으면 400 에러를 던진다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+      const sourceAction = createMockAction({ type: ActionType.SUBJECTIVE });
+
+      ctx.mockActionRepo.findById.mockResolvedValue(sourceAction);
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+
+      // When & Then
+      await expect(
+        ctx.service.updateAction("action1", { type: ActionType.MULTIPLE_CHOICE }, "user1"),
+      ).rejects.toThrow("해당 액션 유형은 옵션을 포함해야 합니다.");
+
+      expect(ctx.mockActionRepo.update).not.toHaveBeenCalled();
+      expect(ctx.mockActionRepo.updateWithOptions).not.toHaveBeenCalled();
+    });
+
+    it("분기 타입으로 변경 시 옵션이 2개가 아니면 400 에러를 던진다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+
+      ctx.mockActionRepo.findById.mockResolvedValue(mockAction);
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+
+      // When & Then
+      await expect(
+        ctx.service.updateAction(
+          "action1",
+          {
+            type: ActionType.BRANCH,
+            options: [{ title: "분기 1", order: 0 }],
+          },
+          "user1",
+        ),
+      ).rejects.toThrow("분기 액션은 정확히 2개의 옵션이 필요합니다.");
+
+      expect(ctx.mockActionRepo.update).not.toHaveBeenCalled();
+      expect(ctx.mockActionRepo.updateWithOptions).not.toHaveBeenCalled();
+    });
+
     it("isRequired를 true로 변경할 수 있다", async () => {
       // Given
       const mockMission = mockMissionFactory();
@@ -172,7 +245,7 @@ describe("ActionService - Mutation", () => {
       );
     });
 
-    it("options가 빈 배열이면 기본 update를 호출한다", async () => {
+    it("options가 빈 배열이면 updateWithOptions를 호출한다", async () => {
       // Given
       const mockMission = mockMissionFactory();
       const updateData = {
@@ -186,19 +259,20 @@ describe("ActionService - Mutation", () => {
 
       ctx.mockActionRepo.findById.mockResolvedValue(mockAction);
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
-      ctx.mockActionRepo.update.mockResolvedValue(mockUpdatedAction);
+      ctx.mockActionRepo.updateWithOptions.mockResolvedValue(mockUpdatedAction);
 
       // When
       const result = await ctx.service.updateAction("action1", updateData, "user1");
 
       // Then
       expect(result).toEqual(mockUpdatedAction);
-      expect(ctx.mockActionRepo.update).toHaveBeenCalledWith(
+      expect(ctx.mockActionRepo.updateWithOptions).toHaveBeenCalledWith(
         "action1",
         { title: "수정된 액션" },
+        [],
         "user1",
       );
-      expect(ctx.mockActionRepo.updateWithOptions).not.toHaveBeenCalled();
+      expect(ctx.mockActionRepo.update).not.toHaveBeenCalled();
     });
   });
 

@@ -4,6 +4,7 @@ import { Separator } from "@/components/ui/separator";
 import type { GetMissionResponse } from "@/types/dto";
 import type { PaymentType } from "@prisma/client";
 import { Typo } from "@repo/ui/components";
+import { ActionSettingsCard } from "./ActionSettingsCard";
 import type { EditorTabValue } from "./EditorMissionTabContext";
 import { useEditorMissionTab } from "./EditorMissionTabContext";
 import { ProjectBasicInfoCard } from "./ProjectBasicInfoCard";
@@ -56,6 +57,8 @@ export function EditorMissionTabContent({ mission, reward }: EditorMissionTabCon
       <ProjectBasicInfoCard mission={mission} />
       <Separator className="h-2" />
       <RewardSettingsCard mission={mission} initialReward={reward} />
+      <Separator className="h-2" />
+      <ActionSettingsCard missionId={mission.id} />
     </>
   );
 }

@@ -30,7 +30,7 @@ import {
   Typo,
 } from "@repo/ui/components";
 import { Plus, Trash2 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { type ForwardedRef, forwardRef, useCallback, useImperativeHandle, useState } from "react";
 
 function generateOptionKey() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -61,6 +61,11 @@ export interface ActionFormValues {
   nextCompletionId?: string | null;
 }
 
+export interface ActionFormHandle {
+  validateAndGetValues: () => ActionFormValues | null;
+  validateAndGetSubmission: () => { actionType: ActionType; values: ActionFormValues } | null;
+}
+
 interface ActionFormProps {
   actionType: ActionType;
   initialValues?: ActionFormValues;
@@ -70,6 +75,10 @@ interface ActionFormProps {
   isLoading: boolean;
   onSubmit: (values: ActionFormValues) => void;
   onCancel: () => void;
+  hideFooter?: boolean;
+  hideTitle?: boolean;
+  enableTypeSelect?: boolean;
+  onActionTypeChange?: (type: ActionType) => void;
 }
 
 const NEEDS_OPTIONS: ActionType[] = [
@@ -86,6 +95,8 @@ const NEEDS_MAX_SELECTIONS: ActionType[] = [
   ActionType.DATE,
   ActionType.TIME,
 ];
+
+const ACTION_TYPE_VALUES = Object.values(ActionType);
 
 function getDefaultOptions(type: ActionType): OptionFormItem[] {
   if (type === ActionType.BRANCH) {
@@ -157,16 +168,24 @@ function parseBranchTargetValue(value: string): {
   };
 }
 
-export function ActionForm({
-  actionType,
-  initialValues,
-  editingAction,
-  allActions,
-  completionOptions,
-  isLoading,
-  onSubmit,
-  onCancel,
-}: ActionFormProps) {
+function ActionFormComponent(
+  {
+    actionType,
+    initialValues,
+    editingAction,
+    allActions,
+    completionOptions,
+    isLoading,
+    onSubmit,
+    onCancel,
+    hideFooter = false,
+    hideTitle = false,
+    enableTypeSelect = false,
+    onActionTypeChange,
+  }: ActionFormProps,
+  ref: ForwardedRef<ActionFormHandle>,
+) {
+  const [selectedActionType, setSelectedActionType] = useState(actionType);
   const [title, setTitle] = useState(initialValues?.title ?? "");
   const [description, setDescription] = useState(initialValues?.description ?? "");
   const [isRequired, setIsRequired] = useState(initialValues?.isRequired ?? true);
@@ -190,13 +209,29 @@ export function ActionForm({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const needsOptions = NEEDS_OPTIONS.includes(actionType);
-  const needsMaxSelections = NEEDS_MAX_SELECTIONS.includes(actionType);
-  const isBranch = actionType === ActionType.BRANCH;
-  const optionLimits = getOptionLimits(actionType);
+  const needsOptions = NEEDS_OPTIONS.includes(selectedActionType);
+  const needsMaxSelections = NEEDS_MAX_SELECTIONS.includes(selectedActionType);
+  const isBranch = selectedActionType === ActionType.BRANCH;
+  const optionLimits = getOptionLimits(selectedActionType);
 
   const selectableActions = allActions.filter(a => !editingAction || a.id !== editingAction.id);
   const hasLinkTargets = selectableActions.length > 0 || completionOptions.length > 0;
+
+  const handleActionTypeChange = (nextType: ActionType) => {
+    if (nextType === selectedActionType) {
+      return;
+    }
+
+    setSelectedActionType(nextType);
+    setHasOther(false);
+    setMaxSelections(1);
+    setOptions(NEEDS_OPTIONS.includes(nextType) ? getDefaultOptions(nextType) : []);
+    setNextActionId(null);
+    setNextCompletionId(null);
+    setNextLinkType("action");
+    setErrors({});
+    onActionTypeChange?.(nextType);
+  };
 
   const validate = useCallback((): boolean => {
     const newErrors: Record<string, string> = {};
@@ -247,16 +282,16 @@ export function ActionForm({
     hasLinkTargets,
   ]);
 
-  const handleSubmit = () => {
-    if (!validate()) return;
+  const buildValidatedValues = useCallback((): ActionFormValues | null => {
+    if (!validate()) return null;
 
-    const values: ActionFormValues = {
+    return {
       title: title.trim(),
       description: description?.trim() || null,
       isRequired,
       ...(needsMaxSelections && { maxSelections }),
-      ...(actionType === ActionType.MULTIPLE_CHOICE && { hasOther }),
-      ...(actionType === ActionType.TAG && { hasOther }),
+      ...(selectedActionType === ActionType.MULTIPLE_CHOICE && { hasOther }),
+      ...(selectedActionType === ActionType.TAG && { hasOther }),
       ...(needsOptions && {
         options: options.map((o, i) => {
           const { _key, ...rest } = o;
@@ -266,7 +301,42 @@ export function ActionForm({
       ...(!isBranch && nextLinkType === "action" && { nextActionId, nextCompletionId: null }),
       ...(!isBranch && nextLinkType === "completion" && { nextCompletionId, nextActionId: null }),
     };
+  }, [
+    validate,
+    title,
+    description,
+    isRequired,
+    needsMaxSelections,
+    maxSelections,
+    selectedActionType,
+    hasOther,
+    needsOptions,
+    options,
+    isBranch,
+    nextLinkType,
+    nextActionId,
+    nextCompletionId,
+  ]);
 
+  useImperativeHandle(
+    ref,
+    () => ({
+      validateAndGetValues: () => buildValidatedValues() ?? null,
+      validateAndGetSubmission: () => {
+        const values = buildValidatedValues();
+        if (!values) {
+          return null;
+        }
+
+        return { actionType: selectedActionType, values };
+      },
+    }),
+    [buildValidatedValues, selectedActionType],
+  );
+
+  const handleSubmit = () => {
+    const values = buildValidatedValues();
+    if (!values) return;
     onSubmit(values);
   };
 
@@ -286,9 +356,32 @@ export function ActionForm({
 
   return (
     <div className="flex flex-col gap-5 p-4">
-      <Typo.SubTitle>
-        {editingAction ? "액션 수정" : `${ACTION_TYPE_LABELS[actionType]} 액션 추가`}
-      </Typo.SubTitle>
+      {!hideTitle && (
+        <Typo.SubTitle>
+          {editingAction ? "액션 수정" : `${ACTION_TYPE_LABELS[selectedActionType]} 액션 추가`}
+        </Typo.SubTitle>
+      )}
+
+      {enableTypeSelect && (
+        <div className="flex flex-col gap-2">
+          <LabelText required={false}>액션 유형</LabelText>
+          <Select
+            value={selectedActionType}
+            onValueChange={value => handleActionTypeChange(value as ActionType)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="액션 유형을 선택하세요" />
+            </SelectTrigger>
+            <SelectContent>
+              {ACTION_TYPE_VALUES.map(type => (
+                <SelectItem key={type} value={type}>
+                  {ACTION_TYPE_LABELS[type]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       <Input
         label="제목"
@@ -326,7 +419,8 @@ export function ActionForm({
         </div>
       )}
 
-      {(actionType === ActionType.MULTIPLE_CHOICE || actionType === ActionType.TAG) && (
+      {(selectedActionType === ActionType.MULTIPLE_CHOICE ||
+        selectedActionType === ActionType.TAG) && (
         <div className="flex items-center justify-between">
           <LabelText required={false}>기타 옵션 허용</LabelText>
           <Toggle checked={hasOther} onCheckedChange={setHasOther} />
@@ -515,14 +609,19 @@ export function ActionForm({
         </div>
       )}
 
-      <div className="flex gap-3 pb-4 pt-2">
-        <Button variant="secondary" fullWidth onClick={onCancel} disabled={isLoading}>
-          취소
-        </Button>
-        <Button fullWidth onClick={handleSubmit} loading={isLoading} disabled={isLoading}>
-          {editingAction ? "수정" : "추가"}
-        </Button>
-      </div>
+      {!hideFooter && (
+        <div className="flex gap-3 pb-4 pt-2">
+          <Button variant="secondary" fullWidth onClick={onCancel} disabled={isLoading}>
+            취소
+          </Button>
+          <Button fullWidth onClick={handleSubmit} loading={isLoading} disabled={isLoading}>
+            {editingAction ? "수정" : "추가"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
+
+export const ActionForm = forwardRef<ActionFormHandle, ActionFormProps>(ActionFormComponent);
+ActionForm.displayName = "ActionForm";
