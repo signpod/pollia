@@ -7,7 +7,7 @@ import { useReadMissionParticipantInfo } from "@/hooks/participant/useReadMissio
 import { useReadReward } from "@/hooks/reward/useReadReward";
 import { getActionNavCookie, setActionNavCookie } from "@/lib/cookie";
 import { formatDateToLocalString } from "@/lib/date";
-import { MissionType } from "@prisma/client";
+import { Mission } from "@prisma/client";
 import { CalloutProvider, type CalloutToneVariant, useCallout } from "@repo/ui/components";
 import { addHours, isBefore } from "date-fns";
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -52,22 +52,21 @@ function CalloutTrigger({
 }
 
 interface MissionPageWrapperProps {
-  missionId: string;
-  missionType: MissionType | null;
-  missionTitle: string | null;
-  missionImageUrl: string | null;
-  description: string | null;
+  mission: Mission;
   reward: MissionRewardData | null;
 }
 
-export function MissionPageWrapper({
-  missionId,
-  missionType,
-  missionTitle,
-  missionImageUrl,
-  description,
-  reward,
-}: MissionPageWrapperProps) {
+export function MissionPageWrapper({ mission, reward }: MissionPageWrapperProps) {
+  const {
+    id: missionId,
+    type: missionType,
+    title: missionTitle,
+    imageUrl: missionImageUrl,
+    description,
+    allowGuestResponse,
+    allowMultipleResponses,
+  } = mission;
+
   useEffect(() => {
     const existingValue = getActionNavCookie(missionId);
     if (!existingValue) {
@@ -76,7 +75,6 @@ export function MissionPageWrapper({
   }, [missionId]);
 
   const {
-    mission,
     firstActionId,
     isEnabledToResume,
     nextActionId,
@@ -227,6 +225,8 @@ export function MissionPageWrapper({
                 isRequirePassword={isRequirePassword}
                 hasExistingResponse={!!missionResponse}
                 isResuming={isResuming}
+                allowGuestResponse={allowGuestResponse}
+                allowMultipleResponses={allowMultipleResponses}
               />
             }
           />

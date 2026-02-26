@@ -47,6 +47,8 @@ interface BottomButtonProps {
   isRequirePassword: boolean;
   hasExistingResponse: boolean;
   isResuming?: boolean;
+  allowGuestResponse?: boolean;
+  allowMultipleResponses?: boolean;
 }
 
 export function BottomButton({
@@ -58,6 +60,8 @@ export function BottomButton({
   isRequirePassword,
   hasExistingResponse,
   isResuming = false,
+  allowGuestResponse = false,
+  allowMultipleResponses = false,
 }: BottomButtonProps) {
   const { missionId } = useParams<{ missionId: string }>();
 
@@ -69,6 +73,7 @@ export function BottomButton({
       hasExistingResponse,
       showResumeModal,
       isResuming,
+      allowGuestResponse,
     });
 
   const [isDeadlinePassed, setIsDeadlinePassed] = useState(false);
@@ -91,11 +96,11 @@ export function BottomButton({
     return <DisabledButton text={BUTTON_TEXT.expired} />;
   }
 
-  if (isCompleted) {
+  if (isCompleted && !allowMultipleResponses) {
     return <DisabledButton text={BUTTON_TEXT.alreadyCompleted} />;
   }
 
-  if (!isLoggedIn) {
+  if (!isLoggedIn && !allowGuestResponse) {
     return (
       <div className="relative py-3 px-4 w-full">
         <ButtonV2
@@ -127,7 +132,9 @@ export function BottomButton({
         loading={isStarting || isResuming}
       >
         <Typo.ButtonText size="large" className="relative m-auto flex justify-center items-center">
-          {hasMissionResponse ? BUTTON_TEXT.resume : BUTTON_TEXT.loggedIn}
+          {hasMissionResponse && !(isCompleted && allowMultipleResponses)
+            ? BUTTON_TEXT.resume
+            : BUTTON_TEXT.loggedIn}
           <motion.div
             className="absolute right-[-32px] top-0"
             animate={BOUNCE_ANIMATION}

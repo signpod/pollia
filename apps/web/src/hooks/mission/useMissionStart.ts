@@ -23,6 +23,7 @@ interface UseMissionStartParams {
   hasExistingResponse: boolean;
   showResumeModal?: () => boolean;
   isResuming: boolean;
+  allowGuestResponse?: boolean;
 }
 
 export function useMissionStart({
@@ -32,6 +33,7 @@ export function useMissionStart({
   hasExistingResponse,
   showResumeModal,
   isResuming,
+  allowGuestResponse = false,
 }: UseMissionStartParams) {
   const { isLoggedIn } = useAuth();
   const { handleKakaoLogin } = useKakaoLogin({
@@ -80,7 +82,9 @@ export function useMissionStart({
 
     const [latestParticipantInfo, latestMissionResponse] = await Promise.all([
       getMissionParticipantInfo(missionId),
-      isLoggedIn ? getMyResponseForMission(missionId) : Promise.resolve({ data: null }),
+      isLoggedIn || allowGuestResponse
+        ? getMyResponseForMission(missionId)
+        : Promise.resolve({ data: null }),
     ]);
 
     const hasLatestMissionResponse = Boolean(latestMissionResponse?.data?.id);
@@ -99,7 +103,7 @@ export function useMissionStart({
       return;
     }
 
-    if (!isLoggedIn) {
+    if (!isLoggedIn && !allowGuestResponse) {
       handleKakaoLogin();
       return;
     }
@@ -127,6 +131,7 @@ export function useMissionStart({
     isResuming,
     missionId,
     isLoggedIn,
+    allowGuestResponse,
     handleKakaoLogin,
     isRequirePassword,
     hasExistingResponse,
