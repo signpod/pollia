@@ -22,7 +22,7 @@ import {
   Typo,
   toast,
 } from "@repo/ui/components";
-import { AlertCircle, ChevronLeft } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -148,14 +148,7 @@ export function CreateMissionClient() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-zinc-100 bg-white px-4 py-3">
-        <button type="button" onClick={() => router.back()} className="p-1">
-          <ChevronLeft className="size-6" />
-        </button>
-        <Typo.SubTitle>새 {UBIQUITOUS_CONSTANTS.MISSION} 만들기</Typo.SubTitle>
-      </header>
-
+    <div className="bg-white">
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6 px-5 py-6">
         {/* 제목 */}
         <Controller
