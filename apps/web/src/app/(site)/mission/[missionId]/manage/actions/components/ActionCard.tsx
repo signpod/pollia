@@ -14,6 +14,7 @@ import {
   GitBranch,
   ImageIcon,
   Pencil,
+  Plus,
   Scale,
   Star,
   Tag,
@@ -33,6 +34,8 @@ interface ActionCardProps {
   onDelete: (action: ActionDetail) => void;
   onMoveUp: (action: ActionDetail) => void;
   onMoveDown: (action: ActionDetail) => void;
+  onRequestConnectAction: (action: ActionDetail) => void;
+  onRequestConnectBranchOption: (action: ActionDetail, optionId: string) => void;
 }
 
 const TYPE_ICONS: Record<ActionType, LucideIcon> = {
@@ -67,7 +70,9 @@ const TYPE_COLORS: Record<ActionType, string> = {
 
 function getNextLabel(action: ActionDetail, allActions: ActionDetail[]): string | null {
   if (action.type === ActionType.BRANCH) {
-    const missingCount = action.options.filter(opt => !opt.nextActionId).length;
+    const missingCount = action.options.filter(
+      opt => !opt.nextActionId && !opt.nextCompletionId,
+    ).length;
     if (missingCount > 0) return `분기 옵션 ${missingCount}개 미연결`;
     return null;
   }
@@ -93,12 +98,17 @@ export function ActionCard({
   onDelete,
   onMoveUp,
   onMoveDown,
+  onRequestConnectAction,
+  onRequestConnectBranchOption,
 }: ActionCardProps) {
   const Icon = TYPE_ICONS[action.type] ?? FileText;
   const colorClass = TYPE_COLORS[action.type] ?? "text-gray-500 bg-gray-50";
   const [iconColor, bgColor] = colorClass.split(" ");
   const nextLabel = getNextLabel(action, allActions);
   const isNextMissing = nextLabel === "다음 이동 미설정" || nextLabel?.includes("미연결");
+  const isBranch = action.type === ActionType.BRANCH;
+  const hasNextConnection = Boolean(action.nextActionId || action.nextCompletionId);
+  const sortedOptions = [...action.options].sort((a, b) => a.order - b.order);
 
   return (
     <div className="flex items-start gap-3 rounded-xl border border-zinc-100 bg-white p-4">
@@ -147,6 +157,63 @@ export function ActionCard({
           <Typo.Body size="small" className={isNextMissing ? "text-red-500" : "text-zinc-400"}>
             {nextLabel}
           </Typo.Body>
+        )}
+
+        {isBranch ? (
+          <div className="mt-1 flex flex-col gap-1.5 rounded-lg bg-zinc-50 p-2">
+            {sortedOptions.map((option, optionIndex) => {
+              const hasOptionConnection = Boolean(option.nextActionId || option.nextCompletionId);
+              const targetAction = option.nextActionId
+                ? allActions.find(candidate => candidate.id === option.nextActionId)
+                : null;
+              const optionStatus = option.nextCompletionId
+                ? "완료 화면으로 이동"
+                : targetAction
+                  ? `다음: ${targetAction.title}`
+                  : hasOptionConnection
+                    ? "연결됨"
+                    : "미연결";
+
+              return (
+                <div
+                  key={option.id}
+                  className="flex items-center justify-between gap-2 rounded-md bg-white px-2 py-1.5"
+                >
+                  <div className="min-w-0">
+                    <Typo.Body size="small" className="truncate text-zinc-700">
+                      {optionIndex + 1}. {option.title || "(옵션 제목 없음)"}
+                    </Typo.Body>
+                    <Typo.Body
+                      size="small"
+                      className={hasOptionConnection ? "text-zinc-400" : "text-red-500"}
+                    >
+                      {optionStatus}
+                    </Typo.Body>
+                  </div>
+                  {!hasOptionConnection && (
+                    <button
+                      type="button"
+                      onClick={() => onRequestConnectBranchOption(action, option.id)}
+                      className="flex size-7 shrink-0 items-center justify-center rounded-full border border-dashed border-zinc-300 text-zinc-500 transition-colors hover:border-violet-400 hover:text-violet-500"
+                    >
+                      <Plus className="size-4" />
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          !hasNextConnection && (
+            <button
+              type="button"
+              onClick={() => onRequestConnectAction(action)}
+              className="mt-1 inline-flex w-fit items-center gap-1 rounded-full border border-dashed border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-500 transition-colors hover:border-violet-400 hover:text-violet-500"
+            >
+              <Plus className="size-3.5" />
+              다음 액션 연결
+            </button>
+          )
         )}
       </div>
 

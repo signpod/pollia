@@ -1,2 +1,3 @@
 export { useManageActionsController } from "./useManageActionsController";
-export type { ConnectionIntent, CompletionOption, DrawerMode } from "./types";
+export { mapCreateActionInput, mapEditInitialValues, mapUpdateActionInput } from "./mappers";
+export type { ConnectionIntent } from "./types";

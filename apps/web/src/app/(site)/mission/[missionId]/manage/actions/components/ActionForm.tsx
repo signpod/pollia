@@ -113,6 +113,47 @@ function getOptionLimits(type: ActionType): { min: number; max: number } {
   }
 }
 
+const BRANCH_ACTION_PREFIX = "action:";
+const BRANCH_COMPLETION_PREFIX = "completion:";
+
+function getBranchTargetValue(option: OptionFormItem): string {
+  if (option.nextActionId) {
+    return `${BRANCH_ACTION_PREFIX}${option.nextActionId}`;
+  }
+  if (option.nextCompletionId) {
+    return `${BRANCH_COMPLETION_PREFIX}${option.nextCompletionId}`;
+  }
+  return "";
+}
+
+function parseBranchTargetValue(value: string): {
+  nextActionId: string | null;
+  nextCompletionId: string | null;
+} {
+  if (!value) {
+    return { nextActionId: null, nextCompletionId: null };
+  }
+
+  if (value.startsWith(BRANCH_COMPLETION_PREFIX)) {
+    return {
+      nextActionId: null,
+      nextCompletionId: value.slice(BRANCH_COMPLETION_PREFIX.length) || null,
+    };
+  }
+
+  if (value.startsWith(BRANCH_ACTION_PREFIX)) {
+    return {
+      nextActionId: value.slice(BRANCH_ACTION_PREFIX.length) || null,
+      nextCompletionId: null,
+    };
+  }
+
+  return {
+    nextActionId: value || null,
+    nextCompletionId: null,
+  };
+}
+
 export function ActionForm({
   actionType,
   initialValues,
@@ -175,7 +216,7 @@ export function ActionForm({
 
     if (hasLinkTargets) {
       if (isBranch) {
-        const missingBranchNext = options.some(o => !o.nextActionId);
+        const missingBranchNext = options.some(o => !o.nextActionId && !o.nextCompletionId);
         if (missingBranchNext) {
           newErrors.branchNextAction = "모든 분기 옵션의 다음 이동을 설정해주세요.";
         }
@@ -326,20 +367,33 @@ export function ActionForm({
                 <div className="ml-6">
                   {hasLinkTargets ? (
                     <Select
-                      value={option.nextActionId ?? ""}
-                      onValueChange={val => updateOption(index, "nextActionId", val || null)}
+                      value={getBranchTargetValue(option)}
+                      onValueChange={val => {
+                        const parsed = parseBranchTargetValue(val);
+                        setOptions(
+                          options.map((currentOption, currentIndex) =>
+                            currentIndex === index
+                              ? {
+                                  ...currentOption,
+                                  nextActionId: parsed.nextActionId,
+                                  nextCompletionId: parsed.nextCompletionId,
+                                }
+                              : currentOption,
+                          ),
+                        );
+                      }}
                     >
                       <SelectTrigger className="h-9 text-sm">
-                        <SelectValue placeholder="분기 이동할 액션 선택" />
+                        <SelectValue placeholder="분기 이동할 대상 선택" />
                       </SelectTrigger>
                       <SelectContent>
                         {selectableActions.map(a => (
-                          <SelectItem key={a.id} value={a.id}>
+                          <SelectItem key={a.id} value={`${BRANCH_ACTION_PREFIX}${a.id}`}>
                             #{(a.order ?? 0) + 1} {a.title}
                           </SelectItem>
                         ))}
                         {completionOptions.map(c => (
-                          <SelectItem key={c.id} value={c.id}>
+                          <SelectItem key={c.id} value={`${BRANCH_COMPLETION_PREFIX}${c.id}`}>
                             [완료] {c.title}
                           </SelectItem>
                         ))}
