@@ -62,6 +62,8 @@ const createMissionFormBaseSchema = z.object({
   isExposed: z.boolean(),
   allowGuestResponse: z.boolean(),
   allowMultipleResponses: z.boolean(),
+  imageUrl: z.string().nullable().optional(),
+  imageFileUploadId: z.string().nullable().optional(),
   hasReward: z.boolean(),
 });
 
