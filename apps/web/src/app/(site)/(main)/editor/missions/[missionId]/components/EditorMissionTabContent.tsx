@@ -1,11 +1,16 @@
 "use client";
 
+import { getCompletionsByMissionId } from "@/actions/mission-completion";
 import { updateMission } from "@/actions/mission/update";
 import { Separator } from "@/components/ui/separator";
+import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
 import { ROUTES } from "@/constants/routes";
+import { useReadActionsDetail } from "@/hooks/action";
+import { useReadMission } from "@/hooks/mission";
 import type { GetMissionResponse } from "@/types/dto";
 import { MissionType, type PaymentType } from "@prisma/client";
 import { Button, toast } from "@repo/ui/components";
+import { useQuery } from "@tanstack/react-query";
 import { AlertCircle, Check, Loader2, Rocket, Save } from "lucide-react";
 import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActionSettingsCard } from "./ActionSettingsCard";
@@ -17,6 +22,10 @@ import { MissionStatsDashboard } from "./MissionStatsDashboard";
 import { ProjectBasicInfoCard } from "./ProjectBasicInfoCard";
 import { RewardSettingsCard } from "./RewardSettingsCard";
 import type { EditorSectionKey, ServerSyncSummary } from "./editor-autosave.types";
+import {
+  getPublishBlockingMessage,
+  validateEditorPublishFlow,
+} from "./editor-publish-flow-validation";
 import type { SectionSaveHandle, SectionSaveState } from "./editor-save.types";
 import { useMissionEditorAutosave } from "./useMissionEditorAutosave";
 
@@ -105,6 +114,13 @@ export function EditorMissionTabContent({
     completion: { hasPendingChanges: false, isBusy: false },
   });
   const isEditorTab = currentTab === "editor";
+  const missionQuery = useReadMission(missionId);
+  const actionsQuery = useReadActionsDetail(missionId);
+  const completionsQuery = useQuery({
+    queryKey: missionCompletionQueryKeys.missionCompletion(missionId),
+    queryFn: () => getCompletionsByMissionId(missionId),
+    staleTime: 5 * 60 * 1000,
+  });
 
   const updateSectionState = useCallback(
     (section: "basic" | "reward" | "action" | "completion", nextState: SectionSaveState) => {
@@ -143,6 +159,37 @@ export function EditorMissionTabContent({
     }),
     [],
   );
+  const missionEntryActionId = missionQuery.data?.data.entryActionId ?? mission.entryActionId;
+  const isPublishValidationReady = Boolean(
+    actionsQuery.data?.data &&
+      completionsQuery.data?.data &&
+      actionRef.current &&
+      completionRef.current,
+  );
+  const publishFlowValidation = useMemo(() => {
+    if (!isPublishValidationReady) {
+      return {
+        isValid: false,
+        issues: [],
+      };
+    }
+
+    return validateEditorPublishFlow({
+      entryActionId: missionEntryActionId,
+      serverActions: actionsQuery.data?.data ?? [],
+      serverCompletions: completionsQuery.data?.data ?? [],
+      actionDraftSnapshot: actionRef.current?.exportDraftSnapshot(),
+      completionDraftSnapshot: completionRef.current?.exportDraftSnapshot(),
+    });
+  }, [
+    actionsQuery.data?.data,
+    completionsQuery.data?.data,
+    isPublishValidationReady,
+    missionEntryActionId,
+    sectionStates.action,
+    sectionStates.completion,
+  ]);
+  const canPublish = !isPublished && isPublishValidationReady && publishFlowValidation.isValid;
 
   useEffect(() => {
     setIsPublished(mission.isActive);
@@ -359,6 +406,25 @@ export function EditorMissionTabContent({
     serverSyncIntervalMs: 20000,
   });
 
+  const runPublishPreflightValidation = useCallback(async () => {
+    const [latestMissionResult, latestActionsResult, latestCompletionsResult] = await Promise.all([
+      missionQuery.refetch(),
+      actionsQuery.refetch(),
+      completionsQuery.refetch(),
+    ]);
+
+    const latestMission = latestMissionResult.data?.data ?? missionQuery.data?.data ?? mission;
+    const latestActions = latestActionsResult.data?.data ?? actionsQuery.data?.data ?? [];
+    const latestCompletions =
+      latestCompletionsResult.data?.data ?? completionsQuery.data?.data ?? [];
+
+    return validateEditorPublishFlow({
+      entryActionId: latestMission.entryActionId,
+      serverActions: latestActions,
+      serverCompletions: latestCompletions,
+    });
+  }, [actionsQuery, completionsQuery, mission, missionQuery]);
+
   const handlePublish = useCallback(async () => {
     if (
       !isEditorTab ||
@@ -368,6 +434,19 @@ export function EditorMissionTabContent({
       isSavingAll ||
       hasAnyBusySection
     ) {
+      return;
+    }
+
+    if (!canPublish) {
+      toast({
+        message:
+          publishFlowValidation.issues.length > 0
+            ? getPublishBlockingMessage(publishFlowValidation.issues)
+            : "발행 가능 상태를 확인 중입니다. 잠시 후 다시 시도해주세요.",
+        icon: AlertCircle,
+        iconClassName: "text-red-500",
+        id: PUBLISH_TOAST_ID,
+      });
       return;
     }
 
@@ -383,6 +462,17 @@ export function EditorMissionTabContent({
         if (saveResult === "failed") {
           return;
         }
+      }
+
+      const preflightValidation = await runPublishPreflightValidation();
+      if (!preflightValidation.isValid) {
+        toast({
+          message: getPublishBlockingMessage(preflightValidation.issues),
+          icon: AlertCircle,
+          iconClassName: "text-red-500",
+          id: PUBLISH_TOAST_ID,
+        });
+        return;
       }
 
       await updateMission(missionId, {
@@ -409,6 +499,7 @@ export function EditorMissionTabContent({
     }
   }, [
     autosave,
+    canPublish,
     hasAnyBusySection,
     hasAnyPendingChanges,
     isEditorTab,
@@ -416,6 +507,8 @@ export function EditorMissionTabContent({
     isPublishing,
     isSavingAll,
     missionId,
+    publishFlowValidation.issues,
+    runPublishPreflightValidation,
     runUnifiedSave,
   ]);
 
@@ -443,7 +536,7 @@ export function EditorMissionTabContent({
               leftIcon={<Rocket className="size-4" />}
               onClick={handlePublish}
               loading={isPublishing}
-              disabled={isSavingAll || isPublishing || hasAnyBusySection}
+              disabled={isSavingAll || isPublishing || hasAnyBusySection || !canPublish}
             >
               발행하기
             </Button>
