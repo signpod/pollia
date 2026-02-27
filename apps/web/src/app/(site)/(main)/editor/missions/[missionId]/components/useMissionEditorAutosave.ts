@@ -28,34 +28,6 @@ interface UseMissionEditorAutosaveOptions {
 
 const SECTION_KEYS: EditorSectionKey[] = ["basic", "reward", "action", "completion"];
 
-function formatStatusLabel(params: {
-  enabled: boolean;
-  localSavedAt: number | null;
-  lastServerSyncAt: number | null;
-  invalidSectionCount: number;
-  lastError: string | null;
-}): string | null {
-  const { enabled, localSavedAt, lastServerSyncAt, invalidSectionCount, lastError } = params;
-
-  if (!enabled) {
-    return null;
-  }
-
-  if (lastError || invalidSectionCount > 0) {
-    return `로컬 저장됨 · 서버 동기화 대기(${Math.max(1, invalidSectionCount)}개 섹션)`;
-  }
-
-  if (lastServerSyncAt) {
-    return "방금 서버 동기화됨";
-  }
-
-  if (localSavedAt) {
-    return "로컬 저장됨";
-  }
-
-  return "자동 저장 대기 중";
-}
-
 export function useMissionEditorAutosave({
   missionId,
   enabled,
@@ -67,9 +39,7 @@ export function useMissionEditorAutosave({
   localDebounceMs = 2000,
   serverSyncIntervalMs = 20000,
 }: UseMissionEditorAutosaveOptions) {
-  const [localSavedAt, setLocalSavedAt] = useState<number | null>(null);
   const [lastServerSyncAt, setLastServerSyncAt] = useState<number | null>(null);
-  const [invalidSectionCount, setInvalidSectionCount] = useState(0);
   const [lastError, setLastError] = useState<string | null>(null);
   const restoreDoneRef = useRef<string | null>(null);
 
@@ -129,9 +99,6 @@ export function useMissionEditorAutosave({
 
       const snapshot = buildSnapshot(meta);
       const saved = saveMissionEditorAutosaveSnapshot(snapshot);
-      if (saved) {
-        setLocalSavedAt(Date.now());
-      }
       return saved;
     },
     [buildSnapshot, enabled],
@@ -139,9 +106,7 @@ export function useMissionEditorAutosave({
 
   const clearLocalDraft = useCallback(() => {
     clearMissionEditorAutosaveSnapshot(missionId);
-    setLocalSavedAt(null);
     setLastServerSyncAt(null);
-    setInvalidSectionCount(0);
     setLastError(null);
   }, [missionId]);
 
@@ -153,14 +118,12 @@ export function useMissionEditorAutosave({
     try {
       const result = await onServerSync();
       const hasHardFailure = result.failedCount > 0;
-      const hasInvalid = result.invalidCount > 0;
       const now = Date.now();
 
       if (result.savedCount > 0) {
         setLastServerSyncAt(now);
       }
 
-      setInvalidSectionCount(result.invalidCount);
       setLastError(hasHardFailure ? "서버 동기화 실패" : null);
       flushLocalDraft({
         lastServerSyncAt: result.savedCount > 0 ? now : lastServerSyncAt,
@@ -168,7 +131,7 @@ export function useMissionEditorAutosave({
         lastError: hasHardFailure ? "서버 동기화 실패" : null,
       });
 
-      if (!hasHardFailure && !hasInvalid) {
+      if (!hasHardFailure) {
         setLastError(null);
       }
     } catch {
@@ -218,9 +181,7 @@ export function useMissionEditorAutosave({
         return;
       }
 
-      setLocalSavedAt(snapshot.updatedAt);
       setLastServerSyncAt(snapshot.meta.lastServerSyncAt ?? null);
-      setInvalidSectionCount(snapshot.meta.invalidSections?.length ?? 0);
       setLastError(snapshot.meta.lastError ?? null);
       restoreDoneRef.current = missionId;
     };
@@ -284,20 +245,7 @@ export function useMissionEditorAutosave({
     };
   }, [enabled, paused, runServerSyncNow, serverSyncIntervalMs]);
 
-  const statusLabel = useMemo(
-    () =>
-      formatStatusLabel({
-        enabled,
-        localSavedAt,
-        lastServerSyncAt,
-        invalidSectionCount,
-        lastError,
-      }),
-    [enabled, invalidSectionCount, lastError, lastServerSyncAt, localSavedAt],
-  );
-
   return {
-    statusLabel,
     flushLocalDraft,
     clearLocalDraft,
     runServerSyncNow,

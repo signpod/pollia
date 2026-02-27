@@ -6,7 +6,7 @@ import { ROUTES } from "@/constants/routes";
 import type { GetMissionResponse } from "@/types/dto";
 import { MissionType, type PaymentType } from "@prisma/client";
 import { Button, toast } from "@repo/ui/components";
-import { AlertCircle, Rocket, Save } from "lucide-react";
+import { AlertCircle, Check, Loader2, Rocket, Save } from "lucide-react";
 import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActionSettingsCard } from "./ActionSettingsCard";
 import { CompletionSettingsCard } from "./CompletionSettingsCard";
@@ -36,6 +36,7 @@ interface EditorMissionTabContentProps {
 
 const UNIFIED_SAVE_TOAST_ID = "editor-mission-save-result";
 const PUBLISH_TOAST_ID = "editor-mission-publish-result";
+const AUTOSAVE_TOAST_ID = "editor-mission-autosave";
 
 interface SectionSaveSummary {
   savedCount: number;
@@ -284,14 +285,59 @@ export function EditorMissionTabContent({
       };
     }
 
-    const summary = await runSectionSaves({ stopOnError: false });
-    return {
-      savedCount: summary.savedCount,
-      invalidCount: summary.invalidCount,
-      failedCount: summary.failedCount,
-      invalidSections: summary.invalidSections,
-      failedSections: summary.failedSections,
-    };
+    toast({
+      id: AUTOSAVE_TOAST_ID,
+      message: "",
+      icon: Loader2,
+      iconClassName: "text-white animate-spin",
+      iconOnly: true,
+      duration: Number.POSITIVE_INFINITY,
+    });
+
+    try {
+      const summary = await runSectionSaves({ stopOnError: false });
+      if (summary.failedCount > 0) {
+        toast({
+          id: AUTOSAVE_TOAST_ID,
+          message: summary.firstErrorMessage ?? "저장 중 오류가 발생했습니다.",
+          icon: AlertCircle,
+          iconClassName: "text-red-500",
+        });
+      } else if (summary.savedCount > 0) {
+        toast({
+          id: AUTOSAVE_TOAST_ID,
+          message: "저장 완료",
+          icon: Check,
+          iconClassName: "text-green-500",
+          duration: 2500,
+        });
+      } else {
+        toast.dismiss(AUTOSAVE_TOAST_ID);
+      }
+
+      return {
+        savedCount: summary.savedCount,
+        invalidCount: summary.invalidCount,
+        failedCount: summary.failedCount,
+        invalidSections: summary.invalidSections,
+        failedSections: summary.failedSections,
+      };
+    } catch {
+      toast({
+        id: AUTOSAVE_TOAST_ID,
+        message: "저장 중 오류가 발생했습니다.",
+        icon: AlertCircle,
+        iconClassName: "text-red-500",
+      });
+
+      return {
+        savedCount: 0,
+        invalidCount: 0,
+        failedCount: 1,
+        invalidSections: [],
+        failedSections: [],
+      };
+    }
   }, [
     hasAnyBusySection,
     hasAnyPendingChanges,
@@ -310,6 +356,7 @@ export function EditorMissionTabContent({
     sectionRefs,
     sectionStates,
     onServerSync: runAutosaveServerSync,
+    serverSyncIntervalMs: 20000,
   });
 
   const handlePublish = useCallback(async () => {
@@ -400,15 +447,11 @@ export function EditorMissionTabContent({
             >
               발행하기
             </Button>
-            {autosave.statusLabel ? (
-              <p className="mt-2 text-center text-xs text-zinc-500">{autosave.statusLabel}</p>
-            ) : null}
           </>
         )}
       </div>
     ),
     [
-      autosave.statusLabel,
       handlePublish,
       handleUnifiedSave,
       hasAnyBusySection,
