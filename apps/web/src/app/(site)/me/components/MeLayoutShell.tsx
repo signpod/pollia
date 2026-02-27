@@ -1,11 +1,13 @@
 "use client";
 
-import { ProfileHeader } from "@/components/common/ProfileHeader";
 import { ROUTES } from "@/constants/routes";
 import { useGoBack } from "@/hooks/common/useGoBack";
+import PolliaIcon from "@public/svgs/pollia-icon.svg";
+import PolliaWordmark from "@public/svgs/pollia-wordmark.svg";
 import { Typo } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
 import { ChevronLeftIcon } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const SUB_PAGE_HEADERS: Record<string, string> = {
@@ -25,10 +27,11 @@ export function MeLayoutShell({ children }: { children: React.ReactNode }) {
   const subPageTitle =
     SUB_PAGE_HEADERS[pathname] ??
     (pathname.startsWith("/me/result/") ? "결과 다시보기" : undefined);
+  const hasOwnHeader = pathname === ROUTES.ME_EDIT || pathname === ROUTES.ME_ACCOUNT;
 
   return (
     <div className="flex min-h-screen flex-col">
-      {subPageTitle ? (
+      {hasOwnHeader ? null : subPageTitle ? (
         <header className={cn("sticky top-0 z-50 flex h-12 items-center bg-white px-1")}>
           <button
             type="button"
@@ -40,7 +43,12 @@ export function MeLayoutShell({ children }: { children: React.ReactNode }) {
           <Typo.SubTitle className="text-base">{subPageTitle}</Typo.SubTitle>
         </header>
       ) : (
-        <ProfileHeader />
+        <header className="sticky top-0 z-50 flex h-12 items-center bg-white px-5">
+          <Link href={ROUTES.HOME} className="flex items-center gap-[2.775px] py-3">
+            <PolliaIcon className="size-4 text-primary" />
+            <PolliaWordmark className="h-[22px] text-black" />
+          </Link>
+        </header>
       )}
       <div className="flex flex-1 flex-col">{children}</div>
     </div>

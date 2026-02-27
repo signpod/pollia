@@ -16,6 +16,8 @@ export const ROUTES = {
   ME_MY_CONTENT: "/me/my-content",
   ME_REWARDS_PENDING: "/me/rewards/pending",
   ME_REWARDS_PAID: "/me/rewards/paid",
+  ME_EDIT: "/me/edit",
+  ME_ACCOUNT: "/me/account",
   ME_ACCOUNT_WITHDRAW: "/me/account/withdraw",
   ME_PARTNERSHIP: "/me/partnership",
   ME_RESULT: (missionId: string) => `/me/result/${missionId}`,
