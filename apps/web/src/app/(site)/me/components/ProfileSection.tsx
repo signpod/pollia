@@ -1,18 +1,28 @@
 "use client";
 
 import { UserAvatar } from "@/components/common/UserAvatar";
+import { ImageCropModal } from "@/components/common/templates/action/image/ImageCropModal";
+import { useImageCrop } from "@/components/common/templates/action/image/hooks/useImageCrop";
 import { useCurrentUser } from "@/hooks/user/useCurrentUser";
 import { useProfileImageUrl } from "@/hooks/user/useProfileImageUrl";
 import { useUpdateUserName } from "@/hooks/user/useUpdateUserName";
+import { useUpdateUserProfileImage } from "@/hooks/user/useUpdateUserProfileImage";
 import { nameSchema } from "@/schemas/user/userSchema";
 import { ButtonV2, Input, Typo } from "@repo/ui/components";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export function ProfileSection() {
   const { data: user } = useCurrentUser();
   const profileImageUrl = useProfileImageUrl();
   const { mutate: updateName, isPending } = useUpdateUserName();
+  const { updateProfileImage, previewUrl } = useUpdateUserProfileImage();
+  const { crop, zoom, rotation, setCrop, setZoom, setRotation, resetCropState, cropImage } =
+    useImageCrop();
+
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const originalFileRef = useRef<File | null>(null);
 
   const currentName = user?.name ?? "";
   const currentEmail = user?.email ?? "";
@@ -22,6 +32,34 @@ export function ProfileSection() {
   useEffect(() => {
     setName(currentName);
   }, [currentName]);
+
+  const handleImageSelect = useCallback(
+    (file: File) => {
+      originalFileRef.current = file;
+      const objectUrl = URL.createObjectURL(file);
+      setCropImageSrc(objectUrl);
+      resetCropState();
+      setCropModalOpen(true);
+    },
+    [resetCropState],
+  );
+
+  const handleCropCancel = useCallback(() => {
+    setCropModalOpen(false);
+    if (cropImageSrc) URL.revokeObjectURL(cropImageSrc);
+    setCropImageSrc(null);
+    originalFileRef.current = null;
+  }, [cropImageSrc]);
+
+  const handleCropComplete = useCallback(async () => {
+    if (!cropImageSrc || !originalFileRef.current) return;
+    const croppedFile = await cropImage(cropImageSrc, originalFileRef.current);
+    updateProfileImage(croppedFile);
+    setCropModalOpen(false);
+    URL.revokeObjectURL(cropImageSrc);
+    setCropImageSrc(null);
+    originalFileRef.current = null;
+  }, [cropImageSrc, cropImage, updateProfileImage]);
 
   const trimmed = name.trim();
   const validation = nameSchema.safeParse(trimmed);
@@ -42,9 +80,14 @@ export function ProfileSection() {
       <Typo.SubTitle size="large">나의 정보</Typo.SubTitle>
       <section className="grid grid-cols-3 items-center ">
         <div className="flex justify-center">
-          <UserAvatar size="large" imageUrl={profileImageUrl} />
+          <UserAvatar
+            size="large"
+            imageUrl={previewUrl ?? profileImageUrl}
+            editable
+            onImageSelect={handleImageSelect}
+          />
         </div>
-        <div className="col-span-2 flex flex-col gap-2">
+        <div className="col-span-2 flex flex-col gap-3">
           <div className="flex items-center gap-2">
             <Input
               value={name}
@@ -64,28 +107,48 @@ export function ProfileSection() {
               <Typo.ButtonText size="medium">저장</Typo.ButtonText>
             </ButtonV2>
           </div>
-          <div className="flex w-full items-center justify-between gap-2 rounded-sm border border-zinc-100 bg-zinc-50 px-3 py-2">
-            <Typo.Body size="medium" className="text-info truncate">
-              {currentEmail}
-            </Typo.Body>
-            <span className="flex shrink-0 items-center gap-1 rounded-full bg-[#FEE500] px-2.5 py-1 text-[11px] font-bold text-[#3C1E1E]">
-              <Image src="/svgs/kakao-icon.svg" alt="" width={10} height={10} />
-              <Typo.Body size="small"> 카카오 연동</Typo.Body>
-            </span>
-          </div>
-          <div className="flex items-center gap-2 rounded-sm bg-violet-50 px-3 py-2">
-            <Typo.Body
-              size="small"
-              className="flex size-5 items-center justify-center rounded-full bg-violet-500 text-[11px] font-bold text-white"
-            >
-              P
-            </Typo.Body>
-            <Typo.Body size="medium" className="font-bold text-violet-700">
-              1,200
-            </Typo.Body>
+          <div className="flex flex-col gap-1.5 px-1">
+            <div className="flex items-center gap-1.5">
+              <Typo.Body size="small" className="text-sub truncate">
+                {currentEmail}
+              </Typo.Body>
+              <Typo.Body size="small" className="text-zinc-300">
+                ·
+              </Typo.Body>
+              <span className="flex shrink-0 items-center gap-1">
+                <Image src="/svgs/kakao-icon.svg" alt="" width={10} height={10} />
+                <Typo.Body size="small" className="text-sub">
+                  카카오
+                </Typo.Body>
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="flex size-[18px] items-center justify-center rounded-full bg-violet-500 text-[10px] font-bold text-white">
+                P
+              </span>
+              <Typo.Body size="small" className="font-semibold text-violet-600">
+                1,200 포인트
+              </Typo.Body>
+            </div>
           </div>
         </div>
       </section>
+
+      {cropImageSrc && (
+        <ImageCropModal
+          isOpen={cropModalOpen}
+          imageSrc={cropImageSrc}
+          crop={crop}
+          zoom={zoom}
+          rotation={rotation}
+          cropShape="circle"
+          onCropChange={setCrop}
+          onZoomChange={setZoom}
+          onRotationChange={setRotation}
+          onCancel={handleCropCancel}
+          onComplete={handleCropComplete}
+        />
+      )}
     </section>
   );
 }
