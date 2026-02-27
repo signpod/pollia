@@ -24,6 +24,7 @@ export function PageTransition({ children, variant = "tab" }: PageTransitionProp
       el.style.zIndex = "";
       el.style.background = "";
       el.style.minHeight = "";
+      el.style.animation = "none";
     };
 
     if (isSlideIn) {
