@@ -54,7 +54,7 @@ export function ProfileHeaderView({
               P
             </span>
             <Typo.Body size="small" className="font-bold text-violet-700">
-              100
+              1,200
             </Typo.Body>
           </div>
           <button onClick={onProfileClick} type="button">

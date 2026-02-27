@@ -137,7 +137,9 @@ function CompletionBottomButton({ hasReward }: { hasReward: boolean }) {
         <FixedBottomLayout hasGradientBlur>
           <FixedBottomLayout.Content className="px-5 py-3">
             <ButtonV2 variant="primary" className="w-full" onClick={() => setIsSheetOpen(true)}>
-              <Typo.ButtonText size="large">리워드 받기</Typo.ButtonText>
+              <div className="flex items-center justify-center w-full">
+                <Typo.ButtonText size="large">🎁 리워드 받기</Typo.ButtonText>
+              </div>
             </ButtonV2>
           </FixedBottomLayout.Content>
         </FixedBottomLayout>

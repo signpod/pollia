@@ -74,11 +74,14 @@ export function ProfileSection() {
             </span>
           </div>
           <div className="flex items-center gap-2 rounded-sm bg-violet-50 px-3 py-2">
-            <span className="flex size-5 items-center justify-center rounded-full bg-violet-500 text-[11px] font-bold text-white">
+            <Typo.Body
+              size="small"
+              className="flex size-5 items-center justify-center rounded-full bg-violet-500 text-[11px] font-bold text-white"
+            >
               P
-            </span>
+            </Typo.Body>
             <Typo.Body size="medium" className="font-bold text-violet-700">
-              100
+              1,200
             </Typo.Body>
           </div>
         </div>
