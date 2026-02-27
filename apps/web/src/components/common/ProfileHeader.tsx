@@ -2,6 +2,7 @@
 
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { ROUTES } from "@/constants/routes";
+import { useGoBack } from "@/hooks/common/useGoBack";
 import { useSearchMissions } from "@/hooks/search";
 import { useCurrentUser } from "@/hooks/user";
 import { useProfileImageUrl } from "@/hooks/user/useProfileImageUrl";
@@ -23,6 +24,7 @@ interface ProfileHeaderProps {
 
 export function ProfileHeader({ showBack, fallbackRight }: ProfileHeaderProps) {
   const router = useRouter();
+  const goBack = useGoBack();
   const { data: currentUser } = useCurrentUser();
   const profileImageUrl = useProfileImageUrl();
 
@@ -226,7 +228,7 @@ export function ProfileHeader({ showBack, fallbackRight }: ProfileHeaderProps) {
         searchDropdown={searchDropdown}
         user={currentUser}
         profileImageUrl={profileImageUrl}
-        onBack={() => router.back()}
+        onBack={goBack}
         onProfileClick={() => router.push(ROUTES.ME)}
       />
       {dimOverlay}

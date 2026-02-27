@@ -2,14 +2,14 @@
 
 import { ROUTES } from "@/constants/routes";
 import { useCanGoBack } from "@/hooks/common/useCanGoBack";
+import { useGoBack } from "@/hooks/common/useGoBack";
 import PolliaIcon from "@public/svgs/pollia-icon.svg";
 import PolliaWordmark from "@public/svgs/pollia-wordmark.svg";
 import { ChevronLeftIcon } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 export function MeHeader() {
-  const router = useRouter();
+  const goBack = useGoBack();
   const hasHistory = useCanGoBack();
 
   return (
@@ -17,7 +17,7 @@ export function MeHeader() {
       {hasHistory ? (
         <button
           type="button"
-          onClick={() => router.back()}
+          onClick={goBack}
           className="-ml-5 flex size-12 items-center justify-center"
         >
           <ChevronLeftIcon className="size-6" />
