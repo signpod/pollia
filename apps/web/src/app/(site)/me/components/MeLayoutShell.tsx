@@ -21,7 +21,9 @@ const SUB_PAGE_HEADERS: Record<string, string> = {
 export function MeLayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const subPageTitle = SUB_PAGE_HEADERS[pathname];
+  const subPageTitle =
+    SUB_PAGE_HEADERS[pathname] ??
+    (pathname.startsWith("/me/result/") ? "결과 다시보기" : undefined);
 
   return (
     <div className="flex min-h-screen flex-col">
