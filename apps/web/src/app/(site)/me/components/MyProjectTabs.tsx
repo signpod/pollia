@@ -14,6 +14,7 @@ import { ButtonV2, EmptyState, Tab, Typo } from "@repo/ui/components";
 import { PencilIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { memo, useCallback, useState } from "react";
 import { MissionLikeButton } from "../../(main)/components/MissionLikeButton";
@@ -186,6 +187,7 @@ function ParticipationListItem({
   filter,
 }: { response: MyMissionResponse; filter: ParticipationFilter }) {
   const { mission } = response;
+  const router = useRouter();
   const [imageError, setImageError] = useState(false);
   const showFallback = imageError || !mission.imageUrl;
   const categoryLabel =
@@ -206,10 +208,10 @@ function ParticipationListItem({
         setActionNavCookie(mission.id, "resume");
         window.open(ROUTES.ACTION({ missionId: mission.id, actionId: nextActionId }), "_blank");
       } else {
-        window.open(ROUTES.MISSION_DONE(mission.id), "_blank");
+        router.push(ROUTES.ME_RESULT(mission.id));
       }
     },
-    [mission.id, filter, nextActionId],
+    [mission.id, filter, nextActionId, router],
   );
 
   return (
@@ -373,13 +375,14 @@ function RewardListItem({ reward }: RewardItemProps) {
           {reward.name}
         </Typo.SubTitle>
       </div>
-      <span
-        className={`shrink-0 rounded-md px-2 py-1 text-[11px] font-bold ${
+      <Typo.Body
+        size="small"
+        className={`shrink-0 rounded-md px-2 py-1 ${
           isPaid ? "bg-zinc-100 text-zinc-500" : "bg-orange-50 text-orange-600"
         }`}
       >
         {badgeText}
-      </span>
+      </Typo.Body>
     </div>
   );
 
