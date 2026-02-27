@@ -277,7 +277,7 @@ function ProjectBasicInfoCardComponent(
                 <Typo.Body size="medium" className="text-zinc-500">
                   {thumbnailImageUpload.isUploading
                     ? "업로드 중..."
-                    : "프로젝트 썸네일을 4:3 비율로 설정합니다."}
+                    : "프로젝트 썸네일을 1:1 비율로 설정합니다."}
                 </Typo.Body>
               </div>
               <ImageSelector
@@ -317,9 +317,9 @@ function ProjectBasicInfoCardComponent(
       <AdminImageCropDialog
         open={thumbnailCropper.isOpen}
         imageSrc={thumbnailCropper.imageSrc}
-        aspect={4 / 3}
+        aspect={1}
         title="프로젝트 썸네일 편집"
-        description="이미지를 4:3 비율로 맞춰 저장합니다."
+        description="이미지를 1:1 비율로 맞춰 저장합니다."
         fileName={thumbnailCropper.fileName ?? `mission-thumbnail-${mission.id}.jpg`}
         onOpenChange={open => {
           if (!open) {
