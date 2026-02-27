@@ -1,179 +1,18 @@
 "use client";
 
-import type { MyMissionResponse, MyMissionResponseAnswer } from "@/types/dto/mission-response";
+import type { MyMissionResponse } from "@/types/dto/mission-response";
 import { ActionType } from "@prisma/client";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { Typo } from "@repo/ui/components";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  CalendarIcon,
-  CheckSquareIcon,
-  FileTextIcon,
-  GitBranchIcon,
-  ImageIcon,
-  MessageSquareIcon,
-  StarIcon,
-  TagIcon,
-  VideoIcon,
-  XIcon,
-} from "lucide-react";
+import { XIcon } from "lucide-react";
 import { useMemo } from "react";
+import { ACTION_TYPE_CONFIG, AnswerContent } from "./AnswerContent";
 
 interface AnswerDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   response: MyMissionResponse;
-}
-
-const ACTION_TYPE_CONFIG: Record<ActionType, { icon: React.ReactNode; label: string }> = {
-  MULTIPLE_CHOICE: { icon: <CheckSquareIcon className="h-4 w-4" />, label: "객관식" },
-  TAG: { icon: <TagIcon className="h-4 w-4" />, label: "태그" },
-  SCALE: { icon: <StarIcon className="h-4 w-4" />, label: "척도" },
-  RATING: { icon: <StarIcon className="h-4 w-4" />, label: "평점" },
-  SUBJECTIVE: { icon: <MessageSquareIcon className="h-4 w-4" />, label: "서술형" },
-  SHORT_TEXT: { icon: <MessageSquareIcon className="h-4 w-4" />, label: "단답형" },
-  IMAGE: { icon: <ImageIcon className="h-4 w-4" />, label: "이미지" },
-  VIDEO: { icon: <VideoIcon className="h-4 w-4" />, label: "동영상" },
-  PDF: { icon: <FileTextIcon className="h-4 w-4" />, label: "PDF" },
-  DATE: { icon: <CalendarIcon className="h-4 w-4" />, label: "날짜" },
-  TIME: { icon: <CalendarIcon className="h-4 w-4" />, label: "시간" },
-  BRANCH: { icon: <GitBranchIcon className="h-4 w-4" />, label: "분기" },
-};
-
-function formatDate(date: Date): string {
-  return new Date(date).toLocaleDateString("ko-KR", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
-
-function formatTime(date: Date): string {
-  return new Date(date).toLocaleTimeString("ko-KR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-function AnswerContent({ answer }: { answer: MyMissionResponseAnswer }) {
-  const actionType = answer.action.type as ActionType;
-
-  switch (actionType) {
-    case "MULTIPLE_CHOICE":
-    case "TAG":
-    case "BRANCH":
-    case "SCALE":
-      if (answer.options.length === 0 && !answer.textAnswer) {
-        return <span className="text-zinc-400">선택 없음</span>;
-      }
-      return (
-        <div className="flex flex-wrap gap-2">
-          {answer.options.map(option => (
-            <span
-              key={option.id}
-              className="rounded-full bg-violet-50 px-3 py-1 text-sm font-medium text-violet-700"
-            >
-              {option.title}
-            </span>
-          ))}
-          {answer.textAnswer && (
-            <span className="rounded-full bg-zinc-100 px-3 py-1 text-sm font-medium text-zinc-700">
-              기타: {answer.textAnswer}
-            </span>
-          )}
-        </div>
-      );
-    case "RATING":
-      if (answer.scaleAnswer === null) {
-        return <span className="text-zinc-400">응답 없음</span>;
-      }
-      return (
-        <div className="flex items-center gap-1">
-          <span className="text-lg font-bold text-violet-600">{answer.scaleAnswer}</span>
-          <span className="text-zinc-500">점</span>
-        </div>
-      );
-
-    case "SUBJECTIVE":
-    case "SHORT_TEXT":
-      if (!answer.textAnswer) {
-        return <span className="text-zinc-400">응답 없음</span>;
-      }
-      return <p className="whitespace-pre-wrap text-zinc-800">{answer.textAnswer}</p>;
-
-    case "IMAGE":
-    case "VIDEO":
-    case "PDF":
-      if (answer.fileUploads.length === 0) {
-        return <span className="text-zinc-400">파일 없음</span>;
-      }
-      return (
-        <div className="space-y-2">
-          {answer.fileUploads.map(file => (
-            <div key={file.id} className="flex items-center gap-2">
-              {actionType === "IMAGE" && file.publicUrl ? (
-                <img
-                  src={file.publicUrl}
-                  alt={file.originalFileName}
-                  className="h-20 w-20 rounded-lg object-cover"
-                />
-              ) : (
-                <a
-                  href={file.publicUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-violet-600 hover:underline"
-                >
-                  {actionType === "VIDEO" ? (
-                    <VideoIcon className="h-4 w-4" />
-                  ) : (
-                    <FileTextIcon className="h-4 w-4" />
-                  )}
-                  <span>{file.originalFileName}</span>
-                </a>
-              )}
-            </div>
-          ))}
-        </div>
-      );
-
-    case "DATE":
-      if (answer.dateAnswers.length === 0) {
-        return <span className="text-zinc-400">응답 없음</span>;
-      }
-      return (
-        <div className="flex flex-wrap gap-2">
-          {answer.dateAnswers.map((date, idx) => (
-            <span
-              key={idx}
-              className="rounded-lg bg-zinc-50 px-3 py-1 text-sm font-medium text-zinc-700"
-            >
-              {formatDate(date)}
-            </span>
-          ))}
-        </div>
-      );
-
-    case "TIME":
-      if (answer.dateAnswers.length === 0) {
-        return <span className="text-zinc-400">응답 없음</span>;
-      }
-      return (
-        <div className="flex flex-wrap gap-2">
-          {answer.dateAnswers.map((date, idx) => (
-            <span
-              key={idx}
-              className="rounded-lg bg-zinc-50 px-3 py-1 text-sm font-medium text-zinc-700"
-            >
-              {formatTime(date)}
-            </span>
-          ))}
-        </div>
-      );
-
-    default:
-      return <span className="text-zinc-400">-</span>;
-  }
 }
 
 export function AnswerDetailModal({ isOpen, onClose, response }: AnswerDetailModalProps) {
