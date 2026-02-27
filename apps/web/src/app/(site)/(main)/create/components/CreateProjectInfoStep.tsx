@@ -35,7 +35,15 @@ function IntroToggleRow({
   );
 }
 
-export function CreateProjectInfoStep() {
+interface CreateProjectInfoStepProps {
+  showActiveToggle?: boolean;
+  showExposureToggle?: boolean;
+}
+
+export function CreateProjectInfoStep({
+  showActiveToggle = true,
+  showExposureToggle = true,
+}: CreateProjectInfoStepProps = {}) {
   const {
     control,
     formState: { errors },
@@ -70,31 +78,35 @@ export function CreateProjectInfoStep() {
         showToolbar
       />
 
-      <Controller
-        control={control}
-        name="isActive"
-        render={({ field }) => (
-          <IntroToggleRow
-            label="활성 상태"
-            description="프로젝트를 활성화하거나 비활성화합니다."
-            checked={field.value}
-            onChange={field.onChange}
-          />
-        )}
-      />
+      {showActiveToggle && (
+        <Controller
+          control={control}
+          name="isActive"
+          render={({ field }) => (
+            <IntroToggleRow
+              label="활성 상태"
+              description="프로젝트를 활성화하거나 비활성화합니다."
+              checked={field.value}
+              onChange={field.onChange}
+            />
+          )}
+        />
+      )}
 
-      <Controller
-        control={control}
-        name="isExposed"
-        render={({ field }) => (
-          <IntroToggleRow
-            label="노출여부"
-            description="노출 시 프로젝트 목록에 표시됩니다."
-            checked={field.value}
-            onChange={field.onChange}
-          />
-        )}
-      />
+      {showExposureToggle && (
+        <Controller
+          control={control}
+          name="isExposed"
+          render={({ field }) => (
+            <IntroToggleRow
+              label="노출여부"
+              description="노출 시 프로젝트 목록에 표시됩니다."
+              checked={field.value}
+              onChange={field.onChange}
+            />
+          )}
+        />
+      )}
 
       <Controller
         control={control}

@@ -27,6 +27,7 @@ import type {
 interface ProjectBasicInfoCardProps {
   mission: GetMissionResponse["data"];
   onSaveStateChange?: SectionSaveStateChangeHandler;
+  onMissionActiveChange?: (isActive: boolean) => void;
 }
 
 function buildDefaultValues(mission: GetMissionResponse["data"]): CreateMissionFormData {
@@ -38,7 +39,7 @@ function buildDefaultValues(mission: GetMissionResponse["data"]): CreateMissionF
     hasReward: false,
     reward: undefined,
     isActive: mission.isActive,
-    isExposed: mission.type === MissionType.GENERAL,
+    isExposed: true,
     allowGuestResponse: mission.allowGuestResponse,
     allowMultipleResponses: mission.allowMultipleResponses,
     imageUrl: mission.imageUrl ?? null,
@@ -49,7 +50,7 @@ function buildDefaultValues(mission: GetMissionResponse["data"]): CreateMissionF
 }
 
 function ProjectBasicInfoCardComponent(
-  { mission, onSaveStateChange }: ProjectBasicInfoCardProps,
+  { mission, onSaveStateChange, onMissionActiveChange }: ProjectBasicInfoCardProps,
   ref: ForwardedRef<SectionSaveHandle>,
 ) {
   const form = useForm<CreateMissionFormData>({
@@ -150,7 +151,7 @@ function ProjectBasicInfoCardComponent(
           title: values.title,
           description: values.description,
           isActive: values.isActive,
-          type: values.isExposed ? MissionType.GENERAL : MissionType.EXPERIENCE_GROUP,
+          type: MissionType.GENERAL,
           allowGuestResponse: values.allowGuestResponse,
           allowMultipleResponses: values.allowMultipleResponses,
           imageUrl: values.imageUrl ?? null,
@@ -162,6 +163,7 @@ function ProjectBasicInfoCardComponent(
         thumbnailImageUpload.deleteMarkedInitial();
         brandLogoImageUpload.deleteMarkedInitial();
         form.reset(values);
+        onMissionActiveChange?.(values.isActive);
 
         if (!silent) {
           toast({ message: `${UBIQUITOUS_CONSTANTS.MISSION} 기본 정보가 수정되었습니다.` });
@@ -185,7 +187,7 @@ function ProjectBasicInfoCardComponent(
         return { status: "failed", message };
       }
     },
-    [brandLogoImageUpload, form, mission.id, thumbnailImageUpload],
+    [brandLogoImageUpload, form, mission.id, onMissionActiveChange, thumbnailImageUpload],
   );
 
   useImperativeHandle(
@@ -263,7 +265,7 @@ function ProjectBasicInfoCardComponent(
             </div>
           </div>
 
-          <CreateProjectInfoStep />
+          <CreateProjectInfoStep showActiveToggle showExposureToggle={false} />
         </form>
       </FormProvider>
 
