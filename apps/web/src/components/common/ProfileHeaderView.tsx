@@ -48,14 +48,19 @@ export function ProfileHeaderView({
       )}
       {searchInput && <div className="mx-3 flex-1">{searchInput}</div>}
       {user ? (
-        <button onClick={onProfileClick} type="button">
-          <div className="flex items-center gap-2">
-            <UserAvatar size="small" imageUrl={profileImageUrl} />
-            <Typo.Body size="medium" className="font-medium text-zinc-700">
-              {user.name}
+        <div className="flex h-9 items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            <span className="flex size-5 items-center justify-center rounded-full bg-violet-500 text-[11px] font-bold text-white">
+              P
+            </span>
+            <Typo.Body size="small" className="font-bold text-violet-700">
+              1,200
             </Typo.Body>
           </div>
-        </button>
+          <button onClick={onProfileClick} type="button">
+            <UserAvatar size="medium" imageUrl={profileImageUrl} />
+          </button>
+        </div>
       ) : (
         fallbackRight
       )}

@@ -6,10 +6,10 @@ import { useCallback, useMemo, useState } from "react";
 import { useMyResponses } from "./useMyResponses";
 
 const TABS = [
-  { value: "in-progress", label: "참여 중" },
-  { value: "completed", label: "참여 완료" },
-  { value: "rewards", label: "리워드" },
+  { value: "my-content", label: "내 콘텐츠" },
+  { value: "participation", label: "참여" },
   { value: "liked", label: "찜" },
+  { value: "rewards", label: "리워드" },
 ] as const;
 
 const DEFAULT_TAB = TABS[0].value;

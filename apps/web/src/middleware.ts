@@ -5,7 +5,7 @@ import { type NextRequest, NextResponse } from "next/server";
 export const config = {
   matcher: [
     "/admin/:path*",
-    "/me",
+    "/me/:path*",
     "/mission/:missionId/action/:path*",
     "/mission/:missionId/done",
   ],
@@ -83,7 +83,7 @@ export async function middleware(request: NextRequest) {
       return response;
     }
 
-    if (pathname === "/me") {
+    if (pathname === "/me" || pathname.startsWith("/me/")) {
       if (!user) {
         return NextResponse.redirect(new URL("/login", request.url));
       }
@@ -97,7 +97,7 @@ export async function middleware(request: NextRequest) {
     if (pathname.startsWith("/admin")) {
       return NextResponse.redirect(new URL("/login/admin", request.url));
     }
-    if (pathname === "/me" || pathname.includes("/mission/")) {
+    if (pathname === "/me" || pathname.startsWith("/me/") || pathname.includes("/mission/")) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
     return NextResponse.next();

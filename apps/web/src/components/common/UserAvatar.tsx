@@ -8,6 +8,7 @@ import { useRef, useState } from "react";
 
 const SIZE_VARIANTS = {
   small: { container: "size-6", icon: "size-4" },
+  medium: { container: "size-9", icon: "size-6" },
   large: { container: "size-[96px]", icon: "size-[68px]" },
 } as const;
 
