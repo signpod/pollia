@@ -31,6 +31,7 @@ import {
 import { getCompletionDraftItemKey, useEditorMissionDraft } from "./EditorMissionDraftContext";
 import type {
   SectionSaveHandle,
+  SectionSaveOptions,
   SectionSaveResult,
   SectionSaveStateChangeHandler,
 } from "./editor-save.types";
@@ -126,6 +127,9 @@ function CompletionSettingsCardComponent(
   const [draftFormSnapshotByItemKey, setDraftFormSnapshotByItemKey] = useState<
     Record<string, CompletionFormRawSnapshot>
   >({});
+  const [validationIssueCountByItemKey, setValidationIssueCountByItemKey] = useState<
+    Record<string, number>
+  >({});
   const [draftHydrationVersion, setDraftHydrationVersion] = useState(0);
   const {
     completionDrafts,
@@ -213,6 +217,19 @@ function CompletionSettingsCardComponent(
       }
       return hasChange ? next : prev;
     });
+
+    setValidationIssueCountByItemKey(prev => {
+      let hasChange = false;
+      const next: Record<string, number> = {};
+      for (const [key, value] of Object.entries(prev)) {
+        if (validKeys.has(key)) {
+          next[key] = value;
+        } else {
+          hasChange = true;
+        }
+      }
+      return hasChange ? next : prev;
+    });
   }, [completionItems]);
 
   const hasPendingChanges = useMemo(() => {
@@ -225,12 +242,31 @@ function CompletionSettingsCardComponent(
     );
   }, [completionDrafts.length, removedExistingIds, visibleExistingCompletions, dirtyByItemKey]);
 
+  const validationIssueCount = useMemo(
+    () =>
+      completionItems.reduce(
+        (sum, item) => sum + (validationIssueCountByItemKey[item.key] ?? 0),
+        0,
+      ),
+    [completionItems, validationIssueCountByItemKey],
+  );
+  const hasValidationIssues = validationIssueCount > 0;
+
   useEffect(() => {
     onSaveStateChange?.({
       hasPendingChanges,
       isBusy: isSaving || isLoading,
+      hasValidationIssues,
+      validationIssueCount,
     });
-  }, [hasPendingChanges, isLoading, isSaving, onSaveStateChange]);
+  }, [
+    hasPendingChanges,
+    hasValidationIssues,
+    isLoading,
+    isSaving,
+    onSaveStateChange,
+    validationIssueCount,
+  ]);
 
   const handleItemDirtyChange = useCallback((itemKey: string, isDirty: boolean) => {
     setDirtyByItemKey(prev => {
@@ -239,6 +275,16 @@ function CompletionSettingsCardComponent(
       }
 
       return { ...prev, [itemKey]: isDirty };
+    });
+  }, []);
+
+  const handleItemValidationChange = useCallback((itemKey: string, issueCount: number) => {
+    setValidationIssueCountByItemKey(prev => {
+      if ((prev[itemKey] ?? 0) === issueCount) {
+        return prev;
+      }
+
+      return { ...prev, [itemKey]: issueCount };
     });
   }, []);
 
@@ -271,6 +317,11 @@ function CompletionSettingsCardComponent(
       delete next[itemKey];
       return next;
     });
+    setValidationIssueCountByItemKey(prev => {
+      const next = { ...prev };
+      delete next[itemKey];
+      return next;
+    });
     setOpenItemKey(prev => (prev === itemKey ? null : prev));
   };
 
@@ -288,10 +339,13 @@ function CompletionSettingsCardComponent(
 
   const executeSave = async ({
     silent = false,
-  }: { silent?: boolean } = {}): Promise<SectionSaveResult> => {
+    showValidationUi = true,
+  }: SectionSaveOptions = {}): Promise<SectionSaveResult> => {
     if (isLoading || isSaving) {
       return { status: "failed", message: "결과 화면 저장이 진행 중입니다." };
     }
+
+    const canShowValidationUi = showValidationUi;
 
     const removedSnapshot = new Set(removedExistingIds);
     const existingSnapshot = [...visibleExistingCompletions];
@@ -320,7 +374,9 @@ function CompletionSettingsCardComponent(
     for (const item of listSnapshot) {
       const formRef = formRefs.current[item.key];
       if (!formRef) {
-        setOpenItemKey(item.key);
+        if (canShowValidationUi) {
+          setOpenItemKey(item.key);
+        }
         return {
           status: "failed",
           message: "결과 화면 폼이 준비되지 않았습니다. 다시 시도해주세요.",
@@ -328,16 +384,20 @@ function CompletionSettingsCardComponent(
       }
 
       if (formRef.isUploading()) {
-        setOpenItemKey(item.key);
+        if (canShowValidationUi) {
+          setOpenItemKey(item.key);
+        }
         return {
           status: "failed",
           message: "이미지 업로드가 완료된 뒤 저장해주세요.",
         };
       }
 
-      const values = formRef.validateAndGetValues();
+      const values = formRef.validateAndGetValues({ showErrors: canShowValidationUi });
       if (!values) {
-        setOpenItemKey(item.key);
+        if (canShowValidationUi) {
+          setOpenItemKey(item.key);
+        }
         return {
           status: "invalid",
           message: "결과 화면 입력값을 확인해주세요.",
@@ -410,6 +470,16 @@ function CompletionSettingsCardComponent(
         return next;
       });
       setDirtyByItemKey(prev => {
+        const next = { ...prev };
+        for (const completion of changedExisting) {
+          delete next[getExistingItemKey(completion.id)];
+        }
+        for (const draft of draftSnapshot) {
+          delete next[getDraftItemKey(draft.key)];
+        }
+        return next;
+      });
+      setValidationIssueCountByItemKey(prev => {
         const next = { ...prev };
         for (const completion of changedExisting) {
           delete next[getExistingItemKey(completion.id)];
@@ -546,10 +616,26 @@ function CompletionSettingsCardComponent(
   return (
     <div className="border border-zinc-200 bg-white">
       <div className="border-b border-zinc-100 px-5 py-4">
-        <Typo.SubTitle>결과 화면 수정</Typo.SubTitle>
-        <Typo.Body size="medium" className="mt-1 text-zinc-500">
-          미션 완료 후 노출될 결과 화면을 추가하고 수정합니다.
-        </Typo.Body>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <Typo.SubTitle>결과 화면 수정</Typo.SubTitle>
+            <Typo.Body size="medium" className="mt-1 text-zinc-500">
+              미션 완료 후 노출될 결과 화면을 추가하고 수정합니다.
+            </Typo.Body>
+          </div>
+          {hasValidationIssues ? (
+            <div
+              className="flex shrink-0 items-center gap-1 text-red-500"
+              title="입력 확인 필요"
+              aria-label="입력 확인 필요"
+            >
+              <AlertCircle className="size-4" />
+              <Typo.Body size="small" className="font-semibold text-red-500">
+                {validationIssueCount}
+              </Typo.Body>
+            </div>
+          ) : null}
+        </div>
       </div>
 
       <div className="flex flex-col gap-4 px-5 py-5">
@@ -574,6 +660,10 @@ function CompletionSettingsCardComponent(
                 item.kind === "existing"
                   ? item.completion.title
                   : (item.draft.title.trim() ?? "") || "새 결과 화면";
+              const previewImageUrl =
+                formRefs.current[item.key]?.getRawSnapshot().imageUrl ??
+                draftFormSnapshotByItemKey[item.key]?.imageUrl ??
+                (item.kind === "existing" ? item.completion.imageUrl : null);
 
               return (
                 <div key={item.key} className="overflow-hidden rounded-xl border border-zinc-200">
@@ -583,14 +673,25 @@ function CompletionSettingsCardComponent(
                       onClick={() => handleToggleItem(item.key)}
                       className="flex min-w-0 flex-1 items-center justify-between gap-3 text-left"
                     >
-                      <Typo.Body size="medium" className="truncate font-semibold text-zinc-800">
-                        {index + 1}. {title}
-                      </Typo.Body>
-                      <ChevronDown
-                        className={`size-4 shrink-0 text-zinc-500 transition-transform ${
-                          isOpen ? "rotate-180" : ""
-                        }`}
-                      />
+                      <div className="min-w-0">
+                        <Typo.Body size="medium" className="truncate font-semibold text-zinc-800">
+                          {index + 1}. {title}
+                        </Typo.Body>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-2">
+                        {previewImageUrl ? (
+                          <img
+                            src={previewImageUrl}
+                            alt={`${title} 미리보기 이미지`}
+                            className="size-10 shrink-0 rounded border border-zinc-200 bg-zinc-100 object-cover"
+                          />
+                        ) : null}
+                        <ChevronDown
+                          className={`size-4 shrink-0 text-zinc-500 transition-transform ${
+                            isOpen ? "rotate-180" : ""
+                          }`}
+                        />
+                      </div>
                     </button>
 
                     <button
@@ -642,6 +743,9 @@ function CompletionSettingsCardComponent(
                       }
                       onDirtyChange={isDirty => {
                         handleItemDirtyChange(item.key, isDirty);
+                      }}
+                      onValidationStateChange={issueCount => {
+                        handleItemValidationChange(item.key, issueCount);
                       }}
                     />
                   </div>

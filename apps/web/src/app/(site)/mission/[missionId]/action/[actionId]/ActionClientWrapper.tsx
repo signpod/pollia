@@ -41,8 +41,9 @@ function ActionContent() {
     actionId: string;
   }>();
   const router = useRouter();
-  const { data: actions } = useReadActionsDetail(missionId);
+  const { data: actionsData } = useReadActionsDetail(missionId);
   const { data: missionData } = useReadMission(missionId);
+  const actions = actionsData?.data ?? [];
 
   useEffect(() => {
     window.scrollTo(0, -SCROLL_OFFSET);
@@ -71,12 +72,12 @@ function ActionContent() {
     router.push(ROUTES.MISSION(missionId));
   }, [missionId, router]);
 
-  if (!actions.data || actions.data.length === 0) {
+  if (actions.length === 0) {
     return null;
   }
 
   const steps = createActionSteps({
-    actions: actions.data,
+    actions,
   });
 
   const currentStep = steps.find(
@@ -89,7 +90,7 @@ function ActionContent() {
 
   return (
     <ActionStepWrapper
-      actions={actions.data}
+      actions={actions}
       currentActionData={currentStep.actionData}
       steps={steps}
       missionId={missionId}

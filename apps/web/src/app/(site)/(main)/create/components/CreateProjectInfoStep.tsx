@@ -63,6 +63,7 @@ export function CreateProjectInfoStep({
             errorMessage={errors.title?.message}
             value={field.value}
             onChange={field.onChange}
+            onBlur={field.onBlur}
           />
         )}
       />

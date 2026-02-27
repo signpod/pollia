@@ -20,7 +20,9 @@ export interface CompletionDraftSubmissionValues {
 }
 
 export interface CompletionDraftFormHandle {
-  validateAndGetValues: () => CompletionDraftSubmissionValues | null;
+  validateAndGetValues: (options?: {
+    showErrors?: boolean;
+  }) => CompletionDraftSubmissionValues | null;
   isUploading: () => boolean;
   deleteMarkedInitial: () => void;
 }

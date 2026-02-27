@@ -26,7 +26,7 @@ import {
   getPublishBlockingMessage,
   validateEditorPublishFlow,
 } from "./editor-publish-flow-validation";
-import type { SectionSaveHandle, SectionSaveState } from "./editor-save.types";
+import type { SectionSaveHandle, SectionSaveOptions, SectionSaveState } from "./editor-save.types";
 import { useMissionEditorAutosave } from "./useMissionEditorAutosave";
 
 interface RewardSnapshot {
@@ -108,10 +108,30 @@ export function EditorMissionTabContent({
   const [sectionStates, setSectionStates] = useState<
     Record<"basic" | "reward" | "action" | "completion", SectionSaveState>
   >({
-    basic: { hasPendingChanges: false, isBusy: false },
-    reward: { hasPendingChanges: false, isBusy: false },
-    action: { hasPendingChanges: false, isBusy: false },
-    completion: { hasPendingChanges: false, isBusy: false },
+    basic: {
+      hasPendingChanges: false,
+      isBusy: false,
+      hasValidationIssues: false,
+      validationIssueCount: 0,
+    },
+    reward: {
+      hasPendingChanges: false,
+      isBusy: false,
+      hasValidationIssues: false,
+      validationIssueCount: 0,
+    },
+    action: {
+      hasPendingChanges: false,
+      isBusy: false,
+      hasValidationIssues: false,
+      validationIssueCount: 0,
+    },
+    completion: {
+      hasPendingChanges: false,
+      isBusy: false,
+      hasValidationIssues: false,
+      validationIssueCount: 0,
+    },
   });
   const isEditorTab = currentTab === "editor";
   const missionQuery = useReadMission(missionId);
@@ -128,7 +148,9 @@ export function EditorMissionTabContent({
         const currentState = prev[section];
         if (
           currentState.hasPendingChanges === nextState.hasPendingChanges &&
-          currentState.isBusy === nextState.isBusy
+          currentState.isBusy === nextState.isBusy &&
+          currentState.hasValidationIssues === nextState.hasValidationIssues &&
+          currentState.validationIssueCount === nextState.validationIssueCount
         ) {
           return prev;
         }
@@ -196,7 +218,15 @@ export function EditorMissionTabContent({
   }, [mission.id, mission.isActive]);
 
   const runSectionSaves = useCallback(
-    async ({ stopOnError }: { stopOnError: boolean }): Promise<SectionSaveSummary> => {
+    async ({
+      stopOnError,
+      trigger = "manual",
+      showValidationUi = true,
+    }: {
+      stopOnError: boolean;
+      trigger?: NonNullable<SectionSaveOptions["trigger"]>;
+      showValidationUi?: boolean;
+    }): Promise<SectionSaveSummary> => {
       const sections: Array<{
         key: EditorSectionKey;
         label: string;
@@ -216,7 +246,11 @@ export function EditorMissionTabContent({
           continue;
         }
 
-        const result = await handle.save({ silent: true });
+        const result = await handle.save({
+          silent: true,
+          trigger,
+          showValidationUi,
+        });
 
         if (result.status === "saved") {
           summary.savedCount += 1;
@@ -272,7 +306,11 @@ export function EditorMissionTabContent({
       saveInFlightRef.current = true;
       setIsSavingAll(true);
       try {
-        const summary = await runSectionSaves({ stopOnError: true });
+        const summary = await runSectionSaves({
+          stopOnError: true,
+          trigger: "manual",
+          showValidationUi: true,
+        });
         if (summary.invalidCount > 0 || summary.failedCount > 0) {
           toast({
             message: summary.firstErrorMessage ?? "저장에 실패했습니다.",
@@ -342,7 +380,11 @@ export function EditorMissionTabContent({
     });
 
     try {
-      const summary = await runSectionSaves({ stopOnError: false });
+      const summary = await runSectionSaves({
+        stopOnError: false,
+        trigger: "autosave",
+        showValidationUi: false,
+      });
       if (summary.failedCount > 0) {
         toast({
           id: AUTOSAVE_TOAST_ID,
@@ -606,6 +648,7 @@ export function EditorMissionTabContent({
           ref={actionRef}
           missionId={mission.id}
           onSaveStateChange={state => updateSectionState("action", state)}
+          getCompletionDraftSnapshot={() => completionRef.current?.exportDraftSnapshot() ?? null}
         />
         <Separator className="h-2" />
         <CompletionSettingsCard

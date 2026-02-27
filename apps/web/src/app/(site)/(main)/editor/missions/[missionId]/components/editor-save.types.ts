@@ -5,8 +5,14 @@ export interface SectionSaveResult {
   message?: string;
 }
 
+export interface SectionSaveOptions {
+  silent?: boolean;
+  trigger?: "autosave" | "manual" | "publish";
+  showValidationUi?: boolean;
+}
+
 export interface SectionSaveHandle {
-  save: (options?: { silent?: boolean }) => Promise<SectionSaveResult>;
+  save: (options?: SectionSaveOptions) => Promise<SectionSaveResult>;
   hasPendingChanges: () => boolean;
   isBusy: () => boolean;
   exportDraftSnapshot: () => unknown | null;
@@ -16,6 +22,8 @@ export interface SectionSaveHandle {
 export interface SectionSaveState {
   hasPendingChanges: boolean;
   isBusy: boolean;
+  hasValidationIssues: boolean;
+  validationIssueCount: number;
 }
 
 export type SectionSaveStateChangeHandler = (state: SectionSaveState) => void;

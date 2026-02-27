@@ -85,8 +85,11 @@ export interface ActionFormRawSnapshot {
 }
 
 export interface ActionFormHandle {
-  validateAndGetValues: () => ActionFormValues | null;
-  validateAndGetSubmission: () => { actionType: ActionType; values: ActionFormValues } | null;
+  validateAndGetValues: (options?: { showErrors?: boolean }) => ActionFormValues | null;
+  validateAndGetSubmission: (options?: { showErrors?: boolean }) => {
+    actionType: ActionType;
+    values: ActionFormValues;
+  } | null;
   isUploading: () => boolean;
   deleteMarkedInitialImages: () => void;
   isDirty: () => boolean;
@@ -107,8 +110,10 @@ interface ActionFormProps {
   hideTitle?: boolean;
   enableTypeSelect?: boolean;
   enforceExclusiveNextLink?: boolean;
+  wordingMode?: "action" | "question";
   onActionTypeChange?: (type: ActionType) => void;
   onDirtyChange?: (isDirty: boolean) => void;
+  onValidationStateChange?: (issueCount: number) => void;
 }
 
 const NEEDS_OPTIONS: ActionType[] = [
@@ -198,6 +203,17 @@ function parseBranchTargetValue(value: string): {
   };
 }
 
+function areErrorMapsEqual(left: Record<string, string>, right: Record<string, string>): boolean {
+  const leftEntries = Object.entries(left);
+  const rightEntries = Object.entries(right);
+
+  if (leftEntries.length !== rightEntries.length) {
+    return false;
+  }
+
+  return leftEntries.every(([key, value]) => right[key] === value);
+}
+
 function ActionFormComponent(
   {
     actionType,
@@ -212,8 +228,10 @@ function ActionFormComponent(
     hideTitle = false,
     enableTypeSelect = false,
     enforceExclusiveNextLink = false,
+    wordingMode = "action",
     onActionTypeChange,
     onDirtyChange,
+    onValidationStateChange,
   }: ActionFormProps,
   ref: ForwardedRef<ActionFormHandle>,
 ) {
@@ -257,8 +275,11 @@ function ActionFormComponent(
   const [nextLinkType, setNextLinkType] = useState<"action" | "completion">(initialNextLinkType);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [hasValidationStarted, setHasValidationStarted] = useState(false);
+  const [validationIssueCount, setValidationIssueCount] = useState(0);
 
   const enableEditorActionMedia = enforceExclusiveNextLink;
+  const itemLabel = wordingMode === "question" ? "질문" : "액션";
   const needsOptions = NEEDS_OPTIONS.includes(selectedActionType);
   const needsMaxSelections = NEEDS_MAX_SELECTIONS.includes(selectedActionType);
   const isBranch = selectedActionType === ActionType.BRANCH;
@@ -409,7 +430,7 @@ function ActionFormComponent(
     }
   };
 
-  const validate = useCallback((): boolean => {
+  const buildValidationErrors = useCallback((): Record<string, string> => {
     const newErrors: Record<string, string> = {};
 
     if (!title.trim()) {
@@ -436,7 +457,7 @@ function ActionFormComponent(
         }
       } else {
         if (nextLinkType === "action" && !nextActionId) {
-          newErrors.nextLink = "다음 이동할 액션을 선택해주세요.";
+          newErrors.nextLink = `다음 이동할 ${itemLabel}을 선택해주세요.`;
         }
         if (nextLinkType === "completion" && !nextCompletionId) {
           newErrors.nextLink = "완료 화면을 선택해주세요.";
@@ -444,8 +465,7 @@ function ActionFormComponent(
       }
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return newErrors;
   }, [
     title,
     needsOptions,
@@ -456,69 +476,99 @@ function ActionFormComponent(
     nextActionId,
     nextCompletionId,
     hasLinkTargets,
+    itemLabel,
   ]);
 
-  const buildValidatedValues = useCallback((): ActionFormValues | null => {
-    if (!validate()) return null;
+  const runValidation = useCallback(
+    ({ showErrors = true }: { showErrors?: boolean } = {}) => {
+      const nextErrors = buildValidationErrors();
+      const issueCount = Object.keys(nextErrors).length;
 
-    return {
-      title: title.trim(),
-      description: description?.trim() || null,
+      setValidationIssueCount(prev => (prev === issueCount ? prev : issueCount));
+
+      if (showErrors) {
+        setErrors(prev => (areErrorMapsEqual(prev, nextErrors) ? prev : nextErrors));
+      }
+
+      return {
+        isValid: issueCount === 0,
+        issueCount,
+      };
+    },
+    [buildValidationErrors],
+  );
+
+  const buildValidatedValues = useCallback(
+    ({ showErrors = true }: { showErrors?: boolean } = {}): ActionFormValues | null => {
+      const validationResult = runValidation({ showErrors });
+      if (!validationResult.isValid) {
+        return null;
+      }
+
+      return {
+        title: title.trim(),
+        description: description?.trim() || null,
+        imageUrl,
+        imageFileUploadId,
+        isRequired,
+        ...(needsMaxSelections && { maxSelections }),
+        ...(selectedActionType === ActionType.MULTIPLE_CHOICE && { hasOther }),
+        ...(selectedActionType === ActionType.TAG && { hasOther }),
+        ...(needsOptions && {
+          options: options.map((o, i) => {
+            const { _key, ...rest } = o;
+            return {
+              ...rest,
+              title: o.title.trim(),
+              description: enableEditorActionMedia
+                ? showOptionDescription
+                  ? o.description?.trim() || null
+                  : null
+                : o.description?.trim() || null,
+              imageUrl: enableEditorActionMedia
+                ? showOptionImage
+                  ? (o.imageUrl ?? null)
+                  : null
+                : (o.imageUrl ?? null),
+              fileUploadId: enableEditorActionMedia
+                ? showOptionImage
+                  ? (o.fileUploadId ?? null)
+                  : null
+                : (o.fileUploadId ?? null),
+              order: i,
+            };
+          }),
+        }),
+        ...(!isBranch && nextLinkType === "action" && { nextActionId, nextCompletionId: null }),
+        ...(!isBranch &&
+          nextLinkType === "completion" && {
+            nextCompletionId,
+            nextActionId: null,
+          }),
+      };
+    },
+    [
+      runValidation,
+      title,
+      description,
       imageUrl,
       imageFileUploadId,
       isRequired,
-      ...(needsMaxSelections && { maxSelections }),
-      ...(selectedActionType === ActionType.MULTIPLE_CHOICE && { hasOther }),
-      ...(selectedActionType === ActionType.TAG && { hasOther }),
-      ...(needsOptions && {
-        options: options.map((o, i) => {
-          const { _key, ...rest } = o;
-          return {
-            ...rest,
-            title: o.title.trim(),
-            description: enableEditorActionMedia
-              ? showOptionDescription
-                ? o.description?.trim() || null
-                : null
-              : o.description?.trim() || null,
-            imageUrl: enableEditorActionMedia
-              ? showOptionImage
-                ? (o.imageUrl ?? null)
-                : null
-              : (o.imageUrl ?? null),
-            fileUploadId: enableEditorActionMedia
-              ? showOptionImage
-                ? (o.fileUploadId ?? null)
-                : null
-              : (o.fileUploadId ?? null),
-            order: i,
-          };
-        }),
-      }),
-      ...(!isBranch && nextLinkType === "action" && { nextActionId, nextCompletionId: null }),
-      ...(!isBranch && nextLinkType === "completion" && { nextCompletionId, nextActionId: null }),
-    };
-  }, [
-    validate,
-    title,
-    description,
-    imageUrl,
-    imageFileUploadId,
-    isRequired,
-    needsMaxSelections,
-    maxSelections,
-    selectedActionType,
-    hasOther,
-    needsOptions,
-    options,
-    enableEditorActionMedia,
-    showOptionDescription,
-    showOptionImage,
-    isBranch,
-    nextLinkType,
-    nextActionId,
-    nextCompletionId,
-  ]);
+      needsMaxSelections,
+      maxSelections,
+      selectedActionType,
+      hasOther,
+      needsOptions,
+      options,
+      enableEditorActionMedia,
+      showOptionDescription,
+      showOptionImage,
+      isBranch,
+      nextLinkType,
+      nextActionId,
+      nextCompletionId,
+    ],
+  );
 
   const getRawSnapshot = useCallback((): ActionFormRawSnapshot => {
     const rawValues: ActionFormValues = {
@@ -677,12 +727,38 @@ function ActionFormComponent(
     onDirtyChange?.(isDirty);
   }, [onDirtyChange, isDirty]);
 
+  useEffect(() => {
+    onValidationStateChange?.(validationIssueCount);
+  }, [onValidationStateChange, validationIssueCount]);
+
+  useEffect(() => {
+    if (!hasValidationStarted) {
+      return;
+    }
+
+    runValidation();
+  }, [
+    description,
+    hasLinkTargets,
+    hasValidationStarted,
+    itemLabel,
+    needsOptions,
+    nextActionId,
+    nextCompletionId,
+    nextLinkType,
+    optionLimits.min,
+    options,
+    runValidation,
+    title,
+    isBranch,
+  ]);
+
   useImperativeHandle(
     ref,
     () => ({
-      validateAndGetValues: () => buildValidatedValues() ?? null,
-      validateAndGetSubmission: () => {
-        const values = buildValidatedValues();
+      validateAndGetValues: options => buildValidatedValues(options) ?? null,
+      validateAndGetSubmission: options => {
+        const values = buildValidatedValues(options);
         if (!values) {
           return null;
         }
@@ -713,6 +789,11 @@ function ActionFormComponent(
     const values = buildValidatedValues();
     if (!values) return;
     onSubmit(values);
+  };
+
+  const handleBlurCapture = () => {
+    setHasValidationStarted(true);
+    runValidation();
   };
 
   const addOption = () => {
@@ -754,22 +835,24 @@ function ActionFormComponent(
   };
 
   return (
-    <div className="flex flex-col gap-5 p-4">
+    <div className="flex flex-col gap-5 p-4" onBlurCapture={handleBlurCapture}>
       {!hideTitle && (
         <Typo.SubTitle>
-          {editingAction ? "액션 수정" : `${ACTION_TYPE_LABELS[selectedActionType]} 액션 추가`}
+          {editingAction
+            ? `${itemLabel} 수정`
+            : `${ACTION_TYPE_LABELS[selectedActionType]} ${itemLabel} 추가`}
         </Typo.SubTitle>
       )}
 
       {enableTypeSelect && (
         <div className="flex flex-col gap-2">
-          <LabelText required={false}>액션 유형</LabelText>
+          <LabelText required={false}>{itemLabel} 유형</LabelText>
           <Select
             value={selectedActionType}
             onValueChange={value => handleActionTypeChange(value as ActionType)}
           >
             <SelectTrigger>
-              <SelectValue placeholder="액션 유형을 선택하세요" />
+              <SelectValue placeholder={`${itemLabel} 유형을 선택하세요`} />
             </SelectTrigger>
             <SelectContent>
               {ACTION_TYPE_VALUES.map(type => (
@@ -785,7 +868,7 @@ function ActionFormComponent(
       <Input
         label="제목"
         required
-        placeholder="액션 제목을 입력해주세요"
+        placeholder={`${itemLabel} 제목을 입력해주세요`}
         maxLength={ACTION_TITLE_MAX_LENGTH}
         value={title}
         onChange={e => setTitle(e.target.value)}
@@ -794,7 +877,7 @@ function ActionFormComponent(
 
       <Textarea
         label="설명"
-        placeholder="액션에 대한 설명을 입력해주세요"
+        placeholder={`${itemLabel}에 대한 설명을 입력해주세요`}
         maxLength={ACTION_DESCRIPTION_MAX_LENGTH}
         rows={3}
         value={description ?? ""}
@@ -806,12 +889,12 @@ function ActionFormComponent(
           <div className="flex items-center justify-between gap-4">
             <div className="flex flex-col gap-1">
               <Typo.Body size="medium" className="font-semibold text-zinc-800">
-                액션 이미지
+                {itemLabel} 이미지
               </Typo.Body>
               <Typo.Body size="small" className="text-zinc-500">
                 {actionImageUpload.isUploading
                   ? "업로드 중..."
-                  : "액션에 노출할 이미지를 설정합니다. (선택)"}
+                  : `${itemLabel}에 노출할 이미지를 설정합니다. (선택)`}
               </Typo.Body>
             </div>
             <ImageSelector
@@ -965,7 +1048,7 @@ function ActionFormComponent(
                       </Select>
                     ) : (
                       <Typo.Body size="small" className="text-zinc-400">
-                        다른 액션을 먼저 추가해주세요.
+                        {`다른 ${itemLabel}을 먼저 추가해주세요.`}
                       </Typo.Body>
                     )}
                   </div>
@@ -1004,7 +1087,7 @@ function ActionFormComponent(
 
           {!hasLinkTargets ? (
             <Typo.Body size="small" className="text-zinc-400">
-              다른 액션이나 완료 화면을 먼저 추가한 후 설정할 수 있습니다.
+              {`다른 ${itemLabel}이나 완료 화면을 먼저 추가한 후 설정할 수 있습니다.`}
             </Typo.Body>
           ) : (
             <>
@@ -1018,7 +1101,7 @@ function ActionFormComponent(
                       : "border-zinc-200 bg-white text-zinc-600"
                   }`}
                 >
-                  다음 액션
+                  {`다음 ${itemLabel}`}
                 </button>
                 <button
                   type="button"
@@ -1036,7 +1119,7 @@ function ActionFormComponent(
               {nextLinkType === "action" ? (
                 <Select value={nextActionId ?? ""} onValueChange={handleNextActionChange}>
                   <SelectTrigger>
-                    <SelectValue placeholder="다음 이동할 액션을 선택하세요" />
+                    <SelectValue placeholder={`다음 이동할 ${itemLabel}을 선택하세요`} />
                   </SelectTrigger>
                   <SelectContent>
                     {selectableActions.map(a => (
@@ -1063,7 +1146,7 @@ function ActionFormComponent(
 
               {enforceExclusiveNextLink && (
                 <Typo.Body size="small" className="text-zinc-500">
-                  다음 액션/완료 화면 중 하나만 선택할 수 있습니다.
+                  {`다음 ${itemLabel}/완료 화면 중 하나만 선택할 수 있습니다.`}
                 </Typo.Body>
               )}
 

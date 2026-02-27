@@ -25,6 +25,7 @@ import { ACTION_TYPE_LABELS } from "@/constants/action";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
 import { useReadActionsDetail } from "@/hooks/action";
+import { useReadMission } from "@/hooks/mission";
 import type { ActionDetail } from "@/types/dto";
 import { ActionType } from "@prisma/client";
 import {
@@ -39,7 +40,7 @@ import {
   toast,
 } from "@repo/ui/components";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, ChevronDown, Plus, Trash2, X } from "lucide-react";
+import { AlertCircle, ChevronDown, GitBranch, Plus, Trash2, X } from "lucide-react";
 import {
   type ForwardedRef,
   forwardRef,
@@ -51,8 +52,11 @@ import {
   useState,
 } from "react";
 import { isDraftCompletionId, useEditorMissionDraft } from "./EditorMissionDraftContext";
+import { FlowOverviewDialog } from "./FlowOverviewDialog";
+import { analyzeEditorFlow } from "./editor-publish-flow-validation";
 import type {
   SectionSaveHandle,
+  SectionSaveOptions,
   SectionSaveResult,
   SectionSaveStateChangeHandler,
 } from "./editor-save.types";
@@ -60,6 +64,7 @@ import type {
 interface ActionSettingsCardProps {
   missionId: string;
   onSaveStateChange?: SectionSaveStateChangeHandler;
+  getCompletionDraftSnapshot?: () => unknown | null;
 }
 
 interface DraftActionItem {
@@ -235,7 +240,7 @@ function resolveDraftCompletionReferences(
 const NOOP = () => {};
 
 function ActionSettingsCardComponent(
-  { missionId, onSaveStateChange }: ActionSettingsCardProps,
+  { missionId, onSaveStateChange, getCompletionDraftSnapshot }: ActionSettingsCardProps,
   ref: ForwardedRef<SectionSaveHandle>,
 ) {
   const queryClient = useQueryClient();
@@ -252,7 +257,11 @@ function ActionSettingsCardComponent(
   const [draftFormSnapshotByItemKey, setDraftFormSnapshotByItemKey] = useState<
     Record<string, ActionFormRawSnapshot>
   >({});
+  const [validationIssueCountByItemKey, setValidationIssueCountByItemKey] = useState<
+    Record<string, number>
+  >({});
   const [draftHydrationVersion, setDraftHydrationVersion] = useState(0);
+  const [isFlowDialogOpen, setIsFlowDialogOpen] = useState(false);
   const {
     completionDrafts,
     getCompletionDraftFormById,
@@ -260,8 +269,21 @@ function ActionSettingsCardComponent(
     removeCompletionDraftById,
   } = useEditorMissionDraft();
 
-  const { data: actionsData, isLoading: isActionsLoading } = useReadActionsDetail(missionId);
-  const { data: completionsData } = useQuery({
+  const {
+    data: missionData,
+    isLoading: isMissionLoading,
+    error: missionError,
+  } = useReadMission(missionId);
+  const {
+    data: actionsData,
+    isLoading: isActionsLoading,
+    error: actionsError,
+  } = useReadActionsDetail(missionId);
+  const {
+    data: completionsData,
+    isLoading: isCompletionsLoading,
+    error: completionsError,
+  } = useQuery({
     queryKey: missionCompletionQueryKeys.missionCompletion(missionId),
     queryFn: () => getCompletionsByMissionId(missionId),
     staleTime: 5 * 60 * 1000,
@@ -307,15 +329,23 @@ function ActionSettingsCardComponent(
           }
           return next;
         });
+        setValidationIssueCountByItemKey(prev => {
+          const next = { ...prev };
+          delete next[deletingItemKey];
+          for (const actionId of affectedActionIds) {
+            delete next[getExistingItemKey(actionId)];
+          }
+          return next;
+        });
         setOpenItemKey(prev => (prev === deletingItemKey ? null : prev));
       }
 
-      toast({ message: "액션이 삭제되었습니다." });
+      toast({ message: "질문이 삭제되었습니다." });
       setDeleteTarget(null);
     },
     onError: error => {
       toast({
-        message: error.message || "액션 삭제에 실패했습니다.",
+        message: error.message || "질문 삭제에 실패했습니다.",
         icon: AlertCircle,
         iconClassName: "text-red-500",
       });
@@ -374,13 +404,70 @@ function ActionSettingsCardComponent(
 
       return {
         id: makeDraftActionId(draft.key),
-        title: `[임시] ${ACTION_TYPE_LABELS[draftType]} 액션`,
+        title: `[임시] ${ACTION_TYPE_LABELS[draftType]} 질문`,
         order: existingActions.length + index,
       };
     });
 
     return [...existingTargets, ...draftTargets];
   }, [existingActions, draftItems, actionTypeByItemKey]);
+
+  const getActionDraftSnapshot = useCallback((): ActionSectionDraftSnapshot => {
+    const formSnapshotByItemKey: Record<string, ActionFormRawSnapshot> = {};
+
+    for (const item of actionItems) {
+      const snapshot =
+        formRefs.current[item.key]?.getRawSnapshot() ?? draftFormSnapshotByItemKey[item.key];
+      if (snapshot) {
+        formSnapshotByItemKey[item.key] = snapshot;
+      }
+    }
+
+    return {
+      draftItems,
+      openItemKey,
+      dirtyByItemKey,
+      actionTypeByItemKey,
+      formSnapshotByItemKey,
+    };
+  }, [
+    actionItems,
+    actionTypeByItemKey,
+    draftFormSnapshotByItemKey,
+    draftItems,
+    dirtyByItemKey,
+    openItemKey,
+  ]);
+
+  const flowAnalysis = useMemo(() => {
+    if (!missionData?.data || !actionsData?.data || !completionsData?.data) {
+      return null;
+    }
+
+    return analyzeEditorFlow({
+      entryActionId: missionData.data.entryActionId,
+      serverActions: actionsData.data,
+      serverCompletions: completionsData.data,
+      actionDraftSnapshot: getActionDraftSnapshot(),
+      completionDraftSnapshot: getCompletionDraftSnapshot?.() ?? null,
+    });
+  }, [
+    actionsData?.data,
+    completionsData?.data,
+    getActionDraftSnapshot,
+    getCompletionDraftSnapshot,
+    missionData?.data,
+  ]);
+
+  const flowErrorMessage =
+    missionError instanceof Error
+      ? missionError.message
+      : actionsError instanceof Error
+        ? actionsError.message
+        : completionsError instanceof Error
+          ? completionsError.message
+          : null;
+  const isFlowLoading = isMissionLoading || isActionsLoading || isCompletionsLoading;
 
   useEffect(() => {
     const validKeys = new Set(actionItems.map(item => item.key));
@@ -411,6 +498,19 @@ function ActionSettingsCardComponent(
       }
       return hasChange ? next : prev;
     });
+
+    setValidationIssueCountByItemKey(prev => {
+      let hasChange = false;
+      const next: Record<string, number> = {};
+      for (const [key, value] of Object.entries(prev)) {
+        if (validKeys.has(key)) {
+          next[key] = value;
+        } else {
+          hasChange = true;
+        }
+      }
+      return hasChange ? next : prev;
+    });
   }, [actionItems]);
 
   const hasPendingChanges = useMemo(() => {
@@ -421,12 +521,28 @@ function ActionSettingsCardComponent(
     return existingActions.some(action => dirtyByItemKey[getExistingItemKey(action.id)]);
   }, [draftItems.length, existingActions, dirtyByItemKey]);
 
+  const validationIssueCount = useMemo(
+    () =>
+      actionItems.reduce((sum, item) => sum + (validationIssueCountByItemKey[item.key] ?? 0), 0),
+    [actionItems, validationIssueCountByItemKey],
+  );
+  const hasValidationIssues = validationIssueCount > 0;
+
   useEffect(() => {
     onSaveStateChange?.({
       hasPendingChanges,
       isBusy: isBusy || isActionsLoading,
+      hasValidationIssues,
+      validationIssueCount,
     });
-  }, [hasPendingChanges, isBusy, isActionsLoading, onSaveStateChange]);
+  }, [
+    hasPendingChanges,
+    hasValidationIssues,
+    isBusy,
+    isActionsLoading,
+    onSaveStateChange,
+    validationIssueCount,
+  ]);
 
   const handleItemDirtyChange = useCallback((itemKey: string, isDirty: boolean) => {
     setDirtyByItemKey(prev => {
@@ -435,6 +551,16 @@ function ActionSettingsCardComponent(
       }
 
       return { ...prev, [itemKey]: isDirty };
+    });
+  }, []);
+
+  const handleItemValidationChange = useCallback((itemKey: string, issueCount: number) => {
+    setValidationIssueCountByItemKey(prev => {
+      if ((prev[itemKey] ?? 0) === issueCount) {
+        return prev;
+      }
+
+      return { ...prev, [itemKey]: issueCount };
     });
   }, []);
 
@@ -465,6 +591,11 @@ function ActionSettingsCardComponent(
       delete next[itemKey];
       return next;
     });
+    setValidationIssueCountByItemKey(prev => {
+      const next = { ...prev };
+      delete next[itemKey];
+      return next;
+    });
     delete formRefs.current[itemKey];
     setOpenItemKey(prev => (prev === itemKey ? null : prev));
   };
@@ -484,10 +615,13 @@ function ActionSettingsCardComponent(
 
   const executeSave = async ({
     silent = false,
-  }: { silent?: boolean } = {}): Promise<SectionSaveResult> => {
+    showValidationUi = true,
+  }: SectionSaveOptions = {}): Promise<SectionSaveResult> => {
     if (isActionsLoading || isBusy) {
-      return { status: "failed", message: "액션 저장이 진행 중입니다." };
+      return { status: "failed", message: "진행 목록 저장이 진행 중입니다." };
     }
+
+    const canShowValidationUi = showValidationUi;
 
     const existingSnapshot = [...existingActions];
     const draftSnapshot = [...draftItems];
@@ -513,27 +647,33 @@ function ActionSettingsCardComponent(
     for (const item of listSnapshot) {
       const formRef = formRefs.current[item.key];
       if (!formRef) {
-        setOpenItemKey(item.key);
+        if (canShowValidationUi) {
+          setOpenItemKey(item.key);
+        }
         return {
           status: "failed",
-          message: "액션 폼이 준비되지 않았습니다. 다시 시도해주세요.",
+          message: "질문 폼이 준비되지 않았습니다. 다시 시도해주세요.",
         };
       }
 
       if (formRef.isUploading()) {
-        setOpenItemKey(item.key);
+        if (canShowValidationUi) {
+          setOpenItemKey(item.key);
+        }
         return {
           status: "failed",
           message: "이미지 업로드가 완료된 뒤 저장해주세요.",
         };
       }
 
-      const submission = formRef.validateAndGetSubmission();
+      const submission = formRef.validateAndGetSubmission({ showErrors: canShowValidationUi });
       if (!submission) {
-        setOpenItemKey(item.key);
+        if (canShowValidationUi) {
+          setOpenItemKey(item.key);
+        }
         return {
           status: "invalid",
-          message: "액션 입력값을 확인해주세요.",
+          message: "질문 입력값을 확인해주세요.",
         };
       }
 
@@ -588,7 +728,9 @@ function ActionSettingsCardComponent(
       for (const draftCompletionId of referencedDraftCompletionIds) {
         const completionForm = getCompletionDraftFormById(draftCompletionId);
         if (!completionForm) {
-          openCompletionDraftById(draftCompletionId);
+          if (canShowValidationUi) {
+            openCompletionDraftById(draftCompletionId);
+          }
           return {
             status: "failed",
             message: "참조된 결과 화면 폼을 찾을 수 없습니다.",
@@ -596,16 +738,22 @@ function ActionSettingsCardComponent(
         }
 
         if (completionForm.isUploading()) {
-          openCompletionDraftById(draftCompletionId);
+          if (canShowValidationUi) {
+            openCompletionDraftById(draftCompletionId);
+          }
           return {
             status: "failed",
             message: "결과 화면 이미지 업로드가 완료된 뒤 저장해주세요.",
           };
         }
 
-        const completionValues = completionForm.validateAndGetValues();
+        const completionValues = completionForm.validateAndGetValues({
+          showErrors: canShowValidationUi,
+        });
         if (!completionValues) {
-          openCompletionDraftById(draftCompletionId);
+          if (canShowValidationUi) {
+            openCompletionDraftById(draftCompletionId);
+          }
           return {
             status: "invalid",
             message: "연결된 결과 화면 입력값을 확인해주세요.",
@@ -658,7 +806,7 @@ function ActionSettingsCardComponent(
 
         const createdId = created?.data?.id;
         if (!createdId) {
-          throw new Error("액션 생성 결과를 확인할 수 없습니다.");
+          throw new Error("질문 생성 결과를 확인할 수 없습니다.");
         }
 
         tempToRealActionIdMap.set(makeDraftActionId(draft.key), createdId);
@@ -738,7 +886,7 @@ function ActionSettingsCardComponent(
         } catch {
           if (!silent) {
             toast({
-              message: "시작 액션 설정 중 오류가 발생했습니다.",
+              message: "시작 질문 설정 중 오류가 발생했습니다.",
               icon: AlertCircle,
               iconClassName: "text-red-500",
             });
@@ -773,6 +921,16 @@ function ActionSettingsCardComponent(
         }
         return next;
       });
+      setValidationIssueCountByItemKey(prev => {
+        const next = { ...prev };
+        for (const action of changedExistingActions) {
+          delete next[getExistingItemKey(action.id)];
+        }
+        for (const draft of draftSnapshot) {
+          delete next[getDraftItemKey(draft.key)];
+        }
+        return next;
+      });
       setDraftFormSnapshotByItemKey({});
 
       for (const draftCompletionId of createdCompletionDraftIds) {
@@ -789,7 +947,7 @@ function ActionSettingsCardComponent(
       ]);
 
       if (!silent) {
-        toast({ message: "액션 설정이 저장되었습니다." });
+        toast({ message: "진행 목록 설정이 저장되었습니다." });
       }
       return { status: "saved" };
     } catch (error) {
@@ -802,7 +960,8 @@ function ActionSettingsCardComponent(
         });
       }
 
-      const message = error instanceof Error ? error.message : "액션 설정 저장에 실패했습니다.";
+      const message =
+        error instanceof Error ? error.message : "진행 목록 설정 저장에 실패했습니다.";
       if (!silent) {
         toast({
           message,
@@ -815,7 +974,7 @@ function ActionSettingsCardComponent(
       setIsUpdatingEntryAction(false);
     }
 
-    return { status: "failed", message: "액션 설정 저장에 실패했습니다." };
+    return { status: "failed", message: "진행 목록 설정 저장에 실패했습니다." };
   };
 
   useImperativeHandle(
@@ -824,24 +983,7 @@ function ActionSettingsCardComponent(
       save: executeSave,
       hasPendingChanges: () => hasPendingChanges,
       isBusy: () => isBusy || isActionsLoading,
-      exportDraftSnapshot: (): ActionSectionDraftSnapshot => {
-        const formSnapshotByItemKey: Record<string, ActionFormRawSnapshot> = {};
-
-        for (const item of actionItems) {
-          const snapshot = formRefs.current[item.key]?.getRawSnapshot();
-          if (snapshot) {
-            formSnapshotByItemKey[item.key] = snapshot;
-          }
-        }
-
-        return {
-          draftItems,
-          openItemKey,
-          dirtyByItemKey,
-          actionTypeByItemKey,
-          formSnapshotByItemKey,
-        };
-      },
+      exportDraftSnapshot: (): ActionSectionDraftSnapshot => getActionDraftSnapshot(),
       importDraftSnapshot: async (snapshot: unknown) => {
         if (!snapshot || typeof snapshot !== "object") {
           return;
@@ -877,26 +1019,44 @@ function ActionSettingsCardComponent(
         setDraftHydrationVersion(prev => prev + 1);
       },
     }),
-    [
-      actionItems,
-      actionTypeByItemKey,
-      draftItems,
-      dirtyByItemKey,
-      executeSave,
-      hasPendingChanges,
-      isActionsLoading,
-      isBusy,
-      openItemKey,
-    ],
+    [executeSave, getActionDraftSnapshot, hasPendingChanges, isActionsLoading, isBusy],
   );
 
   return (
     <div className="border border-zinc-200 bg-white">
       <div className="border-b border-zinc-100 px-5 py-4">
-        <Typo.SubTitle>액션 수정</Typo.SubTitle>
-        <Typo.Body size="medium" className="mt-1 text-zinc-500">
-          참여자가 수행할 액션을 추가하고 수정합니다.
-        </Typo.Body>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <Typo.SubTitle>진행 목록 수정</Typo.SubTitle>
+            <Typo.Body size="medium" className="mt-1 text-zinc-500">
+              참여자가 수행할 질문을 추가하고 수정합니다.
+            </Typo.Body>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            {hasValidationIssues ? (
+              <div
+                className="flex items-center gap-1 text-red-500"
+                title="입력 확인 필요"
+                aria-label="입력 확인 필요"
+              >
+                <AlertCircle className="size-4" />
+                <Typo.Body size="small" className="font-semibold text-red-500">
+                  {validationIssueCount}
+                </Typo.Body>
+              </div>
+            ) : null}
+            <Button
+              variant="secondary"
+              className="h-10 px-4"
+              inlineIcon
+              leftIcon={<GitBranch className="size-4" />}
+              onClick={() => setIsFlowDialogOpen(true)}
+              disabled={isFlowLoading}
+            >
+              플로우
+            </Button>
+          </div>
+        </div>
       </div>
 
       <div className="flex flex-col gap-4 px-5 py-5">
@@ -908,9 +1068,9 @@ function ActionSettingsCardComponent(
           </div>
         ) : actionItems.length === 0 ? (
           <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-10 text-center">
-            <Typo.SubTitle>아직 액션이 없습니다</Typo.SubTitle>
+            <Typo.SubTitle>아직 진행 목록이 없습니다</Typo.SubTitle>
             <Typo.Body size="medium" className="mt-2 text-zinc-500">
-              액션 추가 버튼으로 첫 액션을 생성해주세요.
+              질문 추가 버튼으로 첫 질문을 생성해주세요.
             </Typo.Body>
           </div>
         ) : (
@@ -923,10 +1083,14 @@ function ActionSettingsCardComponent(
               const itemTitle =
                 item.kind === "existing"
                   ? item.action.title
-                  : `${ACTION_TYPE_LABELS[itemType]} 액션`;
+                  : `${ACTION_TYPE_LABELS[itemType]} 질문`;
               const currentActionId =
                 item.kind === "existing" ? item.action.id : makeDraftActionId(item.draft.key);
               const formLinkTargets = linkTargets.filter(target => target.id !== currentActionId);
+              const previewImageUrl =
+                formRefs.current[item.key]?.getRawSnapshot().values.imageUrl ??
+                draftFormSnapshotByItemKey[item.key]?.values.imageUrl ??
+                (item.kind === "existing" ? item.action.imageUrl : null);
 
               return (
                 <div key={item.key} className="overflow-hidden rounded-xl border border-zinc-200">
@@ -944,17 +1108,26 @@ function ActionSettingsCardComponent(
                           {ACTION_TYPE_LABELS[itemType]}
                         </Typo.Body>
                       </div>
-                      <ChevronDown
-                        className={`size-4 shrink-0 text-zinc-500 transition-transform ${
-                          isOpen ? "rotate-180" : ""
-                        }`}
-                      />
+                      <div className="flex shrink-0 items-center gap-2">
+                        {previewImageUrl ? (
+                          <img
+                            src={previewImageUrl}
+                            alt={`${itemTitle} 미리보기 이미지`}
+                            className="size-10 shrink-0 rounded border border-zinc-200 bg-zinc-100 object-cover"
+                          />
+                        ) : null}
+                        <ChevronDown
+                          className={`size-4 shrink-0 text-zinc-500 transition-transform ${
+                            isOpen ? "rotate-180" : ""
+                          }`}
+                        />
+                      </div>
                     </button>
 
                     {item.kind === "draft" ? (
                       <button
                         type="button"
-                        aria-label="신규 액션 제거"
+                        aria-label="신규 질문 제거"
                         onClick={() => handleRemoveDraft(item.draft.key)}
                         className="ml-2 rounded p-1 text-zinc-400 transition-colors hover:text-red-500"
                       >
@@ -963,7 +1136,7 @@ function ActionSettingsCardComponent(
                     ) : (
                       <button
                         type="button"
-                        aria-label="저장된 액션 삭제"
+                        aria-label="저장된 질문 삭제"
                         onClick={event => {
                           event.stopPropagation();
                           setDeleteTarget(item.action);
@@ -998,9 +1171,13 @@ function ActionSettingsCardComponent(
                         hideFooter
                         enableTypeSelect
                         enforceExclusiveNextLink
+                        wordingMode="question"
                         onActionTypeChange={type => handleActionTypeChange(item.key, type)}
                         onDirtyChange={isDirty => {
                           handleItemDirtyChange(item.key, isDirty);
+                        }}
+                        onValidationStateChange={issueCount => {
+                          handleItemValidationChange(item.key, issueCount);
                         }}
                       />
                     ) : (
@@ -1020,9 +1197,13 @@ function ActionSettingsCardComponent(
                         hideFooter
                         enableTypeSelect
                         enforceExclusiveNextLink
+                        wordingMode="question"
                         onActionTypeChange={type => handleActionTypeChange(item.key, type)}
                         onDirtyChange={isDirty => {
                           handleItemDirtyChange(item.key, isDirty);
+                        }}
+                        onValidationStateChange={issueCount => {
+                          handleItemValidationChange(item.key, issueCount);
                         }}
                       />
                     )}
@@ -1041,10 +1222,18 @@ function ActionSettingsCardComponent(
         >
           <Plus className="size-5" />
           <Typo.Body size="medium" className="font-medium">
-            액션 추가
+            질문 추가
           </Typo.Body>
         </button>
       </div>
+
+      <FlowOverviewDialog
+        open={isFlowDialogOpen}
+        onOpenChange={setIsFlowDialogOpen}
+        analysis={flowAnalysis}
+        isLoading={isFlowLoading}
+        errorMessage={flowErrorMessage}
+      />
 
       <Dialog
         open={Boolean(deleteTarget)}
@@ -1070,11 +1259,11 @@ function ActionSettingsCardComponent(
               }}
             >
               <DialogTitle asChild>
-                <Typo.SubTitle className="mb-2">액션 삭제</Typo.SubTitle>
+                <Typo.SubTitle className="mb-2">질문 삭제</Typo.SubTitle>
               </DialogTitle>
               <DialogDescription asChild>
                 <Typo.Body size="medium" className="mb-6 text-zinc-500">
-                  "{deleteTarget.title}" 액션을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+                  "{deleteTarget.title}" 질문을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
                 </Typo.Body>
               </DialogDescription>
               <div className="flex gap-3">

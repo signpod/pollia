@@ -108,6 +108,7 @@ export function CreateRewardSettingsStep() {
                 errorMessage={getRewardErrorMessage(errors, "name")}
                 value={field.value ?? ""}
                 onChange={field.onChange}
+                onBlur={field.onBlur}
               />
             )}
           />
@@ -124,6 +125,7 @@ export function CreateRewardSettingsStep() {
                 errorMessage={getRewardErrorMessage(errors, "description")}
                 value={field.value ?? ""}
                 onChange={field.onChange}
+                onBlur={field.onBlur}
               />
             )}
           />
@@ -138,6 +140,7 @@ export function CreateRewardSettingsStep() {
                   value={field.value}
                   onValueChange={value => {
                     field.onChange(value);
+                    field.onBlur();
 
                     if (value === PaymentType.SCHEDULED) {
                       const currentScheduledDate = getValues("reward.scheduledDate");
@@ -193,6 +196,7 @@ export function CreateRewardSettingsStep() {
                   const handleDateChange = (newDate: Date | undefined) => {
                     if (!newDate) {
                       field.onChange(undefined);
+                      field.onBlur();
                       return;
                     }
                     const current = dateValue ?? newDate;
@@ -201,6 +205,7 @@ export function CreateRewardSettingsStep() {
                     }
                     newDate.setHours(current.getHours(), current.getMinutes(), 0, 0);
                     field.onChange(newDate);
+                    field.onBlur();
                   };
 
                   const handleTimeChange = (newTime: string) => {
@@ -208,6 +213,7 @@ export function CreateRewardSettingsStep() {
                     const nextDate = dateValue ? new Date(dateValue) : new Date();
                     nextDate.setHours(h ?? 0, m ?? 0, 0, 0);
                     field.onChange(nextDate);
+                    field.onBlur();
                   };
 
                   return (

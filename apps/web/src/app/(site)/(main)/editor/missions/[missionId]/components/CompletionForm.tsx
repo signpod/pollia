@@ -85,7 +85,7 @@ export interface CompletionFormRawSnapshot {
 }
 
 export interface CompletionFormHandle {
-  validateAndGetValues: () => CompletionFormValues | null;
+  validateAndGetValues: (options?: { showErrors?: boolean }) => CompletionFormValues | null;
   isUploading: () => boolean;
   deleteMarkedInitial: () => void;
   isDirty: () => boolean;
@@ -104,6 +104,18 @@ interface CompletionFormProps {
   hideFooter?: boolean;
   onTitleChange?: (title: string) => void;
   onDirtyChange?: (isDirty: boolean) => void;
+  onValidationStateChange?: (issueCount: number) => void;
+}
+
+function areErrorMapsEqual(left: Record<string, string>, right: Record<string, string>): boolean {
+  const leftEntries = Object.entries(left);
+  const rightEntries = Object.entries(right);
+
+  if (leftEntries.length !== rightEntries.length) {
+    return false;
+  }
+
+  return leftEntries.every(([key, value]) => right[key] === value);
 }
 
 function CompletionFormComponent(
@@ -118,6 +130,7 @@ function CompletionFormComponent(
     hideFooter = false,
     onTitleChange,
     onDirtyChange,
+    onValidationStateChange,
   }: CompletionFormProps,
   ref: ForwardedRef<CompletionFormHandle>,
 ) {
@@ -128,6 +141,8 @@ function CompletionFormComponent(
     initialValues?.imageFileUploadId ?? null,
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [hasValidationStarted, setHasValidationStarted] = useState(false);
+  const [validationIssueCount, setValidationIssueCount] = useState(0);
 
   const cropper = useImageCropper({
     fileNamePrefix: `completion-image-${missionId}-${itemKey}`,
@@ -165,12 +180,16 @@ function CompletionFormComponent(
     onDirtyChange?.(isDirty);
   }, [onDirtyChange, isDirty]);
 
+  useEffect(() => {
+    onValidationStateChange?.(validationIssueCount);
+  }, [onValidationStateChange, validationIssueCount]);
+
   const handleTitleChange = (nextTitle: string) => {
     setTitle(nextTitle);
     onTitleChange?.(nextTitle);
   };
 
-  const validate = useCallback(() => {
+  const buildValidationErrors = useCallback(() => {
     const nextErrors: Record<string, string> = {};
 
     const normalizedTitle = title.trim();
@@ -187,22 +206,52 @@ function CompletionFormComponent(
       nextErrors.description = `설명은 ${MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH}자를 초과할 수 없습니다.`;
     }
 
-    setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
+    return nextErrors;
   }, [title, description]);
 
-  const buildValidatedValues = useCallback((): CompletionFormValues | null => {
-    if (!validate()) {
-      return null;
+  const runValidation = useCallback(
+    ({ showErrors = true }: { showErrors?: boolean } = {}) => {
+      const nextErrors = buildValidationErrors();
+      const issueCount = Object.keys(nextErrors).length;
+
+      setValidationIssueCount(prev => (prev === issueCount ? prev : issueCount));
+
+      if (showErrors) {
+        setErrors(prev => (areErrorMapsEqual(prev, nextErrors) ? prev : nextErrors));
+      }
+
+      return {
+        isValid: issueCount === 0,
+        issueCount,
+      };
+    },
+    [buildValidationErrors],
+  );
+
+  useEffect(() => {
+    if (!hasValidationStarted) {
+      return;
     }
 
-    return {
-      title: title.trim(),
-      description,
-      imageUrl,
-      imageFileUploadId,
-    };
-  }, [validate, title, description, imageUrl, imageFileUploadId]);
+    runValidation();
+  }, [description, hasValidationStarted, runValidation, title]);
+
+  const buildValidatedValues = useCallback(
+    ({ showErrors = true }: { showErrors?: boolean } = {}): CompletionFormValues | null => {
+      const validationResult = runValidation({ showErrors });
+      if (!validationResult.isValid) {
+        return null;
+      }
+
+      return {
+        title: title.trim(),
+        description,
+        imageUrl,
+        imageFileUploadId,
+      };
+    },
+    [runValidation, title, description, imageUrl, imageFileUploadId],
+  );
 
   const getRawSnapshot = useCallback(
     (): CompletionFormRawSnapshot => ({
@@ -225,7 +274,7 @@ function CompletionFormComponent(
   useImperativeHandle(
     ref,
     () => ({
-      validateAndGetValues: () => buildValidatedValues(),
+      validateAndGetValues: options => buildValidatedValues(options),
       isUploading: () => imageUpload.isUploading,
       deleteMarkedInitial: () => {
         imageUpload.deleteMarkedInitial();
@@ -252,8 +301,13 @@ function CompletionFormComponent(
     setImageFileUploadId(null);
   };
 
+  const handleBlurCapture = () => {
+    setHasValidationStarted(true);
+    runValidation();
+  };
+
   return (
-    <div className="flex flex-col gap-5 p-4">
+    <div className="flex flex-col gap-5 p-4" onBlurCapture={handleBlurCapture}>
       {!hideTitle && <Typo.SubTitle>결과 화면 편집</Typo.SubTitle>}
 
       <Input

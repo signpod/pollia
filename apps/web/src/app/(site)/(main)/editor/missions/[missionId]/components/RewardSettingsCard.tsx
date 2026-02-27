@@ -19,11 +19,13 @@ import {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useState,
 } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import type {
   SectionSaveHandle,
+  SectionSaveOptions,
   SectionSaveResult,
   SectionSaveStateChangeHandler,
 } from "./editor-save.types";
@@ -97,6 +99,22 @@ function buildDefaultValues(
   };
 }
 
+function countValidationIssues(value: unknown): number {
+  if (!value || typeof value !== "object") {
+    return 0;
+  }
+
+  if ("message" in value) {
+    return 1;
+  }
+
+  if (Array.isArray(value)) {
+    return value.reduce((sum, item) => sum + countValidationIssues(item), 0);
+  }
+
+  return Object.values(value).reduce((sum, item) => sum + countValidationIssues(item), 0);
+}
+
 function RewardSettingsCardComponent(
   { mission, initialReward, onSaveStateChange }: RewardSettingsCardProps,
   ref: ForwardedRef<SectionSaveHandle>,
@@ -105,20 +123,32 @@ function RewardSettingsCardComponent(
   const form = useForm<CreateMissionFormData>({
     resolver: zodResolver(createMissionFormSchema),
     defaultValues: buildDefaultValues(mission, initialReward),
+    mode: "onBlur",
+    reValidateMode: "onChange",
   });
 
   const hasPendingChanges = form.formState.isDirty;
   const isBusy = form.formState.isSubmitting;
+  const validationIssueCount = useMemo(
+    () => countValidationIssues(form.formState.errors),
+    [form.formState.errors],
+  );
+  const hasValidationIssues = validationIssueCount > 0;
 
   useEffect(() => {
     onSaveStateChange?.({
       hasPendingChanges,
       isBusy,
+      hasValidationIssues,
+      validationIssueCount,
     });
-  }, [hasPendingChanges, isBusy, onSaveStateChange]);
+  }, [hasPendingChanges, hasValidationIssues, isBusy, onSaveStateChange, validationIssueCount]);
 
   const save = useCallback(
-    async ({ silent = false }: { silent?: boolean } = {}): Promise<SectionSaveResult> => {
+    async ({
+      silent = false,
+      showValidationUi = true,
+    }: SectionSaveOptions = {}): Promise<SectionSaveResult> => {
       if (form.formState.isSubmitting) {
         return { status: "failed", message: "리워드 저장이 진행 중입니다." };
       }
@@ -127,7 +157,9 @@ function RewardSettingsCardComponent(
         return { status: "no_changes" };
       }
 
-      const isValid = await form.trigger();
+      const isValid = showValidationUi
+        ? await form.trigger()
+        : createMissionFormSchema.safeParse(form.getValues()).success;
       if (!isValid) {
         return { status: "invalid", message: "리워드 정보를 확인해주세요." };
       }
@@ -268,10 +300,26 @@ function RewardSettingsCardComponent(
   return (
     <div className="border border-zinc-200 bg-white">
       <div className="border-b border-zinc-100 px-5 py-4">
-        <Typo.SubTitle>리워드 수정</Typo.SubTitle>
-        <Typo.Body size="medium" className="mt-1 text-zinc-500">
-          프로젝트 리워드를 설정하고 수정합니다.
-        </Typo.Body>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <Typo.SubTitle>리워드 수정</Typo.SubTitle>
+            <Typo.Body size="medium" className="mt-1 text-zinc-500">
+              프로젝트 리워드를 설정하고 수정합니다.
+            </Typo.Body>
+          </div>
+          {hasValidationIssues ? (
+            <div
+              className="flex shrink-0 items-center gap-1 text-red-500"
+              title="입력 확인 필요"
+              aria-label="입력 확인 필요"
+            >
+              <AlertCircle className="size-4" />
+              <Typo.Body size="small" className="font-semibold text-red-500">
+                {validationIssueCount}
+              </Typo.Body>
+            </div>
+          ) : null}
+        </div>
       </div>
 
       <FormProvider {...form}>
