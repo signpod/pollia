@@ -172,7 +172,7 @@ function ParticipationTab({
           action={<BrowseAction />}
         />
       ) : (
-        <div className="flex flex-col divide-y divide-zinc-100">
+        <div className="flex flex-col">
           {filtered.map(response => (
             <ParticipationListItem key={response.id} response={response} filter={filter} />
           ))}
@@ -268,7 +268,7 @@ const LikedTab = memo(function LikedTab() {
 
   return (
     <TabSection count={likedMissions.length} emptyMessage="" label="총" href={ROUTES.ME_LIKED_TAB}>
-      <div className="flex flex-col divide-y divide-zinc-100">
+      <div className="flex flex-col">
         {likedMissions.slice(0, MAX_PREVIEW).map(mission => (
           <LikedListItem key={mission.id} mission={mission} />
         ))}
@@ -427,7 +427,7 @@ const RewardsTab = memo(function RewardsTab() {
             label={label}
             href={href}
           >
-            <div className="flex flex-col divide-y divide-zinc-100">
+            <div className="flex flex-col">
               {items?.slice(0, MAX_REWARDS_PREVIEW).map(reward => (
                 <RewardListItem key={reward.id} reward={reward} />
               ))}

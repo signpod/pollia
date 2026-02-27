@@ -46,7 +46,7 @@ function MyContentListItem({ mission }: { mission: Mission }) {
 
 export function MyContentList({ missions }: { missions: Mission[] }) {
   return (
-    <div className="flex flex-col divide-y divide-zinc-100">
+    <div className="flex flex-col">
       {missions.map(mission => (
         <MyContentListItem key={mission.id} mission={mission} />
       ))}
