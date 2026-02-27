@@ -47,13 +47,13 @@ export function ProfileHeaderView({
           <PolliaWordmark className="h-[22px] text-black" />
         </Link>
       )}
-      {searchInput && <div className="mx-3 flex-1">{searchInput}</div>}
+      {searchInput && <div className="mx-3 min-w-0 flex-1">{searchInput}</div>}
       {user ? (
-        <button onClick={onProfileClick} type="button">
+        <button onClick={onProfileClick} type="button" className="shrink-0">
           <UserAvatar size="medium" imageUrl={profileImageUrl} />
         </button>
       ) : (
-        fallbackRight
+        <div className="shrink-0">{fallbackRight}</div>
       )}
       {searchDropdown}
     </header>
