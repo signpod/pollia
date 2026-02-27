@@ -17,13 +17,33 @@ const VALID_TAB_VALUES = new Set(TABS.map(t => t.value));
 
 export type TabValue = (typeof TABS)[number]["value"];
 
+export type ParticipationFilter = "in-progress" | "completed";
+const DEFAULT_FILTER: ParticipationFilter = "in-progress";
+const VALID_FILTERS = new Set<ParticipationFilter>(["in-progress", "completed"]);
+
+function replaceParams(params: Record<string, string | null>) {
+  const url = new URL(window.location.href);
+  for (const [key, value] of Object.entries(params)) {
+    if (value === null) url.searchParams.delete(key);
+    else url.searchParams.set(key, value);
+  }
+  window.history.replaceState(null, "", url.toString());
+}
+
 export function useMyProjectTabs() {
   const { data } = useMyResponses();
   const searchParams = useSearchParams();
   const initialTab = searchParams.get("tab");
+  const initialFilter = searchParams.get("filter");
 
   const [currentTab, setCurrentTab] = useState<string>(
     VALID_TAB_VALUES.has(initialTab as TabValue) ? (initialTab as string) : DEFAULT_TAB,
+  );
+
+  const [participationFilter, setParticipationFilter] = useState<ParticipationFilter>(
+    VALID_FILTERS.has(initialFilter as ParticipationFilter)
+      ? (initialFilter as ParticipationFilter)
+      : DEFAULT_FILTER,
   );
 
   const { inProgressResponses, completedResponses } = useMemo(() => {
@@ -39,13 +59,20 @@ export function useMyProjectTabs() {
 
   const handleTabChange = useCallback((value: string) => {
     setCurrentTab(value);
-    const url = new URL(window.location.href);
-    if (value === DEFAULT_TAB) {
-      url.searchParams.delete("tab");
-    } else {
-      url.searchParams.set("tab", value);
+    replaceParams({
+      tab: value === DEFAULT_TAB ? null : value,
+      filter: null,
+    });
+    if (value === "participation") {
+      setParticipationFilter(DEFAULT_FILTER);
     }
-    window.history.replaceState(null, "", url.toString());
+  }, []);
+
+  const handleFilterChange = useCallback((value: ParticipationFilter) => {
+    setParticipationFilter(value);
+    replaceParams({
+      filter: value === DEFAULT_FILTER ? null : value,
+    });
   }, []);
 
   return {
@@ -54,6 +81,8 @@ export function useMyProjectTabs() {
     handleTabChange,
     inProgressResponses,
     completedResponses,
+    participationFilter,
+    handleFilterChange,
   };
 }
 
