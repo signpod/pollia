@@ -18,6 +18,8 @@ declare namespace NodeJS {
     NEXT_PUBLIC_KAKAO_JS_KEY: string;
     KAKAO_REST_API_KEY: string;
     KAKAO_CLIENT_SECRET: string;
+    ANTHROPIC_API_KEY: string;
+    ANTHROPIC_MODEL: string;
 
     NEXT_PUBLIC_PRIVACY_POLICY_URL: string;
 
