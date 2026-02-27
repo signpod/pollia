@@ -17,20 +17,20 @@ export function RootWrapper({ children, leftAside, rightAside }: RootWrapperProp
   return (
     <div className="flex min-h-svh justify-center">
       {leftAside && (
-        <aside className="hidden shrink-0 xl:block">
+        <aside className="hidden min-w-0 shrink overflow-hidden lg:block">
           <div className="sticky top-15 pr-4">{leftAside}</div>
         </aside>
       )}
       <main
         className={cn(
-          "w-full max-w-[600px] min-h-svh border-x border-zinc-100 overflow-x-clip",
+          "w-full max-w-[600px] min-h-svh border-x border-zinc-100 overflow-x-clip shrink-0",
           isZincBg ? "bg-zinc-50" : "bg-background",
         )}
       >
         {children}
       </main>
       {rightAside && (
-        <aside className="hidden shrink-0 xl:block">
+        <aside className="hidden min-w-0 shrink overflow-hidden lg:block">
           <div className="sticky top-15 pl-4">{rightAside}</div>
         </aside>
       )}
