@@ -73,7 +73,7 @@ export function MainContent({ initialProjects }: MainContentProps) {
       </div>
       {filteredContent.length > 0 ? (
         <>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-10 px-5">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-10 px-5 md:grid-cols-3">
             {filteredContent.map(item => (
               <SurveyCard key={`project-${item.data.id}`} survey={item.data} />
             ))}

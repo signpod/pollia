@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/user";
 import HomeIconFilled from "@public/svgs/home-icon-filled.svg";
 import HomeIcon from "@public/svgs/home-icon.svg";
 import { Tooltip, Typo, useDrawer } from "@repo/ui/components";
-import { BadgePlus, Heart, MessageCircle, Store } from "lucide-react";
+import { BadgePlus, Heart, MessageCircle, Sparkle } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -72,19 +72,19 @@ function BottomNavBarContent() {
       <span
         {...comingSoonProps("nav-store")}
         className="flex flex-1 cursor-not-allowed flex-col items-center justify-center gap-0.5 py-2 opacity-30"
-        aria-label="스토어"
+        aria-label="PICK"
         aria-disabled="true"
       >
-        <Store className="size-7 text-zinc-400" strokeWidth={1.5} />
+        <Sparkle className="size-7 text-zinc-400" strokeWidth={1.5} />
         <Typo.Body size="small" className="text-[11px] font-bold leading-normal text-zinc-400">
-          스토어
+          PICK
         </Typo.Body>
       </span>
 
       <Link
         href={ROUTES.CREATE_MISSION}
         className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2"
-        aria-label="에디트"
+        aria-label="에디터"
       >
         <BadgePlus
           className={`size-7 ${isCreate ? "fill-black text-black [&>line]:stroke-white" : "text-zinc-400"}`}
@@ -94,7 +94,7 @@ function BottomNavBarContent() {
           size="small"
           className={`text-[11px] font-bold leading-normal ${isCreate ? "text-black" : "text-zinc-400"}`}
         >
-          에디트
+          에디터
         </Typo.Body>
       </Link>
 
