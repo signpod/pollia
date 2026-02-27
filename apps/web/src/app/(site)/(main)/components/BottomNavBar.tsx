@@ -57,9 +57,9 @@ function BottomNavBarContent() {
         aria-label="홈"
       >
         {isHome ? (
-          <HomeIconFilled className="size-6 text-black" />
+          <HomeIconFilled className="size-7 text-black" />
         ) : (
-          <HomeIcon className="size-6 text-zinc-400" strokeWidth={1.5} />
+          <HomeIcon className="size-7 text-zinc-400" strokeWidth={1.5} />
         )}
         <Typo.Body
           size="small"
@@ -75,7 +75,7 @@ function BottomNavBarContent() {
         aria-label="스토어"
         aria-disabled="true"
       >
-        <Store className="size-6 text-zinc-400" strokeWidth={1.5} />
+        <Store className="size-7 text-zinc-400" strokeWidth={1.5} />
         <Typo.Body size="small" className="text-[11px] font-bold leading-normal text-zinc-400">
           스토어
         </Typo.Body>
@@ -87,7 +87,7 @@ function BottomNavBarContent() {
         aria-label="에디트"
       >
         <BadgePlus
-          className={`size-6 ${isCreate ? "text-black" : "text-zinc-400"}`}
+          className={`size-7 ${isCreate ? "fill-black text-black [&>line]:stroke-white" : "text-zinc-400"}`}
           strokeWidth={isCreate ? 2 : 1.5}
         />
         <Typo.Body
@@ -105,7 +105,7 @@ function BottomNavBarContent() {
         onClick={handleLikesClick}
       >
         <Heart
-          className={`size-6 ${isLikes ? "text-black" : "text-zinc-400"}`}
+          className={`size-7 ${isLikes ? "text-black" : "text-zinc-400"}`}
           fill={isLikes ? "currentColor" : "none"}
           strokeWidth={isLikes ? 2 : 1.5}
         />
@@ -123,7 +123,7 @@ function BottomNavBarContent() {
         aria-label="커뮤니티"
         aria-disabled="true"
       >
-        <MessageCircle className="size-6 text-zinc-400" strokeWidth={1.5} />
+        <MessageCircle className="size-7 text-zinc-400" strokeWidth={1.5} />
         <Typo.Body size="small" className="text-[11px] font-bold leading-normal text-zinc-400">
           커뮤니티
         </Typo.Body>
