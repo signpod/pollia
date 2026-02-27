@@ -9,8 +9,8 @@
 
 @theme {
   --animate-fade-up: fade-up 0.6s ease-out;
-  --animate-page-fade: page-fade 0.2s ease-out both;
-  --animate-page-slide-in: page-slide-in 0.35s cubic-bezier(0.32, 0.72, 0, 1) both;
+  --animate-page-fade: page-fade 0.2s ease-out forwards;
+  --animate-page-slide-in: page-slide-in 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards;
 
   /* Sub colors */
   --color-yellow-500: #ffe672;
