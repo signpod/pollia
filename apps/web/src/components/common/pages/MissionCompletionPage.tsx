@@ -59,7 +59,7 @@ function RewardBottomSheet({
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
           <motion.div
-            className="absolute inset-0 mx-auto max-w-[600px] bg-black/40"
+            className="absolute inset-0 bg-black/40"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

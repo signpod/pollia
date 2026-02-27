@@ -3,6 +3,7 @@
 import { ROUTES } from "@/constants/routes";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useReadActionsDetail } from "@/hooks/action";
+import { useGoBack } from "@/hooks/common/useGoBack";
 import {
   Button,
   Dialog,
@@ -51,6 +52,7 @@ function buildCreateActionRoute(missionId: string, intent?: CreateRouteIntent) {
 
 export function ManageActionsClient({ missionId }: ManageActionsClientProps) {
   const router = useRouter();
+  const goBack = useGoBack();
   const { data: actionsData, isLoading: actionsLoading } = useReadActionsDetail(missionId);
 
   const actions = useMemo(() => {
@@ -63,7 +65,7 @@ export function ManageActionsClient({ missionId }: ManageActionsClientProps) {
   return (
     <div className="min-h-screen bg-zinc-50">
       <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-zinc-100 bg-white px-4 py-3">
-        <button type="button" onClick={() => router.back()} className="p-1">
+        <button type="button" onClick={goBack} className="p-1">
           <ChevronLeft className="size-6" />
         </button>
         <Typo.SubTitle>액션 설정</Typo.SubTitle>

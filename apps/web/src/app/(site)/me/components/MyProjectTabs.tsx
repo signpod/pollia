@@ -10,14 +10,15 @@ import type { Mission } from "@prisma/client";
 import thumbnailFallback from "@public/images/thumbnail-fallback.png";
 import PolliaFaceVeryGood from "@public/svgs/face/very-good-face-full.svg";
 import PollPollE from "@public/svgs/poll-poll-e.svg";
-import { ButtonV2, EmptyState, Tab, Typo } from "@repo/ui/components";
-import { PencilIcon } from "lucide-react";
+import { ButtonV2, EmptyState, Tab, Typo, useModal } from "@repo/ui/components";
+import { PencilIcon, Trash2Icon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { memo, useCallback, useState } from "react";
 import { MissionLikeButton } from "../../(main)/components/MissionLikeButton";
+import { useDeleteMissionResponse } from "../hooks/useDeleteMissionResponse";
 import { useGroupedRewards } from "../hooks/useGroupedRewards";
 import { useLikedMissions } from "../hooks/useLikedMissions";
 import { useMyProjectTabs } from "../hooks/useMyProjectTabs";
@@ -188,6 +189,8 @@ function ParticipationListItem({
 }: { response: MyMissionResponse; filter: ParticipationFilter }) {
   const { mission } = response;
   const router = useRouter();
+  const { showModal } = useModal();
+  const deleteMutation = useDeleteMissionResponse();
   const [imageError, setImageError] = useState(false);
   const showFallback = imageError || !mission.imageUrl;
   const categoryLabel =
@@ -214,6 +217,24 @@ function ParticipationListItem({
     [mission.id, filter, nextActionId, router],
   );
 
+  const handleDelete = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      showModal({
+        title: "참여 내역 삭제",
+        description: "참여를 삭제하면 콘텐츠 응답 데이터에서도 제거됩니다. 되돌릴 수 없습니다.",
+        confirmText: "삭제하기",
+        cancelText: "취소",
+        showCancelButton: true,
+        onConfirm: async () => {
+          await deleteMutation.mutateAsync(response.id);
+        },
+      });
+    },
+    [showModal, deleteMutation, response.id],
+  );
+
   return (
     <Link href={ROUTES.MISSION(mission.id)} className="flex items-center gap-3 py-3">
       <div className="relative size-11 shrink-0 overflow-hidden rounded-sm">
@@ -234,11 +255,20 @@ function ParticipationListItem({
           {mission.title}
         </Typo.SubTitle>
       </div>
-      <ButtonV2 variant="secondary" size="medium" onClick={handleAction} className="shrink-0">
-        <Typo.ButtonText size="medium">
-          {filter === "in-progress" ? "계속하기" : "결과보기"}
-        </Typo.ButtonText>
-      </ButtonV2>
+      <div className="flex shrink-0 items-center gap-2">
+        <ButtonV2 variant="secondary" size="medium" onClick={handleAction}>
+          <Typo.ButtonText size="medium">
+            {filter === "in-progress" ? "다시 참여" : "결과보기"}
+          </Typo.ButtonText>
+        </ButtonV2>
+        <button
+          type="button"
+          onClick={handleDelete}
+          className="flex items-center justify-center text-zinc-300 transition-colors hover:text-red-500"
+        >
+          <Trash2Icon className="size-4" />
+        </button>
+      </div>
     </Link>
   );
 }

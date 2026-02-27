@@ -1,23 +1,20 @@
 "use client";
 
-import type { FestivalData } from "@/types/dto/festival";
 import PollPollE from "@public/svgs/poll-poll-e.svg";
 import { EmptyState } from "@repo/ui/components";
 import { Loader2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useInfiniteContent } from "../hooks";
 import { type Category, CategoryFilter } from "./CategoryFilter";
-import { FestivalCard } from "./FestivalCard";
 import { StickyCategoryTab } from "./StickyCategoryTab";
 import type { SurveyCardData } from "./SurveyCard";
 import { SurveyCard } from "./SurveyCard";
 
 interface MainContentProps {
   initialProjects: SurveyCardData[];
-  initialFestivals: FestivalData[];
 }
 
-export function MainContent({ initialProjects, initialFestivals }: MainContentProps) {
+export function MainContent({ initialProjects }: MainContentProps) {
   const [selectedCategory, setSelectedCategory] = useState<Category>("all");
   const categoryFilterRef = useRef<HTMLDivElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
@@ -55,22 +52,13 @@ export function MainContent({ initialProjects, initialFestivals }: MainContentPr
 
   const { mixedContent, isLoadingMore, hasNextPage, observerRef } = useInfiniteContent({
     initialProjects,
-    initialFestivals,
   });
 
   const filteredContent = useMemo(() => {
     if (selectedCategory === "all") {
       return mixedContent;
     }
-    return mixedContent.filter(item => {
-      if (item.type === "project") {
-        return item.data.category === selectedCategory;
-      }
-      if (item.type === "festival") {
-        return selectedCategory === "EVENT";
-      }
-      return false;
-    });
+    return mixedContent.filter(item => item.data.category === selectedCategory);
   }, [selectedCategory, mixedContent]);
 
   return (
@@ -85,14 +73,10 @@ export function MainContent({ initialProjects, initialFestivals }: MainContentPr
       </div>
       {filteredContent.length > 0 ? (
         <>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-10 px-5">
-            {filteredContent.map(item =>
-              item.type === "project" ? (
-                <SurveyCard key={`project-${item.data.id}`} survey={item.data} />
-              ) : (
-                <FestivalCard key={`festival-${item.data.id}`} festival={item.data} />
-              ),
-            )}
+          <div className="grid grid-cols-2 gap-x-4 gap-y-10 px-5 md:grid-cols-3">
+            {filteredContent.map(item => (
+              <SurveyCard key={`project-${item.data.id}`} survey={item.data} />
+            ))}
           </div>
 
           <div ref={observerRef} className="mt-8 flex h-10 justify-center">

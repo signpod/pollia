@@ -2,10 +2,11 @@
 
 import { ProfileHeader } from "@/components/common/ProfileHeader";
 import { ROUTES } from "@/constants/routes";
+import { useGoBack } from "@/hooks/common/useGoBack";
 import { Typo } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
 import { ChevronLeftIcon } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 const SUB_PAGE_HEADERS: Record<string, string> = {
   [ROUTES.ME_IN_PROGRESS]: "참여 중",
@@ -20,7 +21,7 @@ const SUB_PAGE_HEADERS: Record<string, string> = {
 
 export function MeLayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
+  const goBack = useGoBack();
   const subPageTitle =
     SUB_PAGE_HEADERS[pathname] ??
     (pathname.startsWith("/me/result/") ? "결과 다시보기" : undefined);
@@ -31,7 +32,7 @@ export function MeLayoutShell({ children }: { children: React.ReactNode }) {
         <header className={cn("sticky top-0 z-50 flex h-12 items-center bg-white px-1")}>
           <button
             type="button"
-            onClick={() => router.back()}
+            onClick={goBack}
             className="size-12 flex items-center justify-center"
           >
             <ChevronLeftIcon className="size-6" />

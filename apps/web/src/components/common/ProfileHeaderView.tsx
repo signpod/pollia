@@ -14,6 +14,7 @@ export interface ProfileHeaderViewProps {
   showBack?: boolean;
   fallbackRight?: ReactNode;
   searchInput?: ReactNode;
+  searchDropdown?: ReactNode;
   user?: { name: string } | null;
   profileImageUrl?: string | null;
   onBack?: () => void;
@@ -24,6 +25,7 @@ export function ProfileHeaderView({
   showBack = false,
   fallbackRight,
   searchInput,
+  searchDropdown,
   user,
   profileImageUrl,
   onBack,
@@ -64,6 +66,7 @@ export function ProfileHeaderView({
       ) : (
         fallbackRight
       )}
+      {searchDropdown}
     </header>
   );
 }
