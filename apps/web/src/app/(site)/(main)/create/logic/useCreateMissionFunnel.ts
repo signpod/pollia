@@ -24,20 +24,17 @@ const STEP_TITLES: Record<Exclude<CreateMissionStep, "success">, string> = {
   category: "카테고리 선택",
   mode: "생성 방식 선택",
   "project-info": "프로젝트 정보 입력",
-  "reward-settings": "리워드 설정",
 };
 
 const NEXT_STEP: Record<Exclude<CreateMissionStep, "success">, CreateMissionStep> = {
   category: "mode",
   mode: "project-info",
-  "project-info": "reward-settings",
-  "reward-settings": "success",
+  "project-info": "success",
 };
 
 const PREV_STEP: Partial<Record<CreateMissionStep, Exclude<CreateMissionStep, "success">>> = {
   mode: "category",
   "project-info": "mode",
-  "reward-settings": "project-info",
 };
 
 export function useCreateMissionFunnel({ form }: UseCreateMissionFunnelParams) {
@@ -86,15 +83,11 @@ export function useCreateMissionFunnel({ form }: UseCreateMissionFunnelParams) {
       return form.trigger([
         "title",
         "description",
-        "isActive",
-        "isExposed",
         "allowGuestResponse",
         "allowMultipleResponses",
+        "hasReward",
+        "reward",
       ]);
-    }
-
-    if (currentStep === "reward-settings") {
-      return form.trigger(["hasReward", "reward"]);
     }
 
     return true;
@@ -166,7 +159,7 @@ export function useCreateMissionFunnel({ form }: UseCreateMissionFunnelParams) {
   const goNext = useCallback(async () => {
     if (currentStep === "success") return;
 
-    if (currentStep === "reward-settings") {
+    if (currentStep === "project-info") {
       await handleSubmit();
       return;
     }
@@ -239,7 +232,7 @@ export function useCreateMissionFunnel({ form }: UseCreateMissionFunnelParams) {
   }, [category, currentStep]);
 
   const nextButtonLabel =
-    currentStep === "reward-settings" ? `${UBIQUITOUS_CONSTANTS.MISSION} 생성` : "다음";
+    currentStep === "project-info" ? `${UBIQUITOUS_CONSTANTS.MISSION} 생성` : "다음";
 
   return {
     currentStep,

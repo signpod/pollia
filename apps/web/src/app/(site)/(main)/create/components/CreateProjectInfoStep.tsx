@@ -7,6 +7,7 @@ import {
   MISSION_DESCRIPTION_MAX_LENGTH,
   MISSION_TITLE_MAX_LENGTH,
 } from "../schema";
+import { CreateRewardSettingsStep } from "./CreateRewardSettingsStep";
 import { CreateTiptapField } from "./CreateTiptapField";
 
 function IntroToggleRow({
@@ -36,13 +37,11 @@ function IntroToggleRow({
 }
 
 interface CreateProjectInfoStepProps {
-  showActiveToggle?: boolean;
-  showExposureToggle?: boolean;
+  showRewardSettings?: boolean;
 }
 
 export function CreateProjectInfoStep({
-  showActiveToggle = true,
-  showExposureToggle = true,
+  showRewardSettings = false,
 }: CreateProjectInfoStepProps = {}) {
   const {
     control,
@@ -63,7 +62,6 @@ export function CreateProjectInfoStep({
             errorMessage={errors.title?.message}
             value={field.value}
             onChange={field.onChange}
-            onBlur={field.onBlur}
           />
         )}
       />
@@ -78,36 +76,6 @@ export function CreateProjectInfoStep({
         showCounter
         showToolbar
       />
-
-      {showActiveToggle && (
-        <Controller
-          control={control}
-          name="isActive"
-          render={({ field }) => (
-            <IntroToggleRow
-              label="활성 상태"
-              description="프로젝트를 활성화하거나 비활성화합니다."
-              checked={field.value}
-              onChange={field.onChange}
-            />
-          )}
-        />
-      )}
-
-      {showExposureToggle && (
-        <Controller
-          control={control}
-          name="isExposed"
-          render={({ field }) => (
-            <IntroToggleRow
-              label="노출여부"
-              description="노출 시 프로젝트 목록에 표시됩니다."
-              checked={field.value}
-              onChange={field.onChange}
-            />
-          )}
-        />
-      )}
 
       <Controller
         control={control}
@@ -134,6 +102,8 @@ export function CreateProjectInfoStep({
           />
         )}
       />
+
+      {showRewardSettings ? <CreateRewardSettingsStep /> : null}
     </div>
   );
 }

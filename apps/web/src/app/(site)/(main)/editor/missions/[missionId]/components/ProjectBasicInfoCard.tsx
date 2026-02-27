@@ -364,7 +364,7 @@ function ProjectBasicInfoCardComponent(
             </div>
           </div>
 
-          <CreateProjectInfoStep showActiveToggle={false} showExposureToggle={false} />
+          <CreateProjectInfoStep />
         </form>
       </FormProvider>
 
