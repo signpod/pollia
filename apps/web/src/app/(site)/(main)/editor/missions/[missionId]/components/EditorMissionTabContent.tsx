@@ -113,9 +113,6 @@ export function EditorMissionTabContent({
     () => Object.values(sectionStates).some(state => state.isBusy),
     [sectionStates],
   );
-  const handleMissionActiveChange = useCallback((nextIsActive: boolean) => {
-    setIsPublished(nextIsActive);
-  }, []);
 
   useEffect(() => {
     setIsPublished(mission.isActive);
@@ -359,7 +356,6 @@ export function EditorMissionTabContent({
           ref={basicInfoRef}
           mission={mission}
           onSaveStateChange={state => updateSectionState("basic", state)}
-          onMissionActiveChange={handleMissionActiveChange}
         />
         <Separator className="h-2" />
         <RewardSettingsCard

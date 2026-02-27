@@ -27,7 +27,6 @@ import type {
 interface ProjectBasicInfoCardProps {
   mission: GetMissionResponse["data"];
   onSaveStateChange?: SectionSaveStateChangeHandler;
-  onMissionActiveChange?: (isActive: boolean) => void;
 }
 
 function buildDefaultValues(mission: GetMissionResponse["data"]): CreateMissionFormData {
@@ -50,7 +49,7 @@ function buildDefaultValues(mission: GetMissionResponse["data"]): CreateMissionF
 }
 
 function ProjectBasicInfoCardComponent(
-  { mission, onSaveStateChange, onMissionActiveChange }: ProjectBasicInfoCardProps,
+  { mission, onSaveStateChange }: ProjectBasicInfoCardProps,
   ref: ForwardedRef<SectionSaveHandle>,
 ) {
   const form = useForm<CreateMissionFormData>({
@@ -150,7 +149,6 @@ function ProjectBasicInfoCardComponent(
         await updateMission(mission.id, {
           title: values.title,
           description: values.description,
-          isActive: values.isActive,
           type: MissionType.GENERAL,
           allowGuestResponse: values.allowGuestResponse,
           allowMultipleResponses: values.allowMultipleResponses,
@@ -163,7 +161,6 @@ function ProjectBasicInfoCardComponent(
         thumbnailImageUpload.deleteMarkedInitial();
         brandLogoImageUpload.deleteMarkedInitial();
         form.reset(values);
-        onMissionActiveChange?.(values.isActive);
 
         if (!silent) {
           toast({ message: `${UBIQUITOUS_CONSTANTS.MISSION} 기본 정보가 수정되었습니다.` });
@@ -187,7 +184,7 @@ function ProjectBasicInfoCardComponent(
         return { status: "failed", message };
       }
     },
-    [brandLogoImageUpload, form, mission.id, onMissionActiveChange, thumbnailImageUpload],
+    [brandLogoImageUpload, form, mission.id, thumbnailImageUpload],
   );
 
   useImperativeHandle(
@@ -265,7 +262,7 @@ function ProjectBasicInfoCardComponent(
             </div>
           </div>
 
-          <CreateProjectInfoStep showActiveToggle showExposureToggle={false} />
+          <CreateProjectInfoStep showActiveToggle={false} showExposureToggle={false} />
         </form>
       </FormProvider>
 
