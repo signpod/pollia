@@ -1,10 +1,10 @@
 import PolliaWordmark from "@public/svgs/pollia-wordmark.svg";
 import { Typo } from "@repo/ui/components";
-import Link from "next/link";
 
+// TODO: 실제 링크 연결 필요
 export function LeftAsidePanel() {
   return (
-    <div className="flex w-56 flex-col gap-3">
+    <div className="flex w-56 flex-col gap-3 pointer-events-none opacity-80">
       <div className="flex flex-col gap-3 rounded-xl border border-zinc-100 bg-white p-4">
         <PolliaWordmark className="h-4 w-auto self-start" />
         <Typo.Body size="small" className="text-zinc-900">
@@ -12,11 +12,11 @@ export function LeftAsidePanel() {
           <br />
           리서치 콘텐츠 플랫폼
         </Typo.Body>
-        <Link href="/" className="flex items-center justify-center rounded-lg bg-zinc-100 py-2">
+        <div className="flex items-center justify-center rounded-lg bg-zinc-100 py-2">
           <Typo.Body size="small" className="font-bold text-zinc-600">
             서비스 소개
           </Typo.Body>
-        </Link>
+        </div>
       </div>
       {/* TODO: 포인트 적립 기능 추가 시 활성화 */}
       {/* <div className="flex flex-col gap-2 rounded-xl border border-zinc-100 bg-white p-4">

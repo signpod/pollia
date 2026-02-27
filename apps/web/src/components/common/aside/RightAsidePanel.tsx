@@ -1,10 +1,7 @@
-import { ROUTES } from "@/constants/routes";
 import PolliaIcon from "@public/svgs/pollia-icon.svg";
 import { Typo } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
 import { ChevronRightIcon, SparklesIcon, TrendingUpIcon } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
 
 interface RankingItem {
   id: string;
@@ -54,9 +51,10 @@ const RANK_COLORS: Record<number, string> = {
   5: "text-zinc-300",
 };
 
+// TODO: 실제 API 연동 및 링크 연결 필요
 export function RightAsidePanel() {
   return (
-    <div className="flex w-56 flex-col gap-3">
+    <div className="flex w-56 flex-col gap-3 pointer-events-none opacity-80">
       <div className="flex flex-col gap-3 rounded-xl border border-zinc-100 bg-white p-4">
         <div className="flex items-center gap-1.5">
           <TrendingUpIcon className="size-3.5 text-violet-500" />
@@ -67,7 +65,7 @@ export function RightAsidePanel() {
 
         <div className="flex flex-col gap-2.5">
           {MOCK_RANKINGS.map((item, index) => (
-            <Link key={item.id} href={ROUTES.MISSION(item.id)} className="flex items-start gap-2.5">
+            <div key={item.id} className="flex items-start gap-2.5">
               <Typo.Body
                 size="small"
                 className={cn(
@@ -88,16 +86,16 @@ export function RightAsidePanel() {
                   {item.participantCount}명 참여
                 </Typo.Body>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
 
-        <Link href={ROUTES.HOME} className="flex items-center justify-center gap-1">
+        <div className="flex items-center justify-center gap-1">
           <ChevronRightIcon className="size-3 text-zinc-400" />
           <Typo.Body size="small" className="font-semibold text-zinc-400">
             더보기
           </Typo.Body>
-        </Link>
+        </div>
         <Typo.Body size="small" className="self-end text-[9px] text-zinc-300">
           참여자 수 기준
         </Typo.Body>
@@ -113,25 +111,11 @@ export function RightAsidePanel() {
 
         <div className="flex flex-col gap-2.5">
           {MOCK_PICKS.map(item => (
-            <Link
-              key={item.id}
-              href={ROUTES.MISSION(item.id)}
-              className="flex items-center gap-2.5"
-            >
+            <div key={item.id} className="flex items-center gap-2.5">
               <div className="relative size-10 shrink-0 overflow-hidden rounded-lg bg-zinc-100">
-                {item.imageUrl ? (
-                  <Image
-                    src={item.imageUrl}
-                    alt={item.title}
-                    fill
-                    sizes="40px"
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="flex size-full items-center justify-center bg-zinc-50">
-                    <PolliaIcon className="size-7 opacity-30" />
-                  </div>
-                )}
+                <div className="flex size-full items-center justify-center bg-zinc-50">
+                  <PolliaIcon className="size-7 opacity-30" />
+                </div>
               </div>
               <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                 <Typo.Body
@@ -144,7 +128,7 @@ export function RightAsidePanel() {
                   {item.category}
                 </Typo.Body>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       </div>
