@@ -144,6 +144,7 @@ export class MissionService {
       const createdMission = await this.repo.createWithActions(
         {
           ...validatedMissionData,
+          isActive: validatedMissionData.isActive ?? false,
           choseong: toChoseong(validatedMissionData.title),
           creatorId: userId,
         },

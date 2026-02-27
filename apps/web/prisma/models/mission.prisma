@@ -8,7 +8,7 @@ model Mission {
   estimatedMinutes       Int?            @map("estimated_minutes")
   deadline               DateTime?
   startDate              DateTime?       @map("start_date")
-  isActive               Boolean         @default(true) @map("is_active")
+  isActive               Boolean         @default(false) @map("is_active")
   allowGuestResponse     Boolean         @default(false) @map("allow_guest_response")
   allowMultipleResponses Boolean         @default(false) @map("allow_multiple_responses")
   maxParticipants        Int?            @map("max_participants")

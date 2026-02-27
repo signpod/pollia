@@ -81,7 +81,7 @@ export default function AdminMissionCreatePage() {
     maxParticipants: null,
     isExposed: true,
     category: "EVENT" as const,
-    isActive: undefined,
+    isActive: false,
     actionIds: [],
     completion: {
       title: "",
@@ -141,7 +141,7 @@ export default function AdminMissionCreatePage() {
         estimatedMinutes: missionData.estimatedMinutes || null,
         startDate: missionData.startDate || null,
         deadline: missionData.deadline || null,
-        isActive: missionData.isActive ?? true,
+        isActive: missionData.isActive ?? false,
         eventId: eventIdParam || null,
       };
 

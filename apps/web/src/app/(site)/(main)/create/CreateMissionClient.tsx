@@ -23,7 +23,7 @@ const CREATE_FORM_DEFAULT_VALUES: CreateMissionFormData = {
   description: "",
   hasReward: false,
   reward: undefined,
-  isActive: true,
+  isActive: false,
   isExposed: true,
   allowGuestResponse: false,
   allowMultipleResponses: false,
