@@ -57,7 +57,7 @@ export function RightAsidePanel() {
     <div className="flex w-56 flex-col gap-3 pointer-events-none opacity-80">
       <div className="flex flex-col gap-3 rounded-xl border border-zinc-100 bg-white p-4">
         <div className="flex items-center gap-1.5">
-          <TrendingUpIcon className="size-3.5 text-violet-500" />
+          <TrendingUpIcon className="size-4 text-violet-500" />
           <Typo.SubTitle size="large" className="font-bold text-zinc-900">
             실시간 랭킹
           </Typo.SubTitle>
@@ -103,7 +103,7 @@ export function RightAsidePanel() {
 
       <div className="flex flex-col gap-3 rounded-xl border border-zinc-100 bg-white p-4">
         <div className="flex items-center gap-1.5">
-          <SparklesIcon className="size-3.5 text-violet-500" />
+          <SparklesIcon className="size-4 text-violet-500" />
           <Typo.SubTitle size="large" className="font-bold text-zinc-900">
             폴리아 PICK
           </Typo.SubTitle>
