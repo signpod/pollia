@@ -11,7 +11,7 @@ import { Typo } from "@repo/ui/components";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronRightIcon, SearchIcon, TrendingUpIcon, XIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { type ReactNode, useDeferredValue, useRef, useState } from "react";
+import { type ReactNode, useDeferredValue, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ProfileHeaderView } from "./ProfileHeaderView";
 
@@ -30,6 +30,8 @@ export function ProfileHeader({ showBack, fallbackRight }: ProfileHeaderProps) {
 
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const debouncedQuery = useDeferredValue(query);
   const { data, isLoading } = useSearchMissions(debouncedQuery);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -103,21 +105,23 @@ export function ProfileHeader({ showBack, fallbackRight }: ProfileHeaderProps) {
     </div>
   );
 
-  const dimOverlay = createPortal(
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          className="fixed inset-0 z-40 bg-black/40"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
-          onClick={close}
-        />
-      )}
-    </AnimatePresence>,
-    document.body,
-  );
+  const dimOverlay = mounted
+    ? createPortal(
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              className="fixed inset-0 z-40 bg-black/40"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              onClick={close}
+            />
+          )}
+        </AnimatePresence>,
+        document.body,
+      )
+    : null;
 
   const searchDropdown = (
     <AnimatePresence>
