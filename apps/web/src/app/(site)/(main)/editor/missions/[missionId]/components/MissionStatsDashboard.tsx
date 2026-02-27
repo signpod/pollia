@@ -89,7 +89,7 @@ export function MissionStatsDashboard({ missionId }: MissionStatsDashboardProps)
           <div>
             <Typo.SubTitle>Raw Data</Typo.SubTitle>
             <Typo.Body size="medium" className="mt-1 text-zinc-500">
-              응답자 ID, 응답 시간, 질문별 답변을 확인할 수 있습니다.
+              닉네임, 응답 시간, 질문별 답변을 확인할 수 있습니다.
             </Typo.Body>
           </div>
           <p className="text-sm text-zinc-500">
@@ -124,7 +124,7 @@ export function MissionStatsDashboard({ missionId }: MissionStatsDashboardProps)
                 <thead className="bg-zinc-50">
                   <tr>
                     <th className="whitespace-nowrap border-b border-zinc-200 px-3 py-2 font-medium text-zinc-700">
-                      응답자 ID
+                      닉네임
                     </th>
                     <th className="whitespace-nowrap border-b border-zinc-200 px-3 py-2 font-medium text-zinc-700">
                       응답 시간
@@ -143,7 +143,9 @@ export function MissionStatsDashboard({ missionId }: MissionStatsDashboardProps)
                   {rows.map(row => (
                     <tr key={row.id} className="border-b border-zinc-100 last:border-0">
                       <td className="whitespace-nowrap px-3 py-2 font-medium text-zinc-800">
-                        {row.respondentId}
+                        {row.user.name && row.user.name.trim().length > 0
+                          ? row.user.name
+                          : "게스트"}
                       </td>
                       <td className="whitespace-nowrap px-3 py-2 text-zinc-700">
                         {formatResponseDateTime(row.responseAt)}

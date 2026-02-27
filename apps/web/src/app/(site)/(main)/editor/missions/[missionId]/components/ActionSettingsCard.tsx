@@ -1,6 +1,6 @@
 "use client";
 
-import { getCompletionsByMissionId } from "@/actions/mission-completion";
+import { createMissionCompletion, getCompletionsByMissionId } from "@/actions/mission-completion";
 import { updateMission } from "@/actions/mission/update";
 import {
   ActionForm,
@@ -9,6 +9,7 @@ import {
 } from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
 import {
   useManageCreateAction,
+  useManageDeleteAction,
   useManageUpdateAction,
 } from "@/app/(site)/mission/[missionId]/manage/actions/hooks";
 import {
@@ -20,14 +21,26 @@ import {
   resolveDraftActionReferences,
 } from "@/app/(site)/mission/[missionId]/manage/actions/logic";
 import { ACTION_TYPE_LABELS } from "@/constants/action";
+import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
 import { useReadActionsDetail } from "@/hooks/action";
 import type { ActionDetail } from "@/types/dto";
 import { ActionType } from "@prisma/client";
-import { Button, Typo, toast } from "@repo/ui/components";
-import { useQuery } from "@tanstack/react-query";
-import { AlertCircle, ChevronDown, Plus, X } from "lucide-react";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogOverlay,
+  DialogPortal,
+  DialogTitle,
+  Typo,
+  toast,
+} from "@repo/ui/components";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { AlertCircle, ChevronDown, Plus, Trash2, X } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
+import { isDraftCompletionId, useEditorMissionDraft } from "./EditorMissionDraftContext";
 
 interface ActionSettingsCardProps {
   missionId: string;
@@ -132,14 +145,72 @@ function isActionChanged(action: ActionDetail, submission: ActionSubmission) {
   return JSON.stringify(current) !== JSON.stringify(initial);
 }
 
+function collectDraftCompletionReferences(values: ActionFormValues): string[] {
+  const draftIds = new Set<string>();
+
+  if (isDraftCompletionId(values.nextCompletionId)) {
+    draftIds.add(values.nextCompletionId);
+  }
+
+  for (const option of values.options ?? []) {
+    if (isDraftCompletionId(option.nextCompletionId)) {
+      draftIds.add(option.nextCompletionId);
+    }
+  }
+
+  return [...draftIds];
+}
+
+function resolveDraftCompletionReferences(
+  values: ActionFormValues,
+  completionIdMap: Map<string, string>,
+  allowUnresolved = false,
+): ActionFormValues {
+  const resolveCompletionId = (completionId: string | null | undefined): string | null => {
+    if (!completionId) {
+      return null;
+    }
+    if (!isDraftCompletionId(completionId)) {
+      return completionId;
+    }
+
+    const mapped = completionIdMap.get(completionId);
+    if (mapped) {
+      return mapped;
+    }
+
+    return allowUnresolved ? null : completionId;
+  };
+
+  return {
+    ...values,
+    nextCompletionId: resolveCompletionId(values.nextCompletionId),
+    options: values.options?.map(option => ({
+      ...option,
+      nextCompletionId: resolveCompletionId(option.nextCompletionId),
+    })),
+  };
+}
+
 const NOOP = () => {};
 
 export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
+  const queryClient = useQueryClient();
   const formRefs = useRef<Record<string, ActionFormHandle | null>>({});
   const [draftItems, setDraftItems] = useState<DraftActionItem[]>([]);
   const [openItemKey, setOpenItemKey] = useState<string | null>(null);
   const [isUpdatingEntryAction, setIsUpdatingEntryAction] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<ActionDetail | null>(null);
+  const [existingFormVersionById, setExistingFormVersionById] = useState<Record<string, number>>(
+    {},
+  );
   const [actionTypeByItemKey, setActionTypeByItemKey] = useState<Record<string, ActionType>>({});
+  const {
+    completionDrafts,
+    getCompletionDraftFormById,
+    openCompletionDraftById,
+    removeCompletionDraftById,
+  } = useEditorMissionDraft();
 
   const { data: actionsData, isLoading: isActionsLoading } = useReadActionsDetail(missionId);
   const { data: completionsData } = useQuery({
@@ -150,8 +221,54 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
 
   const createAction = useManageCreateAction();
   const updateAction = useManageUpdateAction();
+  const deleteAction = useManageDeleteAction({
+    onSuccess: () => {
+      const deletingActionId = deleteTarget?.id;
+
+      if (deletingActionId) {
+        const deletingItemKey = getExistingItemKey(deletingActionId);
+        const affectedActionIds = existingActions
+          .filter(
+            action =>
+              action.id !== deletingActionId &&
+              (action.nextActionId === deletingActionId ||
+                action.options.some(option => option.nextActionId === deletingActionId)),
+          )
+          .map(action => action.id);
+
+        setExistingFormVersionById(prev => {
+          const next = { ...prev };
+          delete next[deletingActionId];
+          for (const actionId of affectedActionIds) {
+            next[actionId] = (next[actionId] ?? 0) + 1;
+          }
+          return next;
+        });
+
+        delete formRefs.current[deletingItemKey];
+        setActionTypeByItemKey(prev => {
+          const next = { ...prev };
+          delete next[deletingItemKey];
+          return next;
+        });
+        setOpenItemKey(prev => (prev === deletingItemKey ? null : prev));
+      }
+
+      toast({ message: "액션이 삭제되었습니다." });
+      setDeleteTarget(null);
+    },
+    onError: error => {
+      toast({
+        message: error.message || "액션 삭제에 실패했습니다.",
+        icon: AlertCircle,
+        iconClassName: "text-red-500",
+      });
+    },
+  });
 
   const isSaving = createAction.isPending || updateAction.isPending || isUpdatingEntryAction;
+  const isDeletingAction = deleteAction.isPending;
+  const isBusy = isSaving || isDeletingAction;
 
   const existingActions = useMemo(() => {
     const list = actionsData?.data ?? [];
@@ -159,12 +276,17 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
   }, [actionsData]);
 
   const completionOptions = useMemo(
-    () =>
-      (completionsData?.data ?? []).map(completion => ({
+    () => [
+      ...(completionsData?.data ?? []).map(completion => ({
         id: completion.id,
         title: completion.title ?? "완료 화면",
       })),
-    [completionsData],
+      ...completionDrafts.map(draft => ({
+        id: draft.id,
+        title: `[임시 완료] ${draft.title}`,
+      })),
+    ],
+    [completionsData, completionDrafts],
   );
 
   const actionItems = useMemo<ActionListItem[]>(
@@ -233,8 +355,13 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
     setActionTypeByItemKey(prev => ({ ...prev, [itemKey]: actionType }));
   };
 
+  const handleDeleteConfirm = () => {
+    if (!deleteTarget) return;
+    deleteAction.mutate({ actionId: deleteTarget.id, missionId });
+  };
+
   const handleSave = async () => {
-    if (isActionsLoading || isSaving) return;
+    if (isActionsLoading || isBusy) return;
 
     const existingSnapshot = [...existingActions];
     const draftSnapshot = [...draftItems];
@@ -292,14 +419,80 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
       return;
     }
 
+    const actionSubmissionsToPersist = [
+      ...changedExistingActions
+        .map(action => submissionsByKey.get(getExistingItemKey(action.id)))
+        .filter((submission): submission is ActionSubmission => Boolean(submission)),
+      ...draftSnapshot
+        .map(draft => submissionsByKey.get(getDraftItemKey(draft.key)))
+        .filter((submission): submission is ActionSubmission => Boolean(submission)),
+    ];
+
+    const referencedDraftCompletionIds = [
+      ...new Set(
+        actionSubmissionsToPersist.flatMap(submission =>
+          collectDraftCompletionReferences(submission.values),
+        ),
+      ),
+    ];
+
+    const createdCompletionDraftIds: string[] = [];
+
     try {
       let firstCreatedActionId: string | null = null;
       const tempToRealActionIdMap = new Map<string, string>();
+      const tempToRealCompletionIdMap = new Map<string, string>();
       const createdDraftRecords: Array<{
         createdId: string;
         submission: ActionSubmission;
         hasDraftReference: boolean;
       }> = [];
+
+      for (const draftCompletionId of referencedDraftCompletionIds) {
+        const completionForm = getCompletionDraftFormById(draftCompletionId);
+        if (!completionForm) {
+          openCompletionDraftById(draftCompletionId);
+          toast({
+            message: "참조된 결과 화면 폼을 찾을 수 없습니다.",
+            icon: AlertCircle,
+            iconClassName: "text-red-500",
+          });
+          return;
+        }
+
+        if (completionForm.isUploading()) {
+          openCompletionDraftById(draftCompletionId);
+          toast({
+            message: "결과 화면 이미지 업로드가 완료된 뒤 저장해주세요.",
+            icon: AlertCircle,
+            iconClassName: "text-red-500",
+          });
+          return;
+        }
+
+        const completionValues = completionForm.validateAndGetValues();
+        if (!completionValues) {
+          openCompletionDraftById(draftCompletionId);
+          return;
+        }
+
+        const createdCompletion = await createMissionCompletion({
+          missionId,
+          title: completionValues.title,
+          description: completionValues.description,
+          imageUrl: completionValues.imageUrl ?? undefined,
+          imageFileUploadId: completionValues.imageFileUploadId ?? undefined,
+        });
+
+        const createdCompletionId = createdCompletion?.data?.id;
+        if (!createdCompletionId) {
+          throw new Error("결과 화면 생성 결과를 확인할 수 없습니다.");
+        }
+
+        tempToRealCompletionIdMap.set(draftCompletionId, createdCompletionId);
+        createdCompletionDraftIds.push(draftCompletionId);
+        completionForm.deleteMarkedInitial();
+      }
 
       for (const [index, draft] of draftSnapshot.entries()) {
         const key = getDraftItemKey(draft.key);
@@ -307,8 +500,13 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
         if (!submission) continue;
 
         const hasDraftReference = hasDraftActionReference(submission.values);
-        const sanitizedValues = resolveDraftActionReferences(
+        const completionResolvedValues = resolveDraftCompletionReferences(
           submission.values,
+          tempToRealCompletionIdMap,
+          true,
+        );
+        const sanitizedValues = resolveDraftActionReferences(
+          completionResolvedValues,
           tempToRealActionIdMap,
           true,
         );
@@ -344,8 +542,13 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
         const submission = submissionsByKey.get(key);
         if (!submission) continue;
 
-        const resolvedValues = resolveDraftActionReferences(
+        const completionResolvedValues = resolveDraftCompletionReferences(
           submission.values,
+          tempToRealCompletionIdMap,
+          true,
+        );
+        const resolvedValues = resolveDraftActionReferences(
+          completionResolvedValues,
           tempToRealActionIdMap,
           true,
         );
@@ -366,8 +569,13 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
           continue;
         }
 
-        const resolvedValues = resolveDraftActionReferences(
+        const completionResolvedValues = resolveDraftCompletionReferences(
           createdDraft.submission.values,
+          tempToRealCompletionIdMap,
+          true,
+        );
+        const resolvedValues = resolveDraftActionReferences(
+          completionResolvedValues,
           tempToRealActionIdMap,
           true,
         );
@@ -406,8 +614,31 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
         }
         return next;
       });
+
+      for (const draftCompletionId of createdCompletionDraftIds) {
+        removeCompletionDraftById(draftCompletionId);
+      }
+
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: missionCompletionQueryKeys.missionCompletion(missionId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: actionQueryKeys.actions({ missionId }),
+        }),
+      ]);
+
       toast({ message: "액션 설정이 저장되었습니다." });
     } catch (error) {
+      if (createdCompletionDraftIds.length > 0) {
+        for (const draftCompletionId of createdCompletionDraftIds) {
+          removeCompletionDraftById(draftCompletionId);
+        }
+        await queryClient.invalidateQueries({
+          queryKey: missionCompletionQueryKeys.missionCompletion(missionId),
+        });
+      }
+
       toast({
         message: error instanceof Error ? error.message : "액션 설정 저장에 실패했습니다.",
         icon: AlertCircle,
@@ -488,12 +719,26 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
                       >
                         <X className="size-4" />
                       </button>
-                    ) : null}
+                    ) : (
+                      <button
+                        type="button"
+                        aria-label="저장된 액션 삭제"
+                        onClick={event => {
+                          event.stopPropagation();
+                          setDeleteTarget(item.action);
+                        }}
+                        disabled={isBusy}
+                        className="ml-2 rounded p-1 text-red-500 transition-colors hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <Trash2 className="size-4" />
+                      </button>
+                    )}
                   </div>
 
                   <div className={isOpen ? "block border-t border-zinc-200" : "hidden"}>
                     {item.kind === "existing" ? (
                       <ActionForm
+                        key={`${item.key}:${existingFormVersionById[item.action.id] ?? 0}`}
                         ref={instance => {
                           formRefs.current[item.key] = instance;
                         }}
@@ -502,12 +747,13 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
                         initialValues={mapEditInitialValues(item.action)}
                         allActions={formLinkTargets}
                         completionOptions={completionOptions}
-                        isLoading={isSaving}
+                        isLoading={isBusy}
                         onSubmit={NOOP}
                         onCancel={NOOP}
                         hideTitle
                         hideFooter
                         enableTypeSelect
+                        enforceExclusiveNextLink
                         onActionTypeChange={type => handleActionTypeChange(item.key, type)}
                       />
                     ) : (
@@ -518,12 +764,13 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
                         actionType={itemType}
                         allActions={formLinkTargets}
                         completionOptions={completionOptions}
-                        isLoading={isSaving}
+                        isLoading={isBusy}
                         onSubmit={NOOP}
                         onCancel={NOOP}
                         hideTitle
                         hideFooter
                         enableTypeSelect
+                        enforceExclusiveNextLink
                         onActionTypeChange={type => handleActionTypeChange(item.key, type)}
                       />
                     )}
@@ -537,7 +784,7 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
         <button
           type="button"
           onClick={handleAddDraft}
-          disabled={isSaving || isActionsLoading}
+          disabled={isBusy || isActionsLoading}
           className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-zinc-200 bg-white py-4 text-zinc-500 transition-colors hover:border-violet-300 hover:text-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Plus className="size-5" />
@@ -547,11 +794,66 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
         </button>
 
         <div className="flex justify-end">
-          <Button onClick={handleSave} loading={isSaving} disabled={isSaving || isActionsLoading}>
+          <Button onClick={handleSave} loading={isSaving} disabled={isBusy || isActionsLoading}>
             저장
           </Button>
         </div>
       </div>
+
+      <Dialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={open => {
+          if (!open && !isDeletingAction) {
+            setDeleteTarget(null);
+          }
+        }}
+      >
+        <DialogPortal>
+          <DialogOverlay />
+          {deleteTarget ? (
+            <DialogContent
+              onInteractOutside={event => {
+                if (isDeletingAction) {
+                  event.preventDefault();
+                }
+              }}
+              onEscapeKeyDown={event => {
+                if (isDeletingAction) {
+                  event.preventDefault();
+                }
+              }}
+            >
+              <DialogTitle asChild>
+                <Typo.SubTitle className="mb-2">액션 삭제</Typo.SubTitle>
+              </DialogTitle>
+              <DialogDescription asChild>
+                <Typo.Body size="medium" className="mb-6 text-zinc-500">
+                  "{deleteTarget.title}" 액션을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+                </Typo.Body>
+              </DialogDescription>
+              <div className="flex gap-3">
+                <Button
+                  variant="secondary"
+                  fullWidth
+                  onClick={() => setDeleteTarget(null)}
+                  disabled={isDeletingAction}
+                >
+                  취소
+                </Button>
+                <Button
+                  fullWidth
+                  onClick={handleDeleteConfirm}
+                  loading={isDeletingAction}
+                  disabled={isDeletingAction}
+                  className="bg-red-500 hover:bg-red-600"
+                >
+                  삭제
+                </Button>
+              </div>
+            </DialogContent>
+          ) : null}
+        </DialogPortal>
+      </Dialog>
     </div>
   );
 }

@@ -30,7 +30,15 @@ import {
   Typo,
 } from "@repo/ui/components";
 import { Plus, Trash2 } from "lucide-react";
-import { type ForwardedRef, forwardRef, useCallback, useImperativeHandle, useState } from "react";
+import {
+  type ForwardedRef,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useState,
+} from "react";
 
 function generateOptionKey() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -78,6 +86,7 @@ interface ActionFormProps {
   hideFooter?: boolean;
   hideTitle?: boolean;
   enableTypeSelect?: boolean;
+  enforceExclusiveNextLink?: boolean;
   onActionTypeChange?: (type: ActionType) => void;
 }
 
@@ -181,10 +190,28 @@ function ActionFormComponent(
     hideFooter = false,
     hideTitle = false,
     enableTypeSelect = false,
+    enforceExclusiveNextLink = false,
     onActionTypeChange,
   }: ActionFormProps,
   ref: ForwardedRef<ActionFormHandle>,
 ) {
+  const initialNextLinkType: "action" | "completion" = initialValues?.nextCompletionId
+    ? "completion"
+    : "action";
+  const hasConflictingInitialNextLink = Boolean(
+    initialValues?.nextActionId && initialValues?.nextCompletionId,
+  );
+  const normalizedInitialNextActionId =
+    enforceExclusiveNextLink &&
+    hasConflictingInitialNextLink &&
+    initialNextLinkType === "completion"
+      ? null
+      : (initialValues?.nextActionId ?? null);
+  const normalizedInitialNextCompletionId =
+    enforceExclusiveNextLink && hasConflictingInitialNextLink && initialNextLinkType === "action"
+      ? null
+      : (initialValues?.nextCompletionId ?? null);
+
   const [selectedActionType, setSelectedActionType] = useState(actionType);
   const [title, setTitle] = useState(initialValues?.title ?? "");
   const [description, setDescription] = useState(initialValues?.description ?? "");
@@ -197,15 +224,11 @@ function ActionFormComponent(
     }
     return NEEDS_OPTIONS.includes(actionType) ? getDefaultOptions(actionType) : [];
   });
-  const [nextActionId, setNextActionId] = useState<string | null>(
-    initialValues?.nextActionId ?? null,
-  );
+  const [nextActionId, setNextActionId] = useState<string | null>(normalizedInitialNextActionId);
   const [nextCompletionId, setNextCompletionId] = useState<string | null>(
-    initialValues?.nextCompletionId ?? null,
+    normalizedInitialNextCompletionId,
   );
-  const [nextLinkType, setNextLinkType] = useState<"action" | "completion">(
-    initialValues?.nextCompletionId ? "completion" : "action",
-  );
+  const [nextLinkType, setNextLinkType] = useState<"action" | "completion">(initialNextLinkType);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -216,6 +239,49 @@ function ActionFormComponent(
 
   const selectableActions = allActions.filter(a => !editingAction || a.id !== editingAction.id);
   const hasLinkTargets = selectableActions.length > 0 || completionOptions.length > 0;
+  const completionIdSet = useMemo(
+    () => new Set(completionOptions.map(completion => completion.id)),
+    [completionOptions],
+  );
+
+  useEffect(() => {
+    if (!nextCompletionId || completionIdSet.has(nextCompletionId)) {
+      return;
+    }
+
+    setNextCompletionId(null);
+    setErrors(prev => {
+      if (!prev.nextLink) {
+        return prev;
+      }
+
+      const { nextLink: _nextLink, ...rest } = prev;
+      return rest;
+    });
+  }, [completionIdSet, nextCompletionId]);
+
+  useEffect(() => {
+    if (!isBranch) {
+      return;
+    }
+
+    let hasChanged = false;
+    const nextOptions = options.map(option => {
+      if (option.nextCompletionId && !completionIdSet.has(option.nextCompletionId)) {
+        hasChanged = true;
+        return {
+          ...option,
+          nextCompletionId: null,
+        };
+      }
+
+      return option;
+    });
+
+    if (hasChanged) {
+      setOptions(nextOptions);
+    }
+  }, [isBranch, options, completionIdSet]);
 
   const handleActionTypeChange = (nextType: ActionType) => {
     if (nextType === selectedActionType) {
@@ -231,6 +297,37 @@ function ActionFormComponent(
     setNextLinkType("action");
     setErrors({});
     onActionTypeChange?.(nextType);
+  };
+
+  const handleNextLinkTypeChange = (type: "action" | "completion") => {
+    setNextLinkType(type);
+
+    if (!enforceExclusiveNextLink) {
+      return;
+    }
+
+    if (type === "action") {
+      setNextCompletionId(null);
+      return;
+    }
+
+    setNextActionId(null);
+  };
+
+  const handleNextActionChange = (value: string) => {
+    setNextActionId(value || null);
+
+    if (enforceExclusiveNextLink) {
+      setNextCompletionId(null);
+    }
+  };
+
+  const handleNextCompletionChange = (value: string) => {
+    setNextCompletionId(value || null);
+
+    if (enforceExclusiveNextLink) {
+      setNextActionId(null);
+    }
   };
 
   const validate = useCallback((): boolean => {
@@ -543,7 +640,7 @@ function ActionFormComponent(
               <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => setNextLinkType("action")}
+                  onClick={() => handleNextLinkTypeChange("action")}
                   className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-colors ${
                     nextLinkType === "action"
                       ? "border-violet-400 bg-violet-500 text-white"
@@ -554,7 +651,7 @@ function ActionFormComponent(
                 </button>
                 <button
                   type="button"
-                  onClick={() => setNextLinkType("completion")}
+                  onClick={() => handleNextLinkTypeChange("completion")}
                   className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-colors ${
                     nextLinkType === "completion"
                       ? "border-violet-400 bg-violet-500 text-white"
@@ -566,10 +663,7 @@ function ActionFormComponent(
               </div>
 
               {nextLinkType === "action" ? (
-                <Select
-                  value={nextActionId ?? ""}
-                  onValueChange={val => setNextActionId(val || null)}
-                >
+                <Select value={nextActionId ?? ""} onValueChange={handleNextActionChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="다음 이동할 액션을 선택하세요" />
                   </SelectTrigger>
@@ -582,10 +676,7 @@ function ActionFormComponent(
                   </SelectContent>
                 </Select>
               ) : (
-                <Select
-                  value={nextCompletionId ?? ""}
-                  onValueChange={val => setNextCompletionId(val || null)}
-                >
+                <Select value={nextCompletionId ?? ""} onValueChange={handleNextCompletionChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="완료 화면을 선택하세요" />
                   </SelectTrigger>
@@ -597,6 +688,12 @@ function ActionFormComponent(
                     ))}
                   </SelectContent>
                 </Select>
+              )}
+
+              {enforceExclusiveNextLink && (
+                <Typo.Body size="small" className="text-zinc-500">
+                  다음 액션/완료 화면 중 하나만 선택할 수 있습니다.
+                </Typo.Body>
               )}
 
               {errors.nextLink && (

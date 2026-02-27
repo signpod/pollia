@@ -6,6 +6,8 @@ import type { GetMissionResponse } from "@/types/dto";
 import type { PaymentType } from "@prisma/client";
 import { useEffect, useState } from "react";
 import { ActionSettingsCard } from "./ActionSettingsCard";
+import { CompletionSettingsCard } from "./CompletionSettingsCard";
+import { EditorMissionDraftProvider } from "./EditorMissionDraftContext";
 import { useEditorMissionTab } from "./EditorMissionTabContext";
 import { MissionStatsDashboard } from "./MissionStatsDashboard";
 import { ProjectBasicInfoCard } from "./ProjectBasicInfoCard";
@@ -66,12 +68,14 @@ export function EditorMissionTabContent({
   }
 
   return (
-    <>
+    <EditorMissionDraftProvider>
       <ProjectBasicInfoCard mission={mission} />
       <Separator className="h-2" />
       <RewardSettingsCard mission={mission} initialReward={reward} />
       <Separator className="h-2" />
       <ActionSettingsCard missionId={mission.id} />
-    </>
+      <Separator className="h-2" />
+      <CompletionSettingsCard missionId={mission.id} />
+    </EditorMissionDraftProvider>
   );
 }
