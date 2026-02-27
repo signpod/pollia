@@ -10,56 +10,72 @@ interface PageTransitionProps {
 
 export function PageTransition({ children, variant = "tab" }: PageTransitionProps) {
   const ref = useRef<HTMLDivElement>(null);
+  const isBack = variant === "stack" ? getIsBackNavigation() : false;
+  const isSlideIn = variant === "stack" && !isBack;
 
   useEffect(() => {
-    if (variant !== "stack") return;
+    const el = ref.current;
+    if (!el) return;
 
-    const snapshot = consumeSnapshot();
-    if (!snapshot) return;
-
-    document.body.appendChild(snapshot);
-
-    const cleanup = () => snapshot.remove();
-    ref.current?.addEventListener("animationend", cleanup, { once: true });
-    const timer = setTimeout(cleanup, 400);
-
-    return () => {
-      clearTimeout(timer);
-      cleanup();
+    const clearInlineStyles = () => {
+      el.style.opacity = "";
+      el.style.transform = "";
+      el.style.position = "";
+      el.style.zIndex = "";
+      el.style.background = "";
+      el.style.minHeight = "";
     };
-  }, [variant]);
 
-  if (variant === "tab") {
+    if (isSlideIn) {
+      const snapshot = consumeSnapshot();
+      if (snapshot) {
+        document.body.appendChild(snapshot);
+        const removeSnapshot = () => snapshot.remove();
+        el.addEventListener(
+          "animationend",
+          () => {
+            removeSnapshot();
+            clearInlineStyles();
+          },
+          { once: true },
+        );
+        const timer = setTimeout(() => {
+          removeSnapshot();
+          clearInlineStyles();
+        }, 400);
+        return () => {
+          clearTimeout(timer);
+          removeSnapshot();
+        };
+      }
+    }
+
+    el.addEventListener("animationend", clearInlineStyles, { once: true });
+    const timer = setTimeout(clearInlineStyles, 400);
+    return () => clearTimeout(timer);
+  }, [isSlideIn]);
+
+  if (isSlideIn) {
     return (
-      <div data-page-transition className="animate-page-fade" style={{ opacity: 0 }}>
-        {children}
-      </div>
-    );
-  }
-
-  const isBack = getIsBackNavigation();
-
-  if (isBack) {
-    return (
-      <div data-page-transition className="animate-page-fade" style={{ opacity: 0 }}>
+      <div
+        ref={ref}
+        data-page-transition
+        className="animate-page-slide-in"
+        style={{
+          transform: "translate3d(100%, 0, 0)",
+          position: "relative",
+          zIndex: 51,
+          background: "var(--color-background, white)",
+          minHeight: "100dvh",
+        }}
+      >
         {children}
       </div>
     );
   }
 
   return (
-    <div
-      ref={ref}
-      data-page-transition
-      className="animate-page-slide-in"
-      style={{
-        transform: "translate3d(100%, 0, 0)",
-        position: "relative",
-        zIndex: 51,
-        background: "var(--color-background, white)",
-        minHeight: "100dvh",
-      }}
-    >
+    <div ref={ref} data-page-transition className="animate-page-fade" style={{ opacity: 0 }}>
       {children}
     </div>
   );

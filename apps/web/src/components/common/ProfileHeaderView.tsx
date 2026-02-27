@@ -4,7 +4,6 @@ import { UserAvatar } from "@/components/common/UserAvatar";
 import { ROUTES } from "@/constants/routes";
 import PolliaIcon from "@public/svgs/pollia-icon.svg";
 import PolliaWordmark from "@public/svgs/pollia-wordmark.svg";
-import { Typo } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
 import { ChevronLeftIcon } from "lucide-react";
 import Link from "next/link";
@@ -50,19 +49,9 @@ export function ProfileHeaderView({
       )}
       {searchInput && <div className="mx-3 flex-1">{searchInput}</div>}
       {user ? (
-        <div className="flex h-9 items-center gap-2">
-          <div className="flex items-center gap-1.5">
-            <span className="flex size-5 items-center justify-center rounded-full bg-violet-500 text-[11px] font-bold text-white">
-              P
-            </span>
-            <Typo.Body size="small" className="font-bold text-violet-700">
-              1,200
-            </Typo.Body>
-          </div>
-          <button onClick={onProfileClick} type="button">
-            <UserAvatar size="medium" imageUrl={profileImageUrl} />
-          </button>
-        </div>
+        <button onClick={onProfileClick} type="button">
+          <UserAvatar size="medium" imageUrl={profileImageUrl} />
+        </button>
       ) : (
         fallbackRight
       )}

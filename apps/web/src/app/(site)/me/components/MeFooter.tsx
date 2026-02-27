@@ -42,10 +42,6 @@ export function MeFooter() {
         <Typo.Body size="large">로그아웃</Typo.Body>
         <ChevronRightIcon className="size-4 text-zinc-400" />
       </button>
-      <Link href={ROUTES.ME_ACCOUNT_WITHDRAW} className="flex items-center justify-between py-4">
-        <Typo.Body size="large">회원 탈퇴</Typo.Body>
-        <ChevronRightIcon className="size-4 text-zinc-400" />
-      </Link>
     </footer>
   );
 }

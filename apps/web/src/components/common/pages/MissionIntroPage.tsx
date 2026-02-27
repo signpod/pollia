@@ -3,7 +3,7 @@
 import { SocialShareButtonsWithData } from "@/app/(site)/mission/[missionId]/components/SocialShareButtonsWithData";
 import { useStickyTabHeader } from "@/app/(site)/mission/[missionId]/components/hooks/useStickyTabHeader";
 import type { MissionRewardData } from "@/app/(site)/mission/[missionId]/types/mission";
-import { NavigableProfileHeader } from "@/components/common/NavigableProfileHeader";
+import { ProfileHeader } from "@/components/common/ProfileHeader";
 import { cn } from "@/lib/utils";
 import { MissionType } from "@prisma/client";
 import { FixedBottomLayout } from "@repo/ui/components";
@@ -78,7 +78,7 @@ export function MissionIntroPage({
   return (
     <div className="relative w-full">
       <MissionIntroTemplate
-        header={<NavigableProfileHeader />}
+        header={<ProfileHeader />}
         imageUrl={imageUrl}
         brandLogoUrl={brandLogoUrl}
         title={title}
