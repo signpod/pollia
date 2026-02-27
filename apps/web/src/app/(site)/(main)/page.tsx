@@ -1,4 +1,3 @@
-import { getFestivals } from "@/actions/festival";
 import { missionService } from "@/server/services/mission";
 import { MissionType } from "@prisma/client";
 import { BannerSlider } from "./components/BannerSlider";
@@ -10,10 +9,10 @@ import { calculateDaysLeft, formatDuration } from "./utils";
 export const dynamic = "force-dynamic";
 
 export default async function MainPage() {
-  const [missions, festivalResponse] = await Promise.all([
-    missionService.getAllMissions({ limit: ITEMS_PER_PAGE, type: MissionType.GENERAL }),
-    getFestivals({ numOfRows: ITEMS_PER_PAGE }),
-  ]);
+  const missions = await missionService.getAllMissions({
+    limit: ITEMS_PER_PAGE,
+    type: MissionType.GENERAL,
+  });
 
   const projects: SurveyCardData[] = missions.map(mission => ({
     id: mission.id,
@@ -32,12 +31,10 @@ export default async function MainPage() {
     startDate: (mission as unknown as { startDate?: Date }).startDate?.toISOString() ?? null,
   }));
 
-  const festivals = festivalResponse.data;
-
   return (
     <main className="min-h-screen bg-white pb-10 flex flex-col gap-6">
       <BannerSlider />
-      <MainContent initialProjects={projects} initialFestivals={festivals} />
+      <MainContent initialProjects={projects} />
     </main>
   );
 }
