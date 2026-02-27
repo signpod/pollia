@@ -3,7 +3,9 @@ import { getCompletionsByMissionId, getMissionCompletion } from "@/actions/missi
 import { getMyResponseForMission } from "@/actions/mission-response";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
+import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { ROUTES } from "@/constants/routes";
+import { checkAuthStatus } from "@/lib/auth";
 import { getQueryClient } from "@/lib/getQueryClient";
 import type { GetMissionCompletionResponse } from "@/types/dto";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
@@ -17,6 +19,9 @@ export default async function MeResultPage({
 }) {
   const { missionId } = await params;
   const queryClient = getQueryClient();
+
+  const { user } = await checkAuthStatus().catch(() => ({ user: null }));
+  const actorKey = user?.id ?? "guest";
 
   const missionResponse = await getMyResponseForMission(missionId).catch(() => ({ data: null }));
   if (!missionResponse.data?.completedAt) {
@@ -55,6 +60,10 @@ export default async function MeResultPage({
     queryClient.prefetchQuery({
       queryKey: actionQueryKeys.actions({ missionId }),
       queryFn: () => getMissionActionsDetail(missionId),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: [...missionQueryKeys.missionResponseForMission(missionId), actorKey],
+      queryFn: () => getMyResponseForMission(missionId),
     }),
   ];
 
