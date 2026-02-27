@@ -9,19 +9,34 @@ import {
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
 import type { MissionCompletionWithMission } from "@/types/dto";
-import { Button, Typo, toast } from "@repo/ui/components";
+import { Typo, toast } from "@repo/ui/components";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, ChevronDown, Plus, X } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  type ForwardedRef,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   CompletionForm,
   type CompletionFormHandle,
   type CompletionFormValues,
 } from "./CompletionForm";
 import { getCompletionDraftItemKey, useEditorMissionDraft } from "./EditorMissionDraftContext";
+import type {
+  SectionSaveHandle,
+  SectionSaveResult,
+  SectionSaveStateChangeHandler,
+} from "./editor-save.types";
 
 interface CompletionSettingsCardProps {
   missionId: string;
+  onSaveStateChange?: SectionSaveStateChangeHandler;
 }
 
 interface ExistingListItem {
@@ -86,12 +101,19 @@ function isCompletionChanged(
 
 const NOOP = () => {};
 
-export function CompletionSettingsCard({ missionId }: CompletionSettingsCardProps) {
+function CompletionSettingsCardComponent(
+  { missionId, onSaveStateChange }: CompletionSettingsCardProps,
+  ref: ForwardedRef<SectionSaveHandle>,
+) {
   const queryClient = useQueryClient();
   const formRefs = useRef<Record<string, CompletionFormHandle | null>>({});
   const [removedExistingIds, setRemovedExistingIds] = useState<Set<string>>(new Set());
   const [openItemKey, setOpenItemKey] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [dirtyByItemKey, setDirtyByItemKey] = useState<Record<string, boolean>>({});
+  const [existingFormVersionById, setExistingFormVersionById] = useState<Record<string, number>>(
+    {},
+  );
   const {
     completionDrafts,
     addCompletionDraft,
@@ -149,6 +171,51 @@ export function CompletionSettingsCard({ missionId }: CompletionSettingsCardProp
     [visibleExistingCompletions, completionDrafts],
   );
 
+  useEffect(() => {
+    const validKeys = new Set(completionItems.map(item => item.key));
+    setDirtyByItemKey(prev => {
+      let hasChange = false;
+      const next: Record<string, boolean> = {};
+
+      for (const [key, value] of Object.entries(prev)) {
+        if (validKeys.has(key)) {
+          next[key] = value;
+        } else {
+          hasChange = true;
+        }
+      }
+
+      return hasChange ? next : prev;
+    });
+  }, [completionItems]);
+
+  const hasPendingChanges = useMemo(() => {
+    if (completionDrafts.length > 0 || removedExistingIds.size > 0) {
+      return true;
+    }
+
+    return visibleExistingCompletions.some(
+      completion => dirtyByItemKey[getExistingItemKey(completion.id)],
+    );
+  }, [completionDrafts.length, removedExistingIds, visibleExistingCompletions, dirtyByItemKey]);
+
+  useEffect(() => {
+    onSaveStateChange?.({
+      hasPendingChanges,
+      isBusy: isSaving || isLoading,
+    });
+  }, [hasPendingChanges, isLoading, isSaving, onSaveStateChange]);
+
+  const handleItemDirtyChange = useCallback((itemKey: string, isDirty: boolean) => {
+    setDirtyByItemKey(prev => {
+      if (prev[itemKey] === isDirty) {
+        return prev;
+      }
+
+      return { ...prev, [itemKey]: isDirty };
+    });
+  }, []);
+
   const handleAddDraft = () => {
     if (isSaving) {
       return;
@@ -164,10 +231,16 @@ export function CompletionSettingsCard({ missionId }: CompletionSettingsCardProp
   };
 
   const handleRemoveDraft = (draftKey: string) => {
+    const itemKey = getDraftItemKey(draftKey);
     removeCompletionDraft(draftKey);
     registerCompletionDraftForm(draftKey, null);
-    delete formRefs.current[getDraftItemKey(draftKey)];
-    setOpenItemKey(prev => (prev === getDraftItemKey(draftKey) ? null : prev));
+    delete formRefs.current[itemKey];
+    setDirtyByItemKey(prev => {
+      const next = { ...prev };
+      delete next[itemKey];
+      return next;
+    });
+    setOpenItemKey(prev => (prev === itemKey ? null : prev));
   };
 
   const handleRemoveExisting = (completionId: string) => {
@@ -182,9 +255,11 @@ export function CompletionSettingsCard({ missionId }: CompletionSettingsCardProp
     setOpenItemKey(prev => (prev === getExistingItemKey(completionId) ? null : prev));
   };
 
-  const handleSave = async () => {
+  const executeSave = async ({
+    silent = false,
+  }: { silent?: boolean } = {}): Promise<SectionSaveResult> => {
     if (isLoading || isSaving) {
-      return;
+      return { status: "failed", message: "결과 화면 저장이 진행 중입니다." };
     }
 
     const removedSnapshot = new Set(removedExistingIds);
@@ -207,8 +282,7 @@ export function CompletionSettingsCard({ missionId }: CompletionSettingsCardProp
     ];
 
     if (listSnapshot.length === 0 && removedSnapshot.size === 0) {
-      toast({ message: "저장할 결과 화면 변경사항이 없습니다." });
-      return;
+      return { status: "no_changes" };
     }
 
     const valuesByItemKey = new Map<string, CompletionFormValues>();
@@ -216,28 +290,27 @@ export function CompletionSettingsCard({ missionId }: CompletionSettingsCardProp
       const formRef = formRefs.current[item.key];
       if (!formRef) {
         setOpenItemKey(item.key);
-        toast({
+        return {
+          status: "failed",
           message: "결과 화면 폼이 준비되지 않았습니다. 다시 시도해주세요.",
-          icon: AlertCircle,
-          iconClassName: "text-red-500",
-        });
-        return;
+        };
       }
 
       if (formRef.isUploading()) {
         setOpenItemKey(item.key);
-        toast({
+        return {
+          status: "failed",
           message: "이미지 업로드가 완료된 뒤 저장해주세요.",
-          icon: AlertCircle,
-          iconClassName: "text-red-500",
-        });
-        return;
+        };
       }
 
       const values = formRef.validateAndGetValues();
       if (!values) {
         setOpenItemKey(item.key);
-        return;
+        return {
+          status: "failed",
+          message: "결과 화면 입력값을 확인해주세요.",
+        };
       }
 
       valuesByItemKey.set(item.key, values);
@@ -253,8 +326,7 @@ export function CompletionSettingsCard({ missionId }: CompletionSettingsCardProp
     });
 
     if (changedExisting.length === 0 && draftSnapshot.length === 0 && removedSnapshot.size === 0) {
-      toast({ message: "변경된 결과 화면이 없습니다." });
-      return;
+      return { status: "no_changes" };
     }
 
     setIsSaving(true);
@@ -296,6 +368,26 @@ export function CompletionSettingsCard({ missionId }: CompletionSettingsCardProp
         await deleteMissionCompletion(completionId);
       }
 
+      setExistingFormVersionById(prev => {
+        const next = { ...prev };
+        for (const completion of changedExisting) {
+          next[completion.id] = (next[completion.id] ?? 0) + 1;
+        }
+        for (const completionId of removedSnapshot) {
+          delete next[completionId];
+        }
+        return next;
+      });
+      setDirtyByItemKey(prev => {
+        const next = { ...prev };
+        for (const completion of changedExisting) {
+          delete next[getExistingItemKey(completion.id)];
+        }
+        for (const draft of draftSnapshot) {
+          delete next[getDraftItemKey(draft.key)];
+        }
+        return next;
+      });
       clearCompletionDrafts();
       setRemovedExistingIds(new Set());
       setOpenItemKey(null);
@@ -309,17 +401,37 @@ export function CompletionSettingsCard({ missionId }: CompletionSettingsCardProp
         }),
       ]);
 
-      toast({ message: "결과 화면 설정이 저장되었습니다." });
+      if (!silent) {
+        toast({ message: "결과 화면 설정이 저장되었습니다." });
+      }
+      return { status: "saved" };
     } catch (error) {
-      toast({
-        message: error instanceof Error ? error.message : "결과 화면 저장 중 오류가 발생했습니다.",
-        icon: AlertCircle,
-        iconClassName: "text-red-500",
-      });
+      const message =
+        error instanceof Error ? error.message : "결과 화면 저장 중 오류가 발생했습니다.";
+      if (!silent) {
+        toast({
+          message,
+          icon: AlertCircle,
+          iconClassName: "text-red-500",
+        });
+      }
+      return { status: "failed", message };
     } finally {
       setIsSaving(false);
     }
+
+    return { status: "failed", message: "결과 화면 저장 중 오류가 발생했습니다." };
   };
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      save: executeSave,
+      hasPendingChanges: () => hasPendingChanges,
+      isBusy: () => isSaving || isLoading,
+    }),
+    [executeSave, hasPendingChanges, isLoading, isSaving],
+  );
 
   return (
     <div className="border border-zinc-200 bg-white">
@@ -389,6 +501,11 @@ export function CompletionSettingsCard({ missionId }: CompletionSettingsCardProp
 
                   <div className={isOpen ? "block border-t border-zinc-200" : "hidden"}>
                     <CompletionForm
+                      key={
+                        item.kind === "existing"
+                          ? `${item.key}:${existingFormVersionById[item.completion.id] ?? 0}`
+                          : item.key
+                      }
                       ref={instance => {
                         formRefs.current[item.key] = instance;
                         if (item.kind === "draft") {
@@ -410,6 +527,9 @@ export function CompletionSettingsCard({ missionId }: CompletionSettingsCardProp
                           ? titleValue => setCompletionDraftTitle(item.draft.key, titleValue)
                           : undefined
                       }
+                      onDirtyChange={isDirty => {
+                        handleItemDirtyChange(item.key, isDirty);
+                      }}
                     />
                   </div>
                 </div>
@@ -429,13 +549,12 @@ export function CompletionSettingsCard({ missionId }: CompletionSettingsCardProp
             결과 화면 추가
           </Typo.Body>
         </button>
-
-        <div className="flex justify-end">
-          <Button onClick={handleSave} loading={isSaving} disabled={isSaving || isLoading}>
-            저장
-          </Button>
-        </div>
       </div>
     </div>
   );
 }
+
+export const CompletionSettingsCard = forwardRef<SectionSaveHandle, CompletionSettingsCardProps>(
+  CompletionSettingsCardComponent,
+);
+CompletionSettingsCard.displayName = "CompletionSettingsCard";

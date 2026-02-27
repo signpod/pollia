@@ -1,6 +1,6 @@
 import { getMission } from "@/actions/mission";
 import { checkAuthStatus } from "@/lib/auth";
-import { ModalProvider, Toaster } from "@repo/ui/components";
+import { ModalProvider } from "@repo/ui/components";
 import { notFound, redirect } from "next/navigation";
 import type { PropsWithChildren } from "react";
 import { EditorMissionHeader } from "./components/EditorMissionHeader";
@@ -52,7 +52,6 @@ export default async function EditorMissionLayout({
           </header>
 
           <main>{children}</main>
-          <Toaster />
         </div>
       </EditorMissionTabProvider>
     </ModalProvider>

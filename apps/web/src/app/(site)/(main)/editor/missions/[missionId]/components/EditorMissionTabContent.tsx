@@ -4,14 +4,18 @@ import { Separator } from "@/components/ui/separator";
 import { ROUTES } from "@/constants/routes";
 import type { GetMissionResponse } from "@/types/dto";
 import type { PaymentType } from "@prisma/client";
-import { useEffect, useState } from "react";
+import { Button, toast } from "@repo/ui/components";
+import { AlertCircle } from "lucide-react";
+import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActionSettingsCard } from "./ActionSettingsCard";
 import { CompletionSettingsCard } from "./CompletionSettingsCard";
+import { EditorBottomSaveSlot } from "./EditorBottomSaveSlot";
 import { EditorMissionDraftProvider } from "./EditorMissionDraftContext";
 import { useEditorMissionTab } from "./EditorMissionTabContext";
 import { MissionStatsDashboard } from "./MissionStatsDashboard";
 import { ProjectBasicInfoCard } from "./ProjectBasicInfoCard";
 import { RewardSettingsCard } from "./RewardSettingsCard";
+import type { SectionSaveHandle, SectionSaveState } from "./editor-save.types";
 
 interface RewardSnapshot {
   id: string;
@@ -26,6 +30,8 @@ interface EditorMissionTabContentProps {
   mission: GetMissionResponse["data"];
   reward: RewardSnapshot | null;
 }
+
+const UNIFIED_SAVE_TOAST_ID = "editor-mission-save-result";
 
 function MissionIntroPreview({ missionId }: { missionId: string }) {
   const previewUrl = ROUTES.MISSION(missionId);
@@ -58,24 +64,199 @@ export function EditorMissionTabContent({
   reward,
 }: EditorMissionTabContentProps) {
   const { currentTab } = useEditorMissionTab();
+  const basicInfoRef = useRef<SectionSaveHandle | null>(null);
+  const rewardRef = useRef<SectionSaveHandle | null>(null);
+  const actionRef = useRef<SectionSaveHandle | null>(null);
+  const completionRef = useRef<SectionSaveHandle | null>(null);
+  const saveInFlightRef = useRef(false);
+  const [isSavingAll, setIsSavingAll] = useState(false);
+  const [sectionStates, setSectionStates] = useState<
+    Record<"basic" | "reward" | "action" | "completion", SectionSaveState>
+  >({
+    basic: { hasPendingChanges: false, isBusy: false },
+    reward: { hasPendingChanges: false, isBusy: false },
+    action: { hasPendingChanges: false, isBusy: false },
+    completion: { hasPendingChanges: false, isBusy: false },
+  });
+  const isEditorTab = currentTab === "editor";
+
+  const updateSectionState = useCallback(
+    (section: "basic" | "reward" | "action" | "completion", nextState: SectionSaveState) => {
+      setSectionStates(prev => {
+        const currentState = prev[section];
+        if (
+          currentState.hasPendingChanges === nextState.hasPendingChanges &&
+          currentState.isBusy === nextState.isBusy
+        ) {
+          return prev;
+        }
+
+        return {
+          ...prev,
+          [section]: nextState,
+        };
+      });
+    },
+    [],
+  );
+
+  const hasAnyPendingChanges = useMemo(
+    () => Object.values(sectionStates).some(state => state.hasPendingChanges),
+    [sectionStates],
+  );
+  const hasAnyBusySection = useMemo(
+    () => Object.values(sectionStates).some(state => state.isBusy),
+    [sectionStates],
+  );
+
+  const handleUnifiedSave = useCallback(async () => {
+    if (!isEditorTab || saveInFlightRef.current || isSavingAll || hasAnyBusySection) {
+      return;
+    }
+
+    if (!hasAnyPendingChanges) {
+      toast({
+        message: "저장할 변경사항이 없습니다.",
+        id: UNIFIED_SAVE_TOAST_ID,
+      });
+      return;
+    }
+
+    saveInFlightRef.current = true;
+    setIsSavingAll(true);
+    try {
+      const sections: Array<{
+        label: string;
+        ref: RefObject<SectionSaveHandle | null>;
+      }> = [
+        { label: "기본 정보", ref: basicInfoRef },
+        { label: "리워드", ref: rewardRef },
+        { label: "액션", ref: actionRef },
+        { label: "결과 화면", ref: completionRef },
+      ];
+
+      let savedCount = 0;
+
+      for (const section of sections) {
+        const handle = section.ref.current;
+        if (!handle || !handle.hasPendingChanges()) {
+          continue;
+        }
+
+        const result = await handle.save({ silent: true });
+
+        if (result.status === "saved") {
+          savedCount += 1;
+          continue;
+        }
+
+        if (result.status === "no_changes") {
+          continue;
+        }
+
+        toast({
+          message: result.message ?? `${section.label} 저장에 실패했습니다.`,
+          icon: AlertCircle,
+          iconClassName: "text-red-500",
+          id: UNIFIED_SAVE_TOAST_ID,
+        });
+        return;
+      }
+
+      if (savedCount > 0) {
+        toast({
+          message: "변경사항이 저장되었습니다.",
+          id: UNIFIED_SAVE_TOAST_ID,
+        });
+        return;
+      }
+
+      toast({
+        message: "저장할 변경사항이 없습니다.",
+        id: UNIFIED_SAVE_TOAST_ID,
+      });
+    } finally {
+      saveInFlightRef.current = false;
+      setIsSavingAll(false);
+    }
+  }, [hasAnyBusySection, hasAnyPendingChanges, isEditorTab, isSavingAll]);
+
+  const saveButtonNode = useMemo(
+    () => (
+      <div className="px-5 py-3">
+        <Button
+          variant="secondary"
+          fullWidth
+          onClick={handleUnifiedSave}
+          loading={isSavingAll}
+          disabled={isSavingAll || hasAnyBusySection || !hasAnyPendingChanges}
+        >
+          저장
+        </Button>
+      </div>
+    ),
+    [handleUnifiedSave, hasAnyBusySection, hasAnyPendingChanges, isSavingAll],
+  );
 
   if (currentTab === "stats") {
-    return <MissionStatsDashboard missionId={missionId} />;
+    return (
+      <>
+        <EditorBottomSaveSlot
+          slotKey={`editor-mission-save:${missionId}`}
+          isActive={false}
+          node={saveButtonNode}
+        />
+        <MissionStatsDashboard missionId={missionId} />
+      </>
+    );
   }
 
   if (currentTab === "preview") {
-    return <MissionIntroPreview missionId={missionId} />;
+    return (
+      <>
+        <EditorBottomSaveSlot
+          slotKey={`editor-mission-save:${missionId}`}
+          isActive={false}
+          node={saveButtonNode}
+        />
+        <MissionIntroPreview missionId={missionId} />
+      </>
+    );
   }
 
   return (
-    <EditorMissionDraftProvider>
-      <ProjectBasicInfoCard mission={mission} />
-      <Separator className="h-2" />
-      <RewardSettingsCard mission={mission} initialReward={reward} />
-      <Separator className="h-2" />
-      <ActionSettingsCard missionId={mission.id} />
-      <Separator className="h-2" />
-      <CompletionSettingsCard missionId={mission.id} />
-    </EditorMissionDraftProvider>
+    <>
+      <EditorBottomSaveSlot
+        slotKey={`editor-mission-save:${missionId}`}
+        isActive={isEditorTab}
+        node={saveButtonNode}
+      />
+      <EditorMissionDraftProvider>
+        <ProjectBasicInfoCard
+          ref={basicInfoRef}
+          mission={mission}
+          onSaveStateChange={state => updateSectionState("basic", state)}
+        />
+        <Separator className="h-2" />
+        <RewardSettingsCard
+          ref={rewardRef}
+          mission={mission}
+          initialReward={reward}
+          onSaveStateChange={state => updateSectionState("reward", state)}
+        />
+        <Separator className="h-2" />
+        <ActionSettingsCard
+          ref={actionRef}
+          missionId={mission.id}
+          onSaveStateChange={state => updateSectionState("action", state)}
+        />
+        <Separator className="h-2" />
+        <CompletionSettingsCard
+          ref={completionRef}
+          missionId={mission.id}
+          onSaveStateChange={state => updateSectionState("completion", state)}
+        />
+      </EditorMissionDraftProvider>
+    </>
   );
 }

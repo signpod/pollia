@@ -11,14 +11,27 @@ import {
 import type { GetMissionResponse } from "@/types/dto";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MissionType, PaymentType } from "@prisma/client";
-import { Button, Typo, toast } from "@repo/ui/components";
+import { Typo, toast } from "@repo/ui/components";
 import { AlertCircle } from "lucide-react";
-import { useState } from "react";
+import {
+  type ForwardedRef,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from "react";
 import { FormProvider, useForm } from "react-hook-form";
+import type {
+  SectionSaveHandle,
+  SectionSaveResult,
+  SectionSaveStateChangeHandler,
+} from "./editor-save.types";
 
 interface RewardSettingsCardProps {
   mission: GetMissionResponse["data"];
   initialReward: RewardSnapshot | null;
+  onSaveStateChange?: SectionSaveStateChangeHandler;
 }
 
 interface RewardFormValues {
@@ -84,62 +97,117 @@ function buildDefaultValues(
   };
 }
 
-export function RewardSettingsCard({ mission, initialReward }: RewardSettingsCardProps) {
+function RewardSettingsCardComponent(
+  { mission, initialReward, onSaveStateChange }: RewardSettingsCardProps,
+  ref: ForwardedRef<SectionSaveHandle>,
+) {
   const [currentReward, setCurrentReward] = useState<RewardSnapshot | null>(initialReward);
   const form = useForm<CreateMissionFormData>({
     resolver: zodResolver(createMissionFormSchema),
     defaultValues: buildDefaultValues(mission, initialReward),
   });
 
-  const handleSubmit = form.handleSubmit(async values => {
-    try {
-      if (!values.hasReward) {
-        if (currentReward) {
-          await deleteReward(currentReward.id, mission.id);
+  const hasPendingChanges = form.formState.isDirty;
+  const isBusy = form.formState.isSubmitting;
+
+  useEffect(() => {
+    onSaveStateChange?.({
+      hasPendingChanges,
+      isBusy,
+    });
+  }, [hasPendingChanges, isBusy, onSaveStateChange]);
+
+  const save = useCallback(
+    async ({ silent = false }: { silent?: boolean } = {}): Promise<SectionSaveResult> => {
+      if (form.formState.isSubmitting) {
+        return { status: "failed", message: "리워드 저장이 진행 중입니다." };
+      }
+
+      if (!form.formState.isDirty) {
+        return { status: "no_changes" };
+      }
+
+      const isValid = await form.trigger();
+      if (!isValid) {
+        return { status: "failed", message: "리워드 정보를 확인해주세요." };
+      }
+
+      const values = form.getValues();
+
+      try {
+        if (!values.hasReward) {
+          if (currentReward) {
+            await deleteReward(currentReward.id, mission.id);
+          }
+
+          setCurrentReward(null);
+          form.reset(buildDefaultValues(mission, null));
+
+          if (!silent) {
+            toast({ message: "리워드 설정이 저장되었습니다." });
+          }
+
+          return { status: "saved" };
         }
 
-        setCurrentReward(null);
-        form.reset(buildDefaultValues(mission, null));
-        toast({ message: "리워드 설정이 저장되었습니다." });
-        return;
+        if (!isRewardFormValues(values.reward)) {
+          return { status: "failed", message: "리워드 정보를 확인해주세요." };
+        }
+
+        const rewardInput = {
+          name: values.reward.name,
+          description: values.reward.description || undefined,
+          paymentType: values.reward.paymentType,
+          scheduledDate:
+            values.reward.paymentType === PaymentType.SCHEDULED
+              ? values.reward.scheduledDate
+              : undefined,
+        };
+
+        if (currentReward) {
+          const updatedReward = await updateReward(currentReward.id, rewardInput);
+          setCurrentReward(updatedReward.data);
+          form.reset(buildDefaultValues(mission, updatedReward.data));
+        } else {
+          const createdReward = await createReward({
+            missionId: mission.id,
+            ...rewardInput,
+          });
+          setCurrentReward(createdReward.data);
+          form.reset(buildDefaultValues(mission, createdReward.data));
+        }
+
+        if (!silent) {
+          toast({ message: "리워드 설정이 저장되었습니다." });
+        }
+
+        return { status: "saved" };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "리워드 설정 저장에 실패했습니다.";
+
+        if (!silent) {
+          toast({
+            message,
+            icon: AlertCircle,
+            iconClassName: "text-red-500",
+          });
+        }
+
+        return { status: "failed", message };
       }
+    },
+    [currentReward, form, mission],
+  );
 
-      if (!isRewardFormValues(values.reward)) {
-        throw new Error("리워드 정보를 확인해주세요.");
-      }
-
-      const rewardInput = {
-        name: values.reward.name,
-        description: values.reward.description || undefined,
-        paymentType: values.reward.paymentType,
-        scheduledDate:
-          values.reward.paymentType === PaymentType.SCHEDULED
-            ? values.reward.scheduledDate
-            : undefined,
-      };
-
-      if (currentReward) {
-        const updatedReward = await updateReward(currentReward.id, rewardInput);
-        setCurrentReward(updatedReward.data);
-        form.reset(buildDefaultValues(mission, updatedReward.data));
-      } else {
-        const createdReward = await createReward({
-          missionId: mission.id,
-          ...rewardInput,
-        });
-        setCurrentReward(createdReward.data);
-        form.reset(buildDefaultValues(mission, createdReward.data));
-      }
-
-      toast({ message: "리워드 설정이 저장되었습니다." });
-    } catch (error) {
-      toast({
-        message: error instanceof Error ? error.message : "리워드 설정 저장에 실패했습니다.",
-        icon: AlertCircle,
-        iconClassName: "text-red-500",
-      });
-    }
-  });
+  useImperativeHandle(
+    ref,
+    () => ({
+      save,
+      hasPendingChanges: () => form.formState.isDirty,
+      isBusy: () => form.formState.isSubmitting,
+    }),
+    [form.formState.isDirty, form.formState.isSubmitting, save],
+  );
 
   return (
     <div className="border border-zinc-200 bg-white">
@@ -151,20 +219,20 @@ export function RewardSettingsCard({ mission, initialReward }: RewardSettingsCar
       </div>
 
       <FormProvider {...form}>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5 px-5 py-5">
+        <form
+          onSubmit={event => {
+            event.preventDefault();
+          }}
+          className="flex flex-col gap-5 px-5 py-5"
+        >
           <CreateRewardSettingsStep />
-
-          <div className="flex justify-end">
-            <Button
-              type="submit"
-              loading={form.formState.isSubmitting}
-              disabled={form.formState.isSubmitting || !form.formState.isDirty}
-            >
-              저장
-            </Button>
-          </div>
         </form>
       </FormProvider>
     </div>
   );
 }
+
+export const RewardSettingsCard = forwardRef<SectionSaveHandle, RewardSettingsCardProps>(
+  RewardSettingsCardComponent,
+);
+RewardSettingsCard.displayName = "RewardSettingsCard";

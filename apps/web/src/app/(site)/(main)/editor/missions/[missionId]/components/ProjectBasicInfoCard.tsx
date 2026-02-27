@@ -14,12 +14,19 @@ import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import type { GetMissionResponse } from "@/types/dto";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MissionType } from "@prisma/client";
-import { Button, ImageSelector, Typo, toast } from "@repo/ui/components";
+import { ImageSelector, Typo, toast } from "@repo/ui/components";
 import { AlertCircle } from "lucide-react";
+import { type ForwardedRef, forwardRef, useCallback, useEffect, useImperativeHandle } from "react";
 import { FormProvider, useForm } from "react-hook-form";
+import type {
+  SectionSaveHandle,
+  SectionSaveResult,
+  SectionSaveStateChangeHandler,
+} from "./editor-save.types";
 
 interface ProjectBasicInfoCardProps {
   mission: GetMissionResponse["data"];
+  onSaveStateChange?: SectionSaveStateChangeHandler;
 }
 
 function buildDefaultValues(mission: GetMissionResponse["data"]): CreateMissionFormData {
@@ -41,7 +48,10 @@ function buildDefaultValues(mission: GetMissionResponse["data"]): CreateMissionF
   };
 }
 
-export function ProjectBasicInfoCard({ mission }: ProjectBasicInfoCardProps) {
+function ProjectBasicInfoCardComponent(
+  { mission, onSaveStateChange }: ProjectBasicInfoCardProps,
+  ref: ForwardedRef<SectionSaveHandle>,
+) {
   const form = useForm<CreateMissionFormData>({
     resolver: zodResolver(createMissionFormSchema),
     defaultValues: buildDefaultValues(mission),
@@ -101,36 +111,101 @@ export function ProjectBasicInfoCard({ mission }: ProjectBasicInfoCardProps) {
     form.setValue("brandLogoFileUploadId", null, { shouldDirty: true });
   };
 
-  const handleSubmit = form.handleSubmit(async values => {
-    try {
-      await updateMission(mission.id, {
-        title: values.title,
-        description: values.description,
-        isActive: values.isActive,
-        type: values.isExposed ? MissionType.GENERAL : MissionType.EXPERIENCE_GROUP,
-        allowGuestResponse: values.allowGuestResponse,
-        allowMultipleResponses: values.allowMultipleResponses,
-        imageUrl: values.imageUrl ?? null,
-        imageFileUploadId: values.imageFileUploadId ?? null,
-        brandLogoUrl: values.brandLogoUrl ?? null,
-        brandLogoFileUploadId: values.brandLogoFileUploadId ?? null,
-      });
+  const hasPendingChanges = form.formState.isDirty;
+  const isBusy = form.formState.isSubmitting || thumbnailImageUpload.isUploading || isBrandLogoBusy;
 
-      thumbnailImageUpload.deleteMarkedInitial();
-      brandLogoImageUpload.deleteMarkedInitial();
-      form.reset(values);
-      toast({ message: `${UBIQUITOUS_CONSTANTS.MISSION} 기본 정보가 수정되었습니다.` });
-    } catch (error) {
-      toast({
-        message:
+  useEffect(() => {
+    onSaveStateChange?.({
+      hasPendingChanges,
+      isBusy,
+    });
+  }, [hasPendingChanges, isBusy, onSaveStateChange]);
+
+  const save = useCallback(
+    async ({ silent = false }: { silent?: boolean } = {}): Promise<SectionSaveResult> => {
+      if (form.formState.isSubmitting) {
+        return { status: "failed", message: "기본 정보 저장이 진행 중입니다." };
+      }
+
+      if (thumbnailImageUpload.isUploading || brandLogoImageUpload.isUploading) {
+        return { status: "failed", message: "이미지 업로드가 완료된 뒤 저장해주세요." };
+      }
+
+      if (!form.formState.isDirty) {
+        return { status: "no_changes" };
+      }
+
+      const isValid = await form.trigger();
+      if (!isValid) {
+        return {
+          status: "failed",
+          message: `${UBIQUITOUS_CONSTANTS.MISSION} 기본 정보를 확인해주세요.`,
+        };
+      }
+
+      const values = form.getValues();
+
+      try {
+        await updateMission(mission.id, {
+          title: values.title,
+          description: values.description,
+          isActive: values.isActive,
+          type: values.isExposed ? MissionType.GENERAL : MissionType.EXPERIENCE_GROUP,
+          allowGuestResponse: values.allowGuestResponse,
+          allowMultipleResponses: values.allowMultipleResponses,
+          imageUrl: values.imageUrl ?? null,
+          imageFileUploadId: values.imageFileUploadId ?? null,
+          brandLogoUrl: values.brandLogoUrl ?? null,
+          brandLogoFileUploadId: values.brandLogoFileUploadId ?? null,
+        });
+
+        thumbnailImageUpload.deleteMarkedInitial();
+        brandLogoImageUpload.deleteMarkedInitial();
+        form.reset(values);
+
+        if (!silent) {
+          toast({ message: `${UBIQUITOUS_CONSTANTS.MISSION} 기본 정보가 수정되었습니다.` });
+        }
+
+        return { status: "saved" };
+      } catch (error) {
+        const message =
           error instanceof Error
             ? error.message
-            : `${UBIQUITOUS_CONSTANTS.MISSION} 수정에 실패했습니다.`,
-        icon: AlertCircle,
-        iconClassName: "text-red-500",
-      });
-    }
-  });
+            : `${UBIQUITOUS_CONSTANTS.MISSION} 수정에 실패했습니다.`;
+
+        if (!silent) {
+          toast({
+            message,
+            icon: AlertCircle,
+            iconClassName: "text-red-500",
+          });
+        }
+
+        return { status: "failed", message };
+      }
+    },
+    [brandLogoImageUpload, form, mission.id, thumbnailImageUpload],
+  );
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      save,
+      hasPendingChanges: () => form.formState.isDirty,
+      isBusy: () =>
+        form.formState.isSubmitting ||
+        thumbnailImageUpload.isUploading ||
+        brandLogoImageUpload.isUploading,
+    }),
+    [
+      brandLogoImageUpload.isUploading,
+      form.formState.isDirty,
+      form.formState.isSubmitting,
+      save,
+      thumbnailImageUpload.isUploading,
+    ],
+  );
 
   return (
     <div className="border border-zinc-200 bg-white">
@@ -142,7 +217,12 @@ export function ProjectBasicInfoCard({ mission }: ProjectBasicInfoCardProps) {
       </div>
 
       <FormProvider {...form}>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5 px-5 py-5">
+        <form
+          onSubmit={event => {
+            event.preventDefault();
+          }}
+          className="flex flex-col gap-5 px-5 py-5"
+        >
           <div className="rounded-xl border border-zinc-200 bg-white px-4 py-4">
             <div className="flex items-center justify-between gap-4">
               <div className="flex flex-col gap-1">
@@ -184,21 +264,6 @@ export function ProjectBasicInfoCard({ mission }: ProjectBasicInfoCardProps) {
           </div>
 
           <CreateProjectInfoStep />
-
-          <div className="flex justify-end">
-            <Button
-              type="submit"
-              loading={form.formState.isSubmitting}
-              disabled={
-                form.formState.isSubmitting ||
-                thumbnailImageUpload.isUploading ||
-                brandLogoImageUpload.isUploading ||
-                !form.formState.isDirty
-              }
-            >
-              저장
-            </Button>
-          </div>
         </form>
       </FormProvider>
 
@@ -237,3 +302,8 @@ export function ProjectBasicInfoCard({ mission }: ProjectBasicInfoCardProps) {
     </div>
   );
 }
+
+export const ProjectBasicInfoCard = forwardRef<SectionSaveHandle, ProjectBasicInfoCardProps>(
+  ProjectBasicInfoCardComponent,
+);
+ProjectBasicInfoCard.displayName = "ProjectBasicInfoCard";

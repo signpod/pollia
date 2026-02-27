@@ -22,8 +22,10 @@ import {
   type ForwardedRef,
   forwardRef,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
+  useRef,
   useState,
 } from "react";
 
@@ -79,6 +81,7 @@ export interface CompletionFormHandle {
   validateAndGetValues: () => CompletionFormValues | null;
   isUploading: () => boolean;
   deleteMarkedInitial: () => void;
+  isDirty: () => boolean;
 }
 
 interface CompletionFormProps {
@@ -91,6 +94,7 @@ interface CompletionFormProps {
   hideTitle?: boolean;
   hideFooter?: boolean;
   onTitleChange?: (title: string) => void;
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 
 function CompletionFormComponent(
@@ -104,6 +108,7 @@ function CompletionFormComponent(
     hideTitle = false,
     hideFooter = false,
     onTitleChange,
+    onDirtyChange,
   }: CompletionFormProps,
   ref: ForwardedRef<CompletionFormHandle>,
 ) {
@@ -138,6 +143,18 @@ function CompletionFormComponent(
 
   const isImageBusy = isLoading || imageUpload.isUploading;
   const descriptionLength = useMemo(() => getTextLengthFromHtml(description), [description]);
+  const dirtyComparableString = JSON.stringify({
+    title: title.trim(),
+    description,
+    imageUrl: imageUrl ?? null,
+    imageFileUploadId: imageFileUploadId ?? null,
+  });
+  const initialDirtyComparableStringRef = useRef(dirtyComparableString);
+  const isDirty = dirtyComparableString !== initialDirtyComparableStringRef.current;
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [onDirtyChange, isDirty]);
 
   const handleTitleChange = (nextTitle: string) => {
     setTitle(nextTitle);
@@ -186,8 +203,9 @@ function CompletionFormComponent(
       deleteMarkedInitial: () => {
         imageUpload.deleteMarkedInitial();
       },
+      isDirty: () => isDirty,
     }),
-    [buildValidatedValues, imageUpload],
+    [buildValidatedValues, imageUpload, isDirty],
   );
 
   const handleSubmit = () => {

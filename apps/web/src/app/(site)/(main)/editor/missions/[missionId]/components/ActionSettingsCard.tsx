@@ -39,11 +39,26 @@ import {
 } from "@repo/ui/components";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, ChevronDown, Plus, Trash2, X } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import {
+  type ForwardedRef,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { isDraftCompletionId, useEditorMissionDraft } from "./EditorMissionDraftContext";
+import type {
+  SectionSaveHandle,
+  SectionSaveResult,
+  SectionSaveStateChangeHandler,
+} from "./editor-save.types";
 
 interface ActionSettingsCardProps {
   missionId: string;
+  onSaveStateChange?: SectionSaveStateChangeHandler;
 }
 
 interface DraftActionItem {
@@ -75,6 +90,15 @@ const ACTION_TYPES_WITH_OPTIONS = new Set<ActionType>([
   ActionType.TAG,
   ActionType.BRANCH,
 ]);
+const ACTION_TYPES_WITH_OPTION_DESCRIPTION = new Set<ActionType>([
+  ActionType.MULTIPLE_CHOICE,
+  ActionType.SCALE,
+  ActionType.BRANCH,
+]);
+const ACTION_TYPES_WITH_OPTION_IMAGE = new Set<ActionType>([
+  ActionType.MULTIPLE_CHOICE,
+  ActionType.BRANCH,
+]);
 
 const ACTION_TYPES_WITH_MAX_SELECTIONS = new Set<ActionType>([
   ActionType.MULTIPLE_CHOICE,
@@ -104,6 +128,8 @@ function normalizeActionValues(type: ActionType, values: ActionFormValues) {
   const normalized: Record<string, unknown> = {
     title: values.title.trim(),
     description: values.description?.trim() || null,
+    imageUrl: values.imageUrl ?? null,
+    imageFileUploadId: values.imageFileUploadId ?? null,
     isRequired: values.isRequired,
   };
 
@@ -116,9 +142,14 @@ function normalizeActionValues(type: ActionType, values: ActionFormValues) {
   }
 
   if (ACTION_TYPES_WITH_OPTIONS.has(type)) {
+    const showOptionDescription = ACTION_TYPES_WITH_OPTION_DESCRIPTION.has(type);
+    const showOptionImage = ACTION_TYPES_WITH_OPTION_IMAGE.has(type);
+
     normalized.options = (values.options ?? []).map((option, index) => ({
       title: option.title.trim(),
-      description: option.description?.trim() || null,
+      description: showOptionDescription ? option.description?.trim() || null : null,
+      imageUrl: showOptionImage ? (option.imageUrl ?? null) : null,
+      fileUploadId: showOptionImage ? (option.fileUploadId ?? null) : null,
       nextActionId: option.nextActionId ?? null,
       nextCompletionId: option.nextCompletionId ?? null,
       order: index,
@@ -194,13 +225,17 @@ function resolveDraftCompletionReferences(
 
 const NOOP = () => {};
 
-export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
+function ActionSettingsCardComponent(
+  { missionId, onSaveStateChange }: ActionSettingsCardProps,
+  ref: ForwardedRef<SectionSaveHandle>,
+) {
   const queryClient = useQueryClient();
   const formRefs = useRef<Record<string, ActionFormHandle | null>>({});
   const [draftItems, setDraftItems] = useState<DraftActionItem[]>([]);
   const [openItemKey, setOpenItemKey] = useState<string | null>(null);
   const [isUpdatingEntryAction, setIsUpdatingEntryAction] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<ActionDetail | null>(null);
+  const [dirtyByItemKey, setDirtyByItemKey] = useState<Record<string, boolean>>({});
   const [existingFormVersionById, setExistingFormVersionById] = useState<Record<string, number>>(
     {},
   );
@@ -249,6 +284,14 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
         setActionTypeByItemKey(prev => {
           const next = { ...prev };
           delete next[deletingItemKey];
+          return next;
+        });
+        setDirtyByItemKey(prev => {
+          const next = { ...prev };
+          delete next[deletingItemKey];
+          for (const actionId of affectedActionIds) {
+            delete next[getExistingItemKey(actionId)];
+          }
           return next;
         });
         setOpenItemKey(prev => (prev === deletingItemKey ? null : prev));
@@ -326,6 +369,49 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
     return [...existingTargets, ...draftTargets];
   }, [existingActions, draftItems, actionTypeByItemKey]);
 
+  useEffect(() => {
+    const validKeys = new Set(actionItems.map(item => item.key));
+    setDirtyByItemKey(prev => {
+      let hasChange = false;
+      const next: Record<string, boolean> = {};
+
+      for (const [key, value] of Object.entries(prev)) {
+        if (validKeys.has(key)) {
+          next[key] = value;
+        } else {
+          hasChange = true;
+        }
+      }
+
+      return hasChange ? next : prev;
+    });
+  }, [actionItems]);
+
+  const hasPendingChanges = useMemo(() => {
+    if (draftItems.length > 0) {
+      return true;
+    }
+
+    return existingActions.some(action => dirtyByItemKey[getExistingItemKey(action.id)]);
+  }, [draftItems.length, existingActions, dirtyByItemKey]);
+
+  useEffect(() => {
+    onSaveStateChange?.({
+      hasPendingChanges,
+      isBusy: isBusy || isActionsLoading,
+    });
+  }, [hasPendingChanges, isBusy, isActionsLoading, onSaveStateChange]);
+
+  const handleItemDirtyChange = useCallback((itemKey: string, isDirty: boolean) => {
+    setDirtyByItemKey(prev => {
+      if (prev[itemKey] === isDirty) {
+        return prev;
+      }
+
+      return { ...prev, [itemKey]: isDirty };
+    });
+  }, []);
+
   const handleAddDraft = () => {
     const draftKey = createDraftKey();
     const itemKey = getDraftItemKey(draftKey);
@@ -339,6 +425,11 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
     const itemKey = getDraftItemKey(draftKey);
     setDraftItems(prev => prev.filter(item => item.key !== draftKey));
     setActionTypeByItemKey(prev => {
+      const next = { ...prev };
+      delete next[itemKey];
+      return next;
+    });
+    setDirtyByItemKey(prev => {
       const next = { ...prev };
       delete next[itemKey];
       return next;
@@ -360,8 +451,12 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
     deleteAction.mutate({ actionId: deleteTarget.id, missionId });
   };
 
-  const handleSave = async () => {
-    if (isActionsLoading || isBusy) return;
+  const executeSave = async ({
+    silent = false,
+  }: { silent?: boolean } = {}): Promise<SectionSaveResult> => {
+    if (isActionsLoading || isBusy) {
+      return { status: "failed", message: "액션 저장이 진행 중입니다." };
+    }
 
     const existingSnapshot = [...existingActions];
     const draftSnapshot = [...draftItems];
@@ -379,8 +474,7 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
     ];
 
     if (listSnapshot.length === 0) {
-      toast({ message: "저장할 액션이 없습니다." });
-      return;
+      return { status: "no_changes" };
     }
 
     const submissionsByKey = new Map<string, ActionSubmission>();
@@ -389,18 +483,27 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
       const formRef = formRefs.current[item.key];
       if (!formRef) {
         setOpenItemKey(item.key);
-        toast({
+        return {
+          status: "failed",
           message: "액션 폼이 준비되지 않았습니다. 다시 시도해주세요.",
-          icon: AlertCircle,
-          iconClassName: "text-red-500",
-        });
-        return;
+        };
+      }
+
+      if (formRef.isUploading()) {
+        setOpenItemKey(item.key);
+        return {
+          status: "failed",
+          message: "이미지 업로드가 완료된 뒤 저장해주세요.",
+        };
       }
 
       const submission = formRef.validateAndGetSubmission();
       if (!submission) {
         setOpenItemKey(item.key);
-        return;
+        return {
+          status: "failed",
+          message: "액션 입력값을 확인해주세요.",
+        };
       }
 
       submissionsByKey.set(item.key, submission);
@@ -415,8 +518,7 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
     });
 
     if (changedExistingActions.length === 0 && draftSnapshot.length === 0) {
-      toast({ message: "변경된 액션이 없습니다." });
-      return;
+      return { status: "no_changes" };
     }
 
     const actionSubmissionsToPersist = [
@@ -426,6 +528,10 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
       ...draftSnapshot
         .map(draft => submissionsByKey.get(getDraftItemKey(draft.key)))
         .filter((submission): submission is ActionSubmission => Boolean(submission)),
+    ];
+    const persistedItemKeys = [
+      ...changedExistingActions.map(action => getExistingItemKey(action.id)),
+      ...draftSnapshot.map(draft => getDraftItemKey(draft.key)),
     ];
 
     const referencedDraftCompletionIds = [
@@ -452,28 +558,27 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
         const completionForm = getCompletionDraftFormById(draftCompletionId);
         if (!completionForm) {
           openCompletionDraftById(draftCompletionId);
-          toast({
+          return {
+            status: "failed",
             message: "참조된 결과 화면 폼을 찾을 수 없습니다.",
-            icon: AlertCircle,
-            iconClassName: "text-red-500",
-          });
-          return;
+          };
         }
 
         if (completionForm.isUploading()) {
           openCompletionDraftById(draftCompletionId);
-          toast({
+          return {
+            status: "failed",
             message: "결과 화면 이미지 업로드가 완료된 뒤 저장해주세요.",
-            icon: AlertCircle,
-            iconClassName: "text-red-500",
-          });
-          return;
+          };
         }
 
         const completionValues = completionForm.validateAndGetValues();
         if (!completionValues) {
           openCompletionDraftById(draftCompletionId);
-          return;
+          return {
+            status: "failed",
+            message: "연결된 결과 화면 입력값을 확인해주세요.",
+          };
         }
 
         const createdCompletion = await createMissionCompletion({
@@ -591,24 +696,47 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
         );
       }
 
+      for (const itemKey of persistedItemKeys) {
+        formRefs.current[itemKey]?.deleteMarkedInitialImages();
+      }
+
       if (existingSnapshot.length === 0 && firstCreatedActionId) {
         setIsUpdatingEntryAction(true);
         try {
           await updateMission(missionId, { entryActionId: firstCreatedActionId });
         } catch {
-          toast({
-            message: "시작 액션 설정 중 오류가 발생했습니다.",
-            icon: AlertCircle,
-            iconClassName: "text-red-500",
-          });
+          if (!silent) {
+            toast({
+              message: "시작 액션 설정 중 오류가 발생했습니다.",
+              icon: AlertCircle,
+              iconClassName: "text-red-500",
+            });
+          }
         } finally {
           setIsUpdatingEntryAction(false);
         }
       }
 
+      setExistingFormVersionById(prev => {
+        const next = { ...prev };
+        for (const action of changedExistingActions) {
+          next[action.id] = (next[action.id] ?? 0) + 1;
+        }
+        return next;
+      });
       setDraftItems([]);
       setActionTypeByItemKey(prev => {
         const next = { ...prev };
+        for (const draft of draftSnapshot) {
+          delete next[getDraftItemKey(draft.key)];
+        }
+        return next;
+      });
+      setDirtyByItemKey(prev => {
+        const next = { ...prev };
+        for (const action of changedExistingActions) {
+          delete next[getExistingItemKey(action.id)];
+        }
         for (const draft of draftSnapshot) {
           delete next[getDraftItemKey(draft.key)];
         }
@@ -628,7 +756,10 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
         }),
       ]);
 
-      toast({ message: "액션 설정이 저장되었습니다." });
+      if (!silent) {
+        toast({ message: "액션 설정이 저장되었습니다." });
+      }
+      return { status: "saved" };
     } catch (error) {
       if (createdCompletionDraftIds.length > 0) {
         for (const draftCompletionId of createdCompletionDraftIds) {
@@ -639,15 +770,31 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
         });
       }
 
-      toast({
-        message: error instanceof Error ? error.message : "액션 설정 저장에 실패했습니다.",
-        icon: AlertCircle,
-        iconClassName: "text-red-500",
-      });
+      const message = error instanceof Error ? error.message : "액션 설정 저장에 실패했습니다.";
+      if (!silent) {
+        toast({
+          message,
+          icon: AlertCircle,
+          iconClassName: "text-red-500",
+        });
+      }
+      return { status: "failed", message };
     } finally {
       setIsUpdatingEntryAction(false);
     }
+
+    return { status: "failed", message: "액션 설정 저장에 실패했습니다." };
   };
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      save: executeSave,
+      hasPendingChanges: () => hasPendingChanges,
+      isBusy: () => isBusy || isActionsLoading,
+    }),
+    [executeSave, hasPendingChanges, isActionsLoading, isBusy],
+  );
 
   return (
     <div className="border border-zinc-200 bg-white">
@@ -755,6 +902,9 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
                         enableTypeSelect
                         enforceExclusiveNextLink
                         onActionTypeChange={type => handleActionTypeChange(item.key, type)}
+                        onDirtyChange={isDirty => {
+                          handleItemDirtyChange(item.key, isDirty);
+                        }}
                       />
                     ) : (
                       <ActionForm
@@ -772,6 +922,9 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
                         enableTypeSelect
                         enforceExclusiveNextLink
                         onActionTypeChange={type => handleActionTypeChange(item.key, type)}
+                        onDirtyChange={isDirty => {
+                          handleItemDirtyChange(item.key, isDirty);
+                        }}
                       />
                     )}
                   </div>
@@ -792,12 +945,6 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
             액션 추가
           </Typo.Body>
         </button>
-
-        <div className="flex justify-end">
-          <Button onClick={handleSave} loading={isSaving} disabled={isBusy || isActionsLoading}>
-            저장
-          </Button>
-        </div>
       </div>
 
       <Dialog
@@ -857,3 +1004,8 @@ export function ActionSettingsCard({ missionId }: ActionSettingsCardProps) {
     </div>
   );
 }
+
+export const ActionSettingsCard = forwardRef<SectionSaveHandle, ActionSettingsCardProps>(
+  ActionSettingsCardComponent,
+);
+ActionSettingsCard.displayName = "ActionSettingsCard";
