@@ -42,13 +42,11 @@ export function MeResultContent({ missionId, completionId }: MeResultContentProp
       </Tab.List>
 
       <Tab.Content value="result" className="m-0">
-        <div className="min-h-[calc(100dvh-48px-45px)] bg-zinc-50">
-          <MissionCompletionTemplate
-            imageUrl={completion?.imageUrl}
-            title={completion?.title}
-            description={completion?.description ?? undefined}
-          />
-        </div>
+        <MissionCompletionTemplate
+          imageUrl={completion?.imageUrl}
+          title={completion?.title}
+          description={completion?.description ?? undefined}
+        />
       </Tab.Content>
 
       <Tab.Content value="answers" className="m-0">
