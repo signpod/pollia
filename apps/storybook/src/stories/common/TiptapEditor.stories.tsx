@@ -1,5 +1,6 @@
 import { TiptapEditor } from "@repo/ui/components";
 import type { Meta, StoryObj } from "@storybook/nextjs";
+import { useState } from "react";
 
 const SAMPLE_CONTENT = `
   <h2>프로젝트 소개</h2>
@@ -35,6 +36,10 @@ const meta: Meta<typeof TiptapEditor> = {
       control: "boolean",
       description: "툴바 노출 여부",
     },
+    onFocus: {
+      action: "onFocus",
+      description: "에디터가 포커스될 때 호출되는 콜백",
+    },
   },
   args: {
     content: SAMPLE_CONTENT,
@@ -52,11 +57,13 @@ function ControlledEditor({
   placeholder,
   editable,
   showToolbar,
+  onFocus,
 }: {
   content?: string;
   placeholder?: string;
   editable?: boolean;
   showToolbar?: boolean;
+  onFocus?: () => void;
 }) {
   return (
     <div className="w-[720px]">
@@ -65,6 +72,7 @@ function ControlledEditor({
         placeholder={placeholder}
         editable={editable}
         showToolbar={showToolbar}
+        onFocus={onFocus}
         className="min-h-[220px] ring-1 ring-zinc-200"
       />
     </div>
@@ -98,6 +106,30 @@ export const EmptyWithPlaceholder: Story = {
     showToolbar: true,
   },
   render: args => <ControlledEditor {...args} />,
+};
+
+function FocusOnContainerClickExample() {
+  const [focusCount, setFocusCount] = useState(0);
+
+  return (
+    <div className="w-[720px] space-y-2">
+      <p className="text-sm text-zinc-500">포커스 횟수: {focusCount}</p>
+      <TiptapEditor
+        content=""
+        editable
+        showToolbar
+        placeholder="빈 영역(패딩 포함)을 클릭해 포커스를 확인해보세요."
+        onFocus={() => {
+          setFocusCount(prev => prev + 1);
+        }}
+        className="min-h-[200px] ring-1 ring-zinc-200"
+      />
+    </div>
+  );
+}
+
+export const FocusOnContainerClick: Story = {
+  render: () => <FocusOnContainerClickExample />,
 };
 
 export const States: Story = {

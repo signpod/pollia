@@ -16,15 +16,16 @@ import { TiptapEditor } from "./TiptapEditor";
 function getTextLength(html: string): number {
   if (!html) return 0;
 
-  const text = html.replace(/<[^>]*>/g, "");
-
   if (typeof document !== "undefined") {
     const div = document.createElement("div");
-    div.innerHTML = text;
-    return div.textContent?.length || 0;
+    div.innerHTML = html;
+    return div.textContent?.replace(/\u00a0/g, " ").trim().length || 0;
   }
 
-  return text.length;
+  return html
+    .replace(/<[^>]*>/g, "")
+    .replace(/(&nbsp;|&#160;|&#xA0;)/gi, " ")
+    .trim().length;
 }
 
 interface TiptapFieldProps<T extends FieldValues> {
@@ -82,7 +83,8 @@ export function TiptapField<T extends FieldValues>({
               <TiptapEditor
                 content={field.value || ""}
                 onUpdate={content => {
-                  field.onChange(content || undefined);
+                  const nextTextLength = getTextLength(content || "");
+                  field.onChange(nextTextLength === 0 ? "" : content);
                 }}
                 placeholder={placeholder}
                 showToolbar={showToolbar}
