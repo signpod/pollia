@@ -23,7 +23,7 @@ export function RootWrapper({ children, leftAside, rightAside }: RootWrapperProp
       )}
       <main
         className={cn(
-          "w-full max-w-[600px] min-h-svh border-x border-zinc-100",
+          "w-full max-w-[600px] min-h-svh border-x border-zinc-100 overflow-x-clip",
           isZincBg ? "bg-zinc-50" : "bg-background",
         )}
       >
