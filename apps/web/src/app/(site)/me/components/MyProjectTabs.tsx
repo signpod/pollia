@@ -21,7 +21,7 @@ import { MissionLikeButton } from "../../(main)/components/MissionLikeButton";
 import { useDeleteMissionResponse } from "../hooks/useDeleteMissionResponse";
 import { useGroupedRewards } from "../hooks/useGroupedRewards";
 import { useLikedMissions } from "../hooks/useLikedMissions";
-import { type ParticipationFilter, useMyProjectTabs } from "../hooks/useMyProjectTabs";
+import { useMyProjectTabs } from "../hooks/useMyProjectTabs";
 import { MyContentList } from "./MyContentList";
 import { SectionHeader } from "./SectionHeader";
 
@@ -51,15 +51,8 @@ interface TabSectionProps {
 }
 
 export function MyProjectTabs() {
-  const {
-    tabs,
-    currentTab,
-    handleTabChange,
-    inProgressResponses,
-    completedResponses,
-    participationFilter,
-    handleFilterChange,
-  } = useMyProjectTabs();
+  const { tabs, currentTab, handleTabChange, inProgressResponses, completedResponses } =
+    useMyProjectTabs();
 
   const tabContent: Record<string, ReactNode> = {
     "my-content": <MyContentTab />,
@@ -67,8 +60,6 @@ export function MyProjectTabs() {
       <ParticipationTab
         inProgressResponses={inProgressResponses}
         completedResponses={completedResponses}
-        filter={participationFilter}
-        onFilterChange={handleFilterChange}
       />
     ),
     liked: <LikedTab />,
@@ -104,17 +95,16 @@ export function MyProjectTabs() {
 
 // ─── 참여 탭 ───
 
+type ParticipationFilter = "in-progress" | "completed";
+
 function ParticipationTab({
   inProgressResponses,
   completedResponses,
-  filter,
-  onFilterChange,
 }: {
   inProgressResponses: MyMissionResponse[];
   completedResponses: MyMissionResponse[];
-  filter: ParticipationFilter;
-  onFilterChange: (value: ParticipationFilter) => void;
 }) {
+  const [filter, setFilter] = useState<ParticipationFilter>("in-progress");
   const allResponses = [...inProgressResponses, ...completedResponses];
 
   if (allResponses.length === 0) {
@@ -147,7 +137,7 @@ function ParticipationTab({
           <div className="flex h-8 items-center rounded-full bg-zinc-100 p-0.5">
             <button
               type="button"
-              onClick={() => onFilterChange("in-progress")}
+              onClick={() => setFilter("in-progress")}
               className={`inline-flex h-7 items-center justify-center rounded-full px-3 text-xs font-bold transition-colors ${
                 filter === "in-progress" ? "bg-white text-violet-500" : "text-zinc-400"
               }`}
@@ -156,7 +146,7 @@ function ParticipationTab({
             </button>
             <button
               type="button"
-              onClick={() => onFilterChange("completed")}
+              onClick={() => setFilter("completed")}
               className={`inline-flex h-7 items-center justify-center rounded-full px-3 text-xs font-bold transition-colors ${
                 filter === "completed" ? "bg-white text-violet-500" : "text-zinc-400"
               }`}

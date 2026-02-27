@@ -25,11 +25,10 @@ export function MeLayoutShell({ children }: { children: React.ReactNode }) {
   const subPageTitle =
     SUB_PAGE_HEADERS[pathname] ??
     (pathname.startsWith("/me/result/") ? "결과 다시보기" : undefined);
-  const hasOwnHeader = pathname === ROUTES.ME_EDIT || pathname === ROUTES.ME_ACCOUNT;
 
   return (
     <div className="flex min-h-screen flex-col">
-      {hasOwnHeader ? null : subPageTitle ? (
+      {subPageTitle ? (
         <header className={cn("sticky top-0 z-50 flex h-12 items-center bg-white px-1")}>
           <button
             type="button"
