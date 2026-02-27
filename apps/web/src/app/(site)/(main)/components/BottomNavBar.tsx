@@ -2,10 +2,15 @@
 
 import { ROUTES } from "@/constants/routes";
 import { useAuth } from "@/hooks/user";
+import CommunityIcon from "@public/svgs/community-icon.svg";
+import EditorIconFill from "@public/svgs/editor-icon-fill.svg";
+import EditorIcon from "@public/svgs/editor-icon.svg";
 import HomeIconFilled from "@public/svgs/home-icon-filled.svg";
 import HomeIcon from "@public/svgs/home-icon.svg";
+import LikeIconFill from "@public/svgs/like-icon-fill.svg";
+import LikeIcon from "@public/svgs/like-icon.svg";
+import PickIcon from "@public/svgs/pick-icon.svg";
 import { Tooltip, Typo, useDrawer } from "@repo/ui/components";
-import { BadgePlus, Heart, MessageCircle, Sparkle } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -50,16 +55,16 @@ function BottomNavBarContent() {
     }) as const;
 
   return (
-    <nav className="flex w-full items-center border-t border-zinc-100 bg-white shadow-[0px_4px_20px_0px_rgba(9,9,11,0.08)]">
+    <nav className="flex w-full items-center border-t border-zinc-100 bg-white px-1 shadow-[0px_4px_20px_0px_rgba(9,9,11,0.08)]">
       <Link
         href={ROUTES.HOME}
         className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2"
         aria-label="홈"
       >
         {isHome ? (
-          <HomeIconFilled className="size-7 text-black" />
+          <HomeIconFilled className="size-6 text-black" />
         ) : (
-          <HomeIcon className="size-7 text-zinc-400" strokeWidth={1.5} />
+          <HomeIcon className="size-6 text-zinc-400" />
         )}
         <Typo.Body
           size="small"
@@ -75,7 +80,7 @@ function BottomNavBarContent() {
         aria-label="PICK"
         aria-disabled="true"
       >
-        <Sparkle className="size-7 text-zinc-400" strokeWidth={1.5} />
+        <PickIcon className="size-6" />
         <Typo.Body size="small" className="text-[11px] font-bold leading-normal text-zinc-400">
           PICK
         </Typo.Body>
@@ -86,10 +91,7 @@ function BottomNavBarContent() {
         className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2"
         aria-label="에디터"
       >
-        <BadgePlus
-          className={`size-7 ${isCreate ? "fill-black text-black [&>line]:stroke-white" : "text-zinc-400"}`}
-          strokeWidth={isCreate ? 2 : 1.5}
-        />
+        {isCreate ? <EditorIconFill className="size-6" /> : <EditorIcon className="size-6" />}
         <Typo.Body
           size="small"
           className={`text-[11px] font-bold leading-normal ${isCreate ? "text-black" : "text-zinc-400"}`}
@@ -104,11 +106,7 @@ function BottomNavBarContent() {
         aria-label="찜"
         onClick={handleLikesClick}
       >
-        <Heart
-          className={`size-7 ${isLikes ? "text-black" : "text-zinc-400"}`}
-          fill={isLikes ? "currentColor" : "none"}
-          strokeWidth={isLikes ? 2 : 1.5}
-        />
+        {isLikes ? <LikeIconFill className="size-6" /> : <LikeIcon className="size-6" />}
         <Typo.Body
           size="small"
           className={`text-[11px] font-bold leading-normal ${isLikes ? "text-black" : "text-zinc-400"}`}
@@ -123,7 +121,7 @@ function BottomNavBarContent() {
         aria-label="커뮤니티"
         aria-disabled="true"
       >
-        <MessageCircle className="size-7 text-zinc-400" strokeWidth={1.5} />
+        <CommunityIcon className="size-6" />
         <Typo.Body size="small" className="text-[11px] font-bold leading-normal text-zinc-400">
           커뮤니티
         </Typo.Body>
