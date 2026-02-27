@@ -113,6 +113,8 @@ function ProjectBasicInfoCardComponent(
 
   const hasPendingChanges = form.formState.isDirty;
   const isBusy = form.formState.isSubmitting || thumbnailImageUpload.isUploading || isBrandLogoBusy;
+  const watchedImageUrl = form.watch("imageUrl");
+  const watchedBrandLogoUrl = form.watch("brandLogoUrl");
 
   useEffect(() => {
     onSaveStateChange?.({
@@ -138,7 +140,7 @@ function ProjectBasicInfoCardComponent(
       const isValid = await form.trigger();
       if (!isValid) {
         return {
-          status: "failed",
+          status: "invalid",
           message: `${UBIQUITOUS_CONSTANTS.MISSION} 기본 정보를 확인해주세요.`,
         };
       }
@@ -196,11 +198,57 @@ function ProjectBasicInfoCardComponent(
         form.formState.isSubmitting ||
         thumbnailImageUpload.isUploading ||
         brandLogoImageUpload.isUploading,
+      exportDraftSnapshot: () => form.getValues(),
+      importDraftSnapshot: (snapshot: unknown) => {
+        if (!snapshot || typeof snapshot !== "object") {
+          return;
+        }
+
+        const values = snapshot as Partial<CreateMissionFormData>;
+        const defaultValues = buildDefaultValues(mission);
+        const nextValues: CreateMissionFormData = {
+          ...defaultValues,
+          title: typeof values.title === "string" ? values.title : defaultValues.title,
+          description:
+            typeof values.description === "string" ? values.description : defaultValues.description,
+          isExposed:
+            typeof values.isExposed === "boolean" ? values.isExposed : defaultValues.isExposed,
+          allowGuestResponse:
+            typeof values.allowGuestResponse === "boolean"
+              ? values.allowGuestResponse
+              : defaultValues.allowGuestResponse,
+          allowMultipleResponses:
+            typeof values.allowMultipleResponses === "boolean"
+              ? values.allowMultipleResponses
+              : defaultValues.allowMultipleResponses,
+          imageUrl:
+            typeof values.imageUrl === "string" || values.imageUrl === null
+              ? values.imageUrl
+              : defaultValues.imageUrl,
+          imageFileUploadId:
+            typeof values.imageFileUploadId === "string" || values.imageFileUploadId === null
+              ? values.imageFileUploadId
+              : defaultValues.imageFileUploadId,
+          brandLogoUrl:
+            typeof values.brandLogoUrl === "string" || values.brandLogoUrl === null
+              ? values.brandLogoUrl
+              : defaultValues.brandLogoUrl,
+          brandLogoFileUploadId:
+            typeof values.brandLogoFileUploadId === "string" ||
+            values.brandLogoFileUploadId === null
+              ? values.brandLogoFileUploadId
+              : defaultValues.brandLogoFileUploadId,
+        };
+
+        form.reset(nextValues, { keepDefaultValues: true });
+      },
     }),
     [
       brandLogoImageUpload.isUploading,
       form.formState.isDirty,
       form.formState.isSubmitting,
+      form,
+      mission,
       save,
       thumbnailImageUpload.isUploading,
     ],
@@ -234,7 +282,7 @@ function ProjectBasicInfoCardComponent(
               </div>
               <ImageSelector
                 size="large"
-                imageUrl={thumbnailImageUpload.previewUrl ?? undefined}
+                imageUrl={thumbnailImageUpload.previewUrl ?? watchedImageUrl ?? undefined}
                 onImageSelect={file => thumbnailCropper.openWithFile(file)}
                 onImageDelete={handleThumbnailDelete}
                 disabled={isThumbnailBusy}
@@ -254,7 +302,7 @@ function ProjectBasicInfoCardComponent(
               </div>
               <ImageSelector
                 size="large"
-                imageUrl={brandLogoImageUpload.previewUrl ?? undefined}
+                imageUrl={brandLogoImageUpload.previewUrl ?? watchedBrandLogoUrl ?? undefined}
                 onImageSelect={file => brandLogoCropper.openWithFile(file)}
                 onImageDelete={handleBrandLogoDelete}
                 disabled={isBrandLogoBusy}

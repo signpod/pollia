@@ -16,7 +16,9 @@ import { useEditorMissionTab } from "./EditorMissionTabContext";
 import { MissionStatsDashboard } from "./MissionStatsDashboard";
 import { ProjectBasicInfoCard } from "./ProjectBasicInfoCard";
 import { RewardSettingsCard } from "./RewardSettingsCard";
+import type { EditorSectionKey, ServerSyncSummary } from "./editor-autosave.types";
 import type { SectionSaveHandle, SectionSaveState } from "./editor-save.types";
+import { useMissionEditorAutosave } from "./useMissionEditorAutosave";
 
 interface RewardSnapshot {
   id: string;
@@ -34,6 +36,24 @@ interface EditorMissionTabContentProps {
 
 const UNIFIED_SAVE_TOAST_ID = "editor-mission-save-result";
 const PUBLISH_TOAST_ID = "editor-mission-publish-result";
+
+interface SectionSaveSummary {
+  savedCount: number;
+  failedCount: number;
+  invalidCount: number;
+  failedSections: EditorSectionKey[];
+  invalidSections: EditorSectionKey[];
+  firstErrorMessage: string | null;
+}
+
+const EMPTY_SUMMARY: SectionSaveSummary = {
+  savedCount: 0,
+  failedCount: 0,
+  invalidCount: 0,
+  failedSections: [],
+  invalidSections: [],
+  firstErrorMessage: null,
+};
 
 function MissionIntroPreview({ missionId }: { missionId: string }) {
   const previewUrl = ROUTES.MISSION(missionId);
@@ -113,10 +133,74 @@ export function EditorMissionTabContent({
     () => Object.values(sectionStates).some(state => state.isBusy),
     [sectionStates],
   );
+  const sectionRefs = useMemo(
+    () => ({
+      basic: basicInfoRef,
+      reward: rewardRef,
+      action: actionRef,
+      completion: completionRef,
+    }),
+    [],
+  );
 
   useEffect(() => {
     setIsPublished(mission.isActive);
   }, [mission.id, mission.isActive]);
+
+  const runSectionSaves = useCallback(
+    async ({ stopOnError }: { stopOnError: boolean }): Promise<SectionSaveSummary> => {
+      const sections: Array<{
+        key: EditorSectionKey;
+        label: string;
+        ref: RefObject<SectionSaveHandle | null>;
+      }> = [
+        { key: "basic", label: "기본 정보", ref: basicInfoRef },
+        { key: "reward", label: "리워드", ref: rewardRef },
+        { key: "action", label: "액션", ref: actionRef },
+        { key: "completion", label: "결과 화면", ref: completionRef },
+      ];
+
+      const summary: SectionSaveSummary = { ...EMPTY_SUMMARY };
+
+      for (const section of sections) {
+        const handle = section.ref.current;
+        if (!handle || !handle.hasPendingChanges()) {
+          continue;
+        }
+
+        const result = await handle.save({ silent: true });
+
+        if (result.status === "saved") {
+          summary.savedCount += 1;
+          continue;
+        }
+
+        if (result.status === "no_changes") {
+          continue;
+        }
+
+        if (result.status === "invalid") {
+          summary.invalidCount += 1;
+          summary.invalidSections.push(section.key);
+          summary.firstErrorMessage ??= result.message ?? `${section.label} 입력값을 확인해주세요.`;
+          if (stopOnError) {
+            return summary;
+          }
+          continue;
+        }
+
+        summary.failedCount += 1;
+        summary.failedSections.push(section.key);
+        summary.firstErrorMessage ??= result.message ?? `${section.label} 저장에 실패했습니다.`;
+        if (stopOnError) {
+          return summary;
+        }
+      }
+
+      return summary;
+    },
+    [],
+  );
 
   const runUnifiedSave = useCallback(
     async ({
@@ -140,37 +224,10 @@ export function EditorMissionTabContent({
       saveInFlightRef.current = true;
       setIsSavingAll(true);
       try {
-        const sections: Array<{
-          label: string;
-          ref: RefObject<SectionSaveHandle | null>;
-        }> = [
-          { label: "기본 정보", ref: basicInfoRef },
-          { label: "리워드", ref: rewardRef },
-          { label: "액션", ref: actionRef },
-          { label: "결과 화면", ref: completionRef },
-        ];
-
-        let savedCount = 0;
-
-        for (const section of sections) {
-          const handle = section.ref.current;
-          if (!handle || !handle.hasPendingChanges()) {
-            continue;
-          }
-
-          const result = await handle.save({ silent: true });
-
-          if (result.status === "saved") {
-            savedCount += 1;
-            continue;
-          }
-
-          if (result.status === "no_changes") {
-            continue;
-          }
-
+        const summary = await runSectionSaves({ stopOnError: true });
+        if (summary.invalidCount > 0 || summary.failedCount > 0) {
           toast({
-            message: result.message ?? `${section.label} 저장에 실패했습니다.`,
+            message: summary.firstErrorMessage ?? "저장에 실패했습니다.",
             icon: AlertCircle,
             iconClassName: "text-red-500",
             id: UNIFIED_SAVE_TOAST_ID,
@@ -178,7 +235,7 @@ export function EditorMissionTabContent({
           return "failed" as const;
         }
 
-        if (savedCount > 0) {
+        if (summary.savedCount > 0) {
           if (showSavedToast) {
             toast({
               message: "변경사항이 저장되었습니다.",
@@ -200,12 +257,60 @@ export function EditorMissionTabContent({
         setIsSavingAll(false);
       }
     },
-    [hasAnyBusySection, hasAnyPendingChanges, isEditorTab, isSavingAll],
+    [hasAnyBusySection, hasAnyPendingChanges, isEditorTab, isSavingAll, runSectionSaves],
   );
 
   const handleUnifiedSave = useCallback(async () => {
     await runUnifiedSave();
   }, [runUnifiedSave]);
+
+  const runAutosaveServerSync = useCallback(async (): Promise<ServerSyncSummary> => {
+    if (
+      !isEditorTab ||
+      isPublished ||
+      saveInFlightRef.current ||
+      publishInFlightRef.current ||
+      isSavingAll ||
+      isPublishing ||
+      hasAnyBusySection ||
+      !hasAnyPendingChanges
+    ) {
+      return {
+        savedCount: 0,
+        invalidCount: 0,
+        failedCount: 0,
+        invalidSections: [],
+        failedSections: [],
+      };
+    }
+
+    const summary = await runSectionSaves({ stopOnError: false });
+    return {
+      savedCount: summary.savedCount,
+      invalidCount: summary.invalidCount,
+      failedCount: summary.failedCount,
+      invalidSections: summary.invalidSections,
+      failedSections: summary.failedSections,
+    };
+  }, [
+    hasAnyBusySection,
+    hasAnyPendingChanges,
+    isEditorTab,
+    isPublished,
+    isPublishing,
+    isSavingAll,
+    runSectionSaves,
+  ]);
+
+  const autosave = useMissionEditorAutosave({
+    missionId,
+    enabled: isEditorTab && !isPublished,
+    paused: isPublishing || isSavingAll,
+    missionUpdatedAt: new Date(mission.updatedAt).getTime(),
+    sectionRefs,
+    sectionStates,
+    onServerSync: runAutosaveServerSync,
+  });
 
   const handlePublish = useCallback(async () => {
     if (
@@ -222,6 +327,7 @@ export function EditorMissionTabContent({
     publishInFlightRef.current = true;
     setIsPublishing(true);
     try {
+      autosave.flushLocalDraft();
       if (hasAnyPendingChanges) {
         const saveResult = await runUnifiedSave({
           showSavedToast: false,
@@ -237,6 +343,7 @@ export function EditorMissionTabContent({
         type: MissionType.GENERAL,
       });
       setIsPublished(true);
+      autosave.clearLocalDraft();
       toast({
         message: "발행되었습니다.",
         id: PUBLISH_TOAST_ID,
@@ -254,6 +361,7 @@ export function EditorMissionTabContent({
       setIsPublishing(false);
     }
   }, [
+    autosave,
     hasAnyBusySection,
     hasAnyPendingChanges,
     isEditorTab,
@@ -280,21 +388,10 @@ export function EditorMissionTabContent({
             저장하기
           </Button>
         ) : (
-          <div className="flex gap-2">
-            <Button
-              variant="secondary"
-              className="flex-1"
-              inlineIcon
-              leftIcon={<Save className="size-4" />}
-              onClick={handleUnifiedSave}
-              loading={isSavingAll}
-              disabled={isSavingAll || isPublishing || hasAnyBusySection || !hasAnyPendingChanges}
-            >
-              저장하기
-            </Button>
+          <>
             <Button
               variant="primary"
-              className="flex-1"
+              fullWidth
               inlineIcon
               leftIcon={<Rocket className="size-4" />}
               onClick={handlePublish}
@@ -303,11 +400,15 @@ export function EditorMissionTabContent({
             >
               발행하기
             </Button>
-          </div>
+            {autosave.statusLabel ? (
+              <p className="mt-2 text-center text-xs text-zinc-500">{autosave.statusLabel}</p>
+            ) : null}
+          </>
         )}
       </div>
     ),
     [
+      autosave.statusLabel,
       handlePublish,
       handleUnifiedSave,
       hasAnyBusySection,

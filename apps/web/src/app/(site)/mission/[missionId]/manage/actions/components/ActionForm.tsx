@@ -78,12 +78,20 @@ export interface ActionFormValues {
   nextCompletionId?: string | null;
 }
 
+export interface ActionFormRawSnapshot {
+  actionType: ActionType;
+  values: ActionFormValues;
+  nextLinkType: "action" | "completion";
+}
+
 export interface ActionFormHandle {
   validateAndGetValues: () => ActionFormValues | null;
   validateAndGetSubmission: () => { actionType: ActionType; values: ActionFormValues } | null;
   isUploading: () => boolean;
   deleteMarkedInitialImages: () => void;
   isDirty: () => boolean;
+  getRawSnapshot: () => ActionFormRawSnapshot;
+  applyRawSnapshot: (snapshot: ActionFormRawSnapshot) => void;
 }
 
 interface ActionFormProps {
@@ -512,6 +520,93 @@ function ActionFormComponent(
     nextCompletionId,
   ]);
 
+  const getRawSnapshot = useCallback((): ActionFormRawSnapshot => {
+    const rawValues: ActionFormValues = {
+      title,
+      description: description ?? null,
+      imageUrl,
+      imageFileUploadId,
+      isRequired,
+      ...(needsMaxSelections && { maxSelections }),
+      ...(selectedActionType === ActionType.MULTIPLE_CHOICE && { hasOther }),
+      ...(selectedActionType === ActionType.TAG && { hasOther }),
+      ...(needsOptions && {
+        options: options.map(option => {
+          const { _key: _ignored, ...rest } = option;
+          return {
+            ...rest,
+            description: rest.description ?? null,
+            imageUrl: rest.imageUrl ?? null,
+            fileUploadId: rest.fileUploadId ?? null,
+            nextActionId: rest.nextActionId ?? null,
+            nextCompletionId: rest.nextCompletionId ?? null,
+          };
+        }),
+      }),
+      ...(!isBranch && nextLinkType === "action" && { nextActionId, nextCompletionId: null }),
+      ...(!isBranch && nextLinkType === "completion" && { nextCompletionId, nextActionId: null }),
+      ...(isBranch && { nextActionId: null, nextCompletionId: null }),
+    };
+
+    return {
+      actionType: selectedActionType,
+      values: rawValues,
+      nextLinkType,
+    };
+  }, [
+    description,
+    hasOther,
+    imageFileUploadId,
+    imageUrl,
+    isBranch,
+    isRequired,
+    needsMaxSelections,
+    needsOptions,
+    nextActionId,
+    nextCompletionId,
+    nextLinkType,
+    options,
+    selectedActionType,
+    title,
+    maxSelections,
+  ]);
+
+  const applyRawSnapshot = useCallback(
+    (snapshot: ActionFormRawSnapshot) => {
+      const nextType = snapshot.actionType;
+      const nextValues = snapshot.values;
+      const nextLink = snapshot.nextLinkType;
+
+      setSelectedActionType(nextType);
+      onActionTypeChange?.(nextType);
+      setTitle(nextValues.title ?? "");
+      setDescription(nextValues.description ?? "");
+      setImageUrl(nextValues.imageUrl ?? null);
+      setImageFileUploadId(nextValues.imageFileUploadId ?? null);
+      setIsRequired(nextValues.isRequired ?? true);
+      setHasOther(nextValues.hasOther ?? false);
+      setMaxSelections(nextValues.maxSelections ?? 1);
+      setOptions(
+        (nextValues.options ?? []).map((option, index) => ({
+          _key: generateOptionKey(),
+          id: option.id,
+          title: option.title ?? "",
+          description: option.description ?? null,
+          imageUrl: option.imageUrl ?? null,
+          fileUploadId: option.fileUploadId ?? null,
+          nextActionId: option.nextActionId ?? null,
+          nextCompletionId: option.nextCompletionId ?? null,
+          order: option.order ?? index,
+        })),
+      );
+      setNextLinkType(nextLink ?? "action");
+      setNextActionId(nextValues.nextActionId ?? null);
+      setNextCompletionId(nextValues.nextCompletionId ?? null);
+      setErrors({});
+    },
+    [onActionTypeChange],
+  );
+
   const dirtyComparableValue = useMemo(
     () => ({
       actionType: selectedActionType,
@@ -600,8 +695,18 @@ function ActionFormComponent(
         optionImages.deleteAllMarkedInitials();
       },
       isDirty: () => isDirty,
+      getRawSnapshot,
+      applyRawSnapshot,
     }),
-    [actionImageUpload, buildValidatedValues, isDirty, optionImages, selectedActionType],
+    [
+      actionImageUpload,
+      applyRawSnapshot,
+      buildValidatedValues,
+      getRawSnapshot,
+      isDirty,
+      optionImages,
+      selectedActionType,
+    ],
   );
 
   const handleSubmit = () => {
@@ -711,7 +816,7 @@ function ActionFormComponent(
             </div>
             <ImageSelector
               size="large"
-              imageUrl={actionImageUpload.previewUrl ?? undefined}
+              imageUrl={actionImageUpload.previewUrl ?? imageUrl ?? undefined}
               onImageSelect={actionImageUpload.upload}
               onImageDelete={handleActionImageDelete}
               disabled={isLoading || actionImageUpload.isUploading}

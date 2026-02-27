@@ -5,6 +5,7 @@ import { updateMission } from "@/actions/mission/update";
 import {
   ActionForm,
   type ActionFormHandle,
+  type ActionFormRawSnapshot,
   type ActionFormValues,
 } from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
 import {
@@ -83,6 +84,14 @@ type ActionSubmission = {
   actionType: ActionType;
   values: ActionFormValues;
 };
+
+interface ActionSectionDraftSnapshot {
+  draftItems: DraftActionItem[];
+  openItemKey: string | null;
+  dirtyByItemKey: Record<string, boolean>;
+  actionTypeByItemKey: Record<string, ActionType>;
+  formSnapshotByItemKey: Record<string, ActionFormRawSnapshot>;
+}
 
 const ACTION_TYPES_WITH_OPTIONS = new Set<ActionType>([
   ActionType.MULTIPLE_CHOICE,
@@ -240,6 +249,10 @@ function ActionSettingsCardComponent(
     {},
   );
   const [actionTypeByItemKey, setActionTypeByItemKey] = useState<Record<string, ActionType>>({});
+  const [draftFormSnapshotByItemKey, setDraftFormSnapshotByItemKey] = useState<
+    Record<string, ActionFormRawSnapshot>
+  >({});
+  const [draftHydrationVersion, setDraftHydrationVersion] = useState(0);
   const {
     completionDrafts,
     getCompletionDraftFormById,
@@ -385,6 +398,19 @@ function ActionSettingsCardComponent(
 
       return hasChange ? next : prev;
     });
+
+    setDraftFormSnapshotByItemKey(prev => {
+      let hasChange = false;
+      const next: Record<string, ActionFormRawSnapshot> = {};
+      for (const [key, value] of Object.entries(prev)) {
+        if (validKeys.has(key)) {
+          next[key] = value;
+        } else {
+          hasChange = true;
+        }
+      }
+      return hasChange ? next : prev;
+    });
   }, [actionItems]);
 
   const hasPendingChanges = useMemo(() => {
@@ -430,6 +456,11 @@ function ActionSettingsCardComponent(
       return next;
     });
     setDirtyByItemKey(prev => {
+      const next = { ...prev };
+      delete next[itemKey];
+      return next;
+    });
+    setDraftFormSnapshotByItemKey(prev => {
       const next = { ...prev };
       delete next[itemKey];
       return next;
@@ -501,7 +532,7 @@ function ActionSettingsCardComponent(
       if (!submission) {
         setOpenItemKey(item.key);
         return {
-          status: "failed",
+          status: "invalid",
           message: "액션 입력값을 확인해주세요.",
         };
       }
@@ -576,7 +607,7 @@ function ActionSettingsCardComponent(
         if (!completionValues) {
           openCompletionDraftById(draftCompletionId);
           return {
-            status: "failed",
+            status: "invalid",
             message: "연결된 결과 화면 입력값을 확인해주세요.",
           };
         }
@@ -742,6 +773,7 @@ function ActionSettingsCardComponent(
         }
         return next;
       });
+      setDraftFormSnapshotByItemKey({});
 
       for (const draftCompletionId of createdCompletionDraftIds) {
         removeCompletionDraftById(draftCompletionId);
@@ -792,8 +824,70 @@ function ActionSettingsCardComponent(
       save: executeSave,
       hasPendingChanges: () => hasPendingChanges,
       isBusy: () => isBusy || isActionsLoading,
+      exportDraftSnapshot: (): ActionSectionDraftSnapshot => {
+        const formSnapshotByItemKey: Record<string, ActionFormRawSnapshot> = {};
+
+        for (const item of actionItems) {
+          const snapshot = formRefs.current[item.key]?.getRawSnapshot();
+          if (snapshot) {
+            formSnapshotByItemKey[item.key] = snapshot;
+          }
+        }
+
+        return {
+          draftItems,
+          openItemKey,
+          dirtyByItemKey,
+          actionTypeByItemKey,
+          formSnapshotByItemKey,
+        };
+      },
+      importDraftSnapshot: async (snapshot: unknown) => {
+        if (!snapshot || typeof snapshot !== "object") {
+          return;
+        }
+
+        const next = snapshot as Partial<ActionSectionDraftSnapshot>;
+        const nextDraftItems = Array.isArray(next.draftItems)
+          ? next.draftItems.filter(
+              (item): item is DraftActionItem =>
+                Boolean(item) &&
+                typeof item === "object" &&
+                typeof (item as { key?: unknown }).key === "string",
+            )
+          : [];
+
+        setDraftItems(nextDraftItems);
+        setOpenItemKey(typeof next.openItemKey === "string" ? next.openItemKey : null);
+        setDirtyByItemKey(
+          next.dirtyByItemKey && typeof next.dirtyByItemKey === "object"
+            ? (next.dirtyByItemKey as Record<string, boolean>)
+            : {},
+        );
+        setActionTypeByItemKey(
+          next.actionTypeByItemKey && typeof next.actionTypeByItemKey === "object"
+            ? (next.actionTypeByItemKey as Record<string, ActionType>)
+            : {},
+        );
+        setDraftFormSnapshotByItemKey(
+          next.formSnapshotByItemKey && typeof next.formSnapshotByItemKey === "object"
+            ? (next.formSnapshotByItemKey as Record<string, ActionFormRawSnapshot>)
+            : {},
+        );
+        setDraftHydrationVersion(prev => prev + 1);
+      },
     }),
-    [executeSave, hasPendingChanges, isActionsLoading, isBusy],
+    [
+      actionItems,
+      actionTypeByItemKey,
+      draftItems,
+      dirtyByItemKey,
+      executeSave,
+      hasPendingChanges,
+      isActionsLoading,
+      isBusy,
+      openItemKey,
+    ],
   );
 
   return (
@@ -885,13 +979,16 @@ function ActionSettingsCardComponent(
                   <div className={isOpen ? "block border-t border-zinc-200" : "hidden"}>
                     {item.kind === "existing" ? (
                       <ActionForm
-                        key={`${item.key}:${existingFormVersionById[item.action.id] ?? 0}`}
+                        key={`${item.key}:${existingFormVersionById[item.action.id] ?? 0}:${draftHydrationVersion}`}
                         ref={instance => {
                           formRefs.current[item.key] = instance;
                         }}
                         actionType={itemType}
                         editingAction={item.action}
-                        initialValues={mapEditInitialValues(item.action)}
+                        initialValues={
+                          draftFormSnapshotByItemKey[item.key]?.values ??
+                          mapEditInitialValues(item.action)
+                        }
                         allActions={formLinkTargets}
                         completionOptions={completionOptions}
                         isLoading={isBusy}
@@ -908,10 +1005,12 @@ function ActionSettingsCardComponent(
                       />
                     ) : (
                       <ActionForm
+                        key={`${item.key}:${draftHydrationVersion}`}
                         ref={instance => {
                           formRefs.current[item.key] = instance;
                         }}
                         actionType={itemType}
+                        initialValues={draftFormSnapshotByItemKey[item.key]?.values}
                         allActions={formLinkTargets}
                         completionOptions={completionOptions}
                         isLoading={isBusy}

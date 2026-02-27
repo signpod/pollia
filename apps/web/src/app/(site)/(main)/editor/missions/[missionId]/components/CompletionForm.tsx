@@ -77,11 +77,20 @@ export interface CompletionFormValues {
   imageFileUploadId?: string | null;
 }
 
+export interface CompletionFormRawSnapshot {
+  title: string;
+  description: string;
+  imageUrl: string | null;
+  imageFileUploadId: string | null;
+}
+
 export interface CompletionFormHandle {
   validateAndGetValues: () => CompletionFormValues | null;
   isUploading: () => boolean;
   deleteMarkedInitial: () => void;
   isDirty: () => boolean;
+  getRawSnapshot: () => CompletionFormRawSnapshot;
+  applyRawSnapshot: (snapshot: CompletionFormRawSnapshot) => void;
 }
 
 interface CompletionFormProps {
@@ -195,6 +204,24 @@ function CompletionFormComponent(
     };
   }, [validate, title, description, imageUrl, imageFileUploadId]);
 
+  const getRawSnapshot = useCallback(
+    (): CompletionFormRawSnapshot => ({
+      title,
+      description,
+      imageUrl: imageUrl ?? null,
+      imageFileUploadId: imageFileUploadId ?? null,
+    }),
+    [description, imageFileUploadId, imageUrl, title],
+  );
+
+  const applyRawSnapshot = useCallback((snapshot: CompletionFormRawSnapshot) => {
+    setTitle(snapshot.title ?? "");
+    setDescription(snapshot.description ?? "");
+    setImageUrl(snapshot.imageUrl ?? null);
+    setImageFileUploadId(snapshot.imageFileUploadId ?? null);
+    setErrors({});
+  }, []);
+
   useImperativeHandle(
     ref,
     () => ({
@@ -204,8 +231,10 @@ function CompletionFormComponent(
         imageUpload.deleteMarkedInitial();
       },
       isDirty: () => isDirty,
+      getRawSnapshot,
+      applyRawSnapshot,
     }),
-    [buildValidatedValues, imageUpload, isDirty],
+    [applyRawSnapshot, buildValidatedValues, getRawSnapshot, imageUpload, isDirty],
   );
 
   const handleSubmit = () => {
@@ -278,7 +307,7 @@ function CompletionFormComponent(
           </div>
           <ImageSelector
             size="large"
-            imageUrl={imageUpload.previewUrl ?? undefined}
+            imageUrl={imageUpload.previewUrl ?? imageUrl ?? undefined}
             onImageSelect={file => cropper.openWithFile(file)}
             onImageDelete={handleDeleteImage}
             disabled={isImageBusy}

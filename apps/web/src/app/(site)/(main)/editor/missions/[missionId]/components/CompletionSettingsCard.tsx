@@ -25,6 +25,7 @@ import {
 import {
   CompletionForm,
   type CompletionFormHandle,
+  type CompletionFormRawSnapshot,
   type CompletionFormValues,
 } from "./CompletionForm";
 import { getCompletionDraftItemKey, useEditorMissionDraft } from "./EditorMissionDraftContext";
@@ -55,6 +56,14 @@ interface DraftListItem {
 }
 
 type CompletionListItem = ExistingListItem | DraftListItem;
+
+interface CompletionSectionDraftSnapshot {
+  draftItems: Array<{ key: string; title: string }>;
+  openItemKey: string | null;
+  removedExistingIds: string[];
+  dirtyByItemKey: Record<string, boolean>;
+  formSnapshotByItemKey: Record<string, CompletionFormRawSnapshot>;
+}
 
 function createDraftKey() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -114,6 +123,10 @@ function CompletionSettingsCardComponent(
   const [existingFormVersionById, setExistingFormVersionById] = useState<Record<string, number>>(
     {},
   );
+  const [draftFormSnapshotByItemKey, setDraftFormSnapshotByItemKey] = useState<
+    Record<string, CompletionFormRawSnapshot>
+  >({});
+  const [draftHydrationVersion, setDraftHydrationVersion] = useState(0);
   const {
     completionDrafts,
     addCompletionDraft,
@@ -187,6 +200,19 @@ function CompletionSettingsCardComponent(
 
       return hasChange ? next : prev;
     });
+
+    setDraftFormSnapshotByItemKey(prev => {
+      let hasChange = false;
+      const next: Record<string, CompletionFormRawSnapshot> = {};
+      for (const [key, value] of Object.entries(prev)) {
+        if (validKeys.has(key)) {
+          next[key] = value;
+        } else {
+          hasChange = true;
+        }
+      }
+      return hasChange ? next : prev;
+    });
   }, [completionItems]);
 
   const hasPendingChanges = useMemo(() => {
@@ -236,6 +262,11 @@ function CompletionSettingsCardComponent(
     registerCompletionDraftForm(draftKey, null);
     delete formRefs.current[itemKey];
     setDirtyByItemKey(prev => {
+      const next = { ...prev };
+      delete next[itemKey];
+      return next;
+    });
+    setDraftFormSnapshotByItemKey(prev => {
       const next = { ...prev };
       delete next[itemKey];
       return next;
@@ -308,7 +339,7 @@ function CompletionSettingsCardComponent(
       if (!values) {
         setOpenItemKey(item.key);
         return {
-          status: "failed",
+          status: "invalid",
           message: "결과 화면 입력값을 확인해주세요.",
         };
       }
@@ -389,6 +420,7 @@ function CompletionSettingsCardComponent(
         return next;
       });
       clearCompletionDrafts();
+      setDraftFormSnapshotByItemKey({});
       setRemovedExistingIds(new Set());
       setOpenItemKey(null);
 
@@ -429,8 +461,86 @@ function CompletionSettingsCardComponent(
       save: executeSave,
       hasPendingChanges: () => hasPendingChanges,
       isBusy: () => isSaving || isLoading,
+      exportDraftSnapshot: (): CompletionSectionDraftSnapshot => {
+        const formSnapshotByItemKey: Record<string, CompletionFormRawSnapshot> = {};
+
+        for (const item of completionItems) {
+          const snapshot = formRefs.current[item.key]?.getRawSnapshot();
+          if (snapshot) {
+            formSnapshotByItemKey[item.key] = snapshot;
+          }
+        }
+
+        return {
+          draftItems: completionDrafts.map(item => ({ key: item.key, title: item.title })),
+          openItemKey,
+          removedExistingIds: [...removedExistingIds],
+          dirtyByItemKey,
+          formSnapshotByItemKey,
+        };
+      },
+      importDraftSnapshot: async (snapshot: unknown) => {
+        if (!snapshot || typeof snapshot !== "object") {
+          return;
+        }
+
+        const next = snapshot as Partial<CompletionSectionDraftSnapshot>;
+        const nextDraftItems = Array.isArray(next.draftItems)
+          ? next.draftItems
+              .filter(
+                (item): item is { key: string; title: string } =>
+                  Boolean(item) &&
+                  typeof item === "object" &&
+                  typeof (item as { key?: unknown }).key === "string",
+              )
+              .map(item => ({
+                key: item.key,
+                title: typeof item.title === "string" ? item.title : "새 결과 화면",
+              }))
+          : [];
+        const nextRemovedIds = Array.isArray(next.removedExistingIds)
+          ? next.removedExistingIds.filter((id): id is string => typeof id === "string")
+          : [];
+        const nextDirtyByKey =
+          next.dirtyByItemKey && typeof next.dirtyByItemKey === "object"
+            ? (next.dirtyByItemKey as Record<string, boolean>)
+            : {};
+        const nextFormSnapshots =
+          next.formSnapshotByItemKey && typeof next.formSnapshotByItemKey === "object"
+            ? (next.formSnapshotByItemKey as Record<string, CompletionFormRawSnapshot>)
+            : {};
+
+        clearCompletionDrafts();
+        for (const item of nextDraftItems) {
+          if (!item || typeof item.key !== "string") {
+            continue;
+          }
+          addCompletionDraft(
+            item.key,
+            typeof item.title === "string" ? item.title : "새 결과 화면",
+          );
+        }
+
+        setRemovedExistingIds(new Set(nextRemovedIds));
+        setDirtyByItemKey(nextDirtyByKey);
+        setOpenItemKey(typeof next.openItemKey === "string" ? next.openItemKey : null);
+        setDraftFormSnapshotByItemKey(nextFormSnapshots);
+        setDraftHydrationVersion(prev => prev + 1);
+      },
     }),
-    [executeSave, hasPendingChanges, isLoading, isSaving],
+    [
+      addCompletionDraft,
+      clearCompletionDrafts,
+      completionDrafts,
+      completionItems,
+      dirtyByItemKey,
+      executeSave,
+      hasPendingChanges,
+      isLoading,
+      isSaving,
+      openItemKey,
+      removedExistingIds,
+    ],
   );
 
   return (
@@ -503,8 +613,8 @@ function CompletionSettingsCardComponent(
                     <CompletionForm
                       key={
                         item.kind === "existing"
-                          ? `${item.key}:${existingFormVersionById[item.completion.id] ?? 0}`
-                          : item.key
+                          ? `${item.key}:${existingFormVersionById[item.completion.id] ?? 0}:${draftHydrationVersion}`
+                          : `${item.key}:${draftHydrationVersion}`
                       }
                       ref={instance => {
                         formRefs.current[item.key] = instance;
@@ -515,7 +625,10 @@ function CompletionSettingsCardComponent(
                       missionId={missionId}
                       itemKey={item.key}
                       initialValues={
-                        item.kind === "existing" ? mapEditInitialValues(item.completion) : undefined
+                        draftFormSnapshotByItemKey[item.key] ??
+                        (item.kind === "existing"
+                          ? mapEditInitialValues(item.completion)
+                          : undefined)
                       }
                       isLoading={isSaving}
                       onSubmit={NOOP}

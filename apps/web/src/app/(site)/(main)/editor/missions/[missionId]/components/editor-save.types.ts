@@ -1,4 +1,4 @@
-export type SectionSaveStatus = "saved" | "no_changes" | "failed";
+export type SectionSaveStatus = "saved" | "no_changes" | "invalid" | "failed";
 
 export interface SectionSaveResult {
   status: SectionSaveStatus;
@@ -9,6 +9,8 @@ export interface SectionSaveHandle {
   save: (options?: { silent?: boolean }) => Promise<SectionSaveResult>;
   hasPendingChanges: () => boolean;
   isBusy: () => boolean;
+  exportDraftSnapshot: () => unknown | null;
+  importDraftSnapshot: (snapshot: unknown) => Promise<void> | void;
 }
 
 export interface SectionSaveState {

@@ -129,7 +129,7 @@ function RewardSettingsCardComponent(
 
       const isValid = await form.trigger();
       if (!isValid) {
-        return { status: "failed", message: "리워드 정보를 확인해주세요." };
+        return { status: "invalid", message: "리워드 정보를 확인해주세요." };
       }
 
       const values = form.getValues();
@@ -151,7 +151,7 @@ function RewardSettingsCardComponent(
         }
 
         if (!isRewardFormValues(values.reward)) {
-          return { status: "failed", message: "리워드 정보를 확인해주세요." };
+          return { status: "invalid", message: "리워드 정보를 확인해주세요." };
         }
 
         const rewardInput = {
@@ -205,8 +205,64 @@ function RewardSettingsCardComponent(
       save,
       hasPendingChanges: () => form.formState.isDirty,
       isBusy: () => form.formState.isSubmitting,
+      exportDraftSnapshot: () => form.getValues(),
+      importDraftSnapshot: (snapshot: unknown) => {
+        if (!snapshot || typeof snapshot !== "object") {
+          return;
+        }
+
+        const values = snapshot as Partial<CreateMissionFormData>;
+        const defaultValues = buildDefaultValues(mission, currentReward);
+        const normalizedBase = {
+          ...defaultValues,
+          title: typeof values.title === "string" ? values.title : defaultValues.title,
+          description:
+            typeof values.description === "string" ? values.description : defaultValues.description,
+          isExposed:
+            typeof values.isExposed === "boolean" ? values.isExposed : defaultValues.isExposed,
+          allowGuestResponse:
+            typeof values.allowGuestResponse === "boolean"
+              ? values.allowGuestResponse
+              : defaultValues.allowGuestResponse,
+          allowMultipleResponses:
+            typeof values.allowMultipleResponses === "boolean"
+              ? values.allowMultipleResponses
+              : defaultValues.allowMultipleResponses,
+        };
+
+        const rawReward =
+          values.reward && typeof values.reward === "object"
+            ? (values.reward as Partial<RewardFormValues>)
+            : undefined;
+        const normalizedReward = rawReward
+          ? {
+              ...rawReward,
+              scheduledDate:
+                typeof rawReward.scheduledDate === "string"
+                  ? new Date(rawReward.scheduledDate)
+                  : rawReward.scheduledDate,
+            }
+          : undefined;
+
+        if (values.hasReward === true && normalizedReward && isRewardFormValues(normalizedReward)) {
+          const nextValues: CreateMissionFormData = {
+            ...normalizedBase,
+            hasReward: true,
+            reward: normalizedReward,
+          };
+          form.reset(nextValues, { keepDefaultValues: true });
+          return;
+        }
+
+        const nextValues: CreateMissionFormData = {
+          ...normalizedBase,
+          hasReward: false,
+          reward: undefined,
+        };
+        form.reset(nextValues, { keepDefaultValues: true });
+      },
     }),
-    [form.formState.isDirty, form.formState.isSubmitting, save],
+    [currentReward, form, form.formState.isDirty, form.formState.isSubmitting, mission, save],
   );
 
   return (
