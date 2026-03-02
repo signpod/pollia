@@ -1,6 +1,7 @@
 "use client";
 
 import { getCompletionsByMissionId } from "@/actions/mission-completion";
+import { saveMissionEditorDraft } from "@/actions/mission/draft";
 import { updateMission } from "@/actions/mission/update";
 import { Separator } from "@/components/ui/separator";
 import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
@@ -8,6 +9,10 @@ import { ROUTES } from "@/constants/routes";
 import { useReadActionsDetail } from "@/hooks/action";
 import { useReadMission } from "@/hooks/mission";
 import type { GetMissionResponse } from "@/types/dto";
+import {
+  type EditorMissionDraftPayload,
+  normalizeEditorMissionDraftPayload,
+} from "@/types/mission-editor-draft";
 import { MissionType, type PaymentType } from "@prisma/client";
 import { Button, toast } from "@repo/ui/components";
 import { useQuery } from "@tanstack/react-query";
@@ -26,6 +31,10 @@ import {
   validateEditorPublishFlow,
 } from "./editor-publish-flow-validation";
 import type { SectionSaveHandle, SectionSaveOptions, SectionSaveState } from "./editor-save.types";
+import {
+  loadMissionEditorDraftFromLocalStorage,
+  saveMissionEditorDraftToLocalStorage,
+} from "./editorMissionDraftStorage";
 
 interface RewardSnapshot {
   id: string;
@@ -48,6 +57,7 @@ type EditorSectionKey = "basic" | "reward" | "action" | "completion";
 
 interface SectionSaveSummary {
   savedCount: number;
+  skippedCount: number;
   failedCount: number;
   invalidCount: number;
   failedSections: EditorSectionKey[];
@@ -55,14 +65,32 @@ interface SectionSaveSummary {
   firstErrorMessage: string | null;
 }
 
-const EMPTY_SUMMARY: SectionSaveSummary = {
-  savedCount: 0,
-  failedCount: 0,
-  invalidCount: 0,
-  failedSections: [],
-  invalidSections: [],
-  firstErrorMessage: null,
-};
+function createEmptySummary(): SectionSaveSummary {
+  return {
+    savedCount: 0,
+    skippedCount: 0,
+    failedCount: 0,
+    invalidCount: 0,
+    failedSections: [],
+    invalidSections: [],
+    firstErrorMessage: null,
+  };
+}
+
+function buildManualSaveToastMessage(params: {
+  savedCount: number;
+  skippedCount: number;
+  failedCount: number;
+}) {
+  const { savedCount, skippedCount, failedCount } = params;
+  const primaryLine = `저장 ${savedCount} / 스킵 ${skippedCount}`;
+
+  if (failedCount <= 0) {
+    return primaryLine;
+  }
+
+  return `${primaryLine}\n실패 ${failedCount}`;
+}
 
 function MissionIntroPreview({ missionId }: { missionId: string }) {
   const previewUrl = ROUTES.MISSION(missionId);
@@ -99,6 +127,7 @@ export function EditorMissionTabContent({
   const rewardRef = useRef<SectionSaveHandle | null>(null);
   const actionRef = useRef<SectionSaveHandle | null>(null);
   const completionRef = useRef<SectionSaveHandle | null>(null);
+  const draftRestoreAppliedRef = useRef(false);
   const saveInFlightRef = useRef(false);
   const publishInFlightRef = useRef(false);
   const [isSavingAll, setIsSavingAll] = useState(false);
@@ -203,9 +232,90 @@ export function EditorMissionTabContent({
   ]);
   const canPublish = !isPublished && isPublishValidationReady && publishFlowValidation.isValid;
 
+  const collectDraftPayload = useCallback((): EditorMissionDraftPayload => {
+    return {
+      basic: basicInfoRef.current?.exportDraftSnapshot() ?? null,
+      reward: rewardRef.current?.exportDraftSnapshot() ?? null,
+      action: actionRef.current?.exportDraftSnapshot() ?? null,
+      completion: completionRef.current?.exportDraftSnapshot() ?? null,
+    };
+  }, []);
+
+  const applyDraftPayload = useCallback(async (payload: EditorMissionDraftPayload) => {
+    await Promise.all([
+      Promise.resolve(basicInfoRef.current?.importDraftSnapshot(payload.basic ?? null)),
+      Promise.resolve(rewardRef.current?.importDraftSnapshot(payload.reward ?? null)),
+      Promise.resolve(actionRef.current?.importDraftSnapshot(payload.action ?? null)),
+      Promise.resolve(completionRef.current?.importDraftSnapshot(payload.completion ?? null)),
+    ]);
+  }, []);
+
+  const persistDraftPayload = useCallback(
+    async (payload: EditorMissionDraftPayload) => {
+      saveMissionEditorDraftToLocalStorage(missionId, payload);
+
+      try {
+        await saveMissionEditorDraft(missionId, payload);
+      } catch (error) {
+        console.error("saveMissionEditorDraft error:", error);
+      }
+    },
+    [missionId],
+  );
+
   useEffect(() => {
     setIsPublished(mission.isActive);
   }, [mission.id, mission.isActive]);
+
+  useEffect(() => {
+    if (!isEditorTab || draftRestoreAppliedRef.current) {
+      return;
+    }
+
+    if (
+      !basicInfoRef.current ||
+      !rewardRef.current ||
+      !actionRef.current ||
+      !completionRef.current
+    ) {
+      return;
+    }
+
+    if (actionsQuery.isLoading || completionsQuery.isLoading) {
+      return;
+    }
+
+    const localDraft = loadMissionEditorDraftFromLocalStorage(missionId);
+    const latestMission = missionQuery.data?.data ?? mission;
+    const serverDraft = normalizeEditorMissionDraftPayload(
+      (latestMission as { editorDraft?: unknown }).editorDraft,
+    );
+    const selectedDraft = localDraft ?? serverDraft;
+
+    draftRestoreAppliedRef.current = true;
+
+    if (!selectedDraft) {
+      return;
+    }
+
+    void applyDraftPayload(selectedDraft)
+      .then(() => {
+        toast({
+          message: "임시 저장된 편집 내용이 복원되었습니다.",
+        });
+      })
+      .catch(error => {
+        console.error("Failed to restore mission editor draft:", error);
+      });
+  }, [
+    actionsQuery.isLoading,
+    applyDraftPayload,
+    completionsQuery.isLoading,
+    isEditorTab,
+    mission,
+    missionId,
+    missionQuery.data?.data,
+  ]);
 
   const runSectionSaves = useCallback(
     async ({
@@ -228,7 +338,7 @@ export function EditorMissionTabContent({
         { key: "completion", label: "결과 화면", ref: completionRef },
       ];
 
-      const summary: SectionSaveSummary = { ...EMPTY_SUMMARY };
+      const summary: SectionSaveSummary = createEmptySummary();
 
       for (const section of sections) {
         const handle = section.ref.current;
@@ -243,28 +353,43 @@ export function EditorMissionTabContent({
         });
 
         if (result.status === "saved") {
-          summary.savedCount += 1;
-          continue;
+          summary.savedCount += result.savedCount ?? 1;
+        } else {
+          summary.savedCount += result.savedCount ?? 0;
+        }
+        summary.skippedCount += result.skippedCount ?? 0;
+        summary.failedCount += result.failedCount ?? (result.status === "failed" ? 1 : 0);
+        summary.invalidCount += result.invalidCount ?? (result.status === "invalid" ? 1 : 0);
+
+        if (result.status === "invalid" && result.invalidCount === undefined) {
+          summary.skippedCount += 1;
         }
 
-        if (result.status === "no_changes") {
-          continue;
-        }
-
-        if (result.status === "invalid") {
-          summary.invalidCount += 1;
+        if (
+          result.status === "invalid" ||
+          result.invalidCount !== undefined ||
+          (result.invalidCount ?? 0) > 0
+        ) {
           summary.invalidSections.push(section.key);
           summary.firstErrorMessage ??= result.message ?? `${section.label} 입력값을 확인해주세요.`;
-          if (stopOnError) {
-            return summary;
-          }
-          continue;
         }
 
-        summary.failedCount += 1;
-        summary.failedSections.push(section.key);
-        summary.firstErrorMessage ??= result.message ?? `${section.label} 저장에 실패했습니다.`;
-        if (stopOnError) {
+        if (
+          result.status === "failed" ||
+          result.failedCount !== undefined ||
+          (result.failedCount ?? 0) > 0
+        ) {
+          summary.failedSections.push(section.key);
+          summary.firstErrorMessage ??= result.message ?? `${section.label} 저장에 실패했습니다.`;
+        }
+
+        if (
+          stopOnError &&
+          (result.status === "failed" ||
+            result.status === "invalid" ||
+            (result.failedCount ?? 0) > 0 ||
+            (result.invalidCount ?? 0) > 0)
+        ) {
           return summary;
         }
       }
@@ -278,10 +403,18 @@ export function EditorMissionTabContent({
     async ({
       showSavedToast = true,
       showNoChangesToast = true,
-    }: { showSavedToast?: boolean; showNoChangesToast?: boolean } = {}) => {
+      mode = "manual",
+    }: {
+      showSavedToast?: boolean;
+      showNoChangesToast?: boolean;
+      mode?: "manual" | "publish";
+    } = {}) => {
       if (!isEditorTab || saveInFlightRef.current || isSavingAll || hasAnyBusySection) {
         return "failed" as const;
       }
+
+      const draftPayload = collectDraftPayload();
+      await persistDraftPayload(draftPayload);
 
       if (!hasAnyPendingChanges) {
         if (showNoChangesToast) {
@@ -297,11 +430,12 @@ export function EditorMissionTabContent({
       setIsSavingAll(true);
       try {
         const summary = await runSectionSaves({
-          stopOnError: true,
-          trigger: "manual",
+          stopOnError: mode === "publish",
+          trigger: mode === "publish" ? "publish" : "manual",
           showValidationUi: true,
         });
-        if (summary.invalidCount > 0 || summary.failedCount > 0) {
+
+        if (mode === "publish" && (summary.invalidCount > 0 || summary.failedCount > 0)) {
           toast({
             message: summary.firstErrorMessage ?? "저장에 실패했습니다.",
             icon: AlertCircle,
@@ -309,6 +443,37 @@ export function EditorMissionTabContent({
             id: UNIFIED_SAVE_TOAST_ID,
           });
           return "failed" as const;
+        }
+
+        if (mode === "manual") {
+          const skippedCount = summary.skippedCount + summary.invalidCount;
+          const processedCount = summary.savedCount + skippedCount + summary.failedCount;
+
+          if (processedCount > 0) {
+            const message = buildManualSaveToastMessage({
+              savedCount: summary.savedCount,
+              skippedCount,
+              failedCount: summary.failedCount,
+            });
+            if (summary.failedCount > 0) {
+              toast({
+                message,
+                icon: AlertCircle,
+                iconClassName: "text-red-500",
+                id: UNIFIED_SAVE_TOAST_ID,
+              });
+              return "failed" as const;
+            }
+
+            if (showSavedToast) {
+              toast({
+                message,
+                id: UNIFIED_SAVE_TOAST_ID,
+              });
+            }
+
+            return summary.savedCount > 0 ? ("saved" as const) : ("no_changes" as const);
+          }
         }
 
         if (summary.savedCount > 0) {
@@ -333,7 +498,15 @@ export function EditorMissionTabContent({
         setIsSavingAll(false);
       }
     },
-    [hasAnyBusySection, hasAnyPendingChanges, isEditorTab, isSavingAll, runSectionSaves],
+    [
+      collectDraftPayload,
+      hasAnyBusySection,
+      hasAnyPendingChanges,
+      isEditorTab,
+      isSavingAll,
+      persistDraftPayload,
+      runSectionSaves,
+    ],
   );
 
   const handleUnifiedSave = useCallback(async () => {
@@ -391,6 +564,7 @@ export function EditorMissionTabContent({
         const saveResult = await runUnifiedSave({
           showSavedToast: false,
           showNoChangesToast: false,
+          mode: "publish",
         });
         if (saveResult === "failed") {
           return;

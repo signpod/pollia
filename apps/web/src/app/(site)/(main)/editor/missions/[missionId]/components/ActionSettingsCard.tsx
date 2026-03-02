@@ -616,11 +616,13 @@ function ActionSettingsCardComponent(
   const executeSave = async ({
     silent = false,
     showValidationUi = true,
+    trigger = "manual",
   }: SectionSaveOptions = {}): Promise<SectionSaveResult> => {
     if (isActionsLoading || isBusy) {
       return { status: "failed", message: "진행 목록 저장이 진행 중입니다." };
     }
 
+    const strictMode = trigger === "publish";
     const canShowValidationUi = showValidationUi;
 
     const existingSnapshot = [...existingActions];
@@ -642,7 +644,45 @@ function ActionSettingsCardComponent(
       return { status: "no_changes" };
     }
 
+    const details: NonNullable<SectionSaveResult["details"]> = [];
     const submissionsByKey = new Map<string, ActionSubmission>();
+    const changedExistingActions: ActionDetail[] = [];
+    const draftActionsToCreate: DraftActionItem[] = [];
+    const settledItemKeys = new Set<string>();
+    const successfulItemKeys = new Set<string>();
+    let savedCount = 0;
+    let skippedCount = 0;
+    let failedCount = 0;
+    let invalidCount = 0;
+
+    const markInvalid = (itemKey: string, message: string) => {
+      if (settledItemKeys.has(itemKey)) return;
+      settledItemKeys.add(itemKey);
+      invalidCount += 1;
+      details.push({ key: itemKey, status: "invalid", message });
+    };
+
+    const markSkipped = (itemKey: string, message: string) => {
+      if (settledItemKeys.has(itemKey)) return;
+      settledItemKeys.add(itemKey);
+      skippedCount += 1;
+      details.push({ key: itemKey, status: "skipped", message });
+    };
+
+    const markFailed = (itemKey: string, message: string) => {
+      if (settledItemKeys.has(itemKey)) return;
+      settledItemKeys.add(itemKey);
+      failedCount += 1;
+      details.push({ key: itemKey, status: "failed", message });
+    };
+
+    const markSaved = (itemKey: string) => {
+      if (settledItemKeys.has(itemKey)) return;
+      settledItemKeys.add(itemKey);
+      successfulItemKeys.add(itemKey);
+      savedCount += 1;
+      details.push({ key: itemKey, status: "saved" });
+    };
 
     for (const item of listSnapshot) {
       const formRef = formRefs.current[item.key];
@@ -650,20 +690,24 @@ function ActionSettingsCardComponent(
         if (canShowValidationUi) {
           setOpenItemKey(item.key);
         }
-        return {
-          status: "failed",
-          message: "질문 폼이 준비되지 않았습니다. 다시 시도해주세요.",
-        };
+        const message = "질문 폼이 준비되지 않았습니다. 다시 시도해주세요.";
+        if (strictMode) {
+          return { status: "failed", message };
+        }
+        markFailed(item.key, message);
+        continue;
       }
 
       if (formRef.isUploading()) {
         if (canShowValidationUi) {
           setOpenItemKey(item.key);
         }
-        return {
-          status: "failed",
-          message: "이미지 업로드가 완료된 뒤 저장해주세요.",
-        };
+        const message = "이미지 업로드가 완료된 뒤 저장해주세요.";
+        if (strictMode) {
+          return { status: "failed", message };
+        }
+        markSkipped(item.key, message);
+        continue;
       }
 
       const submission = formRef.validateAndGetSubmission({ showErrors: canShowValidationUi });
@@ -671,80 +715,104 @@ function ActionSettingsCardComponent(
         if (canShowValidationUi) {
           setOpenItemKey(item.key);
         }
-        return {
-          status: "invalid",
-          message: "질문 입력값을 확인해주세요.",
-        };
+        const message = "질문 입력값을 확인해주세요.";
+        if (strictMode) {
+          return { status: "invalid", message };
+        }
+        markInvalid(item.key, message);
+        continue;
       }
 
       submissionsByKey.set(item.key, submission);
+      if (item.kind === "existing") {
+        if (isActionChanged(item.action, submission)) {
+          changedExistingActions.push(item.action);
+        }
+      } else {
+        draftActionsToCreate.push(item.draft);
+      }
     }
 
-    const changedExistingActions = existingSnapshot.filter(action => {
-      const key = getExistingItemKey(action.id);
-      const submission = submissionsByKey.get(key);
-      if (!submission) return false;
+    if (changedExistingActions.length === 0 && draftActionsToCreate.length === 0) {
+      if (savedCount === 0 && failedCount === 0 && invalidCount === 0 && skippedCount === 0) {
+        return { status: "no_changes" };
+      }
 
-      return isActionChanged(action, submission);
-    });
-
-    if (changedExistingActions.length === 0 && draftSnapshot.length === 0) {
-      return { status: "no_changes" };
+      return {
+        status: failedCount > 0 ? "failed" : "invalid",
+        message:
+          failedCount > 0
+            ? "진행 목록 설정의 일부 저장에 실패했습니다."
+            : "진행 목록 설정의 일부 입력값을 확인해주세요.",
+        savedCount,
+        skippedCount,
+        failedCount,
+        invalidCount,
+        details,
+      };
     }
 
-    const actionSubmissionsToPersist = [
-      ...changedExistingActions
-        .map(action => submissionsByKey.get(getExistingItemKey(action.id)))
-        .filter((submission): submission is ActionSubmission => Boolean(submission)),
-      ...draftSnapshot
-        .map(draft => submissionsByKey.get(getDraftItemKey(draft.key)))
-        .filter((submission): submission is ActionSubmission => Boolean(submission)),
-    ];
-    const persistedItemKeys = [
-      ...changedExistingActions.map(action => getExistingItemKey(action.id)),
-      ...draftSnapshot.map(draft => getDraftItemKey(draft.key)),
-    ];
-
-    const referencedDraftCompletionIds = [
-      ...new Set(
-        actionSubmissionsToPersist.flatMap(submission =>
-          collectDraftCompletionReferences(submission.values),
-        ),
-      ),
-    ];
-
+    const tempToRealActionIdMap = new Map<string, string>();
+    const tempToRealCompletionIdMap = new Map<string, string>();
     const createdCompletionDraftIds: string[] = [];
+    const draftCompletionDependents = new Map<string, Set<string>>();
+    const successfulExistingActionIds: string[] = [];
+    const successfulDraftKeys: string[] = [];
+    let firstCreatedActionId: string | null = null;
+    let didMutateServer = false;
+
+    const persistItemKeys = [
+      ...changedExistingActions.map(action => getExistingItemKey(action.id)),
+      ...draftActionsToCreate.map(draft => getDraftItemKey(draft.key)),
+    ];
+
+    for (const itemKey of persistItemKeys) {
+      const submission = submissionsByKey.get(itemKey);
+      if (!submission) {
+        continue;
+      }
+
+      for (const draftCompletionId of collectDraftCompletionReferences(submission.values)) {
+        const dependents = draftCompletionDependents.get(draftCompletionId) ?? new Set<string>();
+        dependents.add(itemKey);
+        draftCompletionDependents.set(draftCompletionId, dependents);
+      }
+    }
 
     try {
-      let firstCreatedActionId: string | null = null;
-      const tempToRealActionIdMap = new Map<string, string>();
-      const tempToRealCompletionIdMap = new Map<string, string>();
-      const createdDraftRecords: Array<{
-        createdId: string;
-        submission: ActionSubmission;
-        hasDraftReference: boolean;
-      }> = [];
+      for (const [draftCompletionId, dependentKeys] of draftCompletionDependents.entries()) {
+        const unresolvedKeys = [...dependentKeys].filter(key => !settledItemKeys.has(key));
+        if (unresolvedKeys.length === 0) {
+          continue;
+        }
 
-      for (const draftCompletionId of referencedDraftCompletionIds) {
         const completionForm = getCompletionDraftFormById(draftCompletionId);
         if (!completionForm) {
           if (canShowValidationUi) {
             openCompletionDraftById(draftCompletionId);
           }
-          return {
-            status: "failed",
-            message: "참조된 결과 화면 폼을 찾을 수 없습니다.",
-          };
+          const message = "참조된 결과 화면 폼을 찾을 수 없습니다.";
+          if (strictMode) {
+            return { status: "failed", message };
+          }
+          for (const key of unresolvedKeys) {
+            markSkipped(key, message);
+          }
+          continue;
         }
 
         if (completionForm.isUploading()) {
           if (canShowValidationUi) {
             openCompletionDraftById(draftCompletionId);
           }
-          return {
-            status: "failed",
-            message: "결과 화면 이미지 업로드가 완료된 뒤 저장해주세요.",
-          };
+          const message = "결과 화면 이미지 업로드가 완료된 뒤 저장해주세요.";
+          if (strictMode) {
+            return { status: "failed", message };
+          }
+          for (const key of unresolvedKeys) {
+            markSkipped(key, message);
+          }
+          continue;
         }
 
         const completionValues = completionForm.validateAndGetValues({
@@ -754,36 +822,65 @@ function ActionSettingsCardComponent(
           if (canShowValidationUi) {
             openCompletionDraftById(draftCompletionId);
           }
-          return {
-            status: "invalid",
-            message: "연결된 결과 화면 입력값을 확인해주세요.",
-          };
+          const message = "연결된 결과 화면 입력값을 확인해주세요.";
+          if (strictMode) {
+            return { status: "invalid", message };
+          }
+          for (const key of unresolvedKeys) {
+            markSkipped(key, message);
+          }
+          continue;
         }
 
-        const createdCompletion = await createMissionCompletion({
-          missionId,
-          title: completionValues.title,
-          description: completionValues.description,
-          imageUrl: completionValues.imageUrl ?? undefined,
-          imageFileUploadId: completionValues.imageFileUploadId ?? undefined,
-        });
+        try {
+          const createdCompletion = await createMissionCompletion({
+            missionId,
+            title: completionValues.title,
+            description: completionValues.description,
+            imageUrl: completionValues.imageUrl ?? undefined,
+            imageFileUploadId: completionValues.imageFileUploadId ?? undefined,
+          });
+          const createdCompletionId = createdCompletion?.data?.id;
+          if (!createdCompletionId) {
+            throw new Error("결과 화면 생성 결과를 확인할 수 없습니다.");
+          }
 
-        const createdCompletionId = createdCompletion?.data?.id;
-        if (!createdCompletionId) {
-          throw new Error("결과 화면 생성 결과를 확인할 수 없습니다.");
+          tempToRealCompletionIdMap.set(draftCompletionId, createdCompletionId);
+          createdCompletionDraftIds.push(draftCompletionId);
+          completionForm.deleteMarkedInitial();
+          didMutateServer = true;
+        } catch (error) {
+          const message =
+            error instanceof Error
+              ? error.message
+              : "연결된 결과 화면 생성 중 오류가 발생했습니다.";
+          if (strictMode) {
+            return { status: "failed", message };
+          }
+          for (const key of unresolvedKeys) {
+            markFailed(key, message);
+          }
         }
-
-        tempToRealCompletionIdMap.set(draftCompletionId, createdCompletionId);
-        createdCompletionDraftIds.push(draftCompletionId);
-        completionForm.deleteMarkedInitial();
       }
 
-      for (const [index, draft] of draftSnapshot.entries()) {
-        const key = getDraftItemKey(draft.key);
-        const submission = submissionsByKey.get(key);
-        if (!submission) continue;
+      const createdDraftRecords: Array<{
+        itemKey: string;
+        draftKey: string;
+        createdId: string;
+        submission: ActionSubmission;
+      }> = [];
 
-        const hasDraftReference = hasDraftActionReference(submission.values);
+      for (const [index, draft] of draftActionsToCreate.entries()) {
+        const itemKey = getDraftItemKey(draft.key);
+        if (settledItemKeys.has(itemKey)) {
+          continue;
+        }
+
+        const submission = submissionsByKey.get(itemKey);
+        if (!submission) {
+          continue;
+        }
+
         const completionResolvedValues = resolveDraftCompletionReferences(
           submission.values,
           tempToRealCompletionIdMap,
@@ -795,36 +892,58 @@ function ActionSettingsCardComponent(
           true,
         );
 
-        const created = await createAction.mutateAsync(
-          mapCreateActionInput({
-            missionId,
-            selectedType: submission.actionType,
-            values: sanitizedValues,
-            order: existingSnapshot.length + index,
-          }),
-        );
+        try {
+          const created = await createAction.mutateAsync(
+            mapCreateActionInput({
+              missionId,
+              selectedType: submission.actionType,
+              values: sanitizedValues,
+              order: existingSnapshot.length + index,
+            }),
+          );
+          const createdId = created?.data?.id;
+          if (!createdId) {
+            throw new Error("질문 생성 결과를 확인할 수 없습니다.");
+          }
 
-        const createdId = created?.data?.id;
-        if (!createdId) {
-          throw new Error("질문 생성 결과를 확인할 수 없습니다.");
-        }
+          tempToRealActionIdMap.set(makeDraftActionId(draft.key), createdId);
+          didMutateServer = true;
+          if (!firstCreatedActionId) {
+            firstCreatedActionId = createdId;
+          }
 
-        tempToRealActionIdMap.set(makeDraftActionId(draft.key), createdId);
-        createdDraftRecords.push({
-          createdId,
-          submission,
-          hasDraftReference,
-        });
+          if (hasDraftActionReference(submission.values)) {
+            createdDraftRecords.push({
+              itemKey,
+              draftKey: draft.key,
+              createdId,
+              submission,
+            });
+            continue;
+          }
 
-        if (!firstCreatedActionId) {
-          firstCreatedActionId = createdId;
+          successfulDraftKeys.push(draft.key);
+          markSaved(itemKey);
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : "진행 목록 설정 저장에 실패했습니다.";
+          if (strictMode) {
+            return { status: "failed", message };
+          }
+          markFailed(itemKey, message);
         }
       }
 
       for (const action of changedExistingActions) {
-        const key = getExistingItemKey(action.id);
-        const submission = submissionsByKey.get(key);
-        if (!submission) continue;
+        const itemKey = getExistingItemKey(action.id);
+        if (settledItemKeys.has(itemKey)) {
+          continue;
+        }
+
+        const submission = submissionsByKey.get(itemKey);
+        if (!submission) {
+          continue;
+        }
 
         const completionResolvedValues = resolveDraftCompletionReferences(
           submission.values,
@@ -837,19 +956,31 @@ function ActionSettingsCardComponent(
           true,
         );
 
-        await updateAction.mutateAsync(
-          mapUpdateActionInput({
-            missionId,
-            editingActionId: action.id,
-            values: resolvedValues,
-            actionType: submission.actionType,
-            previousActionType: action.type,
-          }),
-        );
+        try {
+          await updateAction.mutateAsync(
+            mapUpdateActionInput({
+              missionId,
+              editingActionId: action.id,
+              values: resolvedValues,
+              actionType: submission.actionType,
+              previousActionType: action.type,
+            }),
+          );
+          didMutateServer = true;
+          successfulExistingActionIds.push(action.id);
+          markSaved(itemKey);
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : "진행 목록 설정 저장에 실패했습니다.";
+          if (strictMode) {
+            return { status: "failed", message };
+          }
+          markFailed(itemKey, message);
+        }
       }
 
       for (const createdDraft of createdDraftRecords) {
-        if (!createdDraft.hasDraftReference) {
+        if (settledItemKeys.has(createdDraft.itemKey)) {
           continue;
         }
 
@@ -864,18 +995,30 @@ function ActionSettingsCardComponent(
           true,
         );
 
-        await updateAction.mutateAsync(
-          mapUpdateActionInput({
-            missionId,
-            editingActionId: createdDraft.createdId,
-            values: resolvedValues,
-            actionType: createdDraft.submission.actionType,
-            previousActionType: createdDraft.submission.actionType,
-          }),
-        );
+        try {
+          await updateAction.mutateAsync(
+            mapUpdateActionInput({
+              missionId,
+              editingActionId: createdDraft.createdId,
+              values: resolvedValues,
+              actionType: createdDraft.submission.actionType,
+              previousActionType: createdDraft.submission.actionType,
+            }),
+          );
+          didMutateServer = true;
+          successfulDraftKeys.push(createdDraft.draftKey);
+          markSaved(createdDraft.itemKey);
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : "진행 목록 설정 저장에 실패했습니다.";
+          if (strictMode) {
+            return { status: "failed", message };
+          }
+          markFailed(createdDraft.itemKey, message);
+        }
       }
 
-      for (const itemKey of persistedItemKeys) {
+      for (const itemKey of successfulItemKeys) {
         formRefs.current[itemKey]?.deleteMarkedInitialImages();
       }
 
@@ -896,60 +1039,104 @@ function ActionSettingsCardComponent(
         }
       }
 
-      setExistingFormVersionById(prev => {
-        const next = { ...prev };
-        for (const action of changedExistingActions) {
-          next[action.id] = (next[action.id] ?? 0) + 1;
-        }
-        return next;
-      });
-      setDraftItems([]);
-      setActionTypeByItemKey(prev => {
-        const next = { ...prev };
-        for (const draft of draftSnapshot) {
-          delete next[getDraftItemKey(draft.key)];
-        }
-        return next;
-      });
-      setDirtyByItemKey(prev => {
-        const next = { ...prev };
-        for (const action of changedExistingActions) {
-          delete next[getExistingItemKey(action.id)];
-        }
-        for (const draft of draftSnapshot) {
-          delete next[getDraftItemKey(draft.key)];
-        }
-        return next;
-      });
-      setValidationIssueCountByItemKey(prev => {
-        const next = { ...prev };
-        for (const action of changedExistingActions) {
-          delete next[getExistingItemKey(action.id)];
-        }
-        for (const draft of draftSnapshot) {
-          delete next[getDraftItemKey(draft.key)];
-        }
-        return next;
-      });
-      setDraftFormSnapshotByItemKey({});
+      const successfulDraftKeySet = new Set(successfulDraftKeys);
+      const successfulItemKeySet = new Set(successfulItemKeys);
 
-      for (const draftCompletionId of createdCompletionDraftIds) {
-        removeCompletionDraftById(draftCompletionId);
+      if (successfulExistingActionIds.length > 0) {
+        setExistingFormVersionById(prev => {
+          const next = { ...prev };
+          for (const actionId of successfulExistingActionIds) {
+            next[actionId] = (next[actionId] ?? 0) + 1;
+          }
+          return next;
+        });
       }
 
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: missionCompletionQueryKeys.missionCompletion(missionId),
-        }),
-        queryClient.invalidateQueries({
-          queryKey: actionQueryKeys.actions({ missionId }),
-        }),
-      ]);
-
-      if (!silent) {
-        toast({ message: "진행 목록 설정이 저장되었습니다." });
+      if (successfulDraftKeySet.size > 0) {
+        setDraftItems(prev => prev.filter(item => !successfulDraftKeySet.has(item.key)));
+        setActionTypeByItemKey(prev => {
+          const next = { ...prev };
+          for (const draftKey of successfulDraftKeySet) {
+            delete next[getDraftItemKey(draftKey)];
+          }
+          return next;
+        });
       }
-      return { status: "saved" };
+
+      if (successfulItemKeySet.size > 0) {
+        setDirtyByItemKey(prev => {
+          const next = { ...prev };
+          for (const key of successfulItemKeySet) {
+            delete next[key];
+          }
+          return next;
+        });
+        setValidationIssueCountByItemKey(prev => {
+          const next = { ...prev };
+          for (const key of successfulItemKeySet) {
+            delete next[key];
+          }
+          return next;
+        });
+        setDraftFormSnapshotByItemKey(prev => {
+          const next = { ...prev };
+          for (const key of successfulItemKeySet) {
+            delete next[key];
+          }
+          return next;
+        });
+      }
+
+      if (createdCompletionDraftIds.length > 0) {
+        for (const draftCompletionId of createdCompletionDraftIds) {
+          removeCompletionDraftById(draftCompletionId);
+        }
+      }
+
+      if (didMutateServer) {
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: missionCompletionQueryKeys.missionCompletion(missionId),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: actionQueryKeys.actions({ missionId }),
+          }),
+        ]);
+      }
+
+      const message =
+        failedCount > 0
+          ? "진행 목록 설정의 일부 저장에 실패했습니다."
+          : invalidCount > 0 || skippedCount > 0
+            ? "진행 목록 설정의 일부 항목이 저장에서 제외되었습니다."
+            : "진행 목록 설정이 저장되었습니다.";
+
+      if (!silent && (savedCount > 0 || skippedCount > 0 || failedCount > 0 || invalidCount > 0)) {
+        if (failedCount > 0) {
+          toast({
+            message,
+            icon: AlertCircle,
+            iconClassName: "text-red-500",
+          });
+        } else {
+          toast({ message });
+        }
+      }
+
+      if (savedCount === 0 && skippedCount === 0 && failedCount === 0 && invalidCount === 0) {
+        return { status: "no_changes" };
+      }
+
+      return {
+        status:
+          failedCount > 0 ? "failed" : invalidCount > 0 || skippedCount > 0 ? "invalid" : "saved",
+        message,
+        savedCount,
+        skippedCount,
+        failedCount,
+        invalidCount,
+        details,
+      };
     } catch (error) {
       if (createdCompletionDraftIds.length > 0) {
         for (const draftCompletionId of createdCompletionDraftIds) {
@@ -973,8 +1160,6 @@ function ActionSettingsCardComponent(
     } finally {
       setIsUpdatingEntryAction(false);
     }
-
-    return { status: "failed", message: "진행 목록 설정 저장에 실패했습니다." };
   };
 
   useImperativeHandle(

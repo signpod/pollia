@@ -1,8 +1,19 @@
 export type SectionSaveStatus = "saved" | "no_changes" | "invalid" | "failed";
 
+export interface SectionSaveDetail {
+  key: string;
+  status: "saved" | "skipped" | "failed" | "invalid";
+  message?: string;
+}
+
 export interface SectionSaveResult {
   status: SectionSaveStatus;
   message?: string;
+  savedCount?: number;
+  skippedCount?: number;
+  failedCount?: number;
+  invalidCount?: number;
+  details?: SectionSaveDetail[];
 }
 
 export interface SectionSaveOptions {

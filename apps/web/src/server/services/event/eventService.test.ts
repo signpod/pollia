@@ -89,6 +89,7 @@ describe("EventService", () => {
             imageFileUploadId: null,
             brandLogoFileUploadId: null,
             entryActionId: null,
+            editorDraft: null,
           },
         ],
       };

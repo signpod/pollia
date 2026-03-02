@@ -340,13 +340,14 @@ function CompletionSettingsCardComponent(
   const executeSave = async ({
     silent = false,
     showValidationUi = true,
+    trigger = "manual",
   }: SectionSaveOptions = {}): Promise<SectionSaveResult> => {
     if (isLoading || isSaving) {
       return { status: "failed", message: "결과 화면 저장이 진행 중입니다." };
     }
 
+    const strictMode = trigger === "publish";
     const canShowValidationUi = showValidationUi;
-
     const removedSnapshot = new Set(removedExistingIds);
     const existingSnapshot = [...visibleExistingCompletions];
     const draftSnapshot = [...completionDrafts];
@@ -370,27 +371,72 @@ function CompletionSettingsCardComponent(
       return { status: "no_changes" };
     }
 
+    const details: NonNullable<SectionSaveResult["details"]> = [];
     const valuesByItemKey = new Map<string, CompletionFormValues>();
+    const changedExisting: MissionCompletionWithMission[] = [];
+    const draftsToCreate: Array<{ key: string; title: string }> = [];
+    const settledItemKeys = new Set<string>();
+    const successfulItemKeys = new Set<string>();
+    const successfulRemovedIds = new Set<string>();
+    let savedCount = 0;
+    let skippedCount = 0;
+    let failedCount = 0;
+    let invalidCount = 0;
+    let didMutateServer = false;
+
+    const markInvalid = (itemKey: string, message: string) => {
+      if (settledItemKeys.has(itemKey)) return;
+      settledItemKeys.add(itemKey);
+      invalidCount += 1;
+      details.push({ key: itemKey, status: "invalid", message });
+    };
+
+    const markSkipped = (itemKey: string, message: string) => {
+      if (settledItemKeys.has(itemKey)) return;
+      settledItemKeys.add(itemKey);
+      skippedCount += 1;
+      details.push({ key: itemKey, status: "skipped", message });
+    };
+
+    const markFailed = (itemKey: string, message: string) => {
+      if (settledItemKeys.has(itemKey)) return;
+      settledItemKeys.add(itemKey);
+      failedCount += 1;
+      details.push({ key: itemKey, status: "failed", message });
+    };
+
+    const markSaved = (itemKey: string) => {
+      if (settledItemKeys.has(itemKey)) return;
+      settledItemKeys.add(itemKey);
+      successfulItemKeys.add(itemKey);
+      savedCount += 1;
+      details.push({ key: itemKey, status: "saved" });
+    };
+
     for (const item of listSnapshot) {
       const formRef = formRefs.current[item.key];
       if (!formRef) {
         if (canShowValidationUi) {
           setOpenItemKey(item.key);
         }
-        return {
-          status: "failed",
-          message: "결과 화면 폼이 준비되지 않았습니다. 다시 시도해주세요.",
-        };
+        const message = "결과 화면 폼이 준비되지 않았습니다. 다시 시도해주세요.";
+        if (strictMode) {
+          return { status: "failed", message };
+        }
+        markFailed(item.key, message);
+        continue;
       }
 
       if (formRef.isUploading()) {
         if (canShowValidationUi) {
           setOpenItemKey(item.key);
         }
-        return {
-          status: "failed",
-          message: "이미지 업로드가 완료된 뒤 저장해주세요.",
-        };
+        const message = "이미지 업로드가 완료된 뒤 저장해주세요.";
+        if (strictMode) {
+          return { status: "failed", message };
+        }
+        markSkipped(item.key, message);
+        continue;
       }
 
       const values = formRef.validateAndGetValues({ showErrors: canShowValidationUi });
@@ -398,131 +444,236 @@ function CompletionSettingsCardComponent(
         if (canShowValidationUi) {
           setOpenItemKey(item.key);
         }
-        return {
-          status: "invalid",
-          message: "결과 화면 입력값을 확인해주세요.",
-        };
+        const message = "결과 화면 입력값을 확인해주세요.";
+        if (strictMode) {
+          return { status: "invalid", message };
+        }
+        markInvalid(item.key, message);
+        continue;
       }
 
       valuesByItemKey.set(item.key, values);
+      if (item.kind === "existing") {
+        if (isCompletionChanged(item.completion, values)) {
+          changedExisting.push(item.completion);
+        }
+      } else {
+        draftsToCreate.push(item.draft);
+      }
     }
 
-    const changedExisting = existingSnapshot.filter(completion => {
-      const values = valuesByItemKey.get(getExistingItemKey(completion.id));
-      if (!values) {
-        return false;
+    if (changedExisting.length === 0 && draftsToCreate.length === 0 && removedSnapshot.size === 0) {
+      if (savedCount === 0 && skippedCount === 0 && failedCount === 0 && invalidCount === 0) {
+        return { status: "no_changes" };
       }
 
-      return isCompletionChanged(completion, values);
-    });
-
-    if (changedExisting.length === 0 && draftSnapshot.length === 0 && removedSnapshot.size === 0) {
-      return { status: "no_changes" };
+      return {
+        status: failedCount > 0 ? "failed" : "invalid",
+        message:
+          failedCount > 0
+            ? "결과 화면 설정의 일부 저장에 실패했습니다."
+            : "결과 화면 설정의 일부 입력값을 확인해주세요.",
+        savedCount,
+        skippedCount,
+        failedCount,
+        invalidCount,
+        details,
+      };
     }
 
     setIsSaving(true);
     try {
       for (const completion of changedExisting) {
         const itemKey = getExistingItemKey(completion.id);
+        if (settledItemKeys.has(itemKey)) {
+          continue;
+        }
+
         const values = valuesByItemKey.get(itemKey);
         if (!values) {
           continue;
         }
 
-        await updateMissionCompletion(completion.id, {
-          title: values.title,
-          description: values.description,
-          imageUrl: values.imageUrl ?? null,
-          imageFileUploadId: values.imageFileUploadId ?? null,
-        });
-        formRefs.current[itemKey]?.deleteMarkedInitial();
+        try {
+          await updateMissionCompletion(completion.id, {
+            title: values.title,
+            description: values.description,
+            imageUrl: values.imageUrl ?? null,
+            imageFileUploadId: values.imageFileUploadId ?? null,
+          });
+          didMutateServer = true;
+          markSaved(itemKey);
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : "결과 화면 저장 중 오류가 발생했습니다.";
+          if (strictMode) {
+            return { status: "failed", message };
+          }
+          markFailed(itemKey, message);
+        }
       }
 
-      for (const draft of draftSnapshot) {
+      for (const draft of draftsToCreate) {
         const itemKey = getDraftItemKey(draft.key);
+        if (settledItemKeys.has(itemKey)) {
+          continue;
+        }
+
         const values = valuesByItemKey.get(itemKey);
         if (!values) {
           continue;
         }
 
-        await createMissionCompletion({
-          missionId,
-          title: values.title,
-          description: values.description,
-          imageUrl: values.imageUrl ?? undefined,
-          imageFileUploadId: values.imageFileUploadId ?? undefined,
-        });
-        formRefs.current[itemKey]?.deleteMarkedInitial();
+        try {
+          await createMissionCompletion({
+            missionId,
+            title: values.title,
+            description: values.description,
+            imageUrl: values.imageUrl ?? undefined,
+            imageFileUploadId: values.imageFileUploadId ?? undefined,
+          });
+          didMutateServer = true;
+          markSaved(itemKey);
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : "결과 화면 저장 중 오류가 발생했습니다.";
+          if (strictMode) {
+            return { status: "failed", message };
+          }
+          markFailed(itemKey, message);
+        }
       }
 
       for (const completionId of removedSnapshot) {
-        await deleteMissionCompletion(completionId);
+        try {
+          await deleteMissionCompletion(completionId);
+          didMutateServer = true;
+          successfulRemovedIds.add(completionId);
+          savedCount += 1;
+          details.push({ key: getExistingItemKey(completionId), status: "saved" });
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : "결과 화면 삭제 중 오류가 발생했습니다.";
+          if (strictMode) {
+            return { status: "failed", message };
+          }
+          failedCount += 1;
+          details.push({ key: getExistingItemKey(completionId), status: "failed", message });
+        }
       }
 
-      setExistingFormVersionById(prev => {
-        const next = { ...prev };
-        for (const completion of changedExisting) {
-          next[completion.id] = (next[completion.id] ?? 0) + 1;
-        }
-        for (const completionId of removedSnapshot) {
-          delete next[completionId];
-        }
-        return next;
-      });
-      setDirtyByItemKey(prev => {
-        const next = { ...prev };
-        for (const completion of changedExisting) {
-          delete next[getExistingItemKey(completion.id)];
-        }
-        for (const draft of draftSnapshot) {
-          delete next[getDraftItemKey(draft.key)];
-        }
-        return next;
-      });
-      setValidationIssueCountByItemKey(prev => {
-        const next = { ...prev };
-        for (const completion of changedExisting) {
-          delete next[getExistingItemKey(completion.id)];
-        }
-        for (const draft of draftSnapshot) {
-          delete next[getDraftItemKey(draft.key)];
-        }
-        return next;
-      });
-      clearCompletionDrafts();
-      setDraftFormSnapshotByItemKey({});
-      setRemovedExistingIds(new Set());
-      setOpenItemKey(null);
-
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: missionCompletionQueryKeys.missionCompletion(missionId),
-        }),
-        queryClient.invalidateQueries({
-          queryKey: actionQueryKeys.actions({ missionId }),
-        }),
-      ]);
-
-      if (!silent) {
-        toast({ message: "결과 화면 설정이 저장되었습니다." });
+      for (const key of successfulItemKeys) {
+        formRefs.current[key]?.deleteMarkedInitial();
       }
-      return { status: "saved" };
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "결과 화면 저장 중 오류가 발생했습니다.";
-      if (!silent) {
-        toast({
-          message,
-          icon: AlertCircle,
-          iconClassName: "text-red-500",
+
+      const successfulExistingIds = changedExisting
+        .map(item => item.id)
+        .filter(id => successfulItemKeys.has(getExistingItemKey(id)));
+      const successfulDraftKeys = draftsToCreate
+        .map(item => item.key)
+        .filter(key => successfulItemKeys.has(getDraftItemKey(key)));
+
+      if (successfulExistingIds.length > 0 || successfulRemovedIds.size > 0) {
+        setExistingFormVersionById(prev => {
+          const next = { ...prev };
+          for (const completionId of successfulExistingIds) {
+            next[completionId] = (next[completionId] ?? 0) + 1;
+          }
+          for (const completionId of successfulRemovedIds) {
+            delete next[completionId];
+          }
+          return next;
         });
       }
-      return { status: "failed", message };
+
+      if (successfulItemKeys.size > 0) {
+        setDirtyByItemKey(prev => {
+          const next = { ...prev };
+          for (const key of successfulItemKeys) {
+            delete next[key];
+          }
+          return next;
+        });
+        setValidationIssueCountByItemKey(prev => {
+          const next = { ...prev };
+          for (const key of successfulItemKeys) {
+            delete next[key];
+          }
+          return next;
+        });
+        setDraftFormSnapshotByItemKey(prev => {
+          const next = { ...prev };
+          for (const key of successfulItemKeys) {
+            delete next[key];
+          }
+          return next;
+        });
+      }
+
+      if (successfulDraftKeys.length > 0) {
+        for (const draftKey of successfulDraftKeys) {
+          removeCompletionDraft(draftKey);
+          registerCompletionDraftForm(draftKey, null);
+        }
+      }
+
+      if (successfulRemovedIds.size > 0) {
+        setRemovedExistingIds(prev => {
+          const next = new Set(prev);
+          for (const id of successfulRemovedIds) {
+            next.delete(id);
+          }
+          return next;
+        });
+      }
+
+      if (didMutateServer) {
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: missionCompletionQueryKeys.missionCompletion(missionId),
+          }),
+          queryClient.invalidateQueries({
+            queryKey: actionQueryKeys.actions({ missionId }),
+          }),
+        ]);
+      }
+
+      const message =
+        failedCount > 0
+          ? "결과 화면 설정의 일부 저장에 실패했습니다."
+          : invalidCount > 0 || skippedCount > 0
+            ? "결과 화면 설정의 일부 항목이 저장에서 제외되었습니다."
+            : "결과 화면 설정이 저장되었습니다.";
+
+      if (!silent && (savedCount > 0 || skippedCount > 0 || failedCount > 0 || invalidCount > 0)) {
+        if (failedCount > 0) {
+          toast({
+            message,
+            icon: AlertCircle,
+            iconClassName: "text-red-500",
+          });
+        } else {
+          toast({ message });
+        }
+      }
+
+      if (savedCount === 0 && skippedCount === 0 && failedCount === 0 && invalidCount === 0) {
+        return { status: "no_changes" };
+      }
+
+      return {
+        status:
+          failedCount > 0 ? "failed" : invalidCount > 0 || skippedCount > 0 ? "invalid" : "saved",
+        message,
+        savedCount,
+        skippedCount,
+        failedCount,
+        invalidCount,
+        details,
+      };
     } finally {
       setIsSaving(false);
     }
-
-    return { status: "failed", message: "결과 화면 저장 중 오류가 발생했습니다." };
   };
 
   useImperativeHandle(
