@@ -11,7 +11,7 @@ import type { GetMissionResponse } from "@/types/dto";
 import { MissionType, type PaymentType } from "@prisma/client";
 import { Button, toast } from "@repo/ui/components";
 import { useQuery } from "@tanstack/react-query";
-import { AlertCircle, Check, Loader2, Rocket, Save } from "lucide-react";
+import { AlertCircle, Rocket, Save } from "lucide-react";
 import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActionSettingsCard } from "./ActionSettingsCard";
 import { CompletionSettingsCard } from "./CompletionSettingsCard";
@@ -21,13 +21,11 @@ import { useEditorMissionTab } from "./EditorMissionTabContext";
 import { MissionStatsDashboard } from "./MissionStatsDashboard";
 import { ProjectBasicInfoCard } from "./ProjectBasicInfoCard";
 import { RewardSettingsCard } from "./RewardSettingsCard";
-import type { EditorSectionKey, ServerSyncSummary } from "./editor-autosave.types";
 import {
   getPublishBlockingMessage,
   validateEditorPublishFlow,
 } from "./editor-publish-flow-validation";
 import type { SectionSaveHandle, SectionSaveOptions, SectionSaveState } from "./editor-save.types";
-import { useMissionEditorAutosave } from "./useMissionEditorAutosave";
 
 interface RewardSnapshot {
   id: string;
@@ -45,7 +43,8 @@ interface EditorMissionTabContentProps {
 
 const UNIFIED_SAVE_TOAST_ID = "editor-mission-save-result";
 const PUBLISH_TOAST_ID = "editor-mission-publish-result";
-const AUTOSAVE_TOAST_ID = "editor-mission-autosave";
+
+type EditorSectionKey = "basic" | "reward" | "action" | "completion";
 
 interface SectionSaveSummary {
   savedCount: number;
@@ -171,15 +170,6 @@ export function EditorMissionTabContent({
   const hasAnyBusySection = useMemo(
     () => Object.values(sectionStates).some(state => state.isBusy),
     [sectionStates],
-  );
-  const sectionRefs = useMemo(
-    () => ({
-      basic: basicInfoRef,
-      reward: rewardRef,
-      action: actionRef,
-      completion: completionRef,
-    }),
-    [],
   );
   const missionEntryActionId = missionQuery.data?.data.entryActionId ?? mission.entryActionId;
   const isPublishValidationReady = Boolean(
@@ -350,104 +340,6 @@ export function EditorMissionTabContent({
     await runUnifiedSave();
   }, [runUnifiedSave]);
 
-  const runAutosaveServerSync = useCallback(async (): Promise<ServerSyncSummary> => {
-    if (
-      !isEditorTab ||
-      isPublished ||
-      saveInFlightRef.current ||
-      publishInFlightRef.current ||
-      isSavingAll ||
-      isPublishing ||
-      hasAnyBusySection ||
-      !hasAnyPendingChanges
-    ) {
-      return {
-        savedCount: 0,
-        invalidCount: 0,
-        failedCount: 0,
-        invalidSections: [],
-        failedSections: [],
-      };
-    }
-
-    toast({
-      id: AUTOSAVE_TOAST_ID,
-      message: "",
-      icon: Loader2,
-      iconClassName: "text-white animate-spin",
-      iconOnly: true,
-      duration: Number.POSITIVE_INFINITY,
-    });
-
-    try {
-      const summary = await runSectionSaves({
-        stopOnError: false,
-        trigger: "autosave",
-        showValidationUi: false,
-      });
-      if (summary.failedCount > 0) {
-        toast({
-          id: AUTOSAVE_TOAST_ID,
-          message: summary.firstErrorMessage ?? "저장 중 오류가 발생했습니다.",
-          icon: AlertCircle,
-          iconClassName: "text-red-500",
-        });
-      } else if (summary.savedCount > 0) {
-        toast({
-          id: AUTOSAVE_TOAST_ID,
-          message: "저장 완료",
-          icon: Check,
-          iconClassName: "text-green-500",
-          duration: 2500,
-        });
-      } else {
-        toast.dismiss(AUTOSAVE_TOAST_ID);
-      }
-
-      return {
-        savedCount: summary.savedCount,
-        invalidCount: summary.invalidCount,
-        failedCount: summary.failedCount,
-        invalidSections: summary.invalidSections,
-        failedSections: summary.failedSections,
-      };
-    } catch {
-      toast({
-        id: AUTOSAVE_TOAST_ID,
-        message: "저장 중 오류가 발생했습니다.",
-        icon: AlertCircle,
-        iconClassName: "text-red-500",
-      });
-
-      return {
-        savedCount: 0,
-        invalidCount: 0,
-        failedCount: 1,
-        invalidSections: [],
-        failedSections: [],
-      };
-    }
-  }, [
-    hasAnyBusySection,
-    hasAnyPendingChanges,
-    isEditorTab,
-    isPublished,
-    isPublishing,
-    isSavingAll,
-    runSectionSaves,
-  ]);
-
-  const autosave = useMissionEditorAutosave({
-    missionId,
-    enabled: isEditorTab && !isPublished,
-    paused: isPublishing || isSavingAll,
-    missionUpdatedAt: new Date(mission.updatedAt).getTime(),
-    sectionRefs,
-    sectionStates,
-    onServerSync: runAutosaveServerSync,
-    serverSyncIntervalMs: 20000,
-  });
-
   const runPublishPreflightValidation = useCallback(async () => {
     const [latestMissionResult, latestActionsResult, latestCompletionsResult] = await Promise.all([
       missionQuery.refetch(),
@@ -495,7 +387,6 @@ export function EditorMissionTabContent({
     publishInFlightRef.current = true;
     setIsPublishing(true);
     try {
-      autosave.flushLocalDraft();
       if (hasAnyPendingChanges) {
         const saveResult = await runUnifiedSave({
           showSavedToast: false,
@@ -522,7 +413,6 @@ export function EditorMissionTabContent({
         type: MissionType.GENERAL,
       });
       setIsPublished(true);
-      autosave.clearLocalDraft();
       toast({
         message: "발행되었습니다.",
         id: PUBLISH_TOAST_ID,
@@ -540,7 +430,6 @@ export function EditorMissionTabContent({
       setIsPublishing(false);
     }
   }, [
-    autosave,
     canPublish,
     hasAnyBusySection,
     hasAnyPendingChanges,
@@ -555,9 +444,9 @@ export function EditorMissionTabContent({
   ]);
 
   const saveButtonNode = useMemo(
-    () => (
-      <div className="px-5 py-3">
-        {isPublished ? (
+    () =>
+      isPublished ? (
+        <div className="px-5 py-3">
           <Button
             variant="primary"
             fullWidth
@@ -569,24 +458,35 @@ export function EditorMissionTabContent({
           >
             저장하기
           </Button>
-        ) : (
-          <>
-            <Button
-              variant="primary"
-              fullWidth
-              inlineIcon
-              leftIcon={<Rocket className="size-4" />}
-              onClick={handlePublish}
-              loading={isPublishing}
-              disabled={isSavingAll || isPublishing || hasAnyBusySection || !canPublish}
-            >
-              발행하기
-            </Button>
-          </>
-        )}
-      </div>
-    ),
+        </div>
+      ) : (
+        <div className="flex gap-2 px-5 py-3">
+          <Button
+            variant="secondary"
+            fullWidth
+            inlineIcon
+            leftIcon={<Save className="size-4" />}
+            onClick={handleUnifiedSave}
+            loading={isSavingAll}
+            disabled={isSavingAll || isPublishing || hasAnyBusySection || !hasAnyPendingChanges}
+          >
+            저장하기
+          </Button>
+          <Button
+            variant="primary"
+            fullWidth
+            inlineIcon
+            leftIcon={<Rocket className="size-4" />}
+            onClick={handlePublish}
+            loading={isPublishing}
+            disabled={isSavingAll || isPublishing || hasAnyBusySection || !canPublish}
+          >
+            발행하기
+          </Button>
+        </div>
+      ),
     [
+      canPublish,
       handlePublish,
       handleUnifiedSave,
       hasAnyBusySection,
