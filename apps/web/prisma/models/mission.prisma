@@ -23,6 +23,7 @@ model Mission {
   password               String?
   likesCount             Int             @default(0) @map("likes_count")
   entryActionId          String?         @map("entry_action_id")
+  editorDraft            Json?           @map("editor_draft")
 
   questions   Action[]
   responses   MissionResponse[]
