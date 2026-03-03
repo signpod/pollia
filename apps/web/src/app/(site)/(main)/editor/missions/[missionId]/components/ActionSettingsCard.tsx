@@ -51,7 +51,11 @@ import {
   useRef,
   useState,
 } from "react";
-import { isDraftCompletionId, useEditorMissionDraft } from "./EditorMissionDraftContext";
+import {
+  isDraftCompletionId,
+  makeDraftCompletionId,
+  useEditorMissionDraft,
+} from "./EditorMissionDraftContext";
 import { FlowOverviewDialog } from "./FlowOverviewDialog";
 import { analyzeEditorFlow } from "./editor-publish-flow-validation";
 import type {
@@ -188,6 +192,77 @@ function isActionChanged(action: ActionDetail, submission: ActionSubmission) {
   const initial = normalizeActionValues(action.type, initialValues);
 
   return JSON.stringify(current) !== JSON.stringify(initial);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function toNullableString(value: unknown): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function parseCompletionDraftSnapshotForOptions(snapshot: unknown): {
+  removedExistingIds: Set<string>;
+  draftItems: Array<{ key: string; title: string }>;
+  titleByItemKey: Record<string, string>;
+} | null {
+  if (!isRecord(snapshot)) {
+    return null;
+  }
+
+  const removedExistingIds = new Set<string>(
+    Array.isArray(snapshot.removedExistingIds)
+      ? snapshot.removedExistingIds
+          .map(id => toNullableString(id))
+          .filter((id): id is string => Boolean(id))
+      : [],
+  );
+
+  const draftItems = Array.isArray(snapshot.draftItems)
+    ? snapshot.draftItems.flatMap(item => {
+        if (!isRecord(item)) {
+          return [];
+        }
+
+        const key = toNullableString(item.key);
+        if (!key) {
+          return [];
+        }
+
+        return [
+          {
+            key,
+            title: toNullableString(item.title) ?? "새 결과 화면",
+          },
+        ];
+      })
+    : [];
+
+  const titleByItemKey: Record<string, string> = {};
+  if (isRecord(snapshot.formSnapshotByItemKey)) {
+    for (const [itemKey, raw] of Object.entries(snapshot.formSnapshotByItemKey)) {
+      if (!isRecord(raw)) {
+        continue;
+      }
+
+      const title = toNullableString(raw.title);
+      if (title) {
+        titleByItemKey[itemKey] = title;
+      }
+    }
+  }
+
+  return {
+    removedExistingIds,
+    draftItems,
+    titleByItemKey,
+  };
 }
 
 function toDateOrFallback(value: unknown, fallback: Date): Date {
@@ -461,14 +536,15 @@ function ActionSettingsCardComponent(
   const isSaving = createAction.isPending || updateAction.isPending || isUpdatingEntryAction;
   const isDeletingAction = deleteAction.isPending;
   const isBusy = isSaving || isDeletingAction;
+  const isInactiveMission = missionData?.data?.isActive === false;
 
   const existingActions = useMemo(() => {
     const list = actionsData?.data ?? [];
     return [...list].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   }, [actionsData]);
 
-  const completionOptions = useMemo(
-    () => [
+  const completionOptions = useMemo(() => {
+    const defaultOptions = [
       ...(completionsData?.data ?? []).map(completion => ({
         id: completion.id,
         title: completion.title ?? "완료 화면",
@@ -477,9 +553,56 @@ function ActionSettingsCardComponent(
         id: draft.id,
         title: `[임시 완료] ${draft.title}`,
       })),
-    ],
-    [completionsData, completionDrafts],
-  );
+    ];
+
+    if (!isInactiveMission) {
+      return defaultOptions;
+    }
+
+    const parsedCompletionSnapshot = parseCompletionDraftSnapshotForOptions(
+      getCompletionDraftSnapshot?.() ?? null,
+    );
+    if (!parsedCompletionSnapshot) {
+      return defaultOptions;
+    }
+
+    const existingOptions = (completionsData?.data ?? [])
+      .filter(completion => !parsedCompletionSnapshot.removedExistingIds.has(completion.id))
+      .map(completion => {
+        const itemKey = `existing:${completion.id}`;
+        return {
+          id: completion.id,
+          title:
+            parsedCompletionSnapshot.titleByItemKey[itemKey] ?? completion.title ?? "완료 화면",
+        };
+      });
+
+    const parsedDraftTitleByKey = new Map(
+      parsedCompletionSnapshot.draftItems.map(draft => [draft.key, draft.title]),
+    );
+    const contextDraftTitleByKey = new Map(completionDrafts.map(draft => [draft.key, draft.title]));
+    const mergedDraftKeys = [
+      ...new Set([
+        ...parsedCompletionSnapshot.draftItems.map(draft => draft.key),
+        ...completionDrafts.map(draft => draft.key),
+      ]),
+    ];
+
+    const draftOptions = mergedDraftKeys.map(draftKey => {
+      const draftItemKey = getDraftItemKey(draftKey);
+      const title =
+        parsedCompletionSnapshot.titleByItemKey[draftItemKey] ??
+        parsedDraftTitleByKey.get(draftKey) ??
+        contextDraftTitleByKey.get(draftKey) ??
+        "새 결과 화면";
+      return {
+        id: makeDraftCompletionId(draftKey),
+        title: `[임시 완료] ${title}`,
+      };
+    });
+
+    return [...existingOptions, ...draftOptions];
+  }, [completionsData?.data, completionDrafts, getCompletionDraftSnapshot, isInactiveMission]);
 
   const actionItems = useMemo<ActionListItem[]>(
     () => [
@@ -498,25 +621,48 @@ function ActionSettingsCardComponent(
   );
 
   const linkTargets = useMemo(() => {
-    const existingTargets = existingActions.map(action => ({
-      id: action.id,
-      title: action.title,
-      order: action.order ?? 0,
-    }));
+    const formSnapshotByItemKey: Record<string, ActionFormRawSnapshot> = {};
+    for (const item of actionItems) {
+      const snapshot =
+        formRefs.current[item.key]?.getRawSnapshot() ?? draftFormSnapshotByItemKey[item.key];
+      if (snapshot) {
+        formSnapshotByItemKey[item.key] = snapshot;
+      }
+    }
+
+    const existingTargets = existingActions.map(action => {
+      const existingItemKey = getExistingItemKey(action.id);
+      const snapshotTitle = formSnapshotByItemKey[existingItemKey]?.values?.title?.trim();
+
+      return {
+        id: action.id,
+        title: isInactiveMission ? snapshotTitle || action.title : action.title,
+        order: action.order ?? 0,
+      };
+    });
 
     const draftTargets = draftItems.map((draft, index) => {
       const itemKey = getDraftItemKey(draft.key);
       const draftType = actionTypeByItemKey[itemKey] ?? ActionType.SUBJECTIVE;
+      const snapshotTitle = formSnapshotByItemKey[itemKey]?.values?.title?.trim();
+      const fallbackTitle = `[임시] ${ACTION_TYPE_LABELS[draftType]} 질문`;
 
       return {
         id: makeDraftActionId(draft.key),
-        title: `[임시] ${ACTION_TYPE_LABELS[draftType]} 질문`,
+        title: isInactiveMission ? snapshotTitle || fallbackTitle : fallbackTitle,
         order: existingActions.length + index,
       };
     });
 
     return [...existingTargets, ...draftTargets];
-  }, [existingActions, draftItems, actionTypeByItemKey]);
+  }, [
+    actionItems,
+    actionTypeByItemKey,
+    draftFormSnapshotByItemKey,
+    draftItems,
+    existingActions,
+    isInactiveMission,
+  ]);
 
   const getActionDraftSnapshot = useCallback((): ActionSectionDraftSnapshot => {
     const formSnapshotByItemKey: Record<string, ActionFormRawSnapshot> = {};
