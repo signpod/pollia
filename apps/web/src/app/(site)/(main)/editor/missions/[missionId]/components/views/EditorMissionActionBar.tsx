@@ -43,18 +43,7 @@ export function EditorMissionActionBar({
   }
 
   return (
-    <div className="flex gap-2 px-5 py-3">
-      <Button
-        variant="secondary"
-        fullWidth
-        inlineIcon
-        leftIcon={<Save className="size-4" />}
-        onClick={onSave}
-        loading={isSavingAll}
-        disabled={isSavingAll || isPublishing || hasAnyBusySection || !hasAnyPendingChanges}
-      >
-        저장하기
-      </Button>
+    <div className="px-5 py-3">
       <Button
         variant="primary"
         fullWidth

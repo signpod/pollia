@@ -13,7 +13,7 @@ import {
 } from "@/types/mission-editor-draft";
 import { MissionType } from "@prisma/client";
 import { toast } from "@repo/ui/components";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   type ServerActionLike,
@@ -34,6 +34,8 @@ import {
 
 const UNIFIED_SAVE_TOAST_ID = "editor-mission-save-result";
 const PUBLISH_TOAST_ID = "editor-mission-publish-result";
+const SERVER_DRAFT_AUTOSAVE_TOAST_ID = "editor-mission-server-draft-autosave";
+const SERVER_DRAFT_AUTOSAVE_INTERVAL_MS = 20_000;
 const LOCAL_DRAFT_AUTOSAVE_THROTTLE_MS = 700;
 const LOCAL_DRAFT_AUTOSAVE_MAX_WAIT_MS = 1500;
 const WORKING_SET_VERSION_THROTTLE_MS = 120;
@@ -48,13 +50,6 @@ interface SectionSaveSummary {
   failedSections: EditorSectionKey[];
   invalidSections: EditorSectionKey[];
   firstErrorMessage: string | null;
-}
-
-interface DraftPersistResult {
-  localDraftSaved: boolean;
-  localDraftErrorMessage: string | null;
-  serverDraftSaved: boolean;
-  serverDraftErrorMessage: string | null;
 }
 
 interface DraftClearResult {
@@ -142,17 +137,13 @@ function createEmptySummary(): SectionSaveSummary {
 
 function buildManualSaveToastMessage(params: {
   savedCount: number;
-  effectiveSkipCount: number;
+  skippedCount: number;
   failedCount: number;
-  hasDraftPersistFailure: boolean;
 }) {
-  const { savedCount, effectiveSkipCount, failedCount, hasDraftPersistFailure } = params;
-  const lines = [`저장 ${savedCount} / 스킵 ${effectiveSkipCount}`];
+  const { savedCount, skippedCount, failedCount } = params;
+  const lines = [`저장 ${savedCount} / 스킵 ${skippedCount}`];
   if (failedCount > 0) {
     lines.push(`실패 ${failedCount}`);
-  }
-  if (hasDraftPersistFailure) {
-    lines.push("임시저장 실패");
   }
 
   return lines.join("\n");
@@ -178,6 +169,8 @@ export function useEditorMissionController({
   const draftRestoreAppliedRef = useRef(false);
   const saveInFlightRef = useRef(false);
   const publishInFlightRef = useRef(false);
+  const serverDraftAutosaveInFlightRef = useRef(false);
+  const serverDraftAutosaveLastSerializedRef = useRef<string | null>(null);
   const localDraftAutosaveRef = useRef<{
     timeoutId: number | null;
     idleId: number | null;
@@ -275,6 +268,11 @@ export function useEditorMissionController({
   useEffect(() => {
     setIsPublished(mission.isActive);
   }, [mission.id, mission.isActive]);
+
+  useEffect(() => {
+    serverDraftAutosaveInFlightRef.current = false;
+    serverDraftAutosaveLastSerializedRef.current = null;
+  }, [missionId]);
 
   useEffect(() => {
     if (!isEditorTab || typeof window === "undefined") {
@@ -387,38 +385,6 @@ export function useEditorMissionController({
       timerState.idleId = null;
     }
   }, []);
-
-  const persistDraftPayload = useCallback(
-    async (
-      localPayload: LocalEditorDraftPayload,
-      serverPayload: ServerEditorDraftPayload,
-      serializedDraftSnapshot: string,
-      persistedAtMs: number,
-    ) => {
-      localDraftAutosaveRef.current.lastSerializedPayload = serializedDraftSnapshot;
-      localDraftAutosaveRef.current.lastPersistedAt = persistedAtMs;
-      const localDraftSaved = saveMissionEditorDraftToLocalStorage(missionId, localPayload);
-
-      let serverDraftSaved = false;
-      let serverDraftErrorMessage: string | null = null;
-      try {
-        await saveMissionEditorDraft(missionId, serverPayload);
-        serverDraftSaved = true;
-      } catch (error) {
-        console.error("saveMissionEditorDraft error:", error);
-        serverDraftErrorMessage =
-          error instanceof Error ? error.message : "서버 임시저장에 실패했습니다.";
-      }
-
-      return {
-        localDraftSaved,
-        localDraftErrorMessage: localDraftSaved ? null : "로컬 임시저장에 실패했습니다.",
-        serverDraftSaved,
-        serverDraftErrorMessage,
-      } satisfies DraftPersistResult;
-    },
-    [missionId],
-  );
 
   const clearPersistedDraft = useCallback(async (): Promise<DraftClearResult> => {
     let serverDraftCleared = false;
@@ -621,6 +587,7 @@ export function useEditorMissionController({
     mission,
     missionId,
     missionQueryData,
+    publishSnapshotVersion,
   ]);
 
   useEffect(() => {
@@ -648,6 +615,106 @@ export function useEditorMissionController({
     scheduleLocalDraftAutosave,
     sectionStates.basic,
     sectionStates.reward,
+  ]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (!isEditorTab || isPublished || !draftRestoreAppliedRef.current) {
+      return;
+    }
+
+    const runServerDraftAutosave = async () => {
+      if (
+        serverDraftAutosaveInFlightRef.current ||
+        saveInFlightRef.current ||
+        publishInFlightRef.current ||
+        isSavingAll ||
+        isPublishing ||
+        hasAnyBusySection
+      ) {
+        return;
+      }
+
+      if (
+        !basicInfoRef.current ||
+        !rewardRef.current ||
+        !actionRef.current ||
+        !completionRef.current
+      ) {
+        return;
+      }
+
+      if (!(hasAnyPendingChanges || hasPendingChangesFromRefs())) {
+        return;
+      }
+
+      const localPayload = collectLocalDraftPayload();
+      const serializedPayload = JSON.stringify(localPayload);
+      if (serverDraftAutosaveLastSerializedRef.current === serializedPayload) {
+        return;
+      }
+
+      const payloadWithMeta: LocalEditorDraftPayload = {
+        ...localPayload,
+        meta: {
+          updatedAtMs: Date.now(),
+        },
+      };
+      const serverPayload = collectServerDraftPayload(payloadWithMeta);
+
+      serverDraftAutosaveInFlightRef.current = true;
+      toast({
+        id: SERVER_DRAFT_AUTOSAVE_TOAST_ID,
+        message: "임시 저장 중...",
+        icon: Loader2,
+        iconClassName: "animate-spin text-white",
+        iconOnly: true,
+      });
+
+      try {
+        await saveMissionEditorDraft(missionId, serverPayload);
+        serverDraftAutosaveLastSerializedRef.current = serializedPayload;
+        toast({
+          id: SERVER_DRAFT_AUTOSAVE_TOAST_ID,
+          message: "임시 저장되었습니다.",
+          icon: CheckCircle2,
+          iconClassName: "text-green-500",
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "서버 임시저장에 실패했습니다.";
+        toast({
+          id: SERVER_DRAFT_AUTOSAVE_TOAST_ID,
+          message,
+          icon: AlertCircle,
+          iconClassName: "text-red-500",
+        });
+      } finally {
+        serverDraftAutosaveInFlightRef.current = false;
+      }
+    };
+
+    const intervalId = window.setInterval(() => {
+      void runServerDraftAutosave();
+    }, SERVER_DRAFT_AUTOSAVE_INTERVAL_MS);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [
+    collectLocalDraftPayload,
+    collectServerDraftPayload,
+    hasAnyBusySection,
+    hasAnyPendingChanges,
+    hasPendingChangesFromRefs,
+    isEditorTab,
+    isPublished,
+    isPublishing,
+    isSavingAll,
+    missionId,
+    publishSnapshotVersion,
   ]);
 
   useEffect(
@@ -788,23 +855,6 @@ export function useEditorMissionController({
         return "no_changes" as const;
       }
 
-      const localDraftPayload = collectLocalDraftPayload();
-      const serializedLocalDraftPayload = JSON.stringify(localDraftPayload);
-      const persistedAtMs = Date.now();
-      const localDraftPayloadWithMeta: LocalEditorDraftPayload = {
-        ...localDraftPayload,
-        meta: {
-          updatedAtMs: persistedAtMs,
-        },
-      };
-      const serverDraftPayload = collectServerDraftPayload(localDraftPayloadWithMeta);
-      const draftPersist = await persistDraftPayload(
-        localDraftPayloadWithMeta,
-        serverDraftPayload,
-        serializedLocalDraftPayload,
-        persistedAtMs,
-      );
-
       saveInFlightRef.current = true;
       setIsSavingAll(true);
       try {
@@ -851,22 +901,16 @@ export function useEditorMissionController({
         }
 
         if (mode === "manual") {
-          const rawUnsavedCount = summary.skippedCount + summary.invalidCount;
-          const effectiveSkipCount = draftPersist.serverDraftSaved ? rawUnsavedCount : 0;
-          const processedCount =
-            summary.savedCount +
-            rawUnsavedCount +
-            summary.failedCount +
-            (draftPersist.serverDraftSaved ? 0 : 1);
+          const skippedCount = summary.skippedCount + summary.invalidCount;
+          const processedCount = summary.savedCount + skippedCount + summary.failedCount;
 
           if (processedCount > 0) {
             const message = buildManualSaveToastMessage({
               savedCount: summary.savedCount,
-              effectiveSkipCount,
+              skippedCount,
               failedCount: summary.failedCount,
-              hasDraftPersistFailure: !draftPersist.serverDraftSaved,
             });
-            if (summary.failedCount > 0 || !draftPersist.serverDraftSaved) {
+            if (summary.failedCount > 0) {
               toast({
                 message,
                 icon: AlertCircle,
@@ -876,8 +920,6 @@ export function useEditorMissionController({
               if (summary.failedCount > 0) {
                 return "failed" as const;
               }
-
-              return summary.savedCount > 0 ? ("saved" as const) : ("no_changes" as const);
             }
 
             if (summary.savedCount > 0) {
@@ -921,15 +963,12 @@ export function useEditorMissionController({
     },
     [
       clearPersistedDraft,
-      collectLocalDraftPayload,
-      collectServerDraftPayload,
       hasAnyBusySection,
       hasAnyPendingChanges,
       hasPendingChangesFromRefs,
       isEditorTab,
       isSavingAll,
       missionId,
-      persistDraftPayload,
       runSectionSaves,
     ],
   );
