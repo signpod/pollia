@@ -116,6 +116,7 @@ interface ActionFormProps {
   onActionTypeChange?: (type: ActionType) => void;
   onDirtyChange?: (isDirty: boolean) => void;
   onValidationStateChange?: (issueCount: number) => void;
+  onRawSnapshotChange?: (snapshot: ActionFormRawSnapshot) => void;
 }
 
 type NextLinkType = "action" | "completion";
@@ -339,6 +340,7 @@ function ActionFormComponent(
     onActionTypeChange,
     onDirtyChange,
     onValidationStateChange,
+    onRawSnapshotChange,
   }: ActionFormProps,
   ref: ForwardedRef<ActionFormHandle>,
 ) {
@@ -925,6 +927,10 @@ function ActionFormComponent(
   useEffect(() => {
     onValidationStateChange?.(validationIssueCount);
   }, [onValidationStateChange, validationIssueCount]);
+
+  useEffect(() => {
+    onRawSnapshotChange?.(getRawSnapshot());
+  }, [getRawSnapshot, onRawSnapshotChange]);
 
   useEffect(() => {
     if (!hasValidationStarted) {

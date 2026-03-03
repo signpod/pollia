@@ -43,6 +43,7 @@ import type {
 interface CompletionSettingsCardProps {
   missionId: string;
   onSaveStateChange?: SectionSaveStateChangeHandler;
+  onWorkingSetChange?: () => void;
 }
 
 interface ExistingListItem {
@@ -102,6 +103,22 @@ function normalizeValues(values: CompletionFormValues) {
     imageUrl: values.imageUrl ?? null,
     imageFileUploadId: values.imageFileUploadId ?? null,
   };
+}
+
+function areCompletionSnapshotsEqual(
+  left: CompletionFormRawSnapshot | undefined,
+  right: CompletionFormRawSnapshot,
+) {
+  if (!left) {
+    return false;
+  }
+
+  return (
+    left.title === right.title &&
+    left.description === right.description &&
+    (left.imageUrl ?? null) === (right.imageUrl ?? null) &&
+    (left.imageFileUploadId ?? null) === (right.imageFileUploadId ?? null)
+  );
 }
 
 function isCompletionChanged(
@@ -185,10 +202,22 @@ function patchCompletionsQueryData(
   return { ...previous, data: nextData };
 }
 
+function isMissingCompletionError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  if (error.message.includes("미션 완료 데이터를 찾을 수 없습니다.")) {
+    return true;
+  }
+
+  return error.cause === 404;
+}
+
 const NOOP = () => {};
 
 function CompletionSettingsCardComponent(
-  { missionId, onSaveStateChange }: CompletionSettingsCardProps,
+  { missionId, onSaveStateChange, onWorkingSetChange }: CompletionSettingsCardProps,
   ref: ForwardedRef<SectionSaveHandle>,
 ) {
   const queryClient = useQueryClient();
@@ -363,6 +392,32 @@ function CompletionSettingsCardComponent(
       return { ...prev, [itemKey]: issueCount };
     });
   }, []);
+
+  const handleItemRawSnapshotChange = useCallback(
+    (itemKey: string, snapshot: CompletionFormRawSnapshot) => {
+      let hasChange = false;
+      setDraftFormSnapshotByItemKey(prev => {
+        if (areCompletionSnapshotsEqual(prev[itemKey], snapshot)) {
+          return prev;
+        }
+
+        hasChange = true;
+        return {
+          ...prev,
+          [itemKey]: snapshot,
+        };
+      });
+
+      if (hasChange) {
+        onWorkingSetChange?.();
+      }
+    },
+    [onWorkingSetChange],
+  );
+
+  useEffect(() => {
+    onWorkingSetChange?.();
+  }, [completionDrafts, onWorkingSetChange, removedExistingIds]);
 
   const handleAddDraft = () => {
     if (isSaving) {
@@ -644,21 +699,39 @@ function CompletionSettingsCardComponent(
         }
       }
 
-      for (const completionId of removedSnapshot) {
-        try {
-          await deleteMissionCompletion(completionId);
-          didMutateServer = true;
-          successfulRemovedIds.add(completionId);
-          savedCount += 1;
-          details.push({ key: getExistingItemKey(completionId), status: "saved" });
-        } catch (error) {
-          const message =
-            error instanceof Error ? error.message : "결과 화면 삭제 중 오류가 발생했습니다.";
-          if (strictMode) {
-            return { status: "failed", message };
+      if (trigger === "publish") {
+        for (const completionId of removedSnapshot) {
+          try {
+            await deleteMissionCompletion(completionId);
+            didMutateServer = true;
+            successfulRemovedIds.add(completionId);
+            savedCount += 1;
+            details.push({ key: getExistingItemKey(completionId), status: "saved" });
+          } catch (error) {
+            if (isMissingCompletionError(error)) {
+              successfulRemovedIds.add(completionId);
+              savedCount += 1;
+              details.push({ key: getExistingItemKey(completionId), status: "saved" });
+              continue;
+            }
+
+            const message =
+              error instanceof Error ? error.message : "결과 화면 삭제 중 오류가 발생했습니다.";
+            if (strictMode) {
+              return { status: "failed", message };
+            }
+            failedCount += 1;
+            details.push({ key: getExistingItemKey(completionId), status: "failed", message });
           }
-          failedCount += 1;
-          details.push({ key: getExistingItemKey(completionId), status: "failed", message });
+        }
+      } else if (removedSnapshot.size > 0) {
+        for (const completionId of removedSnapshot) {
+          skippedCount += 1;
+          details.push({
+            key: getExistingItemKey(completionId),
+            status: "skipped",
+            message: "결과 화면 삭제는 발행 시 반영됩니다.",
+          });
         }
       }
 
@@ -858,6 +931,7 @@ function CompletionSettingsCardComponent(
         setOpenItemKey(typeof next.openItemKey === "string" ? next.openItemKey : null);
         setDraftFormSnapshotByItemKey(nextFormSnapshots);
         setDraftHydrationVersion(prev => prev + 1);
+        onWorkingSetChange?.();
       },
     }),
     [
@@ -871,6 +945,7 @@ function CompletionSettingsCardComponent(
       isLoading,
       isSaving,
       openItemKey,
+      onWorkingSetChange,
       removedExistingIds,
     ],
   );
@@ -918,13 +993,16 @@ function CompletionSettingsCardComponent(
           <div className="flex flex-col gap-3">
             {completionItems.map((item, index) => {
               const isOpen = openItemKey === item.key;
+              const currentSnapshot =
+                formRefs.current[item.key]?.getRawSnapshot() ??
+                draftFormSnapshotByItemKey[item.key];
+              const snapshotTitle = currentSnapshot?.title?.trim() ?? "";
               const title =
                 item.kind === "existing"
-                  ? item.completion.title
-                  : (item.draft.title.trim() ?? "") || "새 결과 화면";
+                  ? snapshotTitle || item.completion.title
+                  : snapshotTitle || (item.draft.title.trim() ?? "") || "새 결과 화면";
               const previewImageUrl =
-                formRefs.current[item.key]?.getRawSnapshot().imageUrl ??
-                draftFormSnapshotByItemKey[item.key]?.imageUrl ??
+                currentSnapshot?.imageUrl ??
                 (item.kind === "existing" ? item.completion.imageUrl : null);
 
               return (
@@ -1011,6 +1089,9 @@ function CompletionSettingsCardComponent(
                       }}
                       onValidationStateChange={issueCount => {
                         handleItemValidationChange(item.key, issueCount);
+                      }}
+                      onRawSnapshotChange={snapshot => {
+                        handleItemRawSnapshotChange(item.key, snapshot);
                       }}
                     />
                   </div>

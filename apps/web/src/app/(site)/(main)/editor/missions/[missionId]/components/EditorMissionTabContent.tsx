@@ -11,7 +11,10 @@ import { useReadMission } from "@/hooks/mission";
 import type { GetMissionResponse } from "@/types/dto";
 import {
   type EditorMissionDraftPayload,
+  type LocalEditorDraftPayload,
+  type ServerEditorDraftPayload,
   normalizeEditorMissionDraftPayload,
+  toServerEditorDraftPayload,
 } from "@/types/mission-editor-draft";
 import { MissionType, type PaymentType } from "@prisma/client";
 import { Button, toast } from "@repo/ui/components";
@@ -52,6 +55,9 @@ interface EditorMissionTabContentProps {
 
 const UNIFIED_SAVE_TOAST_ID = "editor-mission-save-result";
 const PUBLISH_TOAST_ID = "editor-mission-publish-result";
+const LOCAL_DRAFT_AUTOSAVE_THROTTLE_MS = 700;
+const LOCAL_DRAFT_AUTOSAVE_MAX_WAIT_MS = 1500;
+const WORKING_SET_VERSION_THROTTLE_MS = 120;
 
 type EditorSectionKey = "basic" | "reward" | "action" | "completion";
 
@@ -130,9 +136,30 @@ export function EditorMissionTabContent({
   const draftRestoreAppliedRef = useRef(false);
   const saveInFlightRef = useRef(false);
   const publishInFlightRef = useRef(false);
+  const localDraftAutosaveRef = useRef<{
+    timeoutId: number | null;
+    idleId: number | null;
+    maxWaitTimeoutId: number | null;
+    lastPersistedAt: number;
+    lastSerializedPayload: string | null;
+  }>({
+    timeoutId: null,
+    idleId: null,
+    maxWaitTimeoutId: null,
+    lastPersistedAt: 0,
+    lastSerializedPayload: null,
+  });
+  const completionWorkingSetThrottleRef = useRef<{
+    timeoutId: number | null;
+    lastUpdatedAt: number;
+  }>({
+    timeoutId: null,
+    lastUpdatedAt: 0,
+  });
   const [isSavingAll, setIsSavingAll] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublished, setIsPublished] = useState(mission.isActive);
+  const [completionWorkingSetVersion, setCompletionWorkingSetVersion] = useState(0);
   const [sectionStates, setSectionStates] = useState<
     Record<"basic" | "reward" | "action" | "completion", SectionSaveState>
   >({
@@ -239,7 +266,7 @@ export function EditorMissionTabContent({
   ]);
   const canPublish = !isPublished && isPublishValidationReady && publishFlowValidation.isValid;
 
-  const collectDraftPayload = useCallback((): EditorMissionDraftPayload => {
+  const collectLocalDraftPayload = useCallback((): LocalEditorDraftPayload => {
     return {
       basic: basicInfoRef.current?.exportDraftSnapshot() ?? null,
       reward: rewardRef.current?.exportDraftSnapshot() ?? null,
@@ -247,6 +274,12 @@ export function EditorMissionTabContent({
       completion: completionRef.current?.exportDraftSnapshot() ?? null,
     };
   }, []);
+
+  const collectServerDraftPayload = useCallback(
+    (payload: LocalEditorDraftPayload): ServerEditorDraftPayload =>
+      toServerEditorDraftPayload(payload),
+    [],
+  );
 
   const applyDraftPayload = useCallback(async (payload: EditorMissionDraftPayload) => {
     await Promise.all([
@@ -257,18 +290,137 @@ export function EditorMissionTabContent({
     ]);
   }, []);
 
+  const clearLocalDraftAutosaveTimers = useCallback(() => {
+    const timerState = localDraftAutosaveRef.current;
+    if (timerState.timeoutId !== null) {
+      window.clearTimeout(timerState.timeoutId);
+      timerState.timeoutId = null;
+    }
+    if (timerState.maxWaitTimeoutId !== null) {
+      window.clearTimeout(timerState.maxWaitTimeoutId);
+      timerState.maxWaitTimeoutId = null;
+    }
+    if (timerState.idleId !== null && typeof window.cancelIdleCallback === "function") {
+      window.cancelIdleCallback(timerState.idleId);
+      timerState.idleId = null;
+    }
+  }, []);
+
   const persistDraftPayload = useCallback(
-    async (payload: EditorMissionDraftPayload) => {
-      saveMissionEditorDraftToLocalStorage(missionId, payload);
+    async (localPayload: LocalEditorDraftPayload, serverPayload: ServerEditorDraftPayload) => {
+      const serializedLocalPayload = JSON.stringify(localPayload);
+      localDraftAutosaveRef.current.lastSerializedPayload = serializedLocalPayload;
+      localDraftAutosaveRef.current.lastPersistedAt = Date.now();
+      saveMissionEditorDraftToLocalStorage(missionId, localPayload);
 
       try {
-        await saveMissionEditorDraft(missionId, payload);
+        await saveMissionEditorDraft(missionId, serverPayload);
       } catch (error) {
         console.error("saveMissionEditorDraft error:", error);
       }
     },
     [missionId],
   );
+
+  const flushLocalDraftAutosave = useCallback(() => {
+    const timerState = localDraftAutosaveRef.current;
+    timerState.idleId = null;
+    if (timerState.maxWaitTimeoutId !== null) {
+      window.clearTimeout(timerState.maxWaitTimeoutId);
+      timerState.maxWaitTimeoutId = null;
+    }
+
+    if (!isEditorTab || !draftRestoreAppliedRef.current) {
+      return;
+    }
+
+    if (
+      !basicInfoRef.current ||
+      !rewardRef.current ||
+      !actionRef.current ||
+      !completionRef.current
+    ) {
+      return;
+    }
+
+    if (!hasPendingChangesFromRefs()) {
+      return;
+    }
+
+    const payload = collectLocalDraftPayload();
+    const serializedPayload = JSON.stringify(payload);
+    if (timerState.lastSerializedPayload === serializedPayload) {
+      return;
+    }
+
+    timerState.lastSerializedPayload = serializedPayload;
+    timerState.lastPersistedAt = Date.now();
+    saveMissionEditorDraftToLocalStorage(missionId, payload);
+  }, [collectLocalDraftPayload, hasPendingChangesFromRefs, isEditorTab, missionId]);
+
+  const scheduleLocalDraftAutosave = useCallback(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const timerState = localDraftAutosaveRef.current;
+    if (timerState.timeoutId !== null) {
+      return;
+    }
+
+    const elapsed = Date.now() - timerState.lastPersistedAt;
+    const waitMs = Math.max(0, LOCAL_DRAFT_AUTOSAVE_THROTTLE_MS - elapsed);
+
+    timerState.timeoutId = window.setTimeout(() => {
+      timerState.timeoutId = null;
+
+      if (typeof window.requestIdleCallback === "function") {
+        timerState.idleId = window.requestIdleCallback(
+          () => {
+            flushLocalDraftAutosave();
+          },
+          { timeout: LOCAL_DRAFT_AUTOSAVE_MAX_WAIT_MS },
+        );
+        timerState.maxWaitTimeoutId = window.setTimeout(() => {
+          if (timerState.idleId !== null && typeof window.cancelIdleCallback === "function") {
+            window.cancelIdleCallback(timerState.idleId);
+            timerState.idleId = null;
+          }
+          flushLocalDraftAutosave();
+        }, LOCAL_DRAFT_AUTOSAVE_MAX_WAIT_MS);
+        return;
+      }
+
+      flushLocalDraftAutosave();
+    }, waitMs);
+  }, [flushLocalDraftAutosave]);
+
+  const handleActionWorkingSetChange = useCallback(() => {
+    scheduleLocalDraftAutosave();
+  }, [scheduleLocalDraftAutosave]);
+
+  const handleCompletionWorkingSetChange = useCallback(() => {
+    scheduleLocalDraftAutosave();
+
+    const throttleState = completionWorkingSetThrottleRef.current;
+    const now = Date.now();
+    const elapsed = now - throttleState.lastUpdatedAt;
+    if (elapsed >= WORKING_SET_VERSION_THROTTLE_MS) {
+      throttleState.lastUpdatedAt = now;
+      setCompletionWorkingSetVersion(prev => prev + 1);
+      return;
+    }
+
+    if (throttleState.timeoutId !== null) {
+      return;
+    }
+
+    throttleState.timeoutId = window.setTimeout(() => {
+      throttleState.timeoutId = null;
+      throttleState.lastUpdatedAt = Date.now();
+      setCompletionWorkingSetVersion(prev => prev + 1);
+    }, WORKING_SET_VERSION_THROTTLE_MS - elapsed);
+  }, [scheduleLocalDraftAutosave]);
 
   useEffect(() => {
     setIsPublished(mission.isActive);
@@ -294,9 +446,10 @@ export function EditorMissionTabContent({
 
     const localDraft = loadMissionEditorDraftFromLocalStorage(missionId);
     const latestMission = missionQuery.data?.data ?? mission;
-    const serverDraft = normalizeEditorMissionDraftPayload(
+    const serverDraftRaw = normalizeEditorMissionDraftPayload(
       (latestMission as { editorDraft?: unknown }).editorDraft,
     );
+    const serverDraft = serverDraftRaw ? toServerEditorDraftPayload(serverDraftRaw) : null;
     const selectedDraft = localDraft ?? serverDraft;
 
     draftRestoreAppliedRef.current = true;
@@ -323,6 +476,48 @@ export function EditorMissionTabContent({
     missionId,
     missionQuery.data?.data,
   ]);
+
+  useEffect(() => {
+    if (!isEditorTab || !draftRestoreAppliedRef.current) {
+      return;
+    }
+
+    if (
+      !basicInfoRef.current ||
+      !rewardRef.current ||
+      !actionRef.current ||
+      !completionRef.current
+    ) {
+      return;
+    }
+
+    if (!hasPendingChangesFromRefs()) {
+      return;
+    }
+
+    scheduleLocalDraftAutosave();
+  }, [
+    hasPendingChangesFromRefs,
+    isEditorTab,
+    scheduleLocalDraftAutosave,
+    sectionStates.basic,
+    sectionStates.reward,
+  ]);
+
+  useEffect(
+    () => () => {
+      if (typeof window === "undefined") {
+        return;
+      }
+      clearLocalDraftAutosaveTimers();
+      const throttleState = completionWorkingSetThrottleRef.current;
+      if (throttleState.timeoutId !== null) {
+        window.clearTimeout(throttleState.timeoutId);
+        throttleState.timeoutId = null;
+      }
+    },
+    [clearLocalDraftAutosaveTimers],
+  );
 
   const runSectionSaves = useCallback(
     async ({
@@ -420,8 +615,9 @@ export function EditorMissionTabContent({
         return "failed" as const;
       }
 
-      const draftPayload = collectDraftPayload();
-      await persistDraftPayload(draftPayload);
+      const localDraftPayload = collectLocalDraftPayload();
+      const serverDraftPayload = collectServerDraftPayload(localDraftPayload);
+      await persistDraftPayload(localDraftPayload, serverDraftPayload);
 
       const hasPendingChangesNow = hasAnyPendingChanges || hasPendingChangesFromRefs();
       if (!hasPendingChangesNow) {
@@ -507,7 +703,8 @@ export function EditorMissionTabContent({
       }
     },
     [
-      collectDraftPayload,
+      collectLocalDraftPayload,
+      collectServerDraftPayload,
       hasAnyBusySection,
       hasAnyPendingChanges,
       hasPendingChangesFromRefs,
@@ -732,12 +929,15 @@ export function EditorMissionTabContent({
           missionId={mission.id}
           onSaveStateChange={state => updateSectionState("action", state)}
           getCompletionDraftSnapshot={() => completionRef.current?.exportDraftSnapshot() ?? null}
+          completionWorkingSetVersion={completionWorkingSetVersion}
+          onWorkingSetChange={handleActionWorkingSetChange}
         />
         <Separator className="h-2" />
         <CompletionSettingsCard
           ref={completionRef}
           missionId={mission.id}
           onSaveStateChange={state => updateSectionState("completion", state)}
+          onWorkingSetChange={handleCompletionWorkingSetChange}
         />
       </EditorMissionDraftProvider>
     </>

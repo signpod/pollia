@@ -106,6 +106,7 @@ interface CompletionFormProps {
   onTitleChange?: (title: string) => void;
   onDirtyChange?: (isDirty: boolean) => void;
   onValidationStateChange?: (issueCount: number) => void;
+  onRawSnapshotChange?: (snapshot: CompletionFormRawSnapshot) => void;
 }
 
 function areErrorMapsEqual(left: Record<string, string>, right: Record<string, string>): boolean {
@@ -142,6 +143,7 @@ function CompletionFormComponent(
     onTitleChange,
     onDirtyChange,
     onValidationStateChange,
+    onRawSnapshotChange,
   }: CompletionFormProps,
   ref: ForwardedRef<CompletionFormHandle>,
 ) {
@@ -286,6 +288,10 @@ function CompletionFormComponent(
     }),
     [description, imageFileUploadId, imageUrl, title],
   );
+
+  useEffect(() => {
+    onRawSnapshotChange?.(getRawSnapshot());
+  }, [getRawSnapshot, onRawSnapshotChange]);
 
   const applyRawSnapshot = useCallback((snapshot: CompletionFormRawSnapshot) => {
     setTitle(snapshot.title ?? "");

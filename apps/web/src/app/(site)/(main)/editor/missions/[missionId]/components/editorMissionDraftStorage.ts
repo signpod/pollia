@@ -1,5 +1,5 @@
 import {
-  type EditorMissionDraftPayload,
+  type LocalEditorDraftPayload,
   normalizeEditorMissionDraftPayload,
 } from "@/types/mission-editor-draft";
 
@@ -9,7 +9,7 @@ export function getMissionEditorDraftStorageKey(missionId: string) {
 
 export function saveMissionEditorDraftToLocalStorage(
   missionId: string,
-  payload: EditorMissionDraftPayload,
+  payload: LocalEditorDraftPayload,
 ) {
   if (typeof window === "undefined") {
     return;
@@ -27,7 +27,7 @@ export function saveMissionEditorDraftToLocalStorage(
 
 export function loadMissionEditorDraftFromLocalStorage(
   missionId: string,
-): EditorMissionDraftPayload | null {
+): LocalEditorDraftPayload | null {
   if (typeof window === "undefined") {
     return null;
   }

@@ -69,6 +69,8 @@ interface ActionSettingsCardProps {
   missionId: string;
   onSaveStateChange?: SectionSaveStateChangeHandler;
   getCompletionDraftSnapshot?: () => unknown | null;
+  completionWorkingSetVersion?: number;
+  onWorkingSetChange?: () => void;
 }
 
 interface DraftActionItem {
@@ -280,6 +282,17 @@ function toDateOrFallback(value: unknown, fallback: Date): Date {
   return fallback;
 }
 
+function areActionSnapshotsEqual(
+  left: ActionFormRawSnapshot | undefined,
+  right: ActionFormRawSnapshot,
+) {
+  if (!left) {
+    return false;
+  }
+
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
 function buildPatchedActionDetail(params: {
   currentAction: ActionDetail | null;
   actionId: string;
@@ -421,7 +434,13 @@ function resolveDraftCompletionReferences(
 const NOOP = () => {};
 
 function ActionSettingsCardComponent(
-  { missionId, onSaveStateChange, getCompletionDraftSnapshot }: ActionSettingsCardProps,
+  {
+    missionId,
+    onSaveStateChange,
+    getCompletionDraftSnapshot,
+    completionWorkingSetVersion = 0,
+    onWorkingSetChange,
+  }: ActionSettingsCardProps,
   ref: ForwardedRef<SectionSaveHandle>,
 ) {
   const queryClient = useQueryClient();
@@ -544,46 +563,28 @@ function ActionSettingsCardComponent(
   }, [actionsData]);
 
   const completionOptions = useMemo(() => {
-    const defaultOptions = [
-      ...(completionsData?.data ?? []).map(completion => ({
-        id: completion.id,
-        title: completion.title ?? "완료 화면",
-      })),
-      ...completionDrafts.map(draft => ({
-        id: draft.id,
-        title: draft.title,
-      })),
-    ];
-
-    if (!isInactiveMission) {
-      return defaultOptions;
-    }
-
     const parsedCompletionSnapshot = parseCompletionDraftSnapshotForOptions(
       getCompletionDraftSnapshot?.() ?? null,
     );
-    if (!parsedCompletionSnapshot) {
-      return defaultOptions;
-    }
-
+    const removedExistingIds = parsedCompletionSnapshot?.removedExistingIds ?? new Set<string>();
+    const titleByItemKey = parsedCompletionSnapshot?.titleByItemKey ?? {};
     const existingOptions = (completionsData?.data ?? [])
-      .filter(completion => !parsedCompletionSnapshot.removedExistingIds.has(completion.id))
+      .filter(completion => !removedExistingIds.has(completion.id))
       .map(completion => {
         const itemKey = `existing:${completion.id}`;
         return {
           id: completion.id,
-          title:
-            parsedCompletionSnapshot.titleByItemKey[itemKey] ?? completion.title ?? "완료 화면",
+          title: titleByItemKey[itemKey] ?? completion.title ?? "완료 화면",
         };
       });
 
     const parsedDraftTitleByKey = new Map(
-      parsedCompletionSnapshot.draftItems.map(draft => [draft.key, draft.title]),
+      (parsedCompletionSnapshot?.draftItems ?? []).map(draft => [draft.key, draft.title]),
     );
     const contextDraftTitleByKey = new Map(completionDrafts.map(draft => [draft.key, draft.title]));
     const mergedDraftKeys = [
       ...new Set([
-        ...parsedCompletionSnapshot.draftItems.map(draft => draft.key),
+        ...(parsedCompletionSnapshot?.draftItems ?? []).map(draft => draft.key),
         ...completionDrafts.map(draft => draft.key),
       ]),
     ];
@@ -591,7 +592,7 @@ function ActionSettingsCardComponent(
     const draftOptions = mergedDraftKeys.map(draftKey => {
       const draftItemKey = getDraftItemKey(draftKey);
       const title =
-        parsedCompletionSnapshot.titleByItemKey[draftItemKey] ??
+        titleByItemKey[draftItemKey] ??
         parsedDraftTitleByKey.get(draftKey) ??
         contextDraftTitleByKey.get(draftKey) ??
         "새 결과 화면";
@@ -602,7 +603,12 @@ function ActionSettingsCardComponent(
     });
 
     return [...existingOptions, ...draftOptions];
-  }, [completionsData?.data, completionDrafts, getCompletionDraftSnapshot, isInactiveMission]);
+  }, [
+    completionDrafts,
+    completionWorkingSetVersion,
+    completionsData?.data,
+    getCompletionDraftSnapshot,
+  ]);
 
   const actionItems = useMemo<ActionListItem[]>(
     () => [
@@ -815,6 +821,32 @@ function ActionSettingsCardComponent(
       return { ...prev, [itemKey]: issueCount };
     });
   }, []);
+
+  const handleItemRawSnapshotChange = useCallback(
+    (itemKey: string, snapshot: ActionFormRawSnapshot) => {
+      let hasChange = false;
+      setDraftFormSnapshotByItemKey(prev => {
+        if (areActionSnapshotsEqual(prev[itemKey], snapshot)) {
+          return prev;
+        }
+
+        hasChange = true;
+        return {
+          ...prev,
+          [itemKey]: snapshot,
+        };
+      });
+
+      if (hasChange) {
+        onWorkingSetChange?.();
+      }
+    },
+    [onWorkingSetChange],
+  );
+
+  useEffect(() => {
+    onWorkingSetChange?.();
+  }, [draftItems, onWorkingSetChange]);
 
   const handleAddDraft = () => {
     const draftKey = createDraftKey();
@@ -1502,9 +1534,17 @@ function ActionSettingsCardComponent(
             : {},
         );
         setDraftHydrationVersion(prev => prev + 1);
+        onWorkingSetChange?.();
       },
     }),
-    [executeSave, getActionDraftSnapshot, hasPendingChanges, isActionsLoading, isBusy],
+    [
+      executeSave,
+      getActionDraftSnapshot,
+      hasPendingChanges,
+      isActionsLoading,
+      isBusy,
+      onWorkingSetChange,
+    ],
   );
 
   return (
@@ -1665,6 +1705,9 @@ function ActionSettingsCardComponent(
                         onValidationStateChange={issueCount => {
                           handleItemValidationChange(item.key, issueCount);
                         }}
+                        onRawSnapshotChange={snapshot => {
+                          handleItemRawSnapshotChange(item.key, snapshot);
+                        }}
                       />
                     ) : (
                       <ActionForm
@@ -1690,6 +1733,9 @@ function ActionSettingsCardComponent(
                         }}
                         onValidationStateChange={issueCount => {
                           handleItemValidationChange(item.key, issueCount);
+                        }}
+                        onRawSnapshotChange={snapshot => {
+                          handleItemRawSnapshotChange(item.key, snapshot);
                         }}
                       />
                     )}
