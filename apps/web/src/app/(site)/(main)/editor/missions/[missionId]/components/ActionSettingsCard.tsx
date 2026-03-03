@@ -551,7 +551,7 @@ function ActionSettingsCardComponent(
       })),
       ...completionDrafts.map(draft => ({
         id: draft.id,
-        title: `[임시 완료] ${draft.title}`,
+        title: draft.title,
       })),
     ];
 
@@ -597,7 +597,7 @@ function ActionSettingsCardComponent(
         "새 결과 화면";
       return {
         id: makeDraftCompletionId(draftKey),
-        title: `[임시 완료] ${title}`,
+        title,
       };
     });
 
@@ -645,7 +645,7 @@ function ActionSettingsCardComponent(
       const itemKey = getDraftItemKey(draft.key);
       const draftType = actionTypeByItemKey[itemKey] ?? ActionType.SUBJECTIVE;
       const snapshotTitle = formSnapshotByItemKey[itemKey]?.values?.title?.trim();
-      const fallbackTitle = `[임시] ${ACTION_TYPE_LABELS[draftType]} 질문`;
+      const fallbackTitle = `${ACTION_TYPE_LABELS[draftType]} 질문`;
 
       return {
         id: makeDraftActionId(draft.key),
