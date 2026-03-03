@@ -31,7 +31,7 @@ export function ProfileHeaderView({
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 flex h-15 items-center justify-between bg-white px-5",
+        "sticky top-0 z-50 flex h-14 items-center justify-between bg-white px-5",
         showBack && "pr-5 pl-0",
       )}
     >

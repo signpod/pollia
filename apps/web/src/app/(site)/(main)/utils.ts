@@ -26,3 +26,46 @@ export function computeMissionStatus(
   if (startDate && new Date(startDate) > now) return "예정";
   return "모집 중";
 }
+
+// TODO: 백엔드에 조회수(viewCount) 필드 구현 시 실제 데이터로 교체
+export function generateFakeViewCount(missionId: string): number {
+  let hash = 0;
+  for (let i = 0; i < missionId.length; i++) {
+    hash = (hash * 31 + missionId.charCodeAt(i)) | 0;
+  }
+  return 200 + (Math.abs(hash) % 4800);
+}
+
+export function toSurveyCardData(mission: {
+  id: string;
+  title: string;
+  description: string | null;
+  imageUrl: string | null;
+  estimatedMinutes: number | null;
+  deadline: Date | null;
+  maxParticipants: number | null;
+  category: import("@prisma/client").MissionCategory;
+  createdAt: Date;
+  isActive: boolean;
+  likesCount: number;
+}) {
+  return {
+    id: mission.id,
+    title: mission.title,
+    description: mission.description ?? "",
+    imageUrl: mission.imageUrl ?? "",
+    duration: formatDuration(mission.estimatedMinutes),
+    daysLeft: calculateDaysLeft(mission.deadline),
+    reward: null,
+    currentParticipants: 0,
+    maxParticipants: mission.maxParticipants ?? 100,
+    category: mission.category,
+    createdAt: mission.createdAt.toISOString(),
+    isActive: mission.isActive,
+    deadline: mission.deadline?.toISOString() ?? null,
+    startDate: (mission as unknown as { startDate?: Date }).startDate?.toISOString() ?? null,
+    likesCount: mission.likesCount,
+    // TODO: 백엔드에 조회수(viewCount) 필드 구현 시 실제 데이터로 교체
+    viewCount: generateFakeViewCount(mission.id),
+  };
+}

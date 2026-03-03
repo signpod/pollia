@@ -3,7 +3,7 @@
 import { useSearchMissions } from "@/hooks/search";
 import type { MissionSearchRecord } from "@/server/search/missionSearchContract";
 import { Typo } from "@repo/ui/components";
-import { ChevronLeftIcon, SearchIcon, XIcon } from "lucide-react";
+import { ChevronLeftIcon, Loader2, SearchIcon, XIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useDeferredValue, useEffect, useRef, useState } from "react";
 import type { SearchResultItemData } from "./SearchResultItem";
@@ -61,6 +61,12 @@ export function SearchClient() {
     title: record.title,
     imageUrl: "",
     category: record.category,
+    likesCount: record.likesCount,
+    // TODO: 백엔드에 조회수(viewCount) 필드 구현 시 실제 데이터로 교체
+    viewCount:
+      200 +
+      (Math.abs(record.objectID.split("").reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 0)) %
+        4800),
   }));
 
   const isPending = isLoading || submittedQuery !== deferredQuery;
@@ -97,9 +103,8 @@ export function SearchClient() {
   }
 
   return (
-    <div className="relative z-50 -mt-15 min-h-screen bg-white">
-      {/* Self Header */}
-      <header className="sticky top-0 z-50 flex h-15 items-center gap-2 bg-white px-1">
+    <div className="relative z-50 -mt-14 min-h-screen bg-white">
+      <header className="sticky top-0 z-50 flex h-14 items-center gap-2 bg-white px-1">
         <button
           type="button"
           onClick={() => router.back()}
@@ -110,18 +115,15 @@ export function SearchClient() {
         <Typo.SubTitle size="large">검색</Typo.SubTitle>
       </header>
 
-      {/* Search Input */}
       <div className="px-5 py-3">
-        <div className="flex items-center justify-between rounded-full bg-[#fafafa] px-3 py-2">
+        <div className="flex h-[45px] items-center gap-3 rounded-full bg-zinc-50 px-4">
+          <SearchIcon className="size-[18px] shrink-0 text-zinc-400" />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={e => {
               setQuery(e.target.value);
-              if (e.target.value.trim() === "") {
-                setSubmittedQuery("");
-              }
             }}
             onKeyDown={e => {
               if (e.key === "Enter") {
@@ -132,7 +134,7 @@ export function SearchClient() {
             placeholder="검색어를 입력해 주세요"
             className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-zinc-900 outline-none placeholder:text-zinc-400"
           />
-          {query ? (
+          {query && (
             <button
               type="button"
               onClick={() => {
@@ -142,58 +144,47 @@ export function SearchClient() {
               }}
               className="shrink-0"
             >
-              <XIcon className="size-[18px] text-zinc-400" />
-            </button>
-          ) : (
-            <button type="button" onClick={handleSubmit} className="shrink-0">
-              <SearchIcon className="size-[18px] text-zinc-400" />
+              <XIcon className="size-5 text-zinc-400" />
             </button>
           )}
         </div>
       </div>
-      <div className="h-px bg-zinc-100" />
 
-      {/* Search Results */}
       {hasSubmitted ? (
-        <div className="flex flex-col">
-          <div className="flex items-baseline gap-2 px-5 pb-4">
-            <Typo.SubTitle size="large" className="text-default">
-              &ldquo;{submittedQuery}&rdquo; 검색 결과
-            </Typo.SubTitle>
-            {!isPending && (
-              <Typo.Body size="small" className="font-bold text-primary">
-                {results.length}개
-              </Typo.Body>
-            )}
-          </div>
-
+        <div className="flex flex-col gap-4 p-5">
           {isPending && (
-            <div className="flex flex-col items-center py-16">
-              <Typo.Body size="medium" className="text-sub">
-                검색 중...
-              </Typo.Body>
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="size-6 animate-spin text-zinc-400" />
             </div>
           )}
 
           {!isPending && results.length > 0 && (
-            <div className="divide-y divide-zinc-100">
-              {results.map(item => (
-                <SearchResultItem key={item.id} item={item} />
-              ))}
-            </div>
+            <>
+              <div className="flex items-center gap-1">
+                <Typo.ButtonText size="large" className="text-primary">
+                  {submittedQuery}
+                </Typo.ButtonText>
+                <Typo.Body size="medium">검색 결과 {results.length}개</Typo.Body>
+              </div>
+              <div className="flex flex-col gap-4">
+                {results.map((item, index) => (
+                  <div key={item.id}>
+                    <SearchResultItem item={item} query={submittedQuery} />
+                    {index < results.length - 1 && <div className="mt-4 h-px bg-zinc-100" />}
+                  </div>
+                ))}
+              </div>
+            </>
           )}
 
           {!isPending && results.length === 0 && (
-            <div className="flex flex-col items-center py-16">
-              <Typo.Body size="medium" className="text-sub">
-                검색 결과가 없어요
-              </Typo.Body>
-            </div>
+            <Typo.Body size="medium" className="text-disabled">
+              해당하는 프로젝트가 없어요
+            </Typo.Body>
           )}
         </div>
       ) : (
         <div className="flex flex-col gap-10 p-5">
-          {/* Recent Searches */}
           <section className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <Typo.SubTitle size="large">최근 검색어</Typo.SubTitle>
@@ -231,19 +222,18 @@ export function SearchClient() {
                         }
                       }}
                     >
-                      <XIcon className="size-5 text-zinc-400" />
+                      <XIcon className="size-4 text-zinc-400" />
                     </span>
                   </button>
                 ))}
               </div>
             ) : (
               <Typo.Body size="small" className="text-sub">
-                최근 본 프로젝트가 없어요
+                최근 검색어가 없어요
               </Typo.Body>
             )}
           </section>
 
-          {/* Recommended Searches */}
           <section className="flex flex-col gap-4">
             <Typo.SubTitle size="large">추천 검색어</Typo.SubTitle>
             <div className="flex flex-wrap gap-2">
@@ -262,7 +252,6 @@ export function SearchClient() {
             </div>
           </section>
 
-          {/* Popular Projects */}
           <section className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <Typo.SubTitle size="large">인기 프로젝트</Typo.SubTitle>
@@ -276,7 +265,7 @@ export function SearchClient() {
                   <button
                     type="button"
                     onClick={() => handleChipSearch(title)}
-                    className="flex w-full items-center text-left transition-colors hover:bg-zinc-50"
+                    className="flex w-full items-center gap-0.5 text-left transition-colors hover:bg-zinc-50"
                   >
                     <div className="flex size-5 shrink-0 items-center justify-center">
                       <Typo.Body size="small" className="font-bold text-primary">
