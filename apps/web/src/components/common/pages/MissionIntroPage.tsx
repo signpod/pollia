@@ -1,19 +1,17 @@
 "use client";
 
+import { BottomNavBar } from "@/app/(site)/(main)/components/BottomNavBar";
 import { SocialShareButtonsWithData } from "@/app/(site)/mission/[missionId]/components/SocialShareButtonsWithData";
 import { useStickyTabHeader } from "@/app/(site)/mission/[missionId]/components/hooks/useStickyTabHeader";
 import type { MissionRewardData } from "@/app/(site)/mission/[missionId]/types/mission";
 import { ProfileHeader } from "@/components/common/ProfileHeader";
 import { cn } from "@/lib/utils";
 import { MissionType } from "@prisma/client";
-import { FixedBottomLayout } from "@repo/ui/components";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { MissionContentTemplate } from "../templates/MissionContentTemplate";
 import { MissionIntroTemplate } from "../templates/MissionIntroTemplate";
 import type { MissionIntroTemplateProps } from "../templates/MissionIntroTemplate";
-
-const SCROLL_OFFSET = 10;
 
 export interface MissionIntroPageProps extends MissionIntroTemplateProps {
   isRequirePassword: boolean;
@@ -23,23 +21,17 @@ export interface MissionIntroPageProps extends MissionIntroTemplateProps {
   missionImageUrl: string | null;
   description: string | null;
   reward: MissionRewardData | null;
-  contextBrandLogoUrl?: string;
   contextTitle?: string;
   bottomButton?: ReactNode;
 }
 
 export function MissionIntroPage({
   imageUrl,
-  brandLogoUrl,
   title,
-  formattedDeadline,
+  subtitle,
+  authorName,
+  authorImageUrl,
   isRequirePassword,
-  showRewardWidget,
-  rewardName,
-  showDeadlineWidget,
-  deadlineDate,
-  showOpenWidget,
-  openDate,
   titleRef,
   missionId,
   missionType,
@@ -47,7 +39,6 @@ export function MissionIntroPage({
   missionImageUrl,
   description,
   reward,
-  contextBrandLogoUrl,
   contextTitle,
   bottomButton,
 }: MissionIntroPageProps) {
@@ -68,30 +59,18 @@ export function MissionIntroPage({
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleScrollDown = () => {
-    window.scrollTo({
-      top: window.innerHeight + SCROLL_OFFSET,
-      behavior: "smooth",
-    });
-  };
-
   return (
     <div className="relative w-full">
       <MissionIntroTemplate
         header={<ProfileHeader />}
         imageUrl={imageUrl}
-        brandLogoUrl={brandLogoUrl}
+        missionId={missionId}
         title={title}
-        formattedDeadline={formattedDeadline}
+        subtitle={subtitle}
+        authorName={authorName}
+        authorImageUrl={authorImageUrl}
         isRequirePassword={isRequirePassword}
-        showRewardWidget={showRewardWidget}
-        rewardName={rewardName}
-        showDeadlineWidget={showDeadlineWidget}
-        deadlineDate={deadlineDate}
-        showOpenWidget={showOpenWidget}
-        openDate={openDate}
         titleRef={titleRef}
-        onScrollDown={handleScrollDown}
       >
         <MissionContentTemplate
           title={contextTitle}
@@ -112,30 +91,10 @@ export function MissionIntroPage({
         />
       </MissionIntroTemplate>
 
-      <FixedBottomLayout.Content
-        className={isScrolled ? "bg-transparent" : "bg-transparent pointer-events-none"}
-      >
-        <div
-          className="absolute inset-x-0 bottom-0"
-          style={{
-            height: "100px",
-            opacity: isScrolled ? 1 : 0,
-            transition: "opacity 0.3s ease-out",
-            backdropFilter: "blur(100px)",
-            WebkitBackdropFilter: "blur(100px)",
-            maskImage: isScrolled
-              ? "linear-gradient(to bottom, transparent 0%, black 100%)"
-              : "linear-gradient(to bottom, transparent 100%, transparent 100%)",
-            WebkitMaskImage: isScrolled
-              ? "linear-gradient(to bottom, transparent 0%, black 100%)"
-              : "linear-gradient(to bottom, transparent 100%, transparent 100%)",
-            background: "rgba(255, 255, 255, 0)",
-            pointerEvents: "none",
-          }}
-        />
+      <div className="fixed inset-x-0 bottom-0 z-50 mx-auto flex max-w-[600px] flex-col">
         <div
           className={cn(
-            "sticky bottom-0 z-60 border-zinc-100 transition-all duration-300 ease-out",
+            "transition-all duration-300 ease-out",
             isScrolled
               ? "opacity-100 translate-y-0 pointer-events-auto"
               : "opacity-0 translate-y-full pointer-events-none",
@@ -143,7 +102,10 @@ export function MissionIntroPage({
         >
           {bottomButton}
         </div>
-      </FixedBottomLayout.Content>
+        <div className="relative z-10">
+          <BottomNavBar />
+        </div>
+      </div>
     </div>
   );
 }

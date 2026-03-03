@@ -1,16 +1,15 @@
 "use client";
 
 import { MissionIntroPage } from "@/components/common/pages/MissionIntroPage";
+import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { useMissionIntroData, useSurveyResume } from "@/hooks/mission";
 import { useReadMissionResponseForMission } from "@/hooks/mission-response";
 import { useReadMissionParticipantInfo } from "@/hooks/participant/useReadMissionParticipantInfo";
 import { useReadReward } from "@/hooks/reward/useReadReward";
 import { getActionNavCookie, setActionNavCookie } from "@/lib/cookie";
-import { formatDateToLocalString } from "@/lib/date";
 import { Mission } from "@prisma/client";
 import { CalloutProvider, type CalloutToneVariant, useCallout } from "@repo/ui/components";
-import { addHours, isBefore } from "date-fns";
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef } from "react";
 import type { MissionRewardData } from "./types/mission";
 import { BottomButton } from "./ui";
 import { checkParticipantLimitReached } from "./utils/checkParticipantLimit";
@@ -54,9 +53,16 @@ function CalloutTrigger({
 interface MissionPageWrapperProps {
   mission: Mission;
   reward: MissionRewardData | null;
+  creatorName: string | null;
+  creatorImageUrl: string | null;
 }
 
-export function MissionPageWrapper({ mission, reward }: MissionPageWrapperProps) {
+export function MissionPageWrapper({
+  mission,
+  reward,
+  creatorName,
+  creatorImageUrl,
+}: MissionPageWrapperProps) {
   const {
     id: missionId,
     type: missionType,
@@ -81,7 +87,17 @@ export function MissionPageWrapper({ mission, reward }: MissionPageWrapperProps)
     isCompleted,
     missionResponse,
     isRequirePassword,
+    actionIds,
   } = useMissionIntroData(missionId);
+
+  const subtitle = useMemo(() => {
+    const categoryLabel = MISSION_CATEGORY_LABELS[mission.category];
+    const questionCount = actionIds?.length ?? 0;
+    if (questionCount > 0) {
+      return `${categoryLabel} · ${questionCount}문항`;
+    }
+    return categoryLabel;
+  }, [mission.category, actionIds]);
 
   const { showResumeModal, isResuming } = useSurveyResume({
     isEnabledToResume,
@@ -91,7 +107,7 @@ export function MissionPageWrapper({ mission, reward }: MissionPageWrapperProps)
     responseId: missionResponse?.id ?? "",
   });
 
-  const { brandLogoUrl, title, deadline, startDate, createdAt, imageUrl, isActive } = mission ?? {};
+  const { brandLogoUrl, title, deadline, imageUrl, isActive } = mission ?? {};
 
   const titleRef = useRef<HTMLDivElement>(null);
 
@@ -99,42 +115,6 @@ export function MissionPageWrapper({ mission, reward }: MissionPageWrapperProps)
   const { data: participantInfo } = useReadMissionParticipantInfo(missionId);
   const { data: missionResponseData } = useReadMissionResponseForMission({ missionId });
   const { currentParticipants, maxParticipants } = participantInfo?.data ?? {};
-
-  const showRewardWidget = !!rewardQuery?.data?.id;
-  const deadlineDate = useMemo(() => (deadline ? new Date(deadline) : null), [deadline]);
-  const startDateObj = useMemo(() => (startDate ? new Date(startDate) : null), [startDate]);
-  const [showDeadlineWidget, setShowDeadlineWidget] = useState(false);
-  const [showOpenWidget, setShowOpenWidget] = useState(false);
-  const [formattedDeadline, setFormattedDeadline] = useState<string | null>(null);
-
-  useEffect(() => {
-    const now = new Date();
-
-    const formatDot = (date: Date) => formatDateToLocalString(date).replaceAll("-", ".");
-    const startFormatted = startDateObj
-      ? formatDot(startDateObj)
-      : createdAt
-        ? formatDot(new Date(createdAt))
-        : null;
-
-    if (deadlineDate) {
-      const isExpired = isBefore(deadlineDate, now);
-      const isWithin24h = isBefore(deadlineDate, addHours(now, 24));
-      setShowDeadlineWidget(!isExpired && isWithin24h);
-      const deadlineFormatted = formatDot(deadlineDate);
-      setFormattedDeadline(
-        startFormatted ? `${startFormatted} - ${deadlineFormatted}` : deadlineFormatted,
-      );
-    } else if (startFormatted) {
-      setFormattedDeadline(`${startFormatted} - 마감`);
-    }
-
-    if (startDateObj) {
-      const isNotOpenYet = isBefore(now, startDateObj);
-      const isWithin24h = isBefore(startDateObj, addHours(now, 24));
-      setShowOpenWidget(isNotOpenYet && isWithin24h);
-    }
-  }, [deadlineDate, startDateObj, createdAt]);
 
   const isProcessing = Boolean(missionResponseData?.data?.id);
 
@@ -196,18 +176,12 @@ export function MissionPageWrapper({ mission, reward }: MissionPageWrapperProps)
         <main className="flex justify-center bg-background">
           <MissionIntroPage
             imageUrl={imageUrl}
-            brandLogoUrl={brandLogoUrl ?? undefined}
             title={title}
-            formattedDeadline={formattedDeadline}
+            subtitle={subtitle}
+            authorName={creatorName}
+            authorImageUrl={creatorImageUrl}
             isRequirePassword={isRequirePassword}
-            showRewardWidget={showRewardWidget}
-            rewardName={reward?.name ?? rewardQuery?.data?.name ?? ""}
-            showDeadlineWidget={showDeadlineWidget}
-            deadlineDate={deadlineDate}
-            showOpenWidget={showOpenWidget}
-            openDate={startDateObj}
             titleRef={titleRef}
-            contextBrandLogoUrl={brandLogoUrl ?? undefined}
             contextTitle={title}
             missionId={missionId}
             missionType={missionType}

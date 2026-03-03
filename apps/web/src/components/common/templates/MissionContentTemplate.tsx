@@ -8,7 +8,7 @@ import { SECTION_IDS } from "@/app/(site)/mission/[missionId]/constants/sectionI
 import { useGoBack } from "@/hooks/common/useGoBack";
 import { cleanTiptapHTML, cn } from "@/lib/utils";
 import { MissionType } from "@prisma/client";
-import { Tab, Typo } from "@repo/ui/components";
+import { Typo } from "@repo/ui/components";
 import { ChevronLeft } from "lucide-react";
 import type { RefObject } from "react";
 import type { ReactNode } from "react";
@@ -69,29 +69,6 @@ export function MissionContentTemplate({
             {title}
           </Typo.SubTitle>
         </div>
-        <Tab.Root
-          value={activeTab}
-          pointColor="secondary"
-          onValueChange={onChangeTab ?? (() => {})}
-        >
-          <Tab.List className="px-5">
-            <Tab.Item
-              value={SECTION_IDS.MISSION_GUIDE}
-              className={cn(sections.length === 1 ? "mx-auto max-w-[110px]" : "")}
-              onClick={() => onChangeTab?.(SECTION_IDS.MISSION_GUIDE)}
-            >
-              <Typo.SubTitle size="large">상세 안내</Typo.SubTitle>
-            </Tab.Item>
-            {reward && (
-              <Tab.Item
-                value={SECTION_IDS.REWARD}
-                onClick={() => onChangeTab?.(SECTION_IDS.REWARD)}
-              >
-                <Typo.SubTitle size="large">참여 리워드</Typo.SubTitle>
-              </Tab.Item>
-            )}
-          </Tab.List>
-        </Tab.Root>
       </header>
       <div className="flex w-full flex-col px-5 pt-5 pb-10 gap-5">
         <div id={SECTION_IDS.MISSION_GUIDE}>
