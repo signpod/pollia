@@ -1,5 +1,6 @@
 "use client";
 
+import { reorderActions } from "@/actions/action/reorder";
 import { createMissionCompletion, getCompletionsByMissionId } from "@/actions/mission-completion";
 import { updateMission } from "@/actions/mission/update";
 import {
@@ -24,6 +25,7 @@ import {
 import { ACTION_TYPE_LABELS } from "@/constants/action";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
+import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { useReadActionsDetail } from "@/hooks/action";
 import { useReadMission } from "@/hooks/mission";
 import type { ActionDetail, GetMissionActionsDetailResponse } from "@/types/dto";
@@ -40,7 +42,16 @@ import {
   toast,
 } from "@repo/ui/components";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, ChevronDown, GitBranch, Plus, Trash2, X } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowDown,
+  ArrowUp,
+  ChevronDown,
+  GitBranch,
+  Plus,
+  Trash2,
+  X,
+} from "lucide-react";
 import {
   type ForwardedRef,
   forwardRef,
@@ -102,6 +113,7 @@ interface ActionSectionDraftSnapshot {
   dirtyByItemKey: Record<string, boolean>;
   actionTypeByItemKey: Record<string, ActionType>;
   formSnapshotByItemKey: Record<string, ActionFormRawSnapshot>;
+  itemOrderKeys?: string[];
 }
 
 const ACTION_TYPES_WITH_OPTIONS = new Set<ActionType>([
@@ -293,6 +305,20 @@ function areActionSnapshotsEqual(
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
+function areStringArraysEqual(left: string[], right: string[]) {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  for (let index = 0; index < left.length; index += 1) {
+    if (left[index] !== right[index]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 function buildPatchedActionDetail(params: {
   currentAction: ActionDetail | null;
   actionId: string;
@@ -384,6 +410,45 @@ function patchActionsQueryData(
   return { ...previous, data: nextData };
 }
 
+function patchActionOrdersQueryData(
+  previous: GetMissionActionsDetailResponse | undefined,
+  orderedActionIds: string[],
+): GetMissionActionsDetailResponse | undefined {
+  if (!previous || !Array.isArray(previous.data) || orderedActionIds.length === 0) {
+    return previous;
+  }
+
+  const orderById = new Map(orderedActionIds.map((id, order) => [id, order]));
+  const didPatch = previous.data.some(action => orderById.has(action.id));
+  if (!didPatch) {
+    return previous;
+  }
+
+  const nextData = previous.data
+    .map(action => {
+      const nextOrder = orderById.get(action.id);
+      if (nextOrder === undefined || action.order === nextOrder) {
+        return action;
+      }
+      return {
+        ...action,
+        order: nextOrder,
+      };
+    })
+    .sort((left, right) => {
+      const orderDelta = (left.order ?? 0) - (right.order ?? 0);
+      if (orderDelta !== 0) {
+        return orderDelta;
+      }
+      return left.id.localeCompare(right.id);
+    });
+
+  return {
+    ...previous,
+    data: nextData,
+  };
+}
+
 function collectDraftCompletionReferences(values: ActionFormValues): string[] {
   const draftIds = new Set<string>();
 
@@ -446,6 +511,7 @@ function ActionSettingsCardComponent(
   const queryClient = useQueryClient();
   const formRefs = useRef<Record<string, ActionFormHandle | null>>({});
   const [draftItems, setDraftItems] = useState<DraftActionItem[]>([]);
+  const [itemOrderKeys, setItemOrderKeys] = useState<string[]>([]);
   const [openItemKey, setOpenItemKey] = useState<string | null>(null);
   const [isUpdatingEntryAction, setIsUpdatingEntryAction] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<ActionDetail | null>(null);
@@ -626,9 +692,52 @@ function ActionSettingsCardComponent(
     [existingActions, draftItems],
   );
 
+  const orderedActionItems = useMemo<ActionListItem[]>(() => {
+    if (actionItems.length === 0) {
+      return [];
+    }
+
+    const actionItemByKey = new Map(actionItems.map(item => [item.key, item]));
+    const orderedKeys: string[] = [];
+    const seen = new Set<string>();
+
+    for (const key of itemOrderKeys) {
+      if (seen.has(key) || !actionItemByKey.has(key)) {
+        continue;
+      }
+      orderedKeys.push(key);
+      seen.add(key);
+    }
+
+    for (const item of actionItems) {
+      if (seen.has(item.key)) {
+        continue;
+      }
+      orderedKeys.push(item.key);
+      seen.add(item.key);
+    }
+
+    return orderedKeys.flatMap(key => {
+      const item = actionItemByKey.get(key);
+      return item ? [item] : [];
+    });
+  }, [actionItems, itemOrderKeys]);
+
+  const defaultOrderKeys = useMemo(() => actionItems.map(item => item.key), [actionItems]);
+
+  const orderedItemKeys = useMemo(
+    () => orderedActionItems.map(item => item.key),
+    [orderedActionItems],
+  );
+
+  const hasOrderChanges = useMemo(
+    () => !areStringArraysEqual(orderedItemKeys, defaultOrderKeys),
+    [defaultOrderKeys, orderedItemKeys],
+  );
+
   const linkTargets = useMemo(() => {
     const formSnapshotByItemKey: Record<string, ActionFormRawSnapshot> = {};
-    for (const item of actionItems) {
+    for (const item of orderedActionItems) {
       const snapshot =
         formRefs.current[item.key]?.getRawSnapshot() ?? draftFormSnapshotByItemKey[item.key];
       if (snapshot) {
@@ -662,18 +771,18 @@ function ActionSettingsCardComponent(
 
     return [...existingTargets, ...draftTargets];
   }, [
-    actionItems,
     actionTypeByItemKey,
     draftFormSnapshotByItemKey,
     draftItems,
     existingActions,
     isInactiveMission,
+    orderedActionItems,
   ]);
 
   const getActionDraftSnapshot = useCallback((): ActionSectionDraftSnapshot => {
     const formSnapshotByItemKey: Record<string, ActionFormRawSnapshot> = {};
 
-    for (const item of actionItems) {
+    for (const item of orderedActionItems) {
       const snapshot =
         formRefs.current[item.key]?.getRawSnapshot() ?? draftFormSnapshotByItemKey[item.key];
       if (snapshot) {
@@ -687,14 +796,15 @@ function ActionSettingsCardComponent(
       dirtyByItemKey,
       actionTypeByItemKey,
       formSnapshotByItemKey,
+      itemOrderKeys: orderedActionItems.map(item => item.key),
     };
   }, [
-    actionItems,
     actionTypeByItemKey,
     draftFormSnapshotByItemKey,
     draftItems,
     dirtyByItemKey,
     openItemKey,
+    orderedActionItems,
   ]);
 
   const flowAnalysis = useMemo(() => {
@@ -728,7 +838,7 @@ function ActionSettingsCardComponent(
   const isFlowLoading = isMissionLoading || isActionsLoading || isCompletionsLoading;
 
   useEffect(() => {
-    const validKeys = new Set(actionItems.map(item => item.key));
+    const validKeys = new Set(orderedActionItems.map(item => item.key));
     setDirtyByItemKey(prev => {
       let hasChange = false;
       const next: Record<string, boolean> = {};
@@ -769,6 +879,22 @@ function ActionSettingsCardComponent(
       }
       return hasChange ? next : prev;
     });
+  }, [orderedActionItems]);
+
+  useEffect(() => {
+    const validKeys = actionItems.map(item => item.key);
+    setItemOrderKeys(prev => {
+      const validKeySet = new Set(validKeys);
+      const next = prev.filter(key => validKeySet.has(key));
+
+      for (const key of validKeys) {
+        if (!next.includes(key)) {
+          next.push(key);
+        }
+      }
+
+      return areStringArraysEqual(prev, next) ? prev : next;
+    });
   }, [actionItems]);
 
   const hasPendingChanges = useMemo(() => {
@@ -776,13 +902,20 @@ function ActionSettingsCardComponent(
       return true;
     }
 
+    if (hasOrderChanges) {
+      return true;
+    }
+
     return existingActions.some(action => dirtyByItemKey[getExistingItemKey(action.id)]);
-  }, [draftItems.length, existingActions, dirtyByItemKey]);
+  }, [draftItems.length, existingActions, dirtyByItemKey, hasOrderChanges]);
 
   const validationIssueCount = useMemo(
     () =>
-      actionItems.reduce((sum, item) => sum + (validationIssueCountByItemKey[item.key] ?? 0), 0),
-    [actionItems, validationIssueCountByItemKey],
+      orderedActionItems.reduce(
+        (sum, item) => sum + (validationIssueCountByItemKey[item.key] ?? 0),
+        0,
+      ),
+    [orderedActionItems, validationIssueCountByItemKey],
   );
   const hasValidationIssues = validationIssueCount > 0;
 
@@ -892,6 +1025,41 @@ function ActionSettingsCardComponent(
     setActionTypeByItemKey(prev => ({ ...prev, [itemKey]: actionType }));
   };
 
+  const handleMoveItem = useCallback(
+    (itemKey: string, direction: -1 | 1) => {
+      let didMove = false;
+
+      setItemOrderKeys(prev => {
+        const currentIndex = prev.indexOf(itemKey);
+        if (currentIndex < 0) {
+          return prev;
+        }
+
+        const nextIndex = currentIndex + direction;
+        if (nextIndex < 0 || nextIndex >= prev.length) {
+          return prev;
+        }
+
+        const next = [...prev];
+        const currentValue = next[currentIndex];
+        const targetValue = next[nextIndex];
+        if (!currentValue || !targetValue) {
+          return prev;
+        }
+
+        next[currentIndex] = targetValue;
+        next[nextIndex] = currentValue;
+        didMove = true;
+        return next;
+      });
+
+      if (didMove) {
+        onWorkingSetChange?.();
+      }
+    },
+    [onWorkingSetChange],
+  );
+
   const handleDeleteConfirm = () => {
     if (!deleteTarget) return;
     deleteAction.mutate({ actionId: deleteTarget.id, missionId });
@@ -911,18 +1079,78 @@ function ActionSettingsCardComponent(
 
     const existingSnapshot = [...existingActions];
     const draftSnapshot = [...draftItems];
-    const listSnapshot: ActionListItem[] = [
-      ...existingSnapshot.map(action => ({
-        key: getExistingItemKey(action.id),
-        kind: "existing" as const,
-        action,
-      })),
-      ...draftSnapshot.map(draft => ({
-        key: getDraftItemKey(draft.key),
-        kind: "draft" as const,
-        draft,
-      })),
+    const defaultOrderSnapshot = [
+      ...existingSnapshot.map(action => getExistingItemKey(action.id)),
+      ...draftSnapshot.map(draft => getDraftItemKey(draft.key)),
     ];
+    const existingByItemKey = new Map(
+      existingSnapshot.map(action => [getExistingItemKey(action.id), action]),
+    );
+    const draftByItemKey = new Map(draftSnapshot.map(draft => [getDraftItemKey(draft.key), draft]));
+    const listSnapshot: ActionListItem[] = [];
+    const visitedItemKeys = new Set<string>();
+
+    for (const itemKey of itemOrderKeys) {
+      if (visitedItemKeys.has(itemKey)) {
+        continue;
+      }
+
+      const existing = existingByItemKey.get(itemKey);
+      if (existing) {
+        listSnapshot.push({
+          key: itemKey,
+          kind: "existing",
+          action: existing,
+        });
+        visitedItemKeys.add(itemKey);
+        continue;
+      }
+
+      const draft = draftByItemKey.get(itemKey);
+      if (draft) {
+        listSnapshot.push({
+          key: itemKey,
+          kind: "draft",
+          draft,
+        });
+        visitedItemKeys.add(itemKey);
+      }
+    }
+
+    for (const action of existingSnapshot) {
+      const itemKey = getExistingItemKey(action.id);
+      if (visitedItemKeys.has(itemKey)) {
+        continue;
+      }
+      listSnapshot.push({
+        key: itemKey,
+        kind: "existing",
+        action,
+      });
+      visitedItemKeys.add(itemKey);
+    }
+
+    for (const draft of draftSnapshot) {
+      const itemKey = getDraftItemKey(draft.key);
+      if (visitedItemKeys.has(itemKey)) {
+        continue;
+      }
+      listSnapshot.push({
+        key: itemKey,
+        kind: "draft",
+        draft,
+      });
+      visitedItemKeys.add(itemKey);
+    }
+
+    const listSnapshotKeys = listSnapshot.map(item => item.key);
+    const hasOrderChangesInSnapshot = !areStringArraysEqual(listSnapshotKeys, defaultOrderSnapshot);
+    const firstExistingActionIdInOrder =
+      listSnapshot.find((item): item is ExistingListItem => item.kind === "existing")?.action.id ??
+      null;
+    const needsEntrySyncWithoutDataMutations =
+      Boolean(firstExistingActionIdInOrder) &&
+      firstExistingActionIdInOrder !== (missionData?.data?.entryActionId ?? null);
 
     if (listSnapshot.length === 0) {
       return { status: "no_changes" };
@@ -1018,7 +1246,12 @@ function ActionSettingsCardComponent(
       }
     }
 
-    if (changedExistingActions.length === 0 && draftActionsToCreate.length === 0) {
+    if (
+      changedExistingActions.length === 0 &&
+      draftActionsToCreate.length === 0 &&
+      !hasOrderChangesInSnapshot &&
+      !needsEntrySyncWithoutDataMutations
+    ) {
       if (savedCount === 0 && failedCount === 0 && invalidCount === 0 && skippedCount === 0) {
         return { status: "no_changes" };
       }
@@ -1038,13 +1271,17 @@ function ActionSettingsCardComponent(
     }
 
     const tempToRealActionIdMap = new Map<string, string>();
+    const resolvedActionIdByItemKey = new Map<string, string>(
+      existingSnapshot.map(action => [getExistingItemKey(action.id), action.id]),
+    );
     const tempToRealCompletionIdMap = new Map<string, string>();
     const createdCompletionDraftIds: string[] = [];
     const draftCompletionDependents = new Map<string, Set<string>>();
     const successfulExistingActionIds: string[] = [];
     const successfulDraftKeys: string[] = [];
-    let firstCreatedActionId: string | null = null;
     let didMutateServer = false;
+    let didSyncMissionEntryAction = false;
+    let didSyncOrder = false;
 
     const persistItemKeys = [
       ...changedExistingActions.map(action => getExistingItemKey(action.id)),
@@ -1192,10 +1429,8 @@ function ActionSettingsCardComponent(
           }
 
           tempToRealActionIdMap.set(makeDraftActionId(draft.key), createdId);
+          resolvedActionIdByItemKey.set(itemKey, createdId);
           didMutateServer = true;
-          if (!firstCreatedActionId) {
-            firstCreatedActionId = createdId;
-          }
 
           cacheUpsertByActionId.set(
             createdId,
@@ -1347,18 +1582,79 @@ function ActionSettingsCardComponent(
         formRefs.current[itemKey]?.deleteMarkedInitialImages();
       }
 
-      if (existingSnapshot.length === 0 && firstCreatedActionId) {
+      const orderedPersistedActionIds: string[] = [];
+      const seenPersistedActionIds = new Set<string>();
+      for (const item of listSnapshot) {
+        const resolvedId = resolvedActionIdByItemKey.get(item.key);
+        if (!resolvedId || seenPersistedActionIds.has(resolvedId)) {
+          continue;
+        }
+        seenPersistedActionIds.add(resolvedId);
+        orderedPersistedActionIds.push(resolvedId);
+      }
+
+      const shouldReorderActions =
+        orderedPersistedActionIds.length > 0 &&
+        (hasOrderChangesInSnapshot || draftActionsToCreate.length > 0);
+      if (shouldReorderActions) {
+        try {
+          await reorderActions({
+            missionId,
+            actionOrders: orderedPersistedActionIds.map((id, order) => ({ id, order })),
+          });
+          didMutateServer = true;
+          didSyncOrder = true;
+
+          for (const [order, actionId] of orderedPersistedActionIds.entries()) {
+            const cached = cacheUpsertByActionId.get(actionId);
+            if (cached) {
+              cacheUpsertByActionId.set(actionId, { ...cached, order });
+            }
+          }
+
+          queryClient.setQueryData<GetMissionActionsDetailResponse | undefined>(
+            actionQueryKeys.actions({ missionId }),
+            previous => patchActionOrdersQueryData(previous, orderedPersistedActionIds),
+          );
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "질문 순서 저장에 실패했습니다.";
+          if (strictMode) {
+            return { status: "failed", message };
+          }
+          markFailed("order-sync", message);
+        }
+      }
+
+      const candidateEntryActionId = orderedPersistedActionIds[0] ?? null;
+      const currentEntryActionId = missionData?.data?.entryActionId ?? null;
+      if (candidateEntryActionId && candidateEntryActionId !== currentEntryActionId) {
         setIsUpdatingEntryAction(true);
         try {
-          await updateMission(missionId, { entryActionId: firstCreatedActionId });
-        } catch {
-          if (!silent) {
-            toast({
-              message: "시작 질문 설정 중 오류가 발생했습니다.",
-              icon: AlertCircle,
-              iconClassName: "text-red-500",
-            });
+          await updateMission(missionId, { entryActionId: candidateEntryActionId });
+          didMutateServer = true;
+          didSyncMissionEntryAction = true;
+          queryClient.setQueryData(
+            missionQueryKeys.mission(missionId),
+            (previous: { data?: Record<string, unknown> } | undefined) => {
+              if (!previous || !previous.data) {
+                return previous;
+              }
+              return {
+                ...previous,
+                data: {
+                  ...previous.data,
+                  entryActionId: candidateEntryActionId,
+                },
+              };
+            },
+          );
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : "시작 질문 설정 중 오류가 발생했습니다.";
+          if (strictMode) {
+            return { status: "failed", message };
           }
+          markFailed("entry-action-sync", message);
         } finally {
           setIsUpdatingEntryAction(false);
         }
@@ -1426,14 +1722,34 @@ function ActionSettingsCardComponent(
       }
 
       if (didMutateServer) {
-        await Promise.all([
+        const invalidateTargets = [
           queryClient.invalidateQueries({
             queryKey: missionCompletionQueryKeys.missionCompletion(missionId),
           }),
           queryClient.invalidateQueries({
             queryKey: actionQueryKeys.actions({ missionId }),
           }),
-        ]);
+        ];
+
+        if (didSyncMissionEntryAction) {
+          invalidateTargets.push(
+            queryClient.invalidateQueries({
+              queryKey: missionQueryKeys.mission(missionId),
+            }),
+          );
+        }
+
+        await Promise.all(invalidateTargets);
+      }
+
+      if (didSyncOrder) {
+        savedCount += 1;
+        details.push({ key: "order-sync", status: "saved" });
+      }
+
+      if (didSyncMissionEntryAction) {
+        savedCount += 1;
+        details.push({ key: "entry-action-sync", status: "saved" });
       }
 
       const message =
@@ -1517,6 +1833,11 @@ function ActionSettingsCardComponent(
           : [];
 
         setDraftItems(nextDraftItems);
+        setItemOrderKeys(
+          Array.isArray(next.itemOrderKeys)
+            ? next.itemOrderKeys.filter((key): key is string => typeof key === "string")
+            : [],
+        );
         setOpenItemKey(typeof next.openItemKey === "string" ? next.openItemKey : null);
         setDirtyByItemKey(
           next.dirtyByItemKey && typeof next.dirtyByItemKey === "object"
@@ -1591,7 +1912,7 @@ function ActionSettingsCardComponent(
               로딩 중...
             </Typo.Body>
           </div>
-        ) : actionItems.length === 0 ? (
+        ) : orderedActionItems.length === 0 ? (
           <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-10 text-center">
             <Typo.SubTitle>아직 진행 목록이 없습니다</Typo.SubTitle>
             <Typo.Body size="medium" className="mt-2 text-zinc-500">
@@ -1600,8 +1921,10 @@ function ActionSettingsCardComponent(
           </div>
         ) : (
           <div className="flex flex-col gap-3">
-            {actionItems.map((item, index) => {
+            {orderedActionItems.map((item, index) => {
               const isOpen = openItemKey === item.key;
+              const canMoveUp = index > 0;
+              const canMoveDown = index < orderedActionItems.length - 1;
               const fallbackType =
                 item.kind === "existing" ? item.action.type : ActionType.SUBJECTIVE;
               const itemType = actionTypeByItemKey[item.key] ?? fallbackType;
@@ -1620,15 +1943,42 @@ function ActionSettingsCardComponent(
               return (
                 <div key={item.key} className="overflow-hidden rounded-xl border border-zinc-200">
                   <div className="flex items-center justify-between bg-zinc-50 px-4 py-3">
+                    <div className="mr-2 flex shrink-0 items-center gap-1">
+                      <button
+                        type="button"
+                        aria-label="위로 이동"
+                        onClick={() => handleMoveItem(item.key, -1)}
+                        disabled={isBusy || !canMoveUp}
+                        className="rounded p-1 text-zinc-500 transition-colors hover:text-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        <ArrowUp className="size-4" />
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="아래로 이동"
+                        onClick={() => handleMoveItem(item.key, 1)}
+                        disabled={isBusy || !canMoveDown}
+                        className="rounded p-1 text-zinc-500 transition-colors hover:text-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
+                      >
+                        <ArrowDown className="size-4" />
+                      </button>
+                    </div>
                     <button
                       type="button"
                       onClick={() => handleToggleItem(item.key)}
                       className="flex min-w-0 flex-1 items-center justify-between gap-3 text-left"
                     >
                       <div className="min-w-0">
-                        <Typo.Body size="medium" className="truncate font-semibold text-zinc-800">
-                          {index + 1}. {itemTitle}
-                        </Typo.Body>
+                        <div className="flex items-center gap-2">
+                          <Typo.Body size="medium" className="truncate font-semibold text-zinc-800">
+                            {index + 1}. {itemTitle}
+                          </Typo.Body>
+                          {index === 0 ? (
+                            <span className="shrink-0 rounded-full bg-zinc-200 px-2 py-0.5 text-xs font-medium text-zinc-700">
+                              시작 액션
+                            </span>
+                          ) : null}
+                        </div>
                         <Typo.Body size="small" className="mt-1 text-zinc-500">
                           {ACTION_TYPE_LABELS[itemType]}
                         </Typo.Body>

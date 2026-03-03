@@ -71,6 +71,13 @@ interface SectionSaveSummary {
   firstErrorMessage: string | null;
 }
 
+interface DraftPersistResult {
+  localDraftSaved: boolean;
+  localDraftErrorMessage: string | null;
+  serverDraftSaved: boolean;
+  serverDraftErrorMessage: string | null;
+}
+
 function createEmptySummary(): SectionSaveSummary {
   return {
     savedCount: 0,
@@ -85,17 +92,20 @@ function createEmptySummary(): SectionSaveSummary {
 
 function buildManualSaveToastMessage(params: {
   savedCount: number;
-  skippedCount: number;
+  effectiveSkipCount: number;
   failedCount: number;
+  hasDraftPersistFailure: boolean;
 }) {
-  const { savedCount, skippedCount, failedCount } = params;
-  const primaryLine = `저장 ${savedCount} / 스킵 ${skippedCount}`;
-
-  if (failedCount <= 0) {
-    return primaryLine;
+  const { savedCount, effectiveSkipCount, failedCount, hasDraftPersistFailure } = params;
+  const lines = [`저장 ${savedCount} / 스킵 ${effectiveSkipCount}`];
+  if (failedCount > 0) {
+    lines.push(`실패 ${failedCount}`);
+  }
+  if (hasDraftPersistFailure) {
+    lines.push("임시저장 실패");
   }
 
-  return `${primaryLine}\n실패 ${failedCount}`;
+  return lines.join("\n");
 }
 
 function MissionIntroPreview({ missionId }: { missionId: string }) {
@@ -311,13 +321,25 @@ export function EditorMissionTabContent({
       const serializedLocalPayload = JSON.stringify(localPayload);
       localDraftAutosaveRef.current.lastSerializedPayload = serializedLocalPayload;
       localDraftAutosaveRef.current.lastPersistedAt = Date.now();
-      saveMissionEditorDraftToLocalStorage(missionId, localPayload);
+      const localDraftSaved = saveMissionEditorDraftToLocalStorage(missionId, localPayload);
 
+      let serverDraftSaved = false;
+      let serverDraftErrorMessage: string | null = null;
       try {
         await saveMissionEditorDraft(missionId, serverPayload);
+        serverDraftSaved = true;
       } catch (error) {
         console.error("saveMissionEditorDraft error:", error);
+        serverDraftErrorMessage =
+          error instanceof Error ? error.message : "서버 임시저장에 실패했습니다.";
       }
+
+      return {
+        localDraftSaved,
+        localDraftErrorMessage: localDraftSaved ? null : "로컬 임시저장에 실패했습니다.",
+        serverDraftSaved,
+        serverDraftErrorMessage,
+      } satisfies DraftPersistResult;
     },
     [missionId],
   );
@@ -617,7 +639,7 @@ export function EditorMissionTabContent({
 
       const localDraftPayload = collectLocalDraftPayload();
       const serverDraftPayload = collectServerDraftPayload(localDraftPayload);
-      await persistDraftPayload(localDraftPayload, serverDraftPayload);
+      const draftPersist = await persistDraftPayload(localDraftPayload, serverDraftPayload);
 
       const hasPendingChangesNow = hasAnyPendingChanges || hasPendingChangesFromRefs();
       if (!hasPendingChangesNow) {
@@ -650,23 +672,33 @@ export function EditorMissionTabContent({
         }
 
         if (mode === "manual") {
-          const skippedCount = summary.skippedCount + summary.invalidCount;
-          const processedCount = summary.savedCount + skippedCount + summary.failedCount;
+          const rawUnsavedCount = summary.skippedCount + summary.invalidCount;
+          const effectiveSkipCount = draftPersist.serverDraftSaved ? rawUnsavedCount : 0;
+          const processedCount =
+            summary.savedCount +
+            rawUnsavedCount +
+            summary.failedCount +
+            (draftPersist.serverDraftSaved ? 0 : 1);
 
           if (processedCount > 0) {
             const message = buildManualSaveToastMessage({
               savedCount: summary.savedCount,
-              skippedCount,
+              effectiveSkipCount,
               failedCount: summary.failedCount,
+              hasDraftPersistFailure: !draftPersist.serverDraftSaved,
             });
-            if (summary.failedCount > 0) {
+            if (summary.failedCount > 0 || !draftPersist.serverDraftSaved) {
               toast({
                 message,
                 icon: AlertCircle,
                 iconClassName: "text-red-500",
                 id: UNIFIED_SAVE_TOAST_ID,
               });
-              return "failed" as const;
+              if (summary.failedCount > 0) {
+                return "failed" as const;
+              }
+
+              return summary.savedCount > 0 ? ("saved" as const) : ("no_changes" as const);
             }
 
             if (showSavedToast) {

@@ -12,7 +12,7 @@ export function saveMissionEditorDraftToLocalStorage(
   payload: LocalEditorDraftPayload,
 ) {
   if (typeof window === "undefined") {
-    return;
+    return false;
   }
 
   try {
@@ -20,8 +20,10 @@ export function saveMissionEditorDraftToLocalStorage(
       getMissionEditorDraftStorageKey(missionId),
       JSON.stringify(payload),
     );
+    return true;
   } catch (error) {
     console.error("Failed to save mission draft to localStorage:", error);
+    return false;
   }
 }
 

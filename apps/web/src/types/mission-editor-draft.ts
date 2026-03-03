@@ -35,6 +35,7 @@ function sanitizeActionSnapshotForServer(value: unknown): unknown | null {
 
   return {
     draftItems: Array.isArray(value.draftItems) ? value.draftItems : [],
+    itemOrderKeys: Array.isArray(value.itemOrderKeys) ? value.itemOrderKeys : [],
     actionTypeByItemKey: isRecord(value.actionTypeByItemKey) ? value.actionTypeByItemKey : {},
     formSnapshotByItemKey: isRecord(value.formSnapshotByItemKey) ? value.formSnapshotByItemKey : {},
   };
