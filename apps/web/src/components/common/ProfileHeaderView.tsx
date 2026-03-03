@@ -5,29 +5,27 @@ import { ROUTES } from "@/constants/routes";
 import PolliaIcon from "@public/svgs/pollia-icon.svg";
 import PolliaWordmark from "@public/svgs/pollia-wordmark.svg";
 import { cn } from "@repo/ui/lib";
-import { ChevronLeftIcon } from "lucide-react";
+import { ChevronLeftIcon, SearchIcon } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
 export interface ProfileHeaderViewProps {
   showBack?: boolean;
   fallbackRight?: ReactNode;
-  searchInput?: ReactNode;
-  searchDropdown?: ReactNode;
   user?: { name: string } | null;
   profileImageUrl?: string | null;
   onBack?: () => void;
+  onSearchClick?: () => void;
   onProfileClick?: () => void;
 }
 
 export function ProfileHeaderView({
   showBack = false,
   fallbackRight,
-  searchInput,
-  searchDropdown,
   user,
   profileImageUrl,
   onBack,
+  onSearchClick,
   onProfileClick,
 }: ProfileHeaderViewProps) {
   return (
@@ -47,15 +45,26 @@ export function ProfileHeaderView({
           <PolliaWordmark className="h-[22px] text-black" />
         </Link>
       )}
-      {searchInput && <div className="mx-3 min-w-0 flex-1">{searchInput}</div>}
-      {user ? (
-        <button onClick={onProfileClick} type="button" className="shrink-0">
-          <UserAvatar size="medium" imageUrl={profileImageUrl} />
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={onSearchClick}
+          className="flex shrink-0 items-center justify-center"
+        >
+          <SearchIcon className="size-6" />
         </button>
-      ) : (
-        <div className="shrink-0">{fallbackRight}</div>
-      )}
-      {searchDropdown}
+        {user ? (
+          <button
+            onClick={onProfileClick}
+            type="button"
+            className="flex shrink-0 items-center justify-center"
+          >
+            <UserAvatar size="medium" imageUrl={profileImageUrl} />
+          </button>
+        ) : (
+          <div className="shrink-0">{fallbackRight}</div>
+        )}
+      </div>
     </header>
   );
 }
