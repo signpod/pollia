@@ -37,9 +37,9 @@ const PREV_STEP: Partial<Record<CreateMissionStep, Exclude<CreateMissionStep, "s
   "project-info": "mode",
 };
 
-export function useCreateMissionFunnel({ form }: UseCreateMissionFunnelParams) {
+export function useCreateMissionFunnel({ form, initialStep }: UseCreateMissionFunnelParams) {
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState<CreateMissionStep>("category");
+  const [currentStep, setCurrentStep] = useState<CreateMissionStep>(initialStep ?? "category");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<CreateMissionSuccessResult | null>(null);
   const category = useWatch({ control: form.control, name: "category" });
@@ -210,15 +210,23 @@ export function useCreateMissionFunnel({ form }: UseCreateMissionFunnelParams) {
   }, [form]);
 
   const progress = useMemo(() => {
-    const stepIndex = CREATE_MISSION_PROGRESS_STEPS.indexOf(
-      currentStep as Exclude<CreateMissionStep, "success">,
-    );
+    const steps = initialStep
+      ? CREATE_MISSION_PROGRESS_STEPS.filter(
+          s =>
+            CREATE_MISSION_PROGRESS_STEPS.indexOf(s) >=
+            CREATE_MISSION_PROGRESS_STEPS.indexOf(
+              initialStep as Exclude<CreateMissionStep, "success">,
+            ),
+        )
+      : CREATE_MISSION_PROGRESS_STEPS;
+
+    const stepIndex = steps.indexOf(currentStep as Exclude<CreateMissionStep, "success">);
 
     return {
-      current: stepIndex >= 0 ? stepIndex + 1 : CREATE_MISSION_PROGRESS_STEPS.length,
-      total: CREATE_MISSION_PROGRESS_STEPS.length,
+      current: stepIndex >= 0 ? stepIndex + 1 : steps.length,
+      total: steps.length,
     };
-  }, [currentStep]);
+  }, [currentStep, initialStep]);
 
   const screenTitle = useMemo(() => {
     if (currentStep === "success") return `${UBIQUITOUS_CONSTANTS.MISSION} 생성 완료`;

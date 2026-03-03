@@ -10,6 +10,7 @@ export interface CreateMissionSuccessResult {
 
 export interface UseCreateMissionFunnelParams {
   form: UseFormReturn<CreateMissionFormData>;
+  initialStep?: CreateMissionStep;
 }
 
 export const CREATE_MISSION_PROGRESS_STEPS: Exclude<CreateMissionStep, "success">[] = [
