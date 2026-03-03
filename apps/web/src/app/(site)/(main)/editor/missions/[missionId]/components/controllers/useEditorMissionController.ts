@@ -31,6 +31,13 @@ import {
   type PublishAvailability,
   computePublishAvailability,
 } from "../models/editorMissionPublishModel";
+import {
+  type EditorSectionKey,
+  type SectionSaveSummary,
+  accumulateSectionSaveResult,
+  computeManualSaveDisplayCounts,
+  createEmptySectionSaveSummary,
+} from "./editorMissionSaveSummaryModel";
 
 const UNIFIED_SAVE_TOAST_ID = "editor-mission-save-result";
 const PUBLISH_TOAST_ID = "editor-mission-publish-result";
@@ -39,18 +46,6 @@ const SERVER_DRAFT_AUTOSAVE_INTERVAL_MS = 20_000;
 const LOCAL_DRAFT_AUTOSAVE_THROTTLE_MS = 700;
 const LOCAL_DRAFT_AUTOSAVE_MAX_WAIT_MS = 1500;
 const WORKING_SET_VERSION_THROTTLE_MS = 120;
-
-type EditorSectionKey = "basic" | "reward" | "action" | "completion";
-
-interface SectionSaveSummary {
-  savedCount: number;
-  skippedCount: number;
-  failedCount: number;
-  invalidCount: number;
-  failedSections: EditorSectionKey[];
-  invalidSections: EditorSectionKey[];
-  firstErrorMessage: string | null;
-}
 
 interface DraftClearResult {
   localDraftCleared: boolean;
@@ -121,18 +116,6 @@ export interface UseEditorMissionControllerResult {
   actions: {
     onSave: () => Promise<void>;
     onPublish: () => Promise<void>;
-  };
-}
-
-function createEmptySummary(): SectionSaveSummary {
-  return {
-    savedCount: 0,
-    skippedCount: 0,
-    failedCount: 0,
-    invalidCount: 0,
-    failedSections: [],
-    invalidSections: [],
-    firstErrorMessage: null,
   };
 }
 
@@ -755,7 +738,7 @@ export function useEditorMissionController({
         { key: "completion", label: "결과 화면", ref: completionRef },
       ];
 
-      const summary: SectionSaveSummary = createEmptySummary();
+      let summary: SectionSaveSummary = createEmptySectionSaveSummary();
 
       for (const section of sections) {
         const handle = section.ref.current;
@@ -769,36 +752,7 @@ export function useEditorMissionController({
           showValidationUi,
         });
 
-        if (result.status === "saved") {
-          summary.savedCount += result.savedCount ?? 1;
-        } else {
-          summary.savedCount += result.savedCount ?? 0;
-        }
-        summary.skippedCount += result.skippedCount ?? 0;
-        summary.failedCount += result.failedCount ?? (result.status === "failed" ? 1 : 0);
-        summary.invalidCount += result.invalidCount ?? (result.status === "invalid" ? 1 : 0);
-
-        if (result.status === "invalid" && result.invalidCount === undefined) {
-          summary.skippedCount += 1;
-        }
-
-        if (
-          result.status === "invalid" ||
-          result.invalidCount !== undefined ||
-          (result.invalidCount ?? 0) > 0
-        ) {
-          summary.invalidSections.push(section.key);
-          summary.firstErrorMessage ??= result.message ?? `${section.label} 입력값을 확인해주세요.`;
-        }
-
-        if (
-          result.status === "failed" ||
-          result.failedCount !== undefined ||
-          (result.failedCount ?? 0) > 0
-        ) {
-          summary.failedSections.push(section.key);
-          summary.firstErrorMessage ??= result.message ?? `${section.label} 저장에 실패했습니다.`;
-        }
+        summary = accumulateSectionSaveResult(summary, section, result);
 
         if (
           stopOnError &&
@@ -903,8 +857,7 @@ export function useEditorMissionController({
         }
 
         if (mode === "manual") {
-          const skippedCount = summary.skippedCount + summary.invalidCount;
-          const processedCount = summary.savedCount + skippedCount + summary.failedCount;
+          const { skippedCount, processedCount } = computeManualSaveDisplayCounts(summary);
 
           if (processedCount > 0) {
             const message = buildManualSaveToastMessage({
