@@ -313,11 +313,14 @@ export function TiptapEditor({
 
   return (
     <div
-      className={cn("tiptap-editor overflow-hidden rounded-md border-0 bg-background", className)}
+      className={cn(
+        "tiptap-editor flex h-full flex-col overflow-hidden rounded-md border-0 bg-background",
+        className,
+      )}
     >
       {showToolbar && editable && editor && <TiptapToolbar editor={editor} />}
       <div
-        className={cn("min-h-[120px] p-4", !editable && "p-0")}
+        className={cn("flex-1 p-4", !editable && "p-0")}
         onClick={handleContentClick}
         onKeyDown={handleContentKeyDown}
       >
