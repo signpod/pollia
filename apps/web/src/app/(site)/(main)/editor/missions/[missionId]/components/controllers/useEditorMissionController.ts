@@ -111,6 +111,7 @@ export interface UseEditorMissionControllerResult {
   viewState: {
     isPublished: boolean;
     canPublish: boolean;
+    canSave: boolean;
     isSavingAll: boolean;
     isPublishing: boolean;
     hasAnyBusySection: boolean;
@@ -345,6 +346,7 @@ export function useEditorMissionController({
       missionEntryActionId,
     ],
   );
+  const canSave = publishState.isValidationDataReady && publishState.issues.length === 0;
 
   const collectLocalDraftPayload = useCallback((): LocalEditorDraftPayload => {
     return {
@@ -1088,8 +1090,28 @@ export function useEditorMissionController({
   ]);
 
   const handleSave = useCallback(async () => {
-    await runUnifiedSave();
-  }, [runUnifiedSave]);
+    if (!canSave) {
+      const isCheckingSaveState =
+        !publishState.isValidationDataReady || publishState.issues.length === 0;
+      toast({
+        message: isCheckingSaveState
+          ? "저장 가능 상태를 확인 중입니다. 잠시 후 다시 시도해주세요."
+          : (publishState.blockingMessage ?? "저장 가능한 상태인지 확인할 수 없습니다."),
+        icon: AlertCircle,
+        iconClassName: "text-red-500",
+        id: UNIFIED_SAVE_TOAST_ID,
+      });
+      return;
+    }
+
+    await runUnifiedSave({ mode: "publish" });
+  }, [
+    canSave,
+    publishState.blockingMessage,
+    publishState.isValidationDataReady,
+    publishState.issues.length,
+    runUnifiedSave,
+  ]);
 
   const onBasicStateChange = useCallback(
     (state: SectionSaveState) => {
@@ -1146,6 +1168,7 @@ export function useEditorMissionController({
     viewState: {
       isPublished,
       canPublish: publishState.canPublish,
+      canSave,
       isSavingAll,
       isPublishing,
       hasAnyBusySection,

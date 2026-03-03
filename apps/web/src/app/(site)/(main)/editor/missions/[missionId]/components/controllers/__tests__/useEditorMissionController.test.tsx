@@ -7,7 +7,7 @@ import type { GetMissionResponse } from "@/types/dto";
 import { toast } from "@repo/ui/components";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { AlertCircle } from "lucide-react";
-import type { SectionSaveHandle } from "../../editor-save.types";
+import type { SectionSaveHandle, SectionSaveOptions } from "../../editor-save.types";
 import { useEditorMissionController } from "../useEditorMissionController";
 
 jest.mock("@/actions/mission/update", () => ({
@@ -57,6 +57,22 @@ function createSectionHandle(snapshot: unknown): SectionSaveHandle {
 function createPendingSectionHandle(snapshot: unknown): SectionSaveHandle {
   return {
     save: async () => ({ status: "saved", savedCount: 1 }),
+    hasPendingChanges: () => true,
+    isBusy: () => false,
+    exportDraftSnapshot: () => snapshot,
+    importDraftSnapshot: () => undefined,
+  };
+}
+
+function createPendingSectionHandleWithSpy(
+  snapshot: unknown,
+  saveSpy: jest.Mock<void, [SectionSaveOptions | undefined]>,
+): SectionSaveHandle {
+  return {
+    save: async (options?: SectionSaveOptions) => {
+      saveSpy(options);
+      return { status: "saved", savedCount: 1 };
+    },
     hasPendingChanges: () => true,
     isBusy: () => false,
     exportDraftSnapshot: () => snapshot,
@@ -120,6 +136,7 @@ describe("useEditorMissionController", () => {
     );
 
     expect(result.current.viewState.canPublish).toBe(true);
+    expect(result.current.viewState.canSave).toBe(true);
     expect(result.current.publishState.isValidationDataReady).toBe(true);
   });
 
@@ -143,7 +160,62 @@ describe("useEditorMissionController", () => {
     );
 
     expect(result.current.viewState.canPublish).toBe(false);
+    expect(result.current.viewState.canSave).toBe(false);
     expect(result.current.publishState.isValidationDataReady).toBe(false);
+  });
+
+  it("발행 상태여도 플로우가 유효하면 canSave는 true이고 canPublish는 false다", () => {
+    const mission = createMission({ isActive: true });
+
+    const { result } = renderHook(() =>
+      useEditorMissionController({
+        missionId: mission.id,
+        mission,
+        currentTab: "preview",
+        missionQueryData: mission,
+        actionsQueryData: [
+          {
+            id: "action-1",
+            type: "SUBJECTIVE",
+            title: "질문 1",
+            nextActionId: null,
+            nextCompletionId: "completion-1",
+            options: [],
+          },
+        ],
+        completionsQueryData: [{ id: "completion-1", title: "완료" }],
+        isActionsLoading: false,
+        isCompletionsLoading: false,
+        refetchMission: async () => ({ data: { data: mission } }),
+        refetchActions: async () => ({ data: { data: [] } }),
+        refetchCompletions: async () => ({ data: { data: [] } }),
+      }),
+    );
+
+    expect(result.current.viewState.canPublish).toBe(false);
+    expect(result.current.viewState.canSave).toBe(true);
+  });
+
+  it("발행 상태에서 플로우가 유효하지 않으면 canSave가 false다", () => {
+    const mission = createMission({ isActive: true, entryActionId: null });
+
+    const { result } = renderHook(() =>
+      useEditorMissionController({
+        missionId: mission.id,
+        mission,
+        currentTab: "preview",
+        missionQueryData: mission,
+        actionsQueryData: [],
+        completionsQueryData: [],
+        isActionsLoading: false,
+        isCompletionsLoading: false,
+        refetchMission: async () => ({ data: { data: mission } }),
+        refetchActions: async () => ({ data: { data: [] } }),
+        refetchCompletions: async () => ({ data: { data: [] } }),
+      }),
+    );
+
+    expect(result.current.viewState.canSave).toBe(false);
   });
 
   it("entryActionId가 비어도 ref snapshot 준비 후 canPublish가 갱신된다", async () => {
@@ -413,8 +485,60 @@ describe("useEditorMissionController", () => {
     );
   });
 
-  it("수동 저장은 draft payload 저장 없이 실제 섹션 저장 결과만 반영한다", async () => {
+  it("저장하기는 publish trigger로 저장하고 draft payload 저장 없이 실제 섹션 저장 결과만 반영한다", async () => {
     const mission = createMission({ isActive: true });
+    const saveOptionsSpy = jest.fn<void, [SectionSaveOptions | undefined]>();
+
+    const { result } = renderHook(() =>
+      useEditorMissionController({
+        missionId: mission.id,
+        mission,
+        currentTab: "editor",
+        missionQueryData: mission,
+        actionsQueryData: [
+          {
+            id: "action-1",
+            type: "SUBJECTIVE",
+            title: "질문 1",
+            nextActionId: null,
+            nextCompletionId: "completion-1",
+            options: [],
+          },
+        ],
+        completionsQueryData: [{ id: "completion-1", title: "완료" }],
+        isActionsLoading: false,
+        isCompletionsLoading: false,
+        refetchMission: async () => ({ data: { data: mission } }),
+        refetchActions: async () => ({ data: { data: [] } }),
+        refetchCompletions: async () => ({ data: { data: [] } }),
+      }),
+    );
+
+    act(() => {
+      result.current.refs.basicInfoRef.current = createPendingSectionHandleWithSpy(
+        { title: "기본정보" },
+        saveOptionsSpy,
+      );
+      result.current.refs.rewardRef.current = createSectionHandle(null);
+      result.current.refs.actionRef.current = createSectionHandle(null);
+      result.current.refs.completionRef.current = createSectionHandle(null);
+    });
+
+    await act(async () => {
+      await result.current.actions.onSave();
+    });
+
+    const payloadCalls = mockedSaveMissionEditorDraft.mock.calls.filter(([, payload]) => payload);
+    expect(payloadCalls).toHaveLength(0);
+    expect(mockedSaveMissionEditorDraft).toHaveBeenCalledWith(mission.id, null);
+    expect(saveOptionsSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ trigger: "publish", showValidationUi: true }),
+    );
+  });
+
+  it("canSave가 false면 저장을 차단하고 안내 토스트를 노출한다", async () => {
+    const mission = createMission({ isActive: true, entryActionId: null });
+    const saveOptionsSpy = jest.fn<void, [SectionSaveOptions | undefined]>();
 
     const { result } = renderHook(() =>
       useEditorMissionController({
@@ -433,7 +557,10 @@ describe("useEditorMissionController", () => {
     );
 
     act(() => {
-      result.current.refs.basicInfoRef.current = createPendingSectionHandle({ title: "기본정보" });
+      result.current.refs.basicInfoRef.current = createPendingSectionHandleWithSpy(
+        { title: "기본정보" },
+        saveOptionsSpy,
+      );
       result.current.refs.rewardRef.current = createSectionHandle(null);
       result.current.refs.actionRef.current = createSectionHandle(null);
       result.current.refs.completionRef.current = createSectionHandle(null);
@@ -443,8 +570,14 @@ describe("useEditorMissionController", () => {
       await result.current.actions.onSave();
     });
 
-    const payloadCalls = mockedSaveMissionEditorDraft.mock.calls.filter(([, payload]) => payload);
-    expect(payloadCalls).toHaveLength(0);
-    expect(mockedSaveMissionEditorDraft).toHaveBeenCalledWith(mission.id, null);
+    expect(saveOptionsSpy).not.toHaveBeenCalled();
+    expect(mockedSaveMissionEditorDraft).not.toHaveBeenCalled();
+    expect(mockedToast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "editor-mission-save-result",
+        icon: AlertCircle,
+        iconClassName: "text-red-500",
+      }),
+    );
   });
 });

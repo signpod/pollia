@@ -22,6 +22,7 @@ describe("EditorMissionActionBar", () => {
         isPublishing={false}
         hasAnyBusySection={false}
         hasAnyPendingChanges={true}
+        canSave={true}
         canPublish={true}
         onSave={() => {}}
         onPublish={() => {}}
@@ -40,6 +41,7 @@ describe("EditorMissionActionBar", () => {
         isPublishing={false}
         hasAnyBusySection={false}
         hasAnyPendingChanges={true}
+        canSave={true}
         canPublish={true}
         onSave={() => {}}
         onPublish={() => {}}
@@ -58,6 +60,7 @@ describe("EditorMissionActionBar", () => {
         isPublishing={false}
         hasAnyBusySection={false}
         hasAnyPendingChanges={false}
+        canSave={false}
         canPublish={false}
         onSave={() => {}}
         onPublish={() => {}}
@@ -65,5 +68,23 @@ describe("EditorMissionActionBar", () => {
     );
 
     expect(screen.getByRole("button", { name: "발행하기" }).hasAttribute("disabled")).toBe(true);
+  });
+
+  it("발행 상태에서 canSave가 false면 저장하기 버튼이 비활성화된다", () => {
+    render(
+      <EditorMissionActionBar
+        isPublished
+        isSavingAll={false}
+        isPublishing={false}
+        hasAnyBusySection={false}
+        hasAnyPendingChanges={true}
+        canSave={false}
+        canPublish={true}
+        onSave={() => {}}
+        onPublish={() => {}}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "저장하기" }).hasAttribute("disabled")).toBe(true);
   });
 });

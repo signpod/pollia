@@ -9,6 +9,7 @@ export interface EditorMissionActionBarProps {
   isPublishing: boolean;
   hasAnyBusySection: boolean;
   hasAnyPendingChanges: boolean;
+  canSave: boolean;
   canPublish: boolean;
   onSave: () => void;
   onPublish: () => void;
@@ -20,6 +21,7 @@ export function EditorMissionActionBar({
   isPublishing,
   hasAnyBusySection,
   hasAnyPendingChanges,
+  canSave,
   canPublish,
   onSave,
   onPublish,
@@ -34,7 +36,9 @@ export function EditorMissionActionBar({
           leftIcon={<Save className="size-4" />}
           onClick={onSave}
           loading={isSavingAll}
-          disabled={isSavingAll || isPublishing || hasAnyBusySection || !hasAnyPendingChanges}
+          disabled={
+            isSavingAll || isPublishing || hasAnyBusySection || !hasAnyPendingChanges || !canSave
+          }
         >
           저장하기
         </Button>
