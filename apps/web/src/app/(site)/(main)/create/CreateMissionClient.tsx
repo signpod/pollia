@@ -2,10 +2,12 @@
 
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { MissionCategory } from "@prisma/client";
 import { Button, Typo } from "@repo/ui/components";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { CreateCategoryStep } from "./components/CreateCategoryStep";
 import { CreateModeStep } from "./components/CreateModeStep";
@@ -55,13 +57,30 @@ const STEP_TRANSITION_VARIANTS = {
   }),
 };
 
+const VALID_CATEGORIES = new Set<string>([MissionCategory.RESEARCH, MissionCategory.TEST]);
+
 export function CreateMissionClient() {
+  const searchParams = useSearchParams();
+
+  const preselectedCategory = useMemo(() => {
+    const param = searchParams.get("category");
+    if (param && VALID_CATEGORIES.has(param)) return param as MissionCategory;
+    return null;
+  }, [searchParams]);
+
   const form = useForm<CreateMissionFormData>({
     resolver: zodResolver(createMissionFormSchema),
-    defaultValues: CREATE_FORM_DEFAULT_VALUES,
+    defaultValues: {
+      ...CREATE_FORM_DEFAULT_VALUES,
+      ...(preselectedCategory && { category: preselectedCategory }),
+    },
   });
 
-  const controller = useCreateMissionFunnel({ form });
+  const controller = useCreateMissionFunnel({
+    form,
+    initialStep: preselectedCategory ? "mode" : "category",
+  });
+
   const prevStepRef = useRef<CreateMissionStep>(controller.currentStep);
   const lastDirectionRef = useRef<1 | -1>(1);
 
@@ -104,7 +123,9 @@ export function CreateMissionClient() {
     }
   };
 
-  const showBackButton = controller.currentStep !== "category";
+  const showBackButton = preselectedCategory
+    ? controller.currentStep !== "mode"
+    : controller.currentStep !== "category";
   const showNextButton =
     controller.currentStep !== "category" &&
     controller.currentStep !== "mode" &&
