@@ -118,6 +118,97 @@ interface ActionFormProps {
   onValidationStateChange?: (issueCount: number) => void;
 }
 
+type NextLinkType = "action" | "completion";
+
+interface NextLinkSelectorProps {
+  itemLabel: string;
+  linkType: NextLinkType;
+  actionValue: string | null;
+  completionValue: string | null;
+  selectableActions: Array<Pick<ActionDetail, "id" | "title" | "order">>;
+  completionOptions: Array<{ id: string; title: string }>;
+  onLinkTypeChange: (type: NextLinkType) => void;
+  onActionChange: (value: string) => void;
+  onCompletionChange: (value: string) => void;
+  errorMessage?: string;
+}
+
+function NextLinkSelector({
+  itemLabel,
+  linkType,
+  actionValue,
+  completionValue,
+  selectableActions,
+  completionOptions,
+  onLinkTypeChange,
+  onActionChange,
+  onCompletionChange,
+  errorMessage,
+}: NextLinkSelectorProps) {
+  return (
+    <>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => onLinkTypeChange("action")}
+          className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-colors ${
+            linkType === "action"
+              ? "border-violet-400 bg-violet-500 text-white"
+              : "border-zinc-200 bg-white text-zinc-600"
+          }`}
+        >
+          {`다음 ${itemLabel}`}
+        </button>
+        <button
+          type="button"
+          onClick={() => onLinkTypeChange("completion")}
+          className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-colors ${
+            linkType === "completion"
+              ? "border-violet-400 bg-violet-500 text-white"
+              : "border-zinc-200 bg-white text-zinc-600"
+          }`}
+        >
+          완료 화면
+        </button>
+      </div>
+
+      {linkType === "action" ? (
+        <Select value={actionValue ?? ""} onValueChange={onActionChange}>
+          <SelectTrigger>
+            <SelectValue placeholder={`다음 이동할 ${itemLabel}을 선택하세요`} />
+          </SelectTrigger>
+          <SelectContent>
+            {selectableActions.map(a => (
+              <SelectItem key={a.id} value={a.id}>
+                #{(a.order ?? 0) + 1} {a.title}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      ) : (
+        <Select value={completionValue ?? ""} onValueChange={onCompletionChange}>
+          <SelectTrigger>
+            <SelectValue placeholder="완료 화면을 선택하세요" />
+          </SelectTrigger>
+          <SelectContent>
+            {completionOptions.map(c => (
+              <SelectItem key={c.id} value={c.id}>
+                {c.title}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+
+      {errorMessage && (
+        <Typo.Body size="small" className="text-red-500">
+          {errorMessage}
+        </Typo.Body>
+      )}
+    </>
+  );
+}
+
 const NEEDS_OPTIONS: ActionType[] = [
   ActionType.MULTIPLE_CHOICE,
   ActionType.SCALE,
@@ -162,47 +253,6 @@ function getOptionLimits(type: ActionType): { min: number; max: number } {
     default:
       return { min: 0, max: 0 };
   }
-}
-
-const BRANCH_ACTION_PREFIX = "action:";
-const BRANCH_COMPLETION_PREFIX = "completion:";
-
-function getBranchTargetValue(option: OptionFormItem): string {
-  if (option.nextActionId) {
-    return `${BRANCH_ACTION_PREFIX}${option.nextActionId}`;
-  }
-  if (option.nextCompletionId) {
-    return `${BRANCH_COMPLETION_PREFIX}${option.nextCompletionId}`;
-  }
-  return "";
-}
-
-function parseBranchTargetValue(value: string): {
-  nextActionId: string | null;
-  nextCompletionId: string | null;
-} {
-  if (!value) {
-    return { nextActionId: null, nextCompletionId: null };
-  }
-
-  if (value.startsWith(BRANCH_COMPLETION_PREFIX)) {
-    return {
-      nextActionId: null,
-      nextCompletionId: value.slice(BRANCH_COMPLETION_PREFIX.length) || null,
-    };
-  }
-
-  if (value.startsWith(BRANCH_ACTION_PREFIX)) {
-    return {
-      nextActionId: value.slice(BRANCH_ACTION_PREFIX.length) || null,
-      nextCompletionId: null,
-    };
-  }
-
-  return {
-    nextActionId: value || null,
-    nextCompletionId: null,
-  };
 }
 
 function areErrorMapsEqual(left: Record<string, string>, right: Record<string, string>): boolean {
@@ -329,7 +379,10 @@ function ActionFormComponent(
   const [nextCompletionId, setNextCompletionId] = useState<string | null>(
     normalizedInitialNextCompletionId,
   );
-  const [nextLinkType, setNextLinkType] = useState<"action" | "completion">(initialNextLinkType);
+  const [nextLinkType, setNextLinkType] = useState<NextLinkType>(initialNextLinkType);
+  const [branchOptionLinkTypeByKey, setBranchOptionLinkTypeByKey] = useState<
+    Record<string, NextLinkType>
+  >({});
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [hasValidationStarted, setHasValidationStarted] = useState(false);
@@ -437,6 +490,32 @@ function ActionFormComponent(
     }
   }, [isBranch, options, completionIdSet]);
 
+  useEffect(() => {
+    setBranchOptionLinkTypeByKey(prev => {
+      const next: Record<string, NextLinkType> = {};
+
+      for (const option of options) {
+        next[option._key] =
+          prev[option._key] ?? (option.nextCompletionId ? "completion" : "action");
+      }
+
+      const prevKeys = Object.keys(prev);
+      const nextKeys = Object.keys(next);
+
+      if (prevKeys.length !== nextKeys.length) {
+        return next;
+      }
+
+      for (const key of nextKeys) {
+        if (prev[key] !== next[key]) {
+          return next;
+        }
+      }
+
+      return prev;
+    });
+  }, [options]);
+
   const handleActionTypeChange = (nextType: ActionType) => {
     if (nextType === selectedActionType) {
       return;
@@ -453,11 +532,12 @@ function ActionFormComponent(
     setNextActionId(null);
     setNextCompletionId(null);
     setNextLinkType("action");
+    setBranchOptionLinkTypeByKey({});
     setErrors({});
     onActionTypeChange?.(nextType);
   };
 
-  const handleNextLinkTypeChange = (type: "action" | "completion") => {
+  const handleNextLinkTypeChange = (type: NextLinkType) => {
     setNextLinkType(type);
 
     if (!enforceExclusiveNextLink) {
@@ -486,6 +566,59 @@ function ActionFormComponent(
     if (enforceExclusiveNextLink) {
       setNextActionId(null);
     }
+  };
+
+  const handleBranchOptionLinkTypeChange = (optionKey: string, type: NextLinkType) => {
+    setBranchOptionLinkTypeByKey(prev => {
+      if (prev[optionKey] === type) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        [optionKey]: type,
+      };
+    });
+
+    setOptions(prev =>
+      prev.map(option => {
+        if (option._key !== optionKey) {
+          return option;
+        }
+
+        if (type === "action") {
+          return { ...option, nextCompletionId: null };
+        }
+
+        return { ...option, nextActionId: null };
+      }),
+    );
+  };
+
+  const handleBranchOptionNextActionChange = (optionKey: string, value: string) => {
+    setBranchOptionLinkTypeByKey(prev => ({
+      ...prev,
+      [optionKey]: "action",
+    }));
+    setOptions(prev =>
+      patchOptionByKey(prev, optionKey, {
+        nextActionId: value || null,
+        nextCompletionId: null,
+      }),
+    );
+  };
+
+  const handleBranchOptionNextCompletionChange = (optionKey: string, value: string) => {
+    setBranchOptionLinkTypeByKey(prev => ({
+      ...prev,
+      [optionKey]: "completion",
+    }));
+    setOptions(prev =>
+      patchOptionByKey(prev, optionKey, {
+        nextActionId: null,
+        nextCompletionId: value || null,
+      }),
+    );
   };
 
   const buildValidationErrors = useCallback((): Record<string, string> => {
@@ -694,18 +827,23 @@ function ActionFormComponent(
       setIsRequired(nextValues.isRequired ?? true);
       setHasOther(nextValues.hasOther ?? false);
       setMaxSelections(nextValues.maxSelections ?? 1);
-      setOptions(
-        (nextValues.options ?? []).map((option, index) => ({
-          _key: generateOptionKey(),
-          id: option.id,
-          title: option.title ?? "",
-          description: option.description ?? null,
-          imageUrl: option.imageUrl ?? null,
-          fileUploadId: option.fileUploadId ?? null,
-          nextActionId: option.nextActionId ?? null,
-          nextCompletionId: option.nextCompletionId ?? null,
-          order: option.order ?? index,
-        })),
+      const nextOptions = (nextValues.options ?? []).map((option, index) => ({
+        _key: generateOptionKey(),
+        id: option.id,
+        title: option.title ?? "",
+        description: option.description ?? null,
+        imageUrl: option.imageUrl ?? null,
+        fileUploadId: option.fileUploadId ?? null,
+        nextActionId: option.nextActionId ?? null,
+        nextCompletionId: option.nextCompletionId ?? null,
+        order: option.order ?? index,
+      }));
+      setOptions(nextOptions);
+      setBranchOptionLinkTypeByKey(
+        nextOptions.reduce<Record<string, NextLinkType>>((acc, option) => {
+          acc[option._key] = option.nextCompletionId ? "completion" : "action";
+          return acc;
+        }, {}),
       );
       setNextLinkType(nextLink ?? "action");
       setNextActionId(nextValues.nextActionId ?? null);
@@ -1081,36 +1219,28 @@ function ActionFormComponent(
                 )}
 
                 {isBranch && (
-                  <div className="ml-6">
+                  <div className="ml-6 flex flex-col gap-2">
                     {hasLinkTargets ? (
-                      <Select
-                        value={getBranchTargetValue(option)}
-                        onValueChange={val => {
-                          const parsed = parseBranchTargetValue(val);
-                          setOptions(prev =>
-                            patchOptionByKey(prev, option._key, {
-                              nextActionId: parsed.nextActionId,
-                              nextCompletionId: parsed.nextCompletionId,
-                            }),
-                          );
-                        }}
-                      >
-                        <SelectTrigger className="h-9 text-sm">
-                          <SelectValue placeholder="분기 이동할 대상 선택" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {selectableActions.map(a => (
-                            <SelectItem key={a.id} value={`${BRANCH_ACTION_PREFIX}${a.id}`}>
-                              #{(a.order ?? 0) + 1} {a.title}
-                            </SelectItem>
-                          ))}
-                          {completionOptions.map(c => (
-                            <SelectItem key={c.id} value={`${BRANCH_COMPLETION_PREFIX}${c.id}`}>
-                              [완료] {c.title}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <NextLinkSelector
+                        itemLabel={itemLabel}
+                        linkType={
+                          branchOptionLinkTypeByKey[option._key] ??
+                          (option.nextCompletionId ? "completion" : "action")
+                        }
+                        actionValue={option.nextActionId ?? null}
+                        completionValue={option.nextCompletionId ?? null}
+                        selectableActions={selectableActions}
+                        completionOptions={completionOptions}
+                        onLinkTypeChange={type =>
+                          handleBranchOptionLinkTypeChange(option._key, type)
+                        }
+                        onActionChange={value =>
+                          handleBranchOptionNextActionChange(option._key, value)
+                        }
+                        onCompletionChange={value =>
+                          handleBranchOptionNextCompletionChange(option._key, value)
+                        }
+                      />
                     ) : (
                       <Typo.Body size="small" className="text-zinc-400">
                         {`다른 ${itemLabel}을 먼저 추가해주세요.`}
@@ -1156,68 +1286,22 @@ function ActionFormComponent(
             </Typo.Body>
           ) : (
             <>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleNextLinkTypeChange("action")}
-                  className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-colors ${
-                    nextLinkType === "action"
-                      ? "border-violet-400 bg-violet-500 text-white"
-                      : "border-zinc-200 bg-white text-zinc-600"
-                  }`}
-                >
-                  {`다음 ${itemLabel}`}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleNextLinkTypeChange("completion")}
-                  className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-colors ${
-                    nextLinkType === "completion"
-                      ? "border-violet-400 bg-violet-500 text-white"
-                      : "border-zinc-200 bg-white text-zinc-600"
-                  }`}
-                >
-                  완료 화면
-                </button>
-              </div>
-
-              {nextLinkType === "action" ? (
-                <Select value={nextActionId ?? ""} onValueChange={handleNextActionChange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={`다음 이동할 ${itemLabel}을 선택하세요`} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {selectableActions.map(a => (
-                      <SelectItem key={a.id} value={a.id}>
-                        #{(a.order ?? 0) + 1} {a.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <Select value={nextCompletionId ?? ""} onValueChange={handleNextCompletionChange}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="완료 화면을 선택하세요" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {completionOptions.map(c => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+              <NextLinkSelector
+                itemLabel={itemLabel}
+                linkType={nextLinkType}
+                actionValue={nextActionId}
+                completionValue={nextCompletionId}
+                selectableActions={selectableActions}
+                completionOptions={completionOptions}
+                onLinkTypeChange={handleNextLinkTypeChange}
+                onActionChange={handleNextActionChange}
+                onCompletionChange={handleNextCompletionChange}
+                errorMessage={errors.nextLink}
+              />
 
               {enforceExclusiveNextLink && (
                 <Typo.Body size="small" className="text-zinc-500">
                   {`다음 ${itemLabel}/완료 화면 중 하나만 선택할 수 있습니다.`}
-                </Typo.Body>
-              )}
-
-              {errors.nextLink && (
-                <Typo.Body size="small" className="text-red-500">
-                  {errors.nextLink}
                 </Typo.Body>
               )}
             </>
