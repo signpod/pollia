@@ -47,6 +47,31 @@ const LOCAL_DRAFT_AUTOSAVE_THROTTLE_MS = 700;
 const LOCAL_DRAFT_AUTOSAVE_MAX_WAIT_MS = 1500;
 const WORKING_SET_VERSION_THROTTLE_MS = 120;
 
+interface ResolveDraftToRestoreInput {
+  missionId: string;
+  mission: GetMissionResponse["data"];
+  missionQueryData?: GetMissionResponse["data"] | null;
+}
+
+function resolveDraftToRestore({
+  missionId,
+  mission,
+  missionQueryData,
+}: ResolveDraftToRestoreInput): EditorMissionDraftPayload | null {
+  if (mission.isActive || missionQueryData?.isActive) {
+    return null;
+  }
+
+  const latestMission = missionQueryData ?? mission;
+  const localDraft = loadMissionEditorDraftFromLocalStorage(missionId);
+  const serverDraftRaw = normalizeEditorMissionDraftPayload(
+    (latestMission as { editorDraft?: unknown }).editorDraft,
+  );
+  const serverDraft = serverDraftRaw ? toServerEditorDraftPayload(serverDraftRaw) : null;
+
+  return selectLatestEditorMissionDraft(localDraft, serverDraft);
+}
+
 interface DraftClearResult {
   localDraftCleared: boolean;
   localDraftErrorMessage: string | null;
@@ -540,13 +565,7 @@ export function useEditorMissionController({
       return;
     }
 
-    const localDraft = loadMissionEditorDraftFromLocalStorage(missionId);
-    const latestMission = missionQueryData ?? mission;
-    const serverDraftRaw = normalizeEditorMissionDraftPayload(
-      (latestMission as { editorDraft?: unknown }).editorDraft,
-    );
-    const serverDraft = serverDraftRaw ? toServerEditorDraftPayload(serverDraftRaw) : null;
-    const selectedDraft = selectLatestEditorMissionDraft(localDraft, serverDraft);
+    const selectedDraft = resolveDraftToRestore({ missionId, mission, missionQueryData });
 
     draftRestoreAppliedRef.current = true;
 
