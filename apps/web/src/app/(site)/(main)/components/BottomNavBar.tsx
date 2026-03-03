@@ -77,9 +77,9 @@ function BottomNavBarContent() {
     }
   };
 
-  const isHome = !isEditorPopupOpen && pathname === ROUTES.HOME;
-  const isCreate = !isEditorPopupOpen && pathname === ROUTES.CREATE_MISSION;
-  const isLikes = !isEditorPopupOpen && pathname === ROUTES.LIKES;
+  const isHome = pathname === ROUTES.HOME;
+  const isEditor = pathname === "/editor" || pathname.startsWith("/editor/");
+  const isLikes = pathname === ROUTES.LIKES;
 
   const comingSoonProps = (id: string) =>
     ({
@@ -121,52 +121,19 @@ function BottomNavBarContent() {
         </Typo.Body>
       </span>
 
-      <div className="relative flex flex-1 flex-col items-center" ref={popupRef}>
-        {isEditorPopupOpen && (
-          <>
-            <div className="absolute bottom-full z-50 mb-2 w-60 rounded-xl border border-zinc-100 bg-white p-2 shadow-[0px_4px_24px_0px_rgba(0,0,0,0.16)]">
-              <button
-                type="button"
-                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-zinc-50 active:bg-zinc-100"
-                onClick={() => handleCategorySelect("RESEARCH")}
-              >
-                <span className="text-lg">📋</span>
-                <Typo.Body size="medium" className="font-medium text-zinc-800">
-                  설문폼 만들기
-                </Typo.Body>
-              </button>
-              <button
-                type="button"
-                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-zinc-50 active:bg-zinc-100"
-                onClick={() => handleCategorySelect("TEST")}
-              >
-                <span className="text-lg">🧠</span>
-                <Typo.Body size="medium" className="font-medium text-zinc-800">
-                  심리 / 유형 테스트 만들기
-                </Typo.Body>
-              </button>
-            </div>
-          </>
-        )}
-        <button
-          type="button"
-          className="flex w-full flex-col items-center justify-center gap-0.5 py-2"
-          aria-label="에디터"
-          onClick={handleEditorClick}
+      <Link
+        href={ROUTES.CREATE_MISSION}
+        className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2"
+        aria-label="에디터"
+      >
+        {isEditor ? <EditorIconFill className="size-6" /> : <EditorIcon className="size-6" />}
+        <Typo.Body
+          size="small"
+          className={`text-[11px] font-bold leading-normal ${isEditor ? "text-black" : "text-zinc-400"}`}
         >
-          {isCreate || isEditorPopupOpen ? (
-            <EditorIconFill className="size-6" />
-          ) : (
-            <EditorIcon className="size-6" />
-          )}
-          <Typo.Body
-            size="small"
-            className={`text-[11px] font-bold leading-normal ${isCreate || isEditorPopupOpen ? "text-black" : "text-zinc-400"}`}
-          >
-            에디터
-          </Typo.Body>
-        </button>
-      </div>
+          에디터
+        </Typo.Body>
+      </Link>
 
       <Link
         href={ROUTES.LIKES}

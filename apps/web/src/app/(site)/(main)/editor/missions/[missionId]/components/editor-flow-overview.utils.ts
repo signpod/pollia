@@ -18,6 +18,7 @@ export interface FlowOverviewNodeData {
   title: string;
   subtitle: string;
   kind: FlowOverviewNodeKind;
+  compact: boolean;
   isUnreachable: boolean;
   isDeadEnd: boolean;
   isMissingEntry: boolean;
@@ -187,10 +188,16 @@ export function buildFlowOverviewSummary(analysis: EditorFlowAnalysisResult): Fl
   };
 }
 
-export function buildFlowOverviewElements(analysis: EditorFlowAnalysisResult): {
+export function buildFlowOverviewElements(
+  analysis: EditorFlowAnalysisResult,
+  options?: {
+    compact?: boolean;
+  },
+): {
   nodes: FlowOverviewNode[];
   edges: Edge[];
 } {
+  const compact = Boolean(options?.compact);
   const deadEndNodeIds = buildIssueNodeSet(analysis, "dead-end");
   const unreachableNodeIds = buildIssueNodeSet(analysis, "unreachable");
   const hasMissingEntry = analysis.issues.some(issue => issue.type === "missing-entry");
@@ -202,8 +209,9 @@ export function buildFlowOverviewElements(analysis: EditorFlowAnalysisResult): {
       position: { x: 0, y: 0 },
       data: {
         title: "시작",
-        subtitle: hasMissingEntry ? "시작 액션이 아직 설정되지 않았습니다" : "진입점",
+        subtitle: hasMissingEntry ? "시작 질문이 아직 설정되지 않았습니다" : "진입점",
         kind: "start" as const,
+        compact,
         isUnreachable: false,
         isDeadEnd: false,
         isMissingEntry: hasMissingEntry,
@@ -219,6 +227,7 @@ export function buildFlowOverviewElements(analysis: EditorFlowAnalysisResult): {
           title: action.title,
           subtitle: getActionTypeLabel(action.type),
           kind: (isBranchAction ? "branch-action" : "action") as FlowOverviewNodeKind,
+          compact,
           isUnreachable: unreachableNodeIds.has(action.id),
           isDeadEnd: deadEndNodeIds.has(action.id),
           isMissingEntry: false,
@@ -233,6 +242,7 @@ export function buildFlowOverviewElements(analysis: EditorFlowAnalysisResult): {
         title: completion.title,
         subtitle: "완료 화면",
         kind: "completion" as const,
+        compact,
         isUnreachable: unreachableNodeIds.has(completion.id),
         isDeadEnd: false,
         isMissingEntry: false,
