@@ -1,5 +1,6 @@
 import { getMission } from "@/actions/mission";
 import { getReward } from "@/actions/reward";
+import prisma from "@/database/utils/prisma/client";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { dehydrate } from "@tanstack/react-query";
 import { MissionClientWrapper } from "./MissionClientWrapper";
@@ -17,13 +18,24 @@ export default async function MissionPage({ params }: { params: Promise<{ missio
   const { missionId } = await params;
 
   const mission = await getMission(missionId);
-  const reward = mission.data.rewardId ? await getReward(mission.data.rewardId) : null;
+  const [reward, creator] = await Promise.all([
+    mission.data.rewardId ? getReward(mission.data.rewardId) : null,
+    prisma.user.findUnique({
+      where: { id: mission.data.creatorId },
+      select: { name: true, profileImageFileUpload: { select: { publicUrl: true } } },
+    }),
+  ]);
 
   return (
     <>
       <DevTools missionId={missionId} />
       <MissionClientWrapper dehydratedState={dehydrate(getQueryClient())}>
-        <MissionPageWrapper mission={mission.data} reward={reward?.data ?? null} />
+        <MissionPageWrapper
+          mission={mission.data}
+          reward={reward?.data ?? null}
+          creatorName={creator?.name ?? null}
+          creatorImageUrl={creator?.profileImageFileUpload?.publicUrl ?? null}
+        />
       </MissionClientWrapper>
     </>
   );
