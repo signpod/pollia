@@ -39,7 +39,7 @@ export function validateFlowGraph(nodes: Node[], edges: Edge[]): ValidationResul
     errors.push({
       type: "missing-entry",
       nodeId: "start",
-      message: "시작 액션이 설정되지 않았습니다",
+      message: "시작 질문이 설정되지 않았습니다",
     });
   }
 

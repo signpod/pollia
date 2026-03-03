@@ -1975,7 +1975,7 @@ function ActionSettingsCardComponent(
                           </Typo.Body>
                           {index === 0 ? (
                             <span className="shrink-0 rounded-full bg-zinc-200 px-2 py-0.5 text-xs font-medium text-zinc-700">
-                              시작 액션
+                              시작 질문
                             </span>
                           ) : null}
                         </div>

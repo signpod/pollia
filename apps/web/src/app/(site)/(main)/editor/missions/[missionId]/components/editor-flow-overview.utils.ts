@@ -202,7 +202,7 @@ export function buildFlowOverviewElements(analysis: EditorFlowAnalysisResult): {
       position: { x: 0, y: 0 },
       data: {
         title: "시작",
-        subtitle: hasMissingEntry ? "시작 액션이 아직 설정되지 않았습니다" : "진입점",
+        subtitle: hasMissingEntry ? "시작 질문이 아직 설정되지 않았습니다" : "진입점",
         kind: "start" as const,
         isUnreachable: false,
         isDeadEnd: false,

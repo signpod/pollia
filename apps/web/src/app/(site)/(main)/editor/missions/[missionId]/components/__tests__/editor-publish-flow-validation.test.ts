@@ -154,7 +154,7 @@ describe("editor-publish-flow-validation", () => {
         {
           id: "action-1",
           type: "SUBJECTIVE",
-          title: "시작 액션",
+          title: "시작 질문",
           nextActionId: null,
           nextCompletionId: null,
           options: [],
