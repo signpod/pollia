@@ -23,6 +23,15 @@ export interface SurveyCardData {
   isActive: boolean;
   deadline: string | null;
   startDate: string | null;
+  likesCount: number;
+  // TODO: 백엔드에 조회수(viewCount) 필드 구현 시 실제 데이터로 교체
+  viewCount: number;
+}
+
+function formatCompactNumber(value: number): string {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
+  return String(value);
 }
 
 interface SurveyCardProps {
@@ -49,15 +58,17 @@ export function SurveyCard({ survey }: SurveyCardProps) {
         <MissionLikeButton missionId={survey.id} className="absolute bottom-3 right-3" />
       </div>
 
-      <div className="mt-3 flex flex-col gap-2">
-        <div className="flex flex-col gap-1">
-          <span className="text-xs font-bold text-info">{categoryLabel}</span>
-          <p className="line-clamp-2 text-base font-bold leading-normal text-default">
+      <div className="mt-2 flex flex-col gap-1">
+        <span className="text-xs font-bold text-info">{categoryLabel}</span>
+        <div className="flex flex-col gap-0.5">
+          <p className="line-clamp-2 text-sm font-semibold leading-normal text-default">
             {survey.title}
           </p>
+          <p className="text-[11px] font-bold text-zinc-400">
+            조회 {formatCompactNumber(survey.viewCount)} · 찜{" "}
+            {formatCompactNumber(survey.likesCount)}
+          </p>
         </div>
-
-        {/* TODO: 상태 뱃지 (진행 상태, 반응 상태, 남은 기한) 데이터 연동 후 추가 */}
       </div>
     </Link>
   );

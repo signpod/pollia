@@ -1,40 +1,45 @@
 import { missionService } from "@/server/services/mission";
-import { MissionType } from "@prisma/client";
+import { MissionCategory, MissionType } from "@prisma/client";
 import { BannerSlider } from "./components/BannerSlider";
-import { MainContent } from "./components/MainContent";
-import type { SurveyCardData } from "./components/SurveyCard";
-import { ITEMS_PER_PAGE } from "./constants";
-import { calculateDaysLeft, formatDuration } from "./utils";
+import { CurationSection } from "./components/CurationSection";
+import { toSurveyCardData } from "./utils";
 
 export const dynamic = "force-dynamic";
 
 export default async function MainPage() {
-  const missions = await missionService.getAllMissions({
-    limit: ITEMS_PER_PAGE,
-    type: MissionType.GENERAL,
-  });
+  const [testMissionsRaw, researchMissionsRaw] = await Promise.all([
+    missionService.getAllMissions({
+      limit: 6,
+      type: MissionType.GENERAL,
+      category: MissionCategory.TEST,
+    }),
+    missionService.getAllMissions({
+      limit: 6,
+      type: MissionType.GENERAL,
+      category: MissionCategory.RESEARCH,
+    }),
+  ]);
 
-  const projects: SurveyCardData[] = missions.map(mission => ({
-    id: mission.id,
-    title: mission.title,
-    description: mission.description ?? "",
-    imageUrl: mission.imageUrl ?? "",
-    duration: formatDuration(mission.estimatedMinutes),
-    daysLeft: calculateDaysLeft(mission.deadline),
-    reward: null,
-    currentParticipants: 0,
-    maxParticipants: mission.maxParticipants ?? 100,
-    category: mission.category,
-    createdAt: mission.createdAt.toISOString(),
-    isActive: mission.isActive,
-    deadline: mission.deadline?.toISOString() ?? null,
-    startDate: (mission as unknown as { startDate?: Date }).startDate?.toISOString() ?? null,
-  }));
+  const testMissions = testMissionsRaw.map(toSurveyCardData);
+  const researchMissions = researchMissionsRaw.map(toSurveyCardData);
 
   return (
-    <main className="min-h-screen bg-white pb-10 flex flex-col gap-6">
+    <main className="flex min-h-screen flex-col bg-white pb-10">
       <BannerSlider />
-      <MainContent initialProjects={projects} />
+      <div className="flex flex-col gap-10 pt-10">
+        <CurationSection
+          title="인기 심리 테스트"
+          description="지금 가장 핫한 심리/유형 테스트"
+          missions={testMissions}
+          viewAllHref="/curation/TEST"
+        />
+        <CurationSection
+          title="설문 & 리서치"
+          description="참여하고 의견을 나눠보세요"
+          missions={researchMissions}
+          viewAllHref="/curation/RESEARCH"
+        />
+      </div>
     </main>
   );
 }
