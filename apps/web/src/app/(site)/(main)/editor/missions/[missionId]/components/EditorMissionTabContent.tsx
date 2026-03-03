@@ -36,6 +36,7 @@ import {
 } from "./editor-publish-flow-validation";
 import type { SectionSaveHandle, SectionSaveOptions, SectionSaveState } from "./editor-save.types";
 import {
+  getMissionEditorDraftStorageKey,
   loadMissionEditorDraftFromLocalStorage,
   saveMissionEditorDraftToLocalStorage,
 } from "./editorMissionDraftStorage";
@@ -76,6 +77,13 @@ interface DraftPersistResult {
   localDraftSaved: boolean;
   localDraftErrorMessage: string | null;
   serverDraftSaved: boolean;
+  serverDraftErrorMessage: string | null;
+}
+
+interface DraftClearResult {
+  localDraftCleared: boolean;
+  localDraftErrorMessage: string | null;
+  serverDraftCleared: boolean;
   serverDraftErrorMessage: string | null;
 }
 
@@ -348,6 +356,47 @@ export function EditorMissionTabContent({
     },
     [missionId],
   );
+
+  const clearPersistedDraft = useCallback(async (): Promise<DraftClearResult> => {
+    let serverDraftCleared = false;
+    let serverDraftErrorMessage: string | null = null;
+    try {
+      await saveMissionEditorDraft(missionId, null);
+      serverDraftCleared = true;
+    } catch (error) {
+      serverDraftErrorMessage =
+        error instanceof Error ? error.message : "서버 임시저장 정리에 실패했습니다.";
+    }
+
+    let localDraftCleared = false;
+    let localDraftErrorMessage: string | null = null;
+    if (serverDraftCleared) {
+      if (typeof window === "undefined") {
+        localDraftErrorMessage = "로컬 임시저장 정리에 실패했습니다.";
+      } else {
+        try {
+          window.localStorage.removeItem(getMissionEditorDraftStorageKey(missionId));
+          localDraftCleared = true;
+        } catch (error) {
+          localDraftErrorMessage =
+            error instanceof Error ? error.message : "로컬 임시저장 정리에 실패했습니다.";
+        }
+      }
+    }
+
+    if (serverDraftCleared && localDraftCleared) {
+      clearLocalDraftAutosaveTimers();
+      localDraftAutosaveRef.current.lastSerializedPayload = null;
+      localDraftAutosaveRef.current.lastPersistedAt = 0;
+    }
+
+    return {
+      localDraftCleared,
+      localDraftErrorMessage,
+      serverDraftCleared,
+      serverDraftErrorMessage,
+    };
+  }, [clearLocalDraftAutosaveTimers, missionId]);
 
   const flushLocalDraftAutosave = useCallback(() => {
     const timerState = localDraftAutosaveRef.current;
@@ -650,6 +699,33 @@ export function EditorMissionTabContent({
         return "failed" as const;
       }
 
+      const hasPendingChangesNow = hasAnyPendingChanges || hasPendingChangesFromRefs();
+      if (!hasPendingChangesNow) {
+        const clearResult = await clearPersistedDraft();
+        if (!clearResult.serverDraftCleared || !clearResult.localDraftCleared) {
+          console.error("Failed to clear mission editor draft:", {
+            missionId,
+            serverDraftErrorMessage: clearResult.serverDraftErrorMessage,
+            localDraftErrorMessage: clearResult.localDraftErrorMessage,
+          });
+          toast({
+            message: "저장할 변경사항이 없습니다.\n임시저장을 정리하지 못했습니다.",
+            icon: AlertCircle,
+            iconClassName: "text-red-500",
+            id: UNIFIED_SAVE_TOAST_ID,
+          });
+          return "no_changes" as const;
+        }
+
+        if (showNoChangesToast) {
+          toast({
+            message: "저장할 변경사항이 없습니다.",
+            id: UNIFIED_SAVE_TOAST_ID,
+          });
+        }
+        return "no_changes" as const;
+      }
+
       const localDraftPayload = collectLocalDraftPayload();
       const serializedLocalDraftPayload = JSON.stringify(localDraftPayload);
       const persistedAtMs = Date.now();
@@ -667,17 +743,6 @@ export function EditorMissionTabContent({
         persistedAtMs,
       );
 
-      const hasPendingChangesNow = hasAnyPendingChanges || hasPendingChangesFromRefs();
-      if (!hasPendingChangesNow) {
-        if (showNoChangesToast) {
-          toast({
-            message: "저장할 변경사항이 없습니다.",
-            id: UNIFIED_SAVE_TOAST_ID,
-          });
-        }
-        return "no_changes" as const;
-      }
-
       saveInFlightRef.current = true;
       setIsSavingAll(true);
       try {
@@ -686,6 +751,32 @@ export function EditorMissionTabContent({
           trigger: mode === "publish" ? "publish" : "manual",
           showValidationUi: true,
         });
+
+        const shouldClearDraftAfterSave =
+          summary.savedCount > 0 &&
+          summary.failedCount === 0 &&
+          summary.invalidCount === 0 &&
+          summary.skippedCount === 0;
+        const clearDraftAfterSuccessfulSave = async () => {
+          if (!shouldClearDraftAfterSave) {
+            return;
+          }
+
+          const clearResult = await clearPersistedDraft();
+          if (!clearResult.serverDraftCleared || !clearResult.localDraftCleared) {
+            console.error("Failed to clear mission editor draft:", {
+              missionId,
+              serverDraftErrorMessage: clearResult.serverDraftErrorMessage,
+              localDraftErrorMessage: clearResult.localDraftErrorMessage,
+            });
+            toast({
+              message: "저장은 완료되었지만 임시저장을 정리하지 못했습니다.",
+              icon: AlertCircle,
+              iconClassName: "text-red-500",
+              id: UNIFIED_SAVE_TOAST_ID,
+            });
+          }
+        };
 
         if (mode === "publish" && (summary.invalidCount > 0 || summary.failedCount > 0)) {
           toast({
@@ -727,6 +818,10 @@ export function EditorMissionTabContent({
               return summary.savedCount > 0 ? ("saved" as const) : ("no_changes" as const);
             }
 
+            if (summary.savedCount > 0) {
+              await clearDraftAfterSuccessfulSave();
+            }
+
             if (showSavedToast) {
               toast({
                 message,
@@ -739,6 +834,8 @@ export function EditorMissionTabContent({
         }
 
         if (summary.savedCount > 0) {
+          await clearDraftAfterSuccessfulSave();
+
           if (showSavedToast) {
             toast({
               message: "변경사항이 저장되었습니다.",
@@ -768,6 +865,8 @@ export function EditorMissionTabContent({
       hasPendingChangesFromRefs,
       isEditorTab,
       isSavingAll,
+      clearPersistedDraft,
+      missionId,
       persistDraftPayload,
       runSectionSaves,
     ],

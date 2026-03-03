@@ -6,7 +6,7 @@ import type { EditorMissionDraftPayload } from "@/types/mission-editor-draft";
 
 export async function saveMissionEditorDraft(
   missionId: string,
-  payload: EditorMissionDraftPayload,
+  payload: EditorMissionDraftPayload | null,
 ) {
   const user = await requireActiveUser();
   await missionService.saveEditorDraft(missionId, payload, user.id);

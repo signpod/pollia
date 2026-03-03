@@ -2,6 +2,7 @@ import type { ActionRepository } from "@/server/repositories/action/actionReposi
 import type { MissionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import type { MissionRepository } from "@/server/repositories/mission/missionRepository";
 import { searchSyncOutboxRepository } from "@/server/repositories/search-sync-outbox";
+import { Prisma } from "@prisma/client";
 import { MissionService } from "..";
 import { createMockMission, expectServiceErrorWithCause } from "../../testUtils";
 
@@ -158,6 +159,70 @@ describe("MissionService - Mutation", () => {
         "제목을 입력해주세요.",
         400,
       );
+    });
+  });
+
+  describe("saveEditorDraft", () => {
+    it("payload 객체를 editorDraft로 저장한다", async () => {
+      // Given
+      const mockMission = createMockMission({ id: "mission-1", creatorId: "user-1" });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockRepository.update.mockResolvedValue(mockMission);
+
+      // When
+      await missionService.saveEditorDraft(
+        "mission-1",
+        {
+          basic: {
+            title: "수정된 제목",
+          },
+        },
+        "user-1",
+      );
+
+      // Then
+      expect(mockRepository.update).toHaveBeenCalledWith(
+        "mission-1",
+        expect.objectContaining({
+          editorDraft: expect.objectContaining({
+            basic: {
+              title: "수정된 제목",
+            },
+          }),
+        }),
+      );
+    });
+
+    it("payload가 null이면 editorDraft를 null로 정리한다", async () => {
+      // Given
+      const mockMission = createMockMission({ id: "mission-1", creatorId: "user-1" });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockRepository.update.mockResolvedValue(mockMission);
+
+      // When
+      await missionService.saveEditorDraft("mission-1", null, "user-1");
+
+      // Then
+      expect(mockRepository.update).toHaveBeenCalledWith(
+        "mission-1",
+        expect.objectContaining({
+          editorDraft: Prisma.DbNull,
+        }),
+      );
+    });
+
+    it("권한이 없으면 403 에러를 던진다", async () => {
+      // Given
+      const mockMission = createMockMission({ id: "mission-1", creatorId: "user-1" });
+      mockRepository.findById.mockResolvedValue(mockMission);
+
+      // When & Then
+      await expectServiceErrorWithCause(
+        missionService.saveEditorDraft("mission-1", { basic: { title: "제목" } }, "user-2"),
+        "수정 권한이 없습니다.",
+        403,
+      );
+      expect(mockRepository.update).not.toHaveBeenCalled();
     });
   });
 

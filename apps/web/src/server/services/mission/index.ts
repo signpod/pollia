@@ -207,13 +207,23 @@ export class MissionService {
     return updatedMission;
   }
 
-  async saveEditorDraft(missionId: string, payload: EditorMissionDraftPayload, userId: string) {
+  async saveEditorDraft(
+    missionId: string,
+    payload: EditorMissionDraftPayload | null,
+    userId: string,
+  ) {
     const mission = await this.getMission(missionId);
 
     if (mission.creatorId !== userId) {
       const error = new Error("수정 권한이 없습니다.");
       error.cause = 403;
       throw error;
+    }
+
+    if (payload === null) {
+      return this.repo.update(missionId, {
+        editorDraft: Prisma.DbNull,
+      });
     }
 
     const normalizedPayload = toServerEditorDraftPayload(payload);
