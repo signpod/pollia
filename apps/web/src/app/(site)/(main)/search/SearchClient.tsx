@@ -152,17 +152,6 @@ export function SearchClient() {
 
       {hasSubmitted ? (
         <div className="flex flex-col gap-4 p-5">
-          <div className="flex items-center gap-1">
-            <Typo.ButtonText size="large" className="text-primary">
-              {submittedQuery}
-            </Typo.ButtonText>
-            {!isPending ? (
-              <Typo.Body size="medium">검색 결과 {results.length}개</Typo.Body>
-            ) : (
-              <Typo.Body size="medium">검색 결과</Typo.Body>
-            )}
-          </div>
-
           {isPending && (
             <div className="flex items-center justify-center py-16">
               <Loader2 className="size-6 animate-spin text-zinc-400" />
@@ -170,22 +159,28 @@ export function SearchClient() {
           )}
 
           {!isPending && results.length > 0 && (
-            <div className="flex flex-col gap-4">
-              {results.map((item, index) => (
-                <div key={item.id}>
-                  <SearchResultItem item={item} query={submittedQuery} />
-                  {index < results.length - 1 && <div className="mt-4 h-px bg-zinc-100" />}
-                </div>
-              ))}
-            </div>
+            <>
+              <div className="flex items-center gap-1">
+                <Typo.ButtonText size="large" className="text-primary">
+                  {submittedQuery}
+                </Typo.ButtonText>
+                <Typo.Body size="medium">검색 결과 {results.length}개</Typo.Body>
+              </div>
+              <div className="flex flex-col gap-4">
+                {results.map((item, index) => (
+                  <div key={item.id}>
+                    <SearchResultItem item={item} query={submittedQuery} />
+                    {index < results.length - 1 && <div className="mt-4 h-px bg-zinc-100" />}
+                  </div>
+                ))}
+              </div>
+            </>
           )}
 
           {!isPending && results.length === 0 && (
-            <div className="flex flex-col items-center py-16">
-              <Typo.Body size="medium" className="text-sub">
-                검색 결과가 없어요
-              </Typo.Body>
-            </div>
+            <Typo.Body size="medium" className="text-disabled">
+              해당하는 프로젝트가 없어요
+            </Typo.Body>
           )}
         </div>
       ) : (
