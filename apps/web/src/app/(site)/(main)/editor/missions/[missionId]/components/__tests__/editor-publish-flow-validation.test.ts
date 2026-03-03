@@ -186,4 +186,63 @@ describe("editor-publish-flow-validation", () => {
       validation.issues.filter(issue => issue.type === "missing-entry").length,
     );
   });
+
+  it("entryActionId가 없어도 itemOrderKeys 첫 액션을 entry로 해석한다", () => {
+    const validation = validateEditorPublishFlow({
+      entryActionId: null,
+      serverActions: [
+        {
+          id: "action-1",
+          type: "SUBJECTIVE",
+          title: "질문 1",
+          nextActionId: null,
+          nextCompletionId: "completion-1",
+          options: [],
+        },
+      ],
+      serverCompletions: [{ id: "completion-1", title: "완료" }],
+      actionDraftSnapshot: {
+        draftItems: [],
+        itemOrderKeys: ["existing:action-1"],
+        formSnapshotByItemKey: {},
+      },
+    });
+
+    expect(validation.isValid).toBe(true);
+    expect(validation.issues).toHaveLength(0);
+  });
+
+  it("draft 액션이 itemOrderKeys 첫 항목이면 entry로 해석한다", () => {
+    const validation = validateEditorPublishFlow({
+      entryActionId: null,
+      serverActions: [],
+      serverCompletions: [],
+      actionDraftSnapshot: {
+        draftItems: [{ key: "a-1" }],
+        itemOrderKeys: ["draft:a-1"],
+        formSnapshotByItemKey: {
+          "draft:a-1": {
+            actionType: "SUBJECTIVE",
+            values: {
+              title: "임시 질문",
+              nextActionId: null,
+              nextCompletionId: "draft:completion:c-1",
+              options: [],
+            },
+          },
+        },
+      },
+      completionDraftSnapshot: {
+        draftItems: [{ key: "c-1", title: "임시 완료" }],
+        formSnapshotByItemKey: {
+          "draft:c-1": {
+            title: "임시 완료",
+          },
+        },
+      },
+    });
+
+    expect(validation.isValid).toBe(true);
+    expect(validation.issues).toHaveLength(0);
+  });
 });

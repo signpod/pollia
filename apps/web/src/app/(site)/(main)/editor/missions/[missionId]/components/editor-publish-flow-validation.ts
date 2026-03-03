@@ -57,7 +57,7 @@ export interface EditorFlowAnalysisResult {
   connections: EditorFlowConnection[];
 }
 
-interface ServerActionLike {
+export interface ServerActionLike {
   id: string;
   type: string;
   title: string;
@@ -70,7 +70,7 @@ interface ServerActionLike {
   }>;
 }
 
-interface ServerCompletionLike {
+export interface ServerCompletionLike {
   id: string;
   title: string | null;
 }
@@ -91,6 +91,7 @@ interface ParsedActionFormSnapshot {
 
 interface ParsedActionDraftSnapshot {
   draftKeys: string[];
+  itemOrderKeys: string[];
   formSnapshotsByItemKey: Record<string, ParsedActionFormSnapshot>;
 }
 
@@ -166,12 +167,18 @@ function parseActionFormSnapshot(value: unknown): ParsedActionFormSnapshot | nul
 
 function parseActionDraftSnapshot(snapshot: unknown): ParsedActionDraftSnapshot {
   if (!isRecord(snapshot)) {
-    return { draftKeys: [], formSnapshotsByItemKey: {} };
+    return { draftKeys: [], itemOrderKeys: [], formSnapshotsByItemKey: {} };
   }
 
   const draftKeys = Array.isArray(snapshot.draftItems)
     ? snapshot.draftItems
         .map(item => (isRecord(item) ? toNullableString(item.key) : null))
+        .filter((key): key is string => Boolean(key))
+    : [];
+
+  const itemOrderKeys = Array.isArray(snapshot.itemOrderKeys)
+    ? snapshot.itemOrderKeys
+        .map(key => toNullableString(key))
         .filter((key): key is string => Boolean(key))
     : [];
 
@@ -189,8 +196,21 @@ function parseActionDraftSnapshot(snapshot: unknown): ParsedActionDraftSnapshot 
 
   return {
     draftKeys,
+    itemOrderKeys,
     formSnapshotsByItemKey,
   };
+}
+
+function resolveActionIdFromItemKey(itemKey: string): string | null {
+  if (itemKey.startsWith("existing:")) {
+    return toNullableString(itemKey.slice("existing:".length));
+  }
+
+  if (itemKey.startsWith("draft:")) {
+    return toNullableString(itemKey);
+  }
+
+  return null;
 }
 
 function parseCompletionFormSnapshot(value: unknown): ParsedCompletionFormSnapshot | null {
@@ -372,8 +392,21 @@ export function buildEditorFlowState({
     );
   }
 
+  let resolvedEntryActionId = normalizedEntryActionId;
+  for (const itemKey of parsedActionSnapshot.itemOrderKeys) {
+    const candidateActionId = resolveActionIdFromItemKey(itemKey);
+    if (!candidateActionId) {
+      continue;
+    }
+
+    if (actionById.has(candidateActionId)) {
+      resolvedEntryActionId = candidateActionId;
+      break;
+    }
+  }
+
   return {
-    entryActionId: normalizedEntryActionId,
+    entryActionId: resolvedEntryActionId,
     actions: [...actionById.values()],
     completions: [...completionById.values()],
   };
