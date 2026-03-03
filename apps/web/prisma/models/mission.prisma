@@ -22,6 +22,9 @@ model Mission {
   category               MissionCategory @default(EVENT)
   password               String?
   likesCount             Int             @default(0) @map("likes_count")
+  useAiCompletion        Boolean         @default(false) @map("use_ai_completion")
+  aiStatisticsReport     String?         @map("ai_statistics_report")
+  viewCount              Int             @default(0) @map("view_count")
   entryActionId          String?         @map("entry_action_id")
   editorDraft            Json?           @map("editor_draft")
 
@@ -42,6 +45,7 @@ model Mission {
 
   trackingActionEntries   TrackingActionEntry[]
   trackingActionResponses TrackingActionResponse[]
+  completionStats         MissionCompletionStat[]
 
   @@index([creatorId])
   @@index([isActive])

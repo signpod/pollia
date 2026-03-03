@@ -1,0 +1,16 @@
+model MissionCompletionStat {
+  id                  String   @id @default(cuid())
+  missionId           String   @map("mission_id")
+  missionCompletionId String   @map("mission_completion_id")
+  encounterCount      Int      @default(0) @map("encounter_count")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  mission           Mission           @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  missionCompletion MissionCompletion @relation(fields: [missionCompletionId], references: [id], onDelete: Cascade)
+
+  @@unique([missionId, missionCompletionId])
+  @@index([missionId])
+  @@index([missionCompletionId])
+  @@map("mission_completion_stats")
+}
