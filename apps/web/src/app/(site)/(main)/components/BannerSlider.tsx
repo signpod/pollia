@@ -4,7 +4,6 @@ import { ROUTES } from "@/constants/routes";
 import { cn } from "@/lib/utils";
 import PauseIcon from "@public/svgs/pause-icon.svg";
 import PlayIcon from "@public/svgs/play-icon.svg";
-import PolliaIcon from "@public/svgs/pollia-icon.svg";
 import { Typo } from "@repo/ui/components";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -13,19 +12,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 const FEATURED_MISSIONS = [
   {
     id: "cmkg52ncy000gla04ya80cyo2",
-    title: "2026 초미세 습관 형성\n프로젝트 참가 신청 1",
-    brandLogoUrl:
-      "https://jjrsknqxiqbzqiraexpc.supabase.co/storage/v1/object/public/mission-images/f54437e4-95c6-4232-b927-f2b995b09a14/1768804605338.jpg",
+    title: "내가 웹소설 남주로 빙의한다면?",
     imageUrl:
-      "https://lpgfbjohdashthkhxzab.supabase.co/storage/v1/object/public/mission-images/ca3afe20-e1ba-423a-a6d5-6c7662b40451/1770098871007.jpg",
+      "https://lpgfbjohdashthkhxzab.supabase.co/storage/v1/object/public/mission-images/ca3afe20-e1ba-423a-a6d5-6c7662b40451/please.png",
   },
   {
     id: "cmkg52ncy000gla04ya80cyo2",
-    title: "2026 초미세 습관 형성\n프로젝트 참가 신청 2",
-    brandLogoUrl:
-      "https://jjrsknqxiqbzqiraexpc.supabase.co/storage/v1/object/public/mission-images/f54437e4-95c6-4232-b927-f2b995b09a14/1768804605338.jpg",
+    title: "폴리아 배너 2",
     imageUrl:
-      "https://jjrsknqxiqbzqiraexpc.supabase.co/storage/v1/object/public/mission-images/f54437e4-95c6-4232-b927-f2b995b09a14/1768522947884.jpg",
+      "https://lpgfbjohdashthkhxzab.supabase.co/storage/v1/object/public/mission-images/ca3afe20-e1ba-423a-a6d5-6c7662b40451/name.png",
   },
 ];
 
@@ -174,16 +169,13 @@ export function BannerSlider() {
     window.location.href = `https://pollia.me/${ROUTES.MISSION(missionId)}`;
   };
 
-  const mission = FEATURED_MISSIONS[realIndex];
-
   return (
-    <section className="px-5">
+    <section>
       <div
         ref={containerRef}
-        className="relative aspect-square w-full overflow-hidden rounded-2xl shadow-[0_4px_20px_rgba(9,9,11,0.08)]"
+        className="relative aspect-[3/2] w-full overflow-hidden"
         style={{ touchAction: "pan-y" }}
       >
-        {/* 슬라이드 영역 (이미지) */}
         <div
           ref={trackRef}
           className={cn(
@@ -216,41 +208,12 @@ export function BannerSlider() {
           ))}
         </div>
 
-        {/* 그라데이션 + 로고 + 타이틀 (슬라이드 트랙 밖, fade-up 애니메이션) */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-linear-to-b from-transparent to-[#27272A] px-10 pb-10 pt-[60px]">
-          <div key={realIndex} className="flex flex-col gap-3 animate-fade-up">
-            <div
-              className={cn(
-                "shrink-0 overflow-hidden rounded-full border-[1.25px] border-zinc-200 bg-white",
-                "size-[40px] sm:size-[60px]",
-              )}
-            >
-              {mission?.brandLogoUrl ? (
-                <Image
-                  src={mission.brandLogoUrl}
-                  alt="brand logo"
-                  width={60}
-                  height={60}
-                  className="size-full object-cover"
-                />
-              ) : (
-                <div className="flex size-full items-center justify-center">
-                  <PolliaIcon className="size-8 text-violet-500" />
-                </div>
-              )}
-            </div>
-            <Typo.MainTitle className="whitespace-pre-line break-keep text-white text-[20px] sm:text-[28px]">
-              {mission?.title}
-            </Typo.MainTitle>
-          </div>
-        </div>
-
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 px-10 pb-10">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 p-5">
           <div className="flex items-end justify-end">
             <div className="pointer-events-auto flex shrink-0 items-center gap-2">
               <button
                 type="button"
-                className="flex size-[26px] items-center justify-center rounded-full bg-black/40"
+                className="flex size-[26px] items-center justify-center rounded-full bg-zinc-500/50"
                 onClick={() => setIsPlaying(prev => !prev)}
               >
                 {isPlaying ? (
@@ -259,7 +222,7 @@ export function BannerSlider() {
                   <PlayIcon className="size-[18px] fill-white" />
                 )}
               </button>
-              <span className="rounded-md bg-black/40 px-2 py-1">
+              <span className="rounded-full bg-zinc-500/50 px-2 py-1">
                 <Typo.Body size="small" className="text-white">
                   {realIndex + 1} / {total}
                 </Typo.Body>
