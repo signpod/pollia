@@ -61,9 +61,14 @@ describe("EditorDesktopAbsolute", () => {
     }
 
     expect(leftPanel.getAttribute("data-side")).toBe("left");
-    expect(leftPanel.style.left).toContain("max(");
+    expect(leftPanel.style.left).toContain("50vw");
+    expect(leftPanel.style.left).toContain("300px");
+    expect(leftPanel.style.left).toContain("320px");
+    expect(leftPanel.style.left).toContain("20px");
+    expect(leftPanel.style.left).not.toContain("max(");
+    expect(leftPanel.style.left).not.toContain("min(");
     expect(leftPanel.style.height).toBe("calc(100vh - 88px)");
     expect(leftPanel.style.overflow).toBe("hidden");
-    expect(rightPanel.style.left).toContain("min(");
+    expect(rightPanel.style.left).toMatch(/^calc\((50vw \+ 320px|320px \+ 50vw)\)$/);
   });
 });

@@ -45,8 +45,8 @@ export function EditorDesktopAbsolute({
     const baseHalfWidth = MAIN_COLUMN_WIDTH / 2;
     const leftPosition =
       side === "left"
-        ? `max(16px, calc(50vw - ${baseHalfWidth}px - ${gap}px - ${panelWidth}px))`
-        : `min(calc(100vw - ${panelWidth + 16}px), calc(50vw + ${baseHalfWidth + gap}px))`;
+        ? `calc(50vw - ${baseHalfWidth}px - ${gap}px - ${panelWidth}px)`
+        : `calc(50vw + ${baseHalfWidth + gap}px)`;
 
     return {
       top: topOffset,
