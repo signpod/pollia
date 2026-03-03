@@ -17,6 +17,7 @@ import "@xyflow/react/dist/style.css";
 
 interface FlowOverviewCanvasProps {
   analysis: EditorFlowAnalysisResult;
+  variant?: "default" | "compact";
 }
 
 function StatusBadge({ text, className }: { text: string; className: string }) {
@@ -31,10 +32,11 @@ function FlowOverviewNodeCard({ data }: NodeProps<FlowOverviewNode>) {
   const isStart = data.kind === "start";
   const isCompletion = data.kind === "completion";
   const showSourceHandle = isStart || data.kind === "action" || data.kind === "branch-action";
+  const isCompact = Boolean(data.compact);
 
   return (
     <div
-      className={`min-w-[230px] max-w-[290px] rounded-xl border bg-white px-4 py-3 shadow-sm ${
+      className={`${isCompact ? "min-w-[170px] max-w-[220px] px-3 py-2.5" : "min-w-[230px] max-w-[290px] px-4 py-3"} rounded-xl border bg-white shadow-sm ${
         data.isUnreachable ? "opacity-50 grayscale" : ""
       } ${
         data.isDeadEnd
@@ -47,10 +49,16 @@ function FlowOverviewNodeCard({ data }: NodeProps<FlowOverviewNode>) {
       }`}
     >
       {!isStart && <Handle type="target" position={Position.Top} isConnectable={false} />}
-      <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">{data.subtitle}</p>
-      <p className="mt-1 line-clamp-2 text-sm font-semibold text-zinc-900">{data.title}</p>
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+        {data.subtitle}
+      </p>
+      <p
+        className={`${isCompact ? "line-clamp-1 text-xs" : "line-clamp-2 text-sm"} mt-1 font-semibold text-zinc-900`}
+      >
+        {data.title}
+      </p>
       {(data.isMissingEntry || data.isDeadEnd || data.isUnreachable) && (
-        <div className="mt-2 flex flex-wrap gap-1.5">
+        <div className={`${isCompact ? "mt-1.5 gap-1" : "mt-2 gap-1.5"} flex flex-wrap`}>
           {data.isMissingEntry && (
             <StatusBadge
               text="시작 미설정"
@@ -75,8 +83,12 @@ function FlowOverviewNodeCard({ data }: NodeProps<FlowOverviewNode>) {
   );
 }
 
-export function FlowOverviewCanvas({ analysis }: FlowOverviewCanvasProps) {
-  const { nodes, edges } = useMemo(() => buildFlowOverviewElements(analysis), [analysis]);
+export function FlowOverviewCanvas({ analysis, variant = "default" }: FlowOverviewCanvasProps) {
+  const isCompact = variant === "compact";
+  const { nodes, edges } = useMemo(
+    () => buildFlowOverviewElements(analysis, { compact: isCompact }),
+    [analysis, isCompact],
+  );
 
   const nodeTypes = useMemo(
     () => ({
@@ -93,6 +105,7 @@ export function FlowOverviewCanvas({ analysis }: FlowOverviewCanvasProps) {
           edges={edges}
           nodeTypes={nodeTypes}
           fitView
+          fitViewOptions={{ padding: isCompact ? 0.16 : 0.24 }}
           minZoom={0.2}
           maxZoom={1.5}
           nodesConnectable={false}
@@ -101,8 +114,8 @@ export function FlowOverviewCanvas({ analysis }: FlowOverviewCanvasProps) {
           proOptions={{ hideAttribution: true }}
         >
           <Background gap={20} size={1} color="#e4e4e7" />
-          <MiniMap pannable zoomable />
-          <Controls showInteractive={false} />
+          {!isCompact && <MiniMap pannable zoomable />}
+          {!isCompact && <Controls showInteractive={false} />}
         </ReactFlow>
       </div>
     </ReactFlowProvider>

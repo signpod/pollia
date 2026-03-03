@@ -81,7 +81,7 @@ interface ActionSettingsCardProps {
   onSaveStateChange?: SectionSaveStateChangeHandler;
   getCompletionDraftSnapshot?: () => unknown | null;
   completionWorkingSetVersion?: number;
-  onWorkingSetChange?: () => void;
+  onWorkingSetChange?: (draftSnapshot: ActionSectionDraftSnapshot) => void;
 }
 
 interface DraftActionItem {
@@ -107,7 +107,7 @@ type ActionSubmission = {
   values: ActionFormValues;
 };
 
-interface ActionSectionDraftSnapshot {
+export interface ActionSectionDraftSnapshot {
   draftItems: DraftActionItem[];
   openItemKey: string | null;
   dirtyByItemKey: Record<string, boolean>;
@@ -807,6 +807,14 @@ function ActionSettingsCardComponent(
     orderedActionItems,
   ]);
 
+  const notifyWorkingSetChange = useCallback(() => {
+    if (!onWorkingSetChange) {
+      return;
+    }
+
+    onWorkingSetChange(getActionDraftSnapshot());
+  }, [getActionDraftSnapshot, onWorkingSetChange]);
+
   const flowAnalysis = useMemo(() => {
     if (!missionData?.data || !actionsData?.data || !completionsData?.data) {
       return null;
@@ -971,15 +979,15 @@ function ActionSettingsCardComponent(
       });
 
       if (hasChange) {
-        onWorkingSetChange?.();
+        notifyWorkingSetChange();
       }
     },
-    [onWorkingSetChange],
+    [notifyWorkingSetChange],
   );
 
   useEffect(() => {
-    onWorkingSetChange?.();
-  }, [draftItems, onWorkingSetChange]);
+    notifyWorkingSetChange();
+  }, [draftItems, notifyWorkingSetChange]);
 
   const handleAddDraft = () => {
     const draftKey = createDraftKey();
@@ -1054,10 +1062,10 @@ function ActionSettingsCardComponent(
       });
 
       if (didMove) {
-        onWorkingSetChange?.();
+        notifyWorkingSetChange();
       }
     },
-    [onWorkingSetChange],
+    [notifyWorkingSetChange],
   );
 
   const handleDeleteConfirm = () => {
@@ -1855,7 +1863,7 @@ function ActionSettingsCardComponent(
             : {},
         );
         setDraftHydrationVersion(prev => prev + 1);
-        onWorkingSetChange?.();
+        notifyWorkingSetChange();
       },
     }),
     [
@@ -1864,7 +1872,7 @@ function ActionSettingsCardComponent(
       hasPendingChanges,
       isActionsLoading,
       isBusy,
-      onWorkingSetChange,
+      notifyWorkingSetChange,
     ],
   );
 

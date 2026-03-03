@@ -43,7 +43,7 @@ import type {
 interface CompletionSettingsCardProps {
   missionId: string;
   onSaveStateChange?: SectionSaveStateChangeHandler;
-  onWorkingSetChange?: () => void;
+  onWorkingSetChange?: (draftSnapshot: CompletionSectionDraftSnapshot) => void;
 }
 
 interface ExistingListItem {
@@ -63,7 +63,7 @@ interface DraftListItem {
 
 type CompletionListItem = ExistingListItem | DraftListItem;
 
-interface CompletionSectionDraftSnapshot {
+export interface CompletionSectionDraftSnapshot {
   draftItems: Array<{ key: string; title: string }>;
   openItemKey: string | null;
   removedExistingIds: string[];
@@ -293,6 +293,33 @@ function CompletionSettingsCardComponent(
     [visibleExistingCompletions, completionDrafts],
   );
 
+  const getCompletionDraftSnapshot = useCallback((): CompletionSectionDraftSnapshot => {
+    const formSnapshotByItemKey: Record<string, CompletionFormRawSnapshot> = {};
+
+    for (const item of completionItems) {
+      const snapshot = formRefs.current[item.key]?.getRawSnapshot();
+      if (snapshot) {
+        formSnapshotByItemKey[item.key] = snapshot;
+      }
+    }
+
+    return {
+      draftItems: completionDrafts.map(item => ({ key: item.key, title: item.title })),
+      openItemKey,
+      removedExistingIds: [...removedExistingIds],
+      dirtyByItemKey,
+      formSnapshotByItemKey,
+    };
+  }, [completionDrafts, completionItems, dirtyByItemKey, openItemKey, removedExistingIds]);
+
+  const notifyWorkingSetChange = useCallback(() => {
+    if (!onWorkingSetChange) {
+      return;
+    }
+
+    onWorkingSetChange(getCompletionDraftSnapshot());
+  }, [getCompletionDraftSnapshot, onWorkingSetChange]);
+
   useEffect(() => {
     const validKeys = new Set(completionItems.map(item => item.key));
     setDirtyByItemKey(prev => {
@@ -409,15 +436,15 @@ function CompletionSettingsCardComponent(
       });
 
       if (hasChange) {
-        onWorkingSetChange?.();
+        notifyWorkingSetChange();
       }
     },
-    [onWorkingSetChange],
+    [notifyWorkingSetChange],
   );
 
   useEffect(() => {
-    onWorkingSetChange?.();
-  }, [completionDrafts, onWorkingSetChange, removedExistingIds]);
+    notifyWorkingSetChange();
+  }, [completionDrafts, notifyWorkingSetChange, removedExistingIds]);
 
   const handleAddDraft = () => {
     if (isSaving) {
@@ -867,22 +894,7 @@ function CompletionSettingsCardComponent(
       hasPendingChanges: () => hasPendingChanges,
       isBusy: () => isSaving || isLoading,
       exportDraftSnapshot: (): CompletionSectionDraftSnapshot => {
-        const formSnapshotByItemKey: Record<string, CompletionFormRawSnapshot> = {};
-
-        for (const item of completionItems) {
-          const snapshot = formRefs.current[item.key]?.getRawSnapshot();
-          if (snapshot) {
-            formSnapshotByItemKey[item.key] = snapshot;
-          }
-        }
-
-        return {
-          draftItems: completionDrafts.map(item => ({ key: item.key, title: item.title })),
-          openItemKey,
-          removedExistingIds: [...removedExistingIds],
-          dirtyByItemKey,
-          formSnapshotByItemKey,
-        };
+        return getCompletionDraftSnapshot();
       },
       importDraftSnapshot: async (snapshot: unknown) => {
         if (!snapshot || typeof snapshot !== "object") {
@@ -931,7 +943,7 @@ function CompletionSettingsCardComponent(
         setOpenItemKey(typeof next.openItemKey === "string" ? next.openItemKey : null);
         setDraftFormSnapshotByItemKey(nextFormSnapshots);
         setDraftHydrationVersion(prev => prev + 1);
-        onWorkingSetChange?.();
+        notifyWorkingSetChange();
       },
     }),
     [
@@ -941,11 +953,12 @@ function CompletionSettingsCardComponent(
       completionItems,
       dirtyByItemKey,
       executeSave,
+      getCompletionDraftSnapshot,
       hasPendingChanges,
       isLoading,
       isSaving,
+      notifyWorkingSetChange,
       openItemKey,
-      onWorkingSetChange,
       removedExistingIds,
     ],
   );

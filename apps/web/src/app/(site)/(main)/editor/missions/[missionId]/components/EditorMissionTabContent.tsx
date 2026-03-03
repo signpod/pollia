@@ -9,9 +9,12 @@ import { useReadMission } from "@/hooks/mission";
 import type { GetMissionResponse } from "@/types/dto";
 import { type PaymentType } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
-import { ActionSettingsCard } from "./ActionSettingsCard";
-import { CompletionSettingsCard } from "./CompletionSettingsCard";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { type ActionSectionDraftSnapshot, ActionSettingsCard } from "./ActionSettingsCard";
+import {
+  type CompletionSectionDraftSnapshot,
+  CompletionSettingsCard,
+} from "./CompletionSettingsCard";
 import { EditorBottomSaveSlot } from "./EditorBottomSaveSlot";
 import { EditorMissionDraftProvider } from "./EditorMissionDraftContext";
 import { useEditorMissionTab } from "./EditorMissionTabContext";
@@ -19,6 +22,11 @@ import { MissionStatsDashboard } from "./MissionStatsDashboard";
 import { ProjectBasicInfoCard } from "./ProjectBasicInfoCard";
 import { RewardSettingsCard } from "./RewardSettingsCard";
 import { useEditorMissionController } from "./controllers/useEditorMissionController";
+import { EditorDesktopAbsolute } from "./desktop/EditorDesktopAbsolute";
+import { EditorDesktopFlowPanel } from "./desktop/EditorDesktopFlowPanel";
+import { EditorDesktopMobilePanel } from "./desktop/EditorDesktopMobilePanel";
+import { resolveEditorDesktopFlowPolicy } from "./editor-desktop-flow-policy";
+import { analyzeEditorFlow } from "./editor-publish-flow-validation";
 import { EditorMissionActionBar } from "./views/EditorMissionActionBar";
 
 interface RewardSnapshot {
@@ -40,6 +48,9 @@ function MissionIntroPreview({ missionId }: { missionId: string }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!previewUrl) {
+      return;
+    }
     setIsLoading(true);
   }, [previewUrl]);
 
@@ -66,6 +77,10 @@ export function EditorMissionTabContent({
   reward,
 }: EditorMissionTabContentProps) {
   const { currentTab } = useEditorMissionTab();
+  const [cachedActionDraftSnapshot, setCachedActionDraftSnapshot] =
+    useState<ActionSectionDraftSnapshot | null>(null);
+  const [cachedCompletionDraftSnapshot, setCachedCompletionDraftSnapshot] =
+    useState<CompletionSectionDraftSnapshot | null>(null);
   const missionQuery = useReadMission(missionId);
   const actionsQuery = useReadActionsDetail(missionId);
   const completionsQuery = useQuery({
@@ -87,6 +102,63 @@ export function EditorMissionTabContent({
     refetchActions: actionsQuery.refetch,
     refetchCompletions: completionsQuery.refetch,
   });
+  const effectiveMission = missionQuery.data?.data ?? mission;
+  const serverActions = actionsQuery.data?.data;
+  const serverCompletions = completionsQuery.data?.data;
+
+  const handleActionWorkingSetChange = useCallback(
+    (snapshot: ActionSectionDraftSnapshot) => {
+      setCachedActionDraftSnapshot(snapshot);
+      sectionBindings.onActionWorkingSetChange();
+    },
+    [sectionBindings.onActionWorkingSetChange],
+  );
+
+  const handleCompletionWorkingSetChange = useCallback(
+    (snapshot: CompletionSectionDraftSnapshot) => {
+      setCachedCompletionDraftSnapshot(snapshot);
+      sectionBindings.onCompletionWorkingSetChange();
+    },
+    [sectionBindings.onCompletionWorkingSetChange],
+  );
+
+  const desktopFlowInput = useMemo(
+    () =>
+      resolveEditorDesktopFlowPolicy({
+        isActive: effectiveMission.isActive,
+        entryActionId: effectiveMission.entryActionId,
+        serverActions,
+        serverCompletions,
+        actionDraftSnapshot: cachedActionDraftSnapshot,
+        completionDraftSnapshot: cachedCompletionDraftSnapshot,
+      }),
+    [
+      cachedActionDraftSnapshot,
+      cachedCompletionDraftSnapshot,
+      effectiveMission.entryActionId,
+      effectiveMission.isActive,
+      serverActions,
+      serverCompletions,
+    ],
+  );
+
+  const isDesktopFlowLoading =
+    missionQuery.isLoading || actionsQuery.isLoading || completionsQuery.isLoading;
+  const desktopFlowErrorMessage =
+    missionQuery.error instanceof Error
+      ? missionQuery.error.message
+      : actionsQuery.error instanceof Error
+        ? actionsQuery.error.message
+        : completionsQuery.error instanceof Error
+          ? completionsQuery.error.message
+          : null;
+  const desktopFlowAnalysis = useMemo(() => {
+    if (!serverActions || !serverCompletions) {
+      return null;
+    }
+
+    return analyzeEditorFlow(desktopFlowInput);
+  }, [desktopFlowInput, serverActions, serverCompletions]);
 
   const saveButtonNode = useMemo(
     () => (
@@ -115,10 +187,25 @@ export function EditorMissionTabContent({
       viewState.isSavingAll,
     ],
   );
+  const desktopPanels = (
+    <>
+      <EditorDesktopAbsolute side="left">
+        <EditorDesktopFlowPanel
+          analysis={desktopFlowAnalysis}
+          isLoading={isDesktopFlowLoading}
+          errorMessage={desktopFlowErrorMessage}
+        />
+      </EditorDesktopAbsolute>
+      <EditorDesktopAbsolute side="right" panelWidth={440}>
+        <EditorDesktopMobilePanel missionId={missionId} />
+      </EditorDesktopAbsolute>
+    </>
+  );
 
   if (currentTab === "stats") {
     return (
       <>
+        {desktopPanels}
         <EditorBottomSaveSlot
           slotKey={`editor-mission-save:${missionId}`}
           isActive={false}
@@ -132,6 +219,7 @@ export function EditorMissionTabContent({
   if (currentTab === "preview") {
     return (
       <>
+        {desktopPanels}
         <EditorBottomSaveSlot
           slotKey={`editor-mission-save:${missionId}`}
           isActive={false}
@@ -144,6 +232,7 @@ export function EditorMissionTabContent({
 
   return (
     <>
+      {desktopPanels}
       <EditorBottomSaveSlot
         slotKey={`editor-mission-save:${missionId}`}
         isActive={currentTab === "editor"}
@@ -169,14 +258,14 @@ export function EditorMissionTabContent({
           onSaveStateChange={sectionBindings.onActionStateChange}
           getCompletionDraftSnapshot={sectionBindings.getCompletionDraftSnapshot}
           completionWorkingSetVersion={sectionBindings.completionWorkingSetVersion}
-          onWorkingSetChange={sectionBindings.onActionWorkingSetChange}
+          onWorkingSetChange={handleActionWorkingSetChange}
         />
         <Separator className="h-2" />
         <CompletionSettingsCard
           ref={refs.completionRef}
           missionId={mission.id}
           onSaveStateChange={sectionBindings.onCompletionStateChange}
-          onWorkingSetChange={sectionBindings.onCompletionWorkingSetChange}
+          onWorkingSetChange={handleCompletionWorkingSetChange}
         />
       </EditorMissionDraftProvider>
     </>
