@@ -95,7 +95,7 @@ describe("validateFlowGraph - 블랙박스 테스트", () => {
       expect(result.isValid).toBe(false);
       const missingEntryError = result.errors.find(e => e.type === "missing-entry");
       expect(missingEntryError).toBeDefined();
-      expect(missingEntryError?.message).toContain("시작 액션");
+      expect(missingEntryError?.message).toContain("시작 질문");
     });
   });
 
