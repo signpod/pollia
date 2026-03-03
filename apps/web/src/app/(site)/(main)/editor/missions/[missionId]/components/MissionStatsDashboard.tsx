@@ -92,9 +92,9 @@ export function MissionStatsDashboard({ missionId }: MissionStatsDashboardProps)
               닉네임, 응답 시간, 질문별 답변을 확인할 수 있습니다.
             </Typo.Body>
           </div>
-          <p className="text-sm text-zinc-500">
+          <Typo.Body size="small" className="text-zinc-500">
             총 {pagination?.totalRows ?? 0}건 / 페이지 {pagination?.page ?? 1}
-          </p>
+          </Typo.Body>
         </div>
 
         {isInitialLoading && (
@@ -235,8 +235,10 @@ function StatCard({
 }: { title: string; value: string; isLoading: boolean }) {
   return (
     <div className="rounded-xl border border-zinc-200 bg-white p-4">
-      <p className="text-sm text-zinc-500">{title}</p>
-      <p className="mt-1 text-2xl font-semibold text-zinc-900">{isLoading ? "..." : value}</p>
+      <Typo.Body size="small" className="text-zinc-500">
+        {title}
+      </Typo.Body>
+      <Typo.SubTitle className="mt-1 text-2xl">{isLoading ? "..." : value}</Typo.SubTitle>
     </div>
   );
 }
