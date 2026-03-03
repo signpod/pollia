@@ -62,6 +62,8 @@ describe("EditorDesktopAbsolute", () => {
 
     expect(leftPanel.getAttribute("data-side")).toBe("left");
     expect(leftPanel.style.left).toContain("max(");
+    expect(leftPanel.style.height).toBe("calc(100vh - 88px)");
+    expect(leftPanel.style.overflow).toBe("hidden");
     expect(rightPanel.style.left).toContain("min(");
   });
 });

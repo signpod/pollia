@@ -3,14 +3,16 @@
 import {
   Background,
   Controls,
+  type Edge,
   Handle,
   MiniMap,
   type NodeProps,
   Position,
   ReactFlow,
+  type ReactFlowInstance,
   ReactFlowProvider,
 } from "@xyflow/react";
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { type FlowOverviewNode, buildFlowOverviewElements } from "./editor-flow-overview.utils";
 import type { EditorFlowAnalysisResult } from "./editor-publish-flow-validation";
 import "@xyflow/react/dist/style.css";
@@ -85,10 +87,54 @@ function FlowOverviewNodeCard({ data }: NodeProps<FlowOverviewNode>) {
 
 export function FlowOverviewCanvas({ analysis, variant = "default" }: FlowOverviewCanvasProps) {
   const isCompact = variant === "compact";
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const flowInstanceRef = useRef<ReactFlowInstance<FlowOverviewNode, Edge> | null>(null);
   const { nodes, edges } = useMemo(
     () => buildFlowOverviewElements(analysis, { compact: isCompact }),
     [analysis, isCompact],
   );
+  const fitViewPadding = isCompact ? 0.16 : 0.24;
+
+  const fitToView = useCallback(() => {
+    if (!flowInstanceRef.current) {
+      return;
+    }
+
+    flowInstanceRef.current.fitView({ padding: fitViewPadding });
+  }, [fitViewPadding]);
+
+  const handleInit = useCallback(
+    (instance: ReactFlowInstance<FlowOverviewNode, Edge>) => {
+      flowInstanceRef.current = instance;
+      window.requestAnimationFrame(() => {
+        fitToView();
+      });
+    },
+    [fitToView],
+  );
+
+  useEffect(() => {
+    window.requestAnimationFrame(() => {
+      fitToView();
+    });
+  }, [fitToView, nodes, edges]);
+
+  useEffect(() => {
+    if (!containerRef.current || typeof ResizeObserver === "undefined") {
+      return;
+    }
+
+    const observer = new ResizeObserver(() => {
+      window.requestAnimationFrame(() => {
+        fitToView();
+      });
+    });
+
+    observer.observe(containerRef.current);
+    return () => {
+      observer.disconnect();
+    };
+  }, [fitToView]);
 
   const nodeTypes = useMemo(
     () => ({
@@ -99,13 +145,17 @@ export function FlowOverviewCanvas({ analysis, variant = "default" }: FlowOvervi
 
   return (
     <ReactFlowProvider>
-      <div className="h-full w-full rounded-xl border border-zinc-200 bg-zinc-50">
+      <div
+        ref={containerRef}
+        className="h-full min-h-[300px] w-full rounded-xl border border-zinc-200 bg-zinc-50"
+      >
         <ReactFlow
           nodes={nodes}
           edges={edges}
           nodeTypes={nodeTypes}
           fitView
-          fitViewOptions={{ padding: isCompact ? 0.16 : 0.24 }}
+          onInit={handleInit}
+          fitViewOptions={{ padding: fitViewPadding }}
           minZoom={0.2}
           maxZoom={1.5}
           nodesConnectable={false}

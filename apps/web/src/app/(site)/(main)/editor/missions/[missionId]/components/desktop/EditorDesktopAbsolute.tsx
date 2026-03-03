@@ -52,7 +52,9 @@ export function EditorDesktopAbsolute({
       top: topOffset,
       left: leftPosition,
       width: panelWidth,
+      height: `calc(100vh - ${topOffset + 16}px)`,
       maxHeight: `calc(100vh - ${topOffset + 16}px)`,
+      overflow: "hidden",
       zIndex,
     };
   }, [gap, panelWidth, side, topOffset, zIndex]);

@@ -46,23 +46,25 @@ export function EditorDesktopFlowPanel({
         )}
       </header>
 
-      <div className="min-h-0 flex-1 p-3">
+      <div className="min-h-[320px] flex-1 p-3">
         {isLoading ? (
-          <div className="flex h-full items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50">
+          <div className="flex h-full min-h-[300px] items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50">
             <Typo.Body size="small" className="text-zinc-500">
               플로우 로딩 중...
             </Typo.Body>
           </div>
         ) : errorMessage ? (
-          <div className="flex h-full items-center justify-center rounded-xl border border-red-200 bg-red-50 px-4 text-center">
+          <div className="flex h-full min-h-[300px] items-center justify-center rounded-xl border border-red-200 bg-red-50 px-4 text-center">
             <Typo.Body size="small" className="text-red-600">
               {errorMessage}
             </Typo.Body>
           </div>
         ) : analysis ? (
-          <FlowOverviewCanvas analysis={analysis} variant="compact" />
+          <div className="h-full min-h-[300px]">
+            <FlowOverviewCanvas analysis={analysis} variant="compact" />
+          </div>
         ) : (
-          <div className="flex h-full items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 px-4 text-center">
+          <div className="flex h-full min-h-[300px] items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 px-4 text-center">
             <Typo.Body size="small" className="text-zinc-500">
               플로우 데이터가 없습니다.
             </Typo.Body>
