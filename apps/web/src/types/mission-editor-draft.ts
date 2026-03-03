@@ -52,6 +52,63 @@ function sanitizeCompletionSnapshotForServer(value: unknown): unknown | null {
   };
 }
 
+function isOmittableObjectPropertyValue(value: unknown): boolean {
+  const valueType = typeof value;
+  return (
+    value === undefined ||
+    valueType === "function" ||
+    valueType === "symbol" ||
+    valueType === "bigint"
+  );
+}
+
+function toJsonSafeValue(value: unknown, seen: WeakSet<object> = new WeakSet()): unknown | null {
+  if (value === null) {
+    return null;
+  }
+
+  if (typeof value === "string" || typeof value === "boolean") {
+    return value;
+  }
+
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+
+  if (isOmittableObjectPropertyValue(value)) {
+    return null;
+  }
+
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value.toISOString();
+  }
+
+  if (typeof value !== "object") {
+    return null;
+  }
+
+  if (seen.has(value)) {
+    return null;
+  }
+  seen.add(value);
+
+  if (Array.isArray(value)) {
+    const normalizedArray = value.map(item => toJsonSafeValue(item, seen));
+    seen.delete(value);
+    return normalizedArray;
+  }
+
+  const normalizedObject: Record<string, unknown> = {};
+  for (const [key, entryValue] of Object.entries(value)) {
+    if (isOmittableObjectPropertyValue(entryValue)) {
+      continue;
+    }
+    normalizedObject[key] = toJsonSafeValue(entryValue, seen);
+  }
+  seen.delete(value);
+  return normalizedObject;
+}
+
 export function toServerEditorDraftPayload(
   payload: EditorMissionDraftPayload | null | undefined,
 ): ServerEditorDraftPayload {
@@ -66,9 +123,9 @@ export function toServerEditorDraftPayload(
   }
 
   return {
-    basic: normalized.basic ?? null,
-    reward: normalized.reward ?? null,
-    action: sanitizeActionSnapshotForServer(normalized.action),
-    completion: sanitizeCompletionSnapshotForServer(normalized.completion),
+    basic: toJsonSafeValue(normalized.basic),
+    reward: toJsonSafeValue(normalized.reward),
+    action: toJsonSafeValue(sanitizeActionSnapshotForServer(normalized.action)),
+    completion: toJsonSafeValue(sanitizeCompletionSnapshotForServer(normalized.completion)),
   };
 }
