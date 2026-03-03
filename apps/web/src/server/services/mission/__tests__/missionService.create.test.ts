@@ -35,6 +35,7 @@ describe("MissionService - Create", () => {
       findByMissionAndUser: jest.fn(),
       findByMissionAndGuest: jest.fn(),
       findByMissionId: jest.fn(),
+      findByMissionIdPaged: jest.fn(),
       findByUserId: jest.fn(),
       findCompletedByMissionId: jest.fn(),
       create: jest.fn(),
@@ -46,6 +47,7 @@ describe("MissionService - Create", () => {
       deleteByMissionAndUser: jest.fn(),
       deleteByMissionAndGuest: jest.fn(),
       countByMissionId: jest.fn(),
+      countByMissionIdFiltered: jest.fn(),
       countCompletedByMissionId: jest.fn(),
     } as jest.Mocked<MissionResponseRepository>;
 
@@ -103,7 +105,7 @@ describe("MissionService - Create", () => {
         brandLogoUrl: null,
         deadline: request.deadline,
         estimatedMinutes: request.estimatedMinutes,
-        isActive: true,
+        isActive: false,
         allowGuestResponse: false,
         allowMultipleResponses: false,
         maxParticipants: null,
@@ -117,6 +119,7 @@ describe("MissionService - Create", () => {
         brandLogoFileUploadId: null,
         eventId: null,
         entryActionId: null,
+        editorDraft: null,
         createdAt: new Date(),
         updatedAt: new Date(),
         startDate: null,
@@ -144,9 +147,48 @@ describe("MissionService - Create", () => {
           maxParticipants: undefined,
           type: "GENERAL",
           category: "EVENT",
+          isActive: false,
           creatorId: "user-1",
         },
         ["a1", "a2"],
+        expect.anything(),
+      );
+    });
+
+    it("isActive가 명시되면 해당 값을 우선해 생성한다", async () => {
+      // Given
+      const request = {
+        title: "활성 미션",
+        description: undefined,
+        target: undefined,
+        imageUrl: undefined,
+        brandLogoUrl: undefined,
+        deadline: undefined,
+        estimatedMinutes: undefined,
+        type: "GENERAL" as const,
+        category: "EVENT" as const,
+        actionIds: [],
+        isActive: true,
+      };
+
+      const mockCreatedMission = createMockMission({
+        id: "mission-1",
+        title: request.title,
+        isActive: true,
+      });
+      mockRepository.createWithActions.mockResolvedValue(mockCreatedMission);
+
+      // When
+      await missionService.createMission(request, "user-1");
+
+      // Then
+      expect(mockRepository.createWithActions).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: request.title,
+          isActive: true,
+          creatorId: "user-1",
+        }),
+        [],
         expect.anything(),
       );
     });
@@ -526,6 +568,7 @@ describe("MissionService - Create", () => {
         brandLogoFileUploadId: null,
         eventId: null,
         entryActionId: null,
+        editorDraft: null,
         createdAt: new Date(),
         updatedAt: new Date(),
         startDate: null,
@@ -555,6 +598,7 @@ describe("MissionService - Create", () => {
         brandLogoFileUploadId: null,
         eventId: null,
         entryActionId: null,
+        editorDraft: null,
         createdAt: new Date(),
         updatedAt: new Date(),
         startDate: null,

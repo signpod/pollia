@@ -3,6 +3,7 @@ export { cleanupMissionResponseAbuseMeta } from "./cleanup";
 export { deleteMissionResponse } from "./delete";
 export {
   getMissionResponse,
+  getMissionResponsesPage,
   getMissionResponses,
   getMissionStats,
   getMyResponseForMission,

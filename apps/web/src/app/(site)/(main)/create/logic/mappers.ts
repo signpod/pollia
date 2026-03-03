@@ -14,7 +14,7 @@ export function mapCreateMissionRequest(formData: CreateMissionFormData): Create
 
   return {
     title: formData.title,
-    type: formData.isExposed ? MissionType.GENERAL : MissionType.EXPERIENCE_GROUP,
+    type: MissionType.GENERAL,
     category: formData.category,
     actionIds: [],
     description: formData.description || undefined,
@@ -26,7 +26,7 @@ export function mapCreateMissionRequest(formData: CreateMissionFormData): Create
     startDate: null,
     deadline: null,
     maxParticipants: null,
-    isActive: formData.isActive,
+    isActive: false,
     eventId: null,
   };
 }

@@ -9,19 +9,27 @@ interface ToastProps {
   message: string;
   icon?: React.ComponentType<{ className?: string; strokeWidth?: number }>;
   iconClassName?: string;
+  iconOnly?: boolean;
 }
 
-function ToastContent({ message, icon: Icon, iconClassName }: ToastProps) {
+function ToastContent({ message, icon: Icon, iconClassName, iconOnly = false }: ToastProps) {
   return (
     <div className="mx-auto flex w-full max-w-[600px] justify-center">
-      <div className={cn("flex items-center gap-3 rounded-sm px-4 py-3 bg-non-modal-bg-default")}>
+      <div
+        className={cn(
+          "flex items-center rounded-sm bg-non-modal-bg-default",
+          iconOnly ? "justify-center px-4 py-3" : "gap-3 px-4 py-3",
+        )}
+      >
         {Icon && <Icon className={cn("size-6 shrink-0", iconClassName)} strokeWidth={2} />}
-        <Typo.ButtonText
-          size="medium"
-          className="flex-1 text-non-modal-text-default max-w-[260px] whitespace-pre-wrap break-keep"
-        >
-          {message}
-        </Typo.ButtonText>
+        {!iconOnly ? (
+          <Typo.ButtonText
+            size="medium"
+            className="flex-1 text-non-modal-text-default max-w-[260px] whitespace-pre-wrap break-keep"
+          >
+            {message}
+          </Typo.ButtonText>
+        ) : null}
       </div>
     </div>
   );
@@ -50,6 +58,7 @@ export interface ToastOptions {
   message: string;
   icon?: React.ComponentType<{ className?: string; strokeWidth?: number }>;
   iconClassName?: string;
+  iconOnly?: boolean;
   duration?: number;
   id?: string | number;
 }
@@ -62,6 +71,7 @@ export function toast(options: ToastOptions) {
         message={options.message}
         icon={options.icon}
         iconClassName={options.iconClassName}
+        iconOnly={options.iconOnly}
       />
     ),
     {

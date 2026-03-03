@@ -14,6 +14,9 @@
     "cold-start": "node scripts/measure-cold-start.cjs",
     "cold-start:compare": "node scripts/compare-cold-start.cjs",
     "chunks:compare": "node scripts/compare-chunks.cjs",
+    "search:manual:backfill": "dotenv -e .env.local -- node scripts/manual-search-maintenance.cjs --job backfill",
+    "search:manual:sync": "dotenv -e .env.local -- node scripts/manual-search-maintenance.cjs --job sync",
+    "search:manual:repair": "dotenv -e .env.local -- node scripts/manual-search-maintenance.cjs --job both",
     "start": "next start",
     "lint": "biome check --write --diagnostic-level=error .",
     "check-types": "tsc --noEmit",
@@ -31,6 +34,7 @@
     "db:deploy": "prisma migrate deploy"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",

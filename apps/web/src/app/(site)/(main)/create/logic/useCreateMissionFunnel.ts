@@ -4,10 +4,12 @@ import { createMission } from "@/actions/mission";
 import { updateMission } from "@/actions/mission/update";
 import { createReward } from "@/actions/reward/create";
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
+import { ROUTES } from "@/constants/routes";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { MissionCategory } from "@prisma/client";
 import { toast } from "@repo/ui/components";
 import { AlertCircle } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { useWatch } from "react-hook-form";
 import { mapCreateMissionRequest, mapCreateRewardRequest, mapIntroUpdateRequest } from "./mappers";
@@ -22,23 +24,21 @@ const STEP_TITLES: Record<Exclude<CreateMissionStep, "success">, string> = {
   category: "카테고리 선택",
   mode: "생성 방식 선택",
   "project-info": "프로젝트 정보 입력",
-  "reward-settings": "리워드 설정",
 };
 
 const NEXT_STEP: Record<Exclude<CreateMissionStep, "success">, CreateMissionStep> = {
   category: "mode",
   mode: "project-info",
-  "project-info": "reward-settings",
-  "reward-settings": "success",
+  "project-info": "success",
 };
 
 const PREV_STEP: Partial<Record<CreateMissionStep, Exclude<CreateMissionStep, "success">>> = {
   mode: "category",
   "project-info": "mode",
-  "reward-settings": "project-info",
 };
 
 export function useCreateMissionFunnel({ form }: UseCreateMissionFunnelParams) {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState<CreateMissionStep>("category");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<CreateMissionSuccessResult | null>(null);
@@ -83,15 +83,11 @@ export function useCreateMissionFunnel({ form }: UseCreateMissionFunnelParams) {
       return form.trigger([
         "title",
         "description",
-        "isActive",
-        "isExposed",
         "allowGuestResponse",
         "allowMultipleResponses",
+        "hasReward",
+        "reward",
       ]);
-    }
-
-    if (currentStep === "reward-settings") {
-      return form.trigger(["hasReward", "reward"]);
     }
 
     return true;
@@ -133,9 +129,6 @@ export function useCreateMissionFunnel({ form }: UseCreateMissionFunnelParams) {
         }
       }
 
-      setResult({ missionId, warnings });
-      setCurrentStep("success");
-
       toast({
         message:
           warnings.length > 0
@@ -146,6 +139,9 @@ export function useCreateMissionFunnel({ form }: UseCreateMissionFunnelParams) {
           iconClassName: "text-red-500",
         }),
       });
+
+      setResult({ missionId, warnings });
+      router.replace(ROUTES.EDITOR_MISSION(missionId));
 
       return true;
     } catch (error) {
@@ -158,12 +154,12 @@ export function useCreateMissionFunnel({ form }: UseCreateMissionFunnelParams) {
     } finally {
       setIsSubmitting(false);
     }
-  }, [form]);
+  }, [form, router]);
 
   const goNext = useCallback(async () => {
     if (currentStep === "success") return;
 
-    if (currentStep === "reward-settings") {
+    if (currentStep === "project-info") {
       await handleSubmit();
       return;
     }
@@ -236,7 +232,7 @@ export function useCreateMissionFunnel({ form }: UseCreateMissionFunnelParams) {
   }, [category, currentStep]);
 
   const nextButtonLabel =
-    currentStep === "reward-settings" ? `${UBIQUITOUS_CONSTANTS.MISSION} 생성` : "다음";
+    currentStep === "project-info" ? `${UBIQUITOUS_CONSTANTS.MISSION} 생성` : "다음";
 
   return {
     currentStep,

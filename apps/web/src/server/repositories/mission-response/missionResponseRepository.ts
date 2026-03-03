@@ -60,6 +60,29 @@ export class MissionResponseRepository {
     });
   }
 
+  async findByMissionIdPaged(
+    missionId: string,
+    options: { page: number; pageSize: number; membersOnly?: boolean },
+  ) {
+    const skip = (options.page - 1) * options.pageSize;
+
+    return prisma.missionResponse.findMany({
+      where: {
+        missionId,
+        ...(options.membersOnly && { userId: { not: null } }),
+      },
+      include: {
+        user: true,
+        answers: ANSWERS_WITH_RELATIONS,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip,
+      take: options.pageSize,
+    });
+  }
+
   async findByUserId(userId: string) {
     return prisma.missionResponse.findMany({
       where: { userId },
@@ -259,6 +282,15 @@ export class MissionResponseRepository {
   async countByMissionId(missionId: string) {
     return prisma.missionResponse.count({
       where: { missionId },
+    });
+  }
+
+  async countByMissionIdFiltered(missionId: string, options?: { membersOnly?: boolean }) {
+    return prisma.missionResponse.count({
+      where: {
+        missionId,
+        ...(options?.membersOnly && { userId: { not: null } }),
+      },
     });
   }
 

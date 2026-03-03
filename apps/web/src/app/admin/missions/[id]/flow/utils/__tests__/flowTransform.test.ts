@@ -31,6 +31,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
     imageFileUploadId: null,
     brandLogoFileUploadId: null,
     ...overrides,
+    editorDraft: overrides?.editorDraft ?? null,
   });
 
   const createAction = (overrides?: Partial<Action>): Action => ({

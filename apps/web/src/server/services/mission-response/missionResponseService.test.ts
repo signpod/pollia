@@ -16,6 +16,7 @@ describe("MissionResponseService", () => {
       findByMissionAndUser: jest.fn(),
       findByMissionAndGuest: jest.fn(),
       findByMissionId: jest.fn(),
+      findByMissionIdPaged: jest.fn(),
       findByUserId: jest.fn(),
       findCompletedByMissionId: jest.fn(),
       create: jest.fn(),
@@ -27,6 +28,7 @@ describe("MissionResponseService", () => {
       deleteByMissionAndUser: jest.fn(),
       deleteByMissionAndGuest: jest.fn(),
       countByMissionId: jest.fn(),
+      countByMissionIdFiltered: jest.fn(),
       countCompletedByMissionId: jest.fn(),
     } as unknown as jest.Mocked<MissionResponseRepository>;
 
@@ -212,6 +214,72 @@ describe("MissionResponseService", () => {
       await expect(service.getMissionStats("mission1", mockUser.id)).rejects.toThrow(
         "조회 권한이 없습니다.",
       );
+    });
+  });
+
+  describe("getMissionResponsesPage", () => {
+    const pageOptions = { page: 1, pageSize: 20 };
+
+    it("Mission 소유자가 페이지 응답을 조회한다", async () => {
+      // Given
+      const mockMission = { id: "mission1", creatorId: "user1" };
+      const mockResponses = [{ id: "response1" }, { id: "response2" }];
+      mockMissionRepo.findById.mockResolvedValue(mockMission as never);
+      mockResponseRepo.findByMissionIdPaged.mockResolvedValue(mockResponses as never);
+      mockResponseRepo.countByMissionIdFiltered.mockResolvedValue(42);
+
+      // When
+      const result = await service.getMissionResponsesPage("mission1", mockUser.id, pageOptions);
+
+      // Then
+      expect(result.responses).toEqual(mockResponses);
+      expect(result.pagination).toEqual({
+        page: 1,
+        pageSize: 20,
+        totalRows: 42,
+        totalPages: 3,
+      });
+      expect(mockResponseRepo.findByMissionIdPaged).toHaveBeenCalledWith("mission1", pageOptions);
+      expect(mockResponseRepo.countByMissionIdFiltered).toHaveBeenCalledWith("mission1", {
+        membersOnly: undefined,
+      });
+    });
+
+    it("Mission이 없으면 404 에러를 던진다", async () => {
+      // Given
+      mockMissionRepo.findById.mockResolvedValue(null);
+
+      // When & Then
+      await expect(
+        service.getMissionResponsesPage("invalid-mission", mockUser.id, pageOptions),
+      ).rejects.toThrow("미션을 찾을 수 없습니다.");
+    });
+
+    it("Mission 소유자가 아니면 403 에러를 던진다", async () => {
+      // Given
+      const mockMission = { id: "mission1", creatorId: "other-user" };
+      mockMissionRepo.findById.mockResolvedValue(mockMission as never);
+
+      // When & Then
+      await expect(
+        service.getMissionResponsesPage("mission1", mockUser.id, pageOptions),
+      ).rejects.toThrow("조회 권한이 없습니다.");
+    });
+
+    it("응답이 없어도 페이지네이션 메타를 반환한다", async () => {
+      // Given
+      const mockMission = { id: "mission1", creatorId: "user1" };
+      mockMissionRepo.findById.mockResolvedValue(mockMission as never);
+      mockResponseRepo.findByMissionIdPaged.mockResolvedValue([]);
+      mockResponseRepo.countByMissionIdFiltered.mockResolvedValue(0);
+
+      // When
+      const result = await service.getMissionResponsesPage("mission1", mockUser.id, pageOptions);
+
+      // Then
+      expect(result.responses).toEqual([]);
+      expect(result.pagination.totalRows).toBe(0);
+      expect(result.pagination.totalPages).toBe(0);
     });
   });
 

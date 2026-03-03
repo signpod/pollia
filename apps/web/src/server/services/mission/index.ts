@@ -9,7 +9,12 @@ import {
   searchSyncOutboxRepository,
 } from "@/server/repositories/search-sync-outbox";
 import { toChoseong } from "@/server/search";
+import {
+  type EditorMissionDraftPayload,
+  toServerEditorDraftPayload,
+} from "@/types/mission-editor-draft";
 import { type Mission, SearchSyncAction, SearchSyncEntityType } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import type {
   CreateMissionInput,
   GetUserMissionsOptions,
@@ -144,6 +149,7 @@ export class MissionService {
       const createdMission = await this.repo.createWithActions(
         {
           ...validatedMissionData,
+          isActive: validatedMissionData.isActive ?? false,
           choseong: toChoseong(validatedMissionData.title),
           creatorId: userId,
         },
@@ -199,6 +205,32 @@ export class MissionService {
     });
 
     return updatedMission;
+  }
+
+  async saveEditorDraft(
+    missionId: string,
+    payload: EditorMissionDraftPayload | null,
+    userId: string,
+  ) {
+    const mission = await this.getMission(missionId);
+
+    if (mission.creatorId !== userId) {
+      const error = new Error("수정 권한이 없습니다.");
+      error.cause = 403;
+      throw error;
+    }
+
+    if (payload === null) {
+      return this.repo.update(missionId, {
+        editorDraft: Prisma.DbNull,
+      });
+    }
+
+    const normalizedPayload = toServerEditorDraftPayload(payload);
+
+    return this.repo.update(missionId, {
+      editorDraft: normalizedPayload as Prisma.InputJsonValue,
+    } as Prisma.MissionUncheckedUpdateInput);
   }
 
   async deleteMission(missionId: string, userId: string): Promise<void> {

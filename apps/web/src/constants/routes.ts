@@ -46,6 +46,11 @@ export const ROUTES = {
     `/preview/action/${missionId}/${actionId}`,
   MISSION_COMPLETION_PREVIEW: (missionId: string, completionId: string) =>
     `/preview/completion/${missionId}/${completionId}`,
+
+  // 에디터 관련
+  EDITOR_MISSION: (missionId: string) => `/editor/missions/${missionId}`,
+  EDITOR_MISSION_STATS: (missionId: string) => `/editor/missions/${missionId}/stats`,
+  EDITOR_MISSION_PREVIEW: (missionId: string) => `/editor/missions/${missionId}/preview`,
 } as const;
 
 export type Routes = typeof ROUTES;

@@ -1,4 +1,5 @@
 import { actionOptionSchema } from "@/schemas/action-option";
+import { ActionType } from "@prisma/client";
 import { z } from "zod";
 
 export const ACTION_TITLE_MAX_LENGTH = 100;
@@ -167,6 +168,7 @@ export const branchInputSchema = baseActionSchema
 
 export const actionUpdateSchema = z
   .object({
+    type: z.nativeEnum(ActionType).optional(),
     title: actionTitleSchema.optional(),
     description: actionDescriptionSchema,
     imageUrl: actionImageUrlSchema,

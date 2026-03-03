@@ -29,6 +29,7 @@ export const createMockMission = (overrides: Partial<Mission> = {}): Mission => 
   createdAt: new Date(),
   updatedAt: new Date(),
   ...overrides,
+  editorDraft: overrides.editorDraft ?? null,
 });
 
 export const createMockAction = (overrides: Partial<Action> = {}): Action => ({

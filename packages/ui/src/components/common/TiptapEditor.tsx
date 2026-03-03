@@ -39,6 +39,7 @@ const ALIGN_OPTIONS: ReadonlyArray<{
 export interface TiptapEditorProps {
   content?: string;
   onUpdate?: (content: string) => void;
+  onFocus?: () => void;
   placeholder?: string;
   className?: string;
   editable?: boolean;
@@ -179,12 +180,37 @@ function TiptapToolbar({ editor }: TiptapToolbarProps) {
 export function TiptapEditor({
   content = "",
   onUpdate,
+  onFocus,
   placeholder,
   className,
   editable = true,
   showToolbar = false,
 }: TiptapEditorProps) {
   const isInitialized = useRef(false);
+  const onUpdateRef = useRef(onUpdate);
+  const onFocusRef = useRef(onFocus);
+  const editorRef = useRef<Editor | null>(null);
+  const isComposingRef = useRef(false);
+  const pendingHtmlRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    onUpdateRef.current = onUpdate;
+  }, [onUpdate]);
+
+  useEffect(() => {
+    onFocusRef.current = onFocus;
+  }, [onFocus]);
+
+  const flushPendingUpdate = () => {
+    if (!isInitialized.current || pendingHtmlRef.current === null) {
+      return;
+    }
+
+    const latestHtml = editorRef.current?.getHTML() ?? pendingHtmlRef.current;
+
+    pendingHtmlRef.current = null;
+    onUpdateRef.current?.(latestHtml);
+  };
 
   const editor = useEditor({
     extensions: [
@@ -202,23 +228,57 @@ export function TiptapEditor({
       attributes: {
         class: "tiptap",
       },
+      handleDOMEvents: {
+        compositionstart: () => {
+          isComposingRef.current = true;
+          return false;
+        },
+        compositionend: () => {
+          isComposingRef.current = false;
+          flushPendingUpdate();
+          return false;
+        },
+      },
     },
     onUpdate: ({ editor: tiptapEditor }: { editor: Editor }) => {
-      if (isInitialized.current) {
-        onUpdate?.(tiptapEditor.getHTML());
+      editorRef.current = tiptapEditor;
+
+      if (!isInitialized.current) return;
+
+      const nextHtml = tiptapEditor.getHTML();
+
+      if (isComposingRef.current || tiptapEditor.view.composing) {
+        pendingHtmlRef.current = nextHtml;
+        return;
       }
+
+      pendingHtmlRef.current = null;
+      onUpdateRef.current?.(nextHtml);
     },
-    onCreate: () => {
+    onFocus: () => {
+      onFocusRef.current?.();
+    },
+    onCreate: ({ editor: tiptapEditor }: { editor: Editor }) => {
+      editorRef.current = tiptapEditor;
       isInitialized.current = true;
     },
   });
 
   useEffect(() => {
-    if (editor && editor.getHTML() !== content) {
-      isInitialized.current = false;
-      editor.commands.setContent(content);
-      isInitialized.current = true;
-    }
+    if (!editor) return;
+    if (isComposingRef.current || editor.view.composing) return;
+
+    const editorContent = editor.getHTML();
+    const nextContent = content ?? "";
+    const isSameContent =
+      editorContent === nextContent ||
+      (isMeaningfullyEmpty(editorContent) && isMeaningfullyEmpty(nextContent));
+
+    if (isSameContent) return;
+
+    isInitialized.current = false;
+    editor.commands.setContent(nextContent);
+    isInitialized.current = true;
   }, [content, editor]);
 
   useEffect(() => {
@@ -227,15 +287,63 @@ export function TiptapEditor({
     }
   }, [editable, editor]);
 
+  const handleContentClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    focusEditorFromContainerEvent(event.target);
+  };
+
+  const handleContentKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+
+    focusEditorFromContainerEvent(event.target);
+  };
+
+  const focusEditorFromContainerEvent = (target: EventTarget | null) => {
+    if (!editor || !editable) return;
+
+    if (!(target instanceof Node)) return;
+
+    const targetNode = target as Node;
+    const editorElement = editor.view.dom;
+
+    if (editorElement.contains(targetNode)) return;
+    if (editor.isFocused) return;
+
+    editor.chain().focus().run();
+  };
+
   return (
     <div
       className={cn("tiptap-editor overflow-hidden rounded-md border-0 bg-background", className)}
     >
       {showToolbar && editable && editor && <TiptapToolbar editor={editor} />}
-      <div className={cn("min-h-[120px] p-4", !editable && "p-0")}>
+      <div
+        className={cn("min-h-[120px] p-4", !editable && "p-0")}
+        onClick={handleContentClick}
+        onKeyDown={handleContentKeyDown}
+      >
         {editor && <EditorContent editor={editor} />}
       </div>
     </div>
+  );
+}
+
+function isMeaningfullyEmpty(html: string): boolean {
+  if (!html || html.trim() === "") {
+    return true;
+  }
+
+  if (typeof document !== "undefined") {
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = html;
+
+    return (tempDiv.textContent ?? "").replace(/\u00a0/g, " ").trim().length === 0;
+  }
+
+  return (
+    html
+      .replace(/<[^>]*>/g, "")
+      .replace(/(&nbsp;|&#160;|&#xA0;)/gi, " ")
+      .trim().length === 0
   );
 }
 

@@ -106,7 +106,7 @@ export function CreateTiptapField({
             content={field.value || ""}
             onUpdate={content => {
               const nextTextLength = getTextLength(content || "");
-              field.onChange(nextTextLength === 0 ? undefined : content);
+              field.onChange(nextTextLength === 0 ? "" : content);
             }}
             placeholder={placeholder}
             showToolbar={showToolbar}

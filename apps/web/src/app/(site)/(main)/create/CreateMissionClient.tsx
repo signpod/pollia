@@ -10,7 +10,6 @@ import { FormProvider, useForm } from "react-hook-form";
 import { CreateCategoryStep } from "./components/CreateCategoryStep";
 import { CreateModeStep } from "./components/CreateModeStep";
 import { CreateProjectInfoStep } from "./components/CreateProjectInfoStep";
-import { CreateRewardSettingsStep } from "./components/CreateRewardSettingsStep";
 import { CreateSuccessScreen } from "./components/CreateSuccessScreen";
 import { type CreateMissionStep } from "./logic/types";
 import { useCreateMissionFunnel } from "./logic/useCreateMissionFunnel";
@@ -23,19 +22,13 @@ const CREATE_FORM_DEFAULT_VALUES: CreateMissionFormData = {
   description: "",
   hasReward: false,
   reward: undefined,
-  isActive: true,
+  isActive: false,
   isExposed: true,
   allowGuestResponse: false,
   allowMultipleResponses: false,
 };
 
-const CREATE_STEP_ORDER: CreateMissionStep[] = [
-  "category",
-  "mode",
-  "project-info",
-  "reward-settings",
-  "success",
-];
+const CREATE_STEP_ORDER: CreateMissionStep[] = ["category", "mode", "project-info", "success"];
 
 const CREATE_STEP_INDEX: Record<CreateMissionStep, number> = CREATE_STEP_ORDER.reduce(
   (acc, step, index) => {
@@ -98,9 +91,7 @@ export function CreateMissionClient() {
       case "mode":
         return <CreateModeStep onSelectCustom={controller.selectCustomMode} />;
       case "project-info":
-        return <CreateProjectInfoStep />;
-      case "reward-settings":
-        return <CreateRewardSettingsStep />;
+        return <CreateProjectInfoStep showRewardSettings />;
       case "success":
         return controller.result ? (
           <CreateSuccessScreen
@@ -130,7 +121,7 @@ export function CreateMissionClient() {
             tabIndex={showBackButton ? 0 : -1}
             onClick={controller.goBack}
             disabled={!showBackButton || !controller.canGoBack || controller.isSubmitting}
-            className={`flex size-8 items-center justify-center rounded-full border border-zinc-200 text-zinc-700 disabled:cursor-not-allowed disabled:opacity-40 ${
+            className={`flex size-8 items-center justify-center rounded-full text-zinc-700 disabled:cursor-not-allowed disabled:opacity-40 ${
               showBackButton ? "" : "pointer-events-none opacity-0"
             }`}
           >

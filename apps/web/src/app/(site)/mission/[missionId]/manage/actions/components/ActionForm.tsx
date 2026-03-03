@@ -1,8 +1,11 @@
 "use client";
 
+import { useMultipleImages, useSingleImage } from "@/app/admin/hooks/admin-image";
 import { ACTION_TYPE_LABELS } from "@/constants/action";
+import { STORAGE_BUCKETS } from "@/constants/buckets";
 import {
   ACTION_DESCRIPTION_MAX_LENGTH,
+  ACTION_OPTION_DESCRIPTION_MAX_LENGTH,
   ACTION_OPTION_TITLE_MAX_LENGTH,
   ACTION_TITLE_MAX_LENGTH,
   BRANCH_OPTIONS_COUNT,
@@ -18,6 +21,7 @@ import { ActionType } from "@prisma/client";
 import {
   Button,
   CounterInput,
+  ImageSelector,
   Input,
   LabelText,
   Select,
@@ -30,7 +34,17 @@ import {
   Typo,
 } from "@repo/ui/components";
 import { Plus, Trash2 } from "lucide-react";
-import { useCallback, useState } from "react";
+import {
+  type ForwardedRef,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { patchOptionByKey, removeOptionByKey } from "./actionFormOptionState";
 
 function generateOptionKey() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -45,6 +59,8 @@ interface OptionFormItem {
   id?: string;
   title: string;
   description?: string | null;
+  imageUrl?: string | null;
+  fileUploadId?: string | null;
   nextActionId?: string | null;
   nextCompletionId?: string | null;
   order: number;
@@ -53,6 +69,8 @@ interface OptionFormItem {
 export interface ActionFormValues {
   title: string;
   description?: string | null;
+  imageUrl?: string | null;
+  imageFileUploadId?: string | null;
   isRequired: boolean;
   hasOther?: boolean;
   maxSelections?: number;
@@ -61,15 +79,135 @@ export interface ActionFormValues {
   nextCompletionId?: string | null;
 }
 
+export interface ActionFormRawSnapshot {
+  actionType: ActionType;
+  values: ActionFormValues;
+  nextLinkType: "action" | "completion";
+}
+
+export interface ActionFormHandle {
+  validateAndGetValues: (options?: { showErrors?: boolean }) => ActionFormValues | null;
+  validateAndGetSubmission: (options?: { showErrors?: boolean }) => {
+    actionType: ActionType;
+    values: ActionFormValues;
+  } | null;
+  isUploading: () => boolean;
+  deleteMarkedInitialImages: () => void;
+  isDirty: () => boolean;
+  getRawSnapshot: () => ActionFormRawSnapshot;
+  applyRawSnapshot: (snapshot: ActionFormRawSnapshot) => void;
+}
+
 interface ActionFormProps {
   actionType: ActionType;
   initialValues?: ActionFormValues;
+  dirtyBaselineValues?: ActionFormValues;
   editingAction?: ActionDetail | null;
-  allActions: ActionDetail[];
+  allActions: Array<Pick<ActionDetail, "id" | "title" | "order">>;
   completionOptions: Array<{ id: string; title: string }>;
   isLoading: boolean;
   onSubmit: (values: ActionFormValues) => void;
   onCancel: () => void;
+  hideFooter?: boolean;
+  hideTitle?: boolean;
+  enableTypeSelect?: boolean;
+  enforceExclusiveNextLink?: boolean;
+  wordingMode?: "action" | "question";
+  onActionTypeChange?: (type: ActionType) => void;
+  onDirtyChange?: (isDirty: boolean) => void;
+  onValidationStateChange?: (issueCount: number) => void;
+  onRawSnapshotChange?: (snapshot: ActionFormRawSnapshot) => void;
+}
+
+type NextLinkType = "action" | "completion";
+
+interface NextLinkSelectorProps {
+  itemLabel: string;
+  linkType: NextLinkType;
+  actionValue: string | null;
+  completionValue: string | null;
+  selectableActions: Array<Pick<ActionDetail, "id" | "title" | "order">>;
+  completionOptions: Array<{ id: string; title: string }>;
+  onLinkTypeChange: (type: NextLinkType) => void;
+  onActionChange: (value: string) => void;
+  onCompletionChange: (value: string) => void;
+  errorMessage?: string;
+}
+
+function NextLinkSelector({
+  itemLabel,
+  linkType,
+  actionValue,
+  completionValue,
+  selectableActions,
+  completionOptions,
+  onLinkTypeChange,
+  onActionChange,
+  onCompletionChange,
+  errorMessage,
+}: NextLinkSelectorProps) {
+  return (
+    <>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => onLinkTypeChange("action")}
+          className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-colors ${
+            linkType === "action"
+              ? "border-violet-400 bg-violet-500 text-white"
+              : "border-zinc-200 bg-white text-zinc-600"
+          }`}
+        >
+          {`다음 ${itemLabel}`}
+        </button>
+        <button
+          type="button"
+          onClick={() => onLinkTypeChange("completion")}
+          className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-colors ${
+            linkType === "completion"
+              ? "border-violet-400 bg-violet-500 text-white"
+              : "border-zinc-200 bg-white text-zinc-600"
+          }`}
+        >
+          완료 화면
+        </button>
+      </div>
+
+      {linkType === "action" ? (
+        <Select value={actionValue ?? ""} onValueChange={onActionChange}>
+          <SelectTrigger>
+            <SelectValue placeholder={`다음 이동할 ${itemLabel}을 선택하세요`} />
+          </SelectTrigger>
+          <SelectContent>
+            {selectableActions.map(a => (
+              <SelectItem key={a.id} value={a.id}>
+                #{(a.order ?? 0) + 1} {a.title}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      ) : (
+        <Select value={completionValue ?? ""} onValueChange={onCompletionChange}>
+          <SelectTrigger>
+            <SelectValue placeholder="완료 화면을 선택하세요" />
+          </SelectTrigger>
+          <SelectContent>
+            {completionOptions.map(c => (
+              <SelectItem key={c.id} value={c.id}>
+                {c.title}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+
+      {errorMessage && (
+        <Typo.Body size="small" className="text-red-500">
+          {errorMessage}
+        </Typo.Body>
+      )}
+    </>
+  );
 }
 
 const NEEDS_OPTIONS: ActionType[] = [
@@ -86,6 +224,8 @@ const NEEDS_MAX_SELECTIONS: ActionType[] = [
   ActionType.DATE,
   ActionType.TIME,
 ];
+
+const ACTION_TYPE_VALUES = Object.values(ActionType);
 
 function getDefaultOptions(type: ActionType): OptionFormItem[] {
   if (type === ActionType.BRANCH) {
@@ -116,59 +256,118 @@ function getOptionLimits(type: ActionType): { min: number; max: number } {
   }
 }
 
-const BRANCH_ACTION_PREFIX = "action:";
-const BRANCH_COMPLETION_PREFIX = "completion:";
+function areErrorMapsEqual(left: Record<string, string>, right: Record<string, string>): boolean {
+  const leftEntries = Object.entries(left);
+  const rightEntries = Object.entries(right);
 
-function getBranchTargetValue(option: OptionFormItem): string {
-  if (option.nextActionId) {
-    return `${BRANCH_ACTION_PREFIX}${option.nextActionId}`;
+  if (leftEntries.length !== rightEntries.length) {
+    return false;
   }
-  if (option.nextCompletionId) {
-    return `${BRANCH_COMPLETION_PREFIX}${option.nextCompletionId}`;
-  }
-  return "";
+
+  return leftEntries.every(([key, value]) => right[key] === value);
 }
 
-function parseBranchTargetValue(value: string): {
-  nextActionId: string | null;
-  nextCompletionId: string | null;
-} {
-  if (!value) {
-    return { nextActionId: null, nextCompletionId: null };
-  }
-
-  if (value.startsWith(BRANCH_COMPLETION_PREFIX)) {
-    return {
-      nextActionId: null,
-      nextCompletionId: value.slice(BRANCH_COMPLETION_PREFIX.length) || null,
-    };
-  }
-
-  if (value.startsWith(BRANCH_ACTION_PREFIX)) {
-    return {
-      nextActionId: value.slice(BRANCH_ACTION_PREFIX.length) || null,
-      nextCompletionId: null,
-    };
-  }
+function buildActionDirtyComparable(params: {
+  actionType: ActionType;
+  values: ActionFormValues;
+  nextLinkType: "action" | "completion";
+  enableEditorActionMedia: boolean;
+}) {
+  const { actionType, values, nextLinkType, enableEditorActionMedia } = params;
+  const needsOptions = NEEDS_OPTIONS.includes(actionType);
+  const needsMaxSelections = NEEDS_MAX_SELECTIONS.includes(actionType);
+  const isBranch = actionType === ActionType.BRANCH;
+  const showOptionDescription =
+    enableEditorActionMedia &&
+    (actionType === ActionType.MULTIPLE_CHOICE ||
+      actionType === ActionType.SCALE ||
+      actionType === ActionType.BRANCH);
+  const showOptionImage =
+    enableEditorActionMedia &&
+    (actionType === ActionType.MULTIPLE_CHOICE || actionType === ActionType.BRANCH);
 
   return {
-    nextActionId: value || null,
-    nextCompletionId: null,
+    actionType,
+    values: {
+      title: values.title.trim(),
+      description: values.description?.trim() || null,
+      imageUrl: values.imageUrl ?? null,
+      imageFileUploadId: values.imageFileUploadId ?? null,
+      isRequired: values.isRequired,
+      ...(needsMaxSelections && { maxSelections: values.maxSelections ?? 1 }),
+      ...(actionType === ActionType.MULTIPLE_CHOICE && { hasOther: Boolean(values.hasOther) }),
+      ...(actionType === ActionType.TAG && { hasOther: Boolean(values.hasOther) }),
+      ...(needsOptions && {
+        options: (values.options ?? []).map((option, index) => ({
+          ...option,
+          title: option.title.trim(),
+          description: showOptionDescription ? option.description?.trim() || null : null,
+          imageUrl: showOptionImage ? (option.imageUrl ?? null) : null,
+          fileUploadId: showOptionImage ? (option.fileUploadId ?? null) : null,
+          order: index,
+        })),
+      }),
+      ...(!isBranch &&
+        nextLinkType === "action" && {
+          nextActionId: values.nextActionId ?? null,
+          nextCompletionId: null,
+        }),
+      ...(!isBranch &&
+        nextLinkType === "completion" && {
+          nextCompletionId: values.nextCompletionId ?? null,
+          nextActionId: null,
+        }),
+    },
   };
 }
 
-export function ActionForm({
-  actionType,
-  initialValues,
-  editingAction,
-  allActions,
-  completionOptions,
-  isLoading,
-  onSubmit,
-  onCancel,
-}: ActionFormProps) {
+function ActionFormComponent(
+  {
+    actionType,
+    initialValues,
+    dirtyBaselineValues,
+    editingAction,
+    allActions,
+    completionOptions,
+    isLoading,
+    onSubmit,
+    onCancel,
+    hideFooter = false,
+    hideTitle = false,
+    enableTypeSelect = false,
+    enforceExclusiveNextLink = false,
+    wordingMode = "action",
+    onActionTypeChange,
+    onDirtyChange,
+    onValidationStateChange,
+    onRawSnapshotChange,
+  }: ActionFormProps,
+  ref: ForwardedRef<ActionFormHandle>,
+) {
+  const initialNextLinkType: "action" | "completion" = initialValues?.nextCompletionId
+    ? "completion"
+    : "action";
+  const hasConflictingInitialNextLink = Boolean(
+    initialValues?.nextActionId && initialValues?.nextCompletionId,
+  );
+  const normalizedInitialNextActionId =
+    enforceExclusiveNextLink &&
+    hasConflictingInitialNextLink &&
+    initialNextLinkType === "completion"
+      ? null
+      : (initialValues?.nextActionId ?? null);
+  const normalizedInitialNextCompletionId =
+    enforceExclusiveNextLink && hasConflictingInitialNextLink && initialNextLinkType === "action"
+      ? null
+      : (initialValues?.nextCompletionId ?? null);
+
+  const [selectedActionType, setSelectedActionType] = useState(actionType);
   const [title, setTitle] = useState(initialValues?.title ?? "");
   const [description, setDescription] = useState(initialValues?.description ?? "");
+  const [imageUrl, setImageUrl] = useState<string | null>(initialValues?.imageUrl ?? null);
+  const [imageFileUploadId, setImageFileUploadId] = useState<string | null>(
+    initialValues?.imageFileUploadId ?? null,
+  );
   const [isRequired, setIsRequired] = useState(initialValues?.isRequired ?? true);
   const [hasOther, setHasOther] = useState(initialValues?.hasOther ?? false);
   const [maxSelections, setMaxSelections] = useState(initialValues?.maxSelections ?? 1);
@@ -178,27 +377,253 @@ export function ActionForm({
     }
     return NEEDS_OPTIONS.includes(actionType) ? getDefaultOptions(actionType) : [];
   });
-  const [nextActionId, setNextActionId] = useState<string | null>(
-    initialValues?.nextActionId ?? null,
-  );
+  const [nextActionId, setNextActionId] = useState<string | null>(normalizedInitialNextActionId);
   const [nextCompletionId, setNextCompletionId] = useState<string | null>(
-    initialValues?.nextCompletionId ?? null,
+    normalizedInitialNextCompletionId,
   );
-  const [nextLinkType, setNextLinkType] = useState<"action" | "completion">(
-    initialValues?.nextCompletionId ? "completion" : "action",
-  );
+  const [nextLinkType, setNextLinkType] = useState<NextLinkType>(initialNextLinkType);
+  const [branchOptionLinkTypeByKey, setBranchOptionLinkTypeByKey] = useState<
+    Record<string, NextLinkType>
+  >({});
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [hasValidationStarted, setHasValidationStarted] = useState(false);
+  const [validationIssueCount, setValidationIssueCount] = useState(0);
+  const initialActionTypeRef = useRef(actionType);
 
-  const needsOptions = NEEDS_OPTIONS.includes(actionType);
-  const needsMaxSelections = NEEDS_MAX_SELECTIONS.includes(actionType);
-  const isBranch = actionType === ActionType.BRANCH;
-  const optionLimits = getOptionLimits(actionType);
+  const enableEditorActionMedia = enforceExclusiveNextLink;
+  const itemLabel = wordingMode === "question" ? "질문" : "액션";
+  const needsOptions = NEEDS_OPTIONS.includes(selectedActionType);
+  const needsMaxSelections = NEEDS_MAX_SELECTIONS.includes(selectedActionType);
+  const isBranch = selectedActionType === ActionType.BRANCH;
+  const optionLimits = getOptionLimits(selectedActionType);
+  const showOptionDescription =
+    enableEditorActionMedia &&
+    (selectedActionType === ActionType.MULTIPLE_CHOICE ||
+      selectedActionType === ActionType.SCALE ||
+      selectedActionType === ActionType.BRANCH);
+  const showOptionImage =
+    enableEditorActionMedia &&
+    (selectedActionType === ActionType.MULTIPLE_CHOICE || selectedActionType === ActionType.BRANCH);
 
   const selectableActions = allActions.filter(a => !editingAction || a.id !== editingAction.id);
   const hasLinkTargets = selectableActions.length > 0 || completionOptions.length > 0;
+  const completionIdSet = useMemo(
+    () => new Set(completionOptions.map(completion => completion.id)),
+    [completionOptions],
+  );
+  const [initialOptionImages] = useState(() =>
+    options.flatMap(option =>
+      option.imageUrl
+        ? [
+            {
+              id: option._key,
+              url: option.imageUrl,
+              fileUploadId: option.fileUploadId ?? undefined,
+            },
+          ]
+        : [],
+    ),
+  );
 
-  const validate = useCallback((): boolean => {
+  const actionImageUpload = useSingleImage({
+    initialUrl: initialValues?.imageUrl ?? null,
+    initialFileUploadId: initialValues?.imageFileUploadId ?? null,
+    bucket: STORAGE_BUCKETS.ACTION_IMAGES,
+    onUploadSuccess: data => {
+      setImageUrl(data.publicUrl);
+      setImageFileUploadId(data.fileUploadId);
+    },
+  });
+  const optionImages = useMultipleImages({
+    bucket: STORAGE_BUCKETS.ACTION_IMAGES,
+    initialImages: initialOptionImages,
+    onUploadSuccess: (optionKey, data) => {
+      setOptions(prev =>
+        prev.map(option =>
+          option._key === optionKey
+            ? {
+                ...option,
+                imageUrl: data.publicUrl,
+                fileUploadId: data.fileUploadId,
+              }
+            : option,
+        ),
+      );
+    },
+  });
+
+  useEffect(() => {
+    if (!nextCompletionId || completionIdSet.has(nextCompletionId)) {
+      return;
+    }
+
+    setNextCompletionId(null);
+    setErrors(prev => {
+      if (!prev.nextLink) {
+        return prev;
+      }
+
+      const { nextLink: _nextLink, ...rest } = prev;
+      return rest;
+    });
+  }, [completionIdSet, nextCompletionId]);
+
+  useEffect(() => {
+    if (!isBranch) {
+      return;
+    }
+
+    let hasChanged = false;
+    const nextOptions = options.map(option => {
+      if (option.nextCompletionId && !completionIdSet.has(option.nextCompletionId)) {
+        hasChanged = true;
+        return {
+          ...option,
+          nextCompletionId: null,
+        };
+      }
+
+      return option;
+    });
+
+    if (hasChanged) {
+      setOptions(nextOptions);
+    }
+  }, [isBranch, options, completionIdSet]);
+
+  useEffect(() => {
+    setBranchOptionLinkTypeByKey(prev => {
+      const next: Record<string, NextLinkType> = {};
+
+      for (const option of options) {
+        next[option._key] =
+          prev[option._key] ?? (option.nextCompletionId ? "completion" : "action");
+      }
+
+      const prevKeys = Object.keys(prev);
+      const nextKeys = Object.keys(next);
+
+      if (prevKeys.length !== nextKeys.length) {
+        return next;
+      }
+
+      for (const key of nextKeys) {
+        if (prev[key] !== next[key]) {
+          return next;
+        }
+      }
+
+      return prev;
+    });
+  }, [options]);
+
+  const handleActionTypeChange = (nextType: ActionType) => {
+    if (nextType === selectedActionType) {
+      return;
+    }
+
+    for (const option of options) {
+      optionImages.discard(option._key);
+    }
+
+    setSelectedActionType(nextType);
+    setHasOther(false);
+    setMaxSelections(1);
+    setOptions(NEEDS_OPTIONS.includes(nextType) ? getDefaultOptions(nextType) : []);
+    setNextActionId(null);
+    setNextCompletionId(null);
+    setNextLinkType("action");
+    setBranchOptionLinkTypeByKey({});
+    setErrors({});
+    onActionTypeChange?.(nextType);
+  };
+
+  const handleNextLinkTypeChange = (type: NextLinkType) => {
+    setNextLinkType(type);
+
+    if (!enforceExclusiveNextLink) {
+      return;
+    }
+
+    if (type === "action") {
+      setNextCompletionId(null);
+      return;
+    }
+
+    setNextActionId(null);
+  };
+
+  const handleNextActionChange = (value: string) => {
+    setNextActionId(value || null);
+
+    if (enforceExclusiveNextLink) {
+      setNextCompletionId(null);
+    }
+  };
+
+  const handleNextCompletionChange = (value: string) => {
+    setNextCompletionId(value || null);
+
+    if (enforceExclusiveNextLink) {
+      setNextActionId(null);
+    }
+  };
+
+  const handleBranchOptionLinkTypeChange = (optionKey: string, type: NextLinkType) => {
+    setBranchOptionLinkTypeByKey(prev => {
+      if (prev[optionKey] === type) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        [optionKey]: type,
+      };
+    });
+
+    setOptions(prev =>
+      prev.map(option => {
+        if (option._key !== optionKey) {
+          return option;
+        }
+
+        if (type === "action") {
+          return { ...option, nextCompletionId: null };
+        }
+
+        return { ...option, nextActionId: null };
+      }),
+    );
+  };
+
+  const handleBranchOptionNextActionChange = (optionKey: string, value: string) => {
+    setBranchOptionLinkTypeByKey(prev => ({
+      ...prev,
+      [optionKey]: "action",
+    }));
+    setOptions(prev =>
+      patchOptionByKey(prev, optionKey, {
+        nextActionId: value || null,
+        nextCompletionId: null,
+      }),
+    );
+  };
+
+  const handleBranchOptionNextCompletionChange = (optionKey: string, value: string) => {
+    setBranchOptionLinkTypeByKey(prev => ({
+      ...prev,
+      [optionKey]: "completion",
+    }));
+    setOptions(prev =>
+      patchOptionByKey(prev, optionKey, {
+        nextActionId: null,
+        nextCompletionId: value || null,
+      }),
+    );
+  };
+
+  const buildValidationErrors = useCallback((): Record<string, string> => {
     const newErrors: Record<string, string> = {};
 
     if (!title.trim()) {
@@ -225,7 +650,7 @@ export function ActionForm({
         }
       } else {
         if (nextLinkType === "action" && !nextActionId) {
-          newErrors.nextLink = "다음 이동할 액션을 선택해주세요.";
+          newErrors.nextLink = `다음 이동할 ${itemLabel}을 선택해주세요.`;
         }
         if (nextLinkType === "completion" && !nextCompletionId) {
           newErrors.nextLink = "완료 화면을 선택해주세요.";
@@ -233,8 +658,7 @@ export function ActionForm({
       }
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return newErrors;
   }, [
     title,
     needsOptions,
@@ -245,55 +669,420 @@ export function ActionForm({
     nextActionId,
     nextCompletionId,
     hasLinkTargets,
+    itemLabel,
   ]);
 
-  const handleSubmit = () => {
-    if (!validate()) return;
+  const runValidation = useCallback(
+    ({ showErrors = true }: { showErrors?: boolean } = {}) => {
+      const nextErrors = buildValidationErrors();
+      const issueCount = Object.keys(nextErrors).length;
 
-    const values: ActionFormValues = {
-      title: title.trim(),
-      description: description?.trim() || null,
+      setValidationIssueCount(prev => (prev === issueCount ? prev : issueCount));
+
+      if (showErrors) {
+        setErrors(prev => (areErrorMapsEqual(prev, nextErrors) ? prev : nextErrors));
+      }
+
+      return {
+        isValid: issueCount === 0,
+        issueCount,
+      };
+    },
+    [buildValidationErrors],
+  );
+
+  const buildValidatedValues = useCallback(
+    ({ showErrors = true }: { showErrors?: boolean } = {}): ActionFormValues | null => {
+      const validationResult = runValidation({ showErrors });
+      if (!validationResult.isValid) {
+        return null;
+      }
+
+      return {
+        title: title.trim(),
+        description: description?.trim() || null,
+        imageUrl,
+        imageFileUploadId,
+        isRequired,
+        ...(needsMaxSelections && { maxSelections }),
+        ...(selectedActionType === ActionType.MULTIPLE_CHOICE && { hasOther }),
+        ...(selectedActionType === ActionType.TAG && { hasOther }),
+        ...(needsOptions && {
+          options: options.map((o, i) => {
+            const { _key, ...rest } = o;
+            return {
+              ...rest,
+              title: o.title.trim(),
+              description: enableEditorActionMedia
+                ? showOptionDescription
+                  ? o.description?.trim() || null
+                  : null
+                : o.description?.trim() || null,
+              imageUrl: enableEditorActionMedia
+                ? showOptionImage
+                  ? (o.imageUrl ?? null)
+                  : null
+                : (o.imageUrl ?? null),
+              fileUploadId: enableEditorActionMedia
+                ? showOptionImage
+                  ? (o.fileUploadId ?? null)
+                  : null
+                : (o.fileUploadId ?? null),
+              order: i,
+            };
+          }),
+        }),
+        ...(!isBranch && nextLinkType === "action" && { nextActionId, nextCompletionId: null }),
+        ...(!isBranch &&
+          nextLinkType === "completion" && {
+            nextCompletionId,
+            nextActionId: null,
+          }),
+      };
+    },
+    [
+      runValidation,
+      title,
+      description,
+      imageUrl,
+      imageFileUploadId,
+      isRequired,
+      needsMaxSelections,
+      maxSelections,
+      selectedActionType,
+      hasOther,
+      needsOptions,
+      options,
+      enableEditorActionMedia,
+      showOptionDescription,
+      showOptionImage,
+      isBranch,
+      nextLinkType,
+      nextActionId,
+      nextCompletionId,
+    ],
+  );
+
+  const getRawSnapshot = useCallback((): ActionFormRawSnapshot => {
+    const rawValues: ActionFormValues = {
+      title,
+      description: description ?? null,
+      imageUrl,
+      imageFileUploadId,
       isRequired,
       ...(needsMaxSelections && { maxSelections }),
-      ...(actionType === ActionType.MULTIPLE_CHOICE && { hasOther }),
-      ...(actionType === ActionType.TAG && { hasOther }),
+      ...(selectedActionType === ActionType.MULTIPLE_CHOICE && { hasOther }),
+      ...(selectedActionType === ActionType.TAG && { hasOther }),
       ...(needsOptions && {
-        options: options.map((o, i) => {
-          const { _key, ...rest } = o;
-          return { ...rest, title: o.title.trim(), order: i };
+        options: options.map(option => {
+          const { _key: _ignored, ...rest } = option;
+          return {
+            ...rest,
+            description: rest.description ?? null,
+            imageUrl: rest.imageUrl ?? null,
+            fileUploadId: rest.fileUploadId ?? null,
+            nextActionId: rest.nextActionId ?? null,
+            nextCompletionId: rest.nextCompletionId ?? null,
+          };
         }),
       }),
       ...(!isBranch && nextLinkType === "action" && { nextActionId, nextCompletionId: null }),
       ...(!isBranch && nextLinkType === "completion" && { nextCompletionId, nextActionId: null }),
+      ...(isBranch && { nextActionId: null, nextCompletionId: null }),
     };
 
+    return {
+      actionType: selectedActionType,
+      values: rawValues,
+      nextLinkType,
+    };
+  }, [
+    description,
+    hasOther,
+    imageFileUploadId,
+    imageUrl,
+    isBranch,
+    isRequired,
+    needsMaxSelections,
+    needsOptions,
+    nextActionId,
+    nextCompletionId,
+    nextLinkType,
+    options,
+    selectedActionType,
+    title,
+    maxSelections,
+  ]);
+
+  const applyRawSnapshot = useCallback(
+    (snapshot: ActionFormRawSnapshot) => {
+      const nextType = snapshot.actionType;
+      const nextValues = snapshot.values;
+      const nextLink = snapshot.nextLinkType;
+
+      setSelectedActionType(nextType);
+      onActionTypeChange?.(nextType);
+      setTitle(nextValues.title ?? "");
+      setDescription(nextValues.description ?? "");
+      setImageUrl(nextValues.imageUrl ?? null);
+      setImageFileUploadId(nextValues.imageFileUploadId ?? null);
+      setIsRequired(nextValues.isRequired ?? true);
+      setHasOther(nextValues.hasOther ?? false);
+      setMaxSelections(nextValues.maxSelections ?? 1);
+      const nextOptions = (nextValues.options ?? []).map((option, index) => ({
+        _key: generateOptionKey(),
+        id: option.id,
+        title: option.title ?? "",
+        description: option.description ?? null,
+        imageUrl: option.imageUrl ?? null,
+        fileUploadId: option.fileUploadId ?? null,
+        nextActionId: option.nextActionId ?? null,
+        nextCompletionId: option.nextCompletionId ?? null,
+        order: option.order ?? index,
+      }));
+      setOptions(nextOptions);
+      setBranchOptionLinkTypeByKey(
+        nextOptions.reduce<Record<string, NextLinkType>>((acc, option) => {
+          acc[option._key] = option.nextCompletionId ? "completion" : "action";
+          return acc;
+        }, {}),
+      );
+      setNextLinkType(nextLink ?? "action");
+      setNextActionId(nextValues.nextActionId ?? null);
+      setNextCompletionId(nextValues.nextCompletionId ?? null);
+      setErrors({});
+    },
+    [onActionTypeChange],
+  );
+
+  const dirtyComparableString = useMemo(
+    () =>
+      JSON.stringify(
+        buildActionDirtyComparable({
+          actionType: selectedActionType,
+          values: {
+            title,
+            description,
+            imageUrl,
+            imageFileUploadId,
+            isRequired,
+            hasOther,
+            maxSelections,
+            options: options.map(option => {
+              const { _key, ...rest } = option;
+              return rest;
+            }),
+            nextActionId,
+            nextCompletionId,
+          },
+          nextLinkType,
+          enableEditorActionMedia,
+        }),
+      ),
+    [
+      selectedActionType,
+      title,
+      description,
+      imageUrl,
+      imageFileUploadId,
+      isRequired,
+      needsMaxSelections,
+      maxSelections,
+      hasOther,
+      needsOptions,
+      options,
+      enableEditorActionMedia,
+      showOptionDescription,
+      showOptionImage,
+      isBranch,
+      nextLinkType,
+      nextActionId,
+      nextCompletionId,
+    ],
+  );
+  const initialDirtyComparableStringRef = useRef(dirtyComparableString);
+  const dirtyBaselineComparableString = useMemo(() => {
+    if (!dirtyBaselineValues) {
+      return initialDirtyComparableStringRef.current;
+    }
+
+    const baselineNextLinkType: "action" | "completion" = dirtyBaselineValues.nextCompletionId
+      ? "completion"
+      : "action";
+    return JSON.stringify(
+      buildActionDirtyComparable({
+        actionType: initialActionTypeRef.current,
+        values: dirtyBaselineValues,
+        nextLinkType: baselineNextLinkType,
+        enableEditorActionMedia,
+      }),
+    );
+  }, [dirtyBaselineValues, enableEditorActionMedia]);
+  const isDirty = dirtyComparableString !== dirtyBaselineComparableString;
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [onDirtyChange, isDirty]);
+
+  useEffect(() => {
+    onValidationStateChange?.(validationIssueCount);
+  }, [onValidationStateChange, validationIssueCount]);
+
+  useEffect(() => {
+    onRawSnapshotChange?.(getRawSnapshot());
+  }, [getRawSnapshot, onRawSnapshotChange]);
+
+  useEffect(() => {
+    if (!hasValidationStarted) {
+      return;
+    }
+
+    runValidation();
+  }, [
+    description,
+    hasLinkTargets,
+    hasValidationStarted,
+    itemLabel,
+    needsOptions,
+    nextActionId,
+    nextCompletionId,
+    nextLinkType,
+    optionLimits.min,
+    options,
+    runValidation,
+    title,
+    isBranch,
+  ]);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      validateAndGetValues: options => buildValidatedValues(options) ?? null,
+      validateAndGetSubmission: options => {
+        const values = buildValidatedValues(options);
+        if (!values) {
+          return null;
+        }
+
+        return { actionType: selectedActionType, values };
+      },
+      isUploading: () => actionImageUpload.isUploading || optionImages.isAnyUploading,
+      deleteMarkedInitialImages: () => {
+        actionImageUpload.deleteMarkedInitial();
+        optionImages.deleteAllMarkedInitials();
+      },
+      isDirty: () => isDirty,
+      getRawSnapshot,
+      applyRawSnapshot,
+    }),
+    [
+      actionImageUpload,
+      applyRawSnapshot,
+      buildValidatedValues,
+      getRawSnapshot,
+      isDirty,
+      optionImages,
+      selectedActionType,
+    ],
+  );
+
+  const handleSubmit = () => {
+    const values = buildValidatedValues();
+    if (!values) return;
     onSubmit(values);
   };
 
+  const handleBlurCapture = () => {
+    setHasValidationStarted(true);
+    runValidation();
+  };
+
   const addOption = () => {
-    if (options.length >= optionLimits.max) return;
-    setOptions([...options, { _key: generateOptionKey(), title: "", order: options.length }]);
+    setOptions(prev => {
+      if (prev.length >= optionLimits.max) {
+        return prev;
+      }
+
+      return [
+        ...prev,
+        {
+          _key: generateOptionKey(),
+          title: "",
+          description: null,
+          imageUrl: null,
+          fileUploadId: null,
+          order: prev.length,
+        },
+      ];
+    });
   };
 
-  const removeOption = (index: number) => {
-    if (options.length <= optionLimits.min) return;
-    setOptions(options.filter((_, i) => i !== index));
+  const removeOptionByOptionKey = (optionKey: string) => {
+    setOptions(prev => {
+      if (prev.length <= optionLimits.min) {
+        return prev;
+      }
+
+      const target = prev.find(option => option._key === optionKey);
+      if (target) {
+        optionImages.discard(target._key);
+      }
+
+      return removeOptionByKey(prev, optionKey);
+    });
   };
 
-  const updateOption = (index: number, field: keyof OptionFormItem, value: string | null) => {
-    setOptions(options.map((o, i) => (i === index ? { ...o, [field]: value } : o)));
+  const updateOptionByKey = (
+    optionKey: string,
+    field: keyof OptionFormItem,
+    value: string | null,
+  ) => {
+    setOptions(prev =>
+      patchOptionByKey(prev, optionKey, { [field]: value } as Partial<OptionFormItem>),
+    );
+  };
+
+  const handleActionImageDelete = () => {
+    actionImageUpload.discard();
+    setImageUrl(null);
+    setImageFileUploadId(null);
   };
 
   return (
-    <div className="flex flex-col gap-5 p-4">
-      <Typo.SubTitle>
-        {editingAction ? "액션 수정" : `${ACTION_TYPE_LABELS[actionType]} 액션 추가`}
-      </Typo.SubTitle>
+    <div className="flex flex-col gap-5 p-4" onBlurCapture={handleBlurCapture}>
+      {!hideTitle && (
+        <Typo.SubTitle>
+          {editingAction
+            ? `${itemLabel} 수정`
+            : `${ACTION_TYPE_LABELS[selectedActionType]} ${itemLabel} 추가`}
+        </Typo.SubTitle>
+      )}
+
+      {enableTypeSelect && (
+        <div className="flex flex-col gap-2">
+          <LabelText required={false}>{itemLabel} 유형</LabelText>
+          <Select
+            value={selectedActionType}
+            onValueChange={value => handleActionTypeChange(value as ActionType)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder={`${itemLabel} 유형을 선택하세요`} />
+            </SelectTrigger>
+            <SelectContent>
+              {ACTION_TYPE_VALUES.map(type => (
+                <SelectItem key={type} value={type}>
+                  {ACTION_TYPE_LABELS[type]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       <Input
         label="제목"
         required
-        placeholder="액션 제목을 입력해주세요"
+        placeholder={`${itemLabel} 제목을 입력해주세요`}
         maxLength={ACTION_TITLE_MAX_LENGTH}
         value={title}
         onChange={e => setTitle(e.target.value)}
@@ -302,12 +1091,36 @@ export function ActionForm({
 
       <Textarea
         label="설명"
-        placeholder="액션에 대한 설명을 입력해주세요"
+        placeholder={`${itemLabel}에 대한 설명을 입력해주세요`}
         maxLength={ACTION_DESCRIPTION_MAX_LENGTH}
         rows={3}
         value={description ?? ""}
         onChange={e => setDescription(e.target.value)}
       />
+
+      {enableEditorActionMedia && (
+        <div className="rounded-lg border border-zinc-200 bg-white px-4 py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col gap-1">
+              <Typo.Body size="medium" className="font-semibold text-zinc-800">
+                {itemLabel} 이미지
+              </Typo.Body>
+              <Typo.Body size="small" className="text-zinc-500">
+                {actionImageUpload.isUploading
+                  ? "업로드 중..."
+                  : `${itemLabel}에 노출할 이미지를 설정합니다. (선택)`}
+              </Typo.Body>
+            </div>
+            <ImageSelector
+              size="large"
+              imageUrl={actionImageUpload.previewUrl ?? imageUrl ?? undefined}
+              onImageSelect={actionImageUpload.upload}
+              onImageDelete={handleActionImageDelete}
+              disabled={isLoading || actionImageUpload.isUploading}
+            />
+          </div>
+        </div>
+      )}
 
       <div className="flex items-center justify-between">
         <LabelText required={false}>필수 응답</LabelText>
@@ -326,7 +1139,8 @@ export function ActionForm({
         </div>
       )}
 
-      {(actionType === ActionType.MULTIPLE_CHOICE || actionType === ActionType.TAG) && (
+      {(selectedActionType === ActionType.MULTIPLE_CHOICE ||
+        selectedActionType === ActionType.TAG) && (
         <div className="flex items-center justify-between">
           <LabelText required={false}>기타 옵션 허용</LabelText>
           <Toggle checked={hasOther} onCheckedChange={setHasOther} />
@@ -338,79 +1152,111 @@ export function ActionForm({
           <LabelText required>
             항목 ({options.length}/{optionLimits.max})
           </LabelText>
-          {options.map((option, index) => (
-            <div
-              key={option._key}
-              className="flex flex-col gap-2 rounded-lg border border-zinc-100 bg-zinc-50 p-3"
-            >
-              <div className="flex items-center gap-2">
-                <Typo.Body size="small" className="shrink-0 font-medium text-zinc-500">
-                  {index + 1}
-                </Typo.Body>
-                <input
-                  type="text"
-                  placeholder="항목 제목"
-                  maxLength={ACTION_OPTION_TITLE_MAX_LENGTH}
-                  value={option.title}
-                  onChange={e => updateOption(index, "title", e.target.value)}
-                  className="flex-1 rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-violet-400"
-                />
-                {!isBranch && options.length > optionLimits.min && (
-                  <button
-                    type="button"
-                    onClick={() => removeOption(index)}
-                    className="rounded p-1 text-zinc-400 hover:text-red-500"
-                  >
-                    <Trash2 className="size-4" />
-                  </button>
-                )}
-              </div>
+          {options.map((option, index) => {
+            const optionPreviewUrl = showOptionImage
+              ? (optionImages.getPreviewUrl(option._key) ?? option.imageUrl ?? undefined)
+              : undefined;
 
-              {isBranch && (
-                <div className="ml-6">
-                  {hasLinkTargets ? (
-                    <Select
-                      value={getBranchTargetValue(option)}
-                      onValueChange={val => {
-                        const parsed = parseBranchTargetValue(val);
-                        setOptions(
-                          options.map((currentOption, currentIndex) =>
-                            currentIndex === index
-                              ? {
-                                  ...currentOption,
-                                  nextActionId: parsed.nextActionId,
-                                  nextCompletionId: parsed.nextCompletionId,
-                                }
-                              : currentOption,
-                          ),
-                        );
-                      }}
+            return (
+              <div
+                key={option._key}
+                className="flex flex-col gap-2 rounded-lg border border-zinc-100 bg-zinc-50 p-3"
+              >
+                <div className="flex items-center gap-2">
+                  <Typo.Body size="small" className="shrink-0 font-medium text-zinc-500">
+                    {index + 1}
+                  </Typo.Body>
+                  <input
+                    type="text"
+                    placeholder="항목 제목"
+                    maxLength={ACTION_OPTION_TITLE_MAX_LENGTH}
+                    value={option.title}
+                    onChange={e => updateOptionByKey(option._key, "title", e.target.value)}
+                    className="flex-1 rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-violet-400"
+                  />
+                  {!isBranch && options.length > optionLimits.min && (
+                    <button
+                      type="button"
+                      onClick={() => removeOptionByOptionKey(option._key)}
+                      className="rounded p-1 text-zinc-400 hover:text-red-500"
                     >
-                      <SelectTrigger className="h-9 text-sm">
-                        <SelectValue placeholder="분기 이동할 대상 선택" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {selectableActions.map(a => (
-                          <SelectItem key={a.id} value={`${BRANCH_ACTION_PREFIX}${a.id}`}>
-                            #{(a.order ?? 0) + 1} {a.title}
-                          </SelectItem>
-                        ))}
-                        {completionOptions.map(c => (
-                          <SelectItem key={c.id} value={`${BRANCH_COMPLETION_PREFIX}${c.id}`}>
-                            [완료] {c.title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <Typo.Body size="small" className="text-zinc-400">
-                      다른 액션을 먼저 추가해주세요.
-                    </Typo.Body>
+                      <Trash2 className="size-4" />
+                    </button>
                   )}
                 </div>
-              )}
-            </div>
-          ))}
+
+                {showOptionDescription && (
+                  <div className="ml-6">
+                    <input
+                      type="text"
+                      placeholder="항목 설명 (선택)"
+                      maxLength={ACTION_OPTION_DESCRIPTION_MAX_LENGTH}
+                      value={option.description ?? ""}
+                      onChange={e => updateOptionByKey(option._key, "description", e.target.value)}
+                      className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-violet-400"
+                    />
+                  </div>
+                )}
+
+                {showOptionImage && (
+                  <div className="ml-6 rounded-md border border-zinc-200 bg-white px-3 py-2">
+                    <div className="flex items-center justify-between gap-3">
+                      <Typo.Body size="small" className="text-zinc-600">
+                        항목 이미지 (선택)
+                      </Typo.Body>
+                      <ImageSelector
+                        size="medium"
+                        imageUrl={optionPreviewUrl}
+                        onImageSelect={file => {
+                          if (option.fileUploadId) {
+                            optionImages.markInitialForDeletion(option.fileUploadId);
+                          }
+                          optionImages.upload(option._key, file);
+                        }}
+                        onImageDelete={() => {
+                          optionImages.discard(option._key);
+                          updateOptionByKey(option._key, "imageUrl", null);
+                          updateOptionByKey(option._key, "fileUploadId", null);
+                        }}
+                        disabled={isLoading || optionImages.isUploading(option._key)}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {isBranch && (
+                  <div className="ml-6 flex flex-col gap-2">
+                    {hasLinkTargets ? (
+                      <NextLinkSelector
+                        itemLabel={itemLabel}
+                        linkType={
+                          branchOptionLinkTypeByKey[option._key] ??
+                          (option.nextCompletionId ? "completion" : "action")
+                        }
+                        actionValue={option.nextActionId ?? null}
+                        completionValue={option.nextCompletionId ?? null}
+                        selectableActions={selectableActions}
+                        completionOptions={completionOptions}
+                        onLinkTypeChange={type =>
+                          handleBranchOptionLinkTypeChange(option._key, type)
+                        }
+                        onActionChange={value =>
+                          handleBranchOptionNextActionChange(option._key, value)
+                        }
+                        onCompletionChange={value =>
+                          handleBranchOptionNextCompletionChange(option._key, value)
+                        }
+                      />
+                    ) : (
+                      <Typo.Body size="small" className="text-zinc-400">
+                        {`다른 ${itemLabel}을 먼저 추가해주세요.`}
+                      </Typo.Body>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
 
           {errors.options && (
             <Typo.Body size="small" className="text-red-500">
@@ -442,72 +1288,26 @@ export function ActionForm({
 
           {!hasLinkTargets ? (
             <Typo.Body size="small" className="text-zinc-400">
-              다른 액션이나 완료 화면을 먼저 추가한 후 설정할 수 있습니다.
+              {`다른 ${itemLabel}이나 완료 화면을 먼저 추가한 후 설정할 수 있습니다.`}
             </Typo.Body>
           ) : (
             <>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setNextLinkType("action")}
-                  className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-colors ${
-                    nextLinkType === "action"
-                      ? "border-violet-400 bg-violet-500 text-white"
-                      : "border-zinc-200 bg-white text-zinc-600"
-                  }`}
-                >
-                  다음 액션
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setNextLinkType("completion")}
-                  className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-colors ${
-                    nextLinkType === "completion"
-                      ? "border-violet-400 bg-violet-500 text-white"
-                      : "border-zinc-200 bg-white text-zinc-600"
-                  }`}
-                >
-                  완료 화면
-                </button>
-              </div>
+              <NextLinkSelector
+                itemLabel={itemLabel}
+                linkType={nextLinkType}
+                actionValue={nextActionId}
+                completionValue={nextCompletionId}
+                selectableActions={selectableActions}
+                completionOptions={completionOptions}
+                onLinkTypeChange={handleNextLinkTypeChange}
+                onActionChange={handleNextActionChange}
+                onCompletionChange={handleNextCompletionChange}
+                errorMessage={errors.nextLink}
+              />
 
-              {nextLinkType === "action" ? (
-                <Select
-                  value={nextActionId ?? ""}
-                  onValueChange={val => setNextActionId(val || null)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="다음 이동할 액션을 선택하세요" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {selectableActions.map(a => (
-                      <SelectItem key={a.id} value={a.id}>
-                        #{(a.order ?? 0) + 1} {a.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <Select
-                  value={nextCompletionId ?? ""}
-                  onValueChange={val => setNextCompletionId(val || null)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="완료 화면을 선택하세요" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {completionOptions.map(c => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.title}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-
-              {errors.nextLink && (
-                <Typo.Body size="small" className="text-red-500">
-                  {errors.nextLink}
+              {enforceExclusiveNextLink && (
+                <Typo.Body size="small" className="text-zinc-500">
+                  {`다음 ${itemLabel}/완료 화면 중 하나만 선택할 수 있습니다.`}
                 </Typo.Body>
               )}
             </>
@@ -515,14 +1315,19 @@ export function ActionForm({
         </div>
       )}
 
-      <div className="flex gap-3 pb-4 pt-2">
-        <Button variant="secondary" fullWidth onClick={onCancel} disabled={isLoading}>
-          취소
-        </Button>
-        <Button fullWidth onClick={handleSubmit} loading={isLoading} disabled={isLoading}>
-          {editingAction ? "수정" : "추가"}
-        </Button>
-      </div>
+      {!hideFooter && (
+        <div className="flex gap-3 pb-4 pt-2">
+          <Button variant="secondary" fullWidth onClick={onCancel} disabled={isLoading}>
+            취소
+          </Button>
+          <Button fullWidth onClick={handleSubmit} loading={isLoading} disabled={isLoading}>
+            {editingAction ? "수정" : "추가"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
+
+export const ActionForm = forwardRef<ActionFormHandle, ActionFormProps>(ActionFormComponent);
+ActionForm.displayName = "ActionForm";

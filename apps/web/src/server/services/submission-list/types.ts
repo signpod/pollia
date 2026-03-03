@@ -13,9 +13,11 @@ export interface SubmissionAnswer {
 
 export interface SubmissionRow {
   id: string;
+  respondentId: string;
   user: SubmissionUser;
   startedAt: Date;
   completedAt: Date | null;
+  responseAt: Date;
   isCompleted: boolean;
   answers: SubmissionAnswer[];
 }
@@ -37,6 +39,7 @@ export interface MissionResponseWithUserAndAnswers {
   id: string;
   startedAt: Date;
   completedAt: Date | null;
+  userId: string | null;
   guestId: string | null;
   user: Pick<User, "name" | "phone"> | null;
   answers: Array<{
