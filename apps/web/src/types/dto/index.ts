@@ -8,3 +8,4 @@ export * from "./user";
 export * from "./mission-completion";
 export * from "./mission-like";
 export * from "./tracking";
+export * from "./ai";
