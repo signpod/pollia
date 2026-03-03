@@ -13,7 +13,7 @@ import PickIcon from "@public/svgs/pick-icon.svg";
 import { Tooltip, Typo, useDrawer } from "@repo/ui/components";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { LoginDrawer } from "./LoginDrawer";
 
 export function BottomNavBar() {
@@ -30,10 +30,45 @@ function BottomNavBarContent() {
   const { isLoggedIn } = useAuth();
   const { open: openLoginDrawer } = useDrawer();
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
+  const [isEditorPopupOpen, setIsEditorPopupOpen] = useState(false);
+  const popupRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     router.prefetch(ROUTES.LIKES);
   }, [router]);
+
+  useEffect(() => {
+    if (!isEditorPopupOpen) return;
+
+    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+      if (popupRef.current && !popupRef.current.contains(e.target as Node)) {
+        setIsEditorPopupOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [isEditorPopupOpen]);
+
+  const handleEditorClick = useCallback(() => {
+    if (!isLoggedIn) {
+      openLoginDrawer();
+      return;
+    }
+    setIsEditorPopupOpen(prev => !prev);
+  }, [isLoggedIn, openLoginDrawer]);
+
+  const handleCategorySelect = useCallback(
+    (category: "RESEARCH" | "TEST") => {
+      setIsEditorPopupOpen(false);
+      router.push(`${ROUTES.CREATE_MISSION}?category=${category}`);
+    },
+    [router],
+  );
 
   const handleLikesClick = (e: React.MouseEvent) => {
     if (!isLoggedIn) {
@@ -42,9 +77,9 @@ function BottomNavBarContent() {
     }
   };
 
-  const isHome = pathname === ROUTES.HOME;
-  const isCreate = pathname === ROUTES.CREATE_MISSION;
-  const isLikes = pathname === ROUTES.LIKES;
+  const isHome = !isEditorPopupOpen && pathname === ROUTES.HOME;
+  const isCreate = !isEditorPopupOpen && pathname === ROUTES.CREATE_MISSION;
+  const isLikes = !isEditorPopupOpen && pathname === ROUTES.LIKES;
 
   const comingSoonProps = (id: string) =>
     ({
@@ -55,7 +90,7 @@ function BottomNavBarContent() {
     }) as const;
 
   return (
-    <nav className="flex w-full items-center border-t border-zinc-100 bg-white px-1 shadow-[0px_4px_20px_0px_rgba(9,9,11,0.08)]">
+    <nav className="relative z-50 flex w-full items-center border-t border-zinc-100 bg-white px-1 shadow-[0px_4px_20px_0px_rgba(9,9,11,0.08)]">
       <Link
         href={ROUTES.HOME}
         className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2"
@@ -86,19 +121,52 @@ function BottomNavBarContent() {
         </Typo.Body>
       </span>
 
-      <Link
-        href={ROUTES.CREATE_MISSION}
-        className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2"
-        aria-label="에디터"
-      >
-        {isCreate ? <EditorIconFill className="size-6" /> : <EditorIcon className="size-6" />}
-        <Typo.Body
-          size="small"
-          className={`text-[11px] font-bold leading-normal ${isCreate ? "text-black" : "text-zinc-400"}`}
+      <div className="relative flex flex-1 flex-col items-center" ref={popupRef}>
+        {isEditorPopupOpen && (
+          <>
+            <div className="absolute bottom-full z-50 mb-2 w-60 rounded-xl border border-zinc-100 bg-white p-2 shadow-[0px_4px_24px_0px_rgba(0,0,0,0.16)]">
+              <button
+                type="button"
+                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-zinc-50 active:bg-zinc-100"
+                onClick={() => handleCategorySelect("RESEARCH")}
+              >
+                <span className="text-lg">📋</span>
+                <Typo.Body size="medium" className="font-medium text-zinc-800">
+                  설문폼 만들기
+                </Typo.Body>
+              </button>
+              <button
+                type="button"
+                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-zinc-50 active:bg-zinc-100"
+                onClick={() => handleCategorySelect("TEST")}
+              >
+                <span className="text-lg">🧠</span>
+                <Typo.Body size="medium" className="font-medium text-zinc-800">
+                  심리 / 유형 테스트 만들기
+                </Typo.Body>
+              </button>
+            </div>
+          </>
+        )}
+        <button
+          type="button"
+          className="flex w-full flex-col items-center justify-center gap-0.5 py-2"
+          aria-label="에디터"
+          onClick={handleEditorClick}
         >
-          에디터
-        </Typo.Body>
-      </Link>
+          {isCreate || isEditorPopupOpen ? (
+            <EditorIconFill className="size-6" />
+          ) : (
+            <EditorIcon className="size-6" />
+          )}
+          <Typo.Body
+            size="small"
+            className={`text-[11px] font-bold leading-normal ${isCreate || isEditorPopupOpen ? "text-black" : "text-zinc-400"}`}
+          >
+            에디터
+          </Typo.Body>
+        </button>
+      </div>
 
       <Link
         href={ROUTES.LIKES}
