@@ -200,6 +200,13 @@ export function EditorMissionTabContent({
     () => Object.values(sectionStates).some(state => state.isBusy),
     [sectionStates],
   );
+  const hasPendingChangesFromRefs = useCallback(
+    () =>
+      [basicInfoRef.current, rewardRef.current, actionRef.current, completionRef.current].some(
+        handle => handle?.hasPendingChanges() ?? false,
+      ),
+    [],
+  );
   const missionEntryActionId = missionQuery.data?.data.entryActionId ?? mission.entryActionId;
   const isPublishValidationReady = Boolean(
     actionsQuery.data?.data &&
@@ -416,7 +423,8 @@ export function EditorMissionTabContent({
       const draftPayload = collectDraftPayload();
       await persistDraftPayload(draftPayload);
 
-      if (!hasAnyPendingChanges) {
+      const hasPendingChangesNow = hasAnyPendingChanges || hasPendingChangesFromRefs();
+      if (!hasPendingChangesNow) {
         if (showNoChangesToast) {
           toast({
             message: "저장할 변경사항이 없습니다.",
@@ -502,6 +510,7 @@ export function EditorMissionTabContent({
       collectDraftPayload,
       hasAnyBusySection,
       hasAnyPendingChanges,
+      hasPendingChangesFromRefs,
       isEditorTab,
       isSavingAll,
       persistDraftPayload,

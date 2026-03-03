@@ -97,6 +97,7 @@ interface CompletionFormProps {
   missionId: string;
   itemKey: string;
   initialValues?: CompletionFormValues;
+  dirtyBaselineValues?: CompletionFormValues;
   isLoading: boolean;
   onSubmit: (values: CompletionFormValues) => void;
   onCancel: () => void;
@@ -118,11 +119,21 @@ function areErrorMapsEqual(left: Record<string, string>, right: Record<string, s
   return leftEntries.every(([key, value]) => right[key] === value);
 }
 
+function buildCompletionDirtyComparable(values: CompletionFormValues) {
+  return {
+    title: values.title.trim(),
+    description: values.description,
+    imageUrl: values.imageUrl ?? null,
+    imageFileUploadId: values.imageFileUploadId ?? null,
+  };
+}
+
 function CompletionFormComponent(
   {
     missionId,
     itemKey,
     initialValues,
+    dirtyBaselineValues,
     isLoading,
     onSubmit,
     onCancel,
@@ -167,14 +178,27 @@ function CompletionFormComponent(
 
   const isImageBusy = isLoading || imageUpload.isUploading;
   const descriptionLength = useMemo(() => getTextLengthFromHtml(description), [description]);
-  const dirtyComparableString = JSON.stringify({
-    title: title.trim(),
-    description,
-    imageUrl: imageUrl ?? null,
-    imageFileUploadId: imageFileUploadId ?? null,
-  });
+  const dirtyComparableString = useMemo(
+    () =>
+      JSON.stringify(
+        buildCompletionDirtyComparable({
+          title,
+          description,
+          imageUrl: imageUrl ?? null,
+          imageFileUploadId: imageFileUploadId ?? null,
+        }),
+      ),
+    [title, description, imageUrl, imageFileUploadId],
+  );
   const initialDirtyComparableStringRef = useRef(dirtyComparableString);
-  const isDirty = dirtyComparableString !== initialDirtyComparableStringRef.current;
+  const dirtyBaselineComparableString = useMemo(() => {
+    if (!dirtyBaselineValues) {
+      return initialDirtyComparableStringRef.current;
+    }
+
+    return JSON.stringify(buildCompletionDirtyComparable(dirtyBaselineValues));
+  }, [dirtyBaselineValues]);
+  const isDirty = dirtyComparableString !== dirtyBaselineComparableString;
 
   useEffect(() => {
     onDirtyChange?.(isDirty);

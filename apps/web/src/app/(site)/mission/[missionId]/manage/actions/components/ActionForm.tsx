@@ -44,6 +44,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { patchOptionByKey, removeOptionByKey } from "./actionFormOptionState";
 
 function generateOptionKey() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -100,6 +101,7 @@ export interface ActionFormHandle {
 interface ActionFormProps {
   actionType: ActionType;
   initialValues?: ActionFormValues;
+  dirtyBaselineValues?: ActionFormValues;
   editingAction?: ActionDetail | null;
   allActions: Array<Pick<ActionDetail, "id" | "title" | "order">>;
   completionOptions: Array<{ id: string; title: string }>;
@@ -214,10 +216,65 @@ function areErrorMapsEqual(left: Record<string, string>, right: Record<string, s
   return leftEntries.every(([key, value]) => right[key] === value);
 }
 
+function buildActionDirtyComparable(params: {
+  actionType: ActionType;
+  values: ActionFormValues;
+  nextLinkType: "action" | "completion";
+  enableEditorActionMedia: boolean;
+}) {
+  const { actionType, values, nextLinkType, enableEditorActionMedia } = params;
+  const needsOptions = NEEDS_OPTIONS.includes(actionType);
+  const needsMaxSelections = NEEDS_MAX_SELECTIONS.includes(actionType);
+  const isBranch = actionType === ActionType.BRANCH;
+  const showOptionDescription =
+    enableEditorActionMedia &&
+    (actionType === ActionType.MULTIPLE_CHOICE ||
+      actionType === ActionType.SCALE ||
+      actionType === ActionType.BRANCH);
+  const showOptionImage =
+    enableEditorActionMedia &&
+    (actionType === ActionType.MULTIPLE_CHOICE || actionType === ActionType.BRANCH);
+
+  return {
+    actionType,
+    values: {
+      title: values.title.trim(),
+      description: values.description?.trim() || null,
+      imageUrl: values.imageUrl ?? null,
+      imageFileUploadId: values.imageFileUploadId ?? null,
+      isRequired: values.isRequired,
+      ...(needsMaxSelections && { maxSelections: values.maxSelections ?? 1 }),
+      ...(actionType === ActionType.MULTIPLE_CHOICE && { hasOther: Boolean(values.hasOther) }),
+      ...(actionType === ActionType.TAG && { hasOther: Boolean(values.hasOther) }),
+      ...(needsOptions && {
+        options: (values.options ?? []).map((option, index) => ({
+          ...option,
+          title: option.title.trim(),
+          description: showOptionDescription ? option.description?.trim() || null : null,
+          imageUrl: showOptionImage ? (option.imageUrl ?? null) : null,
+          fileUploadId: showOptionImage ? (option.fileUploadId ?? null) : null,
+          order: index,
+        })),
+      }),
+      ...(!isBranch &&
+        nextLinkType === "action" && {
+          nextActionId: values.nextActionId ?? null,
+          nextCompletionId: null,
+        }),
+      ...(!isBranch &&
+        nextLinkType === "completion" && {
+          nextCompletionId: values.nextCompletionId ?? null,
+          nextActionId: null,
+        }),
+    },
+  };
+}
+
 function ActionFormComponent(
   {
     actionType,
     initialValues,
+    dirtyBaselineValues,
     editingAction,
     allActions,
     completionOptions,
@@ -277,6 +334,7 @@ function ActionFormComponent(
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [hasValidationStarted, setHasValidationStarted] = useState(false);
   const [validationIssueCount, setValidationIssueCount] = useState(0);
+  const initialActionTypeRef = useRef(actionType);
 
   const enableEditorActionMedia = enforceExclusiveNextLink;
   const itemLabel = wordingMode === "question" ? "질문" : "액션";
@@ -657,47 +715,30 @@ function ActionFormComponent(
     [onActionTypeChange],
   );
 
-  const dirtyComparableValue = useMemo(
-    () => ({
-      actionType: selectedActionType,
-      values: {
-        title: title.trim(),
-        description: description?.trim() || null,
-        imageUrl,
-        imageFileUploadId,
-        isRequired,
-        ...(needsMaxSelections && { maxSelections }),
-        ...(selectedActionType === ActionType.MULTIPLE_CHOICE && { hasOther }),
-        ...(selectedActionType === ActionType.TAG && { hasOther }),
-        ...(needsOptions && {
-          options: options.map((option, index) => {
-            const { _key, ...rest } = option;
-            return {
-              ...rest,
-              title: option.title.trim(),
-              description: enableEditorActionMedia
-                ? showOptionDescription
-                  ? option.description?.trim() || null
-                  : null
-                : option.description?.trim() || null,
-              imageUrl: enableEditorActionMedia
-                ? showOptionImage
-                  ? (option.imageUrl ?? null)
-                  : null
-                : (option.imageUrl ?? null),
-              fileUploadId: enableEditorActionMedia
-                ? showOptionImage
-                  ? (option.fileUploadId ?? null)
-                  : null
-                : (option.fileUploadId ?? null),
-              order: index,
-            };
-          }),
+  const dirtyComparableString = useMemo(
+    () =>
+      JSON.stringify(
+        buildActionDirtyComparable({
+          actionType: selectedActionType,
+          values: {
+            title,
+            description,
+            imageUrl,
+            imageFileUploadId,
+            isRequired,
+            hasOther,
+            maxSelections,
+            options: options.map(option => {
+              const { _key, ...rest } = option;
+              return rest;
+            }),
+            nextActionId,
+            nextCompletionId,
+          },
+          nextLinkType,
+          enableEditorActionMedia,
         }),
-        ...(!isBranch && nextLinkType === "action" && { nextActionId, nextCompletionId: null }),
-        ...(!isBranch && nextLinkType === "completion" && { nextCompletionId, nextActionId: null }),
-      },
-    }),
+      ),
     [
       selectedActionType,
       title,
@@ -719,9 +760,25 @@ function ActionFormComponent(
       nextCompletionId,
     ],
   );
-  const dirtyComparableString = JSON.stringify(dirtyComparableValue);
   const initialDirtyComparableStringRef = useRef(dirtyComparableString);
-  const isDirty = dirtyComparableString !== initialDirtyComparableStringRef.current;
+  const dirtyBaselineComparableString = useMemo(() => {
+    if (!dirtyBaselineValues) {
+      return initialDirtyComparableStringRef.current;
+    }
+
+    const baselineNextLinkType: "action" | "completion" = dirtyBaselineValues.nextCompletionId
+      ? "completion"
+      : "action";
+    return JSON.stringify(
+      buildActionDirtyComparable({
+        actionType: initialActionTypeRef.current,
+        values: dirtyBaselineValues,
+        nextLinkType: baselineNextLinkType,
+        enableEditorActionMedia,
+      }),
+    );
+  }, [dirtyBaselineValues, enableEditorActionMedia]);
+  const isDirty = dirtyComparableString !== dirtyBaselineComparableString;
 
   useEffect(() => {
     onDirtyChange?.(isDirty);
@@ -797,34 +854,47 @@ function ActionFormComponent(
   };
 
   const addOption = () => {
-    if (options.length >= optionLimits.max) return;
-    setOptions([
-      ...options,
-      {
-        _key: generateOptionKey(),
-        title: "",
-        description: null,
-        imageUrl: null,
-        fileUploadId: null,
-        order: options.length,
-      },
-    ]);
+    setOptions(prev => {
+      if (prev.length >= optionLimits.max) {
+        return prev;
+      }
+
+      return [
+        ...prev,
+        {
+          _key: generateOptionKey(),
+          title: "",
+          description: null,
+          imageUrl: null,
+          fileUploadId: null,
+          order: prev.length,
+        },
+      ];
+    });
   };
 
-  const removeOption = (index: number) => {
-    if (options.length <= optionLimits.min) return;
-    const target = options[index];
-    if (target) {
-      optionImages.discard(target._key);
-    }
-    setOptions(options.filter((_, i) => i !== index));
+  const removeOptionByOptionKey = (optionKey: string) => {
+    setOptions(prev => {
+      if (prev.length <= optionLimits.min) {
+        return prev;
+      }
+
+      const target = prev.find(option => option._key === optionKey);
+      if (target) {
+        optionImages.discard(target._key);
+      }
+
+      return removeOptionByKey(prev, optionKey);
+    });
   };
 
-  const updateOption = (index: number, field: keyof OptionFormItem, value: string | null) => {
+  const updateOptionByKey = (
+    optionKey: string,
+    field: keyof OptionFormItem,
+    value: string | null,
+  ) => {
     setOptions(prev =>
-      prev.map((option, optionIndex) =>
-        optionIndex === index ? { ...option, [field]: value } : option,
-      ),
+      patchOptionByKey(prev, optionKey, { [field]: value } as Partial<OptionFormItem>),
     );
   };
 
@@ -957,13 +1027,13 @@ function ActionFormComponent(
                     placeholder="항목 제목"
                     maxLength={ACTION_OPTION_TITLE_MAX_LENGTH}
                     value={option.title}
-                    onChange={e => updateOption(index, "title", e.target.value)}
+                    onChange={e => updateOptionByKey(option._key, "title", e.target.value)}
                     className="flex-1 rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-violet-400"
                   />
                   {!isBranch && options.length > optionLimits.min && (
                     <button
                       type="button"
-                      onClick={() => removeOption(index)}
+                      onClick={() => removeOptionByOptionKey(option._key)}
                       className="rounded p-1 text-zinc-400 hover:text-red-500"
                     >
                       <Trash2 className="size-4" />
@@ -978,7 +1048,7 @@ function ActionFormComponent(
                       placeholder="항목 설명 (선택)"
                       maxLength={ACTION_OPTION_DESCRIPTION_MAX_LENGTH}
                       value={option.description ?? ""}
-                      onChange={e => updateOption(index, "description", e.target.value)}
+                      onChange={e => updateOptionByKey(option._key, "description", e.target.value)}
                       className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-violet-400"
                     />
                   </div>
@@ -1001,8 +1071,8 @@ function ActionFormComponent(
                         }}
                         onImageDelete={() => {
                           optionImages.discard(option._key);
-                          updateOption(index, "imageUrl", null);
-                          updateOption(index, "fileUploadId", null);
+                          updateOptionByKey(option._key, "imageUrl", null);
+                          updateOptionByKey(option._key, "fileUploadId", null);
                         }}
                         disabled={isLoading || optionImages.isUploading(option._key)}
                       />
@@ -1018,15 +1088,10 @@ function ActionFormComponent(
                         onValueChange={val => {
                           const parsed = parseBranchTargetValue(val);
                           setOptions(prev =>
-                            prev.map((currentOption, currentIndex) =>
-                              currentIndex === index
-                                ? {
-                                    ...currentOption,
-                                    nextActionId: parsed.nextActionId,
-                                    nextCompletionId: parsed.nextCompletionId,
-                                  }
-                                : currentOption,
-                            ),
+                            patchOptionByKey(prev, option._key, {
+                              nextActionId: parsed.nextActionId,
+                              nextCompletionId: parsed.nextCompletionId,
+                            }),
                           );
                         }}
                       >

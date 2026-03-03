@@ -26,7 +26,7 @@ import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
 import { useReadActionsDetail } from "@/hooks/action";
 import { useReadMission } from "@/hooks/mission";
-import type { ActionDetail } from "@/types/dto";
+import type { ActionDetail, GetMissionActionsDetailResponse } from "@/types/dto";
 import { ActionType } from "@prisma/client";
 import {
   Button,
@@ -188,6 +188,112 @@ function isActionChanged(action: ActionDetail, submission: ActionSubmission) {
   const initial = normalizeActionValues(action.type, initialValues);
 
   return JSON.stringify(current) !== JSON.stringify(initial);
+}
+
+function toDateOrFallback(value: unknown, fallback: Date): Date {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value;
+  }
+
+  if (typeof value === "string" || typeof value === "number") {
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  }
+
+  return fallback;
+}
+
+function buildPatchedActionDetail(params: {
+  currentAction: ActionDetail | null;
+  actionId: string;
+  missionId: string;
+  submission: ActionSubmission;
+  serverPatch?: Partial<ActionDetail>;
+}): ActionDetail {
+  const { currentAction, actionId, missionId, submission, serverPatch } = params;
+  const now = new Date();
+  const existingOptionsById = new Map(
+    (currentAction?.options ?? []).map(option => [option.id, option]),
+  );
+  const includesOptions = ACTION_TYPES_WITH_OPTIONS.has(submission.actionType);
+
+  const options = includesOptions
+    ? (submission.values.options ?? []).map((option, index) => {
+        const currentOption = option.id ? existingOptionsById.get(option.id) : undefined;
+
+        return {
+          id: (currentOption?.id ?? option.id) as string,
+          actionId: currentOption?.actionId ?? actionId,
+          title: option.title,
+          description: option.description ?? null,
+          imageUrl: option.imageUrl ?? null,
+          fileUploadId: option.fileUploadId ?? null,
+          order: index,
+          createdAt: toDateOrFallback(currentOption?.createdAt, now),
+          updatedAt: now,
+          nextActionId: option.nextActionId ?? null,
+          nextCompletionId: option.nextCompletionId ?? null,
+        } as ActionDetail["options"][number];
+      })
+    : [];
+
+  return {
+    id: actionId,
+    title: submission.values.title,
+    description: submission.values.description ?? null,
+    imageUrl: submission.values.imageUrl ?? null,
+    imageFileUploadId: submission.values.imageFileUploadId ?? null,
+    type: submission.actionType,
+    order: serverPatch?.order ?? currentAction?.order ?? 0,
+    maxSelections: ACTION_TYPES_WITH_MAX_SELECTIONS.has(submission.actionType)
+      ? (submission.values.maxSelections ?? currentAction?.maxSelections ?? 1)
+      : null,
+    isRequired: submission.values.isRequired,
+    hasOther:
+      submission.actionType === ActionType.MULTIPLE_CHOICE ||
+      submission.actionType === ActionType.TAG
+        ? Boolean(submission.values.hasOther)
+        : false,
+    createdAt: toDateOrFallback(serverPatch?.createdAt ?? currentAction?.createdAt, now),
+    updatedAt: toDateOrFallback(serverPatch?.updatedAt ?? currentAction?.updatedAt, now),
+    missionId: serverPatch?.missionId ?? currentAction?.missionId ?? missionId,
+    nextActionId: submission.values.nextActionId ?? null,
+    nextCompletionId: submission.values.nextCompletionId ?? null,
+    options,
+  };
+}
+
+function patchActionsQueryData(
+  previous: GetMissionActionsDetailResponse | undefined,
+  upserts: ActionDetail[],
+): GetMissionActionsDetailResponse | undefined {
+  if (!previous || !Array.isArray(previous.data) || upserts.length === 0) {
+    return previous;
+  }
+
+  const byId = new Map(previous.data.map(action => [action.id, action]));
+  for (const action of upserts) {
+    byId.set(action.id, action);
+  }
+
+  const nextData = [...byId.values()].sort((left, right) => {
+    const orderDelta = (left.order ?? 0) - (right.order ?? 0);
+    if (orderDelta !== 0) {
+      return orderDelta;
+    }
+
+    const leftCreatedAt = toDateOrFallback(left.createdAt, new Date(0)).getTime();
+    const rightCreatedAt = toDateOrFallback(right.createdAt, new Date(0)).getTime();
+    if (leftCreatedAt !== rightCreatedAt) {
+      return leftCreatedAt - rightCreatedAt;
+    }
+
+    return left.id.localeCompare(right.id);
+  });
+
+  return { ...previous, data: nextData };
 }
 
 function collectDraftCompletionReferences(values: ActionFormValues): string[] {
@@ -650,6 +756,7 @@ function ActionSettingsCardComponent(
     const draftActionsToCreate: DraftActionItem[] = [];
     const settledItemKeys = new Set<string>();
     const successfulItemKeys = new Set<string>();
+    const cacheUpsertByActionId = new Map<string, ActionDetail>();
     let savedCount = 0;
     let skippedCount = 0;
     let failedCount = 0;
@@ -912,6 +1019,20 @@ function ActionSettingsCardComponent(
             firstCreatedActionId = createdId;
           }
 
+          cacheUpsertByActionId.set(
+            createdId,
+            buildPatchedActionDetail({
+              currentAction: null,
+              actionId: createdId,
+              missionId,
+              submission: {
+                actionType: submission.actionType,
+                values: sanitizedValues,
+              },
+              serverPatch: created?.data as Partial<ActionDetail> | undefined,
+            }),
+          );
+
           if (hasDraftActionReference(submission.values)) {
             createdDraftRecords.push({
               itemKey,
@@ -957,7 +1078,7 @@ function ActionSettingsCardComponent(
         );
 
         try {
-          await updateAction.mutateAsync(
+          const updated = await updateAction.mutateAsync(
             mapUpdateActionInput({
               missionId,
               editingActionId: action.id,
@@ -968,6 +1089,19 @@ function ActionSettingsCardComponent(
           );
           didMutateServer = true;
           successfulExistingActionIds.push(action.id);
+          cacheUpsertByActionId.set(
+            action.id,
+            buildPatchedActionDetail({
+              currentAction: action,
+              actionId: action.id,
+              missionId,
+              submission: {
+                actionType: submission.actionType,
+                values: resolvedValues,
+              },
+              serverPatch: updated?.data as Partial<ActionDetail> | undefined,
+            }),
+          );
           markSaved(itemKey);
         } catch (error) {
           const message =
@@ -996,7 +1130,7 @@ function ActionSettingsCardComponent(
         );
 
         try {
-          await updateAction.mutateAsync(
+          const updated = await updateAction.mutateAsync(
             mapUpdateActionInput({
               missionId,
               editingActionId: createdDraft.createdId,
@@ -1006,6 +1140,19 @@ function ActionSettingsCardComponent(
             }),
           );
           didMutateServer = true;
+          cacheUpsertByActionId.set(
+            createdDraft.createdId,
+            buildPatchedActionDetail({
+              currentAction: cacheUpsertByActionId.get(createdDraft.createdId) ?? null,
+              actionId: createdDraft.createdId,
+              missionId,
+              submission: {
+                actionType: createdDraft.submission.actionType,
+                values: resolvedValues,
+              },
+              serverPatch: updated?.data as Partial<ActionDetail> | undefined,
+            }),
+          );
           successfulDraftKeys.push(createdDraft.draftKey);
           markSaved(createdDraft.itemKey);
         } catch (error) {
@@ -1041,6 +1188,13 @@ function ActionSettingsCardComponent(
 
       const successfulDraftKeySet = new Set(successfulDraftKeys);
       const successfulItemKeySet = new Set(successfulItemKeys);
+
+      if (cacheUpsertByActionId.size > 0) {
+        queryClient.setQueryData<GetMissionActionsDetailResponse | undefined>(
+          actionQueryKeys.actions({ missionId }),
+          previous => patchActionsQueryData(previous, [...cacheUpsertByActionId.values()]),
+        );
+      }
 
       if (successfulExistingActionIds.length > 0) {
         setExistingFormVersionById(prev => {
@@ -1347,6 +1501,7 @@ function ActionSettingsCardComponent(
                           draftFormSnapshotByItemKey[item.key]?.values ??
                           mapEditInitialValues(item.action)
                         }
+                        dirtyBaselineValues={mapEditInitialValues(item.action)}
                         allActions={formLinkTargets}
                         completionOptions={completionOptions}
                         isLoading={isBusy}

@@ -8,7 +8,11 @@ import {
 } from "@/actions/mission-completion";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
-import type { MissionCompletionWithMission } from "@/types/dto";
+import type {
+  GetMissionCompletionsResponse,
+  MissionCompletionData,
+  MissionCompletionWithMission,
+} from "@/types/dto";
 import { Typo, toast } from "@repo/ui/components";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, ChevronDown, Plus, X } from "lucide-react";
@@ -107,6 +111,78 @@ function isCompletionChanged(
   const current = normalizeValues(values);
   const initial = normalizeValues(mapEditInitialValues(completion));
   return JSON.stringify(current) !== JSON.stringify(initial);
+}
+
+function toDateOrFallback(value: unknown, fallback: Date): Date {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value;
+  }
+
+  if (typeof value === "string" || typeof value === "number") {
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  }
+
+  return fallback;
+}
+
+function buildPatchedCompletionForCache(params: {
+  currentCompletion: MissionCompletionWithMission | null;
+  serverData: MissionCompletionData;
+  missionId: string;
+  missionMeta: MissionCompletionWithMission["mission"] | null;
+}): MissionCompletionWithMission {
+  const { currentCompletion, serverData, missionId, missionMeta } = params;
+  const now = new Date();
+
+  return {
+    id: serverData.id,
+    title: serverData.title,
+    description: serverData.description,
+    imageUrl: serverData.imageUrl ?? null,
+    links: serverData.links ?? null,
+    missionId: serverData.missionId ?? currentCompletion?.missionId ?? missionId,
+    imageFileUploadId: serverData.imageFileUploadId ?? null,
+    createdAt: toDateOrFallback(serverData.createdAt ?? currentCompletion?.createdAt, now),
+    updatedAt: toDateOrFallback(serverData.updatedAt ?? currentCompletion?.updatedAt, now),
+    imageFileUpload: serverData.imageFileUpload ?? currentCompletion?.imageFileUpload ?? null,
+    mission: currentCompletion?.mission ?? missionMeta ?? { id: missionId, creatorId: "" },
+  };
+}
+
+function patchCompletionsQueryData(
+  previous: GetMissionCompletionsResponse | undefined,
+  params: {
+    upserts: MissionCompletionWithMission[];
+    removeIds: Set<string>;
+  },
+): GetMissionCompletionsResponse | undefined {
+  const { upserts, removeIds } = params;
+  if (
+    !previous ||
+    !Array.isArray(previous.data) ||
+    (upserts.length === 0 && removeIds.size === 0)
+  ) {
+    return previous;
+  }
+
+  const byId = new Map(previous.data.map(completion => [completion.id, completion]));
+  for (const completionId of removeIds) {
+    byId.delete(completionId);
+  }
+  for (const completion of upserts) {
+    byId.set(completion.id, completion);
+  }
+
+  const nextData = [...byId.values()].sort(
+    (left, right) =>
+      toDateOrFallback(left.createdAt, new Date(0)).getTime() -
+      toDateOrFallback(right.createdAt, new Date(0)).getTime(),
+  );
+
+  return { ...previous, data: nextData };
 }
 
 const NOOP = () => {};
@@ -378,6 +454,8 @@ function CompletionSettingsCardComponent(
     const settledItemKeys = new Set<string>();
     const successfulItemKeys = new Set<string>();
     const successfulRemovedIds = new Set<string>();
+    const cacheUpsertByCompletionId = new Map<string, MissionCompletionWithMission>();
+    const missionMeta = existingSnapshot[0]?.mission ?? null;
     let savedCount = 0;
     let skippedCount = 0;
     let failedCount = 0;
@@ -495,13 +573,24 @@ function CompletionSettingsCardComponent(
         }
 
         try {
-          await updateMissionCompletion(completion.id, {
+          const updated = await updateMissionCompletion(completion.id, {
             title: values.title,
             description: values.description,
             imageUrl: values.imageUrl ?? null,
             imageFileUploadId: values.imageFileUploadId ?? null,
           });
           didMutateServer = true;
+          if (updated?.data) {
+            cacheUpsertByCompletionId.set(
+              completion.id,
+              buildPatchedCompletionForCache({
+                currentCompletion: completion,
+                serverData: updated.data,
+                missionId,
+                missionMeta,
+              }),
+            );
+          }
           markSaved(itemKey);
         } catch (error) {
           const message =
@@ -525,7 +614,7 @@ function CompletionSettingsCardComponent(
         }
 
         try {
-          await createMissionCompletion({
+          const created = await createMissionCompletion({
             missionId,
             title: values.title,
             description: values.description,
@@ -533,6 +622,17 @@ function CompletionSettingsCardComponent(
             imageFileUploadId: values.imageFileUploadId ?? undefined,
           });
           didMutateServer = true;
+          if (created?.data) {
+            cacheUpsertByCompletionId.set(
+              created.data.id,
+              buildPatchedCompletionForCache({
+                currentCompletion: null,
+                serverData: created.data,
+                missionId,
+                missionMeta,
+              }),
+            );
+          }
           markSaved(itemKey);
         } catch (error) {
           const message =
@@ -572,6 +672,17 @@ function CompletionSettingsCardComponent(
       const successfulDraftKeys = draftsToCreate
         .map(item => item.key)
         .filter(key => successfulItemKeys.has(getDraftItemKey(key)));
+
+      if (cacheUpsertByCompletionId.size > 0 || successfulRemovedIds.size > 0) {
+        queryClient.setQueryData<GetMissionCompletionsResponse | undefined>(
+          missionCompletionQueryKeys.missionCompletion(missionId),
+          previous =>
+            patchCompletionsQueryData(previous, {
+              upserts: [...cacheUpsertByCompletionId.values()],
+              removeIds: successfulRemovedIds,
+            }),
+        );
+      }
 
       if (successfulExistingIds.length > 0 || successfulRemovedIds.size > 0) {
         setExistingFormVersionById(prev => {
@@ -881,6 +992,9 @@ function CompletionSettingsCardComponent(
                         (item.kind === "existing"
                           ? mapEditInitialValues(item.completion)
                           : undefined)
+                      }
+                      dirtyBaselineValues={
+                        item.kind === "existing" ? mapEditInitialValues(item.completion) : undefined
                       }
                       isLoading={isSaving}
                       onSubmit={NOOP}
