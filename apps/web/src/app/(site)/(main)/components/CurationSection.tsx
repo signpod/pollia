@@ -43,7 +43,12 @@ export function CurationSection({
         </Typo.Body>
       </div>
 
-      <div className={cn("grid gap-4 px-5", columns === 2 ? "grid-cols-2 gap-y-8" : "grid-cols-3")}>
+      <div
+        className={cn(
+          "grid gap-4 px-5",
+          columns === 2 ? "grid-cols-2 gap-y-8" : "grid-cols-2 sm:grid-cols-3",
+        )}
+      >
         {displayMissions.map(mission => (
           <SurveyCard key={mission.id} survey={mission} />
         ))}
