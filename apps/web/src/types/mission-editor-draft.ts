@@ -3,6 +3,9 @@ export interface EditorMissionDraftPayload {
   reward?: unknown | null;
   action?: unknown | null;
   completion?: unknown | null;
+  meta?: {
+    updatedAtMs?: number | null;
+  } | null;
 }
 
 export interface LocalEditorDraftPayload extends EditorMissionDraftPayload {}
@@ -13,6 +16,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
+function normalizeDraftUpdatedAtMs(value: unknown): number | null {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return null;
+  }
+
+  return value;
+}
+
 export function normalizeEditorMissionDraftPayload(
   value: unknown,
 ): EditorMissionDraftPayload | null {
@@ -20,12 +31,54 @@ export function normalizeEditorMissionDraftPayload(
     return null;
   }
 
+  const rawMeta = isRecord(value.meta) ? value.meta : null;
+
   return {
     basic: value.basic ?? null,
     reward: value.reward ?? null,
     action: value.action ?? null,
     completion: value.completion ?? null,
+    meta: {
+      updatedAtMs: normalizeDraftUpdatedAtMs(rawMeta?.updatedAtMs),
+    },
   };
+}
+
+export function selectLatestEditorMissionDraft(
+  localDraft: EditorMissionDraftPayload | null | undefined,
+  serverDraft: EditorMissionDraftPayload | null | undefined,
+): EditorMissionDraftPayload | null {
+  const normalizedLocal = normalizeEditorMissionDraftPayload(localDraft);
+  const normalizedServer = normalizeEditorMissionDraftPayload(serverDraft);
+
+  const localUpdatedAtMs = normalizedLocal?.meta?.updatedAtMs ?? null;
+  const serverUpdatedAtMs = normalizedServer?.meta?.updatedAtMs ?? null;
+
+  if (normalizedLocal && normalizedServer) {
+    if (localUpdatedAtMs !== null && serverUpdatedAtMs !== null) {
+      return localUpdatedAtMs >= serverUpdatedAtMs ? normalizedLocal : normalizedServer;
+    }
+
+    if (localUpdatedAtMs !== null) {
+      return normalizedLocal;
+    }
+
+    if (serverUpdatedAtMs !== null) {
+      return normalizedServer;
+    }
+
+    return normalizedServer;
+  }
+
+  if (normalizedLocal) {
+    return localUpdatedAtMs !== null ? normalizedLocal : null;
+  }
+
+  if (normalizedServer) {
+    return normalizedServer;
+  }
+
+  return null;
 }
 
 function sanitizeActionSnapshotForServer(value: unknown): unknown | null {
@@ -119,6 +172,9 @@ export function toServerEditorDraftPayload(
       reward: null,
       action: null,
       completion: null,
+      meta: {
+        updatedAtMs: null,
+      },
     };
   }
 
@@ -127,5 +183,8 @@ export function toServerEditorDraftPayload(
     reward: toJsonSafeValue(normalized.reward),
     action: toJsonSafeValue(sanitizeActionSnapshotForServer(normalized.action)),
     completion: toJsonSafeValue(sanitizeCompletionSnapshotForServer(normalized.completion)),
+    meta: {
+      updatedAtMs: normalizeDraftUpdatedAtMs(normalized.meta?.updatedAtMs),
+    },
   };
 }

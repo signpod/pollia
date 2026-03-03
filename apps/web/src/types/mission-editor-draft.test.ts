@@ -1,4 +1,135 @@
-import { toServerEditorDraftPayload } from "./mission-editor-draft";
+import {
+  normalizeEditorMissionDraftPayload,
+  selectLatestEditorMissionDraft,
+  toServerEditorDraftPayload,
+} from "./mission-editor-draft";
+
+describe("normalizeEditorMissionDraftPayload", () => {
+  it("meta.updatedAtMs가 유한한 number면 유지한다", () => {
+    const result = normalizeEditorMissionDraftPayload({
+      basic: { title: "draft" },
+      meta: { updatedAtMs: 1_700_000_000_000 },
+    });
+
+    expect(result).toEqual({
+      basic: { title: "draft" },
+      reward: null,
+      action: null,
+      completion: null,
+      meta: {
+        updatedAtMs: 1_700_000_000_000,
+      },
+    });
+  });
+
+  it("meta.updatedAtMs가 유효하지 않으면 null로 정규화한다", () => {
+    expect(
+      normalizeEditorMissionDraftPayload({
+        meta: { updatedAtMs: "1700000000000" },
+      }),
+    ).toEqual({
+      basic: null,
+      reward: null,
+      action: null,
+      completion: null,
+      meta: { updatedAtMs: null },
+    });
+
+    expect(
+      normalizeEditorMissionDraftPayload({
+        meta: { updatedAtMs: Number.POSITIVE_INFINITY },
+      }),
+    ).toEqual({
+      basic: null,
+      reward: null,
+      action: null,
+      completion: null,
+      meta: { updatedAtMs: null },
+    });
+  });
+});
+
+describe("selectLatestEditorMissionDraft", () => {
+  it("둘 다 timestamp가 유효하면 최신(local) 초안을 선택한다", () => {
+    const result = selectLatestEditorMissionDraft(
+      { basic: { title: "local" }, meta: { updatedAtMs: 200 } },
+      { basic: { title: "server" }, meta: { updatedAtMs: 100 } },
+    );
+
+    expect(result).toEqual({
+      basic: { title: "local" },
+      reward: null,
+      action: null,
+      completion: null,
+      meta: { updatedAtMs: 200 },
+    });
+  });
+
+  it("둘 다 timestamp가 유효하면 최신(server) 초안을 선택한다", () => {
+    const result = selectLatestEditorMissionDraft(
+      { basic: { title: "local" }, meta: { updatedAtMs: 100 } },
+      { basic: { title: "server" }, meta: { updatedAtMs: 200 } },
+    );
+
+    expect(result).toEqual({
+      basic: { title: "server" },
+      reward: null,
+      action: null,
+      completion: null,
+      meta: { updatedAtMs: 200 },
+    });
+  });
+
+  it("timestamp가 동률이면 local 초안을 선택한다", () => {
+    const result = selectLatestEditorMissionDraft(
+      { basic: { title: "local" }, meta: { updatedAtMs: 100 } },
+      { basic: { title: "server" }, meta: { updatedAtMs: 100 } },
+    );
+
+    expect(result).toEqual({
+      basic: { title: "local" },
+      reward: null,
+      action: null,
+      completion: null,
+      meta: { updatedAtMs: 100 },
+    });
+  });
+
+  it("한쪽만 timestamp가 있으면 timestamp가 있는 초안을 선택한다", () => {
+    const result = selectLatestEditorMissionDraft(
+      { basic: { title: "local" }, meta: { updatedAtMs: 100 } },
+      { basic: { title: "server" } },
+    );
+
+    expect(result).toEqual({
+      basic: { title: "local" },
+      reward: null,
+      action: null,
+      completion: null,
+      meta: { updatedAtMs: 100 },
+    });
+  });
+
+  it("레거시(둘 다 timestamp 없음)에서는 server 초안을 선택한다", () => {
+    const result = selectLatestEditorMissionDraft(
+      { basic: { title: "local-legacy" } },
+      { basic: { title: "server-legacy" } },
+    );
+
+    expect(result).toEqual({
+      basic: { title: "server-legacy" },
+      reward: null,
+      action: null,
+      completion: null,
+      meta: { updatedAtMs: null },
+    });
+  });
+
+  it("레거시 + server null이면 복원하지 않는다", () => {
+    const result = selectLatestEditorMissionDraft({ basic: { title: "local-legacy" } }, null);
+    expect(result).toBeNull();
+  });
+});
 
 describe("toServerEditorDraftPayload", () => {
   it("payload가 null/undefined면 모든 섹션을 null로 반환한다", () => {
@@ -7,6 +138,9 @@ describe("toServerEditorDraftPayload", () => {
       reward: null,
       action: null,
       completion: null,
+      meta: {
+        updatedAtMs: null,
+      },
     });
 
     expect(toServerEditorDraftPayload(undefined)).toEqual({
@@ -14,6 +148,9 @@ describe("toServerEditorDraftPayload", () => {
       reward: null,
       action: null,
       completion: null,
+      meta: {
+        updatedAtMs: null,
+      },
     });
   });
 
@@ -164,6 +301,17 @@ describe("toServerEditorDraftPayload", () => {
         self: null,
       },
       cyclicArray: [1, null],
+    });
+  });
+
+  it("meta.updatedAtMs를 서버 payload에 유지한다", () => {
+    const result = toServerEditorDraftPayload({
+      basic: { title: "draft" },
+      meta: { updatedAtMs: 1_700_000_000_000 },
+    });
+
+    expect(result.meta).toEqual({
+      updatedAtMs: 1_700_000_000_000,
     });
   });
 });

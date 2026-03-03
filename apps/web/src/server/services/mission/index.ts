@@ -9,7 +9,10 @@ import {
   searchSyncOutboxRepository,
 } from "@/server/repositories/search-sync-outbox";
 import { toChoseong } from "@/server/search";
-import type { EditorMissionDraftPayload } from "@/types/mission-editor-draft";
+import {
+  type EditorMissionDraftPayload,
+  toServerEditorDraftPayload,
+} from "@/types/mission-editor-draft";
 import { type Mission, SearchSyncAction, SearchSyncEntityType } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 import type {
@@ -213,12 +216,7 @@ export class MissionService {
       throw error;
     }
 
-    const normalizedPayload: EditorMissionDraftPayload = {
-      basic: payload.basic ?? null,
-      reward: payload.reward ?? null,
-      action: payload.action ?? null,
-      completion: payload.completion ?? null,
-    };
+    const normalizedPayload = toServerEditorDraftPayload(payload);
 
     return this.repo.update(missionId, {
       editorDraft: normalizedPayload as Prisma.InputJsonValue,

@@ -14,6 +14,7 @@ import {
   type LocalEditorDraftPayload,
   type ServerEditorDraftPayload,
   normalizeEditorMissionDraftPayload,
+  selectLatestEditorMissionDraft,
   toServerEditorDraftPayload,
 } from "@/types/mission-editor-draft";
 import { MissionType, type PaymentType } from "@prisma/client";
@@ -317,10 +318,14 @@ export function EditorMissionTabContent({
   }, []);
 
   const persistDraftPayload = useCallback(
-    async (localPayload: LocalEditorDraftPayload, serverPayload: ServerEditorDraftPayload) => {
-      const serializedLocalPayload = JSON.stringify(localPayload);
-      localDraftAutosaveRef.current.lastSerializedPayload = serializedLocalPayload;
-      localDraftAutosaveRef.current.lastPersistedAt = Date.now();
+    async (
+      localPayload: LocalEditorDraftPayload,
+      serverPayload: ServerEditorDraftPayload,
+      serializedDraftSnapshot: string,
+      persistedAtMs: number,
+    ) => {
+      localDraftAutosaveRef.current.lastSerializedPayload = serializedDraftSnapshot;
+      localDraftAutosaveRef.current.lastPersistedAt = persistedAtMs;
       const localDraftSaved = saveMissionEditorDraftToLocalStorage(missionId, localPayload);
 
       let serverDraftSaved = false;
@@ -375,9 +380,17 @@ export function EditorMissionTabContent({
       return;
     }
 
+    const updatedAtMs = Date.now();
+    const payloadWithMeta: LocalEditorDraftPayload = {
+      ...payload,
+      meta: {
+        updatedAtMs,
+      },
+    };
+
     timerState.lastSerializedPayload = serializedPayload;
-    timerState.lastPersistedAt = Date.now();
-    saveMissionEditorDraftToLocalStorage(missionId, payload);
+    timerState.lastPersistedAt = updatedAtMs;
+    saveMissionEditorDraftToLocalStorage(missionId, payloadWithMeta);
   }, [collectLocalDraftPayload, hasPendingChangesFromRefs, isEditorTab, missionId]);
 
   const scheduleLocalDraftAutosave = useCallback(() => {
@@ -472,7 +485,7 @@ export function EditorMissionTabContent({
       (latestMission as { editorDraft?: unknown }).editorDraft,
     );
     const serverDraft = serverDraftRaw ? toServerEditorDraftPayload(serverDraftRaw) : null;
-    const selectedDraft = localDraft ?? serverDraft;
+    const selectedDraft = selectLatestEditorMissionDraft(localDraft, serverDraft);
 
     draftRestoreAppliedRef.current = true;
 
@@ -638,8 +651,21 @@ export function EditorMissionTabContent({
       }
 
       const localDraftPayload = collectLocalDraftPayload();
-      const serverDraftPayload = collectServerDraftPayload(localDraftPayload);
-      const draftPersist = await persistDraftPayload(localDraftPayload, serverDraftPayload);
+      const serializedLocalDraftPayload = JSON.stringify(localDraftPayload);
+      const persistedAtMs = Date.now();
+      const localDraftPayloadWithMeta: LocalEditorDraftPayload = {
+        ...localDraftPayload,
+        meta: {
+          updatedAtMs: persistedAtMs,
+        },
+      };
+      const serverDraftPayload = collectServerDraftPayload(localDraftPayloadWithMeta);
+      const draftPersist = await persistDraftPayload(
+        localDraftPayloadWithMeta,
+        serverDraftPayload,
+        serializedLocalDraftPayload,
+        persistedAtMs,
+      );
 
       const hasPendingChangesNow = hasAnyPendingChanges || hasPendingChangesFromRefs();
       if (!hasPendingChangesNow) {
