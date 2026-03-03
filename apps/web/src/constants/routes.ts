@@ -9,7 +9,9 @@ export const ROUTES = {
 
   // 메인 페이지
   HOME: "/",
-  CREATE_MISSION: "/create",
+  LEGACY_CREATE_MISSION: "/create",
+  EDITOR_CREATE_MISSION: "/editor/create",
+  CREATE_MISSION: "/editor/create",
   ME: "/me",
   ME_IN_PROGRESS: "/me/in-progress",
   ME_COMPLETED: "/me/completed",
