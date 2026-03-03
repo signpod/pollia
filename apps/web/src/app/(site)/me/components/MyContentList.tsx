@@ -34,7 +34,7 @@ function MyContentListItem({ mission }: { mission: Mission }) {
   };
 
   return (
-    <Link href={ROUTES.MISSION(mission.id)} className="flex items-center gap-3 py-3">
+    <Link href={ROUTES.EDITOR_MISSION(mission.id)} className="flex items-center gap-3 py-3">
       <div className="relative size-11 shrink-0 overflow-hidden rounded-sm">
         <Image
           src={showFallback ? thumbnailFallback : (mission.imageUrl ?? "")}

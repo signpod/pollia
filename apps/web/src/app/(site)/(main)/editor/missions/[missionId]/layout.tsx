@@ -43,7 +43,7 @@ export default async function EditorMissionLayout({
         <div className="min-h-screen bg-zinc-50">
           <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white">
             <div className="px-5 pb-2 pt-4">
-              <EditorMissionHeader title="프로젝트 에디터" />
+              <EditorMissionHeader title="프로젝트 에디터" missionId={missionId} />
               <p className="mt-2 text-sm text-zinc-500">{missionResult.data.title}</p>
             </div>
             <div className="px-2">

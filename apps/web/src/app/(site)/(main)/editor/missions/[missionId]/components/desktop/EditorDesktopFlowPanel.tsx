@@ -15,8 +15,12 @@ interface EditorDesktopFlowPanelProps {
 function SummaryItem({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-md border border-zinc-200 bg-zinc-50 px-2.5 py-2">
-      <p className="text-[11px] font-medium text-zinc-500">{label}</p>
-      <p className="mt-0.5 text-sm font-semibold text-zinc-900">{value}</p>
+      <Typo.Body size="small" className="text-[11px] font-medium text-zinc-500">
+        {label}
+      </Typo.Body>
+      <Typo.Body size="small" className="mt-0.5 text-sm font-semibold text-zinc-900">
+        {value}
+      </Typo.Body>
     </div>
   );
 }

@@ -536,6 +536,159 @@ describe("useEditorMissionController", () => {
     );
   });
 
+  it("발행 상태에서는 draft가 있어도 복원하지 않고 복원 토스트를 노출하지 않는다", async () => {
+    const { loadMissionEditorDraftFromLocalStorage } = jest.requireMock(
+      "../../editorMissionDraftStorage",
+    ) as { loadMissionEditorDraftFromLocalStorage: jest.Mock };
+    loadMissionEditorDraftFromLocalStorage.mockReturnValueOnce({
+      basic: { title: "로컬 임시저장" },
+      meta: { updatedAtMs: Date.now() },
+    });
+
+    const mission = createMission({
+      isActive: true,
+      editorDraft: {
+        basic: { title: "서버 임시저장" },
+        meta: { updatedAtMs: Date.now() - 1000 },
+      },
+    } as any);
+
+    const importSpy = jest.fn();
+
+    const { result } = renderHook(() =>
+      useEditorMissionController({
+        missionId: mission.id,
+        mission,
+        currentTab: "editor",
+        missionQueryData: mission,
+        actionsQueryData: [],
+        completionsQueryData: [],
+        isActionsLoading: false,
+        isCompletionsLoading: false,
+        refetchMission: async () => ({ data: { data: mission } }),
+        refetchActions: async () => ({ data: { data: [] } }),
+        refetchCompletions: async () => ({ data: { data: [] } }),
+      }),
+    );
+
+    act(() => {
+      result.current.refs.basicInfoRef.current = {
+        ...createSectionHandle(null),
+        importDraftSnapshot: importSpy,
+      };
+      result.current.refs.rewardRef.current = createSectionHandle(null);
+      result.current.refs.actionRef.current = createSectionHandle(null);
+      result.current.refs.completionRef.current = createSectionHandle(null);
+    });
+
+    await act(async () => {});
+
+    expect(importSpy).not.toHaveBeenCalled();
+    expect(mockedToast).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "임시 저장된 편집 내용이 복원되었습니다.",
+      }),
+    );
+  });
+
+  it("SSR mission이 발행 상태이고 쿼리 캐시가 미발행 상태여도 복원하지 않는다", async () => {
+    const { loadMissionEditorDraftFromLocalStorage } = jest.requireMock(
+      "../../editorMissionDraftStorage",
+    ) as { loadMissionEditorDraftFromLocalStorage: jest.Mock };
+    loadMissionEditorDraftFromLocalStorage.mockReturnValueOnce({
+      basic: { title: "로컬 임시저장" },
+      meta: { updatedAtMs: Date.now() },
+    });
+
+    const ssrMission = createMission({ isActive: true });
+    const staleCachedMission = createMission({ isActive: false });
+    const importSpy = jest.fn();
+
+    const { result } = renderHook(() =>
+      useEditorMissionController({
+        missionId: ssrMission.id,
+        mission: ssrMission,
+        currentTab: "editor",
+        missionQueryData: staleCachedMission,
+        actionsQueryData: [],
+        completionsQueryData: [],
+        isActionsLoading: false,
+        isCompletionsLoading: false,
+        refetchMission: async () => ({ data: { data: ssrMission } }),
+        refetchActions: async () => ({ data: { data: [] } }),
+        refetchCompletions: async () => ({ data: { data: [] } }),
+      }),
+    );
+
+    act(() => {
+      result.current.refs.basicInfoRef.current = {
+        ...createSectionHandle(null),
+        importDraftSnapshot: importSpy,
+      };
+      result.current.refs.rewardRef.current = createSectionHandle(null);
+      result.current.refs.actionRef.current = createSectionHandle(null);
+      result.current.refs.completionRef.current = createSectionHandle(null);
+    });
+
+    await act(async () => {});
+
+    expect(importSpy).not.toHaveBeenCalled();
+    expect(mockedToast).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "임시 저장된 편집 내용이 복원되었습니다.",
+      }),
+    );
+  });
+
+  it("미발행 상태에서 draft가 있으면 복원하고 복원 토스트를 노출한다", async () => {
+    const { loadMissionEditorDraftFromLocalStorage } = jest.requireMock(
+      "../../editorMissionDraftStorage",
+    ) as { loadMissionEditorDraftFromLocalStorage: jest.Mock };
+    loadMissionEditorDraftFromLocalStorage.mockReturnValueOnce({
+      basic: { title: "로컬 임시저장" },
+      meta: { updatedAtMs: Date.now() },
+    });
+
+    const mission = createMission({ isActive: false });
+    const importSpy = jest.fn();
+
+    const { result } = renderHook(() =>
+      useEditorMissionController({
+        missionId: mission.id,
+        mission,
+        currentTab: "editor",
+        missionQueryData: mission,
+        actionsQueryData: [],
+        completionsQueryData: [],
+        isActionsLoading: false,
+        isCompletionsLoading: false,
+        refetchMission: async () => ({ data: { data: mission } }),
+        refetchActions: async () => ({ data: { data: [] } }),
+        refetchCompletions: async () => ({ data: { data: [] } }),
+      }),
+    );
+
+    act(() => {
+      result.current.refs.basicInfoRef.current = {
+        ...createSectionHandle(null),
+        importDraftSnapshot: importSpy,
+      };
+      result.current.refs.rewardRef.current = createSectionHandle(null);
+      result.current.refs.actionRef.current = createSectionHandle(null);
+      result.current.refs.completionRef.current = createSectionHandle(null);
+    });
+
+    await waitFor(() => {
+      expect(importSpy).toHaveBeenCalled();
+    });
+
+    expect(mockedToast).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "임시 저장된 편집 내용이 복원되었습니다.",
+      }),
+    );
+  });
+
   it("canSave가 false면 저장을 차단하고 안내 토스트를 노출한다", async () => {
     const mission = createMission({ isActive: true, entryActionId: null });
     const saveOptionsSpy = jest.fn<void, [SectionSaveOptions | undefined]>();
