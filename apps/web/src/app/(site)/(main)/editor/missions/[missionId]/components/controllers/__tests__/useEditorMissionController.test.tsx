@@ -581,9 +581,7 @@ describe("useEditorMissionController", () => {
       result.current.refs.completionRef.current = createSectionHandle(null);
     });
 
-    await act(async () => {
-      await new Promise(r => setTimeout(r, 50));
-    });
+    await act(async () => {});
 
     expect(importSpy).not.toHaveBeenCalled();
     expect(mockedToast).not.toHaveBeenCalledWith(
@@ -632,9 +630,7 @@ describe("useEditorMissionController", () => {
       result.current.refs.completionRef.current = createSectionHandle(null);
     });
 
-    await act(async () => {
-      await new Promise(r => setTimeout(r, 50));
-    });
+    await act(async () => {});
 
     expect(importSpy).not.toHaveBeenCalled();
     expect(mockedToast).not.toHaveBeenCalledWith(
