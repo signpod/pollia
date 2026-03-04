@@ -9,9 +9,13 @@ import {
 } from "@/server/repositories/mission-response/missionResponseRepository";
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
 import { type AiService, aiService } from "../ai";
-import type { CompletionInferenceInput } from "./completionInferenceTypes";
-import { hashStructuredAnswers } from "./hashStructuredAnswers";
-import { normalizeStructuredAnswers } from "./normalizeStructuredAnswers";
+import { buildCompletionInferenceInput } from "./buildCompletionInferenceInput";
+import { buildCompletionInferencePrompt } from "./buildCompletionInferencePrompt";
+import type {
+  CompletionInferenceInput,
+  CompletionInferenceRawAnswer,
+} from "./completionInferenceTypes";
+import { hashCompletionInferenceFingerprint } from "./hashCompletionInferenceFingerprint";
 import {
   type CleanupAbuseMetaResult,
   type CompleteResponseInput,
@@ -26,6 +30,7 @@ import {
 } from "./types";
 
 const ABUSE_LOG_RETENTION_DAYS = 90;
+const AI_COMPLETION_LOG_PREFIX = "[AI completion inference]";
 
 export class MissionResponseService {
   constructor(
@@ -406,40 +411,30 @@ export class MissionResponseService {
     missionId: string;
     missionTitle: string;
     completions: CompletionInferenceInput["completions"];
-    rawAnswers: Array<{
-      actionId: string;
-      scaleAnswer: number | null;
-      dateAnswers: Date[];
-      options: Array<{ id: string }>;
-      fileUploads: Array<{ id: string }>;
-      action: {
-        id: string;
-        order: number | null;
-        type:
-          | "MULTIPLE_CHOICE"
-          | "TAG"
-          | "BRANCH"
-          | "SCALE"
-          | "RATING"
-          | "DATE"
-          | "TIME"
-          | "IMAGE"
-          | "VIDEO"
-          | "PDF"
-          | "SUBJECTIVE"
-          | "SHORT_TEXT";
-      };
-    }>;
+    rawAnswers: CompletionInferenceRawAnswer[];
     fallbackCompletionId: string;
   }): Promise<string> {
-    const { keyAnswers, aiAnswers } = normalizeStructuredAnswers(input.rawAnswers);
-    const hashResult = hashStructuredAnswers(keyAnswers);
+    const {
+      keyAnswers,
+      inferenceAnswers,
+      contextSignaturePayload,
+      completionsSummaryForSignature,
+    } = buildCompletionInferenceInput({
+      rawAnswers: input.rawAnswers,
+      completions: input.completions,
+    });
+
+    const fingerprint = hashCompletionInferenceFingerprint({
+      keyAnswers,
+      contextSignaturePayload,
+      completionsSummaryForSignature,
+    });
     const validCompletionIds = new Set(input.completions.map(completion => completion.id));
 
-    if (hashResult) {
+    if (fingerprint) {
       const cached = await this.inferenceCacheRepo.findByMissionAndFingerprint(
         input.missionId,
-        hashResult.hash,
+        fingerprint.hash,
       );
 
       if (cached && validCompletionIds.has(cached.missionCompletionId)) {
@@ -456,7 +451,7 @@ export class MissionResponseService {
         missionId: input.missionId,
         missionTitle: input.missionTitle,
         completions: input.completions,
-        structuredAnswers: aiAnswers,
+        structuredAnswers: inferenceAnswers,
       });
 
       if (validCompletionIds.has(inferredCompletionId)) {
@@ -464,25 +459,25 @@ export class MissionResponseService {
         inferenceSource = "AI";
       } else {
         console.warn(
-          `[AI completion fallback] invalid id "${inferredCompletionId}" for mission ${input.missionId}`,
+          `${AI_COMPLETION_LOG_PREFIX} fallback: invalid id "${inferredCompletionId}" for mission ${input.missionId}`,
         );
         resolvedCompletionId = fallbackCompletionId;
         inferenceSource = "FALLBACK";
       }
     } catch (error) {
       console.warn(
-        `[AI completion fallback] inference failed for mission ${input.missionId}:`,
+        `${AI_COMPLETION_LOG_PREFIX} fallback: inference failed for mission ${input.missionId}:`,
         error instanceof Error ? error.message : error,
       );
       resolvedCompletionId = fallbackCompletionId;
       inferenceSource = "FALLBACK";
     }
 
-    if (hashResult) {
+    if (fingerprint) {
       await this.inferenceCacheRepo.upsertByMissionAndFingerprint({
         missionId: input.missionId,
-        fingerprintHash: hashResult.hash,
-        fingerprintPayload: hashResult.normalizedPayload,
+        fingerprintHash: fingerprint.hash,
+        fingerprintPayload: fingerprint.normalizedPayload,
         missionCompletionId: resolvedCompletionId,
         source: inferenceSource,
       });
@@ -492,21 +487,7 @@ export class MissionResponseService {
   }
 
   private async inferCompletionIdWithAi(input: CompletionInferenceInput): Promise<string> {
-    const prompt = [
-      "너는 설문 완료화면 선택기다.",
-      "아래 completion 목록 중 반드시 하나의 id만 고른다.",
-      "응답 JSON의 result 값에는 completion id 문자열만 넣는다.",
-      "",
-      `missionId: ${input.missionId}`,
-      `missionTitle: ${input.missionTitle}`,
-      `completions: ${JSON.stringify(input.completions)}`,
-      `structuredAnswers: ${JSON.stringify(input.structuredAnswers)}`,
-      "",
-      "규칙:",
-      "- completion id 외의 문자열을 만들지 않는다.",
-      "- 목록에 없는 id를 만들지 않는다.",
-    ].join("\n");
-
+    const prompt = buildCompletionInferencePrompt(input);
     const aiResult = await this.aiClient.generateFromPrompt(prompt);
     return aiResult.result.trim();
   }

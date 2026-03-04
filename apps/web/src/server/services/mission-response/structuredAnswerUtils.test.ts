@@ -17,23 +17,34 @@ describe("structured answer utils", () => {
     const { keyAnswers, aiAnswers } = normalizeStructuredAnswers([
       {
         actionId: "a-image",
+        textAnswer: null,
         scaleAnswer: null,
         dateAnswers: [],
         options: [],
         fileUploads: [{ id: "f1" }, { id: "f2" }],
-        action: { id: "a-image", order: 1, type: "IMAGE" },
+        action: { id: "a-image", order: 1, type: "IMAGE", title: "이미지", description: null },
       },
       {
         actionId: "a-text",
+        textAnswer: null,
         scaleAnswer: null,
         dateAnswers: [],
         options: [],
         fileUploads: [],
-        action: { id: "a-text", order: 2, type: "SUBJECTIVE" },
+        action: { id: "a-text", order: 2, type: "SUBJECTIVE", title: "소감", description: null },
       },
     ]);
 
     expect(keyAnswers).toEqual([]);
-    expect(aiAnswers).toEqual([{ actionId: "a-image", type: "IMAGE", fileCount: 2 }]);
+    expect(aiAnswers).toEqual([
+      {
+        actionId: "a-image",
+        actionType: "IMAGE",
+        actionTitle: "이미지",
+        actionDescription: null,
+        kind: "FILE_UPLOAD",
+        fileCount: 2,
+      },
+    ]);
   });
 });
