@@ -8,6 +8,7 @@ import {
   missionResponseRepository,
 } from "@/server/repositories/mission-response/missionResponseRepository";
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
+import type { Prisma } from "@prisma/client";
 import { type AiService, aiService } from "../ai";
 import { buildCompletionInferenceInput } from "./buildCompletionInferenceInput";
 import { buildCompletionInferencePrompt } from "./buildCompletionInferencePrompt";
@@ -477,7 +478,7 @@ export class MissionResponseService {
       await this.inferenceCacheRepo.upsertByMissionAndFingerprint({
         missionId: input.missionId,
         fingerprintHash: fingerprint.hash,
-        fingerprintPayload: fingerprint.normalizedPayload,
+        fingerprintPayload: fingerprint.normalizedPayload as unknown as Prisma.InputJsonValue,
         missionCompletionId: resolvedCompletionId,
         source: inferenceSource,
       });
