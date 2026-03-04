@@ -7,7 +7,7 @@ interface MissionShareSectionProps {
 
 export function MissionShareSection({ shareButtons }: MissionShareSectionProps) {
   return (
-    <div className="bg-white rounded-2xl p-5 flex items-center gap-0 w-full justify-between">
+    <div className="bg-zinc-50 rounded-2xl p-5 flex items-center gap-0 w-full justify-between">
       <Typo.SubTitle size="large" className="shrink-0">
         가족, 친구에게
         <br />

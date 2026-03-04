@@ -28,7 +28,7 @@ const BOUNCE_TRANSITION = {
 
 function DisabledButton({ text }: { text: string }) {
   return (
-    <div className="relative py-3 px-4 w-full">
+    <div className="relative w-full">
       <ButtonV2 variant="primary" size="large" className="w-full" disabled>
         <Typo.ButtonText size="large" className="flex w-full items-center justify-center gap-3">
           {text}
@@ -102,7 +102,7 @@ export function BottomButton({
 
   if (!isLoggedIn && !allowGuestResponse) {
     return (
-      <div className="relative py-3 px-4 w-full">
+      <div className="relative w-full">
         <ButtonV2
           variant="primary"
           size="large"
@@ -122,7 +122,7 @@ export function BottomButton({
   }
 
   return (
-    <div className="relative py-3 px-4 w-full">
+    <div className="relative w-full">
       <ButtonV2
         variant="primary"
         size="large"
