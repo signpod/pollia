@@ -93,5 +93,5 @@ export interface CompletionInferenceInput {
   missionId: string;
   missionTitle: string;
   completions: CompletionCandidate[];
-  structuredAnswers: CompletionInferenceAnswer[];
+  inferenceAnswers: CompletionInferenceAnswer[];
 }

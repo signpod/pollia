@@ -451,7 +451,7 @@ export class MissionResponseService {
         missionId: input.missionId,
         missionTitle: input.missionTitle,
         completions: input.completions,
-        structuredAnswers: inferenceAnswers,
+        inferenceAnswers,
       });
 
       if (validCompletionIds.has(inferredCompletionId)) {

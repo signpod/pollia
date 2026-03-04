@@ -54,14 +54,14 @@ function normalizeContextPayload(context: CompletionInferenceContextSignatureIte
     .map(item => ({
       actionId: item.actionId,
       actionType: item.actionType,
-      actionTitle: item.actionTitle.trim(),
-      actionDescription: item.actionDescription?.trim() ?? null,
+      actionTitle: item.actionTitle,
+      actionDescription: item.actionDescription,
       selectedOptions: item.selectedOptions
         ? [...item.selectedOptions]
             .map(option => ({
               id: option.id,
-              title: option.title.trim(),
-              description: option.description?.trim() ?? null,
+              title: option.title,
+              description: option.description,
             }))
             .sort((left, right) => left.id.localeCompare(right.id))
         : undefined,
@@ -73,8 +73,8 @@ function normalizeCompletions(completions: CompletionCandidate[]) {
   return [...completions]
     .map(completion => ({
       id: completion.id,
-      title: completion.title.trim(),
-      description: completion.description.trim(),
+      title: completion.title,
+      description: completion.description,
     }))
     .sort((left, right) => left.id.localeCompare(right.id));
 }

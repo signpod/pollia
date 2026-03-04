@@ -7,7 +7,7 @@ describe("buildCompletionInferencePrompt", () => {
       missionId: "mission-1",
       missionTitle: "성향 테스트",
       completions: [{ id: "c1", title: "결과 A", description: "A 설명" }],
-      structuredAnswers: [
+      inferenceAnswers: [
         {
           actionId: "a1",
           actionType: "TAG",

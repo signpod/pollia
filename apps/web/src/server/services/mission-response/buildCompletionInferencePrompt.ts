@@ -20,7 +20,7 @@ export function buildCompletionInferencePrompt(input: CompletionInferenceInput):
     `missionId: ${input.missionId}`,
     `missionTitle: ${input.missionTitle}`,
     `completions: ${JSON.stringify(input.completions)}`,
-    `inferenceAnswers: ${JSON.stringify(input.structuredAnswers)}`,
+    `inferenceAnswers: ${JSON.stringify(input.inferenceAnswers)}`,
     "",
     PROMPT_RULES,
   ].join("\n");
