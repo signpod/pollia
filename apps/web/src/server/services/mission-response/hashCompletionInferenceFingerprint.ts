@@ -1,7 +1,8 @@
-import { createHash } from "crypto";
+import { createHash } from "node:crypto";
 import type {
   CompletionCandidate,
   CompletionInferenceContextSignatureItem,
+  NormalizedFingerprintPayload,
   StructuredAnswerForKey,
 } from "./completionInferenceTypes";
 
@@ -81,15 +82,7 @@ function normalizeCompletions(completions: CompletionCandidate[]) {
 
 export function hashCompletionInferenceFingerprint(
   input: HashCompletionInferenceFingerprintInput,
-): {
-  hash: string;
-  normalizedPayload: {
-    version: number;
-    keyAnswers: ReturnType<typeof normalizeKeyAnswers>;
-    contextSignaturePayload: ReturnType<typeof normalizeContextPayload>;
-    completions: ReturnType<typeof normalizeCompletions>;
-  };
-} | null {
+): { hash: string; normalizedPayload: NormalizedFingerprintPayload } | null {
   if (input.keyAnswers.length === 0) {
     return null;
   }

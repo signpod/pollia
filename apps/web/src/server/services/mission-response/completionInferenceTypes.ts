@@ -95,3 +95,10 @@ export interface CompletionInferenceInput {
   completions: CompletionCandidate[];
   inferenceAnswers: CompletionInferenceAnswer[];
 }
+
+export interface NormalizedFingerprintPayload {
+  version: number;
+  keyAnswers: StructuredAnswerForKey[];
+  contextSignaturePayload: CompletionInferenceContextSignatureItem[];
+  completions: CompletionCandidate[];
+}
