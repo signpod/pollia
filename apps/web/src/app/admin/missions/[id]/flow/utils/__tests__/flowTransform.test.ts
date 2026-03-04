@@ -30,6 +30,9 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
     entryActionId: null,
     imageFileUploadId: null,
     brandLogoFileUploadId: null,
+    useAiCompletion: false,
+    aiStatisticsReport: null,
+    viewCount: 0,
     ...overrides,
     editorDraft: overrides?.editorDraft ?? null,
   });
