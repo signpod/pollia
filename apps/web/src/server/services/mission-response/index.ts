@@ -265,7 +265,8 @@ export class MissionResponseService {
     }
 
     const completions = await this.completionRepo.findAllByMissionId(response.missionId);
-    if (completions.length === 0) {
+    const firstCompletion = completions[0];
+    if (!firstCompletion) {
       const error = new Error("미션 완료 데이터를 찾을 수 없습니다.");
       error.cause = 404;
       throw error;
@@ -293,9 +294,10 @@ export class MissionResponseService {
           description: completion.description,
         })),
         rawAnswers: response.answers,
+        fallbackCompletionId: firstCompletion.id,
       });
     } else {
-      selectedCompletionId = completions[0]!.id;
+      selectedCompletionId = firstCompletion.id;
     }
 
     if (!completionIdSet.has(selectedCompletionId)) {
@@ -394,6 +396,7 @@ export class MissionResponseService {
           | "SHORT_TEXT";
       };
     }>;
+    fallbackCompletionId: string;
   }): Promise<string> {
     const { keyAnswers, aiAnswers } = normalizeStructuredAnswers(input.rawAnswers);
     const hashResult = hashStructuredAnswers(keyAnswers);
@@ -410,17 +413,35 @@ export class MissionResponseService {
       }
     }
 
-    const inferredCompletionId = await this.inferCompletionIdWithAi({
-      missionId: input.missionId,
-      missionTitle: input.missionTitle,
-      completions: input.completions,
-      structuredAnswers: aiAnswers,
-    });
+    const fallbackCompletionId = input.fallbackCompletionId;
+    let resolvedCompletionId: string;
+    let inferenceSource: "AI" | "FALLBACK";
 
-    if (!validCompletionIds.has(inferredCompletionId)) {
-      const error = new Error("AI 완료화면 추론 결과가 유효하지 않습니다.");
-      error.cause = 502;
-      throw error;
+    try {
+      const inferredCompletionId = await this.inferCompletionIdWithAi({
+        missionId: input.missionId,
+        missionTitle: input.missionTitle,
+        completions: input.completions,
+        structuredAnswers: aiAnswers,
+      });
+
+      if (validCompletionIds.has(inferredCompletionId)) {
+        resolvedCompletionId = inferredCompletionId;
+        inferenceSource = "AI";
+      } else {
+        console.warn(
+          `[AI completion fallback] invalid id "${inferredCompletionId}" for mission ${input.missionId}`,
+        );
+        resolvedCompletionId = fallbackCompletionId;
+        inferenceSource = "FALLBACK";
+      }
+    } catch (error) {
+      console.warn(
+        `[AI completion fallback] inference failed for mission ${input.missionId}:`,
+        error instanceof Error ? error.message : error,
+      );
+      resolvedCompletionId = fallbackCompletionId;
+      inferenceSource = "FALLBACK";
     }
 
     if (hashResult) {
@@ -428,12 +449,12 @@ export class MissionResponseService {
         missionId: input.missionId,
         fingerprintHash: hashResult.hash,
         fingerprintPayload: hashResult.normalizedPayload,
-        missionCompletionId: inferredCompletionId,
-        source: "AI",
+        missionCompletionId: resolvedCompletionId,
+        source: inferenceSource,
       });
     }
 
-    return inferredCompletionId;
+    return resolvedCompletionId;
   }
 
   private async inferCompletionIdWithAi(input: CompletionInferenceInput): Promise<string> {

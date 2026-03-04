@@ -625,7 +625,8 @@ describe("MissionResponseService", () => {
       expect(mockInferenceCacheRepo.upsertByMissionAndFingerprint).not.toHaveBeenCalled();
     });
 
-    it("AI가 미션 외 completionId를 반환하면 실패한다", async () => {
+    it("AI가 미션 외 completionId를 반환하면 fallback completion으로 완료한다", async () => {
+      jest.useFakeTimers().setSystemTime(now);
       const mockResponse = createBaseResponse({
         mission: {
           id: "mission1",
@@ -648,11 +649,66 @@ describe("MissionResponseService", () => {
       mockDefaultCompletions();
       mockInferenceCacheRepo.findByMissionAndFingerprint.mockResolvedValue(null);
       mockAiService.generateFromPrompt.mockResolvedValue({ result: "completion-x" });
+      mockResponseRepo.findLatestCompletedAtByActor.mockResolvedValue(null);
+      mockResponseRepo.completeWithSelectionAndAbuseMeta.mockResolvedValue({
+        ...mockResponse,
+        completedAt: now,
+        selectedCompletionId: "completion-1",
+      } as never);
 
-      await expect(
-        service.completeResponse({ responseId: "response1" }, mockUser.id),
-      ).rejects.toThrow("AI 완료화면 추론 결과가 유효하지 않습니다.");
-      expect(mockResponseRepo.completeWithSelectionAndAbuseMeta).not.toHaveBeenCalled();
+      const result = await service.completeResponse({ responseId: "response1" }, mockUser.id);
+
+      expect(result.selectedCompletionId).toBe("completion-1");
+      expect(mockResponseRepo.completeWithSelectionAndAbuseMeta).toHaveBeenCalledWith(
+        "response1",
+        expect.objectContaining({ selectedCompletionId: "completion-1" }),
+      );
+      expect(mockInferenceCacheRepo.upsertByMissionAndFingerprint).toHaveBeenCalledWith(
+        expect.objectContaining({ source: "FALLBACK" }),
+      );
+    });
+
+    it("AI 추론이 throw하면 fallback completion으로 완료한다", async () => {
+      jest.useFakeTimers().setSystemTime(now);
+      const mockResponse = createBaseResponse({
+        mission: {
+          id: "mission1",
+          title: "MBTI Test",
+          useAiCompletion: true,
+        },
+        answers: [
+          {
+            action: { id: "action-1", order: 1, type: "SCALE", nextCompletionId: null },
+            options: [],
+            actionId: "action-1",
+            scaleAnswer: 5,
+            dateAnswers: [],
+            fileUploads: [],
+          },
+        ],
+      });
+
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockDefaultCompletions();
+      mockInferenceCacheRepo.findByMissionAndFingerprint.mockResolvedValue(null);
+      mockAiService.generateFromPrompt.mockRejectedValue(new Error("AI service unavailable"));
+      mockResponseRepo.findLatestCompletedAtByActor.mockResolvedValue(null);
+      mockResponseRepo.completeWithSelectionAndAbuseMeta.mockResolvedValue({
+        ...mockResponse,
+        completedAt: now,
+        selectedCompletionId: "completion-1",
+      } as never);
+
+      const result = await service.completeResponse({ responseId: "response1" }, mockUser.id);
+
+      expect(result.selectedCompletionId).toBe("completion-1");
+      expect(mockResponseRepo.completeWithSelectionAndAbuseMeta).toHaveBeenCalledWith(
+        "response1",
+        expect.objectContaining({ selectedCompletionId: "completion-1" }),
+      );
+      expect(mockInferenceCacheRepo.upsertByMissionAndFingerprint).toHaveBeenCalledWith(
+        expect.objectContaining({ source: "FALLBACK" }),
+      );
     });
 
     it("완료 처리 시 updateMany 실패(null 반환)면 중복 완료로 실패한다", async () => {

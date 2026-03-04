@@ -1,6 +1,6 @@
 "use client";
 
-import { submitAnswerOnly } from "@/actions/action-answer";
+import { completeResponseOnly, submitAnswerOnly } from "@/actions/action-answer";
 import { toast } from "@/components/common/Toast";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import type { ActionForProgress } from "@/hooks/action";
@@ -318,7 +318,17 @@ export function useClientActionSubmit({
             ...SURVEY_SUBMIT_MODAL,
             showCancelButton: true,
             onConfirm: async () => {
-              await executeSubmitAndNavigate(currentAnswer, isActualLast);
+              const result = await completeResponseOnly({ missionId, responseId });
+              if (!result.success) {
+                if (result.code === "ALREADY_COMPLETED") {
+                  handleAlreadyCompleted();
+                } else {
+                  toast.warning(result.error, { id: "complete-response-error" });
+                }
+                return;
+              }
+              removeSessionStorage(toastStorageKey);
+              navigateToDone(result.selectedCompletionId ?? existingAnswer.nextCompletionId);
             },
           });
         } else if (isActualLast) {
@@ -412,6 +422,8 @@ export function useClientActionSubmit({
     showModal,
     actionData,
     missionId,
+    responseId,
+    handleAlreadyCompleted,
     recordResponse,
     user?.id,
     missionResponse?.data?.answers,
