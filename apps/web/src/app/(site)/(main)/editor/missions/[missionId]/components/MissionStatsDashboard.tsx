@@ -1,11 +1,16 @@
 "use client";
 
+import { useGenerateMissionAiReport, useMissionAiReport } from "@/hooks/ai";
 import { useReadMissionResponsesPage, useReadMissionStats } from "@/hooks/mission-response";
 import { formatDateToHHMM, formatDateToYYYYMMDD } from "@/lib/date";
 import type { ColumnDef } from "@/server/services/submission-list";
 import type { ActionType } from "@prisma/client";
 import { Typo } from "@repo/ui/components";
+import { useQueryClient } from "@tanstack/react-query";
+import { Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface MissionStatsDashboardProps {
   missionId: string;
@@ -174,10 +179,10 @@ export function MissionStatsDashboard({ missionId }: MissionStatsDashboardProps)
                 >
                   이전
                 </button>
-                {pageItems.map((item, index) => {
+                {pageItems.map((item, idx) => {
                   if (item === "ellipsis") {
                     return (
-                      <span key={`ellipsis-${index}`} className="px-2 text-sm text-zinc-400">
+                      <span key={`ellipsis-${idx}`} className="px-2 text-sm text-zinc-400">
                         ...
                       </span>
                     );
@@ -213,17 +218,7 @@ export function MissionStatsDashboard({ missionId }: MissionStatsDashboardProps)
         )}
       </section>
 
-      <section className="rounded-xl border border-zinc-200 bg-white p-5">
-        <Typo.SubTitle>AI 통계 분석 리포트</Typo.SubTitle>
-        <Typo.Body size="medium" className="mt-2 text-zinc-500">
-          AI 기반 요약 리포트는 추후 구현 예정입니다.
-        </Typo.Body>
-        <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-zinc-600">
-          <li>응답 데이터 기반 핵심 인사이트 요약</li>
-          <li>질문별 경향성과 이상치 탐지</li>
-          <li>의사결정용 텍스트 리포트 자동 생성</li>
-        </ul>
-      </section>
+      <AiReportSection missionId={missionId} hasResponses={rows.length > 0} />
     </div>
   );
 }
@@ -282,4 +277,66 @@ function formatAnswerValue(value: string | null | undefined, column: ColumnDef) 
 
 function isFileType(type: ActionType): boolean {
   return type === "IMAGE" || type === "VIDEO" || type === "PDF";
+}
+
+function AiReportSection({
+  missionId,
+  hasResponses,
+}: { missionId: string; hasResponses: boolean }) {
+  const queryClient = useQueryClient();
+  const reportQuery = useMissionAiReport(missionId);
+  const generateMutation = useGenerateMissionAiReport({
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["mission-ai-report", missionId],
+      });
+    },
+  });
+
+  const savedReport = reportQuery.data?.data.report;
+  const isGenerating = generateMutation.isPending;
+
+  return (
+    <section className="rounded-xl border border-zinc-200 bg-white p-5">
+      <div className="flex items-center justify-between">
+        <Typo.SubTitle>AI 통계 분석 리포트</Typo.SubTitle>
+        <button
+          type="button"
+          disabled={isGenerating || !hasResponses}
+          onClick={() => generateMutation.mutate(missionId)}
+          className="flex items-center gap-1.5 rounded-lg bg-zinc-900 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <Sparkles className="size-4" />
+          {isGenerating ? "생성 중..." : savedReport ? "다시 생성" : "리포트 생성"}
+        </button>
+      </div>
+
+      {generateMutation.error && (
+        <div className="mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {generateMutation.error.message}
+        </div>
+      )}
+
+      {!savedReport && !isGenerating && (
+        <Typo.Body size="medium" className="mt-3 text-zinc-500">
+          {hasResponses
+            ? "AI가 응답 데이터를 분석하여 핵심 인사이트 리포트를 생성합니다."
+            : "응답 데이터가 있어야 리포트를 생성할 수 있습니다."}
+        </Typo.Body>
+      )}
+
+      {isGenerating && (
+        <div className="mt-4 flex items-center gap-2 text-sm text-zinc-500">
+          <div className="size-4 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600" />
+          응답 데이터를 분석하고 있습니다. 잠시만 기다려주세요.
+        </div>
+      )}
+
+      {savedReport && !isGenerating && (
+        <div className="prose prose-sm prose-zinc mt-4 max-w-none">
+          <Markdown remarkPlugins={[remarkGfm]}>{savedReport}</Markdown>
+        </div>
+      )}
+    </section>
+  );
 }

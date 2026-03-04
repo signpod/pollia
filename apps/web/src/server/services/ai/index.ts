@@ -29,6 +29,29 @@ const JSON_ONLY_SYSTEM_PROMPT = [
 export class AiService {
   constructor(private provider: AiProvider = anthropicAiProvider) {}
 
+  async generateMarkdown(prompt: string): Promise<GenerateFromPromptResult> {
+    try {
+      const providerResponse = await this.provider.generateText({
+        systemPrompt:
+          "너는 마크다운 형식의 리포트를 작성하는 AI 도우미다. 반드시 마크다운 형식으로만 응답한다.",
+        userPrompt: prompt,
+      });
+
+      return {
+        result: providerResponse.text,
+        usage: providerResponse.usage,
+      };
+    } catch (error) {
+      if (error instanceof Error && (error.cause === 400 || error.cause === 502)) {
+        throw error;
+      }
+
+      const serverError = new Error("AI 요청 처리 중 오류가 발생했습니다.");
+      serverError.cause = 500;
+      throw serverError;
+    }
+  }
+
   async generateFromPrompt(prompt: string): Promise<GenerateFromPromptResult> {
     try {
       const { prompt: validatedPrompt } = parseSchema(runAiPromptInputSchema, { prompt });
