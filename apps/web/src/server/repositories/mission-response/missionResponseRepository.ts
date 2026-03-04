@@ -235,6 +235,61 @@ export class MissionResponseRepository {
     });
   }
 
+  async completeWithSelectionAndAbuseMeta(
+    id: string,
+    input: {
+      missionId: string;
+      selectedCompletionId: string;
+      completedAt: Date;
+      ipAddress?: string | null;
+      userAgent?: string | null;
+      submissionIntervalSeconds?: number | null;
+    },
+  ) {
+    return prisma.$transaction(async tx => {
+      const updated = await tx.missionResponse.updateMany({
+        where: {
+          id,
+          completedAt: null,
+        },
+        data: {
+          selectedCompletionId: input.selectedCompletionId,
+          completedAt: input.completedAt,
+          ipAddress: input.ipAddress ?? null,
+          userAgent: input.userAgent ?? null,
+          submissionIntervalSeconds: input.submissionIntervalSeconds ?? null,
+        },
+      });
+
+      if (updated.count === 0) {
+        return null;
+      }
+
+      await tx.missionCompletionStat.upsert({
+        where: {
+          missionId_missionCompletionId: {
+            missionId: input.missionId,
+            missionCompletionId: input.selectedCompletionId,
+          },
+        },
+        create: {
+          missionId: input.missionId,
+          missionCompletionId: input.selectedCompletionId,
+          encounterCount: 1,
+        },
+        update: {
+          encounterCount: {
+            increment: 1,
+          },
+        },
+      });
+
+      return tx.missionResponse.findUnique({
+        where: { id },
+      });
+    });
+  }
+
   async nullifyAbuseMetaOlderThan(cutoffDate: Date) {
     const result = await prisma.missionResponse.updateMany({
       where: {

@@ -19,6 +19,7 @@ export interface MissionResponseBase extends MissionResponseActor {
   missionId: string;
   startedAt: Date;
   completedAt: Date | null;
+  selectedCompletionId: string | null;
   createdAt: Date;
 }
 

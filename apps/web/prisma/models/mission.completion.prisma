@@ -8,10 +8,11 @@ model MissionCompletion {
   missionId String  @map("mission_id")
   mission   Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
 
-  actionsPointingHere Action[]                @relation("ActionToCompletion")
-  optionsPointingHere ActionOption[]          @relation("OptionToCompletion")
-  selectedByResponses MissionResponse[]       @relation("SelectedCompletion")
+  actionsPointingHere Action[]                          @relation("ActionToCompletion")
+  optionsPointingHere ActionOption[]                    @relation("OptionToCompletion")
+  selectedByResponses MissionResponse[]                 @relation("SelectedCompletion")
   stats               MissionCompletionStat[]
+  inferenceCaches     MissionCompletionInferenceCache[]
 
   imageFileUploadId String?     @map("image_file_upload_id")
   imageFileUpload   FileUpload? @relation(fields: [imageFileUploadId], references: [id])
