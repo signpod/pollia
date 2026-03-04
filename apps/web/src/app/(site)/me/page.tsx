@@ -27,6 +27,10 @@ export default async function MePage() {
       queryKey: userQueryKeys.currentUser(),
       queryFn: () => getCurrentUser(),
     }),
+  ]);
+
+  // Fire-and-forget: non-critical prefetches run in background
+  void Promise.all([
     queryClient.prefetchQuery({
       queryKey: rewardQueryKeys.all(),
       queryFn: () => getRewards(),
@@ -51,7 +55,7 @@ export default async function MePage() {
       ?.filter(response => response.completedAt === null)
       .map(response => response.mission.id) ?? [];
 
-  await Promise.all(
+  void Promise.all(
     inProgressMissionIds.map(missionId =>
       queryClient.prefetchQuery({
         queryKey: actionQueryKeys.actionsIds({ missionId }),
