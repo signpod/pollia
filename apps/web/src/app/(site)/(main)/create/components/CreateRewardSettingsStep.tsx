@@ -11,11 +11,11 @@ import {
   SelectTrigger,
   SelectValue,
   Textarea,
-  Toggle,
   Typo,
 } from "@repo/ui/components";
 import { Controller, type FieldErrors, useFormContext } from "react-hook-form";
 import type { CreateMissionFormData } from "../schema";
+import { ToggleSettingRow } from "./ToggleSettingRow";
 
 interface RewardFormValues {
   name: string;
@@ -66,31 +66,25 @@ export function CreateRewardSettingsStep() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <LabelText required={false}>완료 리워드 설정</LabelText>
-          <Toggle
-            checked={hasReward}
-            onCheckedChange={checked => {
-              setValue("hasReward", checked, { shouldDirty: true, shouldValidate: true });
+      <ToggleSettingRow
+        label="완료 리워드 설정"
+        description="프로젝트 완료 시 참여자에게 지급할 리워드를 설정합니다."
+        checked={hasReward}
+        onChange={checked => {
+          setValue("hasReward", checked, { shouldDirty: true, shouldValidate: true });
 
-              if (checked) {
-                const currentReward = getValues("reward");
-                if (!isRewardFormValues(currentReward)) {
-                  setValue("reward", { ...DEFAULT_REWARD_VALUES }, { shouldDirty: true });
-                }
-                return;
-              }
+          if (checked) {
+            const currentReward = getValues("reward");
+            if (!isRewardFormValues(currentReward)) {
+              setValue("reward", { ...DEFAULT_REWARD_VALUES }, { shouldDirty: true });
+            }
+            return;
+          }
 
-              setValue("reward", undefined, { shouldDirty: true, shouldValidate: true });
-              clearErrors("reward");
-            }}
-          />
-        </div>
-        <Typo.Body size="medium" className="text-zinc-500">
-          프로젝트 완료 시 참여자에게 지급할 리워드를 설정합니다.
-        </Typo.Body>
-      </div>
+          setValue("reward", undefined, { shouldDirty: true, shouldValidate: true });
+          clearErrors("reward");
+        }}
+      />
 
       {hasReward && (
         <div className="flex flex-col gap-5 rounded-lg border border-zinc-100 bg-zinc-50 p-4">
