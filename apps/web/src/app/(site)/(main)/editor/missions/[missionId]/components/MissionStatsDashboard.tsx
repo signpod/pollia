@@ -27,6 +27,7 @@ export function MissionStatsDashboard({ missionId }: MissionStatsDashboardProps)
   const pagination = responseData?.pagination;
   const rows = responseData?.rows ?? [];
   const columns = responseData?.columns ?? [];
+  const completionReachStats = stats?.completionReachStats ?? [];
 
   useEffect(() => {
     if (!pagination) return;
@@ -82,6 +83,69 @@ export function MissionStatsDashboard({ missionId }: MissionStatsDashboardProps)
           value={stats ? `${stats.completionRate.toFixed(1)}%` : "-"}
           isLoading={statsQuery.isPending}
         />
+      </section>
+
+      <section className="rounded-xl border border-zinc-200 bg-white p-5">
+        <div className="mb-4 flex flex-col gap-1">
+          <Typo.SubTitle>완료화면 도달 현황</Typo.SubTitle>
+          <Typo.Body size="medium" className="text-zinc-500">
+            완료자 기준으로 완료화면별 도달 수와 도달 비율을 확인합니다.
+          </Typo.Body>
+        </div>
+
+        {statsQuery.isPending && (
+          <div className="rounded-lg border border-dashed border-zinc-200 px-4 py-8 text-center text-sm text-zinc-500">
+            완료화면 통계를 불러오는 중입니다.
+          </div>
+        )}
+
+        {!statsQuery.isPending && statsQuery.error && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-6 text-sm text-red-700">
+            {statsQuery.error.message ?? "완료화면 통계를 불러오지 못했습니다."}
+          </div>
+        )}
+
+        {!statsQuery.isPending && !statsQuery.error && completionReachStats.length === 0 && (
+          <div className="rounded-lg border border-dashed border-zinc-200 px-4 py-8 text-center text-sm text-zinc-500">
+            완료화면이 없습니다.
+          </div>
+        )}
+
+        {!statsQuery.isPending && !statsQuery.error && completionReachStats.length > 0 && (
+          <div className="overflow-x-auto rounded-lg border border-zinc-200">
+            <table className="min-w-full border-collapse text-left text-sm">
+              <thead className="bg-zinc-50">
+                <tr>
+                  <th className="whitespace-nowrap border-b border-zinc-200 px-3 py-2 font-medium text-zinc-700">
+                    완료화면
+                  </th>
+                  <th className="whitespace-nowrap border-b border-zinc-200 px-3 py-2 text-right font-medium text-zinc-700">
+                    도달 수
+                  </th>
+                  <th className="whitespace-nowrap border-b border-zinc-200 px-3 py-2 text-right font-medium text-zinc-700">
+                    도달 %
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {completionReachStats.map(completionStat => (
+                  <tr
+                    key={completionStat.completionId}
+                    className="border-b border-zinc-100 last:border-0"
+                  >
+                    <td className="px-3 py-2 text-zinc-800">{completionStat.completionTitle}</td>
+                    <td className="whitespace-nowrap px-3 py-2 text-right text-zinc-700">
+                      {completionStat.encounterCount}명
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-2 text-right text-zinc-700">
+                      {completionStat.reachRate.toFixed(1)}%
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
 
       <section className="rounded-xl border border-zinc-200 bg-white p-5">

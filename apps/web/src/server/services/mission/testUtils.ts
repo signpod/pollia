@@ -29,6 +29,7 @@ export function createMissionServiceTestContext() {
     updateCompletedAt: jest.fn(),
     findLatestCompletedAtByActor: jest.fn(),
     updateCompletedAtWithAbuseMeta: jest.fn(),
+    completeWithSelectionAndAbuseMeta: jest.fn(),
     nullifyAbuseMetaOlderThan: jest.fn(),
     delete: jest.fn(),
     deleteByMissionAndUser: jest.fn(),

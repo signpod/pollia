@@ -1,6 +1,7 @@
 import { completeResponseInputSchema, startResponseInputSchema } from "@/schemas/mission-response";
 import { actionRepository } from "@/server/repositories/action/actionRepository";
 import { missionCompletionInferenceCacheRepository } from "@/server/repositories/mission-completion-inference-cache/missionCompletionInferenceCacheRepository";
+import { missionCompletionStatRepository } from "@/server/repositories/mission-completion-stat/missionCompletionStatRepository";
 import { missionCompletionRepository } from "@/server/repositories/mission-completion/missionCompletionRepository";
 import {
   type MissionResponseRepository,
@@ -34,6 +35,7 @@ export class MissionResponseService {
     private completionRepo = missionCompletionRepository,
     private inferenceCacheRepo = missionCompletionInferenceCacheRepository,
     private aiClient: AiService = aiService,
+    private completionStatRepo = missionCompletionStatRepository,
   ) {}
 
   async getResponseById(responseId: string, actor: string | ResponseActor) {
@@ -114,13 +116,45 @@ export class MissionResponseService {
       throw error;
     }
 
-    const total = await this.responseRepo.countByMissionId(missionId);
-    const completed = await this.responseRepo.countCompletedByMissionId(missionId);
+    const [total, completed, completionsResult, completionStatsResult] = await Promise.all([
+      this.responseRepo.countByMissionId(missionId),
+      this.responseRepo.countCompletedByMissionId(missionId),
+      this.completionRepo.findAllByMissionId(missionId),
+      this.completionStatRepo.findByMissionId(missionId),
+    ]);
+
+    const completions = completionsResult ?? [];
+    const completionStats = completionStatsResult ?? [];
+    const encounterCountByCompletionId = new Map(
+      completionStats.map(stat => [stat.missionCompletionId, stat.encounterCount] as const),
+    );
+
+    const completionReachStats = [...completions]
+      .sort((left, right) => {
+        const leftCount = encounterCountByCompletionId.get(left.id) ?? 0;
+        const rightCount = encounterCountByCompletionId.get(right.id) ?? 0;
+        if (leftCount !== rightCount) {
+          return rightCount - leftCount;
+        }
+        return left.createdAt.getTime() - right.createdAt.getTime();
+      })
+      .map(completion => {
+        const encounterCount = encounterCountByCompletionId.get(completion.id) ?? 0;
+        const reachRate = completed > 0 ? (encounterCount / completed) * 100 : 0;
+
+        return {
+          completionId: completion.id,
+          completionTitle: completion.title,
+          encounterCount,
+          reachRate,
+        };
+      });
 
     return {
       total,
       completed,
       completionRate: total > 0 ? (completed / total) * 100 : 0,
+      completionReachStats,
     };
   }
 

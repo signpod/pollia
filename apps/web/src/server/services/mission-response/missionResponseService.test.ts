@@ -1,5 +1,6 @@
 import type { ActionRepository } from "@/server/repositories/action/actionRepository";
 import type { MissionCompletionInferenceCacheRepository } from "@/server/repositories/mission-completion-inference-cache/missionCompletionInferenceCacheRepository";
+import type { MissionCompletionStatRepository } from "@/server/repositories/mission-completion-stat/missionCompletionStatRepository";
 import type { MissionCompletionRepository } from "@/server/repositories/mission-completion/missionCompletionRepository";
 import type { MissionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import type { MissionRepository } from "@/server/repositories/mission/missionRepository";
@@ -14,6 +15,7 @@ describe("MissionResponseService", () => {
   let mockCompletionRepo: jest.Mocked<MissionCompletionRepository>;
   let mockInferenceCacheRepo: jest.Mocked<MissionCompletionInferenceCacheRepository>;
   let mockAiService: jest.Mocked<AiService>;
+  let mockCompletionStatRepo: jest.Mocked<MissionCompletionStatRepository>;
 
   const mockUser = { id: "user1" };
   const now = new Date();
@@ -59,6 +61,10 @@ describe("MissionResponseService", () => {
       deleteByMissionId: jest.fn(),
     } as unknown as jest.Mocked<MissionCompletionInferenceCacheRepository>;
 
+    mockCompletionStatRepo = {
+      findByMissionId: jest.fn(),
+    } as unknown as jest.Mocked<MissionCompletionStatRepository>;
+
     mockAiService = {
       generateFromPrompt: jest.fn(),
     } as unknown as jest.Mocked<AiService>;
@@ -70,6 +76,7 @@ describe("MissionResponseService", () => {
       mockCompletionRepo,
       mockInferenceCacheRepo,
       mockAiService,
+      mockCompletionStatRepo,
     );
   });
 
@@ -197,36 +204,138 @@ describe("MissionResponseService", () => {
   });
 
   describe("getMissionStats", () => {
-    it("Mission 통계를 성공적으로 조회한다", async () => {
+    it("Mission 통계를 완료화면 도달 통계와 함께 조회한다", async () => {
       // Given
       const mockMission = { id: "mission1", creatorId: "user1" };
       mockMissionRepo.findById.mockResolvedValue(mockMission as never);
-      mockResponseRepo.countByMissionId.mockResolvedValue(10);
-      mockResponseRepo.countCompletedByMissionId.mockResolvedValue(7);
+      mockResponseRepo.countByMissionId.mockResolvedValue(20);
+      mockResponseRepo.countCompletedByMissionId.mockResolvedValue(10);
+      mockCompletionRepo.findAllByMissionId.mockResolvedValue([
+        { id: "completion-a", title: "A", createdAt: new Date("2026-01-01T00:00:00.000Z") },
+        { id: "completion-b", title: "B", createdAt: new Date("2026-01-02T00:00:00.000Z") },
+        { id: "completion-c", title: "C", createdAt: new Date("2026-01-03T00:00:00.000Z") },
+      ] as never);
+      mockCompletionStatRepo.findByMissionId.mockResolvedValue([
+        {
+          missionCompletionId: "completion-b",
+          encounterCount: 5,
+          missionCompletion: {
+            id: "completion-b",
+            title: "B",
+            createdAt: new Date("2026-01-02T00:00:00.000Z"),
+          },
+        },
+        {
+          missionCompletionId: "completion-a",
+          encounterCount: 2,
+          missionCompletion: {
+            id: "completion-a",
+            title: "A",
+            createdAt: new Date("2026-01-01T00:00:00.000Z"),
+          },
+        },
+      ] as never);
 
       // When
       const result = await service.getMissionStats("mission1", mockUser.id);
 
       // Then
       expect(result).toEqual({
-        total: 10,
-        completed: 7,
-        completionRate: 70,
+        total: 20,
+        completed: 10,
+        completionRate: 50,
+        completionReachStats: [
+          {
+            completionId: "completion-b",
+            completionTitle: "B",
+            encounterCount: 5,
+            reachRate: 50,
+          },
+          {
+            completionId: "completion-a",
+            completionTitle: "A",
+            encounterCount: 2,
+            reachRate: 20,
+          },
+          {
+            completionId: "completion-c",
+            completionTitle: "C",
+            encounterCount: 0,
+            reachRate: 0,
+          },
+        ],
       });
     });
 
-    it("응답이 없으면 completionRate는 0이다", async () => {
+    it("완료자가 없으면 completionRate/reachRate는 0이다", async () => {
       // Given
       const mockMission = { id: "mission1", creatorId: "user1" };
       mockMissionRepo.findById.mockResolvedValue(mockMission as never);
       mockResponseRepo.countByMissionId.mockResolvedValue(0);
       mockResponseRepo.countCompletedByMissionId.mockResolvedValue(0);
+      mockCompletionRepo.findAllByMissionId.mockResolvedValue([
+        { id: "completion-a", title: "A", createdAt: new Date("2026-01-01T00:00:00.000Z") },
+      ] as never);
+      mockCompletionStatRepo.findByMissionId.mockResolvedValue([]);
 
       // When
       const result = await service.getMissionStats("mission1", mockUser.id);
 
       // Then
-      expect(result.completionRate).toBe(0);
+      expect(result).toEqual({
+        total: 0,
+        completed: 0,
+        completionRate: 0,
+        completionReachStats: [
+          {
+            completionId: "completion-a",
+            completionTitle: "A",
+            encounterCount: 0,
+            reachRate: 0,
+          },
+        ],
+      });
+    });
+
+    it("도달 수 동률일 때 completion createdAt 오름차순으로 정렬한다", async () => {
+      // Given
+      const mockMission = { id: "mission1", creatorId: "user1" };
+      mockMissionRepo.findById.mockResolvedValue(mockMission as never);
+      mockResponseRepo.countByMissionId.mockResolvedValue(10);
+      mockResponseRepo.countCompletedByMissionId.mockResolvedValue(10);
+      mockCompletionRepo.findAllByMissionId.mockResolvedValue([
+        { id: "completion-a", title: "A", createdAt: new Date("2026-01-01T00:00:00.000Z") },
+        { id: "completion-b", title: "B", createdAt: new Date("2026-01-02T00:00:00.000Z") },
+      ] as never);
+      mockCompletionStatRepo.findByMissionId.mockResolvedValue([
+        {
+          missionCompletionId: "completion-b",
+          encounterCount: 1,
+          missionCompletion: {
+            id: "completion-b",
+            title: "B",
+            createdAt: new Date("2026-01-02T00:00:00.000Z"),
+          },
+        },
+        {
+          missionCompletionId: "completion-a",
+          encounterCount: 1,
+          missionCompletion: {
+            id: "completion-a",
+            title: "A",
+            createdAt: new Date("2026-01-01T00:00:00.000Z"),
+          },
+        },
+      ] as never);
+
+      // When
+      const result = await service.getMissionStats("mission1", mockUser.id);
+
+      // Then
+      expect(result.completionReachStats.map(stat => stat.completionId)).toEqual([
+        "completion-a",
+        "completion-b",
+      ]);
     });
 
     it("Mission이 없으면 404 에러를 던진다", async () => {

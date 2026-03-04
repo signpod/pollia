@@ -90,6 +90,9 @@ describe("EventService", () => {
             brandLogoFileUploadId: null,
             entryActionId: null,
             editorDraft: null,
+            useAiCompletion: false,
+            aiStatisticsReport: null,
+            viewCount: 0,
           },
         ],
       };
