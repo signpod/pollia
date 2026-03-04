@@ -8,7 +8,7 @@ import { useReadMissionCompletion, useReadMissionCompletionById } from "@/hooks/
 import { useReadReward } from "@/hooks/reward/useReadReward";
 import { MissionType } from "@prisma/client";
 import { useParams } from "next/navigation";
-import { useImageMenu } from "./hooks";
+import { useCompletionImageDownload } from "./hooks";
 
 interface MissionCompletionProps {
   completionId?: string;
@@ -34,16 +34,19 @@ export function MissionCompletion({ completionId, initialImageUrl }: MissionComp
     imageUrl: completionImageUrl,
   } = missionCompletion?.data ?? {};
 
-  const { isMenuOpen, menuRef, toggleMenu, handleImageSave, handleImageShare } = useImageMenu({
-    imageUrl: completionImageUrl ?? "",
-    title: completionTitle,
+  const { handleSave, isGenerating, canSave } = useCompletionImageDownload({
+    completionImageUrl: completionImageUrl ?? initialImageUrl,
+    fallbackImageUrl: imageUrl,
+    missionTitle,
+    completionTitle,
   });
 
   const reward = rewardQuery?.data;
 
   return (
     <MissionCompletionPage
-      imageUrl={completionImageUrl ?? initialImageUrl}
+      imageUrl={completionImageUrl ?? initialImageUrl ?? imageUrl}
+      missionTitle={missionTitle}
       title={completionTitle}
       description={completionDescription}
       reward={
@@ -65,13 +68,9 @@ export function MissionCompletion({ completionId, initialImageUrl }: MissionComp
         ) : undefined
       }
       hasReward={!!reward}
-      imageMenu={{
-        isOpen: isMenuOpen,
-        menuRef,
-        onToggle: toggleMenu,
-        onSave: handleImageSave,
-        onShare: handleImageShare,
-      }}
+      onSave={handleSave}
+      isSaving={isGenerating}
+      canSave={canSave}
     />
   );
 }

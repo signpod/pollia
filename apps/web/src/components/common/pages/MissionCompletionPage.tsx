@@ -1,33 +1,29 @@
 "use client";
 
-import { NavigableProfileHeader } from "@/components/common/NavigableProfileHeader";
 import { ROUTES } from "@/constants/routes";
+import { useGoBack } from "@/hooks/common/useGoBack";
 import { useKakaoLogin } from "@/hooks/login/useKakaoLogin";
 import { useAuth } from "@/hooks/user/useAuth";
 import KakaoIcon from "@public/svgs/kakao-icon.svg";
 import { ButtonV2, FixedBottomLayout, Typo } from "@repo/ui/components";
 import { AnimatePresence, motion } from "framer-motion";
+import { ChevronLeft } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { type ReactNode, type RefObject, useCallback, useEffect, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { MissionCompletionTemplate } from "../templates/MissionCompletionTemplate";
 
 export interface MissionCompletionPageProps {
-  header?: ReactNode;
   imageUrl?: string | null;
+  missionTitle?: string | null;
   title?: string;
   description?: string;
   reward?: ReactNode;
   shareButtons?: ReactNode;
   hasReward?: boolean;
-
-  imageMenu?: {
-    isOpen: boolean;
-    menuRef: RefObject<HTMLDivElement | null>;
-    onToggle: () => void;
-    onSave: () => void;
-    onShare: () => void;
-  };
+  onSave?: () => void;
+  isSaving?: boolean;
+  canSave?: boolean;
 }
 
 function RewardBottomSheet({
@@ -179,25 +175,49 @@ function CompletionBottomButton({ hasReward }: { hasReward: boolean }) {
 }
 
 export function MissionCompletionPage({
-  header = <NavigableProfileHeader />,
   imageUrl,
+  missionTitle,
   title,
   description,
   reward,
   shareButtons,
   hasReward,
-  imageMenu,
+  onSave,
+  isSaving,
+  canSave,
 }: MissionCompletionPageProps) {
+  const goBack = useGoBack();
+
+  const header = (
+    <header className="sticky top-0 z-50 flex h-12 items-center justify-between bg-white px-1">
+      <button type="button" onClick={goBack} className="flex items-center justify-center p-3">
+        <ChevronLeft className="size-6" />
+      </button>
+      {canSave && (
+        <button
+          type="button"
+          onClick={onSave}
+          disabled={isSaving}
+          className="flex items-center justify-center p-3"
+        >
+          <Typo.Body size="medium" className="text-sub">
+            {isSaving ? "저장 중..." : "저장하기"}
+          </Typo.Body>
+        </button>
+      )}
+    </header>
+  );
+
   return (
     <div className="relative flex w-full flex-col items-center h-auto">
       <MissionCompletionTemplate
         header={header}
         imageUrl={imageUrl}
+        missionTitle={missionTitle}
         title={title}
         description={description}
         reward={reward}
         shareButtons={shareButtons}
-        imageMenu={imageMenu}
       />
       <CompletionBottomButton hasReward={!!hasReward} />
     </div>

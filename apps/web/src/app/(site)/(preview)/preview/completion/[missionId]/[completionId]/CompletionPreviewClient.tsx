@@ -1,7 +1,6 @@
 "use client";
 
 import { MissionCompletionPage } from "@/components/common/pages/MissionCompletionPage";
-import { useRef, useState } from "react";
 
 interface CompletionPreviewClientProps {
   imageUrl?: string | null;
@@ -14,21 +13,5 @@ export function CompletionPreviewClient({
   title,
   description,
 }: CompletionPreviewClientProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-
-  return (
-    <MissionCompletionPage
-      imageUrl={imageUrl}
-      title={title}
-      description={description}
-      imageMenu={{
-        isOpen,
-        menuRef,
-        onToggle: () => setIsOpen(prev => !prev),
-        onSave: () => {},
-        onShare: () => {},
-      }}
-    />
-  );
+  return <MissionCompletionPage imageUrl={imageUrl} title={title} description={description} />;
 }
