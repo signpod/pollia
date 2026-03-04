@@ -24,7 +24,7 @@ import {
   useImperativeHandle,
   useMemo,
 } from "react";
-import { FormProvider, useForm } from "react-hook-form";
+import { FormProvider, useForm, useWatch } from "react-hook-form";
 import type {
   SectionSaveHandle,
   SectionSaveOptions,
@@ -35,6 +35,7 @@ import type {
 interface ProjectBasicInfoCardProps {
   mission: GetMissionResponse["data"];
   onSaveStateChange?: SectionSaveStateChangeHandler;
+  onUseAiCompletionChange?: (value: boolean) => void;
 }
 
 function buildDefaultValues(mission: GetMissionResponse["data"]): CreateMissionFormData {
@@ -74,7 +75,7 @@ function countValidationIssues(value: unknown): number {
 }
 
 function ProjectBasicInfoCardComponent(
-  { mission, onSaveStateChange }: ProjectBasicInfoCardProps,
+  { mission, onSaveStateChange, onUseAiCompletionChange }: ProjectBasicInfoCardProps,
   ref: ForwardedRef<SectionSaveHandle>,
 ) {
   const form = useForm<CreateMissionFormData>({
@@ -147,6 +148,10 @@ function ProjectBasicInfoCardComponent(
   const hasValidationIssues = validationIssueCount > 0;
   const watchedImageUrl = form.watch("imageUrl");
   const watchedBrandLogoUrl = form.watch("brandLogoUrl");
+  const watchedUseAiCompletion = useWatch({
+    control: form.control,
+    name: "useAiCompletion",
+  });
 
   useEffect(() => {
     onSaveStateChange?.({
@@ -156,6 +161,10 @@ function ProjectBasicInfoCardComponent(
       validationIssueCount,
     });
   }, [hasPendingChanges, hasValidationIssues, isBusy, onSaveStateChange, validationIssueCount]);
+
+  useEffect(() => {
+    onUseAiCompletionChange?.(watchedUseAiCompletion);
+  }, [onUseAiCompletionChange, watchedUseAiCompletion]);
 
   const save = useCallback(
     async ({
