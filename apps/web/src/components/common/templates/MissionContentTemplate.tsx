@@ -49,7 +49,7 @@ export function MissionContentTemplate({
   const goBack = useGoBack();
 
   return (
-    <div className="bg-zinc-50 relative">
+    <div className="bg-white relative">
       <div ref={sentinelRef} className="h-0" />
       <header className="sticky top-0 z-50 bg-white">
         <div
@@ -70,14 +70,9 @@ export function MissionContentTemplate({
           </Typo.SubTitle>
         </div>
       </header>
-      <div className="flex w-full flex-col px-5 pt-5 pb-10 gap-5">
+      <div className="flex w-full flex-col px-5 pt-5 pb-10 gap-10">
         <div id={SECTION_IDS.MISSION_GUIDE}>
-          {hasDescription && (
-            <div className="bg-white rounded-2xl p-5 flex flex-col gap-4 w-full">
-              <Typo.MainTitle size="small">상세 안내</Typo.MainTitle>
-              <MissionDescription content={cleanTiptapHTML(description)} />
-            </div>
-          )}
+          {hasDescription && <MissionDescription content={cleanTiptapHTML(description)} />}
         </div>
 
         {reward && (
