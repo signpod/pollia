@@ -94,7 +94,7 @@ const Input = ({
   };
 
   return (
-    <div className={cn("flex flex-col gap-2", containerClassName)}>
+    <div className={cn("flex flex-col gap-2 h-12", containerClassName)}>
       {label && (
         <div className="flex items-center justify-between">
           <LabelText required={required}>{label}</LabelText>

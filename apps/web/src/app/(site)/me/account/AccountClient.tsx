@@ -10,7 +10,7 @@ import { useProfileImageUrl } from "@/hooks/user/useProfileImageUrl";
 import { useUpdateUserName } from "@/hooks/user/useUpdateUserName";
 import { useUpdateUserProfileImage } from "@/hooks/user/useUpdateUserProfileImage";
 import { nameSchema } from "@/schemas/user/userSchema";
-import { Input, Typo } from "@repo/ui/components";
+import { ButtonV2, Input, Typo } from "@repo/ui/components";
 import { ChevronLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -118,10 +118,10 @@ export function AccountClient() {
   return (
     <div className="flex flex-1 flex-col">
       <header className="sticky top-0 z-50 flex h-12 shrink-0 items-center bg-white px-1">
-        <button type="button" onClick={goBack} className="flex size-12 items-center justify-center">
+        <button type="button" onClick={goBack} className="flex items-center justify-center p-3">
           <ChevronLeftIcon className="size-6" />
         </button>
-        <Typo.SubTitle size="large">계정관리</Typo.SubTitle>
+        <Typo.MainTitle size="small">계정 관리</Typo.MainTitle>
       </header>
 
       <div className="flex flex-col gap-8 px-5 pt-10">
@@ -149,16 +149,15 @@ export function AccountClient() {
                   errorMessage={errorMessage}
                 />
               </div>
-              <button
-                type="button"
+              <ButtonV2
+                variant="primary"
+                size="large"
                 onClick={handleNameSubmit}
                 disabled={!isNameChanged || !nameValid || isSaving}
-                className="h-11 shrink-0 rounded-lg px-4 disabled:text-disabled"
+                className="shrink-0 w-[60px]"
               >
-                <Typo.Body size="medium" className="text-sub">
-                  수정
-                </Typo.Body>
-              </button>
+                <Typo.ButtonText size="medium">수정</Typo.ButtonText>
+              </ButtonV2>
             </div>
           </div>
 
