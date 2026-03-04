@@ -84,14 +84,14 @@ function sortAnswersByActionOrder(answers: CompletionInferenceRawAnswer[]) {
   });
 }
 
-function sortCompletionsForSignature(completions: CompletionCandidate[]): CompletionCandidate[] {
-  return [...completions]
-    .map(completion => ({
-      id: completion.id,
-      title: normalizeText(completion.title),
-      description: normalizeText(completion.description),
-    }))
-    .sort((left, right) => left.id.localeCompare(right.id));
+function normalizeCompletionsForSignature(
+  completions: CompletionCandidate[],
+): CompletionCandidate[] {
+  return completions.map(completion => ({
+    id: completion.id,
+    title: normalizeText(completion.title),
+    description: normalizeText(completion.description),
+  }));
 }
 
 export function buildCompletionInferenceInput(
@@ -237,6 +237,6 @@ export function buildCompletionInferenceInput(
     keyAnswers,
     inferenceAnswers,
     contextSignaturePayload,
-    completionsSummaryForSignature: sortCompletionsForSignature(input.completions),
+    completionsSummaryForSignature: normalizeCompletionsForSignature(input.completions),
   };
 }
