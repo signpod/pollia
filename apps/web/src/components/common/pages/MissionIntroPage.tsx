@@ -1,14 +1,14 @@
 "use client";
 
-import { BottomNavBar } from "@/app/(site)/(main)/components/BottomNavBar";
+import { MissionLikeButton } from "@/app/(site)/(main)/components/MissionLikeButton";
 import { SocialShareButtonsWithData } from "@/app/(site)/mission/[missionId]/components/SocialShareButtonsWithData";
 import { useStickyTabHeader } from "@/app/(site)/mission/[missionId]/components/hooks/useStickyTabHeader";
 import type { MissionRewardData } from "@/app/(site)/mission/[missionId]/types/mission";
 import { ProfileHeader } from "@/components/common/ProfileHeader";
-import { cn } from "@/lib/utils";
 import { MissionType } from "@prisma/client";
+import { FixedBottomLayout } from "@repo/ui/components";
 import type { ReactNode } from "react";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { MissionContentTemplate } from "../templates/MissionContentTemplate";
 import { MissionIntroTemplate } from "../templates/MissionIntroTemplate";
 import type { MissionIntroTemplateProps } from "../templates/MissionIntroTemplate";
@@ -23,6 +23,8 @@ export interface MissionIntroPageProps extends MissionIntroTemplateProps {
   reward: MissionRewardData | null;
   contextTitle?: string;
   bottomButton?: ReactNode;
+  viewCount?: number;
+  likesCount?: number;
 }
 
 export function MissionIntroPage({
@@ -41,23 +43,14 @@ export function MissionIntroPage({
   reward,
   contextTitle,
   bottomButton,
+  viewCount,
+  likesCount,
 }: MissionIntroPageProps) {
-  const [isScrolled, setIsScrolled] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const { activeTab, isSticky, handleChangeTab } = useStickyTabHeader({
     sentinelRef,
     hasReward: !!reward,
   });
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 5);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   return (
     <div className="relative w-full">
@@ -70,6 +63,8 @@ export function MissionIntroPage({
         authorName={authorName}
         authorImageUrl={authorImageUrl}
         isRequirePassword={isRequirePassword}
+        viewCount={viewCount}
+        likesCount={likesCount}
         titleRef={titleRef}
       >
         <MissionContentTemplate
@@ -91,21 +86,15 @@ export function MissionIntroPage({
         />
       </MissionIntroTemplate>
 
-      <div className="fixed inset-x-0 bottom-0 z-50 mx-auto flex max-w-[600px] flex-col">
-        <div
-          className={cn(
-            "transition-all duration-300 ease-out",
-            isScrolled
-              ? "opacity-100 translate-y-0 pointer-events-auto"
-              : "opacity-0 translate-y-full pointer-events-none",
-          )}
-        >
-          {bottomButton}
+      <FixedBottomLayout.Content>
+        <div className="flex items-center gap-2 px-5 py-3">
+          <MissionLikeButton
+            missionId={missionId}
+            className="flex size-12 shrink-0 items-center justify-center rounded-sm border border-zinc-200 bg-white"
+          />
+          <div className="flex-1 [&>div]:p-0">{bottomButton}</div>
         </div>
-        <div className="relative z-10">
-          <BottomNavBar />
-        </div>
-      </div>
+      </FixedBottomLayout.Content>
     </div>
   );
 }
