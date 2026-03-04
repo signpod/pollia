@@ -8,7 +8,12 @@ import { useReadMissionParticipantInfo } from "@/hooks/participant/useReadMissio
 import { useReadReward } from "@/hooks/reward/useReadReward";
 import { getActionNavCookie, setActionNavCookie } from "@/lib/cookie";
 import { Mission } from "@prisma/client";
-import { CalloutProvider, type CalloutToneVariant, useCallout } from "@repo/ui/components";
+import {
+  CalloutProvider,
+  type CalloutToneVariant,
+  FixedBottomLayout,
+  useCallout,
+} from "@repo/ui/components";
 import { createContext, useContext, useEffect, useMemo, useRef } from "react";
 import type { MissionRewardData } from "./types/mission";
 import { BottomButton } from "./ui";
@@ -173,7 +178,7 @@ export function MissionPageWrapper({
     <CalloutProvider position="top-center">
       <CalloutTrigger calloutData={calloutData} isLoading={isResuming} />
       <MissionIntroContext.Provider value={contextValue}>
-        <main className="flex justify-center bg-background">
+        <FixedBottomLayout hasGradientBlur className="flex justify-center bg-background">
           <MissionIntroPage
             imageUrl={imageUrl}
             title={title}
@@ -189,6 +194,8 @@ export function MissionPageWrapper({
             missionImageUrl={missionImageUrl}
             description={description}
             reward={reward}
+            viewCount={mission.viewCount}
+            likesCount={mission.likesCount}
             bottomButton={
               <BottomButton
                 isActive={isActive ?? false}
@@ -204,7 +211,7 @@ export function MissionPageWrapper({
               />
             }
           />
-        </main>
+        </FixedBottomLayout>
       </MissionIntroContext.Provider>
     </CalloutProvider>
   );
