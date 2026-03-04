@@ -16,7 +16,7 @@ interface SubmitAnswerParams {
 }
 
 export type SubmitAnswerResult =
-  | { success: true }
+  | { success: true; selectedCompletionId?: string }
   | {
       success: false;
       error: string;
@@ -75,7 +75,15 @@ export async function submitAnswerOnly(params: SubmitAnswerParams): Promise<Subm
 
     if (isLastAction || answer.nextCompletionId) {
       const requestMeta = await getRequestMeta();
-      await missionResponseService.completeResponse({ responseId }, actor, requestMeta);
+      const completedResponse = await missionResponseService.completeResponse(
+        { responseId },
+        actor,
+        requestMeta,
+      );
+      return {
+        success: true,
+        selectedCompletionId: completedResponse.selectedCompletionId ?? undefined,
+      };
     }
 
     return { success: true };

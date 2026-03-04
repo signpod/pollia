@@ -243,7 +243,8 @@ export function useClientActionSubmit({
             return;
           }
 
-          navigateToNext(answer, isActualLast);
+          removeSessionStorage(toastStorageKey);
+          navigateToDone(result.selectedCompletionId ?? answer.nextCompletionId);
         } finally {
           setIsSubmitting(false);
           pendingSubmissions.delete(currentActionId);
@@ -285,6 +286,8 @@ export function useClientActionSubmit({
       user?.id,
       navigateToNext,
       navigateToAction,
+      navigateToDone,
+      toastStorageKey,
       updateCacheOptimistically,
       rollbackCache,
     ],
@@ -308,8 +311,17 @@ export function useClientActionSubmit({
         const isActualLast =
           !!existingAnswer.nextCompletionId ||
           progressInfo.currentOrder === progressInfo.totalCount;
+        const isAlreadyCompleted = !!missionResponse?.data?.completedAt;
 
-        if (isActualLast) {
+        if (isActualLast && !isAlreadyCompleted) {
+          showModal({
+            ...SURVEY_SUBMIT_MODAL,
+            showCancelButton: true,
+            onConfirm: async () => {
+              await executeSubmitAndNavigate(currentAnswer, isActualLast);
+            },
+          });
+        } else if (isActualLast) {
           removeSessionStorage(toastStorageKey);
           navigateToDone(existingAnswer.nextCompletionId);
         } else if (existingAnswer.nextActionId) {
@@ -354,6 +366,19 @@ export function useClientActionSubmit({
 
     // 이미 저장된 답변이면 바로 이동 (서버 호출 없이)
     if (isSame) {
+      const isAlreadyCompleted = !!missionResponse?.data?.completedAt;
+
+      if (isActualLast && !isAlreadyCompleted) {
+        showModal({
+          ...SURVEY_SUBMIT_MODAL,
+          showCancelButton: true,
+          onConfirm: async () => {
+            await executeSubmitAndNavigate(currentAnswer, isActualLast);
+          },
+        });
+        return;
+      }
+
       recordResponse({
         missionId,
         sessionId: getOrCreateSessionId(currentAnswer.actionId),
@@ -390,6 +415,7 @@ export function useClientActionSubmit({
     recordResponse,
     user?.id,
     missionResponse?.data?.answers,
+    missionResponse?.data?.completedAt,
     navigateToNext,
     navigateToAction,
     navigateToDone,
