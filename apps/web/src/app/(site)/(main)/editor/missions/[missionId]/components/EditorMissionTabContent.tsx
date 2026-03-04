@@ -77,6 +77,7 @@ export function EditorMissionTabContent({
   reward,
 }: EditorMissionTabContentProps) {
   const { currentTab } = useEditorMissionTab();
+  const [editorUseAiCompletion, setEditorUseAiCompletion] = useState(mission.useAiCompletion);
   const [cachedActionDraftSnapshot, setCachedActionDraftSnapshot] =
     useState<ActionSectionDraftSnapshot | null>(null);
   const [cachedCompletionDraftSnapshot, setCachedCompletionDraftSnapshot] =
@@ -106,6 +107,10 @@ export function EditorMissionTabContent({
   const serverActions = actionsQuery.data?.data;
   const serverCompletions = completionsQuery.data?.data;
 
+  useEffect(() => {
+    setEditorUseAiCompletion(mission.useAiCompletion);
+  }, [mission.useAiCompletion, missionId]);
+
   const handleActionWorkingSetChange = useCallback(
     (snapshot: ActionSectionDraftSnapshot) => {
       setCachedActionDraftSnapshot(snapshot);
@@ -127,6 +132,7 @@ export function EditorMissionTabContent({
       resolveEditorDesktopFlowPolicy({
         isActive: effectiveMission.isActive,
         entryActionId: effectiveMission.entryActionId,
+        useAiCompletion: editorUseAiCompletion,
         serverActions,
         serverCompletions,
         actionDraftSnapshot: cachedActionDraftSnapshot,
@@ -135,6 +141,7 @@ export function EditorMissionTabContent({
     [
       cachedActionDraftSnapshot,
       cachedCompletionDraftSnapshot,
+      editorUseAiCompletion,
       effectiveMission.entryActionId,
       effectiveMission.isActive,
       serverActions,
@@ -245,6 +252,7 @@ export function EditorMissionTabContent({
           ref={refs.basicInfoRef}
           mission={mission}
           onSaveStateChange={sectionBindings.onBasicStateChange}
+          onUseAiCompletionChange={setEditorUseAiCompletion}
         />
         <Separator className="h-2" />
         <RewardSettingsCard
@@ -257,6 +265,7 @@ export function EditorMissionTabContent({
         <ActionSettingsCard
           ref={refs.actionRef}
           missionId={mission.id}
+          useAiCompletion={editorUseAiCompletion}
           onSaveStateChange={sectionBindings.onActionStateChange}
           getCompletionDraftSnapshot={sectionBindings.getCompletionDraftSnapshot}
           completionWorkingSetVersion={sectionBindings.completionWorkingSetVersion}

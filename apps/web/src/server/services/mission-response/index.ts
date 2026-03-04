@@ -1,10 +1,17 @@
 import { completeResponseInputSchema, startResponseInputSchema } from "@/schemas/mission-response";
 import { actionRepository } from "@/server/repositories/action/actionRepository";
+import { missionCompletionInferenceCacheRepository } from "@/server/repositories/mission-completion-inference-cache/missionCompletionInferenceCacheRepository";
+import { missionCompletionStatRepository } from "@/server/repositories/mission-completion-stat/missionCompletionStatRepository";
+import { missionCompletionRepository } from "@/server/repositories/mission-completion/missionCompletionRepository";
 import {
   type MissionResponseRepository,
   missionResponseRepository,
 } from "@/server/repositories/mission-response/missionResponseRepository";
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
+import { type AiService, aiService } from "../ai";
+import type { CompletionInferenceInput } from "./completionInferenceTypes";
+import { hashStructuredAnswers } from "./hashStructuredAnswers";
+import { normalizeStructuredAnswers } from "./normalizeStructuredAnswers";
 import {
   type CleanupAbuseMetaResult,
   type CompleteResponseInput,
@@ -25,6 +32,10 @@ export class MissionResponseService {
     private responseRepo = missionResponseRepository,
     private missionRepo = missionRepository,
     private actionRepo = actionRepository,
+    private completionRepo = missionCompletionRepository,
+    private inferenceCacheRepo = missionCompletionInferenceCacheRepository,
+    private aiClient: AiService = aiService,
+    private completionStatRepo = missionCompletionStatRepository,
   ) {}
 
   async getResponseById(responseId: string, actor: string | ResponseActor) {
@@ -105,13 +116,45 @@ export class MissionResponseService {
       throw error;
     }
 
-    const total = await this.responseRepo.countByMissionId(missionId);
-    const completed = await this.responseRepo.countCompletedByMissionId(missionId);
+    const [total, completed, completionsResult, completionStatsResult] = await Promise.all([
+      this.responseRepo.countByMissionId(missionId),
+      this.responseRepo.countCompletedByMissionId(missionId),
+      this.completionRepo.findAllByMissionId(missionId),
+      this.completionStatRepo.findByMissionId(missionId),
+    ]);
+
+    const completions = completionsResult ?? [];
+    const completionStats = completionStatsResult ?? [];
+    const encounterCountByCompletionId = new Map(
+      completionStats.map(stat => [stat.missionCompletionId, stat.encounterCount] as const),
+    );
+
+    const completionReachStats = [...completions]
+      .sort((left, right) => {
+        const leftCount = encounterCountByCompletionId.get(left.id) ?? 0;
+        const rightCount = encounterCountByCompletionId.get(right.id) ?? 0;
+        if (leftCount !== rightCount) {
+          return rightCount - leftCount;
+        }
+        return left.createdAt.getTime() - right.createdAt.getTime();
+      })
+      .map(completion => {
+        const encounterCount = encounterCountByCompletionId.get(completion.id) ?? 0;
+        const reachRate = completed > 0 ? (encounterCount / completed) * 100 : 0;
+
+        return {
+          completionId: completion.id,
+          completionTitle: completion.title,
+          encounterCount,
+          reachRate,
+        };
+      });
 
     return {
       total,
       completed,
       completionRate: total > 0 ? (completed / total) * 100 : 0,
+      completionReachStats,
     };
   }
 
@@ -255,6 +298,48 @@ export class MissionResponseService {
       throw error;
     }
 
+    const completions = await this.completionRepo.findAllByMissionId(response.missionId);
+    const firstCompletion = completions[0];
+    if (!firstCompletion) {
+      const error = new Error("미션 완료 데이터를 찾을 수 없습니다.");
+      error.cause = 404;
+      throw error;
+    }
+
+    const completionIdSet = new Set(completions.map(completion => completion.id));
+    const branchCompletionId = this.resolveBranchCompletionId(response.answers);
+
+    let selectedCompletionId: string;
+
+    if (branchCompletionId) {
+      if (!completionIdSet.has(branchCompletionId)) {
+        const error = new Error("분기 완료화면이 미션에 존재하지 않습니다.");
+        error.cause = 400;
+        throw error;
+      }
+      selectedCompletionId = branchCompletionId;
+    } else if (response.mission.useAiCompletion === true) {
+      selectedCompletionId = await this.resolveCompletionIdByAi({
+        missionId: response.missionId,
+        missionTitle: response.mission.title,
+        completions: completions.map(completion => ({
+          id: completion.id,
+          title: completion.title,
+          description: completion.description,
+        })),
+        rawAnswers: response.answers,
+        fallbackCompletionId: firstCompletion.id,
+      });
+    } else {
+      selectedCompletionId = firstCompletion.id;
+    }
+
+    if (!completionIdSet.has(selectedCompletionId)) {
+      const error = new Error("완료화면이 미션에 존재하지 않습니다.");
+      error.cause = 400;
+      throw error;
+    }
+
     const completedAt = new Date();
     const latestCompletedAt = await this.responseRepo.findLatestCompletedAtByActor({
       missionId: response.missionId,
@@ -266,12 +351,164 @@ export class MissionResponseService {
       ? Math.max(0, Math.floor((completedAt.getTime() - latestCompletedAt.getTime()) / 1000))
       : null;
 
-    return this.responseRepo.updateCompletedAtWithAbuseMeta(parseResult.data.responseId, {
-      completedAt,
-      ipAddress: requestMeta?.ipAddress ?? null,
-      userAgent: requestMeta?.userAgent ?? null,
-      submissionIntervalSeconds,
+    const completedResponse = await this.responseRepo.completeWithSelectionAndAbuseMeta(
+      parseResult.data.responseId,
+      {
+        missionId: response.missionId,
+        selectedCompletionId,
+        completedAt,
+        ipAddress: requestMeta?.ipAddress ?? null,
+        userAgent: requestMeta?.userAgent ?? null,
+        submissionIntervalSeconds,
+      },
+    );
+
+    if (!completedResponse) {
+      const error = new Error("이미 완료된 응답입니다.");
+      error.cause = 400;
+      throw error;
+    }
+
+    return completedResponse;
+  }
+
+  private resolveBranchCompletionId(
+    answers: Array<{
+      action: { nextCompletionId: string | null; order: number | null };
+      options: Array<{ nextCompletionId: string | null }>;
+    }>,
+  ): string | null {
+    const orderedAnswers = [...answers].sort((left, right) => {
+      const leftOrder = left.action.order ?? Number.MAX_SAFE_INTEGER;
+      const rightOrder = right.action.order ?? Number.MAX_SAFE_INTEGER;
+      return leftOrder - rightOrder;
     });
+
+    let branchCompletionId: string | null = null;
+
+    for (const answer of orderedAnswers) {
+      const optionCompletionId = answer.options.find(
+        option => option.nextCompletionId,
+      )?.nextCompletionId;
+      if (optionCompletionId) {
+        branchCompletionId = optionCompletionId;
+      }
+
+      if (answer.action.nextCompletionId) {
+        branchCompletionId = answer.action.nextCompletionId;
+      }
+    }
+
+    return branchCompletionId;
+  }
+
+  private async resolveCompletionIdByAi(input: {
+    missionId: string;
+    missionTitle: string;
+    completions: CompletionInferenceInput["completions"];
+    rawAnswers: Array<{
+      actionId: string;
+      scaleAnswer: number | null;
+      dateAnswers: Date[];
+      options: Array<{ id: string }>;
+      fileUploads: Array<{ id: string }>;
+      action: {
+        id: string;
+        order: number | null;
+        type:
+          | "MULTIPLE_CHOICE"
+          | "TAG"
+          | "BRANCH"
+          | "SCALE"
+          | "RATING"
+          | "DATE"
+          | "TIME"
+          | "IMAGE"
+          | "VIDEO"
+          | "PDF"
+          | "SUBJECTIVE"
+          | "SHORT_TEXT";
+      };
+    }>;
+    fallbackCompletionId: string;
+  }): Promise<string> {
+    const { keyAnswers, aiAnswers } = normalizeStructuredAnswers(input.rawAnswers);
+    const hashResult = hashStructuredAnswers(keyAnswers);
+    const validCompletionIds = new Set(input.completions.map(completion => completion.id));
+
+    if (hashResult) {
+      const cached = await this.inferenceCacheRepo.findByMissionAndFingerprint(
+        input.missionId,
+        hashResult.hash,
+      );
+
+      if (cached && validCompletionIds.has(cached.missionCompletionId)) {
+        return cached.missionCompletionId;
+      }
+    }
+
+    const fallbackCompletionId = input.fallbackCompletionId;
+    let resolvedCompletionId: string;
+    let inferenceSource: "AI" | "FALLBACK";
+
+    try {
+      const inferredCompletionId = await this.inferCompletionIdWithAi({
+        missionId: input.missionId,
+        missionTitle: input.missionTitle,
+        completions: input.completions,
+        structuredAnswers: aiAnswers,
+      });
+
+      if (validCompletionIds.has(inferredCompletionId)) {
+        resolvedCompletionId = inferredCompletionId;
+        inferenceSource = "AI";
+      } else {
+        console.warn(
+          `[AI completion fallback] invalid id "${inferredCompletionId}" for mission ${input.missionId}`,
+        );
+        resolvedCompletionId = fallbackCompletionId;
+        inferenceSource = "FALLBACK";
+      }
+    } catch (error) {
+      console.warn(
+        `[AI completion fallback] inference failed for mission ${input.missionId}:`,
+        error instanceof Error ? error.message : error,
+      );
+      resolvedCompletionId = fallbackCompletionId;
+      inferenceSource = "FALLBACK";
+    }
+
+    if (hashResult) {
+      await this.inferenceCacheRepo.upsertByMissionAndFingerprint({
+        missionId: input.missionId,
+        fingerprintHash: hashResult.hash,
+        fingerprintPayload: hashResult.normalizedPayload,
+        missionCompletionId: resolvedCompletionId,
+        source: inferenceSource,
+      });
+    }
+
+    return resolvedCompletionId;
+  }
+
+  private async inferCompletionIdWithAi(input: CompletionInferenceInput): Promise<string> {
+    const prompt = [
+      "너는 설문 완료화면 선택기다.",
+      "아래 completion 목록 중 반드시 하나의 id만 고른다.",
+      "응답 JSON의 result 값에는 completion id 문자열만 넣는다.",
+      "",
+      `missionId: ${input.missionId}`,
+      `missionTitle: ${input.missionTitle}`,
+      `completions: ${JSON.stringify(input.completions)}`,
+      `structuredAnswers: ${JSON.stringify(input.structuredAnswers)}`,
+      "",
+      "규칙:",
+      "- completion id 외의 문자열을 만들지 않는다.",
+      "- 목록에 없는 id를 만들지 않는다.",
+    ].join("\n");
+
+    const aiResult = await this.aiClient.generateFromPrompt(prompt);
+    return aiResult.result.trim();
   }
 
   async cleanupAbuseMeta(

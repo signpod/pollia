@@ -21,10 +21,18 @@ export interface CleanupAbuseMetaResult {
   cutoffDate: Date;
 }
 
+export interface CompletionReachStat {
+  completionId: string;
+  completionTitle: string;
+  encounterCount: number;
+  reachRate: number;
+}
+
 export interface ResponseStats {
   total: number;
   completed: number;
   completionRate: number;
+  completionReachStats: CompletionReachStat[];
 }
 
 export interface GetMissionResponsesPageOptions {

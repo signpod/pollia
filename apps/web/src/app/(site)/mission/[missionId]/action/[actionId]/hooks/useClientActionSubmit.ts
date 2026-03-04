@@ -1,6 +1,6 @@
 "use client";
 
-import { submitAnswerOnly } from "@/actions/action-answer";
+import { completeResponseOnly, submitAnswerOnly } from "@/actions/action-answer";
 import { toast } from "@/components/common/Toast";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import type { ActionForProgress } from "@/hooks/action";
@@ -243,7 +243,8 @@ export function useClientActionSubmit({
             return;
           }
 
-          navigateToNext(answer, isActualLast);
+          removeSessionStorage(toastStorageKey);
+          navigateToDone(result.selectedCompletionId ?? answer.nextCompletionId);
         } finally {
           setIsSubmitting(false);
           pendingSubmissions.delete(currentActionId);
@@ -285,6 +286,8 @@ export function useClientActionSubmit({
       user?.id,
       navigateToNext,
       navigateToAction,
+      navigateToDone,
+      toastStorageKey,
       updateCacheOptimistically,
       rollbackCache,
     ],
@@ -308,8 +311,27 @@ export function useClientActionSubmit({
         const isActualLast =
           !!existingAnswer.nextCompletionId ||
           progressInfo.currentOrder === progressInfo.totalCount;
+        const isAlreadyCompleted = !!missionResponse?.data?.completedAt;
 
-        if (isActualLast) {
+        if (isActualLast && !isAlreadyCompleted) {
+          showModal({
+            ...SURVEY_SUBMIT_MODAL,
+            showCancelButton: true,
+            onConfirm: async () => {
+              const result = await completeResponseOnly({ missionId, responseId });
+              if (!result.success) {
+                if (result.code === "ALREADY_COMPLETED") {
+                  handleAlreadyCompleted();
+                } else {
+                  toast.warning(result.error, { id: "complete-response-error" });
+                }
+                return;
+              }
+              removeSessionStorage(toastStorageKey);
+              navigateToDone(result.selectedCompletionId ?? existingAnswer.nextCompletionId);
+            },
+          });
+        } else if (isActualLast) {
           removeSessionStorage(toastStorageKey);
           navigateToDone(existingAnswer.nextCompletionId);
         } else if (existingAnswer.nextActionId) {
@@ -354,6 +376,19 @@ export function useClientActionSubmit({
 
     // 이미 저장된 답변이면 바로 이동 (서버 호출 없이)
     if (isSame) {
+      const isAlreadyCompleted = !!missionResponse?.data?.completedAt;
+
+      if (isActualLast && !isAlreadyCompleted) {
+        showModal({
+          ...SURVEY_SUBMIT_MODAL,
+          showCancelButton: true,
+          onConfirm: async () => {
+            await executeSubmitAndNavigate(currentAnswer, isActualLast);
+          },
+        });
+        return;
+      }
+
       recordResponse({
         missionId,
         sessionId: getOrCreateSessionId(currentAnswer.actionId),
@@ -387,9 +422,12 @@ export function useClientActionSubmit({
     showModal,
     actionData,
     missionId,
+    responseId,
+    handleAlreadyCompleted,
     recordResponse,
     user?.id,
     missionResponse?.data?.answers,
+    missionResponse?.data?.completedAt,
     navigateToNext,
     navigateToAction,
     navigateToDone,

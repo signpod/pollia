@@ -137,4 +137,51 @@ describe("editorMissionPublishModel", () => {
     expect(resolved.entryActionId).toBe("action-1");
     expect(resolved.source).toBe("server");
   });
+
+  it("AI 완료화면 사용 시 completion 연결이 없어도 완료화면이 1개 이상이면 발행 가능하다", () => {
+    const result = computePublishAvailability({
+      isPublished: false,
+      entryActionId: "action-1",
+      useAiCompletion: true,
+      serverActions: [
+        {
+          id: "action-1",
+          type: "SUBJECTIVE",
+          title: "질문 1",
+          nextActionId: null,
+          nextCompletionId: null,
+          options: [],
+        },
+      ],
+      serverCompletions: [{ id: "completion-1", title: "완료" }],
+    });
+
+    expect(result.canPublish).toBe(true);
+    expect(result.issues).toHaveLength(0);
+  });
+
+  it("AI 완료화면 사용 시 완료화면이 없으면 발행 불가하다", () => {
+    const result = computePublishAvailability({
+      isPublished: false,
+      entryActionId: "action-1",
+      useAiCompletion: true,
+      serverActions: [
+        {
+          id: "action-1",
+          type: "SUBJECTIVE",
+          title: "질문 1",
+          nextActionId: null,
+          nextCompletionId: null,
+          options: [],
+        },
+      ],
+      serverCompletions: [],
+    });
+
+    expect(result.canPublish).toBe(false);
+    expect(result.blockingMessage).toBe(
+      "AI 완료화면 사용 시 결과 화면을 최소 1개 이상 추가해야 합니다.",
+    );
+    expect(result.issues.some(issue => issue.type === "missing-completion")).toBe(true);
+  });
 });

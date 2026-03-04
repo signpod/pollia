@@ -35,6 +35,7 @@ export function mapIntroUpdateRequest(formData: CreateMissionFormData): UpdateMi
   return {
     allowGuestResponse: formData.allowGuestResponse,
     allowMultipleResponses: formData.allowMultipleResponses,
+    useAiCompletion: formData.useAiCompletion,
   };
 }
 

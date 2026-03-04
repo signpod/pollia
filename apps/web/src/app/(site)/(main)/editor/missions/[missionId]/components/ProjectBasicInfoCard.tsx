@@ -24,7 +24,7 @@ import {
   useImperativeHandle,
   useMemo,
 } from "react";
-import { FormProvider, useForm } from "react-hook-form";
+import { FormProvider, useForm, useWatch } from "react-hook-form";
 import type {
   SectionSaveHandle,
   SectionSaveOptions,
@@ -35,6 +35,7 @@ import type {
 interface ProjectBasicInfoCardProps {
   mission: GetMissionResponse["data"];
   onSaveStateChange?: SectionSaveStateChangeHandler;
+  onUseAiCompletionChange?: (value: boolean) => void;
 }
 
 function buildDefaultValues(mission: GetMissionResponse["data"]): CreateMissionFormData {
@@ -49,6 +50,7 @@ function buildDefaultValues(mission: GetMissionResponse["data"]): CreateMissionF
     isExposed: true,
     allowGuestResponse: mission.allowGuestResponse,
     allowMultipleResponses: mission.allowMultipleResponses,
+    useAiCompletion: mission.useAiCompletion,
     imageUrl: mission.imageUrl ?? null,
     imageFileUploadId: mission.imageFileUploadId ?? null,
     brandLogoUrl: mission.brandLogoUrl ?? null,
@@ -73,7 +75,7 @@ function countValidationIssues(value: unknown): number {
 }
 
 function ProjectBasicInfoCardComponent(
-  { mission, onSaveStateChange }: ProjectBasicInfoCardProps,
+  { mission, onSaveStateChange, onUseAiCompletionChange }: ProjectBasicInfoCardProps,
   ref: ForwardedRef<SectionSaveHandle>,
 ) {
   const form = useForm<CreateMissionFormData>({
@@ -146,6 +148,10 @@ function ProjectBasicInfoCardComponent(
   const hasValidationIssues = validationIssueCount > 0;
   const watchedImageUrl = form.watch("imageUrl");
   const watchedBrandLogoUrl = form.watch("brandLogoUrl");
+  const watchedUseAiCompletion = useWatch({
+    control: form.control,
+    name: "useAiCompletion",
+  });
 
   useEffect(() => {
     onSaveStateChange?.({
@@ -155,6 +161,10 @@ function ProjectBasicInfoCardComponent(
       validationIssueCount,
     });
   }, [hasPendingChanges, hasValidationIssues, isBusy, onSaveStateChange, validationIssueCount]);
+
+  useEffect(() => {
+    onUseAiCompletionChange?.(watchedUseAiCompletion);
+  }, [onUseAiCompletionChange, watchedUseAiCompletion]);
 
   const save = useCallback(
     async ({
@@ -192,6 +202,7 @@ function ProjectBasicInfoCardComponent(
           type: MissionType.GENERAL,
           allowGuestResponse: values.allowGuestResponse,
           allowMultipleResponses: values.allowMultipleResponses,
+          useAiCompletion: values.useAiCompletion,
           imageUrl: values.imageUrl ?? null,
           imageFileUploadId: values.imageFileUploadId ?? null,
           brandLogoUrl: values.brandLogoUrl ?? null,
@@ -259,6 +270,10 @@ function ProjectBasicInfoCardComponent(
             typeof values.allowMultipleResponses === "boolean"
               ? values.allowMultipleResponses
               : defaultValues.allowMultipleResponses,
+          useAiCompletion:
+            typeof values.useAiCompletion === "boolean"
+              ? values.useAiCompletion
+              : defaultValues.useAiCompletion,
           imageUrl:
             typeof values.imageUrl === "string" || values.imageUrl === null
               ? values.imageUrl
@@ -364,7 +379,7 @@ function ProjectBasicInfoCardComponent(
             </div>
           </div>
 
-          <CreateProjectInfoStep />
+          <CreateProjectInfoStep showAiCompletionToggle />
         </form>
       </FormProvider>
 

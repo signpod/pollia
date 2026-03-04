@@ -77,6 +77,7 @@ function buildDefaultValues(
       isExposed: mission.type === MissionType.GENERAL,
       allowGuestResponse: mission.allowGuestResponse,
       allowMultipleResponses: mission.allowMultipleResponses,
+      useAiCompletion: mission.useAiCompletion,
     };
   }
 
@@ -96,6 +97,7 @@ function buildDefaultValues(
     isExposed: mission.type === MissionType.GENERAL,
     allowGuestResponse: mission.allowGuestResponse,
     allowMultipleResponses: mission.allowMultipleResponses,
+    useAiCompletion: mission.useAiCompletion,
   };
 }
 
@@ -260,6 +262,10 @@ function RewardSettingsCardComponent(
             typeof values.allowMultipleResponses === "boolean"
               ? values.allowMultipleResponses
               : defaultValues.allowMultipleResponses,
+          useAiCompletion:
+            typeof values.useAiCompletion === "boolean"
+              ? values.useAiCompletion
+              : defaultValues.useAiCompletion,
         };
 
         const rawReward =

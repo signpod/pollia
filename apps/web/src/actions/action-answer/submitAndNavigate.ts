@@ -16,12 +16,65 @@ interface SubmitAnswerParams {
 }
 
 export type SubmitAnswerResult =
-  | { success: true }
+  | { success: true; selectedCompletionId?: string }
   | {
       success: false;
       error: string;
       code: "ALREADY_COMPLETED" | "VALIDATION_ERROR" | "SERVER_ERROR";
     };
+
+export async function completeResponseOnly(params: {
+  missionId: string;
+  responseId: string;
+}): Promise<SubmitAnswerResult> {
+  const { missionId, responseId } = params;
+
+  if (!responseId) {
+    return { success: false, error: "유효하지 않은 응답입니다.", code: "VALIDATION_ERROR" };
+  }
+
+  try {
+    const actor = await resolveMissionActor();
+    const response = await missionResponseService.getResponseById(responseId, actor);
+
+    if (response.missionId !== missionId) {
+      return { success: false, error: "유효하지 않은 응답입니다.", code: "VALIDATION_ERROR" };
+    }
+
+    if (response.completedAt) {
+      return { success: false, error: "이미 완료된 미션입니다.", code: "ALREADY_COMPLETED" };
+    }
+
+    const requestMeta = await getRequestMeta();
+    const completedResponse = await missionResponseService.completeResponse(
+      { responseId },
+      actor,
+      requestMeta,
+    );
+
+    return {
+      success: true,
+      selectedCompletionId: completedResponse.selectedCompletionId ?? undefined,
+    };
+  } catch (error) {
+    console.error("completeResponseOnly error:", error);
+
+    const statusCode = error instanceof Error ? (error.cause as number) : undefined;
+    if (statusCode && statusCode >= 400 && statusCode < 500) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "유효하지 않은 요청입니다.",
+        code: "VALIDATION_ERROR",
+      };
+    }
+
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "응답 완료 처리 중 오류가 발생했습니다.",
+      code: "SERVER_ERROR",
+    };
+  }
+}
 
 export async function submitAnswerOnly(params: SubmitAnswerParams): Promise<SubmitAnswerResult> {
   const { missionId, responseId, answer, isLastAction } = params;
@@ -75,7 +128,15 @@ export async function submitAnswerOnly(params: SubmitAnswerParams): Promise<Subm
 
     if (isLastAction || answer.nextCompletionId) {
       const requestMeta = await getRequestMeta();
-      await missionResponseService.completeResponse({ responseId }, actor, requestMeta);
+      const completedResponse = await missionResponseService.completeResponse(
+        { responseId },
+        actor,
+        requestMeta,
+      );
+      return {
+        success: true,
+        selectedCompletionId: completedResponse.selectedCompletionId ?? undefined,
+      };
     }
 
     return { success: true };

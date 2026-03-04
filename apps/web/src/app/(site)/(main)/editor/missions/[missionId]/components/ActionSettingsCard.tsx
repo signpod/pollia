@@ -78,6 +78,7 @@ import type {
 
 interface ActionSettingsCardProps {
   missionId: string;
+  useAiCompletion?: boolean;
   onSaveStateChange?: SectionSaveStateChangeHandler;
   getCompletionDraftSnapshot?: () => unknown | null;
   completionWorkingSetVersion?: number;
@@ -501,6 +502,7 @@ const NOOP = () => {};
 function ActionSettingsCardComponent(
   {
     missionId,
+    useAiCompletion: useAiCompletionOverride,
     onSaveStateChange,
     getCompletionDraftSnapshot,
     completionWorkingSetVersion = 0,
@@ -622,6 +624,8 @@ function ActionSettingsCardComponent(
   const isDeletingAction = deleteAction.isPending;
   const isBusy = isSaving || isDeletingAction;
   const isInactiveMission = missionData?.data?.isActive === false;
+  const isAiCompletionEnabled =
+    useAiCompletionOverride ?? missionData?.data?.useAiCompletion === true;
 
   const existingActions = useMemo(() => {
     const list = actionsData?.data ?? [];
@@ -629,6 +633,10 @@ function ActionSettingsCardComponent(
   }, [actionsData]);
 
   const completionOptions = useMemo(() => {
+    if (isAiCompletionEnabled) {
+      return [];
+    }
+
     const parsedCompletionSnapshot = parseCompletionDraftSnapshotForOptions(
       getCompletionDraftSnapshot?.() ?? null,
     );
@@ -670,6 +678,7 @@ function ActionSettingsCardComponent(
 
     return [...existingOptions, ...draftOptions];
   }, [
+    isAiCompletionEnabled,
     completionDrafts,
     completionWorkingSetVersion,
     completionsData?.data,
@@ -822,6 +831,7 @@ function ActionSettingsCardComponent(
 
     return analyzeEditorFlow({
       entryActionId: missionData.data.entryActionId,
+      useAiCompletion: isAiCompletionEnabled,
       serverActions: actionsData.data,
       serverCompletions: completionsData.data,
       actionDraftSnapshot: getActionDraftSnapshot(),
@@ -832,6 +842,7 @@ function ActionSettingsCardComponent(
     completionsData?.data,
     getActionDraftSnapshot,
     getCompletionDraftSnapshot,
+    isAiCompletionEnabled,
     missionData?.data,
   ]);
 
@@ -2048,6 +2059,7 @@ function ActionSettingsCardComponent(
                         dirtyBaselineValues={mapEditInitialValues(item.action)}
                         allActions={formLinkTargets}
                         completionOptions={completionOptions}
+                        allowCompletionLink={!isAiCompletionEnabled}
                         isLoading={isBusy}
                         onSubmit={NOOP}
                         onCancel={NOOP}
@@ -2077,6 +2089,7 @@ function ActionSettingsCardComponent(
                         initialValues={draftFormSnapshotByItemKey[item.key]?.values}
                         allActions={formLinkTargets}
                         completionOptions={completionOptions}
+                        allowCompletionLink={!isAiCompletionEnabled}
                         isLoading={isBusy}
                         onSubmit={NOOP}
                         onCancel={NOOP}

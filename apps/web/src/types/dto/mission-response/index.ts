@@ -19,6 +19,7 @@ export interface MissionResponseBase extends MissionResponseActor {
   missionId: string;
   startedAt: Date;
   completedAt: Date | null;
+  selectedCompletionId: string | null;
   createdAt: Date;
 }
 
@@ -109,6 +110,12 @@ export interface GetMissionStatsResponse {
     total: number;
     completed: number;
     completionRate: number;
+    completionReachStats: Array<{
+      completionId: string;
+      completionTitle: string;
+      encounterCount: number;
+      reachRate: number;
+    }>;
   };
 }
 

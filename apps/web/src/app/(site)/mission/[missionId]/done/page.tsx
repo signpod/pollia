@@ -40,6 +40,10 @@ export default async function MissionPage({
   }
 
   if (!completionId) {
+    if (missionResponse.data.selectedCompletionId) {
+      redirect(ROUTES.MISSION_DONE(missionId, missionResponse.data.selectedCompletionId));
+    }
+
     const { data: actions } = await getMissionActionsDetail(missionId);
     const isBranched = actions.some(
       action => action.nextCompletionId || action.options?.some(opt => opt.nextCompletionId),

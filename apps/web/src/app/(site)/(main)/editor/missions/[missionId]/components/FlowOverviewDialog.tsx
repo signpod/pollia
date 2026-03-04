@@ -99,6 +99,11 @@ export function FlowOverviewDialog({
                     className="bg-amber-100 text-amber-700 ring-1 ring-amber-200"
                   />
                   <IssueBadge
+                    label="완료화면 미설정"
+                    value={summary.missingCompletionCount}
+                    className="bg-orange-100 text-orange-700 ring-1 ring-orange-200"
+                  />
+                  <IssueBadge
                     label="도달 불가"
                     value={summary.unreachableCount}
                     className="bg-zinc-200 text-zinc-700 ring-1 ring-zinc-300"

@@ -15,6 +15,7 @@ export interface ResolvedEntryAction {
 export interface PublishComputationInput {
   isPublished: boolean;
   entryActionId: string | null | undefined;
+  useAiCompletion?: boolean;
   serverActions: ServerActionLike[] | null | undefined;
   serverCompletions: ServerCompletionLike[] | null | undefined;
   actionDraftSnapshot?: unknown;
@@ -138,6 +139,7 @@ export function resolveEntryActionIdForPublish(input: {
 
 export function buildPublishValidationInput(input: {
   entryActionId: string | null | undefined;
+  useAiCompletion?: boolean;
   serverActions: ServerActionLike[] | null | undefined;
   serverCompletions: ServerCompletionLike[] | null | undefined;
   actionDraftSnapshot?: unknown;
@@ -151,6 +153,7 @@ export function buildPublishValidationInput(input: {
 
   return {
     entryActionId: resolvedEntry.entryActionId,
+    useAiCompletion: input.useAiCompletion === true,
     serverActions: Array.isArray(input.serverActions) ? input.serverActions : [],
     serverCompletions: Array.isArray(input.serverCompletions) ? input.serverCompletions : [],
     actionDraftSnapshot: input.actionDraftSnapshot,
@@ -165,6 +168,7 @@ export function computePublishAvailability(input: PublishComputationInput): Publ
 
   const validationInput = buildPublishValidationInput({
     entryActionId: input.entryActionId,
+    useAiCompletion: input.useAiCompletion,
     serverActions: input.serverActions,
     serverCompletions: input.serverCompletions,
     actionDraftSnapshot: input.actionDraftSnapshot,
@@ -189,6 +193,7 @@ export function computePublishAvailability(input: PublishComputationInput): Publ
 
   const validationResult = validateEditorPublishFlow({
     entryActionId: validationInput.entryActionId,
+    useAiCompletion: validationInput.useAiCompletion,
     serverActions: validationInput.serverActions,
     serverCompletions: validationInput.serverCompletions,
     actionDraftSnapshot: validationInput.actionDraftSnapshot,

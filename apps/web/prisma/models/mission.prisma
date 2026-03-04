@@ -43,9 +43,10 @@ model Mission {
   brandLogoFileUploadId String?     @map("brand_logo_file_upload_id")
   brandLogoFileUpload   FileUpload? @relation("MissionBrandLogo", fields: [brandLogoFileUploadId], references: [id])
 
-  trackingActionEntries   TrackingActionEntry[]
-  trackingActionResponses TrackingActionResponse[]
-  completionStats         MissionCompletionStat[]
+  trackingActionEntries     TrackingActionEntry[]
+  trackingActionResponses   TrackingActionResponse[]
+  completionStats           MissionCompletionStat[]
+  completionInferenceCaches MissionCompletionInferenceCache[]
 
   @@index([creatorId])
   @@index([isActive])

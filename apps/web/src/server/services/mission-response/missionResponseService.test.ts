@@ -1,11 +1,21 @@
+import type { ActionRepository } from "@/server/repositories/action/actionRepository";
+import type { MissionCompletionInferenceCacheRepository } from "@/server/repositories/mission-completion-inference-cache/missionCompletionInferenceCacheRepository";
+import type { MissionCompletionStatRepository } from "@/server/repositories/mission-completion-stat/missionCompletionStatRepository";
+import type { MissionCompletionRepository } from "@/server/repositories/mission-completion/missionCompletionRepository";
 import type { MissionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import type { MissionRepository } from "@/server/repositories/mission/missionRepository";
 import { MissionResponseService } from ".";
+import type { AiService } from "../ai";
 
 describe("MissionResponseService", () => {
   let service: MissionResponseService;
   let mockResponseRepo: jest.Mocked<MissionResponseRepository>;
   let mockMissionRepo: jest.Mocked<MissionRepository>;
+  let mockActionRepo: jest.Mocked<ActionRepository>;
+  let mockCompletionRepo: jest.Mocked<MissionCompletionRepository>;
+  let mockInferenceCacheRepo: jest.Mocked<MissionCompletionInferenceCacheRepository>;
+  let mockAiService: jest.Mocked<AiService>;
+  let mockCompletionStatRepo: jest.Mocked<MissionCompletionStatRepository>;
 
   const mockUser = { id: "user1" };
   const now = new Date();
@@ -23,6 +33,7 @@ describe("MissionResponseService", () => {
       updateCompletedAt: jest.fn(),
       findLatestCompletedAtByActor: jest.fn(),
       updateCompletedAtWithAbuseMeta: jest.fn(),
+      completeWithSelectionAndAbuseMeta: jest.fn(),
       nullifyAbuseMetaOlderThan: jest.fn(),
       delete: jest.fn(),
       deleteByMissionAndUser: jest.fn(),
@@ -36,7 +47,37 @@ describe("MissionResponseService", () => {
       findById: jest.fn(),
     } as unknown as jest.Mocked<MissionRepository>;
 
-    service = new MissionResponseService(mockResponseRepo, mockMissionRepo);
+    mockActionRepo = {
+      hasFileUploadActionByMissionId: jest.fn(),
+    } as unknown as jest.Mocked<ActionRepository>;
+
+    mockCompletionRepo = {
+      findAllByMissionId: jest.fn(),
+    } as unknown as jest.Mocked<MissionCompletionRepository>;
+
+    mockInferenceCacheRepo = {
+      findByMissionAndFingerprint: jest.fn(),
+      upsertByMissionAndFingerprint: jest.fn(),
+      deleteByMissionId: jest.fn(),
+    } as unknown as jest.Mocked<MissionCompletionInferenceCacheRepository>;
+
+    mockCompletionStatRepo = {
+      findByMissionId: jest.fn(),
+    } as unknown as jest.Mocked<MissionCompletionStatRepository>;
+
+    mockAiService = {
+      generateFromPrompt: jest.fn(),
+    } as unknown as jest.Mocked<AiService>;
+
+    service = new MissionResponseService(
+      mockResponseRepo,
+      mockMissionRepo,
+      mockActionRepo,
+      mockCompletionRepo,
+      mockInferenceCacheRepo,
+      mockAiService,
+      mockCompletionStatRepo,
+    );
   });
 
   afterEach(() => {
@@ -163,36 +204,138 @@ describe("MissionResponseService", () => {
   });
 
   describe("getMissionStats", () => {
-    it("Mission 통계를 성공적으로 조회한다", async () => {
+    it("Mission 통계를 완료화면 도달 통계와 함께 조회한다", async () => {
       // Given
       const mockMission = { id: "mission1", creatorId: "user1" };
       mockMissionRepo.findById.mockResolvedValue(mockMission as never);
-      mockResponseRepo.countByMissionId.mockResolvedValue(10);
-      mockResponseRepo.countCompletedByMissionId.mockResolvedValue(7);
+      mockResponseRepo.countByMissionId.mockResolvedValue(20);
+      mockResponseRepo.countCompletedByMissionId.mockResolvedValue(10);
+      mockCompletionRepo.findAllByMissionId.mockResolvedValue([
+        { id: "completion-a", title: "A", createdAt: new Date("2026-01-01T00:00:00.000Z") },
+        { id: "completion-b", title: "B", createdAt: new Date("2026-01-02T00:00:00.000Z") },
+        { id: "completion-c", title: "C", createdAt: new Date("2026-01-03T00:00:00.000Z") },
+      ] as never);
+      mockCompletionStatRepo.findByMissionId.mockResolvedValue([
+        {
+          missionCompletionId: "completion-b",
+          encounterCount: 5,
+          missionCompletion: {
+            id: "completion-b",
+            title: "B",
+            createdAt: new Date("2026-01-02T00:00:00.000Z"),
+          },
+        },
+        {
+          missionCompletionId: "completion-a",
+          encounterCount: 2,
+          missionCompletion: {
+            id: "completion-a",
+            title: "A",
+            createdAt: new Date("2026-01-01T00:00:00.000Z"),
+          },
+        },
+      ] as never);
 
       // When
       const result = await service.getMissionStats("mission1", mockUser.id);
 
       // Then
       expect(result).toEqual({
-        total: 10,
-        completed: 7,
-        completionRate: 70,
+        total: 20,
+        completed: 10,
+        completionRate: 50,
+        completionReachStats: [
+          {
+            completionId: "completion-b",
+            completionTitle: "B",
+            encounterCount: 5,
+            reachRate: 50,
+          },
+          {
+            completionId: "completion-a",
+            completionTitle: "A",
+            encounterCount: 2,
+            reachRate: 20,
+          },
+          {
+            completionId: "completion-c",
+            completionTitle: "C",
+            encounterCount: 0,
+            reachRate: 0,
+          },
+        ],
       });
     });
 
-    it("응답이 없으면 completionRate는 0이다", async () => {
+    it("완료자가 없으면 completionRate/reachRate는 0이다", async () => {
       // Given
       const mockMission = { id: "mission1", creatorId: "user1" };
       mockMissionRepo.findById.mockResolvedValue(mockMission as never);
       mockResponseRepo.countByMissionId.mockResolvedValue(0);
       mockResponseRepo.countCompletedByMissionId.mockResolvedValue(0);
+      mockCompletionRepo.findAllByMissionId.mockResolvedValue([
+        { id: "completion-a", title: "A", createdAt: new Date("2026-01-01T00:00:00.000Z") },
+      ] as never);
+      mockCompletionStatRepo.findByMissionId.mockResolvedValue([]);
 
       // When
       const result = await service.getMissionStats("mission1", mockUser.id);
 
       // Then
-      expect(result.completionRate).toBe(0);
+      expect(result).toEqual({
+        total: 0,
+        completed: 0,
+        completionRate: 0,
+        completionReachStats: [
+          {
+            completionId: "completion-a",
+            completionTitle: "A",
+            encounterCount: 0,
+            reachRate: 0,
+          },
+        ],
+      });
+    });
+
+    it("도달 수 동률일 때 completion createdAt 오름차순으로 정렬한다", async () => {
+      // Given
+      const mockMission = { id: "mission1", creatorId: "user1" };
+      mockMissionRepo.findById.mockResolvedValue(mockMission as never);
+      mockResponseRepo.countByMissionId.mockResolvedValue(10);
+      mockResponseRepo.countCompletedByMissionId.mockResolvedValue(10);
+      mockCompletionRepo.findAllByMissionId.mockResolvedValue([
+        { id: "completion-a", title: "A", createdAt: new Date("2026-01-01T00:00:00.000Z") },
+        { id: "completion-b", title: "B", createdAt: new Date("2026-01-02T00:00:00.000Z") },
+      ] as never);
+      mockCompletionStatRepo.findByMissionId.mockResolvedValue([
+        {
+          missionCompletionId: "completion-b",
+          encounterCount: 1,
+          missionCompletion: {
+            id: "completion-b",
+            title: "B",
+            createdAt: new Date("2026-01-02T00:00:00.000Z"),
+          },
+        },
+        {
+          missionCompletionId: "completion-a",
+          encounterCount: 1,
+          missionCompletion: {
+            id: "completion-a",
+            title: "A",
+            createdAt: new Date("2026-01-01T00:00:00.000Z"),
+          },
+        },
+      ] as never);
+
+      // When
+      const result = await service.getMissionStats("mission1", mockUser.id);
+
+      // Then
+      expect(result.completionReachStats.map(stat => stat.completionId)).toEqual([
+        "completion-a",
+        "completion-b",
+      ]);
     });
 
     it("Mission이 없으면 404 에러를 던진다", async () => {
@@ -409,42 +552,64 @@ describe("MissionResponseService", () => {
   });
 
   describe("completeResponse", () => {
-    it("첫 완료 시 메타와 함께 완료 처리한다", async () => {
-      // Given
-      jest.useFakeTimers().setSystemTime(now);
-      const mockResponse = {
+    function createBaseResponse(overrides: Record<string, unknown> = {}) {
+      return {
         id: "response1",
         missionId: "mission1",
         userId: "user1",
+        guestId: null,
         completedAt: null,
+        mission: {
+          id: "mission1",
+          title: "MBTI Test",
+          useAiCompletion: false,
+        },
+        answers: [],
+        ...overrides,
       };
-      const mockUpdatedResponse = {
+    }
+
+    function mockDefaultCompletions() {
+      mockCompletionRepo.findAllByMissionId.mockResolvedValue([
+        { id: "completion-1", title: "A", description: "desc A" },
+        { id: "completion-2", title: "B", description: "desc B" },
+      ] as never);
+    }
+
+    it("브랜치 완료화면이 있으면 AI 없이 해당 completion으로 완료 처리한다", async () => {
+      jest.useFakeTimers().setSystemTime(now);
+      const mockResponse = createBaseResponse({
+        answers: [
+          {
+            action: { order: 1, nextCompletionId: null },
+            options: [{ nextCompletionId: "completion-2" }],
+            actionId: "action-1",
+            scaleAnswer: null,
+            dateAnswers: [],
+            fileUploads: [],
+          },
+        ],
+      });
+
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockDefaultCompletions();
+      mockResponseRepo.findLatestCompletedAtByActor.mockResolvedValue(null);
+      mockResponseRepo.completeWithSelectionAndAbuseMeta.mockResolvedValue({
         ...mockResponse,
         completedAt: now,
-        ipAddress: "1.1.1.1",
-        userAgent: "jest-agent",
-        submissionIntervalSeconds: null,
-      };
-      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
-      mockResponseRepo.findLatestCompletedAtByActor.mockResolvedValue(null);
-      mockResponseRepo.updateCompletedAtWithAbuseMeta.mockResolvedValue(
-        mockUpdatedResponse as never,
-      );
+        selectedCompletionId: "completion-2",
+      } as never);
 
-      // When
       const result = await service.completeResponse({ responseId: "response1" }, mockUser.id, {
         ipAddress: "1.1.1.1",
         userAgent: "jest-agent",
       });
 
-      // Then
-      expect(result.completedAt).toBeTruthy();
-      expect(mockResponseRepo.findLatestCompletedAtByActor).toHaveBeenCalledWith({
+      expect(result.selectedCompletionId).toBe("completion-2");
+      expect(mockAiService.generateFromPrompt).not.toHaveBeenCalled();
+      expect(mockResponseRepo.completeWithSelectionAndAbuseMeta).toHaveBeenCalledWith("response1", {
         missionId: "mission1",
-        userId: "user1",
-        guestId: null,
-      });
-      expect(mockResponseRepo.updateCompletedAtWithAbuseMeta).toHaveBeenCalledWith("response1", {
+        selectedCompletionId: "completion-2",
         completedAt: now,
         ipAddress: "1.1.1.1",
         userAgent: "jest-agent",
@@ -452,61 +617,219 @@ describe("MissionResponseService", () => {
       });
     });
 
-    it("직전 완료가 있으면 제출 간격(초)을 저장한다", async () => {
-      // Given
+    it("AI 사용 + 캐시 hit면 캐시 completion을 사용한다", async () => {
       jest.useFakeTimers().setSystemTime(now);
-      const previousCompletedAt = new Date(now.getTime() - 15_000);
-      const mockResponse = {
-        id: "response1",
-        missionId: "mission1",
-        userId: "user1",
-        completedAt: null,
-      };
+      const mockResponse = createBaseResponse({
+        mission: {
+          id: "mission1",
+          title: "MBTI Test",
+          useAiCompletion: true,
+        },
+        answers: [
+          {
+            action: { id: "action-1", order: 1, type: "SCALE", nextCompletionId: null },
+            options: [],
+            actionId: "action-1",
+            scaleAnswer: 7,
+            dateAnswers: [],
+            fileUploads: [],
+          },
+        ],
+      });
+
       mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
-      mockResponseRepo.findLatestCompletedAtByActor.mockResolvedValue(previousCompletedAt);
-      mockResponseRepo.updateCompletedAtWithAbuseMeta.mockResolvedValue({
+      mockDefaultCompletions();
+      mockInferenceCacheRepo.findByMissionAndFingerprint.mockResolvedValue({
+        missionCompletionId: "completion-2",
+      } as never);
+      mockResponseRepo.findLatestCompletedAtByActor.mockResolvedValue(null);
+      mockResponseRepo.completeWithSelectionAndAbuseMeta.mockResolvedValue({
         ...mockResponse,
         completedAt: now,
+        selectedCompletionId: "completion-2",
       } as never);
 
-      // When
-      await service.completeResponse({ responseId: "response1" }, mockUser.id);
+      const result = await service.completeResponse({ responseId: "response1" }, mockUser.id);
 
-      // Then
-      expect(mockResponseRepo.updateCompletedAtWithAbuseMeta).toHaveBeenCalledWith("response1", {
-        completedAt: now,
-        ipAddress: null,
-        userAgent: null,
-        submissionIntervalSeconds: 15,
-      });
+      expect(result.selectedCompletionId).toBe("completion-2");
+      expect(mockAiService.generateFromPrompt).not.toHaveBeenCalled();
+      expect(mockInferenceCacheRepo.upsertByMissionAndFingerprint).not.toHaveBeenCalled();
     });
 
-    it("requestMeta가 없으면 ipAddress와 userAgent를 null로 저장한다", async () => {
-      // Given
+    it("AI 캐시 miss면 AI 추론 후 캐시 업서트한다", async () => {
       jest.useFakeTimers().setSystemTime(now);
-      const mockResponse = {
-        id: "response1",
-        missionId: "mission1",
-        userId: "user1",
-        completedAt: null,
-      };
+      const mockResponse = createBaseResponse({
+        mission: {
+          id: "mission1",
+          title: "MBTI Test",
+          useAiCompletion: true,
+        },
+        answers: [
+          {
+            action: { id: "action-1", order: 1, type: "TAG", nextCompletionId: null },
+            options: [{ id: "opt-1", nextCompletionId: null }],
+            actionId: "action-1",
+            scaleAnswer: null,
+            dateAnswers: [],
+            fileUploads: [],
+          },
+        ],
+      });
+
       mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockDefaultCompletions();
+      mockInferenceCacheRepo.findByMissionAndFingerprint.mockResolvedValue(null);
+      mockAiService.generateFromPrompt.mockResolvedValue({ result: "completion-1" });
       mockResponseRepo.findLatestCompletedAtByActor.mockResolvedValue(null);
-      mockResponseRepo.updateCompletedAtWithAbuseMeta.mockResolvedValue({
+      mockResponseRepo.completeWithSelectionAndAbuseMeta.mockResolvedValue({
         ...mockResponse,
         completedAt: now,
+        selectedCompletionId: "completion-1",
       } as never);
 
-      // When
       await service.completeResponse({ responseId: "response1" }, mockUser.id);
 
-      // Then
-      expect(mockResponseRepo.updateCompletedAtWithAbuseMeta).toHaveBeenCalledWith("response1", {
-        completedAt: now,
-        ipAddress: null,
-        userAgent: null,
-        submissionIntervalSeconds: null,
+      expect(mockAiService.generateFromPrompt).toHaveBeenCalledTimes(1);
+      expect(mockInferenceCacheRepo.upsertByMissionAndFingerprint).toHaveBeenCalledTimes(1);
+      expect(mockResponseRepo.completeWithSelectionAndAbuseMeta).toHaveBeenCalledWith(
+        "response1",
+        expect.objectContaining({
+          selectedCompletionId: "completion-1",
+        }),
+      );
+    });
+
+    it("key 재료가 없으면 캐시 조회/저장을 건너뛴다", async () => {
+      const mockResponse = createBaseResponse({
+        mission: {
+          id: "mission1",
+          title: "MBTI Test",
+          useAiCompletion: true,
+        },
+        answers: [
+          {
+            action: { id: "action-1", order: 1, type: "SUBJECTIVE", nextCompletionId: null },
+            options: [],
+            actionId: "action-1",
+            scaleAnswer: null,
+            dateAnswers: [],
+            fileUploads: [],
+          },
+        ],
       });
+
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockDefaultCompletions();
+      mockAiService.generateFromPrompt.mockResolvedValue({ result: "completion-1" });
+      mockResponseRepo.findLatestCompletedAtByActor.mockResolvedValue(null);
+      mockResponseRepo.completeWithSelectionAndAbuseMeta.mockResolvedValue({
+        ...mockResponse,
+        completedAt: now,
+        selectedCompletionId: "completion-1",
+      } as never);
+
+      await service.completeResponse({ responseId: "response1" }, mockUser.id);
+
+      expect(mockInferenceCacheRepo.findByMissionAndFingerprint).not.toHaveBeenCalled();
+      expect(mockInferenceCacheRepo.upsertByMissionAndFingerprint).not.toHaveBeenCalled();
+    });
+
+    it("AI가 미션 외 completionId를 반환하면 fallback completion으로 완료한다", async () => {
+      jest.useFakeTimers().setSystemTime(now);
+      const mockResponse = createBaseResponse({
+        mission: {
+          id: "mission1",
+          title: "MBTI Test",
+          useAiCompletion: true,
+        },
+        answers: [
+          {
+            action: { id: "action-1", order: 1, type: "SCALE", nextCompletionId: null },
+            options: [],
+            actionId: "action-1",
+            scaleAnswer: 10,
+            dateAnswers: [],
+            fileUploads: [],
+          },
+        ],
+      });
+
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockDefaultCompletions();
+      mockInferenceCacheRepo.findByMissionAndFingerprint.mockResolvedValue(null);
+      mockAiService.generateFromPrompt.mockResolvedValue({ result: "completion-x" });
+      mockResponseRepo.findLatestCompletedAtByActor.mockResolvedValue(null);
+      mockResponseRepo.completeWithSelectionAndAbuseMeta.mockResolvedValue({
+        ...mockResponse,
+        completedAt: now,
+        selectedCompletionId: "completion-1",
+      } as never);
+
+      const result = await service.completeResponse({ responseId: "response1" }, mockUser.id);
+
+      expect(result.selectedCompletionId).toBe("completion-1");
+      expect(mockResponseRepo.completeWithSelectionAndAbuseMeta).toHaveBeenCalledWith(
+        "response1",
+        expect.objectContaining({ selectedCompletionId: "completion-1" }),
+      );
+      expect(mockInferenceCacheRepo.upsertByMissionAndFingerprint).toHaveBeenCalledWith(
+        expect.objectContaining({ source: "FALLBACK" }),
+      );
+    });
+
+    it("AI 추론이 throw하면 fallback completion으로 완료한다", async () => {
+      jest.useFakeTimers().setSystemTime(now);
+      const mockResponse = createBaseResponse({
+        mission: {
+          id: "mission1",
+          title: "MBTI Test",
+          useAiCompletion: true,
+        },
+        answers: [
+          {
+            action: { id: "action-1", order: 1, type: "SCALE", nextCompletionId: null },
+            options: [],
+            actionId: "action-1",
+            scaleAnswer: 5,
+            dateAnswers: [],
+            fileUploads: [],
+          },
+        ],
+      });
+
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockDefaultCompletions();
+      mockInferenceCacheRepo.findByMissionAndFingerprint.mockResolvedValue(null);
+      mockAiService.generateFromPrompt.mockRejectedValue(new Error("AI service unavailable"));
+      mockResponseRepo.findLatestCompletedAtByActor.mockResolvedValue(null);
+      mockResponseRepo.completeWithSelectionAndAbuseMeta.mockResolvedValue({
+        ...mockResponse,
+        completedAt: now,
+        selectedCompletionId: "completion-1",
+      } as never);
+
+      const result = await service.completeResponse({ responseId: "response1" }, mockUser.id);
+
+      expect(result.selectedCompletionId).toBe("completion-1");
+      expect(mockResponseRepo.completeWithSelectionAndAbuseMeta).toHaveBeenCalledWith(
+        "response1",
+        expect.objectContaining({ selectedCompletionId: "completion-1" }),
+      );
+      expect(mockInferenceCacheRepo.upsertByMissionAndFingerprint).toHaveBeenCalledWith(
+        expect.objectContaining({ source: "FALLBACK" }),
+      );
+    });
+
+    it("완료 처리 시 updateMany 실패(null 반환)면 중복 완료로 실패한다", async () => {
+      const mockResponse = createBaseResponse();
+      mockResponseRepo.findById.mockResolvedValue(mockResponse as never);
+      mockDefaultCompletions();
+      mockResponseRepo.findLatestCompletedAtByActor.mockResolvedValue(null);
+      mockResponseRepo.completeWithSelectionAndAbuseMeta.mockResolvedValue(null);
+
+      await expect(
+        service.completeResponse({ responseId: "response1" }, mockUser.id),
+      ).rejects.toThrow("이미 완료된 응답입니다.");
     });
 
     it("Response가 없으면 404 에러를 던진다", async () => {
