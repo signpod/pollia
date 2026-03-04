@@ -22,7 +22,6 @@ export interface MissionIntroTemplateProps {
 }
 
 export function MissionIntroTemplate({
-  header,
   imageUrl,
   title,
   subtitle,
@@ -38,41 +37,52 @@ export function MissionIntroTemplate({
 
   return (
     <>
-      {header}
-      <div ref={titleRef} className="flex flex-col gap-1.5 bg-white px-5 pt-4 pb-3">
-        <div className="flex items-center justify-between">
+      <div className="relative w-full aspect-square">
+        <MissionImage imageUrl={effectiveImageUrl} className="absolute inset-0" />
+      </div>
+
+      <div className="relative z-10 -mt-5 flex flex-col items-center w-full px-5">
+        <div
+          ref={titleRef}
+          className="flex w-full flex-col items-center gap-0.5 rounded-2xl bg-white p-4 shadow-[0px_4px_20px_0px_rgba(9,9,11,0.08)]"
+        >
           {subtitle && (
             <Typo.Body size="small" className="text-zinc-500">
               {subtitle}
             </Typo.Body>
           )}
-          <Typo.Body size="small" className="text-zinc-400">
-            조회 {formatCompactNumber(viewCount)} · 찜 {formatCompactNumber(likesCount)}
-          </Typo.Body>
-        </div>
-        <div className="break-keep">
-          <Typo.MainTitle size="large" className="inline text-zinc-900">
-            {title}
-          </Typo.MainTitle>
-          {isRequirePassword && (
-            <Lock className="ml-1 inline-block size-5 align-[0.1em] text-zinc-400" />
-          )}
-        </div>
-        {authorName && (
-          <div className="flex items-center gap-1.5">
-            {authorImageUrl && (
-              <img src={authorImageUrl} alt="" className="size-5 rounded-full object-cover" />
+          <div className="break-keep text-center">
+            <Typo.MainTitle size="small" className="inline line-clamp-2 text-ellipsis">
+              {title}
+            </Typo.MainTitle>
+            {isRequirePassword && (
+              <Lock className="ml-1 inline-block size-5 align-[0.1em] text-zinc-400" />
             )}
-            <Typo.Body size="medium" className="text-zinc-600">
-              {authorName}
-            </Typo.Body>
           </div>
-        )}
+        </div>
       </div>
 
-      <div className="relative w-full aspect-square">
-        <MissionImage imageUrl={effectiveImageUrl} className="absolute inset-0" />
+      <div className="flex items-center justify-between px-5 py-5">
+        {authorName ? (
+          <div className="flex items-center gap-1">
+            {authorImageUrl && (
+              <img
+                src={authorImageUrl}
+                alt=""
+                className="size-5 rounded-full border border-zinc-200 object-cover"
+              />
+            )}
+            <Typo.Body size="medium">{authorName}</Typo.Body>
+          </div>
+        ) : (
+          <div />
+        )}
+        <Typo.Body size="small" className="text-zinc-400">
+          조회 {formatCompactNumber(viewCount)} · 찜 {formatCompactNumber(likesCount)}
+        </Typo.Body>
       </div>
+
+      <div className="mx-5 h-px bg-zinc-100" />
 
       {children}
     </>

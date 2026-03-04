@@ -2,13 +2,14 @@
 
 import { MissionLikeButton } from "@/app/(site)/(main)/components/MissionLikeButton";
 import { SocialShareButtonsWithData } from "@/app/(site)/mission/[missionId]/components/SocialShareButtonsWithData";
-import { useStickyTabHeader } from "@/app/(site)/mission/[missionId]/components/hooks/useStickyTabHeader";
 import type { MissionRewardData } from "@/app/(site)/mission/[missionId]/types/mission";
-import { ProfileHeader } from "@/components/common/ProfileHeader";
+import { useGoBack } from "@/hooks/common/useGoBack";
+import { cn } from "@/lib/utils";
 import { MissionType } from "@prisma/client";
-import { FixedBottomLayout } from "@repo/ui/components";
+import { FixedBottomLayout, Typo } from "@repo/ui/components";
+import { ChevronLeft } from "lucide-react";
 import type { ReactNode } from "react";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MissionContentTemplate } from "../templates/MissionContentTemplate";
 import { MissionIntroTemplate } from "../templates/MissionIntroTemplate";
 import type { MissionIntroTemplateProps } from "../templates/MissionIntroTemplate";
@@ -46,16 +47,48 @@ export function MissionIntroPage({
   viewCount,
   likesCount,
 }: MissionIntroPageProps) {
-  const sentinelRef = useRef<HTMLDivElement>(null);
-  const { activeTab, isSticky, handleChangeTab } = useStickyTabHeader({
-    sentinelRef,
-    hasReward: !!reward,
-  });
+  const localTitleRef = useRef<HTMLDivElement>(null);
+  const [isTitleHidden, setIsTitleHidden] = useState(false);
+  const goBack = useGoBack();
+
+  useEffect(() => {
+    const el = localTitleRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry) setIsTitleHidden(!entry.isIntersecting);
+      },
+      { threshold: 0 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <div className="relative w-full">
+      <header
+        className={cn(
+          "fixed inset-x-0 top-0 z-50 mx-auto flex h-14 max-w-[600px] items-center px-1 transition-colors duration-300",
+          isTitleHidden ? "bg-white" : "bg-gradient-to-b from-black/40 to-transparent",
+        )}
+      >
+        <button type="button" onClick={goBack} className="flex items-center justify-center p-3">
+          <ChevronLeft className={cn("size-6", isTitleHidden ? "text-zinc-900" : "text-white")} />
+        </button>
+        <Typo.SubTitle
+          size="large"
+          className={cn(
+            "truncate transition-opacity duration-300",
+            isTitleHidden ? "opacity-100" : "opacity-0",
+          )}
+        >
+          {title}
+        </Typo.SubTitle>
+      </header>
+
       <MissionIntroTemplate
-        header={<ProfileHeader />}
         imageUrl={imageUrl}
         missionId={missionId}
         title={title}
@@ -65,14 +98,11 @@ export function MissionIntroPage({
         isRequirePassword={isRequirePassword}
         viewCount={viewCount}
         likesCount={likesCount}
-        titleRef={titleRef}
+        titleRef={localTitleRef}
       >
         <MissionContentTemplate
           title={contextTitle}
-          isSticky={isSticky}
-          activeTab={activeTab}
-          onChangeTab={handleChangeTab}
-          sentinelRef={sentinelRef}
+          isSticky={false}
           description={description}
           reward={reward}
           missionType={missionType}
