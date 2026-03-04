@@ -204,16 +204,20 @@ export function BannerSlider() {
                 draggable={false}
                 priority
               />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent from-30% to-[#2f2f2f]" />
             </div>
           ))}
         </div>
 
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 p-5">
-          <div className="flex items-end justify-end">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 p-7">
+          <div className="flex items-end justify-between">
+            <Typo.SubTitle className="text-2xl leading-[1.5] text-white">
+              {FEATURED_MISSIONS[realIndex]?.title}
+            </Typo.SubTitle>
             <div className="pointer-events-auto flex shrink-0 items-center gap-2">
               <button
                 type="button"
-                className="flex size-[26px] items-center justify-center rounded-full bg-zinc-500/50"
+                className="flex size-[26px] items-center justify-center rounded-full bg-black/20"
                 onClick={() => setIsPlaying(prev => !prev)}
               >
                 {isPlaying ? (
@@ -222,8 +226,8 @@ export function BannerSlider() {
                   <PlayIcon className="size-[18px] fill-white" />
                 )}
               </button>
-              <span className="rounded-full bg-zinc-500/50 px-2 py-1">
-                <Typo.Body size="small" className="text-white">
+              <span className="rounded-full bg-black/20 px-2 py-1">
+                <Typo.Body size="small" className="font-bold text-white">
                   {realIndex + 1} / {total}
                 </Typo.Body>
               </span>
