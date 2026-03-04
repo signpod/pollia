@@ -14,3 +14,16 @@ export interface RunAiPromptResponse {
     usage?: AiUsage;
   };
 }
+
+export interface GenerateMissionAiReportResponse {
+  data: {
+    report: string;
+    usage?: AiUsage;
+  };
+}
+
+export interface GetMissionAiReportResponse {
+  data: {
+    report: string | null;
+  };
+}
