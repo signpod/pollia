@@ -666,9 +666,24 @@ describe("MissionResponseService", () => {
         },
         answers: [
           {
-            action: { id: "action-1", order: 1, type: "TAG", nextCompletionId: null },
-            options: [{ id: "opt-1", nextCompletionId: null }],
+            action: {
+              id: "action-1",
+              order: 1,
+              type: "TAG",
+              title: "성향 태그",
+              description: "가장 가까운 성향을 선택하세요",
+              nextCompletionId: null,
+            },
+            options: [
+              {
+                id: "opt-1",
+                title: "분석형",
+                description: "데이터 중심 사고",
+                nextCompletionId: null,
+              },
+            ],
             actionId: "action-1",
+            textAnswer: null,
             scaleAnswer: null,
             dateAnswers: [],
             fileUploads: [],
@@ -690,6 +705,12 @@ describe("MissionResponseService", () => {
       await service.completeResponse({ responseId: "response1" }, mockUser.id);
 
       expect(mockAiService.generateFromPrompt).toHaveBeenCalledTimes(1);
+      const promptArg = mockAiService.generateFromPrompt.mock.calls[0]?.[0];
+      expect(promptArg).toContain("inferenceAnswers:");
+      expect(promptArg).toContain('"actionTitle":"성향 태그"');
+      expect(promptArg).toContain(
+        '"selectedOptions":[{"id":"opt-1","title":"분석형","description":"데이터 중심 사고"}]',
+      );
       expect(mockInferenceCacheRepo.upsertByMissionAndFingerprint).toHaveBeenCalledTimes(1);
       expect(mockResponseRepo.completeWithSelectionAndAbuseMeta).toHaveBeenCalledWith(
         "response1",
@@ -697,6 +718,82 @@ describe("MissionResponseService", () => {
           selectedCompletionId: "completion-1",
         }),
       );
+    });
+
+    it("답변 값이 같아도 액션/옵션 텍스트가 바뀌면 fingerprint가 달라진다", async () => {
+      const baseAnswer = {
+        actionId: "action-1",
+        textAnswer: null,
+        scaleAnswer: null,
+        dateAnswers: [],
+        fileUploads: [],
+      };
+
+      const responseWithFirstContext = createBaseResponse({
+        mission: {
+          id: "mission1",
+          title: "MBTI Test",
+          useAiCompletion: true,
+        },
+        answers: [
+          {
+            ...baseAnswer,
+            action: {
+              id: "action-1",
+              order: 1,
+              type: "TAG",
+              title: "성향 태그",
+              description: "가까운 성향을 선택하세요",
+              nextCompletionId: null,
+            },
+            options: [{ id: "opt-1", title: "분석형", description: null, nextCompletionId: null }],
+          },
+        ],
+      });
+
+      const responseWithSecondContext = createBaseResponse({
+        mission: {
+          id: "mission1",
+          title: "MBTI Test",
+          useAiCompletion: true,
+        },
+        answers: [
+          {
+            ...baseAnswer,
+            action: {
+              id: "action-1",
+              order: 1,
+              type: "TAG",
+              title: "성향 스타일",
+              description: "지금 상태를 골라주세요",
+              nextCompletionId: null,
+            },
+            options: [{ id: "opt-1", title: "전략형", description: null, nextCompletionId: null }],
+          },
+        ],
+      });
+
+      mockResponseRepo.findById
+        .mockResolvedValueOnce(responseWithFirstContext as never)
+        .mockResolvedValueOnce(responseWithSecondContext as never);
+      mockDefaultCompletions();
+      mockInferenceCacheRepo.findByMissionAndFingerprint.mockResolvedValue(null);
+      mockAiService.generateFromPrompt.mockResolvedValue({ result: "completion-1" });
+      mockResponseRepo.findLatestCompletedAtByActor.mockResolvedValue(null);
+      mockResponseRepo.completeWithSelectionAndAbuseMeta.mockResolvedValue({
+        ...responseWithFirstContext,
+        completedAt: now,
+        selectedCompletionId: "completion-1",
+      } as never);
+
+      await service.completeResponse({ responseId: "response1" }, mockUser.id);
+      await service.completeResponse({ responseId: "response1" }, mockUser.id);
+
+      const firstHash = mockInferenceCacheRepo.findByMissionAndFingerprint.mock.calls[0]?.[1];
+      const secondHash = mockInferenceCacheRepo.findByMissionAndFingerprint.mock.calls[1]?.[1];
+      expect(firstHash).toBeDefined();
+      expect(secondHash).toBeDefined();
+      expect(firstHash).not.toBe(secondHash);
     });
 
     it("key 재료가 없으면 캐시 조회/저장을 건너뛴다", async () => {
