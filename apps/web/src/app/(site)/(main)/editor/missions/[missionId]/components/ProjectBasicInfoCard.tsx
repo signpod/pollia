@@ -49,6 +49,7 @@ function buildDefaultValues(mission: GetMissionResponse["data"]): CreateMissionF
     isExposed: true,
     allowGuestResponse: mission.allowGuestResponse,
     allowMultipleResponses: mission.allowMultipleResponses,
+    useAiCompletion: mission.useAiCompletion,
     imageUrl: mission.imageUrl ?? null,
     imageFileUploadId: mission.imageFileUploadId ?? null,
     brandLogoUrl: mission.brandLogoUrl ?? null,
@@ -192,6 +193,7 @@ function ProjectBasicInfoCardComponent(
           type: MissionType.GENERAL,
           allowGuestResponse: values.allowGuestResponse,
           allowMultipleResponses: values.allowMultipleResponses,
+          useAiCompletion: values.useAiCompletion,
           imageUrl: values.imageUrl ?? null,
           imageFileUploadId: values.imageFileUploadId ?? null,
           brandLogoUrl: values.brandLogoUrl ?? null,
@@ -259,6 +261,10 @@ function ProjectBasicInfoCardComponent(
             typeof values.allowMultipleResponses === "boolean"
               ? values.allowMultipleResponses
               : defaultValues.allowMultipleResponses,
+          useAiCompletion:
+            typeof values.useAiCompletion === "boolean"
+              ? values.useAiCompletion
+              : defaultValues.useAiCompletion,
           imageUrl:
             typeof values.imageUrl === "string" || values.imageUrl === null
               ? values.imageUrl
@@ -364,7 +370,7 @@ function ProjectBasicInfoCardComponent(
             </div>
           </div>
 
-          <CreateProjectInfoStep />
+          <CreateProjectInfoStep showAiCompletionToggle />
         </form>
       </FormProvider>
 

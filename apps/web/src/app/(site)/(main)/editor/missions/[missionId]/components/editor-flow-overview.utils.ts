@@ -31,6 +31,7 @@ export interface FlowOverviewSummary {
   completionCount: number;
   connectionCount: number;
   missingEntryCount: number;
+  missingCompletionCount: number;
   unreachableCount: number;
   deadEndCount: number;
 }
@@ -183,6 +184,8 @@ export function buildFlowOverviewSummary(analysis: EditorFlowAnalysisResult): Fl
     completionCount: analysis.state.completions.length,
     connectionCount: analysis.connections.length,
     missingEntryCount: analysis.issues.filter(issue => issue.type === "missing-entry").length,
+    missingCompletionCount: analysis.issues.filter(issue => issue.type === "missing-completion")
+      .length,
     unreachableCount: analysis.issues.filter(issue => issue.type === "unreachable").length,
     deadEndCount: analysis.issues.filter(issue => issue.type === "dead-end").length,
   };

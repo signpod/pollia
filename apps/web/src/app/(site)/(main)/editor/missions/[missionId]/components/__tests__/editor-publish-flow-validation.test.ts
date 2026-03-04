@@ -245,4 +245,46 @@ describe("editor-publish-flow-validation", () => {
     expect(validation.isValid).toBe(true);
     expect(validation.issues).toHaveLength(0);
   });
+
+  it("AI 완료화면 사용 시 dead-end와 완료화면 unreachable을 차단하지 않는다", () => {
+    const validation = validateEditorPublishFlow({
+      entryActionId: "action-1",
+      useAiCompletion: true,
+      serverActions: [
+        {
+          id: "action-1",
+          type: "SUBJECTIVE",
+          title: "질문 1",
+          nextActionId: null,
+          nextCompletionId: null,
+          options: [],
+        },
+      ],
+      serverCompletions: [{ id: "completion-1", title: "완료 1" }],
+    });
+
+    expect(validation.isValid).toBe(true);
+    expect(validation.issues).toHaveLength(0);
+  });
+
+  it("AI 완료화면 사용 시 완료화면이 0개면 missing-completion으로 차단한다", () => {
+    const validation = validateEditorPublishFlow({
+      entryActionId: "action-1",
+      useAiCompletion: true,
+      serverActions: [
+        {
+          id: "action-1",
+          type: "SUBJECTIVE",
+          title: "질문 1",
+          nextActionId: null,
+          nextCompletionId: null,
+          options: [],
+        },
+      ],
+      serverCompletions: [],
+    });
+
+    expect(validation.isValid).toBe(false);
+    expect(validation.issues.some(issue => issue.type === "missing-completion")).toBe(true);
+  });
 });

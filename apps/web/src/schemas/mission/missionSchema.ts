@@ -116,6 +116,7 @@ export const missionUpdateSchema = z
     isActive: z.boolean().optional(),
     allowGuestResponse: z.boolean().optional(),
     allowMultipleResponses: z.boolean().optional(),
+    useAiCompletion: z.boolean().optional(),
     rewardId: z.string().nullable().optional(),
     eventId: eventIdSchema,
     entryActionId: z.string().nullable().optional(),

@@ -1,6 +1,10 @@
 import { makeDraftCompletionId } from "./EditorMissionDraftContext";
 
-export type PublishFlowIssueType = "missing-entry" | "unreachable" | "dead-end";
+export type PublishFlowIssueType =
+  | "missing-entry"
+  | "missing-completion"
+  | "unreachable"
+  | "dead-end";
 
 export interface PublishFlowValidationIssue {
   type: PublishFlowIssueType;
@@ -108,6 +112,7 @@ interface ParsedCompletionDraftSnapshot {
 
 export interface ValidateEditorPublishFlowInput {
   entryActionId: string | null | undefined;
+  useAiCompletion?: boolean;
   serverActions: ServerActionLike[];
   serverCompletions: ServerCompletionLike[];
   actionDraftSnapshot?: unknown;
@@ -519,6 +524,7 @@ function buildOutgoingByActionId(
 export function analyzeEditorFlow(input: ValidateEditorPublishFlowInput): EditorFlowAnalysisResult {
   const issues: PublishFlowValidationIssue[] = [];
   const state = buildEditorFlowState(input);
+  const useAiCompletion = input.useAiCompletion === true;
 
   const actionIdSet = new Set(state.actions.map(action => action.id));
   const connections = buildEditorFlowConnections(state);
@@ -535,6 +541,14 @@ export function analyzeEditorFlow(input: ValidateEditorPublishFlowInput): Editor
     });
   } else {
     queue.push(state.entryActionId);
+  }
+
+  if (useAiCompletion && state.completions.length === 0) {
+    issues.push({
+      type: "missing-completion",
+      nodeId: START_NODE_ID,
+      message: "AI 완료화면 사용 시 결과 화면이 최소 1개 필요합니다",
+    });
   }
 
   while (queue.length > 0) {
@@ -568,7 +582,7 @@ export function analyzeEditorFlow(input: ValidateEditorPublishFlowInput): Editor
     }
 
     const outgoing = outgoingByActionId.get(action.id) ?? [];
-    if (outgoing.length === 0) {
+    if (!useAiCompletion && outgoing.length === 0) {
       issues.push({
         type: "dead-end",
         nodeId: action.id,
@@ -578,6 +592,10 @@ export function analyzeEditorFlow(input: ValidateEditorPublishFlowInput): Editor
   }
 
   for (const completion of state.completions) {
+    if (useAiCompletion) {
+      continue;
+    }
+
     if (!reachableNodeIds.has(completion.id)) {
       issues.push({
         type: "unreachable",
@@ -610,6 +628,10 @@ export function validateEditorPublishFlow(
 export function getPublishBlockingMessage(issues: PublishFlowValidationIssue[]): string {
   if (issues.some(issue => issue.type === "missing-entry")) {
     return "시작 액션이 설정되지 않아 발행할 수 없습니다.";
+  }
+
+  if (issues.some(issue => issue.type === "missing-completion")) {
+    return "AI 완료화면 사용 시 결과 화면을 최소 1개 이상 추가해야 합니다.";
   }
 
   if (issues.some(issue => issue.type === "dead-end")) {

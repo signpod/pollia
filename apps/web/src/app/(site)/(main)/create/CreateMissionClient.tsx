@@ -28,6 +28,7 @@ const CREATE_FORM_DEFAULT_VALUES: CreateMissionFormData = {
   isExposed: true,
   allowGuestResponse: false,
   allowMultipleResponses: false,
+  useAiCompletion: false,
 };
 
 const CREATE_STEP_ORDER: CreateMissionStep[] = ["category", "mode", "project-info", "success"];

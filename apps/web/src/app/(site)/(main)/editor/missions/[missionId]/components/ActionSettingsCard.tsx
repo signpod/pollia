@@ -622,6 +622,7 @@ function ActionSettingsCardComponent(
   const isDeletingAction = deleteAction.isPending;
   const isBusy = isSaving || isDeletingAction;
   const isInactiveMission = missionData?.data?.isActive === false;
+  const useAiCompletion = missionData?.data?.useAiCompletion === true;
 
   const existingActions = useMemo(() => {
     const list = actionsData?.data ?? [];
@@ -629,6 +630,10 @@ function ActionSettingsCardComponent(
   }, [actionsData]);
 
   const completionOptions = useMemo(() => {
+    if (useAiCompletion) {
+      return [];
+    }
+
     const parsedCompletionSnapshot = parseCompletionDraftSnapshotForOptions(
       getCompletionDraftSnapshot?.() ?? null,
     );
@@ -670,6 +675,7 @@ function ActionSettingsCardComponent(
 
     return [...existingOptions, ...draftOptions];
   }, [
+    useAiCompletion,
     completionDrafts,
     completionWorkingSetVersion,
     completionsData?.data,
@@ -822,6 +828,7 @@ function ActionSettingsCardComponent(
 
     return analyzeEditorFlow({
       entryActionId: missionData.data.entryActionId,
+      useAiCompletion: missionData.data.useAiCompletion,
       serverActions: actionsData.data,
       serverCompletions: completionsData.data,
       actionDraftSnapshot: getActionDraftSnapshot(),
@@ -2048,6 +2055,7 @@ function ActionSettingsCardComponent(
                         dirtyBaselineValues={mapEditInitialValues(item.action)}
                         allActions={formLinkTargets}
                         completionOptions={completionOptions}
+                        allowCompletionLink={!useAiCompletion}
                         isLoading={isBusy}
                         onSubmit={NOOP}
                         onCancel={NOOP}
@@ -2077,6 +2085,7 @@ function ActionSettingsCardComponent(
                         initialValues={draftFormSnapshotByItemKey[item.key]?.values}
                         allActions={formLinkTargets}
                         completionOptions={completionOptions}
+                        allowCompletionLink={!useAiCompletion}
                         isLoading={isBusy}
                         onSubmit={NOOP}
                         onCancel={NOOP}

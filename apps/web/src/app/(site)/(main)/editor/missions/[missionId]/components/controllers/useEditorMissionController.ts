@@ -158,6 +158,19 @@ function buildManualSaveToastMessage(params: {
   return lines.join("\n");
 }
 
+function readUseAiCompletionFromBasicDraft(snapshot: unknown): boolean | null {
+  if (!snapshot || typeof snapshot !== "object") {
+    return null;
+  }
+
+  if (!("useAiCompletion" in snapshot)) {
+    return null;
+  }
+
+  const value = (snapshot as { useAiCompletion?: unknown }).useAiCompletion;
+  return typeof value === "boolean" ? value : null;
+}
+
 export function useEditorMissionController({
   missionId,
   mission,
@@ -318,6 +331,22 @@ export function useEditorMissionController({
   }, [isEditorTab, missionId]);
 
   const missionEntryActionId = missionQueryData?.entryActionId ?? mission.entryActionId;
+  const basicInfoDraftSnapshotForPublish = useMemo(() => {
+    if (!basicInfoRef.current) {
+      return undefined;
+    }
+
+    return basicInfoRef.current.exportDraftSnapshot();
+  }, [publishSnapshotVersion]);
+
+  const missionUseAiCompletionForPublish = useMemo(() => {
+    const valueFromDraft = readUseAiCompletionFromBasicDraft(basicInfoDraftSnapshotForPublish);
+    if (valueFromDraft !== null) {
+      return valueFromDraft;
+    }
+
+    return (missionQueryData ?? mission).useAiCompletion;
+  }, [basicInfoDraftSnapshotForPublish, mission, missionQueryData]);
 
   const actionDraftSnapshotForPublish = useMemo(() => {
     if (!actionRef.current) {
@@ -340,6 +369,7 @@ export function useEditorMissionController({
       computePublishAvailability({
         isPublished,
         entryActionId: missionEntryActionId,
+        useAiCompletion: missionUseAiCompletionForPublish,
         serverActions: actionsQueryData,
         serverCompletions: completionsQueryData,
         actionDraftSnapshot: actionDraftSnapshotForPublish,
@@ -352,6 +382,7 @@ export function useEditorMissionController({
       completionsQueryData,
       isPublished,
       missionEntryActionId,
+      missionUseAiCompletionForPublish,
     ],
   );
   const canSave = publishState.isValidationDataReady && publishState.issues.length === 0;
@@ -960,6 +991,7 @@ export function useEditorMissionController({
 
     return validateEditorPublishFlow({
       entryActionId: latestMission.entryActionId,
+      useAiCompletion: latestMission.useAiCompletion,
       serverActions: latestActions,
       serverCompletions: latestCompletions,
     });
@@ -1088,6 +1120,7 @@ export function useEditorMissionController({
   const onBasicStateChange = useCallback(
     (state: SectionSaveState) => {
       updateSectionState("basic", state);
+      setPublishSnapshotVersion(prev => prev + 1);
     },
     [updateSectionState],
   );

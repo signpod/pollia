@@ -127,6 +127,7 @@ export function EditorMissionTabContent({
       resolveEditorDesktopFlowPolicy({
         isActive: effectiveMission.isActive,
         entryActionId: effectiveMission.entryActionId,
+        useAiCompletion: effectiveMission.useAiCompletion,
         serverActions,
         serverCompletions,
         actionDraftSnapshot: cachedActionDraftSnapshot,

@@ -105,6 +105,7 @@ interface ActionFormProps {
   editingAction?: ActionDetail | null;
   allActions: Array<Pick<ActionDetail, "id" | "title" | "order">>;
   completionOptions: Array<{ id: string; title: string }>;
+  allowCompletionLink?: boolean;
   isLoading: boolean;
   onSubmit: (values: ActionFormValues) => void;
   onCancel: () => void;
@@ -123,6 +124,7 @@ type NextLinkType = "action" | "completion";
 
 interface NextLinkSelectorProps {
   itemLabel: string;
+  allowCompletionLink: boolean;
   linkType: NextLinkType;
   actionValue: string | null;
   completionValue: string | null;
@@ -136,6 +138,7 @@ interface NextLinkSelectorProps {
 
 function NextLinkSelector({
   itemLabel,
+  allowCompletionLink,
   linkType,
   actionValue,
   completionValue,
@@ -160,20 +163,22 @@ function NextLinkSelector({
         >
           {`다음 ${itemLabel}`}
         </button>
-        <button
-          type="button"
-          onClick={() => onLinkTypeChange("completion")}
-          className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-colors ${
-            linkType === "completion"
-              ? "border-violet-400 bg-violet-500 text-white"
-              : "border-zinc-200 bg-white text-zinc-600"
-          }`}
-        >
-          완료 화면
-        </button>
+        {allowCompletionLink ? (
+          <button
+            type="button"
+            onClick={() => onLinkTypeChange("completion")}
+            className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-colors ${
+              linkType === "completion"
+                ? "border-violet-400 bg-violet-500 text-white"
+                : "border-zinc-200 bg-white text-zinc-600"
+            }`}
+          >
+            완료 화면
+          </button>
+        ) : null}
       </div>
 
-      {linkType === "action" ? (
+      {linkType === "action" || !allowCompletionLink ? (
         <Select value={actionValue ?? ""} onValueChange={onActionChange}>
           <SelectTrigger>
             <SelectValue placeholder={`다음 이동할 ${itemLabel}을 선택하세요`} />
@@ -271,9 +276,11 @@ function buildActionDirtyComparable(params: {
   actionType: ActionType;
   values: ActionFormValues;
   nextLinkType: "action" | "completion";
+  allowCompletionLink: boolean;
   enableEditorActionMedia: boolean;
 }) {
-  const { actionType, values, nextLinkType, enableEditorActionMedia } = params;
+  const { actionType, values, nextLinkType, allowCompletionLink, enableEditorActionMedia } = params;
+  const resolvedNextLinkType: NextLinkType = allowCompletionLink ? nextLinkType : "action";
   const needsOptions = NEEDS_OPTIONS.includes(actionType);
   const needsMaxSelections = NEEDS_MAX_SELECTIONS.includes(actionType);
   const isBranch = actionType === ActionType.BRANCH;
@@ -304,16 +311,17 @@ function buildActionDirtyComparable(params: {
           description: showOptionDescription ? option.description?.trim() || null : null,
           imageUrl: showOptionImage ? (option.imageUrl ?? null) : null,
           fileUploadId: showOptionImage ? (option.fileUploadId ?? null) : null,
+          nextCompletionId: allowCompletionLink ? (option.nextCompletionId ?? null) : null,
           order: index,
         })),
       }),
       ...(!isBranch &&
-        nextLinkType === "action" && {
+        resolvedNextLinkType === "action" && {
           nextActionId: values.nextActionId ?? null,
           nextCompletionId: null,
         }),
       ...(!isBranch &&
-        nextLinkType === "completion" && {
+        resolvedNextLinkType === "completion" && {
           nextCompletionId: values.nextCompletionId ?? null,
           nextActionId: null,
         }),
@@ -336,6 +344,7 @@ function ActionFormComponent(
     hideTitle = false,
     enableTypeSelect = false,
     enforceExclusiveNextLink = false,
+    allowCompletionLink = true,
     wordingMode = "action",
     onActionTypeChange,
     onDirtyChange,
@@ -344,20 +353,21 @@ function ActionFormComponent(
   }: ActionFormProps,
   ref: ForwardedRef<ActionFormHandle>,
 ) {
-  const initialNextLinkType: "action" | "completion" = initialValues?.nextCompletionId
-    ? "completion"
-    : "action";
+  const initialNextLinkType: "action" | "completion" =
+    allowCompletionLink && initialValues?.nextCompletionId ? "completion" : "action";
   const hasConflictingInitialNextLink = Boolean(
     initialValues?.nextActionId && initialValues?.nextCompletionId,
   );
   const normalizedInitialNextActionId =
+    allowCompletionLink &&
     enforceExclusiveNextLink &&
     hasConflictingInitialNextLink &&
     initialNextLinkType === "completion"
       ? null
       : (initialValues?.nextActionId ?? null);
-  const normalizedInitialNextCompletionId =
-    enforceExclusiveNextLink && hasConflictingInitialNextLink && initialNextLinkType === "action"
+  const normalizedInitialNextCompletionId = !allowCompletionLink
+    ? null
+    : enforceExclusiveNextLink && hasConflictingInitialNextLink && initialNextLinkType === "action"
       ? null
       : (initialValues?.nextCompletionId ?? null);
 
@@ -381,7 +391,9 @@ function ActionFormComponent(
   const [nextCompletionId, setNextCompletionId] = useState<string | null>(
     normalizedInitialNextCompletionId,
   );
-  const [nextLinkType, setNextLinkType] = useState<NextLinkType>(initialNextLinkType);
+  const [nextLinkType, setNextLinkType] = useState<NextLinkType>(
+    allowCompletionLink ? initialNextLinkType : "action",
+  );
   const [branchOptionLinkTypeByKey, setBranchOptionLinkTypeByKey] = useState<
     Record<string, NextLinkType>
   >({});
@@ -407,7 +419,8 @@ function ActionFormComponent(
     (selectedActionType === ActionType.MULTIPLE_CHOICE || selectedActionType === ActionType.BRANCH);
 
   const selectableActions = allActions.filter(a => !editingAction || a.id !== editingAction.id);
-  const hasLinkTargets = selectableActions.length > 0 || completionOptions.length > 0;
+  const hasLinkTargets =
+    selectableActions.length > 0 || (allowCompletionLink && completionOptions.length > 0);
   const completionIdSet = useMemo(
     () => new Set(completionOptions.map(completion => completion.id)),
     [completionOptions],
@@ -454,6 +467,13 @@ function ActionFormComponent(
   });
 
   useEffect(() => {
+    if (!allowCompletionLink) {
+      if (nextCompletionId) {
+        setNextCompletionId(null);
+      }
+      return;
+    }
+
     if (!nextCompletionId || completionIdSet.has(nextCompletionId)) {
       return;
     }
@@ -467,7 +487,7 @@ function ActionFormComponent(
       const { nextLink: _nextLink, ...rest } = prev;
       return rest;
     });
-  }, [completionIdSet, nextCompletionId]);
+  }, [allowCompletionLink, completionIdSet, nextCompletionId]);
 
   useEffect(() => {
     if (!isBranch) {
@@ -476,7 +496,10 @@ function ActionFormComponent(
 
     let hasChanged = false;
     const nextOptions = options.map(option => {
-      if (option.nextCompletionId && !completionIdSet.has(option.nextCompletionId)) {
+      if (
+        option.nextCompletionId &&
+        (!allowCompletionLink || !completionIdSet.has(option.nextCompletionId))
+      ) {
         hasChanged = true;
         return {
           ...option,
@@ -490,15 +513,16 @@ function ActionFormComponent(
     if (hasChanged) {
       setOptions(nextOptions);
     }
-  }, [isBranch, options, completionIdSet]);
+  }, [allowCompletionLink, completionIdSet, isBranch, options]);
 
   useEffect(() => {
     setBranchOptionLinkTypeByKey(prev => {
       const next: Record<string, NextLinkType> = {};
 
       for (const option of options) {
-        next[option._key] =
-          prev[option._key] ?? (option.nextCompletionId ? "completion" : "action");
+        next[option._key] = allowCompletionLink
+          ? (prev[option._key] ?? (option.nextCompletionId ? "completion" : "action"))
+          : "action";
       }
 
       const prevKeys = Object.keys(prev);
@@ -516,7 +540,24 @@ function ActionFormComponent(
 
       return prev;
     });
-  }, [options]);
+  }, [allowCompletionLink, options]);
+
+  useEffect(() => {
+    if (allowCompletionLink) {
+      return;
+    }
+
+    setNextLinkType("action");
+    if (nextCompletionId) {
+      setNextCompletionId(null);
+    }
+
+    setOptions(prev =>
+      prev.map(option =>
+        option.nextCompletionId ? { ...option, nextCompletionId: null } : option,
+      ),
+    );
+  }, [allowCompletionLink, nextCompletionId]);
 
   const handleActionTypeChange = (nextType: ActionType) => {
     if (nextType === selectedActionType) {
@@ -540,6 +581,10 @@ function ActionFormComponent(
   };
 
   const handleNextLinkTypeChange = (type: NextLinkType) => {
+    if (!allowCompletionLink && type === "completion") {
+      return;
+    }
+
     setNextLinkType(type);
 
     if (!enforceExclusiveNextLink) {
@@ -563,6 +608,10 @@ function ActionFormComponent(
   };
 
   const handleNextCompletionChange = (value: string) => {
+    if (!allowCompletionLink) {
+      return;
+    }
+
     setNextCompletionId(value || null);
 
     if (enforceExclusiveNextLink) {
@@ -571,14 +620,15 @@ function ActionFormComponent(
   };
 
   const handleBranchOptionLinkTypeChange = (optionKey: string, type: NextLinkType) => {
+    const resolvedType = allowCompletionLink ? type : "action";
     setBranchOptionLinkTypeByKey(prev => {
-      if (prev[optionKey] === type) {
+      if (prev[optionKey] === resolvedType) {
         return prev;
       }
 
       return {
         ...prev,
-        [optionKey]: type,
+        [optionKey]: resolvedType,
       };
     });
 
@@ -588,7 +638,7 @@ function ActionFormComponent(
           return option;
         }
 
-        if (type === "action") {
+        if (resolvedType === "action") {
           return { ...option, nextCompletionId: null };
         }
 
@@ -611,6 +661,10 @@ function ActionFormComponent(
   };
 
   const handleBranchOptionNextCompletionChange = (optionKey: string, value: string) => {
+    if (!allowCompletionLink) {
+      return;
+    }
+
     setBranchOptionLinkTypeByKey(prev => ({
       ...prev,
       [optionKey]: "completion",
@@ -644,15 +698,16 @@ function ActionFormComponent(
 
     if (hasLinkTargets) {
       if (isBranch) {
-        const missingBranchNext = options.some(o => !o.nextActionId && !o.nextCompletionId);
-        if (missingBranchNext) {
+        const missingBranchNext =
+          allowCompletionLink && options.some(o => !o.nextActionId && !o.nextCompletionId);
+        if (allowCompletionLink && missingBranchNext) {
           newErrors.branchNextAction = "모든 분기 옵션의 다음 이동을 설정해주세요.";
         }
       } else {
-        if (nextLinkType === "action" && !nextActionId) {
+        if (allowCompletionLink && nextLinkType === "action" && !nextActionId) {
           newErrors.nextLink = `다음 이동할 ${itemLabel}을 선택해주세요.`;
         }
-        if (nextLinkType === "completion" && !nextCompletionId) {
+        if (allowCompletionLink && nextLinkType === "completion" && !nextCompletionId) {
           newErrors.nextLink = "완료 화면을 선택해주세요.";
         }
       }
@@ -665,6 +720,7 @@ function ActionFormComponent(
     options,
     optionLimits.min,
     isBranch,
+    allowCompletionLink,
     nextLinkType,
     nextActionId,
     nextCompletionId,
@@ -697,6 +753,8 @@ function ActionFormComponent(
       if (!validationResult.isValid) {
         return null;
       }
+
+      const resolvedNextLinkType: NextLinkType = allowCompletionLink ? nextLinkType : "action";
 
       return {
         title: title.trim(),
@@ -732,9 +790,10 @@ function ActionFormComponent(
             };
           }),
         }),
-        ...(!isBranch && nextLinkType === "action" && { nextActionId, nextCompletionId: null }),
         ...(!isBranch &&
-          nextLinkType === "completion" && {
+          resolvedNextLinkType === "action" && { nextActionId, nextCompletionId: null }),
+        ...(!isBranch &&
+          resolvedNextLinkType === "completion" && {
             nextCompletionId,
             nextActionId: null,
           }),
@@ -757,6 +816,7 @@ function ActionFormComponent(
       showOptionDescription,
       showOptionImage,
       isBranch,
+      allowCompletionLink,
       nextLinkType,
       nextActionId,
       nextCompletionId,
@@ -764,6 +824,8 @@ function ActionFormComponent(
   );
 
   const getRawSnapshot = useCallback((): ActionFormRawSnapshot => {
+    const resolvedNextLinkType: NextLinkType = allowCompletionLink ? nextLinkType : "action";
+
     const rawValues: ActionFormValues = {
       title,
       description: description ?? null,
@@ -786,15 +848,17 @@ function ActionFormComponent(
           };
         }),
       }),
-      ...(!isBranch && nextLinkType === "action" && { nextActionId, nextCompletionId: null }),
-      ...(!isBranch && nextLinkType === "completion" && { nextCompletionId, nextActionId: null }),
+      ...(!isBranch &&
+        resolvedNextLinkType === "action" && { nextActionId, nextCompletionId: null }),
+      ...(!isBranch &&
+        resolvedNextLinkType === "completion" && { nextCompletionId, nextActionId: null }),
       ...(isBranch && { nextActionId: null, nextCompletionId: null }),
     };
 
     return {
       actionType: selectedActionType,
       values: rawValues,
-      nextLinkType,
+      nextLinkType: resolvedNextLinkType,
     };
   }, [
     description,
@@ -805,6 +869,7 @@ function ActionFormComponent(
     isRequired,
     needsMaxSelections,
     needsOptions,
+    allowCompletionLink,
     nextActionId,
     nextCompletionId,
     nextLinkType,
@@ -818,7 +883,8 @@ function ActionFormComponent(
     (snapshot: ActionFormRawSnapshot) => {
       const nextType = snapshot.actionType;
       const nextValues = snapshot.values;
-      const nextLink = snapshot.nextLinkType;
+      const nextLink: NextLinkType =
+        allowCompletionLink && snapshot.nextLinkType === "completion" ? "completion" : "action";
 
       setSelectedActionType(nextType);
       onActionTypeChange?.(nextType);
@@ -837,22 +903,23 @@ function ActionFormComponent(
         imageUrl: option.imageUrl ?? null,
         fileUploadId: option.fileUploadId ?? null,
         nextActionId: option.nextActionId ?? null,
-        nextCompletionId: option.nextCompletionId ?? null,
+        nextCompletionId: allowCompletionLink ? (option.nextCompletionId ?? null) : null,
         order: option.order ?? index,
       }));
       setOptions(nextOptions);
       setBranchOptionLinkTypeByKey(
         nextOptions.reduce<Record<string, NextLinkType>>((acc, option) => {
-          acc[option._key] = option.nextCompletionId ? "completion" : "action";
+          acc[option._key] =
+            allowCompletionLink && option.nextCompletionId ? "completion" : "action";
           return acc;
         }, {}),
       );
       setNextLinkType(nextLink ?? "action");
       setNextActionId(nextValues.nextActionId ?? null);
-      setNextCompletionId(nextValues.nextCompletionId ?? null);
+      setNextCompletionId(allowCompletionLink ? (nextValues.nextCompletionId ?? null) : null);
       setErrors({});
     },
-    [onActionTypeChange],
+    [allowCompletionLink, onActionTypeChange],
   );
 
   const dirtyComparableString = useMemo(
@@ -876,6 +943,7 @@ function ActionFormComponent(
             nextCompletionId,
           },
           nextLinkType,
+          allowCompletionLink,
           enableEditorActionMedia,
         }),
       ),
@@ -895,6 +963,7 @@ function ActionFormComponent(
       showOptionDescription,
       showOptionImage,
       isBranch,
+      allowCompletionLink,
       nextLinkType,
       nextActionId,
       nextCompletionId,
@@ -907,17 +976,20 @@ function ActionFormComponent(
     }
 
     const baselineNextLinkType: "action" | "completion" = dirtyBaselineValues.nextCompletionId
-      ? "completion"
+      ? allowCompletionLink
+        ? "completion"
+        : "action"
       : "action";
     return JSON.stringify(
       buildActionDirtyComparable({
         actionType: initialActionTypeRef.current,
         values: dirtyBaselineValues,
         nextLinkType: baselineNextLinkType,
+        allowCompletionLink,
         enableEditorActionMedia,
       }),
     );
-  }, [dirtyBaselineValues, enableEditorActionMedia]);
+  }, [allowCompletionLink, dirtyBaselineValues, enableEditorActionMedia]);
   const isDirty = dirtyComparableString !== dirtyBaselineComparableString;
 
   useEffect(() => {
@@ -952,6 +1024,7 @@ function ActionFormComponent(
     runValidation,
     title,
     isBranch,
+    allowCompletionLink,
   ]);
 
   useImperativeHandle(
@@ -1229,9 +1302,10 @@ function ActionFormComponent(
                     {hasLinkTargets ? (
                       <NextLinkSelector
                         itemLabel={itemLabel}
+                        allowCompletionLink={allowCompletionLink}
                         linkType={
                           branchOptionLinkTypeByKey[option._key] ??
-                          (option.nextCompletionId ? "completion" : "action")
+                          (allowCompletionLink && option.nextCompletionId ? "completion" : "action")
                         }
                         actionValue={option.nextActionId ?? null}
                         completionValue={option.nextCompletionId ?? null}
@@ -1284,16 +1358,19 @@ function ActionFormComponent(
 
       {!isBranch && (
         <div className="flex flex-col gap-3 rounded-lg border border-violet-100 bg-violet-50/50 p-4">
-          <LabelText required={hasLinkTargets}>다음 이동 설정</LabelText>
+          <LabelText required={allowCompletionLink && hasLinkTargets}>다음 이동 설정</LabelText>
 
           {!hasLinkTargets ? (
             <Typo.Body size="small" className="text-zinc-400">
-              {`다른 ${itemLabel}이나 완료 화면을 먼저 추가한 후 설정할 수 있습니다.`}
+              {allowCompletionLink
+                ? `다른 ${itemLabel}이나 완료 화면을 먼저 추가한 후 설정할 수 있습니다.`
+                : `다른 ${itemLabel}을 먼저 추가한 후 설정할 수 있습니다.`}
             </Typo.Body>
           ) : (
             <>
               <NextLinkSelector
                 itemLabel={itemLabel}
+                allowCompletionLink={allowCompletionLink}
                 linkType={nextLinkType}
                 actionValue={nextActionId}
                 completionValue={nextCompletionId}
@@ -1305,7 +1382,7 @@ function ActionFormComponent(
                 errorMessage={errors.nextLink}
               />
 
-              {enforceExclusiveNextLink && (
+              {enforceExclusiveNextLink && allowCompletionLink && (
                 <Typo.Body size="small" className="text-zinc-500">
                   {`다음 ${itemLabel}/완료 화면 중 하나만 선택할 수 있습니다.`}
                 </Typo.Body>
