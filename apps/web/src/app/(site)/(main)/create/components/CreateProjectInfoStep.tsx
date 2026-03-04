@@ -1,6 +1,7 @@
 "use client";
 
-import { Chip, Input, Toggle, Typo } from "@repo/ui/components";
+import { Badge } from "@/components/ui/badge";
+import { Input, Toggle, Typo } from "@repo/ui/components";
 import { Sparkles } from "lucide-react";
 import { Controller, useFormContext } from "react-hook-form";
 import {
@@ -31,10 +32,13 @@ function IntroToggleRow({
           <div className="flex items-center gap-2">
             <Typo.SubTitle>{label}</Typo.SubTitle>
             {badgeLabel ? (
-              <Chip variant="brand">
+              <Badge
+                variant="outline"
+                className="border-violet-200 bg-violet-50 text-violet-600 hover:bg-violet-100"
+              >
                 <Sparkles className="size-3" />
                 {badgeLabel}
-              </Chip>
+              </Badge>
             ) : null}
           </div>
           <Typo.Body size="medium" className="text-zinc-500">

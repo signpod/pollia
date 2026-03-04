@@ -111,7 +111,7 @@ export function CreateMissionClient() {
       case "mode":
         return <CreateModeStep onSelectCustom={controller.selectCustomMode} />;
       case "project-info":
-        return <CreateProjectInfoStep showRewardSettings />;
+        return <CreateProjectInfoStep showRewardSettings showAiCompletionToggle />;
       case "success":
         return controller.result ? (
           <CreateSuccessScreen

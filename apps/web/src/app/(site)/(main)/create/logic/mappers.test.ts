@@ -1,6 +1,6 @@
 import { MissionCategory, MissionType, PaymentType } from "@prisma/client";
 import type { CreateMissionFormData } from "../schema";
-import { mapCreateMissionRequest, mapCreateRewardRequest } from "./mappers";
+import { mapCreateMissionRequest, mapCreateRewardRequest, mapIntroUpdateRequest } from "./mappers";
 
 function createBaseFormData(): CreateMissionFormData {
   return {
@@ -72,6 +72,25 @@ describe("create mappers", () => {
       expect(() => mapCreateRewardRequest("mission-1", createBaseFormData())).toThrow(
         "리워드가 비활성화된 상태입니다.",
       );
+    });
+  });
+
+  describe("mapIntroUpdateRequest", () => {
+    it("intro 토글 값을 미션 업데이트 payload로 매핑한다", () => {
+      const formData: CreateMissionFormData = {
+        ...createBaseFormData(),
+        allowGuestResponse: false,
+        allowMultipleResponses: true,
+        useAiCompletion: true,
+      };
+
+      const result = mapIntroUpdateRequest(formData);
+
+      expect(result).toEqual({
+        allowGuestResponse: false,
+        allowMultipleResponses: true,
+        useAiCompletion: true,
+      });
     });
   });
 });
