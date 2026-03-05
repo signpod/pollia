@@ -11,10 +11,9 @@ import LikeIconFill from "@public/svgs/like-icon-fill.svg";
 import LikeIcon from "@public/svgs/like-icon.svg";
 import PickIcon from "@public/svgs/pick-icon.svg";
 import { Tooltip, Typo, useDrawer } from "@repo/ui/components";
-import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { LoginDrawer } from "./LoginDrawer";
 
 export function BottomNavBar() {
@@ -32,29 +31,11 @@ function BottomNavBarContent() {
   const { open: openLoginDrawer } = useDrawer();
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
   const [isEditorPopupOpen, setIsEditorPopupOpen] = useState(false);
-  const popupRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     router.prefetch(ROUTES.LIKES);
     router.prefetch(ROUTES.ME);
   }, [router]);
-
-  useEffect(() => {
-    if (!isEditorPopupOpen) return;
-
-    const handleClickOutside = (e: MouseEvent | TouchEvent) => {
-      if (popupRef.current && !popupRef.current.contains(e.target as Node)) {
-        setIsEditorPopupOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("touchstart", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("touchstart", handleClickOutside);
-    };
-  }, [isEditorPopupOpen]);
 
   const handleEditorClick = useCallback(() => {
     if (!isLoggedIn) {
@@ -128,56 +109,20 @@ function BottomNavBarContent() {
         </Typo.Body>
       </span>
 
-      <div ref={popupRef} className="relative flex flex-1 flex-col items-center justify-center">
-        <button
-          type="button"
-          onClick={handleEditorClick}
-          className="flex flex-col items-center justify-center gap-0.5 py-2"
-          aria-label="에디터"
+      <button
+        type="button"
+        onClick={handleEditorClick}
+        className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2"
+        aria-label="에디터"
+      >
+        {isEditorActive ? <EditorIconFill className="size-6" /> : <EditorIcon className="size-6" />}
+        <Typo.Body
+          size="small"
+          className={`text-[11px] font-bold leading-normal ${isEditorActive ? "text-black" : "text-zinc-400"}`}
         >
-          {isEditorActive ? (
-            <EditorIconFill className="size-6" />
-          ) : (
-            <EditorIcon className="size-6" />
-          )}
-          <Typo.Body
-            size="small"
-            className={`text-[11px] font-bold leading-normal ${isEditorActive ? "text-black" : "text-zinc-400"}`}
-          >
-            에디터
-          </Typo.Body>
-        </button>
-
-        <AnimatePresence>
-          {isEditorPopupOpen && (
-            <motion.div
-              className="absolute bottom-full z-50 mb-3 overflow-hidden rounded-xl bg-white shadow-lg"
-              initial={{ opacity: 0, y: 8, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 8, scale: 0.95 }}
-              transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <button
-                type="button"
-                onClick={() => handleCategorySelect("RESEARCH")}
-                className="flex w-full items-center gap-2 whitespace-nowrap px-4 py-3 text-sm font-medium text-zinc-800 transition-colors hover:bg-zinc-50 active:bg-zinc-100"
-              >
-                <span>📋</span>
-                <span>설문조사/리서치</span>
-              </button>
-              <div className="mx-3 border-t border-zinc-100" />
-              <button
-                type="button"
-                onClick={() => handleCategorySelect("TEST")}
-                className="flex w-full items-center gap-2 whitespace-nowrap px-4 py-3 text-sm font-medium text-zinc-800 transition-colors hover:bg-zinc-50 active:bg-zinc-100"
-              >
-                <span>🧠</span>
-                <span>심리/유형 테스트</span>
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+          에디터
+        </Typo.Body>
+      </button>
 
       <Link
         href={ROUTES.LIKES}
