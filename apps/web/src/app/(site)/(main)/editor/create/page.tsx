@@ -1,6 +1,6 @@
 import { checkAuthStatus } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { CreateMissionClient } from "../../create/CreateMissionClient";
+import { EditorCreateContent } from "../components/view/EditorCreateContent";
 
 export default async function EditorCreateMissionPage() {
   const { isAuthenticated } = await checkAuthStatus().catch(() => ({
@@ -12,5 +12,5 @@ export default async function EditorCreateMissionPage() {
     redirect("/login?next=/editor/create");
   }
 
-  return <CreateMissionClient />;
+  return <EditorCreateContent />;
 }
