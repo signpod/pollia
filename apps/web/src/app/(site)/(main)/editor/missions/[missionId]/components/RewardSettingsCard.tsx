@@ -3,7 +3,6 @@
 import { createReward } from "@/actions/reward/create";
 import { deleteReward } from "@/actions/reward/delete";
 import { updateReward } from "@/actions/reward/update";
-import { CreateRewardSettingsStep } from "@/app/(site)/(main)/create/components/CreateRewardSettingsStep";
 import {
   type CreateMissionFormData,
   createMissionFormSchema,
@@ -23,6 +22,7 @@ import {
   useState,
 } from "react";
 import { FormProvider, useForm } from "react-hook-form";
+import { EditorRewardSection } from "../../../components/view/EditorRewardSection";
 import type {
   SectionSaveHandle,
   SectionSaveOptions,
@@ -309,9 +309,8 @@ function RewardSettingsCardComponent(
         onSubmit={event => {
           event.preventDefault();
         }}
-        className="flex flex-col gap-5 px-5 py-5"
       >
-        <CreateRewardSettingsStep />
+        <EditorRewardSection />
       </form>
     </FormProvider>
   );
