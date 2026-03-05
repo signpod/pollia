@@ -15,20 +15,11 @@ import {
 } from "@repo/ui/components";
 import type { ReactNode } from "react";
 import { Controller, type FieldErrors, useFormContext } from "react-hook-form";
-import type { CreateMissionFormData } from "../schema";
+import { type CreateMissionFormData, type RewardFormValues, isRewardFormValues } from "../schema";
 import { ToggleSettingRow } from "./ToggleSettingRow";
 
 interface CreateRewardSettingsStepProps {
   imageUploader?: ReactNode;
-}
-
-interface RewardFormValues {
-  name: string;
-  description?: string;
-  imageUrl?: string | null;
-  imageFileUploadId?: string | null;
-  paymentType: PaymentType;
-  scheduledDate?: Date;
 }
 
 const DEFAULT_REWARD_VALUES: RewardFormValues = {
@@ -37,10 +28,6 @@ const DEFAULT_REWARD_VALUES: RewardFormValues = {
   paymentType: PaymentType.IMMEDIATE,
   scheduledDate: undefined,
 };
-
-function isRewardFormValues(value: unknown): value is RewardFormValues {
-  return typeof value === "object" && value !== null && "name" in value && "paymentType" in value;
-}
 
 function getRewardErrorMessage(
   errors: FieldErrors<CreateMissionFormData>,

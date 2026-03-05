@@ -85,4 +85,16 @@ export const createMissionFormSchema = z.discriminatedUnion("hasReward", [
 
 export type CreateMissionFormData = z.infer<typeof createMissionFormSchema>;
 
+export type RewardFormValues = z.infer<typeof createMissionFormRewardSchema>;
+
+export function isRewardFormValues(value: unknown): value is RewardFormValues {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "name" in value &&
+    "paymentType" in value &&
+    typeof (value as RewardFormValues).name === "string"
+  );
+}
+
 export { rewardInputSchema, MISSION_TITLE_MAX_LENGTH, MISSION_DESCRIPTION_MAX_LENGTH };

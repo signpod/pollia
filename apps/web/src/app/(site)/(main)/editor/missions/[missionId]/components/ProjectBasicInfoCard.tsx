@@ -26,6 +26,7 @@ import {
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { EditorProjectInfoSection } from "../../../components/view/EditorProjectInfoSection";
 import { ImageUploaderField } from "../../../components/view/ImageUploaderField";
+import { countValidationIssues } from "../../../utils/countValidationIssues";
 import type {
   SectionSaveHandle,
   SectionSaveOptions,
@@ -57,22 +58,6 @@ function buildDefaultValues(mission: GetMissionResponse["data"]): CreateMissionF
     brandLogoUrl: mission.brandLogoUrl ?? null,
     brandLogoFileUploadId: mission.brandLogoFileUploadId ?? null,
   };
-}
-
-function countValidationIssues(value: unknown): number {
-  if (!value || typeof value !== "object") {
-    return 0;
-  }
-
-  if ("message" in value) {
-    return 1;
-  }
-
-  if (Array.isArray(value)) {
-    return value.reduce((sum, item) => sum + countValidationIssues(item), 0);
-  }
-
-  return Object.values(value).reduce((sum, item) => sum + countValidationIssues(item), 0);
 }
 
 function ProjectBasicInfoCardComponent(

@@ -5,7 +5,9 @@ import { deleteReward } from "@/actions/reward/delete";
 import { updateReward } from "@/actions/reward/update";
 import {
   type CreateMissionFormData,
+  type RewardFormValues,
   createMissionFormSchema,
+  isRewardFormValues,
 } from "@/app/(site)/(main)/create/schema";
 import { AdminImageCropDialog } from "@/app/admin/components/common/cropper/AdminImageCropDialog";
 import { useImageCropper } from "@/app/admin/components/common/cropper/use-image-cropper";
@@ -28,6 +30,7 @@ import {
 import { FormProvider, useForm } from "react-hook-form";
 import { EditorRewardSection } from "../../../components/view/EditorRewardSection";
 import { ImageUploaderField } from "../../../components/view/ImageUploaderField";
+import { countValidationIssues } from "../../../utils/countValidationIssues";
 import type {
   SectionSaveHandle,
   SectionSaveOptions,
@@ -41,15 +44,6 @@ interface RewardSettingsCardProps {
   onSaveStateChange?: SectionSaveStateChangeHandler;
 }
 
-interface RewardFormValues {
-  name: string;
-  description?: string;
-  imageUrl?: string | null;
-  imageFileUploadId?: string | null;
-  paymentType: PaymentType;
-  scheduledDate?: Date;
-}
-
 export interface RewardSnapshot {
   id: string;
   name: string;
@@ -58,16 +52,6 @@ export interface RewardSnapshot {
   imageFileUploadId: string | null;
   paymentType: PaymentType;
   scheduledDate: Date | null;
-}
-
-function isRewardFormValues(value: unknown): value is RewardFormValues {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "name" in value &&
-    "paymentType" in value &&
-    typeof (value as RewardFormValues).name === "string"
-  );
 }
 
 function buildDefaultValues(
@@ -110,22 +94,6 @@ function buildDefaultValues(
     allowMultipleResponses: mission.allowMultipleResponses,
     useAiCompletion: mission.useAiCompletion,
   };
-}
-
-function countValidationIssues(value: unknown): number {
-  if (!value || typeof value !== "object") {
-    return 0;
-  }
-
-  if ("message" in value) {
-    return 1;
-  }
-
-  if (Array.isArray(value)) {
-    return value.reduce((sum, item) => sum + countValidationIssues(item), 0);
-  }
-
-  return Object.values(value).reduce((sum, item) => sum + countValidationIssues(item), 0);
 }
 
 function RewardSettingsCardComponent(
