@@ -15,6 +15,8 @@ const createMissionFormRewardSchema = z
       .max(100, "리워드 이름은 100자를 초과할 수 없습니다.")
       .trim(),
     description: z.string().max(500, "설명은 500자를 초과할 수 없습니다.").optional(),
+    imageUrl: z.string().nullable().optional(),
+    imageFileUploadId: z.string().nullable().optional(),
     paymentType: z.enum(PaymentType, {
       message: "올바른 지급 유형을 선택해주세요.",
     }),
@@ -82,5 +84,17 @@ export const createMissionFormSchema = z.discriminatedUnion("hasReward", [
 ]);
 
 export type CreateMissionFormData = z.infer<typeof createMissionFormSchema>;
+
+export type RewardFormValues = z.infer<typeof createMissionFormRewardSchema>;
+
+export function isRewardFormValues(value: unknown): value is RewardFormValues {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "name" in value &&
+    "paymentType" in value &&
+    typeof (value as RewardFormValues).name === "string"
+  );
+}
 
 export { rewardInputSchema, MISSION_TITLE_MAX_LENGTH, MISSION_DESCRIPTION_MAX_LENGTH };

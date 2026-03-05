@@ -25,11 +25,12 @@ describe("EditorMissionActionBar", () => {
         canSave={true}
         canPublish={true}
         onSave={() => {}}
+        onDraftSave={() => {}}
         onPublish={() => {}}
       />,
     );
 
-    expect(screen.queryByRole("button", { name: "저장하기" })).toBeNull();
+    expect(screen.getByRole("button", { name: "저장하기" })).not.toBeNull();
     expect(screen.getByRole("button", { name: "발행하기" })).not.toBeNull();
   });
 
@@ -44,6 +45,7 @@ describe("EditorMissionActionBar", () => {
         canSave={true}
         canPublish={true}
         onSave={() => {}}
+        onDraftSave={() => {}}
         onPublish={() => {}}
       />,
     );
@@ -63,6 +65,7 @@ describe("EditorMissionActionBar", () => {
         canSave={false}
         canPublish={false}
         onSave={() => {}}
+        onDraftSave={() => {}}
         onPublish={() => {}}
       />,
     );
@@ -81,6 +84,7 @@ describe("EditorMissionActionBar", () => {
         canSave={false}
         canPublish={true}
         onSave={() => {}}
+        onDraftSave={() => {}}
         onPublish={() => {}}
       />,
     );

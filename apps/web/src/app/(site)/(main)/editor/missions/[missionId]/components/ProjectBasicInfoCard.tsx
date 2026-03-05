@@ -13,7 +13,7 @@ import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import type { GetMissionResponse } from "@/types/dto";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MissionType } from "@prisma/client";
-import { ImageSelector, Typo, toast } from "@repo/ui/components";
+import { toast } from "@repo/ui/components";
 import { AlertCircle } from "lucide-react";
 import {
   type ForwardedRef,
@@ -25,6 +25,8 @@ import {
 } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { EditorProjectInfoSection } from "../../../components/view/EditorProjectInfoSection";
+import { ImageUploaderField } from "../../../components/view/ImageUploaderField";
+import { countValidationIssues } from "../../../utils/countValidationIssues";
 import type {
   SectionSaveHandle,
   SectionSaveOptions,
@@ -56,22 +58,6 @@ function buildDefaultValues(mission: GetMissionResponse["data"]): CreateMissionF
     brandLogoUrl: mission.brandLogoUrl ?? null,
     brandLogoFileUploadId: mission.brandLogoFileUploadId ?? null,
   };
-}
-
-function countValidationIssues(value: unknown): number {
-  if (!value || typeof value !== "object") {
-    return 0;
-  }
-
-  if ("message" in value) {
-    return 1;
-  }
-
-  if (Array.isArray(value)) {
-    return value.reduce((sum, item) => sum + countValidationIssues(item), 0);
-  }
-
-  return Object.values(value).reduce((sum, item) => sum + countValidationIssues(item), 0);
 }
 
 function ProjectBasicInfoCardComponent(
@@ -309,45 +295,29 @@ function ProjectBasicInfoCardComponent(
 
   const imageUploaders = (
     <>
-      <div className="rounded-xl border border-zinc-200 bg-white px-4 py-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex flex-col gap-1">
-            <Typo.SubTitle>브랜드 로고</Typo.SubTitle>
-            <Typo.Body size="medium" className="text-zinc-500">
-              {brandLogoImageUpload.isUploading
-                ? "업로드 중..."
-                : "브랜드 로고를 1:1 비율로 설정합니다."}
-            </Typo.Body>
-          </div>
-          <ImageSelector
-            size="large"
-            imageUrl={brandLogoImageUpload.previewUrl ?? watchedBrandLogoUrl ?? undefined}
-            onImageSelect={file => brandLogoCropper.openWithFile(file)}
-            onImageDelete={handleBrandLogoDelete}
-            disabled={isBrandLogoBusy}
-          />
-        </div>
-      </div>
+      <ImageUploaderField
+        title="브랜드 로고"
+        description={
+          brandLogoImageUpload.isUploading ? "업로드 중..." : "브랜드 로고를 1:1 비율로 설정합니다."
+        }
+        imageUrl={brandLogoImageUpload.previewUrl ?? watchedBrandLogoUrl ?? undefined}
+        onImageSelect={file => brandLogoCropper.openWithFile(file)}
+        onImageDelete={handleBrandLogoDelete}
+        disabled={isBrandLogoBusy}
+      />
 
-      <div className="rounded-xl border border-zinc-200 bg-white px-4 py-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex flex-col gap-1">
-            <Typo.SubTitle>프로젝트 썸네일</Typo.SubTitle>
-            <Typo.Body size="medium" className="text-zinc-500">
-              {thumbnailImageUpload.isUploading
-                ? "업로드 중..."
-                : "프로젝트 썸네일을 1:1 비율로 설정합니다."}
-            </Typo.Body>
-          </div>
-          <ImageSelector
-            size="large"
-            imageUrl={thumbnailImageUpload.previewUrl ?? watchedImageUrl ?? undefined}
-            onImageSelect={file => thumbnailCropper.openWithFile(file)}
-            onImageDelete={handleThumbnailDelete}
-            disabled={isThumbnailBusy}
-          />
-        </div>
-      </div>
+      <ImageUploaderField
+        title="프로젝트 썸네일"
+        description={
+          thumbnailImageUpload.isUploading
+            ? "업로드 중..."
+            : "프로젝트 썸네일을 1:1 비율로 설정합니다."
+        }
+        imageUrl={thumbnailImageUpload.previewUrl ?? watchedImageUrl ?? undefined}
+        onImageSelect={file => thumbnailCropper.openWithFile(file)}
+        onImageDelete={handleThumbnailDelete}
+        disabled={isThumbnailBusy}
+      />
     </>
   );
 

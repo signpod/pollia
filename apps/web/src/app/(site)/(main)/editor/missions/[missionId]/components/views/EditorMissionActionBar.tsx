@@ -12,6 +12,7 @@ export interface EditorMissionActionBarProps {
   canSave: boolean;
   canPublish: boolean;
   onSave: () => void;
+  onDraftSave: () => void;
   onPublish: () => void;
 }
 
@@ -24,6 +25,7 @@ export function EditorMissionActionBar({
   canSave,
   canPublish,
   onSave,
+  onDraftSave,
   onPublish,
 }: EditorMissionActionBarProps) {
   if (isPublished) {
@@ -47,7 +49,18 @@ export function EditorMissionActionBar({
   }
 
   return (
-    <div className="px-5 py-3">
+    <div className="flex gap-2 px-5 py-3">
+      <Button
+        variant="secondary"
+        fullWidth
+        inlineIcon
+        leftIcon={<Save className="size-4" />}
+        onClick={onDraftSave}
+        loading={isSavingAll}
+        disabled={isSavingAll || isPublishing || hasAnyBusySection || !hasAnyPendingChanges}
+      >
+        저장하기
+      </Button>
       <Button
         variant="primary"
         fullWidth

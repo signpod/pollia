@@ -2,7 +2,7 @@ import { stripHtmlTags } from "@/app/admin/lib/utils";
 import { z } from "zod";
 
 export const MISSION_COMPLETION_TITLE_MAX_LENGTH = 100;
-export const MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH = 500;
+export const MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH = 2000;
 
 const titleSchema = z
   .string()

@@ -1,11 +1,16 @@
 "use client";
 
 import { CreateRewardSettingsStep } from "@/app/(site)/(main)/create/components/CreateRewardSettingsStep";
+import type { ReactNode } from "react";
 
-export function EditorRewardSection() {
+interface EditorRewardSectionProps {
+  imageUploader?: ReactNode;
+}
+
+export function EditorRewardSection({ imageUploader }: EditorRewardSectionProps) {
   return (
     <div className="px-5 pb-5">
-      <CreateRewardSettingsStep />
+      <CreateRewardSettingsStep imageUploader={imageUploader} />
     </div>
   );
 }

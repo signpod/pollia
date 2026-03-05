@@ -7,7 +7,6 @@ import { ROUTES } from "@/constants/routes";
 import { useReadActionsDetail } from "@/hooks/action";
 import { useReadMission } from "@/hooks/mission";
 import type { GetMissionResponse } from "@/types/dto";
-import { type PaymentType } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEditorBootstrapScrollController } from "../../../components/controller/useEditorBootstrapScrollController";
@@ -22,7 +21,7 @@ import { EditorMissionDraftProvider } from "./EditorMissionDraftContext";
 import { useEditorMissionTab } from "./EditorMissionTabContext";
 import { MissionStatsDashboard } from "./MissionStatsDashboard";
 import { ProjectBasicInfoCard } from "./ProjectBasicInfoCard";
-import { RewardSettingsCard } from "./RewardSettingsCard";
+import { RewardSettingsCard, type RewardSnapshot } from "./RewardSettingsCard";
 import { useEditorMissionController } from "./controllers/useEditorMissionController";
 import { EditorDesktopAbsolute } from "./desktop/EditorDesktopAbsolute";
 import { EditorDesktopFlowPanel } from "./desktop/EditorDesktopFlowPanel";
@@ -30,14 +29,6 @@ import { EditorDesktopMobilePanel } from "./desktop/EditorDesktopMobilePanel";
 import { resolveEditorDesktopFlowPolicy } from "./editor-desktop-flow-policy";
 import { analyzeEditorFlow } from "./editor-publish-flow-validation";
 import { EditorMissionActionBar } from "./views/EditorMissionActionBar";
-
-interface RewardSnapshot {
-  id: string;
-  name: string;
-  description: string | null;
-  paymentType: PaymentType;
-  scheduledDate: Date | null;
-}
 
 interface EditorMissionTabContentProps {
   missionId: string;
@@ -201,6 +192,9 @@ export function EditorMissionTabContent({
         canPublish={viewState.canPublish}
         onSave={() => {
           void actions.onSave();
+        }}
+        onDraftSave={() => {
+          void actions.onDraftSave();
         }}
         onPublish={() => {
           void actions.onPublish();

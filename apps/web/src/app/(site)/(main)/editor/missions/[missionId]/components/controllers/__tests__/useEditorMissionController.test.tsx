@@ -281,132 +281,7 @@ describe("useEditorMissionController", () => {
     });
   });
 
-  it("미발행 + 변경 있음 + editor 탭에서 20초 server draft 자동저장이 동작한다", async () => {
-    jest.useFakeTimers();
-    const mission = createMission({ isActive: false, entryActionId: null });
-
-    const { result } = renderHook(() =>
-      useEditorMissionController({
-        missionId: mission.id,
-        mission,
-        currentTab: "editor",
-        missionQueryData: mission,
-        actionsQueryData: [
-          {
-            id: "action-1",
-            type: "SUBJECTIVE",
-            title: "질문 1",
-            nextActionId: null,
-            nextCompletionId: "completion-1",
-            options: [],
-          },
-        ],
-        completionsQueryData: [{ id: "completion-1", title: "완료" }],
-        isActionsLoading: false,
-        isCompletionsLoading: false,
-        refetchMission: async () => ({ data: { data: mission } }),
-        refetchActions: async () => ({ data: { data: [] } }),
-        refetchCompletions: async () => ({ data: { data: [] } }),
-      }),
-    );
-
-    act(() => {
-      result.current.refs.basicInfoRef.current = createPendingSectionHandle({ title: "기본정보" });
-      result.current.refs.rewardRef.current = createSectionHandle(null);
-      result.current.refs.actionRef.current = createSectionHandle({
-        draftItems: [],
-        itemOrderKeys: ["existing:action-1"],
-        formSnapshotByItemKey: {},
-      });
-      result.current.refs.completionRef.current = createSectionHandle(null);
-    });
-
-    await act(async () => {
-      jest.advanceTimersByTime(300);
-    });
-
-    await act(async () => {
-      jest.advanceTimersByTime(20_000);
-    });
-
-    await waitFor(() => {
-      expect(mockedSaveMissionEditorDraft).toHaveBeenCalledWith(
-        mission.id,
-        expect.objectContaining({
-          basic: expect.anything(),
-          meta: expect.objectContaining({ updatedAtMs: expect.any(Number) }),
-        }),
-      );
-    });
-
-    expect(mockedToast).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: "editor-mission-server-draft-autosave",
-        message: "임시 저장 중...",
-        iconOnly: true,
-        icon: expect.anything(),
-        iconClassName: "animate-spin text-white",
-      }),
-    );
-    expect(mockedToast).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: "editor-mission-server-draft-autosave",
-        message: "임시 저장되었습니다.",
-        icon: expect.anything(),
-        iconClassName: "text-green-500",
-      }),
-    );
-  });
-
-  it("autosave 실패 시 에러 아이콘과 메시지로 토스트를 갱신한다", async () => {
-    jest.useFakeTimers();
-    const mission = createMission({ isActive: false });
-    mockedSaveMissionEditorDraft.mockRejectedValueOnce(new Error("autosave failed"));
-
-    const { result } = renderHook(() =>
-      useEditorMissionController({
-        missionId: mission.id,
-        mission,
-        currentTab: "editor",
-        missionQueryData: mission,
-        actionsQueryData: [],
-        completionsQueryData: [],
-        isActionsLoading: false,
-        isCompletionsLoading: false,
-        refetchMission: async () => ({ data: { data: mission } }),
-        refetchActions: async () => ({ data: { data: [] } }),
-        refetchCompletions: async () => ({ data: { data: [] } }),
-      }),
-    );
-
-    act(() => {
-      result.current.refs.basicInfoRef.current = createPendingSectionHandle({ title: "기본정보" });
-      result.current.refs.rewardRef.current = createSectionHandle(null);
-      result.current.refs.actionRef.current = createSectionHandle(null);
-      result.current.refs.completionRef.current = createSectionHandle(null);
-    });
-
-    await act(async () => {
-      jest.advanceTimersByTime(300);
-    });
-
-    await act(async () => {
-      jest.advanceTimersByTime(20_000);
-    });
-
-    await waitFor(() => {
-      expect(mockedToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: "editor-mission-server-draft-autosave",
-          message: "autosave failed",
-          icon: AlertCircle,
-          iconClassName: "text-red-500",
-        }),
-      );
-    });
-  });
-
-  it("발행 상태에서는 20초 server draft 자동저장이 동작하지 않는다", async () => {
+  it("발행 상태에서는 server draft 자동저장이 동작하지 않는다", async () => {
     jest.useFakeTimers();
     const mission = createMission({ isActive: true });
 
@@ -652,20 +527,23 @@ describe("useEditorMissionController", () => {
     const mission = createMission({ isActive: false });
     const importSpy = jest.fn();
 
-    const { result } = renderHook(() =>
-      useEditorMissionController({
-        missionId: mission.id,
-        mission,
-        currentTab: "editor",
-        missionQueryData: mission,
-        actionsQueryData: [],
-        completionsQueryData: [],
-        isActionsLoading: false,
-        isCompletionsLoading: false,
-        refetchMission: async () => ({ data: { data: mission } }),
-        refetchActions: async () => ({ data: { data: [] } }),
-        refetchCompletions: async () => ({ data: { data: [] } }),
-      }),
+    const initialProps = {
+      missionId: mission.id,
+      mission,
+      currentTab: "editor" as const,
+      missionQueryData: mission,
+      actionsQueryData: [] as any[],
+      completionsQueryData: [] as any[],
+      isActionsLoading: true,
+      isCompletionsLoading: false,
+      refetchMission: async () => ({ data: { data: mission } }),
+      refetchActions: async () => ({ data: { data: [] as any[] } }),
+      refetchCompletions: async () => ({ data: { data: [] as any[] } }),
+    };
+
+    const { result, rerender } = renderHook(
+      (props: typeof initialProps) => useEditorMissionController(props),
+      { initialProps },
     );
 
     act(() => {
@@ -677,6 +555,8 @@ describe("useEditorMissionController", () => {
       result.current.refs.actionRef.current = createSectionHandle(null);
       result.current.refs.completionRef.current = createSectionHandle(null);
     });
+
+    rerender({ ...initialProps, isActionsLoading: false });
 
     await waitFor(() => {
       expect(importSpy).toHaveBeenCalled();

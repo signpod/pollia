@@ -51,6 +51,8 @@ export function mapCreateRewardRequest(
     missionId,
     name: formData.reward.name,
     description: formData.reward.description,
+    imageUrl: formData.reward.imageUrl ?? undefined,
+    imageFileUploadId: formData.reward.imageFileUploadId ?? undefined,
     paymentType: formData.reward.paymentType,
     scheduledDate: formData.reward.scheduledDate,
   };

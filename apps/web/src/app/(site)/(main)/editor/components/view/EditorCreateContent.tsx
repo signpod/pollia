@@ -10,7 +10,7 @@ import { useSingleImage } from "@/app/admin/hooks/admin-image";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MissionCategory } from "@prisma/client";
-import { Button, ImageSelector, Typo, toast } from "@repo/ui/components";
+import { Button, toast } from "@repo/ui/components";
 import { AlertCircle } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
@@ -22,6 +22,7 @@ import { EditorEmptyTabContent } from "./EditorEmptyTabContent";
 import { EditorProjectInfoSection } from "./EditorProjectInfoSection";
 import { EditorRewardSection } from "./EditorRewardSection";
 import { EditorSectionCard } from "./EditorSectionCard";
+import { ImageUploaderField } from "./ImageUploaderField";
 
 const VALID_CATEGORIES = new Set<string>(Object.values(MissionCategory));
 
@@ -33,7 +34,7 @@ const CREATE_FORM_BASE_VALUES = {
   reward: undefined,
   isActive: false,
   isExposed: true,
-  allowGuestResponse: false,
+  allowGuestResponse: true,
   allowMultipleResponses: false,
   useAiCompletion: false,
   imageUrl: null,
@@ -98,10 +99,31 @@ export function EditorCreateContent() {
     },
   });
 
+  const rewardImageCropper = useImageCropper({ fileNamePrefix: "create-reward-image" });
+
+  const rewardImageUpload = useSingleImage({
+    initialUrl: null,
+    initialFileUploadId: null,
+    bucket: STORAGE_BUCKETS.REWARD_IMAGES,
+    onUploadSuccess: data => {
+      form.setValue("reward.imageUrl", data.publicUrl, { shouldDirty: true });
+      form.setValue("reward.imageFileUploadId", data.fileUploadId, { shouldDirty: true });
+    },
+    onUploadError: error => {
+      toast({
+        message: error.message || "리워드 이미지 업로드에 실패했습니다.",
+        icon: AlertCircle,
+        iconClassName: "text-red-500",
+      });
+    },
+  });
+
   const watchedBrandLogoUrl = form.watch("brandLogoUrl");
   const watchedImageUrl = form.watch("imageUrl");
+  const watchedRewardImageUrl = form.watch("reward.imageUrl");
   const isBrandLogoBusy = controller.isSubmitting || brandLogoImageUpload.isUploading;
   const isThumbnailBusy = controller.isSubmitting || thumbnailImageUpload.isUploading;
+  const isRewardImageBusy = controller.isSubmitting || rewardImageUpload.isUploading;
 
   const handleBrandLogoDelete = () => {
     brandLogoImageUpload.discard();
@@ -113,6 +135,12 @@ export function EditorCreateContent() {
     thumbnailImageUpload.discard();
     form.setValue("imageUrl", null, { shouldDirty: true });
     form.setValue("imageFileUploadId", null, { shouldDirty: true });
+  };
+
+  const handleRewardImageDelete = () => {
+    rewardImageUpload.discard();
+    form.setValue("reward.imageUrl", null, { shouldDirty: true });
+    form.setValue("reward.imageFileUploadId", null, { shouldDirty: true });
   };
 
   const submitButtonNode = useMemo(
@@ -146,45 +174,29 @@ export function EditorCreateContent() {
 
   const imageUploaders = (
     <>
-      <div className="rounded-xl border border-zinc-200 bg-white px-4 py-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex flex-col gap-1">
-            <Typo.SubTitle>브랜드 로고</Typo.SubTitle>
-            <Typo.Body size="medium" className="text-zinc-500">
-              {brandLogoImageUpload.isUploading
-                ? "업로드 중..."
-                : "브랜드 로고를 1:1 비율로 설정합니다."}
-            </Typo.Body>
-          </div>
-          <ImageSelector
-            size="large"
-            imageUrl={brandLogoImageUpload.previewUrl ?? watchedBrandLogoUrl ?? undefined}
-            onImageSelect={file => brandLogoCropper.openWithFile(file)}
-            onImageDelete={handleBrandLogoDelete}
-            disabled={isBrandLogoBusy}
-          />
-        </div>
-      </div>
+      <ImageUploaderField
+        title="브랜드 로고"
+        description={
+          brandLogoImageUpload.isUploading ? "업로드 중..." : "브랜드 로고를 1:1 비율로 설정합니다."
+        }
+        imageUrl={brandLogoImageUpload.previewUrl ?? watchedBrandLogoUrl ?? undefined}
+        onImageSelect={file => brandLogoCropper.openWithFile(file)}
+        onImageDelete={handleBrandLogoDelete}
+        disabled={isBrandLogoBusy}
+      />
 
-      <div className="rounded-xl border border-zinc-200 bg-white px-4 py-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex flex-col gap-1">
-            <Typo.SubTitle>프로젝트 썸네일</Typo.SubTitle>
-            <Typo.Body size="medium" className="text-zinc-500">
-              {thumbnailImageUpload.isUploading
-                ? "업로드 중..."
-                : "프로젝트 썸네일을 1:1 비율로 설정합니다."}
-            </Typo.Body>
-          </div>
-          <ImageSelector
-            size="large"
-            imageUrl={thumbnailImageUpload.previewUrl ?? watchedImageUrl ?? undefined}
-            onImageSelect={file => thumbnailCropper.openWithFile(file)}
-            onImageDelete={handleThumbnailDelete}
-            disabled={isThumbnailBusy}
-          />
-        </div>
-      </div>
+      <ImageUploaderField
+        title="프로젝트 썸네일"
+        description={
+          thumbnailImageUpload.isUploading
+            ? "업로드 중..."
+            : "프로젝트 썸네일을 1:1 비율로 설정합니다."
+        }
+        imageUrl={thumbnailImageUpload.previewUrl ?? watchedImageUrl ?? undefined}
+        onImageSelect={file => thumbnailCropper.openWithFile(file)}
+        onImageDelete={handleThumbnailDelete}
+        disabled={isThumbnailBusy}
+      />
     </>
   );
 
@@ -197,7 +209,22 @@ export function EditorCreateContent() {
       />
       <EditorSectionCard title="프로젝트 기본정보" description="프로젝트 기본 정보를 입력합니다.">
         <EditorProjectInfoSection showAiCompletionToggle imageUploaders={imageUploaders} />
-        <EditorRewardSection />
+        <EditorRewardSection
+          imageUploader={
+            <ImageUploaderField
+              title="리워드 이미지"
+              description={
+                rewardImageUpload.isUploading
+                  ? "업로드 중..."
+                  : "리워드 이미지를 1:1 비율로 설정합니다."
+              }
+              imageUrl={rewardImageUpload.previewUrl ?? watchedRewardImageUrl ?? undefined}
+              onImageSelect={file => rewardImageCropper.openWithFile(file)}
+              onImageDelete={handleRewardImageDelete}
+              disabled={isRewardImageBusy}
+            />
+          }
+        />
       </EditorSectionCard>
 
       <AdminImageCropDialog
@@ -226,6 +253,20 @@ export function EditorCreateContent() {
         }}
         onConfirm={file => {
           thumbnailImageUpload.upload(file);
+        }}
+      />
+      <AdminImageCropDialog
+        open={rewardImageCropper.isOpen}
+        imageSrc={rewardImageCropper.imageSrc}
+        aspect={1}
+        title="리워드 이미지 편집"
+        description="이미지를 1:1 비율로 맞춰 저장합니다."
+        fileName={rewardImageCropper.fileName ?? "create-reward-image.jpg"}
+        onOpenChange={open => {
+          if (!open) rewardImageCropper.close();
+        }}
+        onConfirm={file => {
+          rewardImageUpload.upload(file);
         }}
       />
     </FormProvider>
