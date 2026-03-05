@@ -63,7 +63,7 @@ export function EditorContentHeader({ missionId }: EditorContentHeaderProps) {
     router.replace(ROUTES.HOME);
   };
 
-  const title = missionId ? "프로젝트 에디터" : "프로젝트 생성";
+  const title = "프로젝트 에디터";
 
   return (
     <div className="flex items-center gap-3">
