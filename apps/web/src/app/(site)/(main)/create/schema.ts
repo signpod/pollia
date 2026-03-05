@@ -15,6 +15,8 @@ const createMissionFormRewardSchema = z
       .max(100, "리워드 이름은 100자를 초과할 수 없습니다.")
       .trim(),
     description: z.string().max(500, "설명은 500자를 초과할 수 없습니다.").optional(),
+    imageUrl: z.string().nullable().optional(),
+    imageFileUploadId: z.string().nullable().optional(),
     paymentType: z.enum(PaymentType, {
       message: "올바른 지급 유형을 선택해주세요.",
     }),

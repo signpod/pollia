@@ -35,6 +35,8 @@ interface RewardSnapshot {
   id: string;
   name: string;
   description: string | null;
+  imageUrl: string | null;
+  imageFileUploadId: string | null;
   paymentType: PaymentType;
   scheduledDate: Date | null;
 }

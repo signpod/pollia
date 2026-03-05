@@ -7,10 +7,14 @@ import {
   type CreateMissionFormData,
   createMissionFormSchema,
 } from "@/app/(site)/(main)/create/schema";
+import { AdminImageCropDialog } from "@/app/admin/components/common/cropper/AdminImageCropDialog";
+import { useImageCropper } from "@/app/admin/components/common/cropper/use-image-cropper";
+import { useSingleImage } from "@/app/admin/hooks/admin-image";
+import { STORAGE_BUCKETS } from "@/constants/buckets";
 import type { GetMissionResponse } from "@/types/dto";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MissionType, PaymentType } from "@prisma/client";
-import { toast } from "@repo/ui/components";
+import { ImageSelector, Typo, toast } from "@repo/ui/components";
 import { AlertCircle } from "lucide-react";
 import {
   type ForwardedRef,
@@ -39,6 +43,8 @@ interface RewardSettingsCardProps {
 interface RewardFormValues {
   name: string;
   description?: string;
+  imageUrl?: string | null;
+  imageFileUploadId?: string | null;
   paymentType: PaymentType;
   scheduledDate?: Date;
 }
@@ -47,6 +53,8 @@ interface RewardSnapshot {
   id: string;
   name: string;
   description: string | null;
+  imageUrl: string | null;
+  imageFileUploadId: string | null;
   paymentType: PaymentType;
   scheduledDate: Date | null;
 }
@@ -90,6 +98,8 @@ function buildDefaultValues(
     reward: {
       name: reward.name,
       description: reward.description ?? "",
+      imageUrl: reward.imageUrl,
+      imageFileUploadId: reward.imageFileUploadId,
       paymentType: reward.paymentType,
       scheduledDate: reward.scheduledDate ?? undefined,
     },
@@ -129,8 +139,38 @@ function RewardSettingsCardComponent(
     reValidateMode: "onChange",
   });
 
+  const rewardImageCropper = useImageCropper({
+    fileNamePrefix: `reward-image-${mission.id}`,
+  });
+
+  const rewardImageUpload = useSingleImage({
+    initialUrl: initialReward?.imageUrl ?? null,
+    initialFileUploadId: initialReward?.imageFileUploadId ?? null,
+    bucket: STORAGE_BUCKETS.REWARD_IMAGES,
+    onUploadSuccess: data => {
+      form.setValue("reward.imageUrl", data.publicUrl, { shouldDirty: true });
+      form.setValue("reward.imageFileUploadId", data.fileUploadId, { shouldDirty: true });
+    },
+    onUploadError: error => {
+      toast({
+        message: error.message || "리워드 이미지 업로드에 실패했습니다.",
+        icon: AlertCircle,
+        iconClassName: "text-red-500",
+      });
+    },
+  });
+
+  const isRewardImageBusy = form.formState.isSubmitting || rewardImageUpload.isUploading;
+  const watchedRewardImageUrl = form.watch("reward.imageUrl");
+
+  const handleRewardImageDelete = () => {
+    rewardImageUpload.discard();
+    form.setValue("reward.imageUrl", null, { shouldDirty: true });
+    form.setValue("reward.imageFileUploadId", null, { shouldDirty: true });
+  };
+
   const hasPendingChanges = form.formState.isDirty;
-  const isBusy = form.formState.isSubmitting;
+  const isBusy = form.formState.isSubmitting || rewardImageUpload.isUploading;
   const validationIssueCount = useMemo(
     () => countValidationIssues(form.formState.errors),
     [form.formState.errors],
@@ -153,6 +193,10 @@ function RewardSettingsCardComponent(
     }: SectionSaveOptions = {}): Promise<SectionSaveResult> => {
       if (form.formState.isSubmitting) {
         return { status: "failed", message: "리워드 저장이 진행 중입니다." };
+      }
+
+      if (rewardImageUpload.isUploading) {
+        return { status: "failed", message: "이미지 업로드가 완료된 뒤 저장해주세요." };
       }
 
       if (!form.formState.isDirty) {
@@ -191,6 +235,8 @@ function RewardSettingsCardComponent(
         const rewardInput = {
           name: values.reward.name,
           description: values.reward.description || undefined,
+          imageUrl: values.reward.imageUrl ?? undefined,
+          imageFileUploadId: values.reward.imageFileUploadId ?? undefined,
           paymentType: values.reward.paymentType,
           scheduledDate:
             values.reward.paymentType === PaymentType.SCHEDULED
@@ -211,6 +257,8 @@ function RewardSettingsCardComponent(
           form.reset(buildDefaultValues(mission, createdReward.data));
         }
 
+        rewardImageUpload.deleteMarkedInitial();
+
         if (!silent) {
           toast({ message: "리워드 설정이 저장되었습니다." });
         }
@@ -230,7 +278,7 @@ function RewardSettingsCardComponent(
         return { status: "failed", message };
       }
     },
-    [currentReward, form, mission],
+    [currentReward, form, mission, rewardImageUpload],
   );
 
   useImperativeHandle(
@@ -238,7 +286,7 @@ function RewardSettingsCardComponent(
     () => ({
       save,
       hasPendingChanges: () => form.formState.isDirty,
-      isBusy: () => form.formState.isSubmitting,
+      isBusy: () => form.formState.isSubmitting || rewardImageUpload.isUploading,
       exportDraftSnapshot: () => form.getValues(),
       importDraftSnapshot: (snapshot: unknown) => {
         if (!snapshot || typeof snapshot !== "object") {
@@ -300,19 +348,68 @@ function RewardSettingsCardComponent(
         form.reset(nextValues, { keepDefaultValues: true });
       },
     }),
-    [currentReward, form, form.formState.isDirty, form.formState.isSubmitting, mission, save],
+    [
+      currentReward,
+      form,
+      form.formState.isDirty,
+      form.formState.isSubmitting,
+      mission,
+      rewardImageUpload.isUploading,
+      save,
+    ],
+  );
+
+  const rewardImageUploader = (
+    <div className="rounded-xl border border-zinc-200 bg-white px-4 py-4">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <Typo.SubTitle>리워드 이미지</Typo.SubTitle>
+          <Typo.Body size="medium" className="text-zinc-500">
+            {rewardImageUpload.isUploading
+              ? "업로드 중..."
+              : "리워드 이미지를 1:1 비율로 설정합니다."}
+          </Typo.Body>
+        </div>
+        <ImageSelector
+          size="large"
+          imageUrl={rewardImageUpload.previewUrl ?? watchedRewardImageUrl ?? undefined}
+          onImageSelect={file => rewardImageCropper.openWithFile(file)}
+          onImageDelete={handleRewardImageDelete}
+          disabled={isRewardImageBusy}
+        />
+      </div>
+    </div>
   );
 
   return (
-    <FormProvider {...form}>
-      <form
-        onSubmit={event => {
-          event.preventDefault();
+    <>
+      <FormProvider {...form}>
+        <form
+          onSubmit={event => {
+            event.preventDefault();
+          }}
+        >
+          <EditorRewardSection imageUploader={rewardImageUploader} />
+        </form>
+      </FormProvider>
+
+      <AdminImageCropDialog
+        open={rewardImageCropper.isOpen}
+        imageSrc={rewardImageCropper.imageSrc}
+        aspect={1}
+        title="리워드 이미지 편집"
+        description="이미지를 1:1 비율로 맞춰 저장합니다."
+        fileName={rewardImageCropper.fileName ?? `reward-image-${mission.id}.jpg`}
+        onOpenChange={open => {
+          if (!open) {
+            rewardImageCropper.close();
+          }
         }}
-      >
-        <EditorRewardSection />
-      </form>
-    </FormProvider>
+        onConfirm={file => {
+          rewardImageUpload.upload(file);
+        }}
+      />
+    </>
   );
 }
 

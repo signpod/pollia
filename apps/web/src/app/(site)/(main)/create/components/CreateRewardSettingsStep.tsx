@@ -13,13 +13,20 @@ import {
   Textarea,
   Typo,
 } from "@repo/ui/components";
+import type { ReactNode } from "react";
 import { Controller, type FieldErrors, useFormContext } from "react-hook-form";
 import type { CreateMissionFormData } from "../schema";
 import { ToggleSettingRow } from "./ToggleSettingRow";
 
+interface CreateRewardSettingsStepProps {
+  imageUploader?: ReactNode;
+}
+
 interface RewardFormValues {
   name: string;
   description?: string;
+  imageUrl?: string | null;
+  imageFileUploadId?: string | null;
   paymentType: PaymentType;
   scheduledDate?: Date;
 }
@@ -47,7 +54,7 @@ function getRewardErrorMessage(
   return rewardErrors[field]?.message;
 }
 
-export function CreateRewardSettingsStep() {
+export function CreateRewardSettingsStep({ imageUploader }: CreateRewardSettingsStepProps) {
   const {
     control,
     watch,
@@ -123,6 +130,8 @@ export function CreateRewardSettingsStep() {
               />
             )}
           />
+
+          {imageUploader}
 
           <div className="flex flex-col gap-2">
             <LabelText required>지급 유형</LabelText>
