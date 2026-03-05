@@ -6,7 +6,6 @@ import { createReward } from "@/actions/reward/create";
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { ROUTES } from "@/constants/routes";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
-import { MissionCategory } from "@prisma/client";
 import { toast } from "@repo/ui/components";
 import { AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -21,43 +20,27 @@ import {
 } from "./types";
 
 const STEP_TITLES: Record<Exclude<CreateMissionStep, "success">, string> = {
-  category: "카테고리 선택",
   mode: "생성 방식 선택",
   "project-info": "프로젝트 정보 입력",
 };
 
 const NEXT_STEP: Record<Exclude<CreateMissionStep, "success">, CreateMissionStep> = {
-  category: "mode",
   mode: "project-info",
   "project-info": "success",
 };
 
 const PREV_STEP: Partial<Record<CreateMissionStep, Exclude<CreateMissionStep, "success">>> = {
-  mode: "category",
   "project-info": "mode",
 };
 
 export function useCreateMissionFunnel({ form, initialStep }: UseCreateMissionFunnelParams) {
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState<CreateMissionStep>(initialStep ?? "category");
+  const [currentStep, setCurrentStep] = useState<CreateMissionStep>(initialStep ?? "mode");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<CreateMissionSuccessResult | null>(null);
   const category = useWatch({ control: form.control, name: "category" });
 
   const validateCurrentStep = useCallback(async () => {
-    if (currentStep === "category") {
-      const category = form.getValues("category");
-      if (category) {
-        form.clearErrors("category");
-        return true;
-      }
-      form.setError("category", {
-        type: "manual",
-        message: "카테고리를 선택해주세요.",
-      });
-      return false;
-    }
-
     if (currentStep === "mode") {
       const mode = form.getValues("creationMode");
       if (!mode) {
@@ -171,13 +154,6 @@ export function useCreateMissionFunnel({ form, initialStep }: UseCreateMissionFu
   }, [currentStep, handleSubmit, validateCurrentStep]);
 
   const goBack = useCallback(() => {
-    if (currentStep === "mode") {
-      form.setValue("category", null, { shouldDirty: true, shouldValidate: false });
-      form.setValue("creationMode", null, { shouldDirty: true, shouldValidate: false });
-      form.clearErrors("category");
-      form.clearErrors("creationMode");
-    }
-
     if (currentStep === "project-info") {
       form.setValue("creationMode", null, { shouldDirty: true, shouldValidate: false });
       form.clearErrors("creationMode");
@@ -187,18 +163,6 @@ export function useCreateMissionFunnel({ form, initialStep }: UseCreateMissionFu
     if (!prev) return;
     setCurrentStep(prev);
   }, [currentStep, form]);
-
-  const selectCategory = useCallback(
-    (category: MissionCategory) => {
-      form.clearErrors("category");
-      form.setValue("category", category, {
-        shouldDirty: true,
-        shouldValidate: false,
-      });
-      setCurrentStep("mode");
-    },
-    [form],
-  );
 
   const selectCustomMode = useCallback(() => {
     form.clearErrors("creationMode");
@@ -251,7 +215,6 @@ export function useCreateMissionFunnel({ form, initialStep }: UseCreateMissionFu
     canGoBack: Boolean(PREV_STEP[currentStep]),
     goNext,
     goBack,
-    selectCategory,
     selectCustomMode,
     result,
   };

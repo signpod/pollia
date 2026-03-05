@@ -1,6 +1,5 @@
 "use client";
 
-import { useGoBack } from "@/hooks/common/useGoBack";
 import { useWithdrawUser } from "@/hooks/user/useWithdrawUser";
 import { withdrawalFormSchema } from "@/schemas/user/userSchema";
 import {
@@ -31,7 +30,6 @@ interface WithdrawContentProps {
 
 export function WithdrawContent({ userName }: WithdrawContentProps) {
   const router = useRouter();
-  const goBack = useGoBack();
   const { withdrawAsync } = useWithdrawUser();
   const { showModal } = useModal();
 
@@ -151,7 +149,12 @@ export function WithdrawContent({ userName }: WithdrawContentProps) {
 
       <FixedBottomLayout.Content className="px-5 py-4">
         <div className="flex gap-3">
-          <ButtonV2 variant="secondary" size="large" className="flex-1" onClick={goBack}>
+          <ButtonV2
+            variant="secondary"
+            size="large"
+            className="flex-1"
+            onClick={() => router.back()}
+          >
             <div className="flex items-center justify-center w-full">
               <Typo.ButtonText size="medium">나중에 진행하기</Typo.ButtonText>
             </div>

@@ -1,7 +1,6 @@
 "use client";
 
 import { ROUTES } from "@/constants/routes";
-import { useGoBack } from "@/hooks/common/useGoBack";
 import { useCurrentUser } from "@/hooks/user";
 import { useProfileImageUrl } from "@/hooks/user/useProfileImageUrl";
 import { useRouter } from "next/navigation";
@@ -15,7 +14,6 @@ interface ProfileHeaderProps {
 
 export function ProfileHeader({ showBack, fallbackRight }: ProfileHeaderProps) {
   const router = useRouter();
-  const goBack = useGoBack();
   const { data: currentUser } = useCurrentUser();
   const profileImageUrl = useProfileImageUrl();
 
@@ -25,7 +23,7 @@ export function ProfileHeader({ showBack, fallbackRight }: ProfileHeaderProps) {
       fallbackRight={fallbackRight}
       user={currentUser}
       profileImageUrl={profileImageUrl}
-      onBack={goBack}
+      onBack={() => router.back()}
       onSearchClick={() => router.push(ROUTES.SEARCH)}
       onProfileClick={() => router.push(ROUTES.ME)}
     />

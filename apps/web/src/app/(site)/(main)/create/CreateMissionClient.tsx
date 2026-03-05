@@ -6,10 +6,9 @@ import { MissionCategory } from "@prisma/client";
 import { Button, Typo } from "@repo/ui/components";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef } from "react";
 import { FormProvider, useForm } from "react-hook-form";
-import { CreateCategoryStep } from "./components/CreateCategoryStep";
 import { CreateModeStep } from "./components/CreateModeStep";
 import { CreateProjectInfoStep } from "./components/CreateProjectInfoStep";
 import { CreateSuccessScreen } from "./components/CreateSuccessScreen";
@@ -31,7 +30,7 @@ const CREATE_FORM_DEFAULT_VALUES: CreateMissionFormData = {
   useAiCompletion: false,
 };
 
-const CREATE_STEP_ORDER: CreateMissionStep[] = ["category", "mode", "project-info", "success"];
+const CREATE_STEP_ORDER: CreateMissionStep[] = ["mode", "project-info", "success"];
 
 const CREATE_STEP_INDEX: Record<CreateMissionStep, number> = CREATE_STEP_ORDER.reduce(
   (acc, step, index) => {
@@ -79,7 +78,7 @@ export function CreateMissionClient() {
 
   const controller = useCreateMissionFunnel({
     form,
-    initialStep: preselectedCategory ? "mode" : "category",
+    initialStep: "mode",
   });
 
   const prevStepRef = useRef<CreateMissionStep>(controller.currentStep);
@@ -106,8 +105,6 @@ export function CreateMissionClient() {
 
   const renderCurrentStep = () => {
     switch (controller.currentStep) {
-      case "category":
-        return <CreateCategoryStep onSelectCategory={controller.selectCategory} />;
       case "mode":
         return <CreateModeStep onSelectCustom={controller.selectCustomMode} />;
       case "project-info":
@@ -124,34 +121,30 @@ export function CreateMissionClient() {
     }
   };
 
-  const showBackButton = preselectedCategory
-    ? controller.currentStep !== "mode"
-    : controller.currentStep !== "category";
-  const showNextButton =
-    controller.currentStep !== "category" &&
-    controller.currentStep !== "mode" &&
-    controller.currentStep !== "success";
+  const router = useRouter();
+  const showBackButton = controller.currentStep !== "success";
+  const showNextButton = controller.currentStep !== "mode" && controller.currentStep !== "success";
 
   return (
     <FormProvider {...form}>
-      <div className="bg-white px-5 py-6">
-        <header className="mb-4 flex items-center gap-3">
-          <button
-            type="button"
-            aria-label="이전 단계로 이동"
-            aria-hidden={!showBackButton}
-            tabIndex={showBackButton ? 0 : -1}
-            onClick={controller.goBack}
-            disabled={!showBackButton || !controller.canGoBack || controller.isSubmitting}
-            className={`flex size-8 items-center justify-center rounded-full text-zinc-700 disabled:cursor-not-allowed disabled:opacity-40 ${
-              showBackButton ? "" : "pointer-events-none opacity-0"
-            }`}
-          >
-            <ChevronLeft className="size-5" />
-          </button>
-          <Typo.SubTitle>{controller.screenTitle}</Typo.SubTitle>
-        </header>
+      <header className="flex items-center gap-3 bg-white px-4 py-3">
+        <button
+          type="button"
+          aria-label="이전 단계로 이동"
+          aria-hidden={!showBackButton}
+          tabIndex={showBackButton ? 0 : -1}
+          onClick={controller.canGoBack ? controller.goBack : () => router.back()}
+          disabled={!showBackButton || controller.isSubmitting}
+          className={`flex size-8 items-center justify-center rounded-full text-zinc-700 disabled:cursor-not-allowed disabled:opacity-40 ${
+            showBackButton ? "" : "pointer-events-none opacity-0"
+          }`}
+        >
+          <ChevronLeft className="size-5" />
+        </button>
+        <Typo.SubTitle>{controller.screenTitle}</Typo.SubTitle>
+      </header>
 
+      <div className="bg-white px-5 py-6">
         <div className="mb-5 flex flex-col gap-2">
           <Typo.Body size="medium" className="text-zinc-500">
             {controller.currentStep === "success"

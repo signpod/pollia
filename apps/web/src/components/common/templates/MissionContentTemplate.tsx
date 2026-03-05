@@ -5,11 +5,11 @@ import { MissionFooter } from "@/app/(site)/mission/[missionId]/components/Missi
 import { MissionRewardSection } from "@/app/(site)/mission/[missionId]/components/MissionRewardSection";
 import { MissionShareSection } from "@/app/(site)/mission/[missionId]/components/MissionShareSection";
 import { SECTION_IDS } from "@/app/(site)/mission/[missionId]/constants/sectionIds";
-import { useGoBack } from "@/hooks/common/useGoBack";
 import { cleanTiptapHTML, cn } from "@/lib/utils";
 import { MissionType } from "@prisma/client";
 import { Typo } from "@repo/ui/components";
 import { ChevronLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 import type { RefObject } from "react";
 import type { ReactNode } from "react";
 
@@ -46,7 +46,7 @@ export function MissionContentTemplate({
     ? [SECTION_IDS.MISSION_GUIDE, SECTION_IDS.REWARD]
     : [SECTION_IDS.MISSION_GUIDE];
   const hasDescription = !!description && !!cleanTiptapHTML(description);
-  const goBack = useGoBack();
+  const router = useRouter();
 
   return (
     <div className="bg-white relative">
@@ -60,7 +60,7 @@ export function MissionContentTemplate({
         >
           <button
             type="button"
-            onClick={goBack}
+            onClick={() => router.back()}
             className="shrink-0 size-12 flex items-center justify-center"
           >
             <ChevronLeft className="size-6" />

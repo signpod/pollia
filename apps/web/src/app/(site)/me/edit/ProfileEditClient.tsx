@@ -3,7 +3,6 @@
 import { UserAvatar } from "@/components/common/UserAvatar";
 import { ImageCropModal } from "@/components/common/templates/action/image/ImageCropModal";
 import { useImageCrop } from "@/components/common/templates/action/image/hooks/useImageCrop";
-import { useGoBack } from "@/hooks/common/useGoBack";
 import { useCurrentUser } from "@/hooks/user/useCurrentUser";
 import { useProfileImageUrl } from "@/hooks/user/useProfileImageUrl";
 import { useUpdateUserName } from "@/hooks/user/useUpdateUserName";
@@ -11,10 +10,11 @@ import { useUpdateUserProfileImage } from "@/hooks/user/useUpdateUserProfileImag
 import { nameSchema } from "@/schemas/user/userSchema";
 import { Input, Typo } from "@repo/ui/components";
 import { XIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export function ProfileEditClient() {
-  const goBack = useGoBack();
+  const router = useRouter();
   const { data: user } = useCurrentUser();
   const profileImageUrl = useProfileImageUrl();
   const { mutate: updateName, isPending: isNamePending } = useUpdateUserName();
@@ -90,14 +90,14 @@ export function ProfileEditClient() {
 
   const handleComplete = () => {
     if (!hasAnyChange || !nameValid) {
-      goBack();
+      router.back();
       return;
     }
 
     let pending = 0;
     const onDone = () => {
       pending--;
-      if (pending === 0) goBack();
+      if (pending === 0) router.back();
     };
 
     if (hasImageChange) {
@@ -110,13 +110,17 @@ export function ProfileEditClient() {
       updateName(trimmed, { onSuccess: onDone, onError: onDone });
     }
 
-    if (pending === 0) goBack();
+    if (pending === 0) router.back();
   };
 
   return (
     <div className="flex flex-1 flex-col">
       <header className="sticky top-0 z-50 flex h-12 shrink-0 items-center justify-between bg-white px-3">
-        <button type="button" onClick={goBack} className="flex size-12 items-center justify-center">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="flex size-12 items-center justify-center"
+        >
           <XIcon className="size-6" />
         </button>
         <button type="button" onClick={handleComplete} disabled={isSaving} className="px-3 py-2">
