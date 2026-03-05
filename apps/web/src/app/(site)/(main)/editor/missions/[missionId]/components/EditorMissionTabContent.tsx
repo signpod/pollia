@@ -4,6 +4,7 @@ import { getCompletionsByMissionId } from "@/actions/mission-completion";
 import { Separator } from "@/components/ui/separator";
 import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
 import { ROUTES } from "@/constants/routes";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useReadActionsDetail } from "@/hooks/action";
 import { useReadMission } from "@/hooks/mission";
 import type { GetMissionResponse } from "@/types/dto";
@@ -55,7 +56,7 @@ function MissionIntroPreview({ missionId }: { missionId: string }) {
         </div>
       )}
       <iframe
-        title="콘텐츠 인트로 미리보기"
+        title={`${UBIQUITOUS_CONSTANTS.MISSION} 인트로 미리보기`}
         src={previewUrl}
         className="h-full w-full border-0"
         onLoad={() => setIsLoading(false)}
@@ -265,8 +266,8 @@ export function EditorMissionTabContent({
       />
       <EditorMissionDraftProvider>
         <EditorSectionCard
-          title="콘텐츠 기본정보"
-          description="콘텐츠 기본 정보를 입력합니다."
+          title={`${UBIQUITOUS_CONSTANTS.MISSION} 기본정보`}
+          description={`${UBIQUITOUS_CONSTANTS.MISSION} 기본 정보를 입력합니다.`}
           validationIssueCount={basicValidationCount + rewardValidationCount}
         >
           <ContentBasicInfoCard

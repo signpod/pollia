@@ -2,6 +2,7 @@
 
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { ROUTES } from "@/constants/routes";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { MissionCategory } from "@prisma/client";
 import PolliaFaceVeryGood from "@public/svgs/face/very-good-face-full.svg";
 import { ButtonV2, EmptyState, Tab, Typo } from "@repo/ui/components";
@@ -60,12 +61,12 @@ export function LikedContent() {
           <div className="flex min-h-[50dvh] items-center justify-center">
             <EmptyState
               icon={<PolliaFaceVeryGood className="size-30 text-zinc-200" />}
-              title="찜한 프로젝트가 없어요"
+              title={`찜한 ${UBIQUITOUS_CONSTANTS.MISSION}가 없어요`}
               description={
                 <>
                   아래 버튼을 눌러
                   <br />
-                  마음에 드는 프로젝트를 찜해보세요 ❤️
+                  마음에 드는 {UBIQUITOUS_CONSTANTS.MISSION}를 찜해보세요
                 </>
               }
               action={

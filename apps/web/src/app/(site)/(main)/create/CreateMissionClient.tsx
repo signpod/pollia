@@ -30,7 +30,7 @@ const CREATE_FORM_DEFAULT_VALUES: CreateMissionFormData = {
   useAiCompletion: false,
 };
 
-const CREATE_STEP_ORDER: CreateMissionStep[] = ["mode", "project-info", "success"];
+const CREATE_STEP_ORDER: CreateMissionStep[] = ["mode", "content-info", "success"];
 
 const CREATE_STEP_INDEX: Record<CreateMissionStep, number> = CREATE_STEP_ORDER.reduce(
   (acc, step, index) => {
@@ -107,7 +107,7 @@ export function CreateMissionClient() {
     switch (controller.currentStep) {
       case "mode":
         return <CreateModeStep onSelectCustom={controller.selectCustomMode} />;
-      case "project-info":
+      case "content-info":
         return <CreateContentInfoStep showRewardSettings showAiCompletionToggle />;
       case "success":
         return controller.result ? (

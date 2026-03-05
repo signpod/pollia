@@ -166,7 +166,7 @@ export const MainTitles: Story = {
         maxWidth: "600px",
       }}
     >
-      <Typo.MainTitle size="medium">새로운 프로젝트를 시작해보세요</Typo.MainTitle>
+      <Typo.MainTitle size="medium">새로운 콘텐츠를 시작해보세요</Typo.MainTitle>
       <Typo.MainTitle size="small">더 작은 메인 제목입니다</Typo.MainTitle>
       <Typo.MainTitle size="medium" className="text-blue-600">
         색상을 변경한 메인 제목

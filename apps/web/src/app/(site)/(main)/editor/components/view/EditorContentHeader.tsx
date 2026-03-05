@@ -1,6 +1,7 @@
 "use client";
 
 import { ROUTES } from "@/constants/routes";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useCanGoBack } from "@/hooks/common/useCanGoBack";
 import { IconButton, Typo, useModal } from "@repo/ui/components";
 import { ChevronLeft, ExternalLinkIcon, Trash2Icon } from "lucide-react";
@@ -15,9 +16,8 @@ function MissionActions({ missionId }: { missionId: string }) {
 
   const handleDelete = () => {
     showModal({
-      title: "콘텐츠 삭제",
-      description:
-        "콘텐츠를 삭제하면 참여자들의 응답 데이터도 함께 삭제됩니다.\n되돌릴 수 없습니다.",
+      title: `${UBIQUITOUS_CONSTANTS.MISSION} 삭제`,
+      description: `${UBIQUITOUS_CONSTANTS.MISSION}를 삭제하면 참여자들의 응답 데이터도 함께 삭제됩니다.\n되돌릴 수 없습니다.`,
       confirmText: "삭제하기",
       cancelText: "취소",
       showCancelButton: true,
@@ -34,12 +34,12 @@ function MissionActions({ missionId }: { missionId: string }) {
         href={ROUTES.MISSION(missionId)}
         className="flex items-center gap-1 rounded-full bg-zinc-100 px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-200"
       >
-        프로젝트 바로가기
+        {UBIQUITOUS_CONSTANTS.MISSION} 바로가기
         <ExternalLinkIcon className="size-3.5" />
       </Link>
       <IconButton
         icon={Trash2Icon}
-        aria-label="프로젝트 삭제"
+        aria-label={`${UBIQUITOUS_CONSTANTS.MISSION} 삭제`}
         onClick={handleDelete}
         iconClassName="text-zinc-400 hover:text-red-500"
       />
@@ -63,7 +63,7 @@ export function EditorContentHeader({ missionId }: EditorContentHeaderProps) {
     router.replace(ROUTES.HOME);
   };
 
-  const title = "프로젝트 에디터";
+  const title = `${UBIQUITOUS_CONSTANTS.MISSION} 에디터`;
 
   return (
     <div className="flex items-center gap-3">

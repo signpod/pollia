@@ -1,6 +1,7 @@
 "use client";
 
 import { ROUTES } from "@/constants/routes";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import type { Mission } from "@prisma/client";
 import thumbnailFallback from "@public/images/thumbnail-fallback.png";
 import { Typo, useModal } from "@repo/ui/components";
@@ -21,9 +22,8 @@ function MyContentListItem({ mission }: { mission: Mission }) {
     e.preventDefault();
     e.stopPropagation();
     showModal({
-      title: "콘텐츠 삭제",
-      description:
-        "콘텐츠를 삭제하면 참여자들의 응답 데이터도 함께 삭제됩니다.\n되돌릴 수 없습니다.",
+      title: `${UBIQUITOUS_CONSTANTS.MISSION} 삭제`,
+      description: `${UBIQUITOUS_CONSTANTS.MISSION}를 삭제하면 참여자들의 응답 데이터도 함께 삭제됩니다.\n되돌릴 수 없습니다.`,
       confirmText: "삭제하기",
       cancelText: "취소",
       showCancelButton: true,
@@ -64,7 +64,7 @@ function MyContentListItem({ mission }: { mission: Mission }) {
           type="button"
           onClick={handleDelete}
           className="flex items-center justify-center text-zinc-300 transition-colors hover:text-red-500"
-          aria-label="콘텐츠 삭제"
+          aria-label={`${UBIQUITOUS_CONSTANTS.MISSION} 삭제`}
         >
           <Trash2Icon className="size-4" />
         </button>

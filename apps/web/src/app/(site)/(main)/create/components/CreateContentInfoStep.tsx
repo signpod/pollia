@@ -1,5 +1,6 @@
 "use client";
 
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { Input } from "@repo/ui/components";
 import { Controller, useFormContext } from "react-hook-form";
 import {
@@ -34,7 +35,7 @@ export function CreateContentInfoStep({
         name="title"
         render={({ field }) => (
           <Input
-            label="콘텐츠 제목"
+            label={`${UBIQUITOUS_CONSTANTS.MISSION} 제목`}
             required
             placeholder="제목을 입력해주세요"
             maxLength={MISSION_TITLE_MAX_LENGTH}
@@ -48,8 +49,8 @@ export function CreateContentInfoStep({
       <CreateTiptapField
         name="description"
         label="설명"
-        description="콘텐츠에 대한 설명을 입력해주세요."
-        placeholder="콘텐츠에 대한 설명을 입력해주세요"
+        description={`${UBIQUITOUS_CONSTANTS.MISSION}에 대한 설명을 입력해주세요.`}
+        placeholder={`${UBIQUITOUS_CONSTANTS.MISSION}에 대한 설명을 입력해주세요`}
         isOptional
         maxLength={MISSION_DESCRIPTION_MAX_LENGTH}
         showCounter

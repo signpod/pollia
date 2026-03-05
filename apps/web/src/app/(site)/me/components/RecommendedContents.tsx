@@ -5,6 +5,7 @@ import { MissionLikeButton } from "@/app/(site)/(main)/components/MissionLikeBut
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { ROUTES } from "@/constants/routes";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { MissionCategory, MissionType } from "@prisma/client";
 import thumbnailFallback from "@public/images/thumbnail-fallback.png";
 import { Typo } from "@repo/ui/components";
@@ -74,7 +75,7 @@ export function RecommendedContents({ userName }: RecommendedContentsProps) {
   return (
     <section className="flex flex-col gap-6">
       <Typo.MainTitle size="small" className="px-5">
-        {userName}님의 추천 콘텐츠
+        {userName}님의 추천 {UBIQUITOUS_CONSTANTS.MISSION}
       </Typo.MainTitle>
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex">

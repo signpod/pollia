@@ -8,6 +8,7 @@ import { AdminImageCropDialog } from "@/app/admin/components/common/cropper/Admi
 import { useImageCropper } from "@/app/admin/components/common/cropper/use-image-cropper";
 import { useSingleImage } from "@/app/admin/hooks/admin-image";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MissionCategory } from "@prisma/client";
 import { Button, toast } from "@repo/ui/components";
@@ -92,7 +93,7 @@ export function EditorCreateContent() {
     },
     onUploadError: error => {
       toast({
-        message: error.message || "콘텐츠 썸네일 업로드에 실패했습니다.",
+        message: error.message || `${UBIQUITOUS_CONSTANTS.MISSION} 썸네일 업로드에 실패했습니다.`,
         icon: AlertCircle,
         iconClassName: "text-red-500",
       });
@@ -167,7 +168,7 @@ export function EditorCreateContent() {
           isActive={false}
           node={submitButtonNode}
         />
-        <EditorEmptyTabContent message="콘텐츠를 생성해주세요" />
+        <EditorEmptyTabContent message={`${UBIQUITOUS_CONSTANTS.MISSION}를 생성해주세요`} />
       </>
     );
   }
@@ -186,11 +187,11 @@ export function EditorCreateContent() {
       />
 
       <ImageUploaderField
-        title="콘텐츠 썸네일"
+        title={`${UBIQUITOUS_CONSTANTS.MISSION} 썸네일`}
         description={
           thumbnailImageUpload.isUploading
             ? "업로드 중..."
-            : "콘텐츠 썸네일을 1:1 비율로 설정합니다."
+            : `${UBIQUITOUS_CONSTANTS.MISSION} 썸네일을 1:1 비율로 설정합니다.`
         }
         imageUrl={thumbnailImageUpload.previewUrl ?? watchedImageUrl ?? undefined}
         onImageSelect={file => thumbnailCropper.openWithFile(file)}
@@ -207,7 +208,10 @@ export function EditorCreateContent() {
         isActive={currentTab === "editor"}
         node={submitButtonNode}
       />
-      <EditorSectionCard title="콘텐츠 기본정보" description="콘텐츠 기본 정보를 입력합니다.">
+      <EditorSectionCard
+        title={`${UBIQUITOUS_CONSTANTS.MISSION} 기본정보`}
+        description={`${UBIQUITOUS_CONSTANTS.MISSION} 기본 정보를 입력합니다.`}
+      >
         <EditorContentInfoSection showAiCompletionToggle imageUploaders={imageUploaders} />
         <EditorRewardSection
           imageUploader={
@@ -245,7 +249,7 @@ export function EditorCreateContent() {
         open={thumbnailCropper.isOpen}
         imageSrc={thumbnailCropper.imageSrc}
         aspect={1}
-        title="콘텐츠 썸네일 편집"
+        title={`${UBIQUITOUS_CONSTANTS.MISSION} 썸네일 편집`}
         description="이미지를 1:1 비율로 맞춰 저장합니다."
         fileName={thumbnailCropper.fileName ?? "create-thumbnail.jpg"}
         onOpenChange={open => {

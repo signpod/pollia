@@ -1,5 +1,6 @@
 "use client";
 
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { Typo } from "@repo/ui/components";
 
 interface CreateSuccessScreenProps {
@@ -11,9 +12,9 @@ export function CreateSuccessScreen({ missionId, warnings }: CreateSuccessScreen
   return (
     <div className="rounded-xl border border-zinc-200 bg-white px-5 py-6">
       <div className="flex flex-col gap-2">
-        <Typo.SubTitle>프로젝트가 생성되었습니다.</Typo.SubTitle>
+        <Typo.SubTitle>{UBIQUITOUS_CONSTANTS.MISSION}가 생성되었습니다.</Typo.SubTitle>
         <Typo.Body size="medium" className="text-zinc-600">
-          프로젝트 ID: {missionId}
+          {UBIQUITOUS_CONSTANTS.MISSION} ID: {missionId}
         </Typo.Body>
       </div>
 

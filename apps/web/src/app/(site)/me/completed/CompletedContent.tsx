@@ -1,6 +1,7 @@
 "use client";
 
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { MissionCategory } from "@prisma/client";
 import { Tab, Typo } from "@repo/ui/components";
 import { useMemo, useState } from "react";
@@ -64,7 +65,7 @@ export function CompletedContent() {
         ) : (
           <div className="flex items-center justify-center py-20">
             <Typo.Body size="medium" className="text-zinc-400">
-              완료한 프로젝트가 없어요
+              완료한 {UBIQUITOUS_CONSTANTS.MISSION}가 없어요
             </Typo.Body>
           </div>
         )}
