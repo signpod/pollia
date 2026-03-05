@@ -1012,6 +1012,11 @@ export function useEditorMissionController({
       await saveMissionEditorDraft(missionId, toServerEditorDraftPayload(draftPayload));
     } catch (error) {
       console.error("Failed to save server draft:", error);
+      toast({
+        message: "서버 임시저장에 실패했습니다. 로컬에는 저장되었습니다.",
+        icon: AlertCircle,
+        iconClassName: "text-yellow-500",
+      });
     }
 
     await runUnifiedSave({ mode: "manual" });

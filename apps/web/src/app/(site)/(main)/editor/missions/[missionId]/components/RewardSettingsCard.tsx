@@ -14,7 +14,7 @@ import { STORAGE_BUCKETS } from "@/constants/buckets";
 import type { GetMissionResponse } from "@/types/dto";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MissionType, PaymentType } from "@prisma/client";
-import { ImageSelector, Typo, toast } from "@repo/ui/components";
+import { toast } from "@repo/ui/components";
 import { AlertCircle } from "lucide-react";
 import {
   type ForwardedRef,
@@ -27,6 +27,7 @@ import {
 } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { EditorRewardSection } from "../../../components/view/EditorRewardSection";
+import { ImageUploaderField } from "../../../components/view/ImageUploaderField";
 import type {
   SectionSaveHandle,
   SectionSaveOptions,
@@ -49,7 +50,7 @@ interface RewardFormValues {
   scheduledDate?: Date;
 }
 
-interface RewardSnapshot {
+export interface RewardSnapshot {
   id: string;
   name: string;
   description: string | null;
@@ -360,25 +361,16 @@ function RewardSettingsCardComponent(
   );
 
   const rewardImageUploader = (
-    <div className="rounded-xl border border-zinc-200 bg-white px-4 py-4">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <Typo.SubTitle>리워드 이미지</Typo.SubTitle>
-          <Typo.Body size="medium" className="text-zinc-500">
-            {rewardImageUpload.isUploading
-              ? "업로드 중..."
-              : "리워드 이미지를 1:1 비율로 설정합니다."}
-          </Typo.Body>
-        </div>
-        <ImageSelector
-          size="large"
-          imageUrl={rewardImageUpload.previewUrl ?? watchedRewardImageUrl ?? undefined}
-          onImageSelect={file => rewardImageCropper.openWithFile(file)}
-          onImageDelete={handleRewardImageDelete}
-          disabled={isRewardImageBusy}
-        />
-      </div>
-    </div>
+    <ImageUploaderField
+      title="리워드 이미지"
+      description={
+        rewardImageUpload.isUploading ? "업로드 중..." : "리워드 이미지를 1:1 비율로 설정합니다."
+      }
+      imageUrl={rewardImageUpload.previewUrl ?? watchedRewardImageUrl ?? undefined}
+      onImageSelect={file => rewardImageCropper.openWithFile(file)}
+      onImageDelete={handleRewardImageDelete}
+      disabled={isRewardImageBusy}
+    />
   );
 
   return (
