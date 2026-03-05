@@ -37,6 +37,7 @@ import {
   checkUnifiedSaveGuard,
   resolveNoChangesOutcome,
   resolvePostSectionSaveOutcome,
+  resolveSaveStrategy,
 } from "./editorMissionSaveFlowModel";
 import {
   type EditorSectionKey,
@@ -144,7 +145,6 @@ export interface UseEditorMissionControllerResult {
   publishState: PublishAvailability;
   actions: {
     onSave: () => Promise<void>;
-    onDraftSave: () => Promise<void>;
     onPublish: () => Promise<void>;
   };
 }
@@ -792,21 +792,25 @@ export function useEditorMissionController({
 
       const hasPendingChangesNow = hasAnyPendingChanges || hasPendingChangesFromRefs();
       if (!hasPendingChangesNow) {
-        const clearResult = await clearPersistedDraft();
-        const noChangesOutcome = resolveNoChangesOutcome(clearResult);
-        if (noChangesOutcome.type === "clear_failed") {
-          console.error("Failed to clear mission editor draft:", {
-            missionId,
-            serverDraftErrorMessage: clearResult.serverDraftErrorMessage,
-            localDraftErrorMessage: clearResult.localDraftErrorMessage,
-          });
-          toast({
-            message: "저장할 변경사항이 없습니다.\n임시저장을 정리하지 못했습니다.",
-            icon: AlertCircle,
-            iconClassName: "text-red-500",
-            id: UNIFIED_SAVE_TOAST_ID,
-          });
-        } else if (showNoChangesToast) {
+        if (isPublished) {
+          const clearResult = await clearPersistedDraft();
+          const noChangesOutcome = resolveNoChangesOutcome(clearResult);
+          if (noChangesOutcome.type === "clear_failed") {
+            console.error("Failed to clear mission editor draft:", {
+              missionId,
+              serverDraftErrorMessage: clearResult.serverDraftErrorMessage,
+              localDraftErrorMessage: clearResult.localDraftErrorMessage,
+            });
+            toast({
+              message: "저장할 변경사항이 없습니다.\n임시저장을 정리하지 못했습니다.",
+              icon: AlertCircle,
+              iconClassName: "text-red-500",
+              id: UNIFIED_SAVE_TOAST_ID,
+            });
+            return "no_changes" as const;
+          }
+        }
+        if (showNoChangesToast) {
           toast({ message: "저장할 변경사항이 없습니다.", id: UNIFIED_SAVE_TOAST_ID });
         }
         return "no_changes" as const;
@@ -823,6 +827,7 @@ export function useEditorMissionController({
 
         const outcome = resolvePostSectionSaveOutcome({
           mode,
+          isPublished,
           summary,
           showSavedToast,
           showNoChangesToast,
@@ -842,6 +847,7 @@ export function useEditorMissionController({
       hasAnyPendingChanges,
       hasPendingChangesFromRefs,
       isEditorTab,
+      isPublished,
       isSavingAll,
       missionId,
       runSectionSaves,
@@ -963,32 +969,7 @@ export function useEditorMissionController({
     runUnifiedSave,
   ]);
 
-  const handleSave = useCallback(async () => {
-    const guard = checkSaveGuard({
-      isValidationDataReady: publishState.isValidationDataReady,
-      issueCount: publishState.issues.length,
-      blockingMessage: publishState.blockingMessage,
-    });
-
-    if (!guard.allowed) {
-      toast({
-        message: guard.message,
-        icon: AlertCircle,
-        iconClassName: "text-red-500",
-        id: UNIFIED_SAVE_TOAST_ID,
-      });
-      return;
-    }
-
-    await runUnifiedSave({ mode: "publish" });
-  }, [
-    publishState.blockingMessage,
-    publishState.isValidationDataReady,
-    publishState.issues.length,
-    runUnifiedSave,
-  ]);
-
-  const handleDraftSave = useCallback(async () => {
+  const saveDraft = useCallback(async () => {
     const draftPayload = collectLocalDraftPayload();
     const updatedAtMs = Date.now();
     const payloadWithMeta: LocalEditorDraftPayload = {
@@ -1007,9 +988,42 @@ export function useEditorMissionController({
         iconClassName: "text-yellow-500",
       });
     }
+  }, [collectLocalDraftPayload, missionId]);
 
+  const handleSave = useCallback(async () => {
+    const strategy = resolveSaveStrategy(isPublished);
+
+    if (strategy === "direct-save") {
+      const guard = checkSaveGuard({
+        isValidationDataReady: publishState.isValidationDataReady,
+        issueCount: publishState.issues.length,
+        blockingMessage: publishState.blockingMessage,
+      });
+
+      if (!guard.allowed) {
+        toast({
+          message: guard.message,
+          icon: AlertCircle,
+          iconClassName: "text-red-500",
+          id: UNIFIED_SAVE_TOAST_ID,
+        });
+        return;
+      }
+
+      await runUnifiedSave({ mode: "publish" });
+      return;
+    }
+
+    await saveDraft();
     await runUnifiedSave({ mode: "manual" });
-  }, [collectLocalDraftPayload, missionId, runUnifiedSave]);
+  }, [
+    isPublished,
+    publishState.blockingMessage,
+    publishState.isValidationDataReady,
+    publishState.issues.length,
+    runUnifiedSave,
+    saveDraft,
+  ]);
 
   const onBasicStateChange = useCallback(
     (state: SectionSaveState) => {
@@ -1076,7 +1090,6 @@ export function useEditorMissionController({
     publishState,
     actions: {
       onSave: handleSave,
-      onDraftSave: handleDraftSave,
       onPublish: handlePublish,
     },
   };

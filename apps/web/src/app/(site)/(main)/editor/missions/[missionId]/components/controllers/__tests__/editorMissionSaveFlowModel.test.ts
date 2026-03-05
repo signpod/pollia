@@ -5,6 +5,7 @@ import {
   checkUnifiedSaveGuard,
   resolveNoChangesOutcome,
   resolvePostSectionSaveOutcome,
+  resolveSaveStrategy,
   shouldClearDraftAfterSave,
 } from "../editorMissionSaveFlowModel";
 import { createEmptySectionSaveSummary } from "../editorMissionSaveSummaryModel";
@@ -193,47 +194,81 @@ describe("resolveNoChangesOutcome", () => {
 });
 
 describe("shouldClearDraftAfterSave", () => {
-  it("모두 성공이면 true를 반환한다", () => {
+  it("isPublished=true이고 모두 성공이면 true를 반환한다", () => {
     expect(
-      shouldClearDraftAfterSave({
-        ...createEmptySectionSaveSummary(),
-        savedCount: 3,
-      }),
+      shouldClearDraftAfterSave(
+        {
+          ...createEmptySectionSaveSummary(),
+          savedCount: 3,
+        },
+        true,
+      ),
     ).toBe(true);
   });
 
+  it("isPublished=false이면 항상 false를 반환한다", () => {
+    expect(
+      shouldClearDraftAfterSave(
+        {
+          ...createEmptySectionSaveSummary(),
+          savedCount: 3,
+        },
+        false,
+      ),
+    ).toBe(false);
+  });
+
   it("savedCount가 0이면 false를 반환한다", () => {
-    expect(shouldClearDraftAfterSave(createEmptySectionSaveSummary())).toBe(false);
+    expect(shouldClearDraftAfterSave(createEmptySectionSaveSummary(), true)).toBe(false);
   });
 
   it("failedCount가 있으면 false를 반환한다", () => {
     expect(
-      shouldClearDraftAfterSave({
-        ...createEmptySectionSaveSummary(),
-        savedCount: 2,
-        failedCount: 1,
-      }),
+      shouldClearDraftAfterSave(
+        {
+          ...createEmptySectionSaveSummary(),
+          savedCount: 2,
+          failedCount: 1,
+        },
+        true,
+      ),
     ).toBe(false);
   });
 
   it("invalidCount가 있으면 false를 반환한다", () => {
     expect(
-      shouldClearDraftAfterSave({
-        ...createEmptySectionSaveSummary(),
-        savedCount: 2,
-        invalidCount: 1,
-      }),
+      shouldClearDraftAfterSave(
+        {
+          ...createEmptySectionSaveSummary(),
+          savedCount: 2,
+          invalidCount: 1,
+        },
+        true,
+      ),
     ).toBe(false);
   });
 
   it("skippedCount가 있으면 false를 반환한다", () => {
     expect(
-      shouldClearDraftAfterSave({
-        ...createEmptySectionSaveSummary(),
-        savedCount: 2,
-        skippedCount: 1,
-      }),
+      shouldClearDraftAfterSave(
+        {
+          ...createEmptySectionSaveSummary(),
+          savedCount: 2,
+          skippedCount: 1,
+        },
+        true,
+      ),
     ).toBe(false);
+  });
+});
+
+describe("resolveSaveStrategy", () => {
+  it("isPublished=true이면 direct-save를 반환한다", () => {
+    expect(resolveSaveStrategy(true)).toBe("direct-save");
+  });
+
+  it("isPublished=false이면 draft-then-save를 반환한다", () => {
+    expect(resolveSaveStrategy(false)).toBe("draft-then-save");
   });
 });
 
@@ -243,6 +278,7 @@ describe("resolvePostSectionSaveOutcome", () => {
     it("invalidCount가 있으면 publish_error를 반환한다", () => {
       const result = resolvePostSectionSaveOutcome({
         mode: "publish",
+        isPublished: true,
         summary: {
           ...createEmptySectionSaveSummary(),
           invalidCount: 1,
@@ -262,6 +298,7 @@ describe("resolvePostSectionSaveOutcome", () => {
     it("failedCount가 있으면 publish_error를 반환한다", () => {
       const result = resolvePostSectionSaveOutcome({
         mode: "publish",
+        isPublished: true,
         summary: {
           ...createEmptySectionSaveSummary(),
           failedCount: 1,
@@ -277,6 +314,7 @@ describe("resolvePostSectionSaveOutcome", () => {
     it("firstErrorMessage가 없으면 기본 메시지를 사용한다", () => {
       const result = resolvePostSectionSaveOutcome({
         mode: "publish",
+        isPublished: true,
         summary: {
           ...createEmptySectionSaveSummary(),
           failedCount: 1,
@@ -294,6 +332,7 @@ describe("resolvePostSectionSaveOutcome", () => {
     it("성공 시 saved를 반환한다", () => {
       const result = resolvePostSectionSaveOutcome({
         mode: "publish",
+        isPublished: true,
         summary: {
           ...createEmptySectionSaveSummary(),
           savedCount: 2,
@@ -307,11 +346,12 @@ describe("resolvePostSectionSaveOutcome", () => {
     });
   });
 
-  // Given: manual 모드
-  describe("manual 모드", () => {
+  // Given: manual 모드 (발행된 미션)
+  describe("manual 모드 (isPublished=true)", () => {
     it("failedCount가 있으면 manual_with_failures를 반환한다", () => {
       const result = resolvePostSectionSaveOutcome({
         mode: "manual",
+        isPublished: true,
         summary: {
           ...createEmptySectionSaveSummary(),
           savedCount: 1,
@@ -328,6 +368,7 @@ describe("resolvePostSectionSaveOutcome", () => {
     it("savedCount > 0이면 manual_processed로 saved 결과를 반환한다", () => {
       const result = resolvePostSectionSaveOutcome({
         mode: "manual",
+        isPublished: true,
         summary: {
           ...createEmptySectionSaveSummary(),
           savedCount: 2,
@@ -346,6 +387,7 @@ describe("resolvePostSectionSaveOutcome", () => {
     it("savedCount가 0이고 skippedCount만 있으면 no_changes 결과를 반환한다", () => {
       const result = resolvePostSectionSaveOutcome({
         mode: "manual",
+        isPublished: true,
         summary: {
           ...createEmptySectionSaveSummary(),
           skippedCount: 1,
@@ -361,6 +403,7 @@ describe("resolvePostSectionSaveOutcome", () => {
     it("processedCount가 0이면 no_changes를 반환한다", () => {
       const result = resolvePostSectionSaveOutcome({
         mode: "manual",
+        isPublished: true,
         summary: createEmptySectionSaveSummary(),
         showSavedToast: true,
         showNoChangesToast: true,
@@ -373,6 +416,7 @@ describe("resolvePostSectionSaveOutcome", () => {
     it("showSavedToast가 false면 showToast도 false다", () => {
       const result = resolvePostSectionSaveOutcome({
         mode: "manual",
+        isPublished: true,
         summary: {
           ...createEmptySectionSaveSummary(),
           savedCount: 2,
@@ -389,6 +433,7 @@ describe("resolvePostSectionSaveOutcome", () => {
     it("showNoChangesToast가 false면 no_changes의 showToast도 false다", () => {
       const result = resolvePostSectionSaveOutcome({
         mode: "manual",
+        isPublished: true,
         summary: createEmptySectionSaveSummary(),
         showSavedToast: true,
         showNoChangesToast: false,
@@ -402,6 +447,7 @@ describe("resolvePostSectionSaveOutcome", () => {
     it("saved와 skipped가 섞여 있으면 shouldClearDraft가 false다", () => {
       const result = resolvePostSectionSaveOutcome({
         mode: "manual",
+        isPublished: true,
         summary: {
           ...createEmptySectionSaveSummary(),
           savedCount: 1,
@@ -411,6 +457,28 @@ describe("resolvePostSectionSaveOutcome", () => {
         showNoChangesToast: true,
       });
 
+      if (result.type === "manual_processed") {
+        expect(result.shouldClearDraft).toBe(false);
+      }
+    });
+  });
+
+  // Given: manual 모드 (미발행 미션)
+  describe("manual 모드 (isPublished=false)", () => {
+    it("savedCount > 0이어도 shouldClearDraft가 false다", () => {
+      const result = resolvePostSectionSaveOutcome({
+        mode: "manual",
+        isPublished: false,
+        summary: {
+          ...createEmptySectionSaveSummary(),
+          savedCount: 2,
+        },
+        showSavedToast: true,
+        showNoChangesToast: true,
+      });
+
+      expect(result.type).toBe("manual_processed");
+      expect(result.result).toBe("saved");
       if (result.type === "manual_processed") {
         expect(result.shouldClearDraft).toBe(false);
       }
