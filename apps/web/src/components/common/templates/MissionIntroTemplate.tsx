@@ -1,6 +1,7 @@
 "use client";
 
 import { MissionImage } from "@/app/(site)/mission/[missionId]/components/MissionImage";
+import { UserAvatar } from "@/components/common/UserAvatar";
 import { formatCompactNumber } from "@/lib/format";
 import Lock from "@public/svgs/lock.svg";
 import { Typo } from "@repo/ui/components";
@@ -65,13 +66,7 @@ export function MissionIntroTemplate({
       <div className="flex items-center justify-between px-5 py-5">
         {authorName ? (
           <div className="flex items-center gap-1">
-            {authorImageUrl && (
-              <img
-                src={authorImageUrl}
-                alt=""
-                className="size-5 rounded-full border border-zinc-200 object-cover"
-              />
-            )}
+            <UserAvatar size="small" imageUrl={authorImageUrl} />
             <Typo.Body size="medium">{authorName}</Typo.Body>
           </div>
         ) : (
