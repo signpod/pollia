@@ -23,7 +23,7 @@ function HeaderLoginDrawer() {
   );
 }
 
-const HIDDEN_HEADER_PATHS = ["/editor/create"];
+const HIDDEN_HEADER_PATHS = ["/editor"];
 
 export function Header() {
   const pathname = usePathname();

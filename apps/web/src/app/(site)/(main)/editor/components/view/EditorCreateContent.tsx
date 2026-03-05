@@ -1,87 +1,100 @@
 "use client";
 
-import { CreateCategoryStep } from "@/app/(site)/(main)/create/components/CreateCategoryStep";
 import { CreateProjectInfoStep } from "@/app/(site)/(main)/create/components/CreateProjectInfoStep";
 import {
   type CreateMissionFormData,
   createMissionFormSchema,
 } from "@/app/(site)/(main)/create/schema";
-import { Separator } from "@/components/ui/separator";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { MissionCategory } from "@prisma/client";
 import { Button, Typo } from "@repo/ui/components";
+import { useSearchParams } from "next/navigation";
+import { useMemo } from "react";
 import { FormProvider, useForm } from "react-hook-form";
+import { EditorBottomSaveSlot } from "../../missions/[missionId]/components/EditorBottomSaveSlot";
 import { useEditorMissionTab } from "../../missions/[missionId]/components/EditorMissionTabContext";
 import { useEditorCreateTransitionController } from "../controller/useEditorCreateTransitionController";
 import { EditorEmptyTabContent } from "./EditorEmptyTabContent";
 
-const CREATE_FORM_DEFAULT_VALUES: CreateMissionFormData = {
-  category: null,
+const VALID_CATEGORIES = new Set<string>(Object.values(MissionCategory));
+
+const CREATE_FORM_BASE_VALUES = {
   creationMode: "custom",
   title: "",
   description: "",
-  hasReward: false,
+  hasReward: false as const,
   reward: undefined,
   isActive: false,
   isExposed: true,
   allowGuestResponse: false,
   allowMultipleResponses: false,
   useAiCompletion: false,
-};
+} satisfies Omit<CreateMissionFormData, "category">;
 
 export function EditorCreateContent() {
   const { currentTab } = useEditorMissionTab();
+  const searchParams = useSearchParams();
+
+  const initialCategory = useMemo(() => {
+    const param = searchParams.get("category");
+    if (param && VALID_CATEGORIES.has(param)) return param as MissionCategory;
+    return null;
+  }, [searchParams]);
 
   const form = useForm<CreateMissionFormData>({
     resolver: zodResolver(createMissionFormSchema),
-    defaultValues: CREATE_FORM_DEFAULT_VALUES,
+    defaultValues: { ...CREATE_FORM_BASE_VALUES, category: initialCategory },
     mode: "onBlur",
     reValidateMode: "onChange",
   });
 
   const controller = useEditorCreateTransitionController({ form });
 
+  const submitButtonNode = useMemo(
+    () => (
+      <div className="px-5 py-3">
+        <Button
+          fullWidth
+          loading={controller.isSubmitting}
+          disabled={controller.isSubmitting}
+          onClick={controller.handleCreate}
+        >
+          생성하기
+        </Button>
+      </div>
+    ),
+    [controller.isSubmitting, controller.handleCreate],
+  );
+
   if (currentTab === "stats" || currentTab === "preview") {
-    return <EditorEmptyTabContent message="프로젝트를 생성해주세요" />;
+    return (
+      <>
+        <EditorBottomSaveSlot
+          slotKey="editor-create-submit"
+          isActive={false}
+          node={submitButtonNode}
+        />
+        <EditorEmptyTabContent message="프로젝트를 생성해주세요" />
+      </>
+    );
   }
 
   return (
     <FormProvider {...form}>
-      <div className="flex flex-col">
-        <div className="border border-zinc-200 bg-white">
-          <div className="border-b border-zinc-100 px-5 py-4">
-            <Typo.SubTitle>카테고리 선택</Typo.SubTitle>
-            <Typo.Body size="medium" className="mt-1 text-zinc-500">
-              프로젝트 카테고리를 선택합니다.
-            </Typo.Body>
-          </div>
-          <div className="px-5 py-5">
-            <CreateCategoryStep />
-          </div>
+      <EditorBottomSaveSlot
+        slotKey="editor-create-submit"
+        isActive={currentTab === "editor"}
+        node={submitButtonNode}
+      />
+      <div className="border border-zinc-200 bg-white">
+        <div className="border-b border-zinc-100 px-5 py-4">
+          <Typo.SubTitle>프로젝트 기본정보</Typo.SubTitle>
+          <Typo.Body size="medium" className="mt-1 text-zinc-500">
+            프로젝트 기본 정보를 입력합니다.
+          </Typo.Body>
         </div>
-
-        <Separator className="h-2" />
-
-        <div className="border border-zinc-200 bg-white">
-          <div className="border-b border-zinc-100 px-5 py-4">
-            <Typo.SubTitle>프로젝트 기본정보</Typo.SubTitle>
-            <Typo.Body size="medium" className="mt-1 text-zinc-500">
-              프로젝트 기본 정보를 입력합니다.
-            </Typo.Body>
-          </div>
-          <div className="px-5 py-5">
-            <CreateProjectInfoStep showRewardSettings showAiCompletionToggle />
-          </div>
-        </div>
-
-        <div className="sticky bottom-0 border-t border-zinc-200 bg-white px-5 py-4">
-          <Button
-            fullWidth
-            loading={controller.isSubmitting}
-            disabled={controller.isSubmitting}
-            onClick={controller.handleCreate}
-          >
-            생성하기
-          </Button>
+        <div className="px-5 py-5">
+          <CreateProjectInfoStep showRewardSettings showAiCompletionToggle />
         </div>
       </div>
     </FormProvider>
