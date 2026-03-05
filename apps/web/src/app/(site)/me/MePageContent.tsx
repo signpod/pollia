@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { Footer } from "../(main)/components";
-import { MeFooter, MyProjectTabs, ProfileSection, RecommendedProjects } from "./components";
+import { MeFooter, MyContentTabs, ProfileSection, RecommendedContents } from "./components";
 
 interface MePageContentProps {
   user: { name: string; email: string };
@@ -18,10 +18,10 @@ export function MePageContent({ user }: MePageContentProps) {
       <div className="flex flex-col gap-15 py-5">
         <div className="flex flex-col gap-10">
           <ProfileSection />
-          <MyProjectTabs />
+          <MyContentTabs />
         </div>
         <div className="h-1 w-full bg-zinc-100" />
-        <RecommendedProjects userName={user.name} />
+        <RecommendedContents userName={user.name} />
         <div className="h-1 w-full bg-zinc-100" />
         <MeFooter />
       </div>

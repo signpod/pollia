@@ -1,12 +1,13 @@
 "use client";
 
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import type { MyMissionResponse } from "@/types/dto/mission-response";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { useMyResponses } from "./useMyResponses";
 
 const TABS = [
-  { value: "my-content", label: "내 콘텐츠" },
+  { value: "my-content", label: `내 ${UBIQUITOUS_CONSTANTS.MISSION}` },
   { value: "participation", label: "참여" },
   { value: "liked", label: "찜" },
   { value: "rewards", label: "리워드" },
@@ -17,7 +18,7 @@ const VALID_TAB_VALUES = new Set(TABS.map(t => t.value));
 
 export type TabValue = (typeof TABS)[number]["value"];
 
-export function useMyProjectTabs() {
+export function useMyContentTabs() {
   const { data } = useMyResponses();
   const searchParams = useSearchParams();
   const initialTab = searchParams.get("tab");
@@ -57,4 +58,4 @@ export function useMyProjectTabs() {
   };
 }
 
-export type UseMyProjectTabsReturn = ReturnType<typeof useMyProjectTabs>;
+export type UseMyContentTabsReturn = ReturnType<typeof useMyContentTabs>;

@@ -3,8 +3,8 @@ import type { Meta, StoryObj } from "@storybook/nextjs";
 import { useState } from "react";
 
 const SAMPLE_CONTENT = `
-  <h2>프로젝트 소개</h2>
-  <p>이 프로젝트는 <strong>사용자 의견 수집</strong>을 목적으로 합니다.</p>
+  <h2>콘텐츠 소개</h2>
+  <p>이 콘텐츠는 <strong>사용자 의견 수집</strong>을 목적으로 합니다.</p>
   <ul>
     <li>응답 대상: 20~40대 직장인</li>
     <li>예상 소요 시간: 3분</li>
@@ -101,7 +101,7 @@ export const Readonly: Story = {
 export const EmptyWithPlaceholder: Story = {
   args: {
     content: "",
-    placeholder: "프로젝트 설명을 입력해 주세요.",
+    placeholder: "콘텐츠 설명을 입력해 주세요.",
     editable: true,
     showToolbar: true,
   },
@@ -170,7 +170,7 @@ export const States: Story = {
           content=""
           editable
           showToolbar
-          placeholder="여기에 프로젝트 설명을 작성하세요."
+          placeholder="여기에 콘텐츠 설명을 작성하세요."
           className="min-h-[180px] ring-1 ring-zinc-200"
         />
       </div>

@@ -31,10 +31,17 @@ import {
   computePublishAvailability,
 } from "../models/editorMissionPublishModel";
 import {
+  type PostSectionSaveOutcome,
+  checkPublishGuard,
+  checkSaveGuard,
+  checkUnifiedSaveGuard,
+  resolveNoChangesOutcome,
+  resolvePostSectionSaveOutcome,
+} from "./editorMissionSaveFlowModel";
+import {
   type EditorSectionKey,
   type SectionSaveSummary,
   accumulateSectionSaveResult,
-  computeManualSaveDisplayCounts,
   createEmptySectionSaveSummary,
 } from "./editorMissionSaveSummaryModel";
 
@@ -140,20 +147,6 @@ export interface UseEditorMissionControllerResult {
     onDraftSave: () => Promise<void>;
     onPublish: () => Promise<void>;
   };
-}
-
-function buildManualSaveToastMessage(params: {
-  savedCount: number;
-  skippedCount: number;
-  failedCount: number;
-}) {
-  const { savedCount, skippedCount, failedCount } = params;
-  const lines = [`저장 ${savedCount} / 스킵 ${skippedCount}`];
-  if (failedCount > 0) {
-    lines.push(`실패 ${failedCount}`);
-  }
-
-  return lines.join("\n");
 }
 
 function readUseAiCompletionFromBasicDraft(snapshot: unknown): boolean | null {
@@ -702,6 +695,81 @@ export function useEditorMissionController({
     [],
   );
 
+  const applyPostSectionSaveOutcome = useCallback(
+    async (outcome: PostSectionSaveOutcome) => {
+      switch (outcome.type) {
+        case "publish_error":
+          toast({
+            message: outcome.message,
+            icon: AlertCircle,
+            iconClassName: "text-red-500",
+            id: UNIFIED_SAVE_TOAST_ID,
+          });
+          break;
+
+        case "manual_with_failures":
+          toast({
+            message: outcome.message,
+            icon: AlertCircle,
+            iconClassName: "text-red-500",
+            id: UNIFIED_SAVE_TOAST_ID,
+          });
+          break;
+
+        case "manual_processed":
+          if (outcome.shouldClearDraft) {
+            const clearResult = await clearPersistedDraft();
+            if (!clearResult.serverDraftCleared || !clearResult.localDraftCleared) {
+              console.error("Failed to clear mission editor draft:", {
+                missionId,
+                serverDraftErrorMessage: clearResult.serverDraftErrorMessage,
+                localDraftErrorMessage: clearResult.localDraftErrorMessage,
+              });
+              toast({
+                message: "저장은 완료되었지만 임시저장을 정리하지 못했습니다.",
+                icon: AlertCircle,
+                iconClassName: "text-red-500",
+                id: UNIFIED_SAVE_TOAST_ID,
+              });
+            }
+          }
+          if (outcome.showToast) {
+            toast({ message: outcome.message, id: UNIFIED_SAVE_TOAST_ID });
+          }
+          break;
+
+        case "saved":
+          if (outcome.shouldClearDraft) {
+            const clearResult = await clearPersistedDraft();
+            if (!clearResult.serverDraftCleared || !clearResult.localDraftCleared) {
+              console.error("Failed to clear mission editor draft:", {
+                missionId,
+                serverDraftErrorMessage: clearResult.serverDraftErrorMessage,
+                localDraftErrorMessage: clearResult.localDraftErrorMessage,
+              });
+              toast({
+                message: "저장은 완료되었지만 임시저장을 정리하지 못했습니다.",
+                icon: AlertCircle,
+                iconClassName: "text-red-500",
+                id: UNIFIED_SAVE_TOAST_ID,
+              });
+            }
+          }
+          if (outcome.showToast) {
+            toast({ message: "변경사항이 저장되었습니다.", id: UNIFIED_SAVE_TOAST_ID });
+          }
+          break;
+
+        case "no_changes":
+          if (outcome.showToast) {
+            toast({ message: "저장할 변경사항이 없습니다.", id: UNIFIED_SAVE_TOAST_ID });
+          }
+          break;
+      }
+    },
+    [clearPersistedDraft, missionId],
+  );
+
   const runUnifiedSave = useCallback(
     async ({
       showSavedToast = true,
@@ -712,14 +780,21 @@ export function useEditorMissionController({
       showNoChangesToast?: boolean;
       mode?: "manual" | "publish";
     } = {}) => {
-      if (!isEditorTab || saveInFlightRef.current || isSavingAll || hasAnyBusySection) {
+      const guard = checkUnifiedSaveGuard({
+        isEditorTab,
+        saveInFlight: saveInFlightRef.current,
+        isSavingAll,
+        hasAnyBusySection,
+      });
+      if (!guard.allowed) {
         return "failed" as const;
       }
 
       const hasPendingChangesNow = hasAnyPendingChanges || hasPendingChangesFromRefs();
       if (!hasPendingChangesNow) {
         const clearResult = await clearPersistedDraft();
-        if (!clearResult.serverDraftCleared || !clearResult.localDraftCleared) {
+        const noChangesOutcome = resolveNoChangesOutcome(clearResult);
+        if (noChangesOutcome.type === "clear_failed") {
           console.error("Failed to clear mission editor draft:", {
             missionId,
             serverDraftErrorMessage: clearResult.serverDraftErrorMessage,
@@ -731,14 +806,8 @@ export function useEditorMissionController({
             iconClassName: "text-red-500",
             id: UNIFIED_SAVE_TOAST_ID,
           });
-          return "no_changes" as const;
-        }
-
-        if (showNoChangesToast) {
-          toast({
-            message: "저장할 변경사항이 없습니다.",
-            id: UNIFIED_SAVE_TOAST_ID,
-          });
+        } else if (showNoChangesToast) {
+          toast({ message: "저장할 변경사항이 없습니다.", id: UNIFIED_SAVE_TOAST_ID });
         }
         return "no_changes" as const;
       }
@@ -752,103 +821,22 @@ export function useEditorMissionController({
           showValidationUi: true,
         });
 
-        const shouldClearDraftAfterSave =
-          summary.savedCount > 0 &&
-          summary.failedCount === 0 &&
-          summary.invalidCount === 0 &&
-          summary.skippedCount === 0;
-        const clearDraftAfterSuccessfulSave = async () => {
-          if (!shouldClearDraftAfterSave) {
-            return;
-          }
+        const outcome = resolvePostSectionSaveOutcome({
+          mode,
+          summary,
+          showSavedToast,
+          showNoChangesToast,
+        });
 
-          const clearResult = await clearPersistedDraft();
-          if (!clearResult.serverDraftCleared || !clearResult.localDraftCleared) {
-            console.error("Failed to clear mission editor draft:", {
-              missionId,
-              serverDraftErrorMessage: clearResult.serverDraftErrorMessage,
-              localDraftErrorMessage: clearResult.localDraftErrorMessage,
-            });
-            toast({
-              message: "저장은 완료되었지만 임시저장을 정리하지 못했습니다.",
-              icon: AlertCircle,
-              iconClassName: "text-red-500",
-              id: UNIFIED_SAVE_TOAST_ID,
-            });
-          }
-        };
-
-        if (mode === "publish" && (summary.invalidCount > 0 || summary.failedCount > 0)) {
-          toast({
-            message: summary.firstErrorMessage ?? "저장에 실패했습니다.",
-            icon: AlertCircle,
-            iconClassName: "text-red-500",
-            id: UNIFIED_SAVE_TOAST_ID,
-          });
-          return "failed" as const;
-        }
-
-        if (mode === "manual") {
-          const { skippedCount, processedCount } = computeManualSaveDisplayCounts(summary);
-
-          if (processedCount > 0) {
-            const message = buildManualSaveToastMessage({
-              savedCount: summary.savedCount,
-              skippedCount,
-              failedCount: summary.failedCount,
-            });
-            if (summary.failedCount > 0) {
-              toast({
-                message,
-                icon: AlertCircle,
-                iconClassName: "text-red-500",
-                id: UNIFIED_SAVE_TOAST_ID,
-              });
-              if (summary.failedCount > 0) {
-                return "failed" as const;
-              }
-            }
-
-            if (summary.savedCount > 0) {
-              await clearDraftAfterSuccessfulSave();
-            }
-
-            if (showSavedToast) {
-              toast({
-                message,
-                id: UNIFIED_SAVE_TOAST_ID,
-              });
-            }
-
-            return summary.savedCount > 0 ? ("saved" as const) : ("no_changes" as const);
-          }
-        }
-
-        if (summary.savedCount > 0) {
-          await clearDraftAfterSuccessfulSave();
-
-          if (showSavedToast) {
-            toast({
-              message: "변경사항이 저장되었습니다.",
-              id: UNIFIED_SAVE_TOAST_ID,
-            });
-          }
-          return "saved" as const;
-        }
-
-        if (showNoChangesToast) {
-          toast({
-            message: "저장할 변경사항이 없습니다.",
-            id: UNIFIED_SAVE_TOAST_ID,
-          });
-        }
-        return "no_changes" as const;
+        await applyPostSectionSaveOutcome(outcome);
+        return outcome.result;
       } finally {
         saveInFlightRef.current = false;
         setIsSavingAll(false);
       }
     },
     [
+      applyPostSectionSaveOutcome,
       clearPersistedDraft,
       hasAnyBusySection,
       hasAnyPendingChanges,
@@ -888,28 +876,28 @@ export function useEditorMissionController({
   ]);
 
   const handlePublish = useCallback(async () => {
-    if (
-      !isEditorTab ||
-      isPublished ||
-      publishInFlightRef.current ||
-      isPublishing ||
-      isSavingAll ||
-      hasAnyBusySection
-    ) {
-      return;
-    }
+    const guard = checkPublishGuard({
+      isEditorTab,
+      isPublished,
+      publishInFlight: publishInFlightRef.current,
+      isPublishing,
+      isSavingAll,
+      hasAnyBusySection,
+      canPublish: publishState.canPublish,
+      isValidationDataReady: publishState.isValidationDataReady,
+      issueCount: publishState.issues.length,
+      blockingMessage: publishState.blockingMessage,
+    });
 
-    if (!publishState.canPublish) {
-      const isCheckingPublishState =
-        !publishState.isValidationDataReady || publishState.issues.length === 0;
-      toast({
-        message: isCheckingPublishState
-          ? "발행 가능 상태를 확인 중입니다. 잠시 후 다시 시도해주세요."
-          : (publishState.blockingMessage ?? "발행 가능한 상태인지 확인할 수 없습니다."),
-        icon: AlertCircle,
-        iconClassName: "text-red-500",
-        id: PUBLISH_TOAST_ID,
-      });
+    if (!guard.allowed) {
+      if (!guard.silent) {
+        toast({
+          message: guard.message,
+          icon: AlertCircle,
+          iconClassName: "text-red-500",
+          id: PUBLISH_TOAST_ID,
+        });
+      }
       return;
     }
 
@@ -976,13 +964,15 @@ export function useEditorMissionController({
   ]);
 
   const handleSave = useCallback(async () => {
-    if (!canSave) {
-      const isCheckingSaveState =
-        !publishState.isValidationDataReady || publishState.issues.length === 0;
+    const guard = checkSaveGuard({
+      isValidationDataReady: publishState.isValidationDataReady,
+      issueCount: publishState.issues.length,
+      blockingMessage: publishState.blockingMessage,
+    });
+
+    if (!guard.allowed) {
       toast({
-        message: isCheckingSaveState
-          ? "저장 가능 상태를 확인 중입니다. 잠시 후 다시 시도해주세요."
-          : (publishState.blockingMessage ?? "저장 가능한 상태인지 확인할 수 없습니다."),
+        message: guard.message,
         icon: AlertCircle,
         iconClassName: "text-red-500",
         id: UNIFIED_SAVE_TOAST_ID,
@@ -992,7 +982,6 @@ export function useEditorMissionController({
 
     await runUnifiedSave({ mode: "publish" });
   }, [
-    canSave,
     publishState.blockingMessage,
     publishState.isValidationDataReady,
     publishState.issues.length,

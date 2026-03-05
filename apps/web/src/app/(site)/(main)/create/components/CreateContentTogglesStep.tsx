@@ -5,15 +5,15 @@ import { Controller, useFormContext } from "react-hook-form";
 import type { CreateMissionFormData } from "../schema";
 import { ToggleSettingRow } from "./ToggleSettingRow";
 
-interface CreateProjectTogglesStepProps {
+interface CreateContentTogglesStepProps {
   showAiCompletionToggle?: boolean;
   useMemberOnlyMode?: boolean;
 }
 
-export function CreateProjectTogglesStep({
+export function CreateContentTogglesStep({
   showAiCompletionToggle = false,
   useMemberOnlyMode = false,
-}: CreateProjectTogglesStepProps) {
+}: CreateContentTogglesStepProps) {
   const { control } = useFormContext<CreateMissionFormData>();
 
   return (

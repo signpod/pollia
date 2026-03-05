@@ -31,11 +31,11 @@ import { EmptyState } from "@repo/ui/components";
 
 <EmptyState
   icon={<PollPollE className="size-30 text-zinc-200" />}
-  title="참여중인 프로젝트가 없어요"
+  title="참여중인 콘텐츠가 없어요"
   description={
     <>
       <p>아래 버튼을 눌러</p>
-      <p>새로운 프로젝트를 구경해보세요</p>
+      <p>새로운 콘텐츠를 구경해보세요</p>
     </>
   }
   action={<Button>구경하러 가기</Button>}
@@ -64,11 +64,11 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     icon: <Inbox className="size-30 text-zinc-300" />,
-    title: "참여중인 프로젝트가 없어요",
+    title: "참여중인 콘텐츠가 없어요",
     description: (
       <>
         <p>아래 버튼을 눌러</p>
-        <p>새로운 프로젝트를 구경해보세요 🥳</p>
+        <p>새로운 콘텐츠를 구경해보세요 🥳</p>
       </>
     ),
     action: (
@@ -91,11 +91,11 @@ export const Variants: Story = {
         </h3>
         <EmptyState
           icon={<Inbox className="size-30 text-zinc-300" />}
-          title="참여중인 프로젝트가 없어요"
+          title="참여중인 콘텐츠가 없어요"
           description={
             <>
               <p>아래 버튼을 눌러</p>
-              <p>새로운 프로젝트를 구경해보세요 🥳</p>
+              <p>새로운 콘텐츠를 구경해보세요 🥳</p>
             </>
           }
           action={
@@ -118,7 +118,7 @@ export const Variants: Story = {
           description={
             <>
               <p>아래 버튼을 눌러</p>
-              <p>새로운 프로젝트를 구경해보세요 🥳</p>
+              <p>새로운 콘텐츠를 구경해보세요 🥳</p>
             </>
           }
         />

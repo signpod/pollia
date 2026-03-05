@@ -1,10 +1,11 @@
 "use client";
 
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { MissionCategory } from "@prisma/client";
 import { Tab, Typo } from "@repo/ui/components";
 import { useMemo, useState } from "react";
-import { MeProjectCard } from "../components/MeProjectCard";
+import { MeContentCard } from "../components/MeContentCard";
 import { useMyResponses } from "../hooks/useMyResponses";
 
 type CategoryFilter = "all" | MissionCategory;
@@ -53,7 +54,7 @@ export function CompletedContent() {
         {filteredResponses.length > 0 ? (
           <div className="grid grid-cols-2 gap-x-4 gap-y-10">
             {filteredResponses.map(response => (
-              <MeProjectCard
+              <MeContentCard
                 key={response.id}
                 response={response}
                 variant="completed"
@@ -64,7 +65,7 @@ export function CompletedContent() {
         ) : (
           <div className="flex items-center justify-center py-20">
             <Typo.Body size="medium" className="text-zinc-400">
-              완료한 프로젝트가 없어요
+              완료한 {UBIQUITOUS_CONSTANTS.MISSION}가 없어요
             </Typo.Body>
           </div>
         )}

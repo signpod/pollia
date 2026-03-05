@@ -4,6 +4,7 @@ import { getCompletionsByMissionId } from "@/actions/mission-completion";
 import { Separator } from "@/components/ui/separator";
 import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
 import { ROUTES } from "@/constants/routes";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useReadActionsDetail } from "@/hooks/action";
 import { useReadMission } from "@/hooks/mission";
 import type { GetMissionResponse } from "@/types/dto";
@@ -16,11 +17,11 @@ import {
   type CompletionSectionDraftSnapshot,
   CompletionSettingsCard,
 } from "./CompletionSettingsCard";
+import { ContentBasicInfoCard } from "./ContentBasicInfoCard";
 import { EditorBottomSaveSlot } from "./EditorBottomSaveSlot";
 import { EditorMissionDraftProvider } from "./EditorMissionDraftContext";
 import { useEditorMissionTab } from "./EditorMissionTabContext";
 import { MissionStatsDashboard } from "./MissionStatsDashboard";
-import { ProjectBasicInfoCard } from "./ProjectBasicInfoCard";
 import { RewardSettingsCard, type RewardSnapshot } from "./RewardSettingsCard";
 import { useEditorMissionController } from "./controllers/useEditorMissionController";
 import { EditorDesktopAbsolute } from "./desktop/EditorDesktopAbsolute";
@@ -55,7 +56,7 @@ function MissionIntroPreview({ missionId }: { missionId: string }) {
         </div>
       )}
       <iframe
-        title="프로젝트 인트로 미리보기"
+        title={`${UBIQUITOUS_CONSTANTS.MISSION} 인트로 미리보기`}
         src={previewUrl}
         className="h-full w-full border-0"
         onLoad={() => setIsLoading(false)}
@@ -265,11 +266,11 @@ export function EditorMissionTabContent({
       />
       <EditorMissionDraftProvider>
         <EditorSectionCard
-          title="프로젝트 기본정보"
-          description="프로젝트 기본 정보를 입력합니다."
+          title={`${UBIQUITOUS_CONSTANTS.MISSION} 기본정보`}
+          description={`${UBIQUITOUS_CONSTANTS.MISSION} 기본 정보를 입력합니다.`}
           validationIssueCount={basicValidationCount + rewardValidationCount}
         >
-          <ProjectBasicInfoCard
+          <ContentBasicInfoCard
             ref={refs.basicInfoRef}
             mission={mission}
             onSaveStateChange={handleBasicStateChange}
