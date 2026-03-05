@@ -23,6 +23,8 @@ import { useClientActionSubmit } from "./hooks/useClientActionSubmit";
 
 const SCROLL_OFFSET = 30;
 
+let navigationDirection: "forward" | "backward" = "forward";
+
 interface ActionClientWrapperProps {
   dehydratedState: DehydratedState;
 }
@@ -172,6 +174,8 @@ function ActionStepWrapper({
   }, []);
 
   const handlePrevious = useCallback(() => {
+    navigationDirection = "backward";
+
     if (isFirstStep) {
       navigateToMission();
       return;
@@ -205,7 +209,10 @@ function ActionStepWrapper({
       totalActionCount: progressInfo.totalCount,
       isFirstAction: isFirstStep,
       onPrevious: handlePrevious,
-      onNext: submit,
+      onNext: () => {
+        navigationDirection = "forward";
+        return submit();
+      },
       onPrefetchNext: () => {}, // 클라이언트 네비게이션이므로 prefetch 불필요
       nextButtonText: isActualLastStep ? "제출하기" : "다음",
       isLoading: isSubmitting,
@@ -235,9 +242,14 @@ function ActionStepWrapper({
     return <div>ContentComponent not found</div>;
   }
 
+  const animationName =
+    navigationDirection === "forward" ? "slide-in-from-right" : "slide-in-from-left";
+
   return (
     <ActionProvider value={contextValue}>
-      <ContentComponent key={currentActionData.id} actionData={currentActionData} />
+      <div key={currentActionData.id} style={{ animation: `${animationName} 0.25s ease-out` }}>
+        <ContentComponent actionData={currentActionData} />
+      </div>
     </ActionProvider>
   );
 }
