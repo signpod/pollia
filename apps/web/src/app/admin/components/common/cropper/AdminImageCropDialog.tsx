@@ -134,6 +134,7 @@ export function AdminImageCropDialog({
           </Button>
           <Button
             type="button"
+            className="text-white"
             disabled={isSubmitting || !imageSrc || !croppedAreaPixels}
             onClick={handleConfirm}
           >
