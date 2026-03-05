@@ -228,7 +228,7 @@ export function SearchClient() {
                 ))}
               </div>
             ) : (
-              <Typo.Body size="small" className="text-sub">
+              <Typo.Body size="small" className="text-disabled">
                 최근 검색어가 없어요
               </Typo.Body>
             )}
@@ -244,9 +244,7 @@ export function SearchClient() {
                   onClick={() => handleChipSearch(term)}
                   className="rounded-full border border-zinc-200 px-3 py-2 transition-colors hover:bg-zinc-50"
                 >
-                  <Typo.Body size="small" className="font-bold">
-                    {term}
-                  </Typo.Body>
+                  <Typo.ButtonText size="medium">{term}</Typo.ButtonText>
                 </button>
               ))}
             </div>
@@ -256,7 +254,8 @@ export function SearchClient() {
             <div className="flex items-center justify-between">
               <Typo.SubTitle size="large">인기 프로젝트</Typo.SubTitle>
               <Typo.Body size="small" className="font-bold text-zinc-400">
-                {new Date().toLocaleDateString("ko-KR", { month: "2-digit", day: "2-digit" })} 기준
+                {`${String(new Date().getMonth() + 1).padStart(2, "0")}.${String(new Date().getDate()).padStart(2, "0")}`}{" "}
+                기준
               </Typo.Body>
             </div>
             <ol className="flex flex-col gap-4">

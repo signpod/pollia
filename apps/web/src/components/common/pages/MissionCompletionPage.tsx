@@ -7,7 +7,7 @@ import KakaoIcon from "@public/svgs/kakao-icon.svg";
 import { ButtonV2, FixedBottomLayout, Typo } from "@repo/ui/components";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { MissionCompletionTemplate } from "../templates/MissionCompletionTemplate";
@@ -80,12 +80,12 @@ function RewardBottomSheet({
               <div className="flex gap-2 px-5 py-3">
                 <ButtonV2 variant="secondary" className="flex-1" onClick={onGoHome}>
                   <div className="flex items-center justify-center w-full">
-                    <Typo.ButtonText size="large">홈으로 가기</Typo.ButtonText>
+                    <Typo.ButtonText size="large">닫기</Typo.ButtonText>
                   </div>
                 </ButtonV2>
                 <ButtonV2 variant="primary" className="flex-1" onClick={onGoRewards}>
                   <div className="flex items-center justify-center w-full">
-                    <Typo.ButtonText size="large">내 리워드 보기</Typo.ButtonText>
+                    <Typo.ButtonText size="large">첫 화면으로</Typo.ButtonText>
                   </div>
                 </ButtonV2>
               </div>
@@ -100,6 +100,7 @@ function RewardBottomSheet({
 
 function CompletionBottomButton({ hasReward }: { hasReward: boolean }) {
   const { isLoggedIn } = useAuth();
+  const { missionId } = useParams<{ missionId: string }>();
   const pathname = usePathname();
   const router = useRouter();
   const { handleKakaoLogin } = useKakaoLogin({ redirectPath: pathname });
@@ -107,7 +108,7 @@ function CompletionBottomButton({ hasReward }: { hasReward: boolean }) {
 
   if (!isLoggedIn) {
     return (
-      <FixedBottomLayout hasGradientBlur>
+      <FixedBottomLayout hasGradientBlur hasBottomGap={false}>
         <FixedBottomLayout.Content className="px-5 py-3">
           <ButtonV2
             variant="primary"
@@ -129,7 +130,7 @@ function CompletionBottomButton({ hasReward }: { hasReward: boolean }) {
   if (hasReward) {
     return (
       <>
-        <FixedBottomLayout hasGradientBlur>
+        <FixedBottomLayout hasGradientBlur hasBottomGap={false}>
           <FixedBottomLayout.Content className="px-5 py-3">
             <ButtonV2 variant="primary" className="w-full" onClick={() => setIsSheetOpen(true)}>
               <div className="flex items-center justify-center w-full">
@@ -142,15 +143,15 @@ function CompletionBottomButton({ hasReward }: { hasReward: boolean }) {
         <RewardBottomSheet
           isOpen={isSheetOpen}
           onClose={() => setIsSheetOpen(false)}
-          onGoHome={() => router.push(ROUTES.HOME)}
-          onGoRewards={() => router.push(ROUTES.ME_REWARDS_TAB)}
+          onGoHome={() => setIsSheetOpen(false)}
+          onGoRewards={() => router.push(ROUTES.MISSION(missionId))}
         />
       </>
     );
   }
 
   return (
-    <FixedBottomLayout hasGradientBlur>
+    <FixedBottomLayout hasGradientBlur hasBottomGap={false}>
       <FixedBottomLayout.Content className="px-5 py-3">
         <div className="flex gap-2 w-full">
           <ButtonV2 variant="secondary" className="flex-1" onClick={() => router.push(ROUTES.HOME)}>
@@ -212,7 +213,7 @@ export function MissionCompletionPage({
   );
 
   return (
-    <div className="relative flex w-full flex-col items-center h-auto">
+    <div className="relative flex w-full flex-col items-center">
       <MissionCompletionTemplate
         header={header}
         imageUrl={imageUrl}

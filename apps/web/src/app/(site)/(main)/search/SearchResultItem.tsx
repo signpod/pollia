@@ -53,7 +53,7 @@ export function SearchResultItem({ item, query = "" }: SearchResultItemProps) {
   const categoryLabel = MISSION_CATEGORY_LABELS[item.category] ?? item.category;
 
   return (
-    <Link href={`/mission/${item.id}`} className="flex items-start gap-2">
+    <Link href={`/mission/${item.id}`} className="flex items-start gap-3">
       <div className="relative size-[72px] shrink-0 overflow-hidden rounded-md border border-default">
         <Image
           src={showFallback ? thumbnailFallback : item.imageUrl}
