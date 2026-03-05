@@ -14,11 +14,16 @@
         "CRON_SECRET",
         "ROLLBAR_SERVER_TOKEN",
         "KAKAO_REST_API_KEY",
+        "SUPABASE_SERVICE_SECRET_KEY",
         "NEXT_PUBLIC_SUPABASE_URL",
         "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
         "NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN",
         "NEXT_PUBLIC_KAKAO_JS_KEY",
-        "NEXT_PUBLIC_PRIVACY_POLICY_URL"
+        "NEXT_PUBLIC_PRIVACY_POLICY_URL",
+        "ALGOLIA_APP_ID",
+        "ALGOLIA_WRITE_API_KEY",
+        "ALGOLIA_SEARCH_API_KEY",
+        "ALGOLIA_INDEX_NAME"
       ]
     },
     "build:storybook": {
@@ -43,21 +48,7 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true,
-      "env": [
-        "DATABASE_URL",
-        "DIRECT_URL",
-        "ENABLE_EXPERIMENTAL_COREPACK",
-        "NEXT_PUBLIC_SUPABASE_URL",
-        "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY",
-        "NODE_ENV",
-        "CRON_SECRET",
-        "ROLLBAR_SERVER_TOKEN",
-        "NEXT_PUBLIC_ROLLBAR_CLIENT_TOKEN",
-        "NEXT_PUBLIC_KAKAO_JS_KEY",
-        "KAKAO_REST_API_KEY",
-        "NEXT_PUBLIC_PRIVACY_POLICY_URL"
-      ]
+      "persistent": true
     }
   }
 }

@@ -1,6 +1,7 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { eventService } from "@/server/services/event";
 import type { SortOrderType } from "@/types/common/sort";
 import type {
@@ -19,7 +20,7 @@ export async function getUserEvents(
   request?: GetUserEventsRequest,
 ): Promise<GetUserEventsResponse & { nextCursor?: string }> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const limit = request?.limit ?? 10;
     const options = request ? { ...request, limit: limit + 1 } : { limit: limit + 1 };
 
@@ -37,7 +38,7 @@ export async function getUserEvents(
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error("이벤트 목록을 불러올 수 없습니다.");
+    const serverError = new Error(`${UBIQUITOUS_CONSTANTS.EVENT} 목록을 불러올 수 없습니다.`);
     serverError.cause = 500;
     throw serverError;
   }
@@ -52,7 +53,7 @@ export async function getEvent(eventId: string): Promise<GetEventResponse> {
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error("이벤트를 불러올 수 없습니다.");
+    const serverError = new Error(`${UBIQUITOUS_CONSTANTS.EVENT}를 불러올 수 없습니다.`);
     serverError.cause = 500;
     throw serverError;
   }
@@ -67,7 +68,9 @@ export async function getEventWithMissions(eventId: string): Promise<GetEventWit
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error("이벤트와 미션 목록을 불러올 수 없습니다.");
+    const serverError = new Error(
+      `${UBIQUITOUS_CONSTANTS.EVENT}와 ${UBIQUITOUS_CONSTANTS.MISSION} 목록을 불러올 수 없습니다.`,
+    );
     serverError.cause = 500;
     throw serverError;
   }

@@ -33,11 +33,13 @@ export function ActionDetailCard({ action, onEdit, onDuplicate, onDelete }: Acti
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
               <Badge variant="outline" className="shrink-0">
                 액션 {getDisplayOrder(action.order)}
               </Badge>
-              <div className={`flex items-center gap-1.5 px-2 py-1 rounded-md ${typeInfo.bgColor}`}>
+              <div
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-md shrink-0 ${typeInfo.bgColor}`}
+              >
                 <TypeIcon className={`h-3.5 w-3.5 ${typeInfo.color}`} />
                 <span className={`text-xs font-medium ${typeInfo.color}`}>{typeInfo.label}</span>
               </div>
@@ -112,7 +114,7 @@ export function ActionDetailCard({ action, onEdit, onDuplicate, onDelete }: Acti
               <h4 className="text-sm font-medium text-muted-foreground mb-3">
                 옵션 목록 ({action.options.length}개)
               </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-5 gap-3">
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] gap-3">
                 {action.options
                   .sort((a, b) => a.order - b.order)
                   .map(option => (
@@ -129,7 +131,7 @@ export function ActionDetailCard({ action, onEdit, onDuplicate, onDelete }: Acti
                             {option.title}
                           </h5>
                           {option.description && (
-                            <p className="text-xs text-muted-foreground wrap-break-words">
+                            <p className="text-xs text-muted-foreground wrap-break-word">
                               {option.description}
                             </p>
                           )}

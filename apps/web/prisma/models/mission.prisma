@@ -1,25 +1,32 @@
 model Mission {
-  id               String          @id @default(cuid())
-  title            String
-  description      String?
-  imageUrl         String?         @map("image_url")
-  brandLogoUrl     String?         @map("brand_logo_url")
-  estimatedMinutes Int?            @map("estimated_minutes")
-  deadline         DateTime?
-  startDate        DateTime?       @map("start_date")
-  isActive         Boolean         @default(true) @map("is_active")
-  maxParticipants  Int?            @map("max_participants")
-  creatorId        String          @map("creator_id")
-  rewardId         String?         @map("reward_id")
-  eventId          String?         @map("event_id")
-  createdAt        DateTime        @default(now()) @map("created_at")
-  updatedAt        DateTime        @updatedAt @map("updated_at")
-  target           String?
-  type             MissionType     @default(GENERAL)
-  category         MissionCategory @default(EVENT)
-  password         String?
-  likesCount       Int             @default(0) @map("likes_count")
-  entryActionId    String?         @map("entry_action_id")
+  id                     String          @id @default(cuid())
+  title                  String
+  choseong               String          @default("")
+  description            String?
+  imageUrl               String?         @map("image_url")
+  brandLogoUrl           String?         @map("brand_logo_url")
+  estimatedMinutes       Int?            @map("estimated_minutes")
+  deadline               DateTime?
+  startDate              DateTime?       @map("start_date")
+  isActive               Boolean         @default(false) @map("is_active")
+  allowGuestResponse     Boolean         @default(false) @map("allow_guest_response")
+  allowMultipleResponses Boolean         @default(false) @map("allow_multiple_responses")
+  maxParticipants        Int?            @map("max_participants")
+  creatorId              String          @map("creator_id")
+  rewardId               String?         @map("reward_id")
+  eventId                String?         @map("event_id")
+  createdAt              DateTime        @default(now()) @map("created_at")
+  updatedAt              DateTime        @updatedAt @map("updated_at")
+  target                 String?
+  type                   MissionType     @default(GENERAL)
+  category               MissionCategory @default(EVENT)
+  password               String?
+  likesCount             Int             @default(0) @map("likes_count")
+  useAiCompletion        Boolean         @default(false) @map("use_ai_completion")
+  aiStatisticsReport     String?         @map("ai_statistics_report")
+  viewCount              Int             @default(0) @map("view_count")
+  entryActionId          String?         @map("entry_action_id")
+  editorDraft            Json?           @map("editor_draft")
 
   questions   Action[]
   responses   MissionResponse[]
@@ -36,8 +43,10 @@ model Mission {
   brandLogoFileUploadId String?     @map("brand_logo_file_upload_id")
   brandLogoFileUpload   FileUpload? @relation("MissionBrandLogo", fields: [brandLogoFileUploadId], references: [id])
 
-  trackingActionEntries   TrackingActionEntry[]
-  trackingActionResponses TrackingActionResponse[]
+  trackingActionEntries     TrackingActionEntry[]
+  trackingActionResponses   TrackingActionResponse[]
+  completionStats           MissionCompletionStat[]
+  completionInferenceCaches MissionCompletionInferenceCache[]
 
   @@index([creatorId])
   @@index([isActive])

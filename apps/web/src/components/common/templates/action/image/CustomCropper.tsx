@@ -2,11 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+export type CropShape = "square" | "circle";
+
 interface CustomCropperProps {
   imageSrc: string;
   crop: { x: number; y: number };
   zoom: number;
   rotation: number;
+  cropShape?: CropShape;
   onCropChange: (crop: { x: number; y: number }) => void;
 }
 
@@ -18,6 +21,7 @@ export function CustomCropper({
   crop,
   zoom,
   rotation,
+  cropShape = "square",
   onCropChange,
 }: CustomCropperProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -226,7 +230,7 @@ export function CustomCropper({
           />
         )}
         <div
-          className="absolute inset-0 shadow-[0_0_0_9999px_rgba(0,0,0,0.5)] pointer-events-none"
+          className={`absolute inset-0 shadow-[0_0_0_9999px_rgba(0,0,0,0.5)] pointer-events-none${cropShape === "circle" ? " rounded-full" : ""}`}
           style={{
             width: `${CROP_SIZE}px`,
             height: `${CROP_SIZE}px`,

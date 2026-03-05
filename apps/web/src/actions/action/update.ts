@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { logger } from "@/lib/logger";
 import { actionService } from "@/server/services/action";
 import { missionService } from "@/server/services/mission";
@@ -9,7 +9,7 @@ import { revalidatePath } from "next/cache";
 
 export async function updateAction(actionId: string, request: UpdateActionRequest) {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const updatedAction = await actionService.updateAction(actionId, request, user.id);
 
     if (updatedAction.missionId) {
@@ -35,7 +35,7 @@ export async function updateAction(actionId: string, request: UpdateActionReques
 
 export async function disconnectActionWithCleanup(actionId: string, missionId: string) {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
 
     await actionService.disconnectActionWithCleanup(actionId, missionId, user.id);
 
@@ -65,7 +65,7 @@ export async function disconnectBranchOptionWithCleanup(
   missionId: string,
 ) {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
 
     await actionService.disconnectBranchOptionWithCleanup(actionId, optionId, missionId, user.id);
 
@@ -97,7 +97,7 @@ export async function connectAction(
   missionId: string,
 ) {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
 
     await actionService.connectAction(sourceActionId, targetId, isCompletion, missionId, user.id);
 
@@ -131,7 +131,7 @@ export async function connectBranchOption(
   missionId: string,
 ) {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
 
     await actionService.connectBranchOption(
       actionId,
@@ -167,7 +167,7 @@ export async function connectBranchOption(
 
 export async function disconnectStartWithCleanup(targetActionId: string, missionId: string) {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
 
     await actionService.disconnectActionWithCleanup(targetActionId, missionId, user.id);
 

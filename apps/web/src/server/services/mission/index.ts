@@ -1,9 +1,20 @@
+import prisma from "@/database/utils/prisma/client";
 import { decrypt, encrypt } from "@/lib/crypto";
 import { missionInputSchema, missionPasswordSchema, missionUpdateSchema } from "@/schemas/mission";
 import { actionRepository } from "@/server/repositories/action/actionRepository";
 import { missionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
-import type { Mission } from "@prisma/client";
+import {
+  type SearchSyncOutboxRepository,
+  searchSyncOutboxRepository,
+} from "@/server/repositories/search-sync-outbox";
+import { toChoseong } from "@/server/search";
+import {
+  type EditorMissionDraftPayload,
+  toServerEditorDraftPayload,
+} from "@/types/mission-editor-draft";
+import { type Mission, SearchSyncAction, SearchSyncEntityType } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import type {
   CreateMissionInput,
   GetUserMissionsOptions,
@@ -17,6 +28,7 @@ export class MissionService {
     private repo = missionRepository,
     private responseRepo = missionResponseRepository,
     private actionRepo = actionRepository,
+    private outboxRepo: SearchSyncOutboxRepository = searchSyncOutboxRepository,
   ) {}
 
   async getMission(missionId: string) {
@@ -133,13 +145,28 @@ export class MissionService {
     }
 
     const { actionIds, ...validatedMissionData } = result.data;
-    const mission = await this.repo.createWithActions(
-      {
-        ...validatedMissionData,
-        creatorId: userId,
-      },
-      actionIds,
-    );
+    const mission = await prisma.$transaction(async tx => {
+      const createdMission = await this.repo.createWithActions(
+        {
+          ...validatedMissionData,
+          isActive: validatedMissionData.isActive ?? false,
+          choseong: toChoseong(validatedMissionData.title),
+          creatorId: userId,
+        },
+        actionIds,
+        tx,
+      );
+      await this.outboxRepo.create(
+        {
+          entityType: SearchSyncEntityType.MISSION,
+          entityId: createdMission.id,
+          action: SearchSyncAction.CREATE,
+        },
+        tx,
+      );
+
+      return createdMission;
+    });
 
     return mission;
   }
@@ -160,8 +187,50 @@ export class MissionService {
       throw error;
     }
 
-    const updatedMission = await this.repo.update(missionId, result.data, userId);
+    const updateData = result.data.title
+      ? { ...result.data, choseong: toChoseong(result.data.title) }
+      : result.data;
+
+    const updatedMission = await prisma.$transaction(async tx => {
+      const missionForUpdate = await this.repo.update(missionId, updateData, userId, tx);
+      await this.outboxRepo.create(
+        {
+          entityType: SearchSyncEntityType.MISSION,
+          entityId: missionForUpdate.id,
+          action: SearchSyncAction.UPDATE,
+        },
+        tx,
+      );
+      return missionForUpdate;
+    });
+
     return updatedMission;
+  }
+
+  async saveEditorDraft(
+    missionId: string,
+    payload: EditorMissionDraftPayload | null,
+    userId: string,
+  ) {
+    const mission = await this.getMission(missionId);
+
+    if (mission.creatorId !== userId) {
+      const error = new Error("수정 권한이 없습니다.");
+      error.cause = 403;
+      throw error;
+    }
+
+    if (payload === null) {
+      return this.repo.update(missionId, {
+        editorDraft: Prisma.DbNull,
+      });
+    }
+
+    const normalizedPayload = toServerEditorDraftPayload(payload);
+
+    return this.repo.update(missionId, {
+      editorDraft: normalizedPayload as Prisma.InputJsonValue,
+    } as Prisma.MissionUncheckedUpdateInput);
   }
 
   async deleteMission(missionId: string, userId: string): Promise<void> {
@@ -173,7 +242,17 @@ export class MissionService {
       throw error;
     }
 
-    await this.repo.delete(missionId);
+    await prisma.$transaction(async tx => {
+      await this.repo.delete(missionId, tx);
+      await this.outboxRepo.create(
+        {
+          entityType: SearchSyncEntityType.MISSION,
+          entityId: mission.id,
+          action: SearchSyncAction.DELETE,
+        },
+        tx,
+      );
+    });
   }
 
   async duplicateMission(missionId: string, userId: string): Promise<MissionDuplicateResult> {
@@ -187,39 +266,55 @@ export class MissionService {
 
     const originalActions = await this.actionRepo.findDetailsByMissionId(missionId);
 
-    const duplicated = await this.repo.duplicateMission(
-      {
-        title: `${originalMission.title} - 복사본`,
-        description: originalMission.description,
-        target: originalMission.target,
-        imageUrl: originalMission.imageUrl,
-        brandLogoUrl: originalMission.brandLogoUrl,
-        deadline: originalMission.deadline,
-        estimatedMinutes: originalMission.estimatedMinutes,
-        isActive: false,
-        type: originalMission.type,
-        creatorId: userId,
-        entryActionId: null,
-      },
-      originalActions.map(action => ({
-        title: action.title,
-        description: action.description,
-        imageUrl: action.imageUrl,
-        type: action.type,
-        order: action.order,
-        maxSelections: action.maxSelections,
-        nextActionId: null,
-        nextCompletionId: null,
-        options: action.options.map(opt => ({
-          title: opt.title,
-          description: opt.description,
-          imageUrl: opt.imageUrl,
-          order: opt.order,
+    const duplicateTitle = `${originalMission.title} - 복사본`;
+
+    const duplicated = await prisma.$transaction(async tx => {
+      const duplicatedMission = await this.repo.duplicateMission(
+        {
+          title: duplicateTitle,
+          choseong: toChoseong(duplicateTitle),
+          description: originalMission.description,
+          target: originalMission.target,
+          imageUrl: originalMission.imageUrl,
+          brandLogoUrl: originalMission.brandLogoUrl,
+          deadline: originalMission.deadline,
+          estimatedMinutes: originalMission.estimatedMinutes,
+          isActive: false,
+          type: originalMission.type,
+          creatorId: userId,
+          entryActionId: null,
+        },
+        originalActions.map(action => ({
+          title: action.title,
+          description: action.description,
+          imageUrl: action.imageUrl,
+          type: action.type,
+          order: action.order,
+          maxSelections: action.maxSelections,
           nextActionId: null,
           nextCompletionId: null,
+          options: action.options.map(opt => ({
+            title: opt.title,
+            description: opt.description,
+            imageUrl: opt.imageUrl,
+            order: opt.order,
+            nextActionId: null,
+            nextCompletionId: null,
+          })),
         })),
-      })),
-    );
+        tx,
+      );
+      await this.outboxRepo.create(
+        {
+          entityType: SearchSyncEntityType.MISSION,
+          entityId: duplicatedMission.id,
+          action: SearchSyncAction.DUPLICATE,
+        },
+        tx,
+      );
+
+      return duplicatedMission;
+    });
 
     return {
       ...duplicated,

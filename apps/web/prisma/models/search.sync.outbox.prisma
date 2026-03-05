@@ -1,0 +1,40 @@
+model SearchSyncOutbox {
+  id String @id @default(cuid())
+
+  entityType SearchSyncEntityType @map("entity_type")
+  entityId   String               @map("entity_id")
+  action     SearchSyncAction
+  payload    Json?
+
+  status       SearchSyncStatus @default(PENDING)
+  retryCount   Int              @default(0) @map("retry_count")
+  nextRetryAt  DateTime?        @map("next_retry_at")
+  processedAt  DateTime?        @map("processed_at")
+  errorMessage String?          @map("error_message")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status, nextRetryAt])
+  @@index([entityType, entityId, createdAt])
+  @@index([createdAt])
+  @@map("search_sync_outbox")
+}
+
+enum SearchSyncEntityType {
+  MISSION
+}
+
+enum SearchSyncAction {
+  CREATE
+  UPDATE
+  DELETE
+  DUPLICATE
+}
+
+enum SearchSyncStatus {
+  PENDING
+  PROCESSING
+  DONE
+  FAILED
+}

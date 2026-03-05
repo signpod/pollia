@@ -26,6 +26,7 @@ import {
   useRemoveMissionPassword,
   useSetMissionPassword,
 } from "@/app/admin/hooks/mission";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { Check, CheckCircle2, Copy, Dices, Eye, EyeOff, Lock, Trash2, XCircle } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
@@ -103,7 +104,7 @@ export function PasswordManagement({ missionId }: PasswordManagementProps) {
   if (!mission) {
     return (
       <div className="p-8 border border-dashed rounded-lg text-center text-muted-foreground">
-        미션 정보를 불러올 수 없습니다.
+        {UBIQUITOUS_CONSTANTS.MISSION} 정보를 불러올 수 없습니다.
       </div>
     );
   }
@@ -180,7 +181,7 @@ export function PasswordManagement({ missionId }: PasswordManagementProps) {
                     <div>
                       <div className="font-semibold">비밀번호 설정됨</div>
                       <div className="text-sm text-muted-foreground">
-                        이 미션은 비밀번호로 보호되고 있습니다
+                        이 {UBIQUITOUS_CONSTANTS.MISSION}은 비밀번호로 보호되고 있습니다
                       </div>
                     </div>
                   </>
@@ -192,7 +193,7 @@ export function PasswordManagement({ missionId }: PasswordManagementProps) {
                     <div>
                       <div className="font-semibold text-muted-foreground">비밀번호 미설정</div>
                       <div className="text-sm text-muted-foreground">
-                        누구나 이 미션에 접근할 수 있습니다
+                        누구나 이 {UBIQUITOUS_CONSTANTS.MISSION}에 접근할 수 있습니다
                       </div>
                     </div>
                   </>
@@ -278,8 +279,8 @@ export function PasswordManagement({ missionId }: PasswordManagementProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>비밀번호를 삭제하시겠습니까?</AlertDialogTitle>
             <AlertDialogDescription>
-              이 작업은 되돌릴 수 없습니다. 비밀번호가 삭제되면 누구나 이 미션에 접근할 수 있게
-              됩니다.
+              이 작업은 되돌릴 수 없습니다. 비밀번호가 삭제되면 누구나 이{" "}
+              {UBIQUITOUS_CONSTANTS.MISSION}에 접근할 수 있게 됩니다.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

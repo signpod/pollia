@@ -1,0 +1,216 @@
+"use client";
+
+import { ROUTES } from "@/constants/routes";
+import { useAuth } from "@/hooks/user";
+import CommunityIcon from "@public/svgs/community-icon.svg";
+import EditorIconFill from "@public/svgs/editor-icon-fill.svg";
+import EditorIcon from "@public/svgs/editor-icon.svg";
+import HomeIconFilled from "@public/svgs/home-icon-filled.svg";
+import HomeIcon from "@public/svgs/home-icon.svg";
+import LikeIconFill from "@public/svgs/like-icon-fill.svg";
+import LikeIcon from "@public/svgs/like-icon.svg";
+import PickIcon from "@public/svgs/pick-icon.svg";
+import { Tooltip, Typo, useDrawer } from "@repo/ui/components";
+import { AnimatePresence, motion } from "framer-motion";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { LoginDrawer } from "./LoginDrawer";
+
+export function BottomNavBar() {
+  return (
+    <LoginDrawer>
+      <BottomNavBarContent />
+    </LoginDrawer>
+  );
+}
+
+function BottomNavBarContent() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { isLoggedIn } = useAuth();
+  const { open: openLoginDrawer } = useDrawer();
+  const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
+  const [isEditorPopupOpen, setIsEditorPopupOpen] = useState(false);
+
+  useEffect(() => {
+    router.prefetch(ROUTES.LIKES);
+    router.prefetch(ROUTES.ME);
+  }, [router]);
+
+  const handleEditorClick = useCallback(() => {
+    if (!isLoggedIn) {
+      openLoginDrawer();
+      return;
+    }
+    setIsEditorPopupOpen(prev => !prev);
+  }, [isLoggedIn, openLoginDrawer]);
+
+  const handleCategorySelect = useCallback(
+    (category: "RESEARCH" | "TEST") => {
+      router.push(`${ROUTES.CREATE_MISSION}?category=${category}`);
+    },
+    [router],
+  );
+
+  useEffect(() => {
+    setIsEditorPopupOpen(false);
+  }, [pathname]);
+
+  const handleLikesClick = (e: React.MouseEvent) => {
+    if (!isLoggedIn) {
+      e.preventDefault();
+      openLoginDrawer();
+    }
+  };
+
+  const isHome = !isEditorPopupOpen && pathname === ROUTES.HOME;
+  const isEditor =
+    !isEditorPopupOpen && (pathname === "/editor" || pathname.startsWith("/editor/"));
+  const isLikes = !isEditorPopupOpen && pathname === ROUTES.LIKES;
+  const isEditorActive = isEditor || isEditorPopupOpen;
+
+  const comingSoonProps = (id: string) =>
+    ({
+      "data-tooltip-id": id,
+      onMouseEnter: () => setActiveTooltip(id),
+      onMouseLeave: () => setActiveTooltip(null),
+      onClick: () => setActiveTooltip(prev => (prev === id ? null : id)),
+    }) as const;
+
+  return (
+    <div className="relative">
+      <AnimatePresence>
+        {isEditorPopupOpen && (
+          <motion.div
+            className="fixed inset-0 bg-black/50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => setIsEditorPopupOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      <div className="absolute bottom-full left-0 right-0 overflow-hidden">
+        <AnimatePresence>
+          {isEditorPopupOpen && (
+            <motion.div
+              className="rounded-t-2xl bg-white"
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ duration: 0.25, ease: [0.33, 1, 0.68, 1] }}
+            >
+              <div className="flex flex-col gap-1 p-4">
+                <button
+                  type="button"
+                  onClick={() => handleCategorySelect("RESEARCH")}
+                  className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-medium text-zinc-800 transition-colors hover:bg-zinc-50 active:bg-zinc-100"
+                >
+                  <span className="text-lg">📋</span>
+                  <span>설문조사/리서치</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleCategorySelect("TEST")}
+                  className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-medium text-zinc-800 transition-colors hover:bg-zinc-50 active:bg-zinc-100"
+                >
+                  <span className="text-lg">🧠</span>
+                  <span>심리/유형 테스트</span>
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      <nav className="relative z-50 flex w-full items-center border-t border-zinc-100 bg-white px-1 shadow-[0px_4px_20px_0px_rgba(9,9,11,0.08)]">
+        <Link
+          href={ROUTES.HOME}
+          className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2"
+          aria-label="홈"
+        >
+          {isHome ? (
+            <HomeIconFilled className="size-6 text-black" />
+          ) : (
+            <HomeIcon className="size-6 text-zinc-400" />
+          )}
+          <Typo.Body
+            size="small"
+            className={`text-[11px] font-bold leading-normal ${isHome ? "text-black" : "text-zinc-400"}`}
+          >
+            홈
+          </Typo.Body>
+        </Link>
+
+        <span
+          {...comingSoonProps("nav-store")}
+          className="flex flex-1 cursor-not-allowed flex-col items-center justify-center gap-0.5 py-2 opacity-30"
+          aria-label="PICK"
+          aria-disabled="true"
+        >
+          <PickIcon className="size-6" />
+          <Typo.Body size="small" className="text-[11px] font-bold leading-normal text-zinc-400">
+            PICK
+          </Typo.Body>
+        </span>
+
+        <button
+          type="button"
+          onClick={handleEditorClick}
+          className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2"
+          aria-label="에디터"
+        >
+          {isEditorActive ? (
+            <EditorIconFill className="size-6" />
+          ) : (
+            <EditorIcon className="size-6" />
+          )}
+          <Typo.Body
+            size="small"
+            className={`text-[11px] font-bold leading-normal ${isEditorActive ? "text-black" : "text-zinc-400"}`}
+          >
+            에디터
+          </Typo.Body>
+        </button>
+
+        <Link
+          href={ROUTES.LIKES}
+          className="flex flex-1 flex-col items-center justify-center gap-0.5 py-2"
+          aria-label="찜"
+          onClick={handleLikesClick}
+        >
+          {isLikes ? <LikeIconFill className="size-6" /> : <LikeIcon className="size-6" />}
+          <Typo.Body
+            size="small"
+            className={`text-[11px] font-bold leading-normal ${isLikes ? "text-black" : "text-zinc-400"}`}
+          >
+            찜
+          </Typo.Body>
+        </Link>
+
+        <span
+          {...comingSoonProps("nav-community")}
+          className="flex flex-1 cursor-not-allowed flex-col items-center justify-center gap-0.5 py-2 opacity-30"
+          aria-label="커뮤니티"
+          aria-disabled="true"
+        >
+          <CommunityIcon className="size-6" />
+          <Typo.Body size="small" className="text-[11px] font-bold leading-normal text-zinc-400">
+            커뮤니티
+          </Typo.Body>
+        </span>
+
+        {activeTooltip && (
+          <Tooltip id={activeTooltip} placement="top">
+            <Typo.Body size="small" className="text-zinc-600 whitespace-nowrap">
+              준비중이에요! 조금만 기다려주세요 😊
+            </Typo.Body>
+          </Tooltip>
+        )}
+      </nav>
+    </div>
+  );
+}

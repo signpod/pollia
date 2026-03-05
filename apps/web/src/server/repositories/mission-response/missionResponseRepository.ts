@@ -21,22 +21,35 @@ export class MissionResponseRepository {
   }
 
   async findByMissionAndUser(missionId: string, userId: string) {
-    return prisma.missionResponse.findUnique({
-      where: {
-        missionId_userId: {
-          missionId,
-          userId,
-        },
-      },
+    return prisma.missionResponse.findFirst({
+      where: { missionId, userId },
       include: {
         answers: ANSWERS_WITH_RELATIONS,
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
   }
 
-  async findByMissionId(missionId: string) {
+  async findByMissionAndGuest(missionId: string, guestId: string) {
+    return prisma.missionResponse.findFirst({
+      where: { missionId, guestId },
+      include: {
+        answers: ANSWERS_WITH_RELATIONS,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  }
+
+  async findByMissionId(missionId: string, options?: { membersOnly?: boolean }) {
     return prisma.missionResponse.findMany({
-      where: { missionId },
+      where: {
+        missionId,
+        ...(options?.membersOnly && { userId: { not: null } }),
+      },
       include: {
         user: true,
         answers: ANSWERS_WITH_RELATIONS,
@@ -44,6 +57,29 @@ export class MissionResponseRepository {
       orderBy: {
         createdAt: "desc",
       },
+    });
+  }
+
+  async findByMissionIdPaged(
+    missionId: string,
+    options: { page: number; pageSize: number; membersOnly?: boolean },
+  ) {
+    const skip = (options.page - 1) * options.pageSize;
+
+    return prisma.missionResponse.findMany({
+      where: {
+        missionId,
+        ...(options.membersOnly && { userId: { not: null } }),
+      },
+      include: {
+        user: true,
+        answers: ANSWERS_WITH_RELATIONS,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip,
+      take: options.pageSize,
     });
   }
 
@@ -118,11 +154,12 @@ export class MissionResponseRepository {
     });
   }
 
-  async create(data: { missionId: string; userId: string }) {
+  async create(data: { missionId: string; userId?: string | null; guestId?: string | null }) {
     return prisma.missionResponse.create({
       data: {
         missionId: data.missionId,
-        userId: data.userId,
+        userId: data.userId ?? null,
+        guestId: data.guestId ?? null,
         startedAt: new Date(),
       },
       include: {
@@ -140,6 +177,139 @@ export class MissionResponseRepository {
     });
   }
 
+  async findLatestCompletedAtByActor(input: {
+    missionId: string;
+    userId?: string | null;
+    guestId?: string | null;
+  }) {
+    const { missionId, userId, guestId } = input;
+
+    if (userId) {
+      const response = await prisma.missionResponse.findFirst({
+        where: {
+          missionId,
+          userId,
+          completedAt: { not: null },
+        },
+        select: { completedAt: true },
+        orderBy: { completedAt: "desc" },
+      });
+
+      return response?.completedAt ?? null;
+    }
+
+    if (!guestId) {
+      return null;
+    }
+
+    const response = await prisma.missionResponse.findFirst({
+      where: {
+        missionId,
+        guestId,
+        completedAt: { not: null },
+      },
+      select: { completedAt: true },
+      orderBy: { completedAt: "desc" },
+    });
+
+    return response?.completedAt ?? null;
+  }
+
+  async updateCompletedAtWithAbuseMeta(
+    id: string,
+    input: {
+      completedAt: Date;
+      ipAddress?: string | null;
+      userAgent?: string | null;
+      submissionIntervalSeconds?: number | null;
+    },
+  ) {
+    return prisma.missionResponse.update({
+      where: { id },
+      data: {
+        completedAt: input.completedAt,
+        ipAddress: input.ipAddress ?? null,
+        userAgent: input.userAgent ?? null,
+        submissionIntervalSeconds: input.submissionIntervalSeconds ?? null,
+      },
+    });
+  }
+
+  async completeWithSelectionAndAbuseMeta(
+    id: string,
+    input: {
+      missionId: string;
+      selectedCompletionId: string;
+      completedAt: Date;
+      ipAddress?: string | null;
+      userAgent?: string | null;
+      submissionIntervalSeconds?: number | null;
+    },
+  ) {
+    return prisma.$transaction(async tx => {
+      const updated = await tx.missionResponse.updateMany({
+        where: {
+          id,
+          completedAt: null,
+        },
+        data: {
+          selectedCompletionId: input.selectedCompletionId,
+          completedAt: input.completedAt,
+          ipAddress: input.ipAddress ?? null,
+          userAgent: input.userAgent ?? null,
+          submissionIntervalSeconds: input.submissionIntervalSeconds ?? null,
+        },
+      });
+
+      if (updated.count === 0) {
+        return null;
+      }
+
+      await tx.missionCompletionStat.upsert({
+        where: {
+          missionId_missionCompletionId: {
+            missionId: input.missionId,
+            missionCompletionId: input.selectedCompletionId,
+          },
+        },
+        create: {
+          missionId: input.missionId,
+          missionCompletionId: input.selectedCompletionId,
+          encounterCount: 1,
+        },
+        update: {
+          encounterCount: {
+            increment: 1,
+          },
+        },
+      });
+
+      return tx.missionResponse.findUnique({
+        where: { id },
+      });
+    });
+  }
+
+  async nullifyAbuseMetaOlderThan(cutoffDate: Date) {
+    const result = await prisma.missionResponse.updateMany({
+      where: {
+        completedAt: { lt: cutoffDate },
+        OR: [
+          { ipAddress: { not: null } },
+          { userAgent: { not: null } },
+          { submissionIntervalSeconds: { not: null } },
+        ],
+      },
+      data: {
+        ipAddress: null,
+        userAgent: null,
+        submissionIntervalSeconds: null,
+      },
+    });
+
+    return result.count;
+  }
+
   async delete(id: string) {
     return prisma.missionResponse.delete({
       where: { id },
@@ -155,9 +325,27 @@ export class MissionResponseRepository {
     });
   }
 
+  async deleteByMissionAndGuest(missionId: string, guestId: string) {
+    return prisma.missionResponse.deleteMany({
+      where: {
+        missionId,
+        guestId,
+      },
+    });
+  }
+
   async countByMissionId(missionId: string) {
     return prisma.missionResponse.count({
       where: { missionId },
+    });
+  }
+
+  async countByMissionIdFiltered(missionId: string, options?: { membersOnly?: boolean }) {
+    return prisma.missionResponse.count({
+      where: {
+        missionId,
+        ...(options?.membersOnly && { userId: { not: null } }),
+      },
     });
   }
 

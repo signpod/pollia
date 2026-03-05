@@ -1,6 +1,7 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { missionCompletionService } from "@/server/services/mission-completion/missionCompletionService";
 import type { UpdateMissionCompletionInput } from "@/server/services/mission-completion/types";
 import type { UpdateMissionCompletionRequest, UpdateMissionCompletionResponse } from "@/types/dto";
@@ -23,7 +24,7 @@ export async function updateMissionCompletion(
   request: UpdateMissionCompletionRequest,
 ): Promise<UpdateMissionCompletionResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const input = toUpdateMissionCompletionInput(request);
     const missionCompletion = await missionCompletionService.updateMissionCompletion(
       id,
@@ -36,7 +37,9 @@ export async function updateMissionCompletion(
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error("미션 완료 데이터 수정 중 오류가 발생했습니다.");
+    const serverError = new Error(
+      `${UBIQUITOUS_CONSTANTS.MISSION} 완료 데이터 수정 중 오류가 발생했습니다.`,
+    );
     serverError.cause = 500;
     throw serverError;
   }

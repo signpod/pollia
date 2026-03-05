@@ -1,6 +1,7 @@
 export { createMission } from "./create";
 export { deleteMission } from "./delete";
 export { duplicateMission } from "./duplicate";
+export { saveMissionEditorDraft } from "./draft";
 export {
   getAllMissions,
   getMission,

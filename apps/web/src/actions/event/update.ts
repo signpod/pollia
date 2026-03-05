@@ -1,6 +1,7 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { eventService } from "@/server/services/event";
 import type { UpdateEventRequest, UpdateEventResponse } from "@/types/dto/event";
 
@@ -9,7 +10,7 @@ export async function updateEvent(
   request: UpdateEventRequest,
 ): Promise<UpdateEventResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const event = await eventService.updateEvent(eventId, request, user.id);
     return { data: event };
   } catch (error) {
@@ -17,7 +18,7 @@ export async function updateEvent(
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error("이벤트 수정 중 오류가 발생했습니다.");
+    const serverError = new Error(`${UBIQUITOUS_CONSTANTS.EVENT} 수정 중 오류가 발생했습니다.`);
     serverError.cause = 500;
     throw serverError;
   }

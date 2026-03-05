@@ -1,6 +1,7 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { resolveMissionActor } from "@/actions/common/auth";
+import { getRequestMeta } from "@/actions/common/requestMeta";
 import { missionResponseService } from "@/server/services/mission-response";
 import type {
   CompleteMissionResponseRequest,
@@ -13,8 +14,8 @@ export async function startMissionResponse(
   request: StartMissionResponseRequest,
 ): Promise<StartMissionResponseResponse> {
   try {
-    const user = await requireAuth();
-    const response = await missionResponseService.startResponse(request, user.id);
+    const actor = await resolveMissionActor();
+    const response = await missionResponseService.startResponse(request, actor);
     return { data: response };
   } catch (error) {
     console.error("startMissionResponse error:", error);
@@ -31,10 +32,12 @@ export async function completeMissionResponse(
   request: CompleteMissionResponseRequest,
 ): Promise<CompleteMissionResponseResponse> {
   try {
-    const user = await requireAuth();
+    const actor = await resolveMissionActor();
+    const requestMeta = await getRequestMeta();
     const response = await missionResponseService.completeResponse(
       { responseId: request.responseId },
-      user.id,
+      actor,
+      requestMeta,
     );
     return { data: response };
   } catch (error) {

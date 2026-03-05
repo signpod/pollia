@@ -1,4 +1,5 @@
 import { userRepository } from "@/server/repositories/user/userRepository";
+import { UserStatus } from "@prisma/client";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import type { CreateUserIfNotExistsInput, UpdateUserInput } from "./types";
 
@@ -81,6 +82,46 @@ export class UserService {
   async deleteUser(userId: string): Promise<void> {
     await this.getUserById(userId);
     await this.repo.delete(userId);
+  }
+
+  /**
+   * 탈퇴 상태 머신의 1단계: ACTIVE -> WITHDRAWING 전환.
+   * 이미 WITHDRAWING/WITHDRAWN이면 멱등하게 현재 상태를 반환합니다.
+   */
+  async startWithdrawal(userId: string, reason?: string) {
+    const user = await this.getUserById(userId);
+
+    if (user.status === UserStatus.WITHDRAWN) {
+      return { status: "already_withdrawn" as const, user };
+    }
+
+    if (user.status === UserStatus.WITHDRAWING) {
+      return { status: "already_withdrawing" as const, user };
+    }
+
+    const updated = await this.repo.startWithdrawal(userId, reason);
+    return { status: "started" as const, user: updated };
+  }
+
+  /**
+   * 탈퇴 상태 머신의 2단계: WITHDRAWING -> WITHDRAWN 전환 + 개인정보 익명화.
+   * 이미 WITHDRAWN이면 멱등하게 성공 반환합니다.
+   */
+  async completeWithdrawal(userId: string) {
+    const user = await this.getUserById(userId);
+
+    if (user.status === UserStatus.WITHDRAWN) {
+      return { status: "already_withdrawn" as const, user };
+    }
+
+    if (user.status !== UserStatus.WITHDRAWING) {
+      const error = new Error("탈퇴 진행 중인 계정만 완료할 수 있습니다.");
+      error.cause = 409;
+      throw error;
+    }
+
+    const updated = await this.repo.completeWithdrawal(userId);
+    return { status: "completed" as const, user: updated };
   }
 }
 

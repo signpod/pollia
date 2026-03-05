@@ -162,9 +162,7 @@ const TabList = React.forwardRef<
           animate={{ x: indicator.left }}
           style={{ width: indicator.width }}
           transition={
-            isInitialRender
-              ? { duration: 0 }
-              : { type: "tween", duration: 0.25, ease: "easeInOut" }
+            isInitialRender ? { duration: 0 } : { type: "tween", duration: 0.25, ease: "easeInOut" }
           }
         />
       )}
@@ -184,7 +182,10 @@ const TabItem = React.forwardRef<React.ElementRef<typeof TabsPrimitive.Trigger>,
     const isActive = activeTab === value;
 
     const tabItemVariants = cva(
-      cn("relative px-4 py-3 text-center select-none transition-colors flex-1", scrollable && "min-w-fit"),
+      cn(
+        "relative px-4 py-3 text-center select-none transition-colors flex-1",
+        scrollable && "min-w-fit",
+      ),
       {
         variants: {
           isActive: {

@@ -18,6 +18,9 @@ export const clientConfig = {
   ...baseConfig,
   enabled: isProduction,
   payload: {
+    server: {
+      root: "turbopack:///[project]/",
+    },
     client: {
       javascript: {
         source_map_enabled: true,

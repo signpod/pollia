@@ -13,9 +13,12 @@ export class TrackingActionResponseRepository {
     });
   }
 
-  async findByMissionId(missionId: string) {
+  async findByMissionId(missionId: string, options?: { membersOnly?: boolean }) {
     return prisma.trackingActionResponse.findMany({
-      where: { missionId },
+      where: {
+        missionId,
+        ...(options?.membersOnly && { userId: { not: null } }),
+      },
       orderBy: { respondedAt: "desc" },
     });
   }

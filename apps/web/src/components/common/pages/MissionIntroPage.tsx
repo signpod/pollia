@@ -1,18 +1,19 @@
 "use client";
 
-import { SocialShareButtonsWithData } from "@/app/mission/[missionId]/components/SocialShareButtonsWithData";
-import { useStickyTabHeader } from "@/app/mission/[missionId]/components/hooks/useStickyTabHeader";
-import type { MissionRewardData } from "@/app/mission/[missionId]/types/mission";
+import { MissionLikeButton } from "@/app/(site)/(main)/components/MissionLikeButton";
+import { SocialShareButtonsWithData } from "@/app/(site)/mission/[missionId]/components/SocialShareButtonsWithData";
+import type { MissionRewardData } from "@/app/(site)/mission/[missionId]/types/mission";
+import { ROUTES } from "@/constants/routes";
 import { cn } from "@/lib/utils";
 import { MissionType } from "@prisma/client";
-import { FixedBottomLayout } from "@repo/ui/components";
+import { FixedBottomLayout, Typo } from "@repo/ui/components";
+import { ChevronLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { MissionContentTemplate } from "../templates/MissionContentTemplate";
 import { MissionIntroTemplate } from "../templates/MissionIntroTemplate";
 import type { MissionIntroTemplateProps } from "../templates/MissionIntroTemplate";
-
-const SCROLL_OFFSET = 10;
 
 export interface MissionIntroPageProps extends MissionIntroTemplateProps {
   isRequirePassword: boolean;
@@ -22,21 +23,19 @@ export interface MissionIntroPageProps extends MissionIntroTemplateProps {
   missionImageUrl: string | null;
   description: string | null;
   reward: MissionRewardData | null;
-  contextBrandLogoUrl?: string;
   contextTitle?: string;
   bottomButton?: ReactNode;
+  viewCount?: number;
+  likesCount?: number;
 }
 
 export function MissionIntroPage({
   imageUrl,
-  brandLogoUrl,
   title,
-  formattedDeadline,
+  subtitle,
+  authorName,
+  authorImageUrl,
   isRequirePassword,
-  showRewardWidget,
-  rewardName,
-  showDeadlineWidget,
-  deadlineDate,
   titleRef,
   missionId,
   missionType,
@@ -44,56 +43,71 @@ export function MissionIntroPage({
   missionImageUrl,
   description,
   reward,
-  contextBrandLogoUrl,
   contextTitle,
   bottomButton,
+  viewCount,
+  likesCount,
 }: MissionIntroPageProps) {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const sentinelRef = useRef<HTMLDivElement>(null);
-  const { activeTab, isSticky, handleChangeTab } = useStickyTabHeader({
-    sentinelRef,
-    hasReward: !!reward,
-  });
+  const localTitleRef = useRef<HTMLDivElement>(null);
+  const [isTitleHidden, setIsTitleHidden] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 5);
-    };
+    const el = localTitleRef.current;
+    if (!el) return;
 
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry) setIsTitleHidden(!entry.isIntersecting);
+      },
+      { threshold: 0 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
-
-  const handleScrollDown = () => {
-    window.scrollTo({
-      top: window.innerHeight + SCROLL_OFFSET,
-      behavior: "smooth",
-    });
-  };
 
   return (
     <div className="relative w-full">
+      <header
+        className={cn(
+          "fixed inset-x-0 top-0 z-50 mx-auto flex h-14 max-w-[600px] items-center px-1 transition-colors duration-300",
+          isTitleHidden ? "bg-white" : "bg-gradient-to-b from-black/40 to-transparent",
+        )}
+      >
+        <button
+          type="button"
+          onClick={() => router.replace(ROUTES.HOME)}
+          className="flex items-center justify-center p-3"
+        >
+          <ChevronLeft className={cn("size-6", isTitleHidden ? "text-zinc-900" : "text-white")} />
+        </button>
+        <Typo.SubTitle
+          size="large"
+          className={cn(
+            "truncate transition-opacity duration-300",
+            isTitleHidden ? "opacity-100" : "opacity-0",
+          )}
+        >
+          {title}
+        </Typo.SubTitle>
+      </header>
+
       <MissionIntroTemplate
         imageUrl={imageUrl}
-        brandLogoUrl={brandLogoUrl}
+        missionId={missionId}
         title={title}
-        formattedDeadline={formattedDeadline}
+        subtitle={subtitle}
+        authorName={authorName}
+        authorImageUrl={authorImageUrl}
         isRequirePassword={isRequirePassword}
-        showRewardWidget={showRewardWidget}
-        rewardName={rewardName}
-        showDeadlineWidget={showDeadlineWidget}
-        deadlineDate={deadlineDate}
-        titleRef={titleRef}
-        onScrollDown={handleScrollDown}
+        viewCount={viewCount}
+        likesCount={likesCount}
+        titleRef={localTitleRef}
       >
         <MissionContentTemplate
-          brandLogoUrl={contextBrandLogoUrl}
           title={contextTitle}
-          isSticky={isSticky}
-          activeTab={activeTab}
-          onChangeTab={handleChangeTab}
-          sentinelRef={sentinelRef}
+          isSticky={false}
           description={description}
           reward={reward}
           missionType={missionType}
@@ -107,36 +121,13 @@ export function MissionIntroPage({
         />
       </MissionIntroTemplate>
 
-      <FixedBottomLayout.Content
-        className={isScrolled ? "bg-transparent" : "bg-transparent pointer-events-none"}
-      >
-        <div
-          className="absolute inset-x-0 bottom-0"
-          style={{
-            height: "100px",
-            opacity: isScrolled ? 1 : 0,
-            transition: "opacity 0.3s ease-out",
-            backdropFilter: "blur(100px)",
-            WebkitBackdropFilter: "blur(100px)",
-            maskImage: isScrolled
-              ? "linear-gradient(to bottom, transparent 0%, black 100%)"
-              : "linear-gradient(to bottom, transparent 100%, transparent 100%)",
-            WebkitMaskImage: isScrolled
-              ? "linear-gradient(to bottom, transparent 0%, black 100%)"
-              : "linear-gradient(to bottom, transparent 100%, transparent 100%)",
-            background: "rgba(255, 255, 255, 0)",
-            pointerEvents: "none",
-          }}
-        />
-        <div
-          className={cn(
-            "sticky bottom-0 z-60 border-zinc-100 transition-all duration-300 ease-out",
-            isScrolled
-              ? "opacity-100 translate-y-0 pointer-events-auto"
-              : "opacity-0 translate-y-full pointer-events-none",
-          )}
-        >
-          {bottomButton}
+      <FixedBottomLayout.Content>
+        <div className="flex items-center gap-2 px-5 py-3">
+          <MissionLikeButton
+            missionId={missionId}
+            className="flex size-12 shrink-0 items-center justify-center rounded-sm border border-zinc-200 bg-white"
+          />
+          <div className="flex-1 [&>div]:p-0">{bottomButton}</div>
         </div>
       </FixedBottomLayout.Content>
     </div>

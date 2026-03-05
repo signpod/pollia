@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { missionService } from "@/server/services/mission";
 import { missionNotionPageService } from "@/server/services/mission-notion-page";
 import { missionResponseService } from "@/server/services/mission-response";
@@ -9,7 +9,7 @@ import type { SyncMissionToNotionResponse } from "@/types/dto";
 
 export async function syncMissionToNotion(missionId: string): Promise<SyncMissionToNotionResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
 
     const mission = await missionService.getMission(missionId);
 

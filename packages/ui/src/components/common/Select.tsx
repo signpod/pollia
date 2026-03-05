@@ -41,21 +41,22 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-12 w-full items-center justify-between rounded-[var(--radius-sm)] bg-white",
-      "px-[var(--space-lg)] py-3 text-sm",
-      "ring-1 ring-[var(--color-zinc-200)]",
-      "hover:ring-[var(--color-violet-500)]",
-      "focus:outline-none focus:ring-2 focus:ring-[var(--color-violet-500)]",
+      "flex h-12 w-full items-center justify-between rounded-sm bg-white",
+      "px-4 py-3 text-[16px] font-medium leading-normal",
+      "ring-1 ring-(--color-zinc-200)",
+      "hover:ring-(--color-violet-500)",
+      "focus:outline-none focus:ring-2 focus:ring-(--color-violet-500)",
       "disabled:cursor-not-allowed disabled:opacity-50",
       "transition-colors",
       "[&>span]:line-clamp-1",
+      "[&>span[data-placeholder]]:text-zinc-500",
       className,
     )}
     {...props}
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      <ChevronDown className="h-4 w-4 opacity-50" />
+      <ChevronDown className="size-6 text-zinc-500" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ));
@@ -98,8 +99,8 @@ const SelectContent = React.forwardRef<
       ref={ref}
       className={cn(
         "relative z-50 max-h-96 min-w-[8rem] overflow-hidden",
-        "rounded-[var(--radius-sm)] bg-white",
-        "ring-1 ring-[var(--color-zinc-200)] shadow-lg",
+        "rounded-sm bg-white",
+        "ring-1 ring-zinc-200 shadow-lg",
         "data-[state=open]:animate-in data-[state=closed]:animate-out",
         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
         "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
@@ -115,7 +116,7 @@ const SelectContent = React.forwardRef<
       <SelectScrollUpButton />
       <SelectPrimitive.Viewport
         className={cn(
-          "p-1",
+          "p-2",
           position === "popper" &&
             "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]",
         )}
@@ -134,7 +135,7 @@ const SelectLabel = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Label
     ref={ref}
-    className={cn("py-1.5 pl-8 pr-2 text-sm font-semibold text-[var(--color-zinc-700)]", className)}
+    className={cn("py-1.5 pl-8 pr-2 text-sm font-semibold text-zinc-700", className)}
     {...props}
   />
 ));
@@ -147,23 +148,21 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-pointer select-none items-center",
-      "rounded-[var(--radius-xs)] py-2 pl-8 pr-2",
-      "text-sm outline-none",
-      "focus:bg-[var(--color-violet-50)] focus:text-[var(--color-violet-900)]",
-      "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "flex h-12 w-full cursor-pointer select-none items-center justify-between",
+      "rounded-lg px-4",
+      "text-base font-bold outline-none",
+      "data-[state=checked]:bg-violet-50 data-[state=checked]:text-violet-500 data-[state=checked]:rounded-sm",
+      "focus:bg-zinc-50 focus:rounded-sm",
+      "data-disabled:pointer-events-none data-disabled:opacity-50",
       "transition-colors",
       className,
     )}
     {...props}
   >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-      <SelectPrimitive.ItemIndicator>
-        <Check className="h-4 w-4 text-[var(--color-violet-500)]" />
-      </SelectPrimitive.ItemIndicator>
-    </span>
-
     <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+    <SelectPrimitive.ItemIndicator>
+      <Check className="size-5 text-violet-500" />
+    </SelectPrimitive.ItemIndicator>
   </SelectPrimitive.Item>
 ));
 SelectItem.displayName = SelectPrimitive.Item.displayName;
@@ -174,7 +173,7 @@ const SelectSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Separator
     ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-[var(--color-zinc-200)]", className)}
+    className={cn("-mx-1 my-1 h-px bg-zinc-200", className)}
     {...props}
   />
 ));

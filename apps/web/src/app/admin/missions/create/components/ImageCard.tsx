@@ -3,6 +3,7 @@
 import { ImageSelectField } from "@/app/admin/components/common/ImageSelectField";
 import { type UploadedImageData, useSingleImage } from "@/app/admin/hooks/admin-image";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import type { UseFormReturn } from "react-hook-form";
 import { toast } from "sonner";
 import type { CreateMissionFunnelFormData } from "../schemas";
@@ -19,7 +20,7 @@ export function ImageCard({ form }: ImageCardProps) {
       form.setValue("imageFileUploadId", data.fileUploadId);
     },
     onUploadError: (error: Error) => {
-      toast.error("미션 이미지 업로드 실패", {
+      toast.error(`${UBIQUITOUS_CONSTANTS.MISSION} 이미지 업로드 실패`, {
         description: error.message,
       });
     },
@@ -55,9 +56,11 @@ export function ImageCard({ form }: ImageCardProps) {
       <ImageSelectField
         control={form.control}
         name="imageUrl"
-        label="미션 이미지"
+        label={`${UBIQUITOUS_CONSTANTS.MISSION} 이미지`}
         description={
-          missionImageUpload.isUploading ? "업로드 중..." : "미션을 대표하는 이미지를 업로드하세요."
+          missionImageUpload.isUploading
+            ? "업로드 중..."
+            : `${UBIQUITOUS_CONSTANTS.MISSION}을 대표하는 이미지를 업로드하세요.`
         }
         onImageSelect={missionImageUpload.upload}
         onImageDelete={handleMissionImageDelete}

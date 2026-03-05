@@ -9,24 +9,50 @@ export const ROUTES = {
 
   // 메인 페이지
   HOME: "/",
+  LEGACY_CREATE_MISSION: "/create",
+  EDITOR_CREATE_MISSION: "/editor/create",
+  CREATE_MISSION: "/editor/create",
   ME: "/me",
   ME_IN_PROGRESS: "/me/in-progress",
   ME_COMPLETED: "/me/completed",
+  ME_MY_CONTENT: "/me/my-content",
   ME_REWARDS_PENDING: "/me/rewards/pending",
   ME_REWARDS_PAID: "/me/rewards/paid",
+  ME_EDIT: "/me/edit",
+  ME_ACCOUNT: "/me/account",
+  ME_ACCOUNT_WITHDRAW: "/me/account/withdraw",
+  ME_PARTNERSHIP: "/me/partnership",
+  ME_RESULT: (missionId: string) => `/me/result/${missionId}`,
+  ME_COMPLETED_TAB: "/me?tab=completed",
+  ME_REWARDS_TAB: "/me?tab=rewards",
   ME_LIKED_TAB: "/me?tab=liked",
   LIKES: "/likes",
+  SEARCH: "/search",
 
   // 미션 관련
   MISSION: (id: string) => `/mission/${id}`,
   MISSION_DONE: (id: string, completionId?: string) =>
     completionId ? `/mission/${id}/done?id=${completionId}` : `/mission/${id}/done`,
   MISSION_PASSWORD: (missionId: string) => `/mission/${missionId}/password`,
+  MISSION_MANAGE_ACTIONS: (missionId: string) => `/mission/${missionId}/manage/actions`,
+  MISSION_MANAGE_ACTIONS_NEW: (missionId: string) => `/mission/${missionId}/manage/actions/new`,
+  MISSION_MANAGE_ACTIONS_EDIT: (missionId: string, actionId: string) =>
+    `/mission/${missionId}/manage/actions/${actionId}/edit`,
 
   // 액션 관련
   ACTION: ({ missionId, actionId }: { missionId: string; actionId: string }) =>
     `/mission/${missionId}/action/${actionId}`,
   ACTION_CREATE_DONE: "/mission/action/create/done",
+
+  MISSION_ACTION_PREVIEW: (missionId: string, actionId: string) =>
+    `/preview/action/${missionId}/${actionId}`,
+  MISSION_COMPLETION_PREVIEW: (missionId: string, completionId: string) =>
+    `/preview/completion/${missionId}/${completionId}`,
+
+  // 에디터 관련
+  EDITOR_MISSION: (missionId: string) => `/editor/missions/${missionId}`,
+  EDITOR_MISSION_STATS: (missionId: string) => `/editor/missions/${missionId}/stats`,
+  EDITOR_MISSION_PREVIEW: (missionId: string) => `/editor/missions/${missionId}/preview`,
 } as const;
 
 export type Routes = typeof ROUTES;

@@ -5,6 +5,7 @@ import { AdminCreateCard } from "@/app/admin/components/common/organisms/AdminCr
 import { ADMIN_ROUTES } from "@/app/admin/constants/routes";
 import { BADGE_COLORS } from "@/app/admin/lib/badge-colors";
 import { stripHtmlTags } from "@/app/admin/lib/utils";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import type { Mission } from "@prisma/client";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
@@ -27,11 +28,18 @@ export function EventMissionList({ eventId, missions }: EventMissionListProps) {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">미션 ({missions.length})</h2>
-        <p className="text-muted-foreground">이 이벤트에 속한 미션 목록입니다.</p>
+        <h2 className="text-2xl font-bold tracking-tight">
+          {UBIQUITOUS_CONSTANTS.MISSION} ({missions.length})
+        </h2>
+        <p className="text-muted-foreground">
+          이 {UBIQUITOUS_CONSTANTS.EVENT}에 속한 {UBIQUITOUS_CONSTANTS.MISSION} 목록입니다.
+        </p>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <AdminCreateCard onClick={handleCreateMission} label="미션 추가" />
+        <AdminCreateCard
+          onClick={handleCreateMission}
+          label={`${UBIQUITOUS_CONSTANTS.MISSION} 추가`}
+        />
         {missions.map(mission => (
           <AdminCard
             key={mission.id}

@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { actionAnswerService } from "@/server/services/action-answer";
 import type {
   GetAnswersByResponseResponse,
@@ -10,7 +10,7 @@ import type {
 
 export async function getAnswer(answerId: string): Promise<GetQuestionAnswerResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const answer = await actionAnswerService.getAnswerById(answerId, user.id);
     const data = { ...answer, actionId: answer.action.id };
     return { data };
@@ -27,7 +27,7 @@ export async function getAnswer(answerId: string): Promise<GetQuestionAnswerResp
 
 export async function getMyAnswers(): Promise<GetAnswersByUserResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const answers = await actionAnswerService.getAnswersByUserId(user.id);
     const data = answers.map(answer => ({ ...answer, actionId: answer.action.id }));
     return { data };
@@ -46,7 +46,7 @@ export async function getAnswersByResponse(
   responseId: string,
 ): Promise<GetAnswersByResponseResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const answers = await actionAnswerService.getAnswersByResponseId(responseId, user.id);
     const data = answers.map(answer => ({ ...answer, actionId: answer.action.id }));
     return { data };

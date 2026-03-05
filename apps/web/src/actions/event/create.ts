@@ -1,12 +1,13 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { eventService } from "@/server/services/event";
 import type { CreateEventRequest, CreateEventResponse } from "@/types/dto/event";
 
 export async function createEvent(request: CreateEventRequest): Promise<CreateEventResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const event = await eventService.createEvent(request, user.id);
     return { data: event };
   } catch (error) {
@@ -14,7 +15,7 @@ export async function createEvent(request: CreateEventRequest): Promise<CreateEv
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error("이벤트 생성 중 오류가 발생했습니다.");
+    const serverError = new Error(`${UBIQUITOUS_CONSTANTS.EVENT} 생성 중 오류가 발생했습니다.`);
     serverError.cause = 500;
     throw serverError;
   }

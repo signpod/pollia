@@ -1,9 +1,8 @@
-import type { Metadata, Viewport } from "next";
-import "./globals.css";
 import { GoogleAnalytics } from "@/components/common/GoogleAnalytics";
-import { RootWrapper } from "@/components/common/RootWrapper";
 import { clientConfig } from "@/rollbar";
 import { Provider as RollbarProvider } from "@rollbar/react";
+import type { Metadata, Viewport } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "세상을 발견하는 솔직한 방법, 폴리아",
@@ -45,7 +44,7 @@ export default function RootLayout({
         </head>
         <body className="antialiased">
           <GoogleAnalytics />
-          <RootWrapper>{children}</RootWrapper>
+          {children}
         </body>
       </html>
     </RollbarProvider>

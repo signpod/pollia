@@ -23,8 +23,8 @@ export interface CreateMissionCompletionRequest {
 export interface UpdateMissionCompletionRequest {
   title?: string;
   description?: string;
-  imageUrl?: string;
-  imageFileUploadId?: string;
+  imageUrl?: string | null;
+  imageFileUploadId?: string | null;
   links?: Record<string, string>;
 }
 

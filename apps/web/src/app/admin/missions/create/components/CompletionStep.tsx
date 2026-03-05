@@ -2,7 +2,7 @@
 
 import { ImageSelector } from "@/app/admin/components/common/ImageSelector";
 import { CharacterCounter } from "@/app/admin/components/common/InputField";
-import { TiptapEditor } from "@/app/admin/components/common/TiptapEditor";
+import { TiptapEditor } from "@/app/admin/components/common/tiptap";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import {
   Card,
@@ -14,6 +14,7 @@ import {
 import { Input } from "@/app/admin/components/shadcn-ui/input";
 import { Label } from "@/app/admin/components/shadcn-ui/label";
 import { type UploadedImageData, useSingleImage } from "@/app/admin/hooks/admin-image";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import {
   MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH,
   MISSION_COMPLETION_TITLE_MAX_LENGTH,
@@ -144,7 +145,9 @@ export function CompletionStep({ form }: CompletionStepProps) {
       <Card>
         <CardHeader>
           <CardTitle>완료 화면 정보</CardTitle>
-          <CardDescription>미션 완료 시 표시될 화면의 제목과 설명을 입력하세요.</CardDescription>
+          <CardDescription>
+            {UBIQUITOUS_CONSTANTS.MISSION} 완료 시 표시될 화면의 제목과 설명을 입력하세요.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -159,7 +162,7 @@ export function CompletionStep({ form }: CompletionStepProps) {
             </div>
             <Input
               id="completion-title"
-              placeholder="예: 미션을 완료하셨습니다!"
+              placeholder={`예: ${UBIQUITOUS_CONSTANTS.MISSION}을 완료하셨습니다!`}
               value={completionTitle}
               onChange={e => {
                 const value = e.target.value;

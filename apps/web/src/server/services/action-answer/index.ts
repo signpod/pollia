@@ -20,6 +20,12 @@ import { actionRepository } from "@/server/repositories/action/actionRepository"
 import { missionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import { ActionType, Prisma } from "@prisma/client";
 import { z } from "zod";
+import {
+  type NormalizedActor,
+  type ResponseActor,
+  isResponseOwner,
+  normalizeActor,
+} from "../mission-response/types";
 import type { SubmitAnswersInput, UpdateAnswerInput } from "./types";
 
 export class ActionAnswerService {
@@ -29,28 +35,30 @@ export class ActionAnswerService {
     private actionRepo = actionRepository,
   ) {}
 
-  async getAnswerById(answerId: string, userId: string) {
+  async getAnswerById(answerId: string, actor: string | ResponseActor) {
+    const normalizedActor = normalizeActor(actor);
     const answer = await this.answerRepo.findById(answerId);
 
     if (!answer) {
       this.throwError("답변을 찾을 수 없습니다.", 404);
     }
 
-    if (answer.response.userId !== userId) {
+    if (!isResponseOwner(answer.response, normalizedActor)) {
       this.throwError("조회 권한이 없습니다.", 403);
     }
 
     return answer;
   }
 
-  async getAnswersByResponseId(responseId: string, userId: string) {
+  async getAnswersByResponseId(responseId: string, actor: string | ResponseActor) {
+    const normalizedActor = normalizeActor(actor);
     const response = await this.responseRepo.findById(responseId);
 
     if (!response) {
       this.throwError("응답을 찾을 수 없습니다.", 404);
     }
 
-    if (response.userId !== userId) {
+    if (!isResponseOwner(response, normalizedActor)) {
       this.throwError("조회 권한이 없습니다.", 403);
     }
 
@@ -61,10 +69,25 @@ export class ActionAnswerService {
     return this.answerRepo.findByUserId(userId);
   }
 
-  async submitAnswers(input: SubmitAnswersInput, userId: string) {
+  async submitAnswers(input: SubmitAnswersInput, actor: string | ResponseActor) {
+    const normalizedActor = normalizeActor(actor);
     const validated = this.validateInput(input, submitAnswersSchema);
 
-    const response = await this.verifyResponseOwnership(validated.responseId, userId, {
+    if (!normalizedActor.userId) {
+      const hasFileUploadAnswer = validated.answers.some(
+        answer =>
+          answer.type === ActionType.IMAGE ||
+          answer.type === ActionType.PDF ||
+          answer.type === ActionType.VIDEO ||
+          (answer.fileUploadIds && answer.fileUploadIds.length > 0),
+      );
+
+      if (hasFileUploadAnswer) {
+        this.throwError("파일 업로드 답변은 로그인 후 제출할 수 있습니다.", 403);
+      }
+    }
+
+    const response = await this.verifyResponseOwnership(validated.responseId, normalizedActor, {
       checkCompleted: true,
     });
 
@@ -98,7 +121,10 @@ export class ActionAnswerService {
       this.convertAnswerToCreateInput(answer, validated.responseId),
     );
 
-    await this.answerRepo.createManyWithRelations(answersToCreate, userId);
+    await this.answerRepo.createManyWithRelations(
+      answersToCreate,
+      normalizedActor.userId || undefined,
+    );
 
     return {
       responseId: validated.responseId,
@@ -107,12 +133,18 @@ export class ActionAnswerService {
     };
   }
 
-  async updateAnswer(answerId: string, input: UpdateAnswerInput, userId: string) {
+  async updateAnswer(answerId: string, input: UpdateAnswerInput, actor: string | ResponseActor) {
+    const normalizedActor = normalizeActor(actor);
     const validated = this.validateInput(input, actionAnswerUpdateSchema);
 
-    const answer = await this.getAnswerById(answerId, userId);
+    const answer = await this.getAnswerById(answerId, normalizedActor);
 
     const action = await this.actionRepo.findById(answer.actionId);
+
+    if (!normalizedActor.userId && action) {
+      this.blockGuestFileUploadAction(action.type);
+    }
+
     if (action) {
       this.validateAnswerByActionType(
         {
@@ -137,13 +169,23 @@ export class ActionAnswerService {
       };
     }
 
-    return this.answerRepo.update(answerId, updateData);
+    return this.answerRepo.update(answerId, updateData, normalizedActor.userId || undefined);
   }
 
-  async updateAnswerWithPruning(answerId: string, input: UpdateAnswerInput, userId: string) {
+  async updateAnswerWithPruning(
+    answerId: string,
+    input: UpdateAnswerInput,
+    actor: string | ResponseActor,
+  ) {
+    const normalizedActor = normalizeActor(actor);
     const validated = this.validateInput(input, actionAnswerUpdateSchema);
-    const answer = await this.getAnswerById(answerId, userId);
+    const answer = await this.getAnswerById(answerId, normalizedActor);
     const action = await this.actionRepo.findById(answer.actionId);
+
+    if (!normalizedActor.userId && action) {
+      this.blockGuestFileUploadAction(action.type);
+    }
+
     if (action) {
       this.validateAnswerByActionType(
         {
@@ -171,19 +213,24 @@ export class ActionAnswerService {
     return result;
   }
 
-  async deleteAnswer(answerId: string, userId: string): Promise<void> {
-    await this.getAnswerById(answerId, userId);
+  async deleteAnswer(answerId: string, actor: string | ResponseActor): Promise<void> {
+    const normalizedActor = normalizeActor(actor);
+    await this.getAnswerById(answerId, normalizedActor);
     await this.answerRepo.delete(answerId);
   }
 
-  async deleteAnswersByResponseId(responseId: string, userId: string): Promise<void> {
-    await this.verifyResponseOwnership(responseId, userId);
+  async deleteAnswersByResponseId(
+    responseId: string,
+    actor: string | ResponseActor,
+  ): Promise<void> {
+    const normalizedActor = normalizeActor(actor);
+    await this.verifyResponseOwnership(responseId, normalizedActor);
     await this.answerRepo.deleteByResponseId(responseId);
   }
 
   private async verifyResponseOwnership(
     responseId: string,
-    userId: string,
+    actor: NormalizedActor,
     options?: { checkCompleted?: boolean },
   ) {
     const response = await this.responseRepo.findById(responseId);
@@ -192,7 +239,7 @@ export class ActionAnswerService {
       this.throwError("응답을 찾을 수 없습니다.", 404);
     }
 
-    if (response.userId !== userId) {
+    if (!isResponseOwner(response, actor)) {
       this.throwError("권한이 없습니다.", 403);
     }
 
@@ -201,6 +248,16 @@ export class ActionAnswerService {
     }
 
     return response;
+  }
+
+  private blockGuestFileUploadAction(actionType: ActionType): void {
+    if (
+      actionType === ActionType.IMAGE ||
+      actionType === ActionType.PDF ||
+      actionType === ActionType.VIDEO
+    ) {
+      this.throwError("파일 업로드 답변은 로그인 후 수정할 수 있습니다.", 403);
+    }
   }
 
   private throwError(message: string, statusCode: number): never {

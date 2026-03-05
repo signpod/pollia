@@ -24,6 +24,7 @@ export function createMissionNotionPageServiceTestContext() {
 export const createMockMission = (overrides: Partial<Mission> = {}): Mission => ({
   id: "mission1",
   title: "테스트 미션",
+  choseong: "",
   description: null,
   target: null,
   imageUrl: null,
@@ -35,6 +36,8 @@ export const createMockMission = (overrides: Partial<Mission> = {}): Mission => 
   estimatedMinutes: null,
   maxParticipants: null,
   isActive: true,
+  allowGuestResponse: false,
+  allowMultipleResponses: false,
   type: "GENERAL",
   category: "EVENT",
   password: null,
@@ -43,9 +46,13 @@ export const createMockMission = (overrides: Partial<Mission> = {}): Mission => 
   rewardId: null,
   eventId: null,
   entryActionId: null,
+  useAiCompletion: false,
+  aiStatisticsReport: null,
+  viewCount: 0,
   createdAt: new Date(),
   updatedAt: new Date(),
   ...overrides,
+  editorDraft: overrides.editorDraft ?? null,
 });
 
 export type MissionNotionPageServiceTestContext = ReturnType<

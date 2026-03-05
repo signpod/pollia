@@ -1,4 +1,4 @@
-import { ActionOptionButton } from "@/app/mission/[missionId]/components";
+import { ActionOptionButton } from "@/app/(site)/mission/[missionId]/components";
 import { ActionStepContentProps } from "@/constants/action";
 import { ActionType } from "@prisma/client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";

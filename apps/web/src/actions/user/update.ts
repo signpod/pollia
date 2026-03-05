@@ -1,13 +1,13 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { userUpdateSchema } from "@/schemas/user";
 import { userService } from "@/server/services/user/userService";
 import type { UpdateUserRequest } from "@/types/dto/user";
 
 export async function updateUser(request: UpdateUserRequest) {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
 
     const validated = userUpdateSchema.parse(request);
 

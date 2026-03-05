@@ -51,14 +51,20 @@ function buildRow(
   response: MissionResponseWithUserAndAnswers,
   sortedActions: Action[],
 ): SubmissionRow {
+  const respondentId = response.userId ?? response.guestId ?? response.id;
+  const responseAt = response.completedAt ?? response.startedAt;
+
   return {
     id: response.id,
+    respondentId,
     user: {
-      name: response.user.name,
-      phone: response.user.phone,
+      name: response.user?.name ?? "게스트",
+      phone: response.user?.phone ?? null,
+      guestId: response.guestId,
     },
     startedAt: response.startedAt,
     completedAt: response.completedAt,
+    responseAt,
     isCompleted: response.completedAt !== null,
     answers: buildAnswers(response, sortedActions),
   };

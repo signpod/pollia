@@ -2,7 +2,7 @@ import { stripHtmlTags } from "@/app/admin/lib/utils";
 import { z } from "zod";
 
 export const MISSION_COMPLETION_TITLE_MAX_LENGTH = 100;
-export const MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH = 500;
+export const MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH = 2000;
 
 const titleSchema = z
   .string()
@@ -37,6 +37,11 @@ const descriptionSchema = z
 
 const imageUrlSchema = z.url({ message: "올바른 URL 형식이 아닙니다." }).optional();
 const imageFileUploadIdSchema = z.string().optional();
+const updateImageUrlSchema = z
+  .url({ message: "올바른 URL 형식이 아닙니다." })
+  .nullable()
+  .optional();
+const updateImageFileUploadIdSchema = z.string().nullable().optional();
 
 const linksSchema = z
   .record(z.string(), z.url({ message: "올바른 URL 형식이 아닙니다." }))
@@ -59,13 +64,21 @@ export const missionCompletionUpdateSchema = z
   .object({
     title: titleSchema.optional(),
     description: descriptionSchema.optional(),
-    imageUrl: imageUrlSchema,
-    imageFileUploadId: imageFileUploadIdSchema,
+    imageUrl: updateImageUrlSchema,
+    imageFileUploadId: updateImageFileUploadIdSchema,
     links: linksSchema,
   })
-  .refine(data => Object.keys(data).length > 0, {
-    message: "최소 하나의 필드를 수정해야 합니다.",
-  });
+  .refine(
+    data =>
+      data.title !== undefined ||
+      data.description !== undefined ||
+      data.imageUrl !== undefined ||
+      data.imageFileUploadId !== undefined ||
+      data.links !== undefined,
+    {
+      message: "최소 하나의 필드를 수정해야 합니다.",
+    },
+  );
 
 export type MissionCompletionInput = z.infer<typeof missionCompletionInputSchema>;
 export type MissionCompletionForm = z.infer<typeof missionCompletionFormSchema>;

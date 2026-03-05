@@ -1,11 +1,11 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { actionOptionService } from "@/server/services/action-option";
 
 export async function deleteOption(optionId: string): Promise<{ message: string }> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
 
     await actionOptionService.deleteOption(optionId, user.id);
 
@@ -23,7 +23,7 @@ export async function deleteOption(optionId: string): Promise<{ message: string 
 
 export async function deleteOptionsByQuestionId(questionId: string): Promise<{ message: string }> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
 
     await actionOptionService.deleteOptionsByActionId(questionId, user.id);
 

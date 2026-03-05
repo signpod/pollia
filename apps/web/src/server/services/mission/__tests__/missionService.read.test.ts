@@ -25,14 +25,22 @@ describe("MissionService - Read", () => {
     mockResponseRepository = {
       findById: jest.fn(),
       findByMissionAndUser: jest.fn(),
+      findByMissionAndGuest: jest.fn(),
       findByMissionId: jest.fn(),
+      findByMissionIdPaged: jest.fn(),
       findByUserId: jest.fn(),
       findCompletedByMissionId: jest.fn(),
       create: jest.fn(),
       updateCompletedAt: jest.fn(),
+      findLatestCompletedAtByActor: jest.fn(),
+      updateCompletedAtWithAbuseMeta: jest.fn(),
+      completeWithSelectionAndAbuseMeta: jest.fn(),
+      nullifyAbuseMetaOlderThan: jest.fn(),
       delete: jest.fn(),
       deleteByMissionAndUser: jest.fn(),
+      deleteByMissionAndGuest: jest.fn(),
       countByMissionId: jest.fn(),
+      countByMissionIdFiltered: jest.fn(),
       countCompletedByMissionId: jest.fn(),
     } as jest.Mocked<MissionResponseRepository>;
 

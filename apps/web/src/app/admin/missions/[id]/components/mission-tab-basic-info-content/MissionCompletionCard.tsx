@@ -1,5 +1,6 @@
 "use client";
 
+import { TiptapViewer } from "@/app/admin/components/common/tiptap";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import {
   Card,
@@ -11,8 +12,8 @@ import {
 import { Separator } from "@/app/admin/components/shadcn-ui/separator";
 import { useReadMissionCompletion } from "@/app/admin/hooks/mission-completion";
 import { cn } from "@/app/admin/lib/utils";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { cleanTiptapHTML } from "@/lib/utils";
-import { TiptapViewer } from "@repo/ui/components/common/TiptapViewer";
 import { ExternalLink, ImageIcon, Pencil } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
@@ -52,7 +53,9 @@ export function MissionCompletionCard({ missionId }: MissionCompletionCardProps)
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>완료 화면</CardTitle>
-              <CardDescription>미션 완료 시 표시되는 화면</CardDescription>
+              <CardDescription>
+                {UBIQUITOUS_CONSTANTS.MISSION} 완료 시 표시되는 화면
+              </CardDescription>
             </div>
             <Button variant="outline" size="sm" onClick={() => setIsEditDialogOpen(true)}>
               <Pencil className="h-4 w-4 mr-2" />
@@ -145,9 +148,9 @@ export function MissionCompletionCard({ missionId }: MissionCompletionCardProps)
                                 href={value}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-sm text-primary hover:underline flex items-center gap-1 truncate"
+                                className="text-sm text-primary hover:underline flex items-center gap-1 max-w-full overflow-hidden"
                               >
-                                {value}
+                                <span className="truncate min-w-0">{value}</span>
                                 <ExternalLink className="h-3 w-3 shrink-0" />
                               </a>
                             </div>

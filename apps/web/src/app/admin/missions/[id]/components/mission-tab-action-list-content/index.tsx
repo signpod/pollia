@@ -1,6 +1,9 @@
 "use client";
 
-import { MobilePreviewPanel } from "@/app/admin/components/common/MobilePreviewPanel";
+import {
+  MobilePreviewPanel,
+  useMobilePreviewRefresh,
+} from "@/app/admin/components/common/MobilePreviewPanel";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,8 +25,10 @@ import {
   useReorderActions,
   useUpdateAction,
 } from "@/app/admin/hooks/action";
-import { MissionActionPage } from "@/components/common/pages/MissionActionPage";
+import { ROUTES } from "@/constants/routes";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import type { ActionDetail } from "@/types/dto";
+
 import {
   DndContext,
   type DragEndEvent,
@@ -57,6 +62,7 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
   const [actions, setActions] = useState<ActionDetail[]>([]);
   const [selectedActionId, setSelectedActionId] = useState<string | null>(null);
   const previewAnchorRef = useRef<HTMLDivElement>(null);
+  const { refreshKey, refresh } = useMobilePreviewRefresh();
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -81,6 +87,7 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
     onSuccess: () => {
       toast.success("액션이 수정되었습니다");
       setIsEditDialogOpen(false);
+      refresh();
     },
     onError: error => toast.error(error.message || "액션 수정 중 오류가 발생했습니다"),
   });
@@ -239,7 +246,7 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
                 아직 추가된 액션이 없습니다
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                미션에 액션을 추가하여 사용자 응답을 수집하세요
+                {UBIQUITOUS_CONSTANTS.MISSION}에 액션을 추가하여 사용자 응답을 수집하세요
               </p>
             </div>
           </CardContent>
@@ -373,13 +380,11 @@ export function MissionTabActionListContent({ missionId }: MissionActionListProp
       </AlertDialog>
 
       {selectedAction && (
-        <MobilePreviewPanel anchor={previewAnchorRef}>
-          <MissionActionPage
-            actionData={selectedAction}
-            currentOrder={actions.findIndex(a => a.id === selectedAction.id)}
-            totalActionCount={actions.length}
-          />
-        </MobilePreviewPanel>
+        <MobilePreviewPanel
+          anchor={previewAnchorRef}
+          url={ROUTES.MISSION_ACTION_PREVIEW(missionId, selectedAction.id)}
+          refreshKey={refreshKey}
+        />
       )}
     </>
   );

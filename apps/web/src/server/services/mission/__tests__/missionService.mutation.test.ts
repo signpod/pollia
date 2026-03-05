@@ -1,8 +1,17 @@
 import type { ActionRepository } from "@/server/repositories/action/actionRepository";
 import type { MissionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import type { MissionRepository } from "@/server/repositories/mission/missionRepository";
+import { searchSyncOutboxRepository } from "@/server/repositories/search-sync-outbox";
+import { Prisma } from "@prisma/client";
 import { MissionService } from "..";
 import { createMockMission, expectServiceErrorWithCause } from "../../testUtils";
+
+jest.mock("@/database/utils/prisma/client", () => ({
+  __esModule: true,
+  default: {
+    $transaction: jest.fn(async callback => callback({})),
+  },
+}));
 
 jest.mock("@/lib/crypto", () => ({
   encrypt: jest.fn((text: string) => `encrypted:${text}`),
@@ -30,14 +39,22 @@ describe("MissionService - Mutation", () => {
     mockResponseRepository = {
       findById: jest.fn(),
       findByMissionAndUser: jest.fn(),
+      findByMissionAndGuest: jest.fn(),
       findByMissionId: jest.fn(),
+      findByMissionIdPaged: jest.fn(),
       findByUserId: jest.fn(),
       findCompletedByMissionId: jest.fn(),
       create: jest.fn(),
       updateCompletedAt: jest.fn(),
+      findLatestCompletedAtByActor: jest.fn(),
+      updateCompletedAtWithAbuseMeta: jest.fn(),
+      completeWithSelectionAndAbuseMeta: jest.fn(),
+      nullifyAbuseMetaOlderThan: jest.fn(),
       delete: jest.fn(),
       deleteByMissionAndUser: jest.fn(),
+      deleteByMissionAndGuest: jest.fn(),
       countByMissionId: jest.fn(),
+      countByMissionIdFiltered: jest.fn(),
       countCompletedByMissionId: jest.fn(),
     } as jest.Mocked<MissionResponseRepository>;
 
@@ -60,10 +77,14 @@ describe("MissionService - Mutation", () => {
       mockResponseRepository,
       mockActionRepository,
     );
+    jest.spyOn(searchSyncOutboxRepository, "create").mockResolvedValue({
+      id: "outbox-default",
+    } as never);
   });
 
   afterEach(() => {
     jest.clearAllMocks();
+    jest.restoreAllMocks();
   });
 
   describe("updateMission", () => {
@@ -81,7 +102,6 @@ describe("MissionService - Mutation", () => {
       };
       mockRepository.findById.mockResolvedValue(mockMission);
       mockRepository.update.mockResolvedValue(mockUpdatedMission);
-
       // When
       const result = await missionService.updateMission(
         "mission-1",
@@ -92,13 +112,16 @@ describe("MissionService - Mutation", () => {
       // Then
       expect(result.title).toBe("수정된 설문");
       expect(result.description).toBe("수정된 설명");
+      expect(searchSyncOutboxRepository.create).toHaveBeenCalledTimes(1);
       expect(mockRepository.update).toHaveBeenCalledWith(
         "mission-1",
         {
           title: "수정된 설문",
           description: "수정된 설명",
+          choseong: expect.any(String),
         },
         "user-1",
+        expect.anything(),
       );
     });
 
@@ -123,6 +146,7 @@ describe("MissionService - Mutation", () => {
         "수정 권한이 없습니다.",
         403,
       );
+      expect(searchSyncOutboxRepository.create).not.toHaveBeenCalled();
     });
 
     it("빈 제목으로 수정하면 400 에러를 던진다", async () => {
@@ -139,18 +163,82 @@ describe("MissionService - Mutation", () => {
     });
   });
 
+  describe("saveEditorDraft", () => {
+    it("payload 객체를 editorDraft로 저장한다", async () => {
+      // Given
+      const mockMission = createMockMission({ id: "mission-1", creatorId: "user-1" });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockRepository.update.mockResolvedValue(mockMission);
+
+      // When
+      await missionService.saveEditorDraft(
+        "mission-1",
+        {
+          basic: {
+            title: "수정된 제목",
+          },
+        },
+        "user-1",
+      );
+
+      // Then
+      expect(mockRepository.update).toHaveBeenCalledWith(
+        "mission-1",
+        expect.objectContaining({
+          editorDraft: expect.objectContaining({
+            basic: {
+              title: "수정된 제목",
+            },
+          }),
+        }),
+      );
+    });
+
+    it("payload가 null이면 editorDraft를 null로 정리한다", async () => {
+      // Given
+      const mockMission = createMockMission({ id: "mission-1", creatorId: "user-1" });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockRepository.update.mockResolvedValue(mockMission);
+
+      // When
+      await missionService.saveEditorDraft("mission-1", null, "user-1");
+
+      // Then
+      expect(mockRepository.update).toHaveBeenCalledWith(
+        "mission-1",
+        expect.objectContaining({
+          editorDraft: Prisma.DbNull,
+        }),
+      );
+    });
+
+    it("권한이 없으면 403 에러를 던진다", async () => {
+      // Given
+      const mockMission = createMockMission({ id: "mission-1", creatorId: "user-1" });
+      mockRepository.findById.mockResolvedValue(mockMission);
+
+      // When & Then
+      await expectServiceErrorWithCause(
+        missionService.saveEditorDraft("mission-1", { basic: { title: "제목" } }, "user-2"),
+        "수정 권한이 없습니다.",
+        403,
+      );
+      expect(mockRepository.update).not.toHaveBeenCalled();
+    });
+  });
+
   describe("deleteMission", () => {
     it("Mission을 성공적으로 삭제한다", async () => {
       // Given
       const mockMission = createMockMission({ id: "mission-1", creatorId: "user-1" });
       mockRepository.findById.mockResolvedValue(mockMission);
       mockRepository.delete.mockResolvedValue(mockMission);
-
       // When
       await missionService.deleteMission("mission-1", "user-1");
 
       // Then
-      expect(mockRepository.delete).toHaveBeenCalledWith("mission-1");
+      expect(searchSyncOutboxRepository.create).toHaveBeenCalledTimes(1);
+      expect(mockRepository.delete).toHaveBeenCalledWith("mission-1", expect.anything());
     });
 
     it("Mission이 없으면 404 에러를 던진다", async () => {
@@ -174,6 +262,7 @@ describe("MissionService - Mutation", () => {
         "삭제 권한이 없습니다.",
         403,
       );
+      expect(searchSyncOutboxRepository.create).not.toHaveBeenCalled();
     });
   });
 

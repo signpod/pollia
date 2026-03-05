@@ -1,4 +1,4 @@
-import { ActionOptionButton } from "@/app/mission/[missionId]/components";
+import { ActionOptionButton } from "@/app/(site)/mission/[missionId]/components";
 import type { Meta, StoryObj } from "@storybook/nextjs";
 import { useState } from "react";
 

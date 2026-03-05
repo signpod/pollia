@@ -1,6 +1,6 @@
 import type { UploadedImageData } from "../types";
 
-export function createMockFile(name = "test.jpg", type = "image/jpeg", size = 1024): File {
+export function createMockFile(name = "test.jpg", type = "image/jpeg"): File {
   const blob = new Blob([""], { type });
   return new File([blob], name, { type });
 }

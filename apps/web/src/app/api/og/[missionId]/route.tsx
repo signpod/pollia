@@ -75,15 +75,13 @@ export async function GET(
 
   try {
     const mission = await missionService.getMission(missionId);
-    const { title, imageUrl, brandLogoUrl } = mission;
+    const { title, imageUrl } = mission;
 
-    const displayTitle = title ? (title.length > 50 ? `${title.substring(0, 47)}...` : title) : "";
+    const displayTitle = title ? (title.length > 40 ? `${title.substring(0, 37)}...` : title) : "";
 
-    // wsrv.nl 프록시를 통해 PNG로 변환 및 리사이즈, SUIT 폰트 로드
-    const [missionImage, brandLogo, polliaLogo, suitFont] = await Promise.all([
-      imageUrl ? fetchImageAsBase64(imageUrl, 300, 300, "cover") : null,
-      brandLogoUrl ? fetchImageAsBase64(brandLogoUrl, 56, 56, "contain") : null,
-      fetchImageAsBase64("https://pollia.me/images/pollia-logo.png", 100, 32, "contain"),
+    const [missionImage, polliaLogo, suitFont] = await Promise.all([
+      imageUrl ? fetchImageAsBase64(imageUrl, 530, 530, "cover") : null,
+      fetchImageAsBase64("https://pollia.me/images/pollia-logo.png", 158, 50, "contain"),
       loadSuitFont(),
     ]);
 
@@ -93,66 +91,51 @@ export async function GET(
           width: "100%",
           height: "100%",
           display: "flex",
-          backgroundColor: "#fafafa",
+          gap: 40,
+          padding: 50,
+          backgroundColor: "#ffffff",
         }}
       >
         {/* Left: Mission Image */}
         <div
           style={{
-            width: 630,
-            height: 630,
+            width: 530,
+            height: 530,
+            flexShrink: 0,
             display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "center",
-            backgroundColor: "#e4e4e7",
+            borderRadius: 40,
             overflow: "hidden",
+            backgroundColor: "#e4e4e7",
           }}
         >
           {missionImage ? (
             <img
               src={missionImage}
-              alt="미션 이미지"
-              width={630}
-              height={630}
+              alt=""
+              width={530}
+              height={530}
               style={{
                 objectFit: "cover",
-                objectPosition: "top",
               }}
             />
           ) : null}
         </div>
 
-        {/* Right: Content */}
+        {/* Right: Title + Logo */}
         <div
           style={{
             flex: 1,
             display: "flex",
             flexDirection: "column",
-            justifyContent: "center",
-            padding: 48,
+            justifyContent: "space-between",
           }}
         >
-          {brandLogo ? (
-            <img
-              src={brandLogo}
-              alt="브랜드 로고"
-              width={88}
-              height={88}
-              style={{
-                borderRadius: 44,
-                marginBottom: 24,
-                border: "1px solid #e4e4e7",
-              }}
-            />
-          ) : null}
-
           <div
             style={{
-              color: "#09090b",
-              fontSize: 48,
-              fontWeight: 900,
-              lineHeight: 1.3,
-              marginBottom: 24,
+              color: "#000000",
+              fontSize: 60,
+              fontWeight: 700,
+              lineHeight: 1.2,
               fontFamily: "SUIT",
             }}
           >
@@ -160,8 +143,8 @@ export async function GET(
           </div>
 
           {polliaLogo ? (
-            <div style={{ marginTop: "auto", display: "flex" }}>
-              <img src={polliaLogo} alt="Pollia 로고" height={36} />
+            <div style={{ display: "flex" }}>
+              <img src={polliaLogo} alt="Pollia" width={158} height={50} />
             </div>
           ) : null}
         </div>

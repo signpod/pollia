@@ -187,6 +187,29 @@ export const WithMaxLength: Story = {
   },
 };
 
+// 삭제 버튼
+export const WithClearButton: Story = {
+  render: () => {
+    const [value, setValue] = React.useState("삭제 버튼이 있는 텍스트입니다");
+
+    return (
+      <div className="w-96">
+        <Textarea
+          label="삭제 가능"
+          placeholder="텍스트를 입력하세요"
+          helperText="텍스트가 입력되면 X 버튼이 나타납니다"
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          onClear={() => setValue("")}
+          maxLength={200}
+          showLength
+          required
+        />
+      </div>
+    );
+  },
+};
+
 // 라벨 없는 경우
 export const WithoutLabel: Story = {
   args: {

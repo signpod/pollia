@@ -1,0 +1,25 @@
+model MissionCompletionInferenceCache {
+  id                  String                           @id @default(cuid())
+  missionId           String                           @map("mission_id")
+  fingerprintHash     String                           @map("fingerprint_hash")
+  fingerprintPayload  Json                             @map("fingerprint_payload")
+  missionCompletionId String                           @map("mission_completion_id")
+  source              MissionCompletionInferenceSource
+  confidence          Float?
+  modelName           String?                          @map("model_name")
+  createdAt           DateTime                         @default(now()) @map("created_at")
+  updatedAt           DateTime                         @updatedAt @map("updated_at")
+
+  mission           Mission           @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  missionCompletion MissionCompletion @relation(fields: [missionCompletionId], references: [id], onDelete: Cascade)
+
+  @@unique([missionId, fingerprintHash])
+  @@index([missionId])
+  @@index([missionCompletionId])
+  @@map("mission_completion_inference_caches")
+}
+
+enum MissionCompletionInferenceSource {
+  AI
+  FALLBACK
+}

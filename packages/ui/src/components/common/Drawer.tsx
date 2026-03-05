@@ -69,14 +69,8 @@ export function DrawerContent({ className, containerClassName, children }: Drawe
       const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = "hidden";
 
-      const ch = (window as unknown as Record<string, unknown>).ChannelIO as
-        | ((cmd: string) => void)
-        | undefined;
-      ch?.("hideChannelButton");
-
       return () => {
         document.body.style.overflow = originalOverflow;
-        ch?.("showChannelButton");
       };
     }
   }, [isOpen]);

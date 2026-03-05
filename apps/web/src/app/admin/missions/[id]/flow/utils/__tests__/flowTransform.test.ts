@@ -6,6 +6,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
   const createMission = (overrides?: Partial<Mission>): Mission => ({
     id: "mission-1",
     title: "Test Mission",
+    choseong: "",
     description: null,
     imageUrl: null,
     brandLogoUrl: null,
@@ -13,6 +14,8 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
     startDate: null,
     deadline: null,
     isActive: true,
+    allowGuestResponse: false,
+    allowMultipleResponses: false,
     maxParticipants: null,
     creatorId: "creator-1",
     rewardId: null,
@@ -27,7 +30,11 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
     entryActionId: null,
     imageFileUploadId: null,
     brandLogoFileUploadId: null,
+    useAiCompletion: false,
+    aiStatisticsReport: null,
+    viewCount: 0,
     ...overrides,
+    editorDraft: overrides?.editorDraft ?? null,
   });
 
   const createAction = (overrides?: Partial<Action>): Action => ({

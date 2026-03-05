@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { actionOptionService } from "@/server/services/action-option";
 import type { ActionOption } from "@prisma/client";
 
@@ -13,7 +13,7 @@ export async function createOption(data: {
   imageFileUploadId?: string;
 }): Promise<{ data: ActionOption }> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
 
     const option = await actionOptionService.createOption(data, user.id);
 
@@ -40,7 +40,7 @@ export async function createOptions(
   }>,
 ): Promise<{ data: ActionOption[] }> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
 
     const createdOptions = await actionOptionService.createOptions(questionId, options, user.id);
 

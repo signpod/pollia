@@ -4,6 +4,7 @@ import { FileStatus, MissionCategory, MissionType } from "@prisma/client";
 export const createMockMission = (overrides: Partial<Mission> = {}): Mission => ({
   id: "mission1",
   title: "미션",
+  choseong: "",
   description: null,
   target: null,
   imageUrl: null,
@@ -12,6 +13,8 @@ export const createMockMission = (overrides: Partial<Mission> = {}): Mission => 
   startDate: null,
   deadline: null,
   isActive: true,
+  allowGuestResponse: false,
+  allowMultipleResponses: false,
   maxParticipants: null,
   type: MissionType.GENERAL,
   category: MissionCategory.EVENT,
@@ -23,9 +26,13 @@ export const createMockMission = (overrides: Partial<Mission> = {}): Mission => 
   brandLogoFileUploadId: null,
   eventId: null,
   entryActionId: null,
+  useAiCompletion: false,
+  aiStatisticsReport: null,
+  viewCount: 0,
   createdAt: new Date(),
   updatedAt: new Date(),
   ...overrides,
+  editorDraft: overrides.editorDraft ?? null,
 });
 
 export const createMockAction = (overrides: Partial<Action> = {}): Action => ({

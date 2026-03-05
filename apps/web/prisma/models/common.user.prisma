@@ -1,15 +1,19 @@
 model User {
-  id    String   @id
-  email String   @unique
-  name  String
-  phone String?  @unique
-  role  UserRole @default(USER)
+  id     String     @id
+  email  String     @unique
+  name   String
+  phone  String?    @unique
+  role   UserRole   @default(USER)
+  status UserStatus @default(ACTIVE)
 
   profileImageFileUploadId String?     @unique @map("profile_image_file_upload_id")
   profileImageFileUpload   FileUpload? @relation("UserProfileImage", fields: [profileImageFileUploadId], references: [id], onDelete: SetNull)
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  withdrawnAt      DateTime? @map("withdrawn_at")
+  withdrawalReason String?   @map("withdrawal_reason")
+  authDeletedAt    DateTime? @map("auth_deleted_at")
 
   fileUploads      FileUpload[]      @relation("UserFileUploads")
   missionResponses MissionResponse[]
@@ -20,10 +24,17 @@ model User {
   trackingActionEntries   TrackingActionEntry[]
   trackingActionResponses TrackingActionResponse[]
 
+  @@index([status])
   @@map("users")
 }
 
 enum UserRole {
   USER
   ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  WITHDRAWING
+  WITHDRAWN
 }

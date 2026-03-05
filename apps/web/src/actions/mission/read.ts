@@ -1,6 +1,7 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { missionService } from "@/server/services/mission";
 import { missionNotionPageService } from "@/server/services/mission-notion-page";
 import type { GetUserMissionsOptions } from "@/server/services/mission/types";
@@ -53,7 +54,7 @@ export async function getUserMissions(
   request?: GetUserMissionsRequest,
 ): Promise<GetUserMissionsResponse & { nextCursor?: string }> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const limit = request?.limit ?? 10;
     const options = request
       ? toGetUserMissionsOptions({ ...request, limit: limit + 1 })
@@ -73,7 +74,7 @@ export async function getUserMissions(
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error("미션 목록을 불러올 수 없습니다.");
+    const serverError = new Error(`${UBIQUITOUS_CONSTANTS.MISSION} 목록을 불러올 수 없습니다.`);
     serverError.cause = 500;
     throw serverError;
   }
@@ -83,7 +84,7 @@ export async function getAllMissions(
   request?: GetAllMissionsRequest,
 ): Promise<GetUserMissionsResponse & { nextCursor?: string }> {
   try {
-    await requireAuth();
+    await requireActiveUser();
     const limit = request?.limit ?? 10;
     const options = request
       ? toGetAllMissionsOptions({ ...request, limit: limit + 1 })
@@ -103,7 +104,7 @@ export async function getAllMissions(
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error("미션 목록을 불러올 수 없습니다.");
+    const serverError = new Error(`${UBIQUITOUS_CONSTANTS.MISSION} 목록을 불러올 수 없습니다.`);
     serverError.cause = 500;
     throw serverError;
   }
@@ -114,11 +115,11 @@ export async function getMission(missionId: string): Promise<GetMissionResponse>
     const mission = await missionService.getMission(missionId);
     return { data: mission };
   } catch (error) {
-    console.error("❌ 미션 조회 실패:", error);
+    console.error(`❌ ${UBIQUITOUS_CONSTANTS.MISSION} 조회 실패:`, error);
     if (error instanceof Error && error.cause) {
       throw error;
     }
-    const serverError = new Error("미션을 불러올 수 없습니다.");
+    const serverError = new Error(`${UBIQUITOUS_CONSTANTS.MISSION}을 불러올 수 없습니다.`);
     serverError.cause = 500;
     throw serverError;
   }
@@ -126,7 +127,7 @@ export async function getMission(missionId: string): Promise<GetMissionResponse>
 
 export async function getMissionPassword(missionId: string) {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const password = await missionService.getPassword(missionId, user.id);
     return { data: password };
   } catch (error) {
@@ -176,7 +177,7 @@ export async function getMissionNotionPage(
   missionId: string,
 ): Promise<GetMissionNotionPageResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const notionPage = await missionNotionPageService.getByMissionIdWithAuth(missionId, user.id);
 
     if (!notionPage) {

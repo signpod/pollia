@@ -1,48 +1,16 @@
 "use client";
 
 import { ROUTES } from "@/constants/routes";
-import { useReadActionIds } from "@/hooks/action";
+import { useReadActionIds } from "@/hooks/action/useReadActionIds";
+import { useReadActionsDetail } from "@/hooks/action/useReadActionsDetail";
+import { useReadMission } from "@/hooks/mission/useReadMission";
+import { findNextActionByBFS } from "@/lib/answer/findNextActionByBFS";
 import { setActionNavCookie } from "@/lib/cookie";
 import type { MyMissionResponse } from "@/types/dto/mission-response";
-import { ActionType } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 
 type Answer = MyMissionResponse["answers"][number];
-
-const isValidAnswer = (answer: Answer): boolean => {
-  const { type, isRequired } = answer.action;
-
-  if (!isRequired) {
-    return true;
-  }
-
-  switch (type) {
-    case ActionType.MULTIPLE_CHOICE:
-    case ActionType.TAG:
-      return answer.options.length > 0;
-
-    case ActionType.SCALE:
-    case ActionType.RATING:
-      return answer.scaleAnswer !== null;
-
-    case ActionType.SUBJECTIVE:
-    case ActionType.SHORT_TEXT:
-      return answer.textAnswer !== null;
-
-    case ActionType.IMAGE:
-    case ActionType.VIDEO:
-    case ActionType.PDF:
-      return answer.fileUploads.length > 0;
-
-    case ActionType.DATE:
-    case ActionType.TIME:
-      return answer.dateAnswers.length > 0;
-
-    default:
-      return true;
-  }
-};
 
 interface UseResumeToNextActionParams {
   missionId: string;
@@ -51,14 +19,23 @@ interface UseResumeToNextActionParams {
 
 export function useResumeToNextAction({ missionId, answers }: UseResumeToNextActionParams) {
   const router = useRouter();
-  const { data: actionIdsData, isLoading } = useReadActionIds(missionId);
+  const { data: missionData } = useReadMission(missionId);
+  const { data: actionIdsData, isLoading: isActionIdsLoading } = useReadActionIds(missionId);
+  const { data: actionsData, isLoading: isActionsLoading } = useReadActionsDetail(missionId);
 
   const allActionIds: string[] = actionIdsData?.data?.actionIds ?? [];
-  const validActionIds = new Set(answers.filter(isValidAnswer).map(answer => answer.actionId));
-  const nextActionIndex = allActionIds.findIndex(
-    (actionId: string) => !validActionIds.has(actionId),
-  );
-  const nextActionId = nextActionIndex === -1 ? allActionIds[0] : allActionIds[nextActionIndex];
+  const actions = actionsData?.data ?? [];
+  const firstActionId = missionData?.data.entryActionId ?? allActionIds[0];
+
+  const {
+    nextActionId: bfsNextActionId,
+    lastAnsweredActionId,
+    answeredCount,
+  } = findNextActionByBFS(firstActionId, actions, answers);
+
+  const nextActionId = bfsNextActionId ?? lastAnsweredActionId;
+
+  const isLoading = isActionIdsLoading || isActionsLoading;
 
   const resumeToNextAction = useCallback(() => {
     if (!nextActionId) return;
@@ -70,8 +47,9 @@ export function useResumeToNextAction({ missionId, answers }: UseResumeToNextAct
   return {
     nextActionId,
     resumeToNextAction,
-    isReady: !isLoading && allActionIds.length > 0,
+    isReady: !isLoading && allActionIds.length > 0 && actions.length > 0,
     isLoading,
+    answeredCount,
   };
 }
 

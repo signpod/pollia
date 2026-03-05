@@ -32,6 +32,7 @@ interface FixedBottomLayoutProps {
   children: ReactNode;
   className?: string;
   hasBottomGap?: boolean;
+  bottomGapOverride?: number;
   hasGradient?: boolean;
   hasGradientBlur?: boolean;
 }
@@ -40,6 +41,7 @@ export function FixedBottomLayout({
   children,
   className,
   hasBottomGap = true,
+  bottomGapOverride,
   hasGradient = false,
   hasGradientBlur = false,
 }: FixedBottomLayoutProps) {
@@ -74,15 +76,21 @@ export function FixedBottomLayout({
     setContentHeight(0);
   }, [currentContent]);
 
+  const resolvedBottomGap =
+    typeof bottomGapOverride === "number" && Number.isFinite(bottomGapOverride)
+      ? Math.max(0, bottomGapOverride)
+      : hasBottomGap
+        ? Math.max(72, contentHeight)
+        : 0;
+
   return (
     <FixedBottomContext.Provider value={{ currentContent, setContent, clearContent }}>
       <div className={cn("relative", className)}>
         {children}
         <div
           style={{
-            paddingBottom: hasBottomGap
-              ? `calc(${contentHeight + 20}px + env(safe-area-inset-bottom))`
-              : "0px",
+            paddingBottom: resolvedBottomGap,
+            transition: "padding-bottom 200ms ease-out",
           }}
         />
 

@@ -7,3 +7,4 @@ export * from "./reward";
 export * from "./mission-completion";
 export * from "./mission-like";
 export * from "./user";
+export * from "./ai";

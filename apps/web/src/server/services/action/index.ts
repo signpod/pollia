@@ -1,3 +1,4 @@
+import prisma from "@/database/utils/prisma/client";
 import { logger } from "@/lib/logger";
 import {
   actionUpdateSchema,
@@ -296,9 +297,28 @@ export class ActionService {
       await this.verifyMissionAccess(action.missionId, userId);
     }
 
-    const { options, ...actionData } = result.data;
+    const { options, type, ...restActionData } = result.data;
+    const nextType = type ?? action.type;
+    const isTypeChanged = type !== undefined && type !== action.type;
 
-    if (options && options.length > 0) {
+    if (isTypeChanged && this.isOptionBasedActionType(nextType) && options === undefined) {
+      const error = new Error("해당 액션 유형은 옵션을 포함해야 합니다.");
+      error.cause = 400;
+      throw error;
+    }
+
+    if (isTypeChanged && nextType === ActionType.BRANCH && options?.length !== 2) {
+      const error = new Error("분기 액션은 정확히 2개의 옵션이 필요합니다.");
+      error.cause = 400;
+      throw error;
+    }
+
+    const actionData = {
+      ...restActionData,
+      ...(type !== undefined && { type }),
+    };
+
+    if (options !== undefined) {
       const updatedAction = await this.actionRepo.updateWithOptions(
         actionId,
         actionData,
@@ -313,6 +333,15 @@ export class ActionService {
     return updatedAction;
   }
 
+  private isOptionBasedActionType(type: ActionType): boolean {
+    return (
+      type === ActionType.MULTIPLE_CHOICE ||
+      type === ActionType.SCALE ||
+      type === ActionType.TAG ||
+      type === ActionType.BRANCH
+    );
+  }
+
   async deleteAction(actionId: string, userId: string): Promise<void> {
     const action = await this.actionRepo.findById(actionId);
     if (!action) {
@@ -321,9 +350,37 @@ export class ActionService {
 
     if (action.missionId) {
       await this.verifyMissionAccess(action.missionId, userId);
+      await this.deleteAndReindexOrders(actionId, action.missionId);
+      return;
     }
 
     await this.actionRepo.delete(actionId);
+  }
+
+  private async deleteAndReindexOrders(actionId: string, missionId: string): Promise<void> {
+    await prisma.$transaction(async tx => {
+      await this.actionRepo.delete(actionId, tx);
+
+      const remaining = await this.actionRepo.findOrdersByMissionId(missionId, tx);
+
+      remaining.sort((a, b) => {
+        const aOrder = a.order ?? Number.MAX_SAFE_INTEGER;
+        const bOrder = b.order ?? Number.MAX_SAFE_INTEGER;
+        if (aOrder !== bOrder) return aOrder - bOrder;
+
+        const aCreated = a.createdAt.getTime();
+        const bCreated = b.createdAt.getTime();
+        if (aCreated !== bCreated) return aCreated - bCreated;
+
+        return a.id.localeCompare(b.id);
+      });
+
+      await Promise.all(
+        remaining.flatMap((action, index) =>
+          action.order === index ? [] : [this.actionRepo.updateOrder(action.id, index, tx)],
+        ),
+      );
+    });
   }
 
   async reorderActions(

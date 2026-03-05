@@ -1,6 +1,6 @@
 "use server";
 
-import { requireAuth } from "@/actions/common/auth";
+import { requireActiveUser } from "@/actions/common/auth";
 import { toggleMissionLikeSchema } from "@/schemas/mission-like";
 import { missionLikeService } from "@/server/services/mission-like";
 import type { ToggleMissionLikeRequest, ToggleMissionLikeResponse } from "@/types/dto/mission-like";
@@ -9,7 +9,7 @@ export async function toggleMissionLike(
   request: ToggleMissionLikeRequest,
 ): Promise<ToggleMissionLikeResponse> {
   try {
-    const user = await requireAuth();
+    const user = await requireActiveUser();
     const parsed = toggleMissionLikeSchema.safeParse(request);
     if (!parsed.success) {
       const error = new Error(parsed.error.issues[0]?.message ?? "유효성 검사 실패");

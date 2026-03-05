@@ -65,6 +65,7 @@ describe("EventService", () => {
           {
             id: "mission-1",
             title: "미션 1",
+            choseong: "",
             description: null,
             imageUrl: null,
             brandLogoUrl: null,
@@ -72,6 +73,8 @@ describe("EventService", () => {
             startDate: null,
             deadline: null,
             isActive: true,
+            allowGuestResponse: false,
+            allowMultipleResponses: false,
             maxParticipants: null,
             creatorId: "user-1",
             rewardId: null,
@@ -86,6 +89,10 @@ describe("EventService", () => {
             imageFileUploadId: null,
             brandLogoFileUploadId: null,
             entryActionId: null,
+            editorDraft: null,
+            useAiCompletion: false,
+            aiStatisticsReport: null,
+            viewCount: 0,
           },
         ],
       };

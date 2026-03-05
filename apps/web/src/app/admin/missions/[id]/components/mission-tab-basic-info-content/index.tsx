@@ -1,15 +1,21 @@
 "use client";
 
-import { MobilePreviewPanel } from "@/app/admin/components/common/MobilePreviewPanel";
+import {
+  MobilePreviewPanel,
+  useMobilePreviewRefresh,
+} from "@/app/admin/components/common/MobilePreviewPanel";
 import { SelectField } from "@/app/admin/components/common/SelectField";
 import { ToggleField } from "@/app/admin/components/common/ToggleField";
+import { AdminImageCropDialog } from "@/app/admin/components/common/cropper/AdminImageCropDialog";
+import { useImageEditWithCrop } from "@/app/admin/components/common/cropper/use-image-edit-with-crop";
 import {
   DateView,
-  ImageView,
+  ImageEditableView,
   LabeledView,
   NumberView,
   TextView,
 } from "@/app/admin/components/common/molecules/viewers";
+import { TiptapViewer } from "@/app/admin/components/common/tiptap";
 import { Button } from "@/app/admin/components/shadcn-ui/button";
 import {
   Card,
@@ -23,15 +29,15 @@ import { Separator } from "@/app/admin/components/shadcn-ui/separator";
 import { useUpdateMission } from "@/app/admin/hooks/mission/use-update-mission";
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { ROUTES } from "@/constants/routes";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { cleanTiptapHTML } from "@/lib/utils";
 import type { GetMissionResponse } from "@/types/dto";
 import { MissionCategory, MissionType } from "@prisma/client";
-import { TiptapViewer } from "@repo/ui/components/common/TiptapViewer";
 import { Pencil } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { BasicInfoEditDialog } from "../edit/BasicInfoEditDialog";
-import { ImageEditDialog } from "../edit/ImageEditDialog";
 
 interface MissionBasicInfoProps {
   mission: GetMissionResponse["data"];
@@ -41,30 +47,111 @@ interface InlineToggleFormValues {
   isActive: boolean;
   isExposed: boolean;
   category: MissionCategory;
+  allowGuestResponse: boolean;
+  allowMultipleResponses: boolean;
 }
 
 export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
   const [isBasicInfoDialogOpen, setIsBasicInfoDialogOpen] = useState(false);
-  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
   const previewAnchorRef = useRef<HTMLDivElement>(null);
+  const { refreshKey, refresh } = useMobilePreviewRefresh();
 
   const form = useForm<InlineToggleFormValues>({
     defaultValues: {
       isActive: mission.isActive,
       isExposed: mission.type === MissionType.GENERAL,
       category: mission.category,
+      allowGuestResponse: mission.allowGuestResponse,
+      allowMultipleResponses: mission.allowMultipleResponses,
     },
   });
 
   const updateMission = useUpdateMission();
+
+  const projectImageEdit = useImageEditWithCrop({
+    fileNamePrefix: `mission-image-${mission.id}`,
+    initialUrl: mission.imageUrl,
+    initialFileUploadId: mission.imageFileUploadId,
+    onBeforeOpen: refresh,
+    onUploadSuccess: (data, image) => {
+      updateMission.mutate(
+        {
+          missionId: mission.id,
+          data: {
+            imageUrl: data.publicUrl,
+            imageFileUploadId: data.fileUploadId,
+          },
+        },
+        {
+          onSuccess: () => {
+            image.deleteMarkedInitial();
+            refresh();
+            toast.success(`${UBIQUITOUS_CONSTANTS.MISSION} 이미지가 수정되었습니다`);
+          },
+          onError: error => {
+            image.discard();
+            image.unmarkInitial();
+            toast.error(
+              error.message || `${UBIQUITOUS_CONSTANTS.MISSION} 이미지 저장에 실패했습니다`,
+            );
+          },
+        },
+      );
+    },
+    onUploadError: error => {
+      toast.error(error.message || `${UBIQUITOUS_CONSTANTS.MISSION} 이미지 업로드에 실패했습니다`);
+    },
+  });
+
+  const brandLogoEdit = useImageEditWithCrop({
+    fileNamePrefix: `brand-logo-${mission.id}`,
+    initialUrl: mission.brandLogoUrl,
+    initialFileUploadId: mission.brandLogoFileUploadId,
+    onBeforeOpen: refresh,
+    onUploadSuccess: (data, image) => {
+      updateMission.mutate(
+        {
+          missionId: mission.id,
+          data: {
+            brandLogoUrl: data.publicUrl,
+            brandLogoFileUploadId: data.fileUploadId,
+          },
+        },
+        {
+          onSuccess: () => {
+            image.deleteMarkedInitial();
+            refresh();
+            toast.success("브랜드 로고가 수정되었습니다");
+          },
+          onError: error => {
+            image.discard();
+            image.unmarkInitial();
+            toast.error(error.message || "브랜드 로고 저장에 실패했습니다");
+          },
+        },
+      );
+    },
+    onUploadError: error => {
+      toast.error(error.message || "브랜드 로고 업로드에 실패했습니다");
+    },
+  });
 
   useEffect(() => {
     form.reset({
       isActive: mission.isActive,
       isExposed: mission.type === MissionType.GENERAL,
       category: mission.category,
+      allowGuestResponse: mission.allowGuestResponse,
+      allowMultipleResponses: mission.allowMultipleResponses,
     });
-  }, [mission.isActive, mission.type, mission.category, form]);
+  }, [
+    mission.isActive,
+    mission.type,
+    mission.category,
+    mission.allowGuestResponse,
+    mission.allowMultipleResponses,
+    form,
+  ]);
 
   useEffect(() => {
     const subscription = form.watch((value, { name, type }) => {
@@ -101,9 +188,41 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
           data: { category: value.category },
         });
       }
+      if (
+        name === "allowGuestResponse" &&
+        value.allowGuestResponse !== undefined &&
+        value.allowGuestResponse !== mission.allowGuestResponse
+      ) {
+        updateMission.mutate({
+          missionId: mission.id,
+          data: { allowGuestResponse: value.allowGuestResponse },
+        });
+      }
+      if (
+        name === "allowMultipleResponses" &&
+        value.allowMultipleResponses !== undefined &&
+        value.allowMultipleResponses !== mission.allowMultipleResponses
+      ) {
+        updateMission.mutate({
+          missionId: mission.id,
+          data: { allowMultipleResponses: value.allowMultipleResponses },
+        });
+      }
     });
     return () => subscription.unsubscribe();
-  }, [form, mission.id, mission.isActive, mission.type, mission.category, updateMission]);
+  }, [
+    form,
+    mission.id,
+    mission.isActive,
+    mission.type,
+    mission.category,
+    mission.allowGuestResponse,
+    mission.allowMultipleResponses,
+    updateMission,
+  ]);
+
+  const isProjectImageBusy = projectImageEdit.image.isUploading || updateMission.isPending;
+  const isBrandLogoBusy = brandLogoEdit.image.isUploading || updateMission.isPending;
 
   return (
     <>
@@ -113,7 +232,9 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>인트로 정보</CardTitle>
-                <CardDescription>미션 인트로 화면에 표시되는 정보</CardDescription>
+                <CardDescription>
+                  {UBIQUITOUS_CONSTANTS.MISSION} 인트로 화면에 표시되는 정보
+                </CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -124,21 +245,21 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
                   control={form.control}
                   name="isActive"
                   label="활성 상태"
-                  description="미션을 활성화하거나 비활성화합니다"
+                  description={`${UBIQUITOUS_CONSTANTS.MISSION}을 활성화하거나 비활성화합니다`}
                   disabled={updateMission.isPending}
                 />
                 <ToggleField
                   control={form.control}
                   name="isExposed"
                   label="노출여부"
-                  description="노출 시 미션 목록에 표시됩니다"
+                  description={`노출 시 ${UBIQUITOUS_CONSTANTS.MISSION} 목록에 표시됩니다`}
                   disabled={updateMission.isPending}
                 />
                 <SelectField
                   control={form.control}
                   name="category"
                   label="카테고리"
-                  description="미션의 카테고리를 선택합니다."
+                  description={`${UBIQUITOUS_CONSTANTS.MISSION}의 카테고리를 선택합니다.`}
                   options={[
                     {
                       value: MissionCategory.TEST,
@@ -161,6 +282,20 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
                       label: MISSION_CATEGORY_LABELS[MissionCategory.QUIZ],
                     },
                   ]}
+                  disabled={updateMission.isPending}
+                />
+                <ToggleField
+                  control={form.control}
+                  name="allowGuestResponse"
+                  label="비회원 참여 허용"
+                  description="비회원(게스트)도 참여할 수 있도록 허용합니다"
+                  disabled={updateMission.isPending}
+                />
+                <ToggleField
+                  control={form.control}
+                  name="allowMultipleResponses"
+                  label="다중 응답 허용"
+                  description="동일 사용자가 여러 번 응답할 수 있도록 허용합니다"
                   disabled={updateMission.isPending}
                 />
               </div>
@@ -220,20 +355,89 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
             <Separator />
 
             <section className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium text-muted-foreground">미디어</h3>
-                <Button variant="outline" size="sm" onClick={() => setIsImageDialogOpen(true)}>
-                  <Pencil className="h-4 w-4 mr-2" />
-                  미디어 편집
-                </Button>
-              </div>
+              <h3 className="text-sm font-medium text-muted-foreground">미디어</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <LabeledView label="미션 이미지">
-                  <ImageView src={mission.imageUrl} alt="미션 이미지" size="lg" />
-                </LabeledView>
-                <LabeledView label="브랜드 로고">
-                  <ImageView src={mission.brandLogoUrl} alt="브랜드 로고" size="md" />
-                </LabeledView>
+                <ImageEditableView
+                  title={`${UBIQUITOUS_CONSTANTS.MISSION} 이미지`}
+                  description="권장 비율 9:16"
+                  imageUrl={mission.imageUrl}
+                  imageAlt={`${UBIQUITOUS_CONSTANTS.MISSION} 이미지`}
+                  imageSize="lg"
+                  disabled={isProjectImageBusy}
+                  onAddFile={projectImageEdit.handleAddFile}
+                  onEdit={() =>
+                    projectImageEdit.handleEditImage(
+                      mission.imageUrl,
+                      `mission-image-${mission.id}.jpg`,
+                    )
+                  }
+                  onDelete={() => {
+                    refresh();
+                    projectImageEdit.image.discard();
+                    updateMission.mutate(
+                      {
+                        missionId: mission.id,
+                        data: {
+                          imageUrl: null,
+                          imageFileUploadId: null,
+                        },
+                      },
+                      {
+                        onSuccess: () => {
+                          projectImageEdit.image.deleteMarkedInitial();
+                          refresh();
+                          toast.success(`${UBIQUITOUS_CONSTANTS.MISSION} 이미지가 삭제되었습니다`);
+                        },
+                        onError: error => {
+                          projectImageEdit.image.reset();
+                          toast.error(
+                            error.message ||
+                              `${UBIQUITOUS_CONSTANTS.MISSION} 이미지 삭제에 실패했습니다`,
+                          );
+                        },
+                      },
+                    );
+                  }}
+                />
+                <ImageEditableView
+                  title="브랜드 로고"
+                  description="권장 비율 1:1"
+                  imageUrl={mission.brandLogoUrl}
+                  imageAlt="브랜드 로고"
+                  imageSize="md"
+                  disabled={isBrandLogoBusy}
+                  onAddFile={brandLogoEdit.handleAddFile}
+                  onEdit={() =>
+                    brandLogoEdit.handleEditImage(
+                      mission.brandLogoUrl,
+                      `brand-logo-${mission.id}.jpg`,
+                    )
+                  }
+                  onDelete={() => {
+                    refresh();
+                    brandLogoEdit.image.discard();
+                    updateMission.mutate(
+                      {
+                        missionId: mission.id,
+                        data: {
+                          brandLogoUrl: null,
+                          brandLogoFileUploadId: null,
+                        },
+                      },
+                      {
+                        onSuccess: () => {
+                          brandLogoEdit.image.deleteMarkedInitial();
+                          refresh();
+                          toast.success("브랜드 로고가 삭제되었습니다");
+                        },
+                        onError: error => {
+                          brandLogoEdit.image.reset();
+                          toast.error(error.message || "브랜드 로고 삭제에 실패했습니다");
+                        },
+                      },
+                    );
+                  }}
+                />
               </div>
             </section>
 
@@ -255,7 +459,11 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
         <div ref={previewAnchorRef} className="hidden xl:block" />
       </div>
 
-      <MobilePreviewPanel anchor={previewAnchorRef} url={ROUTES.MISSION(mission.id)} />
+      <MobilePreviewPanel
+        anchor={previewAnchorRef}
+        url={ROUTES.MISSION(mission.id)}
+        refreshKey={refreshKey}
+      />
 
       <BasicInfoEditDialog
         open={isBasicInfoDialogOpen}
@@ -263,10 +471,38 @@ export function MissionTabBasicInfoContent({ mission }: MissionBasicInfoProps) {
         missionId={mission.id}
       />
 
-      <ImageEditDialog
-        open={isImageDialogOpen}
-        onOpenChange={setIsImageDialogOpen}
-        missionId={mission.id}
+      <AdminImageCropDialog
+        open={projectImageEdit.cropper.isOpen}
+        imageSrc={projectImageEdit.cropper.imageSrc}
+        aspect={9 / 16}
+        title={`${UBIQUITOUS_CONSTANTS.MISSION} 이미지 편집`}
+        description="이미지를 9:16 비율로 맞춰 저장합니다."
+        fileName={projectImageEdit.cropper.fileName ?? `mission-image-${mission.id}.jpg`}
+        onOpenChange={open => {
+          if (!open) {
+            projectImageEdit.cropper.close();
+          }
+        }}
+        onConfirm={file => {
+          projectImageEdit.image.upload(file);
+        }}
+      />
+
+      <AdminImageCropDialog
+        open={brandLogoEdit.cropper.isOpen}
+        imageSrc={brandLogoEdit.cropper.imageSrc}
+        aspect={1}
+        title="브랜드 로고 편집"
+        description="이미지를 1:1 비율로 맞춰 저장합니다."
+        fileName={brandLogoEdit.cropper.fileName ?? `brand-logo-${mission.id}.jpg`}
+        onOpenChange={open => {
+          if (!open) {
+            brandLogoEdit.cropper.close();
+          }
+        }}
+        onConfirm={file => {
+          brandLogoEdit.image.upload(file);
+        }}
       />
     </>
   );

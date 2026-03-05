@@ -1,8 +1,16 @@
 import type { ActionRepository } from "@/server/repositories/action/actionRepository";
 import type { MissionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import type { MissionRepository } from "@/server/repositories/mission/missionRepository";
+import { searchSyncOutboxRepository } from "@/server/repositories/search-sync-outbox";
 import { MissionService } from "..";
 import { createMockActionWithOptions, createMockMission } from "../../testUtils";
+
+jest.mock("@/database/utils/prisma/client", () => ({
+  __esModule: true,
+  default: {
+    $transaction: jest.fn(async callback => callback({})),
+  },
+}));
 
 describe("MissionService - Create", () => {
   let missionService: MissionService;
@@ -25,14 +33,22 @@ describe("MissionService - Create", () => {
     mockResponseRepository = {
       findById: jest.fn(),
       findByMissionAndUser: jest.fn(),
+      findByMissionAndGuest: jest.fn(),
       findByMissionId: jest.fn(),
+      findByMissionIdPaged: jest.fn(),
       findByUserId: jest.fn(),
       findCompletedByMissionId: jest.fn(),
       create: jest.fn(),
       updateCompletedAt: jest.fn(),
+      findLatestCompletedAtByActor: jest.fn(),
+      updateCompletedAtWithAbuseMeta: jest.fn(),
+      completeWithSelectionAndAbuseMeta: jest.fn(),
+      nullifyAbuseMetaOlderThan: jest.fn(),
       delete: jest.fn(),
       deleteByMissionAndUser: jest.fn(),
+      deleteByMissionAndGuest: jest.fn(),
       countByMissionId: jest.fn(),
+      countByMissionIdFiltered: jest.fn(),
       countCompletedByMissionId: jest.fn(),
     } as jest.Mocked<MissionResponseRepository>;
 
@@ -55,10 +71,14 @@ describe("MissionService - Create", () => {
       mockResponseRepository,
       mockActionRepository,
     );
+    jest.spyOn(searchSyncOutboxRepository, "create").mockResolvedValue({
+      id: "outbox-default",
+    } as never);
   });
 
   afterEach(() => {
     jest.clearAllMocks();
+    jest.restoreAllMocks();
   });
 
   describe("createMission", () => {
@@ -79,13 +99,16 @@ describe("MissionService - Create", () => {
       const mockCreatedMission = {
         id: "mission-1",
         title: request.title,
+        choseong: "",
         description: request.description,
         target: null,
         imageUrl: null,
         brandLogoUrl: null,
         deadline: request.deadline,
         estimatedMinutes: request.estimatedMinutes,
-        isActive: true,
+        isActive: false,
+        allowGuestResponse: false,
+        allowMultipleResponses: false,
         maxParticipants: null,
         type: "GENERAL" as const,
         category: "EVENT" as const,
@@ -97,22 +120,27 @@ describe("MissionService - Create", () => {
         brandLogoFileUploadId: null,
         eventId: null,
         entryActionId: null,
+        editorDraft: null,
+        useAiCompletion: false,
+        aiStatisticsReport: null,
+        viewCount: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
         startDate: null,
       };
       mockRepository.createWithActions.mockResolvedValue(mockCreatedMission);
-
       // When
       const result = await missionService.createMission(request, "user-1");
 
       // Then
       expect(result.id).toBe("mission-1");
       expect(result.title).toBe("새 설문");
+      expect(searchSyncOutboxRepository.create).toHaveBeenCalledTimes(1);
       expect(mockRepository.createWithActions).toHaveBeenCalledWith(
         {
           title: request.title,
           description: request.description,
+          choseong: expect.any(String),
           target: undefined,
           imageUrl: undefined,
           imageFileUploadId: undefined,
@@ -123,9 +151,49 @@ describe("MissionService - Create", () => {
           maxParticipants: undefined,
           type: "GENERAL",
           category: "EVENT",
+          isActive: false,
           creatorId: "user-1",
         },
         ["a1", "a2"],
+        expect.anything(),
+      );
+    });
+
+    it("isActive가 명시되면 해당 값을 우선해 생성한다", async () => {
+      // Given
+      const request = {
+        title: "활성 미션",
+        description: undefined,
+        target: undefined,
+        imageUrl: undefined,
+        brandLogoUrl: undefined,
+        deadline: undefined,
+        estimatedMinutes: undefined,
+        type: "GENERAL" as const,
+        category: "EVENT" as const,
+        actionIds: [],
+        isActive: true,
+      };
+
+      const mockCreatedMission = createMockMission({
+        id: "mission-1",
+        title: request.title,
+        isActive: true,
+      });
+      mockRepository.createWithActions.mockResolvedValue(mockCreatedMission);
+
+      // When
+      await missionService.createMission(request, "user-1");
+
+      // Then
+      expect(mockRepository.createWithActions).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: request.title,
+          isActive: true,
+          creatorId: "user-1",
+        }),
+        [],
+        expect.anything(),
       );
     });
 
@@ -148,6 +216,7 @@ describe("MissionService - Create", () => {
       await expect(missionService.createMission(request, "user-1")).rejects.toThrow(
         "제목을 입력해주세요.",
       );
+      expect(searchSyncOutboxRepository.create).not.toHaveBeenCalled();
 
       try {
         await missionService.createMission(request, "user-1");
@@ -175,6 +244,9 @@ describe("MissionService - Create", () => {
         title: "A",
       });
       mockRepository.createWithActions.mockResolvedValue(mockCreatedMission);
+      jest.spyOn(searchSyncOutboxRepository, "create").mockResolvedValue({
+        id: "outbox-1",
+      } as never);
 
       // When
       const result = await missionService.createMission(request, "user-1");
@@ -325,7 +397,6 @@ describe("MissionService - Create", () => {
       mockRepository.findById.mockResolvedValue(mockMission);
       mockActionRepository.findDetailsByMissionId.mockResolvedValue(mockActions);
       mockRepository.duplicateMission.mockResolvedValue(mockDuplicatedMission);
-
       // When
       const result = await missionService.duplicateMission("mission-1", "user-1");
 
@@ -333,10 +404,12 @@ describe("MissionService - Create", () => {
       expect(result.id).toBe("mission-2");
       expect(result.title).toBe("원본 미션 - 복사본");
       expect(result.creatorId).toBe("user-1");
+      expect(searchSyncOutboxRepository.create).toHaveBeenCalledTimes(1);
 
       expect(mockRepository.duplicateMission).toHaveBeenCalledWith(
         {
           title: "원본 미션 - 복사본",
+          choseong: expect.any(String),
           description: "설명",
           target: "대상",
           imageUrl: "https://example.com/image.jpg",
@@ -398,6 +471,7 @@ describe("MissionService - Create", () => {
             ],
           },
         ],
+        expect.anything(),
       );
     });
 
@@ -468,6 +542,7 @@ describe("MissionService - Create", () => {
           creatorId: "user-1",
         }),
         [],
+        expect.anything(),
       );
     });
 
@@ -476,6 +551,7 @@ describe("MissionService - Create", () => {
       const mockMission = {
         id: "mission-1",
         title: "활성 미션",
+        choseong: "",
         description: null,
         target: null,
         imageUrl: null,
@@ -483,6 +559,8 @@ describe("MissionService - Create", () => {
         estimatedMinutes: null,
         deadline: null,
         isActive: true,
+        allowGuestResponse: false,
+        allowMultipleResponses: false,
         maxParticipants: null,
         type: "GENERAL" as const,
         category: "EVENT" as const,
@@ -494,6 +572,10 @@ describe("MissionService - Create", () => {
         brandLogoFileUploadId: null,
         eventId: null,
         entryActionId: null,
+        editorDraft: null,
+        useAiCompletion: false,
+        aiStatisticsReport: null,
+        viewCount: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
         startDate: null,
@@ -502,6 +584,7 @@ describe("MissionService - Create", () => {
       const mockDuplicatedMission = {
         id: "mission-2",
         title: "활성 미션 - 복사본",
+        choseong: "",
         description: null,
         target: null,
         imageUrl: null,
@@ -509,6 +592,8 @@ describe("MissionService - Create", () => {
         estimatedMinutes: null,
         deadline: null,
         isActive: false,
+        allowGuestResponse: false,
+        allowMultipleResponses: false,
         maxParticipants: null,
         type: "GENERAL" as const,
         category: "EVENT" as const,
@@ -520,6 +605,10 @@ describe("MissionService - Create", () => {
         brandLogoFileUploadId: null,
         eventId: null,
         entryActionId: null,
+        editorDraft: null,
+        useAiCompletion: false,
+        aiStatisticsReport: null,
+        viewCount: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
         startDate: null,
@@ -538,6 +627,7 @@ describe("MissionService - Create", () => {
           isActive: false,
         }),
         expect.any(Array),
+        expect.anything(),
       );
     });
   });
