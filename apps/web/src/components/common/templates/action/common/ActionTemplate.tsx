@@ -57,7 +57,7 @@ export function SurveyQuestionTemplate({
             )}
           </div>
 
-          {imageUrl && <AdaptiveImage src={imageUrl} alt={title} />}
+          {imageUrl && <AdaptiveImage src={imageUrl} alt={title} priority />}
         </section>
 
         {children}
