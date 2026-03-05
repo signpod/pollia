@@ -1,6 +1,5 @@
 "use client";
 
-import { ProfileHeader } from "@/components/common/ProfileHeader";
 import { useParams } from "next/navigation";
 import { EditorMissionTabs } from "../../missions/[missionId]/components/EditorMissionTabs";
 import { EditorContentHeader } from "./EditorContentHeader";
@@ -11,8 +10,7 @@ export function EditorShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-zinc-50">
-      <ProfileHeader />
-      <header className="sticky top-14 z-20 border-b border-zinc-200 bg-white">
+      <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white">
         <div className="px-5 pb-2 pt-4">
           <EditorContentHeader missionId={missionId} />
         </div>
