@@ -27,7 +27,7 @@ export function MissionCompletionTemplate({
   shareButtons,
 }: MissionCompletionTemplateProps) {
   return (
-    <div className="relative w-full bg-white">
+    <div className="relative w-full bg-white min-h-svh">
       {header}
       <div className="flex w-full flex-col items-center gap-10 px-5 pt-5 pb-10">
         {imageUrl && (

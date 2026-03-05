@@ -386,7 +386,7 @@ function CompletionFormComponent(
               결과 화면 이미지
             </Typo.Body>
             <Typo.Body size="small" className="text-zinc-500">
-              {imageUpload.isUploading ? "업로드 중..." : "이미지를 3:4 비율로 설정합니다. (선택)"}
+              {imageUpload.isUploading ? "업로드 중..." : "이미지를 1:1 비율로 설정합니다. (선택)"}
             </Typo.Body>
           </div>
           <ImageSelector
@@ -413,9 +413,9 @@ function CompletionFormComponent(
       <AdminImageCropDialog
         open={cropper.isOpen}
         imageSrc={cropper.imageSrc}
-        aspect={3 / 4}
+        aspect={1}
         title="결과 화면 이미지 편집"
-        description="이미지를 3:4 비율로 맞춰 저장합니다."
+        description="이미지를 1:1 비율로 맞춰 저장합니다."
         fileName={cropper.fileName ?? `completion-image-${missionId}-${itemKey}.jpg`}
         onOpenChange={open => {
           if (!open) {
