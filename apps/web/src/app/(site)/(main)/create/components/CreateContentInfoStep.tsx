@@ -7,21 +7,21 @@ import {
   MISSION_DESCRIPTION_MAX_LENGTH,
   MISSION_TITLE_MAX_LENGTH,
 } from "../schema";
-import { CreateProjectTogglesStep } from "./CreateProjectTogglesStep";
+import { CreateContentTogglesStep } from "./CreateContentTogglesStep";
 import { CreateRewardSettingsStep } from "./CreateRewardSettingsStep";
 import { CreateTiptapField } from "./CreateTiptapField";
 
-interface CreateProjectInfoStepProps {
+interface CreateContentInfoStepProps {
   showRewardSettings?: boolean;
   showAiCompletionToggle?: boolean;
   hideToggles?: boolean;
 }
 
-export function CreateProjectInfoStep({
+export function CreateContentInfoStep({
   showRewardSettings = false,
   showAiCompletionToggle = false,
   hideToggles = false,
-}: CreateProjectInfoStepProps = {}) {
+}: CreateContentInfoStepProps = {}) {
   const {
     control,
     formState: { errors },
@@ -34,7 +34,7 @@ export function CreateProjectInfoStep({
         name="title"
         render={({ field }) => (
           <Input
-            label="프로젝트 제목"
+            label="콘텐츠 제목"
             required
             placeholder="제목을 입력해주세요"
             maxLength={MISSION_TITLE_MAX_LENGTH}
@@ -48,15 +48,15 @@ export function CreateProjectInfoStep({
       <CreateTiptapField
         name="description"
         label="설명"
-        description="프로젝트에 대한 설명을 입력해주세요."
-        placeholder="프로젝트에 대한 설명을 입력해주세요"
+        description="콘텐츠에 대한 설명을 입력해주세요."
+        placeholder="콘텐츠에 대한 설명을 입력해주세요"
         isOptional
         maxLength={MISSION_DESCRIPTION_MAX_LENGTH}
         showCounter
         showToolbar
       />
 
-      {!hideToggles && <CreateProjectTogglesStep showAiCompletionToggle={showAiCompletionToggle} />}
+      {!hideToggles && <CreateContentTogglesStep showAiCompletionToggle={showAiCompletionToggle} />}
 
       {showRewardSettings ? <CreateRewardSettingsStep /> : null}
     </div>

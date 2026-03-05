@@ -17,7 +17,7 @@ const VALID_TAB_VALUES = new Set(TABS.map(t => t.value));
 
 export type TabValue = (typeof TABS)[number]["value"];
 
-export function useMyProjectTabs() {
+export function useMyContentTabs() {
   const { data } = useMyResponses();
   const searchParams = useSearchParams();
   const initialTab = searchParams.get("tab");
@@ -57,4 +57,4 @@ export function useMyProjectTabs() {
   };
 }
 
-export type UseMyProjectTabsReturn = ReturnType<typeof useMyProjectTabs>;
+export type UseMyContentTabsReturn = ReturnType<typeof useMyContentTabs>;

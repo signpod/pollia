@@ -9,8 +9,8 @@ import { ChevronLeft } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef } from "react";
 import { FormProvider, useForm } from "react-hook-form";
+import { CreateContentInfoStep } from "./components/CreateContentInfoStep";
 import { CreateModeStep } from "./components/CreateModeStep";
-import { CreateProjectInfoStep } from "./components/CreateProjectInfoStep";
 import { CreateSuccessScreen } from "./components/CreateSuccessScreen";
 import { type CreateMissionStep } from "./logic/types";
 import { useCreateMissionFunnel } from "./logic/useCreateMissionFunnel";
@@ -108,7 +108,7 @@ export function CreateMissionClient() {
       case "mode":
         return <CreateModeStep onSelectCustom={controller.selectCustomMode} />;
       case "project-info":
-        return <CreateProjectInfoStep showRewardSettings showAiCompletionToggle />;
+        return <CreateContentInfoStep showRewardSettings showAiCompletionToggle />;
       case "success":
         return controller.result ? (
           <CreateSuccessScreen

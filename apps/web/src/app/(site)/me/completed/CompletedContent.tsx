@@ -4,7 +4,7 @@ import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { MissionCategory } from "@prisma/client";
 import { Tab, Typo } from "@repo/ui/components";
 import { useMemo, useState } from "react";
-import { MeProjectCard } from "../components/MeProjectCard";
+import { MeContentCard } from "../components/MeContentCard";
 import { useMyResponses } from "../hooks/useMyResponses";
 
 type CategoryFilter = "all" | MissionCategory;
@@ -53,7 +53,7 @@ export function CompletedContent() {
         {filteredResponses.length > 0 ? (
           <div className="grid grid-cols-2 gap-x-4 gap-y-10">
             {filteredResponses.map(response => (
-              <MeProjectCard
+              <MeContentCard
                 key={response.id}
                 response={response}
                 variant="completed"

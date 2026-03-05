@@ -14,7 +14,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-interface RecommendedProjectsProps {
+interface RecommendedContentsProps {
   userName: string;
 }
 
@@ -55,7 +55,7 @@ function RecommendedCard({ mission, className }: RecommendedCardProps) {
   );
 }
 
-export function RecommendedProjects({ userName }: RecommendedProjectsProps) {
+export function RecommendedContents({ userName }: RecommendedContentsProps) {
   const [emblaRef] = useEmblaCarousel({
     align: "start",
     containScroll: "trimSnaps",
@@ -74,7 +74,7 @@ export function RecommendedProjects({ userName }: RecommendedProjectsProps) {
   return (
     <section className="flex flex-col gap-6">
       <Typo.MainTitle size="small" className="px-5">
-        {userName}님의 추천 프로젝트
+        {userName}님의 추천 콘텐츠
       </Typo.MainTitle>
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex">

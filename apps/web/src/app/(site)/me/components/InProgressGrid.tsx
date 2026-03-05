@@ -1,9 +1,9 @@
 "use client";
 
 import type { MyMissionResponse } from "@/types/dto/mission-response";
-import { MeProjectCard, type MeProjectCardVariant } from "./MeProjectCard";
+import { MeContentCard, type MeContentCardVariant } from "./MeContentCard";
 
-function getVariant(response: MyMissionResponse): MeProjectCardVariant {
+function getVariant(response: MyMissionResponse): MeContentCardVariant {
   const { deadline } = response.mission;
   if (deadline && new Date(deadline) < new Date()) return "expired";
   return "in-progress";
@@ -17,7 +17,7 @@ export function InProgressGrid({ responses }: InProgressGridProps) {
   return (
     <div className="grid grid-cols-2 gap-x-4 gap-y-10">
       {responses.map(response => (
-        <MeProjectCard
+        <MeContentCard
           key={response.id}
           response={response}
           variant={getVariant(response)}

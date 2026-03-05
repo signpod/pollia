@@ -24,7 +24,7 @@ import {
   useMemo,
 } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
-import { EditorProjectInfoSection } from "../../../components/view/EditorProjectInfoSection";
+import { EditorContentInfoSection } from "../../../components/view/EditorContentInfoSection";
 import { ImageUploaderField } from "../../../components/view/ImageUploaderField";
 import { countValidationIssues } from "../../../utils/countValidationIssues";
 import type {
@@ -34,7 +34,7 @@ import type {
   SectionSaveStateChangeHandler,
 } from "./editor-save.types";
 
-interface ProjectBasicInfoCardProps {
+interface ContentBasicInfoCardProps {
   mission: GetMissionResponse["data"];
   onSaveStateChange?: SectionSaveStateChangeHandler;
   onUseAiCompletionChange?: (value: boolean) => void;
@@ -60,8 +60,8 @@ function buildDefaultValues(mission: GetMissionResponse["data"]): CreateMissionF
   };
 }
 
-function ProjectBasicInfoCardComponent(
-  { mission, onSaveStateChange, onUseAiCompletionChange }: ProjectBasicInfoCardProps,
+function ContentBasicInfoCardComponent(
+  { mission, onSaveStateChange, onUseAiCompletionChange }: ContentBasicInfoCardProps,
   ref: ForwardedRef<SectionSaveHandle>,
 ) {
   const form = useForm<CreateMissionFormData>({
@@ -88,7 +88,7 @@ function ProjectBasicInfoCardComponent(
     },
     onUploadError: error => {
       toast({
-        message: error.message || "프로젝트 썸네일 업로드에 실패했습니다.",
+        message: error.message || "콘텐츠 썸네일 업로드에 실패했습니다.",
         icon: AlertCircle,
         iconClassName: "text-red-500",
       });
@@ -307,11 +307,11 @@ function ProjectBasicInfoCardComponent(
       />
 
       <ImageUploaderField
-        title="프로젝트 썸네일"
+        title="콘텐츠 썸네일"
         description={
           thumbnailImageUpload.isUploading
             ? "업로드 중..."
-            : "프로젝트 썸네일을 1:1 비율로 설정합니다."
+            : "콘텐츠 썸네일을 1:1 비율로 설정합니다."
         }
         imageUrl={thumbnailImageUpload.previewUrl ?? watchedImageUrl ?? undefined}
         onImageSelect={file => thumbnailCropper.openWithFile(file)}
@@ -329,7 +329,7 @@ function ProjectBasicInfoCardComponent(
             event.preventDefault();
           }}
         >
-          <EditorProjectInfoSection showAiCompletionToggle imageUploaders={imageUploaders} />
+          <EditorContentInfoSection showAiCompletionToggle imageUploaders={imageUploaders} />
         </form>
       </FormProvider>
 
@@ -337,7 +337,7 @@ function ProjectBasicInfoCardComponent(
         open={thumbnailCropper.isOpen}
         imageSrc={thumbnailCropper.imageSrc}
         aspect={1}
-        title="프로젝트 썸네일 편집"
+        title="콘텐츠 썸네일 편집"
         description="이미지를 1:1 비율로 맞춰 저장합니다."
         fileName={thumbnailCropper.fileName ?? `mission-thumbnail-${mission.id}.jpg`}
         onOpenChange={open => {
@@ -369,7 +369,7 @@ function ProjectBasicInfoCardComponent(
   );
 }
 
-export const ProjectBasicInfoCard = forwardRef<SectionSaveHandle, ProjectBasicInfoCardProps>(
-  ProjectBasicInfoCardComponent,
+export const ContentBasicInfoCard = forwardRef<SectionSaveHandle, ContentBasicInfoCardProps>(
+  ContentBasicInfoCardComponent,
 );
-ProjectBasicInfoCard.displayName = "ProjectBasicInfoCard";
+ContentBasicInfoCard.displayName = "ContentBasicInfoCard";
