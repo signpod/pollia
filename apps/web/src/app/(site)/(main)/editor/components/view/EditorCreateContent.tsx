@@ -7,7 +7,7 @@ import {
 } from "@/app/(site)/(main)/create/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MissionCategory } from "@prisma/client";
-import { Button, Typo } from "@repo/ui/components";
+import { Button } from "@repo/ui/components";
 import { useSearchParams } from "next/navigation";
 import { useMemo } from "react";
 import { FormProvider, useForm } from "react-hook-form";
@@ -15,6 +15,7 @@ import { EditorBottomSaveSlot } from "../../missions/[missionId]/components/Edit
 import { useEditorMissionTab } from "../../missions/[missionId]/components/EditorMissionTabContext";
 import { useEditorCreateTransitionController } from "../controller/useEditorCreateTransitionController";
 import { EditorEmptyTabContent } from "./EditorEmptyTabContent";
+import { EditorSectionCard } from "./EditorSectionCard";
 
 const VALID_CATEGORIES = new Set<string>(Object.values(MissionCategory));
 
@@ -86,17 +87,11 @@ export function EditorCreateContent() {
         isActive={currentTab === "editor"}
         node={submitButtonNode}
       />
-      <div className="border border-zinc-200 bg-white">
-        <div className="border-b border-zinc-100 px-5 py-4">
-          <Typo.SubTitle>프로젝트 기본정보</Typo.SubTitle>
-          <Typo.Body size="medium" className="mt-1 text-zinc-500">
-            프로젝트 기본 정보를 입력합니다.
-          </Typo.Body>
-        </div>
+      <EditorSectionCard title="프로젝트 기본정보" description="프로젝트 기본 정보를 입력합니다.">
         <div className="px-5 py-5">
           <CreateProjectInfoStep showRewardSettings showAiCompletionToggle />
         </div>
-      </div>
+      </EditorSectionCard>
     </FormProvider>
   );
 }

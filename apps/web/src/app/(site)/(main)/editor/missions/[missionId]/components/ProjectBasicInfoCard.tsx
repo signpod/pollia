@@ -308,30 +308,7 @@ function ProjectBasicInfoCardComponent(
   );
 
   return (
-    <div className="border border-zinc-200 bg-white">
-      <div className="border-b border-zinc-100 px-5 py-4">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <Typo.SubTitle>프로젝트 기본정보 수정</Typo.SubTitle>
-            <Typo.Body size="medium" className="mt-1 text-zinc-500">
-              프로젝트 기본 정보를 수정합니다.
-            </Typo.Body>
-          </div>
-          {hasValidationIssues ? (
-            <div
-              className="flex shrink-0 items-center gap-1 text-red-500"
-              title="입력 확인 필요"
-              aria-label="입력 확인 필요"
-            >
-              <AlertCircle className="size-4" />
-              <Typo.Body size="small" className="font-semibold text-red-500">
-                {validationIssueCount}
-              </Typo.Body>
-            </div>
-          ) : null}
-        </div>
-      </div>
-
+    <>
       <FormProvider {...form}>
         <form
           onSubmit={event => {
@@ -415,7 +392,7 @@ function ProjectBasicInfoCardComponent(
           brandLogoImageUpload.upload(file);
         }}
       />
-    </div>
+    </>
   );
 }
 

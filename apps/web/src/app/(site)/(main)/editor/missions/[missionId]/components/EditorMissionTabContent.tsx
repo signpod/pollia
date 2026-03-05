@@ -10,6 +10,7 @@ import type { GetMissionResponse } from "@/types/dto";
 import { type PaymentType } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { EditorSectionCard } from "../../../components/view/EditorSectionCard";
 import { type ActionSectionDraftSnapshot, ActionSettingsCard } from "./ActionSettingsCard";
 import {
   type CompletionSectionDraftSnapshot,
@@ -78,6 +79,8 @@ export function EditorMissionTabContent({
 }: EditorMissionTabContentProps) {
   const { currentTab } = useEditorMissionTab();
   const [editorUseAiCompletion, setEditorUseAiCompletion] = useState(mission.useAiCompletion);
+  const [basicValidationCount, setBasicValidationCount] = useState(0);
+  const [rewardValidationCount, setRewardValidationCount] = useState(0);
   const [cachedActionDraftSnapshot, setCachedActionDraftSnapshot] =
     useState<ActionSectionDraftSnapshot | null>(null);
   const [cachedCompletionDraftSnapshot, setCachedCompletionDraftSnapshot] =
@@ -110,6 +113,22 @@ export function EditorMissionTabContent({
   useEffect(() => {
     setEditorUseAiCompletion(mission.useAiCompletion);
   }, [mission.useAiCompletion, missionId]);
+
+  const handleBasicStateChange = useCallback(
+    (state: Parameters<typeof sectionBindings.onBasicStateChange>[0]) => {
+      setBasicValidationCount(state.validationIssueCount);
+      sectionBindings.onBasicStateChange(state);
+    },
+    [sectionBindings.onBasicStateChange],
+  );
+
+  const handleRewardStateChange = useCallback(
+    (state: Parameters<typeof sectionBindings.onRewardStateChange>[0]) => {
+      setRewardValidationCount(state.validationIssueCount);
+      sectionBindings.onRewardStateChange(state);
+    },
+    [sectionBindings.onRewardStateChange],
+  );
 
   const handleActionWorkingSetChange = useCallback(
     (snapshot: ActionSectionDraftSnapshot) => {
@@ -248,19 +267,24 @@ export function EditorMissionTabContent({
         node={saveButtonNode}
       />
       <EditorMissionDraftProvider>
-        <ProjectBasicInfoCard
-          ref={refs.basicInfoRef}
-          mission={mission}
-          onSaveStateChange={sectionBindings.onBasicStateChange}
-          onUseAiCompletionChange={setEditorUseAiCompletion}
-        />
-        <Separator className="h-2" />
-        <RewardSettingsCard
-          ref={refs.rewardRef}
-          mission={mission}
-          initialReward={reward}
-          onSaveStateChange={sectionBindings.onRewardStateChange}
-        />
+        <EditorSectionCard
+          title="프로젝트 기본정보"
+          description="프로젝트 기본 정보를 입력합니다."
+          validationIssueCount={basicValidationCount + rewardValidationCount}
+        >
+          <ProjectBasicInfoCard
+            ref={refs.basicInfoRef}
+            mission={mission}
+            onSaveStateChange={handleBasicStateChange}
+            onUseAiCompletionChange={setEditorUseAiCompletion}
+          />
+          <RewardSettingsCard
+            ref={refs.rewardRef}
+            mission={mission}
+            initialReward={reward}
+            onSaveStateChange={handleRewardStateChange}
+          />
+        </EditorSectionCard>
         <Separator className="h-2" />
         <ActionSettingsCard
           ref={refs.actionRef}
