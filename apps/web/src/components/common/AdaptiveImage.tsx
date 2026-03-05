@@ -8,7 +8,7 @@ interface AdaptiveImageProps {
 
 export function AdaptiveImage({ src, alt, priority }: AdaptiveImageProps) {
   return (
-    <figure className="relative overflow-hidden rounded-sm aspect-3/2 bg-muted">
+    <figure className="relative overflow-hidden rounded-sm aspect-square bg-muted">
       <Image src={src} alt={alt} fill className="object-cover" priority={priority} />
     </figure>
   );
