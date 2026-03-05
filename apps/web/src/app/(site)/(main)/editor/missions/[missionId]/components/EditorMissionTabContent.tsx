@@ -9,7 +9,9 @@ import { useReadMission } from "@/hooks/mission";
 import type { GetMissionResponse } from "@/types/dto";
 import { type PaymentType } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEditorBootstrapScrollController } from "../../../components/controller/useEditorBootstrapScrollController";
+import { EditorSectionCard } from "../../../components/view/EditorSectionCard";
 import { type ActionSectionDraftSnapshot, ActionSettingsCard } from "./ActionSettingsCard";
 import {
   type CompletionSectionDraftSnapshot,
@@ -77,7 +79,11 @@ export function EditorMissionTabContent({
   reward,
 }: EditorMissionTabContentProps) {
   const { currentTab } = useEditorMissionTab();
+  const actionSectionRef = useRef<HTMLDivElement>(null);
+  useEditorBootstrapScrollController(missionId, actionSectionRef);
   const [editorUseAiCompletion, setEditorUseAiCompletion] = useState(mission.useAiCompletion);
+  const [basicValidationCount, setBasicValidationCount] = useState(0);
+  const [rewardValidationCount, setRewardValidationCount] = useState(0);
   const [cachedActionDraftSnapshot, setCachedActionDraftSnapshot] =
     useState<ActionSectionDraftSnapshot | null>(null);
   const [cachedCompletionDraftSnapshot, setCachedCompletionDraftSnapshot] =
@@ -109,7 +115,23 @@ export function EditorMissionTabContent({
 
   useEffect(() => {
     setEditorUseAiCompletion(mission.useAiCompletion);
-  }, [mission.useAiCompletion, missionId]);
+  }, [mission.useAiCompletion]);
+
+  const handleBasicStateChange = useCallback(
+    (state: Parameters<typeof sectionBindings.onBasicStateChange>[0]) => {
+      setBasicValidationCount(state.validationIssueCount);
+      sectionBindings.onBasicStateChange(state);
+    },
+    [sectionBindings.onBasicStateChange],
+  );
+
+  const handleRewardStateChange = useCallback(
+    (state: Parameters<typeof sectionBindings.onRewardStateChange>[0]) => {
+      setRewardValidationCount(state.validationIssueCount);
+      sectionBindings.onRewardStateChange(state);
+    },
+    [sectionBindings.onRewardStateChange],
+  );
 
   const handleActionWorkingSetChange = useCallback(
     (snapshot: ActionSectionDraftSnapshot) => {
@@ -248,29 +270,36 @@ export function EditorMissionTabContent({
         node={saveButtonNode}
       />
       <EditorMissionDraftProvider>
-        <ProjectBasicInfoCard
-          ref={refs.basicInfoRef}
-          mission={mission}
-          onSaveStateChange={sectionBindings.onBasicStateChange}
-          onUseAiCompletionChange={setEditorUseAiCompletion}
-        />
+        <EditorSectionCard
+          title="프로젝트 기본정보"
+          description="프로젝트 기본 정보를 입력합니다."
+          validationIssueCount={basicValidationCount + rewardValidationCount}
+        >
+          <ProjectBasicInfoCard
+            ref={refs.basicInfoRef}
+            mission={mission}
+            onSaveStateChange={handleBasicStateChange}
+            onUseAiCompletionChange={setEditorUseAiCompletion}
+          />
+          <RewardSettingsCard
+            ref={refs.rewardRef}
+            mission={mission}
+            initialReward={reward}
+            onSaveStateChange={handleRewardStateChange}
+          />
+        </EditorSectionCard>
         <Separator className="h-2" />
-        <RewardSettingsCard
-          ref={refs.rewardRef}
-          mission={mission}
-          initialReward={reward}
-          onSaveStateChange={sectionBindings.onRewardStateChange}
-        />
-        <Separator className="h-2" />
-        <ActionSettingsCard
-          ref={refs.actionRef}
-          missionId={mission.id}
-          useAiCompletion={editorUseAiCompletion}
-          onSaveStateChange={sectionBindings.onActionStateChange}
-          getCompletionDraftSnapshot={sectionBindings.getCompletionDraftSnapshot}
-          completionWorkingSetVersion={sectionBindings.completionWorkingSetVersion}
-          onWorkingSetChange={handleActionWorkingSetChange}
-        />
+        <div ref={actionSectionRef}>
+          <ActionSettingsCard
+            ref={refs.actionRef}
+            missionId={mission.id}
+            useAiCompletion={editorUseAiCompletion}
+            onSaveStateChange={sectionBindings.onActionStateChange}
+            getCompletionDraftSnapshot={sectionBindings.getCompletionDraftSnapshot}
+            completionWorkingSetVersion={sectionBindings.completionWorkingSetVersion}
+            onWorkingSetChange={handleActionWorkingSetChange}
+          />
+        </div>
         <Separator className="h-2" />
         <CompletionSettingsCard
           ref={refs.completionRef}

@@ -1,7 +1,6 @@
 "use client";
 
 import { updateMission } from "@/actions/mission/update";
-import { CreateProjectInfoStep } from "@/app/(site)/(main)/create/components/CreateProjectInfoStep";
 import {
   type CreateMissionFormData,
   createMissionFormSchema,
@@ -25,6 +24,7 @@ import {
   useMemo,
 } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
+import { EditorProjectInfoSection } from "../../../components/view/EditorProjectInfoSection";
 import type {
   SectionSaveHandle,
   SectionSaveOptions,
@@ -307,79 +307,59 @@ function ProjectBasicInfoCardComponent(
     ],
   );
 
-  return (
-    <div className="border border-zinc-200 bg-white">
-      <div className="border-b border-zinc-100 px-5 py-4">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <Typo.SubTitle>프로젝트 기본정보 수정</Typo.SubTitle>
-            <Typo.Body size="medium" className="mt-1 text-zinc-500">
-              프로젝트 기본 정보를 수정합니다.
+  const imageUploaders = (
+    <>
+      <div className="rounded-xl border border-zinc-200 bg-white px-4 py-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <Typo.SubTitle>브랜드 로고</Typo.SubTitle>
+            <Typo.Body size="medium" className="text-zinc-500">
+              {brandLogoImageUpload.isUploading
+                ? "업로드 중..."
+                : "브랜드 로고를 1:1 비율로 설정합니다."}
             </Typo.Body>
           </div>
-          {hasValidationIssues ? (
-            <div
-              className="flex shrink-0 items-center gap-1 text-red-500"
-              title="입력 확인 필요"
-              aria-label="입력 확인 필요"
-            >
-              <AlertCircle className="size-4" />
-              <Typo.Body size="small" className="font-semibold text-red-500">
-                {validationIssueCount}
-              </Typo.Body>
-            </div>
-          ) : null}
+          <ImageSelector
+            size="large"
+            imageUrl={brandLogoImageUpload.previewUrl ?? watchedBrandLogoUrl ?? undefined}
+            onImageSelect={file => brandLogoCropper.openWithFile(file)}
+            onImageDelete={handleBrandLogoDelete}
+            disabled={isBrandLogoBusy}
+          />
         </div>
       </div>
 
+      <div className="rounded-xl border border-zinc-200 bg-white px-4 py-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <Typo.SubTitle>프로젝트 썸네일</Typo.SubTitle>
+            <Typo.Body size="medium" className="text-zinc-500">
+              {thumbnailImageUpload.isUploading
+                ? "업로드 중..."
+                : "프로젝트 썸네일을 1:1 비율로 설정합니다."}
+            </Typo.Body>
+          </div>
+          <ImageSelector
+            size="large"
+            imageUrl={thumbnailImageUpload.previewUrl ?? watchedImageUrl ?? undefined}
+            onImageSelect={file => thumbnailCropper.openWithFile(file)}
+            onImageDelete={handleThumbnailDelete}
+            disabled={isThumbnailBusy}
+          />
+        </div>
+      </div>
+    </>
+  );
+
+  return (
+    <>
       <FormProvider {...form}>
         <form
           onSubmit={event => {
             event.preventDefault();
           }}
-          className="flex flex-col gap-5 px-5 py-5"
         >
-          <div className="rounded-xl border border-zinc-200 bg-white px-4 py-4">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex flex-col gap-1">
-                <Typo.SubTitle>프로젝트 썸네일</Typo.SubTitle>
-                <Typo.Body size="medium" className="text-zinc-500">
-                  {thumbnailImageUpload.isUploading
-                    ? "업로드 중..."
-                    : "프로젝트 썸네일을 1:1 비율로 설정합니다."}
-                </Typo.Body>
-              </div>
-              <ImageSelector
-                size="large"
-                imageUrl={thumbnailImageUpload.previewUrl ?? watchedImageUrl ?? undefined}
-                onImageSelect={file => thumbnailCropper.openWithFile(file)}
-                onImageDelete={handleThumbnailDelete}
-                disabled={isThumbnailBusy}
-              />
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-zinc-200 bg-white px-4 py-4">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex flex-col gap-1">
-                <Typo.SubTitle>브랜드 로고</Typo.SubTitle>
-                <Typo.Body size="medium" className="text-zinc-500">
-                  {brandLogoImageUpload.isUploading
-                    ? "업로드 중..."
-                    : "브랜드 로고를 1:1 비율로 설정합니다."}
-                </Typo.Body>
-              </div>
-              <ImageSelector
-                size="large"
-                imageUrl={brandLogoImageUpload.previewUrl ?? watchedBrandLogoUrl ?? undefined}
-                onImageSelect={file => brandLogoCropper.openWithFile(file)}
-                onImageDelete={handleBrandLogoDelete}
-                disabled={isBrandLogoBusy}
-              />
-            </div>
-          </div>
-
-          <CreateProjectInfoStep showAiCompletionToggle />
+          <EditorProjectInfoSection showAiCompletionToggle imageUploaders={imageUploaders} />
         </form>
       </FormProvider>
 
@@ -415,7 +395,7 @@ function ProjectBasicInfoCardComponent(
           brandLogoImageUpload.upload(file);
         }}
       />
-    </div>
+    </>
   );
 }
 

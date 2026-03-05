@@ -90,6 +90,7 @@ export function FixedBottomLayout({
         <div
           style={{
             paddingBottom: resolvedBottomGap,
+            transition: "padding-bottom 200ms ease-out",
           }}
         />
 

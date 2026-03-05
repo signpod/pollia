@@ -3,7 +3,6 @@
 import { createReward } from "@/actions/reward/create";
 import { deleteReward } from "@/actions/reward/delete";
 import { updateReward } from "@/actions/reward/update";
-import { CreateRewardSettingsStep } from "@/app/(site)/(main)/create/components/CreateRewardSettingsStep";
 import {
   type CreateMissionFormData,
   createMissionFormSchema,
@@ -11,7 +10,7 @@ import {
 import type { GetMissionResponse } from "@/types/dto";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MissionType, PaymentType } from "@prisma/client";
-import { Typo, toast } from "@repo/ui/components";
+import { toast } from "@repo/ui/components";
 import { AlertCircle } from "lucide-react";
 import {
   type ForwardedRef,
@@ -23,6 +22,7 @@ import {
   useState,
 } from "react";
 import { FormProvider, useForm } from "react-hook-form";
+import { EditorRewardSection } from "../../../components/view/EditorRewardSection";
 import type {
   SectionSaveHandle,
   SectionSaveOptions,
@@ -304,41 +304,15 @@ function RewardSettingsCardComponent(
   );
 
   return (
-    <div className="border border-zinc-200 bg-white">
-      <div className="border-b border-zinc-100 px-5 py-4">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <Typo.SubTitle>리워드 수정</Typo.SubTitle>
-            <Typo.Body size="medium" className="mt-1 text-zinc-500">
-              프로젝트 리워드를 설정하고 수정합니다.
-            </Typo.Body>
-          </div>
-          {hasValidationIssues ? (
-            <div
-              className="flex shrink-0 items-center gap-1 text-red-500"
-              title="입력 확인 필요"
-              aria-label="입력 확인 필요"
-            >
-              <AlertCircle className="size-4" />
-              <Typo.Body size="small" className="font-semibold text-red-500">
-                {validationIssueCount}
-              </Typo.Body>
-            </div>
-          ) : null}
-        </div>
-      </div>
-
-      <FormProvider {...form}>
-        <form
-          onSubmit={event => {
-            event.preventDefault();
-          }}
-          className="flex flex-col gap-5 px-5 py-5"
-        >
-          <CreateRewardSettingsStep />
-        </form>
-      </FormProvider>
-    </div>
+    <FormProvider {...form}>
+      <form
+        onSubmit={event => {
+          event.preventDefault();
+        }}
+      >
+        <EditorRewardSection />
+      </form>
+    </FormProvider>
   );
 }
 
