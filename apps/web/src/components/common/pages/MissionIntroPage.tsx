@@ -3,11 +3,12 @@
 import { MissionLikeButton } from "@/app/(site)/(main)/components/MissionLikeButton";
 import { SocialShareButtonsWithData } from "@/app/(site)/mission/[missionId]/components/SocialShareButtonsWithData";
 import type { MissionRewardData } from "@/app/(site)/mission/[missionId]/types/mission";
-import { useGoBack } from "@/hooks/common/useGoBack";
+import { ROUTES } from "@/constants/routes";
 import { cn } from "@/lib/utils";
 import { MissionType } from "@prisma/client";
 import { FixedBottomLayout, Typo } from "@repo/ui/components";
 import { ChevronLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { MissionContentTemplate } from "../templates/MissionContentTemplate";
@@ -49,7 +50,7 @@ export function MissionIntroPage({
 }: MissionIntroPageProps) {
   const localTitleRef = useRef<HTMLDivElement>(null);
   const [isTitleHidden, setIsTitleHidden] = useState(false);
-  const goBack = useGoBack();
+  const router = useRouter();
 
   useEffect(() => {
     const el = localTitleRef.current;
@@ -74,7 +75,11 @@ export function MissionIntroPage({
           isTitleHidden ? "bg-white" : "bg-gradient-to-b from-black/40 to-transparent",
         )}
       >
-        <button type="button" onClick={goBack} className="flex items-center justify-center p-3">
+        <button
+          type="button"
+          onClick={() => router.replace(ROUTES.HOME)}
+          className="flex items-center justify-center p-3"
+        >
           <ChevronLeft className={cn("size-6", isTitleHidden ? "text-zinc-900" : "text-white")} />
         </button>
         <Typo.SubTitle
