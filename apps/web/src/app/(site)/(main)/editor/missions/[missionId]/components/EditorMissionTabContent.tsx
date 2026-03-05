@@ -202,6 +202,9 @@ export function EditorMissionTabContent({
         onSave={() => {
           void actions.onSave();
         }}
+        onDraftSave={() => {
+          void actions.onDraftSave();
+        }}
         onPublish={() => {
           void actions.onPublish();
         }}

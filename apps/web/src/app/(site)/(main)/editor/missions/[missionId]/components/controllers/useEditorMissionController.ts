@@ -6,14 +6,13 @@ import type { GetMissionResponse } from "@/types/dto";
 import {
   type EditorMissionDraftPayload,
   type LocalEditorDraftPayload,
-  type ServerEditorDraftPayload,
   normalizeEditorMissionDraftPayload,
   selectLatestEditorMissionDraft,
   toServerEditorDraftPayload,
 } from "@/types/mission-editor-draft";
 import { MissionType } from "@prisma/client";
 import { toast } from "@repo/ui/components";
-import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   type ServerActionLike,
@@ -41,8 +40,6 @@ import {
 
 const UNIFIED_SAVE_TOAST_ID = "editor-mission-save-result";
 const PUBLISH_TOAST_ID = "editor-mission-publish-result";
-const SERVER_DRAFT_AUTOSAVE_TOAST_ID = "editor-mission-server-draft-autosave";
-const SERVER_DRAFT_AUTOSAVE_INTERVAL_MS = 20_000;
 const LOCAL_DRAFT_AUTOSAVE_THROTTLE_MS = 700;
 const LOCAL_DRAFT_AUTOSAVE_MAX_WAIT_MS = 1500;
 const WORKING_SET_VERSION_THROTTLE_MS = 120;
@@ -140,6 +137,7 @@ export interface UseEditorMissionControllerResult {
   publishState: PublishAvailability;
   actions: {
     onSave: () => Promise<void>;
+    onDraftSave: () => Promise<void>;
     onPublish: () => Promise<void>;
   };
 }
@@ -191,8 +189,6 @@ export function useEditorMissionController({
   const draftRestoreAppliedRef = useRef(false);
   const saveInFlightRef = useRef(false);
   const publishInFlightRef = useRef(false);
-  const serverDraftAutosaveInFlightRef = useRef(false);
-  const serverDraftAutosaveLastSerializedRef = useRef<string | null>(null);
   const localDraftAutosaveRef = useRef<{
     timeoutId: number | null;
     idleId: number | null;
@@ -290,11 +286,6 @@ export function useEditorMissionController({
   useEffect(() => {
     setIsPublished(mission.isActive);
   }, [mission.id, mission.isActive]);
-
-  useEffect(() => {
-    serverDraftAutosaveInFlightRef.current = false;
-    serverDraftAutosaveLastSerializedRef.current = null;
-  }, [missionId]);
 
   useEffect(() => {
     if (!isEditorTab || typeof window === "undefined") {
@@ -395,12 +386,6 @@ export function useEditorMissionController({
       completion: completionRef.current?.exportDraftSnapshot() ?? null,
     };
   }, []);
-
-  const collectServerDraftPayload = useCallback(
-    (payload: LocalEditorDraftPayload): ServerEditorDraftPayload =>
-      toServerEditorDraftPayload(payload),
-    [],
-  );
 
   const applyDraftPayload = useCallback(async (payload: EditorMissionDraftPayload) => {
     await Promise.all([
@@ -550,12 +535,16 @@ export function useEditorMissionController({
   }, [flushLocalDraftAutosave]);
 
   const handleActionWorkingSetChange = useCallback(() => {
-    scheduleLocalDraftAutosave();
+    if (isPublished) {
+      scheduleLocalDraftAutosave();
+    }
     setPublishSnapshotVersion(prev => prev + 1);
-  }, [scheduleLocalDraftAutosave]);
+  }, [isPublished, scheduleLocalDraftAutosave]);
 
   const handleCompletionWorkingSetChange = useCallback(() => {
-    scheduleLocalDraftAutosave();
+    if (isPublished) {
+      scheduleLocalDraftAutosave();
+    }
     setPublishSnapshotVersion(prev => prev + 1);
 
     const throttleState = completionWorkingSetThrottleRef.current;
@@ -576,7 +565,7 @@ export function useEditorMissionController({
       throttleState.lastUpdatedAt = Date.now();
       setCompletionWorkingSetVersion(prev => prev + 1);
     }, WORKING_SET_VERSION_THROTTLE_MS - elapsed);
-  }, [scheduleLocalDraftAutosave]);
+  }, [isPublished, scheduleLocalDraftAutosave]);
 
   useEffect(() => {
     if (!isEditorTab || draftRestoreAppliedRef.current) {
@@ -626,7 +615,7 @@ export function useEditorMissionController({
   ]);
 
   useEffect(() => {
-    if (!isEditorTab || !draftRestoreAppliedRef.current) {
+    if (!isEditorTab || !isPublished || !draftRestoreAppliedRef.current) {
       return;
     }
 
@@ -647,109 +636,10 @@ export function useEditorMissionController({
   }, [
     hasPendingChangesFromRefs,
     isEditorTab,
+    isPublished,
     scheduleLocalDraftAutosave,
     sectionStates.basic,
     sectionStates.reward,
-  ]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    if (!isEditorTab || isPublished || !draftRestoreAppliedRef.current) {
-      return;
-    }
-
-    const runServerDraftAutosave = async () => {
-      if (
-        serverDraftAutosaveInFlightRef.current ||
-        saveInFlightRef.current ||
-        publishInFlightRef.current ||
-        isSavingAll ||
-        isPublishing ||
-        hasAnyBusySection
-      ) {
-        return;
-      }
-
-      if (
-        !basicInfoRef.current ||
-        !rewardRef.current ||
-        !actionRef.current ||
-        !completionRef.current
-      ) {
-        return;
-      }
-
-      if (!(hasAnyPendingChanges || hasPendingChangesFromRefs())) {
-        return;
-      }
-
-      const localPayload = collectLocalDraftPayload();
-      const serializedPayload = JSON.stringify(localPayload);
-      if (serverDraftAutosaveLastSerializedRef.current === serializedPayload) {
-        return;
-      }
-
-      const payloadWithMeta: LocalEditorDraftPayload = {
-        ...localPayload,
-        meta: {
-          updatedAtMs: Date.now(),
-        },
-      };
-      const serverPayload = collectServerDraftPayload(payloadWithMeta);
-
-      serverDraftAutosaveInFlightRef.current = true;
-      toast({
-        id: SERVER_DRAFT_AUTOSAVE_TOAST_ID,
-        message: "임시 저장 중...",
-        icon: Loader2,
-        iconClassName: "animate-spin text-white",
-        iconOnly: true,
-      });
-
-      try {
-        await saveMissionEditorDraft(missionId, serverPayload);
-        serverDraftAutosaveLastSerializedRef.current = serializedPayload;
-        toast({
-          id: SERVER_DRAFT_AUTOSAVE_TOAST_ID,
-          message: "임시 저장되었습니다.",
-          icon: CheckCircle2,
-          iconClassName: "text-green-500",
-        });
-      } catch (error) {
-        const message = error instanceof Error ? error.message : "서버 임시저장에 실패했습니다.";
-        toast({
-          id: SERVER_DRAFT_AUTOSAVE_TOAST_ID,
-          message,
-          icon: AlertCircle,
-          iconClassName: "text-red-500",
-        });
-      } finally {
-        serverDraftAutosaveInFlightRef.current = false;
-      }
-    };
-
-    const intervalId = window.setInterval(() => {
-      void runServerDraftAutosave();
-    }, SERVER_DRAFT_AUTOSAVE_INTERVAL_MS);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, [
-    collectLocalDraftPayload,
-    collectServerDraftPayload,
-    hasAnyBusySection,
-    hasAnyPendingChanges,
-    hasPendingChangesFromRefs,
-    isEditorTab,
-    isPublished,
-    isPublishing,
-    isSavingAll,
-    missionId,
-    publishSnapshotVersion,
   ]);
 
   useEffect(
@@ -1117,6 +1007,24 @@ export function useEditorMissionController({
     runUnifiedSave,
   ]);
 
+  const handleDraftSave = useCallback(async () => {
+    const draftPayload = collectLocalDraftPayload();
+    const updatedAtMs = Date.now();
+    const payloadWithMeta: LocalEditorDraftPayload = {
+      ...draftPayload,
+      meta: { updatedAtMs },
+    };
+    saveMissionEditorDraftToLocalStorage(missionId, payloadWithMeta);
+
+    try {
+      await saveMissionEditorDraft(missionId, toServerEditorDraftPayload(draftPayload));
+    } catch (error) {
+      console.error("Failed to save server draft:", error);
+    }
+
+    await runUnifiedSave({ mode: "manual" });
+  }, [collectLocalDraftPayload, missionId, runUnifiedSave]);
+
   const onBasicStateChange = useCallback(
     (state: SectionSaveState) => {
       updateSectionState("basic", state);
@@ -1182,6 +1090,7 @@ export function useEditorMissionController({
     publishState,
     actions: {
       onSave: handleSave,
+      onDraftSave: handleDraftSave,
       onPublish: handlePublish,
     },
   };
