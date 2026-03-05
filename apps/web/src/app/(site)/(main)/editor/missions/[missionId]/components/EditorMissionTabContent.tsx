@@ -9,7 +9,8 @@ import { useReadMission } from "@/hooks/mission";
 import type { GetMissionResponse } from "@/types/dto";
 import { type PaymentType } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEditorBootstrapScrollController } from "../../../components/controller/useEditorBootstrapScrollController";
 import { EditorSectionCard } from "../../../components/view/EditorSectionCard";
 import { type ActionSectionDraftSnapshot, ActionSettingsCard } from "./ActionSettingsCard";
 import {
@@ -78,6 +79,8 @@ export function EditorMissionTabContent({
   reward,
 }: EditorMissionTabContentProps) {
   const { currentTab } = useEditorMissionTab();
+  const actionSectionRef = useRef<HTMLDivElement>(null);
+  useEditorBootstrapScrollController(missionId, actionSectionRef);
   const [editorUseAiCompletion, setEditorUseAiCompletion] = useState(mission.useAiCompletion);
   const [basicValidationCount, setBasicValidationCount] = useState(0);
   const [rewardValidationCount, setRewardValidationCount] = useState(0);
@@ -112,7 +115,7 @@ export function EditorMissionTabContent({
 
   useEffect(() => {
     setEditorUseAiCompletion(mission.useAiCompletion);
-  }, [mission.useAiCompletion, missionId]);
+  }, [mission.useAiCompletion]);
 
   const handleBasicStateChange = useCallback(
     (state: Parameters<typeof sectionBindings.onBasicStateChange>[0]) => {
@@ -286,15 +289,17 @@ export function EditorMissionTabContent({
           />
         </EditorSectionCard>
         <Separator className="h-2" />
-        <ActionSettingsCard
-          ref={refs.actionRef}
-          missionId={mission.id}
-          useAiCompletion={editorUseAiCompletion}
-          onSaveStateChange={sectionBindings.onActionStateChange}
-          getCompletionDraftSnapshot={sectionBindings.getCompletionDraftSnapshot}
-          completionWorkingSetVersion={sectionBindings.completionWorkingSetVersion}
-          onWorkingSetChange={handleActionWorkingSetChange}
-        />
+        <div ref={actionSectionRef}>
+          <ActionSettingsCard
+            ref={refs.actionRef}
+            missionId={mission.id}
+            useAiCompletion={editorUseAiCompletion}
+            onSaveStateChange={sectionBindings.onActionStateChange}
+            getCompletionDraftSnapshot={sectionBindings.getCompletionDraftSnapshot}
+            completionWorkingSetVersion={sectionBindings.completionWorkingSetVersion}
+            onWorkingSetChange={handleActionWorkingSetChange}
+          />
+        </div>
         <Separator className="h-2" />
         <CompletionSettingsCard
           ref={refs.completionRef}

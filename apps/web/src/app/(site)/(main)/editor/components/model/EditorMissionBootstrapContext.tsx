@@ -11,6 +11,8 @@ export interface EditorBootstrapDraft {
 interface EditorMissionBootstrapContextValue {
   setDraft: (draft: EditorBootstrapDraft) => void;
   consumeDraft: (missionId: string) => EditorBootstrapDraft | null;
+  peekDraft: (missionId: string) => EditorBootstrapDraft | null;
+  clearDraft: (missionId: string) => void;
 }
 
 const EditorMissionBootstrapContext = createContext<EditorMissionBootstrapContextValue | null>(
@@ -31,7 +33,22 @@ export function EditorMissionBootstrapProvider({ children }: { children: React.R
     return draft;
   }, []);
 
-  const value = useMemo(() => ({ setDraft, consumeDraft }), [setDraft, consumeDraft]);
+  const peekDraft = useCallback((missionId: string): EditorBootstrapDraft | null => {
+    const draft = draftRef.current;
+    if (!draft || draft.missionId !== missionId) return null;
+    return draft;
+  }, []);
+
+  const clearDraft = useCallback((missionId: string): void => {
+    if (draftRef.current?.missionId === missionId) {
+      draftRef.current = null;
+    }
+  }, []);
+
+  const value = useMemo(
+    () => ({ setDraft, consumeDraft, peekDraft, clearDraft }),
+    [setDraft, consumeDraft, peekDraft, clearDraft],
+  );
 
   return (
     <EditorMissionBootstrapContext.Provider value={value}>
