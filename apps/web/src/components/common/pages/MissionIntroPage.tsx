@@ -36,7 +36,6 @@ export function MissionIntroPage({
   authorName,
   authorImageUrl,
   isRequirePassword,
-  titleRef,
   missionId,
   missionType,
   missionTitle,
@@ -95,7 +94,6 @@ export function MissionIntroPage({
 
       <MissionIntroTemplate
         imageUrl={imageUrl}
-        missionId={missionId}
         title={title}
         subtitle={subtitle}
         authorName={authorName}

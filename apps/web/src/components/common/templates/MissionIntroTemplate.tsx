@@ -10,7 +10,6 @@ import type { ReactNode, RefObject } from "react";
 export interface MissionIntroTemplateProps {
   header?: ReactNode;
   imageUrl?: string | null;
-  missionId?: string;
   title?: string | null;
   subtitle?: string | null;
   authorName?: string | null;

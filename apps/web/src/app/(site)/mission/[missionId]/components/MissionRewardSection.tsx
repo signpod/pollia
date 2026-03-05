@@ -7,12 +7,14 @@ import { useEffect, useState } from "react";
 interface MissionRewardSectionProps {
   rewardImageUrl?: string;
   rewardName?: string;
+  rewardDescription?: string;
   rewardScheduledDate?: Date;
 }
 
 export function MissionRewardSection({
   rewardImageUrl,
   rewardName,
+  rewardDescription,
   rewardScheduledDate,
 }: MissionRewardSectionProps) {
   const [formattedScheduledDate, setFormattedScheduledDate] = useState<string | null>(null);
@@ -27,6 +29,11 @@ export function MissionRewardSection({
     <div className="flex flex-col gap-5">
       <div>
         {rewardName && <Typo.Body size="large">{rewardName}</Typo.Body>}
+        {rewardDescription && (
+          <Typo.Body size="medium" className="text-zinc-500">
+            {rewardDescription}
+          </Typo.Body>
+        )}
         {formattedScheduledDate && (
           <Typo.Body size="large" className="font-bold">
             {`${formattedScheduledDate} 순차 지급`}

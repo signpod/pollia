@@ -16,6 +16,7 @@ import type { ReactNode } from "react";
 export interface MissionContentTemplateReward {
   imageUrl?: string | null;
   name?: string | null;
+  description?: string | null;
   scheduledDate?: Date | null;
 }
 
@@ -80,6 +81,7 @@ export function MissionContentTemplate({
             <MissionRewardSection
               rewardImageUrl={reward.imageUrl ?? undefined}
               rewardName={reward.name ?? undefined}
+              rewardDescription={reward.description ?? undefined}
               rewardScheduledDate={reward.scheduledDate ?? undefined}
             />
           </div>
