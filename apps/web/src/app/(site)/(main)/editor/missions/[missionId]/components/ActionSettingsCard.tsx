@@ -1005,7 +1005,7 @@ function ActionSettingsCardComponent(
     const itemKey = getDraftItemKey(draftKey);
 
     setDraftItems(prev => [...prev, { key: draftKey }]);
-    setActionTypeByItemKey(prev => ({ ...prev, [itemKey]: ActionType.SUBJECTIVE }));
+    setActionTypeByItemKey(prev => ({ ...prev, [itemKey]: ActionType.MULTIPLE_CHOICE }));
     setOpenItemKey(itemKey);
   };
 
