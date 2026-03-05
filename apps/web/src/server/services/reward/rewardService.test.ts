@@ -137,6 +137,7 @@ describe("RewardService", () => {
       const mockCreatedReward = {
         id: "reward1",
         ...createData,
+        imageFileUploadId: null,
         scheduledDate: null,
         createdAt: new Date(),
       };
@@ -165,6 +166,7 @@ describe("RewardService", () => {
         id: "reward2",
         ...createData,
         imageUrl: null,
+        imageFileUploadId: null,
         createdAt: new Date(),
       };
       mockRepo.create.mockResolvedValue(mockCreatedReward);
@@ -256,6 +258,7 @@ describe("RewardService", () => {
         name: "스타벅스 카페라떼",
         description: "Grande 사이즈",
         imageUrl: null,
+        imageFileUploadId: null,
         paymentType: "IMMEDIATE" as PaymentType,
         scheduledDate: null,
         paidAt: null,
@@ -285,6 +288,7 @@ describe("RewardService", () => {
         name: "스타벅스 아메리카노",
         description: "Grande 사이즈",
         imageUrl: null,
+        imageFileUploadId: null,
         paymentType: "IMMEDIATE" as PaymentType,
         scheduledDate: null,
         paidAt: null,
@@ -316,6 +320,7 @@ describe("RewardService", () => {
         name: "스타벅스 아메리카노",
         description: "Tall 사이즈",
         imageUrl: null,
+        imageFileUploadId: null,
         paymentType: "IMMEDIATE" as PaymentType,
         scheduledDate: null,
         paidAt: null,
