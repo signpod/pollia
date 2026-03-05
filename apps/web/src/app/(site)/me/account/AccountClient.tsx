@@ -4,7 +4,6 @@ import { UserAvatar } from "@/components/common/UserAvatar";
 import { ImageCropModal } from "@/components/common/templates/action/image/ImageCropModal";
 import { useImageCrop } from "@/components/common/templates/action/image/hooks/useImageCrop";
 import { ROUTES } from "@/constants/routes";
-import { useGoBack } from "@/hooks/common/useGoBack";
 import { useCurrentUser } from "@/hooks/user/useCurrentUser";
 import { useProfileImageUrl } from "@/hooks/user/useProfileImageUrl";
 import { useUpdateUserName } from "@/hooks/user/useUpdateUserName";
@@ -13,6 +12,7 @@ import { nameSchema } from "@/schemas/user/userSchema";
 import { ButtonV2, Input, Typo } from "@repo/ui/components";
 import { ChevronLeftIcon } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 function InfoField({ label, value }: { label: string; value: string }) {
@@ -27,7 +27,7 @@ function InfoField({ label, value }: { label: string; value: string }) {
 }
 
 export function AccountClient() {
-  const goBack = useGoBack();
+  const router = useRouter();
   const { data: user } = useCurrentUser();
   const profileImageUrl = useProfileImageUrl();
   const { mutate: updateName, isPending: isNamePending } = useUpdateUserName();
@@ -118,7 +118,11 @@ export function AccountClient() {
   return (
     <div className="flex flex-1 flex-col">
       <header className="sticky top-0 z-50 flex h-12 shrink-0 items-center bg-white px-1">
-        <button type="button" onClick={goBack} className="flex items-center justify-center p-3">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="flex items-center justify-center p-3"
+        >
           <ChevronLeftIcon className="size-6" />
         </button>
         <Typo.MainTitle size="small">계정 관리</Typo.MainTitle>

@@ -2,10 +2,10 @@
 
 import { ProfileHeader } from "@/components/common/ProfileHeader";
 import { ROUTES } from "@/constants/routes";
-import { useGoBack } from "@/hooks/common/useGoBack";
 import { Typo } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
 import { ChevronLeftIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 
 const SUB_PAGE_HEADERS: Record<string, string> = {
@@ -21,7 +21,7 @@ const SUB_PAGE_HEADERS: Record<string, string> = {
 
 export function MeLayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const goBack = useGoBack();
+  const router = useRouter();
   const hasOwnHeader = pathname === ROUTES.ME_ACCOUNT;
   const subPageTitle =
     SUB_PAGE_HEADERS[pathname] ??
@@ -33,7 +33,7 @@ export function MeLayoutShell({ children }: { children: React.ReactNode }) {
         <header className={cn("sticky top-0 z-50 flex h-12 items-center bg-white px-1")}>
           <button
             type="button"
-            onClick={goBack}
+            onClick={() => router.back()}
             className="size-12 flex items-center justify-center"
           >
             <ChevronLeftIcon className="size-6" />

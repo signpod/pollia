@@ -1,7 +1,6 @@
 "use client";
 
 import { ROUTES } from "@/constants/routes";
-import { useGoBack } from "@/hooks/common/useGoBack";
 import { useKakaoLogin } from "@/hooks/login/useKakaoLogin";
 import { useAuth } from "@/hooks/user/useAuth";
 import KakaoIcon from "@public/svgs/kakao-icon.svg";
@@ -186,11 +185,15 @@ export function MissionCompletionPage({
   isSaving,
   canSave,
 }: MissionCompletionPageProps) {
-  const goBack = useGoBack();
+  const router = useRouter();
 
   const header = (
     <header className="sticky top-0 z-50 flex h-12 items-center justify-between bg-white px-1">
-      <button type="button" onClick={goBack} className="flex items-center justify-center p-3">
+      <button
+        type="button"
+        onClick={() => router.back()}
+        className="flex items-center justify-center p-3"
+      >
         <ChevronLeft className="size-6" />
       </button>
       {canSave && (
