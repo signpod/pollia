@@ -2,6 +2,7 @@
 
 import { ProfileHeader } from "@/components/common/ProfileHeader";
 import { ButtonV2, Typo, useDrawer } from "@repo/ui/components";
+import { usePathname } from "next/navigation";
 import { LoginDrawer } from "./LoginDrawer";
 
 function LoginDrawerTrigger() {
@@ -22,6 +23,14 @@ function HeaderLoginDrawer() {
   );
 }
 
+const HIDDEN_HEADER_PATHS = ["/editor/create"];
+
 export function Header() {
+  const pathname = usePathname();
+
+  if (HIDDEN_HEADER_PATHS.some(path => pathname.startsWith(path))) {
+    return null;
+  }
+
   return <ProfileHeader fallbackRight={<HeaderLoginDrawer />} />;
 }

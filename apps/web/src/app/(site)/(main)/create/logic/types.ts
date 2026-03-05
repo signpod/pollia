@@ -1,7 +1,7 @@
 import type { UseFormReturn } from "react-hook-form";
 import type { CreateMissionFormData } from "../schema";
 
-export type CreateMissionStep = "category" | "mode" | "project-info" | "success";
+export type CreateMissionStep = "mode" | "project-info" | "success";
 
 export interface CreateMissionSuccessResult {
   missionId: string;
@@ -14,7 +14,6 @@ export interface UseCreateMissionFunnelParams {
 }
 
 export const CREATE_MISSION_PROGRESS_STEPS: Exclude<CreateMissionStep, "success">[] = [
-  "category",
   "mode",
   "project-info",
 ];
