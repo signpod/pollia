@@ -535,14 +535,14 @@ export function useEditorMissionController({
   }, [flushLocalDraftAutosave]);
 
   const handleActionWorkingSetChange = useCallback(() => {
-    if (isPublished) {
+    if (!isPublished) {
       scheduleLocalDraftAutosave();
     }
     setPublishSnapshotVersion(prev => prev + 1);
   }, [isPublished, scheduleLocalDraftAutosave]);
 
   const handleCompletionWorkingSetChange = useCallback(() => {
-    if (isPublished) {
+    if (!isPublished) {
       scheduleLocalDraftAutosave();
     }
     setPublishSnapshotVersion(prev => prev + 1);
@@ -611,11 +611,10 @@ export function useEditorMissionController({
     mission,
     missionId,
     missionQueryData,
-    publishSnapshotVersion,
   ]);
 
   useEffect(() => {
-    if (!isEditorTab || !isPublished || !draftRestoreAppliedRef.current) {
+    if (!isEditorTab || isPublished || !draftRestoreAppliedRef.current) {
       return;
     }
 
@@ -633,14 +632,7 @@ export function useEditorMissionController({
     }
 
     scheduleLocalDraftAutosave();
-  }, [
-    hasPendingChangesFromRefs,
-    isEditorTab,
-    isPublished,
-    scheduleLocalDraftAutosave,
-    sectionStates.basic,
-    sectionStates.reward,
-  ]);
+  }, [hasPendingChangesFromRefs, isEditorTab, isPublished, scheduleLocalDraftAutosave]);
 
   useEffect(
     () => () => {
