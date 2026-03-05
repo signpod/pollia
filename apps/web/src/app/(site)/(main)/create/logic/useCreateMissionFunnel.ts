@@ -124,7 +124,7 @@ export function useCreateMissionFunnel({ form, initialStep }: UseCreateMissionFu
       });
 
       setResult({ missionId, warnings });
-      router.replace(ROUTES.EDITOR_MISSION(missionId));
+      router.replace(ROUTES.EDITOR_MISSION(missionId), { scroll: false });
 
       return true;
     } catch (error) {

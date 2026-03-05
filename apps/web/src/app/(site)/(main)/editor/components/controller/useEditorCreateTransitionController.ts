@@ -69,7 +69,7 @@ export function useEditorCreateTransitionController({
       });
 
       setDraft({ formData: values, missionId });
-      router.replace(ROUTES.EDITOR_MISSION(missionId));
+      router.replace(ROUTES.EDITOR_MISSION(missionId), { scroll: false });
     } catch (error) {
       const message =
         error instanceof Error
