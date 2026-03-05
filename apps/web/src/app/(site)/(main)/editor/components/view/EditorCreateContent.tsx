@@ -33,7 +33,7 @@ const CREATE_FORM_BASE_VALUES = {
   reward: undefined,
   isActive: false,
   isExposed: true,
-  allowGuestResponse: false,
+  allowGuestResponse: true,
   allowMultipleResponses: false,
   useAiCompletion: false,
   imageUrl: null,

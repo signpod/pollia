@@ -17,7 +17,7 @@ export function EditorProjectInfoSection({
     <div className="flex flex-col gap-5 px-5 py-5">
       <CreateProjectInfoStep hideToggles />
       {imageUploaders}
-      <CreateProjectTogglesStep showAiCompletionToggle={showAiCompletionToggle} />
+      <CreateProjectTogglesStep showAiCompletionToggle={showAiCompletionToggle} useMemberOnlyMode />
     </div>
   );
 }

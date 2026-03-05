@@ -7,10 +7,12 @@ import { ToggleSettingRow } from "./ToggleSettingRow";
 
 interface CreateProjectTogglesStepProps {
   showAiCompletionToggle?: boolean;
+  useMemberOnlyMode?: boolean;
 }
 
 export function CreateProjectTogglesStep({
   showAiCompletionToggle = false,
+  useMemberOnlyMode = false,
 }: CreateProjectTogglesStepProps) {
   const { control } = useFormContext<CreateMissionFormData>();
 
@@ -19,14 +21,23 @@ export function CreateProjectTogglesStep({
       <Controller
         control={control}
         name="allowGuestResponse"
-        render={({ field }) => (
-          <ToggleSettingRow
-            label="비회원 참여 허용"
-            description="비회원(게스트)도 참여할 수 있도록 허용합니다."
-            checked={field.value}
-            onChange={field.onChange}
-          />
-        )}
+        render={({ field }) =>
+          useMemberOnlyMode ? (
+            <ToggleSettingRow
+              label="회원 전용"
+              description="회원만 참여할 수 있도록 제한합니다."
+              checked={!field.value}
+              onChange={checked => field.onChange(!checked)}
+            />
+          ) : (
+            <ToggleSettingRow
+              label="비회원 참여 허용"
+              description="비회원(게스트)도 참여할 수 있도록 허용합니다."
+              checked={field.value}
+              onChange={field.onChange}
+            />
+          )
+        }
       />
 
       <Controller
