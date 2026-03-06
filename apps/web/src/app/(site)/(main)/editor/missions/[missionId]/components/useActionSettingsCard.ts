@@ -76,6 +76,7 @@ export interface UseActionSettingsCardReturn {
   derived: {
     completionOptions: Array<{ id: string; title: string }>;
     linkTargets: Array<{ id: string; title: string; order: number }>;
+    referencedActionIdsBySource: Map<string, Set<string>>;
     flowAnalysis: ReturnType<typeof analyzeEditorFlow> | null;
   };
   formRefs: React.MutableRefObject<Record<string, ActionFormHandle | null>>;
@@ -321,6 +322,45 @@ export function useActionSettingsCard({
     isInactiveMission,
     orderedActionItems,
   ]);
+
+  const entryActionId = missionData?.data?.entryActionId ?? null;
+
+  const referencedActionIdsBySource = useMemo(() => {
+    const map = new Map<string, Set<string>>();
+    const addRef = (targetId: string, sourceKey: string) => {
+      const set = map.get(targetId) ?? new Set();
+      set.add(sourceKey);
+      map.set(targetId, set);
+    };
+
+    if (entryActionId) {
+      addRef(entryActionId, "__mission_entry__");
+    }
+
+    for (const item of orderedActionItems) {
+      const snapshot = draftFormSnapshotByItemKey[item.key];
+      if (snapshot) {
+        const { values, actionType } = snapshot;
+        if (actionType === ActionType.BRANCH && values.options) {
+          for (const option of values.options) {
+            if (option.nextActionId) addRef(option.nextActionId, item.key);
+          }
+        } else if (values.nextActionId) {
+          addRef(values.nextActionId, item.key);
+        }
+      } else if (item.kind === "existing") {
+        const action = item.action;
+        if (action.type === ActionType.BRANCH) {
+          for (const option of action.options) {
+            if (option.nextActionId) addRef(option.nextActionId, item.key);
+          }
+        } else if (action.nextActionId) {
+          addRef(action.nextActionId, item.key);
+        }
+      }
+    }
+    return map;
+  }, [entryActionId, orderedActionItems, draftFormSnapshotByItemKey]);
 
   const getActionDraftSnapshot = useCallback((): ActionSectionDraftSnapshot => {
     const formSnapshotByItemKey: Record<string, ActionFormRawSnapshot> = {};
@@ -767,6 +807,7 @@ export function useActionSettingsCard({
     derived: {
       completionOptions,
       linkTargets,
+      referencedActionIdsBySource,
       flowAnalysis,
     },
     formRefs,
