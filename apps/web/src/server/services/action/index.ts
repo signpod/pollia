@@ -796,7 +796,7 @@ export class ActionService {
               description: opt.description ?? undefined,
               imageUrl: opt.imageUrl ?? undefined,
               order: opt.order,
-              imageFileUploadId: opt.imageFileUploadId ?? undefined,
+              fileUploadId: opt.fileUploadId ?? undefined,
               nextActionId: null,
               nextCompletionId: null,
             })),
@@ -855,7 +855,7 @@ export class ActionService {
             description: opt.description ?? undefined,
             imageUrl: opt.imageUrl ?? undefined,
             order: opt.order,
-            imageFileUploadId: opt.imageFileUploadId ?? undefined,
+            fileUploadId: opt.fileUploadId ?? undefined,
             nextActionId: resolveActionId(opt.nextActionId) ?? null,
             nextCompletionId: resolveCompletionId(opt.nextCompletionId) ?? null,
           }));
@@ -896,7 +896,7 @@ export class ActionService {
             description: opt.description ?? undefined,
             imageUrl: opt.imageUrl ?? undefined,
             order: opt.order,
-            imageFileUploadId: opt.imageFileUploadId ?? undefined,
+            fileUploadId: opt.fileUploadId ?? undefined,
             nextActionId: resolveActionId(opt.nextActionId) ?? null,
             nextCompletionId: resolveCompletionId(opt.nextCompletionId) ?? null,
           }));
@@ -980,6 +980,7 @@ export class ActionService {
 
     const actionParseResult = actionSectionDraftSnapshotSchema.safeParse(actionSection);
     if (!actionParseResult.success) {
+      console.error("action draft parse errors:", actionParseResult.error.issues);
       const error = new Error("action draft 파싱에 실패했습니다.");
       error.cause = 400;
       throw error;
@@ -994,7 +995,8 @@ export class ActionService {
       if (completionParseResult.success) {
         for (const item of completionParseResult.data.draftItems) {
           const tempId = `draft:completion:${item.key}`;
-          const snapshot = completionParseResult.data.formSnapshotByItemKey[tempId];
+          const snapshotKey = `draft:${item.key}`;
+          const snapshot = completionParseResult.data.formSnapshotByItemKey[snapshotKey];
           if (snapshot) {
             completionsToCreate.push({
               tempId,

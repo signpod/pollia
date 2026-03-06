@@ -213,6 +213,51 @@ describe("ActionService - saveActionSection", () => {
         expect.anything(),
       );
     });
+
+    it("옵션의 fileUploadId가 올바르게 전달된다", async () => {
+      // Given
+      const mockMission = mockMissionFactory();
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
+
+      const mockCreatedAction = createMockAction({
+        id: "real-action-mc",
+        type: ActionType.MULTIPLE_CHOICE,
+      });
+      ctx.mockActionRepo.createMultipleChoice.mockResolvedValue(mockCreatedAction);
+
+      const input = baseSectionInput({
+        actionsToCreate: [
+          {
+            tempId: "draft:mc1",
+            actionType: ActionType.MULTIPLE_CHOICE,
+            values: {
+              title: "사진 선택",
+              isRequired: true,
+              options: [
+                { title: "A", order: 0, fileUploadId: "upload-001" },
+                { title: "B", order: 1, fileUploadId: null },
+              ],
+            },
+          },
+        ],
+        actionOrder: ["draft:mc1"],
+      });
+
+      // When
+      await ctx.service.saveActionSection(input, "user1");
+
+      // Then
+      expect(ctx.mockActionRepo.createMultipleChoice).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.arrayContaining([
+          expect.objectContaining({ title: "A", order: 0, fileUploadId: "upload-001" }),
+          expect.objectContaining({ title: "B", order: 1, fileUploadId: undefined }),
+        ]),
+        "user1",
+        expect.anything(),
+      );
+    });
   });
 
   describe("action 업데이트", () => {

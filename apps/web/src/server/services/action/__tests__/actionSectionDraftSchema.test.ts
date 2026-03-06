@@ -151,6 +151,82 @@ describe("actionSectionDraftSnapshotSchema", () => {
     // Then
     expect(result.success).toBe(false);
   });
+
+  it("dirtyByItemKey가 누락되면 파싱에 실패한다", () => {
+    // Given
+    const input = {
+      draftItems: [],
+      formSnapshotByItemKey: {},
+      actionTypeByItemKey: {},
+      itemOrderKeys: [],
+    };
+
+    // When
+    const result = actionSectionDraftSnapshotSchema.safeParse(input);
+
+    // Then
+    expect(result.success).toBe(false);
+  });
+
+  it("sanitizeActionSnapshotForServer와 동일한 구조를 파싱한다", () => {
+    // Given - sanitize 후 형태 (dirtyByItemKey 포함, openItemKey 제외)
+    const input = {
+      draftItems: [{ key: "q1" }],
+      itemOrderKeys: ["draft:q1"],
+      actionTypeByItemKey: { "draft:q1": ActionType.SUBJECTIVE },
+      formSnapshotByItemKey: {
+        "draft:q1": {
+          actionType: ActionType.SUBJECTIVE,
+          values: {
+            title: "질문",
+            isRequired: true,
+          },
+          nextLinkType: "action",
+        },
+      },
+      dirtyByItemKey: { "draft:q1": true },
+    };
+
+    // When
+    const result = actionSectionDraftSnapshotSchema.safeParse(input);
+
+    // Then
+    expect(result.success).toBe(true);
+  });
+
+  it("옵션에 fileUploadId가 포함된 draft를 파싱한다", () => {
+    // Given
+    const input = {
+      draftItems: [{ key: "mc1" }],
+      formSnapshotByItemKey: {
+        "draft:mc1": {
+          actionType: ActionType.MULTIPLE_CHOICE,
+          values: {
+            title: "사진 선택",
+            isRequired: true,
+            options: [
+              { title: "A", order: 0, fileUploadId: "upload-001" },
+              { title: "B", order: 1, fileUploadId: null },
+            ],
+          },
+          nextLinkType: "action",
+        },
+      },
+      actionTypeByItemKey: { "draft:mc1": ActionType.MULTIPLE_CHOICE },
+      dirtyByItemKey: { "draft:mc1": true },
+    };
+
+    // When
+    const result = actionSectionDraftSnapshotSchema.safeParse(input);
+
+    // Then
+    expect(result.success).toBe(true);
+    if (result.success) {
+      const opts = result.data.formSnapshotByItemKey["draft:mc1"].values.options;
+      expect(opts?.[0].fileUploadId).toBe("upload-001");
+      expect(opts?.[1].fileUploadId).toBeNull();
+    }
+  });
 });
 
 describe("completionSectionDraftSnapshotSchema", () => {

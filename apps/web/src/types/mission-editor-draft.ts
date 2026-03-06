@@ -91,6 +91,7 @@ function sanitizeActionSnapshotForServer(value: unknown): unknown | null {
     itemOrderKeys: Array.isArray(value.itemOrderKeys) ? value.itemOrderKeys : [],
     actionTypeByItemKey: isRecord(value.actionTypeByItemKey) ? value.actionTypeByItemKey : {},
     formSnapshotByItemKey: isRecord(value.formSnapshotByItemKey) ? value.formSnapshotByItemKey : {},
+    dirtyByItemKey: isRecord(value.dirtyByItemKey) ? value.dirtyByItemKey : {},
   };
 }
 

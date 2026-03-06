@@ -136,7 +136,7 @@ export interface SaveActionOptionInput {
   description?: string | null;
   imageUrl?: string | null;
   order: number;
-  imageFileUploadId?: string | null;
+  fileUploadId?: string | null;
   nextActionId?: string | null;
   nextCompletionId?: string | null;
 }

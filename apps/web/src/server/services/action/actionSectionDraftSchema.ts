@@ -9,7 +9,7 @@ const saveActionOptionInputSchema = z.object({
   description: z.string().nullable().optional(),
   imageUrl: z.string().nullable().optional(),
   order: z.number(),
-  imageFileUploadId: z.string().nullable().optional(),
+  fileUploadId: z.string().nullable().optional(),
   nextActionId: z.string().nullable().optional(),
   nextCompletionId: z.string().nullable().optional(),
 });
