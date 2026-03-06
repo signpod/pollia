@@ -980,7 +980,6 @@ export class ActionService {
 
     const actionParseResult = actionSectionDraftSnapshotSchema.safeParse(actionSection);
     if (!actionParseResult.success) {
-      console.error("action draft parse errors:", actionParseResult.error.issues);
       const error = new Error("action draft 파싱에 실패했습니다.");
       error.cause = 400;
       throw error;
