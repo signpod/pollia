@@ -1010,6 +1010,7 @@ export function useEditorMissionController({
         return;
       }
 
+      await saveDraft();
       await runUnifiedSave({ mode: "publish" });
       return;
     }

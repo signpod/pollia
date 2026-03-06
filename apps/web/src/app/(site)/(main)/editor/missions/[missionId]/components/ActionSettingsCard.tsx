@@ -1,26 +1,16 @@
 "use client";
 
-import { reorderActions } from "@/actions/action/reorder";
-import { createMissionCompletion, getCompletionsByMissionId } from "@/actions/mission-completion";
-import { updateMission } from "@/actions/mission/update";
+import { getCompletionsByMissionId } from "@/actions/mission-completion";
+import { applyMissionActionSectionDraft } from "@/actions/mission/apply-draft";
 import {
   ActionForm,
   type ActionFormHandle,
   type ActionFormRawSnapshot,
-  type ActionFormValues,
 } from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
+import { useManageDeleteAction } from "@/app/(site)/mission/[missionId]/manage/actions/hooks";
 import {
-  useManageCreateAction,
-  useManageDeleteAction,
-  useManageUpdateAction,
-} from "@/app/(site)/mission/[missionId]/manage/actions/hooks";
-import {
-  hasDraftActionReference,
   makeDraftActionId,
-  mapCreateActionInput,
   mapEditInitialValues,
-  mapUpdateActionInput,
-  resolveDraftActionReferences,
 } from "@/app/(site)/mission/[missionId]/manage/actions/logic";
 import { ACTION_TYPE_LABELS } from "@/constants/action";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
@@ -28,7 +18,7 @@ import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionComplet
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { useReadActionsDetail } from "@/hooks/action";
 import { useReadMission } from "@/hooks/mission";
-import type { ActionDetail, GetMissionActionsDetailResponse } from "@/types/dto";
+import type { ActionDetail } from "@/types/dto";
 import { ActionType } from "@prisma/client";
 import {
   Button,
@@ -62,11 +52,7 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  isDraftCompletionId,
-  makeDraftCompletionId,
-  useEditorMissionDraft,
-} from "./EditorMissionDraftContext";
+import { makeDraftCompletionId, useEditorMissionDraft } from "./EditorMissionDraftContext";
 import { FlowOverviewDialog } from "./FlowOverviewDialog";
 import { analyzeEditorFlow } from "./editor-publish-flow-validation";
 import type {
@@ -103,11 +89,6 @@ interface DraftListItem {
 
 type ActionListItem = ExistingListItem | DraftListItem;
 
-type ActionSubmission = {
-  actionType: ActionType;
-  values: ActionFormValues;
-};
-
 export interface ActionSectionDraftSnapshot {
   draftItems: DraftActionItem[];
   openItemKey: string | null;
@@ -116,30 +97,6 @@ export interface ActionSectionDraftSnapshot {
   formSnapshotByItemKey: Record<string, ActionFormRawSnapshot>;
   itemOrderKeys?: string[];
 }
-
-const ACTION_TYPES_WITH_OPTIONS = new Set<ActionType>([
-  ActionType.MULTIPLE_CHOICE,
-  ActionType.SCALE,
-  ActionType.TAG,
-  ActionType.BRANCH,
-]);
-const ACTION_TYPES_WITH_OPTION_DESCRIPTION = new Set<ActionType>([
-  ActionType.MULTIPLE_CHOICE,
-  ActionType.SCALE,
-  ActionType.BRANCH,
-]);
-const ACTION_TYPES_WITH_OPTION_IMAGE = new Set<ActionType>([
-  ActionType.MULTIPLE_CHOICE,
-  ActionType.BRANCH,
-]);
-
-const ACTION_TYPES_WITH_MAX_SELECTIONS = new Set<ActionType>([
-  ActionType.MULTIPLE_CHOICE,
-  ActionType.TAG,
-  ActionType.IMAGE,
-  ActionType.DATE,
-  ActionType.TIME,
-]);
 
 function createDraftKey() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -155,58 +112,6 @@ function getExistingItemKey(actionId: string) {
 
 function getDraftItemKey(draftKey: string) {
   return `draft:${draftKey}`;
-}
-
-function normalizeActionValues(type: ActionType, values: ActionFormValues) {
-  const normalized: Record<string, unknown> = {
-    title: values.title.trim(),
-    description: values.description?.trim() || null,
-    imageUrl: values.imageUrl ?? null,
-    imageFileUploadId: values.imageFileUploadId ?? null,
-    isRequired: values.isRequired,
-  };
-
-  if (ACTION_TYPES_WITH_MAX_SELECTIONS.has(type)) {
-    normalized.maxSelections = values.maxSelections ?? 1;
-  }
-
-  if (type === ActionType.MULTIPLE_CHOICE || type === ActionType.TAG) {
-    normalized.hasOther = Boolean(values.hasOther);
-  }
-
-  if (ACTION_TYPES_WITH_OPTIONS.has(type)) {
-    const showOptionDescription = ACTION_TYPES_WITH_OPTION_DESCRIPTION.has(type);
-    const showOptionImage = ACTION_TYPES_WITH_OPTION_IMAGE.has(type);
-
-    normalized.options = (values.options ?? []).map((option, index) => ({
-      title: option.title.trim(),
-      description: showOptionDescription ? option.description?.trim() || null : null,
-      imageUrl: showOptionImage ? (option.imageUrl ?? null) : null,
-      fileUploadId: showOptionImage ? (option.fileUploadId ?? null) : null,
-      nextActionId: option.nextActionId ?? null,
-      nextCompletionId: option.nextCompletionId ?? null,
-      order: index,
-    }));
-  }
-
-  if (type !== ActionType.BRANCH) {
-    normalized.nextActionId = values.nextActionId ?? null;
-    normalized.nextCompletionId = values.nextCompletionId ?? null;
-  }
-
-  return normalized;
-}
-
-function isActionChanged(action: ActionDetail, submission: ActionSubmission) {
-  if (submission.actionType !== action.type) {
-    return true;
-  }
-
-  const initialValues = mapEditInitialValues(action);
-  const current = normalizeActionValues(submission.actionType, submission.values);
-  const initial = normalizeActionValues(action.type, initialValues);
-
-  return JSON.stringify(current) !== JSON.stringify(initial);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -280,21 +185,6 @@ function parseCompletionDraftSnapshotForOptions(snapshot: unknown): {
   };
 }
 
-function toDateOrFallback(value: unknown, fallback: Date): Date {
-  if (value instanceof Date && !Number.isNaN(value.getTime())) {
-    return value;
-  }
-
-  if (typeof value === "string" || typeof value === "number") {
-    const parsed = new Date(value);
-    if (!Number.isNaN(parsed.getTime())) {
-      return parsed;
-    }
-  }
-
-  return fallback;
-}
-
 function areActionSnapshotsEqual(
   left: ActionFormRawSnapshot | undefined,
   right: ActionFormRawSnapshot,
@@ -320,183 +210,6 @@ function areStringArraysEqual(left: string[], right: string[]) {
   return true;
 }
 
-function buildPatchedActionDetail(params: {
-  currentAction: ActionDetail | null;
-  actionId: string;
-  missionId: string;
-  submission: ActionSubmission;
-  serverPatch?: Partial<ActionDetail>;
-}): ActionDetail {
-  const { currentAction, actionId, missionId, submission, serverPatch } = params;
-  const now = new Date();
-  const existingOptionsById = new Map(
-    (currentAction?.options ?? []).map(option => [option.id, option]),
-  );
-  const includesOptions = ACTION_TYPES_WITH_OPTIONS.has(submission.actionType);
-
-  const options = includesOptions
-    ? (submission.values.options ?? []).map((option, index) => {
-        const currentOption = option.id ? existingOptionsById.get(option.id) : undefined;
-
-        return {
-          id: (currentOption?.id ?? option.id) as string,
-          actionId: currentOption?.actionId ?? actionId,
-          title: option.title,
-          description: option.description ?? null,
-          imageUrl: option.imageUrl ?? null,
-          fileUploadId: option.fileUploadId ?? null,
-          order: index,
-          createdAt: toDateOrFallback(currentOption?.createdAt, now),
-          updatedAt: now,
-          nextActionId: option.nextActionId ?? null,
-          nextCompletionId: option.nextCompletionId ?? null,
-        } as ActionDetail["options"][number];
-      })
-    : [];
-
-  return {
-    id: actionId,
-    title: submission.values.title,
-    description: submission.values.description ?? null,
-    imageUrl: submission.values.imageUrl ?? null,
-    imageFileUploadId: submission.values.imageFileUploadId ?? null,
-    type: submission.actionType,
-    order: serverPatch?.order ?? currentAction?.order ?? 0,
-    maxSelections: ACTION_TYPES_WITH_MAX_SELECTIONS.has(submission.actionType)
-      ? (submission.values.maxSelections ?? currentAction?.maxSelections ?? 1)
-      : null,
-    isRequired: submission.values.isRequired,
-    hasOther:
-      submission.actionType === ActionType.MULTIPLE_CHOICE ||
-      submission.actionType === ActionType.TAG
-        ? Boolean(submission.values.hasOther)
-        : false,
-    createdAt: toDateOrFallback(serverPatch?.createdAt ?? currentAction?.createdAt, now),
-    updatedAt: toDateOrFallback(serverPatch?.updatedAt ?? currentAction?.updatedAt, now),
-    missionId: serverPatch?.missionId ?? currentAction?.missionId ?? missionId,
-    nextActionId: submission.values.nextActionId ?? null,
-    nextCompletionId: submission.values.nextCompletionId ?? null,
-    options,
-  };
-}
-
-function patchActionsQueryData(
-  previous: GetMissionActionsDetailResponse | undefined,
-  upserts: ActionDetail[],
-): GetMissionActionsDetailResponse | undefined {
-  if (!previous || !Array.isArray(previous.data) || upserts.length === 0) {
-    return previous;
-  }
-
-  const byId = new Map(previous.data.map(action => [action.id, action]));
-  for (const action of upserts) {
-    byId.set(action.id, action);
-  }
-
-  const nextData = [...byId.values()].sort((left, right) => {
-    const orderDelta = (left.order ?? 0) - (right.order ?? 0);
-    if (orderDelta !== 0) {
-      return orderDelta;
-    }
-
-    const leftCreatedAt = toDateOrFallback(left.createdAt, new Date(0)).getTime();
-    const rightCreatedAt = toDateOrFallback(right.createdAt, new Date(0)).getTime();
-    if (leftCreatedAt !== rightCreatedAt) {
-      return leftCreatedAt - rightCreatedAt;
-    }
-
-    return left.id.localeCompare(right.id);
-  });
-
-  return { ...previous, data: nextData };
-}
-
-function patchActionOrdersQueryData(
-  previous: GetMissionActionsDetailResponse | undefined,
-  orderedActionIds: string[],
-): GetMissionActionsDetailResponse | undefined {
-  if (!previous || !Array.isArray(previous.data) || orderedActionIds.length === 0) {
-    return previous;
-  }
-
-  const orderById = new Map(orderedActionIds.map((id, order) => [id, order]));
-  const didPatch = previous.data.some(action => orderById.has(action.id));
-  if (!didPatch) {
-    return previous;
-  }
-
-  const nextData = previous.data
-    .map(action => {
-      const nextOrder = orderById.get(action.id);
-      if (nextOrder === undefined || action.order === nextOrder) {
-        return action;
-      }
-      return {
-        ...action,
-        order: nextOrder,
-      };
-    })
-    .sort((left, right) => {
-      const orderDelta = (left.order ?? 0) - (right.order ?? 0);
-      if (orderDelta !== 0) {
-        return orderDelta;
-      }
-      return left.id.localeCompare(right.id);
-    });
-
-  return {
-    ...previous,
-    data: nextData,
-  };
-}
-
-function collectDraftCompletionReferences(values: ActionFormValues): string[] {
-  const draftIds = new Set<string>();
-
-  if (isDraftCompletionId(values.nextCompletionId)) {
-    draftIds.add(values.nextCompletionId);
-  }
-
-  for (const option of values.options ?? []) {
-    if (isDraftCompletionId(option.nextCompletionId)) {
-      draftIds.add(option.nextCompletionId);
-    }
-  }
-
-  return [...draftIds];
-}
-
-function resolveDraftCompletionReferences(
-  values: ActionFormValues,
-  completionIdMap: Map<string, string>,
-  allowUnresolved = false,
-): ActionFormValues {
-  const resolveCompletionId = (completionId: string | null | undefined): string | null => {
-    if (!completionId) {
-      return null;
-    }
-    if (!isDraftCompletionId(completionId)) {
-      return completionId;
-    }
-
-    const mapped = completionIdMap.get(completionId);
-    if (mapped) {
-      return mapped;
-    }
-
-    return allowUnresolved ? null : completionId;
-  };
-
-  return {
-    ...values,
-    nextCompletionId: resolveCompletionId(values.nextCompletionId),
-    options: values.options?.map(option => ({
-      ...option,
-      nextCompletionId: resolveCompletionId(option.nextCompletionId),
-    })),
-  };
-}
-
 const NOOP = () => {};
 
 function ActionSettingsCardComponent(
@@ -515,7 +228,7 @@ function ActionSettingsCardComponent(
   const [draftItems, setDraftItems] = useState<DraftActionItem[]>([]);
   const [itemOrderKeys, setItemOrderKeys] = useState<string[]>([]);
   const [openItemKey, setOpenItemKey] = useState<string | null>(null);
-  const [isUpdatingEntryAction, setIsUpdatingEntryAction] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<ActionDetail | null>(null);
   const [dirtyByItemKey, setDirtyByItemKey] = useState<Record<string, boolean>>({});
   const [existingFormVersionById, setExistingFormVersionById] = useState<Record<string, number>>(
@@ -530,12 +243,7 @@ function ActionSettingsCardComponent(
   >({});
   const [draftHydrationVersion, setDraftHydrationVersion] = useState(0);
   const [isFlowDialogOpen, setIsFlowDialogOpen] = useState(false);
-  const {
-    completionDrafts,
-    getCompletionDraftFormById,
-    openCompletionDraftById,
-    removeCompletionDraftById,
-  } = useEditorMissionDraft();
+  const { completionDrafts, removeCompletionDraftById } = useEditorMissionDraft();
 
   const {
     data: missionData,
@@ -557,8 +265,6 @@ function ActionSettingsCardComponent(
     staleTime: 5 * 60 * 1000,
   });
 
-  const createAction = useManageCreateAction();
-  const updateAction = useManageUpdateAction();
   const deleteAction = useManageDeleteAction({
     onSuccess: () => {
       const deletingActionId = deleteTarget?.id;
@@ -620,9 +326,7 @@ function ActionSettingsCardComponent(
     },
   });
 
-  const isSaving = createAction.isPending || updateAction.isPending || isUpdatingEntryAction;
-  const isDeletingAction = deleteAction.isPending;
-  const isBusy = isSaving || isDeletingAction;
+  const isBusy = isApplying || deleteAction.isPending;
   const isInactiveMission = missionData?.data?.isActive === false;
   const isAiCompletionEnabled =
     useAiCompletionOverride ?? missionData?.data?.useAiCompletion === true;
@@ -1094,738 +798,95 @@ function ActionSettingsCardComponent(
     }
 
     const strictMode = trigger === "publish";
-    const canShowValidationUi = showValidationUi;
 
-    const existingSnapshot = [...existingActions];
-    const draftSnapshot = [...draftItems];
-    const defaultOrderSnapshot = [
-      ...existingSnapshot.map(action => getExistingItemKey(action.id)),
-      ...draftSnapshot.map(draft => getDraftItemKey(draft.key)),
-    ];
-    const existingByItemKey = new Map(
-      existingSnapshot.map(action => [getExistingItemKey(action.id), action]),
-    );
-    const draftByItemKey = new Map(draftSnapshot.map(draft => [getDraftItemKey(draft.key), draft]));
-    const listSnapshot: ActionListItem[] = [];
-    const visitedItemKeys = new Set<string>();
-
-    for (const itemKey of itemOrderKeys) {
-      if (visitedItemKeys.has(itemKey)) {
-        continue;
-      }
-
-      const existing = existingByItemKey.get(itemKey);
-      if (existing) {
-        listSnapshot.push({
-          key: itemKey,
-          kind: "existing",
-          action: existing,
-        });
-        visitedItemKeys.add(itemKey);
-        continue;
-      }
-
-      const draft = draftByItemKey.get(itemKey);
-      if (draft) {
-        listSnapshot.push({
-          key: itemKey,
-          kind: "draft",
-          draft,
-        });
-        visitedItemKeys.add(itemKey);
-      }
-    }
-
-    for (const action of existingSnapshot) {
-      const itemKey = getExistingItemKey(action.id);
-      if (visitedItemKeys.has(itemKey)) {
-        continue;
-      }
-      listSnapshot.push({
-        key: itemKey,
-        kind: "existing",
-        action,
-      });
-      visitedItemKeys.add(itemKey);
-    }
-
-    for (const draft of draftSnapshot) {
-      const itemKey = getDraftItemKey(draft.key);
-      if (visitedItemKeys.has(itemKey)) {
-        continue;
-      }
-      listSnapshot.push({
-        key: itemKey,
-        kind: "draft",
-        draft,
-      });
-      visitedItemKeys.add(itemKey);
-    }
-
-    const listSnapshotKeys = listSnapshot.map(item => item.key);
-    const hasOrderChangesInSnapshot = !areStringArraysEqual(listSnapshotKeys, defaultOrderSnapshot);
-    const firstExistingActionIdInOrder =
-      listSnapshot.find((item): item is ExistingListItem => item.kind === "existing")?.action.id ??
-      null;
-    const needsEntrySyncWithoutDataMutations =
-      Boolean(firstExistingActionIdInOrder) &&
-      firstExistingActionIdInOrder !== (missionData?.data?.entryActionId ?? null);
-
-    if (listSnapshot.length === 0) {
-      return { status: "no_changes" };
-    }
-
-    const details: NonNullable<SectionSaveResult["details"]> = [];
-    const submissionsByKey = new Map<string, ActionSubmission>();
-    const changedExistingActions: ActionDetail[] = [];
-    const draftActionsToCreate: DraftActionItem[] = [];
-    const settledItemKeys = new Set<string>();
-    const successfulItemKeys = new Set<string>();
-    const cacheUpsertByActionId = new Map<string, ActionDetail>();
-    let savedCount = 0;
-    let skippedCount = 0;
-    let failedCount = 0;
-    let invalidCount = 0;
-
-    const markInvalid = (itemKey: string, message: string) => {
-      if (settledItemKeys.has(itemKey)) return;
-      settledItemKeys.add(itemKey);
-      invalidCount += 1;
-      details.push({ key: itemKey, status: "invalid", message });
-    };
-
-    const markSkipped = (itemKey: string, message: string) => {
-      if (settledItemKeys.has(itemKey)) return;
-      settledItemKeys.add(itemKey);
-      skippedCount += 1;
-      details.push({ key: itemKey, status: "skipped", message });
-    };
-
-    const markFailed = (itemKey: string, message: string) => {
-      if (settledItemKeys.has(itemKey)) return;
-      settledItemKeys.add(itemKey);
-      failedCount += 1;
-      details.push({ key: itemKey, status: "failed", message });
-    };
-
-    const markSaved = (itemKey: string) => {
-      if (settledItemKeys.has(itemKey)) return;
-      settledItemKeys.add(itemKey);
-      successfulItemKeys.add(itemKey);
-      savedCount += 1;
-      details.push({ key: itemKey, status: "saved" });
-    };
-
-    for (const item of listSnapshot) {
+    for (const item of orderedActionItems) {
       const formRef = formRefs.current[item.key];
       if (!formRef) {
-        if (canShowValidationUi) {
-          setOpenItemKey(item.key);
-        }
+        if (showValidationUi) setOpenItemKey(item.key);
         const message = "질문 폼이 준비되지 않았습니다. 다시 시도해주세요.";
-        if (strictMode) {
-          return { status: "failed", message };
-        }
-        markFailed(item.key, message);
+        if (strictMode) return { status: "failed", message };
         continue;
       }
 
       if (formRef.isUploading()) {
-        if (canShowValidationUi) {
-          setOpenItemKey(item.key);
-        }
+        if (showValidationUi) setOpenItemKey(item.key);
         const message = "이미지 업로드가 완료된 뒤 저장해주세요.";
-        if (strictMode) {
-          return { status: "failed", message };
-        }
-        markSkipped(item.key, message);
+        if (strictMode) return { status: "failed", message };
         continue;
       }
 
-      const submission = formRef.validateAndGetSubmission({ showErrors: canShowValidationUi });
+      const submission = formRef.validateAndGetSubmission({ showErrors: showValidationUi });
       if (!submission) {
-        if (canShowValidationUi) {
-          setOpenItemKey(item.key);
-        }
+        if (showValidationUi) setOpenItemKey(item.key);
         const message = "질문 입력값을 확인해주세요.";
-        if (strictMode) {
-          return { status: "invalid", message };
-        }
-        markInvalid(item.key, message);
-        continue;
-      }
-
-      submissionsByKey.set(item.key, submission);
-      if (item.kind === "existing") {
-        if (isActionChanged(item.action, submission)) {
-          changedExistingActions.push(item.action);
-        }
-      } else {
-        draftActionsToCreate.push(item.draft);
+        if (strictMode) return { status: "invalid", message };
       }
     }
 
-    if (
-      changedExistingActions.length === 0 &&
-      draftActionsToCreate.length === 0 &&
-      !hasOrderChangesInSnapshot &&
-      !needsEntrySyncWithoutDataMutations
-    ) {
-      if (savedCount === 0 && failedCount === 0 && invalidCount === 0 && skippedCount === 0) {
-        return { status: "no_changes" };
-      }
-
-      return {
-        status: failedCount > 0 ? "failed" : "invalid",
-        message:
-          failedCount > 0
-            ? "진행 목록 설정의 일부 저장에 실패했습니다."
-            : "진행 목록 설정의 일부 입력값을 확인해주세요.",
-        savedCount,
-        skippedCount,
-        failedCount,
-        invalidCount,
-        details,
-      };
-    }
-
-    const tempToRealActionIdMap = new Map<string, string>();
-    const resolvedActionIdByItemKey = new Map<string, string>(
-      existingSnapshot.map(action => [getExistingItemKey(action.id), action.id]),
-    );
-    const tempToRealCompletionIdMap = new Map<string, string>();
-    const createdCompletionDraftIds: string[] = [];
-    const draftCompletionDependents = new Map<string, Set<string>>();
-    const successfulExistingActionIds: string[] = [];
-    const successfulDraftKeys: string[] = [];
-    let didMutateServer = false;
-    let didSyncMissionEntryAction = false;
-    let didSyncOrder = false;
-
-    const persistItemKeys = [
-      ...changedExistingActions.map(action => getExistingItemKey(action.id)),
-      ...draftActionsToCreate.map(draft => getDraftItemKey(draft.key)),
-    ];
-
-    for (const itemKey of persistItemKeys) {
-      const submission = submissionsByKey.get(itemKey);
-      if (!submission) {
-        continue;
-      }
-
-      for (const draftCompletionId of collectDraftCompletionReferences(submission.values)) {
-        const dependents = draftCompletionDependents.get(draftCompletionId) ?? new Set<string>();
-        dependents.add(itemKey);
-        draftCompletionDependents.set(draftCompletionId, dependents);
-      }
-    }
-
+    setIsApplying(true);
     try {
-      for (const [draftCompletionId, dependentKeys] of draftCompletionDependents.entries()) {
-        const unresolvedKeys = [...dependentKeys].filter(key => !settledItemKeys.has(key));
-        if (unresolvedKeys.length === 0) {
-          continue;
-        }
+      const response = await applyMissionActionSectionDraft(missionId);
+      const result = response.data;
 
-        const completionForm = getCompletionDraftFormById(draftCompletionId);
-        if (!completionForm) {
-          if (canShowValidationUi) {
-            openCompletionDraftById(draftCompletionId);
-          }
-          const message = "참조된 결과 화면 폼을 찾을 수 없습니다.";
-          if (strictMode) {
-            return { status: "failed", message };
-          }
-          for (const key of unresolvedKeys) {
-            markSkipped(key, message);
-          }
-          continue;
-        }
-
-        if (completionForm.isUploading()) {
-          if (canShowValidationUi) {
-            openCompletionDraftById(draftCompletionId);
-          }
-          const message = "결과 화면 이미지 업로드가 완료된 뒤 저장해주세요.";
-          if (strictMode) {
-            return { status: "failed", message };
-          }
-          for (const key of unresolvedKeys) {
-            markSkipped(key, message);
-          }
-          continue;
-        }
-
-        const completionValues = completionForm.validateAndGetValues({
-          showErrors: canShowValidationUi,
-        });
-        if (!completionValues) {
-          if (canShowValidationUi) {
-            openCompletionDraftById(draftCompletionId);
-          }
-          const message = "연결된 결과 화면 입력값을 확인해주세요.";
-          if (strictMode) {
-            return { status: "invalid", message };
-          }
-          for (const key of unresolvedKeys) {
-            markSkipped(key, message);
-          }
-          continue;
-        }
-
-        try {
-          const createdCompletion = await createMissionCompletion({
-            missionId,
-            title: completionValues.title,
-            description: completionValues.description,
-            imageUrl: completionValues.imageUrl ?? undefined,
-            imageFileUploadId: completionValues.imageFileUploadId ?? undefined,
-          });
-          const createdCompletionId = createdCompletion?.data?.id;
-          if (!createdCompletionId) {
-            throw new Error("결과 화면 생성 결과를 확인할 수 없습니다.");
-          }
-
-          tempToRealCompletionIdMap.set(draftCompletionId, createdCompletionId);
-          createdCompletionDraftIds.push(draftCompletionId);
-          completionForm.deleteMarkedInitial();
-          didMutateServer = true;
-        } catch (error) {
-          const message =
-            error instanceof Error
-              ? error.message
-              : "연결된 결과 화면 생성 중 오류가 발생했습니다.";
-          if (strictMode) {
-            return { status: "failed", message };
-          }
-          for (const key of unresolvedKeys) {
-            markFailed(key, message);
-          }
-        }
+      for (const tempId of Object.keys(result.tempToRealCompletionIdMap)) {
+        removeCompletionDraftById(tempId);
       }
 
-      const createdDraftRecords: Array<{
-        itemKey: string;
-        draftKey: string;
-        createdId: string;
-        submission: ActionSubmission;
-      }> = [];
-
-      for (const [index, draft] of draftActionsToCreate.entries()) {
-        const itemKey = getDraftItemKey(draft.key);
-        if (settledItemKeys.has(itemKey)) {
-          continue;
-        }
-
-        const submission = submissionsByKey.get(itemKey);
-        if (!submission) {
-          continue;
-        }
-
-        const completionResolvedValues = resolveDraftCompletionReferences(
-          submission.values,
-          tempToRealCompletionIdMap,
-          true,
-        );
-        const sanitizedValues = resolveDraftActionReferences(
-          completionResolvedValues,
-          tempToRealActionIdMap,
-          true,
-        );
-
-        try {
-          const created = await createAction.mutateAsync(
-            mapCreateActionInput({
-              missionId,
-              selectedType: submission.actionType,
-              values: sanitizedValues,
-              order: existingSnapshot.length + index,
-            }),
-          );
-          const createdId = created?.data?.id;
-          if (!createdId) {
-            throw new Error("질문 생성 결과를 확인할 수 없습니다.");
-          }
-
-          tempToRealActionIdMap.set(makeDraftActionId(draft.key), createdId);
-          resolvedActionIdByItemKey.set(itemKey, createdId);
-          didMutateServer = true;
-
-          cacheUpsertByActionId.set(
-            createdId,
-            buildPatchedActionDetail({
-              currentAction: null,
-              actionId: createdId,
-              missionId,
-              submission: {
-                actionType: submission.actionType,
-                values: sanitizedValues,
-              },
-              serverPatch: created?.data as Partial<ActionDetail> | undefined,
-            }),
-          );
-
-          if (hasDraftActionReference(submission.values)) {
-            createdDraftRecords.push({
-              itemKey,
-              draftKey: draft.key,
-              createdId,
-              submission,
-            });
-            continue;
-          }
-
-          successfulDraftKeys.push(draft.key);
-          markSaved(itemKey);
-        } catch (error) {
-          const message =
-            error instanceof Error ? error.message : "진행 목록 설정 저장에 실패했습니다.";
-          if (strictMode) {
-            return { status: "failed", message };
-          }
-          markFailed(itemKey, message);
-        }
-      }
-
-      for (const action of changedExistingActions) {
-        const itemKey = getExistingItemKey(action.id);
-        if (settledItemKeys.has(itemKey)) {
-          continue;
-        }
-
-        const submission = submissionsByKey.get(itemKey);
-        if (!submission) {
-          continue;
-        }
-
-        const completionResolvedValues = resolveDraftCompletionReferences(
-          submission.values,
-          tempToRealCompletionIdMap,
-          true,
-        );
-        const resolvedValues = resolveDraftActionReferences(
-          completionResolvedValues,
-          tempToRealActionIdMap,
-          true,
-        );
-
-        try {
-          const updated = await updateAction.mutateAsync(
-            mapUpdateActionInput({
-              missionId,
-              editingActionId: action.id,
-              values: resolvedValues,
-              actionType: submission.actionType,
-              previousActionType: action.type,
-            }),
-          );
-          didMutateServer = true;
-          successfulExistingActionIds.push(action.id);
-          cacheUpsertByActionId.set(
-            action.id,
-            buildPatchedActionDetail({
-              currentAction: action,
-              actionId: action.id,
-              missionId,
-              submission: {
-                actionType: submission.actionType,
-                values: resolvedValues,
-              },
-              serverPatch: updated?.data as Partial<ActionDetail> | undefined,
-            }),
-          );
-          markSaved(itemKey);
-        } catch (error) {
-          const message =
-            error instanceof Error ? error.message : "진행 목록 설정 저장에 실패했습니다.";
-          if (strictMode) {
-            return { status: "failed", message };
-          }
-          markFailed(itemKey, message);
-        }
-      }
-
-      for (const createdDraft of createdDraftRecords) {
-        if (settledItemKeys.has(createdDraft.itemKey)) {
-          continue;
-        }
-
-        const completionResolvedValues = resolveDraftCompletionReferences(
-          createdDraft.submission.values,
-          tempToRealCompletionIdMap,
-          true,
-        );
-        const resolvedValues = resolveDraftActionReferences(
-          completionResolvedValues,
-          tempToRealActionIdMap,
-          true,
-        );
-
-        try {
-          const updated = await updateAction.mutateAsync(
-            mapUpdateActionInput({
-              missionId,
-              editingActionId: createdDraft.createdId,
-              values: resolvedValues,
-              actionType: createdDraft.submission.actionType,
-              previousActionType: createdDraft.submission.actionType,
-            }),
-          );
-          didMutateServer = true;
-          cacheUpsertByActionId.set(
-            createdDraft.createdId,
-            buildPatchedActionDetail({
-              currentAction: cacheUpsertByActionId.get(createdDraft.createdId) ?? null,
-              actionId: createdDraft.createdId,
-              missionId,
-              submission: {
-                actionType: createdDraft.submission.actionType,
-                values: resolvedValues,
-              },
-              serverPatch: updated?.data as Partial<ActionDetail> | undefined,
-            }),
-          );
-          successfulDraftKeys.push(createdDraft.draftKey);
-          markSaved(createdDraft.itemKey);
-        } catch (error) {
-          const message =
-            error instanceof Error ? error.message : "진행 목록 설정 저장에 실패했습니다.";
-          if (strictMode) {
-            return { status: "failed", message };
-          }
-          markFailed(createdDraft.itemKey, message);
-        }
-      }
-
-      for (const itemKey of successfulItemKeys) {
-        formRefs.current[itemKey]?.deleteMarkedInitialImages();
-      }
-
-      const orderedPersistedActionIds: string[] = [];
-      const seenPersistedActionIds = new Set<string>();
-      for (const item of listSnapshot) {
-        const resolvedId = resolvedActionIdByItemKey.get(item.key);
-        if (!resolvedId || seenPersistedActionIds.has(resolvedId)) {
-          continue;
-        }
-        seenPersistedActionIds.add(resolvedId);
-        orderedPersistedActionIds.push(resolvedId);
-      }
-
-      const shouldReorderActions =
-        orderedPersistedActionIds.length > 0 &&
-        (hasOrderChangesInSnapshot || draftActionsToCreate.length > 0);
-      if (shouldReorderActions) {
-        try {
-          await reorderActions({
-            missionId,
-            actionOrders: orderedPersistedActionIds.map((id, order) => ({ id, order })),
-          });
-          didMutateServer = true;
-          didSyncOrder = true;
-
-          for (const [order, actionId] of orderedPersistedActionIds.entries()) {
-            const cached = cacheUpsertByActionId.get(actionId);
-            if (cached) {
-              cacheUpsertByActionId.set(actionId, { ...cached, order });
-            }
-          }
-
-          queryClient.setQueryData<GetMissionActionsDetailResponse | undefined>(
-            actionQueryKeys.actions({ missionId }),
-            previous => patchActionOrdersQueryData(previous, orderedPersistedActionIds),
-          );
-        } catch (error) {
-          const message = error instanceof Error ? error.message : "질문 순서 저장에 실패했습니다.";
-          if (strictMode) {
-            return { status: "failed", message };
-          }
-          markFailed("order-sync", message);
-        }
-      }
-
-      const candidateEntryActionId = orderedPersistedActionIds[0] ?? null;
-      const currentEntryActionId = missionData?.data?.entryActionId ?? null;
-      if (candidateEntryActionId && candidateEntryActionId !== currentEntryActionId) {
-        setIsUpdatingEntryAction(true);
-        try {
-          await updateMission(missionId, { entryActionId: candidateEntryActionId });
-          didMutateServer = true;
-          didSyncMissionEntryAction = true;
-          queryClient.setQueryData(
-            missionQueryKeys.mission(missionId),
-            (previous: { data?: Record<string, unknown> } | undefined) => {
-              if (!previous || !previous.data) {
-                return previous;
-              }
-              return {
-                ...previous,
-                data: {
-                  ...previous.data,
-                  entryActionId: candidateEntryActionId,
-                },
-              };
-            },
-          );
-        } catch (error) {
-          const message =
-            error instanceof Error ? error.message : "시작 질문 설정 중 오류가 발생했습니다.";
-          if (strictMode) {
-            return { status: "failed", message };
-          }
-          markFailed("entry-action-sync", message);
-        } finally {
-          setIsUpdatingEntryAction(false);
-        }
-      }
-
-      const successfulDraftKeySet = new Set(successfulDraftKeys);
-      const successfulItemKeySet = new Set(successfulItemKeys);
-
-      if (cacheUpsertByActionId.size > 0) {
-        queryClient.setQueryData<GetMissionActionsDetailResponse | undefined>(
-          actionQueryKeys.actions({ missionId }),
-          previous => patchActionsQueryData(previous, [...cacheUpsertByActionId.values()]),
-        );
-      }
-
-      if (successfulExistingActionIds.length > 0) {
-        setExistingFormVersionById(prev => {
-          const next = { ...prev };
-          for (const actionId of successfulExistingActionIds) {
-            next[actionId] = (next[actionId] ?? 0) + 1;
-          }
-          return next;
-        });
-      }
-
-      if (successfulDraftKeySet.size > 0) {
-        setDraftItems(prev => prev.filter(item => !successfulDraftKeySet.has(item.key)));
+      const savedDraftKeys = new Set(
+        Object.keys(result.tempToRealActionIdMap).map(key => key.replace(/^draft:/, "")),
+      );
+      if (savedDraftKeys.size > 0) {
+        setDraftItems(prev => prev.filter(item => !savedDraftKeys.has(item.key)));
         setActionTypeByItemKey(prev => {
           const next = { ...prev };
-          for (const draftKey of successfulDraftKeySet) {
+          for (const draftKey of savedDraftKeys) {
             delete next[getDraftItemKey(draftKey)];
           }
           return next;
         });
       }
 
-      if (successfulItemKeySet.size > 0) {
-        setDirtyByItemKey(prev => {
+      setDirtyByItemKey({});
+      setDraftFormSnapshotByItemKey({});
+      setValidationIssueCountByItemKey({});
+
+      if (result.updatedActionIds.length > 0) {
+        setExistingFormVersionById(prev => {
           const next = { ...prev };
-          for (const key of successfulItemKeySet) {
-            delete next[key];
-          }
-          return next;
-        });
-        setValidationIssueCountByItemKey(prev => {
-          const next = { ...prev };
-          for (const key of successfulItemKeySet) {
-            delete next[key];
-          }
-          return next;
-        });
-        setDraftFormSnapshotByItemKey(prev => {
-          const next = { ...prev };
-          for (const key of successfulItemKeySet) {
-            delete next[key];
+          for (const actionId of result.updatedActionIds) {
+            next[actionId] = (next[actionId] ?? 0) + 1;
           }
           return next;
         });
       }
 
-      if (createdCompletionDraftIds.length > 0) {
-        for (const draftCompletionId of createdCompletionDraftIds) {
-          removeCompletionDraftById(draftCompletionId);
-        }
+      for (const item of orderedActionItems) {
+        formRefs.current[item.key]?.deleteMarkedInitialImages();
       }
 
-      if (didMutateServer) {
-        const invalidateTargets = [
-          queryClient.invalidateQueries({
-            queryKey: missionCompletionQueryKeys.missionCompletion(missionId),
-          }),
-          queryClient.invalidateQueries({
-            queryKey: actionQueryKeys.actions({ missionId }),
-          }),
-        ];
-
-        if (didSyncMissionEntryAction) {
-          invalidateTargets.push(
-            queryClient.invalidateQueries({
-              queryKey: missionQueryKeys.mission(missionId),
-            }),
-          );
-        }
-
-        await Promise.all(invalidateTargets);
-      }
-
-      if (didSyncOrder) {
-        savedCount += 1;
-        details.push({ key: "order-sync", status: "saved" });
-      }
-
-      if (didSyncMissionEntryAction) {
-        savedCount += 1;
-        details.push({ key: "entry-action-sync", status: "saved" });
-      }
-
-      const message =
-        failedCount > 0
-          ? "진행 목록 설정의 일부 저장에 실패했습니다."
-          : invalidCount > 0 || skippedCount > 0
-            ? "진행 목록 설정의 일부 항목이 저장에서 제외되었습니다."
-            : "진행 목록 설정이 저장되었습니다.";
-
-      if (!silent && (savedCount > 0 || skippedCount > 0 || failedCount > 0 || invalidCount > 0)) {
-        if (failedCount > 0) {
-          toast({
-            message,
-            icon: AlertCircle,
-            iconClassName: "text-red-500",
-          });
-        } else {
-          toast({ message });
-        }
-      }
-
-      if (savedCount === 0 && skippedCount === 0 && failedCount === 0 && invalidCount === 0) {
-        return { status: "no_changes" };
-      }
-
-      return {
-        status:
-          failedCount > 0 ? "failed" : invalidCount > 0 || skippedCount > 0 ? "invalid" : "saved",
-        message,
-        savedCount,
-        skippedCount,
-        failedCount,
-        invalidCount,
-        details,
-      };
-    } catch (error) {
-      if (createdCompletionDraftIds.length > 0) {
-        for (const draftCompletionId of createdCompletionDraftIds) {
-          removeCompletionDraftById(draftCompletionId);
-        }
-        await queryClient.invalidateQueries({
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: actionQueryKeys.actions({ missionId }) }),
+        queryClient.invalidateQueries({
           queryKey: missionCompletionQueryKeys.missionCompletion(missionId),
-        });
+        }),
+        queryClient.invalidateQueries({ queryKey: missionQueryKeys.mission(missionId) }),
+      ]);
+
+      const savedCount = result.createdActionIds.length + result.updatedActionIds.length;
+      if (!silent && savedCount > 0) {
+        toast({ message: "진행 목록 설정이 저장되었습니다." });
       }
 
+      return savedCount > 0 ? { status: "saved", savedCount } : { status: "no_changes" };
+    } catch (error) {
       const message =
         error instanceof Error ? error.message : "진행 목록 설정 저장에 실패했습니다.";
       if (!silent) {
-        toast({
-          message,
-          icon: AlertCircle,
-          iconClassName: "text-red-500",
-        });
+        toast({ message, icon: AlertCircle, iconClassName: "text-red-500" });
       }
       return { status: "failed", message };
     } finally {
-      setIsUpdatingEntryAction(false);
+      setIsApplying(false);
     }
   };
 
@@ -2141,7 +1202,7 @@ function ActionSettingsCardComponent(
       <Dialog
         open={Boolean(deleteTarget)}
         onOpenChange={open => {
-          if (!open && !isDeletingAction) {
+          if (!open && !deleteAction.isPending) {
             setDeleteTarget(null);
           }
         }}
@@ -2151,12 +1212,12 @@ function ActionSettingsCardComponent(
           {deleteTarget ? (
             <DialogContent
               onInteractOutside={event => {
-                if (isDeletingAction) {
+                if (deleteAction.isPending) {
                   event.preventDefault();
                 }
               }}
               onEscapeKeyDown={event => {
-                if (isDeletingAction) {
+                if (deleteAction.isPending) {
                   event.preventDefault();
                 }
               }}
@@ -2174,15 +1235,15 @@ function ActionSettingsCardComponent(
                   variant="secondary"
                   fullWidth
                   onClick={() => setDeleteTarget(null)}
-                  disabled={isDeletingAction}
+                  disabled={deleteAction.isPending}
                 >
                   취소
                 </Button>
                 <Button
                   fullWidth
                   onClick={handleDeleteConfirm}
-                  loading={isDeletingAction}
-                  disabled={isDeletingAction}
+                  loading={deleteAction.isPending}
+                  disabled={deleteAction.isPending}
                   className="bg-red-500 hover:bg-red-600"
                 >
                   삭제

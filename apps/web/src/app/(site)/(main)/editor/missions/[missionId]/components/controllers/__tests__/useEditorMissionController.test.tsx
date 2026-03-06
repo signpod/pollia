@@ -360,7 +360,7 @@ describe("useEditorMissionController", () => {
     );
   });
 
-  it("저장하기는 publish trigger로 저장하고 draft payload 저장 없이 실제 섹션 저장 결과만 반영한다", async () => {
+  it("저장하기는 draft를 먼저 저장한 뒤 publish trigger로 섹션 저장을 수행한다", async () => {
     const mission = createMission({ isActive: true });
     const saveOptionsSpy = jest.fn<void, [SectionSaveOptions | undefined]>();
 
@@ -404,8 +404,7 @@ describe("useEditorMissionController", () => {
     });
 
     const payloadCalls = mockedSaveMissionEditorDraft.mock.calls.filter(([, payload]) => payload);
-    expect(payloadCalls).toHaveLength(0);
-    expect(mockedSaveMissionEditorDraft).toHaveBeenCalledWith(mission.id, null);
+    expect(payloadCalls).toHaveLength(1);
     expect(saveOptionsSpy).toHaveBeenCalledWith(
       expect.objectContaining({ trigger: "publish", showValidationUi: true }),
     );
