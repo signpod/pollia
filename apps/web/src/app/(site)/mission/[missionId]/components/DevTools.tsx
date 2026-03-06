@@ -48,7 +48,7 @@ export function DevTools({ missionId }: DevToolsProps) {
   const handleDeleteResponse = () => {
     if (!response?.id) return;
 
-    if (window.confirm("정말로 이 미션의 응답을 초기화하시겠습니까?")) {
+    if (window.confirm("정말로 이 컨텐츠의 응답을 초기화하시겠습니까?")) {
       resetResponse(response.id, {
         onSuccess: async () => {
           await Promise.all([
