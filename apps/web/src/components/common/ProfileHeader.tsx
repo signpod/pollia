@@ -14,14 +14,16 @@ interface ProfileHeaderProps {
 
 export function ProfileHeader({ showBack, fallbackRight }: ProfileHeaderProps) {
   const router = useRouter();
-  const { data: currentUser, isLoading } = useCurrentUser();
+  const { data: currentUser, isLoading, isError } = useCurrentUser();
   const profileImageUrl = useProfileImageUrl();
+
+  const showSkeleton = isLoading && !isError;
 
   return (
     <ProfileHeaderView
       showBack={showBack}
       fallbackRight={
-        isLoading ? (
+        showSkeleton ? (
           <div className="size-9 animate-pulse rounded-full bg-zinc-200" />
         ) : (
           fallbackRight
