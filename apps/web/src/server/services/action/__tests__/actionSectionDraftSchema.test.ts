@@ -49,7 +49,7 @@ describe("actionSectionDraftSnapshotSchema", () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.draftItems).toHaveLength(1);
-      expect(result.data.draftItems[0].key).toBe("abc123");
+      expect(result.data.draftItems[0]!.key).toBe("abc123");
       expect(result.data.itemOrderKeys).toEqual(["existing:action1", "draft:abc123"]);
     }
   });
@@ -111,9 +111,9 @@ describe("actionSectionDraftSnapshotSchema", () => {
     // Then
     expect(result.success).toBe(true);
     if (result.success) {
-      const snapshot = result.data.formSnapshotByItemKey["draft:branch1"];
-      expect(snapshot.values.options?.[0].nextActionId).toBe("draft:next1");
-      expect(snapshot.values.options?.[1].nextCompletionId).toBe("draft:completion:done");
+      const snapshot = result.data.formSnapshotByItemKey["draft:branch1"]!;
+      expect(snapshot.values.options?.[0]?.nextActionId).toBe("draft:next1");
+      expect(snapshot.values.options?.[1]?.nextCompletionId).toBe("draft:completion:done");
     }
   });
 
@@ -222,9 +222,9 @@ describe("actionSectionDraftSnapshotSchema", () => {
     // Then
     expect(result.success).toBe(true);
     if (result.success) {
-      const opts = result.data.formSnapshotByItemKey["draft:mc1"].values.options;
-      expect(opts?.[0].fileUploadId).toBe("upload-001");
-      expect(opts?.[1].fileUploadId).toBeNull();
+      const opts = result.data.formSnapshotByItemKey["draft:mc1"]!.values.options;
+      expect(opts?.[0]?.fileUploadId).toBe("upload-001");
+      expect(opts?.[1]?.fileUploadId).toBeNull();
     }
   });
 });
@@ -251,8 +251,8 @@ describe("completionSectionDraftSnapshotSchema", () => {
     expect(result.success).toBe(true);
     if (result.success) {
       expect(result.data.draftItems).toHaveLength(1);
-      expect(result.data.draftItems[0].title).toBe("성공!");
-      const snapshot = result.data.formSnapshotByItemKey["draft:completion:comp1"];
+      expect(result.data.draftItems[0]!.title).toBe("성공!");
+      const snapshot = result.data.formSnapshotByItemKey["draft:completion:comp1"]!;
       expect(snapshot.title).toBe("미션 완료!");
     }
   });

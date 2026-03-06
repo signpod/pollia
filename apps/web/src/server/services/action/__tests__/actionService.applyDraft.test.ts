@@ -1,5 +1,5 @@
 import { toServerEditorDraftPayload } from "@/types/mission-editor-draft";
-import { ActionType } from "@prisma/client";
+import { ActionType, type Prisma } from "@prisma/client";
 import {
   type ActionServiceTestContext,
   createActionServiceTestContext,
@@ -658,7 +658,7 @@ describe("ActionService - applyActionSectionDraft", () => {
       const serverStoredPayload = toServerEditorDraftPayload(frontendPayload);
 
       const mockMission = mockMissionFactory({
-        editorDraft: serverStoredPayload,
+        editorDraft: serverStoredPayload as unknown as Prisma.JsonValue,
       });
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockMissionRepo.update.mockResolvedValue(mockMission);

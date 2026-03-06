@@ -915,7 +915,7 @@ export class ActionService {
       }
 
       for (let i = 0; i < input.actionOrder.length; i++) {
-        const key = input.actionOrder[i];
+        const key = input.actionOrder[i]!;
         const realId = resolveActionId(key) ?? key;
         await this.actionRepo.updateOrder(realId, i, tx);
       }
@@ -1049,7 +1049,7 @@ export class ActionService {
       return key;
     });
 
-    const entryActionKey = actionOrder.length > 0 ? actionOrder[0] : null;
+    const entryActionKey = actionOrder.length > 0 ? actionOrder[0]! : null;
 
     const result = await this.saveActionSection(
       {
