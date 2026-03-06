@@ -1,5 +1,5 @@
 import { getMissionActionIds } from "@/actions/action";
-import { getMission, getMissionParticipantInfo } from "@/actions/mission";
+import { getMissionParticipantInfo } from "@/actions/mission";
 import { getMyResponseForMission } from "@/actions/mission-response";
 import { claimGuestResponses } from "@/actions/mission-response/claimGuestResponses";
 import { getReward } from "@/actions/reward/read";
@@ -20,6 +20,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import type { PropsWithChildren } from "react";
+import { getCachedMission } from "./getCachedMission";
 
 interface LayoutParams {
   params: Promise<{ missionId: string }>;
@@ -30,7 +31,7 @@ export async function generateMetadata({ params }: LayoutParams): Promise<Metada
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://pollia.me";
 
   try {
-    const missionResult = await getMission(missionId);
+    const missionResult = await getCachedMission(missionId);
     const { title, imageUrl } = missionResult.data;
 
     const ogTitle = title || SHARE_MESSAGES.kakao.title;
@@ -75,21 +76,19 @@ export default async function MissionLayout({
   const { missionId } = await params;
   const queryClient = getQueryClient();
 
-  const { isAuthenticated } = await checkAuthStatus().catch(error => {
+  const handleNotFound = (error: unknown) => {
     if (error instanceof Error && (error as Error & { cause?: number }).cause === 404) {
       notFound();
     }
     throw error;
-  });
+  };
 
-  const missionResult = await getMission(missionId).catch(error => {
-    if (error instanceof Error && (error as Error & { cause?: number }).cause === 404) {
-      notFound();
-    }
-    throw error;
-  });
+  const [{ isAuthenticated }, missionResult] = await Promise.all([
+    checkAuthStatus().catch(handleNotFound),
+    getCachedMission(missionId).catch(handleNotFound),
+  ]);
 
-  const prefetchPromises = [
+  const prefetchPromises: Promise<unknown>[] = [
     queryClient.prefetchQuery({
       queryKey: actionQueryKeys.actionsIds({ missionId }),
       queryFn: () => getMissionActionIds(missionId),
@@ -99,6 +98,16 @@ export default async function MissionLayout({
       queryFn: () => getMissionParticipantInfo(missionId),
     }),
   ];
+
+  const rewardId = missionResult.data.rewardId;
+  if (rewardId) {
+    prefetchPromises.push(
+      queryClient.prefetchQuery({
+        queryKey: rewardQueryKeys.reward(rewardId),
+        queryFn: () => getReward(rewardId),
+      }),
+    );
+  }
 
   if (isAuthenticated) {
     const cookieStore = await cookies();
@@ -127,20 +136,6 @@ export default async function MissionLayout({
   }
 
   await Promise.all(prefetchPromises);
-
-  const rewardId = missionResult.data.rewardId;
-  const rewardPrefetchPromises = [];
-  if (rewardId) {
-    rewardPrefetchPromises.push(
-      queryClient.prefetchQuery({
-        queryKey: rewardQueryKeys.reward(rewardId),
-        queryFn: () => getReward(rewardId),
-      }),
-    );
-  }
-  if (rewardPrefetchPromises.length > 0) {
-    await Promise.all(rewardPrefetchPromises);
-  }
 
   queryClient.setQueryData(missionQueryKeys.mission(missionId), missionResult);
 

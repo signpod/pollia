@@ -7,10 +7,10 @@ import { useCallback, useMemo, useState } from "react";
 import { useMyResponses } from "./useMyResponses";
 
 const TABS = [
-  { value: "my-content", label: `내 ${UBIQUITOUS_CONSTANTS.MISSION}` },
   { value: "participation", label: "참여" },
   { value: "liked", label: "찜" },
   { value: "rewards", label: "리워드" },
+  { value: "my-content", label: `내 ${UBIQUITOUS_CONSTANTS.MISSION}` },
 ] as const;
 
 const DEFAULT_TAB = TABS[0].value;

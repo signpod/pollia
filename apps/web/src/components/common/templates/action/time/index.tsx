@@ -167,7 +167,7 @@ function TimeSelectDialog({ open, onOpenChange }: TimeSelectDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogPortal>
         <div className="fixed inset-0 z-50 flex justify-center">
-          <div className="relative w-full max-w-lg">
+          <div className="relative w-full max-w-[640px]">
             <button
               type="button"
               className={cn(
