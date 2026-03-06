@@ -585,39 +585,28 @@ export function useCompletionSettingsCard({
         }
       }
 
-      if (trigger === "publish") {
-        for (const completionId of removedSnapshot) {
-          try {
-            await deleteMissionCompletion(completionId);
-            didMutateServer = true;
+      for (const completionId of removedSnapshot) {
+        try {
+          await deleteMissionCompletion(completionId);
+          didMutateServer = true;
+          successfulRemovedIds.add(completionId);
+          savedCount += 1;
+          details.push({ key: getExistingItemKey(completionId), status: "saved" });
+        } catch (error) {
+          if (isMissingCompletionError(error)) {
             successfulRemovedIds.add(completionId);
             savedCount += 1;
             details.push({ key: getExistingItemKey(completionId), status: "saved" });
-          } catch (error) {
-            if (isMissingCompletionError(error)) {
-              successfulRemovedIds.add(completionId);
-              savedCount += 1;
-              details.push({ key: getExistingItemKey(completionId), status: "saved" });
-              continue;
-            }
-
-            const message =
-              error instanceof Error ? error.message : "결과 화면 삭제 중 오류가 발생했습니다.";
-            if (strictMode) {
-              return { status: "failed", message };
-            }
-            failedCount += 1;
-            details.push({ key: getExistingItemKey(completionId), status: "failed", message });
+            continue;
           }
-        }
-      } else if (removedSnapshot.size > 0) {
-        for (const completionId of removedSnapshot) {
-          skippedCount += 1;
-          details.push({
-            key: getExistingItemKey(completionId),
-            status: "skipped",
-            message: "결과 화면 삭제는 발행 시 반영됩니다.",
-          });
+
+          const message =
+            error instanceof Error ? error.message : "결과 화면 삭제 중 오류가 발생했습니다.";
+          if (strictMode) {
+            return { status: "failed", message };
+          }
+          failedCount += 1;
+          details.push({ key: getExistingItemKey(completionId), status: "failed", message });
         }
       }
 
