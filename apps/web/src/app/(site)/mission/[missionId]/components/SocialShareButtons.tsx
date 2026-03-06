@@ -23,7 +23,7 @@ export function SocialShareButtons({
       <button
         type="button"
         aria-label="카카오톡으로 공유"
-        className="flex justify-center items-center bg-kakao rounded-lg size-9"
+        className="flex justify-center items-center bg-kakao rounded-sm size-9"
         onClick={onKakaoShare}
       >
         <KakaoIcon className="size-4" />
@@ -32,7 +32,7 @@ export function SocialShareButtons({
         <button
           type="button"
           aria-label="X(트위터)로 공유"
-          className="flex justify-center items-center bg-black rounded-lg size-9"
+          className="flex justify-center items-center bg-black rounded-sm size-9"
           onClick={onXShare}
         >
           <XLogo className="size-4 text-white" />
@@ -41,7 +41,7 @@ export function SocialShareButtons({
       <button
         type="button"
         aria-label="링크 복사"
-        className="flex justify-center items-center bg-white border border-zinc-200 rounded-lg size-9"
+        className="flex justify-center items-center bg-white border border-zinc-200 rounded-sm size-9"
         onClick={onLinkShare}
       >
         <Share2 className="size-4" />
