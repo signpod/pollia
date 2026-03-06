@@ -99,8 +99,9 @@ export class ActionRepository {
     data: Omit<Prisma.ActionUncheckedCreateInput, "id" | "createdAt" | "updatedAt">,
     options: OptionInput[],
     userId: string,
+    client?: Prisma.TransactionClient,
   ) {
-    return prisma.$transaction(async tx => {
+    const execute = async (tx: Prisma.TransactionClient) => {
       const createdAction = await tx.action.create({
         data: {
           ...data,
@@ -123,26 +124,40 @@ export class ActionRepository {
       await confirmFileUploads(tx, userId, allFileUploadIds);
 
       return createdAction;
-    });
+    };
+
+    if (client) {
+      return execute(client);
+    }
+    return prisma.$transaction(execute);
   }
 
   async create(
     data: Omit<Prisma.ActionUncheckedCreateInput, "id" | "createdAt" | "updatedAt">,
     userId?: string,
+    client?: Prisma.TransactionClient,
   ) {
-    if (data.imageFileUploadId && typeof data.imageFileUploadId === "string" && userId) {
-      return prisma.$transaction(async tx => {
-        const createdAction = await tx.action.create({
-          data: {
-            ...data,
-            missionId: data.missionId ?? undefined,
-          },
-        });
-
-        await confirmFileUploads(tx, userId, data.imageFileUploadId as string);
-
-        return createdAction;
+    const execute = async (tx: Prisma.TransactionClient) => {
+      const createdAction = await tx.action.create({
+        data: {
+          ...data,
+          missionId: data.missionId ?? undefined,
+        },
       });
+
+      if (data.imageFileUploadId && typeof data.imageFileUploadId === "string" && userId) {
+        await confirmFileUploads(tx, userId, data.imageFileUploadId as string);
+      }
+
+      return createdAction;
+    };
+
+    if (client) {
+      return execute(client);
+    }
+
+    if (data.imageFileUploadId && typeof data.imageFileUploadId === "string" && userId) {
+      return prisma.$transaction(execute);
     }
 
     return prisma.action.create({
@@ -153,18 +168,31 @@ export class ActionRepository {
     });
   }
 
-  async update(actionId: string, data: Prisma.ActionUncheckedUpdateInput, userId?: string) {
-    if (data.imageFileUploadId && typeof data.imageFileUploadId === "string" && userId) {
-      return prisma.$transaction(async tx => {
-        const updatedAction = await tx.action.update({
-          where: { id: actionId },
-          data,
-        });
-
-        await confirmFileUploads(tx, userId, data.imageFileUploadId as string);
-
-        return updatedAction;
+  async update(
+    actionId: string,
+    data: Prisma.ActionUncheckedUpdateInput,
+    userId?: string,
+    client?: Prisma.TransactionClient,
+  ) {
+    const execute = async (tx: Prisma.TransactionClient) => {
+      const updatedAction = await tx.action.update({
+        where: { id: actionId },
+        data,
       });
+
+      if (data.imageFileUploadId && typeof data.imageFileUploadId === "string" && userId) {
+        await confirmFileUploads(tx, userId, data.imageFileUploadId as string);
+      }
+
+      return updatedAction;
+    };
+
+    if (client) {
+      return execute(client);
+    }
+
+    if (data.imageFileUploadId && typeof data.imageFileUploadId === "string" && userId) {
+      return prisma.$transaction(execute);
     }
 
     return prisma.action.update({
@@ -178,8 +206,9 @@ export class ActionRepository {
     data: Prisma.ActionUncheckedUpdateInput,
     options: OptionInput[],
     userId: string,
+    client?: Prisma.TransactionClient,
   ) {
-    return prisma.$transaction(async tx => {
+    const execute = async (tx: Prisma.TransactionClient) => {
       const updatedAction = await tx.action.update({
         where: { id: actionId },
         data,
@@ -200,7 +229,12 @@ export class ActionRepository {
       await confirmFileUploads(tx, userId, allFileUploadIds);
 
       return updatedAction;
-    });
+    };
+
+    if (client) {
+      return execute(client);
+    }
+    return prisma.$transaction(execute);
   }
 
   private async getExistingOptionIds(

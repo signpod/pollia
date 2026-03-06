@@ -4,23 +4,38 @@ import { getCompletionsByMissionId } from "@/actions/mission-completion";
 import { Separator } from "@/components/ui/separator";
 import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
 import { ROUTES } from "@/constants/routes";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useReadActionsDetail } from "@/hooks/action";
 import { useReadMission } from "@/hooks/mission";
 import type { GetMissionResponse } from "@/types/dto";
 import { useQuery } from "@tanstack/react-query";
+import { useAtomValue, useSetAtom } from "jotai";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEditorBootstrapScrollController } from "../../../components/controller/useEditorBootstrapScrollController";
 import { EditorSectionCard } from "../../../components/view/EditorSectionCard";
-import { type ActionSectionDraftSnapshot, ActionSettingsCard } from "./ActionSettingsCard";
 import {
-  type CompletionSectionDraftSnapshot,
-  CompletionSettingsCard,
-} from "./CompletionSettingsCard";
+  actionDirtyByItemKeyAtom,
+  actionDraftItemsAtom,
+  actionFormSnapshotByItemKeyAtom,
+  actionItemOrderKeysAtom,
+  actionOpenItemKeyAtom,
+  actionTypeByItemKeyAtom,
+} from "../atoms/editorActionAtoms";
+import {
+  completionDirtyByItemKeyAtom,
+  completionDraftsAtom,
+  completionFormSnapshotByItemKeyAtom,
+  completionOpenItemKeyAtom,
+  removedCompletionIdsAtom,
+} from "../atoms/editorCompletionAtoms";
+import { serverCompletionsAtom } from "../atoms/editorDerivedAtoms";
+import { type ActionSectionDraftSnapshot, ActionSettingsCard } from "./ActionSettingsCard";
+import { CompletionSettingsCard } from "./CompletionSettingsCard";
+import { ContentBasicInfoCard } from "./ContentBasicInfoCard";
 import { EditorBottomSaveSlot } from "./EditorBottomSaveSlot";
 import { EditorMissionDraftProvider } from "./EditorMissionDraftContext";
 import { useEditorMissionTab } from "./EditorMissionTabContext";
 import { MissionStatsDashboard } from "./MissionStatsDashboard";
-import { ProjectBasicInfoCard } from "./ProjectBasicInfoCard";
 import { RewardSettingsCard, type RewardSnapshot } from "./RewardSettingsCard";
 import { useEditorMissionController } from "./controllers/useEditorMissionController";
 import { EditorDesktopAbsolute } from "./desktop/EditorDesktopAbsolute";
@@ -55,7 +70,7 @@ function MissionIntroPreview({ missionId }: { missionId: string }) {
         </div>
       )}
       <iframe
-        title="프로젝트 인트로 미리보기"
+        title={`${UBIQUITOUS_CONSTANTS.MISSION} 인트로 미리보기`}
         src={previewUrl}
         className="h-full w-full border-0"
         onLoad={() => setIsLoading(false)}
@@ -75,10 +90,17 @@ export function EditorMissionTabContent({
   const [editorUseAiCompletion, setEditorUseAiCompletion] = useState(mission.useAiCompletion);
   const [basicValidationCount, setBasicValidationCount] = useState(0);
   const [rewardValidationCount, setRewardValidationCount] = useState(0);
-  const [cachedActionDraftSnapshot, setCachedActionDraftSnapshot] =
-    useState<ActionSectionDraftSnapshot | null>(null);
-  const [cachedCompletionDraftSnapshot, setCachedCompletionDraftSnapshot] =
-    useState<CompletionSectionDraftSnapshot | null>(null);
+  const actionDraftItems = useAtomValue(actionDraftItemsAtom);
+  const actionOpenItemKey = useAtomValue(actionOpenItemKeyAtom);
+  const actionDirtyByItemKey = useAtomValue(actionDirtyByItemKeyAtom);
+  const actionTypeByItemKey = useAtomValue(actionTypeByItemKeyAtom);
+  const actionFormSnapshotByItemKey = useAtomValue(actionFormSnapshotByItemKeyAtom);
+  const actionItemOrderKeys = useAtomValue(actionItemOrderKeysAtom);
+  const completionDrafts = useAtomValue(completionDraftsAtom);
+  const completionOpenItemKey = useAtomValue(completionOpenItemKeyAtom);
+  const removedCompletionIds = useAtomValue(removedCompletionIdsAtom);
+  const completionDirtyByItemKey = useAtomValue(completionDirtyByItemKeyAtom);
+  const completionFormSnapshotByItemKey = useAtomValue(completionFormSnapshotByItemKeyAtom);
   const missionQuery = useReadMission(missionId);
   const actionsQuery = useReadActionsDetail(missionId);
   const completionsQuery = useQuery({
@@ -103,6 +125,11 @@ export function EditorMissionTabContent({
   const effectiveMission = missionQuery.data?.data ?? mission;
   const serverActions = actionsQuery.data?.data;
   const serverCompletions = completionsQuery.data?.data;
+  const setServerCompletions = useSetAtom(serverCompletionsAtom);
+
+  useEffect(() => {
+    setServerCompletions(serverCompletions ?? []);
+  }, [serverCompletions, setServerCompletions]);
 
   useEffect(() => {
     setEditorUseAiCompletion(mission.useAiCompletion);
@@ -124,21 +151,63 @@ export function EditorMissionTabContent({
     [sectionBindings.onRewardStateChange],
   );
 
-  const handleActionWorkingSetChange = useCallback(
-    (snapshot: ActionSectionDraftSnapshot) => {
-      setCachedActionDraftSnapshot(snapshot);
-      sectionBindings.onActionWorkingSetChange();
-    },
-    [sectionBindings.onActionWorkingSetChange],
+  const cachedActionDraftSnapshot = useMemo<ActionSectionDraftSnapshot>(
+    () => ({
+      draftItems: actionDraftItems,
+      openItemKey: actionOpenItemKey,
+      dirtyByItemKey: actionDirtyByItemKey,
+      actionTypeByItemKey,
+      formSnapshotByItemKey: actionFormSnapshotByItemKey,
+      itemOrderKeys: actionItemOrderKeys,
+    }),
+    [
+      actionDraftItems,
+      actionOpenItemKey,
+      actionDirtyByItemKey,
+      actionTypeByItemKey,
+      actionFormSnapshotByItemKey,
+      actionItemOrderKeys,
+    ],
   );
 
-  const handleCompletionWorkingSetChange = useCallback(
-    (snapshot: CompletionSectionDraftSnapshot) => {
-      setCachedCompletionDraftSnapshot(snapshot);
-      sectionBindings.onCompletionWorkingSetChange();
-    },
-    [sectionBindings.onCompletionWorkingSetChange],
+  // biome-ignore lint/correctness/useExhaustiveDependencies: atom values trigger working set change notification
+  useEffect(() => {
+    sectionBindings.onActionWorkingSetChange();
+  }, [
+    actionDraftItems,
+    actionDirtyByItemKey,
+    actionFormSnapshotByItemKey,
+    actionItemOrderKeys,
+    sectionBindings.onActionWorkingSetChange,
+  ]);
+
+  const cachedCompletionDraftSnapshot = useMemo(
+    () => ({
+      draftItems: completionDrafts.map(item => ({ key: item.key, title: item.title })),
+      openItemKey: completionOpenItemKey,
+      removedExistingIds: [...removedCompletionIds],
+      dirtyByItemKey: completionDirtyByItemKey,
+      formSnapshotByItemKey: completionFormSnapshotByItemKey,
+    }),
+    [
+      completionDrafts,
+      completionOpenItemKey,
+      removedCompletionIds,
+      completionDirtyByItemKey,
+      completionFormSnapshotByItemKey,
+    ],
   );
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: atom values trigger working set change notification
+  useEffect(() => {
+    sectionBindings.onCompletionWorkingSetChange();
+  }, [
+    completionDrafts,
+    removedCompletionIds,
+    completionDirtyByItemKey,
+    completionFormSnapshotByItemKey,
+    sectionBindings.onCompletionWorkingSetChange,
+  ]);
 
   const desktopFlowInput = useMemo(
     () =>
@@ -192,9 +261,6 @@ export function EditorMissionTabContent({
         canPublish={viewState.canPublish}
         onSave={() => {
           void actions.onSave();
-        }}
-        onDraftSave={() => {
-          void actions.onDraftSave();
         }}
         onPublish={() => {
           void actions.onPublish();
@@ -265,11 +331,11 @@ export function EditorMissionTabContent({
       />
       <EditorMissionDraftProvider>
         <EditorSectionCard
-          title="프로젝트 기본정보"
-          description="프로젝트 기본 정보를 입력합니다."
+          title={`${UBIQUITOUS_CONSTANTS.MISSION} 기본정보`}
+          description={`${UBIQUITOUS_CONSTANTS.MISSION} 기본 정보를 입력합니다.`}
           validationIssueCount={basicValidationCount + rewardValidationCount}
         >
-          <ProjectBasicInfoCard
+          <ContentBasicInfoCard
             ref={refs.basicInfoRef}
             mission={mission}
             onSaveStateChange={handleBasicStateChange}
@@ -289,9 +355,6 @@ export function EditorMissionTabContent({
             missionId={mission.id}
             useAiCompletion={editorUseAiCompletion}
             onSaveStateChange={sectionBindings.onActionStateChange}
-            getCompletionDraftSnapshot={sectionBindings.getCompletionDraftSnapshot}
-            completionWorkingSetVersion={sectionBindings.completionWorkingSetVersion}
-            onWorkingSetChange={handleActionWorkingSetChange}
           />
         </div>
         <Separator className="h-2" />
@@ -299,7 +362,6 @@ export function EditorMissionTabContent({
           ref={refs.completionRef}
           missionId={mission.id}
           onSaveStateChange={sectionBindings.onCompletionStateChange}
-          onWorkingSetChange={handleCompletionWorkingSetChange}
         />
       </EditorMissionDraftProvider>
     </>

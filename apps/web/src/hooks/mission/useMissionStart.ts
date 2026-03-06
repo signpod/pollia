@@ -68,7 +68,7 @@ export function useMissionStart({
       } catch {
         isActionInitiatedRef.current = false;
         setIsStarting(false);
-        toast.warning("미션 시작에 실패했어요. 다시 시도해주세요", {
+        toast.warning("컨텐츠 시작에 실패했어요. 다시 시도해주세요", {
           id: "start-mission-error",
         });
       }

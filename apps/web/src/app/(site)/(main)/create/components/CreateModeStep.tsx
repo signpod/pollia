@@ -1,5 +1,6 @@
 "use client";
 
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { Typo } from "@repo/ui/components";
 import { useFormContext } from "react-hook-form";
 import type { CreateMissionFormData } from "../schema";
@@ -13,7 +14,7 @@ const MODE_OPTIONS = [
     value: "custom" as const,
     icon: "✨",
     title: "자유롭게 만들기",
-    description: "직접 입력해서 프로젝트를 생성합니다.",
+    description: `직접 입력해서 ${UBIQUITOUS_CONSTANTS.MISSION}를 생성합니다.`,
     baseClassName: "border-blue-200 bg-blue-50 text-blue-900 hover:border-blue-300",
     selectedClassName: "border-blue-600 bg-blue-600 text-white",
     iconWrapClassName: "bg-blue-100 text-blue-700",

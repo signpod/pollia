@@ -203,6 +203,9 @@ function ActionStepWrapper({
   );
   const ContentComponent = currentStep?.content;
 
+  const animationName =
+    navigationDirection === "forward" ? "slide-in-from-right" : "slide-in-from-left";
+
   const contextValue = useMemo(
     () => ({
       currentOrder: progressInfo.currentOrder - 1,
@@ -221,6 +224,7 @@ function ActionStepWrapper({
       onAnswerChange: handleAnswerChange,
       missionResponse:
         missionResponse?.data && !missionResponse.data.completedAt ? missionResponse : undefined,
+      animationName,
     }),
     [
       progressInfo.currentOrder,
@@ -234,6 +238,7 @@ function ActionStepWrapper({
       updateCanGoNext,
       handleAnswerChange,
       missionResponse,
+      animationName,
     ],
   );
 
@@ -242,14 +247,9 @@ function ActionStepWrapper({
     return <div>ContentComponent not found</div>;
   }
 
-  const animationName =
-    navigationDirection === "forward" ? "slide-in-from-right" : "slide-in-from-left";
-
   return (
     <ActionProvider value={contextValue}>
-      <div key={currentActionData.id} style={{ animation: `${animationName} 0.25s ease-out` }}>
-        <ContentComponent actionData={currentActionData} />
-      </div>
+      <ContentComponent actionData={currentActionData} />
     </ActionProvider>
   );
 }

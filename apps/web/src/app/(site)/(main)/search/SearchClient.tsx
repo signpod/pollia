@@ -1,5 +1,6 @@
 "use client";
 
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useSearchMissions } from "@/hooks/search";
 import type { MissionSearchRecord } from "@/server/search/missionSearchContract";
 import { Typo } from "@repo/ui/components";
@@ -18,7 +19,7 @@ const RECOMMENDED_SEARCHES = [
   "오늘의 저녁 메뉴?",
 ];
 
-const POPULAR_PROJECTS = ["개발자 mbti 테스트", "나에게 맞는 연애 상대는?", "오늘의 저녁 메뉴?"];
+const POPULAR_CONTENTS = ["개발자 mbti 테스트", "나에게 맞는 연애 상대는?", "오늘의 저녁 메뉴?"];
 
 function getRecentSearches(): string[] {
   if (typeof window === "undefined") return [];
@@ -179,7 +180,7 @@ export function SearchClient() {
 
           {!isPending && results.length === 0 && (
             <Typo.Body size="medium" className="text-disabled">
-              해당하는 프로젝트가 없어요
+              해당하는 {UBIQUITOUS_CONSTANTS.MISSION}가 없어요
             </Typo.Body>
           )}
         </div>
@@ -252,14 +253,14 @@ export function SearchClient() {
 
           <section className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <Typo.SubTitle size="large">인기 프로젝트</Typo.SubTitle>
+              <Typo.SubTitle size="large">인기 {UBIQUITOUS_CONSTANTS.MISSION}</Typo.SubTitle>
               <Typo.Body size="small" className="font-bold text-zinc-400">
                 {`${String(new Date().getMonth() + 1).padStart(2, "0")}.${String(new Date().getDate()).padStart(2, "0")}`}{" "}
                 기준
               </Typo.Body>
             </div>
             <ol className="flex flex-col gap-4">
-              {POPULAR_PROJECTS.map((title, index) => (
+              {POPULAR_CONTENTS.map((title, index) => (
                 <li key={title}>
                   <button
                     type="button"

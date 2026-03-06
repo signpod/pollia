@@ -1,3 +1,4 @@
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { MissionCategory, MissionType, PaymentType } from "@prisma/client";
 import type { CreateMissionFormData } from "../schema";
 import { mapCreateMissionRequest, mapCreateRewardRequest, mapIntroUpdateRequest } from "./mappers";
@@ -6,8 +7,8 @@ function createBaseFormData(): CreateMissionFormData {
   return {
     category: MissionCategory.RESEARCH,
     creationMode: "custom",
-    title: "신규 프로젝트",
-    description: "프로젝트 설명",
+    title: `신규 ${UBIQUITOUS_CONSTANTS.MISSION}`,
+    description: `${UBIQUITOUS_CONSTANTS.MISSION} 설명`,
     isActive: true,
     isExposed: false,
     allowGuestResponse: true,

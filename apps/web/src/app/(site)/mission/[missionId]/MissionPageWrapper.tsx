@@ -159,7 +159,7 @@ export function MissionPageWrapper({
         variant: "early-urgency",
         description: rewardQuery?.data?.id
           ? "리워드가 빠르게 줄고 있어요! 바로 참여해보세요"
-          : "참여자가 많은 인기 미션이에요! 바로 참여해보세요",
+          : "참여자가 많은 인기 컨텐츠이에요! 바로 참여해보세요",
       };
     }
     return null;

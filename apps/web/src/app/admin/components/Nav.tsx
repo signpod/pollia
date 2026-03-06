@@ -199,7 +199,7 @@ function NavItemComponent({
   const subItemIsActive = item.items?.some(subItem => isActive(subItem.url)) ?? false;
   const isEventItemOpen = openEventItems.includes(item.url);
 
-  // 캠페인 그룹: 하위 프로젝트가 있는 경우 아코디언으로 표시
+  // 캠페인 그룹: 하위 콘텐츠가 있는 경우 아코디언으로 표시
   if (hasSubItems && isEventGroup) {
     return (
       <>
@@ -310,7 +310,7 @@ function NavItemComponent({
     );
   }
 
-  // 프로젝트 그룹: Ellipsis 버튼 표시
+  // 콘텐츠 그룹: Ellipsis 버튼 표시
   if (isMissionGroup && item.missionId) {
     return (
       <SidebarMenuItem className="group/mission">

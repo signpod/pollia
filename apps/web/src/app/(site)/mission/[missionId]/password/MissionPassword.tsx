@@ -45,7 +45,7 @@ export default function MissionPassword() {
       </div>
       <div className="w-full flex flex-col justify-center flex-1 gap-8 items-center">
         <Typo.MainTitle className="text-center">
-          미션 시작을 위한
+          시작을 위한
           <br />
           비밀번호를 입력해주세요
         </Typo.MainTitle>

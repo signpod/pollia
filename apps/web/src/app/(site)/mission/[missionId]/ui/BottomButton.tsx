@@ -13,10 +13,10 @@ const BUTTON_TEXT = {
   loggedIn: "지금 바로 참여하기",
   resume: "이어서 진행하기",
   loggedOut: "카카오로 로그인하기",
-  expired: "마감된 미션이에요",
-  notActive: "현재 참여할 수 없는 미션이에요",
-  alreadyCompleted: "이미 완료한 미션이에요",
-  participantLimitReached: "마감된 미션이에요",
+  expired: "마감되었어요",
+  notActive: "현재 참여할 수 없어요",
+  alreadyCompleted: "다시 참여할 수 없어요",
+  participantLimitReached: "마감되었어요",
 };
 
 const BOUNCE_ANIMATION = { x: [0, 10, 0] };

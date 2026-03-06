@@ -13,11 +13,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useState } from "react";
 
-export type MeProjectCardVariant = "in-progress" | "completed" | "expired";
+export type MeContentCardVariant = "in-progress" | "completed" | "expired";
 
-interface MeProjectCardProps {
+interface MeContentCardProps {
   response: MyMissionResponse;
-  variant: MeProjectCardVariant;
+  variant: MeContentCardVariant;
   lineClamp?: number;
 }
 
@@ -34,7 +34,7 @@ function resolveCompletionId(answers: MyMissionResponseAnswer[]): string | undef
 function CardAction({
   response,
   variant,
-}: { response: MyMissionResponse; variant: MeProjectCardVariant }) {
+}: { response: MyMissionResponse; variant: MeContentCardVariant }) {
   const { nextActionId } = useResumeToNextAction({
     missionId: response.mission.id,
     answers: response.answers,
@@ -116,7 +116,7 @@ function formatCompletedDate(date: Date): string {
   return `${yy}.${mm}.${dd} 완료`;
 }
 
-export function MeProjectCard({ response, variant, lineClamp = 1 }: MeProjectCardProps) {
+export function MeContentCard({ response, variant, lineClamp = 1 }: MeContentCardProps) {
   const { mission } = response;
   const [imageError, setImageError] = useState(false);
   const showFallback = imageError || !mission.imageUrl;

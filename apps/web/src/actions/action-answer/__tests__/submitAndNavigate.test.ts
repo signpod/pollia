@@ -128,7 +128,7 @@ describe("submitAnswerOnly", () => {
 
       expect(result).toEqual({
         success: false,
-        error: "이미 완료된 미션입니다.",
+        error: "이미 완료된 컨텐츠입니다.",
         code: "ALREADY_COMPLETED",
       });
     });

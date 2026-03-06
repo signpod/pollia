@@ -1,11 +1,11 @@
 export { AnswerDetailModal } from "./AnswerDetailModal";
 export { CompletedEventCard } from "./CompletedEventCard";
-export { MyProjectTabs } from "./MyProjectTabs";
+export { MyContentTabs } from "./MyContentTabs";
 export { InProgressEventCard } from "./InProgressEventCard";
 export { MeFooter } from "./MeFooter";
 export { MeHeader } from "./MeHeader";
 export { MeLikedMissionCard } from "./MeLikedMissionCard";
-export { MeProjectCard } from "./MeProjectCard";
+export { MeContentCard } from "./MeContentCard";
 export { ProfileSection } from "./ProfileSection";
-export { RecommendedProjects } from "./RecommendedProjects";
+export { RecommendedContents } from "./RecommendedContents";
 export { RewardCard } from "./RewardCard";

@@ -13,9 +13,9 @@ export default function MainLayout({
     <ModalProvider>
       <Providers>
         <MainBottomSlotProvider>
-          <FixedBottomLayout hasGradientBlur>
+          <FixedBottomLayout hasGradientBlur className="flex min-h-svh flex-col">
             <Header />
-            {children}
+            <div className="flex flex-1 flex-col">{children}</div>
             <Footer />
             <FixedBottomLayout.Content className="px-0">
               <MainBottomContentStack />

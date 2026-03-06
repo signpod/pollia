@@ -21,16 +21,16 @@ import {
 
 const STEP_TITLES: Record<Exclude<CreateMissionStep, "success">, string> = {
   mode: "생성 방식 선택",
-  "project-info": "프로젝트 정보 입력",
+  "content-info": `${UBIQUITOUS_CONSTANTS.MISSION} 정보 입력`,
 };
 
 const NEXT_STEP: Record<Exclude<CreateMissionStep, "success">, CreateMissionStep> = {
-  mode: "project-info",
-  "project-info": "success",
+  mode: "content-info",
+  "content-info": "success",
 };
 
 const PREV_STEP: Partial<Record<CreateMissionStep, Exclude<CreateMissionStep, "success">>> = {
-  "project-info": "mode",
+  "content-info": "mode",
 };
 
 export function useCreateMissionFunnel({ form, initialStep }: UseCreateMissionFunnelParams) {
@@ -62,7 +62,7 @@ export function useCreateMissionFunnel({ form, initialStep }: UseCreateMissionFu
       return true;
     }
 
-    if (currentStep === "project-info") {
+    if (currentStep === "content-info") {
       return form.trigger([
         "title",
         "description",
@@ -142,7 +142,7 @@ export function useCreateMissionFunnel({ form, initialStep }: UseCreateMissionFu
   const goNext = useCallback(async () => {
     if (currentStep === "success") return;
 
-    if (currentStep === "project-info") {
+    if (currentStep === "content-info") {
       await handleSubmit();
       return;
     }
@@ -154,7 +154,7 @@ export function useCreateMissionFunnel({ form, initialStep }: UseCreateMissionFu
   }, [currentStep, handleSubmit, validateCurrentStep]);
 
   const goBack = useCallback(() => {
-    if (currentStep === "project-info") {
+    if (currentStep === "content-info") {
       form.setValue("creationMode", null, { shouldDirty: true, shouldValidate: false });
       form.clearErrors("creationMode");
     }
@@ -170,7 +170,7 @@ export function useCreateMissionFunnel({ form, initialStep }: UseCreateMissionFu
       shouldDirty: true,
       shouldValidate: false,
     });
-    setCurrentStep("project-info");
+    setCurrentStep("content-info");
   }, [form]);
 
   const progress = useMemo(() => {
@@ -197,14 +197,14 @@ export function useCreateMissionFunnel({ form, initialStep }: UseCreateMissionFu
     if (currentStep === "mode" && category) {
       return `${MISSION_CATEGORY_LABELS[category]} 만들기`;
     }
-    if (currentStep === "project-info" && category) {
+    if (currentStep === "content-info" && category) {
       return `${MISSION_CATEGORY_LABELS[category]} 정보 입력`;
     }
     return STEP_TITLES[currentStep];
   }, [category, currentStep]);
 
   const nextButtonLabel =
-    currentStep === "project-info" ? `${UBIQUITOUS_CONSTANTS.MISSION} 생성` : "다음";
+    currentStep === "content-info" ? `${UBIQUITOUS_CONSTANTS.MISSION} 생성` : "다음";
 
   return {
     currentStep,

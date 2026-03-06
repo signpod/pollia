@@ -16,7 +16,7 @@ export function MissionReward({ rewardImage, rewardName }: MissionRewardProps) {
         <div className="flex items-center gap-2">
           <GiftIcon className="size-5" />
           <Typo.Body size="medium" className="text-zinc-300">
-            해당 미션 완주 시
+            완주 시
           </Typo.Body>
         </div>
         <Typo.SubTitle size="large" className="break-keep text-white">

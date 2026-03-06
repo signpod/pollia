@@ -7,7 +7,6 @@ import {
   type EditorMissionDraftPayload,
   type LocalEditorDraftPayload,
   normalizeEditorMissionDraftPayload,
-  selectLatestEditorMissionDraft,
   toServerEditorDraftPayload,
 } from "@/types/mission-editor-draft";
 import { MissionType } from "@prisma/client";
@@ -22,36 +21,34 @@ import {
 } from "../editor-publish-flow-validation";
 import type { SectionSaveHandle, SectionSaveOptions, SectionSaveState } from "../editor-save.types";
 import {
-  getMissionEditorDraftStorageKey,
-  loadMissionEditorDraftFromLocalStorage,
-  saveMissionEditorDraftToLocalStorage,
-} from "../editorMissionDraftStorage";
-import {
   type PublishAvailability,
   computePublishAvailability,
 } from "../models/editorMissionPublishModel";
 import {
+  type PostSectionSaveOutcome,
+  checkPublishGuard,
+  checkSaveGuard,
+  checkUnifiedSaveGuard,
+  resolveNoChangesOutcome,
+  resolvePostSectionSaveOutcome,
+  resolveSaveStrategy,
+} from "./editorMissionSaveFlowModel";
+import {
   type EditorSectionKey,
   type SectionSaveSummary,
   accumulateSectionSaveResult,
-  computeManualSaveDisplayCounts,
   createEmptySectionSaveSummary,
 } from "./editorMissionSaveSummaryModel";
 
 const UNIFIED_SAVE_TOAST_ID = "editor-mission-save-result";
 const PUBLISH_TOAST_ID = "editor-mission-publish-result";
-const LOCAL_DRAFT_AUTOSAVE_THROTTLE_MS = 700;
-const LOCAL_DRAFT_AUTOSAVE_MAX_WAIT_MS = 1500;
-const WORKING_SET_VERSION_THROTTLE_MS = 120;
 
 interface ResolveDraftToRestoreInput {
-  missionId: string;
   mission: GetMissionResponse["data"];
   missionQueryData?: GetMissionResponse["data"] | null;
 }
 
 function resolveDraftToRestore({
-  missionId,
   mission,
   missionQueryData,
 }: ResolveDraftToRestoreInput): EditorMissionDraftPayload | null {
@@ -60,18 +57,14 @@ function resolveDraftToRestore({
   }
 
   const latestMission = missionQueryData ?? mission;
-  const localDraft = loadMissionEditorDraftFromLocalStorage(missionId);
   const serverDraftRaw = normalizeEditorMissionDraftPayload(
     (latestMission as { editorDraft?: unknown }).editorDraft,
   );
-  const serverDraft = serverDraftRaw ? toServerEditorDraftPayload(serverDraftRaw) : null;
 
-  return selectLatestEditorMissionDraft(localDraft, serverDraft);
+  return serverDraftRaw ? toServerEditorDraftPayload(serverDraftRaw) : null;
 }
 
 interface DraftClearResult {
-  localDraftCleared: boolean;
-  localDraftErrorMessage: string | null;
   serverDraftCleared: boolean;
   serverDraftErrorMessage: string | null;
 }
@@ -120,8 +113,6 @@ export interface UseEditorMissionControllerResult {
     onRewardStateChange: (state: SectionSaveState) => void;
     onActionStateChange: (state: SectionSaveState) => void;
     onCompletionStateChange: (state: SectionSaveState) => void;
-    getCompletionDraftSnapshot: () => unknown | null;
-    completionWorkingSetVersion: number;
     onActionWorkingSetChange: () => void;
     onCompletionWorkingSetChange: () => void;
   };
@@ -137,23 +128,8 @@ export interface UseEditorMissionControllerResult {
   publishState: PublishAvailability;
   actions: {
     onSave: () => Promise<void>;
-    onDraftSave: () => Promise<void>;
     onPublish: () => Promise<void>;
   };
-}
-
-function buildManualSaveToastMessage(params: {
-  savedCount: number;
-  skippedCount: number;
-  failedCount: number;
-}) {
-  const { savedCount, skippedCount, failedCount } = params;
-  const lines = [`저장 ${savedCount} / 스킵 ${skippedCount}`];
-  if (failedCount > 0) {
-    lines.push(`실패 ${failedCount}`);
-  }
-
-  return lines.join("\n");
 }
 
 function readUseAiCompletionFromBasicDraft(snapshot: unknown): boolean | null {
@@ -189,31 +165,10 @@ export function useEditorMissionController({
   const draftRestoreAppliedRef = useRef(false);
   const saveInFlightRef = useRef(false);
   const publishInFlightRef = useRef(false);
-  const localDraftAutosaveRef = useRef<{
-    timeoutId: number | null;
-    idleId: number | null;
-    maxWaitTimeoutId: number | null;
-    lastPersistedAt: number;
-    lastSerializedPayload: string | null;
-  }>({
-    timeoutId: null,
-    idleId: null,
-    maxWaitTimeoutId: null,
-    lastPersistedAt: 0,
-    lastSerializedPayload: null,
-  });
-  const completionWorkingSetThrottleRef = useRef<{
-    timeoutId: number | null;
-    lastUpdatedAt: number;
-  }>({
-    timeoutId: null,
-    lastUpdatedAt: 0,
-  });
 
   const [isSavingAll, setIsSavingAll] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublished, setIsPublished] = useState(mission.isActive);
-  const [completionWorkingSetVersion, setCompletionWorkingSetVersion] = useState(0);
   const [publishSnapshotVersion, setPublishSnapshotVersion] = useState(0);
   const [sectionStates, setSectionStates] = useState<Record<EditorSectionKey, SectionSaveState>>({
     basic: {
@@ -396,22 +351,6 @@ export function useEditorMissionController({
     ]);
   }, []);
 
-  const clearLocalDraftAutosaveTimers = useCallback(() => {
-    const timerState = localDraftAutosaveRef.current;
-    if (timerState.timeoutId !== null) {
-      window.clearTimeout(timerState.timeoutId);
-      timerState.timeoutId = null;
-    }
-    if (timerState.maxWaitTimeoutId !== null) {
-      window.clearTimeout(timerState.maxWaitTimeoutId);
-      timerState.maxWaitTimeoutId = null;
-    }
-    if (timerState.idleId !== null && typeof window.cancelIdleCallback === "function") {
-      window.cancelIdleCallback(timerState.idleId);
-      timerState.idleId = null;
-    }
-  }, []);
-
   const clearPersistedDraft = useCallback(async (): Promise<DraftClearResult> => {
     let serverDraftCleared = false;
     let serverDraftErrorMessage: string | null = null;
@@ -423,149 +362,19 @@ export function useEditorMissionController({
         error instanceof Error ? error.message : "서버 임시저장 정리에 실패했습니다.";
     }
 
-    let localDraftCleared = false;
-    let localDraftErrorMessage: string | null = null;
-    if (serverDraftCleared) {
-      if (typeof window === "undefined") {
-        localDraftErrorMessage = "로컬 임시저장 정리에 실패했습니다.";
-      } else {
-        try {
-          window.localStorage.removeItem(getMissionEditorDraftStorageKey(missionId));
-          localDraftCleared = true;
-        } catch (error) {
-          localDraftErrorMessage =
-            error instanceof Error ? error.message : "로컬 임시저장 정리에 실패했습니다.";
-        }
-      }
-    }
-
-    if (serverDraftCleared && localDraftCleared) {
-      clearLocalDraftAutosaveTimers();
-      localDraftAutosaveRef.current.lastSerializedPayload = null;
-      localDraftAutosaveRef.current.lastPersistedAt = 0;
-    }
-
     return {
-      localDraftCleared,
-      localDraftErrorMessage,
       serverDraftCleared,
       serverDraftErrorMessage,
     };
-  }, [clearLocalDraftAutosaveTimers, missionId]);
-
-  const flushLocalDraftAutosave = useCallback(() => {
-    const timerState = localDraftAutosaveRef.current;
-    timerState.idleId = null;
-    if (timerState.maxWaitTimeoutId !== null) {
-      window.clearTimeout(timerState.maxWaitTimeoutId);
-      timerState.maxWaitTimeoutId = null;
-    }
-
-    if (!isEditorTab || !draftRestoreAppliedRef.current) {
-      return;
-    }
-
-    if (
-      !basicInfoRef.current ||
-      !rewardRef.current ||
-      !actionRef.current ||
-      !completionRef.current
-    ) {
-      return;
-    }
-
-    if (!hasPendingChangesFromRefs()) {
-      return;
-    }
-
-    const payload = collectLocalDraftPayload();
-    const serializedPayload = JSON.stringify(payload);
-    if (timerState.lastSerializedPayload === serializedPayload) {
-      return;
-    }
-
-    const updatedAtMs = Date.now();
-    const payloadWithMeta: LocalEditorDraftPayload = {
-      ...payload,
-      meta: {
-        updatedAtMs,
-      },
-    };
-
-    timerState.lastSerializedPayload = serializedPayload;
-    timerState.lastPersistedAt = updatedAtMs;
-    saveMissionEditorDraftToLocalStorage(missionId, payloadWithMeta);
-  }, [collectLocalDraftPayload, hasPendingChangesFromRefs, isEditorTab, missionId]);
-
-  const scheduleLocalDraftAutosave = useCallback(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const timerState = localDraftAutosaveRef.current;
-    if (timerState.timeoutId !== null) {
-      return;
-    }
-
-    const elapsed = Date.now() - timerState.lastPersistedAt;
-    const waitMs = Math.max(0, LOCAL_DRAFT_AUTOSAVE_THROTTLE_MS - elapsed);
-
-    timerState.timeoutId = window.setTimeout(() => {
-      timerState.timeoutId = null;
-
-      if (typeof window.requestIdleCallback === "function") {
-        timerState.idleId = window.requestIdleCallback(
-          () => {
-            flushLocalDraftAutosave();
-          },
-          { timeout: LOCAL_DRAFT_AUTOSAVE_MAX_WAIT_MS },
-        );
-        timerState.maxWaitTimeoutId = window.setTimeout(() => {
-          if (timerState.idleId !== null && typeof window.cancelIdleCallback === "function") {
-            window.cancelIdleCallback(timerState.idleId);
-            timerState.idleId = null;
-          }
-          flushLocalDraftAutosave();
-        }, LOCAL_DRAFT_AUTOSAVE_MAX_WAIT_MS);
-        return;
-      }
-
-      flushLocalDraftAutosave();
-    }, waitMs);
-  }, [flushLocalDraftAutosave]);
+  }, [missionId]);
 
   const handleActionWorkingSetChange = useCallback(() => {
-    if (!isPublished) {
-      scheduleLocalDraftAutosave();
-    }
     setPublishSnapshotVersion(prev => prev + 1);
-  }, [isPublished, scheduleLocalDraftAutosave]);
+  }, []);
 
   const handleCompletionWorkingSetChange = useCallback(() => {
-    if (!isPublished) {
-      scheduleLocalDraftAutosave();
-    }
     setPublishSnapshotVersion(prev => prev + 1);
-
-    const throttleState = completionWorkingSetThrottleRef.current;
-    const now = Date.now();
-    const elapsed = now - throttleState.lastUpdatedAt;
-    if (elapsed >= WORKING_SET_VERSION_THROTTLE_MS) {
-      throttleState.lastUpdatedAt = now;
-      setCompletionWorkingSetVersion(prev => prev + 1);
-      return;
-    }
-
-    if (throttleState.timeoutId !== null) {
-      return;
-    }
-
-    throttleState.timeoutId = window.setTimeout(() => {
-      throttleState.timeoutId = null;
-      throttleState.lastUpdatedAt = Date.now();
-      setCompletionWorkingSetVersion(prev => prev + 1);
-    }, WORKING_SET_VERSION_THROTTLE_MS - elapsed);
-  }, [isPublished, scheduleLocalDraftAutosave]);
+  }, []);
 
   useEffect(() => {
     if (!isEditorTab || draftRestoreAppliedRef.current) {
@@ -585,7 +394,7 @@ export function useEditorMissionController({
       return;
     }
 
-    const selectedDraft = resolveDraftToRestore({ missionId, mission, missionQueryData });
+    const selectedDraft = resolveDraftToRestore({ mission, missionQueryData });
 
     draftRestoreAppliedRef.current = true;
 
@@ -612,42 +421,6 @@ export function useEditorMissionController({
     missionId,
     missionQueryData,
   ]);
-
-  useEffect(() => {
-    if (!isEditorTab || isPublished || !draftRestoreAppliedRef.current) {
-      return;
-    }
-
-    if (
-      !basicInfoRef.current ||
-      !rewardRef.current ||
-      !actionRef.current ||
-      !completionRef.current
-    ) {
-      return;
-    }
-
-    if (!hasPendingChangesFromRefs()) {
-      return;
-    }
-
-    scheduleLocalDraftAutosave();
-  }, [hasPendingChangesFromRefs, isEditorTab, isPublished, scheduleLocalDraftAutosave]);
-
-  useEffect(
-    () => () => {
-      if (typeof window === "undefined") {
-        return;
-      }
-      clearLocalDraftAutosaveTimers();
-      const throttleState = completionWorkingSetThrottleRef.current;
-      if (throttleState.timeoutId !== null) {
-        window.clearTimeout(throttleState.timeoutId);
-        throttleState.timeoutId = null;
-      }
-    },
-    [clearLocalDraftAutosaveTimers],
-  );
 
   const runSectionSaves = useCallback(
     async ({
@@ -702,6 +475,79 @@ export function useEditorMissionController({
     [],
   );
 
+  const applyPostSectionSaveOutcome = useCallback(
+    async (outcome: PostSectionSaveOutcome) => {
+      switch (outcome.type) {
+        case "publish_error":
+          toast({
+            message: outcome.message,
+            icon: AlertCircle,
+            iconClassName: "text-red-500",
+            id: UNIFIED_SAVE_TOAST_ID,
+          });
+          break;
+
+        case "manual_with_failures":
+          toast({
+            message: outcome.message,
+            icon: AlertCircle,
+            iconClassName: "text-red-500",
+            id: UNIFIED_SAVE_TOAST_ID,
+          });
+          break;
+
+        case "manual_processed":
+          if (outcome.shouldClearDraft) {
+            const clearResult = await clearPersistedDraft();
+            if (!clearResult.serverDraftCleared) {
+              console.error("Failed to clear mission editor draft:", {
+                missionId,
+                serverDraftErrorMessage: clearResult.serverDraftErrorMessage,
+              });
+              toast({
+                message: "저장은 완료되었지만 임시저장을 정리하지 못했습니다.",
+                icon: AlertCircle,
+                iconClassName: "text-red-500",
+                id: UNIFIED_SAVE_TOAST_ID,
+              });
+            }
+          }
+          if (outcome.showToast) {
+            toast({ message: outcome.message, id: UNIFIED_SAVE_TOAST_ID });
+          }
+          break;
+
+        case "saved":
+          if (outcome.shouldClearDraft) {
+            const clearResult = await clearPersistedDraft();
+            if (!clearResult.serverDraftCleared) {
+              console.error("Failed to clear mission editor draft:", {
+                missionId,
+                serverDraftErrorMessage: clearResult.serverDraftErrorMessage,
+              });
+              toast({
+                message: "저장은 완료되었지만 임시저장을 정리하지 못했습니다.",
+                icon: AlertCircle,
+                iconClassName: "text-red-500",
+                id: UNIFIED_SAVE_TOAST_ID,
+              });
+            }
+          }
+          if (outcome.showToast) {
+            toast({ message: "변경사항이 저장되었습니다.", id: UNIFIED_SAVE_TOAST_ID });
+          }
+          break;
+
+        case "no_changes":
+          if (outcome.showToast) {
+            toast({ message: "저장할 변경사항이 없습니다.", id: UNIFIED_SAVE_TOAST_ID });
+          }
+          break;
+      }
+    },
+    [clearPersistedDraft, missionId],
+  );
+
   const runUnifiedSave = useCallback(
     async ({
       showSavedToast = true,
@@ -712,33 +558,37 @@ export function useEditorMissionController({
       showNoChangesToast?: boolean;
       mode?: "manual" | "publish";
     } = {}) => {
-      if (!isEditorTab || saveInFlightRef.current || isSavingAll || hasAnyBusySection) {
+      const guard = checkUnifiedSaveGuard({
+        isEditorTab,
+        saveInFlight: saveInFlightRef.current,
+        isSavingAll,
+        hasAnyBusySection,
+      });
+      if (!guard.allowed) {
         return "failed" as const;
       }
 
       const hasPendingChangesNow = hasAnyPendingChanges || hasPendingChangesFromRefs();
       if (!hasPendingChangesNow) {
-        const clearResult = await clearPersistedDraft();
-        if (!clearResult.serverDraftCleared || !clearResult.localDraftCleared) {
-          console.error("Failed to clear mission editor draft:", {
-            missionId,
-            serverDraftErrorMessage: clearResult.serverDraftErrorMessage,
-            localDraftErrorMessage: clearResult.localDraftErrorMessage,
-          });
-          toast({
-            message: "저장할 변경사항이 없습니다.\n임시저장을 정리하지 못했습니다.",
-            icon: AlertCircle,
-            iconClassName: "text-red-500",
-            id: UNIFIED_SAVE_TOAST_ID,
-          });
-          return "no_changes" as const;
+        if (isPublished) {
+          const clearResult = await clearPersistedDraft();
+          const noChangesOutcome = resolveNoChangesOutcome(clearResult);
+          if (noChangesOutcome.type === "clear_failed") {
+            console.error("Failed to clear mission editor draft:", {
+              missionId,
+              serverDraftErrorMessage: clearResult.serverDraftErrorMessage,
+            });
+            toast({
+              message: "저장할 변경사항이 없습니다.\n임시저장을 정리하지 못했습니다.",
+              icon: AlertCircle,
+              iconClassName: "text-red-500",
+              id: UNIFIED_SAVE_TOAST_ID,
+            });
+            return "no_changes" as const;
+          }
         }
-
         if (showNoChangesToast) {
-          toast({
-            message: "저장할 변경사항이 없습니다.",
-            id: UNIFIED_SAVE_TOAST_ID,
-          });
+          toast({ message: "저장할 변경사항이 없습니다.", id: UNIFIED_SAVE_TOAST_ID });
         }
         return "no_changes" as const;
       }
@@ -752,108 +602,29 @@ export function useEditorMissionController({
           showValidationUi: true,
         });
 
-        const shouldClearDraftAfterSave =
-          summary.savedCount > 0 &&
-          summary.failedCount === 0 &&
-          summary.invalidCount === 0 &&
-          summary.skippedCount === 0;
-        const clearDraftAfterSuccessfulSave = async () => {
-          if (!shouldClearDraftAfterSave) {
-            return;
-          }
+        const outcome = resolvePostSectionSaveOutcome({
+          mode,
+          isPublished,
+          summary,
+          showSavedToast,
+          showNoChangesToast,
+        });
 
-          const clearResult = await clearPersistedDraft();
-          if (!clearResult.serverDraftCleared || !clearResult.localDraftCleared) {
-            console.error("Failed to clear mission editor draft:", {
-              missionId,
-              serverDraftErrorMessage: clearResult.serverDraftErrorMessage,
-              localDraftErrorMessage: clearResult.localDraftErrorMessage,
-            });
-            toast({
-              message: "저장은 완료되었지만 임시저장을 정리하지 못했습니다.",
-              icon: AlertCircle,
-              iconClassName: "text-red-500",
-              id: UNIFIED_SAVE_TOAST_ID,
-            });
-          }
-        };
-
-        if (mode === "publish" && (summary.invalidCount > 0 || summary.failedCount > 0)) {
-          toast({
-            message: summary.firstErrorMessage ?? "저장에 실패했습니다.",
-            icon: AlertCircle,
-            iconClassName: "text-red-500",
-            id: UNIFIED_SAVE_TOAST_ID,
-          });
-          return "failed" as const;
-        }
-
-        if (mode === "manual") {
-          const { skippedCount, processedCount } = computeManualSaveDisplayCounts(summary);
-
-          if (processedCount > 0) {
-            const message = buildManualSaveToastMessage({
-              savedCount: summary.savedCount,
-              skippedCount,
-              failedCount: summary.failedCount,
-            });
-            if (summary.failedCount > 0) {
-              toast({
-                message,
-                icon: AlertCircle,
-                iconClassName: "text-red-500",
-                id: UNIFIED_SAVE_TOAST_ID,
-              });
-              if (summary.failedCount > 0) {
-                return "failed" as const;
-              }
-            }
-
-            if (summary.savedCount > 0) {
-              await clearDraftAfterSuccessfulSave();
-            }
-
-            if (showSavedToast) {
-              toast({
-                message,
-                id: UNIFIED_SAVE_TOAST_ID,
-              });
-            }
-
-            return summary.savedCount > 0 ? ("saved" as const) : ("no_changes" as const);
-          }
-        }
-
-        if (summary.savedCount > 0) {
-          await clearDraftAfterSuccessfulSave();
-
-          if (showSavedToast) {
-            toast({
-              message: "변경사항이 저장되었습니다.",
-              id: UNIFIED_SAVE_TOAST_ID,
-            });
-          }
-          return "saved" as const;
-        }
-
-        if (showNoChangesToast) {
-          toast({
-            message: "저장할 변경사항이 없습니다.",
-            id: UNIFIED_SAVE_TOAST_ID,
-          });
-        }
-        return "no_changes" as const;
+        await applyPostSectionSaveOutcome(outcome);
+        return outcome.result;
       } finally {
         saveInFlightRef.current = false;
         setIsSavingAll(false);
       }
     },
     [
+      applyPostSectionSaveOutcome,
       clearPersistedDraft,
       hasAnyBusySection,
       hasAnyPendingChanges,
       hasPendingChangesFromRefs,
       isEditorTab,
+      isPublished,
       isSavingAll,
       missionId,
       runSectionSaves,
@@ -888,28 +659,28 @@ export function useEditorMissionController({
   ]);
 
   const handlePublish = useCallback(async () => {
-    if (
-      !isEditorTab ||
-      isPublished ||
-      publishInFlightRef.current ||
-      isPublishing ||
-      isSavingAll ||
-      hasAnyBusySection
-    ) {
-      return;
-    }
+    const guard = checkPublishGuard({
+      isEditorTab,
+      isPublished,
+      publishInFlight: publishInFlightRef.current,
+      isPublishing,
+      isSavingAll,
+      hasAnyBusySection,
+      canPublish: publishState.canPublish,
+      isValidationDataReady: publishState.isValidationDataReady,
+      issueCount: publishState.issues.length,
+      blockingMessage: publishState.blockingMessage,
+    });
 
-    if (!publishState.canPublish) {
-      const isCheckingPublishState =
-        !publishState.isValidationDataReady || publishState.issues.length === 0;
-      toast({
-        message: isCheckingPublishState
-          ? "발행 가능 상태를 확인 중입니다. 잠시 후 다시 시도해주세요."
-          : (publishState.blockingMessage ?? "발행 가능한 상태인지 확인할 수 없습니다."),
-        icon: AlertCircle,
-        iconClassName: "text-red-500",
-        id: PUBLISH_TOAST_ID,
-      });
+    if (!guard.allowed) {
+      if (!guard.silent) {
+        toast({
+          message: guard.message,
+          icon: AlertCircle,
+          iconClassName: "text-red-500",
+          id: PUBLISH_TOAST_ID,
+        });
+      }
       return;
     }
 
@@ -975,52 +746,56 @@ export function useEditorMissionController({
     runUnifiedSave,
   ]);
 
-  const handleSave = useCallback(async () => {
-    if (!canSave) {
-      const isCheckingSaveState =
-        !publishState.isValidationDataReady || publishState.issues.length === 0;
-      toast({
-        message: isCheckingSaveState
-          ? "저장 가능 상태를 확인 중입니다. 잠시 후 다시 시도해주세요."
-          : (publishState.blockingMessage ?? "저장 가능한 상태인지 확인할 수 없습니다."),
-        icon: AlertCircle,
-        iconClassName: "text-red-500",
-        id: UNIFIED_SAVE_TOAST_ID,
-      });
-      return;
-    }
-
-    await runUnifiedSave({ mode: "publish" });
-  }, [
-    canSave,
-    publishState.blockingMessage,
-    publishState.isValidationDataReady,
-    publishState.issues.length,
-    runUnifiedSave,
-  ]);
-
-  const handleDraftSave = useCallback(async () => {
+  const saveDraft = useCallback(async () => {
     const draftPayload = collectLocalDraftPayload();
-    const updatedAtMs = Date.now();
-    const payloadWithMeta: LocalEditorDraftPayload = {
-      ...draftPayload,
-      meta: { updatedAtMs },
-    };
-    saveMissionEditorDraftToLocalStorage(missionId, payloadWithMeta);
 
     try {
       await saveMissionEditorDraft(missionId, toServerEditorDraftPayload(draftPayload));
     } catch (error) {
       console.error("Failed to save server draft:", error);
       toast({
-        message: "서버 임시저장에 실패했습니다. 로컬에는 저장되었습니다.",
+        message: "서버 임시저장에 실패했습니다.",
         icon: AlertCircle,
-        iconClassName: "text-yellow-500",
+        iconClassName: "text-red-500",
       });
     }
+  }, [collectLocalDraftPayload, missionId]);
 
+  const handleSave = useCallback(async () => {
+    const strategy = resolveSaveStrategy(isPublished);
+
+    if (strategy === "direct-save") {
+      const guard = checkSaveGuard({
+        isValidationDataReady: publishState.isValidationDataReady,
+        issueCount: publishState.issues.length,
+        blockingMessage: publishState.blockingMessage,
+      });
+
+      if (!guard.allowed) {
+        toast({
+          message: guard.message,
+          icon: AlertCircle,
+          iconClassName: "text-red-500",
+          id: UNIFIED_SAVE_TOAST_ID,
+        });
+        return;
+      }
+
+      await saveDraft();
+      await runUnifiedSave({ mode: "publish" });
+      return;
+    }
+
+    await saveDraft();
     await runUnifiedSave({ mode: "manual" });
-  }, [collectLocalDraftPayload, missionId, runUnifiedSave]);
+  }, [
+    isPublished,
+    publishState.blockingMessage,
+    publishState.isValidationDataReady,
+    publishState.issues.length,
+    runUnifiedSave,
+    saveDraft,
+  ]);
 
   const onBasicStateChange = useCallback(
     (state: SectionSaveState) => {
@@ -1053,11 +828,6 @@ export function useEditorMissionController({
     [updateSectionState],
   );
 
-  const getCompletionDraftSnapshot = useCallback(
-    () => completionRef.current?.exportDraftSnapshot() ?? null,
-    [],
-  );
-
   return {
     refs: {
       basicInfoRef,
@@ -1070,8 +840,6 @@ export function useEditorMissionController({
       onRewardStateChange,
       onActionStateChange,
       onCompletionStateChange,
-      getCompletionDraftSnapshot,
-      completionWorkingSetVersion,
       onActionWorkingSetChange: handleActionWorkingSetChange,
       onCompletionWorkingSetChange: handleCompletionWorkingSetChange,
     },
@@ -1087,7 +855,6 @@ export function useEditorMissionController({
     publishState,
     actions: {
       onSave: handleSave,
-      onDraftSave: handleDraftSave,
       onPublish: handlePublish,
     },
   };

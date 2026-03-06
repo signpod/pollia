@@ -3,7 +3,7 @@ import { cleanTiptapHTML, cn } from "@/lib/utils";
 import { ButtonV2, FixedBottomLayout, Typo } from "@repo/ui/components";
 import { TiptapViewer } from "@repo/ui/components/common/TiptapViewer";
 import { ChevronLeftIcon } from "lucide-react";
-import { type PropsWithChildren, useEffect } from "react";
+import { type PropsWithChildren, useEffect, useRef } from "react";
 import { useActionContext } from "./ActionContext";
 import { useProgressBar } from "./ProgressBarProvider";
 
@@ -30,8 +30,10 @@ export function SurveyQuestionTemplate({
     nextButtonText,
     isLoading,
     isNextDisabled,
+    animationName,
   } = useActionContext();
 
+  const contentRef = useRef<HTMLDivElement>(null);
   const progressValue = ((currentOrder + 1) / totalActionCount) * 100 || 0;
   const { setProgress } = useProgressBar();
 
@@ -40,9 +42,18 @@ export function SurveyQuestionTemplate({
     setProgress(progressValue, currentOrder + 1, totalActionCount);
   }, [currentOrder, totalActionCount, progressValue, setProgress]);
 
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el || !animationName) return;
+
+    el.style.animation = "none";
+    el.offsetHeight;
+    el.style.animation = `${animationName} 0.25s ease-out`;
+  }, [currentOrder, animationName]);
+
   return (
     <FixedBottomLayout hasGradient>
-      <div className="space-y-6 px-5 pb-5 pt-[28px]">
+      <div ref={contentRef} className="space-y-6 px-5 pb-5 pt-[28px]">
         <section className="flex flex-col gap-2 relative">
           <RequiredIndicator isRequired={!!isRequired} />
           <div className="flex flex-col gap-1">

@@ -1,5 +1,6 @@
 "use client";
 
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useWithdrawUser } from "@/hooks/user/useWithdrawUser";
 import { withdrawalFormSchema } from "@/schemas/user/userSchema";
 import {
@@ -18,7 +19,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const WITHDRAWAL_REASONS = [
-  { value: "no-project", label: "원하는 프로젝트가 없음" },
+  { value: "no-content", label: `원하는 ${UBIQUITOUS_CONSTANTS.MISSION}가 없음` },
   { value: "low-usage", label: "사용 빈도 낮음" },
   { value: "inconvenient", label: "기능이 불편함" },
   { value: "other", label: "기타" },
@@ -101,7 +102,7 @@ export function WithdrawContent({ userName }: WithdrawContentProps) {
             <ul className="list-disc ms-[21px] text-info">
               <li>
                 <Typo.Body size="medium" className="text-info">
-                  아직 참여 중인 프로젝트가 있는 경우
+                  아직 참여 중인 {UBIQUITOUS_CONSTANTS.MISSION}가 있는 경우
                 </Typo.Body>
               </li>
               <li>

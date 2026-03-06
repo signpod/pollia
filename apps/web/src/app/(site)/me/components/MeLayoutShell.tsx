@@ -2,6 +2,7 @@
 
 import { ProfileHeader } from "@/components/common/ProfileHeader";
 import { ROUTES } from "@/constants/routes";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { Typo } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
 import { ChevronLeftIcon } from "lucide-react";
@@ -11,7 +12,7 @@ import { usePathname } from "next/navigation";
 const SUB_PAGE_HEADERS: Record<string, string> = {
   [ROUTES.ME_IN_PROGRESS]: "참여 중",
   [ROUTES.ME_COMPLETED]: "참여 완료",
-  [ROUTES.ME_MY_CONTENT]: "내 콘텐츠",
+  [ROUTES.ME_MY_CONTENT]: `내 ${UBIQUITOUS_CONSTANTS.MISSION}`,
   [ROUTES.ME_REWARDS_PENDING]: "지급 예정",
   [ROUTES.ME_REWARDS_PAID]: "지급 완료",
   [ROUTES.ME_LIKED_TAB]: "찜",

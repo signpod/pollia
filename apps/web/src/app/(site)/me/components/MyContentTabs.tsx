@@ -2,6 +2,7 @@
 
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { ROUTES } from "@/constants/routes";
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useReadMissions } from "@/hooks/mission/useReadMissions";
 import { useResumeToNextAction } from "@/hooks/mission/useResumeToNextAction";
 import { setActionNavCookie } from "@/lib/cookie";
@@ -21,7 +22,7 @@ import { MissionLikeButton } from "../../(main)/components/MissionLikeButton";
 import { useDeleteMissionResponse } from "../hooks/useDeleteMissionResponse";
 import { useGroupedRewards } from "../hooks/useGroupedRewards";
 import { useLikedMissions } from "../hooks/useLikedMissions";
-import { useMyProjectTabs } from "../hooks/useMyProjectTabs";
+import { useMyContentTabs } from "../hooks/useMyContentTabs";
 import { MyContentList } from "./MyContentList";
 import { SectionHeader } from "./SectionHeader";
 
@@ -50,9 +51,9 @@ interface TabSectionProps {
   rightAction?: ReactNode;
 }
 
-export function MyProjectTabs() {
+export function MyContentTabs() {
   const { tabs, currentTab, handleTabChange, inProgressResponses, completedResponses } =
-    useMyProjectTabs();
+    useMyContentTabs();
 
   const tabContent: Record<string, ReactNode> = {
     "my-content": <MyContentTab />,
@@ -112,12 +113,12 @@ function ParticipationTab({
       <EmptyState
         className={EMPTY_STATE_CLASS}
         icon={<PolliaFaceVeryGood className="size-30 text-zinc-200" />}
-        title="참여한 프로젝트가 없어요"
+        title={`참여한 ${UBIQUITOUS_CONSTANTS.MISSION}가 없어요`}
         description={
           <>
             아래 버튼을 눌러
             <br />
-            새로운 프로젝트를 구경해보세요 🤩
+            새로운 {UBIQUITOUS_CONSTANTS.MISSION}를 구경해보세요
           </>
         }
         action={<BrowseAction />}
@@ -161,13 +162,15 @@ function ParticipationTab({
           className={EMPTY_STATE_CLASS}
           icon={<PolliaFaceVeryGood className="size-30 text-zinc-200" />}
           title={
-            filter === "in-progress" ? "진행 중인 프로젝트가 없어요" : "완료한 프로젝트가 없어요"
+            filter === "in-progress"
+              ? `진행 중인 ${UBIQUITOUS_CONSTANTS.MISSION}가 없어요`
+              : `완료한 ${UBIQUITOUS_CONSTANTS.MISSION}가 없어요`
           }
           description={
             <>
               아래 버튼을 눌러
               <br />
-              새로운 프로젝트를 구경해보세요 🤩
+              새로운 {UBIQUITOUS_CONSTANTS.MISSION}를 구경해보세요
             </>
           }
           action={<BrowseAction />}
@@ -223,7 +226,7 @@ function ParticipationListItem({
       e.stopPropagation();
       showModal({
         title: "참여 내역 삭제",
-        description: "참여를 삭제하면 콘텐츠 응답 데이터에서도 제거됩니다. 되돌릴 수 없습니다.",
+        description: `참여를 삭제하면 ${UBIQUITOUS_CONSTANTS.MISSION} 응답 데이터에서도 제거됩니다. 되돌릴 수 없습니다.`,
         confirmText: "삭제하기",
         cancelText: "취소",
         showCancelButton: true,
@@ -283,12 +286,12 @@ const LikedTab = memo(function LikedTab() {
       <EmptyState
         className={EMPTY_STATE_CLASS}
         icon={<PolliaFaceVeryGood className="size-30 text-zinc-200" />}
-        title="찜한 프로젝트가 없어요"
+        title={`찜한 ${UBIQUITOUS_CONSTANTS.MISSION}가 없어요`}
         description={
           <>
             아래 버튼을 눌러
             <br />
-            마음에 드는 프로젝트를 찜해보세요 ❤️
+            마음에 드는 {UBIQUITOUS_CONSTANTS.MISSION}를 찜해보세요
           </>
         }
         action={<BrowseAction />}
@@ -436,7 +439,7 @@ const RewardsTab = memo(function RewardsTab() {
           <>
             아래 버튼을 눌러
             <br />
-            리워드가 있는 프로젝트를 찾아보세요 🎁
+            리워드가 있는 {UBIQUITOUS_CONSTANTS.MISSION}를 찾아보세요
           </>
         }
         action={<BrowseAction />}
@@ -480,10 +483,10 @@ const MyContentTab = memo(function MyContentTab() {
       <EmptyState
         className={EMPTY_STATE_CLASS}
         icon={<PolliaFaceVeryGood className="size-30 text-zinc-200" />}
-        title="만든 콘텐츠가 없어요"
+        title={`만든 ${UBIQUITOUS_CONSTANTS.MISSION}가 없어요`}
         description={
           <>
-            나만의 프로젝트를 만들어
+            나만의 {UBIQUITOUS_CONSTANTS.MISSION}를 만들어
             <br />
             다양한 사람들의 의견을 모아보세요 ✨
           </>
@@ -492,7 +495,9 @@ const MyContentTab = memo(function MyContentTab() {
           <div className="flex justify-center">
             <Link href={ROUTES.CREATE_MISSION}>
               <ButtonV2 variant="primary" className="w-auto">
-                <Typo.ButtonText size="large">첫 콘텐츠 만들기</Typo.ButtonText>
+                <Typo.ButtonText size="large">
+                  첫 {UBIQUITOUS_CONSTANTS.MISSION} 만들기
+                </Typo.ButtonText>
               </ButtonV2>
             </Link>
           </div>
@@ -512,7 +517,7 @@ const MyContentTab = memo(function MyContentTab() {
           href={ROUTES.CREATE_MISSION}
           className="flex items-center gap-1.5 rounded-full bg-violet-50 px-3.5 py-1.5 text-sm font-semibold text-violet-600 transition-colors hover:bg-violet-100"
         >
-          <PencilIcon className="size-[13px]" />새 콘텐츠
+          <PencilIcon className="size-[13px]" />새 {UBIQUITOUS_CONSTANTS.MISSION}
         </Link>
       }
     >

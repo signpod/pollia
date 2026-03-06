@@ -24,7 +24,7 @@ export function ToggleSettingRow({
   return (
     <div className="rounded-xl border border-zinc-200 bg-white px-4 py-4">
       <div className="flex items-center justify-between gap-4">
-        <div className="flex flex-col gap-1">
+        <div className="min-w-0 flex-1 flex flex-col gap-1 overflow-hidden">
           <div className="flex items-center gap-2">
             <Typo.SubTitle>{label}</Typo.SubTitle>
             {badgeLabel ? (
@@ -41,7 +41,9 @@ export function ToggleSettingRow({
             {description}
           </Typo.Body>
         </div>
-        <Toggle checked={checked} onCheckedChange={onChange} />
+        <div className="shrink-0">
+          <Toggle checked={checked} onCheckedChange={onChange} />
+        </div>
       </div>
     </div>
   );

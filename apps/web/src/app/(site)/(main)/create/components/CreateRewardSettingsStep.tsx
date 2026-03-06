@@ -1,5 +1,6 @@
 "use client";
 
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { PaymentType } from "@prisma/client";
 import {
   DateAndTimePicker,
@@ -62,7 +63,7 @@ export function CreateRewardSettingsStep({ imageUploader }: CreateRewardSettings
     <div className="flex flex-col gap-6">
       <ToggleSettingRow
         label="완료 리워드 설정"
-        description="프로젝트 완료 시 참여자에게 지급할 리워드를 설정합니다."
+        description={`${UBIQUITOUS_CONSTANTS.MISSION} 완료 시 참여자에게 지급할 리워드를 설정합니다.`}
         checked={hasReward}
         onChange={checked => {
           setValue("hasReward", checked, { shouldDirty: true, shouldValidate: true });

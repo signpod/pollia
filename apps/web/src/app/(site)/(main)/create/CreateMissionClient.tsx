@@ -9,8 +9,8 @@ import { ChevronLeft } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef } from "react";
 import { FormProvider, useForm } from "react-hook-form";
+import { CreateContentInfoStep } from "./components/CreateContentInfoStep";
 import { CreateModeStep } from "./components/CreateModeStep";
-import { CreateProjectInfoStep } from "./components/CreateProjectInfoStep";
 import { CreateSuccessScreen } from "./components/CreateSuccessScreen";
 import { type CreateMissionStep } from "./logic/types";
 import { useCreateMissionFunnel } from "./logic/useCreateMissionFunnel";
@@ -30,7 +30,7 @@ const CREATE_FORM_DEFAULT_VALUES: CreateMissionFormData = {
   useAiCompletion: false,
 };
 
-const CREATE_STEP_ORDER: CreateMissionStep[] = ["mode", "project-info", "success"];
+const CREATE_STEP_ORDER: CreateMissionStep[] = ["mode", "content-info", "success"];
 
 const CREATE_STEP_INDEX: Record<CreateMissionStep, number> = CREATE_STEP_ORDER.reduce(
   (acc, step, index) => {
@@ -107,8 +107,8 @@ export function CreateMissionClient() {
     switch (controller.currentStep) {
       case "mode":
         return <CreateModeStep onSelectCustom={controller.selectCustomMode} />;
-      case "project-info":
-        return <CreateProjectInfoStep showRewardSettings showAiCompletionToggle />;
+      case "content-info":
+        return <CreateContentInfoStep showRewardSettings showAiCompletionToggle />;
       case "success":
         return controller.result ? (
           <CreateSuccessScreen
