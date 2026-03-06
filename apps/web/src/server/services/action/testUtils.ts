@@ -1,4 +1,5 @@
 import type { ActionRepository } from "@/server/repositories/action/actionRepository";
+import type { MissionCompletionRepository } from "@/server/repositories/mission-completion/missionCompletionRepository";
 import type { MissionRepository } from "@/server/repositories/mission/missionRepository";
 import { ActionService } from ".";
 
@@ -8,6 +9,7 @@ export {
   createMockActionResponse,
   createMockActionWithOptions,
   createMockMission,
+  createMockMissionCompletion,
   expectServiceErrorWithCause,
 } from "../testUtils";
 export { createMockMission as mockMissionFactory } from "../testUtils";
@@ -31,11 +33,21 @@ export function createActionServiceTestContext() {
 
   const mockMissionRepo = {
     findById: jest.fn(),
+    update: jest.fn(),
   } as unknown as jest.Mocked<MissionRepository>;
 
-  const service = new ActionService(mockActionRepo, mockMissionRepo);
+  const mockCompletionRepo = {
+    findById: jest.fn(),
+    findByMissionId: jest.fn(),
+    findAllByMissionId: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+    delete: jest.fn(),
+  } as unknown as jest.Mocked<MissionCompletionRepository>;
 
-  return { service, mockActionRepo, mockMissionRepo };
+  const service = new ActionService(mockActionRepo, mockMissionRepo, mockCompletionRepo);
+
+  return { service, mockActionRepo, mockMissionRepo, mockCompletionRepo };
 }
 
 export type ActionServiceTestContext = ReturnType<typeof createActionServiceTestContext>;

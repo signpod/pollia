@@ -12,7 +12,6 @@ export interface EditorMissionActionBarProps {
   canSave: boolean;
   canPublish: boolean;
   onSave: () => void;
-  onDraftSave: () => void;
   onPublish: () => void;
 }
 
@@ -25,7 +24,6 @@ export function EditorMissionActionBar({
   canSave,
   canPublish,
   onSave,
-  onDraftSave,
   onPublish,
 }: EditorMissionActionBarProps) {
   if (isPublished) {
@@ -55,7 +53,7 @@ export function EditorMissionActionBar({
         fullWidth
         inlineIcon
         leftIcon={<Save className="size-4" />}
-        onClick={onDraftSave}
+        onClick={onSave}
         loading={isSavingAll}
         disabled={isSavingAll || isPublishing || hasAnyBusySection || !hasAnyPendingChanges}
       >

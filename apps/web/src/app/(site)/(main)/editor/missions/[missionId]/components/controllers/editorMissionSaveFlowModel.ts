@@ -49,11 +49,11 @@ export type PublishGuardResult =
 
 export interface DraftClearOutcomeInput {
   serverDraftCleared: boolean;
-  localDraftCleared: boolean;
 }
 
 export interface PostSectionSaveInput {
   mode: "manual" | "publish";
+  isPublished: boolean;
   summary: SectionSaveSummary;
   showSavedToast: boolean;
   showNoChangesToast: boolean;
@@ -79,6 +79,16 @@ export type PostSectionSaveOutcome =
     }
   | { type: "saved"; shouldClearDraft: boolean; showToast: boolean; result: "saved" }
   | { type: "no_changes"; showToast: boolean; result: "no_changes" };
+
+// ---------------------------------------------------------------------------
+// Save Strategy
+// ---------------------------------------------------------------------------
+
+export type SaveStrategy = "draft-then-save" | "direct-save";
+
+export function resolveSaveStrategy(isPublished: boolean): SaveStrategy {
+  return isPublished ? "direct-save" : "draft-then-save";
+}
 
 // ---------------------------------------------------------------------------
 // Guard Functions
@@ -138,14 +148,19 @@ export function checkPublishGuard(input: PublishGuardInput): PublishGuardResult 
 // ---------------------------------------------------------------------------
 
 export function resolveNoChangesOutcome(input: DraftClearOutcomeInput): NoChangesOutcome {
-  if (!input.serverDraftCleared || !input.localDraftCleared) {
+  if (!input.serverDraftCleared) {
     return { type: "clear_failed" };
   }
 
   return { type: "cleared" };
 }
 
-export function shouldClearDraftAfterSave(summary: SectionSaveSummary): boolean {
+export function shouldClearDraftAfterSave(
+  summary: SectionSaveSummary,
+  isPublished: boolean,
+): boolean {
+  if (!isPublished) return false;
+
   return (
     summary.savedCount > 0 &&
     summary.failedCount === 0 &&
@@ -155,8 +170,8 @@ export function shouldClearDraftAfterSave(summary: SectionSaveSummary): boolean 
 }
 
 export function resolvePostSectionSaveOutcome(input: PostSectionSaveInput): PostSectionSaveOutcome {
-  const { mode, summary, showSavedToast, showNoChangesToast } = input;
-  const canClearDraft = shouldClearDraftAfterSave(summary);
+  const { mode, isPublished, summary, showSavedToast, showNoChangesToast } = input;
+  const canClearDraft = shouldClearDraftAfterSave(summary, isPublished);
 
   if (mode === "publish" && (summary.invalidCount > 0 || summary.failedCount > 0)) {
     return {

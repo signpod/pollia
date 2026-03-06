@@ -25,7 +25,6 @@ describe("EditorMissionActionBar", () => {
         canSave={true}
         canPublish={true}
         onSave={() => {}}
-        onDraftSave={() => {}}
         onPublish={() => {}}
       />,
     );
@@ -45,7 +44,6 @@ describe("EditorMissionActionBar", () => {
         canSave={true}
         canPublish={true}
         onSave={() => {}}
-        onDraftSave={() => {}}
         onPublish={() => {}}
       />,
     );
@@ -65,7 +63,6 @@ describe("EditorMissionActionBar", () => {
         canSave={false}
         canPublish={false}
         onSave={() => {}}
-        onDraftSave={() => {}}
         onPublish={() => {}}
       />,
     );
@@ -84,7 +81,6 @@ describe("EditorMissionActionBar", () => {
         canSave={false}
         canPublish={true}
         onSave={() => {}}
-        onDraftSave={() => {}}
         onPublish={() => {}}
       />,
     );

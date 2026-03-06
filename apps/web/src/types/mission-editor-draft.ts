@@ -44,43 +44,6 @@ export function normalizeEditorMissionDraftPayload(
   };
 }
 
-export function selectLatestEditorMissionDraft(
-  localDraft: EditorMissionDraftPayload | null | undefined,
-  serverDraft: EditorMissionDraftPayload | null | undefined,
-): EditorMissionDraftPayload | null {
-  const normalizedLocal = normalizeEditorMissionDraftPayload(localDraft);
-  const normalizedServer = normalizeEditorMissionDraftPayload(serverDraft);
-
-  const localUpdatedAtMs = normalizedLocal?.meta?.updatedAtMs ?? null;
-  const serverUpdatedAtMs = normalizedServer?.meta?.updatedAtMs ?? null;
-
-  if (normalizedLocal && normalizedServer) {
-    if (localUpdatedAtMs !== null && serverUpdatedAtMs !== null) {
-      return localUpdatedAtMs >= serverUpdatedAtMs ? normalizedLocal : normalizedServer;
-    }
-
-    if (localUpdatedAtMs !== null) {
-      return normalizedLocal;
-    }
-
-    if (serverUpdatedAtMs !== null) {
-      return normalizedServer;
-    }
-
-    return normalizedServer;
-  }
-
-  if (normalizedLocal) {
-    return localUpdatedAtMs !== null ? normalizedLocal : null;
-  }
-
-  if (normalizedServer) {
-    return normalizedServer;
-  }
-
-  return null;
-}
-
 function sanitizeActionSnapshotForServer(value: unknown): unknown | null {
   if (!isRecord(value)) {
     return value ?? null;
@@ -91,6 +54,7 @@ function sanitizeActionSnapshotForServer(value: unknown): unknown | null {
     itemOrderKeys: Array.isArray(value.itemOrderKeys) ? value.itemOrderKeys : [],
     actionTypeByItemKey: isRecord(value.actionTypeByItemKey) ? value.actionTypeByItemKey : {},
     formSnapshotByItemKey: isRecord(value.formSnapshotByItemKey) ? value.formSnapshotByItemKey : {},
+    dirtyByItemKey: isRecord(value.dirtyByItemKey) ? value.dirtyByItemKey : {},
   };
 }
 
