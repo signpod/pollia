@@ -60,15 +60,15 @@ export function useActionSaveFlow({
 }: UseActionSaveFlowParams): UseActionSaveFlowReturn {
   const queryClient = useQueryClient();
   const [isApplying, setIsApplying] = useAtom(actionIsApplyingAtom);
-  const [, setDraftItems] = useAtom(actionDraftItemsAtom);
-  const [, setItemOrderKeys] = useAtom(actionItemOrderKeysAtom);
-  const [, setOpenItemKey] = useAtom(actionOpenItemKeyAtom);
-  const [, setDirtyByItemKey] = useAtom(actionDirtyByItemKeyAtom);
-  const [, setExistingFormVersionById] = useAtom(actionFormVersionByIdAtom);
-  const [, setActionTypeByItemKey] = useAtom(actionTypeByItemKeyAtom);
-  const [, setDraftFormSnapshotByItemKey] = useAtom(actionFormSnapshotByItemKeyAtom);
-  const [, setValidationIssueCountByItemKey] = useAtom(actionValidationIssueCountByItemKeyAtom);
-  const [, setDraftHydrationVersion] = useAtom(actionDraftHydrationVersionAtom);
+  const setDraftItems = useSetAtom(actionDraftItemsAtom);
+  const setItemOrderKeys = useSetAtom(actionItemOrderKeysAtom);
+  const setOpenItemKey = useSetAtom(actionOpenItemKeyAtom);
+  const setDirtyByItemKey = useSetAtom(actionDirtyByItemKeyAtom);
+  const setExistingFormVersionById = useSetAtom(actionFormVersionByIdAtom);
+  const setActionTypeByItemKey = useSetAtom(actionTypeByItemKeyAtom);
+  const setDraftFormSnapshotByItemKey = useSetAtom(actionFormSnapshotByItemKeyAtom);
+  const setValidationIssueCountByItemKey = useSetAtom(actionValidationIssueCountByItemKeyAtom);
+  const setDraftHydrationVersion = useSetAtom(actionDraftHydrationVersionAtom);
   const dispatchRemoveCompletionDraftById = useSetAtom(removeCompletionDraftByIdAtom);
 
   const executeSave = async ({
