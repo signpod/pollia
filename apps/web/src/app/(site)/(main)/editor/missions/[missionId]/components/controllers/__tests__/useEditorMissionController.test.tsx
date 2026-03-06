@@ -18,14 +18,6 @@ jest.mock("@/actions/mission/draft", () => ({
   saveMissionEditorDraft: jest.fn(),
 }));
 
-jest.mock("../../editorMissionDraftStorage", () => ({
-  getMissionEditorDraftStorageKey: jest.fn(
-    (missionId: string) => `mission-editor-draft:${missionId}`,
-  ),
-  loadMissionEditorDraftFromLocalStorage: jest.fn(() => null),
-  saveMissionEditorDraftToLocalStorage: jest.fn(() => true),
-}));
-
 jest.mock("@repo/ui/components", () => ({
   toast: jest.fn(),
 }));
@@ -411,14 +403,6 @@ describe("useEditorMissionController", () => {
   });
 
   it("발행 상태에서는 draft가 있어도 복원하지 않고 복원 토스트를 노출하지 않는다", async () => {
-    const { loadMissionEditorDraftFromLocalStorage } = jest.requireMock(
-      "../../editorMissionDraftStorage",
-    ) as { loadMissionEditorDraftFromLocalStorage: jest.Mock };
-    loadMissionEditorDraftFromLocalStorage.mockReturnValueOnce({
-      basic: { title: "로컬 임시저장" },
-      meta: { updatedAtMs: Date.now() },
-    });
-
     const mission = createMission({
       isActive: true,
       editorDraft: {
@@ -466,14 +450,6 @@ describe("useEditorMissionController", () => {
   });
 
   it("SSR mission이 발행 상태이고 쿼리 캐시가 미발행 상태여도 복원하지 않는다", async () => {
-    const { loadMissionEditorDraftFromLocalStorage } = jest.requireMock(
-      "../../editorMissionDraftStorage",
-    ) as { loadMissionEditorDraftFromLocalStorage: jest.Mock };
-    loadMissionEditorDraftFromLocalStorage.mockReturnValueOnce({
-      basic: { title: "로컬 임시저장" },
-      meta: { updatedAtMs: Date.now() },
-    });
-
     const ssrMission = createMission({ isActive: true });
     const staleCachedMission = createMission({ isActive: false });
     const importSpy = jest.fn();
@@ -514,16 +490,14 @@ describe("useEditorMissionController", () => {
     );
   });
 
-  it("미발행 상태에서 draft가 있으면 복원하고 복원 토스트를 노출한다", async () => {
-    const { loadMissionEditorDraftFromLocalStorage } = jest.requireMock(
-      "../../editorMissionDraftStorage",
-    ) as { loadMissionEditorDraftFromLocalStorage: jest.Mock };
-    loadMissionEditorDraftFromLocalStorage.mockReturnValueOnce({
-      basic: { title: "로컬 임시저장" },
-      meta: { updatedAtMs: Date.now() },
-    });
-
-    const mission = createMission({ isActive: false });
+  it("미발행 상태에서 서버 draft가 있으면 복원하고 복원 토스트를 노출한다", async () => {
+    const mission = createMission({
+      isActive: false,
+      editorDraft: {
+        basic: { title: "서버 임시저장" },
+        meta: { updatedAtMs: Date.now() },
+      },
+    } as any);
     const importSpy = jest.fn();
 
     const initialProps = {

@@ -49,7 +49,6 @@ export type PublishGuardResult =
 
 export interface DraftClearOutcomeInput {
   serverDraftCleared: boolean;
-  localDraftCleared: boolean;
 }
 
 export interface PostSectionSaveInput {
@@ -149,7 +148,7 @@ export function checkPublishGuard(input: PublishGuardInput): PublishGuardResult 
 // ---------------------------------------------------------------------------
 
 export function resolveNoChangesOutcome(input: DraftClearOutcomeInput): NoChangesOutcome {
-  if (!input.serverDraftCleared || !input.localDraftCleared) {
+  if (!input.serverDraftCleared) {
     return { type: "clear_failed" };
   }
 

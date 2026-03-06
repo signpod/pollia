@@ -165,11 +165,10 @@ describe("checkPublishGuard", () => {
 });
 
 describe("resolveNoChangesOutcome", () => {
-  it("서버와 로컬 모두 정리 성공하면 cleared를 반환한다", () => {
+  it("서버 정리 성공하면 cleared를 반환한다", () => {
     expect(
       resolveNoChangesOutcome({
         serverDraftCleared: true,
-        localDraftCleared: true,
       }),
     ).toEqual({ type: "cleared" });
   });
@@ -178,16 +177,6 @@ describe("resolveNoChangesOutcome", () => {
     expect(
       resolveNoChangesOutcome({
         serverDraftCleared: false,
-        localDraftCleared: true,
-      }),
-    ).toEqual({ type: "clear_failed" });
-  });
-
-  it("로컬 정리 실패 시 clear_failed를 반환한다", () => {
-    expect(
-      resolveNoChangesOutcome({
-        serverDraftCleared: true,
-        localDraftCleared: false,
       }),
     ).toEqual({ type: "clear_failed" });
   });

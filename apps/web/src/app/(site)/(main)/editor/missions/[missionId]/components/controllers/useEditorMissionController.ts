@@ -7,7 +7,6 @@ import {
   type EditorMissionDraftPayload,
   type LocalEditorDraftPayload,
   normalizeEditorMissionDraftPayload,
-  selectLatestEditorMissionDraft,
   toServerEditorDraftPayload,
 } from "@/types/mission-editor-draft";
 import { MissionType } from "@prisma/client";
@@ -21,11 +20,6 @@ import {
   validateEditorPublishFlow,
 } from "../editor-publish-flow-validation";
 import type { SectionSaveHandle, SectionSaveOptions, SectionSaveState } from "../editor-save.types";
-import {
-  getMissionEditorDraftStorageKey,
-  loadMissionEditorDraftFromLocalStorage,
-  saveMissionEditorDraftToLocalStorage,
-} from "../editorMissionDraftStorage";
 import {
   type PublishAvailability,
   computePublishAvailability,
@@ -48,17 +42,13 @@ import {
 
 const UNIFIED_SAVE_TOAST_ID = "editor-mission-save-result";
 const PUBLISH_TOAST_ID = "editor-mission-publish-result";
-const LOCAL_DRAFT_AUTOSAVE_THROTTLE_MS = 700;
-const LOCAL_DRAFT_AUTOSAVE_MAX_WAIT_MS = 1500;
 
 interface ResolveDraftToRestoreInput {
-  missionId: string;
   mission: GetMissionResponse["data"];
   missionQueryData?: GetMissionResponse["data"] | null;
 }
 
 function resolveDraftToRestore({
-  missionId,
   mission,
   missionQueryData,
 }: ResolveDraftToRestoreInput): EditorMissionDraftPayload | null {
@@ -67,18 +57,14 @@ function resolveDraftToRestore({
   }
 
   const latestMission = missionQueryData ?? mission;
-  const localDraft = loadMissionEditorDraftFromLocalStorage(missionId);
   const serverDraftRaw = normalizeEditorMissionDraftPayload(
     (latestMission as { editorDraft?: unknown }).editorDraft,
   );
-  const serverDraft = serverDraftRaw ? toServerEditorDraftPayload(serverDraftRaw) : null;
 
-  return selectLatestEditorMissionDraft(localDraft, serverDraft);
+  return serverDraftRaw ? toServerEditorDraftPayload(serverDraftRaw) : null;
 }
 
 interface DraftClearResult {
-  localDraftCleared: boolean;
-  localDraftErrorMessage: string | null;
   serverDraftCleared: boolean;
   serverDraftErrorMessage: string | null;
 }
@@ -179,19 +165,6 @@ export function useEditorMissionController({
   const draftRestoreAppliedRef = useRef(false);
   const saveInFlightRef = useRef(false);
   const publishInFlightRef = useRef(false);
-  const localDraftAutosaveRef = useRef<{
-    timeoutId: number | null;
-    idleId: number | null;
-    maxWaitTimeoutId: number | null;
-    lastPersistedAt: number;
-    lastSerializedPayload: string | null;
-  }>({
-    timeoutId: null,
-    idleId: null,
-    maxWaitTimeoutId: null,
-    lastPersistedAt: 0,
-    lastSerializedPayload: null,
-  });
 
   const [isSavingAll, setIsSavingAll] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -378,22 +351,6 @@ export function useEditorMissionController({
     ]);
   }, []);
 
-  const clearLocalDraftAutosaveTimers = useCallback(() => {
-    const timerState = localDraftAutosaveRef.current;
-    if (timerState.timeoutId !== null) {
-      window.clearTimeout(timerState.timeoutId);
-      timerState.timeoutId = null;
-    }
-    if (timerState.maxWaitTimeoutId !== null) {
-      window.clearTimeout(timerState.maxWaitTimeoutId);
-      timerState.maxWaitTimeoutId = null;
-    }
-    if (timerState.idleId !== null && typeof window.cancelIdleCallback === "function") {
-      window.cancelIdleCallback(timerState.idleId);
-      timerState.idleId = null;
-    }
-  }, []);
-
   const clearPersistedDraft = useCallback(async (): Promise<DraftClearResult> => {
     let serverDraftCleared = false;
     let serverDraftErrorMessage: string | null = null;
@@ -405,130 +362,19 @@ export function useEditorMissionController({
         error instanceof Error ? error.message : "서버 임시저장 정리에 실패했습니다.";
     }
 
-    let localDraftCleared = false;
-    let localDraftErrorMessage: string | null = null;
-    if (serverDraftCleared) {
-      if (typeof window === "undefined") {
-        localDraftErrorMessage = "로컬 임시저장 정리에 실패했습니다.";
-      } else {
-        try {
-          window.localStorage.removeItem(getMissionEditorDraftStorageKey(missionId));
-          localDraftCleared = true;
-        } catch (error) {
-          localDraftErrorMessage =
-            error instanceof Error ? error.message : "로컬 임시저장 정리에 실패했습니다.";
-        }
-      }
-    }
-
-    if (serverDraftCleared && localDraftCleared) {
-      clearLocalDraftAutosaveTimers();
-      localDraftAutosaveRef.current.lastSerializedPayload = null;
-      localDraftAutosaveRef.current.lastPersistedAt = 0;
-    }
-
     return {
-      localDraftCleared,
-      localDraftErrorMessage,
       serverDraftCleared,
       serverDraftErrorMessage,
     };
-  }, [clearLocalDraftAutosaveTimers, missionId]);
-
-  const flushLocalDraftAutosave = useCallback(() => {
-    const timerState = localDraftAutosaveRef.current;
-    timerState.idleId = null;
-    if (timerState.maxWaitTimeoutId !== null) {
-      window.clearTimeout(timerState.maxWaitTimeoutId);
-      timerState.maxWaitTimeoutId = null;
-    }
-
-    if (!isEditorTab || !draftRestoreAppliedRef.current) {
-      return;
-    }
-
-    if (
-      !basicInfoRef.current ||
-      !rewardRef.current ||
-      !actionRef.current ||
-      !completionRef.current
-    ) {
-      return;
-    }
-
-    if (!hasPendingChangesFromRefs()) {
-      return;
-    }
-
-    const payload = collectLocalDraftPayload();
-    const serializedPayload = JSON.stringify(payload);
-    if (timerState.lastSerializedPayload === serializedPayload) {
-      return;
-    }
-
-    const updatedAtMs = Date.now();
-    const payloadWithMeta: LocalEditorDraftPayload = {
-      ...payload,
-      meta: {
-        updatedAtMs,
-      },
-    };
-
-    timerState.lastSerializedPayload = serializedPayload;
-    timerState.lastPersistedAt = updatedAtMs;
-    saveMissionEditorDraftToLocalStorage(missionId, payloadWithMeta);
-  }, [collectLocalDraftPayload, hasPendingChangesFromRefs, isEditorTab, missionId]);
-
-  const scheduleLocalDraftAutosave = useCallback(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const timerState = localDraftAutosaveRef.current;
-    if (timerState.timeoutId !== null) {
-      return;
-    }
-
-    const elapsed = Date.now() - timerState.lastPersistedAt;
-    const waitMs = Math.max(0, LOCAL_DRAFT_AUTOSAVE_THROTTLE_MS - elapsed);
-
-    timerState.timeoutId = window.setTimeout(() => {
-      timerState.timeoutId = null;
-
-      if (typeof window.requestIdleCallback === "function") {
-        timerState.idleId = window.requestIdleCallback(
-          () => {
-            flushLocalDraftAutosave();
-          },
-          { timeout: LOCAL_DRAFT_AUTOSAVE_MAX_WAIT_MS },
-        );
-        timerState.maxWaitTimeoutId = window.setTimeout(() => {
-          if (timerState.idleId !== null && typeof window.cancelIdleCallback === "function") {
-            window.cancelIdleCallback(timerState.idleId);
-            timerState.idleId = null;
-          }
-          flushLocalDraftAutosave();
-        }, LOCAL_DRAFT_AUTOSAVE_MAX_WAIT_MS);
-        return;
-      }
-
-      flushLocalDraftAutosave();
-    }, waitMs);
-  }, [flushLocalDraftAutosave]);
+  }, [missionId]);
 
   const handleActionWorkingSetChange = useCallback(() => {
-    if (!isPublished) {
-      scheduleLocalDraftAutosave();
-    }
     setPublishSnapshotVersion(prev => prev + 1);
-  }, [isPublished, scheduleLocalDraftAutosave]);
+  }, []);
 
   const handleCompletionWorkingSetChange = useCallback(() => {
-    if (!isPublished) {
-      scheduleLocalDraftAutosave();
-    }
     setPublishSnapshotVersion(prev => prev + 1);
-  }, [isPublished, scheduleLocalDraftAutosave]);
+  }, []);
 
   useEffect(() => {
     if (!isEditorTab || draftRestoreAppliedRef.current) {
@@ -548,7 +394,7 @@ export function useEditorMissionController({
       return;
     }
 
-    const selectedDraft = resolveDraftToRestore({ missionId, mission, missionQueryData });
+    const selectedDraft = resolveDraftToRestore({ mission, missionQueryData });
 
     draftRestoreAppliedRef.current = true;
 
@@ -575,37 +421,6 @@ export function useEditorMissionController({
     missionId,
     missionQueryData,
   ]);
-
-  useEffect(() => {
-    if (!isEditorTab || isPublished || !draftRestoreAppliedRef.current) {
-      return;
-    }
-
-    if (
-      !basicInfoRef.current ||
-      !rewardRef.current ||
-      !actionRef.current ||
-      !completionRef.current
-    ) {
-      return;
-    }
-
-    if (!hasPendingChangesFromRefs()) {
-      return;
-    }
-
-    scheduleLocalDraftAutosave();
-  }, [hasPendingChangesFromRefs, isEditorTab, isPublished, scheduleLocalDraftAutosave]);
-
-  useEffect(
-    () => () => {
-      if (typeof window === "undefined") {
-        return;
-      }
-      clearLocalDraftAutosaveTimers();
-    },
-    [clearLocalDraftAutosaveTimers],
-  );
 
   const runSectionSaves = useCallback(
     async ({
@@ -684,11 +499,10 @@ export function useEditorMissionController({
         case "manual_processed":
           if (outcome.shouldClearDraft) {
             const clearResult = await clearPersistedDraft();
-            if (!clearResult.serverDraftCleared || !clearResult.localDraftCleared) {
+            if (!clearResult.serverDraftCleared) {
               console.error("Failed to clear mission editor draft:", {
                 missionId,
                 serverDraftErrorMessage: clearResult.serverDraftErrorMessage,
-                localDraftErrorMessage: clearResult.localDraftErrorMessage,
               });
               toast({
                 message: "저장은 완료되었지만 임시저장을 정리하지 못했습니다.",
@@ -706,11 +520,10 @@ export function useEditorMissionController({
         case "saved":
           if (outcome.shouldClearDraft) {
             const clearResult = await clearPersistedDraft();
-            if (!clearResult.serverDraftCleared || !clearResult.localDraftCleared) {
+            if (!clearResult.serverDraftCleared) {
               console.error("Failed to clear mission editor draft:", {
                 missionId,
                 serverDraftErrorMessage: clearResult.serverDraftErrorMessage,
-                localDraftErrorMessage: clearResult.localDraftErrorMessage,
               });
               toast({
                 message: "저장은 완료되었지만 임시저장을 정리하지 못했습니다.",
@@ -764,7 +577,6 @@ export function useEditorMissionController({
             console.error("Failed to clear mission editor draft:", {
               missionId,
               serverDraftErrorMessage: clearResult.serverDraftErrorMessage,
-              localDraftErrorMessage: clearResult.localDraftErrorMessage,
             });
             toast({
               message: "저장할 변경사항이 없습니다.\n임시저장을 정리하지 못했습니다.",
@@ -936,21 +748,15 @@ export function useEditorMissionController({
 
   const saveDraft = useCallback(async () => {
     const draftPayload = collectLocalDraftPayload();
-    const updatedAtMs = Date.now();
-    const payloadWithMeta: LocalEditorDraftPayload = {
-      ...draftPayload,
-      meta: { updatedAtMs },
-    };
-    saveMissionEditorDraftToLocalStorage(missionId, payloadWithMeta);
 
     try {
       await saveMissionEditorDraft(missionId, toServerEditorDraftPayload(draftPayload));
     } catch (error) {
       console.error("Failed to save server draft:", error);
       toast({
-        message: "서버 임시저장에 실패했습니다. 로컬에는 저장되었습니다.",
+        message: "서버 임시저장에 실패했습니다.",
         icon: AlertCircle,
-        iconClassName: "text-yellow-500",
+        iconClassName: "text-red-500",
       });
     }
   }, [collectLocalDraftPayload, missionId]);
