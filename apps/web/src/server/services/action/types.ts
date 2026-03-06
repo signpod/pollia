@@ -87,3 +87,64 @@ export type ActionCreatedResult = Pick<
   | "nextActionId"
   | "nextCompletionId"
 >;
+
+export interface SaveActionSectionInput {
+  missionId: string;
+  completionsToCreate: CompletionToCreate[];
+  actionsToCreate: ActionToCreate[];
+  actionsToUpdate: ActionToUpdate[];
+  actionOrder: string[];
+  entryActionKey: string | null;
+}
+
+export interface CompletionToCreate {
+  tempId: string;
+  title: string;
+  description: string;
+  imageUrl?: string | null;
+  imageFileUploadId?: string | null;
+}
+
+export interface ActionToCreate {
+  tempId: string;
+  actionType: ActionType;
+  values: ActionFormValuesInput;
+}
+
+export interface ActionToUpdate {
+  actionId: string;
+  actionType: ActionType;
+  values: ActionFormValuesInput;
+}
+
+export interface ActionFormValuesInput {
+  title: string;
+  description?: string | null;
+  imageUrl?: string | null;
+  imageFileUploadId?: string | null;
+  isRequired: boolean;
+  hasOther?: boolean;
+  maxSelections?: number;
+  options?: SaveActionOptionInput[];
+  nextActionId?: string | null;
+  nextCompletionId?: string | null;
+}
+
+export interface SaveActionOptionInput {
+  id?: string;
+  title: string;
+  description?: string | null;
+  imageUrl?: string | null;
+  order: number;
+  imageFileUploadId?: string | null;
+  nextActionId?: string | null;
+  nextCompletionId?: string | null;
+}
+
+export interface SaveActionSectionResult {
+  createdActionIds: string[];
+  updatedActionIds: string[];
+  createdCompletionIds: string[];
+  tempToRealActionIdMap: Record<string, string>;
+  tempToRealCompletionIdMap: Record<string, string>;
+}

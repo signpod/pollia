@@ -17,13 +17,21 @@ import {
   videoInputSchema,
 } from "@/schemas/action";
 import { actionRepository } from "@/server/repositories/action/actionRepository";
+import { missionCompletionRepository } from "@/server/repositories/mission-completion/missionCompletionRepository";
 import { missionRepository } from "@/server/repositories/mission/missionRepository";
-import { ActionType } from "@prisma/client";
+import { type Action, ActionType, Prisma } from "@prisma/client";
 import { z } from "zod";
+import {
+  actionSectionDraftSnapshotSchema,
+  completionSectionDraftSnapshotSchema,
+} from "./actionSectionDraftSchema";
 import type {
   ActionCreatedResult,
+  ActionToCreate,
+  ActionToUpdate,
   BaseActionInput,
   BaseActionInputWithOptions,
+  CompletionToCreate,
   CreateBranchInput,
   CreateDateInput,
   CreateEitherOrInput,
@@ -38,6 +46,8 @@ import type {
   CreateTimeInput,
   CreateVideoInput,
   GetActionsOptions,
+  SaveActionSectionInput,
+  SaveActionSectionResult,
   UpdateActionInput,
 } from "./types";
 
@@ -45,6 +55,7 @@ export class ActionService {
   constructor(
     private actionRepo = actionRepository,
     private missionRepo = missionRepository,
+    private completionRepo = missionCompletionRepository,
   ) {}
 
   private async createSimpleAction<T extends BaseActionInput>(
@@ -727,6 +738,340 @@ export class ActionService {
       });
       throw error;
     }
+  }
+  async saveActionSection(
+    input: SaveActionSectionInput,
+    userId: string,
+  ): Promise<SaveActionSectionResult> {
+    await this.verifyMissionAccess(input.missionId, userId);
+
+    const tempToRealActionIdMap = new Map<string, string>();
+    const tempToRealCompletionIdMap = new Map<string, string>();
+    const createdActionIds: string[] = [];
+    const updatedActionIds: string[] = [];
+    const createdCompletionIds: string[] = [];
+
+    await prisma.$transaction(async tx => {
+      for (const comp of input.completionsToCreate) {
+        const created = await this.completionRepo.create(
+          {
+            missionId: input.missionId,
+            title: comp.title,
+            description: comp.description,
+            imageUrl: comp.imageUrl ?? null,
+            imageFileUploadId: comp.imageFileUploadId ?? null,
+          },
+          userId,
+          tx,
+        );
+        tempToRealCompletionIdMap.set(comp.tempId, created.id);
+        createdCompletionIds.push(created.id);
+      }
+
+      for (const action of input.actionsToCreate) {
+        const { values, actionType, tempId } = action;
+        const hasOptions = this.isOptionBasedActionType(actionType) && values.options;
+
+        const actionData = {
+          missionId: input.missionId,
+          title: values.title,
+          description: values.description ?? null,
+          imageUrl: values.imageUrl ?? null,
+          imageFileUploadId: values.imageFileUploadId ?? null,
+          isRequired: values.isRequired,
+          hasOther: values.hasOther ?? false,
+          maxSelections: values.maxSelections ?? null,
+          type: actionType,
+          order: 0,
+          nextActionId: null,
+          nextCompletionId: null,
+        };
+
+        let created: Action;
+        if (hasOptions && values.options) {
+          created = await this.actionRepo.createMultipleChoice(
+            actionData,
+            values.options.map(opt => ({
+              title: opt.title,
+              description: opt.description ?? undefined,
+              imageUrl: opt.imageUrl ?? undefined,
+              order: opt.order,
+              imageFileUploadId: opt.imageFileUploadId ?? undefined,
+              nextActionId: null,
+              nextCompletionId: null,
+            })),
+            userId,
+            tx,
+          );
+        } else {
+          created = await this.actionRepo.create(actionData, userId, tx);
+        }
+
+        tempToRealActionIdMap.set(tempId, created.id);
+        createdActionIds.push(created.id);
+      }
+
+      const resolveActionId = (id: string | null | undefined): string | null => {
+        if (!id) return null;
+        return tempToRealActionIdMap.get(id) ?? id;
+      };
+
+      const resolveCompletionId = (id: string | null | undefined): string | null => {
+        if (!id) return null;
+        return tempToRealCompletionIdMap.get(id) ?? id;
+      };
+
+      for (const action of input.actionsToCreate) {
+        const realId = tempToRealActionIdMap.get(action.tempId);
+        if (!realId) continue;
+
+        const { values } = action;
+        const resolvedNextActionId = resolveActionId(values.nextActionId);
+        const resolvedNextCompletionId = resolveCompletionId(values.nextCompletionId);
+
+        const hasOptionFkRefs = values.options?.some(
+          opt => opt.nextActionId || opt.nextCompletionId,
+        );
+
+        const needsActionLevelUpdate =
+          resolvedNextActionId !== null || resolvedNextCompletionId !== null;
+
+        if (needsActionLevelUpdate && !hasOptionFkRefs) {
+          await this.actionRepo.update(
+            realId,
+            {
+              nextActionId: resolvedNextActionId,
+              nextCompletionId: resolvedNextCompletionId,
+            },
+            userId,
+            tx,
+          );
+        }
+
+        if (hasOptionFkRefs && values.options) {
+          const resolvedOptions = values.options.map(opt => ({
+            id: opt.id,
+            title: opt.title,
+            description: opt.description ?? undefined,
+            imageUrl: opt.imageUrl ?? undefined,
+            order: opt.order,
+            imageFileUploadId: opt.imageFileUploadId ?? undefined,
+            nextActionId: resolveActionId(opt.nextActionId) ?? null,
+            nextCompletionId: resolveCompletionId(opt.nextCompletionId) ?? null,
+          }));
+          await this.actionRepo.updateWithOptions(
+            realId,
+            {
+              nextActionId: resolvedNextActionId,
+              nextCompletionId: resolvedNextCompletionId,
+            },
+            resolvedOptions,
+            userId,
+            tx,
+          );
+        }
+      }
+
+      for (const action of input.actionsToUpdate) {
+        const { values, actionType } = action;
+        const hasOptions = this.isOptionBasedActionType(actionType) && values.options;
+
+        const updateData = {
+          title: values.title,
+          description: values.description ?? null,
+          imageUrl: values.imageUrl ?? null,
+          imageFileUploadId: values.imageFileUploadId ?? null,
+          isRequired: values.isRequired,
+          hasOther: values.hasOther ?? false,
+          maxSelections: values.maxSelections ?? null,
+          type: actionType,
+          nextActionId: resolveActionId(values.nextActionId),
+          nextCompletionId: resolveCompletionId(values.nextCompletionId),
+        };
+
+        if (hasOptions && values.options) {
+          const resolvedOptions = values.options.map(opt => ({
+            id: opt.id,
+            title: opt.title,
+            description: opt.description ?? undefined,
+            imageUrl: opt.imageUrl ?? undefined,
+            order: opt.order,
+            imageFileUploadId: opt.imageFileUploadId ?? undefined,
+            nextActionId: resolveActionId(opt.nextActionId) ?? null,
+            nextCompletionId: resolveCompletionId(opt.nextCompletionId) ?? null,
+          }));
+          await this.actionRepo.updateWithOptions(
+            action.actionId,
+            updateData,
+            resolvedOptions,
+            userId,
+            tx,
+          );
+        } else {
+          await this.actionRepo.update(action.actionId, updateData, userId, tx);
+        }
+
+        updatedActionIds.push(action.actionId);
+      }
+
+      for (let i = 0; i < input.actionOrder.length; i++) {
+        const key = input.actionOrder[i];
+        const realId = resolveActionId(key) ?? key;
+        await this.actionRepo.updateOrder(realId, i, tx);
+      }
+
+      const resolvedEntryActionId = input.entryActionKey
+        ? resolveActionId(input.entryActionKey)
+        : null;
+
+      await this.missionRepo.update(
+        input.missionId,
+        { entryActionId: resolvedEntryActionId },
+        userId,
+        tx,
+      );
+    });
+
+    return {
+      createdActionIds,
+      updatedActionIds,
+      createdCompletionIds,
+      tempToRealActionIdMap: Object.fromEntries(tempToRealActionIdMap),
+      tempToRealCompletionIdMap: Object.fromEntries(tempToRealCompletionIdMap),
+    };
+  }
+
+  async applyActionSectionDraft(
+    missionId: string,
+    userId: string,
+  ): Promise<SaveActionSectionResult> {
+    const mission = await this.missionRepo.findById(missionId);
+    if (!mission) {
+      const error = new Error("존재하지 않는 미션입니다.");
+      error.cause = 404;
+      throw error;
+    }
+
+    if (mission.creatorId !== userId) {
+      const error = new Error("액션을 추가할 권한이 없습니다.");
+      error.cause = 403;
+      throw error;
+    }
+
+    if (!mission.editorDraft) {
+      const error = new Error("적용할 draft가 없습니다.");
+      error.cause = 400;
+      throw error;
+    }
+
+    const draft = mission.editorDraft as Record<string, unknown>;
+    const actionSection = draft.action ?? null;
+    const completionSection = draft.completion ?? null;
+
+    if (!actionSection) {
+      return {
+        createdActionIds: [],
+        updatedActionIds: [],
+        createdCompletionIds: [],
+        tempToRealActionIdMap: {},
+        tempToRealCompletionIdMap: {},
+      };
+    }
+
+    const actionParseResult = actionSectionDraftSnapshotSchema.safeParse(actionSection);
+    if (!actionParseResult.success) {
+      const error = new Error("action draft 파싱에 실패했습니다.");
+      error.cause = 400;
+      throw error;
+    }
+
+    const actionDraft = actionParseResult.data;
+
+    const completionsToCreate: CompletionToCreate[] = [];
+    if (completionSection) {
+      const completionParseResult =
+        completionSectionDraftSnapshotSchema.safeParse(completionSection);
+      if (completionParseResult.success) {
+        for (const item of completionParseResult.data.draftItems) {
+          const tempId = `draft:completion:${item.key}`;
+          const snapshot = completionParseResult.data.formSnapshotByItemKey[tempId];
+          if (snapshot) {
+            completionsToCreate.push({
+              tempId,
+              title: snapshot.title,
+              description: snapshot.description,
+              imageUrl: snapshot.imageUrl,
+              imageFileUploadId: snapshot.imageFileUploadId,
+            });
+          }
+        }
+      }
+    }
+
+    const actionsToCreate: ActionToCreate[] = [];
+    const actionsToUpdate: ActionToUpdate[] = [];
+
+    for (const key of actionDraft.itemOrderKeys ?? Object.keys(actionDraft.formSnapshotByItemKey)) {
+      const isDraftItem = key.startsWith("draft:");
+      const isExistingItem = key.startsWith("existing:");
+
+      if (isDraftItem) {
+        const snapshot = actionDraft.formSnapshotByItemKey[key];
+        if (!snapshot) continue;
+
+        actionsToCreate.push({
+          tempId: key,
+          actionType: snapshot.actionType as ActionType,
+          values: snapshot.values,
+        });
+      } else if (isExistingItem) {
+        const isDirty = actionDraft.dirtyByItemKey[key] === true;
+        if (!isDirty) continue;
+
+        const actionId = key.replace("existing:", "");
+        const snapshot = actionDraft.formSnapshotByItemKey[key];
+        if (!snapshot) continue;
+
+        actionsToUpdate.push({
+          actionId,
+          actionType: snapshot.actionType as ActionType,
+          values: snapshot.values,
+        });
+      }
+    }
+
+    const actionOrder = (actionDraft.itemOrderKeys ?? []).map(key => {
+      if (key.startsWith("existing:")) {
+        return key.replace("existing:", "");
+      }
+      return key;
+    });
+
+    const entryActionKey = actionOrder.length > 0 ? actionOrder[0] : null;
+
+    const result = await this.saveActionSection(
+      {
+        missionId,
+        completionsToCreate,
+        actionsToCreate,
+        actionsToUpdate,
+        actionOrder,
+        entryActionKey,
+      },
+      userId,
+    );
+
+    const clearedDraft = {
+      ...draft,
+      action: null,
+      completion: null,
+    };
+
+    await this.missionRepo.update(missionId, {
+      editorDraft: clearedDraft as Prisma.InputJsonValue,
+    });
+
+    return result;
   }
 }
 

@@ -60,28 +60,40 @@ export class MissionCompletionRepository {
     });
   }
 
-  async create(data: Prisma.MissionCompletionUncheckedCreateInput, userId?: string) {
+  async create(
+    data: Prisma.MissionCompletionUncheckedCreateInput,
+    userId?: string,
+    client?: Prisma.TransactionClient,
+  ) {
     const imageFileUploadId =
       typeof data.imageFileUploadId === "string" ? data.imageFileUploadId : undefined;
 
-    if (imageFileUploadId && userId) {
-      return prisma.$transaction(async tx => {
-        const missionCompletion = await tx.missionCompletion.create({
-          data,
-          include: {
-            imageFileUpload: {
-              select: {
-                id: true,
-                publicUrl: true,
-              },
+    const execute = async (tx: Prisma.TransactionClient) => {
+      const missionCompletion = await tx.missionCompletion.create({
+        data,
+        include: {
+          imageFileUpload: {
+            select: {
+              id: true,
+              publicUrl: true,
             },
           },
-        });
-
-        await confirmFileUploads(tx, userId, imageFileUploadId);
-
-        return missionCompletion;
+        },
       });
+
+      if (imageFileUploadId && userId) {
+        await confirmFileUploads(tx, userId, imageFileUploadId);
+      }
+
+      return missionCompletion;
+    };
+
+    if (client) {
+      return execute(client);
+    }
+
+    if (imageFileUploadId && userId) {
+      return prisma.$transaction(execute);
     }
 
     return prisma.missionCompletion.create({
