@@ -50,7 +50,6 @@ const UNIFIED_SAVE_TOAST_ID = "editor-mission-save-result";
 const PUBLISH_TOAST_ID = "editor-mission-publish-result";
 const LOCAL_DRAFT_AUTOSAVE_THROTTLE_MS = 700;
 const LOCAL_DRAFT_AUTOSAVE_MAX_WAIT_MS = 1500;
-const WORKING_SET_VERSION_THROTTLE_MS = 120;
 
 interface ResolveDraftToRestoreInput {
   missionId: string;
@@ -128,8 +127,6 @@ export interface UseEditorMissionControllerResult {
     onRewardStateChange: (state: SectionSaveState) => void;
     onActionStateChange: (state: SectionSaveState) => void;
     onCompletionStateChange: (state: SectionSaveState) => void;
-    getCompletionDraftSnapshot: () => unknown | null;
-    completionWorkingSetVersion: number;
     onActionWorkingSetChange: () => void;
     onCompletionWorkingSetChange: () => void;
   };
@@ -195,18 +192,10 @@ export function useEditorMissionController({
     lastPersistedAt: 0,
     lastSerializedPayload: null,
   });
-  const completionWorkingSetThrottleRef = useRef<{
-    timeoutId: number | null;
-    lastUpdatedAt: number;
-  }>({
-    timeoutId: null,
-    lastUpdatedAt: 0,
-  });
 
   const [isSavingAll, setIsSavingAll] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublished, setIsPublished] = useState(mission.isActive);
-  const [completionWorkingSetVersion, setCompletionWorkingSetVersion] = useState(0);
   const [publishSnapshotVersion, setPublishSnapshotVersion] = useState(0);
   const [sectionStates, setSectionStates] = useState<Record<EditorSectionKey, SectionSaveState>>({
     basic: {
@@ -539,25 +528,6 @@ export function useEditorMissionController({
       scheduleLocalDraftAutosave();
     }
     setPublishSnapshotVersion(prev => prev + 1);
-
-    const throttleState = completionWorkingSetThrottleRef.current;
-    const now = Date.now();
-    const elapsed = now - throttleState.lastUpdatedAt;
-    if (elapsed >= WORKING_SET_VERSION_THROTTLE_MS) {
-      throttleState.lastUpdatedAt = now;
-      setCompletionWorkingSetVersion(prev => prev + 1);
-      return;
-    }
-
-    if (throttleState.timeoutId !== null) {
-      return;
-    }
-
-    throttleState.timeoutId = window.setTimeout(() => {
-      throttleState.timeoutId = null;
-      throttleState.lastUpdatedAt = Date.now();
-      setCompletionWorkingSetVersion(prev => prev + 1);
-    }, WORKING_SET_VERSION_THROTTLE_MS - elapsed);
   }, [isPublished, scheduleLocalDraftAutosave]);
 
   useEffect(() => {
@@ -633,11 +603,6 @@ export function useEditorMissionController({
         return;
       }
       clearLocalDraftAutosaveTimers();
-      const throttleState = completionWorkingSetThrottleRef.current;
-      if (throttleState.timeoutId !== null) {
-        window.clearTimeout(throttleState.timeoutId);
-        throttleState.timeoutId = null;
-      }
     },
     [clearLocalDraftAutosaveTimers],
   );
@@ -1057,11 +1022,6 @@ export function useEditorMissionController({
     [updateSectionState],
   );
 
-  const getCompletionDraftSnapshot = useCallback(
-    () => completionRef.current?.exportDraftSnapshot() ?? null,
-    [],
-  );
-
   return {
     refs: {
       basicInfoRef,
@@ -1074,8 +1034,6 @@ export function useEditorMissionController({
       onRewardStateChange,
       onActionStateChange,
       onCompletionStateChange,
-      getCompletionDraftSnapshot,
-      completionWorkingSetVersion,
       onActionWorkingSetChange: handleActionWorkingSetChange,
       onCompletionWorkingSetChange: handleCompletionWorkingSetChange,
     },

@@ -1,5 +1,6 @@
 "use client";
 
+import { completionIdSetAtom } from "@/app/(site)/(main)/editor/missions/[missionId]/atoms/editorDerivedAtoms";
 import { useMultipleImages, useSingleImage } from "@/app/admin/hooks/admin-image";
 import { ACTION_TYPE_LABELS } from "@/constants/action";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
@@ -33,6 +34,7 @@ import {
   Toggle,
   Typo,
 } from "@repo/ui/components";
+import { useAtomValue } from "jotai";
 import { Plus, Trash2 } from "lucide-react";
 import {
   type ForwardedRef,
@@ -421,10 +423,7 @@ function ActionFormComponent(
   const selectableActions = allActions.filter(a => !editingAction || a.id !== editingAction.id);
   const hasLinkTargets =
     selectableActions.length > 0 || (allowCompletionLink && completionOptions.length > 0);
-  const completionIdSet = useMemo(
-    () => new Set(completionOptions.map(completion => completion.id)),
-    [completionOptions],
-  );
+  const completionIdSet = useAtomValue(completionIdSetAtom);
   const [initialOptionImages] = useState(() =>
     options.flatMap(option =>
       option.imageUrl

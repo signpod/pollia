@@ -7,9 +7,6 @@ export interface ActionSettingsCardProps {
   missionId: string;
   useAiCompletion?: boolean;
   onSaveStateChange?: SectionSaveStateChangeHandler;
-  getCompletionDraftSnapshot?: () => unknown | null;
-  completionWorkingSetVersion?: number;
-  onWorkingSetChange?: (draftSnapshot: ActionSectionDraftSnapshot) => void;
 }
 
 export interface DraftActionItem {

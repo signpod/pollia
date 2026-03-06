@@ -1,4 +1,3 @@
-import { getCompletionsByMissionId } from "@/actions/mission-completion";
 import { applyMissionActionSectionDraft } from "@/actions/mission/apply-draft";
 import type {
   ActionFormHandle,
@@ -15,10 +14,29 @@ import { useReadMission } from "@/hooks/mission";
 import type { ActionDetail } from "@/types/dto";
 import { ActionType } from "@prisma/client";
 import { toast } from "@repo/ui/components";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { AlertCircle } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { makeDraftCompletionId, useEditorMissionDraft } from "./EditorMissionDraftContext";
+import {
+  actionDirtyByItemKeyAtom,
+  actionDraftHydrationVersionAtom,
+  actionDraftItemsAtom,
+  actionFormSnapshotByItemKeyAtom,
+  actionFormVersionByIdAtom,
+  actionIsApplyingAtom,
+  actionIsFlowDialogOpenAtom,
+  actionItemOrderKeysAtom,
+  actionOpenItemKeyAtom,
+  actionTypeByItemKeyAtom,
+  actionValidationIssueCountByItemKeyAtom,
+} from "../atoms/editorActionAtoms";
+import { removeCompletionDraftByIdAtom } from "../atoms/editorCompletionAtoms";
+import {
+  completionOptionsAtom,
+  isAiCompletionEnabledAtom,
+  serverCompletionsAtom,
+} from "../atoms/editorDerivedAtoms";
 import type {
   ActionListItem,
   ActionSectionDraftSnapshot,
@@ -31,7 +49,6 @@ import {
   createDraftKey,
   getDraftItemKey,
   getExistingItemKey,
-  parseCompletionDraftSnapshotForOptions,
 } from "./actionSettingsCard.utils";
 import { analyzeEditorFlow } from "./editor-publish-flow-validation";
 import type { SectionSaveHandle, SectionSaveOptions, SectionSaveResult } from "./editor-save.types";
@@ -90,31 +107,29 @@ export function useActionSettingsCard({
   missionId,
   useAiCompletion: useAiCompletionOverride,
   onSaveStateChange,
-  getCompletionDraftSnapshot,
-  completionWorkingSetVersion = 0,
-  onWorkingSetChange,
 }: ActionSettingsCardProps): UseActionSettingsCardReturn {
   const queryClient = useQueryClient();
   const formRefs = useRef<Record<string, ActionFormHandle | null>>({});
-  const [draftItems, setDraftItems] = useState<DraftActionItem[]>([]);
-  const [itemOrderKeys, setItemOrderKeys] = useState<string[]>([]);
-  const [openItemKey, setOpenItemKey] = useState<string | null>(null);
-  const [isApplying, setIsApplying] = useState(false);
+  const [draftItems, setDraftItems] = useAtom(actionDraftItemsAtom);
+  const [itemOrderKeys, setItemOrderKeys] = useAtom(actionItemOrderKeysAtom);
+  const [openItemKey, setOpenItemKey] = useAtom(actionOpenItemKeyAtom);
+  const [isApplying, setIsApplying] = useAtom(actionIsApplyingAtom);
   const [deleteTarget, setDeleteTarget] = useState<ActionDetail | null>(null);
-  const [dirtyByItemKey, setDirtyByItemKey] = useState<Record<string, boolean>>({});
-  const [existingFormVersionById, setExistingFormVersionById] = useState<Record<string, number>>(
-    {},
+  const [dirtyByItemKey, setDirtyByItemKey] = useAtom(actionDirtyByItemKeyAtom);
+  const [existingFormVersionById, setExistingFormVersionById] = useAtom(actionFormVersionByIdAtom);
+  const [actionTypeByItemKey, setActionTypeByItemKey] = useAtom(actionTypeByItemKeyAtom);
+  const [draftFormSnapshotByItemKey, setDraftFormSnapshotByItemKey] = useAtom(
+    actionFormSnapshotByItemKeyAtom,
   );
-  const [actionTypeByItemKey, setActionTypeByItemKey] = useState<Record<string, ActionType>>({});
-  const [draftFormSnapshotByItemKey, setDraftFormSnapshotByItemKey] = useState<
-    Record<string, ActionFormRawSnapshot>
-  >({});
-  const [validationIssueCountByItemKey, setValidationIssueCountByItemKey] = useState<
-    Record<string, number>
-  >({});
-  const [draftHydrationVersion, setDraftHydrationVersion] = useState(0);
-  const [isFlowDialogOpen, setIsFlowDialogOpen] = useState(false);
-  const { completionDrafts, removeCompletionDraftById } = useEditorMissionDraft();
+  const [validationIssueCountByItemKey, setValidationIssueCountByItemKey] = useAtom(
+    actionValidationIssueCountByItemKeyAtom,
+  );
+  const [draftHydrationVersion, setDraftHydrationVersion] = useAtom(
+    actionDraftHydrationVersionAtom,
+  );
+  const [isFlowDialogOpen, setIsFlowDialogOpen] = useAtom(actionIsFlowDialogOpenAtom);
+  const dispatchRemoveCompletionDraftById = useSetAtom(removeCompletionDraftByIdAtom);
+  const setIsAiCompletionEnabled = useSetAtom(isAiCompletionEnabledAtom);
 
   const {
     data: missionData,
@@ -126,15 +141,6 @@ export function useActionSettingsCard({
     isLoading: isActionsLoading,
     error: actionsError,
   } = useReadActionsDetail(missionId);
-  const {
-    data: completionsData,
-    isLoading: isCompletionsLoading,
-    error: completionsError,
-  } = useQuery({
-    queryKey: missionCompletionQueryKeys.missionCompletion(missionId),
-    queryFn: () => getCompletionsByMissionId(missionId),
-    staleTime: 5 * 60 * 1000,
-  });
 
   const existingActions = useMemo(() => {
     const list = actionsData?.data ?? [];
@@ -207,58 +213,11 @@ export function useActionSettingsCard({
   const isAiCompletionEnabled =
     useAiCompletionOverride ?? missionData?.data?.useAiCompletion === true;
 
-  const completionOptions = useMemo(() => {
-    if (isAiCompletionEnabled) {
-      return [];
-    }
+  useEffect(() => {
+    setIsAiCompletionEnabled(isAiCompletionEnabled);
+  }, [isAiCompletionEnabled, setIsAiCompletionEnabled]);
 
-    const parsedCompletionSnapshot = parseCompletionDraftSnapshotForOptions(
-      getCompletionDraftSnapshot?.() ?? null,
-    );
-    const removedExistingIds = parsedCompletionSnapshot?.removedExistingIds ?? new Set<string>();
-    const titleByItemKey = parsedCompletionSnapshot?.titleByItemKey ?? {};
-    const existingOptions = (completionsData?.data ?? [])
-      .filter(completion => !removedExistingIds.has(completion.id))
-      .map(completion => {
-        const itemKey = `existing:${completion.id}`;
-        return {
-          id: completion.id,
-          title: titleByItemKey[itemKey] ?? completion.title ?? "완료 화면",
-        };
-      });
-
-    const parsedDraftTitleByKey = new Map(
-      (parsedCompletionSnapshot?.draftItems ?? []).map(draft => [draft.key, draft.title]),
-    );
-    const contextDraftTitleByKey = new Map(completionDrafts.map(draft => [draft.key, draft.title]));
-    const mergedDraftKeys = [
-      ...new Set([
-        ...(parsedCompletionSnapshot?.draftItems ?? []).map(draft => draft.key),
-        ...completionDrafts.map(draft => draft.key),
-      ]),
-    ];
-
-    const draftOptions = mergedDraftKeys.map(draftKey => {
-      const draftItemKey = getDraftItemKey(draftKey);
-      const title =
-        titleByItemKey[draftItemKey] ??
-        parsedDraftTitleByKey.get(draftKey) ??
-        contextDraftTitleByKey.get(draftKey) ??
-        "새 결과 화면";
-      return {
-        id: makeDraftCompletionId(draftKey),
-        title,
-      };
-    });
-
-    return [...existingOptions, ...draftOptions];
-  }, [
-    isAiCompletionEnabled,
-    completionDrafts,
-    completionWorkingSetVersion,
-    completionsData?.data,
-    getCompletionDraftSnapshot,
-  ]);
+  const completionOptions = useAtomValue(completionOptionsAtom);
 
   const actionItems = useMemo<ActionListItem[]>(
     () => [
@@ -391,16 +350,10 @@ export function useActionSettingsCard({
     orderedActionItems,
   ]);
 
-  const notifyWorkingSetChange = useCallback(() => {
-    if (!onWorkingSetChange) {
-      return;
-    }
-
-    onWorkingSetChange(getActionDraftSnapshot());
-  }, [getActionDraftSnapshot, onWorkingSetChange]);
+  const serverCompletions = useAtomValue(serverCompletionsAtom);
 
   const flowAnalysis = useMemo(() => {
-    if (!missionData?.data || !actionsData?.data || !completionsData?.data) {
+    if (!missionData?.data || !actionsData?.data || serverCompletions.length === 0) {
       return null;
     }
 
@@ -408,15 +361,14 @@ export function useActionSettingsCard({
       entryActionId: missionData.data.entryActionId,
       useAiCompletion: isAiCompletionEnabled,
       serverActions: actionsData.data,
-      serverCompletions: completionsData.data,
+      serverCompletions,
       actionDraftSnapshot: getActionDraftSnapshot(),
-      completionDraftSnapshot: getCompletionDraftSnapshot?.() ?? null,
+      completionDraftSnapshot: null,
     });
   }, [
     actionsData?.data,
-    completionsData?.data,
+    serverCompletions,
     getActionDraftSnapshot,
-    getCompletionDraftSnapshot,
     isAiCompletionEnabled,
     missionData?.data,
   ]);
@@ -426,10 +378,8 @@ export function useActionSettingsCard({
       ? missionError.message
       : actionsError instanceof Error
         ? actionsError.message
-        : completionsError instanceof Error
-          ? completionsError.message
-          : null;
-  const isFlowLoading = isMissionLoading || isActionsLoading || isCompletionsLoading;
+        : null;
+  const isFlowLoading = isMissionLoading || isActionsLoading;
 
   useEffect(() => {
     const validKeys = new Set(orderedActionItems.map(item => item.key));
@@ -551,29 +501,19 @@ export function useActionSettingsCard({
 
   const handleItemRawSnapshotChange = useCallback(
     (itemKey: string, snapshot: ActionFormRawSnapshot) => {
-      let hasChange = false;
       setDraftFormSnapshotByItemKey(prev => {
         if (areActionSnapshotsEqual(prev[itemKey], snapshot)) {
           return prev;
         }
 
-        hasChange = true;
         return {
           ...prev,
           [itemKey]: snapshot,
         };
       });
-
-      if (hasChange) {
-        notifyWorkingSetChange();
-      }
     },
-    [notifyWorkingSetChange],
+    [setDraftFormSnapshotByItemKey],
   );
-
-  useEffect(() => {
-    notifyWorkingSetChange();
-  }, [draftItems, notifyWorkingSetChange]);
 
   const handleAddDraft = () => {
     const draftKey = createDraftKey();
@@ -621,8 +561,6 @@ export function useActionSettingsCard({
 
   const handleMoveItem = useCallback(
     (itemKey: string, direction: -1 | 1) => {
-      let didMove = false;
-
       setItemOrderKeys(prev => {
         const currentIndex = prev.indexOf(itemKey);
         if (currentIndex < 0) {
@@ -643,15 +581,10 @@ export function useActionSettingsCard({
 
         next[currentIndex] = targetValue;
         next[nextIndex] = currentValue;
-        didMove = true;
         return next;
       });
-
-      if (didMove) {
-        notifyWorkingSetChange();
-      }
     },
-    [notifyWorkingSetChange],
+    [setItemOrderKeys],
   );
 
   const handleDeleteConfirm = () => {
@@ -700,7 +633,7 @@ export function useActionSettingsCard({
       const result = response.data;
 
       for (const tempId of Object.keys(result.tempToRealCompletionIdMap)) {
-        removeCompletionDraftById(tempId);
+        dispatchRemoveCompletionDraftById(tempId);
       }
 
       const savedDraftKeys = new Set(
@@ -805,17 +738,10 @@ export function useActionSettingsCard({
             : {},
         );
         setDraftHydrationVersion(prev => prev + 1);
-        notifyWorkingSetChange();
       },
     }),
-    [
-      executeSave,
-      getActionDraftSnapshot,
-      hasPendingChanges,
-      isActionsLoading,
-      isBusy,
-      notifyWorkingSetChange,
-    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [executeSave, getActionDraftSnapshot, hasPendingChanges, isActionsLoading, isBusy],
   );
 
   return {

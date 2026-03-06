@@ -5,7 +5,6 @@ import type { SectionSaveStateChangeHandler } from "./editor-save.types";
 export interface CompletionSettingsCardProps {
   missionId: string;
   onSaveStateChange?: SectionSaveStateChangeHandler;
-  onWorkingSetChange?: (draftSnapshot: CompletionSectionDraftSnapshot) => void;
 }
 
 export interface ExistingListItem {
