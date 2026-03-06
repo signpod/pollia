@@ -1,12 +1,6 @@
 import type { ActionFormRawSnapshot } from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
 
-export function createDraftKey() {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return crypto.randomUUID();
-  }
-
-  return `draft-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
+export { createDraftKey } from "./editorDraftKey";
 
 export function getExistingItemKey(actionId: string) {
   return `existing:${actionId}`;

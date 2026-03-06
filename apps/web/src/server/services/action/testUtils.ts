@@ -8,11 +8,10 @@ export {
   createMockActionOption,
   createMockActionResponse,
   createMockActionWithOptions,
-  createMockMission,
+  createMockMission as mockMissionFactory,
   createMockMissionCompletion,
   expectServiceErrorWithCause,
 } from "../testUtils";
-export { createMockMission as mockMissionFactory } from "../testUtils";
 
 export function createActionServiceTestContext() {
   const mockActionRepo = {

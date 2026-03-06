@@ -4,7 +4,7 @@ import {
   createActionServiceTestContext,
   createMockAction,
   createMockActionWithOptions,
-  createMockMission,
+  mockMissionFactory,
 } from "../testUtils";
 
 describe("ActionService - Connection Management", () => {
@@ -20,7 +20,7 @@ describe("ActionService - Connection Management", () => {
 
   describe("calculateReachableActionIds", () => {
     it("entryAction부터 시작하여 reachable한 액션들을 찾는다", async () => {
-      const mockMission = createMockMission({
+      const mockMission = mockMissionFactory({
         id: "mission1",
         entryActionId: "action-a",
       });
@@ -42,7 +42,7 @@ describe("ActionService - Connection Management", () => {
     });
 
     it("브랜치 액션의 모든 옵션을 따라간다", async () => {
-      const mockMission = createMockMission({
+      const mockMission = mockMissionFactory({
         id: "mission1",
         entryActionId: "action-a",
       });
@@ -67,7 +67,7 @@ describe("ActionService - Connection Management", () => {
     });
 
     it("순환 참조가 있어도 무한루프에 빠지지 않는다", async () => {
-      const mockMission = createMockMission({
+      const mockMission = mockMissionFactory({
         id: "mission1",
         entryActionId: "action-a",
       });
@@ -87,7 +87,7 @@ describe("ActionService - Connection Management", () => {
     });
 
     it("entryActionId가 없으면 빈 배열을 반환한다", async () => {
-      const mockMission = createMockMission({
+      const mockMission = mockMissionFactory({
         id: "mission1",
         entryActionId: null,
       });
@@ -103,7 +103,7 @@ describe("ActionService - Connection Management", () => {
 
   describe("disconnectActionWithCleanup", () => {
     it("액션 연결을 끊고 unreachable이 된 하위 액션들을 정리한다", async () => {
-      const mockMission = createMockMission({
+      const mockMission = mockMissionFactory({
         id: "mission1",
         entryActionId: "action-a",
         creatorId: "user1",
@@ -154,7 +154,7 @@ describe("ActionService - Connection Management", () => {
     });
 
     it("브랜치 옵션의 하위 연결도 정리한다", async () => {
-      const mockMission = createMockMission({
+      const mockMission = mockMissionFactory({
         id: "mission1",
         entryActionId: "action-a",
         creatorId: "user1",
@@ -206,7 +206,7 @@ describe("ActionService - Connection Management", () => {
     });
 
     it("reachable 액션은 정리하지 않는다", async () => {
-      const mockMission = createMockMission({
+      const mockMission = mockMissionFactory({
         id: "mission1",
         entryActionId: "action-a",
         creatorId: "user1",
@@ -252,7 +252,7 @@ describe("ActionService - Connection Management", () => {
     });
 
     it("권한이 없으면 403 에러를 던진다", async () => {
-      const mockMission = createMockMission({
+      const mockMission = mockMissionFactory({
         id: "mission1",
         creatorId: "user2",
       });
@@ -275,7 +275,7 @@ describe("ActionService - Connection Management", () => {
 
   describe("disconnectBranchOptionWithCleanup", () => {
     it("브랜치 옵션 연결을 끊고 unreachable이 된 하위 액션들을 정리한다", async () => {
-      const mockMission = createMockMission({
+      const mockMission = mockMissionFactory({
         id: "mission1",
         entryActionId: "action-a",
         creatorId: "user1",
@@ -349,7 +349,7 @@ describe("ActionService - Connection Management", () => {
     });
 
     it("권한이 없으면 403 에러를 던진다", async () => {
-      const mockMission = createMockMission({
+      const mockMission = mockMissionFactory({
         id: "mission1",
         creatorId: "user2",
       });
@@ -376,7 +376,7 @@ describe("ActionService - Connection Management", () => {
 
   describe("connectAction", () => {
     it("단순히 액션을 연결한다 (cleanup 없음)", async () => {
-      const mockMission = createMockMission({
+      const mockMission = mockMissionFactory({
         id: "mission1",
         creatorId: "user1",
       });
@@ -410,7 +410,7 @@ describe("ActionService - Connection Management", () => {
     });
 
     it("Completion 연결도 지원한다", async () => {
-      const mockMission = createMockMission({
+      const mockMission = mockMissionFactory({
         id: "mission1",
         creatorId: "user1",
       });
@@ -443,7 +443,7 @@ describe("ActionService - Connection Management", () => {
 
   describe("connectBranchOption", () => {
     it("단순히 브랜치 옵션을 연결한다 (cleanup 없음)", async () => {
-      const mockMission = createMockMission({
+      const mockMission = mockMissionFactory({
         id: "mission1",
         creatorId: "user1",
       });

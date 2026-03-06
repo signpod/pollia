@@ -1068,9 +1068,11 @@ export class ActionService {
       completion: null,
     };
 
-    await this.missionRepo.update(missionId, {
-      editorDraft: clearedDraft as Prisma.InputJsonValue,
-    });
+    await this.missionRepo.update(
+      missionId,
+      { editorDraft: clearedDraft as Prisma.InputJsonValue },
+      userId,
+    );
 
     return result;
   }
