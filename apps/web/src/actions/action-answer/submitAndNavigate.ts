@@ -42,7 +42,7 @@ export async function completeResponseOnly(params: {
     }
 
     if (response.completedAt) {
-      return { success: false, error: "이미 완료된 미션입니다.", code: "ALREADY_COMPLETED" };
+      return { success: false, error: "이미 완료된 컨텐츠입니다.", code: "ALREADY_COMPLETED" };
     }
 
     const requestMeta = await getRequestMeta();
@@ -93,7 +93,7 @@ export async function submitAnswerOnly(params: SubmitAnswerParams): Promise<Subm
     }
 
     if (response.completedAt) {
-      return { success: false, error: "이미 완료된 미션입니다.", code: "ALREADY_COMPLETED" };
+      return { success: false, error: "이미 완료된 컨텐츠입니다.", code: "ALREADY_COMPLETED" };
     }
 
     const submittedAnswers = response.answers ?? [];

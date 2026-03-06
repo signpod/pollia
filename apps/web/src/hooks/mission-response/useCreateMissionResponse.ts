@@ -22,7 +22,9 @@ export function useCreateMissionResponse({ missionId }: { missionId: string }) {
       queryClient.invalidateQueries({ queryKey: missionQueryKeys.userMissions() });
     },
     onError: (error: Error) => {
-      toast.warning(error.message || "미션을 시작 할 수 없어요", { id: "init-error" });
+      toast.warning(error.message || "컨텐츠 시작에 실패했어요. 다시 시도해주세요", {
+        id: "init-error",
+      });
       router.push(ROUTES.MISSION(missionId));
     },
   });
