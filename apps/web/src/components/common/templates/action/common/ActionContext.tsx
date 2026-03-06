@@ -17,6 +17,7 @@ interface ActionContextValue {
   updateCanGoNext: (canGoNext: boolean) => void;
   onAnswerChange: (answer: ActionAnswerItem) => void;
   missionResponse?: GetMissionResponseResponse;
+  animationName?: string;
 }
 
 const ActionContext = createContext<ActionContextValue | null>(null);
