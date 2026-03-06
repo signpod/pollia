@@ -239,7 +239,7 @@ function ActionSettingsCardComponent(
                   <div className={isOpen ? "block border-t border-zinc-200" : "hidden"}>
                     {item.kind === "existing" ? (
                       <ActionForm
-                        key={`${item.key}:${existingFormVersionById[item.action.id] ?? 0}:${draftHydrationVersion}`}
+                        key={`${item.key}:${existingFormVersionById[item.action.id] ?? 0}:${draftHydrationVersion}:${isAiCompletionEnabled}`}
                         ref={(instance: ActionFormHandle | null) => {
                           formRefs.current[item.key] = instance;
                         }}
@@ -274,7 +274,7 @@ function ActionSettingsCardComponent(
                       />
                     ) : (
                       <ActionForm
-                        key={`${item.key}:${draftHydrationVersion}`}
+                        key={`${item.key}:${draftHydrationVersion}:${isAiCompletionEnabled}`}
                         ref={(instance: ActionFormHandle | null) => {
                           formRefs.current[item.key] = instance;
                         }}

@@ -30,7 +30,7 @@ const actionFormValuesSchema = z.object({
 const actionFormRawSnapshotSchema = z.object({
   actionType: z.enum(actionTypeValues),
   values: actionFormValuesSchema,
-  nextLinkType: z.enum(["action", "completion"]),
+  nextLinkType: z.enum(["action", "completion"]).optional(),
 });
 
 const draftActionItemSchema = z.object({

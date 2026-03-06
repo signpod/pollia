@@ -654,16 +654,6 @@ export function useActionSettingsCard({
       setDraftFormSnapshotByItemKey({});
       setValidationIssueCountByItemKey({});
 
-      if (result.updatedActionIds.length > 0) {
-        setExistingFormVersionById(prev => {
-          const next = { ...prev };
-          for (const actionId of result.updatedActionIds) {
-            next[actionId] = (next[actionId] ?? 0) + 1;
-          }
-          return next;
-        });
-      }
-
       for (const item of orderedActionItems) {
         formRefs.current[item.key]?.deleteMarkedInitialImages();
       }
@@ -675,6 +665,16 @@ export function useActionSettingsCard({
         }),
         queryClient.invalidateQueries({ queryKey: missionQueryKeys.mission(missionId) }),
       ]);
+
+      if (result.updatedActionIds.length > 0) {
+        setExistingFormVersionById(prev => {
+          const next = { ...prev };
+          for (const actionId of result.updatedActionIds) {
+            next[actionId] = (next[actionId] ?? 0) + 1;
+          }
+          return next;
+        });
+      }
 
       const savedCount = result.createdActionIds.length + result.updatedActionIds.length;
       if (!silent && savedCount > 0) {
