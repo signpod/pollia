@@ -140,10 +140,11 @@ function ActionSettingsCardComponent(
               const fallbackType =
                 item.kind === "existing" ? item.action.type : ActionType.SUBJECTIVE;
               const itemType = actionTypeByItemKey[item.key] ?? fallbackType;
+              const snapshotTitle = draftFormSnapshotByItemKey[item.key]?.values?.title?.trim();
               const itemTitle =
                 item.kind === "existing"
-                  ? item.action.title
-                  : `${ACTION_TYPE_LABELS[itemType]} 질문`;
+                  ? snapshotTitle || item.action.title
+                  : snapshotTitle || `${ACTION_TYPE_LABELS[itemType]} 질문`;
               const currentActionId =
                 item.kind === "existing" ? item.action.id : makeDraftActionId(item.draft.key);
               const formLinkTargets = linkTargets.filter(target => {

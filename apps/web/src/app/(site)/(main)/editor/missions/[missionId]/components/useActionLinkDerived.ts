@@ -4,20 +4,15 @@ import type {
 } from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
 import { makeDraftActionId } from "@/app/(site)/mission/[missionId]/manage/actions/logic";
 import { ACTION_TYPE_LABELS } from "@/constants/action";
-import type { ActionDetail } from "@/types/dto";
 import { ActionType } from "@prisma/client";
 import { useMemo } from "react";
-import type { ActionListItem, DraftActionItem } from "./actionSettingsCard.types";
-import { getDraftItemKey, getExistingItemKey } from "./actionSettingsCard.utils";
+import type { ActionListItem } from "./actionSettingsCard.types";
 
 interface UseActionLinkDerivedParams {
   orderedActionItems: ActionListItem[];
-  existingActions: ActionDetail[];
-  draftItems: DraftActionItem[];
   draftFormSnapshotByItemKey: Record<string, ActionFormRawSnapshot>;
   actionTypeByItemKey: Record<string, ActionType>;
   formRefs: React.MutableRefObject<Record<string, ActionFormHandle | null>>;
-  isInactiveMission: boolean;
   entryActionId: string | null;
 }
 
@@ -28,57 +23,34 @@ export interface UseActionLinkDerivedReturn {
 
 export function useActionLinkDerived({
   orderedActionItems,
-  existingActions,
-  draftItems,
   draftFormSnapshotByItemKey,
   actionTypeByItemKey,
   formRefs,
-  isInactiveMission,
   entryActionId,
 }: UseActionLinkDerivedParams): UseActionLinkDerivedReturn {
   const linkTargets = useMemo(() => {
-    const formSnapshotByItemKey: Record<string, ActionFormRawSnapshot> = {};
-    for (const item of orderedActionItems) {
+    return orderedActionItems.map((item, index) => {
       const snapshot =
         formRefs.current[item.key]?.getRawSnapshot() ?? draftFormSnapshotByItemKey[item.key];
-      if (snapshot) {
-        formSnapshotByItemKey[item.key] = snapshot;
+      const snapshotTitle = snapshot?.values?.title?.trim();
+
+      if (item.kind === "existing") {
+        return {
+          id: item.action.id,
+          title: snapshotTitle || item.action.title,
+          order: index,
+        };
       }
-    }
 
-    const existingTargets = existingActions.map(action => {
-      const existingItemKey = getExistingItemKey(action.id);
-      const snapshotTitle = formSnapshotByItemKey[existingItemKey]?.values?.title?.trim();
-
-      return {
-        id: action.id,
-        title: isInactiveMission ? snapshotTitle || action.title : action.title,
-        order: action.order ?? 0,
-      };
-    });
-
-    const draftTargets = draftItems.map((draft, index) => {
-      const itemKey = getDraftItemKey(draft.key);
-      const draftType = actionTypeByItemKey[itemKey] ?? ActionType.SUBJECTIVE;
-      const snapshotTitle = formSnapshotByItemKey[itemKey]?.values?.title?.trim();
+      const draftType = actionTypeByItemKey[item.key] ?? ActionType.SUBJECTIVE;
       const fallbackTitle = `${ACTION_TYPE_LABELS[draftType]} 질문`;
-
       return {
-        id: makeDraftActionId(draft.key),
-        title: isInactiveMission ? snapshotTitle || fallbackTitle : fallbackTitle,
-        order: existingActions.length + index,
+        id: makeDraftActionId(item.draft.key),
+        title: snapshotTitle || fallbackTitle,
+        order: index,
       };
     });
-
-    return [...existingTargets, ...draftTargets];
-  }, [
-    actionTypeByItemKey,
-    draftFormSnapshotByItemKey,
-    draftItems,
-    existingActions,
-    isInactiveMission,
-    orderedActionItems,
-  ]);
+  }, [orderedActionItems, draftFormSnapshotByItemKey, actionTypeByItemKey]);
 
   const referencedActionIdsBySource = useMemo(() => {
     const map = new Map<string, Set<string>>();

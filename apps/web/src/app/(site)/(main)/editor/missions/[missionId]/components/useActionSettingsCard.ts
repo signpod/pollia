@@ -267,12 +267,9 @@ export function useActionSettingsCard({
 
   const { linkTargets, referencedActionIdsBySource } = useActionLinkDerived({
     orderedActionItems,
-    existingActions,
-    draftItems,
     draftFormSnapshotByItemKey,
     actionTypeByItemKey,
     formRefs,
-    isInactiveMission,
     entryActionId,
   });
 
