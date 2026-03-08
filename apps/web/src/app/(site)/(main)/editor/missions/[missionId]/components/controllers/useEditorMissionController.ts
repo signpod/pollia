@@ -658,6 +658,21 @@ export function useEditorMissionController({
     refetchMission,
   ]);
 
+  const saveDraft = useCallback(async () => {
+    const draftPayload = collectLocalDraftPayload();
+
+    try {
+      await saveMissionEditorDraft(missionId, toServerEditorDraftPayload(draftPayload));
+    } catch (error) {
+      console.error("Failed to save server draft:", error);
+      toast({
+        message: "서버 임시저장에 실패했습니다.",
+        icon: AlertCircle,
+        iconClassName: "text-red-500",
+      });
+    }
+  }, [collectLocalDraftPayload, missionId]);
+
   const handlePublish = useCallback(async () => {
     const guard = checkPublishGuard({
       isEditorTab,
@@ -688,6 +703,7 @@ export function useEditorMissionController({
     setIsPublishing(true);
     try {
       if (hasAnyPendingChanges) {
+        await saveDraft();
         const saveResult = await runUnifiedSave({
           showSavedToast: false,
           showNoChangesToast: false,
@@ -744,22 +760,8 @@ export function useEditorMissionController({
     publishState.issues.length,
     runPublishPreflightValidation,
     runUnifiedSave,
+    saveDraft,
   ]);
-
-  const saveDraft = useCallback(async () => {
-    const draftPayload = collectLocalDraftPayload();
-
-    try {
-      await saveMissionEditorDraft(missionId, toServerEditorDraftPayload(draftPayload));
-    } catch (error) {
-      console.error("Failed to save server draft:", error);
-      toast({
-        message: "서버 임시저장에 실패했습니다.",
-        icon: AlertCircle,
-        iconClassName: "text-red-500",
-      });
-    }
-  }, [collectLocalDraftPayload, missionId]);
 
   const handleSave = useCallback(async () => {
     const strategy = resolveSaveStrategy(isPublished);
