@@ -32,8 +32,9 @@ import {
   Textarea,
   Toggle,
   Typo,
+  toast,
 } from "@repo/ui/components";
-import { Plus, Trash2 } from "lucide-react";
+import { AlertCircle, Plus, Trash2 } from "lucide-react";
 import {
   type ForwardedRef,
   forwardRef,
@@ -441,6 +442,13 @@ function ActionFormComponent(
       setImageUrl(data.publicUrl);
       setImageFileUploadId(data.fileUploadId);
     },
+    onUploadError: error => {
+      toast({
+        message: error.message || "질문 이미지 업로드에 실패했습니다.",
+        icon: AlertCircle,
+        iconClassName: "text-red-500",
+      });
+    },
   });
   const optionImages = useMultipleImages({
     bucket: STORAGE_BUCKETS.ACTION_IMAGES,
@@ -457,6 +465,13 @@ function ActionFormComponent(
             : option,
         ),
       );
+    },
+    onUploadError: (_optionKey, error) => {
+      toast({
+        message: error.message || "옵션 이미지 업로드에 실패했습니다.",
+        icon: AlertCircle,
+        iconClassName: "text-red-500",
+      });
     },
   });
 
