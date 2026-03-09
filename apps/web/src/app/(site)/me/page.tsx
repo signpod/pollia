@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getMyResponses } from "@/actions/mission-response";
 import { getAllMissions } from "@/actions/mission/read";
 import { getCurrentUser } from "@/actions/user";
