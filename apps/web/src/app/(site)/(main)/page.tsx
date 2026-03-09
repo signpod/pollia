@@ -20,8 +20,8 @@ export default async function MainPage() {
     }),
   ]);
 
-  const testMissions = testMissionsRaw.map(toSurveyCardData);
-  const researchMissions = researchMissionsRaw.map(toSurveyCardData);
+  const testMissions = testMissionsRaw.filter(m => m.isActive).map(toSurveyCardData);
+  const researchMissions = researchMissionsRaw.filter(m => m.isActive).map(toSurveyCardData);
 
   return (
     <main className="flex min-h-screen flex-col bg-white pb-10">
@@ -31,13 +31,13 @@ export default async function MainPage() {
           title="인기 심리 테스트"
           description="지금 가장 핫한 심리/유형 테스트"
           missions={testMissions}
-          viewAllHref="/curation/TEST"
+          viewAllHref={testMissions.length >= 6 ? "/curation/TEST" : undefined}
         />
         <CurationSection
           title="설문 & 리서치"
           description="참여하고 의견을 나눠보세요"
           missions={researchMissions}
-          viewAllHref="/curation/RESEARCH"
+          viewAllHref={researchMissions.length >= 6 ? "/curation/RESEARCH" : undefined}
         />
       </div>
     </main>
