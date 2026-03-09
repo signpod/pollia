@@ -4,8 +4,6 @@ import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { ROUTES } from "@/constants/routes";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useReadMissions } from "@/hooks/mission/useReadMissions";
-import { useResumeToNextAction } from "@/hooks/mission/useResumeToNextAction";
-import { setActionNavCookie } from "@/lib/cookie";
 import type { MyMissionResponse } from "@/types/dto/mission-response";
 import type { Mission } from "@prisma/client";
 import thumbnailFallback from "@public/images/thumbnail-fallback.png";
@@ -200,24 +198,17 @@ function ParticipationListItem({
     MISSION_CATEGORY_LABELS[mission.category as keyof typeof MISSION_CATEGORY_LABELS] ??
     mission.category;
 
-  const { nextActionId } = useResumeToNextAction({
-    missionId: mission.id,
-    answers: response.answers,
-  });
-
   const handleAction = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
       if (filter === "in-progress") {
-        if (!nextActionId) return;
-        setActionNavCookie(mission.id, "resume");
-        window.open(ROUTES.ACTION({ missionId: mission.id, actionId: nextActionId }), "_blank");
+        router.push(ROUTES.MISSION(mission.id));
       } else {
         router.push(ROUTES.ME_RESULT(mission.id));
       }
     },
-    [mission.id, filter, nextActionId, router],
+    [mission.id, filter, router],
   );
 
   const handleDelete = useCallback(
