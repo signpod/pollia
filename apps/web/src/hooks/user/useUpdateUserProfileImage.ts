@@ -51,7 +51,7 @@ export const useUpdateUserProfileImage = () => {
   const uploadImage = useUploadImage({
     bucket: STORAGE_BUCKETS.USER_PROFILE_IMAGES,
     onUploadSuccess: data => updateMutation.mutate({ fileUploadId: data.fileUploadId }),
-    onUploadError: () => toast.warning(PROFILE_IMAGE_MESSAGES.error),
+    onUploadError: error => toast.warning(error.message || PROFILE_IMAGE_MESSAGES.error),
   });
 
   return {
