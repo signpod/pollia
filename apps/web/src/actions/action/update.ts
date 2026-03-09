@@ -1,6 +1,7 @@
 "use server";
 
 import { requireActiveUser } from "@/actions/common/auth";
+import { handleActionError } from "@/actions/common/error";
 import { logger } from "@/lib/logger";
 import { actionService } from "@/server/services/action";
 import { missionService } from "@/server/services/mission";
@@ -24,12 +25,7 @@ export async function updateAction(actionId: string, request: UpdateActionReques
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("액션 수정 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "액션 수정 중 오류가 발생했습니다.");
   }
 }
 
@@ -50,12 +46,7 @@ export async function disconnectActionWithCleanup(actionId: string, missionId: s
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("액션 연결 해제 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "액션 연결 해제 중 오류가 발생했습니다.");
   }
 }
 
@@ -81,12 +72,7 @@ export async function disconnectBranchOptionWithCleanup(
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("브랜치 옵션 연결 해제 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "브랜치 옵션 연결 해제 중 오류가 발생했습니다.");
   }
 }
 
@@ -114,12 +100,7 @@ export async function connectAction(
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("액션 연결 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "액션 연결 중 오류가 발생했습니다.");
   }
 }
 
@@ -156,12 +137,7 @@ export async function connectBranchOption(
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("브랜치 옵션 연결 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "브랜치 옵션 연결 중 오류가 발생했습니다.");
   }
 }
 
@@ -184,11 +160,6 @@ export async function disconnectStartWithCleanup(targetActionId: string, mission
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     });
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("시작 노드 연결 해제 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "시작 노드 연결 해제 중 오류가 발생했습니다.");
   }
 }

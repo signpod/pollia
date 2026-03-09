@@ -35,13 +35,7 @@ export async function getUserEvents(
 
     return { data: events, nextCursor };
   } catch (error) {
-    console.error("getUserEvents error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error(`${UBIQUITOUS_CONSTANTS.EVENT} 목록을 불러올 수 없습니다.`);
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, `${UBIQUITOUS_CONSTANTS.EVENT} 목록을 불러올 수 없습니다.`);
   }
 }
 
