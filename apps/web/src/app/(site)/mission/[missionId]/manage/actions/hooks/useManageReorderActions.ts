@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReorderActionsRequest, reorderActions } from "@/actions/action/reorder";
+import { toMutationFn } from "@/actions/common/error";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -12,10 +13,8 @@ interface UseManageReorderActionsOptions {
 export function useManageReorderActions(options: UseManageReorderActionsOptions = {}) {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async (request: ReorderActionsRequest) => {
-      return await reorderActions(request);
-    },
+  return useMutation<Awaited<ReturnType<typeof reorderActions>>, Error, ReorderActionsRequest>({
+    mutationFn: toMutationFn(reorderActions),
 
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({

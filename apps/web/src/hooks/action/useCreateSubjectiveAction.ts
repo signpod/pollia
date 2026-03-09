@@ -1,6 +1,7 @@
 "use client";
 
 import { createSubjectiveAction } from "@/actions/action";
+import { toMutationFn } from "@/actions/common/error";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import type { CreateSubjectiveActionRequest, CreateSubjectiveActionResponse } from "@/types/dto";
@@ -16,10 +17,8 @@ export function useCreateSubjectiveAction(options: UseCreateSubjectiveActionOpti
   const queryClient = useQueryClient();
   const { handleResetAction } = useResetAction();
 
-  return useMutation({
-    mutationFn: async (
-      payload: CreateSubjectiveActionRequest,
-    ): Promise<CreateSubjectiveActionResponse> => createSubjectiveAction(payload),
+  return useMutation<CreateSubjectiveActionResponse, Error, CreateSubjectiveActionRequest>({
+    mutationFn: toMutationFn(createSubjectiveAction),
     onSuccess: (data, variables) => {
       if (variables.missionId) {
         queryClient.invalidateQueries({

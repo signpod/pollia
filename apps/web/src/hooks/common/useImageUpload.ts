@@ -1,5 +1,6 @@
 "use client";
 
+import { assertActionSuccess } from "@/actions/common/error";
 import { confirmFile, deleteFileByPath, getUploadUrl } from "@/actions/common/files";
 import type { StorageBucket } from "@/constants/buckets";
 import { ConfirmFileRequest, DeleteFileRequest, UploadFileRequest } from "@/types/dto/file";
@@ -49,8 +50,9 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
           actionType: ActionType.IMAGE,
         };
 
-        const { data } = await getUploadUrl(uploadRequest);
-        const { uploadUrl, publicUrl, path, fileUploadId } = data;
+        const uploadResult = await getUploadUrl(uploadRequest);
+        assertActionSuccess(uploadResult);
+        const { uploadUrl, publicUrl, path, fileUploadId } = uploadResult.data;
 
         await uploadFileToStorage(processedFile, uploadUrl, progress => {
           setUploadProgress(progress);

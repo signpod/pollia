@@ -1,5 +1,6 @@
 "use client";
 
+import { toMutationFn } from "@/actions/common/error";
 import { createMission } from "@/actions/mission";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import type { CreateMissionRequest, CreateMissionResponse } from "@/types/dto";
@@ -13,9 +14,8 @@ interface UseCreateMissionOptions {
 export function useCreateMission(options: UseCreateMissionOptions = {}) {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async (payload: CreateMissionRequest): Promise<CreateMissionResponse> =>
-      createMission(payload),
+  return useMutation<CreateMissionResponse, Error, CreateMissionRequest>({
+    mutationFn: toMutationFn(createMission),
     onSuccess: data => {
       queryClient.invalidateQueries({
         queryKey: missionQueryKeys.userMissions(),

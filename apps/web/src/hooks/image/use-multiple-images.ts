@@ -1,5 +1,6 @@
 "use client";
 
+import { assertActionSuccess } from "@/actions/common/error";
 import { deleteFileById, getUploadUrl } from "@/actions/common/files";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import type { DeleteFileByIdRequest, UploadFileRequest } from "@/types/dto/file";
@@ -71,8 +72,9 @@ export function useMultipleImages(options: UseMultipleImagesOptions = {}): UseMu
         actionType: ActionType.IMAGE,
       };
 
-      const { data } = await getUploadUrl(uploadRequest);
-      const { uploadUrl, publicUrl, path, fileUploadId } = data;
+      const result = await getUploadUrl(uploadRequest);
+      assertActionSuccess(result);
+      const { uploadUrl, publicUrl, path, fileUploadId } = result.data;
 
       await uploadFileToStorage(file, uploadUrl);
 

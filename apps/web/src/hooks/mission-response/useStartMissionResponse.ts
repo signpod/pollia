@@ -1,5 +1,6 @@
 "use client";
 
+import { toMutationFn } from "@/actions/common/error";
 import { startMissionResponse } from "@/actions/mission-response";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import type {
@@ -16,10 +17,8 @@ interface UseStartMissionResponseOptions {
 export function useStartMissionResponse(options: UseStartMissionResponseOptions = {}) {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async (
-      payload: StartMissionResponseRequest,
-    ): Promise<StartMissionResponseResponse> => startMissionResponse(payload),
+  return useMutation<StartMissionResponseResponse, Error, StartMissionResponseRequest>({
+    mutationFn: toMutationFn(startMissionResponse),
     onSuccess: (data, payload) => {
       options.onSuccess?.(data);
       queryClient.invalidateQueries({

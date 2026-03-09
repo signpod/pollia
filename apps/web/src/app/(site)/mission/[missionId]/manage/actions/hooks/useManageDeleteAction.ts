@@ -1,6 +1,7 @@
 "use client";
 
 import { deleteAction } from "@/actions/action/delete";
+import { toMutationFn } from "@/actions/common/error";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -17,10 +18,8 @@ interface UseManageDeleteActionOptions {
 export function useManageDeleteAction(options: UseManageDeleteActionOptions = {}) {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async (input: DeleteActionInput) => {
-      return await deleteAction(input.actionId);
-    },
+  return useMutation<Awaited<ReturnType<typeof deleteAction>>, Error, DeleteActionInput>({
+    mutationFn: toMutationFn(async (input: DeleteActionInput) => deleteAction(input.actionId)),
 
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
