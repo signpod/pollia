@@ -19,7 +19,7 @@ const UPDATE_NAME_MESSAGES = {
 export const useUpdateUserName = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<{ data: unknown }, Error, string, UpdateUserNameContext>({
+  return useMutation<Awaited<ReturnType<typeof updateUser>>, Error, string, UpdateUserNameContext>({
     mutationFn: toMutationFn(async (name: string) => updateUser({ name })),
 
     onMutate: async name => {
