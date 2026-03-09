@@ -38,7 +38,9 @@ function createInitialFileUploadIdMap(initialImages?: InitialImageInfo[]): Map<s
 }
 
 export function useMultipleImages(options: UseMultipleImagesOptions = {}): UseMultipleImagesReturn {
-  const { bucket, initialImages, onUploadSuccess, onUploadError } = options;
+  const { initialImages } = options;
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
 
   const [previews, setPreviews] = useState(() => createInitialPreviews(initialImages));
   const [uploadedDataMap, setUploadedDataMap] = useState<Map<string, UploadedImageData>>(new Map());
@@ -65,7 +67,7 @@ export function useMultipleImages(options: UseMultipleImagesOptions = {}): UseMu
         fileName: file.name,
         fileType: file.type,
         fileSize: file.size,
-        bucket: bucket || STORAGE_BUCKETS.MISSION_IMAGES,
+        bucket: optionsRef.current.bucket || STORAGE_BUCKETS.MISSION_IMAGES,
         actionType: ActionType.IMAGE,
       };
 
@@ -94,7 +96,7 @@ export function useMultipleImages(options: UseMultipleImagesOptions = {}): UseMu
         return newMap;
       });
 
-      onUploadSuccess?.(id, data);
+      optionsRef.current.onUploadSuccess?.(id, data);
     },
     onError: (error, { id }) => {
       setUploadingIds(prev => {
@@ -115,7 +117,10 @@ export function useMultipleImages(options: UseMultipleImagesOptions = {}): UseMu
         return newMap;
       });
 
-      onUploadError?.(id, error instanceof Error ? error : new Error(String(error)));
+      optionsRef.current.onUploadError?.(
+        id,
+        error instanceof Error ? error : new Error(String(error)),
+      );
     },
   });
 

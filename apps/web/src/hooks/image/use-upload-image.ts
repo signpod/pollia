@@ -16,6 +16,8 @@ export function useUploadImage(options: UseUploadImageOptions = {}): UseUploadIm
   const [uploadedData, setUploadedData] = useState<UploadedImageData | null>(null);
   const previewUrlRef = useRef(previewUrl);
   previewUrlRef.current = previewUrl;
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
 
   const uploadMutation = useMutation({
     mutationFn: async (file: File): Promise<UploadedImageData> => {
@@ -23,7 +25,7 @@ export function useUploadImage(options: UseUploadImageOptions = {}): UseUploadIm
         fileName: file.name,
         fileType: file.type,
         fileSize: file.size,
-        bucket: options.bucket || STORAGE_BUCKETS.MISSION_IMAGES,
+        bucket: optionsRef.current.bucket || STORAGE_BUCKETS.MISSION_IMAGES,
         actionType: ActionType.IMAGE,
       };
 
@@ -38,12 +40,12 @@ export function useUploadImage(options: UseUploadImageOptions = {}): UseUploadIm
       setUploadedData(data);
       revokeBlobUrl(previewUrlRef.current);
       setPreviewUrl(data.publicUrl);
-      options.onUploadSuccess?.(data);
+      optionsRef.current.onUploadSuccess?.(data);
     },
     onError: error => {
       revokeBlobUrl(previewUrlRef.current);
       setPreviewUrl(null);
-      options.onUploadError?.(error instanceof Error ? error : new Error(String(error)));
+      optionsRef.current.onUploadError?.(error instanceof Error ? error : new Error(String(error)));
     },
   });
 

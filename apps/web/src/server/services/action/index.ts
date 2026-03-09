@@ -1021,7 +1021,7 @@ export class ActionService {
 
         actionsToCreate.push({
           tempId: key,
-          actionType: snapshot.actionType as ActionType,
+          actionType: snapshot.actionType,
           values: snapshot.values,
         });
       } else if (isExistingItem) {
@@ -1034,7 +1034,7 @@ export class ActionService {
 
         actionsToUpdate.push({
           actionId,
-          actionType: snapshot.actionType as ActionType,
+          actionType: snapshot.actionType,
           values: snapshot.values,
         });
       }

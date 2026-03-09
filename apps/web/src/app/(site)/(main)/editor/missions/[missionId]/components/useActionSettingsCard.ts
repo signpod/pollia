@@ -531,10 +531,10 @@ export function useActionSettingsCard({
     [setItemOrderKeys],
   );
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = useCallback(() => {
     if (!deleteTarget) return;
     deleteAction.mutate({ actionId: deleteTarget.id, missionId });
-  };
+  }, [deleteTarget, deleteAction, missionId]);
 
   return {
     viewState: {

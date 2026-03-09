@@ -2,8 +2,8 @@ import type { ActionFormRawSnapshot } from "@/app/(site)/mission/[missionId]/man
 
 export { createDraftKey } from "./editorDraftKey";
 
-const EXISTING_ITEM_PREFIX = "existing:";
-const DRAFT_ITEM_PREFIX = "draft:";
+export const EXISTING_ITEM_PREFIX = "existing:";
+export const DRAFT_ITEM_PREFIX = "draft:";
 const DEFAULT_COMPLETION_TITLE = "새 결과 화면";
 
 export function getExistingItemKey(actionId: string) {

@@ -38,7 +38,7 @@ export function useActionLinkDerived({
         };
       }
 
-      const draftType = actionTypeByItemKey[item.key] ?? ActionType.SUBJECTIVE;
+      const draftType = actionTypeByItemKey[item.key] ?? ActionType.MULTIPLE_CHOICE;
       const fallbackTitle = `${ACTION_TYPE_LABELS[draftType]} 질문`;
       return {
         id: makeDraftActionId(item.draft.key),

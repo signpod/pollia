@@ -1,12 +1,9 @@
 import { applyMissionActionSectionDraft } from "@/actions/mission/apply-draft";
-import type {
-  ActionFormHandle,
-  ActionFormRawSnapshot,
-} from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
+import type { ActionFormHandle } from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
-import { ActionType } from "@prisma/client";
+import { actionSectionDraftSnapshotSchema } from "@/server/services/action/actionSectionDraftSchema";
 import { toast } from "@repo/ui/components";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAtom, useSetAtom } from "jotai";
@@ -25,12 +22,8 @@ import {
   actionValidationIssueCountByItemKeyAtom,
 } from "../atoms/editorActionAtoms";
 import { removeCompletionDraftByIdAtom } from "../atoms/editorCompletionAtoms";
-import type {
-  ActionListItem,
-  ActionSectionDraftSnapshot,
-  DraftActionItem,
-} from "./actionSettingsCard.types";
-import { getDraftItemKey } from "./actionSettingsCard.utils";
+import type { ActionListItem, ActionSectionDraftSnapshot } from "./actionSettingsCard.types";
+import { DRAFT_ITEM_PREFIX, getDraftItemKey } from "./actionSettingsCard.utils";
 import type { SectionSaveHandle, SectionSaveOptions, SectionSaveResult } from "./editor-save.types";
 
 const ACTION_SAVE_MESSAGES = {
@@ -131,7 +124,9 @@ export function useActionSaveFlow({
         }
 
         const savedDraftKeys = new Set(
-          Object.keys(result.tempToRealActionIdMap).map(key => key.replace(/^draft:/, "")),
+          Object.keys(result.tempToRealActionIdMap).map(key =>
+            key.startsWith(DRAFT_ITEM_PREFIX) ? key.slice(DRAFT_ITEM_PREFIX.length) : key,
+          ),
         );
         if (savedDraftKeys.size > 0) {
           setDraftItems(prev => prev.filter(item => !savedDraftKeys.has(item.key)));
@@ -191,42 +186,16 @@ export function useActionSaveFlow({
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setItemOrderKeys, setOpenItemKey, setDirtyByItemKey, setActionTypeByItemKey, setDraftFormSnapshotByItemKey, setDraftHydrationVersion
   const importDraftSnapshot = useCallback(async (snapshot: unknown) => {
-    if (!snapshot || typeof snapshot !== "object") {
-      return;
-    }
+    const parsed = actionSectionDraftSnapshotSchema.safeParse(snapshot);
+    if (!parsed.success) return;
 
-    const next = snapshot as Partial<ActionSectionDraftSnapshot>;
-    const nextDraftItems = Array.isArray(next.draftItems)
-      ? next.draftItems.filter(
-          (item): item is DraftActionItem =>
-            Boolean(item) &&
-            typeof item === "object" &&
-            typeof (item as { key?: unknown }).key === "string",
-        )
-      : [];
-
-    setDraftItems(nextDraftItems);
-    setItemOrderKeys(
-      Array.isArray(next.itemOrderKeys)
-        ? next.itemOrderKeys.filter((key): key is string => typeof key === "string")
-        : [],
-    );
-    setOpenItemKey(typeof next.openItemKey === "string" ? next.openItemKey : null);
-    setDirtyByItemKey(
-      next.dirtyByItemKey && typeof next.dirtyByItemKey === "object"
-        ? (next.dirtyByItemKey as Record<string, boolean>)
-        : {},
-    );
-    setActionTypeByItemKey(
-      next.actionTypeByItemKey && typeof next.actionTypeByItemKey === "object"
-        ? (next.actionTypeByItemKey as Record<string, ActionType>)
-        : {},
-    );
-    setDraftFormSnapshotByItemKey(
-      next.formSnapshotByItemKey && typeof next.formSnapshotByItemKey === "object"
-        ? (next.formSnapshotByItemKey as Record<string, ActionFormRawSnapshot>)
-        : {},
-    );
+    const next = parsed.data;
+    setDraftItems(next.draftItems);
+    setItemOrderKeys(next.itemOrderKeys ?? []);
+    setOpenItemKey(null);
+    setDirtyByItemKey(next.dirtyByItemKey);
+    setActionTypeByItemKey(next.actionTypeByItemKey);
+    setDraftFormSnapshotByItemKey(next.formSnapshotByItemKey);
     setDraftHydrationVersion(prev => prev + 1);
   }, []);
 
