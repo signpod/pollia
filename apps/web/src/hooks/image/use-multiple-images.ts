@@ -104,6 +104,22 @@ export function useMultipleImages(options: UseMultipleImagesOptions = {}): UseMu
         newSet.delete(id);
         return newSet;
       });
+
+      setPreviews(prev => {
+        const newMap = new Map(prev);
+        const currentUrl = newMap.get(id);
+        if (currentUrl?.startsWith("blob:")) {
+          URL.revokeObjectURL(currentUrl);
+        }
+        const initialUrl = initialPreviewsRef.current.get(id);
+        if (initialUrl) {
+          newMap.set(id, initialUrl);
+        } else {
+          newMap.delete(id);
+        }
+        return newMap;
+      });
+
       onUploadError?.(id, error as Error);
     },
   });

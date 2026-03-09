@@ -7,14 +7,26 @@ import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";
 import { useUploadImage } from "@/hooks/image";
 import type { GetCurrentUserResponse } from "@/types/dto/user";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useRef } from "react";
 
 const PROFILE_IMAGE_MESSAGES = {
   success: "프로필 사진이 변경되었어요.",
   error: "프로필 사진 변경 중 오류가 발생했어요.",
 } as const;
 
+interface UpdateProfileImageCallbacks {
+  onSuccess?: () => void;
+  onError?: () => void;
+}
+
 export const useUpdateUserProfileImage = () => {
   const queryClient = useQueryClient();
+  const callbacksRef = useRef<UpdateProfileImageCallbacks | null>(null);
+
+  const resolveCallbacks = (type: "onSuccess" | "onError") => {
+    callbacksRef.current?.[type]?.();
+    callbacksRef.current = null;
+  };
 
   const updateMutation = useMutation({
     mutationFn: ({ fileUploadId }: { fileUploadId: string }) =>
@@ -38,24 +50,38 @@ export const useUpdateUserProfileImage = () => {
         queryClient.invalidateQueries({ queryKey: ["profile-image"] }),
       ]);
       toast.success(PROFILE_IMAGE_MESSAGES.success);
+      resolveCallbacks("onSuccess");
     },
 
-    onError: (_, __, context) => {
+    onError: (error, _, context) => {
       if (context?.previousData) {
         queryClient.setQueryData(userQueryKeys.currentUser(), context.previousData);
       }
-      toast.warning(PROFILE_IMAGE_MESSAGES.error);
+      toast.warning(error.message || PROFILE_IMAGE_MESSAGES.error);
+      resolveCallbacks("onError");
     },
   });
 
   const uploadImage = useUploadImage({
     bucket: STORAGE_BUCKETS.USER_PROFILE_IMAGES,
     onUploadSuccess: data => updateMutation.mutate({ fileUploadId: data.fileUploadId }),
-    onUploadError: error => toast.warning(error.message || PROFILE_IMAGE_MESSAGES.error),
+    onUploadError: error => {
+      toast.warning(error.message || PROFILE_IMAGE_MESSAGES.error);
+      resolveCallbacks("onError");
+    },
   });
 
+  const updateProfileImage = useCallback(
+    (file: File | null, callbacks?: UpdateProfileImageCallbacks) => {
+      if (!file) return;
+      callbacksRef.current = callbacks ?? null;
+      uploadImage.upload(file);
+    },
+    [uploadImage],
+  );
+
   return {
-    updateProfileImage: uploadImage.upload,
+    updateProfileImage,
     isPending: uploadImage.isUploading || updateMutation.isPending,
     previewUrl: uploadImage.previewUrl,
   };

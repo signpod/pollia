@@ -42,6 +42,10 @@ export function useUploadImage(options: UseUploadImageOptions = {}): UseUploadIm
       options.onUploadSuccess?.(data);
     },
     onError: error => {
+      if (previewUrlRef.current?.startsWith("blob:")) {
+        URL.revokeObjectURL(previewUrlRef.current);
+      }
+      setPreviewUrl(null);
       options.onUploadError?.(error as Error);
     },
   });
