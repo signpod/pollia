@@ -21,8 +21,6 @@ import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useClientActionSubmit } from "./hooks/useClientActionSubmit";
 
-const SCROLL_OFFSET = 30;
-
 let navigationDirection: "forward" | "backward" = "forward";
 
 interface ActionClientWrapperProps {
@@ -48,9 +46,7 @@ function ActionContent() {
   const actions = actionsData?.data ?? [];
 
   useEffect(() => {
-    window.scrollTo(0, -SCROLL_OFFSET);
-    document.documentElement.scrollTop = -SCROLL_OFFSET;
-    document.body.scrollTop = -SCROLL_OFFSET;
+    window.scrollTo({ top: 0, behavior: "instant" });
 
     setActionNavCookie(missionId, actionId);
   }, [actionId, missionId]);
