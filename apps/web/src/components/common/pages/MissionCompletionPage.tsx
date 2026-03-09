@@ -184,7 +184,7 @@ export function MissionCompletionPage({
   isSaving,
   canSave,
 }: MissionCompletionPageProps) {
-  const header = <ProfileHeader fallbackRight={<CompletionLoginDrawer />} />;
+  const header = <ProfileHeader showHomeIcon fallbackRight={<CompletionLoginDrawer />} />;
 
   return (
     <div className="relative flex w-full flex-col items-center">

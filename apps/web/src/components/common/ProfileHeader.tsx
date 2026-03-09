@@ -9,10 +9,15 @@ import { ProfileHeaderView } from "./ProfileHeaderView";
 
 interface ProfileHeaderProps {
   showBack?: boolean;
+  showHomeIcon?: boolean;
   fallbackRight?: ReactNode;
 }
 
-export function ProfileHeader({ showBack, fallbackRight }: ProfileHeaderProps) {
+export function ProfileHeader({
+  showBack = false,
+  showHomeIcon = false,
+  fallbackRight,
+}: ProfileHeaderProps) {
   const router = useRouter();
   const { data: currentUser, isLoading, isError } = useCurrentUser();
   const profileImageUrl = useProfileImageUrl();
@@ -22,6 +27,7 @@ export function ProfileHeader({ showBack, fallbackRight }: ProfileHeaderProps) {
   return (
     <ProfileHeaderView
       showBack={showBack}
+      showHomeIcon={showHomeIcon}
       fallbackRight={
         showSkeleton ? (
           <div className="size-9 animate-pulse rounded-full bg-zinc-200" />
