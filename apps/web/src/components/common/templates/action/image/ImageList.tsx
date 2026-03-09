@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCropperModal } from "@/hooks/image/use-cropper-modal";
+import { useCallback, useRef } from "react";
 import { MediaList } from "../common/MediaList";
 import { ImageCropModal } from "./ImageCropModal";
-import { useImageCrop } from "./hooks/useImageCrop";
 
 interface ImageListProps {
   imageUrls: string[];
@@ -22,54 +22,33 @@ export function ImageList({
   onImageLoadComplete,
   onImageEdit,
 }: ImageListProps) {
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [imageToEdit, setImageToEdit] = useState<string | null>(null);
-  const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
-
-  const { crop, zoom, rotation, setCrop, setZoom, setRotation, resetCropState, cropImage } =
-    useImageCrop();
+  const { openCropper, cropModalProps } = useCropperModal();
+  const originalUrlRef = useRef<string | null>(null);
 
   const handleEditClick = useCallback(
-    (imageUrl: string) => {
-      setImageToEdit(imageUrl);
-      setOriginalImageUrl(imageUrl);
-      setIsEditModalOpen(true);
-      resetCropState();
+    async (imageUrl: string) => {
+      if (!onImageEdit) return;
+
+      try {
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+        const urlExtension = imageUrl.split(".").pop()?.split("?")[0] || "jpg";
+        const mimeType = blob.type || `image/${urlExtension === "png" ? "png" : "jpeg"}`;
+        const file = new File([blob], `image.${urlExtension}`, { type: mimeType });
+
+        originalUrlRef.current = imageUrl;
+        openCropper(file, async editedFile => {
+          if (originalUrlRef.current) {
+            await onImageEdit(originalUrlRef.current, editedFile);
+            originalUrlRef.current = null;
+          }
+        });
+      } catch (error) {
+        console.error("이미지 편집 실패:", error);
+      }
     },
-    [resetCropState],
+    [onImageEdit, openCropper],
   );
-
-  const handleEditCancel = useCallback(() => {
-    setIsEditModalOpen(false);
-    setImageToEdit(null);
-    setOriginalImageUrl(null);
-    resetCropState();
-  }, [resetCropState]);
-
-  const handleEditComplete = useCallback(async () => {
-    if (!imageToEdit || !originalImageUrl || !onImageEdit) {
-      return;
-    }
-
-    try {
-      const response = await fetch(imageToEdit);
-      const blob = await response.blob();
-      const urlExtension = originalImageUrl.split(".").pop()?.split("?")[0] || "jpg";
-      const mimeType = blob.type || `image/${urlExtension === "png" ? "png" : "jpeg"}`;
-      const originalFile = new File([blob], `image.${urlExtension}`, { type: mimeType });
-
-      const editedFile = await cropImage(imageToEdit, originalFile);
-      await onImageEdit(originalImageUrl, editedFile);
-
-      setIsEditModalOpen(false);
-      setImageToEdit(null);
-      setOriginalImageUrl(null);
-      resetCropState();
-    } catch (error) {
-      console.error("이미지 편집 실패:", error);
-      handleEditCancel();
-    }
-  }, [imageToEdit, originalImageUrl, onImageEdit, cropImage, handleEditCancel, resetCropState]);
 
   if (imageUrls.length === 0) {
     return null;
@@ -87,20 +66,7 @@ export function ImageList({
         onMediaEdit={handleEditClick}
       />
 
-      {imageToEdit && (
-        <ImageCropModal
-          isOpen={isEditModalOpen}
-          imageSrc={imageToEdit}
-          crop={crop}
-          zoom={zoom}
-          rotation={rotation}
-          onCropChange={setCrop}
-          onZoomChange={setZoom}
-          onRotationChange={setRotation}
-          onCancel={handleEditCancel}
-          onComplete={handleEditComplete}
-        />
-      )}
+      {cropModalProps && <ImageCropModal {...cropModalProps} />}
     </>
   );
 }
