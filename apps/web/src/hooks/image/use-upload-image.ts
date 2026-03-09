@@ -9,6 +9,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { revokeBlobUrl } from "./blob-url";
+import { preprocessFile } from "./preprocess-file";
 import type { UploadedImageData, UseUploadImageOptions, UseUploadImageReturn } from "./types";
 import { uploadFileToStorage } from "./upload-file-to-storage";
 
@@ -22,8 +23,7 @@ export function useUploadImage(options: UseUploadImageOptions = {}): UseUploadIm
 
   const uploadMutation = useMutation({
     mutationFn: async (file: File): Promise<UploadedImageData> => {
-      const { preprocessGifForUpload } = await import("@/lib/gifCrop");
-      const processedFile = await preprocessGifForUpload(file);
+      const processedFile = await preprocessFile(file);
 
       const uploadRequest: UploadFileRequest = {
         fileName: processedFile.name,

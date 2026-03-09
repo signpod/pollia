@@ -2,6 +2,9 @@ import { MAX_WEBP_FILE_SIZE } from "@/constants/fileUpload";
 import { isGifFile } from "@/lib/fileValidation";
 import type { FFmpeg } from "@ffmpeg/ffmpeg";
 
+const FFMPEG_CORE_VERSION = "0.12.10";
+const FFMPEG_CORE_BASE_URL = `https://cdn.jsdelivr.net/npm/@ffmpeg/core@${FFMPEG_CORE_VERSION}/dist/umd`;
+
 let ffmpegInstance: FFmpeg | null = null;
 
 async function getFFmpeg(): Promise<FFmpeg> {
@@ -11,12 +14,10 @@ async function getFFmpeg(): Promise<FFmpeg> {
   const { toBlobURL } = await import("@ffmpeg/util");
 
   const ffmpeg = new FFmpeg();
-  const FFMPEG_CORE_VERSION = "0.12.10";
-  const baseURL = `https://cdn.jsdelivr.net/npm/@ffmpeg/core@${FFMPEG_CORE_VERSION}/dist/umd`;
 
   await ffmpeg.load({
-    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
-    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+    coreURL: await toBlobURL(`${FFMPEG_CORE_BASE_URL}/ffmpeg-core.js`, "text/javascript"),
+    wasmURL: await toBlobURL(`${FFMPEG_CORE_BASE_URL}/ffmpeg-core.wasm`, "application/wasm"),
   });
 
   ffmpegInstance = ffmpeg;
