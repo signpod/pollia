@@ -1,6 +1,7 @@
 "use client";
 
 import { useImageCrop } from "@/components/common/templates/action/image/hooks/useImageCrop";
+import { isGifFile } from "@/lib/fileValidation";
 import { useCallback, useRef, useState } from "react";
 
 export interface CropModalProps {
@@ -39,10 +40,39 @@ export function useCropperModal(): UseCropperModalReturn {
 
   const handleComplete = useCallback(async () => {
     if (!imageSrc || !originalFileRef.current) return;
-    const croppedFile = await cropImage(imageSrc, originalFileRef.current);
-    callbackRef.current?.(croppedFile);
+
+    const file = originalFileRef.current;
+    let resultFile: File;
+
+    if (isGifFile(file.name, file.type)) {
+      const { cropGifToWebp, calculateGifCropParams } = await import("@/lib/gifToWebp");
+      const { CROP_CONSTANTS } = await import(
+        "@/components/common/templates/action/image/hooks/useImageCrop"
+      );
+
+      const img = new Image();
+      const dimensions = await new Promise<{ width: number; height: number }>((resolve, reject) => {
+        img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+        img.onerror = reject;
+        img.src = imageSrc;
+      });
+
+      const cropParams = calculateGifCropParams(
+        dimensions.width,
+        dimensions.height,
+        crop,
+        zoom,
+        rotation,
+        CROP_CONSTANTS.CROP_SIZE,
+      );
+      resultFile = await cropGifToWebp(file, cropParams);
+    } else {
+      resultFile = await cropImage(imageSrc, file);
+    }
+
+    callbackRef.current?.(resultFile);
     close();
-  }, [imageSrc, cropImage, close]);
+  }, [imageSrc, crop, zoom, rotation, cropImage, close]);
 
   const openCropper = useCallback(
     (file: File, onComplete: (croppedFile: File) => void) => {

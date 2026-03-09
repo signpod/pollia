@@ -1,5 +1,7 @@
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import {
+  GIF_FILE_SIZE_LABEL,
+  MAX_GIF_FILE_SIZE,
   getAllowedExtensions,
   getAllowedMimeTypes,
   getFileSizeLabel,
@@ -7,8 +9,9 @@ import {
   isFileUploadActionType,
 } from "@/constants/fileUpload";
 import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
+import { isGifFile } from "@/lib/fileValidation";
 import { fileUploadRepository } from "@/server/repositories/file-upload/fileUploadRepository";
-import { FileStatus, type FileUpload } from "@prisma/client";
+import { ActionType, FileStatus, type FileUpload } from "@prisma/client";
 
 import type { CleanupResult, CreateUploadUrlInput, UploadUrlResult } from "./types";
 
@@ -194,14 +197,22 @@ export class FileUploadService {
       throw error;
     }
 
-    if (input.fileSize > maxFileSize) {
-      const error = new Error(`파일 크기는 ${fileSizeLabel}를 초과할 수 없습니다.`);
+    const fileType = input.fileType?.toLowerCase() || "";
+    const fileName = input.fileName?.toLowerCase() || "";
+
+    let effectiveMaxSize = maxFileSize;
+    let effectiveLabel = fileSizeLabel;
+
+    if (actionType === ActionType.IMAGE && isGifFile(fileName, fileType)) {
+      effectiveMaxSize = MAX_GIF_FILE_SIZE;
+      effectiveLabel = GIF_FILE_SIZE_LABEL;
+    }
+
+    if (input.fileSize > effectiveMaxSize) {
+      const error = new Error(`파일 크기는 ${effectiveLabel}를 초과할 수 없습니다.`);
       error.cause = 400;
       throw error;
     }
-
-    const fileType = input.fileType?.toLowerCase() || "";
-    const fileName = input.fileName?.toLowerCase() || "";
 
     const isValidByExtension = allowedExtensions.some(ext => fileName.endsWith(ext));
 

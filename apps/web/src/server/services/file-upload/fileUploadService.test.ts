@@ -240,6 +240,54 @@ describe("FileUploadService", () => {
         "파일 크기는 50MB를 초과할 수 없습니다.",
       );
     });
+
+    it("GIF 파일은 15MB까지 허용한다", async () => {
+      // Given
+      const gifInput = {
+        fileName: "animation.gif",
+        fileSize: 14 * 1024 * 1024,
+        fileType: "image/gif",
+        actionType: ActionType.IMAGE,
+      };
+      const mockFileUpload = mockFileUploadFactory({ id: "file-gif" });
+      ctx.mockRepo.create.mockResolvedValue(mockFileUpload);
+
+      ctx.mockStorageBucket.createSignedUploadUrl.mockResolvedValue({
+        data: { signedUrl: "https://signed-url.com" },
+        error: null,
+      });
+      ctx.mockStorageBucket.getPublicUrl.mockReturnValue({
+        data: { publicUrl: "https://public-url.com" },
+      });
+
+      // When
+      const result = await ctx.service.createUploadUrl(gifInput, "user1");
+
+      // Then
+      expect(result.fileUploadId).toBe("file-gif");
+      expect(result.path).toMatch(/\.gif$/);
+    });
+
+    it("GIF 파일이 15MB를 초과하면 400 에러를 던진다", async () => {
+      // Given
+      const largeGifInput = {
+        fileName: "large.gif",
+        fileSize: 16 * 1024 * 1024,
+        fileType: "image/gif",
+        actionType: ActionType.IMAGE,
+      };
+
+      // When & Then
+      await expect(ctx.service.createUploadUrl(largeGifInput, "user1")).rejects.toThrow(
+        "파일 크기는 15MB를 초과할 수 없습니다.",
+      );
+
+      try {
+        await ctx.service.createUploadUrl(largeGifInput, "user1");
+      } catch (error) {
+        expect(error instanceof Error && error.cause).toBe(400);
+      }
+    });
   });
 
   describe("deleteFileByPath", () => {

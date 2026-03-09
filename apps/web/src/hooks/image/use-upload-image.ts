@@ -3,6 +3,8 @@
 import { assertActionSuccess } from "@/actions/common/error";
 import { deleteFileById, getUploadUrl } from "@/actions/common/files";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
+import { isGifFile } from "@/lib/fileValidation";
+import { convertGifToWebp } from "@/lib/gifToWebp";
 import type { DeleteFileByIdRequest, UploadFileRequest } from "@/types/dto/file";
 import { ActionType } from "@prisma/client";
 import { useMutation } from "@tanstack/react-query";
@@ -22,10 +24,12 @@ export function useUploadImage(options: UseUploadImageOptions = {}): UseUploadIm
 
   const uploadMutation = useMutation({
     mutationFn: async (file: File): Promise<UploadedImageData> => {
+      const processedFile = isGifFile(file.name, file.type) ? await convertGifToWebp(file) : file;
+
       const uploadRequest: UploadFileRequest = {
-        fileName: file.name,
-        fileType: file.type,
-        fileSize: file.size,
+        fileName: processedFile.name,
+        fileType: processedFile.type,
+        fileSize: processedFile.size,
         bucket: optionsRef.current.bucket || STORAGE_BUCKETS.MISSION_IMAGES,
         actionType: ActionType.IMAGE,
       };
@@ -34,7 +38,7 @@ export function useUploadImage(options: UseUploadImageOptions = {}): UseUploadIm
       assertActionSuccess(result);
       const { uploadUrl, publicUrl, path, fileUploadId } = result.data;
 
-      await uploadFileToStorage(file, uploadUrl);
+      await uploadFileToStorage(processedFile, uploadUrl);
 
       return { publicUrl, fileUploadId, path };
     },
