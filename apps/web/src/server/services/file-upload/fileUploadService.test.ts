@@ -241,11 +241,11 @@ describe("FileUploadService", () => {
       );
     });
 
-    it("GIF 파일은 15MB까지 허용한다", async () => {
+    it("GIF 파일은 50MB까지 허용한다", async () => {
       // Given
       const gifInput = {
         fileName: "animation.gif",
-        fileSize: 14 * 1024 * 1024,
+        fileSize: 49 * 1024 * 1024,
         fileType: "image/gif",
         actionType: ActionType.IMAGE,
       };
@@ -268,18 +268,18 @@ describe("FileUploadService", () => {
       expect(result.path).toMatch(/\.gif$/);
     });
 
-    it("GIF 파일이 15MB를 초과하면 400 에러를 던진다", async () => {
+    it("GIF 파일이 50MB를 초과하면 400 에러를 던진다", async () => {
       // Given
       const largeGifInput = {
         fileName: "large.gif",
-        fileSize: 16 * 1024 * 1024,
+        fileSize: 51 * 1024 * 1024,
         fileType: "image/gif",
         actionType: ActionType.IMAGE,
       };
 
       // When & Then
       await expect(ctx.service.createUploadUrl(largeGifInput, "user1")).rejects.toThrow(
-        "파일 크기는 15MB를 초과할 수 없습니다.",
+        "파일 크기는 50MB를 초과할 수 없습니다.",
       );
 
       try {

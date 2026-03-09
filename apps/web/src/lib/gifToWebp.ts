@@ -40,6 +40,10 @@ async function cleanup(ffmpeg: FFmpeg) {
   } catch {}
 }
 
+export function prefetchFFmpeg(): void {
+  getFFmpeg().catch(() => {});
+}
+
 export async function convertGifToWebp(file: File): Promise<File> {
   if (!isGifFile(file.name, file.type)) return file;
 

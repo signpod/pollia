@@ -55,8 +55,8 @@ export function getFileSizeLabel(actionType: ActionType): string | undefined {
   return FILE_SIZE_LABELS[actionType as FileUploadActionType];
 }
 
-export const MAX_GIF_FILE_SIZE = 15 * MB;
-export const GIF_FILE_SIZE_LABEL = "15MB";
+export const MAX_GIF_FILE_SIZE = 50 * MB;
+export const GIF_FILE_SIZE_LABEL = "50MB";
 
 export function getImageMaxFileSize(fileName: string, fileType: string): number {
   if (isGifFile(fileName, fileType)) return MAX_GIF_FILE_SIZE;
