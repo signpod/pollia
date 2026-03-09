@@ -1,7 +1,5 @@
-import { MAX_FILE_SIZE } from "@/constants/fileUpload";
 import { isGifFile } from "@/lib/fileValidation";
 import type { FFmpeg } from "@ffmpeg/ffmpeg";
-import { ActionType } from "@prisma/client";
 
 let ffmpegInstance: FFmpeg | null = null;
 
@@ -134,7 +132,7 @@ export async function cropGif(file: File, params: GifCropParams): Promise<File> 
   }
 }
 
-const IMAGE_MAX_SIZE = MAX_FILE_SIZE[ActionType.IMAGE];
+const WEBP_MAX_SIZE = 20 * 1024 * 1024;
 
 async function convertGifToWebp(file: File): Promise<File | null> {
   const { fetchFile } = await import("@ffmpeg/util");
@@ -168,7 +166,7 @@ export async function preprocessGifForUpload(file: File): Promise<File> {
   if (!isGifFile(file.name, file.type)) return file;
 
   const webp = await convertGifToWebp(file);
-  if (webp && webp.size <= IMAGE_MAX_SIZE) return webp;
+  if (webp && webp.size <= WEBP_MAX_SIZE) return webp;
 
   return file;
 }

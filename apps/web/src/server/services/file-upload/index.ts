@@ -2,6 +2,8 @@ import { STORAGE_BUCKETS } from "@/constants/buckets";
 import {
   GIF_FILE_SIZE_LABEL,
   MAX_GIF_FILE_SIZE,
+  MAX_WEBP_FILE_SIZE,
+  WEBP_FILE_SIZE_LABEL,
   getAllowedExtensions,
   getAllowedMimeTypes,
   getFileSizeLabel,
@@ -9,7 +11,7 @@ import {
   isFileUploadActionType,
 } from "@/constants/fileUpload";
 import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
-import { isGifFile } from "@/lib/fileValidation";
+import { isGifFile, isWebpFile } from "@/lib/fileValidation";
 import { fileUploadRepository } from "@/server/repositories/file-upload/fileUploadRepository";
 import { ActionType, FileStatus, type FileUpload } from "@prisma/client";
 
@@ -206,6 +208,9 @@ export class FileUploadService {
     if (actionType === ActionType.IMAGE && isGifFile(fileName, fileType)) {
       effectiveMaxSize = MAX_GIF_FILE_SIZE;
       effectiveLabel = GIF_FILE_SIZE_LABEL;
+    } else if (actionType === ActionType.IMAGE && isWebpFile(fileName, fileType)) {
+      effectiveMaxSize = MAX_WEBP_FILE_SIZE;
+      effectiveLabel = WEBP_FILE_SIZE_LABEL;
     }
 
     if (input.fileSize > effectiveMaxSize) {

@@ -1,4 +1,4 @@
-import { isGifFile } from "@/lib/fileValidation";
+import { isGifFile, isWebpFile } from "@/lib/fileValidation";
 import { ActionType } from "@prisma/client";
 
 const MB = 1024 * 1024;
@@ -58,13 +58,18 @@ export function getFileSizeLabel(actionType: ActionType): string | undefined {
 export const MAX_GIF_FILE_SIZE = 50 * MB;
 export const GIF_FILE_SIZE_LABEL = "50MB";
 
+export const MAX_WEBP_FILE_SIZE = 20 * MB;
+export const WEBP_FILE_SIZE_LABEL = "20MB";
+
 export function getImageMaxFileSize(fileName: string, fileType: string): number {
   if (isGifFile(fileName, fileType)) return MAX_GIF_FILE_SIZE;
+  if (isWebpFile(fileName, fileType)) return MAX_WEBP_FILE_SIZE;
   return MAX_FILE_SIZE[ActionType.IMAGE];
 }
 
 export function getImageFileSizeLabel(fileName: string, fileType: string): string {
   if (isGifFile(fileName, fileType)) return GIF_FILE_SIZE_LABEL;
+  if (isWebpFile(fileName, fileType)) return WEBP_FILE_SIZE_LABEL;
   return FILE_SIZE_LABELS[ActionType.IMAGE];
 }
 
