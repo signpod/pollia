@@ -1,3 +1,4 @@
+import { MAX_WEBP_FILE_SIZE } from "@/constants/fileUpload";
 import { isGifFile } from "@/lib/fileValidation";
 import type { FFmpeg } from "@ffmpeg/ffmpeg";
 
@@ -10,7 +11,8 @@ async function getFFmpeg(): Promise<FFmpeg> {
   const { toBlobURL } = await import("@ffmpeg/util");
 
   const ffmpeg = new FFmpeg();
-  const baseURL = "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd";
+  const FFMPEG_CORE_VERSION = "0.12.10";
+  const baseURL = `https://cdn.jsdelivr.net/npm/@ffmpeg/core@${FFMPEG_CORE_VERSION}/dist/umd`;
 
   await ffmpeg.load({
     coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
@@ -21,11 +23,10 @@ async function getFFmpeg(): Promise<FFmpeg> {
   return ffmpeg;
 }
 
-function buildFile(data: Uint8Array | string, originalName: string, format: "webp" | "gif"): File {
+function buildFile(data: Uint8Array, originalName: string, format: "webp" | "gif"): File {
   const nameWithoutExt = originalName.replace(/\.[^/.]+$/, "");
-  const bytes = typeof data === "string" ? new TextEncoder().encode(data) : new Uint8Array(data);
   const mimeType = format === "webp" ? "image/webp" : "image/gif";
-  return new File([bytes], `${nameWithoutExt}.${format}`, {
+  return new File([new Uint8Array(data)], `${nameWithoutExt}.${format}`, {
     type: mimeType,
     lastModified: Date.now(),
   });
@@ -125,14 +126,12 @@ export async function cropGif(file: File, params: GifCropParams): Promise<File> 
       throw new Error("GIF 크롭에 실패했습니다.");
     }
 
-    const data = await ffmpeg.readFile("output.gif");
+    const data = (await ffmpeg.readFile("output.gif")) as Uint8Array;
     return buildFile(data, file.name, "gif");
   } finally {
     await cleanup(ffmpeg, ["input.gif", "output.gif"]);
   }
 }
-
-const WEBP_MAX_SIZE = 20 * 1024 * 1024;
 
 async function convertGifToWebp(file: File): Promise<File | null> {
   const { fetchFile } = await import("@ffmpeg/util");
@@ -153,7 +152,7 @@ async function convertGifToWebp(file: File): Promise<File | null> {
 
     if (exitCode !== 0) return null;
 
-    const data = await ffmpeg.readFile("output.webp");
+    const data = (await ffmpeg.readFile("output.webp")) as Uint8Array;
     return buildFile(data, file.name, "webp");
   } catch {
     return null;
@@ -166,7 +165,7 @@ export async function preprocessGifForUpload(file: File): Promise<File> {
   if (!isGifFile(file.name, file.type)) return file;
 
   const webp = await convertGifToWebp(file);
-  if (webp && webp.size <= WEBP_MAX_SIZE) return webp;
+  if (webp && webp.size <= MAX_WEBP_FILE_SIZE) return webp;
 
   return file;
 }
