@@ -5,11 +5,11 @@ import {
   type CreateMissionFormData,
   createMissionFormSchema,
 } from "@/app/(site)/(main)/create/schema";
-import { AdminImageCropDialog } from "@/app/admin/components/common/cropper/AdminImageCropDialog";
-import { useImageCropper } from "@/app/admin/components/common/cropper/use-image-cropper";
-import { useSingleImage } from "@/app/admin/hooks/admin-image";
+import { ImageCropModal } from "@/components/common/templates/action/image/ImageCropModal";
+import { useImageCrop } from "@/components/common/templates/action/image/hooks/useImageCrop";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
+import { useSingleImage } from "@/hooks/image";
 import type { GetMissionResponse } from "@/types/dto";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MissionType } from "@prisma/client";
@@ -22,6 +22,8 @@ import {
   useEffect,
   useImperativeHandle,
   useMemo,
+  useRef,
+  useState,
 } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { EditorContentInfoSection } from "../../../components/view/EditorContentInfoSection";
@@ -71,12 +73,39 @@ function ContentBasicInfoCardComponent(
     reValidateMode: "onChange",
   });
 
-  const thumbnailCropper = useImageCropper({
-    fileNamePrefix: `mission-thumbnail-${mission.id}`,
-  });
-  const brandLogoCropper = useImageCropper({
-    fileNamePrefix: `brand-logo-${mission.id}`,
-  });
+  const { crop, zoom, rotation, setCrop, setZoom, setRotation, resetCropState, cropImage } =
+    useImageCrop();
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const originalFileRef = useRef<File | null>(null);
+  const cropCallbackRef = useRef<((file: File) => void) | null>(null);
+
+  const openCropper = useCallback(
+    (file: File, onComplete: (croppedFile: File) => void) => {
+      const url = URL.createObjectURL(file);
+      originalFileRef.current = file;
+      cropCallbackRef.current = onComplete;
+      setCropImageSrc(url);
+      resetCropState();
+      setCropModalOpen(true);
+    },
+    [resetCropState],
+  );
+
+  const closeCropper = useCallback(() => {
+    setCropModalOpen(false);
+    if (cropImageSrc) URL.revokeObjectURL(cropImageSrc);
+    setCropImageSrc(null);
+    originalFileRef.current = null;
+    cropCallbackRef.current = null;
+  }, [cropImageSrc]);
+
+  const handleCropComplete = useCallback(async () => {
+    if (!cropImageSrc || !originalFileRef.current) return;
+    const croppedFile = await cropImage(cropImageSrc, originalFileRef.current);
+    cropCallbackRef.current?.(croppedFile);
+    closeCropper();
+  }, [cropImageSrc, cropImage, closeCropper]);
 
   const thumbnailImageUpload = useSingleImage({
     initialUrl: mission.imageUrl,
@@ -301,7 +330,7 @@ function ContentBasicInfoCardComponent(
           brandLogoImageUpload.isUploading ? "업로드 중..." : "브랜드 로고를 1:1 비율로 설정합니다."
         }
         imageUrl={brandLogoImageUpload.previewUrl ?? watchedBrandLogoUrl ?? undefined}
-        onImageSelect={file => brandLogoCropper.openWithFile(file)}
+        onImageSelect={file => openCropper(file, f => brandLogoImageUpload.upload(f))}
         onImageDelete={handleBrandLogoDelete}
         disabled={isBrandLogoBusy}
       />
@@ -314,7 +343,7 @@ function ContentBasicInfoCardComponent(
             : `${UBIQUITOUS_CONSTANTS.MISSION} 썸네일을 1:1 비율로 설정합니다.`
         }
         imageUrl={thumbnailImageUpload.previewUrl ?? watchedImageUrl ?? undefined}
-        onImageSelect={file => thumbnailCropper.openWithFile(file)}
+        onImageSelect={file => openCropper(file, f => thumbnailImageUpload.upload(f))}
         onImageDelete={handleThumbnailDelete}
         disabled={isThumbnailBusy}
       />
@@ -333,38 +362,20 @@ function ContentBasicInfoCardComponent(
         </form>
       </FormProvider>
 
-      <AdminImageCropDialog
-        open={thumbnailCropper.isOpen}
-        imageSrc={thumbnailCropper.imageSrc}
-        aspect={1}
-        title={`${UBIQUITOUS_CONSTANTS.MISSION} 썸네일 편집`}
-        description="이미지를 1:1 비율로 맞춰 저장합니다."
-        fileName={thumbnailCropper.fileName ?? `mission-thumbnail-${mission.id}.jpg`}
-        onOpenChange={open => {
-          if (!open) {
-            thumbnailCropper.close();
-          }
-        }}
-        onConfirm={file => {
-          thumbnailImageUpload.upload(file);
-        }}
-      />
-      <AdminImageCropDialog
-        open={brandLogoCropper.isOpen}
-        imageSrc={brandLogoCropper.imageSrc}
-        aspect={1}
-        title="브랜드 로고 편집"
-        description="이미지를 1:1 비율로 맞춰 저장합니다."
-        fileName={brandLogoCropper.fileName ?? `brand-logo-${mission.id}.jpg`}
-        onOpenChange={open => {
-          if (!open) {
-            brandLogoCropper.close();
-          }
-        }}
-        onConfirm={file => {
-          brandLogoImageUpload.upload(file);
-        }}
-      />
+      {cropImageSrc && (
+        <ImageCropModal
+          isOpen={cropModalOpen}
+          imageSrc={cropImageSrc}
+          crop={crop}
+          zoom={zoom}
+          rotation={rotation}
+          onCropChange={setCrop}
+          onZoomChange={setZoom}
+          onRotationChange={setRotation}
+          onCancel={closeCropper}
+          onComplete={handleCropComplete}
+        />
+      )}
     </>
   );
 }

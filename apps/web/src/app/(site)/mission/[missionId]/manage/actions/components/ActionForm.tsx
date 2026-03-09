@@ -1,8 +1,8 @@
 "use client";
 
-import { useMultipleImages, useSingleImage } from "@/app/admin/hooks/admin-image";
 import { ACTION_TYPE_LABELS } from "@/constants/action";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
+import { useMultipleImages, useSingleImage } from "@/hooks/image";
 import {
   ACTION_DESCRIPTION_MAX_LENGTH,
   ACTION_OPTION_DESCRIPTION_MAX_LENGTH,

@@ -4,14 +4,9 @@ import { updateUser } from "@/actions/user";
 import { toast } from "@/components/common/Toast";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";
-import { useImageUpload } from "@/hooks/common/useImageUpload";
+import { useUploadImage } from "@/hooks/image";
 import type { GetCurrentUserResponse } from "@/types/dto/user";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-
-interface UpdateProfileImageContext {
-  previousData: GetCurrentUserResponse | undefined;
-}
 
 const PROFILE_IMAGE_MESSAGES = {
   success: "프로필 사진이 변경되었어요.",
@@ -20,21 +15,12 @@ const PROFILE_IMAGE_MESSAGES = {
 
 export const useUpdateUserProfileImage = () => {
   const queryClient = useQueryClient();
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const { uploadAsync, isUploading } = useImageUpload({
-    bucket: STORAGE_BUCKETS.USER_PROFILE_IMAGES,
-  });
 
-  const updateMutation = useMutation<{ data: unknown }, Error, File, UpdateProfileImageContext>({
-    mutationFn: async (file: File) => {
-      const uploaded = await uploadAsync(file);
-      return await updateUser({ profileImageFileUploadId: uploaded.fileUploadId });
-    },
+  const updateMutation = useMutation({
+    mutationFn: ({ fileUploadId }: { fileUploadId: string }) =>
+      updateUser({ profileImageFileUploadId: fileUploadId }),
 
-    onMutate: async file => {
-      const objectUrl = URL.createObjectURL(file);
-      setPreviewUrl(objectUrl);
-
+    onMutate: async () => {
       await queryClient.cancelQueries({
         queryKey: userQueryKeys.currentUser(),
       });
@@ -51,18 +37,10 @@ export const useUpdateUserProfileImage = () => {
         queryClient.invalidateQueries({ queryKey: userQueryKeys.currentUser() }),
         queryClient.invalidateQueries({ queryKey: ["profile-image"] }),
       ]);
-      setPreviewUrl(prev => {
-        if (prev) URL.revokeObjectURL(prev);
-        return null;
-      });
       toast.success(PROFILE_IMAGE_MESSAGES.success);
     },
 
     onError: (_, __, context) => {
-      setPreviewUrl(prev => {
-        if (prev) URL.revokeObjectURL(prev);
-        return null;
-      });
       if (context?.previousData) {
         queryClient.setQueryData(userQueryKeys.currentUser(), context.previousData);
       }
@@ -70,11 +48,16 @@ export const useUpdateUserProfileImage = () => {
     },
   });
 
+  const uploadImage = useUploadImage({
+    bucket: STORAGE_BUCKETS.USER_PROFILE_IMAGES,
+    onUploadSuccess: data => updateMutation.mutate({ fileUploadId: data.fileUploadId }),
+    onUploadError: () => toast.warning(PROFILE_IMAGE_MESSAGES.error),
+  });
+
   return {
-    updateProfileImage: updateMutation.mutate,
-    updateProfileImageAsync: updateMutation.mutateAsync,
-    isPending: updateMutation.isPending || isUploading,
-    previewUrl,
+    updateProfileImage: uploadImage.upload,
+    isPending: uploadImage.isUploading || updateMutation.isPending,
+    previewUrl: uploadImage.previewUrl,
   };
 };
 

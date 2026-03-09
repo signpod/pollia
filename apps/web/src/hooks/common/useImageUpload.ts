@@ -28,6 +28,9 @@ export interface UseImageUploadOptions {
   onProgress?: (progress: ImageUploadProgress) => void;
 }
 
+/**
+ * @deprecated hooks/image/use-upload-image의 useUploadImage를 사용하세요.
+ */
 export function useImageUpload(options: UseImageUploadOptions = {}) {
   const [uploadProgress, setUploadProgress] = useState<ImageUploadProgress | null>(null);
 
@@ -169,6 +172,9 @@ async function uploadFileToStorage(
   });
 }
 
+/**
+ * @deprecated hooks/image/use-multiple-images의 useMultipleImages를 사용하세요.
+ */
 export function useMultipleImageUpload(options: UseImageUploadOptions = {}) {
   const singleUpload = useImageUpload(options);
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
