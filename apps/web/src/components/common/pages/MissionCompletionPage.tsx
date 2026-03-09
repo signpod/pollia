@@ -27,6 +27,7 @@ export interface MissionCompletionPageProps {
   description?: string;
   reward?: ReactNode;
   shareButtons?: ReactNode;
+  recommendation?: ReactNode;
   hasReward?: boolean;
   onSave?: () => void;
   isSaving?: boolean;
@@ -177,12 +178,13 @@ export function MissionCompletionPage({
   description,
   reward,
   shareButtons,
+  recommendation,
   hasReward,
   onSave,
   isSaving,
   canSave,
 }: MissionCompletionPageProps) {
-  const header = <ProfileHeader fallbackRight={<CompletionLoginDrawer />} />;
+  const header = <ProfileHeader showHomeIcon fallbackRight={<CompletionLoginDrawer />} />;
 
   return (
     <div className="relative flex w-full flex-col items-center">
@@ -194,6 +196,7 @@ export function MissionCompletionPage({
         description={description}
         reward={reward}
         shareButtons={shareButtons}
+        recommendation={recommendation}
         onSave={onSave}
         isSaving={isSaving}
         canSave={canSave}

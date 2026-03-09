@@ -2,13 +2,16 @@ import { getMissionActionsDetail } from "@/actions/action";
 import { getCompletionsByMissionId, getMissionCompletion } from "@/actions/mission-completion";
 import { getMyResponseForMission } from "@/actions/mission-response";
 import { claimGuestResponses } from "@/actions/mission-response/claimGuestResponses";
+import { getAllMissions } from "@/actions/mission/read";
 import { GUEST_ID_COOKIE_NAME } from "@/constants/cookie";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
+import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { ROUTES } from "@/constants/routes";
 import { checkAuthStatus } from "@/lib/auth";
 import { getQueryClient } from "@/lib/getQueryClient";
 import type { GetMissionCompletionResponse } from "@/types/dto";
+import { MissionType } from "@prisma/client";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -100,6 +103,13 @@ export default async function MissionPage({
       }),
     );
   }
+
+  prefetchPromises.push(
+    queryClient.prefetchQuery({
+      queryKey: [...missionQueryKeys.allMissions(), "recommended"],
+      queryFn: () => getAllMissions({ limit: 6, type: MissionType.GENERAL }),
+    }),
+  );
 
   await Promise.all(prefetchPromises);
 

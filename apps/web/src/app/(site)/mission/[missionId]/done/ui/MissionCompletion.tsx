@@ -1,12 +1,16 @@
 "use client";
 
+import { getAllMissions } from "@/actions/mission/read";
 import { MissionRewardSection } from "@/app/(site)/mission/[missionId]/components/MissionRewardSection";
 import { SocialShareButtonsWithData } from "@/app/(site)/mission/[missionId]/components/SocialShareButtonsWithData";
+import { MissionCarousel } from "@/components/common/MissionCarousel";
 import { MissionCompletionPage } from "@/components/common/pages/MissionCompletionPage";
+import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { useReadMission } from "@/hooks/mission";
 import { useReadMissionCompletion, useReadMissionCompletionById } from "@/hooks/mission-completion";
 import { useReadReward } from "@/hooks/reward/useReadReward";
 import { MissionType } from "@prisma/client";
+import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useCompletionImageDownload } from "./hooks";
 
@@ -43,6 +47,13 @@ export function MissionCompletion({ completionId, initialImageUrl }: MissionComp
 
   const reward = rewardQuery?.data;
 
+  const { data: recommendedMissions } = useQuery({
+    queryKey: [...missionQueryKeys.allMissions(), "recommended"],
+    queryFn: () => getAllMissions({ limit: 6, type: MissionType.GENERAL }),
+    select: data => data.data.filter(m => m.id !== missionId),
+    staleTime: 5 * 60 * 1000,
+  });
+
   return (
     <MissionCompletionPage
       imageUrl={completionImageUrl ?? initialImageUrl ?? imageUrl}
@@ -64,6 +75,15 @@ export function MissionCompletion({ completionId, initialImageUrl }: MissionComp
             missionId={missionId}
             title={missionTitle ?? undefined}
             imageUrl={imageUrl ?? undefined}
+          />
+        ) : undefined
+      }
+      recommendation={
+        recommendedMissions && recommendedMissions.length > 0 ? (
+          <MissionCarousel
+            title="재밌게 즐기셨다면 이 콘텐츠는 어때요?"
+            missions={recommendedMissions}
+            cardClassName="w-[159.5px] sm:w-[200px]"
           />
         ) : undefined
       }

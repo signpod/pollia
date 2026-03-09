@@ -2,6 +2,7 @@
 
 import { UserAvatar } from "@/components/common/UserAvatar";
 import { ROUTES } from "@/constants/routes";
+import HomeIcon from "@public/svgs/home-icon.svg";
 import PolliaIcon from "@public/svgs/pollia-icon.svg";
 import PolliaWordmark from "@public/svgs/pollia-wordmark.svg";
 import { cn } from "@repo/ui/lib";
@@ -11,6 +12,7 @@ import type { ReactNode } from "react";
 
 export interface ProfileHeaderViewProps {
   showBack?: boolean;
+  showHomeIcon?: boolean;
   fallbackRight?: ReactNode;
   user?: { name: string } | null;
   profileImageUrl?: string | null;
@@ -21,6 +23,7 @@ export interface ProfileHeaderViewProps {
 
 export function ProfileHeaderView({
   showBack = false,
+  showHomeIcon = false,
   fallbackRight,
   user,
   profileImageUrl,
@@ -32,13 +35,17 @@ export function ProfileHeaderView({
     <header
       className={cn(
         "sticky top-0 z-50 flex h-14 items-center justify-between bg-white px-5",
-        showBack && "pr-5 pl-0",
+        (showBack || showHomeIcon) && "pr-5 pl-1",
       )}
     >
       {showBack ? (
         <button type="button" onClick={onBack} className="size-12 flex items-center justify-center">
           <ChevronLeftIcon className="size-6" />
         </button>
+      ) : showHomeIcon ? (
+        <Link href={ROUTES.HOME} className="flex size-12 items-center justify-center">
+          <HomeIcon className="size-6" />
+        </Link>
       ) : (
         <Link href={ROUTES.HOME} className="flex shrink-0 items-center gap-[2.775px] py-3">
           <PolliaIcon className="size-4 text-primary" />
