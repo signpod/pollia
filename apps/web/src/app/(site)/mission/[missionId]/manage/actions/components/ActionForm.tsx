@@ -1,8 +1,8 @@
 "use client";
 
-import { useMultipleImages, useSingleImage } from "@/app/admin/hooks/admin-image";
 import { ACTION_TYPE_LABELS } from "@/constants/action";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
+import { useMultipleImages, useSingleImage } from "@/hooks/image";
 import {
   ACTION_DESCRIPTION_MAX_LENGTH,
   ACTION_OPTION_DESCRIPTION_MAX_LENGTH,
@@ -32,8 +32,9 @@ import {
   Textarea,
   Toggle,
   Typo,
+  toast,
 } from "@repo/ui/components";
-import { Plus, Trash2 } from "lucide-react";
+import { AlertCircle, Plus, Trash2 } from "lucide-react";
 import {
   type ForwardedRef,
   forwardRef,
@@ -45,6 +46,13 @@ import {
   useState,
 } from "react";
 import { patchOptionByKey, removeOptionByKey } from "./actionFormOptionState";
+
+const UPLOAD_ERROR_MESSAGES = {
+  ACTION_IMAGE: "질문 이미지 업로드에 실패했습니다.",
+  OPTION_IMAGE: "옵션 이미지 업로드에 실패했습니다.",
+} as const;
+
+const ERROR_ICON_CLASS = "text-red-500";
 
 function generateOptionKey() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -441,6 +449,13 @@ function ActionFormComponent(
       setImageUrl(data.publicUrl);
       setImageFileUploadId(data.fileUploadId);
     },
+    onUploadError: error => {
+      toast({
+        message: error.message || UPLOAD_ERROR_MESSAGES.ACTION_IMAGE,
+        icon: AlertCircle,
+        iconClassName: ERROR_ICON_CLASS,
+      });
+    },
   });
   const optionImages = useMultipleImages({
     bucket: STORAGE_BUCKETS.ACTION_IMAGES,
@@ -457,6 +472,13 @@ function ActionFormComponent(
             : option,
         ),
       );
+    },
+    onUploadError: (_optionKey, error) => {
+      toast({
+        message: error.message || UPLOAD_ERROR_MESSAGES.OPTION_IMAGE,
+        icon: AlertCircle,
+        iconClassName: ERROR_ICON_CLASS,
+      });
     },
   });
 

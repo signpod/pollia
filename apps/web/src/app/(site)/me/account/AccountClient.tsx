@@ -39,7 +39,6 @@ export function AccountClient() {
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const originalFileRef = useRef<File | null>(null);
 
-  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
   const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
 
   const currentName = user?.name ?? "";
@@ -77,13 +76,19 @@ export function AccountClient() {
     if (!cropImageSrc || !originalFileRef.current) return;
     const croppedFile = await cropImage(cropImageSrc, originalFileRef.current);
 
-    setPendingImageFile(croppedFile);
     setLocalPreviewUrl(prev => {
       if (prev) URL.revokeObjectURL(prev);
       return URL.createObjectURL(croppedFile);
     });
 
-    updateProfileImage(croppedFile);
+    updateProfileImage(croppedFile, {
+      onError: () => {
+        setLocalPreviewUrl(prev => {
+          if (prev) URL.revokeObjectURL(prev);
+          return null;
+        });
+      },
+    });
 
     setCropModalOpen(false);
     URL.revokeObjectURL(cropImageSrc);

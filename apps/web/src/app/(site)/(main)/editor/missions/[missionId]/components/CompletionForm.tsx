@@ -1,9 +1,8 @@
 "use client";
 
-import { AdminImageCropDialog } from "@/app/admin/components/common/cropper/AdminImageCropDialog";
-import { useImageCropper } from "@/app/admin/components/common/cropper/use-image-cropper";
-import { useSingleImage } from "@/app/admin/hooks/admin-image";
+import { ImageCropModal } from "@/components/common/templates/action/image/ImageCropModal";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
+import { useCropperModal, useSingleImage } from "@/hooks/image";
 import {
   MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH,
   MISSION_COMPLETION_TITLE_MAX_LENGTH,
@@ -131,8 +130,6 @@ function buildCompletionDirtyComparable(values: CompletionFormValues) {
 
 function CompletionFormComponent(
   {
-    missionId,
-    itemKey,
     initialValues,
     dirtyBaselineValues,
     isLoading,
@@ -157,9 +154,7 @@ function CompletionFormComponent(
   const [hasValidationStarted, setHasValidationStarted] = useState(false);
   const [validationIssueCount, setValidationIssueCount] = useState(0);
 
-  const cropper = useImageCropper({
-    fileNamePrefix: `completion-image-${missionId}-${itemKey}`,
-  });
+  const { openCropper, cropModalProps } = useCropperModal();
 
   const imageUpload = useSingleImage({
     initialUrl: initialValues?.imageUrl ?? null,
@@ -392,7 +387,7 @@ function CompletionFormComponent(
           <ImageSelector
             size="large"
             imageUrl={imageUpload.previewUrl ?? imageUrl ?? undefined}
-            onImageSelect={file => cropper.openWithFile(file)}
+            onImageSelect={file => openCropper(file, f => imageUpload.upload(f))}
             onImageDelete={handleDeleteImage}
             disabled={isImageBusy}
           />
@@ -410,22 +405,7 @@ function CompletionFormComponent(
         </div>
       )}
 
-      <AdminImageCropDialog
-        open={cropper.isOpen}
-        imageSrc={cropper.imageSrc}
-        aspect={1}
-        title="결과 화면 이미지 편집"
-        description="이미지를 1:1 비율로 맞춰 저장합니다."
-        fileName={cropper.fileName ?? `completion-image-${missionId}-${itemKey}.jpg`}
-        onOpenChange={open => {
-          if (!open) {
-            cropper.close();
-          }
-        }}
-        onConfirm={file => {
-          imageUpload.upload(file);
-        }}
-      />
+      {cropModalProps && <ImageCropModal {...cropModalProps} />}
     </div>
   );
 }

@@ -4,7 +4,7 @@ import {
   createActionServiceTestContext,
   createMockAction,
   createMockActionWithOptions,
-  mockMissionFactory,
+  createMockMission,
 } from "../testUtils";
 
 jest.mock("@/database/utils/prisma/client", () => ({
@@ -35,7 +35,7 @@ describe("ActionService - Mutation", () => {
 
     it("Action을 성공적으로 수정한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const updateData = {
         title: "수정된 액션",
         description: "새 설명",
@@ -69,7 +69,7 @@ describe("ActionService - Mutation", () => {
 
     it("권한이 없으면 403 에러를 던진다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       ctx.mockActionRepo.findById.mockResolvedValue(mockAction);
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
 
@@ -83,7 +83,7 @@ describe("ActionService - Mutation", () => {
 
     it("options가 포함되면 updateWithOptions를 호출한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const updateData = {
         title: "수정된 액션",
         options: [
@@ -116,7 +116,7 @@ describe("ActionService - Mutation", () => {
 
     it("타입 변경과 함께 options가 전달되면 updateWithOptions를 호출한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const updateData = {
         type: ActionType.BRANCH,
         options: [
@@ -149,7 +149,7 @@ describe("ActionService - Mutation", () => {
 
     it("옵션이 필요한 타입으로 변경 시 options가 없으면 400 에러를 던진다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const sourceAction = createMockAction({ type: ActionType.SUBJECTIVE });
 
       ctx.mockActionRepo.findById.mockResolvedValue(sourceAction);
@@ -166,7 +166,7 @@ describe("ActionService - Mutation", () => {
 
     it("분기 타입으로 변경 시 옵션이 2개가 아니면 400 에러를 던진다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
 
       ctx.mockActionRepo.findById.mockResolvedValue(mockAction);
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
@@ -189,7 +189,7 @@ describe("ActionService - Mutation", () => {
 
     it("isRequired를 true로 변경할 수 있다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const updateData = {
         isRequired: true,
       };
@@ -216,7 +216,7 @@ describe("ActionService - Mutation", () => {
 
     it("isRequired를 false로 변경할 수 있다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const mockRequiredAction = {
         ...mockAction,
         isRequired: true,
@@ -247,7 +247,7 @@ describe("ActionService - Mutation", () => {
 
     it("options가 빈 배열이면 updateWithOptions를 호출한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const updateData = {
         title: "수정된 액션",
         options: [],
@@ -285,7 +285,7 @@ describe("ActionService - Mutation", () => {
 
     it("missionId가 있는 Action 삭제 시 트랜잭션으로 삭제 후 order를 재정렬한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       ctx.mockActionRepo.findById.mockResolvedValue(mockAction);
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockActionRepo.delete.mockResolvedValue(mockAction);
@@ -337,7 +337,7 @@ describe("ActionService - Mutation", () => {
 
     it("권한이 없으면 403 에러를 던진다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       ctx.mockActionRepo.findById.mockResolvedValue(mockAction);
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
 
@@ -354,7 +354,7 @@ describe("ActionService - Mutation", () => {
   describe("reorderActions", () => {
     it("액션 순서를 성공적으로 변경한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const actionOrders = [
         { id: "action1", order: 2 },
         { id: "action2", order: 0 },
@@ -402,7 +402,7 @@ describe("ActionService - Mutation", () => {
 
     it("Mission 소유자가 아니면 403 에러를 던진다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const actionOrders = [
         { id: "action1", order: 0 },
         { id: "action2", order: 1 },
@@ -427,7 +427,7 @@ describe("ActionService - Mutation", () => {
 
     it("해당 미션에 속하지 않는 액션이 포함되어 있으면 400 에러를 던진다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const actionOrders = [
         { id: "action1", order: 0 },
         { id: "action2", order: 1 },
@@ -454,7 +454,7 @@ describe("ActionService - Mutation", () => {
 
     it("빈 배열로 순서 변경을 요청하면 성공한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const actionOrders: Array<{ id: string; order: number }> = [];
       const missionActionIds = ["action1", "action2"];
 
@@ -481,7 +481,7 @@ describe("ActionService - Mutation", () => {
 
     it("기존 옵션에 id가 있으면 해당 옵션을 업데이트한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const updateData = {
         title: "수정된 액션",
         options: [
@@ -509,7 +509,7 @@ describe("ActionService - Mutation", () => {
 
     it("id가 없는 옵션은 새로 생성한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const updateData = {
         title: "수정된 액션",
         options: [
@@ -537,7 +537,7 @@ describe("ActionService - Mutation", () => {
 
     it("전달되지 않은 기존 옵션은 삭제 대상이 된다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const updateData = {
         title: "수정된 액션",
         options: [{ id: "opt-1", title: "유지할 옵션", order: 0 }],
@@ -583,7 +583,7 @@ describe("ActionService - Mutation", () => {
 
     it("옵션이 없는 액션을 성공적으로 복제한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const mockOriginalAction = createMockActionWithOptions(
         { id: "action1", title: "원본 액션", order: 0 },
         [],
@@ -611,7 +611,7 @@ describe("ActionService - Mutation", () => {
 
     it("옵션이 있는 액션을 옵션과 함께 복제한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const mockOriginalAction = createMockActionWithOptions(
         { id: "action1", title: "원본 액션", type: "MULTIPLE_CHOICE", order: 0 },
         mockOptions,
@@ -638,7 +638,7 @@ describe("ActionService - Mutation", () => {
 
     it("복제된 액션은 맨 뒤 순서(order)를 가진다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const mockOriginalAction = createMockActionWithOptions(
         { id: "action1", title: "원본 액션", order: 0 },
         [],
@@ -667,7 +667,7 @@ describe("ActionService - Mutation", () => {
 
     it("원본 액션이 없으면 404 에러를 던진다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockActionRepo.findByIdWithOptions.mockResolvedValue(null);
 
@@ -682,7 +682,7 @@ describe("ActionService - Mutation", () => {
 
     it("권한이 없으면 403 에러를 던진다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
 
       // When & Then
@@ -695,7 +695,7 @@ describe("ActionService - Mutation", () => {
 
     it("해당 미션에 속하지 않는 액션이면 400 에러를 던진다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const mockOriginalAction = createMockActionWithOptions(
         { id: "action1", missionId: "other-mission", title: "원본 액션", order: 0 },
         [],

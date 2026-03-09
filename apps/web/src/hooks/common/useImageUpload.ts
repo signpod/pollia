@@ -28,6 +28,9 @@ export interface UseImageUploadOptions {
   onProgress?: (progress: ImageUploadProgress) => void;
 }
 
+/**
+ * @deprecated hooks/image/use-upload-image의 useUploadImage를 사용하세요.
+ */
 export function useImageUpload(options: UseImageUploadOptions = {}) {
   const [uploadProgress, setUploadProgress] = useState<ImageUploadProgress | null>(null);
 
@@ -70,33 +73,19 @@ export function useImageUpload(options: UseImageUploadOptions = {}) {
       }
     },
     onSuccess: data => {
-      console.log("✅ 이미지 업로드 성공:", data);
       options.onSuccess?.(data);
     },
     onError: error => {
-      console.error("❌ 이미지 업로드 실패:", error);
-      options.onError?.(error as Error);
+      options.onError?.(error instanceof Error ? error : new Error(String(error)));
     },
   });
 
   const deleteMutation = useMutation({
     mutationFn: (request: DeleteFileRequest) => deleteFileByPath(request),
-    onSuccess: () => {
-      console.log("✅ 이미지 삭제 성공");
-    },
-    onError: error => {
-      console.error("❌ 이미지 삭제 실패:", error);
-    },
   });
 
   const confirmMutation = useMutation({
     mutationFn: (request: ConfirmFileRequest) => confirmFile(request),
-    onSuccess: () => {
-      console.log("✅ 파일 확정 성공");
-    },
-    onError: error => {
-      console.error("❌ 파일 확정 실패:", error);
-    },
   });
 
   return {
@@ -169,6 +158,9 @@ async function uploadFileToStorage(
   });
 }
 
+/**
+ * @deprecated hooks/image/use-multiple-images의 useMultipleImages를 사용하세요.
+ */
 export function useMultipleImageUpload(options: UseImageUploadOptions = {}) {
   const singleUpload = useImageUpload(options);
   const [uploadedImages, setUploadedImages] = useState<UploadedImage[]>([]);
@@ -177,14 +169,9 @@ export function useMultipleImageUpload(options: UseImageUploadOptions = {}) {
     const results: UploadedImage[] = [];
 
     for (const file of files) {
-      try {
-        const result = await singleUpload.uploadAsync(file);
-        results.push(result);
-        setUploadedImages(prev => [...prev, result]);
-      } catch (error) {
-        console.error(`파일 ${file.name} 업로드 실패:`, error);
-        throw error;
-      }
+      const result = await singleUpload.uploadAsync(file);
+      results.push(result);
+      setUploadedImages(prev => [...prev, result]);
     }
 
     return results;

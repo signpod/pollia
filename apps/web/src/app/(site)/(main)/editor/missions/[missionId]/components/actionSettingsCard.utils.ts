@@ -1,19 +1,17 @@
 import type { ActionFormRawSnapshot } from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
 
-export function createDraftKey() {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return crypto.randomUUID();
-  }
+export { createDraftKey } from "./editorDraftKey";
 
-  return `draft-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
+export const EXISTING_ITEM_PREFIX = "existing:";
+export const DRAFT_ITEM_PREFIX = "draft:";
+const DEFAULT_COMPLETION_TITLE = "새 결과 화면";
 
 export function getExistingItemKey(actionId: string) {
-  return `existing:${actionId}`;
+  return `${EXISTING_ITEM_PREFIX}${actionId}`;
 }
 
 export function getDraftItemKey(draftKey: string) {
-  return `draft:${draftKey}`;
+  return `${DRAFT_ITEM_PREFIX}${draftKey}`;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -60,7 +58,7 @@ export function parseCompletionDraftSnapshotForOptions(snapshot: unknown): {
         return [
           {
             key,
-            title: toNullableString(item.title) ?? "새 결과 화면",
+            title: toNullableString(item.title) ?? DEFAULT_COMPLETION_TITLE,
           },
         ];
       })

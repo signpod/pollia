@@ -12,7 +12,6 @@ export {
   createMockMissionCompletion,
   expectServiceErrorWithCause,
 } from "../testUtils";
-export { createMockMission as mockMissionFactory } from "../testUtils";
 
 export function createActionServiceTestContext() {
   const mockActionRepo = {

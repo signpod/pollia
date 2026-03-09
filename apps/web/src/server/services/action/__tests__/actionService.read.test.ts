@@ -4,7 +4,7 @@ import {
   createActionServiceTestContext,
   createMockAction,
   createMockActionWithOptions,
-  mockMissionFactory,
+  createMockMission,
 } from "../testUtils";
 
 describe("ActionService - Read", () => {
@@ -93,7 +93,7 @@ describe("ActionService - Read", () => {
   describe("getMissionActionIds", () => {
     it("Mission의 Action ID 목록을 성공적으로 조회한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const mockActionIds = ["action1", "action2", "action3"];
 
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
@@ -114,7 +114,7 @@ describe("ActionService - Read", () => {
 
       // When & Then
       await expect(ctx.service.getMissionActionIds("invalid-id")).rejects.toThrow(
-        "미션을 찾을 수 없습니다.",
+        "존재하지 않는 미션입니다.",
       );
 
       expect(ctx.mockActionRepo.findActionIdsByMissionId).not.toHaveBeenCalled();
@@ -124,7 +124,7 @@ describe("ActionService - Read", () => {
   describe("getMissionActionsDetail", () => {
     it("Mission의 Action 상세 목록을 성공적으로 조회한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const mockActions = [
         createMockActionWithOptions(
           {
@@ -155,7 +155,7 @@ describe("ActionService - Read", () => {
 
       // When & Then
       await expect(ctx.service.getMissionActionsDetail("invalid-id")).rejects.toThrow(
-        "미션을 찾을 수 없습니다.",
+        "존재하지 않는 미션입니다.",
       );
     });
   });
