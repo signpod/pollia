@@ -329,6 +329,7 @@ export function useActionSettingsCard({
 
   const isBusyTotal = isApplying || isBusy;
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDirtyByItemKey, setDraftFormSnapshotByItemKey, setValidationIssueCountByItemKey
   useEffect(() => {
     const validKeys = new Set(orderedActionItems.map(item => item.key));
     setDirtyByItemKey(prev => {
@@ -373,6 +374,7 @@ export function useActionSettingsCard({
     });
   }, [orderedActionItems]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setItemOrderKeys
   useEffect(() => {
     const validKeys = actionItems.map(item => item.key);
     setItemOrderKeys(prev => {
@@ -415,6 +417,7 @@ export function useActionSettingsCard({
     validationIssueCount,
   ]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDirtyByItemKey
   const handleItemDirtyChange = useCallback((itemKey: string, isDirty: boolean) => {
     setDirtyByItemKey(prev => {
       if (prev[itemKey] === isDirty) {
@@ -425,6 +428,7 @@ export function useActionSettingsCard({
     });
   }, []);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setValidationIssueCountByItemKey
   const handleItemValidationChange = useCallback((itemKey: string, issueCount: number) => {
     setValidationIssueCountByItemKey(prev => {
       if ((prev[itemKey] ?? 0) === issueCount) {

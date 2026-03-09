@@ -74,7 +74,7 @@ export function useActionSaveFlow({
   const latestRef = useRef({ missionId, formRefs, orderedActionItems, isActionsLoading, isBusy });
   latestRef.current = { missionId, formRefs, orderedActionItems, isActionsLoading, isBusy };
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Jotai atom setter(set*)와 queryClient는 안정 참조이므로 의존성에서 제외, latestRef로 최신 값 참조
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - queryClient, setIsApplying, setDraftItems, setActionTypeByItemKey, setDirtyByItemKey, setDraftFormSnapshotByItemKey, setValidationIssueCountByItemKey, setExistingFormVersionById, dispatchRemoveCompletionDraftById, setOpenItemKey. latestRef로 missionId/formRefs/orderedActionItems/isActionsLoading/isBusy 최신 값 참조
   const executeSave = useCallback(
     async ({
       silent = false,
@@ -183,7 +183,7 @@ export function useActionSaveFlow({
     [],
   );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Jotai atom setter(set*)는 안정 참조이므로 의존성에서 제외
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setItemOrderKeys, setOpenItemKey, setDirtyByItemKey, setActionTypeByItemKey, setDraftFormSnapshotByItemKey, setDraftHydrationVersion
   const importDraftSnapshot = useCallback(async (snapshot: unknown) => {
     if (!snapshot || typeof snapshot !== "object") {
       return;
