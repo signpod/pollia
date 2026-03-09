@@ -64,10 +64,13 @@ export function useMultipleImages(options: UseMultipleImagesOptions = {}): UseMu
       id: string;
       file: File;
     }): Promise<{ id: string; data: UploadedImageData }> => {
+      const { preprocessGifForUpload } = await import("@/lib/gifCrop");
+      const processedFile = await preprocessGifForUpload(file);
+
       const uploadRequest: UploadFileRequest = {
-        fileName: file.name,
-        fileType: file.type,
-        fileSize: file.size,
+        fileName: processedFile.name,
+        fileType: processedFile.type,
+        fileSize: processedFile.size,
         bucket: optionsRef.current.bucket || STORAGE_BUCKETS.MISSION_IMAGES,
         actionType: ActionType.IMAGE,
       };
@@ -76,7 +79,7 @@ export function useMultipleImages(options: UseMultipleImagesOptions = {}): UseMu
       assertActionSuccess(result);
       const { uploadUrl, publicUrl, path, fileUploadId } = result.data;
 
-      await uploadFileToStorage(file, uploadUrl);
+      await uploadFileToStorage(processedFile, uploadUrl);
 
       return { id, data: { publicUrl, fileUploadId, path } };
     },

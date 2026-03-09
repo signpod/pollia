@@ -1,4 +1,7 @@
+import { MAX_FILE_SIZE } from "@/constants/fileUpload";
+import { isGifFile } from "@/lib/fileValidation";
 import type { FFmpeg } from "@ffmpeg/ffmpeg";
+import { ActionType } from "@prisma/client";
 
 let ffmpegInstance: FFmpeg | null = null;
 
@@ -20,22 +23,22 @@ async function getFFmpeg(): Promise<FFmpeg> {
   return ffmpeg;
 }
 
-function buildGifFile(data: Uint8Array | string, originalName: string): File {
+function buildFile(data: Uint8Array | string, originalName: string, format: "webp" | "gif"): File {
   const nameWithoutExt = originalName.replace(/\.[^/.]+$/, "");
   const bytes = typeof data === "string" ? new TextEncoder().encode(data) : new Uint8Array(data);
-  return new File([bytes], `${nameWithoutExt}.gif`, {
-    type: "image/gif",
+  const mimeType = format === "webp" ? "image/webp" : "image/gif";
+  return new File([bytes], `${nameWithoutExt}.${format}`, {
+    type: mimeType,
     lastModified: Date.now(),
   });
 }
 
-async function cleanup(ffmpeg: FFmpeg) {
-  try {
-    await ffmpeg.deleteFile("input.gif");
-  } catch {}
-  try {
-    await ffmpeg.deleteFile("output.gif");
-  } catch {}
+async function cleanup(ffmpeg: FFmpeg, files: string[]) {
+  for (const f of files) {
+    try {
+      await ffmpeg.deleteFile(f);
+    } catch {}
+  }
 }
 
 export function prefetchFFmpeg(): void {
@@ -108,13 +111,13 @@ export async function cropGif(file: File, params: GifCropParams): Promise<File> 
     filters.push(`crop=${params.cropWidth}:${params.cropHeight}:${params.cropX}:${params.cropY}`);
 
     const filterChain = filters.join(",");
-    const complexFilter = `${filterChain},split[s0][s1];[s0]palettegen=stats_mode=full[p];[s1][p]paletteuse=dither=sierra2_4a`;
+    const gifFilter = `${filterChain},split[s0][s1];[s0]palettegen=stats_mode=full[p];[s1][p]paletteuse=dither=sierra2_4a`;
 
     const exitCode = await ffmpeg.exec([
       "-i",
       "input.gif",
       "-filter_complex",
-      complexFilter,
+      gifFilter,
       "-loop",
       "0",
       "output.gif",
@@ -125,8 +128,47 @@ export async function cropGif(file: File, params: GifCropParams): Promise<File> 
     }
 
     const data = await ffmpeg.readFile("output.gif");
-    return buildGifFile(data, file.name);
+    return buildFile(data, file.name, "gif");
   } finally {
-    await cleanup(ffmpeg);
+    await cleanup(ffmpeg, ["input.gif", "output.gif"]);
   }
+}
+
+const IMAGE_MAX_SIZE = MAX_FILE_SIZE[ActionType.IMAGE];
+
+async function convertGifToWebp(file: File): Promise<File | null> {
+  const { fetchFile } = await import("@ffmpeg/util");
+  const ffmpeg = await getFFmpeg();
+
+  try {
+    await ffmpeg.writeFile("input.gif", await fetchFile(file));
+
+    const exitCode = await ffmpeg.exec([
+      "-i",
+      "input.gif",
+      "-c:v",
+      "libwebp_anim",
+      "-loop",
+      "0",
+      "output.webp",
+    ]);
+
+    if (exitCode !== 0) return null;
+
+    const data = await ffmpeg.readFile("output.webp");
+    return buildFile(data, file.name, "webp");
+  } catch {
+    return null;
+  } finally {
+    await cleanup(ffmpeg, ["input.gif", "output.webp"]);
+  }
+}
+
+export async function preprocessGifForUpload(file: File): Promise<File> {
+  if (!isGifFile(file.name, file.type)) return file;
+
+  const webp = await convertGifToWebp(file);
+  if (webp && webp.size <= IMAGE_MAX_SIZE) return webp;
+
+  return file;
 }
