@@ -1,7 +1,5 @@
 import type { FFmpeg } from "@ffmpeg/ffmpeg";
 
-import { isGifFile } from "@/lib/fileValidation";
-
 let ffmpegInstance: FFmpeg | null = null;
 
 async function getFFmpeg(): Promise<FFmpeg> {
@@ -22,11 +20,11 @@ async function getFFmpeg(): Promise<FFmpeg> {
   return ffmpeg;
 }
 
-function buildWebpFile(data: Uint8Array | string, originalName: string): File {
+function buildGifFile(data: Uint8Array | string, originalName: string): File {
   const nameWithoutExt = originalName.replace(/\.[^/.]+$/, "");
   const bytes = typeof data === "string" ? new TextEncoder().encode(data) : new Uint8Array(data);
-  return new File([bytes], `${nameWithoutExt}.webp`, {
-    type: "image/webp",
+  return new File([bytes], `${nameWithoutExt}.gif`, {
+    type: "image/gif",
     lastModified: Date.now(),
   });
 }
@@ -36,44 +34,12 @@ async function cleanup(ffmpeg: FFmpeg) {
     await ffmpeg.deleteFile("input.gif");
   } catch {}
   try {
-    await ffmpeg.deleteFile("output.webp");
+    await ffmpeg.deleteFile("output.gif");
   } catch {}
 }
 
 export function prefetchFFmpeg(): void {
   getFFmpeg().catch(() => {});
-}
-
-export async function convertGifToWebp(file: File): Promise<File> {
-  if (!isGifFile(file.name, file.type)) return file;
-
-  const { fetchFile } = await import("@ffmpeg/util");
-  const ffmpeg = await getFFmpeg();
-
-  try {
-    await ffmpeg.writeFile("input.gif", await fetchFile(file));
-
-    const exitCode = await ffmpeg.exec([
-      "-i",
-      "input.gif",
-      "-c:v",
-      "libwebp",
-      "-loop",
-      "0",
-      "-quality",
-      "75",
-      "output.webp",
-    ]);
-
-    if (exitCode !== 0) {
-      throw new Error("GIF 변환에 실패했습니다.");
-    }
-
-    const data = await ffmpeg.readFile("output.webp");
-    return buildWebpFile(data, file.name);
-  } finally {
-    await cleanup(ffmpeg);
-  }
 }
 
 export interface GifCropParams {
@@ -125,7 +91,7 @@ export function calculateGifCropParams(
   };
 }
 
-export async function cropGifToWebp(file: File, params: GifCropParams): Promise<File> {
+export async function cropGif(file: File, params: GifCropParams): Promise<File> {
   const { fetchFile } = await import("@ffmpeg/util");
   const ffmpeg = await getFFmpeg();
 
@@ -141,26 +107,25 @@ export async function cropGifToWebp(file: File, params: GifCropParams): Promise<
 
     filters.push(`crop=${params.cropWidth}:${params.cropHeight}:${params.cropX}:${params.cropY}`);
 
+    const filterChain = filters.join(",");
+    const complexFilter = `${filterChain},split[s0][s1];[s0]palettegen=stats_mode=full[p];[s1][p]paletteuse=dither=sierra2_4a`;
+
     const exitCode = await ffmpeg.exec([
       "-i",
       "input.gif",
-      "-vf",
-      filters.join(","),
-      "-c:v",
-      "libwebp",
+      "-filter_complex",
+      complexFilter,
       "-loop",
       "0",
-      "-quality",
-      "75",
-      "output.webp",
+      "output.gif",
     ]);
 
     if (exitCode !== 0) {
       throw new Error("GIF 크롭에 실패했습니다.");
     }
 
-    const data = await ffmpeg.readFile("output.webp");
-    return buildWebpFile(data, file.name);
+    const data = await ffmpeg.readFile("output.gif");
+    return buildGifFile(data, file.name);
   } finally {
     await cleanup(ffmpeg);
   }

@@ -54,7 +54,7 @@ export function useCropperModal(): UseCropperModalReturn {
       let resultFile: File;
 
       if (isGifFile(file.name, file.type)) {
-        const { cropGifToWebp, calculateGifCropParams } = await import("@/lib/gifToWebp");
+        const { cropGif, calculateGifCropParams } = await import("@/lib/gifCrop");
 
         const img = new Image();
         const dimensions = await new Promise<{ width: number; height: number }>(
@@ -73,7 +73,7 @@ export function useCropperModal(): UseCropperModalReturn {
           rotation,
           CROP_CONSTANTS.CROP_SIZE,
         );
-        resultFile = await cropGifToWebp(file, cropParams);
+        resultFile = await cropGif(file, cropParams);
       } else {
         resultFile = await cropImage(imageSrc, file);
       }
@@ -98,7 +98,7 @@ export function useCropperModal(): UseCropperModalReturn {
       }
 
       if (isGifFile(file.name, file.type)) {
-        import("@/lib/gifToWebp").then(m => m.prefetchFFmpeg());
+        import("@/lib/gifCrop").then(m => m.prefetchFFmpeg());
       }
 
       const url = URL.createObjectURL(file);
