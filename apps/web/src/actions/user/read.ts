@@ -1,6 +1,7 @@
 "use server";
 
 import { requireActiveUser } from "@/actions/common/auth";
+import { handleActionError } from "@/actions/common/error";
 import { userService } from "@/server/services/user/userService";
 import type { GetCurrentUserResponse } from "@/types/dto/user";
 import { cache } from "react";
@@ -15,12 +16,6 @@ export const getCurrentUser = cache(async (): Promise<GetCurrentUserResponse> =>
     const dbUser = await userService.getUserById(user.id);
     return { data: dbUser };
   } catch (error) {
-    console.error("getCurrentUser error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("사용자 정보를 불러올 수 없습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "사용자 정보를 불러올 수 없습니다.");
   }
 });

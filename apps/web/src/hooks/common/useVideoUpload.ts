@@ -1,5 +1,6 @@
 "use client";
 
+import { assertActionSuccess } from "@/actions/common/error";
 import { confirmFile, deleteFileByPath, getUploadUrl } from "@/actions/common/files";
 import type { StorageBucket } from "@/constants/buckets";
 import { ConfirmFileRequest, DeleteFileRequest, UploadFileRequest } from "@/types/dto/file";
@@ -42,8 +43,9 @@ export function useVideoUpload(options: UseVideoUploadOptions = {}) {
           actionType: ActionType.VIDEO,
         };
 
-        const { data } = await getUploadUrl(uploadRequest);
-        const { uploadUrl, publicUrl, path, fileUploadId } = data;
+        const uploadResult = await getUploadUrl(uploadRequest);
+        assertActionSuccess(uploadResult);
+        const { uploadUrl, publicUrl, path, fileUploadId } = uploadResult.data;
 
         await uploadFileToStorage(file, uploadUrl, progress => {
           setUploadProgress(progress);

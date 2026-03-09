@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/actions/common/auth";
+import { handleActionError } from "@/actions/common/error";
 import type { MissionSearchRecord } from "@/server/search";
 import { missionSearchReadService } from "@/server/services/search-sync";
 
@@ -34,13 +35,6 @@ export async function searchMissions(
     const data = await missionSearchReadService.searchMissions(request.query, hitsPerPage);
     return { data };
   } catch (error) {
-    console.error("searchMissions error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-
-    const serverError = new Error("검색 결과를 불러오는 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "검색 결과를 불러오는 중 오류가 발생했습니다.");
   }
 }

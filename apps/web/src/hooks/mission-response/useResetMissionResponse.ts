@@ -1,3 +1,4 @@
+import { toMutationFn } from "@/actions/common/error";
 import { deleteMissionResponse } from "@/actions/mission-response/delete";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -6,9 +7,7 @@ export function useResetMissionResponse({ missionId }: { missionId: string }) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (responseId: string) => {
-      return await deleteMissionResponse(responseId);
-    },
+    mutationFn: toMutationFn(deleteMissionResponse),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: missionQueryKeys.missionResponseForMission(missionId),

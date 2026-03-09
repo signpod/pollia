@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/actions/common/auth";
+import { handleActionError } from "@/actions/common/error";
 import { actionRepository } from "@/server/repositories/action/actionRepository";
 import { missionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import {
@@ -28,12 +29,6 @@ export async function getSubmissionList(
 
     return { data: tableData };
   } catch (error) {
-    console.error("getSubmissionList error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("제출 목록 조회 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "제출 목록 조회 중 오류가 발생했습니다.");
   }
 }

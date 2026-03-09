@@ -1,6 +1,7 @@
 "use client";
 
 import { createScaleAction } from "@/actions/action";
+import { toMutationFn } from "@/actions/common/error";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import type { CreateScaleActionRequest, CreateScaleActionResponse } from "@/types/dto";
@@ -16,9 +17,8 @@ export function useCreateScaleAction(options: UseCreateScaleActionOptions = {}) 
   const queryClient = useQueryClient();
   const { handleResetAction } = useResetAction();
 
-  return useMutation({
-    mutationFn: async (payload: CreateScaleActionRequest): Promise<CreateScaleActionResponse> =>
-      createScaleAction(payload),
+  return useMutation<CreateScaleActionResponse, Error, CreateScaleActionRequest>({
+    mutationFn: toMutationFn(createScaleAction),
     onSuccess: (data, variables) => {
       if (variables.missionId) {
         queryClient.invalidateQueries({

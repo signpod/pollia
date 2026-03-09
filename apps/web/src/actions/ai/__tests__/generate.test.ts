@@ -47,14 +47,16 @@ describe("runAiPrompt", () => {
     });
   });
 
-  it("권한 에러(403)는 그대로 전달한다", async () => {
+  it("권한 에러(403)는 에러 객체로 반환한다", async () => {
     const authError = new Error("관리자 권한이 필요합니다.");
     authError.cause = 403;
     mockRequireAdmin.mockRejectedValue(authError);
 
-    await expect(runAiPrompt({ prompt: "hello" })).rejects.toMatchObject({
-      message: "관리자 권한이 필요합니다.",
-      cause: 403,
+    const result = await runAiPrompt({ prompt: "hello" });
+
+    expect(result).toEqual({
+      data: null,
+      error: { message: "관리자 권한이 필요합니다.", cause: 403 },
     });
   });
 

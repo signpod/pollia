@@ -1,6 +1,7 @@
 "use client";
 
 import { updateAction } from "@/actions/action/update";
+import { toMutationFn } from "@/actions/common/error";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import type { UpdateActionRequest } from "@/types/dto";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -18,11 +19,11 @@ interface UseManageUpdateActionOptions {
 export function useManageUpdateAction(options: UseManageUpdateActionOptions = {}) {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async (input: UpdateActionInput) => {
+  return useMutation<Awaited<ReturnType<typeof updateAction>>, Error, UpdateActionInput>({
+    mutationFn: toMutationFn(async (input: UpdateActionInput) => {
       const { actionId, missionId: _, ...request } = input;
       return await updateAction(actionId, request);
-    },
+    }),
 
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({

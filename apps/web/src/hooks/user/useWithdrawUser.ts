@@ -1,5 +1,6 @@
 "use client";
 
+import { toMutationFn } from "@/actions/common/error";
 import { withdrawUser } from "@/actions/user/withdraw";
 import { toast } from "@/components/common/Toast";
 import type { WithdrawUserRequest } from "@/types/dto/user";
@@ -11,9 +12,7 @@ const WITHDRAW_MESSAGES = {
 
 export const useWithdrawUser = () => {
   const withdrawMutation = useMutation<{ message: string }, Error, WithdrawUserRequest>({
-    mutationFn: async (input: WithdrawUserRequest) => {
-      return await withdrawUser(input);
-    },
+    mutationFn: toMutationFn(withdrawUser),
     onError: () => {
       toast.warning(WITHDRAW_MESSAGES.error);
     },

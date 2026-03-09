@@ -1,5 +1,6 @@
 "use client";
 
+import { toMutationFn } from "@/actions/common/error";
 import { updateUser } from "@/actions/user";
 import { toast } from "@/components/common/Toast";
 import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";
@@ -18,10 +19,8 @@ const UPDATE_NAME_MESSAGES = {
 export const useUpdateUserName = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<{ data: unknown }, Error, string, UpdateUserNameContext>({
-    mutationFn: async (name: string) => {
-      return await updateUser({ name });
-    },
+  return useMutation<Awaited<ReturnType<typeof updateUser>>, Error, string, UpdateUserNameContext>({
+    mutationFn: toMutationFn(async (name: string) => updateUser({ name })),
 
     onMutate: async name => {
       await queryClient.cancelQueries({

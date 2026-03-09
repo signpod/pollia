@@ -1,5 +1,6 @@
 "use client";
 
+import { toMutationFn } from "@/actions/common/error";
 import { updateUser } from "@/actions/user";
 import { toast } from "@/components/common/Toast";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
@@ -28,9 +29,15 @@ export const useUpdateUserProfileImage = () => {
     callbacksRef.current = null;
   };
 
-  const updateMutation = useMutation({
-    mutationFn: ({ fileUploadId }: { fileUploadId: string }) =>
+  const updateMutation = useMutation<
+    Awaited<ReturnType<typeof updateUser>>,
+    Error,
+    { fileUploadId: string },
+    { previousData: GetCurrentUserResponse | undefined }
+  >({
+    mutationFn: toMutationFn(async ({ fileUploadId }: { fileUploadId: string }) =>
       updateUser({ profileImageFileUploadId: fileUploadId }),
+    ),
 
     onMutate: async () => {
       await queryClient.cancelQueries({

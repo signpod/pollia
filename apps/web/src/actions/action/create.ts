@@ -1,6 +1,7 @@
 "use server";
 
 import { requireActiveUser } from "@/actions/common/auth";
+import { handleActionError } from "@/actions/common/error";
 import { actionService } from "@/server/services/action";
 import type { ActionCreatedResult } from "@/server/services/action/types";
 import type {
@@ -47,13 +48,7 @@ async function createActionHandler<TRequest, TResponse extends BaseActionRespons
 
     return { data: action } as TResponse;
   } catch (error) {
-    console.error(`${errorMessage} error:`, error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error(`${errorMessage} 생성 중 오류가 발생했습니다.`);
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, `${errorMessage} 생성 중 오류가 발생했습니다.`);
   }
 }
 
@@ -194,12 +189,6 @@ export async function duplicateAction(request: DuplicateActionRequest) {
 
     return { data: result };
   } catch (error) {
-    console.error("duplicateAction error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("액션 복제 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "액션 복제 중 오류가 발생했습니다.");
   }
 }

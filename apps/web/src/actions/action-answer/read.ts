@@ -1,6 +1,7 @@
 "use server";
 
 import { requireActiveUser } from "@/actions/common/auth";
+import { handleActionError } from "@/actions/common/error";
 import { actionAnswerService } from "@/server/services/action-answer";
 import type {
   GetAnswersByResponseResponse,
@@ -15,13 +16,7 @@ export async function getAnswer(answerId: string): Promise<GetQuestionAnswerResp
     const data = { ...answer, actionId: answer.action.id };
     return { data };
   } catch (error) {
-    console.error("getAnswer error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("답변 조회 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "답변 조회 중 오류가 발생했습니다.");
   }
 }
 
@@ -32,13 +27,7 @@ export async function getMyAnswers(): Promise<GetAnswersByUserResponse> {
     const data = answers.map(answer => ({ ...answer, actionId: answer.action.id }));
     return { data };
   } catch (error) {
-    console.error("getMyAnswers error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("내 답변 목록 조회 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "내 답변 목록 조회 중 오류가 발생했습니다.");
   }
 }
 
@@ -51,12 +40,6 @@ export async function getAnswersByResponse(
     const data = answers.map(answer => ({ ...answer, actionId: answer.action.id }));
     return { data };
   } catch (error) {
-    console.error("getAnswersByResponse error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("답변 목록 조회 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "답변 목록 조회 중 오류가 발생했습니다.");
   }
 }

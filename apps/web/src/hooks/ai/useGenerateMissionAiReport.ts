@@ -1,6 +1,7 @@
 "use client";
 
 import { generateMissionAiReport } from "@/actions/ai";
+import { toMutationFn } from "@/actions/common/error";
 import type { GenerateMissionAiReportResponse } from "@/types/dto";
 import { useMutation } from "@tanstack/react-query";
 
@@ -10,9 +11,8 @@ interface UseGenerateMissionAiReportOptions {
 }
 
 export function useGenerateMissionAiReport(options: UseGenerateMissionAiReportOptions = {}) {
-  return useMutation({
-    mutationFn: async (missionId: string): Promise<GenerateMissionAiReportResponse> =>
-      generateMissionAiReport(missionId),
+  return useMutation<GenerateMissionAiReportResponse, Error, string>({
+    mutationFn: toMutationFn(generateMissionAiReport),
     onSuccess: data => {
       options.onSuccess?.(data);
     },

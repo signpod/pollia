@@ -1,6 +1,7 @@
 "use server";
 
 import { requireActiveUser } from "@/actions/common/auth";
+import { handleActionError } from "@/actions/common/error";
 import { missionService } from "@/server/services/mission";
 import { missionNotionPageService } from "@/server/services/mission-notion-page";
 import { missionResponseService } from "@/server/services/mission-response";
@@ -48,14 +49,6 @@ export async function syncMissionToNotion(missionId: string): Promise<SyncMissio
       errorMessage: error instanceof Error ? error.message : String(error),
       errorStack: error instanceof Error ? error.stack : undefined,
     });
-
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-
-    const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류";
-    const serverError = new Error(`노션 리포트 생성 실패: ${errorMessage}`);
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "노션 리포트 생성 실패");
   }
 }

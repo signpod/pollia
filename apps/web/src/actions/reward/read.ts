@@ -1,5 +1,6 @@
 "use server";
 
+import { handleActionError } from "@/actions/common/error";
 import { rewardService } from "@/server/services/reward/rewardService";
 
 export async function getReward(rewardId: string) {
@@ -7,13 +8,7 @@ export async function getReward(rewardId: string) {
     const reward = await rewardService.getReward(rewardId);
     return { data: reward };
   } catch (error) {
-    console.error("getReward error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("Reward를 불러올 수 없습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "Reward를 불러올 수 없습니다.");
   }
 }
 
@@ -22,12 +17,6 @@ export async function getRewards() {
     const rewards = await rewardService.getRewards();
     return { data: rewards };
   } catch (error) {
-    console.error("getRewards error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("Reward 목록을 불러올 수 없습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "Reward 목록을 불러올 수 없습니다.");
   }
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { toMutationFn } from "@/actions/common/error";
 import { toggleMissionLike } from "@/actions/mission-like/toggle";
 import { toast } from "@/components/common/Toast";
 import { missionLikeQueryKeys } from "@/constants/queryKeys/missionLikeQueryKeys";
@@ -20,9 +21,7 @@ export const useMissionLike = (missionId: string) => {
   const queryClient = useQueryClient();
 
   return useMutation<ToggleMissionLikeResponse, Error, void, MissionLikeContext>({
-    mutationFn: async () => {
-      return await toggleMissionLike({ missionId });
-    },
+    mutationFn: toMutationFn(async () => toggleMissionLike({ missionId })),
 
     onMutate: async () => {
       await queryClient.cancelQueries({
