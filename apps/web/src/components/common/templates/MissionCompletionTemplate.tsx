@@ -16,6 +16,7 @@ export interface MissionCompletionTemplateProps {
   description?: string;
   reward?: ReactNode;
   shareButtons?: ReactNode;
+  recommendation?: ReactNode;
   onSave?: () => void;
   isSaving?: boolean;
   canSave?: boolean;
@@ -29,6 +30,7 @@ export function MissionCompletionTemplate({
   description,
   reward,
   shareButtons,
+  recommendation,
   onSave,
   isSaving,
   canSave,
@@ -36,8 +38,8 @@ export function MissionCompletionTemplate({
   return (
     <div className="relative w-full bg-white min-h-svh pb-10">
       {header}
-      <div className="flex w-full flex-col gap-[60px] px-5 pb-10">
-        <div className="flex w-full flex-col items-end gap-10">
+      <div className="flex w-full flex-col gap-[60px] pb-10">
+        <div className="flex w-full flex-col items-end gap-10 px-5">
           <div className="flex w-full flex-col gap-5">
             {shareButtons && <MissionShareSection shareButtons={shareButtons} />}
 
@@ -98,6 +100,8 @@ export function MissionCompletionTemplate({
             {reward}
           </div>
         </div>
+
+        {recommendation}
       </div>
     </div>
   );
