@@ -114,7 +114,7 @@ describe("ActionService - Read", () => {
 
       // When & Then
       await expect(ctx.service.getMissionActionIds("invalid-id")).rejects.toThrow(
-        "미션을 찾을 수 없습니다.",
+        "존재하지 않는 미션입니다.",
       );
 
       expect(ctx.mockActionRepo.findActionIdsByMissionId).not.toHaveBeenCalled();
@@ -155,7 +155,7 @@ describe("ActionService - Read", () => {
 
       // When & Then
       await expect(ctx.service.getMissionActionsDetail("invalid-id")).rejects.toThrow(
-        "미션을 찾을 수 없습니다.",
+        "존재하지 않는 미션입니다.",
       );
     });
   });

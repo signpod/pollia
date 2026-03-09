@@ -485,7 +485,7 @@ export class ActionService {
   private async getMissionOrThrow(missionId: string) {
     const mission = await this.missionRepo.findById(missionId);
     if (!mission) {
-      const error = new Error("미션을 찾을 수 없습니다.");
+      const error = new Error("존재하지 않는 미션입니다.");
       error.cause = HTTP_STATUS.NOT_FOUND;
       throw error;
     }
