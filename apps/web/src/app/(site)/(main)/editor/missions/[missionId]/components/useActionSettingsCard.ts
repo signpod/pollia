@@ -455,16 +455,18 @@ export function useActionSettingsCard({
     [setDraftFormSnapshotByItemKey],
   );
 
-  const handleAddDraft = () => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setOpenItemKey
+  const handleAddDraft = useCallback(() => {
     const draftKey = createDraftKey();
     const itemKey = getDraftItemKey(draftKey);
 
     setDraftItems(prev => [...prev, { key: draftKey }]);
     setActionTypeByItemKey(prev => ({ ...prev, [itemKey]: ActionType.MULTIPLE_CHOICE }));
     setOpenItemKey(itemKey);
-  };
+  }, []);
 
-  const handleRemoveDraft = (draftKey: string) => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setDirtyByItemKey, setDraftFormSnapshotByItemKey, setValidationIssueCountByItemKey, setOpenItemKey
+  const handleRemoveDraft = useCallback((draftKey: string) => {
     const itemKey = getDraftItemKey(draftKey);
     setDraftItems(prev => prev.filter(item => item.key !== draftKey));
     setActionTypeByItemKey(prev => {
@@ -489,15 +491,17 @@ export function useActionSettingsCard({
     });
     delete formRefs.current[itemKey];
     setOpenItemKey(prev => (prev === itemKey ? null : prev));
-  };
+  }, []);
 
-  const handleToggleItem = (itemKey: string) => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setOpenItemKey
+  const handleToggleItem = useCallback((itemKey: string) => {
     setOpenItemKey(prev => (prev === itemKey ? null : itemKey));
-  };
+  }, []);
 
-  const handleActionTypeChange = (itemKey: string, actionType: ActionType) => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setActionTypeByItemKey
+  const handleActionTypeChange = useCallback((itemKey: string, actionType: ActionType) => {
     setActionTypeByItemKey(prev => ({ ...prev, [itemKey]: actionType }));
-  };
+  }, []);
 
   const handleMoveItem = useCallback(
     (itemKey: string, direction: -1 | 1) => {

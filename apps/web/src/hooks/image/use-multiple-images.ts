@@ -7,6 +7,7 @@ import { ActionType } from "@prisma/client";
 import { useMutation } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { revokeBlobUrl } from "./blob-url";
 import type { UploadedImageData, UseMultipleImagesOptions, UseMultipleImagesReturn } from "./types";
 import { uploadFileToStorage } from "./upload-file-to-storage";
 
@@ -88,10 +89,7 @@ export function useMultipleImages(options: UseMultipleImagesOptions = {}): UseMu
 
       setPreviews(prev => {
         const newMap = new Map(prev);
-        const oldUrl = newMap.get(id);
-        if (oldUrl?.startsWith("blob:")) {
-          URL.revokeObjectURL(oldUrl);
-        }
+        revokeBlobUrl(newMap.get(id));
         newMap.set(id, data.publicUrl);
         return newMap;
       });
@@ -107,10 +105,7 @@ export function useMultipleImages(options: UseMultipleImagesOptions = {}): UseMu
 
       setPreviews(prev => {
         const newMap = new Map(prev);
-        const currentUrl = newMap.get(id);
-        if (currentUrl?.startsWith("blob:")) {
-          URL.revokeObjectURL(currentUrl);
-        }
+        revokeBlobUrl(newMap.get(id));
         const initialUrl = initialPreviewsRef.current.get(id);
         if (initialUrl) {
           newMap.set(id, initialUrl);
@@ -120,7 +115,7 @@ export function useMultipleImages(options: UseMultipleImagesOptions = {}): UseMu
         return newMap;
       });
 
-      onUploadError?.(id, error as Error);
+      onUploadError?.(id, error instanceof Error ? error : new Error(String(error)));
     },
   });
 
@@ -131,9 +126,7 @@ export function useMultipleImages(options: UseMultipleImagesOptions = {}): UseMu
   useEffect(() => {
     return () => {
       for (const url of previewsRef.current.values()) {
-        if (url.startsWith("blob:")) {
-          URL.revokeObjectURL(url);
-        }
+        revokeBlobUrl(url);
       }
     };
   }, []);
@@ -147,10 +140,7 @@ export function useMultipleImages(options: UseMultipleImagesOptions = {}): UseMu
 
       setPreviews(prev => {
         const newMap = new Map(prev);
-        const oldUrl = newMap.get(id);
-        if (oldUrl?.startsWith("blob:")) {
-          URL.revokeObjectURL(oldUrl);
-        }
+        revokeBlobUrl(newMap.get(id));
         newMap.set(id, URL.createObjectURL(file));
         return newMap;
       });
@@ -178,10 +168,7 @@ export function useMultipleImages(options: UseMultipleImagesOptions = {}): UseMu
 
       setPreviews(prev => {
         const newMap = new Map(prev);
-        const url = newMap.get(id);
-        if (url?.startsWith("blob:")) {
-          URL.revokeObjectURL(url);
-        }
+        revokeBlobUrl(newMap.get(id));
         newMap.delete(id);
         return newMap;
       });
@@ -228,9 +215,7 @@ export function useMultipleImages(options: UseMultipleImagesOptions = {}): UseMu
     }
 
     for (const url of previews.values()) {
-      if (url.startsWith("blob:")) {
-        URL.revokeObjectURL(url);
-      }
+      revokeBlobUrl(url);
     }
 
     setPreviews(new Map(initialPreviewsRef.current));

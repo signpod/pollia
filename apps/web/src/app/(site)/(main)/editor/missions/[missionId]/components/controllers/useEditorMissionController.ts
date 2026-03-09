@@ -42,6 +42,7 @@ import {
 
 const UNIFIED_SAVE_TOAST_ID = "editor-mission-save-result";
 const PUBLISH_TOAST_ID = "editor-mission-publish-result";
+const SECTION_REFS_POLL_INTERVAL_MS = 250;
 
 interface ResolveDraftToRestoreInput {
   mission: GetMissionResponse["data"];
@@ -269,7 +270,7 @@ export function useEditorMissionController({
       if (checkSectionRefsReady()) {
         window.clearInterval(intervalId);
       }
-    }, 250);
+    }, SECTION_REFS_POLL_INTERVAL_MS);
 
     return () => {
       window.clearInterval(intervalId);

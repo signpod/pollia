@@ -3,7 +3,7 @@
 import { useImageCrop } from "@/components/common/templates/action/image/hooks/useImageCrop";
 import { useCallback, useRef, useState } from "react";
 
-interface CropModalProps {
+export interface CropModalProps {
   isOpen: boolean;
   imageSrc: string;
   crop: { x: number; y: number };

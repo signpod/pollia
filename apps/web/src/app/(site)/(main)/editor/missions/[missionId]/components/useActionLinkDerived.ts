@@ -5,6 +5,8 @@ import { ActionType } from "@prisma/client";
 import { useMemo } from "react";
 import type { ActionListItem } from "./actionSettingsCard.types";
 
+const MISSION_ENTRY_SOURCE_KEY = "__mission_entry__";
+
 interface UseActionLinkDerivedParams {
   orderedActionItems: ActionListItem[];
   draftFormSnapshotByItemKey: Record<string, ActionFormRawSnapshot>;
@@ -55,7 +57,7 @@ export function useActionLinkDerived({
     };
 
     if (entryActionId) {
-      addRef(entryActionId, "__mission_entry__");
+      addRef(entryActionId, MISSION_ENTRY_SOURCE_KEY);
     }
 
     for (const item of orderedActionItems) {

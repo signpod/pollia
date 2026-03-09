@@ -47,6 +47,13 @@ import {
 } from "react";
 import { patchOptionByKey, removeOptionByKey } from "./actionFormOptionState";
 
+const UPLOAD_ERROR_MESSAGES = {
+  ACTION_IMAGE: "질문 이미지 업로드에 실패했습니다.",
+  OPTION_IMAGE: "옵션 이미지 업로드에 실패했습니다.",
+} as const;
+
+const ERROR_ICON_CLASS = "text-red-500";
+
 function generateOptionKey() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();
@@ -444,9 +451,9 @@ function ActionFormComponent(
     },
     onUploadError: error => {
       toast({
-        message: error.message || "질문 이미지 업로드에 실패했습니다.",
+        message: error.message || UPLOAD_ERROR_MESSAGES.ACTION_IMAGE,
         icon: AlertCircle,
-        iconClassName: "text-red-500",
+        iconClassName: ERROR_ICON_CLASS,
       });
     },
   });
@@ -468,9 +475,9 @@ function ActionFormComponent(
     },
     onUploadError: (_optionKey, error) => {
       toast({
-        message: error.message || "옵션 이미지 업로드에 실패했습니다.",
+        message: error.message || UPLOAD_ERROR_MESSAGES.OPTION_IMAGE,
         icon: AlertCircle,
-        iconClassName: "text-red-500",
+        iconClassName: ERROR_ICON_CLASS,
       });
     },
   });

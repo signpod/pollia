@@ -51,6 +51,16 @@ import type {
   UpdateActionInput,
 } from "./types";
 
+const HTTP_STATUS = {
+  BAD_REQUEST: 400,
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
+} as const;
+
+const VALIDATION_FAILED_MESSAGE = "유효성 검사 실패";
+const DUPLICATE_TITLE_SUFFIX = " (복사본)";
+const EXISTING_ITEM_PREFIX = "existing:";
+
 export class ActionService {
   constructor(
     private actionRepo = actionRepository,
@@ -67,8 +77,8 @@ export class ActionService {
   ): Promise<ActionCreatedResult> {
     const result = schema.safeParse(input);
     if (!result.success) {
-      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
-      error.cause = 400;
+      const error = new Error(result.error.issues[0]?.message || VALIDATION_FAILED_MESSAGE);
+      error.cause = HTTP_STATUS.BAD_REQUEST;
       throw error;
     }
 
@@ -109,8 +119,8 @@ export class ActionService {
   ): Promise<ActionCreatedResult> {
     const result = schema.safeParse(input);
     if (!result.success) {
-      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
-      error.cause = 400;
+      const error = new Error(result.error.issues[0]?.message || VALIDATION_FAILED_MESSAGE);
+      error.cause = HTTP_STATUS.BAD_REQUEST;
       throw error;
     }
 
@@ -164,12 +174,7 @@ export class ActionService {
   }
 
   async getMissionActionIds(missionId: string) {
-    const mission = await this.missionRepo.findById(missionId);
-    if (!mission) {
-      const error = new Error("미션을 찾을 수 없습니다.");
-      error.cause = 404;
-      throw error;
-    }
+    await this.getMissionOrThrow(missionId);
 
     const actionIds = await this.actionRepo.findActionIdsByMissionId(missionId);
 
@@ -177,12 +182,7 @@ export class ActionService {
   }
 
   async getMissionActionsDetail(missionId: string) {
-    const mission = await this.missionRepo.findById(missionId);
-    if (!mission) {
-      const error = new Error("미션을 찾을 수 없습니다.");
-      error.cause = 404;
-      throw error;
-    }
+    await this.getMissionOrThrow(missionId);
 
     const actions = await this.actionRepo.findDetailsByMissionId(missionId);
 
@@ -294,8 +294,8 @@ export class ActionService {
   async updateAction(actionId: string, data: UpdateActionInput, userId: string) {
     const result = actionUpdateSchema.safeParse(data);
     if (!result.success) {
-      const error = new Error(result.error.issues[0]?.message || "유효성 검사 실패");
-      error.cause = 400;
+      const error = new Error(result.error.issues[0]?.message || VALIDATION_FAILED_MESSAGE);
+      error.cause = HTTP_STATUS.BAD_REQUEST;
       throw error;
     }
 
@@ -314,13 +314,13 @@ export class ActionService {
 
     if (isTypeChanged && this.isOptionBasedActionType(nextType) && options === undefined) {
       const error = new Error("해당 액션 유형은 옵션을 포함해야 합니다.");
-      error.cause = 400;
+      error.cause = HTTP_STATUS.BAD_REQUEST;
       throw error;
     }
 
     if (isTypeChanged && nextType === ActionType.BRANCH && options?.length !== 2) {
       const error = new Error("분기 액션은 정확히 2개의 옵션이 필요합니다.");
-      error.cause = 400;
+      error.cause = HTTP_STATUS.BAD_REQUEST;
       throw error;
     }
 
@@ -407,7 +407,7 @@ export class ActionService {
     const invalidActions = actionIds.filter(id => !missionActions.includes(id));
     if (invalidActions.length > 0) {
       const error = new Error("해당 미션에 속하지 않는 액션이 포함되어 있습니다.");
-      error.cause = 400;
+      error.cause = HTTP_STATUS.BAD_REQUEST;
       throw error;
     }
 
@@ -430,14 +430,14 @@ export class ActionService {
 
     if (original.missionId !== missionId) {
       const error = new Error("해당 미션에 속하지 않는 액션입니다.");
-      error.cause = 400;
+      error.cause = HTTP_STATUS.BAD_REQUEST;
       throw error;
     }
 
     const existingActionIds = await this.actionRepo.findActionIdsByMissionId(missionId);
     const nextOrder = existingActionIds.length;
 
-    const duplicatedTitle = `${original.title} (복사본)`;
+    const duplicatedTitle = `${original.title}${DUPLICATE_TITLE_SUFFIX}`;
 
     const actionData = {
       missionId,
@@ -482,25 +482,29 @@ export class ActionService {
     };
   }
 
-  private async verifyMissionAccess(missionId: string, userId: string): Promise<void> {
+  private async getMissionOrThrow(missionId: string) {
     const mission = await this.missionRepo.findById(missionId);
-
     if (!mission) {
-      const error = new Error("존재하지 않는 미션입니다.");
-      error.cause = 404;
+      const error = new Error("미션을 찾을 수 없습니다.");
+      error.cause = HTTP_STATUS.NOT_FOUND;
       throw error;
     }
+    return mission;
+  }
+
+  private async verifyMissionAccess(missionId: string, userId: string): Promise<void> {
+    const mission = await this.getMissionOrThrow(missionId);
 
     if (mission.creatorId !== userId) {
       const error = new Error("액션을 추가할 권한이 없습니다.");
-      error.cause = 403;
+      error.cause = HTTP_STATUS.FORBIDDEN;
       throw error;
     }
   }
 
   private throwActionNotFound(): never {
     const error = new Error("액션을 찾을 수 없습니다.");
-    error.cause = 404;
+    error.cause = HTTP_STATUS.NOT_FOUND;
     throw error;
   }
 
@@ -945,22 +949,17 @@ export class ActionService {
     missionId: string,
     userId: string,
   ): Promise<SaveActionSectionResult> {
-    const mission = await this.missionRepo.findById(missionId);
-    if (!mission) {
-      const error = new Error("존재하지 않는 미션입니다.");
-      error.cause = 404;
-      throw error;
-    }
+    const mission = await this.getMissionOrThrow(missionId);
 
     if (mission.creatorId !== userId) {
       const error = new Error("액션을 추가할 권한이 없습니다.");
-      error.cause = 403;
+      error.cause = HTTP_STATUS.FORBIDDEN;
       throw error;
     }
 
     if (!mission.editorDraft) {
       const error = new Error("적용할 draft가 없습니다.");
-      error.cause = 400;
+      error.cause = HTTP_STATUS.BAD_REQUEST;
       throw error;
     }
 
@@ -981,7 +980,7 @@ export class ActionService {
     const actionParseResult = actionSectionDraftSnapshotSchema.safeParse(actionSection);
     if (!actionParseResult.success) {
       const error = new Error("action draft 파싱에 실패했습니다.");
-      error.cause = 400;
+      error.cause = HTTP_STATUS.BAD_REQUEST;
       throw error;
     }
 
@@ -1014,7 +1013,7 @@ export class ActionService {
 
     for (const key of actionDraft.itemOrderKeys ?? Object.keys(actionDraft.formSnapshotByItemKey)) {
       const isDraftItem = key.startsWith("draft:");
-      const isExistingItem = key.startsWith("existing:");
+      const isExistingItem = key.startsWith(EXISTING_ITEM_PREFIX);
 
       if (isDraftItem) {
         const snapshot = actionDraft.formSnapshotByItemKey[key];
@@ -1029,7 +1028,7 @@ export class ActionService {
         const isDirty = actionDraft.dirtyByItemKey[key] === true;
         if (!isDirty) continue;
 
-        const actionId = key.replace("existing:", "");
+        const actionId = key.replace(EXISTING_ITEM_PREFIX, "");
         const snapshot = actionDraft.formSnapshotByItemKey[key];
         if (!snapshot) continue;
 
@@ -1042,8 +1041,8 @@ export class ActionService {
     }
 
     const actionOrder = (actionDraft.itemOrderKeys ?? []).map(key => {
-      if (key.startsWith("existing:")) {
-        return key.replace("existing:", "");
+      if (key.startsWith(EXISTING_ITEM_PREFIX)) {
+        return key.replace(EXISTING_ITEM_PREFIX, "");
       }
       return key;
     });

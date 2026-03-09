@@ -33,6 +33,15 @@ import type {
 import { getDraftItemKey } from "./actionSettingsCard.utils";
 import type { SectionSaveHandle, SectionSaveOptions, SectionSaveResult } from "./editor-save.types";
 
+const ACTION_SAVE_MESSAGES = {
+  FORM_NOT_READY: "질문 폼이 준비되지 않았습니다. 다시 시도해주세요.",
+  UPLOAD_IN_PROGRESS: "이미지 업로드가 완료된 뒤 저장해주세요.",
+  INVALID_INPUT: "질문 입력값을 확인해주세요.",
+  SAVE_IN_PROGRESS: "진행 목록 저장이 진행 중입니다.",
+  SAVE_SUCCESS: "진행 목록 설정이 저장되었습니다.",
+  SAVE_FAILED: "진행 목록 설정 저장에 실패했습니다.",
+} as const;
+
 interface UseActionSaveFlowParams {
   missionId: string;
   formRefs: React.MutableRefObject<Record<string, ActionFormHandle | null>>;
@@ -85,7 +94,7 @@ export function useActionSaveFlow({
         latestRef.current;
 
       if (isActionsLoading || isBusy) {
-        return { status: "failed", message: "진행 목록 저장이 진행 중입니다." };
+        return { status: "failed", message: ACTION_SAVE_MESSAGES.SAVE_IN_PROGRESS };
       }
 
       const strictMode = trigger === "publish";
@@ -94,23 +103,21 @@ export function useActionSaveFlow({
         const formRef = formRefs.current[item.key];
         if (!formRef) {
           if (showValidationUi) setOpenItemKey(item.key);
-          const message = "질문 폼이 준비되지 않았습니다. 다시 시도해주세요.";
-          if (strictMode) return { status: "failed", message };
+          if (strictMode) return { status: "failed", message: ACTION_SAVE_MESSAGES.FORM_NOT_READY };
           continue;
         }
 
         if (formRef.isUploading()) {
           if (showValidationUi) setOpenItemKey(item.key);
-          const message = "이미지 업로드가 완료된 뒤 저장해주세요.";
-          if (strictMode) return { status: "failed", message };
+          if (strictMode)
+            return { status: "failed", message: ACTION_SAVE_MESSAGES.UPLOAD_IN_PROGRESS };
           continue;
         }
 
         const submission = formRef.validateAndGetSubmission({ showErrors: showValidationUi });
         if (!submission) {
           if (showValidationUi) setOpenItemKey(item.key);
-          const message = "질문 입력값을 확인해주세요.";
-          if (strictMode) return { status: "invalid", message };
+          if (strictMode) return { status: "invalid", message: ACTION_SAVE_MESSAGES.INVALID_INPUT };
         }
       }
 
@@ -165,13 +172,12 @@ export function useActionSaveFlow({
 
         const savedCount = result.createdActionIds.length + result.updatedActionIds.length;
         if (!silent && savedCount > 0) {
-          toast({ message: "진행 목록 설정이 저장되었습니다." });
+          toast({ message: ACTION_SAVE_MESSAGES.SAVE_SUCCESS });
         }
 
         return savedCount > 0 ? { status: "saved", savedCount } : { status: "no_changes" };
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "진행 목록 설정 저장에 실패했습니다.";
+        const message = error instanceof Error ? error.message : ACTION_SAVE_MESSAGES.SAVE_FAILED;
         if (!silent) {
           toast({ message, icon: AlertCircle, iconClassName: "text-red-500" });
         }

@@ -2,12 +2,16 @@ import type { ActionFormRawSnapshot } from "@/app/(site)/mission/[missionId]/man
 
 export { createDraftKey } from "./editorDraftKey";
 
+const EXISTING_ITEM_PREFIX = "existing:";
+const DRAFT_ITEM_PREFIX = "draft:";
+const DEFAULT_COMPLETION_TITLE = "새 결과 화면";
+
 export function getExistingItemKey(actionId: string) {
-  return `existing:${actionId}`;
+  return `${EXISTING_ITEM_PREFIX}${actionId}`;
 }
 
 export function getDraftItemKey(draftKey: string) {
-  return `draft:${draftKey}`;
+  return `${DRAFT_ITEM_PREFIX}${draftKey}`;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -54,7 +58,7 @@ export function parseCompletionDraftSnapshotForOptions(snapshot: unknown): {
         return [
           {
             key,
-            title: toNullableString(item.title) ?? "새 결과 화면",
+            title: toNullableString(item.title) ?? DEFAULT_COMPLETION_TITLE,
           },
         ];
       })

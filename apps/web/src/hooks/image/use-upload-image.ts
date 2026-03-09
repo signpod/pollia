@@ -7,6 +7,7 @@ import { ActionType } from "@prisma/client";
 import { useMutation } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { revokeBlobUrl } from "./blob-url";
 import type { UploadedImageData, UseUploadImageOptions, UseUploadImageReturn } from "./types";
 import { uploadFileToStorage } from "./upload-file-to-storage";
 
@@ -35,18 +36,14 @@ export function useUploadImage(options: UseUploadImageOptions = {}): UseUploadIm
     },
     onSuccess: data => {
       setUploadedData(data);
-      if (previewUrlRef.current?.startsWith("blob:")) {
-        URL.revokeObjectURL(previewUrlRef.current);
-      }
+      revokeBlobUrl(previewUrlRef.current);
       setPreviewUrl(data.publicUrl);
       options.onUploadSuccess?.(data);
     },
     onError: error => {
-      if (previewUrlRef.current?.startsWith("blob:")) {
-        URL.revokeObjectURL(previewUrlRef.current);
-      }
+      revokeBlobUrl(previewUrlRef.current);
       setPreviewUrl(null);
-      options.onUploadError?.(error as Error);
+      options.onUploadError?.(error instanceof Error ? error : new Error(String(error)));
     },
   });
 
@@ -56,17 +53,13 @@ export function useUploadImage(options: UseUploadImageOptions = {}): UseUploadIm
 
   useEffect(() => {
     return () => {
-      if (previewUrlRef.current?.startsWith("blob:")) {
-        URL.revokeObjectURL(previewUrlRef.current);
-      }
+      revokeBlobUrl(previewUrlRef.current);
     };
   }, []);
 
   const upload = useCallback(
     (file: File) => {
-      if (previewUrlRef.current?.startsWith("blob:")) {
-        URL.revokeObjectURL(previewUrlRef.current);
-      }
+      revokeBlobUrl(previewUrlRef.current);
       const blobUrl = URL.createObjectURL(file);
       setPreviewUrl(blobUrl);
       uploadMutation.mutate(file);
@@ -78,9 +71,7 @@ export function useUploadImage(options: UseUploadImageOptions = {}): UseUploadIm
     if (uploadedData?.fileUploadId) {
       deleteMutation.mutate({ fileUploadId: uploadedData.fileUploadId });
     }
-    if (previewUrlRef.current?.startsWith("blob:")) {
-      URL.revokeObjectURL(previewUrlRef.current);
-    }
+    revokeBlobUrl(previewUrlRef.current);
     setPreviewUrl(null);
     setUploadedData(null);
   }, [uploadedData, deleteMutation]);

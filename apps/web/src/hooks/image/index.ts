@@ -13,4 +13,4 @@ export type {
   UseMultipleImagesOptions,
   UseMultipleImagesReturn,
 } from "./types";
-export type { UseCropperModalReturn } from "./use-cropper-modal";
+export type { CropModalProps, UseCropperModalReturn } from "./use-cropper-modal";
