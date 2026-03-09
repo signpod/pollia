@@ -5,16 +5,15 @@ import {
   createMissionFormSchema,
 } from "@/app/(site)/(main)/create/schema";
 import { ImageCropModal } from "@/components/common/templates/action/image/ImageCropModal";
-import { useImageCrop } from "@/components/common/templates/action/image/hooks/useImageCrop";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
-import { useSingleImage } from "@/hooks/image";
+import { useCropperModal, useSingleImage } from "@/hooks/image";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MissionCategory } from "@prisma/client";
 import { Button, toast } from "@repo/ui/components";
 import { AlertCircle } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { EditorBottomSaveSlot } from "../../missions/[missionId]/components/EditorBottomSaveSlot";
 import { useEditorMissionTab } from "../../missions/[missionId]/components/EditorMissionTabContext";
@@ -63,39 +62,7 @@ export function EditorCreateContent() {
 
   const controller = useEditorCreateTransitionController({ form });
 
-  const { crop, zoom, rotation, setCrop, setZoom, setRotation, resetCropState, cropImage } =
-    useImageCrop();
-  const [cropModalOpen, setCropModalOpen] = useState(false);
-  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
-  const originalFileRef = useRef<File | null>(null);
-  const cropCallbackRef = useRef<((file: File) => void) | null>(null);
-
-  const openCropper = useCallback(
-    (file: File, onComplete: (croppedFile: File) => void) => {
-      const url = URL.createObjectURL(file);
-      originalFileRef.current = file;
-      cropCallbackRef.current = onComplete;
-      setCropImageSrc(url);
-      resetCropState();
-      setCropModalOpen(true);
-    },
-    [resetCropState],
-  );
-
-  const closeCropper = useCallback(() => {
-    setCropModalOpen(false);
-    if (cropImageSrc) URL.revokeObjectURL(cropImageSrc);
-    setCropImageSrc(null);
-    originalFileRef.current = null;
-    cropCallbackRef.current = null;
-  }, [cropImageSrc]);
-
-  const handleCropComplete = useCallback(async () => {
-    if (!cropImageSrc || !originalFileRef.current) return;
-    const croppedFile = await cropImage(cropImageSrc, originalFileRef.current);
-    cropCallbackRef.current?.(croppedFile);
-    closeCropper();
-  }, [cropImageSrc, cropImage, closeCropper]);
+  const { openCropper, cropModalProps } = useCropperModal();
 
   const brandLogoImageUpload = useSingleImage({
     initialUrl: null,
@@ -260,20 +227,7 @@ export function EditorCreateContent() {
         />
       </EditorSectionCard>
 
-      {cropImageSrc && (
-        <ImageCropModal
-          isOpen={cropModalOpen}
-          imageSrc={cropImageSrc}
-          crop={crop}
-          zoom={zoom}
-          rotation={rotation}
-          onCropChange={setCrop}
-          onZoomChange={setZoom}
-          onRotationChange={setRotation}
-          onCancel={closeCropper}
-          onComplete={handleCropComplete}
-        />
-      )}
+      {cropModalProps && <ImageCropModal {...cropModalProps} />}
     </FormProvider>
   );
 }

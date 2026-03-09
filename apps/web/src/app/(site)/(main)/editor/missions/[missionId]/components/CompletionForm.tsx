@@ -1,9 +1,8 @@
 "use client";
 
 import { ImageCropModal } from "@/components/common/templates/action/image/ImageCropModal";
-import { useImageCrop } from "@/components/common/templates/action/image/hooks/useImageCrop";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
-import { useSingleImage } from "@/hooks/image";
+import { useCropperModal, useSingleImage } from "@/hooks/image";
 import {
   MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH,
   MISSION_COMPLETION_TITLE_MAX_LENGTH,
@@ -155,29 +154,7 @@ function CompletionFormComponent(
   const [hasValidationStarted, setHasValidationStarted] = useState(false);
   const [validationIssueCount, setValidationIssueCount] = useState(0);
 
-  const { crop, zoom, rotation, setCrop, setZoom, setRotation, resetCropState, cropImage } =
-    useImageCrop();
-  const [cropModalOpen, setCropModalOpen] = useState(false);
-  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
-  const originalFileRef = useRef<File | null>(null);
-
-  const openCropper = useCallback(
-    (file: File) => {
-      const url = URL.createObjectURL(file);
-      originalFileRef.current = file;
-      setCropImageSrc(url);
-      resetCropState();
-      setCropModalOpen(true);
-    },
-    [resetCropState],
-  );
-
-  const closeCropper = useCallback(() => {
-    setCropModalOpen(false);
-    if (cropImageSrc) URL.revokeObjectURL(cropImageSrc);
-    setCropImageSrc(null);
-    originalFileRef.current = null;
-  }, [cropImageSrc]);
+  const { openCropper, cropModalProps } = useCropperModal();
 
   const imageUpload = useSingleImage({
     initialUrl: initialValues?.imageUrl ?? null,
@@ -195,13 +172,6 @@ function CompletionFormComponent(
       });
     },
   });
-
-  const handleCropComplete = useCallback(async () => {
-    if (!cropImageSrc || !originalFileRef.current) return;
-    const croppedFile = await cropImage(cropImageSrc, originalFileRef.current);
-    imageUpload.upload(croppedFile);
-    closeCropper();
-  }, [cropImageSrc, cropImage, closeCropper, imageUpload]);
 
   const isImageBusy = isLoading || imageUpload.isUploading;
   const descriptionLength = useMemo(() => getTextLengthFromHtml(description), [description]);
@@ -417,7 +387,7 @@ function CompletionFormComponent(
           <ImageSelector
             size="large"
             imageUrl={imageUpload.previewUrl ?? imageUrl ?? undefined}
-            onImageSelect={file => openCropper(file)}
+            onImageSelect={file => openCropper(file, f => imageUpload.upload(f))}
             onImageDelete={handleDeleteImage}
             disabled={isImageBusy}
           />
@@ -435,20 +405,7 @@ function CompletionFormComponent(
         </div>
       )}
 
-      {cropImageSrc && (
-        <ImageCropModal
-          isOpen={cropModalOpen}
-          imageSrc={cropImageSrc}
-          crop={crop}
-          zoom={zoom}
-          rotation={rotation}
-          onCropChange={setCrop}
-          onZoomChange={setZoom}
-          onRotationChange={setRotation}
-          onCancel={closeCropper}
-          onComplete={handleCropComplete}
-        />
-      )}
+      {cropModalProps && <ImageCropModal {...cropModalProps} />}
     </div>
   );
 }

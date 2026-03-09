@@ -11,7 +11,7 @@ import { toast } from "@repo/ui/components";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAtom, useSetAtom } from "jotai";
 import { AlertCircle } from "lucide-react";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import {
   actionDirtyByItemKeyAtom,
   actionDraftHydrationVersionAtom,
@@ -71,107 +71,117 @@ export function useActionSaveFlow({
   const setDraftHydrationVersion = useSetAtom(actionDraftHydrationVersionAtom);
   const dispatchRemoveCompletionDraftById = useSetAtom(removeCompletionDraftByIdAtom);
 
-  const executeSave = async ({
-    silent = false,
-    showValidationUi = true,
-    trigger = "manual",
-  }: SectionSaveOptions = {}): Promise<SectionSaveResult> => {
-    if (isActionsLoading || isBusy) {
-      return { status: "failed", message: "진행 목록 저장이 진행 중입니다." };
-    }
+  const latestRef = useRef({ missionId, formRefs, orderedActionItems, isActionsLoading, isBusy });
+  latestRef.current = { missionId, formRefs, orderedActionItems, isActionsLoading, isBusy };
 
-    const strictMode = trigger === "publish";
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Jotai atom setter(set*)와 queryClient는 안정 참조이므로 의존성에서 제외, latestRef로 최신 값 참조
+  const executeSave = useCallback(
+    async ({
+      silent = false,
+      showValidationUi = true,
+      trigger = "manual",
+    }: SectionSaveOptions = {}): Promise<SectionSaveResult> => {
+      const { missionId, formRefs, orderedActionItems, isActionsLoading, isBusy } =
+        latestRef.current;
 
-    for (const item of orderedActionItems) {
-      const formRef = formRefs.current[item.key];
-      if (!formRef) {
-        if (showValidationUi) setOpenItemKey(item.key);
-        const message = "질문 폼이 준비되지 않았습니다. 다시 시도해주세요.";
-        if (strictMode) return { status: "failed", message };
-        continue;
+      if (isActionsLoading || isBusy) {
+        return { status: "failed", message: "진행 목록 저장이 진행 중입니다." };
       }
 
-      if (formRef.isUploading()) {
-        if (showValidationUi) setOpenItemKey(item.key);
-        const message = "이미지 업로드가 완료된 뒤 저장해주세요.";
-        if (strictMode) return { status: "failed", message };
-        continue;
-      }
-
-      const submission = formRef.validateAndGetSubmission({ showErrors: showValidationUi });
-      if (!submission) {
-        if (showValidationUi) setOpenItemKey(item.key);
-        const message = "질문 입력값을 확인해주세요.";
-        if (strictMode) return { status: "invalid", message };
-      }
-    }
-
-    setIsApplying(true);
-    try {
-      const response = await applyMissionActionSectionDraft(missionId);
-      const result = response.data;
-
-      for (const tempId of Object.keys(result.tempToRealCompletionIdMap)) {
-        dispatchRemoveCompletionDraftById(tempId);
-      }
-
-      const savedDraftKeys = new Set(
-        Object.keys(result.tempToRealActionIdMap).map(key => key.replace(/^draft:/, "")),
-      );
-      if (savedDraftKeys.size > 0) {
-        setDraftItems(prev => prev.filter(item => !savedDraftKeys.has(item.key)));
-        setActionTypeByItemKey(prev => {
-          const next = { ...prev };
-          for (const draftKey of savedDraftKeys) {
-            delete next[getDraftItemKey(draftKey)];
-          }
-          return next;
-        });
-      }
-
-      setDirtyByItemKey({});
-      setDraftFormSnapshotByItemKey({});
-      setValidationIssueCountByItemKey({});
+      const strictMode = trigger === "publish";
 
       for (const item of orderedActionItems) {
-        formRefs.current[item.key]?.deleteMarkedInitialImages();
+        const formRef = formRefs.current[item.key];
+        if (!formRef) {
+          if (showValidationUi) setOpenItemKey(item.key);
+          const message = "질문 폼이 준비되지 않았습니다. 다시 시도해주세요.";
+          if (strictMode) return { status: "failed", message };
+          continue;
+        }
+
+        if (formRef.isUploading()) {
+          if (showValidationUi) setOpenItemKey(item.key);
+          const message = "이미지 업로드가 완료된 뒤 저장해주세요.";
+          if (strictMode) return { status: "failed", message };
+          continue;
+        }
+
+        const submission = formRef.validateAndGetSubmission({ showErrors: showValidationUi });
+        if (!submission) {
+          if (showValidationUi) setOpenItemKey(item.key);
+          const message = "질문 입력값을 확인해주세요.";
+          if (strictMode) return { status: "invalid", message };
+        }
       }
 
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: actionQueryKeys.actions({ missionId }) }),
-        queryClient.invalidateQueries({
-          queryKey: missionCompletionQueryKeys.missionCompletion(missionId),
-        }),
-        queryClient.invalidateQueries({ queryKey: missionQueryKeys.mission(missionId) }),
-      ]);
+      setIsApplying(true);
+      try {
+        const response = await applyMissionActionSectionDraft(missionId);
+        const result = response.data;
 
-      if (result.updatedActionIds.length > 0) {
-        setExistingFormVersionById(prev => {
-          const next = { ...prev };
-          for (const actionId of result.updatedActionIds) {
-            next[actionId] = (next[actionId] ?? 0) + 1;
-          }
-          return next;
-        });
-      }
+        for (const tempId of Object.keys(result.tempToRealCompletionIdMap)) {
+          dispatchRemoveCompletionDraftById(tempId);
+        }
 
-      const savedCount = result.createdActionIds.length + result.updatedActionIds.length;
-      if (!silent && savedCount > 0) {
-        toast({ message: "진행 목록 설정이 저장되었습니다." });
-      }
+        const savedDraftKeys = new Set(
+          Object.keys(result.tempToRealActionIdMap).map(key => key.replace(/^draft:/, "")),
+        );
+        if (savedDraftKeys.size > 0) {
+          setDraftItems(prev => prev.filter(item => !savedDraftKeys.has(item.key)));
+          setActionTypeByItemKey(prev => {
+            const next = { ...prev };
+            for (const draftKey of savedDraftKeys) {
+              delete next[getDraftItemKey(draftKey)];
+            }
+            return next;
+          });
+        }
 
-      return savedCount > 0 ? { status: "saved", savedCount } : { status: "no_changes" };
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "진행 목록 설정 저장에 실패했습니다.";
-      if (!silent) {
-        toast({ message, icon: AlertCircle, iconClassName: "text-red-500" });
+        setDirtyByItemKey({});
+        setDraftFormSnapshotByItemKey({});
+        setValidationIssueCountByItemKey({});
+
+        for (const item of latestRef.current.orderedActionItems) {
+          latestRef.current.formRefs.current[item.key]?.deleteMarkedInitialImages();
+        }
+
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: actionQueryKeys.actions({ missionId }) }),
+          queryClient.invalidateQueries({
+            queryKey: missionCompletionQueryKeys.missionCompletion(missionId),
+          }),
+          queryClient.invalidateQueries({ queryKey: missionQueryKeys.mission(missionId) }),
+        ]);
+
+        if (result.updatedActionIds.length > 0) {
+          setExistingFormVersionById(prev => {
+            const next = { ...prev };
+            for (const actionId of result.updatedActionIds) {
+              next[actionId] = (next[actionId] ?? 0) + 1;
+            }
+            return next;
+          });
+        }
+
+        const savedCount = result.createdActionIds.length + result.updatedActionIds.length;
+        if (!silent && savedCount > 0) {
+          toast({ message: "진행 목록 설정이 저장되었습니다." });
+        }
+
+        return savedCount > 0 ? { status: "saved", savedCount } : { status: "no_changes" };
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "진행 목록 설정 저장에 실패했습니다.";
+        if (!silent) {
+          toast({ message, icon: AlertCircle, iconClassName: "text-red-500" });
+        }
+        return { status: "failed", message };
+      } finally {
+        setIsApplying(false);
       }
-      return { status: "failed", message };
-    } finally {
-      setIsApplying(false);
-    }
-  };
+    },
+    [],
+  );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: Jotai atom setter(set*)는 안정 참조이므로 의존성에서 제외
   const importDraftSnapshot = useCallback(async (snapshot: unknown) => {
@@ -222,7 +232,6 @@ export function useActionSaveFlow({
       exportDraftSnapshot: (): ActionSectionDraftSnapshot => getActionDraftSnapshot(),
       importDraftSnapshot,
     }),
-    // biome-ignore lint/correctness/useExhaustiveDependencies: executeSave는 의도적으로 매 렌더 갱신, Jotai setter는 안정 참조
     [
       executeSave,
       getActionDraftSnapshot,

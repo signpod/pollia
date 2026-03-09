@@ -10,9 +10,8 @@ import {
   isRewardFormValues,
 } from "@/app/(site)/(main)/create/schema";
 import { ImageCropModal } from "@/components/common/templates/action/image/ImageCropModal";
-import { useImageCrop } from "@/components/common/templates/action/image/hooks/useImageCrop";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
-import { useSingleImage } from "@/hooks/image";
+import { useCropperModal, useSingleImage } from "@/hooks/image";
 import type { GetMissionResponse } from "@/types/dto";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MissionType, PaymentType } from "@prisma/client";
@@ -25,7 +24,6 @@ import {
   useEffect,
   useImperativeHandle,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import { FormProvider, useForm } from "react-hook-form";
@@ -109,29 +107,7 @@ function RewardSettingsCardComponent(
     reValidateMode: "onChange",
   });
 
-  const { crop, zoom, rotation, setCrop, setZoom, setRotation, resetCropState, cropImage } =
-    useImageCrop();
-  const [cropModalOpen, setCropModalOpen] = useState(false);
-  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
-  const originalFileRef = useRef<File | null>(null);
-
-  const openCropper = useCallback(
-    (file: File) => {
-      const url = URL.createObjectURL(file);
-      originalFileRef.current = file;
-      setCropImageSrc(url);
-      resetCropState();
-      setCropModalOpen(true);
-    },
-    [resetCropState],
-  );
-
-  const closeCropper = useCallback(() => {
-    setCropModalOpen(false);
-    if (cropImageSrc) URL.revokeObjectURL(cropImageSrc);
-    setCropImageSrc(null);
-    originalFileRef.current = null;
-  }, [cropImageSrc]);
+  const { openCropper, cropModalProps } = useCropperModal();
 
   const rewardImageUpload = useSingleImage({
     initialUrl: initialReward?.imageUrl ?? null,
@@ -149,13 +125,6 @@ function RewardSettingsCardComponent(
       });
     },
   });
-
-  const handleCropComplete = useCallback(async () => {
-    if (!cropImageSrc || !originalFileRef.current) return;
-    const croppedFile = await cropImage(cropImageSrc, originalFileRef.current);
-    rewardImageUpload.upload(croppedFile);
-    closeCropper();
-  }, [cropImageSrc, cropImage, closeCropper, rewardImageUpload]);
 
   const isRewardImageBusy = form.formState.isSubmitting || rewardImageUpload.isUploading;
   const watchedRewardImageUrl = form.watch("reward.imageUrl");
@@ -363,7 +332,7 @@ function RewardSettingsCardComponent(
         rewardImageUpload.isUploading ? "업로드 중..." : "리워드 이미지를 1:1 비율로 설정합니다."
       }
       imageUrl={rewardImageUpload.previewUrl ?? watchedRewardImageUrl ?? undefined}
-      onImageSelect={file => openCropper(file)}
+      onImageSelect={file => openCropper(file, f => rewardImageUpload.upload(f))}
       onImageDelete={handleRewardImageDelete}
       disabled={isRewardImageBusy}
     />
@@ -381,20 +350,7 @@ function RewardSettingsCardComponent(
         </form>
       </FormProvider>
 
-      {cropImageSrc && (
-        <ImageCropModal
-          isOpen={cropModalOpen}
-          imageSrc={cropImageSrc}
-          crop={crop}
-          zoom={zoom}
-          rotation={rotation}
-          onCropChange={setCrop}
-          onZoomChange={setZoom}
-          onRotationChange={setRotation}
-          onCancel={closeCropper}
-          onComplete={handleCropComplete}
-        />
-      )}
+      {cropModalProps && <ImageCropModal {...cropModalProps} />}
     </>
   );
 }

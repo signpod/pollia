@@ -6,10 +6,9 @@ import {
   createMissionFormSchema,
 } from "@/app/(site)/(main)/create/schema";
 import { ImageCropModal } from "@/components/common/templates/action/image/ImageCropModal";
-import { useImageCrop } from "@/components/common/templates/action/image/hooks/useImageCrop";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
-import { useSingleImage } from "@/hooks/image";
+import { useCropperModal, useSingleImage } from "@/hooks/image";
 import type { GetMissionResponse } from "@/types/dto";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MissionType } from "@prisma/client";
@@ -22,8 +21,6 @@ import {
   useEffect,
   useImperativeHandle,
   useMemo,
-  useRef,
-  useState,
 } from "react";
 import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { EditorContentInfoSection } from "../../../components/view/EditorContentInfoSection";
@@ -73,39 +70,7 @@ function ContentBasicInfoCardComponent(
     reValidateMode: "onChange",
   });
 
-  const { crop, zoom, rotation, setCrop, setZoom, setRotation, resetCropState, cropImage } =
-    useImageCrop();
-  const [cropModalOpen, setCropModalOpen] = useState(false);
-  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
-  const originalFileRef = useRef<File | null>(null);
-  const cropCallbackRef = useRef<((file: File) => void) | null>(null);
-
-  const openCropper = useCallback(
-    (file: File, onComplete: (croppedFile: File) => void) => {
-      const url = URL.createObjectURL(file);
-      originalFileRef.current = file;
-      cropCallbackRef.current = onComplete;
-      setCropImageSrc(url);
-      resetCropState();
-      setCropModalOpen(true);
-    },
-    [resetCropState],
-  );
-
-  const closeCropper = useCallback(() => {
-    setCropModalOpen(false);
-    if (cropImageSrc) URL.revokeObjectURL(cropImageSrc);
-    setCropImageSrc(null);
-    originalFileRef.current = null;
-    cropCallbackRef.current = null;
-  }, [cropImageSrc]);
-
-  const handleCropComplete = useCallback(async () => {
-    if (!cropImageSrc || !originalFileRef.current) return;
-    const croppedFile = await cropImage(cropImageSrc, originalFileRef.current);
-    cropCallbackRef.current?.(croppedFile);
-    closeCropper();
-  }, [cropImageSrc, cropImage, closeCropper]);
+  const { openCropper, cropModalProps } = useCropperModal();
 
   const thumbnailImageUpload = useSingleImage({
     initialUrl: mission.imageUrl,
@@ -362,20 +327,7 @@ function ContentBasicInfoCardComponent(
         </form>
       </FormProvider>
 
-      {cropImageSrc && (
-        <ImageCropModal
-          isOpen={cropModalOpen}
-          imageSrc={cropImageSrc}
-          crop={crop}
-          zoom={zoom}
-          rotation={rotation}
-          onCropChange={setCrop}
-          onZoomChange={setZoom}
-          onRotationChange={setRotation}
-          onCancel={closeCropper}
-          onComplete={handleCropComplete}
-        />
-      )}
+      {cropModalProps && <ImageCropModal {...cropModalProps} />}
     </>
   );
 }

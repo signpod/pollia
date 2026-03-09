@@ -2,6 +2,7 @@ export { useUploadImage } from "./use-upload-image";
 export { useDeleteImage } from "./use-delete-image";
 export { useSingleImage } from "./use-single-image";
 export { useMultipleImages } from "./use-multiple-images";
+export { useCropperModal } from "./use-cropper-modal";
 export type {
   UploadedImageData,
   UseUploadImageOptions,
@@ -12,3 +13,4 @@ export type {
   UseMultipleImagesOptions,
   UseMultipleImagesReturn,
 } from "./types";
+export type { UseCropperModalReturn } from "./use-cropper-modal";
