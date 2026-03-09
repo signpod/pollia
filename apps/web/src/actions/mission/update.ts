@@ -1,6 +1,7 @@
 "use server";
 
 import { requireActiveUser } from "@/actions/common/auth";
+import { handleActionError } from "@/actions/common/error";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { missionService } from "@/server/services/mission";
 import type { UpdateMissionInput } from "@/server/services/mission/types";
@@ -21,13 +22,7 @@ export async function updateMission(missionId: string, request: UpdateMissionReq
 
     return { data: updatedMission };
   } catch (error) {
-    console.error("updateMission error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error(`${UBIQUITOUS_CONSTANTS.MISSION} 수정 중 오류가 발생했습니다.`);
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, `${UBIQUITOUS_CONSTANTS.MISSION} 수정 중 오류가 발생했습니다.`);
   }
 }
 
@@ -38,13 +33,7 @@ export async function setMissionPassword(missionId: string, password: string) {
     revalidatePath(`/mission/${missionId}`);
     return { success: true };
   } catch (error) {
-    console.error("setMissionPassword error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("비밀번호 설정 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "비밀번호 설정 중 오류가 발생했습니다.");
   }
 }
 
@@ -55,12 +44,6 @@ export async function removeMissionPassword(missionId: string) {
     revalidatePath(`/mission/${missionId}`);
     return { success: true };
   } catch (error) {
-    console.error("removeMissionPassword error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("비밀번호 제거 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "비밀번호 제거 중 오류가 발생했습니다.");
   }
 }

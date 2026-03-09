@@ -1,5 +1,6 @@
 "use server";
 
+import { handleActionError } from "@/actions/common/error";
 import type { KakaoUserInfo } from "@/types/external/kakao";
 
 /**
@@ -27,14 +28,6 @@ export async function getKakaoUserInfo(accessToken: string): Promise<KakaoUserIn
     const kakaoUser: KakaoUserInfo = await userResponse.json();
     return kakaoUser;
   } catch (error) {
-    console.error("❌ 카카오 사용자 정보 조회 에러:", error);
-
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-
-    const serverError = new Error("카카오 사용자 정보 조회 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "카카오 사용자 정보 조회 중 오류가 발생했습니다.");
   }
 }

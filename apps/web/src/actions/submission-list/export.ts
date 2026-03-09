@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/actions/common/auth";
+import { handleActionError } from "@/actions/common/error";
 import { actionRepository } from "@/server/repositories/action/actionRepository";
 import { missionResponseRepository } from "@/server/repositories/mission-response/missionResponseRepository";
 import {
@@ -39,12 +40,6 @@ export async function exportSubmissionsCsv(
 
     return { data: csvContent };
   } catch (error) {
-    console.error("exportSubmissionsCsv error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("CSV 내보내기 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "CSV 내보내기 중 오류가 발생했습니다.");
   }
 }

@@ -1,6 +1,7 @@
 "use server";
 
 import { requireActiveUser } from "@/actions/common/auth";
+import { handleActionError } from "@/actions/common/error";
 import { toggleMissionLikeSchema } from "@/schemas/mission-like";
 import { missionLikeService } from "@/server/services/mission-like";
 import type { ToggleMissionLikeRequest, ToggleMissionLikeResponse } from "@/types/dto/mission-like";
@@ -19,12 +20,6 @@ export async function toggleMissionLike(
     const result = await missionLikeService.toggleLike(parsed.data.missionId, user.id);
     return { data: result };
   } catch (error) {
-    console.error("toggleMissionLike error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("좋아요 처리 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "좋아요 처리 중 오류가 발생했습니다.");
   }
 }

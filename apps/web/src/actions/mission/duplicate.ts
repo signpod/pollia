@@ -1,6 +1,7 @@
 "use server";
 
 import { requireActiveUser } from "@/actions/common/auth";
+import { handleActionError } from "@/actions/common/error";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { missionService } from "@/server/services/mission";
 import type { DuplicateMissionRequest, DuplicateMissionResponse } from "@/types/dto";
@@ -19,12 +20,6 @@ export async function duplicateMission(
       },
     };
   } catch (error) {
-    console.error("duplicateMission error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error(`${UBIQUITOUS_CONSTANTS.MISSION} 복제 중 오류가 발생했습니다.`);
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, `${UBIQUITOUS_CONSTANTS.MISSION} 복제 중 오류가 발생했습니다.`);
   }
 }

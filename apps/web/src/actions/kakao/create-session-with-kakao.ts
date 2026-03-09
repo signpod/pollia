@@ -1,5 +1,6 @@
 "use server";
 
+import { handleActionError } from "@/actions/common/error";
 import { createClient as createServerSupabaseClient } from "@/database/utils/supabase/server";
 import type { CreateSessionWithKakaoRequest } from "@/types/external/kakao";
 import type { User } from "@supabase/supabase-js";
@@ -48,14 +49,6 @@ export async function createSessionWithKakao(
 
     return data.user;
   } catch (error) {
-    console.error("❌ 카카오 세션 생성 에러:", error);
-
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-
-    const serverError = new Error("카카오 세션 생성 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "카카오 세션 생성 중 오류가 발생했습니다.");
   }
 }

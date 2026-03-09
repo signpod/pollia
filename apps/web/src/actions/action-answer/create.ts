@@ -1,6 +1,7 @@
 "use server";
 
 import { resolveMissionActor } from "@/actions/common/auth";
+import { handleActionError } from "@/actions/common/error";
 import { actionAnswerService } from "@/server/services/action-answer";
 import type { SubmitAnswersInput } from "@/server/services/action-answer/types";
 import type { SubmitActionAnswersRequest, SubmitActionAnswersResponse } from "@/types/dto";
@@ -30,12 +31,6 @@ export async function submitAnswers(
     const result = await actionAnswerService.submitAnswers(input, actor);
     return { data: result };
   } catch (error) {
-    console.error("submitAnswers error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("답변 제출 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "답변 제출 중 오류가 발생했습니다.");
   }
 }

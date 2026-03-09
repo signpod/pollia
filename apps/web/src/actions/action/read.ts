@@ -1,5 +1,6 @@
 "use server";
 
+import { handleActionError } from "@/actions/common/error";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { actionService } from "@/server/services/action";
 import type { GetActionsOptions } from "@/server/services/action/types";
@@ -35,13 +36,7 @@ export async function getActionById(actionId: string): Promise<GetActionByIdResp
     const question = await actionService.getActionById(actionId);
     return { data: question };
   } catch (error) {
-    console.error("getActionById error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("질문을 불러올 수 없습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "질문을 불러올 수 없습니다.");
   }
 }
 
@@ -51,13 +46,7 @@ export async function getMissionActionIds(missionId: string): Promise<GetActionI
     const data = { actionIds };
     return { data };
   } catch (error) {
-    console.error("getMissionActionIds error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("질문 목록을 불러올 수 없습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "질문 목록을 불러올 수 없습니다.");
   }
 }
 
@@ -71,13 +60,7 @@ export const getMissionActionsDetail = cache(
       const questions = await actionService.getMissionActionsDetail(missionId);
       return { data: questions };
     } catch (error) {
-      console.error("getMissionActionsDetail error:", error);
-      if (error instanceof Error && error.cause) {
-        throw error;
-      }
-      const serverError = new Error("질문 상세 정보를 불러올 수 없습니다.");
-      serverError.cause = 500;
-      throw serverError;
+      return handleActionError(error, "질문 상세 정보를 불러올 수 없습니다.");
     }
   },
 );
@@ -104,14 +87,9 @@ export async function getMissionActions(
       nextCursor,
     };
   } catch (error) {
-    console.error("getMissionActions error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error(
+    return handleActionError(
+      error,
       `${UBIQUITOUS_CONSTANTS.MISSION} 질문 목록을 불러올 수 없습니다.`,
     );
-    serverError.cause = 500;
-    throw serverError;
   }
 }
