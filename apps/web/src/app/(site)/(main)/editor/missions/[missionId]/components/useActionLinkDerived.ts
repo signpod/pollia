@@ -1,7 +1,4 @@
-import type {
-  ActionFormHandle,
-  ActionFormRawSnapshot,
-} from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
+import type { ActionFormRawSnapshot } from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
 import { makeDraftActionId } from "@/app/(site)/mission/[missionId]/manage/actions/logic";
 import { ACTION_TYPE_LABELS } from "@/constants/action";
 import { ActionType } from "@prisma/client";
@@ -12,7 +9,6 @@ interface UseActionLinkDerivedParams {
   orderedActionItems: ActionListItem[];
   draftFormSnapshotByItemKey: Record<string, ActionFormRawSnapshot>;
   actionTypeByItemKey: Record<string, ActionType>;
-  formRefs: React.MutableRefObject<Record<string, ActionFormHandle | null>>;
   entryActionId: string | null;
 }
 
@@ -25,13 +21,11 @@ export function useActionLinkDerived({
   orderedActionItems,
   draftFormSnapshotByItemKey,
   actionTypeByItemKey,
-  formRefs,
   entryActionId,
 }: UseActionLinkDerivedParams): UseActionLinkDerivedReturn {
   const linkTargets = useMemo(() => {
     return orderedActionItems.map((item, index) => {
-      const snapshot =
-        formRefs.current[item.key]?.getRawSnapshot() ?? draftFormSnapshotByItemKey[item.key];
+      const snapshot = draftFormSnapshotByItemKey[item.key];
       const snapshotTitle = snapshot?.values?.title?.trim();
 
       if (item.kind === "existing") {

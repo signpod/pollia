@@ -8,7 +8,7 @@ export {
   createMockActionOption,
   createMockActionResponse,
   createMockActionWithOptions,
-  createMockMission as mockMissionFactory,
+  createMockMission,
   createMockMissionCompletion,
   expectServiceErrorWithCause,
 } from "../testUtils";

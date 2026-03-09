@@ -269,7 +269,6 @@ export function useActionSettingsCard({
     orderedActionItems,
     draftFormSnapshotByItemKey,
     actionTypeByItemKey,
-    formRefs,
     entryActionId,
   });
 

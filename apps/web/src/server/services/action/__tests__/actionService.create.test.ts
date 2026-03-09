@@ -3,8 +3,8 @@ import {
   type ActionServiceTestContext,
   createActionServiceTestContext,
   createMockActionResponse,
+  createMockMission,
   expectServiceErrorWithCause,
-  mockMissionFactory,
 } from "../testUtils";
 
 describe("ActionService - Create", () => {
@@ -21,7 +21,7 @@ describe("ActionService - Create", () => {
   describe("createMultipleChoiceAction", () => {
     it("Multiple Choice Action을 성공적으로 생성한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const request = {
         missionId: "mission1",
         title: "좋아하는 색은?",
@@ -90,7 +90,7 @@ describe("ActionService - Create", () => {
 
     it("isRequired를 false로 설정하여 선택 액션을 생성한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const request = {
         missionId: "mission1",
         title: "좋아하는 색은?",
@@ -123,7 +123,7 @@ describe("ActionService - Create", () => {
 
     it("isRequired를 명시적으로 true로 설정하여 필수 액션을 생성한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const request = {
         missionId: "mission1",
         title: "좋아하는 색은?",
@@ -149,7 +149,7 @@ describe("ActionService - Create", () => {
 
     it("Mission 소유자가 아니면 403 에러를 던진다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const request = {
         missionId: "mission1",
         title: "액션",
@@ -240,7 +240,7 @@ describe("ActionService - Create", () => {
   describe("createScaleAction", () => {
     it("Scale Action을 성공적으로 생성한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const request = {
         missionId: "mission1",
         title: "만족도를 평가해주세요",
@@ -327,7 +327,7 @@ describe("ActionService - Create", () => {
 
     it("Mission 소유자가 아니면 403 에러를 던진다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const request = {
         missionId: "mission1",
         title: "만족도를 평가해주세요",
@@ -405,7 +405,7 @@ describe("ActionService - Create", () => {
   describe("createSubjectiveAction", () => {
     it("Subjective Action을 성공적으로 생성한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const request = {
         missionId: "mission1",
         title: "의견을 자유롭게 작성해주세요",
@@ -446,7 +446,7 @@ describe("ActionService - Create", () => {
 
     it("Mission 소유자가 아니면 403 에러를 던진다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const request = {
         missionId: "mission1",
         title: "의견을 자유롭게 작성해주세요",
@@ -491,7 +491,7 @@ describe("ActionService - Create", () => {
   describe("createShortTextAction", () => {
     it("Short Text Action을 성공적으로 생성한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const request = {
         missionId: "mission1",
         title: "이름을 입력해주세요",
@@ -532,7 +532,7 @@ describe("ActionService - Create", () => {
 
     it("Mission 소유자가 아니면 403 에러를 던진다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const request = {
         missionId: "mission1",
         title: "이름을 입력해주세요",
@@ -602,7 +602,7 @@ describe("ActionService - Create", () => {
 
     it("Either Or Action을 성공적으로 생성한다 (missionId 있음)", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const request = {
         missionId: "mission1",
         title: "A와 B 중 선택하세요",
@@ -629,7 +629,7 @@ describe("ActionService - Create", () => {
 
     it("Mission 소유자가 아니면 403 에러를 던진다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const request = {
         missionId: "mission1",
         title: "A와 B 중 선택하세요",
@@ -690,7 +690,7 @@ describe("ActionService - Create", () => {
   describe("createDateAction", () => {
     it("Date Action을 성공적으로 생성한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const request = {
         missionId: "mission1",
         title: "방문 가능한 날짜를 선택해주세요",
@@ -733,7 +733,7 @@ describe("ActionService - Create", () => {
 
     it("isRequired를 false로 설정하여 선택 액션을 생성한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const request = {
         missionId: "mission1",
         title: "방문 가능한 날짜를 선택해주세요",
@@ -762,7 +762,7 @@ describe("ActionService - Create", () => {
 
     it("Mission 소유자가 아니면 403 에러를 던진다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const request = {
         missionId: "mission1",
         title: "방문 가능한 날짜를 선택해주세요",
@@ -824,7 +824,7 @@ describe("ActionService - Create", () => {
   describe("createTimeAction", () => {
     it("Time Action을 성공적으로 생성한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const request = {
         missionId: "mission1",
         title: "방문 가능한 시간을 선택해주세요",
@@ -867,7 +867,7 @@ describe("ActionService - Create", () => {
 
     it("isRequired를 false로 설정하여 선택 액션을 생성한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const request = {
         missionId: "mission1",
         title: "방문 가능한 시간을 선택해주세요",
@@ -896,7 +896,7 @@ describe("ActionService - Create", () => {
 
     it("Mission 소유자가 아니면 403 에러를 던진다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const request = {
         missionId: "mission1",
         title: "방문 가능한 시간을 선택해주세요",

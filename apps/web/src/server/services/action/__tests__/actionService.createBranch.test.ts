@@ -3,8 +3,8 @@ import {
   type ActionServiceTestContext,
   createActionServiceTestContext,
   createMockActionResponse,
+  createMockMission,
   expectServiceErrorWithCause,
-  mockMissionFactory,
 } from "../testUtils";
 
 const TEST_USER_ID = "user1";
@@ -58,7 +58,7 @@ describe("ActionService - createBranchAction", () => {
   describe("정상 케이스", () => {
     it("정확히 2개 옵션으로 BRANCH 액션을 성공적으로 생성한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const request = createBranchRequest({
         title: "다음 중 선택하세요",
         description: "경로를 선택해주세요",
@@ -133,7 +133,7 @@ describe("ActionService - createBranchAction", () => {
 
     it("nextActionId가 null인 옵션으로 BRANCH 액션을 생성한다", async () => {
       // Given: 나중에 연결할 수 있도록 nextActionId가 null
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const request = createBranchRequest({
         options: [
           { title: "경로 A", order: 0, nextActionId: null },
@@ -171,7 +171,7 @@ describe("ActionService - createBranchAction", () => {
 
     it("한 옵션만 nextActionId를 가진 BRANCH 액션을 생성한다", async () => {
       // Given: 부분적으로 연결된 분기
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const request = createBranchRequest({
         options: [
           { title: "경로 A", order: 0, nextActionId: "action-next-1" },
@@ -193,7 +193,7 @@ describe("ActionService - createBranchAction", () => {
 
     it("maxSelections가 자동으로 1로 설정된다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const request = createBranchRequest();
       const mockCreatedAction = createMockActionResponse(request, ActionType.BRANCH);
 
@@ -215,7 +215,7 @@ describe("ActionService - createBranchAction", () => {
 
     it("hasOther가 자동으로 false로 설정된다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const request = createBranchRequest();
       const mockCreatedAction = createMockActionResponse(request, ActionType.BRANCH);
 
@@ -384,7 +384,7 @@ describe("ActionService - createBranchAction", () => {
 
     it("Mission 소유자가 아닐 때 403 에러를 던진다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       const request = createBranchRequest();
 
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);

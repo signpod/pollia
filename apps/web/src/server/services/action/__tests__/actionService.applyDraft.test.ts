@@ -4,9 +4,9 @@ import {
   type ActionServiceTestContext,
   createActionServiceTestContext,
   createMockAction,
+  createMockMission,
   createMockMissionCompletion,
   expectServiceErrorWithCause,
-  mockMissionFactory,
 } from "../testUtils";
 
 jest.mock("@/database/utils/prisma/client", () => ({
@@ -42,7 +42,7 @@ describe("ActionService - applyActionSectionDraft", () => {
 
     it("미션 소유자가 아니면 403 에러를 던진다", async () => {
       // Given
-      const mockMission = mockMissionFactory({ id: "mission1", creatorId: "owner" });
+      const mockMission = createMockMission({ id: "mission1", creatorId: "owner" });
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
 
       // When & Then
@@ -57,7 +57,7 @@ describe("ActionService - applyActionSectionDraft", () => {
   describe("draft 없음", () => {
     it("editorDraft가 null이면 400 에러를 던진다", async () => {
       // Given
-      const mockMission = mockMissionFactory({ editorDraft: null });
+      const mockMission = createMockMission({ editorDraft: null });
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
 
       // When & Then
@@ -70,7 +70,7 @@ describe("ActionService - applyActionSectionDraft", () => {
 
     it("editorDraft의 action 섹션이 null이면 빈 결과를 반환한다", async () => {
       // Given
-      const mockMission = mockMissionFactory({
+      const mockMission = createMockMission({
         editorDraft: { basic: null, reward: null, action: null, completion: null },
       });
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
@@ -109,7 +109,7 @@ describe("ActionService - applyActionSectionDraft", () => {
         itemOrderKeys: ["draft:abc"],
       };
 
-      const mockMission = mockMissionFactory({
+      const mockMission = createMockMission({
         editorDraft: { action: actionDraft, completion: null },
       });
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
@@ -177,7 +177,7 @@ describe("ActionService - applyActionSectionDraft", () => {
         itemOrderKeys: ["existing:action1", "existing:action2"],
       };
 
-      const mockMission = mockMissionFactory({
+      const mockMission = createMockMission({
         editorDraft: { action: actionDraft, completion: null },
       });
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
@@ -226,7 +226,7 @@ describe("ActionService - applyActionSectionDraft", () => {
         },
       };
 
-      const mockMission = mockMissionFactory({
+      const mockMission = createMockMission({
         editorDraft: { action: actionDraft, completion: completionDraft },
       });
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
@@ -265,7 +265,7 @@ describe("ActionService - applyActionSectionDraft", () => {
         itemOrderKeys: [],
       };
 
-      const mockMission = mockMissionFactory({
+      const mockMission = createMockMission({
         editorDraft: {
           basic: { title: "제목" },
           reward: { points: 100 },
@@ -300,7 +300,7 @@ describe("ActionService - applyActionSectionDraft", () => {
   describe("draft 파싱 실패", () => {
     it("action draft가 유효하지 않은 형태이면 400 에러를 던진다", async () => {
       // Given
-      const mockMission = mockMissionFactory({
+      const mockMission = createMockMission({
         editorDraft: { action: "invalid-not-an-object", completion: null },
       });
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
@@ -321,7 +321,7 @@ describe("ActionService - applyActionSectionDraft", () => {
         actionTypeByItemKey: {},
         itemOrderKeys: [],
       };
-      const mockMission = mockMissionFactory({
+      const mockMission = createMockMission({
         editorDraft: { action: actionDraft, completion: null },
       });
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
@@ -355,7 +355,7 @@ describe("ActionService - applyActionSectionDraft", () => {
         itemOrderKeys: ["draft:q1"],
       };
 
-      const mockMission = mockMissionFactory({
+      const mockMission = createMockMission({
         editorDraft: { action: actionDraft, completion: null },
       });
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
@@ -405,7 +405,7 @@ describe("ActionService - applyActionSectionDraft", () => {
         },
       };
 
-      const mockMission = mockMissionFactory({
+      const mockMission = createMockMission({
         editorDraft: { action: actionDraft, completion: completionDraft },
       });
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
@@ -497,7 +497,7 @@ describe("ActionService - applyActionSectionDraft", () => {
         },
       };
 
-      const mockMission = mockMissionFactory({
+      const mockMission = createMockMission({
         editorDraft: { action: actionDraft, completion: completionDraft },
       });
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
@@ -573,7 +573,7 @@ describe("ActionService - applyActionSectionDraft", () => {
         },
       };
 
-      const mockMission = mockMissionFactory({
+      const mockMission = createMockMission({
         editorDraft: { action: actionDraft, completion: completionDraft },
       });
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
@@ -657,7 +657,7 @@ describe("ActionService - applyActionSectionDraft", () => {
       // 서버 saveEditorDraft: toServerEditorDraftPayload (2차 변환)
       const serverStoredPayload = toServerEditorDraftPayload(frontendPayload);
 
-      const mockMission = mockMissionFactory({
+      const mockMission = createMockMission({
         editorDraft: serverStoredPayload as unknown as Prisma.JsonValue,
       });
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
@@ -717,7 +717,7 @@ describe("ActionService - applyActionSectionDraft", () => {
         },
       };
 
-      const mockMission = mockMissionFactory({
+      const mockMission = createMockMission({
         editorDraft: { action: actionDraft, completion: completionDraft },
       });
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
