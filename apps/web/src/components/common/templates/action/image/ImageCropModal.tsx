@@ -8,6 +8,7 @@ import { CROP_CONSTANTS } from "./hooks/useImageCrop";
 
 interface ImageCropModalProps {
   isOpen: boolean;
+  isProcessing?: boolean;
   imageSrc: string;
   crop: { x: number; y: number };
   zoom: number;
@@ -22,6 +23,7 @@ interface ImageCropModalProps {
 
 export function ImageCropModal({
   isOpen,
+  isProcessing = false,
   imageSrc,
   crop,
   zoom,
@@ -37,13 +39,13 @@ export function ImageCropModal({
     <Dialog
       open={isOpen}
       onOpenChange={open => {
-        if (!open) {
+        if (!open && !isProcessing) {
           onCancel();
         }
       }}
     >
       <DialogPortal>
-        <DialogOverlay onClick={onCancel} />
+        <DialogOverlay onClick={isProcessing ? undefined : onCancel} />
         <div
           className={cn(
             "fixed top-[50%] left-[50%] z-50 w-[calc(100%-40px)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg bg-white shadow-lg",
@@ -117,6 +119,7 @@ export function ImageCropModal({
               <ButtonV2
                 variant="secondary"
                 onClick={onCancel}
+                disabled={isProcessing}
                 className="flex-1 touch-manipulation"
               >
                 <div className="flex justify-center items-center text-center flex-1">취소</div>
@@ -124,6 +127,8 @@ export function ImageCropModal({
               <ButtonV2
                 variant="primary"
                 onClick={onComplete}
+                disabled={isProcessing}
+                loading={isProcessing}
                 className="flex-1 touch-manipulation"
               >
                 <div className="flex justify-center items-center text-center flex-1">완료</div>

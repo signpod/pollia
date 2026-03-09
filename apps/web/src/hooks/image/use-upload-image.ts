@@ -22,10 +22,13 @@ export function useUploadImage(options: UseUploadImageOptions = {}): UseUploadIm
 
   const uploadMutation = useMutation({
     mutationFn: async (file: File): Promise<UploadedImageData> => {
+      const { preprocessGifForUpload } = await import("@/lib/gifCrop");
+      const processedFile = await preprocessGifForUpload(file);
+
       const uploadRequest: UploadFileRequest = {
-        fileName: file.name,
-        fileType: file.type,
-        fileSize: file.size,
+        fileName: processedFile.name,
+        fileType: processedFile.type,
+        fileSize: processedFile.size,
         bucket: optionsRef.current.bucket || STORAGE_BUCKETS.MISSION_IMAGES,
         actionType: ActionType.IMAGE,
       };
@@ -34,7 +37,7 @@ export function useUploadImage(options: UseUploadImageOptions = {}): UseUploadIm
       assertActionSuccess(result);
       const { uploadUrl, publicUrl, path, fileUploadId } = result.data;
 
-      await uploadFileToStorage(file, uploadUrl);
+      await uploadFileToStorage(processedFile, uploadUrl);
 
       return { publicUrl, fileUploadId, path };
     },
