@@ -1,6 +1,7 @@
 "use server";
 
 import { resolveMissionActor } from "@/actions/common/auth";
+import { handleActionError } from "@/actions/common/error";
 import { getRequestMeta } from "@/actions/common/requestMeta";
 import { missionResponseService } from "@/server/services/mission-response";
 import type {
@@ -18,13 +19,7 @@ export async function startMissionResponse(
     const response = await missionResponseService.startResponse(request, actor);
     return { data: response };
   } catch (error) {
-    console.error("startMissionResponse error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("응답 시작 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "응답 시작 중 오류가 발생했습니다.");
   }
 }
 
@@ -41,12 +36,6 @@ export async function completeMissionResponse(
     );
     return { data: response };
   } catch (error) {
-    console.error("completeMissionResponse error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("응답 완료 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "응답 완료 중 오류가 발생했습니다.");
   }
 }

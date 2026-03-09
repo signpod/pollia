@@ -14,6 +14,7 @@ import {
   createTimeAction,
   createVideoAction,
 } from "@/actions/action/create";
+import { toMutationFn } from "@/actions/common/error";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { BRANCH_HAS_OTHER, BRANCH_MAX_SELECTIONS } from "@/schemas/action";
 import type {
@@ -31,6 +32,7 @@ import type {
   CreateTimeActionRequest,
   CreateVideoActionRequest,
 } from "@/types/dto";
+import type { BaseActionResponse } from "@/types/dto";
 import type { ActionType } from "@prisma/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -60,8 +62,8 @@ interface UseManageCreateActionOptions {
 export function useManageCreateAction(options: UseManageCreateActionOptions = {}) {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async (input: CreateActionInput) => {
+  return useMutation<BaseActionResponse, Error, CreateActionInput>({
+    mutationFn: toMutationFn(async (input: CreateActionInput) => {
       const baseFields = {
         missionId: input.missionId,
         title: input.title,
@@ -196,7 +198,7 @@ export function useManageCreateAction(options: UseManageCreateActionOptions = {}
         default:
           throw new Error(`알 수 없는 액션 타입입니다: ${input.type}`);
       }
-    },
+    }),
 
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({

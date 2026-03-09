@@ -9,11 +9,16 @@ interface UseCompletionImageDownloadOptions {
   completionTitle?: string;
 }
 
+const FIGMA_WIDTH = 390;
 const CANVAS_WIDTH = 1080;
-const PADDING = 48;
+const SCALE = CANVAS_WIDTH / FIGMA_WIDTH;
+const PADDING = Math.round(20 * SCALE);
 const IMAGE_SIZE = CANVAS_WIDTH - PADDING * 2;
-const IMAGE_RADIUS = 48;
-const LOGO_HEIGHT = 48;
+const IMAGE_RADIUS = Math.round(16 * SCALE);
+const LOGO_HEIGHT = Math.round(18 * SCALE);
+const IMAGE_TEXT_GAP = Math.round(40 * SCALE);
+const SUBTITLE_TITLE_GAP = Math.round(4 * SCALE);
+const DIVIDER_PADDING = Math.round(16 * SCALE);
 
 async function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -64,19 +69,19 @@ async function generateCompletionImage({
     logoImg = await loadImage("/images/pollia-logo.png");
   } catch {}
 
-  const titleFontSize = 36;
-  const subtitleFontSize = 28;
-  const lineHeight = 1.4;
+  const subtitleFontSize = Math.round(16 * SCALE);
+  const titleFontSize = Math.round(24 * SCALE);
+  const lineHeight = 1.5;
 
   let totalTextHeight = 0;
   if (missionTitle) totalTextHeight += subtitleFontSize * lineHeight;
   if (completionTitle) totalTextHeight += titleFontSize * lineHeight;
-  if (missionTitle && completionTitle) totalTextHeight += 8;
+  if (missionTitle && completionTitle) totalTextHeight += SUBTITLE_TITLE_GAP;
 
-  const dividerY = PADDING;
-  const imageY = dividerY + 2 + PADDING;
-  const textY = imageY + IMAGE_SIZE + PADDING;
-  const logoY = textY + totalTextHeight + PADDING;
+  const imageY = PADDING;
+  const textY = imageY + IMAGE_SIZE + IMAGE_TEXT_GAP;
+  const dividerY = textY + totalTextHeight + DIVIDER_PADDING;
+  const logoY = dividerY + 2 + DIVIDER_PADDING;
   const canvasHeight = logoY + (logoImg ? LOGO_HEIGHT + PADDING : PADDING);
 
   const canvas = document.createElement("canvas");
@@ -87,9 +92,6 @@ async function generateCompletionImage({
 
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, CANVAS_WIDTH, canvasHeight);
-
-  ctx.fillStyle = "#f4f4f5";
-  ctx.fillRect(PADDING, dividerY, CANVAS_WIDTH - PADDING * 2, 2);
 
   ctx.shadowColor = "rgba(9, 9, 11, 0.16)";
   ctx.shadowBlur = 40;
@@ -104,22 +106,25 @@ async function generateCompletionImage({
   let currentY = textY;
 
   if (missionTitle) {
-    ctx.font = `400 ${subtitleFontSize}px -apple-system, "Helvetica Neue", sans-serif`;
+    ctx.font = `700 ${subtitleFontSize}px "SUIT Variable", -apple-system, "Helvetica Neue", sans-serif`;
     ctx.fillStyle = "#71717a";
     ctx.fillText(missionTitle, CANVAS_WIDTH / 2, currentY + subtitleFontSize);
-    currentY += subtitleFontSize * lineHeight + 8;
+    currentY += subtitleFontSize * lineHeight + SUBTITLE_TITLE_GAP;
   }
 
   if (completionTitle) {
-    ctx.font = `700 ${titleFontSize}px -apple-system, "Helvetica Neue", sans-serif`;
+    ctx.font = `700 ${titleFontSize}px "SUIT Variable", -apple-system, "Helvetica Neue", sans-serif`;
     ctx.fillStyle = "#18181b";
     ctx.fillText(completionTitle, CANVAS_WIDTH / 2, currentY + titleFontSize);
   }
 
+  ctx.fillStyle = "#f4f4f5";
+  ctx.fillRect(0, dividerY, CANVAS_WIDTH, 2);
+
   if (logoImg) {
     const logoScale = LOGO_HEIGHT / logoImg.height;
     const logoWidth = logoImg.width * logoScale;
-    ctx.drawImage(logoImg, (CANVAS_WIDTH - logoWidth) / 2, logoY, logoWidth, LOGO_HEIGHT);
+    ctx.drawImage(logoImg, PADDING, logoY, logoWidth, LOGO_HEIGHT);
   }
 
   return new Promise((resolve, reject) => {

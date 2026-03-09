@@ -9,10 +9,9 @@ import {
   createMissionFormSchema,
   isRewardFormValues,
 } from "@/app/(site)/(main)/create/schema";
-import { AdminImageCropDialog } from "@/app/admin/components/common/cropper/AdminImageCropDialog";
-import { useImageCropper } from "@/app/admin/components/common/cropper/use-image-cropper";
-import { useSingleImage } from "@/app/admin/hooks/admin-image";
+import { ImageCropModal } from "@/components/common/templates/action/image/ImageCropModal";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
+import { useCropperModal, useSingleImage } from "@/hooks/image";
 import type { GetMissionResponse } from "@/types/dto";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MissionType, PaymentType } from "@prisma/client";
@@ -108,9 +107,7 @@ function RewardSettingsCardComponent(
     reValidateMode: "onChange",
   });
 
-  const rewardImageCropper = useImageCropper({
-    fileNamePrefix: `reward-image-${mission.id}`,
-  });
+  const { openCropper, cropModalProps } = useCropperModal();
 
   const rewardImageUpload = useSingleImage({
     initialUrl: initialReward?.imageUrl ?? null,
@@ -335,7 +332,7 @@ function RewardSettingsCardComponent(
         rewardImageUpload.isUploading ? "업로드 중..." : "리워드 이미지를 1:1 비율로 설정합니다."
       }
       imageUrl={rewardImageUpload.previewUrl ?? watchedRewardImageUrl ?? undefined}
-      onImageSelect={file => rewardImageCropper.openWithFile(file)}
+      onImageSelect={file => openCropper(file, f => rewardImageUpload.upload(f))}
       onImageDelete={handleRewardImageDelete}
       disabled={isRewardImageBusy}
     />
@@ -353,22 +350,7 @@ function RewardSettingsCardComponent(
         </form>
       </FormProvider>
 
-      <AdminImageCropDialog
-        open={rewardImageCropper.isOpen}
-        imageSrc={rewardImageCropper.imageSrc}
-        aspect={1}
-        title="리워드 이미지 편집"
-        description="이미지를 1:1 비율로 맞춰 저장합니다."
-        fileName={rewardImageCropper.fileName ?? `reward-image-${mission.id}.jpg`}
-        onOpenChange={open => {
-          if (!open) {
-            rewardImageCropper.close();
-          }
-        }}
-        onConfirm={file => {
-          rewardImageUpload.upload(file);
-        }}
-      />
+      {cropModalProps && <ImageCropModal {...cropModalProps} />}
     </>
   );
 }

@@ -1,6 +1,7 @@
 "use server";
 
 import { requireActiveUser } from "@/actions/common/auth";
+import { handleActionError } from "@/actions/common/error";
 import { actionService } from "@/server/services/action";
 import { revalidatePath } from "next/cache";
 
@@ -25,12 +26,6 @@ export async function reorderActions(request: ReorderActionsRequest) {
 
     return { data: result };
   } catch (error) {
-    console.error("reorderActions error:", error);
-    if (error instanceof Error && error.cause) {
-      throw error;
-    }
-    const serverError = new Error("액션 순서 변경 중 오류가 발생했습니다.");
-    serverError.cause = 500;
-    throw serverError;
+    return handleActionError(error, "액션 순서 변경 중 오류가 발생했습니다.");
   }
 }

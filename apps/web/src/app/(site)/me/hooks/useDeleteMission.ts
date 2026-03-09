@@ -1,5 +1,6 @@
 "use client";
 
+import { toMutationFn } from "@/actions/common/error";
 import { deleteMission } from "@/actions/mission/delete";
 import { toast } from "@/components/common/Toast";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
@@ -10,9 +11,7 @@ export function useDeleteMission() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (missionId: string) => {
-      return await deleteMission(missionId);
-    },
+    mutationFn: toMutationFn(deleteMission),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: missionQueryKeys.userMissions(),

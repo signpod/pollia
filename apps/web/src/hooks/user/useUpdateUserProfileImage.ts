@@ -1,40 +1,45 @@
 "use client";
 
+import { toMutationFn } from "@/actions/common/error";
 import { updateUser } from "@/actions/user";
 import { toast } from "@/components/common/Toast";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { userQueryKeys } from "@/constants/queryKeys/userQueryKeys";
-import { useImageUpload } from "@/hooks/common/useImageUpload";
+import { useUploadImage } from "@/hooks/image";
 import type { GetCurrentUserResponse } from "@/types/dto/user";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-
-interface UpdateProfileImageContext {
-  previousData: GetCurrentUserResponse | undefined;
-}
+import { useCallback, useRef } from "react";
 
 const PROFILE_IMAGE_MESSAGES = {
   success: "프로필 사진이 변경되었어요.",
   error: "프로필 사진 변경 중 오류가 발생했어요.",
 } as const;
 
+interface UpdateProfileImageCallbacks {
+  onSuccess?: () => void;
+  onError?: () => void;
+}
+
 export const useUpdateUserProfileImage = () => {
   const queryClient = useQueryClient();
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const { uploadAsync, isUploading } = useImageUpload({
-    bucket: STORAGE_BUCKETS.USER_PROFILE_IMAGES,
-  });
+  const callbacksRef = useRef<UpdateProfileImageCallbacks | null>(null);
 
-  const updateMutation = useMutation<{ data: unknown }, Error, File, UpdateProfileImageContext>({
-    mutationFn: async (file: File) => {
-      const uploaded = await uploadAsync(file);
-      return await updateUser({ profileImageFileUploadId: uploaded.fileUploadId });
-    },
+  const resolveCallbacks = (type: "onSuccess" | "onError") => {
+    callbacksRef.current?.[type]?.();
+    callbacksRef.current = null;
+  };
 
-    onMutate: async file => {
-      const objectUrl = URL.createObjectURL(file);
-      setPreviewUrl(objectUrl);
+  const updateMutation = useMutation<
+    Awaited<ReturnType<typeof updateUser>>,
+    Error,
+    { fileUploadId: string },
+    { previousData: GetCurrentUserResponse | undefined }
+  >({
+    mutationFn: toMutationFn(async ({ fileUploadId }: { fileUploadId: string }) =>
+      updateUser({ profileImageFileUploadId: fileUploadId }),
+    ),
 
+    onMutate: async () => {
       await queryClient.cancelQueries({
         queryKey: userQueryKeys.currentUser(),
       });
@@ -51,30 +56,41 @@ export const useUpdateUserProfileImage = () => {
         queryClient.invalidateQueries({ queryKey: userQueryKeys.currentUser() }),
         queryClient.invalidateQueries({ queryKey: ["profile-image"] }),
       ]);
-      setPreviewUrl(prev => {
-        if (prev) URL.revokeObjectURL(prev);
-        return null;
-      });
       toast.success(PROFILE_IMAGE_MESSAGES.success);
+      resolveCallbacks("onSuccess");
     },
 
-    onError: (_, __, context) => {
-      setPreviewUrl(prev => {
-        if (prev) URL.revokeObjectURL(prev);
-        return null;
-      });
+    onError: (error, _, context) => {
       if (context?.previousData) {
         queryClient.setQueryData(userQueryKeys.currentUser(), context.previousData);
       }
-      toast.warning(PROFILE_IMAGE_MESSAGES.error);
+      toast.warning(error.message || PROFILE_IMAGE_MESSAGES.error);
+      resolveCallbacks("onError");
     },
   });
 
+  const uploadImage = useUploadImage({
+    bucket: STORAGE_BUCKETS.USER_PROFILE_IMAGES,
+    onUploadSuccess: data => updateMutation.mutate({ fileUploadId: data.fileUploadId }),
+    onUploadError: error => {
+      toast.warning(error.message || PROFILE_IMAGE_MESSAGES.error);
+      resolveCallbacks("onError");
+    },
+  });
+
+  const updateProfileImage = useCallback(
+    (file: File | null, callbacks?: UpdateProfileImageCallbacks) => {
+      if (!file) return;
+      callbacksRef.current = callbacks ?? null;
+      uploadImage.upload(file);
+    },
+    [uploadImage],
+  );
+
   return {
-    updateProfileImage: updateMutation.mutate,
-    updateProfileImageAsync: updateMutation.mutateAsync,
-    isPending: updateMutation.isPending || isUploading,
-    previewUrl,
+    updateProfileImage,
+    isPending: uploadImage.isUploading || updateMutation.isPending,
+    previewUrl: uploadImage.previewUrl,
   };
 };
 

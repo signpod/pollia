@@ -5,11 +5,10 @@ import {
   type CreateMissionFormData,
   createMissionFormSchema,
 } from "@/app/(site)/(main)/create/schema";
-import { AdminImageCropDialog } from "@/app/admin/components/common/cropper/AdminImageCropDialog";
-import { useImageCropper } from "@/app/admin/components/common/cropper/use-image-cropper";
-import { useSingleImage } from "@/app/admin/hooks/admin-image";
+import { ImageCropModal } from "@/components/common/templates/action/image/ImageCropModal";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
+import { useCropperModal, useSingleImage } from "@/hooks/image";
 import type { GetMissionResponse } from "@/types/dto";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MissionType } from "@prisma/client";
@@ -71,12 +70,7 @@ function ContentBasicInfoCardComponent(
     reValidateMode: "onChange",
   });
 
-  const thumbnailCropper = useImageCropper({
-    fileNamePrefix: `mission-thumbnail-${mission.id}`,
-  });
-  const brandLogoCropper = useImageCropper({
-    fileNamePrefix: `brand-logo-${mission.id}`,
-  });
+  const { openCropper, cropModalProps } = useCropperModal();
 
   const thumbnailImageUpload = useSingleImage({
     initialUrl: mission.imageUrl,
@@ -301,7 +295,7 @@ function ContentBasicInfoCardComponent(
           brandLogoImageUpload.isUploading ? "업로드 중..." : "브랜드 로고를 1:1 비율로 설정합니다."
         }
         imageUrl={brandLogoImageUpload.previewUrl ?? watchedBrandLogoUrl ?? undefined}
-        onImageSelect={file => brandLogoCropper.openWithFile(file)}
+        onImageSelect={file => openCropper(file, f => brandLogoImageUpload.upload(f))}
         onImageDelete={handleBrandLogoDelete}
         disabled={isBrandLogoBusy}
       />
@@ -314,7 +308,7 @@ function ContentBasicInfoCardComponent(
             : `${UBIQUITOUS_CONSTANTS.MISSION} 썸네일을 1:1 비율로 설정합니다.`
         }
         imageUrl={thumbnailImageUpload.previewUrl ?? watchedImageUrl ?? undefined}
-        onImageSelect={file => thumbnailCropper.openWithFile(file)}
+        onImageSelect={file => openCropper(file, f => thumbnailImageUpload.upload(f))}
         onImageDelete={handleThumbnailDelete}
         disabled={isThumbnailBusy}
       />
@@ -333,38 +327,7 @@ function ContentBasicInfoCardComponent(
         </form>
       </FormProvider>
 
-      <AdminImageCropDialog
-        open={thumbnailCropper.isOpen}
-        imageSrc={thumbnailCropper.imageSrc}
-        aspect={1}
-        title={`${UBIQUITOUS_CONSTANTS.MISSION} 썸네일 편집`}
-        description="이미지를 1:1 비율로 맞춰 저장합니다."
-        fileName={thumbnailCropper.fileName ?? `mission-thumbnail-${mission.id}.jpg`}
-        onOpenChange={open => {
-          if (!open) {
-            thumbnailCropper.close();
-          }
-        }}
-        onConfirm={file => {
-          thumbnailImageUpload.upload(file);
-        }}
-      />
-      <AdminImageCropDialog
-        open={brandLogoCropper.isOpen}
-        imageSrc={brandLogoCropper.imageSrc}
-        aspect={1}
-        title="브랜드 로고 편집"
-        description="이미지를 1:1 비율로 맞춰 저장합니다."
-        fileName={brandLogoCropper.fileName ?? `brand-logo-${mission.id}.jpg`}
-        onOpenChange={open => {
-          if (!open) {
-            brandLogoCropper.close();
-          }
-        }}
-        onConfirm={file => {
-          brandLogoImageUpload.upload(file);
-        }}
-      />
+      {cropModalProps && <ImageCropModal {...cropModalProps} />}
     </>
   );
 }

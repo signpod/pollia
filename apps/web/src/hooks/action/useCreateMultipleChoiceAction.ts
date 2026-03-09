@@ -1,6 +1,7 @@
 "use client";
 
 import { createMultipleChoiceAction } from "@/actions/action";
+import { toMutationFn } from "@/actions/common/error";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import type {
@@ -19,10 +20,8 @@ export function useCreateMultipleChoiceAction(options: UseCreateMultipleChoiceAc
   const queryClient = useQueryClient();
   const { handleResetAction } = useResetAction();
 
-  return useMutation({
-    mutationFn: async (
-      payload: CreateMultipleChoiceActionRequest,
-    ): Promise<CreateMultipleChoiceActionResponse> => createMultipleChoiceAction(payload),
+  return useMutation<CreateMultipleChoiceActionResponse, Error, CreateMultipleChoiceActionRequest>({
+    mutationFn: toMutationFn(createMultipleChoiceAction),
     onSuccess: (data, variables) => {
       if (variables.missionId) {
         queryClient.invalidateQueries({

@@ -1,6 +1,7 @@
 "use client";
 
 import { connectBranchOption } from "@/actions/action/update";
+import { toMutationFn } from "@/actions/common/error";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -20,16 +21,20 @@ interface UseManageConnectBranchOptionOptions {
 export function useManageConnectBranchOption(options: UseManageConnectBranchOptionOptions = {}) {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: async (input: ConnectBranchOptionInput) => {
-      return await connectBranchOption(
+  return useMutation<
+    Awaited<ReturnType<typeof connectBranchOption>>,
+    Error,
+    ConnectBranchOptionInput
+  >({
+    mutationFn: toMutationFn(async (input: ConnectBranchOptionInput) =>
+      connectBranchOption(
         input.actionId,
         input.optionId,
         input.targetId,
         input.isCompletion,
         input.missionId,
-      );
-    },
+      ),
+    ),
 
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({

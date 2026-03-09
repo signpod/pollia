@@ -1,7 +1,7 @@
 import { ActionType } from "@prisma/client";
 import { z } from "zod";
 
-const actionTypeValues = Object.values(ActionType) as [string, ...string[]];
+const actionTypeSchema = z.enum(ActionType);
 
 const saveActionOptionInputSchema = z.object({
   id: z.string().optional(),
@@ -28,7 +28,7 @@ const actionFormValuesSchema = z.object({
 });
 
 const actionFormRawSnapshotSchema = z.object({
-  actionType: z.enum(actionTypeValues),
+  actionType: actionTypeSchema,
   values: actionFormValuesSchema,
   nextLinkType: z.enum(["action", "completion"]).optional(),
 });
@@ -40,7 +40,7 @@ const draftActionItemSchema = z.object({
 export const actionSectionDraftSnapshotSchema = z.object({
   draftItems: z.array(draftActionItemSchema),
   formSnapshotByItemKey: z.record(z.string(), actionFormRawSnapshotSchema),
-  actionTypeByItemKey: z.record(z.string(), z.enum(actionTypeValues)),
+  actionTypeByItemKey: z.record(z.string(), actionTypeSchema),
   dirtyByItemKey: z.record(z.string(), z.boolean()),
   itemOrderKeys: z.array(z.string()).optional(),
 });

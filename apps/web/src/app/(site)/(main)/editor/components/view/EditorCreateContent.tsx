@@ -4,17 +4,16 @@ import {
   type CreateMissionFormData,
   createMissionFormSchema,
 } from "@/app/(site)/(main)/create/schema";
-import { AdminImageCropDialog } from "@/app/admin/components/common/cropper/AdminImageCropDialog";
-import { useImageCropper } from "@/app/admin/components/common/cropper/use-image-cropper";
-import { useSingleImage } from "@/app/admin/hooks/admin-image";
+import { ImageCropModal } from "@/components/common/templates/action/image/ImageCropModal";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
+import { useCropperModal, useSingleImage } from "@/hooks/image";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MissionCategory } from "@prisma/client";
 import { Button, toast } from "@repo/ui/components";
 import { AlertCircle } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { EditorBottomSaveSlot } from "../../missions/[missionId]/components/EditorBottomSaveSlot";
 import { useEditorMissionTab } from "../../missions/[missionId]/components/EditorMissionTabContext";
@@ -61,10 +60,15 @@ export function EditorCreateContent() {
     reValidateMode: "onChange",
   });
 
+  useEffect(() => {
+    if (initialCategory && !form.getValues("category")) {
+      form.setValue("category", initialCategory);
+    }
+  }, [initialCategory, form]);
+
   const controller = useEditorCreateTransitionController({ form });
 
-  const brandLogoCropper = useImageCropper({ fileNamePrefix: "create-brand-logo" });
-  const thumbnailCropper = useImageCropper({ fileNamePrefix: "create-thumbnail" });
+  const { openCropper, cropModalProps } = useCropperModal();
 
   const brandLogoImageUpload = useSingleImage({
     initialUrl: null,
@@ -99,8 +103,6 @@ export function EditorCreateContent() {
       });
     },
   });
-
-  const rewardImageCropper = useImageCropper({ fileNamePrefix: "create-reward-image" });
 
   const rewardImageUpload = useSingleImage({
     initialUrl: null,
@@ -181,7 +183,7 @@ export function EditorCreateContent() {
           brandLogoImageUpload.isUploading ? "업로드 중..." : "브랜드 로고를 1:1 비율로 설정합니다."
         }
         imageUrl={brandLogoImageUpload.previewUrl ?? watchedBrandLogoUrl ?? undefined}
-        onImageSelect={file => brandLogoCropper.openWithFile(file)}
+        onImageSelect={file => openCropper(file, f => brandLogoImageUpload.upload(f))}
         onImageDelete={handleBrandLogoDelete}
         disabled={isBrandLogoBusy}
       />
@@ -194,7 +196,7 @@ export function EditorCreateContent() {
             : `${UBIQUITOUS_CONSTANTS.MISSION} 썸네일을 1:1 비율로 설정합니다.`
         }
         imageUrl={thumbnailImageUpload.previewUrl ?? watchedImageUrl ?? undefined}
-        onImageSelect={file => thumbnailCropper.openWithFile(file)}
+        onImageSelect={file => openCropper(file, f => thumbnailImageUpload.upload(f))}
         onImageDelete={handleThumbnailDelete}
         disabled={isThumbnailBusy}
       />
@@ -223,7 +225,7 @@ export function EditorCreateContent() {
                   : "리워드 이미지를 1:1 비율로 설정합니다."
               }
               imageUrl={rewardImageUpload.previewUrl ?? watchedRewardImageUrl ?? undefined}
-              onImageSelect={file => rewardImageCropper.openWithFile(file)}
+              onImageSelect={file => openCropper(file, f => rewardImageUpload.upload(f))}
               onImageDelete={handleRewardImageDelete}
               disabled={isRewardImageBusy}
             />
@@ -231,48 +233,7 @@ export function EditorCreateContent() {
         />
       </EditorSectionCard>
 
-      <AdminImageCropDialog
-        open={brandLogoCropper.isOpen}
-        imageSrc={brandLogoCropper.imageSrc}
-        aspect={1}
-        title="브랜드 로고 편집"
-        description="이미지를 1:1 비율로 맞춰 저장합니다."
-        fileName={brandLogoCropper.fileName ?? "create-brand-logo.jpg"}
-        onOpenChange={open => {
-          if (!open) brandLogoCropper.close();
-        }}
-        onConfirm={file => {
-          brandLogoImageUpload.upload(file);
-        }}
-      />
-      <AdminImageCropDialog
-        open={thumbnailCropper.isOpen}
-        imageSrc={thumbnailCropper.imageSrc}
-        aspect={1}
-        title={`${UBIQUITOUS_CONSTANTS.MISSION} 썸네일 편집`}
-        description="이미지를 1:1 비율로 맞춰 저장합니다."
-        fileName={thumbnailCropper.fileName ?? "create-thumbnail.jpg"}
-        onOpenChange={open => {
-          if (!open) thumbnailCropper.close();
-        }}
-        onConfirm={file => {
-          thumbnailImageUpload.upload(file);
-        }}
-      />
-      <AdminImageCropDialog
-        open={rewardImageCropper.isOpen}
-        imageSrc={rewardImageCropper.imageSrc}
-        aspect={1}
-        title="리워드 이미지 편집"
-        description="이미지를 1:1 비율로 맞춰 저장합니다."
-        fileName={rewardImageCropper.fileName ?? "create-reward-image.jpg"}
-        onOpenChange={open => {
-          if (!open) rewardImageCropper.close();
-        }}
-        onConfirm={file => {
-          rewardImageUpload.upload(file);
-        }}
-      />
+      {cropModalProps && <ImageCropModal {...cropModalProps} />}
     </FormProvider>
   );
 }

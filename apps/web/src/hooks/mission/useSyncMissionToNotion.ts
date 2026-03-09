@@ -1,5 +1,6 @@
 "use client";
 
+import { toMutationFn } from "@/actions/common/error";
 import { syncMissionToNotion } from "@/actions/mission";
 import type { SyncMissionToNotionResponse } from "@/types/dto";
 import { useMutation } from "@tanstack/react-query";
@@ -10,9 +11,8 @@ interface UseSyncMissionToNotionOptions {
 }
 
 export function useSyncMissionToNotion(options: UseSyncMissionToNotionOptions = {}) {
-  return useMutation({
-    mutationFn: async (missionId: string): Promise<SyncMissionToNotionResponse> =>
-      syncMissionToNotion(missionId),
+  return useMutation<SyncMissionToNotionResponse, Error, string>({
+    mutationFn: toMutationFn(syncMissionToNotion),
     onSuccess: data => {
       options.onSuccess?.(data);
     },

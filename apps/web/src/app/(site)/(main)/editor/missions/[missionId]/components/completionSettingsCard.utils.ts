@@ -5,13 +5,7 @@ import type {
 } from "@/types/dto";
 import type { CompletionFormRawSnapshot, CompletionFormValues } from "./CompletionForm";
 
-export function createDraftKey() {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return crypto.randomUUID();
-  }
-
-  return `completion-draft-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
+export { createDraftKey } from "./editorDraftKey";
 
 export function getExistingItemKey(completionId: string) {
   return `existing:${completionId}`;

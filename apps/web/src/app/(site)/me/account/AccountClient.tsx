@@ -2,8 +2,8 @@
 
 import { UserAvatar } from "@/components/common/UserAvatar";
 import { ImageCropModal } from "@/components/common/templates/action/image/ImageCropModal";
-import { useImageCrop } from "@/components/common/templates/action/image/hooks/useImageCrop";
 import { ROUTES } from "@/constants/routes";
+import { useCropperModal } from "@/hooks/image/use-cropper-modal";
 import { useCurrentUser } from "@/hooks/user/useCurrentUser";
 import { useProfileImageUrl } from "@/hooks/user/useProfileImageUrl";
 import { useUpdateUserName } from "@/hooks/user/useUpdateUserName";
@@ -13,7 +13,7 @@ import { ButtonV2, Input, Typo } from "@repo/ui/components";
 import { ChevronLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 function InfoField({ label, value }: { label: string; value: string }) {
   return (
@@ -32,14 +32,8 @@ export function AccountClient() {
   const profileImageUrl = useProfileImageUrl();
   const { mutate: updateName, isPending: isNamePending } = useUpdateUserName();
   const { updateProfileImage, isPending: isImagePending } = useUpdateUserProfileImage();
-  const { crop, zoom, rotation, setCrop, setZoom, setRotation, resetCropState, cropImage } =
-    useImageCrop();
+  const { openCropper, cropModalProps } = useCropperModal();
 
-  const [cropModalOpen, setCropModalOpen] = useState(false);
-  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
-  const originalFileRef = useRef<File | null>(null);
-
-  const [pendingImageFile, setPendingImageFile] = useState<File | null>(null);
   const [localPreviewUrl, setLocalPreviewUrl] = useState<string | null>(null);
 
   const currentName = user?.name ?? "";
@@ -57,39 +51,23 @@ export function AccountClient() {
 
   const handleImageSelect = useCallback(
     (file: File) => {
-      originalFileRef.current = file;
-      const objectUrl = URL.createObjectURL(file);
-      setCropImageSrc(objectUrl);
-      resetCropState();
-      setCropModalOpen(true);
+      openCropper(file, croppedFile => {
+        setLocalPreviewUrl(prev => {
+          if (prev) URL.revokeObjectURL(prev);
+          return URL.createObjectURL(croppedFile);
+        });
+        updateProfileImage(croppedFile, {
+          onError: () => {
+            setLocalPreviewUrl(prev => {
+              if (prev) URL.revokeObjectURL(prev);
+              return null;
+            });
+          },
+        });
+      });
     },
-    [resetCropState],
+    [openCropper, updateProfileImage],
   );
-
-  const handleCropCancel = useCallback(() => {
-    setCropModalOpen(false);
-    if (cropImageSrc) URL.revokeObjectURL(cropImageSrc);
-    setCropImageSrc(null);
-    originalFileRef.current = null;
-  }, [cropImageSrc]);
-
-  const handleCropComplete = useCallback(async () => {
-    if (!cropImageSrc || !originalFileRef.current) return;
-    const croppedFile = await cropImage(cropImageSrc, originalFileRef.current);
-
-    setPendingImageFile(croppedFile);
-    setLocalPreviewUrl(prev => {
-      if (prev) URL.revokeObjectURL(prev);
-      return URL.createObjectURL(croppedFile);
-    });
-
-    updateProfileImage(croppedFile);
-
-    setCropModalOpen(false);
-    URL.revokeObjectURL(cropImageSrc);
-    setCropImageSrc(null);
-    originalFileRef.current = null;
-  }, [cropImageSrc, cropImage, updateProfileImage]);
 
   const trimmed = name.trim();
   const validation = nameSchema.safeParse(trimmed);
@@ -176,21 +154,7 @@ export function AccountClient() {
         </div>
       </div>
 
-      {cropImageSrc && (
-        <ImageCropModal
-          isOpen={cropModalOpen}
-          imageSrc={cropImageSrc}
-          crop={crop}
-          zoom={zoom}
-          rotation={rotation}
-          cropShape="circle"
-          onCropChange={setCrop}
-          onZoomChange={setZoom}
-          onRotationChange={setRotation}
-          onCancel={handleCropCancel}
-          onComplete={handleCropComplete}
-        />
-      )}
+      {cropModalProps && <ImageCropModal {...cropModalProps} cropShape="circle" />}
     </div>
   );
 }

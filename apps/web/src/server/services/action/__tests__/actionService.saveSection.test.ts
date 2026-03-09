@@ -3,9 +3,9 @@ import {
   type ActionServiceTestContext,
   createActionServiceTestContext,
   createMockAction,
+  createMockMission,
   createMockMissionCompletion,
   expectServiceErrorWithCause,
-  mockMissionFactory,
 } from "../testUtils";
 import type { SaveActionSectionInput } from "../types";
 
@@ -54,7 +54,7 @@ describe("ActionService - saveActionSection", () => {
 
     it("미션 소유자가 아니면 403 에러를 던진다", async () => {
       // Given
-      const mockMission = mockMissionFactory({ id: "mission1", creatorId: "owner" });
+      const mockMission = createMockMission({ id: "mission1", creatorId: "owner" });
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
 
       // When & Then
@@ -69,7 +69,7 @@ describe("ActionService - saveActionSection", () => {
   describe("completion 생성", () => {
     it("draft completion을 생성하고 tempId 매핑을 반환한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
 
@@ -114,7 +114,7 @@ describe("ActionService - saveActionSection", () => {
   describe("action 생성", () => {
     it("옵션 없는 draft action을 생성한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
 
@@ -165,7 +165,7 @@ describe("ActionService - saveActionSection", () => {
 
     it("옵션 있는 draft action을 createMultipleChoice로 생성한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
 
@@ -216,7 +216,7 @@ describe("ActionService - saveActionSection", () => {
 
     it("옵션의 fileUploadId가 올바르게 전달된다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
 
@@ -263,7 +263,7 @@ describe("ActionService - saveActionSection", () => {
   describe("action 업데이트", () => {
     it("기존 action을 업데이트한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
 
@@ -307,7 +307,7 @@ describe("ActionService - saveActionSection", () => {
 
     it("옵션 있는 기존 action을 updateWithOptions로 업데이트한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
 
@@ -348,7 +348,7 @@ describe("ActionService - saveActionSection", () => {
   describe("FK 참조 해소", () => {
     it("draft action의 nextActionId가 다른 draft action을 참조하면 실제 ID로 해소한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
 
@@ -398,7 +398,7 @@ describe("ActionService - saveActionSection", () => {
 
     it("draft action의 nextCompletionId가 draft completion을 참조하면 실제 ID로 해소한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
 
@@ -449,7 +449,7 @@ describe("ActionService - saveActionSection", () => {
 
     it("기존 action의 nextActionId가 draft action을 참조하면 실제 ID로 해소한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
 
@@ -497,7 +497,7 @@ describe("ActionService - saveActionSection", () => {
 
     it("branch option의 nextActionId를 실제 ID로 해소한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
 
@@ -547,7 +547,7 @@ describe("ActionService - saveActionSection", () => {
   describe("order 및 entryActionId", () => {
     it("actionOrder에 따라 순서를 설정한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
 
@@ -582,7 +582,7 @@ describe("ActionService - saveActionSection", () => {
 
     it("entryActionKey가 draft ID면 실제 ID로 해소하여 mission을 업데이트한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
 
@@ -616,7 +616,7 @@ describe("ActionService - saveActionSection", () => {
 
     it("entryActionKey가 실제 ID면 그대로 mission을 업데이트한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
 
@@ -641,7 +641,7 @@ describe("ActionService - saveActionSection", () => {
   describe("혼합 시나리오", () => {
     it("draft action 생성 + 기존 action 업데이트를 동시에 처리한다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
 
@@ -683,7 +683,7 @@ describe("ActionService - saveActionSection", () => {
 
     it("빈 입력이면 아무것도 생성/수정하지 않는다", async () => {
       // Given
-      const mockMission = mockMissionFactory();
+      const mockMission = createMockMission();
       ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
       ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
 
