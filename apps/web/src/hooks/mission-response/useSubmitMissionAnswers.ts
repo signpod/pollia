@@ -1,6 +1,6 @@
 "use client";
 
-import { toMutationFn } from "@/actions/common/error";
+import { assertActionSuccess, toMutationFn } from "@/actions/common/error";
 import { completeMissionResponse, getMyResponseForMission } from "@/actions/mission-response";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -27,7 +27,8 @@ export function useCompleteMission(options: UseCompleteMissionOptions) {
   >({
     mutationFn: toMutationFn(async ({ responseId }: CompleteMissionPayload) => {
       const freshResponse = await getMyResponseForMission(missionId);
-      if (freshResponse?.data?.completedAt) {
+      assertActionSuccess(freshResponse);
+      if (freshResponse.data?.completedAt) {
         throw new Error("ALREADY_COMPLETED");
       }
 

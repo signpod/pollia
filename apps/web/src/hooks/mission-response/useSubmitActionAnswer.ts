@@ -1,7 +1,7 @@
 "use client";
 
 import { submitAnswers, updateAnswer, updateAnswerWithPruning } from "@/actions/action-answer";
-import { toMutationFn } from "@/actions/common/error";
+import { assertActionSuccess, toMutationFn } from "@/actions/common/error";
 import { getMyResponseForMission } from "@/actions/mission-response";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { isAnswerSameAsSubmitted } from "@/lib/answer/compareAnswers";
@@ -37,11 +37,12 @@ export function useSubmitActionAnswer(options: UseSubmitActionAnswerOptions) {
         answer,
       }: SubmitActionAnswerPayload): Promise<SubmitActionAnswerResult> => {
         const freshResponse = await getMyResponseForMission(missionId);
-        if (freshResponse?.data?.completedAt) {
+        assertActionSuccess(freshResponse);
+        if (freshResponse.data?.completedAt) {
           throw new Error("이미 완료된 미션입니다.");
         }
 
-        const submittedAnswers = freshResponse?.data?.answers ?? [];
+        const submittedAnswers = freshResponse.data?.answers ?? [];
         const isSame = isAnswerSameAsSubmitted(answer, submittedAnswers);
 
         if (isSame) {
@@ -52,10 +53,11 @@ export function useSubmitActionAnswer(options: UseSubmitActionAnswerOptions) {
 
         if (existingAnswer) {
           if (answer.type === ActionType.BRANCH) {
-            const data = await updateAnswerWithPruning(existingAnswer.id, {
+            const pruneResult = await updateAnswerWithPruning(existingAnswer.id, {
               selectedOptionIds: answer.selectedOptionIds,
             });
-            return { skipped: false, data };
+            assertActionSuccess(pruneResult);
+            return { skipped: false, data: pruneResult };
           }
 
           const updateData = (() => {
@@ -77,12 +79,13 @@ export function useSubmitActionAnswer(options: UseSubmitActionAnswerOptions) {
           })();
 
           if (updateData) {
-            const data = await updateAnswer(existingAnswer.id, updateData);
-            return { skipped: false, data };
+            const updateResult = await updateAnswer(existingAnswer.id, updateData);
+            assertActionSuccess(updateResult);
+            return { skipped: false, data: updateResult };
           }
         }
 
-        const data = await submitAnswers({
+        const submitResult = await submitAnswers({
           responseId,
           answers: [
             {
@@ -116,8 +119,9 @@ export function useSubmitActionAnswer(options: UseSubmitActionAnswerOptions) {
             },
           ],
         });
+        assertActionSuccess(submitResult);
 
-        return { skipped: false, data };
+        return { skipped: false, data: submitResult };
       },
     ),
     onSuccess: result => {

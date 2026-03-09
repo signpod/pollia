@@ -33,12 +33,12 @@ export function handleActionError(error: unknown, fallbackMessage: string): neve
 }
 
 function hasActionError(value: unknown): value is ActionErrorResponse {
-  return (
-    value !== null &&
-    typeof value === "object" &&
-    "error" in value &&
-    (value as Record<string, unknown>).error != null
-  );
+  if (value === null || typeof value !== "object") return false;
+  const obj = value as Record<string, unknown>;
+  if (!("data" in obj) || obj.data !== null) return false;
+  if (!("error" in obj) || obj.error == null || typeof obj.error !== "object") return false;
+  const err = obj.error as Record<string, unknown>;
+  return typeof err.message === "string" && typeof err.cause === "number";
 }
 
 /**
