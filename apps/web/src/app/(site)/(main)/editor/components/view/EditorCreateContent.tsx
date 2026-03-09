@@ -13,7 +13,7 @@ import { MissionCategory } from "@prisma/client";
 import { Button, toast } from "@repo/ui/components";
 import { AlertCircle } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { EditorBottomSaveSlot } from "../../missions/[missionId]/components/EditorBottomSaveSlot";
 import { useEditorMissionTab } from "../../missions/[missionId]/components/EditorMissionTabContext";
@@ -59,6 +59,12 @@ export function EditorCreateContent() {
     mode: "onBlur",
     reValidateMode: "onChange",
   });
+
+  useEffect(() => {
+    if (initialCategory && !form.getValues("category")) {
+      form.setValue("category", initialCategory);
+    }
+  }, [initialCategory, form]);
 
   const controller = useEditorCreateTransitionController({ form });
 

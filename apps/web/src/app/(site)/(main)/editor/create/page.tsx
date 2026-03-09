@@ -1,5 +1,6 @@
 import { checkAuthStatus } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import { EditorCreateContent } from "../components/view/EditorCreateContent";
 
 export default async function EditorCreateMissionPage() {
@@ -12,5 +13,9 @@ export default async function EditorCreateMissionPage() {
     redirect("/login?next=/editor/create");
   }
 
-  return <EditorCreateContent />;
+  return (
+    <Suspense>
+      <EditorCreateContent />
+    </Suspense>
+  );
 }

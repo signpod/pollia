@@ -31,6 +31,7 @@ export function useEditorCreateTransitionController({
 
   const handleCreate = useCallback(async () => {
     const isValid = await form.trigger();
+    console.log("errors", form.formState.errors);
     if (!isValid) return;
 
     const values = form.getValues();
