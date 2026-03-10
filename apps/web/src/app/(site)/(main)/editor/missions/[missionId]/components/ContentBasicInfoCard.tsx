@@ -37,6 +37,7 @@ interface ContentBasicInfoCardProps {
   mission: GetMissionResponse["data"];
   onSaveStateChange?: SectionSaveStateChangeHandler;
   onUseAiCompletionChange?: (value: boolean) => void;
+  hasReward?: boolean;
 }
 
 function buildDefaultValues(mission: GetMissionResponse["data"]): CreateMissionFormData {
@@ -62,7 +63,7 @@ function buildDefaultValues(mission: GetMissionResponse["data"]): CreateMissionF
 }
 
 function ContentBasicInfoCardComponent(
-  { mission, onSaveStateChange, onUseAiCompletionChange }: ContentBasicInfoCardProps,
+  { mission, onSaveStateChange, onUseAiCompletionChange, hasReward }: ContentBasicInfoCardProps,
   ref: ForwardedRef<SectionSaveHandle>,
 ) {
   const form = useForm<CreateMissionFormData>({
@@ -335,7 +336,11 @@ function ContentBasicInfoCardComponent(
             event.preventDefault();
           }}
         >
-          <EditorContentInfoSection showAiCompletionToggle imageUploaders={imageUploaders} />
+          <EditorContentInfoSection
+            showAiCompletionToggle
+            imageUploaders={imageUploaders}
+            hasReward={hasReward}
+          />
         </form>
       </FormProvider>
 

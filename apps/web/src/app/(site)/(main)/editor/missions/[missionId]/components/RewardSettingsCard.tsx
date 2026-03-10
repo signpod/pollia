@@ -26,7 +26,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { FormProvider, useForm } from "react-hook-form";
+import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { EditorRewardSection } from "../../../components/view/EditorRewardSection";
 import { ImageUploaderField } from "../../../components/view/ImageUploaderField";
 import { countValidationIssues } from "../../../utils/countValidationIssues";
@@ -41,6 +41,7 @@ interface RewardSettingsCardProps {
   mission: GetMissionResponse["data"];
   initialReward: RewardSnapshot | null;
   onSaveStateChange?: SectionSaveStateChangeHandler;
+  onHasRewardChange?: (value: boolean) => void;
 }
 
 export interface RewardSnapshot {
@@ -100,7 +101,7 @@ function buildDefaultValues(
 }
 
 function RewardSettingsCardComponent(
-  { mission, initialReward, onSaveStateChange }: RewardSettingsCardProps,
+  { mission, initialReward, onSaveStateChange, onHasRewardChange }: RewardSettingsCardProps,
   ref: ForwardedRef<SectionSaveHandle>,
 ) {
   const [currentReward, setCurrentReward] = useState<RewardSnapshot | null>(initialReward);
@@ -155,6 +156,12 @@ function RewardSettingsCardComponent(
       validationIssueCount,
     });
   }, [hasPendingChanges, hasValidationIssues, isBusy, onSaveStateChange, validationIssueCount]);
+
+  const watchedHasReward = useWatch({ control: form.control, name: "hasReward" });
+
+  useEffect(() => {
+    onHasRewardChange?.(watchedHasReward);
+  }, [onHasRewardChange, watchedHasReward]);
 
   const save = useCallback(
     async ({

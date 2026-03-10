@@ -6,17 +6,21 @@ import { Controller, useFormContext } from "react-hook-form";
 import type { CreateMissionFormData } from "../schema";
 import { DateTimeSettingRow } from "./DateTimeSettingRow";
 import { ToggleSettingRow } from "./ToggleSettingRow";
+import { REWARD_MULTIPLE_RESPONSE_WARNING } from "./constants";
 
 interface CreateContentTogglesStepProps {
   showAiCompletionToggle?: boolean;
   useMemberOnlyMode?: boolean;
+  hasReward?: boolean;
 }
 
 export function CreateContentTogglesStep({
   showAiCompletionToggle = false,
   useMemberOnlyMode = false,
+  hasReward: hasRewardProp,
 }: CreateContentTogglesStepProps) {
-  const { control } = useFormContext<CreateMissionFormData>();
+  const { control, watch } = useFormContext<CreateMissionFormData>();
+  const hasReward = hasRewardProp ?? watch("hasReward");
 
   return (
     <>
@@ -77,6 +81,7 @@ export function CreateContentTogglesStep({
             description="동일 사용자가 여러 번 응답할 수 있도록 허용합니다."
             checked={field.value}
             onChange={field.onChange}
+            warning={field.value && hasReward ? REWARD_MULTIPLE_RESPONSE_WARNING : undefined}
           />
         )}
       />
