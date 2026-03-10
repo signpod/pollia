@@ -504,9 +504,10 @@ export function useActionSettingsCard({
         setOpenItemKey,
         setMobilePreviewMode,
         item => ({ type: "action", actionId: item.action.id }),
+        openItemKey,
       );
     },
-    [orderedActionItems, setMobilePreviewMode, setOpenItemKey],
+    [orderedActionItems, setMobilePreviewMode, setOpenItemKey, openItemKey],
   );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setActionTypeByItemKey

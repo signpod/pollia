@@ -319,9 +319,10 @@ export function useCompletionSettingsCard({
         setOpenItemKey,
         setMobilePreviewMode,
         item => ({ type: "completion", completionId: item.completion.id }),
+        openItemKey,
       );
     },
-    [completionItems, setMobilePreviewMode, setOpenItemKey],
+    [completionItems, setMobilePreviewMode, setOpenItemKey, openItemKey],
   );
 
   const handleRemoveDraft = (draftKey: string) => {
