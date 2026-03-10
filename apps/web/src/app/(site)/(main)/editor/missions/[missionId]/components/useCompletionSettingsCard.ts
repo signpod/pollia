@@ -4,7 +4,7 @@ import {
   getCompletionsByMissionId,
   updateMissionCompletion,
 } from "@/actions/mission-completion";
-import type { ActionFormRawSnapshot } from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
+
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
 import type { GetMissionCompletionsResponse, MissionCompletionWithMission } from "@/types/dto";
@@ -13,10 +13,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { AlertCircle } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import {
-  actionDraftHydrationVersionAtom,
-  actionFormSnapshotByItemKeyAtom,
-} from "../atoms/editorActionAtoms";
+import { cleanupDeletedCompletionRefsAtom } from "../atoms/editorActionAtoms";
 import {
   addCompletionDraftAtom,
   clearCompletionDraftsAtom,
@@ -125,8 +122,7 @@ export function useCompletionSettingsCard({
   const dispatchClear = useSetAtom(clearCompletionDraftsAtom);
   const dispatchMarkRemoved = useSetAtom(markCompletionRemovedAtom);
   const dispatchResetAfterSave = useSetAtom(resetCompletionAfterSaveAtom);
-  const setActionFormSnapshotByItemKey = useSetAtom(actionFormSnapshotByItemKeyAtom);
-  const setActionDraftHydrationVersion = useSetAtom(actionDraftHydrationVersionAtom);
+  const dispatchCleanupDeletedCompletionRefs = useSetAtom(cleanupDeletedCompletionRefsAtom);
   const { registerCompletionDraftForm } = useEditorMissionDraft();
 
   const { data, isLoading } = useQuery({
@@ -338,39 +334,9 @@ export function useCompletionSettingsCard({
 
   const clearCompletionRefsInActionSnapshots = useCallback(
     (deletedCompletionId: string) => {
-      let hasReferenceChange = false;
-      setActionFormSnapshotByItemKey(prev => {
-        const next: Record<string, ActionFormRawSnapshot> = {};
-        for (const [key, snapshot] of Object.entries(prev)) {
-          const vals = snapshot.values;
-          const topMatch = vals.nextCompletionId === deletedCompletionId;
-          const optionsMatch = vals.options?.some(o => o.nextCompletionId === deletedCompletionId);
-
-          if (!topMatch && !optionsMatch) {
-            next[key] = snapshot;
-            continue;
-          }
-
-          hasReferenceChange = true;
-          next[key] = {
-            ...snapshot,
-            values: {
-              ...vals,
-              nextCompletionId: topMatch ? null : vals.nextCompletionId,
-              options: vals.options?.map(o =>
-                o.nextCompletionId === deletedCompletionId ? { ...o, nextCompletionId: null } : o,
-              ),
-            },
-          };
-        }
-        return next;
-      });
-
-      if (hasReferenceChange) {
-        setActionDraftHydrationVersion(v => v + 1);
-      }
+      dispatchCleanupDeletedCompletionRefs(deletedCompletionId);
     },
-    [setActionFormSnapshotByItemKey, setActionDraftHydrationVersion],
+    [dispatchCleanupDeletedCompletionRefs],
   );
 
   const handleRemoveDraft = (draftKey: string) => {

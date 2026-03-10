@@ -23,6 +23,7 @@ import {
   actionOpenItemKeyAtom,
   actionTypeByItemKeyAtom,
   actionValidationIssueCountByItemKeyAtom,
+  cleanupDeletedActionRefsAtom,
 } from "../atoms/editorActionAtoms";
 import { completionOptionsAtom, isAiCompletionEnabledAtom } from "../atoms/editorDerivedAtoms";
 import { mobilePreviewModeAtom } from "../atoms/editorMobilePreviewAtom";
@@ -116,7 +117,7 @@ export function useActionSettingsCard({
     actionValidationIssueCountByItemKeyAtom,
   );
   const draftHydrationVersion = useAtomValue(actionDraftHydrationVersionAtom);
-  const setDraftHydrationVersion = useSetAtom(actionDraftHydrationVersionAtom);
+  const dispatchCleanupDeletedActionRefs = useSetAtom(cleanupDeletedActionRefsAtom);
   const [isFlowDialogOpen, setIsFlowDialogOpen] = useAtom(actionIsFlowDialogOpenAtom);
   const setIsAiCompletionEnabled = useSetAtom(isAiCompletionEnabledAtom);
   const setMobilePreviewMode = useSetAtom(mobilePreviewModeAtom);
@@ -470,7 +471,7 @@ export function useActionSettingsCard({
     setOpenItemKey(itemKey);
   }, []);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setDirtyByItemKey, setDraftFormSnapshotByItemKey, setValidationIssueCountByItemKey, setOpenItemKey, setDraftHydrationVersion
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setDirtyByItemKey, setValidationIssueCountByItemKey, setOpenItemKey, dispatchCleanupDeletedActionRefs
   const handleRemoveDraft = useCallback((draftKey: string) => {
     const itemKey = getDraftItemKey(draftKey);
     const deletedActionId = makeDraftActionId(draftKey);
@@ -487,39 +488,7 @@ export function useActionSettingsCard({
       return next;
     });
 
-    let hasReferenceChange = false;
-    setDraftFormSnapshotByItemKey(prev => {
-      const next: Record<string, ActionFormRawSnapshot> = {};
-      for (const [key, snapshot] of Object.entries(prev)) {
-        if (key === itemKey) continue;
-
-        const vals = snapshot.values;
-        const nextActionIdMatch = vals.nextActionId === deletedActionId;
-        const optionsMatch = vals.options?.some(o => o.nextActionId === deletedActionId);
-
-        if (!nextActionIdMatch && !optionsMatch) {
-          next[key] = snapshot;
-          continue;
-        }
-
-        hasReferenceChange = true;
-        next[key] = {
-          ...snapshot,
-          values: {
-            ...vals,
-            nextActionId: nextActionIdMatch ? null : vals.nextActionId,
-            options: vals.options?.map(o =>
-              o.nextActionId === deletedActionId ? { ...o, nextActionId: null } : o,
-            ),
-          },
-        };
-      }
-      return next;
-    });
-
-    if (hasReferenceChange) {
-      setDraftHydrationVersion(v => v + 1);
-    }
+    dispatchCleanupDeletedActionRefs({ itemKey, deletedActionId });
 
     setValidationIssueCountByItemKey(prev => {
       const next = { ...prev };
