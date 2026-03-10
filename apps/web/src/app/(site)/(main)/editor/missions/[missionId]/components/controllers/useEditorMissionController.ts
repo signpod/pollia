@@ -197,6 +197,7 @@ export interface UseEditorMissionControllerResult {
     isPublishing: boolean;
     hasAnyBusySection: boolean;
     hasAnyPendingChanges: boolean;
+    hasAnyValidationIssues: boolean;
   };
   publishState: PublishAvailability;
   actions: {
@@ -300,6 +301,10 @@ export function useEditorMissionController({
   );
   const hasAnyBusySection = useMemo(
     () => Object.values(sectionStates).some(state => state.isBusy),
+    [sectionStates],
+  );
+  const hasAnyValidationIssues = useMemo(
+    () => Object.values(sectionStates).some(state => state.hasValidationIssues),
     [sectionStates],
   );
 
@@ -961,6 +966,7 @@ export function useEditorMissionController({
       isPublishing,
       hasAnyBusySection,
       hasAnyPendingChanges,
+      hasAnyValidationIssues,
     },
     publishState,
     actions: {
