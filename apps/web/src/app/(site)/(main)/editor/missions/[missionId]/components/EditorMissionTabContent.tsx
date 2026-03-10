@@ -29,6 +29,7 @@ import {
   removedCompletionIdsAtom,
 } from "../atoms/editorCompletionAtoms";
 import { serverCompletionsAtom } from "../atoms/editorDerivedAtoms";
+import { mobilePreviewRefreshKeyAtom } from "../atoms/editorMobilePreviewAtom";
 import { type ActionSectionDraftSnapshot, ActionSettingsCard } from "./ActionSettingsCard";
 import { CompletionSettingsCard } from "./CompletionSettingsCard";
 import { ContentBasicInfoCard } from "./ContentBasicInfoCard";
@@ -249,6 +250,9 @@ export function EditorMissionTabContent({
     return analyzeEditorFlow(desktopFlowInput);
   }, [desktopFlowInput, serverActions, serverCompletions]);
 
+  const bumpPreviewRefresh = useSetAtom(mobilePreviewRefreshKeyAtom);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - bumpPreviewRefresh
   const saveButtonNode = useMemo(
     () => (
       <EditorMissionActionBar
@@ -260,10 +264,10 @@ export function EditorMissionTabContent({
         canSave={viewState.canSave}
         canPublish={viewState.canPublish}
         onSave={() => {
-          void actions.onSave();
+          void actions.onSave().then(() => bumpPreviewRefresh(v => v + 1));
         }}
         onPublish={() => {
-          void actions.onPublish();
+          void actions.onPublish().then(() => bumpPreviewRefresh(v => v + 1));
         }}
       />
     ),

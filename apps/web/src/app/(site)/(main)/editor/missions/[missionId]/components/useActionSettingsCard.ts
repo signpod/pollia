@@ -24,6 +24,7 @@ import {
   actionValidationIssueCountByItemKeyAtom,
 } from "../atoms/editorActionAtoms";
 import { completionOptionsAtom, isAiCompletionEnabledAtom } from "../atoms/editorDerivedAtoms";
+import { mobilePreviewModeAtom } from "../atoms/editorMobilePreviewAtom";
 import type {
   ActionListItem,
   ActionSectionDraftSnapshot,
@@ -38,6 +39,7 @@ import {
 } from "./actionSettingsCard.utils";
 import { analyzeEditorFlow } from "./editor-publish-flow-validation";
 import type { SectionSaveHandle } from "./editor-save.types";
+import { toggleItemWithPreview } from "./editorMobilePreview.utils";
 import { useActionFlowAnalysis } from "./useActionFlowAnalysis";
 import { useActionLinkDerived } from "./useActionLinkDerived";
 import { useActionSaveFlow } from "./useActionSaveFlow";
@@ -115,6 +117,7 @@ export function useActionSettingsCard({
   const draftHydrationVersion = useAtomValue(actionDraftHydrationVersionAtom);
   const [isFlowDialogOpen, setIsFlowDialogOpen] = useAtom(actionIsFlowDialogOpenAtom);
   const setIsAiCompletionEnabled = useSetAtom(isAiCompletionEnabledAtom);
+  const setMobilePreviewMode = useSetAtom(mobilePreviewModeAtom);
 
   const {
     data: missionData,
@@ -493,10 +496,19 @@ export function useActionSettingsCard({
     setOpenItemKey(prev => (prev === itemKey ? null : prev));
   }, []);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setOpenItemKey
-  const handleToggleItem = useCallback((itemKey: string) => {
-    setOpenItemKey(prev => (prev === itemKey ? null : itemKey));
-  }, []);
+  const handleToggleItem = useCallback(
+    (itemKey: string) => {
+      toggleItemWithPreview(
+        itemKey,
+        orderedActionItems,
+        setOpenItemKey,
+        setMobilePreviewMode,
+        item => ({ type: "action", actionId: item.action.id }),
+        openItemKey,
+      );
+    },
+    [orderedActionItems, setMobilePreviewMode, setOpenItemKey, openItemKey],
+  );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setActionTypeByItemKey
   const handleActionTypeChange = useCallback((itemKey: string, actionType: ActionType) => {

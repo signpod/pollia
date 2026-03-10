@@ -29,6 +29,7 @@ import {
   resetCompletionAfterSaveAtom,
   setCompletionDraftTitleAtom,
 } from "../atoms/editorCompletionAtoms";
+import { mobilePreviewModeAtom } from "../atoms/editorMobilePreviewAtom";
 import type {
   CompletionFormHandle,
   CompletionFormRawSnapshot,
@@ -50,6 +51,7 @@ import {
   patchCompletionsQueryData,
 } from "./completionSettingsCard.utils";
 import type { SectionSaveHandle, SectionSaveOptions, SectionSaveResult } from "./editor-save.types";
+import { toggleItemWithPreview } from "./editorMobilePreview.utils";
 
 function getDraftItemKey(draftKey: string) {
   return getCompletionDraftItemKey(draftKey);
@@ -109,6 +111,7 @@ export function useCompletionSettingsCard({
   );
   const dispatchAddDraft = useSetAtom(addCompletionDraftAtom);
   const dispatchRemoveDraft = useSetAtom(removeCompletionDraftAtom);
+  const setMobilePreviewMode = useSetAtom(mobilePreviewModeAtom);
   const dispatchSetTitle = useSetAtom(setCompletionDraftTitleAtom);
   const dispatchClear = useSetAtom(clearCompletionDraftsAtom);
   const dispatchMarkRemoved = useSetAtom(markCompletionRemovedAtom);
@@ -308,9 +311,19 @@ export function useCompletionSettingsCard({
     setOpenItemKey(getDraftItemKey(draftKey));
   };
 
-  const handleToggleItem = (itemKey: string) => {
-    setOpenItemKey(prev => (prev === itemKey ? null : itemKey));
-  };
+  const handleToggleItem = useCallback(
+    (itemKey: string) => {
+      toggleItemWithPreview(
+        itemKey,
+        completionItems,
+        setOpenItemKey,
+        setMobilePreviewMode,
+        item => ({ type: "completion", completionId: item.completion.id }),
+        openItemKey,
+      );
+    },
+    [completionItems, setMobilePreviewMode, setOpenItemKey, openItemKey],
+  );
 
   const handleRemoveDraft = (draftKey: string) => {
     const itemKey = getDraftItemKey(draftKey);

@@ -1,6 +1,7 @@
 "use client";
 
-import { MissionCompletionPage } from "@/components/common/pages/MissionCompletionPage";
+import { ProfileHeader } from "@/components/common/ProfileHeader";
+import { MissionCompletionTemplate } from "@/components/common/templates/MissionCompletionTemplate";
 
 interface CompletionPreviewClientProps {
   imageUrl?: string | null;
@@ -13,5 +14,12 @@ export function CompletionPreviewClient({
   title,
   description,
 }: CompletionPreviewClientProps) {
-  return <MissionCompletionPage imageUrl={imageUrl} title={title} description={description} />;
+  return (
+    <MissionCompletionTemplate
+      header={<ProfileHeader showHomeIcon />}
+      imageUrl={imageUrl}
+      title={title}
+      description={description}
+    />
+  );
 }
