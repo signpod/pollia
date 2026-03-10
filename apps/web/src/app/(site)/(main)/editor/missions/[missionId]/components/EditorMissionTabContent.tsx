@@ -252,6 +252,7 @@ export function EditorMissionTabContent({
 
   const bumpPreviewRefresh = useSetAtom(mobilePreviewRefreshKeyAtom);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - bumpPreviewRefresh
   const saveButtonNode = useMemo(
     () => (
       <EditorMissionActionBar
@@ -272,7 +273,6 @@ export function EditorMissionTabContent({
     ),
     [
       actions,
-      bumpPreviewRefresh,
       viewState.canSave,
       viewState.canPublish,
       viewState.hasAnyBusySection,

@@ -1,6 +1,6 @@
 "use client";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface MobilePreviewPanelProps {
   url: string;
@@ -10,12 +10,6 @@ const DEVICE_SIZE = { width: 393, height: 852 };
 
 export function MobilePreviewPanel({ url }: MobilePreviewPanelProps) {
   const [iframeLoading, setIframeLoading] = useState(true);
-
-  useEffect(() => {
-    if (url) {
-      setIframeLoading(true);
-    }
-  }, [url]);
 
   return (
     <div className="flex flex-col items-center">
@@ -40,7 +34,6 @@ export function MobilePreviewPanel({ url }: MobilePreviewPanelProps) {
             </div>
           )}
           <iframe
-            key={url}
             title={`${UBIQUITOUS_CONSTANTS.MISSION} 미리보기`}
             src={url}
             className="h-full w-full border-0"
