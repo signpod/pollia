@@ -26,6 +26,7 @@ const mockedSaveMissionEditorDraft = saveMissionEditorDraft as jest.MockedFuncti
   typeof saveMissionEditorDraft
 >;
 const mockedToast = toast as jest.MockedFunction<typeof toast>;
+const LOCAL_DRAFT_STORAGE_KEY_PREFIX = "pollia:mission-editor-local-draft:";
 
 function createMission(partial?: Partial<GetMissionResponse["data"]>) {
   return {
@@ -75,6 +76,7 @@ function createPendingSectionHandleWithSpy(
 describe("useEditorMissionController", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    window.localStorage.clear();
     mockedSaveMissionEditorDraft.mockResolvedValue(undefined as any);
   });
 
@@ -538,6 +540,106 @@ describe("useEditorMissionController", () => {
     expect(mockedToast).toHaveBeenCalledWith(
       expect.objectContaining({
         message: "임시 저장된 편집 내용이 복원되었습니다.",
+      }),
+    );
+  });
+
+  it("미발행 상태에서 localStorage draft가 있으면 복원한다", async () => {
+    const mission = createMission({ isActive: false });
+    window.localStorage.setItem(
+      `${LOCAL_DRAFT_STORAGE_KEY_PREFIX}${mission.id}`,
+      JSON.stringify({
+        basic: { title: "로컬 임시저장" },
+        meta: { updatedAtMs: Date.now() },
+      }),
+    );
+
+    const initialProps = {
+      missionId: mission.id,
+      mission,
+      currentTab: "editor" as const,
+      missionQueryData: mission,
+      actionsQueryData: [] as any[],
+      completionsQueryData: [] as any[],
+      isActionsLoading: false,
+      isCompletionsLoading: false,
+      refetchMission: async () => ({ data: { data: mission } }),
+      refetchActions: async () => ({ data: { data: [] as any[] } }),
+      refetchCompletions: async () => ({ data: { data: [] as any[] } }),
+    };
+
+    const importSpy = jest.fn();
+    const { result, rerender } = renderHook(
+      (props: typeof initialProps) => useEditorMissionController(props),
+      { initialProps },
+    );
+
+    act(() => {
+      result.current.refs.basicInfoRef.current = {
+        ...createSectionHandle(null),
+        importDraftSnapshot: importSpy,
+      };
+      result.current.refs.rewardRef.current = createSectionHandle(null);
+      result.current.refs.actionRef.current = createSectionHandle(null);
+      result.current.refs.completionRef.current = createSectionHandle(null);
+    });
+
+    rerender(initialProps);
+
+    await waitFor(() => {
+      expect(importSpy).toHaveBeenCalledWith(expect.objectContaining({ title: "로컬 임시저장" }));
+    });
+  });
+
+  it("미발행 상태에서 변경이 있으면 localStorage에 임시저장한다", async () => {
+    jest.useFakeTimers();
+    const mission = createMission({ isActive: false });
+    const initialProps = {
+      missionId: mission.id,
+      mission,
+      currentTab: "editor" as const,
+      missionQueryData: mission,
+      actionsQueryData: [] as any[],
+      completionsQueryData: [] as any[],
+      isActionsLoading: false,
+      isCompletionsLoading: false,
+      refetchMission: async () => ({ data: { data: mission } }),
+      refetchActions: async () => ({ data: { data: [] as any[] } }),
+      refetchCompletions: async () => ({ data: { data: [] as any[] } }),
+    };
+
+    const { result, rerender } = renderHook(
+      (props: typeof initialProps) => useEditorMissionController(props),
+      { initialProps },
+    );
+
+    act(() => {
+      result.current.refs.basicInfoRef.current = createPendingSectionHandle({ title: "기본정보" });
+      result.current.refs.rewardRef.current = createSectionHandle(null);
+      result.current.refs.actionRef.current = createSectionHandle(null);
+      result.current.refs.completionRef.current = createSectionHandle(null);
+    });
+
+    rerender(initialProps);
+
+    act(() => {
+      result.current.sectionBindings.onBasicStateChange({
+        hasPendingChanges: true,
+        isBusy: false,
+        hasValidationIssues: false,
+        validationIssueCount: 0,
+      });
+    });
+
+    await act(async () => {
+      jest.advanceTimersByTime(900);
+    });
+
+    const stored = window.localStorage.getItem(`${LOCAL_DRAFT_STORAGE_KEY_PREFIX}${mission.id}`);
+    expect(stored).toBeTruthy();
+    expect(JSON.parse(stored as string)).toEqual(
+      expect.objectContaining({
+        basic: expect.objectContaining({ title: "기본정보" }),
       }),
     );
   });

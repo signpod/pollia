@@ -43,13 +43,70 @@ import {
 const UNIFIED_SAVE_TOAST_ID = "editor-mission-save-result";
 const PUBLISH_TOAST_ID = "editor-mission-publish-result";
 const SECTION_REFS_POLL_INTERVAL_MS = 250;
+const LOCAL_DRAFT_STORAGE_KEY_PREFIX = "pollia:mission-editor-local-draft:";
+const LOCAL_DRAFT_AUTOSAVE_DELAY_MS = 800;
+
+function getLocalDraftStorageKey(missionId: string): string {
+  return `${LOCAL_DRAFT_STORAGE_KEY_PREFIX}${missionId}`;
+}
+
+function readLocalDraftPayload(missionId: string): EditorMissionDraftPayload | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const raw = window.localStorage.getItem(getLocalDraftStorageKey(missionId));
+    if (!raw) {
+      return null;
+    }
+    return normalizeEditorMissionDraftPayload(JSON.parse(raw));
+  } catch (error) {
+    console.error("Failed to read local mission editor draft:", error);
+    return null;
+  }
+}
+
+function writeLocalDraftPayload(missionId: string, payload: LocalEditorDraftPayload): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(
+      getLocalDraftStorageKey(missionId),
+      JSON.stringify(
+        toServerEditorDraftPayload({
+          ...payload,
+          meta: { updatedAtMs: Date.now() },
+        }),
+      ),
+    );
+  } catch (error) {
+    console.error("Failed to persist local mission editor draft:", error);
+  }
+}
+
+function clearLocalDraftPayload(missionId: string): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.removeItem(getLocalDraftStorageKey(missionId));
+  } catch (error) {
+    console.error("Failed to clear local mission editor draft:", error);
+  }
+}
 
 interface ResolveDraftToRestoreInput {
+  missionId: string;
   mission: GetMissionResponse["data"];
   missionQueryData?: GetMissionResponse["data"] | null;
 }
 
 function resolveDraftToRestore({
+  missionId,
   mission,
   missionQueryData,
 }: ResolveDraftToRestoreInput): EditorMissionDraftPayload | null {
@@ -61,8 +118,23 @@ function resolveDraftToRestore({
   const serverDraftRaw = normalizeEditorMissionDraftPayload(
     (latestMission as { editorDraft?: unknown }).editorDraft,
   );
+  const localDraftRaw = readLocalDraftPayload(missionId);
+  const serverDraft = serverDraftRaw ? toServerEditorDraftPayload(serverDraftRaw) : null;
+  const localDraft = localDraftRaw ? toServerEditorDraftPayload(localDraftRaw) : null;
 
-  return serverDraftRaw ? toServerEditorDraftPayload(serverDraftRaw) : null;
+  if (!serverDraft && !localDraft) {
+    return null;
+  }
+  if (!serverDraft) {
+    return localDraft;
+  }
+  if (!localDraft) {
+    return serverDraft;
+  }
+
+  const serverUpdatedAt = serverDraft.meta?.updatedAtMs ?? 0;
+  const localUpdatedAt = localDraft.meta?.updatedAtMs ?? 0;
+  return localUpdatedAt >= serverUpdatedAt ? localDraft : serverDraft;
 }
 
 interface DraftClearResult {
@@ -353,6 +425,8 @@ export function useEditorMissionController({
   }, []);
 
   const clearPersistedDraft = useCallback(async (): Promise<DraftClearResult> => {
+    clearLocalDraftPayload(missionId);
+
     let serverDraftCleared = false;
     let serverDraftErrorMessage: string | null = null;
     try {
@@ -395,7 +469,7 @@ export function useEditorMissionController({
       return;
     }
 
-    const selectedDraft = resolveDraftToRestore({ mission, missionQueryData });
+    const selectedDraft = resolveDraftToRestore({ missionId, mission, missionQueryData });
 
     draftRestoreAppliedRef.current = true;
 
@@ -421,6 +495,39 @@ export function useEditorMissionController({
     mission,
     missionId,
     missionQueryData,
+  ]);
+
+  useEffect(() => {
+    if (!isEditorTab || typeof window === "undefined" || isPublished) {
+      return;
+    }
+    if (!draftRestoreAppliedRef.current) {
+      return;
+    }
+    if (!basicInfoRef.current || !rewardRef.current || !actionRef.current || !completionRef.current) {
+      return;
+    }
+
+    const hasPendingChangesNow = hasAnyPendingChanges || hasPendingChangesFromRefs();
+    if (!hasPendingChangesNow) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      writeLocalDraftPayload(missionId, collectLocalDraftPayload());
+    }, LOCAL_DRAFT_AUTOSAVE_DELAY_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [
+    collectLocalDraftPayload,
+    hasAnyPendingChanges,
+    hasPendingChangesFromRefs,
+    isEditorTab,
+    isPublished,
+    missionId,
+    sectionStates,
   ]);
 
   const runSectionSaves = useCallback(
