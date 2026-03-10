@@ -12,13 +12,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 const FEATURED_MISSIONS = [
   {
     id: "cmmiuqm3h000hkz040g6ywtia",
-    imageUrl:
-      "https://jjrsknqxiqbzqiraexpc.supabase.co/storage/v1/object/public/mission-images/f54437e4-95c6-4232-b927-f2b995b09a14/1773043105118.jpg",
+    imageUrl: "/images/01.jpg",
   },
   {
     id: "cmme8bjkt0003jm04g04tdw8v",
-    imageUrl:
-      "https://jjrsknqxiqbzqiraexpc.supabase.co/storage/v1/object/public/mission-images/f54437e4-95c6-4232-b927-f2b995b09a14/1772761321452.jpg",
+    imageUrl: "/images/02.jpg",
   },
 ];
 

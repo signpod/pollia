@@ -203,12 +203,37 @@ function BottomNavBarContent() {
           </Typo.Body>
         </span>
 
-        {activeTooltip && (
-          <Tooltip id={activeTooltip} placement="top">
+        {activeTooltip === "nav-store" && (
+          <Tooltip id="nav-store" placement="top">
             <Typo.Body size="small" className="text-zinc-600 whitespace-nowrap">
               준비중이에요! 조금만 기다려주세요 😊
             </Typo.Body>
           </Tooltip>
+        )}
+        {activeTooltip === "nav-community" && (
+          <div className="absolute bottom-full right-0 mb-3 flex flex-col items-end pr-[calc(10%-7.5px)]">
+            <div
+              className="relative right-[-16px] rounded-full bg-white px-4 py-2"
+              style={{ filter: "drop-shadow(0 4px 20px rgba(0, 0, 0, 0.15))" }}
+            >
+              <Typo.Body size="small" className="text-zinc-600 whitespace-nowrap">
+                준비중이에요! 조금만 기다려주세요 😊
+              </Typo.Body>
+            </div>
+            <svg
+              width="15"
+              height="13"
+              viewBox="0 0 15 13"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              style={{ filter: "drop-shadow(0 4px 20px rgba(0, 0, 0, 0.15))" }}
+            >
+              <path
+                d="M9.23205 12C8.46225 13.3333 6.53775 13.3333 5.76795 12L0.5718 3C-0.198 1.66666 0.76425 -4.38926e-06 2.30385 -3.98547e-06L12.6962 -1.2599e-06C14.2358 -8.56109e-07 15.198 1.66667 14.4282 3L9.23205 12Z"
+                fill="white"
+              />
+            </svg>
+          </div>
         )}
       </nav>
     </div>
