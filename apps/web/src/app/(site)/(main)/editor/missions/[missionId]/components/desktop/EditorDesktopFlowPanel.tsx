@@ -1,10 +1,14 @@
 "use client";
 
 import { Typo } from "@repo/ui/components";
-import { useMemo } from "react";
+import { useSetAtom } from "jotai";
+import { useCallback, useMemo } from "react";
+import { actionScrollTargetItemKeyAtom } from "../../atoms/editorActionAtoms";
 import { FlowOverviewCanvas } from "../FlowOverviewCanvas";
+import type { FlowOverviewNodeData } from "../editor-flow-overview.utils";
 import { buildFlowOverviewSummary } from "../editor-flow-overview.utils";
 import type { EditorFlowAnalysisResult } from "../editor-publish-flow-validation";
+import { mapFlowNodeIdToItemKey } from "../flowNodeItemKeyMap";
 
 interface EditorDesktopFlowPanelProps {
   analysis: EditorFlowAnalysisResult | null;
@@ -31,6 +35,17 @@ export function EditorDesktopFlowPanel({
   errorMessage,
 }: EditorDesktopFlowPanelProps) {
   const summary = useMemo(() => (analysis ? buildFlowOverviewSummary(analysis) : null), [analysis]);
+  const setScrollTarget = useSetAtom(actionScrollTargetItemKeyAtom);
+
+  const handleNodeClick = useCallback(
+    (nodeId: string, kind: FlowOverviewNodeData["kind"]) => {
+      const itemKey = mapFlowNodeIdToItemKey(nodeId, kind);
+      if (itemKey) {
+        setScrollTarget(itemKey);
+      }
+    },
+    [setScrollTarget],
+  );
 
   return (
     <section className="flex h-full min-h-[460px] flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-[0_10px_40px_rgba(9,9,11,0.08)]">
@@ -65,7 +80,11 @@ export function EditorDesktopFlowPanel({
           </div>
         ) : analysis ? (
           <div className="h-full min-h-[300px]">
-            <FlowOverviewCanvas analysis={analysis} variant="compact" />
+            <FlowOverviewCanvas
+              analysis={analysis}
+              variant="compact"
+              onNodeClick={handleNodeClick}
+            />
           </div>
         ) : (
           <div className="flex h-full min-h-[300px] items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 px-4 text-center">

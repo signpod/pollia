@@ -11,6 +11,7 @@ import {
 import { ACTION_TYPE_LABELS } from "@/constants/action";
 import { ActionType } from "@prisma/client";
 import { Button, Typo } from "@repo/ui/components";
+import { useAtom } from "jotai";
 import {
   AlertCircle,
   ArrowDown,
@@ -21,7 +22,8 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { type ForwardedRef, forwardRef, useImperativeHandle } from "react";
+import { type ForwardedRef, forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import { actionScrollTargetItemKeyAtom } from "../atoms/editorActionAtoms";
 import { ActionDeleteConfirmDialog } from "./ActionDeleteConfirmDialog";
 import { FlowOverviewDialog } from "./FlowOverviewDialog";
 import type { ActionSettingsCardProps } from "./actionSettingsCard.types";
@@ -80,6 +82,48 @@ function ActionSettingsCardComponent(
     handleItemRawSnapshotChange,
   } = handlers;
 
+  const listContainerRef = useRef<HTMLDivElement>(null);
+  const prevHighlightRef = useRef<HTMLDivElement | null>(null);
+  const [scrollTargetKey, setScrollTargetKey] = useAtom(actionScrollTargetItemKeyAtom);
+
+  useEffect(() => {
+    if (!scrollTargetKey) {
+      return;
+    }
+
+    setScrollTargetKey(null);
+
+    if (prevHighlightRef.current) {
+      prevHighlightRef.current.classList.remove("action-item-highlight");
+      prevHighlightRef.current = null;
+    }
+
+    if (openItemKey !== scrollTargetKey) {
+      handleToggleItem(scrollTargetKey);
+    }
+
+    const targetEl = listContainerRef.current?.querySelector<HTMLDivElement>(
+      `[data-item-key="${CSS.escape(scrollTargetKey)}"]`,
+    );
+    if (!targetEl) {
+      return;
+    }
+
+    prevHighlightRef.current = targetEl;
+    targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    targetEl.classList.add("action-item-highlight");
+    const timer = setTimeout(() => {
+      targetEl.classList.remove("action-item-highlight");
+      if (prevHighlightRef.current === targetEl) {
+        prevHighlightRef.current = null;
+      }
+    }, 1500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [scrollTargetKey, setScrollTargetKey, openItemKey, handleToggleItem]);
+
   return (
     <div className="border border-zinc-200 bg-white">
       <div className="border-b border-zinc-100 px-5 py-4">
@@ -117,7 +161,7 @@ function ActionSettingsCardComponent(
         </div>
       </div>
 
-      <div className="flex flex-col gap-4 px-5 py-5">
+      <div ref={listContainerRef} className="flex flex-col gap-4 px-5 py-5">
         {isActionsLoading ? (
           <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-10 text-center">
             <Typo.Body size="medium" className="text-zinc-500">
@@ -160,7 +204,11 @@ function ActionSettingsCardComponent(
                 (item.kind === "existing" ? item.action.imageUrl : null);
 
               return (
-                <div key={item.key} className="overflow-hidden rounded-xl border border-zinc-200">
+                <div
+                  key={item.key}
+                  data-item-key={item.key}
+                  className="overflow-hidden rounded-xl border border-zinc-200 transition-shadow duration-500"
+                >
                   <div className="flex items-center justify-between bg-zinc-50 px-4 py-3">
                     <div className="mr-2 flex shrink-0 items-center gap-1">
                       <button
