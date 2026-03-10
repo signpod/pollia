@@ -100,7 +100,7 @@ const createMissionFormWithReward = createMissionFormBaseSchema
   })
   .refine(dateRangeRefine, dateRangeError);
 
-export const createMissionFormSchema = z.union([
+export const createMissionFormSchema = z.discriminatedUnion("hasReward", [
   createMissionFormWithoutReward,
   createMissionFormWithReward,
 ]);
