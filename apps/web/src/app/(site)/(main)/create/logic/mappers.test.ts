@@ -93,6 +93,8 @@ describe("create mappers", () => {
         allowGuestResponse: false,
         allowMultipleResponses: true,
         useAiCompletion: true,
+        startDate: null,
+        deadline: null,
       });
     });
   });
