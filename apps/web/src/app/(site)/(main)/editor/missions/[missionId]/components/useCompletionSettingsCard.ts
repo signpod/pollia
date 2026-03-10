@@ -51,6 +51,7 @@ import {
   patchCompletionsQueryData,
 } from "./completionSettingsCard.utils";
 import type { SectionSaveHandle, SectionSaveOptions, SectionSaveResult } from "./editor-save.types";
+import { toggleItemWithPreview } from "./editorMobilePreview.utils";
 
 function getDraftItemKey(draftKey: string) {
   return getCompletionDraftItemKey(draftKey);
@@ -312,20 +313,13 @@ export function useCompletionSettingsCard({
 
   const handleToggleItem = useCallback(
     (itemKey: string) => {
-      setOpenItemKey(prev => {
-        const next = prev === itemKey ? null : itemKey;
-        if (next) {
-          const item = completionItems.find(i => i.key === next);
-          if (item?.kind === "existing") {
-            setMobilePreviewMode({ type: "completion", completionId: item.completion.id });
-          } else {
-            setMobilePreviewMode({ type: "intro" });
-          }
-        } else {
-          setMobilePreviewMode({ type: "intro" });
-        }
-        return next;
-      });
+      toggleItemWithPreview(
+        itemKey,
+        completionItems,
+        setOpenItemKey,
+        setMobilePreviewMode,
+        item => ({ type: "completion", completionId: item.completion.id }),
+      );
     },
     [completionItems, setMobilePreviewMode, setOpenItemKey],
   );

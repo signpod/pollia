@@ -39,6 +39,7 @@ import {
 } from "./actionSettingsCard.utils";
 import { analyzeEditorFlow } from "./editor-publish-flow-validation";
 import type { SectionSaveHandle } from "./editor-save.types";
+import { toggleItemWithPreview } from "./editorMobilePreview.utils";
 import { useActionFlowAnalysis } from "./useActionFlowAnalysis";
 import { useActionLinkDerived } from "./useActionLinkDerived";
 import { useActionSaveFlow } from "./useActionSaveFlow";
@@ -497,20 +498,13 @@ export function useActionSettingsCard({
 
   const handleToggleItem = useCallback(
     (itemKey: string) => {
-      setOpenItemKey(prev => {
-        const next = prev === itemKey ? null : itemKey;
-        if (next) {
-          const item = orderedActionItems.find(i => i.key === next);
-          if (item?.kind === "existing") {
-            setMobilePreviewMode({ type: "action", actionId: item.action.id });
-          } else {
-            setMobilePreviewMode({ type: "intro" });
-          }
-        } else {
-          setMobilePreviewMode({ type: "intro" });
-        }
-        return next;
-      });
+      toggleItemWithPreview(
+        itemKey,
+        orderedActionItems,
+        setOpenItemKey,
+        setMobilePreviewMode,
+        item => ({ type: "action", actionId: item.action.id }),
+      );
     },
     [orderedActionItems, setMobilePreviewMode, setOpenItemKey],
   );

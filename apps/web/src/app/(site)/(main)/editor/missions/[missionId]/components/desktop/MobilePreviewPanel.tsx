@@ -43,7 +43,7 @@ export function MobilePreviewPanel({ url }: MobilePreviewPanelProps) {
             key={url}
             title={`${UBIQUITOUS_CONSTANTS.MISSION} 미리보기`}
             src={url}
-            className="h-full w-full border-0 overflow-y-scroll"
+            className="h-full w-full border-0"
             onLoad={() => setIframeLoading(false)}
           />
         </div>
