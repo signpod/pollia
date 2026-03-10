@@ -3,6 +3,7 @@ import type {
   ActionFormRawSnapshot,
 } from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
 import { useManageDeleteAction } from "@/app/(site)/mission/[missionId]/manage/actions/hooks";
+import { makeDraftActionId } from "@/app/(site)/mission/[missionId]/manage/actions/logic";
 import { useReadActionsDetail } from "@/hooks/action";
 import { useReadMission } from "@/hooks/mission";
 import type { ActionDetail } from "@/types/dto";
@@ -22,6 +23,7 @@ import {
   actionOpenItemKeyAtom,
   actionTypeByItemKeyAtom,
   actionValidationIssueCountByItemKeyAtom,
+  cleanupDeletedActionRefsAtom,
 } from "../atoms/editorActionAtoms";
 import { completionOptionsAtom, isAiCompletionEnabledAtom } from "../atoms/editorDerivedAtoms";
 import { mobilePreviewModeAtom } from "../atoms/editorMobilePreviewAtom";
@@ -115,6 +117,7 @@ export function useActionSettingsCard({
     actionValidationIssueCountByItemKeyAtom,
   );
   const draftHydrationVersion = useAtomValue(actionDraftHydrationVersionAtom);
+  const dispatchCleanupDeletedActionRefs = useSetAtom(cleanupDeletedActionRefsAtom);
   const [isFlowDialogOpen, setIsFlowDialogOpen] = useAtom(actionIsFlowDialogOpenAtom);
   const setIsAiCompletionEnabled = useSetAtom(isAiCompletionEnabledAtom);
   const setMobilePreviewMode = useSetAtom(mobilePreviewModeAtom);
@@ -468,9 +471,11 @@ export function useActionSettingsCard({
     setOpenItemKey(itemKey);
   }, []);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setDirtyByItemKey, setDraftFormSnapshotByItemKey, setValidationIssueCountByItemKey, setOpenItemKey
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setDirtyByItemKey, setValidationIssueCountByItemKey, setOpenItemKey, dispatchCleanupDeletedActionRefs
   const handleRemoveDraft = useCallback((draftKey: string) => {
     const itemKey = getDraftItemKey(draftKey);
+    const deletedActionId = makeDraftActionId(draftKey);
+
     setDraftItems(prev => prev.filter(item => item.key !== draftKey));
     setActionTypeByItemKey(prev => {
       const next = { ...prev };
@@ -482,11 +487,9 @@ export function useActionSettingsCard({
       delete next[itemKey];
       return next;
     });
-    setDraftFormSnapshotByItemKey(prev => {
-      const next = { ...prev };
-      delete next[itemKey];
-      return next;
-    });
+
+    dispatchCleanupDeletedActionRefs({ itemKey, deletedActionId });
+
     setValidationIssueCountByItemKey(prev => {
       const next = { ...prev };
       delete next[itemKey];

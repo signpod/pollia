@@ -29,6 +29,7 @@ import { FlowOverviewDialog } from "./FlowOverviewDialog";
 import type { ActionSettingsCardProps } from "./actionSettingsCard.types";
 import type { SectionSaveHandle } from "./editor-save.types";
 import { useActionSettingsCard } from "./useActionSettingsCard";
+import { useCreateLinkedItem } from "./useCreateLinkedItem";
 
 export type { ActionSectionDraftSnapshot } from "./actionSettingsCard.types";
 
@@ -48,6 +49,8 @@ function ActionSettingsCardComponent(
     handlers,
     saveHandle,
   } = useActionSettingsCard(props);
+
+  const { createLinkedAction, createLinkedCompletion } = useCreateLinkedItem();
 
   useImperativeHandle(ref, () => saveHandle, [saveHandle]);
 
@@ -103,7 +106,7 @@ function ActionSettingsCardComponent(
     }
 
     const targetEl = listContainerRef.current?.querySelector<HTMLDivElement>(
-      `[data-item-key="${CSS.escape(scrollTargetKey)}"]`,
+      `[data-editor-item-key="${CSS.escape(scrollTargetKey)}"]`,
     );
     if (!targetEl) {
       return;
@@ -206,7 +209,7 @@ function ActionSettingsCardComponent(
               return (
                 <div
                   key={item.key}
-                  data-item-key={item.key}
+                  data-editor-item-key={item.key}
                   className="overflow-hidden rounded-xl border border-zinc-200 transition-shadow duration-500"
                 >
                   <div className="flex items-center justify-between bg-zinc-50 px-4 py-3">
@@ -326,6 +329,10 @@ function ActionSettingsCardComponent(
                         onRawSnapshotChange={snapshot => {
                           handleItemRawSnapshotChange(item.key, snapshot);
                         }}
+                        onCreateLinkedAction={createLinkedAction}
+                        onCreateLinkedCompletion={
+                          isAiCompletionEnabled ? undefined : createLinkedCompletion
+                        }
                       />
                     ) : (
                       <ActionForm
@@ -356,6 +363,10 @@ function ActionSettingsCardComponent(
                         onRawSnapshotChange={snapshot => {
                           handleItemRawSnapshotChange(item.key, snapshot);
                         }}
+                        onCreateLinkedAction={createLinkedAction}
+                        onCreateLinkedCompletion={
+                          isAiCompletionEnabled ? undefined : createLinkedCompletion
+                        }
                       />
                     )}
                   </div>

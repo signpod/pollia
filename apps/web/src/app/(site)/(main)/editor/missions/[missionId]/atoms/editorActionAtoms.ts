@@ -25,4 +25,79 @@ export const actionDraftHydrationVersionAtom = atom(0);
 
 export const actionIsFlowDialogOpenAtom = atom(false);
 
+export const cleanupDeletedActionRefsAtom = atom(
+  null,
+  (get, set, { itemKey, deletedActionId }: { itemKey: string; deletedActionId: string }) => {
+    const prev = get(actionFormSnapshotByItemKeyAtom);
+    let hasReferenceChange = false;
+    const next: Record<string, ActionFormRawSnapshot> = {};
+
+    for (const [key, snapshot] of Object.entries(prev)) {
+      if (key === itemKey) continue;
+      const vals = snapshot.values;
+      const nextActionIdMatch = vals.nextActionId === deletedActionId;
+      const optionsMatch = vals.options?.some(o => o.nextActionId === deletedActionId);
+
+      if (!nextActionIdMatch && !optionsMatch) {
+        next[key] = snapshot;
+        continue;
+      }
+
+      hasReferenceChange = true;
+      next[key] = {
+        ...snapshot,
+        values: {
+          ...vals,
+          nextActionId: nextActionIdMatch ? null : vals.nextActionId,
+          options: vals.options?.map(o =>
+            o.nextActionId === deletedActionId ? { ...o, nextActionId: null } : o,
+          ),
+        },
+      };
+    }
+
+    set(actionFormSnapshotByItemKeyAtom, next);
+    if (hasReferenceChange) {
+      set(actionDraftHydrationVersionAtom, v => v + 1);
+    }
+  },
+);
+
+export const cleanupDeletedCompletionRefsAtom = atom(
+  null,
+  (get, set, deletedCompletionId: string) => {
+    const prev = get(actionFormSnapshotByItemKeyAtom);
+    let hasReferenceChange = false;
+    const next: Record<string, ActionFormRawSnapshot> = {};
+
+    for (const [key, snapshot] of Object.entries(prev)) {
+      const vals = snapshot.values;
+      const topMatch = vals.nextCompletionId === deletedCompletionId;
+      const optionsMatch = vals.options?.some(o => o.nextCompletionId === deletedCompletionId);
+
+      if (!topMatch && !optionsMatch) {
+        next[key] = snapshot;
+        continue;
+      }
+
+      hasReferenceChange = true;
+      next[key] = {
+        ...snapshot,
+        values: {
+          ...vals,
+          nextCompletionId: topMatch ? null : vals.nextCompletionId,
+          options: vals.options?.map(o =>
+            o.nextCompletionId === deletedCompletionId ? { ...o, nextCompletionId: null } : o,
+          ),
+        },
+      };
+    }
+
+    set(actionFormSnapshotByItemKeyAtom, next);
+    if (hasReferenceChange) {
+      set(actionDraftHydrationVersionAtom, v => v + 1);
+    }
+  },
+);
+
 export const actionScrollTargetItemKeyAtom = atom<string | null>(null);

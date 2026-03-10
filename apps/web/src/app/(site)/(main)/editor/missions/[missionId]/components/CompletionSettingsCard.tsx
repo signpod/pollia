@@ -100,7 +100,11 @@ function CompletionSettingsCardComponent(
                 (item.kind === "existing" ? item.completion.imageUrl : null);
 
               return (
-                <div key={item.key} className="overflow-hidden rounded-xl border border-zinc-200">
+                <div
+                  key={item.key}
+                  data-editor-item-key={item.key}
+                  className="overflow-hidden rounded-xl border border-zinc-200"
+                >
                   <div className="flex items-center justify-between bg-zinc-50 px-4 py-3">
                     <button
                       type="button"

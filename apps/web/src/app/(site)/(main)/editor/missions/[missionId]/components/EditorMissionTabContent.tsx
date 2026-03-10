@@ -261,6 +261,7 @@ export function EditorMissionTabContent({
         isPublishing={viewState.isPublishing}
         hasAnyBusySection={viewState.hasAnyBusySection}
         hasAnyPendingChanges={viewState.hasAnyPendingChanges}
+        hasAnyValidationIssues={viewState.hasAnyValidationIssues}
         canSave={viewState.canSave}
         canPublish={viewState.canPublish}
         onSave={() => {
@@ -277,6 +278,7 @@ export function EditorMissionTabContent({
       viewState.canPublish,
       viewState.hasAnyBusySection,
       viewState.hasAnyPendingChanges,
+      viewState.hasAnyValidationIssues,
       viewState.isPublished,
       viewState.isPublishing,
       viewState.isSavingAll,
