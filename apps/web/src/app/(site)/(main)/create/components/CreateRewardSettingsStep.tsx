@@ -18,9 +18,11 @@ import type { ReactNode } from "react";
 import { Controller, type FieldErrors, useFormContext } from "react-hook-form";
 import { type CreateMissionFormData, type RewardFormValues, isRewardFormValues } from "../schema";
 import { ToggleSettingRow } from "./ToggleSettingRow";
+import { REWARD_MULTIPLE_RESPONSE_WARNING } from "./constants";
 
 interface CreateRewardSettingsStepProps {
   imageUploader?: ReactNode;
+  allowMultipleResponses?: boolean;
 }
 
 const DEFAULT_REWARD_VALUES: RewardFormValues = {
@@ -42,7 +44,10 @@ function getRewardErrorMessage(
   return rewardErrors[field]?.message;
 }
 
-export function CreateRewardSettingsStep({ imageUploader }: CreateRewardSettingsStepProps) {
+export function CreateRewardSettingsStep({
+  imageUploader,
+  allowMultipleResponses: allowMultipleResponsesProp,
+}: CreateRewardSettingsStepProps) {
   const {
     control,
     watch,
@@ -53,6 +58,7 @@ export function CreateRewardSettingsStep({ imageUploader }: CreateRewardSettings
   } = useFormContext<CreateMissionFormData>();
 
   const hasReward = watch("hasReward");
+  const allowMultipleResponses = allowMultipleResponsesProp ?? watch("allowMultipleResponses");
   const reward = watch("reward");
   const rewardPaymentType =
     hasReward && isRewardFormValues(reward) ? reward.paymentType : undefined;
@@ -65,6 +71,7 @@ export function CreateRewardSettingsStep({ imageUploader }: CreateRewardSettings
         label="완료 리워드 설정"
         description={`${UBIQUITOUS_CONSTANTS.MISSION} 완료 시 참여자에게 지급할 리워드를 설정합니다.`}
         checked={hasReward}
+        warning={hasReward && allowMultipleResponses ? REWARD_MULTIPLE_RESPONSE_WARNING : undefined}
         onChange={checked => {
           setValue("hasReward", checked, { shouldDirty: true, shouldValidate: true });
 
