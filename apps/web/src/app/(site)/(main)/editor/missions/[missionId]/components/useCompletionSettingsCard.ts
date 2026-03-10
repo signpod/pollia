@@ -29,6 +29,7 @@ import {
   resetCompletionAfterSaveAtom,
   setCompletionDraftTitleAtom,
 } from "../atoms/editorCompletionAtoms";
+import { mobilePreviewModeAtom } from "../atoms/editorMobilePreviewAtom";
 import type {
   CompletionFormHandle,
   CompletionFormRawSnapshot,
@@ -109,6 +110,7 @@ export function useCompletionSettingsCard({
   );
   const dispatchAddDraft = useSetAtom(addCompletionDraftAtom);
   const dispatchRemoveDraft = useSetAtom(removeCompletionDraftAtom);
+  const setMobilePreviewMode = useSetAtom(mobilePreviewModeAtom);
   const dispatchSetTitle = useSetAtom(setCompletionDraftTitleAtom);
   const dispatchClear = useSetAtom(clearCompletionDraftsAtom);
   const dispatchMarkRemoved = useSetAtom(markCompletionRemovedAtom);
@@ -309,7 +311,20 @@ export function useCompletionSettingsCard({
   };
 
   const handleToggleItem = (itemKey: string) => {
-    setOpenItemKey(prev => (prev === itemKey ? null : itemKey));
+    setOpenItemKey(prev => {
+      const next = prev === itemKey ? null : itemKey;
+      if (next) {
+        const item = completionItems.find(i => i.key === next);
+        if (item?.kind === "existing") {
+          setMobilePreviewMode({ type: "completion", completionId: item.completion.id });
+        } else {
+          setMobilePreviewMode({ type: "intro" });
+        }
+      } else {
+        setMobilePreviewMode({ type: "intro" });
+      }
+      return next;
+    });
   };
 
   const handleRemoveDraft = (draftKey: string) => {

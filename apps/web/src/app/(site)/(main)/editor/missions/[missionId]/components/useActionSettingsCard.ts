@@ -24,6 +24,7 @@ import {
   actionValidationIssueCountByItemKeyAtom,
 } from "../atoms/editorActionAtoms";
 import { completionOptionsAtom, isAiCompletionEnabledAtom } from "../atoms/editorDerivedAtoms";
+import { mobilePreviewModeAtom } from "../atoms/editorMobilePreviewAtom";
 import type {
   ActionListItem,
   ActionSectionDraftSnapshot,
@@ -115,6 +116,7 @@ export function useActionSettingsCard({
   const draftHydrationVersion = useAtomValue(actionDraftHydrationVersionAtom);
   const [isFlowDialogOpen, setIsFlowDialogOpen] = useAtom(actionIsFlowDialogOpenAtom);
   const setIsAiCompletionEnabled = useSetAtom(isAiCompletionEnabledAtom);
+  const setMobilePreviewMode = useSetAtom(mobilePreviewModeAtom);
 
   const {
     data: missionData,
@@ -493,10 +495,25 @@ export function useActionSettingsCard({
     setOpenItemKey(prev => (prev === itemKey ? null : prev));
   }, []);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setOpenItemKey
-  const handleToggleItem = useCallback((itemKey: string) => {
-    setOpenItemKey(prev => (prev === itemKey ? null : itemKey));
-  }, []);
+  const handleToggleItem = useCallback(
+    (itemKey: string) => {
+      setOpenItemKey(prev => {
+        const next = prev === itemKey ? null : itemKey;
+        if (next) {
+          const item = orderedActionItems.find(i => i.key === next);
+          if (item?.kind === "existing") {
+            setMobilePreviewMode({ type: "action", actionId: item.action.id });
+          } else {
+            setMobilePreviewMode({ type: "intro" });
+          }
+        } else {
+          setMobilePreviewMode({ type: "intro" });
+        }
+        return next;
+      });
+    },
+    [orderedActionItems, setMobilePreviewMode, setOpenItemKey],
+  );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setActionTypeByItemKey
   const handleActionTypeChange = useCallback((itemKey: string, actionType: ActionType) => {

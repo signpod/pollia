@@ -2,6 +2,9 @@
 
 import { ROUTES } from "@/constants/routes";
 import { Typo } from "@repo/ui/components";
+import { useAtomValue } from "jotai";
+import { useMemo } from "react";
+import { mobilePreviewModeAtom } from "../../atoms/editorMobilePreviewAtom";
 import { MobilePreviewPanel } from "./MobilePreviewPanel";
 
 interface EditorDesktopMobilePanelProps {
@@ -9,7 +12,18 @@ interface EditorDesktopMobilePanelProps {
 }
 
 export function EditorDesktopMobilePanel({ missionId }: EditorDesktopMobilePanelProps) {
-  const previewUrl = ROUTES.MISSION(missionId);
+  const previewMode = useAtomValue(mobilePreviewModeAtom);
+
+  const previewUrl = useMemo(() => {
+    switch (previewMode.type) {
+      case "action":
+        return ROUTES.MISSION_ACTION_PREVIEW(missionId, previewMode.actionId);
+      case "completion":
+        return ROUTES.MISSION_COMPLETION_PREVIEW(missionId, previewMode.completionId);
+      default:
+        return ROUTES.MISSION(missionId);
+    }
+  }, [missionId, previewMode]);
 
   return (
     <section className="flex h-full min-h-[460px] flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white p-3 shadow-[0_10px_40px_rgba(9,9,11,0.08)]">
