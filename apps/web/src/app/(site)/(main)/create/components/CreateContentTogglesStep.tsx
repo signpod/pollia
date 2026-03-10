@@ -1,8 +1,10 @@
 "use client";
 
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { Sparkles } from "lucide-react";
 import { Controller, useFormContext } from "react-hook-form";
 import type { CreateMissionFormData } from "../schema";
+import { DateTimeSettingRow } from "./DateTimeSettingRow";
 import { ToggleSettingRow } from "./ToggleSettingRow";
 
 interface CreateContentTogglesStepProps {
@@ -18,6 +20,32 @@ export function CreateContentTogglesStep({
 
   return (
     <>
+      <Controller
+        control={control}
+        name="startDate"
+        render={({ field }) => (
+          <DateTimeSettingRow
+            label="시작일"
+            description={`${UBIQUITOUS_CONSTANTS.MISSION}의 시작일을 설정합니다.`}
+            value={field.value}
+            onChange={field.onChange}
+          />
+        )}
+      />
+
+      <Controller
+        control={control}
+        name="deadline"
+        render={({ field }) => (
+          <DateTimeSettingRow
+            label="만료일"
+            description={`${UBIQUITOUS_CONSTANTS.MISSION}의 만료일을 설정합니다.`}
+            value={field.value}
+            onChange={field.onChange}
+          />
+        )}
+      />
+
       <Controller
         control={control}
         name="allowGuestResponse"

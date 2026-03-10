@@ -70,6 +70,8 @@ function buildDefaultValues(
       allowGuestResponse: mission.allowGuestResponse,
       allowMultipleResponses: mission.allowMultipleResponses,
       useAiCompletion: mission.useAiCompletion,
+      startDate: mission.startDate ? new Date(mission.startDate) : null,
+      deadline: mission.deadline ? new Date(mission.deadline) : null,
     };
   }
 
@@ -78,6 +80,8 @@ function buildDefaultValues(
     creationMode: "custom",
     title: mission.title,
     description: mission.description ?? undefined,
+    startDate: mission.startDate ? new Date(mission.startDate) : null,
+    deadline: mission.deadline ? new Date(mission.deadline) : null,
     hasReward: true,
     reward: {
       name: reward.name,

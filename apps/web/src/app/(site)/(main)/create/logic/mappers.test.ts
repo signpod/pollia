@@ -14,6 +14,8 @@ function createBaseFormData(): CreateMissionFormData {
     allowGuestResponse: true,
     allowMultipleResponses: true,
     useAiCompletion: false,
+    startDate: null,
+    deadline: null,
     hasReward: false,
     reward: undefined,
   };
