@@ -280,7 +280,7 @@ export function EditorMissionTabContent({
   );
   const desktopPanels = (
     <>
-      <EditorDesktopAbsolute side="left">
+      <EditorDesktopAbsolute side="left" panelWidth={440}>
         <EditorDesktopFlowPanel
           analysis={desktopFlowAnalysis}
           isLoading={isDesktopFlowLoading}
