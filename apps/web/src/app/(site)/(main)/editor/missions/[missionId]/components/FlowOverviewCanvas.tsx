@@ -13,13 +13,18 @@ import {
   ReactFlowProvider,
 } from "@xyflow/react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { type FlowOverviewNode, buildFlowOverviewElements } from "./editor-flow-overview.utils";
+import {
+  type FlowOverviewNode,
+  type FlowOverviewNodeData,
+  buildFlowOverviewElements,
+} from "./editor-flow-overview.utils";
 import type { EditorFlowAnalysisResult } from "./editor-publish-flow-validation";
 import "@xyflow/react/dist/style.css";
 
 interface FlowOverviewCanvasProps {
   analysis: EditorFlowAnalysisResult;
   variant?: "default" | "compact";
+  onNodeClick?: (nodeId: string, kind: FlowOverviewNodeData["kind"]) => void;
 }
 
 function StatusBadge({ text, className }: { text: string; className: string }) {
@@ -38,7 +43,8 @@ function FlowOverviewNodeCard({ data }: NodeProps<FlowOverviewNode>) {
 
   return (
     <div
-      className={`${isCompact ? "min-w-[170px] max-w-[220px] px-3 py-2.5" : "min-w-[230px] max-w-[290px] px-4 py-3"} rounded-xl border bg-white shadow-sm ${
+      style={{ pointerEvents: "all" }}
+      className={`${isCompact ? "min-w-[170px] max-w-[220px] px-3 py-2.5" : "min-w-[230px] max-w-[290px] px-4 py-3"} cursor-pointer rounded-xl border bg-white shadow-sm ${
         data.isUnreachable ? "opacity-50 grayscale" : ""
       } ${
         data.isDeadEnd
@@ -85,7 +91,11 @@ function FlowOverviewNodeCard({ data }: NodeProps<FlowOverviewNode>) {
   );
 }
 
-export function FlowOverviewCanvas({ analysis, variant = "default" }: FlowOverviewCanvasProps) {
+export function FlowOverviewCanvas({
+  analysis,
+  variant = "default",
+  onNodeClick,
+}: FlowOverviewCanvasProps) {
   const isCompact = variant === "compact";
   const containerRef = useRef<HTMLDivElement | null>(null);
   const flowInstanceRef = useRef<ReactFlowInstance<FlowOverviewNode, Edge> | null>(null);
@@ -161,7 +171,11 @@ export function FlowOverviewCanvas({ analysis, variant = "default" }: FlowOvervi
           nodesConnectable={false}
           nodesDraggable={false}
           elementsSelectable
+          selectNodesOnDrag={false}
           proOptions={{ hideAttribution: true }}
+          onNodeClick={(_event, node) => {
+            onNodeClick?.(node.id, node.data.kind);
+          }}
         >
           <Background gap={20} size={1} color="#e4e4e7" />
           {!isCompact && <MiniMap pannable zoomable />}

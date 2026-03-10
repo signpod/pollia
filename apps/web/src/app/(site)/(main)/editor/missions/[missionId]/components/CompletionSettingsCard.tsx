@@ -1,5 +1,6 @@
 "use client";
 
+import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { Typo } from "@repo/ui/components";
 import { AlertCircle, ChevronDown, Plus, X } from "lucide-react";
 import { type ForwardedRef, forwardRef, useImperativeHandle } from "react";
@@ -50,7 +51,7 @@ function CompletionSettingsCardComponent(
           <div>
             <Typo.SubTitle>결과 화면 수정</Typo.SubTitle>
             <Typo.Body size="medium" className="mt-1 text-zinc-500">
-              미션 완료 후 노출될 결과 화면을 추가하고 수정합니다.
+              {UBIQUITOUS_CONSTANTS.MISSION} 완료 후 노출될 결과 화면을 추가하고 수정합니다.
             </Typo.Body>
           </div>
           {hasValidationIssues ? (
@@ -99,7 +100,11 @@ function CompletionSettingsCardComponent(
                 (item.kind === "existing" ? item.completion.imageUrl : null);
 
               return (
-                <div key={item.key} className="overflow-hidden rounded-xl border border-zinc-200">
+                <div
+                  key={item.key}
+                  data-editor-item-key={item.key}
+                  className="overflow-hidden rounded-xl border border-zinc-200"
+                >
                   <div className="flex items-center justify-between bg-zinc-50 px-4 py-3">
                     <button
                       type="button"

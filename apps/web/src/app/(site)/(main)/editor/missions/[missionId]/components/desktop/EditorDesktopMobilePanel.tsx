@@ -2,26 +2,32 @@
 
 import { ROUTES } from "@/constants/routes";
 import { Typo } from "@repo/ui/components";
-import { useEffect, useState } from "react";
+import { useAtomValue } from "jotai";
+import { useMemo } from "react";
+import {
+  mobilePreviewModeAtom,
+  mobilePreviewRefreshKeyAtom,
+} from "../../atoms/editorMobilePreviewAtom";
+import { MobilePreviewPanel } from "./MobilePreviewPanel";
 
 interface EditorDesktopMobilePanelProps {
   missionId: string;
 }
 
-const DEVICE_SIZE = {
-  width: 393,
-  height: 852,
-};
-
 export function EditorDesktopMobilePanel({ missionId }: EditorDesktopMobilePanelProps) {
-  const previewUrl = ROUTES.MISSION(missionId);
-  const [isLoading, setIsLoading] = useState(true);
+  const previewMode = useAtomValue(mobilePreviewModeAtom);
+  const refreshKey = useAtomValue(mobilePreviewRefreshKeyAtom);
 
-  useEffect(() => {
-    if (previewUrl) {
-      setIsLoading(true);
+  const previewUrl = useMemo(() => {
+    switch (previewMode.type) {
+      case "action":
+        return ROUTES.MISSION_ACTION_PREVIEW(missionId, previewMode.actionId);
+      case "completion":
+        return ROUTES.MISSION_COMPLETION_PREVIEW(missionId, previewMode.completionId);
+      default:
+        return ROUTES.MISSION(missionId);
     }
-  }, [previewUrl]);
+  }, [missionId, previewMode]);
 
   return (
     <section className="flex h-full min-h-[460px] flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white p-3 shadow-[0_10px_40px_rgba(9,9,11,0.08)]">
@@ -35,35 +41,7 @@ export function EditorDesktopMobilePanel({ missionId }: EditorDesktopMobilePanel
       </header>
 
       <div className="mt-3 flex min-h-0 flex-1 items-start justify-center overflow-auto pb-2">
-        <div
-          className="rounded-[40px] bg-zinc-900 p-3 shadow-2xl"
-          style={{
-            width: DEVICE_SIZE.width + 24,
-            minWidth: DEVICE_SIZE.width + 24,
-            height: DEVICE_SIZE.height + 24,
-            minHeight: DEVICE_SIZE.height + 24,
-          }}
-        >
-          <div
-            className="relative overflow-hidden rounded-[28px] bg-white"
-            style={{
-              width: DEVICE_SIZE.width,
-              height: DEVICE_SIZE.height,
-            }}
-          >
-            {isLoading && (
-              <div className="absolute inset-0 z-10 flex items-center justify-center bg-white">
-                <div className="size-7 animate-spin rounded-full border-4 border-zinc-200 border-t-zinc-500" />
-              </div>
-            )}
-            <iframe
-              title="모바일 미리보기"
-              src={previewUrl}
-              className="h-full w-full border-0"
-              onLoad={() => setIsLoading(false)}
-            />
-          </div>
-        </div>
+        <MobilePreviewPanel key={`${previewUrl}-${refreshKey}`} url={previewUrl} />
       </div>
     </section>
   );

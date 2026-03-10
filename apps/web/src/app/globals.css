@@ -1,1 +1,18 @@
 @import "@repo/tailwind-config";
+
+@keyframes action-item-highlight-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
+  }
+}
+
+.action-item-highlight {
+  animation: action-item-highlight-pulse 0.75s ease-in-out 2;
+  border-color: rgb(139, 92, 246) !important;
+}

@@ -3,6 +3,7 @@ import type {
   ActionFormRawSnapshot,
 } from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
 import { useManageDeleteAction } from "@/app/(site)/mission/[missionId]/manage/actions/hooks";
+import { makeDraftActionId } from "@/app/(site)/mission/[missionId]/manage/actions/logic";
 import { useReadActionsDetail } from "@/hooks/action";
 import { useReadMission } from "@/hooks/mission";
 import type { ActionDetail } from "@/types/dto";
@@ -22,8 +23,10 @@ import {
   actionOpenItemKeyAtom,
   actionTypeByItemKeyAtom,
   actionValidationIssueCountByItemKeyAtom,
+  cleanupDeletedActionRefsAtom,
 } from "../atoms/editorActionAtoms";
 import { completionOptionsAtom, isAiCompletionEnabledAtom } from "../atoms/editorDerivedAtoms";
+import { mobilePreviewModeAtom } from "../atoms/editorMobilePreviewAtom";
 import type {
   ActionListItem,
   ActionSectionDraftSnapshot,
@@ -38,6 +41,7 @@ import {
 } from "./actionSettingsCard.utils";
 import { analyzeEditorFlow } from "./editor-publish-flow-validation";
 import type { SectionSaveHandle } from "./editor-save.types";
+import { toggleItemWithPreview } from "./editorMobilePreview.utils";
 import { useActionFlowAnalysis } from "./useActionFlowAnalysis";
 import { useActionLinkDerived } from "./useActionLinkDerived";
 import { useActionSaveFlow } from "./useActionSaveFlow";
@@ -113,8 +117,10 @@ export function useActionSettingsCard({
     actionValidationIssueCountByItemKeyAtom,
   );
   const draftHydrationVersion = useAtomValue(actionDraftHydrationVersionAtom);
+  const dispatchCleanupDeletedActionRefs = useSetAtom(cleanupDeletedActionRefsAtom);
   const [isFlowDialogOpen, setIsFlowDialogOpen] = useAtom(actionIsFlowDialogOpenAtom);
   const setIsAiCompletionEnabled = useSetAtom(isAiCompletionEnabledAtom);
+  const setMobilePreviewMode = useSetAtom(mobilePreviewModeAtom);
 
   const {
     data: missionData,
@@ -465,9 +471,11 @@ export function useActionSettingsCard({
     setOpenItemKey(itemKey);
   }, []);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setDirtyByItemKey, setDraftFormSnapshotByItemKey, setValidationIssueCountByItemKey, setOpenItemKey
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setDirtyByItemKey, setValidationIssueCountByItemKey, setOpenItemKey, dispatchCleanupDeletedActionRefs
   const handleRemoveDraft = useCallback((draftKey: string) => {
     const itemKey = getDraftItemKey(draftKey);
+    const deletedActionId = makeDraftActionId(draftKey);
+
     setDraftItems(prev => prev.filter(item => item.key !== draftKey));
     setActionTypeByItemKey(prev => {
       const next = { ...prev };
@@ -479,11 +487,9 @@ export function useActionSettingsCard({
       delete next[itemKey];
       return next;
     });
-    setDraftFormSnapshotByItemKey(prev => {
-      const next = { ...prev };
-      delete next[itemKey];
-      return next;
-    });
+
+    dispatchCleanupDeletedActionRefs({ itemKey, deletedActionId });
+
     setValidationIssueCountByItemKey(prev => {
       const next = { ...prev };
       delete next[itemKey];
@@ -493,10 +499,19 @@ export function useActionSettingsCard({
     setOpenItemKey(prev => (prev === itemKey ? null : prev));
   }, []);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setOpenItemKey
-  const handleToggleItem = useCallback((itemKey: string) => {
-    setOpenItemKey(prev => (prev === itemKey ? null : itemKey));
-  }, []);
+  const handleToggleItem = useCallback(
+    (itemKey: string) => {
+      toggleItemWithPreview(
+        itemKey,
+        orderedActionItems,
+        setOpenItemKey,
+        setMobilePreviewMode,
+        item => ({ type: "action", actionId: item.action.id }),
+        openItemKey,
+      );
+    },
+    [orderedActionItems, setMobilePreviewMode, setOpenItemKey, openItemKey],
+  );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setActionTypeByItemKey
   const handleActionTypeChange = useCallback((itemKey: string, actionType: ActionType) => {

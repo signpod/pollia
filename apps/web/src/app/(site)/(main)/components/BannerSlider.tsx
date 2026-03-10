@@ -11,16 +11,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 // TODO: 데이터 수정 필요
 const FEATURED_MISSIONS = [
   {
-    id: "cmkg52ncy000gla04ya80cyo2",
-    title: "내가 웹소설 남주로 빙의한다면?",
+    id: "cmmiuqm3h000hkz040g6ywtia",
     imageUrl:
-      "https://lpgfbjohdashthkhxzab.supabase.co/storage/v1/object/public/mission-images/ca3afe20-e1ba-423a-a6d5-6c7662b40451/please.png",
+      "https://jjrsknqxiqbzqiraexpc.supabase.co/storage/v1/object/public/mission-images/f54437e4-95c6-4232-b927-f2b995b09a14/1773043105118.jpg",
   },
   {
-    id: "cmkg52ncy000gla04ya80cyo2",
-    title: "폴리아 배너 2",
+    id: "cmme8bjkt0003jm04g04tdw8v",
     imageUrl:
-      "https://lpgfbjohdashthkhxzab.supabase.co/storage/v1/object/public/mission-images/ca3afe20-e1ba-423a-a6d5-6c7662b40451/name.png",
+      "https://jjrsknqxiqbzqiraexpc.supabase.co/storage/v1/object/public/mission-images/f54437e4-95c6-4232-b927-f2b995b09a14/1772761321452.jpg",
   },
 ];
 
@@ -197,7 +195,7 @@ export function BannerSlider() {
             >
               <Image
                 src={m.imageUrl}
-                alt={m.title}
+                alt={`Banner ${realIndex + 1}`}
                 fill
                 sizes="(max-width: 600px) 100vw, 600px"
                 className="pointer-events-none select-none object-cover"
@@ -210,10 +208,7 @@ export function BannerSlider() {
         </div>
 
         <div className="pointer-events-none absolute inset-x-0 bottom-0 p-7">
-          <div className="flex items-end justify-between">
-            <Typo.SubTitle className="text-2xl leading-[1.5] text-white">
-              {FEATURED_MISSIONS[realIndex]?.title}
-            </Typo.SubTitle>
+          <div className="flex items-end justify-end">
             <div className="pointer-events-auto flex shrink-0 items-center gap-2">
               <button
                 type="button"

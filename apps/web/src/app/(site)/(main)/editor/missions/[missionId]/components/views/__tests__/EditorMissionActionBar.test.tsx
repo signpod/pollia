@@ -22,6 +22,7 @@ describe("EditorMissionActionBar", () => {
         isPublishing={false}
         hasAnyBusySection={false}
         hasAnyPendingChanges={true}
+        hasAnyValidationIssues={false}
         canSave={true}
         canPublish={true}
         onSave={() => {}}
@@ -41,6 +42,7 @@ describe("EditorMissionActionBar", () => {
         isPublishing={false}
         hasAnyBusySection={false}
         hasAnyPendingChanges={true}
+        hasAnyValidationIssues={false}
         canSave={true}
         canPublish={true}
         onSave={() => {}}
@@ -60,6 +62,7 @@ describe("EditorMissionActionBar", () => {
         isPublishing={false}
         hasAnyBusySection={false}
         hasAnyPendingChanges={false}
+        hasAnyValidationIssues={false}
         canSave={false}
         canPublish={false}
         onSave={() => {}}
@@ -78,6 +81,7 @@ describe("EditorMissionActionBar", () => {
         isPublishing={false}
         hasAnyBusySection={false}
         hasAnyPendingChanges={true}
+        hasAnyValidationIssues={false}
         canSave={false}
         canPublish={true}
         onSave={() => {}}
