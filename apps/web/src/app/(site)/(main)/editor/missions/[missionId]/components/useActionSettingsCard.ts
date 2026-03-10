@@ -3,6 +3,7 @@ import type {
   ActionFormRawSnapshot,
 } from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
 import { useManageDeleteAction } from "@/app/(site)/mission/[missionId]/manage/actions/hooks";
+import { makeDraftActionId } from "@/app/(site)/mission/[missionId]/manage/actions/logic";
 import { useReadActionsDetail } from "@/hooks/action";
 import { useReadMission } from "@/hooks/mission";
 import type { ActionDetail } from "@/types/dto";
@@ -115,6 +116,7 @@ export function useActionSettingsCard({
     actionValidationIssueCountByItemKeyAtom,
   );
   const draftHydrationVersion = useAtomValue(actionDraftHydrationVersionAtom);
+  const setDraftHydrationVersion = useSetAtom(actionDraftHydrationVersionAtom);
   const [isFlowDialogOpen, setIsFlowDialogOpen] = useAtom(actionIsFlowDialogOpenAtom);
   const setIsAiCompletionEnabled = useSetAtom(isAiCompletionEnabledAtom);
   const setMobilePreviewMode = useSetAtom(mobilePreviewModeAtom);
@@ -468,9 +470,11 @@ export function useActionSettingsCard({
     setOpenItemKey(itemKey);
   }, []);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setDirtyByItemKey, setDraftFormSnapshotByItemKey, setValidationIssueCountByItemKey, setOpenItemKey
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setDirtyByItemKey, setDraftFormSnapshotByItemKey, setValidationIssueCountByItemKey, setOpenItemKey, setDraftHydrationVersion
   const handleRemoveDraft = useCallback((draftKey: string) => {
     const itemKey = getDraftItemKey(draftKey);
+    const deletedActionId = makeDraftActionId(draftKey);
+
     setDraftItems(prev => prev.filter(item => item.key !== draftKey));
     setActionTypeByItemKey(prev => {
       const next = { ...prev };
@@ -482,11 +486,41 @@ export function useActionSettingsCard({
       delete next[itemKey];
       return next;
     });
+
+    let hasReferenceChange = false;
     setDraftFormSnapshotByItemKey(prev => {
-      const next = { ...prev };
-      delete next[itemKey];
+      const next: Record<string, ActionFormRawSnapshot> = {};
+      for (const [key, snapshot] of Object.entries(prev)) {
+        if (key === itemKey) continue;
+
+        const vals = snapshot.values;
+        const nextActionIdMatch = vals.nextActionId === deletedActionId;
+        const optionsMatch = vals.options?.some(o => o.nextActionId === deletedActionId);
+
+        if (!nextActionIdMatch && !optionsMatch) {
+          next[key] = snapshot;
+          continue;
+        }
+
+        hasReferenceChange = true;
+        next[key] = {
+          ...snapshot,
+          values: {
+            ...vals,
+            nextActionId: nextActionIdMatch ? null : vals.nextActionId,
+            options: vals.options?.map(o =>
+              o.nextActionId === deletedActionId ? { ...o, nextActionId: null } : o,
+            ),
+          },
+        };
+      }
       return next;
     });
+
+    if (hasReferenceChange) {
+      setDraftHydrationVersion(v => v + 1);
+    }
+
     setValidationIssueCountByItemKey(prev => {
       const next = { ...prev };
       delete next[itemKey];
