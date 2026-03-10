@@ -11,11 +11,15 @@ import {
   DialogTitle,
   Typo,
 } from "@repo/ui/components";
+import { useSetAtom } from "jotai";
 import { X } from "lucide-react";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
+import { actionScrollTargetItemKeyAtom } from "../atoms/editorActionAtoms";
 import { FlowOverviewCanvas } from "./FlowOverviewCanvas";
+import type { FlowOverviewNodeData } from "./editor-flow-overview.utils";
 import { buildFlowOverviewSummary } from "./editor-flow-overview.utils";
 import type { EditorFlowAnalysisResult } from "./editor-publish-flow-validation";
+import { mapFlowNodeIdToItemKey } from "./flowNodeItemKeyMap";
 
 interface FlowOverviewDialogProps {
   open: boolean;
@@ -58,6 +62,18 @@ export function FlowOverviewDialog({
   errorMessage,
 }: FlowOverviewDialogProps) {
   const summary = useMemo(() => (analysis ? buildFlowOverviewSummary(analysis) : null), [analysis]);
+  const setScrollTarget = useSetAtom(actionScrollTargetItemKeyAtom);
+
+  const handleNodeClick = useCallback(
+    (nodeId: string, kind: FlowOverviewNodeData["kind"]) => {
+      const itemKey = mapFlowNodeIdToItemKey(nodeId, kind);
+      if (itemKey) {
+        setScrollTarget(itemKey);
+        onOpenChange(false);
+      }
+    },
+    [setScrollTarget, onOpenChange],
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -134,7 +150,7 @@ export function FlowOverviewDialog({
                   </Typo.Body>
                 </div>
               ) : analysis ? (
-                <FlowOverviewCanvas analysis={analysis} />
+                <FlowOverviewCanvas analysis={analysis} onNodeClick={handleNodeClick} />
               ) : (
                 <div className="flex h-full flex-col items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 text-center">
                   <Typo.SubTitle>표시할 플로우가 없습니다</Typo.SubTitle>

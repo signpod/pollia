@@ -24,3 +24,5 @@ export const actionValidationIssueCountByItemKeyAtom = atom<Record<string, numbe
 export const actionDraftHydrationVersionAtom = atom(0);
 
 export const actionIsFlowDialogOpenAtom = atom(false);
+
+export const actionScrollTargetItemKeyAtom = atom<string | null>(null);
