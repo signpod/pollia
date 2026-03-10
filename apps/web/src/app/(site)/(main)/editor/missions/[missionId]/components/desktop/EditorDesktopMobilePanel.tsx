@@ -4,7 +4,10 @@ import { ROUTES } from "@/constants/routes";
 import { Typo } from "@repo/ui/components";
 import { useAtomValue } from "jotai";
 import { useMemo } from "react";
-import { mobilePreviewModeAtom } from "../../atoms/editorMobilePreviewAtom";
+import {
+  mobilePreviewModeAtom,
+  mobilePreviewRefreshKeyAtom,
+} from "../../atoms/editorMobilePreviewAtom";
 import { MobilePreviewPanel } from "./MobilePreviewPanel";
 
 interface EditorDesktopMobilePanelProps {
@@ -13,6 +16,7 @@ interface EditorDesktopMobilePanelProps {
 
 export function EditorDesktopMobilePanel({ missionId }: EditorDesktopMobilePanelProps) {
   const previewMode = useAtomValue(mobilePreviewModeAtom);
+  const refreshKey = useAtomValue(mobilePreviewRefreshKeyAtom);
 
   const previewUrl = useMemo(() => {
     switch (previewMode.type) {
@@ -37,7 +41,7 @@ export function EditorDesktopMobilePanel({ missionId }: EditorDesktopMobilePanel
       </header>
 
       <div className="mt-3 flex min-h-0 flex-1 items-start justify-center overflow-auto pb-2">
-        <MobilePreviewPanel url={previewUrl} />
+        <MobilePreviewPanel key={`${previewUrl}-${refreshKey}`} url={previewUrl} />
       </div>
     </section>
   );
