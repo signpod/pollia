@@ -21,6 +21,7 @@ import {
   actionIsFlowDialogOpenAtom,
   actionItemOrderKeysAtom,
   actionOpenItemKeyAtom,
+  actionScrollTargetItemKeyAtom,
   actionTypeByItemKeyAtom,
   actionValidationIssueCountByItemKeyAtom,
   cleanupDeletedActionRefsAtom,
@@ -121,6 +122,7 @@ export function useActionSettingsCard({
   const [isFlowDialogOpen, setIsFlowDialogOpen] = useAtom(actionIsFlowDialogOpenAtom);
   const setIsAiCompletionEnabled = useSetAtom(isAiCompletionEnabledAtom);
   const setMobilePreviewMode = useSetAtom(mobilePreviewModeAtom);
+  const setScrollTarget = useSetAtom(actionScrollTargetItemKeyAtom);
 
   const {
     data: missionData,
@@ -461,7 +463,7 @@ export function useActionSettingsCard({
     [setDraftFormSnapshotByItemKey],
   );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setOpenItemKey
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setOpenItemKey, setScrollTarget
   const handleAddDraft = useCallback(() => {
     const draftKey = createDraftKey();
     const itemKey = getDraftItemKey(draftKey);
@@ -469,6 +471,7 @@ export function useActionSettingsCard({
     setDraftItems(prev => [...prev, { key: draftKey }]);
     setActionTypeByItemKey(prev => ({ ...prev, [itemKey]: ActionType.MULTIPLE_CHOICE }));
     setOpenItemKey(itemKey);
+    setScrollTarget(itemKey);
   }, []);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setDirtyByItemKey, setValidationIssueCountByItemKey, setOpenItemKey, dispatchCleanupDeletedActionRefs
