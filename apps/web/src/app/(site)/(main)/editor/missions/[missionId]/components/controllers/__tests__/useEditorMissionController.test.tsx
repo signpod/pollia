@@ -507,13 +507,13 @@ describe("useEditorMissionController", () => {
       mission,
       currentTab: "editor" as const,
       missionQueryData: mission,
-      actionsQueryData: [] as any[],
-      completionsQueryData: [] as any[],
+      actionsQueryData: [],
+      completionsQueryData: [],
       isActionsLoading: true,
       isCompletionsLoading: false,
       refetchMission: async () => ({ data: { data: mission } }),
-      refetchActions: async () => ({ data: { data: [] as any[] } }),
-      refetchCompletions: async () => ({ data: { data: [] as any[] } }),
+      refetchActions: async () => ({ data: { data: [] } }),
+      refetchCompletions: async () => ({ data: { data: [] } }),
     };
 
     const { result, rerender } = renderHook(
@@ -559,13 +559,13 @@ describe("useEditorMissionController", () => {
       mission,
       currentTab: "editor" as const,
       missionQueryData: mission,
-      actionsQueryData: [] as any[],
-      completionsQueryData: [] as any[],
-      isActionsLoading: false,
+      actionsQueryData: [],
+      completionsQueryData: [],
+      isActionsLoading: true,
       isCompletionsLoading: false,
       refetchMission: async () => ({ data: { data: mission } }),
-      refetchActions: async () => ({ data: { data: [] as any[] } }),
-      refetchCompletions: async () => ({ data: { data: [] as any[] } }),
+      refetchActions: async () => ({ data: { data: [] } }),
+      refetchCompletions: async () => ({ data: { data: [] } }),
     };
 
     const importSpy = jest.fn();
@@ -584,7 +584,7 @@ describe("useEditorMissionController", () => {
       result.current.refs.completionRef.current = createSectionHandle(null);
     });
 
-    rerender(initialProps);
+    rerender({ ...initialProps, isActionsLoading: false });
 
     await waitFor(() => {
       expect(importSpy).toHaveBeenCalledWith(expect.objectContaining({ title: "로컬 임시저장" }));
@@ -601,7 +601,7 @@ describe("useEditorMissionController", () => {
       missionQueryData: mission,
       actionsQueryData: [] as any[],
       completionsQueryData: [] as any[],
-      isActionsLoading: false,
+      isActionsLoading: true,
       isCompletionsLoading: false,
       refetchMission: async () => ({ data: { data: mission } }),
       refetchActions: async () => ({ data: { data: [] as any[] } }),
@@ -620,7 +620,7 @@ describe("useEditorMissionController", () => {
       result.current.refs.completionRef.current = createSectionHandle(null);
     });
 
-    rerender(initialProps);
+    rerender({ ...initialProps, isActionsLoading: false });
 
     act(() => {
       result.current.sectionBindings.onBasicStateChange({
