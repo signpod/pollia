@@ -35,9 +35,7 @@ export function DateTimeSettingRow({
   const split = value ? splitDateTime(value) : null;
 
   useEffect(() => {
-    if (value != null) {
-      setIsEnabled(true);
-    }
+    setIsEnabled(value != null);
   }, [value]);
 
   const handleToggle = (checked: boolean) => {
@@ -71,7 +69,7 @@ export function DateTimeSettingRow({
           </div>
         </div>
 
-        {isEnabled && split && (
+        {isEnabled && (
           <DateAndTimePicker
             date={split?.date}
             time={split?.time}
