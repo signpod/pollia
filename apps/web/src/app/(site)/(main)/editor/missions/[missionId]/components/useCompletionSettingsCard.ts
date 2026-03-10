@@ -310,22 +310,25 @@ export function useCompletionSettingsCard({
     setOpenItemKey(getDraftItemKey(draftKey));
   };
 
-  const handleToggleItem = (itemKey: string) => {
-    setOpenItemKey(prev => {
-      const next = prev === itemKey ? null : itemKey;
-      if (next) {
-        const item = completionItems.find(i => i.key === next);
-        if (item?.kind === "existing") {
-          setMobilePreviewMode({ type: "completion", completionId: item.completion.id });
+  const handleToggleItem = useCallback(
+    (itemKey: string) => {
+      setOpenItemKey(prev => {
+        const next = prev === itemKey ? null : itemKey;
+        if (next) {
+          const item = completionItems.find(i => i.key === next);
+          if (item?.kind === "existing") {
+            setMobilePreviewMode({ type: "completion", completionId: item.completion.id });
+          } else {
+            setMobilePreviewMode({ type: "intro" });
+          }
         } else {
           setMobilePreviewMode({ type: "intro" });
         }
-      } else {
-        setMobilePreviewMode({ type: "intro" });
-      }
-      return next;
-    });
-  };
+        return next;
+      });
+    },
+    [completionItems, setMobilePreviewMode, setOpenItemKey],
+  );
 
   const handleRemoveDraft = (draftKey: string) => {
     const itemKey = getDraftItemKey(draftKey);
