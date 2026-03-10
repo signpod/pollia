@@ -8,8 +8,8 @@ import type {
 } from "./editor-publish-flow-validation";
 
 const START_NODE_ID = "start";
-const HORIZONTAL_GAP = 320;
-const VERTICAL_GAP = 220;
+const HORIZONTAL_GAP = 350;
+const VERTICAL_GAP = 250;
 
 export type FlowOverviewNodeKind = "start" | "action" | "branch-action" | "completion";
 
@@ -162,7 +162,7 @@ function toEdge(connection: EditorFlowConnection): Edge {
     id: connection.id,
     source: connection.source,
     target: connection.target,
-    type: "smoothstep",
+    type: "default",
     label: connection.label ?? undefined,
     labelStyle: connection.label
       ? {
@@ -260,7 +260,7 @@ export function buildFlowOverviewElements(
       id: `${START_NODE_ID}:${analysis.state.entryActionId}`,
       source: START_NODE_ID,
       target: analysis.state.entryActionId,
-      type: "smoothstep",
+      type: "default",
       style: {
         stroke: "#0f172a",
         strokeWidth: 2,
