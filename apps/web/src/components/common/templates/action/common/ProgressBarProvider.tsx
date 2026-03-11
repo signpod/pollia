@@ -1,8 +1,5 @@
 "use client";
-
-import { cn } from "@/lib/utils";
 import { ProgressBarV2 } from "@repo/ui/components";
-import { FixedTopLayout } from "@repo/ui/components";
 import { type ReactNode, createContext, useContext, useState } from "react";
 
 const PROGRESS_BAR_CONTAINER_HEIGHT = "h-[60px]";
@@ -54,19 +51,16 @@ export function ProgressBarProvider({ children }: ProgressBarProviderProps) {
         setIsBadgeVisible,
       }}
     >
-      <FixedTopLayout>
-        <FixedTopLayout.Content
-          className={cn("flex justify-center w-full", PROGRESS_BAR_CONTAINER_HEIGHT)}
-        >
-          <ProgressBarV2
-            value={value}
-            currentOrder={currentOrder}
-            totalOrder={totalOrder}
-            badgeVariant={badgeVariant}
-            isBadgeVisible={isBadgeVisible}
-          />
-        </FixedTopLayout.Content>
-      </FixedTopLayout>
+      <div className="pt-1">
+        <ProgressBarV2
+          value={value}
+          currentOrder={currentOrder}
+          totalOrder={totalOrder}
+          badgeVariant={badgeVariant}
+          isBadgeVisible={isBadgeVisible}
+        />
+      </div>
+
       {children}
     </ProgressBarContext.Provider>
   );
