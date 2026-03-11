@@ -74,6 +74,7 @@ export function MissionCompletion({ completionId, initialImageUrl }: MissionComp
                 rewardImageUrl={reward.imageUrl ?? undefined}
                 rewardName={reward.name ?? undefined}
                 rewardScheduledDate={reward.scheduledDate ?? undefined}
+                rewardDescription={reward.description ?? undefined}
               />
             </div>
           </div>
