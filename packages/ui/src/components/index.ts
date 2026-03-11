@@ -38,6 +38,7 @@ export * from "./common/Select";
 export * from "./common/Textarea";
 export * from "./common/ProgressBar";
 export * from "./common/ProgressBarV2";
+export * from "./common/PurchaseLinkCard";
 export * from "./common/RatingScale";
 export * from "./common/StarScale";
 export * from "./common/DateAndTimePicker";
