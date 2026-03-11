@@ -14,6 +14,7 @@ export interface ProfileHeaderViewProps {
   showBack?: boolean;
   showHomeIcon?: boolean;
   fallbackRight?: ReactNode;
+  rightExtra?: ReactNode;
   user?: { name: string } | null;
   profileImageUrl?: string | null;
   onBack?: () => void;
@@ -25,6 +26,7 @@ export function ProfileHeaderView({
   showBack = false,
   showHomeIcon = false,
   fallbackRight,
+  rightExtra,
   user,
   profileImageUrl,
   onBack,
@@ -71,6 +73,7 @@ export function ProfileHeaderView({
         ) : (
           <div className="shrink-0">{fallbackRight}</div>
         )}
+        {rightExtra}
       </div>
     </header>
   );
