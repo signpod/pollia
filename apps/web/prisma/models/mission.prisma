@@ -32,6 +32,7 @@ model Mission {
   responses   MissionResponse[]
   completions MissionCompletion[]
   likes       MissionLike[]
+  views       MissionView[]
   creator     User                @relation(fields: [creatorId], references: [id])
   reward      Reward?             @relation(fields: [rewardId], references: [id])
   event       Event?              @relation(fields: [eventId], references: [id])

@@ -109,6 +109,13 @@ export class MissionRepository {
     });
   }
 
+  async incrementViewCount(missionId: string, client: TransactionClient = prisma) {
+    return client.mission.update({
+      where: { id: missionId },
+      data: { viewCount: { increment: 1 } },
+    });
+  }
+
   async update(
     missionId: string,
     data: Prisma.MissionUncheckedUpdateInput,

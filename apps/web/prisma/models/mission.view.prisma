@@ -1,0 +1,13 @@
+model MissionView {
+  id        String   @id @default(cuid())
+  missionId String   @map("mission_id")
+  actorId   String   @map("actor_id")
+  viewDate  String   @map("view_date")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  mission Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  @@unique([missionId, actorId, viewDate])
+  @@index([missionId])
+  @@map("mission_views")
+}
