@@ -8,15 +8,76 @@ import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { ROUTES } from "@/constants/routes";
+import { SHARE_IMAGE_PATH, SHARE_MESSAGES } from "@/constants/shareMessages";
 import { checkAuthStatus } from "@/lib/auth";
 import { getQueryClient } from "@/lib/getQueryClient";
 import type { GetMissionCompletionResponse } from "@/types/dto";
 import { MissionType } from "@prisma/client";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { getCachedMission } from "../getCachedMission";
 import { MissionCompletion } from "./ui";
 import { RouteWrapper } from "./ui/RouteWrapper";
+
+interface PageParams {
+  params: Promise<{ missionId: string }>;
+  searchParams: Promise<{ id?: string }>;
+}
+
+export async function generateMetadata({ params, searchParams }: PageParams): Promise<Metadata> {
+  const { missionId } = await params;
+  const { id: completionId } = await searchParams;
+
+  try {
+    const missionResult = await getCachedMission(missionId);
+    const mission = missionResult.data;
+
+    let ogTitle = mission.title || SHARE_MESSAGES.kakao.title;
+    let ogDescription = mission.description || SHARE_MESSAGES.kakao.description;
+    let ogImage = mission.imageUrl || SHARE_IMAGE_PATH;
+
+    if (completionId) {
+      const completions = await getCompletionsByMissionId(missionId);
+      const completion = completions.data.find(c => c.id === completionId);
+      if (completion) {
+        ogTitle = completion.title || ogTitle;
+        ogDescription = completion.description || ogDescription;
+        ogImage = completion.imageUrl || ogImage;
+      }
+    } else {
+      const completion = await getMissionCompletion(missionId).catch(() => null);
+      if (completion?.data) {
+        ogTitle = completion.data.title || ogTitle;
+        ogDescription = completion.data.description || ogDescription;
+        ogImage = completion.data.imageUrl || ogImage;
+      }
+    }
+
+    return {
+      title: ogTitle,
+      description: ogDescription,
+      openGraph: {
+        title: ogTitle,
+        description: ogDescription,
+        images: [{ url: ogImage, width: 1200, height: 630, alt: ogTitle }],
+        type: "website",
+      },
+    };
+  } catch {
+    return {
+      title: SHARE_MESSAGES.kakao.title,
+      description: SHARE_MESSAGES.kakao.description,
+      openGraph: {
+        title: SHARE_MESSAGES.kakao.title,
+        description: SHARE_MESSAGES.kakao.description,
+        images: [SHARE_IMAGE_PATH],
+        type: "website",
+      },
+    };
+  }
+}
 
 export default async function MissionPage({
   params,

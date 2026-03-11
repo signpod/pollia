@@ -8,8 +8,10 @@ import { MissionCompletionPage } from "@/components/common/pages/MissionCompleti
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { useReadMission } from "@/hooks/mission";
 import { useReadMissionCompletion, useReadMissionCompletionById } from "@/hooks/mission-completion";
+import { usePurchaseLinks } from "@/hooks/purchase-link";
 import { useReadReward } from "@/hooks/reward/useReadReward";
 import { MissionType } from "@prisma/client";
+import { PurchaseLinkCard, Typo } from "@repo/ui/components";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useCompletionImageDownload } from "./hooks";
@@ -46,11 +48,12 @@ export function MissionCompletion({ completionId, initialImageUrl }: MissionComp
   });
 
   const reward = rewardQuery?.data;
+  const purchaseLinks = usePurchaseLinks();
 
   const { data: recommendedMissions } = useQuery({
     queryKey: [...missionQueryKeys.allMissions(), "recommended"],
     queryFn: () => getAllMissions({ limit: 6, type: MissionType.GENERAL }),
-    select: data => data.data.filter(m => m.id !== missionId),
+    select: data => data.data.filter(m => m.id !== missionId && m.isActive),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -62,11 +65,19 @@ export function MissionCompletion({ completionId, initialImageUrl }: MissionComp
       description={completionDescription}
       reward={
         reward ? (
-          <MissionRewardSection
-            rewardImageUrl={reward.imageUrl ?? undefined}
-            rewardName={reward.name ?? undefined}
-            rewardScheduledDate={reward.scheduledDate ?? undefined}
-          />
+          <div className="flex flex-col gap-4 w-full items-start">
+            <Typo.MainTitle size="small" className="w-full">
+              완료 리워드
+            </Typo.MainTitle>
+            <div className="w-full">
+              <MissionRewardSection
+                rewardImageUrl={reward.imageUrl ?? undefined}
+                rewardName={reward.name ?? undefined}
+                rewardScheduledDate={reward.scheduledDate ?? undefined}
+                rewardDescription={reward.description ?? undefined}
+              />
+            </div>
+          </div>
         ) : undefined
       }
       shareButtons={
@@ -85,6 +96,18 @@ export function MissionCompletion({ completionId, initialImageUrl }: MissionComp
             missions={recommendedMissions}
             cardClassName="w-[159.5px] sm:w-[200px]"
           />
+        ) : undefined
+      }
+      purchaseLinks={
+        purchaseLinks ? (
+          <div className="flex flex-col gap-4 w-full items-start">
+            <Typo.MainTitle size="small" className="w-full">
+              이런 상품은 어때요?
+            </Typo.MainTitle>
+            <div className="w-full">
+              <PurchaseLinkCard items={purchaseLinks} />
+            </div>
+          </div>
         ) : undefined
       }
       hasReward={!!reward}

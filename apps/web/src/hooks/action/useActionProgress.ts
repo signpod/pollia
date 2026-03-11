@@ -99,64 +99,68 @@ function calculatePathFromRoot(
   return pathLength;
 }
 
-function getAllPossibleNextIds(action: ActionForProgress, actions: ActionForProgress[]): string[] {
-  const nextIds: string[] = [];
+function calculateMaxRemainingSteps(startActionId: string, actions: ActionForProgress[]): number {
+  const actionMap = new Map(actions.map(a => [a.id, a]));
+  const memo = new Map<string, number>();
 
-  for (const option of action.options) {
-    if (option.nextActionId && !option.nextCompletionId) {
-      nextIds.push(option.nextActionId);
+  function getNextIds(action: ActionForProgress): string[] {
+    const nextIds: string[] = [];
+    let hasExplicitRouting = false;
+
+    for (const option of action.options) {
+      if (option.nextActionId || option.nextCompletionId) {
+        hasExplicitRouting = true;
+      }
+      if (option.nextActionId && !option.nextCompletionId && actionMap.has(option.nextActionId)) {
+        nextIds.push(option.nextActionId);
+      }
     }
-  }
 
-  if (action.nextActionId && !action.nextCompletionId) {
-    if (!nextIds.includes(action.nextActionId)) {
-      nextIds.push(action.nextActionId);
+    if (action.nextActionId || action.nextCompletionId) {
+      hasExplicitRouting = true;
     }
-  }
 
-  if (nextIds.length === 0 && !action.nextCompletionId) {
-    const hasOptionCompletion = action.options.some(opt => opt.nextCompletionId);
-    if (!hasOptionCompletion) {
+    if (action.nextActionId && !action.nextCompletionId && actionMap.has(action.nextActionId)) {
+      if (!nextIds.includes(action.nextActionId)) {
+        nextIds.push(action.nextActionId);
+      }
+    }
+
+    if (!hasExplicitRouting && nextIds.length === 0) {
       const currentOrder = action.order ?? 0;
       const nextAction = actions.find(a => (a.order ?? 0) === currentOrder + 1);
       if (nextAction) {
         nextIds.push(nextAction.id);
       }
     }
+
+    return nextIds;
   }
 
-  return nextIds;
-}
+  function dfs(actionId: string, visiting: Set<string>): number {
+    if (memo.has(actionId)) return memo.get(actionId)!;
+    if (visiting.has(actionId)) return 0;
 
-function calculateMaxRemainingSteps(startActionId: string, actions: ActionForProgress[]): number {
-  const actionMap = new Map(actions.map(a => [a.id, a]));
-  let maxDistance = 0;
+    const action = actionMap.get(actionId);
+    if (!action) return 0;
 
-  const queue: Array<{ id: string; distance: number }> = [{ id: startActionId, distance: 0 }];
-  const visited = new Set<string>();
+    visiting.add(actionId);
 
-  while (queue.length > 0) {
-    const item = queue.shift();
-    if (!item) break;
+    const nextIds = getNextIds(action);
+    let maxChildSteps = 0;
 
-    const { id, distance } = item;
-    if (visited.has(id)) continue;
-    visited.add(id);
-
-    maxDistance = Math.max(maxDistance, distance);
-
-    const action = actionMap.get(id);
-    if (!action) continue;
-
-    const nextIds = getAllPossibleNextIds(action, actions);
     for (const nextId of nextIds) {
-      if (!visited.has(nextId)) {
-        queue.push({ id: nextId, distance: distance + 1 });
-      }
+      maxChildSteps = Math.max(maxChildSteps, dfs(nextId, visiting));
     }
+
+    visiting.delete(actionId);
+
+    const result = 1 + maxChildSteps;
+    memo.set(actionId, result);
+    return result;
   }
 
-  return maxDistance + 1;
+  return dfs(startActionId, new Set());
 }
 
 function buildSubmittedAnswerMap(

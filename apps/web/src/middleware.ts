@@ -1,4 +1,5 @@
 import { ACTION_NAV_COOKIE_PREFIX, AUTH_COOKIE_PREFIX } from "@/constants/cookie";
+import { WHITE_LABEL_PREFIX } from "@/constants/routes";
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -8,6 +9,7 @@ export const config = {
     "/me/:path*",
     "/mission/:missionId/action/:path*",
     "/mission/:missionId/done",
+    "/wl/:path*",
   ],
 };
 
@@ -54,6 +56,14 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   try {
+    // /wl/* → /* rewrite (white-label)
+    if (pathname.startsWith(`${WHITE_LABEL_PREFIX}/`)) {
+      const rewrittenPath = pathname.replace(new RegExp(`^${WHITE_LABEL_PREFIX}`), "");
+      const url = request.nextUrl.clone();
+      url.pathname = rewrittenPath;
+      return NextResponse.rewrite(url);
+    }
+
     // 미션 경로: nav 쿠키로 인트로 페이지 경유 여부 확인
     // 인증은 서버 액션(resolveMissionActor)에서 처리
     if (pathname.includes("/mission/") && pathname.includes("/action/")) {

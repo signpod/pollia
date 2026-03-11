@@ -44,7 +44,7 @@ export function useImageCrop() {
       );
 
       return new File([croppedBlob], originalFile.name, {
-        type: "image/jpeg",
+        type: "image/png",
         lastModified: Date.now(),
       });
     },

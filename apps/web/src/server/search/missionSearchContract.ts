@@ -20,7 +20,15 @@ export const missionSearchConfig = {
 
 type MissionRecordFields = Pick<
   Mission,
-  "id" | "title" | "choseong" | "description" | "category" | "isActive" | "likesCount" | "createdAt"
+  | "id"
+  | "title"
+  | "choseong"
+  | "description"
+  | "category"
+  | "isActive"
+  | "likesCount"
+  | "viewCount"
+  | "createdAt"
 >;
 
 export interface MissionSearchRecord {
@@ -31,6 +39,7 @@ export interface MissionSearchRecord {
   category: MissionCategory;
   isActive: boolean;
   likesCount: number;
+  viewCount: number;
   createdAt: string;
 }
 
@@ -43,6 +52,7 @@ export function toMissionSearchRecord(mission: MissionRecordFields): MissionSear
     category: mission.category,
     isActive: mission.isActive,
     likesCount: mission.likesCount,
+    viewCount: mission.viewCount,
     createdAt: mission.createdAt.toISOString(),
   };
 }

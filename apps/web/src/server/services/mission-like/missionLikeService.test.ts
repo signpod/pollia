@@ -30,6 +30,7 @@ describe("MissionLikeService", () => {
       findAll: jest.fn(),
       createWithActions: jest.fn(),
       updateLikesCount: jest.fn(),
+      incrementViewCount: jest.fn(),
       update: jest.fn(),
       delete: jest.fn(),
       duplicateMission: jest.fn(),

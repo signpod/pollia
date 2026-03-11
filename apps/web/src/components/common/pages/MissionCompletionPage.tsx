@@ -28,6 +28,7 @@ export interface MissionCompletionPageProps {
   reward?: ReactNode;
   shareButtons?: ReactNode;
   recommendation?: ReactNode;
+  purchaseLinks?: ReactNode;
   hasReward?: boolean;
   onSave?: () => void;
   isSaving?: boolean;
@@ -77,62 +78,56 @@ function CompletionBottomButton({ hasReward }: { hasReward: boolean }) {
 
   if (!isLoggedIn) {
     return (
-      <FixedBottomLayout hasGradientBlur hasBottomGap={false}>
-        <FixedBottomLayout.Content className="px-5 py-3">
-          <ButtonV2
-            variant="primary"
-            className="w-full bg-kakao hover:bg-kakao active:bg-kakao focus:bg-kakao"
-            onClick={handleKakaoLogin}
-          >
-            <div className="flex items-center justify-center w-full gap-6 text-default">
-              <KakaoIcon className="size-6" />
-              <Typo.ButtonText size="large">
-                {hasReward ? "로그인하고 리워드 받기" : "로그인하고 결과 저장하기"}
-              </Typo.ButtonText>
-            </div>
-          </ButtonV2>
-        </FixedBottomLayout.Content>
-      </FixedBottomLayout>
+      <FixedBottomLayout.Content className="px-5 py-3">
+        <ButtonV2
+          variant="primary"
+          className="w-full bg-kakao hover:bg-kakao active:bg-kakao focus:bg-kakao"
+          onClick={handleKakaoLogin}
+        >
+          <div className="flex items-center justify-center w-full gap-6 text-default">
+            <KakaoIcon className="size-6" />
+            <Typo.ButtonText size="large">
+              {hasReward ? "로그인하고 리워드 받기" : "로그인하고 결과 저장하기"}
+            </Typo.ButtonText>
+          </div>
+        </ButtonV2>
+      </FixedBottomLayout.Content>
     );
   }
 
   if (hasReward && !isRewardClaimed) {
     return (
-      <DrawerProvider>
-        <FixedBottomLayout hasGradientBlur hasBottomGap={false}>
-          <FixedBottomLayout.Content className="px-5 py-3">
-            <div className="flex gap-2 w-full">
-              <RewardButtonTrigger />
-              <ButtonV2 variant="primary" className="flex-1" onClick={copyCurrentUrl}>
-                <div className="flex items-center justify-center w-full">
-                  <Typo.ButtonText size="large">결과 공유하기</Typo.ButtonText>
-                </div>
-              </ButtonV2>
-            </div>
-          </FixedBottomLayout.Content>
-        </FixedBottomLayout>
-        <RewardDrawerContent onClose={() => setIsRewardClaimed(true)} />
-      </DrawerProvider>
+      <FixedBottomLayout.Content className="px-5 py-3">
+        <DrawerProvider>
+          <div className="flex gap-2 w-full">
+            <RewardButtonTrigger />
+            <ButtonV2 variant="primary" className="flex-1" onClick={copyCurrentUrl}>
+              <div className="flex items-center justify-center w-full">
+                <Typo.ButtonText size="large">결과 공유하기</Typo.ButtonText>
+              </div>
+            </ButtonV2>
+          </div>
+          <RewardDrawerContent onClose={() => setIsRewardClaimed(true)} />
+        </DrawerProvider>
+      </FixedBottomLayout.Content>
     );
   }
 
   return (
-    <FixedBottomLayout hasGradientBlur hasBottomGap={false}>
-      <FixedBottomLayout.Content className="px-5 py-3">
-        <div className="flex gap-2 w-full">
-          <ButtonV2 variant="secondary" className="flex-1" onClick={() => router.push(ROUTES.HOME)}>
-            <div className="flex items-center justify-center w-full">
-              <Typo.ButtonText size="large">처음으로</Typo.ButtonText>
-            </div>
-          </ButtonV2>
-          <ButtonV2 variant="primary" className="flex-1" onClick={copyCurrentUrl}>
-            <div className="flex items-center justify-center w-full">
-              <Typo.ButtonText size="large">결과 공유하기</Typo.ButtonText>
-            </div>
-          </ButtonV2>
-        </div>
-      </FixedBottomLayout.Content>
-    </FixedBottomLayout>
+    <FixedBottomLayout.Content className="px-5 py-3">
+      <div className="flex gap-2 w-full">
+        <ButtonV2 variant="secondary" className="flex-1" onClick={() => router.push(ROUTES.HOME)}>
+          <div className="flex items-center justify-center w-full">
+            <Typo.ButtonText size="large">처음으로</Typo.ButtonText>
+          </div>
+        </ButtonV2>
+        <ButtonV2 variant="primary" className="flex-1" onClick={copyCurrentUrl}>
+          <div className="flex items-center justify-center w-full">
+            <Typo.ButtonText size="large">결과 공유하기</Typo.ButtonText>
+          </div>
+        </ButtonV2>
+      </div>
+    </FixedBottomLayout.Content>
   );
 }
 
@@ -179,6 +174,7 @@ export function MissionCompletionPage({
   reward,
   shareButtons,
   recommendation,
+  purchaseLinks,
   hasReward,
   onSave,
   isSaving,
@@ -197,6 +193,7 @@ export function MissionCompletionPage({
         reward={reward}
         shareButtons={shareButtons}
         recommendation={recommendation}
+        purchaseLinks={purchaseLinks}
         onSave={onSave}
         isSaving={isSaving}
         canSave={canSave}

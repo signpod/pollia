@@ -4,6 +4,7 @@ import { MissionIntroPage } from "@/components/common/pages/MissionIntroPage";
 import { MISSION_CATEGORY_LABELS } from "@/constants/mission";
 import { useMissionIntroData, useSurveyResume } from "@/hooks/mission";
 import { useReadMissionResponseForMission } from "@/hooks/mission-response";
+import { useTrackMissionView } from "@/hooks/mission-view";
 import { useReadMissionParticipantInfo } from "@/hooks/participant/useReadMissionParticipantInfo";
 import { useReadReward } from "@/hooks/reward/useReadReward";
 import { getActionNavCookie, setActionNavCookie } from "@/lib/cookie";
@@ -77,6 +78,8 @@ export function MissionPageWrapper({
     allowGuestResponse,
     allowMultipleResponses,
   } = mission;
+
+  useTrackMissionView(missionId);
 
   useEffect(() => {
     const existingValue = getActionNavCookie(missionId);
@@ -189,6 +192,7 @@ export function MissionPageWrapper({
             titleRef={titleRef}
             contextTitle={title}
             missionId={missionId}
+            creatorId={mission.creatorId}
             missionType={missionType}
             missionTitle={missionTitle}
             missionImageUrl={missionImageUrl}

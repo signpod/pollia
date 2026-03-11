@@ -17,6 +17,7 @@ export interface MissionCompletionTemplateProps {
   reward?: ReactNode;
   shareButtons?: ReactNode;
   recommendation?: ReactNode;
+  purchaseLinks?: ReactNode;
   onSave?: () => void;
   isSaving?: boolean;
   canSave?: boolean;
@@ -31,12 +32,13 @@ export function MissionCompletionTemplate({
   reward,
   shareButtons,
   recommendation,
+  purchaseLinks,
   onSave,
   isSaving,
   canSave,
 }: MissionCompletionTemplateProps) {
   return (
-    <div className="relative w-full bg-white min-h-svh pb-10">
+    <div className="relative w-full bg-white flex-1 pb-10">
       {header}
       <div className="flex w-full flex-col gap-[60px] pb-10">
         <div className="flex w-full flex-col items-end gap-10 px-5">
@@ -96,6 +98,8 @@ export function MissionCompletionTemplate({
             {description && cleanTiptapHTML(description) && (
               <TiptapViewer content={cleanTiptapHTML(description)} className="w-full break-keep" />
             )}
+
+            {purchaseLinks}
 
             {reward}
           </div>

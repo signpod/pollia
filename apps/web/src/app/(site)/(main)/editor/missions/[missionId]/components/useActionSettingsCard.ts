@@ -21,6 +21,7 @@ import {
   actionIsFlowDialogOpenAtom,
   actionItemOrderKeysAtom,
   actionOpenItemKeyAtom,
+  actionScrollTargetItemKeyAtom,
   actionTypeByItemKeyAtom,
   actionValidationIssueCountByItemKeyAtom,
   cleanupDeletedActionRefsAtom,
@@ -69,6 +70,7 @@ export interface UseActionSettingsCardReturn {
   derived: {
     completionOptions: Array<{ id: string; title: string }>;
     linkTargets: Array<{ id: string; title: string; order: number }>;
+    entryActionId: string | null;
     referencedActionIdsBySource: Map<string, Set<string>>;
     flowAnalysis: ReturnType<typeof analyzeEditorFlow> | null;
   };
@@ -121,6 +123,7 @@ export function useActionSettingsCard({
   const [isFlowDialogOpen, setIsFlowDialogOpen] = useAtom(actionIsFlowDialogOpenAtom);
   const setIsAiCompletionEnabled = useSetAtom(isAiCompletionEnabledAtom);
   const setMobilePreviewMode = useSetAtom(mobilePreviewModeAtom);
+  const setScrollTarget = useSetAtom(actionScrollTargetItemKeyAtom);
 
   const {
     data: missionData,
@@ -269,7 +272,13 @@ export function useActionSettingsCard({
     [defaultOrderKeys, orderedItemKeys],
   );
 
-  const entryActionId = missionData?.data?.entryActionId ?? null;
+  const firstItem = orderedActionItems[0];
+  const firstOrderedActionId = firstItem
+    ? firstItem.kind === "existing"
+      ? firstItem.action.id
+      : makeDraftActionId(firstItem.draft.key)
+    : null;
+  const entryActionId = missionData?.data?.entryActionId ?? firstOrderedActionId;
 
   const { linkTargets, referencedActionIdsBySource } = useActionLinkDerived({
     orderedActionItems,
@@ -461,7 +470,7 @@ export function useActionSettingsCard({
     [setDraftFormSnapshotByItemKey],
   );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setOpenItemKey
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setOpenItemKey, setScrollTarget
   const handleAddDraft = useCallback(() => {
     const draftKey = createDraftKey();
     const itemKey = getDraftItemKey(draftKey);
@@ -469,6 +478,7 @@ export function useActionSettingsCard({
     setDraftItems(prev => [...prev, { key: draftKey }]);
     setActionTypeByItemKey(prev => ({ ...prev, [itemKey]: ActionType.MULTIPLE_CHOICE }));
     setOpenItemKey(itemKey);
+    setScrollTarget(itemKey);
   }, []);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setDirtyByItemKey, setValidationIssueCountByItemKey, setOpenItemKey, dispatchCleanupDeletedActionRefs
@@ -574,6 +584,7 @@ export function useActionSettingsCard({
     derived: {
       completionOptions,
       linkTargets,
+      entryActionId,
       referencedActionIdsBySource,
       flowAnalysis,
     },

@@ -63,11 +63,7 @@ export function SearchClient() {
     imageUrl: "",
     category: record.category,
     likesCount: record.likesCount,
-    // TODO: 백엔드에 조회수(viewCount) 필드 구현 시 실제 데이터로 교체
-    viewCount:
-      200 +
-      (Math.abs(record.objectID.split("").reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 0)) %
-        4800),
+    viewCount: record.viewCount ?? 0,
   }));
 
   const isPending = isLoading || submittedQuery !== deferredQuery;
@@ -104,7 +100,7 @@ export function SearchClient() {
   }
 
   return (
-    <div className="relative z-50 -mt-14 min-h-screen bg-white">
+    <div className="relative z-50 -mt-14 flex-1 bg-white">
       <header className="sticky top-0 z-50 flex h-14 items-center gap-2 bg-white px-1">
         <button
           type="button"

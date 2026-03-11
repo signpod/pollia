@@ -56,7 +56,7 @@ export function ImageCropModal({
             <Typo.MainTitle size="small">이미지 편집</Typo.MainTitle>
           </div>
 
-          <div className="relative flex h-[400px] w-full items-center justify-center">
+          <div className="relative flex h-[400px] w-full items-center justify-center bg-zinc-50">
             <CustomCropper
               imageSrc={imageSrc}
               crop={crop}

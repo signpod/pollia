@@ -58,7 +58,7 @@ export class MissionRepository {
         ...(options?.type && { type: options.type }),
       },
       orderBy: {
-        updatedAt: sortOrder === "latest" ? "desc" : "asc",
+        createdAt: sortOrder === "latest" ? "desc" : "asc",
       },
       take: limit + 1,
       ...(options?.cursor && {
@@ -106,6 +106,13 @@ export class MissionRepository {
     return client.mission.update({
       where: { id: missionId },
       data: { likesCount: { increment: delta } },
+    });
+  }
+
+  async incrementViewCount(missionId: string, client: TransactionClient = prisma) {
+    return client.mission.update({
+      where: { id: missionId },
+      data: { viewCount: { increment: 1 } },
     });
   }
 

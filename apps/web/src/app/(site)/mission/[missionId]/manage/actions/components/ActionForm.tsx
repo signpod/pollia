@@ -45,6 +45,8 @@ import {
   useRef,
   useState,
 } from "react";
+import { NextLinkDisplay } from "./NextLinkDisplay";
+import { NextLinkDrawer } from "./NextLinkDrawer";
 import { patchOptionByKey, removeOptionByKey } from "./actionFormOptionState";
 
 const UPLOAD_ERROR_MESSAGES = {
@@ -111,6 +113,7 @@ interface ActionFormProps {
   dirtyBaselineValues?: ActionFormValues;
   editingAction?: ActionDetail | null;
   allActions: Array<Pick<ActionDetail, "id" | "title" | "order">>;
+  disabledActionIds?: Set<string>;
   completionOptions: Array<{ id: string; title: string }>;
   allowCompletionLink?: boolean;
   isLoading: boolean;
@@ -127,148 +130,6 @@ interface ActionFormProps {
   onRawSnapshotChange?: (snapshot: ActionFormRawSnapshot) => void;
   onCreateLinkedAction?: () => string;
   onCreateLinkedCompletion?: () => string;
-}
-
-type NextLinkType = "action" | "completion";
-
-interface NextLinkSelectorProps {
-  itemLabel: string;
-  allowCompletionLink: boolean;
-  enforceExclusiveNextLink: boolean;
-  actionValue: string | null;
-  completionValue: string | null;
-  selectableActions: Array<Pick<ActionDetail, "id" | "title" | "order">>;
-  completionOptions: Array<{ id: string; title: string }>;
-  onActionChange: (value: string | null) => void;
-  onCompletionChange: (value: string | null) => void;
-  onCreateAction?: () => void;
-  onCreateCompletion?: () => void;
-  errorMessage?: string;
-}
-
-function NextLinkSelector({
-  itemLabel,
-  allowCompletionLink,
-  enforceExclusiveNextLink,
-  actionValue,
-  completionValue,
-  selectableActions,
-  completionOptions,
-  onActionChange,
-  onCompletionChange,
-  onCreateAction,
-  onCreateCompletion,
-  errorMessage,
-}: NextLinkSelectorProps) {
-  const [activeTab, setActiveTab] = useState<NextLinkType>(() =>
-    allowCompletionLink && completionValue ? "completion" : "action",
-  );
-
-  const handleTabChange = (tab: NextLinkType) => {
-    setActiveTab(tab);
-    if (enforceExclusiveNextLink) {
-      if (tab === "action") onCompletionChange(null);
-      if (tab === "completion") onActionChange(null);
-    }
-  };
-
-  const isActionTab = activeTab === "action" || !allowCompletionLink;
-
-  return (
-    <>
-      <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={() => handleTabChange("action")}
-          className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-colors ${
-            activeTab === "action"
-              ? "border-violet-400 bg-violet-500 text-white"
-              : "border-zinc-200 bg-white text-zinc-600"
-          }`}
-        >
-          {`다음 ${itemLabel}`}
-        </button>
-        {allowCompletionLink ? (
-          <button
-            type="button"
-            onClick={() => handleTabChange("completion")}
-            className={`flex-1 rounded-lg border py-2 text-sm font-medium transition-colors ${
-              activeTab === "completion"
-                ? "border-violet-400 bg-violet-500 text-white"
-                : "border-zinc-200 bg-white text-zinc-600"
-            }`}
-          >
-            완료 화면
-          </button>
-        ) : null}
-      </div>
-
-      {isActionTab ? (
-        <>
-          {selectableActions.length > 0 && (
-            <Select value={actionValue ?? ""} onValueChange={v => onActionChange(v || null)}>
-              <SelectTrigger>
-                <SelectValue placeholder={`다음 이동할 ${itemLabel}을 선택하세요`} />
-              </SelectTrigger>
-              <SelectContent>
-                {selectableActions.map(a => (
-                  <SelectItem key={a.id} value={a.id}>
-                    #{(a.order ?? 0) + 1} {a.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          {onCreateAction && (
-            <button
-              type="button"
-              onClick={onCreateAction}
-              className="flex items-center justify-center gap-1 rounded-lg border border-dashed border-zinc-300 py-2 text-sm text-zinc-500 transition-colors hover:border-violet-400 hover:text-violet-500"
-            >
-              <Plus className="size-4" />
-              {`다음 ${itemLabel} 만들기`}
-            </button>
-          )}
-        </>
-      ) : (
-        <>
-          {completionOptions.length > 0 && (
-            <Select
-              value={completionValue ?? ""}
-              onValueChange={v => onCompletionChange(v || null)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="완료 화면을 선택하세요" />
-              </SelectTrigger>
-              <SelectContent>
-                {completionOptions.map(c => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-          {onCreateCompletion && (
-            <button
-              type="button"
-              onClick={onCreateCompletion}
-              className="flex items-center justify-center gap-1 rounded-lg border border-dashed border-zinc-300 py-2 text-sm text-zinc-500 transition-colors hover:border-violet-400 hover:text-violet-500"
-            >
-              <Plus className="size-4" />
-              결과 화면 만들기
-            </button>
-          )}
-        </>
-      )}
-
-      {errorMessage && (
-        <Typo.Body size="small" className="text-red-500">
-          {errorMessage}
-        </Typo.Body>
-      )}
-    </>
-  );
 }
 
 const NEEDS_OPTIONS: ActionType[] = [
@@ -384,6 +245,7 @@ function ActionFormComponent(
     dirtyBaselineValues,
     editingAction,
     allActions,
+    disabledActionIds,
     completionOptions,
     isLoading,
     onSubmit,
@@ -618,6 +480,28 @@ function ActionFormComponent(
     },
     [onCreateLinkedCompletion, allowCompletionLink],
   );
+
+  const [drawerOpenKey, setDrawerOpenKey] = useState<string | null>(null);
+  const MAIN_DRAWER_KEY = "__main__";
+
+  const handleDeleteNextLink = useCallback(() => {
+    setNextActionId(null);
+    setNextCompletionId(null);
+  }, []);
+
+  const handleDeleteBranchOptionNextLink = useCallback((optionKey: string) => {
+    setOptions(prev =>
+      patchOptionByKey(prev, optionKey, {
+        nextActionId: null,
+        nextCompletionId: null,
+      }),
+    );
+  }, []);
+
+  const activeDrawerOption =
+    drawerOpenKey && drawerOpenKey !== MAIN_DRAWER_KEY
+      ? (options.find(o => o._key === drawerOpenKey) ?? null)
+      : null;
 
   const buildValidationErrors = useCallback((): Record<string, string> => {
     const newErrors: Record<string, string> = {};
@@ -1208,30 +1092,16 @@ function ActionFormComponent(
 
                 {isBranch && (hasLinkTargets || hasCreateCallbacks) && (
                   <div className="ml-6 flex flex-col gap-2">
-                    <NextLinkSelector
+                    <LabelText required={allowCompletionLink}>다음 이동</LabelText>
+                    <NextLinkDisplay
                       itemLabel={itemLabel}
-                      allowCompletionLink={allowCompletionLink}
-                      enforceExclusiveNextLink
-                      actionValue={option.nextActionId ?? null}
-                      completionValue={option.nextCompletionId ?? null}
+                      nextActionId={option.nextActionId ?? null}
+                      nextCompletionId={option.nextCompletionId ?? null}
                       selectableActions={selectableActions}
                       completionOptions={completionOptions}
-                      onActionChange={value =>
-                        handleBranchOptionNextActionChange(option._key, value)
-                      }
-                      onCompletionChange={value =>
-                        handleBranchOptionNextCompletionChange(option._key, value)
-                      }
-                      onCreateAction={
-                        onCreateLinkedAction
-                          ? () => handleBranchCreateNextAction(option._key)
-                          : undefined
-                      }
-                      onCreateCompletion={
-                        onCreateLinkedCompletion
-                          ? () => handleBranchCreateNextCompletion(option._key)
-                          : undefined
-                      }
+                      onAdd={() => setDrawerOpenKey(option._key)}
+                      onEdit={() => setDrawerOpenKey(option._key)}
+                      onDelete={() => handleDeleteBranchOptionNextLink(option._key)}
                     />
                   </div>
                 )}
@@ -1267,28 +1137,61 @@ function ActionFormComponent(
         <div className="flex flex-col gap-3 rounded-lg border border-violet-100 bg-violet-50/50 p-4">
           <LabelText required={allowCompletionLink && hasLinkTargets}>다음 이동 설정</LabelText>
 
-          <NextLinkSelector
+          <NextLinkDisplay
             itemLabel={itemLabel}
-            allowCompletionLink={allowCompletionLink}
-            enforceExclusiveNextLink={enforceExclusiveNextLink}
-            actionValue={nextActionId}
-            completionValue={nextCompletionId}
+            nextActionId={nextActionId}
+            nextCompletionId={nextCompletionId}
             selectableActions={selectableActions}
             completionOptions={completionOptions}
-            onActionChange={handleNextActionChange}
-            onCompletionChange={handleNextCompletionChange}
-            onCreateAction={onCreateLinkedAction ? handleCreateNextAction : undefined}
-            onCreateCompletion={onCreateLinkedCompletion ? handleCreateNextCompletion : undefined}
+            onAdd={() => setDrawerOpenKey(MAIN_DRAWER_KEY)}
+            onEdit={() => setDrawerOpenKey(MAIN_DRAWER_KEY)}
+            onDelete={handleDeleteNextLink}
             errorMessage={errors.nextLink}
           />
-
-          {enforceExclusiveNextLink && allowCompletionLink && (
-            <Typo.Body size="small" className="text-zinc-500">
-              {`다음 ${itemLabel}/완료 화면 중 하나만 선택할 수 있습니다.`}
-            </Typo.Body>
-          )}
         </div>
       )}
+
+      <NextLinkDrawer
+        isOpen={drawerOpenKey !== null}
+        onClose={() => setDrawerOpenKey(null)}
+        itemLabel={itemLabel}
+        allowCompletionLink={allowCompletionLink}
+        actionValue={activeDrawerOption ? (activeDrawerOption.nextActionId ?? null) : nextActionId}
+        completionValue={
+          activeDrawerOption ? (activeDrawerOption.nextCompletionId ?? null) : nextCompletionId
+        }
+        selectableActions={selectableActions}
+        disabledActionIds={disabledActionIds}
+        completionOptions={completionOptions}
+        onActionSelect={id => {
+          if (activeDrawerOption) {
+            handleBranchOptionNextActionChange(activeDrawerOption._key, id);
+          } else {
+            handleNextActionChange(id);
+          }
+        }}
+        onCompletionSelect={id => {
+          if (activeDrawerOption) {
+            handleBranchOptionNextCompletionChange(activeDrawerOption._key, id);
+          } else {
+            handleNextCompletionChange(id);
+          }
+        }}
+        onCreateAction={
+          onCreateLinkedAction
+            ? activeDrawerOption
+              ? () => handleBranchCreateNextAction(activeDrawerOption._key)
+              : handleCreateNextAction
+            : undefined
+        }
+        onCreateCompletion={
+          onCreateLinkedCompletion
+            ? activeDrawerOption
+              ? () => handleBranchCreateNextCompletion(activeDrawerOption._key)
+              : handleCreateNextCompletion
+            : undefined
+        }
+      />
 
       {!hideFooter && (
         <div className="flex gap-3 pb-4 pt-2">

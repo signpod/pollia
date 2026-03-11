@@ -200,7 +200,7 @@ export function BannerSlider() {
                 draggable={false}
                 priority
               />
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent from-30% to-[#2f2f2f]" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent from-50% to-[#2F2F2F]" />
             </div>
           ))}
         </div>

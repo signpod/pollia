@@ -1,15 +1,18 @@
 "use client";
 
 import { MissionDescription } from "@/app/(site)/mission/[missionId]/components/MissionDescription";
-import { MissionFooter } from "@/app/(site)/mission/[missionId]/components/MissionFooter";
 import { MissionRewardSection } from "@/app/(site)/mission/[missionId]/components/MissionRewardSection";
 import { MissionShareSection } from "@/app/(site)/mission/[missionId]/components/MissionShareSection";
 import { SECTION_IDS } from "@/app/(site)/mission/[missionId]/constants/sectionIds";
+import { ROUTES, WHITE_LABEL_PREFIX } from "@/constants/routes";
+import { useCanGoBack } from "@/hooks/common/useCanGoBack";
 import { cleanTiptapHTML, cn } from "@/lib/utils";
 import { MissionType } from "@prisma/client";
+import HomeIcon from "@public/svgs/home-icon.svg";
 import { Typo } from "@repo/ui/components";
 import { ChevronLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import type { RefObject } from "react";
 import type { ReactNode } from "react";
 
@@ -23,8 +26,6 @@ export interface MissionContentTemplateReward {
 export interface MissionContentTemplateProps {
   title?: string | null;
   isSticky?: boolean;
-  activeTab?: string;
-  onChangeTab?: (value: string) => void;
   sentinelRef?: RefObject<HTMLDivElement | null>;
   description: string | null;
   reward: MissionContentTemplateReward | null;
@@ -35,19 +36,17 @@ export interface MissionContentTemplateProps {
 export function MissionContentTemplate({
   title,
   isSticky = false,
-  activeTab = SECTION_IDS.MISSION_GUIDE,
-  onChangeTab,
   sentinelRef,
   description,
   reward,
   missionType,
   shareButtons,
 }: MissionContentTemplateProps) {
-  const sections = reward
-    ? [SECTION_IDS.MISSION_GUIDE, SECTION_IDS.REWARD]
-    : [SECTION_IDS.MISSION_GUIDE];
   const hasDescription = !!description && !!cleanTiptapHTML(description);
   const router = useRouter();
+  const canGoBack = useCanGoBack();
+  const pathname = usePathname();
+  const isWhiteLabel = pathname.startsWith(`${WHITE_LABEL_PREFIX}/`);
 
   return (
     <div className="bg-white relative">
@@ -59,13 +58,19 @@ export function MissionContentTemplate({
             isSticky ? "max-h-12 opacity-100" : "max-h-0 opacity-0",
           )}
         >
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="shrink-0 size-12 flex items-center justify-center"
-          >
-            <ChevronLeft className="size-6" />
-          </button>
+          {canGoBack ? (
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="shrink-0 size-12 flex items-center justify-center"
+            >
+              <ChevronLeft className="size-6" />
+            </button>
+          ) : (
+            <Link href={ROUTES.HOME} className="shrink-0 size-12 flex items-center justify-center">
+              <HomeIcon className="size-6" />
+            </Link>
+          )}
           <Typo.SubTitle size="large" className="truncate">
             {title}
           </Typo.SubTitle>
@@ -87,12 +92,10 @@ export function MissionContentTemplate({
           </div>
         )}
 
-        {missionType !== MissionType.EXPERIENCE_GROUP && shareButtons && (
+        {!isWhiteLabel && missionType !== MissionType.EXPERIENCE_GROUP && shareButtons && (
           <MissionShareSection shareButtons={shareButtons} />
         )}
       </div>
-
-      <MissionFooter />
     </div>
   );
 }
