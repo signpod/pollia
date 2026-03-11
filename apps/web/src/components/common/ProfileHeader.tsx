@@ -11,12 +11,14 @@ interface ProfileHeaderProps {
   showBack?: boolean;
   showHomeIcon?: boolean;
   fallbackRight?: ReactNode;
+  rightExtra?: ReactNode;
 }
 
 export function ProfileHeader({
   showBack = false,
   showHomeIcon = false,
   fallbackRight,
+  rightExtra,
 }: ProfileHeaderProps) {
   const router = useRouter();
   const { data: currentUser, isLoading, isError } = useCurrentUser();
@@ -28,6 +30,7 @@ export function ProfileHeader({
     <ProfileHeaderView
       showBack={showBack}
       showHomeIcon={showHomeIcon}
+      rightExtra={rightExtra}
       fallbackRight={
         showSkeleton ? (
           <div className="size-9 animate-pulse rounded-full bg-zinc-200" />

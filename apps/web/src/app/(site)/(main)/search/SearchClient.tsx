@@ -104,7 +104,7 @@ export function SearchClient() {
   }
 
   return (
-    <div className="relative z-50 -mt-14 min-h-screen bg-white">
+    <div className="relative z-50 -mt-14 flex-1 bg-white">
       <header className="sticky top-0 z-50 flex h-14 items-center gap-2 bg-white px-1">
         <button
           type="button"

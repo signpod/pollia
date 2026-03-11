@@ -73,9 +73,36 @@ async function generateCompletionImage({
   const titleFontSize = Math.round(24 * SCALE);
   const lineHeight = 1.5;
 
+  const maxTextWidth = CANVAS_WIDTH - PADDING * 2;
+
+  const tempCanvas = document.createElement("canvas");
+  const tempCtx = tempCanvas.getContext("2d")!;
+
+  function wrapText(text: string, fontSize: number, fontWeight: number): string[] {
+    tempCtx.font = `${fontWeight} ${fontSize}px "SUIT Variable", -apple-system, "Helvetica Neue", sans-serif`;
+    const words = text.split(" ");
+    const lines: string[] = [];
+    let currentLine = "";
+
+    for (const word of words) {
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      if (tempCtx.measureText(testLine).width > maxTextWidth && currentLine) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    }
+    if (currentLine) lines.push(currentLine);
+    return lines;
+  }
+
+  const subtitleLines = missionTitle ? wrapText(missionTitle, subtitleFontSize, 700) : [];
+  const titleLines = completionTitle ? wrapText(completionTitle, titleFontSize, 700) : [];
+
   let totalTextHeight = 0;
-  if (missionTitle) totalTextHeight += subtitleFontSize * lineHeight;
-  if (completionTitle) totalTextHeight += titleFontSize * lineHeight;
+  if (missionTitle) totalTextHeight += subtitleLines.length * subtitleFontSize * lineHeight;
+  if (completionTitle) totalTextHeight += titleLines.length * titleFontSize * lineHeight;
   if (missionTitle && completionTitle) totalTextHeight += SUBTITLE_TITLE_GAP;
 
   const imageY = PADDING;
@@ -108,14 +135,20 @@ async function generateCompletionImage({
   if (missionTitle) {
     ctx.font = `700 ${subtitleFontSize}px "SUIT Variable", -apple-system, "Helvetica Neue", sans-serif`;
     ctx.fillStyle = "#71717a";
-    ctx.fillText(missionTitle, CANVAS_WIDTH / 2, currentY + subtitleFontSize);
-    currentY += subtitleFontSize * lineHeight + SUBTITLE_TITLE_GAP;
+    for (const line of subtitleLines) {
+      ctx.fillText(line, CANVAS_WIDTH / 2, currentY + subtitleFontSize);
+      currentY += subtitleFontSize * lineHeight;
+    }
+    currentY += SUBTITLE_TITLE_GAP;
   }
 
   if (completionTitle) {
     ctx.font = `700 ${titleFontSize}px "SUIT Variable", -apple-system, "Helvetica Neue", sans-serif`;
     ctx.fillStyle = "#18181b";
-    ctx.fillText(completionTitle, CANVAS_WIDTH / 2, currentY + titleFontSize);
+    for (const line of titleLines) {
+      ctx.fillText(line, CANVAS_WIDTH / 2, currentY + titleFontSize);
+      currentY += titleFontSize * lineHeight;
+    }
   }
 
   ctx.fillStyle = "#f4f4f5";
@@ -124,7 +157,7 @@ async function generateCompletionImage({
   if (logoImg) {
     const logoScale = LOGO_HEIGHT / logoImg.height;
     const logoWidth = logoImg.width * logoScale;
-    ctx.drawImage(logoImg, PADDING, logoY, logoWidth, LOGO_HEIGHT);
+    ctx.drawImage(logoImg, (CANVAS_WIDTH - logoWidth) / 2, logoY, logoWidth, LOGO_HEIGHT);
   }
 
   return new Promise((resolve, reject) => {

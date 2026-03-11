@@ -24,7 +24,7 @@ export default async function MainPage() {
   const researchMissions = researchMissionsRaw.filter(m => m.isActive).map(toSurveyCardData);
 
   return (
-    <main className="flex min-h-screen flex-col bg-white pb-10">
+    <main className="flex flex-1 flex-col bg-white pb-10">
       <BannerSlider />
       <div className="flex flex-col gap-10 pt-10">
         <CurationSection

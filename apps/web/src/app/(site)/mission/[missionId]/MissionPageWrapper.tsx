@@ -189,6 +189,7 @@ export function MissionPageWrapper({
             titleRef={titleRef}
             contextTitle={title}
             missionId={missionId}
+            creatorId={mission.creatorId}
             missionType={missionType}
             missionTitle={missionTitle}
             missionImageUrl={missionImageUrl}

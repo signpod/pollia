@@ -3,6 +3,7 @@
 import { ProfileHeader } from "@/components/common/ProfileHeader";
 import { ROUTES } from "@/constants/routes";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
+import { useCanGoBack } from "@/hooks/common/useCanGoBack";
 import { Typo } from "@repo/ui/components";
 import { cn } from "@repo/ui/lib";
 import { ChevronLeftIcon } from "lucide-react";
@@ -23,23 +24,28 @@ const SUB_PAGE_HEADERS: Record<string, string> = {
 export function MeLayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const canGoBack = useCanGoBack();
   const hasOwnHeader = pathname === ROUTES.ME_ACCOUNT;
   const subPageTitle =
     SUB_PAGE_HEADERS[pathname] ??
     (pathname.startsWith("/me/result/") ? "결과 다시보기" : undefined);
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex flex-1 flex-col">
       {hasOwnHeader ? null : subPageTitle ? (
         <header className={cn("sticky top-0 z-50 flex h-12 items-center bg-white px-1")}>
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="size-12 flex items-center justify-center"
-          >
-            <ChevronLeftIcon className="size-6" />
-          </button>
-          <Typo.SubTitle className="text-base">{subPageTitle}</Typo.SubTitle>
+          {canGoBack && (
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="size-12 flex items-center justify-center"
+            >
+              <ChevronLeftIcon className="size-6" />
+            </button>
+          )}
+          <Typo.SubTitle className={cn("text-base", !canGoBack && "pl-4")}>
+            {subPageTitle}
+          </Typo.SubTitle>
         </header>
       ) : (
         <ProfileHeader />

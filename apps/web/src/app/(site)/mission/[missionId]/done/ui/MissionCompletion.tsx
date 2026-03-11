@@ -50,7 +50,7 @@ export function MissionCompletion({ completionId, initialImageUrl }: MissionComp
   const { data: recommendedMissions } = useQuery({
     queryKey: [...missionQueryKeys.allMissions(), "recommended"],
     queryFn: () => getAllMissions({ limit: 6, type: MissionType.GENERAL }),
-    select: data => data.data.filter(m => m.id !== missionId),
+    select: data => data.data.filter(m => m.id !== missionId && m.isActive),
     staleTime: 5 * 60 * 1000,
   });
 
