@@ -63,11 +63,7 @@ export function SearchClient() {
     imageUrl: "",
     category: record.category,
     likesCount: record.likesCount,
-    // TODO: 백엔드에 조회수(viewCount) 필드 구현 시 실제 데이터로 교체
-    viewCount:
-      200 +
-      (Math.abs(record.objectID.split("").reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 0)) %
-        4800),
+    viewCount: record.viewCount ?? 0,
   }));
 
   const isPending = isLoading || submittedQuery !== deferredQuery;
