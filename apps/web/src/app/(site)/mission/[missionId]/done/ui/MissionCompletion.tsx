@@ -48,7 +48,7 @@ export function MissionCompletion({ completionId, initialImageUrl }: MissionComp
   });
 
   const reward = rewardQuery?.data;
-  const purchaseLinks = usePurchaseLinks(missionId);
+  const purchaseLinks = usePurchaseLinks();
 
   const { data: recommendedMissions } = useQuery({
     queryKey: [...missionQueryKeys.allMissions(), "recommended"],
