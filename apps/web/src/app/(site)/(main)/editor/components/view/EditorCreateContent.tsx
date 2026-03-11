@@ -13,7 +13,7 @@ import { MissionCategory } from "@prisma/client";
 import { Button, toast } from "@repo/ui/components";
 import { AlertCircle } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useEffect, useLayoutEffect, useMemo } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { EditorBottomSaveSlot } from "../../missions/[missionId]/components/EditorBottomSaveSlot";
 import { useEditorMissionTab } from "../../missions/[missionId]/components/EditorMissionTabContext";
@@ -48,6 +48,10 @@ const CREATE_FORM_BASE_VALUES = {
 export function EditorCreateContent() {
   const { currentTab } = useEditorMissionTab();
   const searchParams = useSearchParams();
+
+  useLayoutEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const initialCategory = useMemo(() => {
     const param = searchParams.get("category");

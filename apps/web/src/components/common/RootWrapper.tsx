@@ -14,9 +14,8 @@ interface RootWrapperProps {
 export function RootWrapper({ children, leftAside, rightAside }: RootWrapperProps) {
   const pathname = usePathname();
   const isZincBg = pathname.startsWith("/me/result/");
-  const isMissionRoute = pathname.startsWith("/mission");
-  const isMissionDone = /^\/mission\/[^/]+\/done/.test(pathname);
-  const showFooter = !isMissionRoute || isMissionDone;
+  const isWhiteLabel = pathname.startsWith("/wl/");
+  const showFooter = !isWhiteLabel;
   const hasFixedBottom =
     showFooter &&
     !pathname.startsWith("/me") &&
@@ -24,7 +23,7 @@ export function RootWrapper({ children, leftAside, rightAside }: RootWrapperProp
     !pathname.startsWith("/preview");
 
   return (
-    <div className="flex min-h-svh justify-center">
+    <div className="flex min-h-svh justify-center ">
       {leftAside && (
         <aside className="hidden min-w-0 shrink overflow-hidden lg:block">
           <div className="sticky top-15 pr-4">{leftAside}</div>
@@ -32,7 +31,7 @@ export function RootWrapper({ children, leftAside, rightAside }: RootWrapperProp
       )}
       <main
         className={cn(
-          "flex flex-col w-full max-w-[600px] min-h-svh border-x border-zinc-100 overflow-x-clip shrink-0",
+          "flex flex-col w-full max-w-[600px] min-h-svh overflow-x-clip shrink-0 shadow-[0px_4px_20px_0px_rgba(9,9,11,0.08)]",
           isZincBg ? "bg-zinc-50" : "bg-background",
         )}
       >
