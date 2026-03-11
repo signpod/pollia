@@ -26,8 +26,6 @@ export interface MissionContentTemplateReward {
 export interface MissionContentTemplateProps {
   title?: string | null;
   isSticky?: boolean;
-  activeTab?: string;
-  onChangeTab?: (value: string) => void;
   sentinelRef?: RefObject<HTMLDivElement | null>;
   description: string | null;
   reward: MissionContentTemplateReward | null;
@@ -38,17 +36,12 @@ export interface MissionContentTemplateProps {
 export function MissionContentTemplate({
   title,
   isSticky = false,
-  activeTab = SECTION_IDS.MISSION_GUIDE,
-  onChangeTab,
   sentinelRef,
   description,
   reward,
   missionType,
   shareButtons,
 }: MissionContentTemplateProps) {
-  const sections = reward
-    ? [SECTION_IDS.MISSION_GUIDE, SECTION_IDS.REWARD]
-    : [SECTION_IDS.MISSION_GUIDE];
   const hasDescription = !!description && !!cleanTiptapHTML(description);
   const router = useRouter();
   const canGoBack = useCanGoBack();

@@ -73,7 +73,6 @@ export async function getCroppedImg(
     const sourceCanvas = document.createElement("canvas");
     const sourceCtx = sourceCanvas.getContext("2d", {
       willReadFrequently: false,
-      alpha: false,
     });
 
     if (!sourceCtx) {
@@ -85,9 +84,6 @@ export async function getCroppedImg(
 
     sourceCtx.imageSmoothingEnabled = true;
     sourceCtx.imageSmoothingQuality = "high";
-
-    sourceCtx.fillStyle = "#ffffff";
-    sourceCtx.fillRect(0, 0, outputWidth, outputHeight);
 
     const centerX = outputWidth / 2;
     const centerY = outputHeight / 2;
@@ -119,24 +115,19 @@ export async function getCroppedImg(
     sourceCtx.restore();
 
     return new Promise((resolve, reject) => {
-      sourceCanvas.toBlob(
-        blob => {
-          if (blob) {
-            resolve(blob);
-          } else {
-            reject(new Error("이미지를 Blob으로 변환하는데 실패했습니다."));
-          }
-        },
-        "image/jpeg",
-        1.0,
-      );
+      sourceCanvas.toBlob(blob => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject(new Error("이미지를 Blob으로 변환하는데 실패했습니다."));
+        }
+      }, "image/png");
     });
   }
 
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d", {
     willReadFrequently: false,
-    alpha: false,
   });
 
   if (!ctx) {
@@ -156,9 +147,6 @@ export async function getCroppedImg(
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
 
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, bBoxWidth, bBoxHeight);
-
   ctx.translate(bBoxWidth / 2, bBoxHeight / 2);
   ctx.rotate(rotRad);
   ctx.translate(-pixelCrop.width / 2, -pixelCrop.height / 2);
@@ -176,16 +164,12 @@ export async function getCroppedImg(
   );
 
   return new Promise((resolve, reject) => {
-    canvas.toBlob(
-      blob => {
-        if (blob) {
-          resolve(blob);
-        } else {
-          reject(new Error("이미지를 Blob으로 변환하는데 실패했습니다."));
-        }
-      },
-      "image/jpeg",
-      1.0,
-    );
+    canvas.toBlob(blob => {
+      if (blob) {
+        resolve(blob);
+      } else {
+        reject(new Error("이미지를 Blob으로 변환하는데 실패했습니다."));
+      }
+    }, "image/png");
   });
 }
