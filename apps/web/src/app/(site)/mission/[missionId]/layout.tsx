@@ -32,10 +32,10 @@ export async function generateMetadata({ params }: LayoutParams): Promise<Metada
 
   try {
     const missionResult = await getCachedMission(missionId);
-    const { title, imageUrl } = missionResult.data;
+    const { title, description, imageUrl } = missionResult.data;
 
     const ogTitle = title || SHARE_MESSAGES.kakao.title;
-    const ogDescription = SHARE_MESSAGES.kakao.description;
+    const ogDescription = description || SHARE_MESSAGES.kakao.description;
     const ogImage = imageUrl ? `${baseUrl}/api/og/${missionId}` : SHARE_IMAGE_PATH;
 
     return {
