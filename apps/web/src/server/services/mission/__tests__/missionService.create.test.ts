@@ -26,6 +26,7 @@ describe("MissionService - Create", () => {
       createWithActions: jest.fn(),
       update: jest.fn(),
       updateLikesCount: jest.fn(),
+      incrementViewCount: jest.fn(),
       delete: jest.fn(),
       duplicateMission: jest.fn(),
     } as jest.Mocked<MissionRepository>;
