@@ -41,7 +41,10 @@ export function MeResultContent({ missionId, completionId }: MeResultContentProp
         </Tab.Item>
       </Tab.List>
 
-      <Tab.Content value="result" className="m-0">
+      <Tab.Content
+        value="result"
+        className="m-0 h-full min-h-[calc(100vh-96px-60px)] pt-5 bg-white"
+      >
         <MissionCompletionTemplate
           imageUrl={completion?.imageUrl}
           title={completion?.title}
@@ -49,7 +52,7 @@ export function MeResultContent({ missionId, completionId }: MeResultContentProp
         />
       </Tab.Content>
 
-      <Tab.Content value="answers" className="m-0">
+      <Tab.Content value="answers" className="m-0 bg-white h-full min-h-[calc(100vh-96px-60px)]">
         <MyAnswersTab missionId={missionId} />
       </Tab.Content>
     </Tab.Root>
