@@ -72,7 +72,13 @@ function ActionSettingsCardComponent(
     draftHydrationVersion,
   } = listState;
 
-  const { completionOptions, linkTargets, referencedActionIdsBySource, flowAnalysis } = derived;
+  const {
+    completionOptions,
+    linkTargets,
+    entryActionId,
+    referencedActionIdsBySource,
+    flowAnalysis,
+  } = derived;
 
   const {
     handleAddDraft,
@@ -194,13 +200,14 @@ function ActionSettingsCardComponent(
                   : snapshotTitle || `${ACTION_TYPE_LABELS[itemType]} 질문`;
               const currentActionId =
                 item.kind === "existing" ? item.action.id : makeDraftActionId(item.draft.key);
-              const formLinkTargets = linkTargets.filter(target => {
-                if (target.id === currentActionId) return false;
-                const sources = referencedActionIdsBySource.get(target.id);
-                if (!sources) return true;
-                if (sources.has(item.key)) return true;
-                return false;
-              });
+              const formLinkTargets = linkTargets.filter(target => target.id !== currentActionId);
+              const disabledActionIds = new Set<string>();
+              if (entryActionId) disabledActionIds.add(entryActionId);
+              for (const [targetId, sources] of referencedActionIdsBySource) {
+                if (targetId === currentActionId) continue;
+                if (sources.has(item.key)) continue;
+                disabledActionIds.add(targetId);
+              }
               const previewImageUrl =
                 formRefs.current[item.key]?.getRawSnapshot().values.imageUrl ??
                 draftFormSnapshotByItemKey[item.key]?.values.imageUrl ??
@@ -309,6 +316,7 @@ function ActionSettingsCardComponent(
                         }
                         dirtyBaselineValues={mapEditInitialValues(item.action)}
                         allActions={formLinkTargets}
+                        disabledActionIds={disabledActionIds}
                         completionOptions={completionOptions}
                         allowCompletionLink={!isAiCompletionEnabled}
                         isLoading={isBusy}
@@ -343,6 +351,7 @@ function ActionSettingsCardComponent(
                         actionType={itemType}
                         initialValues={draftFormSnapshotByItemKey[item.key]?.values}
                         allActions={formLinkTargets}
+                        disabledActionIds={disabledActionIds}
                         completionOptions={completionOptions}
                         allowCompletionLink={!isAiCompletionEnabled}
                         isLoading={isBusy}

@@ -70,6 +70,7 @@ export interface UseActionSettingsCardReturn {
   derived: {
     completionOptions: Array<{ id: string; title: string }>;
     linkTargets: Array<{ id: string; title: string; order: number }>;
+    entryActionId: string | null;
     referencedActionIdsBySource: Map<string, Set<string>>;
     flowAnalysis: ReturnType<typeof analyzeEditorFlow> | null;
   };
@@ -271,7 +272,13 @@ export function useActionSettingsCard({
     [defaultOrderKeys, orderedItemKeys],
   );
 
-  const entryActionId = missionData?.data?.entryActionId ?? null;
+  const firstItem = orderedActionItems[0];
+  const firstOrderedActionId = firstItem
+    ? firstItem.kind === "existing"
+      ? firstItem.action.id
+      : makeDraftActionId(firstItem.draft.key)
+    : null;
+  const entryActionId = missionData?.data?.entryActionId ?? firstOrderedActionId;
 
   const { linkTargets, referencedActionIdsBySource } = useActionLinkDerived({
     orderedActionItems,
@@ -577,6 +584,7 @@ export function useActionSettingsCard({
     derived: {
       completionOptions,
       linkTargets,
+      entryActionId,
       referencedActionIdsBySource,
       flowAnalysis,
     },
