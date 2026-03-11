@@ -54,7 +54,7 @@ export default async function CurationPage({ params }: CurationPageProps) {
   const missions = missionsRaw.filter(m => m.isActive).map(toSurveyCardData);
 
   return (
-    <main className="flex min-h-screen flex-col bg-white pb-10">
+    <main className="flex flex-1 flex-col bg-white pb-10">
       <div className="pt-6">
         <CurationSection
           title={meta.title}

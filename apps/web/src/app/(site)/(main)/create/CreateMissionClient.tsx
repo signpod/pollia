@@ -28,6 +28,8 @@ const CREATE_FORM_DEFAULT_VALUES: CreateMissionFormData = {
   allowGuestResponse: false,
   allowMultipleResponses: false,
   useAiCompletion: false,
+  startDate: null,
+  deadline: null,
 };
 
 const CREATE_STEP_ORDER: CreateMissionStep[] = ["mode", "content-info", "success"];

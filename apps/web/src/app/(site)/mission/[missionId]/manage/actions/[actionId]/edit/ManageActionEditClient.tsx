@@ -77,7 +77,7 @@ export function ManageActionEditClient({ missionId, actionId }: ManageActionEdit
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="flex-1 bg-zinc-50">
       <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-zinc-100 bg-white px-4 py-3">
         <button type="button" onClick={handleBack} className="p-1">
           <ChevronLeft className="size-6" />
