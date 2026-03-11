@@ -4,7 +4,7 @@ import { MissionDescription } from "@/app/(site)/mission/[missionId]/components/
 import { MissionRewardSection } from "@/app/(site)/mission/[missionId]/components/MissionRewardSection";
 import { MissionShareSection } from "@/app/(site)/mission/[missionId]/components/MissionShareSection";
 import { SECTION_IDS } from "@/app/(site)/mission/[missionId]/constants/sectionIds";
-import { ROUTES } from "@/constants/routes";
+import { ROUTES, WHITE_LABEL_PREFIX } from "@/constants/routes";
 import { useCanGoBack } from "@/hooks/common/useCanGoBack";
 import { cleanTiptapHTML, cn } from "@/lib/utils";
 import { MissionType } from "@prisma/client";
@@ -12,7 +12,7 @@ import HomeIcon from "@public/svgs/home-icon.svg";
 import { Typo } from "@repo/ui/components";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { RefObject } from "react";
 import type { ReactNode } from "react";
 
@@ -52,6 +52,8 @@ export function MissionContentTemplate({
   const hasDescription = !!description && !!cleanTiptapHTML(description);
   const router = useRouter();
   const canGoBack = useCanGoBack();
+  const pathname = usePathname();
+  const isWhiteLabel = pathname.startsWith(`${WHITE_LABEL_PREFIX}/`);
 
   return (
     <div className="bg-white relative">
@@ -97,7 +99,7 @@ export function MissionContentTemplate({
           </div>
         )}
 
-        {missionType !== MissionType.EXPERIENCE_GROUP && shareButtons && (
+        {!isWhiteLabel && missionType !== MissionType.EXPERIENCE_GROUP && shareButtons && (
           <MissionShareSection shareButtons={shareButtons} />
         )}
       </div>

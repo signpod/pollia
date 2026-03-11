@@ -6,14 +6,14 @@ import { useDeleteMission } from "@/app/(site)/me/hooks/useDeleteMission";
 import { SocialShareButtonsWithData } from "@/app/(site)/mission/[missionId]/components/SocialShareButtonsWithData";
 import type { MissionRewardData } from "@/app/(site)/mission/[missionId]/types/mission";
 import { ProfileHeader } from "@/components/common/ProfileHeader";
-import { ROUTES } from "@/constants/routes";
+import { ROUTES, WHITE_LABEL_PREFIX } from "@/constants/routes";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useCurrentUser } from "@/hooks/user";
 import { cn } from "@/lib/utils";
 import { MissionType } from "@prisma/client";
 import { ButtonV2, FixedBottomLayout, Typo, useDrawer, useModal } from "@repo/ui/components";
 import { ChevronLeftIcon, EllipsisVerticalIcon, PencilLineIcon, Trash2Icon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MissionContentTemplate } from "../templates/MissionContentTemplate";
@@ -156,6 +156,8 @@ export function MissionIntroPage({
   const [isTitleHidden, setIsTitleHidden] = useState(false);
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+  const isWhiteLabel = pathname.startsWith(`${WHITE_LABEL_PREFIX}/`);
   const { data: currentUser } = useCurrentUser();
   const isOwner = !!currentUser?.id && currentUser.id === creatorId;
 
@@ -182,47 +184,49 @@ export function MissionIntroPage({
 
   return (
     <div className="relative w-full">
-      <div className="sticky top-0 z-50 h-14">
-        <div
-          className={cn(
-            "absolute inset-x-0 top-0 flex h-14 items-center bg-white pl-1 pr-5 transition-opacity duration-300",
-            isTitleHidden ? "opacity-100" : "opacity-0 pointer-events-none",
-          )}
-        >
-          <button
-            type="button"
-            onClick={() => router.replace(ROUTES.HOME)}
-            className="flex items-center justify-center p-3"
+      {!isWhiteLabel && (
+        <div className="sticky top-0 z-50 h-14">
+          <div
+            className={cn(
+              "absolute inset-x-0 top-0 flex h-14 items-center bg-white pl-1 pr-5 transition-opacity duration-300",
+              isTitleHidden ? "opacity-100" : "opacity-0 pointer-events-none",
+            )}
           >
-            <ChevronLeftIcon className="size-6" />
-          </button>
-          <Typo.SubTitle size="large" className="min-w-0 flex-1 truncate">
-            {title}
-          </Typo.SubTitle>
+            <button
+              type="button"
+              onClick={() => router.replace(ROUTES.HOME)}
+              className="flex items-center justify-center p-3"
+            >
+              <ChevronLeftIcon className="size-6" />
+            </button>
+            <Typo.SubTitle size="large" className="min-w-0 flex-1 truncate">
+              {title}
+            </Typo.SubTitle>
+          </div>
+          <div
+            className={cn(
+              "absolute inset-x-0 top-0 transition-opacity duration-300",
+              isTitleHidden ? "opacity-0 pointer-events-none" : "opacity-100",
+            )}
+          >
+            <ProfileHeader
+              showHomeIcon={isOwner}
+              fallbackRight={<MissionLoginDrawer />}
+              rightExtra={
+                isOwner ? (
+                  <button
+                    type="button"
+                    onClick={handleOpenActionSheet}
+                    className="flex shrink-0 items-center justify-center p-1"
+                  >
+                    <EllipsisVerticalIcon className="size-5" />
+                  </button>
+                ) : undefined
+              }
+            />
+          </div>
         </div>
-        <div
-          className={cn(
-            "absolute inset-x-0 top-0 transition-opacity duration-300",
-            isTitleHidden ? "opacity-0 pointer-events-none" : "opacity-100",
-          )}
-        >
-          <ProfileHeader
-            showHomeIcon={isOwner}
-            fallbackRight={<MissionLoginDrawer />}
-            rightExtra={
-              isOwner ? (
-                <button
-                  type="button"
-                  onClick={handleOpenActionSheet}
-                  className="flex shrink-0 items-center justify-center p-1"
-                >
-                  <EllipsisVerticalIcon className="size-5" />
-                </button>
-              ) : undefined
-            }
-          />
-        </div>
-      </div>
+      )}
 
       <MissionIntroTemplate
         imageUrl={imageUrl}
@@ -253,10 +257,12 @@ export function MissionIntroPage({
 
       <FixedBottomLayout.Content>
         <div className="flex items-center gap-2 px-5 py-3">
-          <MissionLikeButton
-            missionId={missionId}
-            className="flex size-12 shrink-0 items-center justify-center rounded-sm border border-zinc-200 bg-white"
-          />
+          {!isWhiteLabel && (
+            <MissionLikeButton
+              missionId={missionId}
+              className="flex size-12 shrink-0 items-center justify-center rounded-sm border border-zinc-200 bg-white"
+            />
+          )}
           <div className="flex-1 [&>div]:p-0">{bottomButton}</div>
         </div>
       </FixedBottomLayout.Content>
