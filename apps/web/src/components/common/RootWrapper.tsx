@@ -1,5 +1,6 @@
 "use client";
 
+import { Footer } from "@/app/(site)/(main)/components/Footer";
 import { cn } from "@repo/ui/lib";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
@@ -13,6 +14,14 @@ interface RootWrapperProps {
 export function RootWrapper({ children, leftAside, rightAside }: RootWrapperProps) {
   const pathname = usePathname();
   const isZincBg = pathname.startsWith("/me/result/") || pathname.match(/^\/mission\/[^/]+\/done$/);
+  const isMissionRoute = pathname.startsWith("/mission");
+  const isMissionDone = /^\/mission\/[^/]+\/done/.test(pathname);
+  const showFooter = !isMissionRoute;
+  const hasFixedBottom =
+    showFooter &&
+    !pathname.startsWith("/me") &&
+    !pathname.startsWith("/login") &&
+    !pathname.startsWith("/preview");
 
   return (
     <div className="flex min-h-svh justify-center">
@@ -23,11 +32,16 @@ export function RootWrapper({ children, leftAside, rightAside }: RootWrapperProp
       )}
       <main
         className={cn(
-          "w-full max-w-[600px] min-h-svh border-x border-zinc-100 overflow-x-clip shrink-0",
+          "flex flex-col w-full max-w-[600px] min-h-svh border-x border-zinc-100 overflow-x-clip shrink-0",
           isZincBg ? "bg-zinc-50" : "bg-background",
         )}
       >
-        {children}
+        <div className="flex-1">{children}</div>
+        {showFooter && (
+          <div className={cn(hasFixedBottom && "pb-20")}>
+            <Footer />
+          </div>
+        )}
       </main>
       {rightAside && (
         <aside className="hidden min-w-0 shrink overflow-hidden lg:block">
