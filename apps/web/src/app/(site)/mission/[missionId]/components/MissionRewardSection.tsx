@@ -26,25 +26,31 @@ export function MissionRewardSection({
   }, [rewardScheduledDate]);
 
   return (
-    <div className="flex flex-col gap-5">
-      <div>
-        {rewardName && <Typo.Body size="large">{rewardName}</Typo.Body>}
-        {rewardDescription && (
-          <Typo.Body size="medium" className="text-zinc-500">
-            {rewardDescription}
-          </Typo.Body>
+    <div className="flex flex-col items-center rounded-2xl bg-white px-2 py-3 shadow-[0px_4px_20px_0px_rgba(9,9,11,0.08)]">
+      <div className="flex flex-1 flex-col items-center gap-2">
+        {rewardImageUrl && (
+          <div className="size-[120px] overflow-hidden rounded-xl bg-zinc-50 p-2">
+            <AdaptiveImage src={rewardImageUrl} alt="reward" className="size-full rounded-xl" />
+          </div>
         )}
-        {formattedScheduledDate && (
-          <Typo.Body size="large" className="font-bold">
-            {`${formattedScheduledDate} 순차 지급`}
-          </Typo.Body>
-        )}
-      </div>
-      {rewardImageUrl && (
-        <div className="overflow-hidden rounded-lg [&_img]:h-auto [&_img]:w-full">
-          <AdaptiveImage src={rewardImageUrl} alt="reward" />
+        <div className="flex flex-col items-center">
+          {rewardName && (
+            <Typo.SubTitle size="large" className="text-center">
+              {rewardName}
+            </Typo.SubTitle>
+          )}
+          {rewardDescription && (
+            <Typo.Body size="medium" className="text-center text-zinc-400">
+              {rewardDescription}
+            </Typo.Body>
+          )}
+          {formattedScheduledDate && (
+            <Typo.Body size="medium" className="text-center text-zinc-400 pt-4">
+              {`${formattedScheduledDate} 순차 지급`}
+            </Typo.Body>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
