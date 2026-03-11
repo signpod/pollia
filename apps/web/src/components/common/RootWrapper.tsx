@@ -13,10 +13,10 @@ interface RootWrapperProps {
 
 export function RootWrapper({ children, leftAside, rightAside }: RootWrapperProps) {
   const pathname = usePathname();
-  const isZincBg = pathname.startsWith("/me/result/") || pathname.match(/^\/mission\/[^/]+\/done$/);
+  const isZincBg = pathname.startsWith("/me/result/");
   const isMissionRoute = pathname.startsWith("/mission");
   const isMissionDone = /^\/mission\/[^/]+\/done/.test(pathname);
-  const showFooter = !isMissionRoute;
+  const showFooter = !isMissionRoute || isMissionDone;
   const hasFixedBottom =
     showFooter &&
     !pathname.startsWith("/me") &&
