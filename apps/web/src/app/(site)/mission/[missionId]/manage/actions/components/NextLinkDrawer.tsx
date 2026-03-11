@@ -27,6 +27,7 @@ interface NextLinkDrawerProps {
   actionValue: string | null;
   completionValue: string | null;
   selectableActions: NextLinkTarget[];
+  disabledActionIds?: Set<string>;
   completionOptions: CompletionOption[];
   onActionSelect: (id: string) => void;
   onCompletionSelect: (id: string) => void;
@@ -42,6 +43,7 @@ export function NextLinkDrawer({
   actionValue,
   completionValue,
   selectableActions,
+  disabledActionIds,
   completionOptions,
   onActionSelect,
   onCompletionSelect,
@@ -210,6 +212,7 @@ export function NextLinkDrawer({
                 <ActionList
                   actions={filteredActions}
                   selectedId={actionValue}
+                  disabledActionIds={disabledActionIds}
                   itemLabel={itemLabel}
                   searchQuery={searchQuery}
                   onSelect={handleActionClick}
@@ -238,6 +241,7 @@ export function NextLinkDrawer({
 function ActionList({
   actions,
   selectedId,
+  disabledActionIds,
   itemLabel,
   searchQuery,
   onSelect,
@@ -246,6 +250,7 @@ function ActionList({
 }: {
   actions: NextLinkTarget[];
   selectedId: string | null;
+  disabledActionIds?: Set<string>;
   itemLabel: string;
   searchQuery: string;
   onSelect: (id: string) => void;
@@ -261,26 +266,45 @@ function ActionList({
           </Typo.Body>
         </div>
       ) : (
-        actions.map(action => (
-          <button
-            key={action.id}
-            type="button"
-            onClick={() => onSelect(action.id)}
-            className={`flex w-full items-center gap-3 rounded-lg border px-3 py-3 text-left transition-colors ${
-              selectedId === action.id
-                ? "border-violet-300 bg-violet-50"
-                : "border-zinc-100 bg-white hover:border-violet-200 hover:bg-violet-50/30"
-            }`}
-          >
-            <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-600">
-              {(action.order ?? 0) + 1}
-            </span>
-            <span className="min-w-0 flex-1 truncate text-sm font-medium text-zinc-800">
-              {action.title}
-            </span>
-            {selectedId === action.id && <Check className="size-4 shrink-0 text-violet-500" />}
-          </button>
-        ))
+        actions.map(action => {
+          const isDisabled = disabledActionIds?.has(action.id) ?? false;
+          const isEntry = (action.order ?? 0) === 0 && isDisabled;
+          const isSelected = selectedId === action.id;
+
+          return (
+            <button
+              key={action.id}
+              type="button"
+              disabled={isDisabled && !isSelected}
+              onClick={() => onSelect(action.id)}
+              className={`flex w-full items-center gap-3 rounded-lg border px-3 py-3 text-left transition-colors ${
+                isSelected
+                  ? "border-violet-300 bg-violet-50"
+                  : isDisabled
+                    ? "cursor-not-allowed border-zinc-100 bg-zinc-50 opacity-50"
+                    : "border-zinc-100 bg-white hover:border-violet-200 hover:bg-violet-50/30"
+              }`}
+            >
+              <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold text-zinc-600">
+                {(action.order ?? 0) + 1}
+              </span>
+              <span className="min-w-0 flex-1 truncate text-sm font-medium text-zinc-800">
+                {action.title}
+              </span>
+              {isEntry && (
+                <span className="shrink-0 rounded-full bg-zinc-200 px-2 py-0.5 text-xs font-medium text-zinc-600">
+                  시작 질문
+                </span>
+              )}
+              {isDisabled && !isEntry && !isSelected && (
+                <span className="shrink-0 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                  연결됨
+                </span>
+              )}
+              {isSelected && <Check className="size-4 shrink-0 text-violet-500" />}
+            </button>
+          );
+        })
       )}
       {onCreateAction && (
         <button

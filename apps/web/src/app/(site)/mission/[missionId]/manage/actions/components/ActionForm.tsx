@@ -113,6 +113,7 @@ interface ActionFormProps {
   dirtyBaselineValues?: ActionFormValues;
   editingAction?: ActionDetail | null;
   allActions: Array<Pick<ActionDetail, "id" | "title" | "order">>;
+  disabledActionIds?: Set<string>;
   completionOptions: Array<{ id: string; title: string }>;
   allowCompletionLink?: boolean;
   isLoading: boolean;
@@ -244,6 +245,7 @@ function ActionFormComponent(
     dirtyBaselineValues,
     editingAction,
     allActions,
+    disabledActionIds,
     completionOptions,
     isLoading,
     onSubmit,
@@ -1104,6 +1106,7 @@ function ActionFormComponent(
                       actionValue={option.nextActionId ?? null}
                       completionValue={option.nextCompletionId ?? null}
                       selectableActions={selectableActions}
+                      disabledActionIds={disabledActionIds}
                       completionOptions={completionOptions}
                       onActionSelect={id => handleBranchOptionNextActionChange(option._key, id)}
                       onCompletionSelect={id =>
@@ -1173,6 +1176,7 @@ function ActionFormComponent(
             actionValue={nextActionId}
             completionValue={nextCompletionId}
             selectableActions={selectableActions}
+            disabledActionIds={disabledActionIds}
             completionOptions={completionOptions}
             onActionSelect={handleNextActionChange}
             onCompletionSelect={handleNextCompletionChange}
