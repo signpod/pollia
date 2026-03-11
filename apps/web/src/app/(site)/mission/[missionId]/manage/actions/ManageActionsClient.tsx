@@ -3,8 +3,6 @@
 import { ROUTES } from "@/constants/routes";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useReadActionsDetail } from "@/hooks/action";
-import { useCanGoBack } from "@/hooks/common/useCanGoBack";
-import HomeIcon from "@public/svgs/home-icon.svg";
 import {
   Button,
   Dialog,
@@ -17,7 +15,6 @@ import {
   Typo,
 } from "@repo/ui/components";
 import { ChevronLeft, Plus } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo } from "react";
 import { ActionCard } from "./components/ActionCard";
@@ -54,7 +51,6 @@ function buildCreateActionRoute(missionId: string, intent?: CreateRouteIntent) {
 
 export function ManageActionsClient({ missionId }: ManageActionsClientProps) {
   const router = useRouter();
-  const canGoBack = useCanGoBack();
   const { data: actionsData, isLoading: actionsLoading } = useReadActionsDetail(missionId);
 
   const actions = useMemo(() => {
@@ -65,17 +61,11 @@ export function ManageActionsClient({ missionId }: ManageActionsClientProps) {
   const controller = useManageActionsController({ missionId, actions });
 
   return (
-    <div className="flex-1 bg-zinc-50">
+    <div className="min-h-screen bg-zinc-50">
       <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-zinc-100 bg-white px-4 py-3">
-        {canGoBack ? (
-          <button type="button" onClick={() => router.back()} className="p-1">
-            <ChevronLeft className="size-6" />
-          </button>
-        ) : (
-          <Link href={ROUTES.HOME} className="flex size-12 items-center justify-center">
-            <HomeIcon className="size-6" />
-          </Link>
-        )}
+        <button type="button" onClick={() => router.back()} className="p-1">
+          <ChevronLeft className="size-6" />
+        </button>
         <Typo.SubTitle>액션 설정</Typo.SubTitle>
       </header>
 

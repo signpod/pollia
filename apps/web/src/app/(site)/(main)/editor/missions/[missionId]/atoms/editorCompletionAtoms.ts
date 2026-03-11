@@ -25,8 +25,6 @@ export const completionIsSavingAtom = atom(false);
 
 export const completionDraftHydrationVersionAtom = atom(0);
 
-export const completionScrollTargetItemKeyAtom = atom<string | null>(null);
-
 export const addCompletionDraftAtom = atom(
   null,
   (get, set, { draftKey, title = "새 결과 화면" }: { draftKey: string; title?: string }) => {

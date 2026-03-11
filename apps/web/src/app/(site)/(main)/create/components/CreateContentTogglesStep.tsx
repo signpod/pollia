@@ -1,55 +1,23 @@
 "use client";
 
-import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { Sparkles } from "lucide-react";
 import { Controller, useFormContext } from "react-hook-form";
 import type { CreateMissionFormData } from "../schema";
-import { DateTimeSettingRow } from "./DateTimeSettingRow";
 import { ToggleSettingRow } from "./ToggleSettingRow";
-import { REWARD_MULTIPLE_RESPONSE_WARNING } from "./constants";
 
 interface CreateContentTogglesStepProps {
   showAiCompletionToggle?: boolean;
   useMemberOnlyMode?: boolean;
-  hasReward?: boolean;
 }
 
 export function CreateContentTogglesStep({
   showAiCompletionToggle = false,
   useMemberOnlyMode = false,
-  hasReward: hasRewardProp,
 }: CreateContentTogglesStepProps) {
-  const { control, watch } = useFormContext<CreateMissionFormData>();
-  const hasReward = hasRewardProp ?? watch("hasReward");
+  const { control } = useFormContext<CreateMissionFormData>();
 
   return (
     <>
-      <Controller
-        control={control}
-        name="startDate"
-        render={({ field }) => (
-          <DateTimeSettingRow
-            label="시작일"
-            description={`${UBIQUITOUS_CONSTANTS.MISSION}의 시작일을 설정합니다.`}
-            value={field.value}
-            onChange={field.onChange}
-          />
-        )}
-      />
-
-      <Controller
-        control={control}
-        name="deadline"
-        render={({ field }) => (
-          <DateTimeSettingRow
-            label="만료일"
-            description={`${UBIQUITOUS_CONSTANTS.MISSION}의 만료일을 설정합니다.`}
-            value={field.value}
-            onChange={field.onChange}
-          />
-        )}
-      />
-
       <Controller
         control={control}
         name="allowGuestResponse"
@@ -81,7 +49,6 @@ export function CreateContentTogglesStep({
             description="동일 사용자가 여러 번 응답할 수 있도록 허용합니다."
             checked={field.value}
             onChange={field.onChange}
-            warning={field.value && hasReward ? REWARD_MULTIPLE_RESPONSE_WARNING : undefined}
           />
         )}
       />

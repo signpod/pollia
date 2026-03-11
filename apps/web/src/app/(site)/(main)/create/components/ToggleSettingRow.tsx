@@ -11,7 +11,6 @@ interface ToggleSettingRowProps {
   onChange: (checked: boolean) => void;
   badgeLabel?: string;
   badgeIcon?: ReactNode;
-  warning?: string;
 }
 
 export function ToggleSettingRow({
@@ -21,7 +20,6 @@ export function ToggleSettingRow({
   onChange,
   badgeLabel,
   badgeIcon,
-  warning,
 }: ToggleSettingRowProps) {
   return (
     <div className="rounded-xl border border-zinc-200 bg-white px-4 py-4">
@@ -42,11 +40,6 @@ export function ToggleSettingRow({
           <Typo.Body size="medium" className="text-zinc-500">
             {description}
           </Typo.Body>
-          {warning ? (
-            <Typo.Body size="medium" className="text-amber-600">
-              {warning}
-            </Typo.Body>
-          ) : null}
         </div>
         <div className="shrink-0">
           <Toggle checked={checked} onCheckedChange={onChange} />

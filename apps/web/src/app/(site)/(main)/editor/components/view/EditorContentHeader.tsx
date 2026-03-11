@@ -3,8 +3,6 @@
 import { ROUTES } from "@/constants/routes";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useCanGoBack } from "@/hooks/common/useCanGoBack";
-import PolliaIcon from "@public/svgs/pollia-icon.svg";
-import PolliaWordmark from "@public/svgs/pollia-wordmark.svg";
 import { IconButton, Typo, useModal } from "@repo/ui/components";
 import { ChevronLeft, ExternalLinkIcon, Trash2Icon } from "lucide-react";
 import Link from "next/link";
@@ -69,14 +67,7 @@ export function EditorContentHeader({ missionId }: EditorContentHeaderProps) {
 
   return (
     <div className="flex items-center gap-3">
-      {canGoBack ? (
-        <IconButton icon={ChevronLeft} aria-label="뒤로가기" onClick={handleBack} />
-      ) : (
-        <Link href={ROUTES.HOME} className="flex items-center gap-[2.775px] py-3">
-          <PolliaIcon className="size-4 text-primary" />
-          <PolliaWordmark className="h-[22px] text-black" />
-        </Link>
-      )}
+      <IconButton icon={ChevronLeft} aria-label="뒤로가기" onClick={handleBack} />
       <Typo.SubTitle className="flex-1">{title}</Typo.SubTitle>
       {missionId && <MissionActions missionId={missionId} />}
     </div>

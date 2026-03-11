@@ -13,6 +13,7 @@ import {
 import { useReadActionsDetail } from "@/hooks/action/useReadActionsDetail";
 import { useReadMission } from "@/hooks/mission";
 import { useReadMissionResponseForMission } from "@/hooks/mission-response";
+import { useMissionSurveyToast } from "@/hooks/mission/useMissionSurveyToast";
 import { setActionNavCookie } from "@/lib/cookie";
 import type { ActionAnswerItem, ActionDetail } from "@/types/dto";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
@@ -139,6 +140,13 @@ function ActionStepWrapper({
     submittedAnswers,
     entryActionId,
   } satisfies UseActionProgressParams);
+
+  const toastStorageKey = `mission-toast-${missionId}`;
+  useMissionSurveyToast({
+    currentOrder: progressInfo.currentOrder - 1,
+    totalActionCount: progressInfo.totalCount,
+    toastStorageKey,
+  });
 
   const isFirstStep = currentActionData.id === (entryActionId ?? actions[0]?.id);
 

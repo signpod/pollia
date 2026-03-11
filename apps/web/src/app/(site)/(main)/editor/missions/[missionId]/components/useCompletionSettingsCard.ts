@@ -24,7 +24,6 @@ import {
   completionFormVersionByIdAtom,
   completionIsSavingAtom,
   completionOpenItemKeyAtom,
-  completionScrollTargetItemKeyAtom,
   completionValidationIssueCountByItemKeyAtom,
   markCompletionRemovedAtom,
   removeCompletionDraftAtom,
@@ -309,18 +308,14 @@ export function useCompletionSettingsCard({
     [setDraftFormSnapshotByItemKey],
   );
 
-  const setScrollTarget = useSetAtom(completionScrollTargetItemKeyAtom);
-
   const handleAddDraft = () => {
     if (isSaving) {
       return;
     }
 
     const draftKey = createDraftKey();
-    const itemKey = getDraftItemKey(draftKey);
     dispatchAddDraft({ draftKey });
-    setOpenItemKey(itemKey);
-    setScrollTarget(itemKey);
+    setOpenItemKey(getDraftItemKey(draftKey));
   };
 
   const handleToggleItem = useCallback(

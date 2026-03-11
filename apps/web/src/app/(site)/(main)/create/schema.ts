@@ -69,40 +69,18 @@ const createMissionFormBaseSchema = z.object({
   imageFileUploadId: z.string().nullable().optional(),
   brandLogoUrl: z.string().nullable().optional(),
   brandLogoFileUploadId: z.string().nullable().optional(),
-  startDate: z.date().nullable(),
-  deadline: z.date().nullable(),
   hasReward: z.boolean(),
 });
 
-const dateRangeRefine = (data: { startDate?: Date | null; deadline?: Date | null }) => {
-  if (data.startDate && data.deadline) {
-    return data.startDate <= data.deadline;
-  }
-  return true;
-};
-
-const dateRangeError = {
-  message: "시작일은 만료일보다 이전이어야 합니다.",
-  path: ["startDate"],
-};
-
-const createMissionFormWithoutReward = createMissionFormBaseSchema
-  .extend({
+export const createMissionFormSchema = z.discriminatedUnion("hasReward", [
+  createMissionFormBaseSchema.extend({
     hasReward: z.literal(false),
     reward: z.unknown().optional(),
-  })
-  .refine(dateRangeRefine, dateRangeError);
-
-const createMissionFormWithReward = createMissionFormBaseSchema
-  .extend({
+  }),
+  createMissionFormBaseSchema.extend({
     hasReward: z.literal(true),
     reward: createMissionFormRewardSchema,
-  })
-  .refine(dateRangeRefine, dateRangeError);
-
-export const createMissionFormSchema = z.discriminatedUnion("hasReward", [
-  createMissionFormWithoutReward,
-  createMissionFormWithReward,
+  }),
 ]);
 
 export type CreateMissionFormData = z.infer<typeof createMissionFormSchema>;

@@ -1,17 +1,14 @@
 "use client";
 
 import { MissionDescription } from "@/app/(site)/mission/[missionId]/components/MissionDescription";
+import { MissionFooter } from "@/app/(site)/mission/[missionId]/components/MissionFooter";
 import { MissionRewardSection } from "@/app/(site)/mission/[missionId]/components/MissionRewardSection";
 import { MissionShareSection } from "@/app/(site)/mission/[missionId]/components/MissionShareSection";
 import { SECTION_IDS } from "@/app/(site)/mission/[missionId]/constants/sectionIds";
-import { ROUTES } from "@/constants/routes";
-import { useCanGoBack } from "@/hooks/common/useCanGoBack";
 import { cleanTiptapHTML, cn } from "@/lib/utils";
 import { MissionType } from "@prisma/client";
-import HomeIcon from "@public/svgs/home-icon.svg";
 import { Typo } from "@repo/ui/components";
 import { ChevronLeft } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { RefObject } from "react";
 import type { ReactNode } from "react";
@@ -51,7 +48,6 @@ export function MissionContentTemplate({
     : [SECTION_IDS.MISSION_GUIDE];
   const hasDescription = !!description && !!cleanTiptapHTML(description);
   const router = useRouter();
-  const canGoBack = useCanGoBack();
 
   return (
     <div className="bg-white relative">
@@ -63,19 +59,13 @@ export function MissionContentTemplate({
             isSticky ? "max-h-12 opacity-100" : "max-h-0 opacity-0",
           )}
         >
-          {canGoBack ? (
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="shrink-0 size-12 flex items-center justify-center"
-            >
-              <ChevronLeft className="size-6" />
-            </button>
-          ) : (
-            <Link href={ROUTES.HOME} className="shrink-0 size-12 flex items-center justify-center">
-              <HomeIcon className="size-6" />
-            </Link>
-          )}
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="shrink-0 size-12 flex items-center justify-center"
+          >
+            <ChevronLeft className="size-6" />
+          </button>
           <Typo.SubTitle size="large" className="truncate">
             {title}
           </Typo.SubTitle>
@@ -101,6 +91,8 @@ export function MissionContentTemplate({
           <MissionShareSection shareButtons={shareButtons} />
         )}
       </div>
+
+      <MissionFooter />
     </div>
   );
 }

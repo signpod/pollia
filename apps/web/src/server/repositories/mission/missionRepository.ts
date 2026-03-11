@@ -58,7 +58,7 @@ export class MissionRepository {
         ...(options?.type && { type: options.type }),
       },
       orderBy: {
-        createdAt: sortOrder === "latest" ? "desc" : "asc",
+        updatedAt: sortOrder === "latest" ? "desc" : "asc",
       },
       take: limit + 1,
       ...(options?.cursor && {

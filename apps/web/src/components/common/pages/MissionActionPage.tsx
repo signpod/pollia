@@ -40,7 +40,7 @@ export function MissionActionPage({
   );
 
   return (
-    <div className="flex-1 bg-white">
+    <div className="min-h-svh bg-white">
       <ProgressBarProvider>
         <ActionProvider value={contextValue}>
           <ActionComponent actionData={actionData} />

@@ -23,8 +23,8 @@ export function mapCreateMissionRequest(formData: CreateMissionFormData): Create
     brandLogoUrl: formData.brandLogoUrl ?? null,
     brandLogoFileUploadId: formData.brandLogoFileUploadId ?? null,
     estimatedMinutes: null,
-    startDate: formData.startDate ?? null,
-    deadline: formData.deadline ?? null,
+    startDate: null,
+    deadline: null,
     maxParticipants: null,
     isActive: false,
     eventId: null,
@@ -36,8 +36,6 @@ export function mapIntroUpdateRequest(formData: CreateMissionFormData): UpdateMi
     allowGuestResponse: formData.allowGuestResponse,
     allowMultipleResponses: formData.allowMultipleResponses,
     useAiCompletion: formData.useAiCompletion,
-    startDate: formData.startDate ?? null,
-    deadline: formData.deadline ?? null,
   };
 }
 

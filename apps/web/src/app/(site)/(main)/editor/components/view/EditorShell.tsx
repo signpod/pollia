@@ -9,7 +9,7 @@ export function EditorShell({ children }: { children: React.ReactNode }) {
   const missionId = params?.missionId as string | undefined;
 
   return (
-    <div className="flex flex-1 flex-col bg-zinc-50">
+    <div className="min-h-screen bg-zinc-50">
       <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white">
         <div className="px-5 pb-2 pt-4">
           <EditorContentHeader missionId={missionId} />

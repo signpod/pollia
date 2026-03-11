@@ -89,7 +89,6 @@ export function EditorMissionTabContent({
   const actionSectionRef = useRef<HTMLDivElement>(null);
   useEditorBootstrapScrollController(missionId, actionSectionRef);
   const [editorUseAiCompletion, setEditorUseAiCompletion] = useState(mission.useAiCompletion);
-  const [editorHasReward, setEditorHasReward] = useState(!!reward);
   const [basicValidationCount, setBasicValidationCount] = useState(0);
   const [rewardValidationCount, setRewardValidationCount] = useState(0);
   const actionDraftItems = useAtomValue(actionDraftItemsAtom);
@@ -347,14 +346,12 @@ export function EditorMissionTabContent({
             mission={mission}
             onSaveStateChange={handleBasicStateChange}
             onUseAiCompletionChange={setEditorUseAiCompletion}
-            hasReward={editorHasReward}
           />
           <RewardSettingsCard
             ref={refs.rewardRef}
             mission={mission}
             initialReward={reward}
             onSaveStateChange={handleRewardStateChange}
-            onHasRewardChange={setEditorHasReward}
           />
         </EditorSectionCard>
         <Separator className="h-2" />

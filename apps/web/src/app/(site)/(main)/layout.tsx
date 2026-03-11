@@ -1,6 +1,6 @@
 import Providers from "@/components/providers/QueryProvider";
 import { FixedBottomLayout, ModalProvider } from "@repo/ui/components";
-import { Header } from "./components";
+import { Footer, Header } from "./components";
 import { MainBottomContentStack } from "./components/MainBottomContentStack";
 import { MainBottomSlotProvider } from "./components/MainBottomSlotContext";
 
@@ -13,9 +13,10 @@ export default function MainLayout({
     <ModalProvider>
       <Providers>
         <MainBottomSlotProvider>
-          <FixedBottomLayout hasGradientBlur className="flex flex-1 flex-col">
+          <FixedBottomLayout hasGradientBlur className="flex min-h-svh flex-col">
             <Header />
             <div className="flex flex-1 flex-col">{children}</div>
+            <Footer />
             <FixedBottomLayout.Content className="px-0">
               <MainBottomContentStack />
             </FixedBottomLayout.Content>

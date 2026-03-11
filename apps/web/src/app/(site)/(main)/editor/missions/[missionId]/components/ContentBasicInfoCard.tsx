@@ -37,7 +37,6 @@ interface ContentBasicInfoCardProps {
   mission: GetMissionResponse["data"];
   onSaveStateChange?: SectionSaveStateChangeHandler;
   onUseAiCompletionChange?: (value: boolean) => void;
-  hasReward?: boolean;
 }
 
 function buildDefaultValues(mission: GetMissionResponse["data"]): CreateMissionFormData {
@@ -57,13 +56,11 @@ function buildDefaultValues(mission: GetMissionResponse["data"]): CreateMissionF
     imageFileUploadId: mission.imageFileUploadId ?? null,
     brandLogoUrl: mission.brandLogoUrl ?? null,
     brandLogoFileUploadId: mission.brandLogoFileUploadId ?? null,
-    startDate: mission.startDate ? new Date(mission.startDate) : null,
-    deadline: mission.deadline ? new Date(mission.deadline) : null,
   };
 }
 
 function ContentBasicInfoCardComponent(
-  { mission, onSaveStateChange, onUseAiCompletionChange, hasReward }: ContentBasicInfoCardProps,
+  { mission, onSaveStateChange, onUseAiCompletionChange }: ContentBasicInfoCardProps,
   ref: ForwardedRef<SectionSaveHandle>,
 ) {
   const form = useForm<CreateMissionFormData>({
@@ -190,8 +187,6 @@ function ContentBasicInfoCardComponent(
           imageFileUploadId: values.imageFileUploadId ?? null,
           brandLogoUrl: values.brandLogoUrl ?? null,
           brandLogoFileUploadId: values.brandLogoFileUploadId ?? null,
-          startDate: values.startDate ?? null,
-          deadline: values.deadline ?? null,
         });
 
         thumbnailImageUpload.deleteMarkedInitial();
@@ -276,14 +271,6 @@ function ContentBasicInfoCardComponent(
             values.brandLogoFileUploadId === null
               ? values.brandLogoFileUploadId
               : defaultValues.brandLogoFileUploadId,
-          startDate:
-            values.startDate instanceof Date || values.startDate === null
-              ? values.startDate
-              : defaultValues.startDate,
-          deadline:
-            values.deadline instanceof Date || values.deadline === null
-              ? values.deadline
-              : defaultValues.deadline,
         };
 
         form.reset(nextValues, { keepDefaultValues: true });
@@ -336,11 +323,7 @@ function ContentBasicInfoCardComponent(
             event.preventDefault();
           }}
         >
-          <EditorContentInfoSection
-            showAiCompletionToggle
-            imageUploaders={imageUploaders}
-            hasReward={hasReward}
-          />
+          <EditorContentInfoSection showAiCompletionToggle imageUploaders={imageUploaders} />
         </form>
       </FormProvider>
 

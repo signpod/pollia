@@ -41,8 +41,6 @@ const CREATE_FORM_BASE_VALUES = {
   imageFileUploadId: null,
   brandLogoUrl: null,
   brandLogoFileUploadId: null,
-  startDate: null,
-  deadline: null,
 } satisfies Omit<CreateMissionFormData, "category">;
 
 export function EditorCreateContent() {

@@ -13,8 +13,8 @@ import { Typo } from "./Typo";
 
 interface DateAndTimePickerProps {
   date: Date | undefined;
-  /** 시간 값 (HH:mm 형식, 예: "14:30"). undefined이면 "시간 선택" placeholder 표시 */
-  time: string | undefined;
+  /** 시간 값 (HH:mm 형식, 예: "14:30") */
+  time: string;
   onDateChange: (date: Date | undefined) => void;
   onTimeChange: (time: string) => void;
   disabled?: boolean;
@@ -84,7 +84,7 @@ function DatePickerButton({ date, disabled }: { date: Date | undefined; disabled
   );
 }
 
-function TimePickerButton({ time, disabled }: { time: string | undefined; disabled: boolean }) {
+function TimePickerButton({ time, disabled }: { time: string; disabled: boolean }) {
   const { open, isOpen } = useDrawer();
 
   const formatTime = (time: string): string => {
@@ -105,7 +105,7 @@ function TimePickerButton({ time, disabled }: { time: string | undefined; disabl
       )}
       disabled={disabled}
     >
-      <Typo.ButtonText size="medium">{time ? formatTime(time) : "시간 선택"}</Typo.ButtonText>
+      <Typo.ButtonText size="medium">{formatTime(time)}</Typo.ButtonText>
     </ShadcnButton>
   );
 }
@@ -158,15 +158,15 @@ function TimePickerContent({
   time,
   onTimeChange,
 }: {
-  time: string | undefined;
+  time: string;
   onTimeChange: (time: string) => void;
 }) {
   const { close } = useDrawer();
-  const [selectedTime, setSelectedTime] = React.useState(time ?? "09:00");
+  const [selectedTime, setSelectedTime] = React.useState(time);
 
   // time prop이 변경되면 selectedTime도 동기화
   React.useEffect(() => {
-    setSelectedTime(time ?? "09:00");
+    setSelectedTime(time);
   }, [time]);
 
   const handleConfirm = () => {

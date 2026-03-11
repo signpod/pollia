@@ -113,7 +113,7 @@ function ActionSettingsCardComponent(
     }
 
     prevHighlightRef.current = targetEl;
-    targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
     targetEl.classList.add("action-item-highlight");
     const timer = setTimeout(() => {
       targetEl.classList.remove("action-item-highlight");
@@ -210,7 +210,7 @@ function ActionSettingsCardComponent(
                 <div
                   key={item.key}
                   data-editor-item-key={item.key}
-                  className="scroll-mt-28 overflow-hidden rounded-xl border border-zinc-200 transition-shadow duration-500"
+                  className="overflow-hidden rounded-xl border border-zinc-200 transition-shadow duration-500"
                 >
                   <div className="flex items-center justify-between bg-zinc-50 px-4 py-3">
                     <div className="mr-2 flex shrink-0 items-center gap-1">
