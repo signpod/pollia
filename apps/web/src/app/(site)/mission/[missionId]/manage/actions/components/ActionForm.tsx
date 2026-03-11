@@ -498,6 +498,11 @@ function ActionFormComponent(
     );
   }, []);
 
+  const activeDrawerOption =
+    drawerOpenKey && drawerOpenKey !== MAIN_DRAWER_KEY
+      ? (options.find(o => o._key === drawerOpenKey) ?? null)
+      : null;
+
   const buildValidationErrors = useCallback((): Record<string, string> => {
     const newErrors: Record<string, string> = {};
 
@@ -1098,31 +1103,6 @@ function ActionFormComponent(
                       onEdit={() => setDrawerOpenKey(option._key)}
                       onDelete={() => handleDeleteBranchOptionNextLink(option._key)}
                     />
-                    <NextLinkDrawer
-                      isOpen={drawerOpenKey === option._key}
-                      onClose={() => setDrawerOpenKey(null)}
-                      itemLabel={itemLabel}
-                      allowCompletionLink={allowCompletionLink}
-                      actionValue={option.nextActionId ?? null}
-                      completionValue={option.nextCompletionId ?? null}
-                      selectableActions={selectableActions}
-                      disabledActionIds={disabledActionIds}
-                      completionOptions={completionOptions}
-                      onActionSelect={id => handleBranchOptionNextActionChange(option._key, id)}
-                      onCompletionSelect={id =>
-                        handleBranchOptionNextCompletionChange(option._key, id)
-                      }
-                      onCreateAction={
-                        onCreateLinkedAction
-                          ? () => handleBranchCreateNextAction(option._key)
-                          : undefined
-                      }
-                      onCreateCompletion={
-                        onCreateLinkedCompletion
-                          ? () => handleBranchCreateNextCompletion(option._key)
-                          : undefined
-                      }
-                    />
                   </div>
                 )}
               </div>
@@ -1168,23 +1148,50 @@ function ActionFormComponent(
             onDelete={handleDeleteNextLink}
             errorMessage={errors.nextLink}
           />
-          <NextLinkDrawer
-            isOpen={drawerOpenKey === MAIN_DRAWER_KEY}
-            onClose={() => setDrawerOpenKey(null)}
-            itemLabel={itemLabel}
-            allowCompletionLink={allowCompletionLink}
-            actionValue={nextActionId}
-            completionValue={nextCompletionId}
-            selectableActions={selectableActions}
-            disabledActionIds={disabledActionIds}
-            completionOptions={completionOptions}
-            onActionSelect={handleNextActionChange}
-            onCompletionSelect={handleNextCompletionChange}
-            onCreateAction={onCreateLinkedAction ? handleCreateNextAction : undefined}
-            onCreateCompletion={onCreateLinkedCompletion ? handleCreateNextCompletion : undefined}
-          />
         </div>
       )}
+
+      <NextLinkDrawer
+        isOpen={drawerOpenKey !== null}
+        onClose={() => setDrawerOpenKey(null)}
+        itemLabel={itemLabel}
+        allowCompletionLink={allowCompletionLink}
+        actionValue={activeDrawerOption ? (activeDrawerOption.nextActionId ?? null) : nextActionId}
+        completionValue={
+          activeDrawerOption ? (activeDrawerOption.nextCompletionId ?? null) : nextCompletionId
+        }
+        selectableActions={selectableActions}
+        disabledActionIds={disabledActionIds}
+        completionOptions={completionOptions}
+        onActionSelect={id => {
+          if (activeDrawerOption) {
+            handleBranchOptionNextActionChange(activeDrawerOption._key, id);
+          } else {
+            handleNextActionChange(id);
+          }
+        }}
+        onCompletionSelect={id => {
+          if (activeDrawerOption) {
+            handleBranchOptionNextCompletionChange(activeDrawerOption._key, id);
+          } else {
+            handleNextCompletionChange(id);
+          }
+        }}
+        onCreateAction={
+          onCreateLinkedAction
+            ? activeDrawerOption
+              ? () => handleBranchCreateNextAction(activeDrawerOption._key)
+              : handleCreateNextAction
+            : undefined
+        }
+        onCreateCompletion={
+          onCreateLinkedCompletion
+            ? activeDrawerOption
+              ? () => handleBranchCreateNextCompletion(activeDrawerOption._key)
+              : handleCreateNextCompletion
+            : undefined
+        }
+      />
 
       {!hideFooter && (
         <div className="flex gap-3 pb-4 pt-2">
