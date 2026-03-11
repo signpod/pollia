@@ -70,7 +70,6 @@ export interface UseActionSettingsCardReturn {
   derived: {
     completionOptions: Array<{ id: string; title: string }>;
     linkTargets: Array<{ id: string; title: string; order: number }>;
-    referencedActionIdsBySource: Map<string, Set<string>>;
     flowAnalysis: ReturnType<typeof analyzeEditorFlow> | null;
   };
   formRefs: React.MutableRefObject<Record<string, ActionFormHandle | null>>;
@@ -273,7 +272,7 @@ export function useActionSettingsCard({
 
   const entryActionId = missionData?.data?.entryActionId ?? null;
 
-  const { linkTargets, referencedActionIdsBySource } = useActionLinkDerived({
+  const { linkTargets } = useActionLinkDerived({
     orderedActionItems,
     draftFormSnapshotByItemKey,
     actionTypeByItemKey,
@@ -577,7 +576,6 @@ export function useActionSettingsCard({
     derived: {
       completionOptions,
       linkTargets,
-      referencedActionIdsBySource,
       flowAnalysis,
     },
     formRefs,

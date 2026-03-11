@@ -72,7 +72,7 @@ function ActionSettingsCardComponent(
     draftHydrationVersion,
   } = listState;
 
-  const { completionOptions, linkTargets, referencedActionIdsBySource, flowAnalysis } = derived;
+  const { completionOptions, linkTargets, flowAnalysis } = derived;
 
   const {
     handleAddDraft,
@@ -194,13 +194,7 @@ function ActionSettingsCardComponent(
                   : snapshotTitle || `${ACTION_TYPE_LABELS[itemType]} 질문`;
               const currentActionId =
                 item.kind === "existing" ? item.action.id : makeDraftActionId(item.draft.key);
-              const formLinkTargets = linkTargets.filter(target => {
-                if (target.id === currentActionId) return false;
-                const sources = referencedActionIdsBySource.get(target.id);
-                if (!sources) return true;
-                if (sources.has(item.key)) return true;
-                return false;
-              });
+              const formLinkTargets = linkTargets.filter(target => target.id !== currentActionId);
               const previewImageUrl =
                 formRefs.current[item.key]?.getRawSnapshot().values.imageUrl ??
                 draftFormSnapshotByItemKey[item.key]?.values.imageUrl ??
