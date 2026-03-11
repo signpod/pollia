@@ -1,6 +1,5 @@
 "use client";
 
-import { FixedBottomLayout } from "@repo/ui/components";
 import { DehydratedState, HydrationBoundary } from "@tanstack/react-query";
 
 import type { ReactNode } from "react";
@@ -11,9 +10,5 @@ interface MissionClientWrapperProps {
 }
 
 export function MissionClientWrapper({ children, dehydratedState }: MissionClientWrapperProps) {
-  return (
-    <HydrationBoundary state={dehydratedState}>
-      <FixedBottomLayout>{children}</FixedBottomLayout>
-    </HydrationBoundary>
-  );
+  return <HydrationBoundary state={dehydratedState}>{children}</HydrationBoundary>;
 }
