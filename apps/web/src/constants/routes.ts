@@ -1,3 +1,5 @@
+export const WHITE_LABEL_PREFIX = "/wl";
+
 /**
  * 애플리케이션 라우트 경로 상수
  */
