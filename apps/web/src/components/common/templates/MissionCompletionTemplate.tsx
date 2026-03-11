@@ -17,6 +17,7 @@ export interface MissionCompletionTemplateProps {
   reward?: ReactNode;
   shareButtons?: ReactNode;
   recommendation?: ReactNode;
+  purchaseLinks?: ReactNode;
   onSave?: () => void;
   isSaving?: boolean;
   canSave?: boolean;
@@ -31,6 +32,7 @@ export function MissionCompletionTemplate({
   reward,
   shareButtons,
   recommendation,
+  purchaseLinks,
   onSave,
   isSaving,
   canSave,
@@ -102,6 +104,8 @@ export function MissionCompletionTemplate({
         </div>
 
         {recommendation}
+
+        {purchaseLinks && <div className="px-5">{purchaseLinks}</div>}
       </div>
     </div>
   );

@@ -8,8 +8,10 @@ import { MissionCompletionPage } from "@/components/common/pages/MissionCompleti
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { useReadMission } from "@/hooks/mission";
 import { useReadMissionCompletion, useReadMissionCompletionById } from "@/hooks/mission-completion";
+import { usePurchaseLinks } from "@/hooks/purchase-link";
 import { useReadReward } from "@/hooks/reward/useReadReward";
 import { MissionType } from "@prisma/client";
+import { PurchaseLinkCard } from "@repo/ui/components";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useCompletionImageDownload } from "./hooks";
@@ -46,6 +48,7 @@ export function MissionCompletion({ completionId, initialImageUrl }: MissionComp
   });
 
   const reward = rewardQuery?.data;
+  const purchaseLinks = usePurchaseLinks(missionId);
 
   const { data: recommendedMissions } = useQuery({
     queryKey: [...missionQueryKeys.allMissions(), "recommended"],
@@ -87,6 +90,7 @@ export function MissionCompletion({ completionId, initialImageUrl }: MissionComp
           />
         ) : undefined
       }
+      purchaseLinks={purchaseLinks ? <PurchaseLinkCard items={purchaseLinks} /> : undefined}
       hasReward={!!reward}
       onSave={handleSave}
       isSaving={isGenerating}
