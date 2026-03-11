@@ -3,7 +3,10 @@ import type {
   ActionFormRawSnapshot,
 } from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
 import { useManageDeleteAction } from "@/app/(site)/mission/[missionId]/manage/actions/hooks";
-import { makeDraftActionId } from "@/app/(site)/mission/[missionId]/manage/actions/logic";
+import {
+  makeDraftActionId,
+  mapEditInitialValues,
+} from "@/app/(site)/mission/[missionId]/manage/actions/logic";
 import { useReadActionsDetail } from "@/hooks/action";
 import { useReadMission } from "@/hooks/mission";
 import type { ActionDetail } from "@/types/dto";
@@ -119,6 +122,7 @@ export function useActionSettingsCard({
     actionValidationIssueCountByItemKeyAtom,
   );
   const draftHydrationVersion = useAtomValue(actionDraftHydrationVersionAtom);
+  const setDraftHydrationVersion = useSetAtom(actionDraftHydrationVersionAtom);
   const dispatchCleanupDeletedActionRefs = useSetAtom(cleanupDeletedActionRefsAtom);
   const [isFlowDialogOpen, setIsFlowDialogOpen] = useAtom(actionIsFlowDialogOpenAtom);
   const setIsAiCompletionEnabled = useSetAtom(isAiCompletionEnabledAtom);
@@ -470,16 +474,63 @@ export function useActionSettingsCard({
     [setDraftFormSnapshotByItemKey],
   );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setOpenItemKey, setScrollTarget
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setOpenItemKey, setScrollTarget, setDraftFormSnapshotByItemKey, setDraftHydrationVersion
   const handleAddDraft = useCallback(() => {
     const draftKey = createDraftKey();
     const itemKey = getDraftItemKey(draftKey);
+    const newDraftActionId = makeDraftActionId(draftKey);
 
     setDraftItems(prev => [...prev, { key: draftKey }]);
     setActionTypeByItemKey(prev => ({ ...prev, [itemKey]: ActionType.MULTIPLE_CHOICE }));
     setOpenItemKey(itemKey);
     setScrollTarget(itemKey);
-  }, []);
+
+    const prevItem = orderedActionItems[orderedActionItems.length - 1];
+    if (!prevItem) return;
+
+    const prevItemKey = prevItem.key;
+    const prevActionType =
+      actionTypeByItemKey[prevItemKey] ??
+      (prevItem.kind === "existing" ? prevItem.action.type : undefined);
+    if (!prevActionType) return;
+
+    const prevSnapshot = draftFormSnapshotByItemKey[prevItemKey];
+    const prevValues =
+      prevSnapshot?.values ??
+      (prevItem.kind === "existing" ? mapEditInitialValues(prevItem.action) : undefined);
+    if (!prevValues) return;
+
+    if (prevActionType === ActionType.BRANCH) {
+      const hasUnlinkedOption = prevValues.options?.some(o => !o.nextActionId);
+      if (!hasUnlinkedOption) return;
+
+      const updatedValues = {
+        ...prevValues,
+        options: prevValues.options?.map(o =>
+          o.nextActionId ? o : { ...o, nextActionId: newDraftActionId },
+        ),
+      };
+      setDraftFormSnapshotByItemKey(prev => ({
+        ...prev,
+        [prevItemKey]: {
+          actionType: prevSnapshot?.actionType ?? prevActionType,
+          values: updatedValues,
+        },
+      }));
+    } else {
+      if (prevValues.nextActionId) return;
+
+      setDraftFormSnapshotByItemKey(prev => ({
+        ...prev,
+        [prevItemKey]: {
+          actionType: prevSnapshot?.actionType ?? prevActionType,
+          values: { ...prevValues, nextActionId: newDraftActionId },
+        },
+      }));
+    }
+
+    setDraftHydrationVersion(v => v + 1);
+  }, [orderedActionItems, actionTypeByItemKey, draftFormSnapshotByItemKey]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setDirtyByItemKey, setValidationIssueCountByItemKey, setOpenItemKey, dispatchCleanupDeletedActionRefs
   const handleRemoveDraft = useCallback((draftKey: string) => {
