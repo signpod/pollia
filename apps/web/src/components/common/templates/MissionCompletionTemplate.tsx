@@ -99,13 +99,13 @@ export function MissionCompletionTemplate({
               <TiptapViewer content={cleanTiptapHTML(description)} className="w-full break-keep" />
             )}
 
+            {purchaseLinks}
+
             {reward}
           </div>
         </div>
 
         {recommendation}
-
-        {purchaseLinks && <div className="px-5">{purchaseLinks}</div>}
       </div>
     </div>
   );

@@ -11,7 +11,7 @@ import { useReadMissionCompletion, useReadMissionCompletionById } from "@/hooks/
 import { usePurchaseLinks } from "@/hooks/purchase-link";
 import { useReadReward } from "@/hooks/reward/useReadReward";
 import { MissionType } from "@prisma/client";
-import { PurchaseLinkCard } from "@repo/ui/components";
+import { PurchaseLinkCard, Typo } from "@repo/ui/components";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useCompletionImageDownload } from "./hooks";
@@ -65,11 +65,18 @@ export function MissionCompletion({ completionId, initialImageUrl }: MissionComp
       description={completionDescription}
       reward={
         reward ? (
-          <MissionRewardSection
-            rewardImageUrl={reward.imageUrl ?? undefined}
-            rewardName={reward.name ?? undefined}
-            rewardScheduledDate={reward.scheduledDate ?? undefined}
-          />
+          <div className="flex flex-col gap-4 w-full items-start">
+            <Typo.MainTitle size="small" className="w-full">
+              완료 리워드
+            </Typo.MainTitle>
+            <div className="w-full">
+              <MissionRewardSection
+                rewardImageUrl={reward.imageUrl ?? undefined}
+                rewardName={reward.name ?? undefined}
+                rewardScheduledDate={reward.scheduledDate ?? undefined}
+              />
+            </div>
+          </div>
         ) : undefined
       }
       shareButtons={
@@ -90,7 +97,18 @@ export function MissionCompletion({ completionId, initialImageUrl }: MissionComp
           />
         ) : undefined
       }
-      purchaseLinks={purchaseLinks ? <PurchaseLinkCard items={purchaseLinks} /> : undefined}
+      purchaseLinks={
+        purchaseLinks ? (
+          <div className="flex flex-col gap-4 w-full items-start">
+            <Typo.MainTitle size="small" className="w-full">
+              이런 상품은 어때요?
+            </Typo.MainTitle>
+            <div className="w-full">
+              <PurchaseLinkCard items={purchaseLinks} />
+            </div>
+          </div>
+        ) : undefined
+      }
       hasReward={!!reward}
       onSave={handleSave}
       isSaving={isGenerating}
