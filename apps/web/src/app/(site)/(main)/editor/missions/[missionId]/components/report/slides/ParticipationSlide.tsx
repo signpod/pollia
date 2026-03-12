@@ -51,9 +51,9 @@ export function ParticipationSlide({ data }: ParticipationSlideProps) {
                 <Line
                   type="monotone"
                   dataKey="count"
-                  stroke="#18181b"
+                  stroke="#7c3aed"
                   strokeWidth={2}
-                  dot={{ r: 3 }}
+                  dot={{ r: 3, fill: "#7c3aed" }}
                   name="참여자"
                 />
               </LineChart>
@@ -85,8 +85,8 @@ export function ParticipationSlide({ data }: ParticipationSlideProps) {
                   width={80}
                 />
                 <Tooltip />
-                <Bar dataKey="진입" fill="#a1a1aa" radius={[0, 4, 4, 0]} />
-                <Bar dataKey="응답" fill="#18181b" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="진입" fill="#ddd6fe" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="응답" fill="#7c3aed" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

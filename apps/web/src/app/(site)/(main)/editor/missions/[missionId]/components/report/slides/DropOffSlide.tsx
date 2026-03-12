@@ -38,8 +38,8 @@ export function DropOffSlide({ data }: DropOffSlideProps) {
                 width={90}
               />
               <Tooltip />
-              <Bar dataKey="응답" fill="#18181b" stackId="a" radius={[0, 0, 0, 0]} />
-              <Bar dataKey="이탈" fill="#fca5a5" stackId="a" radius={[0, 4, 4, 0]} />
+              <Bar dataKey="응답" fill="#7c3aed" stackId="a" radius={[0, 0, 0, 0]} />
+              <Bar dataKey="이탈" fill="#ede9fe" stackId="a" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

@@ -8,7 +8,7 @@ interface ResultDistributionSlideProps {
   data: AiReportData;
 }
 
-const COLORS = ["#18181b", "#3f3f46", "#71717a", "#a1a1aa", "#d4d4d8", "#e4e4e7"];
+const COLORS = ["#7c3aed", "#8b5cf6", "#a78bfa", "#c4b5fd", "#ddd6fe", "#ede9fe"];
 
 export function ResultDistributionSlide({ data }: ResultDistributionSlideProps) {
   const { resultDistribution } = data.stats;
