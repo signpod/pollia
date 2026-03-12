@@ -14,6 +14,7 @@ interface EditorAccordionProps {
   rightSlot?: ReactNode;
   children: ReactNode;
   className?: string;
+  headerHeight?: string;
 }
 
 export function EditorAccordion({
@@ -27,12 +28,13 @@ export function EditorAccordion({
   rightSlot,
   children,
   className = "",
+  headerHeight = "h-[88px]",
 }: EditorAccordionProps) {
   return (
     <div
       className={`overflow-hidden rounded-xl border border-zinc-200 transition-shadow duration-500 ${className}`}
     >
-      <div className="flex h-[88px] items-stretch bg-zinc-50">
+      <div className={`flex ${headerHeight} items-stretch bg-zinc-50`}>
         {leftSlot}
 
         <button

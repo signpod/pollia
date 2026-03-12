@@ -11,8 +11,9 @@ import type { ActionDetail } from "@/types/dto";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { ActionType } from "@prisma/client";
-import { ChevronDown, ChevronUp, GripVertical, Trash2 } from "lucide-react";
 import { EditorAccordion } from "../../../components/view/EditorAccordion";
+import { EditorDeleteSlot } from "../../../components/view/EditorDeleteSlot";
+import { EditorSortControls } from "../../../components/view/EditorSortControls";
 import type { ActionListItem } from "./actionSettingsCard.types";
 
 const NOOP = () => {};
@@ -91,60 +92,13 @@ export function SortableActionItem({
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const dragHandle = (
-    <>
-      <div
-        className="flex shrink-0 cursor-grab items-center border-r border-zinc-200 px-3 text-zinc-400 hover:text-zinc-600 active:cursor-grabbing"
-        style={{ touchAction: "none" }}
-        {...attributes}
-        {...listeners}
-      >
-        <GripVertical className="size-5" />
-      </div>
-
-      <div className="flex shrink-0 flex-col border-r border-zinc-200">
-        <button
-          type="button"
-          aria-label="위로 이동"
-          onClick={onMoveUp}
-          disabled={isFirst || isBusy}
-          className="flex flex-1 items-center justify-center border-b border-zinc-200 px-3 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 disabled:cursor-not-allowed disabled:text-zinc-200 disabled:hover:bg-transparent"
-        >
-          <ChevronUp className="size-5" />
-        </button>
-        <button
-          type="button"
-          aria-label="아래로 이동"
-          onClick={onMoveDown}
-          disabled={isLast || isBusy}
-          className="flex flex-1 items-center justify-center px-3 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 disabled:cursor-not-allowed disabled:text-zinc-200 disabled:hover:bg-transparent"
-        >
-          <ChevronDown className="size-5" />
-        </button>
-      </div>
-    </>
-  );
-
-  const deleteButton = (
-    <div className="flex shrink-0 items-center border-l border-zinc-200 px-2.5">
-      <button
-        type="button"
-        aria-label="질문 삭제"
-        onClick={event => {
-          event.stopPropagation();
-          if (item.kind === "draft") {
-            onRemoveDraft?.();
-          } else {
-            onDeleteExisting?.(item.action);
-          }
-        }}
-        disabled={item.kind !== "draft" && isBusy}
-        className="rounded p-1.5 text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        <Trash2 className="size-5" />
-      </button>
-    </div>
-  );
+  const handleDelete = () => {
+    if (item.kind === "draft") {
+      onRemoveDraft?.();
+    } else {
+      onDeleteExisting?.(item.action);
+    }
+  };
 
   return (
     <div ref={setNodeRef} style={style} data-editor-item-key={item.key} className="scroll-mt-28">
@@ -163,8 +117,24 @@ export function SortableActionItem({
         previewImage={
           previewImageUrl ? { src: previewImageUrl, alt: `${itemTitle} 미리보기 이미지` } : null
         }
-        leftSlot={dragHandle}
-        rightSlot={deleteButton}
+        leftSlot={
+          <EditorSortControls
+            onMoveUp={onMoveUp}
+            onMoveDown={onMoveDown}
+            isFirst={isFirst}
+            isLast={isLast}
+            disabled={isBusy}
+            attributes={attributes}
+            listeners={listeners}
+          />
+        }
+        rightSlot={
+          <EditorDeleteSlot
+            onDelete={handleDelete}
+            disabled={item.kind !== "draft" && isBusy}
+            ariaLabel="질문 삭제"
+          />
+        }
       >
         {item.kind === "existing" ? (
           <ActionForm
