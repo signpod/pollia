@@ -110,6 +110,8 @@ export interface GetMissionStatsResponse {
     total: number;
     completed: number;
     completionRate: number;
+    averageDurationMs: number | null;
+    shareCount: number;
     completionReachStats: Array<{
       completionId: string;
       completionTitle: string;
@@ -117,6 +119,13 @@ export interface GetMissionStatsResponse {
       reachRate: number;
     }>;
   };
+}
+
+export interface GetDailyParticipationTrendResponse {
+  data: Array<{
+    date: string;
+    count: number;
+  }>;
 }
 
 export interface GetMissionResponsesPageResponse {

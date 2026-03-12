@@ -36,6 +36,7 @@ export const createMockMission = (overrides: Partial<Mission> = {}): Mission => 
   useAiCompletion: false,
   aiStatisticsReport: null,
   viewCount: 0,
+  shareCount: 0,
   createdAt: new Date(),
   updatedAt: new Date(),
   ...overrides,

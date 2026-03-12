@@ -91,7 +91,10 @@ export class TrackingActionService {
     missionId: string,
     options?: GetMissionFunnelOptions,
   ): Promise<SessionMaps> {
-    const repoOptions = options?.membersOnly ? { membersOnly: true } : undefined;
+    const repoOptions: { membersOnly?: boolean; dateRange?: { from: Date; to: Date } } = {};
+    if (options?.membersOnly) repoOptions.membersOnly = true;
+    if (options?.dateRange) repoOptions.dateRange = options.dateRange;
+
     const entries = await this.entryRepo.findByMissionId(missionId, repoOptions);
     const responses = await this.responseRepo.findByMissionId(missionId, repoOptions);
 

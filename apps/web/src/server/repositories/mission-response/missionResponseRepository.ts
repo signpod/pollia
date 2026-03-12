@@ -357,6 +357,72 @@ export class MissionResponseRepository {
       },
     });
   }
+
+  async countCompletedByMissionIdWithDateRange(
+    missionId: string,
+    dateRange?: { from: Date; to: Date },
+  ) {
+    return prisma.missionResponse.count({
+      where: {
+        missionId,
+        completedAt: { not: null },
+        ...(dateRange && {
+          completedAt: { not: null, gte: dateRange.from, lte: dateRange.to },
+        }),
+      },
+    });
+  }
+
+  async getAverageDurationMs(
+    missionId: string,
+    dateRange?: { from: Date; to: Date },
+  ): Promise<number | null> {
+    const dateFilter = dateRange ? `AND "completed_at" >= $2 AND "completed_at" <= $3` : "";
+
+    const params: (string | Date)[] = [missionId];
+    if (dateRange) {
+      params.push(dateRange.from, dateRange.to);
+    }
+
+    const result = await prisma.$queryRawUnsafe<Array<{ avg_ms: number | null }>>(
+      `SELECT AVG(EXTRACT(EPOCH FROM ("completed_at" - "started_at")) * 1000) as avg_ms
+       FROM "mission_responses"
+       WHERE "mission_id" = $1
+         AND "completed_at" IS NOT NULL
+         ${dateFilter}`,
+      ...params,
+    );
+
+    const avgMs = result[0]?.avg_ms;
+    return avgMs !== null && avgMs !== undefined ? Math.round(avgMs) : null;
+  }
+
+  async groupByStartedAtDate(
+    missionId: string,
+    dateRange?: { from: Date; to: Date },
+  ): Promise<Array<{ date: string; count: number }>> {
+    const dateFilter = dateRange ? `AND "started_at" >= $2 AND "started_at" <= $3` : "";
+
+    const params: (string | Date)[] = [missionId];
+    if (dateRange) {
+      params.push(dateRange.from, dateRange.to);
+    }
+
+    const result = await prisma.$queryRawUnsafe<Array<{ date: string; count: bigint }>>(
+      `SELECT DATE("started_at") as date, COUNT(*) as count
+       FROM "mission_responses"
+       WHERE "mission_id" = $1
+         ${dateFilter}
+       GROUP BY DATE("started_at")
+       ORDER BY date ASC`,
+      ...params,
+    );
+
+    return result.map(row => ({
+      date: String(row.date),
+      count: Number(row.count),
+    }));
+  }
 }
 
 export const missionResponseRepository = new MissionResponseRepository();

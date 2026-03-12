@@ -27,6 +27,7 @@ describe("MissionService - Create", () => {
       update: jest.fn(),
       updateLikesCount: jest.fn(),
       incrementViewCount: jest.fn(),
+      incrementShareCount: jest.fn(),
       delete: jest.fn(),
       duplicateMission: jest.fn(),
     } as jest.Mocked<MissionRepository>;
@@ -51,6 +52,9 @@ describe("MissionService - Create", () => {
       countByMissionId: jest.fn(),
       countByMissionIdFiltered: jest.fn(),
       countCompletedByMissionId: jest.fn(),
+      countCompletedByMissionIdWithDateRange: jest.fn(),
+      getAverageDurationMs: jest.fn(),
+      groupByStartedAtDate: jest.fn(),
     } as jest.Mocked<MissionResponseRepository>;
 
     mockActionRepository = {
@@ -125,6 +129,7 @@ describe("MissionService - Create", () => {
         useAiCompletion: false,
         aiStatisticsReport: null,
         viewCount: 0,
+        shareCount: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
         startDate: null,
@@ -577,6 +582,7 @@ describe("MissionService - Create", () => {
         useAiCompletion: false,
         aiStatisticsReport: null,
         viewCount: 0,
+        shareCount: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
         startDate: null,
@@ -610,6 +616,7 @@ describe("MissionService - Create", () => {
         useAiCompletion: false,
         aiStatisticsReport: null,
         viewCount: 0,
+        shareCount: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
         startDate: null,

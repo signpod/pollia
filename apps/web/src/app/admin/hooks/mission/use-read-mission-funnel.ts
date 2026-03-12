@@ -2,9 +2,13 @@
 
 import { getMissionFunnel } from "@/actions/tracking";
 import { trackingQueryKeys } from "@/app/admin/constants/queryKeys";
+import type { DateRangeString } from "@/types/common/dateRange";
 import { useQuery } from "@tanstack/react-query";
 
-export const useReadMissionFunnel = (missionId: string, options?: { membersOnly?: boolean }) => {
+export const useReadMissionFunnel = (
+  missionId: string,
+  options?: { membersOnly?: boolean; dateRange?: DateRangeString },
+) => {
   return useQuery({
     queryKey: trackingQueryKeys.missionFunnel(missionId, options),
     queryFn: () => getMissionFunnel(missionId, options),

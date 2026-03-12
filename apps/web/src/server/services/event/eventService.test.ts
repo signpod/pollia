@@ -93,6 +93,7 @@ describe("EventService", () => {
             useAiCompletion: false,
             aiStatisticsReport: null,
             viewCount: 0,
+            shareCount: 0,
           },
         ],
       };

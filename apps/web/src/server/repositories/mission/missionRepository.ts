@@ -124,6 +124,13 @@ export class MissionRepository {
     });
   }
 
+  async incrementShareCount(missionId: string) {
+    return prisma.mission.update({
+      where: { id: missionId },
+      data: { shareCount: { increment: 1 } },
+    });
+  }
+
   async update(
     missionId: string,
     data: Prisma.MissionUncheckedUpdateInput,

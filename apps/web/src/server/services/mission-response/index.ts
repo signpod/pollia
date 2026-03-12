@@ -20,6 +20,8 @@ import { hashCompletionInferenceFingerprint } from "./hashCompletionInferenceFin
 import {
   type CleanupAbuseMetaResult,
   type CompleteResponseInput,
+  type DailyParticipationTrendItem,
+  type DateRange,
   type GetMissionResponsesPageOptions,
   type MissionResponsesPageResult,
   type ResponseActor,
@@ -85,49 +87,48 @@ export class MissionResponseService {
     return this.responseRepo.findByUserId(userId);
   }
 
+  private async requireMissionOwnership(missionId: string, userId: string) {
+    const mission = await this.missionRepo.findById(missionId);
+
+    if (!mission) {
+      const error = new Error("미션을 찾을 수 없습니다.");
+      error.cause = 404;
+      throw error;
+    }
+
+    if (mission.creatorId !== userId) {
+      const error = new Error("조회 권한이 없습니다.");
+      error.cause = 403;
+      throw error;
+    }
+
+    return mission;
+  }
+
   async getMissionResponses(
     missionId: string,
     userId: string,
     options?: { membersOnly?: boolean },
   ) {
-    const mission = await this.missionRepo.findById(missionId);
-
-    if (!mission) {
-      const error = new Error("미션을 찾을 수 없습니다.");
-      error.cause = 404;
-      throw error;
-    }
-
-    if (mission.creatorId !== userId) {
-      const error = new Error("조회 권한이 없습니다.");
-      error.cause = 403;
-      throw error;
-    }
-
+    await this.requireMissionOwnership(missionId, userId);
     return this.responseRepo.findByMissionId(missionId, options);
   }
 
-  async getMissionStats(missionId: string, userId: string): Promise<ResponseStats> {
-    const mission = await this.missionRepo.findById(missionId);
+  async getMissionStats(
+    missionId: string,
+    userId: string,
+    dateRange?: DateRange,
+  ): Promise<ResponseStats> {
+    const mission = await this.requireMissionOwnership(missionId, userId);
 
-    if (!mission) {
-      const error = new Error("미션을 찾을 수 없습니다.");
-      error.cause = 404;
-      throw error;
-    }
-
-    if (mission.creatorId !== userId) {
-      const error = new Error("조회 권한이 없습니다.");
-      error.cause = 403;
-      throw error;
-    }
-
-    const [total, completed, completionsResult, completionStatsResult] = await Promise.all([
-      this.responseRepo.countByMissionId(missionId),
-      this.responseRepo.countCompletedByMissionId(missionId),
-      this.completionRepo.findAllByMissionId(missionId),
-      this.completionStatRepo.findByMissionId(missionId),
-    ]);
+    const [total, completed, averageDurationMs, completionsResult, completionStatsResult] =
+      await Promise.all([
+        this.responseRepo.countByMissionId(missionId),
+        this.responseRepo.countCompletedByMissionIdWithDateRange(missionId, dateRange),
+        this.responseRepo.getAverageDurationMs(missionId, dateRange),
+        this.completionRepo.findAllByMissionId(missionId),
+        this.completionStatRepo.findByMissionId(missionId),
+      ]);
 
     const completions = completionsResult ?? [];
     const completionStats = completionStatsResult ?? [];
@@ -160,8 +161,19 @@ export class MissionResponseService {
       total,
       completed,
       completionRate: total > 0 ? (completed / total) * 100 : 0,
+      averageDurationMs,
+      shareCount: mission.shareCount,
       completionReachStats,
     };
+  }
+
+  async getDailyParticipationTrend(
+    missionId: string,
+    userId: string,
+    dateRange?: DateRange,
+  ): Promise<DailyParticipationTrendItem[]> {
+    await this.requireMissionOwnership(missionId, userId);
+    return this.responseRepo.groupByStartedAtDate(missionId, dateRange);
   }
 
   async getMissionResponsesPage(
@@ -173,19 +185,7 @@ export class MissionResponseService {
       Awaited<ReturnType<MissionResponseRepository["findByMissionIdPaged"]>>[number]
     >
   > {
-    const mission = await this.missionRepo.findById(missionId);
-
-    if (!mission) {
-      const error = new Error("미션을 찾을 수 없습니다.");
-      error.cause = 404;
-      throw error;
-    }
-
-    if (mission.creatorId !== userId) {
-      const error = new Error("조회 권한이 없습니다.");
-      error.cause = 403;
-      throw error;
-    }
+    await this.requireMissionOwnership(missionId, userId);
 
     const [responses, totalRows] = await Promise.all([
       this.responseRepo.findByMissionIdPaged(missionId, options),
