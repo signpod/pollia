@@ -205,10 +205,10 @@ function ParticipationListItem({
       if (filter === "in-progress") {
         router.push(ROUTES.MISSION(mission.id));
       } else {
-        router.push(ROUTES.ME_RESULT(mission.id));
+        router.push(`${ROUTES.ME_RESULT(mission.id)}?responseId=${response.id}`);
       }
     },
-    [mission.id, filter, router],
+    [mission.id, response.id, filter, router],
   );
 
   const handleDelete = useCallback(

@@ -1,6 +1,6 @@
 import { getMissionActionsDetail } from "@/actions/action";
 import { getCompletionsByMissionId, getMissionCompletion } from "@/actions/mission-completion";
-import { getMyResponseForMission } from "@/actions/mission-response";
+import { getMissionResponse, getMyResponseForMission } from "@/actions/mission-response";
 import { actionQueryKeys } from "@/constants/queryKeys/actionQueryKeys";
 import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
@@ -14,16 +14,21 @@ import { MeResultContent } from "./MeResultContent";
 
 export default async function MeResultPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ missionId: string }>;
+  searchParams: Promise<{ responseId?: string }>;
 }) {
   const { missionId } = await params;
+  const { responseId } = await searchParams;
   const queryClient = getQueryClient();
 
   const { user } = await checkAuthStatus().catch(() => ({ user: null }));
   const actorKey = user?.id ?? "guest";
 
-  const missionResponse = await getMyResponseForMission(missionId).catch(() => ({ data: null }));
+  const missionResponse = responseId
+    ? await getMissionResponse(responseId).catch(() => ({ data: null }))
+    : await getMyResponseForMission(missionId).catch(() => ({ data: null }));
   if (!missionResponse.data?.completedAt) {
     redirect(ROUTES.MISSION(missionId));
   }
@@ -62,8 +67,11 @@ export default async function MeResultPage({
       queryFn: () => getMissionActionsDetail(missionId),
     }),
     queryClient.prefetchQuery({
-      queryKey: [...missionQueryKeys.missionResponseForMission(missionId), actorKey],
-      queryFn: () => getMyResponseForMission(missionId),
+      queryKey: responseId
+        ? missionQueryKeys.missionResponseById(responseId)
+        : [...missionQueryKeys.missionResponseForMission(missionId), actorKey],
+      queryFn: () =>
+        responseId ? getMissionResponse(responseId) : getMyResponseForMission(missionId),
     }),
   ];
 
@@ -94,7 +102,11 @@ export default async function MeResultPage({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <MeResultContent missionId={missionId} completionId={completionId ?? null} />
+      <MeResultContent
+        missionId={missionId}
+        completionId={completionId ?? null}
+        responseId={responseId ?? null}
+      />
     </HydrationBoundary>
   );
 }
