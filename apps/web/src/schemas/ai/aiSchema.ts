@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const AI_PROMPT_MAX_LENGTH = 8000;
+export const AI_PROMPT_MAX_LENGTH = 1_000_000;
 
 export const runAiPromptInputSchema = z.object({
   prompt: z

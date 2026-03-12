@@ -641,6 +641,7 @@ describe("MissionResponseService", () => {
       mockDefaultCompletions();
       mockInferenceCacheRepo.findByMissionAndFingerprint.mockResolvedValue({
         missionCompletionId: "completion-2",
+        source: "AI",
       } as never);
       mockResponseRepo.findLatestCompletedAtByActor.mockResolvedValue(null);
       mockResponseRepo.completeWithSelectionAndAbuseMeta.mockResolvedValue({
