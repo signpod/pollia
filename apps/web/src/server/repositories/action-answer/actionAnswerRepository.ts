@@ -15,6 +15,7 @@ export class ActionAnswerRepository {
           select: {
             id: true,
             userId: true,
+            guestId: true,
             missionId: true,
           },
         },
