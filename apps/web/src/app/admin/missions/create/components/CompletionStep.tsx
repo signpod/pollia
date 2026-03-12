@@ -17,8 +17,10 @@ import { type UploadedImageData, useSingleImage } from "@/app/admin/hooks/admin-
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import {
   MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH,
+  MISSION_COMPLETION_LINKS_MAX_COUNT,
   MISSION_COMPLETION_TITLE_MAX_LENGTH,
 } from "@/schemas/mission-completion/missionCompletionSchema";
+import type { CompletionLinkInput } from "@/types/dto";
 import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
@@ -31,55 +33,62 @@ interface CompletionStepProps {
 
 function LinksSection({ form }: { form: UseFormReturn<CreateMissionFunnelFormData> }) {
   const completion = form.watch("completion");
-  const links = completion?.links || {};
-  const linkEntries = Object.entries(links);
-  const [newLinkKey, setNewLinkKey] = useState("");
-  const [newLinkValue, setNewLinkValue] = useState("");
+  const links: CompletionLinkInput[] = completion?.links || [];
+  const [newName, setNewName] = useState("");
+  const [newUrl, setNewUrl] = useState("");
 
   const handleAddLink = () => {
-    if (!newLinkKey.trim() || !newLinkValue.trim()) {
+    if (!newName.trim() || !newUrl.trim()) {
       toast.error("링크 이름과 URL을 모두 입력해주세요");
       return;
     }
 
     try {
-      new URL(newLinkValue);
+      new URL(newUrl);
     } catch {
       toast.error("올바른 URL 형식이 아닙니다");
       return;
     }
 
-    const currentLinks = completion?.links || {};
+    if (links.length >= MISSION_COMPLETION_LINKS_MAX_COUNT) {
+      toast.error(`링크는 최대 ${MISSION_COMPLETION_LINKS_MAX_COUNT}개까지 추가할 수 있습니다`);
+      return;
+    }
+
     const updatedCompletion: CreateMissionFunnelFormData["completion"] = {
       ...completion,
-      links: { ...currentLinks, [newLinkKey.trim()]: newLinkValue.trim() },
+      links: [...links, { name: newName.trim(), url: newUrl.trim(), order: links.length }],
     };
     form.setValue("completion", updatedCompletion, { shouldDirty: true });
-    setNewLinkKey("");
-    setNewLinkValue("");
+    setNewName("");
+    setNewUrl("");
   };
 
-  const handleRemoveLink = (key: string) => {
-    const currentLinks = completion?.links || {};
-    const { [key]: _, ...rest } = currentLinks;
+  const handleRemoveLink = (index: number) => {
+    const next = links.filter((_, i) => i !== index);
     const updatedCompletion: CreateMissionFunnelFormData["completion"] = {
       ...completion,
-      links: Object.keys(rest).length > 0 ? rest : undefined,
+      links: next.length > 0 ? next : undefined,
     };
     form.setValue("completion", updatedCompletion, { shouldDirty: true });
   };
 
   return (
     <div className="space-y-4">
-      {linkEntries.length > 0 && (
+      {links.length > 0 && (
         <div className="space-y-2">
-          {linkEntries.map(([key, value]) => (
-            <div key={key} className="flex items-center gap-2">
+          {links.map((link, index) => (
+            <div key={`${link.name}-${link.url}`} className="flex items-center gap-2">
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-muted-foreground mb-1">{key}</div>
-                <div className="text-sm text-foreground truncate">{value}</div>
+                <div className="text-sm font-medium text-muted-foreground mb-1">{link.name}</div>
+                <div className="text-sm text-foreground truncate">{link.url}</div>
               </div>
-              <Button type="button" variant="ghost" size="sm" onClick={() => handleRemoveLink(key)}>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => handleRemoveLink(index)}
+              >
                 <Trash2 className="size-4 text-destructive" />
               </Button>
             </div>
@@ -87,34 +96,36 @@ function LinksSection({ form }: { form: UseFormReturn<CreateMissionFunnelFormDat
         </div>
       )}
 
-      <div className="flex gap-2">
-        <Input
-          placeholder="링크 이름"
-          value={newLinkKey}
-          onChange={e => setNewLinkKey(e.target.value)}
-          onKeyDown={e => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              handleAddLink();
-            }
-          }}
-        />
-        <Input
-          placeholder="URL"
-          type="url"
-          value={newLinkValue}
-          onChange={e => setNewLinkValue(e.target.value)}
-          onKeyDown={e => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              handleAddLink();
-            }
-          }}
-        />
-        <Button type="button" onClick={handleAddLink}>
-          <Plus className="size-4" />
-        </Button>
-      </div>
+      {links.length < MISSION_COMPLETION_LINKS_MAX_COUNT && (
+        <div className="flex gap-2">
+          <Input
+            placeholder="링크 이름"
+            value={newName}
+            onChange={e => setNewName(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleAddLink();
+              }
+            }}
+          />
+          <Input
+            placeholder="URL"
+            type="url"
+            value={newUrl}
+            onChange={e => setNewUrl(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleAddLink();
+              }
+            }}
+          />
+          <Button type="button" onClick={handleAddLink}>
+            <Plus className="size-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

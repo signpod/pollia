@@ -78,8 +78,7 @@ export function CompletionDetailCard({
     },
   });
 
-  const links = completion.links ?? null;
-  const linkEntries = links ? Object.entries(links) : [];
+  const links = completion.links ?? [];
   const isDeleting = deleteCompletion.isPending;
   const isImageBusy = completionImageEdit.image.isUploading || updateCompletion.isPending;
 
@@ -179,27 +178,27 @@ export function CompletionDetailCard({
             />
           </LabeledView>
 
-          {linkEntries.length > 0 && (
+          {links.length > 0 && (
             <>
               <Separator />
               <LabeledView label="링크">
                 <div className="space-y-2">
-                  {linkEntries.map(([key, value]) => (
+                  {links.map(link => (
                     <div
-                      key={key}
+                      key={`${link.name}-${link.url}`}
                       className="flex items-center gap-2 p-2 rounded-md border bg-muted/20"
                     >
                       <div className="flex-1 min-w-0">
                         <div className="text-xs font-medium text-muted-foreground mb-0.5">
-                          {key}
+                          {link.name}
                         </div>
                         <a
-                          href={value}
+                          href={link.url}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-sm text-primary hover:underline flex items-center gap-1 max-w-full overflow-hidden"
                         >
-                          <span className="truncate min-w-0">{value}</span>
+                          <span className="truncate min-w-0">{link.url}</span>
                           <ExternalLink className="h-3 w-3 shrink-0" />
                         </a>
                       </div>

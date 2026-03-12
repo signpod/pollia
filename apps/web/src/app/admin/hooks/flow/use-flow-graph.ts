@@ -3,7 +3,10 @@
 import { useReadActionsDetail } from "@/app/admin/hooks/action/use-read-actions-detail";
 import { useReadCompletions } from "@/app/admin/hooks/mission-completion/use-read-completions";
 import { useReadMission } from "@/app/admin/hooks/mission/use-read-mission";
-import { transformToFlowGraph } from "@/app/admin/missions/[id]/flow/utils/flowTransform";
+import {
+  type FlowGraphData,
+  transformToFlowGraph,
+} from "@/app/admin/missions/[id]/flow/utils/flowTransform";
 import type { Edge, Node } from "@xyflow/react";
 import { useMemo } from "react";
 
@@ -34,7 +37,7 @@ export function useFlowGraph(missionId: string) {
     return transformToFlowGraph({
       mission: missionData.data,
       actions: actionsData.data,
-      completions: completionsData.data,
+      completions: completionsData.data as FlowGraphData["completions"],
     });
   }, [missionData, actionsData, completionsData]);
 
