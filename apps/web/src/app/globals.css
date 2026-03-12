@@ -15,4 +15,5 @@
 .action-item-highlight {
   animation: action-item-highlight-pulse 0.75s ease-in-out 2;
   border-color: rgb(139, 92, 246) !important;
+  border-radius: 0.75rem;
 }
