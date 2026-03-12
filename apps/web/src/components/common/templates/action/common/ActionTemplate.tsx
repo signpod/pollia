@@ -34,7 +34,6 @@ export function SurveyQuestionTemplate({
   } = useActionContext();
 
   const contentRef = useRef<HTMLDivElement>(null);
-  const progressValue = ((currentOrder + 1) / totalActionCount) * 100 || 0;
   const { setProgress } = useProgressBar();
 
   const nextRef = useRef(onNext);
@@ -58,17 +57,16 @@ export function SurveyQuestionTemplate({
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
-    setProgress(progressValue, currentOrder + 1, totalActionCount);
-  }, [progressValue, setProgress]);
+    const progress = ((currentOrder + 1) / totalActionCount) * 100 || 0;
+    setProgress(progress, currentOrder + 1, totalActionCount);
 
-  useEffect(() => {
     const el = contentRef.current;
-    if (!el || !animationName) return;
-
-    el.style.animation = "none";
-    el.offsetHeight;
-    el.style.animation = `${animationName} 0.25s ease-out`;
-  }, [currentOrder, animationName]);
+    if (el && animationName) {
+      el.style.animation = "none";
+      el.offsetHeight;
+      el.style.animation = `${animationName} 0.25s ease-out`;
+    }
+  }, [currentOrder, totalActionCount, animationName, setProgress]);
 
   return (
     <FixedBottomLayout hasGradient>
