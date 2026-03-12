@@ -26,6 +26,7 @@ export function createMissionCompletionServiceTestContext() {
     update: jest.fn(),
     updateLikesCount: jest.fn(),
     incrementViewCount: jest.fn(),
+    incrementShareCount: jest.fn(),
     delete: jest.fn(),
     duplicateMission: jest.fn(),
   } as jest.Mocked<MissionRepository>;

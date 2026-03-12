@@ -33,6 +33,7 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
     useAiCompletion: false,
     aiStatisticsReport: null,
     viewCount: 0,
+    shareCount: 0,
     ...overrides,
     editorDraft: overrides?.editorDraft ?? null,
   });

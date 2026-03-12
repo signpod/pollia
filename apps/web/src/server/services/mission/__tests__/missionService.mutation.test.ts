@@ -58,6 +58,9 @@ describe("MissionService - Mutation", () => {
       countByMissionId: jest.fn(),
       countByMissionIdFiltered: jest.fn(),
       countCompletedByMissionId: jest.fn(),
+      countCompletedByMissionIdWithDateRange: jest.fn(),
+      getAverageDurationMs: jest.fn(),
+      groupByStartedAtDate: jest.fn(),
     } as jest.Mocked<MissionResponseRepository>;
 
     mockActionRepository = {
