@@ -44,14 +44,14 @@ export async function generateMetadata({ params, searchParams }: PageParams): Pr
       if (completion) {
         ogTitle = completion.title || ogTitle;
         ogDescription = completion.description || ogDescription;
-        ogImage = completion.imageUrl || ogImage;
+        ogImage = completion.imageUrl || completion.imageFileUpload?.publicUrl || ogImage;
       }
     } else {
       const completion = await getMissionCompletion(missionId).catch(() => null);
       if (completion?.data) {
         ogTitle = completion.data.title || ogTitle;
         ogDescription = completion.data.description || ogDescription;
-        ogImage = completion.data.imageUrl || ogImage;
+        ogImage = completion.data.imageUrl || completion.data.imageFileUpload?.publicUrl || ogImage;
       }
     }
 
