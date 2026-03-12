@@ -4,19 +4,22 @@ import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { Typo } from "@repo/ui/components";
 import { useAtom } from "jotai";
 import { AlertCircle, Plus } from "lucide-react";
-import { type ForwardedRef, forwardRef, useEffect, useImperativeHandle, useRef } from "react";
-import { EditorAccordion } from "../../../components/view/EditorAccordion";
-import { EditorDeleteSlot } from "../../../components/view/EditorDeleteSlot";
+import {
+  type ForwardedRef,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+} from "react";
 import { completionScrollTargetItemKeyAtom } from "../atoms/editorCompletionAtoms";
-import { CompletionForm, type CompletionFormHandle } from "./CompletionForm";
+import type { CompletionFormHandle } from "./CompletionForm";
+import { CompletionItem } from "./CompletionItem";
 import type { CompletionSettingsCardProps } from "./completionSettingsCard.types";
-import { mapEditInitialValues } from "./completionSettingsCard.utils";
 import type { SectionSaveHandle } from "./editor-save.types";
 import { useCompletionSettingsCard } from "./useCompletionSettingsCard";
 
 export type { CompletionSectionDraftSnapshot } from "./completionSettingsCard.types";
-
-const NOOP = () => {};
 
 function CompletionSettingsCardComponent(
   props: CompletionSettingsCardProps,
@@ -28,13 +31,8 @@ function CompletionSettingsCardComponent(
 
   const { isSaving, isLoading, hasValidationIssues, validationIssueCount } = viewState;
 
-  const {
-    completionItems,
-    openItemKey,
-    draftFormSnapshotByItemKey,
-    existingFormVersionById,
-    draftHydrationVersion,
-  } = listState;
+  const { completionItems, openItemKey, existingFormVersionById, draftHydrationVersion } =
+    listState;
 
   const {
     handleAddDraft,
@@ -47,6 +45,13 @@ function CompletionSettingsCardComponent(
     setCompletionDraftTitle,
     registerCompletionDraftForm,
   } = handlers;
+
+  const handleFormRef = useCallback(
+    (itemKey: string, instance: CompletionFormHandle | null) => {
+      formRefs.current[itemKey] = instance;
+    },
+    [formRefs],
+  );
 
   const listContainerRef = useRef<HTMLDivElement>(null);
   const prevHighlightRef = useRef<HTMLDivElement | null>(null);
@@ -140,88 +145,31 @@ function CompletionSettingsCardComponent(
         ) : (
           <div className="flex flex-col gap-3">
             {completionItems.map((item, index) => {
-              const isOpen = openItemKey === item.key;
-              const currentSnapshot =
-                formRefs.current[item.key]?.getRawSnapshot() ??
-                draftFormSnapshotByItemKey[item.key];
-              const snapshotTitle = currentSnapshot?.title?.trim() ?? "";
-              const title =
+              const formKey =
                 item.kind === "existing"
-                  ? snapshotTitle || item.completion.title
-                  : snapshotTitle || (item.draft.title.trim() ?? "") || "새 결과 화면";
-              const previewImageUrl =
-                currentSnapshot?.imageUrl ??
-                (item.kind === "existing" ? item.completion.imageUrl : null);
+                  ? `${item.key}:${existingFormVersionById[item.completion.id] ?? 0}:${draftHydrationVersion}`
+                  : `${item.key}:${draftHydrationVersion}`;
 
               return (
-                <div key={item.key} data-editor-item-key={item.key} className="scroll-mt-28">
-                  <EditorAccordion
-                    isOpen={isOpen}
-                    onToggle={() => handleToggleItem(item.key)}
-                    title={`${index + 1}. ${title}`}
-                    previewImage={
-                      previewImageUrl
-                        ? { src: previewImageUrl, alt: `${title} 미리보기 이미지` }
-                        : null
-                    }
-                    rightSlot={
-                      <EditorDeleteSlot
-                        onDelete={() =>
-                          item.kind === "existing"
-                            ? handleRemoveExisting(item.completion.id)
-                            : handleRemoveDraft(item.draft.key)
-                        }
-                        ariaLabel={
-                          item.kind === "existing" ? "결과 화면 제거" : "신규 결과 화면 제거"
-                        }
-                      />
-                    }
-                  >
-                    <CompletionForm
-                      key={
-                        item.kind === "existing"
-                          ? `${item.key}:${existingFormVersionById[item.completion.id] ?? 0}:${draftHydrationVersion}`
-                          : `${item.key}:${draftHydrationVersion}`
-                      }
-                      ref={(instance: CompletionFormHandle | null) => {
-                        formRefs.current[item.key] = instance;
-                        if (item.kind === "draft") {
-                          registerCompletionDraftForm(item.draft.key, instance);
-                        }
-                      }}
-                      missionId={props.missionId}
-                      itemKey={item.key}
-                      initialValues={
-                        draftFormSnapshotByItemKey[item.key] ??
-                        (item.kind === "existing"
-                          ? mapEditInitialValues(item.completion)
-                          : undefined)
-                      }
-                      dirtyBaselineValues={
-                        item.kind === "existing" ? mapEditInitialValues(item.completion) : undefined
-                      }
-                      isLoading={isSaving}
-                      onSubmit={NOOP}
-                      onCancel={NOOP}
-                      hideTitle
-                      hideFooter
-                      onTitleChange={
-                        item.kind === "draft"
-                          ? titleValue => setCompletionDraftTitle(item.draft.key, titleValue)
-                          : undefined
-                      }
-                      onDirtyChange={isDirty => {
-                        handleItemDirtyChange(item.key, isDirty);
-                      }}
-                      onValidationStateChange={issueCount => {
-                        handleItemValidationChange(item.key, issueCount);
-                      }}
-                      onRawSnapshotChange={snapshot => {
-                        handleItemRawSnapshotChange(item.key, snapshot);
-                      }}
-                    />
-                  </EditorAccordion>
-                </div>
+                <CompletionItem
+                  key={item.key}
+                  item={item}
+                  itemKey={item.key}
+                  index={index}
+                  isOpen={openItemKey === item.key}
+                  isSaving={isSaving}
+                  missionId={props.missionId}
+                  formKey={formKey}
+                  onFormRef={handleFormRef}
+                  onRegisterDraftForm={registerCompletionDraftForm}
+                  onToggle={handleToggleItem}
+                  onRemoveDraft={handleRemoveDraft}
+                  onRemoveExisting={handleRemoveExisting}
+                  onDirtyChange={handleItemDirtyChange}
+                  onValidationStateChange={handleItemValidationChange}
+                  onRawSnapshotChange={handleItemRawSnapshotChange}
+                  onDraftTitleChange={setCompletionDraftTitle}
+                />
               );
             })}
           </div>

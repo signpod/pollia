@@ -285,7 +285,11 @@ function CompletionFormComponent(
   );
 
   useEffect(() => {
-    onRawSnapshotChange?.(getRawSnapshot());
+    if (!onRawSnapshotChange) return;
+    const id = window.setTimeout(() => {
+      onRawSnapshotChange(getRawSnapshot());
+    }, 300);
+    return () => window.clearTimeout(id);
   }, [getRawSnapshot, onRawSnapshotChange]);
 
   const applyRawSnapshot = useCallback((snapshot: CompletionFormRawSnapshot) => {

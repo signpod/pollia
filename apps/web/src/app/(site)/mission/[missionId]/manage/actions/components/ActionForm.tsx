@@ -834,7 +834,11 @@ function ActionFormComponent(
   }, [onValidationStateChange, validationIssueCount]);
 
   useEffect(() => {
-    onRawSnapshotChange?.(getRawSnapshot());
+    if (!onRawSnapshotChange) return;
+    const id = window.setTimeout(() => {
+      onRawSnapshotChange(getRawSnapshot());
+    }, 300);
+    return () => window.clearTimeout(id);
   }, [getRawSnapshot, onRawSnapshotChange]);
 
   useEffect(() => {

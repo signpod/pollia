@@ -817,12 +817,18 @@ export class ActionService {
 
       const resolveActionId = (id: string | null | undefined): string | null => {
         if (!id) return null;
-        return tempToRealActionIdMap.get(id) ?? id;
+        const resolved = tempToRealActionIdMap.get(id);
+        if (resolved) return resolved;
+        if (id.startsWith("draft:")) return null;
+        return id;
       };
 
       const resolveCompletionId = (id: string | null | undefined): string | null => {
         if (!id) return null;
-        return tempToRealCompletionIdMap.get(id) ?? id;
+        const resolved = tempToRealCompletionIdMap.get(id);
+        if (resolved) return resolved;
+        if (id.startsWith("draft:")) return null;
+        return id;
       };
 
       for (const action of input.actionsToCreate) {
@@ -921,6 +927,7 @@ export class ActionService {
       for (let i = 0; i < input.actionOrder.length; i++) {
         const key = input.actionOrder[i]!;
         const realId = resolveActionId(key) ?? key;
+        if (realId.startsWith("draft:")) continue;
         await this.actionRepo.updateOrder(realId, i, tx);
       }
 

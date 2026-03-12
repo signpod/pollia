@@ -5,7 +5,6 @@ import {
   makeDraftActionId,
   mapEditInitialValues,
 } from "@/app/(site)/mission/[missionId]/manage/actions/logic";
-import { ACTION_TYPE_LABELS } from "@/constants/action";
 import {
   DndContext,
   KeyboardSensor,
@@ -27,6 +26,7 @@ import { AlertCircle, GitBranch, Plus } from "lucide-react";
 import {
   type ForwardedRef,
   forwardRef,
+  useCallback,
   useEffect,
   useImperativeHandle,
   useMemo,
@@ -42,6 +42,9 @@ import { useActionSettingsCard } from "./useActionSettingsCard";
 import { useCreateLinkedItem } from "./useCreateLinkedItem";
 
 export type { ActionSectionDraftSnapshot } from "./actionSettingsCard.types";
+
+const EMPTY_SET = new Set<string>();
+const EMPTY_LINK_TARGETS: Array<{ id: string; title: string; order: number }> = [];
 
 function ActionSettingsCardComponent(
   props: ActionSettingsCardProps,
@@ -75,7 +78,6 @@ function ActionSettingsCardComponent(
     orderedActionItems,
     openItemKey,
     actionTypeByItemKey,
-    draftFormSnapshotByItemKey,
     existingFormVersionById,
     draftHydrationVersion,
   } = listState;
@@ -99,6 +101,13 @@ function ActionSettingsCardComponent(
     handleItemValidationChange,
     handleItemRawSnapshotChange,
   } = handlers;
+
+  const handleFormRef = useCallback(
+    (itemKey: string, instance: ActionFormHandle | null) => {
+      formRefs.current[itemKey] = instance;
+    },
+    [formRefs],
+  );
 
   const precomputedByItemKey = useMemo(() => {
     const disabledActionIds: Record<string, Set<string>> = {};
@@ -244,26 +253,11 @@ function ActionSettingsCardComponent(
                   const fallbackType =
                     item.kind === "existing" ? item.action.type : ActionType.SUBJECTIVE;
                   const itemType = actionTypeByItemKey[item.key] ?? fallbackType;
-                  const snapshotTitle = draftFormSnapshotByItemKey[item.key]?.values?.title?.trim();
-                  const itemTitle =
-                    item.kind === "existing"
-                      ? snapshotTitle || item.action.title
-                      : snapshotTitle || `${ACTION_TYPE_LABELS[itemType]} 질문`;
-                  const previewImageUrl =
-                    formRefs.current[item.key]?.getRawSnapshot().values.imageUrl ??
-                    draftFormSnapshotByItemKey[item.key]?.values.imageUrl ??
-                    (item.kind === "existing" ? item.action.imageUrl : null);
 
                   const formKey =
                     item.kind === "existing"
                       ? `${item.key}:${existingFormVersionById[item.action.id] ?? 0}:${draftHydrationVersion}:${isAiCompletionEnabled}`
                       : `${item.key}:${draftHydrationVersion}:${isAiCompletionEnabled}`;
-
-                  const initialValues =
-                    item.kind === "existing"
-                      ? (draftFormSnapshotByItemKey[item.key]?.values ??
-                        mapEditInitialValues(item.action))
-                      : draftFormSnapshotByItemKey[item.key]?.values;
 
                   const dirtyBaselineValues =
                     item.kind === "existing" ? mapEditInitialValues(item.action) : undefined;
@@ -272,42 +266,33 @@ function ActionSettingsCardComponent(
                     <SortableActionItem
                       key={item.key}
                       item={item}
+                      itemKey={item.key}
                       index={index}
                       isOpen={openItemKey === item.key}
                       isBusy={isBusy}
                       itemType={itemType}
-                      itemTitle={itemTitle}
-                      previewImageUrl={previewImageUrl}
-                      formRef={(instance: ActionFormHandle | null) => {
-                        formRefs.current[item.key] = instance;
-                      }}
                       formKey={formKey}
-                      initialValues={initialValues}
                       dirtyBaselineValues={dirtyBaselineValues}
-                      formLinkTargets={precomputedByItemKey.formLinkTargets[item.key] ?? []}
+                      formLinkTargets={
+                        precomputedByItemKey.formLinkTargets[item.key] ?? EMPTY_LINK_TARGETS
+                      }
                       disabledActionIds={
-                        precomputedByItemKey.disabledActionIds[item.key] ?? new Set()
+                        precomputedByItemKey.disabledActionIds[item.key] ?? EMPTY_SET
                       }
                       completionOptions={completionOptions}
                       allowCompletionLink={!isAiCompletionEnabled}
                       isAiCompletionEnabled={isAiCompletionEnabled}
-                      onMoveUp={() => handleMoveItem(item.key, "up")}
-                      onMoveDown={() => handleMoveItem(item.key, "down")}
+                      onFormRef={handleFormRef}
+                      onToggle={handleToggleItem}
+                      onRemoveDraft={handleRemoveDraft}
+                      onDeleteExisting={item.kind === "existing" ? deleteDialog.onOpen : undefined}
+                      onActionTypeChange={handleActionTypeChange}
+                      onDirtyChange={handleItemDirtyChange}
+                      onValidationStateChange={handleItemValidationChange}
+                      onRawSnapshotChange={handleItemRawSnapshotChange}
+                      onMoveItem={handleMoveItem}
                       isFirst={index === 0}
                       isLast={index === orderedActionItems.length - 1}
-                      onToggle={() => handleToggleItem(item.key)}
-                      onRemoveDraft={
-                        item.kind === "draft" ? () => handleRemoveDraft(item.draft.key) : undefined
-                      }
-                      onDeleteExisting={item.kind === "existing" ? deleteDialog.onOpen : undefined}
-                      onActionTypeChange={type => handleActionTypeChange(item.key, type)}
-                      onDirtyChange={isDirty => handleItemDirtyChange(item.key, isDirty)}
-                      onValidationStateChange={issueCount =>
-                        handleItemValidationChange(item.key, issueCount)
-                      }
-                      onRawSnapshotChange={snapshot =>
-                        handleItemRawSnapshotChange(item.key, snapshot)
-                      }
                       onCreateLinkedAction={createLinkedAction}
                       onCreateLinkedCompletion={createLinkedCompletion}
                     />

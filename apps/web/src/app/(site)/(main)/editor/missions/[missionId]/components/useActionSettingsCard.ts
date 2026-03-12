@@ -32,6 +32,7 @@ import {
   cleanupDeletedActionRefsAtom,
 } from "../atoms/editorActionAtoms";
 import { completionOptionsAtom, isAiCompletionEnabledAtom } from "../atoms/editorDerivedAtoms";
+import { editorDraftVersionAtom } from "../atoms/editorDraftVersionAtom";
 import { mobilePreviewModeAtom } from "../atoms/editorMobilePreviewAtom";
 import type {
   ActionListItem,
@@ -88,7 +89,6 @@ export interface UseActionSettingsCardReturn {
     orderedActionItems: ActionListItem[];
     openItemKey: string | null;
     actionTypeByItemKey: Record<string, ActionType>;
-    draftFormSnapshotByItemKey: Record<string, ActionFormRawSnapshot>;
     existingFormVersionById: Record<string, number>;
     draftHydrationVersion: number;
   };
@@ -147,6 +147,7 @@ export function useActionSettingsCard({
   const draftHydrationVersion = useAtomValue(actionDraftHydrationVersionAtom);
   const setDraftHydrationVersion = useSetAtom(actionDraftHydrationVersionAtom);
   const dispatchCleanupDeletedActionRefs = useSetAtom(cleanupDeletedActionRefsAtom);
+  const incrementDraftVersion = useSetAtom(editorDraftVersionAtom);
   const [isFlowDialogOpen, setIsFlowDialogOpen] = useAtom(actionIsFlowDialogOpenAtom);
   const setIsAiCompletionEnabled = useSetAtom(isAiCompletionEnabledAtom);
   const setMobilePreviewMode = useSetAtom(mobilePreviewModeAtom);
@@ -215,6 +216,11 @@ export function useActionSettingsCard({
           return next;
         });
         setOpenItemKey(prev => (prev === deletingItemKey ? null : prev));
+
+        dispatchCleanupDeletedActionRefs({
+          itemKey: deletingItemKey,
+          deletedActionId: deletingActionId,
+        });
       }
 
       toast({ message: "질문이 삭제되었습니다." });
@@ -456,8 +462,9 @@ export function useActionSettingsCard({
           [itemKey]: snapshot,
         };
       });
+      incrementDraftVersion(v => v + 1);
     },
-    [setDraftFormSnapshotByItemKey],
+    [setDraftFormSnapshotByItemKey, incrementDraftVersion],
   );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setOpenItemKey, setScrollTarget, setDraftFormSnapshotByItemKey, setDraftHydrationVersion
@@ -602,7 +609,6 @@ export function useActionSettingsCard({
       orderedActionItems,
       openItemKey,
       actionTypeByItemKey,
-      draftFormSnapshotByItemKey,
       existingFormVersionById,
       draftHydrationVersion,
     },
