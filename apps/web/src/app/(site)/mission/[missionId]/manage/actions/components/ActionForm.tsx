@@ -3,6 +3,7 @@
 import { ACTION_TYPE_LABELS } from "@/constants/action";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { useMultipleImages, useSingleImage } from "@/hooks/image";
+import { sanitizeTiptapContent } from "@/lib/tiptap/utils";
 import {
   ACTION_DESCRIPTION_MAX_LENGTH,
   ACTION_OPTION_DESCRIPTION_MAX_LENGTH,
@@ -45,7 +46,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Textarea,
+  TiptapEditor,
   Toggle,
   Typo,
   toast,
@@ -65,6 +66,21 @@ import { NextLinkDisplay } from "./NextLinkDisplay";
 import { NextLinkDrawer } from "./NextLinkDrawer";
 import { SortableOptionItem } from "./SortableOptionItem";
 import { moveOptionByKey, patchOptionByKey, removeOptionByKey } from "./actionFormOptionState";
+
+function getTextLengthFromHtml(html: string): number {
+  if (!html) return 0;
+
+  if (typeof document !== "undefined") {
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    return div.textContent?.replace(/\u00a0/g, " ").trim().length || 0;
+  }
+
+  return html
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .trim().length;
+}
 
 const UPLOAD_ERROR_MESSAGES = {
   ACTION_IMAGE: "질문 이미지 업로드에 실패했습니다.",
@@ -229,7 +245,7 @@ function buildActionDirtyComparable(params: {
     actionType,
     values: {
       title: values.title.trim(),
-      description: values.description?.trim() || null,
+      description: sanitizeTiptapContent(values.description ?? ""),
       imageUrl: values.imageUrl ?? null,
       imageFileUploadId: values.imageFileUploadId ?? null,
       isRequired: values.isRequired,
@@ -330,6 +346,7 @@ function ActionFormComponent(
   const initialActionTypeRef = useRef(actionType);
 
   const enableEditorActionMedia = enforceExclusiveNextLink;
+  const descriptionTextLength = useMemo(() => getTextLengthFromHtml(description), [description]);
   const itemLabel = wordingMode === "question" ? "질문" : "액션";
   const needsOptions = NEEDS_OPTIONS.includes(selectedActionType);
   const needsMaxSelections = NEEDS_MAX_SELECTIONS.includes(selectedActionType);
@@ -529,6 +546,10 @@ function ActionFormComponent(
       newErrors.title = `제목은 ${ACTION_TITLE_MAX_LENGTH}자를 초과할 수 없습니다.`;
     }
 
+    if (descriptionTextLength > ACTION_DESCRIPTION_MAX_LENGTH) {
+      newErrors.description = `설명은 ${ACTION_DESCRIPTION_MAX_LENGTH}자를 초과할 수 없습니다.`;
+    }
+
     if (needsOptions) {
       const emptyOptions = options.filter(o => !o.title.trim());
       if (emptyOptions.length > 0) {
@@ -556,6 +577,7 @@ function ActionFormComponent(
     return newErrors;
   }, [
     title,
+    descriptionTextLength,
     needsOptions,
     options,
     optionLimits.min,
@@ -595,7 +617,7 @@ function ActionFormComponent(
 
       return {
         title: title.trim(),
-        description: description?.trim() || null,
+        description: sanitizeTiptapContent(description ?? ""),
         imageUrl,
         imageFileUploadId,
         isRequired,
@@ -996,14 +1018,33 @@ function ActionFormComponent(
         errorMessage={errors.title}
       />
 
-      <Textarea
-        label="설명"
-        placeholder={`${itemLabel}에 대한 설명을 입력해주세요`}
-        maxLength={ACTION_DESCRIPTION_MAX_LENGTH}
-        rows={3}
-        value={description ?? ""}
-        onChange={e => setDescription(e.target.value)}
-      />
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <LabelText required={false}>설명</LabelText>
+          <Typo.Body
+            size="small"
+            className={
+              descriptionTextLength > ACTION_DESCRIPTION_MAX_LENGTH
+                ? "text-red-500"
+                : "text-zinc-400"
+            }
+          >
+            {descriptionTextLength}/{ACTION_DESCRIPTION_MAX_LENGTH}
+          </Typo.Body>
+        </div>
+        <TiptapEditor
+          content={description ?? ""}
+          onUpdate={content => setDescription(content)}
+          placeholder={`${itemLabel}에 대한 설명을 입력해주세요`}
+          showToolbar
+          className={`min-h-[220px] rounded-sm bg-white ring-1 ${errors.description ? "ring-red-500" : "ring-zinc-200"} focus-within:ring-violet-500`}
+        />
+        {errors.description ? (
+          <Typo.Body size="small" className="text-red-500">
+            {errors.description}
+          </Typo.Body>
+        ) : null}
+      </div>
 
       {enableEditorActionMedia && (
         <div className="rounded-lg border border-zinc-200 bg-white px-4 py-4">
