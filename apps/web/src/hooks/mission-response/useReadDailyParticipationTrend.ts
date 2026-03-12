@@ -2,12 +2,10 @@
 
 import { getDailyParticipationTrend } from "@/actions/mission-response";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
+import type { DateRangeString } from "@/types/common/dateRange";
 import { useQuery } from "@tanstack/react-query";
 
-export function useReadDailyParticipationTrend(
-  missionId: string,
-  dateRange?: { from: string; to: string },
-) {
+export function useReadDailyParticipationTrend(missionId: string, dateRange?: DateRangeString) {
   return useQuery({
     queryKey: missionQueryKeys.dailyParticipationTrend(missionId, dateRange),
     queryFn: () => getDailyParticipationTrend(missionId, dateRange),
@@ -18,3 +16,7 @@ export function useReadDailyParticipationTrend(
     enabled: !!missionId,
   });
 }
+
+export type UseReadDailyParticipationTrendReturn = ReturnType<
+  typeof useReadDailyParticipationTrend
+>;

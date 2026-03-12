@@ -33,10 +33,12 @@ export const adminMissionCompletionQueryKeys = {
 
 export type AdminMissionCompletionQueryKeys = typeof adminMissionCompletionQueryKeys;
 
+import type { DateRangeString } from "@/types/common/dateRange";
+
 export const trackingQueryKeys = {
   missionFunnel: (
     missionId: string,
-    options?: { membersOnly?: boolean; dateRange?: { from: string; to: string } },
+    options?: { membersOnly?: boolean; dateRange?: DateRangeString },
   ) => ["admin", "mission-funnel", missionId, options ?? {}] as const,
 } as const;
 

@@ -5,6 +5,7 @@ import { handleActionError } from "@/actions/common/error";
 import { actionRepository } from "@/server/repositories/action/actionRepository";
 import { missionResponseService } from "@/server/services/mission-response";
 import { buildSubmissionTables } from "@/server/services/submission-list";
+import type { DateRangeString } from "@/types/common/dateRange";
 import type {
   GetDailyParticipationTrendResponse,
   GetMissionResponseResponse,
@@ -64,7 +65,7 @@ export async function getMissionResponses(
 
 export async function getMissionStats(
   missionId: string,
-  dateRange?: { from: string; to: string },
+  dateRange?: DateRangeString,
 ): Promise<GetMissionStatsResponse> {
   try {
     const user = await requireActiveUser();
@@ -80,7 +81,7 @@ export async function getMissionStats(
 
 export async function getDailyParticipationTrend(
   missionId: string,
-  dateRange?: { from: string; to: string },
+  dateRange?: DateRangeString,
 ): Promise<GetDailyParticipationTrendResponse> {
   try {
     const user = await requireActiveUser();

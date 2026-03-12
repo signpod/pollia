@@ -87,11 +87,7 @@ export class MissionResponseService {
     return this.responseRepo.findByUserId(userId);
   }
 
-  async getMissionResponses(
-    missionId: string,
-    userId: string,
-    options?: { membersOnly?: boolean },
-  ) {
+  private async requireMissionOwnership(missionId: string, userId: string) {
     const mission = await this.missionRepo.findById(missionId);
 
     if (!mission) {
@@ -106,6 +102,15 @@ export class MissionResponseService {
       throw error;
     }
 
+    return mission;
+  }
+
+  async getMissionResponses(
+    missionId: string,
+    userId: string,
+    options?: { membersOnly?: boolean },
+  ) {
+    await this.requireMissionOwnership(missionId, userId);
     return this.responseRepo.findByMissionId(missionId, options);
   }
 
@@ -114,19 +119,7 @@ export class MissionResponseService {
     userId: string,
     dateRange?: DateRange,
   ): Promise<ResponseStats> {
-    const mission = await this.missionRepo.findById(missionId);
-
-    if (!mission) {
-      const error = new Error("미션을 찾을 수 없습니다.");
-      error.cause = 404;
-      throw error;
-    }
-
-    if (mission.creatorId !== userId) {
-      const error = new Error("조회 권한이 없습니다.");
-      error.cause = 403;
-      throw error;
-    }
+    const mission = await this.requireMissionOwnership(missionId, userId);
 
     const [total, completed, averageDurationMs, completionsResult, completionStatsResult] =
       await Promise.all([
@@ -179,20 +172,7 @@ export class MissionResponseService {
     userId: string,
     dateRange?: DateRange,
   ): Promise<DailyParticipationTrendItem[]> {
-    const mission = await this.missionRepo.findById(missionId);
-
-    if (!mission) {
-      const error = new Error("미션을 찾을 수 없습니다.");
-      error.cause = 404;
-      throw error;
-    }
-
-    if (mission.creatorId !== userId) {
-      const error = new Error("조회 권한이 없습니다.");
-      error.cause = 403;
-      throw error;
-    }
-
+    await this.requireMissionOwnership(missionId, userId);
     return this.responseRepo.groupByStartedAtDate(missionId, dateRange);
   }
 
@@ -205,19 +185,7 @@ export class MissionResponseService {
       Awaited<ReturnType<MissionResponseRepository["findByMissionIdPaged"]>>[number]
     >
   > {
-    const mission = await this.missionRepo.findById(missionId);
-
-    if (!mission) {
-      const error = new Error("미션을 찾을 수 없습니다.");
-      error.cause = 404;
-      throw error;
-    }
-
-    if (mission.creatorId !== userId) {
-      const error = new Error("조회 권한이 없습니다.");
-      error.cause = 403;
-      throw error;
-    }
+    await this.requireMissionOwnership(missionId, userId);
 
     const [responses, totalRows] = await Promise.all([
       this.responseRepo.findByMissionIdPaged(missionId, options),

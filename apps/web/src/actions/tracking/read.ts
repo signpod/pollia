@@ -3,11 +3,12 @@
 import { requireActiveUser } from "@/actions/common/auth";
 import { handleActionError } from "@/actions/common/error";
 import { trackingActionService } from "@/server/services/tracking";
+import type { DateRangeString } from "@/types/common/dateRange";
 import type { GetMissionFunnelResponse } from "@/types/dto";
 
 export async function getMissionFunnel(
   missionId: string,
-  options?: { membersOnly?: boolean; dateRange?: { from: string; to: string } },
+  options?: { membersOnly?: boolean; dateRange?: DateRangeString },
 ): Promise<GetMissionFunnelResponse> {
   try {
     const user = await requireActiveUser();

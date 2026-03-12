@@ -389,6 +389,7 @@ export class MissionService {
   }
 
   async incrementShareCount(missionId: string): Promise<void> {
+    await this.getMission(missionId);
     await this.repo.incrementShareCount(missionId);
   }
 }
