@@ -3,8 +3,10 @@
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { Typo } from "@repo/ui/components";
 import { useAtom } from "jotai";
-import { AlertCircle, ChevronDown, Plus, X } from "lucide-react";
+import { AlertCircle, Plus } from "lucide-react";
 import { type ForwardedRef, forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import { EditorAccordion } from "../../../components/view/EditorAccordion";
+import { EditorDeleteSlot } from "../../../components/view/EditorDeleteSlot";
 import { completionScrollTargetItemKeyAtom } from "../atoms/editorCompletionAtoms";
 import { CompletionForm, type CompletionFormHandle } from "./CompletionForm";
 import type { CompletionSettingsCardProps } from "./completionSettingsCard.types";
@@ -144,55 +146,29 @@ function CompletionSettingsCardComponent(
                 (item.kind === "existing" ? item.completion.imageUrl : null);
 
               return (
-                <div
-                  key={item.key}
-                  data-editor-item-key={item.key}
-                  className="scroll-mt-28 overflow-hidden rounded-xl border border-zinc-200 transition-shadow duration-500"
-                >
-                  <div className="flex items-center justify-between bg-zinc-50 px-4 py-3">
-                    <button
-                      type="button"
-                      onClick={() => handleToggleItem(item.key)}
-                      className="flex min-w-0 flex-1 items-center justify-between gap-3 text-left"
-                    >
-                      <div className="min-w-0">
-                        <Typo.Body size="medium" className="truncate font-semibold text-zinc-800">
-                          {index + 1}. {title}
-                        </Typo.Body>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-2">
-                        {previewImageUrl ? (
-                          <img
-                            src={previewImageUrl}
-                            alt={`${title} 미리보기 이미지`}
-                            className="size-10 shrink-0 rounded border border-zinc-200 bg-zinc-100 object-cover"
-                          />
-                        ) : null}
-                        <ChevronDown
-                          className={`size-4 shrink-0 text-zinc-500 transition-transform ${
-                            isOpen ? "rotate-180" : ""
-                          }`}
-                        />
-                      </div>
-                    </button>
-
-                    <button
-                      type="button"
-                      aria-label={
-                        item.kind === "existing" ? "결과 화면 제거" : "신규 결과 화면 제거"
-                      }
-                      onClick={() =>
-                        item.kind === "existing"
-                          ? handleRemoveExisting(item.completion.id)
-                          : handleRemoveDraft(item.draft.key)
-                      }
-                      className="ml-2 rounded p-1 text-zinc-400 transition-colors hover:text-red-500"
-                    >
-                      <X className="size-4" />
-                    </button>
-                  </div>
-
-                  <div className={isOpen ? "block border-t border-zinc-200" : "hidden"}>
+                <div key={item.key} data-editor-item-key={item.key} className="scroll-mt-28">
+                  <EditorAccordion
+                    isOpen={isOpen}
+                    onToggle={() => handleToggleItem(item.key)}
+                    title={`${index + 1}. ${title}`}
+                    previewImage={
+                      previewImageUrl
+                        ? { src: previewImageUrl, alt: `${title} 미리보기 이미지` }
+                        : null
+                    }
+                    rightSlot={
+                      <EditorDeleteSlot
+                        onDelete={() =>
+                          item.kind === "existing"
+                            ? handleRemoveExisting(item.completion.id)
+                            : handleRemoveDraft(item.draft.key)
+                        }
+                        ariaLabel={
+                          item.kind === "existing" ? "결과 화면 제거" : "신규 결과 화면 제거"
+                        }
+                      />
+                    }
+                  >
                     <CompletionForm
                       key={
                         item.kind === "existing"
@@ -236,7 +212,7 @@ function CompletionSettingsCardComponent(
                         handleItemRawSnapshotChange(item.key, snapshot);
                       }}
                     />
-                  </div>
+                  </EditorAccordion>
                 </div>
               );
             })}
