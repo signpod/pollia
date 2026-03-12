@@ -217,6 +217,7 @@ function aggregateByType(type: ActionType, values: string[]): string {
   switch (type) {
     case "MULTIPLE_CHOICE":
     case "TAG":
+    case "BRANCH":
       return aggregateFrequency(values);
     case "SCALE":
     case "RATING":
