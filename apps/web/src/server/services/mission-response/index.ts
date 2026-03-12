@@ -130,7 +130,7 @@ export class MissionResponseService {
 
     const [total, completed, averageDurationMs, completionsResult, completionStatsResult] =
       await Promise.all([
-        this.responseRepo.countByMissionIdWithDateRange(missionId, dateRange),
+        this.responseRepo.countByMissionId(missionId),
         this.responseRepo.countCompletedByMissionIdWithDateRange(missionId, dateRange),
         this.responseRepo.getAverageDurationMs(missionId, dateRange),
         this.completionRepo.findAllByMissionId(missionId),

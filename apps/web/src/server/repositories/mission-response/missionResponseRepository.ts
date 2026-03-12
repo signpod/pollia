@@ -358,17 +358,6 @@ export class MissionResponseRepository {
     });
   }
 
-  async countByMissionIdWithDateRange(missionId: string, dateRange?: { from: Date; to: Date }) {
-    return prisma.missionResponse.count({
-      where: {
-        missionId,
-        ...(dateRange && {
-          startedAt: { gte: dateRange.from, lte: dateRange.to },
-        }),
-      },
-    });
-  }
-
   async countCompletedByMissionIdWithDateRange(
     missionId: string,
     dateRange?: { from: Date; to: Date },
@@ -388,7 +377,7 @@ export class MissionResponseRepository {
     missionId: string,
     dateRange?: { from: Date; to: Date },
   ): Promise<number | null> {
-    const dateFilter = dateRange ? `AND "started_at" >= $2 AND "started_at" <= $3` : "";
+    const dateFilter = dateRange ? `AND "completed_at" >= $2 AND "completed_at" <= $3` : "";
 
     const params: (string | Date)[] = [missionId];
     if (dateRange) {
