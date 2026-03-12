@@ -110,6 +110,8 @@ export interface GetMissionStatsResponse {
     total: number;
     completed: number;
     completionRate: number;
+    averageDurationMs: number | null;
+    shareCount: number;
     completionReachStats: Array<{
       completionId: string;
       completionTitle: string;

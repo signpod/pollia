@@ -20,6 +20,7 @@ import { hashCompletionInferenceFingerprint } from "./hashCompletionInferenceFin
 import {
   type CleanupAbuseMetaResult,
   type CompleteResponseInput,
+  type DateRange,
   type GetMissionResponsesPageOptions,
   type MissionResponsesPageResult,
   type ResponseActor,
@@ -107,7 +108,11 @@ export class MissionResponseService {
     return this.responseRepo.findByMissionId(missionId, options);
   }
 
-  async getMissionStats(missionId: string, userId: string): Promise<ResponseStats> {
+  async getMissionStats(
+    missionId: string,
+    userId: string,
+    dateRange?: DateRange,
+  ): Promise<ResponseStats> {
     const mission = await this.missionRepo.findById(missionId);
 
     if (!mission) {
@@ -122,12 +127,14 @@ export class MissionResponseService {
       throw error;
     }
 
-    const [total, completed, completionsResult, completionStatsResult] = await Promise.all([
-      this.responseRepo.countByMissionId(missionId),
-      this.responseRepo.countCompletedByMissionId(missionId),
-      this.completionRepo.findAllByMissionId(missionId),
-      this.completionStatRepo.findByMissionId(missionId),
-    ]);
+    const [total, completed, averageDurationMs, completionsResult, completionStatsResult] =
+      await Promise.all([
+        this.responseRepo.countByMissionIdWithDateRange(missionId, dateRange),
+        this.responseRepo.countCompletedByMissionIdWithDateRange(missionId, dateRange),
+        this.responseRepo.getAverageDurationMs(missionId, dateRange),
+        this.completionRepo.findAllByMissionId(missionId),
+        this.completionStatRepo.findByMissionId(missionId),
+      ]);
 
     const completions = completionsResult ?? [];
     const completionStats = completionStatsResult ?? [];
@@ -160,6 +167,8 @@ export class MissionResponseService {
       total,
       completed,
       completionRate: total > 0 ? (completed / total) * 100 : 0,
+      averageDurationMs,
+      shareCount: mission.shareCount,
       completionReachStats,
     };
   }
