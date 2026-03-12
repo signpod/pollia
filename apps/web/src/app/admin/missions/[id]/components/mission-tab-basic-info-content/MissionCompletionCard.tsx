@@ -43,8 +43,7 @@ export function MissionCompletionCard({ missionId }: MissionCompletionCardProps)
   const completion = completionResponse?.data ?? null;
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
-  const links = completion?.links ?? null;
-  const linkEntries = links ? Object.entries(links) : [];
+  const links = completion?.links ?? [];
 
   return (
     <>
@@ -128,29 +127,29 @@ export function MissionCompletionCard({ missionId }: MissionCompletionCardProps)
                 }
               />
 
-              {linkEntries.length > 0 && (
+              {links.length > 0 && (
                 <>
                   <Separator />
                   <InfoField
                     label="링크"
                     value={
                       <div className="space-y-2 mt-2">
-                        {linkEntries.map(([key, value]) => (
+                        {links.map(link => (
                           <div
-                            key={key}
+                            key={`${link.name}-${link.url}`}
                             className="flex items-center gap-2 p-2 rounded-md border bg-muted/20"
                           >
                             <div className="flex-1 min-w-0">
                               <div className="text-xs font-medium text-muted-foreground mb-0.5">
-                                {key}
+                                {link.name}
                               </div>
                               <a
-                                href={value}
+                                href={link.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-sm text-primary hover:underline flex items-center gap-1 max-w-full overflow-hidden"
                               >
-                                <span className="truncate min-w-0">{value}</span>
+                                <span className="truncate min-w-0">{link.url}</span>
                                 <ExternalLink className="h-3 w-3 shrink-0" />
                               </a>
                             </div>

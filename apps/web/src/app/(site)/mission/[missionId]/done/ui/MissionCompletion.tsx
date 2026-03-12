@@ -13,6 +13,8 @@ import { useReadReward } from "@/hooks/reward/useReadReward";
 import { MissionType } from "@prisma/client";
 import { PurchaseLinkCard, Typo } from "@repo/ui/components";
 import { useQuery } from "@tanstack/react-query";
+import { ExternalLink } from "lucide-react";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useCompletionImageDownload } from "./hooks";
 
@@ -38,6 +40,7 @@ export function MissionCompletion({ completionId, initialImageUrl }: MissionComp
     title: completionTitle,
     description: completionDescription,
     imageUrl: completionImageUrl,
+    links: completionLinks,
   } = missionCompletion?.data ?? {};
 
   const { handleSave, isGenerating, canSave } = useCompletionImageDownload({
@@ -96,6 +99,37 @@ export function MissionCompletion({ completionId, initialImageUrl }: MissionComp
             missions={recommendedMissions}
             cardClassName="w-[159.5px] sm:w-[200px]"
           />
+        ) : undefined
+      }
+      completionLinks={
+        completionLinks && completionLinks.length > 0 ? (
+          <div className="flex flex-col gap-3 w-full">
+            {completionLinks.map(link => (
+              <a
+                key={`${link.name}-${link.url}`}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3 transition-colors hover:bg-zinc-50"
+              >
+                {link.imageUrl && (
+                  <div className="relative size-12 shrink-0 overflow-hidden rounded-lg">
+                    <Image
+                      src={link.imageUrl}
+                      alt={link.name}
+                      fill
+                      sizes="48px"
+                      className="object-cover"
+                    />
+                  </div>
+                )}
+                <span className="flex-1 min-w-0 text-sm font-medium text-zinc-800 truncate">
+                  {link.name}
+                </span>
+                <ExternalLink className="size-4 shrink-0 text-zinc-400" />
+              </a>
+            ))}
+          </div>
         ) : undefined
       }
       purchaseLinks={

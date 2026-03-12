@@ -3,6 +3,8 @@ import { z } from "zod";
 
 export const MISSION_COMPLETION_TITLE_MAX_LENGTH = 100;
 export const MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH = 2000;
+export const MISSION_COMPLETION_LINKS_MAX_COUNT = 4;
+export const MISSION_COMPLETION_LINK_NAME_MAX_LENGTH = 50;
 
 const titleSchema = z
   .string()
@@ -43,8 +45,26 @@ const updateImageUrlSchema = z
   .optional();
 const updateImageFileUploadIdSchema = z.string().nullable().optional();
 
+const completionLinkSchema = z.object({
+  name: z
+    .string()
+    .min(1, "링크 이름을 입력해주세요.")
+    .max(
+      MISSION_COMPLETION_LINK_NAME_MAX_LENGTH,
+      `링크 이름은 ${MISSION_COMPLETION_LINK_NAME_MAX_LENGTH}자를 초과할 수 없습니다.`,
+    ),
+  url: z.url({ message: "올바른 URL 형식이 아닙니다." }),
+  order: z.number().int().min(0),
+  imageUrl: z.url({ message: "올바른 URL 형식이 아닙니다." }).nullable().optional(),
+  fileUploadId: z.string().nullable().optional(),
+});
+
 const linksSchema = z
-  .record(z.string(), z.url({ message: "올바른 URL 형식이 아닙니다." }))
+  .array(completionLinkSchema)
+  .max(
+    MISSION_COMPLETION_LINKS_MAX_COUNT,
+    `링크는 최대 ${MISSION_COMPLETION_LINKS_MAX_COUNT}개까지 추가할 수 있습니다.`,
+  )
   .optional();
 
 export const missionCompletionInputSchema = z.object({

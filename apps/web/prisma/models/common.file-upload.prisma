@@ -17,6 +17,7 @@ model FileUpload {
   actionImages            Action[]
   rewardImages            Reward[]
   missionCompletionImages MissionCompletion[]
+  completionLinks         CompletionLink[]
 
   actionAnswerId String?       @map("action_answer_id")
   actionAnswer   ActionAnswer? @relation(fields: [actionAnswerId], references: [id], onDelete: Cascade)

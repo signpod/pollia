@@ -5,8 +5,11 @@ import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { useCropperModal, useSingleImage } from "@/hooks/image";
 import {
   MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH,
+  MISSION_COMPLETION_LINKS_MAX_COUNT,
+  MISSION_COMPLETION_LINK_NAME_MAX_LENGTH,
   MISSION_COMPLETION_TITLE_MAX_LENGTH,
 } from "@/schemas/mission-completion";
+import type { CompletionLinkInput } from "@/types/dto";
 import {
   Button,
   ImageSelector,
@@ -16,7 +19,7 @@ import {
   Typo,
   toast,
 } from "@repo/ui/components";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Plus } from "lucide-react";
 import {
   type ForwardedRef,
   forwardRef,
@@ -27,6 +30,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { CompletionLinkEditor } from "./CompletionLinkEditor";
 
 function decodeHtmlEntities(text: string): string {
   const namedEntities: Record<string, string> = {
@@ -74,6 +78,7 @@ export interface CompletionFormValues {
   description: string;
   imageUrl?: string | null;
   imageFileUploadId?: string | null;
+  links?: CompletionLinkInput[];
 }
 
 export interface CompletionFormRawSnapshot {
@@ -81,6 +86,7 @@ export interface CompletionFormRawSnapshot {
   description: string;
   imageUrl: string | null;
   imageFileUploadId: string | null;
+  links: CompletionLinkInput[];
 }
 
 export interface CompletionFormHandle {
@@ -125,6 +131,7 @@ function buildCompletionDirtyComparable(values: CompletionFormValues) {
     description: values.description,
     imageUrl: values.imageUrl ?? null,
     imageFileUploadId: values.imageFileUploadId ?? null,
+    links: values.links ?? [],
   };
 }
 
@@ -150,6 +157,13 @@ function CompletionFormComponent(
   const [imageFileUploadId, setImageFileUploadId] = useState<string | null>(
     initialValues?.imageFileUploadId ?? null,
   );
+  const [links, setLinks] = useState<CompletionLinkInput[]>(initialValues?.links ?? []);
+  const [linkKeys, setLinkKeys] = useState<string[]>(() =>
+    (initialValues?.links ?? []).map((_, i) => `lk-${Date.now()}-${i}`),
+  );
+  const linkKeyCounterRef = useRef(initialValues?.links?.length ?? 0);
+  const [openLinkIndex, setOpenLinkIndex] = useState<number | null>(null);
+  const linkUploadingRef = useRef<Set<number>>(new Set());
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [hasValidationStarted, setHasValidationStarted] = useState(false);
   const [validationIssueCount, setValidationIssueCount] = useState(0);
@@ -183,9 +197,10 @@ function CompletionFormComponent(
           description,
           imageUrl: imageUrl ?? null,
           imageFileUploadId: imageFileUploadId ?? null,
+          links,
         }),
       ),
-    [title, description, imageUrl, imageFileUploadId],
+    [title, description, imageUrl, imageFileUploadId, links],
   );
   const initialDirtyComparableStringRef = useRef(dirtyComparableString);
   const dirtyBaselineComparableString = useMemo(() => {
@@ -227,8 +242,27 @@ function CompletionFormComponent(
       nextErrors.description = `설명은 ${MISSION_COMPLETION_DESCRIPTION_MAX_LENGTH}자를 초과할 수 없습니다.`;
     }
 
+    for (const [i, link] of links.entries()) {
+      if (!link.name.trim()) {
+        nextErrors[`link_${i}_name`] = "링크 이름을 입력해주세요.";
+      } else if (link.name.trim().length > MISSION_COMPLETION_LINK_NAME_MAX_LENGTH) {
+        nextErrors[`link_${i}_name`] =
+          `링크 이름은 ${MISSION_COMPLETION_LINK_NAME_MAX_LENGTH}자를 초과할 수 없습니다.`;
+      }
+
+      if (!link.url.trim()) {
+        nextErrors[`link_${i}_url`] = "URL을 입력해주세요.";
+      } else {
+        try {
+          new URL(link.url);
+        } catch {
+          nextErrors[`link_${i}_url`] = "올바른 URL 형식이 아닙니다.";
+        }
+      }
+    }
+
     return nextErrors;
-  }, [title, description]);
+  }, [title, description, links]);
 
   const runValidation = useCallback(
     ({ showErrors = true }: { showErrors?: boolean } = {}) => {
@@ -255,7 +289,7 @@ function CompletionFormComponent(
     }
 
     runValidation();
-  }, [description, hasValidationStarted, runValidation, title]);
+  }, [hasValidationStarted, runValidation]);
 
   const buildValidatedValues = useCallback(
     ({ showErrors = true }: { showErrors?: boolean } = {}): CompletionFormValues | null => {
@@ -269,9 +303,10 @@ function CompletionFormComponent(
         description,
         imageUrl,
         imageFileUploadId,
+        links: links.length > 0 ? links.map((link, i) => ({ ...link, order: i })) : undefined,
       };
     },
-    [runValidation, title, description, imageUrl, imageFileUploadId],
+    [runValidation, title, description, imageUrl, imageFileUploadId, links],
   );
 
   const getRawSnapshot = useCallback(
@@ -280,8 +315,9 @@ function CompletionFormComponent(
       description,
       imageUrl: imageUrl ?? null,
       imageFileUploadId: imageFileUploadId ?? null,
+      links,
     }),
-    [description, imageFileUploadId, imageUrl, title],
+    [description, imageFileUploadId, imageUrl, links, title],
   );
 
   useEffect(() => {
@@ -297,6 +333,11 @@ function CompletionFormComponent(
     setDescription(snapshot.description ?? "");
     setImageUrl(snapshot.imageUrl ?? null);
     setImageFileUploadId(snapshot.imageFileUploadId ?? null);
+    const nextLinks = snapshot.links ?? [];
+    setLinks(nextLinks);
+    linkKeyCounterRef.current += nextLinks.length;
+    setLinkKeys(nextLinks.map((_, i) => `lk-${Date.now()}-${linkKeyCounterRef.current + i}`));
+    setOpenLinkIndex(null);
     setErrors({});
   }, []);
 
@@ -304,7 +345,7 @@ function CompletionFormComponent(
     ref,
     () => ({
       validateAndGetValues: options => buildValidatedValues(options),
-      isUploading: () => imageUpload.isUploading,
+      isUploading: () => imageUpload.isUploading || linkUploadingRef.current.size > 0,
       deleteMarkedInitial: () => {
         imageUpload.deleteMarkedInitial();
       },
@@ -396,6 +437,81 @@ function CompletionFormComponent(
             disabled={isImageBusy}
           />
         </div>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <Typo.Body size="medium" className="font-semibold text-zinc-800">
+            링크 ({links.length}/{MISSION_COMPLETION_LINKS_MAX_COUNT})
+          </Typo.Body>
+          {links.length < MISSION_COMPLETION_LINKS_MAX_COUNT && (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => {
+                linkKeyCounterRef.current += 1;
+                const newKey = `lk-${Date.now()}-${linkKeyCounterRef.current}`;
+                setLinks(prev => [...prev, { name: "", url: "", order: prev.length }]);
+                setLinkKeys(prev => [...prev, newKey]);
+                setOpenLinkIndex(links.length);
+              }}
+            >
+              <Plus className="mr-1 size-4" />
+              링크 추가
+            </Button>
+          )}
+        </div>
+
+        {links.length > 0 && (
+          <div className="flex flex-col gap-2">
+            {links.map((link, index) => (
+              <CompletionLinkEditor
+                key={linkKeys[index]}
+                linkIndex={index}
+                name={link.name}
+                url={link.url}
+                imageUrl={link.imageUrl ?? null}
+                isOpen={openLinkIndex === index}
+                disabled={isLoading}
+                nameError={errors[`link_${index}_name`]}
+                urlError={errors[`link_${index}_url`]}
+                onNameChange={value => {
+                  setLinks(prev => prev.map((l, i) => (i === index ? { ...l, name: value } : l)));
+                }}
+                onUrlChange={value => {
+                  setLinks(prev => prev.map((l, i) => (i === index ? { ...l, url: value } : l)));
+                }}
+                onImageChange={(newImageUrl, newFileUploadId) => {
+                  setLinks(prev =>
+                    prev.map((l, i) =>
+                      i === index
+                        ? { ...l, imageUrl: newImageUrl, fileUploadId: newFileUploadId }
+                        : l,
+                    ),
+                  );
+                }}
+                onIsUploadingChange={uploading => {
+                  if (uploading) {
+                    linkUploadingRef.current.add(index);
+                  } else {
+                    linkUploadingRef.current.delete(index);
+                  }
+                }}
+                onToggle={() => setOpenLinkIndex(prev => (prev === index ? null : index))}
+                onDelete={() => {
+                  setLinks(prev => prev.filter((_, i) => i !== index));
+                  setLinkKeys(prev => prev.filter((_, i) => i !== index));
+                  linkUploadingRef.current.delete(index);
+                  if (openLinkIndex === index) {
+                    setOpenLinkIndex(null);
+                  } else if (openLinkIndex !== null && openLinkIndex > index) {
+                    setOpenLinkIndex(openLinkIndex - 1);
+                  }
+                }}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {!hideFooter && (

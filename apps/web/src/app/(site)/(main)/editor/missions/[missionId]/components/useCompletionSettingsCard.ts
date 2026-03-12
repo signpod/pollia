@@ -573,6 +573,7 @@ export function useCompletionSettingsCard({
             description: values.description,
             imageUrl: values.imageUrl ?? null,
             imageFileUploadId: values.imageFileUploadId ?? null,
+            links: values.links,
           });
           didMutateServer = true;
           if (updated?.data) {
@@ -615,6 +616,7 @@ export function useCompletionSettingsCard({
             description: values.description,
             imageUrl: values.imageUrl ?? undefined,
             imageFileUploadId: values.imageFileUploadId ?? undefined,
+            links: values.links,
           });
           didMutateServer = true;
           if (created?.data) {
