@@ -37,10 +37,29 @@ export function SurveyQuestionTemplate({
   const progressValue = ((currentOrder + 1) / totalActionCount) * 100 || 0;
   const { setProgress } = useProgressBar();
 
+  const nextRef = useRef(onNext);
+  const canSubmitRef = useRef(false);
+  nextRef.current = onNext;
+  canSubmitRef.current = !(isRequired && isNextDisabled) && !isLoading;
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key !== "Enter") return;
+      if (e.isComposing) return;
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "TEXTAREA") return;
+      if (!canSubmitRef.current) return;
+      e.preventDefault();
+      nextRef.current?.();
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
     setProgress(progressValue, currentOrder + 1, totalActionCount);
-  }, [currentOrder, totalActionCount, progressValue, setProgress]);
+  }, [progressValue, setProgress]);
 
   useEffect(() => {
     const el = contentRef.current;
