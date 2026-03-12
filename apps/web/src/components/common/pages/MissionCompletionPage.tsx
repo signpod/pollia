@@ -32,6 +32,7 @@ export interface MissionCompletionPageProps {
   purchaseLinks?: ReactNode;
   hasReward?: boolean;
   onSave?: () => void;
+  onShare?: () => void;
   isSaving?: boolean;
   canSave?: boolean;
 }
@@ -70,7 +71,13 @@ function copyCurrentUrl() {
   toast.success("링크가 복사되었어요");
 }
 
-function CompletionBottomButton({ hasReward }: { hasReward: boolean }) {
+function CompletionBottomButton({
+  hasReward,
+  onShare,
+}: {
+  hasReward: boolean;
+  onShare?: () => void;
+}) {
   const { isLoggedIn } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
@@ -102,7 +109,14 @@ function CompletionBottomButton({ hasReward }: { hasReward: boolean }) {
         <DrawerProvider>
           <div className="flex gap-2 w-full">
             <RewardButtonTrigger />
-            <ButtonV2 variant="primary" className="flex-1" onClick={copyCurrentUrl}>
+            <ButtonV2
+              variant="primary"
+              className="flex-1"
+              onClick={() => {
+                copyCurrentUrl();
+                onShare?.();
+              }}
+            >
               <div className="flex items-center justify-center w-full">
                 <Typo.ButtonText size="large">결과 공유하기</Typo.ButtonText>
               </div>
@@ -122,7 +136,14 @@ function CompletionBottomButton({ hasReward }: { hasReward: boolean }) {
             <Typo.ButtonText size="large">처음으로</Typo.ButtonText>
           </div>
         </ButtonV2>
-        <ButtonV2 variant="primary" className="flex-1" onClick={copyCurrentUrl}>
+        <ButtonV2
+          variant="primary"
+          className="flex-1"
+          onClick={() => {
+            copyCurrentUrl();
+            onShare?.();
+          }}
+        >
           <div className="flex items-center justify-center w-full">
             <Typo.ButtonText size="large">결과 공유하기</Typo.ButtonText>
           </div>
@@ -179,6 +200,7 @@ export function MissionCompletionPage({
   purchaseLinks,
   hasReward,
   onSave,
+  onShare,
   isSaving,
   canSave,
 }: MissionCompletionPageProps) {
@@ -201,7 +223,7 @@ export function MissionCompletionPage({
         isSaving={isSaving}
         canSave={canSave}
       />
-      <CompletionBottomButton hasReward={!!hasReward} />
+      <CompletionBottomButton hasReward={!!hasReward} onShare={onShare} />
     </div>
   );
 }

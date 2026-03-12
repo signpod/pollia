@@ -11,7 +11,7 @@ export interface AiReportData {
       totalParticipants: number;
       completionRate: number;
       avgDurationSeconds: number | null;
-      shareCount: number | null; // TODO: 백엔드 연결 필요
+      shareCount: number | null;
     };
     dailyTrend: Array<{ date: string; count: number }>;
     funnel: Array<{

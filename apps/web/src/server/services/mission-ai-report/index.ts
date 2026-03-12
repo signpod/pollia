@@ -104,7 +104,7 @@ export class MissionAiReportService {
   }
 
   private async buildStats(
-    mission: { title: string; startDate: Date | null; deadline: Date | null },
+    mission: { title: string; startDate: Date | null; deadline: Date | null; shareCount: number },
     missionId: string,
     responses: Array<{ startedAt: Date; completedAt: Date | null }>,
     completedRows: SubmissionRow[],
@@ -195,7 +195,7 @@ export class MissionAiReportService {
         totalParticipants,
         completionRate,
         avgDurationSeconds,
-        shareCount: null, // TODO: 백엔드 연결 필요
+        shareCount: mission.shareCount,
       },
       dailyTrend,
       funnel,

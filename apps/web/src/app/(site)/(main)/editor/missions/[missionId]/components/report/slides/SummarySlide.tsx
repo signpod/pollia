@@ -59,7 +59,7 @@ export function SummarySlide({ data }: SummarySlideProps) {
         <KpiCard
           icon={Share2}
           label="공유 수"
-          value={kpis.shareCount !== null ? `${kpis.shareCount}회` : "-"}
+          value={kpis.shareCount != null ? `${kpis.shareCount}회` : "-"}
         />
       </div>
     </div>
