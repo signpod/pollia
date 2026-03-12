@@ -78,13 +78,13 @@ export class MissionRepository {
     actionIds: string[],
     client: TransactionClient = prisma,
   ) {
-    const sanitizedData = await sanitizeFileUploadRefs(client, data as Record<string, unknown>, [
+    const sanitizedData = await sanitizeFileUploadRefs(client, data, [
       { idField: "imageFileUploadId", urlField: "imageUrl" },
       { idField: "brandLogoFileUploadId", urlField: "brandLogoUrl" },
     ]);
 
     const createdMission = await client.mission.create({
-      data: sanitizedData as Prisma.MissionUncheckedCreateInput,
+      data: sanitizedData,
     });
 
     if (actionIds.length > 0) {
@@ -130,7 +130,7 @@ export class MissionRepository {
     userId?: string,
     client: TransactionClient = prisma,
   ) {
-    const sanitizedData = await sanitizeFileUploadRefs(client, data as Record<string, unknown>, [
+    const sanitizedData = await sanitizeFileUploadRefs(client, data, [
       { idField: "imageFileUploadId", urlField: "imageUrl" },
       { idField: "brandLogoFileUploadId", urlField: "brandLogoUrl" },
     ]);
@@ -146,7 +146,7 @@ export class MissionRepository {
 
     const updatedMission = await client.mission.update({
       where: { id: missionId },
-      data: sanitizedData as Prisma.MissionUncheckedUpdateInput,
+      data: sanitizedData,
     });
 
     if (fileUploadIds.length > 0 && userId) {

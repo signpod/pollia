@@ -44,10 +44,9 @@ export class RewardRepository {
   }
 
   async create(data: RewardCreateData, userId?: string) {
-    const sanitizedData = await sanitizeFileUploadRefs(prisma, data as Record<string, unknown>, [
+    const safeData = await sanitizeFileUploadRefs(prisma, data, [
       { idField: "imageFileUploadId", urlField: "imageUrl" },
     ]);
-    const safeData = sanitizedData as RewardCreateData;
 
     const fileUploadId =
       typeof safeData.imageFileUploadId === "string" ? safeData.imageFileUploadId : undefined;
@@ -90,10 +89,9 @@ export class RewardRepository {
   }
 
   async update(rewardId: string, data: RewardUpdateData, userId?: string) {
-    const sanitizedData = await sanitizeFileUploadRefs(prisma, data as Record<string, unknown>, [
+    const safeData = await sanitizeFileUploadRefs(prisma, data, [
       { idField: "imageFileUploadId", urlField: "imageUrl" },
     ]);
-    const safeData = sanitizedData as RewardUpdateData;
 
     const fileUploadId =
       typeof safeData.imageFileUploadId === "string" ? safeData.imageFileUploadId : undefined;

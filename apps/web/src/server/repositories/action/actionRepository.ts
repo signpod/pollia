@@ -160,13 +160,11 @@ export class ActionRepository {
     client?: Prisma.TransactionClient,
   ) {
     const queryClient = client ?? prisma;
-    const sanitizedData = await sanitizeFileUploadRefs(
-      queryClient,
-      data as Record<string, unknown>,
-      [{ idField: "imageFileUploadId", urlField: "imageUrl" }],
-    );
+    const sanitizedData = await sanitizeFileUploadRefs(queryClient, data, [
+      { idField: "imageFileUploadId", urlField: "imageUrl" },
+    ]);
     const safeData = {
-      ...(sanitizedData as typeof data),
+      ...sanitizedData,
       missionId: data.missionId ?? undefined,
     };
 
@@ -198,12 +196,10 @@ export class ActionRepository {
     client?: Prisma.TransactionClient,
   ) {
     const queryClient = client ?? prisma;
-    const sanitizedData = await sanitizeFileUploadRefs(
-      queryClient,
-      data as Record<string, unknown>,
-      [{ idField: "imageFileUploadId", urlField: "imageUrl" }],
-    );
-    const safeData = sanitizedData as Prisma.ActionUncheckedUpdateInput;
+    const sanitizedData = await sanitizeFileUploadRefs(queryClient, data, [
+      { idField: "imageFileUploadId", urlField: "imageUrl" },
+    ]);
+    const safeData = sanitizedData;
 
     const execute = async (tx: Prisma.TransactionClient) => {
       const updatedAction = await tx.action.update({

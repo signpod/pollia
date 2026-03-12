@@ -208,7 +208,7 @@ export function useActionSaveFlow({
               ? {
                   options: snap.values.options.map(opt => ({
                     ...opt,
-                    fileUploadId: undefined,
+                    fileUploadId: null,
                   })),
                 }
               : {}),

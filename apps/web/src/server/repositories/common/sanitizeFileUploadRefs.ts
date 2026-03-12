@@ -21,16 +21,17 @@ interface FileUploadFieldMapping {
  * @param fields - 검증할 FileUpload ID 필드와 연관 URL 필드 매핑
  * @returns 존재하지 않는 FileUpload 참조가 null로 대체된 데이터
  */
-export async function sanitizeFileUploadRefs<T extends Record<string, unknown>>(
+export async function sanitizeFileUploadRefs<T extends object>(
   tx: TransactionClient | Prisma.TransactionClient,
   data: T,
   fields: FileUploadFieldMapping[],
 ): Promise<T> {
+  const record = data as Record<string, unknown>;
   const idsToCheck: string[] = [];
   const fieldsByIds = new Map<string, FileUploadFieldMapping[]>();
 
   for (const field of fields) {
-    const value = data[field.idField];
+    const value = record[field.idField];
     if (typeof value === "string") {
       idsToCheck.push(value);
       const existing = fieldsByIds.get(value) ?? [];
@@ -47,29 +48,21 @@ export async function sanitizeFileUploadRefs<T extends Record<string, unknown>>(
   });
   const existingIds = new Set(existingUploads.map(u => u.id));
 
-  let hasStaleRef = false;
-  for (const id of idsToCheck) {
-    if (!existingIds.has(id)) {
-      hasStaleRef = true;
-      break;
-    }
-  }
+  if (idsToCheck.every(id => existingIds.has(id))) return data;
 
-  if (!hasStaleRef) return data;
-
-  const sanitized = { ...data };
+  const sanitized = { ...record };
   for (const [id, mappings] of fieldsByIds) {
     if (!existingIds.has(id)) {
       for (const mapping of mappings) {
-        (sanitized as Record<string, unknown>)[mapping.idField] = null;
+        sanitized[mapping.idField] = null;
         if (mapping.urlField) {
-          (sanitized as Record<string, unknown>)[mapping.urlField] = null;
+          sanitized[mapping.urlField] = null;
         }
       }
     }
   }
 
-  return sanitized;
+  return sanitized as T;
 }
 
 /**
