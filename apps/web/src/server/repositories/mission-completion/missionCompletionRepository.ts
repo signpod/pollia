@@ -122,12 +122,9 @@ export class MissionCompletionRepository {
     const { links: rawLinks, ...rawCompletionData } = data;
     const queryClient = client ?? prisma;
 
-    const sanitizedData = await sanitizeFileUploadRefs(
-      queryClient,
-      rawCompletionData as Record<string, unknown>,
-      [{ idField: "imageFileUploadId", urlField: "imageUrl" }],
-    );
-    const completionData = sanitizedData as typeof rawCompletionData;
+    const completionData = await sanitizeFileUploadRefs(queryClient, rawCompletionData, [
+      { idField: "imageFileUploadId", urlField: "imageUrl" },
+    ]);
     const links = await sanitizeLinks(queryClient, rawLinks);
 
     const fileUploadIds = collectFileUploadIds(completionData.imageFileUploadId, links);
@@ -166,12 +163,9 @@ export class MissionCompletionRepository {
     const { links: rawLinks, ...rawCompletionFields } = data;
     const hasLinks = rawLinks !== undefined;
 
-    const sanitizedData = await sanitizeFileUploadRefs(
-      prisma,
-      rawCompletionFields as Record<string, unknown>,
-      [{ idField: "imageFileUploadId", urlField: "imageUrl" }],
-    );
-    const completionFields = sanitizedData as typeof rawCompletionFields;
+    const completionFields = await sanitizeFileUploadRefs(prisma, rawCompletionFields, [
+      { idField: "imageFileUploadId", urlField: "imageUrl" },
+    ]);
     const links = hasLinks ? await sanitizeLinks(prisma, rawLinks) : undefined;
 
     const fileUploadIds = collectFileUploadIds(
