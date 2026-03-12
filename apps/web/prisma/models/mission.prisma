@@ -25,6 +25,7 @@ model Mission {
   useAiCompletion        Boolean         @default(false) @map("use_ai_completion")
   aiStatisticsReport     String?         @map("ai_statistics_report")
   viewCount              Int             @default(0) @map("view_count")
+  shareCount             Int             @default(0) @map("share_count")
   entryActionId          String?         @map("entry_action_id")
   editorDraft            Json?           @map("editor_draft")
 
@@ -47,6 +48,7 @@ model Mission {
   trackingActionResponses   TrackingActionResponse[]
   completionStats           MissionCompletionStat[]
   completionInferenceCaches MissionCompletionInferenceCache[]
+  shareTrackings            ShareTracking[]
 
   @@index([creatorId])
   @@index([isActive])
