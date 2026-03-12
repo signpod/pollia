@@ -1,5 +1,9 @@
 import prisma from "@/database/utils/prisma/client";
 import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
+import {
+  getValidFileUploadIds,
+  sanitizeFileUploadRefs,
+} from "@/server/repositories/common/sanitizeFileUploadRefs";
 import type { ActionType, Prisma } from "@prisma/client";
 import { type OptionInput, classifyOptions } from "./classifyOptions";
 
@@ -102,26 +106,44 @@ export class ActionRepository {
     client?: Prisma.TransactionClient,
   ) {
     const execute = async (tx: Prisma.TransactionClient) => {
-      const createdAction = await tx.action.create({
-        data: {
-          ...data,
-          missionId: data.missionId ?? undefined,
-        },
-      });
+      const allCandidateIds = [
+        typeof data.imageFileUploadId === "string" ? data.imageFileUploadId : undefined,
+        ...options.map(o => (typeof o.fileUploadId === "string" ? o.fileUploadId : undefined)),
+      ].filter((id): id is string => Boolean(id));
+
+      const validIds = await getValidFileUploadIds(tx, allCandidateIds);
+
+      const safeData = {
+        ...data,
+        missionId: data.missionId ?? undefined,
+        ...(typeof data.imageFileUploadId === "string" && !validIds.has(data.imageFileUploadId)
+          ? { imageFileUploadId: null, imageUrl: null }
+          : {}),
+      };
+
+      const safeOptions = options.map(option => ({
+        ...option,
+        fileUploadId:
+          typeof option.fileUploadId === "string" && !validIds.has(option.fileUploadId)
+            ? null
+            : option.fileUploadId,
+      }));
+
+      const createdAction = await tx.action.create({ data: safeData });
 
       await tx.actionOption.createMany({
-        data: options.map(option => ({
+        data: safeOptions.map(option => ({
           ...option,
           actionId: createdAction.id,
         })),
       });
 
-      const allFileUploadIds = [
-        data.imageFileUploadId,
-        ...options.map(option => option.fileUploadId),
+      const confirmedIds = [
+        typeof safeData.imageFileUploadId === "string" ? safeData.imageFileUploadId : undefined,
+        ...safeOptions.map(o => (typeof o.fileUploadId === "string" ? o.fileUploadId : undefined)),
       ].filter((id): id is string => Boolean(id));
 
-      await confirmFileUploads(tx, userId, allFileUploadIds);
+      await confirmFileUploads(tx, userId, confirmedIds);
 
       return createdAction;
     };
@@ -137,16 +159,20 @@ export class ActionRepository {
     userId?: string,
     client?: Prisma.TransactionClient,
   ) {
-    const execute = async (tx: Prisma.TransactionClient) => {
-      const createdAction = await tx.action.create({
-        data: {
-          ...data,
-          missionId: data.missionId ?? undefined,
-        },
-      });
+    const queryClient = client ?? prisma;
+    const sanitizedData = await sanitizeFileUploadRefs(queryClient, data, [
+      { idField: "imageFileUploadId", urlField: "imageUrl" },
+    ]);
+    const safeData = {
+      ...sanitizedData,
+      missionId: data.missionId ?? undefined,
+    };
 
-      if (data.imageFileUploadId && typeof data.imageFileUploadId === "string" && userId) {
-        await confirmFileUploads(tx, userId, data.imageFileUploadId as string);
+    const execute = async (tx: Prisma.TransactionClient) => {
+      const createdAction = await tx.action.create({ data: safeData });
+
+      if (safeData.imageFileUploadId && typeof safeData.imageFileUploadId === "string" && userId) {
+        await confirmFileUploads(tx, userId, safeData.imageFileUploadId);
       }
 
       return createdAction;
@@ -156,16 +182,11 @@ export class ActionRepository {
       return execute(client);
     }
 
-    if (data.imageFileUploadId && typeof data.imageFileUploadId === "string" && userId) {
+    if (safeData.imageFileUploadId && typeof safeData.imageFileUploadId === "string" && userId) {
       return prisma.$transaction(execute);
     }
 
-    return prisma.action.create({
-      data: {
-        ...data,
-        missionId: data.missionId ?? undefined,
-      },
-    });
+    return prisma.action.create({ data: safeData });
   }
 
   async update(
@@ -174,14 +195,20 @@ export class ActionRepository {
     userId?: string,
     client?: Prisma.TransactionClient,
   ) {
+    const queryClient = client ?? prisma;
+    const sanitizedData = await sanitizeFileUploadRefs(queryClient, data, [
+      { idField: "imageFileUploadId", urlField: "imageUrl" },
+    ]);
+    const safeData = sanitizedData;
+
     const execute = async (tx: Prisma.TransactionClient) => {
       const updatedAction = await tx.action.update({
         where: { id: actionId },
-        data,
+        data: safeData,
       });
 
-      if (data.imageFileUploadId && typeof data.imageFileUploadId === "string" && userId) {
-        await confirmFileUploads(tx, userId, data.imageFileUploadId as string);
+      if (safeData.imageFileUploadId && typeof safeData.imageFileUploadId === "string" && userId) {
+        await confirmFileUploads(tx, userId, safeData.imageFileUploadId);
       }
 
       return updatedAction;
@@ -191,13 +218,13 @@ export class ActionRepository {
       return execute(client);
     }
 
-    if (data.imageFileUploadId && typeof data.imageFileUploadId === "string" && userId) {
+    if (safeData.imageFileUploadId && typeof safeData.imageFileUploadId === "string" && userId) {
       return prisma.$transaction(execute);
     }
 
     return prisma.action.update({
       where: { id: actionId },
-      data,
+      data: safeData,
     });
   }
 
@@ -209,24 +236,46 @@ export class ActionRepository {
     client?: Prisma.TransactionClient,
   ) {
     const execute = async (tx: Prisma.TransactionClient) => {
+      const allCandidateIds = [
+        typeof data.imageFileUploadId === "string" ? data.imageFileUploadId : undefined,
+        ...options.map(o => (typeof o.fileUploadId === "string" ? o.fileUploadId : undefined)),
+      ].filter((id): id is string => Boolean(id));
+
+      const validIds = await getValidFileUploadIds(tx, allCandidateIds);
+
+      const safeData = {
+        ...data,
+        ...(typeof data.imageFileUploadId === "string" && !validIds.has(data.imageFileUploadId)
+          ? { imageFileUploadId: null, imageUrl: null }
+          : {}),
+      };
+
+      const safeOptions = options.map(option => ({
+        ...option,
+        fileUploadId:
+          typeof option.fileUploadId === "string" && !validIds.has(option.fileUploadId)
+            ? null
+            : option.fileUploadId,
+      }));
+
       const updatedAction = await tx.action.update({
         where: { id: actionId },
-        data,
+        data: safeData,
       });
 
-      const existingIds = await this.getExistingOptionIds(tx, actionId);
-      const { toUpdate, toCreate, toDeleteIds } = classifyOptions(existingIds, options);
+      const existingOptionIds = await this.getExistingOptionIds(tx, actionId);
+      const { toUpdate, toCreate, toDeleteIds } = classifyOptions(existingOptionIds, safeOptions);
 
       await this.deleteOptions(tx, toDeleteIds);
       await this.updateOptions(tx, toUpdate);
       await this.createOptions(tx, actionId, toCreate);
 
-      const allFileUploadIds = [
-        data.imageFileUploadId,
-        ...options.map(option => option.fileUploadId),
+      const confirmedIds = [
+        typeof safeData.imageFileUploadId === "string" ? safeData.imageFileUploadId : undefined,
+        ...safeOptions.map(o => (typeof o.fileUploadId === "string" ? o.fileUploadId : undefined)),
       ].filter((id): id is string => Boolean(id));
 
-      await confirmFileUploads(tx, userId, allFileUploadIds);
+      await confirmFileUploads(tx, userId, confirmedIds);
 
       return updatedAction;
     };

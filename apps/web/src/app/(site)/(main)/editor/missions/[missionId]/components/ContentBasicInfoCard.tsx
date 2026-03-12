@@ -283,19 +283,12 @@ function ContentBasicInfoCardComponent(
             typeof values.imageUrl === "string" || values.imageUrl === null
               ? values.imageUrl
               : defaultValues.imageUrl,
-          imageFileUploadId:
-            typeof values.imageFileUploadId === "string" || values.imageFileUploadId === null
-              ? values.imageFileUploadId
-              : defaultValues.imageFileUploadId,
+          imageFileUploadId: defaultValues.imageFileUploadId,
           brandLogoUrl:
             typeof values.brandLogoUrl === "string" || values.brandLogoUrl === null
               ? values.brandLogoUrl
               : defaultValues.brandLogoUrl,
-          brandLogoFileUploadId:
-            typeof values.brandLogoFileUploadId === "string" ||
-            values.brandLogoFileUploadId === null
-              ? values.brandLogoFileUploadId
-              : defaultValues.brandLogoFileUploadId,
+          brandLogoFileUploadId: defaultValues.brandLogoFileUploadId,
           startDate:
             values.startDate instanceof Date || values.startDate === null
               ? values.startDate

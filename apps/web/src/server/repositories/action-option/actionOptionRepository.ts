@@ -1,5 +1,6 @@
 import prisma from "@/database/utils/prisma/client";
 import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
+import { getValidFileUploadIds } from "@/server/repositories/common/sanitizeFileUploadRefs";
 import type { Prisma } from "@prisma/client";
 
 export class ActionOptionRepository {
@@ -50,15 +51,23 @@ export class ActionOptionRepository {
     userId: string,
   ) {
     return prisma.$transaction(async tx => {
+      let safeFileUploadId = data.fileUploadId ?? undefined;
+      if (typeof safeFileUploadId === "string") {
+        const validIds = await getValidFileUploadIds(tx, [safeFileUploadId]);
+        if (!validIds.has(safeFileUploadId)) {
+          safeFileUploadId = undefined;
+        }
+      }
+
       const createdOption = await tx.actionOption.create({
         data: {
           ...data,
-          fileUploadId: data.fileUploadId ?? undefined,
+          fileUploadId: safeFileUploadId,
         },
       });
 
-      if (data.fileUploadId) {
-        await confirmFileUploads(tx, userId, data.fileUploadId);
+      if (safeFileUploadId) {
+        await confirmFileUploads(tx, userId, safeFileUploadId);
       }
 
       return createdOption;
@@ -73,15 +82,29 @@ export class ActionOptionRepository {
     userId: string,
   ) {
     return prisma.$transaction(async tx => {
+      const candidateIds = options
+        .map(o => o.fileUploadId)
+        .filter((id): id is string => typeof id === "string");
+      const validIds = await getValidFileUploadIds(tx, candidateIds);
+
+      const safeOptions = options.map(option => ({
+        ...option,
+        fileUploadId:
+          typeof option.fileUploadId === "string" && !validIds.has(option.fileUploadId)
+            ? undefined
+            : (option.fileUploadId ?? undefined),
+      }));
+
       await tx.actionOption.createMany({
-        data: options.map(option => ({
+        data: safeOptions.map(option => ({
           actionId,
           ...option,
-          fileUploadId: option.fileUploadId ?? undefined,
         })),
       });
 
-      const fileUploadIds = options.map(option => option.fileUploadId).filter(Boolean) as string[];
+      const fileUploadIds = safeOptions
+        .map(option => option.fileUploadId)
+        .filter(Boolean) as string[];
 
       await confirmFileUploads(tx, userId, fileUploadIds);
 
@@ -93,16 +116,26 @@ export class ActionOptionRepository {
   }
 
   async update(optionId: string, data: Prisma.ActionOptionUncheckedUpdateInput, userId?: string) {
-    const fileUploadId = typeof data.fileUploadId === "string" ? data.fileUploadId : undefined;
+    let fileUploadId = typeof data.fileUploadId === "string" ? data.fileUploadId : undefined;
+    let safeData = data;
+
+    if (fileUploadId) {
+      const validIds = await getValidFileUploadIds(prisma, [fileUploadId]);
+      if (!validIds.has(fileUploadId)) {
+        safeData = { ...data, fileUploadId: null };
+        fileUploadId = undefined;
+      }
+    }
 
     if (fileUploadId && userId) {
+      const confirmedId = fileUploadId;
       return prisma.$transaction(async tx => {
         const updatedOption = await tx.actionOption.update({
           where: { id: optionId },
-          data,
+          data: safeData,
         });
 
-        await confirmFileUploads(tx, userId, fileUploadId);
+        await confirmFileUploads(tx, userId, confirmedId);
 
         return updatedOption;
       });
@@ -110,7 +143,7 @@ export class ActionOptionRepository {
 
     return prisma.actionOption.update({
       where: { id: optionId },
-      data,
+      data: safeData,
     });
   }
 
