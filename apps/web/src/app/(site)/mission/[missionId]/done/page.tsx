@@ -15,7 +15,7 @@ import type { GetMissionCompletionResponse } from "@/types/dto";
 import { MissionType } from "@prisma/client";
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getCachedMission } from "../getCachedMission";
 import { MissionCompletion } from "./ui";
@@ -24,6 +24,13 @@ import { RouteWrapper } from "./ui/RouteWrapper";
 interface PageParams {
   params: Promise<{ missionId: string }>;
   searchParams: Promise<{ id?: string }>;
+}
+
+function stripHtml(html: string): string {
+  return html
+    .replace(/<[^>]*>/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export async function generateMetadata({ params, searchParams }: PageParams): Promise<Metadata> {
@@ -44,16 +51,18 @@ export async function generateMetadata({ params, searchParams }: PageParams): Pr
       if (completion) {
         ogTitle = completion.title || ogTitle;
         ogDescription = completion.description || ogDescription;
-        ogImage = completion.imageUrl || ogImage;
+        ogImage = completion.imageUrl || completion.imageFileUpload?.publicUrl || ogImage;
       }
     } else {
       const completion = await getMissionCompletion(missionId).catch(() => null);
       if (completion?.data) {
         ogTitle = completion.data.title || ogTitle;
         ogDescription = completion.data.description || ogDescription;
-        ogImage = completion.data.imageUrl || ogImage;
+        ogImage = completion.data.imageUrl || completion.data.imageFileUpload?.publicUrl || ogImage;
       }
     }
+
+    ogDescription = stripHtml(ogDescription);
 
     return {
       title: ogTitle,
@@ -98,12 +107,19 @@ export default async function MissionPage({
     }
   }
 
+  const headersList = await headers();
+  const userAgent = headersList.get("user-agent") ?? "";
+  const isBot =
+    /bot|crawl|spider|slurp|facebookexternalhit|kakaotalk-scrap|twitterbot|linkedinbot|telegrambot|Yeti|naver/i.test(
+      userAgent,
+    );
+
   const missionResponse = await getMyResponseForMission(missionId).catch(() => ({ data: null }));
-  if (!missionResponse.data?.completedAt) {
+  if (!isBot && !missionResponse.data?.completedAt) {
     redirect(ROUTES.MISSION(missionId));
   }
 
-  if (!completionId) {
+  if (!completionId && missionResponse.data?.completedAt) {
     if (missionResponse.data.selectedCompletionId) {
       redirect(ROUTES.MISSION_DONE(missionId, missionResponse.data.selectedCompletionId));
     }

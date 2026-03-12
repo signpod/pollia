@@ -34,14 +34,17 @@ export function EditorAccordion({
     <div
       className={`overflow-hidden rounded-xl border border-zinc-200 transition-shadow duration-500 ${className}`}
     >
-      <div className={`flex ${headerHeight} items-stretch bg-zinc-50`}>
-        {leftSlot}
+      <div
+        className={`flex ${headerHeight} cursor-pointer items-stretch bg-zinc-50`}
+        onClick={onToggle}
+      >
+        {leftSlot ? (
+          <div className="flex items-stretch" onClick={e => e.stopPropagation()}>
+            {leftSlot}
+          </div>
+        ) : null}
 
-        <button
-          type="button"
-          onClick={onToggle}
-          className="flex min-w-0 flex-1 items-center justify-between gap-3 px-4 py-3 text-left"
-        >
+        <div className="flex min-w-0 flex-1 items-center justify-between gap-3 px-4 py-3 text-left">
           <div className="min-w-0 overflow-hidden">
             <div className="flex items-center gap-2">
               <span className="truncate text-sm font-semibold text-zinc-800">{title}</span>
@@ -65,9 +68,13 @@ export function EditorAccordion({
               }`}
             />
           </div>
-        </button>
+        </div>
 
-        {rightSlot}
+        {rightSlot ? (
+          <div className="flex items-stretch" onClick={e => e.stopPropagation()}>
+            {rightSlot}
+          </div>
+        ) : null}
       </div>
 
       <div className={isOpen ? "block border-t border-zinc-200" : "hidden"}>{children}</div>

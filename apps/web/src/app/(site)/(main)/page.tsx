@@ -12,16 +12,18 @@ export default async function MainPage() {
       limit: 6,
       type: MissionType.GENERAL,
       category: MissionCategory.TEST,
+      isActive: true,
     }),
     missionService.getAllMissions({
       limit: 6,
       type: MissionType.GENERAL,
       category: MissionCategory.RESEARCH,
+      isActive: true,
     }),
   ]);
 
-  const testMissions = testMissionsRaw.filter(m => m.isActive).map(toSurveyCardData);
-  const researchMissions = researchMissionsRaw.filter(m => m.isActive).map(toSurveyCardData);
+  const testMissions = testMissionsRaw.map(toSurveyCardData);
+  const researchMissions = researchMissionsRaw.map(toSurveyCardData);
 
   return (
     <main className="flex flex-1 flex-col bg-white pb-10">

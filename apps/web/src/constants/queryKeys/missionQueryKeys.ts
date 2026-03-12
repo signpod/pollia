@@ -8,6 +8,7 @@ export const missionQueryKeys = {
   all: () => ["mission"] as const,
   missionResponseForMission: (missionId: string) =>
     ["mission-response-for-mission", missionId] as const,
+  missionResponseById: (responseId: string) => ["mission-response-by-id", responseId] as const,
   missionParticipant: (missionId: string) => ["mission-participant", missionId] as const,
   missionPassword: (missionId: string) => ["mission-password", missionId] as const,
   verifyMissionPassword: (missionId: string, password: string) =>

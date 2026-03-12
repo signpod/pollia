@@ -1,12 +1,15 @@
 "use client";
 
+import { getMissionResponse } from "@/actions/mission-response";
 import { ACTION_TYPE_CONFIG, AnswerContent } from "@/app/(site)/me/components/AnswerContent";
 import { MissionCompletionTemplate } from "@/components/common/templates/MissionCompletionTemplate";
+import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { useReadMissionCompletion, useReadMissionCompletionById } from "@/hooks/mission-completion";
 import { useReadMissionResponseForMission } from "@/hooks/mission-response";
 import type { MyMissionResponseAnswer } from "@/types/dto/mission-response";
 import { ActionType } from "@prisma/client";
 import { Tab, Typo } from "@repo/ui/components";
+import { useQuery } from "@tanstack/react-query";
 import { InfoIcon } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
@@ -14,9 +17,10 @@ import { useCallback, useMemo, useState } from "react";
 interface MeResultContentProps {
   missionId: string;
   completionId: string | null;
+  responseId: string | null;
 }
 
-export function MeResultContent({ missionId, completionId }: MeResultContentProps) {
+export function MeResultContent({ missionId, completionId, responseId }: MeResultContentProps) {
   const searchParams = useSearchParams();
   const initialTab = searchParams.get("tab") ?? "result";
   const [currentTab, setCurrentTab] = useState(initialTab);
@@ -53,14 +57,21 @@ export function MeResultContent({ missionId, completionId }: MeResultContentProp
       </Tab.Content>
 
       <Tab.Content value="answers" className="m-0 bg-white h-full min-h-[calc(100vh-96px-60px)]">
-        <MyAnswersTab missionId={missionId} />
+        <MyAnswersTab missionId={missionId} responseId={responseId} />
       </Tab.Content>
     </Tab.Root>
   );
 }
 
-function MyAnswersTab({ missionId }: { missionId: string }) {
-  const { data } = useReadMissionResponseForMission({ missionId });
+function MyAnswersTab({ missionId, responseId }: { missionId: string; responseId: string | null }) {
+  const responseByIdQuery = useQuery({
+    queryKey: missionQueryKeys.missionResponseById(responseId ?? ""),
+    queryFn: () => getMissionResponse(responseId as string),
+    enabled: !!responseId,
+    staleTime: 5 * 60 * 1000,
+  });
+  const responseByMissionQuery = useReadMissionResponseForMission({ missionId });
+  const data = responseId ? responseByIdQuery.data : responseByMissionQuery.data;
   const answers = data?.data?.answers;
 
   const sortedAnswers = useMemo(() => {

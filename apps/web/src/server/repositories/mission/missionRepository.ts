@@ -48,6 +48,7 @@ export class MissionRepository {
     sortOrder?: SortOrderType;
     category?: MissionCategory;
     type?: MissionType;
+    isActive?: boolean;
   }) {
     const limit = options?.limit ?? 10;
     const sortOrder = options?.sortOrder ?? "latest";
@@ -56,6 +57,7 @@ export class MissionRepository {
       where: {
         ...(options?.category && { category: options.category }),
         ...(options?.type && { type: options.type }),
+        ...(options?.isActive !== undefined && { isActive: options.isActive }),
       },
       orderBy: {
         createdAt: sortOrder === "latest" ? "desc" : "asc",

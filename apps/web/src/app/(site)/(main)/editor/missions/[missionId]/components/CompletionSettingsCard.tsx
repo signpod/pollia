@@ -50,7 +50,13 @@ function CompletionSettingsCardComponent(
 
   const listContainerRef = useRef<HTMLDivElement>(null);
   const prevHighlightRef = useRef<HTMLDivElement | null>(null);
+  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [scrollTargetKey, setScrollTargetKey] = useAtom(completionScrollTargetItemKeyAtom);
+
+  const openItemKeyRef = useRef(openItemKey);
+  openItemKeyRef.current = openItemKey;
+  const handleToggleItemRef = useRef(handleToggleItem);
+  handleToggleItemRef.current = handleToggleItem;
 
   useEffect(() => {
     if (!scrollTargetKey) {
@@ -59,13 +65,18 @@ function CompletionSettingsCardComponent(
 
     setScrollTargetKey(null);
 
+    if (highlightTimerRef.current) {
+      clearTimeout(highlightTimerRef.current);
+      highlightTimerRef.current = null;
+    }
+
     if (prevHighlightRef.current) {
       prevHighlightRef.current.classList.remove("action-item-highlight");
       prevHighlightRef.current = null;
     }
 
-    if (openItemKey !== scrollTargetKey) {
-      handleToggleItem(scrollTargetKey);
+    if (openItemKeyRef.current !== scrollTargetKey) {
+      handleToggleItemRef.current(scrollTargetKey);
     }
 
     const targetEl = listContainerRef.current?.querySelector<HTMLDivElement>(
@@ -78,17 +89,14 @@ function CompletionSettingsCardComponent(
     prevHighlightRef.current = targetEl;
     targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
     targetEl.classList.add("action-item-highlight");
-    const timer = setTimeout(() => {
+    highlightTimerRef.current = setTimeout(() => {
       targetEl.classList.remove("action-item-highlight");
       if (prevHighlightRef.current === targetEl) {
         prevHighlightRef.current = null;
       }
+      highlightTimerRef.current = null;
     }, 1500);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [scrollTargetKey, setScrollTargetKey, openItemKey, handleToggleItem]);
+  }, [scrollTargetKey, setScrollTargetKey]);
 
   return (
     <div className="border border-zinc-200 bg-white">
