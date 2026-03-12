@@ -27,7 +27,7 @@ export function MissionStatsDashboard({ missionId }: MissionStatsDashboardProps)
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[calc(100vh-120px)] items-center justify-center bg-white px-5 py-20">
+      <div className="flex h-full items-center justify-center bg-white px-5 py-20">
         <div className="size-6 animate-spin rounded-full border-2 border-violet-200 border-t-violet-600" />
       </div>
     );
@@ -35,7 +35,7 @@ export function MissionStatsDashboard({ missionId }: MissionStatsDashboardProps)
 
   if (isGenerating) {
     return (
-      <div className="flex min-h-[calc(100vh-120px)] flex-col items-center justify-center bg-white px-5 py-24">
+      <div className="flex h-full flex-col items-center justify-center bg-white px-5 py-24">
         <div className="mb-5 flex size-14 items-center justify-center rounded-2xl bg-violet-50">
           <div className="size-6 animate-spin rounded-full border-2 border-violet-200 border-t-violet-600" />
         </div>
@@ -50,7 +50,7 @@ export function MissionStatsDashboard({ missionId }: MissionStatsDashboardProps)
 
   if (reportData) {
     return (
-      <div className="min-h-[calc(100vh-120px)] bg-white px-5 py-5">
+      <div className="h-full bg-white px-5 py-5">
         <div className="mb-4 flex items-center justify-end">
           <button
             type="button"
@@ -72,7 +72,7 @@ export function MissionStatsDashboard({ missionId }: MissionStatsDashboardProps)
   }
 
   return (
-    <div className="flex flex-col items-center justify-center px-5 py-24">
+    <div className="flex h-full flex-col items-center justify-center bg-white px-5 pt-20">
       <div className="mb-5 flex size-14 items-center justify-center rounded-2xl bg-violet-50">
         <BarChart3 className="size-7 text-violet-500" />
       </div>
