@@ -1,39 +1,40 @@
 "use client";
 
-import {
-  ActionForm,
-  type ActionFormHandle,
-} from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
+import type { ActionFormHandle } from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
 import {
   makeDraftActionId,
   mapEditInitialValues,
 } from "@/app/(site)/mission/[missionId]/manage/actions/logic";
 import { ACTION_TYPE_LABELS } from "@/constants/action";
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { ActionType } from "@prisma/client";
 import { Button, Typo } from "@repo/ui/components";
 import { useAtom } from "jotai";
-import {
-  AlertCircle,
-  ArrowDown,
-  ArrowUp,
-  ChevronDown,
-  GitBranch,
-  Plus,
-  Trash2,
-  X,
-} from "lucide-react";
+import { AlertCircle, GitBranch, Plus } from "lucide-react";
 import { type ForwardedRef, forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import { actionScrollTargetItemKeyAtom } from "../atoms/editorActionAtoms";
 import { ActionDeleteConfirmDialog } from "./ActionDeleteConfirmDialog";
 import { FlowOverviewDialog } from "./FlowOverviewDialog";
+import { SortableActionItem } from "./SortableActionItem";
 import type { ActionSettingsCardProps } from "./actionSettingsCard.types";
 import type { SectionSaveHandle } from "./editor-save.types";
 import { useActionSettingsCard } from "./useActionSettingsCard";
 import { useCreateLinkedItem } from "./useCreateLinkedItem";
 
 export type { ActionSectionDraftSnapshot } from "./actionSettingsCard.types";
-
-const NOOP = () => {};
 
 function ActionSettingsCardComponent(
   props: ActionSettingsCardProps,
@@ -85,11 +86,17 @@ function ActionSettingsCardComponent(
     handleRemoveDraft,
     handleToggleItem,
     handleActionTypeChange,
-    handleMoveItem,
+    handleDragEnd,
     handleItemDirtyChange,
     handleItemValidationChange,
     handleItemRawSnapshotChange,
   } = handlers;
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   const listContainerRef = useRef<HTMLDivElement>(null);
   const prevHighlightRef = useRef<HTMLDivElement | null>(null);
@@ -185,204 +192,98 @@ function ActionSettingsCardComponent(
             </Typo.Body>
           </div>
         ) : (
-          <div className="flex flex-col gap-3">
-            {orderedActionItems.map((item, index) => {
-              const isOpen = openItemKey === item.key;
-              const canMoveUp = index > 0;
-              const canMoveDown = index < orderedActionItems.length - 1;
-              const fallbackType =
-                item.kind === "existing" ? item.action.type : ActionType.SUBJECTIVE;
-              const itemType = actionTypeByItemKey[item.key] ?? fallbackType;
-              const snapshotTitle = draftFormSnapshotByItemKey[item.key]?.values?.title?.trim();
-              const itemTitle =
-                item.kind === "existing"
-                  ? snapshotTitle || item.action.title
-                  : snapshotTitle || `${ACTION_TYPE_LABELS[itemType]} 질문`;
-              const currentActionId =
-                item.kind === "existing" ? item.action.id : makeDraftActionId(item.draft.key);
-              const formLinkTargets = linkTargets.filter(target => target.id !== currentActionId);
-              const disabledActionIds = new Set<string>();
-              if (entryActionId) disabledActionIds.add(entryActionId);
-              for (const [targetId, sources] of referencedActionIdsBySource) {
-                if (targetId === currentActionId) continue;
-                if (sources.has(item.key)) continue;
-                disabledActionIds.add(targetId);
-              }
-              const previewImageUrl =
-                formRefs.current[item.key]?.getRawSnapshot().values.imageUrl ??
-                draftFormSnapshotByItemKey[item.key]?.values.imageUrl ??
-                (item.kind === "existing" ? item.action.imageUrl : null);
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={orderedActionItems.map(i => i.key)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="flex flex-col gap-3">
+                {orderedActionItems.map((item, index) => {
+                  const fallbackType =
+                    item.kind === "existing" ? item.action.type : ActionType.SUBJECTIVE;
+                  const itemType = actionTypeByItemKey[item.key] ?? fallbackType;
+                  const snapshotTitle = draftFormSnapshotByItemKey[item.key]?.values?.title?.trim();
+                  const itemTitle =
+                    item.kind === "existing"
+                      ? snapshotTitle || item.action.title
+                      : snapshotTitle || `${ACTION_TYPE_LABELS[itemType]} 질문`;
+                  const currentActionId =
+                    item.kind === "existing" ? item.action.id : makeDraftActionId(item.draft.key);
+                  const formLinkTargets = linkTargets.filter(
+                    target => target.id !== currentActionId,
+                  );
+                  const disabledActionIds = new Set<string>();
+                  if (entryActionId) disabledActionIds.add(entryActionId);
+                  for (const [targetId, sources] of referencedActionIdsBySource) {
+                    if (targetId === currentActionId) continue;
+                    if (sources.has(item.key)) continue;
+                    disabledActionIds.add(targetId);
+                  }
+                  const previewImageUrl =
+                    formRefs.current[item.key]?.getRawSnapshot().values.imageUrl ??
+                    draftFormSnapshotByItemKey[item.key]?.values.imageUrl ??
+                    (item.kind === "existing" ? item.action.imageUrl : null);
 
-              return (
-                <div
-                  key={item.key}
-                  data-editor-item-key={item.key}
-                  className="scroll-mt-28 overflow-hidden rounded-xl border border-zinc-200 transition-shadow duration-500"
-                >
-                  <div className="flex items-center justify-between bg-zinc-50 px-4 py-3">
-                    <div className="mr-2 flex shrink-0 items-center gap-1">
-                      <button
-                        type="button"
-                        aria-label="위로 이동"
-                        onClick={() => handleMoveItem(item.key, -1)}
-                        disabled={isBusy || !canMoveUp}
-                        className="rounded p-1 text-zinc-500 transition-colors hover:text-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        <ArrowUp className="size-4" />
-                      </button>
-                      <button
-                        type="button"
-                        aria-label="아래로 이동"
-                        onClick={() => handleMoveItem(item.key, 1)}
-                        disabled={isBusy || !canMoveDown}
-                        className="rounded p-1 text-zinc-500 transition-colors hover:text-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
-                      >
-                        <ArrowDown className="size-4" />
-                      </button>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleToggleItem(item.key)}
-                      className="flex min-w-0 flex-1 items-center justify-between gap-3 text-left"
-                    >
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <Typo.Body size="medium" className="truncate font-semibold text-zinc-800">
-                            {index + 1}. {itemTitle}
-                          </Typo.Body>
-                          {index === 0 ? (
-                            <span className="shrink-0 rounded-full bg-zinc-200 px-2 py-0.5 text-xs font-medium text-zinc-700">
-                              시작 질문
-                            </span>
-                          ) : null}
-                        </div>
-                        <Typo.Body size="small" className="mt-1 text-zinc-500">
-                          {ACTION_TYPE_LABELS[itemType]}
-                        </Typo.Body>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-2">
-                        {previewImageUrl ? (
-                          <img
-                            src={previewImageUrl}
-                            alt={`${itemTitle} 미리보기 이미지`}
-                            className="size-10 shrink-0 rounded border border-zinc-200 bg-zinc-100 object-cover"
-                          />
-                        ) : null}
-                        <ChevronDown
-                          className={`size-4 shrink-0 text-zinc-500 transition-transform ${
-                            isOpen ? "rotate-180" : ""
-                          }`}
-                        />
-                      </div>
-                    </button>
+                  const formKey =
+                    item.kind === "existing"
+                      ? `${item.key}:${existingFormVersionById[item.action.id] ?? 0}:${draftHydrationVersion}:${isAiCompletionEnabled}`
+                      : `${item.key}:${draftHydrationVersion}:${isAiCompletionEnabled}`;
 
-                    {item.kind === "draft" ? (
-                      <button
-                        type="button"
-                        aria-label="신규 질문 제거"
-                        onClick={() => handleRemoveDraft(item.draft.key)}
-                        className="ml-2 rounded p-1 text-zinc-400 transition-colors hover:text-red-500"
-                      >
-                        <X className="size-4" />
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        aria-label="저장된 질문 삭제"
-                        onClick={event => {
-                          event.stopPropagation();
-                          deleteDialog.onOpen(item.action);
-                        }}
-                        disabled={isBusy}
-                        className="ml-2 rounded p-1 text-red-500 transition-colors hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        <Trash2 className="size-4" />
-                      </button>
-                    )}
-                  </div>
+                  const initialValues =
+                    item.kind === "existing"
+                      ? (draftFormSnapshotByItemKey[item.key]?.values ??
+                        mapEditInitialValues(item.action))
+                      : draftFormSnapshotByItemKey[item.key]?.values;
 
-                  <div className={isOpen ? "block border-t border-zinc-200" : "hidden"}>
-                    {item.kind === "existing" ? (
-                      <ActionForm
-                        key={`${item.key}:${existingFormVersionById[item.action.id] ?? 0}:${draftHydrationVersion}:${isAiCompletionEnabled}`}
-                        ref={(instance: ActionFormHandle | null) => {
-                          formRefs.current[item.key] = instance;
-                        }}
-                        actionType={itemType}
-                        editingAction={item.action}
-                        initialValues={
-                          draftFormSnapshotByItemKey[item.key]?.values ??
-                          mapEditInitialValues(item.action)
-                        }
-                        dirtyBaselineValues={mapEditInitialValues(item.action)}
-                        allActions={formLinkTargets}
-                        disabledActionIds={disabledActionIds}
-                        completionOptions={completionOptions}
-                        allowCompletionLink={!isAiCompletionEnabled}
-                        isLoading={isBusy}
-                        onSubmit={NOOP}
-                        onCancel={NOOP}
-                        hideTitle
-                        hideFooter
-                        enableTypeSelect
-                        enforceExclusiveNextLink
-                        wordingMode="question"
-                        onActionTypeChange={type => handleActionTypeChange(item.key, type)}
-                        onDirtyChange={isDirty => {
-                          handleItemDirtyChange(item.key, isDirty);
-                        }}
-                        onValidationStateChange={issueCount => {
-                          handleItemValidationChange(item.key, issueCount);
-                        }}
-                        onRawSnapshotChange={snapshot => {
-                          handleItemRawSnapshotChange(item.key, snapshot);
-                        }}
-                        onCreateLinkedAction={createLinkedAction}
-                        onCreateLinkedCompletion={
-                          isAiCompletionEnabled ? undefined : createLinkedCompletion
-                        }
-                      />
-                    ) : (
-                      <ActionForm
-                        key={`${item.key}:${draftHydrationVersion}:${isAiCompletionEnabled}`}
-                        ref={(instance: ActionFormHandle | null) => {
-                          formRefs.current[item.key] = instance;
-                        }}
-                        actionType={itemType}
-                        initialValues={draftFormSnapshotByItemKey[item.key]?.values}
-                        allActions={formLinkTargets}
-                        disabledActionIds={disabledActionIds}
-                        completionOptions={completionOptions}
-                        allowCompletionLink={!isAiCompletionEnabled}
-                        isLoading={isBusy}
-                        onSubmit={NOOP}
-                        onCancel={NOOP}
-                        hideTitle
-                        hideFooter
-                        enableTypeSelect
-                        enforceExclusiveNextLink
-                        wordingMode="question"
-                        onActionTypeChange={type => handleActionTypeChange(item.key, type)}
-                        onDirtyChange={isDirty => {
-                          handleItemDirtyChange(item.key, isDirty);
-                        }}
-                        onValidationStateChange={issueCount => {
-                          handleItemValidationChange(item.key, issueCount);
-                        }}
-                        onRawSnapshotChange={snapshot => {
-                          handleItemRawSnapshotChange(item.key, snapshot);
-                        }}
-                        onCreateLinkedAction={createLinkedAction}
-                        onCreateLinkedCompletion={
-                          isAiCompletionEnabled ? undefined : createLinkedCompletion
-                        }
-                      />
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                  const dirtyBaselineValues =
+                    item.kind === "existing" ? mapEditInitialValues(item.action) : undefined;
+
+                  return (
+                    <SortableActionItem
+                      key={item.key}
+                      item={item}
+                      index={index}
+                      isOpen={openItemKey === item.key}
+                      isBusy={isBusy}
+                      itemType={itemType}
+                      itemTitle={itemTitle}
+                      previewImageUrl={previewImageUrl}
+                      formRef={(instance: ActionFormHandle | null) => {
+                        formRefs.current[item.key] = instance;
+                      }}
+                      formKey={formKey}
+                      initialValues={initialValues}
+                      dirtyBaselineValues={dirtyBaselineValues}
+                      formLinkTargets={formLinkTargets}
+                      disabledActionIds={disabledActionIds}
+                      completionOptions={completionOptions}
+                      allowCompletionLink={!isAiCompletionEnabled}
+                      isAiCompletionEnabled={isAiCompletionEnabled}
+                      onToggle={() => handleToggleItem(item.key)}
+                      onRemoveDraft={
+                        item.kind === "draft" ? () => handleRemoveDraft(item.draft.key) : undefined
+                      }
+                      onDeleteExisting={item.kind === "existing" ? deleteDialog.onOpen : undefined}
+                      onActionTypeChange={type => handleActionTypeChange(item.key, type)}
+                      onDirtyChange={isDirty => handleItemDirtyChange(item.key, isDirty)}
+                      onValidationStateChange={issueCount =>
+                        handleItemValidationChange(item.key, issueCount)
+                      }
+                      onRawSnapshotChange={snapshot =>
+                        handleItemRawSnapshotChange(item.key, snapshot)
+                      }
+                      onCreateLinkedAction={createLinkedAction}
+                      onCreateLinkedCompletion={createLinkedCompletion}
+                    />
+                  );
+                })}
+              </div>
+            </SortableContext>
+          </DndContext>
         )}
 
         <button

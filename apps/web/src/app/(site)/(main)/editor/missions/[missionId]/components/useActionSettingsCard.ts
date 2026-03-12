@@ -10,6 +10,8 @@ import {
 import { useReadActionsDetail } from "@/hooks/action";
 import { useReadMission } from "@/hooks/mission";
 import type { ActionDetail } from "@/types/dto";
+import type { DragEndEvent } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
 import { ActionType } from "@prisma/client";
 import { toast } from "@repo/ui/components";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
@@ -94,7 +96,7 @@ export interface UseActionSettingsCardReturn {
     handleRemoveDraft: (draftKey: string) => void;
     handleToggleItem: (itemKey: string) => void;
     handleActionTypeChange: (itemKey: string, type: ActionType) => void;
-    handleMoveItem: (itemKey: string, direction: -1 | 1) => void;
+    handleDragEnd: (event: DragEndEvent) => void;
     handleItemDirtyChange: (itemKey: string, isDirty: boolean) => void;
     handleItemValidationChange: (itemKey: string, issueCount: number) => void;
     handleItemRawSnapshotChange: (itemKey: string, snapshot: ActionFormRawSnapshot) => void;
@@ -579,30 +581,17 @@ export function useActionSettingsCard({
     setActionTypeByItemKey(prev => ({ ...prev, [itemKey]: actionType }));
   }, []);
 
-  const handleMoveItem = useCallback(
-    (itemKey: string, direction: -1 | 1) => {
-      setItemOrderKeys(prev => {
-        const currentIndex = prev.indexOf(itemKey);
-        if (currentIndex < 0) {
-          return prev;
-        }
-
-        const nextIndex = currentIndex + direction;
-        if (nextIndex < 0 || nextIndex >= prev.length) {
-          return prev;
-        }
-
-        const next = [...prev];
-        const currentValue = next[currentIndex];
-        const targetValue = next[nextIndex];
-        if (!currentValue || !targetValue) {
-          return prev;
-        }
-
-        next[currentIndex] = targetValue;
-        next[nextIndex] = currentValue;
-        return next;
-      });
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (over && active.id !== over.id) {
+        setItemOrderKeys(prev => {
+          const oldIndex = prev.indexOf(String(active.id));
+          const newIndex = prev.indexOf(String(over.id));
+          if (oldIndex === -1 || newIndex === -1) return prev;
+          return arrayMove(prev, oldIndex, newIndex);
+        });
+      }
     },
     [setItemOrderKeys],
   );
@@ -656,7 +645,7 @@ export function useActionSettingsCard({
       handleRemoveDraft,
       handleToggleItem,
       handleActionTypeChange,
-      handleMoveItem,
+      handleDragEnd,
       handleItemDirtyChange,
       handleItemValidationChange,
       handleItemRawSnapshotChange,
