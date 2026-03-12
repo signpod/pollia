@@ -215,6 +215,11 @@ export function useActionSettingsCard({
           return next;
         });
         setOpenItemKey(prev => (prev === deletingItemKey ? null : prev));
+
+        dispatchCleanupDeletedActionRefs({
+          itemKey: deletingItemKey,
+          deletedActionId: deletingActionId,
+        });
       }
 
       toast({ message: "질문이 삭제되었습니다." });
