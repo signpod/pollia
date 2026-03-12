@@ -43,6 +43,9 @@ import { useCreateLinkedItem } from "./useCreateLinkedItem";
 
 export type { ActionSectionDraftSnapshot } from "./actionSettingsCard.types";
 
+const EMPTY_SET = new Set<string>();
+const EMPTY_LINK_TARGETS: Array<{ id: string; title: string; order: number }> = [];
+
 function ActionSettingsCardComponent(
   props: ActionSettingsCardProps,
   ref: ForwardedRef<SectionSaveHandle>,
@@ -262,9 +265,11 @@ function ActionSettingsCardComponent(
                       itemType={itemType}
                       formKey={formKey}
                       dirtyBaselineValues={dirtyBaselineValues}
-                      formLinkTargets={precomputedByItemKey.formLinkTargets[item.key] ?? []}
+                      formLinkTargets={
+                        precomputedByItemKey.formLinkTargets[item.key] ?? EMPTY_LINK_TARGETS
+                      }
                       disabledActionIds={
-                        precomputedByItemKey.disabledActionIds[item.key] ?? new Set()
+                        precomputedByItemKey.disabledActionIds[item.key] ?? EMPTY_SET
                       }
                       completionOptions={completionOptions}
                       allowCompletionLink={!isAiCompletionEnabled}

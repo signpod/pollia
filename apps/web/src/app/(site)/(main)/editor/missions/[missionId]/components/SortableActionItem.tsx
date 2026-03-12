@@ -98,6 +98,8 @@ export const SortableActionItem = memo(function SortableActionItem({
       ? (snapshot?.values ?? mapEditInitialValues(item.action))
       : snapshot?.values;
 
+  const existingAction = item.kind === "existing" ? item.action : null;
+
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.key,
     disabled: isBusy,
@@ -110,12 +112,12 @@ export const SortableActionItem = memo(function SortableActionItem({
   };
 
   const handleDelete = useCallback(() => {
-    if (item.kind === "draft") {
-      onRemoveDraft(itemKey);
+    if (existingAction) {
+      onDeleteExisting?.(existingAction);
     } else {
-      onDeleteExisting?.(item.action);
+      onRemoveDraft(itemKey);
     }
-  }, [item, itemKey, onRemoveDraft, onDeleteExisting]);
+  }, [existingAction, itemKey, onRemoveDraft, onDeleteExisting]);
 
   const handleFormRefCb = useCallback(
     (instance: ActionFormHandle | null) => onFormRef(itemKey, instance),

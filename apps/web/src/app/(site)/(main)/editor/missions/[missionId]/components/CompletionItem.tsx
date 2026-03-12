@@ -73,24 +73,27 @@ export const CompletionItem = memo(function CompletionItem({
   const dirtyBaselineValues =
     item.kind === "existing" ? mapEditInitialValues(item.completion) : undefined;
 
+  const existingCompletionId = item.kind === "existing" ? item.completion.id : null;
+  const draftKey = item.kind === "draft" ? item.draft.key : null;
+
   const handleToggle = useCallback(() => onToggle(itemKey), [itemKey, onToggle]);
 
   const handleDelete = useCallback(() => {
-    if (item.kind === "existing") {
-      onRemoveExisting(item.completion.id);
-    } else {
-      onRemoveDraft(item.draft.key);
+    if (existingCompletionId) {
+      onRemoveExisting(existingCompletionId);
+    } else if (draftKey) {
+      onRemoveDraft(draftKey);
     }
-  }, [item, onRemoveExisting, onRemoveDraft]);
+  }, [existingCompletionId, draftKey, onRemoveExisting, onRemoveDraft]);
 
   const handleFormRefCb = useCallback(
     (instance: CompletionFormHandle | null) => {
       onFormRef(itemKey, instance);
-      if (item.kind === "draft") {
-        onRegisterDraftForm(item.draft.key, instance);
+      if (draftKey) {
+        onRegisterDraftForm(draftKey, instance);
       }
     },
-    [itemKey, item, onFormRef, onRegisterDraftForm],
+    [itemKey, draftKey, onFormRef, onRegisterDraftForm],
   );
 
   const handleDirty = useCallback(
@@ -105,10 +108,12 @@ export const CompletionItem = memo(function CompletionItem({
     (snap: CompletionFormRawSnapshot) => onRawSnapshotChange(itemKey, snap),
     [itemKey, onRawSnapshotChange],
   );
-  const handleTitleChange = useMemo(() => {
-    if (item.kind !== "draft") return undefined;
-    return (titleValue: string) => onDraftTitleChange(item.draft.key, titleValue);
-  }, [item, onDraftTitleChange]);
+  const handleTitleChange = useCallback(
+    (titleValue: string) => {
+      if (draftKey) onDraftTitleChange(draftKey, titleValue);
+    },
+    [draftKey, onDraftTitleChange],
+  );
 
   return (
     <div data-editor-item-key={item.key} className="scroll-mt-28">
@@ -138,7 +143,7 @@ export const CompletionItem = memo(function CompletionItem({
           onCancel={NOOP}
           hideTitle
           hideFooter
-          onTitleChange={handleTitleChange}
+          onTitleChange={draftKey ? handleTitleChange : undefined}
           onDirtyChange={handleDirty}
           onValidationStateChange={handleValidation}
           onRawSnapshotChange={handleSnapshot}
