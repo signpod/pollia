@@ -48,7 +48,6 @@ model Mission {
   trackingActionResponses   TrackingActionResponse[]
   completionStats           MissionCompletionStat[]
   completionInferenceCaches MissionCompletionInferenceCache[]
-  shareTrackings            ShareTracking[]
 
   @@index([creatorId])
   @@index([isActive])
