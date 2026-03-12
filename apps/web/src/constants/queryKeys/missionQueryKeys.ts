@@ -18,6 +18,10 @@ export const missionQueryKeys = {
     dateRange
       ? (["mission-stats", missionId, dateRange.from, dateRange.to] as const)
       : (["mission-stats", missionId] as const),
+  dailyParticipationTrend: (missionId: string, dateRange?: { from: string; to: string }) =>
+    dateRange
+      ? (["daily-participation-trend", missionId, dateRange.from, dateRange.to] as const)
+      : (["daily-participation-trend", missionId] as const),
   missionResponsesPage: (missionId: string, page: number, pageSize: number) =>
     ["mission-responses-page", missionId, page, pageSize] as const,
   myResponses: () => ["my-responses"] as const,

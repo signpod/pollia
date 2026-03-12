@@ -42,6 +42,11 @@ export interface ResponseStats {
   completionReachStats: CompletionReachStat[];
 }
 
+export interface DailyParticipationTrendItem {
+  date: string;
+  count: number;
+}
+
 export interface GetMissionResponsesPageOptions {
   page: number;
   pageSize: number;

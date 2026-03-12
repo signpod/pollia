@@ -121,6 +121,13 @@ export interface GetMissionStatsResponse {
   };
 }
 
+export interface GetDailyParticipationTrendResponse {
+  data: Array<{
+    date: string;
+    count: number;
+  }>;
+}
+
 export interface GetMissionResponsesPageResponse {
   data: {
     columns: ColumnDef[];

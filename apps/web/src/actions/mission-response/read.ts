@@ -6,6 +6,7 @@ import { actionRepository } from "@/server/repositories/action/actionRepository"
 import { missionResponseService } from "@/server/services/mission-response";
 import { buildSubmissionTables } from "@/server/services/submission-list";
 import type {
+  GetDailyParticipationTrendResponse,
   GetMissionResponseResponse,
   GetMissionResponsesPageResponse,
   GetMissionResponsesResponse,
@@ -74,6 +75,26 @@ export async function getMissionStats(
     return { data: stats };
   } catch (error) {
     return handleActionError(error, "통계 조회 중 오류가 발생했습니다.");
+  }
+}
+
+export async function getDailyParticipationTrend(
+  missionId: string,
+  dateRange?: { from: string; to: string },
+): Promise<GetDailyParticipationTrendResponse> {
+  try {
+    const user = await requireActiveUser();
+    const parsedDateRange = dateRange
+      ? { from: new Date(dateRange.from), to: new Date(dateRange.to) }
+      : undefined;
+    const trend = await missionResponseService.getDailyParticipationTrend(
+      missionId,
+      user.id,
+      parsedDateRange,
+    );
+    return { data: trend };
+  } catch (error) {
+    return handleActionError(error, "일별 참여 추이 조회 중 오류가 발생했습니다.");
   }
 }
 
