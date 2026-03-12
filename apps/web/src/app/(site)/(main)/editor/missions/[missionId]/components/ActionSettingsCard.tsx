@@ -87,6 +87,7 @@ function ActionSettingsCardComponent(
     handleToggleItem,
     handleActionTypeChange,
     handleDragEnd,
+    handleMoveItem,
     handleItemDirtyChange,
     handleItemValidationChange,
     handleItemRawSnapshotChange,
@@ -263,6 +264,10 @@ function ActionSettingsCardComponent(
                       completionOptions={completionOptions}
                       allowCompletionLink={!isAiCompletionEnabled}
                       isAiCompletionEnabled={isAiCompletionEnabled}
+                      onMoveUp={() => handleMoveItem(item.key, "up")}
+                      onMoveDown={() => handleMoveItem(item.key, "down")}
+                      isFirst={index === 0}
+                      isLast={index === orderedActionItems.length - 1}
                       onToggle={() => handleToggleItem(item.key)}
                       onRemoveDraft={
                         item.kind === "draft" ? () => handleRemoveDraft(item.draft.key) : undefined

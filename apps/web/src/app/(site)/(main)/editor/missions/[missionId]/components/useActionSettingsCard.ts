@@ -97,6 +97,7 @@ export interface UseActionSettingsCardReturn {
     handleToggleItem: (itemKey: string) => void;
     handleActionTypeChange: (itemKey: string, type: ActionType) => void;
     handleDragEnd: (event: DragEndEvent) => void;
+    handleMoveItem: (itemKey: string, direction: "up" | "down") => void;
     handleItemDirtyChange: (itemKey: string, isDirty: boolean) => void;
     handleItemValidationChange: (itemKey: string, issueCount: number) => void;
     handleItemRawSnapshotChange: (itemKey: string, snapshot: ActionFormRawSnapshot) => void;
@@ -596,6 +597,19 @@ export function useActionSettingsCard({
     [setItemOrderKeys],
   );
 
+  const handleMoveItem = useCallback(
+    (itemKey: string, direction: "up" | "down") => {
+      setItemOrderKeys(prev => {
+        const oldIndex = prev.indexOf(itemKey);
+        if (oldIndex === -1) return prev;
+        const newIndex = direction === "up" ? oldIndex - 1 : oldIndex + 1;
+        if (newIndex < 0 || newIndex >= prev.length) return prev;
+        return arrayMove(prev, oldIndex, newIndex);
+      });
+    },
+    [setItemOrderKeys],
+  );
+
   const handleDeleteConfirm = useCallback(() => {
     if (!deleteTarget) return;
     deleteAction.mutate({ actionId: deleteTarget.id, missionId });
@@ -646,6 +660,7 @@ export function useActionSettingsCard({
       handleToggleItem,
       handleActionTypeChange,
       handleDragEnd,
+      handleMoveItem,
       handleItemDirtyChange,
       handleItemValidationChange,
       handleItemRawSnapshotChange,
