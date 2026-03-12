@@ -82,7 +82,7 @@ describe("MissionCompletionService", () => {
       // Then
       expect(result).toEqual(mockCreatedCompletion);
       expect(mockMissionRepo.findById).toHaveBeenCalledWith(TEST_MISSION_ID);
-      expect(mockRepo.create).toHaveBeenCalledWith(createData, TEST_USER_ID);
+      expect(mockRepo.create).toHaveBeenCalledWith(createData);
     });
 
     it("Mission이 없으면 404 에러를 던진다", async () => {
@@ -337,7 +337,7 @@ describe("MissionCompletionService", () => {
       // Then
       expect(result).toEqual(mockUpdatedCompletion);
       expect(mockRepo.findById).toHaveBeenCalledWith(mockCompletion.id);
-      expect(mockRepo.update).toHaveBeenCalledWith(mockCompletion.id, updateData, TEST_USER_ID);
+      expect(mockRepo.update).toHaveBeenCalledWith(mockCompletion.id, updateData);
     });
 
     it("MissionCompletion이 없으면 404 에러를 던진다", async () => {
