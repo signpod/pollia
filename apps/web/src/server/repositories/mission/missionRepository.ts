@@ -1,5 +1,6 @@
 import prisma from "@/database/utils/prisma/client";
 import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
+import { sanitizeFileUploadRefs } from "@/server/repositories/common/sanitizeFileUploadRefs";
 import type { SortOrderType } from "@/types/common/sort";
 import { type ActionType, type MissionCategory, type MissionType, Prisma } from "@prisma/client";
 
@@ -77,8 +78,13 @@ export class MissionRepository {
     actionIds: string[],
     client: TransactionClient = prisma,
   ) {
+    const sanitizedData = await sanitizeFileUploadRefs(client, data as Record<string, unknown>, [
+      { idField: "imageFileUploadId", urlField: "imageUrl" },
+      { idField: "brandLogoFileUploadId", urlField: "brandLogoUrl" },
+    ]);
+
     const createdMission = await client.mission.create({
-      data,
+      data: sanitizedData as Prisma.MissionUncheckedCreateInput,
     });
 
     if (actionIds.length > 0) {
@@ -124,14 +130,23 @@ export class MissionRepository {
     userId?: string,
     client: TransactionClient = prisma,
   ) {
+    const sanitizedData = await sanitizeFileUploadRefs(client, data as Record<string, unknown>, [
+      { idField: "imageFileUploadId", urlField: "imageUrl" },
+      { idField: "brandLogoFileUploadId", urlField: "brandLogoUrl" },
+    ]);
+
     const fileUploadIds = [
-      typeof data.imageFileUploadId === "string" ? data.imageFileUploadId : undefined,
-      typeof data.brandLogoFileUploadId === "string" ? data.brandLogoFileUploadId : undefined,
+      typeof sanitizedData.imageFileUploadId === "string"
+        ? sanitizedData.imageFileUploadId
+        : undefined,
+      typeof sanitizedData.brandLogoFileUploadId === "string"
+        ? sanitizedData.brandLogoFileUploadId
+        : undefined,
     ].filter(Boolean) as string[];
 
     const updatedMission = await client.mission.update({
       where: { id: missionId },
-      data,
+      data: sanitizedData as Prisma.MissionUncheckedUpdateInput,
     });
 
     if (fileUploadIds.length > 0 && userId) {

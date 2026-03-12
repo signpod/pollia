@@ -1,5 +1,6 @@
 import prisma from "@/database/utils/prisma/client";
 import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
+import { sanitizeFileUploadRefs } from "@/server/repositories/common/sanitizeFileUploadRefs";
 import type { Prisma } from "@prisma/client";
 
 type RewardCreateData = Omit<
@@ -43,13 +44,18 @@ export class RewardRepository {
   }
 
   async create(data: RewardCreateData, userId?: string) {
+    const sanitizedData = await sanitizeFileUploadRefs(prisma, data as Record<string, unknown>, [
+      { idField: "imageFileUploadId", urlField: "imageUrl" },
+    ]);
+    const safeData = sanitizedData as RewardCreateData;
+
     const fileUploadId =
-      typeof data.imageFileUploadId === "string" ? data.imageFileUploadId : undefined;
+      typeof safeData.imageFileUploadId === "string" ? safeData.imageFileUploadId : undefined;
 
     if (fileUploadId && userId) {
       return prisma.$transaction(async tx => {
         const reward = await tx.reward.create({
-          data,
+          data: safeData,
           select: {
             id: true,
             name: true,
@@ -69,7 +75,7 @@ export class RewardRepository {
     }
 
     return prisma.reward.create({
-      data,
+      data: safeData,
       select: {
         id: true,
         name: true,
@@ -84,14 +90,19 @@ export class RewardRepository {
   }
 
   async update(rewardId: string, data: RewardUpdateData, userId?: string) {
+    const sanitizedData = await sanitizeFileUploadRefs(prisma, data as Record<string, unknown>, [
+      { idField: "imageFileUploadId", urlField: "imageUrl" },
+    ]);
+    const safeData = sanitizedData as RewardUpdateData;
+
     const fileUploadId =
-      typeof data.imageFileUploadId === "string" ? data.imageFileUploadId : undefined;
+      typeof safeData.imageFileUploadId === "string" ? safeData.imageFileUploadId : undefined;
 
     if (fileUploadId && userId) {
       return prisma.$transaction(async tx => {
         const reward = await tx.reward.update({
           where: { id: rewardId },
-          data,
+          data: safeData,
           select: {
             id: true,
             name: true,
@@ -113,7 +124,7 @@ export class RewardRepository {
 
     return prisma.reward.update({
       where: { id: rewardId },
-      data,
+      data: safeData,
       select: {
         id: true,
         name: true,
