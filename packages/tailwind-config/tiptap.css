@@ -104,8 +104,10 @@
   color: #f9fafb;
   padding: 1em;
   border-radius: 0.5rem;
-  overflow-x: auto;
   margin: 1em 0;
+  white-space: pre-wrap;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 .tiptap pre code {
@@ -114,6 +116,9 @@
   color: inherit;
   font-size: 0.875em;
   line-height: 1.5;
+  white-space: inherit;
+  word-break: inherit;
+  overflow-wrap: inherit;
 }
 
 /* Text Styles */
