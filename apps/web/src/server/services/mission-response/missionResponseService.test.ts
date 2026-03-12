@@ -41,6 +41,9 @@ describe("MissionResponseService", () => {
       countByMissionId: jest.fn(),
       countByMissionIdFiltered: jest.fn(),
       countCompletedByMissionId: jest.fn(),
+      countCompletedByMissionIdWithDateRange: jest.fn(),
+      getAverageDurationMs: jest.fn(),
+      groupByStartedAtDate: jest.fn(),
     } as unknown as jest.Mocked<MissionResponseRepository>;
 
     mockMissionRepo = {
@@ -206,10 +209,11 @@ describe("MissionResponseService", () => {
   describe("getMissionStats", () => {
     it("Mission 통계를 완료화면 도달 통계와 함께 조회한다", async () => {
       // Given
-      const mockMission = { id: "mission1", creatorId: "user1" };
+      const mockMission = { id: "mission1", creatorId: "user1", shareCount: 3 };
       mockMissionRepo.findById.mockResolvedValue(mockMission as never);
       mockResponseRepo.countByMissionId.mockResolvedValue(20);
-      mockResponseRepo.countCompletedByMissionId.mockResolvedValue(10);
+      mockResponseRepo.countCompletedByMissionIdWithDateRange.mockResolvedValue(10);
+      mockResponseRepo.getAverageDurationMs.mockResolvedValue(45000);
       mockCompletionRepo.findAllByMissionId.mockResolvedValue([
         { id: "completion-a", title: "A", createdAt: new Date("2026-01-01T00:00:00.000Z") },
         { id: "completion-b", title: "B", createdAt: new Date("2026-01-02T00:00:00.000Z") },
@@ -244,6 +248,8 @@ describe("MissionResponseService", () => {
         total: 20,
         completed: 10,
         completionRate: 50,
+        averageDurationMs: 45000,
+        shareCount: 3,
         completionReachStats: [
           {
             completionId: "completion-b",
@@ -269,10 +275,11 @@ describe("MissionResponseService", () => {
 
     it("완료자가 없으면 completionRate/reachRate는 0이다", async () => {
       // Given
-      const mockMission = { id: "mission1", creatorId: "user1" };
+      const mockMission = { id: "mission1", creatorId: "user1", shareCount: 0 };
       mockMissionRepo.findById.mockResolvedValue(mockMission as never);
       mockResponseRepo.countByMissionId.mockResolvedValue(0);
-      mockResponseRepo.countCompletedByMissionId.mockResolvedValue(0);
+      mockResponseRepo.countCompletedByMissionIdWithDateRange.mockResolvedValue(0);
+      mockResponseRepo.getAverageDurationMs.mockResolvedValue(null);
       mockCompletionRepo.findAllByMissionId.mockResolvedValue([
         { id: "completion-a", title: "A", createdAt: new Date("2026-01-01T00:00:00.000Z") },
       ] as never);
@@ -286,6 +293,8 @@ describe("MissionResponseService", () => {
         total: 0,
         completed: 0,
         completionRate: 0,
+        averageDurationMs: null,
+        shareCount: 0,
         completionReachStats: [
           {
             completionId: "completion-a",
@@ -299,10 +308,11 @@ describe("MissionResponseService", () => {
 
     it("도달 수 동률일 때 completion createdAt 오름차순으로 정렬한다", async () => {
       // Given
-      const mockMission = { id: "mission1", creatorId: "user1" };
+      const mockMission = { id: "mission1", creatorId: "user1", shareCount: 0 };
       mockMissionRepo.findById.mockResolvedValue(mockMission as never);
       mockResponseRepo.countByMissionId.mockResolvedValue(10);
-      mockResponseRepo.countCompletedByMissionId.mockResolvedValue(10);
+      mockResponseRepo.countCompletedByMissionIdWithDateRange.mockResolvedValue(10);
+      mockResponseRepo.getAverageDurationMs.mockResolvedValue(30000);
       mockCompletionRepo.findAllByMissionId.mockResolvedValue([
         { id: "completion-a", title: "A", createdAt: new Date("2026-01-01T00:00:00.000Z") },
         { id: "completion-b", title: "B", createdAt: new Date("2026-01-02T00:00:00.000Z") },
@@ -338,6 +348,35 @@ describe("MissionResponseService", () => {
       ]);
     });
 
+    it("dateRange를 전달하면 repository에 그대로 전달한다", async () => {
+      // Given
+      const mockMission = { id: "mission1", creatorId: "user1", shareCount: 0 };
+      const dateRange = {
+        from: new Date("2026-03-01T00:00:00.000Z"),
+        to: new Date("2026-03-10T23:59:59.999Z"),
+      };
+      mockMissionRepo.findById.mockResolvedValue(mockMission as never);
+      mockResponseRepo.countByMissionId.mockResolvedValue(5);
+      mockResponseRepo.countCompletedByMissionIdWithDateRange.mockResolvedValue(3);
+      mockResponseRepo.getAverageDurationMs.mockResolvedValue(20000);
+      mockCompletionRepo.findAllByMissionId.mockResolvedValue([
+        { id: "completion-a", title: "A", createdAt: new Date("2026-01-01T00:00:00.000Z") },
+      ] as never);
+      mockCompletionStatRepo.findByMissionId.mockResolvedValue([]);
+
+      // When
+      const result = await service.getMissionStats("mission1", mockUser.id, dateRange);
+
+      // Then
+      expect(mockResponseRepo.countCompletedByMissionIdWithDateRange).toHaveBeenCalledWith(
+        "mission1",
+        dateRange,
+      );
+      expect(mockResponseRepo.getAverageDurationMs).toHaveBeenCalledWith("mission1", dateRange);
+      expect(result.completed).toBe(3);
+      expect(result.averageDurationMs).toBe(20000);
+    });
+
     it("Mission이 없으면 404 에러를 던진다", async () => {
       // Given
       mockMissionRepo.findById.mockResolvedValue(null);
@@ -355,6 +394,66 @@ describe("MissionResponseService", () => {
 
       // When & Then
       await expect(service.getMissionStats("mission1", mockUser.id)).rejects.toThrow(
+        "조회 권한이 없습니다.",
+      );
+    });
+  });
+
+  describe("getDailyParticipationTrend", () => {
+    it("일별 참여 추이를 조회한다", async () => {
+      // Given
+      const mockMission = { id: "mission1", creatorId: "user1" };
+      const trendData = [
+        { date: "2026-03-01", count: 5 },
+        { date: "2026-03-02", count: 12 },
+        { date: "2026-03-03", count: 8 },
+      ];
+      mockMissionRepo.findById.mockResolvedValue(mockMission as never);
+      mockResponseRepo.groupByStartedAtDate.mockResolvedValue(trendData);
+
+      // When
+      const result = await service.getDailyParticipationTrend("mission1", mockUser.id);
+
+      // Then
+      expect(result).toEqual(trendData);
+      expect(mockResponseRepo.groupByStartedAtDate).toHaveBeenCalledWith("mission1", undefined);
+    });
+
+    it("dateRange를 전달하면 repository에 그대로 전달한다", async () => {
+      // Given
+      const mockMission = { id: "mission1", creatorId: "user1" };
+      const dateRange = {
+        from: new Date("2026-03-01T00:00:00.000Z"),
+        to: new Date("2026-03-10T23:59:59.999Z"),
+      };
+      mockMissionRepo.findById.mockResolvedValue(mockMission as never);
+      mockResponseRepo.groupByStartedAtDate.mockResolvedValue([{ date: "2026-03-01", count: 3 }]);
+
+      // When
+      const result = await service.getDailyParticipationTrend("mission1", mockUser.id, dateRange);
+
+      // Then
+      expect(result).toEqual([{ date: "2026-03-01", count: 3 }]);
+      expect(mockResponseRepo.groupByStartedAtDate).toHaveBeenCalledWith("mission1", dateRange);
+    });
+
+    it("Mission이 없으면 404 에러를 던진다", async () => {
+      // Given
+      mockMissionRepo.findById.mockResolvedValue(null);
+
+      // When & Then
+      await expect(
+        service.getDailyParticipationTrend("invalid-mission", mockUser.id),
+      ).rejects.toThrow("미션을 찾을 수 없습니다.");
+    });
+
+    it("Mission 소유자가 아니면 403 에러를 던진다", async () => {
+      // Given
+      const mockMission = { id: "mission1", creatorId: "other-user" };
+      mockMissionRepo.findById.mockResolvedValue(mockMission as never);
+
+      // When & Then
+      await expect(service.getDailyParticipationTrend("mission1", mockUser.id)).rejects.toThrow(
         "조회 권한이 없습니다.",
       );
     });

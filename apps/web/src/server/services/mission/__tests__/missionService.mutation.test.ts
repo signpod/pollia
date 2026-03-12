@@ -33,6 +33,7 @@ describe("MissionService - Mutation", () => {
       update: jest.fn(),
       updateLikesCount: jest.fn(),
       incrementViewCount: jest.fn(),
+      incrementShareCount: jest.fn(),
       delete: jest.fn(),
       duplicateMission: jest.fn(),
     } as jest.Mocked<MissionRepository>;
@@ -464,6 +465,35 @@ describe("MissionService - Mutation", () => {
         "비밀번호 조회 권한이 없습니다.",
         403,
       );
+    });
+  });
+
+  describe("incrementShareCount", () => {
+    it("공유 수를 증가시킨다", async () => {
+      // Given
+      const mockMission = createMockMission({ id: "mission-1", shareCount: 5 });
+      mockRepository.findById.mockResolvedValue(mockMission);
+      mockRepository.incrementShareCount.mockResolvedValue({
+        ...mockMission,
+        shareCount: 6,
+      });
+
+      // When
+      await missionService.incrementShareCount("mission-1");
+
+      // Then
+      expect(mockRepository.incrementShareCount).toHaveBeenCalledWith("mission-1");
+    });
+
+    it("Mission이 없으면 404 에러를 던진다", async () => {
+      // Given
+      mockRepository.findById.mockResolvedValue(null);
+
+      // When & Then
+      await expect(missionService.incrementShareCount("invalid-id")).rejects.toThrow(
+        "미션을 찾을 수 없습니다.",
+      );
+      expect(mockRepository.incrementShareCount).not.toHaveBeenCalled();
     });
   });
 
