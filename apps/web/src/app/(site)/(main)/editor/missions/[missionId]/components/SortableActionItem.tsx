@@ -136,59 +136,32 @@ export function SortableActionItem({
           />
         }
       >
-        {item.kind === "existing" ? (
-          <ActionForm
-            key={formKey}
-            ref={formRef}
-            actionType={itemType}
-            editingAction={item.action}
-            initialValues={initialValues}
-            dirtyBaselineValues={dirtyBaselineValues}
-            allActions={formLinkTargets}
-            disabledActionIds={disabledActionIds}
-            completionOptions={completionOptions}
-            allowCompletionLink={allowCompletionLink}
-            isLoading={isBusy}
-            onSubmit={NOOP}
-            onCancel={NOOP}
-            hideTitle
-            hideFooter
-            enableTypeSelect
-            enforceExclusiveNextLink
-            wordingMode="question"
-            onActionTypeChange={onActionTypeChange}
-            onDirtyChange={onDirtyChange}
-            onValidationStateChange={onValidationStateChange}
-            onRawSnapshotChange={onRawSnapshotChange}
-            onCreateLinkedAction={onCreateLinkedAction}
-            onCreateLinkedCompletion={isAiCompletionEnabled ? undefined : onCreateLinkedCompletion}
-          />
-        ) : (
-          <ActionForm
-            key={formKey}
-            ref={formRef}
-            actionType={itemType}
-            initialValues={initialValues}
-            allActions={formLinkTargets}
-            disabledActionIds={disabledActionIds}
-            completionOptions={completionOptions}
-            allowCompletionLink={allowCompletionLink}
-            isLoading={isBusy}
-            onSubmit={NOOP}
-            onCancel={NOOP}
-            hideTitle
-            hideFooter
-            enableTypeSelect
-            enforceExclusiveNextLink
-            wordingMode="question"
-            onActionTypeChange={onActionTypeChange}
-            onDirtyChange={onDirtyChange}
-            onValidationStateChange={onValidationStateChange}
-            onRawSnapshotChange={onRawSnapshotChange}
-            onCreateLinkedAction={onCreateLinkedAction}
-            onCreateLinkedCompletion={isAiCompletionEnabled ? undefined : onCreateLinkedCompletion}
-          />
-        )}
+        <ActionForm
+          key={formKey}
+          ref={formRef}
+          actionType={itemType}
+          editingAction={item.kind === "existing" ? item.action : undefined}
+          initialValues={initialValues}
+          dirtyBaselineValues={dirtyBaselineValues}
+          allActions={formLinkTargets}
+          disabledActionIds={disabledActionIds}
+          completionOptions={completionOptions}
+          allowCompletionLink={allowCompletionLink}
+          isLoading={isBusy}
+          onSubmit={NOOP}
+          onCancel={NOOP}
+          hideTitle
+          hideFooter
+          enableTypeSelect
+          enforceExclusiveNextLink
+          wordingMode="question"
+          onActionTypeChange={onActionTypeChange}
+          onDirtyChange={onDirtyChange}
+          onValidationStateChange={onValidationStateChange}
+          onRawSnapshotChange={onRawSnapshotChange}
+          onCreateLinkedAction={onCreateLinkedAction}
+          onCreateLinkedCompletion={isAiCompletionEnabled ? undefined : onCreateLinkedCompletion}
+        />
       </EditorAccordion>
     </div>
   );

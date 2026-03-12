@@ -24,7 +24,14 @@ import { ActionType } from "@prisma/client";
 import { Button, Typo } from "@repo/ui/components";
 import { useAtom } from "jotai";
 import { AlertCircle, GitBranch, Plus } from "lucide-react";
-import { type ForwardedRef, forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import {
+  type ForwardedRef,
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+} from "react";
 import { actionScrollTargetItemKeyAtom } from "../atoms/editorActionAtoms";
 import { ActionDeleteConfirmDialog } from "./ActionDeleteConfirmDialog";
 import { FlowOverviewDialog } from "./FlowOverviewDialog";
@@ -92,6 +99,28 @@ function ActionSettingsCardComponent(
     handleItemValidationChange,
     handleItemRawSnapshotChange,
   } = handlers;
+
+  const precomputedByItemKey = useMemo(() => {
+    const disabledActionIds: Record<string, Set<string>> = {};
+    const formLinkTargets: Record<string, typeof linkTargets> = {};
+
+    for (const item of orderedActionItems) {
+      const currentActionId =
+        item.kind === "existing" ? item.action.id : makeDraftActionId(item.draft.key);
+
+      const disabled = new Set<string>();
+      if (entryActionId) disabled.add(entryActionId);
+      for (const [targetId, sources] of referencedActionIdsBySource) {
+        if (targetId === currentActionId) continue;
+        if (sources.has(item.key)) continue;
+        disabled.add(targetId);
+      }
+      disabledActionIds[item.key] = disabled;
+      formLinkTargets[item.key] = linkTargets.filter(t => t.id !== currentActionId);
+    }
+
+    return { disabledActionIds, formLinkTargets };
+  }, [orderedActionItems, entryActionId, referencedActionIdsBySource, linkTargets]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -212,18 +241,6 @@ function ActionSettingsCardComponent(
                     item.kind === "existing"
                       ? snapshotTitle || item.action.title
                       : snapshotTitle || `${ACTION_TYPE_LABELS[itemType]} 질문`;
-                  const currentActionId =
-                    item.kind === "existing" ? item.action.id : makeDraftActionId(item.draft.key);
-                  const formLinkTargets = linkTargets.filter(
-                    target => target.id !== currentActionId,
-                  );
-                  const disabledActionIds = new Set<string>();
-                  if (entryActionId) disabledActionIds.add(entryActionId);
-                  for (const [targetId, sources] of referencedActionIdsBySource) {
-                    if (targetId === currentActionId) continue;
-                    if (sources.has(item.key)) continue;
-                    disabledActionIds.add(targetId);
-                  }
                   const previewImageUrl =
                     formRefs.current[item.key]?.getRawSnapshot().values.imageUrl ??
                     draftFormSnapshotByItemKey[item.key]?.values.imageUrl ??
@@ -259,8 +276,10 @@ function ActionSettingsCardComponent(
                       formKey={formKey}
                       initialValues={initialValues}
                       dirtyBaselineValues={dirtyBaselineValues}
-                      formLinkTargets={formLinkTargets}
-                      disabledActionIds={disabledActionIds}
+                      formLinkTargets={precomputedByItemKey.formLinkTargets[item.key] ?? []}
+                      disabledActionIds={
+                        precomputedByItemKey.disabledActionIds[item.key] ?? new Set()
+                      }
                       completionOptions={completionOptions}
                       allowCompletionLink={!isAiCompletionEnabled}
                       isAiCompletionEnabled={isAiCompletionEnabled}

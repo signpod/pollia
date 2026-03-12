@@ -52,6 +52,26 @@ import { useActionFlowAnalysis } from "./useActionFlowAnalysis";
 import { useActionLinkDerived } from "./useActionLinkDerived";
 import { useActionSaveFlow } from "./useActionSaveFlow";
 
+function filterByValidKeys<T>(prev: Record<string, T>, validKeys: Set<string>): Record<string, T> {
+  let hasChange = false;
+  const next: Record<string, T> = {};
+  for (const [key, value] of Object.entries(prev)) {
+    if (validKeys.has(key)) {
+      next[key] = value;
+    } else {
+      hasChange = true;
+    }
+  }
+  return hasChange ? next : prev;
+}
+
+function deleteKeyFromRecord<T>(prev: Record<string, T>, key: string): Record<string, T> {
+  if (!(key in prev)) return prev;
+  const next = { ...prev };
+  delete next[key];
+  return next;
+}
+
 export interface UseActionSettingsCardReturn {
   viewState: {
     isBusy: boolean;
@@ -354,46 +374,9 @@ export function useActionSettingsCard({
   // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDirtyByItemKey, setDraftFormSnapshotByItemKey, setValidationIssueCountByItemKey
   useEffect(() => {
     const validKeys = new Set(orderedActionItems.map(item => item.key));
-    setDirtyByItemKey(prev => {
-      let hasChange = false;
-      const next: Record<string, boolean> = {};
-
-      for (const [key, value] of Object.entries(prev)) {
-        if (validKeys.has(key)) {
-          next[key] = value;
-        } else {
-          hasChange = true;
-        }
-      }
-
-      return hasChange ? next : prev;
-    });
-
-    setDraftFormSnapshotByItemKey(prev => {
-      let hasChange = false;
-      const next: Record<string, ActionFormRawSnapshot> = {};
-      for (const [key, value] of Object.entries(prev)) {
-        if (validKeys.has(key)) {
-          next[key] = value;
-        } else {
-          hasChange = true;
-        }
-      }
-      return hasChange ? next : prev;
-    });
-
-    setValidationIssueCountByItemKey(prev => {
-      let hasChange = false;
-      const next: Record<string, number> = {};
-      for (const [key, value] of Object.entries(prev)) {
-        if (validKeys.has(key)) {
-          next[key] = value;
-        } else {
-          hasChange = true;
-        }
-      }
-      return hasChange ? next : prev;
-    });
+    setDirtyByItemKey(prev => filterByValidKeys(prev, validKeys));
+    setDraftFormSnapshotByItemKey(prev => filterByValidKeys(prev, validKeys));
+    setValidationIssueCountByItemKey(prev => filterByValidKeys(prev, validKeys));
   }, [orderedActionItems]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setItemOrderKeys
@@ -541,24 +524,12 @@ export function useActionSettingsCard({
     const deletedActionId = makeDraftActionId(draftKey);
 
     setDraftItems(prev => prev.filter(item => item.key !== draftKey));
-    setActionTypeByItemKey(prev => {
-      const next = { ...prev };
-      delete next[itemKey];
-      return next;
-    });
-    setDirtyByItemKey(prev => {
-      const next = { ...prev };
-      delete next[itemKey];
-      return next;
-    });
+    setActionTypeByItemKey(prev => deleteKeyFromRecord(prev, itemKey));
+    setDirtyByItemKey(prev => deleteKeyFromRecord(prev, itemKey));
 
     dispatchCleanupDeletedActionRefs({ itemKey, deletedActionId });
 
-    setValidationIssueCountByItemKey(prev => {
-      const next = { ...prev };
-      delete next[itemKey];
-      return next;
-    });
+    setValidationIssueCountByItemKey(prev => deleteKeyFromRecord(prev, itemKey));
     delete formRefs.current[itemKey];
     setOpenItemKey(prev => (prev === itemKey ? null : prev));
   }, []);

@@ -14,6 +14,9 @@ interface EditorSortControlsProps {
   listeners?: SyntheticListenerMap;
 }
 
+const SORT_BUTTON_CLASS =
+  "flex flex-1 items-center justify-center px-3 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 disabled:cursor-not-allowed disabled:text-zinc-200 disabled:hover:bg-transparent";
+
 export function EditorSortControls({
   onMoveUp,
   onMoveDown,
@@ -40,7 +43,7 @@ export function EditorSortControls({
           aria-label="위로 이동"
           onClick={onMoveUp}
           disabled={isFirst || disabled}
-          className="flex flex-1 items-center justify-center border-b border-zinc-200 px-3 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 disabled:cursor-not-allowed disabled:text-zinc-200 disabled:hover:bg-transparent"
+          className={`${SORT_BUTTON_CLASS} border-b border-zinc-200`}
         >
           <ChevronUp className="size-5" />
         </button>
@@ -49,7 +52,7 @@ export function EditorSortControls({
           aria-label="아래로 이동"
           onClick={onMoveDown}
           disabled={isLast || disabled}
-          className="flex flex-1 items-center justify-center px-3 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 disabled:cursor-not-allowed disabled:text-zinc-200 disabled:hover:bg-transparent"
+          className={SORT_BUTTON_CLASS}
         >
           <ChevronDown className="size-5" />
         </button>

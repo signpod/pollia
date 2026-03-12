@@ -65,7 +65,7 @@ import {
 import { NextLinkDisplay } from "./NextLinkDisplay";
 import { NextLinkDrawer } from "./NextLinkDrawer";
 import { SortableOptionItem } from "./SortableOptionItem";
-import { moveOptionByKey, patchOptionByKey, removeOptionByKey } from "./actionFormOptionState";
+import { moveOptionByKey, patchOptionByKey, removeOptionByKey } from "./actionFormOptionUtils";
 
 function getTextLengthFromHtml(html: string): number {
   if (!html) return 0;

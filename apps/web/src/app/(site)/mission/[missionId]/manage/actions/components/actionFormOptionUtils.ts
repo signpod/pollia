@@ -24,8 +24,10 @@ export function moveOptionByKey<T extends KeyedOptionItem>(
   const newIndex = direction === "up" ? index - 1 : index + 1;
   if (newIndex < 0 || newIndex >= options.length) return options;
   const next = [...options];
-  const temp = next[index] as T;
-  next[index] = next[newIndex] as T;
-  next[newIndex] = temp;
+  const temp = next[index];
+  // biome-ignore lint/style/noNonNullAssertion: 인덱스 범위가 위에서 검증됨
+  next[index] = next[newIndex]!;
+  // biome-ignore lint/style/noNonNullAssertion: 인덱스 범위가 위에서 검증됨
+  next[newIndex] = temp!;
   return next;
 }
