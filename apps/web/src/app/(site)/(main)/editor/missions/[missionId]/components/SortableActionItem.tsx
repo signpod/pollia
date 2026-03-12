@@ -11,8 +11,8 @@ import type { ActionDetail } from "@/types/dto";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { ActionType } from "@prisma/client";
-import { Typo } from "@repo/ui/components";
 import { ChevronDown, ChevronUp, GripVertical, Trash2 } from "lucide-react";
+import { EditorAccordion } from "../../../components/view/EditorAccordion";
 import type { ActionListItem } from "./actionSettingsCard.types";
 
 const NOOP = () => {};
@@ -91,101 +91,81 @@ export function SortableActionItem({
     opacity: isDragging ? 0.5 : 1,
   };
 
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      data-editor-item-key={item.key}
-      className="scroll-mt-28 overflow-hidden rounded-xl border border-zinc-200 transition-shadow duration-500"
-    >
-      <div className="flex h-[88px] items-stretch bg-zinc-50">
-        <div
-          className="flex shrink-0 cursor-grab items-center border-r border-zinc-200 px-3 text-zinc-400 hover:text-zinc-600 active:cursor-grabbing"
-          style={{ touchAction: "none" }}
-          {...attributes}
-          {...listeners}
-        >
-          <GripVertical className="size-5" />
-        </div>
-
-        <div className="flex shrink-0 flex-col border-r border-zinc-200">
-          <button
-            type="button"
-            aria-label="위로 이동"
-            onClick={onMoveUp}
-            disabled={isFirst || isBusy}
-            className="flex flex-1 items-center justify-center border-b border-zinc-200 px-3 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 disabled:cursor-not-allowed disabled:text-zinc-200 disabled:hover:bg-transparent"
-          >
-            <ChevronUp className="size-5" />
-          </button>
-          <button
-            type="button"
-            aria-label="아래로 이동"
-            onClick={onMoveDown}
-            disabled={isLast || isBusy}
-            className="flex flex-1 items-center justify-center px-3 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 disabled:cursor-not-allowed disabled:text-zinc-200 disabled:hover:bg-transparent"
-          >
-            <ChevronDown className="size-5" />
-          </button>
-        </div>
-
-        <button
-          type="button"
-          onClick={onToggle}
-          className="flex min-w-0 flex-1 items-center justify-between gap-3 px-4 py-3 text-left"
-        >
-          <div className="min-w-0 overflow-hidden">
-            <div className="flex items-center gap-2">
-              <Typo.Body size="medium" className="truncate font-semibold text-zinc-800">
-                {index + 1}. {itemTitle}
-              </Typo.Body>
-              {index === 0 ? (
-                <span className="shrink-0 rounded-full bg-zinc-200 px-2 py-0.5 text-xs font-medium text-zinc-700">
-                  시작 질문
-                </span>
-              ) : null}
-            </div>
-            <Typo.Body size="small" className="mt-1 truncate text-zinc-500">
-              {ACTION_TYPE_LABELS[itemType]}
-            </Typo.Body>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            {previewImageUrl ? (
-              <img
-                src={previewImageUrl}
-                alt={`${itemTitle} 미리보기 이미지`}
-                className="size-10 shrink-0 rounded border border-zinc-200 bg-zinc-100 object-cover"
-              />
-            ) : null}
-            <ChevronDown
-              className={`size-5 shrink-0 text-zinc-500 transition-transform ${
-                isOpen ? "rotate-180" : ""
-              }`}
-            />
-          </div>
-        </button>
-
-        <div className="flex shrink-0 items-center border-l border-zinc-200 px-2.5">
-          <button
-            type="button"
-            aria-label="질문 삭제"
-            onClick={event => {
-              event.stopPropagation();
-              if (item.kind === "draft") {
-                onRemoveDraft?.();
-              } else {
-                onDeleteExisting?.(item.action);
-              }
-            }}
-            disabled={item.kind !== "draft" && isBusy}
-            className="rounded p-1.5 text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <Trash2 className="size-5" />
-          </button>
-        </div>
+  const dragHandle = (
+    <>
+      <div
+        className="flex shrink-0 cursor-grab items-center border-r border-zinc-200 px-3 text-zinc-400 hover:text-zinc-600 active:cursor-grabbing"
+        style={{ touchAction: "none" }}
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="size-5" />
       </div>
 
-      <div className={isOpen ? "block border-t border-zinc-200" : "hidden"}>
+      <div className="flex shrink-0 flex-col border-r border-zinc-200">
+        <button
+          type="button"
+          aria-label="위로 이동"
+          onClick={onMoveUp}
+          disabled={isFirst || isBusy}
+          className="flex flex-1 items-center justify-center border-b border-zinc-200 px-3 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 disabled:cursor-not-allowed disabled:text-zinc-200 disabled:hover:bg-transparent"
+        >
+          <ChevronUp className="size-5" />
+        </button>
+        <button
+          type="button"
+          aria-label="아래로 이동"
+          onClick={onMoveDown}
+          disabled={isLast || isBusy}
+          className="flex flex-1 items-center justify-center px-3 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 disabled:cursor-not-allowed disabled:text-zinc-200 disabled:hover:bg-transparent"
+        >
+          <ChevronDown className="size-5" />
+        </button>
+      </div>
+    </>
+  );
+
+  const deleteButton = (
+    <div className="flex shrink-0 items-center border-l border-zinc-200 px-2.5">
+      <button
+        type="button"
+        aria-label="질문 삭제"
+        onClick={event => {
+          event.stopPropagation();
+          if (item.kind === "draft") {
+            onRemoveDraft?.();
+          } else {
+            onDeleteExisting?.(item.action);
+          }
+        }}
+        disabled={item.kind !== "draft" && isBusy}
+        className="rounded p-1.5 text-red-500 transition-colors hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        <Trash2 className="size-5" />
+      </button>
+    </div>
+  );
+
+  return (
+    <div ref={setNodeRef} style={style} data-editor-item-key={item.key} className="scroll-mt-28">
+      <EditorAccordion
+        isOpen={isOpen}
+        onToggle={onToggle}
+        title={`${index + 1}. ${itemTitle}`}
+        subtitle={ACTION_TYPE_LABELS[itemType]}
+        badge={
+          index === 0 ? (
+            <span className="shrink-0 rounded-full bg-zinc-200 px-2 py-0.5 text-xs font-medium text-zinc-700">
+              시작 질문
+            </span>
+          ) : null
+        }
+        previewImage={
+          previewImageUrl ? { src: previewImageUrl, alt: `${itemTitle} 미리보기 이미지` } : null
+        }
+        leftSlot={dragHandle}
+        rightSlot={deleteButton}
+      >
         {item.kind === "existing" ? (
           <ActionForm
             key={formKey}
@@ -239,7 +219,7 @@ export function SortableActionItem({
             onCreateLinkedCompletion={isAiCompletionEnabled ? undefined : onCreateLinkedCompletion}
           />
         )}
-      </div>
+      </EditorAccordion>
     </div>
   );
 }
