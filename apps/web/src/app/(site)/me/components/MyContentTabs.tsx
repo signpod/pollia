@@ -13,7 +13,7 @@ import { ButtonV2, EmptyState, Tab, Typo, useModal } from "@repo/ui/components";
 import { PencilIcon, Trash2Icon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
 import { memo, useCallback, useState } from "react";
 import { MissionLikeButton } from "../../(main)/components/MissionLikeButton";
@@ -95,6 +95,7 @@ export function MyContentTabs() {
 // ─── 참여 탭 ───
 
 type ParticipationFilter = "in-progress" | "completed";
+const VALID_FILTERS = new Set<string>(["in-progress", "completed"]);
 
 function ParticipationTab({
   inProgressResponses,
@@ -103,7 +104,24 @@ function ParticipationTab({
   inProgressResponses: MyMissionResponse[];
   completedResponses: MyMissionResponse[];
 }) {
-  const [filter, setFilter] = useState<ParticipationFilter>("in-progress");
+  const searchParams = useSearchParams();
+  const initialFilter = searchParams.get("filter");
+  const [filter, setFilter] = useState<ParticipationFilter>(
+    VALID_FILTERS.has(initialFilter as string)
+      ? (initialFilter as ParticipationFilter)
+      : "in-progress",
+  );
+
+  const handleFilterChange = useCallback((value: ParticipationFilter) => {
+    setFilter(value);
+    const url = new URL(window.location.href);
+    if (value === "in-progress") {
+      url.searchParams.delete("filter");
+    } else {
+      url.searchParams.set("filter", value);
+    }
+    window.history.replaceState(null, "", url.toString());
+  }, []);
   const allResponses = [...inProgressResponses, ...completedResponses];
 
   if (allResponses.length === 0) {
@@ -136,7 +154,7 @@ function ParticipationTab({
           <div className="flex h-8 items-center rounded-full bg-zinc-100 p-0.5">
             <button
               type="button"
-              onClick={() => setFilter("in-progress")}
+              onClick={() => handleFilterChange("in-progress")}
               className={`inline-flex h-7 items-center justify-center rounded-full px-3 text-xs font-bold transition-colors ${
                 filter === "in-progress" ? "bg-white text-violet-500" : "text-zinc-400"
               }`}
@@ -145,7 +163,7 @@ function ParticipationTab({
             </button>
             <button
               type="button"
-              onClick={() => setFilter("completed")}
+              onClick={() => handleFilterChange("completed")}
               className={`inline-flex h-7 items-center justify-center rounded-full px-3 text-xs font-bold transition-colors ${
                 filter === "completed" ? "bg-white text-violet-500" : "text-zinc-400"
               }`}
