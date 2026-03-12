@@ -7,15 +7,21 @@ interface SubjectiveSlideProps {
   data: AiReportData;
 }
 
-const WORD_STYLES = [
-  "text-2xl font-bold opacity-100",
-  "text-xl font-semibold opacity-90",
-  "text-lg font-medium opacity-80",
-  "text-base font-medium opacity-70",
-  "text-sm opacity-60",
+const KEYWORD_COLORS = [
+  "text-violet-700",
+  "text-violet-600",
+  "text-violet-500",
+  "text-violet-500/80",
+  "text-violet-400",
 ];
 
-const ROTATIONS = ["-rotate-6", "rotate-3", "-rotate-2", "rotate-6", "rotate-0"];
+const KEYWORD_SIZES = [
+  "text-2xl font-bold",
+  "text-xl font-semibold",
+  "text-lg font-medium",
+  "text-base font-medium",
+  "text-sm font-medium",
+];
 
 export function SubjectiveSlide({ data }: SubjectiveSlideProps) {
   const { subjective } = data.ai;
@@ -27,21 +33,27 @@ export function SubjectiveSlide({ data }: SubjectiveSlideProps) {
   const negativePercent = total > 0 ? 100 - positivePercent - neutralPercent : 33;
 
   return (
-    <div className="flex h-full flex-col overflow-y-auto px-6 py-6">
-      <Typo.SubTitle className="mb-4">주관식 분석</Typo.SubTitle>
+    <div className="flex h-full flex-col overflow-y-auto px-7 py-7">
+      <div className="mb-5 flex items-center gap-2.5">
+        <span className="flex size-6 items-center justify-center rounded-md bg-violet-600 text-xs font-bold text-white">
+          5
+        </span>
+        <Typo.SubTitle>주관식 분석</Typo.SubTitle>
+      </div>
 
       {topKeywords.length > 0 && (
         <div className="mb-5">
-          <Typo.Body size="small" className="mb-3 text-zinc-500">
+          <div className="mb-2 text-xs font-medium text-zinc-400">
             키워드 TOP {topKeywords.length}
-          </Typo.Body>
-          <div className="flex flex-wrap items-center justify-center gap-3 rounded-lg bg-zinc-50 px-4 py-5">
+          </div>
+          <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2 rounded-xl bg-zinc-50/80 px-5 py-4">
             {topKeywords.map((kw, i) => (
               <span
                 key={kw.keyword}
-                className={`inline-block text-zinc-700 ${WORD_STYLES[i] ?? WORD_STYLES[WORD_STYLES.length - 1]} ${ROTATIONS[i] ?? ""}`}
+                className={`inline-block ${KEYWORD_COLORS[i] ?? KEYWORD_COLORS[KEYWORD_COLORS.length - 1]} ${KEYWORD_SIZES[i] ?? KEYWORD_SIZES[KEYWORD_SIZES.length - 1]}`}
               >
                 {kw.keyword}
+                <span className="ml-0.5 text-xs font-normal opacity-50">{kw.count}</span>
               </span>
             ))}
           </div>
@@ -49,48 +61,53 @@ export function SubjectiveSlide({ data }: SubjectiveSlideProps) {
       )}
 
       <div className="mb-5">
-        <Typo.Body size="small" className="mb-2 text-zinc-500">
-          감성 분석
-        </Typo.Body>
-        <div className="flex h-5 w-full overflow-hidden rounded-full">
+        <div className="mb-2 text-xs font-medium text-zinc-400">감성 분석</div>
+        <div className="flex h-6 w-full overflow-hidden rounded-lg">
           {positivePercent > 0 && (
             <div
-              className="flex items-center justify-center bg-emerald-400 text-[10px] font-medium text-white"
+              className="flex items-center justify-center bg-emerald-400 text-[10px] font-semibold text-white"
               style={{ width: `${positivePercent}%` }}
             >
-              {positivePercent}%
+              {positivePercent > 10 && `${positivePercent}%`}
             </div>
           )}
           {neutralPercent > 0 && (
             <div
-              className="flex items-center justify-center bg-zinc-300 text-[10px] font-medium text-zinc-600"
+              className="flex items-center justify-center bg-zinc-300 text-[10px] font-semibold text-zinc-600"
               style={{ width: `${neutralPercent}%` }}
             >
-              {neutralPercent}%
+              {neutralPercent > 10 && `${neutralPercent}%`}
             </div>
           )}
           {negativePercent > 0 && (
             <div
-              className="flex items-center justify-center bg-rose-400 text-[10px] font-medium text-white"
+              className="flex items-center justify-center bg-rose-400 text-[10px] font-semibold text-white"
               style={{ width: `${negativePercent}%` }}
             >
-              {negativePercent}%
+              {negativePercent > 10 && `${negativePercent}%`}
             </div>
           )}
         </div>
-        <div className="mt-1.5 flex justify-between text-xs text-zinc-500">
-          <span>긍정 {positivePercent}%</span>
-          <span>중립 {neutralPercent}%</span>
-          <span>부정 {negativePercent}%</span>
+        <div className="mt-2 flex justify-between text-[11px] text-zinc-400">
+          <div className="flex items-center gap-1">
+            <span className="inline-block size-2 rounded-full bg-emerald-400" />
+            긍정 {positivePercent}%
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="inline-block size-2 rounded-full bg-zinc-300" />
+            중립 {neutralPercent}%
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="inline-block size-2 rounded-full bg-rose-400" />
+            부정 {negativePercent}%
+          </div>
         </div>
       </div>
 
       {subjective.summary && (
-        <div className="rounded-lg bg-zinc-50 p-4">
-          <Typo.Body size="small" className="mb-1 font-medium text-zinc-600">
-            AI 요약
-          </Typo.Body>
-          <Typo.Body size="medium" className="whitespace-pre-line leading-relaxed text-zinc-700">
+        <div className="rounded-xl border-l-2 border-violet-400 bg-zinc-50/80 py-3 pl-4 pr-4">
+          <div className="mb-1 text-xs font-semibold text-violet-600">AI 요약</div>
+          <Typo.Body size="medium" className="whitespace-pre-line leading-relaxed text-zinc-600">
             {subjective.summary}
           </Typo.Body>
         </div>

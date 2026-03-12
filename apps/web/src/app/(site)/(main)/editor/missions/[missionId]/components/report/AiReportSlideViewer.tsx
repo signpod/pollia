@@ -17,7 +17,7 @@ interface AiReportSlideViewerProps {
   data: AiReportData;
 }
 
-const TOTAL_SLIDES = 8;
+const SLIDE_LABELS = ["표지", "요약", "참여", "이탈", "객관식", "주관식", "결과", "인사이트"];
 
 export function AiReportSlideViewer({ data }: AiReportSlideViewerProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, dragFree: false });
@@ -49,13 +49,9 @@ export function AiReportSlideViewer({ data }: AiReportSlideViewerProps) {
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "ArrowLeft") {
-        scrollPrev();
-      } else if (e.key === "ArrowRight") {
-        scrollNext();
-      }
+      if (e.key === "ArrowLeft") scrollPrev();
+      else if (e.key === "ArrowRight") scrollNext();
     }
-
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [scrollPrev, scrollNext]);
@@ -72,32 +68,11 @@ export function AiReportSlideViewer({ data }: AiReportSlideViewerProps) {
   ];
 
   return (
-    <div className="flex flex-col">
-      <div className="mb-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={scrollPrev}
-            disabled={!canScrollPrev}
-            className="rounded-md border border-zinc-200 p-1.5 text-zinc-600 transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-30"
-          >
-            <ChevronLeft className="size-4" />
-          </button>
-          <span className="min-w-[48px] text-center text-sm text-zinc-500">
-            {selectedIndex + 1} / {TOTAL_SLIDES}
-          </span>
-          <button
-            type="button"
-            onClick={scrollNext}
-            disabled={!canScrollNext}
-            className="rounded-md border border-zinc-200 p-1.5 text-zinc-600 transition-colors hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-30"
-          >
-            <ChevronRight className="size-4" />
-          </button>
-        </div>
-      </div>
-
-      <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white" ref={emblaRef}>
+    <div className="flex flex-col gap-3">
+      <div
+        className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm"
+        ref={emblaRef}
+      >
         <div className="flex">
           {slides.map((slide, i) => (
             <div key={i} className="min-h-[480px] w-full shrink-0">
@@ -107,17 +82,41 @@ export function AiReportSlideViewer({ data }: AiReportSlideViewerProps) {
         </div>
       </div>
 
-      <div className="mt-3 flex items-center justify-center gap-1.5">
-        {Array.from({ length: TOTAL_SLIDES }).map((_, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => scrollTo(i)}
-            className={`size-2 rounded-full transition-colors ${
-              i === selectedIndex ? "bg-zinc-900" : "bg-zinc-300"
-            }`}
-          />
-        ))}
+      <div className="flex items-center justify-center gap-2">
+        <button
+          type="button"
+          onClick={scrollPrev}
+          disabled={!canScrollPrev}
+          className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 disabled:cursor-not-allowed disabled:opacity-0"
+        >
+          <ChevronLeft className="size-4" />
+        </button>
+
+        <div className="flex items-center gap-1">
+          {SLIDE_LABELS.map((label, i) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => scrollTo(i)}
+              className={`rounded-full px-2.5 py-1 text-xs font-medium transition-all ${
+                i === selectedIndex
+                  ? "bg-violet-600 text-white shadow-sm"
+                  : "text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          onClick={scrollNext}
+          disabled={!canScrollNext}
+          className="rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 disabled:cursor-not-allowed disabled:opacity-0"
+        >
+          <ChevronRight className="size-4" />
+        </button>
       </div>
     </div>
   );

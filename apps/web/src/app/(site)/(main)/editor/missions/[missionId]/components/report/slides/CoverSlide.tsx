@@ -2,6 +2,7 @@
 
 import type { AiReportData } from "@/types/dto";
 import { Typo } from "@repo/ui/components";
+import { Sparkles } from "lucide-react";
 
 interface CoverSlideProps {
   data: AiReportData;
@@ -27,21 +28,26 @@ export function CoverSlide({ data }: CoverSlideProps) {
   const hasPeriod = cover.startDate || cover.endDate;
 
   return (
-    <div className="flex h-full flex-col items-center justify-center px-6 py-10 text-center">
-      <div className="mb-8 rounded-full bg-zinc-100 px-4 py-1.5 text-xs font-medium text-zinc-500">
-        AI 통계 리포트
-      </div>
-      <Typo.MainTitle className="mb-4 text-2xl leading-snug sm:text-3xl">
-        {cover.missionTitle}
-      </Typo.MainTitle>
-      {hasPeriod && (
-        <Typo.Body size="medium" className="mb-2 text-zinc-500">
-          {formatDate(cover.startDate)} ~ {formatDate(cover.endDate)}
+    <div className="relative flex h-full flex-col items-center justify-center overflow-hidden px-8 py-12 text-center">
+      <div className="absolute inset-0 bg-gradient-to-br from-violet-50 via-white to-violet-50/50" />
+      <div className="relative z-10 flex flex-col items-center">
+        <div className="mb-6 flex items-center gap-1.5 rounded-full bg-violet-100 px-3.5 py-1.5 text-xs font-semibold text-violet-600">
+          <Sparkles className="size-3" />
+          AI 통계 리포트
+        </div>
+        <Typo.MainTitle className="mb-3 max-w-md text-2xl leading-snug sm:text-3xl">
+          {cover.missionTitle}
+        </Typo.MainTitle>
+        {hasPeriod && (
+          <Typo.Body size="medium" className="mb-2 text-zinc-400">
+            {formatDate(cover.startDate)} ~ {formatDate(cover.endDate)}
+          </Typo.Body>
+        )}
+        <div className="mt-4 h-px w-12 bg-zinc-200" />
+        <Typo.Body size="small" className="mt-4 text-zinc-400">
+          {generatedDate} 생성
         </Typo.Body>
-      )}
-      <Typo.Body size="small" className="text-zinc-400">
-        리포트 생성일: {generatedDate}
-      </Typo.Body>
+      </div>
     </div>
   );
 }
