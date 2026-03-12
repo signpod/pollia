@@ -509,7 +509,12 @@ export function useEditorMissionController({
     if (!draftRestoreAppliedRef.current) {
       return;
     }
-    if (!basicInfoRef.current || !rewardRef.current || !actionRef.current || !completionRef.current) {
+    if (
+      !basicInfoRef.current ||
+      !rewardRef.current ||
+      !actionRef.current ||
+      !completionRef.current
+    ) {
       return;
     }
 

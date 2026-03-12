@@ -3,6 +3,7 @@
 import { ACTION_TYPE_LABELS } from "@/constants/action";
 import { STORAGE_BUCKETS } from "@/constants/buckets";
 import { useMultipleImages, useSingleImage } from "@/hooks/image";
+import { sanitizeTiptapContent } from "@/lib/tiptap/utils";
 import {
   ACTION_DESCRIPTION_MAX_LENGTH,
   ACTION_OPTION_DESCRIPTION_MAX_LENGTH,
@@ -17,6 +18,22 @@ import {
   TAG_MIN_OPTIONS,
 } from "@/schemas/action";
 import type { ActionDetail } from "@/types/dto";
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import type { DragEndEvent } from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { ActionType } from "@prisma/client";
 import {
   Button,
@@ -29,12 +46,12 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Textarea,
+  TiptapEditor,
   Toggle,
   Typo,
   toast,
 } from "@repo/ui/components";
-import { AlertCircle, Plus, Trash2 } from "lucide-react";
+import { AlertCircle, Plus } from "lucide-react";
 import {
   type ForwardedRef,
   forwardRef,
@@ -47,7 +64,23 @@ import {
 } from "react";
 import { NextLinkDisplay } from "./NextLinkDisplay";
 import { NextLinkDrawer } from "./NextLinkDrawer";
-import { patchOptionByKey, removeOptionByKey } from "./actionFormOptionState";
+import { SortableOptionItem } from "./SortableOptionItem";
+import { moveOptionByKey, patchOptionByKey, removeOptionByKey } from "./actionFormOptionUtils";
+
+function getTextLengthFromHtml(html: string): number {
+  if (!html) return 0;
+
+  if (typeof document !== "undefined") {
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    return div.textContent?.replace(/\u00a0/g, " ").trim().length || 0;
+  }
+
+  return html
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .trim().length;
+}
 
 const UPLOAD_ERROR_MESSAGES = {
   ACTION_IMAGE: "질문 이미지 업로드에 실패했습니다.",
@@ -212,7 +245,7 @@ function buildActionDirtyComparable(params: {
     actionType,
     values: {
       title: values.title.trim(),
-      description: values.description?.trim() || null,
+      description: sanitizeTiptapContent(values.description ?? ""),
       imageUrl: values.imageUrl ?? null,
       imageFileUploadId: values.imageFileUploadId ?? null,
       isRequired: values.isRequired,
@@ -313,6 +346,7 @@ function ActionFormComponent(
   const initialActionTypeRef = useRef(actionType);
 
   const enableEditorActionMedia = enforceExclusiveNextLink;
+  const descriptionTextLength = useMemo(() => getTextLengthFromHtml(description), [description]);
   const itemLabel = wordingMode === "question" ? "질문" : "액션";
   const needsOptions = NEEDS_OPTIONS.includes(selectedActionType);
   const needsMaxSelections = NEEDS_MAX_SELECTIONS.includes(selectedActionType);
@@ -512,6 +546,10 @@ function ActionFormComponent(
       newErrors.title = `제목은 ${ACTION_TITLE_MAX_LENGTH}자를 초과할 수 없습니다.`;
     }
 
+    if (descriptionTextLength > ACTION_DESCRIPTION_MAX_LENGTH) {
+      newErrors.description = `설명은 ${ACTION_DESCRIPTION_MAX_LENGTH}자를 초과할 수 없습니다.`;
+    }
+
     if (needsOptions) {
       const emptyOptions = options.filter(o => !o.title.trim());
       if (emptyOptions.length > 0) {
@@ -539,6 +577,7 @@ function ActionFormComponent(
     return newErrors;
   }, [
     title,
+    descriptionTextLength,
     needsOptions,
     options,
     optionLimits.min,
@@ -578,7 +617,7 @@ function ActionFormComponent(
 
       return {
         title: title.trim(),
-        description: description?.trim() || null,
+        description: sanitizeTiptapContent(description ?? ""),
         imageUrl,
         imageFileUploadId,
         isRequired,
@@ -914,6 +953,30 @@ function ActionFormComponent(
     setImageFileUploadId(null);
   };
 
+  const [openOptionKey, setOpenOptionKey] = useState<string | null>(null);
+
+  const handleMoveOption = useCallback((optionKey: string, direction: "up" | "down") => {
+    setOptions(prev => moveOptionByKey(prev, optionKey, direction));
+  }, []);
+
+  const handleOptionDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    setOptions(prev => {
+      const oldIndex = prev.findIndex(o => o._key === active.id);
+      const newIndex = prev.findIndex(o => o._key === over.id);
+      if (oldIndex === -1 || newIndex === -1) return prev;
+      return arrayMove(prev, oldIndex, newIndex);
+    });
+  }, []);
+
+  const optionSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
   return (
     <div className="flex flex-col gap-5 p-4" onBlurCapture={handleBlurCapture}>
       {!hideTitle && (
@@ -955,14 +1018,33 @@ function ActionFormComponent(
         errorMessage={errors.title}
       />
 
-      <Textarea
-        label="설명"
-        placeholder={`${itemLabel}에 대한 설명을 입력해주세요`}
-        maxLength={ACTION_DESCRIPTION_MAX_LENGTH}
-        rows={3}
-        value={description ?? ""}
-        onChange={e => setDescription(e.target.value)}
-      />
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <LabelText required={false}>설명</LabelText>
+          <Typo.Body
+            size="small"
+            className={
+              descriptionTextLength > ACTION_DESCRIPTION_MAX_LENGTH
+                ? "text-red-500"
+                : "text-zinc-400"
+            }
+          >
+            {descriptionTextLength}/{ACTION_DESCRIPTION_MAX_LENGTH}
+          </Typo.Body>
+        </div>
+        <TiptapEditor
+          content={description ?? ""}
+          onUpdate={content => setDescription(content)}
+          placeholder={`${itemLabel}에 대한 설명을 입력해주세요`}
+          showToolbar
+          className={`min-h-[220px] rounded-sm bg-white ring-1 ${errors.description ? "ring-red-500" : "ring-zinc-200"} focus-within:ring-violet-500`}
+        />
+        {errors.description ? (
+          <Typo.Body size="small" className="text-red-500">
+            {errors.description}
+          </Typo.Body>
+        ) : null}
+      </div>
 
       {enableEditorActionMedia && (
         <div className="rounded-lg border border-zinc-200 bg-white px-4 py-4">
@@ -1018,96 +1100,81 @@ function ActionFormComponent(
           <LabelText required>
             항목 ({options.length}/{optionLimits.max})
           </LabelText>
-          {options.map((option, index) => {
-            const optionPreviewUrl = showOptionImage
-              ? (optionImages.getPreviewUrl(option._key) ?? option.imageUrl ?? undefined)
-              : undefined;
+          <DndContext
+            sensors={optionSensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleOptionDragEnd}
+          >
+            <SortableContext
+              items={options.map(o => o._key)}
+              strategy={verticalListSortingStrategy}
+            >
+              {options.map((option, index) => {
+                const optionPreviewUrl = showOptionImage
+                  ? (optionImages.getPreviewUrl(option._key) ?? option.imageUrl ?? undefined)
+                  : undefined;
 
-            return (
-              <div
-                key={option._key}
-                className="flex flex-col gap-2 rounded-lg border border-zinc-100 bg-zinc-50 p-3"
-              >
-                <div className="flex items-center gap-2">
-                  <Typo.Body size="small" className="shrink-0 font-medium text-zinc-500">
-                    {index + 1}
-                  </Typo.Body>
-                  <input
-                    type="text"
-                    placeholder="항목 제목"
-                    maxLength={ACTION_OPTION_TITLE_MAX_LENGTH}
-                    value={option.title}
-                    onChange={e => updateOptionByKey(option._key, "title", e.target.value)}
-                    className="flex-1 rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-violet-400"
+                return (
+                  <SortableOptionItem
+                    key={option._key}
+                    optionKey={option._key}
+                    index={index}
+                    title={option.title}
+                    description={option.description ?? null}
+                    previewImageUrl={optionPreviewUrl}
+                    isOpen={openOptionKey === option._key}
+                    isFirst={index === 0}
+                    isLast={index === options.length - 1}
+                    showDescription={showOptionDescription}
+                    showImage={showOptionImage}
+                    showDelete={!isBranch && options.length > optionLimits.min}
+                    disabled={isLoading}
+                    isImageUploading={optionImages.isUploading(option._key)}
+                    titleMaxLength={ACTION_OPTION_TITLE_MAX_LENGTH}
+                    descriptionMaxLength={ACTION_OPTION_DESCRIPTION_MAX_LENGTH}
+                    onToggle={() =>
+                      setOpenOptionKey(prev => (prev === option._key ? null : option._key))
+                    }
+                    onTitleChange={value => updateOptionByKey(option._key, "title", value)}
+                    onDescriptionChange={value =>
+                      updateOptionByKey(option._key, "description", value)
+                    }
+                    onImageSelect={file => {
+                      if (option.fileUploadId) {
+                        optionImages.markInitialForDeletion(option.fileUploadId);
+                      }
+                      optionImages.upload(option._key, file);
+                    }}
+                    onImageDelete={() => {
+                      optionImages.discard(option._key);
+                      updateOptionByKey(option._key, "imageUrl", null);
+                      updateOptionByKey(option._key, "fileUploadId", null);
+                    }}
+                    onDelete={() => removeOptionByOptionKey(option._key)}
+                    onMoveUp={() => handleMoveOption(option._key, "up")}
+                    onMoveDown={() => handleMoveOption(option._key, "down")}
+                    branchSlot={
+                      isBranch && (hasLinkTargets || hasCreateCallbacks) ? (
+                        <div className="flex flex-col gap-2">
+                          <LabelText required={allowCompletionLink}>다음 이동</LabelText>
+                          <NextLinkDisplay
+                            itemLabel={itemLabel}
+                            nextActionId={option.nextActionId ?? null}
+                            nextCompletionId={option.nextCompletionId ?? null}
+                            selectableActions={selectableActions}
+                            completionOptions={completionOptions}
+                            onAdd={() => setDrawerOpenKey(option._key)}
+                            onEdit={() => setDrawerOpenKey(option._key)}
+                            onDelete={() => handleDeleteBranchOptionNextLink(option._key)}
+                          />
+                        </div>
+                      ) : undefined
+                    }
                   />
-                  {!isBranch && options.length > optionLimits.min && (
-                    <button
-                      type="button"
-                      onClick={() => removeOptionByOptionKey(option._key)}
-                      className="rounded p-1 text-zinc-400 hover:text-red-500"
-                    >
-                      <Trash2 className="size-4" />
-                    </button>
-                  )}
-                </div>
-
-                {showOptionDescription && (
-                  <div className="ml-6">
-                    <input
-                      type="text"
-                      placeholder="항목 설명 (선택)"
-                      maxLength={ACTION_OPTION_DESCRIPTION_MAX_LENGTH}
-                      value={option.description ?? ""}
-                      onChange={e => updateOptionByKey(option._key, "description", e.target.value)}
-                      className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-violet-400"
-                    />
-                  </div>
-                )}
-
-                {showOptionImage && (
-                  <div className="ml-6 rounded-md border border-zinc-200 bg-white px-3 py-2">
-                    <div className="flex items-center justify-between gap-3">
-                      <Typo.Body size="small" className="text-zinc-600">
-                        항목 이미지 (선택)
-                      </Typo.Body>
-                      <ImageSelector
-                        size="medium"
-                        imageUrl={optionPreviewUrl}
-                        onImageSelect={file => {
-                          if (option.fileUploadId) {
-                            optionImages.markInitialForDeletion(option.fileUploadId);
-                          }
-                          optionImages.upload(option._key, file);
-                        }}
-                        onImageDelete={() => {
-                          optionImages.discard(option._key);
-                          updateOptionByKey(option._key, "imageUrl", null);
-                          updateOptionByKey(option._key, "fileUploadId", null);
-                        }}
-                        disabled={isLoading || optionImages.isUploading(option._key)}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {isBranch && (hasLinkTargets || hasCreateCallbacks) && (
-                  <div className="ml-6 flex flex-col gap-2">
-                    <LabelText required={allowCompletionLink}>다음 이동</LabelText>
-                    <NextLinkDisplay
-                      itemLabel={itemLabel}
-                      nextActionId={option.nextActionId ?? null}
-                      nextCompletionId={option.nextCompletionId ?? null}
-                      selectableActions={selectableActions}
-                      completionOptions={completionOptions}
-                      onAdd={() => setDrawerOpenKey(option._key)}
-                      onEdit={() => setDrawerOpenKey(option._key)}
-                      onDelete={() => handleDeleteBranchOptionNextLink(option._key)}
-                    />
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                );
+              })}
+            </SortableContext>
+          </DndContext>
 
           {errors.options && (
             <Typo.Body size="small" className="text-red-500">
