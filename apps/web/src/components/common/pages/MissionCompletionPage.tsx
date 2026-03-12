@@ -28,6 +28,7 @@ export interface MissionCompletionPageProps {
   reward?: ReactNode;
   shareButtons?: ReactNode;
   recommendation?: ReactNode;
+  completionLinks?: ReactNode;
   purchaseLinks?: ReactNode;
   hasReward?: boolean;
   onSave?: () => void;
@@ -174,6 +175,7 @@ export function MissionCompletionPage({
   reward,
   shareButtons,
   recommendation,
+  completionLinks,
   purchaseLinks,
   hasReward,
   onSave,
@@ -193,6 +195,7 @@ export function MissionCompletionPage({
         reward={reward}
         shareButtons={shareButtons}
         recommendation={recommendation}
+        completionLinks={completionLinks}
         purchaseLinks={purchaseLinks}
         onSave={onSave}
         isSaving={isSaving}

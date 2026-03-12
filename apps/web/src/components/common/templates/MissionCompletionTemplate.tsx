@@ -17,6 +17,7 @@ export interface MissionCompletionTemplateProps {
   reward?: ReactNode;
   shareButtons?: ReactNode;
   recommendation?: ReactNode;
+  completionLinks?: ReactNode;
   purchaseLinks?: ReactNode;
   onSave?: () => void;
   isSaving?: boolean;
@@ -32,6 +33,7 @@ export function MissionCompletionTemplate({
   reward,
   shareButtons,
   recommendation,
+  completionLinks,
   purchaseLinks,
   onSave,
   isSaving,
@@ -98,6 +100,8 @@ export function MissionCompletionTemplate({
             {description && cleanTiptapHTML(description) && (
               <TiptapViewer content={cleanTiptapHTML(description)} className="w-full break-keep" />
             )}
+
+            {completionLinks}
 
             {purchaseLinks}
 

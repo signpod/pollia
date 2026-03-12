@@ -438,7 +438,7 @@ export class MissionResponseService {
         fingerprint.hash,
       );
 
-      if (cached && validCompletionIds.has(cached.missionCompletionId)) {
+      if (cached && cached.source === "AI" && validCompletionIds.has(cached.missionCompletionId)) {
         return cached.missionCompletionId;
       }
     }

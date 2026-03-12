@@ -3,10 +3,15 @@ import type {
   ActionFormRawSnapshot,
 } from "@/app/(site)/mission/[missionId]/manage/actions/components/ActionForm";
 import { useManageDeleteAction } from "@/app/(site)/mission/[missionId]/manage/actions/hooks";
-import { makeDraftActionId } from "@/app/(site)/mission/[missionId]/manage/actions/logic";
+import {
+  makeDraftActionId,
+  mapEditInitialValues,
+} from "@/app/(site)/mission/[missionId]/manage/actions/logic";
 import { useReadActionsDetail } from "@/hooks/action";
 import { useReadMission } from "@/hooks/mission";
 import type { ActionDetail } from "@/types/dto";
+import type { DragEndEvent } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
 import { ActionType } from "@prisma/client";
 import { toast } from "@repo/ui/components";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
@@ -27,6 +32,7 @@ import {
   cleanupDeletedActionRefsAtom,
 } from "../atoms/editorActionAtoms";
 import { completionOptionsAtom, isAiCompletionEnabledAtom } from "../atoms/editorDerivedAtoms";
+import { editorDraftVersionAtom } from "../atoms/editorDraftVersionAtom";
 import { mobilePreviewModeAtom } from "../atoms/editorMobilePreviewAtom";
 import type {
   ActionListItem,
@@ -47,6 +53,26 @@ import { useActionFlowAnalysis } from "./useActionFlowAnalysis";
 import { useActionLinkDerived } from "./useActionLinkDerived";
 import { useActionSaveFlow } from "./useActionSaveFlow";
 
+function filterByValidKeys<T>(prev: Record<string, T>, validKeys: Set<string>): Record<string, T> {
+  let hasChange = false;
+  const next: Record<string, T> = {};
+  for (const [key, value] of Object.entries(prev)) {
+    if (validKeys.has(key)) {
+      next[key] = value;
+    } else {
+      hasChange = true;
+    }
+  }
+  return hasChange ? next : prev;
+}
+
+function deleteKeyFromRecord<T>(prev: Record<string, T>, key: string): Record<string, T> {
+  if (!(key in prev)) return prev;
+  const next = { ...prev };
+  delete next[key];
+  return next;
+}
+
 export interface UseActionSettingsCardReturn {
   viewState: {
     isBusy: boolean;
@@ -63,7 +89,6 @@ export interface UseActionSettingsCardReturn {
     orderedActionItems: ActionListItem[];
     openItemKey: string | null;
     actionTypeByItemKey: Record<string, ActionType>;
-    draftFormSnapshotByItemKey: Record<string, ActionFormRawSnapshot>;
     existingFormVersionById: Record<string, number>;
     draftHydrationVersion: number;
   };
@@ -91,7 +116,8 @@ export interface UseActionSettingsCardReturn {
     handleRemoveDraft: (draftKey: string) => void;
     handleToggleItem: (itemKey: string) => void;
     handleActionTypeChange: (itemKey: string, type: ActionType) => void;
-    handleMoveItem: (itemKey: string, direction: -1 | 1) => void;
+    handleDragEnd: (event: DragEndEvent) => void;
+    handleMoveItem: (itemKey: string, direction: "up" | "down") => void;
     handleItemDirtyChange: (itemKey: string, isDirty: boolean) => void;
     handleItemValidationChange: (itemKey: string, issueCount: number) => void;
     handleItemRawSnapshotChange: (itemKey: string, snapshot: ActionFormRawSnapshot) => void;
@@ -119,7 +145,9 @@ export function useActionSettingsCard({
     actionValidationIssueCountByItemKeyAtom,
   );
   const draftHydrationVersion = useAtomValue(actionDraftHydrationVersionAtom);
+  const setDraftHydrationVersion = useSetAtom(actionDraftHydrationVersionAtom);
   const dispatchCleanupDeletedActionRefs = useSetAtom(cleanupDeletedActionRefsAtom);
+  const incrementDraftVersion = useSetAtom(editorDraftVersionAtom);
   const [isFlowDialogOpen, setIsFlowDialogOpen] = useAtom(actionIsFlowDialogOpenAtom);
   const setIsAiCompletionEnabled = useSetAtom(isAiCompletionEnabledAtom);
   const setMobilePreviewMode = useSetAtom(mobilePreviewModeAtom);
@@ -188,6 +216,11 @@ export function useActionSettingsCard({
           return next;
         });
         setOpenItemKey(prev => (prev === deletingItemKey ? null : prev));
+
+        dispatchCleanupDeletedActionRefs({
+          itemKey: deletingItemKey,
+          deletedActionId: deletingActionId,
+        });
       }
 
       toast({ message: "질문이 삭제되었습니다." });
@@ -347,46 +380,9 @@ export function useActionSettingsCard({
   // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDirtyByItemKey, setDraftFormSnapshotByItemKey, setValidationIssueCountByItemKey
   useEffect(() => {
     const validKeys = new Set(orderedActionItems.map(item => item.key));
-    setDirtyByItemKey(prev => {
-      let hasChange = false;
-      const next: Record<string, boolean> = {};
-
-      for (const [key, value] of Object.entries(prev)) {
-        if (validKeys.has(key)) {
-          next[key] = value;
-        } else {
-          hasChange = true;
-        }
-      }
-
-      return hasChange ? next : prev;
-    });
-
-    setDraftFormSnapshotByItemKey(prev => {
-      let hasChange = false;
-      const next: Record<string, ActionFormRawSnapshot> = {};
-      for (const [key, value] of Object.entries(prev)) {
-        if (validKeys.has(key)) {
-          next[key] = value;
-        } else {
-          hasChange = true;
-        }
-      }
-      return hasChange ? next : prev;
-    });
-
-    setValidationIssueCountByItemKey(prev => {
-      let hasChange = false;
-      const next: Record<string, number> = {};
-      for (const [key, value] of Object.entries(prev)) {
-        if (validKeys.has(key)) {
-          next[key] = value;
-        } else {
-          hasChange = true;
-        }
-      }
-      return hasChange ? next : prev;
-    });
+    setDirtyByItemKey(prev => filterByValidKeys(prev, validKeys));
+    setDraftFormSnapshotByItemKey(prev => filterByValidKeys(prev, validKeys));
+    setValidationIssueCountByItemKey(prev => filterByValidKeys(prev, validKeys));
   }, [orderedActionItems]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setItemOrderKeys
@@ -466,20 +462,68 @@ export function useActionSettingsCard({
           [itemKey]: snapshot,
         };
       });
+      incrementDraftVersion(v => v + 1);
     },
-    [setDraftFormSnapshotByItemKey],
+    [setDraftFormSnapshotByItemKey, incrementDraftVersion],
   );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setOpenItemKey, setScrollTarget
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setOpenItemKey, setScrollTarget, setDraftFormSnapshotByItemKey, setDraftHydrationVersion
   const handleAddDraft = useCallback(() => {
     const draftKey = createDraftKey();
     const itemKey = getDraftItemKey(draftKey);
+    const newDraftActionId = makeDraftActionId(draftKey);
 
     setDraftItems(prev => [...prev, { key: draftKey }]);
     setActionTypeByItemKey(prev => ({ ...prev, [itemKey]: ActionType.MULTIPLE_CHOICE }));
     setOpenItemKey(itemKey);
     setScrollTarget(itemKey);
-  }, []);
+
+    const prevItem = orderedActionItems[orderedActionItems.length - 1];
+    if (!prevItem) return;
+
+    const prevItemKey = prevItem.key;
+    const prevActionType =
+      actionTypeByItemKey[prevItemKey] ??
+      (prevItem.kind === "existing" ? prevItem.action.type : undefined);
+    if (!prevActionType) return;
+
+    const prevSnapshot = draftFormSnapshotByItemKey[prevItemKey];
+    const prevValues =
+      prevSnapshot?.values ??
+      (prevItem.kind === "existing" ? mapEditInitialValues(prevItem.action) : undefined);
+    if (!prevValues) return;
+
+    if (prevActionType === ActionType.BRANCH) {
+      const hasUnlinkedOption = prevValues.options?.some(o => !o.nextActionId);
+      if (!hasUnlinkedOption) return;
+
+      const updatedValues = {
+        ...prevValues,
+        options: prevValues.options?.map(o =>
+          o.nextActionId ? o : { ...o, nextActionId: newDraftActionId },
+        ),
+      };
+      setDraftFormSnapshotByItemKey(prev => ({
+        ...prev,
+        [prevItemKey]: {
+          actionType: prevSnapshot?.actionType ?? prevActionType,
+          values: updatedValues,
+        },
+      }));
+    } else {
+      if (prevValues.nextActionId) return;
+
+      setDraftFormSnapshotByItemKey(prev => ({
+        ...prev,
+        [prevItemKey]: {
+          actionType: prevSnapshot?.actionType ?? prevActionType,
+          values: { ...prevValues, nextActionId: newDraftActionId },
+        },
+      }));
+    }
+
+    setDraftHydrationVersion(v => v + 1);
+  }, [orderedActionItems, actionTypeByItemKey, draftFormSnapshotByItemKey]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: 안정 참조 제외 - setDraftItems, setActionTypeByItemKey, setDirtyByItemKey, setValidationIssueCountByItemKey, setOpenItemKey, dispatchCleanupDeletedActionRefs
   const handleRemoveDraft = useCallback((draftKey: string) => {
@@ -487,24 +531,12 @@ export function useActionSettingsCard({
     const deletedActionId = makeDraftActionId(draftKey);
 
     setDraftItems(prev => prev.filter(item => item.key !== draftKey));
-    setActionTypeByItemKey(prev => {
-      const next = { ...prev };
-      delete next[itemKey];
-      return next;
-    });
-    setDirtyByItemKey(prev => {
-      const next = { ...prev };
-      delete next[itemKey];
-      return next;
-    });
+    setActionTypeByItemKey(prev => deleteKeyFromRecord(prev, itemKey));
+    setDirtyByItemKey(prev => deleteKeyFromRecord(prev, itemKey));
 
     dispatchCleanupDeletedActionRefs({ itemKey, deletedActionId });
 
-    setValidationIssueCountByItemKey(prev => {
-      const next = { ...prev };
-      delete next[itemKey];
-      return next;
-    });
+    setValidationIssueCountByItemKey(prev => deleteKeyFromRecord(prev, itemKey));
     delete formRefs.current[itemKey];
     setOpenItemKey(prev => (prev === itemKey ? null : prev));
   }, []);
@@ -528,29 +560,29 @@ export function useActionSettingsCard({
     setActionTypeByItemKey(prev => ({ ...prev, [itemKey]: actionType }));
   }, []);
 
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (over && active.id !== over.id) {
+        setItemOrderKeys(prev => {
+          const oldIndex = prev.indexOf(String(active.id));
+          const newIndex = prev.indexOf(String(over.id));
+          if (oldIndex === -1 || newIndex === -1) return prev;
+          return arrayMove(prev, oldIndex, newIndex);
+        });
+      }
+    },
+    [setItemOrderKeys],
+  );
+
   const handleMoveItem = useCallback(
-    (itemKey: string, direction: -1 | 1) => {
+    (itemKey: string, direction: "up" | "down") => {
       setItemOrderKeys(prev => {
-        const currentIndex = prev.indexOf(itemKey);
-        if (currentIndex < 0) {
-          return prev;
-        }
-
-        const nextIndex = currentIndex + direction;
-        if (nextIndex < 0 || nextIndex >= prev.length) {
-          return prev;
-        }
-
-        const next = [...prev];
-        const currentValue = next[currentIndex];
-        const targetValue = next[nextIndex];
-        if (!currentValue || !targetValue) {
-          return prev;
-        }
-
-        next[currentIndex] = targetValue;
-        next[nextIndex] = currentValue;
-        return next;
+        const oldIndex = prev.indexOf(itemKey);
+        if (oldIndex === -1) return prev;
+        const newIndex = direction === "up" ? oldIndex - 1 : oldIndex + 1;
+        if (newIndex < 0 || newIndex >= prev.length) return prev;
+        return arrayMove(prev, oldIndex, newIndex);
       });
     },
     [setItemOrderKeys],
@@ -577,7 +609,6 @@ export function useActionSettingsCard({
       orderedActionItems,
       openItemKey,
       actionTypeByItemKey,
-      draftFormSnapshotByItemKey,
       existingFormVersionById,
       draftHydrationVersion,
     },
@@ -605,6 +636,7 @@ export function useActionSettingsCard({
       handleRemoveDraft,
       handleToggleItem,
       handleActionTypeChange,
+      handleDragEnd,
       handleMoveItem,
       handleItemDirtyChange,
       handleItemValidationChange,

@@ -701,4 +701,109 @@ describe("ActionService - saveActionSection", () => {
       expect(ctx.mockCompletionRepo.create).not.toHaveBeenCalled();
     });
   });
+
+  describe("미해결 temp ID 방어", () => {
+    it("actionsToUpdate의 option이 존재하지 않는 draft action을 참조하면 nextActionId를 null로 처리한다", async () => {
+      // Given
+      const mockMission = createMockMission();
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
+
+      const existingAction = createMockAction({ id: "existing-1", type: ActionType.BRANCH });
+      ctx.mockActionRepo.update.mockResolvedValue(existingAction);
+      ctx.mockActionRepo.updateWithOptions.mockResolvedValue(existingAction);
+
+      const input = baseSectionInput({
+        actionsToUpdate: [
+          {
+            actionId: "existing-1",
+            actionType: ActionType.BRANCH,
+            values: {
+              title: "분기 질문",
+              isRequired: true,
+              options: [
+                { title: "A", order: 0, nextActionId: "draft:nonexistent", nextCompletionId: null },
+                { title: "B", order: 1, nextActionId: null, nextCompletionId: null },
+              ],
+            },
+          },
+        ],
+        actionOrder: ["existing-1"],
+        entryActionKey: "existing-1",
+      });
+
+      // When
+      await ctx.service.saveActionSection(input, "user1");
+
+      // Then
+      const updateCall = ctx.mockActionRepo.updateWithOptions.mock.calls[0];
+      expect(updateCall).toBeDefined();
+      const options = updateCall![2] as Array<{ nextActionId: string | null }>;
+      expect(options[0]!.nextActionId).toBeNull();
+    });
+
+    it("actionsToUpdate의 nextActionId가 미해결 draft ID이면 null로 처리한다", async () => {
+      // Given
+      const mockMission = createMockMission();
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
+
+      const existingAction = createMockAction({ id: "existing-1", type: ActionType.SUBJECTIVE });
+      ctx.mockActionRepo.update.mockResolvedValue(existingAction);
+
+      const input = baseSectionInput({
+        actionsToUpdate: [
+          {
+            actionId: "existing-1",
+            actionType: ActionType.SUBJECTIVE,
+            values: {
+              title: "기존 질문",
+              isRequired: true,
+              nextActionId: "draft:deleted",
+            },
+          },
+        ],
+        actionOrder: ["existing-1"],
+        entryActionKey: "existing-1",
+      });
+
+      // When
+      await ctx.service.saveActionSection(input, "user1");
+
+      // Then
+      const updateCall = ctx.mockActionRepo.update.mock.calls.find(
+        call => call[0] === "existing-1",
+      );
+      expect(updateCall).toBeDefined();
+      expect(updateCall![1]).toEqual(expect.objectContaining({ nextActionId: null }));
+    });
+
+    it("actionOrder에 미해결 draft temp ID가 있으면 해당 항목을 skip한다", async () => {
+      // Given
+      const mockMission = createMockMission();
+      ctx.mockMissionRepo.findById.mockResolvedValue(mockMission);
+      ctx.mockMissionRepo.update.mockResolvedValue(mockMission);
+
+      const input = baseSectionInput({
+        actionOrder: ["existing-1", "draft:ghost", "existing-2"],
+        entryActionKey: "existing-1",
+      });
+
+      // When
+      await ctx.service.saveActionSection(input, "user1");
+
+      // Then
+      expect(ctx.mockActionRepo.updateOrder).toHaveBeenCalledWith(
+        "existing-1",
+        0,
+        expect.anything(),
+      );
+      expect(ctx.mockActionRepo.updateOrder).toHaveBeenCalledWith(
+        "existing-2",
+        2,
+        expect.anything(),
+      );
+      expect(ctx.mockActionRepo.updateOrder).toHaveBeenCalledTimes(2);
+    });
+  });
 });

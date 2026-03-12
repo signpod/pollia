@@ -61,7 +61,6 @@ describe("transformToFlowGraph - 블랙박스 테스트", () => {
     title: "Test Completion",
     description: "Done",
     imageUrl: null,
-    links: null,
     missionId: "mission-1",
     imageFileUploadId: null,
     createdAt: new Date(),

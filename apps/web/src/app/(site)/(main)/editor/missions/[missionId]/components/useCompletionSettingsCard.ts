@@ -32,6 +32,7 @@ import {
   resetCompletionAfterSaveAtom,
   setCompletionDraftTitleAtom,
 } from "../atoms/editorCompletionAtoms";
+import { editorDraftVersionAtom } from "../atoms/editorDraftVersionAtom";
 import { mobilePreviewModeAtom } from "../atoms/editorMobilePreviewAtom";
 import type {
   CompletionFormHandle,
@@ -75,7 +76,6 @@ export interface UseCompletionSettingsCardReturn {
   listState: {
     completionItems: CompletionListItem[];
     openItemKey: string | null;
-    draftFormSnapshotByItemKey: Record<string, CompletionFormRawSnapshot>;
     existingFormVersionById: Record<string, number>;
     draftHydrationVersion: number;
   };
@@ -107,9 +107,7 @@ export function useCompletionSettingsCard({
   const [isSaving, setIsSaving] = useAtom(completionIsSavingAtom);
   const [dirtyByItemKey, setDirtyByItemKey] = useAtom(completionDirtyByItemKeyAtom);
   const [existingFormVersionById] = useAtom(completionFormVersionByIdAtom);
-  const [draftFormSnapshotByItemKey, setDraftFormSnapshotByItemKey] = useAtom(
-    completionFormSnapshotByItemKeyAtom,
-  );
+  const setDraftFormSnapshotByItemKey = useSetAtom(completionFormSnapshotByItemKeyAtom);
   const [validationIssueCountByItemKey, setValidationIssueCountByItemKey] = useAtom(
     completionValidationIssueCountByItemKeyAtom,
   );
@@ -124,6 +122,7 @@ export function useCompletionSettingsCard({
   const dispatchMarkRemoved = useSetAtom(markCompletionRemovedAtom);
   const dispatchResetAfterSave = useSetAtom(resetCompletionAfterSaveAtom);
   const dispatchCleanupDeletedCompletionRefs = useSetAtom(cleanupDeletedCompletionRefsAtom);
+  const incrementDraftVersion = useSetAtom(editorDraftVersionAtom);
   const { registerCompletionDraftForm } = useEditorMissionDraft();
 
   const { data, isLoading } = useQuery({
@@ -305,8 +304,9 @@ export function useCompletionSettingsCard({
           [itemKey]: snapshot,
         };
       });
+      incrementDraftVersion(v => v + 1);
     },
-    [setDraftFormSnapshotByItemKey],
+    [setDraftFormSnapshotByItemKey, incrementDraftVersion],
   );
 
   const setScrollTarget = useSetAtom(completionScrollTargetItemKeyAtom);
@@ -344,46 +344,62 @@ export function useCompletionSettingsCard({
     [dispatchCleanupDeletedCompletionRefs],
   );
 
-  const handleRemoveDraft = (draftKey: string) => {
-    const itemKey = getDraftItemKey(draftKey);
-    const deletedCompletionId = makeDraftCompletionId(draftKey);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: formRefs is a stable ref
+  const handleRemoveDraft = useCallback(
+    (draftKey: string) => {
+      const itemKey = getDraftItemKey(draftKey);
+      const deletedCompletionId = makeDraftCompletionId(draftKey);
 
-    dispatchRemoveDraft(draftKey);
-    registerCompletionDraftForm(draftKey, null);
-    delete formRefs.current[itemKey];
-    setDirtyByItemKey(prev => {
-      const next = { ...prev };
-      delete next[itemKey];
-      return next;
-    });
-    setDraftFormSnapshotByItemKey(prev => {
-      const next = { ...prev };
-      delete next[itemKey];
-      return next;
-    });
-    setValidationIssueCountByItemKey(prev => {
-      const next = { ...prev };
-      delete next[itemKey];
-      return next;
-    });
-    setOpenItemKey(prev => (prev === itemKey ? null : prev));
+      dispatchRemoveDraft(draftKey);
+      registerCompletionDraftForm(draftKey, null);
+      delete formRefs.current[itemKey];
+      setDirtyByItemKey(prev => {
+        const next = { ...prev };
+        delete next[itemKey];
+        return next;
+      });
+      setDraftFormSnapshotByItemKey(prev => {
+        const next = { ...prev };
+        delete next[itemKey];
+        return next;
+      });
+      setValidationIssueCountByItemKey(prev => {
+        const next = { ...prev };
+        delete next[itemKey];
+        return next;
+      });
+      setOpenItemKey(prev => (prev === itemKey ? null : prev));
 
-    clearCompletionRefsInActionSnapshots(deletedCompletionId);
-  };
+      clearCompletionRefsInActionSnapshots(deletedCompletionId);
+    },
+    [
+      clearCompletionRefsInActionSnapshots,
+      dispatchRemoveDraft,
+      formRefs,
+      registerCompletionDraftForm,
+      setDirtyByItemKey,
+      setDraftFormSnapshotByItemKey,
+      setOpenItemKey,
+      setValidationIssueCountByItemKey,
+    ],
+  );
 
-  const handleRemoveExisting = (completionId: string) => {
-    const confirmed = window.confirm(
-      "결과 화면을 제거하면 저장 시 실제 삭제됩니다.\n액션에서 연결된 완료 화면 설정은 비워질 수 있습니다.\n계속하시겠습니까?",
-    );
-    if (!confirmed) {
-      return;
-    }
+  const handleRemoveExisting = useCallback(
+    (completionId: string) => {
+      const confirmed = window.confirm(
+        "결과 화면을 제거하면 저장 시 실제 삭제됩니다.\n액션에서 연결된 완료 화면 설정은 비워질 수 있습니다.\n계속하시겠습니까?",
+      );
+      if (!confirmed) {
+        return;
+      }
 
-    dispatchMarkRemoved(completionId);
-    setOpenItemKey(prev => (prev === getExistingItemKey(completionId) ? null : prev));
+      dispatchMarkRemoved(completionId);
+      setOpenItemKey(prev => (prev === getExistingItemKey(completionId) ? null : prev));
 
-    clearCompletionRefsInActionSnapshots(completionId);
-  };
+      clearCompletionRefsInActionSnapshots(completionId);
+    },
+    [clearCompletionRefsInActionSnapshots, dispatchMarkRemoved, setOpenItemKey],
+  );
 
   const setCompletionDraftTitle = useCallback(
     (draftKey: string, title: string) => {
@@ -557,6 +573,7 @@ export function useCompletionSettingsCard({
             description: values.description,
             imageUrl: values.imageUrl ?? null,
             imageFileUploadId: values.imageFileUploadId ?? null,
+            links: values.links,
           });
           didMutateServer = true;
           if (updated?.data) {
@@ -599,6 +616,7 @@ export function useCompletionSettingsCard({
             description: values.description,
             imageUrl: values.imageUrl ?? undefined,
             imageFileUploadId: values.imageFileUploadId ?? undefined,
+            links: values.links,
           });
           didMutateServer = true;
           if (created?.data) {
@@ -815,7 +833,6 @@ export function useCompletionSettingsCard({
     listState: {
       completionItems,
       openItemKey,
-      draftFormSnapshotByItemKey,
       existingFormVersionById,
       draftHydrationVersion,
     },

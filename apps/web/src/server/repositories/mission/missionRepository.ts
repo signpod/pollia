@@ -1,5 +1,6 @@
 import prisma from "@/database/utils/prisma/client";
 import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
+import { sanitizeFileUploadRefs } from "@/server/repositories/common/sanitizeFileUploadRefs";
 import type { SortOrderType } from "@/types/common/sort";
 import { type ActionType, type MissionCategory, type MissionType, Prisma } from "@prisma/client";
 
@@ -48,6 +49,7 @@ export class MissionRepository {
     sortOrder?: SortOrderType;
     category?: MissionCategory;
     type?: MissionType;
+    isActive?: boolean;
   }) {
     const limit = options?.limit ?? 10;
     const sortOrder = options?.sortOrder ?? "latest";
@@ -56,6 +58,7 @@ export class MissionRepository {
       where: {
         ...(options?.category && { category: options.category }),
         ...(options?.type && { type: options.type }),
+        ...(options?.isActive !== undefined && { isActive: options.isActive }),
       },
       orderBy: {
         createdAt: sortOrder === "latest" ? "desc" : "asc",
@@ -75,8 +78,13 @@ export class MissionRepository {
     actionIds: string[],
     client: TransactionClient = prisma,
   ) {
+    const sanitizedData = await sanitizeFileUploadRefs(client, data, [
+      { idField: "imageFileUploadId", urlField: "imageUrl" },
+      { idField: "brandLogoFileUploadId", urlField: "brandLogoUrl" },
+    ]);
+
     const createdMission = await client.mission.create({
-      data,
+      data: sanitizedData,
     });
 
     if (actionIds.length > 0) {
@@ -122,14 +130,23 @@ export class MissionRepository {
     userId?: string,
     client: TransactionClient = prisma,
   ) {
+    const sanitizedData = await sanitizeFileUploadRefs(client, data, [
+      { idField: "imageFileUploadId", urlField: "imageUrl" },
+      { idField: "brandLogoFileUploadId", urlField: "brandLogoUrl" },
+    ]);
+
     const fileUploadIds = [
-      typeof data.imageFileUploadId === "string" ? data.imageFileUploadId : undefined,
-      typeof data.brandLogoFileUploadId === "string" ? data.brandLogoFileUploadId : undefined,
+      typeof sanitizedData.imageFileUploadId === "string"
+        ? sanitizedData.imageFileUploadId
+        : undefined,
+      typeof sanitizedData.brandLogoFileUploadId === "string"
+        ? sanitizedData.brandLogoFileUploadId
+        : undefined,
     ].filter(Boolean) as string[];
 
     const updatedMission = await client.mission.update({
       where: { id: missionId },
-      data,
+      data: sanitizedData,
     });
 
     if (fileUploadIds.length > 0 && userId) {

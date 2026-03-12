@@ -13,6 +13,7 @@ import type { GetMissionResponse } from "@/types/dto";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MissionType } from "@prisma/client";
 import { toast } from "@repo/ui/components";
+import { useSetAtom } from "jotai";
 import { AlertCircle } from "lucide-react";
 import {
   type ForwardedRef,
@@ -26,6 +27,7 @@ import { FormProvider, useForm, useWatch } from "react-hook-form";
 import { EditorContentInfoSection } from "../../../components/view/EditorContentInfoSection";
 import { ImageUploaderField } from "../../../components/view/ImageUploaderField";
 import { countValidationIssues } from "../../../utils/countValidationIssues";
+import { editorDraftVersionAtom } from "../atoms/editorDraftVersionAtom";
 import type {
   SectionSaveHandle,
   SectionSaveOptions,
@@ -145,6 +147,24 @@ function ContentBasicInfoCardComponent(
     });
   }, [hasPendingChanges, hasValidationIssues, isBusy, onSaveStateChange, validationIssueCount]);
 
+  const incrementDraftVersion = useSetAtom(editorDraftVersionAtom);
+
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    const subscription = form.watch(() => {
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        if (form.formState.isDirty) {
+          incrementDraftVersion(v => v + 1);
+        }
+      }, 300);
+    });
+    return () => {
+      subscription.unsubscribe();
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [form, incrementDraftVersion]);
+
   useEffect(() => {
     onUseAiCompletionChange?.(watchedUseAiCompletion);
   }, [onUseAiCompletionChange, watchedUseAiCompletion]);
@@ -263,19 +283,12 @@ function ContentBasicInfoCardComponent(
             typeof values.imageUrl === "string" || values.imageUrl === null
               ? values.imageUrl
               : defaultValues.imageUrl,
-          imageFileUploadId:
-            typeof values.imageFileUploadId === "string" || values.imageFileUploadId === null
-              ? values.imageFileUploadId
-              : defaultValues.imageFileUploadId,
+          imageFileUploadId: defaultValues.imageFileUploadId,
           brandLogoUrl:
             typeof values.brandLogoUrl === "string" || values.brandLogoUrl === null
               ? values.brandLogoUrl
               : defaultValues.brandLogoUrl,
-          brandLogoFileUploadId:
-            typeof values.brandLogoFileUploadId === "string" ||
-            values.brandLogoFileUploadId === null
-              ? values.brandLogoFileUploadId
-              : defaultValues.brandLogoFileUploadId,
+          brandLogoFileUploadId: defaultValues.brandLogoFileUploadId,
           startDate:
             values.startDate instanceof Date || values.startDate === null
               ? values.startDate

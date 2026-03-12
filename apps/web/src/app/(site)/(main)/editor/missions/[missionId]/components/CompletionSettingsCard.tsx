@@ -3,18 +3,23 @@
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { Typo } from "@repo/ui/components";
 import { useAtom } from "jotai";
-import { AlertCircle, ChevronDown, Plus, X } from "lucide-react";
-import { type ForwardedRef, forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import { AlertCircle, Plus } from "lucide-react";
+import {
+  type ForwardedRef,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+} from "react";
 import { completionScrollTargetItemKeyAtom } from "../atoms/editorCompletionAtoms";
-import { CompletionForm, type CompletionFormHandle } from "./CompletionForm";
+import type { CompletionFormHandle } from "./CompletionForm";
+import { CompletionItem } from "./CompletionItem";
 import type { CompletionSettingsCardProps } from "./completionSettingsCard.types";
-import { mapEditInitialValues } from "./completionSettingsCard.utils";
 import type { SectionSaveHandle } from "./editor-save.types";
 import { useCompletionSettingsCard } from "./useCompletionSettingsCard";
 
 export type { CompletionSectionDraftSnapshot } from "./completionSettingsCard.types";
-
-const NOOP = () => {};
 
 function CompletionSettingsCardComponent(
   props: CompletionSettingsCardProps,
@@ -26,13 +31,8 @@ function CompletionSettingsCardComponent(
 
   const { isSaving, isLoading, hasValidationIssues, validationIssueCount } = viewState;
 
-  const {
-    completionItems,
-    openItemKey,
-    draftFormSnapshotByItemKey,
-    existingFormVersionById,
-    draftHydrationVersion,
-  } = listState;
+  const { completionItems, openItemKey, existingFormVersionById, draftHydrationVersion } =
+    listState;
 
   const {
     handleAddDraft,
@@ -46,9 +46,22 @@ function CompletionSettingsCardComponent(
     registerCompletionDraftForm,
   } = handlers;
 
+  const handleFormRef = useCallback(
+    (itemKey: string, instance: CompletionFormHandle | null) => {
+      formRefs.current[itemKey] = instance;
+    },
+    [formRefs],
+  );
+
   const listContainerRef = useRef<HTMLDivElement>(null);
   const prevHighlightRef = useRef<HTMLDivElement | null>(null);
+  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [scrollTargetKey, setScrollTargetKey] = useAtom(completionScrollTargetItemKeyAtom);
+
+  const openItemKeyRef = useRef(openItemKey);
+  openItemKeyRef.current = openItemKey;
+  const handleToggleItemRef = useRef(handleToggleItem);
+  handleToggleItemRef.current = handleToggleItem;
 
   useEffect(() => {
     if (!scrollTargetKey) {
@@ -57,13 +70,18 @@ function CompletionSettingsCardComponent(
 
     setScrollTargetKey(null);
 
+    if (highlightTimerRef.current) {
+      clearTimeout(highlightTimerRef.current);
+      highlightTimerRef.current = null;
+    }
+
     if (prevHighlightRef.current) {
       prevHighlightRef.current.classList.remove("action-item-highlight");
       prevHighlightRef.current = null;
     }
 
-    if (openItemKey !== scrollTargetKey) {
-      handleToggleItem(scrollTargetKey);
+    if (openItemKeyRef.current !== scrollTargetKey) {
+      handleToggleItemRef.current(scrollTargetKey);
     }
 
     const targetEl = listContainerRef.current?.querySelector<HTMLDivElement>(
@@ -76,17 +94,14 @@ function CompletionSettingsCardComponent(
     prevHighlightRef.current = targetEl;
     targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
     targetEl.classList.add("action-item-highlight");
-    const timer = setTimeout(() => {
+    highlightTimerRef.current = setTimeout(() => {
       targetEl.classList.remove("action-item-highlight");
       if (prevHighlightRef.current === targetEl) {
         prevHighlightRef.current = null;
       }
+      highlightTimerRef.current = null;
     }, 1500);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [scrollTargetKey, setScrollTargetKey, openItemKey, handleToggleItem]);
+  }, [scrollTargetKey, setScrollTargetKey]);
 
   return (
     <div className="border border-zinc-200 bg-white">
@@ -130,114 +145,31 @@ function CompletionSettingsCardComponent(
         ) : (
           <div className="flex flex-col gap-3">
             {completionItems.map((item, index) => {
-              const isOpen = openItemKey === item.key;
-              const currentSnapshot =
-                formRefs.current[item.key]?.getRawSnapshot() ??
-                draftFormSnapshotByItemKey[item.key];
-              const snapshotTitle = currentSnapshot?.title?.trim() ?? "";
-              const title =
+              const formKey =
                 item.kind === "existing"
-                  ? snapshotTitle || item.completion.title
-                  : snapshotTitle || (item.draft.title.trim() ?? "") || "새 결과 화면";
-              const previewImageUrl =
-                currentSnapshot?.imageUrl ??
-                (item.kind === "existing" ? item.completion.imageUrl : null);
+                  ? `${item.key}:${existingFormVersionById[item.completion.id] ?? 0}:${draftHydrationVersion}`
+                  : `${item.key}:${draftHydrationVersion}`;
 
               return (
-                <div
+                <CompletionItem
                   key={item.key}
-                  data-editor-item-key={item.key}
-                  className="scroll-mt-28 overflow-hidden rounded-xl border border-zinc-200 transition-shadow duration-500"
-                >
-                  <div className="flex items-center justify-between bg-zinc-50 px-4 py-3">
-                    <button
-                      type="button"
-                      onClick={() => handleToggleItem(item.key)}
-                      className="flex min-w-0 flex-1 items-center justify-between gap-3 text-left"
-                    >
-                      <div className="min-w-0">
-                        <Typo.Body size="medium" className="truncate font-semibold text-zinc-800">
-                          {index + 1}. {title}
-                        </Typo.Body>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-2">
-                        {previewImageUrl ? (
-                          <img
-                            src={previewImageUrl}
-                            alt={`${title} 미리보기 이미지`}
-                            className="size-10 shrink-0 rounded border border-zinc-200 bg-zinc-100 object-cover"
-                          />
-                        ) : null}
-                        <ChevronDown
-                          className={`size-4 shrink-0 text-zinc-500 transition-transform ${
-                            isOpen ? "rotate-180" : ""
-                          }`}
-                        />
-                      </div>
-                    </button>
-
-                    <button
-                      type="button"
-                      aria-label={
-                        item.kind === "existing" ? "결과 화면 제거" : "신규 결과 화면 제거"
-                      }
-                      onClick={() =>
-                        item.kind === "existing"
-                          ? handleRemoveExisting(item.completion.id)
-                          : handleRemoveDraft(item.draft.key)
-                      }
-                      className="ml-2 rounded p-1 text-zinc-400 transition-colors hover:text-red-500"
-                    >
-                      <X className="size-4" />
-                    </button>
-                  </div>
-
-                  <div className={isOpen ? "block border-t border-zinc-200" : "hidden"}>
-                    <CompletionForm
-                      key={
-                        item.kind === "existing"
-                          ? `${item.key}:${existingFormVersionById[item.completion.id] ?? 0}:${draftHydrationVersion}`
-                          : `${item.key}:${draftHydrationVersion}`
-                      }
-                      ref={(instance: CompletionFormHandle | null) => {
-                        formRefs.current[item.key] = instance;
-                        if (item.kind === "draft") {
-                          registerCompletionDraftForm(item.draft.key, instance);
-                        }
-                      }}
-                      missionId={props.missionId}
-                      itemKey={item.key}
-                      initialValues={
-                        draftFormSnapshotByItemKey[item.key] ??
-                        (item.kind === "existing"
-                          ? mapEditInitialValues(item.completion)
-                          : undefined)
-                      }
-                      dirtyBaselineValues={
-                        item.kind === "existing" ? mapEditInitialValues(item.completion) : undefined
-                      }
-                      isLoading={isSaving}
-                      onSubmit={NOOP}
-                      onCancel={NOOP}
-                      hideTitle
-                      hideFooter
-                      onTitleChange={
-                        item.kind === "draft"
-                          ? titleValue => setCompletionDraftTitle(item.draft.key, titleValue)
-                          : undefined
-                      }
-                      onDirtyChange={isDirty => {
-                        handleItemDirtyChange(item.key, isDirty);
-                      }}
-                      onValidationStateChange={issueCount => {
-                        handleItemValidationChange(item.key, issueCount);
-                      }}
-                      onRawSnapshotChange={snapshot => {
-                        handleItemRawSnapshotChange(item.key, snapshot);
-                      }}
-                    />
-                  </div>
-                </div>
+                  item={item}
+                  itemKey={item.key}
+                  index={index}
+                  isOpen={openItemKey === item.key}
+                  isSaving={isSaving}
+                  missionId={props.missionId}
+                  formKey={formKey}
+                  onFormRef={handleFormRef}
+                  onRegisterDraftForm={registerCompletionDraftForm}
+                  onToggle={handleToggleItem}
+                  onRemoveDraft={handleRemoveDraft}
+                  onRemoveExisting={handleRemoveExisting}
+                  onDirtyChange={handleItemDirtyChange}
+                  onValidationStateChange={handleItemValidationChange}
+                  onRawSnapshotChange={handleItemRawSnapshotChange}
+                  onDraftTitleChange={setCompletionDraftTitle}
+                />
               );
             })}
           </div>

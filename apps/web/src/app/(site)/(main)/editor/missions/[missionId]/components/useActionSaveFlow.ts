@@ -195,7 +195,28 @@ export function useActionSaveFlow({
     setOpenItemKey(null);
     setDirtyByItemKey(next.dirtyByItemKey);
     setActionTypeByItemKey(next.actionTypeByItemKey);
-    setDraftFormSnapshotByItemKey(next.formSnapshotByItemKey);
+
+    const sanitizedSnapshots = Object.fromEntries(
+      Object.entries(next.formSnapshotByItemKey).map(([key, snap]) => [
+        key,
+        {
+          ...snap,
+          values: {
+            ...snap.values,
+            imageFileUploadId: null,
+            ...(snap.values.options
+              ? {
+                  options: snap.values.options.map(opt => ({
+                    ...opt,
+                    fileUploadId: null,
+                  })),
+                }
+              : {}),
+          },
+        },
+      ]),
+    );
+    setDraftFormSnapshotByItemKey(sanitizedSnapshots);
     setDraftHydrationVersion(prev => prev + 1);
   }, []);
 

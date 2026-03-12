@@ -1,12 +1,18 @@
-import type { Prisma } from "@prisma/client";
+import type { CompletionLinkInput } from "@/types/dto";
 
-type MissionCompletionCreateFields = Pick<
-  Prisma.MissionCompletionUncheckedCreateInput,
-  "title" | "description" | "imageUrl" | "imageFileUploadId" | "links" | "missionId"
->;
+export type CreateMissionCompletionInput = {
+  title: string;
+  description: string;
+  imageUrl?: string;
+  imageFileUploadId?: string;
+  links?: CompletionLinkInput[];
+  missionId: string;
+};
 
-export type CreateMissionCompletionInput = MissionCompletionCreateFields;
-
-export type UpdateMissionCompletionInput = Partial<
-  Omit<MissionCompletionCreateFields, "missionId">
->;
+export type UpdateMissionCompletionInput = {
+  title?: string;
+  description?: string;
+  imageUrl?: string | null;
+  imageFileUploadId?: string | null;
+  links?: CompletionLinkInput[];
+};

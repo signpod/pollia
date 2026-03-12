@@ -11,8 +11,10 @@ import {
 } from "@/types/mission-editor-draft";
 import { MissionType } from "@prisma/client";
 import { toast } from "@repo/ui/components";
+import { useAtomValue } from "jotai";
 import { AlertCircle } from "lucide-react";
 import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { editorDraftVersionAtom } from "../../atoms/editorDraftVersionAtom";
 import {
   type ServerActionLike,
   type ServerCompletionLike,
@@ -272,6 +274,7 @@ export function useEditorMissionController({
   });
 
   const isEditorTab = currentTab === "editor";
+  const draftVersion = useAtomValue(editorDraftVersionAtom);
 
   const updateSectionState = useCallback(
     (section: EditorSectionKey, nextState: SectionSaveState) => {
@@ -502,6 +505,7 @@ export function useEditorMissionController({
     missionQueryData,
   ]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: draftVersion and sectionStates are intentional triggers
   useEffect(() => {
     if (!isEditorTab || typeof window === "undefined" || isPublished) {
       return;
@@ -509,7 +513,12 @@ export function useEditorMissionController({
     if (!draftRestoreAppliedRef.current) {
       return;
     }
-    if (!basicInfoRef.current || !rewardRef.current || !actionRef.current || !completionRef.current) {
+    if (
+      !basicInfoRef.current ||
+      !rewardRef.current ||
+      !actionRef.current ||
+      !completionRef.current
+    ) {
       return;
     }
 
@@ -527,6 +536,7 @@ export function useEditorMissionController({
     };
   }, [
     collectLocalDraftPayload,
+    draftVersion,
     hasAnyPendingChanges,
     hasPendingChangesFromRefs,
     isEditorTab,

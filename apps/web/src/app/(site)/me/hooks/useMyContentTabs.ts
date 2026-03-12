@@ -46,6 +46,7 @@ export function useMyContentTabs() {
     } else {
       url.searchParams.set("tab", value);
     }
+    url.searchParams.delete("filter");
     window.history.replaceState(null, "", url.toString());
   }, []);
 

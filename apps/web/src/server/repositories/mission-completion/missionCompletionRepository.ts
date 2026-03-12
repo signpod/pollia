@@ -1,40 +1,111 @@
 import prisma from "@/database/utils/prisma/client";
 import { confirmFileUploads } from "@/server/repositories/common/confirmFileUploads";
+import {
+  getValidFileUploadIds,
+  sanitizeFileUploadRefs,
+} from "@/server/repositories/common/sanitizeFileUploadRefs";
+import type { CompletionLinkInput } from "@/types/dto";
 import { Prisma } from "@prisma/client";
+
+const linksInclude = {
+  include: {
+    fileUpload: {
+      select: { id: true, publicUrl: true },
+    },
+  },
+  orderBy: { order: "asc" as const },
+};
+
+const baseInclude = {
+  imageFileUpload: {
+    select: { id: true, publicUrl: true },
+  },
+  links: linksInclude,
+};
+
+const includeWithMission = {
+  ...baseInclude,
+  mission: {
+    select: { id: true, creatorId: true },
+  },
+};
+
+interface CreateData {
+  title: string;
+  description: string;
+  imageUrl?: string;
+  imageFileUploadId?: string;
+  missionId: string;
+  links?: CompletionLinkInput[];
+}
+
+interface UpdateData {
+  title?: string;
+  description?: string;
+  imageUrl?: string | null;
+  imageFileUploadId?: string | null;
+  links?: CompletionLinkInput[];
+}
+
+function collectFileUploadIds(
+  imageFileUploadId?: string | null,
+  links?: CompletionLinkInput[],
+): string[] {
+  const ids: string[] = [];
+  if (imageFileUploadId) ids.push(imageFileUploadId);
+  if (links) {
+    for (const link of links) {
+      if (link.fileUploadId) ids.push(link.fileUploadId);
+    }
+  }
+  return ids;
+}
+
+async function sanitizeLinks(
+  tx: Parameters<typeof getValidFileUploadIds>[0],
+  links?: CompletionLinkInput[],
+): Promise<CompletionLinkInput[] | undefined> {
+  if (!links?.length) return links;
+
+  const candidateIds = links.map(l => l.fileUploadId).filter((id): id is string => Boolean(id));
+
+  if (candidateIds.length === 0) return links;
+
+  const validIds = await getValidFileUploadIds(tx, candidateIds);
+
+  return links.map(link => {
+    if (!link.fileUploadId || validIds.has(link.fileUploadId)) return link;
+    return { ...link, fileUploadId: null, imageUrl: null };
+  });
+}
+
+function buildLinksCreate(links?: CompletionLinkInput[]) {
+  if (!links?.length) return {};
+  return {
+    links: {
+      create: links.map(link => ({
+        name: link.name,
+        url: link.url,
+        imageUrl: link.imageUrl ?? null,
+        order: link.order,
+        fileUploadId: link.fileUploadId ?? null,
+      })),
+    },
+  };
+}
 
 export class MissionCompletionRepository {
   async findById(id: string) {
     return prisma.missionCompletion.findUnique({
       where: { id },
-      include: {
-        imageFileUpload: {
-          select: {
-            id: true,
-            publicUrl: true,
-          },
-        },
-        mission: {
-          select: {
-            id: true,
-            creatorId: true,
-          },
-        },
-      },
+      include: includeWithMission,
     });
   }
 
-  //TODO: "다중미션완료" 서비스로 마이그레이션 이후 삭제
   async findByMissionId(missionId: string) {
     return prisma.missionCompletion.findFirst({
       where: { missionId },
-      include: {
-        imageFileUpload: {
-          select: {
-            id: true,
-            publicUrl: true,
-          },
-        },
-      },
+      include: baseInclude,
       orderBy: { createdAt: "asc" },
     });
   }
@@ -42,99 +113,87 @@ export class MissionCompletionRepository {
   async findAllByMissionId(missionId: string) {
     return prisma.missionCompletion.findMany({
       where: { missionId },
-      include: {
-        imageFileUpload: {
-          select: {
-            id: true,
-            publicUrl: true,
-          },
-        },
-        mission: {
-          select: {
-            id: true,
-            creatorId: true,
-          },
-        },
-      },
+      include: includeWithMission,
       orderBy: { createdAt: "asc" },
     });
   }
 
-  async create(
-    data: Prisma.MissionCompletionUncheckedCreateInput,
-    userId?: string,
-    client?: Prisma.TransactionClient,
-  ) {
-    const imageFileUploadId =
-      typeof data.imageFileUploadId === "string" ? data.imageFileUploadId : undefined;
+  async create(data: CreateData, userId?: string, client?: Prisma.TransactionClient) {
+    const { links: rawLinks, ...rawCompletionData } = data;
+    const queryClient = client ?? prisma;
+
+    const completionData = await sanitizeFileUploadRefs(queryClient, rawCompletionData, [
+      { idField: "imageFileUploadId", urlField: "imageUrl" },
+    ]);
+    const links = await sanitizeLinks(queryClient, rawLinks);
+
+    const fileUploadIds = collectFileUploadIds(completionData.imageFileUploadId, links);
+    const needsTransaction = fileUploadIds.length > 0 && userId;
+    const linksCreate = buildLinksCreate(links);
 
     const execute = async (tx: Prisma.TransactionClient) => {
       const missionCompletion = await tx.missionCompletion.create({
-        data,
-        include: {
-          imageFileUpload: {
-            select: {
-              id: true,
-              publicUrl: true,
-            },
-          },
+        data: {
+          ...completionData,
+          ...linksCreate,
         },
+        include: baseInclude,
       });
 
-      if (imageFileUploadId && userId) {
-        await confirmFileUploads(tx, userId, imageFileUploadId);
+      if (fileUploadIds.length > 0 && userId) {
+        await confirmFileUploads(tx, userId, fileUploadIds);
       }
 
       return missionCompletion;
     };
 
-    if (client) {
-      return execute(client);
-    }
-
-    if (imageFileUploadId && userId) {
-      return prisma.$transaction(execute);
-    }
+    if (client) return execute(client);
+    if (needsTransaction) return prisma.$transaction(execute);
 
     return prisma.missionCompletion.create({
-      data,
-      include: {
-        imageFileUpload: {
-          select: {
-            id: true,
-            publicUrl: true,
-          },
-        },
+      data: {
+        ...completionData,
+        ...linksCreate,
       },
+      include: baseInclude,
     });
   }
 
-  async update(id: string, data: Prisma.MissionCompletionUncheckedUpdateInput, userId?: string) {
-    const imageFileUploadId =
-      typeof data.imageFileUploadId === "string" ? data.imageFileUploadId : undefined;
+  async update(id: string, data: UpdateData, userId?: string) {
+    const { links: rawLinks, ...rawCompletionFields } = data;
+    const hasLinks = rawLinks !== undefined;
 
-    if (imageFileUploadId && userId) {
+    const completionFields = await sanitizeFileUploadRefs(prisma, rawCompletionFields, [
+      { idField: "imageFileUploadId", urlField: "imageUrl" },
+    ]);
+    const links = hasLinks ? await sanitizeLinks(prisma, rawLinks) : undefined;
+
+    const fileUploadIds = collectFileUploadIds(
+      typeof completionFields.imageFileUploadId === "string"
+        ? completionFields.imageFileUploadId
+        : undefined,
+      links,
+    );
+    const needsTransaction = hasLinks || fileUploadIds.length > 0;
+
+    if (needsTransaction) {
       return prisma.$transaction(async tx => {
+        if (hasLinks) {
+          await tx.completionLink.deleteMany({ where: { missionCompletionId: id } });
+        }
+
         const missionCompletion = await tx.missionCompletion.update({
           where: { id },
-          data,
-          include: {
-            imageFileUpload: {
-              select: {
-                id: true,
-                publicUrl: true,
-              },
-            },
-            mission: {
-              select: {
-                id: true,
-                creatorId: true,
-              },
-            },
+          data: {
+            ...completionFields,
+            ...buildLinksCreate(hasLinks ? links : undefined),
           },
+          include: includeWithMission,
         });
 
-        await confirmFileUploads(tx, userId, imageFileUploadId);
+        if (fileUploadIds.length > 0 && userId) {
+          await confirmFileUploads(tx, userId, fileUploadIds);
+        }
 
         return missionCompletion;
       });
@@ -142,21 +201,8 @@ export class MissionCompletionRepository {
 
     return prisma.missionCompletion.update({
       where: { id },
-      data,
-      include: {
-        imageFileUpload: {
-          select: {
-            id: true,
-            publicUrl: true,
-          },
-        },
-        mission: {
-          select: {
-            id: true,
-            creatorId: true,
-          },
-        },
-      },
+      data: completionFields,
+      include: includeWithMission,
     });
   }
 

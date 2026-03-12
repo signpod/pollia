@@ -19,6 +19,13 @@ export function mapEditInitialValues(
     description: completion.description,
     imageUrl: completion.imageUrl ?? null,
     imageFileUploadId: completion.imageFileUploadId ?? null,
+    links: completion.links.map(link => ({
+      name: link.name,
+      url: link.url,
+      order: link.order,
+      imageUrl: link.imageUrl,
+      fileUploadId: link.fileUploadId,
+    })),
   };
 }
 
@@ -28,6 +35,7 @@ function normalizeValues(values: CompletionFormValues) {
     description: values.description.trim(),
     imageUrl: values.imageUrl ?? null,
     imageFileUploadId: values.imageFileUploadId ?? null,
+    links: values.links ?? [],
   };
 }
 
@@ -43,7 +51,8 @@ export function areCompletionSnapshotsEqual(
     left.title === right.title &&
     left.description === right.description &&
     (left.imageUrl ?? null) === (right.imageUrl ?? null) &&
-    (left.imageFileUploadId ?? null) === (right.imageFileUploadId ?? null)
+    (left.imageFileUploadId ?? null) === (right.imageFileUploadId ?? null) &&
+    JSON.stringify(left.links) === JSON.stringify(right.links)
   );
 }
 
@@ -85,7 +94,7 @@ export function buildPatchedCompletionForCache(params: {
     title: serverData.title,
     description: serverData.description,
     imageUrl: serverData.imageUrl ?? null,
-    links: serverData.links ?? null,
+    links: serverData.links ?? [],
     missionId: serverData.missionId ?? currentCompletion?.missionId ?? missionId,
     imageFileUploadId: serverData.imageFileUploadId ?? null,
     createdAt: toDateOrFallback(serverData.createdAt ?? currentCompletion?.createdAt, now),

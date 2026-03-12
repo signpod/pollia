@@ -1,4 +1,11 @@
-import type { Action, ActionOption, FileUpload, Mission, MissionCompletion } from "@prisma/client";
+import type {
+  Action,
+  ActionOption,
+  CompletionLink,
+  FileUpload,
+  Mission,
+  MissionCompletion,
+} from "@prisma/client";
 import { FileStatus, MissionCategory, MissionType } from "@prisma/client";
 
 export const createMockMission = (overrides: Partial<Mission> = {}): Mission => ({
@@ -146,8 +153,13 @@ export const createMockFileUpload = (overrides: Partial<FileUpload> = {}): FileU
   ...overrides,
 });
 
+type CompletionLinkWithUpload = CompletionLink & {
+  fileUpload: { id: string; publicUrl: string } | null;
+};
+
 type MissionCompletionWithRelations = MissionCompletion & {
   imageFileUpload: { id: string; publicUrl: string } | null;
+  links: CompletionLinkWithUpload[];
   mission: { id: string; creatorId: string };
 };
 
@@ -159,11 +171,11 @@ export const createMockMissionCompletion = (
   description: "축하합니다!",
   imageUrl: null,
   imageFileUploadId: null,
-  links: null,
   missionId: "mission1",
   createdAt: new Date(),
   updatedAt: new Date(),
   imageFileUpload: null,
+  links: [],
   mission: {
     id: "mission1",
     creatorId: "user1",

@@ -11,6 +11,7 @@ export function createMissionCompletionServiceTestContext() {
     findAllByMissionId: jest.fn(),
     create: jest.fn(),
     update: jest.fn(),
+    deleteLinks: jest.fn(),
     delete: jest.fn(),
   } as jest.Mocked<MissionCompletionRepository>;
 
