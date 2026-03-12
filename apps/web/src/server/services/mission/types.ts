@@ -21,6 +21,7 @@ export interface GetUserMissionsOptions {
   sortOrder?: SortOrderType;
   category?: MissionCategory;
   type?: MissionType;
+  isActive?: boolean;
 }
 
 export interface MissionWithParticipantInfo {

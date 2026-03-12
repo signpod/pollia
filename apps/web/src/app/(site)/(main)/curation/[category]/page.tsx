@@ -49,9 +49,10 @@ export default async function CurationPage({ params }: CurationPageProps) {
     limit: 20,
     type: MissionType.GENERAL,
     category,
+    isActive: true,
   });
 
-  const missions = missionsRaw.filter(m => m.isActive).map(toSurveyCardData);
+  const missions = missionsRaw.map(toSurveyCardData);
 
   return (
     <main className="flex flex-1 flex-col bg-white pb-10">
