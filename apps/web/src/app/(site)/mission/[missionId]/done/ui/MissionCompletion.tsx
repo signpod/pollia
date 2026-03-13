@@ -8,15 +8,13 @@ import { MissionCompletionPage } from "@/components/common/pages/MissionCompleti
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { useReadMission } from "@/hooks/mission";
 import { useReadMissionCompletion, useReadMissionCompletionById } from "@/hooks/mission-completion";
-import { usePurchaseLinks } from "@/hooks/purchase-link";
 import { useReadReward } from "@/hooks/reward/useReadReward";
 import { useShareTracking } from "@/hooks/share/useShareTracking";
 import { MissionType } from "@prisma/client";
 import { Typo } from "@repo/ui/components";
 import { useQuery } from "@tanstack/react-query";
-import { ExternalLink } from "lucide-react";
-import Image from "next/image";
 import { useParams } from "next/navigation";
+import { PurchaseLinkCarousel } from "./PurchaseLinkCarousel";
 import { useCompletionImageDownload } from "./hooks";
 
 interface MissionCompletionProps {
@@ -52,7 +50,6 @@ export function MissionCompletion({ completionId, initialImageUrl }: MissionComp
   });
 
   const reward = rewardQuery?.data;
-  const purchaseLinks = usePurchaseLinks();
   const { trackShare } = useShareTracking(missionId);
 
   const { data: recommendedMissions } = useQuery({
@@ -105,38 +102,8 @@ export function MissionCompletion({ completionId, initialImageUrl }: MissionComp
       }
       completionLinks={
         completionLinks && completionLinks.length > 0 ? (
-          <div className="flex flex-col gap-3 w-full">
-            {completionLinks.map(link => (
-              <a
-                key={`${link.name}-${link.url}`}
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-3 transition-colors hover:bg-zinc-50"
-              >
-                {link.imageUrl && (
-                  <div className="relative size-12 shrink-0 overflow-hidden rounded-lg">
-                    <Image
-                      src={link.imageUrl}
-                      alt={link.name}
-                      fill
-                      sizes="48px"
-                      className="object-cover"
-                    />
-                  </div>
-                )}
-                <span className="flex-1 min-w-0 text-sm font-medium text-zinc-800 truncate">
-                  {link.name}
-                </span>
-                <ExternalLink className="size-4 shrink-0 text-zinc-400" />
-              </a>
-            ))}
-          </div>
+          <PurchaseLinkCarousel links={completionLinks} />
         ) : undefined
-      }
-      purchaseLinks={
-        // TODO: 구매 링크 UI fix될시 다시 구현
-        undefined
       }
       hasReward={!!reward}
       onShare={trackShare}
