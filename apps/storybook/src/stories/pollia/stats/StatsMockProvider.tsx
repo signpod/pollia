@@ -57,10 +57,16 @@ function buildStatsResponse(filtered: Array<{ date: string; count: number }>) {
       completionRate: Math.round(rate * 10) / 10,
       averageDurationMs: 185000,
       shareCount: 23,
-      completionReachStats: [],
+      completionReachStats: MOCK_COMPLETION_REACH_STATS,
     },
   };
 }
+
+const MOCK_COMPLETION_REACH_STATS = [
+  { completionId: "c1", completionTitle: "성공 완료", encounterCount: 65, reachRate: 66.3 },
+  { completionId: "c2", completionTitle: "보통 결과", encounterCount: 24, reachRate: 24.5 },
+  { completionId: "c3", completionTitle: "아쉬운 결과", encounterCount: 9, reachRate: 9.2 },
+];
 
 const MOCK_FUNNEL_DATA = {
   data: {
