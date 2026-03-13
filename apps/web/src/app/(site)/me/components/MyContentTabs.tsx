@@ -287,8 +287,32 @@ function ParticipationListItem({
 
 // ─── 찜 탭 ───
 
+function LikedSkeleton() {
+  return (
+    <div className="flex flex-col gap-4 min-h-[420px]">
+      <div className="flex h-9 items-center">
+        <div className="h-5 w-16 animate-pulse rounded bg-zinc-100" />
+      </div>
+      <div className="flex flex-col">
+        {Array.from({ length: MAX_PREVIEW }).map((_, i) => (
+          <div key={i} className="flex items-center gap-3 py-3">
+            <div className="size-11 shrink-0 animate-pulse rounded-sm bg-zinc-100" />
+            <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+              <div className="h-3 w-12 animate-pulse rounded bg-zinc-100" />
+              <div className="h-4 w-2/3 animate-pulse rounded bg-zinc-100" />
+            </div>
+            <div className="size-8 animate-pulse rounded-full bg-zinc-100" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const LikedTab = memo(function LikedTab() {
-  const { data: likedMissions } = useLikedMissions();
+  const { data: likedMissions, isLoading } = useLikedMissions();
+
+  if (isLoading) return <LikedSkeleton />;
 
   if (!likedMissions || likedMissions.length === 0) {
     return (
@@ -435,8 +459,31 @@ function RewardListItem({ reward }: RewardItemProps) {
   return content;
 }
 
+function RewardsSkeleton() {
+  return (
+    <div className="flex flex-col gap-4 min-h-[420px]">
+      <div className="flex h-9 items-center">
+        <div className="h-5 w-20 animate-pulse rounded bg-zinc-100" />
+      </div>
+      <div className="flex flex-col">
+        {Array.from({ length: MAX_REWARDS_PREVIEW }).map((_, i) => (
+          <div key={i} className="flex items-center gap-3 py-3">
+            <div className="size-11 shrink-0 animate-pulse rounded-sm bg-zinc-100" />
+            <div className="flex-1">
+              <div className="h-4 w-1/2 animate-pulse rounded bg-zinc-100" />
+            </div>
+            <div className="h-6 w-24 animate-pulse rounded-md bg-zinc-100" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const RewardsTab = memo(function RewardsTab() {
-  const { rewards, grouped } = useGroupedRewards();
+  const { rewards, grouped, isLoading } = useGroupedRewards();
+
+  if (isLoading) return <RewardsSkeleton />;
 
   if (!rewards || rewards.length === 0) {
     return (
@@ -483,8 +530,32 @@ const RewardsTab = memo(function RewardsTab() {
 
 // ─── 내 콘텐츠 탭 ───
 
+function MyContentSkeleton() {
+  return (
+    <div className="flex flex-col gap-4 min-h-[420px]">
+      <div className="flex h-9 items-center">
+        <div className="h-5 w-16 animate-pulse rounded bg-zinc-100" />
+      </div>
+      <div className="flex flex-col">
+        {Array.from({ length: MAX_PREVIEW }).map((_, i) => (
+          <div key={i} className="flex items-center gap-3 py-3">
+            <div className="size-11 shrink-0 animate-pulse rounded-sm bg-zinc-100" />
+            <div className="flex-1">
+              <div className="h-4 w-3/5 animate-pulse rounded bg-zinc-100" />
+            </div>
+            <div className="h-6 w-14 animate-pulse rounded-full bg-zinc-100" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const MyContentTab = memo(function MyContentTab() {
-  const { data } = useReadMissions({ options: { limit: MAX_PREVIEW } });
+  const { data, isLoading } = useReadMissions({ options: { limit: MAX_PREVIEW } });
+
+  if (isLoading) return <MyContentSkeleton />;
+
   const missions = data?.pages.flatMap(page => page.data) ?? [];
 
   if (missions.length === 0) {

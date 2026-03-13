@@ -43,8 +43,9 @@ export function useImageCrop() {
         zoom,
       );
 
-      return new File([croppedBlob], originalFile.name, {
-        type: "image/png",
+      const webpName = originalFile.name.replace(/\.[^/.]+$/, ".webp");
+      return new File([croppedBlob], webpName, {
+        type: "image/webp",
         lastModified: Date.now(),
       });
     },

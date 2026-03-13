@@ -27,6 +27,7 @@ export const missionQueryKeys = {
   missionResponsesPage: (missionId: string, page: number, pageSize: number) =>
     ["mission-responses-page", missionId, page, pageSize] as const,
   myResponses: () => ["my-responses"] as const,
+  actionStats: (missionId: string) => ["action-stats", missionId] as const,
 } as const;
 
 export type MissionQueryKeys = typeof missionQueryKeys;

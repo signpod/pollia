@@ -55,9 +55,10 @@ function MissionActions({ missionId }: { missionId: string }) {
       <PublishBadge missionId={missionId} />
       <Link
         href={ROUTES.MISSION(missionId)}
-        className="flex items-center gap-1 rounded-full bg-zinc-100 px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-200"
+        className="flex items-center gap-1 rounded-full bg-zinc-100 px-2 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-200 sm:px-3"
+        aria-label={`${UBIQUITOUS_CONSTANTS.MISSION} 바로가기`}
       >
-        {UBIQUITOUS_CONSTANTS.MISSION} 바로가기
+        <span className="hidden sm:inline">{UBIQUITOUS_CONSTANTS.MISSION} 바로가기</span>
         <ExternalLinkIcon className="size-3.5" />
       </Link>
       <IconButton

@@ -4,5 +4,7 @@ import { UserRole } from "@prisma/client";
 export { UserRole };
 
 export interface GetCurrentUserResponse {
-  data: User;
+  data: User & {
+    profileImageFileUpload: { publicUrl: string } | null;
+  };
 }

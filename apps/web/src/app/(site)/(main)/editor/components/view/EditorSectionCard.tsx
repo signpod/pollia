@@ -21,7 +21,7 @@ export function EditorSectionCard({
 
   return (
     <div className="border border-zinc-200 bg-white">
-      <div className="border-b border-zinc-100 px-5 py-4">
+      <div className="border-b border-zinc-200 px-5 py-4">
         <div className="flex items-start justify-between gap-4">
           <div>
             <Typo.SubTitle>{title}</Typo.SubTitle>
