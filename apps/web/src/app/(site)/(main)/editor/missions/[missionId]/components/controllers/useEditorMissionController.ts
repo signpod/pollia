@@ -2,6 +2,7 @@
 
 import { saveMissionEditorDraft } from "@/actions/mission/draft";
 import { updateMission } from "@/actions/mission/update";
+import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import type { GetMissionResponse } from "@/types/dto";
 import {
   type EditorMissionDraftPayload,
@@ -10,7 +11,8 @@ import {
   toServerEditorDraftPayload,
 } from "@/types/mission-editor-draft";
 import { MissionType } from "@prisma/client";
-import { toast } from "@repo/ui/components";
+import { toast, useModal } from "@repo/ui/components";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
 import { AlertCircle } from "lucide-react";
 import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -44,6 +46,7 @@ import {
 
 const UNIFIED_SAVE_TOAST_ID = "editor-mission-save-result";
 const PUBLISH_TOAST_ID = "editor-mission-publish-result";
+const UNPUBLISH_TOAST_ID = "editor-mission-unpublish-result";
 const SECTION_REFS_POLL_INTERVAL_MS = 250;
 const LOCAL_DRAFT_STORAGE_KEY_PREFIX = "pollia:mission-editor-local-draft:";
 const LOCAL_DRAFT_AUTOSAVE_DELAY_MS = 800;
@@ -197,6 +200,7 @@ export interface UseEditorMissionControllerResult {
     canSave: boolean;
     isSavingAll: boolean;
     isPublishing: boolean;
+    isUnpublishing: boolean;
     hasAnyBusySection: boolean;
     hasAnyPendingChanges: boolean;
     hasAnyValidationIssues: boolean;
@@ -205,6 +209,7 @@ export interface UseEditorMissionControllerResult {
   actions: {
     onSave: () => Promise<void>;
     onPublish: () => Promise<void>;
+    onUnpublish: () => void;
   };
 }
 
@@ -234,6 +239,9 @@ export function useEditorMissionController({
   refetchActions,
   refetchCompletions,
 }: UseEditorMissionControllerParams): UseEditorMissionControllerResult {
+  const { showModal } = useModal();
+  const queryClient = useQueryClient();
+
   const basicInfoRef = useRef<SectionSaveHandle | null>(null);
   const rewardRef = useRef<SectionSaveHandle | null>(null);
   const actionRef = useRef<SectionSaveHandle | null>(null);
@@ -244,6 +252,7 @@ export function useEditorMissionController({
 
   const [isSavingAll, setIsSavingAll] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isUnpublishing, setIsUnpublishing] = useState(false);
   const [isPublished, setIsPublished] = useState(mission.isActive);
   const [publishSnapshotVersion, setPublishSnapshotVersion] = useState(0);
   const [sectionStates, setSectionStates] = useState<Record<EditorSectionKey, SectionSaveState>>({
@@ -853,6 +862,9 @@ export function useEditorMissionController({
         type: MissionType.GENERAL,
       });
       setIsPublished(true);
+      void queryClient.invalidateQueries({
+        queryKey: missionQueryKeys.mission(missionId),
+      });
       toast({
         message: "발행되었습니다.",
         id: PUBLISH_TOAST_ID,
@@ -881,10 +893,50 @@ export function useEditorMissionController({
     publishState.canPublish,
     publishState.isValidationDataReady,
     publishState.issues.length,
+    queryClient,
     runPublishPreflightValidation,
     runUnifiedSave,
     saveDraft,
   ]);
+
+  const handleUnpublish = useCallback(() => {
+    if (!isPublished || isUnpublishing || isSavingAll || isPublishing) {
+      return;
+    }
+
+    showModal({
+      title: "발행 되돌리기",
+      description: "발행을 되돌리면 미션이 비공개 상태로 전환됩니다.\n계속하시겠습니까?",
+      confirmText: "되돌리기",
+      cancelText: "취소",
+      showCancelButton: true,
+      onConfirm: async () => {
+        setIsUnpublishing(true);
+        try {
+          await updateMission(missionId, { isActive: false });
+          setIsPublished(false);
+          void queryClient.invalidateQueries({
+            queryKey: missionQueryKeys.mission(missionId),
+          });
+          toast({
+            message: "발행이 되돌려졌습니다.",
+            id: UNPUBLISH_TOAST_ID,
+          });
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : "발행 되돌리기 중 오류가 발생했습니다.";
+          toast({
+            message,
+            icon: AlertCircle,
+            iconClassName: "text-red-500",
+            id: UNPUBLISH_TOAST_ID,
+          });
+        } finally {
+          setIsUnpublishing(false);
+        }
+      },
+    });
+  }, [isPublished, isUnpublishing, isSavingAll, isPublishing, missionId, queryClient, showModal]);
 
   const handleSave = useCallback(async () => {
     const strategy = resolveSaveStrategy(isPublished);
@@ -974,6 +1026,7 @@ export function useEditorMissionController({
       canSave,
       isSavingAll,
       isPublishing,
+      isUnpublishing,
       hasAnyBusySection,
       hasAnyPendingChanges,
       hasAnyValidationIssues,
@@ -982,6 +1035,7 @@ export function useEditorMissionController({
     actions: {
       onSave: handleSave,
       onPublish: handlePublish,
+      onUnpublish: handleUnpublish,
     },
   };
 }

@@ -3,6 +3,7 @@
 import { ROUTES } from "@/constants/routes";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useCanGoBack } from "@/hooks/common/useCanGoBack";
+import { useReadMission } from "@/hooks/mission";
 import PolliaIcon from "@public/svgs/pollia-icon.svg";
 import PolliaWordmark from "@public/svgs/pollia-wordmark.svg";
 import { IconButton, Typo, useModal } from "@repo/ui/components";
@@ -10,6 +11,25 @@ import { ChevronLeft, ExternalLinkIcon, Trash2Icon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useDeleteMission } from "../../../../me/hooks/useDeleteMission";
+
+function PublishBadge({ missionId }: { missionId: string }) {
+  const { data } = useReadMission(missionId);
+  const isActive = data?.data?.isActive;
+
+  if (isActive == null) {
+    return null;
+  }
+
+  return isActive ? (
+    <span className="rounded-full bg-green-100 px-3 py-1.5 text-sm font-medium text-green-700">
+      발행됨
+    </span>
+  ) : (
+    <span className="rounded-full bg-zinc-100 px-3 py-1.5 text-sm font-medium text-zinc-500">
+      미발행
+    </span>
+  );
+}
 
 function MissionActions({ missionId }: { missionId: string }) {
   const router = useRouter();
@@ -32,6 +52,7 @@ function MissionActions({ missionId }: { missionId: string }) {
 
   return (
     <>
+      <PublishBadge missionId={missionId} />
       <Link
         href={ROUTES.MISSION(missionId)}
         className="flex items-center gap-1 rounded-full bg-zinc-100 px-3 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:bg-zinc-200"
