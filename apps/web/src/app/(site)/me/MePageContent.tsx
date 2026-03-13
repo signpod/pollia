@@ -4,7 +4,7 @@ import { getUserMissions } from "@/actions/mission";
 import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { MeFooter, MyContentTabs, ProfileSection, RecommendedContents } from "./components";
+import { MeFooter, MyContentTabs, ProfileSection } from "./components";
 
 interface MePageContentProps {
   user: { name: string; email: string };
@@ -29,8 +29,8 @@ export function MePageContent({ user }: MePageContentProps) {
         <ProfileSection />
         <MyContentTabs />
       </div>
-      <div className="h-1 w-full bg-zinc-100" />
-      <RecommendedContents userName={user.name} />
+      {/* <div className="h-1 w-full bg-zinc-100" /> */}
+      {/* <RecommendedContents userName={user.name} /> */}
       <div className="h-1 w-full bg-zinc-100" />
       <MeFooter />
     </div>
