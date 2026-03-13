@@ -6,7 +6,7 @@ import { type UseUserRewardsReturn, useUserRewards } from "./useUserRewards";
 type RewardItem = NonNullable<UseUserRewardsReturn["data"]>[number];
 
 export function useGroupedRewards() {
-  const { data: rewards } = useUserRewards();
+  const { data: rewards, isLoading } = useUserRewards();
 
   const grouped = useMemo(() => {
     const result: Record<string, RewardItem[]> = { pending: [], paid: [] };
@@ -18,7 +18,7 @@ export function useGroupedRewards() {
     return result;
   }, [rewards]);
 
-  return { rewards, grouped };
+  return { rewards, grouped, isLoading };
 }
 
 export type UseGroupedRewardsReturn = ReturnType<typeof useGroupedRewards>;
