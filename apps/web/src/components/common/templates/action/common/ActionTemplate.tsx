@@ -56,9 +56,12 @@ export function SurveyQuestionTemplate({
   }, []);
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "instant" });
     const progress = ((currentOrder + 1) / totalActionCount) * 100 || 0;
     setProgress(progress, currentOrder + 1, totalActionCount);
+  }, [currentOrder, totalActionCount, setProgress]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
 
     const el = contentRef.current;
     if (el && animationName) {
@@ -66,7 +69,7 @@ export function SurveyQuestionTemplate({
       el.offsetHeight;
       el.style.animation = `${animationName} 0.25s ease-out`;
     }
-  }, [currentOrder, totalActionCount, animationName, setProgress]);
+  }, [animationName]);
 
   return (
     <FixedBottomLayout hasGradient>

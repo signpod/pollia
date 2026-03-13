@@ -252,7 +252,7 @@ describe("ActionService - saveActionSection", () => {
         expect.anything(),
         expect.arrayContaining([
           expect.objectContaining({ title: "A", order: 0, fileUploadId: "upload-001" }),
-          expect.objectContaining({ title: "B", order: 1, fileUploadId: undefined }),
+          expect.objectContaining({ title: "B", order: 1, fileUploadId: null }),
         ]),
         "user1",
         expect.anything(),
