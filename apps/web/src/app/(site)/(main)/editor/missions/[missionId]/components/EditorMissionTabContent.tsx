@@ -38,7 +38,6 @@ import { EditorMissionDraftProvider } from "./EditorMissionDraftContext";
 import { useEditorMissionTab } from "./EditorMissionTabContext";
 import { MissionStatsDashboard } from "./MissionStatsDashboard";
 import { RewardSettingsCard, type RewardSnapshot } from "./RewardSettingsCard";
-import { ActionStatsSection } from "./action-stats/ActionStatsSection";
 import { useEditorMissionController } from "./controllers/useEditorMissionController";
 import { EditorDesktopAbsolute } from "./desktop/EditorDesktopAbsolute";
 import { EditorDesktopFlowPanel } from "./desktop/EditorDesktopFlowPanel";
@@ -315,10 +314,7 @@ export function EditorMissionTabContent({
           isActive={false}
           node={saveButtonNode}
         />
-        <div className="space-y-4 bg-white p-4">
-          <ActionStatsSection missionId={missionId} />
-          <MissionStatsDashboard missionId={missionId} />
-        </div>
+        <MissionStatsDashboard missionId={missionId} />
       </>
     );
   }
