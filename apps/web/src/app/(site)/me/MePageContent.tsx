@@ -1,5 +1,8 @@
 "use client";
 
+import { getUserMissions } from "@/actions/mission";
+import { missionQueryKeys } from "@/constants/queryKeys/missionQueryKeys";
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { MeFooter, MyContentTabs, ProfileSection, RecommendedContents } from "./components";
 
@@ -8,9 +11,17 @@ interface MePageContentProps {
 }
 
 export function MePageContent({ user }: MePageContentProps) {
+  const queryClient = useQueryClient();
+
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
+
+    queryClient.prefetchInfiniteQuery({
+      queryKey: missionQueryKeys.userMissions(),
+      queryFn: () => getUserMissions({ limit: 4 }),
+      initialPageParam: undefined as string | undefined,
+    });
+  }, [queryClient]);
 
   return (
     <div className="flex flex-col gap-15 py-5">

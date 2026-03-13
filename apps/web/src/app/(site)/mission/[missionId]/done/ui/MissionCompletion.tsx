@@ -12,7 +12,7 @@ import { usePurchaseLinks } from "@/hooks/purchase-link";
 import { useReadReward } from "@/hooks/reward/useReadReward";
 import { useShareTracking } from "@/hooks/share/useShareTracking";
 import { MissionType } from "@prisma/client";
-import { PurchaseLinkCard, Typo } from "@repo/ui/components";
+import { Typo } from "@repo/ui/components";
 import { useQuery } from "@tanstack/react-query";
 import { ExternalLink } from "lucide-react";
 import Image from "next/image";
@@ -135,16 +135,8 @@ export function MissionCompletion({ completionId, initialImageUrl }: MissionComp
         ) : undefined
       }
       purchaseLinks={
-        purchaseLinks ? (
-          <div className="flex flex-col gap-4 w-full items-start">
-            <Typo.MainTitle size="small" className="w-full">
-              이런 상품은 어때요?
-            </Typo.MainTitle>
-            <div className="w-full">
-              <PurchaseLinkCard items={purchaseLinks} />
-            </div>
-          </div>
-        ) : undefined
+        // TODO: 구매 링크 UI fix될시 다시 구현
+        undefined
       }
       hasReward={!!reward}
       onShare={trackShare}
