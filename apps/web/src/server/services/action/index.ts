@@ -797,10 +797,10 @@ export class ActionService {
             actionData,
             values.options.map(opt => ({
               title: opt.title,
-              description: opt.description ?? undefined,
-              imageUrl: opt.imageUrl ?? undefined,
+              description: opt.description ?? null,
+              imageUrl: opt.imageUrl ?? null,
               order: opt.order,
-              fileUploadId: opt.fileUploadId ?? undefined,
+              fileUploadId: opt.fileUploadId ?? null,
               nextActionId: null,
               nextCompletionId: null,
             })),
@@ -862,10 +862,10 @@ export class ActionService {
           const resolvedOptions = values.options.map(opt => ({
             id: opt.id,
             title: opt.title,
-            description: opt.description ?? undefined,
-            imageUrl: opt.imageUrl ?? undefined,
+            description: opt.description ?? null,
+            imageUrl: opt.imageUrl ?? null,
             order: opt.order,
-            fileUploadId: opt.fileUploadId ?? undefined,
+            fileUploadId: opt.fileUploadId ?? null,
             nextActionId: resolveActionId(opt.nextActionId) ?? null,
             nextCompletionId: resolveCompletionId(opt.nextCompletionId) ?? null,
           }));
@@ -903,10 +903,10 @@ export class ActionService {
           const resolvedOptions = values.options.map(opt => ({
             id: opt.id,
             title: opt.title,
-            description: opt.description ?? undefined,
-            imageUrl: opt.imageUrl ?? undefined,
+            description: opt.description ?? null,
+            imageUrl: opt.imageUrl ?? null,
             order: opt.order,
-            fileUploadId: opt.fileUploadId ?? undefined,
+            fileUploadId: opt.fileUploadId ?? null,
             nextActionId: resolveActionId(opt.nextActionId) ?? null,
             nextCompletionId: resolveCompletionId(opt.nextCompletionId) ?? null,
           }));
