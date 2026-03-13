@@ -1,6 +1,7 @@
 "use client";
 
 import { useReadMissionFunnel } from "@/hooks/tracking/useReadMissionFunnel";
+import type { DateRangeString } from "@/types/common/dateRange";
 import { Typo } from "@repo/ui/components";
 import { useMemo } from "react";
 import {
@@ -15,18 +16,34 @@ import {
 
 interface ActionTimingChartProps {
   missionId: string;
+  dateRange?: DateRangeString;
 }
 
 function msToSeconds(ms: number): number {
   return Math.round((ms / 1000) * 10) / 10;
 }
 
-function truncateLabel(label: string, maxLength = 8): string {
-  return label.length > maxLength ? `${label.slice(0, maxLength)}...` : label;
+function CustomXAxisTick({ x, y, payload }: { x: number; y: number; payload: { value: string } }) {
+  const label = payload.value.length > 20 ? `${payload.value.slice(0, 20)}...` : payload.value;
+  return (
+    <g transform={`translate(${x},${y})`}>
+      <text
+        x={0}
+        y={0}
+        dy={12}
+        textAnchor="end"
+        fill="#71717a"
+        fontSize={11}
+        transform="rotate(-30)"
+      >
+        {label}
+      </text>
+    </g>
+  );
 }
 
-export function ActionTimingChart({ missionId }: ActionTimingChartProps) {
-  const { data, isPending, error } = useReadMissionFunnel(missionId);
+export function ActionTimingChart({ missionId, dateRange }: ActionTimingChartProps) {
+  const { data, isPending, error } = useReadMissionFunnel(missionId, { dateRange });
 
   const chartData = useMemo(() => {
     const actions = data?.data?.metadata?.actions;
@@ -68,13 +85,14 @@ export function ActionTimingChart({ missionId }: ActionTimingChartProps) {
 
       {!isPending && !error && chartData.length > 0 && (
         <ResponsiveContainer width="100%" height={220}>
-          <LineChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 5 }}>
+          <LineChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 40 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e4e4e7" />
             <XAxis
               dataKey="name"
-              tickFormatter={truncateLabel}
-              tick={{ fontSize: 12, fill: "#71717a" }}
+              tick={<CustomXAxisTick x={0} y={0} payload={{ value: "" }} />}
               axisLine={{ stroke: "#d4d4d8" }}
+              interval={0}
+              height={60}
             />
             <YAxis
               tick={{ fontSize: 12, fill: "#71717a" }}

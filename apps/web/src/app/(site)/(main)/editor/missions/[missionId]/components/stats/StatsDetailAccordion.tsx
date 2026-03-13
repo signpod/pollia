@@ -41,7 +41,7 @@ export function StatsDetailAccordion({ missionId }: StatsDetailAccordionProps) {
           <DateRangeFilter value={dateRange} onChange={setDateRange} />
           <StatsSummaryCards missionId={missionId} dateRange={dateRange} />
           <DailyParticipationChart missionId={missionId} dateRange={dateRange} />
-          <ActionTimingChart missionId={missionId} />
+          <ActionTimingChart missionId={missionId} dateRange={dateRange} />
         </div>
       )}
     </section>

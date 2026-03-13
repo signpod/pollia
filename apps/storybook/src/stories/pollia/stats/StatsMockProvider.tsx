@@ -127,18 +127,61 @@ const MOCK_FUNNEL_DATA = {
   },
 };
 
+function daysBetween(from: string, to: string): number {
+  const start = new Date(from);
+  const end = new Date(to);
+  return Math.max(1, Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+}
+
+function buildFunnelResponse(from?: string, to?: string) {
+  const baseActions = MOCK_FUNNEL_DATA.data.metadata.actions;
+  const ratio = from && to ? daysBetween(from, to) / 30 : 1;
+
+  const actions = baseActions.map(action => ({
+    ...action,
+    entryCount: Math.max(1, Math.round(action.entryCount * ratio)),
+    responseCount: Math.max(1, Math.round(action.responseCount * ratio)),
+    inProgressCount: Math.max(0, Math.round(action.inProgressCount * ratio)),
+    entryToResponseRate: action.entryToResponseRate,
+    averageCompletionTimeMs: Math.round(action.averageCompletionTimeMs * (0.8 + ratio * 0.4)),
+  }));
+
+  const totalStarted = Math.max(1, Math.round(MOCK_FUNNEL_DATA.data.metadata.totalStarted * ratio));
+  const totalCompleted = Math.max(
+    1,
+    Math.round(MOCK_FUNNEL_DATA.data.metadata.totalCompleted * ratio),
+  );
+
+  return {
+    data: {
+      nodes: [],
+      links: [],
+      metadata: {
+        totalSessions: Math.max(
+          1,
+          Math.round(MOCK_FUNNEL_DATA.data.metadata.totalSessions * ratio),
+        ),
+        totalStarted,
+        totalCompleted,
+        completionRate: Math.round((totalCompleted / totalStarted) * 1000) / 10,
+        actions,
+      },
+    },
+  };
+}
+
 function populateQueryOnAdd(client: QueryClient, mode: "data" | "empty") {
   client.getQueryCache().subscribe(event => {
     if (event.type !== "added") return;
-    const key = event.query.queryKey as string[];
+    const key = event.query.queryKey;
 
     if (key[0] === "mission-stats") {
       if (mode === "empty") {
         client.setQueryData(key, EMPTY_STATS);
         return;
       }
-      const from = key.length >= 4 ? key[2] : undefined;
-      const to = key.length >= 4 ? key[3] : undefined;
+      const from = typeof key[2] === "string" ? key[2] : undefined;
+      const to = typeof key[3] === "string" ? key[3] : undefined;
       const filtered = filterByDateRange(ALL_DAILY_DATA, from, to);
       client.setQueryData(key, buildStatsResponse(filtered));
     }
@@ -148,14 +191,28 @@ function populateQueryOnAdd(client: QueryClient, mode: "data" | "empty") {
         client.setQueryData(key, { data: [] });
         return;
       }
-      const from = key.length >= 4 ? key[2] : undefined;
-      const to = key.length >= 4 ? key[3] : undefined;
+      const from = typeof key[2] === "string" ? key[2] : undefined;
+      const to = typeof key[3] === "string" ? key[3] : undefined;
       const filtered = filterByDateRange(ALL_DAILY_DATA, from, to);
       client.setQueryData(key, { data: filtered });
     }
 
     if (key[0] === "mission-funnel") {
-      client.setQueryData(key, mode === "empty" ? EMPTY_FUNNEL : MOCK_FUNNEL_DATA);
+      if (mode === "empty") {
+        client.setQueryData(key, EMPTY_FUNNEL);
+        return;
+      }
+      let from: string | undefined;
+      let to: string | undefined;
+      const options = key[2];
+      if (options && typeof options === "object" && "dateRange" in options) {
+        const dr = options.dateRange;
+        if (dr && typeof dr === "object" && "from" in dr && "to" in dr) {
+          from = typeof dr.from === "string" ? dr.from : undefined;
+          to = typeof dr.to === "string" ? dr.to : undefined;
+        }
+      }
+      client.setQueryData(key, buildFunnelResponse(from, to));
     }
   });
 }
