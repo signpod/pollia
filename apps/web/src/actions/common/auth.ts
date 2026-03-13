@@ -21,13 +21,21 @@ export const requireAuth = cache(async (): Promise<User> => {
     error: authError,
   } = await supabase.auth.getUser();
 
-  if (authError || !user) {
-    const error = new Error("로그인이 필요합니다.");
-    error.cause = 401;
-    throw error;
+  if (!authError && user) {
+    return user;
   }
 
-  return user;
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (session?.user) {
+    return session.user;
+  }
+
+  const error = new Error("로그인이 필요합니다.");
+  error.cause = 401;
+  throw error;
 });
 
 /**

@@ -1,3 +1,5 @@
+import type { DateRangeString } from "@/types/common/dateRange";
+
 export const missionQueryKeys = {
   mission: (missionId: string) => ["mission", missionId] as const,
   missionResults: (missionId: string) => ["mission-results", missionId] as const,
@@ -14,7 +16,14 @@ export const missionQueryKeys = {
   verifyMissionPassword: (missionId: string, password: string) =>
     ["verify-mission-password", missionId, password] as const,
   missionNotionPage: (missionId: string) => ["mission-notion-page", missionId] as const,
-  missionStats: (missionId: string) => ["mission-stats", missionId] as const,
+  missionStats: (missionId: string, dateRange?: DateRangeString) =>
+    dateRange
+      ? (["mission-stats", missionId, dateRange.from, dateRange.to] as const)
+      : (["mission-stats", missionId] as const),
+  dailyParticipationTrend: (missionId: string, dateRange?: DateRangeString) =>
+    dateRange
+      ? (["daily-participation-trend", missionId, dateRange.from, dateRange.to] as const)
+      : (["daily-participation-trend", missionId] as const),
   missionResponsesPage: (missionId: string, page: number, pageSize: number) =>
     ["mission-responses-page", missionId, page, pageSize] as const,
   myResponses: () => ["my-responses"] as const,

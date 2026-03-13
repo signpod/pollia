@@ -47,3 +47,12 @@ export async function removeMissionPassword(missionId: string) {
     return handleActionError(error, "비밀번호 제거 중 오류가 발생했습니다.");
   }
 }
+
+export async function incrementShareCount(missionId: string) {
+  try {
+    await missionService.incrementShareCount(missionId);
+    return { success: true };
+  } catch (error) {
+    return handleActionError(error, "공유 수 기록 중 오류가 발생했습니다.");
+  }
+}

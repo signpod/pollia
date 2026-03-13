@@ -28,11 +28,23 @@ export interface CompletionReachStat {
   reachRate: number;
 }
 
+export interface DateRange {
+  from: Date;
+  to: Date;
+}
+
 export interface ResponseStats {
   total: number;
   completed: number;
   completionRate: number;
+  averageDurationMs: number | null;
+  shareCount: number;
   completionReachStats: CompletionReachStat[];
+}
+
+export interface DailyParticipationTrendItem {
+  date: string;
+  count: number;
 }
 
 export interface GetMissionResponsesPageOptions {

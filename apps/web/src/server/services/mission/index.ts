@@ -387,6 +387,11 @@ export class MissionService {
     const decryptedPassword = decrypt(mission.password);
     return decryptedPassword === password;
   }
+
+  async incrementShareCount(missionId: string): Promise<void> {
+    await this.getMission(missionId);
+    await this.repo.incrementShareCount(missionId);
+  }
 }
 
 export const missionService = new MissionService();

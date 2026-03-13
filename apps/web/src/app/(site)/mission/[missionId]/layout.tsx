@@ -35,7 +35,14 @@ export async function generateMetadata({ params }: LayoutParams): Promise<Metada
     const { title, description, imageUrl } = missionResult.data;
 
     const ogTitle = title || SHARE_MESSAGES.kakao.title;
-    const ogDescription = description || SHARE_MESSAGES.kakao.description;
+    let ogDescription = description || SHARE_MESSAGES.kakao.description;
+    ogDescription = ogDescription
+      .replace(/<[^>]*>/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (ogDescription.length > 70) {
+      ogDescription = `${ogDescription.slice(0, 70)}...`;
+    }
     const ogImage = imageUrl ? `${baseUrl}/api/og/${missionId}` : SHARE_IMAGE_PATH;
 
     return {

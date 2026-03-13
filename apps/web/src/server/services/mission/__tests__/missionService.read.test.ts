@@ -19,6 +19,7 @@ describe("MissionService - Read", () => {
       update: jest.fn(),
       updateLikesCount: jest.fn(),
       incrementViewCount: jest.fn(),
+      incrementShareCount: jest.fn(),
       delete: jest.fn(),
       duplicateMission: jest.fn(),
     } as jest.Mocked<MissionRepository>;
@@ -43,6 +44,9 @@ describe("MissionService - Read", () => {
       countByMissionId: jest.fn(),
       countByMissionIdFiltered: jest.fn(),
       countCompletedByMissionId: jest.fn(),
+      countCompletedByMissionIdWithDateRange: jest.fn(),
+      getAverageDurationMs: jest.fn(),
+      groupByStartedAtDate: jest.fn(),
     } as jest.Mocked<MissionResponseRepository>;
 
     mockActionRepository = {

@@ -35,6 +35,7 @@ export interface MissionFunnelData {
 export interface GetMissionFunnelOptions {
   utmSource?: string;
   membersOnly?: boolean;
+  dateRange?: { from: Date; to: Date };
 }
 
 export interface SessionMaps {

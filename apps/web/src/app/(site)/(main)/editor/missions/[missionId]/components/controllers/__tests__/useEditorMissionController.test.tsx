@@ -20,6 +20,11 @@ jest.mock("@/actions/mission/draft", () => ({
 
 jest.mock("@repo/ui/components", () => ({
   toast: jest.fn(),
+  useModal: () => ({ showModal: jest.fn() }),
+}));
+
+jest.mock("@tanstack/react-query", () => ({
+  useQueryClient: () => ({ invalidateQueries: jest.fn() }),
 }));
 
 const mockedSaveMissionEditorDraft = saveMissionEditorDraft as jest.MockedFunction<

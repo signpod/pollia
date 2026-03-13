@@ -13,11 +13,17 @@ export class TrackingActionEntryRepository {
     });
   }
 
-  async findByMissionId(missionId: string, options?: { membersOnly?: boolean }) {
+  async findByMissionId(
+    missionId: string,
+    options?: { membersOnly?: boolean; dateRange?: { from: Date; to: Date } },
+  ) {
     return prisma.trackingActionEntry.findMany({
       where: {
         missionId,
         ...(options?.membersOnly && { userId: { not: null } }),
+        ...(options?.dateRange && {
+          enteredAt: { gte: options.dateRange.from, lte: options.dateRange.to },
+        }),
       },
       orderBy: { enteredAt: "desc" },
     });

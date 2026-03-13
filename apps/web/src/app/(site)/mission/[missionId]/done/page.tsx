@@ -63,6 +63,9 @@ export async function generateMetadata({ params, searchParams }: PageParams): Pr
     }
 
     ogDescription = stripHtml(ogDescription);
+    if (ogDescription.length > 70) {
+      ogDescription = `${ogDescription.slice(0, 70)}...`;
+    }
 
     return {
       title: ogTitle,

@@ -10,6 +10,7 @@ import { useReadMission } from "@/hooks/mission";
 import { useReadMissionCompletion, useReadMissionCompletionById } from "@/hooks/mission-completion";
 import { usePurchaseLinks } from "@/hooks/purchase-link";
 import { useReadReward } from "@/hooks/reward/useReadReward";
+import { useShareTracking } from "@/hooks/share/useShareTracking";
 import { MissionType } from "@prisma/client";
 import { PurchaseLinkCard, Typo } from "@repo/ui/components";
 import { useQuery } from "@tanstack/react-query";
@@ -52,6 +53,7 @@ export function MissionCompletion({ completionId, initialImageUrl }: MissionComp
 
   const reward = rewardQuery?.data;
   const purchaseLinks = usePurchaseLinks();
+  const { trackShare } = useShareTracking(missionId);
 
   const { data: recommendedMissions } = useQuery({
     queryKey: [...missionQueryKeys.allMissions(), "recommended"],
@@ -145,6 +147,7 @@ export function MissionCompletion({ completionId, initialImageUrl }: MissionComp
         ) : undefined
       }
       hasReward={!!reward}
+      onShare={trackShare}
       onSave={handleSave}
       isSaving={isGenerating}
       canSave={canSave}

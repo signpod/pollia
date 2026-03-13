@@ -181,7 +181,7 @@ export function MissionPageWrapper({
     <CalloutProvider position="top-center">
       <CalloutTrigger calloutData={calloutData} isLoading={isResuming} />
       <MissionIntroContext.Provider value={contextValue}>
-        <FixedBottomLayout hasGradientBlur className="flex justify-center bg-background">
+        <FixedBottomLayout hasGradientBlur className="flex flex-col items-center bg-background">
           <MissionIntroPage
             imageUrl={imageUrl}
             title={title}

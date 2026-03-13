@@ -260,6 +260,7 @@ export function EditorMissionTabContent({
         isPublished={viewState.isPublished}
         isSavingAll={viewState.isSavingAll}
         isPublishing={viewState.isPublishing}
+        isUnpublishing={viewState.isUnpublishing}
         hasAnyBusySection={viewState.hasAnyBusySection}
         hasAnyPendingChanges={viewState.hasAnyPendingChanges}
         hasAnyValidationIssues={viewState.hasAnyValidationIssues}
@@ -270,6 +271,9 @@ export function EditorMissionTabContent({
         }}
         onPublish={() => {
           void actions.onPublish().then(() => bumpPreviewRefresh(v => v + 1));
+        }}
+        onUnpublish={() => {
+          void actions.onUnpublish();
         }}
       />
     ),
@@ -282,6 +286,7 @@ export function EditorMissionTabContent({
       viewState.hasAnyValidationIssues,
       viewState.isPublished,
       viewState.isPublishing,
+      viewState.isUnpublishing,
       viewState.isSavingAll,
     ],
   );

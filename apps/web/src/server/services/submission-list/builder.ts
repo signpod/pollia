@@ -76,7 +76,8 @@ function formatAnswerValue(
 ): string | null {
   switch (action.type) {
     case "MULTIPLE_CHOICE":
-    case "TAG": {
+    case "TAG":
+    case "BRANCH": {
       const options = answer.options.map(opt => opt.title);
       const optionsText = options.length > 0 ? options.join(", ") : null;
 

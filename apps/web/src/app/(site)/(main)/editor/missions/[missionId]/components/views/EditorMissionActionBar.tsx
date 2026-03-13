@@ -1,12 +1,13 @@
 "use client";
 
 import { Button } from "@repo/ui/components";
-import { Rocket, Save } from "lucide-react";
+import { Rocket, RotateCcw, Save } from "lucide-react";
 
 export interface EditorMissionActionBarProps {
   isPublished: boolean;
   isSavingAll: boolean;
   isPublishing: boolean;
+  isUnpublishing: boolean;
   hasAnyBusySection: boolean;
   hasAnyPendingChanges: boolean;
   hasAnyValidationIssues: boolean;
@@ -14,12 +15,14 @@ export interface EditorMissionActionBarProps {
   canPublish: boolean;
   onSave: () => void;
   onPublish: () => void;
+  onUnpublish: () => void;
 }
 
 export function EditorMissionActionBar({
   isPublished,
   isSavingAll,
   isPublishing,
+  isUnpublishing,
   hasAnyBusySection,
   hasAnyPendingChanges,
   hasAnyValidationIssues,
@@ -27,10 +30,11 @@ export function EditorMissionActionBar({
   canPublish,
   onSave,
   onPublish,
+  onUnpublish,
 }: EditorMissionActionBarProps) {
   if (isPublished) {
     return (
-      <div className="px-5 py-3">
+      <div className="flex gap-2 px-5 py-3">
         <Button
           variant="primary"
           fullWidth
@@ -41,6 +45,7 @@ export function EditorMissionActionBar({
           disabled={
             isSavingAll ||
             isPublishing ||
+            isUnpublishing ||
             hasAnyBusySection ||
             !hasAnyPendingChanges ||
             hasAnyValidationIssues ||
@@ -48,6 +53,17 @@ export function EditorMissionActionBar({
           }
         >
           저장하기
+        </Button>
+        <Button
+          variant="secondary"
+          fullWidth
+          inlineIcon
+          leftIcon={<RotateCcw className="size-4" />}
+          onClick={onUnpublish}
+          loading={isUnpublishing}
+          disabled={isSavingAll || isPublishing || isUnpublishing || hasAnyBusySection}
+        >
+          발행 되돌리기
         </Button>
       </div>
     );
