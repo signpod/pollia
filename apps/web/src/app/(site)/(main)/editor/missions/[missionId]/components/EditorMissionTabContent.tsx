@@ -314,7 +314,9 @@ export function EditorMissionTabContent({
           isActive={false}
           node={saveButtonNode}
         />
-        <MissionStatsDashboard missionId={missionId} />
+        <div className="bg-white p-4">
+          <MissionStatsDashboard missionId={missionId} />
+        </div>
       </>
     );
   }
