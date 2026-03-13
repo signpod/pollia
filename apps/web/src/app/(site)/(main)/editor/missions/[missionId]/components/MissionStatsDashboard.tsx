@@ -58,7 +58,7 @@ export function MissionStatsDashboard({ missionId }: MissionStatsDashboardProps)
         title="콘텐츠 통계"
         description="참여 현황, 결과 분포, 응답 내역을 확인합니다."
       >
-        <div className="divide-y divide-zinc-100">
+        <div className="divide-y divide-zinc-200">
           <StatsDetailAccordion missionId={missionId} />
           <ResultDistributionAccordion missionId={missionId} />
           <ResponseResultsAccordion missionId={missionId} />
@@ -67,11 +67,10 @@ export function MissionStatsDashboard({ missionId }: MissionStatsDashboardProps)
 
       <Separator className="h-2" />
 
-      <ActionStatsSection missionId={missionId} />
-
-      <Separator className="h-2" />
-
-      <AiReportSection missionId={missionId} hasResponses={(stats?.total ?? 0) > 0} />
+      <div className="divide-y divide-zinc-200 border border-zinc-200 bg-white">
+        <ActionStatsSection missionId={missionId} />
+        <AiReportSection missionId={missionId} hasResponses={(stats?.total ?? 0) > 0} />
+      </div>
     </>
   );
 }
@@ -118,7 +117,7 @@ function AiReportSection({
   }, []);
 
   return (
-    <section className="border border-zinc-200 bg-white">
+    <section>
       <button
         type="button"
         onClick={handleToggle}

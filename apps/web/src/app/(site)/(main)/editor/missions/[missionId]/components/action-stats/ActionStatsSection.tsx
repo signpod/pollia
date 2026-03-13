@@ -32,7 +32,7 @@ export function ActionStatsSection({ missionId }: ActionStatsSectionProps) {
   }, []);
 
   return (
-    <section className="border border-zinc-200 bg-white">
+    <section>
       <button
         type="button"
         onClick={handleToggle}
