@@ -27,6 +27,24 @@ export function SubjectiveSlide({ data }: SubjectiveSlideProps) {
   const { subjective } = data.ai;
   const { topKeywords, sentiment } = subjective;
 
+  const hasSubjectiveData = topKeywords.length > 0;
+
+  if (!hasSubjectiveData) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center px-7 py-7">
+        <div className="mb-5 flex items-center gap-2.5">
+          <span className="flex size-6 items-center justify-center rounded-md bg-violet-600 text-xs font-bold text-white">
+            5
+          </span>
+          <Typo.SubTitle>주관식 분석</Typo.SubTitle>
+        </div>
+        <Typo.Body size="medium" className="text-zinc-400">
+          주관식 질문이 포함되지 않은 미션입니다.
+        </Typo.Body>
+      </div>
+    );
+  }
+
   const total = sentiment.positive + sentiment.neutral + sentiment.negative;
   const positivePercent = total > 0 ? Math.round((sentiment.positive / total) * 100) : 33;
   const neutralPercent = total > 0 ? Math.round((sentiment.neutral / total) * 100) : 34;

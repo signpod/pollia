@@ -23,7 +23,7 @@ export function MultipleChoiceSlide({ data }: MultipleChoiceSlideProps) {
           <Typo.SubTitle>객관식 응답</Typo.SubTitle>
         </div>
         <Typo.Body size="medium" className="text-zinc-400">
-          객관식 질문이 없습니다.
+          객관식 질문이 포함되지 않은 미션입니다.
         </Typo.Body>
       </div>
     );

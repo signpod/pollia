@@ -74,6 +74,11 @@ export class MissionAiReportService {
       };
     });
 
+    const hasSubjective = aggregated.some(
+      col =>
+        (col.type === "SUBJECTIVE" || col.type === "SHORT_TEXT") && col.summary !== "응답 없음",
+    );
+
     const prompt = buildPrompt(
       mission.title,
       completedRows.length,
@@ -83,7 +88,7 @@ export class MissionAiReportService {
     );
 
     const result = await this.provider.generateText({
-      systemPrompt: buildSystemPrompt(),
+      systemPrompt: buildSystemPrompt(hasSubjective),
       userPrompt: prompt,
     });
 
@@ -277,23 +282,53 @@ function aggregateText(values: string[]): string {
   return `총 ${values.length}건\n${lines}${suffix}`;
 }
 
-function buildSystemPrompt(): string {
+function buildSystemPrompt(hasSubjective: boolean): string {
+  const subjectiveRule = hasSubjective
+    ? [
+        "subjective:",
+        "- topKeywords: 주관식 텍스트에서 자주 등장하는 키워드 5~10개와 빈도",
+        "- sentiment: 주관식 텍스트의 긍정/중립/부정 비율 (합계 1.0)",
+        "- summary: 주관식 응답의 전반적 경향과 주요 의견 요약",
+      ]
+    : [
+        "subjective:",
+        "- 이 미션에는 주관식 질문이 없다",
+        "- topKeywords는 빈 배열, sentiment는 균등(0.33/0.34/0.33), summary는 '주관식 질문이 포함되지 않은 미션입니다.'로 채워라",
+      ];
+
   return [
-    "너는 미션/설문 데이터를 분석하는 AI 도우미다.",
-    "반드시 아래 JSON 형식으로만 응답한다. JSON 외 텍스트나 코드블록은 절대 포함하지 않는다.",
+    "너는 미션/설문 결과를 분석하여 운영자에게 실행 가능한 인사이트를 제공하는 데이터 분석 전문가다.",
+    "운영자는 이 리포트를 보고 미션을 개선하거나 의사결정을 내린다.",
     "",
+    "반드시 아래 JSON 형식으로만 응답한다. JSON 외 텍스트나 코드블록은 절대 포함하지 않는다.",
     '{"summary":"3줄 핵심 요약","dropOffAnalysis":"퍼널 이탈 분석 코멘트","subjective":{"topKeywords":[{"keyword":"키워드","count":5}],"sentiment":{"positive":0.6,"neutral":0.3,"negative":0.1},"summary":"주관식 분석 요약"},"insights":["인사이트1","인사이트2","인사이트3"],"suggestions":["제안1","제안2","제안3"]}',
     "",
-    "규칙:",
-    "- summary: 전체 데이터의 핵심을 3문장으로 요약",
-    "- dropOffAnalysis: 퍼널 데이터를 보고 어디서 이탈이 크고 왜 그런지 분석",
-    "- subjective.topKeywords: 주관식 텍스트에서 자주 등장하는 키워드 5~10개와 빈도",
-    "- subjective.sentiment: 주관식 텍스트의 긍정/중립/부정 비율 (합계 1.0)",
-    "- subjective.summary: 주관식 응답의 전반적 경향 요약",
-    "- insights: 데이터에서 발견한 주목할 만한 패턴 3개",
-    "- suggestions: 미션 개선을 위한 구체적 제안 3개",
-    "- 주관식 텍스트가 없으면 subjective 필드는 빈 키워드, 균등 감성, 빈 요약으로 채워라",
-    "- 모든 텍스트는 한국어로 작성",
+    "각 필드 작성 규칙:",
+    "",
+    "summary (3문장):",
+    "- 1문장: 미션의 핵심 성과 (참여·완주·소요시간 기반)",
+    "- 2문장: 응답 데이터에서 드러나는 주요 패턴",
+    "- 3문장: 운영자가 주목해야 할 점 또는 전체 평가",
+    "",
+    "dropOffAnalysis:",
+    "- 퍼널의 진입 대비 응답 비율을 단계별로 비교하라",
+    "- 이탈이 큰 구간을 명시하고, 해당 액션의 유형이나 위치를 근거로 원인을 추론하라",
+    "- 이탈이 거의 없으면 긍정적으로 평가하되, 개선 여지가 있는 부분을 언급하라",
+    "",
+    ...subjectiveRule,
+    "",
+    "insights (3개):",
+    "- 단순 사실 나열이 아니라, 데이터 간의 관계나 숨겨진 패턴을 발견하라",
+    "- 예: 특정 응답 그룹과 완주율의 상관관계, 시간대별 참여 패턴, 질문 유형에 따른 이탈 차이 등",
+    "",
+    "suggestions (3개):",
+    "- 각 제안은 구체적이고 즉시 실행 가능해야 한다",
+    "- 예: '질문 수를 줄여라'보다 'X번째 액션에서 이탈이 크므로 해당 질문을 간소화하거나 위치를 앞으로 이동하라'",
+    "",
+    "주의사항:",
+    "- 데이터가 적더라도 있는 데이터를 최대한 활용하여 분석하라",
+    "- 파일 응답(IMAGE/VIDEO/PDF)은 텍스트 분석 대상이 아니므로 건수만 참고하라",
+    "- 모든 텍스트는 한국어로 작성하되, 자연스럽고 간결하게 작성하라",
   ].join("\n");
 }
 
