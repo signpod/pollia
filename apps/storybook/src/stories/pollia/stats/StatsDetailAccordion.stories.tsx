@@ -1,6 +1,6 @@
 import { StatsDetailAccordion } from "@/app/(site)/(main)/editor/missions/[missionId]/components/stats/StatsDetailAccordion";
 import type { Meta, StoryObj } from "@storybook/nextjs";
-import { MOCK_MISSION_ID, StatsMockProvider } from "./StatsMockProvider";
+import { EmptyStatsMockProvider, MOCK_MISSION_ID, StatsMockProvider } from "./StatsMockProvider";
 
 const meta: Meta<typeof StatsDetailAccordion> = {
   title: "Pollia/Stats/StatsDetailAccordion",
@@ -25,4 +25,17 @@ export const Default: Story = {
   args: {
     missionId: MOCK_MISSION_ID,
   },
+};
+
+export const Empty: Story = {
+  args: {
+    missionId: MOCK_MISSION_ID,
+  },
+  decorators: [
+    Story => (
+      <EmptyStatsMockProvider>
+        <Story />
+      </EmptyStatsMockProvider>
+    ),
+  ],
 };

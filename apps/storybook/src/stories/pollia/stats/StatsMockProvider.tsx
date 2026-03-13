@@ -127,27 +127,37 @@ const MOCK_FUNNEL_DATA = {
   },
 };
 
-interface DateRange {
-  from: string;
-  to: string;
-}
+function populateQueryOnAdd(client: QueryClient, mode: "data" | "empty") {
+  client.getQueryCache().subscribe(event => {
+    if (event.type !== "added") return;
+    const key = event.query.queryKey as string[];
 
-function getPresetDateRanges(): Array<DateRange | undefined> {
-  const today = new Date();
-  const todayStr = toDateString(today);
+    if (key[0] === "mission-stats") {
+      if (mode === "empty") {
+        client.setQueryData(key, EMPTY_STATS);
+        return;
+      }
+      const from = key.length >= 4 ? key[2] : undefined;
+      const to = key.length >= 4 ? key[3] : undefined;
+      const filtered = filterByDateRange(ALL_DAILY_DATA, from, to);
+      client.setQueryData(key, buildStatsResponse(filtered));
+    }
 
-  const sevenDaysAgo = new Date(today);
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    if (key[0] === "daily-participation-trend") {
+      if (mode === "empty") {
+        client.setQueryData(key, { data: [] });
+        return;
+      }
+      const from = key.length >= 4 ? key[2] : undefined;
+      const to = key.length >= 4 ? key[3] : undefined;
+      const filtered = filterByDateRange(ALL_DAILY_DATA, from, to);
+      client.setQueryData(key, { data: filtered });
+    }
 
-  const thirtyDaysAgo = new Date(today);
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29);
-
-  return [
-    undefined,
-    { from: todayStr, to: todayStr },
-    { from: toDateString(sevenDaysAgo), to: todayStr },
-    { from: toDateString(thirtyDaysAgo), to: todayStr },
-  ];
+    if (key[0] === "mission-funnel") {
+      client.setQueryData(key, mode === "empty" ? EMPTY_FUNNEL : MOCK_FUNNEL_DATA);
+    }
+  });
 }
 
 function createMockQueryClient() {
@@ -162,24 +172,49 @@ function createMockQueryClient() {
     },
   });
 
-  const presets = getPresetDateRanges();
+  populateQueryOnAdd(client, "data");
 
-  for (const range of presets) {
-    const filtered = filterByDateRange(ALL_DAILY_DATA, range?.from, range?.to);
+  return client;
+}
 
-    const statsKey = range
-      ? ["mission-stats", MOCK_MISSION_ID, range.from, range.to]
-      : ["mission-stats", MOCK_MISSION_ID];
+const EMPTY_STATS = {
+  data: {
+    total: 0,
+    completed: 0,
+    completionRate: 0,
+    averageDurationMs: null,
+    shareCount: 0,
+    completionReachStats: [],
+  },
+};
 
-    const trendKey = range
-      ? ["daily-participation-trend", MOCK_MISSION_ID, range.from, range.to]
-      : ["daily-participation-trend", MOCK_MISSION_ID];
+const EMPTY_FUNNEL = {
+  data: {
+    nodes: [],
+    links: [],
+    metadata: {
+      totalSessions: 0,
+      totalStarted: 0,
+      totalCompleted: 0,
+      completionRate: 0,
+      actions: [],
+    },
+  },
+};
 
-    client.setQueryData(statsKey, buildStatsResponse(filtered));
-    client.setQueryData(trendKey, { data: filtered });
-  }
+function createEmptyMockQueryClient() {
+  const client = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        refetchOnWindowFocus: false,
+        staleTime: Number.POSITIVE_INFINITY,
+        refetchInterval: false,
+      },
+    },
+  });
 
-  client.setQueryData(["mission-funnel", MOCK_MISSION_ID, {}], MOCK_FUNNEL_DATA);
+  populateQueryOnAdd(client, "empty");
 
   return client;
 }
@@ -188,6 +223,16 @@ export { MOCK_MISSION_ID };
 
 export function StatsMockProvider({ children }: { children: ReactNode }) {
   const [queryClient] = useState(createMockQueryClient);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <div className="min-h-screen bg-zinc-50 p-6">{children}</div>
+    </QueryClientProvider>
+  );
+}
+
+export function EmptyStatsMockProvider({ children }: { children: ReactNode }) {
+  const [queryClient] = useState(createEmptyMockQueryClient);
 
   return (
     <QueryClientProvider client={queryClient}>
