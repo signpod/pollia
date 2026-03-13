@@ -108,6 +108,7 @@ function AiReportSection({
       >
         <div className="flex items-center gap-2">
           <Typo.SubTitle>AI 리포트</Typo.SubTitle>
+          <Sparkles className="size-4 text-violet-500" />
           {reportData && (
             <span className="rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-600">
               생성됨

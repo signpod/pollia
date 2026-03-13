@@ -3,7 +3,6 @@
 import { getCompletionsByMissionId } from "@/actions/mission-completion";
 import { Separator } from "@/components/ui/separator";
 import { missionCompletionQueryKeys } from "@/constants/queryKeys/missionCompletionQueryKeys";
-import { ROUTES } from "@/constants/routes";
 import UBIQUITOUS_CONSTANTS from "@/constants/ubiquitous";
 import { useReadActionsDetail } from "@/hooks/action";
 import { useReadMission } from "@/hooks/mission";
@@ -50,34 +49,6 @@ interface EditorMissionTabContentProps {
   missionId: string;
   mission: GetMissionResponse["data"];
   reward: RewardSnapshot | null;
-}
-
-function MissionIntroPreview({ missionId }: { missionId: string }) {
-  const previewUrl = ROUTES.MISSION(missionId);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    if (!previewUrl) {
-      return;
-    }
-    setIsLoading(true);
-  }, [previewUrl]);
-
-  return (
-    <div className="relative h-[calc(100vh-120px)] min-h-[720px] w-full overflow-hidden bg-white">
-      {isLoading && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/90">
-          <div className="size-8 animate-spin rounded-full border-4 border-zinc-200 border-t-zinc-500" />
-        </div>
-      )}
-      <iframe
-        title={`${UBIQUITOUS_CONSTANTS.MISSION} 인트로 미리보기`}
-        src={previewUrl}
-        className="h-full w-full border-0"
-        onLoad={() => setIsLoading(false)}
-      />
-    </div>
-  );
 }
 
 export function EditorMissionTabContent({
@@ -315,20 +286,6 @@ export function EditorMissionTabContent({
           node={saveButtonNode}
         />
         <MissionStatsDashboard missionId={missionId} />
-      </>
-    );
-  }
-
-  if (currentTab === "preview") {
-    return (
-      <>
-        {desktopPanels}
-        <EditorBottomSaveSlot
-          slotKey={`editor-mission-save:${missionId}`}
-          isActive={false}
-          node={saveButtonNode}
-        />
-        <MissionIntroPreview missionId={missionId} />
       </>
     );
   }
