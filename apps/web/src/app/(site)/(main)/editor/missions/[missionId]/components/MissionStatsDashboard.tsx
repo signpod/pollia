@@ -1,20 +1,83 @@
 "use client";
 
 import { useGenerateMissionAiReport, useMissionAiReport } from "@/hooks/ai";
+import { useReadMissionStats } from "@/hooks/mission-response";
+import { formatMillisecondsToKorean } from "@/lib/utils";
 import { Typo } from "@repo/ui/components";
 import { useQueryClient } from "@tanstack/react-query";
 import { BarChart3, Download, Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { useRef, useState } from "react";
 import { StatsAccordion } from "./StatsAccordion";
+import { ActionStatsSection } from "./action-stats/ActionStatsSection";
 import { AiReportSlideViewer } from "./report/AiReportSlideViewer";
+import { ResponseResultsAccordion } from "./stats/ResponseResultsAccordion";
+import { ResultDistributionAccordion } from "./stats/ResultDistributionAccordion";
+import { StatsDetailAccordion } from "./stats/StatsDetailAccordion";
 
 interface MissionStatsDashboardProps {
   missionId: string;
 }
 
 export function MissionStatsDashboard({ missionId }: MissionStatsDashboardProps) {
-  const [isExporting, setIsExporting] = useState(false);
-  const exportPdfRef = useRef<(() => Promise<void>) | null>(null);
+  const statsQuery = useReadMissionStats(missionId);
+  const stats = statsQuery.data?.data;
+
+  return (
+    <div className="space-y-4 bg-white p-4">
+      <section className="grid grid-cols-2 gap-3 px-5 py-5 sm:grid-cols-4">
+        <StatCard
+          title="총 참여수"
+          value={stats ? `${stats.total}명` : "-"}
+          isLoading={statsQuery.isPending}
+        />
+        <StatCard
+          title="완주율"
+          value={stats ? `${stats.completionRate.toFixed(1)}%` : "-"}
+          isLoading={statsQuery.isPending}
+        />
+        <StatCard
+          title="평균 소요시간"
+          value={
+            stats?.averageDurationMs ? formatMillisecondsToKorean(stats.averageDurationMs) : "-"
+          }
+          isLoading={statsQuery.isPending}
+        />
+        <StatCard
+          title="공유 수"
+          value={stats ? `${stats.shareCount}회` : "-"}
+          isLoading={statsQuery.isPending}
+        />
+      </section>
+
+      <StatsDetailAccordion missionId={missionId} />
+      <ResultDistributionAccordion missionId={missionId} />
+      <ResponseResultsAccordion missionId={missionId} />
+      <ActionStatsSection missionId={missionId} />
+
+      <AiReportSection missionId={missionId} hasResponses={(stats?.total ?? 0) > 0} />
+    </div>
+  );
+}
+
+function StatCard({
+  title,
+  value,
+  isLoading,
+}: { title: string; value: string; isLoading: boolean }) {
+  return (
+    <div className="rounded-xl border border-zinc-200 bg-white p-4">
+      <Typo.Body size="small" className="text-zinc-500">
+        {title}
+      </Typo.Body>
+      <Typo.SubTitle className="mt-1 text-2xl">{isLoading ? "..." : value}</Typo.SubTitle>
+    </div>
+  );
+}
+
+function AiReportSection({
+  missionId,
+  hasResponses,
+}: { missionId: string; hasResponses: boolean }) {
   const queryClient = useQueryClient();
   const reportQuery = useMissionAiReport(missionId);
   const generateMutation = useGenerateMissionAiReport({
@@ -24,6 +87,9 @@ export function MissionStatsDashboard({ missionId }: MissionStatsDashboardProps)
       });
     },
   });
+
+  const exportPdfRef = useRef<(() => Promise<void>) | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   const reportData = reportQuery.data?.data.reportData ?? null;
   const isGenerating = generateMutation.isPending;

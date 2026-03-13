@@ -1,6 +1,9 @@
-import { dirname, join } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import type { StorybookConfig } from "@storybook/nextjs";
+import { config as dotenvConfig } from "dotenv";
 import webpack from "webpack";
+
+dotenvConfig({ path: resolve(__dirname, "../../web/.env.local") });
 
 /**
  * This function is used to resolve the absolute path of a package.
@@ -56,6 +59,12 @@ const config: StorybookConfig = {
     config.plugins = [
       ...(config.plugins || []),
       new webpack.NormalModuleReplacementPlugin(/^node:crypto$/, "crypto-browserify"),
+      new webpack.EnvironmentPlugin({
+        NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:
+          process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "",
+        SUPABASE_SERVICE_SECRET_KEY: process.env.SUPABASE_SERVICE_SECRET_KEY ?? "",
+      }),
     ];
 
     return config;
