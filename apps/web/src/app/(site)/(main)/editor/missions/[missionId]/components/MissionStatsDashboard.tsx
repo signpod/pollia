@@ -3,6 +3,7 @@
 import { useGenerateMissionAiReport, useMissionAiReport } from "@/hooks/ai";
 import { useReadMissionResponsesPage, useReadMissionStats } from "@/hooks/mission-response";
 import { formatDateToHHMM, formatDateToYYYYMMDD } from "@/lib/date";
+import { formatMillisecondsToKorean } from "@/lib/utils";
 import type { ColumnDef } from "@/server/services/submission-list/types";
 import type { ActionType } from "@prisma/client";
 import { Typo } from "@repo/ui/components";
@@ -72,20 +73,27 @@ export function MissionStatsDashboard({ missionId }: MissionStatsDashboardProps)
 
   return (
     <div className="space-y-4 px-5 py-5">
-      <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard
-          title="총 참여자 수"
+          title="총 참여수"
           value={stats ? `${stats.total}명` : "-"}
-          isLoading={statsQuery.isPending}
-        />
-        <StatCard
-          title="완료자 수"
-          value={stats ? `${stats.completed}명` : "-"}
           isLoading={statsQuery.isPending}
         />
         <StatCard
           title="완주율"
           value={stats ? `${stats.completionRate.toFixed(1)}%` : "-"}
+          isLoading={statsQuery.isPending}
+        />
+        <StatCard
+          title="평균 소요시간"
+          value={
+            stats?.averageDurationMs ? formatMillisecondsToKorean(stats.averageDurationMs) : "-"
+          }
+          isLoading={statsQuery.isPending}
+        />
+        <StatCard
+          title="공유 수"
+          value={stats ? `${stats.shareCount}회` : "-"}
           isLoading={statsQuery.isPending}
         />
       </section>

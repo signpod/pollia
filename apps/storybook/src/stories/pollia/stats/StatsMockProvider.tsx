@@ -5,6 +5,7 @@ import { type ReactNode, useState } from "react";
 
 const MOCK_MISSION_ID = "mock-mission-id";
 const BASE_TOTAL = 142;
+const COMPLETION_RATIO = 0.7;
 
 function toDateString(date: Date): string {
   const y = date.getFullYear();
@@ -45,8 +46,9 @@ function filterByDateRange(
 }
 
 function buildStatsResponse(filtered: Array<{ date: string; count: number }>) {
-  const completed = filtered.reduce((sum, d) => sum + d.count, 0);
-  const rate = BASE_TOTAL > 0 ? (completed / BASE_TOTAL) * 100 : 0;
+  const periodParticipation = filtered.reduce((sum, d) => sum + d.count, 0);
+  const completed = Math.round(periodParticipation * COMPLETION_RATIO);
+  const rate = periodParticipation > 0 ? (completed / periodParticipation) * 100 : 0;
 
   return {
     data: {
