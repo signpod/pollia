@@ -3,9 +3,9 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { createContext, useCallback, useContext, useMemo } from "react";
 
-export type EditorTabValue = "editor" | "stats" | "preview";
+export type EditorTabValue = "editor" | "stats";
 
-const VALID_TABS: ReadonlySet<string> = new Set<EditorTabValue>(["editor", "stats", "preview"]);
+const VALID_TABS: ReadonlySet<string> = new Set<EditorTabValue>(["editor", "stats"]);
 const DEFAULT_TAB: EditorTabValue = "editor";
 const TAB_PARAM = "tab";
 

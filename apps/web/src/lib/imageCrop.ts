@@ -115,13 +115,17 @@ export async function getCroppedImg(
     sourceCtx.restore();
 
     return new Promise((resolve, reject) => {
-      sourceCanvas.toBlob(blob => {
-        if (blob) {
-          resolve(blob);
-        } else {
-          reject(new Error("이미지를 Blob으로 변환하는데 실패했습니다."));
-        }
-      }, "image/png");
+      sourceCanvas.toBlob(
+        blob => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error("이미지를 Blob으로 변환하는데 실패했습니다."));
+          }
+        },
+        "image/webp",
+        0.9,
+      );
     });
   }
 
@@ -164,12 +168,16 @@ export async function getCroppedImg(
   );
 
   return new Promise((resolve, reject) => {
-    canvas.toBlob(blob => {
-      if (blob) {
-        resolve(blob);
-      } else {
-        reject(new Error("이미지를 Blob으로 변환하는데 실패했습니다."));
-      }
-    }, "image/png");
+    canvas.toBlob(
+      blob => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject(new Error("이미지를 Blob으로 변환하는데 실패했습니다."));
+        }
+      },
+      "image/webp",
+      0.9,
+    );
   });
 }

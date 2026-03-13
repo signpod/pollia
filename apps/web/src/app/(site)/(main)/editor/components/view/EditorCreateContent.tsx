@@ -168,7 +168,7 @@ export function EditorCreateContent() {
     [controller.isSubmitting, controller.handleCreate],
   );
 
-  if (currentTab === "stats" || currentTab === "preview") {
+  if (currentTab === "stats") {
     return (
       <>
         <EditorBottomSaveSlot

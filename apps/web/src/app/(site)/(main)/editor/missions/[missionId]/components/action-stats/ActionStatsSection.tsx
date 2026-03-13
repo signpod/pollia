@@ -2,9 +2,10 @@
 
 import { useReadActionStats } from "@/hooks/action-stats/useReadActionStats";
 import type { ActionStatItem } from "@/types/dto/action-stats";
-import { BarChart3 } from "lucide-react";
+import { Typo } from "@repo/ui/components";
+import { ChevronDown } from "lucide-react";
 import dynamic from "next/dynamic";
-import { StatsAccordion } from "../StatsAccordion";
+import { useCallback, useState } from "react";
 import { CountOnlyDisplay } from "./CountOnlyDisplay";
 import { TextResponseList } from "./TextResponseList";
 
@@ -22,39 +23,60 @@ interface ActionStatsSectionProps {
 }
 
 export function ActionStatsSection({ missionId }: ActionStatsSectionProps) {
+  const [isOpen, setIsOpen] = useState(false);
   const { data, isPending, error } = useReadActionStats(missionId);
   const items = data?.data ?? [];
 
+  const handleToggle = useCallback(() => {
+    setIsOpen(prev => !prev);
+  }, []);
+
   return (
-    <StatsAccordion
-      icon={BarChart3}
-      title="액션별 통계"
-      badge={
-        items.length > 0 ? (
-          <span className="rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-600">
-            {items.length}개 액션
-          </span>
-        ) : null
-      }
-    >
-      {isPending ? (
-        <div className="flex items-center justify-center px-5 py-20">
-          <div className="size-6 animate-spin rounded-full border-2 border-violet-200 border-t-violet-600" />
+    <section>
+      <button
+        type="button"
+        onClick={handleToggle}
+        className="flex w-full items-center justify-between px-5 py-4"
+      >
+        <div className="flex items-center gap-2">
+          <Typo.SubTitle>질문별 통계</Typo.SubTitle>
+          {items.length > 0 && (
+            <span className="rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-600">
+              {items.length}개 질문
+            </span>
+          )}
         </div>
-      ) : error ? (
-        <div className="px-5 py-10 text-center text-sm text-red-500">
-          통계를 불러오지 못했습니다.
-        </div>
-      ) : items.length === 0 ? (
-        <div className="px-5 py-10 text-center text-sm text-zinc-400">아직 액션이 없습니다.</div>
-      ) : (
-        <div className="space-y-6 px-5 py-5">
-          {items.map(item => (
-            <ActionStatCard key={item.actionId} item={item} />
-          ))}
+        <ChevronDown
+          className={`size-5 text-zinc-500 transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {isOpen && (
+        <div className="px-5 pb-5">
+          {isPending ? (
+            <div className="flex h-[180px] items-center justify-center text-sm text-zinc-500">
+              데이터를 불러오는 중입니다.
+            </div>
+          ) : error ? (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              통계를 불러오지 못했습니다.
+            </div>
+          ) : items.length === 0 ? (
+            <div className="flex h-[180px] items-center justify-center text-sm text-zinc-500">
+              아직 질문이 없습니다.
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {items.map(item => (
+                <ActionStatCard key={item.actionId} item={item} />
+              ))}
+            </div>
+          )}
         </div>
       )}
-    </StatsAccordion>
+    </section>
   );
 }
 

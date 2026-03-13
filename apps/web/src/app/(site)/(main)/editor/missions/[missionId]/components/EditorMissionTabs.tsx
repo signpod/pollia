@@ -19,9 +19,6 @@ export function EditorMissionTabs() {
         <Tab.Item value="stats">
           <Typo.Body size="large">통계</Typo.Body>
         </Tab.Item>
-        <Tab.Item value="preview">
-          <Typo.Body size="large">미리보기</Typo.Body>
-        </Tab.Item>
       </Tab.List>
     </Tab.Root>
   );
