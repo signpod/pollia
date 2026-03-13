@@ -39,10 +39,10 @@ export function ActionStatsSection({ missionId }: ActionStatsSectionProps) {
         className="flex w-full items-center justify-between px-5 py-4"
       >
         <div className="flex items-center gap-2">
-          <Typo.SubTitle>액션별 통계</Typo.SubTitle>
+          <Typo.SubTitle>질문별 통계</Typo.SubTitle>
           {items.length > 0 && (
             <span className="rounded-full bg-violet-100 px-2 py-0.5 text-xs font-medium text-violet-600">
-              {items.length}개 액션
+              {items.length}개 질문
             </span>
           )}
         </div>
@@ -65,7 +65,7 @@ export function ActionStatsSection({ missionId }: ActionStatsSectionProps) {
             </div>
           ) : items.length === 0 ? (
             <div className="flex h-[180px] items-center justify-center text-sm text-zinc-500">
-              아직 액션이 없습니다.
+              아직 질문이 없습니다.
             </div>
           ) : (
             <div className="space-y-6">
