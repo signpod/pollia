@@ -6,6 +6,7 @@ export class UserRepository {
   async findById(userId: string) {
     return prisma.user.findUnique({
       where: { id: userId },
+      include: { profileImageFileUpload: { select: { publicUrl: true } } },
     });
   }
 

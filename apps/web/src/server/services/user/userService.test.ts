@@ -12,6 +12,7 @@ const createMockUser = (
     role: UserRole;
     status: UserStatus;
     profileImageFileUploadId: string | null;
+    profileImageFileUpload: { publicUrl: string } | null;
     createdAt: Date;
     updatedAt: Date;
     withdrawnAt: Date | null;
@@ -26,6 +27,7 @@ const createMockUser = (
   role: UserRole.USER,
   status: UserStatus.ACTIVE,
   profileImageFileUploadId: null,
+  profileImageFileUpload: null,
   createdAt: new Date("2025-01-01"),
   updatedAt: new Date("2025-01-01"),
   withdrawnAt: null,
