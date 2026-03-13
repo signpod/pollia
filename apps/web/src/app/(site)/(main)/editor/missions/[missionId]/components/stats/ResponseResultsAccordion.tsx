@@ -61,7 +61,7 @@ export function ResponseResultsAccordion({ missionId }: ResponseResultsAccordion
   const totalRows = pagination?.totalRows ?? 0;
 
   return (
-    <section className="rounded-xl border border-zinc-200 bg-white">
+    <section>
       <button
         type="button"
         onClick={handleToggle}

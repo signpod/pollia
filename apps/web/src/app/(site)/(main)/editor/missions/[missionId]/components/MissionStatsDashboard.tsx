@@ -1,5 +1,6 @@
 "use client";
 
+import { Separator } from "@/components/ui/separator";
 import { useGenerateMissionAiReport, useMissionAiReport } from "@/hooks/ai";
 import { useReadMissionStats } from "@/hooks/mission-response";
 import { formatMillisecondsToKorean } from "@/lib/utils";
@@ -7,6 +8,7 @@ import { Typo } from "@repo/ui/components";
 import { useQueryClient } from "@tanstack/react-query";
 import { BarChart3, ChevronDown, Download, Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
+import { EditorSectionCard } from "../../../components/view/EditorSectionCard";
 import { ActionStatsSection } from "./action-stats/ActionStatsSection";
 import { AiReportSlideViewer } from "./report/AiReportSlideViewer";
 import { ResponseResultsAccordion } from "./stats/ResponseResultsAccordion";
@@ -22,39 +24,55 @@ export function MissionStatsDashboard({ missionId }: MissionStatsDashboardProps)
   const stats = statsQuery.data?.data;
 
   return (
-    <div className="space-y-4 bg-white p-4">
-      <section className="grid grid-cols-2 gap-3 px-5 py-5 sm:grid-cols-4">
-        <StatCard
-          title="총 참여수"
-          value={stats ? `${stats.total}명` : "-"}
-          isLoading={statsQuery.isPending}
-        />
-        <StatCard
-          title="완주율"
-          value={stats ? `${stats.completionRate.toFixed(1)}%` : "-"}
-          isLoading={statsQuery.isPending}
-        />
-        <StatCard
-          title="평균 소요시간"
-          value={
-            stats?.averageDurationMs ? formatMillisecondsToKorean(stats.averageDurationMs) : "-"
-          }
-          isLoading={statsQuery.isPending}
-        />
-        <StatCard
-          title="공유 수"
-          value={stats ? `${stats.shareCount}회` : "-"}
-          isLoading={statsQuery.isPending}
-        />
-      </section>
+    <>
+      <div className="border border-zinc-200 bg-white">
+        <section className="grid grid-cols-2 gap-3 px-5 py-4 sm:grid-cols-4">
+          <StatCard
+            title="총 참여수"
+            value={stats ? `${stats.total}명` : "-"}
+            isLoading={statsQuery.isPending}
+          />
+          <StatCard
+            title="완주율"
+            value={stats ? `${stats.completionRate.toFixed(1)}%` : "-"}
+            isLoading={statsQuery.isPending}
+          />
+          <StatCard
+            title="평균 소요시간"
+            value={
+              stats?.averageDurationMs ? formatMillisecondsToKorean(stats.averageDurationMs) : "-"
+            }
+            isLoading={statsQuery.isPending}
+          />
+          <StatCard
+            title="공유 수"
+            value={stats ? `${stats.shareCount}회` : "-"}
+            isLoading={statsQuery.isPending}
+          />
+        </section>
+      </div>
 
-      <StatsDetailAccordion missionId={missionId} />
-      <ResultDistributionAccordion missionId={missionId} />
-      <ResponseResultsAccordion missionId={missionId} />
+      <Separator className="h-2" />
+
+      <EditorSectionCard
+        title="콘텐츠 통계"
+        description="참여 현황, 결과 분포, 응답 내역을 확인합니다."
+      >
+        <div className="divide-y divide-zinc-100">
+          <StatsDetailAccordion missionId={missionId} />
+          <ResultDistributionAccordion missionId={missionId} />
+          <ResponseResultsAccordion missionId={missionId} />
+        </div>
+      </EditorSectionCard>
+
+      <Separator className="h-2" />
+
       <ActionStatsSection missionId={missionId} />
 
+      <Separator className="h-2" />
+
       <AiReportSection missionId={missionId} hasResponses={(stats?.total ?? 0) > 0} />
-    </div>
+    </>
   );
 }
 
@@ -100,7 +118,7 @@ function AiReportSection({
   }, []);
 
   return (
-    <section className="rounded-xl border border-zinc-200 bg-white">
+    <section className="border border-zinc-200 bg-white">
       <button
         type="button"
         onClick={handleToggle}
