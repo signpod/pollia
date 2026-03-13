@@ -2,8 +2,10 @@
 
 import type { AiReportData } from "@/types/dto";
 import useEmblaCarousel from "embla-carousel-react";
+import html2canvas from "html2canvas-pro";
+import { jsPDF } from "jspdf";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { CoverSlide } from "./slides/CoverSlide";
 import { DropOffSlide } from "./slides/DropOffSlide";
 import { InsightsSlide } from "./slides/InsightsSlide";
@@ -15,15 +17,26 @@ import { SummarySlide } from "./slides/SummarySlide";
 
 interface AiReportSlideViewerProps {
   data: AiReportData;
+  onExportRef?: React.MutableRefObject<(() => Promise<void>) | null>;
+  onExportingChange?: (exporting: boolean) => void;
 }
 
 const SLIDE_LABELS = ["표지", "요약", "참여", "이탈", "객관식", "주관식", "결과", "인사이트"];
 
-export function AiReportSlideViewer({ data }: AiReportSlideViewerProps) {
+const PDF_WIDTH = 720;
+const PDF_HEIGHT = 1024;
+
+export function AiReportSlideViewer({
+  data,
+  onExportRef,
+  onExportingChange,
+}: AiReportSlideViewerProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, dragFree: false });
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const pdfSlidesRef = useRef<HTMLDivElement>(null);
 
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
@@ -55,6 +68,46 @@ export function AiReportSlideViewer({ data }: AiReportSlideViewerProps) {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [scrollPrev, scrollNext]);
+
+  const handleExportPdf = useCallback(async () => {
+    if (!pdfSlidesRef.current || isExporting) return;
+    setIsExporting(true);
+    onExportingChange?.(true);
+
+    try {
+      const slideElements = pdfSlidesRef.current.children;
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "px",
+        format: [PDF_WIDTH, PDF_HEIGHT],
+      });
+
+      for (let i = 0; i < slideElements.length; i++) {
+        const el = slideElements[i] as HTMLElement;
+        const canvas = await html2canvas(el, {
+          width: PDF_WIDTH,
+          height: PDF_HEIGHT,
+          scale: 2,
+          useCORS: true,
+          backgroundColor: "#ffffff",
+        });
+
+        const imgData = canvas.toDataURL("image/png");
+        if (i > 0) pdf.addPage([PDF_WIDTH, PDF_HEIGHT], "portrait");
+        pdf.addImage(imgData, "PNG", 0, 0, PDF_WIDTH, PDF_HEIGHT);
+      }
+
+      const title = data.stats.cover.missionTitle || "AI 리포트";
+      pdf.save(`${title}.pdf`);
+    } finally {
+      setIsExporting(false);
+      onExportingChange?.(false);
+    }
+  }, [data, isExporting, onExportingChange]);
+
+  useEffect(() => {
+    if (onExportRef) onExportRef.current = handleExportPdf;
+  }, [onExportRef, handleExportPdf]);
 
   const slides = [
     <CoverSlide key="cover" data={data} />,
@@ -117,6 +170,19 @@ export function AiReportSlideViewer({ data }: AiReportSlideViewerProps) {
         >
           <ChevronRight className="size-4" />
         </button>
+      </div>
+
+      {/* 오프스크린 슬라이드 (PDF 캡처용) */}
+      <div
+        ref={pdfSlidesRef}
+        aria-hidden
+        className="pointer-events-none fixed left-[-9999px] top-0"
+      >
+        {slides.map((slide, i) => (
+          <div key={i} className="bg-white" style={{ width: PDF_WIDTH, height: PDF_HEIGHT }}>
+            {slide}
+          </div>
+        ))}
       </div>
     </div>
   );
