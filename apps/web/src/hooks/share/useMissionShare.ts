@@ -4,6 +4,7 @@ import { toast } from "@/components/common/Toast";
 import { ROUTES } from "@/constants/routes";
 import { SHARE_MESSAGES } from "@/constants/shareMessages";
 import { useKakaoShare } from "@/hooks/share/useKakaoShare";
+import { useShareTracking } from "@/hooks/share/useShareTracking";
 import { useCallback, useMemo, useState } from "react";
 
 interface UseMissionShareOptions {
@@ -14,20 +15,28 @@ interface UseMissionShareOptions {
 
 export function useMissionShare({ missionId, title, imageUrl }: UseMissionShareOptions) {
   const [isSharing, setIsSharing] = useState(false);
+  const { trackShare } = useShareTracking(missionId);
 
   const shareUrl = useMemo(() => {
     if (typeof window === "undefined") return "";
     return `${window.location.origin}${ROUTES.MISSION(missionId)}`;
   }, [missionId]);
 
-  const { handleKakaoShare } = useKakaoShare({
+  const { handleKakaoShare: kakaoShare } = useKakaoShare({
     shareUrl,
     title,
     imageUrl,
   });
 
+  const handleKakaoShare = useCallback(() => {
+    trackShare();
+    kakaoShare();
+  }, [trackShare, kakaoShare]);
+
   const handleLinkShare = useCallback(async () => {
     if (isSharing) return;
+
+    trackShare();
 
     if (!navigator.share) {
       try {
@@ -57,13 +66,14 @@ export function useMissionShare({ missionId, title, imageUrl }: UseMissionShareO
     } finally {
       setIsSharing(false);
     }
-  }, [shareUrl, isSharing, title]);
+  }, [shareUrl, isSharing, title, trackShare]);
 
   const handleXShare = useCallback(() => {
+    trackShare();
     const shareText = title || SHARE_MESSAGES.kakao.title;
     const xShareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
     window.open(xShareUrl, "_blank", "noopener,noreferrer,width=550,height=420");
-  }, [shareUrl, title]);
+  }, [shareUrl, title, trackShare]);
 
   return {
     handleKakaoShare,

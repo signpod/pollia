@@ -1,3 +1,7 @@
+import type { AiReportData as AiReportDataType } from "./report";
+
+export type { AiReportAiAnalysis, AiReportData } from "./report";
+
 export interface AiUsage {
   inputTokens: number;
   outputTokens: number;
@@ -17,13 +21,13 @@ export interface RunAiPromptResponse {
 
 export interface GenerateMissionAiReportResponse {
   data: {
-    report: string;
+    reportData: AiReportDataType;
     usage?: AiUsage;
   };
 }
 
 export interface GetMissionAiReportResponse {
   data: {
-    report: string | null;
+    reportData: AiReportDataType | null;
   };
 }

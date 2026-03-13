@@ -19,7 +19,8 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { ActionType } from "@prisma/client";
+
+import { ActionType } from "@/types/domain/action";
 import { Button, Typo } from "@repo/ui/components";
 import { useAtom } from "jotai";
 import { AlertCircle, GitBranch, Plus } from "lucide-react";
