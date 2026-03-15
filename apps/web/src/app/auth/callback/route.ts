@@ -1,7 +1,10 @@
 import { createSessionWithKakao, exchangeKakaoToken, getKakaoUserInfo } from "@/actions/kakao";
 import { createUserIfNotExists } from "@/actions/user";
+import { STORAGE_BUCKETS } from "@/constants/buckets";
+import { fileUploadService } from "@/server/services/file-upload";
 import { userService } from "@/server/services/user/userService";
 import type { KakaoTokenResponse, KakaoUserInfo } from "@/types/external/kakao";
+import { ActionType } from "@prisma/client";
 import type { User } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
@@ -108,6 +111,41 @@ async function registerOrUpdateUser(
   return { isNewUser };
 }
 
+async function uploadKakaoProfileImage(userId: string, kakaoUser: KakaoUserInfo): Promise<void> {
+  const profileImageUrl = kakaoUser.kakao_account.profile.profile_image_url;
+  if (!profileImageUrl) return;
+
+  const imageResponse = await fetch(profileImageUrl);
+  if (!imageResponse.ok) return;
+
+  const imageBuffer = await imageResponse.arrayBuffer();
+  const contentType = imageResponse.headers.get("content-type") || "image/jpeg";
+  const extension = contentType.includes("png") ? "png" : "jpg";
+
+  const { uploadUrl, fileUploadId } = await fileUploadService.createUploadUrl(
+    {
+      fileName: `kakao-profile.${extension}`,
+      fileSize: imageBuffer.byteLength,
+      fileType: contentType,
+      bucket: STORAGE_BUCKETS.USER_PROFILE_IMAGES,
+      actionType: ActionType.IMAGE,
+    },
+    userId,
+  );
+
+  const uploadResponse = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": contentType },
+    body: imageBuffer,
+  });
+
+  if (!uploadResponse.ok) return;
+
+  await userService.updateUser(userId, {
+    profileImageFileUploadId: fileUploadId,
+  });
+}
+
 function getRedirectUrl(request: Request, origin: string, path: string): string {
   const forwardedHost = request.headers.get("x-forwarded-host");
   const isLocalEnv = process.env.NODE_ENV === "development";
@@ -147,8 +185,24 @@ export async function GET(request: Request) {
     const user = await authenticateWithKakao(tokenData, kakaoUser);
     const { isNewUser } = await registerOrUpdateUser(user, kakaoUser);
 
-    if (isNewUser && next === "/") {
-      next = "/login/done";
+    if (isNewUser) {
+      uploadKakaoProfileImage(user.id, kakaoUser).catch(error =>
+        console.error("카카오 프로필 이미지 업로드 실패:", error),
+      );
+
+      const kakaoProfileImageUrl = kakaoUser.kakao_account.profile.profile_image_url;
+      if (kakaoProfileImageUrl) {
+        cookieStore.set("kakao_profile_image", kakaoProfileImageUrl, {
+          path: "/",
+          httpOnly: false,
+          maxAge: 60 * 5,
+          sameSite: "lax",
+        });
+      }
+
+      if (next === "/") {
+        next = "/login/done";
+      }
     }
 
     cookieStore.set("auth_redirect", "", {
